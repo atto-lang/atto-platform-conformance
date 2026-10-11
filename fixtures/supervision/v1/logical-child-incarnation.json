@@ -435,6 +435,76 @@
         "receipt": "UNCERTAIN",
         "restartAllowed": false
       }
+    },
+    {
+      "id": "restart-requires-admitted-new-generation",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "reserve-restart(actor-A,1)",
+        "spawn(actor-B)",
+        "commit-restart-before-admission(actor-B)"
+      ],
+      "expected": {
+        "phase": "RESTARTING",
+        "replacement": "SPAWNED",
+        "commit": "reject-unadmitted-new-generation"
+      },
+      "origin": "formal-supervision-refinement-obligation",
+      "backendVerification": "not-yet-executed"
+    },
+    {
+      "id": "abort-restart-requires-physical-cleanup",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "reserve-restart(actor-A,1)",
+        "spawn(actor-B)",
+        "abort-restart-without-cleanup"
+      ],
+      "expected": {
+        "phase": "RESTARTING",
+        "replacement": "SPAWNED",
+        "abort": "reject-live-replacement"
+      },
+      "origin": "formal-supervision-refinement-obligation",
+      "backendVerification": "not-yet-executed"
+    },
+    {
+      "id": "admitted-restart-after-supervisor-close",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "reserve-restart(actor-A,1)",
+        "spawn-and-admit(actor-B)",
+        "close-supervisor",
+        "commit-restart(actor-B)"
+      ],
+      "expected": {
+        "phase": "RESTARTING",
+        "commit": "reject-closed-control",
+        "physicalCleanupRequired": true
+      },
+      "origin": "formal-supervision-refinement-obligation",
+      "backendVerification": "not-yet-executed"
+    },
+    {
+      "id": "abort-after-physical-replacement-cleanup",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "reserve-restart(actor-A,1)",
+        "spawn-and-admit(actor-B)",
+        "cleanup-replacement(actor-B)",
+        "abort-restart"
+      ],
+      "expected": {
+        "phase": "FINALIZED",
+        "replacement": "NONE",
+        "restartClaimReleased": true
+      },
+      "origin": "formal-supervision-refinement-obligation",
+      "backendVerification": "not-yet-executed"
     }
   ],
   "description": "Host-owned supervisor lifecycle. STOPPING retains exclusive CONTROL-turn authority. Only PENDING may receive direct host applied acknowledgement; UNKNOWN and crash-PENDING may reconcile only after independent proof; no automatic lifecycle retry.",
