@@ -126,3 +126,18 @@ An overflowed queue currently records undelivered notices, but does not by
 itself stop the entire actor family. Higher-level escalation, restart and
 root-failure policies for lost CONTROL traffic remain **release blockers**,
 as do full guest-defined `on_panic` execution and Java/LLVM parity.
+
+
+### Native bridge replay bookkeeping
+
+A terminal native child failure is a one-shot registration: after physical
+finalization and admission, consume the registered `(actor_slot, generation)`
+key, so replay is rejected **without** retaining an ever-growing set of
+completed generations. This retirement must occur even when downstream
+supervisor-process admission fails, because blindly replaying a terminal
+failure could duplicate lifecycle effects. The integration fixture asserts
+that the registered-child count returns to zero after delivery.
+
+**Remaining cleanup gap:** children that terminate normally without a panic
+notification still need a trusted retirement path from the owning actor
+lifecycle. Do not infer that terminal-panic cleanup covers all actor exits.
