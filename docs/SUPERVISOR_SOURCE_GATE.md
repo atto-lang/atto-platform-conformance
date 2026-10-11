@@ -467,3 +467,61 @@ failure publication. A registry method is not proof of physical finalization
 or authoritative lifecycle commit. Do not expose source `f.child`, turn on
 general `on_panic`, or claim guest Java/LLVM parity on the strength of
 these host-only tests.
+
+
+## Restricted Java awaited STOP slice (2026-10-11)
+
+The opt-in `OresCompiler.compileStopOnlySupervisor` now accepts exactly this
+additional source form:
+
+```oreslang
+define supervisor Root as
+  @Implements
+  pub async on_panic(f: Failure): void {
+    await self.stop(f);
+    return;
+  }
+end
+```
+
+This is a **compiler-validated immutable STOP intent**, not arbitrary guest
+`on_panic` evaluation, and does not enable the normal Oreslang compiler.
+It compiles no arbitrary statements, locks, actor references, helper calls,
+`defer`, `recover`, restart, or escalation.
+
+The opted-in host uses `StopOnlySupervisor.installAwaitingStop` and supplies
+an authoritative `CompletionStage<Void>` for the actual STOP effect:
+
+1. Typed `Failure` enters the existing supervisor CONTROL process, only
+   after host child finalization. A verified logical-child identity is required.
+2. The compiler emits one STOP request with a unique monotonically increasing
+   CONTROL turn generation.
+3. An async host-effect future keeps the supervisor's exclusive **logical
+   lease** while releasing the physical CONTROL carrier. A successful
+   submission or enqueue is **not** an acknowledgment.
+4. Successful host acknowledgment enqueues a new CONTROL continuation,
+   executes trusted `acknowledgeFinalizedStop` against the exact finalized
+   incarnation, then counts the decision resolved. Duplicate or late
+   completions do not finalize a second time.
+5. Exceptional/missing acknowledgment, failed enqueue, cancellation and
+   shutdown retire the pending notice with undelivered accounting rather than
+   pretending that STOP succeeded. A reentrant self-close requested during
+   effect initiation or finalization may finish the already-admitted effect
+   but rejects subsequent CONTROL admissions.
+
+**Focused exact-source proof:** private Java 25
+https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38179750225
+
+This runner compiled the exact production AST, lexer, parser, restricted source
+compiler, and supervisor host runtime Git blobs together and executed
+adversarial host-acknowledgment tests. It used a minimal test-only actor-group
+stand-in; it **does not** establish full `ActorRuntime.java` integration,
+full JUnit/Maven, guest evaluator support, GraalVM native-image, or LLVM
+async-source parity.
+
+The LLVM opt-in STOP slice **still rejects** `await self.stop(f)` because
+native guest continuation lowering is not implemented. The normal compiler
+for both backends retains fail-closed supervisor admission. Source-level
+`defer/recover` and execution-context restoration are not implemented by this
+restricted source slice. Full compiler-owned execution contexts and trusted
+typed STOP/RESTART/ESCALATE capabilities remain release prerequisites.
