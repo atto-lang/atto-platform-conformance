@@ -7,6 +7,9 @@ import {isAbsolute} from "node:path";
 const env=process.env;
 const names=["ORE_REAL_WASM","ORE_REAL_MANIFEST","ORE_BROWSER_WORKER_HOST","ORE_BROWSER_WORKER_SHIM"];
 const configured=names.every(k=>typeof env[k]==="string"&&isAbsolute(env[k]));
+// Required CI must fail, never silently skip when an env input disappears.
+if(env.ORE_REQUIRE_REAL_WORKER==="1"&&!configured)
+ throw Error("required real compiled Oreslang Worker evidence is unconfigured");
 test("native Oreslang .ores artifact runs inside real isolated Worker with verified manifest",{
  skip:configured?false:"requires exact built Oreslang compiler and pinned Worker source"
 },async()=>{
