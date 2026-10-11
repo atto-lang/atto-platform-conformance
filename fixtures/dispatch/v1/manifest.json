@@ -27,7 +27,9 @@
         "sourceTree": "d8b5634d4f3e622faf33ae830b11ede7282aee49",
         "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38179386289",
         "verification": "exact-Git-blob + guest main exit status 42"
-      }
+      },
+      "llvmSourcePath": "tests/fixtures/value-match-wildcard-last.ores",
+      "javaSourcePath": "src/test/resources/dispatch/v1/ordered-match-hit.ores"
     },
     {
       "id": "ordered-match-wildcard-fallback",
@@ -45,7 +47,9 @@
         "sourceTree": "d8b5634d4f3e622faf33ae830b11ede7282aee49",
         "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38179386289",
         "verification": "exact-Git-blob + guest main exit status 42"
-      }
+      },
+      "llvmSourcePath": "tests/fixtures/value-match-wildcard-miss.ores",
+      "javaSourcePath": "src/test/resources/dispatch/v1/ordered-match-wildcard-fallback.ores"
     },
     {
       "id": "reject-match-wildcard-before-concrete",
@@ -62,7 +66,9 @@
         "sourceTree": "d8b5634d4f3e622faf33ae830b11ede7282aee49",
         "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38179386289",
         "verification": "exact-Git-blob + parser/type/ownership admission rejection"
-      }
+      },
+      "llvmSourcePath": "tests/fixtures/value-match-default-first.ores",
+      "javaSourcePath": "src/test/resources/dispatch/v1/reject-match-wildcard-before-concrete.ores"
     },
     {
       "id": "reject-match-bare-default",
@@ -79,7 +85,9 @@
         "sourceTree": "d8b5634d4f3e622faf33ae830b11ede7282aee49",
         "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38179386289",
         "verification": "exact-Git-blob + parser/type/ownership admission rejection"
-      }
+      },
+      "llvmSourcePath": "tests/fixtures/value-match-bare-default-first.ores",
+      "javaSourcePath": "src/test/resources/dispatch/v1/reject-match-bare-default.ores"
     },
     {
       "id": "reject-match-on-default",
@@ -96,7 +104,9 @@
         "sourceTree": "d8b5634d4f3e622faf33ae830b11ede7282aee49",
         "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38179386289",
         "verification": "exact-Git-blob + parser/type/ownership admission rejection"
-      }
+      },
+      "llvmSourcePath": "tests/fixtures/value-match-on-default-first.ores",
+      "javaSourcePath": "src/test/resources/dispatch/v1/reject-match-on-default.ores"
     },
     {
       "id": "switch-default-before-cases",
@@ -114,7 +124,9 @@
         "sourceTree": "d8b5634d4f3e622faf33ae830b11ede7282aee49",
         "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38179386289",
         "verification": "exact-Git-blob + guest main exit status 42"
-      }
+      },
+      "llvmSourcePath": "tests/fixtures/value-switch-default-first.ores",
+      "javaSourcePath": "src/test/resources/dispatch/v1/switch-default-before-cases.ores"
     }
   ],
   "releaseGate": "The six scalar fixtures have byte-identical Java JVM execution/admission and LLVM native-subset proof. Full parity is still blocked for nominal messages, async cancellation, actor resources, native-image/AOT, and current synthesized merge-tree CI.",
@@ -138,5 +150,17 @@
       "nativeCTests": 116
     },
     "limitations": "No assertion of nominal typed actor messages, async lexical cancellation, native-image/AOT, or exact merge-tree certification."
+  },
+  "latestJavaHardening": {
+    "revision": "3a9bc4edf89722ceee18d122e1adfad0b08e8682",
+    "exactGitTree": "50dc152ed48c25d9919da6c89bf268f3a1a9f02a",
+    "sourceFileCount": 396,
+    "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38180933869",
+    "fullMavenTests": 1441,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1,
+    "coveredDelta": "Source catch-admission cancellation fence and OresFuture cancellation-hook retention, with focused tests and full JVM verification",
+    "limitations": "Unit-level catch-admission hardening does not certify real nested guest cleanup cancellation, full actor teardown, LLVM async cleanup, or Native Image."
   }
 }
