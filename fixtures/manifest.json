@@ -19,6 +19,34 @@
         "java",
         "llvm"
       ]
+    },
+    {
+      "id": "forward-call",
+      "file": "forward-call.ores",
+      "expect": "accept",
+      "backends": [
+        "java",
+        "llvm"
+      ]
+    },
+    {
+      "id": "arithmetic-precedence",
+      "file": "arithmetic-precedence.ores",
+      "expect": "accept",
+      "backends": [
+        "java",
+        "llvm"
+      ]
+    },
+    {
+      "id": "wrong-arity",
+      "file": "wrong-arity.ores",
+      "expect": "reject",
+      "diagnostic": "arity|argument|expected",
+      "backends": [
+        "java",
+        "llvm"
+      ]
     }
   ]
 }
