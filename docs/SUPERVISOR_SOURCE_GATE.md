@@ -432,3 +432,17 @@ normal-exit API in every clean-exit path; escalation/backpressure policy
 for rejected terminal CONTROL notifications; full compiler CMake/CTest,
 JDK25 Maven, native-image, typed guest `on_panic` async execution, and
 authoritative idempotent STOP/RESTART/ESCALATE host receipts.
+
+
+**Focused hardening verification, 2026-10-11:**
+https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38178052956
+
+The funded private runner passed both JDK25 focused CONTROL/STOP proof and
+native C++20 ASan/UBSan STOP-source conformance, with exact Git blob
+checks for the source files. The Java test scaffold exercised concurrent
+finalization-barrier rejection versus a live CONTROL callback; the full
+ActorRuntime.java file was hash verified but not compiled in that minimal
+scaffold. The native test verified that **both** source STOP spellings reject
+untyped legacy notices. All source-org workflows checked for this audit
+failed with zero executed job steps, so they do not establish Maven or full
+LLVM test-suite results. Do not merge these drafts as full supervisor support.
