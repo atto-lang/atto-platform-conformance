@@ -376,3 +376,32 @@ https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/381779497
 
 Do not infer full LLVM CMake/CTest, Java Maven/JDK25, source guest hook
 execution, durable restart semantics, or AOT parity from this focused run.
+
+
+## STOP-only hardening audit: finalization barrier and typed native admission
+
+Additional release constraints arising from the restricted STOP source slice:
+
+- **Java**: a failed actor's immutable supervisor Notice is captured during
+  unregister/retirement but published only when its runtime finalization
+  Future has settled successfully. This barrier follows the done Future and
+  actor cleanup. A malformed/failed finalization barrier must record
+  undelivered CONTROL without invoking guest lifecycle policy.
+- **Java CONTROL drain**: a fatal barrier event can retire the pending queue
+  concurrently with a host callback already running. The returning callback
+  must observe terminal state and must neither pop an empty queue nor claim
+  additional successful delivery.
+- **LLVM**: all source-defined `on_panic(f: Failure)` hooks, including the
+  `self.stop()` spelling, require a typed terminal PANIC envelope with
+  nonzero actor identity and generation. Untyped zero-kind legacy host notices
+  are not guest-language `Failure` values. Cancellation never implies STOP.
+- **Both**: an explicit lifecycle request is not the same as verified host
+  lifecycle effect. A host decision sink that returns normally is considered
+  an acknowledgement by contract, not proof that a specific actor was stopped.
+  Future runtime integration needs an authoritative, idempotent lifecycle
+  manager keyed by supervisor identity, actor incarnation and turn generation.
+
+These are narrowly scoped hardening commits; the normal compiler still
+rejects general guest supervisor execution. Full Maven/JDK25/GraalVM/LLVM
+integration and production-level real-child finalization proofs remain
+separate release gates.
