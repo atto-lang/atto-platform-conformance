@@ -1,9 +1,10 @@
-export function explore({owners=[0,0],supervisors=1,maxGeneration=2,maxTurns=2,mutant=false,maxStates=250000}={}) {
+export function explore({owners=[0,0],supervisors=1,maxGeneration=2,maxTurns=2,mutant=false,unsafeAbortMutant=false,maxStates=250000}={}) {
   if (!Number.isInteger(supervisors)||supervisors<1
       || !Number.isInteger(maxGeneration)||maxGeneration<1
       || !Number.isInteger(maxTurns)||maxTurns<1
       || !Number.isInteger(maxStates)||maxStates<1
-      || typeof mutant!=="boolean") throw Error("invalid finite exploration bounds");
+      || typeof mutant!=="boolean"||typeof unsafeAbortMutant!=="boolean")
+    throw Error("invalid finite exploration bounds");
   if (!Array.isArray(owners)) throw Error("invalid owner assignment");
   const N=owners.length;
   if (!N || owners.some(x=>!Number.isInteger(x)||x<0||x>=supervisors)) throw Error("invalid owner assignment");
@@ -72,8 +73,12 @@ export function explore({owners=[0,0],supervisors=1,maxGeneration=2,maxTurns=2,m
           emit(`SpawnReplacement(${c})`,x=>x.replacement[c]="Spawned");
         if(rstate==="Spawned"&&s.control[k]===c&&!s.closed[k])
           emit(`AdmitReplacement(${c})`,x=>x.replacement[c]="Admitted");
-        if(["Spawned","Admitted"].includes(rstate))
+        if(["Spawned","Admitted"].includes(rstate)) {
           emit(`CleanupReplacement(${c})`,x=>x.replacement[c]="Cleaned");
+          if(unsafeAbortMutant)
+            emit(`UNSAFE_AbortLiveReplacement(${c})`,
+              x=>{x.phase[c]="Finalized";x.lease[c]=0;});
+        }
         if(["None","Cleaned"].includes(rstate))
           emit(`AbortRestart(${c})`,x=>{x.phase[c]="Finalized";x.lease[c]=0;x.replacement[c]="None";});
         if(rstate==="Admitted"&&s.control[k]===c&&s.gen[c]<maxGeneration&&!s.closed[k])
