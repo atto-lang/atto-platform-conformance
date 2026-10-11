@@ -1,11 +1,13 @@
 import {readFile} from "node:fs/promises";
-import {resolve,dirname} from "node:path";
+import {createHash} from "node:crypto";
+import {resolve,dirname,isAbsolute} from "node:path";
 import {fileURLToPath} from "node:url";
 import {spawnSync} from "node:child_process";
 const root=resolve(dirname(fileURLToPath(import.meta.url)),"..");
 function validSha(s){return typeof s==="string" && /^[0-9a-f]{40}$/.test(s)}
 export function validateCommand(argv){
  if(!Array.isArray(argv)||argv.length===0||argv.some(x=>typeof x!=="string"||!x||x.includes("\0")))throw Error("compiler argv must be nonempty strings without NUL");
+ if(!isAbsolute(argv[0]))throw Error("compiler executable path must be absolute (no PATH lookup)");
  if(argv.filter(x=>x.includes("{file}")).length!==1 || argv.some(x=>x.includes("{file}")&&x!=="{file}"))
   throw Error("exactly one standalone {file} positional token is required");
  return argv;
@@ -26,6 +28,7 @@ export async function loadManifest(){
 }
 export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireConfigured=false,spawn=spawnSync}={}){
  if(!["java","llvm","wasm","browser"].includes(backend))throw Error("unknown backend");
+ if(!Number.isSafeInteger(timeoutMs)||timeoutMs<100||timeoutMs>120000)throw Error("timeoutMs must be 100..120000");
  const manifest=await loadManifest();
  const relevant=manifest.cases.filter(x=>x.backends.includes(backend));
  if(!argv){
@@ -34,9 +37,13 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
  }
  validateCommand(argv);
  if(!validSha(sourceSha))throw Error("configured backend requires exact 40-character lowercase source commit SHA");
+ const binaryBytes=await readFile(argv[0]);
+ const executableSha256=createHash("sha256").update(binaryBytes).digest("hex");
  const results=[];
  for(const c of relevant){
-  const cmd=argv.map(x=>x==="{file}"?resolve(root,"fixtures",c.file):x);
+  const fixturePath=resolve(root,"fixtures",c.file);
+  const fixtureSha256=createHash("sha256").update(await readFile(fixturePath)).digest("hex");
+  const cmd=argv.map(x=>x==="{file}"?fixturePath:x);
   const output=spawn(cmd[0],cmd.slice(1),{encoding:"utf8",timeout:timeoutMs,cwd:root,maxBuffer:1024*1024,windowsHide:true});
   let status;
   const combined=(output.stdout||"")+"\n"+(output.stderr||"");
@@ -45,12 +52,13 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
   else if(c.expect==="accept")status=output.status===0?"VERIFIED":"MISMATCH";
   else {
    const match=new RegExp(c.diagnostic,"i").test(combined);
-   status=output.status!==0 && match?"VERIFIED":"MISMATCH";
+   const diagnostic=/(?:\berror\b|\bundefined\b|\bundeclared\b|\bunknown\b|\bunresolved\b|not found|cannot find)/i.test(combined);
+   status=output.status!==0 && diagnostic && match?"VERIFIED":"MISMATCH";
   }
-  results.push({id:c.id,status,exitCode:output.status,signal:output.signal||null,
+  results.push({id:c.id,status,fixtureSha256,exitCode:output.status,signal:output.signal||null,
     stdout:output.stdout||"",stderr:output.stderr||""});
  }
  const verified=results.filter(x=>x.status==="VERIFIED").length;
  const failed=results.filter(x=>x.status!=="VERIFIED").length;
- return {backend,sourceSha,configured:true,verified,failed,skipped:0,ok:failed===0 && verified>0,results};
+ return {backend,declaredSourceSha:sourceSha,executableSha256,provenanceNote:"Source revision was supplied by caller; this harness does not attest that it produced the binary.",configured:true,verified,failed,skipped:0,ok:failed===0 && verified>0,results};
 }
