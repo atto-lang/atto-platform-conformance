@@ -3,12 +3,14 @@ on:
   push:
     paths:
       - 'formal/supervision/**'
+      - 'test/supervisor-lifecycle.test.mjs'
       - '.github/workflows/supervisor-formal.yml'
       - 'bin/verify-supervisor-trace.mjs'
       - 'test/supervisor-trace.test.mjs'
   pull_request:
     paths:
       - 'formal/supervision/**'
+      - 'test/supervisor-lifecycle.test.mjs'
       - '.github/workflows/supervisor-formal.yml'
       - 'bin/verify-supervisor-trace.mjs'
       - 'test/supervisor-trace.test.mjs'
@@ -36,5 +38,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+      - name: Bounded independent model explorer and negative controls
+        run: node --test test/supervisor-lifecycle.test.mjs
       - name: Exhaustive TLC state exploration and mutation counterexamples
         run: bash formal/supervision/check-tlc.sh
