@@ -14,7 +14,7 @@
       "id": "unresolved-identifier",
       "file": "unresolved-identifier.ores",
       "expect": "reject",
-      "diagnostic": "unresolved|undefined|undeclared|unknown|cannot find",
+      "diagnostic": "nonexistent_symbol",
       "backends": [
         "java",
         "llvm"
