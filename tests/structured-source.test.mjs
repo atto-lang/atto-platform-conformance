@@ -9,7 +9,7 @@ const manifest=JSON.parse(await readFile(join(dir,"manifest.json"),"utf8"));
 test("explicit verified/pending backend matrix",()=>{
  assert.equal(manifest.schemaVersion,1);
  assert.equal(manifest.scope,"bounded-class-i64-wasm32-v1");
- assert.equal(manifest.cases.length,3);
+ assert.equal(manifest.cases.length,4);
  assert.match(manifest.graalEvidence,/actions\/runs\/[0-9]+/);
  const ids=new Set();
  for(const c of manifest.cases){
@@ -19,9 +19,17 @@ test("explicit verified/pending backend matrix",()=>{
   assert.match(c.sourceGitBlobSha1,/^[a-f0-9]{40}$/);
   const graalIsVerified=c.id==="class-shared-borrow"||
    c.id==="class-overlapping-loans";
-  assert.deepEqual(c.confirmedBackends,
-   graalIsVerified?["llvm","wasm","graal"]:["llvm","wasm"]);
-  assert.deepEqual(c.pendingBackends,graalIsVerified?[]:["graal"]);
+  if(c.id==="class-explicit-mutable-borrow") {
+   // No backend has executed the exact candidate bytes yet. The individual
+   // compiler/bridge PRs may pass other fixtures but cannot prove this one.
+   assert.deepEqual(c.confirmedBackends,[]);
+   assert.deepEqual(c.pendingBackends,["llvm","wasm","graal"]);
+   assert.equal(c.sourceGitBlobSha1,"a7c28cc10c8ed4a4164984fe1d8f875e616e2eda");
+  }else{
+   assert.deepEqual(c.confirmedBackends,
+    graalIsVerified?["llvm","wasm","graal"]:["llvm","wasm"]);
+   assert.deepEqual(c.pendingBackends,graalIsVerified?[]:["graal"]);
+  }
   // A native-only interpretation of an unmarked mutable owner is NOT
   // a Java semantic parity success. Do not auto-promote this fixture.
   if(c.id==="class-mutable-borrow")
