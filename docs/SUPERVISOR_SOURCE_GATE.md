@@ -280,3 +280,33 @@ https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/381771709
 (exact runtime/bridge blob hashes, Java JDK 17 host audit, native C++20
 ASan/UBSan). That run does not prove full JVM/JDK25 Maven, complete LLVM
 CMake/CTest, native-image, or arbitrary guest `on_panic` execution.
+
+
+## STOP-only source lowering: focused Java/native compiler proof
+
+Private exact-blob verification:
+https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38177256674
+
+**Java (JDK 25): passed.** Exact Oreslang lexer, parser, AST, restricted
+`SourceSupervisorLowering` and host supervisor CONTROL runtime sources were
+mirrored privately with their original Git blob SHA verified before compile.
+The checked source `on_panic(f: Failure): void { self.stop(); return; }`
+lowered to a STOP decision and committed once on a distinct CONTROL carrier.
+Unsupported guest statements and CANCELLED notices failed closed.
+
+**LLVM/native (C++20 ASan/UBSan): passed.** Exact native parser,
+ownership-checker and supervisor runtime sources compiled the same restricted
+STOP-only source form into an immutable policy bound to the existing host
+CONTROL process. This native run checked type/signature rejection, unsafe
+statements, source admission gating, STOP commitment, and rejection of
+cancellation.
+
+**Not yet verified:** real Oreslang guest evaluator executing arbitrary
+`on_panic` bodies, an automatic trusted actor STOP implementation, full
+Maven/Truffle or LLVM build, GraalVM native image, and identical-source
+end-to-end child physical-finalization ordering with a production runtime
+for both backends. The production compiler entry points still reject
+general `define supervisor`; no `await`/RESTART/ESCALATE parity is claimed.
+
+Do not treat the host decision sink as an Oreslang method or as proof of
+general execution-context, defer/recover, or lifecycle-policy lowering.
