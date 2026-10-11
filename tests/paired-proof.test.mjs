@@ -10,6 +10,7 @@ function run(backend) {
     configured: true,
     ok: true,
     failed: 0,
+    skipped: 0,
     verified: 2,
     declaredSourceSha: sha40,
     executableSha256: "b".repeat(64),
@@ -20,8 +21,16 @@ function run(backend) {
   };
 }
 
+function verifyOfficial(javaRun, llvmRun) {
+  const official = [
+    {id: "int-arithmetic", fixtureSha256: fixture},
+    {id: "unresolved-identifier", fixtureSha256: "d".repeat(64)},
+  ];
+  return verifyPairedSourceChecks(javaRun, llvmRun, official);
+}
+
 test("paired gate records only exact-source compiler admission, not runtime parity", () => {
-  const value = verifyPairedSourceChecks(run("java"), run("llvm"));
+  const value = verifyOfficial(run("java"), run("llvm"));
   assert.equal(value.status, "PAIRED_SOURCE_CHECKS_PASS");
   assert.equal(value.cases, 2);
   assert.equal(value.certifiesRuntimeParity, false);
@@ -31,35 +40,58 @@ test("paired gate records only exact-source compiler admission, not runtime pari
 test("reject missing compiler and false positive zero-test suites", () => {
   const llvm = run("llvm");
   llvm.configured = false;
-  assert.throws(() => verifyPairedSourceChecks(run("java"), llvm));
+  assert.throws(() => verifyOfficial(run("java"), llvm));
   llvm.configured = true;
   llvm.results = [];
   llvm.verified = 0;
-  assert.throws(() => verifyPairedSourceChecks(run("java"), llvm));
+  assert.throws(() => verifyOfficial(run("java"), llvm));
 });
 
 test("reject stale or partial fixture provenance", () => {
   const llvm = run("llvm");
   llvm.results[0].fixtureSha256 = "e".repeat(64);
-  assert.throws(() => verifyPairedSourceChecks(run("java"), llvm), /mismatch/);
+  assert.throws(() => verifyOfficial(run("java"), llvm), /mismatch/);
   llvm.results[0].fixtureSha256 = fixture;
   llvm.results[0].status = "UNCONFIGURED";
-  assert.throws(() => verifyPairedSourceChecks(run("java"), llvm));
+  assert.throws(() => verifyOfficial(run("java"), llvm));
   llvm.results[0].status = "VERIFIED";
   llvm.declaredSourceSha = "uncommitted";
-  assert.throws(() => verifyPairedSourceChecks(run("java"), llvm));
+  assert.throws(() => verifyOfficial(run("java"), llvm));
 });
 
 test("reject duplicate IDs, fixture count drift and executable digest omission", () => {
   const llvm = run("llvm");
   llvm.results[1].id = llvm.results[0].id;
-  assert.throws(() => verifyPairedSourceChecks(run("java"), llvm));
+  assert.throws(() => verifyOfficial(run("java"), llvm));
   llvm.results[1].id = "unresolved-identifier";
   llvm.results.pop();
   llvm.verified = 1;
-  assert.throws(() => verifyPairedSourceChecks(run("java"), llvm), /different fixture sets/);
+  assert.throws(() => verifyOfficial(run("java"), llvm), /different fixture sets/);
   llvm.results = run("llvm").results;
   llvm.verified = 2;
   llvm.executableSha256 = null;
-  assert.throws(() => verifyPairedSourceChecks(run("java"), llvm));
+  assert.throws(() => verifyOfficial(run("java"), llvm));
+});
+
+test("reject mutually incomplete but otherwise matching compiler reports", () => {
+  const java = run("java");
+  const llvm = run("llvm");
+  java.results.pop();
+  llvm.results.pop();
+  java.verified = 1;
+  llvm.verified = 1;
+  assert.throws(() => verifyOfficial(java, llvm), /exact-head/);
+});
+
+test("reject skipped fixtures and unpinned expected fixture sets", () => {
+  const java = run("java");
+  const llvm = run("llvm");
+  java.skipped = 1;
+  assert.throws(() => verifyOfficial(java, llvm), /exact-head/);
+  java.skipped = 0;
+  assert.throws(() => verifyPairedSourceChecks(java, llvm, []), /manifest/);
+  assert.throws(() => verifyPairedSourceChecks(java, llvm, [
+    {id: "int-arithmetic", fixtureSha256: fixture},
+    {id: "int-arithmetic", fixtureSha256: fixture},
+  ]), /duplicate/);
 });
