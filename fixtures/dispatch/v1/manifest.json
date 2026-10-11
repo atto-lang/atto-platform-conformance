@@ -22,7 +22,11 @@
         "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38176388764"
       },
       "java": {
-        "status": "needs-exact-fixture-execution"
+        "status": "verified-scalar-jvm-guest",
+        "sourceRevision": "1bfef8bccd7a8188c47e85322e33e5756f5f1d3a",
+        "sourceTree": "d8b5634d4f3e622faf33ae830b11ede7282aee49",
+        "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38179386289",
+        "verification": "exact-Git-blob + guest main exit status 42"
       }
     },
     {
@@ -36,7 +40,11 @@
         "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38176388764"
       },
       "java": {
-        "status": "needs-exact-fixture-execution"
+        "status": "verified-scalar-jvm-guest",
+        "sourceRevision": "1bfef8bccd7a8188c47e85322e33e5756f5f1d3a",
+        "sourceTree": "d8b5634d4f3e622faf33ae830b11ede7282aee49",
+        "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38179386289",
+        "verification": "exact-Git-blob + guest main exit status 42"
       }
     },
     {
@@ -49,7 +57,11 @@
         "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38176388764"
       },
       "java": {
-        "status": "needs-exact-fixture-execution"
+        "status": "verified-scalar-jvm-guest",
+        "sourceRevision": "1bfef8bccd7a8188c47e85322e33e5756f5f1d3a",
+        "sourceTree": "d8b5634d4f3e622faf33ae830b11ede7282aee49",
+        "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38179386289",
+        "verification": "exact-Git-blob + parser/type/ownership admission rejection"
       }
     },
     {
@@ -62,7 +74,11 @@
         "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38176388764"
       },
       "java": {
-        "status": "needs-exact-fixture-execution"
+        "status": "verified-scalar-jvm-guest",
+        "sourceRevision": "1bfef8bccd7a8188c47e85322e33e5756f5f1d3a",
+        "sourceTree": "d8b5634d4f3e622faf33ae830b11ede7282aee49",
+        "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38179386289",
+        "verification": "exact-Git-blob + parser/type/ownership admission rejection"
       }
     },
     {
@@ -75,7 +91,11 @@
         "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38176388764"
       },
       "java": {
-        "status": "needs-exact-fixture-execution"
+        "status": "verified-scalar-jvm-guest",
+        "sourceRevision": "1bfef8bccd7a8188c47e85322e33e5756f5f1d3a",
+        "sourceTree": "d8b5634d4f3e622faf33ae830b11ede7282aee49",
+        "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38179386289",
+        "verification": "exact-Git-blob + parser/type/ownership admission rejection"
       }
     },
     {
@@ -89,9 +109,34 @@
         "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38176388764"
       },
       "java": {
-        "status": "needs-exact-fixture-execution"
+        "status": "verified-scalar-jvm-guest",
+        "sourceRevision": "1bfef8bccd7a8188c47e85322e33e5756f5f1d3a",
+        "sourceTree": "d8b5634d4f3e622faf33ae830b11ede7282aee49",
+        "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38179386289",
+        "verification": "exact-Git-blob + guest main exit status 42"
       }
     }
   ],
-  "releaseGate": "Exact Java and LLVM native executed fixtures with the same sourceGitBlobSha1, pinned compiler source and result/diagnostic parity; source-code-only evidence is insufficient."
+  "releaseGate": "The six scalar fixtures have byte-identical Java JVM execution/admission and LLVM native-subset proof. Full parity is still blocked for nominal messages, async cancellation, actor resources, native-image/AOT, and current synthesized merge-tree CI.",
+  "verifiedSubset": {
+    "scope": "six pinned scalar value match/switch fixtures only",
+    "sourceGitBlobIdentity": "all six identical Oreslang Git blobs across Java and LLVM",
+    "java": {
+      "revision": "1bfef8bccd7a8188c47e85322e33e5756f5f1d3a",
+      "tree": "d8b5634d4f3e622faf33ae830b11ede7282aee49",
+      "sourceFileCount": 396,
+      "run": "https://github.com/zed-pkg-test/java-app/actions/runs/38179386289",
+      "focusedTests": 5,
+      "fullMavenTests": 1436,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "llvm": {
+      "revision": "6274f0e9c581d069aaa263e82e21b5de2de1e836",
+      "run": "https://github.com/zed-pkg-test/java-app/actions/runs/38176388764",
+      "nativeCTests": 116
+    },
+    "limitations": "No assertion of nominal typed actor messages, async lexical cancellation, native-image/AOT, or exact merge-tree certification."
+  }
 }
