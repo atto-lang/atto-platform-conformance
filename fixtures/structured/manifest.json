@@ -24,11 +24,10 @@
       "expectedI64": "42",
       "confirmedBackends": [
         "llvm",
-        "wasm"
-      ],
-      "pendingBackends": [
+        "wasm",
         "graal"
-      ]
+      ],
+      "pendingBackends": []
     },
     {
       "id": "class-overlapping-loans",
@@ -38,13 +37,13 @@
       "diagnosticClass": "exclusive-loan-conflict",
       "confirmedBackends": [
         "llvm",
-        "wasm"
-      ],
-      "pendingBackends": [
+        "wasm",
         "graal"
-      ]
+      ],
+      "pendingBackends": []
     }
   ],
   "evidence": "https://github.com/akrion-sim/akrion-sim-e2e/actions/runs/38113193431",
-  "notes": "Confirmed LLVM/Wasm for this constrained source subset; no Java/GraalVM parity or actor support is inferred."
+  "notes": "Exact GraalVM 25 run confirms shared-read result 42 and overlapping-loan rejection; the original unmarked mutable owner is rejected by Java but accepted by LLVM/Wasm. This is a documented semantic mismatch, NOT parity. A separate explicit-mut Java variant returns 42 but has not yet been proven byte-identical cross-backend.",
+  "graalEvidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38154510801"
 }
