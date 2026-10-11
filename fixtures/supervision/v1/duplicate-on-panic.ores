@@ -1,0 +1,4 @@
+define supervisor RootSupervisor as
+  on_panic(f: Failure): void { return; }
+  on_panic(f: Failure): void { return; }
+end
