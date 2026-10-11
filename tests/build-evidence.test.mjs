@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {mkdtemp,writeFile,readFile,rm} from "node:fs/promises";
 import {tmpdir} from "node:os";
 import {join,delimiter} from "node:path";
-import {buildEvidence,verifyBuildEvidence,validatePins} from "../src/build-evidence.mjs";
+import {buildEvidence,verifyBuildEvidence,validatePins,digestFile} from "../src/build-evidence.mjs";
 import {fileURLToPath} from "node:url";
 const pins=JSON.parse(await readFile(fileURLToPath(new URL("../fixtures/compiler-pins.json",import.meta.url))));
 async function fixture(fn) {
@@ -13,7 +13,7 @@ async function fixture(fn) {
   const jar=await write("compiler.jar","compiler-bytecode"),dependency=await write("dependency.jar","runtime-dependency");
   const launcher=await write("launcher","#!/bin/sh\\nexit 0\\n");
   const runner=await write("runner","#!/bin/sh\\necho 42\\n");
-  const classpath=await write("classpath.txt",dependency+"\\n");
+  const classpath=await write("classpath.txt",dependency);
   const native=await write("llvmc","native-compiler-binary");
   return await fn({write,jar,dependency,launcher,runner,classpath,native});
  } finally {await rm(dir,{recursive:true,force:true})}
@@ -62,7 +62,7 @@ test("reject missing native artifact, duplicate role, and fake attestation",asyn
  await fixture(async x=>{const r=await buildEvidence(llvmPaths(x));
   const absent=structuredClone(r);absent.artifacts.shift();
   await assert.rejects(verifyBuildEvidence(absent,pins),/missing required/);
-  const repeated=structuredClone(r);repeated.artifacts.push({...r.artifacts[0],path:x.jar});
+  const repeated=structuredClone(r);repeated.artifacts.push({role:"compiler-native",path:x.jar,...await digestFile(x.jar)});
   await assert.rejects(verifyBuildEvidence(repeated,pins),/duplicate singleton/);
   r.claimsIndependentAttestation=true;
   await assert.rejects(verifyBuildEvidence(r,pins),/unpinned/);
