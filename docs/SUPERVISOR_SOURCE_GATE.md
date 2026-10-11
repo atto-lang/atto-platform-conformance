@@ -405,3 +405,30 @@ These are narrowly scoped hardening commits; the normal compiler still
 rejects general guest supervisor execution. Full Maven/JDK25/GraalVM/LLVM
 integration and production-level real-child finalization proofs remain
 separate release gates.
+
+
+### Verified terminal-disposition audit (2026-10-11)
+
+Funded exact-Git-blob workflow:
+https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38178049050
+
+Four jobs passed: Java host audit; native C++ replay/fence sanitizer audit;
+native C11 scheduler/typed panic bridge under ASan/UBSan; and the previous
+native C panic and actor-queue regressions under strict GCC warnings.
+
+Native source files verified by blob SHA:
+- `NativeActorScheduler.c`: `3020d849eaf8ce669187b91d2820fe477a845e82`
+- `NativeActorScheduler.h`: `ff0f3b10118b6cba7effcc43df101da65ebc95e3`
+- `NativeSupervisorPanicBridge.hpp`: `1cd0c1078eb889c11950048b0cddb3f1017ff6a0`
+- `native_supervisor_panic_bridge_test.cpp`: `3880eb20be68794a8a78c1c8fdcf474f658595ee`
+
+The new regressions cover a published-but-not-yet-dispatched panic being
+incorrectly retired as normal, a late terminal publication after a clean
+seal, an attempted terminal failure rejected by a retired parent, and a
+duplicate terminal publication for an already claimed child generation.
+
+Remaining release gates: actual lifecycle-owner installation of the
+normal-exit API in every clean-exit path; escalation/backpressure policy
+for rejected terminal CONTROL notifications; full compiler CMake/CTest,
+JDK25 Maven, native-image, typed guest `on_panic` async execution, and
+authoritative idempotent STOP/RESTART/ESCALATE host receipts.
