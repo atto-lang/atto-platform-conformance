@@ -7,7 +7,12 @@ test('single supervisor serializes two children across STOP and RESTART', () => 
     owners: [0, 0], supervisors: 1, maxGeneration: 2, maxTurns: 2
   });
   assert.equal(result.ok, true, JSON.stringify(result));
-  assert.ok(result.states >= 500, 'exploration unexpectedly lost interleavings');
+  assert.equal(result.states, 668, 'shared CONTROL trace coverage changed');
+  assert.equal(result.transitions, 1302);
+  for (const action of ['SpawnReplacement', 'AdmitReplacement',
+                        'CleanupReplacement', 'AbortRestart', 'CommitRestart',
+                        'StartHostEffect', 'Reconcile', 'CloseSupervisor'])
+    assert.ok(result.actions[action] > 0, 'missing transition: ' + action);
 });
 
 test('two supervisors may own independent CONTROL turns', () => {
@@ -15,7 +20,9 @@ test('two supervisors may own independent CONTROL turns', () => {
     owners: [0, 1], supervisors: 2, maxGeneration: 2, maxTurns: 2
   });
   assert.equal(result.ok, true, JSON.stringify(result));
-  assert.ok(result.states >= 2000, 'multi-supervisor exploration shrank unexpectedly');
+  assert.equal(result.states, 4096, 'independent CONTROL trace coverage changed');
+  assert.equal(result.transitions, 11392);
+  assert.ok(result.actions.CommitRestart > 0);
 });
 
 test('one-generation boundary also holds', () => {
@@ -36,6 +43,27 @@ test('intentional duplicate host effect produces concrete counterexample', () =>
     'Init', 'Cleanup(0)', 'Finalize(0)', 'AcquireControl(0)',
     'ReserveStop(0)', 'StartHostEffect(0)', 'UNSAFE_HostReplay(0)'
   ]);
+});
+
+test('premature RESTART abort of a live replacement has a counterexample', () => {
+  const result = explore({
+    owners: [0], supervisors: 1, maxGeneration: 2,
+    maxTurns: 2, unsafeAbortMutant: true
+  });
+  assert.equal(result.ok, false);
+  assert.ok(result.violations.includes('NoOrphanReplacement'));
+  assert.deepEqual(result.trace, [
+    'Init', 'Cleanup(0)', 'Finalize(0)', 'AcquireControl(0)',
+    'ReserveRestart(0)', 'SpawnReplacement(0)',
+    'UNSAFE_AbortLiveReplacement(0)'
+  ]);
+});
+
+test('invalid exploration bounds cannot produce vacuous green proofs', () => {
+  assert.throws(() => explore({ maxGeneration: 0 }), /invalid finite/);
+  assert.throws(() => explore({ maxTurns: -1 }), /invalid finite/);
+  assert.throws(() => explore({ supervisors: 0 }), /invalid finite/);
+  assert.throws(() => explore({ maxStates: 0 }), /invalid finite/);
 });
 
 test('foreign or invalid child/supervisor ownership is rejected', () => {
