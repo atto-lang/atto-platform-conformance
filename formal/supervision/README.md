@@ -125,3 +125,45 @@ passed both original models, both three-incarnation configurations and
 all four expected negative-control counterexamples. The extra STOP
 configuration explored **190 distinct states**; the extra CONTROL
 configuration explored **78 distinct states**.
+
+
+## Trace-level safety refinement obligation
+
+bin/verify-supervisor-trace.mjs checks an *observed sequence* of runtime
+linearization events against SupervisorLifecycle.tla's intended action order.
+Its synthetic adversarial tests live in test/supervisor-trace.test.mjs.
+This is neither a TLA+ refinement proof nor a substitute for TLC.
+
+Run: node bin/verify-supervisor-trace.mjs path/to/trace.json
+
+The JSON document must have schemaVersion 1, backend java or llvm, the
+exact 40-character lowercase sourceSha, and nonempty events. Every event
+has contiguous seq beginning at one. Each child action carries immutable
+child and supervisor identities and the exact generation. Registration
+uses generation 1 and a previously unseen physical actor identity.
+
+The recognized actions are: register, cleanup, finalize, control.acquire,
+stop.reserve, restart.reserve, restart.abort, restart.commit, stop.invoke,
+stop.applied, stop.uncertain, stop.proof, stop.ack and supervisor.close.
+CONTROL actions include an increasing turn; restart.commit also needs a
+newActor and newGeneration. Independent stop.proof requires an evidenceId.
+Unknown operations fail closed.
+
+The oracle rejects premature finalization, duplicate host STOP invocation,
+conflicting STOP and RESTART reservations, reused ActorIds, generation or
+CONTROL-turn replay, acknowledgment without applied receipt or independent
+positive proof, and late restart commit after closure. It permits a
+post-shutdown reconciliation of already-started, independently proven STOP.
+
+IMPORTANT: a passing *synthetic* trace only proves that the particular
+sequence satisfied the checker. Neither the sourceSha JSON field nor a
+stop.proof event is itself cryptographic attestation or trustworthy evidence.
+A trusted host verifier must assert that independent proof reflects the
+actual host effect. Runtime producers must emit COMPLETE records at the
+real linearization points and bind them to a separately checked build digest.
+No Java/GraalVM or native LLVM runtime refinement claim is made until
+those backends emit trusted actual execution traces and pass the checker.
+
+Further formal work: genuine temporal safety/refinement checks, ghost
+history variables for callbacks and ACK, and conditional liveness properties
+with explicit scheduler fairness/evidence availability assumptions.
