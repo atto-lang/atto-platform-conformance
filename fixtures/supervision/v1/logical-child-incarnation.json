@@ -225,13 +225,79 @@
         "trackedChildren": 0,
         "terminalPanicAllowed": false
       }
+    },
+    {
+      "id": "stop-pre-reserves-generation",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "reserve-stop(actor-A,1,turn-17)",
+        "race-begin-restart(actor-A,1)"
+      ],
+      "expected": {
+        "phase": "STOPPING",
+        "restart": "reject-concurrent-reservation",
+        "committedStop": false
+      }
+    },
+    {
+      "id": "ambiguous-stop-quarantine",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "reserve-stop(actor-A,1,turn-17)",
+        "host-stop-effect-throws"
+      ],
+      "expected": {
+        "phase": "STOPPING",
+        "resolved": 0,
+        "automaticRetry": false,
+        "restart": "reject-until-explicit-reconciliation"
+      }
+    },
+    {
+      "id": "acknowledged-reserved-stop",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "reserve-stop(actor-A,1,turn-17)",
+        "host-stop-acknowledged",
+        "commit-stop(actor-A,1,turn-17)"
+      ],
+      "expected": {
+        "phase": "STOPPED",
+        "logicalIncarnation": 1
+      }
+    },
+    {
+      "id": "stop-turn-replay-denied",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "reserve-stop(actor-A,1,turn-17)",
+        "commit-stop(actor-A,1,turn-18)"
+      ],
+      "expected": "reject-wrong-stop-turn"
+    },
+    {
+      "id": "stop-restart-race",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "race-reserve-stop-and-restart(actor-A,1)"
+      ],
+      "expected": {
+        "acceptedReservations": 1,
+        "rejectedReservations": 1
+      }
     }
   ],
-  "description": "Host-only lifecycle protocol reserves the finalized child generation before any spawn, with abort/commit fencing",
+  "description": "Host lifecycle transitions include STOPPING single-flight STOP reservation, keyed to exact generation and supervisor CONTROL turn. Ambiguous host effects remain quarantined until explicit reconciliation.",
   "phases": [
     "ACTIVE",
     "FINALIZED",
     "RESTARTING",
+    "STOPPING",
     "STOPPED"
   ]
 }
