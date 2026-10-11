@@ -567,3 +567,42 @@ the entire production `ActorRuntime.java`; full Java Maven/JUnit/JDK25,
 GraalVM AOT/hybrid, native CMake/CTest and cross-runtime async supervisor
 execution remain unverified. Both general compiler admission paths must stay
 fail-closed until their actual guest hook and execution-context support lands.
+
+
+## Verified native STOP preflight follow-up (2026-10-11)
+
+The native draft now has a **separate opt-in**
+`install_source_supervisor_stop_verified` accepting a trusted
+`shared_ptr<SupervisorChildRegistry>`, while leaving the older unverified
+host-only installer source-compatible.
+
+The verified installer rejects a STOP before any host lifecycle effect if:
+- The envelope is not a typed PANIC or has a partial/missing logical-child ID.
+- The logical child does not belong to the specified supervisor/runtime.
+- The concrete actor slot, scheduler domain, generation or logical
+  incarnation differs from the current registry snapshot.
+- The child's current phase is not FINALIZED (including ACTIVE, RESTARTING
+  or already STOPPED).
+
+The check runs when the source STOP policy starts **and again immediately
+before the host effect**. Only after the trusted synchronous host sink returns
+successfully does the installer transition that exact child from FINALIZED
+to STOPPED. A throwing/ambiguous sink does not claim success.
+
+Final exact-source proof on an alternate **private** Actions runner:
+https://github.com/3fa-app-test/account-recovery-security/actions/runs/38181090633
+
+Both jobs passed: Java 25 parser/lowering/async CONTROL audit and native
+C++20 ASan/UBSan source STOP + registry verification. Native rejected
+ACTIVE, STOPPED, wrong actor, wrong incarnation and partial logical ID
+without calling the trusted host sink. A full valid STOP transitioned its
+registered child exactly once.
+
+**Scope remains limited.** The legacy native source STOP installer still
+does not enforce this new verifier and must not be substituted for the
+registry-bound integration. The new native installer is **synchronous**:
+`await self.stop(f)` still fails native source admission. Neither backend
+has full arbitrary guest-defined `on_panic`, `defer/recover` execution
+context lowering, durable effects, or complete compiler-suite verification.
+The tested Java actor-group adapter is synthetic; full production
+`ActorRuntime.java` and Maven/GraalVM integrations remain release gates.
