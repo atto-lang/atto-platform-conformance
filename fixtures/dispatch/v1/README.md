@@ -15,6 +15,17 @@ Contract:
 
 LLVM exact 185-file source tree at `6274f0e9c581d069aaa263e82e21b5de2de1e836` passed all 116 CTests
 on https://github.com/zed-pkg-test/java-app/actions/runs/38176388764.
-Java #567 has corresponding compiler-admission tests but the exact *shared
-source bytes* and runtime outputs still need separate executed evidence.
-Do not claim cross-backend parity based on the harness's fake checker.
+Java/GraalVM #567 has independently executed these same six pinned
+source bytes, with actual guest exit-status 42 for accepted programs and
+parser/type/ownership rejection for invalid programs. Its exact 396-file
+Git tree at `1bfef8bccd7a8188c47e85322e33e5756f5f1d3a` passed 1,436
+Maven tests (zero failures/errors, one skip) on
+https://github.com/zed-pkg-test/java-app/actions/runs/38179386289.
+The manifest records individual source blob identities and both run IDs.
+
+This is verified **scalar source-subset parity only**. No Java/LLVM
+equivalence is claimed for cancellation during nested defer/finally, actor
+resource lifetime, tagged/nominal messages, native-image/AOT, or the
+synthesized merge tree. A subsequent Java cancellation hardening revision
+must be independently tested at its exact source tree before its new claims
+are promoted to verified evidence.
