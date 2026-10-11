@@ -344,3 +344,35 @@ slice is intentionally **synchronous**; `async on_panic` remains rejected.
 Full guest hook evaluation, generation-checked authoritative lifecycle
 operations, durable commit receipts, `await` suspension, and source parity
 remain separate release gates.
+
+
+## Native terminal-disposition race hardening
+
+The native scheduler owns the authoritative terminal classification for
+each `(scheduler_domain, actor_slot, generation)`. It now serializes
+`publish_failure` with `seal_normal_exit` under the scheduler mutex:
+
+- A successful terminal publication claims the failure once. Retries of
+  the same generation cannot enqueue a second parent CONTROL event.
+- A well-formed terminal publication attempt also forbids normal sealing
+  if delivery was rejected because the parent retired or CONTROL saturated.
+  The host must retry or escalate; it may not quietly relabel a failed child.
+- A clean-exit seal succeeds only after physical finalization and only
+  when no terminal publication has been attempted or published. The seal
+  prevents any subsequent terminal publication for that generation.
+- The supervisor bridge consumes its child registration only **after** the
+  scheduler confirms the clean-exit seal. It must never rely solely on
+  an earlier non-atomic `poll_done` observation.
+
+These rules secure the host-level scheduler and native bridge. They do not
+prove that a higher-level runtime has classified all exits correctly or
+installed a policy for rejected CONTROL notifications. A normal-exit
+lifecycle owner must still invoke the seal/retirement path for every
+successfully terminated registered child. Parent CONTROL saturation must
+have an authoritative fail-closed escalation path before release.
+
+Funded exact-blob C11/C++20 bridge ASan/UBSan and focused audit workflow:
+https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38177949783
+
+Do not infer full LLVM CMake/CTest, Java Maven/JDK25, source guest hook
+execution, durable restart semantics, or AOT parity from this focused run.
