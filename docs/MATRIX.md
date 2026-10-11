@@ -4,8 +4,8 @@ The test manifest is a target fixture inventory. Source files are not proof of c
 
 | Pair | Currently executed by CI | Status |
 | --- | --- | --- |
-| Java/Graal source checking | No | Requires pinned compiler and real integration run |
-| LLVM source checking | No | Requires pinned native compiler and real integration run |
+| Java/Graal source checking | Yes, narrow real two-case proof | Pinned private CI run 38109980569 passed; five-case extension requires fresh exact-tree CI |
+| LLVM source checking | Yes, narrow real two-case proof | Pinned private CI run 38109980569 passed; five-case extension requires fresh exact-tree CI |
 | wasm32 core runtime | Separate oreslang-wasm CI | C ABI only; no guest Oreslang compilation |
 | Browser host loader | Separate oreslang-browser CI | Wasm adapter only; no guest Oreslang compilation |
 
