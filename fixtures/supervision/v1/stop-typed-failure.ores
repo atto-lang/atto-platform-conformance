@@ -1,0 +1,9 @@
+// Restricted opt-in compiler slice: STOP the current reported failure.
+// This binds a typed Failure parameter; it does not invent a logical
+// child ref, permit arbitrary actor targets, or expose a CONTROL mutex.
+define supervisor RootSupervisor as
+  on_panic(problem: Failure): void {
+    self.stop(problem);
+    return;
+  }
+end
