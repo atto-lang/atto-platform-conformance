@@ -80,6 +80,21 @@ if ! grep -Eq 'Invariant NoOrphanReplacement is violated|NoOrphanReplacement.*vi
   exit 1
 fi
 echo "EXPECTED_MUTANT_COUNTEREXAMPLE: NoOrphanReplacement"
+echo "Unadmitted RESTART commit must violate exact generation readiness"
+if java -Xmx1600m -cp "${TMP}/tla2tools.jar" tlc2.TLC \
+  -workers 2 -deadlock -config SupervisorLifecycleUnsafeCommit.cfg \
+  -metadir "${TMP}/lifecycle-unsafe-commit" SupervisorLifecycle.tla \
+  > "${TMP}/lifecycle-unsafe-commit.log" 2>&1; then
+  cat "${TMP}/lifecycle-unsafe-commit.log"
+  echo "Unsafe premature restart commit unexpectedly passed" >&2
+  exit 1
+fi
+if ! grep -Eq 'Invariant NoUnreadyActiveIncarnation is violated|NoUnreadyActiveIncarnation.*violated' "${TMP}/lifecycle-unsafe-commit.log"; then
+  cat "${TMP}/lifecycle-unsafe-commit.log"
+  echo "Unsafe premature commit mutant failed for unrelated reasons" >&2
+  exit 1
+fi
+echo "EXPECTED_MUTANT_COUNTEREXAMPLE: NoUnreadyActiveIncarnation"
 echo "Three-incarnation ABA-bound configurations"
 for pair in "SupervisorStopABA.cfg:SupervisorStop" \
             "SupervisorLifecycleABA.cfg:SupervisorLifecycle"; do
