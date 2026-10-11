@@ -134,3 +134,24 @@ backend currently compiles source `f.child` expressions, performs a
 real actor restart, or lowers general `await`, `defer`, or `recover` in
 the supervisor hook. The newer integration tests must pass exact-source
 CI before any feature-completion claim.
+
+
+## Focused restart reservation audit — final verification
+
+The latest exact-blob funded verification passed both jobs:
+https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38179674429
+
+- Java registry: `bfaf3e1b1a89db52b721c74b3f2b33ff7175039f`.
+  A real compiler failure in an intermediate mirror exposed duplicate
+  `detachActive` implementations from overlapping edits. The duplicate
+  was removed; the corrected Java source compiled and passed the host
+  race, permit rollback, STOP, identity ABA and admission detach probe.
+- Native registry: `717bc17e5e6a5d677c837c041f910aab249aa175`.
+  Exact native test blob `9e69092327116666fcbfa5e4e0c2a6df0bcb552e`
+  passed strict C++20, normal execution, and ASan/UBSan with the
+  native scheduler header hash checked independently.
+
+These checks establish *standalone registry* invariants, not the
+correctness of the newer Java ActorGroup integration, asynchronous STOP
+continuations, or the native terminal panic bridge. Those integrations
+were added separately and need their own exact-source full tests.
