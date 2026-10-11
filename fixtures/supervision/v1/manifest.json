@@ -4,6 +4,18 @@
   "description": "Shared source fixtures; explicitly do not claim guest runtime hook execution.",
   "cases": [
     {
+      "id": "stop-only-implicit-control",
+      "file": "stop-only-implicit-control.ores",
+      "javaParser": "accept",
+      "javaCompiler": "reject-unlowered-control",
+      "llvmCompiler": "reject-unlowered-control",
+      "javaStopOnlyOptIn": "accept",
+      "llvmStopOnlyOptIn": "accept",
+      "implicitControl": "required",
+      "guestAsyncAndLifecyclePolicy": "unimplemented",
+      "sourceGuestExecution": "restricted-host-control-stop-only"
+    },
+    {
       "id": "typed-on-panic",
       "file": "typed-on-panic.ores",
       "javaParser": "accept",
