@@ -1,9 +1,13 @@
 # Structured-source conformance v1
 
-This is a byte-pinned, limited i64 class conformance contract. Three fixtures match the original files in oreslang-wasm exactly, including their original Git blob hashes.
+This is a byte-pinned, limited i64 class conformance contract. The three fixtures match the original files in oreslang-wasm, including their Git blob hashes.
 
-Two positive cases cover multi-field class reads and exclusive mutable borrows, both returning 42 as real LLVM-to-Wasm32 guests. A negative case rejects overlapping mutable/shared loans before artifact output.
+## Executed backend evidence
 
-Source execution evidence: https://github.com/akrion-sim/akrion-sim-e2e/actions/runs/38113193431
+- [LLVM→Wasm32](https://github.com/akrion-sim/akrion-sim-e2e/actions/runs/38113193431): the shared-read fixture and original mutable-borrow fixture returned 42, while overlapping exclusive/shared loans were rejected.
+- [GraalVM 25](https://github.com/zed-pkg-test/java-app/actions/runs/38154510801): the exact shared-read fixture returned 42 and overlapping loans were rejected. Four focused JUnit tests passed; full Java Maven verification passed 1,413 tests.
+- The exact original mutable class fixture is **NOT portable**: it declares `let Player player` but requests `rt borrow mut player`. GraalVM correctly rejects this immutable owner; LLVM/Wasm currently admits it. A separate Java source variant `let mut Player player` returned 42 but lacks an identical-source LLVM/Wasm proof.
 
-The tests here check schema, fixture integrity and explicit backend status; they are not themselves a compiler or runtime execution proof. GraalVM remains `pending` until the *same source* executes with equivalent behavior and diagnostics there. This is not proof of heap-backed objects, actor ownership, async suspension or a public structured-value Wasm ABI.
+The manifest lists backend confirmation **per case**. Promoting the unmarked mutable fixture to GraalVM-confirmed would be false. Fix the LLVM explicit-mutability admission, then verify a byte-identical explicitly mutable fixture on all backends before changing that case's status.
+
+Static conformance tests check source bytes, manifest fields, and explicit backend statuses; execution evidence is supplied by the linked exact-source runs. This is not proof of native heap-backed objects, actor ownership, suspension, or a public structured-value Wasm ABI.
