@@ -85,6 +85,7 @@
     "javaDecisionFence": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38172134367",
     "sourceStopOnlyJavaAndNative": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38177421772",
     "sourceStopOnlyHardening": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38178052956",
-    "sourceAsyncStopJava25": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38179750225"
+    "sourceAsyncStopJava25": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38179750225",
+    "sourceAsyncStopJava25AndNativeFailClosed": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38179985398"
   }
 }
