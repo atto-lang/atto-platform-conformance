@@ -94,3 +94,43 @@ it is not a full JUnit/Maven suite, full LLVM CMake/CTest, guest
 authoritative host restart effect. Reservation timeouts and cleanup of
 orphaned replacement actors are duties of the future owning lifecycle
 coordinator, not the standalone registry.
+
+
+## Runtime wiring: spawn, finalization, and STOP acknowledgement
+
+The Java ActorGroup now owns a trusted registry for its managed and
+structured inherited children. Child admission records the logical child
+before it can be used as a supervised actor; failed spawn/adoption rolls
+back its registry association. A detached active worker loses the old
+supervisor's registry authority without authorizing a restart.
+
+At physical actor finalization, Java transitions the exact captured
+`(logicalChild, ActorId, incarnation)` from ACTIVE to FINALIZED
+**before** publishing its terminal CONTROL notice. The immutable notice
+carries optional `logicalChild` and `incarnation` fields, while legacy
+unbound host notices remain explicitly distinct. A failed barrier is
+recorded as undelivered and may not emit a finalized Failure.
+Clean exits transition through STOPPED and retire the record.
+
+The opt-in Java STOP-only source plan now calls a trusted host effect
+callback and **only after its successful acknowledgement** records a
+STOPPED disposition for that exact finalized incarnation. A throwing
+sink leaves its identity FINALIZED and its lifecycle effect ambiguous.
+STOP replays and mismatched actor/incarnation tokens fail closed.
+
+The native typed-panic bridge now registers children with its
+`SupervisorChildRegistry`, updates exact-generation finalization after
+the scheduler's physical completion proof, and appends process-scoped
+`logical_child_id` and `logical_incarnation` to the copied terminal
+envelope. A trusted `acknowledge_finalized_stop` checks the original
+actor slot, scheduler generation, and logical incarnation. Scheduler-
+sealed clean exits retire logical child records without guest callbacks.
+
+**Scope limitation:** These are host lifecycle identity/disposition
+transactions, not durable externally replicated commit receipts and
+not guest execution of general `on_panic` bodies. Host sinks still
+provide their own actual effects and acknowledge on return. Neither
+backend currently compiles source `f.child` expressions, performs a
+real actor restart, or lowers general `await`, `defer`, or `recover` in
+the supervisor hook. The newer integration tests must pass exact-source
+CI before any feature-completion claim.
