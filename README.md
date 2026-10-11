@@ -15,12 +15,12 @@ Cross-platform, **evidence-first** language and runtime conformance suite. A har
 ~~~sh
 npm test
 # A compiler that supports a non-executing --check mode:
-node bin/conformance.mjs --backend=java --argv='["java","-jar","/path/to/compiler.jar","--check","{file}"]' --source-sha=FULL_COMMIT_SHA --require
+node bin/conformance.mjs --backend=java --argv='["/absolute/path/to/java","-jar","/path/to/compiler.jar","--check","{file}"]' --source-sha=FULL_COMMIT_SHA --require
 # A separate exact-head native compiler:
-node bin/conformance.mjs --backend=llvm --argv='["/path/to/oreslang-llvmc","{file}"]' --source-sha=FULL_COMMIT_SHA --require
+node bin/conformance.mjs --backend=llvm --argv='["/absolute/path/to/oreslang-llvmc","{file}"]' --source-sha=FULL_COMMIT_SHA --require
 ~~~
 
-The placeholder {file} is replaced with an absolute fixture path. Provide the exact committed compiler binary/revision. The harness does **not** install/checkout compiler source or infer that one backend supports another backend's features.
+The first argv token must be an **absolute executable path** (never a PATH lookup), and the placeholder {file} is replaced with an absolute fixture path. Provide the exact committed compiler binary/revision. The harness records SHA-256 hashes of the executable and each fixture. The user-provided source commit SHA is explicitly marked **declared, not cryptographically attested to the compiler binary**; include independent build provenance to prove the relationship. The harness does **not** install/checkout compiler source or infer that one backend supports another backend's features.
 
 When no backend command is supplied, the run exits non-success with explicit UNCONFIGURED status if --require is used. Without --require it can emit an explicit skipped summary for discovery; that is **not** a passing parity report. CI only exercises harness self-tests.
 
