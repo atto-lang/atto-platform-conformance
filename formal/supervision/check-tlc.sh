@@ -65,4 +65,18 @@ if ! grep -Eq "Invariant NoDuplicateEffects is violated|NoDuplicateEffects.*viol
   exit 1
 fi
 echo "EXPECTED_MUTANT_COUNTEREXAMPLE: NoDuplicateEffects"
+echo "Three-incarnation ABA-bound configurations"
+for pair in "SupervisorStopABA.cfg:SupervisorStop" \
+            "SupervisorLifecycleABA.cfg:SupervisorLifecycle"; do
+  cfg="${pair%%:*}"
+  module="${pair##*:}"
+  log="${TMP}/${cfg}.log"
+  java -Xmx1600m -cp "${TMP}/tla2tools.jar" tlc2.TLC \
+    -workers 4 -deadlock -config "${cfg}" \
+    -metadir "${TMP}/aba-${module}" "${module}.tla" 2>&1 | tee "${log}"
+  if ! grep -Eq "Model checking completed|Model checking finished|Finished computing" "${log}"; then
+    echo "Three-generation model failed: ${cfg}" >&2
+    exit 1
+  fi
+done
 echo "SUPERVISOR_TLC_SAFETY_PASS"
