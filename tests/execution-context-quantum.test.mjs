@@ -20,6 +20,8 @@ test('no timer read every iteration and deadline uses new dispatch start',()=>{
  t.carrierExited();time=30_000_000_000;assert.equal(t.resume(),'committed');
  assert.equal(t.reductionsRemaining,64);
  time+=1;for(let i=0;i<63;i++)assert.equal(t.backedge('again'),'RUN');
+ assert.equal(t.clockReads,2); // still no extra clock read after 63 backedges
+ assert.equal(t.backedge('again'),'HANDOFF');
  assert.equal(t.clockReads,3);
 });
 test('physical exit gates resume and preserves task identity, cleanup obligations',()=>{
