@@ -10,14 +10,22 @@ test("explicit verified/pending backend matrix",()=>{
  assert.equal(manifest.schemaVersion,1);
  assert.equal(manifest.scope,"bounded-class-i64-wasm32-v1");
  assert.equal(manifest.cases.length,3);
+ assert.match(manifest.graalEvidence,/actions\/runs\/[0-9]+/);
  const ids=new Set();
  for(const c of manifest.cases){
   assert.match(c.id,/^[a-z0-9-]+$/);
   assert.equal(ids.has(c.id),false);ids.add(c.id);
   assert.match(c.file,/^[a-z-]+\.ores$/);
   assert.match(c.sourceGitBlobSha1,/^[a-f0-9]{40}$/);
-  assert.deepEqual(c.confirmedBackends,["llvm","wasm"]);
-  assert.deepEqual(c.pendingBackends,["graal"]);
+  const graalIsVerified=c.id==="class-shared-borrow"||
+   c.id==="class-overlapping-loans";
+  assert.deepEqual(c.confirmedBackends,
+   graalIsVerified?["llvm","wasm","graal"]:["llvm","wasm"]);
+  assert.deepEqual(c.pendingBackends,graalIsVerified?[]:["graal"]);
+  // A native-only interpretation of an unmarked mutable owner is NOT
+  // a Java semantic parity success. Do not auto-promote this fixture.
+  if(c.id==="class-mutable-borrow")
+   assert.equal(c.expectedI64,"42");
   if(c.expect==="accept")assert.equal(c.expectedI64,"42");
   else assert.equal(c.diagnosticClass,"exclusive-loan-conflict");
  }
