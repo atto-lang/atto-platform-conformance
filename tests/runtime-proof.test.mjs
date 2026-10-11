@@ -18,12 +18,12 @@ async function reports(){
 }
 test("typed manifest is independently pinned to shared accepted compiler sources",async()=>{
  const cases=await loadRuntimeCases();
- assert.equal(cases.length,3);
- assert.deepEqual(cases.map(x=>x.expect),["42","42","28"]);
+ assert.equal(cases.length,5);
+ assert.deepEqual(cases.map(x=>x.expect),["42","42","28","-7","65539"]);
 });
 test("mock runtime only verifies typed harness semantics, not actual compiler parity",async()=>{
  const {java,llvm,cases,buildReports}=await reports();
- assert.equal(java.verified,3);assert.equal(llvm.verified,3);
+ assert.equal(java.verified,5);assert.equal(llvm.verified,5);
  assert.equal(verifyTypedRuntimeReports(java,llvm,cases,pins,buildReports).status,"PAIRED_TYPED_I64_RUNTIME_PASS");
 });
 test("full signed range is accepted, but noncanonical and overflowing values are rejected",()=>{
@@ -34,7 +34,7 @@ test("different execution outcomes, skipped cases or wrong fixtures cannot be pa
  const {java,llvm,cases,buildReports}=await reports();
  llvm.results[0].value="41";
  assert.throws(()=>verifyTypedRuntimeReports(java,llvm,cases,pins,buildReports),/mismatch/);
- llvm.results[0].value="42";llvm.results.pop();llvm.verified=2;
+ llvm.results[0].value="42";llvm.results.pop();llvm.verified=4;
  assert.throws(()=>verifyTypedRuntimeReports(java,llvm,cases,pins,buildReports),/incomplete/);
 });
 test("runner SHA must be bound to an independently hashed build report",async()=>{
@@ -54,9 +54,9 @@ test("reject forged stdout, signal, exit code and misplaced source revision",asy
 test("runtime crashes, timeouts and truncated process results fail closed",async()=>{
  const good=()=>({status:0,stdout:String.fromCharCode(52,50,10),stderr:"",signal:null});
  const crash=await runTypedSuite({backend:"java",argv,sourceSha:pins.backends.java.sourceCommit,spawn:()=>({status:null,signal:"SIGSEGV",stdout:"",stderr:""})});
- assert.equal(crash.failed,3);assert.ok(crash.results.every(x=>x.status==="SIGNALED"));
+ assert.equal(crash.failed,5);assert.ok(crash.results.every(x=>x.status==="SIGNALED"));
  const timeout=await runTypedSuite({backend:"llvm",argv,sourceSha:pins.backends.llvm.sourceCommit,spawn:()=>({status:null,signal:null,error:{code:"ETIMEDOUT"}})});
- assert.equal(timeout.failed,3);assert.ok(timeout.results.every(x=>x.status==="TIMEOUT"));
+ assert.equal(timeout.failed,5);assert.ok(timeout.results.every(x=>x.status==="TIMEOUT"));
  const truncated=await runTypedSuite({backend:"java",argv,sourceSha:pins.backends.java.sourceCommit,spawn:good});
- assert.equal(truncated.failed,1); // arithmetic-precedence expected 28, not 42
+ assert.equal(truncated.failed,3); // arithmetic-precedence expected 28, not 42
 });
