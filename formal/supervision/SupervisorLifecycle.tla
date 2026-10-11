@@ -13,6 +13,7 @@ ASSUME /\ Children # {}
        /\ Supervisors # {}
        /\ MaxGeneration \in Nat \ {0}
        /\ MaxTurns \in Nat \ {0}
+       /\ "Nobody" \notin Children
 
 Phases == {"Active", "Finalized", "Restarting", "Stopping", "Stopped"}
 Receipts == {"None", "Pending", "Applied", "Uncertain", "Ack"}
@@ -21,11 +22,11 @@ Nobody == "Nobody"
 
 VARIABLES owner, phase, generation, cleaned, leaseGeneration,
           receipt, calls, applied, proof, committedGeneration,
-          control, closed, nextTurn, turn, replacement
+          control, closed, nextTurn, turn, replacement, readyGeneration
 
 vars == <<owner, phase, generation, cleaned, leaseGeneration,
           receipt, calls, applied, proof, committedGeneration,
-          control, closed, nextTurn, turn, replacement>>
+          control, closed, nextTurn, turn, replacement, readyGeneration>>
 
 Init ==
     /\ owner \in [Children -> Supervisors]
@@ -43,6 +44,7 @@ Init ==
     /\ nextTurn = [s \in Supervisors |-> 0]
     /\ turn = [c \in Children |-> 0]
     /\ replacement = [c \in Children |-> "None"]
+    /\ readyGeneration = [c \in Children |-> 0]
 
 (* The actual actor carrier must finish cleanup before finalization. *)
 Cleanup(c) ==
@@ -51,7 +53,7 @@ Cleanup(c) ==
     /\ cleaned' = [cleaned EXCEPT ![c] = TRUE]
     /\ UNCHANGED <<owner, phase, generation, leaseGeneration, receipt,
                    calls, applied, proof, committedGeneration, control,
-                   closed, nextTurn, turn, replacement>>
+                   closed, nextTurn, turn, replacement, readyGeneration>>
 
 Finalize(c) ==
     /\ phase[c] = "Active"
@@ -59,7 +61,7 @@ Finalize(c) ==
     /\ phase' = [phase EXCEPT ![c] = "Finalized"]
     /\ UNCHANGED <<owner, generation, cleaned, leaseGeneration, receipt,
                    calls, applied, proof, committedGeneration, control,
-                   closed, nextTurn, turn, replacement>>
+                   closed, nextTurn, turn, replacement, readyGeneration>>
 
 (* Exactly one logical CONTROL turn per supervisor, even if its worker
    is released by await. Separate supervisors may proceed independently. *)
@@ -72,7 +74,7 @@ AcquireControl(c) ==
     /\ nextTurn' = [nextTurn EXCEPT ![owner[c]] = @ + 1]
     /\ turn' = [turn EXCEPT ![c] = nextTurn[owner[c]] + 1]
     /\ UNCHANGED <<owner, phase, generation, cleaned, leaseGeneration,
-                   receipt, calls, applied, proof, committedGeneration, closed, replacement>>
+                   receipt, calls, applied, proof, committedGeneration, closed, replacement, readyGeneration>>
 
 (* STOP and RESTART race to mutate the SAME Finalized phase. *)
 ReserveStop(c) ==
@@ -83,16 +85,17 @@ ReserveStop(c) ==
     /\ receipt' = [receipt EXCEPT ![c] = "Pending"]
     /\ leaseGeneration' = [leaseGeneration EXCEPT ![c] = generation[c]]
     /\ UNCHANGED <<owner, generation, cleaned, calls, applied, proof,
-                   committedGeneration, control, closed, nextTurn, turn, replacement>>
+                   committedGeneration, control, closed, nextTurn, turn, replacement, readyGeneration>>
 
 ReserveRestart(c) ==
     /\ phase[c] = "Finalized"
     /\ control[owner[c]] = c
     /\ receipt[c] = "None"
+    /\ generation[c] < MaxGeneration
     /\ phase' = [phase EXCEPT ![c] = "Restarting"]
     /\ leaseGeneration' = [leaseGeneration EXCEPT ![c] = generation[c]]
     /\ UNCHANGED <<owner, generation, cleaned, receipt, calls, applied,
-                   proof, committedGeneration, control, closed, nextTurn, turn, replacement>>
+                   proof, committedGeneration, control, closed, nextTurn, turn, replacement, readyGeneration>>
 
 (* Trusted host cleanup is required if the replacement was actually spawned.
    Shutdown does not silently erase a live replacement or its reservation. *)
@@ -104,7 +107,7 @@ SpawnReplacement(c) ==
     /\ replacement' = [replacement EXCEPT ![c] = "Spawned"]
     /\ UNCHANGED <<owner, phase, generation, cleaned, leaseGeneration,
                    receipt, calls, applied, proof, committedGeneration,
-                   control, closed, nextTurn, turn>>
+                   control, closed, nextTurn, turn, readyGeneration>>
 
 AdmitReplacement(c) ==
     /\ phase[c] = "Restarting"
@@ -112,6 +115,7 @@ AdmitReplacement(c) ==
     /\ ~closed[owner[c]]
     /\ replacement[c] = "Spawned"
     /\ replacement' = [replacement EXCEPT ![c] = "Admitted"]
+    /\ readyGeneration' = [readyGeneration EXCEPT ![c] = generation[c] + 1]
     /\ UNCHANGED <<owner, phase, generation, cleaned, leaseGeneration,
                    receipt, calls, applied, proof, committedGeneration,
                    control, closed, nextTurn, turn>>
@@ -123,7 +127,7 @@ CleanupReplacement(c) ==
     /\ replacement' = [replacement EXCEPT ![c] = "Cleaned"]
     /\ UNCHANGED <<owner, phase, generation, cleaned, leaseGeneration,
                    receipt, calls, applied, proof, committedGeneration,
-                   control, closed, nextTurn, turn>>
+                   control, closed, nextTurn, turn, readyGeneration>>
 
 AbortRestart(c) ==
     /\ phase[c] = "Restarting"
@@ -133,7 +137,7 @@ AbortRestart(c) ==
     /\ leaseGeneration' = [leaseGeneration EXCEPT ![c] = 0]
     /\ replacement' = [replacement EXCEPT ![c] = "None"]
     /\ UNCHANGED <<owner, generation, cleaned, receipt, calls, applied,
-                   proof, committedGeneration, control, closed, nextTurn, turn>>
+                   proof, committedGeneration, control, closed, nextTurn, turn, readyGeneration>>
 
 (* Model assumption: a real new actor has already been admitted/readied.
    This transition represents the registry's atomic identity replacement. *)
@@ -142,6 +146,7 @@ CommitRestart(c) ==
     /\ leaseGeneration[c] = generation[c]
     /\ generation[c] < MaxGeneration
     /\ replacement[c] = "Admitted"
+    /\ readyGeneration[c] = generation[c] + 1
     /\ ~closed[owner[c]]
     /\ control[owner[c]] = c
     /\ phase' = [phase EXCEPT ![c] = "Active"]
@@ -154,7 +159,7 @@ CommitRestart(c) ==
     /\ proof' = [proof EXCEPT ![c] = FALSE]
     /\ turn' = [turn EXCEPT ![c] = 0]
     /\ control' = [control EXCEPT ![owner[c]] = Nobody]
-    /\ UNCHANGED <<owner, receipt, committedGeneration, closed, nextTurn>>
+    /\ UNCHANGED <<owner, receipt, committedGeneration, closed, nextTurn, readyGeneration>>
 
 StartHostEffect(c) ==
     /\ phase[c] = "Stopping"
@@ -165,7 +170,7 @@ StartHostEffect(c) ==
     /\ calls' = [calls EXCEPT ![c] = 1]
     /\ UNCHANGED <<owner, phase, generation, cleaned, leaseGeneration,
                    receipt, applied, proof, committedGeneration, control,
-                   closed, nextTurn, turn, replacement>>
+                   closed, nextTurn, turn, replacement, readyGeneration>>
 
 HostSuccess(c) ==
     /\ phase[c] = "Stopping"
@@ -177,7 +182,7 @@ HostSuccess(c) ==
     /\ applied' = [applied EXCEPT ![c] = TRUE]
     /\ UNCHANGED <<owner, phase, generation, cleaned, leaseGeneration,
                    calls, proof, committedGeneration, control, closed,
-                   nextTurn, turn, replacement>>
+                   nextTurn, turn, replacement, readyGeneration>>
 
 (* Either possible physical outcome may accompany a failed callback.
    The runtime does not infer which occurred from the thrown exception. *)
@@ -190,7 +195,7 @@ HostUnknown(c, didApply) ==
     /\ applied' = [applied EXCEPT ![c] = didApply]
     /\ UNCHANGED <<owner, phase, generation, cleaned, leaseGeneration,
                    calls, proof, committedGeneration, control, closed,
-                   nextTurn, turn, replacement>>
+                   nextTurn, turn, replacement, readyGeneration>>
 
 CommitAcknowledgedStop(c) ==
     /\ phase[c] = "Stopping"
@@ -203,7 +208,7 @@ CommitAcknowledgedStop(c) ==
     /\ committedGeneration' = [committedGeneration EXCEPT ![c] = generation[c]]
     /\ control' = [control EXCEPT ![owner[c]] = Nobody]
     /\ UNCHANGED <<owner, generation, cleaned, leaseGeneration, calls,
-                   applied, proof, closed, nextTurn, turn, replacement>>
+                   applied, proof, closed, nextTurn, turn, replacement, readyGeneration>>
 
 (* Independent read-only proof, never a second invocation of STOP.
    Its truthfulness is an explicit environmental assumption. *)
@@ -216,7 +221,7 @@ VerifyHostEffect(c) ==
     /\ proof' = [proof EXCEPT ![c] = TRUE]
     /\ UNCHANGED <<owner, phase, generation, cleaned, leaseGeneration,
                    receipt, calls, applied, committedGeneration, control,
-                   closed, nextTurn, turn, replacement>>
+                   closed, nextTurn, turn, replacement, readyGeneration>>
 
 Reconcile(c) ==
     /\ phase[c] = "Stopping"
@@ -231,7 +236,7 @@ Reconcile(c) ==
                   THEN [control EXCEPT ![owner[c]] = Nobody]
                   ELSE control
     /\ UNCHANGED <<owner, generation, cleaned, leaseGeneration, calls,
-                   applied, proof, closed, nextTurn, turn, replacement>>
+                   applied, proof, closed, nextTurn, turn, replacement, readyGeneration>>
 
 (* Close never rolls back STOPPING, even if no host receipt has arrived. *)
 CloseSupervisor(s) ==
@@ -240,7 +245,7 @@ CloseSupervisor(s) ==
     /\ control' = [control EXCEPT ![s] = Nobody]
     /\ UNCHANGED <<owner, phase, generation, cleaned, leaseGeneration,
                    receipt, calls, applied, proof, committedGeneration,
-                   nextTurn, turn, replacement>>
+                   nextTurn, turn, replacement, readyGeneration>>
 
 Next ==
     \/ \E c \in Children :
@@ -273,6 +278,7 @@ TypeOK ==
     /\ nextTurn \in [Supervisors -> 0..MaxTurns]
     /\ turn \in [Children -> 0..MaxTurns]
     /\ replacement \in [Children -> {"None", "Spawned", "Admitted", "Cleaned"}]
+    /\ readyGeneration \in [Children -> 0..MaxGeneration]
 
 SerialControl ==
     \A s \in Supervisors :
@@ -298,6 +304,11 @@ NoDuplicateEffects == \A c \in Children : calls[c] <= 1
 NoOrphanReplacement ==
     \A c \in Children :
         replacement[c] # "None" => phase[c] = "Restarting"
+
+NoUnreadyActiveIncarnation ==
+    \A c \in Children :
+        (phase[c] = "Active" /\ generation[c] > 1)
+        => readyGeneration[c] = generation[c]
 
 CleanupBeforeSupervisor ==
     \A c \in Children : phase[c] # "Active" => cleaned[c]
@@ -336,10 +347,30 @@ UnsafeAbortWithLiveReplacement(c) ==
     /\ leaseGeneration' = [leaseGeneration EXCEPT ![c] = 0]
     /\ UNCHANGED <<owner, generation, cleaned, receipt, calls, applied,
                    proof, committedGeneration, control, closed,
-                   nextTurn, turn, replacement>>
+                   nextTurn, turn, replacement, readyGeneration>>
 
 UnsafeAbortNext == Next \/ \E c \in Children : UnsafeAbortWithLiveReplacement(c)
 UnsafeAbortSpec == Init /\ [][UnsafeAbortNext]_vars
+
+(* A mutation commits RESTART without admitting the next incarnation. *)
+UnsafeCommitWithoutAdmission(c) ==
+    /\ phase[c] = "Restarting"
+    /\ replacement[c] \in {"None", "Spawned"}
+    /\ generation[c] < MaxGeneration
+    /\ control[owner[c]] = c
+    /\ ~closed[owner[c]]
+    /\ phase' = [phase EXCEPT ![c] = "Active"]
+    /\ generation' = [generation EXCEPT ![c] = @ + 1]
+    /\ cleaned' = [cleaned EXCEPT ![c] = FALSE]
+    /\ leaseGeneration' = [leaseGeneration EXCEPT ![c] = 0]
+    /\ replacement' = [replacement EXCEPT ![c] = "None"]
+    /\ turn' = [turn EXCEPT ![c] = 0]
+    /\ control' = [control EXCEPT ![owner[c]] = Nobody]
+    /\ UNCHANGED <<owner, receipt, calls, applied, proof,
+                   committedGeneration, closed, nextTurn, readyGeneration>>
+
+UnsafeCommitNext == Next \/ \E c \in Children : UnsafeCommitWithoutAdmission(c)
+UnsafeCommitSpec == Init /\ [][UnsafeCommitNext]_vars
 
 (* A deliberate mutation must falsify NoDuplicateEffects. *)
 UnsafeReplay(c) ==
@@ -349,7 +380,7 @@ UnsafeReplay(c) ==
     /\ calls' = [calls EXCEPT ![c] = 2]
     /\ UNCHANGED <<owner, phase, generation, cleaned, leaseGeneration,
                    receipt, applied, proof, committedGeneration,
-                   control, closed, nextTurn, turn, replacement>>
+                   control, closed, nextTurn, turn, replacement, readyGeneration>>
 
 MutantNext == Next \/ \E c \in Children : UnsafeReplay(c)
 MutantSpec == Init /\ [][MutantNext]_vars
