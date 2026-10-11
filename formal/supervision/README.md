@@ -1,8 +1,9 @@
 # Supervisor STOP lifecycle: bounded formal verification
 
-The `SupervisorStop.tla` safety model specifies **trusted host**
-execution of lifecycle operations for two independent logical children,
-two CONTROL turns and up to two actor incarnations per child. TLC explores
+`SupervisorStop.tla` models trusted STOP receipts and late host completions.
+`SupervisorLifecycle.tla` separately models CONTROL ownership, physical
+cleanup, STOP/RESTART competition and supervisor shutdown. Both use two
+logical children and bounded actor generations/turns. TLC explores
 every enabled interleaving under these finite bounds; neither source backend
 is substituted for a model checker.
 
@@ -14,8 +15,9 @@ bash formal/supervision/check-tlc.sh
 
 The runner downloads a **digest-pinned** Java TLC executable and checks its
 SHA-256 before executing. A clean model must complete with no invariant
-violation, and the deliberate `UnsafeReplay` mutant must produce the
-`NoDoubleEffect` counterexample. CI copies the exact Git blobs to a private
+violation, and deliberate mutants must produce counterexamples for duplicate host
+STOP, premature RESTART, false ACK and duplicate lifecycle effects.
+The positive models and negative controls are checked separately. CI copies the exact Git blobs to a private
 funded repository for verification, without copying private Oreslang source
 to a public repository.
 
@@ -66,7 +68,17 @@ fairness and evidence-availability assumptions explicitly.
 
 ## Verified evidence
 
-[Private TLC run 38185059504](https://github.com/3fa-app-test/account-recovery-security/actions/runs/38185059504):
-10,020 generated states; 3,698 distinct states; full graph depth 14;
-no invariant violations; deliberately unsafe replay produced the expected
-`NoDoubleEffect` counterexample.
+[Private combined TLC run 38185363925](https://github.com/3fa-app-test/account-recovery-security/actions/runs/38185363925):
+
+- STOP receipt model: **10,020 generated**, **3,698 distinct** states;
+  depth **14**; no invariant violation.
+- CONTROL/cleanup/restart model: **18,964 generated**, **7,552 distinct**
+  states; depth **29**; no invariant violation.
+- Four expected mutation counterexamples: `NoDoubleEffect`,
+  `NoRestartUnderStop`, `NoInvalidAck`, and
+  `NoDuplicateEffects`.
+
+The conformance workflow `.github/workflows/supervisor-formal.yml`
+runs these checks on formal-model changes; while source-organization
+Actions have no runner allocation, an exact-Git-blob private CI mirror
+provides executable evidence without exposing private source.
