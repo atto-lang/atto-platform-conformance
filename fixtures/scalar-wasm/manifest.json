@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "scope": "pinned-oreslang-source-llvm-wasm-node-worker-scalar-v1",
+  "compilerRepository": "ores-truffle-oreslang/oreslang-source.llvm",
+  "compilerSourceCommit": "c7d3b61d95b1c8ff78d6b2efbed44c9d92791b80",
+  "executionEvidence": "https://github.com/akrion-sim/akrion-sim-e2e/actions/runs/38168849813",
+  "sourceBlobVerificationCount": 17,
+  "environment": "Node22 Worker with browser module entry; not Chromium or Firefox",
+  "supportedSubset": "no-import core wasm32, main() -> signed i64, 2-page memory",
+  "cases": [
+    {
+      "id": "constant-main",
+      "file": "constant-main.ores",
+      "sourceGitBlobSha1": "0f1de3b2fbcabfa1f982270ce06e15ab3fffe436",
+      "expectedI64": "42",
+      "verifiedTargets": [
+        "llvm-to-wasm32-node-worker"
+      ],
+      "pendingTargets": [
+        "llvm-native-execution",
+        "graal-jvm",
+        "chromium",
+        "firefox"
+      ]
+    },
+    {
+      "id": "return-arithmetic",
+      "file": "return-arithmetic.ores",
+      "sourceGitBlobSha1": "a9871bd51ada5cacd49c0271c450be848d96955e",
+      "expectedI64": "28",
+      "verifiedTargets": [
+        "llvm-to-wasm32-node-worker"
+      ],
+      "pendingTargets": [
+        "llvm-native-execution",
+        "graal-jvm",
+        "chromium",
+        "firefox"
+      ]
+    },
+    {
+      "id": "owned-identifier-main",
+      "file": "owned-identifier-main.ores",
+      "sourceGitBlobSha1": "51480d7daab9d423db60ecedecfff04506b68759",
+      "expectedI64": "42",
+      "verifiedTargets": [
+        "llvm-to-wasm32-node-worker"
+      ],
+      "pendingTargets": [
+        "llvm-native-execution",
+        "graal-jvm",
+        "chromium",
+        "firefox"
+      ]
+    }
+  ],
+  "notes": "The CI built production C++ oreslang-llvmc against LLVM 17 and generated wasm32 from these exact Oreslang source files; Clang/LLD linked real Wasm which loaded under the SHA-256 verified browser artifact loader in isolated Node Workers. All three returned their expected i64 values. Unsupported actor source was refused before emitting LLVM IR. This is NOT Java/Graal JVM guest-source parity, native LLVM runtime execution, real browser-engine certification, async/supervisor/actor/borrow parity, or compiler-source reproducibility attestation."
+}
