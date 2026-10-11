@@ -4,7 +4,7 @@ Cross-platform, **evidence-first** language and runtime conformance suite. A har
 
 ## Current deliverable
 
-- Versioned fixture manifest and minimal positive/negative .ores sources.
+- Versioned five-case shared fixture manifest (integer arithmetic, unresolved identifier, forward call, arithmetic precedence, wrong arity).
 - Safe subprocess-based command runner with an argv template; no shell interpolation.
 - Executable harness unit tests (using a **fake checker** to verify the harness only).
 - Explicit status: unconfigured, verified, mismatch, spawn failure, timeout.
@@ -38,7 +38,7 @@ See https://ores-truffle-oreslang.github.io/logs/2/
 
 ## Paired Java/LLVM source-check evidence gate
 
-`src/paired-proof.mjs` provides `verifyPairedSourceChecks(javaRun, llvmRun)`. It requires both configured backends to report complete verified results for the **same fixture IDs and SHA-256 contents**, each with an immutable declared source commit and hashed executable. It rejects partial, stale, unconfigured, or differing fixture sets.
+`src/paired-proof.mjs` provides `verifyPairedSourceChecks(javaRun, llvmRun, expectedFixtures)`. It requires both configured backends to report complete verified results for the **same fixture IDs and SHA-256 contents**, each with an immutable declared source commit and hashed executable. It rejects partial, stale, unconfigured, or differing fixture sets.
 
 The result is intentionally named `PAIRED_SOURCE_CHECKS_PASS` and explicitly sets `certifiesRuntimeParity: false` and `certifiesCompilerBuildProvenance: false`. Unit tests use artificial backend results; their green status is only evidence that the checker itself fails closed. Before release, supply real pinned Java/Graal and LLVM build outputs, independently attest the compiler-source relationship, then execute actual runtime-output, actor scheduling, ownership, and resource-lifecycle parity fixtures.
 
