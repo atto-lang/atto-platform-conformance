@@ -646,3 +646,47 @@ end-to-end bridge+verified-source installer execution; complete
 Java Maven/JDK25 and GraalVM coverage; durable receipts and a trusted
 reconciliation policy for unresolved STOPPING. These changes do not
 enable general guest supervisor code, RESTART, ESCALATE, or LLVM await.
+
+
+## STOP receipt and CONTROL failure audit (2026-10-11)
+
+Java/GraalVM opt-in source STOP uses host-only, per-child exact-turn
+`StopReservation` receipts with monotonic `PENDING` -> `APPLIED` ->
+`ACKNOWLEDGED`. A failed/unknown effect can transition from `PENDING`
+to `UNCERTAIN`, but **confirmed APPLIED or ACKNOWLEDGED may never be
+downgraded to UNCERTAIN**. Both `PENDING` and `UNCERTAIN` keep the
+child in STOPPING, rejecting another STOP or competing RESTART.
+
+The awaited STOP process now accepts a dedicated failed-host-effect
+callback; it runs on a runtime CONTROL carrier, never on the thread
+that completes the foreign host Future. Errors from the host effect
+supplier, an exceptionally settled host Future, and a throwing
+CompletionStage subscription classify the exact reserved turn as
+`UNCERTAIN`. They do not replay the effect or claim successful STOP.
+Confirmed effects transition to APPLIED before the registry commits
+the matching incarnation as STOPPED. Confirmed APPLIED receipts cannot
+be overwritten by failed-effect classification.
+
+Focused private exact-source verification:
+https://github.com/3fa-app-test/account-recovery-security/actions/runs/38182488938
+
+All three jobs passed:
+- Java 25 production `SupervisorChildRegistry.java` compiled from its
+  **exact Git blob** against isolated host identifier types, exercising
+  receipt ordering, forged/duplicate transition rejection, ambiguous
+  effects and restart exclusion.
+- Java 25 source lexer/parser and supervisor CONTROL implementation,
+  with a synthetic actor-group adapter, exercised pending acknowledgments,
+  reentrant close, stale targets, exceptional futures, and hostile
+  `whenComplete` registration.
+- Native C++20 ASan/UBSan source guard remained green. This does not
+  add native async supervisor continuation lowering.
+
+Limitations: an explicit close or rejected CONTROL dispatcher while a
+host acknowledgment remains unresolved may leave a PENDING receipt in
+STOPPING. This is a fail-closed quarantine; **it is not proof the host
+effect was not applied** and requires a trusted reconciler to classify.
+No durable persistent receipt log, full production ActorRuntime/Maven
+verification, GraalVM native-image testing or complete LLVM CMake/CTest
+has been established. Keep general guest source hooks fail-closed and
+do not merge these drafts as a completed supervisor runtime.
