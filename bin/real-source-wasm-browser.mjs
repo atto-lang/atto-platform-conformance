@@ -60,6 +60,28 @@ const report=JSON.parse(gateOutput);
 if(report.ok!==true||report.kind!=="core-wasm-i64-guest-only"||
  report.expectedI64!==value||report.observedI64!==value||
  report.artifactSha256!==artifact.wasmSha256)throw Error("real-source guest report mismatch");
+// Close the entire compiler -> guest -> browser evidence interval: neither
+// the pinned inputs nor the published output/metadata may change between
+// admission and final report. The browser loader alone checks only guest bytes.
+const [wasm,manifestText,provenanceText,...after]=await Promise.all([
+ readFile(opts.output),readFile(opts.output+".artifact.json","utf8"),
+ readFile(opts.output+".provenance.json","utf8"),
+ ...["compiler","bridge","source","browser-module"].map(k=>readFile(opts[k]))
+]);
+for(const [i,name] of ["compiler","bridge","source","browser-module"].entries()){
+ if(digest(after[i])!==opts[name+"-sha256"])
+  throw Error(name+" changed during executable conformance gate");
+}
+const manifest=JSON.parse(manifestText),provenance=JSON.parse(provenanceText);
+if(!/^[a-f0-9]{64}$/.test(artifact.wasmSha256||"")||
+ digest(wasm)!==artifact.wasmSha256||
+ manifest.wasmSha256!==artifact.wasmSha256||
+ provenance.wasmSha256!==artifact.wasmSha256||
+ manifest.producer?.compilerSha256!==opts["compiler-sha256"]||
+ manifest.producer?.sourceSha256!==opts["source-sha256"]||
+ provenance.compilerSha256!==opts["compiler-sha256"]||
+ provenance.sourceSha256!==opts["source-sha256"])
+ throw Error("published artifact/manifest/provenance digest inconsistency");
 console.log(JSON.stringify({ok:true,kind:"native-oreslang-llvm-source-to-browser-i64-only",
  compilerSha256:artifact.compilerSha256,sourceSha256:artifact.sourceSha256,
  browserModuleSha256:opts["browser-module-sha256"],artifactSha256:artifact.wasmSha256,
