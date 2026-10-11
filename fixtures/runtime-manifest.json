@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "int-arithmetic",
+      "file": "int-arithmetic.ores",
+      "type": "i64",
+      "expect": "42"
+    },
+    {
+      "id": "forward-call",
+      "file": "forward-call.ores",
+      "type": "i64",
+      "expect": "42"
+    },
+    {
+      "id": "arithmetic-precedence",
+      "file": "arithmetic-precedence.ores",
+      "type": "i64",
+      "expect": "28"
+    }
+  ]
+}
