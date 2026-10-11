@@ -28,7 +28,9 @@
       "stopTarget": "verified-current-Failure.child-only",
       "requiresTrustedLogicalChildBinding": true,
       "guestAsyncAndLifecyclePolicy": "unimplemented",
-      "sourceGuestExecution": "restricted-host-control-stop-only"
+      "sourceGuestExecution": "restricted-host-control-stop-only",
+      "llvmVerifiedStopOptIn": "accept-with-trusted-finalized-child-registry",
+      "llvmLegacyHostOnlyStop": "unverified-registry-binding"
     },
     {
       "id": "stop-typed-failure",
@@ -41,7 +43,9 @@
       "stopTarget": "current-typed-failure-only",
       "stableLogicalChildRef": "unimplemented",
       "guestAsyncAndLifecyclePolicy": "unimplemented",
-      "sourceGuestExecution": "restricted-host-control-stop-only"
+      "sourceGuestExecution": "restricted-host-control-stop-only",
+      "llvmVerifiedStopOptIn": "accept-with-trusted-finalized-child-registry",
+      "llvmLegacyHostOnlyStop": "unverified-registry-binding"
     },
     {
       "id": "stop-only-implicit-control",
@@ -53,7 +57,9 @@
       "llvmStopOnlyOptIn": "accept",
       "implicitControl": "required",
       "guestAsyncAndLifecyclePolicy": "unimplemented",
-      "sourceGuestExecution": "restricted-host-control-stop-only"
+      "sourceGuestExecution": "restricted-host-control-stop-only",
+      "llvmVerifiedStopOptIn": "accept-with-trusted-finalized-child-registry",
+      "llvmLegacyHostOnlyStop": "unverified-registry-binding"
     },
     {
       "id": "typed-on-panic",
@@ -86,6 +92,7 @@
     "sourceStopOnlyJavaAndNative": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38177421772",
     "sourceStopOnlyHardening": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38178052956",
     "sourceAsyncStopJava25": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38179750225",
-    "sourceAsyncStopJava25AndNativeFailClosed": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38179985398"
+    "sourceAsyncStopJava25AndNativeFailClosed": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38179985398",
+    "sourceStopRegistryPreflightJava25NativeASan": "https://github.com/3fa-app-test/account-recovery-security/actions/runs/38181090633"
   }
 }
