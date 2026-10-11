@@ -47,12 +47,13 @@ test("scripted and synthetic compiler stand-ins are rejected even with all hashe
 
 test("mandatory real compiled Worker conformance cannot silently skip",()=>{
  const child=new URL("./real-compiled-worker.test.mjs",import.meta.url).pathname;
- const result=spawnSync(process.execPath,["--test",child],{
-  encoding:"utf8",
-  env:{...process.env,
-   ORE_REQUIRE_REAL_WORKER:"1",ORE_REAL_WASM:"",
-   ORE_REAL_MANIFEST:"",ORE_BROWSER_WORKER_HOST:"",ORE_BROWSER_WORKER_SHIM:""}
- });
- assert.notEqual(result.status,0);
+ // A nested node --test child inherits NODE_TEST_CONTEXT from its parent
+ // runner; execute the test module directly in a fresh Node process instead.
+ const env={...process.env,
+  ORE_REQUIRE_REAL_WORKER:"1",ORE_REAL_WASM:"",
+  ORE_REAL_MANIFEST:"",ORE_BROWSER_WORKER_HOST:"",ORE_BROWSER_WORKER_SHIM:""};
+ delete env.NODE_TEST_CONTEXT;
+ const result=spawnSync(process.execPath,[child],{encoding:"utf8",env});
+ assert.notEqual(result.status,0,result.stdout+"\n"+result.stderr);
  assert.match(result.stderr+result.stdout,/required real compiled Oreslang Worker evidence is unconfigured/);
 });
