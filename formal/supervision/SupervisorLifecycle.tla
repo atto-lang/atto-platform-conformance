@@ -107,6 +107,8 @@ CommitRestart(c) ==
     /\ phase[c] = "Restarting"
     /\ leaseGeneration[c] = generation[c]
     /\ generation[c] < MaxGeneration
+    /\ ~closed[owner[c]]
+    /\ control[owner[c]] = c
     /\ phase' = [phase EXCEPT ![c] = "Active"]
     /\ generation' = [generation EXCEPT ![c] = @ + 1]
     /\ cleaned' = [cleaned EXCEPT ![c] = FALSE]
@@ -242,6 +244,13 @@ NoStopRestartOverlap ==
     \A c \in Children :
         (receipt[c] \in (Unresolved \cup {"Applied", "Ack"})
          => phase[c] \notin {"Active", "Finalized", "Restarting"})
+
+(* Close may leave a RESTART reservation quarantined; it must never
+   publish a new incarnation after CONTROL has been closed. *)
+RestartOwnedWhileOpen ==
+    \A c \in Children :
+        (phase[c] = "Restarting" /\ ~closed[owner[c]])
+        => control[owner[c]] = c
 
 NoDuplicateEffects == \A c \in Children : calls[c] <= 1
 
