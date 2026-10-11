@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "scope": "supervisor-source-admission-v1",
+  "description": "Shared source fixtures; explicitly do not claim guest runtime hook execution.",
+  "cases": [
+    {
+      "id": "typed-on-panic",
+      "file": "typed-on-panic.ores",
+      "javaParser": "accept",
+      "javaCompiler": "reject-unlowered-control",
+      "llvmCompiler": "reject-unlowered-control",
+      "sourceGuestExecution": "unimplemented"
+    },
+    {
+      "id": "wrong-failure-type",
+      "file": "wrong-failure-type.ores",
+      "javaParser": "reject-wrong-failure-type",
+      "llvmCompiler": "reject-unlowered-control",
+      "sourceGuestExecution": "unimplemented"
+    },
+    {
+      "id": "duplicate-on-panic",
+      "file": "duplicate-on-panic.ores",
+      "javaParser": "reject-duplicate-hook",
+      "llvmCompiler": "reject-unlowered-control",
+      "sourceGuestExecution": "unimplemented"
+    }
+  ],
+  "hostEvidence": {
+    "nativeBridge": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38172014799",
+    "javaParser": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38171659481",
+    "llvmParser": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38171838563",
+    "javaDecisionFence": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38172134367"
+  }
+}
