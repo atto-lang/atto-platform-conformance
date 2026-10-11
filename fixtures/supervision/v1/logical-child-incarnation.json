@@ -167,12 +167,14 @@
       "input": [
         "register(actor-A)",
         "finalize(actor-A,1)",
-        "publish-typed-failure(actor-A,1)",
-        "host-acknowledges-stop(turn-7)",
-        "commit-stop(actor-A,1)"
+        "reserve-stop(actor-A,1,turn-7)",
+        "host-stop-applied",
+        "record-applied-stop(turn-7)",
+        "commit-stop(actor-A,1,turn-7)"
       ],
       "expected": {
         "phase": "STOPPED",
+        "receipt": "ACKNOWLEDGED",
         "actor": "actor-A",
         "logicalIncarnation": 1
       }
@@ -182,11 +184,14 @@
       "input": [
         "register(actor-A)",
         "finalize(actor-A,1)",
-        "publish-typed-failure(actor-A,1)",
-        "host-stop-sink-throws"
+        "reserve-stop(actor-A,1,turn-7)",
+        "invoke-host-stop-effect",
+        "host-stop-sink-throws",
+        "record-uncertain-stop(turn-7)"
       ],
       "expected": {
-        "phase": "FINALIZED",
+        "phase": "STOPPING",
+        "receipt": "UNCERTAIN",
         "resolved": 0,
         "automaticRetry": false
       }
@@ -262,10 +267,12 @@
         "finalize(actor-A,1)",
         "reserve-stop(actor-A,1,turn-17)",
         "host-stop-acknowledged",
+        "record-applied-stop(turn-17)",
         "commit-stop(actor-A,1,turn-17)"
       ],
       "expected": {
         "phase": "STOPPED",
+        "receipt": "ACKNOWLEDGED",
         "logicalIncarnation": 1
       }
     },
@@ -290,9 +297,86 @@
         "acceptedReservations": 1,
         "rejectedReservations": 1
       }
+    },
+    {
+      "id": "native-physical-panic-source-stop-e2e",
+      "input": [
+        "native-scheduler-spawn(child-A)",
+        "native-scheduler-terminal-panic(child-A)",
+        "native-physical-finalization(child-A)",
+        "native-bridge-accept-typed-control",
+        "verified-source-self.stop(f.child)",
+        "reserve-stop(turn-1)",
+        "host-effect-ack",
+        "record-applied(turn-1)",
+        "commit-stop(turn-1)"
+      ],
+      "expected": {
+        "accepted": 1,
+        "resolved": 1,
+        "receipt": "ACKNOWLEDGED",
+        "phase": "STOPPED",
+        "competingRestart": "rejected",
+        "replayedTerminal": "rejected"
+      }
+    },
+    {
+      "id": "native-physical-panic-ambiguous-e2e",
+      "input": [
+        "native-scheduler-terminal-panic(child-A)",
+        "native-physical-finalization(child-A)",
+        "verified-source-self.stop(f.child)",
+        "reserve-stop(turn-1)",
+        "host-effect-throws",
+        "record-uncertain(turn-1)"
+      ],
+      "expected": {
+        "accepted": 1,
+        "undelivered": 1,
+        "receipt": "UNCERTAIN",
+        "phase": "STOPPING",
+        "competingRestart": "rejected"
+      }
+    },
+    {
+      "id": "native-unknown-stop-no-proof",
+      "input": [
+        "reserve-stop(actor-A,1,turn-17)",
+        "record-uncertain(turn-17)",
+        "reconcile-without-authoritative-proof"
+      ],
+      "expected": {
+        "phase": "STOPPING",
+        "receipt": "UNCERTAIN",
+        "autoRetry": false
+      }
+    },
+    {
+      "id": "native-unknown-stop-verified-proof",
+      "input": [
+        "reserve-stop(actor-A,1,turn-17)",
+        "record-uncertain(turn-17)",
+        "independent-host-proof(turn-17)",
+        "record-applied(turn-17)",
+        "commit-stop(turn-17)"
+      ],
+      "expected": {
+        "phase": "STOPPED",
+        "receipt": "ACKNOWLEDGED",
+        "replay": "rejected"
+      }
+    },
+    {
+      "id": "native-stop-reconcile-wrong-turn",
+      "input": [
+        "reserve-stop(actor-A,1,turn-17)",
+        "record-uncertain(turn-17)",
+        "reconcile-with-host-proof(turn-18)"
+      ],
+      "expected": "reject-before-verifier"
     }
   ],
-  "description": "Host lifecycle transitions include STOPPING single-flight STOP reservation, keyed to exact generation and supervisor CONTROL turn. Ambiguous host effects remain quarantined until explicit reconciliation.",
+  "description": "Trusted host supervisor lifecycle contract. STOPPING is an exclusive CONTROL-turn reservation, with host receipt statuses PENDING/APPLIED/UNCERTAIN/ACKNOWLEDGED. A host verifier may confirm unknown results without retrying the effect.",
   "phases": [
     "ACTIVE",
     "FINALIZED",
