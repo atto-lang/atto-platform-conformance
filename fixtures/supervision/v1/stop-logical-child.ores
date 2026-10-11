@@ -1,0 +1,9 @@
+// Restricted compiler-generated STOP-only plan, not general guest evaluation.
+// CONTROL is implicit. The trusted runtime binds f.child to the current
+// physically finalized logical-child incarnation.
+define supervisor RootSupervisor as
+  on_panic(f: Failure): void {
+    self.stop(f.child);
+    return;
+  }
+end
