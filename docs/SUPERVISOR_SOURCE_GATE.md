@@ -525,3 +525,45 @@ for both backends retains fail-closed supervisor admission. Source-level
 `defer/recover` and execution-context restoration are not implemented by this
 restricted source slice. Full compiler-owned execution contexts and trusted
 typed STOP/RESTART/ESCALATE capabilities remain release prerequisites.
+
+
+## Awaited STOP registry authorization audit (2026-10-11)
+
+Exact-source funded private CI:
+https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38180599191
+
+Two allocated jobs passed:
+
+- Java 25 real lexer/parser/AST/restricted source lowering and CONTROL runtime
+  compiled from verified Git blobs. Focused host adapter tests rejected ACTIVE,
+  STOPPED, wrong actor, and wrong-incarnation failure notices *before* host STOP
+  was called, including the synchronous opt-in STOP path. Two successive
+  finalized children were acknowledged independently. Reentrant supervisor
+  close during STOP initiation, post-ack finalization, and a throwing host
+  effect preserved once-only/undelivered accounting.
+- Native C++20 ASan/UBSan opt-in source STOP tests passed with exact parser and
+  runtime Git blobs, including continued **rejection** of awaited source STOP
+  because LLVM has no guest async continuation lowering.
+
+Java `SourceSupervisorLowering` now checks the **current host registry**
+before the STOP policy and again before the host effect. The child must match
+the immutable failure's logical child ID, concrete actor ID, incarnation and
+`FINALIZED` state. A child ID's mere presence is insufficient. The host's
+`acknowledgeFinalizedStop` remains the independent post-effect transition
+check; it can still fail closed if a concurrent lifecycle owner changed state
+during an external asynchronous effect. This is not an atomic distributed
+transaction or a durable host effect receipt.
+
+**Outstanding native parity gap:** the legacy native
+`install_source_supervisor_stop` validates typed PANIC provenance and actor
+generation but is not yet bound to a live `SupervisorChildRegistry` preflight
+before invoking its host decision sink. Do not treat the native STOP source
+slice as equivalent to Java's newly verified registry-bound STOP authorization
+or expose it as a guest-visible privileged effect until that binding is
+implemented, audited and tested.
+
+The focused Java harness uses a test-only actor-group registry adapter, not
+the entire production `ActorRuntime.java`; full Java Maven/JUnit/JDK25,
+GraalVM AOT/hybrid, native CMake/CTest and cross-runtime async supervisor
+execution remain unverified. Both general compiler admission paths must stay
+fail-closed until their actual guest hook and execution-context support lands.
