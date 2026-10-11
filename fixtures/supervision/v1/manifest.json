@@ -99,6 +99,18 @@
     "nativeSourceVerifiedStopReservation": "reserve-STOPPING-before-host-effect",
     "nativeSourceUnknownHostEffect": "leave-STOPPING-and-reject-RESTART",
     "nativeBridgeRegistryOwnership": "same-shared-registry-instance-required",
-    "nativeSourceLegacyChildProjection": "fail-closed"
+    "nativeSourceLegacyChildProjection": "fail-closed",
+    "nativeRealSchedulerBridgeCTest": "native_source_supervisor_bridge_verified_stop_e2e",
+    "nativeRealSchedulerBridgeSource": "tests/native_source_supervisor_bridge_e2e_test.cpp",
+    "nativeReceiptStates": [
+      "PENDING",
+      "APPLIED",
+      "UNCERTAIN",
+      "ACKNOWLEDGED"
+    ],
+    "nativeUnknownReconcile": "requires-independent-host-proof; leave STOPPING-otherwise",
+    "nativeCI": "not-yet-executed-at-latest-source-head",
+    "javaCI": "not-yet-executed-at-latest-source-head",
+    "mirrorStatus": "private-alternate-org-mirror-incomplete; do-not-claim-exact-head-pass"
   }
 }
