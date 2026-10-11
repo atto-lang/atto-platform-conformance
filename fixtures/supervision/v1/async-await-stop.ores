@@ -1,0 +1,9 @@
+// Restricted Java opt-in source compiler: awaiting an authoritative STOP.
+// General Java compilation and LLVM source compilation must still fail closed.
+define supervisor Root as
+  @Implements
+  pub async on_panic(f: Failure): void {
+    await self.stop(f);
+    return;
+  }
+end
