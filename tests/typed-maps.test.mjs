@@ -20,7 +20,13 @@ test("typed Map matrix does not overclaim unsupported backend parity", () => {
     assert.equal(seen.has(entry.id), false);
     seen.add(entry.id);
     assert.equal(entry.javaGraal, "equivalent-source-junit-verified");
-    assert.equal(entry.exactFixtureExecution, "pending");
+    if (entry.id === "typed-map-hooks-and-open-keys") {
+      assert.equal(entry.exactFixtureExecution, "verified");
+      assert.equal(entry.exactFixtureEvidence, manifest.javaGraalEvidence);
+    } else {
+      assert.equal(entry.exactFixtureExecution, "pending");
+      assert.equal(entry.exactFixtureEvidence, undefined);
+    }
     assert.deepEqual(entry.otherBackends, {
       llvm: "pending", wasm: "pending", browser: "pending"
     });
