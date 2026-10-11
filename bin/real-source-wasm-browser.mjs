@@ -5,7 +5,7 @@
  * This is NOT proof of GraalVM source parity or actor behavior.
  */
 import {spawnSync} from "node:child_process";
-import {readFile} from "node:fs/promises";
+import {readFile,stat} from "node:fs/promises";
 import {createHash} from "node:crypto";
 import {isAbsolute,resolve} from "node:path";
 const fields=["compiler","compiler-sha256","bridge","bridge-sha256",
@@ -30,7 +30,19 @@ if(!/^(?:0|-?[1-9][0-9]*)$/.test(value)||value.length>20||
 if([opts.compiler,opts.bridge,opts.source,opts["browser-module"]].some(p=>resolve(p)===resolve(opts.output)))
  throw Error("output cannot overlap a pinned compiler or input");
 const digest=b=>createHash("sha256").update(b).digest("hex");
-const bytes=await Promise.all(["compiler","bridge","source","browser-module"].map(x=>readFile(opts[x])));
+const inputNames=["compiler","bridge","source","browser-module"];
+const maxInputBytes={compiler:64*1024*1024,bridge:2*1024*1024,source:1024*1024,"browser-module":2*1024*1024};
+// Reject oversized files BEFORE allocating and hashing attacker-controlled
+// contents. This is a best-effort preflight, not filesystem immutability.
+const inputStats=await Promise.all(inputNames.map(x=>stat(opts[x])));
+for(let i=0;i<inputNames.length;i++){
+ const name=inputNames[i],metadata=inputStats[i];
+ if(!metadata.isFile()||metadata.size<1||metadata.size>maxInputBytes[name])
+  throw Error(name+" exceeds native conformance input budget");
+}
+const bytes=await Promise.all(inputNames.map(x=>readFile(opts[x])));
+for(let i=0;i<inputNames.length;i++)
+ if(bytes[i].length>maxInputBytes[inputNames[i]])throw Error(inputNames[i]+" exceeds native conformance input budget");
 for(const [i,name] of ["compiler","bridge","source","browser-module"].entries()){
  if(digest(bytes[i])!==opts[name+"-sha256"])throw Error(name+" SHA-256 does not match pin");
 }
