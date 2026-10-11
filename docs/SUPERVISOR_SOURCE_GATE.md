@@ -735,3 +735,30 @@ bodies, runtime RESTART, ESCALATE, and full execution-context
 ## STOP reconciliation audit
 
 Java now uses the registry-owned reservation and exposes trusted unresolved receipt discovery and read-only host-proof reconciliation. Full Maven/production ActorRuntime remains a release gate. Focused private exact-source test passed 3/3: https://github.com/3fa-app-test/account-recovery-security/actions/runs/38183697132
+
+## Late STOP acknowledgment and receipt visibility audit (2026-10-11)
+
+Java/GraalVM now treats authoritative host acknowledgment after an
+independently reconciled **matching** STOP as idempotent: it neither
+re-executes the host effect nor reports a false supervisor failure.
+Any stale or different actor incarnation, supervisor group, CONTROL turn,
+or reservation nonce remains rejected. A reconciliation ticket is
+validated **before** its trusted host verifier is invoked, and the
+registry revalidates at commit. Nonce-bearing `ActorGroup.stopReceipt`
+inspection now requires host/supervisor context; ordinary actor
+observers may use value-only `childSnapshot`.
+
+Focused exact-source private verification:
+https://github.com/3fa-app-test/account-recovery-security/actions/runs/38184378316
+Three jobs passed, including 128 registry interleavings covering
+reconciliation vs late uncertainty and successful host acknowledgment,
+Java 25 restricted source CONTROL execution with a synthetic group
+adapter, and native C++20 ASan/UBSan source guard.
+
+These focused passes are NOT full Java Maven against the production
+ActorRuntime, not GraalVM native-image runtime verification, and not
+full LLVM async supervisor parity. Newly committed production Java
+JUnit integration and actor nonce-access tests remain unverified by
+the full Maven gate. Host-confirmation evidence is supplied by
+trusted integration; this is an in-memory ledger, not a durable
+cross-process journal. Keep the corresponding PRs in draft.
