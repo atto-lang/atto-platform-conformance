@@ -246,3 +246,37 @@ of either compiler tree. Do not promote any source-level guest-supervision
 capability or merge full stacks on the basis of this focused gate. Full
 JDK25 Maven, LLVM compiler CMake/CTest, Graal AOT/hybrid and independent
 review are still required.
+
+
+## Supervisor lifecycle contract hardening: next vertical slice
+
+The trusted host decision request now carries a monotonic CONTROL
+`turnGeneration` (native `turn_generation`), scoped to the supervising
+process identity. A lifecycle effect's prospective idempotency key is
+`(supervisorId, runtimeOrGroupId, turnGeneration)`, not the identity of the
+immutable failure payload, which can be reused in different turns.
+
+**This is a request identity, not a durable commit receipt.** The host still
+needs generation-checked authoritative STOP/RESTART/ESCALATE operations and
+explicit ambiguous-effect reconciliation. A sink that applies an effect and
+throws must never be reported as committed merely because it ran once.
+
+The opt-in Java STOP-only source lowering generates a restricted
+`self.stop(); return;` policy on an ActorGroup-owned CONTROL lane; a
+separate LLVM opt-in parser accepts the corresponding source subset.
+Normal compiler admission remains fail-closed in both implementations.
+Both backends still require a full authoritative guest lifecycle harness
+and explicit effect/capability checks before broad source-level execution.
+
+Native bridge registrations are now consumed for terminal failures and
+can also be explicitly retired after **normal physical finalization** using
+`retire_normally_finalized_child(child)` with an exact generation token.
+The owning runtime must establish that no terminal CONTROL event is pending
+before invoking that method. Wiring it into every clean actor exit remains
+a separate integration requirement; exposing the API alone is insufficient.
+
+Focused funded audit evidence:
+https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38177170932
+(exact runtime/bridge blob hashes, Java JDK 17 host audit, native C++20
+ASan/UBSan). That run does not prove full JVM/JDK25 Maven, complete LLVM
+CMake/CTest, native-image, or arbitrary guest `on_panic` execution.
