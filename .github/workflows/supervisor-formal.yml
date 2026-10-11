@@ -4,14 +4,27 @@ on:
     paths:
       - 'formal/supervision/**'
       - '.github/workflows/supervisor-formal.yml'
+      - 'bin/verify-supervisor-trace.mjs'
+      - 'test/supervisor-trace.test.mjs'
   pull_request:
     paths:
       - 'formal/supervision/**'
       - '.github/workflows/supervisor-formal.yml'
+      - 'bin/verify-supervisor-trace.mjs'
+      - 'test/supervisor-trace.test.mjs'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
+  supervisor-trace-oracle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Run bounded explorer and negative trace mutation gates
+        run: node --test test/supervisor-lifecycle.test.mjs test/supervisor-trace.test.mjs
   tlc-safety-and-mutants:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
