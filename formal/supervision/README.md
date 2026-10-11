@@ -82,3 +82,31 @@ The conformance workflow `.github/workflows/supervisor-formal.yml`
 runs these checks on formal-model changes; while source-organization
 Actions have no runner allocation, an exact-Git-blob private CI mirror
 provides executable evidence without exposing private source.
+
+
+## Bounded explorer and mutation regression
+
+`formal/supervision/explore.mjs` has a separate JavaScript exhaustive
+transition explorer; `test/supervisor-lifecycle.test.mjs` integrates it
+into the repository's `npm test` command. It checks phase coherence,
+per-supervisor CONTROL ownership, physical-cleanup ordering, generation
+fencing, receipt proof, replay, and shutdown quarantine.
+
+In-process execution of the exported explorer function in the current
+tool runtime yielded **536** states / **966** transitions for two
+children sharing one supervisor, and **2,704** states / **6,760**
+transitions for children in two independent supervisors, with no
+invariant violations. An unsafe host-effect replay yielded a seven-step
+`NoDuplicateEffects` counterexample.
+
+During initial exploration a stricter invariant flagged a
+RESTARTING child after supervisor close released CONTROL. The
+corrected contract treats that as a **quarantined** reservation, not an
+authorized late RESTART: `CommitRestart` now requires an open supervisor
+and the original CONTROL owner. Runtime implementations still need
+separate proof that shutdown cannot publish a new actor after closing.
+
+The funded TLC run documented above verifies its own exact checked
+Git blobs, not arbitrary future edits to this model, the JS test runner,
+or the Java/LLVM implementations. Always refresh exact-source evidence
+after changes.
