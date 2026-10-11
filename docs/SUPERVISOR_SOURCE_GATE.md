@@ -446,3 +446,24 @@ scaffold. The native test verified that **both** source STOP spellings reject
 untyped legacy notices. All source-org workflows checked for this audit
 failed with zero executed job steps, so they do not establish Maven or full
 LLVM test-suite results. Do not merge these drafts as full supervisor support.
+
+
+## Host-only logical child identity milestone
+
+See `docs/SUPERVISOR_CHILD_IDENTITY.md` and
+`fixtures/supervision/v1/logical-child-incarnation.json` for the new
+cross-backend host identity model and expected transition scenarios.
+
+Java and LLVM native drafts contain standalone synchronized child registries
+and tests for ACTIVE → FINALIZED → replacement/STOP, generation fencing,
+wrong-supervisor identities, duplicate replacement races, and registry
+recreation ABA. Java uses an opaque UUID child key; native uses a
+process-unique atomic child identifier scoped to its supervisor/runtime.
+
+These are **identity prerequisites, not runtime-integrated RESTART**.
+Existing failure notices still identify physical actor incarnations; the
+host registries are not yet attached to actor-group spawn/finalization or
+failure publication. A registry method is not proof of physical finalization
+or authoritative lifecycle commit. Do not expose source `f.child`, turn on
+general `on_panic`, or claim guest Java/LLVM parity on the strength of
+these host-only tests.
