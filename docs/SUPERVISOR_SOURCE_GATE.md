@@ -179,3 +179,41 @@ Additional normative host invariants:
 They are not full Maven/JDK25, complete LLVM CMake/CTest, Graal AOT/hybrid,
 source-compiled guest `on_panic` tests, or proof of source feature parity.
 The fail-closed source admission fixture matrix remains unchanged.
+
+
+## Implicit CONTROL turn versus guest locking (design clarification)
+
+`define supervisor` creates a runtime-owned, single-flight logical CONTROL
+lane. Its lifecycle hook does not need an explicit `using` clause or a
+guest-visible mutex. An exclusive logical turn may await: the physical
+carrier is released while the runtime retains the turn's continuation,
+generation and exclusive ownership until it resolves or is cancelled.
+
+Do not interpret `supervisor.control` as a capability granted by spelling
+a resource name in source, and do not invent a `self.control` lock field.
+Source lifecycle effects must instead be validated by the compiler against
+the supervisor's declared role and checked again against the runtime-owned
+execution context. Ordinary actors and arbitrary method calls cannot forge
+those capabilities. A future explicit lock syntax, if designed, must have
+real scoped lock semantics and may not silently alias this CONTROL lane.
+
+Current cross-backend opt-in slice: synchronous
+`on_panic(f: Failure): void { self.stop(); return; }`, with an implicit
+CONTROL lease. It is a restricted compiler-produced STOP decision plan,
+not general guest statement execution. `self.stop()` here means requesting
+the trusted host's STOP handling for the failure being processed; it must
+not mean stopping an arbitrary actor or unconditionally destroying the
+supervisor itself. The host sink remains responsible for actual effects.
+
+The intended richer form can use explicit lifecycle methods such as
+`self.restart(f.child)` and `self.escalate(f)` once typed Failure identities,
+policy checks and async lowering exist. Neither plain `return;` nor normal
+fallthrough may implicitly acknowledge a failure. Decisions require
+exactly-once generation-fenced commit semantics and must report ambiguous
+host effects as unknown rather than replay them.
+
+**Verification boundary:** the `stop-only-implicit-control.ores` fixture
+represents only the opt-in STOP subset. Normal Java/LLVM compilation of
+supervisor sources remains fail-closed. This design text does not assert
+full STOP, RESTART or ESCALATE execution parity or verified CI for the
+current head.
