@@ -21,6 +21,6 @@ test("minimum, maximum, negative and full-width signed values pass parser",()=>{
   const result=run(valid);
   assert.notEqual(result.status,0); // missing fixture paths, not a guest failure
   assert.doesNotMatch(result.stderr,/canonical signed 64-bit integer/,valid);
-  assert.match(result.stdout,/"ok":false/);
+  assert.match(result.stderr,/"ok":false/);
  }
 });
