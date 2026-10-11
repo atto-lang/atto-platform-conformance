@@ -27,7 +27,9 @@
       "input": [
         "register(actor-A)",
         "finalize(actor-A,1)",
-        "replace(actor-A,1,actor-B)"
+        "reserve-restart(actor-A,1)",
+        "spawn-and-admit(actor-B)",
+        "commit-reservation(actor-B)"
       ],
       "expected": {
         "sameLogicalChildId": true,
@@ -61,12 +63,12 @@
       "input": [
         "register(actor-A)",
         "finalize(actor-A,1)",
-        "race-replace(actor-A,1,actor-B,actor-C)"
+        "race-begin-restart(actor-A,1)"
       ],
       "expected": {
-        "accepted": 1,
-        "rejected": 1,
-        "logicalIncarnation": 2
+        "acceptedReservations": 1,
+        "rejectedReservations": 1,
+        "phase": "RESTARTING"
       }
     },
     {
@@ -93,6 +95,79 @@
         "distinctLogicalIds": true,
         "staleKey": "reject"
       }
+    },
+    {
+      "id": "no-stop-during-restart",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "reserve-restart(actor-A,1)",
+        "stop(actor-A,1)"
+      ],
+      "expected": "reject-active-reservation"
+    },
+    {
+      "id": "abort-and-retry",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "reserve-restart(A) as permit1",
+        "abort(permit1)",
+        "reserve-restart(A) as permit2",
+        "commit(permit1,actor-B)"
+      ],
+      "expected": "reject-stale-permit"
+    },
+    {
+      "id": "failed-spawn-rollback",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "reserve-restart(A)",
+        "spawn-fails",
+        "abort-reservation"
+      ],
+      "expected": {
+        "phase": "FINALIZED",
+        "logicalIncarnation": 1
+      }
+    },
+    {
+      "id": "actor-aba",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "reserve",
+        "commit(actor-B)",
+        "finalize(actor-B,2)",
+        "reserve",
+        "commit(actor-A)"
+      ],
+      "expected": "reject-reused-physical-actor"
+    },
+    {
+      "id": "native-slot-high-water",
+      "input": [
+        "register(native-slot-2-generation-5)",
+        "finalize",
+        "register(native-slot-2-generation-5)"
+      ],
+      "expected": "reject-reused-scheduler-generation"
+    },
+    {
+      "id": "native-live-slot-collision",
+      "input": [
+        "register(native-slot-2-generation-5)",
+        "register(native-slot-2-generation-6)"
+      ],
+      "expected": "reject-concurrent-slot-incarnation"
     }
+  ],
+  "description": "Host-only lifecycle protocol reserves the finalized child generation before any spawn, with abort/commit fencing",
+  "phases": [
+    "ACTIVE",
+    "FINALIZED",
+    "RESTARTING",
+    "STOPPED"
   ]
 }
