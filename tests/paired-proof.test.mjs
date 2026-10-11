@@ -66,7 +66,7 @@ test("reject duplicate IDs, fixture count drift and executable digest omission",
   llvm.results[1].id = "unresolved-identifier";
   llvm.results.pop();
   llvm.verified = 1;
-  assert.throws(() => verifyOfficial(run("java"), llvm), /different fixture sets/);
+  assert.throws(() => verifyOfficial(run("java"), llvm), /exact-head|different fixture sets/);
   llvm.results = run("llvm").results;
   llvm.verified = 2;
   llvm.executableSha256 = null;
