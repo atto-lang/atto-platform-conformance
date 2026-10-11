@@ -42,6 +42,7 @@
     "nativeBridge": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38172014799",
     "javaParser": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38171659481",
     "llvmParser": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38171838563",
-    "javaDecisionFence": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38172134367"
+    "javaDecisionFence": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38172134367",
+    "sourceStopOnlyJavaAndNative": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38177256674"
   }
 }
