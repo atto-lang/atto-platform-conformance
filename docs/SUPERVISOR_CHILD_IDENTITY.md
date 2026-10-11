@@ -176,3 +176,38 @@ This does not implement `self.restart(f.child)`, a general `Failure`
 object evaluator, or general async `on_panic` code. The newer source
 fixtures and runtime tests must be executed at their **exact final**
 Git SHAs; prior focused CI only covers earlier revisions.
+
+
+## Audit hardening: exclusive STOP lease (2026-10-11)
+
+A `FINALIZED` check is not sufficient to protect a lifecycle effect.
+Between that check and a host STOP callback, a concurrent trusted RESTART
+could reserve the same logical child generation. Both Java and native host
+registries now admit a generation-scoped **STOPPING** reservation before
+performing external effects. STOP and RESTART therefore compete atomically
+on the finalized generation, and only one may win.
+
+The Java source STOP-only synchronous and restricted awaited installers
+claim STOP before entering the host callback/CompletionStage; the native
+`NativeSupervisorPanicBridge.reserve_finalized_stop(...)` performs the
+equivalent host reservation. Commit requires the same child, incarnation
+and reservation identity/CONTROL turn. No host callback executes while
+holding the registry mutex. A STOP callback that throws, a failed or
+ambiguous asynchronous acknowledgment, or shutdown during an await leaves
+the child **STOPPING**, not `FINALIZED` or `STOPPED`.
+
+STOPPING is an explicit unresolved state: the runtime must not retry the
+effect, restart the child, or silently retire its reservation. Future
+authoritative lifecycle reconciliation must establish the external outcome
+before any transition. This work does not implement such reconciliation
+or durable distributed effect receipts. It also does not enable general
+guest supervisor execution, RESTART, or ESCALATE.
+
+The Java worker-transfer path now retires its logical registry binding
+before clearing ownership so a failed detachment does not silently
+orphan the old supervisor's authority. Native PANIC-specific STOP
+acknowledgment rejects forged cancellation and normal-stop envelope kinds.
+
+**Verification boundary:** new STOPPING race and negative tests were added
+to both drafts, but source workflows must run at their exact new Git SHAs
+and pass before these changes can be treated as release-ready.
