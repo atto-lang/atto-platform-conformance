@@ -29,8 +29,8 @@
       "requiresTrustedLogicalChildBinding": true,
       "guestAsyncAndLifecyclePolicy": "unimplemented",
       "sourceGuestExecution": "restricted-host-control-stop-only",
-      "llvmVerifiedStopOptIn": "accept-with-trusted-finalized-child-registry",
-      "llvmLegacyHostOnlyStop": "unverified-registry-binding"
+      "llvmVerifiedStopOptIn": "accept-only-with-live-finalized-owner-matching-registry",
+      "llvmLegacyHostOnlyStop": "reject-unverified-logical-child-target"
     },
     {
       "id": "stop-typed-failure",
@@ -94,5 +94,11 @@
     "sourceAsyncStopJava25": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38179750225",
     "sourceAsyncStopJava25AndNativeFailClosed": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38179985398",
     "sourceStopRegistryPreflightJava25NativeASan": "https://github.com/3fa-app-test/account-recovery-security/actions/runs/38181090633"
+  },
+  "hostStopAudit": {
+    "nativeSourceVerifiedStopReservation": "reserve-STOPPING-before-host-effect",
+    "nativeSourceUnknownHostEffect": "leave-STOPPING-and-reject-RESTART",
+    "nativeBridgeRegistryOwnership": "same-shared-registry-instance-required",
+    "nativeSourceLegacyChildProjection": "fail-closed"
   }
 }
