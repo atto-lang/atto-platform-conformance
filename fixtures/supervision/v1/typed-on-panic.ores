@@ -1,0 +1,11 @@
+// Source ABI contract only: not yet executable on Java/Graal or LLVM.
+// The supervisor is a distinct process, not a class or implicit actor method.
+define supervisor RootSupervisor as
+  @Implements
+  pub async on_panic(f: Failure): void {
+    return;
+  }
+  tear_down(): void {
+    return;
+  }
+end
