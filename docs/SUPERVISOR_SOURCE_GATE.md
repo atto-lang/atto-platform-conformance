@@ -606,3 +606,43 @@ has full arbitrary guest-defined `on_panic`, `defer/recover` execution
 context lowering, durable effects, or complete compiler-suite verification.
 The tested Java actor-group adapter is synthetic; full production
 `ActorRuntime.java` and Maven/GraalVM integrations remain release gates.
+
+
+## Follow-up audit: native verified STOP transaction and shared owner registry
+
+The restricted native `install_source_supervisor_stop_verified` now uses
+`begin_stop` before invoking its synchronous trusted host-effect callback,
+and `commit_stop` only after that callback returns successfully. The
+`STOPPING` reservation excludes concurrent RESTART/STOP claims. If the
+host callback throws or the outcome is ambiguous, the child remains
+`STOPPING`: no automatic rollback, retry, or successful commit is claimed.
+
+The native typed panic bridge may now be constructed with the **same**
+`shared_ptr<SupervisorChildRegistry>` supplied to the verified source
+installer. The bridge rejects a registry whose supervisor ID or runtime
+domain differs from its parent process. Existing bridge constructors
+without an explicit shared registry continue to use a host-owned
+registry; they must **not** be assumed to share the identity authority
+of a separately constructed source installer.
+
+The legacy unverified native STOP installer now rejects the checked
+guest `self.stop(f.child)` projection. A nonzero logical-child ID in
+an arbitrary envelope is insufficient proof of registry ownership or
+physical finalization. The verified source-installer regression now
+uses the actual `f.child` spelling, checks the STOPPING phase from
+inside the host callback, checks competing RESTART rejection, and
+asserts that a throwing host callback leaves the child quarantined.
+
+The private proof branch
+`gha-indie-worker/gha-indie-worker-docs:test/supervisor-stop-reservation-20261011`
+contains only a **partial** mirror of source revision
+`95200874c8bff7f59ce7cea7d9371a1e2901c569`; two files'
+exact Git blob SHAs were verified. Further source-file copies were
+blocked by safety checks. That branch cannot validate this newer
+implementation, and must not be reported as a passing exact-head CI run.
+
+**Outstanding:** full exact-head native CMake/CTest, ASan/UBSan, and
+end-to-end bridge+verified-source installer execution; complete
+Java Maven/JDK25 and GraalVM coverage; durable receipts and a trusted
+reconciliation policy for unresolved STOPPING. These changes do not
+enable general guest supervisor code, RESTART, ESCALATE, or LLVM await.
