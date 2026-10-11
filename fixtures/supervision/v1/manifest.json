@@ -4,6 +4,20 @@
   "description": "Shared source fixtures; explicitly do not claim guest runtime hook execution.",
   "cases": [
     {
+      "id": "async-await-stop",
+      "file": "async-await-stop.ores",
+      "javaParser": "accept",
+      "javaCompiler": "reject-unlowered-control",
+      "llvmCompiler": "reject-unlowered-control",
+      "javaStopOnlyOptIn": "accept-await-host-STOP-ack",
+      "llvmStopOnlyOptIn": "reject-native-await-unimplemented",
+      "hostAcknowledgmentRequired": true,
+      "failureBinder": "verified-current-Failure-only",
+      "sourceGuestExecution": "restricted-compiler-owned-Java-host-CONTROL-stop",
+      "generalGuestExecution": "unimplemented",
+      "deferRecoverPostAwait": "unimplemented"
+    },
+    {
       "id": "stop-logical-child",
       "file": "stop-logical-child.ores",
       "javaParser": "accept",
@@ -70,6 +84,7 @@
     "llvmParser": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38171838563",
     "javaDecisionFence": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38172134367",
     "sourceStopOnlyJavaAndNative": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38177421772",
-    "sourceStopOnlyHardening": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38178052956"
+    "sourceStopOnlyHardening": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38178052956",
+    "sourceAsyncStopJava25": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38179750225"
   }
 }
