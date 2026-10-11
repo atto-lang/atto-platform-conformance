@@ -12,7 +12,7 @@ trap 'rm -rf "$tmp"' EXIT
 "$ORES_LLVM_COMPILER" "$1" > "$tmp/guest.ll"
 # Change the guest entrypoint symbol, so the C probe can print full signed i64.
 # Must match a definition or declaration, not just a comment.
-grep -Eq '(^define |^declare ).*@main\\(' "$tmp/guest.ll" || { echo "no emitted native main" >&2; exit 3; }
+grep -Eq '(^define |^declare ).*@main\(' "$tmp/guest.ll" || { echo "no emitted native main" >&2; exit 3; }
 sed 's/@main(/@oreslang_guest_main(/g' "$tmp/guest.ll" > "$tmp/renamed.ll"
 "$ORES_CLANG" -x ir -c "$tmp/renamed.ll" -o "$tmp/guest.o"
 "$ORES_CLANG" -std=c11 -Wall -Wextra -Werror -c "$ORES_CONFORMANCE_ROOT/probes/llvm-value-probe.c" -o "$tmp/probe.o"
