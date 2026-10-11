@@ -18,6 +18,18 @@
       "file": "arithmetic-precedence.ores",
       "type": "i64",
       "expect": "28"
+    },
+    {
+      "id": "signed-negative",
+      "file": "signed-negative.ores",
+      "type": "i64",
+      "expect": "-7"
+    },
+    {
+      "id": "large-i64",
+      "file": "large-i64.ores",
+      "type": "i64",
+      "expect": "65539"
     }
   ]
 }
