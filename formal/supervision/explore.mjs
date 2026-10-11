@@ -1,10 +1,17 @@
 export function explore({owners=[0,0],supervisors=1,maxGeneration=2,maxTurns=2,mutant=false,maxStates=250000}={}) {
+  if (!Number.isInteger(supervisors)||supervisors<1
+      || !Number.isInteger(maxGeneration)||maxGeneration<1
+      || !Number.isInteger(maxTurns)||maxTurns<1
+      || !Number.isInteger(maxStates)||maxStates<1
+      || typeof mutant!=="boolean") throw Error("invalid finite exploration bounds");
+  if (!Array.isArray(owners)) throw Error("invalid owner assignment");
   const N=owners.length;
   if (!N || owners.some(x=>!Number.isInteger(x)||x<0||x>=supervisors)) throw Error("invalid owner assignment");
   const init={phase:Array(N).fill("Active"),gen:Array(N).fill(1),cleanup:Array(N).fill(false),
     lease:Array(N).fill(0),receipt:Array(N).fill("None"),calls:Array(N).fill(0),
     applied:Array(N).fill(false),proof:Array(N).fill(false),committed:Array(N).fill(0),
-    turn:Array(N).fill(0),control:Array(supervisors).fill(-1),
+    turn:Array(N).fill(0),replacement:Array(N).fill("None"),
+    control:Array(supervisors).fill(-1),
     closed:Array(supervisors).fill(false),nextTurn:Array(supervisors).fill(0)};
   const invalid=s=>{
     const errors=[];
@@ -22,6 +29,9 @@ export function explore({owners=[0,0],supervisors=1,maxGeneration=2,maxTurns=2,m
       if(s.proof[c]&&!s.applied[c])errors.push("ForgedHostProof");
       if(r==="Applied"&&!s.applied[c])errors.push("UnappliedHostReceipt");
       if(p==="Restarting"&&!s.closed[k]&&s.control[k]!==c)errors.push("RestartOutsideLiveControl");
+      if(s.replacement[c]!=="None"&&p!=="Restarting")errors.push("NoOrphanReplacement");
+      if(!["None","Spawned","Admitted","Cleaned"].includes(s.replacement[c]))
+        errors.push("InvalidReplacementLifecycle");
       if(p==="Stopping"&&s.turn[c]===0)errors.push("STOPWithoutControlTurn");
     }
     for(let k=0;k<supervisors;k++){
@@ -33,12 +43,15 @@ export function explore({owners=[0,0],supervisors=1,maxGeneration=2,maxTurns=2,m
   };
   const states=[init],parents=[-1],labels=["Init"],seen=new Set([JSON.stringify(init)]);
   let transitions=0;
+  const actions={};
   for(let q=0;q<states.length;q++){
     const s=states[q],errors=invalid(s);
     if(errors.length){const trace=[];for(let i=q;i>=0;i=parents[i])trace.push(labels[i]);
-      return {ok:false,states:states.length,transitions,violations:errors,trace:trace.reverse(),owners,supervisors,maxGeneration,maxTurns};}
+      return {ok:false,states:states.length,transitions,violations:errors,trace:trace.reverse(),actions,owners,supervisors,maxGeneration,maxTurns};}
     const emit=(label,update)=>{
       const next=JSON.parse(JSON.stringify(s));update(next);transitions++;
+      const action=label.split("(")[0];
+      actions[action]=(actions[action]||0)+1;
       const key=JSON.stringify(next);
       if(!seen.has(key)){seen.add(key);states.push(next);parents.push(q);labels.push(label);
         if(states.length>maxStates)throw Error("MODEL_BOUND_EXCEEDED:"+states.length);}
@@ -54,10 +67,18 @@ export function explore({owners=[0,0],supervisors=1,maxGeneration=2,maxTurns=2,m
         emit(`ReserveRestart(${c})`,x=>{x.phase[c]="Restarting";x.lease[c]=x.gen[c];});
       }
       if(p==="Restarting"){
-        if(s.control[k]===c)emit(`AbortRestart(${c})`,x=>{x.phase[c]="Finalized";x.lease[c]=0;});
-        if(s.control[k]===c&&s.gen[c]<maxGeneration&&!s.closed[k])
+        const rstate=s.replacement[c];
+        if(rstate==="None"&&s.control[k]===c&&!s.closed[k])
+          emit(`SpawnReplacement(${c})`,x=>x.replacement[c]="Spawned");
+        if(rstate==="Spawned"&&s.control[k]===c&&!s.closed[k])
+          emit(`AdmitReplacement(${c})`,x=>x.replacement[c]="Admitted");
+        if(["Spawned","Admitted"].includes(rstate))
+          emit(`CleanupReplacement(${c})`,x=>x.replacement[c]="Cleaned");
+        if(["None","Cleaned"].includes(rstate))
+          emit(`AbortRestart(${c})`,x=>{x.phase[c]="Finalized";x.lease[c]=0;x.replacement[c]="None";});
+        if(rstate==="Admitted"&&s.control[k]===c&&s.gen[c]<maxGeneration&&!s.closed[k])
           emit(`CommitRestart(${c})`,x=>{x.phase[c]="Active";x.gen[c]++;x.cleanup[c]=false;x.lease[c]=0;
-            x.calls[c]=0;x.applied[c]=false;x.proof[c]=false;x.turn[c]=0;x.control[k]=-1;});
+            x.replacement[c]="None";x.calls[c]=0;x.applied[c]=false;x.proof[c]=false;x.turn[c]=0;x.control[k]=-1;});
       }
       if(p==="Stopping"){
         if(r==="Pending"&&s.calls[c]===0&&s.control[k]===c&&!s.closed[k])
@@ -80,5 +101,5 @@ export function explore({owners=[0,0],supervisors=1,maxGeneration=2,maxTurns=2,m
     for(let k=0;k<supervisors;k++)if(!s.closed[k])
       emit(`CloseSupervisor(${k})`,x=>{x.closed[k]=true;x.control[k]=-1;});
   }
-  return {ok:true,states:states.length,transitions,owners,supervisors,maxGeneration,maxTurns};
+  return {ok:true,states:states.length,transitions,actions,owners,supervisors,maxGeneration,maxTurns};
 }
