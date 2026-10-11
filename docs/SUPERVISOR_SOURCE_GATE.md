@@ -99,3 +99,30 @@ not full compiler conformance. No change to the existing source guest
 these tests. Full Java JDK25 Maven and native LLVM CMake/CTest, AOT/hybrid,
 generation-fenced guest CONTROL lowering, resource finalization and
 independent review remain mandatory.
+
+
+## Terminal CONTROL notification lane contract (audit extension)
+
+In addition to `SupervisorProcess` lifecycle decisions, the separate
+`SupervisorFailureControl` notification queue is a bounded owner of immutable
+failure envelopes. A terminal notification-handler exception or dispatcher
+rejection must:
+
+- account for **all** queued notices as undelivered exactly once, including
+  the notice whose handler threw;
+- release references to those queued payloads immediately rather than retain
+  permanently undeliverable metadata;
+- never replay the throwing handler or execute CONTROL inline inside the
+  publishing actor's stack or admission lock; and
+- deny later deliveries while incrementing their explicit loss counters.
+
+The Java and native source PRs contain corresponding handler-exception and
+synchronous/inline-adapter regression tests. Those tests were **added after**
+the previously linked funded host verification runs and must be executed
+again against their exact new source Git blob hashes before marking this
+extension verified.
+
+An overflowed queue currently records undelivered notices, but does not by
+itself stop the entire actor family. Higher-level escalation, restart and
+root-failure policies for lost CONTROL traffic remain **release blockers**,
+as do full guest-defined `on_panic` execution and Java/LLVM parity.
