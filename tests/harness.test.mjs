@@ -4,12 +4,12 @@ import {spawnSync} from "node:child_process";
 import {runSuite,validateCommand,loadManifest} from "../src/harness.mjs";
 const sha="012345678901234567890123456789abcdefabcd";
 const cmd=[process.execPath,new URL("./fake-checker.mjs",import.meta.url).pathname,"{file}"];
-test("manifest parses exact fixtures",async()=>{const m=await loadManifest();assert.equal(m.cases.length,5)});
+test("manifest parses exact fixtures",async()=>{const m=await loadManifest();assert.equal(m.cases.length,7)});
 test("unconfigured is explicit and never counted as verified",async()=>{
  const r=await runSuite({backend:"java"});
  assert.equal(r.configured,false);
  assert.equal(r.verified,0);
- assert.equal(r.skipped,5);
+ assert.equal(r.skipped,7);
  assert.ok(r.results.every(x=>x.status==="UNCONFIGURED"));
 });
 test("required unconfigured suite exits with non-success state",async()=>{
@@ -22,17 +22,17 @@ test("required unconfigured suite exits with non-success state",async()=>{
 test("fake checker only exercises harness accept and reject handling",async()=>{
  const r=await runSuite({backend:"java",argv:cmd,sourceSha:sha});
  assert.equal(r.configured,true);
- assert.equal(r.verified,5);
+ assert.equal(r.verified,7);
  assert.equal(r.failed,0);
  assert.ok(r.results.every(x=>x.status==="VERIFIED"));
 });
 test("same fixtures can be selected for LLVM, without claiming LLVM executed",async()=>{
  const r=await runSuite({backend:"llvm",argv:cmd,sourceSha:sha});
- assert.equal(r.verified,5);
+ assert.equal(r.verified,7);
 });
 test("missing executable is not mistaken for valid reject",async()=>{
  const r=await runSuite({backend:"llvm",argv:["/no/such/executable/oreslang","{file}"],sourceSha:sha});
- assert.equal(r.failed,5);
+ assert.equal(r.failed,7);
  assert.ok(r.results.every(x=>x.status==="SPAWN_ERROR"));
 });
 test("no compiler revision or unsafe argument template fails closed",async()=>{
@@ -41,11 +41,11 @@ test("no compiler revision or unsafe argument template fails closed",async()=>{
 });
 test("nonzero exit without expected error is never accepted",async()=>{
  const r=await runSuite({backend:"java",argv:cmd,sourceSha:sha,spawn:()=>({status:2,stdout:"",stderr:"disk failure"})});
- assert.equal(r.failed,5);
+ assert.equal(r.failed,7);
 });
 test("timeout and signal are never green",async()=>{
  const r=await runSuite({backend:"llvm",argv:cmd,sourceSha:sha,spawn:()=>({status:null,signal:null,error:{code:"ETIMEDOUT"}})});
- assert.equal(r.failed,5);
+ assert.equal(r.failed,7);
  assert.ok(r.results.every(x=>x.status==="TIMEOUT"));
 });
 
@@ -59,7 +59,7 @@ test("verified harness results retain executable and fixture SHA-256 evidence",a
 test("crash text quoting the symbol is not a real compile-time diagnostic",async()=>{
  const r=await runSuite({backend:"llvm",argv:cmd,sourceSha:sha,spawn:()=>({status:1,stdout:"",stderr:"crash during compilation: nonexistent_symbol"})});
  assert.equal(r.verified,0);
- assert.equal(r.failed,5);
+ assert.equal(r.failed,7);
 });
 test("bad timeouts and PATH-dependent commands are rejected",async()=>{
  for(const timeoutMs of [0,99,120001,NaN,Infinity])await assert.rejects(runSuite({backend:"java",timeoutMs}),/timeoutMs/);
