@@ -762,3 +762,16 @@ JUnit integration and actor nonce-access tests remain unverified by
 the full Maven gate. Host-confirmation evidence is supplied by
 trusted integration; this is an in-memory ledger, not a durable
 cross-process journal. Keep the corresponding PRs in draft.
+
+## Bounded machine-checked supervisor safety
+
+TLC checked `formal/supervision/SupervisorStop.tla` (3,698 distinct
+states) and `SupervisorLifecycle.tla` (7,552 states). Both passed, and
+four negative mutations produced the expected counterexamples.
+[Evidence: private TLC run 38185363925](https://github.com/3fa-app-test/account-recovery-security/actions/runs/38185363925).
+The SHA-256-pinned runner is `formal/supervision/check-tlc.sh`.
+
+This proves safety of the bounded formal transitions, **not**
+implementation-level Java/LLVM refinement, cross-process durability
+or liveness without host evidence/fairness. Full production Maven,
+GraalVM native execution and native LLVM parity remain release gates.
