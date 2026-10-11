@@ -52,7 +52,7 @@ test("reject forged stdout, signal, exit code and misplaced source revision",asy
  assert.throws(()=>verifyTypedRuntimeReports(java,llvm,cases,pins,buildReports),/incomplete/);
 });
 test("runtime crashes, timeouts and truncated process results fail closed",async()=>{
- const good=()=>({status:0,stdout:"42\\n",stderr:"",signal:null});
+ const good=()=>({status:0,stdout:String.fromCharCode(52,50,10),stderr:"",signal:null});
  const crash=await runTypedSuite({backend:"java",argv,sourceSha:pins.backends.java.sourceCommit,spawn:()=>({status:null,signal:"SIGSEGV",stdout:"",stderr:""})});
  assert.equal(crash.failed,3);assert.ok(crash.results.every(x=>x.status==="SIGNALED"));
  const timeout=await runTypedSuite({backend:"llvm",argv,sourceSha:pins.backends.llvm.sourceCommit,spawn:()=>({status:null,signal:null,error:{code:"ETIMEDOUT"}})});
