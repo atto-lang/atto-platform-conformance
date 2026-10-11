@@ -47,6 +47,24 @@
         "java",
         "llvm"
       ]
+    },
+    {
+      "id": "signed-negative",
+      "file": "signed-negative.ores",
+      "expect": "accept",
+      "backends": [
+        "java",
+        "llvm"
+      ]
+    },
+    {
+      "id": "large-i64",
+      "file": "large-i64.ores",
+      "expect": "accept",
+      "backends": [
+        "java",
+        "llvm"
+      ]
     }
   ]
 }
