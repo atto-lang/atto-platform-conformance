@@ -731,3 +731,7 @@ execute and pass, including native sanitizer and full CMake/CTest coverage.
 General LLVM guest async `await self.stop(f)`, arbitrary `on_panic`
 bodies, runtime RESTART, ESCALATE, and full execution-context
 `defer/recover` remain unavailable.
+
+## STOP reconciliation audit
+
+Java now uses the registry-owned reservation and exposes trusted unresolved receipt discovery and read-only host-proof reconciliation. Full Maven/production ActorRuntime remains a release gate. Focused private exact-source test passed 3/3: https://github.com/3fa-app-test/account-recovery-security/actions/runs/38183697132
