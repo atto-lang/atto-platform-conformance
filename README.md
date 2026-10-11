@@ -41,3 +41,11 @@ See https://ores-truffle-oreslang.github.io/logs/2/
 `src/paired-proof.mjs` provides `verifyPairedSourceChecks(javaRun, llvmRun)`. It requires both configured backends to report complete verified results for the **same fixture IDs and SHA-256 contents**, each with an immutable declared source commit and hashed executable. It rejects partial, stale, unconfigured, or differing fixture sets.
 
 The result is intentionally named `PAIRED_SOURCE_CHECKS_PASS` and explicitly sets `certifiesRuntimeParity: false` and `certifiesCompilerBuildProvenance: false`. Unit tests use artificial backend results; their green status is only evidence that the checker itself fails closed. Before release, supply real pinned Java/Graal and LLVM build outputs, independently attest the compiler-source relationship, then execute actual runtime-output, actor scheduling, ownership, and resource-lifecycle parity fixtures.
+
+The paired gate also requires the committed manifest and the independently hashed fixture bytes. Two otherwise matching but incomplete reports are rejected, even if both backends report success. With real configured compiler runs, save their output as `java-report.json` and `llvm-report.json`, then run:
+
+~~~sh
+node bin/verify-paired.mjs java-report.json llvm-report.json
+~~~
+
+The CLI refuses unshared backend-specific fixture manifests for now, as well as missing, skipped, stale or mismatched reports. **No report file from a fake checker qualifies as compiler evidence.** A passing paired gate still does not establish runtime parity, binary-to-source provenance, or deployment readiness.
