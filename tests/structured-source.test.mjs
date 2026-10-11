@@ -20,11 +20,17 @@ test("explicit verified/pending backend matrix",()=>{
   const graalIsVerified=c.id==="class-shared-borrow"||
    c.id==="class-overlapping-loans";
   if(c.id==="class-explicit-mutable-borrow") {
-   // No backend has executed the exact candidate bytes yet. The individual
-   // compiler/bridge PRs may pass other fixtures but cannot prove this one.
-   assert.deepEqual(c.confirmedBackends,[]);
-   assert.deepEqual(c.pendingBackends,["llvm","wasm","graal"]);
+   // Exact source bytes were compiled by real pinned LLVM C++ compiler
+   // components and executed as wasm32 in an isolated Worker. Graal remains
+   // pending and no entire latest LLVM repository tree rebuild is claimed.
+   assert.deepEqual(c.confirmedBackends,["llvm","wasm"]);
+   assert.deepEqual(c.pendingBackends,["graal"]);
    assert.equal(c.sourceGitBlobSha1,"a7c28cc10c8ed4a4164984fe1d8f875e616e2eda");
+   assert.equal(manifest.explicitMutableCompilerCoreSha,
+    "bb33404d2f9878e0581bc5df29eb949ab5c22095");
+   assert.match(manifest.explicitMutableEvidence,
+    /^https:\/\/github\.com\/akrion-sim\/akrion-sim-e2e\/actions\/runs\/38169346910$/);
+   assert.match(manifest.explicitMutableCompilerScope,/not a mirror of the entire current LLVM repository tree/);
   }else{
    assert.deepEqual(c.confirmedBackends,
     graalIsVerified?["llvm","wasm","graal"]:["llvm","wasm"]);
