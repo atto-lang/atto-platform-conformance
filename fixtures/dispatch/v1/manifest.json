@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "scope": "scalar-ordered-match-switch-v1",
+  "sourceOrigin": {
+    "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+    "revision": "6274f0e9c581d069aaa263e82e21b5de2de1e836"
+  },
+  "contract": {
+    "match": "source-ordered; trailing wildcard terminal; reject unreachable later arm",
+    "switch": "designated default remains fallback independent of position",
+    "valueArms": "arm-local return produces the selected dispatch value"
+  },
+  "cases": [
+    {
+      "id": "ordered-match-hit",
+      "file": "ordered-match-hit.ores",
+      "sourceGitBlobSha1": "dc799f2791127948853e46c77c8eff35c25c5fb8",
+      "expect": "accept",
+      "expectedI64": "42",
+      "llvm": {
+        "status": "verified-source-subset",
+        "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38176388764"
+      },
+      "java": {
+        "status": "needs-exact-fixture-execution"
+      }
+    },
+    {
+      "id": "ordered-match-wildcard-fallback",
+      "file": "ordered-match-wildcard-fallback.ores",
+      "sourceGitBlobSha1": "297fd3c1b17374883b6c1cc4c13dfe31926cb0d0",
+      "expect": "accept",
+      "expectedI64": "42",
+      "llvm": {
+        "status": "verified-source-subset",
+        "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38176388764"
+      },
+      "java": {
+        "status": "needs-exact-fixture-execution"
+      }
+    },
+    {
+      "id": "reject-match-wildcard-before-concrete",
+      "file": "reject-match-wildcard-before-concrete.ores",
+      "sourceGitBlobSha1": "e0ea232bbe7849abda362b801d9e6db9a4a1e5c7",
+      "expect": "reject",
+      "llvm": {
+        "status": "verified-source-subset",
+        "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38176388764"
+      },
+      "java": {
+        "status": "needs-exact-fixture-execution"
+      }
+    },
+    {
+      "id": "reject-match-bare-default",
+      "file": "reject-match-bare-default.ores",
+      "sourceGitBlobSha1": "d662873b98a0374e697daef214fb177320e9c96c",
+      "expect": "reject",
+      "llvm": {
+        "status": "verified-source-subset",
+        "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38176388764"
+      },
+      "java": {
+        "status": "needs-exact-fixture-execution"
+      }
+    },
+    {
+      "id": "reject-match-on-default",
+      "file": "reject-match-on-default.ores",
+      "sourceGitBlobSha1": "4b3db122c45434728d607073f162a6d1f0c9fb5c",
+      "expect": "reject",
+      "llvm": {
+        "status": "verified-source-subset",
+        "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38176388764"
+      },
+      "java": {
+        "status": "needs-exact-fixture-execution"
+      }
+    },
+    {
+      "id": "switch-default-before-cases",
+      "file": "switch-default-before-cases.ores",
+      "sourceGitBlobSha1": "619918b3a99157c366fe00fc2b803880e871ebaa",
+      "expect": "accept",
+      "expectedI64": "42",
+      "llvm": {
+        "status": "verified-source-subset",
+        "evidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38176388764"
+      },
+      "java": {
+        "status": "needs-exact-fixture-execution"
+      }
+    }
+  ],
+  "releaseGate": "Exact Java and LLVM native executed fixtures with the same sourceGitBlobSha1, pinned compiler source and result/diagnostic parity; source-code-only evidence is insufficient."
+}
