@@ -1,9 +1,10 @@
-export function explore({owners=[0,0],supervisors=1,maxGeneration=2,maxTurns=2,mutant=false,unsafeAbortMutant=false,maxStates=250000}={}) {
+export function explore({owners=[0,0],supervisors=1,maxGeneration=2,maxTurns=2,mutant=false,unsafeAbortMutant=false,unsafeCommitMutant=false,maxStates=250000}={}) {
   if (!Number.isInteger(supervisors)||supervisors<1
       || !Number.isInteger(maxGeneration)||maxGeneration<1
       || !Number.isInteger(maxTurns)||maxTurns<1
       || !Number.isInteger(maxStates)||maxStates<1
-      || typeof mutant!=="boolean"||typeof unsafeAbortMutant!=="boolean")
+      || typeof mutant!=="boolean"||typeof unsafeAbortMutant!=="boolean"
+      ||typeof unsafeCommitMutant!=="boolean")
     throw Error("invalid finite exploration bounds");
   if (!Array.isArray(owners)) throw Error("invalid owner assignment");
   const N=owners.length;
@@ -11,7 +12,7 @@ export function explore({owners=[0,0],supervisors=1,maxGeneration=2,maxTurns=2,m
   const init={phase:Array(N).fill("Active"),gen:Array(N).fill(1),cleanup:Array(N).fill(false),
     lease:Array(N).fill(0),receipt:Array(N).fill("None"),calls:Array(N).fill(0),
     applied:Array(N).fill(false),proof:Array(N).fill(false),committed:Array(N).fill(0),
-    turn:Array(N).fill(0),replacement:Array(N).fill("None"),
+    turn:Array(N).fill(0),replacement:Array(N).fill("None"),readyGen:Array(N).fill(0),
     control:Array(supervisors).fill(-1),
     closed:Array(supervisors).fill(false),nextTurn:Array(supervisors).fill(0)};
   const invalid=s=>{
@@ -31,6 +32,7 @@ export function explore({owners=[0,0],supervisors=1,maxGeneration=2,maxTurns=2,m
       if(r==="Applied"&&!s.applied[c])errors.push("UnappliedHostReceipt");
       if(p==="Restarting"&&!s.closed[k]&&s.control[k]!==c)errors.push("RestartOutsideLiveControl");
       if(s.replacement[c]!=="None"&&p!=="Restarting")errors.push("NoOrphanReplacement");
+      if(p==="Active"&&g>1&&s.readyGen[c]!==g)errors.push("NoUnreadyActiveIncarnation");
       if(!["None","Spawned","Admitted","Cleaned"].includes(s.replacement[c]))
         errors.push("InvalidReplacementLifecycle");
       if(p==="Stopping"&&s.turn[c]===0)errors.push("STOPWithoutControlTurn");
@@ -65,14 +67,15 @@ export function explore({owners=[0,0],supervisors=1,maxGeneration=2,maxTurns=2,m
         emit(`AcquireControl(${c})`,x=>{x.control[k]=c;x.nextTurn[k]++;x.turn[c]=x.nextTurn[k];});
       if(p==="Finalized"&&s.control[k]===c&&r==="None"){
         emit(`ReserveStop(${c})`,x=>{x.phase[c]="Stopping";x.receipt[c]="Pending";x.lease[c]=x.gen[c];});
-        emit(`ReserveRestart(${c})`,x=>{x.phase[c]="Restarting";x.lease[c]=x.gen[c];});
+        if(s.gen[c]<maxGeneration)
+          emit(`ReserveRestart(${c})`,x=>{x.phase[c]="Restarting";x.lease[c]=x.gen[c];});
       }
       if(p==="Restarting"){
         const rstate=s.replacement[c];
         if(rstate==="None"&&s.control[k]===c&&!s.closed[k])
           emit(`SpawnReplacement(${c})`,x=>x.replacement[c]="Spawned");
         if(rstate==="Spawned"&&s.control[k]===c&&!s.closed[k])
-          emit(`AdmitReplacement(${c})`,x=>x.replacement[c]="Admitted");
+          emit(`AdmitReplacement(${c})`,x=>{x.replacement[c]="Admitted";x.readyGen[c]=x.gen[c]+1;});
         if(["Spawned","Admitted"].includes(rstate)) {
           emit(`CleanupReplacement(${c})`,x=>x.replacement[c]="Cleaned");
           if(unsafeAbortMutant)
@@ -81,8 +84,13 @@ export function explore({owners=[0,0],supervisors=1,maxGeneration=2,maxTurns=2,m
         }
         if(["None","Cleaned"].includes(rstate))
           emit(`AbortRestart(${c})`,x=>{x.phase[c]="Finalized";x.lease[c]=0;x.replacement[c]="None";});
-        if(rstate==="Admitted"&&s.control[k]===c&&s.gen[c]<maxGeneration&&!s.closed[k])
+        if(rstate==="Admitted"&&s.readyGen[c]===s.gen[c]+1
+            &&s.control[k]===c&&s.gen[c]<maxGeneration&&!s.closed[k])
           emit(`CommitRestart(${c})`,x=>{x.phase[c]="Active";x.gen[c]++;x.cleanup[c]=false;x.lease[c]=0;
+            x.replacement[c]="None";x.calls[c]=0;x.applied[c]=false;x.proof[c]=false;x.turn[c]=0;x.control[k]=-1;});
+        if(unsafeCommitMutant&&["None","Spawned"].includes(rstate)
+            &&s.control[k]===c&&s.gen[c]<maxGeneration&&!s.closed[k])
+          emit(`UNSAFE_CommitUnreadyReplacement(${c})`,x=>{x.phase[c]="Active";x.gen[c]++;x.cleanup[c]=false;x.lease[c]=0;
             x.replacement[c]="None";x.calls[c]=0;x.applied[c]=false;x.proof[c]=false;x.turn[c]=0;x.control[k]=-1;});
       }
       if(p==="Stopping"){
