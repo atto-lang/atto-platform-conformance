@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "scope": "host-supervisor-logical-child-identity",
   "sourceGuestExecution": "unimplemented",
-  "note": "Host-only model. Actor finalization/spawn and lifecycle effect authority are external to the registry.",
+  "note": "Host-only cross-backend contract. Trusted spawn/finalization identity wiring and acknowledged STOP are implemented in draft runtimes, not full guest execution or durable restart.",
   "scenarios": [
     {
       "id": "first-generation",
@@ -161,6 +161,70 @@
         "register(native-slot-2-generation-6)"
       ],
       "expected": "reject-concurrent-slot-incarnation"
+    },
+    {
+      "id": "host-acknowledged-stop",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "publish-typed-failure(actor-A,1)",
+        "host-acknowledges-stop(turn-7)",
+        "commit-stop(actor-A,1)"
+      ],
+      "expected": {
+        "phase": "STOPPED",
+        "actor": "actor-A",
+        "logicalIncarnation": 1
+      }
+    },
+    {
+      "id": "ambiguous-host-stop",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "publish-typed-failure(actor-A,1)",
+        "host-stop-sink-throws"
+      ],
+      "expected": {
+        "phase": "FINALIZED",
+        "resolved": 0,
+        "automaticRetry": false
+      }
+    },
+    {
+      "id": "duplicate-host-stop",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "host-acknowledges-stop(turn-7)",
+        "commit-stop(actor-A,1)",
+        "commit-stop(actor-A,1)"
+      ],
+      "expected": "reject-replayed-terminal-decision"
+    },
+    {
+      "id": "physical-actor-forgery",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "host-acknowledges-stop(turn-7)",
+        "commit-stop(actor-B,1)"
+      ],
+      "expected": "reject-wrong-physical-incarnation"
+    },
+    {
+      "id": "normal-exit-retirement",
+      "input": [
+        "register(actor-A)",
+        "seal-physical-normal-exit(actor-A)",
+        "finalize(actor-A,1)",
+        "stop(actor-A,1)",
+        "retire"
+      ],
+      "expected": {
+        "trackedChildren": 0,
+        "terminalPanicAllowed": false
+      }
     }
   ],
   "description": "Host-only lifecycle protocol reserves the finalized child generation before any spawn, with abort/commit fencing",
