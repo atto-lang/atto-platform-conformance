@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "scope": "typed-open-map-v1",
   "javaCompilerHead": "e508603347cf7230686f78eb66c0dd3c324c40ff",
-  "javaGraalEvidence": "https://github.com/akrion-sim/akrion-sim-e2e/actions/runs/38169338231",
-  "notes": "Java/Graal runtime tests execute equivalent embedded source and reject analogous invalid programs. These exact standalone fixtures have not yet been run independently. LLVM, Wasm and browser remain pending.",
+  "javaGraalEvidence": "https://github.com/akrion-sim/akrion-sim-e2e/actions/runs/38169660071",
+  "notes": "Java/Graal passed 192 selected exact-tree tests. The standalone positive typed Map fixture was independently executed as the exact Git blob and produced the expected stdout. Negative fixture compiler admission remains tested by equivalent JUnit programs, not yet standalone fixture execution. LLVM, Wasm and browser remain pending.",
   "cases": [
     {
       "id": "typed-map-hooks-and-open-keys",
@@ -12,12 +12,13 @@
       "expect": "accept",
       "expectedStdout": "PPGhelloGtrueRGtrue",
       "javaGraal": "equivalent-source-junit-verified",
-      "exactFixtureExecution": "pending",
+      "exactFixtureExecution": "verified",
       "otherBackends": {
         "llvm": "pending",
         "wasm": "pending",
         "browser": "pending"
-      }
+      },
+      "exactFixtureEvidence": "https://github.com/akrion-sim/akrion-sim-e2e/actions/runs/38169660071"
     },
     {
       "id": "typed-map-borrow-escape",
