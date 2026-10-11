@@ -41,9 +41,22 @@
         "graal"
       ],
       "pendingBackends": []
+    },
+    {
+      "id": "class-explicit-mutable-borrow",
+      "file": "class-explicit-mutable.ores",
+      "sourceGitBlobSha1": "a7c28cc10c8ed4a4164984fe1d8f875e616e2eda",
+      "expect": "accept",
+      "expectedI64": "42",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "llvm",
+        "wasm",
+        "graal"
+      ]
     }
   ],
   "evidence": "https://github.com/akrion-sim/akrion-sim-e2e/actions/runs/38113193431",
-  "notes": "Exact GraalVM 25 run confirms shared-read result 42 and overlapping-loan rejection; the original unmarked mutable owner is rejected by Java but accepted by LLVM/Wasm. This is a documented semantic mismatch, NOT parity. A separate explicit-mut Java variant returns 42 but has not yet been proven byte-identical cross-backend.",
+  "notes": "Exact GraalVM 25 run confirms shared-read result 42 and overlapping-loan rejection; the original unmarked mutable owner is rejected by Java but accepted by LLVM/Wasm. This is a documented semantic mismatch, NOT parity. A separate explicit-mut Java variant returns 42 but has not yet been proven byte-identical cross-backend. Explicit `let mut Player` fixture is byte-identical with the Wasm #3 draft input, but is intentionally PENDING on LLVM/Wasm/Graal until actual per-backend exact-source compiler/runtime evidence is collected.",
   "graalEvidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38154510801"
 }
