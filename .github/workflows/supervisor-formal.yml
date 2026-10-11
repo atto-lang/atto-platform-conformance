@@ -1,0 +1,27 @@
+name: Supervisor lifecycle formal verification
+on:
+  push:
+    paths:
+      - 'formal/supervision/**'
+      - '.github/workflows/supervisor-formal.yml'
+  pull_request:
+    paths:
+      - 'formal/supervision/**'
+      - '.github/workflows/supervisor-formal.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tlc-safety-and-mutants:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Exhaustive TLC state exploration and mutation counterexamples
+        run: bash formal/supervision/check-tlc.sh
