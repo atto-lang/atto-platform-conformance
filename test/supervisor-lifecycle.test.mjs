@@ -7,8 +7,8 @@ test('single supervisor serializes two children across STOP and RESTART', () => 
     owners: [0, 0], supervisors: 1, maxGeneration: 2, maxTurns: 2
   });
   assert.equal(result.ok, true, JSON.stringify(result));
-  assert.equal(result.states, 668, 'shared CONTROL trace coverage changed');
-  assert.equal(result.transitions, 1302);
+  assert.equal(result.states, 1228, 'shared CONTROL trace coverage changed');
+  assert.equal(result.transitions, 2212);
   for (const action of ['SpawnReplacement', 'AdmitReplacement',
                         'CleanupReplacement', 'AbortRestart', 'CommitRestart',
                         'StartHostEffect', 'Reconcile', 'CloseSupervisor'])
@@ -20,8 +20,8 @@ test('two supervisors may own independent CONTROL turns', () => {
     owners: [0, 1], supervisors: 2, maxGeneration: 2, maxTurns: 2
   });
   assert.equal(result.ok, true, JSON.stringify(result));
-  assert.equal(result.states, 4096, 'independent CONTROL trace coverage changed');
-  assert.equal(result.transitions, 11392);
+  assert.equal(result.states, 6400, 'independent CONTROL trace coverage changed');
+  assert.equal(result.transitions, 17120);
   assert.ok(result.actions.CommitRestart > 0);
 });
 
@@ -56,6 +56,19 @@ test('premature RESTART abort of a live replacement has a counterexample', () =>
     'Init', 'Cleanup(0)', 'Finalize(0)', 'AcquireControl(0)',
     'ReserveRestart(0)', 'SpawnReplacement(0)',
     'UNSAFE_AbortLiveReplacement(0)'
+  ]);
+});
+
+test('premature RESTART commit without exact-generation admission is rejected', () => {
+  const result = explore({
+    owners: [0], supervisors: 1, maxGeneration: 2, maxTurns: 2,
+    unsafeCommitMutant: true
+  });
+  assert.equal(result.ok, false);
+  assert.ok(result.violations.includes('NoUnreadyActiveIncarnation'));
+  assert.deepEqual(result.trace, [
+    'Init', 'Cleanup(0)', 'Finalize(0)', 'AcquireControl(0)',
+    'ReserveRestart(0)', 'UNSAFE_CommitUnreadyReplacement(0)'
   ]);
 });
 
