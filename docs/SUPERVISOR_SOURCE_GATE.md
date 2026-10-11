@@ -141,3 +141,41 @@ that the registered-child count returns to zero after delivery.
 **Remaining cleanup gap:** children that terminate normally without a panic
 notification still need a trusted retirement path from the owning actor
 lifecycle. Do not infer that terminal-panic cleanup covers all actor exits.
+
+
+## Cross-backend replay and payload hardening (2026-10-11)
+
+**Final focused private run:** https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38176690334
+
+All three allocated jobs passed at an exact private-mirror commit with individual
+source Git blob verification:
+
+- Java: typed host CONTROL and process commit/close, UTF-8 boundary tests, and
+  deliberate duplicated executor callbacks crossing a 32-notice batch.
+- Native: C++20 supervisor process and CONTROL lane replay tests under
+  ASan/UBSan, including duplicated `begin`, stale `resume`, and invalid
+  `Directive` values forged through native enum casts.
+- Native bridge: actual C11 multiworker actor scheduler and C++ typed panic
+  CONTROL bridge under ASan/UBSan, proving finalization, single-flight
+  suspension, authoritative STOP, reentrant self-close and terminal cleanup.
+
+Additional normative host invariants:
+
+1. The async completion **execution** must check the saved supervisor turn
+   epoch, not just the initial `resume()` admission. A duplicated or delayed
+   queue callback may never commit against a subsequent notice.
+2. Scheduler enqueue adapters are treated as replayable for safety testing;
+   duplicate `begin` and CONTROL drain callbacks cannot invoke policy again,
+   including after a new batch starts.
+3. Native directives are a closed set: STOP, RESTART, ESCALATE, ACKNOWLEDGE.
+   Unknown numeric values must fail closed before any lifecycle sink call.
+4. Value-only failure diagnostics have a maximum of **1,024 UTF-8 bytes**.
+   Truncate at a complete Unicode scalar and replace malformed input with
+   `?`; Java must not use its UTF-16 character count as this limit.
+5. When the native CONTROL queue is retired during an in-flight handler, the
+   returning handler must never attempt to pop the now-empty queue.
+
+**Evidence boundary:** these are focused host runtime and native bridge tests.
+They are not full Maven/JDK25, complete LLVM CMake/CTest, Graal AOT/hybrid,
+source-compiled guest `on_panic` tests, or proof of source feature parity.
+The fail-closed source admission fixture matrix remains unchanged.
