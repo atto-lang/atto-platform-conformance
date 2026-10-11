@@ -89,7 +89,7 @@ export async function verifyBuildEvidence(report,pins) {
   // All runtime-dependency paths must be listed in the actually hashed classpath file.
   if (backend==="java") {
     const cp=report.artifacts.find(x=>x.role==="classpath-file");
-    const entries=(await readFile(cp.path,"utf8")).trim().split(delimiter).filter(Boolean).map(resolve);
+    const entries=(await readFile(cp.path,"utf8")).trim().split(delimiter).filter(Boolean).map(x=>resolve(x));
     const included=report.artifacts.filter(x=>x.role==="runtime-dependency").map(x=>x.path);
     if (new Set(entries).size!==entries.length || entries.length!==included.length ||
         entries.some((p,i)=>p!==included[i])) throw Error("unverified Java dependency classpath membership");
