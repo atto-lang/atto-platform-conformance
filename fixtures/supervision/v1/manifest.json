@@ -4,6 +4,19 @@
   "description": "Shared source fixtures; explicitly do not claim guest runtime hook execution.",
   "cases": [
     {
+      "id": "stop-logical-child",
+      "file": "stop-logical-child.ores",
+      "javaParser": "accept",
+      "javaCompiler": "reject-unlowered-control",
+      "llvmCompiler": "reject-unlowered-control",
+      "javaStopOnlyOptIn": "accept",
+      "llvmStopOnlyOptIn": "accept",
+      "stopTarget": "verified-current-Failure.child-only",
+      "requiresTrustedLogicalChildBinding": true,
+      "guestAsyncAndLifecyclePolicy": "unimplemented",
+      "sourceGuestExecution": "restricted-host-control-stop-only"
+    },
+    {
       "id": "stop-typed-failure",
       "file": "stop-typed-failure.ores",
       "javaParser": "accept",
