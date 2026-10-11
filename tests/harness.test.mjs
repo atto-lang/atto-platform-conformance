@@ -48,3 +48,20 @@ test("timeout and signal are never green",async()=>{
  assert.equal(r.failed,2);
  assert.ok(r.results.every(x=>x.status==="TIMEOUT"));
 });
+
+test("verified harness results retain executable and fixture SHA-256 evidence",async()=>{
+ const r=await runSuite({backend:"llvm",argv:cmd,sourceSha:sha});
+ assert.match(r.executableSha256,/^[0-9a-f]{64}$/);
+ assert.equal(r.declaredSourceSha,sha);
+ assert.match(r.provenanceNote,/does not attest/);
+ for(const item of r.results)assert.match(item.fixtureSha256,/^[0-9a-f]{64}$/);
+});
+test("crash text quoting the symbol is not a real compile-time diagnostic",async()=>{
+ const r=await runSuite({backend:"llvm",argv:cmd,sourceSha:sha,spawn:()=>({status:1,stdout:"",stderr:"crash during compilation: nonexistent_symbol"})});
+ assert.equal(r.verified,0);
+ assert.equal(r.failed,2);
+});
+test("bad timeouts and PATH-dependent commands are rejected",async()=>{
+ for(const timeoutMs of [0,99,120001,NaN,Infinity])await assert.rejects(runSuite({backend:"java",timeoutMs}),/timeoutMs/);
+ assert.throws(()=>validateCommand(["node","{file}"]),/absolute/);
+});
