@@ -22,13 +22,19 @@ replacement may occupy another actor slot whose scheduler generation is
 3. STOP consumes only the currently FINALIZED generation, marking it
    STOPPED. The host can retire the stopped record to bound memory; a
    retired child ID can never reactivate.
-4. RESTART first creates/admit a genuinely new actor under the same
-   supervisor with failure rollback. Only then may the owning runtime
-   commit the replacement identity, atomically advancing its logical
-   generation from FINALIZED to ACTIVE.
-5. Competing terminal decisions must be generation-fenced so only one
-   consumes a finalized incarnation.
-6. Never hold the registry mutex while invoking guest callbacks or while
+4. RESTART must **reserve the FINALIZED generation first**, moving the
+   child to RESTARTING and returning a single-use host-side permit. A second
+   restart, STOP, or replayed permit cannot overtake that reservation.
+5. Outside the registry lock, the trusted host spawns and admits a genuinely
+   new actor. On success, commit the permit and advance the logical
+   incarnation to ACTIVE. On any admission failure, clean up the spawned
+   actor before aborting the permit back to FINALIZED. A fresh permit is
+   required for any later retry.
+6. Reject old physical actor identities (including A → B → A), stale permit
+   nonces, cross-owner child IDs, and duplicate lifecycle decisions.
+   Java keeps a capped used-ActorId ledger; native keeps a bounded
+   per-slot scheduler generation high-water mark.
+7. Never hold the registry mutex while invoking guest callbacks or while
    waiting for spawn, cleanup, or lifecycle effects.
 
 The registries do not themselves spawn actors, observe the physical
@@ -67,3 +73,24 @@ source-level reincarnation.
 Before enabling `f.child`, wire identity to trusted spawn registration,
 actual physical finalization, exact generation-fenced CONTROL delivery,
 replacement rollback, authoritative lifecycle commit and replay tests.
+
+
+## Audit validation and evidence
+
+Funded, exact Git-blob verification:
+https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38179365985
+
+- Java standalone host registry source: `bfaf3e1b1a89db52b721c74b3f2b33ff7175039f`
+  compiled and passed a targeted reservation/race/rollback probe using
+  minimal test-only ActorRuntime identifier stand-ins.
+- Native C++20 registry source: `13939c7b51fda05aa4ca26cae358739cac249f3a`
+  compiled under strict warnings and passed the mirrored regression source
+  `ff83a47006577afc7f1994005af44cb2c251b686` normally and with
+  ASan/UBSan. The native scheduler header was pinned independently.
+
+**Evidence limitations:** This is focused, standalone registry verification;
+it is not a full JUnit/Maven suite, full LLVM CMake/CTest, guest
+`on_panic`/`await` execution, production lifecycle integration, or an
+authoritative host restart effect. Reservation timeouts and cleanup of
+orphaned replacement actors are duties of the future owning lifecycle
+coordinator, not the standalone registry.
