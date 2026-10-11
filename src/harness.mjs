@@ -37,8 +37,9 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
  }
  validateCommand(argv);
  if(!validSha(sourceSha))throw Error("configured backend requires exact 40-character lowercase source commit SHA");
- const binaryBytes=await readFile(argv[0]);
- const executableSha256=createHash("sha256").update(binaryBytes).digest("hex");
+ let executableSha256=null;
+ try{const binaryBytes=await readFile(argv[0]);executableSha256=createHash("sha256").update(binaryBytes).digest("hex")}
+ catch{/* absent executable is reported as SPAWN_ERROR for each fixture below */}
  const results=[];
  for(const c of relevant){
   const fixturePath=resolve(root,"fixtures",c.file);
