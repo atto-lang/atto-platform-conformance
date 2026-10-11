@@ -210,4 +210,29 @@ UnsafeReplay(c) ==
 MutantNext == Next \/ \E c \in Children : UnsafeReplay(c)
 MutantSpec == Init /\ [][MutantNext]_vars
 
+(* Fault injection: allowing RESTART while a STOP receipt is unresolved
+   must violate NoRestartUnderStop. *)
+UnsafeRestart(c) ==
+    /\ phase[c] = "Stopping"
+    /\ receipt[c] \in OpenReceipts
+    /\ phase' = [phase EXCEPT ![c] = "Active"]
+    /\ UNCHANGED <<generation, reservedGeneration, receipt, turn,
+                   starts, verified, succeeded, acknowledgments, observed, closed>>
+MutantRestartNext == Next \/ \E c \in Children : UnsafeRestart(c)
+MutantRestartSpec == Init /\ [][MutantRestartNext]_vars
+
+(* Fault injection: acknowledging an uninitiated host effect must
+   violate NoInvalidAck. *)
+UnsafeAck(c) ==
+    /\ phase[c] = "Stopping"
+    /\ receipt[c] = "Pending"
+    /\ starts[c] = 0
+    /\ phase' = [phase EXCEPT ![c] = "Stopped"]
+    /\ receipt' = [receipt EXCEPT ![c] = "Ack"]
+    /\ acknowledgments' = [acknowledgments EXCEPT ![c] = 1]
+    /\ UNCHANGED <<generation, reservedGeneration, turn, starts,
+                   verified, succeeded, observed, closed>>
+MutantAckNext == Next \/ \E c \in Children : UnsafeAck(c)
+MutantAckSpec == Init /\ [][MutantAckNext]_vars
+
 =============================================================================
