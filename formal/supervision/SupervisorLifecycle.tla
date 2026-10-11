@@ -21,11 +21,11 @@ Nobody == "Nobody"
 
 VARIABLES owner, phase, generation, cleaned, leaseGeneration,
           receipt, calls, applied, proof, committedGeneration,
-          control, closed, nextTurn, turn
+          control, closed, nextTurn, turn, replacement
 
 vars == <<owner, phase, generation, cleaned, leaseGeneration,
           receipt, calls, applied, proof, committedGeneration,
-          control, closed, nextTurn, turn>>
+          control, closed, nextTurn, turn, replacement>>
 
 Init ==
     /\ owner \in [Children -> Supervisors]
@@ -42,6 +42,7 @@ Init ==
     /\ closed = [s \in Supervisors |-> FALSE]
     /\ nextTurn = [s \in Supervisors |-> 0]
     /\ turn = [c \in Children |-> 0]
+    /\ replacement = [c \in Children |-> "None"]
 
 (* The actual actor carrier must finish cleanup before finalization. *)
 Cleanup(c) ==
@@ -50,7 +51,7 @@ Cleanup(c) ==
     /\ cleaned' = [cleaned EXCEPT ![c] = TRUE]
     /\ UNCHANGED <<owner, phase, generation, leaseGeneration, receipt,
                    calls, applied, proof, committedGeneration, control,
-                   closed, nextTurn, turn>>
+                   closed, nextTurn, turn, replacement>>
 
 Finalize(c) ==
     /\ phase[c] = "Active"
@@ -58,7 +59,7 @@ Finalize(c) ==
     /\ phase' = [phase EXCEPT ![c] = "Finalized"]
     /\ UNCHANGED <<owner, generation, cleaned, leaseGeneration, receipt,
                    calls, applied, proof, committedGeneration, control,
-                   closed, nextTurn, turn>>
+                   closed, nextTurn, turn, replacement>>
 
 (* Exactly one logical CONTROL turn per supervisor, even if its worker
    is released by await. Separate supervisors may proceed independently. *)
@@ -71,7 +72,7 @@ AcquireControl(c) ==
     /\ nextTurn' = [nextTurn EXCEPT ![owner[c]] = @ + 1]
     /\ turn' = [turn EXCEPT ![c] = nextTurn[owner[c]] + 1]
     /\ UNCHANGED <<owner, phase, generation, cleaned, leaseGeneration,
-                   receipt, calls, applied, proof, committedGeneration, closed>>
+                   receipt, calls, applied, proof, committedGeneration, closed, replacement>>
 
 (* STOP and RESTART race to mutate the SAME Finalized phase. *)
 ReserveStop(c) ==
@@ -82,7 +83,7 @@ ReserveStop(c) ==
     /\ receipt' = [receipt EXCEPT ![c] = "Pending"]
     /\ leaseGeneration' = [leaseGeneration EXCEPT ![c] = generation[c]]
     /\ UNCHANGED <<owner, generation, cleaned, calls, applied, proof,
-                   committedGeneration, control, closed, nextTurn, turn>>
+                   committedGeneration, control, closed, nextTurn, turn, replacement>>
 
 ReserveRestart(c) ==
     /\ phase[c] = "Finalized"
@@ -91,13 +92,46 @@ ReserveRestart(c) ==
     /\ phase' = [phase EXCEPT ![c] = "Restarting"]
     /\ leaseGeneration' = [leaseGeneration EXCEPT ![c] = generation[c]]
     /\ UNCHANGED <<owner, generation, cleaned, receipt, calls, applied,
-                   proof, committedGeneration, control, closed, nextTurn, turn>>
+                   proof, committedGeneration, control, closed, nextTurn, turn, replacement>>
+
+(* Trusted host cleanup is required if the replacement was actually spawned.
+   Shutdown does not silently erase a live replacement or its reservation. *)
+SpawnReplacement(c) ==
+    /\ phase[c] = "Restarting"
+    /\ control[owner[c]] = c
+    /\ ~closed[owner[c]]
+    /\ replacement[c] = "None"
+    /\ replacement' = [replacement EXCEPT ![c] = "Spawned"]
+    /\ UNCHANGED <<owner, phase, generation, cleaned, leaseGeneration,
+                   receipt, calls, applied, proof, committedGeneration,
+                   control, closed, nextTurn, turn>>
+
+AdmitReplacement(c) ==
+    /\ phase[c] = "Restarting"
+    /\ control[owner[c]] = c
+    /\ ~closed[owner[c]]
+    /\ replacement[c] = "Spawned"
+    /\ replacement' = [replacement EXCEPT ![c] = "Admitted"]
+    /\ UNCHANGED <<owner, phase, generation, cleaned, leaseGeneration,
+                   receipt, calls, applied, proof, committedGeneration,
+                   control, closed, nextTurn, turn>>
+
+(* After a failed admission or close, physical cleanup runs before abort. *)
+CleanupReplacement(c) ==
+    /\ phase[c] = "Restarting"
+    /\ replacement[c] \in {"Spawned", "Admitted"}
+    /\ replacement' = [replacement EXCEPT ![c] = "Cleaned"]
+    /\ UNCHANGED <<owner, phase, generation, cleaned, leaseGeneration,
+                   receipt, calls, applied, proof, committedGeneration,
+                   control, closed, nextTurn, turn>>
 
 AbortRestart(c) ==
     /\ phase[c] = "Restarting"
     /\ leaseGeneration[c] = generation[c]
+    /\ replacement[c] \in {"None", "Cleaned"}
     /\ phase' = [phase EXCEPT ![c] = "Finalized"]
     /\ leaseGeneration' = [leaseGeneration EXCEPT ![c] = 0]
+    /\ replacement' = [replacement EXCEPT ![c] = "None"]
     /\ UNCHANGED <<owner, generation, cleaned, receipt, calls, applied,
                    proof, committedGeneration, control, closed, nextTurn, turn>>
 
@@ -107,12 +141,14 @@ CommitRestart(c) ==
     /\ phase[c] = "Restarting"
     /\ leaseGeneration[c] = generation[c]
     /\ generation[c] < MaxGeneration
+    /\ replacement[c] = "Admitted"
     /\ ~closed[owner[c]]
     /\ control[owner[c]] = c
     /\ phase' = [phase EXCEPT ![c] = "Active"]
     /\ generation' = [generation EXCEPT ![c] = @ + 1]
     /\ cleaned' = [cleaned EXCEPT ![c] = FALSE]
     /\ leaseGeneration' = [leaseGeneration EXCEPT ![c] = 0]
+    /\ replacement' = [replacement EXCEPT ![c] = "None"]
     /\ calls' = [calls EXCEPT ![c] = 0]
     /\ applied' = [applied EXCEPT ![c] = FALSE]
     /\ proof' = [proof EXCEPT ![c] = FALSE]
@@ -129,7 +165,7 @@ StartHostEffect(c) ==
     /\ calls' = [calls EXCEPT ![c] = 1]
     /\ UNCHANGED <<owner, phase, generation, cleaned, leaseGeneration,
                    receipt, applied, proof, committedGeneration, control,
-                   closed, nextTurn, turn>>
+                   closed, nextTurn, turn, replacement>>
 
 HostSuccess(c) ==
     /\ phase[c] = "Stopping"
@@ -141,7 +177,7 @@ HostSuccess(c) ==
     /\ applied' = [applied EXCEPT ![c] = TRUE]
     /\ UNCHANGED <<owner, phase, generation, cleaned, leaseGeneration,
                    calls, proof, committedGeneration, control, closed,
-                   nextTurn, turn>>
+                   nextTurn, turn, replacement>>
 
 (* Either possible physical outcome may accompany a failed callback.
    The runtime does not infer which occurred from the thrown exception. *)
@@ -154,7 +190,7 @@ HostUnknown(c, didApply) ==
     /\ applied' = [applied EXCEPT ![c] = didApply]
     /\ UNCHANGED <<owner, phase, generation, cleaned, leaseGeneration,
                    calls, proof, committedGeneration, control, closed,
-                   nextTurn, turn>>
+                   nextTurn, turn, replacement>>
 
 CommitAcknowledgedStop(c) ==
     /\ phase[c] = "Stopping"
@@ -167,7 +203,7 @@ CommitAcknowledgedStop(c) ==
     /\ committedGeneration' = [committedGeneration EXCEPT ![c] = generation[c]]
     /\ control' = [control EXCEPT ![owner[c]] = Nobody]
     /\ UNCHANGED <<owner, generation, cleaned, leaseGeneration, calls,
-                   applied, proof, closed, nextTurn, turn>>
+                   applied, proof, closed, nextTurn, turn, replacement>>
 
 (* Independent read-only proof, never a second invocation of STOP.
    Its truthfulness is an explicit environmental assumption. *)
@@ -180,7 +216,7 @@ VerifyHostEffect(c) ==
     /\ proof' = [proof EXCEPT ![c] = TRUE]
     /\ UNCHANGED <<owner, phase, generation, cleaned, leaseGeneration,
                    receipt, calls, applied, committedGeneration, control,
-                   closed, nextTurn, turn>>
+                   closed, nextTurn, turn, replacement>>
 
 Reconcile(c) ==
     /\ phase[c] = "Stopping"
@@ -195,7 +231,7 @@ Reconcile(c) ==
                   THEN [control EXCEPT ![owner[c]] = Nobody]
                   ELSE control
     /\ UNCHANGED <<owner, generation, cleaned, leaseGeneration, calls,
-                   applied, proof, closed, nextTurn, turn>>
+                   applied, proof, closed, nextTurn, turn, replacement>>
 
 (* Close never rolls back STOPPING, even if no host receipt has arrived. *)
 CloseSupervisor(s) ==
@@ -204,13 +240,15 @@ CloseSupervisor(s) ==
     /\ control' = [control EXCEPT ![s] = Nobody]
     /\ UNCHANGED <<owner, phase, generation, cleaned, leaseGeneration,
                    receipt, calls, applied, proof, committedGeneration,
-                   nextTurn, turn>>
+                   nextTurn, turn, replacement>>
 
 Next ==
     \/ \E c \in Children :
          Cleanup(c) \/ Finalize(c) \/ AcquireControl(c)
          \/ ReserveStop(c) \/ ReserveRestart(c)
-         \/ AbortRestart(c) \/ CommitRestart(c)
+         \/ SpawnReplacement(c) \/ AdmitReplacement(c)
+         \/ CleanupReplacement(c) \/ AbortRestart(c)
+         \/ CommitRestart(c)
          \/ StartHostEffect(c) \/ HostSuccess(c)
          \/ HostUnknown(c, TRUE) \/ HostUnknown(c, FALSE)
          \/ CommitAcknowledgedStop(c) \/ VerifyHostEffect(c)
@@ -234,6 +272,7 @@ TypeOK ==
     /\ closed \in [Supervisors -> BOOLEAN]
     /\ nextTurn \in [Supervisors -> 0..MaxTurns]
     /\ turn \in [Children -> 0..MaxTurns]
+    /\ replacement \in [Children -> {"None", "Spawned", "Admitted", "Cleaned"}]
 
 SerialControl ==
     \A s \in Supervisors :
@@ -253,6 +292,12 @@ RestartOwnedWhileOpen ==
         => control[owner[c]] = c
 
 NoDuplicateEffects == \A c \in Children : calls[c] <= 1
+
+(* Any physical replacement still alive or admitted is fenced by RESTARTING.
+   After commit or abort, no replacement remains outside the logical actor. *)
+NoOrphanReplacement ==
+    \A c \in Children :
+        replacement[c] # "None" => phase[c] = "Restarting"
 
 CleanupBeforeSupervisor ==
     \A c \in Children : phase[c] # "Active" => cleaned[c]
@@ -281,6 +326,21 @@ ReceiptCoherence ==
 ClosedDoesNotOwnControl ==
     \A s \in Supervisors : closed[s] => control[s] = Nobody
 
+(* A second mutation simulates a host abort of a still-live replacement,
+   without cleaning the physical incarnation. It MUST falsify the
+   replacement ownership invariant. *)
+UnsafeAbortWithLiveReplacement(c) ==
+    /\ phase[c] = "Restarting"
+    /\ replacement[c] \in {"Spawned", "Admitted"}
+    /\ phase' = [phase EXCEPT ![c] = "Finalized"]
+    /\ leaseGeneration' = [leaseGeneration EXCEPT ![c] = 0]
+    /\ UNCHANGED <<owner, generation, cleaned, receipt, calls, applied,
+                   proof, committedGeneration, control, closed,
+                   nextTurn, turn, replacement>>
+
+UnsafeAbortNext == Next \/ \E c \in Children : UnsafeAbortWithLiveReplacement(c)
+UnsafeAbortSpec == Init /\ [][UnsafeAbortNext]_vars
+
 (* A deliberate mutation must falsify NoDuplicateEffects. *)
 UnsafeReplay(c) ==
     /\ phase[c] = "Stopping"
@@ -289,7 +349,7 @@ UnsafeReplay(c) ==
     /\ calls' = [calls EXCEPT ![c] = 2]
     /\ UNCHANGED <<owner, phase, generation, cleaned, leaseGeneration,
                    receipt, applied, proof, committedGeneration,
-                   control, closed, nextTurn, turn>>
+                   control, closed, nextTurn, turn, replacement>>
 
 MutantNext == Next \/ \E c \in Children : UnsafeReplay(c)
 MutantSpec == Init /\ [][MutantNext]_vars
