@@ -167,3 +167,53 @@ those backends emit trusted actual execution traces and pass the checker.
 Further formal work: genuine temporal safety/refinement checks, ghost
 history variables for callbacks and ACK, and conditional liveness properties
 with explicit scheduler fairness/evidence availability assumptions.
+
+
+## RESTART admission and abort refinement audit
+
+The earlier lifecycle model let `CommitRestart` jump directly from
+RESTARTING to ACTIVE and `AbortRestart` jump back to FINALIZED.
+That hid two safety-critical physical obligations. The hardened model
+now requires:
+
+- `SpawnReplacement` before `AdmitReplacement`, recording a distinct
+  new actor incarnation; a successful admission records that exact
+  generation in `readyGeneration`.
+- `CommitRestart` only after `Admitted` with the matching next
+  generation, open supervisor, and the same CONTROL owner.
+- `CleanupReplacement` before `AbortRestart` if a replacement has been
+  spawned (including an admitted actor). After shutdown, a live
+  replacement remains quarantined until trusted physical cleanup.
+- No RESTART reservation at the model's maximal actor generation.
+
+The `NoOrphanReplacement` and `NoUnreadyActiveIncarnation` safety
+invariants are checked by `SupervisorLifecycle.cfg`. Two deliberate
+TLC mutant configurations must fail on those *specific* invariants:
+`SupervisorLifecycleUnsafeAbort.cfg` and
+`SupervisorLifecycleUnsafeCommit.cfg`.
+
+The committed bounded JS explorer (exact blob
+`cb52455410fe210272713e813f8546bd2fbb1faf` at the time of this
+audit) explored **1,228** reachable states / **2,212** transitions for
+two children sharing CONTROL, and **6,400** states / **17,120**
+transitions for independent supervisors, without safety violations.
+It produced a seven-step live-replacement abort counterexample, a
+six-step premature-commit counterexample, and the existing seven-step
+duplicate host-effect counterexample. These results were executed
+directly against that model blob; the dedicated Node test files still
+need their own CI execution.
+
+**Runtime refinement obligations**: Java and LLVM registry
+`beginRestart`/`begin_restart` are reservations, not physical spawn
+proof. The trusted caller must fence the actual replacement, verify
+admission/readiness before `replace`, and finish physical cleanup
+before `abortRestart`/`abort_restart`. No late callback may publish
+the new actor after the supervisor's CONTROL lane closes. Until
+implementation-level traces, fault injection and exact-head CI verify
+this, real guest `self.restart(f.child)` remains gated.
+
+The prior funded TLC green run is **not** proof of these newly modified
+TLA+ blobs. They have been mirrored to the private funded test branch
+`3fa-app-test/account-recovery-security:test/supervisor-source-await-20261011`
+with exact Git blob matches; a fresh completed TLC job for those
+particular revisions is still required before claiming formal TLC success.
