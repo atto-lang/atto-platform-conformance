@@ -65,6 +65,21 @@ if ! grep -Eq "Invariant NoDuplicateEffects is violated|NoDuplicateEffects.*viol
   exit 1
 fi
 echo "EXPECTED_MUTANT_COUNTEREXAMPLE: NoDuplicateEffects"
+echo "Unsafe RESTART abort must violate the live-replacement ownership invariant"
+if java -Xmx1600m -cp "${TMP}/tla2tools.jar" tlc2.TLC \
+  -workers 2 -deadlock -config SupervisorLifecycleUnsafeAbort.cfg \
+  -metadir "${TMP}/lifecycle-unsafe-abort" SupervisorLifecycle.tla \
+  > "${TMP}/lifecycle-unsafe-abort.log" 2>&1; then
+  cat "${TMP}/lifecycle-unsafe-abort.log"
+  echo "Unsafe live-replacement abort unexpectedly passed" >&2
+  exit 1
+fi
+if ! grep -Eq 'Invariant NoOrphanReplacement is violated|NoOrphanReplacement.*violated' "${TMP}/lifecycle-unsafe-abort.log"; then
+  cat "${TMP}/lifecycle-unsafe-abort.log"
+  echo "Unsafe abort mutant failed for an unrelated reason" >&2
+  exit 1
+fi
+echo "EXPECTED_MUTANT_COUNTEREXAMPLE: NoOrphanReplacement"
 echo "Three-incarnation ABA-bound configurations"
 for pair in "SupervisorStopABA.cfg:SupervisorStop" \
             "SupervisorLifecycleABA.cfg:SupervisorLifecycle"; do
