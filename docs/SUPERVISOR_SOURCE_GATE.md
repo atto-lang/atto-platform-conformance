@@ -690,3 +690,44 @@ No durable persistent receipt log, full production ActorRuntime/Maven
 verification, GraalVM native-image testing or complete LLVM CMake/CTest
 has been established. Keep general guest source hooks fail-closed and
 do not merge these drafts as a completed supervisor runtime.
+
+
+## Native physical PANIC → verified source STOP integration (2026-10-11)
+
+Native PR #196 adds `tests/native_source_supervisor_bridge_e2e_test.cpp` and
+registers `native_source_supervisor_bridge_verified_stop_e2e` in CTest.
+The test uses a **real** `NativeActorScheduler` child, physically stops it,
+publishes a typed PANIC into its parent's reserved CONTROL lane, and forwards
+that event through `NativeSupervisorPanicBridge` into the opt-in
+`self.stop(f.child)` installer. The bridge and installer share one
+supervisor/domain-validated child registry instance.
+
+The success path expects exactly one physical PANIC publication and
+supervisor decision, a pre-effect exclusive `STOPPING` reservation,
+rejection of competing RESTART, one `APPLIED` host receipt, and
+`STOPPED`/`ACKNOWLEDGED` final disposition. The injected throwing
+host sink must report the turn undelivered and retain
+`STOPPING`/`UNCERTAIN` without retrying the side effect.
+
+The native child registry now tracks PENDING, APPLIED, UNCERTAIN and
+ACKNOWLEDGED receipts by owner, physical actor incarnation, logical
+incarnation and supervisor CONTROL turn. A trusted host may explicitly call
+`reconcile_uncertain_stop` with an **independent authoritative** verifier.
+Verification is invoked without holding the registry mutex. A negative or
+unknown result does nothing; a positive result is checked against the exact
+reservation again before commit. This is a host-supplied proof contract,
+**not** durable storage or independent proof supplied by Oreslang itself.
+There is no automatic replay, retry, or rollback from uncertainty.
+
+**Test status:** These tests were committed and CTest-wired, but a new
+exact-head execution is NOT established. The source-org Actions failures
+observed so far had `runner_id=null` and zero executed steps. The
+alternate-org private proof branch is a partial mirror whose earlier
+exact-blob checks do not cover this code. Several required transfers were
+blocked, so no complete source mirror or new green test result is claimed.
+Do not promote draft PRs #657, #196, or #13 until exact-revision tests
+execute and pass, including native sanitizer and full CMake/CTest coverage.
+
+General LLVM guest async `await self.stop(f)`, arbitrary `on_panic`
+bodies, runtime RESTART, ESCALATE, and full execution-context
+`defer/recover` remain unavailable.
