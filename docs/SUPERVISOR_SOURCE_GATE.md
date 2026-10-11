@@ -310,3 +310,37 @@ general `define supervisor`; no `await`/RESTART/ESCALATE parity is claimed.
 
 Do not treat the host decision sink as an Oreslang method or as proof of
 general execution-context, defer/recover, or lifecycle-policy lowering.
+
+
+## Restricted typed Failure binding: STOP-only extension
+
+The opt-in STOP source compilers now distinguish two explicit source forms:
+
+- `self.stop(); return;`: historical current-failure STOP request.
+- `self.stop(problem); return;`: the named `problem` must be exactly the
+  `on_panic(problem: Failure)` parameter, checked against the source AST
+  (Java) or restricted source grammar (LLVM). Both lower to a host STOP
+  **request for the current delivered failure**.
+
+These forms do not create an actor handle, evaluate arbitrary expressions,
+or make `problem.child`, `problem.actor`, arbitrary actor IDs, nested
+property access, async `await`, RESTART, or ESCALATE executable. Those
+must remain rejected until stable logical-child identity and typed
+lifecycle-operation lowering are implemented.
+
+Java's restricted host CONTROL integration checks the delivered notice's
+supervisor/group and TERMINAL_FAILURE kind; the new source test asserts
+the STOP decision retains the failed ActorId from that notice. Native
+source parsing also records whether the typed binder was explicitly used.
+That form requires a real native typed PANIC envelope with a nonzero
+actor ID and generation; a legacy zero-kind host notice cannot impersonate
+the typed source `Failure`. The no-argument legacy compatibility path
+remains separate.
+
+Both implementations still rely on the trusted host decision sink to
+apply lifecycle effects. `resolved` counts a successfully returned sink,
+not a durable restart/stop commit receipt. The current opt-in compiler
+slice is intentionally **synchronous**; `async on_panic` remains rejected.
+Full guest hook evaluation, generation-checked authoritative lifecycle
+operations, durable commit receipts, `await` suspension, and source parity
+remain separate release gates.
