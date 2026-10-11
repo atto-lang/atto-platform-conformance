@@ -1,0 +1,5 @@
+define supervisor RootSupervisor as
+  on_panic(f: String): void {
+    return;
+  }
+end
