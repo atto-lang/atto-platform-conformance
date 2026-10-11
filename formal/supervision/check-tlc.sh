@@ -42,4 +42,27 @@ for pair in "SupervisorStopMutant.cfg:NoDoubleEffect" \
   fi
   echo "EXPECTED_MUTANT_COUNTEREXAMPLE: ${invariant}"
 done
+echo "TLC lifecycle model: CONTROL ownership, cleanup, STOP/RESTART"
+java -Xmx1600m -cp "${TMP}/tla2tools.jar" tlc2.TLC \
+  -workers 4 -deadlock -config SupervisorLifecycle.cfg \
+  -metadir "${TMP}/lifecycle" SupervisorLifecycle.tla \
+  2>&1 | tee "${TMP}/lifecycle.log"
+if ! grep -Eq "Model checking completed|Model checking finished|Finished computing" "${TMP}/lifecycle.log"; then
+  echo "TLC did not complete the lifecycle state graph" >&2
+  exit 1
+fi
+echo "Lifecycle mutation must violate NoDuplicateEffects"
+if java -Xmx1600m -cp "${TMP}/tla2tools.jar" tlc2.TLC \
+  -workers 4 -deadlock -config SupervisorLifecycleMutant.cfg \
+  -metadir "${TMP}/lifecycle-mutant" SupervisorLifecycle.tla > "${TMP}/lifecycle-mutant.log" 2>&1; then
+  cat "${TMP}/lifecycle-mutant.log"
+  echo "Unsafe lifecycle mutant unexpectedly passed" >&2
+  exit 1
+fi
+if ! grep -Eq "Invariant NoDuplicateEffects is violated|NoDuplicateEffects.*violated" "${TMP}/lifecycle-mutant.log"; then
+  cat "${TMP}/lifecycle-mutant.log"
+  echo "Lifecycle mutant failed for unrelated reason" >&2
+  exit 1
+fi
+echo "EXPECTED_MUTANT_COUNTEREXAMPLE: NoDuplicateEffects"
 echo "SUPERVISOR_TLC_SAFETY_PASS"
