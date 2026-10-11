@@ -211,3 +211,37 @@ acknowledgment rejects forged cancellation and normal-stop envelope kinds.
 **Verification boundary:** new STOPPING race and negative tests were added
 to both drafts, but source workflows must run at their exact new Git SHAs
 and pass before these changes can be treated as release-ready.
+
+
+## Receipt transition audit: native/Java parity and crash-pending recovery
+
+Native direct `record_stop_applied` accepts **PENDING only**. A STOP
+receipt classified `UNCERTAIN` must not be promoted to APPLIED through a
+direct host acknowledgment; that classification means the original result
+was not established. It may transition to ACKNOWLEDGED only after a
+trusted independent verifier confirms the **same** child, physical actor
+generation, logical incarnation and CONTROL turn. The verifier runs
+outside the registry mutex; the terminal state transition and receipt
+acknowledgment run together under a second, exact-turn check.
+
+A process can also close after reserving STOP but before classifying its
+host effect. The native `reconcile_unresolved_stop` entrypoint admits
+either PENDING or UNCERTAIN, **only with the same independent proof**;
+negative, throwing and missing proof leave STOPPING quarantined. The
+older `reconcile_uncertain_stop` entrypoint remains restricted to
+UNCERTAIN for compatibility. Neither entrypoint retries an effect or
+treats the absence of an acknowledgment as proof of non-execution.
+
+Both backends reject inconsistent receipt and registry owner fields.
+Java stages the reservation, receipt and STOPPING snapshot before map
+publication, and restores the previous FINALIZED snapshot if any
+publication step fails. Native rejects an existing receipt at STOP claim
+time and rolls back its newly created reservation key on insertion
+failure. No guest-issued ID is an authority token.
+
+**Verification status:** These are committed, unverified exact-head
+changes. The latest source GitHub Actions jobs have previously reported
+null runner ID and zero executed steps. The private alternate-organization
+mirror remains incomplete; its older matching blobs do not prove that
+these changes compile or pass. Keep supervisor drafts unmerged pending
+successful exact-source Maven, CMake/CTest and sanitizer execution.
