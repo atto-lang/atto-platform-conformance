@@ -21,18 +21,25 @@ if ! grep -Eq 'Model checking completed|Model checking finished|Finished computi
   exit 1
 fi
 
-echo "TLC mutation gate: deliberate replay MUST violate NoDoubleEffect"
-if java -Xmx1200m -cp "${TMP}/tla2tools.jar" tlc2.TLC \
-  -workers 2 -deadlock -config SupervisorStopMutant.cfg \
-  -metadir "${TMP}/mutant" SupervisorStop.tla > "${TMP}/mutant.log" 2>&1; then
-  cat "${TMP}/mutant.log"
-  echo "Unsafe replay unexpectedly passed TLC!" >&2
-  exit 1
-fi
-if ! grep -Eq 'Invariant NoDoubleEffect is violated|NoDoubleEffect.*violated' "${TMP}/mutant.log"; then
-  cat "${TMP}/mutant.log"
-  echo "Mutant failed for an unrelated reason instead of the expected invariant" >&2
-  exit 1
-fi
-echo "EXPECTED_MUTANT_COUNTEREXAMPLE: NoDoubleEffect"
+echo "TLC mutation gates: each deliberately unsafe action must yield its own counterexample"
+for pair in "SupervisorStopMutant.cfg:NoDoubleEffect" \
+            "SupervisorStopRestartMutant.cfg:NoRestartUnderStop" \
+            "SupervisorStopAckMutant.cfg:NoInvalidAck"; do
+  cfg="${pair%%:*}"
+  invariant="${pair##*:}"
+  log="${TMP}/${invariant}.log"
+  if java -Xmx1200m -cp "${TMP}/tla2tools.jar" tlc2.TLC \
+    -workers 2 -deadlock -config "${cfg}" \
+    -metadir "${TMP}/mutant-${invariant}" SupervisorStop.tla > "${log}" 2>&1; then
+    cat "${log}"
+    echo "Unsafe mutation unexpectedly passed: ${invariant}" >&2
+    exit 1
+  fi
+  if ! grep -Eq "Invariant ${invariant} is violated|${invariant}.*violated" "${log}"; then
+    cat "${log}"
+    echo "Mutation failed for an unrelated reason: ${invariant}" >&2
+    exit 1
+  fi
+  echo "EXPECTED_MUTANT_COUNTEREXAMPLE: ${invariant}"
+done
 echo "SUPERVISOR_TLC_SAFETY_PASS"
