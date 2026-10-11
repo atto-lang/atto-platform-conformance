@@ -1,0 +1,9 @@
+define actor WorkerActor as
+  receive(Message m): void {
+    return match m over {
+      on Message.Compute as (text, n) {
+        return Message.Result(text, n + 1);
+      }
+    };
+  }
+end

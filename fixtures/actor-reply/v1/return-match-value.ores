@@ -1,0 +1,7 @@
+fnc compute_value(Message m): Message {
+  return match m over {
+    on Message.Compute as (text, n) {
+      return Message.Result(text, n + 1);
+    }
+  };
+}

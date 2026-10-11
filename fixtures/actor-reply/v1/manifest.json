@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "scope": "actor-reply-control-source-proposal-v1",
+  "cases": [
+    {
+      "id": "actor-explicit-respond",
+      "file": "explicit-respond.ores",
+      "sourceGitBlobSha1": "e8762383a91026e07162ad18103b3bd0b66a71a9",
+      "expect": "accept",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "browser-worker"
+      ]
+    },
+    {
+      "id": "return-match-value",
+      "file": "return-match-value.ores",
+      "sourceGitBlobSha1": "e82505fa49f9af3abf1c44707246605a9e176909",
+      "expect": "accept",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "browser-worker"
+      ]
+    },
+    {
+      "id": "do-match-value",
+      "file": "do-match-value.ores",
+      "sourceGitBlobSha1": "11b875e3743171a9240f47431bdb81c21ecca62a",
+      "expect": "accept",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "browser-worker"
+      ]
+    },
+    {
+      "id": "reject-implicit-void-return",
+      "file": "invalid-implicit-void-return.ores",
+      "sourceGitBlobSha1": "2c5bcdf8e242fcb9ceb386c7f2410e80ff66a6b4",
+      "expect": "reject",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "browser-worker"
+      ]
+    },
+    {
+      "id": "reject-double-response",
+      "file": "invalid-double-response.ores",
+      "sourceGitBlobSha1": "a9db0849f3ad5f595e60f66418692d175d0de386",
+      "expect": "reject",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "browser-worker"
+      ]
+    }
+  ],
+  "hostReference": {
+    "repo": "ores-truffle-oreslang/oreslang-wasm",
+    "pullRequest": 16,
+    "kind": "javascript-only",
+    "compilerAdmission": false
+  },
+  "notes": "No compiler can claim acceptance for these exact message enum + reply-control fixtures without a real binary and runtime execution or an explicitly specified parser-only stage. The JS reference tests verify behavior but do not promote any language backend."
+}
