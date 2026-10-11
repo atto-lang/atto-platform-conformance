@@ -374,9 +374,70 @@
         "reconcile-with-host-proof(turn-18)"
       ],
       "expected": "reject-before-verifier"
+    },
+    {
+      "id": "uncertain-stop-direct-promotion-rejected",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "reserve-stop(actor-A,1,turn-17)",
+        "record-uncertain(turn-17)",
+        "record-applied-without-proof(turn-17)"
+      ],
+      "expected": {
+        "phase": "STOPPING",
+        "receipt": "UNCERTAIN",
+        "directApplied": "reject"
+      }
+    },
+    {
+      "id": "native-pending-stop-crash-recovery",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "reserve-stop(actor-A,1,turn-17)",
+        "shutdown-before-host-receipt",
+        "independent-proof-of-effect(turn-17)",
+        "reconcile-unresolved-stop(turn-17)"
+      ],
+      "expected": {
+        "phase": "STOPPED",
+        "receipt": "ACKNOWLEDGED",
+        "hostEffectRetried": false
+      }
+    },
+    {
+      "id": "native-pending-stop-without-proof",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "reserve-stop(actor-A,1,turn-17)",
+        "shutdown-before-host-receipt",
+        "independent-verifier-returns-false"
+      ],
+      "expected": {
+        "phase": "STOPPING",
+        "receipt": "PENDING",
+        "restartAllowed": false
+      }
+    },
+    {
+      "id": "native-stop-proof-verifier-throws",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "reserve-stop(actor-A,1,turn-17)",
+        "record-uncertain(turn-17)",
+        "independent-verifier-throws"
+      ],
+      "expected": {
+        "phase": "STOPPING",
+        "receipt": "UNCERTAIN",
+        "restartAllowed": false
+      }
     }
   ],
-  "description": "Trusted host supervisor lifecycle contract. STOPPING is an exclusive CONTROL-turn reservation, with host receipt statuses PENDING/APPLIED/UNCERTAIN/ACKNOWLEDGED. A host verifier may confirm unknown results without retrying the effect.",
+  "description": "Host-owned supervisor lifecycle. STOPPING retains exclusive CONTROL-turn authority. Only PENDING may receive direct host applied acknowledgement; UNKNOWN and crash-PENDING may reconcile only after independent proof; no automatic lifecycle retry.",
   "phases": [
     "ACTIVE",
     "FINALIZED",
