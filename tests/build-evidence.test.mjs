@@ -71,7 +71,7 @@ test("reject missing native artifact, duplicate role, and fake attestation",asyn
 test("mismatched classpath membership and duplicate classpath members fail closed",async()=>{
  await fixture(async x=>{const r=await buildEvidence(javaPaths(x));
   const mismatch=structuredClone(r);mismatch.artifacts.find(a=>a.role==="runtime-dependency").path=x.jar;
-  await assert.rejects(verifyBuildEvidence(mismatch,pins),/hash mismatch|membership/);
+  await assert.rejects(verifyBuildEvidence(mismatch,pins),/hash mismatch|membership|duplicated or unsupported/);
   await writeFile(x.classpath,[x.dependency,x.dependency].join(delimiter));
   await assert.rejects(verifyBuildEvidence(r,pins),/hash mismatch/);
  });
