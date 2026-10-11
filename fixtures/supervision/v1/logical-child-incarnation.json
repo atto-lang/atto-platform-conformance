@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "scope": "host-supervisor-logical-child-identity",
+  "sourceGuestExecution": "unimplemented",
+  "note": "Host-only model. Actor finalization/spawn and lifecycle effect authority are external to the registry.",
+  "scenarios": [
+    {
+      "id": "first-generation",
+      "input": [
+        "register(actor-A)"
+      ],
+      "expected": {
+        "logicalIncarnation": 1,
+        "phase": "ACTIVE"
+      }
+    },
+    {
+      "id": "must-finalize-first",
+      "input": [
+        "register(actor-A)",
+        "replace(actor-A,1,actor-B)"
+      ],
+      "expected": "reject-not-finalized"
+    },
+    {
+      "id": "replacement",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "replace(actor-A,1,actor-B)"
+      ],
+      "expected": {
+        "sameLogicalChildId": true,
+        "actor": "actor-B",
+        "logicalIncarnation": 2,
+        "phase": "ACTIVE"
+      }
+    },
+    {
+      "id": "stale-finalizer",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "replace(actor-A,1,actor-B)",
+        "finalize(actor-A,1)"
+      ],
+      "expected": "reject-stale-incarnation"
+    },
+    {
+      "id": "stale-stop",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "replace(actor-A,1,actor-B)",
+        "stop(actor-A,1)"
+      ],
+      "expected": "reject-stale-incarnation"
+    },
+    {
+      "id": "exactly-one-restart-winner",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "race-replace(actor-A,1,actor-B,actor-C)"
+      ],
+      "expected": {
+        "accepted": 1,
+        "rejected": 1,
+        "logicalIncarnation": 2
+      }
+    },
+    {
+      "id": "stop-and-retire",
+      "input": [
+        "register(actor-A)",
+        "finalize(actor-A,1)",
+        "stop(actor-A,1)",
+        "retire"
+      ],
+      "expected": {
+        "trackedChildren": 0,
+        "staleKey": "reject"
+      }
+    },
+    {
+      "id": "cross-registry-aba",
+      "input": [
+        "register-child-owner-1",
+        "recreate-registry-same-owner",
+        "register-another-child"
+      ],
+      "expected": {
+        "distinctLogicalIds": true,
+        "staleKey": "reject"
+      }
+    }
+  ]
+}
