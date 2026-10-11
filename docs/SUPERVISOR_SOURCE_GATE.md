@@ -217,3 +217,32 @@ represents only the opt-in STOP subset. Normal Java/LLVM compilation of
 supervisor sources remains fail-closed. This design text does not assert
 full STOP, RESTART or ESCALATE execution parity or verified CI for the
 current head.
+
+
+## Final focused audit: completed-turn replay and suspend/commit synchronization
+
+Private exact-Git-blob verification:
+https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/38177170932
+
+All three jobs passed: Java host CONTROL, native C++20 replay/invalid-directive
+ASan/UBSan, and C11 actor scheduler → native typed panic bridge integration
+ASan/UBSan.
+
+Two further failure modes were found during adversarial verification:
+
+- **Java completed-turn replay:** when a duplicated final completion arrived
+  after all notices had resolved, it previously poisoned an otherwise healthy
+  supervisor because there was no following generation yet. The stale
+  completion is now a no-op; an actually mismatched *active* lease still fails
+  closed. A deterministic JUnit regression verifies this with identical notice
+  objects and a replaying executor.
+- **Native await readiness:** entering `on_failure` is not sufficient proof
+  that an `await` has relinquished the physical CONTROL carrier. A new
+  mutex-protected `suspended()` status allows host integration tests to
+  establish that boundary before `resume()`; early resumes remain rejected.
+
+This evidence verifies the mirrored runtime/bridge Git blobs, **not** all files
+of either compiler tree. Do not promote any source-level guest-supervision
+capability or merge full stacks on the basis of this focused gate. Full
+JDK25 Maven, LLVM compiler CMake/CTest, Graal AOT/hybrid and independent
+review are still required.
