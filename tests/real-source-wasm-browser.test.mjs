@@ -57,3 +57,27 @@ test("mandatory real compiled Worker conformance cannot silently skip",()=>{
  assert.notEqual(result.status,0,result.stdout+"\n"+result.stderr);
  assert.match(result.stderr+result.stdout,/required real compiled Oreslang Worker evidence is unconfigured/);
 });
+
+test("oversized pinned bridge is rejected before read/execute",async()=>{
+ const dir=await mkdtemp(join(tmpdir(),"ores-native-budget-"));
+ try{
+  const compiler=join(dir,"compiler.bin"),source=join(dir,"guest.ores"),bridge=join(dir,"bridge.mjs"),
+   adapter=join(dir,"adapter.mjs"),output=join(dir,"out.wasm");
+  const {truncate}=await import("node:fs/promises");
+  await writeFile(compiler,Buffer.from([0x7f,0x45,0x4c,0x46,1]));
+  await writeFile(source,"pub fnc main(): int { return 42; }\n");
+  await writeFile(bridge,"stub");
+  await truncate(bridge,2*1024*1024+1);
+  await writeFile(adapter,"export {}");
+  const a=[
+   "--compiler="+compiler,"--compiler-sha256="+"0".repeat(64),
+   "--source="+source,"--source-sha256="+"0".repeat(64),
+   "--bridge="+bridge,"--bridge-sha256="+"0".repeat(64),
+   "--browser-module="+adapter,"--browser-module-sha256="+"0".repeat(64),
+   "--output="+output,"--expected-i64=42"
+  ];
+  const r=run(a);
+  assert.notEqual(r.status,0);
+  assert.match(r.stderr,/bridge exceeds native conformance input budget/);
+ }finally{await rm(dir,{recursive:true,force:true})}
+});
