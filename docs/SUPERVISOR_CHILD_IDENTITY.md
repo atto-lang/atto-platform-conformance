@@ -155,3 +155,24 @@ These checks establish *standalone registry* invariants, not the
 correctness of the newer Java ActorGroup integration, asynchronous STOP
 continuations, or the native terminal panic bridge. Those integrations
 were added separately and need their own exact-source full tests.
+
+
+## Restricted source `f.child` STOP-only projection
+
+The opt-in Java/GraalVM and LLVM STOP-only source paths now recognize
+`self.stop(f.child); return;` when `f` is exactly the typed parameter of
+`on_panic(f: Failure)`. This is a compiler-validated projection of the
+**current** failure's supervisor-owned logical child, not general guest
+property access. Both backend paths reject renamed, nested, or unrelated
+expressions and continue rejecting general supervisor source compilation.
+
+The Java runtime requires the failure notice to be bound to a logical
+child before emitting this STOP request. The native opt-in policy
+requires both nonzero `logical_child_id` and `logical_incarnation`
+on a typed PANIC envelope. The authoritative STOP acknowledgment is
+generation-checked by the host child registry after physical finalization.
+
+This does not implement `self.restart(f.child)`, a general `Failure`
+object evaluator, or general async `on_panic` code. The newer source
+fixtures and runtime tests must be executed at their **exact final**
+Git SHAs; prior focused CI only covers earlier revisions.
