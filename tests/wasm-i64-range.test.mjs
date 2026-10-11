@@ -5,7 +5,8 @@ import {fileURLToPath} from "node:url";
 const runner=fileURLToPath(new URL("../bin/wasm-core-conformance.mjs",import.meta.url));
 function run(expected){return spawnSync(process.execPath,[runner,
  "--wasm=/nonexistent.wasm","--manifest=/nonexistent.json",
- "--browser-module=/nonexistent.mjs","--expected-i64="+expected],{encoding:"utf8"});}
+ "--browser-module=/nonexistent.mjs","--browser-module-sha256="+"a".repeat(64),
+ "--expected-i64="+expected],{encoding:"utf8"});}
 
 test("guest expected value must be canonical signed i64",()=>{
  for(const invalid of ["-0","00","042","+42","1.0"," 42","42 ","0x2a",
