@@ -110,3 +110,18 @@ The funded TLC run documented above verifies its own exact checked
 Git blobs, not arbitrary future edits to this model, the JS test runner,
 or the Java/LLVM implementations. Always refresh exact-source evidence
 after changes.
+
+## Expanded reincarnation scope
+
+Two additional finite TLC configurations use one logical child, three
+incarnations and three CONTROL turns:
+`SupervisorStopABA.cfg` and `SupervisorLifecycleABA.cfg`. They test
+the same safety invariants through a longer generation sequence; they
+do **not** prove a physical ActorId will never be recycled or that the
+Java implementation refines the TLA+ generation map.
+
+[Expanded private CI run 38185549392](https://github.com/3fa-app-test/account-recovery-security/actions/runs/38185549392)
+passed both original models, both three-incarnation configurations and
+all four expected negative-control counterexamples. The extra STOP
+configuration explored **190 distinct states**; the extra CONTROL
+configuration explored **78 distinct states**.
