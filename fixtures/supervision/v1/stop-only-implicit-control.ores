@@ -1,0 +1,9 @@
+// The supervisor's logical CONTROL lease is implicit, not a source mutex.
+// This is the current opt-in STOP-only source-lowering subset.
+define supervisor RootSupervisor as
+  @Implements
+  on_panic(f: Failure): void {
+    self.stop();
+    return;
+  }
+end
