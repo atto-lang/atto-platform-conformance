@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {resolve} from 'node:path';
-import {compareCaptures, verifyCapture, gitBlobSha1} from './guest-parity.mjs';
+import {compareCaptures, verifyCapture, gitBlobSha1, parseCanonicalAudit, loadManifest, main} from './guest-parity.mjs';
 
 const manifest=JSON.parse(readFileSync(resolve(import.meta.dirname,'../guest/manifest.json'),'utf8'));
 const route=[
@@ -60,4 +60,21 @@ test('gate refuses backend swap and authority derived from a foreign route',()=>
 });
 test('both runtimes required; one valid trace cannot certify parity',()=>{
   assert.throws(()=>compareCaptures(audit(),undefined,manifest,authority(),authority('runtime-java')));
+});
+
+test('manifest rejects SHA or source drift before executing any runner',()=>{
+  const loaded=loadManifest();
+  assert.equal(loaded.manifest.sourceGitBlobSha1,manifest.sourceGitBlobSha1);
+});
+test('audit FD requires single compact canonical JSON record',()=>{
+  const value=audit();
+  const canonical=JSON.stringify(value)+'\n';
+  assert.deepEqual(parseCanonicalAudit(Buffer.from(canonical)),value);
+  assert.throws(()=>parseCanonicalAudit(Buffer.from(canonical+'\n')));
+  assert.throws(()=>parseCanonicalAudit(Buffer.from(canonical+canonical)));
+  assert.throws(()=>parseCanonicalAudit(Buffer.from('{"kind":"a","kind":"b"}\n')));
+  assert.throws(()=>parseCanonicalAudit(Buffer.from('{"kind": "a"}\n')));
+});
+test('the CLI refuses to certify without both real runner paths and trusted host files',()=>{
+  assert.throws(()=>main([]),/both backend runners/);
 });
