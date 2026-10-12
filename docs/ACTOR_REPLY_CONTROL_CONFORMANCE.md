@@ -20,3 +20,16 @@ from `receive(...): void` are rejected by the intended compiler/runtime.
 **The status of every language backend remains pending.** The executable
 JavaScript host-reference protocol is in Wasm PR #16, but does not satisfy any
 real compiler/guest/browser actor backend evidence gate.
+
+## Fixture diagnostic isolation
+
+Every actor-reply fixture declares the same `Message` enum. Proposed `match`
+examples cover both `Compute` and `Result` alternatives, so a backend that
+requires exhaustiveness cannot reject an intended positive case solely for an
+unhandled enum alternative. Negative actor fixtures use the same
+`@Implements` receiver marker as the positive actor fixture. Tests pin each
+fixture to its exact Git blob and separately assert these preconditions.
+
+This is fixture hygiene, **not** confirmation that any compiler accepts the
+proposed syntax or that negative cases fail for the claimed diagnostic. Real
+backend outcomes remain pending until executable compiler tests are recorded.

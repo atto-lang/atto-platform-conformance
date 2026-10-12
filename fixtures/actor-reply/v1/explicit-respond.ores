@@ -11,6 +11,9 @@ define actor WorkerActor as
         self.respond(Message.Result(text, n + 1));
         self.done();
       }
+      on Message.Result as (text, n) {
+        self.done();
+      }
     }
   }
 end
