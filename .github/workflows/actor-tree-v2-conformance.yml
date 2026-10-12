@@ -62,3 +62,7 @@ jobs:
         env:
           TLA2TOOLS_JAR: /tmp/tla2tools.jar
         run: bash contracts/actor-tree/v2/formal/check-tlc.sh
+      - name: TLC durable claim at-most-once and lost-ack mutant counterexamples
+        env:
+          TLA2TOOLS_JAR: /tmp/tla2tools.jar
+        run: bash contracts/actor-tree/v2/formal/check-claims-tlc.sh
