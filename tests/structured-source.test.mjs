@@ -9,7 +9,7 @@ const manifest=JSON.parse(await readFile(join(dir,"manifest.json"),"utf8"));
 test("explicit verified/pending backend matrix",()=>{
  assert.equal(manifest.schemaVersion,1);
  assert.equal(manifest.scope,"bounded-class-i64-wasm32-v1");
- assert.equal(manifest.cases.length,3);
+ assert.equal(manifest.cases.length,4);
  assert.match(manifest.graalEvidence,/actions\/runs\/[0-9]+/);
  const ids=new Set();
  for(const c of manifest.cases){
@@ -19,9 +19,23 @@ test("explicit verified/pending backend matrix",()=>{
   assert.match(c.sourceGitBlobSha1,/^[a-f0-9]{40}$/);
   const graalIsVerified=c.id==="class-shared-borrow"||
    c.id==="class-overlapping-loans";
-  assert.deepEqual(c.confirmedBackends,
-   graalIsVerified?["llvm","wasm","graal"]:["llvm","wasm"]);
-  assert.deepEqual(c.pendingBackends,graalIsVerified?[]:["graal"]);
+  if(c.id==="class-explicit-mutable-borrow") {
+   // Exact source bytes were compiled by real pinned LLVM C++ compiler
+   // components and executed as wasm32 in an isolated Worker. Graal remains
+   // pending and no entire latest LLVM repository tree rebuild is claimed.
+   assert.deepEqual(c.confirmedBackends,["llvm","wasm"]);
+   assert.deepEqual(c.pendingBackends,["graal"]);
+   assert.equal(c.sourceGitBlobSha1,"a7c28cc10c8ed4a4164984fe1d8f875e616e2eda");
+   assert.equal(manifest.explicitMutableCompilerCoreSha,
+    "bb33404d2f9878e0581bc5df29eb949ab5c22095");
+   assert.match(manifest.explicitMutableEvidence,
+    /^https:\/\/github\.com\/akrion-sim\/akrion-sim-e2e\/actions\/runs\/38169346910$/);
+   assert.match(manifest.explicitMutableCompilerScope,/not a mirror of the entire current LLVM repository tree/);
+  }else{
+   assert.deepEqual(c.confirmedBackends,
+    graalIsVerified?["llvm","wasm","graal"]:["llvm","wasm"]);
+   assert.deepEqual(c.pendingBackends,graalIsVerified?[]:["graal"]);
+  }
   // A native-only interpretation of an unmarked mutable owner is NOT
   // a Java semantic parity success. Do not auto-promote this fixture.
   if(c.id==="class-mutable-borrow")
