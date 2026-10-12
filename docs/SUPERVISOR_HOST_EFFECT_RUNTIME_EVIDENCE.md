@@ -327,3 +327,39 @@ must eventually consume separately authenticated host records with
 independently pinned source/backend identity before claiming end-to-end
 runtime refinement. General guest RESTART and all release gates remain
 unchanged.
+
+
+## Attested native restricted source STOP: callback-only ACK is rejected
+
+The restricted native `install_source_supervisor_stop_verified` adapter
+now accepts an **optional** `NativePhysicalStopEvidence` instance in its
+trusted host API. In this opt-in mode, a normal host callback return does
+NOT authorize `stop.applied`: the installer rereads the authoritative
+reservation, checks for a separately issued scheduler-DONE receipt for
+the exact child/actor incarnation and CONTROL turn, and only then commits
+`STOPPED`. If the callback returns normally but the ledger has no
+matching evidence, the STOP stays **UNCERTAIN / STOPPING** with no retry.
+A thrown callback may likewise be reconciled only if the host had already
+recorded physical DONE in the same process.
+
+[Actual funded native CI #38200659588](https://github.com/zed-pkg-test/java-app/actions/runs/38200659588):
+**PASS**, 18 Git-blob-exact LLVM subset sources, GCC ASan/UBSan,
+real scheduler, Parser.cpp, OwnershipChecker.cpp and restricted compiled
+source `on_panic(f: Failure)` `self.stop(f.child)`.
+
+Executed regressions cover:
+- successful STOP with one physical receipt and one host invocation;
+- unknown outcome without evidence remaining quarantined;
+- LOST ACK with independently recorded physical DONE reconciled without
+  reinvoking the host callback;
+- a normal callback return **with no receipt** remaining quarantined;
+- registry asserted FINALIZED while scheduler still executes the actor,
+  rejected until physical DONE;
+- forged child/turn/generation, replay/duplicate, and slot-0 actor identity.
+
+**Not proven by this subset:** durable cross-process effects, cryptographic
+host receipt attestation, arbitrary external STOP side effects, complete
+Java/GraalVM parity, whole-compiler CMake/CTest or Maven, or schema-v2
+actual event-stream emission and TLA+ refinement. The older optional-null
+legacy adapter is source-compatible but **must not** be used as a general
+guest STOP proof. The three PRs remain draft/unmerged.
