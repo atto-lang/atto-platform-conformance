@@ -410,3 +410,42 @@ Java/native refinement, progress under a blocked gate, or native
 supervisor CONTROL-close atomicity.
 
 All PRs remain draft; no general source RESTART/ESCALATE execution is enabled.
+
+
+## Audit follow-up: native RESTART gate lifecycle and initial registration
+
+The native scheduler publication-mutex audit found two independently
+actionable resource-management defects in the new lease prototype:
+
+1. A failed `pthread_mutex_init` of the publication gate tried to
+   destroy the uninitialized mutex.
+2. Partial worker-thread creation failure omitted destruction of a
+   successfully initialized publication gate after joining earlier
+   workers.
+
+Both cleanup paths are corrected. The native scheduler also rejects
+same-thread nested lease acquisition, synchronous STOP under a live
+lease, and destruction under a live lease; its thread-affine release
+and publish operations reject foreign owners and forged nonces.
+`retire()` has no error result and therefore treats same-thread
+lease reentrancy as a fatal host programming error rather than hanging.
+Normal STOP/retire from other threads still blocks until the publication
+guard releases. Do not synchronously invoke user code or wait for a
+blocking lifecycle effect while holding any admission lease.
+
+**Additional admission race:** initial native child registration formerly
+checked `poll_published(child)` and only then inserted the registry
+identity. STOP could retire the physical child between those operations.
+`acquire_registration_lease` now pins an already published actor
+generation across initial registry insertion, with the same physical
+STOP/retirement and CONTROL close coordination as the RESTART
+publication transaction. A candidate using `spawn_unpublished`
+cannot enter initial registration by this path.
+
+Verification now includes a deterministic linker-wrapped startup fault
+test and a real scheduler interleaving with physical STOP blocked
+behind the initial registration lease, in addition to the earlier
+restart/CONTROL-close race and sanitizers. These tests do not prove
+the full native bridge, production guest execution or Java parity.
+The bounded `SupervisorAdmissionLease.tla` model primarily covers
+RESTART publication, not this new initial-registration implementation.
