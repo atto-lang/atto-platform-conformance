@@ -284,3 +284,37 @@ pre-external-proof-gate revision, including 17,712 lifecycle distinct states,
 changes require their own exact-blob CI evidence. The runtime producers and
 trusted verifier are NOT implemented by this formal checking, and neither
 Java nor LLVM is certified to refine the model yet.
+
+## Actual registry journal parity: funded Java 25 and native sanitizer execution
+
+Both source backends now capture a bounded, read-only journal of committed
+supervisor-child registry mutations under each registry's own lock. Events
+include monotonic sequence, operation, child/actor snapshot and (where needed)
+restart permit, STOP turn and physical replacement identity. Failed operations
+do not appear as committed. A dropped journal event permanently invalidates
+the audit read. Recording never calls external code while locked.
+
+The comparator bin/compare-supervisor-registry-transitions.mjs reads exactly
+one SUPERVISOR_REGISTRY_TRANSITIONS_V1 marker from each actual test run.
+It rejects missing, repeated, malformed, or mismatched runtime logs. Its
+11-action fixture exercises register, asserted finalize, restart reserve,
+asserted spawn, verified admission, commit, second finalize, retry reserve,
+asserted spawn, verified cleanup, and abort.
+
+Funded exact-blob CI run:
+https://github.com/3fa-app-test/account-recovery-security/actions/runs/38190035951
+
+The run verified seven exact source blobs, compiled the actual Java registry
+under JDK 25 using an identity-only ActorRuntime compile scaffold, ran all
+19 original Java registry JUnit cases successfully, compiled/executed the
+actual native registry regression test under ASan/UBSan, passed the five
+comparator self-tests, and verified the two execution-emitted logs matched.
+
+LIMITS: This tests real registry code, NOT real full Java interpreter or
+LLVM guest execution, nor formal refinement of either. The compile scaffold
+does not substitute for the real ActorRuntime. A registry cannot itself
+attest external CONTROL scheduling, physical finalization, host STOP effects
+or independent STOP proof. Those external owners must emit truthful events
+at their real linearization points and bind a complete schema-v2 trace to
+the tested binary/source identity. Do not fabricate events to fill gaps.
+All three PRs remain draft until runtime integration and stronger CI pass.
