@@ -82,7 +82,7 @@ const summary={
   "SOURCE_ACTOR_SPAWN_STOP_VERIFIED constructor_on_worker=1 released=1 processed=1 last=13",
   "SOURCE_ACTOR_SPAWN_STOP_VERIFIED constructor_on_worker=1 released=1 processed=2 last=14",
   "SOURCE_ACTOR_SPAWN_STOP_VERIFIED constructor_on_worker=1 released=1 processed=2 last=19",
-  "SOURCE_ACTOR_GROUP_VERIFIED active=0 slots=4 peak=4 carriers=4",""
+  "SOURCE_ACTOR_GROUP_VERIFIED active=0 slots=3 peak=3 carriers=4",""
  ].join("\n")
 };
 test("real-native log interface requires all three physical stops and group barrier",()=>{
@@ -98,4 +98,11 @@ test("guest log rejects fabricated totals, absent teardown, bad exit code, wrong
  change(x=>x.stderr=x.stderr.replace("SOURCE_ACTOR_GROUP_VERIFIED active=0","SOURCE_ACTOR_GROUP_VERIFIED active=1"));
  change(x=>x.stderr+="\nSOURCE_PIPELINE_FAILURE code=7\n");
  change(x=>x.stderr+=summary.stderr.split("\n")[0]+"\n");
+ change(x=>x.stderr=x.stderr.replace("slots=3","slots=4"));
+ change(x=>x.stderr=x.stderr.replace("peak=3","peak=4"));
+ change(x=>x.stderr=x.stderr.replace("carriers=4","carriers=5"));
+ change(x=>x.stdout="unverified extra output");
+ change(x=>x.stderr=x.stderr+"prefix: SOURCE_PIPELINE_FAILURE code=7\n");
+ change(x=>{const lines=x.stderr.trimEnd().split("\n");x.stderr=[...lines.slice(1,4),lines[0],lines[4],""].join("\n")});
+ change(x=>{const lines=x.stderr.trimEnd().split("\n");x.stderr=[lines[0],lines[4],...lines.slice(1,4),""].join("\n")});
 });
