@@ -586,3 +586,41 @@ ownership at every external capability boundary. The normal-exit
 recycler is host-only; guest-defined `await self.restart(f.child)`,
 PANIC-completed physical actor slot recycling, and ESCALATE remain
 disabled until source lowering and terminal-receipt release gates pass.
+
+
+## Audit: exact parent generation required for native PANIC admission
+
+The native supervisor bridge's identity-mode PANIC callback API now uses
+**both** the complete parent ActorRef and an authoritative scheduler
+publication check. An otherwise matching retained callback is rejected
+after its parent has physically STOPPED; it cannot consume a second
+logical child registration or deliver terminal failure to an already
+retired supervisor lane.
+
+A legacy `on_panic(parent_slot, failure)` entry point remains compatible
+with schedulers configured with the legacy slot-only callback ABI, but
+**MUST fail closed for identity-callback schedulers**. Without this
+fence, an identity-mode integration could accidentally invoke the legacy
+bridge entry point, silently stripping the parent generation and bypassing
+generation-scoped callback authorization. The bridge now exposes a
+separate private checked delivery path; neither public callback overload
+can reach it without its respective callback-mode and parent-liveness
+checks.
+
+Real source regression `native_supervisor_panic_bridge_test.cpp` covers:
+legacy routing in the legacy scheduler; forged parent generation;
+slot-only routing rejection in identity mode; successful exact live
+identity routing; duplicate PANIC rejection; and physically retired
+parent callback rejection without consuming another registered child.
+[Exact-source bridge run #38208351490](https://github.com/zed-pkg-test/java-app/actions/runs/38208351490)
+passed strict GCC and Clang ASan/UBSan for the audited revision.
+The companion bounded `NativeParentPanicAuthority.tla` abstraction
+checks these four rejection boundaries with mutation counterexamples.
+
+This authorization change intentionally leaves a STOP-raced terminal
+callback **quarantined instead of routing it into a dead parent**.
+That must be reconciled by supervisor terminal evidence/physical STOP
+receipts. The current callback guard is not an exactly-once durable
+failure ledger or proof of the entire C callback/CONTROL lock graph.
+Production PANIC recycling and compiled guest `self.restart()` remain
+blocked until those release gates are demonstrated.
