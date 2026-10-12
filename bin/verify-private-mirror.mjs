@@ -46,6 +46,18 @@ export function verify({ repo, subtreePath, expectedTree, blobs = [] }) {
     if (!match || !['100644','100755'].includes(match[1]) || match[2] !== '0') {
       throw Error('source subtree contains symlink, gitlink or unexpected index entry');
     }
+    // Git status can report CLEAN even when bytes on disk differ from the
+    // pinned blob: .gitattributes EOL conversion and custom clean filters
+    // transform the worktree before comparing to the index. Hash each raw
+    // executable file with filters explicitly disabled.
+    const path = record.slice(match[0].length);
+    if (!path.startsWith(subtreePath + '/')) {
+      throw Error('tracked file lies outside the verified subtree');
+    }
+    const pinnedBlob = record.slice(7, 47);
+    if (git(repo, 'hash-object', '--no-filters', '--', path) !== pinnedBlob) {
+      throw Error('raw source bytes differ from pinned Git blob at ' + path);
+    }
   }
   for (const entry of blobs) {
     if (!entry || !safePath(entry.path) || !/^[0-9a-f]{40}$/.test(entry.sha)) {
