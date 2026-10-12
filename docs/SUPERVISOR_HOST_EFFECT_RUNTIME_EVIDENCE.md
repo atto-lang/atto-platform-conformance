@@ -81,3 +81,25 @@ assertions to link and execute.
 
 Keep Java #657, LLVM #196, and conformance #13 **draft and unmerged**
 until these source-level and implementation-refinement gates are satisfied.
+
+## Later exact-source CONTROL-close refinement verification
+
+The bridge later gained a host-only `SupervisorProcess.with_healthy_restart_transaction`
+decision fence that serializes CONTROL close/failure classification with the
+entire scheduler-pinned RESTART publication transaction. The current
+`NativeSupervisorPanicBridge.hpp` and `SupervisorProcess.hpp` Git blobs
+were mirrored together and actually executed with the host scheduler source.
+
+**[Final funded source-level CI #38192907210](https://github.com/3fa-app-test/account-recovery-security/actions/runs/38192907210): PASS.**
+All 22 exact Git blob checks completed; the 21 Java registry JUnit
+tests passed; the native registry, restricted source STOP path, and real
+scheduler RESTART close/cleanup/abort path passed under ASan/UBSan;
+the runtime-emitted parity comparator passed all seven Node tests.
+
+The verified latest bridge/process blobs are
+`069a7d6e65506b25bb136e1848255646d741fb8f` and
+`c525270dc9a2fdcf3753f013c08853d246fba6a0`.
+The test establishes this particular host-level shutdown transaction under
+its exercised schedules; it is not an unbounded concurrency proof, and the
+complete LLVM CMake matrix plus unrestricted guest supervisor lowering
+remain gated.
