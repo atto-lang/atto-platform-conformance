@@ -156,3 +156,81 @@ independent/durable proof of an external STOP side effect. The bool-based
 host verifier remains a caller trust boundary that needs a concrete
 provenance-bound evidence backend. Do not merge runtime drafts or enable
 general guest RESTART based solely on these bounded tests.
+
+
+## Full-source compiler and host-effect evidence milestone
+
+The isolated registry smoke suite above is **not** the only compiler evidence
+anymore. Two separate funded branches now contain complete exact-source trees.
+
+### Java/GraalVM
+
+[Funded full-source Java verification #38196942944](https://github.com/zed-pkg-test/java-app/actions/runs/38196942944)
+passed a full Maven `verify`: **1,493 JUnit tests, zero failures/errors**,
+using a 403-file Java source mirror, not the earlier identity-only scaffold.
+The real `ActorRuntime`/compiled `SourceSupervisorLowering` integration ran
+in the focused test gate. This exposed and repaired a Java test generic
+inference regression (`ActorRef<Object>` instead of `ActorRef<String>`),
+plus corrections to isolation-test callbacks, fail-closed dispatcher
+admission, and post-failure notice accounting.
+
+The funded run also **compiled the full GraalVM AOT Native Image
+successfully**, but its AOT smoke step failed on a removed
+`--internal-native-shutdown-selftest` launcher flag. It would be incorrect
+to call that whole job green. The funded workflow was subsequently updated
+to run the real `contracts/v1/fixtures/literal-42.ores` guest program using
+the native `--mode=aot/hybrid` options. The AOT and hybrid executable smoke
+gates must be assessed from a newer completed run, not assumed successful.
+
+The Java PR has moved while other changes land. A successful funded mirror
+applies to the **exactly verified source blobs of that particular run**,
+not automatically to future PR heads.
+
+### LLVM
+
+[Funded complete LLVM CMake/CTest #38197281070](https://github.com/zed-pkg-test/java-app/actions/runs/38197281070)
+verified the full 308-file source subtree and built the complete compiler
+plus host/runtime tests. Its **10/10 supervisor/restart tests** and
+**182/182 full CTest cases** passed. The separate ASan/UBSan configuration
+passed all 10 supervisor/restart tests.
+
+The first full CTest run exposed two outdated test expectations about a
+rejected supervisor CONTROL dispatch. Both tests now explicitly require
+fail-closed admission to throw, while asserting that no guest decision was
+applied. This is a test-contract repair; it does not weaken admission.
+
+### Schema-v2 STOP permit and signed proof verification
+
+The executable trace verifier now requires a globally unreused
+`stopPermitId` on STOP reservation. The exact permit must be preserved
+across `stop.invoke`, `stop.applied` or `stop.uncertain`, optional
+`stop.proof`, and `stop.ack`. Test callers can require
+`expectedSourceSha` and `expectedBackend` from an independently
+verified checkout. Neither the JSON source SHA nor a claimed signed receipt
+is sufficient on its own.
+
+`bin/verify-signed-stop-receipt.mjs` defines a domain-separated Ed25519
+receipt contract for externally configured host authorities. It signs the
+specific source, backend, supervisor, logical child, physical actor, actor
+incarnation, CONTROL turn, STOP permit, receipt/evidence ID, operation ID,
+and `applied` status. The verifier requires a public-key trust anchor and
+source SHA supplied **out of band**; rejects mismatched signatures, actor
+identities, turns, permits, duplicate evidence and operation IDs; and can
+authorize the verifier's explicit `stop.proof` action.
+
+[Funded signed-receipt/schema-v2 CI #38197896901](https://github.com/zed-pkg-test/java-app/actions/runs/38197896901)
+verified the exact four conformance blobs and passed **15/15** positive and
+adversarial Node tests on an allocated runner. Earlier attempts in the
+previous test organization failed **before runner allocation**, not due to
+assertions; they are not implementation test evidence.
+
+**Trust limitation:** A valid Ed25519 signature authenticates that the
+configured host issuer *asserted* application. It cannot certify that the
+external STOP operation actually occurred, that evidence is durable across
+process crashes, or that an issuer signed only after a successful effect.
+The host must separately implement a durable, idempotency-aware operation
+ledger and issuer policy. No complete, independently observed real schema-v2
+trace of a production supervisor execution has been verified yet.
+
+All Java #657, LLVM #196, and conformance #13 PRs remain draft and must not
+be released based on these bounded checks alone.
