@@ -136,17 +136,29 @@ This is neither a TLA+ refinement proof nor a substitute for TLC.
 
 Run: node bin/verify-supervisor-trace.mjs path/to/trace.json
 
-The JSON document must have schemaVersion 1, backend java or llvm, the
+The JSON document must have schemaVersion 2, backend java or llvm, the
 exact 40-character lowercase sourceSha, and nonempty events. Every event
 has contiguous seq beginning at one. Each child action carries immutable
 child and supervisor identities and the exact generation. Registration
 uses generation 1 and a previously unseen physical actor identity.
 
 The recognized actions are: register, cleanup, finalize, control.acquire,
-stop.reserve, restart.reserve, restart.abort, restart.commit, stop.invoke,
-stop.applied, stop.uncertain, stop.proof, stop.ack and supervisor.close.
-CONTROL actions include an increasing turn; restart.commit also needs a
-newActor and newGeneration. Independent stop.proof requires an evidenceId.
+stop.reserve, restart.reserve, restart.spawn, restart.admit,
+restart.cleanup, restart.abort, restart.commit, stop.invoke,
+stop.applied, stop.uncertain, stop.proof, stop.ack, supervisor.close
+and the mandatory final trace.end marker.
+CONTROL actions include an increasing turn; every RESTART reservation gets a
+unique permitId, and the subsequent stage/admit/cleanup/abort/commit actions
+must present that exact one-shot permit. A spawn records a globally distinct
+newActor and newGeneration, admission binds that identity to a host-issued
+admissionId, and abort requires prior cleanupId if a physical replacement
+was spawned. The trace.end action requires a matching recordedEvents count
+and a completed or quarantined status. Incomplete prefixes only pass
+programmatic checks with allowPrefix:true (never the default CLI mode).
+Independent stop.proof requires evidenceId plus a trusted verifyProof
+callback that verifies the original actor, generation, CONTROL turn, host
+receipt and external evidence. The standalone CLI intentionally rejects
+proof-based reconciliation without that callback.
 Unknown operations fail closed.
 
 The oracle rejects premature finalization, duplicate host STOP invocation,
@@ -249,3 +261,26 @@ This is **not** proof of Java or LLVM compiler/runtime behavior. Those
 source trees were not completely mirrored into the funded test repository,
 and the Java Maven, native CMake/CTest, sanitizer, and real-log cross-backend
 trace comparison gates are still open.
+
+## October 11 hardening: one-shot permit and proof trust boundary
+
+A prior verifier accepted a direct reserve-to-commit RESTART without actual
+replacement spawn and admission events. It also treated a string evidenceId
+as positive independent host evidence. Both have been tightened: the
+schemaVersion 2 verifier requires spawn, admission, one-shot permit binding,
+cleanup-before-abort, explicit terminal trace markers, and fail-closed
+trusted host verification for proof-based STOP reconciliation.
+
+A new focused bounded TLA+ model, SupervisorPermit.tla, explicitly explores
+abort/re-reserve ABA retries in one supervisor CONTROL turn. The
+SupervisorPermitMutant.cfg configuration must find a stale-permit commit
+counterexample to NoStalePermitCommit. This is distinct from the existing
+SupervisorLifecycle.tla model, which checks physical replacement lifecycle.
+
+[Exact-blob funded private CI run 38188877214](https://github.com/3fa-app-test/account-recovery-security/actions/runs/38188877214)
+passed 10 synthetic trace regression tests and TLC checks on the pinned
+pre-external-proof-gate revision, including 17,712 lifecycle distinct states,
+94 permit states, and 7 expected mutant counterexamples. Newer proof-callback
+changes require their own exact-blob CI evidence. The runtime producers and
+trusted verifier are NOT implemented by this formal checking, and neither
+Java nor LLVM is certified to refine the model yet.
