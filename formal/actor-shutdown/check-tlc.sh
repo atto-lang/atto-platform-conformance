@@ -35,3 +35,32 @@ if ! grep -Eq 'Invariant NoPrematurePhysicalDone is violated|NoPrematurePhysical
   exit 1
 fi
 echo ACTOR_SHUTDOWN_EXPECTED_MUTANT_COUNTEREXAMPLE
+
+java -Xmx1200m -cp "${TMP}/tla2tools.jar" tlc2.TLC \
+  -workers 2 -deadlock -config NativeReleaseWake.cfg \
+  -metadir "${TMP}/native-safe" NativeReleaseWake.tla \
+  >"${TMP}/native-safe.log" 2>&1 || {
+    cat "${TMP}/native-safe.log"; exit 1;
+  }
+if grep -Eq 'Invariant .* is violated|Error:|Error in specification' "${TMP}/native-safe.log"; then
+  cat "${TMP}/native-safe.log"; exit 1
+fi
+grep -Eq 'Model checking completed|Model checking finished|Finished computing' \
+  "${TMP}/native-safe.log" || { cat "${TMP}/native-safe.log"; exit 1; }
+echo NATIVE_RELEASE_WAKE_TLC_SAFE_PASS
+
+if java -Xmx1200m -cp "${TMP}/tla2tools.jar" tlc2.TLC \
+    -workers 2 -deadlock -config NativeReleaseWakeUnsafe.cfg \
+    -metadir "${TMP}/native-unsafe" NativeReleaseWake.tla \
+    >"${TMP}/native-unsafe.log" 2>&1; then
+  cat "${TMP}/native-unsafe.log"
+  echo 'Expected native lost-wakeup mutant to violate NoLostWakeup' >&2
+  exit 1
+fi
+if ! grep -Eq 'Invariant NoLostWakeup is violated|NoLostWakeup.*violated' \
+  "${TMP}/native-unsafe.log"; then
+  cat "${TMP}/native-unsafe.log"
+  echo 'Native mutant failed for an unrelated reason' >&2
+  exit 1
+fi
+echo NATIVE_RELEASE_WAKE_EXPECTED_MUTANT_COUNTEREXAMPLE
