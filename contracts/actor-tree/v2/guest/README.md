@@ -46,3 +46,11 @@ Funded run: https://github.com/zed-pkg-test/java-app/actions/runs/38282112924
 The runner checked 162 LLVM compiler/runtime source Git blobs and the exact source Git blob SHA-1 above. It built the real LLVM compiler, compiled this precise guest to LLVM IR, linked the real native scheduler and MessagePack runtime, and executed the resulting binary. The guest exited 43, reported two typed forward and two backward hops, ended at INT64_MAX, recorded three physical actor STOP receipts, and closed its actor group with active=0. It emitted real native SOURCE_PIPELINE_ADMIT events with INT64_MIN along the data path and INT64_MAX on the reverse result path.
 
 **Evidence boundary:** the executed native compiler/runtime currently emits admission/STOP diagnostics on stderr; this is not the new structured host-audit FD3 interface. The current proof is executable LLVM single-flow signed-i64 boundary support, *not* a full V2 cross-backend runtime certification. The separately required Java/GraalVM same-source guest, trusted authority records and canonical FD3 trace are still pending.
+
+## Java/GraalVM signed-i64 dialect execution (NOT same-source parity)
+
+Funded Java/GraalVM 25 run: https://github.com/zed-pkg-test/java-app/actions/runs/38282982409
+
+An independent Java-dialect fixture, now committed to Java PR #645, compiled and executed three actor stages with two INT64_MIN downstream values and two INT64_MAX upstream values. Its source Git blob is 8fcb0a15ff5001b2b4c41a6159438121a6d53577, **different** from the LLVM guest source blob 34c2dc0de8816df2f2f8bfbd3c12814ef2afbdb6. The Java run passed 1,471 Maven tests and its exact expected four-hop stdout result. The Java parser required a real fix to accept the negative signed-i64 endpoint without allowing positive overflow (parser blob f5b5a74ff5830467b6aaf320f8f6ac774e88050a).
+
+The same-source release gate remains BLOCKED until frontend syntax/lowering is reconciled, the exact same .ores Git blob executes in both backends, and each real host writes authoritative FD3 V2 audit records. These two green dialect-specific runs **cannot** be combined to claim compiler or source parity.
