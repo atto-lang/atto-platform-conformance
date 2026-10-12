@@ -80,6 +80,6 @@ test("source proposal distinguishes actor reply effects from callable returns",a
  assert.match(invalid,/receive\(Message m\): void/);
  assert.match(invalid,/return match m over/);
  const doubled=await load("invalid-double-response.ores");
- assert.equal((doubled.match(/self\\.respond\\s*\\(/g)||[]).length,2);
- assert.match(doubled,/self\\.done\\(\\)/);
+ assert.equal((doubled.match(/self\.respond\s*\(/g)||[]).length,2);
+ assert.match(doubled,/self\.done\(\)/);
 });
