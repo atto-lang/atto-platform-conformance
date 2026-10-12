@@ -1,6 +1,8 @@
 /**
- * Proposal-only typed actor pipeline admission, not Oreslang compiler or runtime support.
- * Operates on JSON-like plain own-data objects. Proxies are not a trusted input boundary.
+ * Proposal-only typed actor pipeline validation, not runtime authorization.
+ * Input remains caller-owned/mutable. Consumers must use the immutable contract
+ * returned by admitPipelineContract() for any downstream construction decision.
+ * Proxies are not a trusted input boundary.
  */
 const typePattern=/^[A-Z][A-Za-z0-9_]*(?:\.[A-Z][A-Za-z0-9_]*)*$/;
 export const PIPELINE_BACKENDS=Object.freeze(['java-graalvm','llvm','wasm','browser-worker']);
