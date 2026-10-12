@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {resolve} from 'node:path';
-import {compareCaptures, verifyCapture, gitBlobSha1, parseCanonicalAudit, loadManifest, main} from './guest-parity.mjs';
+import {compareCaptures, verifyCapture, gitBlobSha1, parseCanonicalAudit, loadManifest, main, guestRunnerEnvironment} from './guest-parity.mjs';
 
 const manifest=JSON.parse(readFileSync(resolve(import.meta.dirname,'../guest/manifest.json'),'utf8'));
 const route=[
@@ -77,4 +77,34 @@ test('audit FD requires single compact canonical JSON record',()=>{
 });
 test('the CLI refuses to certify without both real runner paths and trusted host files',()=>{
   assert.throws(()=>main([]),/both backend runners/);
+});
+
+test('guest runner env never inherits CI secrets or forged source flags',()=>{
+  const host={
+    PATH:'/usr/bin:/bin', LANG:'C.UTF-8', JAVA_HOME:'/opt/jdk',
+    GITHUB_TOKEN:'private', AWS_ACCESS_KEY_ID:'private',
+    AWS_SECRET_ACCESS_KEY:'private', SSH_AUTH_SOCK:'/tmp/agent',
+    HOME:'/home/ci-with-secrets',
+    ORESLANG_GUEST_SOURCE:'/tmp/malicious.ores',
+    ORESLANG_GUEST_BACKEND:'forged',
+  };
+  const env=guestRunnerEnvironment(host,'llvm-native',manifest,
+    '/trusted/source/three-actor-signed-i64.ores');
+  assert.equal(env.PATH,host.PATH);
+  assert.equal(env.JAVA_HOME,host.JAVA_HOME);
+  assert.equal(env.ORESLANG_GUEST_SOURCE,'/trusted/source/three-actor-signed-i64.ores');
+  assert.equal(env.ORESLANG_GUEST_BACKEND,'llvm-native');
+  assert.equal(env.ORESLANG_GUEST_SOURCE_GIT_BLOB,manifest.sourceGitBlobSha1);
+  for(const secret of ['GITHUB_TOKEN','AWS_ACCESS_KEY_ID','AWS_SECRET_ACCESS_KEY',
+      'SSH_AUTH_SOCK','HOME']) {
+    assert.equal(Object.hasOwn(env,secret),false,
+      secret+' must never be forwarded to the compiled guest runner');
+  }
+});
+test('reject unknown guest backend and malformed source identity before launch',()=>{
+  assert.throws(()=>guestRunnerEnvironment({PATH:'/usr/bin'},'unknown',
+    manifest,'/real/source.ores'), /invalid guest runner environment authority/);
+  assert.throws(()=>guestRunnerEnvironment({},'llvm-native',
+    {...manifest,sourceGitBlobSha1:'short'},'/real/source.ores'),
+    /invalid guest runner environment authority/);
 });
