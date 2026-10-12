@@ -18,11 +18,17 @@ export const EXPECTED_REGISTRY_RESTART = Object.freeze([
  */
 export function extractRegistryTransitions(log, backend) {
   if (typeof log !== 'string') throw new Error(backend+': missing runtime log');
-  const matching = log.split(/\r?\n/).filter(l => l.includes(MARKER));
+  // A compiler diagnostic, shell echo or test-progress line that merely
+  // contains the marker is not an emitted registry event. Reject it rather
+  // than silently upgrading unrelated text to runtime provenance.
+  const lines = log.split(/\r?\n/);
+  const matching = lines.filter(l => l.includes(MARKER));
   if (matching.length !== 1)
     throw new Error(backend+': expected exactly one registry transition line, got '+matching.length);
   const line = matching[0];
-  const payload = line.slice(line.indexOf(MARKER)+MARKER.length).trim();
+  if (!line.startsWith(MARKER) || line.indexOf(MARKER, MARKER.length) !== -1)
+    throw new Error(backend+': marker is not an exact standalone runtime output line');
+  const payload = line.slice(MARKER.length);
   if (!/^[a-z]+(?:[.-][a-z]+)*(?:>[a-z]+(?:[.-][a-z]+)*)+$/.test(payload))
     throw new Error(backend+': malformed registry transitions');
   return payload.split('>');
