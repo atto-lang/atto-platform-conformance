@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oreslang.dev/contracts/actor-tree/v1/lifecycle-trace.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "traceId",
+    "events"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "traceId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "events": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4096,
+      "items": {
+        "$ref": "#/$defs/event"
+      }
+    }
+  },
+  "$defs": {
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtimeId",
+        "actorId",
+        "incarnation"
+      ],
+      "properties": {
+        "runtimeId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "incarnation": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "child": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actor",
+        "physicalDone",
+        "nativeLoans",
+        "pendingCleanup"
+      ],
+      "properties": {
+        "actor": {
+          "$ref": "#/$defs/identity"
+        },
+        "physicalDone": {
+          "type": "boolean"
+        },
+        "nativeLoans": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pendingCleanup": {
+          "type": "boolean"
+        }
+      }
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sequence",
+        "kind",
+        "actor",
+        "nativeLoans",
+        "pendingCleanup",
+        "physicalDone"
+      ],
+      "properties": {
+        "sequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "kind": {
+          "enum": [
+            "parent_stop",
+            "child_stop",
+            "native_loan_released",
+            "source_cleanup_drained",
+            "child_physical_done",
+            "parent_physical_done",
+            "stale_callback"
+          ]
+        },
+        "actor": {
+          "$ref": "#/$defs/identity"
+        },
+        "nativeLoans": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "pendingCleanup": {
+          "type": "boolean"
+        },
+        "physicalDone": {
+          "type": "boolean"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/child"
+          }
+        },
+        "ticket": {
+          "type": "string",
+          "minLength": 1
+        },
+        "accepted": {
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "stale_callback"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "ticket",
+              "accepted"
+            ],
+            "properties": {
+              "accepted": {
+                "const": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "parent_physical_done"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "children"
+            ],
+            "properties": {
+              "physicalDone": {
+                "const": true
+              },
+              "nativeLoans": {
+                "const": 0
+              },
+              "pendingCleanup": {
+                "const": false
+              },
+              "children": {
+                "minItems": 1,
+                "items": {
+                  "properties": {
+                    "physicalDone": {
+                      "const": true
+                    },
+                    "nativeLoans": {
+                      "const": 0
+                    },
+                    "pendingCleanup": {
+                      "const": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "child_physical_done"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "physicalDone": {
+                "const": true
+              },
+              "nativeLoans": {
+                "const": 0
+              },
+              "pendingCleanup": {
+                "const": false
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
