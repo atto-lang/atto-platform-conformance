@@ -88,12 +88,12 @@ test('abort cannot orphan either spawned or admitted replacement', () => {
   expectReject([...r.slice(0,7),event(8,'restart.abort',
     {turn:1,permitId:'permit-1'})], /orphan/);
   const cleaned=[...r.slice(0,7),
-    event(8,'restart.cleanup',{turn:1,permitId:'permit-1',newActor:'actor-B',cleanupId:'cleanup-1'}),
+    event(8,'restart.cleanup',{turn:1,permitId:'permit-1',newActor:'actor-B',newGeneration:2,cleanupId:'cleanup-1'}),
     event(9,'restart.abort',{turn:1,permitId:'permit-1'})];
   assert.equal(verifySupervisorTrace(doc(cleaned,'quarantined')).completion,'quarantined');
   // CONTROL ownership remains held after abort (until STOP/retry or shutdown).
   expectReject([...r.slice(0,7),event(8,'restart.cleanup',
-    {turn:1,permitId:'wrong-permit',newActor:'actor-B',cleanupId:'cleanup-1'})],
+    {turn:1,permitId:'wrong-permit',newActor:'actor-B',newGeneration:2,cleanupId:'cleanup-1'})],
     /cleanup not tied/);
 });
 test('reused restart permits cannot commit a later reservation (ABA)', () => {
@@ -119,7 +119,7 @@ test('closing supervisor prevents restart commit but allows physical cleanup', (
     {turn:1,permitId:'permit-1',newActor:'actor-B',newGeneration:2})],
     /CONTROL turn/,'quarantined');
   r.push(event(9,'restart.cleanup',
-    {turn:1,permitId:'permit-1',newActor:'actor-B',cleanupId:'cleanup-on-close'}));
+    {turn:1,permitId:'permit-1',newActor:'actor-B',newGeneration:2,cleanupId:'cleanup-on-close'}));
   r.push(event(10,'restart.abort',{turn:1,permitId:'permit-1'}));
   assert.equal(verifySupervisorTrace(doc(r)).restartCommits,0);
 });
@@ -188,6 +188,29 @@ test('STOP effect claims, receipts and trusted evidence are bound to exact one-u
   }),/independent host proof rejected/);
   expectReject(proof.map((e,i)=>i===7?{...e,stopPermitId:'foreign'}:e),
     /foreign or stale STOP proof permit/);
+});
+
+test('physical admission and cleanup evidence cannot be reused across logical operations', () => {
+  // The first attempt reserves and then cleans a candidate. A second
+  // reservation must not borrow the previous admission or cleanup proof.
+  const first=restart().slice(0,7);
+  first.push(event(8,'restart.cleanup',{turn:1,permitId:'permit-1',
+    newActor:'actor-B',newGeneration:2,cleanupId:'cleanup-shared'}));
+  first.push(event(9,'restart.abort',{turn:1,permitId:'permit-1'}));
+  first.push(event(10,'restart.reserve',{turn:1,permitId:'permit-2'}));
+  first.push(event(11,'restart.spawn',{turn:1,permitId:'permit-2',
+    newActor:'actor-C',newGeneration:2}));
+  expectReject([...first,event(12,'restart.admit',{turn:1,permitId:'permit-2',
+    newActor:'actor-C',newGeneration:2,admissionId:'admission-1'})],
+    /replayed replacement admission evidence/,'quarantined');
+  first.push(event(12,'restart.admit',{turn:1,permitId:'permit-2',
+    newActor:'actor-C',newGeneration:2,admissionId:'admission-2'}));
+  expectReject([...first,event(13,'restart.cleanup',{turn:1,permitId:'permit-2',
+    newActor:'actor-C',newGeneration:2,cleanupId:'cleanup-shared'})],
+    /replayed replacement cleanup evidence/,'quarantined');
+  expectReject([...first,event(13,'restart.cleanup',{turn:1,permitId:'permit-2',
+    newActor:'actor-C',newGeneration:3,cleanupId:'new-proof'})],
+    /replacement cleanup not tied/,'quarantined');
 });
 
 test('runtime evidence is rejected when the verified checkout or backend disagrees', () => {
