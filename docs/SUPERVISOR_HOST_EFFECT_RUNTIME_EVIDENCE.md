@@ -103,3 +103,56 @@ The test establishes this particular host-level shutdown transaction under
 its exercised schedules; it is not an unbounded concurrency proof, and the
 complete LLVM CMake matrix plus unrestricted guest supervisor lowering
 remain gated.
+
+
+## STOP authorization audit: applied receipts require claimed host entry
+
+A later cross-backend audit found a real contract bypass: although both
+source-compiled STOP installers recorded a one-use callback-entry claim, the
+registries still permitted an unclaimed STOP to be marked APPLIED by a trusted
+but incorrectly wired caller. Java also allowed a direct PENDING host-ACK
+without the invocation claim.
+
+The Java child registry now rejects `markStopApplied` and
+`acknowledgeHostStop` on an unclaimed PENDING receipt. The native registry
+now rejects `record_stop_applied` without `host_invoked`, and the host panic
+bridge offers `claim_finalized_stop_host_invocation` to be invoked *just
+before* the real host effect. The bridge's native integration test first
+asserts that a premature ACK fails, then claims entry and invokes the
+physical effect. Java's acknowledgment-versus-reconciliation race test
+similarly claims host entry before starting both competitors.
+
+The independently authoritative, read-only reconciliation path is
+intentionally separate: the registry does not fabricate host invocation
+from external evidence, and an uncertain receipt is never replayed.
+Native now explicitly rejects classification of an APPLIED or ACKNOWLEDGED
+receipt as UNCERTAIN, matching Java's existing fail-closed behavior.
+
+### Final audited exact-source subset
+
+**[Funded CI #38194891660](https://github.com/3fa-app-test/account-recovery-security/actions/runs/38194891660) passed.**
+
+- 24 exact Java/native/conformance Git source blobs verified before build.
+- Java 25 original child-registry JUnit suite: 22/22 passed. The isolated
+  ActorRuntime ID compilation scaffold remains distinct from the real
+  interpreter/compiler and is not a full Maven or Native Image run.
+- Native child registry under ASan/UBSan: passed.
+- Real native scheduler + source STOP + typed PANIC + CONTROL host
+  integration passed for both successful and uncertain host effects.
+- Physical RESTART admission interrupted by close: admitted=1, closed=1,
+  cleaned=1, aborted=1, committed=0.
+- New scheduler-owned initial-registration lease and unpublished RESTART
+  lease test passed under ASan/UBSan.
+- Native CONTROL-close/restart-publication decision fence stress passed
+  12 consecutive independent executions under ASan/UBSan.
+- Shared registry comparator self-tests passed 7/7 and accepted the 11
+  committed transition names from actual Java/native executed tests.
+
+The model's `stop.invoke` precondition is now better aligned with the
+source-compiled host `stop.applied` implementations, but no complete
+schema-v2 runtime trace refinement has yet been run. In particular,
+`stop.invoke-asserted` is a one-shot host callback ENTRY signal, not
+independent/durable proof of an external STOP side effect. The bool-based
+host verifier remains a caller trust boundary that needs a concrete
+provenance-bound evidence backend. Do not merge runtime drafts or enable
+general guest RESTART based solely on these bounded tests.
