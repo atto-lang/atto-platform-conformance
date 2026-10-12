@@ -217,3 +217,35 @@ TLA+ blobs. They have been mirrored to the private funded test branch
 `3fa-app-test/account-recovery-security:test/supervisor-source-await-20261011`
 with exact Git blob matches; a fresh completed TLC job for those
 particular revisions is still required before claiming formal TLC success.
+
+
+## Verified exact-blob funded proof (latest checked model)
+
+The 2026-10-11 private funded test run
+[38188797535](https://github.com/3fa-app-test/account-recovery-security/actions/runs/38188797535)
+allocated and executed actual Ubuntu runner steps on private draft
+[CI mirror PR #12](https://github.com/3fa-app-test/account-recovery-security/pull/12).
+It validated **18 exact conformance Git blobs** before executing:
+
+- Node model-explorer and strict trace-comparator self-tests:
+  **12 passed**, no failures
+- TLC trusted STOP receipt model: **10,020 generated**, **3,698 distinct**
+  states, no safety invariant violation
+- TLC expanded CONTROL/cleanup/restart model: **45,548 generated**,
+  **17,712 distinct** states, no safety invariant violation
+- Three-incarnation ABA configurations: **190** STOP distinct states and
+  **136** lifecycle distinct states, no violations
+- Six deliberately unsafe transitions each generated the *expected*
+  invariant counterexample: `NoDoubleEffect`,
+  `NoRestartUnderStop`, `NoInvalidAck`,
+  `NoDuplicateEffects`, `NoOrphanReplacement`, and
+  `NoUnreadyActiveIncarnation`
+
+The private repository's independent harness CI
+[38188797624](https://github.com/3fa-app-test/account-recovery-security/actions/runs/38188797624)
+also passed.
+
+This is **not** proof of Java or LLVM compiler/runtime behavior. Those
+source trees were not completely mirrored into the funded test repository,
+and the Java Maven, native CMake/CTest, sanitizer, and real-log cross-backend
+trace comparison gates are still open.
