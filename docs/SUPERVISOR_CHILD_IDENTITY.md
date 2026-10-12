@@ -296,3 +296,44 @@ races still require implementation-level testing. No general guest
 `await self.restart(f.child)` or `self.escalate(f)` is enabled by these
 changes. The source repos' Actions jobs still need allocated runners,
 and the formal-only funded CI cannot prove source runtime parity.
+
+
+## RESTART audit: identity retirement and closure (2026-10-11)
+
+A physical replacement identity must be permanently consumed at its first
+trusted stage, even when physical admission, logical publication, or
+cleanup-backed RESTART ultimately fails. Java maintains the monotonic
+`seenActors` ledger across stage, abort and failed index publication;
+native retains the highest used scheduler generation per physical slot,
+including after failed initial registration and aborted staging. Clearing
+the outstanding slot claim after confirmed cleanup is **not** permission
+to re-register the same physical slot+generation.
+
+The native registry's lock-free `require_candidate` helper was made
+private and explicitly lock-required. Java RESTART reservations now
+preconstruct immutable state and restore the original FINALIZED snapshot
+if registry-map publication fails. The native bridge additionally
+rejects ready actors after supervisor CONTROL becomes unhealthy or closed,
+and rechecks CONTROL/scheduler readiness immediately before publication.
+
+**Outstanding atomicity:** native `poll_ready` is only a snapshot. A
+concurrent `stop`, scheduler retirement or group closure may still race
+the final check and registry publication; there is no scheduler-issued,
+linearizable physical admission lease binding readiness to logical
+publication. General guest RESTART must stay disabled until that lease
+is designed and validated under fault injection. Java's trusted
+`BooleanSupplier` callbacks have an equivalent proof-authority
+assumption until integrated with scheduler-owned, fenced tickets.
+
+Regression tests now exercise closed CONTROL with a still-live native
+bridge, cleanup-before-abort, aborted candidate reuse, and per-slot
+generation ABA. These code-level tests have been committed but are
+**not verified green at the newest source heads**: source Actions jobs
+still show no allocated runner and zero executed steps.
+
+The separate funded formal/conformance run
+[38189635155](https://github.com/3fa-app-test/account-recovery-security/actions/runs/38189635155)
+passed **18 exact Git blob checks, 13 Node tests, two TLC safety models
+(3,698 and 17,712 distinct states) and six expected unsafe mutations**.
+It proves the checked contract/model scope, *not* full Java/LLVM
+runtime execution or absence of the above scheduler lease race.
