@@ -53,7 +53,7 @@ test("stop fences publication and restart fences old tickets even with identical
  let bad=structuredClone(x);bad.events.splice(7,1);bad.events[7]={...ctrl("complete",1,{request:"r1",value:19})};bad.events=renumber(bad.events);
  reject(bad,/stale incarnation/);
  bad=structuredClone(x);bad.events[5].epoch=1;reject(bad,/unauthorized restart/);
- bad=structuredClone(x);bad.events[7].ticket="unissued";reject(bad,/unproven stale ticket/);
+ bad=structuredClone(x);bad.events.find(e=>e.op==="drop-stale").ticket="unissued";reject(bad,/unproven stale ticket/);
 });
 test("dense own-data trace events never execute injected accessor callbacks",()=>{
  let calls=0;
