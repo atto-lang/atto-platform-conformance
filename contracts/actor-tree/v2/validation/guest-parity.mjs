@@ -19,10 +19,17 @@ const CLOSED_DONE = ['actor', 'done', 'cleanupDrained'];
 
 function closed(o, fields) {
   if (!o || typeof o !== 'object' || Array.isArray(o) ||
+      ![Object.prototype, null].includes(Object.getPrototypeOf(o)) ||
       Reflect.ownKeys(o).length !== fields.length ||
-      fields.some(k => !Object.hasOwn(o, k)) ||
-      Reflect.ownKeys(o).some(k => !fields.includes(k))) {
+      Reflect.ownKeys(o).some(k => typeof k !== 'string' || !fields.includes(k))) {
     throw new Error('noncanonical evidence object');
+  }
+  for (const key of fields) {
+    const field = Object.getOwnPropertyDescriptor(o, key);
+    if (!field || !field.enumerable || !Object.hasOwn(field, 'value')) {
+      // A getter may return different values when validated and compared.
+      throw new Error('accessor-backed or missing evidence field: ' + key);
+    }
   }
 }
 function fileBytes(path, maxBytes=1024*1024) {
@@ -32,17 +39,24 @@ function fileBytes(path, maxBytes=1024*1024) {
   }
   return readFileSync(path);
 }
-export function parseCanonicalAudit(bytes) {
-  if (!bytes || bytes.length > 262144 || bytes.length < 3) {
-    throw new Error('one bounded host audit record required on fd 3');
+function parseCanonicalRecord(bytes, maximum, label) {
+  if (!Buffer.isBuffer(bytes) || bytes.length > maximum || bytes.length < 3) {
+    throw new Error('one bounded ' + label + ' JSON record required');
   }
   const s=bytes.toString('utf8');
-  // Every backend writes exactly one compact JSON object and terminal newline.
-  // Roundtrip equality rejects duplicate JSON keys and ambiguous encodings.
-  if (!s.endsWith('\n') || s.endsWith('\n\n')) throw new Error('noncanonical audit framing');
+  // Canonical single-line framing rejects duplicate keys, repeated records,
+  // alternate escapes, whitespace variations and invalid UTF-8 encodings.
+  if (!s.endsWith('\n') || s.endsWith('\n\n')) {
+    throw new Error('noncanonical ' + label + ' framing');
+  }
   const value=JSON.parse(s.slice(0,-1));
-  if (JSON.stringify(value)+'\n' !== s) throw new Error('noncanonical or duplicate-key audit JSON');
+  if (JSON.stringify(value)+'\n' !== s) {
+    throw new Error('noncanonical or duplicate-key ' + label + ' JSON');
+  }
   return value;
+}
+export function parseCanonicalAudit(bytes) {
+  return parseCanonicalRecord(bytes, 262144, 'audit');
 }
 export function gitBlobSha1(bytes) {
   return createHash('sha1').update(Buffer.from('blob '+bytes.length+'\0')).update(bytes).digest('hex');
@@ -72,8 +86,26 @@ export function loadManifest(path=MANIFEST) {
   }
   return {manifest, source};
 }
+// Authority snapshots must be provisioned by the host before invoking either
+// guest runner. Never read or accept an authority file written after execution.
+export function readAuthoritySnapshot(path, manifest) {
+  const authority=parseCanonicalRecord(fileBytes(path,32768),32768,'authority');
+  closed(authority,['expectedPipelineId','expectedSchemaHash','expectedRoute']);
+  if (typeof authority.expectedPipelineId !== 'string' ||
+      !authority.expectedPipelineId.length || authority.expectedPipelineId.length>128 ||
+      authority.expectedSchemaHash !== manifest.schemaHash ||
+      !Array.isArray(authority.expectedRoute) || authority.expectedRoute.length!==3) {
+    throw new Error('invalid preprovisioned authority snapshot');
+  }
+  for (const actor of authority.expectedRoute) {
+    closed(actor,['runtimeId','actorId','incarnation']);
+    identityKey(actor);
+  }
+  return authority;
+}
 export function verifyCapture(evidence, backend, manifest, authority) {
   closed(evidence, CLOSED_EVIDENCE);
+  closed(authority, ['expectedPipelineId','expectedSchemaHash','expectedRoute']);
   if (!BACKENDS.includes(backend) || evidence.kind!=='oreslang-v2-guest-audit' ||
       evidence.backend!==backend || evidence.sourceGitBlobSha1!==manifest.sourceGitBlobSha1) {
     throw new Error('wrong runtime, guest identity or audit kind');
@@ -114,7 +146,9 @@ export function compareCaptures(llvm, graal, manifest, llvmAuthority, graalAutho
   if (JSON.stringify(a)!==JSON.stringify(b)) {
     throw new Error('real LLVM and GraalVM guest traces disagree');
   }
-  return {status:'verified', actors:3, forward:2, backward:2,
+  // These comparisons prove internal trace equivalence, not that the captures
+  // came from independently authenticated compiler/runtime executions.
+  return {status:'trace-equivalent', certified:false, actors:3, forward:2, backward:2,
     values:manifest.expectedValues, sourceGitBlobSha1:manifest.sourceGitBlobSha1};
 }
 // Defense in depth: never forward the full CI process environment to a
@@ -172,11 +206,18 @@ function argsMap(args) {
 export function main(argv) {
   const args=argsMap(argv);
   const {manifest,source}=loadManifest();
-  // Each trusted runtime may emit its registry authority during guest startup.
-  // Read the separately provisioned host authority files only after both runs.
-  // They must be generated before the corresponding guest DATA admission.
-  const captures=BACKENDS.map((b,i)=>runBackend(resolve(args.get(i?'--graal-runner':'--llvm-runner')),b,manifest,source));
-  const authority=BACKENDS.map((_,i)=>JSON.parse(fileBytes(resolve(args.get(i?'--graal-authority':'--llvm-authority')),32768).toString('utf8')));
+  // Read, validate and retain independent immutable-in-time snapshots BEFORE
+  // launching either runner. A runner cannot substitute its own post-hoc route.
+  const authority=BACKENDS.map((_,i)=>readAuthoritySnapshot(
+    resolve(args.get(i?'--graal-authority':'--llvm-authority')),manifest));
+  const captures=BACKENDS.map((b,i)=>runBackend(
+    resolve(args.get(i?'--graal-runner':'--llvm-runner')),b,manifest,source));
+  // Detect persistent source/manifest mutation while either backend executes.
+  // This is defense in depth, not an attestation of what a runner compiled.
+  const after=loadManifest();
+  if (JSON.stringify(after.manifest)!==JSON.stringify(manifest)) {
+    throw new Error('manifest was modified during guest execution');
+  }
   return compareCaptures(captures[0],captures[1],manifest,authority[0],authority[1]);
 }
 if (process.argv[1] && resolve(process.argv[1])===fileURLToPath(import.meta.url)) {

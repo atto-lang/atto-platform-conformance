@@ -54,3 +54,25 @@ Funded Java/GraalVM 25 run: https://github.com/zed-pkg-test/java-app/actions/run
 An independent Java-dialect fixture, now committed to Java PR #645, compiled and executed three actor stages with two INT64_MIN downstream values and two INT64_MAX upstream values. Its source Git blob is 8fcb0a15ff5001b2b4c41a6159438121a6d53577, **different** from the LLVM guest source blob 34c2dc0de8816df2f2f8bfbd3c12814ef2afbdb6. The Java run passed 1,471 Maven tests and its exact expected four-hop stdout result. The Java parser required a real fix to accept the negative signed-i64 endpoint without allowing positive overflow (parser blob f5b5a74ff5830467b6aaf320f8f6ac774e88050a).
 
 The same-source release gate remains BLOCKED until frontend syntax/lowering is reconciled, the exact same .ores Git blob executes in both backends, and each real host writes authoritative FD3 V2 audit records. These two green dialect-specific runs **cannot** be combined to claim compiler or source parity.
+
+## 2026-10-12 verifier authority-order hardening
+
+The verifier reads and validates **both preprovisioned authority snapshots before
+launching either compiler/guest runner**. A guest runner that writes or alters
+an authority file after execution cannot update the already captured expected
+route, request and schema in memory. Each authority file must contain exactly
+one compact canonical JSON object followed by a newline, with the closed fields
+`expectedPipelineId`, `expectedSchemaHash` and `expectedRoute`.
+Duplicated JSON keys, unexpected authority fields and accessor-backed
+in-memory evidence fields fail closed.
+
+The pure comparator returns `status: "trace-equivalent"` and
+`certified: false` even for matching traces. This prevents synthetic fixture
+self-tests or caller-supplied capture objects from being described as
+authenticated guest-runtime proof. An independent runner-provenance gate and
+actual same-source execution on both backends are still required.
+
+A second manifest/source verification after execution detects persistent
+worktree changes during the run, but does not establish what bytes the guest
+compiler actually consumed. FD3 host ownership must be enforced by the
+separate trusted runner/runtime integration rather than inferred from JSON.

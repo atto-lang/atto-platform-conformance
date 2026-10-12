@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
-import {resolve} from 'node:path';
-import {compareCaptures, verifyCapture, gitBlobSha1, parseCanonicalAudit, loadManifest, main, guestRunnerEnvironment} from './guest-parity.mjs';
+import {readFileSync, writeFileSync, chmodSync, existsSync, mkdtempSync, rmSync} from 'node:fs';
+import {resolve, join} from 'node:path';
+import {tmpdir} from 'node:os';
+import {compareCaptures, verifyCapture, gitBlobSha1, parseCanonicalAudit, loadManifest, main, guestRunnerEnvironment, readAuthoritySnapshot} from './guest-parity.mjs';
 
 const manifest=JSON.parse(readFileSync(resolve(import.meta.dirname,'../guest/manifest.json'),'utf8'));
 const route=[
@@ -34,7 +35,8 @@ test('candidate guest fixture Git blob matches pinned SHA',()=>{
 test('synthetic positive verifier self-test normalizes different runtime IDs',()=>{
   const result=compareCaptures(audit(),audit('java-graalvm','runtime-java'),
       manifest,authority(),authority('runtime-java'));
-  assert.equal(result.status,'verified');
+  assert.equal(result.status,'trace-equivalent');
+  assert.equal(result.certified,false);
   assert.deepEqual(result.values,values);
 });
 for(const [name,mutate] of [
@@ -107,4 +109,42 @@ test('reject unknown guest backend and malformed source identity before launch',
   assert.throws(()=>guestRunnerEnvironment({},'llvm-native',
     {...manifest,sourceGitBlobSha1:'short'},'/real/source.ores'),
     /invalid guest runner environment authority/);
+});
+
+test('getter-backed evidence and receipt fields fail closed before use',()=>{
+  const e=audit();
+  let reads=0;
+  Object.defineProperty(e,'trace',{enumerable:true, get(){ reads++; return audit().trace; }});
+  assert.throws(()=>verifyCapture(e,'llvm-native',manifest,authority()),/accessor-backed/);
+  assert.equal(reads,0,'untrusted evidence getter must never execute');
+  const other=audit();
+  Object.defineProperty(other.physicalDone[0],'done',{enumerable:true,get(){throw Error('executed');}});
+  assert.throws(()=>verifyCapture(other,'llvm-native',manifest,authority()),/accessor-backed/);
+});
+test('authority reader rejects duplicate keys, extras and noncanonical framing',()=>{
+  const temp=mkdtempSync(join(tmpdir(),'oreslang-v2-auth-'));
+  const path=join(temp,'authority.json');
+  try {
+    writeFileSync(path,JSON.stringify(authority())+'\n');
+    assert.deepEqual(readAuthoritySnapshot(path,manifest),authority());
+    writeFileSync(path,JSON.stringify({...authority(),untrusted:true})+'\n');
+    assert.throws(()=>readAuthoritySnapshot(path,manifest),/noncanonical/);
+    writeFileSync(path,'{"expectedPipelineId":"r","expectedPipelineId":"forged"}\n');
+    assert.throws(()=>readAuthoritySnapshot(path,manifest),/duplicate-key/);
+    writeFileSync(path,JSON.stringify(authority(),null,2)+'\n');
+    assert.throws(()=>readAuthoritySnapshot(path,manifest),/noncanonical/);
+  } finally {rmSync(temp,{recursive:true,force:true});}
+});
+test('no backend runner starts before both trusted authority snapshots exist',()=>{
+  const temp=mkdtempSync(join(tmpdir(),'oreslang-v2-preflight-'));
+  const runner=join(temp,'runner.sh'), marker=join(temp,'ran');
+  try {
+    writeFileSync(runner,'#!/bin/sh\nprintf invoked > '+JSON.stringify(marker)+'\nexit 43\n');
+    chmodSync(runner,0o700);
+    const argv=['--llvm-runner',runner,'--graal-runner',runner,
+      '--llvm-authority',join(temp,'missing-llvm.json'),
+      '--graal-authority',join(temp,'missing-java.json')];
+    assert.throws(()=>main(argv),/ENOENT/);
+    assert.equal(existsSync(marker),false,'guest runner launched before authorization');
+  } finally {rmSync(temp,{recursive:true,force:true});}
 });
