@@ -256,3 +256,39 @@ arbitrary JSON-supplied evidence.
 Runtime-produced schema-v2 histories, durable host receipts, and full
 source compiler builds remain independent release blockers. Passing
 the existing registry comparator does not pass the schema-v2 oracle.
+
+## Callback-isolation and provenance audit of schema-v2 host proofs
+
+A focused replay audit found that `stop.proof` checked the one-use
+`evidenceId` **after** invoking `verifyProof`. An attacker supplying a
+well-formed second STOP under a distinct supervisor could reuse a prior
+proof ID and trigger the trusted verifier a second time before rejection.
+
+The verifier now checks that proof ID against the per-history used-proof
+set **before** calling `verifyProof`. Reuse cannot invoke another external
+verification callback in the same trace. This is a per-trace safety rule,
+not a durable global nonce ledger.
+
+The trusted proof path now also requires caller-provided
+`expectedSourceSha` and `expectedBackend`. These must originate from an
+independently verified executable/checkout, **never** be copied out of the
+untrusted trace JSON. An external proof callback alone is insufficient
+to accept a STOP proof when those bindings are absent.
+
+The verifier snapshots all event records and the source/backend identity
+before executing host callbacks. Mutations to the original document by
+an external callback can no longer rewrite pending STOP acknowledgments,
+the terminal count, or checked runtime provenance during the same pass.
+
+**Funded, allocated-runner check:**
+[zed-pkg-test/java-app #38198954665](https://github.com/zed-pkg-test/java-app/actions/runs/38198954665).
+Both exact source blobs of `bin/verify-supervisor-trace.mjs` and
+`test/supervisor-trace.test.mjs` were Git-hash pinned. Node's original
+conformance tests plus the three new adversarial cases passed **16/16**,
+zero failures.
+
+The gate demonstrates verifier contract behavior only. It does not yet
+establish that a real Java/GraalVM or LLVM scheduler emits complete
+schema-v2 history, or that the host verifier has actual, independently
+authenticated and durable physical STOP evidence. Do not use it to
+remove any runtime PR's release blocker.
