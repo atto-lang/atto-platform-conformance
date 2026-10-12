@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0.0",
+  "stopId": "stop-2",
+  "actor": {
+    "runtimeId": "runtime-1",
+    "actorId": "parent",
+    "incarnation": 1
+  },
+  "physicalDone": false,
+  "shutdownResult": "failure",
+  "nativeLoans": 0,
+  "pendingCleanup": false,
+  "children": [
+    {
+      "actor": {
+        "runtimeId": "runtime-1",
+        "actorId": "native-child",
+        "incarnation": 1
+      },
+      "physicalDone": true,
+      "nativeLoans": 0,
+      "pendingCleanup": false
+    },
+    {
+      "actor": {
+        "runtimeId": "runtime-1",
+        "actorId": "cleanup-child",
+        "incarnation": 1
+      },
+      "physicalDone": false,
+      "nativeLoans": 0,
+      "pendingCleanup": true
+    }
+  ],
+  "failure": {
+    "code": "SOURCE_CLEANUP_PENDING",
+    "message": "cleanup deadline expired"
+  }
+}

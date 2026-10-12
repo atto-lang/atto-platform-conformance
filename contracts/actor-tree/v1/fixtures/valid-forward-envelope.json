@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0.0",
+  "messageId": "msg-f1",
+  "direction": "forward",
+  "from": {
+    "runtimeId": "runtime-1",
+    "actorId": "parent",
+    "incarnation": 1
+  },
+  "to": {
+    "runtimeId": "runtime-1",
+    "actorId": "native-child",
+    "incarnation": 1
+  },
+  "hopIndex": 0,
+  "schemaHash": "0123456789abcdef",
+  "payload": {
+    "variant": "Number",
+    "value": 42
+  }
+}

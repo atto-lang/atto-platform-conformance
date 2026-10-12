@@ -1,0 +1,138 @@
+{
+  "schemaVersion": "1.0.0",
+  "traceId": "tree-1",
+  "events": [
+    {
+      "sequence": 0,
+      "kind": "parent_stop",
+      "actor": {
+        "runtimeId": "runtime-1",
+        "actorId": "parent",
+        "incarnation": 1
+      },
+      "nativeLoans": 0,
+      "pendingCleanup": false,
+      "physicalDone": false
+    },
+    {
+      "sequence": 1,
+      "kind": "child_stop",
+      "actor": {
+        "runtimeId": "runtime-1",
+        "actorId": "native-child",
+        "incarnation": 1
+      },
+      "nativeLoans": 1,
+      "pendingCleanup": false,
+      "physicalDone": false
+    },
+    {
+      "sequence": 2,
+      "kind": "child_stop",
+      "actor": {
+        "runtimeId": "runtime-1",
+        "actorId": "cleanup-child",
+        "incarnation": 1
+      },
+      "nativeLoans": 0,
+      "pendingCleanup": true,
+      "physicalDone": false
+    },
+    {
+      "sequence": 3,
+      "kind": "source_cleanup_drained",
+      "actor": {
+        "runtimeId": "runtime-1",
+        "actorId": "cleanup-child",
+        "incarnation": 1
+      },
+      "nativeLoans": 0,
+      "pendingCleanup": false,
+      "physicalDone": false
+    },
+    {
+      "sequence": 4,
+      "kind": "child_physical_done",
+      "actor": {
+        "runtimeId": "runtime-1",
+        "actorId": "cleanup-child",
+        "incarnation": 1
+      },
+      "nativeLoans": 0,
+      "pendingCleanup": false,
+      "physicalDone": true
+    },
+    {
+      "sequence": 5,
+      "kind": "native_loan_released",
+      "actor": {
+        "runtimeId": "runtime-1",
+        "actorId": "native-child",
+        "incarnation": 1
+      },
+      "nativeLoans": 0,
+      "pendingCleanup": false,
+      "physicalDone": false
+    },
+    {
+      "sequence": 6,
+      "kind": "child_physical_done",
+      "actor": {
+        "runtimeId": "runtime-1",
+        "actorId": "native-child",
+        "incarnation": 1
+      },
+      "nativeLoans": 0,
+      "pendingCleanup": false,
+      "physicalDone": true
+    },
+    {
+      "sequence": 7,
+      "kind": "parent_physical_done",
+      "actor": {
+        "runtimeId": "runtime-1",
+        "actorId": "parent",
+        "incarnation": 1
+      },
+      "nativeLoans": 0,
+      "pendingCleanup": false,
+      "physicalDone": true,
+      "children": [
+        {
+          "actor": {
+            "runtimeId": "runtime-1",
+            "actorId": "native-child",
+            "incarnation": 1
+          },
+          "physicalDone": true,
+          "nativeLoans": 0,
+          "pendingCleanup": false
+        },
+        {
+          "actor": {
+            "runtimeId": "runtime-1",
+            "actorId": "cleanup-child",
+            "incarnation": 1
+          },
+          "physicalDone": true,
+          "nativeLoans": 0,
+          "pendingCleanup": false
+        }
+      ]
+    },
+    {
+      "sequence": 8,
+      "kind": "stale_callback",
+      "actor": {
+        "runtimeId": "runtime-1",
+        "actorId": "native-child",
+        "incarnation": 1
+      },
+      "nativeLoans": 0,
+      "pendingCleanup": false,
+      "physicalDone": false,
+      "ticket": "ticket-old-incarnation",
+      "accepted": false
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0.0",
+  "stopId": "stop-1",
+  "actor": {
+    "runtimeId": "runtime-1",
+    "actorId": "parent",
+    "incarnation": 1
+  },
+  "physicalDone": true,
+  "shutdownResult": "success",
+  "nativeLoans": 0,
+  "pendingCleanup": false,
+  "children": [
+    {
+      "actor": {
+        "runtimeId": "runtime-1",
+        "actorId": "native-child",
+        "incarnation": 1
+      },
+      "physicalDone": true,
+      "nativeLoans": 0,
+      "pendingCleanup": false
+    },
+    {
+      "actor": {
+        "runtimeId": "runtime-1",
+        "actorId": "cleanup-child",
+        "incarnation": 1
+      },
+      "physicalDone": true,
+      "nativeLoans": 0,
+      "pendingCleanup": false
+    }
+  ]
+}
