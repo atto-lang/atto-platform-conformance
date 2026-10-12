@@ -1,0 +1,22 @@
+name: Actor Shutdown TLA Safety
+on:
+  pull_request:
+    paths:
+      - 'formal/actor-shutdown/**'
+      - '.github/workflows/actor-shutdown-formal.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  bounded-safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: TLC safe model and expected mutant counterexample
+        shell: bash
+        run: bash formal/actor-shutdown/check-tlc.sh
