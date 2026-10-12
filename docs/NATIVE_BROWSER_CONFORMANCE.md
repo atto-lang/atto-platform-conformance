@@ -36,12 +36,12 @@ Use existing paired Java/LLVM source-check gates for compiler admission evidence
 
 ## 2026-10-11 reconciled release proof (pinned snapshots)
 
-[Latest native runner #38191829511](https://github.com/canonical-cloud/canonical-monorepo/actions/runs/38191829511) executed the immutable selected-source matrix stored in
+[Latest native runner #38192061540](https://github.com/canonical-cloud/canonical-monorepo/actions/runs/38192061540) executed the immutable selected-source matrix stored in
 `evidence/portable-native-release-pins-20261011.json` (51 exact Git blobs from four repositories):
 
 - LLVM compiler source snapshot `641d227cd33e058999839bcf4b1871c31f222dd0`
-- Wasm bridge and codec snapshot `04906ea49db2ec109d7247cc16c7e130d68f23f8`
-- Browser loader, Worker, and codec snapshot `ee6e2d8e358127865e09db9305d22e5deae30c3d`
+- Wasm bridge and codec snapshot `774fb8a5ad0ac31b5b10b06ae711f0b92d74c8b5`
+- Browser loader, Worker, and codec snapshot `602cace903cbe572fc2bcb615046bac35147ab1d`
 - Conformance compiler-to-browser source snapshot `4468c1f8243e60d66ed02d0404960e7a20a4bc67`
 
 The SHA-exact verification now includes `bin/verify-portable-release-mirror.mjs`,
@@ -66,4 +66,4 @@ checks, or production merge eligibility.
 
 ### Worker DATA replay and terminal CONTROL checks
 
-[Browser/Wasm exact-source runner #38191829485](https://github.com/canonical-cloud/canonical-monorepo/actions/runs/38191829485) passed 55 Browser tests (including real isolated Worker duplicate/out-of-order ticket rejection, malformed frame denial, and abnormal exit/panic tests) and 22 Wasm tests, with one skipped opt-in native compiler test **in that host-only suite**. The separate current native run #38191829511 explicitly executed that opt-in compiler test with no skips. Worker tests exercise host/isolated transport endpoints; they do not implement or certify source-level Oreslang actor handler lowering.
+[Browser/Wasm exact-source runner #38192061520](https://github.com/canonical-cloud/canonical-monorepo/actions/runs/38192061520) passed 57 Browser tests (including real isolated Worker duplicate/out-of-order ticket rejection, malformed frame denial, and abnormal exit/panic tests) and 23 Wasm tests, with one skipped opt-in native compiler test **in that host-only suite**. The separate current native run #38191829511 explicitly executed that opt-in compiler test with no skips. Worker tests exercise host/isolated transport endpoints; they do not implement or certify source-level Oreslang actor handler lowering.
