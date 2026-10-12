@@ -16,7 +16,7 @@ EXTENDS Naturals, TLC
  * a liveness proof of a blocking host publication gate.
  *)
 CONSTANT MaxLease
-ASSUME MaxLease \in Nat \\ {0}
+ASSUME MaxLease \in Nat \ {0}
 
 VARIABLES phase, physical, gate, issued, lease, committedLease,
           routed, committed, stopRequested, closeRequested, closed, stopApplied
