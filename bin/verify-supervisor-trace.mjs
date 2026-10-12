@@ -17,7 +17,7 @@ export function verifySupervisorTrace(doc, { allowPrefix = false, verifyProof } 
   requireField(sha(doc.sourceSha), 'source commit SHA is required');
   requireField(Array.isArray(doc.events) && doc.events.length > 0, 'missing events');
   requireField(typeof allowPrefix === 'boolean', 'invalid prefix option');
-  const children = new Map(), supervisors = new Map(), usedActors = new Set(), usedPermits = new Set();
+  const children = new Map(), supervisors = new Map(), usedActors = new Set(), usedPermits = new Set(), usedStopPermits = new Set();
   let sealed = false, completion = 'prefix';
   let invocations = 0, acknowledgments = 0, commits = 0;
   const getSupervisor = s => {
@@ -65,7 +65,7 @@ export function verifySupervisorTrace(doc, { allowPrefix = false, verifyProof } 
       usedActors.add(e.actor);
       children.set(e.child, {supervisor:e.supervisor, actor:e.actor, generation:1,
         phase:'Active', cleaned:false, receipt:'None', calls:0, proof:false,
-        applied:false, turn:0, lease:0, permit:null, replacement:'None', staged:null});
+        applied:false, turn:0, lease:0, permit:null, stopPermit:null, replacement:'None', staged:null});
       continue;
     }
     if (e.op === 'supervisor.close') {
@@ -92,6 +92,9 @@ export function verifySupervisorTrace(doc, { allowPrefix = false, verifyProof } 
       case 'stop.reserve':
         owner(c,e);
         requireField(c.phase === 'Finalized' && c.receipt === 'None', 'STOP/RESTART reservation overlap');
+        requireField(id(e.stopPermitId) && !usedStopPermits.has(e.stopPermitId),
+          'missing, foreign or replayed STOP permit ID');
+        usedStopPermits.add(e.stopPermitId); c.stopPermit = e.stopPermitId;
         c.phase = 'Stopping'; c.receipt = 'Pending'; c.lease = c.generation; break;
       case 'restart.reserve':
         owner(c,e);
@@ -140,23 +143,27 @@ export function verifySupervisorTrace(doc, { allowPrefix = false, verifyProof } 
           c.staged?.generation === e.newGeneration, 'replacement not admitted and ready');
         c.actor = e.newActor; c.generation = e.newGeneration; c.phase = 'Active';
         c.cleaned = false; c.lease = 0; c.receipt = 'None'; c.calls = 0;
-        c.proof = false; c.applied = false; c.turn = 0; s.control = null;
+        c.proof = false; c.applied = false; c.turn = 0; c.stopPermit = null; s.control = null;
         c.permit = null; c.replacement = 'None'; c.staged = null; commits++; break;
       case 'stop.invoke':
         owner(c,e);
+        requireField(e.stopPermitId === c.stopPermit, 'foreign or stale STOP invocation permit');
         requireField(c.phase === 'Stopping' && c.receipt === 'Pending' &&
           c.lease === c.generation && c.calls === 0, 'duplicate or unreserved host STOP effect');
         c.calls = 1; invocations++; break;
       case 'stop.applied':
         owner(c,e);
+        requireField(e.stopPermitId === c.stopPermit, 'foreign or stale STOP applied permit');
         requireField(c.phase === 'Stopping' && c.receipt === 'Pending' && c.calls === 1,
           'invalid applied receipt');
         c.receipt = 'Applied'; c.applied = true; break;
       case 'stop.uncertain':
+        requireField(e.stopPermitId === c.stopPermit, 'foreign or stale STOP uncertain permit');
         requireField(c.phase === 'Stopping' && c.receipt === 'Pending' &&
           c.calls === 1 && e.turn === c.turn, 'invalid uncertain receipt');
         c.receipt = 'Uncertain'; break;
       case 'stop.proof':
+        requireField(e.stopPermitId === c.stopPermit, 'foreign or stale STOP proof permit');
         requireField(c.phase === 'Stopping' && ['Pending','Uncertain'].includes(c.receipt) &&
           c.calls === 1 && !c.proof && e.turn === c.turn && id(e.evidenceId),
           'invalid or wrong-turn independent proof');
@@ -170,7 +177,7 @@ export function verifySupervisorTrace(doc, { allowPrefix = false, verifyProof } 
           confirmed = verifyProof(Object.freeze({
             backend:doc.backend, sourceSha:doc.sourceSha,
             child:e.child, supervisor:e.supervisor, actor:e.actor,
-            generation:e.generation, turn:e.turn, evidenceId:e.evidenceId,
+            generation:e.generation, turn:e.turn, stopPermitId:e.stopPermitId, evidenceId:e.evidenceId,
             receipt:c.receipt
           })) === true;
         } catch {
@@ -179,6 +186,7 @@ export function verifySupervisorTrace(doc, { allowPrefix = false, verifyProof } 
         requireField(confirmed, 'independent host proof rejected');
         c.proof = true; c.applied = true; break;
       case 'stop.ack':
+        requireField(e.stopPermitId === c.stopPermit, 'foreign or stale STOP acknowledgment permit');
         requireField(c.phase === 'Stopping' && c.lease === c.generation &&
           c.calls === 1 && e.turn === c.turn, 'unreserved or replayed STOP acknowledgment');
         if (c.receipt === 'Applied') {
