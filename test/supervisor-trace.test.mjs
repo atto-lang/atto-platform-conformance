@@ -8,7 +8,9 @@ const event = (seq, op, extras={}) => {
   const generation = extras.generation ?? 1;
   const actor = extras.actor ?? (child === 'child-2' ? 'actor-C' :
     generation === 2 ? 'actor-B' : 'actor-A');
-  return {seq, op, child, supervisor:'root', generation, actor, ...extras};
+  return {seq, op, child, supervisor:'root', generation, actor,
+    ...(op.startsWith('stop.') ? {stopPermitId:child==='child-2'?'stop-ticket-2':'stop-ticket-1'} : {}),
+    ...extras};
 };
 const rawDoc = events => ({schemaVersion:2,backend:'java',sourceSha,events});
 const doc = (events, status='completed') => rawDoc([...events,{
@@ -54,7 +56,7 @@ test('ambiguous STOP requires independent proof, including after shutdown', () =
   const proof = e => e.evidenceId === 'independent-proof-1' &&
     e.backend === 'java' && e.child === 'child-1' &&
     e.generation === 1 && e.actor === 'actor-A' &&
-    e.turn === 1 && e.receipt === 'Uncertain';
+    e.turn === 1 && e.stopPermitId === 'stop-ticket-1' && e.receipt === 'Uncertain';
   assert.equal(verifySupervisorTrace(doc(events),{verifyProof:proof}).acknowledgments,1);
   assert.throws(() => verifySupervisorTrace(doc(events),{verifyProof:()=>false}),
     /independent host proof rejected/);
@@ -164,4 +166,26 @@ test('independent supervisor lanes can own simultaneous STOP turns', () => {
   t.push(event(13,'stop.uncertain',{turn:1}));
   t.push(event(14,'stop.uncertain',{child:'child-2',supervisor:'other',turn:1}));
   assert.equal(verifySupervisorTrace(doc(t,'quarantined')).invocations,2);
+});
+
+test('STOP effect claims, receipts and trusted evidence are bound to exact one-use permit', () => {
+  const events=stop();
+  expectReject(events.map((e,i)=>i===4?{...e,stopPermitId:''}:e),
+    /missing, foreign or replayed STOP permit/);
+  expectReject(events.map((e,i)=>i===5?{...e,stopPermitId:'forged-ticket'}:e),
+    /foreign or stale STOP invocation permit/);
+  expectReject(events.map((e,i)=>i===6?{...e,stopPermitId:'forged-ticket'}:e),
+    /foreign or stale STOP applied permit/);
+  expectReject(events.map((e,i)=>i===7?{...e,stopPermitId:'forged-ticket'}:e),
+    /foreign or stale STOP acknowledgment permit/);
+  const uncertain=[...events.slice(0,6),event(7,'stop.uncertain',{turn:1,stopPermitId:'wrong'})];
+  expectReject(uncertain,/foreign or stale STOP uncertain permit/,'quarantined');
+  const proof=[...events.slice(0,6),event(7,'stop.uncertain',{turn:1}),
+    event(8,'stop.proof',{turn:1,evidenceId:'external-verified'}),
+    event(9,'stop.ack',{turn:1})];
+  assert.throws(()=>verifySupervisorTrace(doc(proof),{
+    verifyProof:p=>p.stopPermitId === 'foreign-ticket'
+  }),/independent host proof rejected/);
+  expectReject(proof.map((e,i)=>i===7?{...e,stopPermitId:'foreign'}:e),
+    /foreign or stale STOP proof permit/);
 });
