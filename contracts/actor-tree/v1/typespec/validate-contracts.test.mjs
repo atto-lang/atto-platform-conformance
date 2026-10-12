@@ -7,9 +7,12 @@ import Ajv2020 from "ajv/dist/2020.js";
 
 const base = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (path) => JSON.parse(readFileSync(resolve(base, path), "utf8"));
-// Conditional required/not schemas legitimately reference fields declared at
-// their parent root; strictRequired is a lint-only policy, not validation.
-const ajv = new Ajv2020({ strict: true, strictRequired: false, allErrors: true });
+// Conditional constraints inherit required fields and type guards from
+// the root schema. Ajv's strictRequired/strictTypes are *lint* diagnostics
+// local to a subschema; disabling them does not relax JSON Schema validation.
+const ajv = new Ajv2020({
+  strict: true, strictRequired: false, strictTypes: false, allErrors: true
+});
 
 const validators = {
   receipt: ajv.compile(read("schemas/shutdown-receipt.schema.json")),
