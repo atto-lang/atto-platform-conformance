@@ -92,25 +92,26 @@ test('tracked symlinks must not certify mutable source outside the pinned subtre
  }finally{rmSync(repo,{recursive:true,force:true})}
 });
 
-test('raw byte admission rejects Git-clean line ending transforms',()=>{
- const repo=mkdtempSync(join(tmpdir(),'mirror-eol-'));
+test('raw byte admission rejects a Git-clean custom filter transformation',()=>{
+ const repo=mkdtempSync(join(tmpdir(),'mirror-filter-'));
  try{
   git(repo,'init','-q');
   git(repo,'config','user.name','CI Mirror Test');
   git(repo,'config','user.email','ci@example.invalid');
+  git(repo,'config','filter.upper.clean','tr A-Z a-z');
+  git(repo,'config','filter.upper.smudge','tr a-z A-Z');
   mkdirSync(join(repo,'source'));
-  const LF=String.fromCharCode(10),CRLF=String.fromCharCode(13,10);
-  writeFileSync(join(repo,'source','.gitattributes'),'*.ores text eol=crlf'+LF);
-  writeFileSync(join(repo,'source','main.ores'),'fnc foo(): int { return 42; }'+LF);
+  const LF=String.fromCharCode(10);
+  writeFileSync(join(repo,'source','.gitattributes'),'*.ores filter=upper'+LF);
+  writeFileSync(join(repo,'source','main.ores'),'hello'+LF);
   git(repo,'add','.');
-  git(repo,'commit','-qm','pin canonical LF Git blob');
-  // Explicitly put CRLF in the executable checkout while Git's text
-  // normalization still considers the index and worktree equal.
-  writeFileSync(join(repo,'source','main.ores'),'fnc foo(): int { return 42; }'+CRLF);
-  assert.equal(readFileSync(join(repo,'source','main.ores'),'utf8').includes(CRLF),true);
+  git(repo,'commit','-qm','pin lowercase canonical blob');
+  // Git declares the uppercase executable checkout clean after its clean
+  // filter transforms it back to the lowercase index blob.
+  writeFileSync(join(repo,'source','main.ores'),'HELLO'+LF);
   assert.equal(git(repo,'status','--porcelain=v1','--','source'),'');
   const params={repo,subtreePath:'source',expectedTree:git(repo,'rev-parse','HEAD:source'),
-    blobs:[{path:'main.ores',sha:git(repo,'rev-parse','HEAD:source/main.ores')}]};
+   blobs:[{path:'main.ores',sha:git(repo,'rev-parse','HEAD:source/main.ores')}]};
   assert.throws(()=>verify(params),/raw source bytes differ from pinned Git blob/);
  }finally{rmSync(repo,{recursive:true,force:true})}
 });
