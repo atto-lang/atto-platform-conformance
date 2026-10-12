@@ -22,3 +22,19 @@ The authority files are independent host-generated registry snapshots: expectedP
 The comparator checks exact source identity, signed-i64 endpoint values, all four typed hops, separately trusted actor identities, complete physical DONE receipts, and normalized Java/LLVM parity. It rejects missing backends, stale generations, forged routes, missing receipts, duplicate-key/noncanonical audit JSON, and substituted schema hashes.
 
 **Security and proof boundary:** the checker does not attest arbitrary runners or protect FD3 from a compromised host. Only a reviewed, funded, exact-source CI workflow invoking real compiled guest binaries can establish executable provenance. The older LLVM aggregate stderr evidence, unit-test fixtures, structural TypeSpec/Ajv tests, and bounded TLC checks cannot be promoted into full compiled guest certification. Keep PR #13 draft and unmerged until that evidence exists.
+
+
+## Runner environment hardening
+
+The verifier's `guestRunnerEnvironment()` forwards a small allowlist of
+runtime discovery variables (such as PATH, LANG, JAVA_HOME and library
+locations) and overwrites the four `ORESLANG_GUEST_*` control variables
+with host-selected values. It deliberately does **not** inherit
+GITHUB_TOKEN, cloud credentials, SSH_AUTH_SOCK, HOME, or arbitrary CI
+environment variables. Negative unit tests assert these exclusions.
+
+This is only environment scrubbing. It does **not** confine a child process
+that can read the host filesystem, write FD3, or access inherited process
+privileges. Real guest certification still requires sandboxed runners,
+host-only audit descriptor authority, reviewed compiler/runtime provenance,
+and separately authenticated physical DONE receipts.
