@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {dirname, resolve} from 'node:path';
-import {identityKey, signedI64, MIN_I64, MAX_I64, verifyRoundTrip} from './verify-roundtrip.mjs';
+import {identityKey, signedI64, MIN_I64, MAX_I64, NORMATIVE_SCHEMA_SHA256, verifyRoundTrip} from './verify-roundtrip.mjs';
 
 const dir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const valid = () => JSON.parse(readFileSync(resolve(dir, 'fixtures/valid-roundtrip.json'), 'utf8'));
 const trusted = Object.freeze({
   expectedPipelineId: 'pipeline-native-i64-round-trip-1',
-  expectedSchemaHash: '0123456789abcdef'.repeat(4),
+  expectedSchemaHash: NORMATIVE_SCHEMA_SHA256,
   expectedRoute: Object.freeze([
     {runtimeId:'runtime-1',actorId:'stage/A',incarnation:1},
     {runtimeId:'runtime-1',actorId:'stage/B',incarnation:1},
@@ -107,4 +107,12 @@ test('reject undeclared fields at every wire boundary', () => {
     const trace=valid();mutate(trace);
     assert.throws(() => verify(trace), /undeclared/);
   }
+});
+
+test('reject fake 64-hex schema hash even with caller-supplied fake authority', () => {
+  const trace = valid();
+  const fake = 'f'.repeat(64);
+  for (const msg of trace.messages) msg.schemaHash = fake;
+  assert.throws(() => verifyRoundTrip(trace, {...trusted, expectedSchemaHash:fake}),
+    /trusted pipeline authority context/);
 });
