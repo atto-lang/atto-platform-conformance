@@ -93,3 +93,28 @@ test("source proposal distinguishes actor reply effects from callable returns",a
  assert.equal((doubled.match(/self\.respond\s*\(/g)||[]).length,2);
  assert.match(doubled,/self\.done\(\)/);
 });
+
+
+test("fixture JSON Schema vocabulary and closed-field contracts match the pinned manifest",async()=>{
+ const schema=JSON.parse(await readFile(new URL("../schemas/actor-reply-fixtures.schema.json",import.meta.url),"utf8"));
+ assert.equal(schema.$schema,"https://json-schema.org/draft/2020-12/schema");
+ assert.equal(schema.additionalProperties,false);
+ assert.equal(schema.$defs.case.additionalProperties,false);
+ assert.equal(schema.properties.hostReference.additionalProperties,false);
+ assert.equal(schema.properties.schemaVersion.const,1);
+ assert.equal(schema.properties.scope.const,manifest.scope);
+ assert.equal(schema.properties.cases.minItems,canonicalCases.size);
+ assert.equal(schema.properties.cases.maxItems,canonicalCases.size);
+ assert.deepEqual(schema.$defs.case.properties.id.enum,[...canonicalCases.keys()]);
+ const backendNames=["java-graalvm","llvm","wasm","browser-worker"];
+ assert.deepEqual(schema.$defs.backend.enum,backendNames);
+ assert.deepEqual(schema.$defs.case.properties.expect.enum,["accept","reject"]);
+ for(const item of manifest.cases){
+  assert.ok(schema.$defs.case.properties.id.enum.includes(item.id));
+  assert.match(item.file,new RegExp(schema.$defs.case.properties.file.pattern));
+  assert.match(item.sourceGitBlobSha1,new RegExp(schema.$defs.case.properties.sourceGitBlobSha1.pattern));
+  for(const backend of [...item.confirmedBackends,...item.pendingBackends])
+   assert.ok(schema.$defs.backend.enum.includes(backend));
+ }
+ assert.equal(schema.properties.hostReference.properties.compilerAdmission.const,false);
+});
