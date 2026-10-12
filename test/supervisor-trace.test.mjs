@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { verifySupervisorTrace } from '../bin/verify-supervisor-trace.mjs';
 
 const sourceSha = '1111111111111111111111111111111111111111';
+const verifiedOrigin = {expectedSourceSha:sourceSha, expectedBackend:'java'};
 const event = (seq, op, extras={}) => {
   const child = extras.child ?? 'child-1';
   const generation = extras.generation ?? 1;
@@ -57,10 +58,10 @@ test('ambiguous STOP requires independent proof, including after shutdown', () =
     e.backend === 'java' && e.child === 'child-1' &&
     e.generation === 1 && e.actor === 'actor-A' &&
     e.turn === 1 && e.stopPermitId === 'stop-ticket-1' && e.receipt === 'Uncertain';
-  assert.equal(verifySupervisorTrace(doc(events),{verifyProof:proof}).acknowledgments,1);
-  assert.throws(() => verifySupervisorTrace(doc(events),{verifyProof:()=>false}),
+  assert.equal(verifySupervisorTrace(doc(events),{...verifiedOrigin,verifyProof:proof}).acknowledgments,1);
+  assert.throws(() => verifySupervisorTrace(doc(events),{...verifiedOrigin,verifyProof:()=>false}),
     /independent host proof rejected/);
-  assert.throws(() => verifySupervisorTrace(doc(events),{verifyProof:()=>{throw Error('bad');}}),
+  assert.throws(() => verifySupervisorTrace(doc(events),{...verifiedOrigin,verifyProof:()=>{throw Error('bad');}}),
     /trusted independent host proof verifier threw/);
 });
 test('restart requires distinct physical spawn, admission and exact permit', () => {
@@ -184,7 +185,7 @@ test('STOP effect claims, receipts and trusted evidence are bound to exact one-u
     event(8,'stop.proof',{turn:1,evidenceId:'external-verified'}),
     event(9,'stop.ack',{turn:1})];
   assert.throws(()=>verifySupervisorTrace(doc(proof),{
-    verifyProof:p=>p.stopPermitId === 'foreign-ticket'
+    ...verifiedOrigin, verifyProof:p=>p.stopPermitId === 'foreign-ticket'
   }),/independent host proof rejected/);
   expectReject(proof.map((e,i)=>i===7?{...e,stopPermitId:'foreign'}:e),
     /foreign or stale STOP proof permit/);
@@ -211,6 +212,70 @@ test('physical admission and cleanup evidence cannot be reused across logical op
   expectReject([...first,event(13,'restart.cleanup',{turn:1,permitId:'permit-2',
     newActor:'actor-C',newGeneration:3,cleanupId:'new-proof'})],
     /replacement cleanup not tied/,'quarantined');
+});
+
+test('replayed STOP proof is rejected before calling external verifier a second time', () => {
+  const events=[
+    ...stop().slice(0,6),
+    event(7,'stop.uncertain',{turn:1}),
+    event(8,'stop.proof',{turn:1,evidenceId:'same-host-receipt'}),
+    event(9,'stop.ack',{turn:1}),
+    event(10,'register',{child:'child-2',supervisor:'other'}),
+    event(11,'cleanup',{child:'child-2',supervisor:'other'}),
+    event(12,'finalize',{child:'child-2',supervisor:'other'}),
+    event(13,'control.acquire',{child:'child-2',supervisor:'other',turn:1}),
+    event(14,'stop.reserve',{child:'child-2',supervisor:'other',turn:1}),
+    event(15,'stop.invoke',{child:'child-2',supervisor:'other',turn:1}),
+    event(16,'stop.uncertain',{child:'child-2',supervisor:'other',turn:1}),
+    event(17,'stop.proof',{child:'child-2',supervisor:'other',turn:1,
+      evidenceId:'same-host-receipt'}),
+    event(18,'stop.ack',{child:'child-2',supervisor:'other',turn:1})
+  ];
+  let verified = 0;
+  assert.throws(()=>verifySupervisorTrace(doc(events),{
+    ...verifiedOrigin, verifyProof:()=>{ ++verified; return true; }
+  }), /replayed independent host proof evidence/);
+  assert.equal(verified,1,'replay must never trigger another host verifier call');
+});
+
+test('STOP proof requires independently pinned runtime SHA and backend', () => {
+  const events=[...stop().slice(0,6),
+    event(7,'stop.uncertain',{turn:1}),
+    event(8,'stop.proof',{turn:1,evidenceId:'proof-once'}),
+    event(9,'stop.ack',{turn:1})];
+  let calls=0;
+  assert.throws(()=>verifySupervisorTrace(doc(events),{
+    verifyProof:()=>{ calls++; return true; }
+  }), /independent host proof requires verified runtime provenance/);
+  assert.equal(calls,0);
+  assert.throws(()=>verifySupervisorTrace(doc(events),{
+    expectedSourceSha:sourceSha,verifyProof:()=>{ calls++; return true; }
+  }), /independent host proof requires verified runtime provenance/);
+  assert.equal(calls,0);
+  assert.equal(verifySupervisorTrace(doc(events),{
+    ...verifiedOrigin,verifyProof:()=>{ calls++; return true; }
+  }).acknowledgments,1);
+  assert.equal(calls,1);
+});
+
+test('external proof callback cannot rewrite pending events or checked provenance', () => {
+  const events=[...stop().slice(0,6),
+    event(7,'stop.uncertain',{turn:1}),
+    event(8,'stop.proof',{turn:1,evidenceId:'proof-snapshot'}),
+    event(9,'stop.ack',{turn:1})];
+  const input=doc(events);
+  const result=verifySupervisorTrace(input,{
+    ...verifiedOrigin,verifyProof:()=>{
+      input.events[8].turn=999; // future ACK: would fail if read live
+      input.events[9].recordedEvents=0; // terminal: would fail if read live
+      input.sourceSha='2222222222222222222222222222222222222222';
+      input.backend='llvm';
+      return true;
+    }
+  });
+  assert.equal(result.acknowledgments,1);
+  assert.equal(result.sourceSha,sourceSha);
+  assert.equal(result.backend,'java');
 });
 
 test('runtime evidence is rejected when the verified checkout or backend disagrees', () => {
