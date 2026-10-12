@@ -530,3 +530,59 @@ the CONTROL close/recycle implementation.**
 
 Keep general guest `self.restart()`, previously ACTIVE actor slot
 recycling and ESCALATE disabled pending dedicated release gates.
+
+
+## Identity-aware ACTIVE actor reincarnation
+
+The LLVM host scheduler now has a separate, **opt-in** native callback
+ABI that carries an exact `OresNativeActorRef` (scheduler domain, actor
+slot, physical generation) for DATA, ordinary CONTROL/Future, and typed
+terminal PANIC callback dispatch. The scheduler snapshots that identity
+under the physical lane mutex at dequeue, before invoking host code.
+Previously published/active actor generations become recyclable only in
+this identity-aware mode after all accepted callbacks have drained,
+physical DONE has been observed, and `seal_normal_exit()` has
+successfully classified that exact incarnation. Reincarnation increments
+generation and leaves the new actor **unpublished** until a fresh host
+admission transaction. Stale old-generation sends, STOP, and readiness
+probes fail. Index-only legacy submit remains denied for every generation
+after the first.
+
+**Fail-closed terminal boundary:** if a typed PANIC was attempted or
+published, even if the parent CONTROL channel is saturated or the
+failure acknowledgment was lost, the old actor cannot use normal-exit
+recycling. Such cases require exact supervisor terminal-evidence receipts
+and their own reconciliation protocol, not the normal recycle path.
+Legacy slot-index-only callback schedulers cannot recycle active actor
+generations. The native supervisor bridge provides a new overload of
+`on_panic(parent_actor_ref, failure)` that rejects a forged or stale
+parent generation before routing into CONTROL.
+
+Executable native integration:
+`tests/native_active_actor_generation_test.cpp` runs 10,000 **active**
+physical generations, delivering DATA through the new callback ABI,
+physically stopping/sealing each one, rejecting delayed old-generation
+callback attempts, and republishing each new hidden incarnation through
+the scheduler lease. It separately verifies typed CONTROL and PANIC
+callback identities, terminal PANIC recycling rejection, and legacy
+ABI fencing. The normal bridge integration also rejects PANIC callback
+delivery from a forged supervisor parent generation.
+
+[Funded exact-source native scheduler #38205126045](https://github.com/zed-pkg-test/java-app/actions/runs/38205126045)
+passed GCC strict compilation, repeated 10,000 active-generation
+scenarios and Clang ASan/UBSan.
+[Native supervisor bridge #38205126067](https://github.com/zed-pkg-test/java-app/actions/runs/38205126067)
+passed GCC and Clang ASan/UBSan with exact parent-generation rejection.
+[Formal model #38205126057](https://github.com/zed-pkg-test/java-app/actions/runs/38205126057)
+checked bounded normal-DONE callback recycling; all four unsafe variants
+(early reuse, legacy mode reuse, PANIC-generation reuse, stale callback
+effect) produced their expected invariant counterexamples.
+
+Model scope is an abstraction, not compiler/implementation refinement
+or a full native scheduler lock-order liveness proof. A callback carrying
+an ActorRef does not magically revoke non-scheduler memory or arbitrary
+asynchronous host side effects: integrations must enforce generation
+ownership at every external capability boundary. The normal-exit
+recycler is host-only; guest-defined `await self.restart(f.child)`,
+PANIC-completed physical actor slot recycling, and ESCALATE remain
+disabled until source lowering and terminal-receipt release gates pass.
