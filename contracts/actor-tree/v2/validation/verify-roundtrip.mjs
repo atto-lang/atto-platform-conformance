@@ -5,7 +5,25 @@ export const MAX_I64 = (1n << 63n) - 1n;
 const HEX64 = /^[a-f0-9]{64}$/;
 const CANONICAL_INT = /^(0|-?[1-9][0-9]*)$/;
 
+function requireFields(value, fields, context) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new TypeError('invalid ' + context + ' object');
+  }
+  const declared = new Set(fields);
+  for (const field of Reflect.ownKeys(value)) {
+    if (!declared.has(field)) {
+      throw new TypeError('undeclared ' + context + ' field: ' + String(field));
+    }
+  }
+  for (const field of fields) {
+    if (!Object.hasOwn(value, field)) {
+      throw new TypeError('missing ' + context + ' field: ' + field);
+    }
+  }
+}
+
 export function identityKey(actor) {
+  requireFields(actor, ['runtimeId','actorId','incarnation'], 'actor identity');
   if (!actor || typeof actor.runtimeId !== 'string' || !actor.runtimeId.length ||
       typeof actor.actorId !== 'string' || !actor.actorId.length ||
       !Number.isInteger(actor.incarnation) || actor.incarnation < 1 ||
@@ -25,7 +43,20 @@ export function signedI64(value) {
   return parsed;
 }
 
-export function verifyRoundTrip(trace) {
+// Caller-supplied authority is deliberately separate from the untrusted
+// wire trace. Do not derive expectedHash, route or pipelineId from trace.
+export function verifyRoundTrip(trace, authority) {
+  if (!authority || typeof authority !== 'object' ||
+      typeof authority.expectedPipelineId !== 'string' ||
+      !authority.expectedPipelineId.length ||
+      typeof authority.expectedSchemaHash !== 'string' ||
+      !HEX64.test(authority.expectedSchemaHash) ||
+      !Array.isArray(authority.expectedRoute) ||
+      authority.expectedRoute.length !== 3) {
+    throw new TypeError('trusted pipeline authority context is required');
+  }
+  requireFields(trace, ['schemaVersion','pipelineId','route','messages'],
+    'round-trip trace');
   if (!trace || trace.schemaVersion !== '2.0.0' || !Array.isArray(trace.route)
       || trace.route.length !== 3 || !Array.isArray(trace.messages)
       || trace.messages.length !== 4) {
@@ -36,6 +67,13 @@ export function verifyRoundTrip(trace) {
     throw new Error('invalid pipelineId');
   }
   const route = trace.route;
+  for (const message of trace.messages) {
+    requireFields(message,
+      ['messageId','direction','from','to','hopIndex','schemaHash','payload'],
+      'pipeline envelope');
+    requireFields(message.payload, ['variant','i64Decimal'],
+      'signed-i64 payload');
+  }
   const keys = route.map(identityKey);
   if (new Set(keys).size !== 3) throw new Error('route actors must be distinct incarnations');
   const logicalKeys = route.map(a => JSON.stringify([a.runtimeId, a.actorId]));
@@ -81,6 +119,12 @@ export function verifyRoundTrip(trace) {
     }
     variant = message.payload.variant;
     payloads.push(signedI64(message.payload.i64Decimal));
+  }
+  const authorityRoute = authority.expectedRoute.map(identityKey);
+  if (trace.pipelineId !== authority.expectedPipelineId ||
+      schemaHash !== authority.expectedSchemaHash ||
+      keys.some((k,i) => k !== authorityRoute[i])) {
+    throw new Error('pipeline trace does not match trusted schema/actor authority');
   }
   return { route: keys, schemaHash, variant, values: payloads };
 }
