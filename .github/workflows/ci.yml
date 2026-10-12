@@ -19,3 +19,18 @@ jobs:
             echo "ERROR: unconfigured compiler unexpectedly counted as passing" >&2
             exit 1
           fi
+
+  actor-tree-wire-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned TypeSpec and Ajv
+        run: npm install --prefix contracts/actor-tree/v1/typespec --no-audit --no-fund
+      - name: Compile TypeSpec to JSON Schema
+        run: npm run compile --prefix contracts/actor-tree/v1/typespec
+      - name: Assert schema fixtures and strict lifecycle trace checks
+        run: npm test --prefix contracts/actor-tree/v1/typespec
