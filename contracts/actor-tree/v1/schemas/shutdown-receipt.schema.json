@@ -204,6 +204,12 @@
                 }
               }
             }
+          },
+          "shutdownResult": {
+            "enum": [
+              "success",
+              "failure"
+            ]
           }
         }
       }
