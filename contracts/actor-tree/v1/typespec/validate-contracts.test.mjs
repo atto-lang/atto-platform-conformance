@@ -25,6 +25,24 @@ const validators = {
 const key = ({runtimeId, actorId, incarnation}) =>
   JSON.stringify([runtimeId, actorId, incarnation]);
 
+// JSON Schema cannot express uniqueness by *one nested property*, or
+// child identity inequality. Enforce those relational receipt obligations
+// before accepting a receipt as evidence of parent completion.
+function assertReceiptIdentity(receipt) {
+  assert.ok(validators.receipt(receipt),
+    JSON.stringify(validators.receipt.errors));
+  const owner = key(receipt.actor);
+  const children = new Set();
+  for (const child of receipt.children) {
+    const id = key(child.actor);
+    assert.notEqual(id, owner, "parent listed as its own physical child");
+    assert.ok(!children.has(id), "duplicate physical child identity");
+    children.add(id);
+    assert.equal(child.actor.runtimeId, receipt.actor.runtimeId,
+      "cross-runtime child cannot certify parent physical completion");
+  }
+}
+
 // JSON Schema enforces local shape and parent-success prerequisites.
 // This validator additionally enforces chronological cross-event protocol.
 function assertTraceOrdering(trace) {
@@ -87,6 +105,7 @@ for (const [name,kind,file] of [
     const value = read("fixtures/" + file);
     assert.ok(validators[kind](value), JSON.stringify(validators[kind].errors));
     if (kind === "trace") assertTraceOrdering(value);
+    if (kind === "receipt") assertReceiptIdentity(value);
   });
 }
 
@@ -138,17 +157,22 @@ test("reject ABA identity collision hidden by slash-separated actor keys", () =>
 test("reject duplicate child identities in terminal shutdown receipt", () => {
   const value = read("fixtures/valid-shutdown-receipt.json");
   value.children.push(structuredClone(value.children[0]));
-  assert.ok(validators.receipt(value), JSON.stringify(validators.receipt.errors));
-  // Uniqueness by actor incarnation is a relational invariant, not JSON
-  // Schema's generic uniqueItems (which compares whole child objects).
-  const seen = new Set();
-  assert.throws(() => {
-    for (const child of value.children) {
-      const id = key(child.actor);
-      assert.ok(!seen.has(id), "duplicate physical child identity");
-      seen.add(id);
-    }
-  }, /duplicate physical child identity/);
+  assert.throws(() => assertReceiptIdentity(value),
+    /duplicate physical child identity/);
+});
+
+test("reject parent self-reference in terminal shutdown receipt", () => {
+  const value = read("fixtures/valid-shutdown-receipt.json");
+  value.children[0].actor = structuredClone(value.actor);
+  assert.throws(() => assertReceiptIdentity(value),
+    /parent listed as its own physical child/);
+});
+
+test("reject cross-runtime child as parent shutdown proof", () => {
+  const value = read("fixtures/valid-shutdown-receipt.json");
+  value.children[0].actor.runtimeId = "foreign-runtime";
+  assert.throws(() => assertReceiptIdentity(value),
+    /cross-runtime child/);
 });
 
 test("TypeSpec compiler emitted every structural contract model", () => {
