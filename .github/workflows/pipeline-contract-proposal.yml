@@ -4,6 +4,8 @@ on:
     paths:
       - 'src/pipeline-contract.mjs'
       - 'src/pipeline-admission.mjs'
+      - 'src/pipeline-runtime-evidence.mjs'
+      - 'tests/pipeline-runtime-evidence.test.mjs'
       - 'contracts/pipeline/**'
       - 'tests/pipeline-contract.test.mjs'
       - 'formal/TypedPipelineDirections*'
@@ -13,6 +15,8 @@ on:
     paths:
       - 'src/pipeline-contract.mjs'
       - 'src/pipeline-admission.mjs'
+      - 'src/pipeline-runtime-evidence.mjs'
+      - 'tests/pipeline-runtime-evidence.test.mjs'
       - 'contracts/pipeline/**'
       - 'tests/pipeline-contract.test.mjs'
       - 'formal/TypedPipelineDirections*'
@@ -32,7 +36,7 @@ jobs:
         with:
           node-version: '22.23.1'
       - name: Test typed contract, closed schemas and adversarial inputs
-        run: node --test tests/pipeline-contract.test.mjs
+        run: node --test tests/pipeline-contract.test.mjs tests/pipeline-runtime-evidence.test.mjs
       - name: Compile TypeSpec and execute draft-2020-12 schema admission
         shell: bash
         run: |
@@ -40,6 +44,8 @@ jobs:
           npm install --no-save --no-package-lock @typespec/compiler@1.16.0 ajv-cli@5.0.0
           ./node_modules/.bin/tsp compile contracts/pipeline/v1/actor-pipeline.tsp --no-emit --warn-as-error
           ./node_modules/.bin/ajv test --spec=draft2020 -s contracts/pipeline/v1/pipeline-graph.schema.json -d contracts/pipeline/v1/three-actor.json --valid
+          ./node_modules/.bin/tsp compile contracts/pipeline/v1/runtime-trace.tsp --no-emit --warn-as-error
+          ./node_modules/.bin/ajv test --spec=draft2020 -s contracts/pipeline/v1/runtime-trace.schema.json -d contracts/pipeline/v1/trace-three-actor.json --valid
       - name: Check bounded safe TLC model and required unsafe counterexample
         shell: bash
         working-directory: formal
