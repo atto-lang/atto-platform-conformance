@@ -429,3 +429,56 @@ general guest `await self.restart(f.child)` or ESCALATE. Real source
 lowering, bounded-carrier liveness, mixed shutdown interleavings,
 actual cross-backend lifecycle trace comparison, and physical native
 slot reincarnation/capacity policy remain release blockers.
+
+
+## Restricted native physical-slot recycling — exact-source milestone
+
+The draft native scheduler now supplies
+`ores_native_actor_scheduler_recycle_unpublished_done`, restricted to
+**retired, physically DONE, never-published** actor generations with no
+mailbox, CONTROL, running callback, terminal-failure report, or live
+publication lease. The scheduler's publication gate atomically advances
+the slot generation, erases transport state, and leaves the replacement
+unpublished. Stale old-generation ActorRefs cannot send, stop, acquire
+admission, or poll the new actor. Legacy index-only submission is
+deliberately denied after a slot has reincarnated; callers must use
+the generation-checked ActorRef API.
+
+The canonical trusted bridge helper
+`NativeSupervisorPanicBridge::abort_cleaned_and_recycle_unpublished`
+establishes the sequence:
+
+1. Confirm exact physical DONE and registry cleanup.
+2. Abort the one-use logical RESTART ticket.
+3. Recycle the same physical slot to its next generation.
+4. Acquire a **new** logical ticket and commit the new hidden candidate
+   with the existing scheduler/CONTROL publication fences.
+
+The source test also executes this sequence against a real bridge,
+child registry and C scheduler. It verifies the older ActorRef cannot
+send into the new incarnation, while the newly committed incarnation can.
+
+Executed funded verification (separate from source org Actions budgets):
+
+- [Scheduler generation stress #38199514916](https://github.com/zed-pkg-test/java-app/actions/runs/38199514916):
+  exact native blobs, 10,000 consecutive hidden-candidate generations,
+  GCC strict compilation, Clang ASan/UBSan, concurrent STOP and stale-ref
+  rejection; passed.
+- [Native bridge #38199681754](https://github.com/zed-pkg-test/java-app/actions/runs/38199681754):
+  ten exact native bridge/scheduler blobs, actual same-slot logical RESTART,
+  strict GCC and Clang ASan/UBSan; passed for the tested source revision.
+- [Recycling TLC #38199890880](https://github.com/zed-pkg-test/java-app/actions/runs/38199890880):
+  six exact source blobs, 43 distinct states, no positive invariant
+  violation, and three expected unsafe-mutant counterexamples; passed.
+- [Java/GraalVM native-image #38198499124](https://github.com/zed-pkg-test/java-app/actions/runs/38198499124):
+  both AOT and hybrid compile and execute the real guest fixture; passed.
+  This fixture is not guest supervisor RESTART.
+
+**Deliberate release limits:** published/active actors remain nonrecyclable
+until the native callback ABI carries an exact generation and supervisor
+retirement receipts independently fence old terminal events. The current
+scheduler index-only callback ABI cannot satisfy that requirement.
+The bare recycler is host-only; only the bridge's ordered cleanup/abort
+path constitutes the supervisor-level lifecycle operation. TLC remains a
+bounded abstraction, not a refinement proof of C or Java. Guest-defined
+`self.restart(f.child)` and ESCALATE remain disabled.
