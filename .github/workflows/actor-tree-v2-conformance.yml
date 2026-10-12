@@ -1,0 +1,64 @@
+name: Actor-tree V2 signed-i64 and formal conformance
+
+on:
+  push:
+    paths:
+      - 'contracts/actor-tree/v2/**'
+      - '.github/workflows/actor-tree-v2-conformance.yml'
+  pull_request:
+    paths:
+      - 'contracts/actor-tree/v2/**'
+      - '.github/workflows/actor-tree-v2-conformance.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  schema-and-typespec:
+    name: Pinned TypeSpec 1.17 + Ajv Draft 2020-12 + semantic mutations
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned TypeSpec/Ajv toolchain
+        working-directory: contracts/actor-tree/v2/typespec
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Compile TypeSpec models to JSON Schema
+        working-directory: contracts/actor-tree/v2/typespec
+        run: npm run compile
+      - name: Validate canonical signed i64, identity, typed messages, schema and emit
+        working-directory: contracts/actor-tree/v2/typespec
+        run: npm test
+
+  bounded-and-tlc:
+    name: Independent bounded explorer + safe TLC and three mutant counterexamples
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Independent bounded explorer
+        run: python3 contracts/actor-tree/v2/formal/explore.py
+      - name: Fetch and verify pinned TLC distribution
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 --silent --show-error \
+            -o /tmp/tla2tools.jar \
+            https://github.com/zactionsz/tla-tools/releases/download/tla2tools-2026.08.11.125311/tla2tools.jar
+          echo "ab323b79802aedc3203b3f9af37c6aca3ed43f4e0225b36f2aa77b26de46c05f  /tmp/tla2tools.jar" | sha256sum -c
+      - name: TLC safe state search and expected mutant counterexamples
+        env:
+          TLA2TOOLS_JAR: /tmp/tla2tools.jar
+        run: bash contracts/actor-tree/v2/formal/check-tlc.sh
