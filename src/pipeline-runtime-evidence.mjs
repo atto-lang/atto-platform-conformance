@@ -86,8 +86,10 @@ function validate(x){
   }
  }
  if(!completed&&!(stopped&&hops.size>0))return err("trace lacks completion or terminal cancellation");
- return {ok:true,errors:[],forwardAdmissions:[...hops.keys()].filter(k=>k===1||k===2).length,
-  backwardAdmissions:[...hops.keys()].filter(k=>k===3||k===4).length,completions,drops,restarts};
+ // Reservation alone must never be reported as a DATA admission.
+ const admitted=k=>hops.has(k)&&hops.get(k).state!=="reserved";
+ return {ok:true,errors:[],forwardAdmissions:[1,2].filter(admitted).length,
+  backwardAdmissions:[3,4].filter(admitted).length,completions,drops,restarts};
 }
 export function verifyPipelineTrace(trace){
  try{return validate(trace)}catch{return {ok:false,errors:["hostile or malformed trace"]}}
