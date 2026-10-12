@@ -4,6 +4,7 @@ define enum Message as
 end
 
 define actor WorkerActor as
+  @Implements
   receive(Message m): void {
     self.respond(Message.Result("first", 1));
     self.respond(Message.Result("second", 2));
