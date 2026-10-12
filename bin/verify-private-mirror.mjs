@@ -28,7 +28,7 @@ export function verify({ repo, subtreePath, expectedTree, blobs = [] }) {
   // The Git object database is immutable, but the executable checkout is
   // not. A matching HEAD tree alone must not certify a dirty staging area or
   // working tree as SHA-exact source execution. Check before consumers run.
-  const dirty = git(repo, 'status', '--porcelain=v1', '--untracked-files=all', '--', subtreePath);
+  // Include ignored build/generated files: they are just as executable as\n  // tracked files, but plain porcelain status hides them.\n  const dirty = git(repo, 'status', '--porcelain=v1', '--untracked-files=all', '--ignored=matching', '--', subtreePath);
   if (dirty) throw Error('source subtree worktree is dirty or contains untracked files');
   // Skip-worktree / assume-unchanged flags can conceal real modifications from
   // porcelain status; reject an attestation when either is active.
