@@ -22,8 +22,13 @@ must roll back. Stage restarts must fence old producer/consumer capabilities.
   equivalence is not yet a machine-checked guarantee.
 - `three-actor.json` is an admitted contract-only sample, **not** a compiled
   `.ores` program or host-side simulation of compiled pipeline execution.
-- `src/pipeline-contract.mjs` validates stage roles, precise nominal type
-  matching, adjacency, capacity limits and dangerous authority mismatches.
+- `src/pipeline-contract.mjs` checks semantic correctness of caller-owned data,
+  but its yes/no result is NOT a durable authorization token.
+- `src/pipeline-admission.mjs` creates and validates a deep-frozen own-data
+  snapshot before any constructor can consume roles, edges or grants. Consumers
+  **must use `admitPipelineContract(input).contract`**, never the mutable input
+  after validation. The admitted object is local structural policy evidence,
+  not an executable actor capability or proof of runtime/scheduler behavior.
 - `formal/TypedPipelineDirections.tla` explores two forward/two reverse hops,
   shutdown/restart and stale-reply discard in a two-generation bounded model.
   Its intentionally invalid early-reverse transition must be rejected by TLC.
