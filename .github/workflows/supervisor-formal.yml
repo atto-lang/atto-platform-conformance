@@ -8,6 +8,8 @@ on:
       - 'bin/compare-supervisor-restart-traces.mjs'
       - 'fixtures/supervision/v1/verified-restart-trace.json'
       - '.github/workflows/supervisor-formal.yml'
+      - 'bin/compare-supervisor-registry-transitions.mjs'
+      - 'test/supervisor-registry-transition-parity.test.mjs'
       - 'bin/verify-supervisor-trace.mjs'
       - 'test/supervisor-trace.test.mjs'
   pull_request:
@@ -18,6 +20,8 @@ on:
       - 'bin/compare-supervisor-restart-traces.mjs'
       - 'fixtures/supervision/v1/verified-restart-trace.json'
       - '.github/workflows/supervisor-formal.yml'
+      - 'bin/compare-supervisor-registry-transitions.mjs'
+      - 'test/supervisor-registry-transition-parity.test.mjs'
       - 'bin/verify-supervisor-trace.mjs'
       - 'test/supervisor-trace.test.mjs'
   workflow_dispatch:
@@ -32,7 +36,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Run bounded explorer and negative trace mutation gates
-        run: node --test test/supervisor-lifecycle.test.mjs test/supervisor-trace.test.mjs
+        run: node --test test/supervisor-lifecycle.test.mjs test/supervisor-trace.test.mjs test/supervisor-registry-transition-parity.test.mjs
   tlc-safety-and-mutants:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
