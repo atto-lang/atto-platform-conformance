@@ -32,3 +32,33 @@ still execute end-to-end without handwritten host callbacks for parity.
 Model: `formal/actor-tree/TreePhysicalDone.tla`. On the runner,
 `bash formal/actor-tree/check-tlc.sh` checks bounded parent/child
 physical completion and two deliberately unsafe mutants.
+
+## Hardening and proof boundaries (October 12, 2026)
+
+The V1 `ActorIdentity` tuple is `(runtimeId, actorId, incarnation)`.
+Do not concatenate identity fields using a separator; valid identifiers may
+contain separators and would collide. The chronological validator encodes
+the full ordered tuple and requires identical incarnations at STOP, resource
+release, physical DONE, and parent proof.
+
+The JSON Schema documents structure and local terminal conditions. Cross-event
+and cross-child obligations are checked separately in
+`typespec/validate-contracts.test.mjs`: a final native loan must have a
+prior release event, pending lexical cleanup needs an explicit drain,
+a parent may only cite distinct same-runtime child incarnations with
+observed physical DONE, and no live event may follow physical completion.
+A physically completed shutdown cannot still have a `pending` result.
+Typed pipeline hops cannot target the same actor incarnation as their source.
+
+The V1 `TaggedI64` wire model intentionally encodes only a signed
+**32-bit subset** (the `value: int32` in TypeSpec and corresponding JSON
+Schema range). Its name is legacy and **must not** be read as proof of
+signed 64-bit payload parity. A separate versioned wire contract and
+guest-execution tests are required for the LLVM/Java signed-i64 range,
+including `INT64_MIN` and `INT64_MAX`.
+
+The TypeSpec emitter carries structural limits (event/child counts, hop
+bounds, and schema-hash shape), but conditional/relational checks remain
+normative JSON Schema plus semantic verification. Bounded TLC safety
+models do not prove implementation refinement, nor does a model pass
+certify that a newer JSON Schema/TypeSpec revision has compiled.
