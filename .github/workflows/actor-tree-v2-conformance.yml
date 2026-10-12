@@ -37,7 +37,7 @@ jobs:
         run: npm test
 
   bounded-and-tlc:
-    name: Independent bounded explorer + safe TLC and three mutant counterexamples
+    name: Independent bounded explorer + safe TLC and four mutant counterexamples
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
