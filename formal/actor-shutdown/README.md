@@ -14,8 +14,10 @@ The unsafe action publishes physical completion while cleanup/loan/carrier
 ownership remains live. The safe model excludes it.
 
 **Important limits:** bounded model checking does not prove Java, Native Image
-or LLVM refinement; the current Java `get_done()` exceptional completion on
-a failed drain is a known divergence from this stricter target contract.
+or LLVM refinement. The Java draft now distinguishes `get_shutdown_result()`
+(failed-drain reporting) from `get_done()` (physical finalization). That new
+revision still requires exact-source executed tests, and outstanding FFM loans
+must also be integrated into the production physical-release gate.
 An uncooperative finalizer is not guaranteed to terminate. No unconditional
 liveness claim is made. Production enforcement needs tracked FFM loans and
 explicit failed-drain observation. This model is a release gate, not a
