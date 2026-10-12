@@ -2,6 +2,9 @@
 // No network or package dependencies; run with Node 22+.
 export const MIN_I64 = -(1n << 63n);
 export const MAX_I64 = (1n << 63n) - 1n;
+// SHA-256 of the exact UTF-8 bytes of schemas/typed-pipeline-roundtrip.schema.json.
+// V2 is immutable: change the wire schema only with a new contract version.
+export const NORMATIVE_SCHEMA_SHA256 = 'f0f5740526408574c0271013451a8ab2c46aa091994ba393a5b501ce00b884c3';
 const HEX64 = /^[a-f0-9]{64}$/;
 const CANONICAL_INT = /^(0|-?[1-9][0-9]*)$/;
 
@@ -51,6 +54,7 @@ export function verifyRoundTrip(trace, authority) {
       !authority.expectedPipelineId.length ||
       typeof authority.expectedSchemaHash !== 'string' ||
       !HEX64.test(authority.expectedSchemaHash) ||
+      authority.expectedSchemaHash !== NORMATIVE_SCHEMA_SHA256 ||
       !Array.isArray(authority.expectedRoute) ||
       authority.expectedRoute.length !== 3) {
     throw new TypeError('trusted pipeline authority context is required');
