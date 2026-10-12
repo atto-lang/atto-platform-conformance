@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - 'src/pipeline-contract.mjs'
+      - 'src/pipeline-admission.mjs'
       - 'contracts/pipeline/**'
       - 'tests/pipeline-contract.test.mjs'
       - 'formal/TypedPipelineDirections*'
@@ -10,6 +11,7 @@ on:
   pull_request:
     paths:
       - 'src/pipeline-contract.mjs'
+      - 'src/pipeline-admission.mjs'
       - 'contracts/pipeline/**'
       - 'tests/pipeline-contract.test.mjs'
       - 'formal/TypedPipelineDirections*'
