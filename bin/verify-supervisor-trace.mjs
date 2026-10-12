@@ -10,13 +10,15 @@ function id(value) { return typeof value === 'string' && value.length > 0 && val
 function pos(value) { return Number.isSafeInteger(value) && value > 0; }
 function sha(value) { return typeof value === 'string' && /^[a-f0-9]{40}$/.test(value); }
 
-export function verifySupervisorTrace(doc) {
+export function verifySupervisorTrace(doc, { allowPrefix = false } = {}) {
   requireField(doc && typeof doc === 'object' && !Array.isArray(doc), 'invalid document');
-  requireField(doc.schemaVersion === 1, 'unknown schema version');
+  requireField(doc.schemaVersion === 2, 'unknown schema version');
   requireField(['java', 'llvm'].includes(doc.backend), 'invalid backend');
   requireField(sha(doc.sourceSha), 'source commit SHA is required');
   requireField(Array.isArray(doc.events) && doc.events.length > 0, 'missing events');
-  const children = new Map(), supervisors = new Map(), usedActors = new Set();
+  requireField(typeof allowPrefix === 'boolean', 'invalid prefix option');
+  const children = new Map(), supervisors = new Map(), usedActors = new Set(), usedPermits = new Set();
+  let sealed = false, completion = 'prefix';
   let invocations = 0, acknowledgments = 0, commits = 0;
   const getSupervisor = s => {
     if (!supervisors.has(s)) supervisors.set(s, {closed:false, control:null, nextTurn:0});
@@ -28,6 +30,7 @@ export function verifySupervisorTrace(doc) {
     requireField(c !== undefined, 'unknown child ' + e.child);
     requireField(e.supervisor === c.supervisor, 'foreign supervisor');
     requireField(e.generation === c.generation, 'stale or forged generation');
+    requireField(e.actor === c.actor, 'wrong or replayed physical actor identity');
     return c;
   }
   function owner(c, e) {
@@ -41,6 +44,18 @@ export function verifySupervisorTrace(doc) {
     requireField(e && typeof e === 'object' && !Array.isArray(e), 'invalid event');
     requireField(e.seq === i + 1, 'non-contiguous or replayed event sequence');
     requireField(typeof e.op === 'string', 'missing operation');
+    if (e.op === 'trace.end') {
+      requireField(!sealed && i === doc.events.length - 1, 'terminal marker must end the trace');
+      requireField(e.recordedEvents === i, 'terminal marker count mismatch');
+      requireField(['completed','quarantined'].includes(e.status), 'invalid terminal status');
+      const unresolved = [...children.values()].some(c =>
+        c.phase === 'Stopping' || c.phase === 'Restarting' || c.replacement !== 'None')
+        || [...supervisors.values()].some(s => s.control !== null);
+      requireField((e.status === 'quarantined') === unresolved,
+        'terminal status conceals outstanding reservation or CONTROL');
+      sealed = true; completion = e.status;
+      continue;
+    }
     if (e.op === 'register') {
       requireField(id(e.child) && id(e.supervisor) && id(e.actor), 'invalid registration');
       requireField(e.generation === 1 && !children.has(e.child), 'duplicate child or invalid initial generation');
@@ -50,7 +65,7 @@ export function verifySupervisorTrace(doc) {
       usedActors.add(e.actor);
       children.set(e.child, {supervisor:e.supervisor, actor:e.actor, generation:1,
         phase:'Active', cleaned:false, receipt:'None', calls:0, proof:false,
-        applied:false, turn:0, lease:0});
+        applied:false, turn:0, lease:0, permit:null, replacement:'None', staged:null});
       continue;
     }
     if (e.op === 'supervisor.close') {
@@ -81,22 +96,52 @@ export function verifySupervisorTrace(doc) {
       case 'restart.reserve':
         owner(c,e);
         requireField(c.phase === 'Finalized' && c.receipt === 'None', 'STOP/RESTART reservation overlap');
-        c.phase = 'Restarting'; c.lease = c.generation; break;
-      case 'restart.abort':
-        requireField(c.phase === 'Restarting' && c.lease === c.generation, 'invalid restart abort');
-        requireField(e.turn === c.turn, 'stale restart abort turn');
-        c.phase = 'Finalized'; c.lease = 0; break;
-      case 'restart.commit':
+        requireField(id(e.permitId) && !usedPermits.has(e.permitId),
+          'replayed or missing restart permit');
+        usedPermits.add(e.permitId);
+        c.phase = 'Restarting'; c.lease = c.generation;
+        c.permit = e.permitId; c.replacement = 'None'; c.staged = null; break;
+      case 'restart.spawn':
         owner(c,e);
-        requireField(c.phase === 'Restarting' && c.lease === c.generation,
-          'replacement outside admitted reservation');
+        requireField(c.phase === 'Restarting' && e.permitId === c.permit &&
+          c.replacement === 'None', 'invalid or stale restart spawn permit');
         requireField(id(e.newActor) && !usedActors.has(e.newActor), 'physical ActorId ABA reuse');
         requireField(pos(e.newGeneration) && e.newGeneration === c.generation + 1,
-          'non-monotonic incarnation');
+          'non-monotonic staged incarnation');
         usedActors.add(e.newActor);
+        c.staged = {actor:e.newActor,generation:e.newGeneration};
+        c.replacement = 'Spawned'; break;
+      case 'restart.admit':
+        owner(c,e);
+        requireField(c.phase === 'Restarting' && e.permitId === c.permit &&
+          c.replacement === 'Spawned' && c.staged?.actor === e.newActor &&
+          c.staged?.generation === e.newGeneration && id(e.admissionId),
+          'replacement admission not tied to exact staged actor and permit');
+        c.replacement = 'Admitted'; break;
+      case 'restart.cleanup':
+        requireField(c.phase === 'Restarting' && e.permitId === c.permit &&
+          e.turn === c.turn && ['Spawned','Admitted'].includes(c.replacement) &&
+          c.staged?.actor === e.newActor && id(e.cleanupId),
+          'replacement cleanup not tied to original reservation');
+        c.replacement = 'Cleaned'; break;
+      case 'restart.abort':
+        requireField(c.phase === 'Restarting' && c.lease === c.generation &&
+          e.permitId === c.permit, 'invalid or stale restart abort permit');
+        requireField(e.turn === c.turn, 'stale restart abort turn');
+        requireField(['None','Cleaned'].includes(c.replacement),
+          'abort would orphan a spawned or admitted actor');
+        c.phase = 'Finalized'; c.lease = 0; c.permit = null;
+        c.replacement = 'None'; c.staged = null; break;
+      case 'restart.commit':
+        owner(c,e);
+        requireField(c.phase === 'Restarting' && c.lease === c.generation &&
+          e.permitId === c.permit, 'replacement outside admitted reservation');
+        requireField(c.replacement === 'Admitted' && c.staged?.actor === e.newActor &&
+          c.staged?.generation === e.newGeneration, 'replacement not admitted and ready');
         c.actor = e.newActor; c.generation = e.newGeneration; c.phase = 'Active';
         c.cleaned = false; c.lease = 0; c.receipt = 'None'; c.calls = 0;
-        c.proof = false; c.applied = false; c.turn = 0; s.control = null; commits++; break;
+        c.proof = false; c.applied = false; c.turn = 0; s.control = null;
+        c.permit = null; c.replacement = 'None'; c.staged = null; commits++; break;
       case 'stop.invoke':
         owner(c,e);
         requireField(c.phase === 'Stopping' && c.receipt === 'Pending' &&
@@ -134,9 +179,10 @@ export function verifySupervisorTrace(doc) {
         throw new Error('SUPERVISOR_TRACE_REJECT: unknown action ' + e.op);
     }
   }
+  requireField(sealed || allowPrefix, 'incomplete trace: missing terminal marker');
   return Object.freeze({ok:true, backend:doc.backend, sourceSha:doc.sourceSha,
     events:doc.events.length, children:children.size, invocations,
-    acknowledgments, restartCommits:commits});
+    acknowledgments, restartCommits:commits, completion});
 }
 
 if (process.argv[1] && import.meta.url === new URL('file://' + process.argv[1]).href) {
