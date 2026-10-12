@@ -1,0 +1,7 @@
+define actor WorkerActor as
+  receive(Message m): void {
+    self.respond(Message.Result("first", 1));
+    self.respond(Message.Result("second", 2));
+    self.done();
+  }
+end
