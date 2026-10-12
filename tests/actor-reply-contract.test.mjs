@@ -69,7 +69,7 @@ test("all actor reply fixtures are byte-identical to versioned Git blobs",async(
   if(source.includes("match m over"))
    assert.match(source,/on Message.Result as/,"non-exhaustive Result case: "+entry.file);
   if(source.includes("define actor WorkerActor as"))
-   assert.match(source,/@Implements\\s+receive\\(Message m\\): void/,"receiver marker missing: "+entry.file);
+   assert.match(source,/@Implements\s+receive\(Message m\): void/,"receiver marker missing: "+entry.file);
   const digest=createHash("sha1").update("blob "+bytes.length+"\0").update(bytes).digest("hex");
   assert.equal(digest,entry.sourceGitBlobSha1,entry.file);
  }
