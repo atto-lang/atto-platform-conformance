@@ -47,3 +47,16 @@ for (const [name,mutate,match] of mutations) {
     assert.throws(() => verifyRoundTrip(trace), match);
   });
 }
+
+for (const [name, mutate, match] of [
+  ['missing pipeline id', t => delete t.pipelineId, /invalid pipelineId/],
+  ['null actor incarnation', t => t.route[1].incarnation = null, /invalid physical actor identity/],
+  ['empty actor id', t => t.route[0].actorId = '', /invalid physical actor identity/],
+  ['oversized message id', t => t.messages[0].messageId = 'x'.repeat(129), /duplicate or missing messageId/],
+  ['invalid negative incarnation', t => t.messages[0].to.incarnation = -1, /invalid physical actor identity/],
+]) {
+  test('reject malformed runtime identity / wire field: ' + name, () => {
+    const fixture=valid(); mutate(fixture);
+    assert.throws(() => verifyRoundTrip(fixture), match);
+  });
+}
