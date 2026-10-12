@@ -27,6 +27,7 @@ export function verifySupervisorTrace(doc, { allowPrefix = false, verifyProof,
   requireField(Array.isArray(doc.events) && doc.events.length > 0, 'missing events');
   requireField(typeof allowPrefix === 'boolean', 'invalid prefix option');
   const children = new Map(), supervisors = new Map(), usedActors = new Set(), usedPermits = new Set(), usedStopPermits = new Set();
+  const usedAdmissionEvidence = new Set(), usedCleanupEvidence = new Set(), usedHostProofEvidence = new Set();
   let sealed = false, completion = 'prefix';
   let invocations = 0, acknowledgments = 0, commits = 0;
   const getSupervisor = s => {
@@ -129,12 +130,16 @@ export function verifySupervisorTrace(doc, { allowPrefix = false, verifyProof,
           c.replacement === 'Spawned' && c.staged?.actor === e.newActor &&
           c.staged?.generation === e.newGeneration && id(e.admissionId),
           'replacement admission not tied to exact staged actor and permit');
+        requireField(!usedAdmissionEvidence.has(e.admissionId), 'replayed replacement admission evidence');
+        usedAdmissionEvidence.add(e.admissionId);
         c.replacement = 'Admitted'; break;
       case 'restart.cleanup':
         requireField(c.phase === 'Restarting' && e.permitId === c.permit &&
           e.turn === c.turn && ['Spawned','Admitted'].includes(c.replacement) &&
-          c.staged?.actor === e.newActor && id(e.cleanupId),
+          c.staged?.actor === e.newActor && c.staged?.generation === e.newGeneration && id(e.cleanupId),
           'replacement cleanup not tied to original reservation');
+        requireField(!usedCleanupEvidence.has(e.cleanupId), 'replayed replacement cleanup evidence');
+        usedCleanupEvidence.add(e.cleanupId);
         c.replacement = 'Cleaned'; break;
       case 'restart.abort':
         requireField(c.phase === 'Restarting' && c.lease === c.generation &&
@@ -193,6 +198,8 @@ export function verifySupervisorTrace(doc, { allowPrefix = false, verifyProof,
           requireField(false, 'trusted independent host proof verifier threw');
         }
         requireField(confirmed, 'independent host proof rejected');
+        requireField(!usedHostProofEvidence.has(e.evidenceId), 'replayed independent host proof evidence');
+        usedHostProofEvidence.add(e.evidenceId);
         c.proof = true; c.applied = true; break;
       case 'stop.ack':
         requireField(e.stopPermitId === c.stopPermit, 'foreign or stale STOP acknowledgment permit');
