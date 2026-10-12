@@ -155,6 +155,23 @@ admissionId, and abort requires prior cleanupId if a physical replacement
 was spawned. The trace.end action requires a matching recordedEvents count
 and a completed or quarantined status. Incomplete prefixes only pass
 programmatic checks with allowPrefix:true (never the default CLI mode).
+STOP events now also require a globally unique, one-use stopPermitId on
+stop.reserve; each subsequent stop.invoke/applied/uncertain/proof/ack event
+must retain that exact identifier. The integration verifier accepts
+expectedSourceSha and expectedBackend only from the caller's verified source
+checkout rather than trusting the trace's own sourceSha field. The standalone
+CLI remains useful for safety checking but cannot independently attest trace
+provenance.
+
+For independently issued host evidence, use
+bin/verify-signed-stop-receipt.mjs with an out-of-band Ed25519 public key
+and separately acquired applied-effect receipts. The exact signed binding
+includes sourceSha, backend, supervisor, child, physical actor, incarnation,
+CONTROL turn, STOP permit, receipt/evidence ID and host operation ID.
+Signature verification attests an issuer's statement, not external effect
+completion or crash durability. A production host operation ledger is still
+required.
+
 Independent stop.proof requires evidenceId plus a trusted verifyProof
 callback that verifies the original actor, generation, CONTROL turn, host
 receipt and external evidence. The standalone CLI intentionally rejects
