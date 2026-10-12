@@ -1,0 +1,12 @@
+{
+  "kind": "oreslang-v2-guest-certification",
+  "profile": "signed-i64-boundaries",
+  "sourcePath": "contracts/actor-tree/v2/guest/three-actor-signed-i64.ores",
+  "sourceGitBlobSha1": "34c2dc0de8816df2f2f8bfbd3c12814ef2afbdb6",
+  "schemaHash": "f0f5740526408574c0271013451a8ab2c46aa091994ba393a5b501ce00b884c3",
+  "expectedValues": [
+    "-9223372036854775808", "-9223372036854775808",
+    "9223372036854775807", "9223372036854775807"
+  ],
+  "expectedExitCode": 43
+}
