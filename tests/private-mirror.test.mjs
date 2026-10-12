@@ -37,3 +37,32 @@ test('exact-tree private CI evidence only passes pinned blobs and subtree', () =
     rmSync(repo, { recursive: true, force: true });
   }
 });
+
+test('exact-tree verifier refuses dirty, staged, untracked and hidden-checkout files',()=>{
+ const repo=mkdtempSync(join(tmpdir(),'mirror-dirty-'));
+ try{
+  git(repo,'init','-q');
+  git(repo,'config','user.name','CI Mirror Test');
+  git(repo,'config','user.email','ci@example.invalid');
+  mkdirSync(join(repo,'source'));
+  writeFileSync(join(repo,'source','main.ores'),'fnc foo(): int { return 42; }\n');
+  git(repo,'add','.');
+  git(repo,'commit','-qm','pin test tree');
+  const params={repo,subtreePath:'source',
+   expectedTree:git(repo,'rev-parse','HEAD:source'),
+   blobs:[{path:'main.ores',sha:git(repo,'rev-parse','HEAD:source/main.ores')}]};
+  assert.equal(verify(params).status,'EXACT_TREE');
+  writeFileSync(join(repo,'source','main.ores'),'fnc foo(): int { return 666; }\n');
+  assert.throws(()=>verify(params),/worktree is dirty/);
+  git(repo,'add','source/main.ores');
+  assert.throws(()=>verify(params),/worktree is dirty/);
+  git(repo,'reset','-q','--hard','HEAD');
+  writeFileSync(join(repo,'source','injected.ores'),'fnc injected(): int { return 666; }\n');
+  assert.throws(()=>verify(params),/untracked files/);
+  rmSync(join(repo,'source','injected.ores'));
+  git(repo,'update-index','--skip-worktree','source/main.ores');
+  assert.throws(()=>verify(params),/hidden index entries/);
+  git(repo,'update-index','--no-skip-worktree','source/main.ores');
+  assert.equal(verify(params).status,'EXACT_TREE');
+ }finally{rmSync(repo,{recursive:true,force:true})}
+});
