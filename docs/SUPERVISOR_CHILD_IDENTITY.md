@@ -245,3 +245,54 @@ null runner ID and zero executed steps. The private alternate-organization
 mirror remains incomplete; its older matching blobs do not prove that
 these changes compile or pass. Keep supervisor drafts unmerged pending
 successful exact-source Maven, CMake/CTest and sanitizer execution.
+
+
+## RESTART physical-refinement implementation gate (2026-10-11)
+
+Java PR #657 and native PR #196 now stage each replacement actor by its
+original restart reservation and **exact next logical incarnation**.
+Commit rejects an unadmitted candidate; abort refuses to release a
+reservation for a spawned/admitted candidate until trusted physical
+cleanup has been acknowledged. Host readiness/cleanup probes execute
+outside registry locks; the original reservation is revalidated under
+the lock before publishing a state change.
+
+Java `ActorGroup.closeFromRuntime` first calls
+`childRegistry.closeRestartAdmission()`; a concurrent late readiness
+callback cannot reactivate a closed group. LLVM exposes
+`close_restart_admission()` and the native supervisor bridge fences
+admission on teardown. Native `admit_verified_replacement` calls the
+**real** `NativeActorScheduler::poll_ready` equivalent for the candidate
+and publishes both the registry incarnation and bridge PANIC-routing
+index while holding the bridge lock; a later generation-specific PANIC
+must continue to reach the same supervisor. Native
+`abort_cleaned_replacement` verifies `poll_done` before releasing
+the reservation.
+
+**Shared trace**:
+`fixtures/supervision/v1/verified-restart-trace.json` defines 11
+deterministic transitions and negative cases. Focused JVM JUnit and
+native CTest emit an identically named
+`SUPERVISOR_RESTART_TRACE_V1=` marker. After obtaining **actual**
+exact-head runtime test logs, the following strict comparator must pass:
+
+```sh
+node bin/compare-supervisor-restart-traces.mjs \
+  fixtures/supervision/v1/verified-restart-trace.json \
+  /path/to/java-test.log /path/to/native-test.log
+```
+
+The comparator rejects missing, duplicated, malformed or disagreeing
+runtime markers. Its Node self-tests are **only harness checks**, and
+cannot substitute fabricated stdout for the real JUnit/CTest logs.
+Log artifacts must include Java/LLVM commit SHA and verified exact
+compiler source blobs; their relation to the fixture must be recorded.
+
+The safety boundary remains **trusted host**: a BooleanSupplier or
+`std::function<bool()>` returning true is not cryptographic physical
+admission evidence. Java's scheduler-bound restart operation, native
+external message routing before publication, and full actor-cancellation
+races still require implementation-level testing. No general guest
+`await self.restart(f.child)` or `self.escalate(f)` is enabled by these
+changes. The source repos' Actions jobs still need allocated runners,
+and the formal-only funded CI cannot prove source runtime parity.
