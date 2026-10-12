@@ -49,7 +49,17 @@ test('ambiguous STOP requires independent proof, including after shutdown', () =
   assert.equal(verifySupervisorTrace(doc(events,'quarantined')).completion,'quarantined');
   events.push(event(9,'stop.proof',{turn:1,evidenceId:'independent-proof-1'}));
   events.push(event(10,'stop.ack',{turn:1}));
-  assert.equal(verifySupervisorTrace(doc(events)).acknowledgments,1);
+  // The marker string alone cannot establish a trusted host effect.
+  assert.throws(() => verifySupervisorTrace(doc(events)), /trusted independent host proof verifier required/);
+  const proof = e => e.evidenceId === 'independent-proof-1' &&
+    e.backend === 'java' && e.child === 'child-1' &&
+    e.generation === 1 && e.actor === 'actor-A' &&
+    e.turn === 1 && e.receipt === 'Uncertain';
+  assert.equal(verifySupervisorTrace(doc(events),{verifyProof:proof}).acknowledgments,1);
+  assert.throws(() => verifySupervisorTrace(doc(events),{verifyProof:()=>false}),
+    /independent host proof rejected/);
+  assert.throws(() => verifySupervisorTrace(doc(events),{verifyProof:()=>{throw Error('bad');}}),
+    /trusted independent host proof verifier threw/);
 });
 test('restart requires distinct physical spawn, admission and exact permit', () => {
   const events=restart();
