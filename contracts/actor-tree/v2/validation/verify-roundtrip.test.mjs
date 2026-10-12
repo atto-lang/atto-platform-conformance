@@ -7,9 +7,19 @@ import {identityKey, signedI64, MIN_I64, MAX_I64, verifyRoundTrip} from './verif
 
 const dir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const valid = () => JSON.parse(readFileSync(resolve(dir, 'fixtures/valid-roundtrip.json'), 'utf8'));
+const trusted = Object.freeze({
+  expectedPipelineId: 'pipeline-native-i64-round-trip-1',
+  expectedSchemaHash: '0123456789abcdef'.repeat(4),
+  expectedRoute: Object.freeze([
+    {runtimeId:'runtime-1',actorId:'stage/A',incarnation:1},
+    {runtimeId:'runtime-1',actorId:'stage/B',incarnation:1},
+    {runtimeId:'runtime-1',actorId:'stage/C',incarnation:1},
+  ])
+});
+const verify = trace => verifyRoundTrip(trace, trusted);
 
 test('lossless four-hop bidirectional round trip at signed-64 endpoints', () => {
-  const result = verifyRoundTrip(valid());
+  const result = verify(valid());
   assert.deepEqual(result.values, [MIN_I64, MIN_I64, MAX_I64, MAX_I64]);
   assert.equal(result.route.length, 3);
 });
@@ -44,7 +54,7 @@ const mutations = [
 for (const [name,mutate,match] of mutations) {
   test('reject ' + name, () => {
     const trace=valid(); mutate(trace);
-    assert.throws(() => verifyRoundTrip(trace), match);
+    assert.throws(() => verify(trace), match);
   });
 }
 
@@ -57,7 +67,7 @@ for (const [name, mutate, match] of [
 ]) {
   test('reject malformed runtime identity / wire field: ' + name, () => {
     const fixture=valid(); mutate(fixture);
-    assert.throws(() => verifyRoundTrip(fixture), match);
+    assert.throws(() => verify(fixture), match);
   });
 }
 
@@ -65,5 +75,36 @@ test('reject two incarnations of the same logical actor as distinct pipeline sta
   const fixture=valid();
   fixture.route[1].actorId = fixture.route[0].actorId;
   fixture.route[1].incarnation = 2;
-  assert.throws(() => verifyRoundTrip(fixture), /distinct logical actors/);
+  assert.throws(() => verify(fixture), /distinct logical actors/);
+});
+
+test('reject verification without independent authority context', () => {
+  assert.throws(() => verifyRoundTrip(valid()), /trusted pipeline authority context/);
+});
+test('reject internally consistent attacker-selected schema hash', () => {
+  const trace=valid();
+  for (const m of trace.messages) m.schemaHash='f'.repeat(64);
+  assert.throws(() => verify(trace), /trusted schema\/actor authority/);
+});
+test('reject internally consistent but unauthorized actor route', () => {
+  const trace=valid();
+  trace.route[0].actorId='attacker';
+  trace.messages[0].from.actorId='attacker';
+  trace.messages[3].to.actorId='attacker';
+  assert.throws(() => verify(trace), /trusted schema\/actor authority/);
+});
+test('reject internally consistent but substituted pipeline ID', () => {
+  const trace=valid();trace.pipelineId='other-request';
+  assert.throws(() => verify(trace), /trusted schema\/actor authority/);
+});
+test('reject undeclared fields at every wire boundary', () => {
+  for(const mutate of [
+    t=>{t.unsafeExtra=true;},
+    t=>{t.route[0].unsafeExtra=true;},
+    t=>{t.messages[0].unsafeExtra=true;},
+    t=>{t.messages[0].payload.unsafeExtra=true;}
+  ]) {
+    const trace=valid();mutate(trace);
+    assert.throws(() => verify(trace), /undeclared/);
+  }
 });
