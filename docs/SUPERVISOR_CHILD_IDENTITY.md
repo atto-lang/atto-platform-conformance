@@ -374,11 +374,15 @@ is held and must remain bounded and free of callbacks.
 - Java/GraalVM still uses an observational BooleanSupplier admission
   contract. Its actor-cell routing and shutdown must implement an
   equivalent continuous scheduler-backed publication guard.
-- Native `SupervisorProcess::healthy()` is still observed separately
-  from registry publication. Prove or implement a corresponding
-  authoritative CONTROL-close/transaction barrier before enabling
-  general guest RESTART. The scheduler gate alone does **not** solve
-  supervisor CONTROL shutdown races.
+- The native bridge now enters
+  `SupervisorProcess::with_healthy_restart_transaction` **before**
+  acquiring the scheduler admission lease. The process decision fence
+  and process mutex remain held during bounded registry/routing
+  publication, so CONTROL closure and terminal failure classification
+  cannot invalidate the owner mid-commit. Standalone CONTROL-close
+  concurrency tests passed in a separately pinned funded mirror, but
+  a full real native bridge integration test and lock-order stress
+  review are still mandatory release gates.
 - The existing native preallocated scheduler cannot reincarnate
   arbitrary actor slots. A restart candidate must use a fresh slot;
   physical capacity exhaustion and long-term recycling policy remain.
