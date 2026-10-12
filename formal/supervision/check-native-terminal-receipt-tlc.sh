@@ -22,7 +22,8 @@ for pair in \
   NativeTerminalReceiptDropMutant.cfg:TerminalNeverLost \
   NativeTerminalReceiptReplayMutant.cfg:AtMostOneHostEffect \
   NativeTerminalReceiptAckMutant.cfg:AcknowledgmentNeedsEffect \
-  NativeTerminalReceiptRelabelMutant.cfg:NeverRelabelPANICNormal; do
+  NativeTerminalReceiptRelabelMutant.cfg:NeverRelabelPANICNormal \
+  NativeTerminalReceiptProofMutant.cfg:NoUnprovedLostAcknowledgment; do
   cfg="${pair%%:*}"
   invariant="${pair##*:}"
   log="$TMP/$invariant.log"
