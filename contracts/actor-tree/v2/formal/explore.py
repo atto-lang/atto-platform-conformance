@@ -2,26 +2,29 @@
 from collections import deque
 
 def check(enabled=()):
-    init=(0,False,True,True,0,False)
+    init=(0,False,True,True,0,False,False)
     todo=deque([init]); visited={init}; transitions=0
     while todo:
-        hop,stopped,schema,incarnation,effects,stale=state=todo.popleft()
+        hop,stopped,schema,incarnation,effects,stale,post_stop=state=todo.popleft()
         violations=[]
         if not schema: violations.append('NoSchemaSubstitution')
         if not incarnation: violations.append('NoABAIncarnationReuse')
         if effects!=hop: violations.append('ExactlyOnceDelivery')
+        if post_stop: violations.append('NoPostStopDelivery')
         if violations: return len(visited),transitions,state,violations
         next_states=[]
         if not stopped and hop<4 and schema and incarnation:
-            next_states.append((hop+1,stopped,schema,incarnation,effects+1,stale))
-        if not stopped: next_states.append((hop,True,schema,incarnation,effects,stale))
-        if stopped and not stale: next_states.append((hop,stopped,schema,incarnation,effects,True))
+            next_states.append((hop+1,stopped,schema,incarnation,effects+1,stale,post_stop))
+        if not stopped: next_states.append((hop,True,schema,incarnation,effects,stale,post_stop))
+        if stopped and not stale: next_states.append((hop,stopped,schema,incarnation,effects,True,post_stop))
         if 'schema-swap' in enabled and not stopped and hop==1:
-            next_states.append((2,stopped,False,incarnation,effects+1,stale))
+            next_states.append((2,stopped,False,incarnation,effects+1,stale,post_stop))
         if 'incarnation-reuse' in enabled and not stopped and hop==2:
-            next_states.append((3,stopped,schema,False,effects+1,stale))
+            next_states.append((3,stopped,schema,False,effects+1,stale,post_stop))
         if 'duplicate-delivery' in enabled and hop==4 and effects==4:
-            next_states.append((hop,stopped,schema,incarnation,5,stale))
+            next_states.append((hop,stopped,schema,incarnation,5,stale,post_stop))
+        if 'post-stop-delivery' in enabled and stopped and hop<4:
+            next_states.append((hop+1,stopped,schema,incarnation,effects+1,stale,True))
         for ns in next_states:
             transitions+=1
             if ns not in visited: visited.add(ns);todo.append(ns)
@@ -33,7 +36,8 @@ if __name__=='__main__':
     print(f'BOUNDED_SAFE_PASS states={states} edges={edges}')
     for mutant,expected in [('schema-swap','NoSchemaSubstitution'),
                             ('incarnation-reuse','NoABAIncarnationReuse'),
-                            ('duplicate-delivery','ExactlyOnceDelivery')]:
+                            ('duplicate-delivery','ExactlyOnceDelivery'),
+                            ('post-stop-delivery','NoPostStopDelivery')]:
         states,edges,witness,errors=check((mutant,))
         assert expected in errors,(mutant,witness,errors)
         print(f'EXPECTED_MUTANT {mutant} states={states} edges={edges} violation={expected}')
