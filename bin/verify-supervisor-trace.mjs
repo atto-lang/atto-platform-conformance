@@ -10,7 +10,7 @@ function id(value) { return typeof value === 'string' && value.length > 0 && val
 function pos(value) { return Number.isSafeInteger(value) && value > 0; }
 function sha(value) { return typeof value === 'string' && /^[a-f0-9]{40}$/.test(value); }
 
-export function verifySupervisorTrace(doc, { allowPrefix = false } = {}) {
+export function verifySupervisorTrace(doc, { allowPrefix = false, verifyProof } = {}) {
   requireField(doc && typeof doc === 'object' && !Array.isArray(doc), 'invalid document');
   requireField(doc.schemaVersion === 2, 'unknown schema version');
   requireField(['java', 'llvm'].includes(doc.backend), 'invalid backend');
@@ -160,8 +160,24 @@ export function verifySupervisorTrace(doc, { allowPrefix = false } = {}) {
         requireField(c.phase === 'Stopping' && ['Pending','Uncertain'].includes(c.receipt) &&
           c.calls === 1 && !c.proof && e.turn === c.turn && id(e.evidenceId),
           'invalid or wrong-turn independent proof');
-        // A trusted external verifier MUST vouch for evidenceId; this parser cannot do so.
-        c.proof = true; break;
+        // Independent proof is not an arbitrary JSON assertion: an embedder must
+        // check it against trusted host records, bound to this exact incarnation.
+        // The standalone CLI cannot validate such evidence and must fail closed.
+        requireField(typeof verifyProof === 'function',
+          'trusted independent host proof verifier required');
+        let confirmed = false;
+        try {
+          confirmed = verifyProof(Object.freeze({
+            backend:doc.backend, sourceSha:doc.sourceSha,
+            child:e.child, supervisor:e.supervisor, actor:e.actor,
+            generation:e.generation, turn:e.turn, evidenceId:e.evidenceId,
+            receipt:c.receipt
+          })) === true;
+        } catch {
+          requireField(false, 'trusted independent host proof verifier threw');
+        }
+        requireField(confirmed, 'independent host proof rejected');
+        c.proof = true; c.applied = true; break;
       case 'stop.ack':
         requireField(c.phase === 'Stopping' && c.lease === c.generation &&
           c.calls === 1 && e.turn === c.turn, 'unreserved or replayed STOP acknowledgment');
