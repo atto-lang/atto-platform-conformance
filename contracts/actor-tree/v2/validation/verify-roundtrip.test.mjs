@@ -59,7 +59,7 @@ for (const [name,mutate,match] of mutations) {
 }
 
 for (const [name, mutate, match] of [
-  ['missing pipeline id', t => delete t.pipelineId, /invalid pipelineId/],
+  ['missing pipeline id', t => delete t.pipelineId, /missing round-trip trace field: pipelineId/],
   ['null actor incarnation', t => t.route[1].incarnation = null, /invalid physical actor identity/],
   ['empty actor id', t => t.route[0].actorId = '', /invalid physical actor identity/],
   ['oversized message id', t => t.messages[0].messageId = 'x'.repeat(129), /duplicate or missing messageId/],
