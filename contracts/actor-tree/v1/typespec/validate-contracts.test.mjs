@@ -25,6 +25,13 @@ const validators = {
 const key = ({runtimeId, actorId, incarnation}) =>
   JSON.stringify([runtimeId, actorId, incarnation]);
 
+function assertPipelineSemantics(envelope) {
+  assert.ok(validators.envelope(envelope),
+    JSON.stringify(validators.envelope.errors));
+  assert.notEqual(key(envelope.from), key(envelope.to),
+    "pipeline hop cannot target its own actor incarnation");
+}
+
 // JSON Schema cannot express uniqueness by *one nested property*, or
 // child identity inequality. Enforce those relational receipt obligations
 // before accepting a receipt as evidence of parent completion.
@@ -125,6 +132,7 @@ for (const [name,kind,file] of [
     assert.ok(validators[kind](value), JSON.stringify(validators[kind].errors));
     if (kind === "trace") assertTraceOrdering(value);
     if (kind === "receipt") assertReceiptIdentity(value);
+    if (kind === "envelope") assertPipelineSemantics(value);
   });
 }
 
@@ -138,6 +146,20 @@ for (const [name,kind,file] of [
     assert.equal(validators[kind](read("fixtures/" + file)), false);
   });
 }
+
+test("reject physical DONE while shutdown outcome is still pending", () => {
+  const value = read("fixtures/valid-shutdown-receipt.json");
+  value.shutdownResult = "pending";
+  assert.equal(validators.receipt(value), false,
+    "terminal physical DONE must settle the shutdown outcome");
+});
+
+test("reject a typed pipeline hop back into its own actor incarnation", () => {
+  const envelope = read("fixtures/valid-forward-envelope.json");
+  envelope.to = structuredClone(envelope.from);
+  assert.throws(() => assertPipelineSemantics(envelope),
+    /pipeline hop cannot target its own actor incarnation/);
+});
 
 test("reject missing child physical DONE evidence even if receipt claims success", () => {
   const value = read("fixtures/valid-lifecycle-trace.json");
