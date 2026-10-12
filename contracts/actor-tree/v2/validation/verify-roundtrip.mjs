@@ -5,8 +5,14 @@ export const MAX_I64 = (1n << 63n) - 1n;
 const HEX64 = /^[a-f0-9]{64}$/;
 const CANONICAL_INT = /^(0|-?[1-9][0-9]*)$/;
 
-export function identityKey({runtimeId, actorId, incarnation}) {
-  return JSON.stringify([runtimeId, actorId, incarnation]);
+export function identityKey(actor) {
+  if (!actor || typeof actor.runtimeId !== 'string' || !actor.runtimeId.length ||
+      typeof actor.actorId !== 'string' || !actor.actorId.length ||
+      !Number.isInteger(actor.incarnation) || actor.incarnation < 1 ||
+      actor.incarnation > 2147483647) {
+    throw new TypeError('invalid physical actor identity');
+  }
+  return JSON.stringify([actor.runtimeId, actor.actorId, actor.incarnation]);
 }
 export function signedI64(value) {
   if (typeof value !== 'string' || value.length > 20 || !CANONICAL_INT.test(value)) {
@@ -24,6 +30,10 @@ export function verifyRoundTrip(trace) {
       || trace.route.length !== 3 || !Array.isArray(trace.messages)
       || trace.messages.length !== 4) {
     throw new Error('expected v2 three-actor, four-hop round trip');
+  }
+  if (typeof trace.pipelineId !== 'string' || !trace.pipelineId.length ||
+      trace.pipelineId.length > 128) {
+    throw new Error('invalid pipelineId');
   }
   const route = trace.route;
   const keys = route.map(identityKey);
@@ -47,7 +57,7 @@ export function verifyRoundTrip(trace) {
       throw new Error("hop " + i + " violates typed " + direction + " actor route");
     }
     if (typeof message.messageId !== 'string' || !message.messageId.length ||
-        ids.has(message.messageId)) {
+        message.messageId.length > 128 || ids.has(message.messageId)) {
       throw new Error('duplicate or missing messageId');
     }
     ids.add(message.messageId);
@@ -59,7 +69,7 @@ export function verifyRoundTrip(trace) {
     }
     schemaHash = message.schemaHash;
     if (!message.payload || typeof message.payload.variant !== 'string' ||
-        !message.payload.variant.length) {
+        !message.payload.variant.length || message.payload.variant.length > 128) {
       throw new Error('missing nominal typed payload variant');
     }
     if (variant !== undefined && variant !== message.payload.variant) {
