@@ -18,7 +18,7 @@
     {
       "id": "return-match-value",
       "file": "return-match-value.ores",
-      "sourceGitBlobSha1": "e82505fa49f9af3abf1c44707246605a9e176909",
+      "sourceGitBlobSha1": "44d522180d54602f6b906954acec3ce85efbc286",
       "expect": "accept",
       "confirmedBackends": [],
       "pendingBackends": [
@@ -31,7 +31,7 @@
     {
       "id": "do-match-value",
       "file": "do-match-value.ores",
-      "sourceGitBlobSha1": "11b875e3743171a9240f47431bdb81c21ecca62a",
+      "sourceGitBlobSha1": "493dcd764b5af57692e1980eef47ce22cd1d104e",
       "expect": "accept",
       "confirmedBackends": [],
       "pendingBackends": [
@@ -44,7 +44,7 @@
     {
       "id": "reject-implicit-void-return",
       "file": "invalid-implicit-void-return.ores",
-      "sourceGitBlobSha1": "2c5bcdf8e242fcb9ceb386c7f2410e80ff66a6b4",
+      "sourceGitBlobSha1": "ca1784db67bf6ee585f7c351e39dcc0e26db042f",
       "expect": "reject",
       "confirmedBackends": [],
       "pendingBackends": [
@@ -57,7 +57,7 @@
     {
       "id": "reject-double-response",
       "file": "invalid-double-response.ores",
-      "sourceGitBlobSha1": "a9db0849f3ad5f595e60f66418692d175d0de386",
+      "sourceGitBlobSha1": "6427de35068a71365300a14249ebd7828efbf71e",
       "expect": "reject",
       "confirmedBackends": [],
       "pendingBackends": [
