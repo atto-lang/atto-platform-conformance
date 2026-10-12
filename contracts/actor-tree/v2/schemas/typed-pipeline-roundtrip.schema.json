@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oreslang.dev/contracts/actor-tree/v2/typed-pipeline-roundtrip.schema.json",
+  "title": "Oreslang three-actor signed-i64 pipeline round trip",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "pipelineId",
+    "route",
+    "messages"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "2.0.0"
+    },
+    "pipelineId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "route": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "$ref": "#/$defs/identity"
+      }
+    },
+    "messages": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "$ref": "#/$defs/envelope"
+      }
+    }
+  },
+  "$defs": {
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtimeId",
+        "actorId",
+        "incarnation"
+      ],
+      "properties": {
+        "runtimeId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "actorId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "incarnation": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        }
+      }
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "variant",
+        "i64Decimal"
+      ],
+      "properties": {
+        "variant": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "i64Decimal": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20,
+          "pattern": "^(0|-?[1-9][0-9]*)$"
+        }
+      }
+    },
+    "envelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "messageId",
+        "direction",
+        "from",
+        "to",
+        "hopIndex",
+        "schemaHash",
+        "payload"
+      ],
+      "properties": {
+        "messageId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "direction": {
+          "enum": [
+            "forward",
+            "backward"
+          ]
+        },
+        "from": {
+          "$ref": "#/$defs/identity"
+        },
+        "to": {
+          "$ref": "#/$defs/identity"
+        },
+        "hopIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "schemaHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "payload": {
+          "$ref": "#/$defs/payload"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "type": "module",
+  "name": "@oreslang/actor-tree-pipeline-v2",
+  "version": "2.0.0",
+  "scripts": {
+    "compile": "tsp compile .",
+    "test": "node --test ../validation/*.test.mjs"
+  },
+  "devDependencies": {
+    "@typespec/compiler": "1.17.0",
+    "@typespec/json-schema": "1.17.0"
+  }
+}

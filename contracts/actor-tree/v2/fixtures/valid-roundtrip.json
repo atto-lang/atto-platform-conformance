@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "2.0.0",
+  "pipelineId": "pipeline-native-i64-round-trip-1",
+  "route": [
+    {
+      "runtimeId": "runtime-1",
+      "actorId": "stage/A",
+      "incarnation": 1
+    },
+    {
+      "runtimeId": "runtime-1",
+      "actorId": "stage/B",
+      "incarnation": 1
+    },
+    {
+      "runtimeId": "runtime-1",
+      "actorId": "stage/C",
+      "incarnation": 1
+    }
+  ],
+  "messages": [
+    {
+      "messageId": "message-0",
+      "direction": "forward",
+      "hopIndex": 0,
+      "from": {
+        "runtimeId": "runtime-1",
+        "actorId": "stage/A",
+        "incarnation": 1
+      },
+      "to": {
+        "runtimeId": "runtime-1",
+        "actorId": "stage/B",
+        "incarnation": 1
+      },
+      "schemaHash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "payload": {
+        "variant": "Number",
+        "i64Decimal": "-9223372036854775808"
+      }
+    },
+    {
+      "messageId": "message-1",
+      "direction": "forward",
+      "hopIndex": 1,
+      "from": {
+        "runtimeId": "runtime-1",
+        "actorId": "stage/B",
+        "incarnation": 1
+      },
+      "to": {
+        "runtimeId": "runtime-1",
+        "actorId": "stage/C",
+        "incarnation": 1
+      },
+      "schemaHash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "payload": {
+        "variant": "Number",
+        "i64Decimal": "-9223372036854775808"
+      }
+    },
+    {
+      "messageId": "message-2",
+      "direction": "backward",
+      "hopIndex": 2,
+      "from": {
+        "runtimeId": "runtime-1",
+        "actorId": "stage/C",
+        "incarnation": 1
+      },
+      "to": {
+        "runtimeId": "runtime-1",
+        "actorId": "stage/B",
+        "incarnation": 1
+      },
+      "schemaHash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "payload": {
+        "variant": "Number",
+        "i64Decimal": "9223372036854775807"
+      }
+    },
+    {
+      "messageId": "message-3",
+      "direction": "backward",
+      "hopIndex": 3,
+      "from": {
+        "runtimeId": "runtime-1",
+        "actorId": "stage/B",
+        "incarnation": 1
+      },
+      "to": {
+        "runtimeId": "runtime-1",
+        "actorId": "stage/A",
+        "incarnation": 1
+      },
+      "schemaHash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "payload": {
+        "variant": "Number",
+        "i64Decimal": "9223372036854775807"
+      }
+    }
+  ]
+}
