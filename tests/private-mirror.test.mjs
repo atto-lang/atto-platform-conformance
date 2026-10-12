@@ -60,6 +60,11 @@ test('exact-tree verifier refuses dirty, staged, untracked and hidden-checkout f
   writeFileSync(join(repo,'source','injected.ores'),'fnc injected(): int { return 666; }\n');
   assert.throws(()=>verify(params),/untracked files/);
   rmSync(join(repo,'source','injected.ores'));
+  writeFileSync(join(repo,'.gitignore'),'source/*.ores.generated\n');
+  writeFileSync(join(repo,'source','ignored.ores.generated'),'injected source\n');
+  assert.throws(()=>verify(params),/worktree is dirty or contains untracked files/);
+  rmSync(join(repo,'source','ignored.ores.generated'));
+
   git(repo,'update-index','--skip-worktree','source/main.ores');
   assert.throws(()=>verify(params),/hidden index entries/);
   git(repo,'update-index','--no-skip-worktree','source/main.ores');
