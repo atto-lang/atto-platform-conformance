@@ -38,6 +38,15 @@ export function verify({ repo, subtreePath, expectedTree, blobs = [] }) {
   if (indexEntries.split('\n').some(line => /^[a-zS] /.test(line))) {
     throw Error('source subtree has hidden index entries');
   }
+  // Clean Git indexes can contain symlinks to mutable, unpinned paths or
+  // submodule gitlinks. Those bytes are not certified by this tree hash.
+  const stages = git(repo, 'ls-files', '--stage', '-z', '--', subtreePath);
+  for (const record of stages.split('\0').filter(Boolean)) {
+    const match = /^(\d{6}) [0-9a-f]{40} ([0-3])\t/.exec(record);
+    if (!match || !['100644','100755'].includes(match[1]) || match[2] !== '0') {
+      throw Error('source subtree contains symlink, gitlink or unexpected index entry');
+    }
+  }
   for (const entry of blobs) {
     if (!entry || !safePath(entry.path) || !/^[0-9a-f]{40}$/.test(entry.sha)) {
       throw Error('invalid blob pin');
