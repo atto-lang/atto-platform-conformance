@@ -28,3 +28,18 @@ test('malformed output or duplicate records fail',()=>{
   assert.throws(()=>extractRegistryTransitions(MARKER+'register>!\n','native'),/malformed/);
   assert.throws(()=>extractRegistryTransitions(MARKER+'register\n','native'),/malformed/);
 });
+
+test('embedded log markers and output spoofing cannot claim registry parity', () => {
+  assert.throws(() => extractRegistryTransitions('echo '+valid,'java'), /standalone runtime output/);
+  assert.throws(() => extractRegistryTransitions('error: '+valid,'java'), /standalone runtime output/);
+  assert.throws(() => extractRegistryTransitions('  '+valid,'java'), /standalone runtime output/);
+  assert.throws(() => extractRegistryTransitions(
+    MARKER+EXPECTED_REGISTRY_RESTART.join('>')+MARKER+'\n','native'),
+    /standalone runtime output/);
+});
+test('marker-only checks do not accept ANSI-wrapped or contaminated lines', () => {
+  const color='\x1b[32m'+valid+'\x1b[0m';
+  assert.throws(() => extractRegistryTransitions(color,'native'), /standalone runtime output/);
+  assert.throws(() => extractRegistryTransitions(
+    valid.trimEnd()+' trailing-error\n','native'), /malformed/);
+});
