@@ -117,11 +117,35 @@ export function compareCaptures(llvm, graal, manifest, llvmAuthority, graalAutho
   return {status:'verified', actors:3, forward:2, backward:2,
     values:manifest.expectedValues, sourceGitBlobSha1:manifest.sourceGitBlobSha1};
 }
+// Defense in depth: never forward the full CI process environment to a
+// compiled guest runner. In particular, exclude tokens, SSH agent sockets,
+// cloud credentials, GitHub secrets, and user home/config paths. This is an
+// environment boundary only, NOT operating-system or FD3 isolation.
+const RUNNER_ENV_ALLOWLIST = Object.freeze([
+  'PATH', 'LANG', 'LC_ALL', 'JAVA_HOME', 'GRAALVM_HOME',
+  'LD_LIBRARY_PATH', 'DYLD_LIBRARY_PATH', 'TMPDIR'
+]);
+export function guestRunnerEnvironment(hostEnv, backend, manifest, source) {
+  if (!BACKENDS.includes(backend) || !manifest ||
+      !/^[a-f0-9]{40}$/.test(manifest.sourceGitBlobSha1) ||
+      typeof source !== 'string' || !source.length) {
+    throw new Error('invalid guest runner environment authority');
+  }
+  const env=Object.create(null);
+  for (const key of RUNNER_ENV_ALLOWLIST) {
+    if (typeof hostEnv?.[key] === 'string' && hostEnv[key].length) {
+      env[key]=hostEnv[key];
+    }
+  }
+  env.ORESLANG_GUEST_SOURCE=source;
+  env.ORESLANG_GUEST_SOURCE_GIT_BLOB=manifest.sourceGitBlobSha1;
+  env.ORESLANG_GUEST_AUDIT_FD='3';
+  env.ORESLANG_GUEST_BACKEND=backend;
+  return env;
+}
 function runBackend(executable, backend, manifest, source) {
   const out=spawnSync(executable, [], {
-    env:{...process.env, ORESLANG_GUEST_SOURCE:source,
-      ORESLANG_GUEST_SOURCE_GIT_BLOB:manifest.sourceGitBlobSha1,
-      ORESLANG_GUEST_AUDIT_FD:'3', ORESLANG_GUEST_BACKEND:backend},
+    env:guestRunnerEnvironment(process.env, backend, manifest, source),
     stdio:['ignore','pipe','pipe','pipe'], maxBuffer:1024*1024,
     timeout:180000, encoding:'buffer'
   });
