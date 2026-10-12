@@ -2,7 +2,8 @@
 /** Offline, fail-closed admission for exact Git-blob CI mirrors.
  * Checks executed local files, not remote repository metadata or GitHub policy.
  */
-import {readFile,lstat,realpath} from "node:fs/promises";
+import {lstat,realpath,open} from "node:fs/promises";
+import {constants as fsConstants} from "node:fs";
 import {resolve,join,sep} from "node:path";
 import {execFileSync} from "node:child_process";
 
@@ -18,12 +19,35 @@ function positive(value,label){
  if(!/^[1-9][0-9]{0,3}$/.test(value||""))reject("invalid "+label);
  const x=Number(value);if(x>256)reject(label+" too large");return x
 }
+// Hash the same bounded, already-open bytes that passed the regular-file and
+// inode checks. Running git hash-object on a pathname after lstat was a
+// special-file substitution race. Retain Git's SHA-1 collision-detection logic.
+async function readPinned(path,limit,label,prior){
+ const fd=await open(path,fsConstants.O_RDONLY|(fsConstants.O_NONBLOCK||0)|(fsConstants.O_NOFOLLOW||0));
+ try{
+  const st=await fd.stat();
+  if(!st.isFile()||st.size<1||st.size>limit)
+   reject("invalid or oversized "+label);
+  if(prior&&(st.dev!==prior.dev||st.ino!==prior.ino))
+   reject("source inode changed during admission: "+label);
+  const b=Buffer.alloc(st.size);
+  let pos=0;
+  while(pos<b.length){
+   const {bytesRead}=await fd.read(b,pos,b.length-pos,pos);
+   if(!bytesRead)reject("truncated "+label);
+   pos+=bytesRead;
+  }
+  if((await fd.read(Buffer.alloc(1),0,1,pos)).bytesRead)
+   reject("source grew during admission: "+label);
+  return b;
+ }finally{await fd.close()}
+}
 export async function verifyReleaseMirror({root,manifest,expectedFiles,expectedSources}){
  const resolved=await realpath(resolve(root));
  const mf=resolve(manifest);
  const st=await lstat(mf);
  if(!st.isFile()||st.size<2||st.size>1024*1024)reject("manifest byte budget");
- const x=JSON.parse(await readFile(mf,"utf8"));
+ const x=JSON.parse((await readPinned(mf,1024*1024,"manifest",st)).toString("utf8"));
  if(x.schemaVersion!==1||!Array.isArray(x.files)||!Array.isArray(x.sources)||
     x.files.length!==expectedFiles||x.sources.length!==expectedSources)
   reject("incomplete source manifest");
@@ -51,8 +75,9 @@ export async function verifyReleaseMirror({root,manifest,expectedFiles,expectedS
   if(!meta.isFile()||meta.size===0||meta.size>64*1024*1024)
    reject("invalid or oversized executed source file: "+f.path);
   if(await realpath(path)!==path)reject("mirror symlink/alias forbidden: "+f.path);
-  const hash=execFileSync("git",["hash-object","--no-filters",f.path],{
-   cwd:resolved,encoding:"utf8",timeout:10000,maxBuffer:4096
+  const bytes=await readPinned(path,64*1024*1024,"executed source file: "+f.path,meta);
+  const hash=execFileSync("git",["hash-object","--no-filters","--stdin"],{
+   cwd:resolved,input:bytes,encoding:"utf8",timeout:10000,maxBuffer:4096
   }).trim();
   if(hash!==f.blobSha)reject("source Git blob mismatch: "+f.path);
  }
