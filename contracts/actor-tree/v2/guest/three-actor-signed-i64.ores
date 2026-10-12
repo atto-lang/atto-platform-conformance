@@ -1,0 +1,73 @@
+// Candidate V2 guest source: derived from the LLVM #180 compiled pipeline.
+// Unlike the existing scalar baseline this signed-i64 boundary program has
+// NOT YET passed LLVM or Java/GraalVM guest execution. The certification
+// gate must remain red until both backends compile and run these exact bytes.
+define enum Signal as
+    Data: int = 1
+    Result: int = 2
+end
+define pattern PipeMessages as
+    Signal.Data
+    Signal.Result
+end
+
+define actor Source<messages=PipeMessages> as
+    let result: int = 0;
+    receive(Message m) {
+        do match m over {
+            on Signal.Data as n {
+                self.forward(Signal.Data(n));
+            }
+            on Signal.Result as n {
+                result = n;
+            }
+        }
+        return result;
+    }
+end
+
+define actor Transform<messages=PipeMessages> as
+    let value: int = 0;
+    receive(Message m) {
+        do match m over {
+            on Signal.Data as n {
+                value = n;
+                self.forward(Signal.Data(value));
+            }
+            on Signal.Result as n {
+                value = n;
+                self.backward(Signal.Result(value));
+            }
+        }
+        return value;
+    }
+end
+
+define actor Sink<messages=PipeMessages> as
+    let value: int = 0;
+    receive(Message m) {
+        do match m over {
+            on Signal.Data as n {
+                value = n;
+                self.backward(Signal.Result(9223372036854775807));
+            }
+            on Signal.Result as n {
+                value = n;
+            }
+        }
+        return value;
+    }
+end
+
+pub fnc main(): int {
+    const source = spawn Source();
+    const transform = spawn Transform();
+    const sink = spawn Sink();
+    pipeline(source, transform, sink);
+    source.send(Signal.Data(-9223372036854775808));
+    expect_pipeline(source, 9223372036854775807);
+    stop sink;
+    stop transform;
+    stop source;
+    return 43;
+}
