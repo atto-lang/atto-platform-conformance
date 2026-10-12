@@ -30,3 +30,18 @@ These are bounded abstract models, not executable refinement proofs.
 An uncooperative finalizer or FFM release failure is not guaranteed to
 terminate. No unconditional liveness claim is made. This model is a release
 gate, not a certificate for the production runtime implementation.
+
+## Physical quota-refund publication window
+
+`NativeRetirementCommit.tla` models a separate interval after a native arena
+closes and its quota is refunded, but before the now-closed region is removed
+from the actor's physical-ownership registry. The protected implementation
+requires the registry to be empty as well as its pinned byte count to be zero
+before `get_done()` can publish. The deliberately unsafe mutant publishes
+after quota refund alone; TLC must find a
+`NoRegisteredRegionAtDone` counterexample.
+
+This is an abstract, bounded safety property, not Java/LLVM refinement or
+a proof that arena callbacks always complete. The source regression
+`ExplicitNativePhysicalCompletionRaceTest` covers two different outstanding
+native regions on the same actor.
