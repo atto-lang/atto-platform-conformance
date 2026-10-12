@@ -103,7 +103,7 @@ test('raw byte admission rejects Git-clean line ending transforms',()=>{
   writeFileSync(join(repo,'source','main.ores'),'fnc foo(): int { return 42; }\\n');
   git(repo,'add','.');
   git(repo,'commit','-qm','pin canonical LF Git blob');
-  git(repo,'checkout-index','--force','--','source/main.ores');
+  writeFileSync(join(repo,'source','main.ores'),readFileSync(join(repo,'source','main.ores'),'utf8').replace(/\n/g,'\r\n'));
   assert.match(readFileSync(join(repo,'source','main.ores'),'utf8'),/\\r\\n/);
   assert.equal(git(repo,'status','--porcelain=v1','--','source'),'');
   const params={repo,subtreePath:'source',expectedTree:git(repo,'rev-parse','HEAD:source'),
