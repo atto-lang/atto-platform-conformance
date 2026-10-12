@@ -51,6 +51,7 @@ function assertTraceOrdering(trace) {
   const observedDone = new Set();
   const stopped = new Set();
   const lastLoans = new Map();
+  const lastCleanup = new Map();
   const parentDone = new Set();
   for (const event of trace.events) {
     assert.ok(event.sequence > lastSequence, "non-increasing trace sequence");
@@ -62,7 +63,25 @@ function assertTraceOrdering(trace) {
       assert.ok(event.nativeLoans <= lastLoans.get(actorKey),
         "native loan count increased during shutdown trace");
     }
+    if (lastLoans.has(actorKey) && event.nativeLoans < lastLoans.get(actorKey)) {
+      assert.equal(event.kind, "native_loan_released",
+        "native loans disappeared without a release event");
+    }
+    if (event.kind === "native_loan_released") {
+      assert.ok(lastLoans.has(actorKey) &&
+          lastLoans.get(actorKey) > event.nativeLoans,
+        "native release without an outstanding loan");
+    }
+    if (lastCleanup.get(actorKey) === true && !event.pendingCleanup) {
+      assert.equal(event.kind, "source_cleanup_drained",
+        "source cleanup disappeared without a drain event");
+    }
+    if (event.kind === "source_cleanup_drained") {
+      assert.equal(lastCleanup.get(actorKey), true,
+        "cleanup drain without a pending cleanup");
+    }
     lastLoans.set(actorKey, event.nativeLoans);
+    lastCleanup.set(actorKey, event.pendingCleanup);
     if (event.physicalDone) {
       assert.equal(event.nativeLoans, 0, "physical DONE with native loans");
       assert.equal(event.pendingCleanup, false, "physical DONE during cleanup");
@@ -214,4 +233,20 @@ test("reject resource accounting increase during STOP", () => {
   trace.events.forEach((event, sequence) => { event.sequence = sequence; });
   assert.throws(() => assertTraceOrdering(trace),
     /native loan count increased/);
+});
+
+test("reject native child DONE without observed final native-loan release", () => {
+  const trace = read("fixtures/valid-lifecycle-trace.json");
+  trace.events = trace.events.filter(e => e.kind !== "native_loan_released");
+  trace.events.forEach((e, i) => { e.sequence = i; });
+  assert.throws(() => assertTraceOrdering(trace),
+    /native loans disappeared without a release event/);
+});
+
+test("reject child DONE without observed source cleanup drain", () => {
+  const trace = read("fixtures/valid-lifecycle-trace.json");
+  trace.events = trace.events.filter(e => e.kind !== "source_cleanup_drained");
+  trace.events.forEach((e, i) => { e.sequence = i; });
+  assert.throws(() => assertTraceOrdering(trace),
+    /source cleanup disappeared without a drain event/);
 });
