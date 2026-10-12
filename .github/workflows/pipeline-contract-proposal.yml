@@ -7,6 +7,8 @@ on:
       - 'src/pipeline-runtime-evidence.mjs'
       - 'tests/pipeline-runtime-evidence.test.mjs'
       - 'bin/verify-pipeline-evidence.mjs'
+      - 'bin/verify-native-pipeline-execution.mjs'
+      - 'tests/native-pipeline-transcript.test.mjs'
       - 'contracts/pipeline/**'
       - 'tests/pipeline-contract.test.mjs'
       - 'formal/TypedPipelineDirections*'
@@ -19,6 +21,8 @@ on:
       - 'src/pipeline-runtime-evidence.mjs'
       - 'tests/pipeline-runtime-evidence.test.mjs'
       - 'bin/verify-pipeline-evidence.mjs'
+      - 'bin/verify-native-pipeline-execution.mjs'
+      - 'tests/native-pipeline-transcript.test.mjs'
       - 'contracts/pipeline/**'
       - 'tests/pipeline-contract.test.mjs'
       - 'formal/TypedPipelineDirections*'
@@ -38,7 +42,7 @@ jobs:
         with:
           node-version: '22.23.1'
       - name: Test typed contract, closed schemas and adversarial inputs
-        run: node --test tests/pipeline-contract.test.mjs tests/pipeline-runtime-evidence.test.mjs
+        run: node --test tests/pipeline-contract.test.mjs tests/pipeline-runtime-evidence.test.mjs tests/native-pipeline-transcript.test.mjs
       - name: Verify standalone bounded pipeline evidence CLI
         run: node bin/verify-pipeline-evidence.mjs --trace contracts/pipeline/v1/trace-three-actor.json
       - name: Compile TypeSpec and execute draft-2020-12 schema admission
