@@ -234,3 +234,25 @@ trace of a production supervisor execution has been verified yet.
 
 All Java #657, LLVM #196, and conformance #13 PRs remain draft and must not
 be released based on these bounded checks alone.
+
+## Schema-v2 evidence identity replay hardening
+
+The shared schema-v2 oracle now permanently fences reuse of three
+distinct event-evidence identifiers within one validated history:
+`restart.admit.admissionId`, `restart.cleanup.cleanupId`, and
+independently verified `stop.proof.evidenceId`. This prevents an
+otherwise well-formed second child or restart attempt from laundering
+a prior physical admission, physical cleanup, or host-proof record.
+The cleanup event must also carry the staged replacement's **exact**
+`newGeneration`, not merely its actor identifier.
+
+These rules are checked by new negative tests that reserve a second
+RESTART, reuse the first operation's evidence identities, and substitute
+an incorrect physical cleanup incarnation. The verifier already requires
+a separate trusted `verifyProof` callback for a STOP proof: these replay
+checks are an additional safety constraint, **not** authentication of
+arbitrary JSON-supplied evidence.
+
+Runtime-produced schema-v2 histories, durable host receipts, and full
+source compiler builds remain independent release blockers. Passing
+the existing registry comparator does not pass the schema-v2 oracle.
