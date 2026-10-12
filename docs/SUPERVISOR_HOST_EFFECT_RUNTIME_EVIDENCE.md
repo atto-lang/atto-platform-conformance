@@ -363,3 +363,33 @@ Java/GraalVM parity, whole-compiler CMake/CTest or Maven, or schema-v2
 actual event-stream emission and TLA+ refinement. The older optional-null
 legacy adapter is source-compatible but **must not** be used as a general
 guest STOP proof. The three PRs remain draft/unmerged.
+
+## Host-owned STOP receipt adapter — exact-source tested
+
+Added `bin/verify-host-stop-receipt.mjs` exporting
+`createHostStopReceiptVerifier(loadHostReceipt)`. The callback is a trusted
+host-owned loader accepting **only** an evidence locator. Returned records
+are matched against the exact verified backend, source checkout SHA,
+supervisor, child, actor, generation, CONTROL turn, STOP permit and evidence
+identity. The adapter rejects missing records, unavailable host storage,
+forged/stale identities, wrong operation bindings, non-APPLIED outcomes,
+and mere host-invocation markers.
+
+This is deliberately an **interface**, not a durable evidence store:
+the adapter cannot prove that its caller's loader accesses an authoritative
+physical lifecycle owner. Its `provenance` and `status` fields are
+requirements to check against records *actually obtained from the host*;
+putting the same fields into a trace or a guest-provided object is
+not trusted evidence. Persistence, authentication, restart recovery,
+and global replay controls must come from the actual Java/LLVM host
+implementations.
+
+The integration test exercises a schema-v2 uncertain STOP after supervisor
+closure and reconciles it only through the host-loader callback. Negative
+tests substitute wrong identities, origin, turn, stale permit, missing record,
+non-applied record and incompatible operation IDs.
+
+[Funded exact-source CI #38215071069](https://github.com/zed-pkg-test/java-app/actions/runs/38215071069)
+passed with all **21/21** Node conformance and host-receipt tests.
+This does **not** discharge the full source compiler, real runtime-emitted
+trace, durable receipt or full formal refinement release gates.
