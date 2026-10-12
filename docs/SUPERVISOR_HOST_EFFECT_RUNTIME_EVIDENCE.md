@@ -292,3 +292,38 @@ establish that a real Java/GraalVM or LLVM scheduler emits complete
 schema-v2 history, or that the host verifier has actual, independently
 authenticated and durable physical STOP evidence. Do not use it to
 remove any runtime PR's release blocker.
+
+
+## Native host-owned physical DONE receipts (restricted source supervisor)
+
+A further implementation milestone in the LLVM draft introduced
+`NativePhysicalStopEvidence.hpp`. Unlike the registry receipt's
+`host_invoked` bit or the decision sink's Boolean return, the
+process-local ledger rereads the authoritative STOP reservation, observes
+the native scheduler's actual physical `DONE` barrier, and issues a
+single immutable receipt bound to exact supervisor/domain, logical child,
+physical actor slot and generation, incarnation, and CONTROL turn.
+
+The native source STOP integration now tests three cases: normal ACK,
+UNKNOWN with no attestation (remains STOPPING), and LOST ACK with an
+already-recorded physical DONE attestation (reconciles without invoking the
+host sink again). The separate physical regression intentionally supplies
+a false early FINALIZED registry claim for a live actor; host issuance is
+denied until scheduler DONE. A forged registry ticket, wrong turn/actor
+generation, duplicate issuance, and legitimate slot zero are covered.
+
+**Actual GitHub Actions run:**
+[zed-pkg-test/java-app #38200268818](https://github.com/zed-pkg-test/java-app/actions/runs/38200268818)
+**PASS**. 18 exact LLVM C/C++ source/test Git blobs and ASan/UBSan
+native scheduler, parser/ownership checker, source STOP and adversarial
+host receipt test. This is an executed restricted native integration
+slice, not an entire LLVM CMake/CTest verification.
+
+**Boundary:** the new evidence proves physical native actor completion
+only; it is in-memory, is not crash-durable, and cannot attest an
+arbitrary external STOP side effect. Nor does it produce full real
+schema-v2 scheduler/host traces. The schema-v2 `verifyProof` adapter
+must eventually consume separately authenticated host records with
+independently pinned source/backend identity before claiming end-to-end
+runtime refinement. General guest RESTART and all release gates remain
+unchanged.
