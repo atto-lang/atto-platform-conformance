@@ -48,3 +48,34 @@ intentionally unsafe mutation publishes a post-stop delivery while preserving
 the ordinary delivery-count equality, so `NoPostStopDelivery` must fail.
 The independent bounded explorer confirms the same counterexample.
 No bounded model establishes compiler/runtime refinement or general liveness.
+
+
+## Host-owned at-most-once acceptance receipts
+
+`verifyRoundTrip()` is deliberately a pure validator and can be called
+repeatedly. **Do not** treat a successful validation as authorization to
+execute an irreversible external effect.
+
+`verifyAndClaimRoundTrip(trace, trustedAuthority, ledger)` performs
+the pure validation first, then invokes a trusted host-owned
+`ledger.claim(scopeKey)` operation exactly once. The ledger must make
+that operation **synchronous, durable, and linearizable**, returning
+literal `true` only for the first claim; `false`, promises, exceptions,
+and indeterminate outcomes never authorize the effect. The scope key is
+`JSON.stringify([runtimeId, pipelineId])`, not a concatenated string and
+not a tuple derived from the guest trace. Replays in the same runtime
+cannot change actor incarnations to escape the pipeline claim.
+
+On an interrupted claim or an effect whose result is unknown, the host must
+**quarantine** the receipt. Neither a failure nor a timeout proves the
+external effect did not occur. Only independently verified physical/
+external-effect evidence may settle that receipt. The local Set-based
+regressions illustrate the contract but do **not** implement a durable
+multi-process journal.
+
+`formal/PipelineClaim.tla` checks bounded at-most-once external-effect
+safety for fresh/claimed/committed/quarantined states; two intentionally
+unsafe variants permit duplicate committed effects and unsafe replay
+following an unknown acknowledgment. This is formal model evidence,
+not proof that an arbitrary database ledger or actual runtime satisfies
+the modeled atomic claim contract.
