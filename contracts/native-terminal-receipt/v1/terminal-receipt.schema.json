@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ores-truffle-oreslang.github.io/contracts/native-terminal-receipt/v1/terminal-receipt.schema.json",
+  "title": "Oreslang native terminal PANIC receipt (host-owned v1)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "supervisorId",
+    "logicalChildId",
+    "logicalIncarnation",
+    "originalParent",
+    "failure",
+    "status",
+    "claimNonce",
+    "publishedToParent"
+  ],
+  "properties": {
+    "supervisorId": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "logicalChildId": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "logicalIncarnation": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "originalParent": {
+      "$ref": "#/$defs/actorIdentity"
+    },
+    "failure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "child",
+        "failureCode",
+        "correlation"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "panic",
+            "cancelled",
+            "stopped"
+          ]
+        },
+        "child": {
+          "$ref": "#/$defs/actorIdentity"
+        },
+        "failureCode": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "correlation": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "status": {
+      "enum": [
+        "recorded",
+        "claimed",
+        "acknowledged"
+      ]
+    },
+    "claimNonce": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "publishedToParent": {
+      "type": "boolean"
+    }
+  },
+  "$defs": {
+    "actorIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schedulerDomain",
+        "actorSlot",
+        "generation"
+      ],
+      "properties": {
+        "schedulerDomain": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "actorSlot": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "recorded"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "claimNonce": {
+            "const": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "claimed",
+              "acknowledged"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "claimNonce": {
+            "minimum": 1
+          }
+        }
+      }
+    }
+  ]
+}
