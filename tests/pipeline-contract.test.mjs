@@ -78,3 +78,71 @@ test('schema and TypeSpec vocabularies synchronize with runtime admission',async
  for(const op of Object.values(PIPELINE_OPERATIONS))assert.ok(tsp.includes('"'+op+'"'));
  for(const tag of ['PipelineProposal','PipelineStage','PipelineEdge','PipelineSemantics'])assert.ok(tsp.includes('model '+tag));
 });
+
+import {admitPipelineContract} from '../src/pipeline-admission.mjs';
+
+test('admission returns a deep-frozen owned graph independent from caller mutation',()=>{
+ const input=clone();
+ const admitted=admitPipelineContract(input);
+ assert.equal(admitted.ok,true,admitted.errors.join('; '));
+ const a=admitted.contract;
+ assert.notStrictEqual(a,input);
+ assert.notStrictEqual(a.stages,input.stages);
+ assert.notStrictEqual(a.stages[1],input.stages[1]);
+ assert.notStrictEqual(a.edges,input.edges);
+ assert.ok(Object.isFrozen(a)&&Object.isFrozen(a.operations)&&Object.isFrozen(a.semantics));
+ assert.ok(Object.isFrozen(a.stages)&&Object.isFrozen(a.stages[0])&&Object.isFrozen(a.edges[0]));
+ assert.ok(Object.isFrozen(a.confirmedBackends)&&Object.isFrozen(a.pendingBackends));
+ input.stages[1].forwardIn='Message.Escalated';
+ input.edges[0].capacity=9999;
+ input.edges[0].to='sink';
+ input.operations.forward='self.respond';
+ input.pendingBackends.pop();
+ assert.deepEqual(validatePipelineContract(a),{ok:true,errors:[]});
+ assert.equal(a.stages[1].forwardIn,'Message.Compute');
+ assert.equal(a.edges[0].capacity,8);
+ assert.equal(a.edges[0].to,'transform');
+ assert.equal(a.operations.forward,'self.forward');
+ assert.deepEqual(a.pendingBackends,PIPELINE_BACKENDS);
+ assert.throws(()=>{a.stages[1].forwardIn='Message.Escalated'},TypeError);
+ assert.throws(()=>{a.edges[0].capacity=9999},TypeError);
+ assert.throws(()=>{a.edges.push({})},TypeError);
+});
+
+test('admission refuses accessor descriptors before invocation, including nested and inherited fields',()=>{
+ let getters=0;
+ for(const [container,key] of [
+  [x=>x,'operations'],[x=>x.operations,'forward'],[x=>x.stages[0],'forwardOut'],
+  [x=>x.edges[0],'capacity'],[x=>x.semantics,'generationFencing']
+ ]){
+  const input=clone(),target=container(input);
+  Object.defineProperty(target,key,{enumerable:true,configurable:true,get(){getters++;throw Error('getter executed')}});
+  const admitted=admitPipelineContract(input);
+  assert.equal(admitted.ok,false);
+  assert.equal(Object.hasOwn(admitted,'contract'),false);
+ }
+ assert.equal(getters,0);
+ const inherited=Object.assign(Object.create(fixture),{});
+ assert.equal(admitPipelineContract(inherited).ok,false);
+});
+
+test('admission rejects non-JSON authority arrays and metadata, without invoking accessor slots',()=>{
+ let getters=0;
+ const cases=[
+  x=>{x.stages.length=4;},
+  x=>{x.edges.map=()=>[];},
+  x=>{Object.defineProperty(x.edges,'0',{enumerable:true,get(){getters++;return fixture.edges[0]}});},
+  x=>{Object.defineProperty(x,'kind',{value:x.kind,enumerable:false});},
+  x=>{Object.defineProperty(x.stages[1],'id',{value:x.stages[1].id,enumerable:false});},
+  x=>{x.stages[1][Symbol('authority')]=true;},
+  x=>{x.edges[1].capacity=0;},
+  x=>{x.confirmedBackends=['llvm'];}
+ ];
+ for(const mutate of cases){
+  const input=clone();mutate(input);
+  const r=admitPipelineContract(input);
+  assert.equal(r.ok,false);
+  assert.equal(Object.hasOwn(r,'contract'),false);
+ }
+ assert.equal(getters,0);
+});
