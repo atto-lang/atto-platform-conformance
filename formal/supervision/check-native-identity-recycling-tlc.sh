@@ -9,10 +9,14 @@ curl --fail --location --retry 3 --silent --show-error -o "$TMP/tla2tools.jar" \
   "https://github.com/zactionsz/tla-tools/releases/download/tla2tools-${VERSION}/tla2tools.jar"
 echo "$SHA  $TMP/tla2tools.jar" | sha256sum --check --status
 cd "$ROOT"
-java -Xmx1600m -cp "$TMP/tla2tools.jar" tlc2.TLC \
+if ! java -Xmx1600m -cp "$TMP/tla2tools.jar" tlc2.TLC \
   -workers 2 -deadlock -config NativeIdentityRecycling.cfg \
   -metadir "$TMP/positive" NativeIdentityRecycling.tla \
-  > "$TMP/positive.log" 2>&1
+  > "$TMP/positive.log" 2>&1; then
+  cat "$TMP/positive.log"
+  echo "Identity recycling positive model failed" >&2
+  exit 1
+fi
 cat "$TMP/positive.log"
 grep -q 'Model checking completed. No error has been found.' "$TMP/positive.log"
 for pair in \
