@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {dirname, resolve} from 'node:path';
-import {identityKey, signedI64, MIN_I64, MAX_I64, NORMATIVE_SCHEMA_SHA256, verifyRoundTrip} from './verify-roundtrip.mjs';
+import {identityKey, signedI64, MIN_I64, MAX_I64, NORMATIVE_SCHEMA_SHA256, verifyRoundTrip, verifyAndClaimRoundTrip} from './verify-roundtrip.mjs';
 
 const dir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const valid = () => JSON.parse(readFileSync(resolve(dir, 'fixtures/valid-roundtrip.json'), 'utf8'));
@@ -115,4 +115,68 @@ test('reject fake 64-hex schema hash even with caller-supplied fake authority', 
   for (const msg of trace.messages) msg.schemaHash = fake;
   assert.throws(() => verifyRoundTrip(trace, {...trusted, expectedSchemaHash:fake}),
     /trusted pipeline authority context/);
+});
+
+test('host claim ledger rejects whole-trace replay after one accepted pipeline', () => {
+  const seen=new Set();
+  let calls=0;
+  const ledger={
+    claim(key) {
+      calls++;
+      if(seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }
+  };
+  const first=verifyAndClaimRoundTrip(valid(),trusted,ledger);
+  assert.equal(first.values.length,4);
+  assert.equal(first.claimKey, JSON.stringify(['runtime-1','pipeline-native-i64-round-trip-1']));
+  assert.throws(() => verifyAndClaimRoundTrip(valid(),trusted,ledger),
+    /pipeline replay rejected/);
+  assert.equal(calls,2);
+  assert.equal(seen.size,1);
+});
+
+test('untrusted invalid trace cannot consume replay claim capacity', () => {
+  let called=0;
+  const ledger={claim(){called++;return true;}};
+  const forged=valid();
+  forged.messages[0].schemaHash='f'.repeat(64);
+  assert.throws(() => verifyAndClaimRoundTrip(forged,trusted,ledger),
+    /schemaHash changed|trusted schema\/actor authority/);
+  assert.equal(called,0);
+});
+
+test('cannot replay pipelineId under a different actor route in same runtime', () => {
+  const seen=new Set();
+  const ledger={claim(key){if(seen.has(key))return false;seen.add(key);return true;}};
+  verifyAndClaimRoundTrip(valid(),trusted,ledger);
+  const forged=valid();
+  for(const actor of forged.route){
+    actor.actorId='other-'+actor.actorId;
+  }
+  for(const envelope of forged.messages){
+    envelope.from.actorId='other-'+envelope.from.actorId;
+    envelope.to.actorId='other-'+envelope.to.actorId;
+  }
+  const other={...trusted,expectedRoute:forged.route};
+  assert.throws(() => verifyAndClaimRoundTrip(forged,other,ledger),
+    /pipeline replay rejected/);
+  assert.equal(seen.size,1);
+});
+
+test('fail closed if ledger is missing or asynchronously claims', () => {
+  assert.throws(() => verifyAndClaimRoundTrip(valid(),trusted,null),
+    /host-owned atomic replay claim ledger/);
+  assert.throws(() => verifyAndClaimRoundTrip(valid(),trusted,{
+    claim:()=>Promise.resolve(true)
+  }), /claim outcome not authoritative/);
+});
+
+test('fail closed on unknown interrupted external claim', () => {
+  let attempted=0;
+  assert.throws(() => verifyAndClaimRoundTrip(valid(),trusted,{
+    claim(){attempted++;throw new Error('durable journal fsync unknown');}
+  }), /durable journal fsync unknown/);
+  assert.equal(attempted,1);
 });
