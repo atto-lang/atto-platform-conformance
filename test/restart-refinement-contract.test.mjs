@@ -40,3 +40,19 @@ test('mutated fixture is rejected even when both runtime logs agree', () => {
     {...fixture, actions:fixture.actions.slice(1)}, expected, expected),
     /inconsistent/);
 });
+
+test('aborted identities and closed CONTROL are explicit negative refinement gates', () => {
+  const negatives = fixture.negativeTransitions;
+  assert.ok(Array.isArray(negatives));
+  assert.equal(new Set(negatives).size, negatives.length, 'duplicate case names');
+  for (const fragment of [
+    'physically spawned candidate ActorId after cleanup-backed abort',
+    'same native scheduler slot and generation after abandoned RESTART',
+    'supervisor CONTROL process has closed',
+    'two logical children staging the same physical ActorId'
+  ]) {
+    assert.ok(negatives.some(v => v.includes(fragment)),
+      'missing critical physical refinement obligation: ' + fragment);
+  }
+  assert.match(fixture.implementationNotes.readinessRace, /release gate/);
+});
