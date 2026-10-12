@@ -19,8 +19,11 @@ const validators = {
   trace: ajv.compile(read("schemas/lifecycle-trace.schema.json")),
   envelope: ajv.compile(read("schemas/typed-pipeline-envelope.schema.json")),
 };
-const key = (identity) =>
-  identity.runtimeId + "/" + identity.actorId + "/" + identity.incarnation;
+// A delimiter-joined key is ambiguous when a legitimate runtime/actor id
+// itself contains '/': ("a/b","c",1) collides with ("a","b/c",1).
+// Use an unambiguous tuple encoding for all physical-incarnation evidence.
+const key = ({runtimeId, actorId, incarnation}) =>
+  JSON.stringify([runtimeId, actorId, incarnation]);
 
 // JSON Schema enforces local shape and parent-success prerequisites.
 // This validator additionally enforces chronological cross-event protocol.
@@ -117,6 +120,35 @@ test("reject ABA: different incarnation is not the completed child", () => {
   const terminal = value.events.find(event => event.kind === "parent_physical_done");
   terminal.children[0].actor.incarnation++;
   assert.throws(() => assertTraceOrdering(value), /before a child DONE event/);
+});
+
+test("reject ABA identity collision hidden by slash-separated actor keys", () => {
+  const trace = read("fixtures/valid-lifecycle-trace.json");
+  const prior = trace.events.find(e => e.kind === "child_physical_done"
+    && e.actor.actorId === "native-child");
+  const parent = trace.events.find(e => e.kind === "parent_physical_done");
+  // Previously both encoded to 'runtime-1/native-child/1' after joining.
+  prior.actor.runtimeId = "runtime-1/native";
+  prior.actor.actorId = "child";
+  parent.children[0].actor.runtimeId = "runtime-1";
+  parent.children[0].actor.actorId = "native/child";
+  assert.throws(() => assertTraceOrdering(trace), /before a child DONE event/);
+});
+
+test("reject duplicate child identities in terminal shutdown receipt", () => {
+  const value = read("fixtures/valid-shutdown-receipt.json");
+  value.children.push(structuredClone(value.children[0]));
+  assert.ok(validators.receipt(value), JSON.stringify(validators.receipt.errors));
+  // Uniqueness by actor incarnation is a relational invariant, not JSON
+  // Schema's generic uniqueItems (which compares whole child objects).
+  const seen = new Set();
+  assert.throws(() => {
+    for (const child of value.children) {
+      const id = key(child.actor);
+      assert.ok(!seen.has(id), "duplicate physical child identity");
+      seen.add(id);
+    }
+  }, /duplicate physical child identity/);
 });
 
 test("TypeSpec compiler emitted every structural contract model", () => {
