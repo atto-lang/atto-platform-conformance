@@ -482,3 +482,51 @@ The bare recycler is host-only; only the bridge's ordered cleanup/abort
 path constitutes the supervisor-level lifecycle operation. TLC remains a
 bounded abstraction, not a refinement proof of C or Java. Guest-defined
 `self.restart(f.child)` and ESCALATE remain disabled.
+
+
+### Audit follow-up: blocking lease waits and concurrent CONTROL close
+
+The native host runtime audit identified two further boundaries beyond
+generation matching:
+
+- A thread that owns a scheduler RESTART/registration publication lease
+  must not call blocking `wait_done()` or `drain()` on that same scheduler.
+  Such a wait can depend on an actor callback or STOP that must first
+  acquire the publication gate held by the waiting thread. The native
+  APIs now reject these calls immediately, just as they already reject
+  same-thread STOP/destroy under a lease. The scheduler regression
+  confirms the rejection even when the target actor is already DONE.
+- After a failed RESTART candidate is physically DONE, registry
+  cleanup and logical abort must remain available when CONTROL has
+  closed. The native bridge must **not** turn that post-close cleanup
+  into a new live, unpublished generation. The canonical bridge helper
+  now checks the authoritative `SupervisorProcess` CONTROL transaction
+  and the registry admission-closure fence before recycling. A close
+  that wins before this check leaves the old actor physically DONE,
+  with its logical reservation safely aborted.
+
+Avoiding a new lock inversion is essential: a bridge mutex must **not**
+be acquired before waiting for the scheduler publication gate, because
+normal admission acquires the scheduler gate before the bridge routing
+mutex. The native close-versus-recycle regression exercises both valid
+interleavings. If recycling succeeds and CONTROL subsequently closes
+before a NEW logical ticket is reserved, **the trusted host owns the
+returned hidden actor and must STOP and physically finalize it**.
+This remains an explicit host cleanup obligation; the restricted
+recycler itself is not an automatically durable orphan collector.
+
+Latest [funded exact-source scheduler run
+#38203745578](https://github.com/zed-pkg-test/java-app/actions/runs/38203745578)
+passed strict GCC, 10,000-generation recycling, lease-reentrancy
+regressions and Clang ASan/UBSan. Latest
+[full native supervisor bridge run
+#38203745587](https://github.com/zed-pkg-test/java-app/actions/runs/38203745587)
+passed exact source blob checks, real shutdown/recycle races, GCC and
+Clang ASan/UBSan. The pre-existing
+[recycling bounded TLC #38203745574](https://github.com/zed-pkg-test/java-app/actions/runs/38203745574)
+also passed on its unchanged model. **That model does not yet prove
+deadlock freedom for the native mutex graph, nor formal refinement of
+the CONTROL close/recycle implementation.**
+
+Keep general guest `self.restart()`, previously ACTIVE actor slot
+recycling and ESCALATE disabled pending dedicated release gates.
