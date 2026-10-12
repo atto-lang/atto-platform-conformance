@@ -7,6 +7,7 @@ on:
       - 'contracts/pipeline/**'
       - 'tests/pipeline-contract.test.mjs'
       - 'formal/TypedPipelineDirections*'
+      - 'formal/TypedPipelineTickets*'
       - '.github/workflows/pipeline-contract-proposal.yml'
   pull_request:
     paths:
@@ -15,6 +16,7 @@ on:
       - 'contracts/pipeline/**'
       - 'tests/pipeline-contract.test.mjs'
       - 'formal/TypedPipelineDirections*'
+      - 'formal/TypedPipelineTickets*'
       - '.github/workflows/pipeline-contract-proposal.yml'
 permissions:
   contents: read
@@ -51,7 +53,7 @@ jobs:
             echo 'ERROR: early backward mutation escaped invariants' >&2
             exit 1
           fi
-          grep -q ReverseRequiresFullForwardPath unsafe.log || { cat unsafe.log; exit 1; }
+          grep -Fq 'Error: Invariant ReverseRequiresFullForwardPath is violated.' unsafe.log || { cat unsafe.log; exit 1; }
           echo 'Expected unsafe early-backward counterexample observed'
           java -Xmx1g -cp tla2tools.jar tlc2.TLC -deadlock -workers 1 -config TypedPipelineTickets.cfg TypedPipelineTickets.tla
           if java -Xmx1g -cp tla2tools.jar tlc2.TLC -deadlock -workers 1 -config TypedPipelineTicketsUnsafe.cfg TypedPipelineTickets.tla > unsafe-ticket.log 2>&1; then
@@ -59,5 +61,5 @@ jobs:
             echo 'ERROR: stale generation completion mutation escaped invariants' >&2
             exit 1
           fi
-          grep -q CompletionBoundToCurrentEpoch unsafe-ticket.log || { cat unsafe-ticket.log; exit 1; }
+          grep -Fq 'Error: Invariant CompletionBoundToCurrentEpoch is violated.' unsafe-ticket.log || { cat unsafe-ticket.log; exit 1; }
           echo 'Expected stale ticket and incarnation counterexample observed'
