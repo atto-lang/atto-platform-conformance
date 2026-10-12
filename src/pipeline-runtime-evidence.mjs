@@ -101,7 +101,7 @@ export function verifyNativeGuestSummary(evidence){
  try{
   if(!record(evidence,["backend","sourceGitBlobSha1","exitCode","stdout","stderr"]))return {ok:false,errors:["invalid guest evidence shape"]};
   if(evidence.backend!=="llvm-native"||evidence.sourceGitBlobSha1!=="46579a917516899612fcd8c65c70b24b995c2c5a"||
-   evidence.exitCode!==43||typeof evidence.stdout!=="string"||evidence.stdout.length>8192||
+   evidence.exitCode!==43||evidence.stdout!==""||
    typeof evidence.stderr!=="string"||evidence.stderr.length>131072)return {ok:false,errors:["untrusted native guest evidence"]};
   if(/SOURCE_PIPELINE_FAILURE|SOURCE_PIPELINE_TERMINAL_STATUS|SOURCE_ACTOR_INVARIANT_FAILURE/.test(evidence.stderr))return {ok:false,errors:["runtime reported terminal failure"]};
   const lines=evidence.stderr.split(/\r?\n/);
@@ -117,7 +117,15 @@ export function verifyNativeGuestSummary(evidence){
   }
   if(JSON.stringify(seen)!==JSON.stringify([[1,13],[2,14],[2,19]]))return {ok:false,errors:["wrong actor finalizers or state"]};
   const groups=lines.filter(s=>s.startsWith("SOURCE_ACTOR_GROUP_VERIFIED"));
-  if(groups.length!==1||!/^SOURCE_ACTOR_GROUP_VERIFIED active=0 slots=\d+ peak=\d+ carriers=\d+$/.test(groups[0]))return {ok:false,errors:["group shutdown not verified"]};
+  if(groups.length!==1||groups[0]!=="SOURCE_ACTOR_GROUP_VERIFIED active=0 slots=3 peak=3 carriers=4")return {ok:false,errors:["group shutdown not verified"]};
+  // Aggregate witnesses must follow the actual runtime's publication barriers.
+  // An exact finalizer multiset is insufficient if it predates completion.
+  const positions=lines.map((s,i)=>({s,i}));
+  const stopPositions=positions.filter(({s})=>s.startsWith("SOURCE_ACTOR_SPAWN_STOP_VERIFIED")).map(({i})=>i);
+  const groupIndex=lines.indexOf(groups[0]);
+  if(!(lines.indexOf(round[0])<stopPositions[0]&&stopPositions[0]<stopPositions[1]&&
+    stopPositions[1]<stopPositions[2]&&stopPositions[2]<groupIndex))
+    return {ok:false,errors:["invalid completion/teardown order"]};
   return {ok:true,errors:[],actors:3,forward:2,backward:2,result:19};
  }catch{return {ok:false,errors:["hostile native evidence"]}}
 }
