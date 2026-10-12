@@ -16,9 +16,10 @@ must roll back. Stage restarts must fence old producer/consumer capabilities.
 
 - `actor-pipeline.tsp` provides TypeSpec shape/vocabulary.
 - `pipeline-graph.schema.json` supplies a **closed** JSON Schema 2020-12
-  shape/vocabulary. A standard schema validator should also be run when
-  promoting this proposal; the tests currently assert schema vocabulary
-  concordance, not a complete TypeSpec emission equivalence proof.
+  shape/vocabulary. The pipeline workflow executes both the pinned TypeSpec
+  compiler and a draft-2020-12 Ajv validator against the positive fixture.
+  Tests also assert vocabulary concordance; generated TypeSpec-to-Schema
+  equivalence is not yet a machine-checked guarantee.
 - `three-actor.json` is an admitted contract-only sample, **not** a compiled
   `.ores` program or host-side simulation of compiled pipeline execution.
 - `src/pipeline-contract.mjs` validates stage roles, precise nominal type
