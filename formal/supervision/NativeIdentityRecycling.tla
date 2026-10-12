@@ -161,8 +161,8 @@ NoLegacyReuse == mode = "Legacy" => recycled = {}
 CallbackGenerationExact ==
   callbackActive => callbackGeneration = generation
 NoStaleEffect == ~staleDelivered
-NoReusedPublishedWithoutLease ==
-  generation > 1 /\ ~published => phase = "Ready"
+NoHiddenCallbackAdmission ==
+  ~published => (~mailbox /\ ~callbackActive)
 
 UnsafeRecycleBeforeSeal ==
   /\ mode = "Identity"
