@@ -105,6 +105,9 @@ UnsafeStaleComplete(t) ==
   /\ epoch = 2
   /\ oldOwned[t]
   /\ owner[t] = 2
+  /\ published[t]
+  /\ forward[t] = 2
+  /\ backward[t] = 2
   /\ ~completed[t]
   /\ completed' = [completed EXCEPT ![t] = TRUE]
   /\ completionEpoch' = [completionEpoch EXCEPT ![t] = 1]
