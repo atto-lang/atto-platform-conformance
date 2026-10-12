@@ -162,12 +162,17 @@ test("reject ABA: different incarnation is not the completed child", () => {
 
 test("reject ABA identity collision hidden by slash-separated actor keys", () => {
   const trace = read("fixtures/valid-lifecycle-trace.json");
-  const prior = trace.events.find(e => e.kind === "child_physical_done"
-    && e.actor.actorId === "native-child");
   const parent = trace.events.find(e => e.kind === "parent_physical_done");
-  // Previously both encoded to 'runtime-1/native-child/1' after joining.
-  prior.actor.runtimeId = "runtime-1/native";
-  prior.actor.actorId = "child";
+  // This is ONE consistently tracked child across STOP, release, and DONE.
+  // A different alleged child in the parent's receipt must not alias it
+  // merely because '/' was allowed inside the runtime/actor identifiers.
+  for (const event of trace.events) {
+    if (event.actor.actorId === "native-child" &&
+        event.kind !== "stale_callback") {
+      event.actor.runtimeId = "runtime-1/native";
+      event.actor.actorId = "child";
+    }
+  }
   parent.children[0].actor.runtimeId = "runtime-1";
   parent.children[0].actor.actorId = "native/child";
   assert.throws(() => assertTraceOrdering(trace), /before a child DONE event/);
