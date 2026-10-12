@@ -60,6 +60,12 @@ test("a duplicate or relabelled actor fixture cannot silently replace a negative
 test("all actor reply fixtures are byte-identical to versioned Git blobs",async()=>{
  for(const entry of manifest.cases){
   const bytes=await readFile(new URL(entry.file,url));
+  // A language-level accept/reject verdict must not hinge on an unresolved
+  // Message type unrelated to the intended reply-control diagnostic.
+  const source=bytes.toString("utf8");
+  assert.match(source,/define enum Message as/);
+  assert.match(source,/Compute Tuple\[string, int\] 1/);
+  assert.match(source,/Result Tuple\[string, int\] 2/);
   const digest=createHash("sha1").update("blob "+bytes.length+"\0").update(bytes).digest("hex");
   assert.equal(digest,entry.sourceGitBlobSha1,entry.file);
  }
