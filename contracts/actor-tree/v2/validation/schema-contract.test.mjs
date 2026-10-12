@@ -12,6 +12,44 @@ const Ajv2020 = requirePinned('ajv/dist/2020.js');
 const json = (p) => JSON.parse(readFileSync(resolve(here,p),'utf8'));
 const schema = json('schemas/typed-pipeline-roundtrip.schema.json');
 const validate = new Ajv2020({strict:true,allErrors:true}).compile(schema);
+import {NORMATIVE_SCHEMA_SHA256, verifyRoundTrip} from './verify-roundtrip.mjs';
+
+const trustedV2 = Object.freeze({
+  expectedPipelineId: 'pipeline-native-i64-round-trip-1',
+  expectedSchemaHash: NORMATIVE_SCHEMA_SHA256,
+  expectedRoute: Object.freeze([
+    {runtimeId:'runtime-1', actorId:'stage/A', incarnation:1},
+    {runtimeId:'runtime-1', actorId:'stage/B', incarnation:1},
+    {runtimeId:'runtime-1', actorId:'stage/C', incarnation:1},
+  ]),
+});
+
+test('a normative structural pass is not an authorization or signed-i64 proof', () => {
+  const positive = json('fixtures/valid-roundtrip.json');
+  assert.ok(validate(positive), JSON.stringify(validate.errors));
+  assert.equal(verifyRoundTrip(positive, trustedV2).values.length, 4);
+
+  for (const [name, mutate, reason] of [
+    ['signed-i64 upper bound', t=>{t.messages[0].payload.i64Decimal='9223372036854775808';}, /outside/],
+    ['signed-i64 lower bound', t=>{t.messages[0].payload.i64Decimal='-9223372036854775809';}, /outside/],
+    ['valid hex but forged schema hash', t=>{for(const m of t.messages)m.schemaHash='f'.repeat(64);}, /trusted schema\/actor authority/],
+    ['forged but internally consistent route', t=>{
+      t.route[0].actorId='untrusted-A';
+      t.messages[0].from.actorId='untrusted-A';
+      t.messages[3].to.actorId='untrusted-A';
+    }, /trusted schema\/actor authority/],
+    ['reordered typed backward message', t=>{t.messages[2].direction='forward';}, /violates typed backward actor route/],
+    ['duplicate physical actor stages', t=>{t.route[1]=structuredClone(t.route[0]);}, /distinct incarnations/],
+    ['reused message identity', t=>{t.messages[3].messageId=t.messages[0].messageId;}, /duplicate/],
+  ]) {
+    const trace=structuredClone(positive);
+    mutate(trace);
+    assert.ok(validate(trace), name+': structural mutation unexpectedly rejected');
+    assert.throws(() => verifyRoundTrip(trace, trustedV2), reason,
+      name+': semantic authority gate accepted malformed pipeline');
+  }
+});
+
 
 test('signed-i64 pipeline fixture conforms to normative Draft 2020-12 schema', () => {
   const value=json('fixtures/valid-roundtrip.json');
