@@ -38,6 +38,10 @@ export function verifyRoundTrip(trace) {
   const route = trace.route;
   const keys = route.map(identityKey);
   if (new Set(keys).size !== 3) throw new Error('route actors must be distinct incarnations');
+  const logicalKeys = route.map(a => JSON.stringify([a.runtimeId, a.actorId]));
+  if (new Set(logicalKeys).size !== 3) {
+    throw new Error('three pipeline stages must be distinct logical actors');
+  }
   if (!route.every(a => a.runtimeId === route[0].runtimeId)) {
     throw new Error('cross-runtime actor route is not authorized');
   }
