@@ -400,11 +400,12 @@ but unpublished candidates. A rejected candidate is only released by
 and the logical ActorId is never reused. The earlier BooleanSupplier
 registry testing hook is **not** a substitute for this runtime lease.
 
-[Funded Java exact 403-blob full Maven run 38196942944](https://github.com/zed-pkg-test/java-app/actions/runs/38196942944)
+[Funded Java exact 403-blob final Maven run 38197434252](https://github.com/zed-pkg-test/java-app/actions/runs/38197434252)
 passed the selected real ActorRuntime/supervisor regressions and full
-Maven verify for the source revision tested by that run. Subsequent
-DONE-backed cleanup changes require a fresh green mirror check;
-native-image AOT/hybrid are separate release gates.
+Maven verify: **1,513 tests, 0 failures, 0 errors, 0 skips**, including
+20 repeated concurrent physical STOP vs logical RESTART commit races
+and DONE-backed abort after failed publication. GraalVM native-image
+AOT/hybrid are separate release gates.
 
 Neither this model nor the Java host-only admission methods enable
 general guest `await self.restart(f.child)` or ESCALATE. Real source
