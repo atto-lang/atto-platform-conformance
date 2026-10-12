@@ -14,18 +14,28 @@ export function verifySupervisorTrace(doc, { allowPrefix = false, verifyProof,
   expectedSourceSha, expectedBackend } = {}) {
   requireField(doc && typeof doc === 'object' && !Array.isArray(doc), 'invalid document');
   requireField(doc.schemaVersion === 2, 'unknown schema version');
-  requireField(['java', 'llvm'].includes(doc.backend), 'invalid backend');
-  requireField(sha(doc.sourceSha), 'source commit SHA is required');
+  // Hold verified origin identity immutable throughout asynchronous/host proof
+  // callbacks; do not reread attacker-owned document properties mid-trace.
+  const backend = doc.backend, sourceSha = doc.sourceSha;
+  requireField(['java', 'llvm'].includes(backend), 'invalid backend');
+  requireField(sha(sourceSha), 'source commit SHA is required');
   // A JSON sourceSha field is unauthenticated by itself. CI/host callers must
   // supply the SHA of the actual checkout, and fail closed on disagreement.
   if (expectedSourceSha !== undefined)
-    requireField(sha(expectedSourceSha) && doc.sourceSha === expectedSourceSha,
+    requireField(sha(expectedSourceSha) && sourceSha === expectedSourceSha,
       'trace source SHA does not match verified checkout');
   if (expectedBackend !== undefined)
-    requireField(['java', 'llvm'].includes(expectedBackend) && doc.backend === expectedBackend,
+    requireField(['java', 'llvm'].includes(expectedBackend) && backend === expectedBackend,
       'trace backend does not match verified runtime');
   requireField(Array.isArray(doc.events) && doc.events.length > 0, 'missing events');
   requireField(typeof allowPrefix === 'boolean', 'invalid prefix option');
+  // Proof verifiers are external callbacks; they must not be able to mutate
+  // yet-unconsumed events, the trace ending, or the origin of a checked proof.
+  // Schema-v2 event fields are scalars, so defensive event snapshots suffice.
+  const events = doc.events.map(e => {
+    requireField(e && typeof e === 'object' && !Array.isArray(e), 'invalid event');
+    return Object.freeze({...e});
+  });
   const children = new Map(), supervisors = new Map(), usedActors = new Set(), usedPermits = new Set(), usedStopPermits = new Set();
   const usedAdmissionEvidence = new Set(), usedCleanupEvidence = new Set(), usedHostProofEvidence = new Set();
   let sealed = false, completion = 'prefix';
@@ -49,13 +59,13 @@ export function verifySupervisorTrace(doc, { allowPrefix = false, verifyProof,
       'wrong, stale, or closed CONTROL turn');
     return s;
   }
-  for (let i = 0; i < doc.events.length; i++) {
-    const e = doc.events[i];
+  for (let i = 0; i < events.length; i++) {
+    const e = events[i];
     requireField(e && typeof e === 'object' && !Array.isArray(e), 'invalid event');
     requireField(e.seq === i + 1, 'non-contiguous or replayed event sequence');
     requireField(typeof e.op === 'string', 'missing operation');
     if (e.op === 'trace.end') {
-      requireField(!sealed && i === doc.events.length - 1, 'terminal marker must end the trace');
+      requireField(!sealed && i === events.length - 1, 'terminal marker must end the trace');
       requireField(e.recordedEvents === i, 'terminal marker count mismatch');
       requireField(['completed','quarantined'].includes(e.status), 'invalid terminal status');
       const unresolved = [...children.values()].some(c =>
@@ -186,10 +196,18 @@ export function verifySupervisorTrace(doc, { allowPrefix = false, verifyProof,
         // The standalone CLI cannot validate such evidence and must fail closed.
         requireField(typeof verifyProof === 'function',
           'trusted independent host proof verifier required');
+        // A verifier with no independent checkout/runtime binding can be
+        // tricked into accepting a fabricated backend or source SHA.
+        requireField(expectedSourceSha !== undefined && expectedBackend !== undefined,
+          'independent host proof requires verified runtime provenance');
+        // Reject replays before making *any* external verifier call; the
+        // trusted verifier may have I/O, telemetry, or non-idempotent effects.
+        requireField(!usedHostProofEvidence.has(e.evidenceId),
+          'replayed independent host proof evidence');
         let confirmed = false;
         try {
           confirmed = verifyProof(Object.freeze({
-            backend:doc.backend, sourceSha:doc.sourceSha,
+            backend, sourceSha,
             child:e.child, supervisor:e.supervisor, actor:e.actor,
             generation:e.generation, turn:e.turn, stopPermitId:e.stopPermitId, evidenceId:e.evidenceId,
             receipt:c.receipt
@@ -198,7 +216,6 @@ export function verifySupervisorTrace(doc, { allowPrefix = false, verifyProof,
           requireField(false, 'trusted independent host proof verifier threw');
         }
         requireField(confirmed, 'independent host proof rejected');
-        requireField(!usedHostProofEvidence.has(e.evidenceId), 'replayed independent host proof evidence');
         usedHostProofEvidence.add(e.evidenceId);
         c.proof = true; c.applied = true; break;
       case 'stop.ack':
@@ -220,8 +237,8 @@ export function verifySupervisorTrace(doc, { allowPrefix = false, verifyProof,
     }
   }
   requireField(sealed || allowPrefix, 'incomplete trace: missing terminal marker');
-  return Object.freeze({ok:true, backend:doc.backend, sourceSha:doc.sourceSha,
-    events:doc.events.length, children:children.size, invocations,
+  return Object.freeze({ok:true, backend, sourceSha,
+    events:events.length, children:children.size, invocations,
     acknowledgments, restartCommits:commits, completion});
 }
 
