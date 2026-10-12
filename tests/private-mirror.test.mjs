@@ -99,12 +99,15 @@ test('raw byte admission rejects Git-clean line ending transforms',()=>{
   git(repo,'config','user.name','CI Mirror Test');
   git(repo,'config','user.email','ci@example.invalid');
   mkdirSync(join(repo,'source'));
-  writeFileSync(join(repo,'source','.gitattributes'),'*.ores text eol=crlf\\n');
-  writeFileSync(join(repo,'source','main.ores'),'fnc foo(): int { return 42; }\\n');
+  const LF=String.fromCharCode(10),CRLF=String.fromCharCode(13,10);
+  writeFileSync(join(repo,'source','.gitattributes'),'*.ores text eol=crlf'+LF);
+  writeFileSync(join(repo,'source','main.ores'),'fnc foo(): int { return 42; }'+LF);
   git(repo,'add','.');
   git(repo,'commit','-qm','pin canonical LF Git blob');
-  writeFileSync(join(repo,'source','main.ores'),readFileSync(join(repo,'source','main.ores'),'utf8').replace(/\n/g,'\r\n'));
-  assert.match(readFileSync(join(repo,'source','main.ores'),'utf8'),/\\r\\n/);
+  // Explicitly put CRLF in the executable checkout while Git's text
+  // normalization still considers the index and worktree equal.
+  writeFileSync(join(repo,'source','main.ores'),'fnc foo(): int { return 42; }'+CRLF);
+  assert.equal(readFileSync(join(repo,'source','main.ores'),'utf8').includes(CRLF),true);
   assert.equal(git(repo,'status','--porcelain=v1','--','source'),'');
   const params={repo,subtreePath:'source',expectedTree:git(repo,'rev-parse','HEAD:source'),
     blobs:[{path:'main.ores',sha:git(repo,'rev-parse','HEAD:source/main.ores')}]};
