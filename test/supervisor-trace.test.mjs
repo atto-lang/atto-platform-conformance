@@ -189,3 +189,17 @@ test('STOP effect claims, receipts and trusted evidence are bound to exact one-u
   expectReject(proof.map((e,i)=>i===7?{...e,stopPermitId:'foreign'}:e),
     /foreign or stale STOP proof permit/);
 });
+
+test('runtime evidence is rejected when the verified checkout or backend disagrees', () => {
+  const successful=doc(stop());
+  assert.equal(verifySupervisorTrace(successful,{
+    expectedSourceSha:sourceSha,expectedBackend:'java'
+  }).ok,true);
+  assert.throws(()=>verifySupervisorTrace(successful,{
+    expectedSourceSha:'2222222222222222222222222222222222222222'
+  }),/trace source SHA does not match verified checkout/);
+  assert.throws(()=>verifySupervisorTrace(successful,{expectedBackend:'llvm'}),
+    /trace backend does not match verified runtime/);
+  assert.throws(()=>verifySupervisorTrace(successful,{expectedSourceSha:'untrusted'}),
+    /trace source SHA does not match verified checkout/);
+});
