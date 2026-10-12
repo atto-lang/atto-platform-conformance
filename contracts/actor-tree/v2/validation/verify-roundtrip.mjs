@@ -132,3 +132,31 @@ export function verifyRoundTrip(trace, authority) {
   }
   return { route: keys, schemaHash, variant, values: payloads };
 }
+
+/**
+ * Authorize a previously validated pipeline exactly once within its runtime
+ * scope, using an external, host-owned atomic claim ledger. The verifier
+ * performs no guest execution and does not execute the external effect.
+ *
+ * The ledger's claim(key) MUST be synchronous, durable, and linearizable,
+ * returning literal true for a new claim and false for a duplicate. An
+ * exception or async/thenable result is rejected fail-closed. A CLAIMED
+ * record with an unknown external-effect outcome must be quarantined by
+ * the host; this API does not retry or infer physical completion.
+ */
+export function verifyAndClaimRoundTrip(trace, authority, ledger) {
+  if (!ledger || typeof ledger.claim !== 'function') {
+    throw new TypeError('host-owned atomic replay claim ledger is required');
+  }
+  // Validate all guest-controlled data BEFORE touching the replay ledger.
+  const verified = verifyRoundTrip(trace, authority);
+  const scope = JSON.stringify([
+    authority.expectedRoute[0].runtimeId,
+    authority.expectedPipelineId,
+  ]);
+  const claimed = ledger.claim(scope);
+  if (claimed !== true) {
+    throw new Error('pipeline replay rejected or claim outcome not authoritative');
+  }
+  return {...verified, claimKey: scope};
+}
