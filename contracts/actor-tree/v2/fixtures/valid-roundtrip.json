@@ -33,7 +33,7 @@
         "actorId": "stage/B",
         "incarnation": 1
       },
-      "schemaHash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "schemaHash": "f0f5740526408574c0271013451a8ab2c46aa091994ba393a5b501ce00b884c3",
       "payload": {
         "variant": "Number",
         "i64Decimal": "-9223372036854775808"
@@ -53,7 +53,7 @@
         "actorId": "stage/C",
         "incarnation": 1
       },
-      "schemaHash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "schemaHash": "f0f5740526408574c0271013451a8ab2c46aa091994ba393a5b501ce00b884c3",
       "payload": {
         "variant": "Number",
         "i64Decimal": "-9223372036854775808"
@@ -73,7 +73,7 @@
         "actorId": "stage/B",
         "incarnation": 1
       },
-      "schemaHash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "schemaHash": "f0f5740526408574c0271013451a8ab2c46aa091994ba393a5b501ce00b884c3",
       "payload": {
         "variant": "Number",
         "i64Decimal": "9223372036854775807"
@@ -93,7 +93,7 @@
         "actorId": "stage/A",
         "incarnation": 1
       },
-      "schemaHash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "schemaHash": "f0f5740526408574c0271013451a8ab2c46aa091994ba393a5b501ce00b884c3",
       "payload": {
         "variant": "Number",
         "i64Decimal": "9223372036854775807"
