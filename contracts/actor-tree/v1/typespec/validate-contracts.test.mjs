@@ -29,20 +29,35 @@ function assertTraceOrdering(trace) {
   let lastSequence = -1;
   const observedDone = new Set();
   const stopped = new Set();
+  const lastLoans = new Map();
+  const parentDone = new Set();
   for (const event of trace.events) {
     assert.ok(event.sequence > lastSequence, "non-increasing trace sequence");
     lastSequence = event.sequence;
     const actorKey = key(event.actor);
+    assert.ok(!parentDone.has(actorKey),
+      "actor emitted a lifecycle event after physical DONE");
+    if (lastLoans.has(actorKey)) {
+      assert.ok(event.nativeLoans <= lastLoans.get(actorKey),
+        "native loan count increased during shutdown trace");
+    }
+    lastLoans.set(actorKey, event.nativeLoans);
+    if (event.physicalDone) {
+      assert.equal(event.nativeLoans, 0, "physical DONE with native loans");
+      assert.equal(event.pendingCleanup, false, "physical DONE during cleanup");
+    }
     if (event.kind === "parent_stop" || event.kind === "child_stop") {
       stopped.add(actorKey);
     }
     if (event.kind === "child_physical_done") {
       assert.ok(stopped.has(actorKey), "child done before recorded stop");
+      assert.ok(!observedDone.has(actorKey), "duplicate child physical DONE");
       observedDone.add(actorKey);
     }
     if (event.kind === "parent_physical_done") {
       assert.ok(stopped.has(actorKey), "parent done before recorded stop");
       assert.ok(event.children.length > 0, "missing child proofs");
+      parentDone.add(actorKey);
       const unique = new Set();
       for (const child of event.children) {
         const id = key(child.actor);
@@ -118,4 +133,28 @@ test("TypeSpec compiler emitted every structural contract model", () => {
     assert.ok(names.some(name => name.includes(model)),
       "TypeSpec JSON Schema emitter did not emit model " + model + ": " + names.join(", "));
   }
+});
+
+test("reject duplicate child physical completion on same incarnation", () => {
+  const trace = read("fixtures/valid-lifecycle-trace.json");
+  const done = trace.events.find(e => e.kind === "child_physical_done");
+  assert.ok(done);
+  const copy = structuredClone(done);
+  copy.sequence = trace.events.at(-1).sequence + 1;
+  trace.events.push(copy);
+  assert.throws(() => assertTraceOrdering(trace),
+    /duplicate child physical DONE/);
+});
+
+test("reject resource accounting increase during STOP", () => {
+  const trace = read("fixtures/valid-lifecycle-trace.json");
+  const stop = trace.events.find(e => e.kind === "child_stop");
+  assert.ok(stop);
+  const copy = structuredClone(stop);
+  copy.kind = "native_loan_released";
+  copy.nativeLoans += 1;
+  copy.sequence = trace.events.at(-1).sequence + 1;
+  trace.events.push(copy);
+  assert.throws(() => assertTraceOrdering(trace),
+    /native loan count increased/);
 });
