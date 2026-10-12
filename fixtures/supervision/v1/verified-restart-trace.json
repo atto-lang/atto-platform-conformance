@@ -69,7 +69,10 @@
     "commit after close",
     "wrong scheduler generation",
     "double admission",
-    "replayed restart reservation"
+    "replayed restart reservation",
+    "two logical children staging the same physical ActorId",
+    "two native candidate generations staging the same scheduler slot",
+    "registering a still-staged physical replacement as a separate child"
   ],
   "implementations": {
     "java": "src/test/java/dev/oreslang/runtime/SupervisorChildRegistryTest.java",
@@ -79,5 +82,9 @@
     "The host-provided readiness and cleanup callbacks are truthful.",
     "Publication and routing exclusion must be established separately by ActorRuntime/native scheduler.",
     "A registry-only trace does not prove real actor spawning or cleanup."
-  ]
+  ],
+  "implementationNotes": {
+    "java": "One pending ActorId is reserved by exactly one child; ActorGroup teardown fences commit.",
+    "native": "One physical scheduler slot may be staged by at most one child; panic routing and registry commit publish atomically."
+  }
 }
