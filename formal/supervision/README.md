@@ -318,3 +318,39 @@ or independent STOP proof. Those external owners must emit truthful events
 at their real linearization points and bind a complete schema-v2 trace to
 the tested binary/source identity. Do not fabricate events to fill gaps.
 All three PRs remain draft until runtime integration and stronger CI pass.
+
+## Registry-journal authority and evidence-correlation audit
+
+Additional runtime hardening prevents Java guest-visible public audit access:
+the journal Transition type and accessors are package-private, retaining
+physical ActorId and lifecycle nonce information inside trusted host code.
+STOP entries do not misuse the restartPermit slot. Instead Java records
+a separate stopPermit nonce tied to the original StopReservation; reserve,
+uncertain, and reconciled ACK tests prove that it remains the same.
+
+The native restart.abort event now retains the exact cleaned physical
+replacement ActorRef before erasing the staging maps, so an emitted audit
+record can correlate cleanup and abort to the same actor incarnation.
+Native regression tests reject missing or mismatched discarded candidates.
+
+The runtime marker comparator now rejects trace tokens embedded in log
+diagnostics, echoed shell commands, leading ANSI decorators, and duplicate
+markers, rather than upgrading arbitrary text to a runtime-produced trace.
+Standalone self-tests exercise all these failure modes.
+
+Fresh exact-blob execution evidence (all gates green):
+https://github.com/3fa-app-test/account-recovery-security/actions/runs/38191439882
+
+The funded workflow checked seven exact Java/native/conformance blob SHAs,
+ran actual Java 25 registry and its 20 JUnit tests (20 passed), executed
+the actual native C++ registry test under ASan/UBSan, passed 7 comparator
+self-tests, and matched all 11 observed registry transitions across both
+executions. This replaces earlier partial/in-between CI results whose
+pin checks intentionally failed until every source revision was mirrored.
+
+This is still REGISTRY-level verification, not a proof of completed
+supervisor source lowering, host STOP effect correctness, external
+admission/cleanup truthfulness, actual Java ActorRuntime integration,
+native routing publication, or complete schema-v2 refinement. The next
+milestone is to instrument the scheduler and host boundaries with
+independently authenticated event provenance and rerun full source builds.
