@@ -5,7 +5,8 @@
  * This is NOT proof of GraalVM source parity or actor behavior.
  */
 import {spawnSync} from "node:child_process";
-import {readFile,stat} from "node:fs/promises";
+import {open} from "node:fs/promises";
+import {constants as fsConstants} from "node:fs";
 import {createHash} from "node:crypto";
 import {isAbsolute,resolve} from "node:path";
 const fields=["compiler","compiler-sha256","bridge","bridge-sha256",
@@ -32,17 +33,31 @@ if([opts.compiler,opts.bridge,opts.source,opts["browser-module"]].some(p=>resolv
 const digest=b=>createHash("sha256").update(b).digest("hex");
 const inputNames=["compiler","bridge","source","browser-module"];
 const maxInputBytes={compiler:64*1024*1024,bridge:2*1024*1024,source:1024*1024,"browser-module":2*1024*1024};
-// Reject oversized files BEFORE allocating and hashing attacker-controlled
-// contents. This is a best-effort preflight, not filesystem immutability.
-const inputStats=await Promise.all(inputNames.map(x=>stat(opts[x])));
-for(let i=0;i<inputNames.length;i++){
- const name=inputNames[i],metadata=inputStats[i];
- if(!metadata.isFile()||metadata.size<1||metadata.size>maxInputBytes[name])
-  throw Error(name+" exceeds native conformance input budget");
+// Open each pinned path exactly once and validate the opened descriptor.
+// Nonblocking, no-follow opens prevent a substituted FIFO or symlink from
+// blocking admission or changing the physical input after stat().
+async function readBounded(path,maxBytes,name){
+ const flags=fsConstants.O_RDONLY|(fsConstants.O_NONBLOCK||0)|(fsConstants.O_NOFOLLOW||0);
+ const fd=await open(path,flags);
+ try{
+  const meta=await fd.stat();
+  if(!meta.isFile()||meta.size<1||meta.size>maxBytes)
+   throw Error(name+" exceeds native conformance input budget");
+  const bytes=Buffer.alloc(meta.size);
+  let offset=0;
+  while(offset<bytes.length){
+   const {bytesRead}=await fd.read(bytes,offset,bytes.length-offset,offset);
+   if(bytesRead===0)throw Error(name+" changed or truncated during pinned read");
+   offset+=bytesRead;
+  }
+  // Reject a file that grew between fstat() and the last read.
+  const extra=Buffer.alloc(1);
+  if((await fd.read(extra,0,1,offset)).bytesRead!==0)
+   throw Error(name+" exceeds native conformance input budget");
+  return bytes;
+ }finally{await fd.close()}
 }
-const bytes=await Promise.all(inputNames.map(x=>readFile(opts[x])));
-for(let i=0;i<inputNames.length;i++)
- if(bytes[i].length>maxInputBytes[inputNames[i]])throw Error(inputNames[i]+" exceeds native conformance input budget");
+const bytes=await Promise.all(inputNames.map(x=>readBounded(opts[x],maxInputBytes[x],x)));
 for(const [i,name] of ["compiler","bridge","source","browser-module"].entries()){
  if(digest(bytes[i])!==opts[name+"-sha256"])throw Error(name+" SHA-256 does not match pin");
 }
@@ -76,9 +91,10 @@ if(report.ok!==true||report.kind!=="core-wasm-i64-guest-only"||
 // the pinned inputs nor the published output/metadata may change between
 // admission and final report. The browser loader alone checks only guest bytes.
 const [wasm,manifestText,provenanceText,...after]=await Promise.all([
- readFile(opts.output),readFile(opts.output+".artifact.json","utf8"),
- readFile(opts.output+".provenance.json","utf8"),
- ...["compiler","bridge","source","browser-module"].map(k=>readFile(opts[k]))
+ readBounded(opts.output,16*1024*1024,"published Wasm"),
+ readBounded(opts.output+".artifact.json",1024*1024,"artifact manifest").then(b=>b.toString("utf8")),
+ readBounded(opts.output+".provenance.json",1024*1024,"provenance").then(b=>b.toString("utf8")),
+ ...["compiler","bridge","source","browser-module"].map(k=>readBounded(opts[k],maxInputBytes[k],k))
 ]);
 for(const [i,name] of ["compiler","bridge","source","browser-module"].entries()){
  if(digest(after[i])!==opts[name+"-sha256"])
