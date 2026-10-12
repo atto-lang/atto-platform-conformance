@@ -5,7 +5,7 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 cd "$HERE"
 java -cp "$TLA2TOOLS_JAR" tlc2.TLC -workers 2 -deadlock \
   -config TypedRoundTrip-safe.cfg TypedRoundTrip.tla
-for spec in schema-swap incarnation-reuse duplicate-delivery; do
+for spec in schema-swap incarnation-reuse duplicate-delivery post-stop-delivery; do
   log="$(mktemp)"
   if java -cp "$TLA2TOOLS_JAR" tlc2.TLC -workers 2 -deadlock \
     -config "TypedRoundTrip-$spec.cfg" TypedRoundTrip.tla > "$log" 2>&1; then
@@ -17,6 +17,7 @@ for spec in schema-swap incarnation-reuse duplicate-delivery; do
     schema-swap) invariant=NoSchemaSubstitution ;;
     incarnation-reuse) invariant=NoABAIncarnationReuse ;;
     duplicate-delivery) invariant=ExactlyOnceDelivery ;;
+    post-stop-delivery) invariant=NoPostStopDelivery ;;
   esac
   grep -Eq "Invariant $invariant is violated|$invariant.*violated" "$log" || {
     cat "$log"; rm -f "$log"; exit 1;
