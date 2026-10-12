@@ -109,6 +109,10 @@ function assertTraceOrdering(trace) {
       const unique = new Set();
       for (const child of event.children) {
         const id = key(child.actor);
+        assert.notEqual(id, actorKey,
+          "parent cannot certify itself as a physical child");
+        assert.equal(child.actor.runtimeId, event.actor.runtimeId,
+          "parent cannot cite cross-runtime child completion");
         assert.ok(!unique.has(id), "duplicate child identity");
         unique.add(id);
         assert.ok(observedDone.has(id), "parent done before a child DONE event");
@@ -198,6 +202,22 @@ test("reject ABA identity collision hidden by slash-separated actor keys", () =>
   parent.children[0].actor.runtimeId = "runtime-1";
   parent.children[0].actor.actorId = "native/child";
   assert.throws(() => assertTraceOrdering(trace), /before a child DONE event/);
+});
+
+test("reject cross-runtime child as parent physical DONE trace evidence", () => {
+  const trace = read("fixtures/valid-lifecycle-trace.json");
+  const parent = trace.events.find(e => e.kind === "parent_physical_done");
+  const doneChild = trace.events.find(e => e.kind === "child_physical_done"
+    && e.actor.actorId === "native-child");
+  for (const event of trace.events) {
+    if (event.actor.actorId === "native-child" &&
+        event.kind !== "stale_callback") {
+      event.actor.runtimeId = "foreign-runtime";
+    }
+  }
+  parent.children[0].actor.runtimeId = "foreign-runtime";
+  assert.ok(doneChild);
+  assert.throws(() => assertTraceOrdering(trace), /cross-runtime child completion/);
 });
 
 test("reject duplicate child identities in terminal shutdown receipt", () => {
