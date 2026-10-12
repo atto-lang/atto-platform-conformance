@@ -133,7 +133,7 @@ test('a safety-valid prefix is not a completed run', () => {
   assert.throws(()=>verifySupervisorTrace(rawDoc(prefix)),/incomplete trace/);
   assert.equal(verifySupervisorTrace(rawDoc(prefix),{allowPrefix:true}).completion,'prefix');
   expectReject(prefix,/terminal status conceals/);
-  expectReject([...stop(),event(9,'stop.invoke',{turn:1})],/wrong or replayed|unreserved/);
+  expectReject([...stop(),event(9,'stop.invoke',{turn:1})],/CONTROL turn|unreserved/);
   const bad=doc(stop());bad.events.at(-1).recordedEvents=4;
   assert.throws(()=>verifySupervisorTrace(bad),/terminal marker count mismatch/);
   assert.throws(()=>verifySupervisorTrace({...doc(stop()),sourceSha:'bad'}),/source commit SHA/);
