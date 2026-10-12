@@ -4,6 +4,7 @@ import {readFile} from "node:fs/promises";
 import {verifyNativeTranscript} from "../bin/verify-native-pipeline-execution.mjs";
 
 const fixture=JSON.parse(await readFile(new URL("../contracts/pipeline/v1/trace-three-actor.json",import.meta.url),"utf8"));
+fixture.events.push({seq:fixture.events.length,op:"stop",epoch:1,request:null,hop:null,ticket:null,stage:null,variant:null,value:null});
 const success=[
  "SOURCE_PIPELINE_ROUNDTRIP_PASS actors=3 typed=1 forward=2 backward=2 result=19",
  "SOURCE_ACTOR_SPAWN_STOP_VERIFIED constructor_on_worker=1 released=1 processed=1 last=13",
@@ -16,7 +17,7 @@ function transcript(t=fixture){
 }
 test("synthetic fixture exercises adapter, not actual guest execution proof",()=>{
  assert.deepEqual(verifyNativeTranscript(transcript(),43),{
-  ok:true,backend:"llvm-native",events:21,forward:2,backward:2,
+  ok:true,backend:"llvm-native",events:22,forward:2,backward:2,
   completed:1,physicalStops:3,groupClosed:true
  });
 });
