@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, symlinkSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -89,5 +89,25 @@ test('tracked symlinks must not certify mutable source outside the pinned subtre
   assert.throws(()=>verify(params),/symlink, gitlink or unexpected index/);
   writeFileSync(join(repo,'outside.ores'),'fnc danger(): int { return 999; }\n');
   assert.throws(()=>verify(params),/symlink, gitlink or unexpected index/);
+ }finally{rmSync(repo,{recursive:true,force:true})}
+});
+
+test('raw byte admission rejects Git-clean line ending transforms',()=>{
+ const repo=mkdtempSync(join(tmpdir(),'mirror-eol-'));
+ try{
+  git(repo,'init','-q');
+  git(repo,'config','user.name','CI Mirror Test');
+  git(repo,'config','user.email','ci@example.invalid');
+  mkdirSync(join(repo,'source'));
+  writeFileSync(join(repo,'source','.gitattributes'),'*.ores text eol=crlf\\n');
+  writeFileSync(join(repo,'source','main.ores'),'fnc foo(): int { return 42; }\\n');
+  git(repo,'add','.');
+  git(repo,'commit','-qm','pin canonical LF Git blob');
+  git(repo,'checkout-index','--force','--','source/main.ores');
+  assert.match(readFileSync(join(repo,'source','main.ores'),'utf8'),/\\r\\n/);
+  assert.equal(git(repo,'status','--porcelain=v1','--','source'),'');
+  const params={repo,subtreePath:'source',expectedTree:git(repo,'rev-parse','HEAD:source'),
+    blobs:[{path:'main.ores',sha:git(repo,'rev-parse','HEAD:source/main.ores')}]};
+  assert.throws(()=>verify(params),/raw source bytes differ from pinned Git blob/);
  }finally{rmSync(repo,{recursive:true,force:true})}
 });
