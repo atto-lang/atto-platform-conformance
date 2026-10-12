@@ -100,9 +100,9 @@ Acknowledge ==
   /\ UNCHANGED <<childDone, parentLive, recoveredParent, recorded, claimed,
                  effectCount, lostAcknowledgment, independentProof, normalSealed, rejected>>
 
-/* A lost acknowledgment may be reconciled only after a separate host
+(* A lost acknowledgment may be reconciled only after a separate host
  * receipt proves the exact effect actually committed. Neither action
- * retries guest policy or reenters external STOP/CONTROL host work. */
+ * retries guest policy or reenters external STOP/CONTROL host work. *)
 VerifyIndependentCommit ==
   /\ status = "Claimed"
   /\ effectCount = 1
