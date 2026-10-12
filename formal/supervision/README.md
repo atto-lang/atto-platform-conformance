@@ -354,3 +354,60 @@ admission/cleanup truthfulness, actual Java ActorRuntime integration,
 native routing publication, or complete schema-v2 refinement. The next
 milestone is to instrument the scheduler and host boundaries with
 independently authenticated event provenance and rerun full source builds.
+
+
+## Atomic initial-child admission and scheduler lease model (October 2026)
+
+`SupervisorInitialAdmission.tla` separately checks **initial child
+registration**, not only logical RESTART publication. The bounded model
+has two independent physical actors, up to three physical generations,
+a scheduler-owned registration lease, asynchronous STOP requests,
+actual physical retirement, and supervisor close that cannot linearize
+while a registration lease remains held. It checks that:
+
+- An initial logical child is registered only with an exact physical
+  admission proof from the current generation.
+- A physical STOP cannot retire a registered candidate while its
+  admission lease is held.
+- The registered generation must equal the physical scheduler generation
+  (no actor-slot ABA / stale callback registration).
+- Closing a supervisor does not leave an outstanding publication lease.
+
+The checker is `bash formal/supervision/check-initial-tlc.sh`. Three
+deliberately unsafe actions must produce their intended counterexamples:
+unleased registration, STOP through a held gate, and stale-generation
+registration.
+
+[Six-blob funded TLC run 38197144529](https://github.com/3fa-app-test/account-recovery-security/actions/runs/38197144529)
+verified exact source blob identities and passed the positive bounded
+model plus all three expected mutation counterexamples. This verifies
+the **model**, not a machine-checked refinement of the native bridge or
+Java actor scheduler.
+
+### Java/GraalVM implementation-level boundary
+
+In draft [Java PR #657](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/657),
+`ActorGroup.spawnUnpublishedRestartCandidate` creates a real ActorCell
+with a hidden routing/initialization flag; mail, continuations, early
+`ready()`, and `beginTurn` cannot run it before publication.
+`commitUnpublishedRestart` coordinates physical `lifecycleLock`,
+group `authorityLock`, and `SupervisorChildRegistry` publication.
+The physical actor cannot stop across that critical section. The
+post-commit routing flip is an allocation-free boolean publication.
+`pendingRestartCandidates` makes group close cancel physically owned
+but unpublished candidates. A rejected candidate is only released by
+`abortCleanedUnpublishedRestart` after its physical DONE barrier,
+and the logical ActorId is never reused. The earlier BooleanSupplier
+registry testing hook is **not** a substitute for this runtime lease.
+
+[Funded Java exact 403-blob full Maven run 38196942944](https://github.com/zed-pkg-test/java-app/actions/runs/38196942944)
+passed the selected real ActorRuntime/supervisor regressions and full
+Maven verify for the source revision tested by that run. Subsequent
+DONE-backed cleanup changes require a fresh green mirror check;
+native-image AOT/hybrid are separate release gates.
+
+Neither this model nor the Java host-only admission methods enable
+general guest `await self.restart(f.child)` or ESCALATE. Real source
+lowering, bounded-carrier liveness, mixed shutdown interleavings,
+actual cross-backend lifecycle trace comparison, and physical native
+slot reincarnation/capacity policy remain release blockers.
