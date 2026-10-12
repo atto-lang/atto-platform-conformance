@@ -98,9 +98,9 @@ CompleteCleanup ==
   /\ cleanupPending' = 0
   /\ carrier' = 0
   /\ phase' = "Stopped"
-  /\ shutdownResult' = "Succeeded"
   /\ UNCHANGED <<cleanupRuns, loan, closeCalls, staleCallbacks,
-                  drainFailed, doneResult, rejectedData, physicalDone>>
+                  drainFailed, shutdownResult, doneResult,
+                  rejectedData, physicalDone>>
 
 ReleaseNativeLoan ==
   /\ phase # "Running"
@@ -139,7 +139,8 @@ RejectPostStopData ==
                   closeCalls, staleCallbacks, drainFailed, shutdownResult,
                   doneResult, physicalDone>>
 
-Finalize ==
+Finalize(outcome) ==
+  /\ outcome \in {"Succeeded", "Failed"}
   /\ phase = "Stopped"
   /\ carrier = 0
   /\ cleanupPending = 0
@@ -147,11 +148,11 @@ Finalize ==
   /\ ~drainFailed
   /\ ~physicalDone
   /\ physicalDone' = TRUE
-  /\ doneResult' = "Succeeded"
+  /\ doneResult' = outcome
+  /\ shutdownResult' = outcome
   /\ phase' = "Terminated"
   /\ UNCHANGED <<carrier, cleanupPending, cleanupRuns, loan,
-                  closeCalls, staleCallbacks, drainFailed, shutdownResult,
-                  rejectedData>>
+                  closeCalls, staleCallbacks, drainFailed, rejectedData>>
 
 (* Deliberately unsafe transition for a negative-model counterexample. *)
 UnsafeFinalize ==
@@ -176,7 +177,7 @@ Next == \/ RequestStop
         \/ CleanupDeadline
         \/ LateFutureCompletion
         \/ RejectPostStopData
-        \/ Finalize
+        \/ (\E outcome \in {"Succeeded", "Failed"}: Finalize(outcome))
         \/ UnsafeFinalize
 
 Spec == Init /\ [][Next]_vars
@@ -198,14 +199,14 @@ TypeOK ==
 NoPrematurePhysicalDone ==
   physicalDone => (carrier = 0 /\ cleanupPending = 0 /\ loan = 0)
 
-PhysicalDoneIsUniqueSuccess ==
-  (doneResult = "Succeeded") <=> physicalDone
+PhysicalDoneIsExactlyTerminal ==
+  (doneResult # "Pending") <=> physicalDone
 
 NoFailedDrainSuccess ==
   drainFailed => ~physicalDone
 
 CleanupAtMostOnce == cleanupRuns <= 1
 OriginalTurnGoneBeforeCleanup == (cleanupRuns > 0) => phase # "Running"
-NoSuccessBeforeNativeRelease == (doneResult = "Succeeded") => loan = 0
+NoTerminalBeforeNativeRelease == (doneResult # "Pending") => loan = 0
 
 =============================================================================
