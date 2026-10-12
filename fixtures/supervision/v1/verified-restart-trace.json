@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "id": "verified-restart-transaction-v1",
+  "scope": "trusted-host-runtime-registry",
+  "sourceRuntimeExecution": "not-yet-executed",
+  "actions": [
+    {
+      "action": "register",
+      "expectedPhase": "ACTIVE",
+      "generation": 1
+    },
+    {
+      "action": "finalize",
+      "expectedPhase": "FINALIZED",
+      "generation": 1
+    },
+    {
+      "action": "reserve-restart",
+      "expectedPhase": "RESTARTING",
+      "generation": 1
+    },
+    {
+      "action": "stage-replacement",
+      "expectedPhase": "RESTARTING",
+      "replacement": "SPAWNED"
+    },
+    {
+      "action": "acknowledge-admission",
+      "expectedPhase": "RESTARTING",
+      "replacement": "ADMITTED"
+    },
+    {
+      "action": "commit-restart",
+      "expectedPhase": "ACTIVE",
+      "generation": 2
+    },
+    {
+      "action": "finalize",
+      "expectedPhase": "FINALIZED",
+      "generation": 2
+    },
+    {
+      "action": "reserve-restart",
+      "expectedPhase": "RESTARTING",
+      "generation": 2
+    },
+    {
+      "action": "stage-replacement",
+      "expectedPhase": "RESTARTING",
+      "replacement": "SPAWNED"
+    },
+    {
+      "action": "acknowledge-physical-cleanup",
+      "expectedPhase": "RESTARTING",
+      "replacement": "CLEANED"
+    },
+    {
+      "action": "abort-restart",
+      "expectedPhase": "FINALIZED",
+      "generation": 2
+    }
+  ],
+  "expectedTrace": "ACTIVE>FINALIZED>RESTARTING>SPAWNED>ADMITTED>ACTIVE>FINALIZED>RESTARTING>SPAWNED>CLEANED>FINALIZED",
+  "negativeTransitions": [
+    "commit without stage",
+    "commit after stage but before admitted",
+    "abort while spawned",
+    "abort after admitted without cleanup",
+    "commit after close",
+    "wrong scheduler generation",
+    "double admission",
+    "replayed restart reservation"
+  ],
+  "implementations": {
+    "java": "src/test/java/dev/oreslang/runtime/SupervisorChildRegistryTest.java",
+    "native": "tests/native_supervisor_child_registry_test.cpp"
+  },
+  "assumptions": [
+    "The host-provided readiness and cleanup callbacks are truthful.",
+    "Publication and routing exclusion must be established separately by ActorRuntime/native scheduler.",
+    "A registry-only trace does not prove real actor spawning or cleanup."
+  ]
+}
