@@ -25,6 +25,17 @@ export function verify({ repo, subtreePath, expectedTree, blobs = [] }) {
   if (actual !== expectedTree || git(repo, 'cat-file', '-t', actual) !== 'tree') {
     throw Error('exact Git subtree mismatch');
   }
+  // The Git object database is immutable, but the executable checkout is
+  // not. A matching HEAD tree alone must not certify a dirty staging area or
+  // working tree as SHA-exact source execution. Check before consumers run.
+  const dirty = git(repo, 'status', '--porcelain=v1', '--untracked-files=all', '--', subtreePath);
+  if (dirty) throw Error('source subtree worktree is dirty or contains untracked files');
+  // Skip-worktree / assume-unchanged flags can conceal real modifications from
+  // porcelain status; reject an attestation when either is active.
+  const indexEntries = git(repo, 'ls-files', '-v', '--', subtreePath);
+  if (indexEntries.split('\n').some(line => /^[a-zS] /.test(line))) {
+    throw Error('source subtree has hidden index entries');
+  }
   for (const entry of blobs) {
     if (!entry || !safePath(entry.path) || !/^[0-9a-f]{40}$/.test(entry.sha)) {
       throw Error('invalid blob pin');
