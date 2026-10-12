@@ -87,13 +87,46 @@ test('TypeSpec-emitted root schema agrees with normative V2 on structural mutati
     ['invalid schema hash', t=>{t.messages[0].schemaHash='bad';}],
     ['wrong direction enum', t=>{t.messages[0].direction='sideways';}],
     ['number instead of decimal string', t=>{t.messages[0].payload.i64Decimal=42;}],
-    ['noncanonical minus zero', t=>{t.messages[0].payload.i64Decimal='-0';}]
+    ['noncanonical minus zero', t=>{t.messages[0].payload.i64Decimal='-0';}],
+    ['root not object', t=>null],
+    ['missing schema version', t=>{delete t.schemaVersion;}],
+    ['invalid schema version', t=>{t.schemaVersion='2.0.1';}],
+    ['pipeline id not string', t=>{t.pipelineId=7;}],
+    ['pipeline id longer than 128', t=>{t.pipelineId='x'.repeat(129);}],
+    ['route not array', t=>{t.route={};}],
+    ['route null', t=>{t.route=null;}],
+    ['route too short', t=>{t.route.pop();}],
+    ['identity null', t=>{t.route[0]=null;}],
+    ['identity unexpected field', t=>{t.route[0].unexpected=true;}],
+    ['identity missing runtime id', t=>{delete t.route[0].runtimeId;}],
+    ['identity empty runtime id', t=>{t.route[0].runtimeId='';}],
+    ['identity missing actor id', t=>{delete t.route[0].actorId;}],
+    ['identity actor id not string', t=>{t.route[0].actorId=5;}],
+    ['identity incarnation above int32 range', t=>{t.route[0].incarnation=2147483648;}],
+    ['identity incarnation zero', t=>{t.route[0].incarnation=0;}],
+    ['envelope missing sender', t=>{delete t.messages[0].from;}],
+    ['envelope missing receiver', t=>{delete t.messages[0].to;}],
+    ['envelope hop index negative', t=>{t.messages[0].hopIndex=-1;}],
+    ['envelope hop index above bound', t=>{t.messages[0].hopIndex=4;}],
+    ['envelope hop index fraction', t=>{t.messages[0].hopIndex=0.5;}],
+    ['envelope direction null', t=>{t.messages[0].direction=null;}],
+    ['envelope message id too long', t=>{t.messages[0].messageId='m'.repeat(129);}],
+    ['envelope schema hash uppercase', t=>{t.messages[0].schemaHash='A'.repeat(64);}],
+    ['payload not object', t=>{t.messages[0].payload=[];}],
+    ['payload missing variant', t=>{delete t.messages[0].payload.variant;}],
+    ['payload empty variant', t=>{t.messages[0].payload.variant='';}],
+    ['payload variant too long', t=>{t.messages[0].payload.variant='a'.repeat(129);}],
+    ['payload decimal too long', t=>{t.messages[0].payload.i64Decimal='1'.repeat(21);}],
+    ['payload decimal whitespace', t=>{t.messages[0].payload.i64Decimal=' 1';}],
+    ['messages not array', t=>{t.messages='wrong';}],
+    ['message entry null', t=>{t.messages[1]=null;}]
   ];
   for(const [name,mutate] of mutations) {
     const value=structuredClone(base);
-    mutate(value);
-    const normative=validate(value);
-    const generatedResult=generatedValidator(value);
+    const changed=mutate(value);
+    const candidate=changed === undefined ? value : changed;
+    const normative=validate(candidate);
+    const generatedResult=generatedValidator(candidate);
     assert.equal(generatedResult,normative,
       'TypeSpec JSON Schema differs from normative structural contract: '+name+
       ' | emitted errors='+JSON.stringify(generatedValidator.errors));
