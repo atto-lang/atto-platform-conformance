@@ -38,3 +38,23 @@ All four backends remain `pendingBackends`. Do not promote any value to
 and runs with typed downstream and upstream messages on the relevant backend.
 The formal model does not establish implementation refinement, liveness,
 backpressure fairness, OS worker exit, or transport behavior.
+
+## Formal and security limits after the ticket audit
+
+The original `TypedPipelineDirections` model checks stage ordering with two
+forward and two backward hops, but did not represent request-specific identity.
+`TypedPipelineTickets` now explores two correlation tickets and two physical
+epochs, including STOP/restart, same-ID reuse, safe discard of late replies and
+an intentionally unsafe old-epoch completion. CI must observe the
+`CompletionBoundToCurrentEpoch` counterexample in the unsafe configuration.
+The test does **not** establish unbounded exactly-once delivery, fairness, a
+physical STOP barrier, or a refinement mapping to any compiled runtime.
+
+`admitPipelineContract` snapshots only admitted primitive fields and deeply
+freezes the resulting own-data graph; rejecting accessors, noncanonical arrays
+and mutable caller aliasing. Its trust boundary is JSON-like objects in a
+trusted JavaScript realm. A hostile `Proxy`, compromised JS built-ins, or
+concurrent shared-memory producer are not safely normalized by this function.
+Callers should parse JSON in a trusted realm, validate the original content
+and use only the returned owned `contract` for subsequent construction. It is
+a proposal-level structural admission, **not** an actor execution capability.
