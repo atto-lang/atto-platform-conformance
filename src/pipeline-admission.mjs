@@ -68,7 +68,7 @@ export function admitPipelineContract(source){
     const contract=copyProposal(source);
     const verdict=validatePipelineContract(contract);
     if(!verdict.ok)return verdict;
-    return {ok:true,errors:[],contract};
+    return Object.freeze({ok:true,errors:Object.freeze([]),contract});
   } catch {
     return {ok:false,errors:['pipeline admission requires bounded own-data snapshot']};
   }
