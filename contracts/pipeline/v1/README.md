@@ -58,3 +58,41 @@ concurrent shared-memory producer are not safely normalized by this function.
 Callers should parse JSON in a trusted realm, validate the original content
 and use only the returned owned `contract` for subsequent construction. It is
 a proposal-level structural admission, **not** an actor execution capability.
+
+## Executable compiler-guest evidence versus a model trace
+
+LLVM PR #180 already contains **real compiled** actor source
+\`tests/fixtures/source-actor-pipeline-bidirectional.ores\`, which exercises
+\`self.forward\` and \`self.backward\` through Source, Transform and Sink and
+checks final source state 19. The current bounded LLVM and Java implementations
+are distinct from this proposal's future role-declaration syntax.
+
+\`runtime-trace.tsp\` and \`runtime-trace.schema.json\` define a closed exchange
+format for ordered reserve, publish, deliver, finalize, complete, STOP, restart,
+and stale-reply discard events. \`trace-three-actor.json\` is an **illustrative,
+synthetic** single-flow trace. \`verifyPipelineTrace()\` checks that ordered
+events are consistent with five typed hops and generation fencing, but this
+does **not** prove that the compiled runtime emitted them. The Java/LLVM runtime
+instrumentation and trusted runner-side provenance are still needed for an
+implementation-to-TLA+ refinement claim. It does not prove arbitrarily many
+flows, exact-once delivery in general, or progress/fairness.
+
+\`verifyNativeGuestSummary()\` is intentionally weaker and accepts only the
+already-existing LLVM compiled guest's aggregate result plus its three physical
+actor STOP receipts and group close. It rejects wrong values, duplicates,
+missing stop receipts, terminal failures, and the wrong source fixture Git blob.
+This gate must be fed stderr and exit status **captured directly from a real
+compiled executable in trusted GitHub Actions**, not manually constructed
+JSON. It cannot establish event ordering or incarnation replay safety merely
+from this aggregate transcript.
+
+A CI runner can run:
+
+\`\`\`sh
+node bin/verify-pipeline-evidence.mjs --trace contracts/pipeline/v1/trace-three-actor.json
+node bin/verify-pipeline-evidence.mjs --native-summary path/to/captured-native-execution.json
+\`\`\`
+
+Successful parsing validates internal coherence, **not** authenticity of a
+runner, an executable, or a build artifact. The wire/source compatibility
+still needs executable common-source fixtures and SHA-exact compiler builds.
