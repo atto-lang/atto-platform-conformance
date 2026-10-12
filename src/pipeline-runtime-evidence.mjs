@@ -81,7 +81,7 @@ function validate(x){
    epoch++;restarts++;stopped=false;completed=false;currentRequest=null;hops=new Map();nextHop=0;continue;
   }
   if(e.op==="drop-stale"){
-   if(restarts!==1||e.epoch!==epoch-1||!stopped&&!oldTickets.has(e.ticket)||!oldTickets.has(e.ticket)||oldTickets.get(e.ticket)!==e.epoch)return err("unproven stale ticket at "+seq);
+   if(restarts!==1||e.epoch!==epoch-1||!oldTickets.has(e.ticket)||oldTickets.get(e.ticket)!==e.epoch)return err("unproven stale ticket at "+seq);
    oldTickets.delete(e.ticket);drops++;continue;
   }
  }
