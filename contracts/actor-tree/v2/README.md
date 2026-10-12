@@ -21,3 +21,30 @@ Run \`node --test validation/*.test.mjs\` without dependencies. To compile the
 TypeSpec model, run \`npm install --ignore-scripts\` and \`npm run compile\` in
 \`typespec/\` with package downloads enabled; require emitted-schema comparison
 against the normative JSON Schema in funded CI before certifying emission.
+
+
+## Trusted verifier authority and schema integrity
+
+`verifyRoundTrip(trace, authority)` is fail-closed. The `authority` object
+must originate **outside the untrusted trace** and include:
+`expectedPipelineId`, `expectedRoute` (three runtime/actor/incarnation
+tuples), and `expectedSchemaHash`. The verifier refuses undeclared wire
+fields even when the calling code has not run Ajv separately. Never construct
+the authority object by copying identity or schema-hash values out of the
+untrusted message being checked.
+
+`expectedSchemaHash` must equal the published V2 schema's SHA-256:
+`f0f5740526408574c0271013451a8ab2c46aa091994ba393a5b501ce00b884c3`.
+This is the SHA-256 of the **exact UTF-8 bytes** of
+`schemas/typed-pipeline-roundtrip.schema.json`, including its newline.
+The CI digest test recomputes this value; source edits require a new versioned
+contract rather than silently changing the V2 hash. The hash binds message
+shape to the versioned schema; it does **not** authenticate remote actors.
+A genuine runtime must independently authenticate actor incarnation authority
+and delivery ownership.
+
+The V2 TLC model separately excludes guest deliveries after STOP. The fourth
+intentionally unsafe mutation publishes a post-stop delivery while preserving
+the ordinary delivery-count equality, so `NoPostStopDelivery` must fail.
+The independent bounded explorer confirms the same counterexample.
+No bounded model establishes compiler/runtime refinement or general liveness.
