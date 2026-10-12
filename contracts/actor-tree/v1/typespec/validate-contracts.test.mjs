@@ -35,8 +35,8 @@ function assertTraceOrdering(trace) {
     assert.ok(event.sequence > lastSequence, "non-increasing trace sequence");
     lastSequence = event.sequence;
     const actorKey = key(event.actor);
-    assert.ok(!parentDone.has(actorKey),
-      "actor emitted a lifecycle event after physical DONE");
+    assert.ok(!parentDone.has(actorKey) || event.kind === "stale_callback",
+      "actor emitted a live lifecycle event after physical DONE");
     if (lastLoans.has(actorKey)) {
       assert.ok(event.nativeLoans <= lastLoans.get(actorKey),
         "native loan count increased during shutdown trace");
@@ -53,6 +53,7 @@ function assertTraceOrdering(trace) {
       assert.ok(stopped.has(actorKey), "child done before recorded stop");
       assert.ok(!observedDone.has(actorKey), "duplicate child physical DONE");
       observedDone.add(actorKey);
+      parentDone.add(actorKey);
     }
     if (event.kind === "parent_physical_done") {
       assert.ok(stopped.has(actorKey), "parent done before recorded stop");
@@ -143,7 +144,7 @@ test("reject duplicate child physical completion on same incarnation", () => {
   copy.sequence = trace.events.at(-1).sequence + 1;
   trace.events.push(copy);
   assert.throws(() => assertTraceOrdering(trace),
-    /duplicate child physical DONE/);
+    /after physical DONE|duplicate child physical DONE/);
 });
 
 test("reject resource accounting increase during STOP", () => {
@@ -153,8 +154,8 @@ test("reject resource accounting increase during STOP", () => {
   const copy = structuredClone(stop);
   copy.kind = "native_loan_released";
   copy.nativeLoans += 1;
-  copy.sequence = trace.events.at(-1).sequence + 1;
-  trace.events.push(copy);
+  trace.events.splice(2, 0, copy);
+  trace.events.forEach((event, sequence) => { event.sequence = sequence; });
   assert.throws(() => assertTraceOrdering(trace),
     /native loan count increased/);
 });
