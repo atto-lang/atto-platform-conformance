@@ -624,3 +624,74 @@ receipts. The current callback guard is not an exactly-once durable
 failure ledger or proof of the entire C callback/CONTROL lock graph.
 Production PANIC recycling and compiled guest `self.restart()` remain
 blocked until those release gates are demonstrated.
+
+
+## Terminal PANIC evidence and recovered-parent reconciliation
+
+The native scheduler now retains a **typed, exact-generation terminal
+envelope** on the failed child's physical lane before attempting its
+parent's CONTROL publication. This evidence survives CONTROL
+backpressure, original-parent physical STOP, and lost delivery, but is
+intentionally process-local and is not a crash-durable WAL. A terminal
+PANIC attempt prevents normal-exit sealing and physical PANIC-slot
+recycling.
+
+Host-owned terminal receipt states:
+
+- `RECORDED`: exact original parent and child physical identities plus
+  PANIC type/code/correlation are preserved; no host enqueue was claimed.
+- `CLAIMED`: one host claimant crossed the authorization barrier.
+  An ambiguous enqueue may have committed; never automatically retry.
+- `ACKNOWLEDGED`: the exact nonce is acknowledged after host CONTROL
+  enqueue succeeds or after an independently verified host commit proof.
+
+The ordinary callback uses
+`claim_live_parent_terminal_receipt`, checking original parent
+publication and the one-use claim **under the scheduler mutex** shared
+with STOP. A STOP that wins first leaves the receipt RECORDED.
+Recovery uses
+`claim_recovered_parent_terminal_receipt(original, replacement, child)`,
+checking the replacement is an exact published newer physical generation
+at the same parent slot under that same mutex. Both reject stale
+generations, duplicate claims, and callbacks racing physical STOP.
+
+The host bridge's `reconcile_quarantined_terminal` uses the
+scheduler-minted failure payload, validates the existing logical child
+registry binding, and admits it to a recovered parent without copying
+untrusted caller failure details. The bridge's
+`reconcile_claimed_terminal_ack` is only for a trusted, independent
+external effect verification callback; it **never** reruns supervisor
+policy or repeats the host effect. An unverified or throwing verifier
+leaves the evidence CLAIMED.
+
+Versioned contract files:
+`contracts/native-terminal-receipt/v1/main.tsp`,
+`terminal-receipt.schema.json`, and `example-recorded.json`.
+These specify the joined logical owner/physical scheduler evidence
+shape. The scheduler itself stores physical identities only; the
+trusted bridge joins it to the logical child registry. The funded
+contract gate validates source blobs, JSON parse and cross-field sample
+consistency; it does **not** yet compile TypeSpec or perform full
+JSON Schema conformance validation.
+
+Executed evidence:
+- [Exact-source native receipt #38214312462](https://github.com/zed-pkg-test/java-app/actions/runs/38214312462):
+  GCC, Clang ASan/UBSan, stopped-parent recovery, ambiguous enqueue,
+  lost-acknowledgment independent proof, forged receipts, racing claims,
+  100 original-parent and 50 recovered-parent STOP interleavings.
+- [Full native bridge #38214312490](https://github.com/zed-pkg-test/java-app/actions/runs/38214312490):
+  existing supervisor registration/STOP/RESTART tests passed against
+  the changed C scheduler and C++ bridge with sanitizers.
+- [Receipt TLC #38214312440](https://github.com/zed-pkg-test/java-app/actions/runs/38214312440):
+  66 distinct states; five deliberate unsafe transitions yielded
+  counterexamples for dropped evidence, duplicate host effect,
+  acknowledgment without an effect, PANIC relabeled as normal, and
+  lost acknowledgment marked successful without independent proof.
+
+**Release boundaries**: crash-durable evidence storage, exact logical
+CONTROL-turn receipts across process restart, independent host-effect
+verification backed by persistent evidence, PANIC-terminated physical
+slot recycling, compiler-lowered `await self.restart(f.child)`,
+cross-backend Java/GraalVM–LLVM trace parity, and full implementation
+refinement proofs remain outstanding. Keep guest RESTART and ESCALATE
+disabled, and keep source/conformance PRs draft and unmerged.
