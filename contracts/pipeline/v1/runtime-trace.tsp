@@ -8,7 +8,7 @@ enum TraceOp {
 }
 model PipelineTraceEvent {
   @minValue(0) @maxValue(127) seq: int32;
-  op: TraceOp;
+  `op`: TraceOp;
   @minValue(1) @maxValue(2) epoch: int32;
   request: string | null;
   hop: int32 | null;
