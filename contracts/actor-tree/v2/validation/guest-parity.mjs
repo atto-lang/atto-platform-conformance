@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Fail-closed evidence gate, NOT a replacement for executable compiler/runtime CI.
-// The CI job must build the exact source and run two real backends. The guest
-// cannot write the reserved host-owned audit FD; the trusted host does.
+// The CI job must build the exact source and run two real backends. The trusted
+// wrapper receives FD3 and MUST prevent compiled guests from inheriting it;
+// spawnSync cannot enforce that grandchild descriptor boundary.
 import {readFileSync, statSync} from 'node:fs';
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
@@ -30,6 +31,40 @@ function closed(o, fields) {
       // A getter may return different values when validated and compared.
       throw new Error('accessor-backed or missing evidence field: ' + key);
     }
+  }
+}
+// Refuse dynamic/accessor-backed nested evidence before any comparison. JSON
+// parsed from a canonical FD3 record is already plain; this also hardens the
+// directly exported verification API against mutable object graphs.
+function requirePlainEvidenceTree(value, seen=new WeakSet(), depth=0) {
+  if (value===null || typeof value==='string' || typeof value==='boolean') return;
+  if (typeof value==='number' && Number.isFinite(value)) return;
+  if (!value || typeof value!=='object' || depth>16 || seen.has(value)) {
+    throw new Error('noncanonical nested evidence');
+  }
+  const array=Array.isArray(value);
+  const prototype=Object.getPrototypeOf(value);
+  if (array ? prototype!==Array.prototype :
+      (prototype!==Object.prototype && prototype!==null)) {
+    throw new Error('noncanonical nested evidence prototype');
+  }
+  seen.add(value);
+  const keys=Reflect.ownKeys(value);
+  if ((array && (!Number.isSafeInteger(value.length) || value.length>1024 ||
+      keys.length!==value.length+1)) || (!array && keys.length>64)) {
+    throw new Error('noncanonical nested evidence shape');
+  }
+  for (const key of keys) {
+    if (typeof key!=='string') throw new Error('noncanonical nested evidence key');
+    if (array && key==='length') continue;
+    if (array && (!/^(0|[1-9][0-9]*)$/.test(key) || Number(key)>=value.length)) {
+      throw new Error('sparse or noncanonical evidence array');
+    }
+    const field=Object.getOwnPropertyDescriptor(value,key);
+    if (!field || !field.enumerable || !Object.hasOwn(field,'value')) {
+      throw new Error('accessor-backed nested evidence');
+    }
+    requirePlainEvidenceTree(field.value,seen,depth+1);
   }
 }
 function fileBytes(path, maxBytes=1024*1024) {
@@ -104,6 +139,8 @@ export function readAuthoritySnapshot(path, manifest) {
   return authority;
 }
 export function verifyCapture(evidence, backend, manifest, authority) {
+  requirePlainEvidenceTree(evidence);
+  requirePlainEvidenceTree(authority);
   closed(evidence, CLOSED_EVIDENCE);
   closed(authority, ['expectedPipelineId','expectedSchemaHash','expectedRoute']);
   if (!BACKENDS.includes(backend) || evidence.kind!=='oreslang-v2-guest-audit' ||

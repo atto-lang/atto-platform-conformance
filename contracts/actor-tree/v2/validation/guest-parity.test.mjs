@@ -148,3 +148,24 @@ test('no backend runner starts before both trusted authority snapshots exist',()
     assert.equal(existsSync(marker),false,'guest runner launched before authorization');
   } finally {rmSync(temp,{recursive:true,force:true});}
 });
+
+test('nested getter-backed envelopes and sparse route arrays fail closed',()=>{
+  const e=audit();
+  let reads=0;
+  Object.defineProperty(e.trace.messages[1].payload,'i64Decimal',{
+    enumerable:true,get(){reads++;return values[1];}
+  });
+  assert.throws(()=>verifyCapture(e,'llvm-native',manifest,authority()),/accessor-backed nested evidence/);
+  assert.equal(reads,0);
+  const sparse=audit();
+  delete sparse.trace.messages[2];
+  assert.throws(()=>verifyCapture(sparse,'llvm-native',manifest,authority()),/noncanonical nested evidence shape/);
+});
+test('nested aliasing and unusual prototypes cannot bypass evidence comparison',()=>{
+  const e=audit();
+  e.trace.messages[1].from=e.trace.messages[0].from;
+  assert.throws(()=>verifyCapture(e,'llvm-native',manifest,authority()),/noncanonical nested evidence/);
+  const other=audit();
+  Object.setPrototypeOf(other.trace.messages[0].payload, {variant:'Number'});
+  assert.throws(()=>verifyCapture(other,'llvm-native',manifest,authority()),/noncanonical nested evidence prototype/);
+});

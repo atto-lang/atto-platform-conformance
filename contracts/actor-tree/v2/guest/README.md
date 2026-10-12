@@ -76,3 +76,18 @@ A second manifest/source verification after execution detects persistent
 worktree changes during the run, but does not establish what bytes the guest
 compiler actually consumed. FD3 host ownership must be enforced by the
 separate trusted runner/runtime integration rather than inferred from JSON.
+
+## Nested evidence and FD ownership boundary
+
+The exported comparator now rejects getter-backed nested payloads, sparse
+arrays, reference-aliased mutable evidence, unexpected prototypes and
+non-JSON number values before reading the capture. This is defense in depth
+for direct API callers; canonical JSON parsed from FD3 has no JavaScript
+accessor properties or shared references.
+
+**FD3 isolation is not yet independently proven.** The parent process passes
+FD3 to the trusted backend wrapper. That wrapper must compile and launch the
+guest in a separate child process with FD3 closed, capture native host-owned
+scheduler events through an authenticated private channel, and write the
+witness on FD3 itself. The Node launcher does not enforce that grandchild
+descriptor isolation, so FD3 JSON alone is not sufficient provenance.
