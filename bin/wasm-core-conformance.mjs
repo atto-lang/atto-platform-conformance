@@ -9,7 +9,10 @@ const options=Object.fromEntries(process.argv.slice(2).map(x=>{
 }));
 for(const key of ["wasm","manifest","browser-module"])
  if(!isAbsolute(options[key]||""))throw Error(key+" must be an absolute path");
-if(!/^-?[0-9]+$/.test(options["expected-i64"]||""))throw Error("expected-i64 must be an integer");
+const rawExpected=options["expected-i64"]||"";
+if(rawExpected.length>20||!/^(?:0|-?[1-9][0-9]*)$/.test(rawExpected)||
+   BigInt(rawExpected)<-(1n<<63n)||BigInt(rawExpected)>(1n<<63n)-1n)
+ throw Error("expected-i64 must be a canonical signed 64-bit integer");
 const child=fileURLToPath(new URL("../src/wasm-guest-child.mjs",import.meta.url));
 const run=spawnSync(process.execPath,[child,options.wasm,options.manifest,options["browser-module"],options["expected-i64"]],{
  timeout:5000,encoding:"utf8",maxBuffer:65536,windowsHide:true
