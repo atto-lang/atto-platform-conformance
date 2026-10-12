@@ -60,3 +60,10 @@ for (const [name, mutate, match] of [
     assert.throws(() => verifyRoundTrip(fixture), match);
   });
 }
+
+test('reject two incarnations of the same logical actor as distinct pipeline stages', () => {
+  const fixture=valid();
+  fixture.route[1].actorId = fixture.route[0].actorId;
+  fixture.route[1].incarnation = 2;
+  assert.throws(() => verifyRoundTrip(fixture), /distinct logical actors/);
+});
