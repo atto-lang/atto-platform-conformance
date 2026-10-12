@@ -32,7 +32,7 @@ function fileBytes(path, maxBytes=1024*1024) {
   }
   return readFileSync(path);
 }
-function parseCanonicalAudit(bytes) {
+export function parseCanonicalAudit(bytes) {
   if (!bytes || bytes.length > 262144 || bytes.length < 3) {
     throw new Error('one bounded host audit record required on fd 3');
   }
@@ -148,8 +148,11 @@ function argsMap(args) {
 export function main(argv) {
   const args=argsMap(argv);
   const {manifest,source}=loadManifest();
-  const authority=BACKENDS.map((_,i)=>JSON.parse(fileBytes(resolve(args.get(i?'--graal-authority':'--llvm-authority')),32768).toString('utf8')));
+  // Each trusted runtime may emit its registry authority during guest startup.
+  // Read the separately provisioned host authority files only after both runs.
+  // They must be generated before the corresponding guest DATA admission.
   const captures=BACKENDS.map((b,i)=>runBackend(resolve(args.get(i?'--graal-runner':'--llvm-runner')),b,manifest,source));
+  const authority=BACKENDS.map((_,i)=>JSON.parse(fileBytes(resolve(args.get(i?'--graal-authority':'--llvm-authority')),32768).toString('utf8')));
   return compareCaptures(captures[0],captures[1],manifest,authority[0],authority[1]);
 }
 if (process.argv[1] && resolve(process.argv[1])===fileURLToPath(import.meta.url)) {
