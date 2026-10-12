@@ -16,9 +16,17 @@ ownership remains live. The safe model excludes it.
 **Important limits:** bounded model checking does not prove Java, Native Image
 or LLVM refinement. The Java draft now distinguishes `get_shutdown_result()`
 (failed-drain reporting) from `get_done()` (physical finalization). That new
-revision still requires exact-source executed tests, and outstanding FFM loans
-must also be integrated into the production physical-release gate.
-An uncooperative finalizer is not guaranteed to terminate. No unconditional
-liveness claim is made. Production enforcement needs tracked FFM loans and
-explicit failed-drain observation. This model is a release gate, not a
-certificate for the runtime implementation.
+revision still requires exact-source executed tests. The latest Java draft
+now attempts to gate physical done on final native loan retirement, with a
+nonblocking wakeup callback and failed-Arena-close observation; this is
+**unverified** by funded JVM, Native Image or LLVM guest execution.
+
+The additional `NativeReleaseWake.tla` model explores loan release before,
+during or after actor memory retirement and the finalizer's pinned-byte
+check. `NativeReleaseWakeUnsafe.cfg` must produce a specific
+`NoLostWakeup` counterexample for an intentionally dropped callback.
+These are bounded abstract models, not executable refinement proofs.
+
+An uncooperative finalizer or FFM release failure is not guaranteed to
+terminate. No unconditional liveness claim is made. This model is a release
+gate, not a certificate for the production runtime implementation.
