@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -69,5 +69,25 @@ test('exact-tree verifier refuses dirty, staged, untracked and hidden-checkout f
   assert.throws(()=>verify(params),/hidden index entries/);
   git(repo,'update-index','--no-skip-worktree','source/main.ores');
   assert.equal(verify(params).status,'EXACT_TREE');
+ }finally{rmSync(repo,{recursive:true,force:true})}
+});
+
+test('tracked symlinks must not certify mutable source outside the pinned subtree',()=>{
+ const repo=mkdtempSync(join(tmpdir(),'mirror-symlink-'));
+ try{
+  git(repo,'init','-q');
+  git(repo,'config','user.name','CI Mirror Test');
+  git(repo,'config','user.email','ci@example.invalid');
+  mkdirSync(join(repo,'source'));
+  writeFileSync(join(repo,'outside.ores'),'fnc danger(): int { return 1; }\n');
+  symlinkSync('../outside.ores',join(repo,'source','main.ores'));
+  git(repo,'add','.');
+  git(repo,'commit','-qm','tracked symlink outside source subtree');
+  const params={repo,subtreePath:'source',
+   expectedTree:git(repo,'rev-parse','HEAD:source'),
+   blobs:[{path:'main.ores',sha:git(repo,'rev-parse','HEAD:source/main.ores')}]};
+  assert.throws(()=>verify(params),/symlink, gitlink or unexpected index/);
+  writeFileSync(join(repo,'outside.ores'),'fnc danger(): int { return 999; }\n');
+  assert.throws(()=>verify(params),/symlink, gitlink or unexpected index/);
  }finally{rmSync(repo,{recursive:true,force:true})}
 });
