@@ -1,3 +1,8 @@
+define enum Message as
+  Compute Tuple[string, int] 1
+  Result Tuple[string, int] 2
+end
+
 fnc compute_do(Message m): Message {
   do match m over {
     on Message.Compute as (text, n) {
