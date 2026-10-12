@@ -29,6 +29,15 @@ test("no success before physical turn finalizers and exact two-way admission",()
  reject(x,/completion before final physical turns|duplicate or premature/);
  x=dup();x.events[20].value=20;reject(x,/unauthorized completion/);
 });
+test("unpublished reservation is not falsely reported as admitted DATA",()=>{
+ const x=dup();
+ x.events=renumber([...x.events.slice(0,4),x.events[4],ctrl("stop",1)]);
+ const result=verifyPipelineTrace(x);
+ assert.equal(result.ok,true,result.errors.join("; "));
+ assert.equal(result.forwardAdmissions,0);
+ assert.equal(result.backwardAdmissions,0);
+ assert.equal(result.completions,0);
+});
 test("replayed publication, receipt, completion and wrong variant fail closed",()=>{
  for(const idx of [1,2,3,20]){
   const x=dup();x.events.splice(idx+1,0,{...x.events[idx]});x.events=renumber(x.events);
