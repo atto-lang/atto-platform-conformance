@@ -1,6 +1,6 @@
 # V2 compiled guest certification gate — DRAFT
 
-The signed-i64 candidate in this directory is **not yet compiled or executed on either backend**. It adapts the real compiled three-actor scalar guest in LLVM PR #180 into a new four-hop source fixture sending INT64_MIN twice downstream (A → B → C) and INT64_MAX twice upstream (C → B → A). The original LLVM scalar runs are valuable baseline evidence, but they do not certify these new bytes or Java/GraalVM behavior.
+The signed-i64 candidate now has **exact-source compiled LLVM guest execution** on a funded runner; Java/GraalVM execution of the same source and FD3 host audit/parity remain unverified. It adapts the real compiled three-actor scalar guest in LLVM PR #180 into a new four-hop source fixture sending INT64_MIN twice downstream (A → B → C) and INT64_MAX twice upstream (C → B → A). The original LLVM scalar runs provide the starting baseline. The new source's own LLVM execution is independently verified by funded run https://github.com/zed-pkg-test/java-app/actions/runs/38282112924; it does not certify Java/GraalVM behavior or FD3 host audit semantics.
 
 The source Git blob SHA-1 and normative V2 schema SHA-256 are pinned in manifest.json. The validator in ../validation/guest-parity.mjs requires real executions on **both** llvm-native and java-graalvm. Its unit tests deliberately use synthetic inputs and **are not runtime evidence**.
 
@@ -38,3 +38,11 @@ that can read the host filesystem, write FD3, or access inherited process
 privileges. Real guest certification still requires sandboxed runners,
 host-only audit descriptor authority, reviewed compiler/runtime provenance,
 and separately authenticated physical DONE receipts.
+
+## Real LLVM guest execution evidence
+
+Funded run: https://github.com/zed-pkg-test/java-app/actions/runs/38282112924
+
+The runner checked 162 LLVM compiler/runtime source Git blobs and the exact source Git blob SHA-1 above. It built the real LLVM compiler, compiled this precise guest to LLVM IR, linked the real native scheduler and MessagePack runtime, and executed the resulting binary. The guest exited 43, reported two typed forward and two backward hops, ended at INT64_MAX, recorded three physical actor STOP receipts, and closed its actor group with active=0. It emitted real native SOURCE_PIPELINE_ADMIT events with INT64_MIN along the data path and INT64_MAX on the reverse result path.
+
+**Evidence boundary:** the executed native compiler/runtime currently emits admission/STOP diagnostics on stderr; this is not the new structured host-audit FD3 interface. The current proof is executable LLVM single-flow signed-i64 boundary support, *not* a full V2 cross-backend runtime certification. The separately required Java/GraalVM same-source guest, trusted authority records and canonical FD3 trace are still pending.
