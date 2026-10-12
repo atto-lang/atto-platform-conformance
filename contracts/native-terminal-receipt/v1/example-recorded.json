@@ -1,0 +1,23 @@
+{
+  "supervisorId": 7331,
+  "logicalChildId": 1,
+  "logicalIncarnation": 1,
+  "originalParent": {
+    "schedulerDomain": 42,
+    "actorSlot": 0,
+    "generation": 1
+  },
+  "failure": {
+    "kind": "panic",
+    "child": {
+      "schedulerDomain": 42,
+      "actorSlot": 1,
+      "generation": 1
+    },
+    "failureCode": 9201,
+    "correlation": 443
+  },
+  "status": "recorded",
+  "claimNonce": 0,
+  "publishedToParent": false
+}
