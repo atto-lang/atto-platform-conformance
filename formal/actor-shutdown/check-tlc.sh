@@ -64,3 +64,32 @@ if ! grep -Eq 'Invariant NoLostWakeup is violated|NoLostWakeup.*violated' \
   exit 1
 fi
 echo NATIVE_RELEASE_WAKE_EXPECTED_MUTANT_COUNTEREXAMPLE
+
+java -Xmx1200m -cp "${TMP}/tla2tools.jar" tlc2.TLC \
+  -workers 2 -deadlock -config NativeRetirementCommit.cfg \
+  -metadir "${TMP}/retire-safe" NativeRetirementCommit.tla \
+  >"${TMP}/retire-safe.log" 2>&1 || {
+    cat "${TMP}/retire-safe.log"; exit 1;
+  }
+if grep -Eq 'Invariant .* is violated|Error:|Error in specification' "${TMP}/retire-safe.log"; then
+  cat "${TMP}/retire-safe.log"; exit 1
+fi
+grep -Eq 'Model checking completed|Model checking finished|Finished computing' \
+  "${TMP}/retire-safe.log" || { cat "${TMP}/retire-safe.log"; exit 1; }
+echo NATIVE_RETIREMENT_COMMIT_TLC_SAFE_PASS
+
+if java -Xmx1200m -cp "${TMP}/tla2tools.jar" tlc2.TLC \
+    -workers 2 -deadlock -config NativeRetirementCommitUnsafe.cfg \
+    -metadir "${TMP}/retire-unsafe" NativeRetirementCommit.tla \
+    >"${TMP}/retire-unsafe.log" 2>&1; then
+  cat "${TMP}/retire-unsafe.log"
+  echo 'Expected early-quota-refund mutant to violate NoRegisteredRegionAtDone' >&2
+  exit 1
+fi
+if ! grep -Eq 'Invariant NoRegisteredRegionAtDone is violated|NoRegisteredRegionAtDone.*violated' \
+  "${TMP}/retire-unsafe.log"; then
+  cat "${TMP}/retire-unsafe.log"
+  echo 'Retirement mutant failed for an unrelated reason' >&2
+  exit 1
+fi
+echo NATIVE_RETIREMENT_EXPECTED_MUTANT_COUNTEREXAMPLE
