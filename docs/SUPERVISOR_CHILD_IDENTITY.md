@@ -337,3 +337,72 @@ passed **18 exact Git blob checks, 13 Node tests, two TLC safety models
 (3,698 and 17,712 distinct states) and six expected unsafe mutations**.
 It proves the checked contract/model scope, *not* full Java/LLVM
 runtime execution or absence of the above scheduler lease race.
+
+
+## Scheduler-gated RESTART publication prototype (2026-10-11)
+
+Native draft PR #196 now introduces a scheduler-issued, thread-affine
+`OresNativeRestartLease` for **unpublished** replacement actor lanes.
+`spawn_unpublished` allocates a physical incarnation without allowing
+ordinary send, legacy index submission, or CONTROL delivery to reach it.
+`poll_ready` remains a physical readiness observation; the separate
+`poll_published` probe is required for initial child registration.
+
+During `NativeSupervisorPanicBridge::admit_verified_replacement`, the
+scheduler publication gate is acquired for the exact actor domain, slot,
+generation, and single-use nonce. The bridge then stages, verifies, and
+commits its registry and future PANIC-routing index before publishing
+normal scheduler routing. The guard is released on **every** exception
+path. STOP and global scheduler retirement coordinate on the same gate,
+so a successful physical readiness observation cannot become invalid
+in the middle of the identity transaction. A failed replacement must
+still reach physical DONE before the existing restart reservation is
+released.
+
+This first implementation deliberately uses a **single scheduler-wide
+host publication mutex**. It is a correctness-first prototype and can
+block native STOP/retirement callers while a host publication is running.
+A future per-slot or nonblocking admission mechanism is needed before
+claiming bounded-carrier or real-time scheduler behavior under arbitrary
+host callbacks. Do not call stop/retire from the lease-owning thread.
+No guest callback is invoked while holding the scheduler's *internal*
+mutex; registry transitions occur while the separate publication gate
+is held and must remain bounded and free of callbacks.
+
+**Important remaining blockers:**
+
+- Java/GraalVM still uses an observational BooleanSupplier admission
+  contract. Its actor-cell routing and shutdown must implement an
+  equivalent continuous scheduler-backed publication guard.
+- Native `SupervisorProcess::healthy()` is still observed separately
+  from registry publication. Prove or implement a corresponding
+  authoritative CONTROL-close/transaction barrier before enabling
+  general guest RESTART. The scheduler gate alone does **not** solve
+  supervisor CONTROL shutdown races.
+- The existing native preallocated scheduler cannot reincarnate
+  arbitrary actor slots. A restart candidate must use a fresh slot;
+  physical capacity exhaustion and long-term recycling policy remain.
+- The host publication gate is thread-affine. A stolen or replayed lease
+  must never unlock another host's gate; a failed release is fatal
+  instead of silently continuing with inconsistent authority.
+- Full native source CMake/CTest, bridge integration, Java Maven/native
+  image, TSan/jcstress, actual dual-backend trace comparison, crash
+  recovery, and guest source `self.restart(f.child)` are still release
+  gates, not established by a focused scheduler-only pass.
+
+**Executable evidence:** exact native scheduler header/C source/test
+were mirrored into private funded runner
+`3fa-app-test/account-recovery-security`, with `git hash-object`
+comparison before compilation. [Focused funded run #38192217815](https://github.com/3fa-app-test/account-recovery-security/actions/runs/38192217815)
+passed GCC strict builds (25 race runs) and Clang ASan/UBSan
+(10 race runs) on that checked revision. Subsequent hardening has
+different source hashes and requires an additional green exact-blob run.
+
+The separate bounded TLA+ `SupervisorAdmissionLease.tla` models
+lease publication competing with STOP and shutdown and has deliberately
+unsafe unleased-publication and retire-through-lease actions. The model
+assumes its publication transaction is infallible and does not prove
+Java/native refinement, progress under a blocked gate, or native
+supervisor CONTROL-close atomicity.
+
+All PRs remain draft; no general source RESTART/ESCALATE execution is enabled.
