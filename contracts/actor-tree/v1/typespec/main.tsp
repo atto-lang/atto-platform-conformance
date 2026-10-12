@@ -30,7 +30,7 @@ model ShutdownReceipt {
   shutdownResult: "pending" | "success" | "failure";
   @minValue(0) nativeLoans: int32;
   pendingCleanup: boolean;
-  children: ChildResourceState[];
+  @maxItems(1024) children: ChildResourceState[];
   failure?: ShutdownFailure;
 }
 
@@ -51,7 +51,7 @@ model LifecycleEvent {
 model LifecycleTrace {
   schemaVersion: "1.0.0";
   @minLength(1) traceId: string;
-  events: LifecycleEvent[];
+  @minItems(1) @maxItems(4096) events: LifecycleEvent[];
 }
 
 model TaggedI64 {
@@ -65,7 +65,7 @@ model TypedPipelineEnvelope {
   direction: "forward" | "backward";
   from: ActorIdentity;
   to: ActorIdentity;
-  @minValue(0) hopIndex: int32;
-  schemaHash: string;
+  @minValue(0) @maxValue(1024) hopIndex: int32;
+  @pattern("^[a-f0-9]{16}$") schemaHash: string;
   payload: TaggedI64;
 }
