@@ -1,0 +1,63 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {resolve} from 'node:path';
+import {compareCaptures, verifyCapture, gitBlobSha1} from './guest-parity.mjs';
+
+const manifest=JSON.parse(readFileSync(resolve(import.meta.dirname,'../guest/manifest.json'),'utf8'));
+const route=[
+  {runtimeId:'runtime-llvm',actorId:'stage/A',incarnation:1},
+  {runtimeId:'runtime-llvm',actorId:'stage/B',incarnation:1},
+  {runtimeId:'runtime-llvm',actorId:'stage/C',incarnation:1}
+];
+const values=manifest.expectedValues;
+function authority(runtimeId='runtime-llvm') {
+  return {expectedPipelineId:'trusted-pipeline-1', expectedSchemaHash:manifest.schemaHash,
+    expectedRoute:route.map(x=>({...x,runtimeId}))};
+}
+function audit(backend='llvm-native', runtimeId='runtime-llvm') {
+  const actors=route.map(x=>({...x,runtimeId}));
+  const steps=[[0,1,'forward'],[1,2,'forward'],[2,1,'backward'],[1,0,'backward']];
+  return {kind:'oreslang-v2-guest-audit', backend, sourceGitBlobSha1:manifest.sourceGitBlobSha1,
+    trace:{schemaVersion:'2.0.0',pipelineId:'trusted-pipeline-1',route:actors,
+      messages:steps.map(([from,to,direction],i)=>({
+        messageId:'msg-'+i,hopIndex:i,direction,
+        from:{...actors[from]},to:{...actors[to]},schemaHash:manifest.schemaHash,
+        payload:{variant:'Number',i64Decimal:values[i]}
+      }))},
+    physicalDone:actors.map(actor=>({actor:{...actor},done:true,cleanupDrained:true}))};
+}
+test('candidate guest fixture Git blob matches pinned SHA',()=>{
+  const source=readFileSync(resolve(import.meta.dirname,'../guest/three-actor-signed-i64.ores'));
+  assert.equal(gitBlobSha1(source),manifest.sourceGitBlobSha1);
+});
+test('synthetic positive verifier self-test normalizes different runtime IDs',()=>{
+  const result=compareCaptures(audit(),audit('java-graalvm','runtime-java'),
+      manifest,authority(),authority('runtime-java'));
+  assert.equal(result.status,'verified');
+  assert.deepEqual(result.values,values);
+});
+for(const [name,mutate] of [
+  ['missing physical DONE',e=>e.physicalDone.pop()],
+  ['duplicated DONE',e=>e.physicalDone[1]=structuredClone(e.physicalDone[0])],
+  ['incomplete cleanup',e=>e.physicalDone[2].cleanupDrained=false],
+  ['unknown evidence property',e=>e.isApproved=true],
+  ['source mismatch',e=>e.sourceGitBlobSha1='0'.repeat(40)],
+  ['replayed delivery',e=>e.trace.messages[3].messageId=e.trace.messages[0].messageId],
+  ['wrong direction',e=>e.trace.messages[2].direction='forward'],
+  ['forged actor incarnation',e=>e.trace.messages[3].to.incarnation=2],
+  ['wrong signed-64 result',e=>e.trace.messages[3].payload.i64Decimal='1'],
+  ['schema substitution',e=>e.trace.messages[0].schemaHash='f'.repeat(64)],
+]) {
+  test('gate rejects '+name,()=>{
+    const a=audit();mutate(a);
+    assert.throws(()=>verifyCapture(a,'llvm-native',manifest,authority()));
+  });
+}
+test('gate refuses backend swap and authority derived from a foreign route',()=>{
+  assert.throws(()=>verifyCapture(audit('java-graalvm'),'llvm-native',manifest,authority()));
+  assert.throws(()=>verifyCapture(audit(),'llvm-native',manifest,authority('other')));
+});
+test('both runtimes required; one valid trace cannot certify parity',()=>{
+  assert.throws(()=>compareCaptures(audit(),undefined,manifest,authority(),authority('runtime-java')));
+});
