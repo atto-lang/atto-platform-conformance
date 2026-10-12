@@ -8,5 +8,8 @@ fnc compute_value(Message m): Message {
     on Message.Compute as (text, n) {
       return Message.Result(text, n + 1);
     }
+    on Message.Result as (text, n) {
+      return Message.Result(text, n);
+    }
   };
 }
