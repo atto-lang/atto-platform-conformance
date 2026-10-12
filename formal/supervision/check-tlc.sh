@@ -109,4 +109,22 @@ for pair in "SupervisorStopABA.cfg:SupervisorStop" \
     exit 1
   fi
 done
+echo "One-shot restart permit safety: abort/re-reserve ABA"
+java -Xmx1200m -cp "${TMP}/tla2tools.jar" tlc2.TLC -workers 2 -deadlock -config SupervisorPermit.cfg -metadir "${TMP}/permit-safety" SupervisorPermit.tla 2>&1 | tee "${TMP}/permit-safety.log"
+if ! grep -Eq "Model checking completed|Model checking finished|Finished computing" "${TMP}/permit-safety.log"; then
+  echo "Permit safety model did not complete" >&2
+  exit 1
+fi
+echo "A stale permit committing a newer reservation MUST violate NoStalePermitCommit"
+if java -Xmx1200m -cp "${TMP}/tla2tools.jar" tlc2.TLC -workers 2 -deadlock -config SupervisorPermitMutant.cfg -metadir "${TMP}/permit-mutant" SupervisorPermit.tla > "${TMP}/permit-mutant.log" 2>&1; then
+  cat "${TMP}/permit-mutant.log"
+  echo "Stale permit mutant unexpectedly passed" >&2
+  exit 1
+fi
+if ! grep -Eq 'Invariant NoStalePermitCommit is violated|NoStalePermitCommit.*violated' "${TMP}/permit-mutant.log"; then
+  cat "${TMP}/permit-mutant.log"
+  echo "Stale permit mutation failed for unrelated reason" >&2
+  exit 1
+fi
+echo "EXPECTED_MUTANT_COUNTEREXAMPLE: NoStalePermitCommit"
 echo "SUPERVISOR_TLC_SAFETY_PASS"
