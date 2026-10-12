@@ -10,11 +10,20 @@ function id(value) { return typeof value === 'string' && value.length > 0 && val
 function pos(value) { return Number.isSafeInteger(value) && value > 0; }
 function sha(value) { return typeof value === 'string' && /^[a-f0-9]{40}$/.test(value); }
 
-export function verifySupervisorTrace(doc, { allowPrefix = false, verifyProof } = {}) {
+export function verifySupervisorTrace(doc, { allowPrefix = false, verifyProof,
+  expectedSourceSha, expectedBackend } = {}) {
   requireField(doc && typeof doc === 'object' && !Array.isArray(doc), 'invalid document');
   requireField(doc.schemaVersion === 2, 'unknown schema version');
   requireField(['java', 'llvm'].includes(doc.backend), 'invalid backend');
   requireField(sha(doc.sourceSha), 'source commit SHA is required');
+  // A JSON sourceSha field is unauthenticated by itself. CI/host callers must
+  // supply the SHA of the actual checkout, and fail closed on disagreement.
+  if (expectedSourceSha !== undefined)
+    requireField(sha(expectedSourceSha) && doc.sourceSha === expectedSourceSha,
+      'trace source SHA does not match verified checkout');
+  if (expectedBackend !== undefined)
+    requireField(['java', 'llvm'].includes(expectedBackend) && doc.backend === expectedBackend,
+      'trace backend does not match verified runtime');
   requireField(Array.isArray(doc.events) && doc.events.length > 0, 'missing events');
   requireField(typeof allowPrefix === 'boolean', 'invalid prefix option');
   const children = new Map(), supervisors = new Map(), usedActors = new Set(), usedPermits = new Set(), usedStopPermits = new Set();
