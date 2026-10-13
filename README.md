@@ -43,10 +43,28 @@ uploading a build artifact, the trusted mirror orchestrator must run:
 ```sh
 export GH_TOKEN="token-with-read-metadata-on-both-repositories"
 export ORES_APPROVED_PRIVATE_MIRRORS="akrion-sim/akrion-sim-e2e"
-node bin/require-private-mirror.mjs \
+node bin/private-mirror-publish.mjs \
   ores-truffle-oreslang/oreslang-source.java \
-  akrion-sim/akrion-sim-e2e
+  SOURCE_COMMIT_SHA40 \
+  akrion-sim/akrion-sim-e2e \
+  DESTINATION_BASE_COMMIT_SHA40 \
+  snapshots/source-sha \
+  ci/private-immutable-source-proof
 ```
+
+The **publisher** performs the same GitHub-verified visibility and allowlist
+checks *inside* its GitHub blob/tree/commit/ref write path. It pins an exact
+source commit, checks the recursive tree and individual blob SHA values, and
+creates only a **new isolated CI branch** (never overwrites an existing ref,
+main branch or an unapproved destination). Visibility is rechecked before
+every GitHub object/ref mutation. It cannot promise a truly atomic check-and-
+write with GitHub visibility changes; keep source/destination visibility
+admin privileges tightly controlled and revalidate before each run.
+
+The standalone `require-private-mirror.mjs` is available for diagnostics,
+but running that preflight by itself **does not** authorize a subsequent
+unprotected git push. Do not use generic copy/push commands in place of the
+guarded publisher.
 
 The CLI fails closed unless the source and destination both resolve as
 GitHub-verified **private** repositories and the destination is explicitly
