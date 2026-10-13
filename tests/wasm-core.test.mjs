@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {spawnSync} from "node:child_process";
 import {isAbsolute} from "node:path";
-const script=new URL("../bin/wasm-core-conformance.mjs",import.meta.url).pathname;
+import {fileURLToPath} from "node:url";
+const script=fileURLToPath(new URL("../bin/wasm-core-conformance.mjs",import.meta.url));
 test("cross-repo Wasm gate requires every exact artifact input",()=>{
  for(const argv of [
   [],
@@ -34,7 +35,8 @@ test("real Oreslang LLVM-to-Wasm-to-browser guest gate, opt-in and not faked",{
 
 test("duplicate CLI flags cannot replace a pinned artifact or adapter",()=>{
  for(const extra of ["--wasm=/other","--manifest=/other",
-  "--browser-module=/other","--expected-i64=7"]){
+  "--browser-module=/other","--browser-module-sha256="+"b".repeat(64),
+  "--expected-i64=7"]){
   const args=["--wasm=/missing.wasm","--manifest=/missing.json",
    "--browser-module=/missing.mjs","--browser-module-sha256="+"a".repeat(64),
    "--expected-i64=42",extra];
