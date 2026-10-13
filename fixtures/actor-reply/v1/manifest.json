@@ -5,7 +5,7 @@
     {
       "id": "actor-explicit-respond",
       "file": "explicit-respond.ores",
-      "sourceGitBlobSha1": "30835d8bbdf05ed2574908472b881f9244cefdc3",
+      "sourceGitBlobSha1": "08d3f21d8d7377523586e84ceeaa67c168c15411",
       "expect": "accept",
       "confirmedBackends": [],
       "pendingBackends": [
