@@ -116,6 +116,32 @@ export async function publishPrivateMirror({
     method:"POST",body:{base_tree:base.tree.sha,tree:entries},fetchImpl
   });
   sha(targetTree.sha);
+  // Verify GitHub materialized exactly the requested snapshot, rather than
+  // trusting only the tree creation response SHA. Refuse stale, missing or
+  // injected files before the tree becomes reachable from a commit or ref.
+  const materialized=await githubRequest(destination,
+    "/git/trees/"+targetTree.sha+"?recursive=1",token,{fetchImpl});
+  if(materialized?.truncated!==false||!Array.isArray(materialized.tree))
+    throw Error("materialized destination snapshot cannot be verified");
+  const expected=new Map(entries.map(e=>[e.path,e]));
+  let verified=0;
+  for(const item of materialized.tree){
+    if(typeof item?.path!=="string"||typeof item.type!=="string")
+      throw Error("invalid materialized snapshot tree entry");
+    if(item.path===prefix||!item.path.startsWith(prefix+"/"))continue;
+    if(item.type==="tree"){
+      if(!entries.some(e=>e.path.startsWith(item.path+"/")))
+        throw Error("materialized snapshot contains unexpected empty directory");
+      continue;
+    }
+    const want=expected.get(item.path);
+    if(item.type!=="blob"||!want||
+       item.sha!==want.sha||item.mode!==want.mode)
+      throw Error("materialized snapshot differs from pinned source blobs");
+    verified++;
+  }
+  if(verified!==entries.length)
+    throw Error("materialized snapshot omits pinned source blobs");
   await authorize();
   const result=await githubRequest(destination,"/git/commits",token,{
     method:"POST",body:{message:"ci: verified private source snapshot "+sourceCommit,
