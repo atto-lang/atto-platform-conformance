@@ -17,7 +17,7 @@ function fixture({sourceTree,blobSha=C,meta,errors}={}){
   const request=async(url,options)=>{
     const method=options.method,path=url.replace(/^https:\/\/api.github.com\/repos\//,"");
     events.push({path,method,body:options.body?JSON.parse(options.body):undefined});
-    const src=path.startsWith(source+"/"),name=src?source:destination;
+    const src=path===source||path.startsWith(source+"/"),name=src?source:destination;
     if(path===name){
       seen[src?"source":"destination"]++;
       const custom=meta?.(name,seen[src?"source":"destination"]);
