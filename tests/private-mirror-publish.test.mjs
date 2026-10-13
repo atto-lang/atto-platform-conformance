@@ -12,7 +12,7 @@ const opts={source,destination,sourceCommit:A,destinationBaseCommit:B,
 const good=name=>({full_name:name,private:true,visibility:"private",
   archived:false,permissions:{push:true}});
 
-function fixture({sourceTree,destinationTree,blobSha=C,refSha=E,meta,errors}={}){
+function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E,meta,errors}={}){
   const events=[],seen={source:0,destination:0};
   const request=async(url,options)=>{
     const method=options.method,path=url.replace(/^https:\/\/api.github.com\/repos\//,"");
@@ -36,6 +36,12 @@ function fixture({sourceTree,destinationTree,blobSha=C,refSha=E,meta,errors}={})
       if(suffix==="/git/commits/"+B)data={tree:{sha:E}};
       else if(suffix==="/git/trees/"+E+"?recursive=1")
         data=destinationTree||{truncated:false,tree:[{path:"unrelated/readme.txt",type:"blob"}]};
+      else if(suffix==="/git/trees/"+D+"?recursive=1")
+        data=materializedTree||{truncated:false,tree:[
+          {path:"snapshots",type:"tree"},
+          {path:"snapshots/checked",type:"tree"},
+          {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C}
+        ]};
       else if(suffix==="/git/blobs"&&method==="POST")
         data={sha:blobSha};
       else if(suffix==="/git/trees"&&method==="POST")
@@ -170,5 +176,27 @@ test("unsafe branch dot paths and lock-file suffixes are rejected before API acc
   const {h,promise}=run({}, {newBranch});
   await assert.rejects(promise,/isolated CI branch/);
   assert.equal(h.events.length,0);
+ }
+});
+
+test("materialized snapshot must contain exactly pinned blobs before a commit or ref",async()=>{
+ for(const tree of [
+  {truncated:true,tree:[]},
+  {truncated:false,tree:[]},
+  {truncated:false,tree:[{path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:D}]},
+  {truncated:false,tree:[
+    {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C},
+    {path:"snapshots/checked/injected.ores",type:"blob",mode:"100644",sha:D}
+  ]},
+  {truncated:false,tree:[
+    {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C},
+    {path:"snapshots/checked/stale",type:"tree"}
+  ]},
+  {truncated:false,tree:[{path:"snapshots/checked/main.ores",type:"blob",mode:"100755",sha:C}]}
+ ]){
+  const {h,promise}=run({materializedTree:tree});
+  await assert.rejects(promise,/materialized destination snapshot|materialized snapshot/);
+  assert.equal(h.events.some(x=>x.path===destination+"/git/commits"&&x.method==="POST"),false);
+  assert.equal(h.events.some(x=>x.path===destination+"/git/refs"&&x.method==="POST"),false);
  }
 });
