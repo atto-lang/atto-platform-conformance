@@ -114,3 +114,19 @@ test("transport, timeout, JSON and redirect failures never become approval", asy
 test("no permissive fallback exists if caller fails to supply a fetch implementation", async () => {
   await assert.rejects(check({fetchImpl: null}), /visibility lookup unavailable/);
 });
+
+test("transport and JSON parse errors redact credentials even if client errors include them", async () => {
+  const secret = "restricted-test-token";
+  for (const fetchImpl of [
+    async () => { throw Error("bad Authorization: Bearer " + secret); },
+    async () => ({status: 200, json: async () => {
+      throw Error("request Authorization Bearer " + secret);
+    }})
+  ]) {
+    await assert.rejects(check({fetchImpl}), error => {
+      assert.equal(error.message.includes(secret), false, "token leaked in error");
+      assert.match(error.message, /visibility lookup failed|metadata could not be decoded/);
+      return true;
+    });
+  }
+});
