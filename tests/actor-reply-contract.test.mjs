@@ -152,7 +152,14 @@ test("procedural actor grammar cannot be spoofed by comments or strings",async()
   actor.replace("self.respond(Message.Result(text, n + 1));",
    "return Message.Result(text, n + 1);"),
   // A catch-all arm cannot silently replace exhaustive variant handling.
-  actor.replace("on Message.Result as", "on Message.Compute as")
+  actor.replace("on Message.Result as", "on Message.Compute as"),
+  // The reply must be the declared Result variant, not another Compute.
+  actor.replace("self.respond(Message.Result(text, n + 1));",
+   '/* self.respond(Message.Result("decoy", 42)); */\n        self.respond(Message.Compute(text, n + 1));'),
+  // A second hidden receive overload is not part of this single-handler
+  // canonical fixture even if its parameter types differ.
+  actor.replace("\nend\n",
+   "\n  receive(ActorMail<int> other): void { return; }\nend\n")
  ];
  for(const [i,mutated] of mutations.entries()){
   assert.notEqual(mutated,actor,"mutation "+i+" did not modify source");
