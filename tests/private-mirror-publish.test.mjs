@@ -200,3 +200,37 @@ test("materialized snapshot must contain exactly pinned blobs before a commit or
   assert.equal(h.events.some(x=>x.path===destination+"/git/refs"&&x.method==="POST"),false);
  }
 });
+
+test("case-insensitive destination prefix collisions fail before source is copied",async()=>{
+ for(const entry of [
+  {path:"SNAPSHOTS/CHECKED/old.ores",type:"blob"},
+  {path:"Snapshots/Checked",type:"tree"},
+  {path:"SNAPSHOTS",type:"blob"}
+ ]){
+  const {h,promise}=run({destinationTree:{truncated:false,tree:[entry]}});
+  await assert.rejects(promise,/destination snapshot prefix/);
+  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+ }
+});
+test("case-insensitive colliding source paths and .GIT segments are rejected",async()=>{
+ for(const tree of [
+  {truncated:false,tree:[
+    {type:"blob",path:"Main.ores",sha:C,size:4,mode:"100644"},
+    {type:"blob",path:"main.ores",sha:C,size:4,mode:"100644"}
+  ]},
+  {truncated:false,tree:[{type:"blob",path:"src/.GIT/config",sha:C,size:4,mode:"100644"}]}
+ ]){
+  const {h,promise}=run({sourceTree:tree});
+  await assert.rejects(promise,/colliding source path|unsafe or oversized/);
+  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+ }
+});
+test("duplicate entries in materialized tree cannot disguise omitted source blobs",async()=>{
+ const tree={truncated:false,tree:[
+  {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C},
+  {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C}
+ ]};
+ const {h,promise}=run({materializedTree:tree});
+ await assert.rejects(promise,/materialized snapshot contains duplicate paths/);
+ assert.equal(h.events.some(e=>e.path===destination+"/git/refs"),false);
+});
