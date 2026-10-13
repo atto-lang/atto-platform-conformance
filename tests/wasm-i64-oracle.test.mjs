@@ -4,6 +4,7 @@ import {spawnSync} from "node:child_process";
 import {fileURLToPath} from "node:url";
 const script=fileURLToPath(new URL("../bin/wasm-core-conformance.mjs",import.meta.url));
 const base=["--wasm=/missing/guest.wasm","--manifest=/missing/artifact.json",
+ "--browser-module-sha256="+"a".repeat(64),
  "--browser-module=/missing/loader.mjs"];
 const args=x=>[...base,"--expected-i64="+x];
 test("signed Wasm oracle enforces strict canonical signed 64-bit range",()=>{
@@ -20,16 +21,14 @@ test("min/max signed i64 and full-width decimal values pass argument admission",
   assert.doesNotMatch(r.stderr,/canonical signed 64-bit integer/);
  }
 });
-test("ambiguous duplicate CLI arguments are refused for every option",()=>{
- for(const [key,first,second] of [
-  ["expected-i64","9223372036854775808","42"],
-  ["wasm","/missing/guest.wasm","/missing/other.wasm"],
-  ["manifest","/missing/artifact.json","/missing/other.json"],
-  ["browser-module","/missing/loader.mjs","/missing/other.mjs"]
+test("ambiguous duplicate CLI arguments are refused for every pinned option",()=>{
+ for(const [key,value] of [
+  ["expected-i64","43"],["wasm","/other.wasm"],
+  ["manifest","/other.json"],["browser-module","/other.mjs"],
+  ["browser-module-sha256","b".repeat(64)]
  ]){
-  const command=[...args("42"),"--"+key+"="+first,"--"+key+"="+second];
-  const result=spawnSync(process.execPath,[script,...command],{encoding:"utf8"});
-  assert.notEqual(result.status,0,key);
-  assert.match(result.stderr,new RegExp("duplicate wasm-core conformance argument: "+key),key);
+  const r=spawnSync(process.execPath,[script,...args("42"),"--"+key+"="+value],{encoding:"utf8"});
+  assert.notEqual(r.status,0,key);
+  assert.match(r.stderr,new RegExp("duplicate wasm-core conformance argument: "+key),key);
  }
 });
