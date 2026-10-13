@@ -47,7 +47,8 @@ export async function publishPrivateMirror({
   approvedDestinations,token,fetchImpl=fetch
 }) {
   sha(sourceCommit);sha(destinationBaseCommit);
-  if(!validPath(prefix)||!BRANCH.test(newBranch))throw Error("invalid destination prefix or isolated CI branch");
+  if(!validPath(prefix)||!BRANCH.test(newBranch)||newBranch.includes("..")||newBranch.endsWith(".lock"))
+    throw Error("invalid destination prefix or isolated CI branch");
   const authorize=()=>requirePrivateMirror({
     source,destination,approvedDestinations,token,fetchImpl
   });
@@ -81,6 +82,21 @@ export async function publishPrivateMirror({
   }
   const base=await githubRequest(destination,"/git/commits/"+destinationBaseCommit,token,{fetchImpl});
   if(!OID.test(base?.tree?.sha||""))throw Error("destination base is not an immutable commit");
+  // Git's base_tree PATCH-like behavior *preserves* unrelated entries.
+  // A pre-existing subtree at the chosen prefix could carry stale source
+  // code or injected files into the new snapshot without being overwritten.
+  // Demand an empty, isolated destination prefix before writing ANY blobs.
+  const baseInventory=await githubRequest(destination,
+    "/git/trees/"+base.tree.sha+"?recursive=1",token,{fetchImpl});
+  if(baseInventory?.truncated!==false||!Array.isArray(baseInventory.tree))
+    throw Error("destination base tree inventory is incomplete");
+  for(const item of baseInventory.tree){
+    if(typeof item?.path!=="string"||typeof item.type!=="string")
+      throw Error("invalid destination base tree entry");
+    if(item.path===prefix||item.path.startsWith(prefix+"/")||
+       (prefix.startsWith(item.path+"/")&&item.type!=="tree"))
+      throw Error("destination snapshot prefix is not empty or conflicts with existing path");
+  }
   const entries=[];
   for(const file of files){
     const srcBlob=await githubRequest(source,"/git/blobs/"+file.sha,token,{fetchImpl});
@@ -107,9 +123,15 @@ export async function publishPrivateMirror({
   });
   sha(result.sha);
   await authorize();
-  await githubRequest(destination,"/git/refs",token,{
+  const createdRef=await githubRequest(destination,"/git/refs",token,{
     method:"POST",body:{ref:"refs/heads/"+newBranch,sha:result.sha},fetchImpl
   });
+  if(createdRef?.ref!=="refs/heads/"+newBranch||createdRef?.object?.sha!==result.sha)
+    throw Error("new isolated CI ref confirmation mismatch");
+  const verifyRef=await githubRequest(destination,"/git/ref/heads/"+newBranch,
+    token,{fetchImpl});
+  if(verifyRef?.ref!==createdRef.ref||verifyRef?.object?.sha!==result.sha)
+    throw Error("isolated CI ref read-after-write mismatch");
   return Object.freeze({status:"PRIVATE_MIRROR_PUBLISHED",destination,newBranch,
     sourceCommit,commit:result.sha,blobs:files.length});
 }
