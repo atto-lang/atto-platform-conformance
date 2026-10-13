@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {createHash} from "node:crypto";
 import {readFile} from "node:fs/promises";
+import {assertCanonicalActorReceive} from "./helpers/actor-receive-fixture.mjs";
 const url=new URL("../fixtures/actor-reply/v1/",import.meta.url);
 const manifest=JSON.parse(await readFile(new URL("manifest.json",url),"utf8"));
 const canonicalCases=new Map([
@@ -77,10 +78,10 @@ test("all actor reply fixtures are byte-identical to versioned Git blobs",async(
 test("source proposal distinguishes actor reply effects from callable returns",async()=>{
  const load=async name=>readFile(new URL(name,url),"utf8");
  const actor=await load("explicit-respond.ores");
- // A receive handler performs delivery actions: it must use procedural
- // do match, not a discarded value-producing match expression.
- assert.match(actor,/\bdo match m over\s*\{/);
- assert.doesNotMatch(actor,/(?<!\bdo )\bmatch m over\s*\{/);
+ // Scan executable tokens, not raw text: comments, strings, nested
+ // braces, branch-local done calls, and out-of-order effects must not spoof
+ // the canonical procedural actor receive contract.
+ assert.equal(assertCanonicalActorReceive(actor),true);
  assert.match(actor,/self\.respond\(Message\.Result\(/);
  assert.match(actor,/self\.done\(\)/);
  assert.doesNotMatch(actor,/return Message\.Result/);
@@ -121,4 +122,36 @@ test("fixture JSON Schema vocabulary and closed-field contracts match the pinned
    assert.ok(schema.$defs.backend.enum.includes(backend));
  }
  assert.equal(schema.properties.hostReference.properties.compilerAdmission.const,false);
+});
+
+test("procedural actor grammar cannot be spoofed by comments or strings",async()=>{
+ const actor=await readFile(new URL("explicit-respond.ores",url),"utf8");
+ const mutations=[
+  // A non-executed comment must never satisfy the do match rule.
+  actor.replace("do match m over", "/* do match m over { */ match m over"),
+  actor.replace("do match m over", '"do match m over"; match m over'),
+  actor.replace("do match m over", "// do match m over\n    match m over"),
+  // An apparent done call in a comment is not a terminal delivery.
+  actor.replace("self.done();\n      }\n    }\n  }\nend",
+   "/* self.done(); */\n      }\n    }\n  }\nend"),
+  // One delivery may not complete twice.
+  actor.replace("self.done();", "self.done();\n        self.done();"),
+  // No reply or effect is permitted after the terminal done() call.
+  actor.replace("self.done();\n      }\n      on Message.Result",
+   'self.done();\n        self.respond(Message.Result("late", 3));\n      }\n      on Message.Result'),
+  // A reply must not be generated on the one-way Result branch.
+  actor.replace("on Message.Result as (text, n) {\n        self.done();",
+   'on Message.Result as (text, n) {\n        self.respond(Message.Result("wrong", 0));\n        self.done();'),
+  // Returning from receive is not a response, even inside do match.
+  actor.replace("self.respond(Message.Result(text, n + 1));",
+   "return Message.Result(text, n + 1);"),
+  // A catch-all arm cannot silently replace exhaustive variant handling.
+  actor.replace("on Message.Result as", "on Message.Compute as")
+ ];
+ for(const [i,mutated] of mutations.entries()){
+  assert.notEqual(mutated,actor,"mutation "+i+" did not modify source");
+  assert.throws(()=>assertCanonicalActorReceive(mutated),undefined,
+   "mutation "+i+" escaped scoped actor contract validation");
+ }
+ assert.equal(assertCanonicalActorReceive(actor),true);
 });
