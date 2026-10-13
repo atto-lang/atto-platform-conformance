@@ -21,8 +21,8 @@
     },
     "cases": {
       "type": "array",
-      "minItems": 5,
-      "maxItems": 5,
+      "minItems": 6,
+      "maxItems": 6,
       "items": {
         "$ref": "#/$defs/case"
       }
@@ -82,7 +82,8 @@
             "return-match-value",
             "do-match-value",
             "reject-implicit-void-return",
-            "reject-double-response"
+            "reject-double-response",
+            "reject-do-match-void-return"
           ]
         },
         "file": {
