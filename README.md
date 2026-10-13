@@ -34,4 +34,33 @@ When no backend command is supplied, the run exits non-success with explicit UNC
 
 **Security**: never mirror private compiler source into public repos. Same-org private GitHub repositories are not automatically readable with the test repo GITHUB_TOKEN. Use authorized credentials or approved private exact-tree CI mirroring; keep SHA evidence and delete temporary mirrors.
 
+### Mandatory pre-copy private-carrier gate
+
+Git blob identity is only an **integrity** proof. It does not authorize publication.
+Before invoking *any* GitHub write, copying a private blob, creating test refs or
+uploading a build artifact, the trusted mirror orchestrator must run:
+
+```sh
+export GH_TOKEN="token-with-read-metadata-on-both-repositories"
+export ORES_APPROVED_PRIVATE_MIRRORS="akrion-sim/akrion-sim-e2e"
+node bin/require-private-mirror.mjs \
+  ores-truffle-oreslang/oreslang-source.java \
+  akrion-sim/akrion-sim-e2e
+```
+
+The CLI fails closed unless the source and destination both resolve as
+GitHub-verified **private** repositories and the destination is explicitly
+allowlisted, not archived and writable by the credential. A 403, missing token,
+unknown visibility, non-approved repo, `internal` or `public` destination, and
+malformed metadata are all failures. Do not print the token, copy source on
+failure, or "retry" by switching to a public carrier.
+
+Do not allow a workflow that runs only *after* a push to substitute for
+the mandatory **before-copy** admission decision. Execute the gate immediately
+before the mirror operation, using trusted credentials and a locked-down
+destination whose privacy cannot change independently during the copy. This
+preflight is not a cure for historically exposed Git objects; incident response
+and GitHub Support may be required. See
+[security incident #22](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22).
+
 See https://ores-truffle-oreslang.github.io/logs/2/
