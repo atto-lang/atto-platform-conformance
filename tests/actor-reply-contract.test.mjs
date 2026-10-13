@@ -77,6 +77,10 @@ test("all actor reply fixtures are byte-identical to versioned Git blobs",async(
 test("source proposal distinguishes actor reply effects from callable returns",async()=>{
  const load=async name=>readFile(new URL(name,url),"utf8");
  const actor=await load("explicit-respond.ores");
+ // A receive handler performs delivery actions: it must use procedural
+ // do match, not a discarded value-producing match expression.
+ assert.match(actor,/\bdo match m over\s*\{/);
+ assert.doesNotMatch(actor,/(?<!\bdo )\bmatch m over\s*\{/);
  assert.match(actor,/self\.respond\(Message\.Result\(/);
  assert.match(actor,/self\.done\(\)/);
  assert.doesNotMatch(actor,/return Message\.Result/);
