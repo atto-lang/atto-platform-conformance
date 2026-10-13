@@ -2,9 +2,12 @@
 import {spawnSync} from "node:child_process";
 import {isAbsolute} from "node:path";
 import {fileURLToPath} from "node:url";
+const seen=new Set();
 const options=Object.fromEntries(process.argv.slice(2).map(x=>{
  const m=/^--(wasm|manifest|browser-module|expected-i64)=(.+)$/.exec(x);
  if(!m)throw Error("unexpected wasm-core conformance argument: "+x);
+ if(seen.has(m[1]))throw Error("duplicate wasm-core conformance argument: "+m[1]);
+ seen.add(m[1]);
  return [m[1],m[2]];
 }));
 for(const key of ["wasm","manifest","browser-module"])
