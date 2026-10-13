@@ -66,6 +66,19 @@
         "wasm",
         "browser-worker"
       ]
+    },
+    {
+      "id": "reject-do-match-void-return",
+      "file": "invalid-do-match-void-return.ores",
+      "sourceGitBlobSha1": "a1cccde82d9287c0eac6025230eca91879477b2a",
+      "expect": "reject",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "browser-worker"
+      ]
     }
   ],
   "hostReference": {
