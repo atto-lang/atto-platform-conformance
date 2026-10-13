@@ -70,6 +70,9 @@ function assertTerminalDone(body,variant){
   throw Error("Compute must call self.respond() exactly once");
  if(variant==="Result"&&responses.total!==0)
   throw Error("Result one-way branch cannot respond");
+ if(variant==="Compute"&&body.slice(responses.last,responses.last+8).join(" ")!==
+     "self . respond ( Message . Result (")
+  throw Error("Compute must respond with Message.Result");
  for(const operation of ["forward","send","end"]){
   if(countCall(body,operation).total)throw Error("canonical fixture contains unexpected self."+operation);
  }
@@ -82,6 +85,10 @@ function assertTerminalDone(body,variant){
  */
 export function assertCanonicalActorReceive(source) {
  const tokens=fixtureTokens(source);
+ // This is a single canonical actor source fixture. A hidden second receiver
+ // with a different type must not evade the exact signature check below.
+ const receiveNames=tokens.filter((x,i)=>x==="receive"&&tokens[i+1]==="(").length;
+ if(receiveNames!==1)throw Error("canonical actor must declare exactly one receive");
  const starts=[];
  for(let i=0;i+7<tokens.length;i++){
   if(tokens.slice(i,i+8).join(" ")==="receive ( Message m ) : void {")
