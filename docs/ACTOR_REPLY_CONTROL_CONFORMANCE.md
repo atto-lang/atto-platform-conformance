@@ -41,3 +41,22 @@ fixture to its exact Git blob and separately assert these preconditions.
 This is fixture hygiene, **not** confirmation that any compiler accepts the
 proposed syntax or that negative cases fail for the claimed diagnostic. Real
 backend outcomes remain pending until executable compiler tests are recorded.
+
+## Procedural syntax audit gates
+
+The canonical actor `receive` fixture is checked by a lightweight,
+comment/string-aware lexical scanner (`tests/helpers/actor-receive-fixture.mjs`).
+It requires `do match` as the only receiver body statement, two exhaustive
+`Compute` / `Result` arms, an exactly-once terminal `self.done()` in
+each arm, a `Compute` reply before `done()`, and no reply on the one-way
+`Result` arm. Adversarial test mutations cover comments and strings that
+pretend to contain `do match`, omitted/duplicate `done()` calls, late
+responses, and a callable `return` in the receiving arm.
+
+The distinct negative fixture `invalid-do-match-void-return.ores` asserts
+that even a **procedural** `do match` cannot return a `Message.Result`
+value from `receive(...): void`. That is separate from the negative
+`return match` fixture. This scanner verifies only canonical test source
+hygiene; it does **not** parse or typecheck arbitrary Oreslang programs.
+The actual compiler backends must establish their own grammar, type, effect,
+message-reply and control-flow proofs before any admission is promoted.
