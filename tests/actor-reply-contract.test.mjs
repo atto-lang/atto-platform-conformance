@@ -158,8 +158,8 @@ test("procedural actor grammar cannot be spoofed by comments or strings",async()
    '/* self.respond(Message.Result("decoy", 42)); */\n        self.respond(Message.Compute(text, n + 1));'),
   // A second hidden receive overload is not part of this single-handler
   // canonical fixture even if its parameter types differ.
-  actor.replace("\nend\n",
-   "\n  receive(ActorMail<int> other): void { return; }\nend\n")
+  actor.slice(0,actor.lastIndexOf("\nend\n"))+
+   "\n  receive(ActorMail<int> other): void { return; }\nend\n"
  ];
  for(const [i,mutated] of mutations.entries()){
   assert.notEqual(mutated,actor,"mutation "+i+" did not modify source");
