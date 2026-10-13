@@ -14,7 +14,7 @@ const BRANCH=/^ci\/private-[A-Za-z0-9][A-Za-z0-9._-]{0,75}$/;
 
 function validPath(path) {
   return typeof path==="string" && path.length<=512 && PATH.test(path) &&
-    path.split("/").every(x=>x!=="."&&x!==".."&&x!==".git");
+    path.split("/").every(x=>x!=="."&&x!==".."&&x.toLowerCase()!==".git");
 }
 function sha(value) {
   if(typeof value!=="string"||!OID.test(value))throw Error("invalid immutable Git commit or blob SHA");
@@ -69,8 +69,9 @@ export async function publishPrivateMirror({
        !["100644","100755"].includes(file.mode)||
        !Number.isSafeInteger(file.size)||file.size<0||file.size>1048576)
       throw Error("unsafe or oversized private source tree entry");
-    if(paths.has(file.path))throw Error("duplicate source path");
-    paths.add(file.path);
+    const folded=file.path.toLowerCase();
+    if(paths.has(folded))throw Error("duplicate or cross-platform-colliding source path");
+    paths.add(folded);
     totalBytes+=file.size;
     if(totalBytes>41943040)throw Error("private mirror exceeds 40MiB limit");
   }
@@ -93,8 +94,10 @@ export async function publishPrivateMirror({
   for(const item of baseInventory.tree){
     if(typeof item?.path!=="string"||typeof item.type!=="string")
       throw Error("invalid destination base tree entry");
-    if(item.path===prefix||item.path.startsWith(prefix+"/")||
-       (prefix.startsWith(item.path+"/")&&item.type!=="tree"))
+    // Prevent silent overlay on case-insensitive macOS/Windows checkouts.
+    const current=item.path.toLowerCase(), wanted=prefix.toLowerCase();
+    if(current===wanted||current.startsWith(wanted+"/")||
+       (wanted.startsWith(current+"/")&&item.type!=="tree"))
       throw Error("destination snapshot prefix is not empty or conflicts with existing path");
   }
   const entries=[];
@@ -125,6 +128,7 @@ export async function publishPrivateMirror({
     throw Error("materialized destination snapshot cannot be verified");
   const expected=new Map(entries.map(e=>[e.path,e]));
   let verified=0;
+  const seenMaterialized=new Set();
   for(const item of materialized.tree){
     if(typeof item?.path!=="string"||typeof item.type!=="string")
       throw Error("invalid materialized snapshot tree entry");
@@ -135,6 +139,9 @@ export async function publishPrivateMirror({
       continue;
     }
     const want=expected.get(item.path);
+    if(seenMaterialized.has(item.path))
+      throw Error("materialized snapshot contains duplicate paths");
+    seenMaterialized.add(item.path);
     if(item.type!=="blob"||!want||
        item.sha!==want.sha||item.mode!==want.mode)
       throw Error("materialized snapshot differs from pinned source blobs");
