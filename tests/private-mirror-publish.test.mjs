@@ -12,7 +12,7 @@ const opts={source,destination,sourceCommit:A,destinationBaseCommit:B,
 const good=name=>({full_name:name,private:true,visibility:"private",
   archived:false,permissions:{push:true}});
 
-function fixture({sourceTree,blobSha=C,meta,errors}={}){
+function fixture({sourceTree,destinationTree,blobSha=C,refSha=E,meta,errors}={}){
   const events=[],seen={source:0,destination:0};
   const request=async(url,options)=>{
     const method=options.method,path=url.replace(/^https:\/\/api.github.com\/repos\//,"");
@@ -34,6 +34,8 @@ function fixture({sourceTree,blobSha=C,meta,errors}={}){
         data={sha:C,encoding:"base64",content:"NDI7Cg==",size:4};
     } else {
       if(suffix==="/git/commits/"+B)data={tree:{sha:E}};
+      else if(suffix==="/git/trees/"+E+"?recursive=1")
+        data=destinationTree||{truncated:false,tree:[{path:"unrelated/readme.txt",type:"blob"}]};
       else if(suffix==="/git/blobs"&&method==="POST")
         data={sha:blobSha};
       else if(suffix==="/git/trees"&&method==="POST")
@@ -41,7 +43,9 @@ function fixture({sourceTree,blobSha=C,meta,errors}={}){
       else if(suffix==="/git/commits"&&method==="POST")
         data={sha:E};
       else if(suffix==="/git/refs"&&method==="POST")
-        data={ref:options.body?JSON.parse(options.body).ref:undefined};
+        data={ref:options.body?JSON.parse(options.body).ref:undefined,object:{sha:refSha}};
+      else if(suffix==="/git/ref/heads/"+opts.newBranch&&method==="GET")
+        data={ref:"refs/heads/"+opts.newBranch,object:{sha:refSha}};
     }
     if(!data)throw Error("unexpected mock request "+path);
     return{status:method==="POST"?201:200,json:async()=>data};
@@ -66,6 +70,8 @@ test("real destination Git-object publisher guards every write and only creates 
  assert.deepEqual(writes[1].body.tree,[{
   path:"snapshots/checked/main.ores",mode:"100644",type:"blob",sha:C}]);
  assert.ok(h.seen.source>=5&&h.seen.destination>=5,"reverify before every write");
+ assert.ok(h.events.some(e=>e.path===destination+"/git/ref/heads/"+opts.newBranch),
+   "verify CI ref persisted with pinned SHA");
 });
 test("public destinations fail BEFORE fetching private source or writing anything",async()=>{
  const {h,promise}=run({meta:(name)=>name===destination?{...good(name),private:false,visibility:"public"}:good(name)});
@@ -128,4 +134,41 @@ test("GitHub API errors redact response body and bearer tokens",async()=>{
   return true;
  });
  assert.equal(h.events.some(e=>e.path===destination+"/git/refs"),false);
+});
+
+test("pre-existing destination files under snapshot prefix are rejected before any source blob publication",async()=>{
+ for(const existing of [
+   {path:"snapshots/checked",type:"tree"},
+   {path:"snapshots/checked/old-source.ores",type:"blob"},
+   {path:"snapshots",type:"blob"}
+ ]){
+   const {h,promise}=run({destinationTree:{truncated:false,tree:[existing]}});
+   await assert.rejects(promise,/destination snapshot prefix/);
+   assert.equal(h.events.some(e=>e.path===source+"/git/blobs/"+C),false);
+   assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+ }
+});
+test("incomplete destination base tree cannot be treated as empty",async()=>{
+ for(const inventory of [
+  {truncated:true,tree:[]},
+  {truncated:false,tree:null},
+  {truncated:false,tree:[null]}
+ ]){
+   const {h,promise}=run({destinationTree:inventory});
+   await assert.rejects(promise,/destination base tree inventory|invalid destination base tree/);
+   assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+ }
+});
+test("publication confirms GitHub-created ref SHA and separately reads it back",async()=>{
+ const {h,promise}=run({refSha:D});
+ await assert.rejects(promise,/new isolated CI ref confirmation mismatch/);
+ assert.equal(h.events.some(e=>e.path===destination+"/git/refs"),true);
+ assert.equal(h.events.some(e=>e.path===destination+"/git/ref/heads/"+opts.newBranch),false);
+});
+test("unsafe branch dot paths and lock-file suffixes are rejected before API access",async()=>{
+ for(const newBranch of ["ci/private-foo..bar","ci/private-foo.lock"]){
+  const {h,promise}=run({}, {newBranch});
+  await assert.rejects(promise,/isolated CI branch/);
+  assert.equal(h.events.length,0);
+ }
 });
