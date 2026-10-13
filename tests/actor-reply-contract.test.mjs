@@ -10,7 +10,8 @@ const canonicalCases=new Map([
  ["return-match-value",["return-match-value.ores","accept"]],
  ["do-match-value",["do-match-value.ores","accept"]],
  ["reject-implicit-void-return",["invalid-implicit-void-return.ores","reject"]],
- ["reject-double-response",["invalid-double-response.ores","reject"]]
+ ["reject-double-response",["invalid-double-response.ores","reject"]],
+ ["reject-do-match-void-return",["invalid-do-match-void-return.ores","reject"]]
 ]);
 function assertCanonicalCaseMatrix(cases){
  assert.ok(Array.isArray(cases));
@@ -97,6 +98,11 @@ test("source proposal distinguishes actor reply effects from callable returns",a
  const doubled=await load("invalid-double-response.ores");
  assert.equal((doubled.match(/self\.respond\s*\(/g)||[]).length,2);
  assert.match(doubled,/self\.done\(\)/);
+ const invalidDo=await load("invalid-do-match-void-return.ores");
+ assert.match(invalidDo,/receive\(Message m\): void/);
+ assert.match(invalidDo,/do match m over/);
+ assert.match(invalidDo,/return Message\.Result\(/);
+ assert.equal((invalidDo.match(/self\.done\(\)/g)||[]).length,2);
 });
 
 
