@@ -20,20 +20,32 @@ function repoName(value) {
 }
 
 async function repoMetadata(name, token, fetchImpl) {
-  const response = await fetchImpl("https://api.github.com/repos/" + name, {
-    method: "GET",
-    redirect: "error",
-    headers: {
-      "Accept": "application/vnd.github+json",
-      "Authorization": "Bearer " + token,
-      "X-GitHub-Api-Version": "2022-11-28"
-    },
-    signal: AbortSignal.timeout(5000)
-  });
+  let response;
+  try {
+    response = await fetchImpl("https://api.github.com/repos/" + name, {
+      method: "GET",
+      redirect: "error",
+      headers: {
+        "Accept": "application/vnd.github+json",
+        "Authorization": "Bearer " + token,
+        "X-GitHub-Api-Version": "2022-11-28"
+      },
+      signal: AbortSignal.timeout(5000)
+    });
+  } catch {
+    // Transport diagnostics are untrusted. Never propagate a library error
+    // whose message could contain an Authorization header or access token.
+    throw Error("GitHub repository visibility lookup failed (" + name + ")");
+  }
   if (!response || response.status !== 200) {
     throw Error("GitHub repository visibility is unverifiable (" + name + ")");
   }
-  const result = await response.json();
+  let result;
+  try {
+    result = await response.json();
+  } catch {
+    throw Error("GitHub repository metadata could not be decoded (" + name + ")");
+  }
   if (!result || result.full_name !== name ||
       typeof result.private !== "boolean" ||
       !["public", "internal", "private"].includes(result.visibility)) {
