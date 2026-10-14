@@ -33,3 +33,26 @@ on a prior authorized write denial; LLVM's documented compiler does **not**
 implement this expression/Option/string/stdio subset, so it must remain pending.
 The original source-fixture tests are still separately valid; no backend is
 marked confirmed by adding this evidence gate.
+
+## CI invocation for an actual backend
+
+Use the fail-closed CLI `node bin/value-match-evidence.mjs` with all required
+arguments: `--backend=java-graalvm`, `--source-sha=<exact-40-char-commit>`,
+`--check-argv=<JSON string array>`, `--run-argv=<JSON string array>`,
+and optional `--timeout-ms=15000`. The executable in each JSON array must
+have an **absolute path** and the source path appears as one standalone
+`{file}` element, not part of an interpolated shell command.
+
+For a locally built Java classpath, the check command can use
+`java -cp <built-classpath> dev.oreslang.launcher.OresMain --check {file}`
+and the run command can use the same launcher without `--check`. Translate
+that example to absolute executable paths and JSON argument arrays. The
+commands are **not automatically available or executed** by this repository.
+No environment credentials or shell command substitutions are required.
+
+The CLI returns 0 only when all six exact-source compilation decisions and
+all three runtime observations agree with the contract. Exit 1 means a failed
+verdict; exit 2 means malformed input or unavailable executable. The output
+always identifies itself as **unattested**, regardless of exit status. A
+separate trusted build pipeline must independently verify the compiler
+binary's provenance before endorsing any backend.
