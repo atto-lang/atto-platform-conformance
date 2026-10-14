@@ -41,7 +41,8 @@ export function validateRealCompilerReport(r) {
   requireField(!r.runner_sha || r.runner_sha === r.source_commit_declared, "CI source mismatch");
   requireField(r.source_commit_binary_link_attested === false, "unsupported attestation claim");
   requireField(r.compiler_verification === "real-process-observation-only", "unsupported verification class");
-  requireField(typeof r.compiler_sha256 === "string" && sha256.test(r.compiler_sha256), "missing compiler digest");
+  requireField(typeof r.process_invoker_sha256 === "string" && sha256.test(r.process_invoker_sha256), "missing process invoker digest");
+  requireField(typeof r.compiler_artifact_sha256 === "string" && sha256.test(r.compiler_artifact_sha256), "missing compiler artifact digest");
   requireField(typeof r.compiler_path === "string" && isAbsolute(r.compiler_path), "missing compiler path");
   requireField(Array.isArray(r.cases) && r.cases.length === 2, "expected exactly two cases");
   const [positive, negative] = r.cases;
@@ -50,10 +51,14 @@ export function validateRealCompilerReport(r) {
   requireField(negative.source_sha256 === sourceHash(negatives), "negative fixture modified");
   requireField(good(positive.compile), "positive source was not accepted");
   if (r.backend === "java") {
+    requireField(r.compiler_artifact_kind === "java-launcher-class-only" &&
+      r.compiler_artifact_sha256 === r.launcher_class_sha256, "Java compiler artifact identity mismatch");
     requireField(sha256.test(r.launcher_class_sha256 ?? "") &&
       sha256.test(r.maven_classpath_sha256 ?? "") &&
       sha256.test(r.java_probe_sha256 ?? ""), "missing Java launcher provenance");
   } else {
+    requireField(r.compiler_artifact_kind === "llvm-native-executable" &&
+      r.compiler_artifact_sha256 === r.process_invoker_sha256, "native artifact/invoker mismatch");
     requireField(sha256.test(r.clang_sha256 ?? ""), "missing clang identity");
     requireField(typeof positive.compile.stdout === "string" &&
       positive.compile.stdout.includes("define ") && positive.compile.stdout.includes("main"), "not LLVM IR");
