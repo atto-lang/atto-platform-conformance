@@ -34,4 +34,51 @@ When no backend command is supplied, the run exits non-success with explicit UNC
 
 **Security**: never mirror private compiler source into public repos. Same-org private GitHub repositories are not automatically readable with the test repo GITHUB_TOKEN. Use authorized credentials or approved private exact-tree CI mirroring; keep SHA evidence and delete temporary mirrors.
 
+### Mandatory pre-copy private-carrier gate
+
+Git blob identity is only an **integrity** proof. It does not authorize publication.
+Before invoking *any* GitHub write, copying a private blob, creating test refs or
+uploading a build artifact, the trusted mirror orchestrator must run:
+
+```sh
+export GH_TOKEN="token-with-read-metadata-on-both-repositories"
+export ORES_APPROVED_PRIVATE_MIRRORS="akrion-sim/akrion-sim-e2e"
+node bin/private-mirror-publish.mjs \
+  ores-truffle-oreslang/oreslang-source.java \
+  SOURCE_COMMIT_SHA40 \
+  akrion-sim/akrion-sim-e2e \
+  DESTINATION_BASE_COMMIT_SHA40 \
+  snapshots/source-sha \
+  ci/private-immutable-source-proof
+```
+
+The **publisher** performs the same GitHub-verified visibility and allowlist
+checks *inside* its GitHub blob/tree/commit/ref write path. It pins an exact
+source commit, checks the recursive tree and individual blob SHA values, and
+creates only a **new isolated CI branch** (never overwrites an existing ref,
+main branch or an unapproved destination). Visibility is rechecked before
+every GitHub object/ref mutation. It cannot promise a truly atomic check-and-
+write with GitHub visibility changes; keep source/destination visibility
+admin privileges tightly controlled and revalidate before each run.
+
+The standalone `require-private-mirror.mjs` is available for diagnostics,
+but running that preflight by itself **does not** authorize a subsequent
+unprotected git push. Do not use generic copy/push commands in place of the
+guarded publisher.
+
+The CLI fails closed unless the source and destination both resolve as
+GitHub-verified **private** repositories and the destination is explicitly
+allowlisted, not archived and writable by the credential. A 403, missing token,
+unknown visibility, non-approved repo, `internal` or `public` destination, and
+malformed metadata are all failures. Do not print the token, copy source on
+failure, or "retry" by switching to a public carrier.
+
+Do not allow a workflow that runs only *after* a push to substitute for
+the mandatory **before-copy** admission decision. Execute the gate immediately
+before the mirror operation, using trusted credentials and a locked-down
+destination whose privacy cannot change independently during the copy. This
+preflight is not a cure for historically exposed Git objects; incident response
+and GitHub Support may be required. See
+[security incident #22](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22).
+
 See https://ores-truffle-oreslang.github.io/logs/2/
