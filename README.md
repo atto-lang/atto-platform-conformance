@@ -2,6 +2,16 @@
 
 Cross-platform, **evidence-first** language and runtime conformance suite. A harness that has not run a real compiler must never claim parity.
 
+## Real compiler evidence adapter (proposed integration)
+
+A private compiler build can produce a narrow two-fixture JSON smoke report using the companion changes in [Java PR #953](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/953) and [LLVM PR #383](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/383). This repo adds a **non-promoting** consistency checker:
+
+```sh
+node bin/inspect-real-evidence.mjs /path/to/approved-report.json
+```
+
+See [the real compiler evidence policy](docs/REAL_COMPILER_EVIDENCE.md). The report must come from an independently reviewed real compiler run; the JSON adapter itself cannot authenticate an external run, and **a passing schema check does not demonstrate language correctness or parity**.
+
 ## Current deliverable
 
 - Versioned fixture manifest and minimal positive/negative .ores sources.
