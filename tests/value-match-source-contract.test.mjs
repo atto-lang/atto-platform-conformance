@@ -118,6 +118,21 @@ function has(t,...pattern){return t.some((_,i)=>pattern.every((v,j)=>t[i+j]===v)
 function assertSourceShape(file,src){
  assert.ok(expected.has(file));
  const t=executableTokens(src);
+ // A token-level inventory is not a compiler, but it must never accept
+ // fixtures with missing "over", changed match operands or injected matches.
+ const introductions={
+  "value-option-braced.ores":[["return","match","value","over","{"]],
+  "value-vs-procedural.ores":[["val","int","x","=","match","input","over","{"],["do","match","input","over","{"]],
+  "value-guard-over-end.ores":[["return","match","value","over"]],
+  "reject-nonexhaustive.ores":[["return","match","input","over","{"]],
+  "reject-mismatched-types.ores":[["return","match","input","over","{"]],
+  "reject-no-value.ores":[["return","match","input","over","{"]]
+ };
+ assert.equal(t.filter(x=>x==="match").length,introductions[file].length,
+  "unexpected extra or missing executable match construct");
+ for(const intro of introductions[file]){
+  assert.ok(has(t,...intro),"invalid or spoofed match introduction: "+file);
+ }
  assert.ok(has(t,"match")&&has(t,"return"),"missing executable match or return");
  if(file!=="value-vs-procedural.ores")assert.ok(has(t,"return","match"),"missing return match");
  switch(file){
@@ -164,7 +179,17 @@ test("executable fixture syntax cannot be spoofed by comments or string literals
   ["reject-mismatched-types.ores",s=>s.replace('"wrong"','"valid"')],
   ["reject-no-value.ores",s=>s.replace("return;", "/* return; */")],
   ["value-option-braced.ores",s=>s+" /* unterminated"],
-  ["value-option-braced.ores",s=>s+" {"]
+  ["value-option-braced.ores",s=>s+" {"],
+  // Previously undetected false positives: missing over, changed operands,
+  // an extra executable match and a procedural arm targeting another value.
+  ["value-option-braced.ores",s=>s.replace("return match value over","return match value")],
+  ["value-option-braced.ores",s=>s.replace("return match value over","return match other over")],
+  ["value-option-braced.ores",s=>s.replace("return match value over","return match value over /* decoy */ match")],
+  ["value-vs-procedural.ores",s=>s.replace("do match input over","do match other over")],
+  ["value-vs-procedural.ores",s=>s.replace("val int x = match input over","val int x = match input")],
+  ["value-guard-over-end.ores",s=>s.replace("return match value over","return match other over")],
+  ["reject-nonexhaustive.ores",s=>s.replace("return match input over","return match input")],
+  ["reject-no-value.ores",s=>s.replace("return match input over","return match other over")]
  ];
  for(const [file,mutate] of mutations){
   const src=await read(file),altered=mutate(src);
