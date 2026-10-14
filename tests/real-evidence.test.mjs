@@ -16,7 +16,10 @@ function fixture(backend = "llvm") {
   return {
     schema_version: 1, evidence_type: "real-compiler-smoke", backend,
     source_commit_declared: "a".repeat(40), source_commit_binary_link_attested: false,
-    runner_sha: "a".repeat(40), compiler_path: "/opt/compiler", compiler_sha256: "a".repeat(64),
+    runner_sha: "a".repeat(40), compiler_path: "/opt/compiler",
+    process_invoker_sha256: "a".repeat(64),
+    compiler_artifact_sha256: backend === "java" ? "b".repeat(64) : "a".repeat(64),
+    compiler_artifact_kind: backend === "java" ? "java-launcher-class-only" : "llvm-native-executable",
     compiler_verification: "real-process-observation-only",
     launcher_class_sha256: "b".repeat(64), maven_classpath_sha256: "c".repeat(64),
     java_probe_sha256: "d".repeat(64), clang_sha256: "e".repeat(64),
@@ -48,6 +51,7 @@ test("rejection requires observed error diagnostics, not a crash or pretend succ
 test("reject missing provenance, changed fixture, timeout, false success or invalid IR", () => {
   for (const mutation of [
     r => r.source_commit_binary_link_attested = true,
+    r => r.compiler_artifact_sha256 = "f".repeat(64),
     r => r.runner_sha = "f".repeat(40),
     r => r.cases[0].source_sha256 = "0".repeat(64),
     r => r.cases[0].compile.timeout = true,
