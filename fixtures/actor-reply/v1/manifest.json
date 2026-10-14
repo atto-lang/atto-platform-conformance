@@ -5,7 +5,7 @@
     {
       "id": "actor-explicit-respond",
       "file": "explicit-respond.ores",
-      "sourceGitBlobSha1": "30835d8bbdf05ed2574908472b881f9244cefdc3",
+      "sourceGitBlobSha1": "08d3f21d8d7377523586e84ceeaa67c168c15411",
       "expect": "accept",
       "confirmedBackends": [],
       "pendingBackends": [
@@ -58,6 +58,19 @@
       "id": "reject-double-response",
       "file": "invalid-double-response.ores",
       "sourceGitBlobSha1": "1ddbdd6b2e846914209a509912cba445593f074d",
+      "expect": "reject",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "browser-worker"
+      ]
+    },
+    {
+      "id": "reject-do-match-void-return",
+      "file": "invalid-do-match-void-return.ores",
+      "sourceGitBlobSha1": "a1cccde82d9287c0eac6025230eca91879477b2a",
       "expect": "reject",
       "confirmedBackends": [],
       "pendingBackends": [

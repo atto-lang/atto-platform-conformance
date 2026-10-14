@@ -1,0 +1,19 @@
+define enum Message as
+  Compute Tuple[string, int] 1
+  Result Tuple[string, int] 2
+end
+
+define actor WorkerActor as
+  @Implements
+  receive(Message m): void {
+    do match m over {
+      on Message.Compute as (text, n) {
+        self.done();
+        return Message.Result(text, n + 1);
+      }
+      on Message.Result as (text, n) {
+        self.done();
+      }
+    }
+  }
+end
