@@ -7,7 +7,7 @@ The shared platform-conformance harness currently tests its own runner with a fa
 - Java/GraalVM: `oreslang-source.java/.github/workflows/graal-conformance.yml` executes `scripts/ai-conformance-smoke.py` using the built Java launcher through the reviewed Python probe.
 - LLVM: `oreslang-source.llvm/.github/workflows/llvm-conformance.yml` executes `scripts/ai-conformance-smoke.py` using `build/oreslang-llvmc`, then asks clang to link the generated IR and runs the resulting executable.
 - Each producer tests `main()` returning 42 and a rejected reference to `nonexistent_symbol`. Positive source acceptance plus runtime result, and a real negative compiler diagnostic, are separately required.
-- Producers record exact argv, process outputs and exit status, selected backend, source fixture SHA-256, compiler/launcher digest, source checkout SHA and CI run identity. Timeouts and truncated results fail closed.
+- Producers record exact argv, process outputs and exit status, selected backend, source fixture SHA-256, compiler artifact digest (native executable for LLVM, Java launcher class for Graal), process-invoker digest, source checkout SHA and CI run identity. Timeouts and truncated results fail closed. Process output is captured in temporary files to avoid unbounded in-memory buffering; these are not OS-level network or filesystem sandboxes.
 
 ## Ingesting an approved, sanitized artifact
 
