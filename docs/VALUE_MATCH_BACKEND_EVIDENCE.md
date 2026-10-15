@@ -8,9 +8,17 @@ placeholders, and requires the exact **40-character source Git commit SHA** clai
 by the invoker.
 
 It verifies all **six canonical Git blobs** and the closed pending-backend manifest
-*before executing anything*. It requires the checker to accept three positives
+*before executing anything*. It retains the verified byte buffers, stages them in
+a private temporary directory with create-only file writes, and gives the compiler
+**only those snapshot paths**. This prevents a concurrent modification to the
+repository fixture from changing the source executed after its SHA check.
+Snapshot SHA-256 is also reported per result. It requires the checker to accept three positives
 and to reject each of the three negatives for its specific semantic diagnostic
 (not just an "unsupported match", a crash, a timeout or a generic failure).
+Negative diagnostics must originate on **stderr** with the expected semantic
+error class; guest stdout and unrelated diagnostic text cannot satisfy them.
+A zero-exit compiler or runtime invocation that emits an error diagnostic on
+stderr must not be counted as passing, even when its stdout otherwise matches.
 The runner must emit **exact** stdout for the two runnable fixture files:
 `42:0` and `142:42`.
 

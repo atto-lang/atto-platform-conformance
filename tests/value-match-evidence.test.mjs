@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-import {basename} from "node:path";
+import {basename,dirname} from "node:path";
+import {createHash} from "node:crypto";
 import {runValueMatchEvidence,validateEvidenceCommand} from "../src/value-match-evidence.mjs";
 
 const sha="012345678901234567890123456789abcdefabcd";
@@ -113,4 +114,73 @@ test("source SHA, backend, argv and timeout must all be validated",async()=>{
    ["/bin/echo","{file}","{output}"],["/bin/echo","bad\0arg","{file}"]]){
   assert.throws(()=>validateEvidenceCommand(argv));
  }
+});
+
+test("checker receives private, immutable staged bytes rather than the original source path",async()=>{
+ let checks=0,runs=0;
+ const spawn=(exe,args)=>{
+  const file=args.at(-1),base=basename(file);
+  assert.match(dirname(file),/ores-vmatch-/,"backend did not receive a private snapshot");
+  if(base.endsWith(".ores")&&base!=="guard-with-entrypoint.ores"){
+   const canonical=new URL("../fixtures/value-match/v1/"+base,import.meta.url);
+   const expected=readFileSync(canonical),observed=readFileSync(file);
+   assert.deepEqual(observed,expected,"backend source differs from SHA-pinned bytes");
+   if(args.includes("--check"))checks++;
+   else runs++;
+  }
+  return fixtureMock(exe,args);
+ };
+ const r=await invoke({spawn});
+ assert.equal(r.ok,true);
+ assert.equal(checks,6);
+ assert.equal(runs,2);
+ for(const item of r.results)assert.match(item.fixtureSha256,/^[0-9a-f]{64}$/);
+});
+test("negative source errors appearing only on stdout are never compiler proof",async()=>{
+ const spawn=(exe,args)=>{
+  if(args.includes("--check")&&basename(args.at(-1))==="reject-no-value.ores")
+   return {status:1,signal:null,stdout:diagnostics["reject-no-value.ores"],stderr:""};
+  return fixtureMock(exe,args);
+ };
+ const r=await invoke({spawn});
+ assert.equal(r.ok,false);
+ assert.equal(r.results.find(x=>x.id==="reject-no-value").status,"CHECK_MISMATCH");
+});
+test("successful exit with compiler errors on stderr never counts as admitted or executed",async()=>{
+ for(const phase of ["--check","--run"]){
+  const spawn=(exe,args)=>{
+   const file=basename(args.at(-1));
+   if(args.includes(phase)&&file==="value-option-braced.ores"){
+    return {status:0,signal:null,
+      stdout:phase==="--run"?"42:0":"",
+      stderr:"error: value match arm type mismatch"};
+   }
+   return fixtureMock(exe,args);
+  };
+  const r=await invoke({spawn});
+  assert.equal(r.ok,false,phase);
+  assert.equal(r.results.find(x=>x.id==="value-option-braced").status,
+   phase==="--check"?"CHECK_MISMATCH":"OUTPUT_MISMATCH");
+ }
+});
+test("rejections emitting extraneous stdout do not satisfy exact compiler contract",async()=>{
+ const spawn=(exe,args)=>{
+  if(args.includes("--check")&&basename(args.at(-1))==="reject-no-value.ores")
+   return {status:1,signal:null,stdout:"partial guest output",
+     stderr:diagnostics["reject-no-value.ores"]};
+  return fixtureMock(exe,args);
+ };
+ const r=await invoke({spawn});
+ assert.equal(r.ok,false);
+ assert.equal(r.results.find(x=>x.id==="reject-no-value").status,"CHECK_MISMATCH");
+});
+test("runtime stdout matching expected output is not green if it also reports a crash",async()=>{
+ const spawn=(exe,args)=>{
+  if(args.includes("--run")&&basename(args.at(-1))==="value-option-braced.ores")
+   return {status:0,signal:null,stdout:"42:0",stderr:"assertion failed"};
+  return fixtureMock(exe,args);
+ };
+ const r=await invoke({spawn});
+ assert.equal(r.ok,false);
+ assert.equal(r.results[0].status,"CRASH");
 });

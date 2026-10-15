@@ -52,20 +52,27 @@ function validateManifest(m){
  }
  if(m.evidence?.exactFixtureExecution!==false)throw Error("manifest execution claim requires independent attestation");
 }
+function hasCompilerErrorDiagnostic(p){
+ // Error lines from stderr, not guest stdout or source echoed in a log.
+ return (p.stderr||"").split(/\r?\n/).some(line=>
+  /^\s*(?:error\b|oreslang:\s*(?!warning\b|info\b|notice\b)|oreslang\s+(?:parse|type)\s+error\b)/i.test(line));
+}
 function processFailure(p){
  if(p?.error)return p.error.code==="ETIMEDOUT"?"TIMEOUT":"SPAWN_ERROR";
  if(p?.signal)return "SIGNALED";
  if(!Number.isInteger(p?.status)||p.status<0)return "INVALID_EXIT";
- if(/\b(?:panic|segmentation fault|uncaught exception|fatal error|stack trace)\b/i.test(p.stderr||""))return "CRASH";
+ if(/\b(?:panic|segmentation fault|uncaught exception|fatal error|stack trace|stacktrace|assertion failed|aborted|core dumped)\b/i.test((p.stderr||"")+"\n"+(p.stdout||"")))return "CRASH";
  return null;
 }
 function invoke(spawn,argv,file,timeoutMs){
  return spawn(argv[0],argv.slice(1).map(x=>x==="{file}"?file:x),{encoding:"utf8",timeout:timeoutMs,maxBuffer:1048576,shell:false,windowsHide:true});
 }
 function correctRejection(p,name){
- if(p.status===0)return false;
- return ((p.stderr||"")+"\n"+(p.stdout||"")).split(/\r?\n/).some(line=>
-  /^\s*(?:error\b|oreslang:\s*|oreslang\s+(?:parse|type)\s+error\b)/i.test(line)&&DIAGNOSTICS[name].test(line));
+ if(p.status===0||!hasCompilerErrorDiagnostic(p)||p.stdout)return false;
+ // Require a specific, stderr-emitted semantic error. Generic compiler
+ // failures or quoted guest output must not count as correct rejection.
+ return p.stderr.split(/\r?\n/).some(line=>
+  /^\s*(?:error\b|oreslang:\s*(?!warning\b|info\b|notice\b)|oreslang\s+(?:parse|type)\s+error\b)/i.test(line)&&DIAGNOSTICS[name].test(line));
 }
 /**
  * Requires a real executable compiler/checker and runtime command (never shell).
@@ -81,7 +88,7 @@ export async function runValueMatchEvidence({backend,sourceSha,checkArgv,runArgv
  for(const [name,expect,sha,stdout] of FIXTURES){
   const bytes=await readFile(join(root,name));
   if(gitBlob(bytes)!==sha)throw Error("mutated fixture: "+name);
-  files.push({name,expect,sha,stdout});
+  files.push({name,expect,sha,stdout,bytes,sha256:sha256(bytes)});
  }
  const configured=Boolean(checkArgv&&runArgv);
  const info={backend,declaredSourceSha:sourceSha||null,configured,attested:false,
@@ -95,26 +102,32 @@ export async function runValueMatchEvidence({backend,sourceSha,checkArgv,runArgv
  try{
   dir=await mkdtemp(join(tmpdir(),"ores-vmatch-"));
   for(const f of files){
-   const path=join(root,f.name);
+   // Work from the verified byte snapshot, never the mutable source path:
+   // fixture edits after SHA verification cannot change compiler inputs.
+   const path=join(dir,f.name);
+   await writeFile(path,f.bytes,{mode:0o600,flag:"wx"});
    const checked=invoke(spawn,checkArgv,path,timeoutMs);
    const error=processFailure(checked);
-   const admitted=!error&&(f.expect==="accept"?checked.status===0:correctRejection(checked,f.name));
-   if(!admitted){results.push({id:f.name.slice(0,-5),status:error||"CHECK_MISMATCH",stage:"compile",fixtureGitBlobSha1:f.sha});continue}
+   const admitted=!error&&(f.expect==="accept"?
+     checked.status===0&&!hasCompilerErrorDiagnostic(checked) : correctRejection(checked,f.name));
+   if(!admitted){results.push({id:f.name.slice(0,-5),status:error||"CHECK_MISMATCH",stage:"compile",fixtureGitBlobSha1:f.sha,fixtureSha256:f.sha256});continue}
    checksPassed++;
-   if(f.expect==="reject"){results.push({id:f.name.slice(0,-5),status:"VERIFIED_REJECTION",stage:"compile",fixtureGitBlobSha1:f.sha});continue}
+   if(f.expect==="reject"){results.push({id:f.name.slice(0,-5),status:"VERIFIED_REJECTION",stage:"compile",fixtureGitBlobSha1:f.sha,fixtureSha256:f.sha256});continue}
    let runPath=path, supplementalHarness=false;
    if(f.name==="value-guard-over-end.ores"){
     runPath=join(dir,"guard-with-entrypoint.ores");
-    await writeFile(runPath,(await readFile(path,"utf8"))+"\n"+harness+"\n","utf8");
+    await writeFile(runPath,f.bytes.toString("utf8")+"\n"+harness+"\n",{mode:0o600,flag:"wx"});
     supplementalHarness=true;
    }
    const executed=invoke(spawn,runArgv,runPath,timeoutMs);
    const runtimeError=processFailure(executed);
    const output=executed.stdout||"";
-   const exact=!runtimeError&&executed.status===0&&output===f.stdout;
+   const exact=!runtimeError&&executed.status===0&&
+    !hasCompilerErrorDiagnostic(executed)&&output===f.stdout;
    if(exact)runsPassed++;
    results.push({id:f.name.slice(0,-5),status:exact?"VERIFIED_OUTPUT":runtimeError||"OUTPUT_MISMATCH",
-    stage:"runtime",fixtureGitBlobSha1:f.sha,supplementalHarness,expectedStdout:f.stdout,observedStdoutSha256:sha256(Buffer.from(output,"utf8"))});
+    stage:"runtime",fixtureGitBlobSha1:f.sha,fixtureSha256:f.sha256,supplementalHarness,
+    expectedStdout:f.stdout,observedStdoutSha256:sha256(Buffer.from(output,"utf8"))});
   }
  }finally{if(dir)await rm(dir,{recursive:true,force:true})}
  return {...info,ok:checksPassed===6&&runsPassed===3&&results.length===6,
