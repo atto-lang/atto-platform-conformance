@@ -28,3 +28,10 @@ Private source repositories must remain private. Do not clone, mirror or publish
 ## Current status
 
 No backend has yet been admitted into the public supported-feature matrix by this adapter. Even a successful two-case smoke only proves **that narrow fixture subset under one configuration**, not ownership, actors, portable runtime behavior, or Java/LLVM semantic parity.
+
+## Cross-repository audit corrections
+
+- Real LLVM output executes a zero-argument native binary; the report validator permits a single-element runtime argv and rejects an empty argv. The prior >=2-argument rule was incorrect.
+- Real Java reports use Python as the process invoker and the compiled OresMain class as the limited compiler-artifact fingerprint. The validator does not mistake the Python hash for the compiler digest.
+- Report consistency now links compiler invocation to the exact positive/negative fixture paths and links LLVM's output binary to the Clang link target. These syntactic checks **do not authenticate a forged JSON report**.
+- The producer subprocess runner enforces bounded output capture and terminates process groups on timeout. This does not provide a sandbox: private CI hosts still need explicit limits on privileges, network and filesystem.
