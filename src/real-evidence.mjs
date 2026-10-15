@@ -27,8 +27,11 @@ function good(p) { return validateProcess(p, "positive").exit_code === 0; }
 function rejected(p) {
   validateProcess(p, "negative");
   const combined = p.stdout + "\n" + p.stderr;
-  return p.exit_code > 0 && combined.includes("nonexistent_symbol") &&
-    /\b(error|undefined|undeclared|unresolved|unknown)\b|not found|cannot find/i.test(combined) &&
+  // A separate fixture echo and unrelated process error must not qualify.
+  const diagnosticLine = combined.split(/\r?\n/).some(line =>
+    line.includes("nonexistent_symbol") &&
+    /\b(error|undefined|undeclared|unresolved|unknown)\b|not found|cannot find/i.test(line));
+  return p.exit_code > 0 && diagnosticLine &&
     !/\b(segmentation fault|stack trace|traceback|fatal signal)\b/i.test(combined);
 }
 
