@@ -76,6 +76,8 @@ test("reject command-to-source and linker-to-executable mismatches", () => {
     r => r.cases[0].compile.argv[0] = "/tmp/other-compiler",
     r => { r.cases[1].compile.argv[r.cases[1].compile.argv.length - 1] = "/tmp/positive.ores"; },
     r => r.cases[0].link.argv[5] = "/tmp/wrong-binary",
+    r => { r.cases[1].compile.argv[1] = "/other/negative.ores"; },
+    r => { r.cases[0].link.argv[3] = "/other/app.ll"; },
     r => r.cases[0].link.argv[2] = "c",
   ];
   for (const attack of attacks) {
