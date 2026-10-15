@@ -122,6 +122,13 @@ export async function publishPrivateMirror({
     if(srcBlob?.sha!==file.sha||srcBlob.encoding!=="base64"||
        typeof srcBlob.content!=="string"||srcBlob.size!==file.size)
       throw Error("source blob content identity or encoding mismatch");
+    // Bound the RAW API payload before normalizing it: an attacker-controlled
+    // response full of whitespace must not allocate an unbounded replacement
+    // string. GitHub line-wraps base64, so allow ample newline slack (1/32)
+    // beyond the canonical payload while bounding a 1MiB blob near 1.5MiB.
+    const canonicalMax=4*Math.ceil(file.size/3);
+    if(srcBlob.content.length>canonicalMax+Math.ceil(file.size/32)+256)
+      throw Error("source blob transport payload exceeds pinned size budget");
     // Verify the transport representation BEFORE copying private bytes.
     // Node's base64 decoder alone is permissive of malformed/trailing data;
     // require a canonical round-trip and the pinned Git tree's byte length.
