@@ -34,7 +34,9 @@ function fixture(backend = "llvm") {
     launcher_class_sha256: "b".repeat(64), maven_classpath_sha256: "c".repeat(64),
     java_probe_sha256: "d".repeat(64), clang_sha256: "e".repeat(64),
     cases: [
-      { id: "positive", source_sha256: digest(positive), compile, link: good(["/usr/bin/clang", "-x", "ir", "/tmp/app.ll", "-o", "/tmp/app"], 0),
+      { id: "positive", source_sha256: digest(positive), compile,
+        llvm_ir_sha256: digest(compile.stdout), linked_native_sha256: "f".repeat(64),
+        post_execution_native_sha256: "f".repeat(64), link: good(["/usr/bin/clang", "-x", "ir", "/tmp/app.ll", "-o", "/tmp/app"], 0),
         execution: good(backend === "java"
           ? ["/opt/compiler", "/opt/java_probe.py", "/tmp/positive.ores", "--execute"]
           : ["/tmp/app"], 42), passed: true },
@@ -111,6 +113,10 @@ test("reject missing provenance, changed fixture, timeout, false success or inva
     r => r.cases[0].execution.exit_code = 0,
     r => r.ok = false,
     r => r.cases[0].compile.stdout = "not real LLVM",
+    r => r.cases[0].llvm_ir_sha256 = "0".repeat(64),
+    r => r.cases[0].linked_native_sha256 = "0".repeat(64),
+    r => r.cases[0].post_execution_native_sha256 = "0".repeat(64),
+    r => { delete r.cases[0].linked_native_sha256; },
   ]) {
     const r = fixture(); mutation(r);
     assert.throws(() => validateRealCompilerReport(r));
