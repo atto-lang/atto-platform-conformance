@@ -13,7 +13,7 @@ function requireField(condition, message) {
 
 function validateProcess(p, label) {
   requireField(p && typeof p === "object" && !Array.isArray(p), label + " process missing");
-  requireField(Array.isArray(p.argv) && p.argv.length >= 2 &&
+  requireField(Array.isArray(p.argv) && p.argv.length >= 1 &&
     p.argv.every(x => typeof x === "string" && x.length && !x.includes("\0")) &&
     isAbsolute(p.argv[0]), label + " argv invalid");
   requireField(p.timeout === false && p.output_truncated === false, label + " timeout/truncation");
