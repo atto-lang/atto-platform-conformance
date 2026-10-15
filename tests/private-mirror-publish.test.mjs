@@ -148,6 +148,27 @@ test("missing approvals and unsafe ref/path reject without contacting GitHub",as
   assert.equal(h.events.length,0);
  }
 });
+test("snapshot prefix never places mirrored source into GitHub workflow or root paths",async()=>{
+ // A source file named workflows/run.yml would become a runnable workflow
+ // under .github/workflows/ if the caller could choose the .github prefix.
+ // Reject all non-snapshot roots before even querying GitHub visibility.
+ for(const prefix of [
+  ".github", ".github/workflows", ".GITHUB/workflows",
+  "workflows", "src", "mirror", "snapshot", "snapshots",
+  "docs/snapshots", "snapshots/.github/../workflows"
+ ]){
+  const {h,promise}=run({}, {prefix});
+  await assert.rejects(promise,/invalid destination prefix/);
+  assert.equal(h.events.length,0,"untrusted prefix must fail before any network access");
+ }
+ // Approved private mirror fixtures retain one nested inert prefix.
+ const {h,promise}=run();
+ await promise;
+ const tree=h.events.find(x=>x.path===destination+"/git/trees"&&x.method==="POST");
+ assert.ok(tree);
+ assert.ok(tree.body.tree.every(x=>x.path.startsWith("snapshots/checked/")));
+});
+
 test("untrusted source tree types and truncated trees never cause destination writes",async()=>{
  for(const tree of [
   {truncated:true,tree:[]},
