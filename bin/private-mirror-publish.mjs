@@ -6,6 +6,7 @@
  * never overwrites an existing ref or writes to the destination main branch.
  */
 import {pathToFileURL} from "node:url";
+import {createHash} from "node:crypto";
 import {requirePrivateMirror} from "./require-private-mirror.mjs";
 
 const OID=/^[a-f0-9]{40}$/;
@@ -134,10 +135,18 @@ export async function publishPrivateMirror({
     // require a canonical round-trip and the pinned Git tree's byte length.
     const encoded=srcBlob.content.replace(/\s/g,"");
     if(encoded.length>Math.ceil(file.size/3)*4+4||
-       !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(encoded)||
-       Buffer.from(encoded,"base64").length!==file.size||
-       Buffer.from(encoded,"base64").toString("base64")!==encoded)
+       !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(encoded))
       throw Error("source blob payload is not valid pinned base64");
+    const bytes=Buffer.from(encoded,"base64");
+    if(bytes.length!==file.size||bytes.toString("base64")!==encoded)
+      throw Error("source blob payload is not valid pinned base64");
+    // GitHub's response sha is a claim, not independent evidence that the
+    // encoded bytes match the pinned source Git object. Calculate the exact
+    // Git blob SHA-1 locally BEFORE copying any confidential bytes.
+    const actualBlobSha=createHash("sha1")
+      .update("blob "+bytes.length+"\0").update(bytes).digest("hex");
+    if(actualBlobSha!==file.sha)
+      throw Error("source blob bytes differ from pinned Git SHA");
     // Recheck confidentiality and the reviewed destination-main base
     // BEFORE every Git object mutation, including unreferenced blob writes.
     await authorize();
