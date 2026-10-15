@@ -47,7 +47,13 @@ export async function publishPrivateMirror({
   approvedDestinations,token,fetchImpl=fetch
 }) {
   sha(sourceCommit);sha(destinationBaseCommit);
-  if(!validPath(prefix)||!BRANCH.test(newBranch)||newBranch.includes("..")||newBranch.endsWith(".lock"))
+  // Snapshot files must never be placed at the destination repository root.
+  // In particular a caller-selected ".github" prefix could copy an
+  // untrusted source "workflows/*.yml" into executable GitHub Actions
+  // configuration on the temporary branch. Keep ALL mirrors under an
+  // isolated, non-executable repository subtree.
+  if(!validPath(prefix)||!prefix.startsWith("snapshots/")||
+     !BRANCH.test(newBranch)||newBranch.includes("..")||newBranch.endsWith(".lock"))
     throw Error("invalid destination prefix or isolated CI branch");
   const authorize=()=>requirePrivateMirror({
     source,destination,approvedDestinations,token,fetchImpl
