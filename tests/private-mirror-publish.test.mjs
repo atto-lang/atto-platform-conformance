@@ -197,6 +197,12 @@ test("malformed source blob base64 is denied before destination writes",async()=
   await assert.rejects(promise,/source blob payload is not valid pinned base64/);
   assert.equal(h.events.filter(e=>e.method==="POST").length,0);
  }
+ // An oversized untrusted API response must not cause unbounded allocation
+ // when stripping whitespace or any destination blob publication.
+ const oversized=run({sourceBlobContent:" ".repeat(4096)+"NDI7Cg=="});
+ await assert.rejects(oversized.promise,
+   /source blob transport payload exceeds pinned size budget/);
+ assert.equal(oversized.h.events.filter(e=>e.method==="POST").length,0);
  // GitHub may line-wrap a valid blob. Canonical normalization is still safe.
  const {h,promise}=run({sourceBlobContent:"NDI7\nCg=="});
  await promise;
