@@ -54,6 +54,7 @@ test("rejects public, internal, contradictory, archived and unwritable destinati
     {...good(destination), private: true, visibility: "internal"},
     {...good(destination), private: true, visibility: "public"},
     {...good(destination), archived: true},
+    {...good(destination), default_branch: "unreviewed-branch"},
     {...good(destination), permissions: {push: false}},
     {...good(destination), permissions: undefined}
   ]) {
