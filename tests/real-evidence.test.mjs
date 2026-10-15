@@ -25,7 +25,7 @@ function fixture(backend = "llvm") {
   return {
     schema_version: 1, evidence_type: "real-compiler-smoke", backend,
     source_commit_declared: "a".repeat(40), source_commit_binary_link_attested: false,
-    runner_sha: "a".repeat(40), compiler_path: "/opt/compiler",
+    runner_sha: "a".repeat(40), actual_git_checkout_sha: "a".repeat(40), compiler_path: "/opt/compiler",
     process_invoker_sha256: "a".repeat(64),
     compiler_artifact_sha256: backend === "java" ? "b".repeat(64) : "a".repeat(64),
     compiler_artifact_kind: backend === "java" ? "java-launcher-class-only" : "llvm-native-executable",
@@ -104,6 +104,8 @@ test("reject missing provenance, changed fixture, timeout, false success or inva
     r => r.source_commit_binary_link_attested = true,
     r => r.compiler_artifact_sha256 = "f".repeat(64),
     r => r.runner_sha = "f".repeat(40),
+    r => r.actual_git_checkout_sha = "f".repeat(40),
+    r => { delete r.actual_git_checkout_sha; },
     r => r.cases[0].source_sha256 = "0".repeat(64),
     r => r.cases[0].compile.timeout = true,
     r => r.cases[0].execution.exit_code = 0,
