@@ -120,14 +120,17 @@ test("a mislabeled or non-commit main ref cannot attest a trusted base",async()=
    assert.equal(h.events.filter(e=>e.method==="POST").length,0);
  }
 });
-test("destination main changing before commit or new ref fails closed",async()=>{
- for(const changeRead of [2,3]){
+test("destination main changing before any Git object write or ref fails closed",async()=>{
+ // First read authenticates the destination before source bytes are fetched.
+ // Next reads must precede blob, tree, commit, and isolated ref creation.
+ const expectedWrites=[null,0,1,2,3];
+ for(const changeRead of [2,3,4,5]){
    const {h,promise}=run({mainRefChangeOnRead:changeRead});
    await assert.rejects(promise,/destination base must equal current trusted main HEAD/);
-   assert.equal(h.events.some(e=>e.path===destination+"/git/refs"),false);
-   if(changeRead===2){
-     assert.equal(h.events.some(e=>e.path===destination+"/git/commits"&&e.method==="POST"),false);
-   }
+   const writes=h.events.filter(e=>e.method==="POST");
+   assert.equal(writes.length,expectedWrites[changeRead-1]);
+   assert.equal(writes.some(e=>e.path===destination+"/git/refs"),false);
+   assert.equal(h.seen.main,changeRead);
  }
 });
 test("public destinations fail BEFORE fetching private source or writing anything",async()=>{
