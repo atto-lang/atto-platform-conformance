@@ -110,6 +110,12 @@ export function validateRealCompilerReport(r) {
     requireField(sha256.test(r.clang_sha256 ?? ""), "missing clang identity");
     requireField(typeof positive.compile.stdout === "string" &&
       positive.compile.stdout.includes("define ") && positive.compile.stdout.includes("main"), "not LLVM IR");
+    requireField(sha256.test(positive.llvm_ir_sha256 ?? "") &&
+      positive.llvm_ir_sha256 === sourceHash(positive.compile.stdout),
+      "LLVM emitted IR digest mismatch");
+    requireField(sha256.test(positive.linked_native_sha256 ?? "") &&
+      positive.linked_native_sha256 === positive.post_execution_native_sha256,
+      "native executable missing or changed between link and execution");
     requireField(good(positive.link), "LLVM link failed");
   }
   validateProcess(positive.execution, "runtime");
