@@ -1,4 +1,4 @@
-import {readFile,mkdtemp,writeFile,rm} from "node:fs/promises";
+import {readFile,mkdtemp,mkdir,writeFile,rm,lstat} from "node:fs/promises";
 import {createHash} from "node:crypto";
 import {spawnSync} from "node:child_process";
 import {join,isAbsolute,resolve} from "node:path";
@@ -67,6 +67,16 @@ function processFailure(p){
 function invoke(spawn,argv,file,timeoutMs){
  return spawn(argv[0],argv.slice(1).map(x=>x==="{file}"?file:x),{encoding:"utf8",timeout:timeoutMs,maxBuffer:1048576,shell:false,windowsHide:true});
 }
+async function sourceUnchanged(path,originalBytes){
+ // Detect deleted, swapped, symlinked, truncated, or rewritten staged input.
+ // Re-reading bounded by its expected byte length prevents an oversized
+ // compiler-created file from exhausting test-runner memory.
+ try{
+  const metadata=await lstat(path);
+  if(!metadata.isFile()||metadata.size!==originalBytes.length)return false;
+  return (await readFile(path)).equals(originalBytes);
+ }catch{return false}
+}
 function correctRejection(p,name){
  if(p.status===0||!hasCompilerErrorDiagnostic(p)||p.stdout)return false;
  // Require a specific, stderr-emitted semantic error. Generic compiler
@@ -101,31 +111,41 @@ export async function runValueMatchEvidence({backend,sourceSha,checkArgv,runArgv
  let dir;const results=[];let checksPassed=0,runsPassed=0;
  try{
   dir=await mkdtemp(join(tmpdir(),"ores-vmatch-"));
+  const checkDir=join(dir,"check");
+  const runDir=join(dir,"run");
+  await mkdir(checkDir,{mode:0o700});
+  await mkdir(runDir,{mode:0o700});
   for(const f of files){
-   // Work from the verified byte snapshot, never the mutable source path:
-   // fixture edits after SHA verification cannot change compiler inputs.
-   const path=join(dir,f.name);
-   await writeFile(path,f.bytes,{mode:0o600,flag:"wx"});
-   const checked=invoke(spawn,checkArgv,path,timeoutMs);
+   // A checker could mutate its own staged file, even though the canonical
+   // repo fixture is untouched. Give checking and runtime separate fresh
+   // snapshots and reject in-place modification of either one.
+   const checkPath=join(checkDir,f.name);
+   await writeFile(checkPath,f.bytes,{mode:0o600,flag:"wx"});
+   const checked=invoke(spawn,checkArgv,checkPath,timeoutMs);
    const error=processFailure(checked);
-   const admitted=!error&&(f.expect==="accept"?
+   const checkUnchanged=await sourceUnchanged(checkPath,f.bytes);
+   const admitted=!error&&checkUnchanged&&(f.expect==="accept"?
      checked.status===0&&!hasCompilerErrorDiagnostic(checked) : correctRejection(checked,f.name));
-   if(!admitted){results.push({id:f.name.slice(0,-5),status:error||"CHECK_MISMATCH",stage:"compile",fixtureGitBlobSha1:f.sha,fixtureSha256:f.sha256});continue}
+   if(!admitted){results.push({id:f.name.slice(0,-5),status:checkUnchanged?(error||"CHECK_MISMATCH"):"SOURCE_MUTATED",
+    stage:"compile",fixtureGitBlobSha1:f.sha,fixtureSha256:f.sha256});continue}
    checksPassed++;
    if(f.expect==="reject"){results.push({id:f.name.slice(0,-5),status:"VERIFIED_REJECTION",stage:"compile",fixtureGitBlobSha1:f.sha,fixtureSha256:f.sha256});continue}
-   let runPath=path, supplementalHarness=false;
+   let runPath=join(runDir,f.name),supplementalHarness=false;
+   let runBytes=f.bytes;
    if(f.name==="value-guard-over-end.ores"){
-    runPath=join(dir,"guard-with-entrypoint.ores");
-    await writeFile(runPath,f.bytes.toString("utf8")+"\n"+harness+"\n",{mode:0o600,flag:"wx"});
+    runPath=join(runDir,"guard-with-entrypoint.ores");
+    runBytes=Buffer.from(f.bytes.toString("utf8")+"\n"+harness+"\n","utf8");
     supplementalHarness=true;
    }
+   await writeFile(runPath,runBytes,{mode:0o600,flag:"wx"});
    const executed=invoke(spawn,runArgv,runPath,timeoutMs);
    const runtimeError=processFailure(executed);
+   const runUnchanged=await sourceUnchanged(runPath,runBytes);
    const output=executed.stdout||"";
-   const exact=!runtimeError&&executed.status===0&&
+   const exact=runUnchanged&&!runtimeError&&executed.status===0&&
     !hasCompilerErrorDiagnostic(executed)&&output===f.stdout;
    if(exact)runsPassed++;
-   results.push({id:f.name.slice(0,-5),status:exact?"VERIFIED_OUTPUT":runtimeError||"OUTPUT_MISMATCH",
+   results.push({id:f.name.slice(0,-5),status:exact?"VERIFIED_OUTPUT":runUnchanged?(runtimeError||"OUTPUT_MISMATCH"):"SOURCE_MUTATED",
     stage:"runtime",fixtureGitBlobSha1:f.sha,fixtureSha256:f.sha256,supplementalHarness,
     expectedStdout:f.stdout,observedStdoutSha256:sha256(Buffer.from(output,"utf8"))});
   }

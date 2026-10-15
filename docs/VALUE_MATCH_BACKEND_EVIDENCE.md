@@ -8,10 +8,14 @@ placeholders, and requires the exact **40-character source Git commit SHA** clai
 by the invoker.
 
 It verifies all **six canonical Git blobs** and the closed pending-backend manifest
-*before executing anything*. It retains the verified byte buffers, stages them in
-a private temporary directory with create-only file writes, and gives the compiler
-**only those snapshot paths**. This prevents a concurrent modification to the
-repository fixture from changing the source executed after its SHA check.
+*before executing anything*. It retains the verified byte buffers and gives the compiler **only a private,
+create-only check snapshot**, never the repository fixture. After checking, the
+runner rejects deleted, substituted, symlinked or modified source files with
+`SOURCE_MUTATED`. Every positive runtime execution receives a **separate fresh
+source snapshot** based on the verified bytes, and is checked again afterward.
+This addresses a checker-to-runner validation/use race, although it cannot
+prevent a malicious executable from rewriting then restoring a source file
+during execution; strong provenance and OS isolation remain separate.
 Snapshot SHA-256 is also reported per result. It requires the checker to accept three positives
 and to reject each of the three negatives for its specific semantic diagnostic
 (not just an "unsupported match", a crash, a timeout or a generic failure).
@@ -64,3 +68,18 @@ verdict; exit 2 means malformed input or unavailable executable. The output
 always identifies itself as **unattested**, regardless of exit status. A
 separate trusted build pipeline must independently verify the compiler
 binary's provenance before endorsing any backend.
+
+## Historical Java compiler negative baseline
+
+[Real GraalVM 25 Maven run #38660730412](https://github.com/scintilla-run/scintilla-e2e/actions/runs/38660730412)
+ran all eight pinned PR #932 JUnit tests against an older **PR #930** source mirror,
+not the Java `main` integration that includes value-match support. It passed
+only the fixture identity check; the other **seven tests failed** with early
+`Oreslang parse error at 2:10: expected expression` (one at column 15).
+Inspection established that the old compiler source lacks `MatchExpr` in its
+parser/AST/type checker/evaluator. These outcomes are **not** proof of a
+regression in current Java main or semantic negative-fixture admission.
+The harness treats those generic parser failures as `CHECK_MISMATCH`; the
+backend remains pending until a source-revision-attested execution of the
+integrated compiler is available. The clean-main seven-file PR migration
+remains subject to an earlier connector safety denial and must not be bypassed.

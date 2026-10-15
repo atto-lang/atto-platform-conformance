@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {readFileSync} from "node:fs";
+import {readFileSync,writeFileSync,unlinkSync,symlinkSync} from "node:fs";
 import {basename,dirname} from "node:path";
 import {createHash} from "node:crypto";
 import {runValueMatchEvidence,validateEvidenceCommand} from "../src/value-match-evidence.mjs";
@@ -183,4 +183,84 @@ test("runtime stdout matching expected output is not green if it also reports a 
  const r=await invoke({spawn});
  assert.equal(r.ok,false);
  assert.equal(r.results[0].status,"CRASH");
+});
+
+test("check and runtime use separate verified byte snapshots for all runnable positives",async()=>{
+ const paths=new Map();
+ const spawn=(exe,args)=>{
+  const file=args.at(-1),name=basename(file);
+  if(args.includes("--check")&&["value-option-braced.ores","value-vs-procedural.ores","value-guard-over-end.ores"].includes(name)){
+   paths.set(name,file);
+  }
+  if(args.includes("--run")&&name!=="guard-with-entrypoint.ores"){
+   assert.notEqual(file,paths.get(name),"runtime reused check-stage input");
+   assert.deepEqual(readFileSync(file),readFileSync(new URL("../fixtures/value-match/v1/"+name,import.meta.url)));
+  }
+  if(args.includes("--run")&&name==="guard-with-entrypoint.ores")
+   assert.notEqual(file,paths.get("value-guard-over-end.ores"));
+  return fixtureMock(exe,args);
+ };
+ const result=await invoke({spawn});
+ assert.equal(result.ok,true);
+ assert.equal(result.runsPassed,3);
+});
+test("checker source mutation is detected even if it returns a successful verdict",async()=>{
+ let runtimeCalled=false;
+ const spawn=(exe,args)=>{
+  const name=basename(args.at(-1));
+  if(name==="value-option-braced.ores"&&args.includes("--check")){
+   writeFileSync(args.at(-1),"pub fnc main(): void { return; }");
+   return ok();
+  }
+  if(name==="value-option-braced.ores"&&args.includes("--run"))runtimeCalled=true;
+  return fixtureMock(exe,args);
+ };
+ const r=await invoke({spawn});
+ assert.equal(r.ok,false);
+ assert.equal(runtimeCalled,false);
+ assert.equal(r.results[0].status,"SOURCE_MUTATED");
+ assert.equal(r.checksPassed,5);
+ assert.equal(r.runsPassed,2);
+});
+test("checker cannot silently replace input with a symlink and claim proof",async()=>{
+ const spawn=(exe,args)=>{
+  if(args.includes("--check")&&basename(args.at(-1))==="value-option-braced.ores"){
+   unlinkSync(args.at(-1));
+   symlinkSync(new URL("../fixtures/value-match/v1/value-option-braced.ores",import.meta.url).pathname,args.at(-1));
+   return ok();
+  }
+  return fixtureMock(exe,args);
+ };
+ const r=await invoke({spawn});
+ assert.equal(r.ok,false);
+ assert.equal(r.results[0].status,"SOURCE_MUTATED");
+});
+test("runtime source mutation invalidates a coincidentally correct output",async()=>{
+ const spawn=(exe,args)=>{
+  if(args.includes("--run")&&basename(args.at(-1))==="value-option-braced.ores"){
+   writeFileSync(args.at(-1),"pub fnc main(): void { return; }");
+   return ok("42:0");
+  }
+  return fixtureMock(exe,args);
+ };
+ const r=await invoke({spawn});
+ assert.equal(r.ok,false);
+ assert.equal(r.results[0].status,"SOURCE_MUTATED");
+ assert.equal(r.runsPassed,2);
+});
+test("old PR930 compiler syntax errors never qualify as semantic match evidence",async()=>{
+ let totalRunCalls=0;
+ const spawn=(exe,args)=>{
+  if(args.includes("--check"))return bad("Oreslang parse error at 2:10: expected expression");
+  totalRunCalls++;
+  return fixtureMock(exe,args);
+ };
+ const r=await invoke({spawn});
+ assert.equal(r.ok,false);
+ assert.equal(r.checksPassed,0);
+ assert.equal(r.runsPassed,0);
+ assert.equal(totalRunCalls,0);
+ assert.ok(r.results.every(x=>x.status==="CHECK_MISMATCH"));
+ assert.deepEqual(r.confirmedBackends,[]);
+ assert.equal(r.attested,false);
 });
