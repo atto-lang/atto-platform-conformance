@@ -5,7 +5,7 @@ import {publishPrivateMirror} from "../bin/private-mirror-publish.mjs";
 const source="ores-truffle-oreslang/oreslang-source.java";
 const destination="akrion-sim/akrion-sim-e2e";
 const A="a".repeat(40),B="b".repeat(40),C="5e5201f1b1618f87282bf41ce89ca710404cce95",
- D="d".repeat(40),E="e".repeat(40);
+ D="320dd1875cd1274bf94e9d431cab4e41c0c25a0b",E="e".repeat(40);
 const opts={source,destination,sourceCommit:A,destinationBaseCommit:B,
   prefix:"snapshots/checked",newBranch:"ci/private-test-proof",
   approvedDestinations:[destination],token:"opaque-test-token"};
@@ -14,7 +14,7 @@ const good=name=>({full_name:name,private:true,visibility:"private",
 
 function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E,meta,errors,
   sourceBlobContent="NDI7Cg==",mainRefSha=B,mainRefChangeOnRead=0,policyBody=null,
-  mainRefName="refs/heads/main",mainRefType="commit"}={}){
+  mainRefName="refs/heads/main",mainRefType="commit",sourceCommitResponseSha=A}={}){
   const events=[],seen={source:0,destination:0,main:0};
   const request=async(url,options)=>{
     const method=options.method,path=url.replace(/^https:\/\/api.github.com\/repos\//,"");
@@ -34,9 +34,9 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
         data={path:".github/private-ci-approved-repositories.txt",
           encoding:"base64",content:bytes.toString("base64"),size:bytes.length};
       }
-      else if(suffix==="/git/commits/"+A)data={tree:{sha:D}};
+      else if(suffix==="/git/commits/"+A)data={sha:sourceCommitResponseSha,tree:{sha:D}};
       else if(suffix==="/git/trees/"+D+"?recursive=1")
-        data=sourceTree||{truncated:false,tree:[{type:"blob",path:"main.ores",sha:C,size:4,mode:"100644"}]};
+        data={sha:D,...(sourceTree||{truncated:false,tree:[{type:"blob",path:"main.ores",sha:C,size:4,mode:"100644"}]})};
       else if(suffix==="/git/blobs/"+C)
         data={sha:C,encoding:"base64",content:sourceBlobContent,size:4};
     } else {
@@ -191,6 +191,34 @@ test("untrusted source tree types and truncated trees never cause destination wr
   assert.equal(h.events.filter(e=>e.method==="POST").length,0);
  }
 });
+test("pinned source commit identity is required before fetching any tree or blob",async()=>{
+ const {h,promise}=run({sourceCommitResponseSha:B});
+ await assert.rejects(promise,/source commit SHA or pinned tree is invalid/);
+ assert.equal(h.events.some(x=>x.path===source+"/git/trees/"+D+"?recursive=1"),false);
+ assert.equal(h.events.some(x=>x.path===source+"/git/blobs/"+C),false);
+ assert.equal(h.events.filter(x=>x.method==="POST").length,0);
+});
+
+test("complete source Git tree must hash to the pinned commit before blob fetch",async()=>{
+ const entry={type:"blob",path:"main.ores",sha:C,size:4,mode:"100644"};
+ const corrupted=[
+  {truncated:false,tree:[{...entry,mode:"100755"}]},
+  {truncated:false,tree:[{...entry,path:"renamed.ores"}]},
+  {truncated:false,tree:[{...entry,sha:B}]},
+  {truncated:false,tree:[entry,{...entry,path:"injected.ores"}]},
+  {truncated:false,tree:[]},
+  {truncated:false,tree:[{...entry,path:"src/main.ores"}]},
+  {sha:B,truncated:false,tree:[entry]},
+  {truncated:false,tree:[entry,{path:"src",type:"tree",mode:"040000",sha:B}]}
+ ];
+ for(const sourceTree of corrupted){
+  const {h,promise}=run({sourceTree});
+  await assert.rejects(promise,/source tree/);
+  assert.equal(h.events.some(x=>x.path===source+"/git/blobs/"+C),false);
+  assert.equal(h.events.filter(x=>x.method==="POST").length,0);
+ }
+});
+
 test("malformed source blob base64 is denied before destination writes",async()=>{
  const malformed=[
   "!!!!", "NDI7", "NDI7Cg==junk", "NDI7Cg===",
@@ -357,7 +385,7 @@ test("case-insensitive colliding source paths and .GIT segments are rejected",as
   {truncated:false,tree:[{type:"blob",path:"src/.GIT/config",sha:C,size:4,mode:"100644"}]}
  ]){
   const {h,promise}=run({sourceTree:tree});
-  await assert.rejects(promise,/colliding source path|unsafe or oversized/);
+  await assert.rejects(promise,/case-colliding source tree path|unsafe source tree path/);
   assert.equal(h.events.filter(e=>e.method==="POST").length,0);
  }
 });
