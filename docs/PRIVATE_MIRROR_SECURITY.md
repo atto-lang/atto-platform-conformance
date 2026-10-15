@@ -28,9 +28,16 @@ root or `.github/workflows`, where a mirrored source file could become
 executable GitHub Actions configuration on a temporary branch. Source blob
 base64 is checked for canonical bytes and exact size before publication.
 The exporter publishes only a **new** isolated CI branch after verifying all
-Git objects. A Git tree hash
-confirms exact bytes, not that the transfer was authorized or that the
-compiler worked. Even after a temporary branch is deleted or rewound,
+Git objects. Verification must account for the complete materialized Git
+tree: every pinned blob inside the snapshot must match, and every Git object
+outside the snapshot and its changing ancestor directories must preserve
+its original type, file mode and SHA. Unexpected files, missing pre-existing
+files, modified workflows, and mutated unrelated directory trees must all
+fail before a commit or temporary ref is published. A snapshot-only check
+does not prove the destination's trusted workflow tree was preserved.
+
+A Git tree hash confirms exact bytes, not that the transfer was authorized
+or that the compiler worked. Even after a temporary branch is deleted or rewound,
 retained Git objects, Actions caches and logs require separate review.
 
 **Existing exception:** [security issue #28](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/28)
