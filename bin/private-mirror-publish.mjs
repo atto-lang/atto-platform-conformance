@@ -136,7 +136,7 @@ export async function publishPrivateMirror({
     await authorize();
     await requireTrustedBase();
     const pushed=await githubRequest(destination,"/git/blobs",token,{
-      method:"POST",body:{content:srcBlob.content,encoding:"base64"},fetchImpl
+      method:"POST",body:{content:encoded,encoding:"base64"},fetchImpl
     });
     if(pushed.sha!==file.sha)throw Error("destination blob SHA differs from source");
     entries.push({path:prefix+"/"+file.path,mode:file.mode,type:"blob",sha:pushed.sha});
