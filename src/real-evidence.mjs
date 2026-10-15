@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { isAbsolute } from "node:path";
+import { dirname, isAbsolute } from "node:path";
 
 const sha40 = /^[0-9a-f]{40}$/;
 const sha256 = /^[0-9a-f]{64}$/;
@@ -61,6 +61,13 @@ export function validateRealCompilerReport(r) {
     negative.compile?.argv?.[0] === r.compiler_path, "compiler executable mismatch");
   requireField(sourceArg(positive.compile, "positive.ores") &&
     sourceArg(negative.compile, "negative.ores"), "compiler fixture argv mismatch");
+  // Both fixtures and any LLVM IR/output binary belong to the same isolated
+  // invocation directory. A valid hash plus a mismatched argv is not evidence.
+  const sourceDirectory = dirname(positive.compile.argv.at(-1));
+  requireField(isAbsolute(positive.compile.argv.at(-1)) &&
+    isAbsolute(negative.compile.argv.at(-1)) &&
+    dirname(negative.compile.argv.at(-1)) === sourceDirectory,
+    "fixtures were compiled from mismatched directories");
   requireField(good(positive.compile), "positive source was not accepted");
   if (r.backend === "java") {
     requireField(typeof r.java_probe_path === "string" && isAbsolute(r.java_probe_path) &&
@@ -92,6 +99,9 @@ export function validateRealCompilerReport(r) {
       positive.execution?.argv?.length === 1 &&
       positive.link.argv[5] === positive.execution.argv[0],
       "LLVM IR/link/execution argv mismatch");
+    requireField(dirname(positive.link.argv[3]) === sourceDirectory &&
+      dirname(positive.link.argv[5]) === sourceDirectory,
+      "LLVM IR and output executable must remain in fixture directory");
     requireField(r.compiler_artifact_kind === "llvm-native-executable" &&
       r.compiler_artifact_sha256 === r.process_invoker_sha256, "native artifact/invoker mismatch");
     requireField(sha256.test(r.clang_sha256 ?? ""), "missing clang identity");
