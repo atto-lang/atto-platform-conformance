@@ -10,7 +10,7 @@ const opts={source,destination,sourceCommit:A,destinationBaseCommit:B,
   prefix:"snapshots/checked",newBranch:"ci/private-test-proof",
   approvedDestinations:[destination],token:"opaque-test-token"};
 const good=name=>({full_name:name,private:true,visibility:"private",
-  archived:false,permissions:{push:true}});
+  archived:false,default_branch:"main",permissions:{push:true}});
 
 function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E,meta,errors}={}){
   const events=[],seen={source:0,destination:0};
@@ -27,7 +27,12 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
     if(errors?.[suffix])return{status:403,json:async()=>({message:"Bearer opaque-test-token"})};
     let data;
     if(src){
-      if(suffix==="/git/commits/"+A)data={tree:{sha:D}};
+      if(suffix==="/contents/.github/private-ci-approved-repositories.txt?ref=main"){
+        const bytes=Buffer.from(destination+"\n","utf8");
+        data={path:".github/private-ci-approved-repositories.txt",
+          encoding:"base64",content:bytes.toString("base64"),size:bytes.length};
+      }
+      else if(suffix==="/git/commits/"+A)data={tree:{sha:D}};
       else if(suffix==="/git/trees/"+D+"?recursive=1")
         data=sourceTree||{truncated:false,tree:[{type:"blob",path:"main.ores",sha:C,size:4,mode:"100644"}]};
       else if(suffix==="/git/blobs/"+C)
