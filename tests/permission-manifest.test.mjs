@@ -160,3 +160,43 @@ test('all authority layers are validated and snapshotted before matcher callback
     malformed, 'read', '/safe', () => { matcherCalled = true; return true; }));
   assert.equal(matcherCalled, false);
 });
+
+test('inconsistent matchers cannot promote an overlapping explicit deny into a grant', () => {
+  const scope = 'api.example.com:443';
+  const overlap = scoped('net', [scope], [scope]);
+  const layers = {host: overlap, artifact: overlap, runtime: overlap,
+                  actor: overlap, delegated: overlap};
+  let invocations = 0;
+  const flippingMatcher = () => (++invocations > 1);
+  // Previously: first host deny returned false, next host allow true,
+  // and later checks returned true, allowing a scope explicitly denied.
+  assert.equal(evaluatePermission(layers, 'net', scope, flippingMatcher), false);
+  assert.equal(invocations, 1, 'matcher must be called once per unique scope');
+});
+
+test('one authorization uses a single match result across five layers', () => {
+  const scope = '/safe/file.txt';
+  const all = scoped('read', [scope]);
+  const layers = {host: all, artifact: all, runtime: all,
+                  actor: all, delegated: all};
+  let invocations = 0;
+  assert.equal(evaluatePermission(layers, 'read', scope, () => {
+    invocations++;
+    return invocations === 1;
+  }), true);
+  assert.equal(invocations, 1);
+});
+
+test('every explicit deny is matched before any positive grant', () => {
+  const layers = {host: scoped('read', ['/safe'], ['/blocked']),
+                  artifact: scoped('read', ['/safe']),
+                  runtime: scoped('read', ['/safe']),
+                  actor: scoped('read', ['/safe']),
+                  delegated: scoped('read', ['/safe'], ['/other'])};
+  const seen = [];
+  assert.equal(evaluatePermission(layers, 'read', '/safe', (_, resource, scope) => {
+    seen.push(scope);
+    return resource === scope;
+  }), true);
+  assert.deepEqual(seen, ['/blocked', '/other', '/safe']);
+});
