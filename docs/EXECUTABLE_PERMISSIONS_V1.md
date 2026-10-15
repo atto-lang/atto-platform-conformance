@@ -14,7 +14,7 @@ For every privileged operation, require all five independent policies: host/OS c
 
 Root keys, in order: format, version, artifact_sha256, policy. Format is oreslang.permissions; version is integer 1. Artifact digest is 64 lowercase hex characters. Policy has exactly eight categories in this order: read, write, net, env, run, sys, ffi, import. Each has allow and deny string arrays; an empty allow grants nothing. An asterisk means all resources in *that category*. Arrays are sorted and unique, at most 128 entries, each scope <=4096 UTF-8 bytes. Maximum total manifest is 65,536 bytes.
 
-Serialization is minified UTF-8 JSON without trailing newline. Reject missing, duplicate or unknown fields, invalid scopes, corrupted or noncanonical JSON, downgrades, and artifact digest mismatch. Targets must additionally validate semantic scope grammar before any runtime policy operation. A missing manifest on a permission-managed executable means reject execution, not inherit OS/isolate grants. A user-editable sidecar or environment variable is not a trusted ceiling.
+Serialization is minified UTF-8 JSON without trailing newline. Reject missing, duplicate or unknown fields, invalid scopes, corrupted or noncanonical JSON, downgrades, and artifact digest mismatch. Reject unpaired UTF-16 surrogate code units before any UTF-8 conversion, since host runtimes can otherwise substitute U+FFFD and alter a permission scope's identity. The verifier returns a deeply frozen permission-policy snapshot (categories, rules and scope arrays); do not subsequently mutate a verified authority ceiling. Targets must additionally validate semantic scope grammar before any runtime policy operation. A missing manifest on a permission-managed executable means reject execution, not inherit OS/isolate grants. A user-editable sidecar or environment variable is not a trusted ceiling.
 
 ## Native enforcement requirements
 
@@ -23,7 +23,7 @@ Serialization is minified UTF-8 JSON without trailing newline. Reject missing, d
 - ENV/SYS/RUN: validate exact key/process/argv/env rules and inherited file descriptors/handles; subprocesses cannot acquire parent-forbidden authority.
 - Actors, ActorGroups, untrusted JIT, dynamic imports and hot reload cannot mint grants. Raw FFI/syscalls require actual OS sandboxing or strictly mediated trusted host APIs. Unsupported target permissions reject rather than silently ignore.
 
-The reference decision helper deliberately relies on a trusted caller-supplied resource matcher and **cannot itself enforce host I/O**.
+The reference decision helper deliberately relies on a trusted caller-supplied resource matcher, demands a boolean result rather than truthiness, and **cannot itself enforce host I/O**. The repository includes deterministic authority-lattice, digest, malformed-Unicode, mutation, serialization and budget tests; these are reference tests only, not native-runtime evidence.
 
 ## CLI parser and evidence gates
 
