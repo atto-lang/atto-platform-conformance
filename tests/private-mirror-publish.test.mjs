@@ -4,7 +4,7 @@ import {publishPrivateMirror} from "../bin/private-mirror-publish.mjs";
 
 const source="ores-truffle-oreslang/oreslang-source.java";
 const destination="akrion-sim/akrion-sim-e2e";
-const A="a".repeat(40),B="b".repeat(40),C="c".repeat(40),
+const A="a".repeat(40),B="b".repeat(40),C="5e5201f1b1618f87282bf41ce89ca710404cce95",
  D="d".repeat(40),E="e".repeat(40);
 const opts={source,destination,sourceCommit:A,destinationBaseCommit:B,
   prefix:"snapshots/checked",newBranch:"ci/private-test-proof",
@@ -209,6 +209,14 @@ test("malformed source blob base64 is denied before destination writes",async()=
  assert.equal(h.events.filter(e=>e.method==="POST").length,4);
  const blob=h.events.find(e=>e.path===destination+"/git/blobs"&&e.method==="POST");
  assert.equal(blob.body.content,"NDI7Cg==","publish canonical bytes only");
+});
+
+test("mismatched source blob bytes are refused before any destination write",async()=>{
+ // API claims the right source SHA and byte length while serving different
+ // valid base64 bytes. Metadata equality is insufficient for pinning.
+ const {h,promise}=run({sourceBlobContent:"NDI8Cg=="});
+ await assert.rejects(promise,/source blob bytes differ from pinned Git SHA/);
+ assert.equal(h.events.filter(e=>e.method==="POST").length,0);
 });
 
 test("source-to-destination blob mismatch halts without publishing tree/ref",async()=>{
