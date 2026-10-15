@@ -90,3 +90,47 @@ test('runtime request cannot expand artifact ceiling or delegated child authorit
   assert.equal(evaluatePermission({...layers, delegated: denyAllPolicy()},
                                    'read', '/safe', matches), false);
 });
+
+test('verified policy rejects post-verification authority mutation', () => {
+  const granted = scoped('net', ['api.example.com:443'], ['blocked.example.com:443']);
+  const verified = parseManifest(serializeManifest(manifest(granted)), artifact);
+  assert.equal(Object.isFrozen(verified), true);
+  assert.equal(Object.isFrozen(verified.policy), true);
+  assert.equal(Object.isFrozen(verified.policy.net), true);
+  assert.equal(Object.isFrozen(verified.policy.net.allow), true);
+  assert.equal(Object.isFrozen(verified.policy.net.deny), true);
+  assert.throws(() => verified.policy.net.allow.push('*'), TypeError);
+  assert.throws(() => verified.policy.net.deny.pop(), TypeError);
+  assert.throws(() => { verified.policy.net.allow = ['*']; }, TypeError);
+  assert.throws(() => { verified.policy.net = {allow: ['*'], deny: []}; }, TypeError);
+  assert.deepEqual(verified.policy.net, {
+    allow: ['api.example.com:443'], deny: ['blocked.example.com:443'],
+  });
+});
+
+test('unpaired Unicode surrogates do not cross policy or resource boundaries', () => {
+  for (const invalid of ['\uD800', '\uDC00', 'root\uD800', 'root\uDC00']) {
+    assert.throws(() => validatePolicy(scoped('read', [invalid])));
+    assert.throws(() => serializeManifest(manifest(scoped('read', [invalid]))));
+  }
+  const valid = scoped('read', ['path/\uD83D\uDE00']);
+  assert.deepEqual(parseManifest(serializeManifest(manifest(valid)), artifact).policy.read.allow,
+                   ['path/\uD83D\uDE00']);
+  const all = scoped('read', ['*']);
+  const layers = {host: all, artifact: all, runtime: all, actor: all, delegated: all};
+  assert.throws(() => evaluatePermission(layers, 'read', '\uD800', matches));
+});
+
+test('resource matchers must return a boolean in grants and explicit denies', () => {
+  const specific = scoped('net', ['api.example.com:443']);
+  const layers = {host: specific, artifact: specific, runtime: specific,
+                  actor: specific, delegated: specific};
+  for (const invalid of ['true', {}, 1, null, undefined]) {
+    assert.throws(() => evaluatePermission(
+      layers, 'net', 'api.example.com:443', () => invalid));
+    const denyLayers = {...layers, host: scoped('net', ['*'], ['api.example.com:443'])};
+    assert.throws(() => evaluatePermission(
+      denyLayers, 'net', 'api.example.com:443', () => invalid));
+  }
+  assert.equal(evaluatePermission(layers, 'net', 'api.example.com:443', matches), true);
+});
