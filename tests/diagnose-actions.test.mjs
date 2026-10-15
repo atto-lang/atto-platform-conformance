@@ -3,7 +3,9 @@ import assert from "node:assert/strict";
 import { assessRun } from "../bin/diagnose-actions.mjs";
 const run = {id: 123, status: "completed", conclusion: "failure", head_sha: "a".repeat(40)};
 const job = (id, steps, conclusion = "failure", status = "completed") =>
-  ({id, name: "harness", status, conclusion, runner_id: steps.length ? 5 : 0, steps});
+  ({id, name: "harness", status, conclusion,
+    runner_id: steps.some(s => s.status === "completed") ? 5 : 0,
+    steps: steps.map(s => s.status ? s : {...s, status: "completed"})});
 
 test("zero-step failure does not diagnose billing or prove CI", () => {
   const out = assessRun(run, {total_count:1, jobs:[job(1, [])]});
@@ -27,6 +29,29 @@ test("completed successful steps do not attest compiler parity", () => {
 test("incomplete job pagination cannot certify success", () => {
   const out = assessRun(run, {total_count:2,jobs:[job(1,[{conclusion:"success"}],"success")]});
   assert.equal(out.classification, "INCOMPLETE_JOB_LIST");
+});
+test("listed skipped and queued steps are not counted as executed", () => {
+  const steps = [
+    {status:"completed",conclusion:"skipped"},
+    {status:"queued",conclusion:null},
+  ];
+  const out = assessRun(run, {total_count:1,jobs:[job(1,steps)]});
+  assert.equal(out.classification, "NO_EXECUTED_STEPS");
+  assert.equal(out.jobs[0].step_count, 2);
+  assert.equal(out.jobs[0].executed_step_count, 0);
+  assert.equal(out.permits_merging, false);
+});
+test("a job missing step details cannot be labeled successful or zero-step", () => {
+  const out = assessRun(run, {total_count:1,jobs:[{id:1,status:"completed",conclusion:"failure",steps:null}]});
+  assert.equal(out.classification, "UNKNOWN_STEP_DETAILS");
+  assert.equal(out.job_list_complete, true);
+  assert.equal(out.permits_merging, false);
+});
+test("a step with recorded execution remains distinct from its job conclusion", () => {
+  const out = assessRun(run, {total_count:1,
+    jobs:[job(1,[{status:"in_progress", conclusion:null}])]});
+  assert.equal(out.classification, "EXECUTED_STEPS_WITH_FAILURE");
+  assert.equal(out.jobs[0].executed_step_count, 1);
 });
 test("no jobs and queued jobs are separate states", () => {
   assert.equal(assessRun(run, {total_count:0,jobs:[]}).classification, "NO_JOBS_RECORDED");
