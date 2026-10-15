@@ -129,6 +129,19 @@ test("report CLI processes bounded files without granting provenance", () => {
     assert.equal(blocked.status, 1);
     assert.match(blocked.stderr, /256 KiB/);
 
+    if (process.platform === "linux") {
+      const fifo = join(dir, "blocked-pipe.json");
+      const created = spawnSync("mkfifo", [fifo], {encoding: "utf8", timeout: 2000});
+      assert.equal(created.status, 0, created.stderr);
+      const t0 = Date.now();
+      const blockedPipe = spawnSync(process.execPath, [cli, fifo], {
+        encoding: "utf8", timeout: 2000,
+      });
+      assert.equal(blockedPipe.status, 1, "FIFO must fail, not hang waiting for a writer");
+      assert.match(blockedPipe.stderr, /regular file/);
+      assert.ok(Date.now() - t0 < 2000, "FIFO inspection must remain bounded");
+    }
+
     if (process.platform !== "win32") {
       const alias = join(dir, "alias.json");
       symlinkSync(valid, alias);
