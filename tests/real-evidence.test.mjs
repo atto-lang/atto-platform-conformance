@@ -11,8 +11,13 @@ const positive = "pub fnc main(): int {\n  return 20 + 22;\n}\n";
 const negative = "pub fnc main(): int {\n  return nonexistent_symbol;\n}\n";
 
 function fixture(backend = "llvm") {
-  const compile = good(["/opt/compiler", "/tmp/positive.ores"], 0, backend === "llvm" ? "define i32 @main() {" : "");
-  const negativeCompile = good(["/opt/compiler", "/tmp/negative.ores"], 1, "", "error: unknown identifier nonexistent_symbol");
+  const compile = good(backend === "java"
+    ? ["/opt/compiler", "/opt/java_probe.py", "/tmp/positive.ores"]
+    : ["/opt/compiler", "/tmp/positive.ores"], 0,
+    backend === "llvm" ? "define i32 @main() {" : "");
+  const negativeCompile = good(backend === "java"
+    ? ["/opt/compiler", "/opt/java_probe.py", "/tmp/negative.ores"]
+    : ["/opt/compiler", "/tmp/negative.ores"], 1, "", "error: unknown identifier nonexistent_symbol");
   return {
     schema_version: 1, evidence_type: "real-compiler-smoke", backend,
     source_commit_declared: "a".repeat(40), source_commit_binary_link_attested: false,
@@ -24,8 +29,10 @@ function fixture(backend = "llvm") {
     launcher_class_sha256: "b".repeat(64), maven_classpath_sha256: "c".repeat(64),
     java_probe_sha256: "d".repeat(64), clang_sha256: "e".repeat(64),
     cases: [
-      { id: "positive", source_sha256: digest(positive), compile, link: good(["/usr/bin/clang", "a.ll"], 0),
-        execution: good(["/tmp/app"], 42), passed: true },
+      { id: "positive", source_sha256: digest(positive), compile, link: good(["/usr/bin/clang", "-x", "ir", "/tmp/app.ll", "-o", "/tmp/app"], 0),
+        execution: good(backend === "java"
+          ? ["/opt/compiler", "/opt/java_probe.py", "/tmp/positive.ores", "--execute"]
+          : ["/tmp/app"], 42), passed: true },
       { id: "negative", source_sha256: digest(negative), compile: negativeCompile, passed: true },
     ],
     ok: true,
@@ -57,6 +64,24 @@ test("rejection requires observed error diagnostics, not a crash or pretend succ
     assert.throws(() => validateRealCompilerReport(r));
   }
 });
+test("reject command-to-source and linker-to-executable mismatches", () => {
+  const attacks = [
+    r => r.cases[0].compile.argv[0] = "/tmp/other-compiler",
+    r => r.cases[1].compile.argv.at(-1) === "/tmp/negative.ores" &&
+      (r.cases[1].compile.argv[r.cases[1].compile.argv.length - 1] = "/tmp/positive.ores"),
+    r => r.cases[0].link.argv[5] = "/tmp/wrong-binary",
+    r => r.cases[0].link.argv[2] = "c",
+  ];
+  for (const attack of attacks) {
+    const r = fixture("llvm");
+    attack(r);
+    assert.throws(() => validateRealCompilerReport(r));
+  }
+  const java = fixture("java");
+  java.cases[0].execution.argv[3] = "--check";
+  assert.throws(() => validateRealCompilerReport(java));
+});
+
 test("reject missing provenance, changed fixture, timeout, false success or invalid IR", () => {
   for (const mutation of [
     r => r.source_commit_binary_link_attested = true,
