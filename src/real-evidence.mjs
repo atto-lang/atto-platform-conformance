@@ -42,6 +42,9 @@ export function validateRealCompilerReport(r) {
   requireField(r.backend === "java" || r.backend === "llvm", "unexpected backend");
   requireField(typeof r.source_commit_declared === "string" && sha40.test(r.source_commit_declared), "invalid source SHA");
   requireField(!r.runner_sha || r.runner_sha === r.source_commit_declared, "CI source mismatch");
+  requireField(typeof r.actual_git_checkout_sha === "string" &&
+    r.actual_git_checkout_sha === r.source_commit_declared,
+    "Git checkout HEAD differs from declared source revision");
   requireField(r.source_commit_binary_link_attested === false, "unsupported attestation claim");
   requireField(r.compiler_verification === "real-process-observation-only", "unsupported verification class");
   requireField(typeof r.process_invoker_sha256 === "string" && sha256.test(r.process_invoker_sha256), "missing process invoker digest");
