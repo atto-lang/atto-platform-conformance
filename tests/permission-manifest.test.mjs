@@ -134,3 +134,29 @@ test('resource matchers must return a boolean in grants and explicit denies', ()
   }
   assert.equal(evaluatePermission(layers, 'net', 'api.example.com:443', matches), true);
 });
+
+test('all authority layers are validated and snapshotted before matcher callbacks', () => {
+  const allowed = scoped('read', ['/safe']);
+  const delegated = scoped('read', ['/safe'], ['/safe']);
+  const layers = {host: allowed, artifact: allowed, runtime: allowed,
+                  actor: allowed, delegated};
+  let called = 0;
+  const reentrantMatcher = (_permission, resource, scope) => {
+    if (++called === 1) delegated.read.deny.length = 0;
+    return resource === scope;
+  };
+  // The delegated deny at decision start must survive mutation from a
+  // reentrant matcher invoked for an earlier authority layer.
+  assert.equal(evaluatePermission(layers, 'read', '/safe', reentrantMatcher), false);
+  assert.ok(called > 0);
+  assert.deepEqual(delegated.read.deny, []);
+
+  // An invalid later layer must fail before the matcher can run or observe
+  // any authority, even if an earlier layer would deny the resource.
+  let matcherCalled = false;
+  const malformed = {...layers, host: denyAllPolicy(),
+                     delegated: {read: {allow: ['*'], deny: []}}};
+  assert.throws(() => evaluatePermission(
+    malformed, 'read', '/safe', () => { matcherCalled = true; return true; }));
+  assert.equal(matcherCalled, false);
+});
