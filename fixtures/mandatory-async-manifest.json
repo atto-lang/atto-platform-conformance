@@ -1,0 +1,329 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "io-pure",
+      "file": "io-pure.ores",
+      "expect": "accept",
+      "backends": [
+        "java",
+        "net",
+        "llvm",
+        "forge",
+        "wasm"
+      ]
+    },
+    {
+      "id": "io-pure-io-comment",
+      "file": "io-pure-io-comment.ores",
+      "expect": "accept",
+      "backends": [
+        "java",
+        "net",
+        "llvm",
+        "forge",
+        "wasm"
+      ]
+    },
+    {
+      "id": "io-fs-read",
+      "file": "io-fs-read.ores",
+      "expect": "reject",
+      "backends": [
+        "java",
+        "net",
+        "llvm",
+        "forge",
+        "wasm"
+      ],
+      "diagnostic": "(?:error|unsupported|invalid|unexpected|expected|unknown|unresolved|not supported|cannot)",
+      "exitCode": 1,
+      "noOutput": true
+    },
+    {
+      "id": "io-fs-read-blocking",
+      "file": "io-fs-read-blocking.ores",
+      "expect": "reject",
+      "backends": [
+        "java",
+        "net",
+        "llvm",
+        "forge",
+        "wasm"
+      ],
+      "diagnostic": "(?:error|unsupported|invalid|unexpected|expected|unknown|unresolved|not supported|cannot)",
+      "exitCode": 1,
+      "noOutput": true
+    },
+    {
+      "id": "io-fs-read-async",
+      "file": "io-fs-read-async.ores",
+      "expect": "reject",
+      "backends": [
+        "java",
+        "net",
+        "llvm",
+        "forge",
+        "wasm"
+      ],
+      "diagnostic": "(?:error|unsupported|invalid|unexpected|expected|unknown|unresolved|not supported|cannot)",
+      "exitCode": 1,
+      "noOutput": true
+    },
+    {
+      "id": "io-fs-write",
+      "file": "io-fs-write.ores",
+      "expect": "reject",
+      "backends": [
+        "java",
+        "net",
+        "llvm",
+        "forge",
+        "wasm"
+      ],
+      "diagnostic": "(?:error|unsupported|invalid|unexpected|expected|unknown|unresolved|not supported|cannot)",
+      "exitCode": 1,
+      "noOutput": true
+    },
+    {
+      "id": "io-fs-write-async",
+      "file": "io-fs-write-async.ores",
+      "expect": "reject",
+      "backends": [
+        "java",
+        "net",
+        "llvm",
+        "forge",
+        "wasm"
+      ],
+      "diagnostic": "(?:error|unsupported|invalid|unexpected|expected|unknown|unresolved|not supported|cannot)",
+      "exitCode": 1,
+      "noOutput": true
+    },
+    {
+      "id": "io-http-get",
+      "file": "io-http-get.ores",
+      "expect": "reject",
+      "backends": [
+        "java",
+        "net",
+        "llvm",
+        "forge",
+        "wasm"
+      ],
+      "diagnostic": "(?:error|unsupported|invalid|unexpected|expected|unknown|unresolved|not supported|cannot)",
+      "exitCode": 1,
+      "noOutput": true
+    },
+    {
+      "id": "io-http-get-async",
+      "file": "io-http-get-async.ores",
+      "expect": "reject",
+      "backends": [
+        "java",
+        "net",
+        "llvm",
+        "forge",
+        "wasm"
+      ],
+      "diagnostic": "(?:error|unsupported|invalid|unexpected|expected|unknown|unresolved|not supported|cannot)",
+      "exitCode": 1,
+      "noOutput": true
+    },
+    {
+      "id": "io-http-listen",
+      "file": "io-http-listen.ores",
+      "expect": "reject",
+      "backends": [
+        "java",
+        "net",
+        "llvm",
+        "forge",
+        "wasm"
+      ],
+      "diagnostic": "(?:error|unsupported|invalid|unexpected|expected|unknown|unresolved|not supported|cannot)",
+      "exitCode": 1,
+      "noOutput": true
+    },
+    {
+      "id": "io-net-connect",
+      "file": "io-net-connect.ores",
+      "expect": "reject",
+      "backends": [
+        "java",
+        "net",
+        "llvm",
+        "forge",
+        "wasm"
+      ],
+      "diagnostic": "(?:error|unsupported|invalid|unexpected|expected|unknown|unresolved|not supported|cannot)",
+      "exitCode": 1,
+      "noOutput": true
+    },
+    {
+      "id": "io-net-connect-async",
+      "file": "io-net-connect-async.ores",
+      "expect": "reject",
+      "backends": [
+        "java",
+        "net",
+        "llvm",
+        "forge",
+        "wasm"
+      ],
+      "diagnostic": "(?:error|unsupported|invalid|unexpected|expected|unknown|unresolved|not supported|cannot)",
+      "exitCode": 1,
+      "noOutput": true
+    },
+    {
+      "id": "io-net-listen",
+      "file": "io-net-listen.ores",
+      "expect": "reject",
+      "backends": [
+        "java",
+        "net",
+        "llvm",
+        "forge",
+        "wasm"
+      ],
+      "diagnostic": "(?:error|unsupported|invalid|unexpected|expected|unknown|unresolved|not supported|cannot)",
+      "exitCode": 1,
+      "noOutput": true
+    },
+    {
+      "id": "io-stdio-read",
+      "file": "io-stdio-read.ores",
+      "expect": "reject",
+      "backends": [
+        "java",
+        "net",
+        "llvm",
+        "forge",
+        "wasm"
+      ],
+      "diagnostic": "(?:error|unsupported|invalid|unexpected|expected|unknown|unresolved|not supported|cannot)",
+      "exitCode": 1,
+      "noOutput": true
+    },
+    {
+      "id": "io-stdio-print",
+      "file": "io-stdio-print.ores",
+      "expect": "reject",
+      "backends": [
+        "java",
+        "net",
+        "llvm",
+        "forge",
+        "wasm"
+      ],
+      "diagnostic": "(?:error|unsupported|invalid|unexpected|expected|unknown|unresolved|not supported|cannot)",
+      "exitCode": 1,
+      "noOutput": true
+    },
+    {
+      "id": "io-print",
+      "file": "io-print.ores",
+      "expect": "reject",
+      "backends": [
+        "java",
+        "net",
+        "llvm",
+        "forge",
+        "wasm"
+      ],
+      "diagnostic": "(?:error|unsupported|invalid|unexpected|expected|unknown|unresolved|not supported|cannot)",
+      "exitCode": 1,
+      "noOutput": true
+    },
+    {
+      "id": "io-native-io",
+      "file": "io-native-io.ores",
+      "expect": "reject",
+      "backends": [
+        "java",
+        "net",
+        "llvm",
+        "forge",
+        "wasm"
+      ],
+      "diagnostic": "(?:error|unsupported|invalid|unexpected|expected|unknown|unresolved|not supported|cannot)",
+      "exitCode": 1,
+      "noOutput": true
+    },
+    {
+      "id": "io-wasi-io",
+      "file": "io-wasi-io.ores",
+      "expect": "reject",
+      "backends": [
+        "java",
+        "net",
+        "llvm",
+        "forge",
+        "wasm"
+      ],
+      "diagnostic": "(?:error|unsupported|invalid|unexpected|expected|unknown|unresolved|not supported|cannot)",
+      "exitCode": 1,
+      "noOutput": true
+    },
+    {
+      "id": "io-fake-async",
+      "file": "io-fake-async.ores",
+      "expect": "reject",
+      "backends": [
+        "java",
+        "net",
+        "llvm",
+        "forge",
+        "wasm"
+      ],
+      "diagnostic": "(?:error|unsupported|invalid|unexpected|expected|unknown|unresolved|not supported|cannot)",
+      "exitCode": 1,
+      "noOutput": true
+    },
+    {
+      "id": "io-alias",
+      "file": "io-alias.ores",
+      "expect": "reject",
+      "backends": [
+        "java",
+        "net",
+        "llvm",
+        "forge",
+        "wasm"
+      ],
+      "diagnostic": "(?:error|unsupported|invalid|unexpected|expected|unknown|unresolved|not supported|cannot)",
+      "exitCode": 1,
+      "noOutput": true
+    },
+    {
+      "id": "io-unreachable",
+      "file": "io-unreachable.ores",
+      "expect": "reject",
+      "backends": [
+        "java",
+        "net",
+        "llvm",
+        "forge",
+        "wasm"
+      ],
+      "diagnostic": "(?:error|unsupported|invalid|unexpected|expected|unknown|unresolved|not supported|cannot)",
+      "exitCode": 1,
+      "noOutput": true
+    },
+    {
+      "id": "io-dead-branch",
+      "file": "io-dead-branch.ores",
+      "expect": "reject",
+      "backends": [
+        "java",
+        "net",
+        "llvm",
+        "forge",
+        "wasm"
+      ],
+      "diagnostic": "(?:error|unsupported|invalid|unexpected|expected|unknown|unresolved|not supported|cannot)",
+      "exitCode": 1,
+      "noOutput": true
+    }
+  ]
+}

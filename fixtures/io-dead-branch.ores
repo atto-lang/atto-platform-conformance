@@ -1,0 +1,1 @@
+pub fnc main():int{if(false){stdio.println("denied");} return 42;}

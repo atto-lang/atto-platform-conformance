@@ -3,6 +3,7 @@ import {createHash} from "node:crypto";
 import {resolve,dirname,isAbsolute} from "node:path";
 import {fileURLToPath} from "node:url";
 import {spawnSync} from "node:child_process";
+export const BACKENDS=Object.freeze(["java","net","llvm","forge","wasm","browser"]);
 const root=resolve(dirname(fileURLToPath(import.meta.url)),"..");
 function validSha(s){return typeof s==="string" && /^[0-9a-f]{40}$/.test(s)}
 export function validateCommand(argv){
@@ -12,27 +13,32 @@ export function validateCommand(argv){
   throw Error("exactly one standalone {file} positional token is required");
  return argv;
 }
-export async function loadManifest(){
- const manifest=JSON.parse(await readFile(resolve(root,"fixtures/manifest.json"),"utf8"));
+export async function loadManifest(suite="core"){
+ const manifests={core:"manifest.json","mandatory-async":"mandatory-async-manifest.json"};
+ if(!Object.hasOwn(manifests,suite))throw Error("unknown conformance suite");
+ const manifest=JSON.parse(await readFile(resolve(root,"fixtures",manifests[suite]),"utf8"));
  if(manifest.schemaVersion!==1||!Array.isArray(manifest.cases))throw Error("invalid manifest schema");
  const ids=new Set();
  for(const item of manifest.cases){
   if(!item||typeof item.id!=="string"||ids.has(item.id)||!/^[a-z0-9-]+$/.test(item.id))throw Error("invalid/duplicate test id");
   ids.add(item.id);
   if(typeof item.file!=="string"||!/^[-a-z0-9]+\.ores$/.test(item.file))throw Error("invalid fixture path");
-  if(!["accept","reject"].includes(item.expect)||!Array.isArray(item.backends)||!item.backends.length||item.backends.some(x=>!["java","llvm","wasm","browser"].includes(x)))throw Error("invalid fixture expectation/backends");
+  if(!["accept","reject"].includes(item.expect)||!Array.isArray(item.backends)||!item.backends.length||item.backends.some(x=>!BACKENDS.includes(x)))throw Error("invalid fixture expectation/backends");
   if(item.expect==="reject"&&typeof item.diagnostic!=="string")throw Error("negative fixture must require a diagnostic");
+  if(item.exitCode!==undefined && item.exitCode!==1)throw Error("invalid rejection exit code");
+  if(item.noOutput!==undefined && typeof item.noOutput!=="boolean")throw Error("invalid rejection output rule");
   await readFile(resolve(root,"fixtures",item.file),"utf8");
  }
  return manifest;
 }
-export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireConfigured=false,spawn=spawnSync}={}){
- if(!["java","llvm","wasm","browser"].includes(backend))throw Error("unknown backend");
+const itemExitCode=(c,code)=>c.exitCode===undefined?code!==0:code===c.exitCode;
+export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireConfigured=false,suite="core",spawn=spawnSync}={}){
+ if(!BACKENDS.includes(backend))throw Error("unknown backend");
  if(!Number.isSafeInteger(timeoutMs)||timeoutMs<100||timeoutMs>120000)throw Error("timeoutMs must be 100..120000");
- const manifest=await loadManifest();
+ const manifest=await loadManifest(suite);
  const relevant=manifest.cases.filter(x=>x.backends.includes(backend));
  if(!argv){
-  return {backend,sourceSha:sourceSha||null,configured:false,verified:0,failed:0,
+  return {backend,suite,sourceSha:sourceSha||null,configured:false,verified:0,failed:0,
    skipped:relevant.length,ok:!requireConfigured,results:relevant.map(c=>({id:c.id,status:"UNCONFIGURED"}))};
  }
  validateCommand(argv);
@@ -53,13 +59,14 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
   else if(c.expect==="accept")status=output.status===0?"VERIFIED":"MISMATCH";
   else {
    const match=new RegExp(c.diagnostic,"i").test(combined);
-   const diagnostic=/(?:\berror\b|\bundefined\b|\bundeclared\b|\bunknown\b|\bunresolved\b|not found|cannot find)/i.test(combined);
-   status=output.status!==0 && diagnostic && match?"VERIFIED":"MISMATCH";
+   const diagnostic=/(?:\berror\b|\bundefined\b|\bundeclared\b|\bunknown\b|\bunresolved\b|\binvalid\b|\bunexpected\b|\bexpected\b|\bunsupported\b|not found|cannot find)/i.test(combined);
+   const exitMatches=itemExitCode(c,output.status);
+   status=exitMatches && (!c.noOutput || output.stdout==="") && diagnostic && match?"VERIFIED":"MISMATCH";
   }
   results.push({id:c.id,status,fixtureSha256,exitCode:output.status,signal:output.signal||null,
     stdout:output.stdout||"",stderr:output.stderr||""});
  }
  const verified=results.filter(x=>x.status==="VERIFIED").length;
  const failed=results.filter(x=>x.status!=="VERIFIED").length;
- return {backend,declaredSourceSha:sourceSha,executableSha256,provenanceNote:"Source revision was supplied by caller; this harness does not attest that it produced the binary.",configured:true,verified,failed,skipped:0,ok:failed===0 && verified>0,results};
+ return {backend,suite,declaredSourceSha:sourceSha,executableSha256,provenanceNote:"Source revision was supplied by caller; this harness does not attest that it produced the binary.",configured:true,verified,failed,skipped:0,ok:failed===0 && verified>0,results};
 }

@@ -1,0 +1,1 @@
+pub fnc main():int{return wasi.fd_read(0);}

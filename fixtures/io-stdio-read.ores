@@ -1,0 +1,1 @@
+pub fnc main():int{return stdio.read_line();}

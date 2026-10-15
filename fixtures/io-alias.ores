@@ -1,0 +1,1 @@
+pub fnc main():int{let read = fs.read_text; return 42;}

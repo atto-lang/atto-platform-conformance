@@ -1,0 +1,1 @@
+pub fnc main():int{return net.connect("127.0.0.1",1);}

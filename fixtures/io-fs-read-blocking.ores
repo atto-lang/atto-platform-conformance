@@ -1,0 +1,1 @@
+pub fnc main():int{return fs.read_text_blocking("/tmp/denied");}

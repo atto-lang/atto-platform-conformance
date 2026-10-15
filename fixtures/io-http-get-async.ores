@@ -1,0 +1,1 @@
+pub fnc main():int{return http.get_async("http://127.0.0.1:1");}

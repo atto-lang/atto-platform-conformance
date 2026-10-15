@@ -82,3 +82,5 @@ and GitHub Support may be required. See
 [security incident #22](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22).
 
 See https://ores-truffle-oreslang.github.io/logs/2/
+
+See [mandatory nonblocking guest I/O](docs/MANDATORY_ASYNC_IO.md) for enforcement, verification and unsupported surfaces.

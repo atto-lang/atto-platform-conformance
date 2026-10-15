@@ -1,0 +1,1 @@
+pub fnc main():int{return 42;} // fs.read_text_async http.get_async stdio.println legacy-blocking
