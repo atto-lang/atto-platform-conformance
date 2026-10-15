@@ -65,3 +65,18 @@ test("bad timeouts and PATH-dependent commands are rejected",async()=>{
  for(const timeoutMs of [0,99,120001,NaN,Infinity])await assert.rejects(runSuite({backend:"java",timeoutMs}),/timeoutMs/);
  assert.throws(()=>validateCommand(["node","{file}"]),/absolute/);
 });
+
+test("duplicate CLI selectors cannot silently replace compiler invocation or provenance",()=>{
+ const cli=new URL("../bin/conformance.mjs",import.meta.url).pathname;
+ for(const [first,second] of [
+  ["--backend=java","--backend=llvm"],
+  ["--argv=[]","--argv=[]"],
+  ["--source-sha="+sha,"--source-sha="+"0".repeat(40)],
+  ["--timeout-ms=100","--timeout-ms=200"],
+  ["--require","--require"]]){
+  const result=spawnSync(process.execPath,[cli,first,second],{encoding:"utf8"});
+  assert.equal(result.status,2);
+  assert.match(result.stderr,/duplicate conformance argument/);
+  assert.equal(result.stdout,"");
+ }
+});
