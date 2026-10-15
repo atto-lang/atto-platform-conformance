@@ -61,3 +61,19 @@ These comparisons do not independently authenticate the report or prove that an 
 For the LLVM positive fixture, the producer now hashes the exact UTF-8 LLVM IR bytes written to the linker input and the generated native executable both before and after guest execution. The shared adapter requires the IR digest to match recorded compiler stdout and the two executable digests to match, rejecting omitted or inconsistent fields. If Clang reports success but produces no regular executable, the producer fails closed.
 
 These checks detect unintended modification during an observed run but do **not** authenticate self-reported JSON, link the source tree cryptographically to compiler binaries, or prove the absence of a time-of-check/time-of-use race. Java continues to report only the launcher class digest rather than an entire Maven/JDK dependency closure. Public promotion still requires independent CI artifact/run verification.
+
+## Malformed report admission
+
+The shared validator requires exactly two non-null, plain-object case records
+before reading the case IDs or any process fields. A `null`, array, string,
+boolean or missing case is rejected with an explicit `untrusted compiler evidence`
+error rather than allowing an incidental JavaScript `TypeError`. This is a
+fail-closed report parsing boundary, **not** a compiler or binary provenance
+attestation.
+
+The case-shape regression was executed against the exact branch validator with
+both Java and LLVM valid fixtures: **2/2 valid reports accepted**, **14/14
+malformed case variants rejected**. These targeted checks use a deterministic
+mock hash implementation, not the complete Node unit suite or native
+compiler execution. The previous private carrier's 74-pass result predates
+this change and must not be misrepresented as an exact-head pass.
