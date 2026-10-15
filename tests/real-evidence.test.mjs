@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { spawnSync } from "node:child_process";
+import { mkdtempSync, writeFileSync, symlinkSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { validateRealCompilerReport } from "../src/real-evidence.mjs";
 
 const digest = (text) => createHash("sha256").update(text).digest("hex");
@@ -67,8 +71,7 @@ test("rejection requires observed error diagnostics, not a crash or pretend succ
 test("reject command-to-source and linker-to-executable mismatches", () => {
   const attacks = [
     r => r.cases[0].compile.argv[0] = "/tmp/other-compiler",
-    r => r.cases[1].compile.argv.at(-1) === "/tmp/negative.ores" &&
-      (r.cases[1].compile.argv[r.cases[1].compile.argv.length - 1] = "/tmp/positive.ores"),
+    r => { r.cases[1].compile.argv[r.cases[1].compile.argv.length - 1] = "/tmp/positive.ores"; },
     r => r.cases[0].link.argv[5] = "/tmp/wrong-binary",
     r => r.cases[0].link.argv[2] = "c",
   ];
@@ -95,5 +98,34 @@ test("reject missing provenance, changed fixture, timeout, false success or inva
   ]) {
     const r = fixture(); mutation(r);
     assert.throws(() => validateRealCompilerReport(r));
+  }
+});
+
+test("report CLI processes bounded files without granting provenance", () => {
+  const dir = mkdtempSync(join(tmpdir(), "ores-real-evidence-test-"));
+  const cli = new URL("../bin/inspect-real-evidence.mjs", import.meta.url).pathname;
+  try {
+    const valid = join(dir, "valid.json");
+    writeFileSync(valid, JSON.stringify(fixture()));
+    const passed = spawnSync(process.execPath, [cli, valid], {encoding: "utf8"});
+    assert.equal(passed.status, 0, passed.stderr);
+    const data = JSON.parse(passed.stdout);
+    assert.equal(data.authenticity_attested, false);
+    assert.equal(data.publicly_promotable, false);
+
+    const oversized = join(dir, "large.json");
+    writeFileSync(oversized, " ".repeat(256 * 1024 + 1));
+    const blocked = spawnSync(process.execPath, [cli, oversized], {encoding: "utf8"});
+    assert.equal(blocked.status, 1);
+    assert.match(blocked.stderr, /256 KiB/);
+
+    if (process.platform !== "win32") {
+      const alias = join(dir, "alias.json");
+      symlinkSync(valid, alias);
+      const symlinked = spawnSync(process.execPath, [cli, alias], {encoding: "utf8"});
+      assert.equal(symlinked.status, 1);
+    }
+  } finally {
+    rmSync(dir, {recursive: true, force: true});
   }
 });
