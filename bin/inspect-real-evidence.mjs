@@ -8,7 +8,13 @@ const MAX_REPORT_BYTES = 256 * 1024;
 async function readBoundedReport(file) {
   // CI evidence may be externally supplied. Never load unbounded JSON into
   // memory, follow a symlink, or process non-regular files.
-  const handle = await open(file, constants.O_RDONLY | constants.O_NOFOLLOW);
+  // O_NONBLOCK must be present BEFORE fstat: opening a FIFO with O_RDONLY
+  // can otherwise block forever waiting for a writer. O_NOFOLLOW must also
+  // be available or symlinks could be followed on some platforms.
+  if (typeof constants.O_NONBLOCK !== "number" || typeof constants.O_NOFOLLOW !== "number") {
+    throw Error("platform lacks required nonblocking/no-follow file primitives");
+  }
+  const handle = await open(file, constants.O_RDONLY | constants.O_NONBLOCK | constants.O_NOFOLLOW);
   try {
     const stat = await handle.stat();
     if (!stat.isFile() || stat.size > MAX_REPORT_BYTES) {
