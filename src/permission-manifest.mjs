@@ -126,8 +126,13 @@ export function evaluatePermission(layers, permission, resource, scopeMatches) {
       throw new TypeError('resource matcher must return a boolean');
     return result;
   };
-  for (const name of ['host','artifact','runtime','actor','delegated']) {
-    const rule = validatePolicy(layers[name])[permission];
+  // Snapshot and validate every authority layer before invoking any matcher.
+  // A matcher may perform reentrant work: mutating a later policy must not
+  // change the effective authority mid-decision, nor hide malformed layers
+  // behind an earlier deny or missing grant.
+  const rules = ['host','artifact','runtime','actor','delegated']
+    .map(name => validatePolicy(layers[name])[permission]);
+  for (const rule of rules) {
     if (rule.deny.some(matches)) return false;
     if (!rule.allow.some(matches)) return false;
   }
