@@ -13,7 +13,7 @@ const good=name=>({full_name:name,private:true,visibility:"private",
   archived:false,default_branch:"main",permissions:{push:true}});
 
 function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E,meta,errors,
-  mainRefSha=B,mainRefChangeOnRead=0}={}){
+  mainRefSha=B,mainRefChangeOnRead=0,policyBody=null}={}){
   const events=[],seen={source:0,destination:0,main:0};
   const request=async(url,options)=>{
     const method=options.method,path=url.replace(/^https:\/\/api.github.com\/repos\//,"");
@@ -29,7 +29,7 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
     let data;
     if(src){
       if(suffix==="/contents/.github/private-ci-approved-repositories.txt?ref=main"){
-        const bytes=Buffer.from(destination+"\n","utf8");
+        const bytes=Buffer.from(policyBody===null?destination+"\n":policyBody,"utf8");
         data={path:".github/private-ci-approved-repositories.txt",
           encoding:"base64",content:bytes.toString("base64"),size:bytes.length};
       }
@@ -89,6 +89,15 @@ test("real destination Git-object publisher guards every write and only creates 
  assert.ok(h.seen.source>=5&&h.seen.destination>=5,"reverify before every write");
  assert.ok(h.events.some(e=>e.path===destination+"/git/ref/heads/"+opts.newBranch),
    "verify CI ref persisted with pinned SHA");
+});
+test("source-main policy denial stops ALL reads of private Git objects",async()=>{
+ for(const policyBody of ["# approved destinations: none\n","different-org/private\n"]){
+   const {h,promise}=run({policyBody});
+   await assert.rejects(promise,/not approved by trusted source main policy/);
+   assert.equal(h.events.some(e=>e.path===source+"/git/commits/"+A),false);
+   assert.equal(h.events.some(e=>e.path===source+"/git/blobs/"+C),false);
+   assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+ }
 });
 test("untrusted destination base cannot be used to introduce workflows or source",async()=>{
  const {h,promise}=run({mainRefSha:D});
