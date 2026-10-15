@@ -25,8 +25,15 @@ source-main policy, and the pinned destination-main commit before **each**
 Git-object write (blob, tree, commit, or isolated ref). Every source file must
 be placed under a dedicated `snapshots/...` subtree, never at repository
 root or `.github/workflows`, where a mirrored source file could become
-executable GitHub Actions configuration on a temporary branch. Source blob
-base64 is checked for canonical bytes and exact size before publication.
+executable GitHub Actions configuration on a temporary branch. Before
+accessing private source blob bytes, the publisher requires that GitHub's
+returned source commit SHA equals the requested commit, and independently
+rehashes every recursively listed source directory (Git tree format) up to
+the pinned root Git tree SHA. This catches injected, missing, renamed, or
+remoded paths that individually valid blob IDs cannot detect. Source blob
+base64 is then checked for canonical bytes, exact size and SHA before
+publication. The hash check does not substitute for secure transport,
+source repository access control or independent export authorization.
 The exporter publishes only a **new** isolated CI branch after verifying all
 Git objects. Verification must account for the complete materialized Git
 tree: every pinned blob inside the snapshot must match, and every Git object
