@@ -52,6 +52,9 @@ export function validateRealCompilerReport(r) {
   requireField(typeof r.compiler_path === "string" && isAbsolute(r.compiler_path), "missing compiler path");
   requireField(Array.isArray(r.cases) && r.cases.length === 2, "expected exactly two cases");
   const [positive, negative] = r.cases;
+  requireField(positive && typeof positive === "object" && !Array.isArray(positive) &&
+    negative && typeof negative === "object" && !Array.isArray(negative),
+    "invalid compiler evidence case objects");
   requireField(positive.id === "positive" && negative.id === "negative", "unexpected case order");
   requireField(positive.source_sha256 === sourceHash(positives), "positive fixture modified");
   requireField(negative.source_sha256 === sourceHash(negatives), "negative fixture modified");
