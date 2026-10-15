@@ -72,6 +72,10 @@ export function validateRealCompilerReport(r) {
     dirname(negative.compile.argv.at(-1)) === sourceDirectory,
     "fixtures were compiled from mismatched directories");
   requireField(good(positive.compile), "positive source was not accepted");
+  // Validate runtime process structure before cross-process argv comparisons.
+  // A missing argv must be reported as invalid process evidence, not misclassified
+  // as a compiler/linker identity mismatch.
+  validateProcess(positive.execution, "runtime");
   if (r.backend === "java") {
     requireField(typeof r.java_probe_path === "string" && isAbsolute(r.java_probe_path) &&
       positive.compile.argv[1] === r.java_probe_path &&
@@ -118,7 +122,6 @@ export function validateRealCompilerReport(r) {
       "native executable missing or changed between link and execution");
     requireField(good(positive.link), "LLVM link failed");
   }
-  validateProcess(positive.execution, "runtime");
   requireField(positive.execution.exit_code === 42, "runtime did not return 42");
   requireField(rejected(negative.compile), "negative source not rejected with diagnostic");
   requireField(positive.passed === true && negative.passed === true && r.ok === true, "inconsistent report statuses");
