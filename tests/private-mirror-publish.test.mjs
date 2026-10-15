@@ -13,7 +13,7 @@ const good=name=>({full_name:name,private:true,visibility:"private",
   archived:false,default_branch:"main",permissions:{push:true}});
 
 function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E,meta,errors,
-  mainRefSha=B,mainRefChangeOnRead=0,policyBody=null,
+  sourceBlobContent="NDI7Cg==",mainRefSha=B,mainRefChangeOnRead=0,policyBody=null,
   mainRefName="refs/heads/main",mainRefType="commit"}={}){
   const events=[],seen={source:0,destination:0,main:0};
   const request=async(url,options)=>{
@@ -38,7 +38,7 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
       else if(suffix==="/git/trees/"+D+"?recursive=1")
         data=sourceTree||{truncated:false,tree:[{type:"blob",path:"main.ores",sha:C,size:4,mode:"100644"}]};
       else if(suffix==="/git/blobs/"+C)
-        data={sha:C,encoding:"base64",content:"NDI7Cg==",size:4};
+        data={sha:C,encoding:"base64",content:sourceBlobContent,size:4};
     } else {
       if(suffix==="/git/ref/heads/main"&&method==="GET"){
         seen.main++;
@@ -186,6 +186,23 @@ test("untrusted source tree types and truncated trees never cause destination wr
   assert.equal(h.events.filter(e=>e.method==="POST").length,0);
  }
 });
+test("malformed source blob base64 is denied before destination writes",async()=>{
+ const malformed=[
+  "!!!!", "NDI7", "NDI7Cg==junk", "NDI7Cg===",
+  "", Buffer.alloc(16,42).toString("base64"),
+  "NDI7Cg==\\u0000"
+ ];
+ for(const sourceBlobContent of malformed){
+  const {h,promise}=run({sourceBlobContent});
+  await assert.rejects(promise,/source blob payload is not valid pinned base64/);
+  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+ }
+ // GitHub may line-wrap a valid blob. Canonical normalization is still safe.
+ const {h,promise}=run({sourceBlobContent:"NDI7\\nCg=="});
+ await promise;
+ assert.equal(h.events.filter(e=>e.method==="POST").length,4);
+});
+
 test("source-to-destination blob mismatch halts without publishing tree/ref",async()=>{
  const {h,promise}=run({blobSha:D});
  await assert.rejects(promise,/destination blob SHA differs/);
