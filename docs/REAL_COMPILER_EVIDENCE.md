@@ -7,7 +7,7 @@ The shared platform-conformance harness currently tests its own runner with a fa
 - Java/GraalVM: `oreslang-source.java/.github/workflows/graal-conformance.yml` executes `scripts/ai-conformance-smoke.py` using the built Java launcher through the reviewed Python probe.
 - LLVM: `oreslang-source.llvm/.github/workflows/llvm-conformance.yml` executes `scripts/ai-conformance-smoke.py` using `build/oreslang-llvmc`, then asks clang to link the generated IR and runs the resulting executable.
 - Each producer tests `main()` returning 42 and a rejected reference to `nonexistent_symbol`. Positive source acceptance plus runtime result, and a real negative compiler diagnostic, are separately required.
-- Producers record exact argv, process outputs and exit status, selected backend, source fixture SHA-256, compiler artifact digest (native executable for LLVM, Java launcher class for Graal), process-invoker digest, source checkout SHA and CI run identity. Timeouts and truncated results fail closed. Process output is captured in temporary files to avoid unbounded in-memory buffering; these are not OS-level network or filesystem sandboxes.
+- Producers record exact argv, process outputs and exit status, selected backend, source fixture SHA-256, compiler artifact digest (native executable for LLVM, Java launcher class for Graal), process-invoker digest, source checkout SHA and CI run identity. Timeouts and truncated results fail closed. Process output is read incrementally with bounded in-memory buffers (32 KiB per stream); these are not OS-level network or filesystem sandboxes.
 
 ## Ingesting an approved, sanitized artifact
 
@@ -55,3 +55,9 @@ The GitHub Actions diagnostic classifies steps using execution evidence rather t
 The real Java and LLVM producers independently run git rev-parse --verify HEAD in their source worktrees, reject --source-sha when it differs, and record actual_git_checkout_sha in the report. The shared validator requires that recorded checkout SHA to equal the declared commit SHA. Under pull_request workflows, github.sha may identify GitHub's synthetic merge commit; the source identity must be interpreted as the checked-out tree, not automatically as the PR branch head.
 
 These comparisons do not independently authenticate the report or prove that an executable was built reproducibly from that commit. They do not allow public example promotion or merging without real successful source-repository CI.
+
+## IR and native executable fingerprints
+
+For the LLVM positive fixture, the producer now hashes the exact UTF-8 LLVM IR bytes written to the linker input and the generated native executable both before and after guest execution. The shared adapter requires the IR digest to match recorded compiler stdout and the two executable digests to match, rejecting omitted or inconsistent fields. If Clang reports success but produces no regular executable, the producer fails closed.
+
+These checks detect unintended modification during an observed run but do **not** authenticate self-reported JSON, link the source tree cryptographically to compiler binaries, or prove the absence of a time-of-check/time-of-use race. Java continues to report only the launcher class digest rather than an entire Maven/JDK dependency closure. Public promotion still requires independent CI artifact/run verification.
