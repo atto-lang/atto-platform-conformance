@@ -54,6 +54,26 @@ test("real-process report is internally consistent but never promotes itself", (
     assert.equal(result.publicly_promotable, false);
   }
 });
+test("malformed compiler case structures fail closed with controlled errors", () => {
+  const badCases = [
+    [null, {}],
+    [{}, null],
+    [[], {}],
+    [{}, []],
+    ["positive", {}],
+    [true, {}],
+    [{ id: "positive" }, { id: "negative" }],
+  ];
+  for (const backend of ["llvm", "java"]) {
+    for (const cases of badCases) {
+      const r = fixture(backend);
+      r.cases = cases;
+      assert.throws(() => validateRealCompilerReport(r),
+        /untrusted compiler evidence:/);
+    }
+  }
+});
+
 test("native runtime processes legitimately have one argv element", () => {
   const r = fixture("llvm");
   assert.deepEqual(r.cases[0].execution.argv, ["/tmp/app"]);
