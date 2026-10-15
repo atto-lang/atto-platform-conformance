@@ -18,7 +18,7 @@ function fixture(records = {}, calls = []) {
     const name = url.slice("https://api.github.com/repos/".length);
     const policyUrl = source + "/contents/.github/private-ci-approved-repositories.txt?ref=main";
     if (name === policyUrl) {
-      const content = Buffer.from("## approved by trusted main\\n" + destination + "\\n", "utf8");
+      const content = Buffer.from("## approved by trusted main\n" + destination + "\n", "utf8");
       const defaultRecord = {
         path: ".github/private-ci-approved-repositories.txt",
         encoding: "base64", content: content.toString("base64"), size: content.length,
@@ -86,7 +86,7 @@ test("unknown, unauthorized and missing metadata fail closed", async () => {
 
 test("a caller allowlist cannot override the trusted main policy", async () => {
   const key = source + "/contents/.github/private-ci-approved-repositories.txt?ref=main";
-  for(const body of ["# no approved destinations\\n", "other/team\\n"]) {
+  for(const body of ["# no approved destinations\n", "other/team\n"]) {
     const bytes = Buffer.from(body, "utf8");
     const calls = [];
     await assert.rejects(
