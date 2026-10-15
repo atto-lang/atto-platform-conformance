@@ -15,21 +15,34 @@ export function assessRun(run, jobsResponse) {
   const jobs = jobsResponse.jobs;
   const complete = Number.isSafeInteger(jobsResponse.total_count) &&
     jobsResponse.total_count === jobs.length;
-  const normalized = jobs.map((job) => ({
-    id: job.id,
-    name: job.name,
-    status: job.status,
-    conclusion: job.conclusion ?? null,
-    runner_allocated: Number.isSafeInteger(job.runner_id) && job.runner_id > 0,
-    step_count: Array.isArray(job.steps) ? job.steps.length : null,
-    failed_step_count: Array.isArray(job.steps)
-      ? job.steps.filter(step => step.conclusion === "failure").length : null,
-  }));
+  const isExecuted = step =>
+    step && typeof step === "object" &&
+    (step.status === "in_progress" ||
+      (step.status === "completed" &&
+        ["success", "failure", "cancelled", "timed_out", "neutral"].includes(step.conclusion)) ||
+      (typeof step.started_at === "string" && step.started_at.length > 0 &&
+        step.conclusion !== "skipped"));
+  const normalized = jobs.map((job) => {
+    const steps = Array.isArray(job.steps) ? job.steps : null;
+    const executed = steps?.filter(isExecuted) ?? null;
+    return {
+      id: job.id,
+      name: job.name,
+      status: job.status,
+      conclusion: job.conclusion ?? null,
+      runner_allocated: Number.isSafeInteger(job.runner_id) && job.runner_id > 0,
+      step_count: steps?.length ?? null,
+      executed_step_count: executed?.length ?? null,
+      failed_step_count: executed?.filter(step => step.conclusion === "failure").length ?? null,
+    };
+  });
   const allCompleted = jobs.length > 0 && jobs.every(j => j.status === "completed");
-  const anyExecuted = normalized.some(j => (j.step_count ?? 0) > 0);
-  const allNoSteps = normalized.every(j => j.step_count === 0);
+  const allStepsKnown = normalized.every(j => j.step_count !== null);
+  const anyExecuted = normalized.some(j => (j.executed_step_count ?? 0) > 0);
+  const allNoSteps = allStepsKnown && normalized.every(j => j.executed_step_count === 0);
   let classification;
   if (!complete) classification = "INCOMPLETE_JOB_LIST";
+  else if (!allStepsKnown && jobs.length > 0) classification = "UNKNOWN_STEP_DETAILS";
   else if (jobs.length === 0) classification = "NO_JOBS_RECORDED";
   else if (!allCompleted) classification = "IN_PROGRESS_OR_QUEUED";
   else if (allNoSteps) classification = "NO_EXECUTED_STEPS";
@@ -49,6 +62,7 @@ export function assessRun(run, jobsResponse) {
     classification,
     job_list_complete: complete,
     job_count: jobs.length,
+    executed_step_count: normalized.reduce((sum, j) => sum + (j.executed_step_count ?? 0), 0),
     jobs: normalized,
     root_cause_established: false,
     guidance: classification === "NO_EXECUTED_STEPS"
@@ -88,7 +102,7 @@ async function main() {
   if (run.id !== runId) throw Error("GitHub run identity mismatch");
   const result = assessRun(run, jobs);
   console.log(JSON.stringify(result, null, 2));
-  if (result.classification !== "EXECUTED_STEPS_SUCCEEDED" || run.conclusion !== "success")
+  if (result.classification !== "EXECUTED_STEPS_SUCCEEDED" || run.conclusion !== "success" || run.status !== "completed")
     process.exitCode = 1;
 }
 
