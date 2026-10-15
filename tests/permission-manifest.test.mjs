@@ -164,12 +164,14 @@ test('all authority layers are validated and snapshotted before matcher callback
 test('inconsistent matchers cannot promote an overlapping explicit deny into a grant', () => {
   const scope = 'api.example.com:443';
   const overlap = scoped('net', [scope], [scope]);
-  const layers = {host: overlap, artifact: overlap, runtime: overlap,
-                  actor: overlap, delegated: overlap};
+  const grant = scoped('net', [scope]);
+  const layers = {host: overlap, artifact: grant, runtime: grant,
+                  actor: grant, delegated: grant};
   let invocations = 0;
   const flippingMatcher = () => (++invocations > 1);
-  // Previously: first host deny returned false, next host allow true,
-  // and later checks returned true, allowing a scope explicitly denied.
+  // Original behavior: the first host deny returned false; host allow
+  // and all later grants returned true. No other layer had a deny,
+  // so the explicitly denied host scope was incorrectly authorized.
   assert.equal(evaluatePermission(layers, 'net', scope, flippingMatcher), false);
   assert.equal(invocations, 1, 'matcher must be called once per unique scope');
 });
