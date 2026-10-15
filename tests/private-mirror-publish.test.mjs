@@ -12,8 +12,9 @@ const opts={source,destination,sourceCommit:A,destinationBaseCommit:B,
 const good=name=>({full_name:name,private:true,visibility:"private",
   archived:false,default_branch:"main",permissions:{push:true}});
 
-function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E,meta,errors}={}){
-  const events=[],seen={source:0,destination:0};
+function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E,meta,errors,
+  mainRefSha=B,mainRefChangeOnRead=0}={}){
+  const events=[],seen={source:0,destination:0,main:0};
   const request=async(url,options)=>{
     const method=options.method,path=url.replace(/^https:\/\/api.github.com\/repos\//,"");
     events.push({path,method,body:options.body?JSON.parse(options.body):undefined});
@@ -38,7 +39,12 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
       else if(suffix==="/git/blobs/"+C)
         data={sha:C,encoding:"base64",content:"NDI7Cg==",size:4};
     } else {
-      if(suffix==="/git/commits/"+B)data={tree:{sha:E}};
+      if(suffix==="/git/ref/heads/main"&&method==="GET"){
+        seen.main++;
+        data={ref:"refs/heads/main",object:{type:"commit",
+          sha:mainRefChangeOnRead&&seen.main>=mainRefChangeOnRead?D:mainRefSha}};
+      }
+      else if(suffix==="/git/commits/"+B)data={tree:{sha:E}};
       else if(suffix==="/git/trees/"+E+"?recursive=1")
         data=destinationTree||{truncated:false,tree:[{path:"unrelated/readme.txt",type:"blob"}]};
       else if(suffix==="/git/trees/"+D+"?recursive=1")
@@ -83,6 +89,23 @@ test("real destination Git-object publisher guards every write and only creates 
  assert.ok(h.seen.source>=5&&h.seen.destination>=5,"reverify before every write");
  assert.ok(h.events.some(e=>e.path===destination+"/git/ref/heads/"+opts.newBranch),
    "verify CI ref persisted with pinned SHA");
+});
+test("untrusted destination base cannot be used to introduce workflows or source",async()=>{
+ const {h,promise}=run({mainRefSha:D});
+ await assert.rejects(promise,/destination base must equal current trusted main HEAD/);
+ assert.equal(h.events.some(e=>e.path===source+"/git/commits/"+A),false);
+ assert.equal(h.events.some(e=>e.path===source+"/git/blobs/"+C),false);
+ assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+});
+test("destination main changing before commit or new ref fails closed",async()=>{
+ for(const changeRead of [2,3]){
+   const {h,promise}=run({mainRefChangeOnRead:changeRead});
+   await assert.rejects(promise,/destination base must equal current trusted main HEAD/);
+   assert.equal(h.events.some(e=>e.path===destination+"/git/refs"),false);
+   if(changeRead===2){
+     assert.equal(h.events.some(e=>e.path===destination+"/git/commits"&&e.method==="POST"),false);
+   }
+ }
 });
 test("public destinations fail BEFORE fetching private source or writing anything",async()=>{
  const {h,promise}=run({meta:(name)=>name===destination?{...good(name),private:false,visibility:"public"}:good(name)});
