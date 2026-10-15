@@ -47,3 +47,11 @@ The tool reads run and job metadata without mirroring private code, creating run
 An administrator still needs the GitHub Actions run-summary banner and org-level billing, spending-limit, Actions policy, and runner-capacity checks. A private carrier without executing steps is not a working substitute. Never copy private compiler trees into public or unapproved repositories.
 
 The six offline unit tests are included in npm test. They are diagnostic-tool tests, not compiler conformance evidence.
+
+## 2026-10-14 additional audit: execution and source-identity classification
+
+The GitHub Actions diagnostic classifies steps using execution evidence rather than the mere presence of entries in the steps array. A completed job that contains only skipped or queued steps is classified as NO_EXECUTED_STEPS. Missing step details yield UNKNOWN_STEP_DETAILS and incomplete pagination yields INCOMPLETE_JOB_LIST; neither permits a CI-success inference.
+
+The real Java and LLVM producers independently run git rev-parse --verify HEAD in their source worktrees, reject --source-sha when it differs, and record actual_git_checkout_sha in the report. The shared validator requires that recorded checkout SHA to equal the declared commit SHA. Under pull_request workflows, github.sha may identify GitHub's synthetic merge commit; the source identity must be interpreted as the checked-out tree, not automatically as the PR branch head.
+
+These comparisons do not independently authenticate the report or prove that an executable was built reproducibly from that commit. They do not allow public example promotion or merging without real successful source-repository CI.
