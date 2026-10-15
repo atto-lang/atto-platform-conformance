@@ -133,7 +133,8 @@ export async function requirePrivateMirror({
   }
   const destinationRepo = await repoMetadata(to, token, fetchImpl);
   if (destinationRepo.private !== true || destinationRepo.visibility !== "private" ||
-      destinationRepo.archived === true || destinationRepo.permissions?.push !== true) {
+      destinationRepo.archived === true || destinationRepo.permissions?.push !== true ||
+      destinationRepo.default_branch !== "main") {
     throw Error("destination must be a writable verified PRIVATE GitHub repository");
   }
   await requireReviewedApproval(from, to, sourceRepo, token, fetchImpl);
