@@ -117,6 +117,21 @@ export async function publishPrivateMirror({
        (wanted.startsWith(current+"/")&&item.type!=="tree"))
       throw Error("destination snapshot prefix is not empty or conflicts with existing path");
   }
+  // Validate the complete source-independent part of the destination base.
+  // Materializing a verified snapshot MUST NOT silently alter a workflow,
+  // configuration or any other file elsewhere in the carrier repository.
+  // Parent tree hashes naturally change when a nested snapshot is added.
+  const isUnrelated=path=>path!==prefix&&!path.startsWith(prefix+"/")&&
+    !prefix.startsWith(path+"/");
+  const baseUnrelated=new Map();
+  for(const item of baseInventory.tree){
+    if(!isUnrelated(item.path))continue;
+    if(!["tree","blob","commit"].includes(item.type)||
+       typeof item.mode!=="string"||!OID.test(item.sha||"")||
+       baseUnrelated.has(item.path))
+      throw Error("destination base outside snapshot cannot be attested");
+    baseUnrelated.set(item.path,item);
+  }
   const entries=[];
   for(const file of files){
     const srcBlob=await githubRequest(source,"/git/blobs/"+file.sha,token,{fetchImpl});
@@ -172,11 +187,24 @@ export async function publishPrivateMirror({
     throw Error("materialized destination snapshot cannot be verified");
   const expected=new Map(entries.map(e=>[e.path,e]));
   let verified=0;
-  const seenMaterialized=new Set();
+  const seenMaterialized=new Set(),seenUnrelated=new Set();
   for(const item of materialized.tree){
     if(typeof item?.path!=="string"||typeof item.type!=="string")
       throw Error("invalid materialized snapshot tree entry");
-    if(item.path===prefix||!item.path.startsWith(prefix+"/"))continue;
+    if(isUnrelated(item.path)){
+      const original=baseUnrelated.get(item.path);
+      if(!original||seenUnrelated.has(item.path)||
+         item.type!==original.type||item.mode!==original.mode||
+         item.sha!==original.sha)
+        throw Error("materialized destination changed files outside snapshot");
+      seenUnrelated.add(item.path);
+      continue;
+    }
+    if(item.path===prefix||prefix.startsWith(item.path+"/")){
+      if(item.type!=="tree")
+        throw Error("materialized snapshot parent is not a tree");
+      continue;
+    }
     if(item.type==="tree"){
       if(!entries.some(e=>e.path.startsWith(item.path+"/")))
         throw Error("materialized snapshot contains unexpected empty directory");
@@ -193,6 +221,8 @@ export async function publishPrivateMirror({
   }
   if(verified!==entries.length)
     throw Error("materialized snapshot omits pinned source blobs");
+  if(seenUnrelated.size!==baseUnrelated.size)
+    throw Error("materialized destination omitted files outside snapshot");
   await authorize();
   await requireTrustedBase();
   const result=await githubRequest(destination,"/git/commits",token,{
