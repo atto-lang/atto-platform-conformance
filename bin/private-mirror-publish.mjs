@@ -122,6 +122,15 @@ export async function publishPrivateMirror({
     if(srcBlob?.sha!==file.sha||srcBlob.encoding!=="base64"||
        typeof srcBlob.content!=="string"||srcBlob.size!==file.size)
       throw Error("source blob content identity or encoding mismatch");
+    // Verify the transport representation BEFORE copying private bytes.
+    // Node's base64 decoder alone is permissive of malformed/trailing data;
+    // require a canonical round-trip and the pinned Git tree's byte length.
+    const encoded=srcBlob.content.replace(/\s/g,"");
+    if(encoded.length>Math.ceil(file.size/3)*4+4||
+       !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(encoded)||
+       Buffer.from(encoded,"base64").length!==file.size||
+       Buffer.from(encoded,"base64").toString("base64")!==encoded)
+      throw Error("source blob payload is not valid pinned base64");
     // Recheck confidentiality and the reviewed destination-main base
     // BEFORE every Git object mutation, including unreferenced blob writes.
     await authorize();
