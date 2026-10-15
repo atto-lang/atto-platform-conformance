@@ -88,7 +88,7 @@ async function requireReviewedApproval(source, destination, sourceRepo, token, f
   catch { throw Error("trusted source destination policy invalid"); }
   if (!record || record.path !== POLICY_PATH || record.encoding !== "base64" ||
       !Number.isSafeInteger(record.size) || record.size < 0 || record.size > 4096 ||
-      typeof record.content !== "string")
+      typeof record.content !== "string" || record.content.length > 8192)
     throw Error("trusted source destination policy invalid");
   const encoded = record.content.replace(/\s/g, "");
   if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(encoded))
