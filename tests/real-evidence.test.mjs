@@ -63,8 +63,8 @@ test("native runtime processes legitimately have one argv element", () => {
 
 test("rejection requires observed error diagnostics, not a crash or pretend success", () => {
   for (const [exitCode, text] of [[0, "error: nonexistent_symbol"],
-    [1, "disk failure"], [1, "error: disk full\\nsource text: nonexistent_symbol"],
-    [1, "nonexistent_symbol\\nunrelated error: disk full"],
+    [1, "disk failure"], [1, "error: disk full\nsource text: nonexistent_symbol"],
+    [1, "nonexistent_symbol\nunrelated error: disk full"],
     [1, "Traceback: error nonexistent_symbol"]]) {
     const r = fixture(); r.cases[1].compile.exit_code = exitCode;
     r.cases[1].compile.stderr = text;
