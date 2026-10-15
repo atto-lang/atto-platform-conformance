@@ -30,6 +30,7 @@ function fixture(backend = "llvm") {
     compiler_artifact_sha256: backend === "java" ? "b".repeat(64) : "a".repeat(64),
     compiler_artifact_kind: backend === "java" ? "java-launcher-class-only" : "llvm-native-executable",
     compiler_verification: "real-process-observation-only",
+    java_probe_path: "/opt/java_probe.py", clang_path: "/usr/bin/clang",
     launcher_class_sha256: "b".repeat(64), maven_classpath_sha256: "c".repeat(64),
     java_probe_sha256: "d".repeat(64), clang_sha256: "e".repeat(64),
     cases: [
@@ -83,6 +84,15 @@ test("reject command-to-source and linker-to-executable mismatches", () => {
   const java = fixture("java");
   java.cases[0].execution.argv[3] = "--check";
   assert.throws(() => validateRealCompilerReport(java));
+});
+
+test("report may not substitute an unrecorded linker or probe binary", () => {
+  const llvm = fixture("llvm");
+  llvm.clang_path = "/usr/local/bin/fake-clang";
+  assert.throws(() => validateRealCompilerReport(llvm), /Clang identity/);
+  const java = fixture("java");
+  java.java_probe_path = "/opt/other.py";
+  assert.throws(() => validateRealCompilerReport(java), /Java probe identity/);
 });
 
 test("reject missing provenance, changed fixture, timeout, false success or invalid IR", () => {
