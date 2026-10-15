@@ -122,8 +122,10 @@ export async function publishPrivateMirror({
     if(srcBlob?.sha!==file.sha||srcBlob.encoding!=="base64"||
        typeof srcBlob.content!=="string"||srcBlob.size!==file.size)
       throw Error("source blob content identity or encoding mismatch");
-    // Recheck CURRENT confidentiality before EVERY destination mutation.
+    // Recheck confidentiality and the reviewed destination-main base
+    // BEFORE every Git object mutation, including unreferenced blob writes.
     await authorize();
+    await requireTrustedBase();
     const pushed=await githubRequest(destination,"/git/blobs",token,{
       method:"POST",body:{content:srcBlob.content,encoding:"base64"},fetchImpl
     });
@@ -131,6 +133,7 @@ export async function publishPrivateMirror({
     entries.push({path:prefix+"/"+file.path,mode:file.mode,type:"blob",sha:pushed.sha});
   }
   await authorize();
+  await requireTrustedBase();
   const targetTree=await githubRequest(destination,"/git/trees",token,{
     method:"POST",body:{base_tree:base.tree.sha,tree:entries},fetchImpl
   });
