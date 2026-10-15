@@ -40,6 +40,15 @@ test("real-process report is internally consistent but never promotes itself", (
     assert.equal(result.publicly_promotable, false);
   }
 });
+test("native runtime processes legitimately have one argv element", () => {
+  const r = fixture("llvm");
+  assert.deepEqual(r.cases[0].execution.argv, ["/tmp/app"]);
+  assert.equal(validateRealCompilerReport(r).consistency_valid, true);
+  const invalid = fixture("llvm");
+  invalid.cases[0].execution.argv = [];
+  assert.throws(() => validateRealCompilerReport(invalid), /argv invalid/);
+});
+
 test("rejection requires observed error diagnostics, not a crash or pretend success", () => {
   for (const [exitCode, text] of [[0, "error: nonexistent_symbol"],
     [1, "disk failure"], [1, "Traceback: error nonexistent_symbol"]]) {
