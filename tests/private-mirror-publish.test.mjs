@@ -198,9 +198,11 @@ test("malformed source blob base64 is denied before destination writes",async()=
   assert.equal(h.events.filter(e=>e.method==="POST").length,0);
  }
  // GitHub may line-wrap a valid blob. Canonical normalization is still safe.
- const {h,promise}=run({sourceBlobContent:"NDI7\\nCg=="});
+ const {h,promise}=run({sourceBlobContent:"NDI7\nCg=="});
  await promise;
  assert.equal(h.events.filter(e=>e.method==="POST").length,4);
+ const blob=h.events.find(e=>e.path===destination+"/git/blobs"&&e.method==="POST");
+ assert.equal(blob.body.content,"NDI7Cg==","publish canonical bytes only");
 });
 
 test("source-to-destination blob mismatch halts without publishing tree/ref",async()=>{
