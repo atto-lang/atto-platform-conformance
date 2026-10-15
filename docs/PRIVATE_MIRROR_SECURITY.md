@@ -35,3 +35,23 @@ for future transfers or supersede origin branch-protection checks.
 
 Test changes with `npm test` before any real source transfer. Tests
 inject mock GitHub responses and never copy private source.
+
+## Trusted destination main base
+
+The publisher must bind `destinationBaseCommit` to the destination's live
+`refs/heads/main` **before accessing any private Git source objects**. It
+rechecks that exact ref immediately before creating the destination commit
+and before publishing the new isolated branch. A caller-provided destination
+commit is not enough: an arbitrary existing Git object could contain
+unreviewed GitHub Actions workflows or stale confidential content.
+
+A fast-changing destination `main` is treated as a failed admission rather
+than silently rebasing: restart with a separately reviewed new base.
+Although this prevents intentionally stale or unrelated base commits, it
+does **not** authenticate what is in destination `main`, prove CODEOWNER
+review, or exclude a race after the final ref read. Security reviewers must
+inspect the trusted destination workflows and access before approval.
+
+The security regression suite includes an initial forged base, a changed
+base before commit, a changed base before ref publication, empty/incorrect
+source-main destination policy, and a non-main destination default branch.
