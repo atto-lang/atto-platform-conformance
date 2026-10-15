@@ -20,9 +20,15 @@ Do not use environment-supplied approvals, a public destination, or
 generic cross-org file copying to evade this restriction. Repo-level
 GitHub Actions authorization to execute does not replace this policy.
 
-The trusted exporter revalidates repository visibility and the reviewed
-default-branch approval before each write; it publishes only a **new**
-isolated CI branch after verifying all Git objects. A Git tree hash
+The trusted exporter revalidates repository visibility, the approved
+source-main policy, and the pinned destination-main commit before **each**
+Git-object write (blob, tree, commit, or isolated ref). Every source file must
+be placed under a dedicated `snapshots/...` subtree, never at repository
+root or `.github/workflows`, where a mirrored source file could become
+executable GitHub Actions configuration on a temporary branch. Source blob
+base64 is checked for canonical bytes and exact size before publication.
+The exporter publishes only a **new** isolated CI branch after verifying all
+Git objects. A Git tree hash
 confirms exact bytes, not that the transfer was authorized or that the
 compiler worked. Even after a temporary branch is deleted or rewound,
 retained Git objects, Actions caches and logs require separate review.
@@ -40,8 +46,8 @@ inject mock GitHub responses and never copy private source.
 
 The publisher must bind `destinationBaseCommit` to the destination's live
 `refs/heads/main` **before accessing any private Git source objects**. It
-rechecks that exact ref immediately before creating the destination commit
-and before publishing the new isolated branch. A caller-provided destination
+rechecks that exact ref before **every** destination blob/tree/commit/ref
+mutation, not only at final branch publication. A caller-provided destination
 commit is not enough: an arbitrary existing Git object could contain
 unreviewed GitHub Actions workflows or stale confidential content.
 
