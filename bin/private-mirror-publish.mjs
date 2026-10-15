@@ -52,9 +52,19 @@ export async function publishPrivateMirror({
   const authorize=()=>requirePrivateMirror({
     source,destination,approvedDestinations,token,fetchImpl
   });
+  // The caller must not supply an arbitrary destination base tree containing
+  // attacker-controlled workflows or stale confidential source. Pin the base
+  // to the current, reviewed default-main ref, and recheck it before publish.
+  const requireTrustedBase=async()=>{
+    const ref=await githubRequest(destination,"/git/ref/heads/main",token,{fetchImpl});
+    if(ref?.ref!=="refs/heads/main"||ref?.object?.type!=="commit"||
+       ref?.object?.sha!==destinationBaseCommit)
+      throw Error("destination base must equal current trusted main HEAD");
+  };
   // FIRST external operation: authorization, before ANY source bytes are fetched
   // and before ANY destination object/ref is created.
   await authorize();
+  await requireTrustedBase();
   const srcCommit=await githubRequest(source,"/git/commits/"+sourceCommit,token,{fetchImpl});
   if(!srcCommit?.tree?.sha||!OID.test(srcCommit.tree.sha))throw Error("source commit has no pinned tree");
   const srcTree=await githubRequest(source,"/git/trees/"+srcCommit.tree.sha+"?recursive=1",token,{fetchImpl});
@@ -150,12 +160,14 @@ export async function publishPrivateMirror({
   if(verified!==entries.length)
     throw Error("materialized snapshot omits pinned source blobs");
   await authorize();
+  await requireTrustedBase();
   const result=await githubRequest(destination,"/git/commits",token,{
     method:"POST",body:{message:"ci: verified private source snapshot "+sourceCommit,
       tree:targetTree.sha,parents:[destinationBaseCommit]},fetchImpl
   });
   sha(result.sha);
   await authorize();
+  await requireTrustedBase();
   const createdRef=await githubRequest(destination,"/git/refs",token,{
     method:"POST",body:{ref:"refs/heads/"+newBranch,sha:result.sha},fetchImpl
   });
