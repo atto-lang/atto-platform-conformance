@@ -47,11 +47,16 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
       }
       else if(suffix==="/git/commits/"+B)data={tree:{sha:E}};
       else if(suffix==="/git/trees/"+E+"?recursive=1")
-        data=destinationTree||{truncated:false,tree:[{path:"unrelated/readme.txt",type:"blob"}]};
+        data=destinationTree||{truncated:false,tree:[
+          {path:"unrelated",type:"tree",mode:"040000",sha:A},
+          {path:"unrelated/readme.txt",type:"blob",mode:"100644",sha:C}
+        ]};
       else if(suffix==="/git/trees/"+D+"?recursive=1")
         data=materializedTree||{truncated:false,tree:[
-          {path:"snapshots",type:"tree"},
-          {path:"snapshots/checked",type:"tree"},
+          {path:"unrelated",type:"tree",mode:"040000",sha:A},
+          {path:"unrelated/readme.txt",type:"blob",mode:"100644",sha:C},
+          {path:"snapshots",type:"tree",mode:"040000",sha:D},
+          {path:"snapshots/checked",type:"tree",mode:"040000",sha:E},
           {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C}
         ]};
       else if(suffix==="/git/blobs"&&method==="POST")
@@ -284,6 +289,29 @@ test("unsafe branch dot paths and lock-file suffixes are rejected before API acc
   const {h,promise}=run({}, {newBranch});
   await assert.rejects(promise,/isolated CI branch/);
   assert.equal(h.events.length,0);
+ }
+});
+
+test("materialized snapshot cannot mutate files outside the allowed subtree",async()=>{
+ const unrelated={path:"unrelated/readme.txt",type:"blob",mode:"100644",sha:C};
+ const valid=[
+  {path:"unrelated",type:"tree",mode:"040000",sha:A},
+  unrelated,
+  {path:"snapshots",type:"tree",mode:"040000",sha:D},
+  {path:"snapshots/checked",type:"tree",mode:"040000",sha:E},
+  {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C}
+ ];
+ for(const changed of [
+  valid.map(x=>x.path===unrelated.path?{...x,sha:B}:x),
+  valid.filter(x=>x.path!==unrelated.path),
+  [...valid,{path:".github/workflows/injected.yml",type:"blob",mode:"100644",sha:B}],
+  [...valid,unrelated],
+  valid.map(x=>x.path==="snapshots/checked"?{...x,type:"blob"}:x)
+ ]){
+  const {h,promise}=run({materializedTree:{truncated:false,tree:changed}});
+  await assert.rejects(promise,/materialized destination|materialized snapshot/);
+  assert.equal(h.events.some(e=>e.method==="POST"&&
+    [destination+"/git/commits",destination+"/git/refs"].includes(e.path)),false);
  }
 });
 
