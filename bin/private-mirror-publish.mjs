@@ -8,6 +8,7 @@
 import {pathToFileURL} from "node:url";
 import {createHash} from "node:crypto";
 import {requirePrivateMirror} from "./require-private-mirror.mjs";
+import {verifySourceTree} from "./verify-source-tree.mjs";
 
 const OID=/^[a-f0-9]{40}$/;
 const PATH=/^[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*$/;
@@ -73,9 +74,13 @@ export async function publishPrivateMirror({
   await authorize();
   await requireTrustedBase();
   const srcCommit=await githubRequest(source,"/git/commits/"+sourceCommit,token,{fetchImpl});
-  if(!srcCommit?.tree?.sha||!OID.test(srcCommit.tree.sha))throw Error("source commit has no pinned tree");
+  if(srcCommit?.sha!==sourceCommit||!OID.test(srcCommit?.tree?.sha||""))
+    throw Error("source commit SHA or pinned tree is invalid");
   const srcTree=await githubRequest(source,"/git/trees/"+srcCommit.tree.sha+"?recursive=1",token,{fetchImpl});
-  if(srcTree.truncated!==false||!Array.isArray(srcTree.tree))throw Error("source tree incomplete");
+  // A GitHub API listing, even with individually pinned blob IDs, does not
+  // prove those paths and modes belong to the source commit. Rehash ALL tree
+  // objects and the source root before reading or publishing a private blob.
+  verifySourceTree(srcCommit.tree.sha,srcTree);
   const files=srcTree.tree.filter(x=>x.type==="blob");
   if(files.length===0||files.length>750||srcTree.tree.length>3000)
     throw Error("unsupported source tree size");
