@@ -13,7 +13,8 @@ const good=name=>({full_name:name,private:true,visibility:"private",
   archived:false,default_branch:"main",permissions:{push:true}});
 
 function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E,meta,errors,
-  mainRefSha=B,mainRefChangeOnRead=0,policyBody=null}={}){
+  mainRefSha=B,mainRefChangeOnRead=0,policyBody=null,
+  mainRefName="refs/heads/main",mainRefType="commit"}={}){
   const events=[],seen={source:0,destination:0,main:0};
   const request=async(url,options)=>{
     const method=options.method,path=url.replace(/^https:\/\/api.github.com\/repos\//,"");
@@ -41,7 +42,7 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
     } else {
       if(suffix==="/git/ref/heads/main"&&method==="GET"){
         seen.main++;
-        data={ref:"refs/heads/main",object:{type:"commit",
+        data={ref:mainRefName,object:{type:mainRefType,
           sha:mainRefChangeOnRead&&seen.main>=mainRefChangeOnRead?D:mainRefSha}};
       }
       else if(suffix==="/git/commits/"+B)data={tree:{sha:E}};
@@ -105,6 +106,19 @@ test("untrusted destination base cannot be used to introduce workflows or source
  assert.equal(h.events.some(e=>e.path===source+"/git/commits/"+A),false);
  assert.equal(h.events.some(e=>e.path===source+"/git/blobs/"+C),false);
  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+});
+test("a mislabeled or non-commit main ref cannot attest a trusted base",async()=>{
+ for(const scenario of [
+   {mainRefName:"refs/heads/feature"},
+   {mainRefName:"refs/tags/main"},
+   {mainRefType:"tag"},
+   {mainRefType:"blob"},
+ ]){
+   const {h,promise}=run(scenario);
+   await assert.rejects(promise,/destination base must equal current trusted main HEAD/);
+   assert.equal(h.events.some(e=>e.path===source+"/git/blobs/"+C),false);
+   assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+ }
 });
 test("destination main changing before commit or new ref fails closed",async()=>{
  for(const changeRead of [2,3]){
