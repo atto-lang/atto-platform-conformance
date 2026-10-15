@@ -49,14 +49,39 @@ export function validateRealCompilerReport(r) {
   requireField(positive.id === "positive" && negative.id === "negative", "unexpected case order");
   requireField(positive.source_sha256 === sourceHash(positives), "positive fixture modified");
   requireField(negative.source_sha256 === sourceHash(negatives), "negative fixture modified");
+  // A fake report can invent commands, but internal consistency must still tie
+  // the observed compiler invocations to the same source and tool identity.
+  const sourceArg = (p, expected) =>
+    Array.isArray(p?.argv) && typeof p.argv.at(-1) === "string" &&
+    p.argv.at(-1).endsWith("/" + expected);
+  requireField(positive.compile?.argv?.[0] === r.compiler_path &&
+    negative.compile?.argv?.[0] === r.compiler_path, "compiler executable mismatch");
+  requireField(sourceArg(positive.compile, "positive.ores") &&
+    sourceArg(negative.compile, "negative.ores"), "compiler fixture argv mismatch");
   requireField(good(positive.compile), "positive source was not accepted");
   if (r.backend === "java") {
+    requireField(positive.compile.argv.length === 3 &&
+      negative.compile.argv.length === 3 &&
+      positive.execution?.argv?.length === 4 &&
+      positive.execution.argv[0] === r.compiler_path &&
+      positive.execution.argv[1] === positive.compile.argv[1] &&
+      positive.execution.argv[2] === positive.compile.argv[2] &&
+      positive.execution.argv[3] === "--execute", "Java probe/guest execution argv mismatch");
     requireField(r.compiler_artifact_kind === "java-launcher-class-only" &&
       r.compiler_artifact_sha256 === r.launcher_class_sha256, "Java compiler artifact identity mismatch");
     requireField(sha256.test(r.launcher_class_sha256 ?? "") &&
       sha256.test(r.maven_classpath_sha256 ?? "") &&
       sha256.test(r.java_probe_sha256 ?? ""), "missing Java launcher provenance");
   } else {
+    requireField(positive.compile.argv.length === 2 &&
+      negative.compile.argv.length === 2 &&
+      positive.link?.argv?.length === 6 &&
+      positive.link.argv[1] === "-x" && positive.link.argv[2] === "ir" &&
+      positive.link.argv[3].endsWith("/app.ll") &&
+      positive.link.argv[4] === "-o" &&
+      positive.execution?.argv?.length === 1 &&
+      positive.link.argv[5] === positive.execution.argv[0],
+      "LLVM IR/link/execution argv mismatch");
     requireField(r.compiler_artifact_kind === "llvm-native-executable" &&
       r.compiler_artifact_sha256 === r.process_invoker_sha256, "native artifact/invoker mismatch");
     requireField(sha256.test(r.clang_sha256 ?? ""), "missing clang identity");
