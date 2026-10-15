@@ -8,7 +8,7 @@ The compiler can read source/packages in its separate **trusted toolchain I/O do
 
 The trusted packaging pipeline must compute SHA-256 of the final executable payload *excluding the manifest*, and the trusted loader must obtain its expected digest through an independent protected or signed channel. The manifest records this artifact digest and rejects mismatched pairings. **A hash is not a signature**: controlling both the binary and its supposed expected hash defeats this check.
 
-For every privileged operation, require all five independent policies: host/OS ceiling, artifact ceiling, runtime request, actor/isolate, delegated child. Deny overrides allow in any layer; missing policy is an error. Never intersect raw scope strings as if they were resolved resources.
+For every privileged operation, require all five independent policies: host/OS ceiling, artifact ceiling, runtime request, actor/isolate, delegated child. Deny overrides allow in any layer; missing policy is an error. Never intersect raw scope strings as if they were resolved resources. **Validate and snapshot all five authority layers before invoking any resource-matching callback or asynchronous/native operation.** A reentrant matcher or child callback must not mutate the effective permission decision mid-check; malformed later layers must reject even if an earlier layer would deny. Implementations may instead use trusted immutable versioned policy snapshots.
 
 ## Canonical JSON v1
 
