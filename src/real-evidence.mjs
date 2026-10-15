@@ -60,6 +60,10 @@ export function validateRealCompilerReport(r) {
     sourceArg(negative.compile, "negative.ores"), "compiler fixture argv mismatch");
   requireField(good(positive.compile), "positive source was not accepted");
   if (r.backend === "java") {
+    requireField(typeof r.java_probe_path === "string" && isAbsolute(r.java_probe_path) &&
+      positive.compile.argv[1] === r.java_probe_path &&
+      negative.compile.argv[1] === r.java_probe_path,
+      "Java probe identity mismatches recorded invocation");
     requireField(positive.compile.argv.length === 3 &&
       negative.compile.argv.length === 3 &&
       positive.execution?.argv?.length === 4 &&
@@ -73,6 +77,9 @@ export function validateRealCompilerReport(r) {
       sha256.test(r.maven_classpath_sha256 ?? "") &&
       sha256.test(r.java_probe_sha256 ?? ""), "missing Java launcher provenance");
   } else {
+    requireField(typeof r.clang_path === "string" && isAbsolute(r.clang_path) &&
+      positive.link?.argv?.[0] === r.clang_path,
+      "Clang identity mismatches recorded linker invocation");
     requireField(positive.compile.argv.length === 2 &&
       negative.compile.argv.length === 2 &&
       positive.link?.argv?.length === 6 &&
