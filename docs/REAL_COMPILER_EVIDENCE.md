@@ -35,3 +35,15 @@ No backend has yet been admitted into the public supported-feature matrix by thi
 - Real Java reports use Python as the process invoker and the compiled OresMain class as the limited compiler-artifact fingerprint. The validator does not mistake the Python hash for the compiler digest.
 - Report consistency now links compiler invocation to the exact positive/negative fixture paths and links LLVM's output binary to the Clang link target. These syntactic checks **do not authenticate a forged JSON report**.
 - The producer subprocess runner enforces bounded output capture and terminates process groups on timeout. This does not provide a sandbox: private CI hosts still need explicit limits on privileges, network and filesystem.
+
+## Read-only GitHub Actions pre-step diagnostics
+
+Run the repository's Node 22+ diagnostic on the exact failed run from a machine with a securely configured Actions:read token (GH_TOKEN or GITHUB_TOKEN):
+
+    node bin/diagnose-actions.mjs ores-truffle-oreslang/oreslang-platform-conformance 38661631910
+
+The tool reads run and job metadata without mirroring private code, creating runners, or accessing billing. It classifies NO_EXECUTED_STEPS distinctly from EXECUTED_STEPS_WITH_FAILURE and refuses to infer a billing root cause. It always returns root_cause_established=false and permits_merging=false; a failed or incomplete run produces a nonzero exit code.
+
+An administrator still needs the GitHub Actions run-summary banner and org-level billing, spending-limit, Actions policy, and runner-capacity checks. A private carrier without executing steps is not a working substitute. Never copy private compiler trees into public or unapproved repositories.
+
+The six offline unit tests are included in npm test. They are diagnostic-tool tests, not compiler conformance evidence.
