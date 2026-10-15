@@ -119,11 +119,17 @@ export function evaluatePermission(layers, permission, resource, scopeMatches) {
   // A buggy matcher returning a truthy string or object is not proof of a
   // match. Especially for explicit denies, silently coercing the return
   // value could misapply the deny while still granting access.
+  // A matcher may depend on mutable host state. Within one authorization
+  // decision, each unique scope must be resolved once; otherwise a deny and
+  // an allow for the same scope could see contradictory matcher results.
+  const matchCache = new Map();
   const matches = scope => {
     if (scope === '*') return true;
+    if (matchCache.has(scope)) return matchCache.get(scope);
     const result = scopeMatches(permission, resource, scope);
     if (typeof result !== 'boolean')
       throw new TypeError('resource matcher must return a boolean');
+    matchCache.set(scope, result);
     return result;
   };
   // Snapshot and validate every authority layer before invoking any matcher.
@@ -132,9 +138,8 @@ export function evaluatePermission(layers, permission, resource, scopeMatches) {
   // behind an earlier deny or missing grant.
   const rules = ['host','artifact','runtime','actor','delegated']
     .map(name => validatePolicy(layers[name])[permission]);
-  for (const rule of rules) {
-    if (rule.deny.some(matches)) return false;
-    if (!rule.allow.some(matches)) return false;
-  }
-  return true;
+  // Evaluate every explicit denial before granting through any layer. This
+  // also fixes the matching order for overlapping deny/allow scopes.
+  if (rules.some(rule => rule.deny.some(matches))) return false;
+  return rules.every(rule => rule.allow.some(matches));
 }
