@@ -65,7 +65,8 @@ export async function publishPrivateMirror({
       typeof approvedRunnerProbeWorkflow!=="string"||
       !/^\.github\/workflows\/[A-Za-z0-9_-]+\.ya?ml$/.test(approvedRunnerProbeWorkflow))
     throw Error("reviewed source-free runner probe run and workflow are required");
-  if(!validPath(prefix)||!BRANCH.test(newBranch)||newBranch.includes("..")||newBranch.endsWith(".lock"))
+  if(!validPath(prefix)||prefix.split("/").some(x=>x.toLowerCase()===".github")||
+     !BRANCH.test(newBranch)||newBranch.includes("..")||newBranch.endsWith(".lock"))
     throw Error("invalid destination prefix or isolated CI branch");
   const authorize=()=>requirePrivateMirror({
     source,destination,approvedDestinations,sourceRepositoryId,
@@ -161,6 +162,21 @@ export async function publishPrivateMirror({
   const files=srcTree.tree.filter(x=>x.type==="blob");
   if(files.length===0||files.length>750||srcTree.tree.length>3000)
     throw Error("unsupported source tree size");
+  // Validate the ENTIRE recursive tree, including directories, before reading
+  // any source blob or creating unreachable blobs in the destination.
+  // Directory names can contain unsafe segments/case aliases even if their
+  // child blobs look individually valid to a lenient API client.
+  const seenEntries=new Map();
+  for(const entry of srcTree.tree){
+    if(!entry||!validPath(entry.path)||!OID.test(entry.sha)||
+       !(entry.type==="tree"&&entry.mode==="040000"||
+         entry.type==="blob"&&["100644","100755"].includes(entry.mode)))
+      throw Error("unsafe source Git tree entry");
+    const folded=entry.path.toLowerCase();
+    if(seenEntries.has(folded))
+      throw Error("duplicate or cross-platform-colliding source path");
+    seenEntries.set(folded,entry.path);
+  }
   let totalBytes=0;
   const paths=new Set();
   for(const file of files){
