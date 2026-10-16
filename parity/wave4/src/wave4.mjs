@@ -139,19 +139,21 @@ export class Channels{
 }
 /** Kernel readiness never runs guest code. Reactor completion is a scheduler-owned handoff. */
 export class IoReactorModel{
- #ops=new Map();#ready=[];#next=1;#nextReactor=0;#busy=0;
+ #ops=new WeakMap();#ready=[];#next=1;#nextReactor=0;#busy=0;
  constructor({reactors=1,limit=32}={}){check(Number.isInteger(reactors)&&reactors>=1&&reactors<=4&&Number.isInteger(limit)&&limit>0&&limit<=1024,'bounded NIO settings');this.reactors=reactors;this.limit=limit;}
  submit(owner,generation,kind){
   check(typeof owner==='string'&&owner&&Number.isSafeInteger(generation)&&generation>0&&['read','write','accept'].includes(kind),'invalid I/O operation');
   check(this.#busy<this.limit,'operation quota');
+  check(Number.isSafeInteger(this.#next+1),'I/O operation ID exhausted');
   const id=this.#next++,reactor=this.#nextReactor++%this.reactors;
-  const token=Object.freeze({id,generation,owner,reactor});this.#ops.set(id,{token,state:'pending'});this.#busy++;return token;
+  const token=Object.freeze({id,generation,owner,reactor});this.#ops.set(token,{token,state:'pending'});this.#busy++;return token;
  }
- #get(token){const op=this.#ops.get(token?.id);check(op&&op.token===token,'untrusted or stale I/O completion');return op;}
+ #get(token){const op=this.#ops.get(token);check(op&&op.token===token,'untrusted or stale I/O completion');return op;}
  cancel(token){const op=this.#get(token);if(op.state!=='pending')return false;op.state='cancelled';this.#busy--;return true;}
  kernelComplete(token,result){
   const op=this.#get(token);
   if(op.state!=='pending')return false;
+  if(this.#ready.length>=this.limit)return false;
   const message=copyData(result);op.state='completed';this.#busy--;
   this.#ready.push(Object.freeze({owner:token.owner,generation:token.generation,id:token.id,result:message}));return true;
  }
@@ -160,6 +162,12 @@ export class IoReactorModel{
   const events=[];
   this.#ready=this.#ready.filter(event=>{if(event.owner!==owner||event.generation!==generation)return true;events.push(event);return false;});
   return events;
+ }
+ retireGeneration(owner,generation){
+  check(typeof owner==='string'&&Number.isSafeInteger(generation),'bad retired generation');
+  const initial=this.#ready.length;
+  this.#ready=this.#ready.filter(event=>event.owner!==owner||event.generation!==generation);
+  return initial-this.#ready.length;
  }
  get stats(){return Object.freeze({outstanding:this.#busy,pendingCompletions:this.#ready.length,reactors:this.reactors});}
 }
