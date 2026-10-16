@@ -1,0 +1,28 @@
+name: Wave 2 semantic source contracts
+on:
+  push:
+    paths:
+      - 'parity/wave2/**'
+      - '.github/workflows/wave2-semantic-contracts.yml'
+  pull_request:
+    paths:
+      - 'parity/wave2/**'
+      - '.github/workflows/wave2-semantic-contracts.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  wave2-static-and-adversarial:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate pinned source fixtures and adversarial runner
+        run: node --test parity/wave2/tests/wave2.test.mjs
+      - name: Validate self-contained Wave 2 source manifest
+        run: node parity/wave2/bin/wave2.mjs --list
