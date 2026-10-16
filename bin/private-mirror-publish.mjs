@@ -156,7 +156,7 @@ export async function publishPrivateMirror({
   const nestedSource=materialized.tree.filter(e=>e?.path===prefix);
   if(nestedSource.length!==1||nestedSource[0].type!=="tree"||
       nestedSource[0].sha!==srcCommit.tree.sha)
-    throw Error("materialized source subtree SHA does not equal pinned source Git tree");
+    throw Error("materialized snapshot source subtree SHA does not equal pinned source Git tree");
   await authorize();
   const result=await githubRequest(destination,"/git/commits",token,{
     method:"POST",body:{message:"ci: verified private source snapshot "+sourceCommit,
