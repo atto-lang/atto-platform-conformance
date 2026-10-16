@@ -33,7 +33,7 @@ test("requires all five identical Java/LLVM/.net/.wasm/.forge fixtures", async (
 test("rejects one changed semantic source", async () => {
   await fixtureSpace(async workspace => {
     await writeFile(join(workspace, BACKENDS[3], RELATIVE_FIXTURE),
-      Buffer.from("pub fnc main(): int { return 41 + 2; }\\n"));
+      Buffer.from("pub fnc main(): int { return 41 + 2; }\n"));
     await assert.rejects(verifyFiveBackendSourceIdentity(workspace),
       /scalar fixture size|scalar source mismatch/);
   });
