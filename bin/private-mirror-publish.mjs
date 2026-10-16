@@ -98,7 +98,8 @@ export async function publishPrivateMirror({
   if(capacityJobs?.total_count!==1||!Array.isArray(capacityJobs.jobs)||
      capacityJobs.jobs.length!==1||probeJob?.name!=="capacity"||
      probeJob?.status!=="completed"||probeJob?.conclusion!=="success"||
-     (probeJob?.run_id!==undefined&&probeJob.run_id!==runnerProbeRunId)||
+     probeJob?.run_id!==runnerProbeRunId||
+     !Number.isSafeInteger(probeJob?.runner_id)||probeJob.runner_id<=0||
      typeof probeJob?.runner_name!=="string"||
      probeJob.runner_name.length===0||
      !Array.isArray(probeJob.steps)||
