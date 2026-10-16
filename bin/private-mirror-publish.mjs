@@ -91,10 +91,17 @@ export async function publishPrivateMirror({
   const capacityJobs=await githubRequest(destination,
     "/actions/runs/"+runnerProbeRunId+"/jobs?per_page=100",token,{fetchImpl});
   const probeJob=capacityJobs?.jobs?.[0];
-  // GitHub automatically adds "Set up job" and "Complete job" steps,
-  // so a real one-command capacity workflow has MORE than one reported step.
-  const executed=(Array.isArray(probeJob?.steps)?probeJob.steps:[]).filter(step=>
-     step?.name==="Prove runner allocation and shell execution");
+  // A reviewed source-FREE capacity workflow is deliberately one shell step.
+  // The actual GitHub-hosted Ubuntu runner API surrounds it with two managed
+  // steps. Reject ANY additional steps: "capacity" is not permission to run
+  // arbitrary scripts, checkout source, or pass a substituted workflow.
+  const expectedSteps=["Set up job",
+    "Prove runner allocation and shell execution","Complete job"];
+  const proofSteps=probeJob?.steps;
+  const exactStepSequence=Array.isArray(proofSteps)&&
+    proofSteps.length===expectedSteps.length&&
+    proofSteps.every((step,i)=>step?.name===expectedSteps[i]&&
+      step.status==="completed"&&step.conclusion==="success");
   if(capacityJobs?.total_count!==1||!Array.isArray(capacityJobs.jobs)||
      capacityJobs.jobs.length!==1||probeJob?.name!=="capacity"||
      probeJob?.status!=="completed"||probeJob?.conclusion!=="success"||
@@ -102,9 +109,7 @@ export async function publishPrivateMirror({
      !Number.isSafeInteger(probeJob?.runner_id)||probeJob.runner_id<=0||
      typeof probeJob?.runner_name!=="string"||
      probeJob.runner_name.length===0||
-     !Array.isArray(probeJob.steps)||
-     executed.length!==1||executed[0].status!=="completed"||
-     executed[0].conclusion!=="success")
+     !exactStepSequence)
     throw Error("destination runner probe has no independently executed success step");
   await authorize();
   const base=await githubRequest(destination,"/git/commits/"+destinationBaseCommit,token,{fetchImpl});
