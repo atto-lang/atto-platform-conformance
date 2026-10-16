@@ -65,7 +65,9 @@ function command(argv){
  return argv;
 }
 export function primaryDiagnostic(output,category){
- if(typeof output!=='string'||!ERRORS.has(category))return false;
+ if(typeof output!=='string'||!ERRORS.has(category)||output.length>65536)return false;
+ // A crashing frontend is not a semantic type-checking result.
+ if(/\b(?:segmentation fault|internal compiler error|uncaught exception|stack trace|assertion failed)\b/i.test(output))return false;
  const patterns={
   'type-mismatch':/\b(type mismatch|incompatible types?|cannot (?:assign|convert).*float|float.*(?:int|integer)|expected int.*(?:float|division))\b/i,
   nonexhaustive:/\b(non.?exhaustive|missing (?:variant|case|pattern)|not all (?:cases|variants|patterns))\b/i,
