@@ -46,3 +46,21 @@ test('negative fixture cannot verify when executable is unhashable even with a m
  assert.equal(r.verified,0);
  assert.equal(r.results[1].status,'UNHASHABLE_EXECUTABLE');
 });
+
+
+test('indented and fatal compiler errors cannot verify positive fixture',async()=>{
+ for(const stderr of [
+  '  error: missing identifier xyz',
+  'fatal error: unreadable input',
+  'main.ores:2:13: fatal error: toolchain failed',
+ ]) {
+  const result=await runSuite({
+   backend:'llvm',sourceSha:sha,argv:[process.execPath,'{file}'],
+   spawn:(exe,args)=>args.at(-1).endsWith('unresolved-identifier.ores')
+    ? {status:1,signal:null,stdout:'',stderr:'error: unresolved identifier nonexistent_symbol'}
+    : {status:0,signal:null,stdout:'',stderr}
+  });
+  assert.equal(result.results[0].status,'MISMATCH',stderr);
+  assert.equal(result.ok,false,stderr);
+ }
+});
