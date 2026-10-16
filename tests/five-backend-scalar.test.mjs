@@ -53,7 +53,7 @@ test("rejects symlinked leaf fixture paths even with correct source bytes", {
     const {rename} = await import("node:fs/promises");
     await rename(path, hidden);
     await symlink(hidden, path, "file");
-    await assert.rejects(verifyFiveBackendSourceIdentity(workspace), /ELOOP|symbolic link|symlink/i);
+    await assert.rejects(verifyFiveBackendSourceIdentity(workspace), /ELOOP|symbolic link|symlink|fixture path escaped the expected physical checkout/i);
   });
 });
 test("rejects symlinked fixture directories", {skip:process.platform==="win32"}, async () => {
