@@ -51,3 +51,29 @@ This example specifies an API shape, not known installed binaries or a claimed s
 5. Do not copy private source into unapproved cross-org carriers or treat a failed zero-step GitHub Actions run as a compiler test outcome.
 
 There are no changes to source compiler implementations in this PR. It is a concrete executable conformance candidate suite and gap ledger, **not** completion of all five implementation tasks.
+
+
+## 2026-10-16 implementation integration: shared arithmetic-76
+
+The exact source bytes in `fixtures/value-i64-evaluation.ores` are Git blob
+`a8165323a8aa40e7cec613fdb7e645c41a901965`.
+
+| Backend | Candidate implementation gate | Evidence still required |
+| --- | --- | --- |
+| Java ([#1087](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1087)) | Same bytes in `scripts/ai-conformance-smoke.py` `ARITHMETIC`; compile + execute expected native process exit 76 | Real Java/Graal and Native Image Actions jobs |
+| LLVM ([#479](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/479)) | Same bytes in the byte-identical smoke script; LLVM IR → Clang → executable exit 76 | Full LLVM CTest and real native-guest Actions run |
+| .NET ([#37](https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/37)) | Typed AST checks nested `100 - (3 + 2) - 19` association and operands | Native AOT compiled guest execution (AST admission is not execution) |
+| Forge ([#30](https://github.com/ores-truffle-oreslang/oreslang-source.forge/pull/30)) | Same bytes in the C++ raw-string source; interpreted Oreslang result must be 76 | Exact-head Forge native build and tests, and independently compiled native guest |
+| Wasm ([#35](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/35)) | `examples/arithmetic-76.ores` has the exact Git blob; pinned real LLVM→Wasm zero-import guest is required to produce 76 | Compiler-provenance-pinned real Wasm job and runtime execution |
+
+The shared runner has also been hardened to check the first compiler error,
+reject malformed/duplicated JSON result fields and compiler-crash diagnostics,
+and recheck local executable and fixture hashes after the batch. Existing scalar
+runners in .NET/Forge/Wasm and shared Java/LLVM smoke runners now reject invalid
+UTF-8 compiler output instead of replacing undecodable bytes.
+
+**This is test implementation, not confirmed feature parity.** Source-organization
+Actions still report failures with no executed steps. The protected private CI
+destination allowlist remains empty. Do not use another organization's Actions
+or promote `OBSERVED_PASS` to certified without explicit authorization and
+genuine exact-source execution evidence.
