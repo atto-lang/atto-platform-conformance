@@ -32,7 +32,7 @@ export function isExpectedCompilerDiagnostic(output,symbol){
 
  return false;
 }
-function hasCompilerErrorSeverity(output){
+export function hasCompilerErrorSeverity(output){
  // Accept fixtures must not be promoted when a compiler reports an error
  // yet exits zero. Match standard diagnostic severity, not arbitrary prose.
  return output.split(/\r?\n/).some(line=>
