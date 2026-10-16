@@ -20,14 +20,14 @@ export async function loadManifest(){
   if(!item||typeof item.id!=="string"||ids.has(item.id)||!/^[a-z0-9-]+$/.test(item.id))throw Error("invalid/duplicate test id");
   ids.add(item.id);
   if(typeof item.file!=="string"||!/^[-a-z0-9]+\.ores$/.test(item.file))throw Error("invalid fixture path");
-  if(!["accept","reject"].includes(item.expect)||!Array.isArray(item.backends)||!item.backends.length||item.backends.some(x=>!["java","llvm","wasm","browser"].includes(x)))throw Error("invalid fixture expectation/backends");
+  if(!["accept","reject"].includes(item.expect)||!Array.isArray(item.backends)||!item.backends.length||item.backends.some(x=>!["java","llvm","wasm","net","forge","browser"].includes(x)))throw Error("invalid fixture expectation/backends");
   if(item.expect==="reject"&&typeof item.diagnostic!=="string")throw Error("negative fixture must require a diagnostic");
   await readFile(resolve(root,"fixtures",item.file),"utf8");
  }
  return manifest;
 }
 export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireConfigured=false,spawn=spawnSync}={}){
- if(!["java","llvm","wasm","browser"].includes(backend))throw Error("unknown backend");
+ if(!["java","llvm","wasm","net","forge","browser"].includes(backend))throw Error("unknown backend");
  if(!Number.isSafeInteger(timeoutMs)||timeoutMs<100||timeoutMs>120000)throw Error("timeoutMs must be 100..120000");
  const manifest=await loadManifest();
  const relevant=manifest.cases.filter(x=>x.backends.includes(backend));
