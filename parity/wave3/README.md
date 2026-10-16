@@ -14,6 +14,13 @@ This addition complements [wave 1 PR #47](https://github.com/ores-truffle-oresla
 | **14 — local ActorRef identity** | WeakMap-based opaque local reference model with minted handles, generational retirement, stale/foreign/forged denial, bounded mailbox, JSON deny | Actual Java/LLVM/.NET/Wasm/Forge runtime forge/stale/capability and wire-denial tests; authenticated *remote* references require a separate transport credential. Reuse [Forge #13](https://github.com/ores-truffle-oreslang/oreslang-source.forge/pull/13), [Forge #34](https://github.com/ores-truffle-oreslang/oreslang-source.forge/pull/34), [.NET #21](https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/21). |
 | **15 — single-flight physical actor turns** | Bounded state-machine execution model: one active guest lease per actor, multiple unfinished logical messages, suspend/requeue, carrier migration, stale/double-resume denial, concurrent unrelated actors | Real multithreaded carrier stress and sanitizer/native traces across backend runtime profiles. Reuse [Java #519](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/519) and [Java #997](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/997). |
 
+The normative five-backend actor-hook and `private abstract` contract is
+[PRIVATE_ABSTRACT_ACTOR_HOOKS_V1.md](../../contracts/v1/PRIVATE_ABSTRACT_ACTOR_HOOKS_V1.md).
+It is byte-identical to the contract committed in each `oreslang-source.*`
+backend. LLVM's restricted `on_message(int)` remains a legacy subset, **not**
+proven `receive(ActorMail<T>)` ABI parity. Unsupported native class and hook
+source must fail closed with a real compiler diagnostic and no emitted artifact.
+
 ## Actual local execution
 
 Run on Node 22+:
