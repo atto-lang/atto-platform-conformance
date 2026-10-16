@@ -5,7 +5,8 @@ import {requirePrivateMirror} from "../bin/require-private-mirror.mjs";
 const source = "ores-truffle-oreslang/oreslang-source.java";
 const destination = "akrion-sim/akrion-sim-e2e";
 const good = name => ({
-  full_name: name, private: true, visibility: "private",
+  full_name: name, id: name===source?1400792274:1321164328,
+  private: true, visibility: "private",
   archived: false, permissions: {push: true}
 });
 function fixture(records = {}, calls = []) {
@@ -22,7 +23,8 @@ function fixture(records = {}, calls = []) {
 }
 const base = {
   source, destination, approvedDestinations: [destination],
-  token: "restricted-test-token"
+  token: "restricted-test-token",
+  sourceRepositoryId: 1400792274, destinationRepositoryId: 1321164328
 };
 const check = (overrides = {}, records = {}, calls = []) =>
   requirePrivateMirror({...base, fetchImpl: fixture(records, calls), ...overrides});
@@ -129,4 +131,37 @@ test("transport and JSON parse errors redact credentials even if client errors i
       return true;
     });
   }
+});
+
+test("repository-name replacements are denied against protected numeric identity",async()=>{
+ for(const [name,id] of [[source,11],[destination,22]]){
+  const calls=[];
+  await assert.rejects(check({}, {[name]:{...good(name),id}},calls),
+    /private source metadata|writable verified PRIVATE/);
+  assert.equal(calls.length,name===source?1:2);
+ }
+});
+test("missing or spoofed policy repo IDs deny before any network request",async()=>{
+ for(const policy of [
+  {sourceRepositoryId:undefined},{sourceRepositoryId:0},
+  {destinationRepositoryId:undefined},{destinationRepositoryId:0},
+  {sourceRepositoryId:1321164328,destinationRepositoryId:1321164328},
+  {destinationRepositoryId:"1321164328"}
+ ]){
+  const calls=[];
+  await assert.rejects(check(policy,{},calls),/trusted source and destination numeric/);
+  assert.equal(calls.length,0);
+ }
+});
+test("repository metadata without an immutable positive ID cannot authorize copying",async()=>{
+ for(const meta of [
+  { ...good(destination),id:undefined },
+  { ...good(destination),id:"1321164328" },
+  { ...good(destination),id:-1 }
+ ]){
+  const calls=[];
+  await assert.rejects(check({}, {[destination]:meta},calls),
+    /invalid or mismatched repository metadata/);
+  assert.equal(calls.length,2);
+ }
 });
