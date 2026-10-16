@@ -5,8 +5,10 @@ import {resolve} from 'node:path';
 import {validateFiveBackendRuntimeEvidence} from '../src/five-backend-runtime-evidence.mjs';
 
 const path = process.argv[2];
-if (process.argv.length !== 3 || !path) {
-  console.error('usage: node bin/check-five-backend-runtime-evidence.mjs REPORT.json');
+const structuralOnly = process.argv[3] === '--structural-only';
+if (![3,4].includes(process.argv.length) || !path ||
+    (process.argv.length === 4 && !structuralOnly)) {
+  console.error('usage: node bin/check-five-backend-runtime-evidence.mjs REPORT.json [--structural-only]');
   process.exit(2);
 }
 let fd;
@@ -24,6 +26,9 @@ try {
   if (bytes.length > 128 * 1024) throw Error('report too large');
   const result=validateFiveBackendRuntimeEvidence(JSON.parse(bytes.toString('utf8')));
   console.log(JSON.stringify(result,null,2));
+  // Nonzero by default: no unverified report can become a green parity gate.
+  // Zero exit is opt-in for structural validation ONLY.
+  if (!structuralOnly) process.exitCode = 3;
 } catch (error) {
   console.error('five-backend evidence rejected: ' + error.message);
   process.exitCode=1;
