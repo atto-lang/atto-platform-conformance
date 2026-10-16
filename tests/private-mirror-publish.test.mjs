@@ -41,7 +41,7 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
       else if(suffix==="/git/trees/"+D+"?recursive=1")
         data=materializedTree||{truncated:false,tree:[
           {path:"snapshots",type:"tree"},
-          {path:"snapshots/checked",type:"tree"},
+          {path:"snapshots/checked",type:"tree",sha:D},
           {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C}
         ]};
       else if(suffix==="/git/blobs"&&method==="POST")
@@ -257,4 +257,16 @@ test("repository ID retargeting mid-publication denies subsequent Git writes",as
  })});
  await assert.rejects(promise,/writable verified PRIVATE/);
  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+});
+
+test("whole published nested Git tree must match the exact pinned source tree",async()=>{
+ const materializedTree={truncated:false,tree:[
+  {path:"snapshots",type:"tree"},
+  {path:"snapshots/checked",type:"tree",sha:E},
+  {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C}
+ ]};
+ const {h,promise}=run({materializedTree});
+ await assert.rejects(promise,/materialized snapshot source subtree SHA/);
+ assert.equal(h.events.some(e=>e.path===destination+"/git/commits"&&e.method==="POST"),false);
+ assert.equal(h.events.some(e=>e.path===destination+"/git/refs"&&e.method==="POST"),false);
 });
