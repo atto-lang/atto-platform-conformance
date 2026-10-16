@@ -1,0 +1,7 @@
+define class Counter as
+  pub read(): int { return 5; }
+  pub make(): void {
+    val callback = lex[self] || -> self.read();
+    return;
+  }
+end
