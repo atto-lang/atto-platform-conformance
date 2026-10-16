@@ -56,8 +56,8 @@ test('duplicate keys are denied even when escaped or nested', () => {
     '{"a":1,"b":2}',
     '{"a":{"x":1},"b":{"x":2}}',
     '[{"x":1},{"x":2}]',
-    '{"escaped\"key":"value","array":[true,null,false]}'
-  ]) assert.doesNotThrow(() => rejectDuplicateObjectKeys(input));
+    '{"escaped\\\"key":"value","array":[true,null,false]}'
+  ]) { JSON.parse(input); assert.doesNotThrow(() => rejectDuplicateObjectKeys(input)); }
 });
 test('delimited object-key collisions cannot masquerade as exact fields', () => {
   assert.throws(() => validateBatch(mutate(x => {
