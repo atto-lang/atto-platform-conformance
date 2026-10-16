@@ -4,7 +4,7 @@ This is a strict structural gate, NOT independent provenance authentication or a
 
 Canonical source: `pub fnc main(): int { return 40 + 2; }` followed by LF. Exact Git blob: `015f8b0f79aafa796a148d2adeff1574e8d6c491`.
 
-Run `node --test tests/five-backend-runtime-evidence.test.mjs` and `node bin/check-five-backend-runtime-evidence.mjs /absolute/path/to/report.json`.
+Run `node --test tests/five-backend-runtime-evidence.test.mjs`. `node bin/check-five-backend-runtime-evidence.mjs /absolute/path/to/report.json` always exits 3 after structural success because independent parity attestation remains missing. To use it solely as a JSON consistency checker, explicitly pass `--structural-only` (exit 0 on structural success; this is NOT a parity certification).
 
 The report must include exactly five distinct backend records with source SHA and tree, canonical fixture Git blob, binary SHA-256 digests, compile and guest process observations, typed int 42 result, and nonzero GitHub Actions run/job/runner/steps with head SHA matching source commit.
 
