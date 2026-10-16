@@ -27,7 +27,9 @@ async function readSafeFixture(workspace, repository) {
       throw Error("unsafe fixture directory: " + repository);
   }
   const file = join(part, "add.ores");
-  const handle = await open(file, constants.O_RDONLY | (constants.O_NOFOLLOW || 0));
+  if (!Number.isInteger(constants.O_NOFOLLOW))
+    throw Error("no-follow regular file support required for source identity");
+  const handle = await open(file, constants.O_RDONLY | constants.O_NOFOLLOW);
   try {
     const st = await handle.stat();
     if (!st.isFile() || st.size !== EXACT_SOURCE.length)
