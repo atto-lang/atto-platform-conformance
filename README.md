@@ -67,6 +67,12 @@ The guarded publisher's configuration, when approval exists, requires:
 - `ORES_APPROVED_PRIVATE_SOURCE_TREE_SHA`: reviewed exact Git tree SHA for that
   commit, verified against GitHub's commit record **before any private blobs
   are requested**.
+- `ORES_APPROVED_DESTINATION_BASE_COMMIT` and
+  `ORES_APPROVED_DESTINATION_BASE_TREE_SHA`: independently reviewed destination
+  commit and complete Git tree to build the isolated CI snapshot upon.
+  These must match **before reading private source Git objects**, and the
+  target prefix must be empty; caller-selected unreviewed workflows cannot
+  become part of a private-source snapshot.
 - `ORES_APPROVED_RUNNER_PROBE_RUN_ID`: positive integer GitHub Actions run
   ID for an independently reviewed *source-free* capacity workflow in the
   **destination repository**, executed within the preceding 24 hours.
@@ -85,6 +91,8 @@ denies the publication **before source blobs are read**, or before the next
 destination write if identity/visibility changes mid-flight. A private
 destination without a recent, correctly pinned **successful one-step runner
 probe** is likewise denied **before requesting any source commit or blob**.
+The reviewed destination base commit/tree and empty prefix are also checked
+**before any confidential source Git read**.
 The recent probe is evidence that a runner executed, **not** a guarantee of
 remaining GitHub Actions minutes, current billing eligibility, or long-running
 compiler capacity. Recheck runner capacity at each source transfer. The exact
