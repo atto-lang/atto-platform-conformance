@@ -101,7 +101,12 @@ export function inspectWasm(bytes,{profile='scalar',allowedImports=[]}={}){
  }
  need(hasCode,'no compiled code section');
  need(exports.some(x=>x.name==='ores_main'&&x.kind===0),'no ores_main exported guest function');
- return Object.freeze({format:'wasm',target:'wasm32',profile,imports:Object.freeze(imports),exports:Object.freeze(exports),memoryMaximum,sha256:sha256(b),binaryShapeOnly:true});
+ need(WebAssembly.validate(b),'Wasm engine validation failed');
+ const compiled=new WebAssembly.Module(b);
+ const runtimeImports=WebAssembly.Module.imports(compiled).map(x=>({name:x.module+'.'+x.name,kind:x.kind}));
+ need(runtimeImports.length===imports.length&&runtimeImports.every((x,i)=>x.name===imports[i]&&x.kind==='function'),'Wasm engine import identity mismatch');
+ need(WebAssembly.Module.exports(compiled).some(x=>x.name==='ores_main'&&x.kind==='function'),'Wasm engine export mismatch');
+ return Object.freeze({format:'wasm',target:'wasm32',profile,imports:Object.freeze(imports),exports:Object.freeze(exports),memoryMaximum,engineModuleValidated:true,sha256:sha256(b),binaryShapeOnly:true});
 }
 export async function inspectFile(path,target,wasmOptions={}){
  const b=await readFile(path);
