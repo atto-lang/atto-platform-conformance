@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
+import {mkdtempSync,writeFileSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import {loadManifest,validateManifest,primaryDiagnostic,runWave2,BACKENDS,TASKS} from '../src/wave2.mjs';
 const sourceSha='a'.repeat(40);
 const command=[process.execPath,'{file}'];
@@ -84,6 +87,8 @@ test('primary rejection must identify the right semantic reason, not an unrelate
   assert.equal(primaryDiagnostic('error: unexpected token near a source echo',cat),false,cat);
   assert.equal(primaryDiagnostic('warning: state loan cannot cooperate',cat),false,cat);
  }
+ assert.equal(primaryDiagnostic('error: unexpected token\\nerror: state loan cannot cooperate','loan-suspend'),false);
+ assert.equal(primaryDiagnostic('error: state loan cannot cooperate\\nerror: unexpected token','loan-suspend'),true);
  assert.equal(primaryDiagnostic('error: state loan cannot cooperate','loan-suspend'),true);
  assert.equal(primaryDiagnostic('error: read-only capability cannot write','read-mutate'),true);
 });
@@ -100,7 +105,7 @@ test('negative compilation crashes and nonstandard exit codes are not accepted',
  }
 });
 test('runtime JSON requires an exact signed-decimal result and no extraneous fields',async()=>{
- for(const raw of ['42','{"result":42}','{"result":"43","verified":true}','{"result":"43"}\nextra']){
+ for(const raw of ['42','{"result":42}','{"result":"43","verified":true}','{"result":"43"}\nextra','{"result":"43","result":"43"}','{"res\\u0075lt":"43"}']){
   const r=await runWave2({backend:'java',task:7,checkArgv:command,executeArgv:command,sourceSha,
    spawn:(binary,args)=>args.at(-1).endsWith('dispatch-value-match.ores')?{status:0,stdout:raw,stderr:''}:mock(binary,args)});
   assert.equal(r.ok,false,raw);
@@ -113,4 +118,20 @@ test('CLI rejects duplicate arguments and unconfigured success',()=>{
  assert.match(x.stdout,/UNCONFIGURED/);
  const y=spawnSync(process.execPath,[cli,'--backend=java','--backend=llvm'],{encoding:'utf8'});
  assert.equal(y.status,2);
+});
+
+test('file mutation after a mocked successful compilation invalidates all receipts',async()=>{
+ const dir=mkdtempSync(join(tmpdir(),'ores-wave2-tool-'));
+ try{
+  const exe=join(dir,'compiler-shim');
+  writeFileSync(exe,'original',{mode:0o700});
+  let tampered=false;
+  await assert.rejects(async()=>{
+   await runWave2({backend:'java',task:7,checkArgv:[exe,'{file}'],
+    executeArgv:[exe,'{file}'],sourceSha,spawn:(binary,args)=>{
+     if(!tampered){writeFileSync(exe,'substituted');tampered=true;}
+     return mock(binary,args);
+    }});
+  },/executable changed during run/);
+ }finally{rmSync(dir,{recursive:true,force:true});}
 });
