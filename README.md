@@ -97,7 +97,15 @@ destination write if identity/visibility changes mid-flight. A private
 destination without a recent, correctly pinned **successful one-step runner
 probe** is likewise denied **before requesting any source commit or blob**.
 The reviewed destination base commit/tree and empty prefix are also checked
-**before any confidential source Git read**.
+**before any confidential source Git read**. Destination prefix components
+equal to `.github` (case-insensitive) are forbidden, including nested
+`.github/workflows`, so source copies cannot target GitHub workflow locations.
+Every entry of the **entire recursive source Git tree**, including directories,
+must pass valid-path, SHA, Git type and mode validation (directories require
+`040000`; blobs require `100644` or `100755`) before the publisher reads
+its first source blob. Case-insensitive collisions are rejected across all
+entries, not just files. This preflight does not authorize cross-org export:
+separately reviewed source and destination policy remains mandatory.
 The recent probe is evidence that a runner executed, **not** a guarantee of
 remaining GitHub Actions minutes, current billing eligibility, or long-running
 compiler capacity. Recheck runner capacity at each source transfer. The exact
