@@ -6,7 +6,8 @@ const source="ores-truffle-oreslang/oreslang-source.java";
 const destination="akrion-sim/akrion-sim-e2e";
 const A="a".repeat(40),B="b".repeat(40),C="c".repeat(40),
  D="d".repeat(40),E="e".repeat(40);
-const opts={source,destination,sourceCommit:A,destinationBaseCommit:B,
+const opts={source,destination,sourceCommit:A,approvedSourceCommit:A,
+  approvedSourceTreeSha:D,destinationBaseCommit:B,
   prefix:"snapshots/checked",newBranch:"ci/private-test-proof",
   approvedDestinations:[destination],token:"opaque-test-token",
   sourceRepositoryId:1400792274,destinationRepositoryId:1321164328};
@@ -93,6 +94,9 @@ test("missing approvals and unsafe ref/path reject without contacting GitHub",as
   {newBranch:"main"},{newBranch:"ci/my-public-copy"},
   {prefix:"../src"},{prefix:"src/../../other"},
   {sourceCommit:"not-a-sha"},
+  {approvedSourceCommit:undefined},{approvedSourceTreeSha:undefined},
+  {approvedSourceCommit:B},{approvedSourceCommit:"invalid"},
+  {approvedSourceTreeSha:"not-a-tree"},
   {sourceRepositoryId:undefined},{destinationRepositoryId:undefined},
   {sourceRepositoryId:0},{destinationRepositoryId:1400792274}
  ]){
@@ -269,4 +273,29 @@ test("whole published nested Git tree must match the exact pinned source tree",a
  await assert.rejects(promise,/materialized snapshot source subtree SHA/);
  assert.equal(h.events.some(e=>e.path===destination+"/git/commits"&&e.method==="POST"),false);
  assert.equal(h.events.some(e=>e.path===destination+"/git/refs"&&e.method==="POST"),false);
+});
+
+test("source Git tree changed since reviewed policy denies before fetching any source blobs",async()=>{
+ const h=fixture();
+ const intercept=async(url,opt)=>{
+  if(url.endsWith(source+"/git/commits/"+A))
+   return {status:200,json:async()=>({tree:{sha:E}})};
+  return h.request(url,opt);
+ };
+ await assert.rejects(publishPrivateMirror({...opts,fetchImpl:intercept}),
+   /source commit tree differs from independently reviewed policy pin/);
+ assert.equal(h.events.some(e=>e.path===source+"/git/blobs/"+C),false);
+ assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+});
+test("source SHA and tree pin are independent policy inputs",async()=>{
+ for(const change of [
+  {sourceCommit:B},
+  {approvedSourceCommit:B},
+  {approvedSourceTreeSha:E}
+ ]){
+  const {h,promise}=run({},change);
+  await assert.rejects(promise);
+  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+  if(change.sourceCommit||change.approvedSourceCommit)assert.equal(h.events.length,0);
+ }
 });
