@@ -1,7 +1,7 @@
 // Source identity is necessary, not sufficient, for executed five-backend parity.
 import {createHash} from "node:crypto";
 import {constants} from "node:fs";
-import {lstat, open} from "node:fs/promises";
+import {lstat, open, realpath} from "node:fs/promises";
 import {join, resolve} from "node:path";
 import {fileURLToPath} from "node:url";
 
@@ -32,7 +32,7 @@ async function readSafeFixture(workspace, repository) {
   const handle = await open(file, constants.O_RDONLY | constants.O_NOFOLLOW);
   try {
     const st = await handle.stat();
-    if (!st.isFile() || st.size !== EXACT_SOURCE.length)
+    if (!st.isFile() || st.nlink !== 1 || st.size !== EXACT_SOURCE.length)
       throw Error("invalid scalar fixture size/type: " + repository);
     const bytes = Buffer.alloc(st.size);
     let offset = 0;
@@ -42,7 +42,9 @@ async function readSafeFixture(workspace, repository) {
       offset += bytesRead;
     }
     const after = await handle.stat();
-    if (after.size !== st.size || after.mtimeMs !== st.mtimeMs || after.ino !== st.ino)
+    if (after.size !== st.size || after.mtimeMs !== st.mtimeMs ||
+        after.ctimeMs !== st.ctimeMs || after.ino !== st.ino ||
+        after.dev !== st.dev || after.nlink !== 1)
       throw Error("fixture changed during read: " + repository);
     return bytes;
   } finally {
@@ -51,6 +53,11 @@ async function readSafeFixture(workspace, repository) {
 }
 
 export async function verifyFiveBackendSourceIdentity(workspace) {
+  const physicalWorkspace = resolve(workspace);
+  const workspaceStat = await lstat(physicalWorkspace);
+  if (!workspaceStat.isDirectory() || workspaceStat.isSymbolicLink() ||
+      (await realpath(physicalWorkspace)) !== physicalWorkspace)
+    throw Error("workspace must be a canonical physical directory");
   if (gitBlob(EXACT_SOURCE) !== EXPECTED_GIT_BLOB)
     throw Error("source contract Git blob pin is invalid");
   const files = [];
