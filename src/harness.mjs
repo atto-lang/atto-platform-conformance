@@ -52,6 +52,8 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
   const combined=(output.stdout||"")+"\n"+(output.stderr||"");
   if(output.error)status=output.error.code==="ETIMEDOUT"?"TIMEOUT":"SPAWN_ERROR";
   else if(output.signal)status="SIGNALED";
+  // A missing/invalid process exit code cannot be evidence of a compiler rejection.
+  else if(!Number.isSafeInteger(output.status)||output.status<0)status="INVALID_EXIT_STATUS";
   else if(c.expect==="accept")status=output.status===0?"VERIFIED":"MISMATCH";
   else {
    const match=new RegExp(c.diagnostic,"i").test(combined);
