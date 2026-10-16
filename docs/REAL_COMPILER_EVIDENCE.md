@@ -1,6 +1,6 @@
 # Real compiler smoke evidence — non-promoting adapter
 
-The shared platform-conformance harness currently tests its own runner with a fake checker; this is not backend parity evidence. Independently, the **private** Java/GraalVM and LLVM source repositories now have proposed CI changes that invoke actual Oreslang compiler builds and produce compatible JSON reports.
+The shared platform-conformance harness currently tests its own runner with a fake checker; this is not backend parity evidence. Independently, the **private** Java/GraalVM and LLVM source repositories have merged compiler-smoke producer changes (Java PR #953 and LLVM PR #383) that can generate compatible JSON reports. Their merged status alone does not authenticate an executed build on a current exact commit.
 
 ## Producer workflows
 
@@ -77,3 +77,23 @@ malformed case variants rejected**. These targeted checks use a deterministic
 mock hash implementation, not the complete Node unit suite or native
 compiler execution. The previous private carrier's 74-pass result predates
 this change and must not be misrepresented as an exact-head pass.
+
+## 2026-10-16 report-admission hardening and exact-file CI
+
+The validator now shares the harness's conservative, case-sensitive
+`isExpectedCompilerDiagnostic` matcher. A rejected source must identify
+`nonexistent_symbol` as the **primary diagnostic subject**; seeing that
+text in a source echo, filename, secondary hint, warning or unrelated error
+does not qualify. A zero-exit successful compile/link is rejected if its
+reported output carries an error-severity diagnostic. The 42-exit guest
+execution must likewise not emit an error-severity diagnostic. These checks
+guard against inconsistent reports; no self-reported JSON can prove
+authenticity or compiler binary provenance.
+
+The narrowly scoped, private cross-organization carrier
+[Voxletra PR #13](https://github.com/voxletra/voxletra-e2e/pull/13)
+tests the exact Git blobs for this harness and validator without assuming
+full compiler-source access. The carrier is *not* an approved complete
+compiler mirror, and its unit tests are not Java/LLVM runtime parity.
+Real compiler admission requires independently verified, exact-head
+producer runs, raw compiler logs, binary provenance and reviewed artifacts.
