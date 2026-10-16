@@ -31,6 +31,41 @@ This does **not** establish that any organization's Actions *minutes* are
 exhausted. No authoritative billing/runner-policy diagnostic is available
 from these run summaries alone.
 
+## Verified PRIVATE alternative runner — Voxletra
+
+**Capacity milestone achieved for one different organization, not for source
+CI or source-copy authorization.**
+
+- Destination `voxletra/voxletra-e2e`: GitHub numeric repo ID
+  `1311678027`, `visibility=private`, authenticated metadata confirms
+  repository is not archived and push access is available.
+- Created an isolated, source-free
+  [capacity workflow](https://github.com/voxletra/voxletra-e2e/blob/ci/private-runner-capacity-20261016/.github/workflows/oreslang-source-free-capacity.yml)
+  on branch `ci/private-runner-capacity-20261016`. Workflow has
+  `permissions: {}`, no checkout/download/secrets, one Bash command, and no
+  artifact upload. Source compiler/actor code was NOT transferred.
+- [GitHub Actions run #38940228917](https://github.com/voxletra/voxletra-e2e/actions/runs/38940228917):
+  event `push`, workflow path
+  `.github/workflows/oreslang-source-free-capacity.yml`, exact commit
+  `b9d18dced1ed5848a9fcf2441e65a44abc3ef199`, completed
+  **success**. The single job `capacity`, ID `117105691508`, completed
+  successfully on runner ID `1000002089` with actual successful
+  `Prove runner allocation and shell execution` step; GitHub also recorded
+  normal setup and completion steps. Full run and job metadata were read from
+  the GitHub Actions API.
+- This satisfies **one** immediate private-carrier runner-capacity probe.
+  It does not reveal remaining minutes or grant permission to export source;
+  re-run a fresh source-free probe if this evidence becomes stale.
+
+**What remains before using this candidate for cross-org source tests:**
+independent source/destination repository-ID authorization, trusted/protected
+policy origin, approved exact source commit and complete tree, reviewed
+destination base commit/tree/workflow and permissions, incident #22
+containment, and clean real compiler tests. The source repo's own hosted
+Actions remain unable to start; administrator review is still required if
+source-local CI must run. Do not copy private Oreslang Git objects into Voxletra
+based only on this capacity milestone.
+
 ## Administrator-only diagnosis, in order
 
 1. Inspect one source-free run and its job/check-run **annotations** in the
