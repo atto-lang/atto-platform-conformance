@@ -251,6 +251,34 @@ export async function publishPrivateMirror({
   if(nestedSource.length!==1||nestedSource[0].type!=="tree"||
       nestedSource[0].sha!==srcCommit.tree.sha)
     throw Error("materialized snapshot source subtree SHA does not equal pinned source Git tree");
+
+  // A matching nested source subtree is not sufficient: a malformed or
+  // substituted target tree could delete, replace or inject unrelated
+  // destination files. Preserve the FULL reviewed base tree outside the
+  // snapshot prefix. Prefix ancestors change tree OIDs by design, so compare
+  // their type/mode but compare all other paths byte-for-byte by Git identity.
+  const outsideBase=new Map(baseInventory.tree.filter(item=>
+    !prefix.startsWith(item.path+"/") &&
+    item.path!==prefix && !item.path.startsWith(prefix+"/"))
+    .map(item=>[item.path,item]));
+  const outsideSeen=new Set();
+  for(const item of materialized.tree){
+    if(typeof item?.path!=="string")continue;
+    if(item.path===prefix||item.path.startsWith(prefix+"/"))continue;
+    if(prefix.startsWith(item.path+"/")){
+      if(item.type!=="tree"||item.mode!=="040000")
+        throw Error("destination snapshot ancestor type or mode changed");
+      continue;
+    }
+    const original=outsideBase.get(item.path);
+    if(!original||outsideSeen.has(item.path)||
+       item.type!==original.type||item.mode!==original.mode||
+       item.sha!==original.sha)
+      throw Error("destination base entries changed outside snapshot prefix");
+    outsideSeen.add(item.path);
+  }
+  if(outsideSeen.size!==outsideBase.size)
+    throw Error("destination base entries omitted outside snapshot prefix");
   await authorize();
   const result=await githubRequest(destination,"/git/commits",token,{
     method:"POST",body:{message:"ci: verified private source snapshot "+sourceCommit,
