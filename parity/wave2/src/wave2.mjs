@@ -91,9 +91,13 @@ export async function runWave2({backend,task,checkArgv,executeArgv,sourceSha,tim
  const needCheck=candidate.some(c=>c.mode!=='execute'),needExecute=candidate.some(c=>c.mode==='execute');
  const configured=(!needCheck||!!checkArgv)&&(!needExecute||!!executeArgv);
  if(checkArgv)command(checkArgv);if(executeArgv)command(executeArgv);
+ const commandSha256={};
  if(configured&&candidate.length){
   if(!/^[0-9a-f]{40}$/.test(sourceSha||''))bad('exact declared source SHA required');
-  for(const argv of [checkArgv,executeArgv].filter(Boolean))await regular(argv[0]);
+  for(const [kind,argv] of [['check',checkArgv],['execute',executeArgv]])if(argv){
+   await regular(argv[0]);
+   commandSha256[kind]=createHash('sha256').update(await readFile(argv[0])).digest('hex');
+  }
  }
  const results=[];
  for(const c of selected){
@@ -126,7 +130,7 @@ export async function runWave2({backend,task,checkArgv,executeArgv,sourceSha,tim
  return {schemaVersion:2,backend,task:task??'all',configured:configured&&candidate.length>0,
   status:observedOnly?'ADMISSION_OR_RESULT_OBSERVED':'INCOMPLETE',ok:observedOnly,observedPass,
   missing,total:selected.length,verified:false,parityVerified:false,provenanceVerified:false,
-  declaredSourceSha:sourceSha||null,
+  declaredSourceSha:sourceSha||null,commandSha256,
   note:'Source fixtures and local adapter outcomes only; no independent compiler provenance, guest authenticity, or full feature parity is certified.',
   results};
 }
