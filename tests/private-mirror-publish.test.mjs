@@ -50,7 +50,7 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
       else if(suffix==="/actions/runs/"+opts.runnerProbeRunId+"/jobs?per_page=100")
         data=capacityJobs||{total_count:1,jobs:[{name:"capacity",
           status:"completed",conclusion:"success",runner_name:"GitHub Actions 1",
-          run_id:opts.runnerProbeRunId,
+          runner_id:1000057681,run_id:opts.runnerProbeRunId,
           steps:[
             {name:"Set up job",status:"completed",conclusion:"success"},
             {name:"Prove runner allocation and shell execution",status:"completed",conclusion:"success"},
@@ -368,7 +368,8 @@ test("stale, incorrect source-free workflow and wrong destination repository ID 
 });
 test("incomplete, fake, multiple or job-with-no-real-step runner evidence cannot authorize private copy",async()=>{
  const goodJob={name:"capacity",status:"completed",conclusion:"success",
-    runner_name:"GitHub Actions 1",run_id:opts.runnerProbeRunId,
+    runner_name:"GitHub Actions 1",runner_id:1000057681,
+    run_id:opts.runnerProbeRunId,
     steps:[{name:"Prove runner allocation and shell execution",status:"completed",conclusion:"success"}]};
  for(const jobs of [
   {total_count:0,jobs:[]},
@@ -379,6 +380,9 @@ test("incomplete, fake, multiple or job-with-no-real-step runner evidence cannot
   {total_count:1,jobs:[{...goodJob,steps:[{...goodJob.steps[0],name:"Fake skipped"}]}]},
   {total_count:1,jobs:[{...goodJob,status:"queued"}]},
   {total_count:1,jobs:[{...goodJob,run_id:opts.runnerProbeRunId+1}]},
+  {total_count:1,jobs:[{...goodJob,run_id:undefined}]},
+  {total_count:1,jobs:[{...goodJob,runner_id:0}]},
+  {total_count:1,jobs:[{...goodJob,runner_id:undefined}]},
   {total_count:1,jobs:[{...goodJob,steps:[{...goodJob.steps[0],status:"in_progress"}]}]},
   {total_count:1,jobs:[{...goodJob,steps:[goodJob.steps[0],goodJob.steps[0]]}]}
  ]){
