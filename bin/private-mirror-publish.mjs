@@ -42,6 +42,31 @@ async function githubRequest(repo,path,token,{method="GET",body,fetchImpl=fetch}
   try{return await response.json()}catch{throw Error("GitHub private mirror API returned invalid JSON")}
 }
 
+
+// Ref creation is atomic, but discover an existing target BEFORE accessing any
+// confidential source bytes. A late collision would otherwise leave private
+// blobs copied into the carrier without any useful CI branch.
+async function requireAbsentSnapshotRef(repo,branch,token,fetchImpl=fetch) {
+  let response;
+  try {
+    response=await fetchImpl("https://api.github.com/repos/"+repo+
+      "/git/ref/heads/"+branch,{
+      method:"GET",redirect:"error",
+      headers:{"Accept":"application/vnd.github+json",
+        "Authorization":"Bearer "+token,
+        "X-GitHub-Api-Version":"2022-11-28"},
+      signal:AbortSignal.timeout(10000)
+    });
+  }catch{
+    throw Error("cannot verify destination CI ref absence");
+  }
+  if(response?.status===404)return;
+  if(response?.status===200)
+    throw Error("destination CI branch already exists");
+  // 401, 403, 429, 5xx, redirects and malformed responses deny.
+  throw Error("cannot verify destination CI ref absence");
+}
+
 export async function publishPrivateMirror({
   source,destination,sourceCommit,approvedSourceCommit,approvedSourceTreeSha,
   destinationBaseCommit,approvedDestinationBaseCommit,
@@ -75,6 +100,7 @@ export async function publishPrivateMirror({
   // FIRST external operation: authorization, before ANY source bytes are fetched
   // and before ANY destination object/ref is created.
   await authorize();
+  await requireAbsentSnapshotRef(destination,newBranch,token,fetchImpl);
   // Prove the chosen PRIVATE carrier can actually execute a source-free job
   // BEFORE reading/copying any confidential Git objects. This is not billing
   // attestation; only a recent independently pinned successful runner probe.
@@ -297,6 +323,7 @@ export async function publishPrivateMirror({
   });
   sha(result.sha);
   await authorize();
+  await requireAbsentSnapshotRef(destination,newBranch,token,fetchImpl);
   const createdRef=await githubRequest(destination,"/git/refs",token,{
     method:"POST",body:{ref:"refs/heads/"+newBranch,sha:result.sha},fetchImpl
   });
