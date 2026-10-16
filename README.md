@@ -14,6 +14,26 @@ See [the real compiler evidence policy](docs/REAL_COMPILER_EVIDENCE.md). The rep
 
 ## Current deliverable
 
+### Five-backend admission hardening (2026-10-15)
+
+The manifest harness recognizes Java/Graal, LLVM, Wasm, .NET and Forge
+(plus the existing browser runtime selector) without assuming any backend
+implements an unlisted fixture. A backend with **zero registered cases**
+reports `NO_CASES` and `ok: false` even when the caller supplied a real
+executable; discovering a backend is not certifying it.
+
+A negative compile fixture is `VERIFIED` only on exit code **1** with its
+expected diagnostic and no crash/fatal marker. Exit 2, 126, 127, signals,
+timeouts, missing executables and crash-shaped diagnostics never satisfy
+semantic rejection. Identical fixture references and duplicate backend
+selectors within a manifest case are rejected.
+
+The existing Java and LLVM fixture set remains only a **compiler-admission**
+probe; it does not prove five-backend parity, guest execution, runtime safety,
+trusted-code AOT, or CI provenance. New .NET/Forge cases require real compiler
+and execution evidence before registration. See
+`tests/five-backend-admission.test.mjs` for regression coverage.
+
 - Versioned fixture manifest and minimal positive/negative .ores sources.
 - Safe subprocess-based command runner with an argv template; no shell interpolation.
 - Executable harness unit tests (using a **fake checker** to verify the harness only).
