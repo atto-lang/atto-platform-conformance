@@ -40,7 +40,7 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
         data={sha:C,encoding:"base64",content:"NDI7Cg==",size:4};
     } else {
       if(suffix==="/actions/runs/"+opts.runnerProbeRunId)data=capacityRun||{
-        id:opts.runnerProbeRunId,status:"completed",conclusion:"success",
+        id:opts.runnerProbeRunId,status:"completed",conclusion:"success",event:"push",
         head_sha:opts.approvedRunnerProbeCommit,path:opts.approvedRunnerProbeWorkflow,
         repository:{id:opts.destinationRepositoryId},
         head_repository:{id:opts.destinationRepositoryId},
@@ -335,7 +335,7 @@ test("no private source bytes are read when runner probe failed or recorded zero
  }
 });
 test("stale, incorrect source-free workflow and wrong destination repository ID deny before source read",async()=>{
- const successful={id:opts.runnerProbeRunId,status:"completed",conclusion:"success",
+ const successful={id:opts.runnerProbeRunId,status:"completed",conclusion:"success",event:"push",
   head_sha:opts.approvedRunnerProbeCommit,path:opts.approvedRunnerProbeWorkflow,
   repository:{id:opts.destinationRepositoryId},
   head_repository:{id:opts.destinationRepositoryId},created_at:new Date().toISOString()};
@@ -344,6 +344,8 @@ test("stale, incorrect source-free workflow and wrong destination repository ID 
   {created_at:"not-a-date"},
   {head_sha:A},
   {path:".github/workflows/unreviewed.yml"},
+  {event:"pull_request"},
+  {event:"schedule"},
   {repository:{id:9999}},
   {head_repository:{id:9999}},
   {id:0}
