@@ -116,9 +116,10 @@ export async function runWave2({backend,task,checkArgv,executeArgv,sourceSha,tim
   else if(c.mode==='reject'&&p.status===1&&!stdout&&primaryDiagnostic(stderr,c.diagnostic))status='OBSERVED_PASS';
   else if(c.mode==='execute'&&p.status===0&&!stderr){
    try{
-    const observation=JSON.parse(stdout);
-    exact(observation,['result']);
-    if(typeof observation.result==='string'&&observation.result===c.expectedValue)status='OBSERVED_PASS';
+    // JSON.parse accepts duplicate keys, and therefore is not a strict
+    // one-field result oracle. Only one literal decimal string is admitted.
+    const one=/^\s*\{\s*"result"\s*:\s*"(-?(?:0|[1-9]\d*))"\s*\}\s*$/.exec(stdout);
+    if(one&&one[1]===c.expectedValue)status='OBSERVED_PASS';
    }catch{/* Fail closed; a real guest adapter must produce one exact JSON result. */}
   }
   results.push({id:c.id,status,certified:false,expected:c.expectedValue??c.diagnostic??null,fixtureSha256:digest,exitCode:p.status??null,signal:p.signal||null});
