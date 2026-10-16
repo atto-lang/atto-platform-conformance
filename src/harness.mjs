@@ -4,6 +4,8 @@ import {resolve,dirname,isAbsolute} from "node:path";
 import {fileURLToPath} from "node:url";
 import {spawnSync} from "node:child_process";
 const root=resolve(dirname(fileURLToPath(import.meta.url)),"..");
+export const COMPILER_BACKENDS=Object.freeze(["java","llvm","net","wasm","forge"]);
+const SUPPORTED_BACKENDS=new Set([...COMPILER_BACKENDS,"browser"]);
 function validSha(s){return typeof s==="string" && /^[0-9a-f]{40}$/.test(s)}
 export function validateCommand(argv){
  if(!Array.isArray(argv)||argv.length===0||argv.some(x=>typeof x!=="string"||!x||x.includes("\0")))throw Error("compiler argv must be nonempty strings without NUL");
@@ -20,14 +22,14 @@ export async function loadManifest(){
   if(!item||typeof item.id!=="string"||ids.has(item.id)||!/^[a-z0-9-]+$/.test(item.id))throw Error("invalid/duplicate test id");
   ids.add(item.id);
   if(typeof item.file!=="string"||!/^[-a-z0-9]+\.ores$/.test(item.file))throw Error("invalid fixture path");
-  if(!["accept","reject"].includes(item.expect)||!Array.isArray(item.backends)||!item.backends.length||item.backends.some(x=>!["java","llvm","wasm","browser"].includes(x)))throw Error("invalid fixture expectation/backends");
+  if(!["accept","reject"].includes(item.expect)||!Array.isArray(item.backends)||!item.backends.length||item.backends.some(x=>!SUPPORTED_BACKENDS.has(x)))throw Error("invalid fixture expectation/backends");
   if(item.expect==="reject"&&typeof item.diagnostic!=="string")throw Error("negative fixture must require a diagnostic");
   await readFile(resolve(root,"fixtures",item.file),"utf8");
  }
  return manifest;
 }
 export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireConfigured=false,spawn=spawnSync}={}){
- if(!["java","llvm","wasm","browser"].includes(backend))throw Error("unknown backend");
+ if(!SUPPORTED_BACKENDS.has(backend))throw Error("unknown backend");
  if(!Number.isSafeInteger(timeoutMs)||timeoutMs<100||timeoutMs>120000)throw Error("timeoutMs must be 100..120000");
  const manifest=await loadManifest();
  const relevant=manifest.cases.filter(x=>x.backends.includes(backend));
