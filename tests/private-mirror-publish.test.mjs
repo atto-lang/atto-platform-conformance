@@ -5,7 +5,7 @@ import {publishPrivateMirror} from "../bin/private-mirror-publish.mjs";
 const source="ores-truffle-oreslang/oreslang-source.java";
 const destination="akrion-sim/akrion-sim-e2e";
 const A="a".repeat(40),B="b".repeat(40),C="c".repeat(40),
- D="d".repeat(40),E="e".repeat(40),G="9".repeat(40),H="8".repeat(40);
+ D="d".repeat(40),E="e".repeat(40),G="9".repeat(40),H="8".repeat(40),F="7".repeat(40);
 const opts={source,destination,sourceCommit:A,approvedSourceCommit:A,
   approvedSourceTreeSha:D,destinationBaseCommit:B,
   approvedDestinationBaseCommit:B,approvedDestinationBaseTreeSha:E,
@@ -21,7 +21,8 @@ const good=name=>({full_name:name,id:name===source?1400792274:1321164328,
 
 function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E,
   capacityRun,capacityJobs,capacityProbeTree,capacityProbeCommit,meta,errors,
-  preExistingRef=false,lateExistingRef=false,refPreflightStatus}={}){
+  preExistingRef=false,lateExistingRef=false,refPreflightStatus,
+  sourceBlobResponses}={}){
   const events=[],seen={source:0,destination:0};
   let refReads=0;
   const request=async(url,options)=>{
@@ -48,8 +49,12 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
       if(suffix==="/git/commits/"+A)data={tree:{sha:D}};
       else if(suffix==="/git/trees/"+D+"?recursive=1")
         data=sourceTree||{truncated:false,tree:[{type:"blob",path:"main.ores",sha:C,size:4,mode:"100644"}]};
-      else if(suffix==="/git/blobs/"+C)
-        data={sha:C,encoding:"base64",content:"NDI7Cg==",size:4};
+      else if(suffix==="/git/blobs/"+C||suffix==="/git/blobs/"+F){
+        const blobSha=suffix.endsWith("/"+F)?F:C;
+        data=sourceBlobResponses?.[blobSha]||
+          (blobSha===F?{sha:F,encoding:"base64",content:"T0s=",size:2}:
+            {sha:C,encoding:"base64",content:"NDI7Cg==",size:4});
+      }
     } else {
       if(suffix==="/actions/runs/"+opts.runnerProbeRunId)data=capacityRun||{
         id:opts.runnerProbeRunId,status:"completed",conclusion:"success",event:"push",
@@ -88,7 +93,7 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
           {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C}
         ]};
       else if(suffix==="/git/blobs"&&method==="POST")
-        data={sha:blobSha};
+        data={sha:options.body&&JSON.parse(options.body).content==="T0s="?F:blobSha};
       else if(suffix==="/git/trees"&&method==="POST")
         data={sha:D};
       else if(suffix==="/git/commits"&&method==="POST")
@@ -627,4 +632,44 @@ test("ref claimed during long publication rejects before publishing commit ref",
  await assert.rejects(promise,/destination CI branch already exists/);
  assert.ok(h.events.some(e=>e.method==="POST"&&e.path===destination+"/git/trees"));
  assert.equal(h.events.some(e=>e.method==="POST"&&e.path===destination+"/git/refs"),false);
+});
+
+test("late malformed source blob denies all destination writes with two-phase validation",async()=>{
+ const tree={truncated:false,tree:[
+  {type:"blob",path:"first.ores",sha:C,size:4,mode:"100644"},
+  {type:"blob",path:"second.ores",sha:F,size:2,mode:"100644"}]};
+ for(const bad of [
+   {sha:F,encoding:"base64",content:"T0s=",size:3},
+   {sha:F,encoding:"utf-8",content:"OK",size:2},
+   {sha:C,encoding:"base64",content:"T0s=",size:2}
+ ]){
+  const {h,promise}=run({sourceTree:tree,sourceBlobResponses:{[F]:bad}});
+  await assert.rejects(promise,/source blob content identity or encoding mismatch/);
+  assert.ok(h.events.some(e=>e.path===source+"/git/blobs/"+C));
+  assert.ok(h.events.some(e=>e.path===source+"/git/blobs/"+F));
+  assert.equal(h.events.filter(e=>e.method==="POST").length,0,
+    "late malformed blob must prevent even first private destination blob write");
+ }
+});
+test("all source blob GETs precede any destination blob POST in successful multi-blob copy",async()=>{
+ const tree={truncated:false,tree:[
+  {type:"blob",path:"first.ores",sha:C,size:4,mode:"100644"},
+  {type:"blob",path:"second.ores",sha:F,size:2,mode:"100644"}]};
+ const materialized={truncated:false,tree:[
+  {path:"unrelated",type:"tree",mode:"040000",sha:B},
+  {path:"unrelated/readme.txt",type:"blob",mode:"100644",sha:C},
+  {path:"snapshots",type:"tree",mode:"040000"},
+  {path:"snapshots/checked",type:"tree",sha:D},
+  {path:"snapshots/checked/first.ores",type:"blob",mode:"100644",sha:C},
+  {path:"snapshots/checked/second.ores",type:"blob",mode:"100644",sha:F}
+ ]};
+ const {h,promise}=run({sourceTree:tree,materializedTree:materialized});
+ const answer=await promise;
+ assert.equal(answer.blobs,2);
+ const writes=h.events.filter(e=>e.path===destination+"/git/blobs"&&e.method==="POST");
+ assert.equal(writes.length,2);
+ const secondRead=h.events.findIndex(e=>e.path===source+"/git/blobs/"+F);
+ const firstWrite=h.events.findIndex(e=>e.path===destination+"/git/blobs"&&e.method==="POST");
+ assert.ok(secondRead>=0&&firstWrite>secondRead,
+   "all source blobs must be validated before the first copy");
 });
