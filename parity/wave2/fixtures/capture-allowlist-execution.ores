@@ -1,0 +1,8 @@
+pub routine main(): void {
+  val int base = 4;
+  val int excluded = 100;
+  val Fnc<int, int> allow = lex[base] |int value| -> base + value;
+  val Fnc<int, int> deny = nlex[excluded] |int value| -> base + value;
+  stdio.stdout.write(allow(3));
+  stdio.stdout.write(deny(5));
+}
