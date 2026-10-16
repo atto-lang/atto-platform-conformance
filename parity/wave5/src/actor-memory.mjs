@@ -7,19 +7,20 @@ function cloneData(input,depth=0,counter={n:0}){
  ensure(depth<=maxDepth&&++counter.n<=maxNodes,'data depth/node budget');
  if(input===null||typeof input==='boolean'||typeof input==='string')return input;
  if(typeof input==='number'){ensure(Number.isSafeInteger(input),'portable integer required');return input}
- if(Array.isArray(input)){ensure(input.length<=64&&!Object.keys(input).some(k=>String(+k)!==k),'dense array required');return Object.freeze(input.map(v=>cloneData(v,depth+1,counter)))}
+ if(Array.isArray(input)){ensure(input.length<=64&&Object.keys(input).length===input.length&&!Object.keys(input).some(k=>String(+k)!==k),'dense array required');return Object.freeze(input.map(v=>cloneData(v,depth+1,counter)))}
  ensure(input&&typeof input==='object'&&(Object.getPrototypeOf(input)===Object.prototype||Object.getPrototypeOf(input)===null),'only detached records');
- const keys=Object.keys(input);ensure(keys.length<=64,'record fields quota');
+ const keys=Object.keys(input);ensure(keys.length<=64&&Reflect.ownKeys(input).length===keys.length,'record fields/symbol quota');
  const record=Object.create(null);
  for(const key of keys){
   ensure(/^[a-zA-Z_][a-zA-Z0-9_]{0,63}$/.test(key)&&key!=='constructor'&&key!=='__proto__','unsafe record key');
-  Object.defineProperty(record,key,{value:cloneData(input[key],depth+1,counter),enumerable:true});
+  const d=Object.getOwnPropertyDescriptor(input,key);
+  ensure(d&&Object.hasOwn(d,'value'),'getters/setters cannot acquire actor heap authority');
+  Object.defineProperty(record,key,{value:cloneData(d.value,depth+1,counter),enumerable:true});
  }
  return Object.freeze(record);
 }
 export class ActorMemoryAuthority {
  #actors=new Map();#identity=new WeakMap();#handles=new WeakMap();#readViews=new WeakMap();
- #shared=new Map();#nextId=1;
  constructor({maxActors=32,maxBlocksPerActor=1024,maxTotalBytes=1<<20}={}){
   ensure(Number.isInteger(maxActors)&&maxActors>0&&maxActors<=1024,'actor count bound');
   ensure(Number.isInteger(maxBlocksPerActor)&&maxBlocksPerActor>0&&maxBlocksPerActor<=16384,'block bound');
