@@ -15,7 +15,7 @@ export function isExpectedCompilerDiagnostic(output,symbol){
  if(typeof output!=="string"||!validDiagnosticSymbol(symbol))return false;
  const token=new RegExp("(^|[^A-Za-z0-9_])"+symbol+"($|[^A-Za-z0-9_])");
  const diagnostic=/\b(?:undefined|undeclared|unknown|unresolved|unbound|not found|cannot find|cannot resolve)\b/i;
- return output.split(/\r?\n/).some(line=>diagnostic.test(line)&&token.test(line));
+ return output.split(/\r?\n/).some(line=>/\berror\b/i.test(line)&&diagnostic.test(line)&&token.test(line));
 }
 export function validateCommand(argv){
  if(!Array.isArray(argv)||argv.length===0||argv.some(x=>typeof x!=="string"||!x||x.includes("\0")))throw Error("compiler argv must be nonempty strings without NUL");
