@@ -31,11 +31,15 @@ export function validateWave1Spec(spec) {
   }
   const ids = new Set(), paths = new Set(), byTask = new Map();
   for (const f of spec.fixtures) {
-    exactKeys(f, ['id','task','path','expect','sha256'], 'fixture');
+    const expectedFields = ['id','task','path','expect','sha256',
+      f?.expect === 'reject' ? 'diagnosticClass' : 'expectedInt'];
+    exactKeys(f, expectedFields, 'fixture');
     if (!slug(f.id) || ids.has(f.id) || !EXPECTED_TASKS.includes(f.task) || f.task < 3 ||
         typeof f.path !== 'string' ||
         !/^fixtures\/wave1\/[a-z0-9-]+\.ores$/.test(f.path) || paths.has(f.path) ||
         !['accept','reject'].includes(f.expect) ||
+        (f.expect === 'reject' && !['syntax','unresolved-name','import-root-escape','duplicate-method-slot'].includes(f.diagnosticClass)) ||
+        (f.expect === 'accept' && (!Number.isSafeInteger(f.expectedInt) || f.expectedInt < -2147483648 || f.expectedInt > 2147483647)) ||
         typeof f.sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(f.sha256)) {
       throw Error('invalid/duplicate Wave 1 fixture');
     }
