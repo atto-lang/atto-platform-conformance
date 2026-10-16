@@ -35,8 +35,8 @@ export async function executeAdapter({backend,area=null,argv,sourceCommit,timeou
     cwd:ROOT,encoding:'utf8',windowsHide:true,shell:false,timeout:timeoutMs,maxBuffer:1024*1024
   });
   let entry;
-  if(out.error||out.signal||out.status!==0){
-   entry={phase:'adapter-error',exitCode:null,stderr:out.error?.code==='ETIMEDOUT'?'adapter timeout':out.error?'adapter process failed':out.signal?'adapter signaled':'adapter exited nonzero'};
+  if(out.error||out.signal||out.status!==0||typeof out.stderr!=='string'||out.stderr.length!==0){
+   entry={phase:'adapter-error',exitCode:null,stderr:out.error?.code==='ETIMEDOUT'?'adapter timeout':out.error?'adapter process failed':out.signal?'adapter signaled':out.status!==0?'adapter exited nonzero':'adapter wrote to stderr'};
   }else{
    try {
     const message=JSON.parse(out.stdout);
