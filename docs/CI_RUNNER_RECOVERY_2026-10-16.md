@@ -66,6 +66,33 @@ Actions remain unable to start; administrator review is still required if
 source-local CI must run. Do not copy private Oreslang Git objects into Voxletra
 based only on this capacity milestone.
 
+## Hosted synthetic Git-tree proof on the same PRIVATE carrier
+
+A second source-free workflow on the isolated Voxletra branch passed:
+
+- [Run #38940949779](https://github.com/voxletra/voxletra-e2e/actions/runs/38940949779)
+  from commit `a4345481e50144535482a85ec6818b67cb7c7648`,
+  workflow `.github/workflows/oreslang-synthetic-tree-proof.yml`.
+  Job `synthetic-exact-tree` executed on runner ID `1000002102`.
+- Actual GitHub job logs contain **all four required markers**:
+  `EXACT_TREE_MATCH=yes`, `EXECUTABLE_MODE_MATCH=yes`,
+  `TAMPERING_DETECTED=yes` and `REAL_NATIVE_CLANG_EXECUTION=yes`.
+- The fully synthetic Git tree retained path/mode identity under a nested
+  prefix, and adding a new file changed the tree hash. Node `v22.23.3`
+  and Clang `18.1.3` were confirmed. The host compiled and executed a
+  standalone C guest that returned exit code 42.
+- This run used locally generated synthetic input only: **no Oreslang
+  source, no source checkout, no cross-org credentials, no GitHub mirror
+  operation**. It proves Git tree mechanics and native toolchain ability,
+  not the security of a future source export or Oreslang runtime behavior.
+
+The draft mirror publisher's offline mocked-GitHub suite is now **41/41
+passing**. It additionally requires the simple source-free probe's *exact*
+managed step sequence (setup, approved shell step, completion), preventing
+a supposedly successful capacity job from hiding extra executable steps.
+Its reviewed policy and the source-exposure incident remain unresolved.
+JDK 25/GraalVM **has not been verified** on this carrier.
+
 ## Administrator-only diagnosis, in order
 
 1. Inspect one source-free run and its job/check-run **annotations** in the
