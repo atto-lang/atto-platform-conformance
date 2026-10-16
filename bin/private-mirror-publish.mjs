@@ -47,6 +47,7 @@ export async function publishPrivateMirror({
   destinationBaseCommit,approvedDestinationBaseCommit,
   approvedDestinationBaseTreeSha,prefix,newBranch,
   runnerProbeRunId,approvedRunnerProbeCommit,approvedRunnerProbeWorkflow,
+  approvedRunnerProbeWorkflowBlobSha,
   approvedDestinations,sourceRepositoryId,destinationRepositoryId,
   token,fetchImpl=fetch
 }) {
@@ -59,7 +60,7 @@ export async function publishPrivateMirror({
   sha(approvedSourceCommit);sha(approvedSourceTreeSha);
   if(sourceCommit!==approvedSourceCommit)
     throw Error("source commit differs from independently reviewed policy pin");
-  sha(approvedRunnerProbeCommit);
+  sha(approvedRunnerProbeCommit);sha(approvedRunnerProbeWorkflowBlobSha);
   if(!Number.isSafeInteger(runnerProbeRunId)||runnerProbeRunId<=0||
       typeof approvedRunnerProbeWorkflow!=="string"||
       !/^\.github\/workflows\/[A-Za-z0-9_-]+\.ya?ml$/.test(approvedRunnerProbeWorkflow))
@@ -111,6 +112,23 @@ export async function publishPrivateMirror({
      probeJob.runner_name.length===0||
      !exactStepSequence)
     throw Error("destination runner probe has no independently executed success step");
+  // Bind the observed successful run to the independently reviewed workflow
+  // *contents*, not merely a matching workflow filename or step name.
+  // Commit/tree APIs operate on the destination only; do this before reading
+  // any private source Git objects or creating any destination objects.
+  const probeCommit=await githubRequest(destination,
+    "/git/commits/"+approvedRunnerProbeCommit,token,{fetchImpl});
+  if(!OID.test(probeCommit?.tree?.sha||""))
+    throw Error("approved runner-probe commit has no Git tree");
+  const probeTree=await githubRequest(destination,
+    "/git/trees/"+probeCommit.tree.sha+"?recursive=1",token,{fetchImpl});
+  if(probeTree?.truncated!==false||!Array.isArray(probeTree.tree))
+    throw Error("reviewed runner-probe workflow tree incomplete");
+  const workflowMatches=probeTree.tree.filter(x=>x?.path===approvedRunnerProbeWorkflow);
+  if(workflowMatches.length!==1||workflowMatches[0].type!=="blob"||
+     workflowMatches[0].mode!=="100644"||
+     workflowMatches[0].sha!==approvedRunnerProbeWorkflowBlobSha)
+    throw Error("runner probe workflow content differs from reviewed Git blob");
   await authorize();
   const base=await githubRequest(destination,"/git/commits/"+destinationBaseCommit,token,{fetchImpl});
   if(!OID.test(base?.tree?.sha||""))throw Error("destination base is not an immutable commit");
@@ -255,7 +273,8 @@ if(process.argv[1]&&pathToFileURL(process.argv[1]).href===import.meta.url){
       approvedSourceTreeSha:process.env.ORES_APPROVED_PRIVATE_SOURCE_TREE_SHA,
       runnerProbeRunId:Number(process.env.ORES_APPROVED_RUNNER_PROBE_RUN_ID),
       approvedRunnerProbeCommit:process.env.ORES_APPROVED_RUNNER_PROBE_COMMIT,
-      approvedRunnerProbeWorkflow:process.env.ORES_APPROVED_RUNNER_PROBE_WORKFLOW
+      approvedRunnerProbeWorkflow:process.env.ORES_APPROVED_RUNNER_PROBE_WORKFLOW,
+      approvedRunnerProbeWorkflowBlobSha:process.env.ORES_APPROVED_RUNNER_PROBE_WORKFLOW_BLOB_SHA
     });
     console.log(JSON.stringify(result));
   }catch{
