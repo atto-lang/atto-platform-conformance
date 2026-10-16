@@ -16,7 +16,7 @@ Never reinterpret the fake checker tests as Java/LLVM conformance. Real runs req
 
 At a real build gate: 1) obtain exact compiler tree/commit; 2) build it using authorized private-runner access; 3) supply non-executing checker argv; 4) run conformance with --require; 5) archive provenance and raw output, label unsupported fixtures explicitly rather than dropping them.
 
-Hardening: command argv requires an absolute executable, timeouts are bounded to 100..120000 ms, SHA-256 hashes record the executable and test inputs, and negative tests require both the expected symbol and a recognizable compiler error/undefined-name diagnostic. Nonzero process exits with crash-only text never pass. Source revision is caller-supplied and NOT attested to the hashed executable; a reproducible compiler build must establish that link.
+Hardening: command argv requires an absolute executable, timeouts are bounded to 100..120000 ms, SHA-256 hashes record the executable and test inputs, and v1 negative fixtures require a **literal ASCII identifier** (not an arbitrary regex). A nonzero exit counts only when one output line contains an explicit `error` severity, an unresolved/unknown/undefined-name diagnostic, and the exact case-sensitive identifier as a full token. Warnings, source echoes, unrelated process failures, invalid exit codes, and crash-only text never pass. Multi-line diagnostics need an explicitly verified backend-specific adapter; they are deliberately not auto-promoted as conformance evidence. Source revision is caller-supplied and NOT attested to the hashed executable; a reproducible compiler build must establish that link.
 
 ## AI smoke evidence admission
 
