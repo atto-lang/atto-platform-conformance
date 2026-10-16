@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
+import {mkdtemp,writeFile,rm,symlink} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import {readFile} from 'node:fs/promises';
 import {validateBatch,loadBatch,rejectDuplicateObjectKeys} from '../bin/validate-first-five.mjs';
 const path = new URL('../contracts/first-five.json',import.meta.url);
@@ -65,4 +68,23 @@ test('delimited object-key collisions cannot masquerade as exact fields', () => 
     delete x.tasks[0].statuses.llvm;
     x.tasks[0].statuses['java|llvm'] = 'pending';
   })), /invalid fields/);
+});
+
+test('loader rejects ambiguous, malformed UTF-8 and symlink inventories', async () => {
+  const dir = await mkdtemp(join(tmpdir(),'ores-parity-audit-'));
+  try {
+    const baseline = await readFile(path,'utf8');
+    const file = join(dir,'batch.json');
+    const replacement = baseline.replace('"batch": 1,','"batch": 1, "batch": 1,');
+    assert.notEqual(replacement, baseline);
+    await writeFile(file, replacement);
+    await assert.rejects(loadBatch(file),/duplicate JSON object key/);
+    await writeFile(file, Buffer.from([0x7b,0x22,0x61,0x22,0x3a,0xc3,0x28,0x7d]));
+    await assert.rejects(loadBatch(file),/encoded|UTF-8/i);
+    await writeFile(file, baseline);
+    const link=join(dir,'symlink.json');
+    await symlink(file, link);
+    await assert.rejects(loadBatch(link),/invalid contract file/);
+    assert.equal((await loadBatch(file)).status,'CONTRACT_VALID_ONLY');
+  } finally { await rm(dir,{recursive:true,force:true}); }
 });
