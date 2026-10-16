@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { dirname, isAbsolute } from "node:path";
+import { hasCompilerErrorSeverity, isExpectedCompilerDiagnostic } from "./harness.mjs";
 
 const sha40 = /^[0-9a-f]{40}$/;
 const sha256 = /^[0-9a-f]{64}$/;
@@ -23,15 +24,18 @@ function validateProcess(p, label) {
   requireField(Number.isSafeInteger(p.duration_ms) && p.duration_ms >= 0, label + " duration");
   return p;
 }
-function good(p) { return validateProcess(p, "positive").exit_code === 0; }
+function good(p) {
+  validateProcess(p, "positive");
+  return p.exit_code === 0 &&
+    !hasCompilerErrorSeverity(p.stdout + "\n" + p.stderr);
+}
 function rejected(p) {
   validateProcess(p, "negative");
   const combined = p.stdout + "\n" + p.stderr;
-  // A separate fixture echo and unrelated process error must not qualify.
-  const diagnosticLine = combined.split(/\r?\n/).some(line =>
-    line.includes("nonexistent_symbol") &&
-    /\b(error|undefined|undeclared|unresolved|unknown)\b|not found|cannot find/i.test(line));
-  return p.exit_code > 0 && diagnosticLine &&
+  // Require an actual primary unresolved-identifier error, not a source echo,
+  // filename, hint, unrelated process error, or a diagnostic for another symbol.
+  return p.exit_code > 0 &&
+    isExpectedCompilerDiagnostic(combined, "nonexistent_symbol") &&
     !/\b(segmentation fault|stack trace|traceback|fatal signal)\b/i.test(combined);
 }
 
@@ -79,6 +83,9 @@ export function validateRealCompilerReport(r) {
   // A missing argv must be reported as invalid process evidence, not misclassified
   // as a compiler/linker identity mismatch.
   validateProcess(positive.execution, "runtime");
+  requireField(!hasCompilerErrorSeverity(
+    positive.execution.stdout + "\n" + positive.execution.stderr),
+    "runtime reported error severity");
   if (r.backend === "java") {
     requireField(typeof r.java_probe_path === "string" && isAbsolute(r.java_probe_path) &&
       positive.compile.argv[1] === r.java_probe_path &&
