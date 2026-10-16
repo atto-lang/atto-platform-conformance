@@ -163,11 +163,11 @@
       }
     },
     {
-      "id": "effects-read-only",
+      "id": "effects-critical-write",
       "area": "effects",
       "mode": "check",
-      "file": "effects-read-only.ores",
-      "gitBlob": "d0b08b6278b7f02e346a8a96ebb71f1b33ef87dd",
+      "file": "effects-critical-write.ores",
+      "gitBlob": "5738ca8b68ed43d8f6e22152970f569506b14b8a",
       "oracle": {
         "kind": "admission",
         "value": "accepted"
