@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {spawnSync} from "node:child_process";
-import {runSuite,validateCommand,loadManifest} from "../src/harness.mjs";
+import {runSuite,validateCommand,loadManifest,COMPILER_BACKENDS} from "../src/harness.mjs";
 const sha="012345678901234567890123456789abcdefabcd";
 const cmd=[process.execPath,new URL("./fake-checker.mjs",import.meta.url).pathname,"{file}"];
 test("manifest parses exact fixtures",async()=>{const m=await loadManifest();assert.equal(m.cases.length,2)});
@@ -79,4 +79,27 @@ test("duplicate CLI selectors cannot silently replace compiler invocation or pro
   assert.match(result.stderr,/duplicate conformance argument/);
   assert.equal(result.stdout,"");
  }
+});
+
+test("all five source compiler backends have target fixtures but none are verified without a real runner",async()=>{
+ const manifest=await loadManifest();
+ assert.deepEqual([...COMPILER_BACKENDS].sort(),["forge","java","llvm","net","wasm"].sort());
+ for(const c of manifest.cases) assert.deepEqual([...c.backends].sort(),[...COMPILER_BACKENDS].sort());
+ for(const backend of COMPILER_BACKENDS){
+  const r=await runSuite({backend,requireConfigured:true});
+  assert.equal(r.ok,false,backend);
+  assert.equal(r.configured,false,backend);
+  assert.equal(r.verified,0,backend);
+  assert.equal(r.skipped,manifest.cases.length,backend);
+  assert.ok(r.results.every(x=>x.status==="UNCONFIGURED"),backend);
+ }
+});
+test("missing real tools cannot yield verification for newly admitted backends",async()=>{
+ for(const backend of ["net","wasm","forge"]){
+  const r=await runSuite({backend,argv:["/no/such/oreslang-compiler","{file}"],sourceSha:sha});
+  assert.equal(r.ok,false,backend);
+  assert.equal(r.failed,2,backend);
+  assert.ok(r.results.every(x=>x.status==="SPAWN_ERROR"),backend);
+ }
+ await assert.rejects(runSuite({backend:"not-a-compiler"}),/unknown backend/);
 });
