@@ -78,7 +78,7 @@ export async function verifyFiveBackendSourceIdentity(workspace) {
     throw Error("source contract Git blob pin is invalid");
   const files = [];
   for (const repository of BACKENDS) {
-    const bytes = await readSafeFixture(workspace, repository);
+    const bytes = await readSafeFixture(physicalWorkspace, repository);
     const digest = gitBlob(bytes);
     if (digest !== EXPECTED_GIT_BLOB || !bytes.equals(EXACT_SOURCE))
       throw Error("five-backend scalar source mismatch: " + repository);
