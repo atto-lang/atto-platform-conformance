@@ -90,15 +90,20 @@ export async function publishPrivateMirror({
     throw Error("destination source-free runner capacity probe not verified");
   const capacityJobs=await githubRequest(destination,
     "/actions/runs/"+runnerProbeRunId+"/jobs?per_page=100",token,{fetchImpl});
+  const probeJob=capacityJobs?.jobs?.[0];
+  // GitHub automatically adds "Set up job" and "Complete job" steps,
+  // so a real one-command capacity workflow has MORE than one reported step.
+  const executed=(Array.isArray(probeJob?.steps)?probeJob.steps:[]).filter(step=>
+     step?.name==="Prove runner allocation and shell execution");
   if(capacityJobs?.total_count!==1||!Array.isArray(capacityJobs.jobs)||
-     capacityJobs.jobs.length!==1||capacityJobs.jobs[0]?.name!=="capacity"||
-     capacityJobs.jobs[0]?.conclusion!=="success"||
-     typeof capacityJobs.jobs[0]?.runner_name!=="string"||
-     capacityJobs.jobs[0].runner_name.length===0||
-     !Array.isArray(capacityJobs.jobs[0].steps)||
-     capacityJobs.jobs[0].steps.length!==1||
-     capacityJobs.jobs[0].steps[0]?.name!=="Prove runner allocation and shell execution"||
-     capacityJobs.jobs[0].steps[0].conclusion!=="success")
+     capacityJobs.jobs.length!==1||probeJob?.name!=="capacity"||
+     probeJob?.status!=="completed"||probeJob?.conclusion!=="success"||
+     (probeJob?.run_id!==undefined&&probeJob.run_id!==runnerProbeRunId)||
+     typeof probeJob?.runner_name!=="string"||
+     probeJob.runner_name.length===0||
+     !Array.isArray(probeJob.steps)||
+     executed.length!==1||executed[0].status!=="completed"||
+     executed[0].conclusion!=="success")
     throw Error("destination runner probe has no independently executed success step");
   await authorize();
   const base=await githubRequest(destination,"/git/commits/"+destinationBaseCommit,token,{fetchImpl});
