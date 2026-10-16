@@ -1,0 +1,229 @@
+{
+  "schemaVersion": 2,
+  "phase": "wave2",
+  "status": "experimental-source-contracts-not-backend-verification",
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "tasks": [
+    {
+      "id": 6,
+      "category": "values",
+      "leader": "java",
+      "nativeLeader": "llvm",
+      "proof": "integer arithmetic exact results and type-safe int/float division"
+    },
+    {
+      "id": 7,
+      "category": "dispatch",
+      "leader": "java",
+      "nativeLeader": "llvm",
+      "proof": "value-arm result distinct from procedural function return"
+    },
+    {
+      "id": 8,
+      "category": "capture",
+      "leader": "java",
+      "nativeLeader": "llvm",
+      "proof": "no implicit self and no borrowed escaping receiver"
+    },
+    {
+      "id": 9,
+      "category": "ownership",
+      "leader": "java",
+      "nativeLeader": "llvm",
+      "proof": "sealed state-loan scope and nonescape"
+    },
+    {
+      "id": 10,
+      "category": "effects",
+      "leader": "java",
+      "nativeLeader": "llvm",
+      "proof": "with effect upper bounds, using scoped grants, critical exclusive write"
+    }
+  ],
+  "cases": [
+    {
+      "id": "value-i64-evaluation",
+      "task": 6,
+      "category": "values",
+      "file": "value-i64-evaluation.ores",
+      "gitBlob": "a8165323a8aa40e7cec613fdb7e645c41a901965",
+      "mode": "execute",
+      "expectedValue": "76",
+      "candidates": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "verified": false
+    },
+    {
+      "id": "value-int-division-reject",
+      "task": 6,
+      "category": "values",
+      "file": "value-int-division-reject.ores",
+      "gitBlob": "f405599f101013f13163a04c432d45be6e24bb0f",
+      "mode": "reject",
+      "diagnostic": "type-mismatch",
+      "candidates": [
+        "java"
+      ],
+      "verified": false
+    },
+    {
+      "id": "dispatch-value-match",
+      "task": 7,
+      "category": "dispatch",
+      "file": "dispatch-value-match.ores",
+      "gitBlob": "a0eca6ba4511bb81fd0a2210d1b9012bcd2d0d8d",
+      "mode": "execute",
+      "expectedValue": "43",
+      "candidates": [
+        "java",
+        "llvm"
+      ],
+      "verified": false
+    },
+    {
+      "id": "dispatch-do-match",
+      "task": 7,
+      "category": "dispatch",
+      "file": "dispatch-do-match.ores",
+      "gitBlob": "52aaa28412a99c5587b29c1f7da49d7dc36dfa05",
+      "mode": "execute",
+      "expectedValue": "42",
+      "candidates": [
+        "java",
+        "llvm"
+      ],
+      "verified": false
+    },
+    {
+      "id": "dispatch-nonexhaustive-reject",
+      "task": 7,
+      "category": "dispatch",
+      "file": "dispatch-nonexhaustive-reject.ores",
+      "gitBlob": "a6e524f18528795a041dca601777ad3b7456d40d",
+      "mode": "reject",
+      "diagnostic": "nonexhaustive",
+      "candidates": [
+        "java"
+      ],
+      "verified": false
+    },
+    {
+      "id": "capture-allowlist-execution",
+      "task": 8,
+      "category": "capture",
+      "file": "capture-allowlist-execution.ores",
+      "gitBlob": "ac66d3ef5d4e59552f575fc505326732065f1541",
+      "mode": "execute",
+      "expectedValue": "79",
+      "candidates": [
+        "java"
+      ],
+      "verified": false
+    },
+    {
+      "id": "capture-implicit-self-reject",
+      "task": 8,
+      "category": "capture",
+      "file": "capture-implicit-self-reject.ores",
+      "gitBlob": "99858fcb8305b7cfe52bce6b032a099a84a2385f",
+      "mode": "reject",
+      "diagnostic": "self-capture",
+      "candidates": [
+        "java"
+      ],
+      "verified": false
+    },
+    {
+      "id": "capture-escaping-self-reject",
+      "task": 8,
+      "category": "capture",
+      "file": "capture-escaping-self-reject.ores",
+      "gitBlob": "bda98aca005424b7c3b75bd65571d2fdc0ec44e4",
+      "mode": "reject",
+      "diagnostic": "receiver-borrow",
+      "candidates": [
+        "java"
+      ],
+      "verified": false
+    },
+    {
+      "id": "ownership-state-read",
+      "task": 9,
+      "category": "ownership",
+      "file": "ownership-state-read.ores",
+      "gitBlob": "cdf1dfcb63db44ab4eb8dc183127cc5ddb0f0c38",
+      "mode": "check",
+      "candidates": [
+        "java",
+        "llvm"
+      ],
+      "verified": false
+    },
+    {
+      "id": "ownership-loan-escape-reject",
+      "task": 9,
+      "category": "ownership",
+      "file": "ownership-loan-escape-reject.ores",
+      "gitBlob": "3025e24ec4f6d9fa119fb79d96b8ef6cba6f1062",
+      "mode": "reject",
+      "diagnostic": "state-loan",
+      "candidates": [
+        "java",
+        "llvm"
+      ],
+      "verified": false
+    },
+    {
+      "id": "effects-state-write",
+      "task": 10,
+      "category": "effects",
+      "file": "effects-state-write.ores",
+      "gitBlob": "02cd308d35760d5037bb3112abbe9598aa38aead",
+      "mode": "check",
+      "candidates": [
+        "java",
+        "llvm"
+      ],
+      "verified": false
+    },
+    {
+      "id": "effects-read-mutate-reject",
+      "task": 10,
+      "category": "effects",
+      "file": "effects-read-mutate-reject.ores",
+      "gitBlob": "002bc461cd7e51bc8e84266e67edf3536b5cca2f",
+      "mode": "reject",
+      "diagnostic": "read-mutate",
+      "candidates": [
+        "java",
+        "llvm"
+      ],
+      "verified": false
+    },
+    {
+      "id": "effects-loan-suspend-reject",
+      "task": 10,
+      "category": "effects",
+      "file": "effects-loan-suspend-reject.ores",
+      "gitBlob": "81dfa8dc4304feb89ac7d6eb54af81119d6d9a8f",
+      "mode": "reject",
+      "diagnostic": "loan-suspend",
+      "candidates": [
+        "java",
+        "llvm"
+      ],
+      "verified": false
+    }
+  ]
+}
