@@ -174,6 +174,47 @@ when an already-occupied destination ref is known in advance.
   Java/GraalVM/LLVM/.NET/Wasm/Forge compiler correctness. Public exposure
   incident #22 and independently approved policy issue #962 remain blocking.
 
+## Source-blob two-phase validation and hosted synthetic proof (2026-10-16)
+
+Another audit identified a partial-transfer hazard: copying each source Git blob
+immediately after its validation can strand earlier confidential Git objects
+in the destination if a *later* source blob is corrupt or missing. Those
+objects are unreferenced but are not directly deletable through normal GitHub
+Git APIs.
+
+The publisher was changed to **two phases**: first read and validate the
+*complete* pinned set of source Git blob objects in bounded process memory,
+then reauthorize the destination's numeric identity, visibility and push
+permission before each mutation and copy the verified contents. Negative tests
+prove a bad second blob prevents *all* destination POSTs. A positive two-blob
+mock verifies all source blob GETs precede the first destination blob POST.
+The exact checked code and test blobs at that stage were
+`8bfaee1a7d9cde0438dee4660739a0834d331343` and
+`b742487ad814aced15dd8c4d3f25a621de510070`, with **53/53**
+isolated mocked-API publisher/visibility tests passing. Additional
+cryptographic source-byte validation has subsequently been added to the
+active PR branch; the 53/53 result must not be misrepresented as native
+CI against later code revisions.
+
+A separate source-free synthetic two-phase validation workflow was executed
+on the working PRIVATE `voxletra/voxletra-e2e` GitHub Actions runner:
+- [Initial run #38954025321](https://github.com/voxletra/voxletra-e2e/actions/runs/38954025321):
+  **failed**, because the independent synthetic test validator omitted
+  comparing the source-declared size. Failure was investigated from real logs.
+- [Corrected run #38954097648](https://github.com/voxletra/voxletra-e2e/actions/runs/38954097648):
+  **passed** at exact commit
+  `8c2ffca134c977f7c61aef5bbf41e8099153b80b`, GitHub runner ID
+  `1000002333`. The actual job log includes
+  `LATE_SOURCE_FAILURE_NO_DESTINATION_WRITES=yes`,
+  `TWO_PHASE_SYNTHETIC_COPY_SUCCESS=yes` and
+  `MALFORMED_SECOND_BLOB_CASES=3`.
+
+This hosted proof contains **only locally generated synthetic data** and is
+not an execution of `bin/private-mirror-publish.mjs` or a mirror of the
+private Oreslang actor branch. Never infer protected-policy approval,
+compiler parity, or permission to export source from this test.
+Public-exposure incident #22 and export authorization #962 remain open.
+
 ## Administrator-only diagnosis, in order
 
 1. Inspect one source-free run and its job/check-run **annotations** in the
