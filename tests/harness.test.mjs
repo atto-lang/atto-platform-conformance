@@ -5,6 +5,25 @@ import {runSuite,validateCommand,loadManifest} from "../src/harness.mjs";
 const sha="012345678901234567890123456789abcdefabcd";
 const cmd=[process.execPath,new URL("./fake-checker.mjs",import.meta.url).pathname,"{file}"];
 test("manifest parses exact fixtures",async()=>{const m=await loadManifest();assert.equal(m.cases.length,2)});
+test("five target backends are selectable but fail closed without executable evidence",async()=>{
+ const manifest=await loadManifest();
+ for(const backend of ["java","llvm","net","forge","wasm"]){
+  assert.ok(manifest.cases.every(c=>c.backends.includes(backend)));
+  const missing=await runSuite({backend,requireConfigured:true});
+  assert.equal(missing.configured,false);
+  assert.equal(missing.verified,0);
+  assert.equal(missing.skipped,2);
+  assert.equal(missing.ok,false);
+  const fake=await runSuite({backend,argv:cmd,sourceSha:sha});
+  assert.equal(fake.verified,2);
+  assert.equal(fake.failed,0);
+  assert.match(fake.provenanceNote,/does not attest/);
+ }
+});
+test("unrecognized backend names fail closed",async()=>{
+ await assert.rejects(runSuite({backend:"csharp"}),/unknown backend/);
+});
+
 test("unconfigured is explicit and never counted as verified",async()=>{
  const r=await runSuite({backend:"java"});
  assert.equal(r.configured,false);
