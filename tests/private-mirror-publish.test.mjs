@@ -49,8 +49,13 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
       };
       else if(suffix==="/actions/runs/"+opts.runnerProbeRunId+"/jobs?per_page=100")
         data=capacityJobs||{total_count:1,jobs:[{name:"capacity",
-          conclusion:"success",runner_name:"GitHub Actions 1",
-          steps:[{name:"Prove runner allocation and shell execution",conclusion:"success"}]}]};
+          status:"completed",conclusion:"success",runner_name:"GitHub Actions 1",
+          run_id:opts.runnerProbeRunId,
+          steps:[
+            {name:"Set up job",status:"completed",conclusion:"success"},
+            {name:"Prove runner allocation and shell execution",status:"completed",conclusion:"success"},
+            {name:"Complete job",status:"completed",conclusion:"success"}
+          ]}]};
       else if(suffix==="/git/commits/"+B)data={tree:{sha:E}};
       else if(suffix==="/git/trees/"+E+"?recursive=1")
         data=destinationTree||{truncated:false,tree:[{path:"unrelated/readme.txt",type:"blob"}]};
@@ -362,15 +367,20 @@ test("stale, incorrect source-free workflow and wrong destination repository ID 
  }
 });
 test("incomplete, fake, multiple or job-with-no-real-step runner evidence cannot authorize private copy",async()=>{
- const goodJob={name:"capacity",conclusion:"success",runner_name:"GitHub Actions 1",
-    steps:[{name:"Prove runner allocation and shell execution",conclusion:"success"}]};
+ const goodJob={name:"capacity",status:"completed",conclusion:"success",
+    runner_name:"GitHub Actions 1",run_id:opts.runnerProbeRunId,
+    steps:[{name:"Prove runner allocation and shell execution",status:"completed",conclusion:"success"}]};
  for(const jobs of [
   {total_count:0,jobs:[]},
   {total_count:2,jobs:[goodJob,goodJob]},
   {total_count:1,jobs:[{...goodJob,steps:[]}]},
   {total_count:1,jobs:[{...goodJob,runner_name:""}]},
   {total_count:1,jobs:[{...goodJob,steps:[{...goodJob.steps[0],conclusion:"skipped"}]}]},
-  {total_count:1,jobs:[{...goodJob,steps:[{...goodJob.steps[0],name:"Fake skipped"}]}]}
+  {total_count:1,jobs:[{...goodJob,steps:[{...goodJob.steps[0],name:"Fake skipped"}]}]},
+  {total_count:1,jobs:[{...goodJob,status:"queued"}]},
+  {total_count:1,jobs:[{...goodJob,run_id:opts.runnerProbeRunId+1}]},
+  {total_count:1,jobs:[{...goodJob,steps:[{...goodJob.steps[0],status:"in_progress"}]}]},
+  {total_count:1,jobs:[{...goodJob,steps:[goodJob.steps[0],goodJob.steps[0]]}]}
  ]){
   const {h,promise}=run({capacityJobs:jobs});
   await assert.rejects(promise,/runner probe has no independently executed success step/);
