@@ -17,6 +17,11 @@ function gitBlob(bytes) {
   const prefix = Buffer.from("blob " + bytes.length + "\0");
   return createHash("sha1").update(prefix).update(bytes).digest("hex");
 }
+function sameFile(a, b) {
+  return a.dev === b.dev && a.ino === b.ino && a.mode === b.mode &&
+    a.nlink === b.nlink && a.size === b.size &&
+    a.mtimeMs === b.mtimeMs && a.ctimeMs === b.ctimeMs;
+}
 async function readSafeFixture(workspace, repository) {
   const root = join(resolve(workspace), repository);
   let part = root;
@@ -48,6 +53,9 @@ async function readSafeFixture(workspace, repository) {
     const st = await handle.stat();
     if (!st.isFile() || st.nlink !== 1 || st.size !== EXACT_SOURCE.length)
       throw Error("invalid scalar fixture size/type: " + repository);
+    // Bind the pre-open path inode to the actual no-follow descriptor.
+    if (!sameFile(beforeOpen, st))
+      throw Error("fixture replaced before read: " + repository);
     const bytes = Buffer.alloc(st.size);
     let offset = 0;
     while (offset < bytes.length) {
@@ -56,12 +64,13 @@ async function readSafeFixture(workspace, repository) {
       offset += bytesRead;
     }
     const after = await handle.stat();
-    if (after.size !== st.size || after.mtimeMs !== st.mtimeMs ||
-        after.ctimeMs !== st.ctimeMs || after.ino !== st.ino ||
-        after.dev !== st.dev || after.nlink !== 1)
+    if (!sameFile(st, after))
       throw Error("fixture changed during read: " + repository);
     if ((await realpath(file)) !== file)
       throw Error("fixture path changed during read: " + repository);
+    const afterPath = await lstat(file);
+    if (!afterPath.isFile() || !sameFile(after, afterPath))
+      throw Error("fixture replaced during read: " + repository);
     for (const parent of parentSnapshot) {
       const now = await lstat(parent.path);
       if (!now.isDirectory() || now.isSymbolicLink() ||
@@ -75,6 +84,8 @@ async function readSafeFixture(workspace, repository) {
 }
 
 export async function verifyFiveBackendSourceIdentity(workspace) {
+  if (typeof workspace !== "string" || !workspace || workspace.includes("\0"))
+    throw TypeError("workspace must be a nonempty directory path without NUL");
   const requestedWorkspace = resolve(workspace);
   const workspaceStat = await lstat(requestedWorkspace);
   if (!workspaceStat.isDirectory() || workspaceStat.isSymbolicLink())
