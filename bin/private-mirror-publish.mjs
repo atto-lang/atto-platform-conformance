@@ -279,6 +279,17 @@ export async function publishPrivateMirror({
   }
   if(outsideSeen.size!==outsideBase.size)
     throw Error("destination base entries omitted outside snapshot prefix");
+  // The recursive Git-tree response must also contain every ancestor leading
+  // to the verified source subtree. Do not trust a forged partial tree listing
+  // that happens to contain the final nested SHA and unrelated base entries.
+  const segments=prefix.split("/");
+  for(let count=1;count<segments.length;count++){
+    const path=segments.slice(0,count).join("/");
+    const matches=materialized.tree.filter(item=>item?.path===path);
+    if(matches.length!==1||matches[0].type!=="tree"||
+       matches[0].mode!=="040000")
+      throw Error("destination snapshot path ancestor missing or changed");
+  }
   await authorize();
   const result=await githubRequest(destination,"/git/commits",token,{
     method:"POST",body:{message:"ci: verified private source snapshot "+sourceCommit,
