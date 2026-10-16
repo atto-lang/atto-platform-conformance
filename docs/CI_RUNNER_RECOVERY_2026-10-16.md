@@ -70,7 +70,16 @@ with a nonempty real runner name and a successful named shell step.
 Only a reviewed `push` or `workflow_dispatch` event is eligible; pull-request
 and scheduled jobs do not qualify. The capacity run must be at most 24 hours
 old. This proves only a small real runner allocation, not remaining minute
-balance or eligibility for a full source build. Use least privilege, an isolated temporary ref and exact nested Git
+balance or eligibility for a full source build.
+
+Even with a successful runner probe, the publisher now requires an independently
+reviewed **destination base commit SHA and destination base Git-tree SHA**,
+and verifies both, plus an empty snapshot prefix, before retrieving the first
+private source commit/tree. A caller-selected unreviewed destination baseline
+could otherwise introduce a malicious workflow that executes after branch
+publication. This does not replace independent verification that the reviewed
+destination baseline and workflow are benign or that the source export has
+code-owner/security approval. Use least privilege, an isolated temporary ref and exact nested Git
 tree SHA verification. A private destination **alone is not authorization**.
 
 The draft [private mirror hardening PR #43](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/pull/43)
