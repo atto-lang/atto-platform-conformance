@@ -93,6 +93,34 @@ a supposedly successful capacity job from hiding extra executable steps.
 Its reviewed policy and the source-exposure incident remain unresolved.
 JDK 25/GraalVM **has not been verified** on this carrier.
 
+## Adversarial source-free path/mode test on the approved-capacity candidate
+
+New independent synthetic-only Actions
+[run #38948996757](https://github.com/voxletra/voxletra-e2e/actions/runs/38948996757)
+executed successfully on private `voxletra/voxletra-e2e`, runner ID
+`1000002294`, exact branch commit
+`fcc901296d49a96541feef1ac3f693b7f9893e72`. Workflow:
+`.github/workflows/oreslang-synthetic-path-preflight.yml`. No Oreslang
+source checkout, secrets or cross-org transfer was performed.
+
+Actual job logs confirm four markers:
+
+- `GIT_SYMLINK_MODE_OBSERVED=yes` — locally generated Git link uses
+  `120000 blob`, which the new publisher source preflight rejects
+- `GIT_CASE_COLLISION_OBSERVED=yes` — the actual Linux Git tree may
+  contain both `src/Main.ores` and `src/main.ores`
+- `SYNTHETIC_SOURCE_TREE_PREFLIGHT=yes` — independent synthetic
+  adversarial directory, symlink, case-alias and OID/mode tests passed
+- `WORKFLOW_TARGET_PREFIX_DENIED=yes` — synthetic code rejects
+  destination prefixes containing `.github` components
+
+Read-only GitHub Git-tree inspection of the exact carrier commit independently
+confirmed real directory entries use Git mode `040000`. The actual publisher
+source code's updated mocked-GitHub suite passed **46/46** tests, including
+malformed source directories and valid nested Git tree cases. This synthetic
+hosted test is **not** live execution of the private publisher, actual
+cross-org source transfer, or full Oreslang compiler/backend CI.
+
 ## Administrator-only diagnosis, in order
 
 1. Inspect one source-free run and its job/check-run **annotations** in the
