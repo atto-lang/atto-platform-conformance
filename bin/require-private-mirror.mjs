@@ -10,6 +10,7 @@
 import {pathToFileURL} from "node:url";
 
 const FULL_NAME = /^[A-Za-z0-9][A-Za-z0-9_.-]*\/[A-Za-z0-9][A-Za-z0-9_.-]*$/;
+const validRepoId = id => Number.isSafeInteger(id) && id > 0;
 
 function repoName(value) {
   if (typeof value !== "string" || !FULL_NAME.test(value) ||
@@ -48,19 +49,28 @@ async function repoMetadata(name, token, fetchImpl) {
   }
   if (!result || result.full_name !== name ||
       typeof result.private !== "boolean" ||
-      !["public", "internal", "private"].includes(result.visibility)) {
+      !["public", "internal", "private"].includes(result.visibility) ||
+      !validRepoId(result.id)) {
     throw Error("GitHub returned invalid or mismatched repository metadata (" + name + ")");
   }
   return result;
 }
 
 export async function requirePrivateMirror({
-  source, destination, approvedDestinations, token, fetchImpl = fetch
+  source, destination, approvedDestinations, token,
+  sourceRepositoryId, destinationRepositoryId, fetchImpl = fetch
 }) {
   // In particular, no discovery endpoint and no source blob operation may
   // be attempted when approval, credentials or names are missing.
   const from = repoName(source);
   const to = repoName(destination);
+  // These immutable IDs MUST come from a separately reviewed, trusted policy.
+  // Learning an ID from the first metadata lookup would not prevent a repo-name
+  // swap that happened before the first lookup.
+  if (!validRepoId(sourceRepositoryId) || !validRepoId(destinationRepositoryId) ||
+      sourceRepositoryId === destinationRepositoryId) {
+    throw Error("trusted source and destination numeric repository IDs are required");
+  }
   if (!Array.isArray(approvedDestinations) ||
       approvedDestinations.length === 0 || approvedDestinations.length > 32 ||
       !approvedDestinations.every(v => typeof v === "string" && FULL_NAME.test(v)) ||
@@ -73,12 +83,14 @@ export async function requirePrivateMirror({
   if (typeof fetchImpl !== "function") throw Error("GitHub visibility lookup unavailable");
 
   const sourceRepo = await repoMetadata(from, token, fetchImpl);
-  if (sourceRepo.private !== true || sourceRepo.visibility !== "private" ||
+  if (sourceRepo.id !== sourceRepositoryId ||
+      sourceRepo.private !== true || sourceRepo.visibility !== "private" ||
       sourceRepo.archived === true) {
     throw Error("private source metadata is not securely established");
   }
   const destinationRepo = await repoMetadata(to, token, fetchImpl);
-  if (destinationRepo.private !== true || destinationRepo.visibility !== "private" ||
+  if (destinationRepo.id !== destinationRepositoryId ||
+      destinationRepo.private !== true || destinationRepo.visibility !== "private" ||
       destinationRepo.archived === true || destinationRepo.permissions?.push !== true) {
     throw Error("destination must be a writable verified PRIVATE GitHub repository");
   }
@@ -94,7 +106,9 @@ if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) 
       source: process.argv[2],
       destination: process.argv[3],
       approvedDestinations,
-      token: process.env.GH_TOKEN || process.env.GITHUB_TOKEN
+      token: process.env.GH_TOKEN || process.env.GITHUB_TOKEN,
+      sourceRepositoryId: Number(process.env.ORES_APPROVED_PRIVATE_SOURCE_REPO_ID),
+      destinationRepositoryId: Number(process.env.ORES_APPROVED_PRIVATE_DESTINATION_REPO_ID)
     });
     console.log(JSON.stringify(verdict));
   } catch (error) {
