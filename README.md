@@ -34,6 +34,10 @@ The first argv token must be an **absolute executable path** (never a PATH looku
 
 When no backend command is supplied, the run exits non-success with explicit UNCONFIGURED status if --require is used. Without --require it can emit an explicit skipped summary for discovery; that is **not** a passing parity report. CI only exercises harness self-tests.
 
+## Five-backend baseline coverage
+
+The manifest selects both scalar accept/reject smoke fixtures for all five source compiler tracks: `java`, `llvm`, `wasm`, `net`, and `forge`. This is **test selection only**, not proof that any compiler executed the fixture. The Node fake-checker selftests exercise only the harness. A real compiler command, exact source SHA, toolchain/binary provenance and source-language execution evidence remain mandatory to claim parity. `--require` fails closed for every unconfigured backend, and a backend with no matching fixtures cannot report success. The Wasm compile check is distinct from running the resulting module in a Worker or strict-AOT host; Forge interpreter execution is distinct from native machine-code execution; managed .NET test runs are not Windows Native AOT certification.
+
 ## Ownership and future steps
 1. Pin compilation frontend/host revisions, profile registry contract and all fixture hashes.
 2. Feed actual Java and LLVM non-executing check entrypoints into this harness; verify positive and negative cases.
