@@ -19,7 +19,7 @@ test("CPU/GPU/nb registry exhaustively pins eight real source fixtures", async (
   assert.deepEqual(metadata.cases.map(c=>c.id).sort(),requiredIds);
   const filenames=(await readdir(root)).sort();
   assert.deepEqual(filenames,
-    [...requiredIds.map(id=>id+".ores"),"manifest.json"].sort(),
+    [...requiredIds.map(id=>id+".ores"),"manifest.json","unsupported-v1.json"].sort(),
     "no unregistered or absent source fixtures");
   const files=new Set();
   for(const c of metadata.cases){
@@ -55,4 +55,26 @@ test("single-completion futures, nested graph and no implicit transfer have expl
   // This suite certifies fixture completeness and desired semantics only.
   // Backend compiler executions must be added separately, with pinned SHA,
   // a passing baseline, typed diagnostics and no artifact on rejection.
+});
+
+test("identical ten-case CPU/GPU/nb rejection corpus is registered", async () => {
+  const corpus = JSON.parse(await readFile(new URL("unsupported-v1.json",root),"utf8"));
+  const expected = [
+    "cpu-value", "gpu-value", "nb-cpu-future", "nb-gpu-future",
+    "cpu-gpu-nested", "gpu-cpu-nested", "gpu-cpu-gpu-nested",
+    "nb-mixed-nested", "empty-gpu-value", "empty-nb-gpu-value"
+  ];
+  assert.deepEqual(Object.keys(corpus).sort(),expected.sort());
+  const contents = new Set();
+  for (const [id, source] of Object.entries(corpus)) {
+    assert.match(source,/^pub fnc main\(\):int\{return (?:nb )?(?:cpu|gpu)\s*\{/,
+      id+": actual reserved execution-region token required");
+    assert.ok(!contents.has(source),id+": duplicate source cannot count as separate coverage");
+    contents.add(source);
+    assert.ok(source.endsWith(";}" ),id+": complete fixture required");
+  }
+  assert.match(corpus["gpu-cpu-gpu-nested"],
+    /gpu\s*\{\s*cpu\s*\{\s*gpu\s*\{/);
+  assert.match(corpus["nb-mixed-nested"],/nb cpu\s*\{\s*nb gpu\s*\{/);
+  // This test pins source data; it is not compiler execution evidence.
 });
