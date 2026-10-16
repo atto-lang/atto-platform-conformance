@@ -22,8 +22,20 @@ try {
   const s=await fd.stat();
   if (!s.isFile() || s.nlink !== 1 || s.size > 128 * 1024 ||
     s.dev !== lst.dev || s.ino !== lst.ino) throw Error('report file changed during open');
-  const bytes=await fd.readFile();
-  if (bytes.length > 128 * 1024) throw Error('report too large');
+  // Bound allocation and IO even if another process grows the file after stat.
+  const buffer=Buffer.alloc(128 * 1024 + 1);
+  let used=0;
+  while(used<buffer.length) {
+    const {bytesRead}=await fd.read(buffer,used,buffer.length-used,used);
+    if(bytesRead===0) break;
+    used+=bytesRead;
+  }
+  if (used > 128 * 1024) throw Error('report too large');
+  const after=await fd.stat();
+  if(after.size!==s.size || after.mtimeMs!==s.mtimeMs ||
+     after.ctimeMs!==s.ctimeMs || after.nlink!==1)
+    throw Error('report changed during read');
+  const bytes=buffer.subarray(0,used);
   const result=validateFiveBackendRuntimeEvidence(JSON.parse(bytes.toString('utf8')));
   console.log(JSON.stringify(result,null,2));
   // Nonzero by default: no unverified report can become a green parity gate.
