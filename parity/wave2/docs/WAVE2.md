@@ -18,7 +18,7 @@
 - Dispatch return destinations: [common-source #20](https://github.com/ores-truffle-oreslang/oreslang-common-source/pull/20). Both dispatch fixture sources reproduce its value and procedural examples, retaining distinct expected returns.
 - Receiver/capture: [Java #1087](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1087), [LLVM #479](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/479), .NET #40, Forge #36 and Wasm #38. Explicit/implicit capture sources follow Java's on-branch regression tests.
 - Borrow suspension: [Java #740](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/740). The two `ownership-*.ores` fixtures preserve the actual upstream Git blobs: `b98aa02b6c4c9f4daa2cf07d85279e4311a64d49` and `e33a48c741b8ead1d7de1458e15c4988a202d197`.
-- State capabilities: [Java #760](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/760). The two `effects-*.ores` sources preserve exact upstream blobs `d0b08b6278b7f02e346a8a96ebb71f1b33ef87dd` and `2a611a093ce56c654bdca70c5dde9fda7a778187`.
+- State capabilities: [Java #760](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/760). The two `effects-*.ores` sources preserve exact upstream blobs `5738ca8b68ed43d8f6e22152970f569506b14b8a` and `2a611a093ce56c654bdca70c5dde9fda7a778187`.
 
 The `candidate` matrix in `manifest.json` identifies an **intended test target** only, *not a verified implementation*. For example, .NET/Forge/Wasm are candidates for only the two narrow numeric probes in this wave, not for closure/effect/borrow semantics. Wasm must use real pinned LLVM source compilation before any claims.
 
