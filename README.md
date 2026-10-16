@@ -67,6 +67,14 @@ The guarded publisher's configuration, when approval exists, requires:
 - `ORES_APPROVED_PRIVATE_SOURCE_TREE_SHA`: reviewed exact Git tree SHA for that
   commit, verified against GitHub's commit record **before any private blobs
   are requested**.
+- `ORES_APPROVED_RUNNER_PROBE_RUN_ID`: positive integer GitHub Actions run
+  ID for an independently reviewed *source-free* capacity workflow in the
+  **destination repository**, executed within the preceding 24 hours.
+- `ORES_APPROVED_RUNNER_PROBE_COMMIT`: exact approved destination commit
+  that executed that probe; the workflow-run API must report that SHA.
+- `ORES_APPROVED_RUNNER_PROBE_WORKFLOW`: approved workflow path, for example
+  `.github/workflows/runner-capacity-probe.yml`. Its independently reviewed
+  contents must have no private source dependencies, secrets or untrusted code.
 - `GH_TOKEN` (or `GITHUB_TOKEN`): a narrowly authorized credential whose
   source-read and destination-write scope is separately reviewed. The
   connector's own authenticated calls do **not** mean a destination's
@@ -74,7 +82,12 @@ The guarded publisher's configuration, when approval exists, requires:
 
 Missing, malformed, swapped, changed, public or internal repository metadata
 denies the publication **before source blobs are read**, or before the next
-destination write if identity/visibility changes mid-flight. The exact
+destination write if identity/visibility changes mid-flight. A private
+destination without a recent, correctly pinned **successful one-step runner
+probe** is likewise denied **before requesting any source commit or blob**.
+The recent probe is evidence that a runner executed, **not** a guarantee of
+remaining GitHub Actions minutes, current billing eligibility, or long-running
+compiler capacity. Recheck runner capacity at each source transfer. The exact
 published nested source tree SHA must match the source commit's Git tree, not
 merely a few matching source file paths. The publisher creates only a new
 isolated `ci/private-*` branch; it does not make CI minutes available or
