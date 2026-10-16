@@ -3,6 +3,7 @@ import {readFile, lstat} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {resolve, dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {TextDecoder} from 'node:util';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const manifestFile = resolve(here, '../contracts/first-five.json');
@@ -17,7 +18,8 @@ const REQUIREMENTS = new Set([
 ]);
 const exactKeys = (obj, expected, where) => {
   if (!obj || typeof obj !== 'object' || Array.isArray(obj) ||
-    Object.keys(obj).sort().join('|') !== [...expected].sort().join('|'))
+    Object.keys(obj).length !== expected.length ||
+    expected.some(key => !Object.hasOwn(obj, key)))
     throw Error('invalid fields at ' + where);
 };
 const uniqueStrings = (xs) => Array.isArray(xs) && xs.length > 0 &&
@@ -65,12 +67,50 @@ export function validateBatch(data) {
   };
 }
 
+
+/** JSON.parse loses repeated object keys. Reject ambiguous manifests first. */
+export function rejectDuplicateObjectKeys(source) {
+  if (typeof source !== 'string') throw Error('manifest must be JSON text');
+  const frames = [];
+  for (let i = 0; i < source.length; i++) {
+    const ch = source[i];
+    if (ch === '"') {
+      const start = i++;
+      let escaped = false;
+      for (; i < source.length; i++) {
+        if (escaped) { escaped = false; continue; }
+        if (source[i] === '\\') { escaped = true; continue; }
+        if (source[i] === '"') break;
+      }
+      if (i >= source.length) throw Error('unterminated JSON string');
+      const frame = frames[frames.length - 1];
+      if (frame?.object && frame.awaitingKey) {
+        const name = JSON.parse(source.slice(start, i + 1));
+        if (frame.keys.has(name)) throw Error('duplicate JSON object key');
+        frame.keys.add(name);
+        frame.awaitingKey = false;
+      }
+    } else if (ch === '{') {
+      frames.push({object: true, awaitingKey: true, keys: new Set()});
+    } else if (ch === '[') {
+      frames.push({object: false});
+    } else if (ch === '}' || ch === ']') {
+      frames.pop();
+    } else if (ch === ',') {
+      const frame = frames[frames.length - 1];
+      if (frame?.object) frame.awaitingKey = true;
+    }
+  }
+}
+
 export async function loadBatch(path = manifestFile) {
   const st = await lstat(path);
   if (!st.isFile() || st.isSymbolicLink() || st.size > 64*1024) throw Error('invalid contract file');
   const bytes = await readFile(path);
-  const content = bytes.toString('utf8');
-  if (content.includes('\ufffd')) throw Error('invalid UTF-8 contract');
+  const content = new TextDecoder('utf-8', {fatal: true}).decode(bytes);
+  // Syntax validation happens before the lexical duplicate-key audit.
+  JSON.parse(content);
+  rejectDuplicateObjectKeys(content);
   const obj = JSON.parse(content, (k,v) => {
     if (k === '__proto__' || k === 'constructor' || k === 'prototype')
       throw Error('unsafe object key');
