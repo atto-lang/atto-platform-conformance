@@ -18,7 +18,8 @@ See [the real compiler evidence policy](docs/REAL_COMPILER_EVIDENCE.md). The rep
 - Safe subprocess-based command runner with an argv template; no shell interpolation.
 - Executable harness unit tests (using a **fake checker** to verify the harness only).
 - Explicit status: unconfigured, verified, mismatch, spawn failure, timeout.
-- CI tests the harness. It does **not** claim Java/LLVM/Wasm feature parity without configured external compiler binaries.
+- Five target selectors (`java`, `llvm`, `net`, `forge`, `wasm`) now share the two language admission smoke fixtures. The `browser` selector remains separate. This is harness coverage, **not** identical source lowering or runtime semantics.
+- CI tests the harness. It does **not** claim five-backend or Elm-inspired `Option`/`Result`/`Future`/reactive parity without exact-source compiler binaries, positive guest execution, negative admission, and verified output/cleanup traces.
 
 ## Examples
 
@@ -36,7 +37,7 @@ When no backend command is supplied, the run exits non-success with explicit UNC
 
 ## Ownership and future steps
 1. Pin compilation frontend/host revisions, profile registry contract and all fixture hashes.
-2. Feed actual Java and LLVM non-executing check entrypoints into this harness; verify positive and negative cases.
+2. Feed exact-tree Java, LLVM, .NET Native AOT, Forge, and native-LLVM→Wasm checker/runner entrypoints into this harness; verify positive and negative cases without counting simulated compiler checks as parity.
 3. Add runtime-output cases only after explicit backend support; compare typed values, actor messages, ownership, async and resource limits.
 4. Add Wasm compile+instantiate and browser tests once the compiler emits actual Oreslang guest modules.
 5. Extend environment-header fixtures when Java PR #586 is merged and LLVM implements equivalent checks.
