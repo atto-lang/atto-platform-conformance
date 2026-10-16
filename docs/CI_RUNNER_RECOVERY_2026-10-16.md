@@ -88,6 +88,25 @@ provenance. The connected integration could not read main branch protection
 (403) and the repository rulesets endpoint returned a plan-related 403;
 neither property can be asserted as verified.
 
+## Capacity-probe parser hardening (2026-10-16)
+
+Review of the actual successful Actions job payload from a **public** test
+repository established that GitHub automatically adds `Set up job` and
+`Complete job` steps. The earlier draft mirror publisher incorrectly
+required `steps.length === 1`, which would have rejected even a genuine
+successful private runner. The publisher now permits GitHub-managed
+setup/completion steps while requiring **exactly one** named
+`Prove runner allocation and shell execution` step with
+`status=completed` and `conclusion=success`.
+
+Admission also requires a positive numeric `runner_id`, a nonempty
+`runner_name`, exact `job.run_id` equality, completed job success, and
+reviewed private destination run metadata. No CI/source-exposure evidence is
+inferred from a successful **public** job; that example was used only to
+confirm GitHub's REST response shape. The offline mocked-API test harness
+now includes the managed setup/complete steps and rejects missing runner IDs,
+duplicate named steps, mismatched run IDs and incomplete execution.
+
 ## Definition of a usable release gate
 
 - A source-free runner executes an actual step with visible logs.
