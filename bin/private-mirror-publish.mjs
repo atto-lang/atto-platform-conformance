@@ -44,13 +44,15 @@ async function githubRequest(repo,path,token,{method="GET",body,fetchImpl=fetch}
 
 export async function publishPrivateMirror({
   source,destination,sourceCommit,destinationBaseCommit,prefix,newBranch,
-  approvedDestinations,token,fetchImpl=fetch
+  approvedDestinations,sourceRepositoryId,destinationRepositoryId,
+  token,fetchImpl=fetch
 }) {
   sha(sourceCommit);sha(destinationBaseCommit);
   if(!validPath(prefix)||!BRANCH.test(newBranch)||newBranch.includes("..")||newBranch.endsWith(".lock"))
     throw Error("invalid destination prefix or isolated CI branch");
   const authorize=()=>requirePrivateMirror({
-    source,destination,approvedDestinations,token,fetchImpl
+    source,destination,approvedDestinations,sourceRepositoryId,
+    destinationRepositoryId,token,fetchImpl
   });
   // FIRST external operation: authorization, before ANY source bytes are fetched
   // and before ANY destination object/ref is created.
@@ -178,7 +180,9 @@ if(process.argv[1]&&pathToFileURL(process.argv[1]).href===import.meta.url){
       destination:process.argv[4],destinationBaseCommit:process.argv[5],
       prefix:process.argv[6],newBranch:process.argv[7],
       approvedDestinations:(process.env.ORES_APPROVED_PRIVATE_MIRRORS||"").split(",").filter(Boolean),
-      token:process.env.GH_TOKEN||process.env.GITHUB_TOKEN
+      token:process.env.GH_TOKEN||process.env.GITHUB_TOKEN,
+      sourceRepositoryId:Number(process.env.ORES_APPROVED_PRIVATE_SOURCE_REPO_ID),
+      destinationRepositoryId:Number(process.env.ORES_APPROVED_PRIVATE_DESTINATION_REPO_ID)
     });
     console.log(JSON.stringify(result));
   }catch{
