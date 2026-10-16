@@ -63,27 +63,27 @@ test('ActorGroup permit revocation, leave and close preserve authority',()=>{
  assert.throws(()=>g.close('child'),/creator/);
 });
 test('CONTROL notice is independent from full DATA mailbox',()=>{
- const s=new SupervisorControl({maxData:1,maxControl:2});s.register('child','parent');
+ const s=new SupervisorControl({maxData:1,maxControl:2});const cap=s.register('child','parent');
  assert.equal(s.data({n:1}),true);assert.equal(s.data({n:2}),false);
- assert.equal(s.terminate('child','parent','panic'),true);
+ assert.equal(s.terminate('child','parent','panic',cap),true);
  assert.equal(s.sizes.data,1);assert.equal(s.sizes.control,1);
  assert.deepEqual(s.popControl(),{actor:'child',parent:'parent',generation:1,kind:'panic'});
  assert.equal(s.popData().n,1);
 });
 test('CONTROL exactly-once terminal per actor generation and parent spoof denial',()=>{
- const s=new SupervisorControl();s.register('child','parent');
- assert.throws(()=>s.terminate('child','imposter','panic'),/untrusted/);
- assert.equal(s.terminate('child','parent','raise'),true);
- assert.equal(s.terminate('child','parent','panic'),false);
- s.restart('child','parent');assert.equal(s.terminate('child','parent','panic'),true);
+ const s=new SupervisorControl();const cap=s.register('child','parent');
+ assert.throws(()=>s.terminate('child','imposter','panic',cap),/untrusted/);
+ assert.equal(s.terminate('child','parent','raise',cap),true);
+ assert.equal(s.terminate('child','parent','panic',cap),false);
+ const renewed=s.restart('child','parent',cap);assert.throws(()=>s.terminate('child','parent','panic',cap),/authority/);assert.equal(s.terminate('child','parent','panic',renewed),true);
  assert.equal(s.popControl().generation,1);assert.equal(s.popControl().generation,2);
 });
 test('CONTROL saturated dedicated lane is explicit, never drops into DATA',()=>{
- const s=new SupervisorControl({maxData:1,maxControl:1});s.register('a','p');s.register('b','p');
- assert.equal(s.terminate('a','p','panic'),true);
- assert.equal(s.terminate('b','p','panic'),false);
+ const s=new SupervisorControl({maxData:1,maxControl:1});const a=s.register('a','p'),b=s.register('b','p');
+ assert.equal(s.terminate('a','p','panic',a),true);
+ assert.equal(s.terminate('b','p','panic',b),false);
  assert.equal(s.sizes.control,1);assert.equal(s.sizes.data,0);
- s.popControl();assert.equal(s.terminate('b','p','panic'),true);
+ s.popControl();assert.equal(s.terminate('b','p','panic',b),true);
 });
 test('typed MessagePack encodes stable fixarray, fixstr, version, variant and payload',()=>{
  const codec=new StrictMessagePackFixture();codec.add('Demo',1,['int','str']);
@@ -146,7 +146,7 @@ test('kernel completion never dispatches guest code inline; scheduler lease requ
  assert.equal(i.kernelComplete(x,{bytes:3}),true);
  assert.equal(i.stats.pendingCompletions,1);
  assert.throws(()=>i.drainForActor('a',1),/lease/);
- assert.deepEqual(i.drainForActor('a',1,{hasLease:true}).map(x=>x.result.bytes),[3]);
+ assert.deepEqual(i.drainForActor('a',1,{lease:i.grantActorLease('a',1)}).map(x=>x.result.bytes),[3]);
  assert.equal(i.stats.pendingCompletions,0);
 });
 test('cancel races with completion and double delivery never resumes twice',()=>{
@@ -158,8 +158,8 @@ test('cancel races with completion and double delivery never resumes twice',()=>
 test('foreign generation/owner cannot collect reactor completions',()=>{
  const i=new IoReactorModel();const x=i.submit('a',3,'write');
  i.kernelComplete(x,5);
- assert.deepEqual(i.drainForActor('a',4,{hasLease:true}),[]);
- assert.deepEqual(i.drainForActor('b',3,{hasLease:true}),[]);
- assert.equal(i.drainForActor('a',3,{hasLease:true}).length,1);
+ assert.deepEqual(i.drainForActor('a',4,{lease:i.grantActorLease('a',4)}),[]);
+ assert.deepEqual(i.drainForActor('b',3,{lease:i.grantActorLease('b',3)}),[]);
+ assert.equal(i.drainForActor('a',3,{lease:i.grantActorLease('a',3)}).length,1);
  assert.throws(()=>i.kernelComplete({id:x.id},7),/untrusted/);
 });
