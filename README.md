@@ -97,7 +97,13 @@ destination write if identity/visibility changes mid-flight. A private
 destination without a recent, correctly pinned **successful one-step runner
 probe** is likewise denied **before requesting any source commit or blob**.
 The reviewed destination base commit/tree and empty prefix are also checked
-**before any confidential source Git read**. Destination prefix components
+**before any confidential source Git read**. The published full Git tree is then compared to the reviewed
+destination base tree **outside the new snapshot prefix**: every unrelated
+existing Git path must retain its type, mode and object SHA, and no unrelated
+paths may be added or silently removed. Ancestor directory tree hashes can
+change because the new subtree is inserted, but their type/mode must remain
+directory/040000. A matching nested source SHA alone is not proof that the
+destination's existing repository contents were preserved. Destination prefix components
 equal to `.github` (case-insensitive) are forbidden, including nested
 `.github/workflows`, so source copies cannot target GitHub workflow locations.
 Every entry of the **entire recursive source Git tree**, including directories,
