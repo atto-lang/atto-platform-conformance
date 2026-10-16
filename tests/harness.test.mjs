@@ -30,6 +30,24 @@ test("same fixtures can be selected for LLVM, without claiming LLVM executed",as
  const r=await runSuite({backend:"llvm",argv:cmd,sourceSha:sha});
  assert.equal(r.verified,2);
 });
+test("all five compiler backends select identical baseline fixtures without claiming real execution",async()=>{
+ const m=await loadManifest();
+ const expected=["int-arithmetic","unresolved-identifier"];
+ for(const backend of ["java","llvm","wasm","net","forge"]){
+  assert.deepEqual(m.cases.filter(c=>c.backends.includes(backend)).map(c=>c.id),expected);
+  const missing=await runSuite({backend,requireConfigured:true});
+  assert.equal(missing.configured,false);
+  assert.equal(missing.ok,false);
+  assert.equal(missing.verified,0);
+  assert.equal(missing.skipped,2);
+  const fake=await runSuite({backend,argv:cmd,sourceSha:sha});
+  assert.equal(fake.verified,2);
+  assert.equal(fake.failed,0);
+ }
+});
+test("unsupported compiler backend is rejected rather than counted as configured",async()=>{
+ await assert.rejects(runSuite({backend:"unknown",argv:cmd,sourceSha:sha}),/unknown backend/);
+});
 test("missing executable is not mistaken for valid reject",async()=>{
  const r=await runSuite({backend:"llvm",argv:["/no/such/executable/oreslang","{file}"],sourceSha:sha});
  assert.equal(r.failed,2);
