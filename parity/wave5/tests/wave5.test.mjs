@@ -133,3 +133,30 @@ test('manifest / cannot silently reassign native suites or claim parity',async()
   const cloned=structuredClone(original);mutation(cloned);assert.throws(()=>validateManifest(cloned),/wave5-manifest/);
  }
 });
+
+test('25 / explicitly allowlisted, function-only wasm capability import is usable by real engine',()=>{
+ const section=(id,p)=>Buffer.concat([Buffer.from([id,p.length]),p]);
+ const header=wasm.subarray(0,8),type=section(1,Buffer.from([1,0x60,0,1,0x7e]));
+ const a=Buffer.from('ores_host'),b=Buffer.from('clock_now');
+ const imp=section(2,Buffer.concat([Buffer.from([1,a.length]),a,Buffer.from([b.length]),b,Buffer.from([0,0])]));
+ const fn=section(3,Buffer.from([1,0]));
+ const exp=section(7,Buffer.concat([Buffer.from([1,9]),Buffer.from('ores_main'),Buffer.from([0,1])]));
+ const code=section(10,Buffer.from([1,4,0,0x42,42,0x0b]));
+ const moduleBytes=Buffer.concat([header,type,imp,fn,exp,code]);
+ assert.throws(()=>inspectWasm(moduleBytes,{profile:'scalar'}),/unauthorized/);
+ const inspected=inspectWasm(moduleBytes,{profile:'capability',allowedImports:['ores_host.clock_now']});
+ assert.deepEqual(inspected.imports,['ores_host.clock_now']);
+ const guest=new WebAssembly.Instance(new WebAssembly.Module(moduleBytes),{ores_host:{clock_now:()=>0n}});
+ assert.equal(guest.exports.ores_main(),42n);
+});
+test('25 / bounded Wasm memory must declare an explicit maximum',()=>{
+ const section=(id,p)=>Buffer.concat([Buffer.from([id,p.length]),p]);
+ const prefix=wasm.subarray(0,17); // magic + type + function sections
+ const postfix=wasm.subarray(17);
+ const bounded=Buffer.concat([prefix,section(5,Buffer.from([1,1,1,2])),postfix]);
+ const inspected=inspectWasm(bounded);
+ assert.equal(inspected.memoryMaximum,2);
+ assert.doesNotThrow(()=>new WebAssembly.Module(bounded));
+ const unbounded=Buffer.concat([prefix,section(5,Buffer.from([1,0,1])),postfix]);
+ assert.throws(()=>inspectWasm(unbounded),/maximum|flag/);
+});
