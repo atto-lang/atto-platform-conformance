@@ -62,6 +62,11 @@ The guarded publisher's configuration, when approval exists, requires:
   numeric source ID.
 - `ORES_APPROVED_PRIVATE_DESTINATION_REPO_ID`: reviewed immutable positive
   GitHub numeric destination ID, distinct from the source.
+- `ORES_APPROVED_PRIVATE_SOURCE_COMMIT`: reviewed exact 40-character source
+  commit SHA, independently pinned to the intended source PR/head.
+- `ORES_APPROVED_PRIVATE_SOURCE_TREE_SHA`: reviewed exact Git tree SHA for that
+  commit, verified against GitHub's commit record **before any private blobs
+  are requested**.
 - `GH_TOKEN` (or `GITHUB_TOKEN`): a narrowly authorized credential whose
   source-read and destination-write scope is separately reviewed. The
   connector's own authenticated calls do **not** mean a destination's
