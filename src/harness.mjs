@@ -32,6 +32,12 @@ export function isExpectedCompilerDiagnostic(output,symbol){
 
  return false;
 }
+function hasCompilerErrorSeverity(output){
+ // Accept fixtures must not be promoted when a compiler reports an error
+ // yet exits zero. Match standard diagnostic severity, not arbitrary prose.
+ return output.split(/\r?\n/).some(line=>
+  /^(?:.*?:\d+(?::\d+)?:\s*)?error(?:\[[A-Za-z0-9_-]{1,20}\])?\s*:/i.test(line));
+}
 export function validateCommand(argv){
  if(!Array.isArray(argv)||argv.length===0||argv.some(x=>typeof x!=="string"||!x||x.includes("\0")))throw Error("compiler argv must be nonempty strings without NUL");
  if(!isAbsolute(argv[0]))throw Error("compiler executable path must be absolute (no PATH lookup)");
@@ -79,7 +85,9 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
   else if(output.signal)status="SIGNALED";
   // A missing/invalid process exit code cannot be evidence of a compiler rejection.
   else if(!Number.isSafeInteger(output.status)||output.status<0)status="INVALID_EXIT_STATUS";
-  else if(c.expect==="accept")status=output.status===0?"VERIFIED":"MISMATCH";
+  // The binary must be hashable, even if a mock or wrapper claims it succeeded.
+  else if(!executableSha256)status="UNHASHABLE_EXECUTABLE";
+  else if(c.expect==="accept")status=output.status===0 && !hasCompilerErrorSeverity(combined)?"VERIFIED":"MISMATCH";
   else {
    status=output.status!==0 && isExpectedCompilerDiagnostic(combined,c.diagnostic)
      ?"VERIFIED":"MISMATCH";
