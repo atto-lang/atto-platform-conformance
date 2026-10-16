@@ -575,3 +575,22 @@ test("outside-prefix destination base must remain byte-identical at publication"
   assert.equal(h.events.some(e=>e.method==="POST"&&e.path===destination+"/git/refs"),false);
  }
 });
+
+test("recursive Git tree must explicitly include every source-prefix ancestor",async()=>{
+ const correct=[
+  {path:"unrelated",type:"tree",mode:"040000",sha:B},
+  {path:"unrelated/readme.txt",type:"blob",mode:"100644",sha:C},
+  {path:"snapshots",type:"tree",mode:"040000"},
+  {path:"snapshots/checked",type:"tree",sha:D},
+  {path:"snapshots/checked/main.ores",type:"blob",sha:C,mode:"100644"}
+ ];
+ for(const entries of [
+   correct.filter(e=>e.path!=="snapshots"),
+   correct.concat({path:"snapshots",type:"tree",mode:"040000"}),
+ ]){
+  const {h,promise}=run({materializedTree:{truncated:false,tree:entries}});
+  await assert.rejects(promise,/destination snapshot path ancestor missing or changed/);
+  assert.equal(h.events.some(e=>e.method==="POST"&&e.path===destination+"/git/commits"),false);
+  assert.equal(h.events.some(e=>e.method==="POST"&&e.path===destination+"/git/refs"),false);
+ }
+});
