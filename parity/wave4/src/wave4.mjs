@@ -105,7 +105,7 @@ export class StrictMessagePackFixture{
     if(tag<=127)return tag;
     if(tag>=0xe0)return tag-256;
     if(tag===0xc2)return false;if(tag===0xc3)return true;
-    if(tag===0xd2){check(i+4<=bytes.length,'short integer');const n=bytes.readInt32BE(i);i+=4;check(n>127&&n<-32?'':true,'');return n;}
+    if(tag===0xd2){check(i+4<=bytes.length,'short integer');const n=bytes.readInt32BE(i);i+=4;return n;}
     if(tag>=0xa0&&tag<=0xbf){const len=tag-0xa0;check(i+len<=bytes.length,'short string');const text=bytes.toString('utf8',i,i+len);check(Buffer.from(text,'utf8').equals(bytes.subarray(i,i+len)),'noncanonical UTF-8');i+=len;return text;}
     if(tag>=0x90&&tag<=0x9f){const len=tag-0x90;const values=[];for(let j=0;j<len;j++)values.push(read(depth+1));return values;}
     fail('noncanonical/unsupported MessagePack tag');
@@ -162,4 +162,27 @@ export class IoReactorModel{
   return events;
  }
  get stats(){return Object.freeze({outstanding:this.#busy,pendingCompletions:this.#ready.length,reactors:this.reactors});}
+}
+/** ActorGroup membership is not supervision ownership or public mailbox authority. */
+export class ActorGroupModel {
+ #creator;#members=new Set();#caps=new WeakMap();#epoch=1;#closed=false;#limit;
+ constructor(creator,{capacity=8}={}){
+  check(typeof creator==='string'&&creator.length>0&&Number.isSafeInteger(capacity)&&capacity>0&&capacity<=64,'bad group constructor');
+  this.#creator=creator;this.#members.add(creator);this.#limit=capacity;
+ }
+ #manager(id){check(id===this.#creator,'only creator manages group');check(!this.#closed,'group closed');}
+ issue(manager){this.#manager(manager);const cap=Object.freeze({});this.#caps.set(cap,{epoch:this.#epoch});return cap;}
+ rotate(manager){this.#manager(manager);this.#epoch++;return this.issue(manager);}
+ join(actor,cap,{running=false}={}){
+  check(running&&typeof actor==='string'&&actor,'requires live actor self');
+  const proof=this.#caps.get(cap);
+  check(proof&&proof.epoch===this.#epoch&&!this.#closed,'forged/stale group permit');
+  if(this.#members.has(actor))return false;
+  check(this.#members.size<this.#limit,'group membership quota');
+  this.#members.add(actor);return true;
+ }
+ leave(actor,{running=false}={}){check(running&&this.#members.has(actor),'not an executing member');return this.#members.delete(actor);}
+ close(manager){check(manager===this.#creator,'only creator can close');this.#closed=true;this.#epoch++;this.#members.clear();}
+ get size(){return this.#members.size;}
+ get closed(){return this.#closed;}
 }
