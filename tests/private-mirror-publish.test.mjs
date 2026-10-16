@@ -120,6 +120,7 @@ test("missing approvals and unsafe ref/path reject without contacting GitHub",as
   {approvedDestinations:[]},{token:undefined},
   {newBranch:"main"},{newBranch:"ci/my-public-copy"},
   {prefix:"../src"},{prefix:"src/../../other"},
+  {prefix:".github/workflows/private"},{prefix:"snapshot/.GITHUB/workflows"},
   {sourceCommit:"not-a-sha"},
   {approvedSourceCommit:undefined},{approvedSourceTreeSha:undefined},
   {approvedSourceCommit:B},{approvedSourceCommit:"invalid"},
@@ -264,7 +265,7 @@ test("case-insensitive colliding source paths and .GIT segments are rejected",as
   {truncated:false,tree:[{type:"blob",path:"src/.GIT/config",sha:C,size:4,mode:"100644"}]}
  ]){
   const {h,promise}=run({sourceTree:tree});
-  await assert.rejects(promise,/colliding source path|unsafe or oversized/);
+  await assert.rejects(promise,/colliding source path|unsafe or oversized|unsafe source Git tree entry/);
   assert.equal(h.events.filter(e=>e.method==="POST").length,0);
  }
 });
@@ -505,4 +506,42 @@ test("unreviewed runner-probe blob policy pin rejects before external API reques
   await assert.rejects(promise,/invalid immutable Git commit or blob SHA/);
   assert.equal(h.events.length,0);
  }
+});
+
+test("malformed directory Git trees deny before confidential blob fetch or destination writes",async()=>{
+ const ordinary={type:"blob",path:"src/main.ores",sha:C,size:4,mode:"100644"};
+ const badTrees=[
+  {type:"tree",path:"src/../escape",sha:D,mode:"040000"},
+  {type:"tree",path:"src/.GIT",sha:D,mode:"040000"},
+  {type:"tree",path:"src/symlink",sha:D,mode:"120000"},
+  {type:"tree",path:"src/missing-oid",sha:"invalid",mode:"040000"},
+  {type:"tree",path:"src/vendor",sha:D,mode:"160000"},
+  {type:"commit",path:"src/vendor",sha:D,mode:"160000"},
+  {type:"tree",path:"src/vendor",sha:D,mode:"100644"},
+  {type:"tree",path:"src\\backslash",sha:D,mode:"040000"},
+  {type:"tree",path:"src",sha:D,mode:"040000"},
+  {type:"tree",path:"SRC",sha:D,mode:"040000"}
+ ];
+ for(const bad of badTrees){
+  const prior={type:"tree",path:"src",sha:E,mode:"040000"};
+  const entries=(bad.path==="src"||bad.path==="SRC")?[prior,bad,ordinary]:[prior,ordinary,bad];
+  const {h,promise}=run({sourceTree:{truncated:false,tree:entries}});
+  await assert.rejects(promise,/unsafe source Git tree entry|duplicate or cross-platform-colliding source path/);
+  assert.equal(h.events.some(e=>e.path===source+"/git/blobs/"+C),false);
+  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+ }
+});
+test("valid nested source tree directories preserve exact-mode happy path",async()=>{
+ const src={truncated:false,tree:[
+  {type:"tree",path:"src",sha:E,mode:"040000"},
+  {type:"blob",path:"src/main.ores",sha:C,size:4,mode:"100644"}]};
+ const materialized={truncated:false,tree:[
+  {path:"snapshots/checked",type:"tree",sha:D},
+  {path:"snapshots/checked/src",type:"tree",sha:E},
+  {path:"snapshots/checked/src/main.ores",type:"blob",sha:C,mode:"100644"}
+ ]};
+ const {h,promise}=run({sourceTree:src,materializedTree:materialized});
+ const result=await promise;
+ assert.equal(result.status,"PRIVATE_MIRROR_PUBLISHED");
+ assert.ok(h.events.some(e=>e.method==="POST"&&e.path===destination+"/git/refs"));
 });
