@@ -29,3 +29,27 @@ The `fixtures/manifest.json` basic arithmetic and unresolved-name cases are **ta
 For each backend, a passing claim requires an actual independently pinned compiler executable, the exact source commit, authenticated build provenance, and the runner's accept/reject evidence. A fake checker or schema-only check tests the harness, not the compiler. An absent compiler is `UNCONFIGURED` (or `SPAWN_ERROR` when an invalid command is supplied), never verified; a required suite exits nonzero. Wasm must demonstrate actual Oreslang guest compilation and execution rather than treating LLVM host success as Wasm execution.
 
 This shared two-case admission contract is **not full language parity**. Actors, ownership, async/await, Sendable/Serializable, permissions, and other advanced behavior require additional exact-source fixtures and real evidence for each compiler. No missing feature may be reported as implemented based on documentation or fail-closed rejection alone.
+
+
+## October 16 manifest and source identity hardening
+
+Conformance PR #35 now validates that every claimed compiler backend has at
+least one positive and one negative fixture before admitting the manifest.
+Duplicate IDs, duplicate fixture paths, duplicate backend selectors, invalid
+diagnostic symbols, empty or oversized inventories and mismatched expectation
+metadata are rejected. The checked-out manifest and each source fixture must
+be regular, non-symlink files. An accepting-only manifest must never report
+successful parity even when its chosen positive fixture passes.
+
+A private, narrowly scoped 19-file snapshot was checked with exact Git blob
+hashes on [Voxletra run #38945270220](https://github.com/voxletra/voxletra-e2e/actions/runs/38945270220):
+**54 Node tests passed, 0 failed or skipped**. This is conformance *harness*
+validation, including mocked compiler behaviors; no real compiler, actor
+runtime, whole-tree source revision or CI budget balance is attested.
+
+Remaining limitation: the harness hashes the compiler executable before
+testing but does **not** independently authenticate its source-build chain
+or guarantee that the on-disk executable cannot change between fixture
+invocations. Git blob equality of a test snapshot is not a complete native
+compiler provenance attestation. Do not promote backend support without
+independently reviewed build and runtime evidence.
