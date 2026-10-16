@@ -14,3 +14,7 @@ Never reinterpret the fake checker tests as Java/LLVM conformance. Real runs req
 At a real build gate: 1) obtain exact compiler tree/commit; 2) build it using authorized private-runner access; 3) supply non-executing checker argv; 4) run conformance with --require; 5) archive provenance and raw output, label unsupported fixtures explicitly rather than dropping them.
 
 Hardening: command argv requires an absolute executable, timeouts are bounded to 100..120000 ms, SHA-256 hashes record the executable and test inputs, and negative tests require both the expected symbol and a recognizable compiler error/undefined-name diagnostic. Nonzero process exits with crash-only text never pass. Source revision is caller-supplied and NOT attested to the hashed executable; a reproducible compiler build must establish that link.
+
+## AI smoke evidence admission
+
+Two companion PRs add proposed compiler-executed smoke jobs. The report-consistency adapter in `src/real-evidence.mjs` does not assert authenticity. Without independently verifiable successful workflow execution, no feature is promoted as supported in this matrix.
