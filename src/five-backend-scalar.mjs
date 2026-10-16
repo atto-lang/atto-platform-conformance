@@ -33,9 +33,17 @@ async function readSafeFixture(workspace, repository) {
   // A stable physical path and post-read parent identity are both required.
   if ((await realpath(file)) !== file)
     throw Error("fixture path escaped the expected physical checkout");
-  if (!Number.isInteger(constants.O_NOFOLLOW))
-    throw Error("no-follow regular file support required for source identity");
-  const handle = await open(file, constants.O_RDONLY | constants.O_NOFOLLOW);
+  // A malicious checkout can replace a source file with a FIFO. Opening a
+  // FIFO read-only with blocking I/O may hang forever before fstat() runs.
+  // O_NONBLOCK also closes the pre-open lstat-to-open substitution window.
+  if (!Number.isInteger(constants.O_NOFOLLOW) ||
+      !Number.isInteger(constants.O_NONBLOCK))
+    throw Error("no-follow nonblocking file support required for source identity");
+  const beforeOpen = await lstat(file);
+  if (!beforeOpen.isFile() || beforeOpen.isSymbolicLink())
+    throw Error("fixture must be an ordinary regular file: " + repository);
+  const handle = await open(file,
+    constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
   try {
     const st = await handle.stat();
     if (!st.isFile() || st.nlink !== 1 || st.size !== EXACT_SOURCE.length)
