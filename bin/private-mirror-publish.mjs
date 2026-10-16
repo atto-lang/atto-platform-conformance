@@ -45,6 +45,7 @@ async function githubRequest(repo,path,token,{method="GET",body,fetchImpl=fetch}
 export async function publishPrivateMirror({
   source,destination,sourceCommit,approvedSourceCommit,approvedSourceTreeSha,
   destinationBaseCommit,prefix,newBranch,
+  runnerProbeRunId,approvedRunnerProbeCommit,approvedRunnerProbeWorkflow,
   approvedDestinations,sourceRepositoryId,destinationRepositoryId,
   token,fetchImpl=fetch
 }) {
@@ -54,6 +55,11 @@ export async function publishPrivateMirror({
   sha(approvedSourceCommit);sha(approvedSourceTreeSha);
   if(sourceCommit!==approvedSourceCommit)
     throw Error("source commit differs from independently reviewed policy pin");
+  sha(approvedRunnerProbeCommit);
+  if(!Number.isSafeInteger(runnerProbeRunId)||runnerProbeRunId<=0||
+      typeof approvedRunnerProbeWorkflow!=="string"||
+      !/^\.github\/workflows\/[A-Za-z0-9_-]+\.ya?ml$/.test(approvedRunnerProbeWorkflow))
+    throw Error("reviewed source-free runner probe run and workflow are required");
   if(!validPath(prefix)||!BRANCH.test(newBranch)||newBranch.includes("..")||newBranch.endsWith(".lock"))
     throw Error("invalid destination prefix or isolated CI branch");
   const authorize=()=>requirePrivateMirror({
@@ -62,6 +68,33 @@ export async function publishPrivateMirror({
   });
   // FIRST external operation: authorization, before ANY source bytes are fetched
   // and before ANY destination object/ref is created.
+  await authorize();
+  // Prove the chosen PRIVATE carrier can actually execute a source-free job
+  // BEFORE reading/copying any confidential Git objects. This is not billing
+  // attestation; only a recent independently pinned successful runner probe.
+  const capacityRun=await githubRequest(destination,"/actions/runs/"+runnerProbeRunId,token,{fetchImpl});
+  const created=Date.parse(capacityRun?.created_at||"");
+  if(capacityRun?.id!==runnerProbeRunId||capacityRun?.status!=="completed"||
+     capacityRun?.conclusion!=="success"||
+     capacityRun?.head_sha!==approvedRunnerProbeCommit||
+     capacityRun?.path!==approvedRunnerProbeWorkflow||
+     capacityRun?.repository?.id!==destinationRepositoryId||
+     capacityRun?.head_repository?.id!==destinationRepositoryId||
+     !Number.isFinite(created)||created>Date.now()+300000||
+     Date.now()-created>86400000)
+    throw Error("destination source-free runner capacity probe not verified");
+  const capacityJobs=await githubRequest(destination,
+    "/actions/runs/"+runnerProbeRunId+"/jobs?per_page=100",token,{fetchImpl});
+  if(capacityJobs?.total_count!==1||!Array.isArray(capacityJobs.jobs)||
+     capacityJobs.jobs.length!==1||capacityJobs.jobs[0]?.name!=="capacity"||
+     capacityJobs.jobs[0]?.conclusion!=="success"||
+     typeof capacityJobs.jobs[0]?.runner_name!=="string"||
+     capacityJobs.jobs[0].runner_name.length===0||
+     !Array.isArray(capacityJobs.jobs[0].steps)||
+     capacityJobs.jobs[0].steps.length!==1||
+     capacityJobs.jobs[0].steps[0]?.name!=="Prove runner allocation and shell execution"||
+     capacityJobs.jobs[0].steps[0].conclusion!=="success")
+    throw Error("destination runner probe has no independently executed success step");
   await authorize();
   const srcCommit=await githubRequest(source,"/git/commits/"+sourceCommit,token,{fetchImpl});
   if(!srcCommit?.tree?.sha||!OID.test(srcCommit.tree.sha))throw Error("source commit has no pinned tree");
@@ -198,7 +231,10 @@ if(process.argv[1]&&pathToFileURL(process.argv[1]).href===import.meta.url){
       sourceRepositoryId:Number(process.env.ORES_APPROVED_PRIVATE_SOURCE_REPO_ID),
       destinationRepositoryId:Number(process.env.ORES_APPROVED_PRIVATE_DESTINATION_REPO_ID),
       approvedSourceCommit:process.env.ORES_APPROVED_PRIVATE_SOURCE_COMMIT,
-      approvedSourceTreeSha:process.env.ORES_APPROVED_PRIVATE_SOURCE_TREE_SHA
+      approvedSourceTreeSha:process.env.ORES_APPROVED_PRIVATE_SOURCE_TREE_SHA,
+      runnerProbeRunId:Number(process.env.ORES_APPROVED_RUNNER_PROBE_RUN_ID),
+      approvedRunnerProbeCommit:process.env.ORES_APPROVED_RUNNER_PROBE_COMMIT,
+      approvedRunnerProbeWorkflow:process.env.ORES_APPROVED_RUNNER_PROBE_WORKFLOW
     });
     console.log(JSON.stringify(result));
   }catch{
