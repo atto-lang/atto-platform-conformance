@@ -225,3 +225,50 @@ duplicate named steps, mismatched run IDs and incomplete execution.
 - Full compiler and runtime CI executes against the same pinned PR SHA with
   step logs and artifacts. An unconfigured/skipped backend is not parity.
 - Required reviews/checks pass before draft status is removed or merge.
+
+
+## Real synthetic cross-organization Git object publication
+
+Completed a **synthetic-only** source→destination Git API transaction, with
+no private Oreslang compiler/actor source. This verifies the end-to-end
+mechanism but is not code-owner authorization to mirror confidential source.
+
+- Synthetic source objects created in private `akrion-sim/akrion-sim-e2e`,
+  repository ID `1321164328`. The source tree with two newly generated
+  nonconfidential files was `2a66115f267eecae4645d4b01287da14a31e0351`.
+  Synthetic blobs: `main.ores`
+  `9f6430031fc79b48ac5089c1f28f57e7df93805c` (`100644`) and
+  `bin/run.sh` `0be165a59c3275263e819e61a3fb7ebfbaf7c1d7`
+  (`100755`). Both destination blob SHA checks matched.
+- Target verified private `voxletra/voxletra-e2e` (ID `1311678027`).
+  Pinned source-free test base commit
+  `fcc901296d49a96541feef1ac3f693b7f9893e72`, tree
+  `1ae3107532a2b7efe40670172f4ec97da7b60b63`.
+  Target prefix `snapshots/generated-cross-org-test-20261016`
+  was initially empty.
+- Git tree API constructed target tree
+  `8713cef54b9e6993f39c02b522805fd87e2a974a`;
+  a separate read-back confirmed **exact nested source tree SHA equality**
+  `2a66115f267eecae4645d4b01287da14a31e0351` and both file
+  modes/identities.
+- Source-free synthetic commit
+  `44a0d9e445511932e0b1e2c9e338c6bcfb4761d7`
+  points at exactly that target tree and the pinned base parent.
+  GitHub confirmed the isolated
+  [destination test branch](https://github.com/voxletra/voxletra-e2e/tree/ci/private-synthetic-git-tree-proof-20261016)
+  `ci/private-synthetic-git-tree-proof-20261016` resolves to that exact
+  commit. No existing destination branch was overwritten.
+- Verified by comparing Git recursive trees: all **90 preexisting base-tree
+  entries were preserved** outside the synthetic subtree (zero missing,
+  modified, or injected unrelated entries). Consequently the publisher now
+  also checks complete outside-prefix destination-tree equivalence before
+  final commit/ref publication. Offline mocked-GitHub security tests:
+  **47/47 pass** after this extra invariant.
+- This **did not** run the confidential publisher's full CLI against remote
+  protected policy inputs; the Git objects were created through the
+  individual authenticated GitHub connector operations for a deliberately
+  generated synthetic payload. **No Oreslang private source was copied.**
+  The isolated synthetic test branch should be deleted through authorized
+  GitHub branch management when the evidence is no longer needed; the
+  current connector exposes no branch-ref deletion action.
+
