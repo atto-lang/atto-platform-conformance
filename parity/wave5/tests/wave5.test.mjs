@@ -151,8 +151,8 @@ test('25 / explicitly allowlisted, function-only wasm capability import is usabl
 });
 test('25 / bounded Wasm memory must declare an explicit maximum',()=>{
  const section=(id,p)=>Buffer.concat([Buffer.from([id,p.length]),p]);
- const prefix=wasm.subarray(0,17); // magic + type + function sections
- const postfix=wasm.subarray(17);
+ const prefix=wasm.subarray(0,19); // magic + type + function sections
+ const postfix=wasm.subarray(19);
  const bounded=Buffer.concat([prefix,section(5,Buffer.from([1,1,1,2])),postfix]);
  const inspected=inspectWasm(bounded);
  assert.equal(inspected.memoryMaximum,2);
