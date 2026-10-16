@@ -40,7 +40,8 @@ async function readSafeFixture(workspace, repository) {
     throw Error("fixture path escaped the expected physical checkout");
   // A malicious checkout can replace a source file with a FIFO. Opening a
   // FIFO read-only with blocking I/O may hang forever before fstat() runs.
-  // O_NONBLOCK also closes the pre-open lstat-to-open substitution window.
+  // O_NONBLOCK also prevents FIFO hangs if a path changes after lstat().
+  // Path checks are still not an atomic authorization boundary.
   if (!Number.isInteger(constants.O_NOFOLLOW) ||
       !Number.isInteger(constants.O_NONBLOCK))
     throw Error("no-follow nonblocking file support required for source identity");
