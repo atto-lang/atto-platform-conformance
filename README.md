@@ -120,6 +120,15 @@ must pass valid-path, SHA, Git type and mode validation (directories require
 its first source blob. Case-insensitive collisions are rejected across all
 entries, not just files. This preflight does not authorize cross-org export:
 separately reviewed source and destination policy remains mandatory.
+The publisher now also independently recomputes each source Git blob's SHA-1
+over its decoded bytes (Git's canonical `blob <size>\\0<bytes>` identity)
+after strict canonical base64/size verification and **before any destination
+write**. Claimed SHA and size JSON fields alone do not authorize a copy.
+A generated-data native Node/Git source-free capacity test passed on a
+verified private hosted runner
+([Voxletra #38954552168](https://github.com/voxletra/voxletra-e2e/actions/runs/38954552168));
+this does not certify the full publisher or grant source export approval.
+
 The recent probe is evidence that a runner executed, **not** a guarantee of
 remaining GitHub Actions minutes, current billing eligibility, or long-running
 compiler capacity. Recheck runner capacity at each source transfer. The exact
