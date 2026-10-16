@@ -13,24 +13,23 @@ function validDiagnosticSymbol(s){
 /** Literal unresolved-name diagnostic only: no regex-injected manifest or source echo. */
 export function isExpectedCompilerDiagnostic(output,symbol){
  if(typeof output!=="string"||!validDiagnosticSymbol(symbol))return false;
- // The requested name must be the subject of the diagnostic, not a filename,
- // source echo or an unrelated identifier on the same line.
+ // Admit only the *primary* unresolved-name diagnostic immediately after
+ // severity; later notes, hints and unrelated errors are not independent proof.
  const patterns=[
-  /\b(?:unresolved|undefined|undeclared|unknown|unbound)\s+(?:(?:identifier|name|symbol|variable|reference|value)\s+)?["'\x60]?([A-Za-z_][A-Za-z0-9_]*)/gi,
-  /\b(?:cannot find|cannot resolve)\s+(?:(?:identifier|name|symbol|variable|reference|value)\s+)?["'\x60]?([A-Za-z_][A-Za-z0-9_]*)/gi,
-  /\b([A-Za-z_][A-Za-z0-9_]*)["'\x60]?\s+(?:is\s+)?(?:not found|not defined|undefined|undeclared|unresolved|unknown|unbound)\b/gi
+  /^(?:use\s+of\s+)?(?:unresolved|undefined|undeclared|unknown|unbound)\s+(?:(?:identifier|name|symbol|variable|reference|value)\s+)?["'\x60]?([A-Za-z_][A-Za-z0-9_]*)/i,
+  /^(?:cannot find|cannot resolve)\s+(?:(?:identifier|name|symbol|variable|reference|value)\s+)?["'\x60]?([A-Za-z_][A-Za-z0-9_]*)/i,
+  /^["'\x60]?([A-Za-z_][A-Za-z0-9_]*)["'\x60]?\s+(?:is\s+)?(?:not found|not defined|undefined|undeclared|unresolved|unknown|unbound)\b/i
  ];
  for(const line of output.split(/\r?\n/)){
-  const severity=/\berror(?:\[[A-Za-z0-9_-]{1,20}\])?\s*:/i.exec(line);
+  const severity=/^(?:.*?:\d+(?::\d+)?:\s*)?error(?:\[[A-Za-z0-9_-]{1,20}\])?\s*:/i.exec(line);
   if(!severity)continue;
-  const detail=line.slice(severity.index+severity[0].length);
+  const detail=line.slice(severity[0].length).trimStart();
   for(const pattern of patterns){
-   pattern.lastIndex=0;
-   for(const match of detail.matchAll(pattern)){
-    if(match[1]===symbol)return true;
-   }
+   const match=pattern.exec(detail);
+   if(match)return match[1]===symbol;
   }
  }
+
  return false;
 }
 export function validateCommand(argv){
