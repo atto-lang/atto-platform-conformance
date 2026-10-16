@@ -13,9 +13,25 @@ function validDiagnosticSymbol(s){
 /** Literal unresolved-name diagnostic only: no regex-injected manifest or source echo. */
 export function isExpectedCompilerDiagnostic(output,symbol){
  if(typeof output!=="string"||!validDiagnosticSymbol(symbol))return false;
- const token=new RegExp("(^|[^A-Za-z0-9_])"+symbol+"($|[^A-Za-z0-9_])");
- const diagnostic=/\b(?:undefined|undeclared|unknown|unresolved|unbound|not found|cannot find|cannot resolve)\b/i;
- return output.split(/\r?\n/).some(line=>/\berror\b/i.test(line)&&diagnostic.test(line)&&token.test(line));
+ // The requested name must be the subject of the diagnostic, not a filename,
+ // source echo or an unrelated identifier on the same line.
+ const patterns=[
+  /\b(?:unresolved|undefined|undeclared|unknown|unbound)\s+(?:(?:identifier|name|symbol|variable|reference|value)\s+)?["'\x60]?([A-Za-z_][A-Za-z0-9_]*)/gi,
+  /\b(?:cannot find|cannot resolve)\s+(?:(?:identifier|name|symbol|variable|reference|value)\s+)?["'\x60]?([A-Za-z_][A-Za-z0-9_]*)/gi,
+  /\b([A-Za-z_][A-Za-z0-9_]*)["'\x60]?\s+(?:is\s+)?(?:not found|not defined|undefined|undeclared|unresolved|unknown|unbound)\b/gi
+ ];
+ for(const line of output.split(/\r?\n/)){
+  const severity=/\berror(?:\[[A-Za-z0-9_-]{1,20}\])?\s*:/i.exec(line);
+  if(!severity)continue;
+  const detail=line.slice(severity.index+severity[0].length);
+  for(const pattern of patterns){
+   pattern.lastIndex=0;
+   for(const match of detail.matchAll(pattern)){
+    if(match[1]===symbol)return true;
+   }
+  }
+ }
+ return false;
 }
 export function validateCommand(argv){
  if(!Array.isArray(argv)||argv.length===0||argv.some(x=>typeof x!=="string"||!x||x.includes("\0")))throw Error("compiler argv must be nonempty strings without NUL");
