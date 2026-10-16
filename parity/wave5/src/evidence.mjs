@@ -15,6 +15,7 @@ export function validateProfile({task,backend,target,wasmProfile='scalar',allowe
  if(task===21){if(backend!=='memory'||target!=='host-model')bad('task21 is host-only until source lowering');return true}
  const intended={22:'llvm',23:'net',24:'forge',25:'wasm'}[task];
  if(backend!==intended||!allowedTargets[backend]?.includes(target))bad('backend/native target mismatch');
+ if(!Array.isArray(allowedImports))bad('import policies must be arrays');
  if(target!=='wasm32'&&(wasmProfile!=='scalar'||allowedImports.length))bad('native targets cannot use wasm import policy');
  if(target==='wasm32'&&(!['scalar','capability'].includes(wasmProfile)||!Array.isArray(allowedImports)))bad('invalid wasm profile');
  return true;
