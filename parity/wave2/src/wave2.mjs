@@ -124,6 +124,20 @@ export async function runWave2({backend,task,checkArgv,executeArgv,sourceSha,tim
   }
   results.push({id:c.id,status,certified:false,expected:c.expectedValue??c.diagnostic??null,fixtureSha256:digest,exitCode:p.status??null,signal:p.signal||null});
  }
+ // Input files may be replaced between their original hash check and
+ // the last guest process. Such a race invalidates the full observation.
+ for(const [kind,argv] of [['check',checkArgv],['execute',executeArgv]])if(configured&&candidate.length&&argv){
+  await regular(argv[0]);
+  const digest=createHash('sha256').update(await readFile(argv[0])).digest('hex');
+  if(digest!==commandSha256[kind])bad('executable changed during run: '+kind);
+ }
+ for(const c of candidate){
+  const file=resolve(root,'fixtures',c.file);
+  await regular(file);
+  const bytes=await readFile(file);
+  const blob=createHash('sha1').update(Buffer.from('blob '+bytes.length+'\0')).update(bytes).digest('hex');
+  if(blob!==c.gitBlob)bad('fixture changed during run: '+c.id);
+ }
  const attempted=results.filter(x=>x.status==='OBSERVED_PASS'||x.status==='MISMATCH'||x.status==='TIMEOUT'||x.status==='SPAWN_ERROR'||x.status==='SIGNALED'||x.status==='INVALID_EXIT').length;
  const observedPass=results.filter(x=>x.status==='OBSERVED_PASS').length;
  const missing=results.filter(x=>x.status==='UNSUPPORTED'||x.status==='UNCONFIGURED').length;
