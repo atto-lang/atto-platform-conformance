@@ -7,6 +7,16 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),"..");
 export const COMPILER_BACKENDS=Object.freeze(["java","llvm","net","wasm","forge"]);
 const SUPPORTED_BACKENDS=new Set([...COMPILER_BACKENDS,"browser"]);
 function validSha(s){return typeof s==="string" && /^[0-9a-f]{40}$/.test(s)}
+function validDiagnosticSymbol(s){
+ return typeof s==="string" && /^[A-Za-z_][A-Za-z0-9_]{0,127}$/.test(s);
+}
+/** Literal unresolved-name diagnostic only: no regex-injected manifest or source echo. */
+export function isExpectedCompilerDiagnostic(output,symbol){
+ if(typeof output!=="string"||!validDiagnosticSymbol(symbol))return false;
+ const token=new RegExp("(^|[^A-Za-z0-9_])"+symbol+"($|[^A-Za-z0-9_])");
+ const diagnostic=/\b(?:undefined|undeclared|unknown|unresolved|unbound|not found|cannot find|cannot resolve)\b/i;
+ return output.split(/\r?\n/).some(line=>diagnostic.test(line)&&token.test(line));
+}
 export function validateCommand(argv){
  if(!Array.isArray(argv)||argv.length===0||argv.some(x=>typeof x!=="string"||!x||x.includes("\0")))throw Error("compiler argv must be nonempty strings without NUL");
  if(!isAbsolute(argv[0]))throw Error("compiler executable path must be absolute (no PATH lookup)");
@@ -23,7 +33,7 @@ export async function loadManifest(){
   ids.add(item.id);
   if(typeof item.file!=="string"||!/^[-a-z0-9]+\.ores$/.test(item.file))throw Error("invalid fixture path");
   if(!["accept","reject"].includes(item.expect)||!Array.isArray(item.backends)||!item.backends.length||item.backends.some(x=>!SUPPORTED_BACKENDS.has(x)))throw Error("invalid fixture expectation/backends");
-  if(item.expect==="reject"&&typeof item.diagnostic!=="string")throw Error("negative fixture must require a diagnostic");
+  if(item.expect==="reject"&&!validDiagnosticSymbol(item.diagnostic))throw Error("negative fixture must require a literal identifier diagnostic");
   await readFile(resolve(root,"fixtures",item.file),"utf8");
  }
  return manifest;
@@ -56,9 +66,8 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
   else if(!Number.isSafeInteger(output.status)||output.status<0)status="INVALID_EXIT_STATUS";
   else if(c.expect==="accept")status=output.status===0?"VERIFIED":"MISMATCH";
   else {
-   const match=new RegExp(c.diagnostic,"i").test(combined);
-   const diagnostic=/(?:\berror\b|\bundefined\b|\bundeclared\b|\bunknown\b|\bunresolved\b|not found|cannot find)/i.test(combined);
-   status=output.status!==0 && diagnostic && match?"VERIFIED":"MISMATCH";
+   status=output.status!==0 && isExpectedCompilerDiagnostic(combined,c.diagnostic)
+     ?"VERIFIED":"MISMATCH";
   }
   results.push({id:c.id,status,fixtureSha256,exitCode:output.status,signal:output.signal||null,
     stdout:output.stdout||"",stderr:output.stderr||""});
