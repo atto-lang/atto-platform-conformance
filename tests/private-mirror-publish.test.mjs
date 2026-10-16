@@ -416,3 +416,51 @@ test("destination prefix collision is rejected before reading confidential sourc
  assert.equal(h.events.some(e=>e.path.startsWith(source+"/git/")),false);
  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
 });
+
+test("capacity proof cannot hide extra executable, checkout or skipped steps",async()=>{
+ const steps=[
+  {name:"Set up job",status:"completed",conclusion:"success"},
+  {name:"Prove runner allocation and shell execution",status:"completed",conclusion:"success"},
+  {name:"Complete job",status:"completed",conclusion:"success"}
+ ];
+ const injected=[
+  {name:"Run actions/checkout@v4",status:"completed",conclusion:"success"},
+  {name:"Unreviewed shell",status:"completed",conclusion:"success"},
+  {name:"Print env",status:"completed",conclusion:"skipped"}
+ ];
+ for(const extra of injected){
+  for(const position of [0,1,3]){
+   const attempted=[...steps];
+   attempted.splice(position,0,extra);
+   const {h,promise}=run({capacityJobs:{total_count:1,jobs:[{
+    name:"capacity",status:"completed",conclusion:"success",
+    run_id:opts.runnerProbeRunId,runner_id:1000057681,
+    runner_name:"GitHub Actions 1000057681",steps:attempted
+   }]}});
+   await assert.rejects(promise,/runner probe has no independently executed success step/);
+   assert.equal(h.events.some(e=>e.path.startsWith(source+"/git/")),false);
+   assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+  }
+ }
+});
+test("capacity step verification requires GitHub-managed step order and success",async()=>{
+ const ok=[
+  {name:"Set up job",status:"completed",conclusion:"success"},
+  {name:"Prove runner allocation and shell execution",status:"completed",conclusion:"success"},
+  {name:"Complete job",status:"completed",conclusion:"success"}
+ ];
+ for(const steps of [
+  [ok[1],ok[0],ok[2]],
+  [ok[0],ok[2],ok[1]],
+  [ok[0],{...ok[1],status:"queued"},ok[2]],
+  [ok[0],ok[1],{...ok[2],conclusion:"failure"}],
+ ]){
+  const {h,promise}=run({capacityJobs:{total_count:1,jobs:[{
+    name:"capacity",status:"completed",conclusion:"success",
+    run_id:opts.runnerProbeRunId,runner_id:1000057681,
+    runner_name:"GitHub Actions 1000057681",steps
+  }]}});
+  await assert.rejects(promise,/runner probe has no independently executed success step/);
+  assert.equal(h.events.some(e=>e.path.startsWith(source+"/git/")),false);
+ }
+});
