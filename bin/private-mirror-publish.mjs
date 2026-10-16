@@ -43,11 +43,17 @@ async function githubRequest(repo,path,token,{method="GET",body,fetchImpl=fetch}
 }
 
 export async function publishPrivateMirror({
-  source,destination,sourceCommit,destinationBaseCommit,prefix,newBranch,
+  source,destination,sourceCommit,approvedSourceCommit,approvedSourceTreeSha,
+  destinationBaseCommit,prefix,newBranch,
   approvedDestinations,sourceRepositoryId,destinationRepositoryId,
   token,fetchImpl=fetch
 }) {
   sha(sourceCommit);sha(destinationBaseCommit);
+  // The reviewed policy must pin BOTH the intended source commit and tree.
+  // Reject caller-chosen revisions before metadata reads, much less blob copying.
+  sha(approvedSourceCommit);sha(approvedSourceTreeSha);
+  if(sourceCommit!==approvedSourceCommit)
+    throw Error("source commit differs from independently reviewed policy pin");
   if(!validPath(prefix)||!BRANCH.test(newBranch)||newBranch.includes("..")||newBranch.endsWith(".lock"))
     throw Error("invalid destination prefix or isolated CI branch");
   const authorize=()=>requirePrivateMirror({
@@ -59,6 +65,8 @@ export async function publishPrivateMirror({
   await authorize();
   const srcCommit=await githubRequest(source,"/git/commits/"+sourceCommit,token,{fetchImpl});
   if(!srcCommit?.tree?.sha||!OID.test(srcCommit.tree.sha))throw Error("source commit has no pinned tree");
+  if(srcCommit.tree.sha!==approvedSourceTreeSha)
+    throw Error("source commit tree differs from independently reviewed policy pin");
   const srcTree=await githubRequest(source,"/git/trees/"+srcCommit.tree.sha+"?recursive=1",token,{fetchImpl});
   if(srcTree.truncated!==false||!Array.isArray(srcTree.tree))throw Error("source tree incomplete");
   const files=srcTree.tree.filter(x=>x.type==="blob");
@@ -188,7 +196,9 @@ if(process.argv[1]&&pathToFileURL(process.argv[1]).href===import.meta.url){
       approvedDestinations:(process.env.ORES_APPROVED_PRIVATE_MIRRORS||"").split(",").filter(Boolean),
       token:process.env.GH_TOKEN||process.env.GITHUB_TOKEN,
       sourceRepositoryId:Number(process.env.ORES_APPROVED_PRIVATE_SOURCE_REPO_ID),
-      destinationRepositoryId:Number(process.env.ORES_APPROVED_PRIVATE_DESTINATION_REPO_ID)
+      destinationRepositoryId:Number(process.env.ORES_APPROVED_PRIVATE_DESTINATION_REPO_ID),
+      approvedSourceCommit:process.env.ORES_APPROVED_PRIVATE_SOURCE_COMMIT,
+      approvedSourceTreeSha:process.env.ORES_APPROVED_PRIVATE_SOURCE_TREE_SHA
     });
     console.log(JSON.stringify(result));
   }catch{
