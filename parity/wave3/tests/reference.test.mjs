@@ -76,3 +76,35 @@ test('independent actors execute concurrently without actor-local overlap',()=>{
  const m=new SingleFlightModel();m.create('a');m.create('b');m.send('a');m.send('b');m.enter('a','carrier1');m.enter('b','carrier2');
  assert.equal(m.snapshot('a').active.carrier,'carrier1');assert.equal(m.snapshot('b').active.carrier,'carrier2');
 });
+test('bounded actor continuation interleavings preserve single-flight on every reachable trace',()=>{
+ // Replay each prefix from a fresh model; invalid steps are deliberately pruned.
+ const actions=['send','enter-A','enter-B','suspend','resume','finish','cancel'];
+ let reachable=0,branchCount=0;
+ function replay(trace){
+  const m=new SingleFlightModel({maxOutstanding:2,maxReady:2});m.create('actor');
+  for(const action of trace){
+   const s=m.snapshot('actor');
+   if(action==='send')m.send('actor');
+   else if(action.startsWith('enter-'))m.enter('actor',action.slice(6));
+   else if(action==='suspend')m.suspend('actor',s.active?.ticket);
+   else if(action==='finish')m.finish('actor',s.active?.ticket);
+   else if(action==='resume'){const entry=s.states.find(x=>x[1]==='suspended');m.resume('actor',entry?.[0]);}
+   else if(action==='cancel'){const entry=s.states.find(x=>x[1]==='ready'||x[1]==='suspended');m.cancel('actor',entry?.[0]);}
+   const after=m.snapshot('actor');
+   assert.ok(after.active===null||after.states.filter(x=>x[1]==='running').length===1);
+   assert.equal(after.states.filter(x=>x[1]==='running').length,after.active?1:0);
+   assert.ok(after.outstanding<=2,JSON.stringify({trace,after}));
+  }
+ }
+ function visit(trace,depth){
+  replay(trace);reachable++;
+  if(depth===0)return;
+  for(const action of actions){
+   const next=[...trace,action];
+   try{replay(next);}catch(e){if(!String(e.message).startsWith('wave3:'))throw e;continue;}
+   branchCount++;visit(next,depth-1);
+  }
+ }
+ visit([],5);
+ assert.ok(reachable>80,{reachable,branchCount});
+});
