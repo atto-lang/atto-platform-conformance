@@ -63,7 +63,14 @@ Before any copy require independent security review of a **private** numeric
 destination repo ID, an independently pinned source repo ID + exact source
 commit/tree, protected reviewed policy origin, explicit export scope, and
 destination Actions capacity demonstrated by an executed **source-free**
-probe. Use least privilege, an isolated temporary ref and exact nested Git
+probe. The publisher now also fails closed **before the first source Git read**
+unless GitHub confirms a completed successful probe from the **same numeric
+private repository ID**, approved exact workflow path and exact probe commit,
+with a nonempty real runner name and a successful named shell step.
+Only a reviewed `push` or `workflow_dispatch` event is eligible; pull-request
+and scheduled jobs do not qualify. The capacity run must be at most 24 hours
+old. This proves only a small real runner allocation, not remaining minute
+balance or eligibility for a full source build. Use least privilege, an isolated temporary ref and exact nested Git
 tree SHA verification. A private destination **alone is not authorization**.
 
 The draft [private mirror hardening PR #43](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/pull/43)
