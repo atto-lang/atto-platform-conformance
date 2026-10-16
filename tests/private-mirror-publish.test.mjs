@@ -8,8 +8,10 @@ const A="a".repeat(40),B="b".repeat(40),C="c".repeat(40),
  D="d".repeat(40),E="e".repeat(40);
 const opts={source,destination,sourceCommit:A,destinationBaseCommit:B,
   prefix:"snapshots/checked",newBranch:"ci/private-test-proof",
-  approvedDestinations:[destination],token:"opaque-test-token"};
-const good=name=>({full_name:name,private:true,visibility:"private",
+  approvedDestinations:[destination],token:"opaque-test-token",
+  sourceRepositoryId:1400792274,destinationRepositoryId:1321164328};
+const good=name=>({full_name:name,id:name===source?1400792274:1321164328,
+  private:true,visibility:"private",
   archived:false,permissions:{push:true}});
 
 function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E,meta,errors}={}){
@@ -90,7 +92,9 @@ test("missing approvals and unsafe ref/path reject without contacting GitHub",as
   {approvedDestinations:[]},{token:undefined},
   {newBranch:"main"},{newBranch:"ci/my-public-copy"},
   {prefix:"../src"},{prefix:"src/../../other"},
-  {sourceCommit:"not-a-sha"}
+  {sourceCommit:"not-a-sha"},
+  {sourceRepositoryId:undefined},{destinationRepositoryId:undefined},
+  {sourceRepositoryId:0},{destinationRepositoryId:1400792274}
  ]){
   const {h,promise}=run({},override);
   await assert.rejects(promise);
@@ -233,4 +237,24 @@ test("duplicate entries in materialized tree cannot disguise omitted source blob
  const {h,promise}=run({materializedTree:tree});
  await assert.rejects(promise,/materialized snapshot contains duplicate paths/);
  assert.equal(h.events.some(e=>e.path===destination+"/git/refs"),false);
+});
+
+test("unreviewed or swapped numeric repository IDs reject before fetching source bytes",async()=>{
+ for(const meta of [
+  (name)=>({...good(name),id:name===source?42:1321164328}),
+  (name)=>({...good(name),id:name===destination?43:1400792274})
+ ]){
+  const {h,promise}=run({meta});
+  await assert.rejects(promise,/metadata|private source|writable verified PRIVATE/);
+  assert.equal(h.events.some(e=>e.path.includes("/git/")),false);
+  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+ }
+});
+test("repository ID retargeting mid-publication denies subsequent Git writes",async()=>{
+ const {h,promise}=run({meta:(name,n)=>({
+  ...good(name),
+  id:name===destination&&n>=2?999999:good(name).id
+ })});
+ await assert.rejects(promise,/writable verified PRIVATE/);
+ assert.equal(h.events.filter(e=>e.method==="POST").length,0);
 });
