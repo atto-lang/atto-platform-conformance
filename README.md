@@ -96,6 +96,14 @@ denies the publication **before source blobs are read**, or before the next
 destination write if identity/visibility changes mid-flight. A private
 destination without a recent, correctly pinned **successful one-step runner
 probe** is likewise denied **before requesting any source commit or blob**.
+The publisher additionally checks that its exact, isolated
+`ci/private-*` destination branch **does not already exist** before reading
+the first private source Git object, and once again before publishing the
+ref. GitHub 404 alone counts as branch absence; 200, permission failures,
+rate limits, redirects and ambiguous responses deny the transfer.
+The final create-ref POST remains the atomic collision gate, since a branch
+could still be claimed between preflight and publication.
+
 The reviewed destination base commit/tree and empty prefix are also checked
 **before any confidential source Git read**. The published full Git tree is then compared to the reviewed
 destination base tree **outside the new snapshot prefix**: every unrelated
