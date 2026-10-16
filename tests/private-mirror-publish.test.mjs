@@ -4,8 +4,8 @@ import {publishPrivateMirror} from "../bin/private-mirror-publish.mjs";
 
 const source="ores-truffle-oreslang/oreslang-source.java";
 const destination="akrion-sim/akrion-sim-e2e";
-const A="a".repeat(40),B="b".repeat(40),C="c".repeat(40),
- D="d".repeat(40),E="e".repeat(40),G="9".repeat(40),H="8".repeat(40),F="7".repeat(40);
+const A="a".repeat(40),B="b".repeat(40),C="5e5201f1b1618f87282bf41ce89ca710404cce95",
+ D="d".repeat(40),E="e".repeat(40),G="9".repeat(40),H="8".repeat(40),F="a0aba9318addb41b4e58e43cb96b41ae7694d312";
 const opts={source,destination,sourceCommit:A,approvedSourceCommit:A,
   approvedSourceTreeSha:D,destinationBaseCommit:B,
   approvedDestinationBaseCommit:B,approvedDestinationBaseTreeSha:E,
@@ -672,4 +672,33 @@ test("all source blob GETs precede any destination blob POST in successful multi
  const firstWrite=h.events.findIndex(e=>e.path===destination+"/git/blobs"&&e.method==="POST");
  assert.ok(secondRead>=0&&firstWrite>secondRead,
    "all source blobs must be validated before the first copy");
+});
+
+test("pre-publication Git blob hashing rejects forged JSON identity and noncanonical base64",async()=>{
+ const sourceTree={truncated:false,tree:[
+   {type:"blob",path:"main.ores",sha:C,size:4,mode:"100644"}
+ ]};
+ for(const content of [
+   "T0sK",       // valid base64, different bytes but declared SHA/size
+   "NDI7Cg==!",  // GitHub base64 must not contain extra garbage
+   "NDI7Cg===",  // invalid padding
+   "NDI7Cg= ",   // no arbitrary spaces
+   "NDI7C",      // incomplete encoding
+   "NDI7Cg==A",  // trailing injection
+   "NDI7Cg=="+"A".repeat(1398105) // encoded size bound
+ ]){
+  const {h,promise}=run({
+    sourceTree,
+    sourceBlobResponses:{[C]:{sha:C,size:4,encoding:"base64",content}}
+  });
+  await assert.rejects(promise,/source Git blob (bytes do not match immutable SHA|has invalid base64 payload|decoded size or encoding differs)/);
+  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+ }
+});
+test("GitHub source blob CR/LF line wrapping retains cryptographic identity",async()=>{
+ const {promise}=run({sourceBlobResponses:{
+   [C]:{sha:C,encoding:"base64",content:"NDI7\r\nCg==\n",size:4}
+ }});
+ const receipt=await promise;
+ assert.equal(receipt.status,"PRIVATE_MIRROR_PUBLISHED");
 });
