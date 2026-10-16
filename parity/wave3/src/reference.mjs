@@ -104,9 +104,9 @@ export class SingleFlightModel {
  #a(id){const a=this.#actors.get(id);assert(a,'unknown actor');return a;}
  send(id){const a=this.#a(id);assert(a.lifetimes.size<this.maxOutstanding,'too many outstanding messages');assert(a.ready.length<this.maxReady,'ready queue full');const ticket=a.next++;a.lifetimes.set(ticket,'ready');a.ready.push(ticket);return ticket;}
  enter(id,carrier){const a=this.#a(id);assert(a.active===null,'parallel guest execution denied');assert(typeof carrier==='string'&&carrier.length>0,'invalid carrier');const ticket=a.ready.shift();assert(ticket!==undefined,'nothing ready');assert(a.lifetimes.get(ticket)==='ready','ready state mismatch');a.lifetimes.set(ticket,'running');a.active={ticket,carrier};return ticket;}
- suspend(id,ticket){const a=this.#a(id);assert(a.active?.ticket===ticket,'not active turn');a.active=null;a.lifetimes.set(ticket,'suspended');}
+ suspend(id,ticket){const a=this.#a(id);assert(a.active!==null&&a.active.ticket===ticket,'not active turn');a.active=null;a.lifetimes.set(ticket,'suspended');}
  resume(id,ticket){const a=this.#a(id);assert(a.lifetimes.get(ticket)==='suspended','double or illegal resume');assert(a.ready.length<this.maxReady,'ready queue full');a.lifetimes.set(ticket,'ready');a.ready.push(ticket);}
- finish(id,ticket){const a=this.#a(id);assert(a.active?.ticket===ticket,'not active turn');a.active=null;a.lifetimes.delete(ticket);}
+ finish(id,ticket){const a=this.#a(id);assert(a.active!==null&&a.active.ticket===ticket,'not active turn');a.active=null;a.lifetimes.delete(ticket);}
  cancel(id,ticket){const a=this.#a(id);assert(a.lifetimes.has(ticket),'unknown ticket');assert(a.active?.ticket!==ticket,'cannot retire currently running turn inline');a.lifetimes.delete(ticket);a.ready=a.ready.filter(t=>t!==ticket);}
  snapshot(id){const a=this.#a(id);return Object.freeze({active:a.active&&{...a.active},outstanding:a.lifetimes.size,ready:[...a.ready],states:[...a.lifetimes.entries()]});}
 }
