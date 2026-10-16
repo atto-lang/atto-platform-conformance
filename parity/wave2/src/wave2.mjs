@@ -75,11 +75,11 @@ export function primaryDiagnostic(output,category){
   'read-mutate':/\bread.?only\b|\b(?:read|write)\b.*\b(?:capability|mutation|mutable|write|mutate)\b/i,
   'loan-suspend':/\b(?:loan|state)\b.*\b(?:suspend|cooperate|await|select)\b|\b(?:suspend|cooperate|await|select)\b.*\bloan\b/i
  };
- return output.split(/\r?\n/).some(s=>{
-  const line=s.trim();
-  const e=/(?:^|:\d+(?::\d+)?:\s*)(?:fatal\s+)?error(?:\[[A-Za-z0-9_-]{1,30}\])?\s*:\s*(.*)$/i.exec(line);
-  return !!e&&patterns[category].test(e[1]);
- });
+ for(const line of output.split(/\r?\n/)){
+  const e=/(?:^|:\d+(?::\d+)?:\s*)(?:fatal\s+)?error(?:\[[A-Za-z0-9_-]{1,30}\])?\s*:\s*(.*)$/i.exec(line.trim());
+  if(e)return patterns[category].test(e[1]);
+ }
+ return false;
 }
 function errorSeverity(output){return /(?:^|\n)\s*(?:[^\n]*?:\d+(?::\d+)?:\s*)?(?:fatal\s+)?error(?:\[[A-Za-z0-9_-]+\])?\s*:/i.test(output);}
 export async function runWave2({backend,task,checkArgv,executeArgv,sourceSha,timeoutMs=10000,requireAll=false,spawn=spawnSync}={}){
