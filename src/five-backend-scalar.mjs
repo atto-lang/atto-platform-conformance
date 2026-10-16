@@ -20,13 +20,19 @@ function gitBlob(bytes) {
 async function readSafeFixture(workspace, repository) {
   const root = join(resolve(workspace), repository);
   let part = root;
+  const parentSnapshot = [];
   for (const relative of ["", "contracts", "v1", "semantics", "fixtures"]) {
     if (relative) part = join(part, relative);
     const st = await lstat(part); // refuse symlinks at every source directory
     if (!st.isDirectory() || st.isSymbolicLink())
       throw Error("unsafe fixture directory: " + repository);
+    parentSnapshot.push({path:part,dev:st.dev,ino:st.ino});
   }
   const file = join(part, "add.ores");
+  // lstat alone cannot detect all parent path substitutions between checks.
+  // A stable physical path and post-read parent identity are both required.
+  if ((await realpath(file)) !== file)
+    throw Error("fixture path escaped the expected physical checkout");
   if (!Number.isInteger(constants.O_NOFOLLOW))
     throw Error("no-follow regular file support required for source identity");
   const handle = await open(file, constants.O_RDONLY | constants.O_NOFOLLOW);
@@ -46,6 +52,14 @@ async function readSafeFixture(workspace, repository) {
         after.ctimeMs !== st.ctimeMs || after.ino !== st.ino ||
         after.dev !== st.dev || after.nlink !== 1)
       throw Error("fixture changed during read: " + repository);
+    if ((await realpath(file)) !== file)
+      throw Error("fixture path changed during read: " + repository);
+    for (const parent of parentSnapshot) {
+      const now = await lstat(parent.path);
+      if (!now.isDirectory() || now.isSymbolicLink() ||
+          now.dev !== parent.dev || now.ino !== parent.ino)
+        throw Error("fixture parent directory changed during read: " + repository);
+    }
     return bytes;
   } finally {
     await handle.close();
