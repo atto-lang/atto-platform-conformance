@@ -222,16 +222,25 @@ export async function publishPrivateMirror({
     if(!["tree","blob"].includes(file.type))
       throw Error("unsupported source tree object");
   }
-  const entries=[];
+  // Phase 1: read and validate EVERY source blob before performing even one
+  // destination mutation. A corrupt/failed late blob cannot strand an earlier
+  // confidential object in the carrier. This intentionally holds bounded
+  // (<=40MiB of raw blob bytes) source payloads only in process memory.
+  const verifiedBlobs=[];
   for(const file of files){
     const srcBlob=await githubRequest(source,"/git/blobs/"+file.sha,token,{fetchImpl});
     if(srcBlob?.sha!==file.sha||srcBlob.encoding!=="base64"||
        typeof srcBlob.content!=="string"||srcBlob.size!==file.size)
       throw Error("source blob content identity or encoding mismatch");
-    // Recheck CURRENT confidentiality before EVERY destination mutation.
+    verifiedBlobs.push({file,content:srcBlob.content});
+  }
+  // Phase 2: copy only the complete verified source set, re-authorizing the
+  // exact destination privacy and numeric identity before EACH write.
+  const entries=[];
+  for(const {file,content} of verifiedBlobs){
     await authorize();
     const pushed=await githubRequest(destination,"/git/blobs",token,{
-      method:"POST",body:{content:srcBlob.content,encoding:"base64"},fetchImpl
+      method:"POST",body:{content,encoding:"base64"},fetchImpl
     });
     if(pushed.sha!==file.sha)throw Error("destination blob SHA differs from source");
     entries.push({path:prefix+"/"+file.path,mode:file.mode,type:"blob",sha:pushed.sha});
