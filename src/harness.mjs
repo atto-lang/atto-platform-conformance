@@ -36,7 +36,7 @@ export function hasCompilerErrorSeverity(output){
  // Accept fixtures must not be promoted when a compiler reports an error
  // yet exits zero. Match standard diagnostic severity, not arbitrary prose.
  return output.split(/\r?\n/).some(line=>
-  /^(?:.*?:\d+(?::\d+)?:\s*)?error(?:\[[A-Za-z0-9_-]{1,20}\])?\s*:/i.test(line));
+  /^\s*(?:.*?:\d+(?::\d+)?:\s*)?(?:fatal\s+)?error(?:\[[A-Za-z0-9_-]{1,20}\])?\s*:/i.test(line));
 }
 export function validateCommand(argv){
  if(!Array.isArray(argv)||argv.length===0||argv.some(x=>typeof x!=="string"||!x||x.includes("\0")))throw Error("compiler argv must be nonempty strings without NUL");
