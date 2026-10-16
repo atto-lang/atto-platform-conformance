@@ -41,3 +41,22 @@ node parity/wave2/bin/check-wave2.mjs --report=/absolute/path/to/normalized-obse
 The report contains `schemaVersion`, `backend`, `area` (null or one of numeric/dispatch/capture/ownership/effects), `sourceCommit`, `adapterSha256`, and exact `observations` keyed by `caseId`/`gitBlob`. An observation has `phase` (`guest-executed`, `compiler-accepted`, or `compiler-rejected`), `exitCode`, `stderr`, and—for guest execution only—normalized `observed: {kind, value}`.
 
 A successful report-consistency exit is not a parity certification. Use an independently authorized private CI runner and leave this draft unmerged until real compiler results and independent provenance checks are available. Never mirror private source to an unapproved cross-org carrier or interpret a no-step Action failure as a passing test.
+
+## Optional real-process adapter invocation
+
+An operator may configure a trusted, **already-built** backend-specific executable which receives the absolute source fixture path and one of `execute`, `check`, `reject`. The adapter must separately compile and, for execution probes, run a **real Oreslang guest**, then emit exactly one JSON object: `{"phase":"guest-executed","exitCode":0,"stderr":"","observed":{"kind":"integer","value":42}}` (or the appropriate phase/value/diagnostic for the requested case). The runner uses no shell, bounds time and output, and refuses missing tools, invalid JSON and partial results.
+
+```sh
+node parity/wave2/bin/run-wave2.mjs \
+  --backend=llvm --area=numeric \
+  --source-commit=REPLACE_WITH_40_CHAR_SOURCE_COMMIT_SHA \
+  --adapter-argv='["/absolute/path/to/reviewed-oreslang-guest-adapter","{file}","{mode}"]'
+```
+
+The SHA-256 is of the **argv[0] executable bytes only**, not an automatic digest of its linked libraries, compiler closure, source tree or guest runtime. If `argv[0]` is a general interpreter, it hashes the interpreter rather than the adapter script. Executed-process output can still be forged by an adapter; independent exact-tree build/runner/log verification remains mandatory. All adapter runs remain **unattested observations**, never promoted to verified feature support by this gate.
+
+Run the combined local harness tests with:
+
+```sh
+node --test parity/wave2/tests/gate.test.mjs parity/wave2/tests/adapter.test.mjs
+```
