@@ -679,7 +679,7 @@ test("pre-publication Git blob hashing rejects forged JSON identity and noncanon
    {type:"blob",path:"main.ores",sha:C,size:4,mode:"100644"}
  ]};
  for(const content of [
-   "T0sK",       // valid base64, different bytes but declared SHA/size
+   "QUJDRA==",   // valid base64, same size, deliberately wrong Git SHA
    "NDI7Cg==!",  // GitHub base64 must not contain extra garbage
    "NDI7Cg===",  // invalid padding
    "NDI7Cg= ",   // no arbitrary spaces
