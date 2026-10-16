@@ -121,6 +121,26 @@ malformed source directories and valid nested Git tree cases. This synthetic
 hosted test is **not** live execution of the private publisher, actual
 cross-org source transfer, or full Oreslang compiler/backend CI.
 
+## Read-only Java source-tree eligibility preflight (no export)
+
+Fetched **only metadata and Git tree inventories** via the authenticated GitHub
+integration, then applied the draft publisher's entry/path/mode, case-alias
+and file-count/size checks in read-only code. No source blob content was
+downloaded for publication; no cross-organization writes occurred.
+
+| Java PR and exact checked head | Git source tree | Entries / blobs | Blob bytes | Result |
+| --- | --- | --- | --- | --- |
+| [imports #1050](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1050) `613878a0a7fca6e2afa6fd14f16d0b282eefd176` | `cac866037d135ae61ab8acd450374ae0137b40f8` | 685 / 613 | 6,251,897 | preflight accepted |
+| [Sendable #1060](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1060) `b25a5b7921b1fafb9574d29ffc62574f2a80e791` | `ef2d0580569554a52badf2ea0da7ac6c19e2c7a2` | 689 / 616 | 6,183,753 | preflight accepted |
+| [DOP #1066](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1066) `ee9c4abc0fb62916c9f4cbff5175de7bf02235f1` | `86d76b1822f64b73a14bafca5e4c0ddf05172cfc` | 687 / 615 | 6,168,334 | preflight accepted |
+
+For each checked exact commit, GitHub returned `truncated=false`, no Git
+tree mode/path/identity/case-collision violations, and no individual blob
+exceeded 1 MiB. All fall under the publisher limits (750 blobs, 3,000
+entries, 40 MiB total). They are **not** approved for export, and a newer
+head requires a fresh exact-head preflight. This metadata is also not
+evidence of successful compilation or runtime conformance.
+
 ## Administrator-only diagnosis, in order
 
 1. Inspect one source-free run and its job/check-run **annotations** in the
