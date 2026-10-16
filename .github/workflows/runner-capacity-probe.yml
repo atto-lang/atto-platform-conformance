@@ -1,0 +1,23 @@
+# Source-free runner admission check: no checkout, tokens, artifacts, or private source.
+name: Source-free GitHub Actions runner capacity
+on:
+  push:
+    paths:
+      - ".github/workflows/runner-capacity-probe.yml"
+  pull_request:
+    paths:
+      - ".github/workflows/runner-capacity-probe.yml"
+  workflow_dispatch:
+permissions: {}
+jobs:
+  capacity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Prove runner allocation and shell execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s\n' 'RUNNER_EXECUTED=yes'
+          printf '%s\n' 'NO_SOURCE_CHECKOUT=yes'
+          printf '%s\n' 'NO_SECRET_ACCESS=yes'
