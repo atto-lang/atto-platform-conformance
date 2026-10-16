@@ -67,11 +67,13 @@ async function readSafeFixture(workspace, repository) {
 }
 
 export async function verifyFiveBackendSourceIdentity(workspace) {
-  const physicalWorkspace = resolve(workspace);
-  const workspaceStat = await lstat(physicalWorkspace);
-  if (!workspaceStat.isDirectory() || workspaceStat.isSymbolicLink() ||
-      (await realpath(physicalWorkspace)) !== physicalWorkspace)
-    throw Error("workspace must be a canonical physical directory");
+  const requestedWorkspace = resolve(workspace);
+  const workspaceStat = await lstat(requestedWorkspace);
+  if (!workspaceStat.isDirectory() || workspaceStat.isSymbolicLink())
+    throw Error("workspace must be a physical directory, not a symlink");
+  // On macOS /var may be an alias of /private/var. Permit operating-system
+  // ancestor aliases, but never follow symlinks inside the workspace tree.
+  const physicalWorkspace = await realpath(requestedWorkspace);
   if (gitBlob(EXACT_SOURCE) !== EXPECTED_GIT_BLOB)
     throw Error("source contract Git blob pin is invalid");
   const files = [];
