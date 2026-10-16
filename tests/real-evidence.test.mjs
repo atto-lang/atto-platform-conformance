@@ -182,3 +182,49 @@ test("report CLI processes bounded files without granting provenance", () => {
     rmSync(dir, {recursive: true, force: true});
   }
 });
+
+
+test("positive compile, link and runtime must not report errors with success-like exit codes", () => {
+  for (const backend of ["java", "llvm"]) {
+    for (const phase of ["compile", "execution", ...(backend === "llvm" ? ["link"] : [])]) {
+      const r = fixture(backend);
+      r.cases[0][phase].stderr = "src/main.ores:2: error: unknown identifier other_symbol";
+      assert.throws(() => validateRealCompilerReport(r),
+        /untrusted compiler evidence:/, backend + " " + phase);
+    }
+  }
+});
+
+test("negative evidence rejects echoed source, filenames and secondary-hint spoofing", () => {
+  const attacks = [
+    "error: unresolved identifier other_symbol; hint: nonexistent_symbol undefined",
+    "/work/nonexistent_symbol.ores:2: error: unresolved identifier other_symbol",
+    "error: failed reading nonexistent_symbol.ores",
+    "error: cannot find name another_symbol; maybe nonexistent_symbol?",
+    "warning: unknown identifier nonexistent_symbol",
+    "error: inaccessible source; return nonexistent_symbol;",
+    "error: unknown symbol other_symbol\\nsource: nonexistent_symbol"
+  ];
+  for (const backend of ["java", "llvm"]) {
+    for (const spoof of attacks) {
+      const r = fixture(backend);
+      r.cases[1].compile.stderr = spoof;
+      assert.throws(() => validateRealCompilerReport(r),
+        /negative source not rejected/, backend + ": " + spoof);
+    }
+  }
+});
+
+test("primary compiler rejection still validates on both real-report backends", () => {
+  for (const backend of ["java", "llvm"]) {
+    for (const diagnostic of [
+      "error: unknown identifier nonexistent_symbol",
+      "src/main.ores:2:7: error: use of undeclared identifier 'nonexistent_symbol'",
+      "error[E0425]: cannot find name nonexistent_symbol"
+    ]) {
+      const r = fixture(backend);
+      r.cases[1].compile.stderr = diagnostic;
+      assert.equal(validateRealCompilerReport(r).consistency_valid, true);
+    }
+  }
+});
