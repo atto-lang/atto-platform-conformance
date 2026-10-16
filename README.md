@@ -92,3 +92,16 @@ and GitHub Support may be required. See
 [security incident #22](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22).
 
 See https://ores-truffle-oreslang.github.io/logs/2/
+
+## Parity batch 1: grammar, types, imports, ownership, HIR/MIR
+
+The [first-five parity inventory](docs/FIRST_FIVE_PARITY.md) tracks five
+source-compiler workstreams across Java, LLVM, .NET, Wasm and Forge. Run
+`npm run parity:first-five` to check the strict versioned manifest and print
+its SHA-256 fingerprint. `npm test` runs rejection controls for incomplete
+and falsely verified inventories. Both commands are **contract checks only**:
+no real compiler is run and neither command attests backend support.
+
+Use actual, pinned real compiler execution and independently verified CI
+provenance before changing backend support declarations. The source fixture
+smoke harness remains a separate, narrower test.
