@@ -36,9 +36,9 @@ test('adversarial metadata cannot invent backend certification',async()=>{
  const m=await loadManifest();
  for(const mutation of [
   x=>x.backends.pop(),x=>x.tasks[0].id=9,x=>x.cases[0].verified=true,
-  x=>x.cases[0].gitBlob='0'.repeat(40),x=>x.cases[0].id=x.cases[1].id,
+  x=>x.cases[0].gitBlob='not-a-git-blob',x=>x.cases[0].id=x.cases[1].id,
   x=>x.cases[0].candidates=['browser'],x=>x.cases[0].mode='reject',
-  x=>x.cases[1].diagnostic='unknown',x=>x.cases.pop()
+  x=>x.cases[1].diagnostic='unknown',x=>x.cases=x.cases.filter(c=>c.task!==10||c.mode==='reject')
  ]){
   const copy=structuredClone(m);mutation(copy);
   assert.throws(()=>validateManifest(copy),/wave2:/);
