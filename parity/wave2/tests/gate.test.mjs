@@ -49,7 +49,7 @@ test('all five backend selectors permit only the targeted numeric probes',async(
 test('compile acceptance never substitutes for executing source',async()=>{
  const m=await loadManifest(),x=report(m,'java','dispatch');
  x.observations[0].phase='compiler-accepted';delete x.observations[0].observed;
- assert.throws(()=>evaluateReport(m,x),/expected object/);
+ assert.equal(evaluateReport(m,x).consistent,false);
 });
 test('an identical but incorrect dispatch result fails semantic oracle',async()=>{
  const m=await loadManifest(),x=report(m,'java','dispatch');
