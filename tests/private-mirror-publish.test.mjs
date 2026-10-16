@@ -65,10 +65,15 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
         }]};
       else if(suffix==="/git/commits/"+B)data={tree:{sha:E}};
       else if(suffix==="/git/trees/"+E+"?recursive=1")
-        data=destinationTree||{truncated:false,tree:[{path:"unrelated/readme.txt",type:"blob"}]};
+        data=destinationTree||{truncated:false,tree:[
+          {path:"unrelated",type:"tree",mode:"040000",sha:B},
+          {path:"unrelated/readme.txt",type:"blob",mode:"100644",sha:C}
+        ]};
       else if(suffix==="/git/trees/"+D+"?recursive=1")
         data=materializedTree||{truncated:false,tree:[
-          {path:"snapshots",type:"tree"},
+          {path:"unrelated",type:"tree",mode:"040000",sha:B},
+          {path:"unrelated/readme.txt",type:"blob",mode:"100644",sha:C},
+          {path:"snapshots",type:"tree",mode:"040000"},
           {path:"snapshots/checked",type:"tree",sha:D},
           {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C}
         ]};
@@ -536,6 +541,9 @@ test("valid nested source tree directories preserve exact-mode happy path",async
   {type:"tree",path:"src",sha:E,mode:"040000"},
   {type:"blob",path:"src/main.ores",sha:C,size:4,mode:"100644"}]};
  const materialized={truncated:false,tree:[
+  {path:"unrelated",type:"tree",mode:"040000",sha:B},
+  {path:"unrelated/readme.txt",type:"blob",mode:"100644",sha:C},
+  {path:"snapshots",type:"tree",mode:"040000"},
   {path:"snapshots/checked",type:"tree",sha:D},
   {path:"snapshots/checked/src",type:"tree",sha:E},
   {path:"snapshots/checked/src/main.ores",type:"blob",sha:C,mode:"100644"}
@@ -544,4 +552,26 @@ test("valid nested source tree directories preserve exact-mode happy path",async
  const result=await promise;
  assert.equal(result.status,"PRIVATE_MIRROR_PUBLISHED");
  assert.ok(h.events.some(e=>e.method==="POST"&&e.path===destination+"/git/refs"));
+});
+
+test("outside-prefix destination base must remain byte-identical at publication",async()=>{
+ const standard=[
+  {path:"unrelated",type:"tree",mode:"040000",sha:B},
+  {path:"unrelated/readme.txt",type:"blob",mode:"100644",sha:C},
+  {path:"snapshots",type:"tree",mode:"040000"},
+  {path:"snapshots/checked",type:"tree",sha:D},
+  {path:"snapshots/checked/main.ores",type:"blob",sha:C,mode:"100644"}
+ ];
+ for(const variant of [
+   standard.filter(x=>x.path!=="unrelated/readme.txt"),
+   standard.map(x=>x.path==="unrelated/readme.txt"?{...x,sha:A}:x),
+   standard.concat({path:"unrelated/injected.txt",type:"blob",mode:"100644",sha:C}),
+   standard.concat({path:"extra-repo-file.txt",type:"blob",mode:"100644",sha:C}),
+   standard.map(x=>x.path==="snapshots"?{...x,type:"blob",mode:"100644"}:x)
+ ]){
+  const {h,promise}=run({materializedTree:{truncated:false,tree:variant}});
+  await assert.rejects(promise,/destination base entries|destination snapshot ancestor/);
+  assert.equal(h.events.some(e=>e.method==="POST"&&e.path===destination+"/git/commits"),false);
+  assert.equal(h.events.some(e=>e.method==="POST"&&e.path===destination+"/git/refs"),false);
+ }
 });
