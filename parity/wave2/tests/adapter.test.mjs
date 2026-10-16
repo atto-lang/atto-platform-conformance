@@ -29,6 +29,7 @@ test('adapter timeout and malformed JSON fail closed',async()=>{
  for(const fake of [
   ()=>({status:null,error:{code:'ETIMEDOUT'},stdout:'',stderr:''}),
   ()=>({status:0,stdout:'{not-json',stderr:''}),
+  ()=>({status:0,stdout:JSON.stringify({phase:'guest-executed',exitCode:0,stderr:'',observed:{kind:'integer',value:42}}),stderr:'error: underlying compiler crashed'}),
   ()=>({status:0,stdout:'{"phase":"guest-executed","exitCode":0,"stderr":""}',stderr:''})
  ]){
   const r=await executeAdapter({backend:'java',area:'numeric',argv,sourceCommit:SHA,spawn:fake});
