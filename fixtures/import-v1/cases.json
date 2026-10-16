@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "status": "CORPUS_ONLY_NOT_BACKEND_EXECUTION",
+  "backends": {
+    "java": "feature-draft-untested",
+    "llvm": "experimental-scalar-subset-unverified-for-this-fixture",
+    "net": "reject-only",
+    "forge": "reject-only",
+    "wasm": "reject-only"
+  },
+  "cases": [
+    {
+      "id": "project-root-function",
+      "entry": "project/src/main-plus.ores",
+      "expect": "return-42",
+      "requiredFeatures": [
+        "project-root-manifest",
+        "file-import",
+        "cross-unit-link"
+      ]
+    },
+    {
+      "id": "relative-function",
+      "entry": "project/src/main-relative.ores",
+      "expect": "return-42",
+      "requiredFeatures": [
+        "importer-relative",
+        "file-import",
+        "cross-unit-link"
+      ]
+    },
+    {
+      "id": "rooted-parent-rejection",
+      "entry": "project/src/invalid-root-traversal.ores",
+      "expect": "reject",
+      "diagnostic": "noncanonical-rooted-import"
+    }
+  ],
+  "evidence": [],
+  "provenance": "NONE"
+}
