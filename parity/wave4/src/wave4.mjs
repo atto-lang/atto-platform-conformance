@@ -5,7 +5,7 @@
 const fail = reason => { throw new Error('wave4: ' + reason); };
 const check = (ok,reason) => { if (!ok) fail(reason); };
 const record = v => v !== null && typeof v === 'object' &&
-    !Array.isArray(v) && Object.getPrototypeOf(v) === Object.prototype;
+    !Array.isArray(v) && (Object.getPrototypeOf(v) === Object.prototype || Object.getPrototypeOf(v) === null);
 const permitted = new Set(['string','number','boolean']);
 const MAX_DEPTH=8, MAX_NODES=256;
 function copyData(v,limit={nodes:0},depth=0){
