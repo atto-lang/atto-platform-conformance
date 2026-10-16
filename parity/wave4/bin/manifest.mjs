@@ -26,7 +26,7 @@ export function validate(m){
   if(!/^[0-9a-f]{40}$/.test(c.gitBlob))fail('invalid git object identity');
   ids.add(c.id);paths.add(c.file);grouped.add(c.task);
  }
- if(grouped.size!==5||m.sourceCases.filter(c=>c.mode==='reject').length!==1||m.sourceCases.filter(c=>c.mode==='execute').length!==1)fail('coverage contract changed');
+ if(grouped.size!==5||m.sourceCases.filter(c=>c.mode==='reject').length!==1||m.sourceCases.filter(c=>c.mode==='execute').length!==1||m.sourceCases.filter(c=>c.task===16&&c.mode==='admit').length!==1||m.sourceCases.filter(c=>c.task===16&&c.mode==='reject').length!==1)fail('coverage contract changed');
  return m;
 }
 async function regular(file){
