@@ -8,6 +8,7 @@ const A="a".repeat(40),B="b".repeat(40),C="c".repeat(40),
  D="d".repeat(40),E="e".repeat(40);
 const opts={source,destination,sourceCommit:A,approvedSourceCommit:A,
   approvedSourceTreeSha:D,destinationBaseCommit:B,
+  approvedDestinationBaseCommit:B,approvedDestinationBaseTreeSha:E,
   runnerProbeRunId:1234567,approvedRunnerProbeCommit:"f".repeat(40),
   approvedRunnerProbeWorkflow:".github/workflows/runner-capacity-probe.yml",
   prefix:"snapshots/checked",newBranch:"ci/private-test-proof",
@@ -111,6 +112,10 @@ test("missing approvals and unsafe ref/path reject without contacting GitHub",as
   {approvedSourceCommit:undefined},{approvedSourceTreeSha:undefined},
   {approvedSourceCommit:B},{approvedSourceCommit:"invalid"},
   {approvedSourceTreeSha:"not-a-tree"},
+  {approvedDestinationBaseCommit:undefined},
+  {approvedDestinationBaseTreeSha:undefined},
+  {approvedDestinationBaseCommit:A},
+  {approvedDestinationBaseTreeSha:"not-a-tree"},
   {runnerProbeRunId:undefined},{runnerProbeRunId:0},
   {approvedRunnerProbeCommit:undefined},{approvedRunnerProbeWorkflow:"unreviewed.yml"},
   {sourceRepositoryId:undefined},{destinationRepositoryId:undefined},
@@ -372,4 +377,28 @@ test("incomplete, fake, multiple or job-with-no-real-step runner evidence cannot
   assert.equal(h.events.filter(e=>e.path.startsWith(source+"/git/")).length,0);
   assert.equal(h.events.filter(e=>e.method==="POST").length,0);
  }
+});
+
+test("unapproved destination commit rejects before API and mismatched destination base tree before source reads",async()=>{
+ const {h,promise}=run({}, {destinationBaseCommit:A});
+ await assert.rejects(promise,/destination base commit differs from independently reviewed policy pin/);
+ assert.equal(h.events.length,0);
+ const second=fixture();
+ const fetchImpl=async(url,options)=>{
+  if(url.endsWith(destination+"/git/commits/"+B))
+   return {status:200,json:async()=>({tree:{sha:A}})};
+  return second.request(url,options);
+ };
+ await assert.rejects(publishPrivateMirror({...opts,fetchImpl}),
+    /destination base tree differs from independently reviewed policy pin/);
+ assert.equal(second.events.some(e=>e.path.startsWith(source+"/git/")),false);
+ assert.equal(second.events.filter(e=>e.method==="POST").length,0);
+});
+test("destination prefix collision is rejected before reading confidential source commit",async()=>{
+ const {h,promise}=run({destinationTree:{truncated:false,tree:[
+  {path:"snapshots/checked/injected.ores",type:"blob"}
+ ]}});
+ await assert.rejects(promise,/destination snapshot prefix/);
+ assert.equal(h.events.some(e=>e.path.startsWith(source+"/git/")),false);
+ assert.equal(h.events.filter(e=>e.method==="POST").length,0);
 });
