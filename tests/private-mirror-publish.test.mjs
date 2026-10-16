@@ -5,12 +5,13 @@ import {publishPrivateMirror} from "../bin/private-mirror-publish.mjs";
 const source="ores-truffle-oreslang/oreslang-source.java";
 const destination="akrion-sim/akrion-sim-e2e";
 const A="a".repeat(40),B="b".repeat(40),C="c".repeat(40),
- D="d".repeat(40),E="e".repeat(40);
+ D="d".repeat(40),E="e".repeat(40),G="9".repeat(40),H="8".repeat(40);
 const opts={source,destination,sourceCommit:A,approvedSourceCommit:A,
   approvedSourceTreeSha:D,destinationBaseCommit:B,
   approvedDestinationBaseCommit:B,approvedDestinationBaseTreeSha:E,
   runnerProbeRunId:1234567,approvedRunnerProbeCommit:"f".repeat(40),
   approvedRunnerProbeWorkflow:".github/workflows/runner-capacity-probe.yml",
+  approvedRunnerProbeWorkflowBlobSha:G,
   prefix:"snapshots/checked",newBranch:"ci/private-test-proof",
   approvedDestinations:[destination],token:"opaque-test-token",
   sourceRepositoryId:1400792274,destinationRepositoryId:1321164328};
@@ -19,7 +20,7 @@ const good=name=>({full_name:name,id:name===source?1400792274:1321164328,
   archived:false,permissions:{push:true}});
 
 function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E,
-  capacityRun,capacityJobs,meta,errors}={}){
+  capacityRun,capacityJobs,capacityProbeTree,capacityProbeCommit,meta,errors}={}){
   const events=[],seen={source:0,destination:0};
   const request=async(url,options)=>{
     const method=options.method,path=url.replace(/^https:\/\/api.github.com\/repos\//,"");
@@ -56,6 +57,12 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
             {name:"Prove runner allocation and shell execution",status:"completed",conclusion:"success"},
             {name:"Complete job",status:"completed",conclusion:"success"}
           ]}]};
+      else if(suffix==="/git/commits/"+opts.approvedRunnerProbeCommit)
+        data=capacityProbeCommit||{tree:{sha:H}};
+      else if(suffix==="/git/trees/"+H+"?recursive=1")
+        data=capacityProbeTree||{truncated:false,tree:[{
+          path:opts.approvedRunnerProbeWorkflow,mode:"100644",type:"blob",sha:G
+        }]};
       else if(suffix==="/git/commits/"+B)data={tree:{sha:E}};
       else if(suffix==="/git/trees/"+E+"?recursive=1")
         data=destinationTree||{truncated:false,tree:[{path:"unrelated/readme.txt",type:"blob"}]};
@@ -123,6 +130,8 @@ test("missing approvals and unsafe ref/path reject without contacting GitHub",as
   {approvedDestinationBaseTreeSha:"not-a-tree"},
   {runnerProbeRunId:undefined},{runnerProbeRunId:0},
   {approvedRunnerProbeCommit:undefined},{approvedRunnerProbeWorkflow:"unreviewed.yml"},
+  {approvedRunnerProbeWorkflowBlobSha:undefined},
+  {approvedRunnerProbeWorkflowBlobSha:"not-a-sha"},
   {sourceRepositoryId:undefined},{destinationRepositoryId:undefined},
   {sourceRepositoryId:0},{destinationRepositoryId:1400792274}
  ]){
@@ -462,5 +471,38 @@ test("capacity step verification requires GitHub-managed step order and success"
   }]}});
   await assert.rejects(promise,/runner probe has no independently executed success step/);
   assert.equal(h.events.some(e=>e.path.startsWith(source+"/git/")),false);
+ }
+});
+
+test("source-free workflow Git blob must match reviewed immutable workflow contents",async()=>{
+ const baseline={path:opts.approvedRunnerProbeWorkflow,mode:"100644",type:"blob",sha:G};
+ for(const tree of [
+  {truncated:true,tree:[baseline]},
+  {truncated:false,tree:[]},
+  {truncated:false,tree:[{...baseline,sha:C}]},
+  {truncated:false,tree:[{...baseline,mode:"100755"}]},
+  {truncated:false,tree:[{...baseline,type:"tree"}]},
+  {truncated:false,tree:[baseline,baseline]},
+  {truncated:false,tree:[{...baseline,path:".github/workflows/other.yml"}]}
+ ]){
+  const {h,promise}=run({capacityProbeTree:tree});
+  await assert.rejects(promise,/runner-probe workflow tree incomplete|runner probe workflow content differs/);
+  assert.equal(h.events.some(e=>e.path.startsWith(source+"/git/")),false);
+  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+ }
+});
+test("probe commit without an exact Git tree rejects before source read",async()=>{
+ for(const capacityProbeCommit of [{}, {tree:{sha:"bogus"}}, {tree:{sha:null}}]){
+  const {h,promise}=run({capacityProbeCommit});
+  await assert.rejects(promise,/approved runner-probe commit has no Git tree/);
+  assert.equal(h.events.some(e=>e.path.startsWith(source+"/git/")),false);
+  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+ }
+});
+test("unreviewed runner-probe blob policy pin rejects before external API requests",async()=>{
+ for(const value of [undefined,null,"",0,"a".repeat(41)]){
+  const {h,promise}=run({}, {approvedRunnerProbeWorkflowBlobSha:value});
+  await assert.rejects(promise,/invalid immutable Git commit or blob SHA/);
+  assert.equal(h.events.length,0);
  }
 });
