@@ -141,6 +141,39 @@ entries, 40 MiB total). They are **not** approved for export, and a newer
 head requires a fresh exact-head preflight. This metadata is also not
 evidence of successful compilation or runtime conformance.
 
+## Destination ref-occupancy security preflight (2026-10-16)
+
+The publisher now checks that its exact `ci/private-*` destination Git ref is
+absent **before any private source Git object is read**, and checks once more
+immediately before creating the ref. Only GitHub's 404 response counts as
+absence; 200 (occupied), 401/403 (access denied), 429 (rate limited), redirects
+and unexpected errors fail closed. Final POST-to-create remains atomic; these
+preflight reads do not eliminate races but avoid copying confidential blobs
+when an already-occupied destination ref is known in advance.
+
+- Real GitHub API read-only check: pre-existing synthetic
+  `ci/private-synthetic-mirror-e2e-20261016-040a8e7f` returned an exact ref,
+  while nonexistent `ci/private-absent-proof-20261016-00000000` returned 404.
+  No source blobs were accessed or copied by either check.
+- Independently generated synthetic-only
+  [private runner #38953397978](https://github.com/voxletra/voxletra-e2e/actions/runs/38953397978)
+  **passed** on hosted runner `1000002328`, exact workflow commit
+  `ea182f6a7a51779c38ae86879d076579f3ff09c9`.
+  Real job logs verify `EXISTING_REF_DETECTED=yes`,
+  `ATOMIC_OCCUPIED_REF_REJECTED=yes`,
+  `ATOMIC_NEW_REF_CREATED=yes`,
+  `RACING_SECOND_CREATE_REJECTED=yes` and
+  `FAIL_CLOSED_REF_STATUS_MATRIX=yes`.
+  This was local Git/Node test logic with generated synthetic data, not the
+  private publisher itself or a private Oreslang source transfer.
+- Exact source-level mocked-GitHub publisher/visibility suite now
+  **51/51 passing**. It includes pre-existing ref, indeterminate API
+  response, and late-claimed ref cases and asserts that early rejections
+  prevent all source Git reads/destination writes.
+- This does not establish protected source-export authorization or actual
+  Java/GraalVM/LLVM/.NET/Wasm/Forge compiler correctness. Public exposure
+  incident #22 and independently approved policy issue #962 remain blocking.
+
 ## Administrator-only diagnosis, in order
 
 1. Inspect one source-free run and its job/check-run **annotations** in the
