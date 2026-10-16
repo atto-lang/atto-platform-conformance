@@ -76,6 +76,7 @@ export async function publishPrivateMirror({
   const created=Date.parse(capacityRun?.created_at||"");
   if(capacityRun?.id!==runnerProbeRunId||capacityRun?.status!=="completed"||
      capacityRun?.conclusion!=="success"||
+     !["push","workflow_dispatch"].includes(capacityRun?.event)||
      capacityRun?.head_sha!==approvedRunnerProbeCommit||
      capacityRun?.path!==approvedRunnerProbeWorkflow||
      capacityRun?.repository?.id!==destinationRepositoryId||
