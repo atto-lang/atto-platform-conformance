@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
 import {readFile} from 'node:fs/promises';
-import {validateBatch,loadBatch} from '../bin/validate-first-five.mjs';
+import {validateBatch,loadBatch,rejectDuplicateObjectKeys} from '../bin/validate-first-five.mjs';
 const path = new URL('../contracts/first-five.json',import.meta.url);
 const data = JSON.parse(await readFile(path,'utf8'));
 const mutate = fn => { const copy = structuredClone(data); fn(copy); return copy; };
@@ -39,4 +39,30 @@ test('bad CLI inputs do not bypass inventory validation', () => {
  assert.equal(p.status,2);
  assert.equal(p.stdout,'');
  assert.match(p.stderr,/usage:/);
+});
+
+test('duplicate keys are denied even when escaped or nested', () => {
+  for (const input of [
+    '{"a":1,"a":2}',
+    '{"a":1,"\\u0061":2}',
+    '{"outer":{"v":1,"v":2}}',
+    '[{"nested":{"item":0,"item":1}}]',
+    '{"a":[],"b":{"x":true,"x":false}}'
+  ]) {
+    JSON.parse(input); // Valid JSON whose semantics would otherwise be ambiguous.
+    assert.throws(() => rejectDuplicateObjectKeys(input), /duplicate JSON object key/);
+  }
+  for (const input of [
+    '{"a":1,"b":2}',
+    '{"a":{"x":1},"b":{"x":2}}',
+    '[{"x":1},{"x":2}]',
+    '{"escaped\"key":"value","array":[true,null,false]}'
+  ]) assert.doesNotThrow(() => rejectDuplicateObjectKeys(input));
+});
+test('delimited object-key collisions cannot masquerade as exact fields', () => {
+  assert.throws(() => validateBatch(mutate(x => {
+    delete x.tasks[0].statuses.java;
+    delete x.tasks[0].statuses.llvm;
+    x.tasks[0].statuses['java|llvm'] = 'pending';
+  })), /invalid fields/);
 });
