@@ -1,0 +1,5 @@
+fnc bad(Option<int> x): int {
+  return match x over {
+    on Some(n) { return n; }
+  };
+}
