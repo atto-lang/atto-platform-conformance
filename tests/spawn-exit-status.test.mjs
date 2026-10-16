@@ -28,10 +28,10 @@ test("negative or noninteger exit status is rejected even with expected diagnost
   }
 });
 
-test("real nonzero integer exit with expected compile-time diagnostic remains valid", async () => {
+test("real nonzero integer exit with explicit unresolved-name diagnostic remains valid", async () => {
   const r = await runSuite({
     backend: "forge", argv, sourceSha,
-    spawn: () => ({status: 1, signal: null, stdout: "", stderr: "error: nonexistent_symbol"})
+    spawn: () => ({status: 1, signal: null, stdout: "", stderr: "error: unresolved identifier nonexistent_symbol"})
   });
   assert.equal(r.verified, 1);
   assert.equal(r.failed, 1);
