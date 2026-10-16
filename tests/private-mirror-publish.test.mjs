@@ -20,8 +20,10 @@ const good=name=>({full_name:name,id:name===source?1400792274:1321164328,
   archived:false,permissions:{push:true}});
 
 function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E,
-  capacityRun,capacityJobs,capacityProbeTree,capacityProbeCommit,meta,errors}={}){
+  capacityRun,capacityJobs,capacityProbeTree,capacityProbeCommit,meta,errors,
+  preExistingRef=false,lateExistingRef=false,refPreflightStatus}={}){
   const events=[],seen={source:0,destination:0};
+  let refReads=0;
   const request=async(url,options)=>{
     const method=options.method,path=url.replace(/^https:\/\/api.github.com\/repos\//,"");
     events.push({path,method,body:options.body?JSON.parse(options.body):undefined});
@@ -32,6 +34,14 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
       return{status:200,json:async()=>custom||good(name)};
     }
     const suffix=path.slice(name.length);
+    if(!src&&suffix==="/git/ref/heads/"+opts.newBranch&&method==="GET"){
+      refReads++;
+      if(refReads<=2){
+        const status=refPreflightStatus??((refReads===1&&preExistingRef||
+          refReads===2&&lateExistingRef)?200:404);
+        return {status,json:async()=>({ref:"refs/heads/"+opts.newBranch})};
+      }
+    }
     if(errors?.[suffix])return{status:403,json:async()=>({message:"Bearer opaque-test-token"})};
     let data;
     if(src){
@@ -593,4 +603,27 @@ test("recursive Git tree must explicitly include every source-prefix ancestor",a
   assert.equal(h.events.some(e=>e.method==="POST"&&e.path===destination+"/git/commits"),false);
   assert.equal(h.events.some(e=>e.method==="POST"&&e.path===destination+"/git/refs"),false);
  }
+});
+
+test("occupied destination CI branch rejects before private source read and all writes",async()=>{
+ for(const input of [{preExistingRef:true},{refPreflightStatus:200}]){
+  const {h,promise}=run(input);
+  await assert.rejects(promise,/destination CI branch already exists/);
+  assert.equal(h.events.some(e=>e.path.startsWith(source+"/git/")),false);
+  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+ }
+});
+test("unverifiable destination ref absence denies before any source Git read",async()=>{
+ for(const status of [null,0,301,401,403,429,500,503]){
+  const {h,promise}=run({refPreflightStatus:status});
+  await assert.rejects(promise,/cannot verify destination CI ref absence/);
+  assert.equal(h.events.some(e=>e.path.startsWith(source+"/git/")),false);
+  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+ }
+});
+test("ref claimed during long publication rejects before publishing commit ref",async()=>{
+ const {h,promise}=run({lateExistingRef:true});
+ await assert.rejects(promise,/destination CI branch already exists/);
+ assert.ok(h.events.some(e=>e.method==="POST"&&e.path===destination+"/git/trees"));
+ assert.equal(h.events.some(e=>e.method==="POST"&&e.path===destination+"/git/refs"),false);
 });
