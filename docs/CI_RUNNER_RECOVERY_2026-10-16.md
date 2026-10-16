@@ -272,3 +272,20 @@ mechanism but is not code-owner authorization to mirror confidential source.
   GitHub branch management when the evidence is no longer needed; the
   current connector exposes no branch-ref deletion action.
 
+
+## Post-publication parent/ref collision invariants
+
+Latest publisher safety pass also requires a complete source-prefix ancestor
+chain in the materialized recursive Git tree and rejects an already-created
+destination ref at **two** stages: once before any private source Git read
+and once before publishing the final new ref. Only an actual GitHub 404
+permits continuing; an existing ref (200), malformed/unauthorized/failed
+metadata, redirect or unknown status fails closed. The final `POST /git/refs`
+remains atomic with no overwrite. The mock model distinguishes a pre-creation
+404 from the eventual successful read-after-write 200.
+
+Isolated mocked GitHub publisher and privacy tests, evaluated from the
+same reviewed branch version, passed **51/51** after including both
+destination-base integrity, source-ancestor checks and ref collision cases.
+This does not replace native publisher CI. See the synthetic cross-org proof
+above for separately observed GitHub API blob/tree/commit/ref behavior.
