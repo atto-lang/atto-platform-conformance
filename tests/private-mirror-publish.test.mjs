@@ -8,6 +8,8 @@ const A="a".repeat(40),B="b".repeat(40),C="c".repeat(40),
  D="d".repeat(40),E="e".repeat(40);
 const opts={source,destination,sourceCommit:A,approvedSourceCommit:A,
   approvedSourceTreeSha:D,destinationBaseCommit:B,
+  runnerProbeRunId:1234567,approvedRunnerProbeCommit:"f".repeat(40),
+  approvedRunnerProbeWorkflow:".github/workflows/runner-capacity-probe.yml",
   prefix:"snapshots/checked",newBranch:"ci/private-test-proof",
   approvedDestinations:[destination],token:"opaque-test-token",
   sourceRepositoryId:1400792274,destinationRepositoryId:1321164328};
@@ -15,7 +17,8 @@ const good=name=>({full_name:name,id:name===source?1400792274:1321164328,
   private:true,visibility:"private",
   archived:false,permissions:{push:true}});
 
-function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E,meta,errors}={}){
+function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E,
+  capacityRun,capacityJobs,meta,errors}={}){
   const events=[],seen={source:0,destination:0};
   const request=async(url,options)=>{
     const method=options.method,path=url.replace(/^https:\/\/api.github.com\/repos\//,"");
@@ -36,7 +39,18 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
       else if(suffix==="/git/blobs/"+C)
         data={sha:C,encoding:"base64",content:"NDI7Cg==",size:4};
     } else {
-      if(suffix==="/git/commits/"+B)data={tree:{sha:E}};
+      if(suffix==="/actions/runs/"+opts.runnerProbeRunId)data=capacityRun||{
+        id:opts.runnerProbeRunId,status:"completed",conclusion:"success",
+        head_sha:opts.approvedRunnerProbeCommit,path:opts.approvedRunnerProbeWorkflow,
+        repository:{id:opts.destinationRepositoryId},
+        head_repository:{id:opts.destinationRepositoryId},
+        created_at:new Date().toISOString()
+      };
+      else if(suffix==="/actions/runs/"+opts.runnerProbeRunId+"/jobs?per_page=100")
+        data=capacityJobs||{total_count:1,jobs:[{name:"capacity",
+          conclusion:"success",runner_name:"GitHub Actions 1",
+          steps:[{name:"Prove runner allocation and shell execution",conclusion:"success"}]}]};
+      else if(suffix==="/git/commits/"+B)data={tree:{sha:E}};
       else if(suffix==="/git/trees/"+E+"?recursive=1")
         data=destinationTree||{truncated:false,tree:[{path:"unrelated/readme.txt",type:"blob"}]};
       else if(suffix==="/git/trees/"+D+"?recursive=1")
@@ -97,6 +111,8 @@ test("missing approvals and unsafe ref/path reject without contacting GitHub",as
   {approvedSourceCommit:undefined},{approvedSourceTreeSha:undefined},
   {approvedSourceCommit:B},{approvedSourceCommit:"invalid"},
   {approvedSourceTreeSha:"not-a-tree"},
+  {runnerProbeRunId:undefined},{runnerProbeRunId:0},
+  {approvedRunnerProbeCommit:undefined},{approvedRunnerProbeWorkflow:"unreviewed.yml"},
   {sourceRepositoryId:undefined},{destinationRepositoryId:undefined},
   {sourceRepositoryId:0},{destinationRepositoryId:1400792274}
  ]){
@@ -297,5 +313,61 @@ test("source SHA and tree pin are independent policy inputs",async()=>{
   await assert.rejects(promise);
   assert.equal(h.events.filter(e=>e.method==="POST").length,0);
   if(change.sourceCommit||change.approvedSourceCommit)assert.equal(h.events.length,0);
+ }
+});
+
+test("no private source bytes are read when runner probe failed or recorded zero steps",async()=>{
+ const probe={id:opts.runnerProbeRunId,status:"completed",conclusion:"failure",
+    head_sha:opts.approvedRunnerProbeCommit,path:opts.approvedRunnerProbeWorkflow,
+    repository:{id:opts.destinationRepositoryId},
+    head_repository:{id:opts.destinationRepositoryId},created_at:new Date().toISOString()};
+ const failures=[
+  {capacityRun:probe},
+  {capacityRun:{...probe,conclusion:"success"},capacityJobs:{total_count:1,jobs:[
+   {name:"capacity",conclusion:"failure",runner_name:"",steps:[]}]}}
+ ];
+ for(const input of failures){
+  const {h,promise}=run(input);
+  await assert.rejects(promise,/runner capacity probe|runner probe has no/);
+  assert.equal(h.events.some(e=>e.path===source+"/git/commits/"+A),false);
+  assert.equal(h.events.some(e=>e.path===source+"/git/blobs/"+C),false);
+  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+ }
+});
+test("stale, incorrect source-free workflow and wrong destination repository ID deny before source read",async()=>{
+ const successful={id:opts.runnerProbeRunId,status:"completed",conclusion:"success",
+  head_sha:opts.approvedRunnerProbeCommit,path:opts.approvedRunnerProbeWorkflow,
+  repository:{id:opts.destinationRepositoryId},
+  head_repository:{id:opts.destinationRepositoryId},created_at:new Date().toISOString()};
+ for(const modified of [
+  {created_at:"2020-01-01T00:00:00Z"},
+  {created_at:"not-a-date"},
+  {head_sha:A},
+  {path:".github/workflows/unreviewed.yml"},
+  {repository:{id:9999}},
+  {head_repository:{id:9999}},
+  {id:0}
+ ]){
+  const {h,promise}=run({capacityRun:{...successful,...modified}});
+  await assert.rejects(promise,/destination source-free runner capacity probe not verified/);
+  assert.equal(h.events.some(e=>e.path.startsWith(source+"/git/")),false);
+  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+ }
+});
+test("incomplete, fake, multiple or job-with-no-real-step runner evidence cannot authorize private copy",async()=>{
+ const goodJob={name:"capacity",conclusion:"success",runner_name:"GitHub Actions 1",
+    steps:[{name:"Prove runner allocation and shell execution",conclusion:"success"}]};
+ for(const jobs of [
+  {total_count:0,jobs:[]},
+  {total_count:2,jobs:[goodJob,goodJob]},
+  {total_count:1,jobs:[{...goodJob,steps:[]}]},
+  {total_count:1,jobs:[{...goodJob,runner_name:""}]},
+  {total_count:1,jobs:[{...goodJob,steps:[{...goodJob.steps[0],conclusion:"skipped"}]}]},
+  {total_count:1,jobs:[{...goodJob,steps:[{...goodJob.steps[0],name:"Fake skipped"}]}]}
+ ]){
+  const {h,promise}=run({capacityJobs:jobs});
+  await assert.rejects(promise,/runner probe has no independently executed success step/);
+  assert.equal(h.events.filter(e=>e.path.startsWith(source+"/git/")).length,0);
+  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
  }
 });
