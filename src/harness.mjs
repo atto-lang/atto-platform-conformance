@@ -45,7 +45,7 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
  const relevant=manifest.cases.filter(x=>x.backends.includes(backend));
  if(!argv){
   return {backend,sourceSha:sourceSha||null,configured:false,verified:0,failed:0,
-   skipped:relevant.length,ok:!requireConfigured,results:relevant.map(c=>({id:c.id,status:"UNCONFIGURED"}))};
+   skipped:relevant.length,ok:false,results:relevant.map(c=>({id:c.id,status:"UNCONFIGURED"}))};
  }
  validateCommand(argv);
  if(!validSha(sourceSha))throw Error("configured backend requires exact 40-character lowercase source commit SHA");
