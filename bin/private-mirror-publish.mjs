@@ -44,12 +44,16 @@ async function githubRequest(repo,path,token,{method="GET",body,fetchImpl=fetch}
 
 export async function publishPrivateMirror({
   source,destination,sourceCommit,approvedSourceCommit,approvedSourceTreeSha,
-  destinationBaseCommit,prefix,newBranch,
+  destinationBaseCommit,approvedDestinationBaseCommit,
+  approvedDestinationBaseTreeSha,prefix,newBranch,
   runnerProbeRunId,approvedRunnerProbeCommit,approvedRunnerProbeWorkflow,
   approvedDestinations,sourceRepositoryId,destinationRepositoryId,
   token,fetchImpl=fetch
 }) {
   sha(sourceCommit);sha(destinationBaseCommit);
+  sha(approvedDestinationBaseCommit);sha(approvedDestinationBaseTreeSha);
+  if(destinationBaseCommit!==approvedDestinationBaseCommit)
+    throw Error("destination base commit differs from independently reviewed policy pin");
   // The reviewed policy must pin BOTH the intended source commit and tree.
   // Reject caller-chosen revisions before metadata reads, much less blob copying.
   sha(approvedSourceCommit);sha(approvedSourceTreeSha);
@@ -97,6 +101,28 @@ export async function publishPrivateMirror({
      capacityJobs.jobs[0].steps[0].conclusion!=="success")
     throw Error("destination runner probe has no independently executed success step");
   await authorize();
+  const base=await githubRequest(destination,"/git/commits/"+destinationBaseCommit,token,{fetchImpl});
+  if(!OID.test(base?.tree?.sha||""))throw Error("destination base is not an immutable commit");
+  if(base.tree.sha!==approvedDestinationBaseTreeSha)
+    throw Error("destination base tree differs from independently reviewed policy pin");
+  // Git's base_tree PATCH-like behavior *preserves* unrelated entries.
+  // A pre-existing subtree at the chosen prefix could carry stale source
+  // code or injected files into the new snapshot without being overwritten.
+  // Demand an empty, isolated destination prefix before writing ANY blobs.
+  const baseInventory=await githubRequest(destination,
+    "/git/trees/"+base.tree.sha+"?recursive=1",token,{fetchImpl});
+  if(baseInventory?.truncated!==false||!Array.isArray(baseInventory.tree))
+    throw Error("destination base tree inventory is incomplete");
+  for(const item of baseInventory.tree){
+    if(typeof item?.path!=="string"||typeof item.type!=="string")
+      throw Error("invalid destination base tree entry");
+    // Prevent silent overlay on case-insensitive macOS/Windows checkouts.
+    const current=item.path.toLowerCase(), wanted=prefix.toLowerCase();
+    if(current===wanted||current.startsWith(wanted+"/")||
+       (wanted.startsWith(current+"/")&&item.type!=="tree"))
+      throw Error("destination snapshot prefix is not empty or conflicts with existing path");
+  }
+  await authorize();
   const srcCommit=await githubRequest(source,"/git/commits/"+sourceCommit,token,{fetchImpl});
   if(!srcCommit?.tree?.sha||!OID.test(srcCommit.tree.sha))throw Error("source commit has no pinned tree");
   if(srcCommit.tree.sha!==approvedSourceTreeSha)
@@ -124,25 +150,6 @@ export async function publishPrivateMirror({
   for(const file of srcTree.tree){
     if(!["tree","blob"].includes(file.type))
       throw Error("unsupported source tree object");
-  }
-  const base=await githubRequest(destination,"/git/commits/"+destinationBaseCommit,token,{fetchImpl});
-  if(!OID.test(base?.tree?.sha||""))throw Error("destination base is not an immutable commit");
-  // Git's base_tree PATCH-like behavior *preserves* unrelated entries.
-  // A pre-existing subtree at the chosen prefix could carry stale source
-  // code or injected files into the new snapshot without being overwritten.
-  // Demand an empty, isolated destination prefix before writing ANY blobs.
-  const baseInventory=await githubRequest(destination,
-    "/git/trees/"+base.tree.sha+"?recursive=1",token,{fetchImpl});
-  if(baseInventory?.truncated!==false||!Array.isArray(baseInventory.tree))
-    throw Error("destination base tree inventory is incomplete");
-  for(const item of baseInventory.tree){
-    if(typeof item?.path!=="string"||typeof item.type!=="string")
-      throw Error("invalid destination base tree entry");
-    // Prevent silent overlay on case-insensitive macOS/Windows checkouts.
-    const current=item.path.toLowerCase(), wanted=prefix.toLowerCase();
-    if(current===wanted||current.startsWith(wanted+"/")||
-       (wanted.startsWith(current+"/")&&item.type!=="tree"))
-      throw Error("destination snapshot prefix is not empty or conflicts with existing path");
   }
   const entries=[];
   for(const file of files){
@@ -231,6 +238,8 @@ if(process.argv[1]&&pathToFileURL(process.argv[1]).href===import.meta.url){
       token:process.env.GH_TOKEN||process.env.GITHUB_TOKEN,
       sourceRepositoryId:Number(process.env.ORES_APPROVED_PRIVATE_SOURCE_REPO_ID),
       destinationRepositoryId:Number(process.env.ORES_APPROVED_PRIVATE_DESTINATION_REPO_ID),
+      approvedDestinationBaseCommit:process.env.ORES_APPROVED_DESTINATION_BASE_COMMIT,
+      approvedDestinationBaseTreeSha:process.env.ORES_APPROVED_DESTINATION_BASE_TREE_SHA,
       approvedSourceCommit:process.env.ORES_APPROVED_PRIVATE_SOURCE_COMMIT,
       approvedSourceTreeSha:process.env.ORES_APPROVED_PRIVATE_SOURCE_TREE_SHA,
       runnerProbeRunId:Number(process.env.ORES_APPROVED_RUNNER_PROBE_RUN_ID),
