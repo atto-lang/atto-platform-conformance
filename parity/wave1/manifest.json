@@ -196,7 +196,7 @@
       "feature": "scalar",
       "file": "scalar-accept.ores",
       "sha256": "ab1ac790ba3928b8876b428230ae4215984380a221c02c604f85cd3fca1d790f",
-      "expect": "reject",
+      "expect": "accept",
       "targets": [
         "java",
         "llvm",
@@ -217,14 +217,16 @@
         "net",
         "wasm",
         "forge"
-      ]
+      ],
+      "diagnostic": "identifier",
+      "symbol": "nonexistent_symbol"
     },
     {
       "id": "grammar-accept",
       "feature": "grammar",
       "file": "grammar-accept.ores",
       "sha256": "98164109f85a6a2afddf3d9a9f9cbe5c224eb437a8b36fecba6f095df5bece97",
-      "expect": "reject",
+      "expect": "accept",
       "targets": [
         "java",
         "llvm",
@@ -245,14 +247,15 @@
         "net",
         "wasm",
         "forge"
-      ]
+      ],
+      "diagnostic": "syntax"
     },
     {
       "id": "scope-accept",
       "feature": "scope",
       "file": "scope-accept.ores",
       "sha256": "fceb0bf7e8b2058ffa7a3fa52294a520e274d54ed2841d5cc489d32d3397b006",
-      "expect": "reject",
+      "expect": "accept",
       "targets": [
         "java",
         "llvm",
@@ -273,14 +276,16 @@
         "net",
         "wasm",
         "forge"
-      ]
+      ],
+      "diagnostic": "identifier",
+      "symbol": "unknown_scope_name"
     },
     {
       "id": "types-accept",
       "feature": "types",
       "file": "types-accept.ores",
       "sha256": "2aa68b324bdf7d8e8b44e5e31a8ca4134c6254326b2a485c31a1131e8cc825b5",
-      "expect": "reject",
+      "expect": "accept",
       "targets": [
         "java",
         "llvm",
@@ -301,7 +306,8 @@
         "net",
         "wasm",
         "forge"
-      ]
+      ],
+      "diagnostic": "arity"
     }
   ]
 }
