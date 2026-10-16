@@ -1,4 +1,4 @@
-import {readFile} from "node:fs/promises";
+import {readFile,lstat} from "node:fs/promises";
 import {createHash} from "node:crypto";
 import {resolve,dirname,isAbsolute} from "node:path";
 import {fileURLToPath} from "node:url";
@@ -45,17 +45,61 @@ export function validateCommand(argv){
   throw Error("exactly one standalone {file} positional token is required");
  return argv;
 }
-export async function loadManifest(){
- const manifest=JSON.parse(await readFile(resolve(root,"fixtures/manifest.json"),"utf8"));
- if(manifest.schemaVersion!==1||!Array.isArray(manifest.cases))throw Error("invalid manifest schema");
- const ids=new Set();
+export function validateManifestSchema(manifest){
+ if(!manifest||typeof manifest!=="object"||Array.isArray(manifest)||
+    manifest.schemaVersion!==1||!Array.isArray(manifest.cases)||
+    manifest.cases.length===0||manifest.cases.length>1000)
+   throw Error("invalid manifest schema");
+ const ids=new Set(),files=new Set(),coverage=new Map();
  for(const item of manifest.cases){
-  if(!item||typeof item.id!=="string"||ids.has(item.id)||!/^[a-z0-9-]+$/.test(item.id))throw Error("invalid/duplicate test id");
+  if(!item||typeof item!=="object"||Array.isArray(item)||
+     typeof item.id!=="string"||item.id.length>128||
+     !/^[a-z0-9-]+$/.test(item.id)||ids.has(item.id))
+   throw Error("invalid/duplicate test id");
   ids.add(item.id);
-  if(typeof item.file!=="string"||!/^[-a-z0-9]+\.ores$/.test(item.file))throw Error("invalid fixture path");
-  if(!["accept","reject"].includes(item.expect)||!Array.isArray(item.backends)||!item.backends.length||item.backends.some(x=>!SUPPORTED_BACKENDS.has(x)))throw Error("invalid fixture expectation/backends");
-  if(item.expect==="reject"&&!validDiagnosticSymbol(item.diagnostic))throw Error("negative fixture must require a literal identifier diagnostic");
-  await readFile(resolve(root,"fixtures",item.file),"utf8");
+  if(typeof item.file!=="string"||item.file.length>128||
+     !/^[-a-z0-9]+\.ores$/.test(item.file)||files.has(item.file))
+   throw Error("invalid/duplicate fixture path");
+  files.add(item.file);
+  if(!["accept","reject"].includes(item.expect)||
+     !Array.isArray(item.backends)||item.backends.length===0||
+     item.backends.some(x=>!SUPPORTED_BACKENDS.has(x))||
+     new Set(item.backends).size!==item.backends.length)
+   throw Error("invalid fixture expectation/backends");
+  if(item.expect==="reject"&&!validDiagnosticSymbol(item.diagnostic))
+   throw Error("negative fixture must require a literal identifier diagnostic");
+  if(item.expect==="accept"&&item.diagnostic!==undefined)
+   throw Error("accept fixture may not declare a rejection diagnostic");
+  for(const backend of item.backends){
+   if(!coverage.has(backend))coverage.set(backend,new Set());
+   coverage.get(backend).add(item.expect);
+  }
+ }
+ // A passing compiler must be challenged with both valid and invalid source.
+ // Missing target backends may not silently disappear from the test inventory.
+ for(const backend of COMPILER_BACKENDS){
+  const kinds=coverage.get(backend);
+  if(!kinds?.has("accept")||!kinds.has("reject"))
+   throw Error("missing positive/negative fixture coverage for "+backend);
+ }
+ for(const [backend,kinds] of coverage){
+  if(!kinds.has("accept")||!kinds.has("reject"))
+   throw Error("missing positive/negative fixture coverage for "+backend);
+ }
+ return manifest;
+}
+export async function assertRegularFixture(file){
+ const stat=await lstat(file);
+ if(!stat.isFile()||stat.isSymbolicLink())
+  throw Error("fixture must be a regular non-symlink file");
+}
+export async function loadManifest(){
+ const manifestPath=resolve(root,"fixtures/manifest.json");
+ await assertRegularFixture(manifestPath);
+ const manifest=validateManifestSchema(JSON.parse(await readFile(manifestPath,"utf8")));
+ for(const item of manifest.cases){
+  const fixturePath=resolve(root,"fixtures",item.file);
+  await assertRegularFixture(fixturePath);
  }
  return manifest;
 }
@@ -76,6 +120,7 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
  const results=[];
  for(const c of relevant){
   const fixturePath=resolve(root,"fixtures",c.file);
+  await assertRegularFixture(fixturePath);
   const fixtureSha256=createHash("sha256").update(await readFile(fixturePath)).digest("hex");
   const cmd=argv.map(x=>x==="{file}"?fixturePath:x);
   const output=spawn(cmd[0],cmd.slice(1),{encoding:"utf8",timeout:timeoutMs,cwd:root,maxBuffer:1024*1024,windowsHide:true});
@@ -97,5 +142,6 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
  }
  const verified=results.filter(x=>x.status==="VERIFIED").length;
  const failed=results.filter(x=>x.status!=="VERIFIED").length;
- return {backend,declaredSourceSha:sourceSha,executableSha256,provenanceNote:"Source revision was supplied by caller; this harness does not attest that it produced the binary.",configured:true,verified,failed,skipped:0,ok:failed===0 && verified>0,results};
+ return {backend,declaredSourceSha:sourceSha,executableSha256,provenanceNote:"Source revision was supplied by caller; this harness does not attest that it produced the binary.",configured:true,verified,failed,skipped:0,ok:failed===0 && verified>0 &&
+  relevant.some(x=>x.expect==="accept") && relevant.some(x=>x.expect==="reject"),results};
 }
