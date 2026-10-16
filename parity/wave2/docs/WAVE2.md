@@ -10,7 +10,7 @@
 | 7 | Value/procedural dispatch | `match` arm value returns 43 after caller continues; `do match` returns 42 from function | Real guest compiled and executed. Switch forms in shared PR #20 are an additional open extension |
 | 8 | Closures and receiver | Explicit `lex[base]` yields printed 7; implicit `self` inside class lambda rejects with a capture/scope diagnostic | Guest callback plus source type-checker negative; receiver environment must not be implicitly retained |
 | 9 | Ownership/borrow | Borrow ended in lexical `block` before await prints 71; borrowed value live over await rejects with ownership diagnostic | Fresh compiled guest output and ownership rejection after parsing; run across implicit cooperation as later milestone |
-| 10 | Effects/critical state | `with state.read` plus sealed `handle_state` is admitted; mutation inside `using state.read` rejected even with `state.write` listed in function effect upper bound | Real compiler/type/ownership/effect checks; follow up with executed actor state and exclusive write tests |
+| 10 | Effects/critical state | exclusive `critical` writes through sealed `handle_state` and `using state.write` admitted; mutation under `using state.read` rejected even if signature allows `state.write` | Real compiler/type/ownership/effect checks; follow up with executed actor state and exclusive-write scheduling tests |
 
 ## Reused and independently developed source
 
