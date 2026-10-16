@@ -89,10 +89,14 @@ export function evaluateReport(manifest,report){
   if(o.gitBlob!==c.gitBlob||typeof o.stderr!=='string'||o.stderr.length>65536)error('source/diagnostic mismatch');
   let matched=false;
   if(c.mode==='execute') {
-   keys(o.observed,['kind','value']);
-   matched=o.phase==='guest-executed'&&o.exitCode===0&&
-    o.observed.kind===c.oracle.kind&&o.observed.value===c.oracle.value&&
-    (c.oracle.kind!=='integer'||Number.isSafeInteger(o.observed.value))&&!/\berror\s*:/i.test(o.stderr);
+   // A failed adapter or compiler-only observation has no guest value.
+   // Preserve a visible MISMATCH instead of throwing or manufacturing a value.
+   if(Object.hasOwn(o,'observed')) {
+    keys(o.observed,['kind','value']);
+    matched=o.phase==='guest-executed'&&o.exitCode===0&&
+     o.observed.kind===c.oracle.kind&&o.observed.value===c.oracle.value&&
+     (c.oracle.kind!=='integer'||Number.isSafeInteger(o.observed.value))&&!/\berror\s*:/i.test(o.stderr);
+   }
   } else if(c.mode==='check') {
    if(Object.hasOwn(o,'observed'))error('compile-only check cannot assert executed value');
    matched=o.phase==='compiler-accepted'&&o.exitCode===0&&!/\berror\s*:/i.test(o.stderr);
