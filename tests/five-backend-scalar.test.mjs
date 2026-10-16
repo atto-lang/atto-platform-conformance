@@ -44,6 +44,18 @@ test("rejects missing source even if four other backends match", async () => {
     await assert.rejects(verifyFiveBackendSourceIdentity(workspace));
   });
 });
+test("rejects symlinked leaf fixture paths even with correct source bytes", {
+  skip: process.platform === "win32"
+}, async () => {
+  await fixtureSpace(async workspace => {
+    const path = join(workspace, BACKENDS[2], RELATIVE_FIXTURE);
+    const hidden = path + ".real";
+    const {rename} = await import("node:fs/promises");
+    await rename(path, hidden);
+    await symlink(hidden, path, "file");
+    await assert.rejects(verifyFiveBackendSourceIdentity(workspace), /ELOOP|symbolic link|symlink/i);
+  });
+});
 test("rejects symlinked fixture directories", {skip:process.platform==="win32"}, async () => {
   await fixtureSpace(async workspace => {
     const real = join(workspace, BACKENDS[0], "contracts/v1/semantics/fixtures");
