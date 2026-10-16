@@ -37,3 +37,33 @@ The next increment should add a real executable positive/negative source fixture
 pair for each track to the existing conformance harness, without changing the
 current two-case smoke manifest until the real compilers' flags and diagnostics
 are validated. HIR/MIR IR fixtures belong in the common-source verifier suite.
+
+## Cross-backend comment/import boundary — Oct 16, 2026
+
+A consistent source-admission rule is required even before each backend has a
+complete module graph: a `//` comment ends on LF, CRLF or CR alone. CR-only
+line endings cannot swallow a subsequent real `import` token and cannot
+produce an apparently valid partial artifact. An import inside a properly
+nested block comment is not an executable import. A scanner that cannot
+reliably classify the source must reject the source, not publish output.
+
+| Compiler | Existing PR with new regression | Scope |
+| --- | --- | --- |
+| Java/Graal | [#1050](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1050) | Lexer recognizes CR/CRLF; lexical import remains source-visible; package resolution tests still pending |
+| LLVM | [#466](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/466) | Experimental import preamble preserves CR/LF source-byte offsets, not complete module linking |
+| .NET Native AOT | [#41](https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/41) | Both scalar and structured parsers reject CR-hidden unsupported import tokens |
+| Forge | [#38](https://github.com/ores-truffle-oreslang/oreslang-source.forge/pull/38) | Scalar lexer explicitly rejects unsupported imports after CR-only comments |
+| Wasm | [#41](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/41) | Single-source preflight rejects CR-hidden imports before compiler launch/artifact publication; nested comment/NUL admission hardening |
+
+**Evidence limitations:** the exact GitHub LLVM `ImportPreamble.hpp` header
+(blob `182157658f5e031de3c6622acabe295e940e1b7e`) and its complete
+`native_import_preamble_test.cpp` (blob
+`89b5304dc1087e0833286d69fc0442b724c5e22c`) were reproduced
+byte-for-byte locally (matching `git hash-object`), then compiled and
+executed successfully under strict GCC C++17, Clang C++17 and GCC ASan+UBSan;
+the latter test includes 15,000 seeded malformed-preamble fuzz inputs.
+The Wasm scanner had a separate five-test isolated Node 22 reproduction pass,
+**not** a full exact-blob bridge test. Neither the .NET nor Forge compiler was
+executed in this audit. Full Java/LLVM/.NET/Forge/Wasm compiler parity remains
+**UNVERIFIED**; the conformance inventory must not promote any unsupported
+feature from these narrow checks.
