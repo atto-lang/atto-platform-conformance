@@ -83,6 +83,9 @@ export function validateRealCompilerReport(r) {
   // A missing argv must be reported as invalid process evidence, not misclassified
   // as a compiler/linker identity mismatch.
   validateProcess(positive.execution, "runtime");
+  requireField(!hasCompilerErrorSeverity(
+    positive.execution.stdout + "\n" + positive.execution.stderr),
+    "runtime reported error severity");
   if (r.backend === "java") {
     requireField(typeof r.java_probe_path === "string" && isAbsolute(r.java_probe_path) &&
       positive.compile.argv[1] === r.java_probe_path &&
