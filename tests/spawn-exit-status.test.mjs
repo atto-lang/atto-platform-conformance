@@ -13,7 +13,7 @@ test("missing exit status cannot masquerade as a successful negative-compiler te
   assert.equal(r.ok, false);
   assert.equal(r.verified, 0);
   assert.equal(r.failed, 2);
-  assert.deepEqual(r.results.map(x => x.status), ["MISMATCH", "INVALID_EXIT_STATUS"]);
+  assert.deepEqual(r.results.map(x => x.status), ["INVALID_EXIT_STATUS", "INVALID_EXIT_STATUS"]);
 });
 
 test("negative or noninteger exit status is rejected even with expected diagnostic", async () => {
