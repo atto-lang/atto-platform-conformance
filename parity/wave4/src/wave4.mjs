@@ -48,12 +48,13 @@ export class StateDomain{
 }
 /** Bounded, separately budgeted supervisor CONTROL; no user code runs inline. */
 export class SupervisorControl{
- #children=new Map();#data=[];#control=[];#seen=new Set();#maxData;#maxControl;
+ #children=new Map();#authority=new WeakMap();#data=[];#control=[];#seen=new Set();#maxData;#maxControl;
  constructor({maxData=2,maxControl=2}={}){check(Number.isInteger(maxData)&&maxData>0&&maxData<=64&&Number.isInteger(maxControl)&&maxControl>0&&maxControl<=64,'bad mailbox quotas');this.#maxData=maxData;this.#maxControl=maxControl;}
- register(id,parent){check(typeof id==='string'&&typeof parent==='string'&&id&&parent&&!this.#children.has(id),'bad child identity');this.#children.set(id,{parent,generation:1,terminal:false});}
+ register(id,parent){check(typeof id==='string'&&typeof parent==='string'&&id&&parent&&!this.#children.has(id),'bad child identity');this.#children.set(id,{parent,generation:1,terminal:false});const cap=Object.freeze({});this.#authority.set(cap,{id,parent,generation:1});return cap;}
  data(value){if(this.#data.length>=this.#maxData)return false;this.#data.push(copyData(value));return true;}
- terminate(child,parent,kind){
-  const a=this.#children.get(child);check(a&&a.parent===parent,'untrusted CONTROL source/parent');
+ terminate(child,parent,kind,cap){
+  const a=this.#children.get(child),grant=this.#authority.get(cap);
+  check(a&&a.parent===parent&&grant&&grant.id===child&&grant.parent===parent&&grant.generation===a.generation,'untrusted CONTROL source/parent/authority');
   check(['throw','raise','panic','cancel','host-fatal'].includes(kind),'invalid terminal cause');
   const key=child+'#'+a.generation;
   if(this.#seen.has(key))return false;
@@ -65,7 +66,7 @@ export class SupervisorControl{
  popControl(){return this.#control.shift()??null;}
  popData(){return this.#data.shift()??null;}
  get sizes(){return{data:this.#data.length,control:this.#control.length};}
- restart(child,parent){const a=this.#children.get(child);check(a&&a.parent===parent&&a.terminal,'restart requires terminal child');a.generation++;a.terminal=false;}
+ restart(child,parent,cap){const a=this.#children.get(child),grant=this.#authority.get(cap);check(a&&a.parent===parent&&a.terminal&&grant&&grant.id===child&&grant.parent===parent&&grant.generation===a.generation,'restart requires authenticated terminal child');a.generation++;a.terminal=false;const next=Object.freeze({});this.#authority.set(next,{id:child,parent,generation:a.generation});return next;}
 }
 /** A closed, narrow canonical MessagePack subset; not the production actor v2 ABI. */
 export class StrictMessagePackFixture{
@@ -139,7 +140,7 @@ export class Channels{
 }
 /** Kernel readiness never runs guest code. Reactor completion is a scheduler-owned handoff. */
 export class IoReactorModel{
- #ops=new WeakMap();#ready=[];#next=1;#nextReactor=0;#busy=0;
+ #ops=new WeakMap();#leases=new WeakMap();#ready=[];#next=1;#nextReactor=0;#busy=0;
  constructor({reactors=1,limit=32}={}){check(Number.isInteger(reactors)&&reactors>=1&&reactors<=4&&Number.isInteger(limit)&&limit>0&&limit<=1024,'bounded NIO settings');this.reactors=reactors;this.limit=limit;}
  submit(owner,generation,kind){
   check(typeof owner==='string'&&owner&&Number.isSafeInteger(generation)&&generation>0&&['read','write','accept'].includes(kind),'invalid I/O operation');
@@ -157,8 +158,13 @@ export class IoReactorModel{
   const message=copyData(result);op.state='completed';this.#busy--;
   this.#ready.push(Object.freeze({owner:token.owner,generation:token.generation,id:token.id,result:message}));return true;
  }
- drainForActor(owner,generation,{hasLease=false}={}){
-  check(hasLease===true,'guest continuation requires actor execution lease');
+ grantActorLease(owner,generation){
+  check(typeof owner==='string'&&owner&&Number.isSafeInteger(generation)&&generation>0,'invalid actor lease identity');
+  const lease=Object.freeze({});this.#leases.set(lease,{owner,generation});return lease;
+ }
+ drainForActor(owner,generation,{lease}={}){
+  const granted=this.#leases.get(lease);
+  check(granted&&granted.owner===owner&&granted.generation===generation,'guest continuation requires actor execution lease');
   const events=[];
   this.#ready=this.#ready.filter(event=>{if(event.owner!==owner||event.generation!==generation)return true;events.push(event);return false;});
   return events;
