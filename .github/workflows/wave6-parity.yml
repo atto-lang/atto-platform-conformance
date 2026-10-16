@@ -1,0 +1,26 @@
+name: Wave 6 platform and differential reference gates (not release certification)
+on:
+  pull_request:
+    paths:
+      - 'parity/wave6/**'
+      - '.github/workflows/wave6-parity.yml'
+  push:
+    branches:
+      - 'feat/parity-wave6-mobile-embedded-iot-desktop-cert-20261016'
+    paths:
+      - 'parity/wave6/**'
+permissions:
+  contents: read
+jobs:
+  wave6-reference:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check source hashes and deliberately unverified profile inventory
+        run: node parity/wave6/bin/check.mjs
+      - name: Run 27 actual Node Ed25519/platform/differential reference tests
+        run: node --test parity/wave6/tests/wave6.test.mjs
