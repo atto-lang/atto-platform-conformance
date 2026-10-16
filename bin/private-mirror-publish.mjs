@@ -6,6 +6,7 @@
  * never overwrites an existing ref or writes to the destination main branch.
  */
 import {pathToFileURL} from "node:url";
+import {createHash} from "node:crypto";
 import {requirePrivateMirror} from "./require-private-mirror.mjs";
 
 const OID=/^[a-f0-9]{40}$/;
@@ -232,6 +233,20 @@ export async function publishPrivateMirror({
     if(srcBlob?.sha!==file.sha||srcBlob.encoding!=="base64"||
        typeof srcBlob.content!=="string"||srcBlob.size!==file.size)
       throw Error("source blob content identity or encoding mismatch");
+    // Declared SHA/size are untrusted API fields: recompute Git's SHA-1
+    // object ID over decoded bytes before ANY destination mutation.
+    // GitHub's base64 may have CR/LF line breaks, not arbitrary whitespace.
+    const encoded=srcBlob.content.replace(/[\r\n]/g,"");
+    if(encoded.length>1398104||
+       !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(encoded))
+      throw Error("source Git blob has invalid base64 payload");
+    const decoded=Buffer.from(encoded,"base64");
+    if(decoded.length!==file.size||decoded.toString("base64")!==encoded)
+      throw Error("source Git blob decoded size or encoding differs");
+    const digest=createHash("sha1").update("blob "+decoded.length+"\0","utf8")
+      .update(decoded).digest("hex");
+    if(digest!==file.sha)
+      throw Error("source Git blob bytes do not match immutable SHA");
     verifiedBlobs.push({file,content:srcBlob.content});
   }
   // Phase 2: copy only the complete verified source set, re-authorizing the
