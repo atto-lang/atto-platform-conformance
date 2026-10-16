@@ -228,3 +228,19 @@ test("primary compiler rejection still validates on both real-report backends", 
     }
   }
 });
+
+
+test("real-report positive phases reject indented or fatal errors on zero exit", () => {
+  for (const backend of ["java", "llvm"]) {
+    for (const stderr of [
+      "  error: unresolved identifier other_symbol",
+      "fatal error: failed to initialize compiler",
+      "src/main.ores:4:9: fatal error: malformed input"
+    ]) {
+      const r = fixture(backend);
+      r.cases[0].compile.stderr = stderr;
+      assert.throws(() => validateRealCompilerReport(r),
+        /positive source was not accepted/, backend + ": " + stderr);
+    }
+  }
+});
