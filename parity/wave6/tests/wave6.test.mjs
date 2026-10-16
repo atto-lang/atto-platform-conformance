@@ -149,3 +149,24 @@ test('30 / forged/reordered JSON evidence cannot pass canonical signed observati
  const altered=Buffer.from(JSON.stringify({...obj,unknown:42}),'utf8');const sig=sign(null,altered,k.privateKey);
  assert.throws(()=>verifySignedObservation({payload:altered,signature:sig,publicKey:k.publicKey}),/schema/);
 });
+test('30 / standalone CLI refuses empty/untrusted parity input and unknown arguments',async()=>{
+ const {mkdtemp,writeFile,rm}=await import('node:fs/promises');const {tmpdir}=await import('node:os');const {join}=await import('node:path');
+ const p=new URL('../bin/differential.mjs',import.meta.url).pathname;
+ const dir=await mkdtemp(join(tmpdir(),'ores-wave6-diff-'));
+ try{
+  const empty=join(dir,'empty.json');await writeFile(empty,JSON.stringify({records:[],requiredCases:['checked-i64-42']}));
+  const r=spawnSync(process.execPath,[p,'--observations='+empty],{encoding:'utf8'});
+  assert.equal(r.status,3,r.stderr);assert.equal(JSON.parse(r.stdout).status,'INCOMPLETE');
+  assert.equal(spawnSync(process.execPath,[p,'--unknown=yes'],{encoding:'utf8'}).status,2);
+ }finally{await rm(dir,{recursive:true,force:true})}
+});
+test('30 / even an apparently full five-backend report cannot issue certified success',async()=>{
+ const {mkdtemp,writeFile,rm}=await import('node:fs/promises');const {tmpdir}=await import('node:os');const {join}=await import('node:path');
+ const dir=await mkdtemp(join(tmpdir(),'ores-wave6-report-'));
+ try{
+  const file=join(dir,'observations.json');await writeFile(file,JSON.stringify({records:BACKENDS.map(b=>observation(b)),requiredCases:['checked-i64-42']}));
+  const r=spawnSync(process.execPath,[new URL('../bin/differential.mjs',import.meta.url).pathname,'--observations='+file],{encoding:'utf8'});
+  assert.equal(r.status,4,r.stderr);const observationReport=JSON.parse(r.stdout);
+  assert.equal(observationReport.status,'OBSERVED_MATCH_NOT_CERTIFIED');assert.equal(observationReport.certifiedParity,false);
+ }finally{await rm(dir,{recursive:true,force:true})}
+});
