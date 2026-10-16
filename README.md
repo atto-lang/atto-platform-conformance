@@ -79,8 +79,13 @@ The guarded publisher's configuration, when approval exists, requires:
 - `ORES_APPROVED_RUNNER_PROBE_COMMIT`: exact approved destination commit
   that executed that probe; the workflow-run API must report that SHA.
 - `ORES_APPROVED_RUNNER_PROBE_WORKFLOW`: approved workflow path, for example
-  `.github/workflows/runner-capacity-probe.yml`. Its independently reviewed
-  contents must have no private source dependencies, secrets or untrusted code.
+  `.github/workflows/oreslang-source-free-capacity.yml`.
+- `ORES_APPROVED_RUNNER_PROBE_WORKFLOW_BLOB_SHA`: independently reviewed exact
+  immutable Git blob SHA of that workflow file **at the approved probe
+  commit**. The publisher retrieves the destination commit/tree and rejects
+  mismatched, missing, symlinked or truncated workflow entries before reading
+  any private source Git object. Workflow contents still need independent
+  security review; matching a Git SHA is integrity evidence, not approval.
 - `GH_TOKEN` (or `GITHUB_TOKEN`): a narrowly authorized credential whose
   source-read and destination-write scope is separately reviewed. The
   connector's own authenticated calls do **not** mean a destination's
