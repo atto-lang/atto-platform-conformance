@@ -37,8 +37,8 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
     if(!src&&suffix==="/git/ref/heads/"+opts.newBranch&&method==="GET"){
       refReads++;
       if(refReads<=2){
-        const status=refPreflightStatus??((refReads===1&&preExistingRef||
-          refReads===2&&lateExistingRef)?200:404);
+        const status=refPreflightStatus===undefined?((refReads===1&&preExistingRef||
+          refReads===2&&lateExistingRef)?200:404):refPreflightStatus;
         return {status,json:async()=>({ref:"refs/heads/"+opts.newBranch})};
       }
     }
@@ -228,7 +228,8 @@ test("publication confirms GitHub-created ref SHA and separately reads it back",
  const {h,promise}=run({refSha:D});
  await assert.rejects(promise,/new isolated CI ref confirmation mismatch/);
  assert.equal(h.events.some(e=>e.path===destination+"/git/refs"),true);
- assert.equal(h.events.some(e=>e.path===destination+"/git/ref/heads/"+opts.newBranch),false);
+ assert.equal(h.events.filter(e=>e.path===destination+"/git/ref/heads/"+opts.newBranch).length,2,
+  "two absent-ref probes precede the rejected ref confirmation; no read-after-write");
 });
 test("unsafe branch dot paths and lock-file suffixes are rejected before API access",async()=>{
  for(const newBranch of ["ci/private-foo..bar","ci/private-foo.lock"]){
