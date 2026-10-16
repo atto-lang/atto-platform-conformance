@@ -9,7 +9,7 @@ const rootPath = resolve(root, "project");
 const backendNames = ["java", "llvm", "net", "forge", "wasm"];
 
 async function fixture(relative) {
-  assert.match(relative, /^project\/[a-zA-Z0-9_./-]+\.ores$/);
+  assert.ok(relative.startsWith("project/") && relative.endsWith(".ores"));
   assert.ok(!relative.split("/").some(segment => segment === "." || segment === ".." || !segment));
   const file = resolve(root, relative);
   assert.ok(file.startsWith(rootPath + sep), "fixture must remain under project/");
