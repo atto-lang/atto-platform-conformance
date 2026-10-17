@@ -189,6 +189,64 @@ test("source-free verifier receipt is never native guest parity",()=>{
   assert.equal(pending.parityCertified,false);
 });
 
+test("77-case source-free carrier evidence never authenticates any native backend",()=>{
+  // Independent, digest-pinned, real GitHub-hosted run with three rounds of
+  // 77 verifier tests. No backend-native compiler or guest ran in this job.
+  const report={
+    repository:"scintilla-run-test/gleam-runner-conformance",
+    runId:38996750516,runAttempt:1,
+    carrierHeadSha:"cb37064568d13cd2b051940d01f148a5a13d1b07",
+    carrierTreeSha:"b73b0af44ef5c1ba60d5186901f213bfaa7bd5ad",
+    jobId:117290889613,jobName:"source-free-77",
+    rounds:3,testsPerRound:77,totalExecuted:231,
+    verifierBlob:"de7b3921a66c32f50115ee9933ef4e391ec34f8f",
+    verifierTestsBlob:"b73b3c06da3170294b5dfb589ba2131af217d268",
+    artifactZipSha256:"f6f2f42fbb614ca5f7b9b5defa5e6eace150ffeeb29be268059b9a93efcea901",
+    sourceFreeOnly:true,guestRuntimeCertified:false,
+    sourceRepositoryNativeCiCertified:false
+  };
+  assert.equal(report.rounds*report.testsPerRound,report.totalExecuted);
+  assert.equal(check(base()).claimedExecutionCount,0);
+
+  // Native evidence must be bound to the exact source repository ID,
+  // source Git blob, actual native execution and an authenticated CI record.
+  const fake=base();
+  fake.records[0]=executed(BACKENDS[0]);
+  Object.assign(fake.records[0].execution,{
+    repositoryId:1323598260, // the carrier, not any compiler repository
+    headCommitSha:report.carrierHeadSha,headTreeSha:report.carrierTreeSha,
+    runId:report.runId,runAttempt:report.runAttempt,jobId:report.jobId,
+    runnerJob:report.jobName,testStep:"Run source-free regression suite",
+    executedTestCount:report.totalExecuted,
+    compilerExecuted:false,nativeGuestExecuted:false,
+    artifactSha256:report.artifactZipSha256,
+    sourceGitBlobSha:report.verifierBlob
+  });
+  reject(fake);
+
+  for(const backend of BACKENDS){
+    const x=base();
+    x.records=BACKENDS.map(executed);
+    const record=x.records.find(r=>r.backend===backend);
+    record.execution.compilerExecuted=false;
+    record.execution.nativeGuestExecuted=false;
+    record.execution.artifactSha256=report.artifactZipSha256;
+    reject(x);
+  }
+  const claiming=base();
+  claiming.records=BACKENDS.map(executed);
+  // Five structurally plausible *native* declarations are still
+  // unauthenticated even if the same source-free artifact digest is copied.
+  for(const r of claiming.records)
+    r.execution.artifactSha256=report.artifactZipSha256;
+  const result=check(claiming);
+  assert.equal(result.claimedExecutionCount,5);
+  assert.equal(result.authenticatedExecutionCount,0);
+  assert.equal(result.parityCertified,false);
+  assert.equal(result.releaseReady,false);
+  assert.equal(result.blocked.length,5);
+});
+
 test("reject runner housekeeping as native guest test steps",()=>{
   for (const name of [
     "Set up job", "Complete job", "Initialize containers",
