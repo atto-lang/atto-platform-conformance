@@ -6,6 +6,7 @@
  * never overwrites an existing ref or writes to the destination main branch.
  */
 import {pathToFileURL} from "node:url";
+import {createHash} from "node:crypto";
 import {requirePrivateMirror} from "./require-private-mirror.mjs";
 
 const OID=/^[a-f0-9]{40}$/;
@@ -20,6 +21,26 @@ function sha(value) {
   if(typeof value!=="string"||!OID.test(value))throw Error("invalid immutable Git commit or blob SHA");
   return value;
 }
+/** Independently verify Git blob bytes; API-reported SHA/size are untrusted. */
+export function verifyGitBlob(content, expectedSha, expectedSize) {
+  if(typeof content!=="string"||!OID.test(expectedSha)||
+     !Number.isSafeInteger(expectedSize)||expectedSize<0||expectedSize>1048576)
+    throw Error("unsafe Git source blob identity or size");
+  // GitHub's blob API can wrap base64 over lines. No other base64
+  // whitespace/alphabet ambiguity is allowed at this security boundary.
+  const encoded=content.replace(/[\r\n]/g,"");
+  if(encoded.length>1398104||!(/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/).test(encoded))
+    throw Error("invalid canonical Git source blob encoding");
+  const bytes=Buffer.from(encoded,"base64");
+  if(bytes.length!==expectedSize||bytes.toString("base64")!==encoded)
+    throw Error("Git source blob byte length or base64 identity mismatch");
+  const digest=createHash("sha1")
+    .update("blob "+bytes.length+"\\0").update(bytes).digest("hex");
+  if(digest!==expectedSha)
+    throw Error("Git source blob content hash does not match pinned tree");
+  return encoded;
+}
+
 async function githubRequest(repo,path,token,{method="GET",body,fetchImpl=fetch}={}) {
   let response;
   try {
@@ -107,10 +128,11 @@ export async function publishPrivateMirror({
     if(srcBlob?.sha!==file.sha||srcBlob.encoding!=="base64"||
        typeof srcBlob.content!=="string"||srcBlob.size!==file.size)
       throw Error("source blob content identity or encoding mismatch");
+    const verifiedBase64=verifyGitBlob(srcBlob.content,file.sha,file.size);
     // Recheck CURRENT confidentiality before EVERY destination mutation.
     await authorize();
     const pushed=await githubRequest(destination,"/git/blobs",token,{
-      method:"POST",body:{content:srcBlob.content,encoding:"base64"},fetchImpl
+      method:"POST",body:{content:verifiedBase64,encoding:"base64"},fetchImpl
     });
     if(pushed.sha!==file.sha)throw Error("destination blob SHA differs from source");
     entries.push({path:prefix+"/"+file.path,mode:file.mode,type:"blob",sha:pushed.sha});
