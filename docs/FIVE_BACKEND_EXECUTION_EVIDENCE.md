@@ -203,3 +203,16 @@ source-org GitHub Actions runs remain blocked before runner allocation, while
 the private alternate-org source-free 73-case evidence run covers verifier
 regressions only. Source export is still prohibited without independent,
 protected-main policy approval and security incident containment.
+
+## Third independently inspected source-free 77 × 3 receipt (2026-10-17 UTC)
+
+**Source-free only; no native Oreslang compiler or `.ores` guest was executed.** A third private-carrier run, [38996750516](https://github.com/scintilla-run-test/gleam-runner-conformance/actions/runs/38996750516), successfully executed the source-free adversarial regression step and uploaded [artifact 12087306517](https://github.com/scintilla-run-test/gleam-runner-conformance/actions/runs/38996750516/artifacts/12087306517), containing `77-parity.json`.
+
+- Run attempt `1`, job `source-free-77` (job ID `117290889613`), source carrier repo ID `1323598260` and exact head `cb37064568d13cd2b051940d01f148a5a13d1b07`; tree `b73b0af44ef5c1ba60d5186901f213bfaa7bd5ad`.
+- Real successful execution step: `Execute 77 source-free adversarial regressions three complete rounds`. Count **77 × 3 = 231** source-free tests, with successful run conclusion.
+- Downloaded ZIP SHA-256 `f6f2f42fbb614ca5f7b9b5defa5e6eace150ffeeb29be268059b9a93efcea901`, matching GitHub artifact metadata. The included report pins verifier `de7b3921a66c32f50115ee9933ef4e391ec34f8f`, regression tests `b73b3c06da3170294b5dfb589ba2131af217d268`, and workflow `36e375543b44b6c2cab3a1705f4a08a2dd40c9eb`.
+- All three Git blobs were independently fetched and identical across Java [#1112](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1112), LLVM [#495](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/495), .NET [#56](https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/56), WASM [#52](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/52), Forge [#50](https://github.com/ores-truffle-oreslang/oreslang-source.forge/pull/50) source-verifier PRs. Each PR also has a new identical documentation-only receipt.
+- The scoped machine-readable receipt is `evidence/source-free-ci-77-38996750516.json`. `tests/source-free-ci-receipt-77.test.mjs` checks the 231-count arithmetic, five-backend pin completeness, and **failure to promote source-free evidence into the native manifest**. These new Node tests are committed and have not been verified by GitHub Actions on the source organization.
+- No native guest output is available. `contracts/v1/semantics/five-backend-evidence.pending.json` remains **five pending**; `nativeExecutionAuthenticated:false`, `parityCertified:false`, `releaseReady:false`. Do not use receipt success as release certification or cross-organization source-export approval.
+
+Security issue [#22](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22) remains open. The public `zed-pkg-test/java-app` exposure is uncontained per authenticated GitHub visibility. All five source `main` branches were independently observed `protected:false` and source-org Actions jobs still had zero executed steps and no native artifacts. Administrator containment, independently enforced protections, funded runners and exact-head native proof remain prerequisites.
