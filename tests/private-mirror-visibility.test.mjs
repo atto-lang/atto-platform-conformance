@@ -1,12 +1,14 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
+import {createHash} from "node:crypto";
 import {requirePrivateMirror} from "../bin/require-private-mirror.mjs";
 
 const source = "ores-truffle-oreslang/oreslang-source.java";
 const A="a".repeat(40),T="d".repeat(40),M="b".repeat(40),destinationId=1234;
-const encoded=text=>({type:"file",encoding:"base64",sha:"c".repeat(40),
+const encoded=text=>({type:"file",encoding:"base64",sha:createHash("sha1").update("blob "+Buffer.byteLength(text)+"\0").update(text).digest("hex"),
   content:Buffer.from(text).toString("base64")});
 const rules=()=>({enforce_admins:{enabled:true},
+  required_status_checks:{strict:true,contexts:["native-tests"]},
   required_pull_request_reviews:{require_code_owner_reviews:true,
     dismiss_stale_reviews:true,required_approving_review_count:1,
     bypass_pull_request_allowances:{users:[],teams:[],apps:[]}}});
@@ -28,9 +30,9 @@ function fixture(records = {}, calls = []) {
       [source+"/branches/main"]:{name:"main",protected:true,commit:{sha:M}},
       [source+"/branches/main/protection"]:rules(),
       [source+"/contents/.github/private-ci-approved-repositories.txt?ref="+M]:
-        encoded(destination+" "+destinationId+"\\n"),
+        encoded(destination+" "+destinationId+"\n"),
       [source+"/contents/.github/private-ci-approved-source-snapshots.txt?ref="+M]:
-        encoded(A+" "+T+" "+destinationId+"\\n"),
+        encoded(A+" "+T+" "+destinationId+"\n"),
       [source+"/git/commits/"+A]:{sha:A,tree:{sha:T}}
     };
     const result=records[name]??defaults[name]??good(name);
@@ -167,11 +169,11 @@ test("reviewed policy must pin destination numeric ID and immutable source snaps
  const a=source+"/contents/.github/private-ci-approved-repositories.txt?ref="+M;
  const b=source+"/contents/.github/private-ci-approved-source-snapshots.txt?ref="+M;
  for(const records of [
-  {[a]:encoded("# empty\\n")},
-  {[a]:encoded(destination+" 9999\\n")},
-  {[b]:encoded("# empty\\n")},
-  {[b]:encoded(A+" "+"e".repeat(40)+" "+destinationId+"\\n")},
-  {[b]:encoded(A+" "+T+" "+destinationId+"\\n"+A+" "+T+" "+destinationId+"\\n")}
+  {[a]:encoded("# empty\n")},
+  {[a]:encoded(destination+" 9999\n")},
+  {[b]:encoded("# empty\n")},
+  {[b]:encoded(A+" "+"e".repeat(40)+" "+destinationId+"\n")},
+  {[b]:encoded(A+" "+T+" "+destinationId+"\n"+A+" "+T+" "+destinationId+"\n")}
  ]) await assert.rejects(check({},records),/approval/);
 });
 test("untrusted source ID, missing source pins, and mismatched Git tree deny",async()=>{
@@ -182,7 +184,7 @@ test("untrusted source ID, missing source pins, and mismatched Git tree deny",as
  }
  await assert.rejects(check({},{[source]:{...good(source),id:7}}),/immutable source/);
  await assert.rejects(check({},{[source+"/git/commits/"+A]:{
-  sha:A,tree:{sha:"e".repeat(40)}}}),/commit\\/tree mismatch/);
+  sha:A,tree:{sha:"e".repeat(40)}}}),/commit.tree mismatch/);
 });
 test("protected-main revision change while reading policy denies",async()=>{
  let visits=0;

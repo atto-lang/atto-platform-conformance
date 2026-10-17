@@ -1,5 +1,6 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
+import {createHash} from "node:crypto";
 import {publishPrivateMirror} from "../bin/private-mirror-publish.mjs";
 
 const source="ores-truffle-oreslang/oreslang-source.java";
@@ -12,9 +13,10 @@ const opts={source,destination,sourceCommit:A,sourceTree:D,destinationBaseCommit
 const good=name=>({full_name:name,private:true,visibility:"private",
   id:name===source?1400792274:1234,archived:false,disabled:false,
   permissions:{push:true}});
-const encoded=text=>({type:"file",encoding:"base64",sha:"f".repeat(40),
+const encoded=text=>({type:"file",encoding:"base64",sha:createHash("sha1").update("blob "+Buffer.byteLength(text)+"\0").update(text).digest("hex"),
   content:Buffer.from(text).toString("base64")});
 const protection=()=>({enforce_admins:{enabled:true},
+  required_status_checks:{strict:true,contexts:["native-tests"]},
   required_pull_request_reviews:{require_code_owner_reviews:true,
     dismiss_stale_reviews:true,required_approving_review_count:1,
     bypass_pull_request_allowances:{users:[],teams:[],apps:[]}}});
@@ -37,9 +39,9 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
       if(suffix==="/branches/main")data={name:"main",protected:true,commit:{sha:M}};
       else if(suffix==="/branches/main/protection")data=protection();
       else if(suffix==="/contents/.github/private-ci-approved-repositories.txt?ref="+M)
-        data=encoded(destination+" 1234\\n");
+        data=encoded(destination+" 1234\n");
       else if(suffix==="/contents/.github/private-ci-approved-source-snapshots.txt?ref="+M)
-        data=encoded(A+" "+D+" 1234\\n");
+        data=encoded(A+" "+D+" 1234\n");
       else if(suffix==="/git/commits/"+A)data={sha:A,tree:{sha:D}};
       else if(suffix==="/git/trees/"+D+"?recursive=1")
         data=sourceTree||{truncated:false,tree:[{type:"blob",path:"main.ores",sha:C,size:4,mode:"100644"}]};

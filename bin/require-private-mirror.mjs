@@ -8,6 +8,7 @@
  * settings. The mirror orchestrator must fail closed if this command fails.
  */
 import {pathToFileURL} from "node:url";
+import {createHash} from "node:crypto";
 
 const SOURCE_IDS = Object.freeze({
   "ores-truffle-oreslang/oreslang-source.java": 1400792274,
@@ -87,30 +88,33 @@ function policyText(data) {
   if (!data || data.type !== "file" || data.encoding !== "base64" ||
       typeof data.content !== "string" || data.content.length > 65536 ||
       typeof data.sha !== "string" || !OID.test(data.sha) ||
-      !/^[A-Za-z0-9+/=\\r\\n]+$/.test(data.content)) {
+      !/^[A-Za-z0-9+/=\r\n]+$/.test(data.content)) {
     throw Error("untrusted or oversized source-main policy content");
   }
-  const clean = data.content.replace(/[\\r\\n]/g, "");
+  const clean = data.content.replace(/[\r\n]/g, "");
   const raw = Buffer.from(clean, "base64");
   if (raw.length > 32768 || raw.toString("base64") !== clean) {
     throw Error("noncanonical source-main policy content");
   }
+  const actualSha = createHash("sha1").update("blob " + raw.length + "\0").update(raw).digest("hex");
+  if (actualSha !== data.sha) throw Error("source-main policy blob digest mismatch");
   const text = raw.toString("utf8");
   if (!Buffer.from(text, "utf8").equals(raw)) throw Error("invalid source-main policy encoding");
   return text;
 }
 function requireUniquePolicyEntry(text, fields, expected, label) {
-  let matchCount = 0, seen = new Set();
-  for (const raw of text.split("\\n")) {
+  let matchCount = 0;
+  const names = new Set(), ids = new Set();
+  for (const raw of text.split("\n")) {
     const line = raw.trim();
     if (!line || line.startsWith("#")) continue;
     const values = line.split(" ");
-    if (values.length !== fields || values.some(x => !x || /\\s/.test(x))) {
+    if (values.length !== fields || values.some(x => !x || /\s/.test(x))) {
       throw Error("malformed reviewed " + label);
     }
     const key = values.join(" ");
-    if (seen.has(key)) throw Error("duplicate reviewed " + label);
-    seen.add(key);
+    if (names.has(values[0]) || ids.has(values[fields - 1])) throw Error("duplicate reviewed " + label);
+    names.add(values[0]); ids.add(values[fields - 1]);
     if (key === expected) matchCount++;
   }
   if (matchCount !== 1) throw Error("missing exact protected-main " + label);
@@ -126,6 +130,9 @@ async function protectedSourceApproval(from, sourceCommit, sourceTree, destId, t
   // A branch's protected flag alone cannot prove independent codeowner review.
   const rules = await metadata(base + "/branches/main/protection", token, fetchImpl);
   const review = rules?.required_pull_request_reviews;
+  const checks = rules?.required_status_checks;
+  const namedChecks = [...(Array.isArray(checks?.contexts) ? checks.contexts : []),
+    ...(Array.isArray(checks?.checks) ? checks.checks.map(x => x.context) : [])];
   if (review?.require_code_owner_reviews !== true ||
       review.dismiss_stale_reviews !== true ||
       !Number.isSafeInteger(review.required_approving_review_count) ||
