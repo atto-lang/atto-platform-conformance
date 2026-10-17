@@ -81,9 +81,9 @@ test("duplicate CLI selectors cannot silently replace compiler invocation or pro
  }
 });
 
-test("all five source compiler backends have target fixtures but none are verified without a real runner",async()=>{
+test("all six source compiler backends have target fixtures but none are verified without a real runner",async()=>{
  const manifest=await loadManifest();
- assert.deepEqual([...COMPILER_BACKENDS].sort(),["forge","java","llvm","net","wasm"].sort());
+ assert.deepEqual([...COMPILER_BACKENDS].sort(),["forge","java","js","llvm","net","wasm"].sort());
  for(const c of manifest.cases) assert.deepEqual([...c.backends].sort(),[...COMPILER_BACKENDS].sort());
  for(const backend of COMPILER_BACKENDS){
   const r=await runSuite({backend,requireConfigured:true});
@@ -95,7 +95,7 @@ test("all five source compiler backends have target fixtures but none are verifi
  }
 });
 test("missing real tools cannot yield verification for newly admitted backends",async()=>{
- for(const backend of ["net","wasm","forge"]){
+ for(const backend of ["net","wasm","forge","js"]){
   const r=await runSuite({backend,argv:["/no/such/oreslang-compiler","{file}"],sourceSha:sha});
   assert.equal(r.ok,false,backend);
   assert.equal(r.failed,2,backend);
