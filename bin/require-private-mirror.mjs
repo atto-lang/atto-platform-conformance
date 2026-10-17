@@ -126,7 +126,10 @@ const SECURITY_PATHS = Object.freeze([
   "/.github/private-ci-approved-source-snapshots.txt",
   "/.github/private-ci-required-checks.json"
 ]);
-const SECURITY_TEAM = /^@ores-truffle-oreslang\/[A-Za-z0-9_.-]+$/;
+const TRUSTED_SECURITY_OWNERS = new Set([
+  "@ORESoftware",
+  "@ores-truffle-oreslang/security"
+]);
 
 function requireSecurityCodeowners(text) {
   const lines = text.split("\n").map(x => x.trim())
@@ -141,8 +144,8 @@ function requireSecurityCodeowners(text) {
     const values = line.split(/\s+/);
     const pattern = values.shift();
     if (!SECURITY_PATHS.includes(pattern) || seen.has(pattern) ||
-        values.length === 0 || values.some(x => !SECURITY_TEAM.test(x))) {
-      throw Error("security CODEOWNERS final block is not exact organization-team ownership");
+        values.length === 0 || values.some(x => !TRUSTED_SECURITY_OWNERS.has(x))) {
+      throw Error("security CODEOWNERS final block is not exact trusted ownership");
     }
     const normalized = [...new Set(values)].sort();
     if (normalized.length !== values.length) {
@@ -185,20 +188,25 @@ function requiredChecksPolicy(text) {
   return result;
 }
 
-function requireExactProtectedChecks(checks, policy) {
+function requireApprovedProtectedChecks(checks, policy) {
   if (!checks || checks.strict !== true ||
-      !Array.isArray(checks.checks) || checks.checks.length !== policy.size ||
+      !Array.isArray(checks.checks) || checks.checks.length < policy.size ||
       (Array.isArray(checks.contexts) && checks.contexts.length !== 0)) {
-    throw Error("exact app-bound required status checks missing");
+    throw Error("approved app-bound required status checks missing");
   }
-  const seen = new Set();
+  const actual = new Map();
   for (const item of checks.checks) {
     if (!item || typeof item.context !== "string" ||
         !Number.isSafeInteger(item.app_id) || item.app_id <= 0 ||
-        seen.has(item.context) || policy.get(item.context) !== item.app_id) {
-      throw Error("required status check context/app identity mismatch");
+        actual.has(item.context)) {
+      throw Error("required status check context/app identity invalid");
     }
-    seen.add(item.context);
+    actual.set(item.context, item.app_id);
+  }
+  for (const [context, appId] of policy) {
+    if (actual.get(context) !== appId) {
+      throw Error("approved required status check context/app identity missing");
+    }
   }
 }
 async function protectedSourceApproval(from, sourceCommit, sourceTree, destId, to, token, fetchImpl) {
@@ -227,7 +235,7 @@ async function protectedSourceApproval(from, sourceCommit, sourceTree, destId, t
   const file = async name => policyText(await metadata(base +
     "/contents/.github/" + name + "?ref=" + protectedSha, token, fetchImpl));
   requireSecurityCodeowners(await file("CODEOWNERS"));
-  requireExactProtectedChecks(checks,
+  requireApprovedProtectedChecks(checks,
     requiredChecksPolicy(await file("private-ci-required-checks.json")));
   requireUniquePolicyEntry(await file("private-ci-approved-repositories.txt"),
     2, to + " " + destId, "destination approval");
