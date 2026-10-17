@@ -58,6 +58,26 @@ tree, native test logs, and artifact bytes itself. The ledger has
 of how complete a declaration looks. No private-source transfer is
 authorized by these checks.
 
+### Source-free hosted adversarial control
+
+The independent private hosted run
+[ClipTown #38995444439](https://github.com/cliptown/cliptown-e2e/actions/runs/38995444439)
+executed **six** source-free Node runner/ref-shape tests, **four**
+source-free five-backend false-certification tests, six CTest-admission
+model tests and GCC/Clang O0/O2 synthetic ABI checks successfully.
+Its runner ID was `1000005505`, its exact carrier HEAD was
+`497ca57e7811a62ba5ee57615939ee9fd617ddd1`, and the 3-day
+metadata-only artifact
+[`source-free-ci-evidence-38995444439-1`](https://github.com/cliptown/cliptown-e2e/actions/runs/38995444439/artifacts/12086683920)
+has artifact ID `12086683920`.
+
+These were **independently authored model tests**. The actual private
+platform-conformance ledger code, the five compiler backends, and their
+native guest test suites did not execute on ClipTown. No private source
+was copied across GitHub organizations; the source-org CI blocker and
+cross-org security policy remain unresolved. This hosted run cannot
+upgrade any backend from pending to executed.
+
 ## Offline shape check
 
 From the repository root (Node 22+):
