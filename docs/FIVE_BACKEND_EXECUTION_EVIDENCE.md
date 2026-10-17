@@ -32,9 +32,31 @@ Every manifest must contain exactly five distinct backend records. Each record i
 
 - `pending`: No conformance success claim. Requires a reason; forbids an execution object.
 - `unsupported`: An explicitly unsupported feature or native backend path. Requires a reason; forbids an execution object.
-- `executed-claimed`: A **declaration**, not verified truth. Requires a specific source blob, repository numeric ID, immutable head commit and tree, workflow ID/path/blob, run ID and attempt, event, native job and step, actual guest/compiler execution flags, native execution mode, toolchain, executed fixture ID and count, observed value 42, and test-log/artifact SHA-256 digests.
+- `executed-claimed`: A **declaration**, not verified truth. Requires a specific source blob, repository numeric ID, immutable head commit and tree, workflow ID/path/blob, run ID and attempt, exact workflow run path/ref, event, positive allocated runner ID, positive job ID, bounded runner name, native job and step, actual guest/compiler execution flags, native execution mode, toolchain, executed fixture ID and count, observed value 42, and test-log/artifact SHA-256 digests.
 
 Boolean and zero-valued IDs, duplicate/missing backends, arbitrary workflow events, mismatched numeric repository IDs, wrong execution mode or result, empty test counts, missing digests, and source-only claims are rejected.
+
+## Claimed runner/job provenance must be explicit
+
+A record with `executed-claimed` status must now include all of
+`workflowRunPath`, `jobId`, `runnerId`, and `runnerName`, in
+addition to its previously pinned `workflowPath`, run, and attempt.
+`workflowRunPath` must refer to that **exact workflow file** with
+either no suffix or a validated `@ref` suffix (for example,
+`@refs/pull/123/merge`). Numeric runner/job IDs must be positive safe
+integers, not `0`, `null`, booleans, or strings. Job, runner, toolchain
+and test-step display strings must be single-line and nonempty to avoid
+fake multiline log lines.
+
+These checks reject claims from GitHub jobs that never acquired a
+runner, but **only at the metadata-shape level**. Even a plausible
+nonzero ID and matching workflow run ref can be forged. The independent
+release controller **must fetch** and compare the actual GitHub
+`run.path`, run attempt, job ID, runner ID/name, step status, source
+tree, native test logs, and artifact bytes itself. The ledger has
+`authenticatedExecutionCount:0` and `releaseReady:false` regardless
+of how complete a declaration looks. No private-source transfer is
+authorized by these checks.
 
 ## Offline shape check
 
