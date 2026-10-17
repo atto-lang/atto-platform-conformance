@@ -1,0 +1,200 @@
+{
+  "schemaVersion": 1,
+  "contract": "scalar-int64-v1",
+  "javaReferenceSha": "12cdd17af7f949a3c54e045a46a2fc21be0ea5d0",
+  "notes": "Java reference uses signed i64 literals and Java long wraparound for +,-,*,%; int/int division is float and remains outside this int-only JS slice.",
+  "cases": [
+    {
+      "id": "zero",
+      "source": "pub fnc main(): int { return 0; }",
+      "expect": "runtime",
+      "resultInt64": "0"
+    },
+    {
+      "id": "one",
+      "source": "pub fnc main(): int { return 1; }",
+      "expect": "runtime",
+      "resultInt64": "1"
+    },
+    {
+      "id": "minus-one",
+      "source": "pub fnc main(): int { return -1; }",
+      "expect": "runtime",
+      "resultInt64": "-1"
+    },
+    {
+      "id": "i64-max",
+      "source": "pub fnc main(): int { return 9223372036854775807; }",
+      "expect": "runtime",
+      "resultInt64": "9223372036854775807"
+    },
+    {
+      "id": "i64-min",
+      "source": "pub fnc main(): int { return -9223372036854775808; }",
+      "expect": "runtime",
+      "resultInt64": "-9223372036854775808"
+    },
+    {
+      "id": "add",
+      "source": "pub fnc main(): int { return 20 + 22; }",
+      "expect": "runtime",
+      "resultInt64": "42"
+    },
+    {
+      "id": "sub",
+      "source": "pub fnc main(): int { return 50 - 8; }",
+      "expect": "runtime",
+      "resultInt64": "42"
+    },
+    {
+      "id": "mul",
+      "source": "pub fnc main(): int { return 6 * 7; }",
+      "expect": "runtime",
+      "resultInt64": "42"
+    },
+    {
+      "id": "wrap-add",
+      "source": "pub fnc main(): int { return 9223372036854775807 + 1; }",
+      "expect": "runtime",
+      "resultInt64": "-9223372036854775808"
+    },
+    {
+      "id": "wrap-sub",
+      "source": "pub fnc main(): int { return -9223372036854775808 - 1; }",
+      "expect": "runtime",
+      "resultInt64": "9223372036854775807"
+    },
+    {
+      "id": "wrap-mul",
+      "source": "pub fnc main(): int { return 9223372036854775807 * 2; }",
+      "expect": "runtime",
+      "resultInt64": "-2"
+    },
+    {
+      "id": "negate-min",
+      "source": "pub fnc main(): int { return -(-9223372036854775808); }",
+      "expect": "runtime",
+      "resultInt64": "-9223372036854775808"
+    },
+    {
+      "id": "unary-plus",
+      "source": "pub fnc main(): int { return +42; }",
+      "expect": "runtime",
+      "resultInt64": "42"
+    },
+    {
+      "id": "precedence-a",
+      "source": "pub fnc main(): int { return 2 + 3 * 4; }",
+      "expect": "runtime",
+      "resultInt64": "14"
+    },
+    {
+      "id": "precedence-b",
+      "source": "pub fnc main(): int { return (2 + 3) * 4; }",
+      "expect": "runtime",
+      "resultInt64": "20"
+    },
+    {
+      "id": "left-assoc-sub",
+      "source": "pub fnc main(): int { return 20 - 5 - 3; }",
+      "expect": "runtime",
+      "resultInt64": "12"
+    },
+    {
+      "id": "rem-pos-pos",
+      "source": "pub fnc main(): int { return 7 % 3; }",
+      "expect": "runtime",
+      "resultInt64": "1"
+    },
+    {
+      "id": "rem-neg-pos",
+      "source": "pub fnc main(): int { return -7 % 3; }",
+      "expect": "runtime",
+      "resultInt64": "-1"
+    },
+    {
+      "id": "rem-pos-neg",
+      "source": "pub fnc main(): int { return 7 % -3; }",
+      "expect": "runtime",
+      "resultInt64": "1"
+    },
+    {
+      "id": "rem-neg-neg",
+      "source": "pub fnc main(): int { return -7 % -3; }",
+      "expect": "runtime",
+      "resultInt64": "-1"
+    },
+    {
+      "id": "rem-min-neg-one",
+      "source": "pub fnc main(): int { return -9223372036854775808 % -1; }",
+      "expect": "runtime",
+      "resultInt64": "0"
+    },
+    {
+      "id": "forward-call",
+      "source": "pub fnc main(): int { return add(40, 2); } fnc add(int a, int b): int { return a + b; }",
+      "expect": "runtime",
+      "resultInt64": "42"
+    },
+    {
+      "id": "nested-call",
+      "source": "pub fnc main(): int { return add(mul(6,7), -42); } fnc add(int a,int b): int { return a+b; } fnc mul(int a,int b): int { return a*b; }",
+      "expect": "runtime",
+      "resultInt64": "0"
+    },
+    {
+      "id": "param-rem",
+      "source": "pub fnc main(): int { return rem(43, 5); } fnc rem(int a,int b): int { return a % b; }",
+      "expect": "runtime",
+      "resultInt64": "3"
+    },
+    {
+      "id": "overflow-literal",
+      "source": "pub fnc main(): int { return 9223372036854775808; }",
+      "expect": "compile-reject",
+      "category": "integer-overflow"
+    },
+    {
+      "id": "underflow-literal",
+      "source": "pub fnc main(): int { return -9223372036854775809; }",
+      "expect": "compile-reject",
+      "category": "integer-overflow"
+    },
+    {
+      "id": "unresolved",
+      "source": "pub fnc main(): int { return nonexistent_symbol; }",
+      "expect": "compile-reject",
+      "category": "unresolved"
+    },
+    {
+      "id": "missing-callee",
+      "source": "pub fnc main(): int { return missing(1); }",
+      "expect": "compile-reject",
+      "category": "unresolved"
+    },
+    {
+      "id": "bad-arity",
+      "source": "pub fnc main(): int { return add(1); } fnc add(int a,int b): int { return a+b; }",
+      "expect": "compile-reject",
+      "category": "arity"
+    },
+    {
+      "id": "duplicate-function",
+      "source": "pub fnc main(): int { return 1; } pub fnc main(): int { return 2; }",
+      "expect": "compile-reject",
+      "category": "duplicate"
+    },
+    {
+      "id": "division-int-slice",
+      "source": "pub fnc main(): int { return 84 / 2; }",
+      "expect": "compile-reject",
+      "category": "division-float"
+    },
+    {
+      "id": "remainder-zero",
+      "source": "pub fnc main(): int { return 1 % 0; }",
+      "expect": "runtime-reject",
+      "category": "zero-divisor"
+    }
+  ]
+}
