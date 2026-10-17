@@ -103,6 +103,13 @@ test("reject claimed unallocated runner and fake numeric job IDs",()=>{
     x.records[0].execution.runnerName=value;
     reject(x);
   }
+  for (const key of ["runnerName","runnerJob","testStep","toolchain"]) {
+    for (const separator of ["\u0085", "\u2028", "\u2029"]) {
+      const x=base();x.records[0]=executed(BACKENDS[0]);
+      x.records[0].execution[key]="valid" + separator + "forged-step";
+      reject(x);
+    }
+  }
   for (const key of ["runnerJob","testStep","toolchain"]) {
     const x=base();x.records[0]=executed(BACKENDS[0]);
     x.records[0].execution[key]="valid\nspoofed-step";
