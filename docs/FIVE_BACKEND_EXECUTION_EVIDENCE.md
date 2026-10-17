@@ -4,6 +4,18 @@ This source-free ledger complements `src/five-backend-scalar.mjs`. The original 
 
 It **does not authenticate GitHub API responses, inspect build logs, verify artifact contents, execute the Oreslang guest, certify parity, or authorize private-source transfer**. It deliberately returns `EVIDENCE_SHAPE_ONLY_NOT_AUTHENTICATED` and `parityCertified:false` even when all five backends contain apparently complete execution claims. Never promote a release from this offline checker alone.
 
+**All five records remain release-blocked even when all five claim execution.**
+A structurally complete manifest now reports `completeUnverifiedClaimSet:true`,
+`authenticatedExecutionCount:0`, `independentlyAuthenticatableClaims:false`,
+`releaseReady:false`, and a `blocked` entry for **every** claimed backend
+with reason `SELF_REPORTED_EXECUTION_NOT_AUTHENTICATED`. Earlier shape-only
+output used the misleading label `independentlyAuthenticatableClaims:true`
+and omitted claimed backends from the blocked list. The revised result is
+explicitly a breaking fail-closed change for callers that confused complete
+self-reported fields with independent verification. Release controllers must
+verify actual GitHub run/jobs and downloaded binary artifact bytes separately.
+
+
 ## Canonical scalar fixture
 
 - File: `contracts/v1/semantics/fixtures/add.ores`
