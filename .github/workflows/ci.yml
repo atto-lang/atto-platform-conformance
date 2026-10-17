@@ -17,7 +17,7 @@ jobs:
       - run: npm test
       - name: Confirm mandatory real compiler gate cannot pass unconfigured
         run: |
-          for backend in java llvm net wasm forge; do
+          for backend in java llvm net wasm forge js; do
             if node bin/conformance.mjs "--backend=$backend" --require; then
               echo "ERROR: unconfigured $backend compiler unexpectedly counted as passing" >&2
               exit 1
