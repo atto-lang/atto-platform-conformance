@@ -8,6 +8,7 @@
   "scripts": {
     "test": "node --test",
     "inspect": "node bin/conformance.mjs",
-    "audit:private-ci-bootstrap": "node bin/audit-private-ci-bootstrap.mjs"
+    "audit:private-ci-bootstrap": "node bin/audit-private-ci-bootstrap.mjs",
+    "propose:private-ci-canary": "node bin/propose-private-ci-canary.mjs"
   }
 }
