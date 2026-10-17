@@ -32,7 +32,7 @@ function sha256(v, name) { if (typeof v !== "string" || !SHA256.test(v)) fail(na
 function positive(v, name) { if (!Number.isSafeInteger(v) || v < 1) fail(name + " must be positive safe integer"); }
 function nonempty(v, name) {
   if (typeof v !== "string" || v.trim().length < 1 || v.length > 250 ||
-      /[\u0000-\u001f\u007f]/.test(v)) fail(name + " must be nonempty bounded single-line string");
+      /[\u0000-\u001f\u007f\u0085\u2028\u2029]/.test(v)) fail(name + " must be nonempty bounded single-line string");
 }
 function runPath(v, workflowPath) {
   // An evidence claim must identify exactly which reviewed workflow *ref*
