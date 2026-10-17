@@ -43,20 +43,21 @@ async function githubRequest(repo,path,token,{method="GET",body,fetchImpl=fetch}
 }
 
 export async function publishPrivateMirror({
-  source,destination,sourceCommit,destinationBaseCommit,prefix,newBranch,
+  source,destination,sourceCommit,sourceTree,destinationBaseCommit,prefix,newBranch,
   approvedDestinations,token,fetchImpl=fetch
 }) {
-  sha(sourceCommit);sha(destinationBaseCommit);
+  sha(sourceCommit);sha(sourceTree);sha(destinationBaseCommit);
   if(!validPath(prefix)||!BRANCH.test(newBranch)||newBranch.includes("..")||newBranch.endsWith(".lock"))
     throw Error("invalid destination prefix or isolated CI branch");
   const authorize=()=>requirePrivateMirror({
-    source,destination,approvedDestinations,token,fetchImpl
+    source,destination,sourceCommit,sourceTree,approvedDestinations,token,fetchImpl
   });
   // FIRST external operation: authorization, before ANY source bytes are fetched
   // and before ANY destination object/ref is created.
   await authorize();
   const srcCommit=await githubRequest(source,"/git/commits/"+sourceCommit,token,{fetchImpl});
-  if(!srcCommit?.tree?.sha||!OID.test(srcCommit.tree.sha))throw Error("source commit has no pinned tree");
+  if(srcCommit?.sha !== sourceCommit || srcCommit?.tree?.sha !== sourceTree)
+    throw Error("source commit/tree differ from approved immutable snapshot");
   const srcTree=await githubRequest(source,"/git/trees/"+srcCommit.tree.sha+"?recursive=1",token,{fetchImpl});
   if(srcTree.truncated!==false||!Array.isArray(srcTree.tree))throw Error("source tree incomplete");
   const files=srcTree.tree.filter(x=>x.type==="blob");
@@ -171,12 +172,12 @@ export async function publishPrivateMirror({
 
 if(process.argv[1]&&pathToFileURL(process.argv[1]).href===import.meta.url){
   try{
-    if(process.argv.length!==8)
-      throw Error("usage: private-mirror-publish.mjs <source> <sourceSHA> <destination> <baseSHA> <prefix> <ci/private-branch>");
+    if(process.argv.length!==9)
+      throw Error("usage: private-mirror-publish.mjs <source> <sourceSHA> <sourceTREE> <destination> <baseSHA> <prefix> <ci/private-branch>");
     const result=await publishPrivateMirror({
-      source:process.argv[2],sourceCommit:process.argv[3],
-      destination:process.argv[4],destinationBaseCommit:process.argv[5],
-      prefix:process.argv[6],newBranch:process.argv[7],
+      source:process.argv[2],sourceCommit:process.argv[3],sourceTree:process.argv[4],
+      destination:process.argv[5],destinationBaseCommit:process.argv[6],
+      prefix:process.argv[7],newBranch:process.argv[8],
       approvedDestinations:(process.env.ORES_APPROVED_PRIVATE_MIRRORS||"").split(",").filter(Boolean),
       token:process.env.GH_TOKEN||process.env.GITHUB_TOKEN
     });

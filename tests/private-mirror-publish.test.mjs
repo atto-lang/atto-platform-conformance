@@ -5,12 +5,19 @@ import {publishPrivateMirror} from "../bin/private-mirror-publish.mjs";
 const source="ores-truffle-oreslang/oreslang-source.java";
 const destination="akrion-sim/akrion-sim-e2e";
 const A="a".repeat(40),B="b".repeat(40),C="c".repeat(40),
- D="d".repeat(40),E="e".repeat(40);
-const opts={source,destination,sourceCommit:A,destinationBaseCommit:B,
+ D="d".repeat(40),E="e".repeat(40),M="f".repeat(40);
+const opts={source,destination,sourceCommit:A,sourceTree:D,destinationBaseCommit:B,
   prefix:"snapshots/checked",newBranch:"ci/private-test-proof",
   approvedDestinations:[destination],token:"opaque-test-token"};
 const good=name=>({full_name:name,private:true,visibility:"private",
-  archived:false,permissions:{push:true}});
+  id:name===source?1400792274:1234,archived:false,disabled:false,
+  permissions:{push:true}});
+const encoded=text=>({type:"file",encoding:"base64",sha:"f".repeat(40),
+  content:Buffer.from(text).toString("base64")});
+const protection=()=>({enforce_admins:{enabled:true},
+  required_pull_request_reviews:{require_code_owner_reviews:true,
+    dismiss_stale_reviews:true,required_approving_review_count:1,
+    bypass_pull_request_allowances:{users:[],teams:[],apps:[]}}});
 
 function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E,meta,errors}={}){
   const events=[],seen={source:0,destination:0};
@@ -27,7 +34,13 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
     if(errors?.[suffix])return{status:403,json:async()=>({message:"Bearer opaque-test-token"})};
     let data;
     if(src){
-      if(suffix==="/git/commits/"+A)data={tree:{sha:D}};
+      if(suffix==="/branches/main")data={name:"main",protected:true,commit:{sha:M}};
+      else if(suffix==="/branches/main/protection")data=protection();
+      else if(suffix==="/contents/.github/private-ci-approved-repositories.txt?ref="+M)
+        data=encoded(destination+" 1234\\n");
+      else if(suffix==="/contents/.github/private-ci-approved-source-snapshots.txt?ref="+M)
+        data=encoded(A+" "+D+" 1234\\n");
+      else if(suffix==="/git/commits/"+A)data={sha:A,tree:{sha:D}};
       else if(suffix==="/git/trees/"+D+"?recursive=1")
         data=sourceTree||{truncated:false,tree:[{type:"blob",path:"main.ores",sha:C,size:4,mode:"100644"}]};
       else if(suffix==="/git/blobs/"+C)
@@ -233,4 +246,16 @@ test("duplicate entries in materialized tree cannot disguise omitted source blob
  const {h,promise}=run({materializedTree:tree});
  await assert.rejects(promise,/materialized snapshot contains duplicate paths/);
  assert.equal(h.events.some(e=>e.path===destination+"/git/refs"),false);
+});
+
+test("publisher denies before source blobs/writes without protected review proof",async()=>{
+ const {h,promise}=run({errors:{["/branches/main/protection"]:true}});
+ await assert.rejects(promise);
+ assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+ assert.equal(h.events.some(e=>e.path.includes("/git/blobs/")),false);
+});
+test("publisher refuses missing sourceTree before any API access",async()=>{
+ const {h,promise}=run({}, {sourceTree:undefined});
+ await assert.rejects(promise,/invalid immutable/);
+ assert.equal(h.events.length,0);
 });

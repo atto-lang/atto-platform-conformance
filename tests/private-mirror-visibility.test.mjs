@@ -3,10 +3,18 @@ import assert from "node:assert/strict";
 import {requirePrivateMirror} from "../bin/require-private-mirror.mjs";
 
 const source = "ores-truffle-oreslang/oreslang-source.java";
+const A="a".repeat(40),T="d".repeat(40),M="b".repeat(40),destinationId=1234;
+const encoded=text=>({type:"file",encoding:"base64",sha:"c".repeat(40),
+  content:Buffer.from(text).toString("base64")});
+const rules=()=>({enforce_admins:{enabled:true},
+  required_pull_request_reviews:{require_code_owner_reviews:true,
+    dismiss_stale_reviews:true,required_approving_review_count:1,
+    bypass_pull_request_allowances:{users:[],teams:[],apps:[]}}});
 const destination = "akrion-sim/akrion-sim-e2e";
 const good = name => ({
   full_name: name, private: true, visibility: "private",
-  archived: false, permissions: {push: true}
+  archived:false,disabled:false,id:name===source?1400792274:destinationId,
+  permissions:{push:true}
 });
 function fixture(records = {}, calls = []) {
   return async (url, options) => {
@@ -16,12 +24,21 @@ function fixture(records = {}, calls = []) {
     assert.equal(options.method, "GET");
     assert.equal(options.headers.Authorization, "Bearer restricted-test-token");
     const name = url.slice("https://api.github.com/repos/".length);
-    const result = records[name] ?? good(name);
+    const defaults={
+      [source+"/branches/main"]:{name:"main",protected:true,commit:{sha:M}},
+      [source+"/branches/main/protection"]:rules(),
+      [source+"/contents/.github/private-ci-approved-repositories.txt?ref="+M]:
+        encoded(destination+" "+destinationId+"\\n"),
+      [source+"/contents/.github/private-ci-approved-source-snapshots.txt?ref="+M]:
+        encoded(A+" "+T+" "+destinationId+"\\n"),
+      [source+"/git/commits/"+A]:{sha:A,tree:{sha:T}}
+    };
+    const result=records[name]??defaults[name]??good(name);
     return {status: result?.status ?? 200, json: async () => result?.data ?? result};
   };
 }
 const base = {
-  source, destination, approvedDestinations: [destination],
+  source,destination,sourceCommit:A,sourceTree:T,approvedDestinations:[destination],
   token: "restricted-test-token"
 };
 const check = (overrides = {}, records = {}, calls = []) =>
@@ -30,9 +47,10 @@ const check = (overrides = {}, records = {}, calls = []) =>
 test("accepts only explicitly approved and GitHub-verified writable private destination", async () => {
   const calls = [];
   assert.deepEqual(await check({}, {}, calls), {
-    status: "PRIVATE_MIRROR_APPROVED", source, destination
+    status:"PRIVATE_MIRROR_APPROVED",source,destination,
+    sourceCommit:A,sourceTree:T,destinationId
   });
-  assert.equal(calls.length, 2);
+  assert.equal(calls.length, 8);
   assert.equal(calls[0].url.endsWith("/" + source), true);
   assert.equal(calls[1].url.endsWith("/" + destination), true);
 });
@@ -129,4 +147,53 @@ test("transport and JSON parse errors redact credentials even if client errors i
       return true;
     });
   }
+});
+
+test("unprotected source or missing enforceable codeowner review rejects",async()=>{
+ const branch={name:"main",protected:false,commit:{sha:M}};
+ const review={...rules(),required_pull_request_reviews:{
+   ...rules().required_pull_request_reviews,require_code_owner_reviews:false}};
+ for(const records of [
+  {[source+"/branches/main"]:branch},
+  {[source+"/branches/main/protection"]:review},
+  {[source+"/branches/main/protection"]:{status:403}}
+ ]) {
+  const calls=[];
+  await assert.rejects(check({},records,calls),/protected source main|codeowner|unavailable/);
+  assert.equal(calls.filter(x=>x.options.method!=="GET").length,0);
+ }
+});
+test("reviewed policy must pin destination numeric ID and immutable source snapshot",async()=>{
+ const a=source+"/contents/.github/private-ci-approved-repositories.txt?ref="+M;
+ const b=source+"/contents/.github/private-ci-approved-source-snapshots.txt?ref="+M;
+ for(const records of [
+  {[a]:encoded("# empty\\n")},
+  {[a]:encoded(destination+" 9999\\n")},
+  {[b]:encoded("# empty\\n")},
+  {[b]:encoded(A+" "+"e".repeat(40)+" "+destinationId+"\\n")},
+  {[b]:encoded(A+" "+T+" "+destinationId+"\\n"+A+" "+T+" "+destinationId+"\\n")}
+ ]) await assert.rejects(check({},records),/approval/);
+});
+test("untrusted source ID, missing source pins, and mismatched Git tree deny",async()=>{
+ for(const change of [{sourceTree:undefined},{sourceCommit:undefined},{sourceCommit:"x".repeat(40)}]){
+  const calls=[];
+  await assert.rejects(check(change,{},calls),/exact pinned/);
+  assert.equal(calls.length,0);
+ }
+ await assert.rejects(check({},{[source]:{...good(source),id:7}}),/immutable source/);
+ await assert.rejects(check({},{[source+"/git/commits/"+A]:{
+  sha:A,tree:{sha:"e".repeat(40)}}}),/commit\\/tree mismatch/);
+});
+test("protected-main revision change while reading policy denies",async()=>{
+ let visits=0;
+ const fallback=fixture();
+ const mock=async(url,options)=>{
+  if(url.endsWith("/"+source+"/branches/main")){
+   ++visits;
+   return {status:200,json:async()=>({name:"main",protected:true,
+     commit:{sha:visits===1?M:"e".repeat(40)}})};
+  }
+  return fallback(url,options);
+ };
+ await assert.rejects(check({fetchImpl:mock}),/changed during source admission/);
 });

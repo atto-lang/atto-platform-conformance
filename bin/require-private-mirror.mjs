@@ -9,6 +9,14 @@
  */
 import {pathToFileURL} from "node:url";
 
+const SOURCE_IDS = Object.freeze({
+  "ores-truffle-oreslang/oreslang-source.java": 1400792274,
+  "ores-truffle-oreslang/oreslang-source.llvm": 1410897874,
+  "ores-truffle-oreslang/oreslang-source.net": 1419704375,
+  "ores-truffle-oreslang/oreslang-source.wasm": 1419858954,
+  "ores-truffle-oreslang/oreslang-source.forge": 1419703674
+});
+const OID = /^[a-f0-9]{40}$/;
 const FULL_NAME = /^[A-Za-z0-9][A-Za-z0-9_.-]*\/[A-Za-z0-9][A-Za-z0-9_.-]*$/;
 
 function repoName(value) {
@@ -54,13 +62,108 @@ async function repoMetadata(name, token, fetchImpl) {
   return result;
 }
 
+
+/** Fail-closed read-only request. Never include errors or raw response bodies. */
+async function metadata(path, token, fetchImpl) {
+  let response;
+  try {
+    response = await fetchImpl("https://api.github.com/" + path, {
+      method: "GET", redirect: "error",
+      headers: {
+        "Accept": "application/vnd.github+json",
+        "Authorization": "Bearer " + token,
+        "X-GitHub-Api-Version": "2022-11-28"
+      },
+      signal: AbortSignal.timeout(5000)
+    });
+  } catch {
+    throw Error("trusted source export policy lookup failed");
+  }
+  if (!response || response.status !== 200) throw Error("trusted source export policy unavailable");
+  try { return await response.json(); }
+  catch { throw Error("trusted source export policy is not decodable"); }
+}
+function policyText(data) {
+  if (!data || data.type !== "file" || data.encoding !== "base64" ||
+      typeof data.content !== "string" || data.content.length > 65536 ||
+      typeof data.sha !== "string" || !OID.test(data.sha) ||
+      !/^[A-Za-z0-9+/=\\r\\n]+$/.test(data.content)) {
+    throw Error("untrusted or oversized source-main policy content");
+  }
+  const clean = data.content.replace(/[\\r\\n]/g, "");
+  const raw = Buffer.from(clean, "base64");
+  if (raw.length > 32768 || raw.toString("base64") !== clean) {
+    throw Error("noncanonical source-main policy content");
+  }
+  const text = raw.toString("utf8");
+  if (!Buffer.from(text, "utf8").equals(raw)) throw Error("invalid source-main policy encoding");
+  return text;
+}
+function requireUniquePolicyEntry(text, fields, expected, label) {
+  let matchCount = 0, seen = new Set();
+  for (const raw of text.split("\\n")) {
+    const line = raw.trim();
+    if (!line || line.startsWith("#")) continue;
+    const values = line.split(" ");
+    if (values.length !== fields || values.some(x => !x || /\\s/.test(x))) {
+      throw Error("malformed reviewed " + label);
+    }
+    const key = values.join(" ");
+    if (seen.has(key)) throw Error("duplicate reviewed " + label);
+    seen.add(key);
+    if (key === expected) matchCount++;
+  }
+  if (matchCount !== 1) throw Error("missing exact protected-main " + label);
+}
+async function protectedSourceApproval(from, sourceCommit, sourceTree, destId, to, token, fetchImpl) {
+  const base = "repos/" + from;
+  const branch = await metadata(base + "/branches/main", token, fetchImpl);
+  const protectedSha = branch?.commit?.sha;
+  if (branch?.name !== "main" || branch.protected !== true ||
+      typeof protectedSha !== "string" || !OID.test(protectedSha)) {
+    throw Error("protected source main is mandatory");
+  }
+  // A branch's protected flag alone cannot prove independent codeowner review.
+  const rules = await metadata(base + "/branches/main/protection", token, fetchImpl);
+  const review = rules?.required_pull_request_reviews;
+  if (review?.require_code_owner_reviews !== true ||
+      review.dismiss_stale_reviews !== true ||
+      !Number.isSafeInteger(review.required_approving_review_count) ||
+      review.required_approving_review_count < 1 ||
+      rules?.enforce_admins?.enabled !== true ||
+      (review?.bypass_pull_request_allowances?.users?.length ?? 0) !== 0 ||
+      (review?.bypass_pull_request_allowances?.teams?.length ?? 0) !== 0 ||
+      (review?.bypass_pull_request_allowances?.apps?.length ?? 0) !== 0) {
+    throw Error("independently enforced codeowner review proof missing");
+  }
+  const file = async name => policyText(await metadata(base +
+    "/contents/.github/" + name + "?ref=" + protectedSha, token, fetchImpl));
+  requireUniquePolicyEntry(await file("private-ci-approved-repositories.txt"),
+    2, to + " " + destId, "destination approval");
+  requireUniquePolicyEntry(await file("private-ci-approved-source-snapshots.txt"),
+    3, sourceCommit + " " + sourceTree + " " + destId, "source snapshot approval");
+  const commit = await metadata(base + "/git/commits/" + sourceCommit, token, fetchImpl);
+  if (commit?.sha !== sourceCommit || commit?.tree?.sha !== sourceTree) {
+    throw Error("reviewed source commit/tree mismatch");
+  }
+  // TOCTOU: fail if protected main changed while its policy was being read.
+  const after = await metadata(base + "/branches/main", token, fetchImpl);
+  if (after?.protected !== true || after?.commit?.sha !== protectedSha) {
+    throw Error("protected policy changed during source admission");
+  }
+}
+
 export async function requirePrivateMirror({
-  source, destination, approvedDestinations, token, fetchImpl = fetch
+  source, destination, sourceCommit, sourceTree, approvedDestinations, token, fetchImpl = fetch
 }) {
   // In particular, no discovery endpoint and no source blob operation may
   // be attempted when approval, credentials or names are missing.
   const from = repoName(source);
   const to = repoName(destination);
+  if (!(from in SOURCE_IDS) || !OID.test(sourceCommit ?? "") ||
+      !OID.test(sourceTree ?? "")) {
+    throw Error("exact pinned Oreslang source commit/tree required");
+  }
   if (!Array.isArray(approvedDestinations) ||
       approvedDestinations.length === 0 || approvedDestinations.length > 32 ||
       !approvedDestinations.every(v => typeof v === "string" && FULL_NAME.test(v)) ||
@@ -77,22 +180,31 @@ export async function requirePrivateMirror({
       sourceRepo.archived === true) {
     throw Error("private source metadata is not securely established");
   }
+  if (sourceRepo.id !== SOURCE_IDS[from] || sourceRepo.disabled !== false) {
+    throw Error("immutable source repository identity mismatch");
+  }
   const destinationRepo = await repoMetadata(to, token, fetchImpl);
   if (destinationRepo.private !== true || destinationRepo.visibility !== "private" ||
-      destinationRepo.archived === true || destinationRepo.permissions?.push !== true) {
+      destinationRepo.archived === true || destinationRepo.disabled !== false ||
+      !Number.isSafeInteger(destinationRepo.id) || destinationRepo.id <= 0 ||
+      destinationRepo.permissions?.push !== true) {
     throw Error("destination must be a writable verified PRIVATE GitHub repository");
   }
-  return Object.freeze({status: "PRIVATE_MIRROR_APPROVED", source: from, destination: to});
+  await protectedSourceApproval(from, sourceCommit, sourceTree,
+    destinationRepo.id, to, token, fetchImpl);
+  return Object.freeze({status: "PRIVATE_MIRROR_APPROVED", source: from, destination: to,
+    sourceCommit, sourceTree, destinationId: destinationRepo.id});
 }
 
 if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
   try {
-    if (process.argv.length !== 4) throw Error("usage: require-private-mirror.mjs <source-owner/repo> <destination-owner/repo>");
+    if (process.argv.length !== 6) throw Error("usage: require-private-mirror.mjs <source-owner/repo> <destination-owner/repo> <source-commit> <source-tree>");
     const approvedDestinations = (process.env.ORES_APPROVED_PRIVATE_MIRRORS || "")
       .split(",").filter(Boolean);
     const verdict = await requirePrivateMirror({
       source: process.argv[2],
       destination: process.argv[3],
+      sourceCommit: process.argv[4], sourceTree: process.argv[5],
       approvedDestinations,
       token: process.env.GH_TOKEN || process.env.GITHUB_TOKEN
     });
