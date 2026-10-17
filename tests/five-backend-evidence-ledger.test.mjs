@@ -181,3 +181,20 @@ test("source-free verifier receipt is never native guest parity",()=>{
   assert.equal(pending.claimedExecutionCount,0);
   assert.equal(pending.parityCertified,false);
 });
+
+test("reject runner housekeeping as native guest test steps",()=>{
+  for (const name of [
+    "Set up job", "Complete job", "Initialize containers",
+    "Start containers", "Stop containers", "Post Checkout", "Pre Checkout"
+  ]) {
+    const x=base();x.records[0]=executed(BACKENDS[0]);
+    x.records[0].execution.testStep=name;
+    reject(x);
+  }
+  const x=base();x.records[0]=executed(BACKENDS[0]);
+  x.records[0].execution.testStep="Run actual native guest fixture";
+  const result=check(x);
+  assert.equal(result.claimedExecutionCount,1);
+  assert.equal(result.parityCertified,false);
+  assert.equal(result.authenticatedExecutionCount,0);
+});
