@@ -28,10 +28,11 @@ test("import v1 corpus covers five targets but never claims runtime verification
   assert.ok(Object.values(inventory.backends).every(status =>
     !/^(verified|complete|parity)$/i.test(status)));
   assert.deepEqual(inventory.cases.map(({id}) => id), [
-    "project-root-function", "relative-function", "rooted-parent-rejection"
+    "project-root-function", "relative-function", "rooted-parent-rejection",
+    "cr-comment-relative-function", "cr-comment-rooted-parent-rejection"
   ]);
   assert.deepEqual(inventory.cases.map(({expect}) => expect),
-    ["return-42", "return-42", "reject"]);
+    ["return-42", "return-42", "reject", "return-42", "reject"]);
   for (const entry of inventory.cases) await fixture(entry.entry);
 });
 
@@ -51,4 +52,21 @@ test("two positive entrypoints share one package-local function", async () => {
 test("negative fixture encodes normalization-within-root traversal", async () => {
   const invalid = await fixture("project/src/invalid-root-traversal.ores");
   assert.match(invalid, /"\+\/src\/\.\.\/src\/lib\/helper"/);
+});
+
+
+test("CR-only line comment cannot hide a canonical import or traversal rejection", async () => {
+  const positives = await fixture("project/src/main-cr-comment.ores");
+  const negative = await fixture("project/src/invalid-cr-root-traversal.ores");
+  for (const [name, source] of [["positive", positives], ["negative", negative]]) {
+    assert.match(source, /^\/\/[^\r\n]+\rimport fnc helper from "/,
+      name + ": the import must start on the second logical line");
+    assert.equal(source.includes("\n"), false,
+      name + ": fixture must use CR-only line endings, not normalize to LF");
+    assert.ok(source.includes("\rfnc main(): int"),
+      name + ": main must follow the import on another CR-only line");
+  }
+  assert.match(positives, /import fnc helper from "\.\/lib\/helper";/);
+  assert.match(positives, /return helper\(41\);/);
+  assert.match(negative, /import fnc helper from "\+\/src\/\.\.\/src\/lib\/helper";/);
 });
