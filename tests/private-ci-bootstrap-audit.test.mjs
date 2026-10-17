@@ -144,7 +144,7 @@ test("Java preserves extended terminal ownership plus wildcard and source/carrie
   assert.doesNotThrow(()=>auditCodeowners(javaCodeowners,JAVA_REPO));
   assert.doesNotThrow(()=>auditRequiredChecks(javaChecks,protection(),JAVA_REPO));
   assert.throws(()=>auditCodeowners(javaCodeowners.replace(
-    "/.github/workflows/ @ORESoftware\\n",""),JAVA_REPO),/wildcard missing/);
+    "/.github/workflows/ @ORESoftware",""),JAVA_REPO),/wildcard missing/);
   assert.throws(()=>auditCodeowners(javaCodeowners.replace(
     "/scripts/publish-private-ci-source.py @ORESoftware",
     "/scripts/publish-private-ci-source.py @Unreviewed"),JAVA_REPO),/final block mismatch/);
