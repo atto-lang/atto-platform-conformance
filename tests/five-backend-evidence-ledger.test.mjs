@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {BACKENDS, EXPECTED_GIT_BLOB, RELATIVE_FIXTURE} from "../src/five-backend-scalar.mjs";
 import {EVIDENCE_SCHEMA, REPOSITORY_IDS, EXECUTION_MODES,
-  validateFiveBackendEvidenceManifest as check} from "../src/five-backend-evidence-ledger.mjs";
+  validateFiveBackendEvidenceManifest as check,
+  validateSourceFreeVerifierReceipt as checkSourceFree} from "../src/five-backend-evidence-ledger.mjs";
 
 function base() {
   return {schema:EVIDENCE_SCHEMA,
@@ -166,6 +167,76 @@ test("reject malformed artifact or log digests",()=>{
   }
 });
 
+
+function sourceFree82(){
+  return {
+    schema:"oreslang.source_free_ci_verifier_82.v1",
+    repository:"scintilla-run-test/gleam-runner-conformance",
+    carrier_head_sha:"36204819e5439de6964b8d3b297ba4c75420b9d2",
+    carrier_tree_sha:"07f7164cd1f802ee6c46b0102649819592504d29",
+    run_id:38997728835,run_attempt:1,source_free_only:true,
+    private_runtime_or_compiler_source_transferred:false,
+    guest_runtime_certified:false,source_repository_native_ci_certified:false,
+    tests_per_round:82,rounds:3,expected_total:246,
+    git_blobs:{
+      "scripts/verify_ci_run.py":"1d7b03db64a8576b5c4271b6f7571df503dffd81",
+      "scripts/test_verify_ci_run.py":"45ada59ac6001254897edf9f8cd3b75ef4f58acc",
+      ".github/workflows/ci-run-evidence-contract.yml":
+        "c62d13b3c3e9d666d90f752bcf96cbe07588a648"
+    }
+  };
+}
+test("validated 82x3 source-free receipt remains non-native evidence",()=>{
+  const result=checkSourceFree(sourceFree82());
+  assert.equal(result.regressionExecutionsClaimed,246);
+  assert.equal(result.status,"SOURCE_FREE_RECEIPT_SHAPE_ONLY_NOT_AUTHENTICATED");
+  assert.equal(result.nativeExecutionAuthenticated,false);
+  assert.equal(result.authenticatedExecutionCount,0);
+  assert.equal(result.parityCertified,false);
+  assert.equal(result.releaseReady,false);
+  assert.equal(result.externalVerificationRequired,true);
+  assert.equal(check(base()).blocked.length,5);
+});
+test("reject older 82-case GitHub artifact with stale expected_total 231",()=>{
+  // Carrier run 38997306268 reported 82 tests per round in 3 rounds, but
+  // wrote old total 231. It is NOT acceptable evidence for 246 cases.
+  const stale=sourceFree82();
+  stale.carrier_head_sha="1e5da5ef0398cdddcbbc13ea1881334d825775b4";
+  stale.run_id=38997306268;
+  stale.expected_total=231;
+  assert.throws(()=>checkSourceFree(stale),/stale or inconsistent/);
+  // A valid older 77-case shape may still report 231; never native.
+  stale.schema="oreslang.source_free_ci_verifier_77.v1";
+  stale.tests_per_round=77;
+  const old=checkSourceFree(stale);
+  assert.equal(old.regressionExecutionsClaimed,231);
+  assert.equal(old.parityCertified,false);
+});
+test("fail closed on incomplete, native-promoting and malformed source-free receipts",()=>{
+  const cases=[
+    ["missing blob",r=>delete r.git_blobs["scripts/test_verify_ci_run.py"]],
+    ["unexpected blob",r=>r.git_blobs["secrets/token.txt"]="a".repeat(40)],
+    ["wrong verifier SHA",r=>r.git_blobs["scripts/verify_ci_run.py"]="BAD"],
+    ["native guest claim",r=>r.guest_runtime_certified=true],
+    ["native CI claim",r=>r.source_repository_native_ci_certified=true],
+    ["copied private source claim",r=>r.private_runtime_or_compiler_source_transferred=true],
+    ["source-free classification removed",r=>r.source_free_only=false],
+    ["unsupported schema",r=>r.schema="oreslang.source_free_ci_verifier_99999.v1"],
+    ["schema round-count disagreement",r=>r.tests_per_round=81],
+    ["zero rounds",r=>r.rounds=0],
+    ["implausible rounds",r=>r.rounds=13],
+    ["missing total",r=>delete r.expected_total],
+    ["run ID boolean",r=>r.run_id=true],
+    ["run attempt zero",r=>r.run_attempt=0],
+    ["forged extra field",r=>r.parityCertified=true],
+    ["bad carrier SHA",r=>r.carrier_head_sha="0".repeat(39)],
+  ];
+  for(const [label,mutate] of cases){
+    const receipt=sourceFree82();
+    mutate(receipt);
+    assert.throws(()=>checkSourceFree(receipt),/INVALID_FIVE_BACKEND_EVIDENCE/,label);
+  }
+});
 
 test("source-free verifier receipt is never native guest parity",()=>{
   // Actual, GitHub-hosted source-free 73-test report. Its successful
