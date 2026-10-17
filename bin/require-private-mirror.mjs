@@ -138,6 +138,9 @@ async function protectedSourceApproval(from, sourceCommit, sourceTree, destId, t
       !Number.isSafeInteger(review.required_approving_review_count) ||
       review.required_approving_review_count < 1 ||
       rules?.enforce_admins?.enabled !== true ||
+       checks?.strict !== true || namedChecks.length === 0 ||
+       !namedChecks.every(x => typeof x === "string" && x.length > 0) ||
+       !review?.bypass_pull_request_allowances ||
       (review?.bypass_pull_request_allowances?.users?.length ?? 0) !== 0 ||
       (review?.bypass_pull_request_allowances?.teams?.length ?? 0) !== 0 ||
       (review?.bypass_pull_request_allowances?.apps?.length ?? 0) !== 0) {
