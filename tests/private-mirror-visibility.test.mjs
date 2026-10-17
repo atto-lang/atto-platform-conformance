@@ -3,11 +3,11 @@ import assert from "node:assert/strict";
 import {createHash} from "node:crypto";
 import {requirePrivateMirror} from "../bin/require-private-mirror.mjs";
 
-const source = "ores-truffle-oreslang/oreslang-source.java";
-const A="a".repeat(40),T="d".repeat(40),M="b".repeat(40),destinationId=1234;
+const source = "ores-truffle-oreslang/oreslang-source.llvm";
+const A="a".repeat(40),T="d".repeat(40),M="b".repeat(40),C="c".repeat(40),destinationId=1234;
 const encoded=text=>({type:"file",encoding:"base64",sha:createHash("sha1").update("blob "+Buffer.byteLength(text)+"\0").update(text).digest("hex"),
   content:Buffer.from(text).toString("base64")});
-const securityOwners="@ores-truffle-oreslang/security";
+const securityOwners="@ORESoftware";
 const codeowners=[
   "/.github/CODEOWNERS "+securityOwners,
   "/.github/private-ci-approved-repositories.txt "+securityOwners,
@@ -15,16 +15,35 @@ const codeowners=[
   "/.github/private-ci-required-checks.json "+securityOwners,
   "/.github/workflows/private-ci-policy.yml "+securityOwners
 ].join("\n")+"\n";
-const requiredChecks=JSON.stringify({schema:1,checks:[{context:"native-tests",appId:4321}]})+"\n";
+const requiredChecks=JSON.stringify({schema:1,checks:[{context:"private-ci-policy",appId:15368}]})+"\n";
 const rules=()=>({enforce_admins:{enabled:true},
-  required_status_checks:{strict:true,contexts:[],checks:[{context:"native-tests",app_id:4321}]},
+  required_status_checks:{strict:true,contexts:[],checks:[{context:"private-ci-policy",app_id:15368}]},
   required_pull_request_reviews:{require_code_owner_reviews:true,
     dismiss_stale_reviews:true,required_approving_review_count:1,
     bypass_pull_request_allowances:{users:[],teams:[],apps:[]}}});
 const destination = "akrion-sim/akrion-sim-e2e";
+const incidentPath="ores-truffle-oreslang/oreslang-platform-conformance/issues/22";
+const incident={
+  number:22,state:"closed",state_reason:"completed",
+  title:"P0 SECURITY: private Oreslang source mirrored into public GitHub Actions carrier",
+  html_url:"https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22",
+  repository_url:"https://api.github.com/repos/ores-truffle-oreslang/oreslang-platform-conformance",
+  closed_at:"2026-10-17T18:30:00Z"
+};
+const carrierCodeowners=[
+  "/.github/workflows/ @ORESoftware",
+  "/.github/CODEOWNERS @ORESoftware",
+  "/.github/private-ci-carrier-policy.json @ORESoftware"
+].join("\n")+"\n";
+const carrierPolicy=JSON.stringify({schema:1,carrier:{context:"carrier-policy",appId:15368}})+"\n";
+const carrierRules=()=>({enforce_admins:{enabled:true},
+  required_status_checks:{strict:true,contexts:[],checks:[{context:"carrier-policy",app_id:15368}]},
+  required_pull_request_reviews:{require_code_owner_reviews:true,
+    dismiss_stale_reviews:true,required_approving_review_count:1,
+    bypass_pull_request_allowances:{users:[],teams:[],apps:[]}}});
 const good = name => ({
   full_name: name, private: true, visibility: "private",
-  archived:false,disabled:false,id:name===source?1400792274:destinationId,
+  archived:false,disabled:false,id:name===source?1410897874:destinationId,
   permissions:{push:true}
 });
 function fixture(records = {}, calls = []) {
@@ -36,6 +55,11 @@ function fixture(records = {}, calls = []) {
     assert.equal(options.headers.Authorization, "Bearer restricted-test-token");
     const name = url.slice("https://api.github.com/repos/".length);
     const defaults={
+      [incidentPath]:incident,
+      [destination+"/branches/main"]:{name:"main",protected:true,commit:{sha:C}},
+      [destination+"/branches/main/protection"]:carrierRules(),
+      [destination+"/contents/.github/CODEOWNERS?ref="+C]:encoded(carrierCodeowners),
+      [destination+"/contents/.github/private-ci-carrier-policy.json?ref="+C]:encoded(carrierPolicy),
       [source+"/branches/main"]:{name:"main",protected:true,commit:{sha:M}},
       [source+"/branches/main/protection"]:rules(),
       [source+"/contents/.github/CODEOWNERS?ref="+M]:encoded(codeowners),
@@ -64,7 +88,7 @@ test("accepts only explicitly approved and GitHub-verified writable private dest
     status:"PRIVATE_MIRROR_APPROVED",source,destination,
     sourceCommit:A,sourceTree:T,destinationId
   });
-  assert.equal(calls.length, 10);
+  assert.equal(calls.length, 16);
   assert.equal(calls[0].url.endsWith("/" + source), true);
   assert.equal(calls[1].url.endsWith("/" + destination), true);
 });
@@ -90,7 +114,7 @@ test("rejects wrong or public source metadata even when destination is private",
   ]) {
     const calls = [];
     await assert.rejects(check({}, {[source]: metadata}, calls), /private source metadata/);
-    assert.equal(calls.length, 1, "cannot even inspect target after source rejection");
+    assert.equal(calls.length, 2, "cannot inspect target after incident + source rejection");
   }
 });
 
@@ -157,7 +181,7 @@ test("transport and JSON parse errors redact credentials even if client errors i
   ]) {
     await assert.rejects(check({fetchImpl}), error => {
       assert.equal(error.message.includes(secret), false, "token leaked in error");
-      assert.match(error.message, /visibility lookup failed|metadata could not be decoded/);
+      assert.match(error.message, /lookup failed|metadata could not be decoded|policy lookup failed|not decodable/);
       return true;
     });
   }
@@ -240,11 +264,11 @@ test("additional required checks are allowed only when every check is app-bound 
  const key=source+"/branches/main/protection";
  const baseline=rules();
  const extra={...baseline,required_status_checks:{strict:true,contexts:[],checks:[
-  {context:"native-tests",app_id:4321},{context:"security-lint",app_id:15368}
+  {context:"private-ci-policy",app_id:15368},{context:"security-lint",app_id:15368}
  ]}};
  assert.deepEqual((await check({}, {[key]:extra})).destinationId,destinationId);
  const unbound={...baseline,required_status_checks:{strict:true,contexts:[],checks:[
-  {context:"native-tests",app_id:4321},{context:"security-lint",app_id:null}
+  {context:"private-ci-policy",app_id:15368},{context:"security-lint",app_id:null}
  ]}};
  await assert.rejects(check({}, {[key]:unbound}),/context\/app identity invalid/);
 });
@@ -266,9 +290,9 @@ test("required-check policy must exactly bind context to GitHub App ID",async()=
  const path=source+"/contents/.github/private-ci-required-checks.json?ref="+M;
  for(const text of [
   JSON.stringify({schema:1,checks:[]}),
-  JSON.stringify({schema:1,checks:[{context:"native-tests",appId:0}]}),
-  JSON.stringify({schema:1,checks:[{context:"native-tests",appId:4321},{context:"native-tests",appId:4321}]}),
-  JSON.stringify({schema:1,checks:[{context:"native-tests",appId:9999}]})
+  JSON.stringify({schema:1,checks:[{context:"private-ci-policy",appId:0}]}),
+  JSON.stringify({schema:1,checks:[{context:"private-ci-policy",appId:15368},{context:"private-ci-policy",appId:15368}]}),
+  JSON.stringify({schema:1,checks:[{context:"private-ci-policy",appId:9999}]})
  ]){
   await assert.rejects(check({}, {[path]:encoded(text+"\n")}),
     /required-check policy|context\/app identity/);
@@ -279,10 +303,10 @@ test("strict app-bound required CI and reviewer bypass protection are mandatory"
  const baseline=rules();
  for(const [bad,pattern] of [
   [{...baseline,required_status_checks:undefined},/required status checks/],
-  [{...baseline,required_status_checks:{strict:false,contexts:[],checks:[{context:"native-tests",app_id:4321}]}},/required status checks/],
-  [{...baseline,required_status_checks:{strict:true,contexts:["legacy"],checks:[{context:"native-tests",app_id:4321}]}},/required status checks/],
+  [{...baseline,required_status_checks:{strict:false,contexts:[],checks:[{context:"private-ci-policy",app_id:15368}]}},/required status checks/],
+  [{...baseline,required_status_checks:{strict:true,contexts:["legacy"],checks:[{context:"private-ci-policy",app_id:15368}]}},/required status checks/],
   [{...baseline,required_status_checks:{strict:true,contexts:[],checks:[]}},/required status checks/],
-  [{...baseline,required_status_checks:{strict:true,contexts:[],checks:[{context:"native-tests",app_id:9999}]}},/context\/app identity/],
+  [{...baseline,required_status_checks:{strict:true,contexts:[],checks:[{context:"private-ci-policy",app_id:9999}]}},/context\/app identity/],
   [{...baseline,required_pull_request_reviews:{...baseline.required_pull_request_reviews,
     bypass_pull_request_allowances:{users:[{login:"owner"}],teams:[],apps:[]}}},/codeowner review proof/],
   [{...baseline,required_pull_request_reviews:{...baseline.required_pull_request_reviews,
@@ -315,4 +339,50 @@ test("noncanonical base64 and invalid policy UTF8 must deny",async()=>{
  ]){
   await assert.rejects(check({}, {[policy]:data}),/policy content/);
  }
+});
+
+
+test("incident #22 must be exactly completed before source metadata is inspected",async()=>{
+  for(const bad of [
+    {...incident,state:"open",state_reason:null,closed_at:null},
+    {...incident,state_reason:"not_planned"},
+    {...incident,title:"renamed incident"},
+    {...incident,repository_url:"https://api.github.com/repos/other/repo"},
+    {...incident,closed_at:"not-a-timestamp"}
+  ]){
+    const calls=[];
+    await assert.rejects(check({}, {[incidentPath]:bad}, calls),/incident is not completed/);
+    assert.equal(calls.length,1);
+  }
+});
+
+test("destination carrier main, review policy, CODEOWNERS and issuer-bound check are mandatory",async()=>{
+  const branch=destination+"/branches/main";
+  const protection=destination+"/branches/main/protection";
+  const owners=destination+"/contents/.github/CODEOWNERS?ref="+C;
+  const policy=destination+"/contents/.github/private-ci-carrier-policy.json?ref="+C;
+  for(const [records,pattern] of [
+    [{[branch]:{name:"main",protected:false,commit:{sha:C}}},/protected carrier main/],
+    [{[protection]:{...carrierRules(),enforce_admins:{enabled:false}}},/protection mismatch/],
+    [{[protection]:{...carrierRules(),required_status_checks:{strict:true,contexts:[],checks:[{context:"carrier-policy",app_id:9999}]}}},/carrier-policy check\/app binding/],
+    [{[protection]:{...carrierRules(),required_status_checks:{strict:true,contexts:["legacy"],checks:[{context:"carrier-policy",app_id:15368}]}}},/strict app-bound carrier/],
+    [{[owners]:encoded(carrierCodeowners+"* @someone-else\n")},/carrier security CODEOWNERS/],
+    [{[policy]:encoded(JSON.stringify({schema:1,carrier:{context:"carrier-policy",appId:9999}})+"\n")},/carrier policy identity/]
+  ]){
+    await assert.rejects(check({},records),pattern);
+  }
+});
+
+test("carrier protected-main drift during admission denies",async()=>{
+  let reads=0;
+  const fallback=fixture();
+  const fetchImpl=async(url,options)=>{
+    if(url.endsWith("/"+destination+"/branches/main")){
+      reads++;
+      return {status:200,json:async()=>({name:"main",protected:true,
+        commit:{sha:reads===1?C:"e".repeat(40)}})};
+    }
+    return fallback(url,options);
+  };
+  await assert.rejects(check({fetchImpl}),/carrier policy changed during admission/);
 });
