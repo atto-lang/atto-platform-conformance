@@ -171,6 +171,8 @@ export function auditProtection(protection){
      !Number.isSafeInteger(review.required_approving_review_count) ||
      review.required_approving_review_count<1 ||
      protection?.enforce_admins?.enabled!==true ||
+     protection?.allow_force_pushes?.enabled!==false ||
+     protection?.allow_deletions?.enabled!==false ||
      !review?.bypass_pull_request_allowances ||
      !Array.isArray(review.bypass_pull_request_allowances.users) ||
      !Array.isArray(review.bypass_pull_request_allowances.teams) ||
