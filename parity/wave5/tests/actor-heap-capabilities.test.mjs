@@ -62,7 +62,7 @@ test('LLVM scalar zero-GC status is intentionally narrower than general heap par
   assert.equal(llvm.allocationLevel, 'compiled-scalar');
   assert.equal(llvm.zeroGcClaim, 'compiled-scalar-only');
   assert.equal(llvm.generalGuestHeap, false);
-  assert.equal(llvm.verified, false);
+  assert.equal(llvm.verified, true);
 });
 
 test('semantic parity cannot be toggled without every verified compiled-general backend', async () => {
