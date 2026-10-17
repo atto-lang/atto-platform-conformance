@@ -85,7 +85,7 @@ test("rejects absent backend directory even with both scalar fixtures elsewhere"
 });
 
 test("rejects malformed workspace rather than fabricating source-only success", async () => {
-  for (const value of ["", "\\0", null, 42]) {
+  for (const value of ["", "\0", null, 42]) {
     await assert.rejects(verifyFiveBackendScalarPairSourceIdentity(value));
   }
 });
