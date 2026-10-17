@@ -256,6 +256,31 @@ source-free verifier executed. Private-source transfer remains blocked until
 the outstanding exposure incident and independently reviewed protected-main
 approval policy have been resolved.
 
+## Current source-free 85-test byte parity and verified 255/255 proof
+
+All five `oreslang-source.*` verifier review branches now have identical:
+- `scripts/verify_ci_run.py`, Git blob `b59a7880f060582694ed4a9862caede5e5f3e8b9`;
+- `scripts/test_verify_ci_run.py`, Git blob `84eedb6beec2e8fbe81b7539095ef4550a09b0cf`, with 85 unittest methods;
+- `docs/CI_RUN_SOURCE_FREE_85_RECEIPT.md`, Git blob `ee9c2d7f00e702f1633e51f28e1023278303fbb5`.
+
+Independent carrier [run 38998088804](https://github.com/scintilla-run-test/gleam-runner-conformance/actions/runs/38998088804) executed those two script blobs in 3 rounds of **85** source-free regressions: **255/255 passed**, 8 real successful job steps. Carrier HEAD `ba78a09a767a43acf9f248d1999fa41456c1c5a4`, tree `eca4be6b8e286955733bdc31d8d8570535632ba1`; job ID `117294970323`. Exact source-free reference workflow blob `78bd3f8e95f2097d244468d80833f696fed46141`.
+
+[Artifact #12087253307](https://github.com/scintilla-run-test/gleam-runner-conformance/actions/runs/38998088804/artifacts/12087253307) has independently verified downloaded ZIP SHA-256
+`cf6076b613f70b9098915ef4724bcc0f18c3f31c6c06dfb0b4749f8d22da67c0`. Its `85-parity.json` states
+`schema:oreslang.source_free_ci_verifier_85.v1`,
+`tests_per_round:85`, `rounds:3`, `expected_total:255`, and all
+native/guest-source transfer certification flags are **false**.
+This receipt is distinct from the earlier invalid 82-case report and from the
+corrected historical 82-case receipt. It is still **SOURCE-FREE ONLY**.
+
+The ledger's `validateSourceFreeVerifierReceipt` performs fail-closed
+schema, arithmetic, Git-blob-format and non-native-classification checks.
+A valid *shape* is not proof that the GitHub API, artifact bytes or test logs
+are authentic; those require separate independent review. All five native
+records are still `pending`. No successful source-free proof, no alternate
+organization's runner budget, and no reviewer request can certify Java,
+LLVM, .NET, Forge or Wasm compiler execution or authorize private source export.
+
 ## Runner-housekeeping denial in native evidence declarations
 
 For an `executed-claimed` record, `testStep` must name an **executable**
