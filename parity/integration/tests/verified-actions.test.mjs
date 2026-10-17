@@ -147,3 +147,9 @@ test('55 / CLI refuses a report without a reviewed PR and never creates an outpu
   await assert.rejects(access(output),{code:'ENOENT'});
  } finally {await rm(folder,{recursive:true,force:true})}
 });
+test('52 / contradictory failed workflow or job cannot promote perfect step lists',()=>{
+ const runFailed=full();runFailed.artifacts=[report(runFailed)];runFailed.run.conclusion='failure';
+ assert.equal(assessBoundRun(runFailed,req()).status,'PARTIAL_EXECUTION_NOT_HOST_PROOF');
+ const jobFailed=full();jobFailed.artifacts=[report(jobFailed)];jobFailed.jobs[0].conclusion='failure';
+ assert.equal(assessBoundRun(jobFailed,req()).status,'PARTIAL_EXECUTION_NOT_HOST_PROOF');
+});
