@@ -93,16 +93,25 @@ export function validateFiveBackendEvidenceManifest(manifest) {
       if (Object.hasOwn(record, "reason")) fail("claimed execution must not have pending reason");
       validateExecution(record.execution, record.backend);
       claimed += 1;
+      // This metadata is still unauthenticated. Keep *every* record on the
+      // blocked list until an independent controller validates actual GitHub
+      // jobs, compiler output, guest execution and artifact bytes.
+      blocked.push({backend: record.backend, status: record.status,
+        reason: "SELF_REPORTED_EXECUTION_NOT_AUTHENTICATED"});
     } else if (record.status === "pending" || record.status === "unsupported") {
       nonempty(record.reason, "pending/unsupported reason");
       if (Object.hasOwn(record, "execution")) fail("non-execution status cannot supply an execution claim");
       blocked.push({backend: record.backend, status: record.status, reason: record.reason});
     } else fail("unknown backend status");
   }
-  // Offline metadata can always be fabricated. Never emit certified-parity status.
+  // Offline metadata can always be fabricated. In particular, five claimed
+  // executions must NEVER turn the "blocked" list empty or an
+  // independently-authenticated boolean true. Shape checks only.
   return {status: "EVIDENCE_SHAPE_ONLY_NOT_AUTHENTICATED",
     nativeExecutionAuthenticated: false, parityCertified: false,
+    releaseReady: false, authenticatedExecutionCount: 0,
     backendCount: BACKENDS.length, claimedExecutionCount: claimed,
-    independentlyAuthenticatableClaims: claimed === BACKENDS.length,
+    completeUnverifiedClaimSet: claimed === BACKENDS.length,
+    independentlyAuthenticatableClaims: false,
     blocked};
 }
