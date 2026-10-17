@@ -78,3 +78,24 @@ This audit is intentionally read-only and cannot enable protection. A GitHub
 token that cannot read the protection endpoint fails closed. A passing bootstrap
 audit still does not authorize a source mirror; destination + snapshot approval
 must be added later through a separate protected, independently reviewed change.
+
+
+## One-backend canary proposal
+
+After the protected-main bootstrap audit passes, use the read-only proposal tool
+to construct the exact policy lines for **one** backend and **one** verified
+private destination:
+
+`GH_TOKEN=<token> npm run propose:private-ci-canary -- <source-owner/repo> <private-destination-owner/repo> <source-commit>`
+
+The command verifies source/destination privacy and immutable repository IDs,
+resolves the source commit's exact root tree, and requires that commit to be
+reachable from source `main`. It performs GET requests only and prints:
+
+- the exact destination approval line: `owner/repo numeric_repository_id`;
+- the exact snapshot approval line: `source_commit root_tree destination_id`.
+
+The output is **proposal text, not authorization**. Add it only through a
+separate protected CODEOWNERS-reviewed source policy PR after
+`audit:private-ci-bootstrap` passes. Start with exactly one backend/snapshot;
+do not grant wildcard, branch-name, moving-ref, or multi-repository approval.
