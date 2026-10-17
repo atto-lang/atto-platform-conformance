@@ -144,7 +144,7 @@ export function auditRequiredChecks(text,protection,repo){
   }
   const checks=protection?.required_status_checks;
   if(checks?.strict!==true || !Array.isArray(checks.checks) ||
-     (Array.isArray(checks.contexts) && checks.contexts.length!==0)){
+     !Array.isArray(checks.contexts) || checks.contexts.length!==0){
     error("strict app-bound required checks missing");
   }
   const seen=new Set();
@@ -168,9 +168,12 @@ export function auditProtection(protection){
      review.required_approving_review_count<1 ||
      protection?.enforce_admins?.enabled!==true ||
      !review?.bypass_pull_request_allowances ||
-     (review.bypass_pull_request_allowances.users?.length??0)!==0 ||
-     (review.bypass_pull_request_allowances.teams?.length??0)!==0 ||
-     (review.bypass_pull_request_allowances.apps?.length??0)!==0){
+     !Array.isArray(review.bypass_pull_request_allowances.users) ||
+     !Array.isArray(review.bypass_pull_request_allowances.teams) ||
+     !Array.isArray(review.bypass_pull_request_allowances.apps) ||
+     review.bypass_pull_request_allowances.users.length!==0 ||
+     review.bypass_pull_request_allowances.teams.length!==0 ||
+     review.bypass_pull_request_allowances.apps.length!==0){
     error("review/admin/no-bypass protection mismatch");
   }
 }
@@ -180,6 +183,7 @@ function auditEmptyApprovals(destinationText,snapshotText){
 }
 export async function auditRepository(repo,{token,fetchImpl=fetch}={}){
   if(typeof token!=="string" || !token.trim()) error("authenticated GitHub token required");
+  if(!SOURCE_REPOSITORIES.includes(repo)) error("source repository is not allowlisted");
   if(typeof fetchImpl!=="function") error("GitHub fetch implementation unavailable");
   const base="https://api.github.com/repos/"+repo;
   const branch=await getJson(base+"/branches/main",token,fetchImpl);
@@ -203,6 +207,10 @@ export async function auditRepository(repo,{token,fetchImpl=fetch}={}){
   auditProtection(protection);
   auditRequiredChecks(requiredChecks,protection,repo);
   auditEmptyApprovals(destinations,snapshots);
+  // A protection rule can change without changing main's commit SHA.
+  const finalProtection=await getJson(base+"/branches/main/protection",token,fetchImpl);
+  auditProtection(finalProtection);
+  auditRequiredChecks(requiredChecks,finalProtection,repo);
   const after=await getJson(base+"/branches/main",token,fetchImpl);
   if(after?.protected!==true || after?.commit?.sha!==protectedSha){
     error(repo+" protected main changed during audit");

@@ -45,7 +45,7 @@ function encoded(text){
     sha:createHash("sha1").update("blob "+raw.length+"\0").update(raw).digest("hex")};
 }
 function fixture(overrides={},calls=[],repository=repo){
-  let branchReads=0;
+  let branchReads=0, protectionReads=0;
   return async (url,options)=>{
     calls.push({url,options});
     assert.equal(options.method,"GET");
@@ -57,6 +57,10 @@ function fixture(overrides={},calls=[],repository=repo){
       const custom=overrides.branch;
       if(typeof custom==="function") return {status:200,json:async()=>custom(branchReads)};
       return {status:200,json:async()=>custom??{name:"main",protected:true,commit:{sha:SHA}}};
+    }
+    if(url===base+"/branches/main/protection" && typeof overrides.protection==="function"){
+      protectionReads++;
+      return {status:200,json:async()=>overrides.protection(protectionReads)};
     }
     const table={
       [base+"/branches/main/protection"]:overrides.protection??protection(),
@@ -159,4 +163,42 @@ test("Java preserves extended terminal ownership plus wildcard and source/carrie
   });
   assert.equal(result.repo,JAVA_REPO);
   assert.equal(result.status,"BOOTSTRAP_PROTECTED");
+});
+
+test("missing or malformed bypass allowance arrays deny bootstrap",()=>{
+  const r=protection().required_pull_request_reviews;
+  for(const bypass of [
+    {},{users:[]},{users:[],teams:[]},
+    {users:[],teams:[],apps:null},{users:"",teams:[],apps:[]},
+    {users:[],teams:{length:0},apps:[]},
+    {users:[],teams:[],apps:""}
+  ]) assert.throws(()=>auditProtection({...protection(),
+    required_pull_request_reviews:{...r,bypass_pull_request_allowances:bypass}
+  }),/protection mismatch/);
+});
+
+test("missing, null, or untrusted legacy required contexts deny bootstrap",()=>{
+  const p=protection(),{contexts,...rest}=p.required_status_checks;
+  for(const checksMetadata of [rest,{...rest,contexts:null},
+    {...rest,contexts:""},{...rest,contexts:[],strict:false}
+  ]) assert.throws(()=>auditRequiredChecks(checks,
+    {...p,required_status_checks:checksMetadata}),/strict app-bound/);
+});
+
+test("unlisted repository cannot impersonate a bootstrap source",async()=>{
+  let calls=0;
+  await assert.rejects(auditRepository("attacker-org/lookalike",{
+    token:"test-token",fetchImpl:async()=>{calls++;throw Error("unexpected request");}
+  }),/source repository is not allowlisted/);
+  assert.equal(calls,0);
+});
+
+test("review or issuer protection revoked without moving main fails closed",async()=>{
+  await assert.rejects(run({protection:n=>n===1?protection():{
+    ...protection(),enforce_admins:{enabled:false}
+  }}),/review\/admin\/no-bypass/);
+  await assert.rejects(run({protection:n=>n===1?protection():{
+    ...protection(),required_status_checks:{strict:true,contexts:[],
+      checks:[{context:"private-ci-policy",app_id:999}]}
+  }}),/check\/app binding/);
 });
