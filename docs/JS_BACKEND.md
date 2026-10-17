@@ -20,3 +20,33 @@ Build/checkout the JS compiler through your ordinary approved private repository
 Replace the paths and SHA with verified values. A CLI smoke check only exercises the parser/admission surface, **not generated-JS execution**. The harness hashes the executable (Node) and fixtures; the declared compiler SHA is not cryptographically tied to the JS compiler script. Add independent pinned source/artifact provenance before promoting any claims.
 
 Keep the suite UNCONFIGURED without a real compiler path. Do not infer browser execution, iso-lattes readiness, async/actor support or security isolation from a green manifest check.
+
+## Real emitted-ESM runtime evidence
+
+The existing `--check` harness only tests source acceptance/rejection. A
+separate programmatic collector now runs **both** the real JS compiler and its
+emitted ESM fixture on Node 22+:
+
+```js
+import {runJsRuntimeEvidence} from './src/js-runtime-evidence.mjs';
+
+const result = await runJsRuntimeEvidence({
+  compilerScript:'/approved/private/checkout/oreslang-source.js/bin/oreslang-jsc.mjs',
+  declaredSourceSha:'YOUR_EXACT_40_HEX_JS_COMPILER_COMMIT',
+  timeoutMs:10000
+});
+console.log(result);
+if(!result.ok)process.exitCode=1;
+```
+
+The collector checks the fixed shared arithmetic fixture returns `42n`,
+records compiler-script, fixture and emitted-module SHA-256 hashes, and
+reports compilation failures, missing generated modules, runtime failures
+and timeouts explicitly. It never bundles or mirrors the private compiler.
+Tests of the evidence collector itself **do not** imply real compiler execution.
+
+The declared source SHA is not cryptographically bound to the compiler script:
+independently review/attest the exact checkout before approving this evidence.
+The source fixture executes in the Node process with normal host privileges;
+it is trusted and fixed by the conformance repository. This is not a sandbox
+for attacker-supplied source, nor proof of Java numeric semantics or actors.
