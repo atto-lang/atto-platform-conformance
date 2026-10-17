@@ -119,6 +119,88 @@ function requireUniquePolicyEntry(text, fields, expected, label) {
   }
   if (matchCount !== 1) throw Error("missing exact protected-main " + label);
 }
+
+const SECURITY_PATHS = Object.freeze([
+  "/.github/CODEOWNERS",
+  "/.github/private-ci-approved-repositories.txt",
+  "/.github/private-ci-approved-source-snapshots.txt",
+  "/.github/private-ci-required-checks.json"
+]);
+const SECURITY_TEAM = /^@ores-truffle-oreslang\/[A-Za-z0-9_.-]+$/;
+
+function requireSecurityCodeowners(text) {
+  const lines = text.split("\n").map(x => x.trim())
+    .filter(x => x && !x.startsWith("#"));
+  if (lines.length < SECURITY_PATHS.length) {
+    throw Error("security CODEOWNERS final block missing");
+  }
+  const tail = lines.slice(-SECURITY_PATHS.length);
+  const seen = new Set();
+  let owners = null;
+  for (const line of tail) {
+    const values = line.split(/\s+/);
+    const pattern = values.shift();
+    if (!SECURITY_PATHS.includes(pattern) || seen.has(pattern) ||
+        values.length === 0 || values.some(x => !SECURITY_TEAM.test(x))) {
+      throw Error("security CODEOWNERS final block is not exact organization-team ownership");
+    }
+    const normalized = [...new Set(values)].sort();
+    if (normalized.length !== values.length) {
+      throw Error("security CODEOWNERS contains duplicate owners");
+    }
+    const signature = normalized.join(" ");
+    if (owners === null) owners = signature;
+    else if (owners !== signature) {
+      throw Error("security CODEOWNERS policy files do not share one owner set");
+    }
+    seen.add(pattern);
+  }
+  if (seen.size !== SECURITY_PATHS.length) {
+    throw Error("security CODEOWNERS final block incomplete");
+  }
+  return owners;
+}
+
+function requiredChecksPolicy(text) {
+  let value;
+  try { value = JSON.parse(text); }
+  catch { throw Error("required-check policy is not valid JSON"); }
+  if (!value || Object.getPrototypeOf(value) !== Object.prototype ||
+      Object.keys(value).length !== 2 || value.schema !== 1 ||
+      !Array.isArray(value.checks) || value.checks.length < 1 || value.checks.length > 16) {
+    throw Error("required-check policy schema invalid");
+  }
+  const result = new Map();
+  for (const item of value.checks) {
+    if (!item || Object.getPrototypeOf(item) !== Object.prototype ||
+        Object.keys(item).length !== 2 ||
+        typeof item.context !== "string" || item.context.length < 1 || item.context.length > 100 ||
+        /[\r\n\0]/.test(item.context) ||
+        !Number.isSafeInteger(item.appId) || item.appId <= 0) {
+      throw Error("required-check policy entry invalid");
+    }
+    if (result.has(item.context)) throw Error("required-check policy contains duplicate context");
+    result.set(item.context, item.appId);
+  }
+  return result;
+}
+
+function requireExactProtectedChecks(checks, policy) {
+  if (!checks || checks.strict !== true ||
+      !Array.isArray(checks.checks) || checks.checks.length !== policy.size ||
+      (Array.isArray(checks.contexts) && checks.contexts.length !== 0)) {
+    throw Error("exact app-bound required status checks missing");
+  }
+  const seen = new Set();
+  for (const item of checks.checks) {
+    if (!item || typeof item.context !== "string" ||
+        !Number.isSafeInteger(item.app_id) || item.app_id <= 0 ||
+        seen.has(item.context) || policy.get(item.context) !== item.app_id) {
+      throw Error("required status check context/app identity mismatch");
+    }
+    seen.add(item.context);
+  }
+}
 async function protectedSourceApproval(from, sourceCommit, sourceTree, destId, to, token, fetchImpl) {
   const base = "repos/" + from;
   const branch = await metadata(base + "/branches/main", token, fetchImpl);
@@ -131,16 +213,12 @@ async function protectedSourceApproval(from, sourceCommit, sourceTree, destId, t
   const rules = await metadata(base + "/branches/main/protection", token, fetchImpl);
   const review = rules?.required_pull_request_reviews;
   const checks = rules?.required_status_checks;
-  const namedChecks = [...(Array.isArray(checks?.contexts) ? checks.contexts : []),
-    ...(Array.isArray(checks?.checks) ? checks.checks.map(x => x.context) : [])];
   if (review?.require_code_owner_reviews !== true ||
       review.dismiss_stale_reviews !== true ||
       !Number.isSafeInteger(review.required_approving_review_count) ||
       review.required_approving_review_count < 1 ||
       rules?.enforce_admins?.enabled !== true ||
-       checks?.strict !== true || namedChecks.length === 0 ||
-       !namedChecks.every(x => typeof x === "string" && x.length > 0) ||
-       !review?.bypass_pull_request_allowances ||
+      !review?.bypass_pull_request_allowances ||
       (review?.bypass_pull_request_allowances?.users?.length ?? 0) !== 0 ||
       (review?.bypass_pull_request_allowances?.teams?.length ?? 0) !== 0 ||
       (review?.bypass_pull_request_allowances?.apps?.length ?? 0) !== 0) {
@@ -148,6 +226,9 @@ async function protectedSourceApproval(from, sourceCommit, sourceTree, destId, t
   }
   const file = async name => policyText(await metadata(base +
     "/contents/.github/" + name + "?ref=" + protectedSha, token, fetchImpl));
+  requireSecurityCodeowners(await file("CODEOWNERS"));
+  requireExactProtectedChecks(checks,
+    requiredChecksPolicy(await file("private-ci-required-checks.json")));
   requireUniquePolicyEntry(await file("private-ci-approved-repositories.txt"),
     2, to + " " + destId, "destination approval");
   requireUniquePolicyEntry(await file("private-ci-approved-source-snapshots.txt"),
