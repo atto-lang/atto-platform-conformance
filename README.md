@@ -14,7 +14,7 @@ See [the real compiler evidence policy](docs/REAL_COMPILER_EVIDENCE.md). The rep
 
 ## Current deliverable
 
-- Versioned fixture manifest and minimal positive/negative .ores sources targeting **five compiler backends** (`java`, `llvm`, `net`, `wasm`, `forge`); this is a target inventory, not a parity claim.
+- Versioned fixture manifest and minimal positive/negative .ores sources targeting **six compiler backends** (`java`, `llvm`, `net`, `wasm`, `forge`, `js`); this is a target inventory, not a parity claim.
 - Safe subprocess-based command runner with an argv template; no shell interpolation.
 - Executable harness unit tests (using a **fake checker** to verify the harness only).
 - Explicit status: unconfigured, verified, mismatch, spawn failure, timeout.
