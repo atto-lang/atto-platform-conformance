@@ -159,7 +159,7 @@ test("Java preserves extended terminal ownership plus wildcard and source/carrie
   await assert.rejects(auditRepository(JAVA_REPO,{
     token:"test-token",
     fetchImpl:fixture({codeowners:codeowners,checks:javaChecks},[],JAVA_REPO)
-  }),/final block mismatch/);
+  }),/final block missing/);
   const result=await auditRepository(JAVA_REPO,{
     token:"test-token",
     fetchImpl:fixture({codeowners:javaCodeowners,checks:javaChecks},[],JAVA_REPO)
