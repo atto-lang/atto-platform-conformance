@@ -2,7 +2,7 @@
 const fail=x=>{throw Error('integration-ci: '+x)};
 const sha=x=>typeof x==='string'&&/^[a-f0-9]{40}$/.test(x);
 const keys=(v,k)=>{if(!v||typeof v!=='object'||Array.isArray(v)||Object.keys(v).length!==k.length||k.some(x=>!Object.hasOwn(v,x)))fail('missing/unknown evidence field')};
-const stepNames=['Check out integration driver','Check out 6 pinned wave commits','Run pinned six-wave host suites'];
+const stepNames=['Check out integration driver','Set up Node 22','Confirm Clang for native format control cases',...Array.from({length:6},(_,i)=>'Checkout wave '+(i+1)+' exact draft head'),'Check out 6 pinned wave commits','Test integration runner and provenance denial guards','Run pinned six-wave host suites'];
 export function assessWorkflow(input,{expectedHead}={}){
  keys(input,['repository','runId','attempt','head','conclusion','jobs']);
  if(input.repository!=='ores-truffle-oreslang/oreslang-platform-conformance'||!sha(input.head)||!sha(expectedHead)||input.head!==expectedHead)fail('wrong source repository or head');
@@ -18,6 +18,8 @@ export function assessWorkflow(input,{expectedHead}={}){
   seen.add(s.name);
  }
  if(stepNames.some(x=>!seen.has(x)))fail('required checkout/execution steps missing');
+ const positions=stepNames.map(x=>job.steps.findIndex(s=>s.name===x));
+ if(positions.some((value,i)=>i>0&&value<=positions[i-1]))fail('required trusted step order is wrong');
  return Object.freeze({status:'UNTRUSTED_CI_STEP_RECEIPT_SHAPE_VALID',
   stepNamesObserved:stepNames,runId:input.runId,head:input.head,
   fetchedIndependentlyFromGitHub:false,runnerIdentityTrusted:false,
