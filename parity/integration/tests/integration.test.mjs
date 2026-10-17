@@ -118,12 +118,12 @@ test('37 / an untracked Node test cannot be injected into reviewed checkout',asy
  try{
   const root=join(workspace,'wave1'),dir=join(root,'parity','wave1','tests');
   await mkdir(dir,{recursive:true});
-  const path='parity/wave1/tests/probe.test.mjs',source=Buffer.from("import test from 'node:test';test('ok',()=>{});\\n");
+  const path='parity/wave1/tests/probe.test.mjs',source=Buffer.from("import test from 'node:test';test('ok',()=>{});\n");
   await writeFile(join(dir,'probe.test.mjs'),source);
   execFileSync('git',['init','-q',root]);execFileSync('git',['-C',root,'add','.']);
   execFileSync('git',['-C',root,'-c','user.email=test@example.invalid','-c','user.name=Test','commit','-qm','baseline']);
   const head=execFileSync('git',['-C',root,'rev-parse','HEAD'],{encoding:'utf8'}).trim();
-  await writeFile(join(dir,'injected.test.mjs'),"import test from 'node:test';test('injected',()=>{});\\n");
+  await writeFile(join(dir,'injected.test.mjs'),"import test from 'node:test';test('injected',()=>{});\n");
   await assert.rejects(verifyCheckout({wave:1,head,changedFiles:[path],pinnedFiles:[{path,gitBlob:hash(source)}]},workspace),/modified before tests/);
  }finally{await rm(workspace,{recursive:true,force:true})}
 });
@@ -132,9 +132,9 @@ test('38 / extra tracked but unreviewed test must not execute',async()=>{
  try{
   const root=join(workspace,'wave1'),dir=join(root,'parity','wave1','tests');
   await mkdir(dir,{recursive:true});
-  const path='parity/wave1/tests/probe.test.mjs',source=Buffer.from("import test from 'node:test';test('ok',()=>{});\\n");
+  const path='parity/wave1/tests/probe.test.mjs',source=Buffer.from("import test from 'node:test';test('ok',()=>{});\n");
   await writeFile(join(dir,'probe.test.mjs'),source);
-  await writeFile(join(dir,'unreviewed.test.mjs'),"import test from 'node:test';test('not admitted',()=>{});\\n");
+  await writeFile(join(dir,'unreviewed.test.mjs'),"import test from 'node:test';test('not admitted',()=>{});\n");
   execFileSync('git',['init','-q',root]);execFileSync('git',['-C',root,'add','.']);
   execFileSync('git',['-C',root,'-c','user.email=test@example.invalid','-c','user.name=Test','commit','-qm','baseline']);
   const head=execFileSync('git',['-C',root,'rev-parse','HEAD'],{encoding:'utf8'}).trim();
