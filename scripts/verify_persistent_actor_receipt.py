@@ -226,22 +226,22 @@ def main(argv=None):
     parser.add_argument("--contract-blob", required=True)
     parser.add_argument("--verifier-blob", required=True)
     parser.add_argument("--tests-blob", required=True)
+    args = parser.parse_args(argv)
     try:
         result = verify_persistent_actor_zip(
-            parser.parse_args(argv).zip,
-            expected_zip_sha256=parser.parse_args(argv).zip_sha256,
-            expected_head_sha=parser.parse_args(argv).head,
-            expected_tree_sha=parser.parse_args(argv).tree,
-            expected_run_id=parser.parse_args(argv).run_id,
-            expected_attempt=parser.parse_args(argv).attempt,
+            args.zip,
+            expected_zip_sha256=args.zip_sha256,
+            expected_head_sha=args.head,
+            expected_tree_sha=args.tree,
+            expected_run_id=args.run_id,
+            expected_attempt=args.attempt,
             expected_backend_heads={
-                backend: getattr(parser.parse_args(argv), backend + "_head")
-                for backend in BACKENDS
+                backend: getattr(args, backend + "_head") for backend in BACKENDS
             },
             expected_blobs={
-                BLOB_PATHS[0]: parser.parse_args(argv).contract_blob,
-                BLOB_PATHS[1]: parser.parse_args(argv).verifier_blob,
-                BLOB_PATHS[2]: parser.parse_args(argv).tests_blob,
+                BLOB_PATHS[0]: args.contract_blob,
+                BLOB_PATHS[1]: args.verifier_blob,
+                BLOB_PATHS[2]: args.tests_blob,
             })
     except ReceiptDenied as exc:
         print("PERSISTENT_ACTOR_RECEIPT_REJECTED: " + str(exc), file=sys.stderr)
