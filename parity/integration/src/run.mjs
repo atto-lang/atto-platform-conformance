@@ -6,6 +6,7 @@ import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {dirname} from 'node:path';
 import {validateInventory,mergeReadiness} from './inventory.mjs';
+import {assessProcess} from './test-evidence.mjs';
 
 const fail=s=>{throw Error('integration-runner: '+s)};
 const safeEnv=()=>Object.fromEntries(['PATH','HOME','TMPDIR','TEMP','TMP','SYSTEMROOT','WINDIR','COMSPEC'].filter(k=>typeof process.env[k]==='string').map(k=>[k,process.env[k]]).concat([['CI','true'],['NODE_OPTIONS','']]));
@@ -29,7 +30,7 @@ export async function verifyCheckout(w,workspace){
  const rootReal=await realpath(root);
  const head=gitAt(root,['rev-parse','HEAD']);
  if(head!==w.head)fail('source commit drift: wave '+w.wave+' observed '+head+' wanted '+w.head);
- const dirty=gitAt(root,['status','--porcelain','--untracked-files=no']);
+ const dirty=gitAt(root,['status','--porcelain=v1','--untracked-files=all']);
  if(dirty)fail('tracked source tree modified before tests wave '+w.wave);
  for(const path of w.changedFiles)await regular(join(root,path),16*1024*1024,rootReal);
  const pins=[];
@@ -43,7 +44,10 @@ export async function verifyCheckout(w,workspace){
  const tests=children.filter(x=>/^[a-zA-Z0-9_-]+\.test\.mjs$/.test(x)).sort();
  if(!tests.length||tests.length>30)fail('wave '+w.wave+' has no bounded Node suites');
  for(const t of tests)await regular(join(testsDir,t),1048576,rootReal);
- return Object.freeze({wave:w.wave,head,root,pins,tests:tests.map(t=>'parity/wave'+w.wave+'/tests/'+t)});
+ const selected=tests.map(t=>'parity/wave'+w.wave+'/tests/'+t);
+ const expected=w.changedFiles.filter(p=>p.startsWith('parity/wave'+w.wave+'/tests/')&&p.endsWith('.test.mjs')).sort();
+ if(JSON.stringify(selected)!==JSON.stringify(expected))fail('unreviewed/missing test program wave '+w.wave);
+ return Object.freeze({wave:w.wave,head,root,pins,tests:selected});
 }
 export async function runIntegration({inventoryPath,checkoutRoot,outputPath,timeoutMs=180000}={}){
  if(typeof inventoryPath!=='string'||!isAbsolute(inventoryPath)||typeof checkoutRoot!=='string'||!isAbsolute(checkoutRoot)||!Number.isSafeInteger(timeoutMs)||timeoutMs<1000||timeoutMs>300000)fail('invalid bounded run arguments');
@@ -52,13 +56,14 @@ export async function runIntegration({inventoryPath,checkoutRoot,outputPath,time
  const report={schemaVersion:1,status:'STARTED',scope:'NODE_HOST_CONFORMANCE_ONLY',inventory:sourceInventory,results:[],compilerParityVerified:false,releaseCertified:false,independentRunnerAttestation:false};
  for(const w of doc.waves){
   const check=await verifyCheckout(w,checkoutRoot);
-  const cmd=spawnSync(process.execPath,['--test',...check.tests],{cwd:check.root,encoding:'utf8',shell:false,timeout:timeoutMs,maxBuffer:2*1024*1024,env:safeEnv(),windowsHide:true});
-  const ran=cmd.status===0&&!cmd.signal&&!cmd.error;
-  const after=gitAt(check.root,['status','--porcelain','--untracked-files=no']);
-  const status=ran&&!after?'PASSED':cmd.error?.code==='ETIMEDOUT'?'TIMEOUT':cmd.signal?'SIGNALED':after?'SOURCE_MUTATED':'FAILED';
+  const cmd=spawnSync(process.execPath,['--test','--test-reporter=tap',...check.tests],{cwd:check.root,encoding:'utf8',shell:false,timeout:timeoutMs,maxBuffer:2*1024*1024,env:safeEnv(),windowsHide:true});
+  let tap=null,observationError=null;
+  try{tap=assessProcess(cmd,{minimumTests:check.tests.length})}catch(e){observationError=String(e.message||e)}
+  const after=gitAt(check.root,['status','--porcelain=v1','--untracked-files=all']);
+  const status=cmd.error?.code==='ETIMEDOUT'?'TIMEOUT':cmd.signal?'SIGNALED':after?'SOURCE_MUTATED':tap?'PASSED':'NO_CONFIRMED_TESTS';
   report.results.push({wave:w.wave,head:check.head,status,exitCode:Number.isInteger(cmd.status)?cmd.status:null,
    tests:check.tests,pinned:check.pins,stdoutTail:String(cmd.stdout||'').slice(-2500),stderrTail:String(cmd.stderr||'').slice(-1500),
-   hostSuiteRan:!cmd.error,guestCompilerRan:false});
+   testCounts:tap?.counts??null,observationError,hostSuiteRan:!cmd.error,guestCompilerRan:false});
  }
  const readiness=mergeReadiness(report);
  report.readiness=readiness;
