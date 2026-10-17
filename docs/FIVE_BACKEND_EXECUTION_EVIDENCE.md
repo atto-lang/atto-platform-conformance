@@ -78,6 +78,16 @@ was copied across GitHub organizations; the source-org CI blocker and
 cross-org security policy remain unresolved. This hosted run cannot
 upgrade any backend from pending to executed.
 
+The follow-up [ClipTown run #38995591028](https://github.com/cliptown/cliptown-e2e/actions/runs/38995591028),
+on carrier SHA `1642ac839326d640a9fcc75980a92ecfb93ebd3d`,
+also passed: **7/7** independent runner/ref and Unicode separator
+negative cases, **4/4** five-backend claim cases, six CTest admission
+cases and the source-free ABI controls. GitHub allocated runner
+`1000005506`; evidence
+[artifact #12087062030](https://github.com/cliptown/cliptown-e2e/actions/runs/38995591028/artifacts/12087062030)
+was uploaded. This still is **not** execution of the real ledger's
+Node tests or of any Oreslang native compiler.
+
 ## Offline shape check
 
 From the repository root (Node 22+):
