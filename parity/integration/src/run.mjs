@@ -55,9 +55,10 @@ export async function runIntegration({inventoryPath,checkoutRoot,outputPath,time
  const doc=JSON.parse(await readFile(inventoryPath,'utf8')),sourceInventory=validateInventory(doc);
  const report={schemaVersion:1,status:'STARTED',scope:'NODE_HOST_CONFORMANCE_ONLY',inventory:sourceInventory,results:[],compilerParityVerified:false,releaseCertified:false,independentRunnerAttestation:false};
  for(const w of doc.waves){
-  let check=null;
+  let check=null,attempted=false;
   try {
    check=await verifyCheckout(w,checkoutRoot);
+   attempted=true;
    const cmd=spawnSync(process.execPath,['--test','--test-reporter=tap',...check.tests],{cwd:check.root,encoding:'utf8',shell:false,timeout:timeoutMs,maxBuffer:2*1024*1024,env:safeEnv(),windowsHide:true});
    let tap=null,observationError=null;
    try{tap=assessProcess(cmd,{minimumTests:check.tests.length})}catch(e){observationError=String(e.message||e)}
@@ -67,9 +68,9 @@ export async function runIntegration({inventoryPath,checkoutRoot,outputPath,time
     tests:check.tests,pinned:check.pins,stdoutTail:String(cmd.stdout||'').slice(-2500),stderrTail:String(cmd.stderr||'').slice(-1500),
     testCounts:tap?.counts??null,observationError,hostSuiteRan:!cmd.error,guestCompilerRan:false});
   }catch(e){
-   report.results.push({wave:w.wave,head:w.head,status:'BLOCKED_BEFORE_TEST',exitCode:null,
+   report.results.push({wave:w.wave,head:w.head,status:attempted?'POST_TEST_VERIFICATION_FAILED':'BLOCKED_BEFORE_TEST',exitCode:null,
     tests:check?.tests??[],pinned:check?.pins??[],stdoutTail:'',stderrTail:'',testCounts:null,
-    observationError:String(e?.message||e).slice(0,1000),hostSuiteRan:false,guestCompilerRan:false});
+    observationError:String(e?.message||e).slice(0,1000),hostSuiteRan:attempted,guestCompilerRan:false});
   }
  }
  const readiness=mergeReadiness(report);
