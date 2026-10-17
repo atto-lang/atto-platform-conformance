@@ -4,7 +4,7 @@ import {resolve,dirname,isAbsolute} from "node:path";
 import {fileURLToPath} from "node:url";
 import {spawnSync} from "node:child_process";
 const root=resolve(dirname(fileURLToPath(import.meta.url)),"..");
-export const COMPILER_BACKENDS=Object.freeze(["java","llvm","net","wasm","forge"]);
+export const COMPILER_BACKENDS=Object.freeze(["java","llvm","net","wasm","forge","js"]);
 const SUPPORTED_BACKENDS=new Set([...COMPILER_BACKENDS,"browser"]);
 function validSha(s){return typeof s==="string" && /^[0-9a-f]{40}$/.test(s)}
 function validDiagnosticSymbol(s){
