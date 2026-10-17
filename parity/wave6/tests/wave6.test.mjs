@@ -76,6 +76,16 @@ test('29 / OS-native desktop signing and installed app execution are mandatory',
  const bad=receipt('windows-x64');bad.signing.format='unsigned';assert.throws(()=>validateCandidate(bad),/Windows/);
  const mac=receipt('macos-arm64');mac.executedSteps=mac.executedSteps.filter(x=>x!=='installed-app-launch');assert.throws(()=>validateCandidate(mac),/macOS/);
 });
+test('26–29 / platform receipts reject accessors, symbols and non-plain nested evidence before reading values',()=>{
+ const getter=receipt('android-arm64');
+ Object.defineProperty(getter,'platformRepo',{enumerable:true,get(){throw Error('GETTER EXECUTED')}});
+ assert.throws(()=>validateCandidate(getter),/plain enumerable data/);
+ const symbol=receipt('ios-arm64');symbol[Symbol('hidden')]='surprise';
+ assert.throws(()=>validateCandidate(symbol),/plain enumerable data/);
+ const nested=receipt('linux-x64');
+ Object.defineProperty(nested.signing,'identity',{enumerable:true,get(){throw Error('NESTED GETTER EXECUTED')}});
+ assert.throws(()=>validateCandidate(nested),/plain enumerable data/);
+});
 test('26–29 / platform evidence is bound to the exact expected platform repo and run',()=>{
  const wrongRepo=receipt('android-arm64');wrongRepo.platformRepo='ores-truffle-oreslang/oreslang-platform.iot';assert.throws(()=>validateCandidate(wrongRepo),/platform repo/);
  const wrongRun=receipt('linux-x64');wrongRun.runUrl='https://github.com/ores-truffle-oreslang/oreslang-platform.mobile/actions/runs/123';assert.throws(()=>validateCandidate(wrongRun),/platform run URL/);
