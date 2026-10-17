@@ -234,6 +234,31 @@ test("security CODEOWNERS must end with exact org-team ownership for every expor
  }
 });
 
+test("additional required checks are allowed only when every check is app-bound and approved checks remain present",async()=>{
+ const key=source+"/branches/main/protection";
+ const baseline=rules();
+ const extra={...baseline,required_status_checks:{strict:true,contexts:[],checks:[
+  {context:"native-tests",app_id:4321},{context:"security-lint",app_id:15368}
+ ]}};
+ assert.deepEqual((await check({}, {[key]:extra})).destinationId,destinationId);
+ const unbound={...baseline,required_status_checks:{strict:true,contexts:[],checks:[
+  {context:"native-tests",app_id:4321},{context:"security-lint",app_id:null}
+ ]}};
+ await assert.rejects(check({}, {[key]:unbound}),/context\/app identity invalid/);
+});
+
+test("the existing independently reviewed ORESoftware owner remains an accepted exact security owner",async()=>{
+ const path=source+"/contents/.github/CODEOWNERS?ref="+M;
+ const owner="@ORESoftware";
+ const text=[
+  "/.github/CODEOWNERS "+owner,
+  "/.github/private-ci-approved-repositories.txt "+owner,
+  "/.github/private-ci-approved-source-snapshots.txt "+owner,
+  "/.github/private-ci-required-checks.json "+owner
+ ].join("\n")+"\n";
+ assert.deepEqual((await check({}, {[path]:encoded(text)})).destinationId,destinationId);
+});
+
 test("required-check policy must exactly bind context to GitHub App ID",async()=>{
  const path=source+"/contents/.github/private-ci-required-checks.json?ref="+M;
  for(const text of [
