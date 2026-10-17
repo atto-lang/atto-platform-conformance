@@ -35,7 +35,7 @@ export function verifyGitBlob(content, expectedSha, expectedSize) {
   if(bytes.length!==expectedSize||bytes.toString("base64")!==encoded)
     throw Error("Git source blob byte length or base64 identity mismatch");
   const digest=createHash("sha1")
-    .update("blob "+bytes.length+"\\0").update(bytes).digest("hex");
+    .update("blob "+bytes.length+"\0").update(bytes).digest("hex");
   if(digest!==expectedSha)
     throw Error("Git source blob content hash does not match pinned tree");
   return encoded;
