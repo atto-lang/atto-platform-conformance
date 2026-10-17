@@ -7,7 +7,10 @@ const kinds = new Set(["void", "i64", "HostBuffer<f32>", "GpuBuffer<f32>"]);
 const maxDepth = 64, maxNodes = 2048;
 const bad = (code,detail) => { const e=new TypeError(code+": "+detail);e.code=code;throw e };
 const record = v => v!==null && typeof v==="object" && !Array.isArray(v);
-const future = type => "Future<"+type+">";
+const future = type => {
+ if(isFuture(type))bad("NESTED_FUTURE","explicit await/composition required");
+ return "Future<"+type+">";
+};
 const isFuture = type => typeof type==="string" && /^Future<.+>$/.test(type);
 const isOwnedBuffer = type => type==="HostBuffer<f32>" || type==="GpuBuffer<f32>";
 const id = text => /^[A-Za-z_][A-Za-z0-9_]{0,127}$/.test(text||"");
