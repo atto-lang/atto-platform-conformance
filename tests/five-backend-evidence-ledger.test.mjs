@@ -36,10 +36,43 @@ test("no shape-only document ever certifies all claimed executions",()=>{
   const x=base();x.records=BACKENDS.map(executed);
   const result=check(x);
   assert.equal(result.claimedExecutionCount,5);
-  assert.equal(result.independentlyAuthenticatableClaims,true);
+  assert.equal(result.completeUnverifiedClaimSet,true);
+  assert.equal(result.independentlyAuthenticatableClaims,false);
+  assert.equal(result.nativeExecutionAuthenticated,false);
+  assert.equal(result.authenticatedExecutionCount,0);
+  assert.equal(result.releaseReady,false);
   assert.equal(result.parityCertified,false);
+  assert.equal(result.blocked.length,5);
+  assert.ok(result.blocked.every(record=>
+    record.reason==="SELF_REPORTED_EXECUTION_NOT_AUTHENTICATED"));
   assert.equal(result.status,"EVIDENCE_SHAPE_ONLY_NOT_AUTHENTICATED");
 });
+test("a mix of claimed and pending execution remains wholly blocked",()=>{
+  const x=base();
+  x.records[0]=executed(BACKENDS[0]);
+  x.records[2]=executed(BACKENDS[2]);
+  const result=check(x);
+  assert.equal(result.claimedExecutionCount,2);
+  assert.equal(result.authenticatedExecutionCount,0);
+  assert.equal(result.completeUnverifiedClaimSet,false);
+  assert.equal(result.independentlyAuthenticatableClaims,false);
+  assert.equal(result.releaseReady,false);
+  assert.equal(result.blocked.length,5);
+  assert.equal(result.blocked.filter(r=>
+    r.reason==="SELF_REPORTED_EXECUTION_NOT_AUTHENTICATED").length,2);
+});
+
+test("no declaration, even five matching digests, is a proof of native runs",()=>{
+  const x=base();
+  x.records=BACKENDS.map(executed);
+  const result=check(x);
+  assert.equal(result.authenticatedExecutionCount,0);
+  assert.equal(result.nativeExecutionAuthenticated,false);
+  assert.equal(result.parityCertified,false);
+  assert.equal(result.releaseReady,false);
+  assert.equal(result.blocked.length,5);
+});
+
 test("reject missing backend",()=>{const x=base();x.records.pop();reject(x)});
 test("reject duplicate backend",()=>{const x=base();x.records[4]=structuredClone(x.records[0]);reject(x)});
 test("reject unknown status",()=>{const x=base();x.records[0].status="verified";reject(x)});
