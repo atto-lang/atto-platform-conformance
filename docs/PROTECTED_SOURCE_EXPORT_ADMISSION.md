@@ -16,3 +16,26 @@ This draft changes the **real publisher's** `requirePrivateMirror()` admission, 
 The environment destination list remains only an additional restrictive filter: it is **never** authoritative approval. The CLI now requires a separate source-tree SHA; callers with only a source commit cannot export.
 
 These mocked source-free tests demonstrate guarded control flow and denial, **not** official branch protection, reviewer independence, incident containment, or permission to mirror. The admission checker must be independently audited before merge, including protection rulesets and bypass actor semantics. Existing source security incident [#22](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22) remains P0. This change does not run compilers or promise native parity.
+
+## Additional Git-object integrity hardening (2026-10-16)
+
+7. Before **any** destination blob publication, decode GitHub's source blob
+   response as canonical base64 (allow only GitHub line wrapping), enforce the
+   pinned byte length, and independently recompute the Git object SHA-1 as
+   `SHA1("blob <length>\\0" || raw_bytes)`. Reject a response whose bytes do
+   not hash to the blob SHA embedded in the approved root Git tree—even when
+   every API-provided `sha` and `size` field agrees. Destination POSTs receive
+   only the verified, normalized base64 payload.
+
+   The mocked GitHub publisher test now uses an actual SHA for the four-byte
+   `42;\\n` fixture rather than an arbitrary hash and covers an in-place
+   four-byte forgery, malformed/noncanonical base64, and wrapped legitimate
+   base64. A focused independent Node 22 test of the verification function
+   passed **10/10** cases. This does **not** constitute full private-mirror
+   integration testing or an authorized cross-organization transfer.
+
+**Status unchanged:** the protected-source approval and original incident
+review remain prerequisites. Do not mirror actual source simply because this
+cryptographic preflight passes; the approved source/destination identities,
+protected main, exact source snapshot and actual funded runner must all be
+confirmed independently.
