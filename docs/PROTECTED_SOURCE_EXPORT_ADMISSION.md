@@ -9,7 +9,7 @@ This draft changes the **real publisher's** `requirePrivateMirror()` admission, 
 1. Require a pinned 40-hex source **commit and root tree**, and a source repository name among the five immutable Oreslang repository IDs.
 2. Query both source and destination identities and require private/active status and exact numeric IDs (the destination ID must match independently reviewed policy).
 3. Query `source:main` and require actual `protected=true`; query enforced review settings and require independent approving review, code-owner review, stale approval dismissal, admin enforcement and no listed bypass actors. If the GitHub App cannot access protection details, **deny**.
-4. Read `.github/CODEOWNERS` from that exact protected-main commit and require its **final four non-comment rules** to exactly own CODEOWNERS itself plus all three private-CI policy files by the same explicitly trusted security principal set. This prevents a later wildcard rule from silently overriding policy-file ownership.
+4. Read `.github/CODEOWNERS` from that exact protected-main commit and require its **final five non-comment rules** to exactly own CODEOWNERS itself, all three private-CI data files, and the dedicated private-CI policy workflow by the same explicitly trusted security principal set. This prevents a later wildcard rule from silently overriding policy-file ownership.
 5. Read `.github/private-ci-required-checks.json` and bind each approved required check to both its exact check context and GitHub App ID. Branch protection may require additional checks, but every required check must be app-bound and every policy-listed security check must be present. Current GitHub Actions evidence uses app ID **15368**.
 6. Read destination and snapshot approval files from the exact pinned protected-main commit, not from a PR checkout or local environment. Require exact destination name + numeric ID, and exact source commit + root tree + destination ID.
 7. Resolve the source commit from the original repository and verify it identifies the pinned root tree. Re-read protected-main ref before success; drift denies admission. Repeat the check before **each** destination write, including the final ref.
@@ -47,7 +47,7 @@ confirmed independently.
 
 The admission code now closes the two audit gaps previously recorded on this PR:
 
-- CODEOWNERS is not inferred from the branch-protection boolean. The protected-main CODEOWNERS bytes are Git-blob verified, and its final exact rules must cover CODEOWNERS plus all private-CI approval/check files with one trusted owner set.
+- CODEOWNERS is not inferred from the branch-protection boolean. The protected-main CODEOWNERS bytes are Git-blob verified, and its final exact rules must cover CODEOWNERS, all private-CI approval/check files, and the workflow that emits the required private-CI policy check with one trusted owner set.
 - Required checks are not accepted by name alone. The protected-main policy records exact `context + appId` pairs and admission verifies those pairs against branch protection. Additional required checks are allowed only when they are also app-bound.
 
 This still does **not** enable mirroring by itself. All five source repositories currently report `main.protected=false`; the policy files and branch protection must land and be independently reviewed before any private source export can pass.
