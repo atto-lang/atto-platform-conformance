@@ -1,5 +1,5 @@
 /** Executes all six pinned same-repo host suites. This is NOT guest compiler execution. */
-import {readFile,lstat,readdir,writeFile} from 'node:fs/promises';
+import {readFile,lstat,readdir,writeFile,realpath} from 'node:fs/promises';
 import {resolve,join,isAbsolute,relative} from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
@@ -15,9 +15,10 @@ function gitAt(root,args){
  return result.stdout.trim();
 }
 const blobHash=bytes=>createHash('sha1').update(Buffer.from('blob '+bytes.length+'\0')).update(bytes).digest('hex');
-async function regular(path,max=1048576){
+async function regular(path,max=1048576,rootReal=null){
  const s=await lstat(path);
  if(!s.isFile()||s.isSymbolicLink()||s.size<=0||s.size>max)fail('missing, symlinked or oversized file: '+path);
+ if(rootReal!==null){const actual=await realpath(path),sub=relative(rootReal,actual);if(sub==='..'||sub.startsWith('../')||isAbsolute(sub))fail('intermediate symlink escapes checkout: '+path)}
 }
 export async function verifyCheckout(w,workspace){
  if(!w||!Number.isInteger(w.wave)||w.wave<1||w.wave>6)fail('invalid wave');
@@ -25,14 +26,15 @@ export async function verifyCheckout(w,workspace){
  const root=resolve(workspace,'wave'+w.wave);
  if(relative(workspace,root).startsWith('..'))fail('outside workspace');
  const st=await lstat(root);if(!st.isDirectory()||st.isSymbolicLink())fail('nonregular checkout root');
+ const rootReal=await realpath(root);
  const head=gitAt(root,['rev-parse','HEAD']);
  if(head!==w.head)fail('source commit drift: wave '+w.wave+' observed '+head+' wanted '+w.head);
  const dirty=gitAt(root,['status','--porcelain','--untracked-files=no']);
  if(dirty)fail('tracked source tree modified before tests wave '+w.wave);
- for(const path of w.changedFiles)await regular(join(root,path),16*1024*1024);
+ for(const path of w.changedFiles)await regular(join(root,path),16*1024*1024,rootReal);
  const pins=[];
  for(const p of w.pinnedFiles){
-  const path=join(root,p.path);await regular(path);
+  const path=join(root,p.path);await regular(path,1048576,rootReal);
   const blob=blobHash(await readFile(path));
   if(blob!==p.gitBlob)fail('source Git blob mismatch wave '+w.wave+': '+p.path);
   pins.push({path:p.path,gitBlob:blob});
@@ -40,7 +42,7 @@ export async function verifyCheckout(w,workspace){
  const testsDir=join(root,'parity','wave'+w.wave,'tests'),children=await readdir(testsDir);
  const tests=children.filter(x=>/^[a-zA-Z0-9_-]+\.test\.mjs$/.test(x)).sort();
  if(!tests.length||tests.length>30)fail('wave '+w.wave+' has no bounded Node suites');
- for(const t of tests)await regular(join(testsDir,t));
+ for(const t of tests)await regular(join(testsDir,t),1048576,rootReal);
  return Object.freeze({wave:w.wave,head,root,pins,tests:tests.map(t=>'parity/wave'+w.wave+'/tests/'+t)});
 }
 export async function runIntegration({inventoryPath,checkoutRoot,outputPath,timeoutMs=180000}={}){
