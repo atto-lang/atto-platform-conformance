@@ -43,7 +43,8 @@ test('31 / pinned manifests tests and cross-wave source must remain exact',async
 });
 test('31 / false parity promotion and missing backend inventory rejected',async()=>{
  for(const f of [m=>{m.certifiedParity=true},m=>{m.backends.pop()},m=>{m.tasks[4].name='release-now'}]){
-  assert.throws(()=>validateInventory(await mutate(f)),/integration-inventory/);
+  const changed=await mutate(f);
+  assert.throws(()=>validateInventory(changed),/integration-inventory/);
  }
 });
 test('32 / temp locally committed checkout proves exact Git head and source blobs',async()=>{
