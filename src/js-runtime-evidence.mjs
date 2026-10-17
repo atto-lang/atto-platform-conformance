@@ -17,12 +17,14 @@ if(value!==42n) process.exit(6);
 process.stdout.write('42\\n');`;
 
 export async function runJsRuntimeEvidence({
-  compilerScript,declaredSourceSha,timeoutMs=10000
+  compilerScript,declaredSourceSha,expectedCompilerScriptSha256,timeoutMs=10000
 }={}){
   if(!compilerScript)
     return {backend:'js',configured:false,ok:false,status:'UNCONFIGURED',verified:0};
   if(typeof compilerScript!=='string'||!isAbsolute(compilerScript))
     throw Error('compilerScript must be an absolute file path');
+  if(!/^[0-9a-f]{64}$/.test(expectedCompilerScriptSha256||''))
+    throw Error('independently pinned compiler script SHA-256 required');
   if(!SOURCE_SHA.test(declaredSourceSha||''))
     throw Error('declaredSourceSha must be an exact lowercase 40-hex commit');
   if(!Number.isSafeInteger(timeoutMs)||timeoutMs<100||timeoutMs>120000)
@@ -36,6 +38,9 @@ export async function runJsRuntimeEvidence({
     throw Error('fixture must be a regular non-symlink file');
   const fixtureSha256=sha(await readFile(fixture));
   const compilerScriptSha256=sha(await readFile(compilerScript));
+  if(compilerScriptSha256!==expectedCompilerScriptSha256)
+    return {backend:'js',configured:true,ok:false,status:'COMPILER_DIGEST_MISMATCH',verified:0,
+      compilerScriptSha256,declaredSourceSha};
   const temp=await mkdtemp(join(tmpdir(),'ores-js-evidence-'));
   try{
     const emitted=join(temp,'verified.mjs');
@@ -47,6 +52,15 @@ export async function runJsRuntimeEvidence({
       fixtureSha256,provenanceNote:'Compiler source commit is declared, NOT cryptographically tied to the compiler script; separately attest its build/checkout.',
       verified:0,ok:false
     };
+    // The immutable positive fixture is accompanied by a real negative
+    // compiler check; a successful run alone is not acceptance/rejection parity.
+    const invalid=join(root,'fixtures/unresolved-identifier.ores');
+    const reject=spawnSync(process.execPath,[compilerScript,'--check',invalid],{
+      cwd:temp,encoding:'utf8',timeout:timeoutMs,maxBuffer:1024*1024,windowsHide:true
+    });
+    if(reject.error||reject.signal||reject.status===0||
+       !/^error: unresolved identifier nonexistent_symbol\\b/m.test(reject.stderr||''))
+      return {...common,status:'NEGATIVE_FIXTURE_FAILED',negativeExit:reject.status};
     if(compiled.error||compiled.signal||compiled.status!==0)
       return {...common,status:compiled.error?.code==='ETIMEDOUT'?'TIMEOUT':'COMPILE_FAILED',compilerExit:compiled.status,compilerStderr:(compiled.stderr||'').slice(0,4096)};
     let moduleBytes;
@@ -61,6 +75,6 @@ export async function runJsRuntimeEvidence({
     if(ran.error||ran.signal||ran.status!==0||ran.stdout!=='42\n'||ran.stderr)
       return {...common,moduleSha256,status:ran.error?.code==='ETIMEDOUT'?'TIMEOUT':'RUNTIME_FAILED',
         runtimeExit:ran.status,runtimeStdout:(ran.stdout||'').slice(0,4096),runtimeStderr:(ran.stderr||'').slice(0,4096)};
-    return {...common,moduleSha256,status:'VERIFIED',verified:1,ok:true,runtimeOutput:'42'};
+    return {...common,moduleSha256,status:'RUNTIME_VERIFIED',verified:1,ok:true,runtimeOutput:'42'};
   }finally{await rm(temp,{recursive:true,force:true});}
 }
