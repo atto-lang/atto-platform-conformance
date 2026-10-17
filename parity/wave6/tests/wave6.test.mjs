@@ -28,8 +28,9 @@ function receipt(profile){
  if(['cortex-m3','riscv32'].includes(profile))executedSteps.push('source-actor-messages','supervision-fault-test');
  if(profile.endsWith('-gateway'))executedSteps.push('mutual-authentication','replay-fault-injection','signed-ota-powerloss');
  if(['windows-x64','macos-arm64','linux-x64'].includes(profile))executedSteps.push('installed-app-launch');
- return {profile,sourceRepo:'oreslang-source.llvm',sourceSha:git,compilerSha256:dummy,artifactSha256:sourceSha,artifactBytes:8192,
-  runner:'gh-runner',runUrl:'https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/actions/runs/1234567',executedSteps,
+ const platformRepo=PROFILES[profile].platformRepo;
+ return {profile,platformRepo,platformSha:git,sourceRepo:'ores-truffle-oreslang/oreslang-source.llvm',sourceSha:git,compilerSha256:dummy,artifactSha256:sourceSha,artifactBytes:8192,
+  runner:'gh-runner',runUrl:'https://github.com/'+platformRepo+'/actions/runs/1234567',executedSteps,
   platformTests:{guestOutput:true,lifecycle:true,ownership:true,cancellation:true,startup:true},signing,measurements:{ramBytes:4096,flashBytes:8192,stackBytes:1024,worstCaseUs:50}};
 }
 function observation(backend='java',caseId='checked-i64-42',value='42'){
@@ -74,6 +75,15 @@ test('29 / OS-native desktop signing and installed app execution are mandatory',
  for(const p of ['windows-x64','macos-arm64','linux-x64'])assert.equal(validateCandidate(receipt(p)).distributionCertified,false);
  const bad=receipt('windows-x64');bad.signing.format='unsigned';assert.throws(()=>validateCandidate(bad),/Windows/);
  const mac=receipt('macos-arm64');mac.executedSteps=mac.executedSteps.filter(x=>x!=='installed-app-launch');assert.throws(()=>validateCandidate(mac),/macOS/);
+});
+test('26–29 / platform evidence is bound to the exact expected platform repo and run',()=>{
+ const wrongRepo=receipt('android-arm64');wrongRepo.platformRepo='ores-truffle-oreslang/oreslang-platform.iot';assert.throws(()=>validateCandidate(wrongRepo),/platform repo/);
+ const wrongRun=receipt('linux-x64');wrongRun.runUrl='https://github.com/ores-truffle-oreslang/oreslang-platform.mobile/actions/runs/123';assert.throws(()=>validateCandidate(wrongRun),/platform run URL/);
+ const wrongSource=receipt('cortex-m3');wrongSource.sourceRepo='ores-truffle-oreslang/oreslang-source.java';assert.throws(()=>validateCandidate(wrongSource),/binary identity/);
+});
+test('26–29 / resource and artifact measurements are positive and bounded',()=>{
+ const zero=receipt('macos-arm64');zero.measurements.stackBytes=0;assert.throws(()=>validateCandidate(zero),/performance\/memory/);
+ const huge=receipt('android-arm64');huge.artifactBytes=128*1024*1024+1;assert.throws(()=>validateCandidate(huge),/binary identity/);
 });
 test('26–29 / candidate receipts remain non-certified even when all caller-claimed conditions are true',()=>{
  for(const p of Object.keys(PROFILES)){const res=validateCandidate(receipt(p));assert.equal(res.compilerProvenanceVerified,false);assert.equal(res.distributionCertified,false)}
