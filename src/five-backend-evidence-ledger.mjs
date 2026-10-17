@@ -31,7 +31,22 @@ function sha1(v, name) { if (typeof v !== "string" || !SHA1.test(v)) fail(name +
 function sha256(v, name) { if (typeof v !== "string" || !SHA256.test(v)) fail(name + " must be SHA-256"); }
 function positive(v, name) { if (!Number.isSafeInteger(v) || v < 1) fail(name + " must be positive safe integer"); }
 function nonempty(v, name) {
-  if (typeof v !== "string" || v.trim().length < 1 || v.length > 250) fail(name + " must be nonempty bounded string");
+  if (typeof v !== "string" || v.trim().length < 1 || v.length > 250 ||
+      /[\u0000-\u001f\u007f]/.test(v)) fail(name + " must be nonempty bounded single-line string");
+}
+function runPath(v, workflowPath) {
+  // An evidence claim must identify exactly which reviewed workflow *ref*
+  // GitHub reports as executed. Still verify this string independently.
+  if (typeof v !== "string" || v.length > 500 ||
+      !v.startsWith(workflowPath) ||
+      (v !== workflowPath && !v.startsWith(workflowPath + "@")))
+    fail("workflow run path does not match expected workflow");
+  if (v !== workflowPath) {
+    const ref = v.slice(workflowPath.length + 1);
+    if (!/^[A-Za-z0-9_./-]+$/.test(ref) ||
+        ref.split("/").some(segment => segment === "" || segment === "." || segment === ".."))
+      fail("workflow run ref is malformed");
+  }
 }
 function strictKeys(value, keys, name) {
   for (const key of Object.keys(value)) if (!keys.includes(key)) fail(name + " contains unexpected key: " + key);
@@ -39,7 +54,8 @@ function strictKeys(value, keys, name) {
 function validateExecution(e, backend) {
   object(e, "execution evidence");
   const fields = ["repositoryId", "headCommitSha", "headTreeSha", "workflowId",
-    "workflowPath", "workflowBlobSha", "runId", "runAttempt", "runEvent",
+    "workflowPath", "workflowRunPath", "workflowBlobSha",
+    "runId", "runAttempt", "runEvent", "jobId", "runnerId", "runnerName",
     "runnerJob", "testStep", "executionMode", "toolchain", "ciStatement",
     "sourceGitBlobSha", "nativeGuestExecuted", "compilerExecuted",
     "executedFixtureIds", "executedTestCount", "observedValue",
@@ -50,12 +66,14 @@ function validateExecution(e, backend) {
   for (const key of ["headCommitSha", "headTreeSha", "workflowBlobSha", "sourceGitBlobSha"])
     sha1(e[key], key);
   if (e.sourceGitBlobSha !== EXPECTED_GIT_BLOB) fail("source contract blob mismatch");
-  for (const key of ["workflowId", "runId", "runAttempt", "executedTestCount"]) positive(e[key], key);
+  for (const key of ["workflowId", "runId", "runAttempt", "jobId", "runnerId",
+                     "executedTestCount"]) positive(e[key], key);
   if (typeof e.workflowPath !== "string" || !WORKFLOW.test(e.workflowPath) ||
       e.workflowPath.split("/").some(s => s === "" || s === "." || s === ".."))
     fail("invalid exact workflow path");
+  runPath(e.workflowRunPath, e.workflowPath);
   if (!["push", "pull_request"].includes(e.runEvent)) fail("untrusted workflow event");
-  for (const key of ["runnerJob", "testStep", "toolchain"]) nonempty(e[key], key);
+  for (const key of ["runnerName", "runnerJob", "testStep", "toolchain"]) nonempty(e[key], key);
   if (e.executionMode !== EXECUTION_MODES[backend]) fail("incorrect native execution mode");
   if (e.ciStatement !== CI_STATEMENT) fail("GitHub execution proof statement absent");
   if (e.compilerExecuted !== true || e.nativeGuestExecuted !== true)
