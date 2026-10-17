@@ -93,6 +93,54 @@ function validateExecution(e, backend) {
   sha256(e.artifactSha256, "artifactSha256");
 }
 
+// Validate an inspected source-free carrier JSON report *without* ever
+// upgrading it to source-compiler / native-guest execution evidence.
+// ZIP artifact SHA-256, GitHub run identity, logs and actual job allocation
+// still require independent authenticated verification outside this function.
+export function validateSourceFreeVerifierReceipt(receipt) {
+  object(receipt, "source-free report");
+  const keys=["schema","repository","carrier_head_sha","carrier_tree_sha",
+    "run_id","run_attempt","source_free_only",
+    "private_runtime_or_compiler_source_transferred","guest_runtime_certified",
+    "source_repository_native_ci_certified","tests_per_round","rounds",
+    "expected_total","git_blobs"];
+  strictKeys(receipt,keys,"source-free report");
+  for(const key of keys)
+    if(!Object.hasOwn(receipt,key)) fail("missing source-free report field: "+key);
+  const match=/^oreslang\\.source_free_ci_verifier_([1-9][0-9]{0,3})\\.v1$/.exec(receipt.schema);
+  if(!match) fail("unrecognized source-free verifier schema");
+  const schemaTests=Number(match[1]);
+  positive(receipt.tests_per_round,"tests_per_round");
+  positive(receipt.rounds,"rounds");
+  positive(receipt.expected_total,"expected_total");
+  positive(receipt.run_id,"run_id");
+  positive(receipt.run_attempt,"run_attempt");
+  if(receipt.rounds>12 || receipt.tests_per_round!==schemaTests ||
+     receipt.expected_total!==receipt.rounds*receipt.tests_per_round)
+    fail("source-free report has stale or inconsistent execution totals");
+  nonempty(receipt.repository,"source-free carrier repository");
+  sha1(receipt.carrier_head_sha,"carrier_head_sha");
+  sha1(receipt.carrier_tree_sha,"carrier_tree_sha");
+  if(receipt.source_free_only!==true ||
+     receipt.private_runtime_or_compiler_source_transferred!==false ||
+     receipt.guest_runtime_certified!==false ||
+     receipt.source_repository_native_ci_certified!==false)
+    fail("source-free receipt contains native certification or source-transfer claim");
+  object(receipt.git_blobs,"source-free pinned blobs");
+  const blobNames=["scripts/verify_ci_run.py","scripts/test_verify_ci_run.py",
+    ".github/workflows/ci-run-evidence-contract.yml"];
+  strictKeys(receipt.git_blobs,blobNames,"source-free pinned blobs");
+  for(const name of blobNames){
+    if(!Object.hasOwn(receipt.git_blobs,name))
+      fail("source-free receipt missing exact input blob: "+name);
+    sha1(receipt.git_blobs[name],name);
+  }
+  return {status:"SOURCE_FREE_RECEIPT_SHAPE_ONLY_NOT_AUTHENTICATED",
+    regressionExecutionsClaimed:receipt.expected_total,
+    authenticatedExecutionCount:0, nativeExecutionAuthenticated:false,
+    parityCertified:false, releaseReady:false, externalVerificationRequired:true};
+}
+
 export function validateFiveBackendEvidenceManifest(manifest) {
   object(manifest, "manifest");
   strictKeys(manifest, ["schema", "fixture", "records"], "manifest");
