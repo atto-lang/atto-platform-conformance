@@ -107,7 +107,7 @@ export function validateSourceFreeVerifierReceipt(receipt) {
   strictKeys(receipt,keys,"source-free report");
   for(const key of keys)
     if(!Object.hasOwn(receipt,key)) fail("missing source-free report field: "+key);
-  const match=/^oreslang\\.source_free_ci_verifier_([1-9][0-9]{0,3})\\.v1$/.exec(receipt.schema);
+  const match=/^oreslang\.source_free_ci_verifier_([1-9][0-9]{0,3})\.v1$/.exec(receipt.schema);
   if(!match) fail("unrecognized source-free verifier schema");
   const schemaTests=Number(match[1]);
   positive(receipt.tests_per_round,"tests_per_round");
