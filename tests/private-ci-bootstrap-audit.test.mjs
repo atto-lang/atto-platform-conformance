@@ -28,6 +28,8 @@ const empty="# no approvals during bootstrap\n";
 const workflow="name: Private CI export policy\n";
 const protection=()=>({
   enforce_admins:{enabled:true},
+  allow_force_pushes:{enabled:false},
+  allow_deletions:{enabled:false},
   required_status_checks:{strict:true,contexts:[],checks:[
     {context:"private-ci-policy",app_id:15368},
     {context:"other-security-check",app_id:15368}
@@ -100,6 +102,15 @@ test("review, admin enforcement and bypass requirements fail closed",()=>{
     {...protection(),required_pull_request_reviews:{...protection().required_pull_request_reviews,required_approving_review_count:0}},
     {...protection(),required_pull_request_reviews:{...protection().required_pull_request_reviews,bypass_pull_request_allowances:{users:[{login:"owner"}],teams:[],apps:[]}}}
   ]) assert.throws(()=>auditProtection(bad),/protection mismatch/);
+});
+
+test("force pushes and branch deletion exceptions must fail closed",()=>{
+  for(const setting of ["allow_force_pushes","allow_deletions"]){
+    for(const invalid of [undefined,null,{}, {enabled:true},{enabled:"false"}]){
+      assert.throws(()=>auditProtection({...protection(),[setting]:invalid}),
+        /review\/admin\/no-bypass protection mismatch/);
+    }
+  }
 });
 
 test("required check must be strict and bound to GitHub Actions app 15368",()=>{
@@ -194,6 +205,12 @@ test("unlisted repository cannot impersonate a bootstrap source",async()=>{
     token:"test-token",fetchImpl:async()=>{calls++;throw Error("unexpected request");}
   }),/source repository is not allowlisted/);
   assert.equal(calls,0);
+});
+
+test("force-push permission enabled mid-audit denies the same protected SHA",async()=>{
+  await assert.rejects(run({protection:n=>n===1?protection():{
+    ...protection(),allow_force_pushes:{enabled:true}
+  }}),/review\/admin\/no-bypass protection mismatch/);
 });
 
 test("review or issuer protection revoked without moving main fails closed",async()=>{
