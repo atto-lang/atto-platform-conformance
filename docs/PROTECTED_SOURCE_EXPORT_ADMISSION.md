@@ -99,3 +99,46 @@ The output is **proposal text, not authorization**. Add it only through a
 separate protected CODEOWNERS-reviewed source policy PR after
 `audit:private-ci-bootstrap` passes. Start with exactly one backend/snapshot;
 do not grant wildcard, branch-name, moving-ref, or multi-repository approval.
+
+
+## Protected carrier + incident gate
+
+Private-source publication now requires two additional revocable conditions on every
+authorization pass:
+
+1. **Incident containment:** authenticated
+   `ores-truffle-oreslang/oreslang-platform-conformance#22` must have the exact
+   expected issue identity, `state=closed`, `state_reason=completed`, and a
+   valid `closed_at`. Open, reopened, renamed, inaccessible or malformed state
+   denies before source metadata/content inspection. Because the publisher calls
+   admission before every destination mutation, reopening the incident revokes
+   later writes.
+2. **Carrier protection:** destination `main` must be protected with code-owner
+   review, stale-review dismissal, admin enforcement, zero user/team/app bypasses,
+   strict app-bound checks, and `carrier-policy` from GitHub Actions App ID
+   `15368`. Protected-main CODEOWNERS must end with:
+   `/.github/workflows/ @ORESoftware`,
+   `/.github/CODEOWNERS @ORESoftware`, and
+   `/.github/private-ci-carrier-policy.json @ORESoftware`.
+   The carrier policy JSON must exactly pin the same check/app identity, and a
+   main-SHA drift during admission denies.
+
+A funded carrier is therefore not automatically authorized merely because it has
+Actions minutes. Capacity, confidentiality policy, source snapshot approval and
+incident completion are separate gates.
+
+### 2026-10-17 funded source-free evidence
+
+Private `sagitta-stack/sagitta-infra` demonstrated current hosted-runner
+capacity and now has draft carrier bootstrap PR #9. Exact head
+`c7c679ccb3485b56c3faa9b018a5c410ac62d3d5` passed carrier-policy run
+`39059833261` on Ubuntu 24.04 with read-only token permissions, immutable
+checkout and `persist-credentials:false`. The run passed the carrier trust-root
+check and 12 independent source-free adversarial tests, including exhaustive
+16,384 boolean authority assignments plus incident/carrier revocation between
+writes.
+
+This evidence does **not** authorize or execute a private Oreslang source mirror.
+At the time of this evidence, incident #22 remained open, all Oreslang source
+`main` branches remained unprotected, and Sagitta `main` itself remained
+unprotected.
