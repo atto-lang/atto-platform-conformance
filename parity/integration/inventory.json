@@ -1,0 +1,246 @@
+{
+  "schemaVersion": 1,
+  "kind": "oreslang-roadmap-integration",
+  "status": "draft-host-suite-conformance-not-compiler-parity",
+  "sourceRepository": "ores-truffle-oreslang/oreslang-platform-conformance",
+  "tasks": [
+    {
+      "id": 31,
+      "name": "exact-six-wave-tree-pin-and-path-collision"
+    },
+    {
+      "id": 32,
+      "name": "same-private-repo-executable-host-ci"
+    },
+    {
+      "id": 33,
+      "name": "exact-head-runtime-observation-gate"
+    },
+    {
+      "id": 34,
+      "name": "cross-wave-fixture-and-provenance-audit"
+    },
+    {
+      "id": 35,
+      "name": "production-backend-merge-readiness"
+    }
+  ],
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "forge",
+    "wasm"
+  ],
+  "waves": [
+    {
+      "wave": 1,
+      "pr": 47,
+      "head": "4f5b723c9f55d21eb7a07631a41dd63fec0cffd1",
+      "path": "checkouts/wave1",
+      "changedFiles": [
+        "parity/wave1/bin/wave1.mjs",
+        "parity/wave1/docs/WAVE1.md",
+        "parity/wave1/fixtures/grammar-accept.ores",
+        "parity/wave1/fixtures/grammar-reject.ores",
+        "parity/wave1/fixtures/scalar-accept.ores",
+        "parity/wave1/fixtures/scalar-reject.ores",
+        "parity/wave1/fixtures/scope-accept.ores",
+        "parity/wave1/fixtures/scope-reject.ores",
+        "parity/wave1/fixtures/types-accept.ores",
+        "parity/wave1/fixtures/types-reject.ores",
+        "parity/wave1/manifest.json",
+        "parity/wave1/src/wave1.mjs",
+        "parity/wave1/tests/wave1.test.mjs"
+      ],
+      "pinnedFiles": [
+        {
+          "path": "parity/wave1/tests/wave1.test.mjs",
+          "gitBlob": "ab2d8d81cf2f5d0c4223b09425f1a4485a08a045"
+        },
+        {
+          "path": "parity/wave1/manifest.json",
+          "gitBlob": "575a9abf86a3dd13a9dc8b521275180d0cbacc01"
+        }
+      ]
+    },
+    {
+      "wave": 2,
+      "pr": 49,
+      "head": "4bb5e69efa871bee7829af4790dbd5bc0c2bbae4",
+      "path": "checkouts/wave2",
+      "changedFiles": [
+        ".github/workflows/wave2-semantic-contracts.yml",
+        "parity/wave2/README.md",
+        "parity/wave2/bin/wave2.mjs",
+        "parity/wave2/fixtures/capture-allowlist-execution.ores",
+        "parity/wave2/fixtures/capture-escaping-self-reject.ores",
+        "parity/wave2/fixtures/capture-implicit-self-reject.ores",
+        "parity/wave2/fixtures/dispatch-do-match.ores",
+        "parity/wave2/fixtures/dispatch-nonexhaustive-reject.ores",
+        "parity/wave2/fixtures/dispatch-value-match.ores",
+        "parity/wave2/fixtures/effects-loan-suspend-reject.ores",
+        "parity/wave2/fixtures/effects-read-mutate-reject.ores",
+        "parity/wave2/fixtures/effects-state-write.ores",
+        "parity/wave2/fixtures/ownership-loan-escape-reject.ores",
+        "parity/wave2/fixtures/ownership-state-read.ores",
+        "parity/wave2/fixtures/value-i64-evaluation.ores",
+        "parity/wave2/fixtures/value-int-division-reject.ores",
+        "parity/wave2/manifest.json",
+        "parity/wave2/src/wave2.mjs",
+        "parity/wave2/tests/wave2.test.mjs"
+      ],
+      "pinnedFiles": [
+        {
+          "path": "parity/wave2/tests/wave2.test.mjs",
+          "gitBlob": "a7d6456b7d79151bec614c94215ea9f2baae4259"
+        },
+        {
+          "path": "parity/wave2/manifest.json",
+          "gitBlob": "9041a09ec9d8ca0fd40efc0700fb41e0a31cc066"
+        }
+      ]
+    },
+    {
+      "wave": 3,
+      "pr": 52,
+      "head": "7f614ac1128dabeb06ca6b67678c11a341fe973c",
+      "path": "checkouts/wave3",
+      "changedFiles": [
+        ".github/workflows/wave3-parity.yml",
+        "contracts/v1/PRIVATE_ABSTRACT_ACTOR_HOOKS_V1.md",
+        "parity/wave3/README.md",
+        "parity/wave3/bin/wave3.mjs",
+        "parity/wave3/fixtures/actor-protected-receive.ores",
+        "parity/wave3/fixtures/actor-receive-reference-reject.ores",
+        "parity/wave3/fixtures/actor-serial-lifetime.ores",
+        "parity/wave3/fixtures/actor-user-receive-reject.ores",
+        "parity/wave3/fixtures/cleanup-normal.ores",
+        "parity/wave3/fixtures/cleanup-panic-bypass.ores",
+        "parity/wave3/manifest.json",
+        "parity/wave3/package.json",
+        "parity/wave3/src/manifest.mjs",
+        "parity/wave3/src/reference.mjs",
+        "parity/wave3/tests/manifest.test.mjs",
+        "parity/wave3/tests/reference.test.mjs"
+      ],
+      "pinnedFiles": [
+        {
+          "path": "parity/wave3/tests/reference.test.mjs",
+          "gitBlob": "10a914db45f49309440f28ca2bc6e1f103503ca3"
+        },
+        {
+          "path": "parity/wave3/manifest.json",
+          "gitBlob": "6969130a1982c3f882f34a73ebdf849576990012"
+        }
+      ]
+    },
+    {
+      "wave": 4,
+      "pr": 54,
+      "head": "478292e8fa8ee08cbd1553d785aa83b327dd610a",
+      "path": "checkouts/wave4",
+      "changedFiles": [
+        ".github/workflows/wave4-parity.yml",
+        "parity/wave4/README.md",
+        "parity/wave4/bin/manifest.mjs",
+        "parity/wave4/fixtures/group-membership.ores",
+        "parity/wave4/fixtures/message-variant.ores",
+        "parity/wave4/fixtures/nio-facade.ores",
+        "parity/wave4/fixtures/select-procedural.ores",
+        "parity/wave4/fixtures/state-read-mutate-reject.ores",
+        "parity/wave4/fixtures/state-read.ores",
+        "parity/wave4/manifest.json",
+        "parity/wave4/src/wave4.mjs",
+        "parity/wave4/tests/manifest.test.mjs",
+        "parity/wave4/tests/wave4.test.mjs"
+      ],
+      "pinnedFiles": [
+        {
+          "path": "parity/wave4/tests/wave4.test.mjs",
+          "gitBlob": "0658646edb177d4e88e6280cae18c1df8bbd3b0f"
+        },
+        {
+          "path": "parity/wave4/manifest.json",
+          "gitBlob": "e84f3696f77c259ba6b343293ba6b36023cde4b2"
+        }
+      ]
+    },
+    {
+      "wave": 5,
+      "pr": 55,
+      "head": "178598885b1c9e5399a1ed05fa5c4a6e2c008184",
+      "path": "checkouts/wave5",
+      "changedFiles": [
+        ".github/workflows/wave5-parity.yml",
+        "parity/wave5/README.md",
+        "parity/wave5/bin/inspect.mjs",
+        "parity/wave5/bin/validate.mjs",
+        "parity/wave5/fixtures/actor-memory-escape-reject.ores",
+        "parity/wave5/fixtures/actor-memory-read.ores",
+        "parity/wave5/fixtures/forge-native-main.ores",
+        "parity/wave5/fixtures/llvm-native-main.ores",
+        "parity/wave5/fixtures/net-native-main.ores",
+        "parity/wave5/fixtures/wasm-native-main.ores",
+        "parity/wave5/manifest.json",
+        "parity/wave5/package.json",
+        "parity/wave5/src/actor-memory.mjs",
+        "parity/wave5/src/artifacts.mjs",
+        "parity/wave5/src/evidence.mjs",
+        "parity/wave5/src/manifest.mjs",
+        "parity/wave5/tests/wave5.test.mjs"
+      ],
+      "pinnedFiles": [
+        {
+          "path": "parity/wave5/tests/wave5.test.mjs",
+          "gitBlob": "b9972d56e52b30778220fc3c23fcdbd3f1e1a3be"
+        },
+        {
+          "path": "parity/wave5/manifest.json",
+          "gitBlob": "38b43cb4f4a41818dab3c0d8bb7d2d7e439874f2"
+        }
+      ]
+    },
+    {
+      "wave": 6,
+      "pr": 56,
+      "head": "938fade4961cd1432951d52fea98715b21c442f3",
+      "path": "checkouts/wave6",
+      "changedFiles": [
+        ".github/workflows/wave6-parity.yml",
+        "parity/wave6/README.md",
+        "parity/wave6/bin/check.mjs",
+        "parity/wave6/bin/differential.mjs",
+        "parity/wave6/fixtures/actor-state-loan-escape-reject.ores",
+        "parity/wave6/fixtures/actor-state-read.ores",
+        "parity/wave6/fixtures/scalar-42.ores",
+        "parity/wave6/manifest.json",
+        "parity/wave6/package.json",
+        "parity/wave6/src/differential.mjs",
+        "parity/wave6/src/manifest.mjs",
+        "parity/wave6/src/ota.mjs",
+        "parity/wave6/src/platforms.mjs",
+        "parity/wave6/tests/wave6.test.mjs"
+      ],
+      "pinnedFiles": [
+        {
+          "path": "parity/wave6/tests/wave6.test.mjs",
+          "gitBlob": "f29426ff0a4668e156f90d8807631210410b0e48"
+        },
+        {
+          "path": "parity/wave6/manifest.json",
+          "gitBlob": "4a378a6dc294cc15cc908c2a6fe7668246812706"
+        }
+      ]
+    }
+  ],
+  "requiredProof": [
+    "all six pinned Git commits present",
+    "all pinned test and manifest blobs identical",
+    "all six Node suites genuinely execute and pass",
+    "CI job and step provenance independently checked",
+    "real production guest compilation and execution verified per backend",
+    "private source stays within approved boundary"
+  ],
+  "certifiedParity": false
+}
