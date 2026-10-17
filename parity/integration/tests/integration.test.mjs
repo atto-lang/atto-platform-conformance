@@ -180,3 +180,22 @@ test('44 / blocked six-wave integration writes a restrictive non-certifying JSON
   await assert.rejects(runIntegration({inventoryPath:resolve(fileURLToPath(manifestPath)),checkoutRoot:workspace,outputPath:output}),/EEXIST/);
  }finally{await rm(workspace,{recursive:true,force:true})}
 });
+
+test('43 / ignored untracked payload still blocks a clean source checkout',async()=>{
+ const workspace=await mkdtemp(join(tmpdir(),'ores-ignored-'));
+ try{
+  const root=join(workspace,'wave1'),dir=join(root,'parity','wave1','tests');
+  await mkdir(dir,{recursive:true});
+  const sourcePath='parity/wave1/tests/probe.test.mjs';
+  const source=Buffer.from("import test from 'node:test';test('safe',()=>{});\n");
+  await writeFile(join(dir,'probe.test.mjs'),source);
+  await writeFile(join(root,'.gitignore'),'ignored/\n');
+  execFileSync('git',['init','-q',root]);
+  execFileSync('git',['-C',root,'add','.']);
+  execFileSync('git',['-C',root,'-c','user.email=test@example.invalid','-c','user.name=Test','commit','-qm','baseline']);
+  const head=execFileSync('git',['-C',root,'rev-parse','HEAD'],{encoding:'utf8'}).trim();
+  await mkdir(join(root,'ignored'));
+  await writeFile(join(root,'ignored','injected.mjs'),'console.log("unreviewed")\n');
+  await assert.rejects(verifyCheckout({wave:1,head,changedFiles:[sourcePath],pinnedFiles:[{path:sourcePath,gitBlob:hash(source)}]},workspace),/modified before tests/);
+ }finally{await rm(workspace,{recursive:true,force:true})}
+});
