@@ -7,6 +7,7 @@ import {fileURLToPath} from 'node:url';
 import {dirname} from 'node:path';
 import {validateInventory,mergeReadiness} from './inventory.mjs';
 import {assessProcess} from './test-evidence.mjs';
+import {runSourceValidator} from './source-validation.mjs';
 
 const fail=s=>{throw Error('integration-runner: '+s)};
 const safeEnv=()=>Object.fromEntries(['PATH','HOME','TMPDIR','TEMP','TMP','SYSTEMROOT','WINDIR','COMSPEC'].filter(k=>typeof process.env[k]==='string').map(k=>[k,process.env[k]]).concat([['CI','true'],['NODE_OPTIONS','']]));
@@ -55,9 +56,12 @@ export async function runIntegration({inventoryPath,checkoutRoot,outputPath,time
  const doc=JSON.parse(await readFile(inventoryPath,'utf8')),sourceInventory=validateInventory(doc);
  const report={schemaVersion:1,status:'STARTED',scope:'NODE_HOST_CONFORMANCE_ONLY',inventory:sourceInventory,results:[],compilerParityVerified:false,releaseCertified:false,independentRunnerAttestation:false};
  for(const w of doc.waves){
-  let check=null,attempted=false;
+  let check=null,attempted=false,sourceAttempted=false,sourceValidation=null;
   try {
    check=await verifyCheckout(w,checkoutRoot);
+   sourceAttempted=true;
+   sourceValidation=await runSourceValidator({wave:w.wave,root:check.root,env:safeEnv()});
+   if(gitAt(check.root,['status','--porcelain=v1','--untracked-files=all']))fail('source validator modified checkout before tests');
    attempted=true;
    const cmd=spawnSync(process.execPath,['--test','--test-reporter=tap',...check.tests],{cwd:check.root,encoding:'utf8',shell:false,timeout:timeoutMs,maxBuffer:2*1024*1024,env:safeEnv(),windowsHide:true});
    let tap=null,observationError=null;
@@ -66,11 +70,11 @@ export async function runIntegration({inventoryPath,checkoutRoot,outputPath,time
    const status=cmd.error?.code==='ETIMEDOUT'?'TIMEOUT':cmd.signal?'SIGNALED':after?'SOURCE_MUTATED':tap?'PASSED':'NO_CONFIRMED_TESTS';
    report.results.push({wave:w.wave,head:check.head,status,exitCode:Number.isInteger(cmd.status)?cmd.status:null,
     tests:check.tests,pinned:check.pins,stdoutTail:String(cmd.stdout||'').slice(-2500),stderrTail:String(cmd.stderr||'').slice(-1500),
-    testCounts:tap?.counts??null,observationError,hostSuiteRan:!cmd.error,guestCompilerRan:false});
+    testCounts:tap?.counts??null,observationError,sourceValidation,hostSuiteRan:!cmd.error,guestCompilerRan:false});
   }catch(e){
-   report.results.push({wave:w.wave,head:w.head,status:attempted?'POST_TEST_VERIFICATION_FAILED':'BLOCKED_BEFORE_TEST',exitCode:null,
+   report.results.push({wave:w.wave,head:w.head,status:attempted?'POST_TEST_VERIFICATION_FAILED':sourceAttempted?'SOURCE_VALIDATION_FAILED':'BLOCKED_BEFORE_TEST',exitCode:null,
     tests:check?.tests??[],pinned:check?.pins??[],stdoutTail:'',stderrTail:'',testCounts:null,
-    observationError:String(e?.message||e).slice(0,1000),hostSuiteRan:attempted,guestCompilerRan:false});
+    observationError:String(e?.message||e).slice(0,1000),sourceValidation,hostSuiteRan:attempted,guestCompilerRan:false});
   }
  }
  const readiness=mergeReadiness(report);
@@ -86,8 +90,8 @@ const calledPath=process.argv[1]?resolve(process.argv[1]):'';
 if(calledPath===fileURLToPath(import.meta.url)){
  try{
   const args=process.argv.slice(2);
-  if(args.length!==2||!args[0].startsWith('--checkouts=')||!args[1].startsWith('--inventory='))fail('use --checkouts=/absolute/path --inventory=/absolute/path');
-  const result=await runIntegration({checkoutRoot:args[0].slice(12),inventoryPath:args[1].slice(12)});
+  if(args.length!==3||!args[0].startsWith('--checkouts=')||!args[1].startsWith('--inventory=')||!args[2].startsWith('--output='))fail('use --checkouts=/absolute/path --inventory=/absolute/path --output=/absolute/report.json');
+  const result=await runIntegration({checkoutRoot:args[0].slice(12),inventoryPath:args[1].slice(12),outputPath:args[2].slice(9)});
   console.log(JSON.stringify(result,null,2));
   process.exitCode=result.status==='HOST_SUITES_FAILED'?1:0;
  }catch(e){console.error(e.stack||e.message);process.exitCode=2}
