@@ -12,6 +12,9 @@ export const BACKENDS = Object.freeze([
 export const RELATIVE_FIXTURE = "contracts/v1/semantics/fixtures/add.ores";
 export const EXACT_SOURCE = Buffer.from("pub fnc main(): int { return 40 + 2; }\n");
 export const EXPECTED_GIT_BLOB = "015f8b0f79aafa796a148d2adeff1574e8d6c491";
+export const PRECEDENCE_RELATIVE_FIXTURE = "contracts/v1/semantics/fixtures/precedence.ores";
+export const PRECEDENCE_SOURCE = Buffer.from("pub fnc main(): int { return (2 + 3) * 8; }\\n");
+export const PRECEDENCE_GIT_BLOB = "2d09e697ad4eeac4ee263c3656b92998c67f0bfc";
 
 function gitBlob(bytes) {
   const prefix = Buffer.from("blob " + bytes.length + "\0");
@@ -22,7 +25,7 @@ function sameFile(a, b) {
     a.nlink === b.nlink && a.size === b.size &&
     a.mtimeMs === b.mtimeMs && a.ctimeMs === b.ctimeMs;
 }
-async function readSafeFixture(workspace, repository) {
+async function readSafeFixture(workspace, repository, fixtureName = "add.ores", expectedSize = EXACT_SOURCE.length) {
   const root = join(resolve(workspace), repository);
   let part = root;
   const parentSnapshot = [];
@@ -33,7 +36,7 @@ async function readSafeFixture(workspace, repository) {
       throw Error("unsafe fixture directory: " + repository);
     parentSnapshot.push({path:part,dev:st.dev,ino:st.ino});
   }
-  const file = join(part, "add.ores");
+  const file = join(part, fixtureName);
   // lstat alone cannot detect all parent path substitutions between checks.
   // A stable physical path and post-read parent identity are both required.
   if ((await realpath(file)) !== file)
@@ -52,7 +55,7 @@ async function readSafeFixture(workspace, repository) {
     constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
   try {
     const st = await handle.stat();
-    if (!st.isFile() || st.nlink !== 1 || st.size !== EXACT_SOURCE.length)
+    if (!st.isFile() || st.nlink !== 1 || st.size !== expectedSize)
       throw Error("invalid scalar fixture size/type: " + repository);
     // Bind the pre-open path inode to the actual no-follow descriptor.
     if (!sameFile(beforeOpen, st))
@@ -108,6 +111,32 @@ export async function verifyFiveBackendSourceIdentity(workspace) {
   // No backend compiler, runner or native guest is invoked here.
   return {status: "SOURCE_IDENTITY_ONLY_NOT_EXECUTION", fixture: RELATIVE_FIXTURE,
     executionVerified: false, fixtureCount: files.length, files};
+}
+
+// Extension of the original add-only contract. This asserts two canonical
+// identical source fixtures in each backend; it does NOT execute any compiler.
+export async function verifyFiveBackendScalarPairSourceIdentity(workspace) {
+  const addProof = await verifyFiveBackendSourceIdentity(workspace);
+  if (gitBlob(PRECEDENCE_SOURCE) !== PRECEDENCE_GIT_BLOB)
+    throw Error("precedence contract Git blob pin is invalid");
+  const physicalWorkspace = await realpath(resolve(workspace));
+  const precedenceFiles = [];
+  for (const repository of BACKENDS) {
+    const bytes = await readSafeFixture(
+      physicalWorkspace, repository, "precedence.ores", PRECEDENCE_SOURCE.length);
+    const digest = gitBlob(bytes);
+    if (digest !== PRECEDENCE_GIT_BLOB || !bytes.equals(PRECEDENCE_SOURCE))
+      throw Error("five-backend precedence source mismatch: " + repository);
+    precedenceFiles.push({repository, gitBlobSha: digest,
+      sourceSha256: createHash("sha256").update(bytes).digest("hex")});
+  }
+  return {status: "SOURCE_IDENTITY_ONLY_NOT_EXECUTION",
+    executionVerified: false, parityCertified: false,
+    fixtureCount: 2, backendCount: BACKENDS.length, sourceFileCount: 10,
+    fixtures: [
+      {path: RELATIVE_FIXTURE, gitBlobSha: EXPECTED_GIT_BLOB, files: addProof.files},
+      {path: PRECEDENCE_RELATIVE_FIXTURE, gitBlobSha: PRECEDENCE_GIT_BLOB, files: precedenceFiles}
+    ]};
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
