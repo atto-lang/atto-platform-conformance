@@ -55,15 +55,22 @@ export async function runIntegration({inventoryPath,checkoutRoot,outputPath,time
  const doc=JSON.parse(await readFile(inventoryPath,'utf8')),sourceInventory=validateInventory(doc);
  const report={schemaVersion:1,status:'STARTED',scope:'NODE_HOST_CONFORMANCE_ONLY',inventory:sourceInventory,results:[],compilerParityVerified:false,releaseCertified:false,independentRunnerAttestation:false};
  for(const w of doc.waves){
-  const check=await verifyCheckout(w,checkoutRoot);
-  const cmd=spawnSync(process.execPath,['--test','--test-reporter=tap',...check.tests],{cwd:check.root,encoding:'utf8',shell:false,timeout:timeoutMs,maxBuffer:2*1024*1024,env:safeEnv(),windowsHide:true});
-  let tap=null,observationError=null;
-  try{tap=assessProcess(cmd,{minimumTests:check.tests.length})}catch(e){observationError=String(e.message||e)}
-  const after=gitAt(check.root,['status','--porcelain=v1','--untracked-files=all']);
-  const status=cmd.error?.code==='ETIMEDOUT'?'TIMEOUT':cmd.signal?'SIGNALED':after?'SOURCE_MUTATED':tap?'PASSED':'NO_CONFIRMED_TESTS';
-  report.results.push({wave:w.wave,head:check.head,status,exitCode:Number.isInteger(cmd.status)?cmd.status:null,
-   tests:check.tests,pinned:check.pins,stdoutTail:String(cmd.stdout||'').slice(-2500),stderrTail:String(cmd.stderr||'').slice(-1500),
-   testCounts:tap?.counts??null,observationError,hostSuiteRan:!cmd.error,guestCompilerRan:false});
+  let check=null;
+  try {
+   check=await verifyCheckout(w,checkoutRoot);
+   const cmd=spawnSync(process.execPath,['--test','--test-reporter=tap',...check.tests],{cwd:check.root,encoding:'utf8',shell:false,timeout:timeoutMs,maxBuffer:2*1024*1024,env:safeEnv(),windowsHide:true});
+   let tap=null,observationError=null;
+   try{tap=assessProcess(cmd,{minimumTests:check.tests.length})}catch(e){observationError=String(e.message||e)}
+   const after=gitAt(check.root,['status','--porcelain=v1','--untracked-files=all']);
+   const status=cmd.error?.code==='ETIMEDOUT'?'TIMEOUT':cmd.signal?'SIGNALED':after?'SOURCE_MUTATED':tap?'PASSED':'NO_CONFIRMED_TESTS';
+   report.results.push({wave:w.wave,head:check.head,status,exitCode:Number.isInteger(cmd.status)?cmd.status:null,
+    tests:check.tests,pinned:check.pins,stdoutTail:String(cmd.stdout||'').slice(-2500),stderrTail:String(cmd.stderr||'').slice(-1500),
+    testCounts:tap?.counts??null,observationError,hostSuiteRan:!cmd.error,guestCompilerRan:false});
+  }catch(e){
+   report.results.push({wave:w.wave,head:w.head,status:'BLOCKED_BEFORE_TEST',exitCode:null,
+    tests:check?.tests??[],pinned:check?.pins??[],stdoutTail:'',stderrTail:'',testCounts:null,
+    observationError:String(e?.message||e).slice(0,1000),hostSuiteRan:false,guestCompilerRan:false});
+  }
  }
  const readiness=mergeReadiness(report);
  report.readiness=readiness;
