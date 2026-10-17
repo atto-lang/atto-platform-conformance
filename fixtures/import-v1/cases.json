@@ -34,6 +34,27 @@
       "entry": "project/src/invalid-root-traversal.ores",
       "expect": "reject",
       "diagnostic": "noncanonical-rooted-import"
+    },
+    {
+      "id": "cr-comment-relative-function",
+      "entry": "project/src/main-cr-comment.ores",
+      "expect": "return-42",
+      "requiredFeatures": [
+        "cr-only-line-comment",
+        "importer-relative",
+        "file-import",
+        "cross-unit-link"
+      ]
+    },
+    {
+      "id": "cr-comment-rooted-parent-rejection",
+      "entry": "project/src/invalid-cr-root-traversal.ores",
+      "expect": "reject",
+      "diagnostic": "noncanonical-rooted-import",
+      "requiredFeatures": [
+        "cr-only-line-comment",
+        "canonical-rooted-path"
+      ]
     }
   ],
   "evidence": [],
