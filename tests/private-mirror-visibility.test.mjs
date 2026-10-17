@@ -7,8 +7,16 @@ const source = "ores-truffle-oreslang/oreslang-source.java";
 const A="a".repeat(40),T="d".repeat(40),M="b".repeat(40),destinationId=1234;
 const encoded=text=>({type:"file",encoding:"base64",sha:createHash("sha1").update("blob "+Buffer.byteLength(text)+"\0").update(text).digest("hex"),
   content:Buffer.from(text).toString("base64")});
+const securityOwners="@ores-truffle-oreslang/security";
+const codeowners=[
+  "/.github/CODEOWNERS "+securityOwners,
+  "/.github/private-ci-approved-repositories.txt "+securityOwners,
+  "/.github/private-ci-approved-source-snapshots.txt "+securityOwners,
+  "/.github/private-ci-required-checks.json "+securityOwners
+].join("\n")+"\n";
+const requiredChecks=JSON.stringify({schema:1,checks:[{context:"native-tests",appId:4321}]})+"\n";
 const rules=()=>({enforce_admins:{enabled:true},
-  required_status_checks:{strict:true,contexts:["native-tests"]},
+  required_status_checks:{strict:true,contexts:[],checks:[{context:"native-tests",app_id:4321}]},
   required_pull_request_reviews:{require_code_owner_reviews:true,
     dismiss_stale_reviews:true,required_approving_review_count:1,
     bypass_pull_request_allowances:{users:[],teams:[],apps:[]}}});
@@ -29,6 +37,9 @@ function fixture(records = {}, calls = []) {
     const defaults={
       [source+"/branches/main"]:{name:"main",protected:true,commit:{sha:M}},
       [source+"/branches/main/protection"]:rules(),
+      [source+"/contents/.github/CODEOWNERS?ref="+M]:encoded(codeowners),
+      [source+"/contents/.github/private-ci-required-checks.json?ref="+M]:
+        encoded(requiredChecks),
       [source+"/contents/.github/private-ci-approved-repositories.txt?ref="+M]:
         encoded(destination+" "+destinationId+"\n"),
       [source+"/contents/.github/private-ci-approved-source-snapshots.txt?ref="+M]:
@@ -52,7 +63,7 @@ test("accepts only explicitly approved and GitHub-verified writable private dest
     status:"PRIVATE_MIRROR_APPROVED",source,destination,
     sourceCommit:A,sourceTree:T,destinationId
   });
-  assert.equal(calls.length, 8);
+  assert.equal(calls.length, 10);
   assert.equal(calls[0].url.endsWith("/" + source), true);
   assert.equal(calls[1].url.endsWith("/" + destination), true);
 });
@@ -205,20 +216,51 @@ test("source policy Git blob digest must match the reviewed bytes",async()=>{
  const forged={...encoded(destination+" "+destinationId+"\n"),sha:"f".repeat(40)};
  await assert.rejects(check({}, {[policy]:forged}),/policy blob digest mismatch/);
 });
-test("strict nonempty required CI and reviewer bypass protection are mandatory",async()=>{
+test("security CODEOWNERS must end with exact org-team ownership for every export policy file",async()=>{
+ const path=source+"/contents/.github/CODEOWNERS?ref="+M;
+ for(const text of [
+  [
+   "/.github/CODEOWNERS "+securityOwners,
+   "/.github/private-ci-approved-repositories.txt "+securityOwners,
+   "/.github/private-ci-approved-source-snapshots.txt "+securityOwners
+  ].join("\n")+"\n",
+  codeowners+"* @someone-else\n",
+  codeowners.replaceAll(securityOwners,"@individual"),
+  codeowners.replace(
+    "/.github/private-ci-required-checks.json "+securityOwners,
+    "/.github/private-ci-required-checks.json @ores-truffle-oreslang/other-team")
+ ]){
+  await assert.rejects(check({}, {[path]:encoded(text)}),/security CODEOWNERS/);
+ }
+});
+
+test("required-check policy must exactly bind context to GitHub App ID",async()=>{
+ const path=source+"/contents/.github/private-ci-required-checks.json?ref="+M;
+ for(const text of [
+  JSON.stringify({schema:1,checks:[]}),
+  JSON.stringify({schema:1,checks:[{context:"native-tests",appId:0}]}),
+  JSON.stringify({schema:1,checks:[{context:"native-tests",appId:4321},{context:"native-tests",appId:4321}]}),
+  JSON.stringify({schema:1,checks:[{context:"native-tests",appId:9999}]})
+ ]){
+  await assert.rejects(check({}, {[path]:encoded(text+"\n")}),
+    /required-check policy|context\/app identity/);
+ }
+});
+test("strict app-bound required CI and reviewer bypass protection are mandatory",async()=>{
  const key=source+"/branches/main/protection";
  const baseline=rules();
- for(const bad of [
-  {...baseline,required_status_checks:undefined},
-  {...baseline,required_status_checks:{strict:false,contexts:["native-tests"]}},
-  {...baseline,required_status_checks:{strict:true,contexts:[]}},
-  {...baseline,required_status_checks:{strict:true,contexts:[null]}},
-  {...baseline,required_pull_request_reviews:{...baseline.required_pull_request_reviews,
-    bypass_pull_request_allowances:{users:[{login:"owner"}],teams:[],apps:[]}}},
-  {...baseline,required_pull_request_reviews:{...baseline.required_pull_request_reviews,
-    bypass_pull_request_allowances:undefined}}
+ for(const [bad,pattern] of [
+  [{...baseline,required_status_checks:undefined},/required status checks/],
+  [{...baseline,required_status_checks:{strict:false,contexts:[],checks:[{context:"native-tests",app_id:4321}]}},/required status checks/],
+  [{...baseline,required_status_checks:{strict:true,contexts:["legacy"],checks:[{context:"native-tests",app_id:4321}]}},/required status checks/],
+  [{...baseline,required_status_checks:{strict:true,contexts:[],checks:[]}},/required status checks/],
+  [{...baseline,required_status_checks:{strict:true,contexts:[],checks:[{context:"native-tests",app_id:9999}]}},/context\/app identity/],
+  [{...baseline,required_pull_request_reviews:{...baseline.required_pull_request_reviews,
+    bypass_pull_request_allowances:{users:[{login:"owner"}],teams:[],apps:[]}}},/codeowner review proof/],
+  [{...baseline,required_pull_request_reviews:{...baseline.required_pull_request_reviews,
+    bypass_pull_request_allowances:undefined}},/codeowner review proof/]
  ]){
-   await assert.rejects(check({}, {[key]:bad}),/codeowner review proof/);
+   await assert.rejects(check({}, {[key]:bad}),pattern);
  }
 });
 test("duplicate destination names or numeric ids and ambiguous snapshots deny",async()=>{
