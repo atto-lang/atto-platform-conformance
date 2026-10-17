@@ -51,3 +51,30 @@ The admission code now closes the two audit gaps previously recorded on this PR:
 - Required checks are not accepted by name alone. The protected-main policy records exact `context + appId` pairs and admission verifies those pairs against branch protection. Additional required checks are allowed only when they are also app-bound.
 
 This still does **not** enable mirroring by itself. All five source repositories currently report `main.protected=false`; the policy files and branch protection must land and be independently reviewed before any private source export can pass.
+
+
+## Protected-main bootstrap verification
+
+After a repository administrator enables branch protection on all five source
+repositories, run the read-only verifier with a token that can read branch
+protection metadata:
+
+`GH_TOKEN=<admin-read-token> npm run audit:private-ci-bootstrap`
+
+The verifier requires, for every `oreslang-source.*` repository:
+
+- `main.protected === true`;
+- at least one approving review, CODEOWNERS review, stale-review dismissal,
+  admin enforcement and no user/team/app PR bypass allowances;
+- strict app-bound required checks containing
+  `private-ci-policy` from GitHub Actions App ID `15368`;
+- the exact final CODEOWNERS block protecting CODEOWNERS, both approval files,
+  required-check policy and the policy workflow itself;
+- Git-blob integrity for all protected policy files;
+- **empty** destination and source-snapshot approval lists during bootstrap;
+- no protected-main SHA drift while the audit is running.
+
+This audit is intentionally read-only and cannot enable protection. A GitHub
+token that cannot read the protection endpoint fails closed. A passing bootstrap
+audit still does not authorize a source mirror; destination + snapshot approval
+must be added later through a separate protected, independently reviewed change.
