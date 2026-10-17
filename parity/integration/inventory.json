@@ -198,6 +198,10 @@
         {
           "path": "parity/wave5/manifest.json",
           "gitBlob": "38b43cb4f4a41818dab3c0d8bb7d2d7e439874f2"
+        },
+        {
+          "path": "parity/wave5/fixtures/llvm-native-main.ores",
+          "gitBlob": "015f8b0f79aafa796a148d2adeff1574e8d6c491"
         }
       ]
     },
@@ -230,6 +234,10 @@
         {
           "path": "parity/wave6/manifest.json",
           "gitBlob": "4a378a6dc294cc15cc908c2a6fe7668246812706"
+        },
+        {
+          "path": "parity/wave6/fixtures/scalar-42.ores",
+          "gitBlob": "015f8b0f79aafa796a148d2adeff1574e8d6c491"
         }
       ]
     }
