@@ -67,3 +67,13 @@ test('50 malformed selected run/head/attempt cannot trigger API requests',async(
   assert.throws(()=>validateRequest(q),/actions-audit/);
  }
 });
+
+test('46 listed but unexecuted queued or skipped steps are not test execution',()=>{
+ const d=base();d.jobs[0].steps=[{name:'Checkout',status:'queued',conclusion:null},{name:'Skipped',status:'completed',conclusion:'skipped'}];
+ const a=classifyRun(d,select());assert.equal(a.recordedStepCount,2);assert.equal(a.jobs[0].completedSteps,0);assert.equal(a.classification,'NO_EXECUTED_TEST_EVIDENCE');
+});
+test('48 a completed failing step remains an observed noncertifying failure',()=>{
+ const d=base();d.jobs[0].steps=[{name:'Compile',status:'completed',conclusion:'failure'}];
+ const a=classifyRun(d,select());assert.equal(a.jobs[0].completedSteps,1);assert.equal(a.classification,'JOB_EXECUTED_WITH_ERRORS_OR_PARTIAL_STEPS');
+ assert.equal(a.releaseCertified,false);
+});
