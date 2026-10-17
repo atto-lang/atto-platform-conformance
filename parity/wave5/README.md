@@ -34,9 +34,8 @@ boundary: Java may continue using JVM-managed Truffle/runtime wrappers even
 when guest data is increasingly arena-backed, and Wasm may explicitly recycle
 linear-memory capacity without claiming host OS decommit.
 
-Current audit anchors are Java #1134, LLVM #549, .NET #36/#64, Forge #29/#60
-and Wasm #64. Every entry remains `verified:false` until exact-head executable
-backend evidence with source/artifact provenance is available.
+Current audit anchors are Java #1134, LLVM #563, .NET #36/#64, Forge #29/#60
+and Wasm #64. LLVM is `verified:true` only at the declared `compiled-scalar` level from exact-head executable evidence; the other backend entries remain `verified:false` until equivalent source/artifact-provenance evidence is available.
 
 ## What this branch actually adds
 
