@@ -103,6 +103,33 @@ export async function loadManifest(){
  }
  return manifest;
 }
+/**
+ * Capture a fail-closed executable identity at each fixture boundary.
+ * This detects changes between/around invocations, not the inode the
+ * kernel actually exec'd; immutable trusted builds remain necessary.
+ * Reject symlinks and nonregular wrappers instead of trusting their target.
+ */
+async function executableProof(path){
+ try{
+  const before=await lstat(path,{bigint:true});
+  if(!before.isFile()||before.isSymbolicLink())return null;
+  const digest=createHash("sha256").update(await readFile(path)).digest("hex");
+  const after=await lstat(path,{bigint:true});
+  if(!after.isFile()||after.isSymbolicLink())return null;
+  const fields=["dev","ino","size","mode","mtimeNs","ctimeNs"];
+  if(fields.some(x=>before[x]!==after[x]))return null;
+  return Object.freeze({
+   sha256:digest,
+   dev:String(before.dev),ino:String(before.ino),
+   size:String(before.size),mode:String(before.mode),
+   mtimeNs:String(before.mtimeNs),ctimeNs:String(before.ctimeNs)
+  });
+ }catch{return null}
+}
+function sameExecutable(a,b){
+ return !!a&&!!b&&Object.keys(a).every(k=>a[k]===b[k]);
+}
+
 export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireConfigured=false,spawn=spawnSync}={}){
  if(!SUPPORTED_BACKENDS.has(backend))throw Error("unknown backend");
  if(!Number.isSafeInteger(timeoutMs)||timeoutMs<100||timeoutMs>120000)throw Error("timeoutMs must be 100..120000");
@@ -114,16 +141,21 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
  }
  validateCommand(argv);
  if(!validSha(sourceSha))throw Error("configured backend requires exact 40-character lowercase source commit SHA");
- let executableSha256=null;
- try{const binaryBytes=await readFile(argv[0]);executableSha256=createHash("sha256").update(binaryBytes).digest("hex")}
- catch{/* absent executable is reported as SPAWN_ERROR for each fixture below */}
+ const initialExecutable=await executableProof(argv[0]);
+ const executableSha256=initialExecutable?.sha256||null;
+ const commandSha256=createHash("sha256").update(JSON.stringify(argv)).digest("hex");
  const results=[];
+ let driftSeen=false;
  for(const c of relevant){
   const fixturePath=resolve(root,"fixtures",c.file);
   await assertRegularFixture(fixturePath);
   const fixtureSha256=createHash("sha256").update(await readFile(fixturePath)).digest("hex");
   const cmd=argv.map(x=>x==="{file}"?fixturePath:x);
+  const beforeExecutable=await executableProof(argv[0]);
   const output=spawn(cmd[0],cmd.slice(1),{encoding:"utf8",timeout:timeoutMs,cwd:root,maxBuffer:1024*1024,windowsHide:true});
+  const afterExecutable=await executableProof(argv[0]);
+  if(initialExecutable && (!sameExecutable(initialExecutable,beforeExecutable)
+      || !sameExecutable(initialExecutable,afterExecutable)))driftSeen=true;
   let status;
   const combined=(output.stdout||"")+"\n"+(output.stderr||"");
   if(output.error)status=output.error.code==="ETIMEDOUT"?"TIMEOUT":"SPAWN_ERROR";
@@ -132,16 +164,27 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
   else if(!Number.isSafeInteger(output.status)||output.status<0)status="INVALID_EXIT_STATUS";
   // The binary must be hashable, even if a mock or wrapper claims it succeeded.
   else if(!executableSha256)status="UNHASHABLE_EXECUTABLE";
+  else if(driftSeen)status="EXECUTABLE_CHANGED";
   else if(c.expect==="accept")status=output.status===0 && !hasCompilerErrorSeverity(combined)?"VERIFIED":"MISMATCH";
   else {
    status=output.status!==0 && isExpectedCompilerDiagnostic(combined,c.diagnostic)
      ?"VERIFIED":"MISMATCH";
   }
-  results.push({id:c.id,status,fixtureSha256,exitCode:output.status,signal:output.signal||null,
+  // A later drift invalidates every prior positive claim in this run.
+  if(driftSeen)for(const prior of results)
+   if(prior.status==="VERIFIED")prior.status="EXECUTABLE_CHANGED";
+  results.push({id:c.id,status,fixtureSha256,
+    executableBeforeSha256:beforeExecutable?.sha256||null,
+    executableAfterSha256:afterExecutable?.sha256||null,
+    exitCode:output.status,signal:output.signal||null,
     stdout:output.stdout||"",stderr:output.stderr||""});
  }
  const verified=results.filter(x=>x.status==="VERIFIED").length;
  const failed=results.filter(x=>x.status!=="VERIFIED").length;
- return {backend,declaredSourceSha:sourceSha,executableSha256,provenanceNote:"Source revision was supplied by caller; this harness does not attest that it produced the binary.",configured:true,verified,failed,skipped:0,ok:failed===0 && verified>0 &&
+ return {backend,declaredSourceSha:sourceSha,executableSha256,
+  executableIdentity:initialExecutable,commandSha256,
+  harnessRuntime:{node:process.version,platform:process.platform,arch:process.arch},
+  executableDriftDetected:driftSeen,
+  provenanceNote:"Source revision was supplied by caller. Hashes detect observable pre/post changes, but cannot attest the binary actually executed by the kernel or compiler-to-source provenance.",configured:true,verified,failed,skipped:0,ok:!driftSeen && failed===0 && verified>0 &&
   relevant.some(x=>x.expect==="accept") && relevant.some(x=>x.expect==="reject"),results};
 }
