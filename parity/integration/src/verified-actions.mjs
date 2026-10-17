@@ -58,7 +58,8 @@ export function assessBoundRun({run,jobs,artifacts},request){
       allSuccessful=false;
     }
   }
-  const fullSteps=next===REQUIRED_STEPS.length&&allSuccessful&&completed>=REQUIRED_STEPS.length;
+  const fullSteps=run.status==='completed'&&run.conclusion==='success'&&job.status==='completed'&&job.conclusion==='success'&&
+    next===REQUIRED_STEPS.length&&allSuccessful&&completed>=REQUIRED_STEPS.length;
   const reportArtifacts=artifacts.filter(a=>a.name===WORKFLOW.artifact&&!a.expired);
   const reportPresent=reportArtifacts.length===1&&reportArtifacts[0].size_in_bytes>0;
   if(basic.classification==='NO_EXECUTED_TEST_EVIDENCE'&&artifacts.length)fail('artifact appears in run without executed steps');
