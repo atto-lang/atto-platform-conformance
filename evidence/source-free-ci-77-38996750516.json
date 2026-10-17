@@ -43,26 +43,26 @@
   "backendPrHeads": {
     "oreslang-source.java": {
       "pr": 1112,
-      "sha": "2a1bbcec402ca08526f1aef76e365cb0a833a1f9"
+      "sha": "863fcfa45bfbe010eba00bff34ae25831e6aacd1"
     },
     "oreslang-source.llvm": {
       "pr": 495,
-      "sha": "9de6b6c31d4a7a3c47b8805ea406890f09fff5c2"
+      "sha": "4148a934fc3b56c15048930503ab5ab4615ce4fb"
     },
     "oreslang-source.net": {
       "pr": 56,
-      "sha": "7dbf126a04620cbb39147ec415f2ae7d48d6e9b0"
+      "sha": "a31dee81d1b5bda3e9000cc65c4e59c11e5d8da5"
     },
     "oreslang-source.wasm": {
       "pr": 52,
-      "sha": "79d61e7d37335ca44a6ecb6ef81e0ed2906dc3e8"
+      "sha": "d9e421e0a8f9a1d3677b67d1b391cf6f28709d5a"
     },
     "oreslang-source.forge": {
       "pr": 50,
-      "sha": "f492c5559b50451fd1e365f4e7bc799540ac2fcd"
+      "sha": "379588c280823d9d2fcf2a5625fb69065d3b8d33"
     }
   },
-  "parityScope": "Three Git blobs matched across the above five source-verifier PR heads (15 Git-file lookups), not whole-source or runtime parity.",
+  "parityScope": "Three Git blobs identical across five final source-verifier PR heads after receipt-only documentation commits; 15 path lookups were completed at the immediately preceding heads, and the docs-only commits do not modify any pinned paths. Not full compiler/runtime parity.",
   "blockers": [
     "oreslang-platform-conformance#22",
     "oreslang-source.java#904",
