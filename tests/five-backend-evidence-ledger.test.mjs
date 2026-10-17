@@ -78,3 +78,26 @@ test("reject malformed artifact or log digests",()=>{
     const x=base();x.records[0]=executed(BACKENDS[0]);x.records[0].execution[key]="0".repeat(40);reject(x);
   }
 });
+
+
+test("source-free verifier receipt is never native guest parity",()=>{
+  // Actual, GitHub-hosted source-free 73-test report. Its successful
+  // verifier regressions cannot substitute for a backend compiler invocation.
+  const x=base();
+  x.records[0]=executed(BACKENDS[0]);
+  Object.assign(x.records[0].execution,{
+    repositoryId:1323598260,  // source-free carrier, not Java source repo
+    headCommitSha:"4ed1d2cdf1a6c7a67e4a21ea22404933ba137886",
+    workflowPath:".github/workflows/oreslang-source-free-73-evidence.yml",
+    runId:38994382119,runAttempt:1,executedTestCount:219,
+    compilerExecuted:false,nativeGuestExecuted:false,
+    artifactSha256:"56c6e85cf07a4e71d415ee470958a9995a404353d773054f333ff83e1f8e7248"
+  });
+  reject(x);
+  const extra=base();
+  extra.records[0].sourceFreeRun=38994382119;
+  reject(extra); // source-free receipts must not enter the native manifest
+  const pending=check(base());
+  assert.equal(pending.claimedExecutionCount,0);
+  assert.equal(pending.parityCertified,false);
+});
