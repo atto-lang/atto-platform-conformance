@@ -20,3 +20,25 @@ For the historical receipt set `--member 77-parity.json`, `--schema oreslang.sou
 A separate authenticated GitHub run/job/step proof must establish the **exact** source-free test execution. To claim Oreslang parity, each source backend must separately pass real compiler, AOT/guest and runtime tests on a pinned source tree, with independently checked artifacts. All source `main` branches currently report no protection and the approved private CI destination list is empty; this change does not approve a source transfer, trigger a build, merge a security policy or add credentials.
 
 **Keep DRAFT** until independently reviewed and the repository's CI genuinely executes this new suite.
+
+## Persistent actor 47x3 receipt profile (2026-10-17 UTC)
+
+The persistent actor policy suite has advanced beyond the older 37/44-case receipts. The current five backend parity branches share these exact source-free Git blobs:
+
+- contract `83a40f637ab77437108d02fedc8cde997f753928`
+- verifier `e423ef5aef92a48eb1fb5c38578b986f20da2130`
+- tests `544fca635d7ab77b6496b0a6c917bf17302b2ce0` (**47 distinct tests**)
+
+A new private source-free carrier run [#39075802504](https://github.com/scintilla-run-test/gleam-runner-conformance/actions/runs/39075802504) executed all **47 tests in three isolated rounds = 141/141**, on carrier commit `6ecebcc2aebc39c81b6f1fe872894461d14235eb` / tree `de7ea07936dcb2c39678662a9e0f4954d5365cdd`. GitHub artifact ID `12116967605` is named `oreslang-sourcefree-persistent-actor-47-39075802504-1`; downloaded ZIP SHA-256 is `b0e3e7a568592772aeb74bae9a7442d5799131bde603ac8f5a34b7f5948909c9`, matching GitHub artifact metadata.
+
+The receipt pins the exact backend heads:
+
+- Java `ea2cdc09fd488183e04fe938fdd6f69ce2b47566`
+- LLVM `d79427fb3a2114e3197566eb830cc76596314ec2`
+- .NET `9cadaba519c4b0964a69a4a6d668a28761e5f356`
+- Wasm `dd60caf793c42230f14e6aac829f5f6a8434434e`
+- Forge `0ab9e78b490d2a1ff4bd8d62815edf17ab25e6a1`
+
+`scripts/verify_persistent_actor_receipt.py` is a separate fail-closed profile for this receipt shape. Source-free carrier run [#39076113979](https://github.com/scintilla-run-test/gleam-runner-conformance/actions/runs/39076113979) executed its adversarial verifier tests, downloaded artifact `12116967605` from the prior run without extracting it, and successfully validated the exact ZIP digest, run/attempt, carrier commit/tree, five backend heads, three blob identities and exact `[47,47,47] / 141` test inventory.
+
+This is still **policy-only evidence**. The validated receipt requires `guest_runtime_certified:false`, `native_backend_certified:false`, `private_source_export_authorized:false` and `source_runtime_or_compiler_transferred:false`. It must never be used as native backend parity, guest execution, source-export authorization, or release certification.
