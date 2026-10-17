@@ -12,7 +12,7 @@ import {assessWorkflow,checkNoRunAsProof} from '../src/host-evidence.mjs';
 const manifestPath=new URL('../inventory.json',import.meta.url);
 const load=async()=>JSON.parse(await readFile(manifestPath,'utf8'));
 const mutate=async fn=>{const x=structuredClone(await load());fn(x);return x;};
-const makeRuns=(status='PASSED')=>HEADS.map((head,i)=>({wave:i+1,head,status}));
+const makeRuns=(status='PASSED')=>HEADS.map((head,i)=>({wave:i+1,head,status,hostSuiteRan:true,guestCompilerRan:false,testCounts:{tests:2,pass:2,fail:0,cancelled:0,skipped:0,todo:0},sourceValidation:{status:'SOURCE_FIXTURES_VALIDATED_HOST_ONLY',wave:i+1,compilerExecuted:false,parityVerified:false}}));
 const hash=b=>createHash('sha1').update(Buffer.from('blob '+b.length+'\0')).update(b).digest('hex');
 const workflow=()=>({
  repository:'ores-truffle-oreslang/oreslang-platform-conformance',
@@ -155,5 +155,28 @@ test('40 / missing checkouts give six blocked results, never imaginary test fail
   assert.equal(r.status,'HOST_SUITES_FAILED');
   assert.ok(r.results.every(x=>x.status==='BLOCKED_BEFORE_TEST'&&x.hostSuiteRan===false&&x.testCounts===null));
   assert.equal(r.releaseCertified,false);
+ }finally{await rm(workspace,{recursive:true,force:true})}
+});
+
+test('45 / synthetic green text without source validator and executed cases cannot imply host readiness',()=>{
+ const results=makeRuns();for(const row of results){delete row.sourceValidation;delete row.testCounts;row.hostSuiteRan=false;}
+ const x=mergeReadiness({results});
+ assert.equal(x.hostReadiness,'BLOCKED');
+ assert.ok(x.failedWaves.every(row=>/source-validator/.test(row.reason)));
+ assert.equal(x.mergeApproved,false);assert.equal(x.releaseCertified,false);
+});
+test('44 / blocked six-wave integration writes a restrictive non-certifying JSON report',async()=>{
+ const {stat}=await import('node:fs/promises');
+ const workspace=await mkdtemp(join(tmpdir(),'ores-wave9-artifact-'));
+ try{
+  const output=join(workspace,'host-report.json');
+  const report=await runIntegration({inventoryPath:resolve(fileURLToPath(manifestPath)),checkoutRoot:workspace,outputPath:output});
+  const saved=JSON.parse(await readFile(output,'utf8'));
+  assert.equal(saved.results.length,6);
+  assert.equal(report.releaseCertified,false);
+  assert.equal(saved.readiness.hostReadiness,'BLOCKED');
+  assert.equal(saved.results[0].sourceValidation,null);
+  const info=await stat(output);assert.equal(info.mode & 0o077,0);
+  await assert.rejects(runIntegration({inventoryPath:resolve(fileURLToPath(manifestPath)),checkoutRoot:workspace,outputPath:output}),/EEXIST/);
  }finally{await rm(workspace,{recursive:true,force:true})}
 });
