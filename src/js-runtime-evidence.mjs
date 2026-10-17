@@ -59,7 +59,7 @@ export async function runJsRuntimeEvidence({
       cwd:temp,encoding:'utf8',timeout:timeoutMs,maxBuffer:1024*1024,windowsHide:true
     });
     if(reject.error||reject.signal||reject.status===0||
-       !/^error: unresolved identifier nonexistent_symbol\\b/m.test(reject.stderr||''))
+       !/^error: unresolved identifier nonexistent_symbol\b/m.test(reject.stderr||''))
       return {...common,status:'NEGATIVE_FIXTURE_FAILED',negativeExit:reject.status};
     if(compiled.error||compiled.signal||compiled.status!==0)
       return {...common,status:compiled.error?.code==='ETIMEDOUT'?'TIMEOUT':'COMPILE_FAILED',compilerExit:compiled.status,compilerStderr:(compiled.stderr||'').slice(0,4096)};
