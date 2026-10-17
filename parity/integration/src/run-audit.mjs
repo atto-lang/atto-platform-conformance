@@ -31,10 +31,10 @@ export function classifyRun(input,request){
   for(const s of steps){
    shape(s,['name','status','conclusion']);
    if(typeof s.name!=='string'||s.name.length>150||!['queued','in_progress','completed','pending'].includes(s.status))fail('malformed step status');
-   if(s.status==='completed')stepExecutions++;
+   if(s.status==='completed'&&['success','failure','timed_out'].includes(s.conclusion))stepExecutions++;
   }
   results.push({jobId:j.id,status:j.status,conclusion:j.conclusion??null,recordedSteps:steps.length,completedSteps:stepExecutions,
-    classification:steps.length===0?'NO_RECORDED_STEPS':j.conclusion==='success'?'STEPS_RECORDED_REVIEW_REQUIRED':'STEPS_RECORDED_FAILED_OR_UNFINISHED'});
+    classification:stepExecutions===0?'NO_CONFIRMED_EXECUTION_STEPS':j.conclusion==='success'?'STEPS_RECORDED_REVIEW_REQUIRED':'STEPS_RECORDED_FAILED_OR_UNFINISHED'});
  }
  const artifactsSafe=[];
  for(const a of artifacts){
@@ -43,7 +43,7 @@ export function classifyRun(input,request){
   artifactsSafe.push({artifactId:a.id,name:a.name,bytes:a.size_in_bytes,expired:a.expired===true});
  }
  const completed=run.status==='completed';
- const noSteps=results.every(j=>j.recordedSteps===0);
+ const noSteps=results.every(j=>j.completedSteps===0);
  const classification=!completed?'NOT_FINAL':noSteps?'NO_EXECUTED_TEST_EVIDENCE':run.conclusion==='success'?'STEPS_RECORDED_NOT_COMPILER_PROOF':'JOB_EXECUTED_WITH_ERRORS_OR_PARTIAL_STEPS';
  const evidence={schemaVersion:1,source:'github-actions-rest-api-response',repository:selection.repository,runId:run.id,head:run.head_sha,attempt:run.run_attempt,
     status:run.status,conclusion:run.conclusion??null,classification,jobs:results,artifacts:artifactsSafe,
