@@ -33,13 +33,15 @@ import {runJsRuntimeEvidence} from './src/js-runtime-evidence.mjs';
 const result = await runJsRuntimeEvidence({
   compilerScript:'/approved/private/checkout/oreslang-source.js/bin/oreslang-jsc.mjs',
   declaredSourceSha:'YOUR_EXACT_40_HEX_JS_COMPILER_COMMIT',
+  expectedCompilerScriptSha256:'INDEPENDENTLY_TRUSTED_64_HEX_SCRIPT_SHA256',
   timeoutMs:10000
 });
 console.log(result);
 if(!result.ok)process.exitCode=1;
 ```
 
-The collector checks the fixed shared arithmetic fixture returns `42n`,
+The collector requires an independently trusted compiler-script SHA-256, verifies the negative
+unresolved-identifier fixture fails, checks the fixed shared arithmetic fixture returns `42n`,
 records compiler-script, fixture and emitted-module SHA-256 hashes, and
 reports compilation failures, missing generated modules, runtime failures
 and timeouts explicitly. It never bundles or mirrors the private compiler.
