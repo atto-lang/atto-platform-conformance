@@ -13,8 +13,11 @@ function executed(backend) {
   return {backend,status:"executed-claimed",execution:{
     repositoryId:REPOSITORY_IDS[backend],headCommitSha:"a".repeat(40),
     headTreeSha:"b".repeat(40),workflowId:12,
-    workflowPath:".github/workflows/native.yml",workflowBlobSha:"c".repeat(40),
+    workflowPath:".github/workflows/native.yml",
+    workflowRunPath:".github/workflows/native.yml@refs/heads/main",
+    workflowBlobSha:"c".repeat(40),
     runId:93,runAttempt:1,runEvent:"pull_request",
+    jobId:1324,runnerId:86421,runnerName:"GitHub Actions 86421",
     runnerJob:"native",testStep:"Run native guest tests",
     executionMode:EXECUTION_MODES[backend],toolchain:"pinned native toolchain",
     ciStatement:"GITHUB_RUN_EXECUTION_VERIFIED_NOT_GUEST_PARITY_CERTIFIED",
@@ -87,6 +90,50 @@ test("reject fabricated guest result or no executable tests",()=>{
 });
 test("reject wrong toolchain mode for backend",()=>{const x=base();x.records[0]=executed(BACKENDS[0]);x.records[0].execution.executionMode=EXECUTION_MODES[BACKENDS[1]];reject(x)});
 test("reject swapped repository numeric identity",()=>{const x=base();x.records[0]=executed(BACKENDS[0]);x.records[0].execution.repositoryId=REPOSITORY_IDS[BACKENDS[1]];reject(x)});
+test("reject claimed unallocated runner and fake numeric job IDs",()=>{
+  for (const key of ["jobId", "runnerId"]) {
+    for (const value of [0, -1, true, false, null, "123", Number.MAX_SAFE_INTEGER+1]) {
+      const x=base();x.records[0]=executed(BACKENDS[0]);
+      x.records[0].execution[key]=value;
+      reject(x);
+    }
+  }
+  for (const value of ["", "   ", false, null, 32, "runner\nforged"]) {
+    const x=base();x.records[0]=executed(BACKENDS[0]);
+    x.records[0].execution.runnerName=value;
+    reject(x);
+  }
+  for (const key of ["runnerJob","testStep","toolchain"]) {
+    const x=base();x.records[0]=executed(BACKENDS[0]);
+    x.records[0].execution[key]="valid\nspoofed-step";
+    reject(x);
+  }
+});
+test("reject missing, wrong, or traversal workflow-run references",()=>{
+  for (const value of [
+    undefined, "", ".github/workflows/other.yml@refs/heads/main",
+    ".github/workflows/native.yml@refs/heads/../evil",
+    ".github/workflows/native.yml@refs/heads//main",
+    ".github/workflows/native.yml@",
+    ".github/workflows/native.yml@refs/heads/main?x=y",
+    ".github/workflows/native.yml@refs/heads/main#frag",
+    ".github/workflows/native.yml@refs/heads/main\nspoofed"
+  ]) {
+    const x=base();x.records[0]=executed(BACKENDS[0]);
+    if (value === undefined) delete x.records[0].execution.workflowRunPath;
+    else x.records[0].execution.workflowRunPath=value;
+    reject(x);
+  }
+  for (const value of [
+    ".github/workflows/native.yml",
+    ".github/workflows/native.yml@main",
+    ".github/workflows/native.yml@refs/pull/123/merge"
+  ]) {
+    const x=base();x.records[0]=executed(BACKENDS[0]);
+    x.records[0].execution.workflowRunPath=value;
+    assert.equal(check(x).claimedExecutionCount,1);
+  }
+});
 test("reject run attempt bool, zero and overflow",()=>{
   for(const v of [true,0,Number.MAX_SAFE_INTEGER+1]){
     const x=base();x.records[0]=executed(BACKENDS[0]);x.records[0].execution.runAttempt=v;reject(x);
