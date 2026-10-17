@@ -9,6 +9,7 @@
  */
 import {pathToFileURL} from "node:url";
 import {createHash} from "node:crypto";
+import {auditCodeowners,auditRequiredChecks,auditProtection} from "./audit-private-ci-bootstrap.mjs";
 
 const SOURCE_IDS = Object.freeze({
   "ores-truffle-oreslang/oreslang-source.java": 1400792274,
@@ -19,6 +20,15 @@ const SOURCE_IDS = Object.freeze({
 });
 const OID = /^[a-f0-9]{40}$/;
 const FULL_NAME = /^[A-Za-z0-9][A-Za-z0-9_.-]*\/[A-Za-z0-9][A-Za-z0-9_.-]*$/;
+const INCIDENT_REPOSITORY = "ores-truffle-oreslang/oreslang-platform-conformance";
+const INCIDENT_NUMBER = 22;
+const INCIDENT_TITLE = "P0 SECURITY: private Oreslang source mirrored into public GitHub Actions carrier";
+const CARRIER_CHECK = Object.freeze({context:"carrier-policy",appId:15368});
+const CARRIER_SECURITY_PATHS = Object.freeze([
+  "/.github/workflows/",
+  "/.github/CODEOWNERS",
+  "/.github/private-ci-carrier-policy.json"
+]);
 
 function repoName(value) {
   if (typeof value !== "string" || !FULL_NAME.test(value) ||
@@ -83,6 +93,86 @@ async function metadata(path, token, fetchImpl) {
   if (!response || response.status !== 200) throw Error("trusted source export policy unavailable");
   try { return await response.json(); }
   catch { throw Error("trusted source export policy is not decodable"); }
+}
+async function requireIncidentCompletion(token, fetchImpl) {
+  const issue = await metadata("repos/" + INCIDENT_REPOSITORY + "/issues/" + INCIDENT_NUMBER,
+    token, fetchImpl);
+  if (issue?.number !== INCIDENT_NUMBER ||
+      issue?.state !== "closed" || issue?.state_reason !== "completed" ||
+      issue?.title !== INCIDENT_TITLE ||
+      issue?.html_url !== "https://github.com/" + INCIDENT_REPOSITORY + "/issues/" + INCIDENT_NUMBER ||
+      issue?.repository_url !== "https://api.github.com/repos/" + INCIDENT_REPOSITORY ||
+      typeof issue?.closed_at !== "string" ||
+      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(issue.closed_at) ||
+      Object.hasOwn(issue, "pull_request")) {
+    throw Error("P0 private-source incident is not completed with exact identity");
+  }
+}
+
+function requireCarrierCodeowners(text) {
+  const lines = text.split("\n").map(x => x.trim()).filter(x => x && !x.startsWith("#"));
+  const expected = CARRIER_SECURITY_PATHS.map(path => path + " @ORESoftware");
+  const actual = lines.slice(-expected.length);
+  if (actual.length !== expected.length || actual.some((line,index) => line !== expected[index])) {
+    throw Error("carrier security CODEOWNERS final block mismatch");
+  }
+}
+
+function carrierPolicy(text) {
+  let value;
+  try { value = JSON.parse(text); }
+  catch { throw Error("carrier policy is not valid JSON"); }
+  if (!value || Object.getPrototypeOf(value) !== Object.prototype ||
+      Object.keys(value).length !== 2 || value.schema !== 1 ||
+      !value.carrier || Object.getPrototypeOf(value.carrier) !== Object.prototype ||
+      Object.keys(value.carrier).length !== 2 ||
+      value.carrier.context !== CARRIER_CHECK.context ||
+      value.carrier.appId !== CARRIER_CHECK.appId) {
+    throw Error("carrier policy identity mismatch");
+  }
+}
+
+function requireCarrierCheck(protection) {
+  auditProtection(protection);
+  const checks = protection?.required_status_checks;
+  if (checks?.strict !== true || !Array.isArray(checks.checks) ||
+      !Array.isArray(checks.contexts) || checks.contexts.length !== 0) {
+    throw Error("strict app-bound carrier checks missing");
+  }
+  const seen = new Set();
+  let required = false;
+  for (const item of checks.checks) {
+    if (!item || typeof item.context !== "string" ||
+        !Number.isSafeInteger(item.app_id) || item.app_id <= 0 ||
+        seen.has(item.context)) {
+      throw Error("carrier required check identity invalid");
+    }
+    seen.add(item.context);
+    if (item.context === CARRIER_CHECK.context && item.app_id === CARRIER_CHECK.appId) {
+      required = true;
+    }
+  }
+  if (!required) throw Error("carrier-policy check/app binding missing");
+}
+
+async function protectedCarrierApproval(to, token, fetchImpl) {
+  const base = "repos/" + to;
+  const branch = await metadata(base + "/branches/main", token, fetchImpl);
+  const protectedSha = branch?.commit?.sha;
+  if (branch?.name !== "main" || branch.protected !== true ||
+      typeof protectedSha !== "string" || !OID.test(protectedSha)) {
+    throw Error("protected carrier main is mandatory");
+  }
+  const protection = await metadata(base + "/branches/main/protection", token, fetchImpl);
+  requireCarrierCheck(protection);
+  const file = async name => policyText(await metadata(base +
+    "/contents/.github/" + name + "?ref=" + protectedSha, token, fetchImpl));
+  requireCarrierCodeowners(await file("CODEOWNERS"));
+  carrierPolicy(await file("private-ci-carrier-policy.json"));
+  const after = await metadata(base + "/branches/main", token, fetchImpl);
+  if (after?.protected !== true || after?.commit?.sha !== protectedSha) {
+    throw Error("protected carrier policy changed during admission");
+  }
 }
 function policyText(data) {
   if (!data || data.type !== "file" || data.encoding !== "base64" ||
@@ -220,24 +310,11 @@ async function protectedSourceApproval(from, sourceCommit, sourceTree, destId, t
   }
   // A branch's protected flag alone cannot prove independent codeowner review.
   const rules = await metadata(base + "/branches/main/protection", token, fetchImpl);
-  const review = rules?.required_pull_request_reviews;
-  const checks = rules?.required_status_checks;
-  if (review?.require_code_owner_reviews !== true ||
-      review.dismiss_stale_reviews !== true ||
-      !Number.isSafeInteger(review.required_approving_review_count) ||
-      review.required_approving_review_count < 1 ||
-      rules?.enforce_admins?.enabled !== true ||
-      !review?.bypass_pull_request_allowances ||
-      (review?.bypass_pull_request_allowances?.users?.length ?? 0) !== 0 ||
-      (review?.bypass_pull_request_allowances?.teams?.length ?? 0) !== 0 ||
-      (review?.bypass_pull_request_allowances?.apps?.length ?? 0) !== 0) {
-    throw Error("independently enforced codeowner review proof missing");
-  }
+  auditProtection(rules);
   const file = async name => policyText(await metadata(base +
     "/contents/.github/" + name + "?ref=" + protectedSha, token, fetchImpl));
-  requireSecurityCodeowners(await file("CODEOWNERS"));
-  requireApprovedProtectedChecks(checks,
-    requiredChecksPolicy(await file("private-ci-required-checks.json")));
+  auditCodeowners(await file("CODEOWNERS"), from);
+  auditRequiredChecks(await file("private-ci-required-checks.json"), rules, from);
   requireUniquePolicyEntry(await file("private-ci-approved-repositories.txt"),
     2, to + " " + destId, "destination approval");
   requireUniquePolicyEntry(await file("private-ci-approved-source-snapshots.txt"),
@@ -275,6 +352,11 @@ export async function requirePrivateMirror({
   }
   if (typeof fetchImpl !== "function") throw Error("GitHub visibility lookup unavailable");
 
+  // Incident containment is a revocable release gate. Check it before any
+  // private-source metadata/content reads and, because the publisher calls
+  // this admission again before every write, before every destination write.
+  await requireIncidentCompletion(token, fetchImpl);
+
   const sourceRepo = await repoMetadata(from, token, fetchImpl);
   if (sourceRepo.private !== true || sourceRepo.visibility !== "private" ||
       sourceRepo.archived === true) {
@@ -290,6 +372,7 @@ export async function requirePrivateMirror({
       destinationRepo.permissions?.push !== true) {
     throw Error("destination must be a writable verified PRIVATE GitHub repository");
   }
+  await protectedCarrierApproval(to, token, fetchImpl);
   await protectedSourceApproval(from, sourceCommit, sourceTree,
     destinationRepo.id, to, token, fetchImpl);
   return Object.freeze({status: "PRIVATE_MIRROR_APPROVED", source: from, destination: to,
