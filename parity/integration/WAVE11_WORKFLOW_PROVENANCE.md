@@ -12,12 +12,12 @@
 
 ## Exact local verification
 
-Executed **18/18 Node v22.16.0 tests**, zero failures/skips/TODO, including actual child CLI invocation and negative cases for wrong workflow/PR/repo, queued and skipped steps, reordered steps, missing/duplicated/wrong-head artifacts, oversized streamed HTTP, invalid JSON content-type, redirect, forbidden response, invalid UTF-8 and incomplete pagination.
+Executed **19/19 Node v22.16.0 tests**, zero failures/skips/TODO, including actual child CLI invocation and negative cases for wrong workflow/PR/repo, queued and skipped steps, failed workflow/job conclusions, reordered steps, missing/duplicated/wrong-head artifacts, oversized streamed HTTP, invalid JSON content-type, redirect, forbidden response, invalid UTF-8 and incomplete pagination.
 
 Git blob identities verified from the committed PR branch:
 
-- `src/verified-actions.mjs` — `cf4bb6dcd1c2b1fe95d401d47b3e529174f3e265`
-- `tests/verified-actions.test.mjs` — `003816d95c0d4055a87b45723d0a225718486b23`
+- `src/verified-actions.mjs` — `654af629ce6407740beaed1d0eb53316310d32ab`
+- `tests/verified-actions.test.mjs` — `866121205cfa9aaa327578f9a0ceb7d5c3cbd302`
 - `bin/audit.mjs` — `99b1b761ec0ad35859a05ced2b91e9da7ac3bab1`
 - Inherited `src/run-audit.mjs` — `c7b78960a767b42e471056f436654ea7947dd5f4`
 
