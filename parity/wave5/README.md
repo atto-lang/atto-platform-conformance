@@ -23,7 +23,7 @@ It distinguishes four allocation levels:
 4. `compiled-general` — ordinary mutable guest allocations (classes/records/lists/maps/closures/retained state as applicable) are compiler-routed into actor-owned domains.
 
 The current audited ledger keeps **semantic actor-heap parity false**. LLVM is
-`compiled-scalar`; Java, .NET, Forge and Wasm remain `host-runtime` for this
+`compiled-scalar` and is verified at that declared level by exact-source compiler/native carrier evidence; Java, .NET, Forge and Wasm remain `host-runtime` for this
 gate. A host arena, successful policy fixture, or host allocator test cannot be
 edited into a `compiled-general` claim.
 
@@ -34,7 +34,7 @@ boundary: Java may continue using JVM-managed Truffle/runtime wrappers even
 when guest data is increasingly arena-backed, and Wasm may explicitly recycle
 linear-memory capacity without claiming host OS decommit.
 
-Current audit anchors are Java #1134, LLVM #517, .NET #36/#64, Forge #29/#60
+Current audit anchors are Java #1134, LLVM #549, .NET #36/#64, Forge #29/#60
 and Wasm #64. Every entry remains `verified:false` until exact-head executable
 backend evidence with source/artifact provenance is available.
 
