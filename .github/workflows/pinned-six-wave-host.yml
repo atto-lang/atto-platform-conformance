@@ -1,0 +1,86 @@
+name: Pinned six-wave host conformance (not compiler parity)
+on:
+  pull_request:
+    paths:
+      - 'parity/integration/**'
+      - '.github/workflows/pinned-six-wave-host.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  six-wave-host-conformance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out integration driver
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          path: integration
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Confirm Clang for native format control cases
+        run: clang --version
+      - name: Checkout wave 1 exact draft head
+        uses: actions/checkout@v4
+        with:
+          repository: ores-truffle-oreslang/oreslang-platform-conformance
+          ref: 4f5b723c9f55d21eb7a07631a41dd63fec0cffd1
+          persist-credentials: false
+          path: integration/checkouts/wave1
+      - name: Checkout wave 2 exact draft head
+        uses: actions/checkout@v4
+        with:
+          repository: ores-truffle-oreslang/oreslang-platform-conformance
+          ref: 4bb5e69efa871bee7829af4790dbd5bc0c2bbae4
+          persist-credentials: false
+          path: integration/checkouts/wave2
+      - name: Checkout wave 3 exact draft head
+        uses: actions/checkout@v4
+        with:
+          repository: ores-truffle-oreslang/oreslang-platform-conformance
+          ref: 7f614ac1128dabeb06ca6b67678c11a341fe973c
+          persist-credentials: false
+          path: integration/checkouts/wave3
+      - name: Checkout wave 4 exact draft head
+        uses: actions/checkout@v4
+        with:
+          repository: ores-truffle-oreslang/oreslang-platform-conformance
+          ref: 478292e8fa8ee08cbd1553d785aa83b327dd610a
+          persist-credentials: false
+          path: integration/checkouts/wave4
+      - name: Checkout wave 5 exact draft head
+        uses: actions/checkout@v4
+        with:
+          repository: ores-truffle-oreslang/oreslang-platform-conformance
+          ref: 178598885b1c9e5399a1ed05fa5c4a6e2c008184
+          persist-credentials: false
+          path: integration/checkouts/wave5
+      - name: Checkout wave 6 exact draft head
+        uses: actions/checkout@v4
+        with:
+          repository: ores-truffle-oreslang/oreslang-platform-conformance
+          ref: 938fade4961cd1432951d52fea98715b21c442f3
+          persist-credentials: false
+          path: integration/checkouts/wave6
+      - name: Check out 6 pinned wave commits
+        working-directory: integration
+        run: |
+          set -euo pipefail
+          test "$(git -C checkouts/wave1 rev-parse HEAD)" = "4f5b723c9f55d21eb7a07631a41dd63fec0cffd1"
+          test "$(git -C checkouts/wave2 rev-parse HEAD)" = "4bb5e69efa871bee7829af4790dbd5bc0c2bbae4"
+          test "$(git -C checkouts/wave3 rev-parse HEAD)" = "7f614ac1128dabeb06ca6b67678c11a341fe973c"
+          test "$(git -C checkouts/wave4 rev-parse HEAD)" = "478292e8fa8ee08cbd1553d785aa83b327dd610a"
+          test "$(git -C checkouts/wave5 rev-parse HEAD)" = "178598885b1c9e5399a1ed05fa5c4a6e2c008184"
+          test "$(git -C checkouts/wave6 rev-parse HEAD)" = "938fade4961cd1432951d52fea98715b21c442f3"
+      - name: Test integration runner and provenance denial guards
+        working-directory: integration
+        run: node --test parity/integration/tests/*.test.mjs
+      - name: Run pinned six-wave host suites
+        working-directory: integration
+        run: |
+          node parity/integration/src/run.mjs \
+            "--checkouts=$PWD/checkouts" \
+            "--inventory=$PWD/parity/integration/inventory.json"
