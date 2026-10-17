@@ -74,6 +74,12 @@ function validateExecution(e, backend) {
   runPath(e.workflowRunPath, e.workflowPath);
   if (!["push", "pull_request"].includes(e.runEvent)) fail("untrusted workflow event");
   for (const key of ["runnerName", "runnerJob", "testStep", "toolchain"]) nonempty(e[key], key);
+  // Match the source backends' exact-run verifier: runner lifecycle entries
+  // are never executable native proof steps, even when a run is successful.
+  if (["Set up job", "Complete job", "Initialize containers",
+       "Start containers", "Stop containers"].includes(e.testStep) ||
+      e.testStep.startsWith("Pre ") || e.testStep.startsWith("Post "))
+    fail("native test step must be executable, not runner housekeeping");
   if (e.executionMode !== EXECUTION_MODES[backend]) fail("incorrect native execution mode");
   if (e.ciStatement !== CI_STATEMENT) fail("GitHub execution proof statement absent");
   if (e.compilerExecuted !== true || e.nativeGuestExecuted !== true)
