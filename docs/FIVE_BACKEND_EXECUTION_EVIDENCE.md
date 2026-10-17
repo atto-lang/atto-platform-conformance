@@ -49,3 +49,36 @@ The static example has zero claimed executions and five blocked records. There i
 5. Only an independent release controller combining authenticated provenance **and** inspected native test execution artifacts may report five-way parity certified. This module never does so.
 
 Current background blockers: [private-source exposure incident #22](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22), [source protection #994](https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/994), and [publisher authorization #962](https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/962). These are not bypassed by available alternate-org GitHub Actions minutes.
+
+## Second cross-backend scalar contract — arithmetic precedence
+
+Canonical fixture: `contracts/v1/semantics/fixtures/precedence.ores`
+
+```oreslang
+pub fnc main(): int { return (2 + 3) * 8; }
+```
+
+The file includes a trailing newline and has exact Git blob
+`2d09e697ad4eeac4ee263c3656b92998c67f0bfc`. Java and LLVM's
+existing semantics manifests require **executed result 40**. The .NET
+conformance PR #19 adds Windows Native AOT executable execution;
+Forge PR #11 requires both real IR and interpreter results; WASM
+[PR #61](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/61)
+requires pinned LLVM compiler and actual Wasm guest execution.
+
+`verifyFiveBackendScalarPairSourceIdentity(workspace)` now validates
+**both** pinned fixture bytes across five adjacent private source checkouts
+(10 ordinary regular files) using the existing bounded, nonblocking,
+no-follow descriptor checks and pre/post read identity guards.
+It returns `SOURCE_IDENTITY_ONLY_NOT_EXECUTION` and
+`parityCertified:false`. Seven adversarial Node unit tests exercise
+correct source identity, mutation, missing fixture or backend, swapped
+files, symlink rejection and invalid workspace input.
+
+**Parity status: PENDING execution.** This source identity extension is
+not proof the five backends accepted or ran the fixture. The current
+single-fixture `EVIDENCE_SCHEMA` remains scoped to `native.add`;
+do not fold a precedence-only source manifest into that schema or
+declare five-way numeric parity until independent native result-40
+receipts, matching source/commit/tree pins and negative tests are
+authenticated for all five.
