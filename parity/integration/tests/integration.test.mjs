@@ -18,7 +18,7 @@ const workflow=()=>({
  repository:'ores-truffle-oreslang/oreslang-platform-conformance',
  runId:12345,attempt:1,head:HEADS[0],conclusion:'success',
  jobs:[{name:'six-wave-host-conformance',runId:12345,attempt:1,head:HEADS[0],conclusion:'success',
-  steps:['Check out integration driver','Check out 6 pinned wave commits','Run pinned six-wave host suites'].map(name=>({name,status:'completed',conclusion:'success',attempt:1}))}]
+  steps:['Check out integration driver','Set up Node 22','Confirm Clang for native format control cases',...Array.from({length:6},(_,i)=>'Checkout wave '+(i+1)+' exact draft head'),'Check out 6 pinned wave commits','Test integration runner and provenance denial guards','Run pinned six-wave host suites'].map(name=>({name,status:'completed',conclusion:'success',attempt:1}))}]
 });
 test('31 / all 92 changed files across six PRs are uniquely registered',async()=>{
  const x=validateInventory(await load());
