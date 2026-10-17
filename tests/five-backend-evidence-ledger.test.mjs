@@ -197,6 +197,28 @@ test("validated 82x3 source-free receipt remains non-native evidence",()=>{
   assert.equal(result.externalVerificationRequired,true);
   assert.equal(check(base()).blocked.length,5);
 });
+test("85-case exact carrier receipt is shape-valid but never native certification",()=>{
+  const receipt=sourceFree82();
+  receipt.schema="oreslang.source_free_ci_verifier_85.v1";
+  receipt.tests_per_round=85;
+  receipt.expected_total=255;
+  receipt.run_id=38998088804;
+  receipt.carrier_head_sha="ba78a09a767a43acf9f248d1999fa41456c1c5a4";
+  receipt.carrier_tree_sha="eca4be6b8e286955733bdc31d8d8570535632ba1";
+  receipt.git_blobs["scripts/verify_ci_run.py"]=
+    "b59a7880f060582694ed4a9862caede5e5f3e8b9";
+  receipt.git_blobs["scripts/test_verify_ci_run.py"]=
+    "84eedb6beec2e8fbe81b7539095ef4550a09b0cf";
+  receipt.git_blobs[".github/workflows/ci-run-evidence-contract.yml"]=
+    "78bd3f8e95f2097d244468d80833f696fed46141";
+  const r=checkSourceFree(receipt);
+  assert.equal(r.regressionExecutionsClaimed,255);
+  assert.equal(r.parityCertified,false);
+  assert.equal(r.releaseReady,false);
+  receipt.expected_total=246;
+  assert.throws(()=>checkSourceFree(receipt),/stale or inconsistent/);
+});
+
 test("reject older 82-case GitHub artifact with stale expected_total 231",()=>{
   // Carrier run 38997306268 reported 82 tests per round in 3 rounds, but
   // wrote old total 231. It is NOT acceptable evidence for 246 cases.
