@@ -299,3 +299,16 @@ source-org GitHub Actions runs remain blocked before runner allocation, while
 the private alternate-org source-free 73-case evidence run covers verifier
 regressions only. Source export is still prohibited without independent,
 protected-main policy approval and security incident containment.
+
+## Fourth verified source-free CI receipt — 86 × 3 (2026-10-17 UTC)
+
+The latest private-carrier [GitHub Actions run #38998516318](https://github.com/scintilla-run-test/gleam-runner-conformance/actions/runs/38998516318) succeeded with `86` source-free security regressions in **three rounds**: `258` executed test cases. The job `source-free-86` ID `117296273366` completed its checkout, immutable-blob checks, regression step and artifact upload.
+
+- Private carrier GitHub repository ID `1323598260`; exact carrier head `2019cb7895e1c098b3692916876c28d92add3185`, tree `4f5b6938dac0041c15fd71a613717f4c2ae7edde`.
+- [Artifact #12088435863](https://github.com/scintilla-run-test/gleam-runner-conformance/actions/runs/38998516318/artifacts/12088435863): downloaded ZIP SHA-256 `2728c4a06f228235b6c3e28c962ebab08252bfcd960eecbac8c87627066a1866` exactly matches GitHub metadata. Its `86-parity.json` report says `source_free_only:true`, `guest_runtime_certified:false`, `private_runtime_or_compiler_source_transferred:false`, and `source_repository_native_ci_certified:false`.
+- Three pinned Git blobs: verifier `26868f6f8e423a038e32ed56ef09da7fcdb43b52`, tests `9d268ba9fa019fa96d3439b64dee0b9fadfdf0cf`, workflow `3af5567b01dfa757b52c31bd6da09711bd780593`.
+- **15/15 blob rechecks** passed after bringing LLVM, .NET, WASM and Forge forward to the Java verifier revision: each backend draft PR has identical verifier/test/workflow blobs. This is *source-free verifier file parity*, **not** native guest or feature-level language parity.
+- New scoped receipt: `evidence/source-free-ci-86-38998516318.json`; new regression module `tests/source-free-ci-receipt-86.test.mjs`. These three new ledger tests are committed but have **not** themselves executed in the carrier run above. Only the pinned Python verifier's 86 tests are GitHub-hosted-tested.
+- Previous `77 × 3 = 231` receipt is preserved for audit history and remains source-free only. The original `five-backend-evidence.pending.json` stays five-pending, with `parityCertified:false`.
+
+No private compiler tree was mirrored by this work. **Open P0 incident #22** still documents a separate public source carrier, and Java #904/#962 still prevent approved cross-organization private source export. The source organization continues to show zero-step failed Actions jobs. Mere availability of alternative-org budget does not satisfy source privacy, independent review, protected policy or exact-tree authorization.
