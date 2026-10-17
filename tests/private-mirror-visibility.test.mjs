@@ -12,7 +12,8 @@ const codeowners=[
   "/.github/CODEOWNERS "+securityOwners,
   "/.github/private-ci-approved-repositories.txt "+securityOwners,
   "/.github/private-ci-approved-source-snapshots.txt "+securityOwners,
-  "/.github/private-ci-required-checks.json "+securityOwners
+  "/.github/private-ci-required-checks.json "+securityOwners,
+  "/.github/workflows/private-ci-policy.yml "+securityOwners
 ].join("\n")+"\n";
 const requiredChecks=JSON.stringify({schema:1,checks:[{context:"native-tests",appId:4321}]})+"\n";
 const rules=()=>({enforce_admins:{enabled:true},
@@ -222,7 +223,8 @@ test("security CODEOWNERS must end with exact org-team ownership for every expor
   [
    "/.github/CODEOWNERS "+securityOwners,
    "/.github/private-ci-approved-repositories.txt "+securityOwners,
-   "/.github/private-ci-approved-source-snapshots.txt "+securityOwners
+   "/.github/private-ci-approved-source-snapshots.txt "+securityOwners,
+   "/.github/private-ci-required-checks.json "+securityOwners
   ].join("\n")+"\n",
   codeowners+"* @someone-else\n",
   codeowners.replaceAll(securityOwners,"@individual"),
@@ -254,7 +256,8 @@ test("the existing independently reviewed ORESoftware owner remains an accepted 
   "/.github/CODEOWNERS "+owner,
   "/.github/private-ci-approved-repositories.txt "+owner,
   "/.github/private-ci-approved-source-snapshots.txt "+owner,
-  "/.github/private-ci-required-checks.json "+owner
+  "/.github/private-ci-required-checks.json "+owner,
+  "/.github/workflows/private-ci-policy.yml "+owner
  ].join("\n")+"\n";
  assert.deepEqual((await check({}, {[path]:encoded(text)})).destinationId,destinationId);
 });
