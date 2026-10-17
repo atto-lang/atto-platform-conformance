@@ -216,6 +216,26 @@ test("materialized snapshot must contain exactly pinned blobs before a commit or
  }
 });
 
+test("materialized tree denies case-aliased source before publishing CI commit/ref",async()=>{
+ const goodFile={path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C};
+ for(const injection of [
+   {path:"SNAPSHOTS/CHECKED/injected.ores",type:"blob",mode:"100644",sha:D},
+   {path:"snapshots/checked/MAIN.ores",type:"blob",mode:"100644",sha:C},
+   {path:"Snapshots/Checked",type:"tree"},
+   {path:"snapshots/checked",type:"blob",mode:"100644",sha:C}
+ ]){
+   const tree={truncated:false,tree:[
+     {path:"snapshots",type:"tree"},
+     {path:"snapshots/checked",type:"tree"},
+     goodFile,injection
+   ]};
+   const {h,promise}=run({materializedTree:tree});
+   await assert.rejects(promise,/materialized snapshot/);
+   assert.equal(h.events.some(e=>e.path===destination+"/git/commits"&&e.method==="POST"),false);
+   assert.equal(h.events.some(e=>e.path===destination+"/git/refs"&&e.method==="POST"),false);
+ }
+});
+
 test("case-insensitive destination prefix collisions fail before source is copied",async()=>{
  for(const entry of [
   {path:"SNAPSHOTS/CHECKED/old.ores",type:"blob"},
