@@ -13,7 +13,7 @@ export const RELATIVE_FIXTURE = "contracts/v1/semantics/fixtures/add.ores";
 export const EXACT_SOURCE = Buffer.from("pub fnc main(): int { return 40 + 2; }\n");
 export const EXPECTED_GIT_BLOB = "015f8b0f79aafa796a148d2adeff1574e8d6c491";
 export const PRECEDENCE_RELATIVE_FIXTURE = "contracts/v1/semantics/fixtures/precedence.ores";
-export const PRECEDENCE_SOURCE = Buffer.from("pub fnc main(): int { return (2 + 3) * 8; }\\n");
+export const PRECEDENCE_SOURCE = Buffer.from("pub fnc main(): int { return (2 + 3) * 8; }\n");
 export const PRECEDENCE_GIT_BLOB = "2d09e697ad4eeac4ee263c3656b92998c67f0bfc";
 
 function gitBlob(bytes) {
