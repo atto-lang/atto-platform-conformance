@@ -82,3 +82,40 @@ do not fold a precedence-only source manifest into that schema or
 declare five-way numeric parity until independent native result-40
 receipts, matching source/commit/tree pins and negative tests are
 authenticated for all five.
+
+
+## Verified source-free CI provenance receipt — 2026-10-17 (UTC)
+
+The distinct **source-free verifier** test lane has one independently inspected,
+successful run. It does **not** satisfy any of the five native-backend
+`executed-claimed` records above, and must never be entered as such.
+
+- Private carrier: `scintilla-run-test/gleam-runner-conformance` (numeric repository ID `1323598260`)
+- GitHub run: [#38994382119](https://github.com/scintilla-run-test/gleam-runner-conformance/actions/runs/38994382119), attempt `1`, job `source-free-provenance` (job ID `117283556982`)
+- Carrier commit: `4ed1d2cdf1a6c7a67e4a21ea22404933ba137886`; carrier tree: `4e6d5b9ecb6772c8caa4c4508e3b8fc93159202e`
+- Reviewed verifier Git blob: `a5c90f2f6b74b7ff61f7f22339b5c7ee2bab13c6`
+- Reviewed verifier test Git blob: `735823056232643772db389f5e3e5837dfb46ca0`
+- Workflow Git blob: `57553b4cc24676a123849eeb29a69b9f00d5354d` (`.github/workflows/oreslang-source-free-73-evidence.yml`)
+- Execution: `73 + 73 + 73 = 219` Python regression tests; `0` failures, `0` skips recorded, with real completed runner job steps and logs
+- Artifact ID `12086447209`: `oreslang-source-free-exact73-38994382119-1`; ZIP SHA-256 `56c6e85cf07a4e71d415ee470958a9995a404353d773054f333ff83e1f8e7248`
+- Downloaded ZIP metadata was independently hashed and the included `oreslang-source-free-73-report.json` examined. The report's two pinned Git blobs matched the five source-verifier draft PR heads checked on October 17, 2026 UTC.
+- Artifact expires on `2026-10-20T02:18:15Z` under the recorded 3-day retention setting. Preserve a separately authorized and integrity-checked copy if later audit requires it.
+
+**Scope boundary:** the report declares
+`classification: SOURCE_FREE_CI_SECURITY_REGRESSIONS_ONLY`,
+`private_compiler_source_exported: false`, and
+`guest_compiler_parity_certified: false`. These are **self-reported**
+attributes of the carrier; they are not proofs of repository privacy policy,
+runner network behavior, private source authorization, or guest execution.
+The GitHub job and downloaded ZIP establish that the *source-free tests*
+executed against the recorded source-free blobs, not that any private
+compiler/runtime/actor code was built, tested, or allowed to be transferred.
+
+This evidence must be kept **outside** `five-backend-evidence.pending.json`:
+all five native compiler/guest records remain `pending` until separately
+authenticated exact-head native jobs, tests, logs, and artifacts exist.
+Source incident [#22](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22)
+and the protected-source publishing policy [Java #962](https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/962)
+remain distinct security gates. Never mirror private source into a
+different organization solely because a source-free carrier has available
+GitHub Actions minutes.
