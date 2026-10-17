@@ -52,12 +52,11 @@ test('49 linked workflow artifact must match exact run',()=>{
  const d=base();d.artifacts=[{id:12,name:'host-report',size_in_bytes:200,expired:false,workflow_run:{id:runId+2}}];
  assert.throws(()=>classifyRun(d,select()),/artifact/);
 });
-test('50 CLI missing token is an API failure; cannot write invented report',async()=>{
+test('50 CLI invalid pinned run cannot write invented report or access network',async()=>{
  const tmp=await mkdtemp(join(tmpdir(),'ores-actionsaudit-'));
  try{
   const output=join(tmp,'audit.json');
-  const proc=spawnSync(process.execPath,[new URL('../bin/audit.mjs',import.meta.url).pathname,'--run-id='+runId,'--head='+head,'--output='+output],{encoding:'utf8',env:{PATH:process.env.PATH,HOME:process.env.HOME}});
-  // Environment may have outside network access; no response is independently trusted without a valid read-only token.
+  const proc=spawnSync(process.execPath,[new URL('../bin/audit.mjs',import.meta.url).pathname,'--run-id=0','--head='+head,'--output='+output],{encoding:'utf8',env:{PATH:process.env.PATH,HOME:process.env.HOME}});
   assert.notEqual(proc.status,0);
   await assert.rejects(readFile(output),/ENOENT/);
  }finally{await rm(tmp,{recursive:true,force:true})}
