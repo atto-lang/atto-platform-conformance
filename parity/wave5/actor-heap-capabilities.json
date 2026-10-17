@@ -34,8 +34,8 @@
       "zeroGcClaim": "compiled-scalar-only",
       "hostBoundary": "native-no-tracing-gc",
       "generalGuestHeap": false,
-      "refs": ["llvm#517"],
-      "verified": false
+      "refs": ["llvm#549"],
+      "verified": true
     },
     {
       "backend": "net",
