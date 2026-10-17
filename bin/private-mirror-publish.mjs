@@ -152,10 +152,26 @@ export async function publishPrivateMirror({
   const expected=new Map(entries.map(e=>[e.path,e]));
   let verified=0;
   const seenMaterialized=new Set();
+  const foldedPrefix=prefix.toLowerCase();
+  const seenMaterializedFolded=new Set();
   for(const item of materialized.tree){
     if(typeof item?.path!=="string"||typeof item.type!=="string")
       throw Error("invalid materialized snapshot tree entry");
-    if(item.path===prefix||!item.path.startsWith(prefix+"/"))continue;
+    const folded=item.path.toLowerCase();
+    // The source may be built on macOS/Windows. A server-side tree with
+    // another spelling of this prefix must never become executable input,
+    // even when the exact-case prefix contains all pinned source blobs.
+    if(folded===foldedPrefix){
+      if(item.path!==prefix||item.type!=="tree")
+        throw Error("materialized snapshot prefix has a case collision");
+      continue;
+    }
+    if(!folded.startsWith(foldedPrefix+"/"))continue;
+    if(!item.path.startsWith(prefix+"/"))
+      throw Error("materialized snapshot contains case-colliding source paths");
+    if(seenMaterializedFolded.has(folded))
+      throw Error("materialized snapshot contains case-colliding source paths");
+    seenMaterializedFolded.add(folded);
     if(item.type==="tree"){
       if(!entries.some(e=>e.path.startsWith(item.path+"/")))
         throw Error("materialized snapshot contains unexpected empty directory");
