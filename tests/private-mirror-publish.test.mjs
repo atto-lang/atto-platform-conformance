@@ -5,7 +5,7 @@ import {publishPrivateMirror} from "../bin/private-mirror-publish.mjs";
 
 const source="ores-truffle-oreslang/oreslang-source.java";
 const destination="akrion-sim/akrion-sim-e2e";
-const A="a".repeat(40),B="b".repeat(40),C="c".repeat(40),
+const A="a".repeat(40),B="b".repeat(40),C="5e5201f1b1618f87282bf41ce89ca710404cce95",
  D="d".repeat(40),E="e".repeat(40),M="f".repeat(40);
 const opts={source,destination,sourceCommit:A,sourceTree:D,destinationBaseCommit:B,
   prefix:"snapshots/checked",newBranch:"ci/private-test-proof",
@@ -21,7 +21,7 @@ const protection=()=>({enforce_admins:{enabled:true},
     dismiss_stale_reviews:true,required_approving_review_count:1,
     bypass_pull_request_allowances:{users:[],teams:[],apps:[]}}});
 
-function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E,meta,errors}={}){
+function fixture({sourceTree,destinationTree,materializedTree,sourceBlobContent="NDI7Cg==",blobSha=C,refSha=E,meta,errors}={}){
   const events=[],seen={source:0,destination:0};
   const request=async(url,options)=>{
     const method=options.method,path=url.replace(/^https:\/\/api.github.com\/repos\//,"");
@@ -46,7 +46,7 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
       else if(suffix==="/git/trees/"+D+"?recursive=1")
         data=sourceTree||{truncated:false,tree:[{type:"blob",path:"main.ores",sha:C,size:4,mode:"100644"}]};
       else if(suffix==="/git/blobs/"+C)
-        data={sha:C,encoding:"base64",content:"NDI7Cg==",size:4};
+        data={sha:C,encoding:"base64",content:sourceBlobContent,size:4};
     } else {
       if(suffix==="/git/commits/"+B)data={tree:{sha:E}};
       else if(suffix==="/git/trees/"+E+"?recursive=1")
@@ -260,4 +260,25 @@ test("publisher refuses missing sourceTree before any API access",async()=>{
  const {h,promise}=run({}, {sourceTree:undefined});
  await assert.rejects(promise,/invalid immutable/);
  assert.equal(h.events.length,0);
+});
+
+test("Git API-reported SHA cannot launder altered source blob bytes",async()=>{
+ const forged=run({sourceBlobContent:Buffer.from("evil").toString("base64")});
+ await assert.rejects(forged.promise,/content hash does not match/);
+ assert.equal(forged.h.events.filter(e=>e.method==="POST").length,0,
+   "tampered source bytes must never be copied to any destination object");
+ const malformed=run({sourceBlobContent:"NDI7!g=="});
+ await assert.rejects(malformed.promise,/invalid canonical Git source blob encoding/);
+ assert.equal(malformed.h.events.filter(e=>e.method==="POST").length,0);
+ const noncanonical=run({sourceBlobContent:"NDI7Cg==="});
+ await assert.rejects(noncanonical.promise,/invalid canonical Git source blob encoding/);
+ assert.equal(noncanonical.h.events.filter(e=>e.method==="POST").length,0);
+});
+test("GitHub line-wrapped canonical source blob remains independently valid",async()=>{
+ const {h,promise}=run({sourceBlobContent:"NDI7\\nCg==".replace("\\n","\n")});
+ const result=await promise;
+ assert.equal(result.status,"PRIVATE_MIRROR_PUBLISHED");
+ const posted=h.events.find(e=>e.path===destination+"/git/blobs"&&e.method==="POST");
+ assert.equal(posted.body.content,"NDI7Cg==",
+   "publish only normalized SHA-verified base64 bytes");
 });
