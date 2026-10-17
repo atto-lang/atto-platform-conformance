@@ -25,6 +25,7 @@ test("CPU checked overflow never silently wraps",()=>{
 test("nb cpu returns Future<i64> and is not an implicit Stream or Channel",()=>{
  const g=lower(cpu(i(42n),true));
  assert.equal(g.resultType,"Future<i64>");
+ reject("NESTED_FUTURE",()=>lower(cpu(cpu(i(42n),true),true)));
  assert.equal(g.nodes.at(-1).opcode,"SUBMIT");
  assert.ok(g.effects.includes("Suspend"));
  reject("INVALID_GRAPH",()=>executeCpuI64(g));
