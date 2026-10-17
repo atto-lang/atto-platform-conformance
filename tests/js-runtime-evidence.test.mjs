@@ -12,7 +12,7 @@ test('unconfigured real JS runtime collector is explicitly not a pass',async()=>
 
 test('missing exact revision, invalid path and bad deadlines fail closed',async()=>{
  await assert.rejects(runJsRuntimeEvidence({compilerScript:'relative/compiler.mjs',declaredSourceSha:'a'.repeat(40)}),/absolute/);
- await assert.rejects(runJsRuntimeEvidence({compilerScript:'/no/such/compiler.mjs'}),/declaredSourceSha/);
- await assert.rejects(runJsRuntimeEvidence({compilerScript:'/no/such/compiler.mjs',declaredSourceSha:'a'.repeat(40),timeoutMs:50}),/timeoutMs/);
+ await assert.rejects(runJsRuntimeEvidence({compilerScript:'/no/such/compiler.mjs'}),/independently pinned compiler script SHA-256/);
+ await assert.rejects(runJsRuntimeEvidence({compilerScript:'/no/such/compiler.mjs',declaredSourceSha:'a'.repeat(40),expectedCompilerScriptSha256:'b'.repeat(64),timeoutMs:50}),/timeoutMs/);
  await assert.rejects(runJsRuntimeEvidence({compilerScript:'/no/such/compiler.mjs',declaredSourceSha:'a'.repeat(40)}));
 });
