@@ -1,0 +1,77 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile,mkdtemp,mkdir,writeFile,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join,resolve} from 'node:path';
+import {execFileSync,spawnSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
+import {fileURLToPath} from 'node:url';
+import {validateInventory,mergeReadiness,HEADS} from '../src/inventory.mjs';
+import {verifyCheckout,runIntegration} from '../src/run.mjs';
+import {assessWorkflow,checkNoRunAsProof} from '../src/host-evidence.mjs';
+const manifestPath=new URL('../inventory.json',import.meta.url);
+const load=async()=>JSON.parse(await readFile(manifestPath,'utf8'));
+const mutate=async fn=>{const x=structuredClone(await load());fn(x);return x;};
+const makeRuns=(status='PASSED')=>HEADS.map((head,i)=>({wave:i+1,head,status}));
+const hash=b=>createHash('sha1').update(Buffer.from('blob '+b.length+'\0')).update(b).digest('hex');
+const workflow=()=>({
+ repository:'ores-truffle-oreslang/oreslang-platform-conformance',
+ runId:12345,attempt:1,head:HEADS[0],conclusion:'success',
+ jobs:[{name:'six-wave-host-conformance',runId:12345,attempt:1,head:HEADS[0],conclusion:'success',
+  steps:['Check out integration driver','Check out 6 pinned wave commits','Run pinned six-wave host suites'].map(name=>({name,status:'completed',conclusion:'success',attempt:1}))}]
+});
+test('31 / all 92 changed files across six PRs are uniquely registered',async()=>{
+ const x=validateInventory(await load());
+ assert.equal(x.files,92);assert.equal(x.waves,6);assert.equal(x.anchoredBlobs,14);assert.equal(x.certifiedParity,false);
+});
+test('31 / exact PR source heads cannot be silently updated',async()=>{
+ const x=await mutate(m=>{m.waves[0].head='0'.repeat(40)});
+ assert.throws(()=>validateInventory(x),/head substitution/);
+});
+test('31 / path collision across distinct PRs fails before test admission',async()=>{
+ const x=await mutate(m=>{m.waves[5].changedFiles[0]=m.waves[4].changedFiles[0]});
+ assert.throws(()=>validateInventory(x),/path collision/);
+});
+test('31 / file traversal and changed inventory omissions fail closed',async()=>{
+ for(const f of [m=>{m.waves[0].changedFiles[0]='../escape'},m=>{m.waves[2].changedFiles.pop()}]){
+  const x=await mutate(f);assert.throws(()=>validateInventory(x),/integration-inventory/);
+ }
+});
+test('31 / pinned manifests tests and cross-wave source must remain exact',async()=>{
+ const x=await mutate(m=>{m.waves[4].pinnedFiles[2].gitBlob='0'.repeat(40)});
+ assert.throws(()=>validateInventory(x),/scalar golden/);
+});
+test('31 / false parity promotion and missing backend inventory rejected',async()=>{
+ for(const f of [m=>{m.certifiedParity=true},m=>{m.backends.pop()},m=>{m.tasks[4].name='release-now'}]){
+  assert.throws(()=>validateInventory(await mutate(f)),/integration-inventory/);
+ }
+});
+test('32 / temp locally committed checkout proves exact Git head and source blobs',async()=>{
+ const workspace=await mkdtemp(join(tmpdir(),'ores-integration-'));
+ try{
+  const root=join(workspace,'wave1'),testdir=join(root,'parity','wave1','tests');
+  await mkdir(testdir,{recursive:true});
+  const testFile='parity/wave1/tests/probe.test.mjs';
+  const source=Buffer.from("import test from 'node:test';test('probe',()=>{});\n");
+  await writeFile(join(testdir,'probe.test.mjs'),source);
+  execFileSync('git',['init','-q',root]);execFileSync('git',['-C',root,'add','.']);
+  execFileSync('git',['-C',root,'-c','user.email=test@example.invalid','-c','user.name=Test','commit','-qm','checkpoint']);
+  const head=execFileSync('git',['-C',root,'rev-parse','HEAD'],{encoding:'utf8'}).trim();
+  const w={wave:1,head,changedFiles:[testFile],pinnedFiles:[{path:testFile,gitBlob:hash(source)}]};
+  const checked=await verifyCheckout(w,workspace);
+  assert.equal(checked.head,head);assert.deepEqual(checked.tests,[testFile]);
+  const executed=spawnSync(process.execPath,['--test',...checked.tests],{cwd:root,encoding:'utf8'});
+  assert.equal(executed.status,0,executed.stderr);
+  await writeFile(join(testdir,'probe.test.mjs'),"malicious source change\n");
+  await assert.rejects(verifyCheckout(w,workspace),/modified before tests/);
+ }finally{await rm(workspace,{recursive:true,force:true})}
+});
+test('32 / absent checkouts and non-absolute working roots reject',async()=>{
+ const m=await load();
+ await assert.rejects(verifyCheckout(m.waves[0],'/definitely-not-a-real-checkout-parent'),/ENOENT|integration-runner/);
+ await assert.rejects(verifyCheckout(m.waves[0],'relative/path'),/absolute checkout/);
+});
+test('32 / invalid runner inputs cannot produce a green report',async()=>{
+ await assert.rejects(runIntegration({inventoryPath:'inventory.json',checkoutRoot:'/tmp'}),/absolute/);
+ await assert.rejects(runIntegration({inventoryPath:resolve(fileURLToPath(manifestPath)),checkoutRoot:'/tmp',timeoutMs:0}),/bounded/);
+});
