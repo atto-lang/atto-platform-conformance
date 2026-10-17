@@ -217,6 +217,45 @@ incident [#22](https://github.com/ores-truffle-oreslang/oreslang-platform-confor
 and independently reviewed protected-main export approval remain separate
 required gates.
 
+## Corrected source-free 82-case receipt — 246/246 verified
+
+**Detected integrity regression:** Earlier hosted [run 38997306268](https://github.com/scintilla-run-test/gleam-runner-conformance/actions/runs/38997306268)
+ran an 82-test suite three times, but the produced JSON incorrectly recorded
+`tests_per_round:82`, `rounds:3`, `expected_total:231`. The correct
+total is **246**, not 231. That artifact's ZIP hash matching GitHub did not
+make its *contents* internally valid; reject it as an 82-case proof.
+
+**Fixed and rerun:** The source-free carrier workflow was corrected in
+[commit 3620481](https://github.com/scintilla-run-test/gleam-runner-conformance/commit/36204819e5439de6964b8d3b297ba4c75420b9d2)
+to persist the three actually completed counts, require `[82,82,82]`, compute
+the total from those counts, enforce `82*3=246` and validate serialized JSON
+before upload.
+
+- Verified private-carrier [run #38997728835](https://github.com/scintilla-run-test/gleam-runner-conformance/actions/runs/38997728835), attempt `1`, successful with eight executed steps including the three-round test suite and artifact upload.
+- Exact HEAD: `36204819e5439de6964b8d3b297ba4c75420b9d2`; tree: `07f7164cd1f802ee6c46b0102649819592504d29`. Job `source-free-82` ID `117293864666`.
+- `scripts/verify_ci_run.py`: Git blob `1d7b03db64a8576b5c4271b6f7571df503dffd81`.
+- `scripts/test_verify_ci_run.py`: Git blob `45ada59ac6001254897edf9f8cd3b75ef4f58acc`. Both blobs match **all five** backend verifier PR branches.
+- Source-free reference workflow Git blob `c62d13b3c3e9d666d90f752bcf96cbe07588a648`.
+- [Artifact #12087892537](https://github.com/scintilla-run-test/gleam-runner-conformance/actions/runs/38997728835/artifacts/12087892537): downloaded ZIP SHA-256 `377f9566dc24c4e014723032d7cba3579b0ec6bc55329711ada87c42e3bed80d` equals GitHub metadata. `82-parity.json` has `schema:oreslang.source_free_ci_verifier_82.v1`, `tests_per_round:82`, `rounds:3`, `expected_total:246`.
+- The JSON explicitly records `source_free_only:true`, `guest_runtime_certified:false`, `source_repository_native_ci_certified:false`, `private_runtime_or_compiler_source_transferred:false`.
+- The five backend evidence branches each now include the same Git blob `636658d7e6c431cda3dd9ca6a7d9a64af8e07d48` at `docs/CI_RUN_SOURCE_FREE_82_RECEIPT.md`. Earlier 77-case receipts remain historical.
+
+A new `validateSourceFreeVerifierReceipt` shape gate checks required JSON keys,
+strict source-free/non-native flags, bounded positive IDs and rounds, three
+source-free Git blob SHA-1s, and the **arithmetic consistency** of the schema,
+tests per round and execution total. It returns
+`SOURCE_FREE_RECEIPT_SHAPE_ONLY_NOT_AUTHENTICATED` and always reports
+`parityCertified:false`, `releaseReady:false`, and
+`externalVerificationRequired:true`. This parser does **not** authenticate
+downloaded ZIP bytes or the GitHub API; independently inspect artifact hashes,
+runner jobs and execution logs for those claims.
+
+The central ledger still reports **all five native backends pending**. Do not
+promote Java, LLVM, .NET, Forge or Wasm guest/runtime parity because a
+source-free verifier executed. Private-source transfer remains blocked until
+the outstanding exposure incident and independently reviewed protected-main
+approval policy have been resolved.
+
 ## Runner-housekeeping denial in native evidence declarations
 
 For an `executed-claimed` record, `testStep` must name an **executable**
