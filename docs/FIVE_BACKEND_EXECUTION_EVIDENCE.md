@@ -173,3 +173,23 @@ and the protected-source publishing policy [Java #962](https://github.com/ores-t
 remain distinct security gates. Never mirror private source into a
 different organization solely because a source-free carrier has available
 GitHub Actions minutes.
+
+
+## Runner-housekeeping denial in native evidence declarations
+
+For an `executed-claimed` record, `testStep` must name an **executable**
+native guest/fixture test. The ledger rejects GitHub runner lifecycle labels
+`Set up job`, `Complete job`, `Initialize containers`, `Start containers`,
+`Stop containers`, and any `Pre ` / `Post ` step. This aligns the offline
+shape gate with the five source backends' independently executed
+`verify_ci_run.py` eligibility check. A run whose only completed steps are
+housekeeping cannot support a native guest execution claim.
+
+This gate checks the **reported step name**, not its truthfulness. Do not infer
+native parity from an `executed-claimed` record even if the step name passes:
+release controllers must independently retrieve job and step metadata,
+logs, artifact bytes and actual `.ores` compiler+guest results. Current
+source-org GitHub Actions runs remain blocked before runner allocation, while
+the private alternate-org source-free 73-case evidence run covers verifier
+regressions only. Source export is still prohibited without independent,
+protected-main policy approval and security incident containment.
