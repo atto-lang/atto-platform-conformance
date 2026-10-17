@@ -3,7 +3,17 @@ import assert from "node:assert/strict";
 import {createHash} from "node:crypto";
 import {auditRepository,auditCodeowners,auditRequiredChecks,auditProtection} from "../bin/audit-private-ci-bootstrap.mjs";
 
-const repo="ores-truffle-oreslang/oreslang-source.java";
+const repo="ores-truffle-oreslang/oreslang-source.llvm";
+const JAVA_REPO="ores-truffle-oreslang/oreslang-source.java";
+const javaCodeowners=[
+  "/.github/workflows/ @ORESoftware",
+  ...["/.github/CODEOWNERS","/.github/private-ci-approved-repositories.txt","/.github/private-ci-approved-source-snapshots.txt","/.github/private-ci-required-checks.json","/.github/workflows/private-ci-mirror-preflight.yml","/.github/workflows/private-ci-policy.yml","/.github/workflows/private-exact-candidate-validation.yml","/.github/workflows/private-exact-main-validation.yml","/.github/workflows/private-exact-publisher-validation.yml","/docs/security/CI_PRIVATE_SOURCE_MIRRORING.md","/docs/security/PRIVATE_CI_POLICY_INTEGRATION_REVIEW_2026-10-16.md","/docs/security/PRIVATE_EXACT_MAIN_VALIDATION.md","/scripts/check-private-ci-destination.sh","/scripts/publish-private-ci-source.py","/scripts/run-in-private-ci-destination.sh","/scripts/test-private-ci-destination.sh","/scripts/test-publish-private-ci-source.py","/scripts/ci_private_mirror_preflight.py","/tests/test_ci_private_mirror_preflight.py","/src/test/java/dev/oreslang/PrivateExactMainValidationWorkflowSecurityTest.java","/src/test/java/dev/oreslang/PrivateExactPublisherAdmissionMutationTest.java","/src/test/java/dev/oreslang/PrivateExactPublisherValidationWorkflowSecurityTest.java"].map(path=>path+" @ORESoftware")
+].join("\\n")+"\\n";
+const javaChecks=JSON.stringify({
+  schema:1,
+  source:{context:"private-ci-policy",appId:15368},
+  carrier:{context:"carrier-policy",appId:15368}
+})+"\\n";
 const SHA="a".repeat(40);
 const owner="@ORESoftware";
 const codeowners=[
@@ -34,14 +44,14 @@ function encoded(text){
   return {type:"file",encoding:"base64",content:raw.toString("base64"),
     sha:createHash("sha1").update("blob "+raw.length+"\0").update(raw).digest("hex")};
 }
-function fixture(overrides={},calls=[]){
+function fixture(overrides={},calls=[],repository=repo){
   let branchReads=0;
   return async (url,options)=>{
     calls.push({url,options});
     assert.equal(options.method,"GET");
     assert.equal(options.redirect,"error");
     assert.equal(options.headers.Authorization,"Bearer test-token");
-    const base="https://api.github.com/repos/"+repo;
+    const base="https://api.github.com/repos/"+repository;
     if(url===base+"/branches/main"){
       branchReads++;
       const custom=overrides.branch;
@@ -124,4 +134,29 @@ test("missing credentials fail before any network request",async()=>{
   let calls=0;
   await assert.rejects(auditRepository(repo,{token:"",fetchImpl:async()=>{calls++;}}),/token required/);
   assert.equal(calls,0);
+});
+
+test("Java preserves extended terminal ownership plus wildcard and source/carrier issuer pins",async()=>{
+  assert.doesNotThrow(()=>auditCodeowners(javaCodeowners,JAVA_REPO));
+  assert.doesNotThrow(()=>auditRequiredChecks(javaChecks,protection(),JAVA_REPO));
+  assert.throws(()=>auditCodeowners(javaCodeowners.replace(
+    "/.github/workflows/ @ORESoftware\\n",""),JAVA_REPO),/wildcard missing/);
+  assert.throws(()=>auditCodeowners(javaCodeowners.replace(
+    "/scripts/publish-private-ci-source.py @ORESoftware",
+    "/scripts/publish-private-ci-source.py @Unreviewed"),JAVA_REPO),/final block mismatch/);
+  assert.throws(()=>auditRequiredChecks(JSON.stringify({
+    schema:1,source:{context:"private-ci-policy",appId:15368},
+    carrier:{context:"carrier-policy",appId:15369}
+  }),protection(),JAVA_REPO),/issuer policy identity mismatch/);
+  assert.throws(()=>auditRequiredChecks(checks,protection(),JAVA_REPO),/issuer policy identity mismatch/);
+  await assert.rejects(auditRepository(JAVA_REPO,{
+    token:"test-token",
+    fetchImpl:fixture({codeowners:codeowners,checks:javaChecks},[],JAVA_REPO)
+  }),/final block mismatch/);
+  const result=await auditRepository(JAVA_REPO,{
+    token:"test-token",
+    fetchImpl:fixture({codeowners:javaCodeowners,checks:javaChecks},[],JAVA_REPO)
+  });
+  assert.equal(result.repo,JAVA_REPO);
+  assert.equal(result.status,"BOOTSTRAP_PROTECTED");
 });

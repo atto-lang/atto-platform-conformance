@@ -27,6 +27,38 @@ const SECURITY_PATHS=Object.freeze([
   "/.github/private-ci-required-checks.json",
   "/.github/workflows/private-ci-policy.yml"
 ]);
+const JAVA_SOURCE_REPOSITORY="ores-truffle-oreslang/oreslang-source.java";
+// Java's reviewed publisher preserves a larger terminal CODEOWNERS block
+// than the smaller fail-closed bootstrap contract in the other four backends.
+const JAVA_SECURITY_PATHS=Object.freeze([
+  "/.github/CODEOWNERS",
+  "/.github/private-ci-approved-repositories.txt",
+  "/.github/private-ci-approved-source-snapshots.txt",
+  "/.github/private-ci-required-checks.json",
+  "/.github/workflows/private-ci-mirror-preflight.yml",
+  "/.github/workflows/private-ci-policy.yml",
+  "/.github/workflows/private-exact-candidate-validation.yml",
+  "/.github/workflows/private-exact-main-validation.yml",
+  "/.github/workflows/private-exact-publisher-validation.yml",
+  "/docs/security/CI_PRIVATE_SOURCE_MIRRORING.md",
+  "/docs/security/PRIVATE_CI_POLICY_INTEGRATION_REVIEW_2026-10-16.md",
+  "/docs/security/PRIVATE_EXACT_MAIN_VALIDATION.md",
+  "/scripts/check-private-ci-destination.sh",
+  "/scripts/publish-private-ci-source.py",
+  "/scripts/run-in-private-ci-destination.sh",
+  "/scripts/test-private-ci-destination.sh",
+  "/scripts/test-publish-private-ci-source.py",
+  "/scripts/ci_private_mirror_preflight.py",
+  "/tests/test_ci_private_mirror_preflight.py",
+  "/src/test/java/dev/oreslang/PrivateExactMainValidationWorkflowSecurityTest.java",
+  "/src/test/java/dev/oreslang/PrivateExactPublisherAdmissionMutationTest.java",
+  "/src/test/java/dev/oreslang/PrivateExactPublisherValidationWorkflowSecurityTest.java"
+]);
+const JAVA_REQUIRED_CHECKS=Object.freeze({
+  schema:1,
+  source:EXPECTED_CHECK,
+  carrier:Object.freeze({context:"carrier-policy",appId:15368})
+});
 
 function error(message){ throw Error("PRIVATE_CI_BOOTSTRAP_DENIED: "+message); }
 async function getJson(url,token,fetchImpl){
@@ -65,28 +97,50 @@ function decodePolicy(file,label){
 function dataLines(text){
   return text.split("\n").map(x=>x.trim()).filter(x=>x && !x.startsWith("#"));
 }
-export function auditCodeowners(text){
+export function auditCodeowners(text,repo){
   const lines=dataLines(text);
-  if(lines.length<SECURITY_PATHS.length) error("security CODEOWNERS final block missing");
-  const expected=SECURITY_PATHS.map(path=>path+" "+EXPECTED_OWNER);
+  const java=repo===JAVA_SOURCE_REPOSITORY;
+  const paths=java?JAVA_SECURITY_PATHS:SECURITY_PATHS;
+  if(lines.length<paths.length+(java?1:0)) error("security CODEOWNERS final block missing");
+  const expected=paths.map(path=>path+" "+EXPECTED_OWNER);
   const actual=lines.slice(-expected.length);
   if(actual.length!==expected.length || actual.some((x,i)=>x!==expected[i])){
     error("security CODEOWNERS final block mismatch");
   }
+  if(java && lines[lines.length-expected.length-1]!=="/.github/workflows/ "+EXPECTED_OWNER){
+    error("Java workflow CODEOWNERS wildcard missing or shadowed");
+  }
 }
-export function auditRequiredChecks(text,protection){
+export function auditRequiredChecks(text,protection,repo){
   let policy;
   try{policy=JSON.parse(text);}catch{error("required-check policy is not valid JSON");}
-  if(!policy || Object.getPrototypeOf(policy)!==Object.prototype ||
-     Object.keys(policy).length!==2 || policy.schema!==1 ||
-     !Array.isArray(policy.checks) || policy.checks.length!==1){
+  const java=repo===JAVA_SOURCE_REPOSITORY;
+  if(!policy || Object.getPrototypeOf(policy)!==Object.prototype || policy.schema!==1){
     error("required-check policy schema mismatch");
   }
-  const one=policy.checks[0];
-  if(!one || Object.getPrototypeOf(one)!==Object.prototype ||
-     Object.keys(one).length!==2 || one.context!==EXPECTED_CHECK.context ||
-     one.appId!==EXPECTED_CHECK.appId){
-    error("required-check policy identity mismatch");
+  if(java){
+    const expected=JAVA_REQUIRED_CHECKS;
+    if(Object.keys(policy).length!==3 ||
+       !Object.hasOwn(policy,"source") || !Object.hasOwn(policy,"carrier") ||
+       ![["source",expected.source],["carrier",expected.carrier]].every(([key,value])=>{
+         const actual=policy[key];
+         return actual && Object.getPrototypeOf(actual)===Object.prototype &&
+           Object.keys(actual).length===2 &&
+           actual.context===value.context && actual.appId===value.appId;
+       })){
+      error("Java source/carrier issuer policy identity mismatch");
+    }
+  }else{
+    if(Object.keys(policy).length!==2 ||
+       !Array.isArray(policy.checks) || policy.checks.length!==1){
+      error("required-check policy schema mismatch");
+    }
+    const one=policy.checks[0];
+    if(!one || Object.getPrototypeOf(one)!==Object.prototype ||
+       Object.keys(one).length!==2 || one.context!==EXPECTED_CHECK.context ||
+       one.appId!==EXPECTED_CHECK.appId){
+      error("required-check policy identity mismatch");
+    }
   }
   const checks=protection?.required_status_checks;
   if(checks?.strict!==true || !Array.isArray(checks.checks) ||
@@ -145,9 +199,9 @@ export async function auditRepository(repo,{token,fetchImpl=fetch}={}){
   ]);
   // Existence + blob integrity of the protected workflow is part of the trust root.
   await file(".github/workflows/private-ci-policy.yml");
-  auditCodeowners(codeowners);
+  auditCodeowners(codeowners,repo);
   auditProtection(protection);
-  auditRequiredChecks(requiredChecks,protection);
+  auditRequiredChecks(requiredChecks,protection,repo);
   auditEmptyApprovals(destinations,snapshots);
   const after=await getJson(base+"/branches/main",token,fetchImpl);
   if(after?.protected!==true || after?.commit?.sha!==protectedSha){
