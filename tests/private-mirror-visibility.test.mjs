@@ -199,3 +199,50 @@ test("protected-main revision change while reading policy denies",async()=>{
  };
  await assert.rejects(check({fetchImpl:mock}),/changed during source admission/);
 });
+
+test("source policy Git blob digest must match the reviewed bytes",async()=>{
+ const policy=source+"/contents/.github/private-ci-approved-repositories.txt?ref="+M;
+ const forged={...encoded(destination+" "+destinationId+"\n"),sha:"f".repeat(40)};
+ await assert.rejects(check({}, {[policy]:forged}),/policy blob digest mismatch/);
+});
+test("strict nonempty required CI and reviewer bypass protection are mandatory",async()=>{
+ const key=source+"/branches/main/protection";
+ const baseline=rules();
+ for(const bad of [
+  {...baseline,required_status_checks:undefined},
+  {...baseline,required_status_checks:{strict:false,contexts:["native-tests"]}},
+  {...baseline,required_status_checks:{strict:true,contexts:[]}},
+  {...baseline,required_status_checks:{strict:true,contexts:[null]}},
+  {...baseline,required_pull_request_reviews:{...baseline.required_pull_request_reviews,
+    bypass_pull_request_allowances:{users:[{login:"owner"}],teams:[],apps:[]}}},
+  {...baseline,required_pull_request_reviews:{...baseline.required_pull_request_reviews,
+    bypass_pull_request_allowances:undefined}}
+ ]){
+   await assert.rejects(check({}, {[key]:bad}),/codeowner review proof/);
+ }
+});
+test("duplicate destination names or numeric ids and ambiguous snapshots deny",async()=>{
+ const dest=source+"/contents/.github/private-ci-approved-repositories.txt?ref="+M;
+ const snaps=source+"/contents/.github/private-ci-approved-source-snapshots.txt?ref="+M;
+ for(const policy of [
+  destination+" "+destinationId+"\n"+destination+" 5678\n",
+  destination+" "+destinationId+"\n"+"alternate/repo "+destinationId+"\n"
+ ]){
+  await assert.rejects(check({}, {[dest]:encoded(policy)}),/duplicate reviewed/);
+ }
+ await assert.rejects(check({}, {[snaps]:encoded(
+   A+" "+T+" "+destinationId+"\n"+
+   "e".repeat(40)+" "+"f".repeat(40)+" "+destinationId+"\n"
+ )}),/duplicate reviewed/);
+});
+test("noncanonical base64 and invalid policy UTF8 must deny",async()=>{
+ const policy=source+"/contents/.github/private-ci-approved-repositories.txt?ref="+M;
+ const normal=encoded(destination+" "+destinationId+"\n");
+ for(const data of [
+   {...normal,content:normal.content.slice(0,-1)},
+   {...normal,content:"_invalid"},
+   {...normal,encoding:"utf-8"}
+ ]){
+  await assert.rejects(check({}, {[policy]:data}),/policy content/);
+ }
+});
