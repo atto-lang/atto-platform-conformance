@@ -134,3 +134,16 @@ test('55 / exact live-observation shape never returns certified source backend p
  assert.equal(r.sourceCompilerExecuted,false);assert.equal(r.guestExecuted,false);
  assert.equal(r.backendParityCertified,false);assert.match(r.contentSha256,/^[a-f0-9]{64}$/);
 });
+test('55 / CLI refuses a report without a reviewed PR and never creates an output',async()=>{
+ const {spawnSync}=await import('node:child_process');
+ const {mkdtemp,access,rm}=await import('node:fs/promises');
+ const {tmpdir}=await import('node:os');
+ const {join}=await import('node:path');
+ const folder=await mkdtemp(join(tmpdir(),'ores-verified-ci-'));
+ try{
+  const output=join(folder,'report.json');
+  const r=spawnSync(process.execPath,[new URL('../bin/audit.mjs',import.meta.url).pathname,'--run-id='+id,'--head='+head,'--output='+output],{encoding:'utf8',env:{PATH:process.env.PATH,HOME:process.env.HOME}});
+  assert.equal(r.status,2);
+  await assert.rejects(access(output),{code:'ENOENT'});
+ } finally {await rm(folder,{recursive:true,force:true})}
+});
