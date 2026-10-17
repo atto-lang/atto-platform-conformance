@@ -112,3 +112,47 @@ test('35 / full host outcomes still mandate production compiler and independent 
  const r=mergeReadiness({results:makeRuns()});assert.equal(r.securityReview,'REQUIRED');
  assert.ok(r.nextRequirements.some(x=>/production compiler/.test(x)));
 });
+
+test('37 / an untracked Node test cannot be injected into reviewed checkout',async()=>{
+ const workspace=await mkdtemp(join(tmpdir(),'ores-untracked-'));
+ try{
+  const root=join(workspace,'wave1'),dir=join(root,'parity','wave1','tests');
+  await mkdir(dir,{recursive:true});
+  const path='parity/wave1/tests/probe.test.mjs',source=Buffer.from("import test from 'node:test';test('ok',()=>{});\\n");
+  await writeFile(join(dir,'probe.test.mjs'),source);
+  execFileSync('git',['init','-q',root]);execFileSync('git',['-C',root,'add','.']);
+  execFileSync('git',['-C',root,'-c','user.email=test@example.invalid','-c','user.name=Test','commit','-qm','baseline']);
+  const head=execFileSync('git',['-C',root,'rev-parse','HEAD'],{encoding:'utf8'}).trim();
+  await writeFile(join(dir,'injected.test.mjs'),"import test from 'node:test';test('injected',()=>{});\\n");
+  await assert.rejects(verifyCheckout({wave:1,head,changedFiles:[path],pinnedFiles:[{path,gitBlob:hash(source)}]},workspace),/modified before tests/);
+ }finally{await rm(workspace,{recursive:true,force:true})}
+});
+test('38 / extra tracked but unreviewed test must not execute',async()=>{
+ const workspace=await mkdtemp(join(tmpdir(),'ores-unreviewed-'));
+ try{
+  const root=join(workspace,'wave1'),dir=join(root,'parity','wave1','tests');
+  await mkdir(dir,{recursive:true});
+  const path='parity/wave1/tests/probe.test.mjs',source=Buffer.from("import test from 'node:test';test('ok',()=>{});\\n");
+  await writeFile(join(dir,'probe.test.mjs'),source);
+  await writeFile(join(dir,'unreviewed.test.mjs'),"import test from 'node:test';test('not admitted',()=>{});\\n");
+  execFileSync('git',['init','-q',root]);execFileSync('git',['-C',root,'add','.']);
+  execFileSync('git',['-C',root,'-c','user.email=test@example.invalid','-c','user.name=Test','commit','-qm','baseline']);
+  const head=execFileSync('git',['-C',root,'rev-parse','HEAD'],{encoding:'utf8'}).trim();
+  await assert.rejects(verifyCheckout({wave:1,head,changedFiles:[path],pinnedFiles:[{path,gitBlob:hash(source)}]},workspace),/unreviewed\/missing test/);
+ }finally{await rm(workspace,{recursive:true,force:true})}
+});
+test('39 / all CI stages must appear in authored workflow order',()=>{
+ const r=workflow();
+ const first=r.jobs[0].steps[1];r.jobs[0].steps[1]=r.jobs[0].steps[2];r.jobs[0].steps[2]=first;
+ assert.throws(()=>assessWorkflow(r,{expectedHead:HEADS[0]}),/step order/);
+});
+test('40 / missing checkouts give six blocked results, never imaginary test failures',async()=>{
+ const workspace=await mkdtemp(join(tmpdir(),'ores-missing-six-'));
+ try{
+  const r=await runIntegration({inventoryPath:resolve(fileURLToPath(manifestPath)),checkoutRoot:workspace});
+  assert.equal(r.results.length,6);
+  assert.equal(r.status,'HOST_SUITES_FAILED');
+  assert.ok(r.results.every(x=>x.status==='BLOCKED_BEFORE_TEST'&&x.hostSuiteRan===false&&x.testCounts===null));
+  assert.equal(r.releaseCertified,false);
+ }finally{await rm(workspace,{recursive:true,force:true})}
+});
