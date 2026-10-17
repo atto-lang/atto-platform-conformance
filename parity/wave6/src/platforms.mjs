@@ -7,7 +7,15 @@ const sha=x=>typeof x==='string'&&/^[0-9a-f]{64}$/.test(x);
 const git=x=>typeof x==='string'&&/^[0-9a-f]{40}$/.test(x);
 const safe=x=>typeof x==='string'&&/^[a-zA-Z0-9_.:-]{1,100}$/.test(x);
 const integer=x=>Number.isSafeInteger(x)&&x>=0;
-const keys=(o,required)=>{need(o&&typeof o==='object'&&!Array.isArray(o)&&Object.keys(o).length===required.length&&required.every(k=>Object.hasOwn(o,k)),'unknown/missing platform fields')};
+const keys=(o,required)=>{
+ need(o&&typeof o==='object'&&!Array.isArray(o),'unknown/missing platform fields');
+ const proto=Object.getPrototypeOf(o),symbols=Object.getOwnPropertySymbols(o);
+ const descriptors=Object.getOwnPropertyDescriptors(o),names=Object.keys(descriptors);
+ need((proto===Object.prototype||proto===null)&&symbols.length===0&&
+  names.length===required.length&&required.every(k=>Object.hasOwn(descriptors,k))&&
+  names.every(k=>Object.hasOwn(descriptors[k],'value')&&descriptors[k].enumerable===true),
+  'platform fields must be plain enumerable data without accessors/symbols');
+};
 const LLVM_SOURCE_REPO='ores-truffle-oreslang/oreslang-source.llvm';
 export const PROFILES=Object.freeze({
  'android-arm64':Object.freeze({task:26,os:'android',cpu:'arm64-v8a',binding:'JNI',aot:'native-library',platformRepo:'ores-truffle-oreslang/oreslang-platform.mobile'}),
