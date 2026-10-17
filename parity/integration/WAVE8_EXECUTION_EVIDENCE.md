@@ -8,7 +8,7 @@
 | **37 — deny untracked executable injection** | Git status now uses `--porcelain=v1 --untracked-files=all` both **before and after** execution. Existing containment/symlink checks remain. | Cannot add `evil.test.mjs` without failing tree cleanliness |
 | **38 — exact reviewed test inventory** | Discovered test file paths must be **exactly** the `*.test.mjs` paths registered among the PR's reviewed changed files. | Additional tracked (but unreviewed) test cannot be silently executed |
 | **39 — ordered twelve-step CI receipt** | The CI evidence model requires all twelve authored steps, in the authored order, tied to the same successful attempt; duplicate, skipped, stale and failed steps reject. | Omission/reordering of Node setup, Clang, any wave checkout, integration runner self-test, or host test step cannot produce the simulated success shape |
-| **40 — complete six-wave diagnostics** | A missing/bad checkout now records `BLOCKED_BEFORE_TEST` and advances to the next wave, preserving six explicit records and `hostSuiteRan:false`. Successful test records include verified TAP counts. | One bad checkout cannot suppress diagnostics for the other five or masquerade as a run-time test failure |
+| **40 — complete six-wave diagnostics** | A missing/bad checkout now records `BLOCKED_BEFORE_TEST` and advances to the next wave, preserving six explicit records and `hostSuiteRan:false`. Successful test records include verified TAP counts. A post-subprocess metadata/checkout failure reports `POST_TEST_VERIFICATION_FAILED` with `hostSuiteRan:true`, rather than falsely calling it a pre-test block. | One bad checkout cannot suppress diagnostics for the other five or masquerade as a run-time test failure |
 
 ## Test evidence
 
