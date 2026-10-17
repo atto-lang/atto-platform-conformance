@@ -75,3 +75,40 @@ test('32 / invalid runner inputs cannot produce a green report',async()=>{
  await assert.rejects(runIntegration({inventoryPath:'inventory.json',checkoutRoot:'/tmp'}),/absolute/);
  await assert.rejects(runIntegration({inventoryPath:resolve(fileURLToPath(manifestPath)),checkoutRoot:'/tmp',timeoutMs:0}),/bounded/);
 });
+test('33 / even all passing host suites are not certified compiler parity',()=>{
+ const r=mergeReadiness({results:makeRuns()});
+ assert.equal(r.hostReadiness,'HOST_SUITES_PASSED_NEEDS_INDEPENDENT_CI');
+ assert.equal(r.mergeApproved,false);assert.equal(r.releaseCertified,false);assert.equal(r.backendCompilerParity,'UNVERIFIED');
+});
+test('33 / a nonzero test or wrong source head blocks integration',()=>{
+ const results=makeRuns();results[4].status='FAILED';results[1].head='f'.repeat(40);
+ const r=mergeReadiness({results});assert.equal(r.hostReadiness,'BLOCKED');assert.equal(r.failedWaves.length,2);
+});
+test('33 / duplicate and incomplete host results are denied',()=>{
+ const result=makeRuns();result[5].wave=1;
+ assert.throws(()=>mergeReadiness({results:result}),/duplicate/);
+ assert.throws(()=>mergeReadiness({results:makeRuns().slice(0,5)}),/missing executed/);
+});
+test('34 / a zero-step failed Actions job is not compiler/test evidence',()=>{
+ const r=checkNoRunAsProof({runConclusions:[{jobs:[{steps:null},{steps:[]}]}]});
+ assert.equal(r.ranActualSteps,false);assert.equal(r.blockedRunCount,2);assert.equal(r.safeConclusion,'NO_EXECUTED_TEST_EVIDENCE');
+});
+test('34 / synthetic successful job receipts are never independent attestation',()=>{
+ const r=assessWorkflow(workflow(),{expectedHead:HEADS[0]});
+ assert.equal(r.status,'UNTRUSTED_CI_STEP_RECEIPT_SHAPE_VALID');
+ assert.equal(r.fetchedIndependentlyFromGitHub,false);assert.equal(r.compilerParityVerified,false);
+});
+test('34 / stale attempt or wrong source revision rejected',()=>{
+ for(const change of [m=>{m.jobs[0].attempt=2},m=>{m.head='f'.repeat(40)},m=>{m.jobs[0].steps[1].attempt=2}]){
+  const c=workflow();change(c);assert.throws(()=>assessWorkflow(c,{expectedHead:HEADS[0]}),/integration-ci/);
+ }
+});
+test('34 / missing compile/checkout/execute steps or fake success cannot pass',()=>{
+ for(const change of [m=>{m.jobs[0].steps.pop()},m=>{m.jobs[0].steps[0].conclusion='skipped'},m=>{m.jobs[0].steps[1].name=m.jobs[0].steps[0].name}]){
+  const c=workflow();change(c);assert.throws(()=>assessWorkflow(c,{expectedHead:HEADS[0]}),/integration-ci/);
+ }
+});
+test('35 / full host outcomes still mandate production compiler and independent CI reviews',()=>{
+ const r=mergeReadiness({results:makeRuns()});assert.equal(r.securityReview,'REQUIRED');
+ assert.ok(r.nextRequirements.some(x=>/production compiler/.test(x)));
+});
