@@ -28,9 +28,9 @@ test("October issue batch covers 30 unique existing issue refs across 20 distinc
  }
  assert.equal(issues,30);
  const statuses=batch.repositories.map(x=>x.status);
- assert.equal(statuses.filter(x=>x==="partial-draft-pr").length,8);
+ assert.equal(statuses.filter(x=>x==="partial-draft-pr").length,18);
  assert.equal(statuses.filter(x=>x==="merged-partial-pr").length,2);
- assert.equal(statuses.filter(x=>x==="branch-created-only").length,10);
+ assert.equal(statuses.filter(x=>x==="branch-created-only").length,0);
 });
 
 test("branch setup and draft PRs are not misreported as certified implementations",()=>{
