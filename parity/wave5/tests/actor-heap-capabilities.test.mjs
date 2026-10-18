@@ -79,7 +79,7 @@ test('zero-GC full-AOT parity cannot be toggled as a documentation assertion', a
   assert.throws(() => validateActorHeapCapabilities(doc), /zero-GC\/full-AOT flag/);
 });
 
-test('a hypothetical complete evidence set computes promotion instead of trusting flags', async () => {
+test('self-attested complete evidence cannot certify a candidate manifest', async () => {
   const original = await loadActorHeapCapabilities();
   const doc = structuredClone(original);
   for (const entry of doc.backends) {
@@ -92,7 +92,18 @@ test('a hypothetical complete evidence set computes promotion instead of trustin
   }
   doc.certifiedSemanticActorHeapParity = true;
   doc.certifiedZeroGcFullAotParity = true;
-  const result = validateActorHeapCapabilities(doc);
-  assert.equal(result.semanticReady, true);
-  assert.equal(result.zeroGcAotReady, true);
+  assert.throws(() => validateActorHeapCapabilities(doc), /candidate may not self-certify/);
+});
+
+test('promotion requirements cannot be silently weakened or reordered', async () => {
+  const original = await loadActorHeapCapabilities();
+  for (const mutation of [
+    doc => { doc.promotionRequirements[0] = 'all backends self-report success'; },
+    doc => { doc.promotionRequirements.reverse(); },
+    doc => { doc.promotionRequirements.push('optional extra gate'); }
+  ]) {
+    const doc = structuredClone(original);
+    mutation(doc);
+    assert.throws(() => validateActorHeapCapabilities(doc), /promotion requirements missing, reordered or weakened/);
+  }
 });
