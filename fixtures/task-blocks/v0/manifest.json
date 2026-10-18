@@ -137,11 +137,11 @@
       "runtimeExpected": "pending"
     },
     {
-      "id": "reject-nb-task",
-      "file": "reject-nb-task.ores",
+      "id": "nb-task-alias",
+      "file": "nb-task-alias.ores",
       "syntax": "expression",
-      "parserExpected": "reject",
-      "runtimeExpected": "forbidden"
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
     },
     {
       "id": "reject-task-escaping-borrow",
