@@ -378,7 +378,9 @@ test("deny whitespace and case disguised runner-housekeeping proof steps",()=>{
   for (const spoof of [
     " set UP JOB ", " COMPLETE JOB ", " initialize CONTAINERS ",
     " STOP Containers ", " pOsT Checkout ", " PRE Cleanup ",
-    "pre checkout", "post checkout"
+    "pre checkout", "post checkout", "SET   UP    JOB",
+    "SET\u00a0UP\u00a0JOB", "Ｓｅｔ ｕｐ ｊｏｂ",
+    "Ｐｏｓｔ Checkout", "Complete　job"
   ]) {
     const x=base();
     x.records[0]=executed(BACKENDS[0]);
