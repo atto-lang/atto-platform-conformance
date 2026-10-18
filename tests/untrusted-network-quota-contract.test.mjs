@@ -79,6 +79,18 @@ const required = new Map([
   [
     "java-direct-network-entry-denied",
     "broker-required"
+  ],
+  [
+    "http-caller-cancel-does-not-own-host-io",
+    "host-owned-completion"
+  ],
+  [
+    "tcp-actual-socket-closure",
+    "physical-close-before-release"
+  ],
+  [
+    "monotonic-clock-representation-wrap",
+    "bounded-refill"
   ]
 ]);
 
