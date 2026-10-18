@@ -152,6 +152,24 @@
       "description": "Rate accounting must handle a trusted monotonic sample crossing signed or unsigned integer representation wrap, rejecting backward samples without granting extra starts",
       "expected": "bounded-refill",
       "backendEvidence": "pending"
+    },
+    {
+      "id": "actor-context-broker-authentication",
+      "description": "An untrusted actor executes the broker intrinsic, which must derive sender and lineage from runtime-owned execution state and reject a different actor or runtime",
+      "expected": "runtime-provenance-required",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "broker-ticket-cap-and-replay",
+      "description": "A guest cannot submit more than sixteen outstanding bound network result tickets, cannot replay consumed results and cannot retain authority after host unbinding",
+      "expected": "bounded-one-shot-ticket",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "no-guest-future-callback-on-host",
+      "description": "Host I/O completion updates sealed immutable ticket state only and cannot execute guest-provided callbacks on privileged host executor threads",
+      "expected": "no-guest-callback-on-host",
+      "backendEvidence": "pending"
     }
   ]
 }
