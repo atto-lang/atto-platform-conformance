@@ -23,3 +23,16 @@ test("reject malformed blob identifier",()=>{const l=copy(lock);l.sourceBlobs[Ob
 test("reject extra unknown metadata",()=>assert.throws(()=>validateMlSourceLock({...lock,verified:true},registry),/false source/));
 test("reject numeric schema confusion",()=>assert.throws(()=>validateMlSourceLock({...lock,schemaVersion:true},registry),/false source/));
 test("reject missing producer",()=>{const r=copy(registry);r.repositories.pop();assert.throws(()=>validateMlSourceLock(lock,r),/owning edge/);});
+
+test("actual locked 56-repo snapshot remains non-promotable and consistent", async()=>{
+ const {readFileSync}=await import("node:fs");
+ const live=JSON.parse(readFileSync(new URL("../integration/ml-source-blob-lock.v1.json",import.meta.url),"utf8"));
+ const inv=JSON.parse(readFileSync(new URL("../integration/org-repositories.v1.json",import.meta.url),"utf8"));
+ const r=validateMlSourceLock(live,inv);
+ assert.equal(r.files,14);
+ assert.equal(r.importDeclarations,52);
+ assert.equal(r.directSourceEdges,2);
+ assert.equal(r.guestExecuted,false);
+ assert.equal(r.exportAuthorized,false);
+ assert.equal(r.releaseReady,false);
+});
