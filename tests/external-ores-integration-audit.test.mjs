@@ -64,3 +64,49 @@ test("reject missing upstream blockers and regression in wave allocation", () =>
   y.issues[0].wave = 4;
   assert.throws(() => validateExternalOresAudit(y), /wave distribution drift/);
 });
+
+test("reject capacity-as-approval and private-carrier bypasses before promotion", () => {
+  for (const [key, badValue] of [
+    ["privateSourceToUnapprovedPrivateCarrier", "allowed"],
+    ["allowRunnerCapacityAsCopyAuthorization", true],
+    ["requireProtectedSourceMain", false],
+    ["requireReviewedExactSourceTree", false],
+    ["requireApprovedPrivateDestination", false],
+    ["requireExecutedCompilerSteps", false],
+  ]) {
+    const malicious = copy();
+    malicious.securityPolicy[key] = badValue;
+    assert.throws(() => validateExternalOresAudit(malicious), /fail-closed provenance/);
+    const omitted = copy();
+    delete omitted.securityPolicy[key];
+    assert.throws(() => validateExternalOresAudit(omitted), /fail-closed provenance/);
+  }
+});
+
+test("malicious inventory strings cannot escape into error logs", () => {
+  const badUrl = copy();
+  badUrl.issues[2].url = "https://example.test/secret/DO_NOT_PRINT\\u001b[31m";
+  assert.throws(
+    () => validateExternalOresAudit(badUrl),
+    error => error.message.includes("ordinal 3") &&
+      !error.message.includes("DO_NOT_PRINT") &&
+      !error.message.includes("\\u001b"),
+  );
+  const duplicatedEdge = copy();
+  duplicatedEdge.boundaries[1] = structuredClone(duplicatedEdge.boundaries[0]);
+  assert.throws(
+    () => validateExternalOresAudit(duplicatedEdge),
+    error => error.message.includes("duplicate boundary") &&
+      !error.message.includes(duplicatedEdge.boundaries[0].consumer),
+  );
+});
+
+test("runner capacity does not imply real compiler attestation", () => {
+  const result = validateExternalOresAudit(campaign);
+  assert.equal(result.status, "metadata-only");
+  for (const upstream of campaign.upstreams) {
+    assert.equal(upstream.evidence, "not-attested");
+  }
+  assert.equal(campaign.securityPolicy.allowRunnerCapacityAsCopyAuthorization, false);
+  assert.equal(campaign.securityPolicy.requireExecutedCompilerSteps, true);
+});
