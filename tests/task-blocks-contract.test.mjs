@@ -10,7 +10,8 @@ const ids = ["do-nb-no-handle","task-int-await","task-void-await","reject-bare-n
  "async-future-nested-task","reject-async-task-malformed",
  "task-spelling-value","task-spelling-discard","task-spelling-await","task-nested-not-flattened",
  "nb-task-alias","reject-task-escaping-borrow","reject-task-double-move",
- "reject-task-borrow-across-await","reject-task-borrowed-iife-argument"];
+ "reject-task-borrow-across-await","reject-task-borrowed-iife-argument",
+ "task-cancel-and-join"];
 
 test("task blocks remain an explicitly unverified source contract", () => {
   assert.equal(contract.schemaVersion, 1);
@@ -153,4 +154,16 @@ test("borrow and move negative fixtures cannot be classified as passes", async (
   assert.match(await read("reject-task-double-move"), /Task<int> second = task/);
   assert.match(await read("reject-task-borrow-across-await"), /await job/);
   assert.match(await read("reject-task-borrowed-iife-argument"), /async task/);
+});
+
+
+test("cancellation and actual cleanup join are distinct guest contracts, not executable yet", async () => {
+  const file = await readFile(new URL("task-cancel-and-join.ores", base), "utf8");
+  assert.match(file, /let Task<int> job = nb task\\s*\\{/);
+  assert.match(file, /job\\.cancel\\(\\);/);
+  assert.match(file, /await job\\.get_done\\(\\);/);
+  const entry = contract.cases.find(c => c.id === "task-cancel-and-join");
+  assert.equal(entry.parserExpected, "accept");
+  assert.equal(entry.runtimeExpected, "pending");
+  assert.equal(contract.runtimeVerified, false);
 });
