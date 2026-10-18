@@ -27,11 +27,11 @@ const PINNED_SOURCE_IDENTITIES=Object.freeze({
 // Reviewed immutable workflow identities: GitHub Actions app ID and check name
 // alone cannot authenticate what instructions the status-producing job ran.
 const PINNED_POLICY_WORKFLOW_BLOBS=Object.freeze({
-  "ores-truffle-oreslang/oreslang-source.java":"b7c36261c6f1dad2c86cae31f8974f854e124021",
-  "ores-truffle-oreslang/oreslang-source.llvm":"15d506a6e54f04eae39291acb585667bddd4db03",
-  "ores-truffle-oreslang/oreslang-source.net":"15d506a6e54f04eae39291acb585667bddd4db03",
-  "ores-truffle-oreslang/oreslang-source.wasm":"15d506a6e54f04eae39291acb585667bddd4db03",
-  "ores-truffle-oreslang/oreslang-source.forge":"15d506a6e54f04eae39291acb585667bddd4db03"
+  "ores-truffle-oreslang/oreslang-source.java":"3ccf6597e52d427ba261573d6702f9a6bf19c07a",
+  "ores-truffle-oreslang/oreslang-source.llvm":"1e18ea42fc8a819e26a90f9b2dfea7cbdc129e76",
+  "ores-truffle-oreslang/oreslang-source.net":"1e18ea42fc8a819e26a90f9b2dfea7cbdc129e76",
+  "ores-truffle-oreslang/oreslang-source.wasm":"1e18ea42fc8a819e26a90f9b2dfea7cbdc129e76",
+  "ores-truffle-oreslang/oreslang-source.forge":"1e18ea42fc8a819e26a90f9b2dfea7cbdc129e76"
 });
 const OID=/^[0-9a-f]{40}$/;
 const EXPECTED_OWNER="@ORESoftware";
