@@ -92,7 +92,7 @@ test('self-attested complete evidence cannot certify a candidate manifest', asyn
   }
   doc.certifiedSemanticActorHeapParity = true;
   doc.certifiedZeroGcFullAotParity = true;
-  assert.throws(() => validateActorHeapCapabilities(doc), /candidate may not self-certify/);
+  assert.throws(() => validateActorHeapCapabilities(doc), /candidate (?:row )?may not self-certify/);
 });
 
 test('promotion requirements cannot be silently weakened or reordered', async () => {
