@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "scope": "task-blocks-v0-draft",
+  "runtimeVerified": false,
+  "backends": {
+    "java-graalvm": "parser-only-runtime-gated",
+    "llvm": "fail-closed",
+    "net": "unverified",
+    "wasm": "unverified",
+    "forge": "unverified"
+  },
+  "cases": [
+    {
+      "id": "do-nb-no-handle",
+      "file": "do-nb-no-handle.ores",
+      "syntax": "statement",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "task-int-await",
+      "file": "task-int-await.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "task-void-await",
+      "file": "task-void-await.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "reject-bare-nb",
+      "file": "reject-bare-nb.ores",
+      "syntax": "statement",
+      "parserExpected": "reject",
+      "runtimeExpected": "forbidden"
+    },
+    {
+      "id": "reject-escaping-borrow",
+      "file": "reject-escaping-borrow.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
+    }
+  ]
+}
