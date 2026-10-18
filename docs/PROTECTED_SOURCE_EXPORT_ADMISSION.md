@@ -153,3 +153,41 @@ The source-export bootstrap auditor now has two fail-closed protections added du
 **Validation scope:** Exact current Java #1217 CODEOWNERS and four companion bootstrap-policy PR CODEOWNERS snapshots were fetched separately and passed the corrected pure CODEOWNERS predicate (five out of five). Isolated JavaScript checks also rejected omission/wrong ownership of both Java dispatcher paths and six wrong-source-identity inputs. These are read-only, in-memory tests, **not** GitHub-hosted Node execution and **not** a `BOOTSTRAP_PROTECTED` result from a live admin-authenticated policy audit.
 
 **Still blocked:** All five source `main` branches report `protected=false`; source-org Actions job allocation remains unsuccessful, both carrier security incidents #22/#77 are unresolved, and the source/destination snapshot authorization ledgers remain empty. These fail-closed restrictions must be retained until a genuinely independent reviewer and repository administrator complete the governance prerequisites. Nothing in this section authorizes source export.
+
+## 2026-10-18 UTC: reviewed workflow-content admission
+
+**Fixed security gap:** the previous bootstrap auditor fetched and SHA-1-validated
+`.github/workflows/private-ci-policy.yml`, but did not check the file's
+identity against an independently reviewed workflow. A modified workflow
+could report a success under the required `private-ci-policy` check name
+and GitHub Actions App ID `15368`, even if it stopped validating the policy.
+
+The auditor now pins the exact **reviewed Git blob** for this workflow at
+every source's protected `main` SHA:
+
+| Source repository | Reviewed bootstrap-policy workflow Git blob |
+|---|---|
+| `oreslang-source.java` | `d4b1356249534e4dc55e9aeabfad80773016cd48` |
+| `oreslang-source.llvm` | `78f7eb2aeb148598c43479bda446a258541f0483` |
+| `oreslang-source.net` | `78f7eb2aeb148598c43479bda446a258541f0483` |
+| `oreslang-source.wasm` | `78f7eb2aeb148598c43479bda446a258541f0483` |
+| `oreslang-source.forge` | `78f7eb2aeb148598c43479bda446a258541f0483` |
+
+These were independently read from the current draft security-policy PR heads:
+Java #1217, LLVM #529, .NET #79, WASM #76, Forge #77.
+Normal contents API base64 canonicalization and Git-blob SHA verification
+still happen **before** the exact reviewed hash comparison. Even adding a
+comment or replacing the body with a no-op `run: echo pass` fails closed.
+
+Tests use only the two GitHub Actions **policy-workflow fixtures**, not
+runtime or compiler source. They cover mutated workflows, no-op/check-name
+spoofing and substitution of Java's distinct policy workflow for the
+four-backend workflow (and vice versa). A legitimate policy-workflow change
+requires a distinct independently reviewed update to these pinned hashes;
+do not automatically adopt an unreviewed branch's workflow.
+
+The code and test fixtures were exercised through an isolated V8 JavaScript
+compatibility harness and cannot substitute for a normal `node --test` run.
+Official source-organization CI still requires actual runner allocation,
+protected-main enforcement, real independent review, and both incident
+investigations (#22 and #77) to be resolved before private-source exports.
