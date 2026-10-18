@@ -81,6 +81,10 @@ Source: GitHub live open-PR search (`org:ores-truffle-oreslang is:open updated:>
 - Private CI: conformance authorization #57/#109 → Java source tree proof #1361 → immutable bundle #1373; none authorizes unreviewed cross-org source transfer.
 - Named calls: Java #1335 → #1400 → #1408 → invocation ABI #1397.
 
+## Source-free snapshot integrity tests
+
+The structured inventory can be validated with `python3 scripts/validate-recovered-work-items.py`, and the schema regression tests with `python3 tests/test-recovered-work-items.py`. Nine local synthetic-fixture tests passed, exercising counts, identities, URL origin, duplicate rejection, status claims and source window. The actual 50-entry JSON also passed an independent in-session structural/identity check. These checks **do not** query GitHub live, prove compiler execution, or establish that any tracked feature is complete.
+
 ## How to update
 
 Change an item's `observed` status only after exact-head checks and evidence URL are captured; record the relevant commit, runner/job steps, and independent security approval where applicable. The accompanying JSON is a structured snapshot.
