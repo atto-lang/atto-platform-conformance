@@ -16,7 +16,7 @@ function signed(data=payload,event='push',delivery='delivery-1'){
 }
 function fixture(input=signed(),response='ACCEPTED'){
   const calls=[];
-  const config={secret,...input,admitSignedPush:async value=>{calls.push(value);return response;}};
+  const config={secret,...input,admitVerifiedEvent:async value=>{calls.push(value);return response;}};
   return {config,calls};
 }
 
@@ -99,7 +99,7 @@ test('invalid DB callback result fails closed',async()=>{
 });
 test('requires an atomic callback; legacy split callbacks are not accepted',async()=>{
   const f=fixture();
-  delete f.config.admitSignedPush;
+  delete f.config.admitVerifiedEvent;
   f.config.readExpected=async()=>({});
   f.config.persistInbox=async()=>true;
   await assert.rejects(()=>admitGithubPush(f.config),TypeError);
@@ -107,7 +107,7 @@ test('requires an atomic callback; legacy split callbacks are not accepted',asyn
 test('HTTP adapter ingests signed push and routes to one callback',async()=>{
   const f=fixture();
   const server=createServer(createGithubWebhookHandler({
-    secret,admitSignedPush:f.config.admitSignedPush
+    secret,admitVerifiedEvent:f.config.admitVerifiedEvent
   }));
   await new Promise(done=>server.listen(0,'127.0.0.1',done));
   try{
@@ -121,7 +121,7 @@ test('HTTP adapter ingests signed push and routes to one callback',async()=>{
 });
 test('HTTP adapter returns 503 without leaking raw webhook or database errors',async()=>{
   const server=createServer(createGithubWebhookHandler({
-    secret,admitSignedPush:async()=>{throw Error('database-private-stack');}
+    secret,admitVerifiedEvent:async()=>{throw Error('database-private-stack');}
   }));
   await new Promise(done=>server.listen(0,'127.0.0.1',done));
   try{

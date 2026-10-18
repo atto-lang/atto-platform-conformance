@@ -9,15 +9,15 @@ const validRef=s=>typeof s==='string'&&REF.test(s)&&
 
 /**
  * Authenticated HTTP boundary ONLY. It does not choose tenant, run, or actor
- * identity from the webhook payload. The injected admitSignedPush callback
+ * identity from the webhook payload. The injected admitVerifiedEvent callback
  * MUST resolve authorized workflow identity and check repo/ref/SHA, expected
  * actor state version, delivery replay and inbox quota in one DB transaction.
  */
 export async function admitGithubPush({
-  secret,headers,rawBody,admitSignedPush,maxBytes=1_048_576
+  secret,headers,rawBody,admitVerifiedEvent,maxBytes=1_048_576
 }) {
   if(typeof secret!=='string'||secret.length<16||
-     !headers||typeof admitSignedPush!=='function'||
+     !headers||typeof admitVerifiedEvent!=='function'||
      !Number.isSafeInteger(maxBytes)||maxBytes<1||maxBytes>16_777_216)
     throw new TypeError('invalid GitHub webhook admission configuration');
   if(!Buffer.isBuffer(rawBody)||rawBody.length===0||rawBody.length>maxBytes)
@@ -46,7 +46,7 @@ export async function admitGithubPush({
 
   // No readExpected + persistInbox split is permitted here. The database
   // callback is the single authority for expectation and deduplication.
-  const result=await admitSignedPush({
+  const result=await admitVerifiedEvent({
     installationId:payload.installation.id,repositoryId:payload.repository.id,
     ref:payload.ref,sha:payload.after,deliveryId,rawBody:Buffer.from(rawBody)
   });
