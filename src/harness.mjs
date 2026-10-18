@@ -151,14 +151,16 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
   // The executable must remain the exact same path/target/file identity and bytes
   // across every invocation. This detects replacement, deletion and symlink
   // retargeting around a subprocess, but cannot eliminate the final exec TOCTOU.
-  if(!initialExecutable||!executableBefore)status="UNHASHABLE_EXECUTABLE";
-  else if(!sameExecutableSnapshot(initialExecutable,executableBefore)||
-          !sameExecutableSnapshot(executableBefore,executableAfter))
+  if(initialExecutable &&
+     (!sameExecutableSnapshot(initialExecutable,executableBefore)||
+      (executableBefore&&!sameExecutableSnapshot(executableBefore,executableAfter))))
    status="EXECUTABLE_CHANGED";
   else if(output.error)status=output.error.code==="ETIMEDOUT"?"TIMEOUT":"SPAWN_ERROR";
   else if(output.signal)status="SIGNALED";
   // A missing/invalid process exit code cannot be evidence of a compiler rejection.
   else if(!Number.isSafeInteger(output.status)||output.status<0)status="INVALID_EXIT_STATUS";
+  // A successful-looking mock/wrapper still cannot certify an unhashable executable.
+  else if(!initialExecutable||!executableBefore||!executableAfter)status="UNHASHABLE_EXECUTABLE";
   else if(c.expect==="accept")status=output.status===0 && !hasCompilerErrorSeverity(combined)?"VERIFIED":"MISMATCH";
   else {
    status=output.status!==0 && isExpectedCompilerDiagnostic(combined,c.diagnostic)
