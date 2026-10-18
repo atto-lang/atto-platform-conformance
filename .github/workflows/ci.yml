@@ -21,6 +21,7 @@ jobs:
           npm run check:integration
           npm run check:compatibility
           npm run check:head-snapshot
+          npm run check:ml-source-lock
       - name: Prove unverified candidate cannot pass release gate
         shell: bash
         run: |
