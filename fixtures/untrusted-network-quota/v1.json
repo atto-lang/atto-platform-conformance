@@ -5,7 +5,10 @@
     "httpMaxInFlight": 10,
     "httpRequestStartsPerSecond": 10,
     "httpStartBurst": 2,
-    "tcpMaxActiveConnections": 10
+    "tcpMaxActiveConnections": 10,
+    "tcpConnectionStartsPerSecond": 10,
+    "tcpStartBurst": 2,
+    "refundPublishedStartTokens": false
   },
   "scope": "supervisor-authorized-untrusted-network-egress",
   "pendingBackends": [
@@ -100,6 +103,24 @@
       "id": "shutdown-race",
       "description": "Concurrent close, cancellation and actor shutdown cannot double-release or oversubscribe slots",
       "expected": "release-once",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "delayed-cancel-no-token-refund",
+      "description": "An untrusted guest retains two uncommitted network starts through refill and later cancels them: refund only in-flight/socket slots",
+      "expected": "no-refund-of-published-start-token",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "revocation-prevents-commit",
+      "description": "Supervisor quota revocation after reservation but before the actual outbound dispatch must prevent committing and allow once-only credit cleanup",
+      "expected": "deny-new-commit-and-release-slot",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "hierarchical-internal-rollback",
+      "description": "A supervisor or tenant denies admission after child tentative debit and the host rolls all tentative state back atomically before returning",
+      "expected": "rollback-unpublished-only",
       "backendEvidence": "pending"
     }
   ]
