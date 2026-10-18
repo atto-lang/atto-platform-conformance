@@ -22,6 +22,22 @@ def valid():
                        "observed": "open; runtime/CI unverified", "next_action": "Run real compilation and regression tests"} for i in range(50)]}
 
 
+
+def rendered(snapshot):
+    items = snapshot["items"]
+    repos = len({item["repo"] for item in items})
+    p0 = sum(item["priority"] == "P0" for item in items)
+    heading = (f"**Snapshot:** {len(items)} distinct open PRs, {repos} repositories, "
+               f"{p0} P0 and {len(items)-p0} P1.\\n")
+    rows = []
+    for item in items:
+        label = item["repo"].split("/", 1)[1] + " #" + str(item["pr"])
+        rows.append(
+            f'| {item["id"]} | {item["priority"]} | [{label}]({item["url"]})'
+            f' — {item["title"]} | {item["next_action"]} |')
+    return heading + "\\n".join(rows) + "\\n"
+
+
 class RecoveryCheckerTests(unittest.TestCase):
     def test_valid_snapshot(self):
         self.assertEqual(checker.validate(valid()), (50, 10))
@@ -52,5 +68,42 @@ class RecoveryCheckerTests(unittest.TestCase):
     def test_missing_gate_rejected(self):
         t=valid(); t["items"][0]["next_action"]=""
         with self.assertRaises(ValueError): checker.validate(t)
+
+
+    def test_rendered_markdown_matches_canonical_ledger(self):
+        snapshot = valid()
+        self.assertEqual(checker.validate_markdown(snapshot, rendered(snapshot)), 50)
+
+    def test_markdown_action_drift_rejected(self):
+        snapshot = valid()
+        original = rendered(snapshot)
+        stale = original.replace("Run real compilation and regression tests",
+                                 "Run old synthetic-only checks", 1)
+        with self.assertRaises(ValueError):
+            checker.validate_markdown(snapshot, stale)
+
+    def test_markdown_priority_drift_rejected(self):
+        snapshot = valid()
+        stale = rendered(snapshot).replace("| 1 | P1 |", "| 1 | P0 |", 1)
+        with self.assertRaises(ValueError):
+            checker.validate_markdown(snapshot, stale)
+
+    def test_markdown_url_drift_rejected(self):
+        snapshot = valid()
+        stale = rendered(snapshot).replace("/pull/1)", "/pull/2)", 1)
+        with self.assertRaises(ValueError):
+            checker.validate_markdown(snapshot, stale)
+
+    def test_markdown_summary_drift_rejected(self):
+        snapshot = valid()
+        stale = rendered(snapshot).replace("25 P0 and 25 P1", "26 P0 and 24 P1")
+        with self.assertRaises(ValueError):
+            checker.validate_markdown(snapshot, stale)
+
+    def test_markdown_missing_row_rejected(self):
+        snapshot = valid()
+        stale = "\\n".join(rendered(snapshot).splitlines()[:-1]) + "\\n"
+        with self.assertRaises(ValueError):
+            checker.validate_markdown(snapshot, stale)
 
 if __name__ == "__main__": unittest.main(verbosity=2)
