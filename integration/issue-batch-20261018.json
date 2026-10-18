@@ -5,7 +5,7 @@
   "batch": "issue-batch-20261018",
   "documentationOnly": true,
   "releaseCertified": false,
-  "note": "Branches do not imply implementation; a draft PR is partial and not CI-certified. Keep all unmerged.",
+  "note": "Snapshot: 10 PRs have received work; target-profiles #22 and HDL #13 subsequently merged; eight draft PRs remain open. Passing CI is not implied by any PR.",
   "repositories": [
     {
       "repository": "ores-truffle-oreslang/oreslang-source.java",
@@ -105,8 +105,8 @@
         }
       ],
       "branch": "draft/issue-batch-12-7-20261018",
-      "status": "partial-draft-pr",
-      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-source.hdl/pull/13"
+      "status": "merged-partial-pr",
+      "mergedPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-source.hdl/pull/13"
     },
     {
       "repository": "ores-truffle-oreslang/rx-oreslang-channels",
@@ -121,7 +121,8 @@
         }
       ],
       "branch": "draft/issue-batch-18-8-20261018",
-      "status": "branch-created-only"
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/rx-oreslang-channels/pull/24"
     },
     {
       "repository": "ores-truffle-oreslang/oreslang-ml-conformance",
@@ -169,7 +170,8 @@
         }
       ],
       "branch": "draft/issue-batch-93-20261018",
-      "status": "branch-created-only"
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/100"
     },
     {
       "repository": "ores-truffle-oreslang/oreslang-source.net",
@@ -180,7 +182,8 @@
         }
       ],
       "branch": "draft/issue-batch-35-20261018",
-      "status": "branch-created-only"
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/97"
     },
     {
       "repository": "ores-truffle-oreslang/oreslang-autograd",
@@ -213,7 +216,8 @@
         }
       ],
       "branch": "draft/issue-batch-16-20261018",
-      "status": "branch-created-only"
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-browser/pull/26"
     },
     {
       "repository": "ores-truffle-oreslang/oreslang-platform.embedded",
@@ -224,7 +228,8 @@
         }
       ],
       "branch": "draft/issue-batch-19-20261018",
-      "status": "branch-created-only"
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-platform.embedded/pull/21"
     },
     {
       "repository": "ores-truffle-oreslang/.github",
@@ -246,8 +251,8 @@
         }
       ],
       "branch": "draft/issue-batch-21-20261018",
-      "status": "partial-draft-pr",
-      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-target-profiles/pull/22"
+      "status": "merged-partial-pr",
+      "mergedPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-target-profiles/pull/22"
     },
     {
       "repository": "ores-truffle-oreslang/oreslang-wasm",
