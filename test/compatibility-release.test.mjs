@@ -79,3 +79,14 @@ test("reject catalog version or drift inconsistent with pinned inventory", () =>
     d.snapshotDate = "2026-10-18";
   }), inventory), /non-promotable policy/);
 });
+
+test("reject replaced or ambiguous repository identity", () => {
+  assert.throws(() => validateCompatibilityCandidate(altered(d => {
+    d.pins[0].repositoryId = d.pins[1].repositoryId;
+  }), inventory), /invalid or duplicated immutable GitHub repository ID/);
+  for (const bad of [null, 0, "0", "1.0", "not-a-github-id"]) {
+    assert.throws(() => validateCompatibilityCandidate(altered(d => {
+      d.pins[0].repositoryId = bad;
+    }), inventory), /invalid or duplicated immutable GitHub repository ID/);
+  }
+});
