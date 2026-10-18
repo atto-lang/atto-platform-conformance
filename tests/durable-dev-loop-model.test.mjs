@@ -91,3 +91,48 @@ test('iteration budget enforces a hard stop',()=>{
   step(m,e,msg('fail','tests_failed',{sha:'abc',iteration:1,fingerprint:'err'}));
   assert.throws(()=>push(m,e,2,'def'),/ITERATION_BUDGET_EXHAUSTED/);
 });
+
+
+test('reserved object property IDs cannot bypass deduplication or mutate dictionary prototypes',()=>{
+  const [m,e]=init();
+  assert.throws(()=>m.apply(e,'constructor'),/UNKNOWN_INBOX_MESSAGE/);
+  const p=msg('__proto__','code_pushed',{sha:'abc'});
+  assert.equal(m.enqueue(p),true);
+  assert.equal(m.apply(e,'__proto__'),true);
+  assert.equal(m.apply(e,'__proto__'),false);
+  assert.equal(m.enqueue(p),false);
+  assert.equal(m.snapshot().state.iteration,1);
+  assert.equal(Object.hasOwn(m.snapshot().seen,'__proto__'),true);
+  assert.equal(Object.getPrototypeOf(m.snapshot().state),Object.prototype);
+});
+
+test('receipt replay must match first durable receipt exactly',()=>{
+  const [m,e]=init();
+  push(m,e,1,'abc');webhook(m,e,1,'abc');
+  const key='r:test:1:abc';
+  assert.equal(m.acknowledge(e,key,'gha-run-1'),true);
+  assert.equal(m.acknowledge(e,key,'gha-run-1'),false);
+  assert.throws(()=>m.acknowledge(e,key,'gha-run-2'),/RECEIPT_CONFLICT/);
+  assert.equal(m.snapshot().outbox[key].receipt,'gha-run-1');
+});
+
+test('malformed persisted epoch, code generation and actor identity quarantine on restore',()=>{
+  const [m,e]=init();m.freeze(e);
+  for(const field of ['epoch','version']) {
+    const snapshot=m.snapshot();snapshot[field]=-1;
+    assert.throws(()=>new DurableDevLoopModel({store:snapshot}),/CORRUPT_SNAPSHOT/);
+  }
+  const snapshot=m.snapshot();snapshot.codeGeneration='unreviewed-new-runtime';
+  assert.throws(()=>new DurableDevLoopModel({store:snapshot}),/CORRUPT_SNAPSHOT/);
+  const bad=m.snapshot();bad.state.expectedRef='refs/heads/main';
+  assert.throws(()=>new DurableDevLoopModel({store:bad}),/CORRUPT_SNAPSHOT/);
+  const missing=m.snapshot();delete missing.nodeId;
+  assert.throws(()=>new DurableDevLoopModel({store:missing}),/CORRUPT_SNAPSHOT/);
+});
+
+test('blank IDs and mismatched tenant identities reject before inbox mutation',()=>{
+  const [m]=init();
+  assert.throws(()=>m.enqueue(msg('  ','code_pushed',{sha:'abc'})),/BAD_MESSAGE/);
+  assert.throws(()=>m.enqueue(msg('evil','code_pushed',{sha:'abc',tenantId:'other'})),/WRONG_ACTOR/);
+  assert.equal(Object.keys(m.snapshot().inbox).length,0);
+});
