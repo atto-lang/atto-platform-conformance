@@ -126,3 +126,61 @@ Selected: **100 distinct issues** in **6 ores-* GitHub organizations** and **44 
 ## Admission rule
 
 Every issue moves from queued → implemented → verified only with a named source commit, independently reviewed upstream contract revision, deterministic comparison receipts where applicable, exact-tree real test results, and recorded CI job steps. The issue inventory and its test validate **metadata integrity only**, not completion.
+
+## October 18, 2026 — CI confidentiality and upstream status follow-up
+
+This section is newer than the **historical 100-open-issues snapshot**. It
+does not revise the inventory's `open-at-snapshot` statuses, does not attest
+compiler execution, and must not be conflated with the earlier audit.
+
+- **TJSV advisory #230:** upstream remediation was merged as
+  [TJSV #235](https://github.com/ORESoftware/typespec-json-schema-validator/pull/235)
+  at `a9aa7e0a258a0514b433178842288ab798b0947c`, removing the expired
+  `npm:1193788` waiver and pinning TypeSpec 1.17.0. The package version fix
+  [#236](https://github.com/ORESoftware/typespec-json-schema-validator/pull/236)
+  merged at `be8fa62e54d421ddbfcad8eedf0aaf94289b3ed7`.
+  Upstream issue #230 is **closed**. These are source/CI changes, **not**
+  Oreslang native compiler acceptance or proof that every consumer has repinned.
+- **RPC #326:** remains open. The negative admission gate
+  [API-docs #329](https://github.com/ORESoftware/api-docs/pull/329)
+  merged as `9e3d6302ef8535f480a88c7e8b5a4fd47f57e309`. API-docs'
+  reviewed `rpc-v1-core` TJSV consumer repin
+  [#330](https://github.com/ORESoftware/api-docs/pull/330)
+  merged as `02b566611cca3d9e67bfada9c24df8d2da981cd3`.
+  This explicitly **does not** implement native Oreslang v1/v2 handlers.
+  GitHub Pages deployment is a separate configuration blocker
+  [#331](https://github.com/ORESoftware/api-docs/issues/331).
+- **Chat:** ORES Chat SDK integrated security changes
+  [#42](https://github.com/ores-chat/ores-chat-clients/pull/42)
+  merged at `617389e6000cf780084680ba2c86362f207a009d`;
+  its three `main` push workflows passed. This is **not** evidence that
+  native Oreslang Java/LLVM conformance completed.
+- **Conformance CI:** [#103](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/pull/103)
+  source Actions run `39151790465`, attempt 2, **failed with zero steps**;
+  no compiler or audit-script assertions actually executed there.
+  The approved-to-review private carrier `akrion-sim/akrion-sim-e2e` had
+  zero-step failures too. Separate private `ores-otel-test/canonical-go-consumer`
+  synthetic canary [run 39155897966](https://github.com/ores-otel-test/canonical-go-consumer/actions/runs/39155897966)
+  passed *real runner steps* but carried **no private source**.
+
+### Mandatory gate before any cross-organization private source copy
+
+A destination being private, writable, and funded is **necessary but
+insufficient**. Do not treat a user-requested carrier, connector auth, a passing
+synthetic workflow, a source Git SHA or blob identity as independent permission
+to publish confidential source.
+
+Require the **protected source-main** security/CODEOWNER policy, explicitly
+reviewed numeric destination identity, approved immutable source commit and
+complete tree digest, live visibility and authorization checks through the
+canonical guarded publisher, and no outstanding incident/retention policy
+restriction. Source-main policies and exact destination allowlists must have
+landed via independent review. No token-less GitHub connector copy may bypass
+these preconditions. Alternative-organization Actions execution remains
+**source-free only** until all transfer gates succeed.
+
+Actual compiler acceptance additionally requires executing the complete,
+approved source tree on the isolated private carrier, exact commit/tree and
+binary attestation, guarded artifacts/retention, current contract receipts,
+both backends' native tests and real executed-step logs. Metadata tests,
+host-only synthetic checks, and carrier budget proofs cannot substitute.
