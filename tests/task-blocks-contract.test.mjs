@@ -11,7 +11,9 @@ const ids = ["do-nb-no-handle","task-int-await","task-void-await","reject-bare-n
  "task-spelling-value","task-spelling-discard","task-spelling-await","task-nested-not-flattened",
  "nb-task-alias","reject-task-escaping-borrow","reject-task-double-move",
  "reject-task-borrow-across-await","reject-task-borrowed-iife-argument",
- "task-cancel-and-join"];
+ "task-cancel-and-join",
+ "suspends-task-body","suspends-task-lambda","suspends-lambda-no-spawn",
+ "reject-suspends-task-modifier","reject-sync-lambda-suspends","reject-sync-helper-await"];
 
 test("task blocks remain an explicitly unverified source contract", () => {
   assert.equal(contract.schemaVersion, 1);
@@ -166,4 +168,42 @@ test("cancellation and actual cleanup join are distinct guest contracts, not exe
   assert.equal(entry.parserExpected, "accept");
   assert.equal(entry.runtimeExpected, "pending");
   assert.equal(contract.runtimeVerified, false);
+});
+
+
+test("suspends is a callable effect inside Task, never an implicit spawn", async () => {
+  const read = async id => readFile(new URL(id + ".ores", base), "utf8");
+  const block = await read("suspends-task-body");
+  const lambda = await read("suspends-task-lambda");
+  const direct = await read("suspends-lambda-no-spawn");
+  assert.match(block, /suspends fnc compute_blocking/);
+  assert.match(block, /let Task<int> child = task\s*\{/);
+  assert.match(block, /return compute_blocking\(5\);/);
+  assert.match(lambda, /\(async task \|int a\| ->\s*\{/);
+  assert.match(lambda, /return compute_blocking\(a\);/);
+  assert.match(direct, /\(suspends \|int a\| -> compute_blocking\(a\)\)\(5\)/);
+  assert.doesNotMatch(direct, /\basync task\b/);
+  for (const id of ["suspends-task-body","suspends-task-lambda","suspends-lambda-no-spawn"]) {
+    const row = contract.cases.find(c => c.id === id);
+    assert.equal(row.parserExpected, "accept");
+    assert.equal(row.runtimeExpected, "pending");
+  }
+});
+
+test("suspends task is redundant, ordinary lambdas cannot inherit effects", async () => {
+  const read = async id => readFile(new URL(id + ".ores", base), "utf8");
+  assert.match(await read("reject-suspends-task-modifier"),
+    /\(suspends task \|int a\| -> a\)/);
+  const badModifier = contract.cases.find(c => c.id === "reject-suspends-task-modifier");
+  assert.equal(badModifier.parserExpected,"reject");
+  assert.equal(badModifier.runtimeExpected,"forbidden");
+
+  const plainLambda = await read("reject-sync-lambda-suspends");
+  assert.match(plainLambda, /suspends fnc caller/);
+  assert.match(plainLambda, /\|int a\| -> compute_blocking\(\)/);
+  assert.equal(contract.cases.find(c=>c.id==="reject-sync-lambda-suspends").runtimeExpected,"reject");
+
+  const helper = await read("reject-sync-helper-await");
+  assert.match(helper, /fnc invalid\(\): int\s*\{\s*return await compute\(\)/);
+  assert.equal(contract.cases.find(c=>c.id==="reject-sync-helper-await").runtimeExpected,"reject");
 });
