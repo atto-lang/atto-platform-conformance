@@ -4,6 +4,8 @@ const SHA=/^[0-9a-f]{40}$/;
 const DELIVERY=/^[A-Za-z0-9-]{1,128}$/;
 const REF=/^refs\/heads\/[A-Za-z0-9_./-]{1,240}$/;
 const validId=n=>Number.isSafeInteger(n)&&n>0;
+const validRef=s=>typeof s==='string'&&REF.test(s)&&
+  !s.split('/').some(part=>part==='.'||part==='..'||part==='');
 
 /**
  * Authenticated HTTP boundary ONLY. It does not choose tenant, run, or actor
@@ -38,7 +40,7 @@ export async function admitGithubPush({
   catch { return {status:400,code:'BAD_JSON'}; }
   if(!payload||typeof payload!=='object'||Array.isArray(payload)||
      payload.deleted!==false||!SHA.test(payload.after||'')||
-     !REF.test(payload.ref||'')||
+     !validRef(payload.ref)||
      !validId(payload.installation?.id)||!validId(payload.repository?.id))
     return {status:422,code:'BAD_PUSH'};
 
