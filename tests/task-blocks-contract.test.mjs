@@ -15,7 +15,9 @@ const ids = ["do-nb-no-handle","task-int-await","task-void-await","reject-bare-n
  "suspends-task-body","suspends-task-lambda","suspends-lambda-no-spawn",
  "reject-suspends-task-modifier","reject-sync-lambda-suspends","reject-sync-helper-await",
  "suspends-task-caller-value","suspends-lambda-within-task",
- "reject-suspends-task-prefix","reject-plain-calls-suspends"];
+ "reject-suspends-task-prefix","reject-plain-calls-suspends",
+ "reject-typed-callback-suspends","reject-mutex-callback-suspends",
+ "reject-firstclass-suspends","reject-static-suspends-fnc"];
 
 test("task blocks remain an explicitly unverified source contract", () => {
   assert.equal(contract.schemaVersion, 1);
@@ -234,4 +236,23 @@ test("suspends task is not a new launch mode and direct plain callers lack effec
   assert.match(plain, /fnc plain\(\): int \{ return read_value\(\); \}/);
   assert.equal(contract.cases.find(c=>c.id==="reject-plain-calls-suspends")?.runtimeExpected,"reject");
   assert.equal(contract.runtimeVerified,false);
+});
+
+
+test("a suspends effect cannot be erased through plain Fnc values or callbacks", async () => {
+  const read = async id => readFile(new URL(id+".ores",base),"utf8");
+  const expected = [
+    "reject-typed-callback-suspends", "reject-mutex-callback-suspends",
+    "reject-firstclass-suspends", "reject-static-suspends-fnc"
+  ];
+  for (const id of expected) {
+    const c = contract.cases.find(entry => entry.id === id);
+    assert.equal(c?.parserExpected, "accept");
+    assert.equal(c?.runtimeExpected, "reject");
+  }
+  assert.match(await read("reject-typed-callback-suspends"), /apply\(\|int n\| -> read_blocking\(\), 3\)/);
+  assert.match(await read("reject-mutex-callback-suspends"), /mutex\.with_lock\(\|n\| ->\s*\{/);
+  assert.match(await read("reject-firstclass-suspends"), /Fnc<int> callback = read_blocking;/);
+  assert.match(await read("reject-static-suspends-fnc"), /Fnc<int> callback = Worker\.read_blocking;/);
+  assert.equal(contract.runtimeVerified, false);
 });
