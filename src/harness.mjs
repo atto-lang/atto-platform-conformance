@@ -174,6 +174,17 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
     exitCode:output.status,signal:output.signal||null,
     stdout:output.stdout||"",stderr:output.stderr||""});
  }
+ // Evidence for a suite is indivisible: a later executable identity drift
+ // invalidates earlier apparent successes. Never publish mixed-identity
+ // per-fixture VERIFIED evidence even when the overall suite is already red.
+ if(initialExecutable && results.some(x=>x.status==="EXECUTABLE_CHANGED")){
+  for(const result of results){
+   if(result.status==="VERIFIED"){
+    result.status="EXECUTABLE_CHANGED";
+    result.priorVerificationRevoked=true;
+   }
+  }
+ }
  const verified=results.filter(x=>x.status==="VERIFIED").length;
  const failed=results.filter(x=>x.status!=="VERIFIED").length;
  return {backend,declaredSourceSha:sourceSha,executableSha256,provenanceNote:"Source revision was supplied by caller; this harness does not attest that it produced the binary.",configured:true,verified,failed,skipped:0,ok:failed===0 && verified>0 &&
