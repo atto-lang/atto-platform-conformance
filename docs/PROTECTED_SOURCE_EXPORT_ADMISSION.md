@@ -191,3 +191,50 @@ compatibility harness and cannot substitute for a normal `node --test` run.
 Official source-organization CI still requires actual runner allocation,
 protected-main enforcement, real independent review, and both incident
 investigations (#22 and #77) to be resolved before private-source exports.
+
+## 2026-10-18 UTC: whole-workflow CODEOWNERS hardening and funded source-free test
+
+**Threat model:** pinning the `.github/workflows/private-ci-policy.yml` Git blob
+is not sufficient if a second, **unreviewed** GitHub Actions workflow can create
+a job named `private-ci-policy`. Both jobs can have the same GitHub Actions
+App ID `15368`; branch-protection status checks ordinarily bind to context
+and issuing app, not uniquely to a workflow file's reviewed bytes.
+
+Java's canonical bootstrap PR already required a terminal
+`/.github/workflows/ @ORESoftware` CODEOWNERS directory wildcard. LLVM #529,
+.NET #79, WASM #76 and Forge #77 previously required only the exact
+policy workflow's CODEOWNERS entry. **The four source PRs now add the wildcard
+immediately before their final exact security path block.** Their identical
+`private-ci-policy` workflow code has also been hardened to reject a missing
+or shadowed workflow-directory wildcard.
+
+The independent read-only bootstrap auditor in conformance PR #57 now requires
+this wildcard in **all five** source repositories and re-pins the independently
+reviewed workflow Git blobs. Java remains
+`d4b1356249534e4dc55e9aeabfad80773016cd48`; the four other backends now
+use **`c009875541d9ad5fc323aa85ef53cf7b25f6ec74`**, which intentionally
+supersedes the older `78f7eb2...` snapshot quoted in the previous section.
+The current exact CODEOWNERS and workflow files were independently read from
+the candidate security branches: **5/5** passed the offline gate, and removing
+or changing the directory owner was rejected for each backend (**10/10**
+negative checks). These are not run-evidence checks.
+
+**Funded GitHub Actions test, no private source transfer:** a separate draft
+`sagitta-stack/sagitta-infra` PR #23 contains a newly written synthetic Python
+policy oracle and an immutable-action-pinned workflow with read-only
+permissions. It contains **no copied Oreslang compiler/runtime/actor Git tree**.
+The funded runner executed [run 39092829709](https://github.com/sagitta-stack/sagitta-infra/actions/runs/39092829709),
+which completed all eight job steps and **24/24** synthetic unit tests,
+including workflow-directory ownership spoofing regressions. Uploaded artifact
+`12123905189` has independently downloaded ZIP SHA-256
+`edfa8d2e50042280448b916bfbc4c3267bbe854dd4dbecdd2bb87d151355363d`;
+the contained receipt's own log SHA-256 also matched the log bytes. The
+receipt correctly reports `native_compiler_executed=false`,
+`native_guest_executed=false`, `private_source_transferred=false`,
+`source_export_authorized=false`, and `release_ready=false`.
+
+**Scope:** the funded model exercises the synthetic admission rules on a real
+runner; it is not a run of this private conformance PR's JS code and does not
+authenticate a native `.ores` fixture, private source export, or protected-main
+governance. Source-org runners remain unavailable and historical source-carrier
+security incidents #22 and #77 remain open. No source-copy bypass is granted.
