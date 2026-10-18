@@ -15,13 +15,13 @@ export async function auditPinnedProvenance(candidate, inventory, requestJson) {
         String(info.id) !== pin.repositoryId ||
         info.full_name !== `${candidate.organization}/${pin.name}` ||
         info.default_branch !== pin.ref ||
-        info.archived === true ||
+        info.archived !== false ||
         info.private !== (inventoryByName.get(pin.name).visibility === "private")) {
       throw Error(`audit: repository identity, visibility, archive or branch mismatch: ${pin.name}`);
     }
     const ref = await requestJson(`${prefix}/git/ref/heads/${pin.ref}`);
     const head = ref?.object?.sha;
-    if (typeof head !== "string" || !/^[a-f0-9]{40}$/.test(head)) {
+    if (ref?.object?.type !== "commit" || typeof head !== "string" || !/^[a-f0-9]{40}$/.test(head)) {
       throw Error(`audit: missing or invalid main commit: ${pin.name}`);
     }
     let relation = "EXACT_MAIN";
