@@ -13,8 +13,12 @@ if (!path || ![3,4].includes(process.argv.length) ||
 }
 let fd;
 try {
-  if (!Number.isInteger(constants.O_NOFOLLOW) || !Number.isInteger(constants.O_NONBLOCK))
-    throw Error('safe no-follow file reads unsupported');
+  // A missing, zero or aliased platform flag must fail closed. Merely
+  // checking Number.isInteger(0) would silently drop no-follow protection.
+  if (!Number.isSafeInteger(constants.O_NOFOLLOW) || constants.O_NOFOLLOW<=0 ||
+      !Number.isSafeInteger(constants.O_NONBLOCK) || constants.O_NONBLOCK<=0 ||
+      (constants.O_NOFOLLOW & constants.O_NONBLOCK)!==0)
+    throw Error('independent secure file flags unavailable');
   const filename=resolve(path), lst=await lstat(filename);
   const limit=128*1024;
   if(!lst.isFile() || lst.isSymbolicLink() || lst.nlink !== 1 || lst.size > limit)
@@ -35,7 +39,10 @@ try {
   if(after.size !== before.size || after.mtimeMs !== before.mtimeMs ||
      after.ctimeMs !== before.ctimeMs || used !== before.size)
     throw Error('input mutated while reading');
-  const result=validatePerformanceEvidence(JSON.parse(buf.subarray(0,used).toString('utf8')));
+  // Buffer.toString('utf8') silently inserts replacement glyphs on malformed
+  // byte sequences. Reject malformed UTF-8 evidence rather than normalizing it.
+  const jsonText=new TextDecoder('utf-8',{fatal:true}).decode(buf.subarray(0,used));
+  const result=validatePerformanceEvidence(JSON.parse(jsonText));
   console.log(JSON.stringify(result,null,2));
   // A schema check must not accidentally become a release-performance green gate.
   if (!structuralOnly) process.exitCode=3;
