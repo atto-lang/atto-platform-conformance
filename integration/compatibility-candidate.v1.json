@@ -1,0 +1,378 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "oreslang-compat-2026-10-17-candidate-1",
+  "kind": "CANDIDATE_SNAPSHOT",
+  "organization": "ores-truffle-oreslang",
+  "snapshotDate": "2026-10-17",
+  "inventoryPath": "integration/org-repositories.v1.json",
+  "promotionState": "BLOCKED_UNVERIFIED",
+  "securityIncident": "oreslang-platform-conformance#22",
+  "provenance": "Latest returned default-branch commit-search match per repository; immutable commit SHA, NOT branch tip attestation or CI evidence.",
+  "policy": "METADATA_ONLY_NO_SOURCE_EXPORT",
+  "pins": [
+    {
+      "name": ".github",
+      "ref": "main",
+      "commit": "37801d1269bcecdc1e690460c13a80db02067cae",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "async-testing",
+      "ref": "main",
+      "commit": "e3f7ca93fe4a79531a012cef4a0990e32f5895f0",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "gh-linguist-fork",
+      "ref": "main",
+      "commit": "cca2b9ede241f4c88e94f2a8749cef531b4fa80e",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "html-js-css-syntax-highlighter",
+      "ref": "main",
+      "commit": "725285129da36ef05f7a0f3b8839fe57433b15d1",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "ores-truffle-oreslang.github.io",
+      "ref": "main",
+      "commit": "779b29bdd1f655796d6a223e88cb4162dd1094c6",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-browser",
+      "ref": "main",
+      "commit": "a5b2f1394f7b1806c16966ba3d644196398a463d",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-cli",
+      "ref": "main",
+      "commit": "d200bd5f6abfb915a90fcc395208b6ebaa55b49e",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-common-source",
+      "ref": "main",
+      "commit": "4dcbd3e84ccfca9f4729f952dcc8ca19c9852164",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-data-science",
+      "ref": "main",
+      "commit": "ded0e79a3aaf49f207082f3c0b43e2bec558bd7e",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-db",
+      "ref": "main",
+      "commit": "94ef615a31543ee6db306116bf7f99f278bf1bfd",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-demo",
+      "ref": "main",
+      "commit": "42d577348fc2a847decc9db6baab5106b53e6d7f",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-demo-restful-server",
+      "ref": "main",
+      "commit": "1e01e05e9a306a3b435616f34860a81bcc187727",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-demos",
+      "ref": "main",
+      "commit": "24036b3146d0170ad99f08b7c76c98dadeb48100",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-design-patterns",
+      "ref": "main",
+      "commit": "3b5dbd25082062a6599e8b400f26466124600cc0",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-format",
+      "ref": "main",
+      "commit": "f963e5c784b6682b619942c408db93f782d6d076",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-hot-loading-tests",
+      "ref": "main",
+      "commit": "42b46717a980291b74f31bbe93fe7b987cf0481a",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-hpc-finance",
+      "ref": "main",
+      "commit": "539f41c6e3b390eb6c7980a26ed0249455b02bee",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-http-routing",
+      "ref": "main",
+      "commit": "6c5413221d29f790b691ab9c1ad17b3160aeac9d",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-linked-queue",
+      "ref": "main",
+      "commit": "0484fcbf988c318aef1ba3b7d93e682ff9e82cb9",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-message-queue-demo.ores",
+      "ref": "main",
+      "commit": "9714663b25bc4b4ef249f3914c621f019734e331",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-otel",
+      "ref": "main",
+      "commit": "9bb412b512f3f83f7bb90e9ad4dea67e4aecdda4",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-phoenix-server.ores",
+      "ref": "main",
+      "commit": "f144e8010047f0f54a7d51ac3022fc4e2c5f1212",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-platform-conformance",
+      "ref": "main",
+      "commit": "c82f968545cbe9d6579fd5c503fc9571a63118dd",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-platform.asic",
+      "ref": "main",
+      "commit": "571e2f11914091f362174a5f1e73928a94dbd566",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-platform.desktop",
+      "ref": "main",
+      "commit": "7fbd572b0e6b1ac70b577464a7856908cd22a0e6",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-platform.embedded",
+      "ref": "main",
+      "commit": "74421863e17d2d6ee1cd21d196f318d50512441c",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-platform.fpga",
+      "ref": "main",
+      "commit": "a775d4a87b51339c6f3705d82273cbe763cdd311",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-platform.iot",
+      "ref": "main",
+      "commit": "ffedb2b438a44d7223626046b1e4ce9dbc7bf325",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-platform.mobile",
+      "ref": "main",
+      "commit": "7d0569912ab074929c2b1f68ab90b5e98c3b4388",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-proof-of-concepts",
+      "ref": "main",
+      "commit": "e8dbb4061a3510ec7cb38bb31c8f81b1d9ddcabe",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-restful-server-perf-benchmarks",
+      "ref": "main",
+      "commit": "77b7063e8c4d527eea209bc28814748958970ca9",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-rpc",
+      "ref": "main",
+      "commit": "bd02fafc178f88d16bace58089978440dfbff639",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-serialization-and-validation",
+      "ref": "main",
+      "commit": "15b98e12d3535fab0d464d4e1d8bac4d6cc4deb7",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-source.forge",
+      "ref": "main",
+      "commit": "27451dffa02edd000a33b9bb3c7009a66fbccac0",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-source.hdl",
+      "ref": "main",
+      "commit": "0e21c7a8c83544e40e0e94816202da2f9f6aa76b",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-source.java",
+      "ref": "main",
+      "commit": "172cef4beb34fe624f93cbe7a95377e94e0b2a75",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-source.js",
+      "ref": "main",
+      "commit": "9400d0ffe3758d6deca64ca90b324c164a857dde",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-source.llvm",
+      "ref": "main",
+      "commit": "b8e40e7b3c9251bba5fccebd39d3394fc5e81c21",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-source.net",
+      "ref": "main",
+      "commit": "4fffc9943604c07b43f73fd19b36a311f5a3c6f4",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-source.wasm",
+      "ref": "main",
+      "commit": "7ba37e588f150e0dfd1a483c5e5c0c1f07d38bf2",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-spin",
+      "ref": "main",
+      "commit": "00ef686753e6658986190812f2310d3844e1fc99",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-ssr",
+      "ref": "main",
+      "commit": "39b3098a125b60465ea6f4a2cf51cf95257e161d",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-stack-cli",
+      "ref": "main",
+      "commit": "d483018dd0a1a008cda3fd9ac4534b1d3ced4c57",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-target-profiles",
+      "ref": "main",
+      "commit": "62e31d0146e84018e3d0303b287bcea0a752c486",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-test.cli",
+      "ref": "main",
+      "commit": "f03cba4b73babfd943c1805d2284daeba0a933b6",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-wasm",
+      "ref": "main",
+      "commit": "887bc023f92a1000bcc3f3aa2c2d4fc06bea8be3",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-websocket-server-demo.ores",
+      "ref": "main",
+      "commit": "f862687119cc2b90fe745dc267da1d248de77836",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "rx-ores",
+      "ref": "main",
+      "commit": "7d7f770476b7a0b240d930ac7bb503b783256150",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "rx-ores-callbacks",
+      "ref": "main",
+      "commit": "ad763d6aa0a33eb5750d9fe09fe793f80bb87695",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "rx-oreslang-channels",
+      "ref": "main",
+      "commit": "9e75cbceaee49846031e5733e66aba82cddf9be6",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "sublime-text-plugins",
+      "ref": "main",
+      "commit": "d1c6885e09093d4aaff71362d972fc7d57f61202",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "vscode-plugins",
+      "ref": "main",
+      "commit": "69131a6f9a13731bc8bf11e4b5a8dd63d5a17d59",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    }
+  ]
+}
