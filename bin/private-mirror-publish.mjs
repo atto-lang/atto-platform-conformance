@@ -170,6 +170,13 @@ export async function publishPrivateMirror({
 }
 
 if(process.argv[1]&&pathToFileURL(process.argv[1]).href===import.meta.url){
+  // P0 incident hold: an operator-provided environment allowlist alone is
+  // not independent review or source-export authorization. This CLI must
+  // never write Git objects or even query private source while #22/#77 remain.
+  console.error("PRIVATE_MIRROR_SUSPENDED: source transfers require independent incident clearance and the reviewed dispatcher");
+  process.exitCode=1;
+  /* Legacy entrypoint intentionally unreachable. Retained for source-free
+   * historical fixture review; remove it after approved replacement lands.
   try{
     if(process.argv.length!==8)
       throw Error("usage: private-mirror-publish.mjs <source> <sourceSHA> <destination> <baseSHA> <prefix> <ci/private-branch>");
@@ -185,4 +192,5 @@ if(process.argv[1]&&pathToFileURL(process.argv[1]).href===import.meta.url){
     console.error("PRIVATE_MIRROR_DENIED: confidential source copy rejected");
     process.exitCode=1;
   }
+  */
 }
