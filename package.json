@@ -7,6 +7,9 @@
   },
   "scripts": {
     "test": "node --test",
-    "inspect": "node bin/conformance.mjs"
+    "inspect": "node bin/conformance.mjs",
+    "check:integration": "node bin/check-org-integration.mjs",
+    "check:compatibility": "node bin/check-compatibility-release.mjs",
+    "gate:release": "node bin/check-compatibility-release.mjs --require-ready"
   }
 }
