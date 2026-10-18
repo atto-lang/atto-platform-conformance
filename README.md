@@ -48,7 +48,11 @@ and [#77](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance
 remain open. Neither a private repository, an environment allowlist, nor a matching
 Git tree/blob SHA constitutes authorization to transfer confidential source.
 The previous executable `bin/private-mirror-publish.mjs` CLI instructions have
-been withdrawn and that CLI is disabled pending incident-owner approval.
+been withdrawn. Both the **CLI** and imported `publishPrivateMirror()` API are
+unconditionally suspended, before any private-source read, GitHub request,
+blob/tree/commit/ref write, or credential/allowlist inspection. The retired
+publisher logic is retained only in Git history for incident forensics; do not
+re-enable this legacy path as an alternative to the independently reviewed dispatcher.
 
 Do **not** rerun old source-bearing workflow carriers, create replacement carrier
 branches, migrate source to another organization, or purge incident refs/artifacts.
