@@ -78,6 +78,7 @@
   },
   "blockers": [
     "oreslang-platform-conformance#22 historical disclosure cleanup open",
+    "oreslang-platform-conformance#77 separate private carrier source-placement incident open",
     "oreslang-source.java#962 private-source policy and main protection incomplete",
     "oreslang-platform-conformance#69 zero-step native runners; administrator action required"
   ]
