@@ -281,3 +281,29 @@ The receipt deliberately remains non-authorizing:
 `release_ready=false`. This evidence validates the source-free security model
 only; it is not permission to mirror private compiler source and is not native
 Oreslang execution evidence.
+
+
+## 2026-10-18 UTC: exact independent canary review + dual incident revocation
+
+The final pre-copy gate is now deliberately stronger than the bootstrap shape check. A source-bearing canary cannot rely on a reviewer name merely written into policy JSON or on a status context/App ID alone.
+
+For every authorization pass, including every revalidation immediately before a destination write, the publisher now requires:
+
+1. Both known private-source P0 incidents are completed with exact identity. oreslang-platform-conformance#22 and #77 must each be closed with state_reason=completed. Reopening either incident revokes subsequent publication immediately.
+2. Exact reviewed workflow bytes. The source .github/workflows/private-ci-policy.yml must match the independently reviewed immutable Git blob for that backend. The Sagitta carrier .github/workflows/private-ci-carrier-admission.yml must match reviewed blob 645f7f8f5ec6d907fb2a1b7ea9f93c8e28f3855a. A same-name GitHub Actions job from an altered workflow is insufficient.
+3. One active canary only. Source destination/snapshot ledgers and the carrier snapshot ledger must contain exactly the one approved tuple being executed; unrelated additional grants fail closed.
+4. Same active independent reviewer on both sides. Source and carrier .github/private-ci-independent-reviewer.json must be enabled, use the same non-operator login + immutable numeric user ID + minimum permission, and retain write-or-better live repository permission in both repositories.
+5. Authorization files activate together. On the source, destination, snapshot and reviewer-policy files must have the same latest reachable Git commit. On the carrier, snapshot and reviewer-policy files must likewise share one latest commit.
+6. Exact merged-PR approval. Each authorization commit must belong to one unambiguous merged PR targeting that repository's own main. The configured reviewer must not be the PR author and their latest review on the PR's exact final head SHA must be APPROVED. A stale-head approval or later CHANGES_REQUESTED review fails closed. A full association/review result page is treated as ambiguous rather than silently assuming there is no next page.
+7. Carrier policy parity. Sagitta carrier PR #7 now contains .github/private-ci-carrier-policy.json, terminal CODEOWNERS protection for that file, strict reviewer/carrier JSON parsing, and BOM/NUL/symlink rejection. Exact carrier head ccce25a5a72c6839f44a1273a5ff7ae7576c2c11 passed funded carrier-policy run 39137987792 and source-free selftest run 39137987793.
+
+The read-only canary proposal command now prints source destination/snapshot lines and the carrier snapshot line plus the dual-PR review protocol. It remains proposal text only and performs no writes.
+
+### Funded source-free evidence
+
+No private Oreslang compiler/runtime/actor source was transferred for these tests.
+
+- Sagitta run 39137193505 passed the expanded 117-case private-CI security matrix, including the new JavaScript duplicate-key, escaped-equivalent-key, BOM/NUL, UTF-8 and exact-line parser model. Artifact 12140380989 ZIP SHA-256: f027c51a2ddd19c237392d0283e42ab7aff369d00406d4c4e4f5ab3742b3de56. Every inner receipt hash independently matched.
+- Sagitta run 39138598738 passed 21/21 independent canary-review protocol tests covering both incident gates, operator-reviewer denial, live permission, exact-head approval, self-review denial, later review revocation, one-commit activation, one active canary, PR association-page ambiguity, exact base-repository identity and source/carrier workflow pins. Artifact 12141065693 ZIP SHA-256: b8d9dc2e42b1928087baf09529f4606eed2dc52d926814992d33b04347168965. Its test-log hash also independently matched the receipt.
+
+Both receipts explicitly preserve private_source_transferred=false, source_export_authorized=false, native_compiler_executed=false, and release_ready=false. They are security-model evidence, not native compiler certification and not authority to mirror source before the live governance gates pass.
