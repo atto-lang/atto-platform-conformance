@@ -219,6 +219,34 @@
       "syntax": "expression",
       "parserExpected": "accept",
       "runtimeExpected": "reject"
+    },
+    {
+      "id": "suspends-task-caller-value",
+      "file": "suspends-task-caller-value.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "suspends-lambda-within-task",
+      "file": "suspends-lambda-within-task.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "reject-suspends-task-prefix",
+      "file": "reject-suspends-task-prefix.ores",
+      "syntax": "expression",
+      "parserExpected": "reject",
+      "runtimeExpected": "forbidden"
+    },
+    {
+      "id": "reject-plain-calls-suspends",
+      "file": "reject-plain-calls-suspends.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
     }
   ]
 }
