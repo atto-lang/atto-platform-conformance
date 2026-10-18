@@ -21,8 +21,16 @@ const SOURCE_IDS = Object.freeze({
 const OID = /^[a-f0-9]{40}$/;
 const FULL_NAME = /^[A-Za-z0-9][A-Za-z0-9_.-]*\/[A-Za-z0-9][A-Za-z0-9_.-]*$/;
 const INCIDENT_REPOSITORY = "ores-truffle-oreslang/oreslang-platform-conformance";
-const INCIDENT_NUMBER = 22;
-const INCIDENT_TITLE = "P0 SECURITY: private Oreslang source mirrored into public GitHub Actions carrier";
+const REQUIRED_INCIDENTS = Object.freeze([
+  Object.freeze({
+    number:22,
+    title:"P0 SECURITY: private Oreslang source mirrored into public GitHub Actions carrier"
+  }),
+  Object.freeze({
+    number:77,
+    title:"P0 SECURITY: audit repeated private Oreslang source carriers in Scintilla"
+  })
+]);
 const CARRIER_CHECK = Object.freeze({context:"carrier-policy",appId:15368});
 const CARRIER_SECURITY_PATHS = Object.freeze([
   "/.github/workflows/",
@@ -95,22 +103,105 @@ async function metadata(path, token, fetchImpl) {
   catch { throw Error("trusted source export policy is not decodable"); }
 }
 async function requireIncidentCompletion(token, fetchImpl) {
-  const issue = await metadata("repos/" + INCIDENT_REPOSITORY + "/issues/" + INCIDENT_NUMBER,
-    token, fetchImpl);
-  if (issue?.number !== INCIDENT_NUMBER ||
-      issue?.state !== "closed" || issue?.state_reason !== "completed" ||
-      issue?.title !== INCIDENT_TITLE ||
-      issue?.html_url !== "https://github.com/" + INCIDENT_REPOSITORY + "/issues/" + INCIDENT_NUMBER ||
-      issue?.repository_url !== "https://api.github.com/repos/" + INCIDENT_REPOSITORY ||
-      typeof issue?.closed_at !== "string" ||
-      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(issue.closed_at) ||
-      Object.hasOwn(issue, "pull_request")) {
-    throw Error("P0 private-source incident is not completed with exact identity");
+  for (const expected of REQUIRED_INCIDENTS) {
+    const issue = await metadata("repos/" + INCIDENT_REPOSITORY + "/issues/" + expected.number,
+      token, fetchImpl);
+    if (issue?.number !== expected.number ||
+        issue?.state !== "closed" || issue?.state_reason !== "completed" ||
+        issue?.title !== expected.title ||
+        issue?.html_url !== "https://github.com/" + INCIDENT_REPOSITORY + "/issues/" + expected.number ||
+        issue?.repository_url !== "https://api.github.com/repos/" + INCIDENT_REPOSITORY ||
+        typeof issue?.closed_at !== "string" ||
+        !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(issue.closed_at) ||
+        Object.hasOwn(issue, "pull_request")) {
+      throw Error("P0 private-source incident is not completed with exact identity");
+    }
   }
 }
 
+function strictJsonParse(text,label) {
+  let i=0;
+  const fail=()=>{ throw Error(label+" JSON is ambiguous or invalid"); };
+  const ws=()=>{ while(i<text.length && /[\t\n\r ]/.test(text[i])) i++; };
+  const stringToken=()=>{
+    ws();
+    if(text[i]!=='"') fail();
+    const start=i++;
+    while(i<text.length){
+      const ch=text[i++];
+      if(ch==='"'){
+        try{return JSON.parse(text.slice(start,i));}catch{fail();}
+      }
+      if(ch==='\\'){
+        if(i>=text.length) fail();
+        const esc=text[i++];
+        if(esc==='u'){
+          if(!/^[0-9a-fA-F]{4}$/.test(text.slice(i,i+4))) fail();
+          i+=4;
+        }else if(!'"\\/bfnrt'.includes(esc)) fail();
+      }else if(ch.charCodeAt(0)<0x20) fail();
+    }
+    fail();
+  };
+  const literal=()=>{
+    ws();
+    const m=text.slice(i).match(/^(?:-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?|true|false|null)/);
+    if(!m) fail();
+    i+=m[0].length;
+  };
+  const value=()=>{
+    ws();
+    if(text[i]==='{') object();
+    else if(text[i]==='[') array();
+    else if(text[i]==='"') stringToken();
+    else literal();
+    ws();
+  };
+  const object=()=>{
+    i++; ws();
+    const seen=new Set();
+    if(text[i]==='}'){i++;return;}
+    for(;;){
+      const key=stringToken();
+      if(seen.has(key)) throw Error(label+" JSON contains duplicate object key: "+key);
+      seen.add(key);
+      ws(); if(text[i++]!==':') fail();
+      value();
+      if(text[i]===','){i++;continue;}
+      if(text[i]==='}'){i++;return;}
+      fail();
+    }
+  };
+  const array=()=>{
+    i++; ws();
+    if(text[i]===']'){i++;return;}
+    for(;;){
+      value();
+      if(text[i]===','){i++;continue;}
+      if(text[i]===']'){i++;return;}
+      fail();
+    }
+  };
+  value(); ws();
+  if(i!==text.length) fail();
+  try{return JSON.parse(text);}catch{fail();}
+}
+
+function exactDataLines(text,label) {
+  const out=[];
+  for (const line of text.split("\n")) {
+    if (line==="") continue;
+    if (line.startsWith("#")) continue;
+    if (line!==line.trim() || line.startsWith(" #")) {
+      throw Error(label+" contains ambiguous surrounding whitespace/comment syntax");
+    }
+    out.push(line);
+  }
+  return out;
+}
+
 function requireCarrierCodeowners(text) {
-  const lines = text.split("\n").map(x => x.trim()).filter(x => x && !x.startsWith("#"));
+  const lines = exactDataLines(text,"carrier CODEOWNERS");
   const expected = CARRIER_SECURITY_PATHS.map(path => path + " @ORESoftware");
   const actual = lines.slice(-expected.length);
   if (actual.length !== expected.length || actual.some((line,index) => line !== expected[index])) {
@@ -119,11 +210,9 @@ function requireCarrierCodeowners(text) {
 }
 
 function carrierPolicy(text) {
-  let value;
-  try { value = JSON.parse(text); }
-  catch { throw Error("carrier policy is not valid JSON"); }
+  const value = strictJsonParse(text,"carrier policy");
   if (!value || Object.getPrototypeOf(value) !== Object.prototype ||
-      Object.keys(value).length !== 2 || value.schema !== 1 ||
+      Object.keys(value).length !== 2 || !Number.isSafeInteger(value.schema) || value.schema !== 1 ||
       !value.carrier || Object.getPrototypeOf(value.carrier) !== Object.prototype ||
       Object.keys(value.carrier).length !== 2 ||
       value.carrier.context !== CARRIER_CHECK.context ||
@@ -183,8 +272,12 @@ function policyText(data) {
   }
   const clean = data.content.replace(/[\r\n]/g, "");
   const raw = Buffer.from(clean, "base64");
-  if (raw.length > 32768 || raw.toString("base64") !== clean) {
+  if (raw.length === 0 || raw.length > 32768 || raw.toString("base64") !== clean) {
     throw Error("noncanonical source-main policy content");
+  }
+  if ((raw.length >= 3 && raw[0] === 0xef && raw[1] === 0xbb && raw[2] === 0xbf) ||
+      raw.includes(0)) {
+    throw Error("source-main policy contains forbidden BOM/NUL bytes");
   }
   const actualSha = createHash("sha1").update("blob " + raw.length + "\0").update(raw).digest("hex");
   if (actualSha !== data.sha) throw Error("source-main policy blob digest mismatch");
@@ -195,9 +288,7 @@ function policyText(data) {
 function requireUniquePolicyEntry(text, fields, expected, label) {
   let matchCount = 0;
   const names = new Set(), ids = new Set();
-  for (const raw of text.split("\n")) {
-    const line = raw.trim();
-    if (!line || line.startsWith("#")) continue;
+  for (const line of exactDataLines(text,label)) {
     const values = line.split(" ");
     if (values.length !== fields || values.some(x => !x || /\s/.test(x))) {
       throw Error("malformed reviewed " + label);
@@ -223,8 +314,7 @@ const TRUSTED_SECURITY_OWNERS = new Set([
 ]);
 
 function requireSecurityCodeowners(text) {
-  const lines = text.split("\n").map(x => x.trim())
-    .filter(x => x && !x.startsWith("#"));
+  const lines = exactDataLines(text,"security CODEOWNERS");
   if (lines.length < SECURITY_PATHS.length) {
     throw Error("security CODEOWNERS final block missing");
   }
@@ -232,7 +322,10 @@ function requireSecurityCodeowners(text) {
   const seen = new Set();
   let owners = null;
   for (const line of tail) {
-    const values = line.split(/\s+/);
+    const values = line.split(" ");
+    if (values.some(x => !x)) {
+      throw Error("security CODEOWNERS final block is not exact trusted ownership");
+    }
     const pattern = values.shift();
     if (!SECURITY_PATHS.includes(pattern) || seen.has(pattern) ||
         values.length === 0 || values.some(x => !TRUSTED_SECURITY_OWNERS.has(x))) {
@@ -256,11 +349,9 @@ function requireSecurityCodeowners(text) {
 }
 
 function requiredChecksPolicy(text) {
-  let value;
-  try { value = JSON.parse(text); }
-  catch { throw Error("required-check policy is not valid JSON"); }
+  const value = strictJsonParse(text,"required-check policy");
   if (!value || Object.getPrototypeOf(value) !== Object.prototype ||
-      Object.keys(value).length !== 2 || value.schema !== 1 ||
+      Object.keys(value).length !== 2 || !Number.isSafeInteger(value.schema) || value.schema !== 1 ||
       !Array.isArray(value.checks) || value.checks.length < 1 || value.checks.length > 16) {
     throw Error("required-check policy schema invalid");
   }
