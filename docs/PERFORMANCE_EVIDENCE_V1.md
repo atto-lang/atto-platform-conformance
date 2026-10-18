@@ -1,15 +1,31 @@
-# Cross-target optimization evidence v1 (proposed)
+# Cross-target optimization evidence v1 (experimental)
 
-Status: **draft schema and validation contract only**. CI of a schema/harness does not establish runtime/compiler correctness, and no actual performance measurement is included in this proposal.
+Status: **implemented structural validator + bounded CLI on this draft branch**. This is not authenticated benchmark evidence, an independent schema attestation, or a compiler performance result.
 
-## Why a common envelope, not a common speed metric
-A native JVM latency sample, LLVM executable runtime, Wasm SIMD throughput, FPGA initiation interval and ASIC mapped-cell area are **incomparable** until the environment, unit and interpretation are captured. Do not combine them into a platform-agnostic speedup rank.
+## How to validate a report
 
-## Proposed result envelope
+```sh
+# JSON parsing, strict fields, typed units, hash-shape and claimed evidence gates:
+node bin/check-performance-evidence.mjs /path/to/report.json --structural-only
+# Deliberately returns exit 3 even if structurally valid:
+node bin/check-performance-evidence.mjs /path/to/report.json
+# Node 22+ unit + CLI negative fixtures:
+npm test
+```
+
+The validator at `src/performance-evidence.mjs` has strict exact fields, bounded samples and artifact references, 40/64-character lowercase hex hashes (nonzero for reported measurements), backend/family combinations, typed units, and stage-specific correctness/evidence requirements. The CLI refuses links and oversized input; the Node unit tests cover structural false positives.
+
+**Security:** a self-authored report can fabricate plausible source hashes, compiler versions, samples and artifact locators. A structurally valid report always returns `performance_claim_certified:false` and `provenance_authenticated:false`. Independent toolchain, artifact, real-compiler execution and source SHA attestation are a separate release gate. Passing CI tests of a report validator proves only that the validator behaves as tested.
+
+## Report format
+
+The v1 object has exactly these fields: `schemaVersion`, `status`, `family`, `backend`, `mode`, `sourceSha`, `compilerSha256`, `fixtureSha256`, `toolchain:{name,version}`, `environment:{target,cpu,clockPolicy}`, `kind`, `unit`, `samples`, `correctness`, and `evidence:[{stage,sha256,locator}]`.
+
+The following example is deliberately unconfigured. It cannot be promoted as a measured success.
+
 ```json
 {
   "schemaVersion": 1,
-  "producer": "independently-reviewed-benchmark-runner",
   "status": "UNCONFIGURED",
   "family": "software",
   "backend": "llvm",
@@ -18,7 +34,7 @@ A native JVM latency sample, LLVM executable runtime, Wasm SIMD throughput, FPGA
   "compilerSha256": "0000000000000000000000000000000000000000000000000000000000000000",
   "fixtureSha256": "0000000000000000000000000000000000000000000000000000000000000000",
   "toolchain": {"name": "clang", "version": "unconfigured"},
-  "environment": {"target": "host", "cpu": "unknown", "clockPolicy": "unknown"},
+  "environment": {"target": "unknown", "cpu": "unknown", "clockPolicy": "unknown"},
   "kind": "latency",
   "unit": "ns",
   "samples": [],
@@ -26,21 +42,26 @@ A native JVM latency sample, LLVM executable runtime, Wasm SIMD throughput, FPGA
   "evidence": []
 }
 ```
-This object is **illustrative and intentionally UNCONFIGURED**; synthetic zeros and no samples must never validate as a measured success. No schema is yet implemented by this PR.
 
-## Required validation semantics
-- `PASS` is invalid unless exact source/tool/fixture evidence, measured samples, a reference correctness result, and defensible run provenance exist.
-- Typed families: software latency/throughput/allocations/build metrics; FPGA II/latency/Fmax/LUT/FF/BRAM/DSP; ASIC mapped area/critical path/slack and independently justified power.
-- Target-specific status enums: `UNCONFIGURED`, `UNSUPPORTED`, `NOT_VECTORIZED`, `SIMULATED_ONLY`, `SYNTH_ONLY`, `PLACE_ROUTE_VERIFIED`, `MEASURED`, `FAIL`. Reject unrecognized or inflated status.
-- Store both raw and aggregate values; warmup/training samples cannot count as held-out benchmark samples. Record number of independent trials, confidence/dispersion and clock, CPU/target/toolchain characteristics.
-- Require explicit comparability keys (fixture hash, units, target, compilation mode, correctness profile); no unstated cross-platform performance claim.
-- A generated schema fixture or fake runner cannot authenticate native compilers or hardware. Existing `docs/REAL_COMPILER_EVIDENCE.md` policy applies unchanged.
+## Metric registry
 
-## Implementation backlog
-- [ ] Publish a strict versioned JSON Schema, with limits on payload size, sample lengths and numeric ranges
-- [ ] Add fixtures: valid unconfigured example, attempted forged PASS, missing hashes, unknown units, NaN/negative measurements, mixed hardware/software dimensions, unsupported feature claims
-- [ ] Implement CLI validator + tests; CI tests the validator, not runtime claims
-- [ ] Integrate only real signed-off/pinned artifacts from Java/LLVM/Wasm/HDL and physically measured FPGA/ASIC workflows
-- [ ] Document approval flow for selecting practical non-flaky per-target regression thresholds
+| Family | Backend | Metric kind | Unit |
+| --- | --- | --- | --- |
+| software | java, llvm, wasm | latency; throughput; allocation | ns; ops/s; bytes/op |
+| software | java, llvm, wasm | build_time; image_size | ms; bytes |
+| fpga | fpga | ii; fmax; lut; ff; bram; dsp | cycles; MHz; count; count; count; count |
+| asic | asic | area; slack; critical_path; power | um2; ns; ns; mW |
+
+Sampling requires 5+ values to claim `MEASURED`. A stage claim like `SYNTH_ONLY` requires reference to actual synthesis and correctness artifacts, but these references cannot be independently verified by the JSON parser. FPGA `PLACE_ROUTE_VERIFIED` requires an explicit place-route artifact reference. ASIC power requires a switching/library power model artifact reference. No self-declared status is a certificate.
+
+## Next implementation backlog
+
+- [x] Strict fail-closed v1 structural validator and Node 22 CLI with size/link checks
+- [x] Positive/negative unit tests, including forged PASS, invalid units/hashes, unsupported target and file-safety cases
+- [ ] Publish a matching machine-independent JSON Schema as an additional editor/schema integration contract
+- [ ] Independently authenticate real compiler binary provenance and CI artifact digests
+- [ ] Add benchmark collection adapters and exact execution evidence from Java, LLVM and Wasm
+- [ ] Add FPGA real P&R and ASIC mapped-cell reports, independently signed off with constraints and raw logs
+- [ ] Define target-specific comparison cohorts, confidence intervals and reviewed regression thresholds
 
 Tracking: https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/80
