@@ -92,9 +92,23 @@ export function validateCompatibilityCandidate(candidate, inventory) {
     result: "CANDIDATE_ONLY_NOT_COMPATIBILITY_PROOF"
   });
 }
+// Canonical source bytes are part of the Git blob binding. Reject duplicate
+// JSON properties, noncanonical whitespace, missing terminal LF and ambiguous
+// byte-level formatting before Git SHA validation. Do not relax to JSON.parse
+// alone: normalization could otherwise hide a changed on-disk Git blob.
+export function parseCanonicalJson(text, context) {
+  if (typeof text !== "string" || text.length > 1_000_000) {
+    throw Error(context + ": missing or oversized JSON");
+  }
+  const data = JSON.parse(text);
+  if (JSON.stringify(data, null, 2) + "\n" !== text) {
+    throw Error(context + ": non-canonical JSON; exact Git blob cannot be attested");
+  }
+  return data;
+}
 export function loadCompatibilityCandidate(url = compatibilityUrl) {
-  return JSON.parse(readFileSync(url, "utf8"));
+  return parseCanonicalJson(readFileSync(url, "utf8"), "candidate");
 }
 export function loadCandidateInventory(url = registryUrl) {
-  return JSON.parse(readFileSync(url, "utf8"));
+  return parseCanonicalJson(readFileSync(url, "utf8"), "inventory");
 }
