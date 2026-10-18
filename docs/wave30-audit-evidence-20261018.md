@@ -15,11 +15,11 @@ All Git blob SHA values below were verified against fetched files from `draft/is
 | Repository | Source blob | Test blob | Executed evidence |
 | --- | --- | --- | --- |
 | `oreslang-source.wasm` SIMD admission | `bb47fe2cdf504c468b74361285ed8c456e58d5eb` | existing `d5cea2918752f58920ae85add37db43af9cea45b`; adversarial `65f7f20f2d19bb841842c00381ae03bec80836ba` | 10/10 function-level checks in isolated V8 with ESM import/export syntax stripped; not Node CI |
-| `oreslang-data-science` NdArray ABI | `3d8521e23f53a16f3da24eb0ec3798889e2f0d88` | `685a8f5f51080570a7193b0a9110d0f3da471c5e` | 10/10 local CPython unit tests; 20,000 prior-version seeded strided-view comparisons plus 1,000 borrow/generation sequences without mismatch |
+| `oreslang-data-science` NdArray ABI | `3d8521e23f53a16f3da24eb0ec3798889e2f0d88` | `685a8f5f51080570a7193b0a9110d0f3da471c5e` | 10/10 local CPython unit tests; 20,000 current exact-blob seeded strided-view comparisons (7,359 accepted / 12,641 rejected) plus 1,000 borrow/generation sequences without mismatch |
 | `oreslang-common-source` IPC receipts | `969b7b4202077dccd1fd5b610f45f493bd9b1a31` | `006bcbf25764c434776402917a34e788a2dd7d12` | 7/7 local CPython unit tests |
 | `oreslang-proof-of-concepts` bounded DATA/CONTROL model | `6cbe1fe7c5cef717d2577f0fa206ec5c47c76033` | `b81e6d5806856c27d85a345b9fff67188d44dbb9` | 5/5 local CPython unit tests |
 
-## Actual hardening committed in this pass
+Additional local independent checks: bounded mailbox model at capacity 3 / five issued messages explored 231 states and 634 transitions without assertion failure; 10,000 seeded IPC receipt event sequences preserved the fail-closed replay rule. These remain abstract-model checks, not runtime execution.\n\n## Actual hardening committed in this pass
 
 - `oreslang-source.wasm` #88: fix assigning the optional engine-probe result to a `const` destructured field, which threw in scalar default mode; add default-path regression assertions.
 - `oreslang-data-science` #9: require strictly increasing owner generations across drop/register, fail closed on malformed releases, and give loan objects identity rather than structural equality; add tests for owner-reuse and re-created loan tokens.
