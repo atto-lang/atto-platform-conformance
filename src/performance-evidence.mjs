@@ -35,6 +35,14 @@ const object = (v, keys, label) => {
 };
 const bounded = (v, max=200) => typeof v === 'string' && v.length > 0 &&
   v.length <= max && !/[\u0000-\u001f\u007f]/.test(v);
+// Evidence locators are identifiers, not URLs or filesystem capabilities.
+// A downstream authenticator may resolve these paths only under its own
+// trusted artifact root, using no-follow descriptor-based operations.
+const safeLocator = (v) => bounded(v,512) &&
+  !v.includes('\\\\') && !v.includes('\\') && !v.includes('%') &&
+  !v.includes(':') && !v.startsWith('/') &&
+  v.split('/').every(p => p.length>0 && p!=='.' && p!=='..' &&
+    /^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(p));
 const measured = (status) => ['MEASURED','SYNTH_ONLY','PLACE_ROUTE_VERIFIED','SIMULATED_ONLY'].includes(status);
 
 export function validatePerformanceEvidence(r) {
@@ -66,7 +74,7 @@ export function validatePerformanceEvidence(r) {
     object(e,['stage','sha256','locator'],'evidence item');
     check(['compile','test','simulation','synthesis','place-route','board','power-model',
       'correctness','benchmark'].includes(e.stage), 'invalid evidence stage');
-    check(safeHash(e.sha256,SHA256) && bounded(e.locator,512), 'invalid evidence reference');
+    check(safeHash(e.sha256,SHA256) && safeLocator(e.locator), 'invalid evidence reference');
   }
   // Even a structurally complete report is NOT independent proof of execution.
   // The checks here prevent trivial false-green claims, not fabricated digests.
