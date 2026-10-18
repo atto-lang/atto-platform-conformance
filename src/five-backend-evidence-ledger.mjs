@@ -83,7 +83,8 @@ function validateExecution(e, backend) {
   // Normalization is only for rejecting lifecycle masquerades, never for
   // approving the claim. Trim and ASCII-case-fold like the source verifier's
   // housekeeping exclusion, then reject pre/post and runner lifecycle steps.
-  const normalizedStep = e.testStep.trim().toLowerCase();
+  const normalizedStep = e.testStep.normalize("NFKC").trim()
+    .replace(/\s+/gu, " ").toLowerCase();
   if (new Set(["set up job", "complete job", "initialize containers",
                "start containers", "stop containers"]).has(normalizedStep) ||
       /^(pre|post)\s/.test(normalizedStep))
