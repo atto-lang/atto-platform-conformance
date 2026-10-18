@@ -1,3 +1,4 @@
+import {isProxy} from 'node:util/types';
 // Validation of performance report SHAPE, not authentication of the producer.
 // Neither hash strings nor a self-reported PASS prove a benchmark actually ran.
 const BACKENDS = Object.freeze({
@@ -30,8 +31,23 @@ const safeHash = (value, pattern) => typeof value === 'string' && pattern.test(v
 const fail = (why) => { throw new Error('untrusted performance evidence: ' + why); };
 const check = (ok, why) => { if (!ok) fail(why); };
 const object = (v, keys, label) => {
-  check(v !== null && typeof v === 'object' && !Array.isArray(v), label + ' must be object');
-  check(Object.keys(v).sort().join('|') === [...keys].sort().join('|'), label + ' unexpected/missing fields');
+  check(!isProxy(v) && v !== null && typeof v === 'object' && !Array.isArray(v) &&
+    (Object.getPrototypeOf(v)===Object.prototype || Object.getPrototypeOf(v)===null),
+    label + ' must be plain data object');
+  const descriptors=Object.getOwnPropertyDescriptors(v);
+  check(Reflect.ownKeys(descriptors).length===keys.length &&
+    keys.every(k=>Object.hasOwn(descriptors,k) &&
+      Object.hasOwn(descriptors[k],'value')),
+    label + ' unexpected/missing/accessor fields');
+};
+const denseArray = (v, max, label) => {
+  check(!isProxy(v) && Array.isArray(v) && Object.getPrototypeOf(v)===Array.prototype &&
+    v.length<=max, label+' must be bounded plain array');
+  const d=Object.getOwnPropertyDescriptors(v);
+  check(Reflect.ownKeys(d).length===v.length+1 &&
+    Array.from({length:v.length},(_,i)=>d[String(i)])
+      .every(item=>item && Object.hasOwn(item,'value')),
+    label+' must be dense own-data array');
 };
 const bounded = (v, max=200) => typeof v === 'string' && v.length > 0 &&
   v.length <= max && !/[\u0000-\u001f\u007f]/.test(v);
@@ -63,13 +79,13 @@ export function validatePerformanceEvidence(r) {
     check(bounded(value,120), 'invalid toolchain.' + key);
   for(const [key,value] of Object.entries(r.environment))
     check(bounded(value,160), 'invalid environment.' + key);
-  check(Array.isArray(r.samples) && r.samples.length <= 10000, 'samples must be bounded array');
+  denseArray(r.samples,10000,'samples');
   for (const sample of r.samples) {
     check(typeof sample === 'number' && Number.isFinite(sample), 'sample must be finite number');
     if (metric.min !== undefined) check(sample >= metric.min, 'sample below valid range');
     if (metric.integer) check(Number.isSafeInteger(sample), 'metric requires exact integer sample');
   }
-  check(Array.isArray(r.evidence) && r.evidence.length <= 32, 'evidence must be bounded array');
+  denseArray(r.evidence,32,'evidence');
   for (const e of r.evidence) {
     object(e,['stage','sha256','locator'],'evidence item');
     check(['compile','test','simulation','synthesis','place-route','board','power-model',
