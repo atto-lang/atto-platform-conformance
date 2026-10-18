@@ -48,9 +48,30 @@ test("produces exact proposal lines without writing anything",async()=>{
     destination,destinationId,
     policyLines:{
       destination:destination+" "+destinationId,
-      snapshot:sourceCommit+" "+sourceTree+" "+destinationId
+      snapshot:sourceCommit+" "+sourceTree+" "+destinationId,
+      carrierSnapshot:sourceCommit+" "+sourceTree+" "+destinationId
     },
-    warning:"Proposal only: add these lines only through a protected CODEOWNERS-reviewed policy PR after bootstrap audit passes."
+    reviewProtocol:{
+      sourceReviewerPolicy:".github/private-ci-independent-reviewer.json",
+      carrierReviewerPolicy:".github/private-ci-independent-reviewer.json",
+      sourceAuthorizationPaths:[
+        ".github/private-ci-approved-repositories.txt",
+        ".github/private-ci-approved-source-snapshots.txt",
+        ".github/private-ci-independent-reviewer.json"
+      ],
+      carrierAuthorizationPaths:[
+        ".github/private-ci-approved-source-snapshots.txt",
+        ".github/private-ci-independent-reviewer.json"
+      ],
+      requirements:[
+        "activate the same non-operator reviewer identity on source and carrier",
+        "change each side's authorization paths together in one commit",
+        "obtain that reviewer's APPROVED review on the exact final PR head for both source and carrier",
+        "reviewer must retain configured write-or-better permission in both repositories",
+        "keep exactly one active canary and preserve pinned policy workflow blobs"
+      ]
+    },
+    warning:"Proposal only: after bootstrap passes, apply source and carrier lines in separate protected CODEOWNERS-reviewed PRs and obtain exact-head approval from the same configured independent reviewer."
   });
   assert.equal(calls.length,4);
   assert.equal(calls.every(x=>x.options.method==="GET"),true);
