@@ -110,3 +110,19 @@ test("runner capacity does not imply real compiler attestation", () => {
   assert.equal(campaign.securityPolicy.allowRunnerCapacityAsCopyAuthorization, false);
   assert.equal(campaign.securityPolicy.requireExecutedCompilerSteps, true);
 });
+
+test("closed audit inventory rejects invented compiler or CI attestation fields", () => {
+  for (const mutate of [
+    x => { x.nativeCompilerPassed = true; },
+    x => { x.securityPolicy.extraReviewPassed = true; },
+    x => { x.authorityPolicy.generatedCompiler = "passed"; },
+    x => { x.upstreams[0].runtimeEvidence = "green"; },
+    x => { x.boundaries[0].realTransportAdmission = true; },
+    x => { x.issues[0].verified = true; },
+  ]) {
+    const forged = copy();
+    mutate(forged);
+    assert.throws(() => validateExternalOresAudit(forged),
+      /unexpected or missing audit inventory field/);
+  }
+});
