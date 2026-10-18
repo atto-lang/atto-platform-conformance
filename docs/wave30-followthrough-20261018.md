@@ -1,5 +1,7 @@
 # Wave 30 engineering follow-through — October 18, 2026
 
+> **POST-MERGE STATUS CORRECTION (October 18, 2026):** The table below was authored when the PRs were open drafts. Six PRs were subsequently merged by `the1mills`, not by this audit: common-source #87 (19:21:34 UTC), embedded #22 (19:19:15 UTC), HDL #14 (19:14:09 UTC), Wasm #101 (19:17:29 UTC), actor proof-of-concepts #13 (19:23:12 UTC), and Rx #16 (19:25:39 UTC). Data-science #12 was still **open/draft** at last check. GitHub source-workflow jobs still failed with **zero executed steps**; merge does not constitute executed CI, native compiler parity, or a production release gate. Central bootstrap/security hold: [#69](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/69#issuecomment-6254141363).
+
 **DRAFT; none merged or production certified.** This document is a review queue, not a source-export authorization.
 
 ## Source-local draft pull requests
