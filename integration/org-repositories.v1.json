@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "organization": "ores-truffle-oreslang",
   "snapshotDate": "2026-10-17",
-  "expectedRepositoryCount": 52,
-  "description": "Integration targets and next acceptance gates, NOT implemented/dependency/passing evidence.",
+  "expectedRepositoryCount": 56,
+  "description": "Organization-wide planned integration targets and next acceptance gates for 56 repositories; NOT compiled, linked, runtime-tested, or release evidence.",
   "repositories": [
     {
       "name": ".github",
@@ -51,6 +51,17 @@
       "nextGate": "Publish a versioned capability matrix from verified, explicitly public-safe conformance evidence only."
     },
     {
+      "name": "oreslang-autograd",
+      "visibility": "private",
+      "area": "library",
+      "upstreams": [
+        "oreslang-common-source",
+        "oreslang-target-profiles",
+        "oreslang-tensor"
+      ],
+      "nextGate": "Execute scalar reverse-mode gradients against analytic and finite-difference oracles; enforce saved-forward lifetime, deterministic accumulation and tensor ownership."
+    },
+    {
       "name": "oreslang-browser",
       "visibility": "private",
       "area": "platform",
@@ -85,9 +96,10 @@
       "area": "library",
       "upstreams": [
         "oreslang-source.java",
-        "oreslang-source.llvm"
+        "oreslang-source.llvm",
+        "oreslang-tensor"
       ],
-      "nextGate": "Run identical Oreslang numerical kernels and host-independent output oracles against each admitted compiler."
+      "nextGate": "Run identical Oreslang numerical kernels and host-independent output oracles against each admitted compiler. Add an opt-in pinned Oreslang tensor adapter and compare reference scalar results."
     },
     {
       "name": "oreslang-db",
@@ -166,9 +178,10 @@
       "area": "library",
       "upstreams": [
         "oreslang-data-science",
-        "oreslang-source.llvm"
+        "oreslang-source.llvm",
+        "oreslang-tensor"
       ],
-      "nextGate": "Pin deterministic numerical/reference fixtures and distinguish scalar from native SIMD/GPU performance evidence."
+      "nextGate": "Pin deterministic numerical/reference fixtures and distinguish scalar from native SIMD/GPU performance evidence. Add an opt-in pinned Oreslang tensor adapter and compare reference scalar results."
     },
     {
       "name": "oreslang-http-routing",
@@ -198,6 +211,29 @@
         "rx-oreslang-channels"
       ],
       "nextGate": "Initialize an Oreslang-only bounded queue/consumer demo and prove backpressure/cancellation with a pinned compiler."
+    },
+    {
+      "name": "oreslang-ml",
+      "visibility": "private",
+      "area": "library",
+      "upstreams": [
+        "oreslang-autograd",
+        "oreslang-common-source",
+        "oreslang-tensor"
+      ],
+      "nextGate": "Execute pure-Oreslang linear layer forward/loss/SGD with decreasing-loss oracle using pinned tensor and autograd contracts; no hidden host framework."
+    },
+    {
+      "name": "oreslang-ml-conformance",
+      "visibility": "private",
+      "area": "conformance",
+      "upstreams": [
+        "oreslang-autograd",
+        "oreslang-ml",
+        "oreslang-platform-conformance",
+        "oreslang-tensor"
+      ],
+      "nextGate": "Publish independent deterministic numeric/gradient fixtures and require exact compiler-guest executed test receipts distinct from host-only oracle passes."
     },
     {
       "name": "oreslang-otel",
@@ -443,6 +479,18 @@
         "oreslang-common-source"
       ],
       "nextGate": "Reconcile freestanding profile admission schema drafts and enforce exact provider/effect/import closure before emission."
+    },
+    {
+      "name": "oreslang-tensor",
+      "visibility": "private",
+      "area": "library",
+      "upstreams": [
+        "oreslang-common-source",
+        "oreslang-source.java",
+        "oreslang-source.llvm",
+        "oreslang-target-profiles"
+      ],
+      "nextGate": "Compile and execute shape/stride checked CPU tensor kernels and alias/overflow negative cases on admitted Java/LLVM guests; track storage ownership."
     },
     {
       "name": "oreslang-test.cli",
