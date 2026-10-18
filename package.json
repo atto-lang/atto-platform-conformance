@@ -11,6 +11,7 @@
     "check:integration": "node bin/check-org-integration.mjs",
     "check:compatibility": "node bin/check-compatibility-release.mjs",
     "gate:release": "node bin/check-compatibility-release.mjs --require-ready",
-    "audit:pin-provenance": "node bin/audit-compatibility-pins.mjs"
+    "audit:pin-provenance": "node bin/audit-compatibility-pins.mjs",
+    "check:head-snapshot": "node bin/check-head-snapshot.mjs"
   }
 }
