@@ -6,7 +6,7 @@ const manifestFields = [
   "schemaVersion", "releaseId", "kind", "organization", "snapshotDate",
   "inventoryPath", "promotionState", "securityIncident", "provenance", "policy", "pins"
 ];
-const pinFields = ["name", "ref", "commit", "compatibility", "evidence"];
+const pinFields = ["name", "repositoryId", "ref", "commit", "compatibility", "evidence"];
 function requireObject(obj, context) {
   if (!obj || typeof obj !== "object" || Array.isArray(obj) ||
       Object.getPrototypeOf(obj) !== Object.prototype) {
@@ -50,12 +50,18 @@ export function validateCompatibilityCandidate(candidate, inventory) {
   }
   const source = new Map(inventory.repositories.map(r => [r.name, r]));
   const names = [];
+  const seenRepositoryIds = new Set();
   for (const p of candidate.pins) {
     requireFields(p, pinFields, "pin");
     if (typeof p.name !== "string" || !source.has(p.name)) {
       throw Error("pin: unknown repository");
     }
     names.push(p.name);
+    if (typeof p.repositoryId !== "string" || !/^[1-9][0-9]{0,19}$/.test(p.repositoryId) ||
+        seenRepositoryIds.has(p.repositoryId)) {
+      throw Error("pin: invalid or duplicated immutable GitHub repository ID");
+    }
+    seenRepositoryIds.add(p.repositoryId);
     if (p.ref !== "main") throw Error("pin: unexpected reference");
     if (typeof p.commit !== "string" || !/^[0-9a-f]{40}$/.test(p.commit)) {
       throw Error("pin: expected full immutable Git commit SHA");
