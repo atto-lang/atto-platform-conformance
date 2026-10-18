@@ -19,7 +19,10 @@ function canned(options = {}) {
     const pin = byName.get(name);
     assert.ok(pin, "only inventory members requested");
     if (suffix === "") return {
-      id: options.badRepoId && name === candidate.pins[0].name ? 999 : Number(pin.repositoryId),
+      id: options.badRepoId && name === candidate.pins[0].name ? 999 :
+        options.idAsString && name === candidate.pins[0].name ? pin.repositoryId :
+        options.unsafeId && name === candidate.pins[0].name ? Number.MAX_SAFE_INTEGER + 1 :
+        Number(pin.repositoryId),
       full_name: "ores-truffle-oreslang/" + name,
       default_branch: "main", archived: options.badArchive && name === candidate.pins[0].name ? undefined : false,
       private: options.badPrivacy && name === candidate.pins[0].name
@@ -63,6 +66,12 @@ test("accept pinned ancestor without silently moving frozen snapshot", async () 
 test("deny repository-replacement attack even when name and SHA match", async () => {
   await assert.rejects(() => auditPinnedProvenance(candidate, inventory,
     canned({badRepoId: true}).requestJson), /repository identity/);
+});
+test("deny GitHub IDs represented as strings or unsafe JSON numbers", async () => {
+  for (const flag of ["idAsString", "unsafeId"]) {
+    await assert.rejects(() => auditPinnedProvenance(candidate, inventory,
+      canned({[flag]: true}).requestJson), /repository identity/);
+  }
 });
 test("deny private/public visibility changes", async () => {
   await assert.rejects(() => auditPinnedProvenance(candidate, inventory,
@@ -122,7 +131,10 @@ test("read-only HTTP caller allows only explicit same-org paths and never redire
     "/repos/ores-truffle-oreslang/../private", "/repos/ores-truffle-oreslang/repo?evil=1",
     "/repos/ores-truffle-oreslang/repo#frag", "/repos/ores-truffle-oreslang/repo%2fxxx",
     "/repos/ores-truffle-oreslang/repo/compare/feature...main",
-    "/repos/ores-truffle-oreslang/repo/git/ref/heads/feature"]) {
+    "/repos/ores-truffle-oreslang/repo/git/ref/heads/feature",
+    "/repos/ores-truffle-oreslang/..",
+    "/repos/ores-truffle-oreslang/repo..",
+    "/repos/ores-truffle-oreslang/."]) {
     await assert.rejects(() => requestJson(path), /invalid GitHub API path/);
   }
   assert.equal(recorded.length, 3);
