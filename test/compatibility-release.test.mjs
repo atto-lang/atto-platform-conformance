@@ -11,15 +11,15 @@ const altered = update => {
   update(next);
   return next;
 };
-test("pin all 52 repos while refusing to assert compatibility", () => {
+test("pin all 56 repos while refusing to assert compatibility", () => {
   const result = validateCompatibilityCandidate(manifest, inventory);
-  assert.equal(result.repositories, 52);
-  assert.equal(result.intendedRelationships, 104);
-  assert.equal(result.pinnedCommits, 52);
+  assert.equal(result.repositories, 56);
+  assert.equal(result.intendedRelationships, 120);
+  assert.equal(result.pinnedCommits, 56);
   assert.equal(result.verifiedCompatibilities, 0);
   assert.equal(result.releaseReady, false);
   assert.equal(result.result, "CANDIDATE_ONLY_NOT_COMPATIBILITY_PROOF");
-  assert.equal(new Set(manifest.pins.map(p => p.commit)).size, 52);
+  assert.equal(new Set(manifest.pins.map(p => p.commit)).size, 56);
 });
 test("reject unlisted repo", () =>
   assert.throws(() => validateCompatibilityCandidate(altered(d => {
