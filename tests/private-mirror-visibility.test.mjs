@@ -578,3 +578,42 @@ test("authorization PR base repository identity is pinned",async()=>{
     head:{sha:sourcePrHead,repo:{full_name:source}},user:{id:400000001}
   }]}),/not bound to one merged main pull request/);
 });
+
+test("CODEOWNER must retain exact live user identity and write access in both source and carrier",async()=>{
+  const pinned={permission:"write",user:{login:"ORESoftware",id:11139560,type:"User"}};
+  for(const target of [source,destination]){
+    const path=target+"/collaborators/ORESoftware/permission";
+    for(const denied of [
+      {...pinned,permission:"read"},
+      {...pinned,permission:"triage"},
+      {...pinned,permission:"none"},
+      {...pinned,user:{...pinned.user,id:11139561}},
+      {...pinned,user:{...pinned.user,login:"attacker"}},
+      {...pinned,user:{...pinned.user,type:"Organization"}},
+      {status:403,data:{message:"forbidden"}}
+    ]){
+      await assert.rejects(check({}, {[path]:denied}),
+        /CODEOWNER identity or current write permission|trusted source export policy unavailable/);
+    }
+  }
+});
+
+test("live CODEOWNER revocation during source or carrier policy reads denies publish",async()=>{
+  for(const target of [source,destination]){
+    let ownerReads=0;
+    const fallback=fixture();
+    const fetchImpl=async(url,options)=>{
+      const result=await fallback(url,options);
+      if(url==="https://api.github.com/repos/"+target+
+        "/collaborators/ORESoftware/permission" && ++ownerReads===2){
+        return {status:200,json:async()=>({
+          permission:"read",user:{login:"ORESoftware",id:11139560,type:"User"}
+        })};
+      }
+      return result;
+    };
+    await assert.rejects(check({fetchImpl}),
+      /CODEOWNER identity or current write permission is not verified/);
+    assert.equal(ownerReads,2);
+  }
+});
