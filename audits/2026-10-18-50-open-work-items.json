@@ -24,7 +24,7 @@
       "title": "test(zorde): fail closed on unrelated private-visibility compiler diagnostics",
       "priority": "P0",
       "observed": "open; runtime/CI unverified",
-      "next_action": "Run 26 same-line access-denial regressions and obtain real native compiler diagnostics.",
+      "next_action": "Run 29 source-free denial-verifier regressions plus real native compiler privacy diagnostics; do not count source-free tests as guest execution.",
       "verified_from": "GitHub open PR search updated >= 2026-10-08"
     },
     {
