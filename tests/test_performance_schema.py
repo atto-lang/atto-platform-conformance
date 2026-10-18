@@ -45,6 +45,10 @@ def accepted(item):
     return not list(VALIDATOR.iter_errors(item))
 
 
+def copy_report(item):
+    return json.loads(json.dumps(item))
+
+
 class PerformanceSchemaTests(unittest.TestCase):
     def test_draft_2020_12_is_well_formed(self):
         self.assertEqual(SCHEMA["$schema"], "https://json-schema.org/draft/2020-12/schema")
@@ -92,6 +96,50 @@ class PerformanceSchemaTests(unittest.TestCase):
                                          kind="power", unit="mW", stages=stages[:-1])))
         self.assertFalse(accepted(report(family="asic", status="MEASURED",
                                          kind="power", unit="mW", stages=stages)))
+
+    def test_measured_identity_and_environment_are_nonzero_and_configured(self):
+        source=report()
+        self.assertTrue(accepted(source))
+        for field, value in (("sourceSha", "0" * 40),
+                             ("compilerSha256", "0" * 64),
+                             ("fixtureSha256", "0" * 64)):
+            case=copy_report(source)
+            case[field]=value
+            with self.subTest(field=field):
+                self.assertFalse(accepted(case))
+        for path in (("toolchain", "version", "unconfigured"),
+                     ("environment", "target", "unknown"),
+                     ("environment", "cpu", "unknown"),
+                     ("environment", "clockPolicy", "unknown")):
+            case=copy_report(source)
+            case[path[0]][path[1]]=path[2]
+            with self.subTest(path=path):
+                self.assertFalse(accepted(case))
+
+    def test_zero_evidence_digest_and_metric_range_are_denied(self):
+        case=report()
+        case["evidence"][0]["sha256"]="0" * 64
+        self.assertFalse(accepted(case))
+        for field, unit, invalid in (
+            ("latency", "ns", -1.0),
+            ("throughput", "ops/s", -0.5),
+            ("ii", "cycles", 0),
+            ("ii", "cycles", 1.5),
+            ("ii", "cycles", 2**53),
+            ("lut", "count", -1),
+            ("lut", "count", 1.5),
+            ("dsp", "count", 2**53),
+            ("fmax", "MHz", -0.01),
+        ):
+            case=report(family="fpga" if field in ("ii","lut","dsp","fmax") else "software",
+                        kind=field, unit=unit)
+            case["samples"][0]=invalid
+            with self.subTest(metric=field, sample=invalid):
+                self.assertFalse(accepted(case))
+        allowed=report(family="asic", status="SYNTH_ONLY", kind="slack", unit="ns",
+                       stages=("correctness","synthesis"))
+        allowed["samples"][0]=-2.5
+        self.assertTrue(accepted(allowed))
 
     def test_required_stages_exhaustive_128_subsets_each_family_and_status(self):
         # Oracle is independent of JSON Schema implementation. Unknown/false
