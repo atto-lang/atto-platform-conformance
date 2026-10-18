@@ -170,6 +170,13 @@
       "syntax": "expression",
       "parserExpected": "accept",
       "runtimeExpected": "reject"
+    },
+    {
+      "id": "task-cancel-and-join",
+      "file": "task-cancel-and-join.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
     }
   ]
 }
