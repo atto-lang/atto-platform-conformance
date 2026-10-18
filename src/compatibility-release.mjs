@@ -45,7 +45,7 @@ export function validateCompatibilityCandidate(candidate, inventory) {
       candidate.inventoryPath !== "integration/org-repositories.v1.json" ||
       candidate.inventoryGitBlobSha !== canonicalInventoryGitBlobSha(inventory) ||
       candidate.snapshotDate !== inventory.snapshotDate ||
-      candidate.releaseId !== "oreslang-compat-" + candidate.snapshotDate + "-candidate-1" ||
+      candidate.releaseId !== "oreslang-compat-" + candidate.snapshotDate + "-candidate-2" ||
       candidate.promotionState !== "BLOCKED_UNVERIFIED" ||
       candidate.securityIncident !== "oreslang-platform-conformance#22" ||
       candidate.policy !== "METADATA_ONLY_NO_SOURCE_EXPORT" ||
