@@ -415,3 +415,39 @@ test("GitHub policy file decoder rejects BOM and NUL bytes before policy admissi
     await assert.rejects(run({checks:bad}),/forbidden BOM\/NUL bytes/);
   }
 });
+
+test("bootstrap binds CODEOWNER to current immutable user identity and actual write access",async()=>{
+  const baseline={permission:"admin",user:{login:"ORESoftware",id:11139560,type:"User"}};
+  for(const changed of [
+    {permission:"read"}, {permission:"triage"}, {permission:"none"},
+    {permission:null}, {user:{...baseline.user,id:11139561}},
+    {user:{...baseline.user,login:"attacker"}},
+    {user:{...baseline.user,type:"Organization"}},
+    {user:null}, {status:403,data:{message:"not authorized"}},
+    {status:404,data:{message:"not found"}}
+  ]){
+    const calls=[];
+    const spec=Object.hasOwn(changed,"status")?changed:{
+      ...baseline,...changed
+    };
+    await assert.rejects(run({codeownerPermission:spec},calls),
+      /trusted CODEOWNER must retain verified write access|GitHub policy metadata unavailable/);
+    assert.equal(calls.at(-1).url.includes("/collaborators/ORESoftware/permission"),true);
+    assert.equal(calls.some(x=>x.url.includes("/branches/main")),false,
+      "deny before branch, workflow, or approval policy reads");
+  }
+  for(const allowed of ["write","maintain","admin"]){
+    const verified=await run({codeownerPermission:{...baseline,permission:allowed}});
+    assert.equal(verified.status,"BOOTSTRAP_PROTECTED");
+  }
+});
+
+test("CODEOWNER permission revocation without moving protected main fails closed",async()=>{
+  const calls=[];
+  const baseline={permission:"write",user:{login:"ORESoftware",id:11139560,type:"User"}};
+  await assert.rejects(run({
+    codeownerPermission:read=>read===1?baseline:{...baseline,permission:"read"}
+  },calls),/trusted CODEOWNER must retain verified write access/);
+  assert.equal(calls.filter(x=>x.url.endsWith("/collaborators/ORESoftware/permission")).length,2);
+  assert.equal(calls.some(x=>x.url.endsWith("/branches/main/protection")),true);
+});
