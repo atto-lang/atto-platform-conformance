@@ -12,6 +12,7 @@
     "check:compatibility": "node bin/check-compatibility-release.mjs",
     "gate:release": "node bin/check-compatibility-release.mjs --require-ready",
     "audit:pin-provenance": "node bin/audit-compatibility-pins.mjs",
-    "check:head-snapshot": "node bin/check-head-snapshot.mjs"
+    "check:head-snapshot": "node bin/check-head-snapshot.mjs",
+    "check:ml-source-lock": "node bin/check-ml-source-lock.mjs"
   }
 }
