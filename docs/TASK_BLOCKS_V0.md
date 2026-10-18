@@ -80,3 +80,20 @@ A normal synchronous lambda inside a `suspends` / `async` function does not inhe
 Six new fixtures check `suspends fnc` in Task blocks and Task lambdas, no-spawn `suspends` lambdas, forbidden `suspends task`, and negative non-suspendable lambda/helper calls. The fixtures only establish grammar and declared contracts, **not executable Java/LLVM parity**. `runtimeVerified` remains `false`.
 
 Any `suspends` call, `await` and async iteration are actual suspension boundaries; a live ordinary borrow, MutexGuard or actor-private mutable state may not escape across them. A synchronous helper or closure may not smuggle suspension effects through a plain function signature. Native LLVM rejects unsupported `suspends` lambda lowering rather than compiling an untyped scalar substitute.
+
+## Shared suspends x Task contract (draft only)
+
+`suspends fnc` and `suspends |...|` do not spawn a Task/Future: the
+call may suspend the *calling* Task and returns `R` directly. Task
+expressions and `async task` callables create independently owned Task
+lifetimes. `await Task<R>` returns `R` without implicit flattening.
+A plain lambda cannot inherit its enclosing declaration's suspension effect.
+`suspends task { ... }` is invalid, as are simultaneous `async suspends`
+modifiers. A Task launched inside `suspends` is still a separately owned
+child that must be cancelled/joined under its TaskScope.
+
+The versioned matrix covers a direct suspends callable inside a Task, a
+suspends lambda inside a Task, a forbidden suspends-task prefix, and an
+ordinary unmarked callable trying to call a suspends declaration. Source
+execution is `runtimeVerified=false` for every backend; these are
+cross-backend contract fixtures, not runtime parity or cancellation proofs.
