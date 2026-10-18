@@ -21,12 +21,13 @@ function canned(options = {}) {
     if (suffix === "") return {
       id: options.badRepoId && name === candidate.pins[0].name ? 999 : Number(pin.repositoryId),
       full_name: "ores-truffle-oreslang/" + name,
-      default_branch: "main", archived: false,
+      default_branch: "main", archived: options.badArchive && name === candidate.pins[0].name ? undefined : false,
       private: options.badPrivacy && name === candidate.pins[0].name
         ? visibility.get(name) !== "private" : visibility.get(name) === "private"
     };
     if (suffix === "/git/ref/heads/main") return {
-      object: {sha: options.badRef && name === candidate.pins[0].name
+      object: {type: options.badRefType && name === candidate.pins[0].name ? "blob" : "commit",
+        sha: options.badRef && name === candidate.pins[0].name
         ? "invalid" : options.moved && name === candidate.pins[0].name
         ? differentHead : pin.commit}
     };
@@ -64,6 +65,14 @@ test("deny repository-replacement attack even when name and SHA match", async ()
 test("deny private/public visibility changes", async () => {
   await assert.rejects(() => auditPinnedProvenance(candidate, inventory,
     canned({badPrivacy: true}).requestJson), /repository identity/);
+});
+test("deny unknown archive status or source repo visibility", async () => {
+  await assert.rejects(() => auditPinnedProvenance(candidate, inventory,
+    canned({badArchive: true}).requestJson), /repository identity/);
+});
+test("deny non-commit main Git refs", async () => {
+  await assert.rejects(() => auditPinnedProvenance(candidate, inventory,
+    canned({badRefType: true}).requestJson), /invalid main commit/);
 });
 test("deny invalid or missing branch references", async () => {
   await assert.rejects(() => auditPinnedProvenance(candidate, inventory,
