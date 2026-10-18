@@ -377,6 +377,7 @@ export async function auditRepository(repo,{token,fetchImpl=fetch}={}){
   // Privacy and immutable repository ID can change independently of branch
   // SHA and branch-protection settings. Revalidate both before success.
   await assertSourceIdentity();
+  await codeownerPermission(); // Revalidate after policy/branch reads: permissions can change without moving main.
   return Object.freeze({repo,status:"BOOTSTRAP_PROTECTED",protectedSha,
     requiredCheck:EXPECTED_CHECK.context,requiredCheckAppId:EXPECTED_CHECK.appId});
 }
