@@ -167,3 +167,24 @@ test("compiler symlink retargeting is detected",async()=>{
   assert.ok(r.results.every(x=>x.status!=="VERIFIED"));
  }finally{await rm(dir,{recursive:true,force:true})}
 });
+
+test("late compiler replacement revokes previous successful fixture evidence",async()=>{
+ const dir=await mkdtemp(join(tmpdir(),"oreslang-late-executable-drift-"));
+ const executable=join(dir,"compiler");
+ await writeFile(executable,"version-A");
+ let calls=0;
+ try{
+  const r=await runSuite({backend:"java",argv:[executable,"{file}"],sourceSha:sha,spawn:()=>{
+   if(++calls===2)writeFileSync(executable,"version-B");
+   return {status:0,signal:null,stdout:"",stderr:""};
+  }});
+  assert.equal(calls,2);
+  assert.equal(r.ok,false);
+  assert.equal(r.verified,0);
+  assert.equal(r.failed,2);
+  assert.equal(r.results[0].status,"EXECUTABLE_CHANGED");
+  assert.equal(r.results[0].priorVerificationRevoked,true);
+  assert.equal(r.results[1].status,"EXECUTABLE_CHANGED");
+  assert.notEqual(r.results[1].executableSha256Before,r.results[1].executableSha256After);
+ }finally{await rm(dir,{recursive:true,force:true})}
+});
