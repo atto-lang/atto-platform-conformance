@@ -646,6 +646,301 @@
           }
         }
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "MEASURED",
+              "SYNTH_ONLY",
+              "PLACE_ROUTE_VERIFIED",
+              "SIMULATED_ONLY"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "evidence": {
+            "contains": {
+              "type": "object",
+              "properties": {
+                "stage": {
+                  "const": "correctness"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "MEASURED"
+          },
+          "family": {
+            "const": "software"
+          }
+        },
+        "required": [
+          "status",
+          "family"
+        ]
+      },
+      "then": {
+        "properties": {
+          "evidence": {
+            "contains": {
+              "type": "object",
+              "properties": {
+                "stage": {
+                  "const": "benchmark"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "MEASURED"
+          },
+          "family": {
+            "const": "fpga"
+          }
+        },
+        "required": [
+          "status",
+          "family"
+        ]
+      },
+      "then": {
+        "properties": {
+          "evidence": {
+            "contains": {
+              "type": "object",
+              "properties": {
+                "stage": {
+                  "const": "benchmark"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "MEASURED"
+          },
+          "family": {
+            "const": "fpga"
+          }
+        },
+        "required": [
+          "status",
+          "family"
+        ]
+      },
+      "then": {
+        "properties": {
+          "evidence": {
+            "contains": {
+              "type": "object",
+              "properties": {
+                "stage": {
+                  "const": "place-route"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "MEASURED"
+          },
+          "family": {
+            "const": "fpga"
+          }
+        },
+        "required": [
+          "status",
+          "family"
+        ]
+      },
+      "then": {
+        "properties": {
+          "evidence": {
+            "contains": {
+              "type": "object",
+              "properties": {
+                "stage": {
+                  "const": "board"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "SYNTH_ONLY"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "evidence": {
+            "contains": {
+              "type": "object",
+              "properties": {
+                "stage": {
+                  "const": "synthesis"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "SIMULATED_ONLY"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "evidence": {
+            "contains": {
+              "type": "object",
+              "properties": {
+                "stage": {
+                  "const": "simulation"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "PLACE_ROUTE_VERIFIED"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "evidence": {
+            "contains": {
+              "type": "object",
+              "properties": {
+                "stage": {
+                  "const": "place-route"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "MEASURED",
+              "SYNTH_ONLY",
+              "PLACE_ROUTE_VERIFIED",
+              "SIMULATED_ONLY"
+            ]
+          },
+          "family": {
+            "const": "asic"
+          },
+          "kind": {
+            "const": "power"
+          }
+        },
+        "required": [
+          "status",
+          "family",
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "evidence": {
+            "contains": {
+              "type": "object",
+              "properties": {
+                "stage": {
+                  "const": "power-model"
+                }
+              },
+              "required": [
+                "stage"
+              ]
+            }
+          }
+        }
+      }
     }
   ]
 }
