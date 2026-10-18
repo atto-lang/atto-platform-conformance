@@ -44,6 +44,7 @@ const PINNED_CARRIER_POLICY_WORKFLOW_BLOBS = Object.freeze({
 });
 const REVIEWER_LOGIN=/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$/;
 const PERMISSION_RANK=Object.freeze({read:1,triage:2,write:3,maintain:4,admin:5});
+const PINNED_CODEOWNER=Object.freeze({login:"ORESoftware",id:11139560,type:"User"});
 const CARRIER_SECURITY_PATHS = Object.freeze([
   "/.github/private-ci-independent-reviewer.json",
   "/.github/private-ci-approved-source-snapshots.txt",
@@ -240,6 +241,19 @@ function activeReviewerPolicy(text,label) {
   return Object.freeze({login:reviewer.login,id:reviewer.id,minimumPermission:value.minimumPermission});
 }
 
+async function requireLiveCodeownerPermission(repo,token,fetchImpl){
+  const doc=await metadata("repos/"+repo+"/collaborators/"+
+    PINNED_CODEOWNER.login+"/permission",token,fetchImpl);
+  const who=doc?.user;
+  const permission=doc?.permission;
+  if(who?.login!==PINNED_CODEOWNER.login ||
+     who?.id!==PINNED_CODEOWNER.id ||
+     who?.type!==PINNED_CODEOWNER.type ||
+     !Object.hasOwn(PERMISSION_RANK,permission) ||
+     PERMISSION_RANK[permission]<PERMISSION_RANK.write){
+    throw Error("CODEOWNER identity or current write permission is not verified");
+  }
+}
 async function requireReviewerPermission(repo,reviewer,token,fetchImpl) {
   const doc=await metadata("repos/"+repo+"/collaborators/"+encodeURIComponent(reviewer.login)+"/permission",
     token,fetchImpl);
@@ -492,6 +506,8 @@ export async function requirePrivateMirror({
       destinationRepo.permissions?.push !== true) {
     throw Error("destination must be a writable verified PRIVATE GitHub repository");
   }
+  await requireLiveCodeownerPermission(from,token,fetchImpl);
+  await requireLiveCodeownerPermission(to,token,fetchImpl);
   const carrierApproval=await protectedCarrierApproval(to,sourceCommit,sourceTree,
     destinationRepo.id,token,fetchImpl);
   const sourceApproval=await protectedSourceApproval(from, sourceCommit, sourceTree,
@@ -503,6 +519,9 @@ export async function requirePrivateMirror({
   }
   await requireReviewerPermission(from,sourceApproval.reviewer,token,fetchImpl);
   await requireReviewerPermission(to,sourceApproval.reviewer,token,fetchImpl);
+  // Codeowner repository access may change independently of reviewed policy SHA.
+  await requireLiveCodeownerPermission(from,token,fetchImpl);
+  await requireLiveCodeownerPermission(to,token,fetchImpl);
   return Object.freeze({status: "PRIVATE_MIRROR_APPROVED", source: from, destination: to,
     sourceCommit, sourceTree, destinationId: destinationRepo.id});
 }
