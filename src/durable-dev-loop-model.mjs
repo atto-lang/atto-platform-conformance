@@ -3,14 +3,29 @@
  * Simulates durable inbox/state/outbox atomicity, fencing, freeze/rehydration, and dev-loop routing.
  */
 const copy = value => structuredClone(value);
-const nonempty = value => typeof value === 'string' && value.length > 0;
+const nonempty = value => typeof value === 'string' && value.trim().length > 0;
+// Define dictionary entries as own data properties, never __proto__ setters.
+const put = (object, key, value) => Object.defineProperty(object, key, {
+  configurable:true, enumerable:true, writable:true, value
+});
 const assert = (condition, code) => { if (!condition) throw new Error(code); };
 
 export class DurableDevLoopModel {
   constructor({tenantId='tenant-a', runId='run-1', nodeId='coordinator', maxIterations=10, store=null}={}) {
     if (store !== null) {
       assert(store.formatVersion === 0 && store.stateSchemaVersion === 1, 'INCOMPATIBLE_SNAPSHOT');
-      assert(nonempty(store.tenantId) && nonempty(store.runId) && nonempty(store.codeGeneration), 'CORRUPT_SNAPSHOT');
+      assert(nonempty(store.tenantId) && nonempty(store.runId) &&
+             nonempty(store.nodeId) && store.codeGeneration === 'dev-loop-v0', 'CORRUPT_SNAPSHOT');
+      assert(Number.isSafeInteger(store.epoch) && store.epoch >= 0 &&
+             Number.isSafeInteger(store.version) && store.version >= 0, 'CORRUPT_SNAPSHOT');
+      assert(store.state && Number.isSafeInteger(store.state.iteration) &&
+             Number.isSafeInteger(store.state.maxIterations) &&
+             store.state.maxIterations > 0 && store.state.iteration >= 0 &&
+             store.state.iteration <= store.state.maxIterations &&
+             store.state.expectedRef === 'refs/heads/dev', 'CORRUPT_SNAPSHOT');
+      assert(store.inbox && store.seen && store.outbox &&
+             Array.isArray(store.events) && !Array.isArray(store.inbox) &&
+             !Array.isArray(store.seen) && !Array.isArray(store.outbox), 'CORRUPT_SNAPSHOT');
       this.db = copy(store);
       this.db.active = false; // a new process must never inherit an active lease
     } else {
@@ -45,23 +60,23 @@ export class DurableDevLoopModel {
     assert(message && nonempty(message.id) && nonempty(message.type), 'BAD_MESSAGE');
     assert(message.tenantId === this.db.tenantId && message.runId === this.db.runId, 'WRONG_ACTOR');
     if (Object.hasOwn(this.db.seen,message.id) || Object.hasOwn(this.db.inbox,message.id)) return false;
-    this.db.inbox[message.id]=copy(message);
+    put(this.db.inbox,message.id,copy(message));
     return true;
   }
   apply(epoch, id, {crashBeforeCommit=false}={}) {
     this.checkLease(epoch);
     assert(nonempty(id), 'BAD_MESSAGE_ID');
     if (Object.hasOwn(this.db.seen,id)) return false;
+    assert(Object.hasOwn(this.db.inbox,id), 'UNKNOWN_INBOX_MESSAGE');
     const m=this.db.inbox[id];
-    assert(m, 'UNKNOWN_INBOX_MESSAGE');
     // Candidate state is isolated; exceptions or simulated crashes cannot partially commit.
     const next=this.snapshot(), s=next.state;
     delete next.inbox[id];
-    next.seen[id]=true;
+    put(next.seen,id,true);
     const event=(kind)=>next.events.push({kind,messageId:id,iteration:s.iteration,sha:s.expectedSha});
     const intent=(kind,key)=> {
       assert(!Object.hasOwn(next.outbox,key), 'DUPLICATE_INTENT');
-      next.outbox[key]={kind,key,status:'pending'};
+      put(next.outbox,key,{kind,key,status:'pending'});
     };
     switch(m.type) {
       case 'code_pushed':
@@ -106,6 +121,7 @@ export class DurableDevLoopModel {
         break;
       default: throw new Error('UNKNOWN_MESSAGE_TYPE');
     }
+    assert(Number.isSafeInteger(next.version+1), 'STATE_VERSION_OVERFLOW');
     next.version++;
     if (crashBeforeCommit) throw new Error('SIMULATED_CRASH_BEFORE_COMMIT');
     this.db=next;
@@ -114,12 +130,18 @@ export class DurableDevLoopModel {
   acknowledge(epoch,key,receipt) {
     this.checkLease(epoch);
     assert(nonempty(receipt), 'BAD_RECEIPT');
+    assert(Object.hasOwn(this.db.outbox,key), 'UNKNOWN_INTENT');
     const current=this.db.outbox[key];
-    assert(current, 'UNKNOWN_INTENT');
-    if(current.status==='acknowledged')return false;
-    current.status='acknowledged';
-    current.receipt=receipt;
-    this.db.version++;
+    if(current.status==='acknowledged') {
+      assert(current.receipt===receipt, 'RECEIPT_CONFLICT');
+      return false;
+    }
+    assert(Number.isSafeInteger(this.db.version+1), 'STATE_VERSION_OVERFLOW');
+    const next=this.snapshot();
+    next.outbox[key].status='acknowledged';
+    next.outbox[key].receipt=receipt;
+    next.version++;
+    this.db=next;
     return true;
   }
 }
