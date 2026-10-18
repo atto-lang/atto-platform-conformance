@@ -516,14 +516,24 @@ test("independent reviewer must be live, distinct from PR author, and identical 
   await assert.rejects(check({}, {[srcPermission]:{permission:"read",user:reviewer}}),/live repository permission/);
   const srcPull=source+"/commits/"+sourceAuthorizationCommit+"/pulls?per_page=20";
   await assert.rejects(check({}, {[srcPull]:[{
-    number:501,state:"closed",merged_at:"2026-10-18T14:00:00Z",base:{ref:"main"},
+    number:501,state:"closed",merged_at:"2026-10-18T14:00:00Z",
     base:{ref:"main",repo:{full_name:source}},
     head:{sha:sourcePrHead,repo:{full_name:source}},user:{id:reviewer.id}
   }]}),/cannot be the authorization PR author/);
   const carrierReviewerPath=destination+"/contents/.github/private-ci-independent-reviewer.json?ref="+C;
+  const otherReviewer={login:"someone-else",id:300000002};
   const other=JSON.stringify({schema:2,enabled:true,minimumPermission:"write",
-    disallowedReviewerIds:[11139560,2148448],reviewer:{login:"someone-else",id:300000002}})+"\n";
-  await assert.rejects(check({}, {[carrierReviewerPath]:encoded(other)}),/reviewer policies do not match|policy commit history/);
+    disallowedReviewerIds:[11139560,2148448],reviewer:otherReviewer})+"\n";
+  const carReviews=destination+"/pulls/701/reviews?per_page=100";
+  const carPermission=destination+"/collaborators/"+otherReviewer.login+"/permission";
+  await assert.rejects(check({}, {
+    [carrierReviewerPath]:encoded(other),
+    [carReviews]:[{
+      id:9004,state:"APPROVED",commit_id:carrierPrHead,
+      submitted_at:"2026-10-18T13:59:00Z",user:otherReviewer
+    }],
+    [carPermission]:{permission:"write",user:otherReviewer}
+  }),/source and carrier independent reviewer policies do not match/);
 });
 
 test("source and carrier status workflows are pinned to independently reviewed Git blobs",async()=>{
