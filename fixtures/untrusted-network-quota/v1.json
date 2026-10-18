@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "status": "proposal-contract-only-no-backend-execution",
+  "defaults": {
+    "httpMaxInFlight": 10,
+    "httpRequestStartsPerSecond": 10,
+    "httpStartBurst": 2,
+    "tcpMaxActiveConnections": 10
+  },
+  "scope": "supervisor-authorized-untrusted-network-egress",
+  "pendingBackends": [
+    "java-graalvm",
+    "llvm",
+    "wasm",
+    "forge",
+    ".net"
+  ],
+  "confirmedBackends": [],
+  "notes": "This registry is not a sandbox or active enforcement proof. Current UNTRUSTED network permission remains denied unless explicitly brokered in a protected runtime.",
+  "cases": [
+    {
+      "id": "http-ten-in-flight",
+      "description": "Ten outstanding HTTP requests may be admitted if each request start is within its independently metered start-rate budget",
+      "expected": "admit",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "http-eleventh-in-flight",
+      "description": "The eleventh simultaneously in-flight HTTP request is rejected before dispatch",
+      "expected": "too-many-in-flight",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "http-ten-starts-per-second",
+      "description": "A workload issuing HTTP starts at exactly the configured sustained rate can progress subject to token bucket burst semantics",
+      "expected": "bounded-rate",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "http-burst-exhausted",
+      "description": "After initial burst two without clock advancement, the third request start is rejected even with concurrency headroom",
+      "expected": "rate-limited",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "http-cancel-and-timeout",
+      "description": "Request cancellation or timeout may free its in-flight slot only once underlying host operation has terminated",
+      "expected": "release-once",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "tcp-ten-open",
+      "description": "Up to ten active and connecting outbound TCP sockets can hold slots",
+      "expected": "admit",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "tcp-eleventh-open",
+      "description": "The eleventh active outbound TCP connection is denied before DNS and socket creation",
+      "expected": "too-many-connections",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "tcp-connect-failure",
+      "description": "DNS failure, connect failure and socket-creation failure release reserved TCP slot once",
+      "expected": "release-once",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "tcp-rapid-reconnect",
+      "description": "Rapid disconnect and reconnect must remain subject to a separately configured socket-start attempt policy",
+      "expected": "bounded-starts",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "http2-and-keepalive",
+      "description": "HTTP2 multiplexing counts every in-flight request, while pooled physical sockets count against applicable aggregate open socket caps",
+      "expected": "same-egress-gate",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "redirect-and-dns",
+      "description": "Redirect, proxy, hostname and resolved destination addresses must not allow permission or quota bypass",
+      "expected": "capability-denied",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "restart-and-spawn",
+      "description": "Actor restart, descendant spawn and forged sender credentials cannot reset the trusted lineage budget",
+      "expected": "stable-lineage-quota",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "guest-control-mutation",
+      "description": "Guest must not mutate policy, clock, lease, counter or resource identity",
+      "expected": "capability-denied",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "shutdown-race",
+      "description": "Concurrent close, cancellation and actor shutdown cannot double-release or oversubscribe slots",
+      "expected": "release-once",
+      "backendEvidence": "pending"
+    }
+  ]
+}
