@@ -2,9 +2,9 @@
 
 The single lockfile is [`integration/compatibility-candidate.v1.json`](../integration/compatibility-candidate.v1.json), paired with [`integration/org-repositories.v1.json`](../integration/org-repositories.v1.json).
 
-The candidate's `inventoryGitBlobSha` binds it to the **entire exact canonical inventory Git blob** (all nodes, edges, visibility and `nextGate` text), not merely the list of 52 names. Loaders require canonical 2-space JSON with a terminal newline and reject duplicate keys, reordering/alternate formatting and oversized JSON before structural validation. Any intentional inventory change requires a reviewed new candidate with a matching inventory digest; this hash does not replace access control or independent review.
+The candidate's `inventoryGitBlobSha` binds it to the **entire exact canonical inventory Git blob** (all nodes, edges, visibility and `nextGate` text), not merely the list of 56 names. Loaders require canonical 2-space JSON with a terminal newline and reject duplicate keys, reordering/alternate formatting and oversized JSON before structural validation. Any intentional inventory change requires a reviewed new candidate with a matching inventory digest; this hash does not replace access control or independent review.
 
-This is a **private, non-promotable candidate snapshot**, not a claim that the whole Oreslang stack passes tests. It records **52 full Git commit SHAs and 52 stable numeric GitHub repository IDs**, one pair per repository, taken from authenticated GitHub repository metadata and **commit-search results** for their default branches on 2026-10-17. A commit-search match is not a signed statement of branch tip or approval. These pins are immutable object identifiers, *not* proof of dependency compatibility, correct checked-out code, compiled guest execution, functional correctness, or permission to transfer any private repository.
+This is a **private, non-promotable candidate snapshot**, not a claim that the whole Oreslang stack passes tests. It records **56 full Git commit SHAs and 56 stable numeric GitHub repository IDs**, one pair per repository: 52 original historical candidate pins plus four verified newly discovered `main` snapshot pins for Tensor, Autograd, ML and ML Conformance. Candidate #2 is not a claim of current branch heads or execution. A commit-search match is not a signed statement of branch tip or approval. These pins are immutable object identifiers, *not* proof of dependency compatibility, correct checked-out code, compiled guest execution, functional correctness, or permission to transfer any private repository.
 
 ## Validate
 
@@ -30,7 +30,7 @@ Output includes `CANDIDATE_ONLY_NOT_COMPATIBILITY_PROOF`, `releaseReady: false`,
 
 ## Authenticated provenance audit (metadata only)
 
-The optional `npm run audit:pin-provenance` requires an explicitly provisioned `ORESLANG_REPOSITORY_READ_TOKEN` with read-only repository metadata access across **all 52 repos**. The ordinary per-repository `GITHUB_TOKEN` must **not** be assumed to have access to 44 other private repositories. Do **not** add the token to the workflow by default.
+The optional `npm run audit:pin-provenance` requires an explicitly provisioned `ORESLANG_REPOSITORY_READ_TOKEN` with read-only repository metadata access across **all 56 repos**. The ordinary per-repository `GITHUB_TOKEN` must **not** be assumed to have access to 44 other private repositories. Do **not** add the token to the workflow by default.
 
 The auditor calls only GitHub's REST API on `api.github.com`, disables redirects, and fetches repo identity, default `main` Git ref, and commit comparison metadata. For ancestor pins, a successful comparison must have `status=ahead`, `behind_by=0`, `base_commit.sha` equal to the pinned SHA **and** `merge_base_commit.sha` equal to the pinned SHA; a high-level comparison status alone is insufficient. It **never fetches raw source, trees, contents, or private artifacts**, and exits nonzero on missing authority, mismatch, rewritten history, or GitHub API failure.
 
@@ -41,7 +41,7 @@ ORESLANG_REPOSITORY_READ_TOKEN="$READ_ONLY_GITHUB_APP_TOKEN" npm run audit:pin-p
 
 A `READ_ONLY_PIN_PROVENANCE_NOT_COMPATIBILITY` result proves the listed commit IDs remain reachable from authorized repo heads and the exact repository identity/visibility matches. It is **not** compiler correctness, CI execution, release readiness, independent security approval, or evidence that a pin remains current `main`; historical ancestors are allowed.
 
-Authenticated GitHub metadata was checked on 2026-10-18: 45 pins equaled `main`, while seven were proven ancestors with GitHub compare `status=ahead` and `behind_by=0`. The seven are `html-js-css-syntax-highlighter`, `ores-truffle-oreslang.github.io`, `oreslang-serialization-and-validation`, `oreslang-target-profiles`, `rx-ores`, `rx-ores-callbacks`, and `vscode-plugins`. This is a review-time observation only; do not treat the report as a permanent attestation.
+For the **earlier 52-repo candidate only**, authenticated GitHub metadata was checked on 2026-10-18: 45 pins equaled `main`, while seven were proven ancestors with GitHub compare `status=ahead` and `behind_by=0`. The seven are `html-js-css-syntax-highlighter`, `ores-truffle-oreslang.github.io`, `oreslang-serialization-and-validation`, `oreslang-target-profiles`, `rx-ores`, `rx-ores-callbacks`, and `vscode-plugins`. This is a historical review-time observation, NOT proof that all 56 candidate #2 pins currently match or descend from `main`. Do not treat it as a permanent attestation.
 
 ## Alternate-organization source-free CI canary
 
@@ -55,6 +55,10 @@ An **independently authored synthetic** CI evidence classifier and test fixture 
 Those **same blobs were imported into this private review branch, carrier → source organization**, where the ordinary `npm test` discovers the source-free fixture. The synthetic verifier classifies authentic GitHub run/job metadata as `RUNNER_STEPS_OBSERVED` only when the expected SHA, repository ID, workflow, successful job/steps and required named test steps match. It rejects zero-step jobs and wrong revisions. It always reports `sourceCompatibilityVerified:false` and `releaseReady:false`.
 
 **Evidence scope:** exact-blob GitHub-hosted execution of a synthetic **CI evidence classifier only**. It does not verify actual private Oreslang conformance code, source-org runners, compiler behavior, user-code isolation, cross-repo compatibility or mirror authorization. The reviewed conformance PR #79 is still draft and must pass native Node tests on its own exact source-org head once protected CI is restored.
+
+## New ML/tensor integration gate
+
+The compatibility candidate now accounts for the four new private repositories with exact IDs and pins. A separate `oreslang-ml-conformance` review branch holds **same-organization provider contract snapshots** from tensor, autograd and ML, with matching Git blob identifiers. Its independent host-only numerical oracle suite passed 26/26 tests on the private source-free funded carrier ([Actions #39093380746](https://github.com/scintilla-run-test/gleam-runner-conformance/actions/runs/39093380746)); this does **not** prove Oreslang compiler execution. All ML providers remain `NOT_EXECUTED` and do not qualify for release promotion.
 
 ## Security and quality gates
 
