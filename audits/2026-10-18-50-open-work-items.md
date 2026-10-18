@@ -2,7 +2,7 @@
 
 Source: GitHub live open-PR search (`org:ores-truffle-oreslang is:open updated:>=2026-10-08`). Items were updated in the last ten days; some were originally opened earlier. This is a **triage and next-execution gate** artifact, not a claim that these 50 PRs were fixed or tested. Do not merge solely on this evidence.
 
-**Snapshot:** 50 distinct open PRs, 10 repositories, 33 P0 and 17 P1. Only Zorde #25 received an actual code/test patch in this work session; its runtime/compiler CI is not certified. All other entries are investigated/triaged, not completed.
+**Snapshot:** 50 distinct open PRs, 10 repositories, 33 P0 and 17 P1. Original recovery pass hardened Zorde #25; a subsequent pass also committed a TaskScope concurrency fix on Java #1407. Neither has passing source-org compiler/runtime CI. All other entries remain triaged, not completed.
 
 ## Global admission rules
 
@@ -88,3 +88,27 @@ The structured inventory can be validated with `python3 scripts/validate-recover
 ## How to update
 
 Change an item's `observed` status only after exact-head checks and evidence URL are captured; record the relevant commit, runner/job steps, and independent security approval where applicable. The accompanying JSON is a structured snapshot.
+
+## Execution wave 1 follow-up (same day; no release certification)
+
+- **Task #17, Java #1407:** corrected callback registration inside
+  `TaskScope.startTask()` so terminal notification occurs outside
+  `admissionLock`, preserving the atomically reserved child join slot.
+  Added a deterministic inline-scheduler regression that inspects whether a
+  scope completion callback holds the admission monitor. Changes committed
+  to its stacked draft branch; real Maven/JUnit execution is still unverified.
+- **Task #2, Zorde #25:** reconciled this Markdown gate with the JSON ledger:
+  **29** source-free diagnostic verifier regressions, not an executed native
+  compiler negative/positive suite. Keep the draft and parent #20 gated.
+- **Recovery inventory #110:** added a Markdown-versus-JSON parity verifier
+  and six source-free regression cases. These checks reject priority, action,
+  PR URL, summary, and row-count drift. This is metadata integrity, not CI.
+- **Current CI observations:** conformance harness run
+  [39176331456](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/actions/runs/39176331456),
+  job 117819659188, and Java fast-ci run
+  [39176109871](https://github.com/ores-truffle-oreslang/oreslang-source.java/actions/runs/39176109871),
+  job 117818999011, each failed with zero executable steps.
+  A real test verdict requires an approved source-local runner.
+- **Private-source boundary unchanged:** investigations #22/#77, publisher
+  approval, branch protection and CODEOWNER review are prerequisites to any
+  external carrier export. No cross-org source transfer authorized.
