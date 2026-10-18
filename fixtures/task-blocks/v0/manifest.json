@@ -74,8 +74,36 @@
       "runtimeExpected": "pending"
     },
     {
-      "id": "reject-async-task-lambda",
-      "file": "reject-async-task-lambda.ores",
+      "id": "async-task-braced",
+      "file": "async-task-braced.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "async-task-expression",
+      "file": "async-task-expression.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "async-task-immediate-await",
+      "file": "async-task-immediate-await.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "async-future-nested-task",
+      "file": "async-future-nested-task.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "reject-async-task-malformed",
+      "file": "reject-async-task-malformed.ores",
       "syntax": "expression",
       "parserExpected": "reject",
       "runtimeExpected": "forbidden"
