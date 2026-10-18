@@ -21,6 +21,8 @@ export function inspectCheckouts(registry, parent, {allowMissing=false}={}) {
     if(!st.isDirectory() || st.isSymbolicLink() || realpathSync(dir)!==dir) throw new Error("non-directory or linked checkout: "+row.name);
     const manifestPath=join(dir,".oreslang","integration.json");
     if(!existsSync(manifestPath)) throw new Error("missing integration contract: "+row.name);
+    const contractDir=lstatSync(join(dir,".oreslang"));
+    if(!contractDir.isDirectory() || contractDir.isSymbolicLink() || realpathSync(join(dir,".oreslang"))!==join(dir,".oreslang")) throw new Error("linked integration contract directory: "+row.name);
     const fst=lstatSync(manifestPath);
     if(!fst.isFile() || fst.isSymbolicLink() || fst.size>65536) throw new Error("unsafe member manifest: "+row.name);
     const member=JSON.parse(readFileSync(manifestPath,"utf8"));
