@@ -2,7 +2,7 @@
 
 The single lockfile is [`integration/compatibility-candidate.v1.json`](../integration/compatibility-candidate.v1.json), paired with [`integration/org-repositories.v1.json`](../integration/org-repositories.v1.json).
 
-This is a **private, non-promotable candidate snapshot**, not a claim that the whole Oreslang stack passes tests. It records **52 full Git commit SHAs**, one per repository, taken from authenticated GitHub **commit-search results** for their default branches on 2026-10-17. A commit-search match is not a signed statement of branch tip or approval. These pins are immutable object identifiers, *not* proof of dependency compatibility, correct checked-out code, compiled guest execution, functional correctness, or permission to transfer any private repository.
+This is a **private, non-promotable candidate snapshot**, not a claim that the whole Oreslang stack passes tests. It records **52 full Git commit SHAs and 52 stable numeric GitHub repository IDs**, one pair per repository, taken from authenticated GitHub repository metadata and **commit-search results** for their default branches on 2026-10-17. A commit-search match is not a signed statement of branch tip or approval. These pins are immutable object identifiers, *not* proof of dependency compatibility, correct checked-out code, compiled guest execution, functional correctness, or permission to transfer any private repository.
 
 ## Validate
 
@@ -20,7 +20,7 @@ Output includes `CANDIDATE_ONLY_NOT_COMPATIBILITY_PROOF`, `releaseReady: false`,
 
 ## Consumer pinning contract
 
-- Identify a repository in the lockfile, then use its **full commit SHA**, never floating `main`, to select the intended source revision.
+- Identify a repository in the lockfile by **both exact organization/repo name and stable numeric GitHub repository ID**, then use its **full commit SHA**, never floating `main`, to select the intended source revision. At promotion time, re-query the authenticated GitHub repository metadata and compare its stable ID to reject a deleted/recreated or renamed-name impostor.
 - Consumers should hold their own SHA pins or Git submodule commit pins until the explicit compatibility receipt is approved; the snapshot does *not* replace independently versioned consumer dependency locks.
 - For every dependency edge, exercise the actual consumer against the pinned provider. Record exact compiler binary/source identity, source fixture blob SHAs, the guest executed outcome, deterministic oracle, target profile, host permissions, runtime artifact and test-run URL. Unsupported backends must reject unsupported source features without pretending execution.
 - Promotion requires independent review of both semantics and security. The validator **intentionally does not accept** manually added `VERIFIED` labels or self-authored CI URLs as proof. A future signed/verifiable evidence schema and executor must be reviewed before `BLOCKED_UNVERIFIED` can change.
