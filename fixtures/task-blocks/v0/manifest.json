@@ -44,6 +44,41 @@
       "syntax": "expression",
       "parserExpected": "accept",
       "runtimeExpected": "reject"
+    },
+    {
+      "id": "task-iife-expression",
+      "file": "task-iife-expression.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "task-iife-block",
+      "file": "task-iife-block.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "task-iife-awaited",
+      "file": "task-iife-awaited.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "task-iife-future-observer",
+      "file": "task-iife-future-observer.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "reject-async-task-lambda",
+      "file": "reject-async-task-lambda.ores",
+      "syntax": "expression",
+      "parserExpected": "reject",
+      "runtimeExpected": "forbidden"
     }
   ]
 }
