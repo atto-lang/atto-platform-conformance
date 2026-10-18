@@ -43,6 +43,19 @@ A `READ_ONLY_PIN_PROVENANCE_NOT_COMPATIBILITY` result proves the listed commit I
 
 Authenticated GitHub metadata was checked on 2026-10-18: 45 pins equaled `main`, while seven were proven ancestors with GitHub compare `status=ahead` and `behind_by=0`. The seven are `html-js-css-syntax-highlighter`, `ores-truffle-oreslang.github.io`, `oreslang-serialization-and-validation`, `oreslang-target-profiles`, `rx-ores`, `rx-ores-callbacks`, and `vscode-plugins`. This is a review-time observation only; do not treat the report as a permanent attestation.
 
+## Alternate-organization source-free CI canary
+
+GitHub Actions in the source organization has failed before runner allocation. A **separate private** carrier, [`scintilla-run-test/gleam-runner-conformance`](https://github.com/scintilla-run-test/gleam-runner-conformance), has working runner capacity. As an explicit confinement measure, do **not** copy the conformance repo, private compiler source Git trees, lockfile, inventory, source artifacts, or secrets into this carrier. Issue [#22](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22) remains open; carrier visibility alone does not grant permission to mirror.
+
+An **independently authored synthetic** CI evidence classifier and test fixture were created in the carrier, on branch `validation/source-free-oreslang-ci-evidence-20261017`. GitHub-hosted [run #39092687507](https://github.com/scintilla-run-test/gleam-runner-conformance/actions/runs/39092687507), exact head `2c547899152cd8506454cb0c5e25e0136a347f04`, executed checkout, Node 22 setup, tests and isolation steps; job logs report **20/20 tests passed**. The tested blob SHAs were:
+
+- `source-free/runner-evidence.mjs`: `fe1e4793fef1b52ccb64a0a545a369b935bd53a4`
+- `source-free/test/runner-evidence.test.mjs`: `4e9deae82ed4a7b9080b806358a6b5005d7ba834`
+
+Those **same blobs were imported into this private review branch, carrier → source organization**, where the ordinary `npm test` discovers the source-free fixture. The synthetic verifier classifies authentic GitHub run/job metadata as `RUNNER_STEPS_OBSERVED` only when the expected SHA, repository ID, workflow, successful job/steps and required named test steps match. It rejects zero-step jobs and wrong revisions. It always reports `sourceCompatibilityVerified:false` and `releaseReady:false`.
+
+**Evidence scope:** exact-blob GitHub-hosted execution of a synthetic **CI evidence classifier only**. It does not verify actual private Oreslang conformance code, source-org runners, compiler behavior, user-code isolation, cross-repo compatibility or mirror authorization. The reviewed conformance PR #79 is still draft and must pass native Node tests on its own exact source-org head once protected CI is restored.
+
 ## Security and quality gates
 
 1. Keep [private source exposure incident #22](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22) open until its independent remediation and authorization gates are genuinely complete. A private destination or GitHub Actions budget alone is not authorization to mirror source.
