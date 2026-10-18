@@ -1,10 +1,11 @@
 import {readFileSync} from "node:fs";
+import {createHash} from "node:crypto";
 import {registryUrl, validateOrgIntegrationRegistry} from "./integration-registry.mjs";
 
 export const compatibilityUrl = new URL("../integration/compatibility-candidate.v1.json", import.meta.url);
 const manifestFields = [
   "schemaVersion", "releaseId", "kind", "organization", "snapshotDate",
-  "inventoryPath", "promotionState", "securityIncident", "provenance", "policy", "pins"
+  "inventoryPath", "inventoryGitBlobSha", "promotionState", "securityIncident", "provenance", "policy", "pins"
 ];
 const pinFields = ["name", "repositoryId", "ref", "commit", "compatibility", "evidence"];
 function requireObject(obj, context) {
@@ -18,6 +19,12 @@ function requireFields(obj, fields, context) {
   if (JSON.stringify(Object.keys(obj).sort()) !== JSON.stringify([...fields].sort())) {
     throw Error(context + ": unexpected or missing properties");
   }
+}
+// Reproduce the canonical JSON Git blob ID; this binds the complete dependency
+// graph/metadata, not just repository names. PR review protects this anchor.
+export function canonicalInventoryGitBlobSha(inventory) {
+  const bytes = Buffer.from(JSON.stringify(inventory, null, 2) + "\n", "utf8");
+  return createHash("sha1").update("blob " + bytes.length + "\0").update(bytes).digest("hex");
 }
 function sortedNames(names) {
   for (let i = 1; i < names.length; i++) {
@@ -36,6 +43,7 @@ export function validateCompatibilityCandidate(candidate, inventory) {
       candidate.kind !== "CANDIDATE_SNAPSHOT" ||
       candidate.organization !== inventory.organization ||
       candidate.inventoryPath !== "integration/org-repositories.v1.json" ||
+      candidate.inventoryGitBlobSha !== canonicalInventoryGitBlobSha(inventory) ||
       candidate.snapshotDate !== inventory.snapshotDate ||
       candidate.releaseId !== "oreslang-compat-" + candidate.snapshotDate + "-candidate-1" ||
       candidate.promotionState !== "BLOCKED_UNVERIFIED" ||
