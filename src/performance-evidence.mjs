@@ -82,8 +82,17 @@ export function validatePerformanceEvidence(r) {
       'measured report has unknown toolchain or environment');
     const stages = new Set(r.evidence.map(e => e.stage));
     check(stages.has('correctness'), 'missing correctness artifact reference');
-    if (r.status === 'MEASURED') check(stages.has('benchmark') || stages.has('board') ||
-      stages.has('power-model'), 'measured report lacks benchmark or board artifact');
+    // Do not confuse modeled hardware numbers with measurements. For now,
+    // ASIC reports cannot say MEASURED: a fabricated silicon / lab-test
+    // provenance stage is not part of this evidence schema.
+    if (r.status === 'MEASURED') {
+      check(r.family !== 'asic', 'ASIC measured silicon admission is not implemented');
+      if (r.family === 'software')
+        check(stages.has('benchmark'), 'software measurement requires benchmark artifact');
+      if (r.family === 'fpga')
+        check(stages.has('place-route') && stages.has('board') &&
+          stages.has('benchmark'), 'FPGA measurement needs P&R, board and benchmark artifacts');
+    }
     if (r.status === 'PLACE_ROUTE_VERIFIED') check(r.family === 'fpga' &&
       stages.has('place-route'), 'place-route evidence required for FPGA');
     if (r.status === 'SYNTH_ONLY') check(r.family !== 'software' &&
