@@ -170,6 +170,79 @@ class PerformanceSchemaTests(unittest.TestCase):
                 n += 1
         self.assertEqual(n, 1024)
 
+    def test_live_node_validator_matches_independent_jsonschema(self):
+        # Exercise the executable JS validator, not just a duplicated Python
+        # interpretation of the status/stage rules. One source-free Node
+        # subprocess receives all fixtures, including negative attacks.
+        import subprocess
+        scenarios = [
+            ("software", "MEASURED", "latency", "ns"),
+            ("fpga", "MEASURED", "fmax", "MHz"),
+            ("fpga", "SYNTH_ONLY", "lut", "count"),
+            ("fpga", "SIMULATED_ONLY", "ii", "cycles"),
+            ("fpga", "PLACE_ROUTE_VERIFIED", "fmax", "MHz"),
+            ("asic", "SYNTH_ONLY", "power", "mW"),
+            ("asic", "SIMULATED_ONLY", "area", "um2"),
+            ("asic", "SIMULATED_ONLY", "power", "mW"),
+        ]
+        samples = []
+        for family, status, kind, unit in scenarios:
+            for mask in range(1 << len(STAGES)):
+                selected = tuple(v for i, v in enumerate(STAGES) if (mask >> i) & 1)
+                samples.append(report(family=family, status=status,
+                                      kind=kind, unit=unit, stages=selected))
+        good = report()
+        for field, bad in (("sourceSha", "0" * 40),
+                           ("compilerSha256", "0" * 64),
+                           ("fixtureSha256", "0" * 64),
+                           ("status", "PASS"), ("unit", "MHz")):
+            item = copy_report(good)
+            item[field] = bad
+            samples.append(item)
+        for field, bad in (("latency", -1), ("latency", -0.01),
+                           ("latency", 0), ("latency", 100)):
+            item = copy_report(good)
+            item["kind"] = field
+            item["samples"][0] = bad
+            samples.append(item)
+        for metric, unit, bad in (("ii", "cycles", 0),
+                                  ("ii", "cycles", 1.5),
+                                  ("lut", "count", -1),
+                                  ("lut", "count", 9007199254740992)):
+            item = report(family="fpga", status="SYNTH_ONLY",
+                          kind=metric, unit=unit,
+                          stages=("correctness", "synthesis"))
+            item["samples"][0] = bad
+            samples.append(item)
+        unsupported = report(status="UNCONFIGURED", stages=())
+        unsupported["samples"] = []
+        unsupported["correctness"] = "UNVERIFIED"
+        samples.append(unsupported)
+        # Read the entire JSON array once; no network, credentials, mirrored
+        # private repositories, package downloads or output artifacts.
+        source = (
+            "import {readFileSync} from 'node:fs';"
+            "import {validatePerformanceEvidence} "
+            "from './src/performance-evidence.mjs';"
+            "const fixtures=JSON.parse(readFileSync(0,'utf8'));"
+            "const admitted=fixtures.map(x=>{try{"
+            "validatePerformanceEvidence(x);return true"
+            "}catch{return false}});"
+            "process.stdout.write(JSON.stringify(admitted));"
+        )
+        root = SCHEMA_PATH.parent.parent
+        finished = subprocess.run(
+            ["node", "--input-type=module", "-e", source],
+            cwd=root, input=json.dumps(samples), capture_output=True,
+            text=True, check=True, timeout=40,
+        )
+        decisions = json.loads(finished.stdout)
+        self.assertEqual(len(decisions), len(samples))
+        for i, (sample, admitted) in enumerate(zip(samples, decisions)):
+            with self.subTest(i=i, family=sample["family"],
+                              status=sample["status"], kind=sample["kind"]):
+                self.assertEqual(bool(admitted), accepted(sample))
+
 
 if __name__ == "__main__":
     unittest.main()
