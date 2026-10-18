@@ -60,6 +60,14 @@ Those **same blobs were imported into this private review branch, carrier → so
 
 The compatibility candidate now accounts for the four new private repositories with exact IDs and pins. A separate `oreslang-ml-conformance` review branch holds **same-organization provider contract snapshots** from tensor, autograd and ML, with matching Git blob identifiers. Its independent host-only numerical oracle suite passed 26/26 tests on the private source-free funded carrier ([Actions #39093380746](https://github.com/scintilla-run-test/gleam-runner-conformance/actions/runs/39093380746)); this does **not** prove Oreslang compiler execution. All ML providers remain `NOT_EXECUTED` and do not qualify for release promotion.
 
+## Full 56-repo immutable head-provenance observation
+
+The separate [`integration/head-provenance-snapshot.v1.json`](../integration/head-provenance-snapshot.v1.json) records an authenticated **read-only** GitHub ref/compare observation for all 56 candidate repositories (2026-10-17 US Eastern / 2026-10-18 UTC): **34 frozen pins still equal current `main`; 22 differ but were individually confirmed to be strict ancestors of the then-current `main` via GitHub compare `status=ahead`, `behind_by=0`, `base_commit.sha=pinnedSha`, and `merge_base_commit.sha=pinnedSha`. No missing refs, repository IDs, or divergent histories were observed.
+
+`npm run check:head-snapshot` structurally binds every observed row to the immutable 56-pin candidate. It **does not call GitHub again**, and its output is `SNAPSHOT_STRUCTURE_ONLY_NOT_REMOTE_ATTESTATION`. Later branch updates can make it stale; rerun the authenticated read-only audit before treating the snapshot as a current observation. This file is not a test pass, independent approval, source export permission, or release attestation.
+
+The [`oreslang-ml-conformance`](https://github.com/ores-truffle-oreslang/oreslang-ml-conformance) draft records a separate 3-provider contract lock and independent scalar/tensor/autograd/SGD reference oracles. Corresponding tensor/autograd/ML draft PRs must not be merged as implemented guest behavior based solely on this metadata.
+
 ## Security and quality gates
 
 1. Keep [private source exposure incident #22](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22) open until its independent remediation and authorization gates are genuinely complete. A private destination or GitHub Actions budget alone is not authorization to mirror source.
