@@ -82,6 +82,12 @@ export function validateActorHeapCapabilities(doc) {
     if (entry.aotLevel === 'full-aot' && level < LEVELS.indexOf('compiled-scalar')) {
       fail(entry.backend + ' full AOT cannot be inferred from a host arena');
     }
+    if (entry.verified && (
+        entry.allocationLevel === 'compiled-general' ||
+        entry.aotLevel === 'full-aot' ||
+        entry.zeroGcClaim === 'guest-general')) {
+      fail(entry.backend + ' candidate row may not self-certify general/full-AOT claims');
+    }
   }
 
   const semanticReady = doc.backends.every(entry =>
