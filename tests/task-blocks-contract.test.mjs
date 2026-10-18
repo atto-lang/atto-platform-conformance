@@ -13,7 +13,9 @@ const ids = ["do-nb-no-handle","task-int-await","task-void-await","reject-bare-n
  "reject-task-borrow-across-await","reject-task-borrowed-iife-argument",
  "task-cancel-and-join",
  "suspends-task-body","suspends-task-lambda","suspends-lambda-no-spawn",
- "reject-suspends-task-modifier","reject-sync-lambda-suspends","reject-sync-helper-await"];
+ "reject-suspends-task-modifier","reject-sync-lambda-suspends","reject-sync-helper-await",
+ "suspends-task-caller-value","suspends-lambda-within-task",
+ "reject-suspends-task-prefix","reject-plain-calls-suspends"];
 
 test("task blocks remain an explicitly unverified source contract", () => {
   assert.equal(contract.schemaVersion, 1);
@@ -206,4 +208,30 @@ test("suspends task is redundant, ordinary lambdas cannot inherit effects", asyn
   const helper = await read("reject-sync-helper-await");
   assert.match(helper, /fnc invalid\(\): int\s*\{\s*return await compute\(\)/);
   assert.equal(contract.cases.find(c=>c.id==="reject-sync-helper-await").runtimeExpected,"reject");
+});
+
+
+test("suspends has caller-local effect and adds no hidden Task or Future", async () => {
+  const read = async id => readFile(new URL(id + ".ores", base), "utf8");
+  const direct = await read("suspends-task-caller-value");
+  assert.match(direct, /suspends fnc read_value\(\): int/);
+  assert.match(direct, /let Task<int> job = task\s*\{/);
+  assert.match(direct, /return read_value\(\);/);
+  assert.match(direct, /let int result = await job;/);
+  const lambda = await read("suspends-lambda-within-task");
+  assert.match(lambda, /\(suspends \|int value\| -> value\)\(5\)/);
+  assert.doesNotMatch(lambda, /async task/);
+  for (const id of ["suspends-task-caller-value","suspends-lambda-within-task"]) {
+    assert.equal(contract.cases.find(c => c.id===id)?.runtimeExpected,"pending");
+  }
+});
+
+test("suspends task is not a new launch mode and direct plain callers lack effect", async () => {
+  const read = async id => readFile(new URL(id + ".ores",base), "utf8");
+  assert.match(await read("reject-suspends-task-prefix"), /suspends task\s*\{/);
+  assert.equal(contract.cases.find(c=>c.id==="reject-suspends-task-prefix")?.parserExpected,"reject");
+  const plain = await read("reject-plain-calls-suspends");
+  assert.match(plain, /fnc plain\(\): int \{ return read_value\(\); \}/);
+  assert.equal(contract.cases.find(c=>c.id==="reject-plain-calls-suspends")?.runtimeExpected,"reject");
+  assert.equal(contract.runtimeVerified,false);
 });
