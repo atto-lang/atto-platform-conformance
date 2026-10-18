@@ -39,7 +39,7 @@ const bounded = (v, max=200) => typeof v === 'string' && v.length > 0 &&
 // A downstream authenticator may resolve these paths only under its own
 // trusted artifact root, using no-follow descriptor-based operations.
 const safeLocator = (v) => bounded(v,512) &&
-  !v.includes('\\\\') && !v.includes('\\') && !v.includes('%') &&
+  !v.includes('\\') && !v.includes('%') &&
   !v.includes(':') && !v.startsWith('/') &&
   v.split('/').every(p => p.length>0 && p!=='.' && p!=='..' &&
     /^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(p));
