@@ -1,6 +1,6 @@
 # Oreslang organizational integration map (v1)
 
-This is a **private planning and structural-admission catalog** for 52 GitHub repositories as inventoried on 2026-10-17. It is not a dependency lockfile, feature-completeness report, CI attestation, permission grant, or approval to export source. See `integration/org-repositories.v1.json`.
+This is a **private planning and structural-admission catalog** for 56 GitHub repositories as inventoried on 2026-10-17. It is not a dependency lockfile, feature-completeness report, CI attestation, permission grant, or approval to export source. See `integration/org-repositories.v1.json`.
 
 ## Boundaries
 
@@ -11,6 +11,10 @@ This is a **private planning and structural-admission catalog** for 52 GitHub re
 - Every `nextGate` is a specific next testable deliverable; completing the text alone never marks it done.
 - 44 repositories are private, 8 public in this snapshot. Catalog and validation remain inside a private repo; do not publish private source, manifests containing sensitive code, or private test artifacts.
 - Incident [platform-conformance #22](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22) remains open. **Do not clone or mirror private sources to another org or test carrier** except after the independent, exact-head, protected authorization process has explicitly allowed that specific action and destination. No integration test here copies source between repos.
+
+## ML/tensor expansion (56 repositories)
+
+A versioned candidate #2 now includes `oreslang-tensor`, `oreslang-autograd`, `oreslang-ml`, and `oreslang-ml-conformance`; it retains all prior 52 pinned commits, adds four new immutable `main`-snapshot pins, and records **120 planned integration edges**. This remains a *structural admission* manifest and does not count any new backend/guest feature as complete. Tensor, autodiff, and ML providers have dedicated same-org review branches and the ML conformance review has exact-blob-pinned contracts and independent source-free numerical oracles.
 
 ## Immutable candidate pins
 
@@ -24,7 +28,7 @@ node bin/check-compatibility-release.mjs
 npm test
 ```
 
-The standalone command verifies a closed 52-repository inventory, correct name/visibility vocabulary, no unknown external or self links, deterministic ordering, no duplicate edges, and an acyclic target graph. The output evidence tier is `STRUCTURAL_METADATA_ONLY`. The Node unit tests include adversarial malformed-input cases. GitHub Actions jobs with **zero executed steps** must be labeled `NOT_EXECUTED`, even if the workflow conclusion says `failure`.
+The standalone command verifies a closed 56-repository inventory, correct name/visibility vocabulary, no unknown external or self links, deterministic ordering, no duplicate edges, and an acyclic target graph. The output evidence tier is `STRUCTURAL_METADATA_ONLY`. The Node unit tests include adversarial malformed-input cases. GitHub Actions jobs with **zero executed steps** must be labeled `NOT_EXECUTED`, even if the workflow conclusion says `failure`.
 
 ## Integration waves
 
