@@ -19,7 +19,7 @@ export class DurableDevLoopModel {
       this.db = {
         formatVersion:0, stateSchemaVersion:1, codeGeneration:'dev-loop-v0',
         tenantId, runId, nodeId, epoch:0, active:false, version:0,
-        state:{stage:'editing',iteration:0,expectedSha:null,maxIterations,
+        state:{stage:'editing',iteration:0,expectedSha:null,expectedRef:'refs/heads/dev',maxIterations,
                lastFailure:null,unchangedFailures:0},
         inbox:{}, seen:{}, outbox:{}, events:[]
       };
@@ -76,7 +76,7 @@ export class DurableDevLoopModel {
       case 'github_push':
         // A delivery from an old revision, another branch, or a different iteration is inert.
         if (s.stage!=='waiting_webhook' || m.sha!==s.expectedSha ||
-            m.iteration!==s.iteration || m.ref!==m.expectedRef) {
+            m.iteration!==s.iteration || m.ref!==s.expectedRef) {
           event('stale_webhook_ignored'); break;
         }
         s.stage='testing';
