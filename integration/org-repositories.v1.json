@@ -1,0 +1,527 @@
+{
+  "schemaVersion": 1,
+  "organization": "ores-truffle-oreslang",
+  "snapshotDate": "2026-10-17",
+  "expectedRepositoryCount": 52,
+  "description": "Integration targets and next acceptance gates, NOT implemented/dependency/passing evidence.",
+  "repositories": [
+    {
+      "name": ".github",
+      "visibility": "private",
+      "area": "tooling",
+      "upstreams": [
+        "oreslang-platform-conformance"
+      ],
+      "nextGate": "Define protected-branch and required exact-head evidence policy; no cross-org private-source mirrors without independent authorization."
+    },
+    {
+      "name": "async-testing",
+      "visibility": "private",
+      "area": "conformance",
+      "upstreams": [
+        "oreslang-platform-conformance",
+        "oreslang-source.java"
+      ],
+      "nextGate": "Run pinned real-compiler actor/channel proofs and record run/execution tier without source mirroring."
+    },
+    {
+      "name": "gh-linguist-fork",
+      "visibility": "public",
+      "area": "tooling",
+      "upstreams": [],
+      "nextGate": "Add and test `.ores` syntax detection against canonical shared syntax cases without changing upstream vendor defaults."
+    },
+    {
+      "name": "html-js-css-syntax-highlighter",
+      "visibility": "public",
+      "area": "tooling",
+      "upstreams": [
+        "oreslang-common-source"
+      ],
+      "nextGate": "Pin canonical Oreslang token fixtures and compare highlighted token categories with editor and formatter contracts."
+    },
+    {
+      "name": "ores-truffle-oreslang.github.io",
+      "visibility": "public",
+      "area": "docs",
+      "upstreams": [
+        "html-js-css-syntax-highlighter",
+        "oreslang-platform-conformance"
+      ],
+      "nextGate": "Publish a versioned capability matrix from verified, explicitly public-safe conformance evidence only."
+    },
+    {
+      "name": "oreslang-browser",
+      "visibility": "private",
+      "area": "platform",
+      "upstreams": [
+        "oreslang-source.wasm",
+        "oreslang-target-profiles",
+        "oreslang-wasm"
+      ],
+      "nextGate": "Run real wasm32 scalar artifact through browser-loader admission with import and memory denial cases."
+    },
+    {
+      "name": "oreslang-cli",
+      "visibility": "public",
+      "area": "tooling",
+      "upstreams": [
+        "oreslang-format",
+        "oreslang-platform-conformance",
+        "oreslang-source.java"
+      ],
+      "nextGate": "Pin JSON diagnostic protocol and add check-only end-to-end tests for compiler revisions and zero-execution promise."
+    },
+    {
+      "name": "oreslang-common-source",
+      "visibility": "private",
+      "area": "contracts",
+      "upstreams": [],
+      "nextGate": "Version the normative source/semantic/ownership contract and publish immutable fixture/blob hashes to consumers."
+    },
+    {
+      "name": "oreslang-data-science",
+      "visibility": "private",
+      "area": "library",
+      "upstreams": [
+        "oreslang-source.java",
+        "oreslang-source.llvm"
+      ],
+      "nextGate": "Run identical Oreslang numerical kernels and host-independent output oracles against each admitted compiler."
+    },
+    {
+      "name": "oreslang-db",
+      "visibility": "private",
+      "area": "library",
+      "upstreams": [
+        "oreslang-serialization-and-validation",
+        "oreslang-source.java"
+      ],
+      "nextGate": "Initialize repository and define bounded typed record/transaction adapter contracts with no invented backend support."
+    },
+    {
+      "name": "oreslang-demo",
+      "visibility": "private",
+      "area": "demo",
+      "upstreams": [
+        "oreslang-cli",
+        "oreslang-source.java"
+      ],
+      "nextGate": "Pin compiler/tooling versions and execute example corpus with expected output/negative diagnostics."
+    },
+    {
+      "name": "oreslang-demo-restful-server",
+      "visibility": "public",
+      "area": "demo",
+      "upstreams": [
+        "oreslang-http-routing",
+        "oreslang-otel",
+        "oreslang-spin"
+      ],
+      "nextGate": "Verify exact pins and run API requests against a real Spin server; record responses and graceful shutdown."
+    },
+    {
+      "name": "oreslang-demos",
+      "visibility": "public",
+      "area": "demo",
+      "upstreams": [
+        "oreslang-cli",
+        "oreslang-platform.desktop",
+        "oreslang-source.java"
+      ],
+      "nextGate": "Replace source-file concatenation compatibility shim with a proven compiler-driven multi-file linking gate."
+    },
+    {
+      "name": "oreslang-design-patterns",
+      "visibility": "private",
+      "area": "demo",
+      "upstreams": [
+        "oreslang-platform-conformance",
+        "oreslang-source.java"
+      ],
+      "nextGate": "Add output oracles and compiler-pinned guest execution evidence for each native Oreslang pattern."
+    },
+    {
+      "name": "oreslang-format",
+      "visibility": "private",
+      "area": "tooling",
+      "upstreams": [
+        "oreslang-common-source"
+      ],
+      "nextGate": "Use shared syntax fixtures for parser/formatter roundtrip and verify stable idempotence."
+    },
+    {
+      "name": "oreslang-hot-loading-tests",
+      "visibility": "private",
+      "area": "conformance",
+      "upstreams": [
+        "oreslang-platform-conformance",
+        "oreslang-source.java"
+      ],
+      "nextGate": "Pin generation/reload test traces and verify rollback, actor quiescence and stale-capability rejection."
+    },
+    {
+      "name": "oreslang-hpc-finance",
+      "visibility": "private",
+      "area": "library",
+      "upstreams": [
+        "oreslang-data-science",
+        "oreslang-source.llvm"
+      ],
+      "nextGate": "Pin deterministic numerical/reference fixtures and distinguish scalar from native SIMD/GPU performance evidence."
+    },
+    {
+      "name": "oreslang-http-routing",
+      "visibility": "private",
+      "area": "library",
+      "upstreams": [
+        "oreslang-source.java"
+      ],
+      "nextGate": "Exercise route-ID/pipeline-ID preservation with RPC schema projections and real source guest tests."
+    },
+    {
+      "name": "oreslang-linked-queue",
+      "visibility": "private",
+      "area": "library",
+      "upstreams": [
+        "oreslang-platform-conformance",
+        "oreslang-source.java"
+      ],
+      "nextGate": "Run bounded deque adversarial mutation/alias cases in actual Oreslang guest execution."
+    },
+    {
+      "name": "oreslang-message-queue-demo.ores",
+      "visibility": "private",
+      "area": "demo",
+      "upstreams": [
+        "oreslang-source.java",
+        "rx-oreslang-channels"
+      ],
+      "nextGate": "Initialize an Oreslang-only bounded queue/consumer demo and prove backpressure/cancellation with a pinned compiler."
+    },
+    {
+      "name": "oreslang-otel",
+      "visibility": "private",
+      "area": "library",
+      "upstreams": [
+        "oreslang-source.java"
+      ],
+      "nextGate": "Prove actor-local spans and deterministic event/trace propagation on a pinned real runtime."
+    },
+    {
+      "name": "oreslang-phoenix-server.ores",
+      "visibility": "private",
+      "area": "demo",
+      "upstreams": [
+        "oreslang-rpc",
+        "oreslang-spin"
+      ],
+      "nextGate": "Initialize a Phoenix-style Oreslang server example with a documented distinction from the Elixir framework."
+    },
+    {
+      "name": "oreslang-platform-conformance",
+      "visibility": "private",
+      "area": "conformance",
+      "upstreams": [
+        "oreslang-common-source",
+        "oreslang-target-profiles"
+      ],
+      "nextGate": "Admit signed-off exact compiler binaries and track per-backend guest execution separately from host/mock and runner failures."
+    },
+    {
+      "name": "oreslang-platform.asic",
+      "visibility": "private",
+      "area": "platform",
+      "upstreams": [
+        "oreslang-source.hdl",
+        "oreslang-target-profiles"
+      ],
+      "nextGate": "Pin RTL hashes from HDL compiler and prove synthesis/lint separately from timing, tapeout, or fabricated silicon."
+    },
+    {
+      "name": "oreslang-platform.desktop",
+      "visibility": "private",
+      "area": "platform",
+      "upstreams": [
+        "oreslang-source.llvm",
+        "oreslang-target-profiles"
+      ],
+      "nextGate": "Link a real Oreslang-exported guest scalar into desktop host ABI tests without claiming a GUI actor runtime."
+    },
+    {
+      "name": "oreslang-platform.embedded",
+      "visibility": "private",
+      "area": "platform",
+      "upstreams": [
+        "oreslang-source.llvm",
+        "oreslang-target-profiles"
+      ],
+      "nextGate": "Build and execute freestanding `core` image with no OS/libc/allocator symbols and preserve independent QEMU evidence."
+    },
+    {
+      "name": "oreslang-platform.fpga",
+      "visibility": "private",
+      "area": "platform",
+      "upstreams": [
+        "oreslang-source.hdl",
+        "oreslang-target-profiles"
+      ],
+      "nextGate": "Consume versioned HDL RTL fixture and establish iverilog/synthesis vs board-test evidence tiers."
+    },
+    {
+      "name": "oreslang-platform.iot",
+      "visibility": "private",
+      "area": "platform",
+      "upstreams": [
+        "oreslang-platform.embedded",
+        "oreslang-serialization-and-validation"
+      ],
+      "nextGate": "Define authenticated transport extension over bounded framing and test replay/truncation rejection."
+    },
+    {
+      "name": "oreslang-platform.mobile",
+      "visibility": "private",
+      "area": "platform",
+      "upstreams": [
+        "oreslang-source.llvm",
+        "oreslang-target-profiles"
+      ],
+      "nextGate": "Prove arm64 AOT ABI boundary with explicit ownership and no iOS JIT assumptions."
+    },
+    {
+      "name": "oreslang-proof-of-concepts",
+      "visibility": "private",
+      "area": "demo",
+      "upstreams": [
+        "oreslang-platform-conformance",
+        "oreslang-source.java"
+      ],
+      "nextGate": "Record a same-revision 90-fixture source guest matrix and independently check result oracles."
+    },
+    {
+      "name": "oreslang-restful-server-perf-benchmarks",
+      "visibility": "private",
+      "area": "conformance",
+      "upstreams": [
+        "oreslang-demo-restful-server",
+        "oreslang-spin"
+      ],
+      "nextGate": "Gate every performance comparison on identical HTTP conformance and publish full run provenance before rankings."
+    },
+    {
+      "name": "oreslang-rpc",
+      "visibility": "private",
+      "area": "library",
+      "upstreams": [
+        "oreslang-http-routing",
+        "oreslang-serialization-and-validation"
+      ],
+      "nextGate": "Contract-test stable route, operation and type IDs from HTTP metadata through RPC/Protobuf/JSON Schema projections."
+    },
+    {
+      "name": "oreslang-serialization-and-validation",
+      "visibility": "private",
+      "area": "library",
+      "upstreams": [
+        "oreslang-common-source"
+      ],
+      "nextGate": "Pin bounded codec/refinement fixtures for JSON, MessagePack and Protobuf with fail-closed malformed input."
+    },
+    {
+      "name": "oreslang-source.forge",
+      "visibility": "private",
+      "area": "compiler",
+      "upstreams": [
+        "oreslang-common-source",
+        "oreslang-platform-conformance",
+        "oreslang-target-profiles"
+      ],
+      "nextGate": "Run real guest scalar corpus and independently reject unsupported actor/async/lowering features."
+    },
+    {
+      "name": "oreslang-source.hdl",
+      "visibility": "private",
+      "area": "compiler",
+      "upstreams": [
+        "oreslang-common-source",
+        "oreslang-platform-conformance",
+        "oreslang-target-profiles"
+      ],
+      "nextGate": "Generate checked fixed-width RTL and compare deterministic Oreslang semantic oracle with HDL simulator output."
+    },
+    {
+      "name": "oreslang-source.java",
+      "visibility": "private",
+      "area": "compiler",
+      "upstreams": [
+        "oreslang-common-source",
+        "oreslang-platform-conformance",
+        "oreslang-target-profiles"
+      ],
+      "nextGate": "Integrate compiler-owned import/effect closure and executable actor/OTP fixtures with exact-head native/guest CI."
+    },
+    {
+      "name": "oreslang-source.js",
+      "visibility": "private",
+      "area": "compiler",
+      "upstreams": [
+        "oreslang-common-source",
+        "oreslang-platform-conformance",
+        "oreslang-target-profiles"
+      ],
+      "nextGate": "Pin scalar i64/JS semantics and compare guest output against Java, without advertising unsupported runtime features."
+    },
+    {
+      "name": "oreslang-source.llvm",
+      "visibility": "private",
+      "area": "compiler",
+      "upstreams": [
+        "oreslang-common-source",
+        "oreslang-platform-conformance",
+        "oreslang-target-profiles"
+      ],
+      "nextGate": "Enforce true freestanding admission and compiled source actor/continuation acceptance via native/guest conformance."
+    },
+    {
+      "name": "oreslang-source.net",
+      "visibility": "private",
+      "area": "compiler",
+      "upstreams": [
+        "oreslang-common-source",
+        "oreslang-platform-conformance",
+        "oreslang-target-profiles"
+      ],
+      "nextGate": "Require Native AOT executable plus source-level scalar parity and negative actor admission checks."
+    },
+    {
+      "name": "oreslang-source.wasm",
+      "visibility": "private",
+      "area": "compiler",
+      "upstreams": [
+        "oreslang-platform-conformance",
+        "oreslang-source.llvm",
+        "oreslang-wasm"
+      ],
+      "nextGate": "Execute pinned real LLVM-generated source-to-Wasm scalar cases and deny module imports."
+    },
+    {
+      "name": "oreslang-spin",
+      "visibility": "private",
+      "area": "library",
+      "upstreams": [
+        "oreslang-http-routing",
+        "oreslang-source.java"
+      ],
+      "nextGate": "Test pinned compiler/router compatibility, per-request actor ownership and REST graceful shutdown."
+    },
+    {
+      "name": "oreslang-ssr",
+      "visibility": "private",
+      "area": "library",
+      "upstreams": [
+        "oreslang-http-routing",
+        "oreslang-spin"
+      ],
+      "nextGate": "Connect native HTML response type to Spin route dispatch and verify escaping/HTMX action safety."
+    },
+    {
+      "name": "oreslang-stack-cli",
+      "visibility": "private",
+      "area": "tooling",
+      "upstreams": [
+        "oreslang-http-routing",
+        "oreslang-source.java",
+        "oreslang-spin"
+      ],
+      "nextGate": "Exercise Oreslang-native dev/build flows with flags-2-env and keep unsupported deploy fail-closed."
+    },
+    {
+      "name": "oreslang-target-profiles",
+      "visibility": "private",
+      "area": "contracts",
+      "upstreams": [
+        "oreslang-common-source"
+      ],
+      "nextGate": "Reconcile freestanding profile admission schema drafts and enforce exact provider/effect/import closure before emission."
+    },
+    {
+      "name": "oreslang-test.cli",
+      "visibility": "private",
+      "area": "tooling",
+      "upstreams": [
+        "oreslang-cli",
+        "oreslang-platform-conformance"
+      ],
+      "nextGate": "Unify test invocation/evidence with canonical oreslang CLI and reject synthetic race results as real guest proof."
+    },
+    {
+      "name": "oreslang-wasm",
+      "visibility": "private",
+      "area": "runtime",
+      "upstreams": [
+        "oreslang-source.llvm",
+        "oreslang-target-profiles"
+      ],
+      "nextGate": "Pin wasm ABI/WIT and prove core Wasm host import/memory gates with real compiler artifacts."
+    },
+    {
+      "name": "oreslang-websocket-server-demo.ores",
+      "visibility": "private",
+      "area": "demo",
+      "upstreams": [
+        "oreslang-rpc",
+        "oreslang-source.java"
+      ],
+      "nextGate": "Initialize a typed WebSocket actor example and verify bounded channel + lifecycle/close behavior."
+    },
+    {
+      "name": "rx-ores",
+      "visibility": "private",
+      "area": "library",
+      "upstreams": [
+        "oreslang-source.java"
+      ],
+      "nextGate": "Run demand-driven pull/Future cancellation and leak/terminal semantics on pinned real guest runtime."
+    },
+    {
+      "name": "rx-ores-callbacks",
+      "visibility": "private",
+      "area": "library",
+      "upstreams": [
+        "oreslang-source.java",
+        "rx-ores"
+      ],
+      "nextGate": "Prove callback continuation and stop-backpressure semantics against shared reactive signal oracle."
+    },
+    {
+      "name": "rx-oreslang-channels",
+      "visibility": "private",
+      "area": "library",
+      "upstreams": [
+        "oreslang-source.java",
+        "rx-ores"
+      ],
+      "nextGate": "Verify bounded channel select, cancellation and linearizable terminal outcomes with shared Rx semantic fixtures."
+    },
+    {
+      "name": "sublime-text-plugins",
+      "visibility": "public",
+      "area": "tooling",
+      "upstreams": [
+        "oreslang-cli",
+        "oreslang-format"
+      ],
+      "nextGate": "Test `oreslang check --format=json` diagnostic parsing against the same fixtures as VS Code."
+    },
+    {
+      "name": "vscode-plugins",
+      "visibility": "public",
+      "area": "tooling",
+      "upstreams": [
+        "oreslang-cli",
+        "oreslang-format"
+      ],
+      "nextGate": "Test canonical CLI diagnostic schema and shared syntax-highlighting fixture against editor adapter."
+    }
+  ]
+}
