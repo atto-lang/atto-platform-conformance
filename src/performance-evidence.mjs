@@ -124,7 +124,7 @@ export function validatePerformanceEvidence(r) {
     if (r.status === 'SIMULATED_ONLY') check(r.family !== 'software' &&
       stages.has('simulation'), 'simulation evidence required for hardware');
     if (r.family === 'asic' && r.kind === 'power')
-      check(stages.has('power-model'), 'ASIC power needs a switching/library model');
+      check(stages.has('power-model'), 'ASIC power requires power-model evidence (switching/library model)');
   } else {
     check(r.samples.length === 0 && r.evidence.length === 0,
       'unverified/failed status cannot report promoted measurements');
