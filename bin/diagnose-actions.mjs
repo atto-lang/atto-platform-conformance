@@ -35,6 +35,7 @@ export function assessRun(run, jobsResponse) {
     const steps = Array.isArray(job?.steps) ? job.steps : null;
     const executed = steps?.filter(isExecuted) ?? null;
     const failing = steps?.filter(isFailed) ?? null;
+    const cancelled = steps?.filter(step => step?.status === "completed" && step.conclusion === "cancelled") ?? null;
     const runnerAllocated = Number.isSafeInteger(job?.runner_id) && job.runner_id > 0;
     const jobHeadMatch = job?.head_sha == null ? "UNKNOWN" :
       runHeadValid && job.head_sha === run.head_sha ? "VERIFIED" : "MISMATCH";
@@ -44,7 +45,8 @@ export function assessRun(run, jobsResponse) {
       Number.isSafeInteger(run.run_attempt) && run.run_attempt > 0 &&
       job.run_attempt === run.run_attempt ? "VERIFIED" : "MISMATCH";
     const meaningfulExecution = runnerAllocated &&
-      (executed?.some(step => !isHousekeeping(step.name)) ?? false);
+      (executed?.some(step => step.conclusion === "success" && !isHousekeeping(step.name)) ?? false) &&
+      cancelled?.length === 0;
     let classification;
     if (!job?.status) classification = "UNKNOWN_JOB_STATUS";
     else if (job.status !== "completed") classification = "PENDING_OR_QUEUED";
@@ -53,6 +55,7 @@ export function assessRun(run, jobsResponse) {
     else if (!steps) classification = job?.conclusion === "failure" ? "UNOBSERVED_FAILURE" : "STEPS_UNAVAILABLE";
     else if (failing.length) classification = failing.some(s => s.conclusion === "failure")
       ? "EXECUTED_STEP_FAILURE" : "EXECUTED_STEP_TIMEOUT";
+    else if (cancelled?.length) classification = "EXECUTED_STEP_CANCELLED";
     else if (job?.conclusion === "failure" && steps.length === 0) classification = "OBSERVED_NO_STEP_FAILURE";
     else if (job?.conclusion === "failure" && executed.length === 0) classification = "FAILED_JOB_WITH_NO_EXECUTED_STEP";
     else if (job?.conclusion === "failure") classification = "FAILED_JOB_WITHOUT_FAILED_STEP";
@@ -76,7 +79,7 @@ export function assessRun(run, jobsResponse) {
     };
   });
   const kinds = new Set(normalized.map(j => j.classification));
-  const priority = ["EXECUTED_STEP_FAILURE", "EXECUTED_STEP_TIMEOUT", "UNOBSERVED_FAILURE",
+  const priority = ["EXECUTED_STEP_FAILURE", "EXECUTED_STEP_TIMEOUT", "EXECUTED_STEP_CANCELLED", "UNOBSERVED_FAILURE",
     "OBSERVED_NO_STEP_FAILURE", "FAILED_JOB_WITHOUT_FAILED_STEP", "FAILED_JOB_WITH_NO_EXECUTED_STEP",
     "PENDING_OR_QUEUED", "CANCELLED", "SKIPPED", "STEPS_UNAVAILABLE", "TIMED_OUT_UNATTRIBUTED",
     "SUCCESS_WITHOUT_EXECUTION_EVIDENCE", "UNKNOWN_JOB_STATUS", "OTHER_STATUS"];
