@@ -328,6 +328,15 @@ export async function auditRepository(repo,{token,fetchImpl=fetch}={}){
   // Confirm the original reviewed private repository, not just an owner/repo
   // slug that could be reassigned after an organization transfer or rename.
   await assertSourceIdentity();
+  const codeownerPermission=async()=>{
+    const doc=await getJson(base+"/collaborators/ORESoftware/permission",token,fetchImpl);
+    if(doc?.user?.login!=="ORESoftware" || doc.user.id!==11139560 ||
+       doc.user.type!=="User" ||
+       !["write","maintain","admin"].includes(doc.permission)){
+      error("trusted CODEOWNER must retain verified write access");
+    }
+  };
+  await codeownerPermission();
   const branch=await getJson(base+"/branches/main",token,fetchImpl);
   const protectedSha=branch?.commit?.sha;
   if(branch?.name!=="main" || branch.protected!==true ||
