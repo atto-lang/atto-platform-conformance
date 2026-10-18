@@ -205,3 +205,16 @@ test("confirmed mismatched job head SHA cannot be attributed as test failure",()
  assert.equal(out.jobs[0].classification,"EXECUTED_STEP_FAILURE");
  assert.equal(out.all_job_head_shas_verified,false);
 });
+
+test("cancelled executed step must never certify a successful test run",()=>{
+ for(const steps of [
+  [step("Compiler test","cancelled")],
+  [step("Checkout"),step("Compiler test","cancelled")],
+  [step("Compiler test","success"),step("Post-test verification","cancelled")]
+ ]){
+  const out=assess([job(steps,{conclusion:"success"})],{conclusion:"success"});
+  assert.equal(out.classification,"EXECUTED_STEP_CANCELLED");
+  assert.notEqual(out.classification,"EXECUTED_STEPS_SUCCEEDED");
+  assert.equal(out.permits_merging,false);
+ }
+});
