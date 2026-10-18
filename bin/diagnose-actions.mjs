@@ -10,7 +10,16 @@ const REPO = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
 const SHA = /^[a-f0-9]{40}$/;
 const STEP_CONCLUSIONS = new Set(["success", "failure", "cancelled", "timed_out", "neutral"]);
 const HOUSEKEEPING = new Set(["Set up job", "Complete job", "Initialize containers", "Start containers", "Stop containers"]);
-const isHousekeeping = name => HOUSEKEEPING.has(name) || (typeof name === "string" && /^(Pre |Post )/.test(name));
+// Completed checkout/setup/upload steps prove a runner did some work, but not
+// that a compiler or test ran. Names are advisory, so this remains diagnostic.
+const isHousekeeping = name => {
+  if (typeof name !== "string" || !name.trim()) return true;
+  const normalized = name.trim();
+  return HOUSEKEEPING.has(normalized) ||
+    /^(?:Pre |Post )/i.test(normalized) ||
+    /^(?:Run )?actions\/(?:checkout|cache|setup-[a-z0-9_-]+|upload-artifact|download-artifact)(?:@[^ ]+)?$/i.test(normalized) ||
+    /^(?:Checkout(?: repository| source| code)?|Set up (?:Node|Java|Python|Go|Rust|Ruby|Gradle|Maven)|Cache(?: dependencies)?|Upload artifact|Download artifact)$/i.test(normalized);
+};
 const isExecuted = step => step && typeof step === "object" &&
   step.status === "completed" && STEP_CONCLUSIONS.has(step.conclusion);
 const isFailed = step => step && step.status === "completed" && ["failure", "timed_out"].includes(step.conclusion);
@@ -44,7 +53,7 @@ export function assessRun(run, jobsResponse) {
       Number.isSafeInteger(run.run_attempt) && run.run_attempt > 0 &&
       job.run_attempt === run.run_attempt ? "VERIFIED" : "MISMATCH";
     const meaningfulExecution = runnerAllocated &&
-      (executed?.some(step => !isHousekeeping(step.name)) ?? false);
+      (executed?.some(step => step.conclusion === "success" && !isHousekeeping(step.name)) ?? false);
     let classification;
     if (!job?.status) classification = "UNKNOWN_JOB_STATUS";
     else if (job.status !== "completed") classification = "PENDING_OR_QUEUED";
@@ -71,7 +80,7 @@ export function assessRun(run, jobsResponse) {
       head_sha_match:jobHeadMatch,
       run_id_match:jobRunMatch,
       run_attempt_match:jobAttemptMatch,
-      meaningful_executed_step_count:executed?.filter(s=>!isHousekeeping(s.name)).length ?? null,
+      meaningful_executed_step_count:executed?.filter(s=>s.conclusion === "success" && !isHousekeeping(s.name)).length ?? null,
       classification,
     };
   });
