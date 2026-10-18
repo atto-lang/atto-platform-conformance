@@ -56,3 +56,14 @@ There is no implicit type flattening or extra scheduling tier for `async task`. 
 This is **frontend syntax admission plus proposed contracts**, not executable backend parity. Lambda arguments and nonlocal captures must be moved/copied/shared with explicit actor/tenant-safe authority before the Task begins. `Task<T>.asFuture()` currently projects the *same cancelable host runtime Future* (Java #1379); this is not a read-only subscription and must not leak cancellation authority to untrusted callers.
 
 Additional regression targets: type inference for `Future<Task<T>>`, lexical returns and `finally` rejection, nested suspend ownership, cancellation of a never-joined task, move-only result consumption, hot-reload invalidation, and LLVM-native scheduling.
+
+
+## Task spellings and strict ownership additions (October 18, 2026)
+
+We retain `nb { ... }` and `do nb { ... }` for source compatibility, but the clearer forms `task { ... }` and `do task { ... }` have the same Task-expression and discarded-handle AST, respectively. `await task { ... }` is the immediate Task join. `nb task { ... }` is **not** a second "do not yield" mode; it is invalid. OS thread scheduling is an implementation detail, and only `await` suspends the caller. An `async task` whose body returns another `task {}` produces `Task<Task<T>>` and needs two explicit awaits.
+
+Java frontend #1377 adds ownership checker coverage for these spellings plus double-move captures, transitive captures from immediately invoked lambdas, borrowed capture/arguments, actor/mutex guard escapes, and ordinary borrow leases held over await. Storing a first-class `async task` or `async` lambda without immediate invocation remains statically rejected: until typed callable capture metadata exists, indirect invocation might otherwise smuggle a borrowed argument across a scheduler boundary.
+
+Java runtime #1379 contains nonparking host scheduler integration tests using a single `OresScheduler` carrier and tests cancellation/owner shutdown. A context-level compiler-frame launch adapter now rejects actor-owned Tasks until mailbox lifecycle integration and rejects untrusted Tasks until inherited fuel/deadline accounting exists.
+
+**Not yet finished:** end-to-end Oreslang source continuations, actor-owned per-Task scopes, exact capture/return typing, cancellation quiescence integration and verified Java/LLVM runtime parity. These fixture checks do not exercise those implementations.
