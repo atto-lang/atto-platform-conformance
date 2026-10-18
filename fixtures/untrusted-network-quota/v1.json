@@ -134,6 +134,24 @@
       "description": "An actual UNTRUSTED actor turn invoking the ordinary Java NativeIo outbound HTTP or TCP path is rejected before host networking",
       "expected": "broker-required",
       "backendEvidence": "pending"
+    },
+    {
+      "id": "http-caller-cancel-does-not-own-host-io",
+      "description": "Cancel the untrusted caller-visible HTTP result while a real host HTTP response is blocked; the underlying host transport alone settles the slot",
+      "expected": "host-owned-completion",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "tcp-actual-socket-closure",
+      "description": "A trusted broker opens real asynchronous TCP, then supervisor shutdown or cancellation closes that OS channel before it recycles the socket slot",
+      "expected": "physical-close-before-release",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "monotonic-clock-representation-wrap",
+      "description": "Rate accounting must handle a trusted monotonic sample crossing signed or unsigned integer representation wrap, rejecting backward samples without granting extra starts",
+      "expected": "bounded-refill",
+      "backendEvidence": "pending"
     }
   ]
 }
