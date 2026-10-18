@@ -7,7 +7,10 @@ const contract = JSON.parse(await readFile(new URL("manifest.json", base), "utf8
 const ids = ["do-nb-no-handle","task-int-await","task-void-await","reject-bare-nb","reject-escaping-borrow",
  "task-iife-expression","task-iife-block","task-iife-awaited","task-iife-future-observer",
  "async-task-braced","async-task-expression","async-task-immediate-await",
- "async-future-nested-task","reject-async-task-malformed"];
+ "async-future-nested-task","reject-async-task-malformed",
+ "task-spelling-value","task-spelling-discard","task-spelling-await","task-nested-not-flattened",
+ "reject-nb-task","reject-task-escaping-borrow","reject-task-double-move",
+ "reject-task-borrow-across-await","reject-task-borrowed-iife-argument"];
 
 test("task blocks remain an explicitly unverified source contract", () => {
   assert.equal(contract.schemaVersion, 1);
@@ -109,4 +112,44 @@ test("malformed async task lambda must fail parser admission", async () => {
   const entry = contract.cases.find(c => c.id === "reject-async-task-malformed");
   assert.equal(entry.parserExpected,"reject");
   assert.equal(entry.runtimeExpected,"forbidden");
+});
+
+
+test("task and nb share one Task expression contract, await is the join", async () => {
+  const read = async id => readFile(new URL(id + ".ores",base), "utf8");
+  const value = await read("task-spelling-value");
+  const detached = await read("task-spelling-discard");
+  const joined = await read("task-spelling-await");
+  assert.match(value, /let Task<int> job = task\s*\{/);
+  assert.match(value, /let int value = await job;/);
+  assert.match(detached, /\bdo task\s*\{/);
+  assert.match(joined, /let int value = await task\s*\{/);
+  assert.doesNotMatch(joined, /\bnb task\s*\{/);
+});
+
+test("nested Task is not flattened by one await", async () => {
+  const file = await readFile(new URL("task-nested-not-flattened.ores",base),"utf8");
+  assert.match(file, /Task<Task<int>> outer/);
+  assert.match(file, /async task \|int x\| -> task\s*\{/);
+  assert.match(file, /Task<int> inner = await outer;/);
+  assert.match(file, /int answer = await inner;/);
+});
+
+test("borrow and move negative fixtures cannot be classified as passes", async () => {
+  const read = async id => readFile(new URL(id + ".ores",base), "utf8");
+  const forbidden = await read("reject-nb-task");
+  assert.match(forbidden, /\bnb task\s*\{/);
+  assert.equal(contract.cases.find(c => c.id === "reject-nb-task").parserExpected,"reject");
+  for (const id of [
+    "reject-task-escaping-borrow", "reject-task-double-move",
+    "reject-task-borrow-across-await", "reject-task-borrowed-iife-argument"
+  ]) {
+    const entry = contract.cases.find(c => c.id === id);
+    assert.equal(entry.parserExpected,"accept");
+    assert.equal(entry.runtimeExpected,"reject");
+  }
+  assert.match(await read("reject-task-escaping-borrow"), /rt borrow/);
+  assert.match(await read("reject-task-double-move"), /Task<int> second = task/);
+  assert.match(await read("reject-task-borrow-across-await"), /await job/);
+  assert.match(await read("reject-task-borrowed-iife-argument"), /async task/);
 });
