@@ -7,7 +7,7 @@
   "inventoryPath": "integration/org-repositories.v1.json",
   "promotionState": "BLOCKED_UNVERIFIED",
   "securityIncident": "oreslang-platform-conformance#22",
-  "provenance": "Versioned 56-repository candidate: the original 52 frozen commit-search pins are preserved; four ML-layer commits were read from authenticated main Git refs and repository numeric IDs. SHA pins are historical and NOT CI, branch-tip, runtime, or compatibility evidence.",
+  "provenance": "Versioned 56-repository candidate: the original 52 frozen commit-search pins are preserved; four ML-layer commits were read from authenticated main Git refs and repository numeric IDs. SHA pins are historical and NOT CI, branch-tip, runtime, or compatibility evidence. NOT branch tip attestation or CI evidence.",
   "policy": "METADATA_ONLY_NO_SOURCE_EXPORT",
   "pins": [
     {
