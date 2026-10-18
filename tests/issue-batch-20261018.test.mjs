@@ -16,8 +16,10 @@ test("October issue batch covers 30 unique existing issue refs across 20 distinc
   assert.equal(seen.has(row.repository),false,"duplicate repo");
   seen.add(row.repository);
   assert.equal(row.branch,"draft/issue-batch-"+row.issues.map(x=>x.number).join("-")+"-20261018");
-  assert.ok(["partial-draft-pr","branch-created-only"].includes(row.status));
+  assert.ok(["partial-draft-pr","merged-partial-pr","branch-created-only"].includes(row.status));
   assert.equal(Object.hasOwn(row,"draftPullRequest"),row.status==="partial-draft-pr");
+  assert.equal(Object.hasOwn(row,"mergedPullRequest"),row.status==="merged-partial-pr");
+  if(row.status==="merged-partial-pr")assert.match(row.mergedPullRequest,/\/pull\/\d+$/);
   for(const issue of row.issues){
    assert.ok(Number.isSafeInteger(issue.number)&&issue.number>0);
    assert.equal(issue.url,"https://github.com/"+row.repository+"/issues/"+issue.number);
@@ -25,6 +27,10 @@ test("October issue batch covers 30 unique existing issue refs across 20 distinc
   }
  }
  assert.equal(issues,30);
+ const statuses=batch.repositories.map(x=>x.status);
+ assert.equal(statuses.filter(x=>x==="partial-draft-pr").length,8);
+ assert.equal(statuses.filter(x=>x==="merged-partial-pr").length,2);
+ assert.equal(statuses.filter(x=>x==="branch-created-only").length,10);
 });
 
 test("branch setup and draft PRs are not misreported as certified implementations",()=>{
