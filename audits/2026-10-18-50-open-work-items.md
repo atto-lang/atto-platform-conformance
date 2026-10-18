@@ -69,7 +69,7 @@ Source: GitHub live open-PR search (`org:ores-truffle-oreslang is:open updated:>
 
 ## Execution evidence recorded in this session
 
-- Zorde PR #25: located same-line false-positive compiler-privacy diagnostic bypass; source-free regression model reproduced six forgeries, new local 26-case test suite passes, code/tests committed to the existing PR branch. Still requires real compiler diagnostics and trusted CI.
+- Zorde PR #25: located same-line false-positive compiler-privacy diagnostic bypass; source-free regression model reproduced six forgeries, new local 29-case test suite passes, code/tests committed to the existing PR branch. Still requires real compiler diagnostics and trusted CI.
 - All 50: located as open via live search, each assigned a concrete next execution gate. Status of executable CI was not independently checked for all 50.
 - No private source was exported or copied to a different org, no PR merged, and no branch protection changed.
 
