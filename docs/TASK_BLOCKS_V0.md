@@ -67,3 +67,16 @@ Java frontend #1377 adds ownership checker coverage for these spellings plus dou
 Java runtime #1379 contains nonparking host scheduler integration tests using a single `OresScheduler` carrier and tests cancellation/owner shutdown. A context-level compiler-frame launch adapter now rejects actor-owned Tasks until mailbox lifecycle integration and rejects untrusted Tasks until inherited fuel/deadline accounting exists.
 
 **Not yet finished:** end-to-end Oreslang source continuations, actor-owned per-Task scopes, exact capture/return typing, cancellation quiescence integration and verified Java/LLVM runtime parity. These fixture checks do not exercise those implementations.
+
+
+## `suspends` / Task effect contract
+
+`suspends` marks a callable that may cooperatively suspend its **current caller Task**; it does **not** create a Task or Future. It can be invoked from a `suspends` function, an ordinary `async` function, or the body of a `task {}` / `async task` once those bodies have compiler-generated continuation frames. `async task` already implies a suspendable body; an additional `suspends` modifier is redundant and disallowed.
+
+A new `suspends |int a| -> expression` lambda parses as an explicit `SuspendsLambdaExpr` with a no-spawn effect. The contextual `suspend |...|` alias is admitted, while a plain `suspend(...)` named callable is preserved. **Executing first-class suspends lambdas remains type-checker gated**, since effectful function types, continuation frames and ownership-safe captures are not implemented.
+
+A normal synchronous lambda inside a `suspends` / `async` function does not inherit its parent's suspension permission. The current Java compiler checks both direct `suspends` calls and `await` against that callable-local effect. Existing root `main` is a special entry point already running in a VM Task, so it may `await` without a `suspends` annotation. Non-root helpers must explicitly declare `suspends` or `async`.
+
+Six new fixtures check `suspends fnc` in Task blocks and Task lambdas, no-spawn `suspends` lambdas, forbidden `suspends task`, and negative non-suspendable lambda/helper calls. The fixtures only establish grammar and declared contracts, **not executable Java/LLVM parity**. `runtimeVerified` remains `false`.
+
+Any `suspends` call, `await` and async iteration are actual suspension boundaries; a live ordinary borrow, MutexGuard or actor-private mutable state may not escape across them. A synchronous helper or closure may not smuggle suspension effects through a plain function signature. Native LLVM rejects unsupported `suspends` lambda lowering rather than compiling an untyped scalar substitute.
