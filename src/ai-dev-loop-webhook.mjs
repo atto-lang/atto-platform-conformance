@@ -41,8 +41,9 @@ export async function admitGithubPush({secret,headers,rawBody,readExpected,persi
       expected.expectedSha!==payload.after ||
       expected.expectedRef!==payload.ref ||
       !nonempty(expected.tenantId) || !nonempty(expected.workflowId) ||
-      !nonempty(expected.runId) || !Number.isSafeInteger(expected.iteration) ||
-      expected.iteration<1) return {status:202,code:'STALE_OR_UNRELATED'};
+      !nonempty(expected.runId) || !nonempty(expected.nodeId) ||
+      !Number.isSafeInteger(expected.iteration) || expected.iteration<1 ||
+      !Number.isSafeInteger(expected.stateVersion) || expected.stateVersion<0) return {status:202,code:'STALE_OR_UNRELATED'};
   // persistInbox MUST atomically deduplicate this delivery and verify
   // run/iteration/expected SHA under a storage transaction.
   const inserted=await persistInbox({
