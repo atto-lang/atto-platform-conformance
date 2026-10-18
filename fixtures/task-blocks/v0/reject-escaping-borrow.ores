@@ -1,0 +1,10 @@
+pub fnc main(): void {
+  let int mutable = 42;
+  let int shared = rt borrow mut mutable;
+  let Task<void> t = nb {
+    consume(shared);
+    return;
+  };
+  await t;
+  return;
+}
