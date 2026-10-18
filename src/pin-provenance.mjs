@@ -50,10 +50,11 @@ export function createGitHubReadonlyRequester(token, fetchImpl = globalThis.fetc
       /[\r\n]/.test(token)) throw Error("audit: explicitly supplied GitHub read token required");
   if (typeof fetchImpl !== "function") throw Error("audit: fetch implementation required");
   return async function requestJson(path) {
-    if (typeof path !== "string" ||
-        !/^\/repos\/ores-truffle-oreslang\/[a-z0-9._-]+\/(?:)?/.test(path) ||
-        path.includes("..") && !/\/compare\/[a-f0-9]{40}\.\.\.[a-f0-9]{40}$/.test(path) ||
-        /[?#%\r\n]/.test(path)) {
+    const safePath = typeof path === "string" &&
+      /^\\/repos\\/ores-truffle-oreslang\\/(?:\\.github|[a-z0-9][a-z0-9._-]*)(?:\\/git\\/ref\\/heads\\/main|\\/compare\\/[a-f0-9]{40}\\.\\.\\.[a-f0-9]{40})?$/.test(path) &&
+      !path.includes("%") && !path.includes("?") && !path.includes("#") &&
+      !path.includes("\\r") && !path.includes("\\n");
+    if (!safePath) {
       throw Error("audit: invalid GitHub API path");
     }
     const response = await fetchImpl("https://api.github.com" + path, {
