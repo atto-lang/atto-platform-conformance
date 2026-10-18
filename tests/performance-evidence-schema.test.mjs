@@ -65,3 +65,27 @@ test('schema artifact locator syntax agrees with structural validator',()=>{
     assert.equal(pattern.test(bad),false,bad);
   }
 });
+
+test('Draft 2020-12 evidence stage admission is aligned with the runtime gate',()=>{
+  // This is a source-free structural check; the separate Python jsonschema
+  // suite evaluates actual Draft2020-12 semantics across 896 stage subsets.
+  const clauses=schema.allOf.filter(x=>x.then?.properties?.evidence?.contains);
+  const stageOf=x=>x.then.properties.evidence.contains.properties.stage.const;
+  const matches=(clause,request)=>Object.entries(clause.if.properties).every(([k,v])=>
+    Object.hasOwn(v,'const')?request[k]===v.const:v.enum?.includes(request[k]));
+  const vectors=[
+    [{status:'MEASURED',family:'software',kind:'latency'},['correctness','benchmark']],
+    [{status:'MEASURED',family:'fpga',kind:'fmax'},['correctness','benchmark','place-route','board']],
+    [{status:'SYNTH_ONLY',family:'fpga',kind:'lut'},['correctness','synthesis']],
+    [{status:'SIMULATED_ONLY',family:'fpga',kind:'ii'},['correctness','simulation']],
+    [{status:'PLACE_ROUTE_VERIFIED',family:'fpga',kind:'fmax'},['correctness','place-route']],
+    [{status:'SYNTH_ONLY',family:'asic',kind:'power'},['correctness','synthesis','power-model']],
+    [{status:'SIMULATED_ONLY',family:'asic',kind:'area'},['correctness','simulation']],
+  ];
+  assert.equal(clauses.length,9);
+  for(const [claim,required] of vectors){
+    const stages=clauses.filter(c=>matches(c,claim)).map(stageOf);
+    assert.deepEqual([...new Set(stages)].sort(),required.sort(),
+      JSON.stringify(claim));
+  }
+});
