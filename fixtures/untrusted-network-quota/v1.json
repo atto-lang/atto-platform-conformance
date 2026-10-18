@@ -122,6 +122,18 @@
       "description": "A supervisor or tenant denies admission after child tentative debit and the host rolls all tentative state back atomically before returning",
       "expected": "rollback-unpublished-only",
       "backendEvidence": "pending"
+    },
+    {
+      "id": "revoked-hierarchy-all-or-nothing",
+      "description": "When any one trusted quota scope closes between admission and dispatch the entire composite lease must refuse before committing any component",
+      "expected": "deny-all-commit",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "java-direct-network-entry-denied",
+      "description": "An actual UNTRUSTED actor turn invoking the ordinary Java NativeIo outbound HTTP or TCP path is rejected before host networking",
+      "expected": "broker-required",
+      "backendEvidence": "pending"
     }
   ]
 }
