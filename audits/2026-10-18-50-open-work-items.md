@@ -123,8 +123,11 @@ concurrency/runner canary on branch
 `c06c67734bd1f5b9f29b4a5cb872b99828e632a5`, Actions run
 https://github.com/opto-sync-test/go-java-validation/actions/runs/39177621239
 completed successfully with **eight executed steps**, including compile
-and 1,750 synthetic concurrency cases. A separate local Java 21 source-free
-model passed 3,000 cases.
+and 1,750 synthetic concurrency cases; follow-up
+[run #39178027624](https://github.com/opto-sync-test/go-java-validation/actions/runs/39178027624)
+also passed eight steps and **2,250** source-free cases (including
+integer-saturation checks). A separate local Java 21 source-free
+model passed **3,500** cases.
 
 The alternate org is **runner-capable**; this is explicitly **not** a
 release test of #1407 or a cross-org private Oreslang tree mirror.
