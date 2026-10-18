@@ -23,14 +23,28 @@ const FAIL = (message) => { throw new Error("external ORES audit: " + message); 
 const isObject = (value) => value !== null && typeof value === "object" &&
   !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
 const text = (value) => typeof value === "string" && value.length > 0 && !/[\r\n\0]/.test(value);
+// Audit inventories are coordination-only and must be CLOSED objects.
+// Additional invented fields such as "nativeCompilerPassed" may not hitchhike
+// alongside validated metadata and be mistaken for verified release evidence.
+const requireKeys = (value, required, optional = []) => {
+  if (!isObject(value)) FAIL("inventory entry must be an object");
+  const actual = Object.keys(value);
+  const allowed = new Set([...required, ...optional]);
+  if (required.some(key => !Object.hasOwn(value, key)) ||
+      actual.some(key => !allowed.has(key))) {
+    FAIL("unexpected or missing audit inventory field");
+  }
+};
 
 export function validateExternalOresAudit(audit) {
   if (!isObject(audit)) FAIL("root must be a plain object");
+  requireKeys(audit, ["schemaVersion", "snapshotDate", "status", "authorityPolicy", "securityPolicy", "upstreams", "boundaries", "issues"]);
   if (audit.schemaVersion !== 1 || audit.status !== "coordination-only" ||
       !/^20\d\d-\d\d-\d\d$/.test(audit.snapshotDate ?? "")) {
     FAIL("unsupported schema, date, or unsupported attestation status");
   }
   const auth = audit.authorityPolicy;
+  requireKeys(auth, ["typespec", "jsonSchema", "generated", "precedence"]);
   if (!isObject(auth) || auth.typespec !== "independent-peer" ||
       auth.jsonSchema !== "independent-peer" ||
       auth.generated !== "comparison-evidence-only" ||
@@ -38,6 +52,7 @@ export function validateExternalOresAudit(audit) {
     FAIL("TypeSpec and JSON Schema must remain independent peers");
   }
   const sec = audit.securityPolicy;
+  requireKeys(sec, ["privateSourceToPublicCarrier", "privateSourceToUnapprovedPrivateCarrier", "releaseOnZeroStepCI", "allowRunnerCapacityAsCopyAuthorization", "requireProtectedSourceMain", "requireReviewedExactSourceTree", "requireApprovedPrivateDestination", "requireExecutedCompilerSteps", "requireImmutablePin", "requireRuntimeEvidence"]);
   if (!isObject(sec) || sec.privateSourceToPublicCarrier !== "forbidden" ||
       sec.privateSourceToUnapprovedPrivateCarrier !== "forbidden" ||
       sec.releaseOnZeroStepCI !== "forbidden" ||
@@ -54,6 +69,7 @@ export function validateExternalOresAudit(audit) {
   }
   const upstreamNames = new Set();
   for (const p of audit.upstreams) {
+    requireKeys(p, ["repo", "kind", "evidence", "gate"], ["blocker"]);
     if (!isObject(p) || !REQUIRED_UPSTREAMS.has(p.repo) ||
         upstreamNames.has(p.repo) || !text(p.kind) || !text(p.gate) ||
         p.evidence !== "not-attested") {
@@ -78,6 +94,7 @@ export function validateExternalOresAudit(audit) {
   }
   const boundaries = new Set();
   for (const edge of audit.boundaries) {
+    requireKeys(edge, ["consumer", "upstream", "relationship", "evidence", "note"]);
     if (!isObject(edge) || !text(edge.consumer) ||
         !/^ores-[a-z0-9-]+\/[A-Za-z0-9._-]+$/.test(edge.consumer) ||
         !upstreamNames.has(edge.upstream) || !text(edge.relationship) ||
@@ -96,6 +113,7 @@ export function validateExternalOresAudit(audit) {
   const byOrg = new Map([...ORGS].map(([name]) => [name, 0]));
   const byWave = new Map([[1, 0], [2, 0], [3, 0], [4, 0]]);
   for (const [index, item] of audit.issues.entries()) {
+    requireKeys(item, ["ordinal", "repository", "number", "title", "url", "workstream", "wave", "priority", "status"]);
     if (!isObject(item) || item.ordinal !== index + 1 ||
         !Number.isSafeInteger(item.number) || item.number < 1 ||
         !text(item.repository) || !text(item.title) ||
