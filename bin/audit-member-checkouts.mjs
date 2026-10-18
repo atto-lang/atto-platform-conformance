@@ -25,13 +25,20 @@ export function inspectCheckouts(registry, parent, {allowMissing=false}={}) {
     if(!contractDir.isDirectory() || contractDir.isSymbolicLink() || realpathSync(join(dir,".oreslang"))!==join(dir,".oreslang")) throw new Error("linked integration contract directory: "+row.name);
     const fst=lstatSync(manifestPath);
     if(!fst.isFile() || fst.isSymbolicLink() || fst.size>65536) throw new Error("unsafe member manifest: "+row.name);
-    const member=JSON.parse(readFileSync(manifestPath,"utf8"));
+    const manifestBytes=readFileSync(manifestPath);
+    const member=JSON.parse(manifestBytes.toString("utf8"));
     validateMember(registry,member);
     const top=realpathSync(git(dir,["rev-parse","--show-toplevel"]));
     if(top!==dir) throw new Error("not an independent git checkout: "+row.name);
     const commit=git(dir,["rev-parse","HEAD"]);
     const tree=git(dir,["rev-parse","HEAD^{tree}"]);
     if(!/^[0-9a-f]{40,64}$/.test(commit) || !/^[0-9a-f]{40,64}$/.test(tree)) throw new Error("invalid git object ID: "+row.name);
+    // status alone omits ignored files and can hide assume-unchanged entries.
+    // Bind the validated bytes to the recorded immutable commit explicitly.
+    const entry=git(dir,["ls-tree",commit,"--",".oreslang/integration.json"]);
+    if(!/^100644 blob [0-9a-f]{40,64}\t\.oreslang\/integration\.json$/.test(entry)) throw new Error("manifest must be a committed regular file: "+row.name);
+    const committed=execFileSync("git",["show",commit+":.oreslang/integration.json"],{cwd:dir,timeout:15000,stdio:["ignore","pipe","pipe"],maxBuffer:65536});
+    if(!manifestBytes.equals(committed)) throw new Error("manifest differs from recorded commit: "+row.name);
     if(git(dir,["status","--porcelain","--untracked-files=all"])) throw new Error("dirty worktree: "+row.name);
     seen.add(row.name);
     checked.push({repository:member.repository,commit,tree,evidence:"metadata-only"});
