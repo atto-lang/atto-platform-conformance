@@ -266,7 +266,7 @@ test("unprotected source or missing enforceable codeowner review rejects",async(
   {[source+"/branches/main/protection"]:{status:403}}
  ]) {
   const calls=[];
-  await assert.rejects(check({},records,calls),/protected source main|codeowner|unavailable/);
+  await assert.rejects(check({},records,calls),/protected source main|codeowner|unavailable|review\/admin\/no-bypass protection mismatch/);
   assert.equal(calls.filter(x=>x.options.method!=="GET").length,0);
  }
 });
@@ -344,14 +344,7 @@ test("additional required checks are allowed only when every check is app-bound 
 
 test("the existing independently reviewed ORESoftware owner remains an accepted exact security owner",async()=>{
  const path=source+"/contents/.github/CODEOWNERS?ref="+M;
- const owner="@ORESoftware";
- const text=[
-  "/.github/CODEOWNERS "+owner,
-  "/.github/private-ci-approved-repositories.txt "+owner,
-  "/.github/private-ci-approved-source-snapshots.txt "+owner,
-  "/.github/private-ci-required-checks.json "+owner,
-  "/.github/workflows/private-ci-policy.yml "+owner
- ].join("\n")+"\n";
+ const text=codeowners;
  assert.deepEqual((await check({}, {[path]:encoded(text)})).destinationId,destinationId);
 });
 
@@ -371,15 +364,15 @@ test("strict app-bound required CI and reviewer bypass protection are mandatory"
  const key=source+"/branches/main/protection";
  const baseline=rules();
  for(const [bad,pattern] of [
-  [{...baseline,required_status_checks:undefined},/required status checks/],
-  [{...baseline,required_status_checks:{strict:false,contexts:[],checks:[{context:"private-ci-policy",app_id:15368}]}},/required status checks/],
-  [{...baseline,required_status_checks:{strict:true,contexts:["legacy"],checks:[{context:"private-ci-policy",app_id:15368}]}},/required status checks/],
-  [{...baseline,required_status_checks:{strict:true,contexts:[],checks:[]}},/required status checks/],
-  [{...baseline,required_status_checks:{strict:true,contexts:[],checks:[{context:"private-ci-policy",app_id:9999}]}},/context\/app identity/],
+  [{...baseline,required_status_checks:undefined},/required status checks|strict app-bound required checks/],
+  [{...baseline,required_status_checks:{strict:false,contexts:[],checks:[{context:"private-ci-policy",app_id:15368}]}},/required status checks|strict app-bound required checks/],
+  [{...baseline,required_status_checks:{strict:true,contexts:["legacy"],checks:[{context:"private-ci-policy",app_id:15368}]}},/required status checks|strict app-bound required checks/],
+  [{...baseline,required_status_checks:{strict:true,contexts:[],checks:[]}},/required status checks|strict app-bound required checks/],
+  [{...baseline,required_status_checks:{strict:true,contexts:[],checks:[{context:"private-ci-policy",app_id:9999}]}},/context\/app identity|private-ci-policy check\/app binding missing/],
   [{...baseline,required_pull_request_reviews:{...baseline.required_pull_request_reviews,
-    bypass_pull_request_allowances:{users:[{login:"owner"}],teams:[],apps:[]}}},/codeowner review proof/],
+    bypass_pull_request_allowances:{users:[{login:"owner"}],teams:[],apps:[]}}},/codeowner review proof|review\/admin\/no-bypass protection mismatch/],
   [{...baseline,required_pull_request_reviews:{...baseline.required_pull_request_reviews,
-    bypass_pull_request_allowances:undefined}},/codeowner review proof/]
+    bypass_pull_request_allowances:undefined}},/codeowner review proof|review\/admin\/no-bypass protection mismatch/]
  ]){
    await assert.rejects(check({}, {[key]:bad}),pattern);
  }
@@ -483,7 +476,7 @@ test("policy bytes and exact line grammar reject BOM NUL and surrounding whitesp
   const ownersPath=destination+"/contents/.github/CODEOWNERS?ref="+C;
   await assert.rejects(check({}, {[destPath]:encoded(" "+destination+" "+destinationId+"\n")}),/ambiguous surrounding whitespace/);
   await assert.rejects(check({}, {[ownersPath]:encoded(carrierCodeowners.replace("/.github/CODEOWNERS @ORESoftware","/.github/CODEOWNERS @ORESoftware "))}),/ambiguous surrounding whitespace/);
-  for(const text of ["\\ufeff"+requiredChecks, requiredChecks+"\\u0000"]){
+   for(const text of [String.fromCharCode(0xFEFF)+requiredChecks, requiredChecks+String.fromCharCode(0)]){
     await assert.rejects(check({}, {[checksPath]:encoded(text)}),/forbidden BOM\/NUL/);
   }
 });
