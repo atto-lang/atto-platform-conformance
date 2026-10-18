@@ -7,7 +7,7 @@ const repo="ores-truffle-oreslang/oreslang-source.llvm";
 const JAVA_REPO="ores-truffle-oreslang/oreslang-source.java";
 const javaCodeowners=[
   "/.github/workflows/ @ORESoftware",
-  ...["/.github/CODEOWNERS","/.github/private-ci-approved-repositories.txt","/.github/private-ci-approved-source-snapshots.txt","/.github/private-ci-independent-reviewer.json","/.github/private-ci-required-checks.json","/.github/workflows/private-ci-mirror-preflight.yml","/.github/workflows/private-ci-policy.yml","/.github/workflows/private-exact-candidate-validation.yml","/.github/workflows/private-exact-main-validation.yml","/.github/workflows/private-exact-publisher-validation.yml","/docs/security/CI_PRIVATE_SOURCE_MIRRORING.md","/docs/security/PRIVATE_CI_POLICY_INTEGRATION_REVIEW_2026-10-16.md","/docs/security/PRIVATE_EXACT_MAIN_VALIDATION.md","/docs/security/PRIVATE_CI_REVIEW_PINNED_EXTERNAL_ADMISSION.md","/scripts/check-private-ci-destination.sh","/scripts/publish-private-ci-source.py","/scripts/run-in-private-ci-destination.sh","/scripts/test-private-ci-destination.sh","/scripts/test-publish-private-ci-source.py","/scripts/ci_private_mirror_preflight.py","/scripts/verify-review-pinned-private-ci.py","/tests/test_ci_private_mirror_preflight.py","/tests/test_review_pinned_private_ci.py","/src/test/java/dev/oreslang/PrivateExactMainValidationWorkflowSecurityTest.java","/src/test/java/dev/oreslang/PrivateExactPublisherAdmissionMutationTest.java","/src/test/java/dev/oreslang/PrivateExactPublisherValidationWorkflowSecurityTest.java"].map(path=>path+" @ORESoftware")
+  ...["/.github/CODEOWNERS","/.github/private-ci-approved-repositories.txt","/.github/private-ci-approved-source-snapshots.txt","/.github/private-ci-independent-reviewer.json","/.github/private-ci-required-checks.json","/.github/workflows/private-ci-mirror-preflight.yml","/.github/workflows/private-ci-policy.yml","/.github/workflows/private-exact-candidate-validation.yml","/.github/workflows/private-exact-main-validation.yml","/.github/workflows/private-exact-publisher-validation.yml","/docs/security/CI_PRIVATE_SOURCE_MIRRORING.md","/docs/security/PRIVATE_CI_POLICY_INTEGRATION_REVIEW_2026-10-16.md","/docs/security/PRIVATE_EXACT_MAIN_VALIDATION.md","/docs/security/PRIVATE_CI_REVIEW_PINNED_EXTERNAL_ADMISSION.md","/scripts/check-private-ci-destination.sh","/scripts/publish-private-ci-source.py","/scripts/run-in-private-ci-destination.sh","/scripts/test-private-ci-destination.sh","/scripts/test-publish-private-ci-source.py","/scripts/ci_private_mirror_preflight.py","/scripts/verify-review-pinned-private-ci.py","/scripts/dispatch-review-pinned-private-ci.py","/tests/test_ci_private_mirror_preflight.py","/tests/test_review_pinned_private_ci.py","/tests/test_review_pinned_dispatcher.py","/src/test/java/dev/oreslang/PrivateExactMainValidationWorkflowSecurityTest.java","/src/test/java/dev/oreslang/PrivateExactPublisherAdmissionMutationTest.java","/src/test/java/dev/oreslang/PrivateExactPublisherValidationWorkflowSecurityTest.java"].map(path=>path+" @ORESoftware")
 ].join("\n")+"\n";
 const javaChecks=JSON.stringify({
   schema:1,
@@ -177,6 +177,28 @@ test("Java preserves extended terminal ownership plus wildcard and source/carrie
   });
   assert.equal(result.repo,JAVA_REPO);
   assert.equal(result.status,"BOOTSTRAP_PROTECTED");
+});
+
+test("Java CODEOWNERS requires dispatcher code and regression test in exact terminal order",()=>{
+  assert.doesNotThrow(()=>auditCodeowners(javaCodeowners,JAVA_REPO));
+  for(const path of [
+    "/scripts/dispatch-review-pinned-private-ci.py",
+    "/tests/test_review_pinned_dispatcher.py"
+  ]){
+    const entry=path+" @ORESoftware\\n";
+    assert.ok(javaCodeowners.includes(entry));
+    assert.throws(()=>auditCodeowners(javaCodeowners.replace(entry,""),JAVA_REPO),
+      /security CODEOWNERS final block mismatch|security CODEOWNERS final block missing/);
+    assert.throws(()=>auditCodeowners(javaCodeowners.replace(
+      entry,path+" @Unreviewed\\n"),JAVA_REPO),
+      /security CODEOWNERS final block mismatch/);
+  }
+  const lines=javaCodeowners.split("\\n");
+  const a=lines.indexOf("/scripts/dispatch-review-pinned-private-ci.py @ORESoftware");
+  const b=lines.indexOf("/tests/test_review_pinned_dispatcher.py @ORESoftware");
+  assert.ok(a>0 && b>a);
+  [lines[a],lines[b]]=[lines[b],lines[a]];
+  assert.throws(()=>auditCodeowners(lines.join("\\n"),JAVA_REPO),/final block mismatch/);
 });
 
 test("missing or malformed bypass allowance arrays deny bootstrap",()=>{
