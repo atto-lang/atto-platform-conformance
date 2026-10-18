@@ -22,13 +22,21 @@ const rules=()=>({enforce_admins:{enabled:true},
     dismiss_stale_reviews:true,required_approving_review_count:1,
     bypass_pull_request_allowances:{users:[],teams:[],apps:[]}}});
 const destination = "akrion-sim/akrion-sim-e2e";
-const incidentPath="ores-truffle-oreslang/oreslang-platform-conformance/issues/22";
-const incident={
+const incidentPath22="ores-truffle-oreslang/oreslang-platform-conformance/issues/22";
+const incidentPath77="ores-truffle-oreslang/oreslang-platform-conformance/issues/77";
+const incident22={
   number:22,state:"closed",state_reason:"completed",
   title:"P0 SECURITY: private Oreslang source mirrored into public GitHub Actions carrier",
   html_url:"https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22",
   repository_url:"https://api.github.com/repos/ores-truffle-oreslang/oreslang-platform-conformance",
   closed_at:"2026-10-17T18:30:00Z"
+};
+const incident77={
+  number:77,state:"closed",state_reason:"completed",
+  title:"P0 SECURITY: audit repeated private Oreslang source carriers in Scintilla",
+  html_url:"https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/77",
+  repository_url:"https://api.github.com/repos/ores-truffle-oreslang/oreslang-platform-conformance",
+  closed_at:"2026-10-18T14:00:00Z"
 };
 const carrierCodeowners=[
   "/.github/workflows/ @ORESoftware",
@@ -55,7 +63,8 @@ function fixture(records = {}, calls = []) {
     assert.equal(options.headers.Authorization, "Bearer restricted-test-token");
     const name = url.slice("https://api.github.com/repos/".length);
     const defaults={
-      [incidentPath]:incident,
+      [incidentPath22]:incident22,
+      [incidentPath77]:incident77,
       [destination+"/branches/main"]:{name:"main",protected:true,commit:{sha:C}},
       [destination+"/branches/main/protection"]:carrierRules(),
       [destination+"/contents/.github/CODEOWNERS?ref="+C]:encoded(carrierCodeowners),
@@ -88,7 +97,7 @@ test("accepts only explicitly approved and GitHub-verified writable private dest
     status:"PRIVATE_MIRROR_APPROVED",source,destination,
     sourceCommit:A,sourceTree:T,destinationId
   });
-  assert.equal(calls.length, 16);
+  assert.equal(calls.length, 17);
   assert.equal(calls[0].url.endsWith("/" + source), true);
   assert.equal(calls[1].url.endsWith("/" + destination), true);
 });
@@ -114,7 +123,7 @@ test("rejects wrong or public source metadata even when destination is private",
   ]) {
     const calls = [];
     await assert.rejects(check({}, {[source]: metadata}, calls), /private source metadata/);
-    assert.equal(calls.length, 2, "cannot inspect target after incident + source rejection");
+    assert.equal(calls.length, 3, "cannot inspect target after both incidents + source rejection");
   }
 });
 
@@ -342,17 +351,23 @@ test("noncanonical base64 and invalid policy UTF8 must deny",async()=>{
 });
 
 
-test("incident #22 must be exactly completed before source metadata is inspected",async()=>{
-  for(const bad of [
-    {...incident,state:"open",state_reason:null,closed_at:null},
-    {...incident,state_reason:"not_planned"},
-    {...incident,title:"renamed incident"},
-    {...incident,repository_url:"https://api.github.com/repos/other/repo"},
-    {...incident,closed_at:"not-a-timestamp"}
+test("both P0 incidents must be exactly completed before source metadata is inspected",async()=>{
+  for(const [path,incident,prior] of [
+    [incidentPath22,incident22,0],
+    [incidentPath77,incident77,1]
   ]){
-    const calls=[];
-    await assert.rejects(check({}, {[incidentPath]:bad}, calls),/incident is not completed/);
-    assert.equal(calls.length,1);
+    for(const bad of [
+      {...incident,state:"open",state_reason:null,closed_at:null},
+      {...incident,state_reason:"not_planned"},
+      {...incident,title:"renamed incident"},
+      {...incident,repository_url:"https://api.github.com/repos/other/repo"},
+      {...incident,closed_at:"not-a-timestamp"}
+    ]){
+      const calls=[];
+      await assert.rejects(check({}, {[path]:bad}, calls),/incident is not completed/);
+      assert.equal(calls.length,prior+1);
+      assert.equal(calls.some(x=>x.url.endsWith("/"+source)),false);
+    }
   }
 });
 
@@ -385,4 +400,37 @@ test("carrier protected-main drift during admission denies",async()=>{
     return fallback(url,options);
   };
   await assert.rejects(check({fetchImpl}),/carrier policy changed during admission/);
+});
+
+
+test("policy JSON rejects duplicate and escaped-equivalent keys end to end",async()=>{
+  const checksPath=source+"/contents/.github/private-ci-required-checks.json?ref="+M;
+  const carrierPath=destination+"/contents/.github/private-ci-carrier-policy.json?ref="+C;
+  for(const text of [
+    '{"schema":1,"schema":2,"checks":[{"context":"private-ci-policy","appId":15368}]}',
+    '{"schema":1,"\\u0073chema":2,"checks":[{"context":"private-ci-policy","appId":15368}]}',
+    '{"schema":1,"checks":[{"context":"private-ci-policy","context":"other","appId":15368}]}'
+  ]) await assert.rejects(check({}, {[checksPath]:encoded(text)}),/duplicate object key|ambiguous or invalid/);
+  for(const text of [
+    '{"schema":1,"schema":2,"carrier":{"context":"carrier-policy","appId":15368}}',
+    '{"schema":1,"carrier":{"context":"carrier-policy","context":"other","appId":15368}}'
+  ]) await assert.rejects(check({}, {[carrierPath]:encoded(text)}),/duplicate object key|ambiguous or invalid/);
+});
+
+test("policy bytes and exact line grammar reject BOM NUL and surrounding whitespace",async()=>{
+  const destPath=source+"/contents/.github/private-ci-approved-repositories.txt?ref="+M;
+  const checksPath=source+"/contents/.github/private-ci-required-checks.json?ref="+M;
+  const ownersPath=destination+"/contents/.github/CODEOWNERS?ref="+C;
+  await assert.rejects(check({}, {[destPath]:encoded(" "+destination+" "+destinationId+"\n")}),/ambiguous surrounding whitespace/);
+  await assert.rejects(check({}, {[ownersPath]:encoded(carrierCodeowners.replace("/.github/CODEOWNERS @ORESoftware","/.github/CODEOWNERS @ORESoftware "))}),/ambiguous surrounding whitespace/);
+  for(const text of ["\\ufeff"+requiredChecks, requiredChecks+"\\u0000"]){
+    await assert.rejects(check({}, {[checksPath]:encoded(text)}),/forbidden BOM\/NUL/);
+  }
+});
+
+test("boolean schema values cannot satisfy carrier or source policy schemas",async()=>{
+  const checksPath=source+"/contents/.github/private-ci-required-checks.json?ref="+M;
+  const carrierPath=destination+"/contents/.github/private-ci-carrier-policy.json?ref="+C;
+  await assert.rejects(check({}, {[checksPath]:encoded(JSON.stringify({schema:true,checks:[{context:"private-ci-policy",appId:15368}]}))}),/schema/);
+  await assert.rejects(check({}, {[carrierPath]:encoded(JSON.stringify({schema:true,carrier:{context:"carrier-policy",appId:15368}}))}),/carrier policy identity/);
 });
