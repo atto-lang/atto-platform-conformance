@@ -12,6 +12,7 @@ export async function auditPinnedProvenance(candidate, inventory, requestJson) {
     const prefix = `/repos/${candidate.organization}/${pin.name}`;
     const info = await requestJson(prefix);
     if (!info || typeof info !== "object" ||
+        !Number.isSafeInteger(info.id) || info.id < 1 ||
         String(info.id) !== pin.repositoryId ||
         info.full_name !== `${candidate.organization}/${pin.name}` ||
         info.default_branch !== pin.ref ||
@@ -55,7 +56,11 @@ export function createGitHubReadonlyRequester(token, fetchImpl = globalThis.fetc
     const safePath = typeof path === "string" &&
       /^\/repos\/ores-truffle-oreslang\/(?:\.github|[a-z0-9][a-z0-9._-]*)(?:\/git\/ref\/heads\/main|\/compare\/[a-f0-9]{40}\.\.\.[a-f0-9]{40})?$/.test(path) &&
       !path.includes("%") && !path.includes("?") && !path.includes("#") &&
-      !path.includes("\r") && !path.includes("\n");
+      !path.includes("\r") && !path.includes("\n") &&
+      // Repos cannot have consecutive dots; compare syntax uses exactly three
+      // after a SHA, so reject ambiguous dot-dot path segments separately.
+      !/\/\.\.(?:\/|$)/.test(path) &&
+      !/\/repos\/ores-truffle-oreslang\/[a-z0-9._-]*\.\.(?:\/|$)/.test(path);
     if (!safePath) {
       throw Error("audit: invalid GitHub API path");
     }
