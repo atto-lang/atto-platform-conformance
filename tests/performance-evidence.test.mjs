@@ -102,3 +102,17 @@ test('CLI cannot turn structural validation into a green release gate',()=>{
     assert.equal(run(file,'--structural-only').status,1);
   } finally {rmSync(dir,{recursive:true,force:true});}
 });
+
+test('artifact locators are relative opaque paths, never URI or traversal capabilities',()=>{
+  const invalid=['../secret','artifacts/../secret','artifacts/./entry',
+    '/etc/passwd','C:\\windows\\secret','https://example.com/log.txt',
+    'artifacts//entry','artifacts/%2e%2e/secret','artifacts\\secret',
+    'artifacts/result#fragment','artifacts/result?query','artifacts/entry:foo',
+    'artifacts/évidence','artifacts/trailing/'];
+  for(const locator of invalid) {
+    const r=ready();r.evidence[0].locator=locator;
+    assert.throws(()=>validatePerformanceEvidence(r),/invalid evidence reference/,locator);
+  }
+  const r=ready();r.evidence[0].locator='ci/raw-artifacts/results_2026.10-18.json';
+  assert.equal(validatePerformanceEvidence(r).performance_claim_certified,false);
+});
