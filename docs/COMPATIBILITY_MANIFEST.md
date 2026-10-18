@@ -28,18 +28,18 @@ Output includes `CANDIDATE_ONLY_NOT_COMPATIBILITY_PROOF`, `releaseReady: false`,
 
 ## Authenticated provenance audit (metadata only)
 
-The optional \`npm run audit:pin-provenance\` requires an explicitly provisioned \`ORESLANG_REPOSITORY_READ_TOKEN\` with read-only repository metadata access across **all 52 repos**. The ordinary per-repository \`GITHUB_TOKEN\` must **not** be assumed to have access to 44 other private repositories. Do **not** add the token to the workflow by default.
+The optional `npm run audit:pin-provenance` requires an explicitly provisioned `ORESLANG_REPOSITORY_READ_TOKEN` with read-only repository metadata access across **all 52 repos**. The ordinary per-repository `GITHUB_TOKEN` must **not** be assumed to have access to 44 other private repositories. Do **not** add the token to the workflow by default.
 
-The auditor calls only GitHub's REST API on \`api.github.com\`, disables redirects, and fetches repo identity, default \`main\` Git ref, and commit comparison metadata. It **never fetches raw source, trees, contents, or private artifacts**, and exits nonzero on missing authority, mismatch, rewritten history, or GitHub API failure.
+The auditor calls only GitHub's REST API on `api.github.com`, disables redirects, and fetches repo identity, default `main` Git ref, and commit comparison metadata. It **never fetches raw source, trees, contents, or private artifacts**, and exits nonzero on missing authority, mismatch, rewritten history, or GitHub API failure.
 
-\`\`\`sh
+```sh
 # Only after an administrator explicitly authorizes a read-only org-wide token:
 ORESLANG_REPOSITORY_READ_TOKEN="$READ_ONLY_GITHUB_APP_TOKEN" npm run audit:pin-provenance
-\`\`\`
+```
 
-A \`READ_ONLY_PIN_PROVENANCE_NOT_COMPATIBILITY\` result proves the listed commit IDs remain reachable from authorized repo heads and the exact repository identity/visibility matches. It is **not** compiler correctness, CI execution, release readiness, independent security approval, or evidence that a pin remains current \`main\`; historical ancestors are allowed.
+A `READ_ONLY_PIN_PROVENANCE_NOT_COMPATIBILITY` result proves the listed commit IDs remain reachable from authorized repo heads and the exact repository identity/visibility matches. It is **not** compiler correctness, CI execution, release readiness, independent security approval, or evidence that a pin remains current `main`; historical ancestors are allowed.
 
-Authenticated GitHub metadata was checked on 2026-10-18: 45 pins equaled \`main\`, while seven were proven ancestors with GitHub compare \`status=ahead\` and \`behind_by=0\`. The seven are \`html-js-css-syntax-highlighter\`, \`ores-truffle-oreslang.github.io\`, \`oreslang-serialization-and-validation\`, \`oreslang-target-profiles\`, \`rx-ores\`, \`rx-ores-callbacks\`, and \`vscode-plugins\`. This is a review-time observation only; do not treat the report as a permanent attestation.
+Authenticated GitHub metadata was checked on 2026-10-18: 45 pins equaled `main`, while seven were proven ancestors with GitHub compare `status=ahead` and `behind_by=0`. The seven are `html-js-css-syntax-highlighter`, `ores-truffle-oreslang.github.io`, `oreslang-serialization-and-validation`, `oreslang-target-profiles`, `rx-ores`, `rx-ores-callbacks`, and `vscode-plugins`. This is a review-time observation only; do not treat the report as a permanent attestation.
 
 ## Security and quality gates
 
