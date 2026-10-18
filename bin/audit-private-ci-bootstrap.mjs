@@ -100,6 +100,77 @@ async function getJson(url,token,fetchImpl){
   if(!response || response.status!==200) error("GitHub policy metadata unavailable");
   try{return await response.json();}catch{error("GitHub policy metadata is not decodable");}
 }
+function strictJsonParse(text,label){
+  // JSON.parse silently accepts duplicate object keys (last value wins).
+  // Walk the JSON grammar first so escaped-equivalent duplicate names such as
+  // "schema" and "\\u0073chema" are rejected before ordinary parsing.
+  let i=0;
+  const fail=()=>error(label+" JSON is ambiguous or invalid");
+  const ws=()=>{ while(i<text.length && /[\t\n\r ]/.test(text[i])) i++; };
+  const stringToken=()=>{
+    ws();
+    if(text[i]!=='"') fail();
+    const start=i++;
+    while(i<text.length){
+      const ch=text[i++];
+      if(ch==='"'){
+        try{return JSON.parse(text.slice(start,i));}catch{fail();}
+      }
+      if(ch==='\\'){
+        if(i>=text.length) fail();
+        const esc=text[i++];
+        if(esc==='u'){
+          if(!/^[0-9a-fA-F]{4}$/.test(text.slice(i,i+4))) fail();
+          i+=4;
+        }else if(!'"\\/bfnrt'.includes(esc)) fail();
+      }else if(ch.charCodeAt(0)<0x20) fail();
+    }
+    fail();
+  };
+  const literal=()=>{
+    ws();
+    const rest=text.slice(i);
+    const m=rest.match(/^(?:-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?|true|false|null)/);
+    if(!m) fail();
+    i+=m[0].length;
+  };
+  const value=()=>{
+    ws();
+    if(text[i]==='{') object();
+    else if(text[i]==='[') array();
+    else if(text[i]==='"') stringToken();
+    else literal();
+    ws();
+  };
+  const object=()=>{
+    i++; ws();
+    const seen=new Set();
+    if(text[i]==='}'){i++;return;}
+    for(;;){
+      const key=stringToken();
+      if(seen.has(key)) error(label+" JSON contains duplicate object key: "+key);
+      seen.add(key);
+      ws(); if(text[i++]!==':') fail();
+      value();
+      if(text[i]===','){i++;continue;}
+      if(text[i]==='}'){i++;return;}
+      fail();
+    }
+  };
+  const array=()=>{
+    i++; ws();
+    if(text[i]===']'){i++;return;}
+    for(;;){
+      value();
+      if(text[i]===','){i++;continue;}
+      if(text[i]===']'){i++;return;}
+      fail();
+    }
+  };
+  value(); ws();
+  if(i!==text.length) fail();
+  try{return JSON.parse(text);}catch{fail();}
+}
 function decodePolicy(file,label){
   if(!file || file.type!=="file" || file.encoding!=="base64" ||
      typeof file.content!=="string" || file.content.length>131072 ||
@@ -110,18 +181,29 @@ function decodePolicy(file,label){
   const clean=file.content.replace(/[\r\n]/g,"");
   let raw;
   try{raw=Buffer.from(clean,"base64");}catch{error(label+" base64 invalid");}
-  if(raw.length>65536 || raw.toString("base64")!==clean) error(label+" base64 noncanonical");
+  if(raw.length===0 || raw.length>65536 || raw.toString("base64")!==clean)
+    error(label+" base64 noncanonical");
+  if((raw.length>=3 && raw[0]===0xef && raw[1]===0xbb && raw[2]===0xbf) || raw.includes(0))
+    error(label+" contains forbidden BOM/NUL bytes");
   const digest=createHash("sha1").update("blob "+raw.length+"\0").update(raw).digest("hex");
   if(digest!==file.sha) error(label+" blob digest mismatch");
   const text=raw.toString("utf8");
   if(!Buffer.from(text,"utf8").equals(raw)) error(label+" UTF-8 invalid");
   return text;
 }
-function dataLines(text){
-  return text.split("\n").map(x=>x.trim()).filter(x=>x && !x.startsWith("#"));
+function dataLines(text,label="policy"){
+  const out=[];
+  for(const line of text.split("\n")){
+    if(line==="") continue;
+    if(line.startsWith("#")) continue;
+    if(line!==line.trim() || line.startsWith(" #"))
+      error(label+" contains ambiguous surrounding whitespace/comment syntax");
+    out.push(line);
+  }
+  return out;
 }
 export function auditCodeowners(text,repo){
-  const lines=dataLines(text);
+  const lines=dataLines(text,"CODEOWNERS");
   const java=repo===JAVA_SOURCE_REPOSITORY;
   const paths=java?JAVA_SECURITY_PATHS:SECURITY_PATHS;
   if(lines.length<paths.length+1) error("security CODEOWNERS final block missing");
@@ -135,10 +217,10 @@ export function auditCodeowners(text,repo){
   }
 }
 export function auditRequiredChecks(text,protection,repo){
-  let policy;
-  try{policy=JSON.parse(text);}catch{error("required-check policy is not valid JSON");}
+  const policy=strictJsonParse(text,"required-check policy");
   const java=repo===JAVA_SOURCE_REPOSITORY;
-  if(!policy || Object.getPrototypeOf(policy)!==Object.prototype || policy.schema!==1){
+  if(!policy || Object.getPrototypeOf(policy)!==Object.prototype ||
+     !Number.isSafeInteger(policy.schema) || policy.schema!==1){
     error("required-check policy schema mismatch");
   }
   if(java){
@@ -203,12 +285,12 @@ export function auditProtection(protection){
   }
 }
 export function auditReviewerPolicy(text){
-  let policy;
-  try{policy=JSON.parse(text);}catch{error("independent reviewer policy is not valid JSON");}
+  const policy=strictJsonParse(text,"independent reviewer policy");
   const keys=["schema","enabled","minimumPermission","disallowedReviewerIds","reviewer"];
   if(!policy || Object.getPrototypeOf(policy)!==Object.prototype ||
      Object.keys(policy).length!==keys.length || keys.some(key=>!Object.hasOwn(policy,key)) ||
-     policy.schema!==2 || typeof policy.enabled!=="boolean" ||
+     !Number.isSafeInteger(policy.schema) || policy.schema!==2 ||
+     typeof policy.enabled!=="boolean" ||
      !["write","maintain","admin"].includes(policy.minimumPermission)){
     error("independent reviewer policy schema mismatch");
   }
@@ -225,8 +307,10 @@ export function auditReviewerPolicy(text){
   }
 }
 function auditEmptyApprovals(destinationText,snapshotText){
-  if(dataLines(destinationText).length!==0) error("destination approval must remain empty during bootstrap");
-  if(dataLines(snapshotText).length!==0) error("snapshot approval must remain empty during bootstrap");
+  if(dataLines(destinationText,"destination approval").length!==0)
+    error("destination approval must remain empty during bootstrap");
+  if(dataLines(snapshotText,"snapshot approval").length!==0)
+    error("snapshot approval must remain empty during bootstrap");
 }
 export async function auditRepository(repo,{token,fetchImpl=fetch}={}){
   if(typeof token!=="string" || !token.trim()) error("authenticated GitHub token required");
