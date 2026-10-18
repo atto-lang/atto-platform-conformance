@@ -26,6 +26,21 @@ Output includes `CANDIDATE_ONLY_NOT_COMPATIBILITY_PROOF`, `releaseReady: false`,
 - Promotion requires independent review of both semantics and security. The validator **intentionally does not accept** manually added `VERIFIED` labels or self-authored CI URLs as proof. A future signed/verifiable evidence schema and executor must be reviewed before `BLOCKED_UNVERIFIED` can change.
 - The proposed registry and lockfile live on PR #79, **not** on `main`. Until the PR is reviewed and merged, the lockfile is a review candidate only.
 
+## Authenticated provenance audit (metadata only)
+
+The optional \`npm run audit:pin-provenance\` requires an explicitly provisioned \`ORESLANG_REPOSITORY_READ_TOKEN\` with read-only repository metadata access across **all 52 repos**. The ordinary per-repository \`GITHUB_TOKEN\` must **not** be assumed to have access to 44 other private repositories. Do **not** add the token to the workflow by default.
+
+The auditor calls only GitHub's REST API on \`api.github.com\`, disables redirects, and fetches repo identity, default \`main\` Git ref, and commit comparison metadata. It **never fetches raw source, trees, contents, or private artifacts**, and exits nonzero on missing authority, mismatch, rewritten history, or GitHub API failure.
+
+\`\`\`sh
+# Only after an administrator explicitly authorizes a read-only org-wide token:
+ORESLANG_REPOSITORY_READ_TOKEN="$READ_ONLY_GITHUB_APP_TOKEN" npm run audit:pin-provenance
+\`\`\`
+
+A \`READ_ONLY_PIN_PROVENANCE_NOT_COMPATIBILITY\` result proves the listed commit IDs remain reachable from authorized repo heads and the exact repository identity/visibility matches. It is **not** compiler correctness, CI execution, release readiness, independent security approval, or evidence that a pin remains current \`main\`; historical ancestors are allowed.
+
+Authenticated GitHub metadata was checked on 2026-10-18: 45 pins equaled \`main\`, while seven were proven ancestors with GitHub compare \`status=ahead\` and \`behind_by=0\`. The seven are \`html-js-css-syntax-highlighter\`, \`ores-truffle-oreslang.github.io\`, \`oreslang-serialization-and-validation\`, \`oreslang-target-profiles\`, \`rx-ores\`, \`rx-ores-callbacks\`, and \`vscode-plugins\`. This is a review-time observation only; do not treat the report as a permanent attestation.
+
 ## Security and quality gates
 
 1. Keep [private source exposure incident #22](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22) open until its independent remediation and authorization gates are genuinely complete. A private destination or GitHub Actions budget alone is not authorization to mirror source.
