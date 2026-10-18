@@ -2,6 +2,8 @@
 
 The single lockfile is [`integration/compatibility-candidate.v1.json`](../integration/compatibility-candidate.v1.json), paired with [`integration/org-repositories.v1.json`](../integration/org-repositories.v1.json).
 
+The candidate's `inventoryGitBlobSha` binds it to the **entire exact canonical inventory Git blob** (all nodes, edges, visibility and `nextGate` text), not merely the list of 52 names. Loaders require canonical 2-space JSON with a terminal newline and reject duplicate keys, reordering/alternate formatting and oversized JSON before structural validation. Any intentional inventory change requires a reviewed new candidate with a matching inventory digest; this hash does not replace access control or independent review.
+
 This is a **private, non-promotable candidate snapshot**, not a claim that the whole Oreslang stack passes tests. It records **52 full Git commit SHAs and 52 stable numeric GitHub repository IDs**, one pair per repository, taken from authenticated GitHub repository metadata and **commit-search results** for their default branches on 2026-10-17. A commit-search match is not a signed statement of branch tip or approval. These pins are immutable object identifiers, *not* proof of dependency compatibility, correct checked-out code, compiled guest execution, functional correctness, or permission to transfer any private repository.
 
 ## Validate
@@ -30,7 +32,7 @@ Output includes `CANDIDATE_ONLY_NOT_COMPATIBILITY_PROOF`, `releaseReady: false`,
 
 The optional `npm run audit:pin-provenance` requires an explicitly provisioned `ORESLANG_REPOSITORY_READ_TOKEN` with read-only repository metadata access across **all 52 repos**. The ordinary per-repository `GITHUB_TOKEN` must **not** be assumed to have access to 44 other private repositories. Do **not** add the token to the workflow by default.
 
-The auditor calls only GitHub's REST API on `api.github.com`, disables redirects, and fetches repo identity, default `main` Git ref, and commit comparison metadata. It **never fetches raw source, trees, contents, or private artifacts**, and exits nonzero on missing authority, mismatch, rewritten history, or GitHub API failure.
+The auditor calls only GitHub's REST API on `api.github.com`, disables redirects, and fetches repo identity, default `main` Git ref, and commit comparison metadata. For ancestor pins, a successful comparison must have `status=ahead`, `behind_by=0`, `base_commit.sha` equal to the pinned SHA **and** `merge_base_commit.sha` equal to the pinned SHA; a high-level comparison status alone is insufficient. It **never fetches raw source, trees, contents, or private artifacts**, and exits nonzero on missing authority, mismatch, rewritten history, or GitHub API failure.
 
 ```sh
 # Only after an administrator explicitly authorizes a read-only org-wide token:
