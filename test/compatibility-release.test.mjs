@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  loadCompatibilityCandidate, loadCandidateInventory, validateCompatibilityCandidate
+  loadCompatibilityCandidate, loadCandidateInventory, validateCompatibilityCandidate, canonicalInventoryGitBlobSha
 } from "../src/compatibility-release.mjs";
 
 const manifest = loadCompatibilityCandidate();
@@ -89,4 +89,18 @@ test("reject replaced or ambiguous repository identity", () => {
       d.pins[0].repositoryId = bad;
     }), inventory), /invalid or duplicated immutable GitHub repository ID/);
   }
+});
+
+test("lockfile binds entire dependency graph, not just repository names", () => {
+  assert.equal(canonicalInventoryGitBlobSha(inventory), manifest.inventoryGitBlobSha);
+  assert.match(manifest.inventoryGitBlobSha, /^[a-f0-9]{40}$/);
+  const drift = structuredClone(inventory);
+  drift.repositories[0].nextGate += " Verified-new semantics would change the graph digest.";
+  assert.throws(() => validateCompatibilityCandidate(manifest, drift), /non-promotable policy/);
+  assert.throws(() => validateCompatibilityCandidate(altered(d => {
+    d.inventoryGitBlobSha = "a".repeat(40);
+  }), inventory), /non-promotable policy/);
+  assert.throws(() => validateCompatibilityCandidate(altered(d => {
+    delete d.inventoryGitBlobSha;
+  }), inventory), /unexpected or missing properties/);
 });
