@@ -28,8 +28,8 @@ test("October issue batch covers 30 unique existing issue refs across 20 distinc
  }
  assert.equal(issues,30);
  const statuses=batch.repositories.map(x=>x.status);
- assert.equal(statuses.filter(x=>x==="partial-draft-pr").length,18);
- assert.equal(statuses.filter(x=>x==="merged-partial-pr").length,2);
+ assert.equal(statuses.filter(x=>x==="partial-draft-pr").length,14);
+ assert.equal(statuses.filter(x=>x==="merged-partial-pr").length,6);
  assert.equal(statuses.filter(x=>x==="branch-created-only").length,0);
 });
 
