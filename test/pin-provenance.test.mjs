@@ -45,20 +45,20 @@ function canned(options = {}) {
   return {requestJson, accessed};
 }
 
-test("read-only audit verifies all 52 exact main SHAs; never claims compatibility", async () => {
+test("read-only audit verifies all 56 exact main SHAs; never claims compatibility", async () => {
   const {requestJson, accessed} = canned();
   const r = await auditPinnedProvenance(candidate, inventory, requestJson);
-  assert.equal(r.repositoriesChecked, 52);
-  assert.equal(r.exactMain, 52);
+  assert.equal(r.repositoriesChecked, 56);
+  assert.equal(r.exactMain, 56);
   assert.equal(r.ancestorOfMain, 0);
   assert.equal(r.releaseReady, false);
   assert.equal(r.result, "READ_ONLY_PIN_PROVENANCE_NOT_COMPATIBILITY");
-  assert.equal(accessed.length, 104);
+  assert.equal(accessed.length, 112);
 });
 test("accept pinned ancestor without silently moving frozen snapshot", async () => {
   const {requestJson} = canned({moved: true});
   const r = await auditPinnedProvenance(candidate, inventory, requestJson);
-  assert.equal(r.exactMain, 51);
+  assert.equal(r.exactMain, 55);
   assert.equal(r.ancestorOfMain, 1);
   assert.equal(r.results[0].pinnedSha, candidate.pins[0].commit);
   assert.equal(r.results[0].observedMainSha, differentHead);
