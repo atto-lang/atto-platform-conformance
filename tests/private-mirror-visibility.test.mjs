@@ -100,6 +100,8 @@ function fixture(records = {}, calls = []) {
         id:9002,state:"APPROVED",commit_id:carrierPrHead,
         submitted_at:"2026-10-18T13:59:00Z",user:reviewer
       }],
+      [destination+"/collaborators/ORESoftware/permission"]:
+        {permission:"write",user:{login:"ORESoftware",id:11139560,type:"User"}},
       [destination+"/collaborators/"+reviewer.login+"/permission"]:
         {permission:"write",user:reviewer},
       [source+"/branches/main"]:{name:"main",protected:true,commit:{sha:M}},
@@ -130,6 +132,8 @@ function fixture(records = {}, calls = []) {
         id:9001,state:"APPROVED",commit_id:sourcePrHead,
         submitted_at:"2026-10-18T13:59:00Z",user:reviewer
       }],
+      [source+"/collaborators/ORESoftware/permission"]:
+        {permission:"write",user:{login:"ORESoftware",id:11139560,type:"User"}},
       [source+"/collaborators/"+reviewer.login+"/permission"]:
         {permission:"write",user:reviewer},
       [source+"/git/commits/"+A]:{sha:A,tree:{sha:T}}
