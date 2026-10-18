@@ -76,3 +76,9 @@ Tracking: https://github.com/ores-truffle-oreslang/oreslang-platform-conformance
 - A protected-source export hold is active in the same repository (security PR #86, incidents #22/#77). Approval of a private destination or availability of another organization's Actions minutes is **not** permission to mirror private code. Only independent protected-main review and incident clearance can authorize any later export.
 
 Remaining: run the complete Node test suite on an independently approved source-local runner; validate machine-readable schema using an independent JSON Schema engine; preserve independent attestation/no promotion.
+
+## October 18 report-locator traversal protection
+
+Structural evidence `locator` is now an opaque, bounded relative POSIX artifact identifier, **not** a URL, a filesystem path capability or permission to fetch private artifacts. Each segment must begin with an ASCII alphanumeric and contain only ASCII alphanumeric, `_`, `-` or `.` thereafter. The parser rejects absolute/scheme/drive prefixes, backslashes, percent encoding, empty segments, and `.`/`..` traversal. The companion draft-2020-12 JSON Schema uses the same locator grammar. Any eventual artifact resolver must independently enforce a trusted artifact root, no-follow file access, exact digest checking and CI provenance authentication.
+
+Adversarial tests in `tests/performance-evidence.test.mjs` and schema consistency tests cover traversal/URI and encoding attempts. The separate source-free `tests/performance-evidence-fuzz.test.mjs` ran locally on exact Git blob contents: **10,000 malformed path variants rejected** and **5,000 structurally valid synthetic measurement records stayed unauthenticated**. These 15,000 cases test validator behavior only; no actual compiler or benchmark executed. Existing full-suite GitHub Actions still fail with no recorded job steps.
