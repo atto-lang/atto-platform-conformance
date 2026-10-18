@@ -1,4 +1,4 @@
-import {readFile,lstat} from "node:fs/promises";
+import {readFile,lstat,realpath} from "node:fs/promises";
 import {createHash} from "node:crypto";
 import {resolve,dirname,isAbsolute} from "node:path";
 import {fileURLToPath} from "node:url";
@@ -103,6 +103,27 @@ export async function loadManifest(){
  }
  return manifest;
 }
+async function snapshotExecutable(file){
+ try{
+  const pathStat=await lstat(file);
+  const resolvedPath=await realpath(file);
+  const targetStat=await lstat(resolvedPath);
+  if(!targetStat.isFile())return null;
+  const sha256=createHash("sha256").update(await readFile(resolvedPath)).digest("hex");
+  return Object.freeze({
+   sha256,resolvedPath,pathIsSymlink:pathStat.isSymbolicLink(),
+   pathDev:pathStat.dev,pathIno:pathStat.ino,pathMode:pathStat.mode,
+   targetDev:targetStat.dev,targetIno:targetStat.ino,targetMode:targetStat.mode,
+   targetSize:targetStat.size
+  });
+ }catch{return null}
+}
+function sameExecutableSnapshot(a,b){
+ return !!a&&!!b&&a.sha256===b.sha256&&a.resolvedPath===b.resolvedPath&&
+  a.pathIsSymlink===b.pathIsSymlink&&a.pathDev===b.pathDev&&a.pathIno===b.pathIno&&
+  a.pathMode===b.pathMode&&a.targetDev===b.targetDev&&a.targetIno===b.targetIno&&
+  a.targetMode===b.targetMode&&a.targetSize===b.targetSize;
+}
 export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireConfigured=false,spawn=spawnSync}={}){
  if(!SUPPORTED_BACKENDS.has(backend))throw Error("unknown backend");
  if(!Number.isSafeInteger(timeoutMs)||timeoutMs<100||timeoutMs>120000)throw Error("timeoutMs must be 100..120000");
@@ -114,30 +135,41 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
  }
  validateCommand(argv);
  if(!validSha(sourceSha))throw Error("configured backend requires exact 40-character lowercase source commit SHA");
- let executableSha256=null;
- try{const binaryBytes=await readFile(argv[0]);executableSha256=createHash("sha256").update(binaryBytes).digest("hex")}
- catch{/* absent executable is reported as SPAWN_ERROR for each fixture below */}
+ const initialExecutable=await snapshotExecutable(argv[0]);
+ const executableSha256=initialExecutable?.sha256||null;
  const results=[];
  for(const c of relevant){
   const fixturePath=resolve(root,"fixtures",c.file);
   await assertRegularFixture(fixturePath);
   const fixtureSha256=createHash("sha256").update(await readFile(fixturePath)).digest("hex");
+  const executableBefore=await snapshotExecutable(argv[0]);
   const cmd=argv.map(x=>x==="{file}"?fixturePath:x);
   const output=spawn(cmd[0],cmd.slice(1),{encoding:"utf8",timeout:timeoutMs,cwd:root,maxBuffer:1024*1024,windowsHide:true});
+  const executableAfter=await snapshotExecutable(argv[0]);
   let status;
   const combined=(output.stdout||"")+"\n"+(output.stderr||"");
-  if(output.error)status=output.error.code==="ETIMEDOUT"?"TIMEOUT":"SPAWN_ERROR";
+  // The executable must remain the exact same path/target/file identity and bytes
+  // across every invocation. This detects replacement, deletion and symlink
+  // retargeting around a subprocess, but cannot eliminate the final exec TOCTOU.
+  if(!initialExecutable||!executableBefore)status="UNHASHABLE_EXECUTABLE";
+  else if(!sameExecutableSnapshot(initialExecutable,executableBefore)||
+          !sameExecutableSnapshot(executableBefore,executableAfter))
+   status="EXECUTABLE_CHANGED";
+  else if(output.error)status=output.error.code==="ETIMEDOUT"?"TIMEOUT":"SPAWN_ERROR";
   else if(output.signal)status="SIGNALED";
   // A missing/invalid process exit code cannot be evidence of a compiler rejection.
   else if(!Number.isSafeInteger(output.status)||output.status<0)status="INVALID_EXIT_STATUS";
-  // The binary must be hashable, even if a mock or wrapper claims it succeeded.
-  else if(!executableSha256)status="UNHASHABLE_EXECUTABLE";
   else if(c.expect==="accept")status=output.status===0 && !hasCompilerErrorSeverity(combined)?"VERIFIED":"MISMATCH";
   else {
    status=output.status!==0 && isExpectedCompilerDiagnostic(combined,c.diagnostic)
      ?"VERIFIED":"MISMATCH";
   }
-  results.push({id:c.id,status,fixtureSha256,exitCode:output.status,signal:output.signal||null,
+  results.push({id:c.id,status,fixtureSha256,
+    executableSha256Before:executableBefore?.sha256||null,
+    executableSha256After:executableAfter?.sha256||null,
+    executableResolvedPathBefore:executableBefore?.resolvedPath||null,
+    executableResolvedPathAfter:executableAfter?.resolvedPath||null,
+    exitCode:output.status,signal:output.signal||null,
     stdout:output.stdout||"",stderr:output.stderr||""});
  }
  const verified=results.filter(x=>x.status==="VERIFIED").length;
