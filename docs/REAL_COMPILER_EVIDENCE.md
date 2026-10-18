@@ -46,7 +46,7 @@ The tool reads run and job metadata without mirroring private code, creating run
 
 An administrator still needs the GitHub Actions run-summary banner and org-level billing, spending-limit, Actions policy, and runner-capacity checks. A private carrier without executing steps is not a working substitute. Never copy private compiler trees into public or unapproved repositories.
 
-The diagnostic test file currently defines 30 synthetic/offline regression tests. They are included in `npm test`, but a successful source-org exact-head execution has not been observed for draft PR #91. Their mere presence is not an executed test result or compiler conformance evidence.
+The diagnostic test file currently defines 34 synthetic/offline regression tests. They are included in `npm test`, but a successful source-org exact-head execution has not been observed for draft PR #91. Their mere presence is not an executed test result or compiler conformance evidence.
 
 ## 2026-10-14 additional audit: execution and source-identity classification
 

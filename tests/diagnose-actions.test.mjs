@@ -218,3 +218,28 @@ test("cancelled executed step must never certify a successful test run",()=>{
   assert.equal(out.permits_merging,false);
  }
 });
+
+
+test("checkout/setup/cache/artifact work cannot establish substantive execution",()=>{
+ for(const name of ["Checkout","Checkout repository","Checkout source","Checkout code",
+   "Run actions/checkout@v4","Run actions/setup-node@v4","Run actions/cache@v4",
+   "Run actions/upload-artifact@v4","Run actions/download-artifact@v4",
+   "Set up Node","Set up Java","Cache dependencies","Upload artifact","Download artifact"]){
+  const out=assess([job([step(name)],{conclusion:"success"})],{conclusion:"success"});
+  assert.equal(out.classification,"SUCCESS_WITHOUT_EXECUTION_EVIDENCE",name);
+  assert.equal(out.jobs[0].meaningful_executed_step_count,0,name);
+ }
+});
+test("neutral and cancelled steps cannot count as successful substantive work",()=>{
+ for(const conclusion of ["neutral","cancelled"]){
+  const out=assess([job([step("Run guest tests",conclusion)],{conclusion:"success"})],{conclusion:"success"});
+  assert.notEqual(out.classification,"EXECUTED_STEPS_SUCCEEDED");
+  assert.equal(out.jobs[0].meaningful_executed_step_count,0);
+ }
+});
+test("a real successful non-housekeeping step remains observed after checkout",()=>{
+ const out=assess([job([step("Checkout"),step("Compile and test guest")],{conclusion:"success"})],{conclusion:"success"});
+ assert.equal(out.classification,"EXECUTED_STEPS_SUCCEEDED");
+ assert.equal(out.jobs[0].meaningful_executed_step_count,1);
+ assert.equal(out.permits_merging,false);
+});
