@@ -5,7 +5,7 @@
   "batch": "issue-batch-20261018",
   "documentationOnly": true,
   "releaseCertified": false,
-  "note": "Snapshot: 10 PRs have received work; target-profiles #22 and HDL #13 subsequently merged; eight draft PRs remain open. Passing CI is not implied by any PR.",
+  "note": "Snapshot of 30-issue, 20-repo batch: 18 open draft PRs with partial work, 2 independently merged partial PRs, 0 branch-only repos. Code and oracle/evidence contracts must not be confused with completed implementations. CI evidence remains unverified.",
   "repositories": [
     {
       "repository": "ores-truffle-oreslang/oreslang-source.java",
@@ -24,7 +24,8 @@
         }
       ],
       "branch": "draft/issue-batch-1345-1336-1337-20261018",
-      "status": "branch-created-only"
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1362"
     },
     {
       "repository": "ores-truffle-oreslang/oreslang-source.llvm",
@@ -39,7 +40,8 @@
         }
       ],
       "branch": "draft/issue-batch-630-625-20261018",
-      "status": "branch-created-only"
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/634"
     },
     {
       "repository": "ores-truffle-oreslang/oreslang-platform-conformance",
@@ -90,7 +92,8 @@
         }
       ],
       "branch": "draft/issue-batch-12-15-20261018",
-      "status": "branch-created-only"
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-source.js/pull/20"
     },
     {
       "repository": "ores-truffle-oreslang/oreslang-source.hdl",
@@ -137,7 +140,8 @@
         }
       ],
       "branch": "draft/issue-batch-2-6-20261018",
-      "status": "branch-created-only"
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-ml-conformance/pull/8"
     },
     {
       "repository": "ores-truffle-oreslang/oreslang-data-science",
@@ -148,7 +152,8 @@
         }
       ],
       "branch": "draft/issue-batch-9-20261018",
-      "status": "branch-created-only"
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-data-science/pull/11"
     },
     {
       "repository": "ores-truffle-oreslang/oreslang-source.forge",
@@ -159,7 +164,8 @@
         }
       ],
       "branch": "draft/issue-batch-28-20261018",
-      "status": "branch-created-only"
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-source.forge/pull/91"
     },
     {
       "repository": "ores-truffle-oreslang/oreslang-source.wasm",
@@ -194,7 +200,8 @@
         }
       ],
       "branch": "draft/issue-batch-2-20261018",
-      "status": "branch-created-only"
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-autograd/pull/6"
     },
     {
       "repository": "ores-truffle-oreslang/oreslang-tensor",
@@ -205,7 +212,8 @@
         }
       ],
       "branch": "draft/issue-batch-2-20261018",
-      "status": "branch-created-only"
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-tensor/pull/6"
     },
     {
       "repository": "ores-truffle-oreslang/oreslang-browser",
@@ -240,7 +248,8 @@
         }
       ],
       "branch": "draft/issue-batch-6-20261018",
-      "status": "branch-created-only"
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/.github/pull/7"
     },
     {
       "repository": "ores-truffle-oreslang/oreslang-target-profiles",
@@ -263,7 +272,8 @@
         }
       ],
       "branch": "draft/issue-batch-39-20261018",
-      "status": "branch-created-only"
+      "status": "partial-draft-pr",
+      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-wasm/pull/40"
     },
     {
       "repository": "ores-truffle-oreslang/oreslang-serialization-and-validation",
