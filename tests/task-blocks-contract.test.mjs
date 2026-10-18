@@ -9,7 +9,7 @@ const ids = ["do-nb-no-handle","task-int-await","task-void-await","reject-bare-n
  "async-task-braced","async-task-expression","async-task-immediate-await",
  "async-future-nested-task","reject-async-task-malformed",
  "task-spelling-value","task-spelling-discard","task-spelling-await","task-nested-not-flattened",
- "reject-nb-task","reject-task-escaping-borrow","reject-task-double-move",
+ "nb-task-alias","reject-task-escaping-borrow","reject-task-double-move",
  "reject-task-borrow-across-await","reject-task-borrowed-iife-argument"];
 
 test("task blocks remain an explicitly unverified source contract", () => {
@@ -79,7 +79,9 @@ test("outer await joins the Task, while asFuture is an explicit observer", async
   assert.match(awaited, /let int answer = await\s*\(\|int a, string b\| -> nb/);
   assert.match(projected, /let Future<int> result = /);
   assert.match(projected, /\}\)\(5, "xyz"\)\.asFuture\(\)/);
-  asserttest("async task is a single scheduled Task and accepts braced or expression bodies", async () => {
+});
+
+test("async task is a single scheduled Task and accepts braced or expression bodies", async () => {
   const read = async name => readFile(new URL(name + ".ores",base), "utf8");
   const braced = await read("async-task-braced");
   const expression = await read("async-task-expression");
@@ -124,7 +126,9 @@ test("task and nb share one Task expression contract, await is the join", async 
   assert.match(value, /let int value = await job;/);
   assert.match(detached, /\bdo task\s*\{/);
   assert.match(joined, /let int value = await task\s*\{/);
-  assert.doesNotMatch(joined, /\bnb task\s*\{/);
+  const alias = await read("nb-task-alias");
+  assert.match(alias, /let Task<int> job = nb task\s*\{/);
+  assert.equal(contract.cases.find(c => c.id === "nb-task-alias")?.parserExpected, "accept");
 });
 
 test("nested Task is not flattened by one await", async () => {
@@ -137,9 +141,6 @@ test("nested Task is not flattened by one await", async () => {
 
 test("borrow and move negative fixtures cannot be classified as passes", async () => {
   const read = async id => readFile(new URL(id + ".ores",base), "utf8");
-  const forbidden = await read("reject-nb-task");
-  assert.match(forbidden, /\bnb task\s*\{/);
-  assert.equal(contract.cases.find(c => c.id === "reject-nb-task").parserExpected,"reject");
   for (const id of [
     "reject-task-escaping-borrow", "reject-task-double-move",
     "reject-task-borrow-across-await", "reject-task-borrowed-iife-argument"
