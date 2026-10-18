@@ -268,9 +268,11 @@ async function requireExactPolicyReview(repo,protectedSha,paths,reviewer,token,f
   if(new Set(commits).size!==1) throw Error("authorization files were not activated in one reviewed commit");
   const policyCommit=commits[0];
   const pulls=await metadata("repos/"+repo+"/commits/"+policyCommit+"/pulls?per_page=20",token,fetchImpl);
-  if(!Array.isArray(pulls)||pulls.length>20) throw Error("authorization pull request lookup is ambiguous");
+  if(!Array.isArray(pulls)||pulls.length===0||pulls.length>=20)
+    throw Error("authorization pull request lookup is ambiguous");
   const merged=pulls.filter(pr=>pr?.state==="closed" && typeof pr?.merged_at==="string" &&
-    pr?.base?.ref==="main" && pr?.head?.repo?.full_name===repo);
+    pr?.base?.ref==="main" && pr?.base?.repo?.full_name===repo &&
+    pr?.head?.repo?.full_name===repo);
   if(merged.length!==1 || !Number.isSafeInteger(merged[0]?.number) || merged[0].number<=0 ||
      typeof merged[0]?.head?.sha!=="string" || !OID.test(merged[0].head.sha) ||
      !Number.isSafeInteger(merged[0]?.user?.id) || merged[0].user.id<=0){
@@ -401,7 +403,9 @@ function requireUniquePolicyEntry(text, fields, expected, label) {
     names.add(values[0]); ids.add(values[fields - 1]);
     if (key === expected) matchCount++;
   }
-  if (matchCount !== 1) throw Error("missing exact protected-main " + label);
+  if (matchCount !== 1 || names.size !== 1) {
+    throw Error("protected-main " + label + " must contain exactly one active canary");
+  }
 }
 
 const SECURITY_PATHS = Object.freeze([
