@@ -79,7 +79,8 @@ test("reject capacity-as-approval and private-carrier bypasses before promotion"
     assert.throws(() => validateExternalOresAudit(malicious), /fail-closed provenance/);
     const omitted = copy();
     delete omitted.securityPolicy[key];
-    assert.throws(() => validateExternalOresAudit(omitted), /fail-closed provenance/);
+    assert.throws(() => validateExternalOresAudit(omitted),
+      /unexpected or missing audit inventory field/);
   }
 });
 
