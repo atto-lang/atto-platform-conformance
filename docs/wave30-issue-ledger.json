@@ -1,0 +1,295 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-18",
+  "organization": "ores-truffle-oreslang",
+  "branch": "draft/issue-wave30-20261018",
+  "releaseCertified": false,
+  "merged": false,
+  "statusDefinition": {
+    "code_partial": "Code/tests committed, issue and backend acceptance incomplete",
+    "plan_only": "Issue-specific verification plan committed, no implementation"
+  },
+  "verificationNotes": [
+    "GitHub branches and ahead-of-main diffs were verified; some branches are behind main and need reconciliation.",
+    "GitHub Actions on sampled repos failed with zero job steps, not an executed test result.",
+    "Local isolated model smoke checks do not certify exact Git HEAD, full compiler, or backend parity."
+  ],
+  "repositories": [
+    {
+      "name": "oreslang-platform.asic",
+      "branchUrl": "https://github.com/ores-truffle-oreslang/oreslang-platform.asic/tree/draft/issue-wave30-20261018",
+      "issues": [
+        {
+          "number": 4,
+          "status": "code_partial",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-platform.asic/issues/4"
+        }
+      ]
+    },
+    {
+      "name": "oreslang-platform.fpga",
+      "branchUrl": "https://github.com/ores-truffle-oreslang/oreslang-platform.fpga/tree/draft/issue-wave30-20261018",
+      "issues": [
+        {
+          "number": 4,
+          "status": "code_partial",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-platform.fpga/issues/4"
+        }
+      ]
+    },
+    {
+      "name": "oreslang-source.hdl",
+      "branchUrl": "https://github.com/ores-truffle-oreslang/oreslang-source.hdl/tree/draft/issue-wave30-20261018",
+      "issues": [
+        {
+          "number": 6,
+          "status": "code_partial",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-source.hdl/issues/6"
+        },
+        {
+          "number": 7,
+          "status": "code_partial",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-source.hdl/issues/7"
+        }
+      ]
+    },
+    {
+      "name": "oreslang-target-profiles",
+      "branchUrl": "https://github.com/ores-truffle-oreslang/oreslang-target-profiles/tree/draft/issue-wave30-20261018",
+      "issues": [
+        {
+          "number": 14,
+          "status": "code_partial",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-target-profiles/issues/14"
+        },
+        {
+          "number": 21,
+          "status": "code_partial",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-target-profiles/issues/21"
+        }
+      ]
+    },
+    {
+      "name": "oreslang-cli",
+      "branchUrl": "https://github.com/ores-truffle-oreslang/oreslang-cli/tree/draft/issue-wave30-20261018",
+      "issues": [
+        {
+          "number": 8,
+          "status": "code_partial",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-cli/issues/8"
+        }
+      ]
+    },
+    {
+      "name": "oreslang-source.wasm",
+      "branchUrl": "https://github.com/ores-truffle-oreslang/oreslang-source.wasm/tree/draft/issue-wave30-20261018",
+      "issues": [
+        {
+          "number": 33,
+          "status": "plan_only",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-source.wasm/issues/33"
+        },
+        {
+          "number": 88,
+          "status": "code_partial",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-source.wasm/issues/88"
+        }
+      ]
+    },
+    {
+      "name": "oreslang-wasm",
+      "branchUrl": "https://github.com/ores-truffle-oreslang/oreslang-wasm/tree/draft/issue-wave30-20261018",
+      "issues": [
+        {
+          "number": 39,
+          "status": "code_partial",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-wasm/issues/39"
+        }
+      ]
+    },
+    {
+      "name": "oreslang-restful-server-perf-benchmarks",
+      "branchUrl": "https://github.com/ores-truffle-oreslang/oreslang-restful-server-perf-benchmarks/tree/draft/issue-wave30-20261018",
+      "issues": [
+        {
+          "number": 11,
+          "status": "code_partial",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-restful-server-perf-benchmarks/issues/11"
+        }
+      ]
+    },
+    {
+      "name": "oreslang-common-source",
+      "branchUrl": "https://github.com/ores-truffle-oreslang/oreslang-common-source/tree/draft/issue-wave30-20261018",
+      "issues": [
+        {
+          "number": 69,
+          "status": "plan_only",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-common-source/issues/69"
+        },
+        {
+          "number": 79,
+          "status": "code_partial",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-common-source/issues/79"
+        },
+        {
+          "number": 80,
+          "status": "plan_only",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-common-source/issues/80"
+        }
+      ]
+    },
+    {
+      "name": "oreslang-serialization-and-validation",
+      "branchUrl": "https://github.com/ores-truffle-oreslang/oreslang-serialization-and-validation/tree/draft/issue-wave30-20261018",
+      "issues": [
+        {
+          "number": 18,
+          "status": "plan_only",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-serialization-and-validation/issues/18"
+        }
+      ]
+    },
+    {
+      "name": "rx-oreslang-channels",
+      "branchUrl": "https://github.com/ores-truffle-oreslang/rx-oreslang-channels/tree/draft/issue-wave30-20261018",
+      "issues": [
+        {
+          "number": 8,
+          "status": "plan_only",
+          "url": "https://github.com/ores-truffle-oreslang/rx-oreslang-channels/issues/8"
+        },
+        {
+          "number": 18,
+          "status": "plan_only",
+          "url": "https://github.com/ores-truffle-oreslang/rx-oreslang-channels/issues/18"
+        }
+      ]
+    },
+    {
+      "name": "oreslang-data-science",
+      "branchUrl": "https://github.com/ores-truffle-oreslang/oreslang-data-science/tree/draft/issue-wave30-20261018",
+      "issues": [
+        {
+          "number": 9,
+          "status": "code_partial",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-data-science/issues/9"
+        }
+      ]
+    },
+    {
+      "name": "oreslang-source.forge",
+      "branchUrl": "https://github.com/ores-truffle-oreslang/oreslang-source.forge/tree/draft/issue-wave30-20261018",
+      "issues": [
+        {
+          "number": 28,
+          "status": "plan_only",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-source.forge/issues/28"
+        },
+        {
+          "number": 31,
+          "status": "plan_only",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-source.forge/issues/31"
+        }
+      ]
+    },
+    {
+      "name": "oreslang-source.net",
+      "branchUrl": "https://github.com/ores-truffle-oreslang/oreslang-source.net/tree/draft/issue-wave30-20261018",
+      "issues": [
+        {
+          "number": 35,
+          "status": "plan_only",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-source.net/issues/35"
+        },
+        {
+          "number": 38,
+          "status": "plan_only",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-source.net/issues/38"
+        }
+      ]
+    },
+    {
+      "name": "oreslang-platform.embedded",
+      "branchUrl": "https://github.com/ores-truffle-oreslang/oreslang-platform.embedded/tree/draft/issue-wave30-20261018",
+      "issues": [
+        {
+          "number": 19,
+          "status": "code_partial",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-platform.embedded/issues/19"
+        }
+      ]
+    },
+    {
+      "name": "oreslang-format",
+      "branchUrl": "https://github.com/ores-truffle-oreslang/oreslang-format/tree/draft/issue-wave30-20261018",
+      "issues": [
+        {
+          "number": 60,
+          "status": "plan_only",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-format/issues/60"
+        },
+        {
+          "number": 71,
+          "status": "plan_only",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-format/issues/71"
+        }
+      ]
+    },
+    {
+      "name": ".github",
+      "branchUrl": "https://github.com/ores-truffle-oreslang/.github/tree/draft/issue-wave30-20261018",
+      "issues": [
+        {
+          "number": 6,
+          "status": "plan_only",
+          "url": "https://github.com/ores-truffle-oreslang/.github/issues/6"
+        }
+      ]
+    },
+    {
+      "name": "rx-ores",
+      "branchUrl": "https://github.com/ores-truffle-oreslang/rx-ores/tree/draft/issue-wave30-20261018",
+      "issues": [
+        {
+          "number": 10,
+          "status": "code_partial",
+          "url": "https://github.com/ores-truffle-oreslang/rx-ores/issues/10"
+        }
+      ]
+    },
+    {
+      "name": "oreslang-proof-of-concepts",
+      "branchUrl": "https://github.com/ores-truffle-oreslang/oreslang-proof-of-concepts/tree/draft/issue-wave30-20261018",
+      "issues": [
+        {
+          "number": 6,
+          "status": "code_partial",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-proof-of-concepts/issues/6"
+        }
+      ]
+    },
+    {
+      "name": "oreslang-spin",
+      "branchUrl": "https://github.com/ores-truffle-oreslang/oreslang-spin/tree/draft/issue-wave30-20261018",
+      "issues": [
+        {
+          "number": 10,
+          "status": "code_partial",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-spin/issues/10"
+        }
+      ]
+    },
+    {
+      "name": "oreslang-linked-queue",
+      "branchUrl": "https://github.com/ores-truffle-oreslang/oreslang-linked-queue/tree/draft/issue-wave30-20261018",
+      "issues": [
+        {
+          "number": 3,
+          "status": "plan_only",
+          "url": "https://github.com/ores-truffle-oreslang/oreslang-linked-queue/issues/3"
+        }
+      ]
+    }
+  ]
+}
