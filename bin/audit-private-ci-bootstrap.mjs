@@ -28,10 +28,10 @@ const PINNED_SOURCE_IDENTITIES=Object.freeze({
 // alone cannot authenticate what instructions the status-producing job ran.
 const PINNED_POLICY_WORKFLOW_BLOBS=Object.freeze({
   "ores-truffle-oreslang/oreslang-source.java":"d4b1356249534e4dc55e9aeabfad80773016cd48",
-  "ores-truffle-oreslang/oreslang-source.llvm":"c009875541d9ad5fc323aa85ef53cf7b25f6ec74",
-  "ores-truffle-oreslang/oreslang-source.net":"c009875541d9ad5fc323aa85ef53cf7b25f6ec74",
-  "ores-truffle-oreslang/oreslang-source.wasm":"c009875541d9ad5fc323aa85ef53cf7b25f6ec74",
-  "ores-truffle-oreslang/oreslang-source.forge":"c009875541d9ad5fc323aa85ef53cf7b25f6ec74"
+  "ores-truffle-oreslang/oreslang-source.llvm":"15d506a6e54f04eae39291acb585667bddd4db03",
+  "ores-truffle-oreslang/oreslang-source.net":"15d506a6e54f04eae39291acb585667bddd4db03",
+  "ores-truffle-oreslang/oreslang-source.wasm":"15d506a6e54f04eae39291acb585667bddd4db03",
+  "ores-truffle-oreslang/oreslang-source.forge":"15d506a6e54f04eae39291acb585667bddd4db03"
 });
 const OID=/^[0-9a-f]{40}$/;
 const EXPECTED_OWNER="@ORESoftware";
@@ -40,6 +40,7 @@ const SECURITY_PATHS=Object.freeze([
   "/.github/CODEOWNERS",
   "/.github/private-ci-approved-repositories.txt",
   "/.github/private-ci-approved-source-snapshots.txt",
+  "/.github/private-ci-independent-reviewer.json",
   "/.github/private-ci-required-checks.json",
   "/.github/workflows/private-ci-policy.yml"
 ]);
@@ -201,6 +202,28 @@ export function auditProtection(protection){
     error("review/admin/no-bypass protection mismatch");
   }
 }
+export function auditReviewerPolicy(text){
+  let policy;
+  try{policy=JSON.parse(text);}catch{error("independent reviewer policy is not valid JSON");}
+  const keys=["schema","enabled","minimumPermission","disallowedReviewerIds","reviewer"];
+  if(!policy || Object.getPrototypeOf(policy)!==Object.prototype ||
+     Object.keys(policy).length!==keys.length || keys.some(key=>!Object.hasOwn(policy,key)) ||
+     policy.schema!==2 || typeof policy.enabled!=="boolean" ||
+     !["write","maintain","admin"].includes(policy.minimumPermission)){
+    error("independent reviewer policy schema mismatch");
+  }
+  const blocked=policy.disallowedReviewerIds;
+  if(!Array.isArray(blocked) || blocked.length!==2 ||
+     blocked.some(id=>!Number.isSafeInteger(id) || id<=0) ||
+     new Set(blocked).size!==2 || !blocked.includes(11139560) || !blocked.includes(2148448)){
+    error("independent reviewer operator denylist mismatch");
+  }
+  // Bootstrap is deliberately non-authorizing. Reviewer activation belongs to
+  // the separately reviewed canary phase after protected-main bootstrap.
+  if(policy.enabled!==false || policy.reviewer!==null){
+    error("independent reviewer must remain disabled during bootstrap");
+  }
+}
 function auditEmptyApprovals(destinationText,snapshotText){
   if(dataLines(destinationText).length!==0) error("destination approval must remain empty during bootstrap");
   if(dataLines(snapshotText).length!==0) error("snapshot approval must remain empty during bootstrap");
@@ -230,10 +253,11 @@ export async function auditRepository(repo,{token,fetchImpl=fetch}={}){
   const protection=await getJson(base+"/branches/main/protection",token,fetchImpl);
   auditProtection(protection);
   const file=async path=>decodePolicy(await getJson(base+"/contents/"+path+"?ref="+protectedSha,token,fetchImpl),path);
-  const [codeowners,destinations,snapshots,requiredChecks]=await Promise.all([
+  const [codeowners,destinations,snapshots,reviewerPolicy,requiredChecks]=await Promise.all([
     file(".github/CODEOWNERS"),
     file(".github/private-ci-approved-repositories.txt"),
     file(".github/private-ci-approved-source-snapshots.txt"),
+    file(".github/private-ci-independent-reviewer.json"),
     file(".github/private-ci-required-checks.json")
   ]);
   // Pin the *reviewed instructions* of the trusted check: an attacker could
@@ -247,6 +271,7 @@ export async function auditRepository(repo,{token,fetchImpl=fetch}={}){
   auditCodeowners(codeowners,repo);
   auditProtection(protection);
   auditRequiredChecks(requiredChecks,protection,repo);
+  auditReviewerPolicy(reviewerPolicy);
   auditEmptyApprovals(destinations,snapshots);
   // A protection rule can change without changing main's commit SHA.
   const finalProtection=await getJson(base+"/branches/main/protection",token,fetchImpl);
