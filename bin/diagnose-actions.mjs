@@ -83,7 +83,15 @@ export function assessRun(run, jobsResponse) {
   let classification = !complete ? "INCOMPLETE_JOB_LIST" : jobs.length === 0 ? "NO_JOBS_RECORDED" :
     priority.find(x => kinds.has(x)) || (kinds.size === 1 && kinds.has("EXECUTED_STEPS_SUCCEEDED")
       ? "EXECUTED_STEPS_SUCCEEDED" : "MIXED_OR_UNKNOWN");
-  if (classification === "EXECUTED_STEPS_SUCCEEDED" &&
+  // Never attribute an observed failure OR apparent success to the requested
+  // commit/attempt when GitHub's job records explicitly identify another one.
+  // Preserve per-job classifications so the mismatch does not hide raw evidence.
+  const conflictingIdentity = normalized.some(j =>
+    j.head_sha_match === "MISMATCH" ||
+    j.run_id_match === "MISMATCH" ||
+    j.run_attempt_match === "MISMATCH");
+  if (complete && conflictingIdentity) classification = "JOB_IDENTITY_MISMATCH";
+  else if (classification === "EXECUTED_STEPS_SUCCEEDED" &&
       (run.status !== "completed" || run.conclusion !== "success")) classification = "RUN_JOB_STATE_MISMATCH";
   const observedExecuted = normalized.reduce((sum,j)=>sum+(j.executed_step_count??0),0);
   const observedFailed = normalized.reduce((sum,j)=>sum+(j.failed_step_count??0),0);
