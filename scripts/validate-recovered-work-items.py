@@ -12,9 +12,9 @@ PR_URL = re.compile(r"https://github[.]com/ores-truffle-oreslang/([a-zA-Z0-9_.-]
 SNAPSHOT = Path(__file__).resolve().parents[1] / "audits/2026-10-18-50-open-work-items.json"
 MARKDOWN = SNAPSHOT.with_suffix(".md")
 ROW = re.compile(
-    r"^\\| ([1-9][0-9]*) \\| (P[01]) \\| \\[([^\\]]+)\\]\\("
+    r"^\| ([1-9][0-9]*) \| (P[01]) \| \[([^\]]+)\]\("
     r"(https://github[.]com/ores-truffle-oreslang/[a-zA-Z0-9_.-]+/pull/[1-9][0-9]*)"
-    r"\\) — (.*?) \\| (.*?) \\|$"
+    r"\) — (.*?) \| (.*?) \|$"
 )
 
 
@@ -71,7 +71,7 @@ def validate_markdown(snapshot, markdown):
     if required_summary not in markdown:
         raise ValueError("human-facing priority summary differs from JSON")
     rows = [line for line in markdown.splitlines()
-            if re.match(r"^\\| [0-9]+ \\| P[01] \\|", line)]
+            if re.match(r"^\| [0-9]+ \| P[01] \|", line)]
     if len(rows) != len(items):
         raise ValueError("Markdown row count differs from JSON")
     for expected, row in zip(items, rows):
