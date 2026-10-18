@@ -78,9 +78,30 @@ export async function proposeCanary({source,destination,sourceCommit,token,fetch
     destinationId:dest.id,
     policyLines:Object.freeze({
       destination:destination+" "+dest.id,
-      snapshot:sourceCommit+" "+sourceTree+" "+dest.id
+      snapshot:sourceCommit+" "+sourceTree+" "+dest.id,
+      carrierSnapshot:sourceCommit+" "+sourceTree+" "+dest.id
     }),
-    warning:"Proposal only: add these lines only through a protected CODEOWNERS-reviewed policy PR after bootstrap audit passes."
+    reviewProtocol:Object.freeze({
+      sourceReviewerPolicy:".github/private-ci-independent-reviewer.json",
+      carrierReviewerPolicy:".github/private-ci-independent-reviewer.json",
+      sourceAuthorizationPaths:Object.freeze([
+        ".github/private-ci-approved-repositories.txt",
+        ".github/private-ci-approved-source-snapshots.txt",
+        ".github/private-ci-independent-reviewer.json"
+      ]),
+      carrierAuthorizationPaths:Object.freeze([
+        ".github/private-ci-approved-source-snapshots.txt",
+        ".github/private-ci-independent-reviewer.json"
+      ]),
+      requirements:Object.freeze([
+        "activate the same non-operator reviewer identity on source and carrier",
+        "change each side's authorization paths together in one commit",
+        "obtain that reviewer\'s APPROVED review on the exact final PR head for both source and carrier",
+        "reviewer must retain configured write-or-better permission in both repositories",
+        "keep exactly one active canary and preserve pinned policy workflow blobs"
+      ])
+    }),
+    warning:"Proposal only: after bootstrap passes, apply source and carrier lines in separate protected CODEOWNERS-reviewed PRs and obtain exact-head approval from the same configured independent reviewer."
   });
 }
 
