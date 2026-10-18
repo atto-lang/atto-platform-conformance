@@ -1,11 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {assessRun,readAllJobs} from "../bin/diagnose-actions.mjs";
+import {assessRun,readAllJobs,verifyStableRunSnapshot} from "../bin/diagnose-actions.mjs";
 const SHA="a".repeat(40);
 const run={id:123,run_attempt:2,status:"completed",conclusion:"failure",head_sha:SHA};
 const step=(name,conclusion="success",status="completed")=>({name,status,conclusion});
 const job=(steps,{status="completed",conclusion="failure",head_sha=SHA,runner_id=5}={})=>
-  ({id:10,name:"harness",status,conclusion,head_sha,runner_id,steps});
+  ({id:10,name:"harness",run_id:123,run_attempt:2,status,conclusion,head_sha,runner_id,steps});
 const assess=(jobs,override={})=>assessRun({...run,...override},{total_count:jobs.length,jobs});
 
 test("explicit empty steps are an observed no-step failure, not quota diagnosis",()=>{
@@ -123,4 +123,77 @@ test("aggregate counts preserve unknown when job steps are unavailable",()=>{
  assert.equal(out.executed_step_count,null);
  assert.equal(out.observed_failed_step_count,1);
  assert.equal(out.unobserved_job_count,1);
+});
+
+test("only checkout or runner housekeeping does not prove substantive execution",()=>{
+ for(const name of ["Set up job","Complete job","Post Run actions/checkout","Pre cache"]){
+  const out=assess([job([step(name)],{conclusion:"success"})],{conclusion:"success"});
+  assert.equal(out.classification,"SUCCESS_WITHOUT_EXECUTION_EVIDENCE");
+  assert.equal(out.jobs[0].meaningful_executed_step_count,0);
+ }
+});
+test("successful listed steps without a real runner do not prove executed CI",()=>{
+ const out=assess([job([step("Actual test")],{conclusion:"success",runner_id:null})],{conclusion:"success"});
+ assert.equal(out.classification,"SUCCESS_WITHOUT_EXECUTION_EVIDENCE");
+ assert.equal(out.jobs[0].runner_allocated,false);
+});
+test("missing job status is not interpreted as queued",()=>{
+ const out=assess([job(null,{status:null})]);
+ assert.equal(out.classification,"UNKNOWN_JOB_STATUS");
+});
+test("job run and attempt mismatch cannot support exact-run verification",()=>{
+ const value={...job([step("Test")],{conclusion:"success"}),run_id:999,run_attempt:3};
+ const out=assess([value],{conclusion:"success"});
+ assert.equal(out.classification,"EXECUTED_STEPS_SUCCEEDED");
+ assert.equal(out.all_job_run_ids_verified,false);
+ assert.equal(out.all_job_run_attempts_verified,false);
+ assert.equal(out.jobs[0].run_id_match,"MISMATCH");
+ assert.equal(out.jobs[0].run_attempt_match,"MISMATCH");
+});
+test("job run and attempt missing are UNKNOWN rather than VERIFIED",()=>{
+ const value={...job([step("Test")],{conclusion:"success"}),run_id:null,run_attempt:null};
+ const out=assess([value],{conclusion:"success"});
+ assert.equal(out.jobs[0].run_id_match,"UNKNOWN");
+ assert.equal(out.jobs[0].run_attempt_match,"UNKNOWN");
+ assert.equal(out.all_job_run_ids_verified,false);
+ assert.equal(out.all_job_run_attempts_verified,false);
+});
+test("run/attempt identity positively binds successful job to exact observed run",()=>{
+ const out=assess([job([step("Test")],{conclusion:"success"})],{conclusion:"success"});
+ assert.equal(out.all_job_head_shas_verified,true);
+ assert.equal(out.all_job_run_ids_verified,true);
+ assert.equal(out.all_job_run_attempts_verified,true);
+});
+test("duplicate and malformed job identities cannot be counted twice",()=>{
+ assert.throws(()=>assess([job([step("Test")]),job([step("Test")])]),/duplicate GitHub job identity/);
+ assert.throws(()=>assess([{...job([]),id:null}]),/job identity/);
+});
+test("pagination requires latest attempt and rejects duplicate page jobs",async()=>{
+ const seen=[];
+ const out=await readAllJobs("/repos/a/b/actions/runs/123",async path=>{
+  seen.push(path);
+  return {total_count:1,jobs:[{id:7}]};
+ });
+ assert.equal(out.jobs.length,1);
+ assert.ok(seen[0].includes("filter=latest"));
+ await assert.rejects(readAllJobs("/x",async path=>({
+   total_count:101,jobs:path.endsWith("page=1")
+     ? Array.from({length:100},(_,i)=>({id:i+1}))
+     : [{id:100}]
+ })),/pagination identity/);
+});
+test("run reread accepts immutable identity and denies rerun/swap/visibility drift",()=>{
+ const exact={...run,workflow_id:1234,path:".github/workflows/ci.yml",
+  repository:{id:22},head_repository:{id:22}};
+ assert.equal(verifyStableRunSnapshot(exact,{...exact}),true);
+ for(const replacement of [
+  {run_attempt:3},{head_sha:"b".repeat(40)},
+  {status:"in_progress"},{conclusion:"success"},
+  {workflow_id:5678},{path:".github/workflows/other.yml"},
+  {repository:{id:99}},{head_repository:{id:99}}
+ ]){
+  assert.throws(()=>verifyStableRunSnapshot(exact,{...exact,...replacement}),/changed/);
+ }
+ assert.throws(()=>verifyStableRunSnapshot({...exact,run_attempt:null},exact),/invalid initial/);
+ assert.throws(()=>verifyStableRunSnapshot({...exact,repository:null},exact),/identity changed or is unobserved/);
 });
