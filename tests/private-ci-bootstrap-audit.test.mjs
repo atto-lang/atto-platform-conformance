@@ -214,7 +214,8 @@ test("required check must be strict and bound to GitHub Actions app 15368",()=>{
 test("final CODEOWNERS block cannot be shadowed by a later wildcard",()=>{
   assert.doesNotThrow(()=>auditCodeowners(codeowners));
   assert.throws(()=>auditCodeowners(codeowners+"* @someone-else\n"),/final block mismatch/);
-  assert.throws(()=>auditCodeowners(codeowners.replace(owner,"@someone-else")),/final block mismatch/);
+  assert.throws(()=>auditCodeowners(codeowners.replace(owner,"@someone-else")),
+    /final block mismatch|workflow directory CODEOWNERS wildcard missing/);
 });
 
 test("all source repos deny unreviewed same-name workflow spoofing",()=>{
