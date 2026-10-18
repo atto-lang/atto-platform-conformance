@@ -27,7 +27,7 @@ const PINNED_SOURCE_IDENTITIES=Object.freeze({
 // Reviewed immutable workflow identities: GitHub Actions app ID and check name
 // alone cannot authenticate what instructions the status-producing job ran.
 const PINNED_POLICY_WORKFLOW_BLOBS=Object.freeze({
-  "ores-truffle-oreslang/oreslang-source.java":"d4b1356249534e4dc55e9aeabfad80773016cd48",
+  "ores-truffle-oreslang/oreslang-source.java":"b7c36261c6f1dad2c86cae31f8974f854e124021",
   "ores-truffle-oreslang/oreslang-source.llvm":"15d506a6e54f04eae39291acb585667bddd4db03",
   "ores-truffle-oreslang/oreslang-source.net":"15d506a6e54f04eae39291acb585667bddd4db03",
   "ores-truffle-oreslang/oreslang-source.wasm":"15d506a6e54f04eae39291acb585667bddd4db03",
