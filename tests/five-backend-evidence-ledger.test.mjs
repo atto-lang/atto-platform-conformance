@@ -340,6 +340,59 @@ test("77-case source-free carrier evidence never authenticates any native backen
   assert.equal(result.blocked.length,5);
 });
 
+test("reject Unicode bidi and zero-width CI identity spoofing",()=>{
+  // The exact-run Python verifier rejects Cc/Cf/Cs/Zl/Zp categories.
+  // Shape-only JS evidence must not be more permissive about displayed
+  // runner, job, step or toolchain identities.
+  for (const key of ["runnerName","runnerJob","testStep","toolchain"]) {
+    for (const invisible of [
+      "\u202e",  // right-to-left override
+      "\u2066",  // left-to-right isolate
+      "\u200b",  // zero-width space
+      "\u200d",  // zero-width joiner
+      "\ufeff",  // byte order mark / invisible formatter
+      "\u0085",  // next-line separator
+      "\u2028",  // Unicode line separator
+      "\u2029",  // Unicode paragraph separator
+      "\ud800"   // lone surrogate code point
+    ]) {
+      const x=base();
+      x.records[0]=executed(BACKENDS[0]);
+      x.records[0].execution[key]="approved" + invisible + "native";
+      reject(x);
+    }
+  }
+  // Legible Unicode characters may be allowed, but shape validation
+  // must NEVER transform the claim into execution authentication.
+  const legible=base();
+  legible.records[0]=executed(BACKENDS[0]);
+  legible.records[0].execution.runnerName="Exécuteur natif";
+  const result=check(legible);
+  assert.equal(result.claimedExecutionCount,1);
+  assert.equal(result.nativeExecutionAuthenticated,false);
+  assert.equal(result.parityCertified,false);
+  assert.equal(result.releaseReady,false);
+});
+
+test("deny whitespace and case disguised runner-housekeeping proof steps",()=>{
+  for (const spoof of [
+    " set UP JOB ", " COMPLETE JOB ", " initialize CONTAINERS ",
+    " STOP Containers ", " pOsT Checkout ", " PRE Cleanup ",
+    "pre checkout", "post checkout"
+  ]) {
+    const x=base();
+    x.records[0]=executed(BACKENDS[0]);
+    x.records[0].execution.testStep=spoof;
+    reject(x);
+  }
+  const x=base();
+  x.records[0]=executed(BACKENDS[0]);
+  x.records[0].execution.testStep="Run native guest fixtures";
+  const result=check(x);
+  assert.equal(result.authenticatedExecutionCount,0);
+  assert.equal(result.blocked.length,5);
+});
+
 test("reject runner housekeeping as native guest test steps",()=>{
   for (const name of [
     "Set up job", "Complete job", "Initialize containers",
