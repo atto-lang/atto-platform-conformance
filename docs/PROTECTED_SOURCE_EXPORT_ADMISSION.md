@@ -142,3 +142,14 @@ This evidence does **not** authorize or execute a private Oreslang source mirror
 At the time of this evidence, incident #22 remained open, all Oreslang source
 `main` branches remained unprotected, and Sagitta `main` itself remained
 unprotected.
+
+## 2026-10-18 UTC: bootstrap source identity and Java CODEOWNERS parity
+
+The source-export bootstrap auditor now has two fail-closed protections added during review:
+
+1. **Exact Java CODEOWNERS inventory.** The independent bootstrap auditor must include `/scripts/dispatch-review-pinned-private-ci.py` and `/tests/test_review_pinned_dispatcher.py` in its reviewed terminal path sequence. Both were already present in Java PR #1217's real CODEOWNERS and publisher `REQUIRED_CODEOWNER_PATHS`, but missing in this auditor's 26-entry Java inventory; that mismatch would deny otherwise valid protected-main bootstrap. The auditor now expects the same 28 paths. Regression tests reject both missing/modified owners and misordered security entries.
+2. **Immutable repository identity.** Before checking branch protection or any policy file, and again immediately before success, the auditor reads GitHub repository metadata and requires the exact reviewed full name, numeric source repository ID, `private=true`, `visibility=private`, `archived=false`, and `disabled=false`. A name-only lookup is insufficient because slugs may be reassigned or repositories transferred. The independently read source IDs are Java `1400792274`, LLVM `1410897874`, .NET `1419704375`, WASM `1419858954`, and Forge `1419703674`. Negative tests reject wrong IDs, public visibility, renamed identity, archived/disabled repositories, and mid-audit privacy/identity drift. No redirect following is permitted.
+
+**Validation scope:** Exact current Java #1217 CODEOWNERS and four companion bootstrap-policy PR CODEOWNERS snapshots were fetched separately and passed the corrected pure CODEOWNERS predicate (five out of five). Isolated JavaScript checks also rejected omission/wrong ownership of both Java dispatcher paths and six wrong-source-identity inputs. These are read-only, in-memory tests, **not** GitHub-hosted Node execution and **not** a `BOOTSTRAP_PROTECTED` result from a live admin-authenticated policy audit.
+
+**Still blocked:** All five source `main` branches report `protected=false`; source-org Actions job allocation remains unsuccessful, both carrier security incidents #22/#77 are unresolved, and the source/destination snapshot authorization ledgers remain empty. These fail-closed restrictions must be retained until a genuinely independent reviewer and repository administrator complete the governance prerequisites. Nothing in this section authorizes source export.
