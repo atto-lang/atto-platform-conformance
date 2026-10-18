@@ -29,7 +29,8 @@ export function assessRun(run, jobsResponse) {
     const executed = steps?.filter(isExecuted) ?? null;
     const failing = steps?.filter(isFailed) ?? null;
     const runnerAllocated = Number.isSafeInteger(job?.runner_id) && job.runner_id > 0;
-    const jobHeadVerified = runHeadValid && job?.head_sha === run.head_sha;
+    const jobHeadMatch = job?.head_sha == null ? "UNKNOWN" :
+      runHeadValid && job.head_sha === run.head_sha ? "VERIFIED" : "MISMATCH";
     let classification;
     if (job?.status !== "completed") classification = "PENDING_OR_QUEUED";
     else if (job?.conclusion === "skipped") classification = "SKIPPED";
@@ -52,7 +53,7 @@ export function assessRun(run, jobsResponse) {
       failed_step_count:failing?.length ?? null,
       failed_steps:failing?.map(step => ({number:step.number ?? null, name:step.name ?? null,
         conclusion:step.conclusion, housekeeping:isHousekeeping(step.name)})) ?? null,
-      head_sha_match:jobHeadVerified ? "VERIFIED" : "UNKNOWN_OR_MISMATCH",
+      head_sha_match:jobHeadMatch,
       classification,
     };
   });
@@ -66,6 +67,9 @@ export function assessRun(run, jobsResponse) {
       ? "EXECUTED_STEPS_SUCCEEDED" : "MIXED_OR_UNKNOWN");
   if (classification === "EXECUTED_STEPS_SUCCEEDED" &&
       (run.status !== "completed" || run.conclusion !== "success")) classification = "RUN_JOB_STATE_MISMATCH";
+  const observedExecuted = normalized.reduce((sum,j)=>sum+(j.executed_step_count??0),0);
+  const observedFailed = normalized.reduce((sum,j)=>sum+(j.failed_step_count??0),0);
+  const unknownStepJobs = normalized.filter(j=>j.step_count===null).length;
   return {
     run_id:run.id, run_attempt:run.run_attempt ?? null,
     run_status:run.status ?? null, run_conclusion:run.conclusion ?? null,
@@ -74,8 +78,11 @@ export function assessRun(run, jobsResponse) {
     all_job_head_shas_verified:runHeadValid && normalized.every(j => j.head_sha_match === "VERIFIED"),
     classification, job_classifications:[...kinds].sort(),
     job_list_complete:complete, job_count:jobs.length,
-    executed_step_count:normalized.reduce((sum,j)=>sum+(j.executed_step_count??0),0),
-    failed_step_count:normalized.reduce((sum,j)=>sum+(j.failed_step_count??0),0),
+    executed_step_count:unknownStepJobs ? null : observedExecuted,
+    failed_step_count:unknownStepJobs ? null : observedFailed,
+    observed_executed_step_count:observedExecuted,
+    observed_failed_step_count:observedFailed,
+    unobserved_job_count:unknownStepJobs,
     jobs:normalized, root_cause_established:false,
     guidance:"Use exact head SHA, job/step details, run banner and independent billing evidence. No runner, quota, native compiler, or test result may be inferred from a workflow conclusion alone.",
     permits_merging:false,
