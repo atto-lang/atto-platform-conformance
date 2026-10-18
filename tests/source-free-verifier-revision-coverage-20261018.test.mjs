@@ -35,7 +35,7 @@ test("all five reviewed PRs share a newer unexecuted three-blob revision", () =>
   assert.equal(now.backendPrHeads.length, 5);
   assert.equal(new Set(now.backendPrHeads.map(x => x.backend)).size, 5);
   for (const [path, newSha] of Object.entries(now.verifierBlobs)) {
-    assert.ok(hex40.test(path === "N/A" ? "" : newSha));
+    assert.ok(hex40.test(newSha), `invalid candidate Git blob for ${path}`);
     assert.ok(hex40.test(old.blobs[path]));
     assert.notEqual(newSha, old.blobs[path], `old executed blob MUST NOT cover new ${path}`);
   }
