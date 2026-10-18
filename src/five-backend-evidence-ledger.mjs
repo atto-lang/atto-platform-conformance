@@ -31,8 +31,12 @@ function sha1(v, name) { if (typeof v !== "string" || !SHA1.test(v)) fail(name +
 function sha256(v, name) { if (typeof v !== "string" || !SHA256.test(v)) fail(name + " must be SHA-256"); }
 function positive(v, name) { if (!Number.isSafeInteger(v) || v < 1) fail(name + " must be positive safe integer"); }
 function nonempty(v, name) {
+  // Follow exact-run verifier's display-identity rule. GitHub job/runner/step
+  // labels containing bidi controls, zero-width formatters, surrogate code
+  // points or Unicode separators can impersonate real execution in reports.
   if (typeof v !== "string" || v.trim().length < 1 || v.length > 250 ||
-      /[\u0000-\u001f\u007f\u0085\u2028\u2029]/.test(v)) fail(name + " must be nonempty bounded single-line string");
+      /[\p{Cc}\p{Cf}\p{Cs}\p{Zl}\p{Zp}]/u.test(v))
+    fail(name + " must be a visible bounded single-line string");
 }
 function runPath(v, workflowPath) {
   // An evidence claim must identify exactly which reviewed workflow *ref*
@@ -76,9 +80,13 @@ function validateExecution(e, backend) {
   for (const key of ["runnerName", "runnerJob", "testStep", "toolchain"]) nonempty(e[key], key);
   // Match the source backends' exact-run verifier: runner lifecycle entries
   // are never executable native proof steps, even when a run is successful.
-  if (["Set up job", "Complete job", "Initialize containers",
-       "Start containers", "Stop containers"].includes(e.testStep) ||
-      e.testStep.startsWith("Pre ") || e.testStep.startsWith("Post "))
+  // Normalization is only for rejecting lifecycle masquerades, never for
+  // approving the claim. Trim and ASCII-case-fold like the source verifier's
+  // housekeeping exclusion, then reject pre/post and runner lifecycle steps.
+  const normalizedStep = e.testStep.trim().toLowerCase();
+  if (new Set(["set up job", "complete job", "initialize containers",
+               "start containers", "stop containers"]).has(normalizedStep) ||
+      /^(pre|post)\s/.test(normalizedStep))
     fail("native test step must be executable, not runner housekeeping");
   if (e.executionMode !== EXECUTION_MODES[backend]) fail("incorrect native execution mode");
   if (e.ciStatement !== CI_STATEMENT) fail("GitHub execution proof statement absent");
