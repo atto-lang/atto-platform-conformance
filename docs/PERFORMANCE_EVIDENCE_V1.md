@@ -58,7 +58,7 @@ Sampling requires 5+ values to claim `MEASURED`. A stage claim like `SYNTH_ONLY`
 
 - [x] Strict fail-closed v1 structural validator and Node 22 CLI with size/link checks
 - [x] Positive/negative unit tests, including forged PASS, invalid units/hashes, unsupported target and file-safety cases
-- [ ] Publish a matching machine-independent JSON Schema as an additional editor/schema integration contract
+- [x] Publish a matching machine-independent JSON Schema as an additional editor/schema integration contract
 - [ ] Independently authenticate real compiler binary provenance and CI artifact digests
 - [ ] Add benchmark collection adapters and exact execution evidence from Java, LLVM and Wasm
 - [ ] Add FPGA real P&R and ASIC mapped-cell reports, independently signed off with constraints and raw logs
@@ -82,3 +82,11 @@ Remaining: run the complete Node test suite on an independently approved source-
 Structural evidence `locator` is now an opaque, bounded relative POSIX artifact identifier, **not** a URL, a filesystem path capability or permission to fetch private artifacts. Each segment must begin with an ASCII alphanumeric and contain only ASCII alphanumeric, `_`, `-` or `.` thereafter. The parser rejects absolute/scheme/drive prefixes, backslashes, percent encoding, empty segments, and `.`/`..` traversal. The companion draft-2020-12 JSON Schema uses the same locator grammar. Any eventual artifact resolver must independently enforce a trusted artifact root, no-follow file access, exact digest checking and CI provenance authentication.
 
 Adversarial tests in `tests/performance-evidence.test.mjs` and schema consistency tests cover traversal/URI and encoding attempts. The separate source-free `tests/performance-evidence-fuzz.test.mjs` ran locally on exact Git blob contents: **10,000 malformed path variants rejected** and **5,000 structurally valid synthetic measurement records stayed unauthenticated**. These 15,000 cases test validator behavior only; no actual compiler or benchmark executed. Existing full-suite GitHub Actions still fail with no recorded job steps.
+
+## October 18 — independently testable JSON Schema stage admission
+
+The published Draft 2020-12 schema now enforces the same **stage-presence prerequisites** as the executable validator: a correctness reference for claimed execution; a benchmark reference for software `MEASURED`; correctness, benchmark, place-route and board references for FPGA `MEASURED`; synthesis for `SYNTH_ONLY`; simulation for `SIMULATED_ONLY`; place-route for `PLACE_ROUTE_VERIFIED`; and a power-model for ASIC power reports that claim simulated/synthesized execution. All nine stage rules were verified against 1,024 exhaustive synthetic stage subsets of eight family/status/metric combinations on the exact GitHub schema object.
+
+An independent Python `jsonschema==4.26.0` Draft202012 validator suite is committed under `tests/test_performance_schema.py` and invoked after `npm test` in the source repository's existing `.github/workflows/ci.yml`. It checks schema well-formedness, valid/invalid stage combinations and 1,024 synthetic stage-set cases. A separate local **reconstructed-stage-constraint** smoke using the same Python validation engine passed 1,024/1,024 vectors; this smoke did **not** execute the full checked-in Python suite against the exact private JSON Schema. Source-organization Actions still fails before recording job steps; the new exact-head CI run is unobserved, not passed.
+
+`node --test` also checks the nine-stage admission matrix structurally, so inadvertent removal of required `contains` clauses fails fast even when the separate Python test cannot run. A schema-valid report remains self-reported and always **uncertified**. The next release gate is cryptographically authenticated source+toolchain+raw artifacts, followed by exact-source backend execution, not merely schema acceptance.
