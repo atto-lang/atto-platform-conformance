@@ -28,14 +28,14 @@ def rendered(snapshot):
     repos = len({item["repo"] for item in items})
     p0 = sum(item["priority"] == "P0" for item in items)
     heading = (f"**Snapshot:** {len(items)} distinct open PRs, {repos} repositories, "
-               f"{p0} P0 and {len(items)-p0} P1.\\n")
+               f"{p0} P0 and {len(items)-p0} P1.\n")
     rows = []
     for item in items:
         label = item["repo"].split("/", 1)[1] + " #" + str(item["pr"])
         rows.append(
             f'| {item["id"]} | {item["priority"]} | [{label}]({item["url"]})'
             f' — {item["title"]} | {item["next_action"]} |')
-    return heading + "\\n".join(rows) + "\\n"
+    return heading + "\n".join(rows) + "\n"
 
 
 class RecoveryCheckerTests(unittest.TestCase):
@@ -102,7 +102,7 @@ class RecoveryCheckerTests(unittest.TestCase):
 
     def test_markdown_missing_row_rejected(self):
         snapshot = valid()
-        stale = "\\n".join(rendered(snapshot).splitlines()[:-1]) + "\\n"
+        stale = "\n".join(rendered(snapshot).splitlines()[:-1]) + "\n"
         with self.assertRaises(ValueError):
             checker.validate_markdown(snapshot, stale)
 
