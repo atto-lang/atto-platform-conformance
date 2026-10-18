@@ -107,6 +107,69 @@
       "syntax": "expression",
       "parserExpected": "reject",
       "runtimeExpected": "forbidden"
+    },
+    {
+      "id": "task-spelling-value",
+      "file": "task-spelling-value.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "task-spelling-discard",
+      "file": "task-spelling-discard.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "task-spelling-await",
+      "file": "task-spelling-await.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "task-nested-not-flattened",
+      "file": "task-nested-not-flattened.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "reject-nb-task",
+      "file": "reject-nb-task.ores",
+      "syntax": "expression",
+      "parserExpected": "reject",
+      "runtimeExpected": "forbidden"
+    },
+    {
+      "id": "reject-task-escaping-borrow",
+      "file": "reject-task-escaping-borrow.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
+    },
+    {
+      "id": "reject-task-double-move",
+      "file": "reject-task-double-move.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
+    },
+    {
+      "id": "reject-task-borrow-across-await",
+      "file": "reject-task-borrow-across-await.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
+    },
+    {
+      "id": "reject-task-borrowed-iife-argument",
+      "file": "reject-task-borrowed-iife-argument.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
     }
   ]
 }
