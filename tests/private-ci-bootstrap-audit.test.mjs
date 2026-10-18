@@ -47,13 +47,24 @@ function encoded(text){
     sha:createHash("sha1").update("blob "+raw.length+"\0").update(raw).digest("hex")};
 }
 function fixture(overrides={},calls=[],repository=repo){
-  let branchReads=0, protectionReads=0;
+  let branchReads=0, protectionReads=0, identityReads=0;
   return async (url,options)=>{
     calls.push({url,options});
     assert.equal(options.method,"GET");
     assert.equal(options.redirect,"error");
     assert.equal(options.headers.Authorization,"Bearer test-token");
     const base="https://api.github.com/repos/"+repository;
+    if(url===base){
+      identityReads++;
+      const value=overrides.identity;
+      const expected={
+        id:repository===JAVA_REPO?1400792274:1410897874,
+        full_name:repository,private:true,visibility:"private",
+        archived:false,disabled:false
+      };
+      const custom=typeof value==="function"?value(identityReads,expected):value;
+      return {status:200,json:async()=>custom??expected};
+    }
     if(url===base+"/branches/main"){
       branchReads++;
       const custom=overrides.branch;
@@ -88,10 +99,46 @@ test("accepts strict protected-main bootstrap with empty export approvals",async
   });
 });
 
+test("source repository identity is pinned before branch policy reads",async()=>{
+  for(const change of [
+    {id:99999999},
+    {full_name:"ores-truffle-oreslang/replaced-repo"},
+    {private:false,visibility:"public"},
+    {private:true,visibility:"public"},
+    {archived:true},
+    {disabled:true},
+    {id:"1410897874"}
+  ]){
+    const calls=[];
+    const expected={
+      id:1410897874,full_name:repo,private:true,visibility:"private",
+      archived:false,disabled:false
+    };
+    await assert.rejects(run({identity:{...expected,...change}},calls),
+      /immutable source identity, privacy or active state mismatch/);
+    assert.equal(calls.length,1, "untrusted slug must not reach branch policy reads");
+  }
+});
+
+test("source privacy or numeric ID drift during audit must fail closed",async()=>{
+  for(const change of [
+    {private:false,visibility:"public"},
+    {id:99999999},
+    {archived:true}
+  ]){
+    const calls=[];
+    await assert.rejects(run({identity:(read,expected)=>
+      read===1?expected:{...expected,...change}},calls),
+      /immutable source identity, privacy or active state mismatch/);
+    assert.equal(calls[0].url,"https://api.github.com/repos/"+repo);
+    assert.equal(calls.at(-1).url,"https://api.github.com/repos/"+repo);
+  }
+});
+
 test("unprotected main fails before protection or policy files are read",async()=>{
   const calls=[];
   await assert.rejects(run({branch:{name:"main",protected:false,commit:{sha:SHA}}},calls),/main is not protected/);
-  assert.equal(calls.length,1);
+  assert.equal(calls.length,2); // identity first, then main branch; no policy read
 });
 
 test("review, admin enforcement and bypass requirements fail closed",()=>{
