@@ -1,0 +1,4 @@
+pub fnc main(): void {
+  let int value = await task { return 42; };
+  return;
+}
