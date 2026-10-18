@@ -67,11 +67,12 @@ test("completed-successful execution has no compiler parity or merge authorizati
 test("run and job head SHA mismatch never verify the head",()=>{
  const out=assess([job([step("Actual test")],{conclusion:"success",head_sha:"b".repeat(40)})],{conclusion:"success"});
  assert.equal(out.all_job_head_shas_verified,false);
- assert.equal(out.jobs[0].head_sha_match,"UNKNOWN_OR_MISMATCH");
+ assert.equal(out.jobs[0].head_sha_match,"MISMATCH");
 });
 test("missing head SHA never becomes verified",()=>{
  const out=assess([job([step("Actual test")],{conclusion:"success",head_sha:null})],{conclusion:"success"});
  assert.equal(out.all_job_head_shas_verified,false);
+ assert.equal(out.jobs[0].head_sha_match,"UNKNOWN");
 });
 test("failed job classification remains meaningful when another job is unobserved",()=>{
  const out=assess([job([step("Test","failure")]),{...job(null),id:11,name:"unknown"}]);
@@ -112,6 +113,14 @@ test("completion of workflow does not turn null/empty steps into tests",()=>{
  for(const steps of [null,[]]){
   const out=assess([job(steps)],{status:"completed",conclusion:"failure"});
   assert.notEqual(out.classification,"EXECUTED_STEP_FAILURE");
-  assert.equal(out.failed_step_count,0);
+  assert.equal(out.failed_step_count,steps===null ? null : 0);
  }
+});
+
+test("aggregate counts preserve unknown when job steps are unavailable",()=>{
+ const out=assess([job([step("compile","failure")]),{...job(null),id:11,name:"unobserved"}]);
+ assert.equal(out.failed_step_count,null);
+ assert.equal(out.executed_step_count,null);
+ assert.equal(out.observed_failed_step_count,1);
+ assert.equal(out.unobserved_job_count,1);
 });
