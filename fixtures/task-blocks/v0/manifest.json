@@ -177,6 +177,48 @@
       "syntax": "expression",
       "parserExpected": "accept",
       "runtimeExpected": "pending"
+    },
+    {
+      "id": "suspends-task-body",
+      "file": "suspends-task-body.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "suspends-task-lambda",
+      "file": "suspends-task-lambda.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "suspends-lambda-no-spawn",
+      "file": "suspends-lambda-no-spawn.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "pending"
+    },
+    {
+      "id": "reject-suspends-task-modifier",
+      "file": "reject-suspends-task-modifier.ores",
+      "syntax": "expression",
+      "parserExpected": "reject",
+      "runtimeExpected": "forbidden"
+    },
+    {
+      "id": "reject-sync-lambda-suspends",
+      "file": "reject-sync-lambda-suspends.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
+    },
+    {
+      "id": "reject-sync-helper-await",
+      "file": "reject-sync-helper-await.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
     }
   ]
 }
