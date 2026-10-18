@@ -15,6 +15,11 @@ jobs:
         with:
           node-version: '22'
       - run: npm test
+      - name: Independent JSON Schema Draft 2020-12 contract checks
+        run: |
+          python3 -m venv "$RUNNER_TEMP/ores-evidence-schema-venv"
+          "$RUNNER_TEMP/ores-evidence-schema-venv/bin/python" -m pip install --disable-pip-version-check --no-input "jsonschema==4.26.0"
+          "$RUNNER_TEMP/ores-evidence-schema-venv/bin/python" -m unittest discover -s tests -p test_performance_schema.py -v
       - name: Confirm mandatory real compiler gate cannot pass unconfigured
         run: |
           for backend in java llvm net wasm forge; do
