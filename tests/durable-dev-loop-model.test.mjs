@@ -51,6 +51,7 @@ test('unrelated tenants and duplicate delivery IDs fail closed',()=>{
 test('stale/out-of-order webhooks and tests cannot advance iteration',()=>{
   const [m,e]=init();push(m,e,1,'abc');
   webhook(m,e,1,'wrong','old');webhook(m,e,0,'abc','wrong-iteration');
+  step(m,e,msg('spoofed-ref','github_push',{sha:'abc',iteration:1,ref:'refs/heads/main',expectedRef:'refs/heads/main'}));
   assert.equal(m.snapshot().state.stage,'waiting_webhook');
   assert.equal(Object.keys(m.snapshot().outbox).length,0);
   webhook(m,e,1,'abc');
