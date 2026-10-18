@@ -238,3 +238,46 @@ runner; it is not a run of this private conformance PR's JS code and does not
 authenticate a native `.ores` fixture, private source export, or protected-main
 governance. Source-org runners remain unavailable and historical source-carrier
 security incidents #22 and #77 remain open. No source-copy bypass is granted.
+
+
+## 2026-10-18 UTC: policy-file indirection and parser hardening
+
+A further review found that a CODEOWNED policy pathname is not sufficient if
+the checked-out path can resolve through a Git symlink. A reviewed approval or
+reviewer file could otherwise remain unchanged while an unprotected symlink
+target changes later. The canonical source policy workflows now fail closed
+unless every security input they consume is a regular **non-symlink** file.
+They also bound input size, require strict UTF-8 without BOM or NUL bytes,
+reject duplicate JSON object keys, and require exact approval-line grammar
+without surrounding whitespace. Boolean JSON values are not accepted as
+integer schema versions.
+
+The independently reviewed workflow blobs are now:
+
+| Source repository | Hardened policy workflow Git blob |
+|---|---|
+| `oreslang-source.java` | `3ccf6597e52d427ba261573d6702f9a6bf19c07a` |
+| `oreslang-source.llvm` | `1e18ea42fc8a819e26a90f9b2dfea7cbdc129e76` |
+| `oreslang-source.net` | `1e18ea42fc8a819e26a90f9b2dfea7cbdc129e76` |
+| `oreslang-source.wasm` | `1e18ea42fc8a819e26a90f9b2dfea7cbdc129e76` |
+| `oreslang-source.forge` | `1e18ea42fc8a819e26a90f9b2dfea7cbdc129e76` |
+
+The read-only bootstrap auditor pins these exact new blobs. A future workflow
+change requires another explicit reviewed pin update; no moving branch/ref is
+accepted as workflow identity.
+
+**Funded source-free regression evidence:** private Sagitta run
+`39098406458` at head `16c0adb9ad15fb343431dc609fe109bcfc4a2ba2`
+completed all job steps and **102/102** synthetic security tests: 24 bootstrap
+admission, 10 policy filesystem/parser attacks, 27 revocation/race cases,
+18 provenance cases, and 23 checkout-tree cases. Artifact
+`12125920725` downloaded with ZIP SHA-256
+`5fec1cccc040bb9a45173adfe31f80f535457ddd791c11754eb9181a03ff5836`;
+all receipt-recorded inner log hashes were independently rehashed and matched.
+
+The receipt deliberately remains non-authorizing:
+`private_source_transferred=false`, `source_export_authorized=false`,
+`native_compiler_executed=false`, `native_guest_executed=false`, and
+`release_ready=false`. This evidence validates the source-free security model
+only; it is not permission to mirror private compiler source and is not native
+Oreslang execution evidence.
