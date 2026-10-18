@@ -25,7 +25,10 @@ const codeowners=[
 ].join("\n")+"\n";
 const checks=JSON.stringify({schema:1,checks:[{context:"private-ci-policy",appId:15368}]})+"\n";
 const empty="# no approvals during bootstrap\n";
-const workflow="name: Private CI export policy\n";
+// Policy-workflow fixtures are reviewed GitHub Actions YAML, not compiler source.
+// The audit must fail closed on even a one-byte change to a trusted check.
+const workflow="name: Private CI export policy\non:\n  push:\n  pull_request:\npermissions:\n  contents: read\njobs:\n  private-ci-policy:\n    runs-on: ubuntu-latest\n    timeout-minutes: 5\n    steps:\n      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683\n        with:\n          persist-credentials: false\n      - name: Validate fail-closed export policy\n        shell: bash\n        run: |\n          set -euo pipefail\n          python3 - <<'PY'\n          import json, re\n          from pathlib import Path\n          owner=\"@ORESoftware\"\n          paths=[\"/.github/CODEOWNERS\",\"/.github/private-ci-approved-repositories.txt\",\"/.github/private-ci-approved-source-snapshots.txt\",\"/.github/private-ci-required-checks.json\",\"/.github/workflows/private-ci-policy.yml\"]\n          rules=[x.strip() for x in Path(\".github/CODEOWNERS\").read_text().splitlines() if x.strip() and not x.lstrip().startswith(\"#\")]\n          if rules[-len(paths):] != [f\"{p} {owner}\" for p in paths]: raise SystemExit(\"private CI CODEOWNERS final block mismatch\")\n          def entries(p): return [x.strip() for x in Path(p).read_text().splitlines() if x.strip() and not x.lstrip().startswith(\"#\")]\n          repos=entries(\".github/private-ci-approved-repositories.txt\"); rr=re.compile(r\"^[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]* [1-9][0-9]*$\")\n          if any(not rr.fullmatch(x) for x in repos): raise SystemExit(\"invalid destination policy\")\n          rn=[x.split()[0] for x in repos]; ri=[x.split()[1] for x in repos]\n          if len(rn)!=len(set(rn)) or len(ri)!=len(set(ri)): raise SystemExit(\"duplicate destination policy\")\n          snaps=entries(\".github/private-ci-approved-source-snapshots.txt\"); sr=re.compile(r\"^[0-9a-f]{40} [0-9a-f]{40} [1-9][0-9]*$\")\n          if any(not sr.fullmatch(x) for x in snaps): raise SystemExit(\"invalid snapshot policy\")\n          sc=[x.split()[0] for x in snaps]; sd=[x.split()[2] for x in snaps]\n          if len(sc)!=len(set(sc)) or len(sd)!=len(set(sd)): raise SystemExit(\"duplicate snapshot policy\")\n          data=json.loads(Path(\".github/private-ci-required-checks.json\").read_text())\n          if set(data)!={\"schema\",\"checks\"} or data[\"schema\"]!=1 or not isinstance(data[\"checks\"],list) or not 1<=len(data[\"checks\"])<=16: raise SystemExit(\"invalid required-check schema\")\n          seen=set(); required=False\n          for item in data[\"checks\"]:\n              if set(item)!={\"context\",\"appId\"} or not isinstance(item[\"context\"],str) or not item[\"context\"] or len(item[\"context\"])>100 or not isinstance(item[\"appId\"],int) or item[\"appId\"]<=0: raise SystemExit(\"invalid required-check entry\")\n              if item[\"context\"] in seen: raise SystemExit(\"duplicate required-check context\")\n              seen.add(item[\"context\"]); required |= item[\"context\"]==\"private-ci-policy\" and item[\"appId\"]==15368\n          if not required: raise SystemExit(\"private-ci-policy must be bound to GitHub Actions app 15368\")\n          print(\"private CI export policy: PASS\")\n          PY\n";
+const javaWorkflow="name: Private CI export policy\n\n# Always produce this check for branch protection; no paths filters.\non:\n  push:\n  pull_request:\n\npermissions:\n  contents: read\n\njobs:\n  private-ci-policy:\n    runs-on: ubuntu-24.04\n    timeout-minutes: 5\n    steps:\n      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5\n        with:\n          persist-credentials: false\n      - name: Validate issuer contract, ownership and policy grammar\n        shell: bash\n        run: |\n          set -euo pipefail\n          python3 -I - <<'PY'\n          import ast\n          import json\n          import re\n          from pathlib import Path\n\n          base = Path(\".github\")\n          declared = json.loads((base / \"private-ci-required-checks.json\").read_text(encoding=\"utf-8\"))\n          expected = {\n              \"schema\": 1,\n              \"source\": {\"context\": \"private-ci-policy\", \"appId\": 15368},\n              \"carrier\": {\"context\": \"carrier-policy\", \"appId\": 15368},\n          }\n          if declared != expected:\n              raise SystemExit(\"private CI required checks must be bound to pinned Actions issuer\")\n\n          publisher = ast.parse(Path(\"scripts/publish-private-ci-source.py\").read_text(encoding=\"utf-8\"))\n          vars = {}\n          for node in publisher.body:\n              if isinstance(node, ast.Assign):\n                  for target in node.targets:\n                      if isinstance(target, ast.Name) and target.id in (\n                              \"REQUIRED_CODEOWNER_PATHS\", \"REQUIRED_CODEOWNER\",\n                              \"SOURCE_POLICY_CHECK\", \"CARRIER_POLICY_CHECK\",\n                              \"GITHUB_ACTIONS_APP_ID\"):\n                          vars[target.id] = ast.literal_eval(node.value)\n          if (len(vars) != 5 or vars[\"REQUIRED_CODEOWNER\"] != \"@ORESoftware\"\n                  or vars[\"SOURCE_POLICY_CHECK\"] != declared[\"source\"][\"context\"]\n                  or vars[\"CARRIER_POLICY_CHECK\"] != declared[\"carrier\"][\"context\"]\n                  or vars[\"GITHUB_ACTIONS_APP_ID\"] != 15368):\n              raise SystemExit(\"publisher security issuer constants mismatch\")\n          required = vars[\"REQUIRED_CODEOWNER_PATHS\"]\n          if not isinstance(required, tuple) or len(required) < 28 or len(set(required)) != len(required):\n              raise SystemExit(\"private CI CODEOWNER path inventory invalid\")\n          codeowners = (base / \"CODEOWNERS\").read_text(encoding=\"utf-8\").splitlines()\n          rules = [s.strip() for s in codeowners if s.strip() and not s.lstrip().startswith(\"#\")]\n          if rules[-len(required):] != [f\"{p} @ORESoftware\" for p in required]:\n              raise SystemExit(\"terminal CODEOWNERS contract mismatch\")\n          if (len(rules) <= len(required)\n                  or rules[-len(required)-1] != \"/.github/workflows/ @ORESoftware\"):\n              raise SystemExit(\"unreviewed workflows could spoof protected check name\")\n          for path in required:\n              if not (Path(\".\") / path.lstrip(\"/\")).is_file():\n                  raise SystemExit(\"CODEOWNERS mandatory path not present: \" + path)\n\n          dest_pattern = re.compile(r\"[A-Za-z0-9][A-Za-z0-9_.-]*/[A-Za-z0-9][A-Za-z0-9_.-]* [1-9][0-9]{0,19}\")\n          snap_pattern = re.compile(r\"[0-9a-f]{40} [0-9a-f]{40} [1-9][0-9]{0,19}\")\n          def load_lines(name, pattern):\n              data = (base / name).read_text(encoding=\"utf-8\").splitlines()\n              active = [line for line in data if line and not line.startswith(\"#\")]\n              if any(not pattern.fullmatch(line) for line in active):\n                  raise SystemExit(\"unreviewable private CI approval format: \" + name)\n              return active\n          dests = load_lines(\"private-ci-approved-repositories.txt\", dest_pattern)\n          names = [line.split()[0].casefold() for line in dests]\n          ids = [line.split()[1] for line in dests]\n          if len(names) != len(set(names)) or len(ids) != len(set(ids)):\n              raise SystemExit(\"duplicate destination identity\")\n          snaps = load_lines(\"private-ci-approved-source-snapshots.txt\", snap_pattern)\n          if len(snaps) != len(set(snaps)):\n              raise SystemExit(\"duplicate snapshot tuple\")\n          commit_tree = {}\n          for row in snaps:\n              commit, tree, _dest = row.split()\n              if commit in commit_tree and commit_tree[commit] != tree:\n                  raise SystemExit(\"one source commit maps to inconsistent root trees\")\n              commit_tree[commit] = tree\n          print(\"private CI issuer + source policy: PASS\")\n          PY\n";
 const protection=()=>({
   enforce_admins:{enabled:true},
   allow_force_pushes:{enabled:false},
@@ -81,7 +84,7 @@ function fixture(overrides={},calls=[],repository=repo){
       [base+"/contents/.github/private-ci-approved-repositories.txt?ref="+SHA]:encoded(overrides.destinations??empty),
       [base+"/contents/.github/private-ci-approved-source-snapshots.txt?ref="+SHA]:encoded(overrides.snapshots??empty),
       [base+"/contents/.github/private-ci-required-checks.json?ref="+SHA]:encoded(overrides.checks??checks),
-      [base+"/contents/.github/workflows/private-ci-policy.yml?ref="+SHA]:encoded(overrides.workflow??workflow)
+      [base+"/contents/.github/workflows/private-ci-policy.yml?ref="+SHA]:encoded(overrides.workflow??(repository===JAVA_REPO?javaWorkflow:workflow))
     };
     const value=table[url];
     if(!value) return {status:404,json:async()=>({message:"not found"})};
@@ -133,6 +136,35 @@ test("source privacy or numeric ID drift during audit must fail closed",async()=
     assert.equal(calls[0].url,"https://api.github.com/repos/"+repo);
     assert.equal(calls.at(-1).url,"https://api.github.com/repos/"+repo);
   }
+});
+
+test("bootstrap requires the independently reviewed exact workflow Git blob",async()=>{
+  // Same check name and same Actions app are insufficient: a passing job can
+  // be fabricated by changing the YAML of the checked workflow.
+  for(const altered of [
+    "name: Private CI export policy\njobs:\n  private-ci-policy:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo pass\n",
+    workflow.replace("private CI export policy: PASS","private CI export policy: BYPASS"),
+    workflow+"\n# unreviewed modification\n"
+  ]){
+    const calls=[];
+    await assert.rejects(run({workflow:altered},calls),
+      /policy workflow differs from independently reviewed immutable Git blob/);
+    assert.ok(calls.some(item=>item.url.includes("/contents/.github/workflows/private-ci-policy.yml?ref=")));
+  }
+});
+
+test("Java source bootstrap also pins its distinct reviewed workflow",async()=>{
+  const good=()=>auditRepository(JAVA_REPO,{
+    token:"test-token",
+    fetchImpl:fixture({codeowners:javaCodeowners,checks:javaChecks},[],JAVA_REPO)
+  });
+  assert.equal((await good()).status,"BOOTSTRAP_PROTECTED");
+  await assert.rejects(auditRepository(JAVA_REPO,{
+    token:"test-token",
+    fetchImpl:fixture({codeowners:javaCodeowners,checks:javaChecks,
+      workflow:javaWorkflow.replace("private CI issuer + source policy: PASS",
+                                  "private CI issuer + source policy: UNSAFE")},[],JAVA_REPO)
+  }),/policy workflow differs from independently reviewed immutable Git blob/);
 });
 
 test("unprotected main fails before protection or policy files are read",async()=>{
