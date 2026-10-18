@@ -65,3 +65,14 @@ Sampling requires 5+ values to claim `MEASURED`. A stage claim like `SYNTH_ONLY`
 - [ ] Define target-specific comparison cohorts, confidence intervals and reviewed regression thresholds
 
 Tracking: https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/80
+
+## October 18 hardening and source-free CI status
+
+- Added `schemas/performance-evidence.schema.json` (JSON Schema draft 2020-12), with strict field closure and family/backend/metric/unit/status constraints. This schema supports editor/integrator validation; the executable `src/performance-evidence.mjs` remains the authoritative structural gate. Neither authenticates reports.
+- Added schema-to-runtime consistency tests, including no self-attestation fields and an explicit disallow of `MEASURED` ASIC silicon without a future silicon provenance protocol.
+- A `MEASURED` software report requires benchmark artifacts. FPGA `MEASURED` requires separate P&R, board and benchmark artifacts; an ASIC `SYNTH_ONLY` area/power estimate needs synthesis and, for power, library/switching-model references. References remain self-reported until independently verified.
+- Strengthened the CLI's secure-open preflight: missing, zero or aliased no-follow/non-blocking file flags deny processing; invalid UTF-8 evidence bytes reject instead of being silently normalized. The CLI still returns nonzero unless an operator explicitly requests structural-only inspection.
+- Original organization Actions continues to fail with `steps:null`, including on `main`. This is **not** proof of a code-test failure or billing cause. No hosted CI correctness pass is claimed.
+- A protected-source export hold is active in the same repository (security PR #86, incidents #22/#77). Approval of a private destination or availability of another organization's Actions minutes is **not** permission to mirror private code. Only independent protected-main review and incident clearance can authorize any later export.
+
+Remaining: run the complete Node test suite on an independently approved source-local runner; validate machine-readable schema using an independent JSON Schema engine; preserve independent attestation/no promotion.
