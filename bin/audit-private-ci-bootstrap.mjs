@@ -17,6 +17,13 @@ export const SOURCE_REPOSITORIES = Object.freeze([
   "ores-truffle-oreslang/oreslang-source.wasm",
   "ores-truffle-oreslang/oreslang-source.forge"
 ]);
+const PINNED_SOURCE_IDENTITIES=Object.freeze({
+  "ores-truffle-oreslang/oreslang-source.java":1400792274,
+  "ores-truffle-oreslang/oreslang-source.llvm":1410897874,
+  "ores-truffle-oreslang/oreslang-source.net":1419704375,
+  "ores-truffle-oreslang/oreslang-source.wasm":1419858954,
+  "ores-truffle-oreslang/oreslang-source.forge":1419703674
+});
 const OID=/^[0-9a-f]{40}$/;
 const EXPECTED_OWNER="@ORESoftware";
 const EXPECTED_CHECK=Object.freeze({context:"private-ci-policy",appId:15368});
@@ -194,6 +201,17 @@ export async function auditRepository(repo,{token,fetchImpl=fetch}={}){
   if(!SOURCE_REPOSITORIES.includes(repo)) error("source repository is not allowlisted");
   if(typeof fetchImpl!=="function") error("GitHub fetch implementation unavailable");
   const base="https://api.github.com/repos/"+repo;
+  const assertSourceIdentity=async()=>{
+    const metadata=await getJson(base,token,fetchImpl);
+    if(metadata?.full_name!==repo || metadata.id!==PINNED_SOURCE_IDENTITIES[repo] ||
+       metadata.private!==true || metadata.visibility!=="private" ||
+       metadata.archived!==false || metadata.disabled!==false){
+      error(repo+" immutable source identity, privacy or active state mismatch");
+    }
+  };
+  // Confirm the original reviewed private repository, not just an owner/repo
+  // slug that could be reassigned after an organization transfer or rename.
+  await assertSourceIdentity();
   const branch=await getJson(base+"/branches/main",token,fetchImpl);
   const protectedSha=branch?.commit?.sha;
   if(branch?.name!=="main" || branch.protected!==true ||
@@ -223,6 +241,9 @@ export async function auditRepository(repo,{token,fetchImpl=fetch}={}){
   if(after?.protected!==true || after?.commit?.sha!==protectedSha){
     error(repo+" protected main changed during audit");
   }
+  // Privacy and immutable repository ID can change independently of branch
+  // SHA and branch-protection settings. Revalidate both before success.
+  await assertSourceIdentity();
   return Object.freeze({repo,status:"BOOTSTRAP_PROTECTED",protectedSha,
     requiredCheck:EXPECTED_CHECK.context,requiredCheckAppId:EXPECTED_CHECK.appId});
 }
