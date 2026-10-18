@@ -197,7 +197,7 @@
           },
           "sha256": {
             "type": "string",
-            "pattern": "^[0-9a-f]{64}$"
+            "pattern": "^(?!0{64}$)[0-9a-f]{64}$"
           },
           "locator": {
             "type": "string",
@@ -937,6 +937,150 @@
               "required": [
                 "stage"
               ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "latency",
+              "throughput",
+              "allocation",
+              "build_time",
+              "image_size",
+              "fmax",
+              "area",
+              "critical_path",
+              "power"
+            ]
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "samples": {
+            "items": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "lut",
+              "ff",
+              "bram",
+              "dsp"
+            ]
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "samples": {
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "ii"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "samples": {
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "MEASURED",
+              "SYNTH_ONLY",
+              "PLACE_ROUTE_VERIFIED",
+              "SIMULATED_ONLY"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "sourceSha": {
+            "type": "string",
+            "pattern": "^(?!0{40}$)[a-f0-9]{40}$"
+          },
+          "compilerSha256": {
+            "type": "string",
+            "pattern": "^(?!0{64}$)[a-f0-9]{64}$"
+          },
+          "fixtureSha256": {
+            "type": "string",
+            "pattern": "^(?!0{64}$)[a-f0-9]{64}$"
+          },
+          "toolchain": {
+            "properties": {
+              "version": {
+                "not": {
+                  "const": "unconfigured"
+                }
+              }
+            }
+          },
+          "environment": {
+            "properties": {
+              "target": {
+                "not": {
+                  "const": "unknown"
+                }
+              },
+              "cpu": {
+                "not": {
+                  "const": "unknown"
+                }
+              },
+              "clockPolicy": {
+                "not": {
+                  "const": "unknown"
+                }
+              }
             }
           }
         }
