@@ -5,7 +5,7 @@
   "batch": "issue-batch-20261018",
   "documentationOnly": true,
   "releaseCertified": false,
-  "note": "Snapshot of 30-issue, 20-repo batch: 18 open draft PRs with partial work, 2 independently merged partial PRs, 0 branch-only repos. Code and oracle/evidence contracts must not be confused with completed implementations. CI evidence remains unverified.",
+  "note": "Observed 2026-10-18: 6 independently merged partial PRs, 14 open draft PRs; no branch-only repositories. No completed-issue or verified-backend claim; zero-step CI is missing evidence.",
   "repositories": [
     {
       "repository": "ores-truffle-oreslang/oreslang-source.java",
@@ -76,8 +76,8 @@
         }
       ],
       "branch": "draft/issue-batch-79-80-20261018",
-      "status": "partial-draft-pr",
-      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-common-source/pull/82"
+      "status": "merged-partial-pr",
+      "mergedPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-common-source/pull/82"
     },
     {
       "repository": "ores-truffle-oreslang/oreslang-source.js",
@@ -224,8 +224,8 @@
         }
       ],
       "branch": "draft/issue-batch-16-20261018",
-      "status": "partial-draft-pr",
-      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-browser/pull/26"
+      "status": "merged-partial-pr",
+      "mergedPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-browser/pull/26"
     },
     {
       "repository": "ores-truffle-oreslang/oreslang-platform.embedded",
@@ -236,8 +236,8 @@
         }
       ],
       "branch": "draft/issue-batch-19-20261018",
-      "status": "partial-draft-pr",
-      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-platform.embedded/pull/21"
+      "status": "merged-partial-pr",
+      "mergedPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-platform.embedded/pull/21"
     },
     {
       "repository": "ores-truffle-oreslang/.github",
@@ -284,8 +284,8 @@
         }
       ],
       "branch": "draft/issue-batch-18-20261018",
-      "status": "partial-draft-pr",
-      "draftPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-serialization-and-validation/pull/19"
+      "status": "merged-partial-pr",
+      "mergedPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-serialization-and-validation/pull/19"
     }
   ]
 }
