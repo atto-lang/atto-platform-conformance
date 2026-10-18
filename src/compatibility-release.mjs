@@ -1,0 +1,86 @@
+import {readFileSync} from "node:fs";
+import {registryUrl, validateOrgIntegrationRegistry} from "./integration-registry.mjs";
+
+export const compatibilityUrl = new URL("../integration/compatibility-candidate.v1.json", import.meta.url);
+const manifestFields = [
+  "schemaVersion", "releaseId", "kind", "organization", "snapshotDate",
+  "inventoryPath", "promotionState", "securityIncident", "provenance", "policy", "pins"
+];
+const pinFields = ["name", "ref", "commit", "compatibility", "evidence"];
+function requireObject(obj, context) {
+  if (!obj || typeof obj !== "object" || Array.isArray(obj) ||
+      Object.getPrototypeOf(obj) !== Object.prototype) {
+    throw Error(context + ": expected plain JSON object");
+  }
+}
+function requireFields(obj, fields, context) {
+  requireObject(obj, context);
+  if (JSON.stringify(Object.keys(obj).sort()) !== JSON.stringify([...fields].sort())) {
+    throw Error(context + ": unexpected or missing properties");
+  }
+}
+function sortedNames(names) {
+  for (let i = 1; i < names.length; i++) {
+    if (!(names[i - 1] < names[i])) return false;
+  }
+  return true;
+}
+
+// Release *candidate* validator. This intentionally rejects all invented
+// passing evidence until a separate attestation/approval implementation exists.
+// No network calls, Git source transfers, shell commands, or CI execution.
+export function validateCompatibilityCandidate(candidate, inventory) {
+  const topology = validateOrgIntegrationRegistry(inventory);
+  requireFields(candidate, manifestFields, "candidate");
+  if (candidate.schemaVersion !== 1 ||
+      candidate.kind !== "CANDIDATE_SNAPSHOT" ||
+      candidate.organization !== inventory.organization ||
+      candidate.inventoryPath !== "integration/org-repositories.v1.json" ||
+      candidate.snapshotDate !== inventory.snapshotDate ||
+      candidate.releaseId !== "oreslang-compat-" + candidate.snapshotDate + "-candidate-1" ||
+      candidate.promotionState !== "BLOCKED_UNVERIFIED" ||
+      candidate.securityIncident !== "oreslang-platform-conformance#22" ||
+      candidate.policy !== "METADATA_ONLY_NO_SOURCE_EXPORT" ||
+      typeof candidate.provenance !== "string" ||
+      !candidate.provenance.includes("NOT branch tip attestation or CI evidence")) {
+    throw Error("candidate: invalid identity or non-promotable policy");
+  }
+  if (!Array.isArray(candidate.pins) || candidate.pins.length !== topology.count) {
+    throw Error("candidate: pin coverage mismatch");
+  }
+  const source = new Map(inventory.repositories.map(r => [r.name, r]));
+  const names = [];
+  for (const p of candidate.pins) {
+    requireFields(p, pinFields, "pin");
+    if (typeof p.name !== "string" || !source.has(p.name)) {
+      throw Error("pin: unknown repository");
+    }
+    names.push(p.name);
+    if (p.ref !== "main") throw Error("pin: unexpected reference");
+    if (typeof p.commit !== "string" || !/^[0-9a-f]{40}$/.test(p.commit)) {
+      throw Error("pin: expected full immutable Git commit SHA");
+    }
+    if (p.compatibility !== "UNVERIFIED" ||
+        !Array.isArray(p.evidence) || p.evidence.length !== 0) {
+      throw Error("pin: unsupported compatibility or forged evidence promotion");
+    }
+  }
+  if (!sortedNames(names) || names.some((name, i) => name !== inventory.repositories[i].name)) {
+    throw Error("pin: duplicate, missing, or unsorted repository");
+  }
+  return Object.freeze({
+    candidateId: candidate.releaseId,
+    repositories: candidate.pins.length,
+    intendedRelationships: topology.edgeCount,
+    pinnedCommits: candidate.pins.length,
+    verifiedCompatibilities: 0,
+    releaseReady: false,
+    result: "CANDIDATE_ONLY_NOT_COMPATIBILITY_PROOF"
+  });
+}
+export function loadCompatibilityCandidate(url = compatibilityUrl) {
+  return JSON.parse(readFileSync(url, "utf8"));
+}
+export function loadCandidateInventory(url = registryUrl) {
+  return JSON.parse(readFileSync(url, "utf8"));
+}
