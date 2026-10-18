@@ -8,12 +8,12 @@ const mutate = callback => {
   callback(document);
   return document;
 };
-test("entire 52-repository inventory admits without code transfer", () => {
+test("entire 56-repository inventory admits without code transfer", () => {
   const result = validateOrgIntegrationRegistry(source);
-  assert.equal(result.count, 52);
-  assert.equal(result.edgeCount, 104);
-  assert.equal(result.topologicalOrder.length, 52);
-  assert.equal(Object.values(result.areaCounts).reduce((sum, n) => sum + n, 0), 52);
+  assert.equal(result.count, 56);
+  assert.equal(result.edgeCount, 120);
+  assert.equal(result.topologicalOrder.length, 56);
+  assert.equal(Object.values(result.areaCounts).reduce((sum, n) => sum + n, 0), 56);
   assert.deepEqual(new Set(source.repositories.map(r => r.visibility)), new Set(["private", "public"]));
 });
 test("unknown integration upstream rejected", () => {
