@@ -144,7 +144,8 @@ test("missing job status is not interpreted as queued",()=>{
 test("job run and attempt mismatch cannot support exact-run verification",()=>{
  const value={...job([step("Test")],{conclusion:"success"}),run_id:999,run_attempt:3};
  const out=assess([value],{conclusion:"success"});
- assert.equal(out.classification,"EXECUTED_STEPS_SUCCEEDED");
+ assert.equal(out.classification,"JOB_IDENTITY_MISMATCH");
+ assert.equal(out.jobs[0].classification,"EXECUTED_STEPS_SUCCEEDED");
  assert.equal(out.all_job_run_ids_verified,false);
  assert.equal(out.all_job_run_attempts_verified,false);
  assert.equal(out.jobs[0].run_id_match,"MISMATCH");
@@ -196,4 +197,11 @@ test("run reread accepts immutable identity and denies rerun/swap/visibility dri
  }
  assert.throws(()=>verifyStableRunSnapshot({...exact,run_attempt:null},exact),/invalid initial/);
  assert.throws(()=>verifyStableRunSnapshot({...exact,repository:null},exact),/identity changed or is unobserved/);
+});
+
+test("confirmed mismatched job head SHA cannot be attributed as test failure",()=>{
+ const out=assess([job([step("Compile native","failure")],{head_sha:"b".repeat(40)})]);
+ assert.equal(out.classification,"JOB_IDENTITY_MISMATCH");
+ assert.equal(out.jobs[0].classification,"EXECUTED_STEP_FAILURE");
+ assert.equal(out.all_job_head_shas_verified,false);
 });
