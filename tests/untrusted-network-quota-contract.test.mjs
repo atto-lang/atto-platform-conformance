@@ -71,6 +71,14 @@ const required = new Map([
   [
     "hierarchical-internal-rollback",
     "rollback-unpublished-only"
+  ],
+  [
+    "revoked-hierarchy-all-or-nothing",
+    "deny-all-commit"
+  ],
+  [
+    "java-direct-network-entry-denied",
+    "broker-required"
   ]
 ]);
 
