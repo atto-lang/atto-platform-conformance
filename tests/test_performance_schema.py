@@ -5,7 +5,6 @@ Requires jsonschema==4.26.0. Exercises the actual checked-in JSON Schema,
 NOT a hand-rolled approximation. These source-free fixtures do not verify
 execution, compiler provenance, benchmark accuracy or artifact authenticity.
 """
-import copy
 import json
 import unittest
 from pathlib import Path
@@ -108,6 +107,8 @@ class PerformanceSchemaTests(unittest.TestCase):
             ("asic", "SYNTH_ONLY", "power", "mW",
              {"correctness", "synthesis", "power-model"}),
             ("asic", "SIMULATED_ONLY", "area", "um2", {"correctness", "simulation"}),
+            ("asic", "SIMULATED_ONLY", "power", "mW",
+             {"correctness", "simulation", "power-model"}),
         ]
         n = 0
         for family, status, kind, unit, required in cases:
@@ -119,7 +120,7 @@ class PerformanceSchemaTests(unittest.TestCase):
                 with self.subTest(family=family, status=status, mask=mask):
                     self.assertEqual(accepted(case), expected)
                 n += 1
-        self.assertEqual(n, 896)
+        self.assertEqual(n, 1024)
 
 
 if __name__ == "__main__":
