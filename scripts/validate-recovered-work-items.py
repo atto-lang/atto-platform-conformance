@@ -10,6 +10,13 @@ from pathlib import Path
 
 PR_URL = re.compile(r"https://github[.]com/ores-truffle-oreslang/([a-zA-Z0-9_.-]+)/pull/([1-9][0-9]*)\Z")
 SNAPSHOT = Path(__file__).resolve().parents[1] / "audits/2026-10-18-50-open-work-items.json"
+MARKDOWN = SNAPSHOT.with_suffix(".md")
+ROW = re.compile(
+    r"^\\| ([1-9][0-9]*) \\| (P[01]) \\| \\[([^\\]]+)\\]\\("
+    r"(https://github[.]com/ores-truffle-oreslang/[a-zA-Z0-9_.-]+/pull/[1-9][0-9]*)"
+    r"\\) — (.*?) \\| (.*?) \\|$"
+)
+
 
 
 def validate(data):
@@ -50,12 +57,47 @@ def validate(data):
     return len(items), len(repos)
 
 
+
+def validate_markdown(snapshot, markdown):
+    """Fail closed when the human-facing inventory diverges from its JSON ledger."""
+    items = snapshot["items"]
+    repos = len({entry["repo"] for entry in items})
+    p0 = sum(entry["priority"] == "P0" for entry in items)
+    p1 = len(items) - p0
+    required_summary = (
+        f"**Snapshot:** {len(items)} distinct open PRs, {repos} repositories, "
+        f"{p0} P0 and {p1} P1."
+    )
+    if required_summary not in markdown:
+        raise ValueError("human-facing priority summary differs from JSON")
+    rows = [line for line in markdown.splitlines()
+            if re.match(r"^\\| [0-9]+ \\| P[01] \\|", line)]
+    if len(rows) != len(items):
+        raise ValueError("Markdown row count differs from JSON")
+    for expected, row in zip(items, rows):
+        match = ROW.fullmatch(row)
+        if match is None:
+            raise ValueError("malformed Markdown task row")
+        task_id, priority, label, url, title, action = match.groups()
+        expected_label = f"{expected['repo'].split('/', 1)[1]} #{expected['pr']}"
+        if (int(task_id) != expected["id"]
+                or priority != expected["priority"]
+                or label != expected_label
+                or url != expected["url"]
+                or title != expected["title"]
+                or action != expected["next_action"]):
+            raise ValueError(f"Markdown/JSON divergence at task {expected['id']}")
+    return len(rows)
+
 def main():
     if len(sys.argv) > 2:
         return 2
     file = Path(sys.argv[1]) if len(sys.argv) == 2 else SNAPSHOT
     try:
-        result = validate(json.loads(file.read_text(encoding="utf-8")))
+        snapshot = json.loads(file.read_text(encoding="utf-8"))
+        result = validate(snapshot)
+        if file.resolve() == SNAPSHOT.resolve():
+            validate_markdown(snapshot, MARKDOWN.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
         print(f"recovery snapshot rejected: {exc}", file=sys.stderr)
         return 1
