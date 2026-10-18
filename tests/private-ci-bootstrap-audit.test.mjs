@@ -56,7 +56,7 @@ function encoded(text){
     sha:createHash("sha1").update("blob "+raw.length+"\0").update(raw).digest("hex")};
 }
 function fixture(overrides={},calls=[],repository=repo){
-  let branchReads=0, protectionReads=0, identityReads=0;
+  let branchReads=0, protectionReads=0, identityReads=0, ownerReads=0;
   return async (url,options)=>{
     calls.push({url,options});
     assert.equal(options.method,"GET");
@@ -73,6 +73,15 @@ function fixture(overrides={},calls=[],repository=repo){
       };
       const custom=typeof value==="function"?value(identityReads,expected):value;
       return {status:200,json:async()=>custom??expected};
+    }
+    if(url===base+"/collaborators/ORESoftware/permission"){
+      ownerReads++;
+      const expected={permission:"admin",user:{login:"ORESoftware",id:11139560,type:"User"}};
+      const spec=overrides.codeownerPermission;
+      const value=typeof spec==="function"?spec(ownerReads,expected):spec;
+      if(value && typeof value.status==="number")
+        return {status:value.status,json:async()=>value.data??{}};
+      return {status:200,json:async()=>value??expected};
     }
     if(url===base+"/branches/main"){
       branchReads++;
