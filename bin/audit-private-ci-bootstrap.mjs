@@ -28,10 +28,10 @@ const PINNED_SOURCE_IDENTITIES=Object.freeze({
 // alone cannot authenticate what instructions the status-producing job ran.
 const PINNED_POLICY_WORKFLOW_BLOBS=Object.freeze({
   "ores-truffle-oreslang/oreslang-source.java":"d4b1356249534e4dc55e9aeabfad80773016cd48",
-  "ores-truffle-oreslang/oreslang-source.llvm":"78f7eb2aeb148598c43479bda446a258541f0483",
-  "ores-truffle-oreslang/oreslang-source.net":"78f7eb2aeb148598c43479bda446a258541f0483",
-  "ores-truffle-oreslang/oreslang-source.wasm":"78f7eb2aeb148598c43479bda446a258541f0483",
-  "ores-truffle-oreslang/oreslang-source.forge":"78f7eb2aeb148598c43479bda446a258541f0483"
+  "ores-truffle-oreslang/oreslang-source.llvm":"c009875541d9ad5fc323aa85ef53cf7b25f6ec74",
+  "ores-truffle-oreslang/oreslang-source.net":"c009875541d9ad5fc323aa85ef53cf7b25f6ec74",
+  "ores-truffle-oreslang/oreslang-source.wasm":"c009875541d9ad5fc323aa85ef53cf7b25f6ec74",
+  "ores-truffle-oreslang/oreslang-source.forge":"c009875541d9ad5fc323aa85ef53cf7b25f6ec74"
 });
 const OID=/^[0-9a-f]{40}$/;
 const EXPECTED_OWNER="@ORESoftware";
@@ -123,14 +123,14 @@ export function auditCodeowners(text,repo){
   const lines=dataLines(text);
   const java=repo===JAVA_SOURCE_REPOSITORY;
   const paths=java?JAVA_SECURITY_PATHS:SECURITY_PATHS;
-  if(lines.length<paths.length+(java?1:0)) error("security CODEOWNERS final block missing");
+  if(lines.length<paths.length+1) error("security CODEOWNERS final block missing");
   const expected=paths.map(path=>path+" "+EXPECTED_OWNER);
   const actual=lines.slice(-expected.length);
   if(actual.length!==expected.length || actual.some((x,i)=>x!==expected[i])){
     error("security CODEOWNERS final block mismatch");
   }
-  if(java && lines[lines.length-expected.length-1]!=="/.github/workflows/ "+EXPECTED_OWNER){
-    error("Java workflow CODEOWNERS wildcard missing or shadowed");
+  if(lines[lines.length-expected.length-1]!=="/.github/workflows/ "+EXPECTED_OWNER){
+    error("workflow directory CODEOWNERS wildcard missing or shadowed");
   }
 }
 export function auditRequiredChecks(text,protection,repo){
