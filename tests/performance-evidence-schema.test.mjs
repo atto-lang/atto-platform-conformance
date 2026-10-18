@@ -53,3 +53,15 @@ test('schema disallows unsupported silicon measurement promotions',()=>{
   const notPromoted=schema.allOf.find(r=>r.if?.properties?.status?.enum?.includes('UNCONFIGURED'));
   assert.equal(notPromoted.then.properties.samples.maxItems,0);
 });
+
+test('schema artifact locator syntax agrees with structural validator',()=>{
+  const field=schema.properties.evidence.items.properties.locator;
+  const pattern=new RegExp(field.pattern);
+  for(const good of ['ci/raw-artifacts/report.json','artifacts/sha256_abc-01.txt']) {
+    assert.equal(pattern.test(good),true,good);
+  }
+  for(const bad of ['../secret','./entry','/absolute','https://host/x',
+    'artifact/%2e%2e/secret','foo\\\\bar','artifact//x','x/../y']) {
+    assert.equal(pattern.test(bad),false,bad);
+  }
+});
