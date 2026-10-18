@@ -39,7 +39,13 @@ export function validateExternalOresAudit(audit) {
   }
   const sec = audit.securityPolicy;
   if (!isObject(sec) || sec.privateSourceToPublicCarrier !== "forbidden" ||
+      sec.privateSourceToUnapprovedPrivateCarrier !== "forbidden" ||
       sec.releaseOnZeroStepCI !== "forbidden" ||
+      sec.allowRunnerCapacityAsCopyAuthorization !== false ||
+      sec.requireProtectedSourceMain !== true ||
+      sec.requireReviewedExactSourceTree !== true ||
+      sec.requireApprovedPrivateDestination !== true ||
+      sec.requireExecutedCompilerSteps !== true ||
       sec.requireImmutablePin !== true || sec.requireRuntimeEvidence !== true) {
     FAIL("missing fail-closed provenance or private-source protections");
   }
@@ -79,7 +85,7 @@ export function validateExternalOresAudit(audit) {
       FAIL("invalid edge or false executable contract claim");
     }
     const pair = edge.consumer + " -> " + edge.upstream;
-    if (boundaries.has(pair)) FAIL("duplicate boundary: " + pair);
+    if (boundaries.has(pair)) FAIL("duplicate boundary in inventory");
     boundaries.add(pair);
   }
   if (!Array.isArray(audit.issues) || audit.issues.length !== 100) {
@@ -105,7 +111,7 @@ export function validateExternalOresAudit(audit) {
     }
     const expected = `https://github.com/${item.repository}/issues/${item.number}`;
     if (item.url !== expected || issueUrls.has(item.url)) {
-      FAIL("issue URL mismatch or duplicate: " + item.url);
+      FAIL("issue URL mismatch or duplicate at ordinal " + (index + 1));
     }
     issueUrls.add(item.url);
     repoNames.add(item.repository);
