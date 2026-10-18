@@ -91,6 +91,18 @@ const required = new Map([
   [
     "monotonic-clock-representation-wrap",
     "bounded-refill"
+  ],
+  [
+    "actor-context-broker-authentication",
+    "runtime-provenance-required"
+  ],
+  [
+    "broker-ticket-cap-and-replay",
+    "bounded-one-shot-ticket"
+  ],
+  [
+    "no-guest-future-callback-on-host",
+    "no-guest-callback-on-host"
   ]
 ]);
 
