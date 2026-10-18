@@ -14,7 +14,25 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-      - run: npm test
+      - name: Test source-free conformance and provenance validators
+        run: npm test
+      - name: Validate 52-repository candidate structure (offline only)
+        run: |
+          npm run check:integration
+          npm run check:compatibility
+      - name: Prove unverified candidate cannot pass release gate
+        shell: bash
+        run: |
+          set +e
+          npm run gate:release > gate-output.txt 2>&1
+          gate_status=$?
+          set -e
+          cat gate-output.txt
+          if [ "$gate_status" -ne 3 ]; then
+            echo "Expected gate:release to return 3; got $gate_status" >&2
+            exit 1
+          fi
+          grep -q 'RELEASE_BLOCKED' gate-output.txt
       - name: Confirm mandatory real compiler gate cannot pass unconfigured
         run: |
           for backend in java llvm net wasm forge; do
