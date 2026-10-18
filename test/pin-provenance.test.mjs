@@ -33,7 +33,9 @@ function canned(options = {}) {
     };
     if (suffix.startsWith("/compare/")) return {
       status: options.diverged ? "diverged" : "ahead",
-      behind_by: options.diverged ? 1 : 0, ahead_by: 2
+      behind_by: options.diverged ? 1 : 0, ahead_by: 2,
+      base_commit: {sha: options.badBase ? differentHead : pin.commit},
+      merge_base_commit: {sha: options.badMergeBase ? differentHead : pin.commit}
     };
     throw Error("unexpected GitHub request " + path);
   }
@@ -81,6 +83,12 @@ test("deny invalid or missing branch references", async () => {
 test("deny rewritten history or missing pinned ancestors", async () => {
   await assert.rejects(() => auditPinnedProvenance(candidate, inventory,
     canned({moved: true, diverged: true}).requestJson), /not a proven ancestor/);
+});
+test("deny GitHub compare mismatch even with status=ahead", async () => {
+  for (const flag of ["badBase", "badMergeBase"]) {
+    await assert.rejects(() => auditPinnedProvenance(candidate, inventory,
+      canned({moved: true, [flag]: true}).requestJson), /not a proven ancestor/);
+  }
 });
 test("deny incomplete requests and forged pin data before network", async () => {
   const corrupted = structuredClone(candidate);
