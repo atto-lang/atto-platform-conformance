@@ -109,3 +109,10 @@ test('HTTP adapter enforces POST endpoint and emits accepted JSON',async()=>{
     assert.deepEqual(await response.json(),{code:'ACCEPTED'});
   }finally{await new Promise((resolve,reject)=>server.close(e=>e?reject(e):resolve()));}
 });
+
+
+test('unversioned expected actor state cannot bypass transactional correlation',async()=>{
+  const a=harness(signed(),{readExpected:async()=>({...expected,stateVersion:undefined})});
+  assert.equal((await admitGithubPush(a.opts)).code,'STALE_OR_UNRELATED');
+  assert.equal(a.recorded.length,0);
+});
