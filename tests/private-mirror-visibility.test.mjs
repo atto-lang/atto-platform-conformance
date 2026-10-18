@@ -595,7 +595,7 @@ test("CODEOWNER must retain exact live user identity and write access in both so
       {status:403,data:{message:"forbidden"}}
     ]){
       await assert.rejects(check({}, {[path]:denied}),
-        /CODEOWNER identity or current write permission|trusted source export policy unavailable/);
+        /CODEOWNER identity or current write permission|trusted source policy unavailable/);
     }
   }
 });
