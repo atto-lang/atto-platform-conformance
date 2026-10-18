@@ -81,6 +81,7 @@ test('Draft 2020-12 evidence stage admission is aligned with the runtime gate',(
     [{status:'PLACE_ROUTE_VERIFIED',family:'fpga',kind:'fmax'},['correctness','place-route']],
     [{status:'SYNTH_ONLY',family:'asic',kind:'power'},['correctness','synthesis','power-model']],
     [{status:'SIMULATED_ONLY',family:'asic',kind:'area'},['correctness','simulation']],
+    [{status:'SIMULATED_ONLY',family:'asic',kind:'power'},['correctness','simulation','power-model']],
   ];
   assert.equal(clauses.length,9);
   for(const [claim,required] of vectors){
