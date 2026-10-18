@@ -52,8 +52,10 @@ const JAVA_SECURITY_PATHS=Object.freeze([
   "/scripts/test-publish-private-ci-source.py",
   "/scripts/ci_private_mirror_preflight.py",
   "/scripts/verify-review-pinned-private-ci.py",
+  "/scripts/dispatch-review-pinned-private-ci.py",
   "/tests/test_ci_private_mirror_preflight.py",
   "/tests/test_review_pinned_private_ci.py",
+  "/tests/test_review_pinned_dispatcher.py",
   "/src/test/java/dev/oreslang/PrivateExactMainValidationWorkflowSecurityTest.java",
   "/src/test/java/dev/oreslang/PrivateExactPublisherAdmissionMutationTest.java",
   "/src/test/java/dev/oreslang/PrivateExactPublisherValidationWorkflowSecurityTest.java"
