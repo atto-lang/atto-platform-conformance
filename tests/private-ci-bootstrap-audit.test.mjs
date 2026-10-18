@@ -153,6 +153,16 @@ test("bootstrap requires the independently reviewed exact workflow Git blob",asy
   }
 });
 
+test("cross-backend workflow substitution cannot impersonate the reviewed issuer",async()=>{
+  await assert.rejects(run({workflow:javaWorkflow}),
+    /policy workflow differs from independently reviewed immutable Git blob/);
+  await assert.rejects(auditRepository(JAVA_REPO,{
+    token:"test-token",fetchImpl:fixture({
+      codeowners:javaCodeowners,checks:javaChecks,workflow
+    },[],JAVA_REPO)
+  }),/policy workflow differs from independently reviewed immutable Git blob/);
+});
+
 test("Java source bootstrap also pins its distinct reviewed workflow",async()=>{
   const good=()=>auditRepository(JAVA_REPO,{
     token:"test-token",
