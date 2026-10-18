@@ -185,20 +185,20 @@ test("Java CODEOWNERS requires dispatcher code and regression test in exact term
     "/scripts/dispatch-review-pinned-private-ci.py",
     "/tests/test_review_pinned_dispatcher.py"
   ]){
-    const entry=path+" @ORESoftware\\n";
+    const entry=path+" @ORESoftware\n";
     assert.ok(javaCodeowners.includes(entry));
     assert.throws(()=>auditCodeowners(javaCodeowners.replace(entry,""),JAVA_REPO),
       /security CODEOWNERS final block mismatch|security CODEOWNERS final block missing/);
     assert.throws(()=>auditCodeowners(javaCodeowners.replace(
-      entry,path+" @Unreviewed\\n"),JAVA_REPO),
+      entry,path+" @Unreviewed\n"),JAVA_REPO),
       /security CODEOWNERS final block mismatch/);
   }
-  const lines=javaCodeowners.split("\\n");
+  const lines=javaCodeowners.split("\n");
   const a=lines.indexOf("/scripts/dispatch-review-pinned-private-ci.py @ORESoftware");
   const b=lines.indexOf("/tests/test_review_pinned_dispatcher.py @ORESoftware");
   assert.ok(a>0 && b>a);
   [lines[a],lines[b]]=[lines[b],lines[a]];
-  assert.throws(()=>auditCodeowners(lines.join("\\n"),JAVA_REPO),/final block mismatch/);
+  assert.throws(()=>auditCodeowners(lines.join("\n"),JAVA_REPO),/final block mismatch/);
 });
 
 test("missing or malformed bypass allowance arrays deny bootstrap",()=>{
