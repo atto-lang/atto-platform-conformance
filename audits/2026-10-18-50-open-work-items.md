@@ -112,3 +112,27 @@ Change an item's `observed` status only after exact-head checks and evidence URL
 - **Private-source boundary unchanged:** investigations #22/#77, publisher
   approval, branch protection and CODEOWNER review are prerequisites to any
   external carrier export. No cross-org source transfer authorized.
+
+
+## Source-free alternate Actions capacity verification
+
+Private carrier `opto-sync-test/go-java-validation` (repo ID
+1323598177) hosted an **independently written**, source-free Java 21
+concurrency/runner canary on branch
+`audit/sourcefree-taskscope-canary-20261018`. At commit
+`c06c67734bd1f5b9f29b4a5cb872b99828e632a5`, Actions run
+https://github.com/opto-sync-test/go-java-validation/actions/runs/39177621239
+completed successfully with **eight executed steps**, including compile
+and 1,750 synthetic concurrency cases. A separate local Java 21 source-free
+model passed 3,000 cases.
+
+The alternate org is **runner-capable**; this is explicitly **not** a
+release test of #1407 or a cross-org private Oreslang tree mirror.
+No private Oreslang source, Git blobs, credentials, or provenance code
+was transferred. The source repository's reviewed destination allowlist
+has no approved entries, and open security issues
+[Java #962](https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/962),
+[Java #1368](https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1368)
+and [conformance #22](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22)
+block any private-source transfer. An available budget cannot override
+these conditions. Exact-source Maven/JUnit/GraalVM CI remains pending.
