@@ -1,132 +1,71 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
+import {spawnSync} from "node:child_process";
+import {fileURLToPath} from "node:url";
 import {requirePrivateMirror} from "../bin/require-private-mirror.mjs";
 
-const source = "ores-truffle-oreslang/oreslang-source.java";
-const destination = "akrion-sim/akrion-sim-e2e";
-const good = name => ({
-  full_name: name, private: true, visibility: "private",
-  archived: false, permissions: {push: true}
-});
-function fixture(records = {}, calls = []) {
-  return async (url, options) => {
-    calls.push({url, options});
-    assert.match(url, /^https:\/\/api\.github\.com\/repos\//);
-    assert.equal(options.redirect, "error");
-    assert.equal(options.method, "GET");
-    assert.equal(options.headers.Authorization, "Bearer restricted-test-token");
-    const name = url.slice("https://api.github.com/repos/".length);
-    const result = records[name] ?? good(name);
-    return {status: result?.status ?? 200, json: async () => result?.data ?? result};
-  };
-}
-const base = {
-  source, destination, approvedDestinations: [destination],
-  token: "restricted-test-token"
-};
-const check = (overrides = {}, records = {}, calls = []) =>
-  requirePrivateMirror({...base, fetchImpl: fixture(records, calls), ...overrides});
+const cli = fileURLToPath(new URL("../bin/require-private-mirror.mjs", import.meta.url));
+const source = "synthetic-source/repo", destination = "synthetic-private/repo";
+const base = {source, destination, approvedDestinations:[destination], token:"FAKE_METADATA_TEST_TOKEN"};
 
-test("accepts only explicitly approved and GitHub-verified writable private destination", async () => {
-  const calls = [];
-  assert.deepEqual(await check({}, {}, calls), {
-    status: "PRIVATE_MIRROR_APPROVED", source, destination
+const cases = [
+  ["valid-looking private repository metadata", {}],
+  ["missing source", {source:undefined}],
+  ["missing destination", {destination:undefined}],
+  ["missing approval list", {approvedDestinations:[]}],
+  ["operator allowlist", {approvedDestinations:[destination]}],
+  ["forced allowlist", {approvedDestinations:["*",destination]}],
+  ["missing token", {token:undefined}],
+  ["untrusted token", {token:"test"}],
+  ["synthetic public source", {source:"example/public"}],
+  ["synthetic internal destination", {destination:"example/internal"}],
+  ["claimed private visibility", {sourceMetadata:{private:true},destinationMetadata:{private:true}}],
+  ["claimed incident closure", {incidentsClosed:[22,77]}],
+  ["claimed policy receipt", {policy:{enabled:true,signature:"synthetic"}}],
+  ["fresh Actions minutes", {actionsMinutesRemaining:1000}],
+];
+
+for (const [description,change] of cases) {
+  test(`legacy metadata verifier denies ${description} before IO`, async () => {
+    let requests = 0;
+    const fetchImpl = () => { requests++; throw Error("FETCH_CALLED"); };
+    await assert.rejects(requirePrivateMirror({...base,...change,fetchImpl}), /PRIVATE_MIRROR_SUSPENDED/);
+    assert.equal(requests,0);
   });
-  assert.equal(calls.length, 2);
-  assert.equal(calls[0].url.endsWith("/" + source), true);
-  assert.equal(calls[1].url.endsWith("/" + destination), true);
+}
+
+test("poisoned input getters are never read", async () => {
+  let accessed = 0;
+  const input = new Proxy({}, {get() {accessed++;throw Error("POISON");}});
+  await assert.rejects(requirePrivateMirror(input), /PRIVATE_MIRROR_SUSPENDED/);
+  assert.equal(accessed,0);
 });
 
-test("rejects public, internal, contradictory, archived and unwritable destinations", async () => {
-  for (const metadata of [
-    {...good(destination), private: false, visibility: "public"},
-    {...good(destination), private: true, visibility: "internal"},
-    {...good(destination), private: true, visibility: "public"},
-    {...good(destination), archived: true},
-    {...good(destination), permissions: {push: false}},
-    {...good(destination), permissions: undefined}
-  ]) {
-    await assert.rejects(check({}, {[destination]: metadata}), /writable verified PRIVATE/);
-  }
+test("undefined and null arguments fail with an incident hold", async () => {
+  await assert.rejects(requirePrivateMirror(), /PRIVATE_MIRROR_SUSPENDED/);
+  await assert.rejects(requirePrivateMirror(null), /PRIVATE_MIRROR_SUSPENDED/);
 });
 
-test("rejects wrong or public source metadata even when destination is private", async () => {
-  for (const metadata of [
-    {...good(source), private: false, visibility: "public"},
-    {...good(source), visibility: "internal"},
-    {...good(source), archived: true}
-  ]) {
-    const calls = [];
-    await assert.rejects(check({}, {[source]: metadata}, calls), /private source metadata/);
-    assert.equal(calls.length, 1, "cannot even inspect target after source rejection");
-  }
+test("metadata preflight CLI is denied without credential exposure", () => {
+  const result = spawnSync(process.execPath,[cli,source,destination],{
+    encoding:"utf8",timeout:5000,env:{...process.env,
+      GH_TOKEN:base.token,ORES_APPROVED_PRIVATE_MIRRORS:destination}});
+  assert.equal(result.status,1,result.stderr);
+  assert.match(result.stderr,/PRIVATE_MIRROR_SUSPENDED/);
+  assert.doesNotMatch(result.stdout+result.stderr,/FAKE_METADATA_TEST_TOKEN|PRIVATE_MIRROR_APPROVED/);
 });
 
-test("unknown, unauthorized and missing metadata fail closed", async () => {
-  for (const metadata of [
-    {status: 403}, {status: 404}, {status: 401},
-    {status: 200, data: {private: true, visibility: "private"}},
-    {status: 200, data: {full_name: destination, private: "true", visibility: "private"}},
-    {status: 200, data: {full_name: "someone-else/private", private: true, visibility: "private"}}
-  ]) {
-    await assert.rejects(check({}, {[destination]: metadata}), /unverifiable|invalid or mismatched/);
-  }
+test("metadata preflight CLI denies missing arguments", () => {
+  const result = spawnSync(process.execPath,[cli],{encoding:"utf8",timeout:5000});
+  assert.equal(result.status,1,result.stderr);
+  assert.match(result.stderr,/PRIVATE_MIRROR_SUSPENDED/);
 });
 
-test("missing explicit destination approval is rejected before any network request", async () => {
-  for (const approvedDestinations of [undefined, [], ["other/repo"], [destination, "../evil"], Array(40).fill(destination)]) {
-    const calls = [];
-    await assert.rejects(check({approvedDestinations}, {}, calls), /allowlist/);
-    assert.equal(calls.length, 0);
-  }
-});
-
-test("missing credentials fail closed before any network request", async () => {
-  for (const token of [undefined, "", " "]) {
-    const calls = [];
-    await assert.rejects(check({token}, {}, calls), /authenticated GitHub/);
-    assert.equal(calls.length, 0);
-  }
-});
-
-test("rejects malformed repository names and URL injection before making requests", async () => {
-  for (const sourceValue of [
-    "../other/repo", "org/repo?private=true", "org/repo#frag",
-    "org/repo/extra", "org\\repo", "", "org/..", "org/repo\nHeader: injection"
-  ]) {
-    const calls = [];
-    await assert.rejects(check({source: sourceValue}, {}, calls), /invalid GitHub/);
-    assert.equal(calls.length, 0);
-  }
-});
-
-test("transport, timeout, JSON and redirect failures never become approval", async () => {
-  for (const fetchImpl of [
-    async () => { throw Error("network error"); },
-    async () => { throw Error("redirect not allowed"); },
-    async () => ({status: 200, json: async () => { throw Error("invalid JSON"); }}),
-    async () => null
-  ]) {
-    await assert.rejects(check({fetchImpl}));
-  }
-});
-
-test("no permissive fallback exists if caller fails to supply a fetch implementation", async () => {
-  await assert.rejects(check({fetchImpl: null}), /visibility lookup unavailable/);
-});
-
-test("transport and JSON parse errors redact credentials even if client errors include them", async () => {
-  const secret = "restricted-test-token";
-  for (const fetchImpl of [
-    async () => { throw Error("bad Authorization: Bearer " + secret); },
-    async () => ({status: 200, json: async () => {
-      throw Error("request Authorization Bearer " + secret);
-    }})
-  ]) {
-    await assert.rejects(check({fetchImpl}), error => {
-      assert.equal(error.message.includes(secret), false, "token leaked in error");
-      assert.match(error.message, /visibility lookup failed|metadata could not be decoded/);
-      return true;
-    });
-  }
+test("imported metadata verifier does not run any network requests", () => {
+  const url = new URL("../bin/require-private-mirror.mjs", import.meta.url).href;
+  const script = `globalThis.fetch=()=>{throw Error("FETCH_CALLED")}; import(${JSON.stringify(url)}).then(()=>console.log("IMPORT_OK"));`;
+  const result = spawnSync(process.execPath,["--input-type=module","-e",script],{encoding:"utf8",timeout:5000});
+  assert.equal(result.status,0,result.stderr);
+  assert.equal(result.stdout.trim(),"IMPORT_OK");
+  assert.equal(result.stderr,"");
 });
