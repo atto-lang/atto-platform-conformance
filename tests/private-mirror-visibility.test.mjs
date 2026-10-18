@@ -93,7 +93,7 @@ function fixture(records = {}, calls = []) {
         [{sha:carrierAuthorizationCommit}],
       [destination+"/commits/"+carrierAuthorizationCommit+"/pulls?per_page=20]:[{
         number:701,state:"closed",merged_at:"2026-10-18T14:00:00Z",
-        base:{ref:"main"},head:{sha:carrierPrHead,repo:{full_name:destination}},
+        base:{ref:"main",repo:{full_name:destination}},head:{sha:carrierPrHead,repo:{full_name:destination}},
         user:{id:400000002}
       }],
       [destination+"/pulls/701/reviews?per_page=100]:[{
@@ -123,7 +123,7 @@ function fixture(records = {}, calls = []) {
         [{sha:sourceAuthorizationCommit}],
       [source+"/commits/"+sourceAuthorizationCommit+"/pulls?per_page=20]:[{
         number:501,state:"closed",merged_at:"2026-10-18T14:00:00Z",
-        base:{ref:"main"},head:{sha:sourcePrHead,repo:{full_name:source}},
+        base:{ref:"main",repo:{full_name:source}},head:{sha:sourcePrHead,repo:{full_name:source}},
         user:{id:400000001}
       }],
       [source+"/pulls/501/reviews?per_page=100]:[{
@@ -517,6 +517,7 @@ test("independent reviewer must be live, distinct from PR author, and identical 
   const srcPull=source+"/commits/"+sourceAuthorizationCommit+"/pulls?per_page=20";
   await assert.rejects(check({}, {[srcPull]:[{
     number:501,state:"closed",merged_at:"2026-10-18T14:00:00Z",base:{ref:"main"},
+    base:{ref:"main",repo:{full_name:source}},
     head:{sha:sourcePrHead,repo:{full_name:source}},user:{id:reviewer.id}
   }]}),/cannot be the authorization PR author/);
   const carrierReviewerPath=destination+"/contents/.github/private-ci-independent-reviewer.json?ref="+C;
@@ -530,4 +531,36 @@ test("source and carrier status workflows are pinned to independently reviewed G
   const car=destination+"/contents/.github/workflows/private-ci-carrier-admission.yml?ref="+C;
   await assert.rejects(check({}, {[src]:encoded(sourcePolicyWorkflow+"\n# mutation\n")}),/source policy workflow differs/);
   await assert.rejects(check({}, {[car]:encoded(carrierPolicyWorkflow+"\n# mutation\n")}),/carrier policy workflow differs/);
+});
+
+
+test("protected ledgers permit exactly one active canary",async()=>{
+  const destPath=source+"/contents/.github/private-ci-approved-repositories.txt?ref="+M;
+  const snapPath=source+"/contents/.github/private-ci-approved-source-snapshots.txt?ref="+M;
+  const carrierSnap=destination+"/contents/.github/private-ci-approved-source-snapshots.txt?ref="+C;
+  await assert.rejects(check({}, {[destPath]:encoded(
+    destination+" "+destinationId+"\nother/private 5678\n")}),/exactly one active canary/);
+  await assert.rejects(check({}, {[snapPath]:encoded(
+    A+" "+T+" "+destinationId+"\n"+"e".repeat(40)+" "+"f".repeat(40)+" 5678\n")}),/exactly one active canary/);
+  await assert.rejects(check({}, {[carrierSnap]:encoded(
+    A+" "+T+" "+destinationId+"\n"+"e".repeat(40)+" "+"f".repeat(40)+" 5678\n")}),/exactly one active canary/);
+});
+
+test("full PR association page is treated as ambiguous",async()=>{
+  const path=source+"/commits/"+sourceAuthorizationCommit+"/pulls?per_page=20";
+  const rows=Array.from({length:20},(_,i)=>({
+    number:500+i,state:"closed",merged_at:"2026-10-18T14:00:00Z",
+    base:{ref:"main",repo:{full_name:source}},
+    head:{sha:sourcePrHead,repo:{full_name:source}},user:{id:400000001+i}
+  }));
+  await assert.rejects(check({}, {[path]:rows}),/lookup is ambiguous/);
+});
+
+test("authorization PR base repository identity is pinned",async()=>{
+  const srcPull=source+"/commits/"+sourceAuthorizationCommit+"/pulls?per_page=20";
+  await assert.rejects(check({}, {[srcPull]:[{
+    number:501,state:"closed",merged_at:"2026-10-18T14:00:00Z",
+    base:{ref:"main",repo:{full_name:"other/repo"}},
+    head:{sha:sourcePrHead,repo:{full_name:source}},user:{id:400000001}
+  }]}),/not bound to one merged main pull request/);
 });
