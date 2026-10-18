@@ -59,6 +59,18 @@ const required = new Map([
   [
     "shutdown-race",
     "release-once"
+  ],
+  [
+    "delayed-cancel-no-token-refund",
+    "no-refund-of-published-start-token"
+  ],
+  [
+    "revocation-prevents-commit",
+    "deny-new-commit-and-release-slot"
+  ],
+  [
+    "hierarchical-internal-rollback",
+    "rollback-unpublished-only"
   ]
 ]);
 
@@ -70,7 +82,10 @@ function checkContract(doc) {
     httpMaxInFlight: 10,
     httpRequestStartsPerSecond: 10,
     httpStartBurst: 2,
-    tcpMaxActiveConnections: 10
+    tcpMaxActiveConnections: 10,
+    tcpConnectionStartsPerSecond: 10,
+    tcpStartBurst: 2,
+    refundPublishedStartTokens: false
   });
   assert.deepEqual(doc.confirmedBackends, []);
   assert.deepEqual(doc.pendingBackends, ["java-graalvm", "llvm", "wasm", "forge", ".net"]);
