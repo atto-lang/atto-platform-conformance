@@ -4,7 +4,8 @@ import {readFile} from "node:fs/promises";
 
 const base = new URL("../fixtures/task-blocks/v0/", import.meta.url);
 const contract = JSON.parse(await readFile(new URL("manifest.json", base), "utf8"));
-const ids = ["do-nb-no-handle","task-int-await","task-void-await","reject-bare-nb","reject-escaping-borrow"];
+const ids = ["do-nb-no-handle","task-int-await","task-void-await","reject-bare-nb","reject-escaping-borrow",
+ "task-iife-expression","task-iife-block","task-iife-awaited","task-iife-future-observer","reject-async-task-lambda"];
 
 test("task blocks remain an explicitly unverified source contract", () => {
   assert.equal(contract.schemaVersion, 1);
@@ -48,4 +49,39 @@ test("negative fixtures must not be mistaken for executable parity", async () =>
   assert.match(borrow, /rt borrow mut/);
   assert.match(borrow, /nb\s*\{/);
   assert.equal(contract.cases.find(c=>c.id==="reject-escaping-borrow").runtimeExpected,"reject");
+});
+
+
+test("IIFE Task lambdas pass positional args without an async wrapper", async () => {
+  const read = async name => readFile(new URL(name + ".ores", base), "utf8");
+  const arrow = await read("task-iife-expression");
+  const braced = await read("task-iife-block");
+  assert.match(arrow, /\(\|int a, string b\| -> nb\s*\{/);
+  assert.match(arrow, /\}\)\(5, "xyz"\)/);
+  assert.match(arrow, /let Task<int> task\s*=/);
+  assert.match(arrow, /let int answer = await task/);
+  assert.doesNotMatch(arrow, /\basync\s*\|/);
+  assert.match(braced, /\(\|int a, string b\| ->\s*\{/);
+  assert.match(braced, /return nb\s*\{/);
+  assert.match(braced, /\}\)\(5, "xyz"\)/);
+  assert.doesNotMatch(braced, /\basync\s*\|/);
+});
+
+test("outer await joins the Task, while asFuture is an explicit observer", async () => {
+  const read = async name => readFile(new URL(name + ".ores",base), "utf8");
+  const awaited = await read("task-iife-awaited");
+  const projected = await read("task-iife-future-observer");
+  assert.match(awaited, /let int answer = await\s*\(\|int a, string b\| -> nb/);
+  assert.match(projected, /let Future<int> result = /);
+  assert.match(projected, /\}\)\(5, "xyz"\)\.asFuture\(\)/);
+  assert.match(projected, /let int answer = await result/);
+  assert.doesNotMatch(projected, /\basync\s*\|/);
+});
+
+test("async lambda nesting must remain forbidden without Future<Task<T>> semantics", async () => {
+  const invalid = await readFile(new URL("reject-async-task-lambda.ores",base), "utf8");
+  assert.match(invalid, /\(async \|int a, string b\| -> nb\s*\{/);
+  const entry = contract.cases.find(c => c.id === "reject-async-task-lambda");
+  assert.equal(entry.parserExpected, "reject");
+  assert.equal(entry.runtimeExpected, "forbidden");
 });
