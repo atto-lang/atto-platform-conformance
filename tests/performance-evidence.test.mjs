@@ -96,6 +96,8 @@ test('CLI cannot turn structural validation into a green release gate',()=>{
     assert.equal(run(link,'--structural-only').status,1);
     writeFileSync(file,JSON.stringify({...ready(),status:'PASS'}));
     assert.equal(run(file,'--structural-only').status,1);
+    writeFileSync(file,Buffer.from([0x7b,0xff,0x7d])); // malformed UTF-8 JSON bytes
+    assert.equal(run(file,'--structural-only').status,1);
     writeFileSync(file,' '.repeat(128*1024+1));
     assert.equal(run(file,'--structural-only').status,1);
   } finally {rmSync(dir,{recursive:true,force:true});}
