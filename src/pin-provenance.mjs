@@ -28,7 +28,9 @@ export async function auditPinnedProvenance(candidate, inventory, requestJson) {
     if (head !== pin.commit) {
       const comparison = await requestJson(`${prefix}/compare/${pin.commit}...${head}`);
       if (comparison?.status !== "ahead" || comparison?.behind_by !== 0 ||
-          !Number.isSafeInteger(comparison?.ahead_by) || comparison.ahead_by < 1) {
+          !Number.isSafeInteger(comparison?.ahead_by) || comparison.ahead_by < 1 ||
+          comparison?.base_commit?.sha !== pin.commit ||
+          comparison?.merge_base_commit?.sha !== pin.commit) {
         throw Error(`audit: pin is not a proven ancestor of main: ${pin.name}`);
       }
       relation = "ANCESTOR_OF_MAIN";
