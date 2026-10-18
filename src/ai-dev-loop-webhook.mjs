@@ -1,81 +1,80 @@
 import {createHmac, timingSafeEqual} from 'node:crypto';
 
-const HEX=/^[0-9a-f]{40}$/;
+const SHA=/^[0-9a-f]{40}$/;
 const DELIVERY=/^[A-Za-z0-9-]{1,128}$/;
-const nonempty=s=>typeof s==='string' && s.length>0;
+const REF=/^refs\/heads\/[A-Za-z0-9_./-]{1,240}$/;
+const validId=n=>Number.isSafeInteger(n)&&n>0;
 
 /**
- * A host-side webhook admission boundary; does not execute AI tasks.
- * Callbacks MUST be backed by durable, tenant-authorized storage. In-memory
- * deduplication does not satisfy the contract across a process restart.
+ * Authenticated HTTP boundary ONLY. It does not choose tenant, run, or actor
+ * identity from the webhook payload. The injected admitSignedPush callback
+ * MUST resolve authorized workflow identity and check repo/ref/SHA, expected
+ * actor state version, delivery replay and inbox quota in one DB transaction.
  */
-export async function admitGithubPush({secret,headers,rawBody,readExpected,persistInbox,maxBytes=1_048_576}) {
-  if(!nonempty(secret) || typeof readExpected!=='function' ||
-      typeof persistInbox!=='function')throw TypeError('admission configuration required');
-  if(!Buffer.isBuffer(rawBody) || rawBody.length===0 || rawBody.length>maxBytes)
+export async function admitGithubPush({
+  secret,headers,rawBody,admitSignedPush,maxBytes=1_048_576
+}) {
+  if(typeof secret!=='string'||secret.length<16||
+     !headers||typeof admitSignedPush!=='function'||
+     !Number.isSafeInteger(maxBytes)||maxBytes<1||maxBytes>16_777_216)
+    throw new TypeError('invalid GitHub webhook admission configuration');
+  if(!Buffer.isBuffer(rawBody)||rawBody.length===0||rawBody.length>maxBytes)
     return {status:413,code:'INVALID_BODY'};
-  // Raw-body signature is validated BEFORE JSON parsing and any state lookup.
+
+  // Verify the original byte stream before JSON parsing or any storage lookup.
   const signature=headers['x-hub-signature-256'];
-  if(typeof signature!=='string' || !/^sha256=[a-f0-9]{64}$/.test(signature))
+  if(typeof signature!=='string'||!/^sha256=[a-f0-9]{64}$/.test(signature))
     return {status:401,code:'BAD_SIGNATURE'};
-  const expectedSig=Buffer.from(createHmac('sha256',secret).update(rawBody).digest('hex'),'hex');
-  const got=Buffer.from(signature.slice(7),'hex');
-  if(!timingSafeEqual(got,expectedSig))return {status:401,code:'BAD_SIGNATURE'};
+  const actual=Buffer.from(signature.slice(7),'hex');
+  const expected=createHmac('sha256',secret).update(rawBody).digest();
+  if(!timingSafeEqual(actual,expected))return {status:401,code:'BAD_SIGNATURE'};
+
   if(headers['x-github-event']!=='push')return {status:202,code:'IGNORED_EVENT'};
-  const delivery=headers['x-github-delivery'];
-  if(typeof delivery!=='string' || !DELIVERY.test(delivery))
+  const deliveryId=headers['x-github-delivery'];
+  if(typeof deliveryId!=='string'||!DELIVERY.test(deliveryId))
     return {status:400,code:'BAD_DELIVERY_ID'};
   let payload;
-  try {payload=JSON.parse(rawBody.toString('utf8'));}catch{return {status:400,code:'BAD_JSON'};}
-  if(!payload || typeof payload!=='object' || payload.deleted!==false ||
-      !HEX.test(payload.after||'') || !nonempty(payload.ref) ||
-      !Number.isSafeInteger(payload.installation?.id) ||
-      !Number.isSafeInteger(payload.repository?.id))
+  try { payload=JSON.parse(rawBody.toString('utf8')); }
+  catch { return {status:400,code:'BAD_JSON'}; }
+  if(!payload||typeof payload!=='object'||Array.isArray(payload)||
+     payload.deleted!==false||!SHA.test(payload.after||'')||
+     !REF.test(payload.ref||'')||
+     !validId(payload.installation?.id)||!validId(payload.repository?.id))
     return {status:422,code:'BAD_PUSH'};
-  const expected=await readExpected({installationId:payload.installation.id,repositoryId:payload.repository.id});
-  // The expected SHA/ref/run/iteration must come from authoritative backend
-  // state, NEVER from untrusted JSON fields supplied by the webhook.
-  if(!expected || expected.stage!=='waiting_webhook' ||
-      expected.installationId!==payload.installation.id ||
-      expected.repositoryId!==payload.repository.id ||
-      expected.expectedSha!==payload.after ||
-      expected.expectedRef!==payload.ref ||
-      !nonempty(expected.tenantId) || !nonempty(expected.workflowId) ||
-      !nonempty(expected.runId) || !nonempty(expected.nodeId) ||
-      !Number.isSafeInteger(expected.iteration) || expected.iteration<1 ||
-      !Number.isSafeInteger(expected.stateVersion) || expected.stateVersion<0) return {status:202,code:'STALE_OR_UNRELATED'};
-  // persistInbox MUST atomically deduplicate this delivery and verify
-  // run/iteration/expected SHA under a storage transaction.
-  const inserted=await persistInbox({
-    tenantId:expected.tenantId,workflowId:expected.workflowId,runId:expected.runId,
-    nodeId:expected.nodeId,iteration:expected.iteration,
-    event:'github_push',deliveryId:delivery,sha:payload.after,ref:payload.ref,
-    expectedStateVersion:expected.stateVersion
+
+  // No readExpected + persistInbox split is permitted here. The database
+  // callback is the single authority for expectation and deduplication.
+  const result=await admitSignedPush({
+    installationId:payload.installation.id,repositoryId:payload.repository.id,
+    ref:payload.ref,sha:payload.after,deliveryId,rawBody:Buffer.from(rawBody)
   });
-  return inserted ? {status:202,code:'ACCEPTED'} : {status:200,code:'DUPLICATE'};
+  if(result==='ACCEPTED')return {status:202,code:'ACCEPTED'};
+  if(result==='DUPLICATE')return {status:200,code:'DUPLICATE'};
+  if(result==='STALE')return {status:202,code:'STALE_OR_UNRELATED'};
+  // Reject unknown results rather than reporting false successful admission.
+  throw new Error('unexpected durable admission result');
 }
 
-/** Minimal native Node HTTP adapter. Route/authentication still belongs to the server. */
+/** Host Node adapter: external operations are NEVER run on the request stack. */
 export function createGithubWebhookHandler(settings) {
   return async (req,res)=>{
-    if(req.method!=='POST' || req.url!=='/webhooks/github'){
+    if(req.method!=='POST'||req.url!=='/webhooks/github'){
       res.writeHead(404,{'content-type':'application/json'});res.end('{"error":"not_found"}');return;
     }
     const maxBytes=settings.maxBytes??1_048_576;
     try {
-      const parts=[];let total=0;
+      const chunks=[];let total=0;
       for await(const chunk of req){
         total+=chunk.length;
         if(total>maxBytes){res.writeHead(413);res.end();return;}
-        parts.push(chunk);
+        chunks.push(chunk);
       }
-      const answer=await admitGithubPush({
-        ...settings,headers:req.headers,rawBody:Buffer.concat(parts),maxBytes
+      const result=await admitGithubPush({
+        ...settings,headers:req.headers,rawBody:Buffer.concat(chunks),maxBytes
       });
-      res.writeHead(answer.status,{'content-type':'application/json','cache-control':'no-store'});
-      res.end(JSON.stringify({code:answer.code}));
-    }catch{
-      // No request payload or credentials in error responses.
+      res.writeHead(result.status,{'content-type':'application/json','cache-control':'no-store'});
+      res.end(JSON.stringify({code:result.code}));
+    } catch {
       if(!res.headersSent)res.writeHead(503,{'content-type':'application/json'});
       res.end('{"code":"INGRESS_UNAVAILABLE"}');
     }
