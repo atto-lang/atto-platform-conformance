@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "releaseId": "oreslang-compat-2026-10-17-candidate-1",
+  "releaseId": "oreslang-compat-2026-10-17-candidate-2",
   "kind": "CANDIDATE_SNAPSHOT",
   "organization": "ores-truffle-oreslang",
   "snapshotDate": "2026-10-17",
   "inventoryPath": "integration/org-repositories.v1.json",
   "promotionState": "BLOCKED_UNVERIFIED",
   "securityIncident": "oreslang-platform-conformance#22",
-  "provenance": "Latest returned default-branch commit-search match per repository; immutable commit SHA, NOT branch tip attestation or CI evidence.",
+  "provenance": "Versioned 56-repository candidate: the original 52 frozen commit-search pins are preserved; four ML-layer commits were read from authenticated main Git refs and repository numeric IDs. SHA pins are historical and NOT CI, branch-tip, runtime, or compatibility evidence.",
   "policy": "METADATA_ONLY_NO_SOURCE_EXPORT",
   "pins": [
     {
@@ -49,6 +49,14 @@
       "compatibility": "UNVERIFIED",
       "evidence": [],
       "repositoryId": "1409246164"
+    },
+    {
+      "name": "oreslang-autograd",
+      "repositoryId": "1423913203",
+      "ref": "main",
+      "commit": "aeede1cc8f02a6afa2b733076e049d406fa0e4ac",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
     },
     {
       "name": "oreslang-browser",
@@ -169,6 +177,22 @@
       "compatibility": "UNVERIFIED",
       "evidence": [],
       "repositoryId": "1421529840"
+    },
+    {
+      "name": "oreslang-ml",
+      "repositoryId": "1423913534",
+      "ref": "main",
+      "commit": "77893de4fb1f5a6b92e189f2a5f51ae520b22723",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
+      "name": "oreslang-ml-conformance",
+      "repositoryId": "1423913837",
+      "ref": "main",
+      "commit": "dd1157e95de7ce31274ef665eb6ce728f51c1617",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
     },
     {
       "name": "oreslang-otel",
@@ -363,6 +387,14 @@
       "repositoryId": "1413794870"
     },
     {
+      "name": "oreslang-tensor",
+      "repositoryId": "1423912926",
+      "ref": "main",
+      "commit": "823825ae42797023536b711df5055998df23a704",
+      "compatibility": "UNVERIFIED",
+      "evidence": []
+    },
+    {
       "name": "oreslang-test.cli",
       "ref": "main",
       "commit": "f03cba4b73babfd943c1805d2284daeba0a933b6",
@@ -427,5 +459,5 @@
       "repositoryId": "1402488145"
     }
   ],
-  "inventoryGitBlobSha": "43c61cc0b3917d94c4ae0c8c8ac098bb119d6edf"
+  "inventoryGitBlobSha": "26db8e19df419310150cfe8c870c59ee04eae3e7"
 }
