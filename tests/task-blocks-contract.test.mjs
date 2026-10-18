@@ -159,9 +159,9 @@ test("borrow and move negative fixtures cannot be classified as passes", async (
 
 test("cancellation and actual cleanup join are distinct guest contracts, not executable yet", async () => {
   const file = await readFile(new URL("task-cancel-and-join.ores", base), "utf8");
-  assert.match(file, /let Task<int> job = nb task\\s*\\{/);
-  assert.match(file, /job\\.cancel\\(\\);/);
-  assert.match(file, /await job\\.get_done\\(\\);/);
+  assert.match(file, /let Task<int> job = nb task\s*\{/);
+  assert.match(file, /job\.cancel\(\);/);
+  assert.match(file, /await job\.get_done\(\);/);
   const entry = contract.cases.find(c => c.id === "task-cancel-and-join");
   assert.equal(entry.parserExpected, "accept");
   assert.equal(entry.runtimeExpected, "pending");
