@@ -247,6 +247,34 @@
       "syntax": "expression",
       "parserExpected": "accept",
       "runtimeExpected": "reject"
+    },
+    {
+      "id": "reject-typed-callback-suspends",
+      "file": "reject-typed-callback-suspends.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
+    },
+    {
+      "id": "reject-mutex-callback-suspends",
+      "file": "reject-mutex-callback-suspends.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
+    },
+    {
+      "id": "reject-firstclass-suspends",
+      "file": "reject-firstclass-suspends.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
+    },
+    {
+      "id": "reject-static-suspends-fnc",
+      "file": "reject-static-suspends-fnc.ores",
+      "syntax": "expression",
+      "parserExpected": "accept",
+      "runtimeExpected": "reject"
     }
   ]
 }
