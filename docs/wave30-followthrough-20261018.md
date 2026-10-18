@@ -8,13 +8,13 @@
 
 | Repository / issue | Draft PR | Current evidence | Still required |
 | --- | --- | --- | --- |
-| oreslang-common-source #79 | [#87](https://github.com/ores-truffle-oreslang/oreslang-common-source/pull/87) | 9/9 exact-blob CPython ledger/stress tests; 15,000 additional seeded streams checked; source-side IPC workflow has zero executed steps | Native transport, Java/LLVM integration, authenticated control frames, executed CI |
-| oreslang-platform.embedded #19 | [#22](https://github.com/ores-truffle-oreslang/oreslang-platform.embedded/pull/22) | 6/6 exact-blob CPython tests for ARM ELF descriptor admission, missing symbols, symlink/FIFO paths | Trusted pinned nm provenance, Cortex-M target, allocator/IR proof, CI |
+| oreslang-common-source #79 | [#87](https://github.com/ores-truffle-oreslang/oreslang-common-source/pull/87) | 13/13 exact-blob CPython ledger/stress unit tests; 8,000 additional scenarios / 320,000 operations checked; source-side IPC workflow has zero executed steps | Native transport, Java/LLVM integration, authenticated control frames, executed CI |
+| oreslang-platform.embedded #19 | [#22](https://github.com/ores-truffle-oreslang/oreslang-platform.embedded/pull/22) | 8/8 exact-blob CPython tests for ARM ET_EXEC admission, malformed architectures, symlink/FIFO paths | Trusted pinned nm provenance, Cortex-M target, allocator/IR proof, CI |
 | oreslang-source.hdl #6/#7 | [#14](https://github.com/ores-truffle-oreslang/oreslang-source.hdl/pull/14) | 13/13 exact-blob CPython manifest/regression tests (7 baseline + 6 new) | Actual HLS compiler, synthesis/equivalence, executed CI |
-| oreslang-data-science #9 | [#12](https://github.com/ores-truffle-oreslang/oreslang-data-science/pull/12) | 10/10 prior reference unit tests and randomized bounds checking | Real NdArray<T> compiler ABI and Java/LLVM parity |
-| rx-ores #10 | [#16](https://github.com/ores-truffle-oreslang/rx-ores/pull/16) | Reference-only demand, termination and cancellation model | Separate fourth real ReadableStream/WritableStream Oreslang prototype |
+| oreslang-data-science #9 | [#12](https://github.com/ores-truffle-oreslang/oreslang-data-science/pull/12) | 6,000 seeded accepted/rejected mutable-layout cases and 16,793 exhaustively enumerated accepted strided layouts, using exact-source reproduction | Real NdArray<T> compiler ABI and Java/LLVM parity |
+| rx-ores #10 | [#16](https://github.com/ores-truffle-oreslang/rx-ores/pull/16) | Reference-only demand, termination and cancellation model; exact-source 81,920 seeded operations passed | Separate fourth real ReadableStream/WritableStream Oreslang prototype |
 | oreslang-proof-of-concepts #6 | [#13](https://github.com/ores-truffle-oreslang/oreslang-proof-of-concepts/pull/13) | Bounded mailbox source model with local finite-state checks | Runtime/scheduler fault injection and formal state-space extension |
-| oreslang-source.wasm #88 | [#101](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/101) | 10/10 isolated V8 SIMD admission checks; current-main diff | Real SIMD opcode emission, benchmark parity and source-backed Wasm receipts |
+| oreslang-source.wasm #88 | [#101](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/101) | 18/18 isolated V8 SIMD admission checks; exact source in current main | Real SIMD opcode emission, benchmark parity and source-backed Wasm receipts |
 
 ## Reconciliation outcome
 
