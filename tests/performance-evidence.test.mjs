@@ -57,10 +57,29 @@ test('FPGA P&R requires real artifact reference',()=>{
   assert.equal(validatePerformanceEvidence(r).performance_claim_certified,false);
   r.evidence.pop();assert.throws(()=>validatePerformanceEvidence(r));
 });
-test('ASIC power needs a model reference',()=>{
+test('ASIC silicon cannot be certified MEASURED without a silicon evidence protocol',()=>{
   const r=ready();r.family='asic';r.backend='asic';r.kind='power';r.unit='mW';
-  assert.throws(()=>validatePerformanceEvidence(r));
   r.evidence.push(evidence('power-model'));
+  assert.throws(()=>validatePerformanceEvidence(r),/ASIC measured silicon/);
+});
+test('ASIC mapped power requires both synthesis and a power model',()=>{
+  const r=ready('SYNTH_ONLY');r.family='asic';r.backend='asic';r.kind='power';
+  r.unit='mW';r.samples=[1];r.evidence=[evidence('correctness'),evidence('synthesis')];
+  assert.throws(()=>validatePerformanceEvidence(r),/power-model/);
+  r.evidence.push(evidence('power-model'));
+  assert.equal(validatePerformanceEvidence(r).performance_claim_certified,false);
+});
+test('software MEASURED may not claim a benchmark using only board evidence',()=>{
+  const r=ready();r.evidence=[evidence('correctness'),evidence('board')];
+  assert.throws(()=>validatePerformanceEvidence(r),/software measurement requires benchmark/);
+});
+test('FPGA MEASURED requires placement, real board and benchmark artifacts',()=>{
+  const r=ready();r.family='fpga';r.backend='fpga';r.kind='fmax';r.unit='MHz';
+  r.evidence=[evidence('correctness'),evidence('benchmark')];
+  assert.throws(()=>validatePerformanceEvidence(r),/FPGA measurement/);
+  r.evidence.push(evidence('place-route'));
+  assert.throws(()=>validatePerformanceEvidence(r),/FPGA measurement/);
+  r.evidence.push(evidence('board'));
   assert.equal(validatePerformanceEvidence(r).performance_claim_certified,false);
 });
 test('CLI cannot turn structural validation into a green release gate',()=>{
