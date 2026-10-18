@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  loadCompatibilityCandidate, loadCandidateInventory, validateCompatibilityCandidate, canonicalInventoryGitBlobSha
+  loadCompatibilityCandidate, loadCandidateInventory, validateCompatibilityCandidate, canonicalInventoryGitBlobSha, parseCanonicalJson
 } from "../src/compatibility-release.mjs";
 
 const manifest = loadCompatibilityCandidate();
@@ -103,4 +103,16 @@ test("lockfile binds entire dependency graph, not just repository names", () => 
   assert.throws(() => validateCompatibilityCandidate(altered(d => {
     delete d.inventoryGitBlobSha;
   }), inventory), /unexpected or missing properties/);
+});
+
+test("reject duplicate JSON keys, reordered props and whitespace before digest checking", () => {
+  const raw = JSON.stringify(inventory, null, 2) + "\n";
+  assert.deepEqual(parseCanonicalJson(raw, "inventory"), inventory);
+  const duplicateKey = raw.replace('"schemaVersion": 1,', '"schemaVersion": 999,\n  "schemaVersion": 1,');
+  assert.throws(() => parseCanonicalJson(duplicateKey, "inventory"), /non-canonical JSON/);
+  assert.throws(() => parseCanonicalJson(raw.slice(0, -1), "inventory"), /non-canonical JSON/);
+  assert.throws(() => parseCanonicalJson(raw.replace("  \"organization\"", "    \"organization\""), "inventory"), /non-canonical JSON/);
+  assert.throws(() => parseCanonicalJson("  " + raw, "inventory"), /non-canonical JSON/);
+  assert.throws(() => parseCanonicalJson("{}", "inventory"), /non-canonical JSON/);
+  assert.throws(() => parseCanonicalJson(null, "inventory"), /missing or oversized/);
 });
