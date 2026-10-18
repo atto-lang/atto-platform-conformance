@@ -24,6 +24,15 @@ const PINNED_SOURCE_IDENTITIES=Object.freeze({
   "ores-truffle-oreslang/oreslang-source.wasm":1419858954,
   "ores-truffle-oreslang/oreslang-source.forge":1419703674
 });
+// Reviewed immutable workflow identities: GitHub Actions app ID and check name
+// alone cannot authenticate what instructions the status-producing job ran.
+const PINNED_POLICY_WORKFLOW_BLOBS=Object.freeze({
+  "ores-truffle-oreslang/oreslang-source.java":"d4b1356249534e4dc55e9aeabfad80773016cd48",
+  "ores-truffle-oreslang/oreslang-source.llvm":"78f7eb2aeb148598c43479bda446a258541f0483",
+  "ores-truffle-oreslang/oreslang-source.net":"78f7eb2aeb148598c43479bda446a258541f0483",
+  "ores-truffle-oreslang/oreslang-source.wasm":"78f7eb2aeb148598c43479bda446a258541f0483",
+  "ores-truffle-oreslang/oreslang-source.forge":"78f7eb2aeb148598c43479bda446a258541f0483"
+});
 const OID=/^[0-9a-f]{40}$/;
 const EXPECTED_OWNER="@ORESoftware";
 const EXPECTED_CHECK=Object.freeze({context:"private-ci-policy",appId:15368});
@@ -227,8 +236,14 @@ export async function auditRepository(repo,{token,fetchImpl=fetch}={}){
     file(".github/private-ci-approved-source-snapshots.txt"),
     file(".github/private-ci-required-checks.json")
   ]);
-  // Existence + blob integrity of the protected workflow is part of the trust root.
-  await file(".github/workflows/private-ci-policy.yml");
+  // Pin the *reviewed instructions* of the trusted check: an attacker could
+  // otherwise replace the workflow with a passing no-op job under the same
+  // check name and GitHub Actions issuer, despite valid CODEOWNERS metadata.
+  const workflowPath=".github/workflows/private-ci-policy.yml";
+  const workflowResponse=await getJson(base+"/contents/"+workflowPath+"?ref="+protectedSha,token,fetchImpl);
+  decodePolicy(workflowResponse,workflowPath);
+  if(workflowResponse.sha!==PINNED_POLICY_WORKFLOW_BLOBS[repo])
+    error(repo+" policy workflow differs from independently reviewed immutable Git blob");
   auditCodeowners(codeowners,repo);
   auditProtection(protection);
   auditRequiredChecks(requiredChecks,protection,repo);
