@@ -223,7 +223,8 @@ test("Java source bootstrap also pins its distinct reviewed workflow",async()=>{
 test("unprotected main fails before protection or policy files are read",async()=>{
   const calls=[];
   await assert.rejects(run({branch:{name:"main",protected:false,commit:{sha:SHA}}},calls),/main is not protected/);
-  assert.equal(calls.length,2); // identity first, then main branch; no policy read
+  assert.equal(calls.length,3); // repository ID, live CODEOWNER permission, then main; no policy file read
+  assert.equal(calls[1].url.endsWith("/collaborators/ORESoftware/permission"),true);
 });
 
 test("review, admin enforcement and bypass requirements fail closed",()=>{
@@ -411,7 +412,7 @@ test("bootstrap parser rejects boolean schema and ambiguous policy lines",()=>{
 });
 
 test("GitHub policy file decoder rejects BOM and NUL bytes before policy admission",async()=>{
-  for(const bad of ["\\ufeff"+checks, checks+"\\u0000"]){
+  for(const bad of [String.fromCharCode(0xFEFF)+checks, checks+String.fromCharCode(0)]){
     await assert.rejects(run({checks:bad}),/forbidden BOM\/NUL bytes/);
   }
 });
