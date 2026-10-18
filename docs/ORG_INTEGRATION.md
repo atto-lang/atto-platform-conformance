@@ -12,10 +12,15 @@ This is a **private planning and structural-admission catalog** for 52 GitHub re
 - 44 repositories are private, 8 public in this snapshot. Catalog and validation remain inside a private repo; do not publish private source, manifests containing sensitive code, or private test artifacts.
 - Incident [platform-conformance #22](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22) remains open. **Do not clone or mirror private sources to another org or test carrier** except after the independent, exact-head, protected authorization process has explicitly allowed that specific action and destination. No integration test here copies source between repos.
 
+## Immutable candidate pins
+
+The organization-wide candidate lockfile is [`compatibility-candidate.v1.json`](../integration/compatibility-candidate.v1.json). It selects one complete Git commit per repository **without implying that the commits have been tested together**. The independent [candidate policy](COMPATIBILITY_MANIFEST.md) explains the evidence and incident prerequisites. This lockfile deliberately cannot be promoted by editing a status field.
+
 ## Run checks
 
 ```sh
 node bin/check-org-integration.mjs
+node bin/check-compatibility-release.mjs
 npm test
 ```
 
