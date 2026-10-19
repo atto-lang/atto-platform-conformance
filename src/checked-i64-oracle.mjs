@@ -9,6 +9,7 @@ import {Buffer} from 'node:buffer';
 export const I64_MIN=-(1n<<63n);
 export const I64_MAX=(1n<<63n)-1n;
 export const CHECKED_I64_CONTRACT='checked-i64-v1';
+export const CHECKED_I64_SOURCE_DIRECTIVE='// oreslang:checked-i64-v1\n';
 const MAX_DEPTH=64, MAX_NODES=256, MAX_JSON_BYTES=16384;
 const OPS=new Set(['neg','add','sub','mul','rem','div_trunc']);
 const SIGNS={add:'+',sub:'-',mul:'*',rem:'%'};
@@ -114,7 +115,9 @@ export function evaluateCheckedI64(expr) {
 // Deterministic fixture integrity witness: the guest source is derived from
 // the same expression tree and cannot secretly execute a different program.
 // null means that the abstract integer-quotient op has no Oreslang mapping.
-export function renderCheckedI64GuestSource(expr) {
+export function renderCheckedI64GuestSource(expr,profile='portable-default') {
+  if(profile!=='portable-default'&&profile!=='checked-i64-v1')
+    throw TypeError('unsupported checked-i64 source profile');
   const code=boundedWalk(expr,{
     literal:v=>v,
     operation:(op,args)=>{
@@ -123,7 +126,9 @@ export function renderCheckedI64GuestSource(expr) {
       return '('+args[0]+' '+SIGNS[op]+' '+args[1]+')';
     }
   });
-  return code===null?null:'pub fnc main(): int { return '+code+'; }\n';
+  return code===null?null:
+    (profile==='checked-i64-v1'?CHECKED_I64_SOURCE_DIRECTIVE:'')+
+    'pub fnc main(): int { return '+code+'; }\n';
 }
 
 // Strict text-only entry. Canonical JSON excludes duplicated fields, aliases
