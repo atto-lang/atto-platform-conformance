@@ -62,3 +62,48 @@ test("foreign owner, generation and epoch are denied",()=>{
   assert.throws(()=>b.require(owner,"epoch-A",72),/foreign/);
   assert.throws(()=>b.require(owner,"epoch-B",71),/foreign/);
 });
+
+
+test("physical bridge binding is one-shot and disables legacy mutation",()=>{
+  const g=new PhysicalBindingOracle(),owner={id:"a"},epoch="e";
+  assert.equal(g.legacyAllowed(),true);
+  g.claim(owner,epoch,11);
+  assert.equal(g.legacyAllowed(),false);
+  assert.equal(g.mutate(owner,epoch,11),true);
+  assert.throws(()=>g.claim(owner,epoch,11),/rebind/);
+  assert.throws(()=>g.claim({id:"b"},epoch,12),/rebind/);
+  assert.deepEqual(g.state(),{bound:true,generation:11,retired:false});
+});
+
+test("foreign owner generation and epoch cannot mutate or retire bound bridge",()=>{
+  const g=new PhysicalBindingOracle(),owner={},foreign={};
+  g.claim(owner,"current",21);
+  assert.throws(()=>g.mutate(foreign,"current",21),/foreign/);
+  assert.throws(()=>g.mutate(owner,"current",22),/foreign/);
+  assert.throws(()=>g.mutate(owner,"old",21),/foreign/);
+  assert.throws(()=>g.retire(foreign,"current",21),/foreign/);
+  assert.deepEqual(g.state(),{bound:true,generation:21,retired:false});
+});
+
+test("retirement never permits bridge rebind or post-retirement mutation",()=>{
+  const g=new PhysicalBindingOracle(),owner={};
+  g.claim(owner,"e",31);
+  g.retire(owner,"e",31);
+  assert.deepEqual(g.state(),{bound:true,generation:31,retired:true});
+  assert.throws(()=>g.mutate(owner,"e",31),/retired/);
+  assert.throws(()=>g.claim({}, "e",32),/rebind/);
+});
+
+test("100000 reconnects require 100000 fresh bridge instances",()=>{
+  let previous=null;
+  for(let generation=1;generation<=100000;generation++){
+    const g=new PhysicalBindingOracle(),owner={generation};
+    g.claim(owner,"e",generation);
+    g.mutate(owner,"e",generation);
+    g.retire(owner,"e",generation);
+    if(previous)
+      assert.throws(()=>previous.claim(owner,"e",generation),/rebind/);
+    assert.equal(g.state().retired,true);
+    previous=g;
+  }
+});
