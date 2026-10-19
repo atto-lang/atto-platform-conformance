@@ -30,10 +30,17 @@ function parseTree(snapshot) {
   return entries;
 }
 
-export function triageCarrierTree(snapshot, reviewedPin = null) {
+export function triageCarrierTree(snapshot, reviewedPin = null, knownPrivateBlobShas = []) {
   const entries = parseTree(snapshot);
   const base = {authorizes_source_transfer:false,certifies_source_free:false};
   if (!entries) return {...base,classification:'UNVERIFIABLE_TREE',reason:'incomplete or malformed immutable tree evidence'};
+  if (!Array.isArray(knownPrivateBlobShas) || knownPrivateBlobShas.length > 10000 ||
+      !knownPrivateBlobShas.every(sha => typeof sha === 'string' && SHA.test(sha)))
+    return {...base,classification:'UNVERIFIABLE_FINGERPRINTS',reason:'invalid private-blob inventory'};
+  const fingerprints = new Set(knownPrivateBlobShas);
+  const matches = entries.filter(e => e.type === 'blob' && fingerprints.has(e.sha));
+  if (matches.length) return {...base,classification:'MATCHES_REPORTED_PRIVATE_BLOB',matched_count:matches.length,
+    reason:'private-source fingerprint match requires independent provenance and containment review'};
   const suspicious = entries.filter(e => e.type === 'blob' && (CODE.test(e.path) || CODE_AREA.test(e.path)));
   if (suspicious.length) return {...base,classification:'POTENTIAL_SOURCE_BEARING',suspicious_count:suspicious.length,
     reason:'source-like content or location; preserve refs for independent forensics'};
