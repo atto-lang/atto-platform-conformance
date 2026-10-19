@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {HotUpgradeGate,IpcReceiptLedger,StageDoneGate,WireMemoryLedger}
+import {HotUpgradeGate,IpcReceiptLedger,StageDoneGate,WireMemoryLedger,EdgeCreditGate}
   from "../src/actor-upgrade-ipc-reference.mjs";
 const code1="1".repeat(64),code2="2".repeat(64),ABI="a".repeat(64);
 const STATE="b".repeat(64),SHARED="c".repeat(64),POLICY="d".repeat(64);
@@ -277,4 +277,87 @@ test("resource byte charges must be positive safe integers",()=>{
   for(const bad of [0,-1,0.5,Number.MAX_SAFE_INTEGER+1]){
     assert.throws(()=>ledger.reserve(bad),/charge/);
   }
+});
+
+test("edge credit commits only capacity-one first producer",()=>{
+  const edge=new EdgeCreditGate({capacity:1,maxWaiters:2});
+  const a=edge.request(),b=edge.request();
+  assert.equal(edge.status(a),"COMMITTED");
+  assert.equal(edge.status(b),"WAITING");
+  assert.equal(edge.inspect().queued,1);
+  assert.equal(edge.inspect().waiting,1);
+});
+test("edge cancellation before commit returns credit without ghost delivery",()=>{
+  const edge=new EdgeCreditGate({capacity:1,maxWaiters:2});
+  const a=edge.request(),b=edge.request();
+  assert.equal(edge.cancel(b),true);
+  assert.equal(edge.status(b),"CANCELLED");
+  assert.equal(edge.dequeue(),a);
+  assert.equal(edge.inspect().queued,0);
+  assert.equal(edge.status(a),"DELIVERED");
+});
+test("edge cancellation after commit cannot reclaim transferred ownership",()=>{
+  const edge=new EdgeCreditGate({capacity:1});
+  const a=edge.request();
+  assert.equal(edge.cancel(a),false);
+  assert.equal(edge.status(a),"COMMITTED");
+  assert.equal(edge.dequeue(),a);
+});
+test("FIFO edge wakeup after capacity releases",()=>{
+  const edge=new EdgeCreditGate({capacity:1,maxWaiters:3});
+  const a=edge.request(),b=edge.request(),c=edge.request();
+  assert.equal(edge.dequeue(),a);
+  assert.equal(edge.status(b),"COMMITTED");
+  assert.equal(edge.status(c),"WAITING");
+  assert.equal(edge.dequeue(),b);
+  assert.equal(edge.dequeue(),c);
+});
+test("bounded edge waiter capacity returns null without allocating",()=>{
+  const edge=new EdgeCreditGate({capacity:1,maxWaiters:1});
+  edge.request();edge.request();
+  assert.equal(edge.request(),null);
+  assert.equal(edge.inspect().waiting,1);
+});
+test("edge STOP cancels only waiters; committed frames stay reserved",()=>{
+  const edge=new EdgeCreditGate({capacity:1,maxWaiters:2});
+  const a=edge.request(),b=edge.request();
+  edge.stop();
+  assert.equal(edge.status(a),"COMMITTED");
+  assert.equal(edge.status(b),"CANCELLED");
+  assert.equal(edge.inspect().queued,1);
+  assert.throws(()=>edge.request(),/sealed/);
+  edge.retireCommitted(a);
+  assert.equal(edge.status(a),"RETIRED");
+  assert.equal(edge.inspect().queued,0);
+});
+test("double retire and queue underflow reject",()=>{
+  const edge=new EdgeCreditGate({capacity:1});
+  assert.throws(()=>edge.dequeue(),/underflow/);
+  const a=edge.request();edge.retireCommitted(a);
+  assert.throws(()=>edge.retireCommitted(a),/foreign\/double/);
+  assert.throws(()=>edge.dequeue(),/underflow/);
+});
+test("edge tokens are instance-bound and cannot be forged",()=>{
+  const a=new EdgeCreditGate({capacity:1}),b=new EdgeCreditGate({capacity:1});
+  const x=a.request(),y=b.request();
+  assert.equal(b.status(x),"UNKNOWN");
+  assert.throws(()=>b.cancel(x),/foreign/);
+  assert.equal(b.status(y),"COMMITTED");
+});
+test("edge credit saturation and cancellation churn preserves queue bound",()=>{
+  let seed=31;const rand=()=>{seed=(Math.imul(seed,1103515245)+12345)>>>0;return seed;};
+  const edge=new EdgeCreditGate({capacity:3,maxWaiters:11}),all=[];
+  for(let i=0;i<6000;i++){
+    const r=rand()%5;
+    if(r<=2){const t=edge.request();if(t)all.push(t);}
+    else if(r===3){
+      const waiter=all.find(t=>edge.status(t)==="WAITING");
+      if(waiter)edge.cancel(waiter);
+    }else if(edge.inspect().queued)edge.dequeue();
+    const inspect=edge.inspect();
+    assert.ok(inspect.queued<=3&&inspect.waiting<=11);
+  }
+  edge.stop();
+  while(edge.inspect().queued)edge.dequeue();
+  assert.equal(edge.inspect().waiting,0);
 });
