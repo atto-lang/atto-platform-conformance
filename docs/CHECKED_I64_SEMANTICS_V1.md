@@ -77,7 +77,7 @@ The JS Program IR's provisional tag should map to this contract only
 after peer review; do not silently reuse or re-label existing artifacts.
 
 The data-oracle vectors in `fixtures/checked-i64-v1.json` and
-`src/checked-i64-oracle.mjs` validate the *mathematical contract only*.
+`src/checked-i64-oracle.mjs` validate the *mathematical contract only*. The fixture bytes are pinned to Git blob `44224caf6f6c76dedff429a47d51edc926830fdc` and the test suite independently checks every `guestSource` against a deterministic Oreslang source renderer. Source/AST divergence is a test failure. The oracle's `evaluateCheckedI64Json` entrance accepts bounded canonical JSON strings; arbitrary live objects and Proxy traps are not a safe cross-boundary input format.
 They do not execute any Oreslang compiler or establish Java, LLVM or Node
 backend parity.
 
