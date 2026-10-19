@@ -100,6 +100,8 @@ export class TrustedFdAliasModel {
   constructor(limit=64){check(positive(limit)&&limit<=4096,"FD watcher capacity");this.#limit=limit;}
   open(fd){
     check(nonnegative(fd)&&fd<=1048576,"invalid OS fd");
+    check(this.#handles.size<4*this.#limit,"bounded FD handle inventory");
+    check(this.#next<Number.MAX_SAFE_INTEGER,"FD capability identity overflow");
     const handle=Object.freeze({fdHandle:++this.#next});
     const description=Object.freeze({openDescription:this.#next});
     this.#handles.set(handle,{fd,description,closed:false});
@@ -108,6 +110,8 @@ export class TrustedFdAliasModel {
   duplicate(handle,newFd){
     const old=this.#require(handle);check(!old.closed,"duplicate closed handle");
     check(nonnegative(newFd)&&newFd<=1048576,"invalid dup fd");
+    check(this.#handles.size<4*this.#limit,"bounded FD handle inventory");
+    check(this.#next<Number.MAX_SAFE_INTEGER,"FD alias identity overflow");
     const next=Object.freeze({fdHandle:++this.#next});
     this.#handles.set(next,{fd:newFd,description:old.description,closed:false});
     return next;
@@ -123,6 +127,7 @@ export class TrustedFdAliasModel {
     check(this.#watches.size<this.#limit,"FD watcher capacity exhausted");
     check(!this.#cap.has(v.description),"duplicated open-file description watch");
     check(!this.#numbers.has(v.fd),"same numeric FD already watched");
+    check(this.#next<Number.MAX_SAFE_INTEGER,"FD watcher identity overflow");
     const t=Object.freeze({watchTicket:++this.#next});
     this.#watches.set(t,{description:v.description,fd:v.fd});
     this.#cap.set(v.description,t);this.#numbers.set(v.fd,t);return t;
