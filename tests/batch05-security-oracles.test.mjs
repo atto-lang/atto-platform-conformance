@@ -140,10 +140,15 @@ test("unrelated eventfds are distinct despite matching anon_inode metadata",()=>
   fd.watch(a);fd.watch(b);
   assert.equal(fd.inspect().watches,2);
 });
-test("same numeric fd must not be watched twice under new identity",()=>{
-  const fd=new TrustedFdAliasModel(),a=fd.open(9),b=fd.open(9);
-  fd.watch(a);
-  assert.throws(()=>fd.watch(b),/same numeric/);
+test("same live numeric FD cannot mint a second trusted open description",()=>{
+  const fd=new TrustedFdAliasModel(),a=fd.open(9);
+  assert.throws(()=>fd.open(9),/already live/);
+  assert.throws(()=>fd.duplicate(a,9),/already live/);
+  const t=fd.watch(a);
+  assert.equal(fd.inspect().openHandles,1);
+  fd.retire(t);fd.close(a);
+  const reopened=fd.open(9);
+  assert.ok(fd.watch(reopened));
 });
 test("FD reuse after retirement is safe, stale handle can't revive",()=>{
   const fd=new TrustedFdAliasModel(),a=fd.open(9),ticket=fd.watch(a);
@@ -292,4 +297,25 @@ test("trusted alias allocation is also bounded by open FD inventory",()=>{
   assert.throws(()=>fd.duplicate(h,9),/bounded FD handle inventory/);
   aliases.forEach(x=>fd.close(x));
   fd.close(h);
+});
+
+test("dup of an occupied FD number is never a silent dup2 authority overwrite",()=>{
+  const fd=new TrustedFdAliasModel(),a=fd.open(5),b=fd.open(6);
+  assert.throws(()=>fd.duplicate(a,6),/already live/);
+  assert.equal(fd.inspect().openHandles,2);
+  const t=fd.watch(b);
+  assert.equal(fd.inspect().watches,1);
+  fd.retire(t);fd.close(a);fd.close(b);
+});
+test("numeric FD reuse remains fenced while any prior alias owns that number",()=>{
+  const fd=new TrustedFdAliasModel(),a=fd.open(10),duplicate=fd.duplicate(a,12);
+  fd.close(a);
+  const recreated=fd.open(10); // distinct kernel open description after close
+  assert.ok(fd.watch(recreated));
+  assert.throws(()=>fd.open(12),/already live/);
+  const other=fd.watch(duplicate);
+  assert.equal(fd.inspect().watches,2);
+  fd.retire(other);fd.close(duplicate);
+  const newTwelve=fd.open(12);
+  assert.ok(fd.watch(newTwelve));
 });
