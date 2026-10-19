@@ -5,9 +5,10 @@
 ## What is actually implemented here
 
 - A bounded, executable vector-clock reference oracle (\`src/concurrency-observation-oracles.mjs\`) for supplied synthetic READ/WRITE, spawn/join, mutex, channel, completion, and cancellation events. It derives clocks instead of trusting timestamps or caller-supplied vectors.
+- A conservative observed-wait graph oracle: AND/ALL dependencies may form an observed cycle, while OR/select, timeouts, cancellations and external producers cannot become false definite-deadlock claims.
 - A scoped-Task lifecycle automaton that rejects \`get_done\` or scope completion before physical exit, plus duplicate exits, unowned children, cancellation-as-exit, and post-scope events.
 - A structured bounded causal-diagnostic shape check. Whitelisted error codes, relative source paths, typed boundary names, opaque correlations, strict fields, and explicit truncation prevent accidental inclusion of raw payloads/host stacks.
-- Regression fixtures for true and false race positives, data generation reuse, independent scheduling, sync edges, cancellation, physical quiescence, and diagnostic redaction.
+- Regression fixtures for observed wait cycles, OR-select/timeouts, true and false race positives, data generation reuse, independent scheduling, sync edges, cancellation, physical quiescence, and diagnostic redaction.
 - An independently tracked ten-item JSON backlog (\`audits/batch-02-test-work.json\`) that explicitly leaves every **guest-execution release gate pending**.
 
 These reference oracles **cannot prove** actual source instrumentation, correct runtime scheduling, the absence of races in an Oreslang program, exhaustive deadlock freedom, or cross-backend parity. Host-only synthetic success must not be reported as Oreslang \`--race\` passing. The Java and LLVM compiler integration issues remain open.
@@ -42,7 +43,7 @@ These reference oracles **cannot prove** actual source instrumentation, correct 
 
 Original issue #92 has historic mirror-testing language. Its requirements do **not** override current [private-source incident #22](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22), [private-carrier incident #77](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/77), [bootstrap #69](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/69) or the empty protected-main source-transfer authorization lists. Funded alternative-org Actions capacity does **not** authorize copying private compiler source.
 
-To exercise this source-free reference code with a real Node.js runner:
+To exercise these source-free reference oracles and release-gate inventory with a real Node.js runner:
 
 \`\`\`sh
 node --test tests/concurrency-observation-oracles.test.mjs
