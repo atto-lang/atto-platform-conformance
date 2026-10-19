@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   HierarchicalOutboundQuotaModel, TrustedFdAliasModel,
-  TrainingControlModel, transportActorAdmission
+  TrainingControlModel, transportActorAdmission, projectClosureBindings, receiptOriginDecision
 } from "../src/batch05-security-oracles.mjs";
 
 const scope=(kind,over={})=>({kind,id:"host-"+kind,
@@ -235,4 +235,46 @@ test("conservative local-mail result is not proof runtime guest compiled",()=>{
 test("guest cannot attach unrecognized execution authority fields",()=>{
   assert.throws(()=>transportActorAdmission({transport:"ipc",role:"actor",serial:false,
     requires:[],with:[],authenticated:true}),/fields/);
+});
+
+test("unreferenced actor self and host capability are omitted from closure",()=>{
+  const available=[
+    {binding:"b1",spelling:"count",kind:"ordinary"},
+    {binding:"b2",spelling:"self",kind:"self"},
+    {binding:"b3",spelling:"broker",kind:"capability"}
+  ];
+  assert.deepEqual(projectClosureBindings({available,referenced:["b1"]}),
+    [available[0]]);
+});
+test("shadowed same-name lexical slots are distinct by binding identity",()=>{
+  const available=[
+    {binding:"outer1",spelling:"x",kind:"ordinary"},
+    {binding:"inner1",spelling:"x",kind:"ordinary"}
+  ];
+  assert.deepEqual(projectClosureBindings({available,referenced:["inner1"]}),
+    [available[1]]);
+});
+test("explicit construction-stage receiver cannot escape to closure",()=>{
+  const available=[{binding:"construction1",spelling:"self",kind:"constructorSelf"}];
+  assert.throws(()=>projectClosureBindings({available,referenced:["construction1"]}),
+    /constructing self/);
+});
+test("unresolved binding and guest-provided capture metadata fail closed",()=>{
+  const available=[{binding:"b1",spelling:"a",kind:"ordinary"}];
+  assert.throws(()=>projectClosureBindings({available,referenced:["ghost"]}),/unresolved/);
+  assert.throws(()=>projectClosureBindings({available:[{...available[0],trusted:true}],
+    referenced:["b1"]}),/fields/);
+});
+test("authenticated peer cannot claim OUTCOME_UNKNOWN local transport failure",()=>{
+  assert.equal(receiptOriginDecision({source:"authenticated-peer",stage:"OUTCOME_UNKNOWN"}),
+    "DENY");
+  assert.equal(receiptOriginDecision({source:"trusted-local-transport",
+    stage:"OUTCOME_UNKNOWN"}),"ADMISSIBLE_ORIGIN_ONLY");
+});
+test("local transport cannot forge remote handler commit or ACK",()=>{
+  for(const stage of ["REMOTE_ACCEPTED","HANDLER_COMMITTED","HANDLER_FAILED"])
+    assert.equal(receiptOriginDecision({source:"trusted-local-transport",stage}),
+      "DENY");
+  assert.equal(receiptOriginDecision({source:"authenticated-peer",
+    stage:"HANDLER_COMMITTED"}),"ADMISSIBLE_ORIGIN_ONLY");
 });
