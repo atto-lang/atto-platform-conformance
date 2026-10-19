@@ -189,7 +189,11 @@ export class StageDoneGate {
     requireOk(pos(count)&&count<=1024,"bounded stages");
     this.#stages=new Set(Array.from({length:count},(_,i)=>i+1));
   }
-  addFrame(){requireOk(this.#stages.size>0,"closed pipeline");this.#frames++;}
+  addFrame(){
+    requireOk(this.#stages.size>0&&this.#frames<4096,
+      "closed pipeline or route frame budget exceeded");
+    this.#frames++;
+  }
   retireFrame(){requireOk(this.#frames>0,"double route frame retirement");this.#frames--;}
   failed(stage,code){
     requireOk(this.#stages.has(stage)&&validId(code),"invalid stage failure");
@@ -250,7 +254,11 @@ export class WireMemoryLedger {
  */
 export class EdgeCreditGate {
   #capacity;#waiterCap;#queued=[];#waiting=[];#seq=0;#sealed=false;
-  #states=new Map();
+  #states=new Map();#completed=[];
+  #terminal(t,state){
+    this.#states.set(t,state);this.#completed.push(t);
+    if(this.#completed.length>256)this.#states.delete(this.#completed.shift());
+  }
   constructor({capacity,maxWaiters=64}={}){
     requireOk(pos(capacity)&&capacity<=4096&&pos(maxWaiters)&&maxWaiters<=4096,
       "bounded edge capacity");
@@ -274,14 +282,14 @@ export class EdgeCreditGate {
     if(state!=="WAITING")return false; // committed transfer irreversible
     const index=this.#waiting.indexOf(t);
     requireOk(index>=0,"edge wait queue corrupted");
-    this.#waiting.splice(index,1);this.#states.set(t,"CANCELLED");
+    this.#waiting.splice(index,1);this.#terminal(t,"CANCELLED");
     return true;
   }
   dequeue(){
     requireOk(this.#queued.length>0,"edge credit underflow");
     const t=this.#queued.shift();
     requireOk(this.#states.get(t)==="COMMITTED","edge commit mismatch");
-    this.#states.set(t,"DELIVERED");
+    this.#terminal(t,"DELIVERED");
     this.#promote();
     return t;
   }
@@ -295,7 +303,7 @@ export class EdgeCreditGate {
   }
   stop(){
     this.#sealed=true;
-    for(const t of this.#waiting)this.#states.set(t,"CANCELLED");
+    for(const t of this.#waiting)this.#terminal(t,"CANCELLED");
     this.#waiting.length=0;
     // Committed DATA remains counted until explicit dequeue/retirement.
   }
@@ -303,11 +311,11 @@ export class EdgeCreditGate {
     const index=this.#queued.indexOf(t);
     requireOk(index>=0&&this.#states.get(t)==="COMMITTED",
       "foreign/double edge retirement");
-    this.#queued.splice(index,1);this.#states.set(t,"RETIRED");
+    this.#queued.splice(index,1);this.#terminal(t,"RETIRED");
     this.#promote();
   }
   status(t){return this.#states.get(t)??"UNKNOWN";}
   inspect(){return Object.freeze({queued:this.#queued.length,
-    waiting:this.#waiting.length,capacity:this.#capacity,
-    maxWaiters:this.#waiterCap,sealed:this.#sealed});}
+    waiting:this.#waiting.length,tracked:this.#states.size,
+    capacity:this.#capacity,maxWaiters:this.#waiterCap,sealed:this.#sealed});}
 }
