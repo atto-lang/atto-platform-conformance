@@ -327,3 +327,28 @@ test("actor capacity and malformed params fail closed",()=>{
   const m=new ActorStateRwModel({actor:"a",epoch:1,maxThreads:3});
   assert.throws(()=>m.request("CRITICAL_WRITE","t"),/request/);
 });
+
+test("shared borrow cannot be passed off as mutable Task write authority",()=>{
+  const m=new ScopedLoanModel();
+  const borrowed={kind:"borrow",mutable:false,value:SCALAR};
+  assert.throws(()=>m.admit([claim(place(),"WRITE",borrowed)]),/not mutable Task write/);
+  assert.equal(m.inspect().active,0);
+  const reader=m.admit([claim(place(),"READ",borrowed)]);
+  assert.equal(m.inspect().active,1);m.quiescent(reader);m.finish();
+});
+test("unrecognized parent access mode does not become an implicit write permission",()=>{
+  const m=new ScopedLoanModel(),p=place(),t=m.admit([claim(p,"READ")]);
+  assert.throws(()=>m.parentMayAccess(claim(p,"UNKNOWN")),/parent access mode/);
+  m.quiescent(t);
+});
+test("all-or-none claim admission across disjoint components",()=>{
+  const m=new ScopedLoanModel(),p=place();
+  const t=m.admit([claim({...p,path:[field("position")]},"WRITE")]);
+  assert.throws(()=>m.admit([
+    claim({...p,path:[field("velocity")]},"WRITE"),
+    claim({...p,path:[field("position")]},"WRITE")
+  ]),/overlapping/);
+  assert.equal(m.inspect().active,1);
+  const u=m.admit([claim({...p,path:[field("velocity")]},"WRITE")]);
+  assert.equal(m.inspect().active,2);m.quiescent(t);m.quiescent(u);m.finish();
+});
