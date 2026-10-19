@@ -247,7 +247,8 @@ export function receiptOriginDecision({source,stage}){
     "receipt origin");
   check(["REMOTE_ACCEPTED","REJECTED_BEFORE_REMOTE","HANDLER_COMMITTED",
     "HANDLER_FAILED","OUTCOME_UNKNOWN"].includes(stage),"receipt stage");
-  if(stage==="OUTCOME_UNKNOWN"&&source!=="trusted-local-transport")return "DENY";
-  if(stage!=="OUTCOME_UNKNOWN"&&source==="trusted-local-transport")return "DENY";
+  const localOnly=stage==="OUTCOME_UNKNOWN"||stage==="REJECTED_BEFORE_REMOTE";
+  if(localOnly&&source!=="trusted-local-transport")return "DENY";
+  if(!localOnly&&source==="trusted-local-transport")return "DENY";
   return "ADMISSIBLE_ORIGIN_ONLY";
 }
