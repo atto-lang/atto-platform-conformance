@@ -96,24 +96,29 @@ export class HierarchicalOutboundQuotaModel {
 /** Abstract trusted per-open-description FD capability/duplication registry. */
 export class TrustedFdAliasModel {
   #next=0;#handles=new Map();#watches=new Map();#cap=new Map();#numbers=new Map();
+  #openNumbers=new Map();
   #limit;
   constructor(limit=64){check(positive(limit)&&limit<=4096,"FD watcher capacity");this.#limit=limit;}
   open(fd){
     check(nonnegative(fd)&&fd<=1048576,"invalid OS fd");
+    check(!this.#openNumbers.has(fd),"open fd number already live; require trusted dup handoff");
     check(this.#handles.size<4*this.#limit,"bounded FD handle inventory");
     check(this.#next<Number.MAX_SAFE_INTEGER,"FD capability identity overflow");
     const handle=Object.freeze({fdHandle:++this.#next});
     const description=Object.freeze({openDescription:this.#next});
     this.#handles.set(handle,{fd,description,closed:false});
+    this.#openNumbers.set(fd,handle);
     return handle;
   }
   duplicate(handle,newFd){
     const old=this.#require(handle);check(!old.closed,"duplicate closed handle");
     check(nonnegative(newFd)&&newFd<=1048576,"invalid dup fd");
+    check(!this.#openNumbers.has(newFd),"duplicated numeric FD already live");
     check(this.#handles.size<4*this.#limit,"bounded FD handle inventory");
     check(this.#next<Number.MAX_SAFE_INTEGER,"FD alias identity overflow");
     const next=Object.freeze({fdHandle:++this.#next});
     this.#handles.set(next,{fd:newFd,description:old.description,closed:false});
+    this.#openNumbers.set(newFd,next);
     return next;
   }
   #require(handle){
@@ -144,9 +149,12 @@ export class TrustedFdAliasModel {
     // Closed numeric handles do not retain an unbounded host object tombstone.
     // The opaque handle identity is never reused even when its integer FD is.
     this.#handles.delete(handle);
+    check(this.#openNumbers.get(v.fd)===handle,"FD numeric owner changed");
+    this.#openNumbers.delete(v.fd);
   }
   inspect(){return Object.freeze({watches:this.#watches.size,
-    identities:this.#cap.size,numbers:this.#numbers.size});}
+    identities:this.#cap.size,numbers:this.#numbers.size,
+    openHandles:this.#openNumbers.size});}
 }
 
 /** Nominal guest command alone is never trusted supervisor CONTROL. */
