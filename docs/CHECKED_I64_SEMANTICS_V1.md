@@ -1,0 +1,106 @@
+# Oreslang signed-i64 checked arithmetic — portable language contract v1
+
+**Status:** candidate authoritative contract, review required; **not** an
+executed Java/JavaScript/LLVM compiler-parity certificate.
+
+This contract resolves the mismatch between the JavaScript backend's
+`signed-i64-checked-provisional` Program IR and historic unmarked
+Java/GraalVM `long` wraparound paths. The checked behavior is the proposed
+portable Oreslang default. A backend that still wraps is **nonconformant**
+for these fixtures, not implicitly grandfathered into a passing result.
+
+## Domain and literals
+
+* `int` is signed 64-bit, range
+  `[-9223372036854775808, 9223372036854775807]`.
+* Decimal digit separators may be used only according to the separately
+  versioned lexer grammar; they do not change numeric range.
+* `-9223372036854775808` is legal as a single directly signed
+  literal, even though positive `9223372036854775808` is illegal.
+  `-9223372036854775809` and positive values above the maximum are
+  **compile-time** `integer_overflow` diagnostics.
+* Unary negation of an **already evaluated** `INT64_MIN` value is
+  arithmetic overflow, not a special literal case. For example,
+  `-(-9223372036854775808)` must fail rather than wrap.
+  Parentheses and source syntax may not silently change a valid negative
+  literal into invalid positive-literal parsing.
+
+## Arithmetic
+
+* Binary `+`, `-`, `*`, and unary arithmetic negation calculate with
+  unlimited *mathematical intermediate precision* for range checking,
+  then produce a signed-i64 value only when within bounds.
+* Every evaluated arithmetic node must check its own result.
+  `(INT64_MAX + 1) - 1` fails at the first addition; cancellation,
+  later casts, optimization, vectorization, LLVM nsw flags or JS BigInt
+  narrowing must not mask that failure.
+* `a % b` uses truncation-toward-zero quotient semantics for a nonzero
+  divisor; the remainder has the dividend's sign (or zero). Specifically
+  `INT64_MIN % -1 == 0`. `a % 0` fails as `division_by_zero`.
+* **Existing language typing is preserved:** Java's `int / int` currently
+  promotes to a floating-point result and the JS int-only slice rejects
+  this operator. This document does **not** unilaterally redefine `/`
+  as integral division. The conformance oracle defines a separate
+  abstract `div_trunc` operation for any *future explicit integer-quotient
+  primitive*: truncate toward zero, fail on zero divisor, and fail
+  `INT64_MIN / -1` as integer overflow. No backend may claim that
+  abstract case passes until an explicit source-language mapping exists.
+* Two's-complement wrap is **not** the default and cannot be selected
+  by ignoring an integer model tag. Any future wrapping operation must
+  have an explicit, separately typed/named opt-in contract.
+
+## Error phase and cross-backend classification
+
+* A source integer literal outside the signed range is rejected during
+  compilation with category `integer_overflow`.
+* An ordinary arithmetic expression that overflows during execution
+  fails with category `integer_overflow`; a zero divisor fails with
+  `division_by_zero`. Backends may use distinct native exceptions,
+  but evidence adapters must normalize them from **observed real guest
+  behavior**, not from hand-authored JSON.
+* Optimizers must preserve evaluation ordering and cannot silently elide
+  a failing evaluated subexpression. A compile-time optimization may
+  diagnose provable failure only if the standardized phase contract for
+  that expression is explicitly updated and versioned for **all**
+  backends.
+* Error strings, Java exception names, process return codes, and host
+  signals are not interchangeable with normalized guest error category.
+  The parity runner must separately retain original diagnostics, stdout,
+  stderr, runtime exit and signal information.
+
+## Version and migration
+
+`checked-i64-v1` is a **new** portable semantic authority candidate,
+not a reinterpretation of `scalar-int64-v1` in draft conformance PR #71,
+which describes the observed historical Java wrapping reference.
+The JS Program IR's provisional tag should map to this contract only
+after peer review; do not silently reuse or re-label existing artifacts.
+
+The data-oracle vectors in `fixtures/checked-i64-v1.json` and
+`src/checked-i64-oracle.mjs` validate the *mathematical contract only*.
+They do not execute any Oreslang compiler or establish Java, LLVM or Node
+backend parity.
+
+## Required real-compiler parity gate
+
+1. Review and freeze the contract and fixture bytes/hash.
+2. Build both exact pinned compiler heads under approved source
+   confidentiality controls; record full Git tree SHA, compiler artifact
+   hash, toolchain, provenance and executed workflow/job/step IDs.
+3. Compile and **execute** identical source programs on Java/GraalVM and
+   Node 22. Compare typed values, error category, error phase, raw
+   diagnostics, process outcomes, and complete fixture IDs. Missing,
+   unsupported or skipped cases fail the parity gate.
+4. Extend independently to LLVM, including overflow trapping without
+   undefined behavior or optimization removal.
+5. Reject reports from zero-step jobs, mocks, source-free oracles, or
+   structural-only JSON consistency checks as certification.
+6. Do not export private source into another organization until a
+   protected and reviewed policy authorizes the **immutable destination
+   repository ID and exact source commit/tree**, including incident
+   resume gates for conformance security issues #22 and #77. Destination
+   privacy or prior runner success by itself never authorizes a copy.
+
+Related: JS PRs #13/#19/#21/#22 and integration #23;
+Java PR #956 (opt-in checked Java execution); conformance PR #71
+(historic wrapping differential matrix).
