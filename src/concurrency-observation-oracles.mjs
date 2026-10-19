@@ -64,6 +64,7 @@ export function auditMemoryTrace(trace){
   const roots=traceHeader(trace,4096);
   const states=new Map([...roots].map(x=>[x,{clock:new Map(),closed:false}]));
   const locks=new Map(), messages=new Map(), accesses=new Map(), races=[];
+  const spawnOwners=new Map(),joined=new Set();
   for(const [index,event] of trace.events.entries()){
     requireThat(obj(event)&&Object.hasOwn(eventFields,event.op),"unknown memory-trace operation");
     exact(event,eventFields[event.op],"memory event");
@@ -77,12 +78,16 @@ export function auditMemoryTrace(trace){
         requireThat(!states.has(child)&&states.size<64,"duplicate/unbounded spawned child");
         tick(clock,who);
         states.set(child,{clock:snapshot(clock),closed:false});
+        spawnOwners.set(child,who);
         break;
       }
       case "join": {
         const child=id(event.child,"join child");
         const childState=states.get(child);
         requireThat(child!==who&&childState?.closed===true,"join requires physically exited child");
+        requireThat(spawnOwners.get(child)===who&&!joined.has(child),
+          "join requires unique original owning spawner");
+        joined.add(child);
         merge(clock,childState.clock);tick(clock,who);
         break;
       }
@@ -197,6 +202,16 @@ export function auditTaskTrace(trace){
         task.exited=true;break;
       case "get_done":
         requireThat(task.exited,"get_done before physical exit");
+        for(const [candidateName,candidate] of tasks){
+          let parent=candidate.parent;
+          while(parent!==null){
+            if(parent===e.task){
+              requireThat(candidate.exited,"get_done before descendant quiescence");
+              break;
+            }
+            parent=tasks.get(parent)?.parent??null;
+          }
+        }
         requireThat(!task.observed,"duplicate get_done observation");
         task.observed=true;break;
     }
