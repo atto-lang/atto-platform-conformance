@@ -152,3 +152,24 @@ account approval, issue closure or merge is performed by this PR.
 The exact-fetched model and inventory suite now passes **51/51** isolated V8-shim checks, including **50,000 deterministic hierarchical quota steps** and **20,000 FD open/dup/watch/retire transitions**. These uphold bounded counters, exact credit cleanup, numerical FD identity exclusivity, and no accidental quota refund across restart/cancel. Unlike actual Node `--test`, this evaluator does not exercise Node module-loading behavior.
 
 [Private canary #39303220290](https://github.com/ores-dummy-org-oreslang-stack/ores-dummy-org-oreslang-stack-infra/actions/runs/39303220290) succeeded at 18:31 UTC on Oct 19. This shows that the separate private test organization's runner recently executed a **source-free canary**, but does not measure its remaining GitHub Actions minutes or authorize any private source transfer. The mirror dispatcher PR #1217 still blocks exports while incident #22/#77 and independent exact-repo/tree approvals remain incomplete.
+
+## October 19: Explicit IPC dispatch-commit publication fence
+
+Stacked Java [PR #1503](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1503) now has a source-level three-phase receipt chain:
+
+```text
+LOCAL_ADMITTED --commitDispatch()--> DISPATCH_COMMITTED --verified peer ACK--> REMOTE_ACCEPTED
+       |                                  |                                |
+       | local rejectBeforeRemote()       | trusted transportLost()        | verified HANDLER_COMMITTED / FAILED
+       v                                  v                                v
+REJECTED_BEFORE_REMOTE                OUTCOME_UNKNOWN                  terminal receipt
+```
+
+- Both `commitDispatch` and `rejectBeforeRemote` are package-local trusted-host calls serialized by the same correlation monitor. A never-sent local rejection is **invalid after successful dispatch commitment**. An authenticated remote receipt cannot transition from LOCAL_ADMITTED to REMOTE_ACCEPTED.
+- Dispatch commitment **precedes the first possible physical network write**, but does **not** prove that any byte reached the peer. A write exception after commit must be classified as uncertain unless a separately authenticated transport witness proves an unsent frame; no automatic replay is allowed.
+- `DISPATCH_COMMITTED` retains one outstanding transport credit until verified peer ACK, final local loss or other supported terminal retirement. EOF snapshots distinguish LOCAL_ADMITTED, DISPATCH_COMMITTED and REMOTE_ACCEPTED.
+- Java host tests now include **512 real two-thread commit-vs-reject races in each of the correlation ledger and completion bridge**, plus the existing 512 ACK-vs-EOF races and the seeded 61,440-transition suite. Newly authored exact-head Java cases are **not yet verified as executed** by javac/JUnit/Native Image.
+- Source-free `IpcPublicationFenceModel` has eight new falsification tests, exhaustive **120 serial orderings** across commit/reject/ACK/DONE/EOF and **100,000 deterministic fault-event sequences**. The current combined reference-model/inventory suite is **59/59 isolated V8-shim tests passed**; this is not real Node `--test`.
+- **Mandatory remaining physical proof:** the actual authenticated socket/proxy adapter must bind `commitDispatch` to its trusted per-session generation/close lock and a one-shot send lease, ensuring no guest or stale actor can send after session revocation. The host-only correlation model does not enforce kernel/socket/FD ownership or independently prove a write could not occur before calling `commitDispatch`. No LIVE IPC adapter or fully protected UNTRUSTED network capability is enabled.
+
+Do not claim that this source-level publication state resolves the entire physical network publication race; its linearization applies only to host receipt bookkeeping until the transport ownership gate is implemented and tested.
