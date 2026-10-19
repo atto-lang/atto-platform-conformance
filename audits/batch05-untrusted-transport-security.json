@@ -8,7 +8,7 @@
     "repo": "ores-truffle-oreslang/oreslang-source.java",
     "pr": 1503,
     "basePr": 1438,
-    "scope": "REMOTE_OUTCOME_UNKNOWN_DENIED_LOCAL_DISCONNECT_ONLY",
+    "scope": "PEER_LOCAL_VERDICTS_FENCED_EOF_AND_PREDISPATCH_REJECTION",
     "verifiedExactHeadJava": false
   },
   "upstreamEvidence": {
@@ -18,7 +18,8 @@
     "jobConclusion": "success",
     "stepExecutionObserved": true,
     "appliesToCurrentBatch05JavaPatch": false,
-    "guestNetworkIsolationProof": false
+    "guestNetworkIsolationProof": false,
+    "caveat": "Funded private carrier canary run 39303220290 confirms recently executed runner; source snapshot export remains blocked by independent policy"
   },
   "safety": {
     "directUntrustedNetwork": "DEFAULT_DENY",
