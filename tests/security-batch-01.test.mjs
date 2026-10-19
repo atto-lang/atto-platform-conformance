@@ -16,7 +16,7 @@ function makeFixture(overrides={}) {
     const pieces=path.split("/");
     const repo=pieces.slice(0,2).join("/");
     const resource=pieces.slice(2).join("/");
-    const fixtureKey=repo+"/"+resource;
+    const fixtureKey=resource?repo+"/"+resource:repo;
     if(Object.hasOwn(overrides,fixtureKey)){
       const value=overrides[fixtureKey];
       return {status:value?.httpStatus||200,json:async()=>value?.payload??value};
