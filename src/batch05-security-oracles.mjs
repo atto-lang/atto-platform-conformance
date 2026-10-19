@@ -134,9 +134,11 @@ export class TrustedFdAliasModel {
     this.#cap.delete(r.description);this.#numbers.delete(r.fd);
   }
   close(handle){
-    const v=this.#require(handle);check(!v.closed,"double FD close");
+    const v=this.#require(handle);
     check(!this.#cap.has(v.description),"close while alias capability is watched");
-    v.closed=true;
+    // Closed numeric handles do not retain an unbounded host object tombstone.
+    // The opaque handle identity is never reused even when its integer FD is.
+    this.#handles.delete(handle);
   }
   inspect(){return Object.freeze({watches:this.#watches.size,
     identities:this.#cap.size,numbers:this.#numbers.size});}
