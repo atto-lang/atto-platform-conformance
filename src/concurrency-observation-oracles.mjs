@@ -250,3 +250,71 @@ export function auditCausalDiagnostic(d){
     guestErrorLineage:"NOT_ESTABLISHED",backend:d.backend,
     frames:d.frames.length,truncated:d.truncated};
 }
+
+
+/**
+ * Conservative observed-wait graph reference.
+ * ANY/select, externally completable, and timeout waits are NOT mandatory
+ * blocking edges; excluding them can miss real deadlocks but cannot turn them
+ * into false "definite" deadlocks. Even closed cycles here are observations.
+ */
+export function auditWaitGraph(graph){
+  exact(graph,["schema","sourceTree","participants","waits"],"wait graph");
+  requireThat(graph.schema===1&&SHA.test(graph.sourceTree||""),"wait graph source");
+  requireThat(Array.isArray(graph.participants)&&
+    graph.participants.length>0&&graph.participants.length<=128,"wait participants");
+  const participants=new Set(graph.participants.map(x=>id(x,"wait participant")));
+  requireThat(participants.size===graph.participants.length,"duplicate participant");
+  requireThat(Array.isArray(graph.waits)&&graph.waits.length<=128,"wait budget");
+  const entries=new Map(),eligible=new Map();
+  for(const w of graph.waits){
+    exact(w,["owner","dependencies","mode","state","timeout","external"],"wait entry");
+    const who=id(w.owner,"wait owner");
+    requireThat(participants.has(who)&&!entries.has(who),"foreign/duplicate waiter");
+    requireThat(Array.isArray(w.dependencies)&&
+      w.dependencies.length>0&&w.dependencies.length<=32,"wait dependencies");
+    const deps=w.dependencies.map(x=>id(x,"wait dependency"));
+    requireThat(new Set(deps).size===deps.length &&
+      deps.every(x=>participants.has(x)),"duplicate or unknown wait dependency");
+    requireThat(["ALL","ANY"].includes(w.mode)&&
+      ["pending","cancelled","completed"].includes(w.state)&&
+      typeof w.timeout==="boolean"&&typeof w.external==="boolean",
+      "wait completion semantics");
+    entries.set(who,w);
+    // No OR-select, timeout, cancelled, completed or external-producer edge
+    // can be required for a conservative wait-cycle witness.
+    if(w.state==="pending"&&w.mode==="ALL"&&!w.timeout&&!w.external)
+      eligible.set(who,deps);
+  }
+  // Only currently blocked tasks may close a fully observed dependency cycle.
+  const edges=new Map([...eligible].map(([who,deps])=>
+    [who,deps.filter(dep=>eligible.has(dep))]));
+  const seenCycles=new Set(),cycles=[];
+  for(const origin of [...edges.keys()].sort()){
+    const stack=[{node:origin,path:[origin]}];
+    let budget=100000;
+    while(stack.length){
+      requireThat(--budget>0,"wait-cycle search budget exhausted");
+      const {node,path}=stack.pop();
+      for(const next of edges.get(node)||[]){
+        if(next===origin){
+          const cycle=path;
+          const rots=cycle.map((_,i)=>[...cycle.slice(i),...cycle.slice(0,i)].join("|"));
+          const canonical=rots.sort()[0];
+          if(!seenCycles.has(canonical)){
+            seenCycles.add(canonical);
+            cycles.push([...canonical.split("|"),canonical.split("|")[0]]);
+            requireThat(cycles.length<=128,"wait-cycle finding budget");
+          }
+        }else if(!path.includes(next)&&path.length<129){
+          stack.push({node:next,path:[...path,next]});
+        }
+      }
+    }
+  }
+  return {schema:1,classification:"POTENTIAL_OBSERVED_CYCLES_ONLY",
+    definiteDeadlock:"NOT_PROVEN",sourceWaitInstrumentation:"NOT_ESTABLISHED",
+    participantCount:participants.size,pendingWaits:[...entries.values()]
+      .filter(w=>w.state==="pending").length,
+    conservativeWaitCycles:cycles.sort((a,b)=>a.join("|").localeCompare(b.join("|")))};
+}
