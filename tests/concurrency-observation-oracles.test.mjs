@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {auditMemoryTrace,auditTaskTrace,auditCausalDiagnostic} from
+import {auditMemoryTrace,auditTaskTrace,auditCausalDiagnostic,auditWaitGraph} from
   "../src/concurrency-observation-oracles.mjs";
 const SHA="a".repeat(40);
 const mem=(events,roots=["A","B"])=>auditMemoryTrace({
@@ -220,4 +220,63 @@ test("parent get_done cannot settle before owned descendants exit",()=>{
     ev("parent","physical_exit"),ev("child","physical_exit"),
     ev("parent","get_done"),ev("scope0","scope_done")
   ]).scopeDone,true);
+});
+
+const wait=(owner,dependencies,over={})=>({owner,dependencies,
+  mode:"ALL",state:"pending",timeout:false,external:false,...over});
+const graph=(participants,waits)=>auditWaitGraph({schema:1,sourceTree:SHA,
+  participants,waits});
+test("observed two-owner mandatory wait cycle is potential, never proven definite",()=>{
+  const x=graph(["A","B"],[wait("A",["B"]),wait("B",["A"])]);
+  assert.deepEqual(x.conservativeWaitCycles,[["A","B","A"]]);
+  assert.equal(x.definiteDeadlock,"NOT_PROVEN");
+});
+test("OR/select must not be interpreted as mandatory wait",()=>{
+  const x=graph(["A","B","C"],[
+    wait("A",["B","C"],{mode:"ANY"}),wait("B",["A"])
+  ]);
+  assert.equal(x.conservativeWaitCycles.length,0);
+});
+test("external producers prevent guaranteed wait-edge admission",()=>{
+  assert.equal(graph(["A","B"],[
+    wait("A",["B"],{external:true}),wait("B",["A"])
+  ]).conservativeWaitCycles.length,0);
+});
+test("timeouts prevent guaranteed wait-edge admission",()=>{
+  assert.equal(graph(["A","B"],[
+    wait("A",["B"],{timeout:true}),wait("B",["A"])
+  ]).conservativeWaitCycles.length,0);
+});
+test("cancellation and completed waits are not active edges",()=>{
+  for(const state of ["cancelled","completed"]){
+    assert.equal(graph(["A","B"],[
+      wait("A",["B"],{state}),wait("B",["A"])
+    ]).conservativeWaitCycles.length,0);
+  }
+});
+test("multi-wait ALL cycle retains an observed necessary edge",()=>{
+  assert.deepEqual(graph(["A","B","C"],[
+    wait("A",["B","C"]),wait("B",["A"])
+  ]).conservativeWaitCycles,[["A","B","A"]]);
+});
+test("self wait is an observed risk only, never verified deadlock",()=>{
+  const x=graph(["A"],[wait("A",["A"])]);
+  assert.deepEqual(x.conservativeWaitCycles,[["A","A"]]);
+  assert.equal(x.definiteDeadlock,"NOT_PROVEN");
+});
+test("wait graph rejects duplicate, foreign and injected fields",()=>{
+  assert.throws(()=>graph(["A","A"],[wait("A",["A"])]),/duplicate participant/);
+  assert.throws(()=>graph(["A"],[wait("B",["A"])]),/foreign\/duplicate waiter/);
+  assert.throws(()=>graph(["A"],[wait("A",["B"])]),/unknown wait dependency/);
+  assert.throws(()=>graph(["A"],[wait("A",["A"],{secret:"hello"})]),/fields/);
+});
+test("wait graph rejects duplicate edges and unsupported completion semantics",()=>{
+  assert.throws(()=>graph(["A","B"],[wait("A",["B","B"])]),/duplicate or unknown/);
+  assert.throws(()=>graph(["A"],[wait("A",["A"],{mode:"ONE"})]),/completion semantics/);
+});
+test("graph without pending cycles reports no proven liveness",()=>{
+  const x=graph(["A","B"],[wait("A",["B"])]);
+  assert.equal(x.conservativeWaitCycles.length,0);
+  assert.equal(x.definiteDeadlock,"NOT_PROVEN");
+  assert.equal(x.sourceWaitInstrumentation,"NOT_ESTABLISHED");
 });
