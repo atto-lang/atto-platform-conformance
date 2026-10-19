@@ -113,8 +113,8 @@ npm test
 The Node 22 repository workflow automatically collects both new test modules
 when a real worker executes them.
 
-**46/46 source-free test cases passed** under isolated V8 with assertion shims
-on the exact fetched files, including 6000 seeded edge-credit transitions.
+**48/48 source-free test cases passed** under isolated V8 with assertion shims
+on the exact fetched files, including 6000 seeded edge-credit transitions, 2000 retired edge tickets, and\na saturated 4096-frame retirement test.
 This is **not** a Node `--test` receipt, Java JUnit, Graal Native Image,
 LLVM CTest, real cryptographic IPC, or generated guest actor compilation.
 
