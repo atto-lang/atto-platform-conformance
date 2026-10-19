@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {AuthenticatedFrameOracle,PhysicalBindingOracle} from "../src/batch05-authenticated-frame-oracle.mjs";
+import {AuthenticatedFrameOracle,PhysicalBindingOracle,BlockingHostOperationOracle} from "../src/batch05-authenticated-frame-oracle.mjs";
 
 test("receipt pre-authentication length cap is small and fail closed",()=>{
   assert.equal(AuthenticatedFrameOracle.boundedWireLength("RECEIPT",600),true);
@@ -106,4 +106,36 @@ test("100000 reconnects require 100000 fresh bridge instances",()=>{
     assert.equal(g.state().retired,true);
     previous=g;
   }
+});
+
+
+test("actor-carrier blocking guard fires before any host IPC side effect",()=>{
+  const g=new BlockingHostOperationOracle();
+  g.enterActorCarrier();
+  assert.throws(()=>g.send(),/cannot block/);
+  assert.throws(()=>g.readReceipt(),/cannot block/);
+  assert.throws(()=>g.closeAndWait(),/cannot block/);
+  assert.deepEqual(g.state(),{
+    actorCarrier:true,sendAdmissions:0,receiptReads:0,closeMutations:0
+  });
+  g.exitActorCarrier();
+  assert.equal(g.send(),true);
+  assert.equal(g.readReceipt(),true);
+  assert.equal(g.closeAndWait(),true);
+  assert.deepEqual(g.state(),{
+    actorCarrier:false,sendAdmissions:1,receiptReads:1,closeMutations:1
+  });
+});
+
+test("100000 actor-carrier denials never consume admission/read/close state",()=>{
+  const g=new BlockingHostOperationOracle();
+  g.enterActorCarrier();
+  for(let i=0;i<100000;i++){
+    assert.throws(()=>g.send(),/cannot block/);
+    assert.throws(()=>g.readReceipt(),/cannot block/);
+    assert.throws(()=>g.closeAndWait(),/cannot block/);
+  }
+  assert.deepEqual(g.state(),{
+    actorCarrier:true,sendAdmissions:0,receiptReads:0,closeMutations:0
+  });
 });
