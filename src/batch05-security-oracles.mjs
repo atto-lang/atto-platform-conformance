@@ -252,3 +252,60 @@ export function receiptOriginDecision({source,stage}){
   if(!localOnly&&source==="trusted-local-transport")return "DENY";
   return "ADMISSIBLE_ORIGIN_ONLY";
 }
+
+
+/**
+ * Host-only reference for the local-dispatch vs never-sent race. An atomic
+ * dispatch commitment precedes any possible physical write. Postcommit
+ * transport failures are outcome-unknown, not safe-to-replay rejections.
+ * This is not a socket adapter, scheduler lock, or peer authenticator.
+ */
+export class IpcPublicationFenceModel {
+  #stage="LOCAL_ADMITTED";
+  #pending=true;
+  #credit=1;
+  #lastObserved=null;
+  commitDispatch(){
+    check(this.#pending&&this.#stage==="LOCAL_ADMITTED",
+      "dispatch commitment denied");
+    this.#stage="DISPATCH_COMMITTED";
+  }
+  rejectBeforeRemote(){
+    check(this.#pending&&this.#stage==="LOCAL_ADMITTED",
+      "cannot prove never-sent after dispatch commitment");
+    this.#stage="REJECTED_BEFORE_REMOTE";
+    this.#pending=false;this.#credit=0;
+  }
+  receivePeer(stage){
+    check(stage!=="OUTCOME_UNKNOWN"&&stage!=="REJECTED_BEFORE_REMOTE",
+      "peer cannot assert trusted-local verdict");
+    if(stage==="REMOTE_ACCEPTED"){
+      check(this.#pending&&this.#stage==="DISPATCH_COMMITTED",
+        "peer ACK before local dispatch commitment");
+      this.#stage=stage;
+      this.#credit=0;
+    }else if(stage==="HANDLER_COMMITTED"||stage==="HANDLER_FAILED"){
+      check(this.#pending&&this.#stage==="REMOTE_ACCEPTED",
+        "remote handler result without ACK");
+      this.#stage=stage;
+      this.#pending=false;
+    }else DENY("unknown remote receipt stage");
+  }
+  transportLost(){
+    if(!this.#pending)return false;
+    this.#lastObserved=this.#stage;
+    this.#stage="OUTCOME_UNKNOWN";
+    this.#pending=false;
+    this.#credit=0;
+    return true;
+  }
+  inspect(){
+    return Object.freeze({stage:this.#stage,pending:this.#pending,
+      transportCredits:this.#credit,lastObserved:this.#lastObserved});
+  }
+  invariant(){
+    const expected=this.#pending&&
+      (this.#stage==="LOCAL_ADMITTED"||this.#stage==="DISPATCH_COMMITTED")?1:0;
+    return this.#credit===expected && this.#credit>=0 && this.#credit<=1;
+  }
+}
