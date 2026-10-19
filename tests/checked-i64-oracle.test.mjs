@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {
-  CHECKED_I64_CONTRACT, I64_MIN, I64_MAX,
+  CHECKED_I64_CONTRACT, CHECKED_I64_SOURCE_DIRECTIVE, I64_MIN, I64_MAX,
   CheckedI64ContractError, evaluateCheckedI64,
   evaluateCheckedI64Json, renderCheckedI64GuestSource
 } from '../src/checked-i64-oracle.mjs';
@@ -146,4 +146,22 @@ test('foreign expressions must enter as bounded canonical parsed JSON, not live 
   assert.throws(()=>evaluateCheckedI64({op:'add',args:extended}),/argument/);
   const symbolic={op:'literal',value:'1',[Symbol('invisible')]:true};
   assert.throws(()=>evaluateCheckedI64(symbolic),/record fields/);
+});
+
+
+test('Java experimental checked header is exact and identical for both backend inputs',()=>{
+  // The Java reference currently requires this exact *first line* to enable
+  // checked evaluation. JS must compile the identical source bytes; it treats
+  // a line-comment directive lexically as a comment. This is a transitional
+  // opt-in profile, not proof that Java unmarked int is checked by default.
+  assert.equal(CHECKED_I64_SOURCE_DIRECTIVE,'// oreslang:checked-i64-v1\n');
+  for(const row of matrix.cases){
+    const plain=renderCheckedI64GuestSource(row.expr,'portable-default');
+    const explicit=renderCheckedI64GuestSource(row.expr,'checked-i64-v1');
+    assert.equal(plain,row.guestSource??null,row.id);
+    assert.equal(explicit,plain===null?null:CHECKED_I64_SOURCE_DIRECTIVE+plain,row.id);
+  }
+  const expr=matrix.cases.find(x=>x.id==='add-max-one').expr;
+  assert.throws(()=>renderCheckedI64GuestSource(expr,'legacy-wrap'),/unsupported checked-i64 source profile/);
+  assert.throws(()=>renderCheckedI64GuestSource(expr,null),/unsupported checked-i64 source profile/);
 });
