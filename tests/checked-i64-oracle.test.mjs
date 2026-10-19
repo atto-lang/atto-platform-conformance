@@ -45,6 +45,28 @@ test('checked-i64 v1 contract has complete, unique, bounded evidence inventory',
     assert.ok(ids.has(id),'required vector '+id);
   }
 });
+test('Java source-mapped checked-i64 fixtures are byte-for-byte pinned',()=>{
+  // Same deterministic mapping used by the Java JUnit suite. This ties its
+  // 38 source-executable rows to the independently authored JSON fixture and
+  // catches changes to expression text, expected values or error phases even
+  // when the category counts remain identical.
+  const rows=matrix.cases.filter(row=>typeof row.guestSource==='string');
+  assert.equal(rows.length,38);
+  const canonical=rows.map(row=>{
+    const source=/^pub fnc main\(\): int \{ return (.*); \}\n$/.exec(row.guestSource);
+    assert.ok(source,'unrecognized mapped source: '+row.id);
+    return [
+      row.id,source[1],row.expected.kind,
+      row.expected.kind==='value'?row.expected.decimal:row.expected.category,
+      row.expected.phase??'none'
+    ].join('\0')+'\n';
+  }).join('');
+  const mappedDigest=createHash('sha256').update(canonical,'utf8').digest('hex');
+  // Independently pinned in Java ExperimentalCheckedI64SharedVectorTest.
+  assert.equal(mappedDigest,
+    'b83276db9e770025291dd09b0837a55cd8fadc2a7f9fff4c2a78a2ea836c3044');
+});
+
 test('every mathematical checked-i64 vector has its independently specified outcome',()=>{
   let values=0,failures=0;
   for(const row of matrix.cases){
