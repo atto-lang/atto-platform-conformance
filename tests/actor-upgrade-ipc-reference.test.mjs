@@ -361,3 +361,24 @@ test("edge credit saturation and cancellation churn preserves queue bound",()=>{
   while(edge.inspect().queued)edge.dequeue();
   assert.equal(edge.inspect().waiting,0);
 });
+
+test("terminal edge receipts are bounded during long-running pipeline churn",()=>{
+  const edge=new EdgeCreditGate({capacity:1,maxWaiters:1});
+  for(let i=0;i<2000;i++){
+    const t=edge.request();assert.ok(t);
+    assert.equal(edge.dequeue(),t);
+  }
+  const count=edge.inspect();
+  assert.equal(count.queued,0);
+  assert.equal(count.waiting,0);
+  assert.ok(count.tracked<=256);
+});
+test("physical stage frame admission fails closed at maximum frame budget",()=>{
+  const stream=new StageDoneGate(1);
+  for(let i=0;i<4096;i++)stream.addFrame();
+  assert.equal(stream.inspect().outstandingFrames,4096);
+  assert.throws(()=>stream.addFrame(),/budget/);
+  for(let i=0;i<4096;i++)stream.retireFrame();
+  stream.finalized(1);
+  assert.equal(stream.inspect().state,"DONE");
+});
