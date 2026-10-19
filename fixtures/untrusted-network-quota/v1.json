@@ -170,6 +170,30 @@
       "description": "Host I/O completion updates sealed immutable ticket state only and cannot execute guest-provided callbacks on privileged host executor threads",
       "expected": "no-guest-callback-on-host",
       "backendEvidence": "pending"
+    },
+    {
+      "id": "actor-termination-cached-ticket",
+      "description": "After automatic actor finalization, a cached trusted host bridge reference cannot consume a pending or completed result ticket, including when lookup preceded revocation",
+      "expected": "revoked-no-result",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "actor-termination-queued-dispatch",
+      "description": "A host I/O dispatch runnable queued before actor termination cannot initiate a network request after the broker's synchronized no-I/O revocation fence",
+      "expected": "no-post-revocation-dispatch",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "host-cleanup-capacity-exhausted",
+      "description": "When all bounded host cleanup reservations are consumed, new actor egress binding construction rejects without creating an untracked network broker",
+      "expected": "bounded-fail-closed",
+      "backendEvidence": "pending"
+    },
+    {
+      "id": "host-cleanup-retry-exhaustion",
+      "description": "A failing trusted host HTTP cancellation consumes a finite retry budget and retains resource reservations with observable failure until host cleanup succeeds",
+      "expected": "bounded-retry-and-capacity-retention",
+      "backendEvidence": "pending"
     }
   ]
 }

@@ -103,6 +103,22 @@ const required = new Map([
   [
     "no-guest-future-callback-on-host",
     "no-guest-callback-on-host"
+  ],
+  [
+    "actor-termination-cached-ticket",
+    "revoked-no-result"
+  ],
+  [
+    "actor-termination-queued-dispatch",
+    "no-post-revocation-dispatch"
+  ],
+  [
+    "host-cleanup-capacity-exhausted",
+    "bounded-fail-closed"
+  ],
+  [
+    "host-cleanup-retry-exhaustion",
+    "bounded-retry-and-capacity-retention"
   ]
 ]);
 

@@ -72,3 +72,21 @@ The Java prototype does not enable Oreslang guest NETWORK or provide
 production SSRF-safe arbitrary egress. Java/Graal and LLVM protected guest
 execution, host transport quiescence, stable actor lineage, supervisor mailbox
 quota admission and original source CI remain hard blockers before merge.
+
+
+## October 18: termination revocation and bounded cleanup contract
+
+Four additional security scenarios remain **unverified** until exercised
+against real, protected runtime actor turns, not a test-only identity shim.
+An already-cached broker binding must refuse tickets after automatic actor
+termination, a queued host dispatch must not escape after revocation, and
+termination cleanup must have reserved, finite capacity and bounded failure
+handling. A successful future cancellation is not proof that the OS transport
+has terminated.
+
+Java source PR #1266 has the source-level synchronized revocation and
+capacity-reserved host cleanup prototype. Private carrier Actions
+[#39199747989](https://github.com/scintilla-run-test/gleam-runner-conformance/actions/runs/39199747989)
+passed an exact-blob 25-file HOST-ONLY mirror with simulated actor callbacks.
+Real `ActorRuntime.spawnUntrusted`, Graal isolate containment, protected LLVM,
+real transport quiescence, and supervisor mailbox quotas are **still pending**.
