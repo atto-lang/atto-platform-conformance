@@ -1,0 +1,238 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {
+  HierarchicalOutboundQuotaModel, TrustedFdAliasModel,
+  TrainingControlModel, transportActorAdmission
+} from "../src/batch05-security-oracles.mjs";
+
+const scope=(kind,over={})=>({kind,id:"host-"+kind,
+  ratePerSecond:10,burst:2,bytesPerSecond:10000,byteBurst:10000,
+  maxOutstanding:10,...over});
+const profiles=over=>["actor","lineage","supervisor","tenant"]
+  .map(kind=>scope(kind,over?.[kind]||{}));
+const quota=over=>new HierarchicalOutboundQuotaModel(profiles(over));
+const accepted=out=>{assert.equal(out.accepted,true);return out.lease;};
+const admitted=(q,bytes=10,clock=0n)=>accepted(q.admit(bytes,clock));
+
+test("hierarchical quota issues opaque runtime-owned leases and debits every scope",()=>{
+  const q=quota(),lease=admitted(q);
+  const s=q.inspect();
+  assert.equal(s.outstanding,1);
+  for(const layer of s.scopes){
+    assert.equal(layer.active,1);
+    assert.equal(layer.tokenWhole,1);
+  }
+  q.finish(lease);
+  assert.equal(q.inspect().outstanding,0);
+});
+test("ten starts per second with burst two rejects immediate third request",()=>{
+  const q=quota(),a=admitted(q),b=admitted(q);
+  assert.deepEqual(q.admit(10,0n),{accepted:false,reason:"RATE"});
+  q.finish(a);q.finish(b);
+  assert.deepEqual(q.admit(10,0n),{accepted:false,reason:"RATE"});
+  assert.ok(q.admit(10,100000000n).accepted);
+});
+test("published start-token refunds are forbidden after time refill",()=>{
+  const q=quota(),a=admitted(q),b=admitted(q);
+  assert.equal(q.admit(1,100000000n).accepted,true);
+  // At t=100ms only one token refills. Retiring prior slots cannot
+  // manufacture additional burst tokens at that same timestamp.
+  q.finish(a);q.finish(b);
+  assert.deepEqual(q.admit(1,100000000n),{accepted:false,reason:"RATE"});
+});
+test("repeated cancellation cannot increase start rate",()=>{
+  const q=quota();
+  for(let i=0;i<2;i++)q.finish(admitted(q,1,0n));
+  for(let i=0;i<30;i++)
+    assert.equal(q.admit(1,0n).accepted,false);
+  assert.equal(q.inspect().outstanding,0);
+});
+test("eleventh simultaneous HTTP/TCP in-flight request denied",()=>{
+  const config={ratePerSecond:1000,burst:100,maxOutstanding:10};
+  const q=new HierarchicalOutboundQuotaModel(profiles({
+    actor:config,lineage:config,supervisor:config,tenant:config
+  }));
+  const leases=Array.from({length:10},()=>admitted(q));
+  assert.deepEqual(q.admit(1,0n),{accepted:false,reason:"OUTSTANDING"});
+  q.finish(leases[0]);assert.equal(q.admit(1,0n).accepted,true);
+});
+test("lineage and tenant ceilings cannot be bypassed by one actor",()=>{
+  const q=quota({
+    actor:{ratePerSecond:100,burst:100},
+    lineage:{ratePerSecond:10,burst:1},
+    supervisor:{ratePerSecond:100,burst:100},
+    tenant:{ratePerSecond:100,burst:100}
+  });
+  assert.ok(q.admit(1,0n).accepted);
+  assert.deepEqual(q.admit(1,0n),{accepted:false,reason:"RATE"});
+  assert.equal(q.inspect().scopes[0].tokenWhole,99);
+});
+test("restarting child does not mint new actor or supervisor tokens",()=>{
+  const q=quota(),a=admitted(q),b=admitted(q);
+  q.restart();
+  assert.equal(q.inspect().incarnation,2);
+  assert.equal(q.admit(1,0n).accepted,false);
+  q.finish(a);q.finish(b);
+  assert.equal(q.admit(1,0n).accepted,false);
+});
+test("cancellation after admission frees pending credit but never burst",()=>{
+  const q=quota(),a=admitted(q),b=admitted(q);
+  q.finish(a);q.finish(b);
+  for(const x of q.inspect().scopes)assert.equal(x.tokenWhole,0);
+});
+test("byte budget is reserved for serialized cost and never overshoots",()=>{
+  const q=quota({tenant:{byteBurst:15,bytesPerSecond:15}});
+  const a=admitted(q,10);
+  assert.deepEqual(q.admit(10,0n),{accepted:false,reason:"BYTES"});
+  assert.equal(q.inspect().outstanding,1);
+  q.finish(a);
+  assert.deepEqual(q.admit(10,0n),{accepted:false,reason:"BYTES"});
+});
+test("negative, missing or reversed monotonic time fails closed",()=>{
+  const q=quota();
+  assert.throws(()=>q.admit(10),/clock/);
+  assert.throws(()=>q.admit(10,-1n),/clock/);
+  admitted(q,10,500000000n);
+  assert.throws(()=>q.admit(10,400000000n),/rollback/);
+});
+test("preflight rejects huge payload, negative size and token-unsafe inputs",()=>{
+  const q=quota();
+  for(const size of [0,-1,10000001,1.1,NaN])
+    assert.throws(()=>q.admit(size,0n),/preflight/);
+  assert.equal(q.inspect().outstanding,0);
+});
+test("duplicate/foreign quota credit retirement never alters counters",()=>{
+  const a=quota(),b=quota(),ticket=admitted(a);
+  assert.throws(()=>b.finish(ticket),/foreign/);
+  a.finish(ticket);assert.throws(()=>a.finish(ticket),/duplicate/);
+  assert.equal(a.inspect().outstanding,0);
+});
+test("supervisor shutdown seals new egress while physical credits remain live",()=>{
+  const q=quota(),lease=admitted(q);
+  q.stop();
+  assert.throws(()=>q.admit(1,0n),/closed/);
+  assert.equal(q.inspect().outstanding,1);
+  q.finish(lease);assert.equal(q.inspect().outstanding,0);
+});
+test("rate and in-flight are independent quota axes",()=>{
+  const q=quota({actor:{maxOutstanding:1,ratePerSecond:100,burst:20}});
+  const a=admitted(q);
+  assert.deepEqual(q.admit(1,0n),{accepted:false,reason:"OUTSTANDING"});
+  q.finish(a);
+  assert.equal(q.admit(1,0n).accepted,true);
+});
+test("quota profiles require all stable ancestor levels",()=>{
+  assert.throws(()=>new HierarchicalOutboundQuotaModel(profiles().slice(0,3)),/four/);
+  assert.throws(()=>new HierarchicalOutboundQuotaModel([scope("actor"),scope("actor"),
+    scope("supervisor"),scope("tenant")]),/scope owner/);
+});
+
+test("duplicated eventfd aliases reuse canonical open-description identity",()=>{
+  const fd=new TrustedFdAliasModel();
+  const original=fd.open(5),alias=fd.duplicate(original,7);
+  const ticket=fd.watch(original);
+  assert.throws(()=>fd.watch(alias),/duplicated/);
+  fd.retire(ticket);
+  assert.ok(fd.watch(alias));
+});
+test("unrelated eventfds are distinct despite matching anon_inode metadata",()=>{
+  const fd=new TrustedFdAliasModel(),a=fd.open(5),b=fd.open(7);
+  fd.watch(a);fd.watch(b);
+  assert.equal(fd.inspect().watches,2);
+});
+test("same numeric fd must not be watched twice under new identity",()=>{
+  const fd=new TrustedFdAliasModel(),a=fd.open(9),b=fd.open(9);
+  fd.watch(a);
+  assert.throws(()=>fd.watch(b),/same numeric/);
+});
+test("FD reuse after retirement is safe, stale handle can't revive",()=>{
+  const fd=new TrustedFdAliasModel(),a=fd.open(9),ticket=fd.watch(a);
+  fd.retire(ticket);fd.close(a);
+  assert.throws(()=>fd.watch(a),/foreign/);
+  const b=fd.open(9);
+  assert.ok(fd.watch(b));
+});
+test("cannot close watched FD or bypass owner via duplicated alias",()=>{
+  const fd=new TrustedFdAliasModel(),a=fd.open(5),alias=fd.duplicate(a,8);
+  const t=fd.watch(a);
+  assert.throws(()=>fd.close(alias),/watched/);
+  fd.retire(t);fd.close(alias);
+  assert.throws(()=>fd.watch(alias),/foreign/);
+});
+test("foreign FD watch tickets and handles are rejected",()=>{
+  const a=new TrustedFdAliasModel(),b=new TrustedFdAliasModel();
+  const x=a.open(11),ticket=a.watch(x);
+  assert.throws(()=>b.retire(ticket),/foreign/);
+  assert.throws(()=>b.duplicate(x,12),/foreign/);
+});
+test("bounded FD watcher table rejects N+1 aliases or watchers",()=>{
+  const fd=new TrustedFdAliasModel(2);
+  fd.watch(fd.open(1));fd.watch(fd.open(2));
+  assert.throws(()=>fd.watch(fd.open(3)),/capacity/);
+});
+test("reactor numeric and capability claims retire exactly once",()=>{
+  const fd=new TrustedFdAliasModel(),h=fd.open(1),t=fd.watch(h);
+  fd.retire(t);assert.throws(()=>fd.retire(t),/double/);
+  const x=fd.inspect();assert.equal(x.identities,0);assert.equal(x.numbers,0);
+});
+
+test("ML DATA cannot impersonate supervisor CONTROL by raw string or tag",()=>{
+  const ml=new TrainingControlModel("trainer");
+  assert.throws(()=>ml.data("cancel_failed"),/DATA fields/);
+  assert.throws(()=>ml.data({kind:"Commit",run:1,incarnation:1,step:0}),/untrusted CONTROL/);
+});
+test("ML optimizer commit requires trusted runtime-issued authority",()=>{
+  const ml=new TrainingControlModel("trainer"),auth=ml.controlAuthorityForHost();
+  assert.throws(()=>ml.commit({}, {run:1,incarnation:1,expectedVersion:1,step:0}),
+    /CONTROL authority/);
+  assert.equal(ml.commit(auth,{run:1,incarnation:1,expectedVersion:1,step:0}).weightVersion,2);
+});
+test("ML restart invalidates old authority even if step and weight version reset",()=>{
+  const ml=new TrainingControlModel("trainer"),old=ml.controlAuthorityForHost();
+  ml.restart();
+  assert.throws(()=>ml.commit(old,{run:2,incarnation:2,expectedVersion:1,step:0}),/CONTROL/);
+  const fresh=ml.controlAuthorityForHost();
+  assert.equal(ml.commit(fresh,{run:2,incarnation:2,expectedVersion:1,step:0}).step,1);
+});
+test("ML stale run/incarnation and weight version never mutate state",()=>{
+  const ml=new TrainingControlModel("trainer"),auth=ml.controlAuthorityForHost();
+  for(const bad of [{run:2,incarnation:1,expectedVersion:1,step:0},
+    {run:1,incarnation:2,expectedVersion:1,step:0},
+    {run:1,incarnation:1,expectedVersion:2,step:0}]){
+    assert.throws(()=>ml.commit(auth,bad),/stale/);
+    assert.equal(ml.inspect().weightVersion,1);
+  }
+});
+test("ML stopped actor denies DATA and privileged commit",()=>{
+  const ml=new TrainingControlModel("trainer"),auth=ml.controlAuthorityForHost();
+  ml.stop(auth);
+  assert.throws(()=>ml.data({kind:"Gradient",run:1,incarnation:1,step:0}),/stopped/);
+  assert.throws(()=>ml.commit(auth,{run:1,incarnation:1,expectedVersion:1,step:0}),/CONTROL/);
+});
+
+test("unsupported transport actor modes remain non-executable without adapter",()=>{
+  for(const transport of ["http","ipc","tcp","ffi","proxy","websocket"]){
+    const result=transportActorAdmission({transport,role:"actor",
+      serial:false,requires:[],with:[]});
+    assert.equal(result.status,"UNSUPPORTED");
+    assert.equal(result.guestExecution,"DENIED");
+  }
+});
+test("unary, serial and unverified capability clauses remain denied",()=>{
+  for(const descriptor of [
+    {transport:"mail",role:"unary",serial:false,requires:[],with:[]},
+    {transport:"mail",role:"actor",serial:true,requires:[],with:[]},
+    {transport:"mail",role:"actor",serial:false,requires:["NETWORK"],with:[]},
+    {transport:"mail",role:"actor",serial:false,requires:[],with:["filesystem"]}
+  ])assert.equal(transportActorAdmission(descriptor).status,"UNSUPPORTED");
+});
+test("conservative local-mail result is not proof runtime guest compiled",()=>{
+  const out=transportActorAdmission({transport:"mail",role:"actor",
+    serial:false,requires:[],with:[]});
+  assert.equal(out.status,"LOCAL_MAIL_ONLY");
+  assert.equal(out.guestExecution,"REFERENCE_NOT_PROOF");
+});
+test("guest cannot attach unrecognized execution authority fields",()=>{
+  assert.throws(()=>transportActorAdmission({transport:"ipc",role:"actor",serial:false,
+    requires:[],with:[],authenticated:true}),/fields/);
+});
