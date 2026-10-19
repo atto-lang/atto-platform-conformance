@@ -125,6 +125,25 @@ validation. The JS parser now rejects malformed, duplicated or displaced
 markers (including CRLF and unsupported versions) instead of silently
 ignoring them; block-comment lookalikes do not select a profile.
 
+### JS checked overflow versus foreign host-type failure (Oct 19 hardening)
+
+JS integration PR #23 now distinguishes two previously conflated failure
+classes in the **provisional generated host runtime**:
+
+* A `BigInt` mathematical result outside signed 64-bit range raises a
+  `RangeError` bearing `ORES_I64_OVERFLOW:`. The numeric evidence adapter
+  recognizes **only this observed marker** as a checked-overflow outcome.
+* A non-`BigInt` operand arriving from host JavaScript raises a `TypeError`
+  bearing `Oreslang signed i64 BigInt required`. This is a foreign interop
+  type failure; it must not be relabeled integer overflow.
+* Remainder by zero remains `RangeError` with
+  `ORES_I64_DIVISION_BY_ZERO:`, after validating both signed-i64 operands.
+
+These markers are **provisional host diagnostics**, not an authenticated
+guest `Error` ABI, LLVM parity attestation, or substitute for observed
+GraalVM execution. Changes to these codes require corresponding negative
+interop tests and a reviewed semantic version policy before production.
+
 Source-org Actions for these private repos have been failing before steps
 execute. Local JavaScript V8 source-generation/execution checks cover all
 16 Node numeric-boundary expressions and header rejections, but cannot
