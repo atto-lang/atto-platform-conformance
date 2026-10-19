@@ -25,3 +25,22 @@ export class AuthenticatedFrameOracle {
   state(){return Object.freeze({lastMessage:this.#lastMessage,lastFrame:this.#lastFrame});}
   invariant(){return this.#lastMessage>=0&&this.#lastFrame>=0;}
 }
+
+
+/** Source-free same-process physical transport owner binding contract. */
+export class PhysicalBindingOracle {
+  #owner=null; #epoch=null; #generation=0;
+  claim(owner,epoch,generation){
+    if(owner===null||owner===undefined||!epoch||
+       !Number.isSafeInteger(generation)||generation<=0) throw Error("binding");
+    if(this.#owner!==null) throw Error("rebind");
+    this.#owner=owner;this.#epoch=epoch;this.#generation=generation;
+  }
+  require(owner,epoch,generation){
+    if(this.#owner===null)throw Error("unbound");
+    if(owner!==this.#owner||epoch!==this.#epoch||generation!==this.#generation)
+      throw Error("foreign/stale");
+    return true;
+  }
+  legacyAllowed(){return this.#owner===null;}
+}
