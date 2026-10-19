@@ -202,6 +202,9 @@ export class ScopedLoanModel {
       // This is the declared referent value type. Lifetime/owner/capture
       // authority still must come from the real compiler.
       const traits=deriveSendSync(c.type);
+      // A shared &T being Send does not confer a mutable write capability.
+      check(c.mode!=="WRITE"||c.type.kind!=="borrow",
+        "borrowed referent is not mutable Task write authority");
       check(c.mode==="READ"?traits.sync:traits.send,"Send/Sync Task capture");
       const o=c.place.domain+"|"+c.place.owner;
       if(owner===null)owner=o;
@@ -237,6 +240,7 @@ export class ScopedLoanModel {
   parentMayAccess(c){
     exact(c,["place","mode","type"],"parent claim");
     ScopedLoanModel.#place(c.place);
+    check(["READ","WRITE"].includes(c.mode),"parent access mode");
     if(this.#sealed)return false;
     const owner=c.place.domain+"|"+c.place.owner;
     if(owner!==this.#owner)return false;
