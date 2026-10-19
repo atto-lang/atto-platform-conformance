@@ -46,6 +46,9 @@ export class PhysicalBindingOracle {
     if(this.#retired)throw Error("retired");
     return true;
   }
+  require(owner,epoch,generation){
+    return this.mutate(owner,epoch,generation);
+  }
   retire(owner,epoch,generation){
     this.mutate(owner,epoch,generation);
     this.#retired=true;
