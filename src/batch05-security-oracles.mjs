@@ -196,3 +196,45 @@ export function transportActorAdmission(descriptor){
   }
   return Object.freeze({status:"LOCAL_MAIL_ONLY",guestExecution:"REFERENCE_NOT_PROOF"});
 }
+
+
+/**
+ * Bind closure captures by compiler-resolved binding ID, never spelling,
+ * an entire environment snapshot, or an ambient actor receiver.
+ * Synthetic input is NOT evidence of real source name resolution.
+ */
+export function projectClosureBindings({available,referenced}){
+  check(Array.isArray(available)&&available.length<=1024 &&
+    Array.isArray(referenced)&&referenced.length<=1024,"capture footprint bound");
+  const slots=new Map();
+  for(const entry of available){
+    strict(entry,["binding","spelling","kind"],"resolved slot");
+    check(ident(entry.binding)&&ident(entry.spelling)&&
+      ["ordinary","self","constructorSelf","capability"].includes(entry.kind),
+      "resolved binding identity");
+    check(!slots.has(entry.binding),"duplicate binding identity");
+    slots.set(entry.binding,entry);
+  }
+  const projected=new Set();
+  for(const id of referenced){
+    check(ident(id)&&slots.has(id),"unresolved free-variable binding");
+    const slot=slots.get(id);
+    check(slot.kind!=="constructorSelf","constructing self cannot escape");
+    projected.add(id);
+  }
+  return Object.freeze([...projected].map(id=>Object.freeze({...slots.get(id)})));
+}
+
+/**
+ * Peer-generated receipts cannot assert trusted local EOF/disconnect.
+ * OUTCOME_UNKNOWN belongs only to the trusted local transport owner.
+ */
+export function receiptOriginDecision({source,stage}){
+  check(["authenticated-peer","trusted-local-transport"].includes(source),
+    "receipt origin");
+  check(["REMOTE_ACCEPTED","REJECTED_BEFORE_REMOTE","HANDLER_COMMITTED",
+    "HANDLER_FAILED","OUTCOME_UNKNOWN"].includes(stage),"receipt stage");
+  if(stage==="OUTCOME_UNKNOWN"&&source!=="trusted-local-transport")return "DENY";
+  if(stage!=="OUTCOME_UNKNOWN"&&source==="trusted-local-transport")return "DENY";
+  return "ADMISSIBLE_ORIGIN_ONLY";
+}
