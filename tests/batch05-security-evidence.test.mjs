@@ -44,7 +44,7 @@ test("source-local IPC patch is scoped and remains Java CI unverified",()=>{
   assert.equal(evidence.fix.pr,1503);
   assert.equal(evidence.fix.basePr,1438);
   assert.equal(evidence.fix.verifiedExactHeadJava,false);
-  assert.equal(evidence.fix.scope,"REMOTE_OUTCOME_UNKNOWN_DENIED_LOCAL_DISCONNECT_ONLY");
+  assert.equal(evidence.fix.scope,"PEER_LOCAL_VERDICTS_FENCED_EOF_AND_PREDISPATCH_REJECTION");
 });
 test("approved host CI for other tree cannot validate current patch or guest network",()=>{
   assert.equal(evidence.upstreamEvidence.run,39207273400);
