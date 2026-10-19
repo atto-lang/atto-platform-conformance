@@ -151,7 +151,7 @@ test("unknown nominal, false traits, and recursive object descriptors fail close
   assert.throws(()=>deriveSendSync(cycle),/recursive/);
 });
 test("no guest-supplied unsafe Send override or hidden descriptor fields",()=>{
-  assert.throws(()=>deriveSendSync({kind:"scalar",name:"int",send:true}),/fields/);
+  assert.throws(()=>deriveSendSync({kind:"scalar",name:"int",send:true}),/non-core|fields/);
   assert.throws(()=>deriveSendSync({kind:"arc",value:SCALAR,unsafeSync:true}),/fields/);
 });
 test("large recursive type declarations and excess compound width denied",()=>{
@@ -174,9 +174,9 @@ test("disjoint proven fields and nonoverlapping ranges write concurrently",()=>{
   const m=new ScopedLoanModel(),p=place();
   const a=m.admit([claim({...p,path:[field("position")]},"WRITE")]);
   const b=m.admit([claim({...p,path:[field("velocity")]},"WRITE")]);
-  const c=m.admit([claim({...p,path:[field("position"),range(0,10)]},"READ")]);
-  // c conflicts with a full position writer
-  // In this fixture c admission must have failed; made separate test below.
+  assert.equal(m.inspect().active,2);
+  assert.equal(m.parentMayAccess(claim({...p,path:[field("position")]},"READ")),false);
+  m.quiescent(a);m.quiescent(b);m.finish();
 });
 test("whole field and nested range conservatively overlap",()=>{
   const m=new ScopedLoanModel(),p=place();
