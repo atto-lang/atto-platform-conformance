@@ -278,3 +278,18 @@ test("local transport cannot forge remote handler commit or ACK",()=>{
   assert.equal(receiptOriginDecision({source:"authenticated-peer",
     stage:"HANDLER_COMMITTED"}),"ADMISSIBLE_ORIGIN_ONLY");
 });
+
+test("FD identity registry cannot grow without bound on open/dup storms",()=>{
+  const fd=new TrustedFdAliasModel(1),handles=[];
+  for(let i=0;i<4;i++)handles.push(fd.open(i));
+  assert.throws(()=>fd.open(5),/bounded FD handle inventory/);
+  fd.close(handles[0]);
+  assert.ok(fd.open(5));
+});
+test("trusted alias allocation is also bounded by open FD inventory",()=>{
+  const fd=new TrustedFdAliasModel(1),h=fd.open(5);
+  const aliases=[fd.duplicate(h,6),fd.duplicate(h,7),fd.duplicate(h,8)];
+  assert.throws(()=>fd.duplicate(h,9),/bounded FD handle inventory/);
+  aliases.forEach(x=>fd.close(x));
+  fd.close(h);
+});
