@@ -19,11 +19,14 @@ indeterminate even though indeterminacy should be concluded by the trusted
 **local** transport/session-loss observer, not claimed in a remote ACK.
 
 Stacked draft [#1503](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1503)
-rejects peer-origin `OUTCOME_UNKNOWN` **before** altering any correlation
-or transport credit. It leaves `retireTransportLost(session)` and the
-host-only completion bridge as the local authority for uncertainty. Negative
-tests cover pre-ACK, post-ACK and unchanged host futures, and the 61,440-case
-seeded test was updated to use local EOF for the uncertainty branch.
+rejects peer-origin `OUTCOME_UNKNOWN` **and `REJECTED_BEFORE_REMOTE`**
+before altering any correlation or transport credit. It leaves
+`retireTransportLost(session)` as the trusted-local uncertainty authority,
+and introduces package-local `rejectBeforeRemote(message)` for trusted
+prepublication rejection, including completion outside the bridge monitor. Negative
+tests cover pre-ACK, post-ACK and unchanged host futures, plus local
+prepublication failure, double-release and callback reentrancy. The 61,440-case
+seeded test now uses local EOF/rejection instead of forged peer verdicts.
 
 **Not proven:** this stacked Java patch has not yet passed executed exact-head
 Java tests. Its `acceptVerified` entrypoint itself **does not perform peer
@@ -58,8 +61,8 @@ two-process transport parity remains open. Do not merge before the parent.
   than name spelling; unused receiver/capability slots are omitted;
   constructing receiver escape denies. Source-level Java still requires
   actual compiler name-resolution, reachability and capture lifetime tests.
-- **receiptOriginDecision:** OUTCOME_UNKNOWN is a trusted-local event, not
-  an authenticated-peer terminal, matching the source Java hardening.
+- **receiptOriginDecision:** OUTCOME_UNKNOWN and REJECTED_BEFORE_REMOTE are
+  trusted-local events, not authenticated-peer terminal outcomes.
 
 These are bounded deterministic reference oracles, not Oreslang programs,
 network security enforcement, native FD tracking, protected sandboxing,
@@ -110,7 +113,7 @@ node --test tests/batch05-security-evidence.test.mjs
 npm test
 ```
 
-**45/45 source-free model and inventory checks passed in an isolated V8
+**49/49 source-free model and inventory checks passed in an isolated V8
 test harness with Node assertion shims.** That is **not** the real
 Node `--test` runner, compiled Oreslang guest, Maven, CTest or Native Image.
 Repo main's existing `tests/supervisor-outbound-inventory.test.mjs` remains
@@ -134,3 +137,11 @@ separate: do not replace the accepted contract's 12 scenarios.
 
 No private source export, untrusted network grant, live FD handle mutation,
 account approval, issue closure or merge is performed by this PR.
+
+
+## Follow-up audit and attempted source-local CI rerun (Oct 19)
+
+- Source-head Java [#1503](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1503) now distinguishes **both** local outcomes (uncertain EOF and never-sent prepublication rejection) from authenticated peer ACK/COMMIT/FAIL. Methods for prepublication reject are **package-private**, not public guest APIs. Source JDK21/JUnit and native guest execution remain **unobserved**.
+- The conformance FD model now rejects creating two trusted handle identities for a simultaneously live numeric descriptor and does not accidentally model unreviewed `dup2` overwrite authority. Numeric reuse after close/retirement is still permitted with a distinct opaque identity. Reference tests: 49/49 isolated V8-shim, not the Node CLI.
+- Failed source-local Actions attempts were retried via GitHub connector: conformance run [39302748822](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/actions/runs/39302748822) attempt 2 and Java run [39302640852](https://github.com/ores-truffle-oreslang/oreslang-source.java/actions/runs/39302640852) attempt 2 both concluded failure again with `steps:null`. This cannot certify failure cause, node --test, javac, or Oreslang guest tests.
+- The cross-org mirror option remains **blocked** by private-CI policy PR #1217: incidents conformance #22/#77 open, no independent approvals binding this exact source tree and destination repo ID. Earlier approved carrier run #39207273400 is scoped to an older Java host quota source snapshot and is **not** permission to export PR #1503 or conformance PR #123.
