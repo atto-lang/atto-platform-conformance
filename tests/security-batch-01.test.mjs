@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {auditSecurityBatch,classifyWorkflowJob,policyLines,
+import {auditSecurityBatch,classifyWorkflowJob,classifyPinnedRun,policyLines,
   SOURCE_REPOS,CARRIERS,SAMPLE_RUNS} from "../bin/audit-security-batch-01.mjs";
 
 const encoded=text=>({type:"file",encoding:"base64",
@@ -35,8 +35,17 @@ function makeFixture(overrides={}) {
       }
       if(resource.startsWith("contents/.github/"))
         return {status:200,json:async()=>encoded("# no approvals\n")};
-      if(resource.startsWith("actions/runs/"))
+      if(/^actions\/runs\/\d+$/.test(resource)){
+        const id=Number(resource.split("/")[2]);
+        const fixture=SAMPLE_RUNS.find(([n,i])=>n===repo&&i===id);
+        return {status:200,json:async()=>({
+          id,repository:{id:identities.get(repo),full_name:repo},
+          head_sha:fixture?.[2],run_attempt:1,status:"completed"
+        })};
+      }
+      if(/^actions\/runs\/\d+\/jobs$/.test(resource))
         return {status:200,json:async()=>({total_count:1,jobs:[{
+          id:42,run_id:Number(resource.split("/")[2]),
           name:"test",status:"completed",conclusion:"failure",steps:null
         }]})};
     }
@@ -164,4 +173,57 @@ test("invalid JSON from one repo never produces a passing identity",async()=>{
   const result=await auditSecurityBatch({token:"synthetic",fetchImpl});
   assert.equal(result.sources[0].identity,"UNVERIFIABLE");
   assert.equal(result.privateSourceExport,"DENIED");
+});
+
+test("sampled run metadata must bind immutable repo ID, run ID, head and attempt",()=>{
+  const [name,id,head]=SAMPLE_RUNS[0];
+  const base={id,repository:{id:SOURCE_REPOS[0][1],full_name:name},
+    head_sha:head,run_attempt:1,status:"completed"};
+  assert.equal(classifyPinnedRun(base,name,id,head),"EXACT_HEAD_RUN_METADATA");
+  assert.equal(classifyPinnedRun({...base,head_sha:"f".repeat(40)},name,id,head),
+    "MISMATCHED_OR_UNVERIFIABLE");
+  assert.equal(classifyPinnedRun({...base,id:id+1},name,id,head),
+    "MISMATCHED_OR_UNVERIFIABLE");
+  assert.equal(classifyPinnedRun({...base,run_attempt:undefined},name,id,head),
+    "MISMATCHED_OR_UNVERIFIABLE");
+  assert.equal(classifyPinnedRun({...base,repository:{...base.repository,id:999}},
+    name,id,head),"MISMATCHED_OR_UNVERIFIABLE");
+  assert.equal(classifyPinnedRun({...base,status:"in_progress"},name,id,head),
+    "NOT_TERMINAL");
+});
+test("mismatched run head prevents even querying unrelated jobs",async()=>{
+  const [name,id]=SAMPLE_RUNS[0],{fetchImpl,requests}=makeFixture({
+    [name+"/actions/runs/"+id]:{
+      id,head_sha:"f".repeat(40),run_attempt:1,status:"completed",
+      repository:{id:SOURCE_REPOS[0][1],full_name:name}
+    }
+  });
+  const report=await auditSecurityBatch({token:"synthetic",fetchImpl});
+  assert.equal(report.runs[0].runEvidence,"MISMATCHED_OR_UNVERIFIABLE");
+  assert.deepEqual(report.runs[0].jobEvidence,["UNOBSERVED"]);
+  assert.ok(!requests.some(r=>r.url.includes("/actions/runs/"+id+"/jobs")));
+  assert.equal(report.privateSourceExport,"DENIED");
+});
+test("foreign workflow job run IDs cannot certify a complete page",async()=>{
+  const [name,id]=SAMPLE_RUNS[0],{fetchImpl}=makeFixture({
+    [name+"/actions/runs/"+id+"/jobs"]:{total_count:1,jobs:[{
+      id:99,run_id:id+1,status:"completed",steps:[{
+        status:"completed",conclusion:"success",
+        started_at:"2026-10-19T00:00:00Z",completed_at:"2026-10-19T00:01:00Z"
+      }]
+    }]}
+  });
+  const report=await auditSecurityBatch({token:"synthetic",fetchImpl});
+  assert.equal(report.runs[0].runEvidence,"EXACT_HEAD_RUN_METADATA");
+  assert.equal(report.runs[0].coverage,"INCOMPLETE_OR_UNOBSERVED");
+  assert.deepEqual(report.runs[0].jobEvidence,["UNOBSERVED"]);
+});
+test("source-free run evidence never becomes publisher authorization",async()=>{
+  const {fetchImpl}=makeFixture();
+  const report=await auditSecurityBatch({token:"synthetic",fetchImpl});
+  assert.equal(report.runs.length,SAMPLE_RUNS.length);
+  assert.ok(report.runs.every(r=>r.runEvidence==="EXACT_HEAD_RUN_METADATA"));
+  assert.ok(report.runs.every(r=>r.jobEvidence[0]==="UNOBSERVED"));
+  assert.equal(report.privateSourceExport,"DENIED");
+  assert.equal(report.ciCompilerTests,"NOT_ATTESTED");
 });
