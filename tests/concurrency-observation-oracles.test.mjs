@@ -195,3 +195,29 @@ test("unsafe freeform error text and backend mismatch fail closed",()=>{
   assert.throws(()=>auditCausalDiagnostic(diag({errorCode:"secrets: abc"})),/error code/);
   assert.throws(()=>auditCausalDiagnostic(diag({backend:"host-jvm"})),/backend/);
 });
+
+test("foreign join cannot forge a happens-before transfer",()=>{
+  assert.throws(()=>mem([
+    {owner:"A",op:"spawn",child:"C"},write("C"),
+    {owner:"C",op:"done"},{owner:"B",op:"join",child:"C"}
+  ]),/unique original owning spawner/);
+});
+test("join is single-consumer even if a child is already exited",()=>{
+  assert.throws(()=>mem([
+    {owner:"A",op:"spawn",child:"C"},
+    {owner:"C",op:"done"},
+    {owner:"A",op:"join",child:"C"},
+    {owner:"A",op:"join",child:"C"}
+  ]),/unique original owning spawner/);
+});
+test("parent get_done cannot settle before owned descendants exit",()=>{
+  assert.throws(()=>task([
+    reg("parent"),reg("child","parent"),
+    ev("parent","physical_exit"),ev("parent","get_done")
+  ]),/descendant quiescence/);
+  assert.equal(task([
+    reg("parent"),reg("child","parent"),
+    ev("parent","physical_exit"),ev("child","physical_exit"),
+    ev("parent","get_done"),ev("scope0","scope_done")
+  ]).scopeDone,true);
+});
