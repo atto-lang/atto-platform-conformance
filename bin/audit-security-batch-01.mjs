@@ -22,9 +22,10 @@ export const CARRIERS=Object.freeze([
   ["sagitta-stack/sagitta-infra",1357615104]
 ]);
 export const SAMPLE_RUNS=Object.freeze([
-  ["ores-truffle-oreslang/oreslang-source.java",39192171654],
-  ["ores-truffle-oreslang/oreslang-source.llvm",39192071724],
-  ["ores-truffle-oreslang/oreslang-serialization-and-validation",39171413088]
+  // Immutable commit IDs observed through the authenticated run metadata.
+  ["ores-truffle-oreslang/oreslang-source.java",39192171654,"0f9012b4bfd6efbf9e35da3873a23f6a104f8467"],
+  ["ores-truffle-oreslang/oreslang-source.llvm",39192071724,"d2d335689336f53f9ed8858dc8103a2753959838"],
+  ["ores-truffle-oreslang/oreslang-serialization-and-validation",39171413088,"979e60642df99908f9aa44502fb17ae66c4072b1"]
 ]);
 const ISSUE_REPO="ores-truffle-oreslang/oreslang-platform-conformance";
 const OID=/^[0-9a-f]{40}$/;
@@ -70,6 +71,27 @@ export function classifyWorkflowJob(job) {
     typeof step.started_at==="string" && step.started_at.length>0 &&
     typeof step.completed_at==="string" && step.completed_at.length>0).length;
   return count>0?"TIMESTAMPED_STEPS_REPORTED":"NO_TIMESTAMPED_STEPS";
+}
+
+/**
+ * Bind job metadata to the sampled immutable head and numeric repository ID
+ * before analyzing any jobs. This is an evidence-integrity check, NOT an
+ * authorization or CI-success assertion. Missing fields always mean unknown.
+ */
+export function classifyPinnedRun(run,name,id,expectedHead) {
+  const identity=SOURCE_REPOS.find(([repo])=>repo===name);
+  if(!identity || !run || typeof run!=="object" ||
+     !Number.isSafeInteger(id) || run.id!==id ||
+     run.repository?.id!==identity[1] ||
+     run.repository?.full_name!==name ||
+     (run.head_repository!=null &&
+       (run.head_repository.id!==identity[1] ||
+        run.head_repository.full_name!==name)) ||
+     !OID.test(expectedHead) || run.head_sha!==expectedHead ||
+     !Number.isSafeInteger(run.run_attempt) || run.run_attempt<1)
+    return "MISMATCHED_OR_UNVERIFIABLE";
+  return run.status==="completed"?"EXACT_HEAD_RUN_METADATA":
+    "NOT_TERMINAL";
 }
 
 export function policyLines(file) {
@@ -141,17 +163,29 @@ export async function auditSecurityBatch({token,fetchImpl=fetch}={}) {
       independentlyAccepted:false});
   }
   const runs=[];
-  for(const [name,id] of SAMPLE_RUNS) {
+  for(const [name,id,expectedHead] of SAMPLE_RUNS) {
+    const metadata=await readMetadata(name+"/actions/runs/"+id,token,fetchImpl);
+    const runEvidence=classifyPinnedRun(
+      metadata.ok?metadata.value:null,name,id,expectedHead);
+    // Never analyze possibly unrelated job records as evidence for an exact
+    // source head. A missing run/attempt/repository binding fails closed.
+    if(runEvidence!=="EXACT_HEAD_RUN_METADATA") {
+      runs.push({repo:name,runId:id,expectedHead,runEvidence,
+        coverage:"INCOMPLETE_OR_UNOBSERVED",jobEvidence:["UNOBSERVED"]});
+      continue;
+    }
     const response=await readMetadata(name+"/actions/runs/"+id+"/jobs?per_page=100",
       token,fetchImpl);
     const payload=response.ok?response.value:null;
     const jobs=Array.isArray(payload?.jobs)?payload.jobs:null;
-    const complete=jobs!==null && Number.isSafeInteger(payload.total_count) &&
-      payload.total_count===jobs.length;
-    runs.push({repo:name,runId:id,
+    const complete=jobs!==null && jobs.length<=100 &&
+      Number.isSafeInteger(payload.total_count) &&
+      payload.total_count===jobs.length &&
+      jobs.every(job=>job && Number.isSafeInteger(job.id) &&
+        job.run_id===id);
+    runs.push({repo:name,runId:id,expectedHead,runEvidence,
       coverage:complete?"FIRST_PAGE_COMPLETE":"INCOMPLETE_OR_UNOBSERVED",
-      jobEvidence:jobs===null?["UNOBSERVED"]:
-        jobs.slice(0,100).map(classifyWorkflowJob)});
+      jobEvidence:complete?jobs.map(classifyWorkflowJob):["UNOBSERVED"]});
   }
   // A read-only diagnostic NEVER grants source-export authority.
   return {
