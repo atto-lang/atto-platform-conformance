@@ -113,7 +113,7 @@ node --test tests/batch05-security-evidence.test.mjs
 npm test
 ```
 
-**49/49 source-free model and inventory checks passed in an isolated V8
+**51/51 source-free model and inventory checks passed in an isolated V8
 test harness with Node assertion shims.** That is **not** the real
 Node `--test` runner, compiled Oreslang guest, Maven, CTest or Native Image.
 Repo main's existing `tests/supervisor-outbound-inventory.test.mjs` remains
@@ -142,6 +142,13 @@ account approval, issue closure or merge is performed by this PR.
 ## Follow-up audit and attempted source-local CI rerun (Oct 19)
 
 - Source-head Java [#1503](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1503) now distinguishes **both** local outcomes (uncertain EOF and never-sent prepublication rejection) from authenticated peer ACK/COMMIT/FAIL. Methods for prepublication reject are **package-private**, not public guest APIs. Source JDK21/JUnit and native guest execution remain **unobserved**.
-- The conformance FD model now rejects creating two trusted handle identities for a simultaneously live numeric descriptor and does not accidentally model unreviewed `dup2` overwrite authority. Numeric reuse after close/retirement is still permitted with a distinct opaque identity. Reference tests: 49/49 isolated V8-shim, not the Node CLI.
+- The conformance FD model now rejects creating two trusted handle identities for a simultaneously live numeric descriptor and does not accidentally model unreviewed `dup2` overwrite authority. Numeric reuse after close/retirement is still permitted with a distinct opaque identity. Reference tests: 51/51 isolated V8-shim, not the Node CLI.
 - Failed source-local Actions attempts were retried via GitHub connector: conformance run [39302748822](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/actions/runs/39302748822) attempt 2 and Java run [39302640852](https://github.com/ores-truffle-oreslang/oreslang-source.java/actions/runs/39302640852) attempt 2 both concluded failure again with `steps:null`. This cannot certify failure cause, node --test, javac, or Oreslang guest tests.
 - The cross-org mirror option remains **blocked** by private-CI policy PR #1217: incidents conformance #22/#77 open, no independent approvals binding this exact source tree and destination repo ID. Earlier approved carrier run #39207273400 is scoped to an older Java host quota source snapshot and is **not** permission to export PR #1503 or conformance PR #123.
+
+
+### Additional seeded adversarial checks (same audit)
+
+The exact-fetched model and inventory suite now passes **51/51** isolated V8-shim checks, including **50,000 deterministic hierarchical quota steps** and **20,000 FD open/dup/watch/retire transitions**. These uphold bounded counters, exact credit cleanup, numerical FD identity exclusivity, and no accidental quota refund across restart/cancel. Unlike actual Node `--test`, this evaluator does not exercise Node module-loading behavior.
+
+[Private canary #39303220290](https://github.com/ores-dummy-org-oreslang-stack/ores-dummy-org-oreslang-stack-infra/actions/runs/39303220290) succeeded at 18:31 UTC on Oct 19. This shows that the separate private test organization's runner recently executed a **source-free canary**, but does not measure its remaining GitHub Actions minutes or authorize any private source transfer. The mirror dispatcher PR #1217 still blocks exports while incident #22/#77 and independent exact-repo/tree approvals remain incomplete.
