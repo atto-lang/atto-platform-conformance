@@ -165,8 +165,11 @@ test("accepts only explicitly approved and GitHub-verified writable private dest
     sourceCommit:A,sourceTree:T,destinationId
   });
   assert.ok(calls.length >= 30);
-  assert.equal(calls[0].url.endsWith("/" + source), true);
-  assert.equal(calls[1].url.endsWith("/" + destination), true);
+  // Source exposure incidents are checked before touching repository metadata.
+  assert.equal(calls[0].url.endsWith("/issues/22"), true);
+  assert.equal(calls[1].url.endsWith("/issues/77"), true);
+  assert.equal(calls[2].url.endsWith("/" + source), true);
+  assert.equal(calls[3].url.endsWith("/" + destination), true);
 });
 
 test("rejects public, internal, contradictory, archived and unwritable destinations", async () => {
@@ -346,7 +349,7 @@ test("additional required checks are allowed only when every check is app-bound 
  const unbound={...baseline,required_status_checks:{strict:true,contexts:[],checks:[
   {context:"private-ci-policy",app_id:15368},{context:"security-lint",app_id:null}
  ]}};
- await assert.rejects(check({}, {[key]:unbound}),/context\/app identity invalid/);
+ await assert.rejects(check({}, {[key]:unbound}),/context\/app identity invalid|required check identity invalid/);
 });
 
 test("the existing independently reviewed ORESoftware owner remains an accepted exact security owner",async()=>{
