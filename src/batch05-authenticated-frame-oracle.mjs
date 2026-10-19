@@ -29,18 +29,28 @@ export class AuthenticatedFrameOracle {
 
 /** Source-free same-process physical transport owner binding contract. */
 export class PhysicalBindingOracle {
-  #owner=null; #epoch=null; #generation=0;
+  #owner=null; #epoch=null; #generation=0; #retired=false;
   claim(owner,epoch,generation){
     if(owner===null||owner===undefined||!epoch||
        !Number.isSafeInteger(generation)||generation<=0) throw Error("binding");
     if(this.#owner!==null) throw Error("rebind");
     this.#owner=owner;this.#epoch=epoch;this.#generation=generation;
   }
-  require(owner,epoch,generation){
+  #requireIdentity(owner,epoch,generation){
     if(this.#owner===null)throw Error("unbound");
     if(owner!==this.#owner||epoch!==this.#epoch||generation!==this.#generation)
       throw Error("foreign/stale");
+  }
+  mutate(owner,epoch,generation){
+    this.#requireIdentity(owner,epoch,generation);
+    if(this.#retired)throw Error("retired");
     return true;
   }
+  retire(owner,epoch,generation){
+    this.mutate(owner,epoch,generation);
+    this.#retired=true;
+  }
   legacyAllowed(){return this.#owner===null;}
+  state(){return Object.freeze({bound:this.#owner!==null,
+    generation:this.#generation,retired:this.#retired});}
 }
