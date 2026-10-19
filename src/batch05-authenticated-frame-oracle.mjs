@@ -57,3 +57,19 @@ export class PhysicalBindingOracle {
   state(){return Object.freeze({bound:this.#owner!==null,
     generation:this.#generation,retired:this.#retired});}
 }
+
+
+/** Source-free ordering contract for blocking host operations. */
+export class BlockingHostOperationOracle {
+  #actorCarrier=false; #sendAdmissions=0; #receiptReads=0; #closeMutations=0;
+  enterActorCarrier(){this.#actorCarrier=true;}
+  exitActorCarrier(){this.#actorCarrier=false;}
+  #requireHost(){if(this.#actorCarrier)throw Error("cannot block actor carrier");}
+  send(){this.#requireHost();this.#sendAdmissions++;return true;}
+  readReceipt(){this.#requireHost();this.#receiptReads++;return true;}
+  closeAndWait(){this.#requireHost();this.#closeMutations++;return true;}
+  state(){return Object.freeze({
+    actorCarrier:this.#actorCarrier,sendAdmissions:this.#sendAdmissions,
+    receiptReads:this.#receiptReads,closeMutations:this.#closeMutations
+  });}
+}
