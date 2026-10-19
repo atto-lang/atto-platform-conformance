@@ -374,7 +374,7 @@ test("strict app-bound required CI and reviewer bypass protection are mandatory"
   [{...baseline,required_status_checks:undefined},/required status checks|strict app-bound required checks/],
   [{...baseline,required_status_checks:{strict:false,contexts:[],checks:[{context:"private-ci-policy",app_id:15368}]}},/required status checks|strict app-bound required checks/],
   [{...baseline,required_status_checks:{strict:true,contexts:["legacy"],checks:[{context:"private-ci-policy",app_id:15368}]}},/required status checks|strict app-bound required checks/],
-  [{...baseline,required_status_checks:{strict:true,contexts:[],checks:[]}},/required status checks|strict app-bound required checks/],
+  [{...baseline,required_status_checks:{strict:true,contexts:[],checks:[]}},/private-ci-policy check\/app binding missing/],
   [{...baseline,required_status_checks:{strict:true,contexts:[],checks:[{context:"private-ci-policy",app_id:9999}]}},/context\/app identity|private-ci-policy check\/app binding missing/],
   [{...baseline,required_pull_request_reviews:{...baseline.required_pull_request_reviews,
     bypass_pull_request_allowances:{users:[{login:"owner"}],teams:[],apps:[]}}},/codeowner review proof|review\/admin\/no-bypass protection mismatch/],
