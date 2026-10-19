@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {AuthenticatedFrameOracle} from "../src/batch05-authenticated-frame-oracle.mjs";
+import {AuthenticatedFrameOracle,PhysicalBindingOracle} from "../src/batch05-authenticated-frame-oracle.mjs";
 
 test("receipt pre-authentication length cap is small and fail closed",()=>{
   assert.equal(AuthenticatedFrameOracle.boundedWireLength("RECEIPT",600),true);
@@ -45,4 +45,20 @@ test("100000 monotonic authenticated frames preserve constant-memory replay stat
     assert.equal(g.invariant(),true);
   }
   assert.deepEqual(g.state(),{lastMessage:100000,lastFrame:100000});
+});
+
+
+test("physical binding is irreversible and disables legacy authority",()=>{
+  const b=new PhysicalBindingOracle(),owner={};
+  b.claim(owner,"epoch-A",71);
+  assert.equal(b.require(owner,"epoch-A",71),true);
+  assert.equal(b.legacyAllowed(),false);
+  assert.throws(()=>b.claim({},"epoch-A",72),/rebind/);
+});
+test("foreign owner, generation and epoch are denied",()=>{
+  const b=new PhysicalBindingOracle(),owner={};
+  b.claim(owner,"epoch-A",71);
+  assert.throws(()=>b.require({},"epoch-A",71),/foreign/);
+  assert.throws(()=>b.require(owner,"epoch-A",72),/foreign/);
+  assert.throws(()=>b.require(owner,"epoch-B",71),/foreign/);
 });
