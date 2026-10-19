@@ -37,7 +37,8 @@ export class HotUpgradeGate {
   acquire(kind){
     requireOk(!this.#frozen&&!this.#closed,"DATA admission frozen");
     requireOk(pinKinds.has(kind),"unknown native pin kind");
-    requireOk(this.#pins.size<4096,"pin budget exhausted");
+    requireOk(this.#pins.size<4096&&this.#serial<Number.MAX_SAFE_INTEGER,
+      "pin budget/identity exhausted");
     const t=token(++this.#serial);
     this.#pins.set(t,{kind,code:this.#active.code});return t;
   }
@@ -60,6 +61,7 @@ export class HotUpgradeGate {
     for(const k of ["abi","state","shared","policy"])
       requireOk(image[k]===this.#active[k],"code-only schema/capability drift: "+k);
     requireOk(image.code!==this.#active.code,"duplicate code image");
+    requireOk(this.#serial<Number.MAX_SAFE_INTEGER,"code stage ticket overflow");
     const t=token(++this.#serial);this.#staged={...image,t};return t;
   }
   abort(t){
@@ -223,6 +225,7 @@ export class WireMemoryLedger {
   reserve(n){
     requireOk(pos(n),"scratch preflight charge");
     if(n>this.#scratchCap-this.#scratch)return null;
+    requireOk(this.#serial<Number.MAX_SAFE_INTEGER,"wire ticket overflow");
     const t=token(++this.#serial);this.#encode.set(t,n);this.#scratch+=n;return t;
   }
   commit(t,bytes){
@@ -268,6 +271,7 @@ export class EdgeCreditGate {
     requireOk(!this.#sealed,"edge admission sealed");
     if(this.#queued.length===this.#capacity&&
        this.#waiting.length>=this.#waiterCap)return null;
+    requireOk(this.#seq<Number.MAX_SAFE_INTEGER,"edge admission ticket overflow");
     const t=token(++this.#seq);
     if(this.#waiting.length===0&&this.#queued.length<this.#capacity){
       this.#states.set(t,"COMMITTED");this.#queued.push(t);
