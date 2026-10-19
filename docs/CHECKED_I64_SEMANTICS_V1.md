@@ -105,6 +105,40 @@ portable default. The two profiles require separate execution receipts,
 versioned semantic status, and distinct CI gate names. No profile switch may
 silently fall back to legacy wrapping behavior.
 
+## October 19 remainder and source-admission implementation
+
+The **draft implementations**, not the production default, now encode one
+explicit zero-divisor marker: `ORES_I64_DIVISION_BY_ZERO`. Java #956 admits
+signed `%` in marked checked source and throws a dedicated provisional host
+exception for zero divisors; JS #23 checks both signed BigInt operands before
+remainder and throws a marked RangeError on zero. Evidence adapters may
+normalize an **observed** marker to `division_by_zero` only after verifying
+the running compiler and exact fixture; a marker on its own authenticates
+neither guest execution nor the producer. This is not yet a shared
+Oreslang guest `Error`/Throw ABI.
+
+Java's common experimental HIR exporter does **not** currently admit `%`.
+This is a Java **linked guest runtime** probe and a JS program-v2 guest
+probe, *not* a common-HIR-to-MIR remainder conformance result. The Java
+and JS compilers must also use the **same** checked first-line header
+validation. The JS parser now rejects malformed, duplicated or displaced
+markers (including CRLF and unsupported versions) instead of silently
+ignoring them; block-comment lookalikes do not select a profile.
+
+Source-org Actions for these private repos have been failing before steps
+execute. Local JavaScript V8 source-generation/execution checks cover all
+16 Node numeric-boundary expressions and header rejections, but cannot
+replace Node 22 CI, Java/Graal linked guest JUnit, LLVM native tests, or
+source-to-binary provenance.
+
+**Do not** promote `checked-i64-v1` to the unmarked Java default yet.
+Java #956 also restricts non-i64 operations in the experimental marked
+profile. A safe default rollout needs separate typing-aware work to
+preserve floating `/`, string concatenation, complex arithmetic,
+literal diagnostics, and all other non-i64 operations, plus migration
+review and executed regression evidence. Treat the current checked
+profile as a compatibility bridge, not an approved language-wide flip.
+
 ## Required real-compiler parity gate
 
 1. Review and freeze the contract and fixture bytes/hash.
