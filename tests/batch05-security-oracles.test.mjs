@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   HierarchicalOutboundQuotaModel, TrustedFdAliasModel,
-  TrainingControlModel, transportActorAdmission, projectClosureBindings, receiptOriginDecision
+  TrainingControlModel, transportActorAdmission, projectClosureBindings, receiptOriginDecision,
+  IpcPublicationFenceModel
 } from "../src/batch05-security-oracles.mjs";
 
 const scope=(kind,over={})=>({kind,id:"host-"+kind,
@@ -395,4 +396,109 @@ test("20k seeded FD handle/dup/watch/retire steps cannot double-own numeric FDs"
   const stats=fd.inspect();
   assert.equal(stats.watches,0);
   assert.equal(stats.openHandles,0);
+});
+
+
+test("peer ACK is illegal before trusted local transport dispatch commitment",()=>{
+  const f=new IpcPublicationFenceModel();
+  assert.throws(()=>f.receivePeer("REMOTE_ACCEPTED"),/before local dispatch/);
+  assert.ok(f.invariant());
+  assert.deepEqual(f.inspect(),{
+    stage:"LOCAL_ADMITTED",pending:true,transportCredits:1,lastObserved:null
+  });
+});
+test("local never-sent rejection loses irreversibly after dispatch commit",()=>{
+  const f=new IpcPublicationFenceModel();
+  f.commitDispatch();
+  assert.throws(()=>f.rejectBeforeRemote(),/cannot prove never-sent/);
+  assert.equal(f.inspect().stage,"DISPATCH_COMMITTED");
+  assert.equal(f.inspect().transportCredits,1);
+  assert.equal(f.transportLost(),true);
+  assert.equal(f.inspect().lastObserved,"DISPATCH_COMMITTED");
+  assert.equal(f.inspect().stage,"OUTCOME_UNKNOWN");
+  assert.equal(f.inspect().transportCredits,0);
+  assert.throws(()=>f.commitDispatch(),/commitment denied/);
+  assert.ok(f.invariant());
+});
+test("local rejection wins before dispatch: no publish and no credits leak",()=>{
+  const f=new IpcPublicationFenceModel();
+  f.rejectBeforeRemote();
+  assert.throws(()=>f.commitDispatch(),/commitment denied/);
+  assert.equal(f.transportLost(),false);
+  assert.equal(f.inspect().stage,"REJECTED_BEFORE_REMOTE");
+  assert.ok(f.invariant());
+});
+test("authenticated peer ACK and terminal must respect dispatch order",()=>{
+  const f=new IpcPublicationFenceModel();
+  assert.throws(()=>f.receivePeer("HANDLER_COMMITTED"),/without ACK/);
+  f.commitDispatch();
+  assert.throws(()=>f.receivePeer("HANDLER_COMMITTED"),/without ACK/);
+  f.receivePeer("REMOTE_ACCEPTED");
+  assert.equal(f.inspect().transportCredits,0);
+  f.receivePeer("HANDLER_COMMITTED");
+  assert.equal(f.inspect().pending,false);
+  assert.equal(f.transportLost(),false);
+  assert.throws(()=>f.receivePeer("HANDLER_FAILED"),/without ACK/);
+  assert.ok(f.invariant());
+});
+test("a remote peer cannot issue locally authoritative terminal outcomes",()=>{
+  const f=new IpcPublicationFenceModel();
+  f.commitDispatch();
+  assert.throws(()=>f.receivePeer("OUTCOME_UNKNOWN"),/trusted-local/);
+  assert.throws(()=>f.receivePeer("REJECTED_BEFORE_REMOTE"),/trusted-local/);
+  assert.equal(f.inspect().stage,"DISPATCH_COMMITTED");
+  assert.ok(f.invariant());
+});
+test("trusted local EOF without dispatch is conservatively uncertain, not replayable",()=>{
+  const f=new IpcPublicationFenceModel();
+  assert.equal(f.transportLost(),true);
+  assert.equal(f.inspect().lastObserved,"LOCAL_ADMITTED");
+  assert.equal(f.inspect().stage,"OUTCOME_UNKNOWN");
+  assert.throws(()=>f.rejectBeforeRemote(),/cannot prove/);
+  assert.ok(f.invariant());
+});
+test("exhaustive serial orderings of commit, reject, ACK, DONE and EOF preserve credits",()=>{
+  const commands=["commit","reject","ack","done","eof"];
+  let serializations=0;
+  const walk=(prefix,remaining)=>{
+    if(remaining.length===0){
+      const f=new IpcPublicationFenceModel();
+      for(const name of prefix){
+        try{
+          if(name==="commit")f.commitDispatch();
+          else if(name==="reject")f.rejectBeforeRemote();
+          else if(name==="ack")f.receivePeer("REMOTE_ACCEPTED");
+          else if(name==="done")f.receivePeer("HANDLER_COMMITTED");
+          else f.transportLost();
+        }catch(e){assert.match(String(e),/SECURITY_ORACLE_DENY/);}
+        assert.ok(f.invariant());
+      }
+      serializations++;
+      return;
+    }
+    for(let i=0;i<remaining.length;i++)
+      walk([...prefix,remaining[i]],
+        [...remaining.slice(0,i),...remaining.slice(i+1)]);
+  };
+  walk([],commands);
+  assert.equal(serializations,120);
+});
+test("100k deterministic IPC publication fault transitions never underflow credits",()=>{
+  let seed=20261019;
+  const rng=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed};
+  for(let i=0;i<100000;i++){
+    const f=new IpcPublicationFenceModel();
+    for(let j=0;j<5;j++){
+      const pick=rng()%6;
+      try{
+        if(pick===0)f.commitDispatch();
+        else if(pick===1)f.rejectBeforeRemote();
+        else if(pick===2)f.receivePeer("REMOTE_ACCEPTED");
+        else if(pick===3)f.receivePeer("HANDLER_COMMITTED");
+        else if(pick===4)f.receivePeer("HANDLER_FAILED");
+        else f.transportLost();
+      }catch(e){assert.match(String(e),/SECURITY_ORACLE_DENY/);}
+      assert.ok(f.invariant());
+    }
+  }
 });
