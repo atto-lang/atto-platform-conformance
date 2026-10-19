@@ -10,7 +10,7 @@ import {
 
 const matrixBytes=await readFile(new URL('../fixtures/checked-i64-v1.json',import.meta.url));
 const gitBlobSha1=createHash('sha1')
-  .update('blob '+matrixBytes.length+'\\0'.replace('\\0','\\x00'))
+  .update('blob '+matrixBytes.length+'\0')
   .update(matrixBytes).digest('hex');
 const matrix=JSON.parse(matrixBytes);
 const L=value=>({op:'literal',value:String(value)});
