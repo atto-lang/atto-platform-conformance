@@ -332,3 +332,67 @@ test("unknown IPC origin and pseudo terminal result remain denied",()=>{
   assert.throws(()=>receiptOriginDecision({source:"authenticated-peer",
     stage:"CANCELLED_BEFORE_REMOTE"}),/receipt stage/);
 });
+
+test("50k seeded hierarchical quota transitions preserve aggregate credit invariants",()=>{
+  let seed=20261019;
+  const rng=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed;};
+  const q=quota(),live=[];
+  let now=0n;
+  for(let i=0;i<50000;i++){
+    now+=1000000n; // trusted monotonic 1 ms increments
+    const roll=rng()%17;
+    if(roll===0)q.restart();
+    else if(roll<6&&live.length)q.finish(live.splice(rng()%live.length,1)[0]);
+    else{
+      const admission=q.admit(1+(rng()%16),now);
+      if(admission.accepted)live.push(admission.lease);
+    }
+    const snapshot=q.inspect();
+    assert.equal(snapshot.outstanding,live.length);
+    assert.ok(snapshot.outstanding<=10);
+    for(const scope of snapshot.scopes){
+      assert.equal(scope.active,live.length);
+      assert.ok(scope.tokenWhole>=0&&scope.tokenWhole<=2);
+      assert.ok(scope.bytesWhole>=0&&scope.bytesWhole<=10000);
+    }
+  }
+  for(const ticket of live)q.finish(ticket);
+  assert.equal(q.inspect().outstanding,0);
+  q.stop();
+  assert.throws(()=>q.admit(1,now),/closed/);
+});
+test("20k seeded FD handle/dup/watch/retire steps cannot double-own numeric FDs",()=>{
+  let seed=7331;const rng=()=>{seed=(Math.imul(seed,1103515245)+12345)>>>0;return seed;};
+  const fd=new TrustedFdAliasModel(12),handles=[],watches=[];
+  let nextFd=1;
+  for(let i=0;i<20000;i++){
+    const action=rng()%5;
+    if(action===0&&handles.length<24){
+      const h=fd.open(nextFd++);
+      handles.push(h);
+    }else if(action===1&&handles.length&&handles.length<24){
+      const target=handles[rng()%handles.length];
+      handles.push(fd.duplicate(target,nextFd++));
+    }else if(action===2&&handles.length&&watches.length<12){
+      const h=handles[rng()%handles.length];
+      try{watches.push(fd.watch(h));}catch(e){assert.match(String(e),/watch|duplicate|numeric|capacity/);}
+    }else if(action===3&&watches.length){
+      fd.retire(watches.splice(rng()%watches.length,1)[0]);
+    }else if(action===4&&handles.length){
+      const index=rng()%handles.length,h=handles[index];
+      try{fd.close(h);handles.splice(index,1);}
+      catch(e){assert.match(String(e),/watched/);}
+    }
+    const s=fd.inspect();
+    assert.ok(s.openHandles<=24);
+    assert.equal(s.openHandles,handles.length);
+    assert.equal(s.watches,watches.length);
+    assert.equal(s.numbers,s.watches);
+    assert.equal(s.identities,s.watches);
+  }
+  watches.forEach(t=>fd.retire(t));
+  handles.forEach(h=>fd.close(h));
+  const stats=fd.inspect();
+  assert.equal(stats.watches,0);
+  assert.equal(stats.openHandles,0);
+});
