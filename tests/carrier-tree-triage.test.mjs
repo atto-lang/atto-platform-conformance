@@ -69,3 +69,15 @@ test('directory tree objects have to carry safe Git mode',()=>{
   assert.equal(triage({tree:[good,entry('fixtures/synthetic.json')]}).classification,'SOURCE_FREE_UNPROVEN');
   assert.equal(triage({tree:[{...good,mode:'100644'},entry('fixtures/synthetic.json')]}).classification,'UNVERIFIABLE_TREE');
 });
+
+test('known private blob fingerprint flags renamed content despite benign path',()=>{
+  const observed={...base,tree:[entry('logs/harmless.json',B)]};
+  const v=triageCarrierTree(observed,null,[B]);
+  assert.equal(v.classification,'MATCHES_REPORTED_PRIVATE_BLOB');
+  assert.equal(v.authorizes_source_transfer,false);
+  assert.equal(v.certifies_source_free,false);
+});
+test('unknown and malformed fingerprint inventories do not become approvals',()=>{
+  assert.equal(triageCarrierTree(base,null,['not-a-sha']).classification,'UNVERIFIABLE_FINGERPRINTS');
+  assert.equal(triageCarrierTree(base,null,[]).classification,'SOURCE_FREE_UNPROVEN');
+});
