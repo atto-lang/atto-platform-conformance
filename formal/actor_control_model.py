@@ -13,7 +13,7 @@ from typing import Iterator
 
 CAPACITY = 2
 MESSAGES = (11, 12, 21, 22)
-MUTANTS = ("priority", "stale-admission", "duplicate-settlement")
+MUTANTS = ("priority", "stale-admission", "duplicate-settlement", "cancelled-resurrection", "lost-message")
 
 @dataclass(frozen=True)
 class State:
@@ -73,6 +73,11 @@ def transitions(s: State, mutant: str | None = None) -> Iterator[tuple[str, Stat
         else:
             yield "DATA.reject(stale-g1)", replace(
                 s, stale_attempted=True, stale_drops=1)
+    if mutant == "cancelled-resurrection" and s.generation == 2 and s.phase == "live" and s.cancelled and len(s.queued) < CAPACITY:
+        m = min(s.cancelled)
+        yield f"MUTANT.resurrect-cancelled({m})", replace(s, queued=s.queued + (m,))
+    if mutant == "lost-message" and s.phase == "live" and s.queued:
+        yield "MUTANT.drop-without-settlement", replace(s, queued=s.queued[1:])
     if mutant == "duplicate-settlement" and s.completed:
         m = s.completed[0]
         if s.completed.count(m) == 1:
@@ -89,6 +94,11 @@ def violations(s: State) -> tuple[str, ...]:
         problems.append("TerminalDrainsPending")
     if s.phase == "fenced" and s.carrier != ("control", s.generation):
         problems.append("FenceOwnsCarrier")
+    # Terminal cancellation is a permanent tombstone, including after restart.
+    # A stop-time-only check would be implied by TerminalDrainsPending and vacuous.
+    if set(s.completed) & set(s.cancelled) or set(s.queued) & set(s.cancelled) or \
+            (s.carrier is not None and s.carrier[0] == "data" and s.carrier[1] in s.cancelled):
+        problems.append("NoResurrection")
     if any(generation_of(m) != s.generation for m in s.queued):
         problems.append("QueueIncarnation")
     if s.carrier and s.carrier[0] == "data" and generation_of(s.carrier[1]) != s.generation:
@@ -102,8 +112,6 @@ def violations(s: State) -> tuple[str, ...]:
     accounted = queued + inflight + list(s.completed) + list(s.cancelled)
     if len(accounted) != len(set(accounted)) or set(accounted) != s.accepted:
         problems.append("DataConservation")
-    if s.phase == "stopped" and any(m in s.queued for m in s.cancelled):
-        problems.append("NoResurrection")
     if s.stale_drops not in (0, 1):
         problems.append("BoundedStaleDrops")
     return tuple(problems)

@@ -30,6 +30,15 @@ class ActorControlFormalTest(unittest.TestCase):
         self.assertEqual(result.invariant, "QueueIncarnation")
         self.assertIn("SUPERVISOR.restart(g2)", result.trace)
 
+    def test_cancelled_reply_resurrection_detected(self):
+        result = model.check("cancelled-resurrection")
+        self.assertEqual(result.invariant, "NoResurrection")
+        self.assertIn("SUPERVISOR.restart(g2)", result.trace)
+
+    def test_lost_message_detected(self):
+        result = model.check("lost-message")
+        self.assertEqual(result.invariant, "DataConservation")
+
     def test_duplicate_reply_detected(self):
         result = model.check("duplicate-settlement")
         self.assertEqual(result.invariant, "AtMostOnce")

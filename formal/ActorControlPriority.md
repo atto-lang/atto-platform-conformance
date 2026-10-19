@@ -9,7 +9,7 @@ The verified ABSTRACT properties are:
 - Each accepted DATA envelope belongs to exactly one of queued, in-flight, completed or explicitly cancelled. No successful settlement may happen twice.
 - Both DATA and CONTROL mailboxes have bounded capacity.
 
-The checker uses breadth-first search and produces a shortest discovered counterexample trace in JSON. Three required negative mutants demonstrate detection of priority bypass, stale authority admission and duplicate settlement. The currently tested safe bound reaches 1,155 states and 1,883 transitions; tests enforce the safety properties and reachable corner cases rather than freezing state counts.
+The checker uses breadth-first search and produces a shortest discovered counterexample trace in JSON. Five required negative mutants demonstrate detection of priority bypass, stale authority admission, duplicate settlement, cancelled-envelope resurrection, and silent loss without settlement. Coverage tests assert reachable corner cases rather than freezing state counts.
 
 Run on Python 3.10+ without dependencies:
 
@@ -18,8 +18,12 @@ Run on Python 3.10+ without dependencies:
     python3 formal/actor_control_model.py --mutant priority --json
     python3 formal/actor_control_model.py --mutant stale-admission --json
     python3 formal/actor_control_model.py --mutant duplicate-settlement --json
+    python3 formal/actor_control_model.py --mutant cancelled-resurrection --json
+    python3 formal/actor_control_model.py --mutant lost-message --json
 
-The three mutant invocations MUST fail with a nonzero exit status and identify, respectively, ControlPriority, QueueIncarnation and AtMostOnce.
+All five mutant invocations MUST fail with a nonzero exit status and identify, respectively, ControlPriority, QueueIncarnation, AtMostOnce, NoResurrection and DataConservation.
+
+The NoResurrection invariant is checked *across* restart, not only at the instant of stopped state; stopped already entails empty queues, so a stop-only queue check is insufficient.
 
 ## Critical proof boundary
 
