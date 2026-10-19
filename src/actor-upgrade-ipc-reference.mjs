@@ -240,3 +240,74 @@ export class WireMemoryLedger {
     encodes:this.#encode.size,frames:this.#frames.size,
     scratchCap:this.#scratchCap,retainedCap:this.#storedCap});}
 }
+
+
+/**
+ * Model for one bounded ActorStream DATA edge.
+ * request() is an abstract nonparking future registration, not a guest Future.
+ * Successful queue commit consumes the sender-owned message exactly once.
+ * Cancellation after commit cannot claw the message back from the recipient.
+ */
+export class EdgeCreditGate {
+  #capacity;#waiterCap;#queued=[];#waiting=[];#seq=0;#sealed=false;
+  #states=new Map();
+  constructor({capacity,maxWaiters=64}={}){
+    requireOk(pos(capacity)&&capacity<=4096&&pos(maxWaiters)&&maxWaiters<=4096,
+      "bounded edge capacity");
+    this.#capacity=capacity;this.#waiterCap=maxWaiters;
+  }
+  request(){
+    requireOk(!this.#sealed,"edge admission sealed");
+    if(this.#queued.length===this.#capacity&&
+       this.#waiting.length>=this.#waiterCap)return null;
+    const t=token(++this.#seq);
+    if(this.#waiting.length===0&&this.#queued.length<this.#capacity){
+      this.#states.set(t,"COMMITTED");this.#queued.push(t);
+    }else{
+      this.#states.set(t,"WAITING");this.#waiting.push(t);
+    }
+    return t;
+  }
+  cancel(t){
+    const state=this.#states.get(t);
+    requireOk(state!==undefined,"foreign edge credit");
+    if(state!=="WAITING")return false; // committed transfer irreversible
+    const index=this.#waiting.indexOf(t);
+    requireOk(index>=0,"edge wait queue corrupted");
+    this.#waiting.splice(index,1);this.#states.set(t,"CANCELLED");
+    return true;
+  }
+  dequeue(){
+    requireOk(this.#queued.length>0,"edge credit underflow");
+    const t=this.#queued.shift();
+    requireOk(this.#states.get(t)==="COMMITTED","edge commit mismatch");
+    this.#states.set(t,"DELIVERED");
+    this.#promote();
+    return t;
+  }
+  #promote(){
+    if(this.#sealed)return;
+    while(this.#waiting.length&&this.#queued.length<this.#capacity){
+      const t=this.#waiting.shift();
+      requireOk(this.#states.get(t)==="WAITING","waiter state mismatch");
+      this.#states.set(t,"COMMITTED");this.#queued.push(t);
+    }
+  }
+  stop(){
+    this.#sealed=true;
+    for(const t of this.#waiting)this.#states.set(t,"CANCELLED");
+    this.#waiting.length=0;
+    // Committed DATA remains counted until explicit dequeue/retirement.
+  }
+  retireCommitted(t){
+    const index=this.#queued.indexOf(t);
+    requireOk(index>=0&&this.#states.get(t)==="COMMITTED",
+      "foreign/double edge retirement");
+    this.#queued.splice(index,1);this.#states.set(t,"RETIRED");
+    this.#promote();
+  }
+  status(t){return this.#states.get(t)??"UNKNOWN";}
+  inspect(){return Object.freeze({queued:this.#queued.length,
+    waiting:this.#waiting.length,capacity:this.#capacity,
+    maxWaiters:this.#waiterCap,sealed:this.#sealed});}
+}
