@@ -81,6 +81,30 @@ The data-oracle vectors in `fixtures/checked-i64-v1.json` and
 They do not execute any Oreslang compiler or establish Java, LLVM or Node
 backend parity.
 
+## Transitional exact-source interop (Java PR #956)
+
+Java PR #956 still preserves wrapping arithmetic for **unmarked** Oreslang
+source. It enables experimental checked arithmetic only when the exact first
+line is `// oreslang:checked-i64-v1\n`. That is **not** portable checked-by-
+default semantics. Java's checked overflow marker is currently host-side
+`ORES_I64_OVERFLOW`; guest Error, actor supervision, and complete checked
+ABI parity remain open.
+
+`renderCheckedI64GuestSource(expr,'portable-default')` emits the unmarked
+candidate default form. It must **not** be counted as passing on the legacy
+Java runtime for overflow cases. `renderCheckedI64GuestSource(expr,'checked-i64-v1')`
+prefixes the exact first-line directive and is the interim source profile for
+a Java ↔ JS checked-semantics test. Java and JS must receive **identical
+rendered bytes** (the JS lexer accepts line comments). The runner must not
+secretly prefix only Java and claim to have executed the same source. The
+fixture suite checks both source forms against the exact AST and pins the
+base fixture Git blob.
+
+Passing the opt-in profile is not sufficient to claim the eventual unmarked
+portable default. The two profiles require separate execution receipts,
+versioned semantic status, and distinct CI gate names. No profile switch may
+silently fall back to legacy wrapping behavior.
+
 ## Required real-compiler parity gate
 
 1. Review and freeze the contract and fixture bytes/hash.
