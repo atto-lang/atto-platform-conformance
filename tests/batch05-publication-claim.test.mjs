@@ -2,6 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {PublicationClaimOracle} from "../src/batch05-publication-claim-oracle.mjs";
 
+const epoch=(session,routeEpoch=3,capabilityGeneration=4)=>({
+  domain:"tenant",sender:"sender",destination:"worker",session,
+  senderIncarnation:1,destinationIncarnation:2,routeEpoch,capabilityGeneration
+});
+
 test("unclaimed message cannot be acknowledged by peer",()=>{
   const g=new PublicationClaimOracle(),t=g.admit();
   assert.throws(()=>g.receipt(t,"REMOTE_ACCEPTED"),/out of order/);
@@ -126,4 +131,35 @@ test("100000 deterministic transitions preserve outstanding credit accounting",(
       assert.ok(g.counts().pending<=10);
     }
   }
+});
+
+test("stale EOF cannot retire a new route or capability with same session string",()=>{
+  const g=new PublicationClaimOracle(2);
+  const old=epoch("reused",3,4),newRoute=epoch("reused",4,5);
+  const a=g.admit(old),b=g.admit(newRoute);
+  g.claim(a);g.claim(b);
+  const previous=g.eof(old);
+  assert.equal(previous.length,1);
+  assert.equal(previous[0].ticket,a);
+  assert.equal(g.state(b),"DISPATCH_CLAIMED");
+  assert.equal(g.counts().credits,1);
+  assert.equal(g.eof(old).length,0);
+  g.receipt(b,"REMOTE_ACCEPTED");
+  g.receipt(b,"HANDLER_COMMITTED");
+  assert.equal(g.invariant(),true);
+});
+test("epoch values are copied: mutating input after admission cannot change authority",()=>{
+  const g=new PublicationClaimOracle(1),proof=epoch("immutable");
+  const t=g.admit(proof);
+  proof.routeEpoch=99;proof.session="forged";
+  assert.equal(g.eof(proof).length,0);
+  assert.equal(g.eof(epoch("immutable")).length,1);
+  assert.equal(g.state(t),"RETIRED");
+});
+test("text-only EOF and truncated generation metadata are rejected",()=>{
+  const g=new PublicationClaimOracle();
+  g.admit(epoch("protected"));
+  assert.throws(()=>g.eof("protected"),/complete transport epoch/);
+  assert.throws(()=>g.eof({session:"protected"}),/complete transport epoch/);
+  assert.equal(g.counts().pending,1);
 });
