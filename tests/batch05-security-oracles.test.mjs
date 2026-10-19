@@ -319,3 +319,16 @@ test("numeric FD reuse remains fenced while any prior alias owns that number",()
   const newTwelve=fd.open(12);
   assert.ok(fd.watch(newTwelve));
 });
+
+test("authenticated peer cannot classify REJECTED_BEFORE_REMOTE",()=>{
+  assert.equal(receiptOriginDecision({source:"authenticated-peer",
+    stage:"REJECTED_BEFORE_REMOTE"}),"DENY");
+  assert.equal(receiptOriginDecision({source:"trusted-local-transport",
+    stage:"REJECTED_BEFORE_REMOTE"}),"ADMISSIBLE_ORIGIN_ONLY");
+});
+test("unknown IPC origin and pseudo terminal result remain denied",()=>{
+  assert.throws(()=>receiptOriginDecision({source:"guest",stage:"HANDLER_COMMITTED"}),
+    /receipt origin/);
+  assert.throws(()=>receiptOriginDecision({source:"authenticated-peer",
+    stage:"CANCELLED_BEFORE_REMOTE"}),/receipt stage/);
+});
