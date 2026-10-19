@@ -52,25 +52,25 @@ test("duplicate claim and duplicate ACK must reject",()=>{
   assert.throws(()=>g.receipt(t,"REMOTE_ACCEPTED"),/out of order/);
 });
 test("lost session after claimed write is ambiguous and reclaims credit",()=>{
-  const g=new PublicationClaimOracle(),t=g.admit("old");
+  const g=new PublicationClaimOracle(),t=g.admit(epoch("old"));
   g.claim(t);
-  const lost=g.eof("old");
+  const lost=g.eof(epoch("old"));
   assert.equal(lost.length,1);
   assert.equal(lost[0].stage,"DISPATCH_CLAIMED");
   assert.equal(g.counts().credits,0);
   assert.equal(g.invariant(),true);
 });
 test("lost session after ACK does not imply handler committed",()=>{
-  const g=new PublicationClaimOracle(),t=g.admit("old");
+  const g=new PublicationClaimOracle(),t=g.admit(epoch("old"));
   g.claim(t);g.receipt(t,"REMOTE_ACCEPTED");
-  assert.equal(g.eof("old")[0].stage,"REMOTE_ACCEPTED");
+  assert.equal(g.eof(epoch("old"))[0].stage,"REMOTE_ACCEPTED");
   assert.equal(g.state(t),"RETIRED");
   assert.equal(g.invariant(),true);
 });
 test("session fencing only retires correlations of chosen session",()=>{
-  const g=new PublicationClaimOracle(),a=g.admit("old"),b=g.admit("new");
+  const g=new PublicationClaimOracle(),a=g.admit(epoch("old")),b=g.admit(epoch("new"));
   g.claim(a);
-  assert.equal(g.eof("old").length,1);
+  assert.equal(g.eof(epoch("old")).length,1);
   assert.equal(g.state(b),"LOCAL_ADMITTED");
   assert.equal(g.counts().credits,1);
   g.reject(b);assert.equal(g.invariant(),true);
@@ -92,13 +92,13 @@ test("all 24 claim/reject/ACK/EOF serial schedules maintain invariants",()=>{
   function permutations(arr,p=[]){
     if(!arr.length){
       n++;
-      const g=new PublicationClaimOracle(1),t=g.admit("s");
+      const g=new PublicationClaimOracle(1),t=g.admit(epoch("s"));
       for(const action of p){
         try{
           if(action==="claim")g.claim(t);
           else if(action==="reject")g.reject(t);
           else if(action==="ack")g.receipt(t,"REMOTE_ACCEPTED");
-          else g.eof("s");
+          else g.eof(epoch("s"));
         }catch(e){assert.match(String(e),/stale|never-sent|out of order|duplicate/);}
         assert.equal(g.invariant(),true);
       }
@@ -115,7 +115,7 @@ test("100000 deterministic transitions preserve outstanding credit accounting",(
     const g=new PublicationClaimOracle(10),tickets=[];
     for(let step=0;step<500;step++){
       const action=random()%7;
-      if(action===0){const t=g.admit("s");if(t)tickets.push(t);}
+      if(action===0){const t=g.admit(epoch("s"));if(t)tickets.push(t);}
       else if(tickets.length){
         const t=tickets[random()%tickets.length];
         try{
@@ -124,7 +124,7 @@ test("100000 deterministic transitions preserve outstanding credit accounting",(
           else if(action===3)g.receipt(t,"REMOTE_ACCEPTED");
           else if(action===4)g.receipt(t,"HANDLER_FAILED");
           else if(action===5)g.receipt(t,"OUTCOME_UNKNOWN");
-          else g.eof("s");
+          else g.eof(epoch("s"));
         }catch(e){assert.match(String(e),/stale|never-sent|out of order|duplicate|remote cannot/);}
       }
       assert.equal(g.invariant(),true);
