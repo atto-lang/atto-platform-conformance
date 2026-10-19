@@ -247,6 +247,7 @@ export class ScopedLoanModel {
     if(this.#generations.get(owner+"|"+c.place.allocation)!==c.place.generation)
       return false;
     const t=deriveSendSync(c.type);
+    if(c.mode==="WRITE"&&c.type.kind==="borrow")return false;
     if(!(c.mode==="READ"?t.sync:t.send))return false;
     return ![...this.#children.values()].some(x=>x.claims.some(y=>
       ScopedLoanModel.conflicts(c,y)));
