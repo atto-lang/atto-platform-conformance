@@ -62,3 +62,16 @@ test("ETS and STM models never certify guest runtime integration",()=>{
   assert.equal(ets.inspect().guestApiVerified,false);
   assert.equal(new StmReference().inspect().guestStmVerified,false);
 });
+
+test("versioned ETS compareExchange rejects stale per-key generation",()=>{
+ const table=new EtsSetReference({owner,maxEntries:2});
+ const cap=table.issue(owner);
+ table.insert(cap,owner,"item",1);
+ const prior=table.lookup(cap,owner);
+ table.take(cap,owner,"item");
+ table.insert(cap,owner,"item",1);
+ assert.equal(table.compareExchangeVersioned(cap,owner,"item",1,prior.version,7),false);
+ const current=table.lookup(cap,owner);
+ assert.ok(current.version>prior.version);
+ assert.equal(table.compareExchangeVersioned(cap,owner,"item",1,current.version,9),true);
+});
