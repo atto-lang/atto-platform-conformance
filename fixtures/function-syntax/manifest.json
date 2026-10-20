@@ -22,8 +22,8 @@
   "sourceFreeReferenceEvidence": {
     "repository": "ORESoftware/typespec-json-schema-validator",
     "pullRequest": 239,
-    "runId": 39441715765,
-    "result": "20/20 independent syntax-reference tests passed"
+    "runId": 39443132577,
+    "result": "21/21 independent syntax-reference tests passed"
   },
   "notes": "The fixture is byte-identical to the Java parser/typechecker corpus, the Rust formatter corpus, and the LLVM fail-closed corpus. Source-free reference evidence validates the public grammar contract only. Java Maven/Graal, formatter cargo, and LLVM CMake/CTest remain pending because their source-org jobs fail before step 1. No cross-org private compiler source export is authorized by this manifest."
 }
