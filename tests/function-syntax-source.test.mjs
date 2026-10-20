@@ -15,7 +15,7 @@ test("function syntax corpus keeps explicit staged backend/tool expectations",()
   const c=manifest.cases[0];
   assert.equal(c.id,"end-delimited-roundtrip");
   assert.equal(c.file,"end-delimited-roundtrip.ores");
-  assert.equal(c.sourceGitBlobSha1,"5d9384b6d2acfd6d21a805315fed4bd7518022b1");
+  assert.equal(c.sourceGitBlobSha1,"c91a244cb99c1aaa74b3abadf9b99d8e1f3aea86");
   assert.deepEqual(c.expectations,{
     java:"accept-and-typecheck",
     formatter:"format-idempotently",
