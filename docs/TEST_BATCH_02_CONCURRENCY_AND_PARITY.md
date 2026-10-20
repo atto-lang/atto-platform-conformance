@@ -9,8 +9,8 @@ This is a source-free contract/testing branch. It cannot authorize source export
 - Preserved existing `src/concurrency-observation-oracles.mjs`: vector-clock memory trace reference, conservative wait-cycle audit, Task physical-exit and owner checks, bounded/redacted causal diagnostics. Synthetic trace interpretation is **not runtime instrumentation**.
 - Added `src/batch-02-replay-contract.mjs`: bounded trace and dependency-closure shape checking; rejects missing imported units, stale source/runtime closure identity, partial/incomplete decisions, unknown alternatives, time regressions and untrusted fields. It does **not** compute the import closure from a guest compiler or prove actual scheduler replay.
 - Added `src/batch-02-evidence-admission.mjs`: separates software benchmarks from FPGA/ASIC PPA, measured from modeled results, and L0–L4 assurance layers. Independent post-merge reviews, protected branch claims and executed merge-head CI metadata are checked structurally, but results always return `benchmarkCertified:false`, `assuranceCertified:false` and `releaseCertified:false` without independent external authentication.
-- Added 21 evidence-admission adversarial tests and 11 replay contract tests. Updated inventory tests with the original ten issue URLs.
-- Added an actual **transitive imported-source digest regression** to Java [test mode PR #1427](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1427), commit `9fdb4fe63295756b4dae0f807edf75b64a664d8c`. It changes a file two imports from the entry and independently tests import rebinding; Java JUnit exact-head execution still pending.
+- Added 21 evidence-admission adversarial tests and 13 replay contract tests. Updated inventory tests with the original ten issue URLs.
+- Added an actual **transitive imported-source digest regression** to Java [test mode PR #1427](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1427), commits `9fdb4fe63295756b4dae0f807edf75b64a664d8c` and `43756989f64ff69170b912918c85b9ea0e135767`. It changes a file two imports from the entry and independently tests import rebinding; Java JUnit exact-head execution still pending.
 
 ## Correct batch tasks and release gates
 
@@ -30,8 +30,9 @@ This is a source-free contract/testing branch. It cannot authorize source export
 ## Verifying only what was actually tested
 
 - The new evidence module was evaluated in an isolated V8 sandbox from the **committed GitHub source**: **21/21 synthetic tests passed**.
-- The new source-free replay module was similarly checked: **11/11 synthetic tests passed**.
-- These are neither Node 22 `node --test` tests nor a GitHub Actions job or compiler execution. The existing 42 race/Task/causal synthetic tests and batch manifest checks must also be executed at the exact latest head before promotion.
+- The new source-free replay module was similarly checked: **13/13 synthetic tests passed**.
+- The existing 42 race/Task/causal and 5 corrected inventory checks were also run in the isolated V8 evaluator. Total: **81/81 isolated synthetic checks passed** (42 + 5 + 21 + 13).
+- These are neither Node 22 `node --test` tests nor a GitHub Actions job or compiler execution. All 81 tests still require native Node 22 exact-head execution before promotion.
 - Run on an authorized source-local runner: `node --test tests/batch-02-test-work.test.mjs tests/concurrency-observation-oracles.test.mjs tests/batch-02-evidence-admission.test.mjs tests/batch-02-replay-contract.test.mjs`. Run `npm test` for full conformance coverage.
 - Java exact-head JDK25 Maven/JUnit must run `SourceClosureFingerprintTest`, `OresTestTraceTest` and source-compiled guest replay rejection. Native LLVM load/store races are separately required.
 - **No imported source tree or compiler binary was copied to another GitHub organization.** Conformance private-exposure incidents [#22](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22) and [#77](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/77) and Java private CI protection [#962](https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/962) still govern any future transfer.
