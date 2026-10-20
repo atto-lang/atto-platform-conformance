@@ -89,3 +89,16 @@ test("bad seed, noncanonical source closure and invalid clock denied",()=>{
   const b=trace();b.decisions[1].logicalTime=0;b.decisions[0].logicalTime=1;
   assert.throws(()=>check(manifest(),trace(),b),/nonmonotonic logical time/);
 });
+
+test("canonical relative and package imports are admitted as source-free aliases",()=>{
+  const m=manifest();m.edges[0].specifier="./dep";
+  assert.equal(check(m).sourceUnits,2);
+  m.edges[0].specifier="+/pkg/module";
+  assert.equal(check(m).sourceUnits,2);
+});
+test("traversal and absolute imports are denied before replay admission",()=>{
+  for(const specifier of ["../secret", "/etc/passwd", "./../../out", "pkg//bad"]){
+    const m=manifest();m.edges[0].specifier=specifier;
+    assert.throws(()=>check(m),/unresolved import/);
+  }
+});
