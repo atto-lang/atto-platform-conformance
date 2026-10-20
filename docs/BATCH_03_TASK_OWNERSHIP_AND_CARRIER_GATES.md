@@ -42,3 +42,7 @@ Then require independent reviewed Java JDK25/GraalVM/JUnit, LLVM native CMake/CT
 Private source may not be transferred to an alternate GitHub organization based solely on available Actions budget or private visibility. Incidents [#22](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22), [#77](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/77), approval and protected policy gates must be resolved independently before any cross-organization source transfer.
 
 Keep PR #118 and Java #1631 in draft pending actual exact-head CI plus independent review. No unreviewed source import, runtime enablement, branch protection bypass, merge or issue closure is authorized by this batch.
+
+## Additional scalar trait conformance
+
+The synthetic trait model previously accepted `void` as transferable. This disagreed with Java `ThreadSafetyTraits`, which rejects `Primitive.VOID`. The model and an explicit regression have now been updated. Isolated JS results: 45 trait/Task/carrier checks, 7 ETS/STM, 9 FFI/Channel, 10 CFG, and 4 inventory checks: **75/75 passed**. This is not native Node or compiler evidence.
