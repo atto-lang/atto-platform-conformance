@@ -1,4 +1,4 @@
-/** Structural admission for eight Oreslang actor hot-reload paths.
+/** Structural admission for eight modes x two actor kinds = sixteen cases.
  * THIS IS NOT guest execution or an authenticated CI attestation.
  */
 export const MATRIX = Object.freeze([
@@ -7,6 +7,7 @@ export const MATRIX = Object.freeze([
   ['llvm','aot','aot'], ['llvm','aot','jit'],
   ['llvm','jit','aot'], ['llvm','jit','jit'],
 ].map(([backend,from,to]) => backend+':'+from+'->'+to));
+export const ACTOR_KINDS=Object.freeze(['shared','private']);
 const SHA40=/^[0-9a-f]{40}$/;
 const SHA256=/^[0-9a-f]{64}$/;
 const positive=x=>Number.isSafeInteger(x)&&x>0;
@@ -18,34 +19,34 @@ function keys(obj,names,label){
     reject(label+' has missing/extra keys');
 }
 export function pendingReport(){
-  return {schema_version:1,feature:'oreslang-actor-hot-reload-v1',
-    cases:MATRIX.map(transition=>({transition,actor_kind:'shared',
+  return {schema_version:2,feature:'oreslang-actor-hot-reload-v2',
+    cases:ACTOR_KINDS.flatMap(actor_kind=>MATRIX.map(transition=>({transition,actor_kind,
       status:'blocked',source_commit:null,source_tree:null,
-      compiled_image_sha256:null,ci:null,observed:null}))};
+      compiled_image_sha256:null,ci:null,observed:null})))};
 }
 export function evaluateHotReloadReport(report){
   keys(report,['schema_version','feature','cases'],'report');
-  if(report.schema_version!==1||report.feature!=='oreslang-actor-hot-reload-v1')
+  if(report.schema_version!==2||report.feature!=='oreslang-actor-hot-reload-v2')
     reject('wrong feature/schema');
-  if(!Array.isArray(report.cases)||report.cases.length!==MATRIX.length)
-    reject('must include all eight transitions');
+  if(!Array.isArray(report.cases)||report.cases.length!==MATRIX.length*ACTOR_KINDS.length)
+    reject('must include all sixteen actor-kind / mode combinations');
   let passed=0;
   const seen=new Set(),blocked=[];
   for(const c of report.cases){
     keys(c,['transition','actor_kind','status','source_commit','source_tree',
       'compiled_image_sha256','ci','observed'],'case');
-    if(!MATRIX.includes(c.transition)||seen.has(c.transition))
-      reject('invalid/duplicate transition');
-    seen.add(c.transition);
-    if(c.actor_kind!=='shared')
-      reject('v1 only admits same-heap SHARED code-only upgrades');
+    if(!MATRIX.includes(c.transition)||!ACTOR_KINDS.includes(c.actor_kind))
+      reject('invalid transition or actor kind');
+    const identity=c.actor_kind+'|'+c.transition;
+    if(seen.has(identity)) reject('duplicate actor-kind / transition');
+    seen.add(identity);
     if(!['executed','blocked','unsupported'].includes(c.status))
       reject('invalid status');
     if(c.status!=='executed'){
       if(c.compiled_image_sha256!==null||c.ci!==null||c.observed!==null||
          c.source_commit!==null||c.source_tree!==null)
         reject('blocked case contains fake execution evidence');
-      blocked.push(c.transition);
+      blocked.push(identity);
       continue;
     }
     if(!SHA40.test(c.source_commit)||!SHA40.test(c.source_tree)||
@@ -57,15 +58,18 @@ export function evaluateHotReloadReport(report){
       reject('wrong CI head or zero-step job');
     const o=c.observed;
     keys(o,['actor_id_before','actor_id_after','heap_id_before','heap_id_after',
+      'allocation_domain_before','allocation_domain_after',
       'mailbox_id_before','mailbox_id_after','generation_before','generation_after',
       'outputs','on_start_runs','old_code_pin_blocked_commit',
       'old_code_retired_after_last_pin','rejected_upgrade_kept_previous_epoch',
       'duplicate_delivery_count','guest_compiled','guest_executed',
       'real_image_switch'],'actor observation');
-    for(const key of ['actor_id_before','heap_id_before','mailbox_id_before'])
+    for(const key of ['actor_id_before','heap_id_before','mailbox_id_before',
+       'allocation_domain_before'])
       if(typeof o[key]!=='string'||!o[key]) reject('invalid '+key);
     for(const [a,b] of [['actor_id_before','actor_id_after'],
-       ['heap_id_before','heap_id_after'],['mailbox_id_before','mailbox_id_after']])
+       ['heap_id_before','heap_id_after'],['mailbox_id_before','mailbox_id_after'],
+       ['allocation_domain_before','allocation_domain_after']])
       if(o[a]!==o[b]) reject('actor resource changed: '+a);
     if(!Number.isSafeInteger(o.generation_before)||o.generation_before<0||
        o.generation_after!==o.generation_before+1)
@@ -80,8 +84,9 @@ export function evaluateHotReloadReport(report){
     if(o.duplicate_delivery_count!==0) reject('duplicate mailbox delivery');
     passed++;
   }
-  return {required_transitions:8,structurally_passing_transitions:passed,
-    blocked_transitions:blocked,structurally_complete:passed===8,
+  return {required_transitions:8,required_actor_kinds:ACTOR_KINDS.length,
+    required_cases:16,structurally_passing_cases:passed,
+    blocked_cases:blocked,structurally_complete:passed===16,
     // No self-reported document can establish authentic source or real execution.
     authenticated_execution:false,production_hot_reload_certified:false};
 }
