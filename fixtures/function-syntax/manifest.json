@@ -5,7 +5,7 @@
     {
       "id": "end-delimited-roundtrip",
       "file": "end-delimited-roundtrip.ores",
-      "sourceGitBlobSha1": "5d9384b6d2acfd6d21a805315fed4bd7518022b1",
+      "sourceGitBlobSha1": "c91a244cb99c1aaa74b3abadf9b99d8e1f3aea86",
       "expectations": {
         "java": "accept-and-typecheck",
         "formatter": "format-idempotently",
