@@ -53,3 +53,15 @@ This is an **additive proposed subrecord**, not a silent replacement of the exis
 6. Require exact source SHA/tree and executed CI logs. A reference-model green result or zero-step workflow failure is not backend conformance evidence. Do not mirror private source into an unapproved public repository.
 
 Run the reference checks with `node --test tests/actor-hop-trace.test.mjs` or `npm test` in the repository. No external packages are required.
+
+## October 20 hardening audit and verification scope
+
+The reference model now rejects copied/shape-forged trace contexts using module-private identity admission (WeakSet). Optional ECS index handles use index-local issued-handle identity (WeakMap) in addition to slot generations: a guessed or JSON-recreated {slot, generation} record cannot resolve a trace. These are **process-local model safeguards**, not cross-machine authentication.
+
+AoSoA is implemented as arrays of per-block **field columns** rather than arrays of AoS rows. Each update copies the modified block's field columns and structurally shares the other immutable blocks. Unrelated message/continuation forks retain their own snapshot. Guest-supplied error-message fields are not permitted to overwrite runtime-only trace provenance.
+
+Structured source identifiers must be canonical relative logical names, never raw filesystem paths, URLs, query strings or credentials. The reference accepts only controlled display metadata; a production integration still needs compiler-resolved source identities, trust policy, explicit remote envelope validation and reliable invocation source spans.
+
+Tests in `tests/actor-hop-hardening.test.mjs` exercise context/handle forgery, blocked-column AoSoA, invalid source identifiers and accessor properties, randomized capacity-block dimensions, redaction and 100,000 sequential actor visits. This last stress case measures actor-visit **retention**, not 100,000 interleaved real async await boundaries; actual compiler/runtime tests are still required.
+
+**CI evidence policy:** a workflow run marked `failure` with `steps:null` / zero executed steps is runner/provisioning **non-evidence**, not a failing Node assertion or proof of Actions-minute exhaustion. Do not mirror a private repository into a public destination; private cross-org transfer requires an approved private target, maintained provenance, validated runner allocation and explicit authorization for that source. Tests executed outside GitHub must be labeled local rather than exact-head CI.
