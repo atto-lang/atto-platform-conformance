@@ -5,16 +5,16 @@ const manifest=JSON.parse(readFileSync(new URL(
   "../audits/batch-02-test-work.json",import.meta.url),"utf8"));
 const REPO="ores-truffle-oreslang/";
 const expected=[
-  [11,"oreslang-source.java","issue",589],
-  [12,"oreslang-source.java","pr",1429],
-  [13,"oreslang-source.java","issue",1417],
-  [14,"oreslang-source.java","issue",1418],
-  [15,"oreslang-source.java","pr",1415],
-  [16,"oreslang-source.llvm","pr",655],
-  [17,"oreslang-test.cli","pr",8],
-  [18,"oreslang-platform-conformance","issue",92],
-  [19,"oreslang-platform-conformance","issue",108],
-  [20,"oreslang-platform-conformance","issue",99]
+  [11,"oreslang-source.java","issue",1417],
+  [12,"oreslang-source.java","issue",1418],
+  [13,"oreslang-source.java","issue",1446],
+  [14,"oreslang-platform-conformance","issue",108],
+  [15,"oreslang-platform-conformance","issue",92],
+  [16,"oreslang-platform-conformance","issue",44],
+  [17,"oreslang-platform-conformance","issue",80],
+  [18,"oreslang-common-source","issue",58],
+  [19,"oreslang-platform-conformance","issue",85],
+  [20,"oreslang-platform-conformance","issue",19]
 ];
 test("batch 02 contains exactly the ten original work items",()=>{
   assert.equal(manifest.schema,1);
@@ -51,4 +51,16 @@ test("cross-org private source transfer cannot be admitted by inventory",()=>{
   assert.equal(manifest.security.privateSourceExport,
     "FORBIDDEN_UNTIL_INDEPENDENT_APPROVAL");
   assert.equal(Object.hasOwn(manifest,"approvedCarrier"),false);
+});
+
+test("original task list anchors release gates to the correct request",()=>{
+  const gates=["GUEST_MEMORY_INSTRUMENTATION","DETERMINISTIC_GUEST_REPLAY",
+    "IMPORT_CLOSURE_REPLAY_INTEGRITY","GUEST_TASK_SCOPE_CONFORMANCE",
+    "SOURCE_LEVEL_ERROR_LINEAGE","COMPILER_EXECUTABLE_DRIFT",
+    "BENCHMARK_PROVENANCE_SCHEMA","FIVE_BACKEND_EXACT_HEAD",
+    "FORMAL_ASSURANCE_LEDGER","INDEPENDENT_RELEASE_REVIEW"];
+  assert.deepEqual(manifest.items.map(x=>x.releaseGate),gates);
+  assert.ok(!manifest.items.some(x=>x.type==="pr"),
+    "implementation PR references are dependencies, not a substitute for requested issues");
+  assert.equal(new Set(manifest.items.map(x=>x.url)).size,10);
 });
