@@ -1,0 +1,313 @@
+{
+  "schemaVersion": 1,
+  "policy": "reported-status-is-not-execution-evidence",
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "features": [
+    {
+      "id": "scalar",
+      "title": "Signed integer arithmetic",
+      "implementation": {
+        "java": "reported",
+        "llvm": "reported",
+        "net": "partial",
+        "wasm": "partial",
+        "forge": "partial"
+      },
+      "verified": {
+        "java": false,
+        "llvm": false,
+        "net": false,
+        "wasm": false,
+        "forge": false
+      }
+    },
+    {
+      "id": "grammar",
+      "title": "Canonical declarations and parsing",
+      "implementation": {
+        "java": "reported",
+        "llvm": "partial",
+        "net": "partial",
+        "wasm": "partial",
+        "forge": "partial"
+      },
+      "verified": {
+        "java": false,
+        "llvm": false,
+        "net": false,
+        "wasm": false,
+        "forge": false
+      }
+    },
+    {
+      "id": "scope",
+      "title": "Lexical scope and module visibility",
+      "implementation": {
+        "java": "reported",
+        "llvm": "partial",
+        "net": "unsupported",
+        "wasm": "partial",
+        "forge": "unsupported"
+      },
+      "verified": {
+        "java": false,
+        "llvm": false,
+        "net": false,
+        "wasm": false,
+        "forge": false
+      }
+    },
+    {
+      "id": "types",
+      "title": "Typed functions, classes and nominal type checks",
+      "implementation": {
+        "java": "reported",
+        "llvm": "partial",
+        "net": "unsupported",
+        "wasm": "partial",
+        "forge": "unsupported"
+      },
+      "verified": {
+        "java": false,
+        "llvm": false,
+        "net": false,
+        "wasm": false,
+        "forge": false
+      }
+    },
+    {
+      "id": "actors",
+      "title": "Actors, messaging and lifecycle",
+      "implementation": {
+        "java": "reported",
+        "llvm": "partial",
+        "net": "unsupported",
+        "wasm": "unsupported",
+        "forge": "unsupported"
+      },
+      "verified": {
+        "java": false,
+        "llvm": false,
+        "net": false,
+        "wasm": false,
+        "forge": false
+      }
+    },
+    {
+      "id": "ownership",
+      "title": "Affine ownership and borrowing",
+      "implementation": {
+        "java": "reported",
+        "llvm": "partial",
+        "net": "unsupported",
+        "wasm": "unsupported",
+        "forge": "unsupported"
+      },
+      "verified": {
+        "java": false,
+        "llvm": false,
+        "net": false,
+        "wasm": false,
+        "forge": false
+      }
+    },
+    {
+      "id": "effects",
+      "title": "Effects and critical-state capabilities",
+      "implementation": {
+        "java": "partial",
+        "llvm": "unsupported",
+        "net": "unsupported",
+        "wasm": "unsupported",
+        "forge": "unsupported"
+      },
+      "verified": {
+        "java": false,
+        "llvm": false,
+        "net": false,
+        "wasm": false,
+        "forge": false
+      }
+    },
+    {
+      "id": "async",
+      "title": "Async, select and channels",
+      "implementation": {
+        "java": "reported",
+        "llvm": "unsupported",
+        "net": "unsupported",
+        "wasm": "unsupported",
+        "forge": "unsupported"
+      },
+      "verified": {
+        "java": false,
+        "llvm": false,
+        "net": false,
+        "wasm": false,
+        "forge": false
+      }
+    },
+    {
+      "id": "aot",
+      "title": "Native ahead-of-time artifacts",
+      "implementation": {
+        "java": "partial",
+        "llvm": "reported",
+        "net": "reported",
+        "wasm": "partial",
+        "forge": "partial"
+      },
+      "verified": {
+        "java": false,
+        "llvm": false,
+        "net": false,
+        "wasm": false,
+        "forge": false
+      }
+    },
+    {
+      "id": "platform",
+      "title": "Target-specific platform integration",
+      "implementation": {
+        "java": "partial",
+        "llvm": "partial",
+        "net": "partial",
+        "wasm": "partial",
+        "forge": "partial"
+      },
+      "verified": {
+        "java": false,
+        "llvm": false,
+        "net": false,
+        "wasm": false,
+        "forge": false
+      }
+    }
+  ],
+  "cases": [
+    {
+      "id": "scalar-accept",
+      "feature": "scalar",
+      "file": "scalar-accept.ores",
+      "sha256": "ab1ac790ba3928b8876b428230ae4215984380a221c02c604f85cd3fca1d790f",
+      "expect": "accept",
+      "targets": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ]
+    },
+    {
+      "id": "scalar-reject",
+      "feature": "scalar",
+      "file": "scalar-reject.ores",
+      "sha256": "9a774feeca31a0dc1fd4b8a2ca576d79ace49a16cc7e49fecd16715bf604fb07",
+      "expect": "reject",
+      "targets": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "diagnostic": "identifier",
+      "symbol": "nonexistent_symbol"
+    },
+    {
+      "id": "grammar-accept",
+      "feature": "grammar",
+      "file": "grammar-accept.ores",
+      "sha256": "98164109f85a6a2afddf3d9a9f9cbe5c224eb437a8b36fecba6f095df5bece97",
+      "expect": "accept",
+      "targets": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ]
+    },
+    {
+      "id": "grammar-reject",
+      "feature": "grammar",
+      "file": "grammar-reject.ores",
+      "sha256": "6764c47167a150ca60a216a6cb34edfe93a740bea9ca1a4d7db0f7aedec23601",
+      "expect": "reject",
+      "targets": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "diagnostic": "syntax"
+    },
+    {
+      "id": "scope-accept",
+      "feature": "scope",
+      "file": "scope-accept.ores",
+      "sha256": "fceb0bf7e8b2058ffa7a3fa52294a520e274d54ed2841d5cc489d32d3397b006",
+      "expect": "accept",
+      "targets": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ]
+    },
+    {
+      "id": "scope-reject",
+      "feature": "scope",
+      "file": "scope-reject.ores",
+      "sha256": "367df560911a1a2483607bf8d6afdaf79faf598ecca98596ad920037545dac8f",
+      "expect": "reject",
+      "targets": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "diagnostic": "identifier",
+      "symbol": "unknown_scope_name"
+    },
+    {
+      "id": "types-accept",
+      "feature": "types",
+      "file": "types-accept.ores",
+      "sha256": "2aa68b324bdf7d8e8b44e5e31a8ca4134c6254326b2a485c31a1131e8cc825b5",
+      "expect": "accept",
+      "targets": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ]
+    },
+    {
+      "id": "types-reject",
+      "feature": "types",
+      "file": "types-reject.ores",
+      "sha256": "0e28f0a9e364056832cbcde9e1ffcbaef865f6c7035f2427f42a488aace30943",
+      "expect": "reject",
+      "targets": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "diagnostic": "arity"
+    }
+  ]
+}
