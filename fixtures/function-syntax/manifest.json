@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "scope": "end-delimited-function-syntax-v1",
+  "cases": [
+    {
+      "id": "end-delimited-roundtrip",
+      "file": "end-delimited-roundtrip.ores",
+      "sourceGitBlobSha1": "5d9384b6d2acfd6d21a805315fed4bd7518022b1",
+      "expectations": {
+        "java": "accept-and-typecheck",
+        "formatter": "format-idempotently",
+        "llvm": "reject-before-ir-until-native-parity"
+      },
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java",
+        "formatter",
+        "llvm"
+      ]
+    }
+  ],
+  "sourceFreeReferenceEvidence": {
+    "repository": "ORESoftware/typespec-json-schema-validator",
+    "pullRequest": 239,
+    "runId": 39369932336,
+    "result": "18/18 independent syntax-reference tests passed"
+  },
+  "notes": "The fixture is byte-identical to the Java parser/typechecker corpus, the Rust formatter corpus, and the LLVM fail-closed corpus. Source-free reference evidence validates the public grammar contract only. Java Maven/Graal, formatter cargo, and LLVM CMake/CTest remain pending because their source-org jobs fail before step 1. No cross-org private compiler source export is authorized by this manifest."
+}
