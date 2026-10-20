@@ -44,6 +44,14 @@ node bin/conformance.mjs --backend=java --argv='["/absolute/path/to/java","-jar"
 node bin/conformance.mjs --backend=llvm --argv='["/absolute/path/to/oreslang-llvmc","{file}"]' --source-sha=FULL_COMMIT_SHA --require
 ~~~
 
+The harness now reads bounded regular fixture bytes through verified file
+descriptors and **seals the entire suite in a private temporary snapshot before
+launching the first compiler**. Each fixture's SHA-256 records the exact copied
+input supplied to the subprocess; it never reopens a mutable checkout path
+while compiling. Symlinks, hardlinks and oversized inputs are rejected. This
+improves local test provenance but does not attest that the caller-declared
+source commit built the compiler or turn a compiler into a sandbox.
+
 The first argv token must be an **absolute executable path** (never a PATH lookup), and the placeholder {file} is replaced with an absolute fixture path. Provide the exact committed compiler binary/revision. The harness records SHA-256 hashes of the executable and each fixture. The user-provided source commit SHA is explicitly marked **declared, not cryptographically attested to the compiler binary**; include independent build provenance to prove the relationship. The harness does **not** install/checkout compiler source or infer that one backend supports another backend's features.
 
 When no backend command is supplied, the run exits non-success with explicit UNCONFIGURED status if --require is used. Without --require it can emit an explicit skipped summary for discovery; that is **not** a passing parity report. CI only exercises harness self-tests.
