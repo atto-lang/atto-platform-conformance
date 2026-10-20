@@ -12,6 +12,20 @@ node bin/inspect-real-evidence.mjs /path/to/approved-report.json
 
 See [the real compiler evidence policy](docs/REAL_COMPILER_EVIDENCE.md). The report must come from an independently reviewed real compiler run; the JSON adapter itself cannot authenticate an external run, and **a passing schema check does not demonstrate language correctness or parity**.
 
+## Universal tree-shaking receipt
+
+The repository now carries the versioned `oreslang.reachability/1` contract
+and a fail-closed verifier for backend-neutral tree-shaking receipts. See
+[`docs/TREE_SHAKING_CONTRACT.md`](docs/TREE_SHAKING_CONTRACT.md).
+
+```sh
+node bin/verify-reachability-manifest.mjs /path/to/reachability.json
+```
+
+A valid receipt proves only the shape and internal consistency of reachability
+evidence. Final artifact/synthesis inspection is still required to prove the
+dead implementation was physically omitted.
+
 ## Current deliverable
 
 - Versioned fixture manifest and minimal positive/negative .ores sources targeting **five compiler backends** (`java`, `llvm`, `net`, `wasm`, `forge`); this is a target inventory, not a parity claim.
