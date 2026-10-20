@@ -97,7 +97,7 @@ export function deriveSendSync(type){
       check(typeof t.kind==="string","type kind");
       const fields=Object.keys(t).sort().join("|");
       if(t.kind==="scalar"){
-        check(fields==="kind|name" && ["bool","int","float","string","void"].includes(t.name),
+        check(fields==="kind|name" && ["bool","int","float","string"].includes(t.name),
           "non-core scalar type");
         return {send:true,sync:true};
       }
