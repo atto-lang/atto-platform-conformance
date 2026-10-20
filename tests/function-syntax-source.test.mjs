@@ -25,7 +25,7 @@ test("function syntax corpus keeps explicit staged backend/tool expectations",()
   assert.deepEqual(c.pendingBackends,["java","formatter","llvm"]);
   assert.equal(manifest.sourceFreeReferenceEvidence.runId,39369932336);
   assert.match(manifest.sourceFreeReferenceEvidence.result,/18\/18/);
-  assert.match(manifest.notes,/does not authorize.*private compiler source export/i);
+  assert.match(manifest.notes,/No cross-org private compiler source export is authorized/i);
 });
 
 test("function syntax corpus retains exact shared Git blob bytes",async()=>{
