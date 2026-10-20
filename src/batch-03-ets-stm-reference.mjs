@@ -25,7 +25,7 @@ function value(x){must(safe(x),"immutable scalar-only fixture payload");return x
  * authenticated Oreslang actor identities.
  */
 export class EtsSetReference {
- #table=new Map();#caps=new Map();#owner;#heir;#acl;#quota;#generation=1;
+ #table=new Map();#versions=new Map();#caps=new Map();#owner;#heir;#acl;#quota;#generation=1;
  #closed=false;#serial=0;
  constructor({owner,heir=null,access="private",maxEntries=64}={}){
   this.#owner=principal(owner);
@@ -51,6 +51,11 @@ export class EtsSetReference {
    privilege:p===this.#owner?"owner":this.#acl});
   return cap;
  }
+ #nextVersion(k){
+  const prior=this.#versions.get(k)||0;
+  must(prior<Number.MAX_SAFE_INTEGER,"ETS entry generation exhausted");
+  const next=prior+1;this.#versions.set(k,next);return next;
+ }
  #auth(cap,who,op){
   const claim=this.#caps.get(cap),actor=principal(who);
   must(!this.#closed&&claim&&claim.generation===this.#generation&&
@@ -60,29 +65,39 @@ export class EtsSetReference {
  }
  lookup(cap,actor,k){
   this.#auth(cap,actor,"read");must(key(k),"ETS key");
-  return {present:this.#table.has(k),value:this.#table.get(k)??null};
+  return {present:this.#table.has(k),value:this.#table.get(k)??null,
+   version:this.#versions.get(k)||0};
  }
  insert(cap,actor,k,v){
   this.#auth(cap,actor,"write");must(key(k),"ETS key");value(v);
   must(this.#table.has(k)||this.#table.size<this.#quota,"ETS entry quota");
-  this.#table.set(k,v);
+  this.#nextVersion(k);this.#table.set(k,v);
  }
  insertNew(cap,actor,k,v){
   this.#auth(cap,actor,"write");must(key(k),"ETS key");value(v);
   if(this.#table.has(k))return false;
   must(this.#table.size<this.#quota,"ETS entry quota");
-  this.#table.set(k,v);return true;
+  this.#nextVersion(k);this.#table.set(k,v);return true;
  }
  compareExchange(cap,actor,k,expected,updated){
   this.#auth(cap,actor,"write");must(key(k),"ETS key");value(expected);value(updated);
   if(!this.#table.has(k)||!Object.is(this.#table.get(k),expected))return false;
-  this.#table.set(k,updated);return true;
+  this.#nextVersion(k);this.#table.set(k,updated);return true;
+ }
+ /** Versioned CAS is the ABA-aware shape required by a real ETS ABI. */
+ compareExchangeVersioned(cap,actor,k,expected,version,updated){
+  this.#auth(cap,actor,"write");must(key(k),"ETS key");
+  value(expected);value(updated);
+  must(Number.isSafeInteger(version)&&version>0,"ETS CAS version");
+  if(!this.#table.has(k)||!Object.is(this.#table.get(k),expected)||
+     this.#versions.get(k)!==version)return false;
+  this.#nextVersion(k);this.#table.set(k,updated);return true;
  }
  take(cap,actor,k){
   this.#auth(cap,actor,"write");must(key(k),"ETS key");
   if(!this.#table.has(k))return {present:false,value:null};
   const result=this.#table.get(k);
-  this.#table.delete(k);return {present:true,value:result};
+  this.#nextVersion(k);this.#table.delete(k);return {present:true,value:result};
  }
  snapshot(cap,actor){
   this.#auth(cap,actor,"read");
