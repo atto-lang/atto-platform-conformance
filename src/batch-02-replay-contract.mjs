@@ -7,6 +7,7 @@ const SHA=/^[0-9a-f]{64}$/;
 const GIT=/^[0-9a-f]{40}$/;
 const PATH=/^[a-zA-Z0-9_./+-]{1,256}$/;
 const ID=/^[a-zA-Z0-9_:.-]{1,100}$/;
+const IMPORT=/^[a-zA-Z0-9_./+@:-]{1,160}$/;
 function ensure(p,m){if(!p)throw Error(m);}
 function keys(v,expected,label){
   ensure(v!==null&&typeof v==="object"&&!Array.isArray(v),label+" object");
@@ -35,7 +36,9 @@ function sourceManifest(m){
   for(const e of m.edges){
     keys(e,["from","specifier","to"],"import edge");
     ensure(units.has(e.from)&&units.has(e.to)&&
-      typeof e.specifier==="string"&&ID.test(e.specifier),
+      typeof e.specifier==="string"&&IMPORT.test(e.specifier)&&
+      !e.specifier.includes("..")&&!e.specifier.startsWith("/")&&
+      !e.specifier.includes("//"),
       "unresolved import edge");
     const key=JSON.stringify([e.from,e.specifier]);
     ensure(!seen.has(key),"duplicate import resolution");
