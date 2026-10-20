@@ -1,4 +1,4 @@
-import {readFile,lstat,open,mkdtemp,writeFile,rm} from "node:fs/promises";
+import {lstat,open,mkdtemp,writeFile,rm} from "node:fs/promises";
 import {constants} from "node:fs";
 import {tmpdir} from "node:os";
 import {createHash} from "node:crypto";
@@ -91,6 +91,7 @@ export function validateManifestSchema(manifest){
  return manifest;
 }
 const MAX_FIXTURE_BYTES=1024*1024;
+const MAX_EXECUTABLE_BYTES=512*1024*1024;
 function sameFileIdentity(a,b){
  return a.dev===b.dev&&a.ino===b.ino&&a.mode===b.mode&&
   a.size===b.size&&a.nlink===b.nlink&&
@@ -135,7 +136,38 @@ export async function readRegularFixtureBytes(file){
 export async function snapshotRegularFixture(file,destination){
  const bytes=await readRegularFixtureBytes(file);
  await writeFile(destination,bytes,{flag:"wx",mode:0o400});
- return createHash("sha256").update(bytes).digest("hex");
+ const expected=createHash("sha256").update(bytes).digest("hex");
+ await assertSealedFixture(destination,expected);
+ return expected;
+}
+// This detects accidental or opportunistic same-user fixture rewrites. It is
+// not a defense against a malicious compiler that races or restores bytes.
+async function assertSealedFixture(file,expected){
+ const actual=createHash("sha256").update(await readRegularFixtureBytes(file)).digest("hex");
+ if(actual!==expected)throw Error("sealed fixture changed after snapshot");
+}
+// Never read an entire executable into memory. This hash is a local receipt,
+// not an attestation binding the pathname to what spawn later executes.
+export async function hashExecutableBounded(file){
+ const handle=await open(file,constants.O_RDONLY|(constants.O_NONBLOCK??0));
+ try{
+  const original=await handle.stat();
+  if(!original.isFile()||original.size<=0||original.size>MAX_EXECUTABLE_BYTES)
+   throw Error("executable must be a bounded regular file");
+  const hash=createHash("sha256");
+  const buffer=Buffer.allocUnsafe(65536);
+  let total=0;
+  while(total<=MAX_EXECUTABLE_BYTES){
+   const {bytesRead}=await handle.read(buffer,0,Math.min(buffer.length,MAX_EXECUTABLE_BYTES+1-total),total);
+   if(bytesRead===0)break;
+   hash.update(buffer.subarray(0,bytesRead));
+   total+=bytesRead;
+  }
+  const after=await handle.stat();
+  if(total!==original.size||!sameFileIdentity(original,after))
+   throw Error("executable changed while hashing");
+  return hash.digest("hex");
+ }finally{await handle.close()}
 }
 export async function loadManifest(){
  const manifestPath=resolve(root,"fixtures/manifest.json");
@@ -158,8 +190,8 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
  validateCommand(argv);
  if(!validSha(sourceSha))throw Error("configured backend requires exact 40-character lowercase source commit SHA");
  let executableSha256=null;
- try{const binaryBytes=await readFile(argv[0]);executableSha256=createHash("sha256").update(binaryBytes).digest("hex")}
- catch{/* absent executable is reported as SPAWN_ERROR for each fixture below */}
+ try{executableSha256=await hashExecutableBounded(argv[0])}
+ catch{/* Unhashable or missing executable is a non-verifying run. */}
  const results=[];
  // Compile isolated, hashed copies, never the mutable checked-out fixtures.
  const snapshotDir=await mkdtemp(join(tmpdir(),"oreslang-conformance-"));
@@ -174,8 +206,10 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
    sealed.push({c,snapshotPath,fixtureSha256});
   }
   for(const {c,snapshotPath,fixtureSha256} of sealed){
+  await assertSealedFixture(snapshotPath,fixtureSha256);
   const cmd=argv.map(x=>x==="{file}"?snapshotPath:x);
   const output=spawn(cmd[0],cmd.slice(1),{encoding:"utf8",timeout:timeoutMs,cwd:root,maxBuffer:1024*1024,windowsHide:true});
+  await assertSealedFixture(snapshotPath,fixtureSha256);
   let status;
   const combined=(output.stdout||"")+"\n"+(output.stderr||"");
   if(output.error)status=output.error.code==="ETIMEDOUT"?"TIMEOUT":"SPAWN_ERROR";
