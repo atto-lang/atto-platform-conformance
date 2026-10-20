@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import {open, stat} from "node:fs/promises";
 import {resolve} from "node:path";
-import {validateReachabilityManifest} from "../src/reachability-manifest.mjs";
+import {validateAnyReachabilityManifest} from "../src/reachability-manifest.mjs";
 
 const MAX_BYTES = 2 * 1024 * 1024;
 
@@ -23,7 +23,7 @@ try {
   }
 
   const manifest = JSON.parse(text);
-  validateReachabilityManifest(manifest);
+  validateAnyReachabilityManifest(manifest);
   process.stdout.write(JSON.stringify({ok: true, schema: manifest.schema}) + "\n");
 } catch (error) {
   console.error(error?.message ?? String(error));
