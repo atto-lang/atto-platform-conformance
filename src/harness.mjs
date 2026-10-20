@@ -1,6 +1,8 @@
-import {readFile,lstat} from "node:fs/promises";
+import {readFile,lstat,open,mkdtemp,writeFile,rm} from "node:fs/promises";
+import {constants} from "node:fs";
+import {tmpdir} from "node:os";
 import {createHash} from "node:crypto";
-import {resolve,dirname,isAbsolute} from "node:path";
+import {resolve,dirname,isAbsolute,join} from "node:path";
 import {fileURLToPath} from "node:url";
 import {spawnSync} from "node:child_process";
 const root=resolve(dirname(fileURLToPath(import.meta.url)),"..");
@@ -88,15 +90,56 @@ export function validateManifestSchema(manifest){
  }
  return manifest;
 }
+const MAX_FIXTURE_BYTES=1024*1024;
+function sameFileIdentity(a,b){
+ return a.dev===b.dev&&a.ino===b.ino&&a.mode===b.mode&&
+  a.size===b.size&&a.nlink===b.nlink&&
+  a.mtimeMs===b.mtimeMs&&a.ctimeMs===b.ctimeMs;
+}
 export async function assertRegularFixture(file){
  const stat=await lstat(file);
- if(!stat.isFile()||stat.isSymbolicLink())
-  throw Error("fixture must be a regular non-symlink file");
+ if(!stat.isFile()||stat.isSymbolicLink()||stat.nlink!==1||
+    stat.size<=0||stat.size>MAX_FIXTURE_BYTES)
+  throw Error("fixture must be a nonempty bounded unique regular non-symlink file");
+}
+/** Read from a checked descriptor, with a fixed byte cap even if it grows.
+ * Snapshot before launching compilers; this is evidence integrity, not a
+ * security sandbox for arbitrary untrusted compiler executables.
+ */
+export async function readRegularFixtureBytes(file){
+ const original=await lstat(file);
+ await assertRegularFixture(file);
+ const flags=constants.O_RDONLY|(constants.O_NOFOLLOW??0)|(constants.O_NONBLOCK??0);
+ const handle=await open(file,flags);
+ try{
+  const opened=await handle.stat();
+  if(!opened.isFile()||!sameFileIdentity(original,opened))
+   throw Error("fixture changed before descriptor read");
+  const chunks=[];
+  let total=0;
+  while(total<=MAX_FIXTURE_BYTES){
+   const buf=Buffer.allocUnsafe(Math.min(8192,MAX_FIXTURE_BYTES+1-total));
+   const {bytesRead}=await handle.read(buf,0,buf.length,total);
+   if(bytesRead===0)break;
+   chunks.push(buf.subarray(0,bytesRead));
+   total+=bytesRead;
+  }
+  const after=await handle.stat();
+  const final=await lstat(file);
+  if(total<=0||total>MAX_FIXTURE_BYTES||
+     !sameFileIdentity(opened,after)||!sameFileIdentity(after,final))
+   throw Error("fixture changed during read or exceeded byte budget");
+  return Buffer.concat(chunks,total);
+ }finally{await handle.close()}
+}
+export async function snapshotRegularFixture(file,destination){
+ const bytes=await readRegularFixtureBytes(file);
+ await writeFile(destination,bytes,{flag:"wx",mode:0o400});
+ return createHash("sha256").update(bytes).digest("hex");
 }
 export async function loadManifest(){
  const manifestPath=resolve(root,"fixtures/manifest.json");
- await assertRegularFixture(manifestPath);
- const manifest=validateManifestSchema(JSON.parse(await readFile(manifestPath,"utf8")));
+ const manifest=validateManifestSchema(JSON.parse((await readRegularFixtureBytes(manifestPath)).toString("utf8")));
  for(const item of manifest.cases){
   const fixturePath=resolve(root,"fixtures",item.file);
   await assertRegularFixture(fixturePath);
@@ -118,11 +161,14 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
  try{const binaryBytes=await readFile(argv[0]);executableSha256=createHash("sha256").update(binaryBytes).digest("hex")}
  catch{/* absent executable is reported as SPAWN_ERROR for each fixture below */}
  const results=[];
+ // Compile isolated, hashed copies, never the mutable checked-out fixtures.
+ const snapshotDir=await mkdtemp(join(tmpdir(),"oreslang-conformance-"));
+ try{
  for(const c of relevant){
   const fixturePath=resolve(root,"fixtures",c.file);
-  await assertRegularFixture(fixturePath);
-  const fixtureSha256=createHash("sha256").update(await readFile(fixturePath)).digest("hex");
-  const cmd=argv.map(x=>x==="{file}"?fixturePath:x);
+  const snapshotPath=join(snapshotDir,c.file);
+  const fixtureSha256=await snapshotRegularFixture(fixturePath,snapshotPath);
+  const cmd=argv.map(x=>x==="{file}"?snapshotPath:x);
   const output=spawn(cmd[0],cmd.slice(1),{encoding:"utf8",timeout:timeoutMs,cwd:root,maxBuffer:1024*1024,windowsHide:true});
   let status;
   const combined=(output.stdout||"")+"\n"+(output.stderr||"");
@@ -140,6 +186,7 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
   results.push({id:c.id,status,fixtureSha256,exitCode:output.status,signal:output.signal||null,
     stdout:output.stdout||"",stderr:output.stderr||""});
  }
+ }finally{await rm(snapshotDir,{recursive:true,force:true})}
  const verified=results.filter(x=>x.status==="VERIFIED").length;
  const failed=results.filter(x=>x.status!=="VERIFIED").length;
  return {backend,declaredSourceSha:sourceSha,executableSha256,provenanceNote:"Source revision was supplied by caller; this harness does not attest that it produced the binary.",configured:true,verified,failed,skipped:0,ok:failed===0 && verified>0 &&
