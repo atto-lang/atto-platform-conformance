@@ -352,3 +352,11 @@ test("all-or-none claim admission across disjoint components",()=>{
   const u=m.admit([claim({...p,path:[field("velocity")]},"WRITE")]);
   assert.equal(m.inspect().active,2);m.quiescent(t);m.quiescent(u);m.finish();
 });
+
+test("void is not a runtime transferable scalar and cannot derive Send or Sync",()=>{
+  for(const name of ["void","Void","unknown"]){
+    assert.throws(()=>deriveSendSync({kind:"scalar",name}),/non-core scalar/);
+  }
+  assert.deepEqual(deriveSendSync({kind:"scalar",name:"int"}),
+    {send:true,sync:true});
+});
