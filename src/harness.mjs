@@ -164,10 +164,16 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
  // Compile isolated, hashed copies, never the mutable checked-out fixtures.
  const snapshotDir=await mkdtemp(join(tmpdir(),"oreslang-conformance-"));
  try{
- for(const c of relevant){
-  const fixturePath=resolve(root,"fixtures",c.file);
-  const snapshotPath=join(snapshotDir,c.file);
-  const fixtureSha256=await snapshotRegularFixture(fixturePath,snapshotPath);
+  // Seal *all* fixture bytes before the first compiler can run. A compiler
+  // cannot rewrite a later checkout fixture to change its test input.
+  const sealed=[];
+  for(const c of relevant){
+   const fixturePath=resolve(root,"fixtures",c.file);
+   const snapshotPath=join(snapshotDir,c.file);
+   const fixtureSha256=await snapshotRegularFixture(fixturePath,snapshotPath);
+   sealed.push({c,snapshotPath,fixtureSha256});
+  }
+  for(const {c,snapshotPath,fixtureSha256} of sealed){
   const cmd=argv.map(x=>x==="{file}"?snapshotPath:x);
   const output=spawn(cmd[0],cmd.slice(1),{encoding:"utf8",timeout:timeoutMs,cwd:root,maxBuffer:1024*1024,windowsHide:true});
   let status;
