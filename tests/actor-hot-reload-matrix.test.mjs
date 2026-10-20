@@ -31,7 +31,9 @@ test('all sixteen backend/mode plus SHARED/PRIVATE paths are necessary',()=>{
   assert.equal(new Set(MATRIX).size,8);
   assert.equal(pendingReport().cases.length,16);
   const result=evaluateHotReloadReport(pendingReport());
-  assert.equal(result.structurally_passing_transitions,0);
+  assert.equal(result.structurally_passing_cases,0);
+  assert.equal(result.required_cases,16);
+  assert.equal(result.blocked_cases.length,16);
   assert.equal(result.production_hot_reload_certified,false);
 });
 test('synthetic observations never authenticate actual compiler execution',()=>{
