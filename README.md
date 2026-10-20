@@ -50,7 +50,15 @@ launching the first compiler**. Each fixture's SHA-256 records the exact copied
 input supplied to the subprocess; it never reopens a mutable checkout path
 while compiling. Symlinks, hardlinks and oversized inputs are rejected. This
 improves local test provenance but does not attest that the caller-declared
-source commit built the compiler or turn a compiler into a sandbox.
+source commit built the compiler or turn a compiler into a sandbox. The harness
+re-hashes sealed fixture bytes before and after each compiler invocation, failing
+on detected tampering (including same-UID chmod/rewrite attacks on a later case).
+This is **detection, not immutable filesystem enforcement**: an adversarial
+compiler running with the same user permissions can race or restore bytes, so
+untrusted executables still require an independently enforced sandbox. Binary
+hashing reads in bounded 64-KiB chunks and refuses executable files above
+512 MiB; binary hashes remain local receipts rather than reproducible-build
+attestations.
 
 The first argv token must be an **absolute executable path** (never a PATH lookup), and the placeholder {file} is replaced with an absolute fixture path. Provide the exact committed compiler binary/revision. The harness records SHA-256 hashes of the executable and each fixture. The user-provided source commit SHA is explicitly marked **declared, not cryptographically attested to the compiler binary**; include independent build provenance to prove the relationship. The harness does **not** install/checkout compiler source or infer that one backend supports another backend's features.
 
