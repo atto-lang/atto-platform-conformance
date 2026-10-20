@@ -23,7 +23,7 @@ test("function syntax corpus keeps explicit staged backend/tool expectations",()
   });
   assert.deepEqual(c.confirmedBackends,[]);
   assert.deepEqual(c.pendingBackends,["java","formatter","llvm"]);
-  assert.equal(manifest.sourceFreeReferenceEvidence.runId,39369932336);
+  assert.equal(manifest.sourceFreeReferenceEvidence.runId,39370298348);
   assert.match(manifest.sourceFreeReferenceEvidence.result,/18\/18/);
   assert.match(manifest.notes,/No cross-org private compiler source export is authorized/i);
 });
