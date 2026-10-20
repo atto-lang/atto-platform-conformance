@@ -29,3 +29,10 @@ Status: implementation work on existing compiler drafts plus one new current-mai
 Task 31 requires Java compiler actual InvertedArray<T> guest source support; native host column storage alone does not qualify. Task 32 requires actual LLVM source-to-IR lowering; host C++ spans alone do not qualify. Task 36 has production compiler changes staged but remains blocked until independently reviewed actual execution. Tasks 38 and 40 require measured—not modeled—native SIMD and shape runtime receipts.
 
 Do not copy private source to external organizations just to use available Actions minutes; an explicitly approved protected-main publisher and immutable destination/source identity are prerequisites. Never claim success from a workflow with unobserved steps.
+
+## Follow-up code changes
+
+- Java [#1675](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1675) now includes readonly structural-pattern and named structural-parameter protections on current-main `AggregateKind.CONTRACT`, with **10 committed JUnit tests** including Parser-to-TypeChecker source tests (head `45de298c719d9c7df0e9fe7e5821e198dae3daa0`). Not executed.
+- Java [#1445](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1445) adds two actual JUnit regressions for IEEE signed zero/NaN storage and structural-loan fencing (head `062d96bf359d5f5c84038a1fe44207b8bcee3043`). Not executed.
+- Data Science [#15](https://github.com/ores-truffle-oreslang/oreslang-data-science/pull/15) adds two **Oreslang guest-source** test fixtures for valid zero-row matrices, negative extents and out-of-bounds indexing, corrected to explicit Result bindings (head `216cd6ac064abe87e3b62662648a209922f90a1d`). Guest compilation not observed.
+- A read-only local tool retry of LLVM source-org run `39359520937` was accepted, but its subsequent job still reported `steps:null`; no LLVM compiler execution can be claimed.
