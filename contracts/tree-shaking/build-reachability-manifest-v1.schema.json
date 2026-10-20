@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oreslang.org/schemas/build-reachability-manifest-v1.schema.json",
+  "title": "Oreslang whole-build reachability manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "entryUnit",
+    "retainedUnits",
+    "removedUnits",
+    "units"
+  ],
+  "properties": {
+    "schema": {
+      "const": "oreslang.build-reachability/1"
+    },
+    "entryUnit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "retainedUnits": {
+      "$ref": "#/$defs/stringSet"
+    },
+    "removedUnits": {
+      "$ref": "#/$defs/stringSet"
+    },
+    "units": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "./reachability-manifest-v1.schema.json"
+      }
+    }
+  },
+  "$defs": {
+    "stringSet": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}
