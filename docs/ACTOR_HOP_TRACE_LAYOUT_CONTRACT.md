@@ -65,3 +65,22 @@ Structured source identifiers must be canonical relative logical names, never ra
 Tests in `tests/actor-hop-hardening.test.mjs` exercise context/handle forgery, blocked-column AoSoA, invalid source identifiers and accessor properties, randomized capacity-block dimensions, redaction and 100,000 sequential actor visits. This last stress case measures actor-visit **retention**, not 100,000 interleaved real async await boundaries; actual compiler/runtime tests are still required.
 
 **CI evidence policy:** a workflow run marked `failure` with `steps:null` / zero executed steps is runner/provisioning **non-evidence**, not a failing Node assertion or proof of Actions-minute exhaustion. Do not mirror a private repository into a public destination; private cross-org transfer requires an approved private target, maintained provenance, validated runner allocation and explicit authorization for that source. Tests executed outside GitHub must be labeled local rather than exact-head CI.
+
+## Local exact-tree, no-mirror verification path (October 20)
+
+While GitHub Actions private runner allocation is unavailable, run the committed tests **inside a local authorized clone of this original private repository**. The required arguments are the exact PR head commit and root tree from authenticated GitHub metadata; the verifier refuses a mismatched or dirty checkout and validates the byte-for-byte Git blob identity/mode of all six source/test files before running Node >=22.
+
+At time of this change, for head `7cc607758ac100576949dcddaf030deaaa8e49bc` and root tree `f9085a9fd2555ba4c24ccbb38cd779df0e043b41`:
+
+```sh
+# Execute only in an already-authorized clone of the source repository.
+git fetch origin feat/actor-hop-trace-layout-reference-20261020
+git checkout --detach 7cc607758ac100576949dcddaf030deaaa8e49bc
+bash scripts/verify-actor-hop-exact-tree.sh 7cc607758ac100576949dcddaf030deaaa8e49bc f9085a9fd2555ba4c24ccbb38cd779df0e043b41
+```
+
+The example SHAs are **version-specific**: refresh both independently after *any* additional PR commit. Do not treat merely producing the `MODEL_ONLY_PASS` marker as signed third-party CI attestation; retain the executed terminal log and environment provenance, and use a source-local runner-backed receipt for release approval. This is backend-neutral reference-model testing only, not native Java/LLVM guest conformance or Java/LLVM ownership proof.
+
+A verification of a **synthetic local test repository** exercised a matching set of reference-model cases and verified that wrong SHA and dirty tree are rejected. That synthetic verification is not evidence that exact private PR content was executed. The exact `scripts/verify-actor-hop-exact-tree.sh` bytes were independently checked by Git SHA on the GitHub branch against the locally exercised verifier.
+
+The private source was **not mirrored** cross-organization. Protected source-transfer policy and open incidents #22/#69/#77/#127 remain gating; use the original private repository's checkout for any genuine source-specific validation.
