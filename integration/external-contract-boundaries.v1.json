@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "status": "coordination-only",
+  "updatedAt": "2026-10-18",
+  "scope": "Proposed external integration seams, not proof of present imports or executable conformance.",
+  "peerAuthorities": [
+    "human-authored TypeSpec",
+    "independently human-authored JSON Schema Draft 2020-12"
+  ],
+  "derivativeWitnesses": [
+    "TypeSpec-emitted JSON Schema",
+    "WIT",
+    "Protobuf",
+    "generated API clients",
+    "Oreslang bindings"
+  ],
+  "edges": [
+    {
+      "consumer": "ores-stack/ores-stack-cli",
+      "authority": "ORESoftware/api-docs",
+      "boundary": "stack-runtime-codec-and-framing",
+      "contractPolicy": "independently-authored-typespec-plus-json-schema; generated-wit-protobuf-clients-are-derivative",
+      "admission": "blocked",
+      "evidence": "not-attested",
+      "sourceCommit": null,
+      "tjsvReceipt": null,
+      "compilerRuntimeReceipt": null,
+      "executedWorkflow": null
+    },
+    {
+      "consumer": "ores-stack/ores-stack-interfaces",
+      "authority": "ORESoftware/ores-interfaces",
+      "boundary": "wit-component-boundary",
+      "contractPolicy": "independently-authored-typespec-plus-json-schema; generated-wit-protobuf-clients-are-derivative",
+      "admission": "blocked",
+      "evidence": "not-attested",
+      "sourceCommit": null,
+      "tjsvReceipt": null,
+      "compilerRuntimeReceipt": null,
+      "executedWorkflow": null
+    },
+    {
+      "consumer": "ores-truffle-oreslang/oreslang-common-source",
+      "authority": "ORESoftware/typespec-json-schema-validator",
+      "boundary": "compiler-contract-ir-parity",
+      "contractPolicy": "independently-authored-typespec-plus-json-schema; generated-wit-protobuf-clients-are-derivative",
+      "admission": "blocked",
+      "evidence": "not-attested",
+      "sourceCommit": null,
+      "tjsvReceipt": null,
+      "compilerRuntimeReceipt": null,
+      "executedWorkflow": null
+    },
+    {
+      "consumer": "ores-truffle-oreslang/oreslang-http-routing",
+      "authority": "ORESoftware/api-docs",
+      "boundary": "route-operation-key-safety",
+      "contractPolicy": "independently-authored-typespec-plus-json-schema; generated-wit-protobuf-clients-are-derivative",
+      "admission": "blocked",
+      "evidence": "not-attested",
+      "sourceCommit": null,
+      "tjsvReceipt": null,
+      "compilerRuntimeReceipt": null,
+      "executedWorkflow": null
+    },
+    {
+      "consumer": "ores-truffle-oreslang/oreslang-platform-conformance",
+      "authority": "ORESoftware/api-docs",
+      "boundary": "rpc-cross-runtime-conformance",
+      "contractPolicy": "independently-authored-typespec-plus-json-schema; generated-wit-protobuf-clients-are-derivative",
+      "admission": "blocked",
+      "evidence": "not-attested",
+      "sourceCommit": null,
+      "tjsvReceipt": null,
+      "compilerRuntimeReceipt": null,
+      "executedWorkflow": null
+    },
+    {
+      "consumer": "ores-truffle-oreslang/oreslang-platform-conformance",
+      "authority": "ORESoftware/typespec-json-schema-validator",
+      "boundary": "cross-backend-tjsv-receipts",
+      "contractPolicy": "independently-authored-typespec-plus-json-schema; generated-wit-protobuf-clients-are-derivative",
+      "admission": "blocked",
+      "evidence": "not-attested",
+      "sourceCommit": null,
+      "tjsvReceipt": null,
+      "compilerRuntimeReceipt": null,
+      "executedWorkflow": null
+    },
+    {
+      "consumer": "ores-truffle-oreslang/oreslang-rpc",
+      "authority": "ORESoftware/api-docs",
+      "boundary": "rpc-v1-v2-wire-operations",
+      "contractPolicy": "independently-authored-typespec-plus-json-schema; generated-wit-protobuf-clients-are-derivative",
+      "admission": "blocked",
+      "evidence": "not-attested",
+      "sourceCommit": null,
+      "tjsvReceipt": null,
+      "compilerRuntimeReceipt": null,
+      "executedWorkflow": null
+    },
+    {
+      "consumer": "ores-truffle-oreslang/oreslang-serialization-and-validation",
+      "authority": "ORESoftware/ores-contracts",
+      "boundary": "zorde-schema-projections",
+      "contractPolicy": "independently-authored-typespec-plus-json-schema; generated-wit-protobuf-clients-are-derivative",
+      "admission": "blocked",
+      "evidence": "not-attested",
+      "sourceCommit": null,
+      "tjsvReceipt": null,
+      "compilerRuntimeReceipt": null,
+      "executedWorkflow": null
+    },
+    {
+      "consumer": "ores-truffle-oreslang/oreslang-serialization-and-validation",
+      "authority": "ORESoftware/typespec-json-schema-validator",
+      "boundary": "zorde-schema-parity",
+      "contractPolicy": "independently-authored-typespec-plus-json-schema; generated-wit-protobuf-clients-are-derivative",
+      "admission": "blocked",
+      "evidence": "not-attested",
+      "sourceCommit": null,
+      "tjsvReceipt": null,
+      "compilerRuntimeReceipt": null,
+      "executedWorkflow": null
+    },
+    {
+      "consumer": "ores-truffle-oreslang/oreslang-source.java",
+      "authority": "ORESoftware/api-docs",
+      "boundary": "graal-rpc-handler-conformance",
+      "contractPolicy": "independently-authored-typespec-plus-json-schema; generated-wit-protobuf-clients-are-derivative",
+      "admission": "blocked",
+      "evidence": "not-attested",
+      "sourceCommit": null,
+      "tjsvReceipt": null,
+      "compilerRuntimeReceipt": null,
+      "executedWorkflow": null
+    },
+    {
+      "consumer": "ores-truffle-oreslang/oreslang-source.llvm",
+      "authority": "ORESoftware/api-docs",
+      "boundary": "llvm-rpc-handler-conformance",
+      "contractPolicy": "independently-authored-typespec-plus-json-schema; generated-wit-protobuf-clients-are-derivative",
+      "admission": "blocked",
+      "evidence": "not-attested",
+      "sourceCommit": null,
+      "tjsvReceipt": null,
+      "compilerRuntimeReceipt": null,
+      "executedWorkflow": null
+    },
+    {
+      "consumer": "ores-truffle-oreslang/oreslang-stack-cli",
+      "authority": "ORESoftware/ores-stack",
+      "boundary": "deployment-compatibility",
+      "contractPolicy": "independently-authored-typespec-plus-json-schema; generated-wit-protobuf-clients-are-derivative",
+      "admission": "blocked",
+      "evidence": "not-attested",
+      "sourceCommit": null,
+      "tjsvReceipt": null,
+      "compilerRuntimeReceipt": null,
+      "executedWorkflow": null
+    }
+  ]
+}
