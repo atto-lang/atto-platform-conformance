@@ -2,11 +2,12 @@ import {readFile, lstat} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {resolve, dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {COMPILER_BACKENDS} from './harness.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const EXPECTED_TASKS = Object.freeze([1, 2, 3, 4, 5]);
-const SOURCE_BACKENDS = [...COMPILER_BACKENDS].sort();
+// Wave 1 is a versioned five-backend contract, independent of the discovery
+// harness inventory. Adding JS discovery must not reinterpret frozen evidence.
+const SOURCE_BACKENDS = Object.freeze(['java', 'llvm', 'net', 'wasm', 'forge'].sort());
 const isObject = x => x !== null && typeof x === 'object' && !Array.isArray(x);
 const exactKeys = (value, keys, label) => {
   if (!isObject(value) || Object.keys(value).sort().join('|') !== [...keys].sort().join('|')) {
@@ -104,3 +105,4 @@ export async function loadWave1() {
   });
   return {spec, result};
 }
+

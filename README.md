@@ -28,8 +28,8 @@ dead implementation was physically omitted.
 
 ## Current deliverable
 
-- Versioned fixture manifest and minimal positive/negative .ores sources targeting **five compiler backends** (`java`, `llvm`, `net`, `wasm`, `forge`); this is a target inventory, not a parity claim.
-- Safe subprocess-based command runner with an argv template; no shell interpolation.
+- Versioned fixture manifest and minimal positive/negative .ores sources targeting **six compiler backends** (`java`, `llvm`, `net`, `wasm`, `forge`, `js`); this is a target inventory, not a parity claim.
+- Safe subprocess-based command runner with an argv template; no shell interpolation. JavaScript is a source-check-only target pending independent ESM runtime evidence.
 - Executable harness unit tests (using a **fake checker** to verify the harness only).
 - Explicit status: unconfigured, verified, mismatch, spawn failure, timeout.
 - CI tests the harness. It does **not** claim Java/LLVM/.NET/Wasm/Forge feature parity without configured real compiler binaries, exact revisions and independently reviewed provenance.
@@ -122,3 +122,13 @@ and GitHub Support may be required. See
 [security incident #22](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22).
 
 See https://ores-truffle-oreslang.github.io/logs/2/
+
+### Experimental JS checker target
+
+Once the JS compiler source and Node 22+ executable are available in an **authorized, private** CI checkout at exact revisions, the JS subset can run:
+
+```sh
+node bin/conformance.mjs --backend=js --argv='["/absolute/path/to/node","/absolute/path/to/oreslang-source.js/bin/oreslang-jsc.mjs","--program-v2","--check","{file}"]' --source-sha=EXACT_JS_SOURCE_COMMIT_SHA --require
+```
+
+This is a **source acceptance/rejection gate**, not a runtime test. `verified` means the two compiler-check subprocess cases met the narrow source-check expectations, **not** that any emitted JS was executed. See `docs/MATRIX.md` for the required runtime, compiler provenance, and cross-backend parity gates.
