@@ -5,7 +5,7 @@
     {
       "id": "class-mutable-borrow",
       "file": "class-mutable.ores",
-      "sourceGitBlobSha1": "3cad92b8c5f7c4d5b97472a7247ab0c10455078b",
+      "sourceGitBlobSha1": "debcef23bf39b07d3f5bcf3a1b8f0aeaa7607b0b",
       "expect": "accept",
       "expectedI64": "42",
       "confirmedBackends": [
@@ -32,7 +32,7 @@
     {
       "id": "class-overlapping-loans",
       "file": "class-overlap.ores",
-      "sourceGitBlobSha1": "2664d2fa411e4e5ea84d1c817c3f9e31ac45b511",
+      "sourceGitBlobSha1": "c85f5cfa50158f89ac484d5344b8300d1d7c047f",
       "expect": "reject",
       "diagnosticClass": "exclusive-loan-conflict",
       "confirmedBackends": [
@@ -45,7 +45,7 @@
     {
       "id": "class-explicit-mutable-borrow",
       "file": "class-explicit-mutable.ores",
-      "sourceGitBlobSha1": "a7c28cc10c8ed4a4164984fe1d8f875e616e2eda",
+      "sourceGitBlobSha1": "c56b9e63174ff2fbb762e71273c032c6473f490a",
       "expect": "accept",
       "expectedI64": "42",
       "confirmedBackends": [
