@@ -92,7 +92,7 @@ test('self-attested complete evidence cannot certify a candidate manifest', asyn
   }
   doc.certifiedSemanticActorHeapParity = true;
   doc.certifiedZeroGcFullAotParity = true;
-  assert.throws(() => validateActorHeapCapabilities(doc), /candidate may not self-certify/);
+  assert.throws(() => validateActorHeapCapabilities(doc), /candidate (?:row )?may not self-certify/);
 });
 
 test('promotion requirements cannot be silently weakened or reordered', async () => {
@@ -105,5 +105,40 @@ test('promotion requirements cannot be silently weakened or reordered', async ()
     const doc = structuredClone(original);
     mutation(doc);
     assert.throws(() => validateActorHeapCapabilities(doc), /promotion requirements missing, reordered or weakened/);
+  }
+});
+
+
+test('one backend cannot self-certify compiled-general inside candidate ledger', async () => {
+  const original = await loadActorHeapCapabilities();
+  for (const mutation of [
+    entry => {
+      entry.allocationLevel = 'compiled-general';
+      entry.generalGuestHeap = true;
+      entry.reclamation = 'deterministic-native';
+      entry.verified = true;
+    },
+    entry => {
+      entry.allocationLevel = 'compiled-general';
+      entry.generalGuestHeap = true;
+      entry.reclamation = 'deterministic-native';
+      entry.aotLevel = 'full-aot';
+      entry.verified = true;
+    },
+    entry => {
+      entry.allocationLevel = 'compiled-general';
+      entry.generalGuestHeap = true;
+      entry.reclamation = 'deterministic-native';
+      entry.aotLevel = 'full-aot';
+      entry.zeroGcClaim = 'guest-general';
+      entry.verified = true;
+    }
+  ]) {
+    const doc = structuredClone(original);
+    mutation(doc.backends.find(value => value.backend === 'java'));
+    assert.throws(
+      () => validateActorHeapCapabilities(doc),
+      /candidate row may not self-certify general\/full-AOT claims/
+    );
   }
 });
