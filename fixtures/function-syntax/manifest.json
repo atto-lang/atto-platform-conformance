@@ -26,7 +26,7 @@
     "result": "21/21 independent syntax-reference tests passed",
     "covers": "v1-as-separator-only"
   },
-  "notes": "The fixture is byte-identical to the Java parser/typechecker corpus, the Rust formatter corpus, and the LLVM fail-closed corpus. The prior source-free reference run validates the v1 `as` separator contract only; the recorded v2 source-free oracle validates the original 15-vector base-v2 set (8 accept / 7 reject). Three additional hardening vectors now require body-level `Math::...` and `value as Type` syntax without an explicit separator to fail closed. Java Maven/Graal, formatter cargo, LLVM CMake/CTest, and fresh hosted hardening-vector evidence remain pending exact-head verification. No cross-org private compiler source export is authorized by this manifest.",
+  "notes": "The fixture is byte-identical to the Java parser/typechecker corpus, the Rust formatter corpus, and the LLVM fail-closed corpus. The hardened source-free v2 oracle now validates all 18 reference vectors (8 accept / 10 reject), including body-level `Math::...` and `value as Type` syntax without an explicit separator. Java Maven/Graal, formatter cargo, and LLVM CMake/CTest remain pending exact-head implementation verification. No cross-org private compiler source export is authorized by this manifest.",
   "referenceVectors": [
     {
       "id": "separator-free-next-line",
@@ -122,12 +122,12 @@
   "v2SourceFreeReferenceEvidence": {
     "repository": "zed-pkg/zed-lambdas",
     "pullRequest": 25,
-    "runId": 39534351624,
-    "jobId": 119007414167,
-    "result": "8 accepted / 7 rejected independent v2 syntax vectors passed",
-    "marker": "ORESLANG_DOUBLE_COLON_V2_SOURCE_FREE_PASS accepted=8 rejected=7 private_source_bytes=0",
+    "runId": 39538775578,
+    "jobId": 119021472417,
+    "result": "8 accepted / 10 rejected independent hardened v2 syntax vectors passed",
+    "marker": "ORESLANG_DOUBLE_COLON_V2_HARDENED_SOURCE_FREE_PASS accepted=8 rejected=10 private_source_bytes=0",
     "privateSourceBytes": 0,
-    "scope": "abstract base-v2 syntax contract only; the three separator-masquerade hardening vectors require fresh evidence; not Java/LLVM implementation certification",
-    "covers": "base-v2-15-vectors"
+    "scope": "abstract hardened v2 syntax contract only; not Java/Rust/LLVM implementation certification",
+    "covers": "hardened-v2-18-vectors"
   }
 }
