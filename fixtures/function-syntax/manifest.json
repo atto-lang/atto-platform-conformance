@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "scope": "end-delimited-function-syntax-v1",
+  "scope": "end-delimited-function-syntax-v2",
   "cases": [
     {
       "id": "end-delimited-roundtrip",
       "file": "end-delimited-roundtrip.ores",
-      "sourceGitBlobSha1": "c91a244cb99c1aaa74b3abadf9b99d8e1f3aea86",
+      "sourceGitBlobSha1": "512597025b9890efa34c1b59cc4f27524edcbeda",
       "expectations": {
         "java": "accept-and-typecheck",
         "formatter": "format-idempotently",
@@ -23,7 +23,8 @@
     "repository": "ORESoftware/typespec-json-schema-validator",
     "pullRequest": 239,
     "runId": 39443132577,
-    "result": "21/21 independent syntax-reference tests passed"
+    "result": "21/21 independent syntax-reference tests passed",
+    "covers": "v1-as-separator-only"
   },
-  "notes": "The fixture is byte-identical to the Java parser/typechecker corpus, the Rust formatter corpus, and the LLVM fail-closed corpus. Source-free reference evidence validates the public grammar contract only. Java Maven/Graal, formatter cargo, and LLVM CMake/CTest remain pending because their source-org jobs fail before step 1. No cross-org private compiler source export is authorized by this manifest."
+  "notes": "The fixture is byte-identical to the Java parser/typechecker corpus, the Rust formatter corpus, and the LLVM fail-closed corpus. The prior source-free reference run validates the v1 `as` separator contract only; `::` is a v2 extension and requires fresh independent oracle evidence. Java Maven/Graal, formatter cargo, and LLVM CMake/CTest remain pending exact-head verification. No cross-org private compiler source export is authorized by this manifest."
 }
