@@ -8,6 +8,15 @@ const LEVELS = ['host-reference', 'host-runtime', 'compiled-scalar', 'compiled-g
 const RECLAMATION = ['gc-dependent', 'deterministic-native', 'deterministic-capacity-reuse'];
 const AOT = ['not-certified', 'partial-native-subsets', 'full-aot'];
 const ZERO = ['none', 'compiled-scalar-only', 'guest-general'];
+const REQUIREMENTS = Object.freeze([
+  "all ordinary mutable guest allocations are compiler-lowered into actor-owned domains",
+  "persistent state survives turns and legal carrier migration while scratch cannot cross suspension",
+  "foreign actor, stale generation and stolen carrier authority are rejected",
+  "actor retirement is race-safe, retryable and does not refund physically pinned native bytes",
+  "cycles do not require cross-actor circular ownership or a process-global guest tracing collector",
+  "exact-head backend tests execute with visible runner steps and artifact/source provenance",
+  "native backends prove full AOT with no guest interpreter or JIT fallback"
+]);
 
 const fail = message => { throw new Error('actor-heap-promotion: ' + message); };
 const own = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
@@ -35,7 +44,7 @@ export function validateActorHeapCapabilities(doc) {
   if (JSON.stringify(doc.levels) !== JSON.stringify(LEVELS)) fail('allocation level inventory changed');
   if (JSON.stringify(doc.reclamationModes) !== JSON.stringify(RECLAMATION)) fail('reclamation inventory changed');
   if (!Array.isArray(doc.backends) || doc.backends.length !== BACKENDS.length) fail('backend inventory changed');
-  if (!Array.isArray(doc.promotionRequirements) || doc.promotionRequirements.length < 7) fail('promotion requirements incomplete');
+  if (JSON.stringify(doc.promotionRequirements) !== JSON.stringify(REQUIREMENTS)) fail('promotion requirements missing, reordered or weakened');
 
   for (let index = 0; index < BACKENDS.length; ++index) {
     const entry = doc.backends[index];
@@ -85,6 +94,11 @@ export function validateActorHeapCapabilities(doc) {
   }
   if (doc.certifiedZeroGcFullAotParity !== zeroGcAotReady) {
     fail('zero-GC/full-AOT flag does not match evidence');
+  }
+  // This is only a candidate ledger. Self-attested rows cannot authorize a
+  // release claim; that requires separately verified exact-head run artifacts.
+  if (semanticReady || zeroGcAotReady) {
+    fail('candidate may not self-certify; require independent executable artifact evidence');
   }
 
   return {
