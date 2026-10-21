@@ -43,4 +43,10 @@ test("structural contract retains explicit negative soundness and metadata bound
  ]) assert.equal(byId.get(id)?.admission,"reject",id);
  assert.equal(byId.get("generic-method-alpha")?.admission,"accept");
  assert.equal(byId.get("readonly-field-width")?.expectedMain,"11");
+ for(const id of ["anonymous-inline-implicit","anonymous-inline-redundant-keyword",
+   "anonymous-struct-redundant-keyword","named-trait-explicit"]){
+  assert.equal(byId.get(id)?.admission,"accept",id);
+  assert.equal(byId.get(id)?.expectedMain,"11",id);
+ }
+ assert.equal(byId.get("named-interface-requires-structural")?.admission,"reject");
 });
