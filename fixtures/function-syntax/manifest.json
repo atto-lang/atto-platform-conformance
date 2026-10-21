@@ -44,6 +44,11 @@
       "accepted": true
     },
     {
+      "id": "routine-double-colon",
+      "source": "routine f() -> int :: return 1; end",
+      "accepted": true
+    },
+    {
       "id": "double-colon-with-static-access",
       "source": "fnc f() -> int :: return Math::answer(); end",
       "accepted": true
