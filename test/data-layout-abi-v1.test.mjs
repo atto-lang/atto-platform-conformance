@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import {
-  MAX_COMPRESSED32_OFFSET, MAX_COMPRESSED32_SPAN,
+  TYPES, MAX_COMPRESSED32_OFFSET, MAX_COMPRESSED32_SPAN,
   computeLayoutAbi, encodeCompressed32, decodeCompressed32,
   decodeStoredCompressed32, dereferenceCompressed32
 } from '../verification/data-layout-abi-v1.mjs';
@@ -45,6 +45,67 @@ test('AoSoA tail lanes and invalid layout parameters never become live rows', ()
   }));
   assert.throws(() => computeLayoutAbi({layout:'aos',fields:[...fields,{name:'x',type:'u8'}],capacity:1}));
   assert.throws(() => computeLayoutAbi({layout:'aos',fields:[{name:'x',type:'string'}],capacity:1}));
+});
+
+test('ABI field names include normal identifiers and use prototype-safe lookup', () => {
+  const ordinary = [
+    {name:'position_x',type:'f64'},
+    {name:'velocity2',type:'f32'},
+    {name:'__proto__',type:'u32'},
+    {name:'constructor',type:'i8'},
+    {name:'$local',type:'bool'}
+  ];
+  for (const layout of ['aos','soa','aosoa','soaos']) {
+    const options = layout === 'aosoa' ? {tileWidth:4} :
+      layout === 'soaos' ? {groups:[['position_x','velocity2'],['__proto__','constructor','$local']]} : {};
+    const geometry = computeLayoutAbi({layout,fields:ordinary,capacity:5,...options});
+    for (const field of ordinary) {
+      assert.equal(typeof geometry.address(4,field.name).byteOffset,'bigint');
+    }
+    assert.throws(() => geometry.address(4,'toString'),RangeError);
+    assert.throws(() => geometry.address(4,'hasOwnProperty'),RangeError);
+  }
+  for (const invalid of ['9id','x-y','a b','', 'r\\n', 'x.']) {
+    assert.throws(() => computeLayoutAbi({
+      layout:'aos',fields:[{name:invalid,type:'u32'}],capacity:1
+    }),TypeError);
+  }
+});
+
+test('heterogeneous layout cells are aligned, nonaliasing and inside committed segments', () => {
+  const capacities = [0,1,2,3,5,8,17];
+  for (const capacity of capacities) {
+    for (const layout of ['aos','soa','aosoa','soaos']) {
+      const variants = layout === 'aosoa'
+        ? [1,2,4,8].map(tileWidth => ({tileWidth}))
+        : layout === 'soaos'
+        ? [{groups:[['id','flag'],['x','next']]},
+           {groups:[['id'],['x'],['flag'],['next']]}]
+        : [{}];
+      for (const options of variants) {
+        const geometry = computeLayoutAbi({layout,fields,capacity,...options});
+        const occupied = new Set();
+        for (let row = 0; row < capacity; row++) {
+          for (const field of fields) {
+            const cell = geometry.address(row,field.name);
+            const type = TYPES[field.type];
+            assert.equal(cell.byteOffset % type.align,0n,
+              `${layout}: misaligned ${field.name}`);
+            const segment = geometry.segments[cell.segment];
+            assert.ok(segment && cell.byteOffset + type.size <= segment.bytes,
+              `${layout}: out-of-bounds ${field.name}`);
+            for (let i = 0n; i < type.size; i++) {
+              const key = `${cell.segment}:${cell.byteOffset + i}`;
+              assert.equal(occupied.has(key),false,
+                `${layout}: alias in capacity ${capacity}, ${field.name}`);
+              occupied.add(key);
+            }
+          }
+        }
+        assert.throws(() => geometry.address(capacity,'x'),RangeError);
+      }
+    }
+  }
 });
 
 test('compressed32 is unsigned, null-reserving, aligned and bounds checked', () => {
