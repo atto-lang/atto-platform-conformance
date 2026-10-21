@@ -26,7 +26,7 @@
     "result": "21/21 independent syntax-reference tests passed",
     "covers": "v1-as-separator-only"
   },
-  "notes": "The source-free v2 contract now covers 33 reference vectors: full return-type acceptance plus separator masquerades, malformed/unbalanced return types, exact-colon boundaries, semicolon boundaries, and physical-line comment behavior. Java Maven/Graal, formatter cargo, and LLVM CMake/CTest remain separate exact-head implementation gates. No cross-org private compiler source export is authorized by this manifest.",
+  "notes": "The source-free v2 contract now validates all 33 reference vectors (14 accept / 19 reject): full return-type acceptance plus separator masquerades, malformed/unbalanced return types, exact-colon boundaries, semicolon boundaries, and physical-line comment behavior. Java Maven/Graal, formatter cargo, and LLVM CMake/CTest remain separate exact-head implementation gates. No cross-org private compiler source export is authorized by this manifest.",
   "referenceVectors": [
     {
       "id": "separator-free-next-line",
@@ -196,13 +196,13 @@
   ],
   "v2SourceFreeReferenceEvidence": {
     "repository": "zed-pkg/zed-lambdas",
-    "pullRequest": 25,
-    "runId": 39541133296,
-    "jobId": 119028888173,
-    "result": "13 accepted / 10 rejected independent full-type v2 syntax vectors passed",
-    "marker": "ORESLANG_DOUBLE_COLON_V2_FULL_TYPE_SOURCE_FREE_PASS accepted=13 rejected=10 private_source_bytes=0",
+    "pullRequest": 26,
+    "runId": 39625325242,
+    "jobId": 119308910442,
+    "result": "14 accepted / 19 rejected independent adversarial v2 syntax vectors passed",
+    "marker": "ORESLANG_DOUBLE_COLON_V2_ADVERSARIAL_SOURCE_FREE_PASS accepted=14 rejected=19 private_source_bytes=0",
     "privateSourceBytes": 0,
-    "scope": "prior 23-vector hosted receipt; expanded 33-vector adversarial receipt pending",
-    "covers": "full-type-v2-23-vectors"
+    "scope": "abstract adversarial v2 syntax contract only; not Java/Rust/LLVM implementation certification",
+    "covers": "adversarial-v2-33-vectors"
   }
 }
