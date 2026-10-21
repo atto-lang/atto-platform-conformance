@@ -154,3 +154,18 @@ Two bounded **reference models**, not production compilers or actor runtimes, no
 **Concurrency nuance:** a serial actor can admit only one outstanding message lifetime, whereas an actor configured for multiple concurrent requests/messages may have more than one **suspended** message handler concurrently. It must still execute guest code single-flight. A production MessageRegion therefore belongs to the *handler/message lifetime*, not merely a single reusable actor-wide scratch bump pointer that resets whenever another handler runs. The unary fast path in the section above is deliberately restricted to serial admission.
 
 The reference assertions were executed in a JavaScript V8 tool environment while authoring this draft. Source-org GitHub Actions may fail before job steps run; require observed Node 22 node --test job steps and separate real compiler/guest execution before promoting any parity checkbox. None of these models proves cache speedups, GC elimination or isolation in Java, LLVM, Wasm, JS Workers or .NET.
+
+
+## ABI integrity and exact-SHA evidence slice (2026-10-21)
+
+This is **shared reference-contract progress**, not source-level guest conformance.
+
+- Corrected the shared heterogeneous layout oracle's identifier character class; ordinary multi-letter names previously failed validation.
+- Froze nested scalar width descriptors, field-locator entries, field lists, and SoAoS group lists to prevent post-validation offset mutation.
+- Added property-style tests for every logical cell across capacities 0, 1, 2, 3, 5, 8, 17, all four layouts, natural alignment, disjoint byte ranges and committed segment bounds.
+- Added optional explicit `maxSegmentBytes` and `maxTotalBytes` **BigInt** physical admission quotas, including tile padding and group record strides. Backends must always pass their actual actor/instance limits rather than assume the reference's unconstrained default is a safe physical allocation.
+- Pinned current backend draft/main commit SHAs without claiming compiler guest execution in `contracts/v1/five-target-actor-layout-evidence-20261021.json`. Added a fail-closed source-free verifier that rejects fabricated certified parity.
+- Independently reconstructed the exact reference module in an ephemeral local Node 22 workspace. Its `git hash-object` matched the private GitHub blob `b76c3bf2bf7860eb06c9f0545a049bcc41f37986`; seven focused local smoke tests passed for geometry, hardening, quota and compressed32. These are **not** the full repository test suite.
+- The source GitHub Actions workflow still failed before steps. No exact-head generated Oreslang guest tests have executed, and no private-source mirror has been authorized.
+
+**Next acceptance gate:** independently stepful runner admission, audited source/tree provenance, shared mixed-width ECS source fixture compiled/executed through GraalVM and LLVM first, then the Wasm/JS/.NET targets with the same observable semantics and actor lifetime checks. Keep tracker #144 completion boxes open until merged/released and verified.
