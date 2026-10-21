@@ -45,6 +45,29 @@ function visibleSource(source){
 }
 
 
+function normalizeHeaderTypeSource(text){
+  let out="",quote=null,escape=false,block=0;
+  for(let i=0;i<text.length;i++){
+    const c=text[i],n=text[i+1];
+    if(block){
+      if(c==="/"&&n==="*"){block++;i++;continue;}
+      if(c==="*"&&n==="/"){block--;out+=" ";i++;continue;}
+      continue;
+    }
+    if(quote!==null){
+      if(escape){escape=false;continue;}
+      if(c==="\\"){escape=true;continue;}
+      if(c===quote){quote=null;continue;}
+      continue;
+    }
+    if(c==="/"&&n==="/") break;
+    if(c==="/"&&n==="*"){block=1;out+=" ";i++;continue;}
+    if(c==="\""||c==="'"||c==="\`"){out+="__ores_literal_type__";quote=c;continue;}
+    out+=c;
+  }
+  return block===0&&quote===null ? out : null;
+}
+
 function topLevelTypeChunks(text){
   const chunks=[];
   let start=null, paren=0, bracket=0, brace=0, angle=0;
@@ -86,9 +109,10 @@ function parseTypeAtomChunks(chunks,state){
     state.i++;
     return parseTypeAtomChunks(chunks,state);
   }
-  if(token==="borrow"||token==="&"){
+  if(token==="borrow"||token==="&"||token==="&mut"){
+    const prefix=token;
     state.i++;
-    if(state.i<chunks.length&&chunks[state.i]==="mut") state.i++;
+    if(prefix!=="&mut"&&state.i<chunks.length&&chunks[state.i]==="mut") state.i++;
     return parseTypeAtomChunks(chunks,state);
   }
   if(token==="tuple"){
@@ -130,26 +154,32 @@ function parseTypeAtomChunks(chunks,state){
 }
 
 function isCompleteTypePrefix(text){
-  const chunks=topLevelTypeChunks(text.trim());
+  const normalized=normalizeHeaderTypeSource(text);
+  if(normalized===null) return false;
+  const chunks=topLevelTypeChunks(normalized.trim());
   if(chunks.length===0) return false;
   const state={i:0};
   return parseTypeChunks(chunks,state)&&state.i===chunks.length;
 }
 
 function classifyV2Callable(source){
+  const rawLines=source.split(/\r?\n/);
   const lines=visibleSource(source).split(/\r?\n/);
   const headerIndex=lines.findIndex(line=>line.trim().length>0);
   if(headerIndex<0) return false;
   const header=lines[headerIndex];
+  const rawHeader=rawLines[headerIndex];
   if(!/\b(fnc|routine)\b/.test(header)) return false;
 
   const close=header.indexOf(")");
   if(close<0) return false;
   let tail=header.slice(close+1).trimStart();
+  let rawTail=rawHeader.slice(close+1).trimStart();
 
   if(tail.startsWith(":")) return false;
-  if(!tail.startsWith("->")) return false;
+  if(!tail.startsWith("->")||!rawTail.startsWith("->")) return false;
   tail=tail.slice(2);
+  rawTail=rawTail.slice(2);
 
   const asMatch=/\bas\b/.exec(tail);
   const colonAt=tail.indexOf("::");
@@ -160,7 +190,7 @@ function classifyV2Callable(source){
 
   if(candidates.length){
     const sep=candidates[0];
-    const typeText=tail.slice(0,sep.start).trim();
+    const typeText=rawTail.slice(0,sep.start).trim();
     if(!isCompleteTypePrefix(typeText)) return false;
     const body=tail.slice(sep.end).trimStart();
     if(/^as\b/.test(body) || body.startsWith("::")) return false;
@@ -178,7 +208,7 @@ function classifyV2Callable(source){
 
 test("v2 callable separator reference vectors",()=>{
   assert.ok(Array.isArray(manifest.referenceVectors));
-  assert.equal(manifest.referenceVectors.length,18);
+  assert.equal(manifest.referenceVectors.length,23);
   let accepted=0;
   let rejected=0;
   for(const vector of manifest.referenceVectors){
@@ -186,6 +216,6 @@ test("v2 callable separator reference vectors",()=>{
     assert.equal(actual,vector.accepted,vector.id);
     if(actual) accepted++; else rejected++;
   }
-  assert.equal(accepted,8);
+  assert.equal(accepted,13);
   assert.equal(rejected,10);
 });
