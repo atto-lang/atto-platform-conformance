@@ -78,3 +78,67 @@ P1: guest actor parity in JS/Wasm/.NET and source aggregated actor lowering in L
 P2: target-tuned SIMD/AoSoA/SoAoS auto choice, optional GPU device storage, NUMA and process-isolated worker profiles with quantitative results.
 
 This proposal complements existing Java and LLVM DOP contracts. Do not mark it implemented until exact-head guest evidence exists in each affected backend.
+
+
+## JVM/Graal self-managed actor heap and message-lifetime region — refinement (2026-10-21)
+
+**Decision proposal:** implement an actor-owned allocator hierarchy *inside* the already actor-owned native memory domain. Keep an actor's persistent object heap distinct from a cheap message-scratch region, plus a pinned/scope-owned continuation region. Avoid a tracing collector by default. This is an allocation-policy and codegen design, **not** an assertion that the current native arena draft already frees all message temporaries.
+
+**Existing actual implementation:** Graal/Java draft [#1822](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1822) currently supports JNI-backed `ActorNativeArena`, compact native object slots, a per-actor logical `ActorLinearMemory`, selected native lists/value cells and a native TaskFrame lifecycle header. It still has Java managed facades/evaluator frames and long-lived native allocations; most variable-size payloads cannot be reclaimed mid-actor. Its code has a **JDK 21 baseline and JNI allocator**, *not* a mandatory stable-JDK22+ FFM dependency. A separate FFM provider can be enabled after an explicitly reviewed toolchain baseline/Native Image compatibility change. Do not casually rewrite the runtime around `Arena.ofShared()` without reconciling that constraint.
+
+### Per-actor allocation strata
+
+| Allocation category | Primary home | Release condition |
+| --- | --- | --- |
+| Actor state, retained class instances, long-lived collections, ECS chunks, actor-owned indexes | `ActorHeap` backed by the actor's native arena, with size-class slabs/free lists where worth the overhead | Compiler-emitted drops on overwrites or scoped release; any remaining storage reclaimed only after physical actor termination and external lease quiescence |
+| Message-handler locals, parsing/serialization scratch, bounded transient arrays and ephemeral query buffers | `MessageRegion` bump allocator with a monotonically increasing reset epoch, possibly pooling native pages | After **logical handler completion**, cleanup and proof of no outstanding scratch references; reuse capacity rather than allocate a new OS region per message |
+| Async continuation frame, retained locals, select registrations, scoped descendants and external-operation state | `ContinuationRegion` with explicit lifetimes and pin/lease counting; may use actor-persistent allocator underneath | After the **last** live owner/continuation/scope actually retires, not on carrier yield, Future terminal notification or ordinary mailbox receipt |
+| Frozen shared data | Dedicated grant/lifetime-accounted shared region (not actor scratch) | After all authorized read leases/grants retire |
+| Native FD/socket/file/FFI authority | Opaque, generation-safe runtime resource registry, not raw guest handles | Deterministic close/transfer/rollback before releasing the owning memory |
+
+A native arena is the allocator's backing/lifetime authority; a *heap within an arena* can add reusable free slots, size classes, growth/reallocation and layout-specific stores. Full local tracing GC is **not needed** for the fast path. Do not require one OS mapping or precommit a 64-KiB guest page for every tiny actor or every message. Pool and account native pages, but enforce strict logical actor ownership; keep currently specified 4-KiB object slabs / 64-KiB logical guest pages and common actor-relative offset authority when evolving #1822.
+
+### Unary / single-flight actor fast path
+
+1. On dequeue, start a fresh message epoch and mark `MessageRegion` active. Its backing capacity can be reused across messages.
+2. Place allocations proven to die with the handler in scratch; put state/retained objects in persistent heap. The borrow checker proves lifetime and alias constraints, and typed lowering chooses the region.
+3. The actor has at most one *active logical guest handler* even if its carrier thread is released by await. **Do not reset scratch on `await`, scheduler `rt cooperate`, or thread migration.** An awaiting handler may still own scratch and pinned continuation state.
+4. On normal return **or** catch/raise/panic/cancel, run compiler-emitted destructor/drop glue in reverse scope order. Complete message ownership transfer/copy/serialization and release external resources first.
+5. Verify no escaped scratch owner, borrowed projection, live subtask or pending callback retains the region. If the proof is static and no dynamic capability/FFI is involved, codegen can omit redundant runtime reference scans; if a dynamic lease remains, defer reset or fail the unsafe operation.
+6. Advance the scratch epoch, revoke stale views/handles and reset allocator offsets in constant time. **An epoch invalidates guest handles even if the same native page is reused.** Quota accounting reflects live/reserved bytes according to its published contract.
+7. Admit the next message only under the one-handler-at-a-time actor execution contract. `get_done()` / actor stop are separate: physical arena teardown requires stronger whole-actor quiescence.
+
+The borrow checker **does not free memory**: it proves aliasing, liveness and escape. The compiler emits drops and region placement; the native allocator performs actual reclaim/reuse. Safe source semantics stay `rt copy`, `rt share`, `rt take`, `rt borrow`, `rt mut borrow`.
+
+**Escape rules:** reject a scratch reference stored in actor state, sent to another actor, published to a detached Task, returned from the handler as a live scratch reference, used after a message boundary, or held by an unproven asynchronous/FFI callback. Explicit owned result transfer, freeze/copy or compiler-proven promotion must provide a new lifetime-owning domain before reset; do not silently keep an alias into reclaimed memory. Zero-copy promotion is permitted only if the underlying page ownership is actually transferred and no other scratch objects/borrows remain on it; otherwise copy/move to persistent storage.
+
+**Persistent-heap reclamation:** slot reuse requires ABA-resistant identity; generation fencing of physical slots must be compatible with #1822's nonrecycled actor-relative logical offsets and #1849's compressed32 encoding. Physical slab space may be reused only under new valid allocation authority. Bounded, weak/nonowning generational internal links can represent cycles under one arena owner, but resource destruction and mid-actor reclamation still need explicit ownership/drop semantics. If a long-lived actor continually allocates unreachable persistent cyclic graphs with no drop path, actor-exit bulk reset alone is insufficient; reject unsupported ownership cycles or enforce quotas, do not pretend there is no leak.
+
+**Data layout:** persistent `LayoutStore<T>` / inverted-class stores may choose AoS, SoA, AoSoA or SoAoS within the actor heap; a message's ECS query iterators, sorted hit buffers and temporary conversion workspace belong in scratch only if they do not escape. Do not allocate a managed JVM wrapper per ECS row or per scalar operation. Layout conversion, erase, compaction and actor stop must respect field loans and continuation pins.
+
+### Implementation milestones on the existing Java branch
+
+- **J1 — classify allocation sites:** emit a typed `allocationDomain = MESSAGE | ACTOR | CONTINUATION | SHARED` witness in lowering. Start with native scalars and fixed-size aggregates; unsupported types fail closed. Never infer guest scope from the Java thread alone.
+- **J2 — add message-region allocator:** bounded page/slab backing, alignment/overflow/quota checks, reentrant-close denial, monotonic epochs, deterministic reset and optional high-water retention/release; keep thread migration safe.
+- **J3 — introduce persistent reusable heap:** size-class freelists and typed drop glue for variable-length text, native collection payloads, closures/ADTs and owned graph nodes. No general tracing pass and no per-object JVM finalizers.
+- **J4 — async pinning:** spill the remaining managed guest continuation locals to checked native frame slots, preserve frames across `await`, and retire after all child Tasks/callbacks/FFI leases finish. Keep single-flight actor turn semantics.
+- **J5 — generated accessors and evaluation:** avoid managed object facades, boxing, temporary Java lists/maps and per-element wrappers in steady-state guest loops; preserve explicit runtime bookkeeping outside guest heaps.
+- **J6 — measured conformance:** exact-head real-source success/reject cases for temporary message allocation, repeated messages, persistent state across messages, handler await/cancel/error, scratch escape denial, stale epoch/reused slot, high allocation pressure, concurrent shutdown and arena lease deferral. Compare allocated bytes and GC pressure after warmup, document Native Image separately. This is not certified until executed against the actual compiler/runtime.
+
+### FFM/provider portability caveat
+
+JDK 25 `Arena.ofShared()` allows multi-thread access to segments and explicit close; `Arena.ofConfined()` is tied to a creating thread and does not directly fit migrating actor carriers. Closing a shared FFM arena invalidates **all segments allocated from that scope**, not just a custom logical subheap: a bump-pointer reset within a still-open scope **does not** automatically invalidate Java `MemorySegment` wrappers. The custom region layer therefore needs independent epoch/handle validation and/or separate closeable scopes for message scratch. For JDK 21, the existing JNI allocator can supply the same semantic contract. `Arena.ofAuto()` is GC-managed and should not be used to promise deterministic guest deallocation. See the [JDK 25 Arena API](https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/foreign/Arena.html) and [GraalVM Native Image FFM support](https://docs.oracle.com/en/graalvm/jdk/25i/docs/reference-manual/native-image/native-code-interoperability/ffm-api/).
+
+### Acceptance tests (required before runtime claims)
+
+- 100K sequential messages with bounded transient bytes; persistent data unchanged and message scratch reset to low-water each time.
+- Single handler pauses at await; its scratch values remain readable after resume on a different worker thread; a **new** handler is not admitted concurrently under unary/single-flight policy.
+- Handler return, error, cancellation and panic each run required drops once and release scratch only after resource/future/child-task quiescence.
+- Storage of a scratch borrow into actor state, Sendable payload, frozen region, external callback or escaped Task is rejected before artifact publication.
+- Generation/epoch mismatch prevents stale scratch view reuse even if the same physical address is allocated next message; fuzz offset arithmetic and stale compressed32 handles.
+- Repeated persistent variable-length allocation/overwrite reclaims usable slots and preserves full actor budget/accounting; bounded actors fail deterministically at quota.
+- ECS per-row access is native, field-loan-safe and layout-equivalent across AoS/SoA/AoSoA/SoAoS; compare no-wrapper-allocation workload benchmarks with managed/reference baseline.
+- Actor stop during a suspended message, external I/O or field lease delays physical release until true quiescence; verify no post-close native access, no double-drop and explicit failure receipts.
+- Tests cover JNI JDK21 baseline; if FFM is adopted, separately execute JDK25 JVM+Native Image and confirm no semantic or lifetime regressions.
+
+Existing relevant gates: [Java actor allocation issue #289](https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/289), [native arena draft #1822](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1822), [compressed refs #1849](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1849), [whole-actor Task quiescence #1566](https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1566), and [five-target queue #144](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/144).
