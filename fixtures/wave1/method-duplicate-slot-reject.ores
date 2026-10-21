@@ -1,0 +1,4 @@
+define class Counter as
+  get(): int { return 1; }
+  get(): int { return 2; }
+end

@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "contract": "cpu-gpu-nb-v1",
+  "kind": "normative-target-corpus-not-execution-evidence",
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "cases": [
+    {
+      "id": "cpu-value",
+      "file": "cpu-value.ores",
+      "outcome": "accept_when_lowered",
+      "expectedTypeOrDiagnostic": "int",
+      "evidence": "not_verified"
+    },
+    {
+      "id": "gpu-value",
+      "file": "gpu-value.ores",
+      "outcome": "accept_when_lowered",
+      "expectedTypeOrDiagnostic": "GpuBuffer<f32>",
+      "evidence": "not_verified"
+    },
+    {
+      "id": "nb-cpu-unary",
+      "file": "nb-cpu-unary.ores",
+      "outcome": "accept_when_lowered",
+      "expectedTypeOrDiagnostic": "Future<int>",
+      "evidence": "not_verified"
+    },
+    {
+      "id": "nb-gpu-unary",
+      "file": "nb-gpu-unary.ores",
+      "outcome": "accept_when_lowered",
+      "expectedTypeOrDiagnostic": "Future<GpuBuffer<f32>>",
+      "evidence": "not_verified"
+    },
+    {
+      "id": "gpu-cpu-gpu-nested",
+      "file": "gpu-cpu-gpu-nested.ores",
+      "outcome": "accept_when_lowered",
+      "expectedTypeOrDiagnostic": "GpuBuffer<f32>",
+      "evidence": "not_verified"
+    },
+    {
+      "id": "gpu-empty-reject",
+      "file": "gpu-empty-reject.ores",
+      "outcome": "reject_always",
+      "expectedTypeOrDiagnostic": "no_device_effect",
+      "evidence": "not_verified"
+    },
+    {
+      "id": "nb-not-stream",
+      "file": "nb-not-stream.ores",
+      "outcome": "reject_always",
+      "expectedTypeOrDiagnostic": "future_not_stream",
+      "evidence": "not_verified"
+    },
+    {
+      "id": "gpu-no-implicit-download",
+      "file": "gpu-no-implicit-download.ores",
+      "outcome": "reject_always",
+      "expectedTypeOrDiagnostic": "residency_mismatch",
+      "evidence": "not_verified"
+    }
+  ]
+}

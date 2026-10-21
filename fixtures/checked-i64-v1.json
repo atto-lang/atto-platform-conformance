@@ -1,0 +1,907 @@
+{
+  "schemaVersion": 1,
+  "contract": "checked-i64-v1",
+  "status": "candidate-unattested",
+  "notes": "Mathematical reference vectors. guestSource is target input, not evidence that any compiler executed it. div_trunc cases intentionally have no Oreslang source mapping.",
+  "cases": [
+    {
+      "id": "literal-zero",
+      "expr": {
+        "op": "literal",
+        "value": "0"
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "0"
+      },
+      "guestSource": "pub fnc main(): int { return 0; }\n"
+    },
+    {
+      "id": "literal-max",
+      "expr": {
+        "op": "literal",
+        "value": "9223372036854775807"
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "9223372036854775807"
+      },
+      "guestSource": "pub fnc main(): int { return 9223372036854775807; }\n"
+    },
+    {
+      "id": "literal-min",
+      "expr": {
+        "op": "literal",
+        "value": "-9223372036854775808"
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "-9223372036854775808"
+      },
+      "guestSource": "pub fnc main(): int { return -9223372036854775808; }\n"
+    },
+    {
+      "id": "literal-over-max",
+      "expr": {
+        "op": "literal",
+        "value": "9223372036854775808"
+      },
+      "expected": {
+        "kind": "error",
+        "category": "integer_overflow",
+        "phase": "compile"
+      },
+      "guestSource": "pub fnc main(): int { return 9223372036854775808; }\n"
+    },
+    {
+      "id": "literal-under-min",
+      "expr": {
+        "op": "literal",
+        "value": "-9223372036854775809"
+      },
+      "expected": {
+        "kind": "error",
+        "category": "integer_overflow",
+        "phase": "compile"
+      },
+      "guestSource": "pub fnc main(): int { return -9223372036854775809; }\n"
+    },
+    {
+      "id": "add-basic",
+      "expr": {
+        "op": "add",
+        "args": [
+          {
+            "op": "literal",
+            "value": "40"
+          },
+          {
+            "op": "literal",
+            "value": "2"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      },
+      "guestSource": "pub fnc main(): int { return (40 + 2); }\n"
+    },
+    {
+      "id": "add-max-zero",
+      "expr": {
+        "op": "add",
+        "args": [
+          {
+            "op": "literal",
+            "value": "9223372036854775807"
+          },
+          {
+            "op": "literal",
+            "value": "0"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "9223372036854775807"
+      },
+      "guestSource": "pub fnc main(): int { return (9223372036854775807 + 0); }\n"
+    },
+    {
+      "id": "add-max-one",
+      "expr": {
+        "op": "add",
+        "args": [
+          {
+            "op": "literal",
+            "value": "9223372036854775807"
+          },
+          {
+            "op": "literal",
+            "value": "1"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "error",
+        "category": "integer_overflow",
+        "phase": "runtime"
+      },
+      "guestSource": "pub fnc main(): int { return (9223372036854775807 + 1); }\n"
+    },
+    {
+      "id": "add-min-neg-one",
+      "expr": {
+        "op": "add",
+        "args": [
+          {
+            "op": "literal",
+            "value": "-9223372036854775808"
+          },
+          {
+            "op": "literal",
+            "value": "-1"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "error",
+        "category": "integer_overflow",
+        "phase": "runtime"
+      },
+      "guestSource": "pub fnc main(): int { return (-9223372036854775808 + -1); }\n"
+    },
+    {
+      "id": "add-min-one",
+      "expr": {
+        "op": "add",
+        "args": [
+          {
+            "op": "literal",
+            "value": "-9223372036854775808"
+          },
+          {
+            "op": "literal",
+            "value": "1"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "-9223372036854775807"
+      },
+      "guestSource": "pub fnc main(): int { return (-9223372036854775808 + 1); }\n"
+    },
+    {
+      "id": "add-cancel",
+      "expr": {
+        "op": "add",
+        "args": [
+          {
+            "op": "literal",
+            "value": "1"
+          },
+          {
+            "op": "literal",
+            "value": "-1"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "0"
+      },
+      "guestSource": "pub fnc main(): int { return (1 + -1); }\n"
+    },
+    {
+      "id": "sub-basic",
+      "expr": {
+        "op": "sub",
+        "args": [
+          {
+            "op": "literal",
+            "value": "50"
+          },
+          {
+            "op": "literal",
+            "value": "8"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      },
+      "guestSource": "pub fnc main(): int { return (50 - 8); }\n"
+    },
+    {
+      "id": "sub-min-zero",
+      "expr": {
+        "op": "sub",
+        "args": [
+          {
+            "op": "literal",
+            "value": "-9223372036854775808"
+          },
+          {
+            "op": "literal",
+            "value": "0"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "-9223372036854775808"
+      },
+      "guestSource": "pub fnc main(): int { return (-9223372036854775808 - 0); }\n"
+    },
+    {
+      "id": "sub-min-one",
+      "expr": {
+        "op": "sub",
+        "args": [
+          {
+            "op": "literal",
+            "value": "-9223372036854775808"
+          },
+          {
+            "op": "literal",
+            "value": "1"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "error",
+        "category": "integer_overflow",
+        "phase": "runtime"
+      },
+      "guestSource": "pub fnc main(): int { return (-9223372036854775808 - 1); }\n"
+    },
+    {
+      "id": "sub-max-negative-one",
+      "expr": {
+        "op": "sub",
+        "args": [
+          {
+            "op": "literal",
+            "value": "9223372036854775807"
+          },
+          {
+            "op": "literal",
+            "value": "-1"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "error",
+        "category": "integer_overflow",
+        "phase": "runtime"
+      },
+      "guestSource": "pub fnc main(): int { return (9223372036854775807 - -1); }\n"
+    },
+    {
+      "id": "sub-zero-negative-one",
+      "expr": {
+        "op": "sub",
+        "args": [
+          {
+            "op": "literal",
+            "value": "0"
+          },
+          {
+            "op": "literal",
+            "value": "-1"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "1"
+      },
+      "guestSource": "pub fnc main(): int { return (0 - -1); }\n"
+    },
+    {
+      "id": "mul-basic",
+      "expr": {
+        "op": "mul",
+        "args": [
+          {
+            "op": "literal",
+            "value": "6"
+          },
+          {
+            "op": "literal",
+            "value": "7"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "42"
+      },
+      "guestSource": "pub fnc main(): int { return (6 * 7); }\n"
+    },
+    {
+      "id": "mul-max-one",
+      "expr": {
+        "op": "mul",
+        "args": [
+          {
+            "op": "literal",
+            "value": "9223372036854775807"
+          },
+          {
+            "op": "literal",
+            "value": "1"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "9223372036854775807"
+      },
+      "guestSource": "pub fnc main(): int { return (9223372036854775807 * 1); }\n"
+    },
+    {
+      "id": "mul-max-two",
+      "expr": {
+        "op": "mul",
+        "args": [
+          {
+            "op": "literal",
+            "value": "9223372036854775807"
+          },
+          {
+            "op": "literal",
+            "value": "2"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "error",
+        "category": "integer_overflow",
+        "phase": "runtime"
+      },
+      "guestSource": "pub fnc main(): int { return (9223372036854775807 * 2); }\n"
+    },
+    {
+      "id": "mul-min-negative-one",
+      "expr": {
+        "op": "mul",
+        "args": [
+          {
+            "op": "literal",
+            "value": "-9223372036854775808"
+          },
+          {
+            "op": "literal",
+            "value": "-1"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "error",
+        "category": "integer_overflow",
+        "phase": "runtime"
+      },
+      "guestSource": "pub fnc main(): int { return (-9223372036854775808 * -1); }\n"
+    },
+    {
+      "id": "mul-min-zero",
+      "expr": {
+        "op": "mul",
+        "args": [
+          {
+            "op": "literal",
+            "value": "-9223372036854775808"
+          },
+          {
+            "op": "literal",
+            "value": "0"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "0"
+      },
+      "guestSource": "pub fnc main(): int { return (-9223372036854775808 * 0); }\n"
+    },
+    {
+      "id": "mul-neg-seven-three",
+      "expr": {
+        "op": "mul",
+        "args": [
+          {
+            "op": "literal",
+            "value": "-7"
+          },
+          {
+            "op": "literal",
+            "value": "3"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "-21"
+      },
+      "guestSource": "pub fnc main(): int { return (-7 * 3); }\n"
+    },
+    {
+      "id": "mul-root-square-valid",
+      "expr": {
+        "op": "mul",
+        "args": [
+          {
+            "op": "literal",
+            "value": "3037000499"
+          },
+          {
+            "op": "literal",
+            "value": "3037000499"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "9223372030926249001"
+      },
+      "guestSource": "pub fnc main(): int { return (3037000499 * 3037000499); }\n"
+    },
+    {
+      "id": "mul-root-square-overflow",
+      "expr": {
+        "op": "mul",
+        "args": [
+          {
+            "op": "literal",
+            "value": "3037000500"
+          },
+          {
+            "op": "literal",
+            "value": "3037000500"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "error",
+        "category": "integer_overflow",
+        "phase": "runtime"
+      },
+      "guestSource": "pub fnc main(): int { return (3037000500 * 3037000500); }\n"
+    },
+    {
+      "id": "neg-zero",
+      "expr": {
+        "op": "neg",
+        "args": [
+          {
+            "op": "literal",
+            "value": "0"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "0"
+      },
+      "guestSource": "pub fnc main(): int { return (-0); }\n"
+    },
+    {
+      "id": "neg-max",
+      "expr": {
+        "op": "neg",
+        "args": [
+          {
+            "op": "literal",
+            "value": "9223372036854775807"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "-9223372036854775807"
+      },
+      "guestSource": "pub fnc main(): int { return (-9223372036854775807); }\n"
+    },
+    {
+      "id": "neg-min",
+      "expr": {
+        "op": "neg",
+        "args": [
+          {
+            "op": "literal",
+            "value": "-9223372036854775808"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "error",
+        "category": "integer_overflow",
+        "phase": "runtime"
+      },
+      "guestSource": "pub fnc main(): int { return (--9223372036854775808); }\n"
+    },
+    {
+      "id": "rem-positive",
+      "expr": {
+        "op": "rem",
+        "args": [
+          {
+            "op": "literal",
+            "value": "7"
+          },
+          {
+            "op": "literal",
+            "value": "3"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "1"
+      },
+      "guestSource": "pub fnc main(): int { return (7 % 3); }\n"
+    },
+    {
+      "id": "rem-negative",
+      "expr": {
+        "op": "rem",
+        "args": [
+          {
+            "op": "literal",
+            "value": "-7"
+          },
+          {
+            "op": "literal",
+            "value": "3"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "-1"
+      },
+      "guestSource": "pub fnc main(): int { return (-7 % 3); }\n"
+    },
+    {
+      "id": "rem-negative-divisor",
+      "expr": {
+        "op": "rem",
+        "args": [
+          {
+            "op": "literal",
+            "value": "7"
+          },
+          {
+            "op": "literal",
+            "value": "-3"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "1"
+      },
+      "guestSource": "pub fnc main(): int { return (7 % -3); }\n"
+    },
+    {
+      "id": "rem-both-negative",
+      "expr": {
+        "op": "rem",
+        "args": [
+          {
+            "op": "literal",
+            "value": "-7"
+          },
+          {
+            "op": "literal",
+            "value": "-3"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "-1"
+      },
+      "guestSource": "pub fnc main(): int { return (-7 % -3); }\n"
+    },
+    {
+      "id": "rem-min-minus-one",
+      "expr": {
+        "op": "rem",
+        "args": [
+          {
+            "op": "literal",
+            "value": "-9223372036854775808"
+          },
+          {
+            "op": "literal",
+            "value": "-1"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "0"
+      },
+      "guestSource": "pub fnc main(): int { return (-9223372036854775808 % -1); }\n"
+    },
+    {
+      "id": "rem-zero-divisor",
+      "expr": {
+        "op": "rem",
+        "args": [
+          {
+            "op": "literal",
+            "value": "7"
+          },
+          {
+            "op": "literal",
+            "value": "0"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "error",
+        "category": "division_by_zero",
+        "phase": "runtime"
+      },
+      "guestSource": "pub fnc main(): int { return (7 % 0); }\n"
+    },
+    {
+      "id": "rem-zero-zero",
+      "expr": {
+        "op": "rem",
+        "args": [
+          {
+            "op": "literal",
+            "value": "0"
+          },
+          {
+            "op": "literal",
+            "value": "0"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "error",
+        "category": "division_by_zero",
+        "phase": "runtime"
+      },
+      "guestSource": "pub fnc main(): int { return (0 % 0); }\n"
+    },
+    {
+      "id": "intermediate-add-overflow",
+      "expr": {
+        "op": "sub",
+        "args": [
+          {
+            "op": "add",
+            "args": [
+              {
+                "op": "literal",
+                "value": "9223372036854775807"
+              },
+              {
+                "op": "literal",
+                "value": "1"
+              }
+            ]
+          },
+          {
+            "op": "literal",
+            "value": "1"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "error",
+        "category": "integer_overflow",
+        "phase": "runtime"
+      },
+      "guestSource": "pub fnc main(): int { return ((9223372036854775807 + 1) - 1); }\n"
+    },
+    {
+      "id": "intermediate-sub-overflow",
+      "expr": {
+        "op": "add",
+        "args": [
+          {
+            "op": "sub",
+            "args": [
+              {
+                "op": "literal",
+                "value": "-9223372036854775808"
+              },
+              {
+                "op": "literal",
+                "value": "1"
+              }
+            ]
+          },
+          {
+            "op": "literal",
+            "value": "1"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "error",
+        "category": "integer_overflow",
+        "phase": "runtime"
+      },
+      "guestSource": "pub fnc main(): int { return ((-9223372036854775808 - 1) + 1); }\n"
+    },
+    {
+      "id": "intermediate-mul-overflow",
+      "expr": {
+        "op": "sub",
+        "args": [
+          {
+            "op": "mul",
+            "args": [
+              {
+                "op": "literal",
+                "value": "9223372036854775807"
+              },
+              {
+                "op": "literal",
+                "value": "2"
+              }
+            ]
+          },
+          {
+            "op": "literal",
+            "value": "9223372036854775807"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "error",
+        "category": "integer_overflow",
+        "phase": "runtime"
+      },
+      "guestSource": "pub fnc main(): int { return ((9223372036854775807 * 2) - 9223372036854775807); }\n"
+    },
+    {
+      "id": "precedence-tree",
+      "expr": {
+        "op": "add",
+        "args": [
+          {
+            "op": "literal",
+            "value": "1"
+          },
+          {
+            "op": "mul",
+            "args": [
+              {
+                "op": "literal",
+                "value": "2"
+              },
+              {
+                "op": "literal",
+                "value": "3"
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "7"
+      },
+      "guestSource": "pub fnc main(): int { return (1 + (2 * 3)); }\n"
+    },
+    {
+      "id": "div-trunc-negative",
+      "expr": {
+        "op": "div_trunc",
+        "args": [
+          {
+            "op": "literal",
+            "value": "-7"
+          },
+          {
+            "op": "literal",
+            "value": "3"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "-2"
+      },
+      "guestSourceStatus": "abstract-unmapped"
+    },
+    {
+      "id": "div-trunc-negative-divisor",
+      "expr": {
+        "op": "div_trunc",
+        "args": [
+          {
+            "op": "literal",
+            "value": "7"
+          },
+          {
+            "op": "literal",
+            "value": "-3"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "-2"
+      },
+      "guestSourceStatus": "abstract-unmapped"
+    },
+    {
+      "id": "div-trunc-min-minus-one",
+      "expr": {
+        "op": "div_trunc",
+        "args": [
+          {
+            "op": "literal",
+            "value": "-9223372036854775808"
+          },
+          {
+            "op": "literal",
+            "value": "-1"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "error",
+        "category": "integer_overflow",
+        "phase": "runtime"
+      },
+      "guestSourceStatus": "abstract-unmapped"
+    },
+    {
+      "id": "div-trunc-zero-divisor",
+      "expr": {
+        "op": "div_trunc",
+        "args": [
+          {
+            "op": "literal",
+            "value": "1"
+          },
+          {
+            "op": "literal",
+            "value": "0"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "error",
+        "category": "division_by_zero",
+        "phase": "runtime"
+      },
+      "guestSourceStatus": "abstract-unmapped"
+    },
+    {
+      "id": "div-trunc-min-one",
+      "expr": {
+        "op": "div_trunc",
+        "args": [
+          {
+            "op": "literal",
+            "value": "-9223372036854775808"
+          },
+          {
+            "op": "literal",
+            "value": "1"
+          }
+        ]
+      },
+      "expected": {
+        "kind": "value",
+        "decimal": "-9223372036854775808"
+      },
+      "guestSourceStatus": "abstract-unmapped"
+    }
+  ]
+}

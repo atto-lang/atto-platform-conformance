@@ -1,0 +1,1 @@
+pub routine run(input: GpuBuffer<f32>): Stream<GpuBuffer<f32>> { return nb gpu { kernel(rt take input) }; }
