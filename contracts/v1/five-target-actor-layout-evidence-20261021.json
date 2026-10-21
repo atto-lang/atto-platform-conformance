@@ -51,10 +51,10 @@
     {
       "id": "wasm",
       "repository": "ores-truffle-oreslang/oreslang-source.wasm",
-      "commit": "cb68555b2403474672dc1c3546ebb4bfc4715bd8",
-      "source": "https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/112",
+      "commit": "0e07a6f70ece5dadf4f3eef7cad7b9c6ba5db6b4",
+      "source": "https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/113",
       "actorMemory": "Wasm linear-memory actor region; source guest actor lowering unverified",
-      "layouts": "actor-owned homogeneous f64 AoS/SoA/AoSoA/SoAoS host substrate",
+      "layouts": "ActorArena-backed mixed-width u32/f64/bool/ref32 four-layout host shard; actual Wasm guest execution unverified",
       "evidence": {
         "sourceOreslangCompiled": false,
         "generatedGuestExecuted": false,
@@ -66,10 +66,10 @@
     {
       "id": "dotnet",
       "repository": "ores-truffle-oreslang/oreslang-source.net",
-      "commit": "6ae47c74236b127865fdd3feebbdfacb40a2811d",
-      "source": "https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/108",
+      "commit": "6ebe24e7c4fe27138677064f38256fe575ffcfcd",
+      "source": "https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/123",
       "actorMemory": "unmanaged ActorArena; managed CLR runtime bookkeeping only; no independent CLR GC heaps",
-      "layouts": "unmanaged homogeneous f64 AoS/SoA/AoSoA/SoAoS host substrate",
+      "layouts": "NativeMemory actor arena-backed mixed-width u32/f64/bool/ref32 four-layout typed shard; .NET compilation unverified",
       "evidence": {
         "sourceOreslangCompiled": false,
         "generatedGuestExecuted": false,
@@ -81,10 +81,10 @@
     {
       "id": "javascript",
       "repository": "ores-truffle-oreslang/oreslang-source.js",
-      "commit": "a1df3a9c48e28668b7daa946c4f7f6cb0c7575ac",
-      "source": "https://github.com/ores-truffle-oreslang/oreslang-source.js/pull/34",
+      "commit": "f49a948c6e1f00f8ce8b6032ee02792b4f1dd242",
+      "source": "https://github.com/ores-truffle-oreslang/oreslang-source.js/pull/35",
       "actorMemory": "private browser Web Worker / Node worker thread; private ArrayBuffer payloads",
-      "layouts": "worker-private homogeneous f64 AoS/SoA/AoSoA/SoAoS host substrate",
+      "layouts": "Worker-private mixed-width u32/f64/bool/ref32 four-layout storage; Node Worker suite added but not executed",
       "evidence": {
         "sourceOreslangCompiled": false,
         "generatedGuestExecuted": false,
