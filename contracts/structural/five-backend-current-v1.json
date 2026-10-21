@@ -108,6 +108,40 @@
       "facet": "patterns",
       "admission": "reject",
       "source": "fnc bad(int x): int { match x over on structural {} v -> { return 1; } on _ -> { return 0; } end }\n"
+    },
+    {
+      "id": "anonymous-inline-implicit",
+      "facet": "readonly",
+      "admission": "accept",
+      "source": "fnc take({ id: int } value): int { return value.id; }\npub fnc main(): int { return take(record{id: 11, extra: 99}); }\n",
+      "expectedMain": "11"
+    },
+    {
+      "id": "anonymous-inline-redundant-keyword",
+      "facet": "readonly",
+      "admission": "accept",
+      "source": "fnc take(structural { id: int } value): int { return value.id; }\npub fnc main(): int { return take(record{id: 11, extra: 99}); }\n",
+      "expectedMain": "11"
+    },
+    {
+      "id": "anonymous-struct-redundant-keyword",
+      "facet": "readonly",
+      "admission": "accept",
+      "source": "fnc take(structural struct{ id: int } value): int { return value.id; }\npub fnc main(): int { return take(record{id: 11, extra: 99}); }\n",
+      "expectedMain": "11"
+    },
+    {
+      "id": "named-interface-requires-structural",
+      "facet": "nominal",
+      "admission": "reject",
+      "source": "define interface HasId\n id: int;\nend\ndefine class Candidate as pub val int id = 11; end\nfnc take(HasId value): int { return value.id; }\npub fnc main(): int { return take(new Candidate()); }\n"
+    },
+    {
+      "id": "named-trait-explicit",
+      "facet": "readonly",
+      "admission": "accept",
+      "source": "define trait HasId as\n id: int;\nend\ndefine class Candidate as pub val int id = 11; end\nfnc take(structural HasId value): int { return value.id; }\npub fnc main(): int { return take(new Candidate()); }\n",
+      "expectedMain": "11"
     }
   ]
 }
