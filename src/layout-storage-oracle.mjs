@@ -127,6 +127,7 @@ export class LayoutStore {
     this.#data = new ArrayBuffer(this.#geometry.bytes);
     this.#view = new DataView(this.#data);
     this.#capacity = capacity;
+    Object.preventExtensions(this); // forbid own-property shadowing of layout/capacity getters
   }
   get layout() { return this.#layout; }
   get capacity() { return this.#capacity; }
@@ -169,10 +170,14 @@ export class LayoutStore {
     if (!row || typeof row !== 'object' || Array.isArray(row)) throw new TypeError('row must be a record');
     const keys = Object.keys(row);
     if (keys.length !== this.#schema.length) throw new TypeError('row field set differs from schema');
+    const snapshot = Object.create(null);
     for (const f of this.#schema) {
       if (!Object.hasOwn(row, f.name)) throw new TypeError('missing row field');
-      checkValue(row[f.name], f.type);
+      const value = row[f.name]; // read an accessor/proxy only once, before changing store
+      checkValue(value, f.type);
+      snapshot[f.name] = value;
     }
+    return snapshot;
   }
   #handle(slot) {
     const handle = Object.freeze({ domain: this.#domain, slot, generation: this.#slots[slot].generation });
@@ -197,12 +202,13 @@ export class LayoutStore {
     this.#data = memory; this.#view = view; this.#geometry = next; this.#capacity = capacity;
   }
   push(row) {
-    this.#requireOpen(); this.#requireNoLoans(); this.#checkRow(row);
+    this.#requireOpen(); this.#requireNoLoans();
+    const prepared = this.#checkRow(row);
     if (this.length === this.capacity) this.reserve(Math.max(1, this.capacity * 2));
     const index = this.length, slot = this.#free.pop() ?? this.#slots.length;
     if (slot === this.#slots.length) this.#slots.push({ index, generation: 1, live: true });
     else { this.#slots[slot].index = index; this.#slots[slot].live = true; }
-    for (const f of this.#schema) this.#writeIndex(index, f.name, row[f.name]);
+    for (const f of this.#schema) this.#writeIndex(index, f.name, prepared[f.name]);
     this.#rowSlots.push(slot);
     return this.#handle(slot);
   }
