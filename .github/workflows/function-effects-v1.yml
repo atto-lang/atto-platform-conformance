@@ -1,0 +1,36 @@
+name: Function effects v1 contract
+on:
+  pull_request:
+    paths:
+      - 'contracts/v1/FUNCTION_EFFECTS_V1.md'
+      - 'contracts/v1/function-effects-v1.json'
+      - 'contracts/v1/verify_function_effects_v1.py'
+      - 'contracts/v1/test_function_effects_v1.py'
+      - '.github/workflows/function-effects-v1.yml'
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact source head
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --verify HEAD)" = "$EXPECTED_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
+      - name: Verify effect contract
+        working-directory: contracts/v1
+        run: |
+          python3 verify_function_effects_v1.py function-effects-v1.json
+          python3 test_function_effects_v1.py

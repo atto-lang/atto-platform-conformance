@@ -24,3 +24,7 @@ java -cp /path/to/tla2tools.jar tlc2.TLC -deadlock -config OwnedWorkerRequests.c
 java -cp /path/to/tla2tools.jar tlc2.TLC -deadlock -config OwnedWorkerRequestsUnsafe.cfg OwnedWorkerRequests.tla
 # Second invocation MUST exit nonzero and identify the pre-publication invariant.
 ```
+
+## Supervisor CONTROL priority and generation fencing
+
+See [ActorControlPriority.md](ActorControlPriority.md) for the bounded explicit-state supervisor model, required negative mutations, and the separate runtime refinement gate.

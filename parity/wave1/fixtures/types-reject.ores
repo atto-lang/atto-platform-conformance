@@ -1,0 +1,6 @@
+pub fnc answer(int x): int {
+  return x;
+}
+pub fnc main(): int {
+  return answer(1, 2);
+}

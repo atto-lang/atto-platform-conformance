@@ -5,6 +5,7 @@ The test manifest is a target fixture inventory. Source files are not proof of c
 | Pair | Currently executed by CI | Status |
 | --- | --- | --- |
 | Java/Graal source checking | No | Requires pinned compiler and real integration run |
+| JavaScript source checking | No | JS `--program-v2 --check` must be executed by a pinned Node 22+ binary against both real fixtures; this is **not** runtime execution or Java parity |
 | LLVM source checking | No | Requires pinned native compiler and real integration run |
 | .NET source checking | No | Native AOT bootstrap; requires pinned real .NET compiler |
 | Forge source checking | No | C++20 bootstrap; requires pinned real Forge compiler |
@@ -24,7 +25,7 @@ Two companion PRs add proposed compiler-executed smoke jobs. The report-consiste
 
 ## Five-compiler source fixture scope
 
-The `fixtures/manifest.json` basic arithmetic and unresolved-name cases are **targets** for `java`, `llvm`, `net`, `wasm`, and `forge`. Listing a backend in the manifest neither claims that it implements the fixture nor confirms that its runtime is feature-complete. `browser` remains an independent adapter target and must not be counted as a sixth compiler.
+The `fixtures/manifest.json` basic arithmetic and unresolved-name cases are **targets** for `java`, `llvm`, `net`, `wasm`, `forge`, and `js`. Listing a backend in the manifest neither claims that it implements the fixture nor confirms that its runtime is feature-complete. `browser` remains an independent adapter target and must not be counted as a sixth compiler.
 
 For each backend, a passing claim requires an actual independently pinned compiler executable, the exact source commit, authenticated build provenance, and the runner's accept/reject evidence. A fake checker or schema-only check tests the harness, not the compiler. An absent compiler is `UNCONFIGURED` (or `SPAWN_ERROR` when an invalid command is supplied), never verified; a required suite exits nonzero. Wasm must demonstrate actual Oreslang guest compilation and execution rather than treating LLVM host success as Wasm execution.
 
@@ -53,3 +54,7 @@ or guarantee that the on-disk executable cannot change between fixture
 invocations. Git blob equality of a test snapshot is not a complete native
 compiler provenance attestation. Do not promote backend support without
 independently reviewed build and runtime evidence.
+
+## JavaScript backend admission
+
+The `js` entries in `fixtures/manifest.json` are **inventory targets** only. The same two source fixtures can be checked by the isolated, experimental Oreslang JS program-v2 frontend with Node 22+ and `oreslang-jsc --program-v2 --check {file}`, using an absolute Node executable and an exact JS-source commit. The shared `runSuite` result carries `verificationScope: "compiler-source-check-only"` and `runtimeVerified: false`, even when both checks pass. A passing check cannot prove that generated ESM executes or returns integer 42, cannot attest the declared source SHA, and cannot establish Java or LLVM parity. Independent pinned GitHub runner evidence for compilation **and actual ESM execution**, diagnostic rejection, and build provenance is required before promoting any JS behavior to the supported-feature matrix.

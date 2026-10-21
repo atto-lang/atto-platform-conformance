@@ -1,0 +1,1 @@
+pub suspends routine run(): int { const value = cpu { 42 }; return value; }
