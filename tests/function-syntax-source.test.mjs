@@ -31,6 +31,7 @@ test("function syntax corpus keeps explicit staged backend/tool expectations",()
   assert.equal(manifest.v2SourceFreeReferenceEvidence.runId,39534351624);
   assert.equal(manifest.v2SourceFreeReferenceEvidence.jobId,119007414167);
   assert.equal(manifest.v2SourceFreeReferenceEvidence.privateSourceBytes,0);
+  assert.equal(manifest.v2SourceFreeReferenceEvidence.covers,"base-v2-15-vectors");
   assert.match(manifest.v2SourceFreeReferenceEvidence.marker,/accepted=8 rejected=7 private_source_bytes=0$/);
   assert.match(manifest.notes,/No cross-org private compiler source export is authorized/i);
 });
