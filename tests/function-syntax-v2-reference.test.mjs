@@ -161,7 +161,7 @@ function classifyV2Callable(source){
   if(candidates.length){
     const sep=candidates[0];
     const typeText=tail.slice(0,sep.start).trim();
-    if(!typeText || hasAmbiguousBareWords(typeText)) return false;
+    if(!isCompleteTypePrefix(typeText)) return false;
     const body=tail.slice(sep.end).trimStart();
     if(/^as\b/.test(body) || body.startsWith("::")) return false;
     return true;
