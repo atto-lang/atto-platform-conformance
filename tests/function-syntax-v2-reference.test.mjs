@@ -45,35 +45,95 @@ function visibleSource(source){
 }
 
 
-function hasAmbiguousBareWords(typeText){
-  const words=[];
-  let paren=0, bracket=0, brace=0, angle=0;
-  for(let i=0;i<typeText.length;){
-    const c=typeText[i];
-    if(c==="("){ paren++; i++; continue; }
-    if(c===")"){ paren=Math.max(0,paren-1); i++; continue; }
-    if(c==="["){ bracket++; i++; continue; }
-    if(c==="]"){ bracket=Math.max(0,bracket-1); i++; continue; }
-    if(c==="{"){ brace++; i++; continue; }
-    if(c==="}"){ brace=Math.max(0,brace-1); i++; continue; }
-    if(c==="<"){ angle++; i++; continue; }
-    if(c===">" && angle>0){ angle--; i++; continue; }
-    if(paren===0 && bracket===0 && brace===0 && angle===0 && /[A-Za-z0-9_]/.test(c)){
-      const start=i++;
-      while(i<typeText.length && /[A-Za-z0-9_]/.test(typeText[i])) i++;
-      words.push({start,end:i,text:typeText.slice(start,i)});
+function topLevelTypeChunks(text){
+  const chunks=[];
+  let start=null, paren=0, bracket=0, brace=0, angle=0;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    const top=paren===0&&bracket===0&&brace===0&&angle===0;
+    if(/\s/.test(c)&&top){
+      if(start!==null){ chunks.push(text.slice(start,i)); start=null; }
       continue;
     }
-    i++;
+    if(start===null) start=i;
+    if(c==="(") paren++;
+    else if(c===")") paren=Math.max(0,paren-1);
+    else if(c==="[") bracket++;
+    else if(c==="]") bracket=Math.max(0,bracket-1);
+    else if(c==="{") brace++;
+    else if(c==="}") brace=Math.max(0,brace-1);
+    else if(c==="<") angle++;
+    else if(c===">"&&angle>0) angle--;
   }
-  for(let i=1;i<words.length;i++){
-    const a=words[i-1], b=words[i];
-    if(!/^\s*$/.test(typeText.slice(a.end,b.start))) continue;
-    const ampMut=a.text==="mut" && ((i>=2 && words[i-2].text==="borrow") || typeText.slice(0,a.start).trimEnd().endsWith("&"));
-    const legal=a.text==="type" || a.text==="borrow" || ampMut || (a.text==="typeof" && b.text==="fnc");
-    if(!legal) return true;
+  if(start!==null) chunks.push(text.slice(start));
+  return chunks;
+}
+
+function parseTypeChunks(chunks,state){
+  if(!parseTypeAtomChunks(chunks,state)) return false;
+  while(state.i<chunks.length&&chunks[state.i]==="|"){
+    state.i++;
+    if(!parseTypeAtomChunks(chunks,state)) return false;
   }
-  return false;
+  return true;
+}
+
+function parseTypeAtomChunks(chunks,state){
+  if(state.i>=chunks.length) return false;
+  const token=chunks[state.i];
+
+  if(token==="!"||token==="type"){
+    state.i++;
+    return parseTypeAtomChunks(chunks,state);
+  }
+  if(token==="borrow"||token==="&"){
+    state.i++;
+    if(state.i<chunks.length&&chunks[state.i]==="mut") state.i++;
+    return parseTypeAtomChunks(chunks,state);
+  }
+  if(token==="tuple"){
+    state.i++;
+    if(state.i>=chunks.length||!chunks[state.i].startsWith("(")) return false;
+    state.i++;
+    return true;
+  }
+  if(token==="struct"||token==="record"){
+    state.i++;
+    if(state.i>=chunks.length||!chunks[state.i].startsWith("{")) return false;
+    state.i++;
+    return true;
+  }
+  if(token==="typeof"){
+    state.i++;
+    if(state.i>=chunks.length) return false;
+    if(chunks[state.i]==="fnc"){
+      state.i++;
+      if(state.i>=chunks.length||!chunks[state.i].startsWith("(")) return false;
+      state.i++;
+    }else if(chunks[state.i].startsWith("fnc(")){
+      state.i++;
+    }else return false;
+    if(state.i>=chunks.length||chunks[state.i]!=="=>") return false;
+    state.i++;
+    return parseTypeChunks(chunks,state);
+  }
+  if(token==="|"||token==="=>"||token==="."||token==="mut") return false;
+
+  const first=chunks[state.i++];
+  if(first.startsWith("(")&&state.i<chunks.length&&chunks[state.i]==="=>"){
+    state.i++;
+    return parseTypeChunks(chunks,state);
+  }
+  while(state.i+1<chunks.length&&chunks[state.i]===".") state.i+=2;
+  while(state.i<chunks.length&&(chunks[state.i].startsWith("<")||chunks[state.i].startsWith("["))) state.i++;
+  return true;
+}
+
+function isCompleteTypePrefix(text){
+  const chunks=topLevelTypeChunks(text.trim());
+  if(chunks.length===0) return false;
+  const state={i:0};
+  return parseTypeChunks(chunks,state)&&state.i===chunks.length;
 }
 
 function classifyV2Callable(source){
