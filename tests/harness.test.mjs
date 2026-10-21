@@ -58,6 +58,8 @@ test("verified harness results retain executable and fixture SHA-256 evidence",a
  assert.match(r.executableSha256,/^[0-9a-f]{64}$/);
  assert.equal(r.declaredSourceSha,sha);
  assert.match(r.provenanceNote,/does not attest/);
+ assert.equal(r.verificationScope,"compiler-source-check-only");
+ assert.equal(r.runtimeVerified,false);
  for(const item of r.results){
   assert.match(item.fixtureSha256,/^[0-9a-f]{64}$/);
   assert.equal(item.executableSha256Before,r.executableSha256);
@@ -90,9 +92,9 @@ test("duplicate CLI selectors cannot silently replace compiler invocation or pro
  }
 });
 
-test("all five source compiler backends have target fixtures but none are verified without a real runner",async()=>{
+test("all six source compiler backends have target fixtures but none are verified without a real runner",async()=>{
  const manifest=await loadManifest();
- assert.deepEqual([...COMPILER_BACKENDS].sort(),["forge","java","llvm","net","wasm"].sort());
+ assert.deepEqual([...COMPILER_BACKENDS].sort(),["forge","java","js","llvm","net","wasm"].sort());
  for(const c of manifest.cases) assert.deepEqual([...c.backends].sort(),[...COMPILER_BACKENDS].sort());
  for(const backend of COMPILER_BACKENDS){
   const r=await runSuite({backend,requireConfigured:true});
@@ -104,7 +106,7 @@ test("all five source compiler backends have target fixtures but none are verifi
  }
 });
 test("missing real tools cannot yield verification for newly admitted backends",async()=>{
- for(const backend of ["net","wasm","forge"]){
+ for(const backend of ["net","wasm","forge","js"]){
   const r=await runSuite({backend,argv:["/no/such/oreslang-compiler","{file}"],sourceSha:sha});
   assert.equal(r.ok,false,backend);
   assert.equal(r.failed,2,backend);

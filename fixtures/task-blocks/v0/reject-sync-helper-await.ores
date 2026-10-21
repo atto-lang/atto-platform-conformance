@@ -1,0 +1,2 @@
+async fnc compute(): int { return 3; }
+fnc invalid(): int { return await compute(); }

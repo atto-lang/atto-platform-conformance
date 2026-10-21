@@ -1,0 +1,1 @@
+pub fnc main(): int { const result: int = match<ret=int> 7 over on 7 { return 42; } default { return 0; } end; return result + 1; }

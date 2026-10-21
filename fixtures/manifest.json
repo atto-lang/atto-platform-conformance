@@ -10,7 +10,8 @@
         "llvm",
         "net",
         "wasm",
-        "forge"
+        "forge",
+        "js"
       ]
     },
     {
@@ -23,7 +24,8 @@
         "llvm",
         "net",
         "wasm",
-        "forge"
+        "forge",
+        "js"
       ]
     }
   ]

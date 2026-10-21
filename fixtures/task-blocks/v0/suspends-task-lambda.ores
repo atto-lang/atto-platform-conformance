@@ -1,0 +1,8 @@
+suspends fnc compute_blocking(int a): int { return a + 1; }
+pub fnc main(): void {
+  let Task<int> child = (async task |int a| -> {
+    return compute_blocking(a);
+  })(5);
+  let int answer = await child;
+  return;
+}

@@ -1,0 +1,8 @@
+pub fnc main(): void {
+  do nb {
+    let int answer = await fetchAsync();
+    consume(answer);
+  };
+  nextStep();
+  return;
+}
