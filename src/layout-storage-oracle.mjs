@@ -105,7 +105,7 @@ function checkValue(value, type) {
 export class LayoutStore {
   #schema; #types; #geometry; #data; #view; #domain = Symbol('layout-domain');
   #issued = new WeakSet(); #slots = []; #rowSlots = []; #free = [];
-  #loans = new Map(); #closed = false; #maxBytes; #width; #groups;
+  #loans = new Map(); #closed = false; #maxBytes; #width; #groups; #layout; #capacity;
   constructor(schema, { layout = 'soa', capacity = 0, width = 8, groups = undefined,
                         maxBytes = 64 * 1024 * 1024 } = {}) {
     if (!Array.isArray(schema) || schema.length === 0) throw new TypeError('nonempty schema required');
@@ -119,14 +119,17 @@ export class LayoutStore {
         !Number.isSafeInteger(maxBytes) || maxBytes < 0) throw new RangeError('invalid capacity or quota');
     this.#schema = schema.map(f => Object.freeze({ name: f.name, type: f.type }));
     this.#types = new Map(this.#schema.map(f => [f.name, TYPES[f.type]]));
-    this.#maxBytes = maxBytes; this.#width = width; this.#groups = groups;
-    this.layout = layout;
+    this.#maxBytes = maxBytes; this.#width = width;
+    this.#groups = groups?.map(group => [...group]);
+    this.#layout = layout;
     this.#geometry = makeGeometry(this.#schema, layout, capacity, width, groups);
     this.#checkQuota(this.#geometry.bytes);
     this.#data = new ArrayBuffer(this.#geometry.bytes);
     this.#view = new DataView(this.#data);
-    this.capacity = capacity;
+    this.#capacity = capacity;
   }
+  get layout() { return this.#layout; }
+  get capacity() { return this.#capacity; }
   get length() { return this.#rowSlots.length; }
   get byteLength() { return this.#data.byteLength; }
   #requireOpen() { if (this.#closed) throw new Error('retired layout store'); }
@@ -191,7 +194,7 @@ export class LayoutStore {
       }
     }
     new Uint8Array(this.#data).fill(0); // revoke and scrub old backing before publishing new
-    this.#data = memory; this.#view = view; this.#geometry = next; this.capacity = capacity;
+    this.#data = memory; this.#view = view; this.#geometry = next; this.#capacity = capacity;
   }
   push(row) {
     this.#requireOpen(); this.#requireNoLoans(); this.#checkRow(row);
@@ -276,7 +279,8 @@ export class LayoutStore {
     }
     new Uint8Array(this.#data).fill(0);
     this.#data = memory; this.#view = view; this.#geometry = next;
-    this.layout = layout; this.#width = width; this.#groups = groups;
+    this.#layout = layout; this.#width = width;
+    this.#groups = groups?.map(group => [...group]);
   }
   dispose() {
     if (this.#closed) return;
