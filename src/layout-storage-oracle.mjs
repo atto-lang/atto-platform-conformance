@@ -96,6 +96,7 @@ function makeGeometry(schema, layout, capacity, width, groups) {
 }
 function checkValue(value, type) {
   if (typeof value !== 'number' || !Number.isFinite(value)) throw new TypeError('finite numeric field required');
+  if (type === 'f32' && !Number.isFinite(Math.fround(value))) throw new RangeError('f32 overflow');
   if (type === 'i32' && (!Number.isInteger(value) || value < -2147483648 || value > 2147483647))
     throw new RangeError('i32 out of bounds');
   if (type === 'u32' && (!Number.isInteger(value) || value < 0 || value > 4294967295))
@@ -180,7 +181,8 @@ export class LayoutStore {
     if (!Number.isSafeInteger(capacity) || capacity < 0) throw new RangeError('invalid capacity');
     if (capacity <= this.capacity) return;
     const next = makeGeometry(this.#schema, this.layout, capacity, this.#width, this.#groups);
-    this.#checkQuota(next.bytes);
+    // A conversion/growth briefly owns both allocations: include both in peak quota.
+    this.#checkQuota(next.bytes + this.#data.byteLength);
     const memory = new ArrayBuffer(next.bytes), view = new DataView(memory);
     for (let row = 0; row < this.length; row++) {
       for (const f of this.#schema) {
@@ -188,6 +190,7 @@ export class LayoutStore {
         view[type.set](next.position(row, f.name), this.#readIndex(row, f.name), true);
       }
     }
+    new Uint8Array(this.#data).fill(0); // revoke and scrub old backing before publishing new
     this.#data = memory; this.#view = view; this.#geometry = next; this.capacity = capacity;
   }
   push(row) {
@@ -263,7 +266,7 @@ export class LayoutStore {
   convert(layout, { width = this.#width, groups = this.#groups } = {}) {
     this.#requireOpen(); this.#requireNoLoans();
     const next = makeGeometry(this.#schema, layout, this.capacity, width, groups);
-    this.#checkQuota(next.bytes);
+    this.#checkQuota(next.bytes + this.#data.byteLength);
     const memory = new ArrayBuffer(next.bytes), view = new DataView(memory);
     for (let row = 0; row < this.length; row++) {
       for (const f of this.#schema) {
@@ -271,6 +274,7 @@ export class LayoutStore {
         view[type.set](next.position(row, f.name), this.#readIndex(row, f.name), true);
       }
     }
+    new Uint8Array(this.#data).fill(0);
     this.#data = memory; this.#view = view; this.#geometry = next;
     this.layout = layout; this.#width = width; this.#groups = groups;
   }
