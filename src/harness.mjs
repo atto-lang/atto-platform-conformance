@@ -1,4 +1,4 @@
-import {lstat,open,mkdtemp,writeFile,rm} from "node:fs/promises";
+import {lstat,realpath,open,mkdtemp,writeFile,rm} from "node:fs/promises";
 import {constants} from "node:fs";
 import {tmpdir} from "node:os";
 import {createHash} from "node:crypto";
@@ -178,6 +178,27 @@ export async function loadManifest(){
  }
  return manifest;
 }
+async function snapshotExecutable(file){
+ try{
+  const pathStat=await lstat(file);
+  const resolvedPath=await realpath(file);
+  const targetStat=await lstat(resolvedPath);
+  if(!targetStat.isFile())return null;
+  const sha256=await hashExecutableBounded(resolvedPath);
+  return Object.freeze({
+   sha256,resolvedPath,pathIsSymlink:pathStat.isSymbolicLink(),
+   pathDev:pathStat.dev,pathIno:pathStat.ino,pathMode:pathStat.mode,
+   targetDev:targetStat.dev,targetIno:targetStat.ino,targetMode:targetStat.mode,
+   targetSize:targetStat.size
+  });
+ }catch{return null}
+}
+function sameExecutableSnapshot(a,b){
+ return !!a&&!!b&&a.sha256===b.sha256&&a.resolvedPath===b.resolvedPath&&
+  a.pathIsSymlink===b.pathIsSymlink&&a.pathDev===b.pathDev&&a.pathIno===b.pathIno&&
+  a.pathMode===b.pathMode&&a.targetDev===b.targetDev&&a.targetIno===b.targetIno&&
+  a.targetMode===b.targetMode&&a.targetSize===b.targetSize;
+}
 export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireConfigured=false,spawn=spawnSync}={}){
  if(!SUPPORTED_BACKENDS.has(backend))throw Error("unknown backend");
  if(!Number.isSafeInteger(timeoutMs)||timeoutMs<100||timeoutMs>120000)throw Error("timeoutMs must be 100..120000");
@@ -189,9 +210,8 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
  }
  validateCommand(argv);
  if(!validSha(sourceSha))throw Error("configured backend requires exact 40-character lowercase source commit SHA");
- let executableSha256=null;
- try{executableSha256=await hashExecutableBounded(argv[0])}
- catch{/* Unhashable or missing executable is a non-verifying run. */}
+ const initialExecutable=await snapshotExecutable(argv[0]);
+ const executableSha256=initialExecutable?.sha256||null;
  const results=[];
  // Compile isolated, hashed copies, never the mutable checked-out fixtures.
  const snapshotDir=await mkdtemp(join(tmpdir(),"oreslang-conformance-"));
@@ -208,25 +228,50 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
   for(const {c,snapshotPath,fixtureSha256} of sealed){
   await assertSealedFixture(snapshotPath,fixtureSha256);
   const cmd=argv.map(x=>x==="{file}"?snapshotPath:x);
+  const executableBefore=await snapshotExecutable(argv[0]);
   const output=spawn(cmd[0],cmd.slice(1),{encoding:"utf8",timeout:timeoutMs,cwd:root,maxBuffer:1024*1024,windowsHide:true});
   await assertSealedFixture(snapshotPath,fixtureSha256);
+  const executableAfter=await snapshotExecutable(argv[0]);
   let status;
   const combined=(output.stdout||"")+"\n"+(output.stderr||"");
-  if(output.error)status=output.error.code==="ETIMEDOUT"?"TIMEOUT":"SPAWN_ERROR";
+  // The executable must remain the exact same path/target/file identity and bytes
+  // across every invocation. This detects replacement, deletion and symlink
+  // retargeting around a subprocess, but cannot eliminate the final exec TOCTOU.
+  if(initialExecutable &&
+     (!sameExecutableSnapshot(initialExecutable,executableBefore)||
+      (executableBefore&&!sameExecutableSnapshot(executableBefore,executableAfter))))
+   status="EXECUTABLE_CHANGED";
+  else if(output.error)status=output.error.code==="ETIMEDOUT"?"TIMEOUT":"SPAWN_ERROR";
   else if(output.signal)status="SIGNALED";
   // A missing/invalid process exit code cannot be evidence of a compiler rejection.
   else if(!Number.isSafeInteger(output.status)||output.status<0)status="INVALID_EXIT_STATUS";
-  // The binary must be hashable, even if a mock or wrapper claims it succeeded.
-  else if(!executableSha256)status="UNHASHABLE_EXECUTABLE";
+  // A successful-looking mock/wrapper still cannot certify an unhashable executable.
+  else if(!initialExecutable||!executableBefore||!executableAfter)status="UNHASHABLE_EXECUTABLE";
   else if(c.expect==="accept")status=output.status===0 && !hasCompilerErrorSeverity(combined)?"VERIFIED":"MISMATCH";
   else {
    status=output.status!==0 && isExpectedCompilerDiagnostic(combined,c.diagnostic)
      ?"VERIFIED":"MISMATCH";
   }
-  results.push({id:c.id,status,fixtureSha256,exitCode:output.status,signal:output.signal||null,
+  results.push({id:c.id,status,fixtureSha256,
+    executableSha256Before:executableBefore?.sha256||null,
+    executableSha256After:executableAfter?.sha256||null,
+    executableResolvedPathBefore:executableBefore?.resolvedPath||null,
+    executableResolvedPathAfter:executableAfter?.resolvedPath||null,
+    exitCode:output.status,signal:output.signal||null,
     stdout:output.stdout||"",stderr:output.stderr||""});
  }
  }finally{await rm(snapshotDir,{recursive:true,force:true})}
+ // Evidence for a suite is indivisible: a later executable identity drift
+ // invalidates earlier apparent successes. Never publish mixed-identity
+ // per-fixture VERIFIED evidence even when the overall suite is already red.
+ if(initialExecutable && results.some(x=>x.status==="EXECUTABLE_CHANGED")){
+  for(const result of results){
+   if(result.status==="VERIFIED"){
+    result.status="EXECUTABLE_CHANGED";
+    result.priorVerificationRevoked=true;
+   }
+  }
+ }
  const verified=results.filter(x=>x.status==="VERIFIED").length;
  const failed=results.filter(x=>x.status!=="VERIFIED").length;
  return {backend,declaredSourceSha:sourceSha,verificationScope:"compiler-source-check-only",runtimeVerified:false,executableSha256,provenanceNote:"Source revision was supplied by caller; this harness does not attest that it produced the binary.",configured:true,verified,failed,skipped:0,ok:failed===0 && verified>0 &&
