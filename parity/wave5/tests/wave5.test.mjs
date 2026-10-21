@@ -160,3 +160,15 @@ test('25 / bounded Wasm memory must declare an explicit maximum',()=>{
  const unbounded=Buffer.concat([prefix,section(5,Buffer.from([1,0,1])),postfix]);
  assert.throws(()=>inspectWasm(unbounded),/maximum|flag/);
 });
+
+
+test('21 / array accessors and proxies never execute during admission',()=>{
+ const m=new ActorMemoryAuthority(),a=m.createActor('a');
+ let calls=0;
+ const getter=[1];
+ Object.defineProperty(getter,'0',{enumerable:true,get(){calls++;return 7;}});
+ const proxy=new Proxy([1],{getPrototypeOf(){calls++;return Array.prototype;}});
+ for(const value of [getter,proxy])assert.throws(()=>m.allocate(a,value),/wave5-memory:/);
+ assert.equal(calls,0);
+ assert.equal(m.stats(a).blocks,0);
+});

@@ -1,3 +1,4 @@
+import {types} from 'node:util';
 /* Wave 5: bounded, host-only model of actor-owned memory capabilities.
    NOT a heap allocator or compiled Oreslang guest representation. */
 const fail = reason => {throw new Error('wave5-memory: '+reason)};
@@ -5,9 +6,20 @@ const ensure=(ok,msg)=>{if(!ok)fail(msg)};
 const maxDepth=12,maxNodes=512;
 function cloneData(input,depth=0,counter={n:0}){
  ensure(depth<=maxDepth&&++counter.n<=maxNodes,'data depth/node budget');
+ ensure(!types.isProxy(input),'proxy data cannot acquire actor heap authority');
  if(input===null||typeof input==='boolean'||typeof input==='string')return input;
  if(typeof input==='number'){ensure(Number.isSafeInteger(input),'portable integer required');return input}
- if(Array.isArray(input)){ensure(input.length<=64&&Object.keys(input).length===input.length&&!Object.keys(input).some(k=>String(+k)!==k),'dense array required');return Object.freeze(input.map(v=>cloneData(v,depth+1,counter)))}
+ if(Array.isArray(input)){
+  ensure(Object.getPrototypeOf(input)===Array.prototype&&input.length<=64&&
+   Reflect.ownKeys(input).length===input.length+1,'dense plain array required');
+  const copy=[];
+  for(let i=0;i<input.length;i++){
+   const d=Object.getOwnPropertyDescriptor(input,String(i));
+   ensure(d&&Object.hasOwn(d,'value'),'array getters/setters cannot acquire actor heap authority');
+   copy.push(cloneData(d.value,depth+1,counter));
+  }
+  return Object.freeze(copy);
+ }
  ensure(input&&typeof input==='object'&&(Object.getPrototypeOf(input)===Object.prototype||Object.getPrototypeOf(input)===null),'only detached records');
  const keys=Object.keys(input);ensure(keys.length<=64&&Reflect.ownKeys(input).length===keys.length,'record fields/symbol quota');
  const record=Object.create(null);
