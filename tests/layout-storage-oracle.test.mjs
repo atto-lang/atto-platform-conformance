@@ -241,3 +241,56 @@ test('convert options cannot reenter store during layout calculation', () => {
   assert.deepEqual(s.get(h),{x:3.5});
   s.dispose();
 });
+
+test('deterministic randomized differential test across 4 layouts and 2048 operations', () => {
+  let state = 0x59d3e1ab;
+  const random = () => {
+    state ^= state << 13; state ^= state >>> 17; state ^= state << 5;
+    return state >>> 0;
+  };
+  const configs = [
+    {layout:'aos'}, {layout:'soa'}, {layout:'aosoa',width:4},
+    {layout:'aosoa',width:16},
+    {layout:'soaos',groups:[['x','y'],['vx','vy'],['team']]}
+  ];
+  const stores = configs.map(c => new LayoutStore(schema, {...c, capacity: 2}));
+  const active = [];
+  const expected = new Map();
+  const values = i => ({x:i + 0.5,y:-i - 0.5,vx:(i%1024),vy:-(i%1024),team:i%4});
+  const check = () => {
+    for (let j = 0; j < active.length; j++) {
+      const item = active[j];
+      for (let k = 0; k < stores.length; k++)
+        assert.deepEqual(stores[k].get(item.handles[k]),expected.get(item.id));
+    }
+    assert.ok(stores.every(s => s.length === active.length));
+  };
+  for (let step = 0; step < 2048; step++) {
+    const dice = random() % 100;
+    if (active.length === 0 || dice < 35) {
+      const id = step + 1, value = values(id);
+      const handles = stores.map(s => s.push(value));
+      expected.set(id,value);
+      active.push({id,handles});
+    } else if (dice < 65) {
+      const j = random() % active.length, item = active[j], field = schema[random()%schema.length].name;
+      const v = expected.get(item.id), number = field==='team'?random()%4:random()%1024;
+      for (let k = 0; k < stores.length; k++) stores[k].write(item.handles[k],field,number);
+      expected.set(item.id,{...v,[field]:number});
+    } else if (dice < 84) {
+      const j = random() % active.length, item = active[j];
+      stores.forEach((s,k) => {
+        s.eraseSwap(item.handles[k]);
+        assert.throws(() => s.get(item.handles[k]),/stale/);
+      });
+      expected.delete(item.id);
+      active.splice(j,1);
+    } else {
+      const config = configs[random()%configs.length];
+      stores.forEach(s => s.convert(config.layout,config));
+    }
+    if (step%87 === 0) check();
+  }
+  check();
+  stores.forEach(s=>s.dispose());
+});
