@@ -6,7 +6,7 @@ import {resolve,dirname,isAbsolute,join} from "node:path";
 import {fileURLToPath} from "node:url";
 import {spawnSync} from "node:child_process";
 const root=resolve(dirname(fileURLToPath(import.meta.url)),"..");
-export const COMPILER_BACKENDS=Object.freeze(["java","llvm","net","wasm","forge"]);
+export const COMPILER_BACKENDS=Object.freeze(["java","llvm","net","wasm","forge","js"]);
 const SUPPORTED_BACKENDS=new Set([...COMPILER_BACKENDS,"browser"]);
 function validSha(s){return typeof s==="string" && /^[0-9a-f]{40}$/.test(s)}
 function validDiagnosticSymbol(s){
@@ -184,7 +184,7 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
  const manifest=await loadManifest();
  const relevant=manifest.cases.filter(x=>x.backends.includes(backend));
  if(!argv){
-  return {backend,sourceSha:sourceSha||null,configured:false,verified:0,failed:0,
+  return {backend,sourceSha:sourceSha||null,verificationScope:"compiler-source-check-only",runtimeVerified:false,configured:false,verified:0,failed:0,
    skipped:relevant.length,ok:false,results:relevant.map(c=>({id:c.id,status:"UNCONFIGURED"}))};
  }
  validateCommand(argv);
@@ -229,6 +229,6 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
  }finally{await rm(snapshotDir,{recursive:true,force:true})}
  const verified=results.filter(x=>x.status==="VERIFIED").length;
  const failed=results.filter(x=>x.status!=="VERIFIED").length;
- return {backend,declaredSourceSha:sourceSha,executableSha256,provenanceNote:"Source revision was supplied by caller; this harness does not attest that it produced the binary.",configured:true,verified,failed,skipped:0,ok:failed===0 && verified>0 &&
+ return {backend,declaredSourceSha:sourceSha,verificationScope:"compiler-source-check-only",runtimeVerified:false,executableSha256,provenanceNote:"Source revision was supplied by caller; this harness does not attest that it produced the binary.",configured:true,verified,failed,skipped:0,ok:failed===0 && verified>0 &&
   relevant.some(x=>x.expect==="accept") && relevant.some(x=>x.expect==="reject"),results};
 }
