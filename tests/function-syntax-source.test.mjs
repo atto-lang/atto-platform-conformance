@@ -26,6 +26,12 @@ test("function syntax corpus keeps explicit staged backend/tool expectations",()
   assert.equal(manifest.sourceFreeReferenceEvidence.runId,39443132577);
   assert.equal(manifest.sourceFreeReferenceEvidence.covers,"v1-as-separator-only");
   assert.match(manifest.sourceFreeReferenceEvidence.result,/^21\/21 independent syntax-reference tests passed$/);
+  assert.equal(manifest.v2SourceFreeReferenceEvidence.repository,"zed-pkg/zed-lambdas");
+  assert.equal(manifest.v2SourceFreeReferenceEvidence.pullRequest,25);
+  assert.equal(manifest.v2SourceFreeReferenceEvidence.runId,39534351624);
+  assert.equal(manifest.v2SourceFreeReferenceEvidence.jobId,119007414167);
+  assert.equal(manifest.v2SourceFreeReferenceEvidence.privateSourceBytes,0);
+  assert.match(manifest.v2SourceFreeReferenceEvidence.marker,/accepted=8 rejected=7 private_source_bytes=0$/);
   assert.match(manifest.notes,/No cross-org private compiler source export is authorized/i);
 });
 
