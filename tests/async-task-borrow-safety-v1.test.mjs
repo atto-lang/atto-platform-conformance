@@ -22,9 +22,10 @@ test('async Task borrow-safety v1 contract is pinned', () => {
 test('fixtures use canonical Oreslang ownership syntax', () => {
   const source = Object.values(cases).join('\n');
   assert.match(source, /rt borrow owner/);
-  assert.match(source, /rt borrow mut owner/);
+  assert.match(source, /rt mut borrow owner/);
   assert.match(source, /rt copy x/);
   assert.match(source, /rt share x/);
+  assert.doesNotMatch(source, /rt borrow mut/);
   assert.doesNotMatch(source, /\b(?:val|let|const)\s+&/);
 });
 
