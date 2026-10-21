@@ -68,6 +68,23 @@ function normalizeHeaderTypeSource(text){
   return block===0&&quote===null ? out : null;
 }
 
+function typeDelimitersBalanced(text){
+  const stack=[];
+  let previous=null;
+  for(const c of text){
+    if(c==="("||c==="["||c==="{"||c==="<") stack.push(c);
+    else if(c===")"){ if(stack.pop()!=="(") return false; }
+    else if(c==="]"){ if(stack.pop()!=="[") return false; }
+    else if(c==="}"){ if(stack.pop()!=="{") return false; }
+    else if(c===">"){
+      if(stack.at(-1)==="<") stack.pop();
+      else if(previous!=="=") return false;
+    }
+    previous=c;
+  }
+  return stack.length===0;
+}
+
 function topLevelTypeChunks(text){
   const chunks=[];
   let start=null, paren=0, bracket=0, brace=0, angle=0;
@@ -156,7 +173,9 @@ function parseTypeAtomChunks(chunks,state){
 function isCompleteTypePrefix(text){
   const normalized=normalizeHeaderTypeSource(text);
   if(normalized===null) return false;
-  const chunks=topLevelTypeChunks(normalized.trim());
+  const typeSource=normalized.trim();
+  if(!typeDelimitersBalanced(typeSource) || typeSource.includes(";")) return false;
+  const chunks=topLevelTypeChunks(typeSource);
   if(chunks.length===0) return false;
   const state={i:0};
   return parseTypeChunks(chunks,state)&&state.i===chunks.length;
@@ -193,7 +212,7 @@ function classifyV2Callable(source){
     const typeText=rawTail.slice(0,sep.start).trim();
     if(!isCompleteTypePrefix(typeText)) return false;
     const body=tail.slice(sep.end).trimStart();
-    if(/^as\b/.test(body) || body.startsWith("::")) return false;
+    if(/^as\b/.test(body) || body.startsWith(":")) return false;
     return true;
   }
 
@@ -208,7 +227,7 @@ function classifyV2Callable(source){
 
 test("v2 callable separator reference vectors",()=>{
   assert.ok(Array.isArray(manifest.referenceVectors));
-  assert.equal(manifest.referenceVectors.length,23);
+  assert.equal(manifest.referenceVectors.length,31);
   let accepted=0;
   let rejected=0;
   for(const vector of manifest.referenceVectors){
@@ -217,5 +236,5 @@ test("v2 callable separator reference vectors",()=>{
     if(actual) accepted++; else rejected++;
   }
   assert.equal(accepted,13);
-  assert.equal(rejected,10);
+  assert.equal(rejected,18);
 });
