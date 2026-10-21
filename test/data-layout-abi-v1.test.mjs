@@ -108,6 +108,33 @@ test('heterogeneous layout cells are aligned, nonaliasing and inside committed s
   }
 });
 
+test('published ABI geometry cannot be mutated after verification', () => {
+  assert.equal(Object.isFrozen(TYPES.f64),true);
+  assert.throws(() => { TYPES.f64.size = 1n; }, TypeError);
+
+  const geometries = [
+    computeLayoutAbi({layout:'aos',fields,capacity:3}),
+    computeLayoutAbi({layout:'soa',fields,capacity:3}),
+    computeLayoutAbi({layout:'aosoa',fields,capacity:3,tileWidth:4}),
+    computeLayoutAbi({layout:'soaos',fields,capacity:3,
+      groups:[['id','flag'],['x','next']]})
+  ];
+  for (const geometry of geometries) {
+    const baseline = geometry.address(1,'id');
+    assert.equal(Object.isFrozen(geometry.fields),true);
+    assert.equal(Object.isFrozen(geometry.locator.id),true);
+    assert.equal(Object.isFrozen(geometry.segments[0]),true);
+    assert.throws(() => { geometry.fields.push({name:'injected',type:'i64'}); },TypeError);
+    assert.throws(() => { geometry.locator.id.segment = 9; },TypeError);
+    assert.throws(() => { geometry.segments[0].bytes = 1n; },TypeError);
+    if (geometry.layout === 'soaos') {
+      assert.equal(Object.isFrozen(geometry.segments[0].fields),true);
+      assert.throws(() => { geometry.segments[0].fields[0] = 'next'; },TypeError);
+    }
+    assert.deepEqual(geometry.address(1,'id'),baseline);
+  }
+});
+
 test('compressed32 is unsigned, null-reserving, aligned and bounds checked', () => {
   assert.equal(MAX_COMPRESSED32_OFFSET,34359738352n);
   assert.equal(MAX_COMPRESSED32_SPAN,34359738360n);
