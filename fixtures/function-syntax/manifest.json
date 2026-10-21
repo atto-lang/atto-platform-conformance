@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "scope": "end-delimited-function-syntax-v1",
+  "scope": "end-delimited-function-syntax-v2",
   "cases": [
     {
       "id": "end-delimited-roundtrip",
       "file": "end-delimited-roundtrip.ores",
-      "sourceGitBlobSha1": "c91a244cb99c1aaa74b3abadf9b99d8e1f3aea86",
+      "sourceGitBlobSha1": "6d085173b18d247a6e2641f6aa27ca4a4a3d6b2b",
       "expectations": {
         "java": "accept-and-typecheck",
         "formatter": "format-idempotently",
@@ -23,7 +23,7 @@
     "repository": "ORESoftware/typespec-json-schema-validator",
     "pullRequest": 239,
     "runId": 39443132577,
-    "result": "21/21 independent syntax-reference tests passed"
+    "result": "21/21 prior as-separator reference tests passed; :: extension requires refreshed source-free oracle"
   },
-  "notes": "The fixture is byte-identical to the Java parser/typechecker corpus, the Rust formatter corpus, and the LLVM fail-closed corpus. Source-free reference evidence validates the public grammar contract only. Java Maven/Graal, formatter cargo, and LLVM CMake/CTest remain pending because their source-org jobs fail before step 1. No cross-org private compiler source export is authorized by this manifest."
+  "notes": "The v2 fixture adds the callable-header :: separator and is byte-identical to the Java parser/typechecker and Rust formatter corpora. Java and formatter are expected to accept it; LLVM remains fail-closed until native parser/lowering parity is implemented. The recorded source-free run predates the :: extension and is retained only as prior as-separator evidence."
 }
