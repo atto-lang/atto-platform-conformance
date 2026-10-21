@@ -23,7 +23,7 @@
     {
       "id": "typed-map-borrow-escape",
       "file": "borrow-escape-reject.ores",
-      "sourceGitBlobSha1": "c0b04917c398720cf9b4d63a17316b254a812f79",
+      "sourceGitBlobSha1": "e18525a3e886e513f742cf0473be65afc8e1b993",
       "expect": "reject",
       "diagnosticClass": "borrow-escape",
       "javaGraal": "equivalent-source-junit-verified",
