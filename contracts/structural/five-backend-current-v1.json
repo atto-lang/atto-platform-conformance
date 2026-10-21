@@ -142,6 +142,27 @@
       "admission": "accept",
       "source": "define trait HasId as\n id: int;\nend\ndefine class Candidate as pub val int id = 11; end\nfnc take(structural HasId value): int { return value.id; }\npub fnc main(): int { return take(new Candidate()); }\n",
       "expectedMain": "11"
+    },
+    {
+      "id": "anonymous-struct-implicit",
+      "facet": "readonly",
+      "admission": "accept",
+      "source": "fnc take(struct{ id: int } value): int { return value.id; }\npub fnc main(): int { return take(record{id: 11, extra: 99}); }\n",
+      "expectedMain": "11"
+    },
+    {
+      "id": "anonymous-record-implicit",
+      "facet": "readonly",
+      "admission": "accept",
+      "source": "fnc take(record{ id: int } value): int { return value.id; }\npub fnc main(): int { return take(record{id: 11, extra: 99}); }\n",
+      "expectedMain": "11"
+    },
+    {
+      "id": "anonymous-record-redundant-keyword",
+      "facet": "readonly",
+      "admission": "accept",
+      "source": "fnc take(structural record{ id: int } value): int { return value.id; }\npub fnc main(): int { return take(record{id: 11, extra: 99}); }\n",
+      "expectedMain": "11"
     }
   ]
 }
