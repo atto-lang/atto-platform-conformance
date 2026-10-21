@@ -6,7 +6,7 @@ const contract = await readFile(new URL('../docs/ASYNC_TASK_BORROW_SAFETY_V1.md'
 const cases = JSON.parse(await readFile(new URL('../fixtures/async-task-borrow-safety-v1/cases.json', import.meta.url)));
 
 test('async Task borrow-safety v1 contract is pinned', () => {
-  assert.equal(Object.keys(cases).length, 16);
+  assert.equal(Object.keys(cases).length, 18);
   for (const phrase of [
     'Submission—not `await`—is the ownership-transfer boundary',
     'Unknown AST forms fail closed',
@@ -22,7 +22,7 @@ test('async Task borrow-safety v1 contract is pinned', () => {
 test('fixtures use canonical Oreslang ownership syntax', () => {
   const source = Object.values(cases).join('\n');
   assert.match(source, /rt borrow owner/);
-  assert.match(source, /rt mut borrow owner/);
+  assert.match(source, /rt borrow mut owner/);
   assert.match(source, /rt copy x/);
   assert.match(source, /rt share x/);
   assert.doesNotMatch(source, /\b(?:val|let|const)\s+&/);
@@ -37,6 +37,8 @@ test('matrix covers concurrency and lifetime edge cases', () => {
     'for-initializer-borrow-reject',
     'borrow-across-await-reject',
     'gpu-borrow-without-fence-reject',
-    'borrowed-future-payload-reject'
+    'borrowed-future-payload-reject',
+    'mutex-capability-capture-reject',
+    'non-send-wrapper-launder-reject'
   ]) assert.ok(cases[name], 'missing case: ' + name);
 });
