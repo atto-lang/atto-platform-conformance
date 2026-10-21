@@ -85,7 +85,7 @@ function classifyV2Callable(source){
 
 test("v2 callable separator reference vectors",()=>{
   assert.ok(Array.isArray(manifest.referenceVectors));
-  assert.equal(manifest.referenceVectors.length,14);
+  assert.equal(manifest.referenceVectors.length,15);
   let accepted=0;
   let rejected=0;
   for(const vector of manifest.referenceVectors){
@@ -93,6 +93,6 @@ test("v2 callable separator reference vectors",()=>{
     assert.equal(actual,vector.accepted,vector.id);
     if(actual) accepted++; else rejected++;
   }
-  assert.equal(accepted,7);
+  assert.equal(accepted,8);
   assert.equal(rejected,7);
 });
