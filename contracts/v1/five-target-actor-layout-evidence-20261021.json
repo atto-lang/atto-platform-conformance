@@ -24,10 +24,10 @@
     {
       "id": "llvm",
       "repository": "ores-truffle-oreslang/oreslang-source.llvm",
-      "commit": "7ef39d2c1b35cc1965030d79bee0ed3f822375c3",
-      "source": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/tree/main",
-      "actorMemory": "actor-owned native heap/arena runtime; compiler allocation coverage not verified here",
-      "layouts": "native inverted column prototype; source-level four-layout guest output unverified",
+      "commit": "15c5dcb2e9749f7ff2bee08a6ebfdc61524f4746",
+      "source": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/837",
+      "actorMemory": "actor-owned native heap substrate; new heterogeneous plan not yet connected to source actor allocation or guest field accesses",
+      "layouts": "checked heterogeneous mixed-width AoS/SoA/AoSoA/grouped SoAoS native address planner and C++17 host regression; compiler guest lowering unverified",
       "evidence": {
         "sourceOreslangCompiled": false,
         "generatedGuestExecuted": false,
