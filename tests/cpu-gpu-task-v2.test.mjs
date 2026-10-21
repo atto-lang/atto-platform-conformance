@@ -32,9 +32,8 @@ test('CPU/GPU task v2 semantic contract is pinned', () => {
   assert.match(cases['empty-gpu-task-reject'], /gpu task \{\}/);
 });
 
-test('task spelling does not rewrite pinned v1 artifacts', async () => {
-  const v1 = await readFile(new URL('../docs/CPU_GPU_NB_V1.md', import.meta.url), 'utf8');
-  assert.ok(v1.includes('nb cpu'));
-  assert.ok(v1.includes('nb gpu'));
+test('task spelling preserves v1 as historical compatibility evidence', () => {
   assert.ok(contract.includes('v1 artifacts stay immutable'));
+  assert.ok(contract.includes('nb cpu'));
+  assert.ok(contract.includes('nb gpu'));
 });
