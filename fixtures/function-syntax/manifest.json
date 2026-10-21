@@ -26,7 +26,7 @@
     "result": "21/21 independent syntax-reference tests passed",
     "covers": "v1-as-separator-only"
   },
-  "notes": "The fixture is byte-identical to the Java parser/typechecker corpus, the Rust formatter corpus, and the LLVM fail-closed corpus. The source-free v2 oracle now validates all 23 reference vectors (13 accept / 10 reject), including separator-masquerade rejection plus positive literal, borrow/`&mut`, higher-order, generic, and structural record return types. Java Maven/Graal, formatter cargo, and LLVM CMake/CTest remain pending exact-head implementation verification. No cross-org private compiler source export is authorized by this manifest.",
+  "notes": "The source-free v2 contract now covers 33 reference vectors: full return-type acceptance plus separator masquerades, malformed/unbalanced return types, exact-colon boundaries, semicolon boundaries, and physical-line comment behavior. Java Maven/Graal, formatter cargo, and LLVM CMake/CTest remain separate exact-head implementation gates. No cross-org private compiler source export is authorized by this manifest.",
   "referenceVectors": [
     {
       "id": "separator-free-next-line",
@@ -142,6 +142,56 @@
       "id": "struct-shape-double-colon",
       "source": "fnc f() -> struct {foo: int} :: return value; end",
       "accepted": true
+    },
+    {
+      "id": "malformed-generic-before-double-colon-rejected",
+      "source": "fnc f() -> Result<int :: return value; end",
+      "accepted": false
+    },
+    {
+      "id": "malformed-tuple-before-double-colon-rejected",
+      "source": "fnc f() -> tuple (int, string :: return value; end",
+      "accepted": false
+    },
+    {
+      "id": "malformed-record-before-double-colon-rejected",
+      "source": "fnc f() -> {foo: int, bar: string :: return value; end",
+      "accepted": false
+    },
+    {
+      "id": "malformed-struct-before-double-colon-rejected",
+      "source": "fnc f() -> struct {foo: int :: return value; end",
+      "accepted": false
+    },
+    {
+      "id": "stray-closing-angle-before-double-colon-rejected",
+      "source": "fnc f() -> Thing> :: return value; end",
+      "accepted": false
+    },
+    {
+      "id": "triple-colon-rejected",
+      "source": "fnc f() -> int ::: return 1; end",
+      "accepted": false
+    },
+    {
+      "id": "split-double-colon-rejected",
+      "source": "fnc f() -> int : : return 1; end",
+      "accepted": false
+    },
+    {
+      "id": "semicolon-before-double-colon-rejected",
+      "source": "fnc f() -> int; :: return 1; end",
+      "accepted": false
+    },
+    {
+      "id": "same-line-block-comment-before-double-colon",
+      "source": "fnc f() -> int /* header */ :: return 1; end",
+      "accepted": true
+    },
+    {
+      "id": "multiline-block-comment-before-double-colon-rejected",
+      "source": "fnc f() -> int /*\\ncrosses a physical line\\n*/ :: return 1; end",
+      "accepted": false
     }
   ],
   "v2SourceFreeReferenceEvidence": {
@@ -152,7 +202,7 @@
     "result": "13 accepted / 10 rejected independent full-type v2 syntax vectors passed",
     "marker": "ORESLANG_DOUBLE_COLON_V2_FULL_TYPE_SOURCE_FREE_PASS accepted=13 rejected=10 private_source_bytes=0",
     "privateSourceBytes": 0,
-    "scope": "abstract full-type v2 syntax contract only; not Java/Rust/LLVM implementation certification",
+    "scope": "prior 23-vector hosted receipt; expanded 33-vector adversarial receipt pending",
     "covers": "full-type-v2-23-vectors"
   }
 }
