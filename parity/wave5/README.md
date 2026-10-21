@@ -12,6 +12,31 @@
 | **24. Forge independent compiler** | [Forge #30](https://github.com/ores-truffle-oreslang/oreslang-source.forge/pull/30), [#11](https://github.com/ores-truffle-oreslang/oreslang-source.forge/pull/11) | Replace/augment `oresforge run` interpreted scalar execution with independently emitted real native executable. Check SSA lowering, register allocation, instruction selection, calling convention, stack frame/unwind, native execution and differential real Java/LLVM guest output. A positive `ir` result or Forge host interpreter `run` is insufficient. |
 | **25. Wasm source and execution profiles** | [Wasm #35](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/35), [#41](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/41), [#34](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/34) | Use the **real pinned LLVM Oreslang compiler** to emit wasm32, not an invented independent Wasm frontend. Enforce source graph completeness, allowed host function capabilities, strict import signatures, typed guest value ABI, bounded memory and guest execution in WASI/browser/embedded profile as applicable. |
 
+## Actor-heap promotion gate
+
+`actor-heap-capabilities.json` is a deliberately non-promoting capability ledger.
+It distinguishes four allocation levels:
+
+1. `host-reference` — model/test only;
+2. `host-runtime` — a real backend arena API exists, but ordinary compiled guest objects are not proven to use it;
+3. `compiled-scalar` — at least a bounded scalar subset emitted by the real compiler uses actor-owned storage;
+4. `compiled-general` — ordinary mutable guest allocations (classes/records/lists/maps/closures/retained state as applicable) are compiler-routed into actor-owned domains.
+
+The current audited ledger keeps **semantic actor-heap parity false**. LLVM is
+`compiled-scalar` and is verified at that declared level by exact-source compiler/native carrier evidence; Java, .NET, Forge and Wasm remain `host-runtime` for this
+gate. A host arena, successful policy fixture, or host allocator test cannot be
+edited into a `compiled-general` claim.
+
+The validator computes promotion preconditions. `guest-general` zero-GC is
+only admissible with compiled-general storage, deterministic reclamation and
+full AOT. This is intentionally separate from the host/control-plane GC
+boundary: Java may continue using JVM-managed Truffle/runtime wrappers even
+when guest data is increasingly arena-backed, and Wasm may explicitly recycle
+linear-memory capacity without claiming host OS decommit.
+
+Current audit anchors are Java #1134, LLVM #563, .NET #36/#64, Forge #29/#60
+and Wasm #64. LLVM is `verified:true` only at the declared `compiled-scalar` level from exact-head executable evidence; the other backend entries remain `verified:false` until equivalent source/artifact-provenance evidence is available.
+
 ## What this branch actually adds
 
 - `src/actor-memory.mjs`: a bounded **host-only reference** for actor-owned allocations with opaque WeakMap-issued authority, per-actor/global quotas, generations, zero-length accounting, independently frozen nested data, scoped read-only snapshots, explicit owned deep copy, retirement, foreign/stale ref denial, and rejection of getters, symbols and sparse aggregates. No claim of real allocation into compiler actor heaps.
