@@ -26,7 +26,7 @@
     "result": "21/21 independent syntax-reference tests passed",
     "covers": "v1-as-separator-only"
   },
-  "notes": "The fixture is byte-identical to the Java parser/typechecker corpus, the Rust formatter corpus, and the LLVM fail-closed corpus. The prior source-free reference run validates the v1 `as` separator contract only; `::` is a v2 extension with fresh independent source-free oracle evidence recorded in v2SourceFreeReferenceEvidence. Java Maven/Graal, formatter cargo, and LLVM CMake/CTest remain pending exact-head verification. No cross-org private compiler source export is authorized by this manifest. The v2 reference vectors independently exercise same-line separator placement, mixed-separator rejection, opaque comments/strings, higher-order returns, and body-level static access.",
+  "notes": "The fixture is byte-identical to the Java parser/typechecker corpus, the Rust formatter corpus, and the LLVM fail-closed corpus. The prior source-free reference run validates the v1 `as` separator contract only; the recorded v2 source-free oracle validates the original 15-vector base-v2 set (8 accept / 7 reject). Three additional hardening vectors now require body-level `Math::...` and `value as Type` syntax without an explicit separator to fail closed. Java Maven/Graal, formatter cargo, LLVM CMake/CTest, and fresh hosted hardening-vector evidence remain pending exact-head verification. No cross-org private compiler source export is authorized by this manifest.",
   "referenceVectors": [
     {
       "id": "separator-free-next-line",
@@ -102,6 +102,21 @@
       "id": "comment-double-colon-not-separator",
       "source": "fnc f() -> int /* :: */ return 1; end",
       "accepted": false
+    },
+    {
+      "id": "body-static-access-without-separator-rejected",
+      "source": "fnc f() -> int Math::answer(); end",
+      "accepted": false
+    },
+    {
+      "id": "routine-body-static-access-without-separator-rejected",
+      "source": "routine f() -> Result<int, string> Math::answer(); end",
+      "accepted": false
+    },
+    {
+      "id": "body-cast-as-without-separator-rejected",
+      "source": "fnc f() -> int value as Foo; end",
+      "accepted": false
     }
   ],
   "v2SourceFreeReferenceEvidence": {
@@ -112,6 +127,7 @@
     "result": "8 accepted / 7 rejected independent v2 syntax vectors passed",
     "marker": "ORESLANG_DOUBLE_COLON_V2_SOURCE_FREE_PASS accepted=8 rejected=7 private_source_bytes=0",
     "privateSourceBytes": 0,
-    "scope": "abstract syntax contract only; not Java/LLVM implementation certification"
+    "scope": "abstract base-v2 syntax contract only; the three separator-masquerade hardening vectors require fresh evidence; not Java/LLVM implementation certification",
+    "covers": "base-v2-15-vectors"
   }
 }
