@@ -26,7 +26,7 @@
     "result": "21/21 independent syntax-reference tests passed",
     "covers": "v1-as-separator-only"
   },
-  "notes": "The fixture is byte-identical to the Java parser/typechecker corpus, the Rust formatter corpus, and the LLVM fail-closed corpus. The prior source-free reference run validates the v1 `as` separator contract only; `::` is a v2 extension and requires fresh independent oracle evidence. Java Maven/Graal, formatter cargo, and LLVM CMake/CTest remain pending exact-head verification. No cross-org private compiler source export is authorized by this manifest. The v2 reference vectors independently exercise same-line separator placement, mixed-separator rejection, opaque comments/strings, higher-order returns, and body-level static access.",
+  "notes": "The fixture is byte-identical to the Java parser/typechecker corpus, the Rust formatter corpus, and the LLVM fail-closed corpus. The prior source-free reference run validates the v1 `as` separator contract only; `::` is a v2 extension with fresh independent source-free oracle evidence recorded in v2SourceFreeReferenceEvidence. Java Maven/Graal, formatter cargo, and LLVM CMake/CTest remain pending exact-head verification. No cross-org private compiler source export is authorized by this manifest. The v2 reference vectors independently exercise same-line separator placement, mixed-separator rejection, opaque comments/strings, higher-order returns, and body-level static access.",
   "referenceVectors": [
     {
       "id": "separator-free-next-line",
@@ -103,5 +103,15 @@
       "source": "fnc f() -> int /* :: */ return 1; end",
       "accepted": false
     }
-  ]
+  ],
+  "v2SourceFreeReferenceEvidence": {
+    "repository": "zed-pkg/zed-lambdas",
+    "pullRequest": 25,
+    "runId": 39534351624,
+    "jobId": 119007414167,
+    "result": "8 accepted / 7 rejected independent v2 syntax vectors passed",
+    "marker": "ORESLANG_DOUBLE_COLON_V2_SOURCE_FREE_PASS accepted=8 rejected=7 private_source_bytes=0",
+    "privateSourceBytes": 0,
+    "scope": "abstract syntax contract only; not Java/LLVM implementation certification"
+  }
 }
