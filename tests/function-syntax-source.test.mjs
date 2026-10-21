@@ -27,12 +27,12 @@ test("function syntax corpus keeps explicit staged backend/tool expectations",()
   assert.equal(manifest.sourceFreeReferenceEvidence.covers,"v1-as-separator-only");
   assert.match(manifest.sourceFreeReferenceEvidence.result,/^21\/21 independent syntax-reference tests passed$/);
   assert.equal(manifest.v2SourceFreeReferenceEvidence.repository,"zed-pkg/zed-lambdas");
-  assert.equal(manifest.v2SourceFreeReferenceEvidence.pullRequest,25);
-  assert.equal(manifest.v2SourceFreeReferenceEvidence.runId,39541133296);
-  assert.equal(manifest.v2SourceFreeReferenceEvidence.jobId,119028888173);
+  assert.equal(manifest.v2SourceFreeReferenceEvidence.pullRequest,26);
+  assert.equal(manifest.v2SourceFreeReferenceEvidence.runId,39625325242);
+  assert.equal(manifest.v2SourceFreeReferenceEvidence.jobId,119308910442);
   assert.equal(manifest.v2SourceFreeReferenceEvidence.privateSourceBytes,0);
-  assert.equal(manifest.v2SourceFreeReferenceEvidence.covers,"full-type-v2-23-vectors");
-  assert.match(manifest.v2SourceFreeReferenceEvidence.marker,/accepted=13 rejected=10 private_source_bytes=0$/);
+  assert.equal(manifest.v2SourceFreeReferenceEvidence.covers,"adversarial-v2-33-vectors");
+  assert.match(manifest.v2SourceFreeReferenceEvidence.marker,/accepted=14 rejected=19 private_source_bytes=0$/);
   assert.match(manifest.notes,/No cross-org private compiler source export is authorized/i);
 });
 
