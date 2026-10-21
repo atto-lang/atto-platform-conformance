@@ -133,3 +133,15 @@ test('growth charges simultaneous old/new buffers against a strict peak quota', 
   assert.equal(s.length, 1);
   s.dispose();
 });
+
+test('physical layout metadata is not externally writable or affected by mutated group input', () => {
+  const groups = [['x','y'], ['vx','vy'], ['team']];
+  const s = new LayoutStore(schema, { layout: 'soaos', groups });
+  const h = s.push(row(1));
+  assert.throws(() => { s.layout = 'aos'; }, TypeError);
+  assert.throws(() => { s.capacity = Number.MAX_SAFE_INTEGER; }, TypeError);
+  groups[0][0] = 'team'; // mutation of caller-owned array must not alter the store.
+  s.convert('soaos');
+  assert.deepEqual(s.get(h), row(1));
+  s.dispose();
+});
