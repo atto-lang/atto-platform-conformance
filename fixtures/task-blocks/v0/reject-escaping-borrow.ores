@@ -1,6 +1,6 @@
 pub fnc main(): void {
   let int mutable = 42;
-  let captured = rt borrow mut mutable;
+  let captured = rt mut borrow mutable;
   let Task<void> t = nb {
     consume(captured);
     return;
