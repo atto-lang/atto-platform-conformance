@@ -26,7 +26,7 @@
     "result": "21/21 independent syntax-reference tests passed",
     "covers": "v1-as-separator-only"
   },
-  "notes": "The fixture is byte-identical to the Java parser/typechecker corpus, the Rust formatter corpus, and the LLVM fail-closed corpus. The hardened source-free v2 oracle now validates all 18 reference vectors (8 accept / 10 reject), including body-level `Math::...` and `value as Type` syntax without an explicit separator. Java Maven/Graal, formatter cargo, and LLVM CMake/CTest remain pending exact-head implementation verification. No cross-org private compiler source export is authorized by this manifest.",
+  "notes": "The fixture is byte-identical to the Java parser/typechecker corpus, the Rust formatter corpus, and the LLVM fail-closed corpus. The source-free v2 oracle now validates all 23 reference vectors (13 accept / 10 reject), including separator-masquerade rejection plus positive literal, borrow/`&mut`, higher-order, generic, and structural record return types. Java Maven/Graal, formatter cargo, and LLVM CMake/CTest remain pending exact-head implementation verification. No cross-org private compiler source export is authorized by this manifest.",
   "referenceVectors": [
     {
       "id": "separator-free-next-line",
@@ -117,17 +117,42 @@
       "id": "body-cast-as-without-separator-rejected",
       "source": "fnc f() -> int value as Foo; end",
       "accepted": false
+    },
+    {
+      "id": "amp-mut-double-colon",
+      "source": "fnc f() -> &mut Thing :: return value; end",
+      "accepted": true
+    },
+    {
+      "id": "borrow-mut-double-colon",
+      "source": "fnc f() -> borrow mut Thing :: return value; end",
+      "accepted": true
+    },
+    {
+      "id": "string-literal-double-colon",
+      "source": "fnc f() -> \"ok value\" :: return \"ok value\"; end",
+      "accepted": true
+    },
+    {
+      "id": "record-shape-double-colon",
+      "source": "fnc f() -> {foo: int, bar: string} :: return value; end",
+      "accepted": true
+    },
+    {
+      "id": "struct-shape-double-colon",
+      "source": "fnc f() -> struct {foo: int} :: return value; end",
+      "accepted": true
     }
   ],
   "v2SourceFreeReferenceEvidence": {
     "repository": "zed-pkg/zed-lambdas",
     "pullRequest": 25,
-    "runId": 39538775578,
-    "jobId": 119021472417,
-    "result": "8 accepted / 10 rejected independent hardened v2 syntax vectors passed",
-    "marker": "ORESLANG_DOUBLE_COLON_V2_HARDENED_SOURCE_FREE_PASS accepted=8 rejected=10 private_source_bytes=0",
+    "runId": 39541133296,
+    "jobId": 119028888173,
+    "result": "13 accepted / 10 rejected independent full-type v2 syntax vectors passed",
+    "marker": "ORESLANG_DOUBLE_COLON_V2_FULL_TYPE_SOURCE_FREE_PASS accepted=13 rejected=10 private_source_bytes=0",
     "privateSourceBytes": 0,
-    "scope": "abstract hardened v2 syntax contract only; not Java/Rust/LLVM implementation certification",
-    "covers": "hardened-v2-18-vectors"
+    "scope": "abstract full-type v2 syntax contract only; not Java/Rust/LLVM implementation certification",
+    "covers": "full-type-v2-23-vectors"
   }
 }
