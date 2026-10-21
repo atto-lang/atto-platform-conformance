@@ -8,7 +8,7 @@
 
 `task { ... }`, `cpu task { ... }`, and `gpu task { ... }` submit independent logical work immediately. Submission—not `await`—is the ownership-transfer boundary. Compatibility `nb` forms obey the same lifetime rules.
 
-Every executable child requires compiler-derived admission tied to the exact checked Task expression, parent ownership epoch, execution domain, and runtime-created child identity. Reparsed/untyped ASTs, optimizer clones, foreign handles, or user-authored metadata cannot mint authority.
+Every executable child requires compiler-derived admission tied to the exact checked Task expression, parent ownership epoch, execution domain, and runtime-created child identity. Launch authority is one-shot: a second initial dispatch/replay of the same child identity is rejected, and the identity/epoch/domain proof is revalidated on every physical resume. Reparsed/untyped ASTs, optimizer clones, foreign handles, or user-authored metadata cannot mint authority.
 
 ## Capture rules
 
