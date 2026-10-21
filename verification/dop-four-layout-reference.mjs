@@ -31,13 +31,13 @@ function makeGeometry(fields, capacity, layout, options = {}) {
     indexes = Object.fromEntries(fields.map((f, i) => [f, {segment: 0, offset: i * width, stride: 1}]));
   } else {
     sizes = groups.map(g => capacity * g.length);
-    indexes = {};
+    indexes = Object.create(null);
     groups.forEach((g, gi) => g.forEach((f, j) => {
       indexes[f] = {segment: gi, offset: j, stride: g.length};
     }));
   }
   const address = (row, field) => {
-    if (!Number.isSafeInteger(row) || row < 0 || row >= capacity || !(field in indexes))
+    if (!Number.isSafeInteger(row) || row < 0 || row >= capacity || !Object.hasOwn(indexes, field))
       throw new RangeError("invalid row or field");
     const p = indexes[field];
     if (layout === "aosoa") {
@@ -98,11 +98,15 @@ class FourLayoutOracle {
     if (!record || Object.keys(record).length !== this.#g.fields.length ||
         this.#g.fields.some(f => !Object.hasOwn(record, f) || typeof record[f] !== "number"))
       throw new TypeError("record schema mismatch");
+    // Snapshot potentially effectful getters before reserving an ID or mutating bytes.
+    // Failed field evaluation must not consume a slot or partially publish a row.
+    const values = this.#g.fields.map(f => record[f]);
+    if (values.some(v => typeof v !== "number")) throw new TypeError("record schema mismatch");
     const slot = this.#free.length ? this.#free.pop() : this.#slots.length;
     const s = this.#slots[slot] ?? {generation: 1, live: false, row: -1};
     if (s.generation === 0) throw new Error("generation exhausted");
     const row = this.count;
-    this.#g.fields.forEach(f => this.#write(row, f, record[f]));
+    this.#g.fields.forEach((f,i) => this.#write(row, f, values[i]));
     s.row = row; s.live = true; this.#slots[slot] = s; this.#denseSlots.push(slot);
     const h = Object.freeze({owner: this.#owner, slot, generation: s.generation});
     this.#issued.set(h, true);
