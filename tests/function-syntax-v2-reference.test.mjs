@@ -44,6 +44,38 @@ function visibleSource(source){
   return out;
 }
 
+
+function hasAmbiguousBareWords(typeText){
+  const words=[];
+  let paren=0, bracket=0, brace=0, angle=0;
+  for(let i=0;i<typeText.length;){
+    const c=typeText[i];
+    if(c==="("){ paren++; i++; continue; }
+    if(c===")"){ paren=Math.max(0,paren-1); i++; continue; }
+    if(c==="["){ bracket++; i++; continue; }
+    if(c==="]"){ bracket=Math.max(0,bracket-1); i++; continue; }
+    if(c==="{"){ brace++; i++; continue; }
+    if(c==="}"){ brace=Math.max(0,brace-1); i++; continue; }
+    if(c==="<"){ angle++; i++; continue; }
+    if(c===">" && angle>0){ angle--; i++; continue; }
+    if(paren===0 && bracket===0 && brace===0 && angle===0 && /[A-Za-z0-9_]/.test(c)){
+      const start=i++;
+      while(i<typeText.length && /[A-Za-z0-9_]/.test(typeText[i])) i++;
+      words.push({start,end:i,text:typeText.slice(start,i)});
+      continue;
+    }
+    i++;
+  }
+  for(let i=1;i<words.length;i++){
+    const a=words[i-1], b=words[i];
+    if(!/^\s*$/.test(typeText.slice(a.end,b.start))) continue;
+    const ampMut=a.text==="mut" && ((i>=2 && words[i-2].text==="borrow") || typeText.slice(0,a.start).trimEnd().endsWith("&"));
+    const legal=a.text==="type" || a.text==="borrow" || ampMut || (a.text==="typeof" && b.text==="fnc");
+    if(!legal) return true;
+  }
+  return false;
+}
+
 function classifyV2Callable(source){
   const lines=visibleSource(source).split(/\r?\n/);
   const headerIndex=lines.findIndex(line=>line.trim().length>0);
@@ -68,7 +100,8 @@ function classifyV2Callable(source){
 
   if(candidates.length){
     const sep=candidates[0];
-    if(!tail.slice(0,sep.start).trim()) return false;
+    const typeText=tail.slice(0,sep.start).trim();
+    if(!typeText || hasAmbiguousBareWords(typeText)) return false;
     const body=tail.slice(sep.end).trimStart();
     if(/^as\b/.test(body) || body.startsWith("::")) return false;
     return true;
@@ -85,7 +118,7 @@ function classifyV2Callable(source){
 
 test("v2 callable separator reference vectors",()=>{
   assert.ok(Array.isArray(manifest.referenceVectors));
-  assert.equal(manifest.referenceVectors.length,15);
+  assert.equal(manifest.referenceVectors.length,18);
   let accepted=0;
   let rejected=0;
   for(const vector of manifest.referenceVectors){
@@ -94,5 +127,5 @@ test("v2 callable separator reference vectors",()=>{
     if(actual) accepted++; else rejected++;
   }
   assert.equal(accepted,8);
-  assert.equal(rejected,7);
+  assert.equal(rejected,10);
 });
