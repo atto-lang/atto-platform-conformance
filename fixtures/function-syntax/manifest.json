@@ -26,5 +26,77 @@
     "result": "21/21 independent syntax-reference tests passed",
     "covers": "v1-as-separator-only"
   },
-  "notes": "The fixture is byte-identical to the Java parser/typechecker corpus, the Rust formatter corpus, and the LLVM fail-closed corpus. The prior source-free reference run validates the v1 `as` separator contract only; `::` is a v2 extension and requires fresh independent oracle evidence. Java Maven/Graal, formatter cargo, and LLVM CMake/CTest remain pending exact-head verification. No cross-org private compiler source export is authorized by this manifest."
+  "notes": "The fixture is byte-identical to the Java parser/typechecker corpus, the Rust formatter corpus, and the LLVM fail-closed corpus. The prior source-free reference run validates the v1 `as` separator contract only; `::` is a v2 extension and requires fresh independent oracle evidence. Java Maven/Graal, formatter cargo, and LLVM CMake/CTest remain pending exact-head verification. No cross-org private compiler source export is authorized by this manifest. The v2 reference vectors independently exercise same-line separator placement, mixed-separator rejection, opaque comments/strings, higher-order returns, and body-level static access.",
+  "referenceVectors": [
+    {
+      "id": "separator-free-next-line",
+      "source": "fnc f() -> int\n  return 1\nend",
+      "accepted": true
+    },
+    {
+      "id": "same-line-as",
+      "source": "fnc f() -> int as return 1; end",
+      "accepted": true
+    },
+    {
+      "id": "same-line-double-colon",
+      "source": "fnc f() -> int :: return 1; end",
+      "accepted": true
+    },
+    {
+      "id": "double-colon-with-static-access",
+      "source": "fnc f() -> int :: return Math::answer(); end",
+      "accepted": true
+    },
+    {
+      "id": "higher-order-double-colon",
+      "source": "fnc f() -> () => void ::\n  return || -> { return; };\nend",
+      "accepted": true
+    },
+    {
+      "id": "string-double-colon-is-body-text",
+      "source": "fnc f() -> string :: return \"::\"; end",
+      "accepted": true
+    },
+    {
+      "id": "comment-double-colon-before-as",
+      "source": "fnc f() -> int /* :: */ as return 1; end",
+      "accepted": true
+    },
+    {
+      "id": "next-line-as-rejected",
+      "source": "fnc f() -> int\nas\n  return 1\nend",
+      "accepted": false
+    },
+    {
+      "id": "next-line-double-colon-rejected",
+      "source": "fnc f() -> int\n::\n  return 1\nend",
+      "accepted": false
+    },
+    {
+      "id": "same-line-body-without-separator-rejected",
+      "source": "fnc f() -> int return 1; end",
+      "accepted": false
+    },
+    {
+      "id": "colon-return-double-colon-rejected",
+      "source": "fnc f(): int :: return 1; end",
+      "accepted": false
+    },
+    {
+      "id": "as-double-colon-rejected",
+      "source": "fnc f() -> int as :: return 1; end",
+      "accepted": false
+    },
+    {
+      "id": "double-colon-as-rejected",
+      "source": "fnc f() -> int :: as return 1; end",
+      "accepted": false
+    },
+    {
+      "id": "comment-double-colon-not-separator",
+      "source": "fnc f() -> int /* :: */ return 1; end",
+      "accepted": false
+    }
+  ]
 }
