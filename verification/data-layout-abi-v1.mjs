@@ -59,7 +59,7 @@ function recordShape(fields) {
   return Object.freeze({align:maxAlign,stride:alignUp(cursor,maxAlign),offsets});
 }
 
-function computeLayoutAbi({layout, fields, capacity, tileWidth, groups}) {
+function computeLayoutAbi({layout, fields, capacity, tileWidth, groups, maxSegmentBytes, maxTotalBytes}) {
   const normalized = normalizeFields(fields);
   const count = checkedCount(capacity, 'capacity');
   if (!['aos','soa','aosoa','soaos'].includes(layout)) throw new RangeError('unknown layout');
@@ -121,6 +121,28 @@ function computeLayoutAbi({layout, fields, capacity, tileWidth, groups}) {
         locator[name] = {segment,offset:shape.offsets[name],rowStride:shape.stride};
       }
     });
+  }
+
+  // Backend-specific actor quota/memory32 caps are optional inputs to the
+  // shared geometry oracle. Charge real physical extents, including AoSoA
+  // tail padding and all SoAoS segment strides, before publishing any layout.
+  // BigInt limits avoid accidental Number rounding near 4 GiB/2^53.
+  for (const [label, bound] of [
+    ['maxSegmentBytes',maxSegmentBytes], ['maxTotalBytes',maxTotalBytes]
+  ]) {
+    if (bound !== undefined && (typeof bound !== 'bigint' || bound < 0n)) {
+      throw new RangeError(`invalid ${label}: expected nonnegative bigint`);
+    }
+  }
+  let totalBytes = 0n;
+  for (const segment of segments) {
+    if (maxSegmentBytes !== undefined && segment.bytes > maxSegmentBytes) {
+      throw new RangeError('physical ABI segment exceeds target limit');
+    }
+    totalBytes += segment.bytes;
+    if (maxTotalBytes !== undefined && totalBytes > maxTotalBytes) {
+      throw new RangeError('physical ABI layout exceeds actor quota');
+    }
   }
 
   const address = (row, field) => {
