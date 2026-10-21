@@ -34,7 +34,7 @@ function normalizeFields(fields) {
   const seen = new Set();
   return fields.map((field, index) => {
     if (!field || typeof field.name !== 'string' ||
-        !/^[$A-Z_a-z][$\\w]*$/.test(field.name) ||
+        !/^[$A-Z_a-z][$\w]*$/.test(field.name) ||
         seen.has(field.name) || !Object.hasOwn(TYPES, field.type)) {
       throw new TypeError(`invalid field ${index}`);
     }
