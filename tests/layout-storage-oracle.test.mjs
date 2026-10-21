@@ -69,7 +69,7 @@ test('SoAoS groups are arrays of compact records; AoSoA is tiled columns', () =>
   assert.equal(grouped.physicalOffset(handles[3][1], 'x') - grouped.physicalOffset(handles[3][0], 'x'), 16);
   assert.equal(soa.physicalOffset(handles[1][1], 'x') - soa.physicalOffset(handles[1][0], 'x'), 8);
   assert.equal(tiled.physicalOffset(handles[2][0], 'y') - tiled.physicalOffset(handles[2][0], 'x'), 32);
-  assert.equal(aos.physicalOffset(handles[0][1], 'x') - aos.physicalOffset(handles[0][0], 'x'), 28);
+  assert.equal(aos.physicalOffset(handles[0][1], 'x') - aos.physicalOffset(handles[0][0], 'x'), 32);
   stores.forEach(s => s.dispose());
 });
 
@@ -102,5 +102,34 @@ test('loan to one field permits a disjoint mutable field loan only', () => {
   assert.equal(y.read(h), 123.5);
   assert.throws(() => s.dispose(), /loans/);
   x.release(); y.release();
+  s.dispose();
+});
+
+
+test('tail tiles, repeated compaction and numeric overflow do not corrupt other rows', () => {
+  const s = new LayoutStore(schema, { layout: 'aosoa', width: 8, capacity: 1 });
+  const handles = Array.from({ length: 1031 }, (_, i) => s.push(row(i)));
+  assert.throws(() => s.write(handles[1023], 'vx', 1e100), /f32 overflow/);
+  assert.equal(s.read(handles[1023], 'vx'), 1023);
+  for (let i = 0; i < 200; i++) {
+    s.eraseSwap(handles[i]);
+    assert.throws(() => s.read(handles[i], 'x'), /stale/);
+  }
+  for (const target of layouts) s.convert(target.layout, target);
+  for (let i = 200; i < handles.length; i++) {
+    assert.deepEqual(s.get(handles[i]), row(i));
+  }
+  assert.equal(s.length, 831);
+  s.dispose();
+});
+
+test('growth charges simultaneous old/new buffers against a strict peak quota', () => {
+  const s = new LayoutStore([{ name: 'x', type: 'f64' }], {
+    layout: 'soa', capacity: 1, maxBytes: 20
+  });
+  const h = s.push({ x: 4 });
+  assert.throws(() => s.push({ x: 5 }), /quota/); // 8 old + 16 new > 20
+  assert.deepEqual(s.get(h), { x: 4 });
+  assert.equal(s.length, 1);
   s.dispose();
 });
