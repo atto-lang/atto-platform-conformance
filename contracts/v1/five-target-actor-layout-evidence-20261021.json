@@ -19,12 +19,18 @@
         "stepfulCiObserved": false,
         "verifiedArtifactSha": null,
         "runUrl": null
+      },
+      "scalarGuestCandidate": {
+        "pr": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1859",
+        "sourceBlob": "43fde293203e4910271f2d54422d83b95cd7458a",
+        "expectedExit": 42,
+        "sourceCompilerExecutionVerified": false
       }
     },
     {
       "id": "llvm",
       "repository": "ores-truffle-oreslang/oreslang-source.llvm",
-      "commit": "15c5dcb2e9749f7ff2bee08a6ebfdc61524f4746",
+      "commit": "20b2ea03417306cdac86283554481008ff02f918",
       "source": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/837",
       "actorMemory": "actor-owned native heap substrate; new heterogeneous plan not yet connected to source actor allocation or guest field accesses",
       "layouts": "checked heterogeneous mixed-width AoS/SoA/AoSoA/grouped SoAoS native address planner and C++17 host regression; compiler guest lowering unverified",
@@ -34,6 +40,12 @@
         "stepfulCiObserved": false,
         "verifiedArtifactSha": null,
         "runUrl": null
+      },
+      "scalarGuestCandidate": {
+        "pr": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/837",
+        "sourceBlob": "43fde293203e4910271f2d54422d83b95cd7458a",
+        "expectedExit": 42,
+        "sourceCompilerExecutionVerified": false
       }
     },
     {
