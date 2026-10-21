@@ -4,6 +4,6 @@ end
 fnc invalid(): void {
   val m = new MyMap();
   val int x = 7;
-  m.put("extra", &x);
+  m.put("extra", rt borrow x);
   return;
 }
