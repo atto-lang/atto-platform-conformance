@@ -83,6 +83,25 @@ function runChecks() {
   reject(()=>empty.address(0,"x"),"padded tails not live rows");
   s.retire();
   reject(()=>s.push({x:1,y:2,vx:3,vy:4}),"retired actor domain");
+  const dangerousFields = ["__proto__", "constructor"];
+  const grouped = new FourLayoutOracle({
+    owner:"special",fields:dangerousFields,capacity:2,layout:"soaos",groups:[dangerousFields]
+  });
+  const special = grouped.push(Object.fromEntries([["__proto__", 4],["constructor", 5]]));
+  check(grouped.read(special,"__proto__")===4 && grouped.read(special,"constructor")===5,
+    "field names cannot collide with object prototypes");
+  reject(()=>grouped.address(0,"toString"),"inherited property must not be a field");
+  reject(()=>grouped.address(0,"hasOwnProperty"),"inherited method must not be a field");
+
+  const transactional = new FourLayoutOracle({owner:"tx",fields,capacity:1,layout:"soa"});
+  const badRecord = Object.fromEntries([["x", 1],["y", 2],["vx", 3],["vy", 4]]);
+  Object.defineProperty(badRecord,"vx",{
+    enumerable:true,get(){ throw new Error("getter failed"); }
+  });
+  reject(()=>transactional.push(badRecord),"row getter throw");
+  check(transactional.count===0,"failed getter did not publish a partially inserted row");
+  const valid = transactional.push({x:1,y:2,vx:3,vy:4});
+  check(transactional.read(valid,"vx")===3,"failed insert must not burn capacity");
   return true;
 }
 
