@@ -142,3 +142,15 @@ JDK 25 `Arena.ofShared()` allows multi-thread access to segments and explicit cl
 - Tests cover JNI JDK21 baseline; if FFM is adopted, separately execute JDK25 JVM+Native Image and confirm no semantic or lifetime regressions.
 
 Existing relevant gates: [Java actor allocation issue #289](https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/289), [native arena draft #1822](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1822), [compressed refs #1849](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1849), [whole-actor Task quiescence #1566](https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/1566), and [five-target queue #144](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/144).
+
+
+## Executable source-free reference checks (Oct 21, 2026)
+
+Two bounded **reference models**, not production compilers or actor runtimes, now accompany this draft:
+
+- [Four-layout numerical oracle](../verification/dop-four-layout-reference.mjs) and its [unit regression](../test/dop-four-layout.test.mjs): physical addresses for AoS, SoA, tiled AoSoA and grouped SoAoS; explicit single authoritative layout; f64 signed-zero/NaN preservation; swap-delete; generation-fenced, issuance-checked stable row handles; disjoint-field loans; blocked compaction/conversion under loans; capacity and masked-tail rejection. Its 4-million-element ceiling is a test-harness guard, **not** a normative ABI maximum. Do not mistake f64 reference geometry for finalized heterogeneous fields, alignment, padding or native vectorization.
+- [Actor message-memory model](../verification/actor-message-memory-reference.mjs) and its [unit regression](../test/actor-message-memory.test.mjs): independent scratch lifetimes for multiple outstanding messages; strictly one executing guest turn at a time; await/suspension and carrier migration; issuer-checked scratch handles; quota while continuations are suspended; external lifetime-only leases; retiring/reclaiming only after true quiescence.
+
+**Concurrency nuance:** a serial actor can admit only one outstanding message lifetime, whereas an actor configured for multiple concurrent requests/messages may have more than one **suspended** message handler concurrently. It must still execute guest code single-flight. A production MessageRegion therefore belongs to the *handler/message lifetime*, not merely a single reusable actor-wide scratch bump pointer that resets whenever another handler runs. The unary fast path in the section above is deliberately restricted to serial admission.
+
+The reference assertions were executed in a JavaScript V8 tool environment while authoring this draft. Source-org GitHub Actions may fail before job steps run; require observed Node 22 node --test job steps and separate real compiler/guest execution before promoting any parity checkbox. None of these models proves cache speedups, GC elimination or isolation in Java, LLVM, Wasm, JS Workers or .NET.
