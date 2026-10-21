@@ -11,6 +11,8 @@ test('async Task borrow-safety v1 contract is pinned', () => {
     'Submission—not `await`—is the ownership-transfer boundary',
     'Unknown AST forms fail closed',
     'compiler-derived transitive Send proof',
+    'Launch authority is one-shot',
+    'revalidated on every physical resume',
     'Scoped mutable WRITE capture remains rejected',
     'physical quiescence',
     'independent Task never inherits actor `self`'
