@@ -2,7 +2,7 @@
 
 **Status (2026-10-21): normative cross-backend safety gate.** Companion to `CPU_GPU_TASK_V2.md`. Backends may remain fail-closed until their compiler/runtime ownership chain is proved.
 
-**Canonical ownership syntax:** `rt borrow value`, `rt borrow mut value`, `rt take value`, `rt copy value`, and `rt share value`. Oreslang source does not use C/C++ pointer-style `&` or `*` ownership operators.
+**Canonical ownership syntax:** `rt borrow value`, `rt mut borrow value`, `rt take value`, `rt copy value`, and `rt share value`. Oreslang source does not use C/C++ pointer-style `&` or `*` ownership operators.
 
 ## Ownership boundary
 
@@ -14,7 +14,7 @@ Every executable child requires compiler-derived admission tied to the exact che
 
 1. Capture discovery is CFG-aware and lexical-scope aware. It includes nested Tasks, closures, `defer`/`finally`, channel/select callbacks, method receivers, classic `for` initializers, for-of/destructuring, pattern/catch/select bindings, and recursive lambda names. Unknown AST forms fail closed.
 2. Copy-safe immutable values are snapshotted at submission. A non-Copy owned value transfers exactly once and requires a compiler-derived transitive Send proof. Parent and sibling continuations may not use the moved binding afterward. Unknown nominal or inferred ownership provenance fails closed unless the compiler can derive the complete transitive transfer proof.
-3. Ordinary `rt borrow` and `rt borrow mut` loans, actor-state loans, guards, interior-mutable/raw/foreign capabilities, untrusted handles, and scheduler-local authority cannot escape into an ordinary independent Task. Wrapping them in classes, records, generics, closures, `rt copy`, `rt share`, or serialization does not make them Send-safe.
+3. Ordinary `rt borrow` and `rt mut borrow` loans, actor-state loans, guards, interior-mutable/raw/foreign capabilities, untrusted handles, and scheduler-local authority cannot escape into an ordinary independent Task. Wrapping them in classes, records, generics, closures, `rt copy`, `rt share`, or serialization does not make them Send-safe.
 4. Scoped immutable READ borrowing is a distinct structured-concurrency capability. It requires an exact lexical TaskScope, exact allocation identity/generation, proven Sync referent, authenticated projection/range proof, exact scheduler child identity, and physical retirement before release.
 5. Scoped mutable WRITE capture remains rejected until distinct WRITE authority, disjoint-place proofs, reborrow freezing, cancellation fencing, and runtime conflict control exist.
 6. A `Future<T>` result must own, copy, or explicitly share its payload. Borrowed references, guards, actor-state projections, and device pointers cannot become ordinary Future results.
