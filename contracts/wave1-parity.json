@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 1,
+  "purpose": "unverified-parity-targets",
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "tasks": [
+    {
+      "task": 1,
+      "id": "feature-matrix",
+      "title": "Versioned backend/profile feature readiness",
+      "lead": "conformance",
+      "kind": "infrastructure",
+      "cases": [],
+      "backends": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      },
+      "relatedPRs": [
+        "https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/pull/41"
+      ]
+    },
+    {
+      "task": 2,
+      "id": "real-evidence",
+      "title": "Real five-backend admission and provenance",
+      "lead": "conformance",
+      "kind": "infrastructure",
+      "cases": [],
+      "backends": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      },
+      "relatedPRs": [
+        "https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/pull/40",
+        "https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/pull/1"
+      ]
+    },
+    {
+      "task": 3,
+      "id": "grammar-corpus",
+      "title": "Canonical grammar accept/reject fixtures",
+      "lead": "java",
+      "kind": "language",
+      "cases": [
+        "grammar-function-accept",
+        "grammar-malformed-params-reject"
+      ],
+      "backends": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      },
+      "relatedPRs": [
+        "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1087"
+      ]
+    },
+    {
+      "task": 4,
+      "id": "scope-and-imports",
+      "title": "Lexical scope and package-root import admission",
+      "lead": "java",
+      "kind": "language",
+      "cases": [
+        "scope-local-accept",
+        "scope-unresolved-reject",
+        "import-root-traversal-reject"
+      ],
+      "backends": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      },
+      "relatedPRs": [
+        "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1050",
+        "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/448"
+      ]
+    },
+    {
+      "task": 5,
+      "id": "type-method-slots",
+      "title": "Nominal type and method-slot admission",
+      "lead": "java",
+      "kind": "language",
+      "cases": [
+        "method-shared-slot-accept",
+        "method-duplicate-slot-reject"
+      ],
+      "backends": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      },
+      "relatedPRs": [
+        "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1044"
+      ]
+    }
+  ],
+  "fixtures": [
+    {
+      "id": "grammar-function-accept",
+      "task": 3,
+      "path": "fixtures/wave1/grammar-function-accept.ores",
+      "expect": "accept",
+      "sha256": "ee4513afc4079f7b05e21b20326058447171fb048024eb40d6135682986a1e8a",
+      "expectedInt": 14
+    },
+    {
+      "id": "grammar-malformed-params-reject",
+      "task": 3,
+      "path": "fixtures/wave1/grammar-malformed-params-reject.ores",
+      "expect": "reject",
+      "sha256": "6764c47167a150ca60a216a6cb34edfe93a740bea9ca1a4d7db0f7aedec23601",
+      "diagnosticClass": "syntax"
+    },
+    {
+      "id": "scope-local-accept",
+      "task": 4,
+      "path": "fixtures/wave1/scope-local-accept.ores",
+      "expect": "accept",
+      "sha256": "4c8a7141bf3d10abc25d29691ed029cce5c74ca5b1a1bffd5362f000b09e3693",
+      "expectedInt": 42
+    },
+    {
+      "id": "scope-unresolved-reject",
+      "task": 4,
+      "path": "fixtures/wave1/scope-unresolved-reject.ores",
+      "expect": "reject",
+      "sha256": "37c47fdec024280fc70a18fe480db9916ce0a00689099f011faa860cd761008a",
+      "diagnosticClass": "unresolved-name"
+    },
+    {
+      "id": "import-root-traversal-reject",
+      "task": 4,
+      "path": "fixtures/wave1/import-root-traversal-reject.ores",
+      "expect": "reject",
+      "sha256": "71672b74132d58fd06c60746b24a8b728474c778e9c04297bdd297ee01aa9d7e",
+      "diagnosticClass": "import-root-escape"
+    },
+    {
+      "id": "method-shared-slot-accept",
+      "task": 5,
+      "path": "fixtures/wave1/method-shared-slot-accept.ores",
+      "expect": "accept",
+      "sha256": "44cc301083b497ce99dd7326cd125276f0d8ca729981ecf7cffb5a267730d8c5",
+      "expectedInt": 42
+    },
+    {
+      "id": "method-duplicate-slot-reject",
+      "task": 5,
+      "path": "fixtures/wave1/method-duplicate-slot-reject.ores",
+      "expect": "reject",
+      "sha256": "aef83e50e9acb49276de2106cba7795e2836b60296d8d1d339e1cb70d6bc84f3",
+      "diagnosticClass": "duplicate-method-slot"
+    }
+  ]
+}
