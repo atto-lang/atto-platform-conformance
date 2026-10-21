@@ -28,11 +28,11 @@ test("function syntax corpus keeps explicit staged backend/tool expectations",()
   assert.match(manifest.sourceFreeReferenceEvidence.result,/^21\/21 independent syntax-reference tests passed$/);
   assert.equal(manifest.v2SourceFreeReferenceEvidence.repository,"zed-pkg/zed-lambdas");
   assert.equal(manifest.v2SourceFreeReferenceEvidence.pullRequest,25);
-  assert.equal(manifest.v2SourceFreeReferenceEvidence.runId,39538775578);
-  assert.equal(manifest.v2SourceFreeReferenceEvidence.jobId,119021472417);
+  assert.equal(manifest.v2SourceFreeReferenceEvidence.runId,39541133296);
+  assert.equal(manifest.v2SourceFreeReferenceEvidence.jobId,119028888173);
   assert.equal(manifest.v2SourceFreeReferenceEvidence.privateSourceBytes,0);
-  assert.equal(manifest.v2SourceFreeReferenceEvidence.covers,"hardened-v2-18-vectors");
-  assert.match(manifest.v2SourceFreeReferenceEvidence.marker,/accepted=8 rejected=10 private_source_bytes=0$/);
+  assert.equal(manifest.v2SourceFreeReferenceEvidence.covers,"full-type-v2-23-vectors");
+  assert.match(manifest.v2SourceFreeReferenceEvidence.marker,/accepted=13 rejected=10 private_source_bytes=0$/);
   assert.match(manifest.notes,/No cross-org private compiler source export is authorized/i);
 });
 
