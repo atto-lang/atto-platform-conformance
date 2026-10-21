@@ -10,12 +10,12 @@ const manifest=JSON.parse(await readFile(join(dir,"manifest.json"),"utf8"));
 
 test("function syntax corpus keeps explicit staged backend/tool expectations",()=>{
   assert.equal(manifest.schemaVersion,1);
-  assert.equal(manifest.scope,"end-delimited-function-syntax-v1");
+  assert.equal(manifest.scope,"end-delimited-function-syntax-v2");
   assert.equal(manifest.cases.length,1);
   const c=manifest.cases[0];
   assert.equal(c.id,"end-delimited-roundtrip");
   assert.equal(c.file,"end-delimited-roundtrip.ores");
-  assert.equal(c.sourceGitBlobSha1,"c91a244cb99c1aaa74b3abadf9b99d8e1f3aea86");
+  assert.equal(c.sourceGitBlobSha1,"6d085173b18d247a6e2641f6aa27ca4a4a3d6b2b");
   assert.deepEqual(c.expectations,{
     java:"accept-and-typecheck",
     formatter:"format-idempotently",
@@ -24,8 +24,10 @@ test("function syntax corpus keeps explicit staged backend/tool expectations",()
   assert.deepEqual(c.confirmedBackends,[]);
   assert.deepEqual(c.pendingBackends,["java","formatter","llvm"]);
   assert.equal(manifest.sourceFreeReferenceEvidence.runId,39443132577);
-  assert.match(manifest.sourceFreeReferenceEvidence.result,/^21\/21 independent syntax-reference tests passed$/);
-  assert.match(manifest.notes,/No cross-org private compiler source export is authorized/i);
+  assert.match(manifest.sourceFreeReferenceEvidence.result,/prior as-separator reference tests passed/);
+  assert.match(manifest.sourceFreeReferenceEvidence.result,/:: extension requires refreshed source-free oracle/);
+  assert.match(manifest.notes,/v2 fixture adds the callable-header :: separator/i);
+  assert.match(manifest.notes,/LLVM remains fail-closed/i);
 });
 
 test("function syntax corpus retains exact shared Git blob bytes",async()=>{
