@@ -4,113 +4,133 @@ import {createHmac} from 'node:crypto';
 import {createServer} from 'node:http';
 import {admitGithubPush,createGithubWebhookHandler} from '../src/ai-dev-loop-webhook.mjs';
 
-const secret='ci-fixture-secret';
+const secret='test-webhook-secret-long-enough';
 const sha='a'.repeat(40);
-const payload={deleted:false,after:sha,ref:'refs/heads/feature',
+const payload={deleted:false,after:sha,ref:'refs/heads/dev',
   installation:{id:71},repository:{id:52}};
-const signed=(data=payload,event='push',deliveryId='delivery-1')=>{
+function signed(data=payload,event='push',delivery='delivery-1'){
   const rawBody=Buffer.from(JSON.stringify(data));
   return {rawBody,headers:{
     'x-hub-signature-256':'sha256='+createHmac('sha256',secret).update(rawBody).digest('hex'),
-    'x-github-event':event,'x-github-delivery':deliveryId
-  }};
-};
-const harness=(event=signed(),override={})=>{
-  const calls=[];const used=new Set();
-  const admitVerifiedEvent=async e=>{
-    calls.push(e);
-    if(e.sha!==sha||e.ref!=='refs/heads/feature'||e.repositoryId!==52||
-       e.installationId!==71)return 'STALE';
-    if(used.has(e.deliveryId))return 'DUPLICATE';
-    used.add(e.deliveryId);return 'ACCEPTED';
-  };
-  return {calls,options:{secret,...event,admitVerifiedEvent,...override}};
-};
-test('valid GitHub push invokes ONE verified atomic-admission callback',async()=>{
-  const a=harness();
-  assert.deepEqual(await admitGithubPush(a.options),{status:202,code:'ACCEPTED'});
-  assert.equal(a.calls.length,1);
-  assert.deepEqual({...a.calls[0],rawBody:undefined},{
-    installationId:71,repositoryId:52,sha,ref:'refs/heads/feature',
-    deliveryId:'delivery-1',rawBody:undefined
-  });
-  assert.deepEqual(a.calls[0].rawBody,a.options.rawBody);
-  assert.equal('runId' in a.calls[0],false);
-  assert.equal('tenantId' in a.calls[0],false);
+    'x-github-event':event,'x-github-delivery':delivery}};
+}
+function fixture(input=signed(),response='ACCEPTED'){
+  const calls=[];
+  const config={secret,...input,admitVerifiedEvent:async value=>{calls.push(value);return response;}};
+  return {config,calls};
+}
+
+test('verified push calls only the atomic durable admission boundary',async()=>{
+  const f=fixture();
+  assert.deepEqual(await admitGithubPush(f.config),{status:202,code:'ACCEPTED'});
+  assert.equal(f.calls.length,1);
+  assert.deepEqual({...f.calls[0],rawBody:undefined},{
+    installationId:71,repositoryId:52,ref:'refs/heads/dev',sha,deliveryId:'delivery-1',
+    rawBody:undefined});
+  assert.deepEqual(f.calls[0].rawBody,signed().rawBody);
+  assert.equal('tenantId' in f.calls[0],false);
+  assert.equal('expectedStateVersion' in f.calls[0],false);
 });
-test('tampered HMAC never invokes storage',async()=>{
-  const event=signed();event.rawBody=Buffer.from(JSON.stringify({...payload,after:'b'.repeat(40)}));
-  const a=harness(event);
-  assert.equal((await admitGithubPush(a.options)).status,401);
-  assert.equal(a.calls.length,0);
+
+test('reject tampered raw bytes before any DB admission',async()=>{
+  const s=signed();s.rawBody=Buffer.from(s.rawBody.toString().replace(sha,'b'.repeat(40)));
+  const f=fixture(s);
+  assert.equal((await admitGithubPush(f.config)).status,401);
+  assert.equal(f.calls.length,0);
 });
-test('unknown signature and non-push events do not enqueue',async()=>{
-  const bad=signed();delete bad.headers['x-hub-signature-256'];
-  const a=harness(bad);
-  assert.equal((await admitGithubPush(a.options)).code,'BAD_SIGNATURE');
-  const b=harness(signed(payload,'ping'));
-  assert.equal((await admitGithubPush(b.options)).code,'IGNORED_EVENT');
-  assert.equal(a.calls.length+b.calls.length,0);
-});
-test('oversized, malformed and empty bodies rejected',async()=>{
-  const a=harness(signed());
-  assert.equal((await admitGithubPush({...a.options,maxBytes:10})).status,413);
-  assert.equal((await admitGithubPush({...a.options,rawBody:Buffer.alloc(0)})).status,413);
-  const malformed=signed();malformed.rawBody=Buffer.from('{oops');
-  assert.equal((await admitGithubPush(harness(malformed).options)).status,401);
-});
-test('SHA/ref/repository/installation are backend-bound',async()=>{
-  for(const event of [
-    {...payload,after:'b'.repeat(40)},
-    {...payload,ref:'refs/heads/other'},
-    {...payload,repository:{id:123}},
-    {...payload,installation:{id:456}}
-  ]){
-    const a=harness(signed(event));
-    assert.equal((await admitGithubPush(a.options)).code,'STALE_OR_UNRELATED');
+test('missing signature or malformed signature is rejected',async()=>{
+  for(const bad of [undefined,'sha256=z','sha256='+'0'.repeat(64)]){
+    const s=signed();
+    if(bad===undefined)delete s.headers['x-hub-signature-256'];
+    else s.headers['x-hub-signature-256']=bad;
+    const f=fixture(s);
+    assert.equal((await admitGithubPush(f.config)).status,401);
+    assert.equal(f.calls.length,0);
   }
 });
-test('signed attacker-supplied workflow coordinates are discarded',async()=>{
-  const a=harness(signed({...payload,tenantId:'attacker',runId:'attacker',
-    iteration:90,expectedStateVersion:42}));
-  assert.equal((await admitGithubPush(a.options)).code,'ACCEPTED');
-  assert.equal('tenantId' in a.calls[0],false);
-  assert.equal('expectedStateVersion' in a.calls[0],false);
+test('non-push event never calls database',async()=>{
+  const f=fixture(signed(payload,'ping'));
+  assert.equal((await admitGithubPush(f.config)).code,'IGNORED_EVENT');
+  assert.equal(f.calls.length,0);
 });
-test('same signed delivery is idempotent at backend boundary',async()=>{
-  const a=harness();
-  assert.equal((await admitGithubPush(a.options)).code,'ACCEPTED');
-  assert.equal((await admitGithubPush(a.options)).code,'DUPLICATE');
-  assert.equal(a.calls.length,2);
-});
-test('deleted branch and malformed identifiers fail closed',async()=>{
-  for(const event of [
-    {...payload,deleted:true}, {...payload,after:'INVALID'},
-    {...payload,ref:'refs/tags/tag'}, {...payload,repository:{id:0}},
-    {...payload,installation:{id:0}}
-  ]){
-    const a=harness(signed(event));
-    assert.equal((await admitGithubPush(a.options)).status,422);
-    assert.equal(a.calls.length,0);
+test('invalid delivery ID rejected after authenticated event',async()=>{
+  for(const id of ['','../x','x'.repeat(129)]){
+    const f=fixture(signed(payload,'push',id));
+    assert.equal((await admitGithubPush(f.config)).code,'BAD_DELIVERY_ID');
+    assert.equal(f.calls.length,0);
   }
 });
-test('backend error fails closed instead of claiming accepted',async()=>{
-  const a=harness(signed(),{admitVerifiedEvent:async()=>undefined});
-  await assert.rejects(admitGithubPush(a.options),/backend result/);
+test('invalid or oversized request rejected before storage',async()=>{
+  const f=fixture();
+  assert.equal((await admitGithubPush({...f.config,maxBytes:5})).status,413);
+  assert.equal((await admitGithubPush({...f.config,rawBody:Buffer.alloc(0)})).status,413);
+  assert.equal(f.calls.length,0);
 });
-test('HTTP end-to-end routes signed event to one backend admission',async()=>{
-  const a=harness();
+test('ill-formed but authenticated push rejected',async()=>{
+  const cases=[
+    {...payload,deleted:true},{...payload,after:'bad'},{...payload,ref:'refs/tags/v1'},
+    {...payload,repository:{id:0}},{...payload,installation:{id:Number.MAX_SAFE_INTEGER+1}},
+    {...payload,after:'b'.repeat(39)}, {...payload,ref:'refs/heads/../../other'}];
+  for(const invalid of cases){
+    const f=fixture(signed(invalid));
+    assert.equal((await admitGithubPush(f.config)).code,'BAD_PUSH');
+    assert.equal(f.calls.length,0);
+  }
+});
+test('signed payload cannot set tenant/run/expected state version',async()=>{
+  const f=fixture(signed({...payload,tenantId:'attacker',runId:'attacker',
+    expectedStateVersion:900,workflowId:'root'}));
+  assert.equal((await admitGithubPush(f.config)).code,'ACCEPTED');
+  assert.equal(f.calls.length,1);
+  assert.equal('tenantId' in f.calls[0],false);
+  assert.equal('runId' in f.calls[0],false);
+  assert.equal('expectedStateVersion' in f.calls[0],false);
+});
+test('durable duplicate and stale outcomes are returned unchanged',async()=>{
+  for(const [r,code,status] of [['DUPLICATE','DUPLICATE',200],
+    ['STALE','STALE_OR_UNRELATED',202]]){
+    const f=fixture(signed(),r);
+    assert.deepEqual(await admitGithubPush(f.config),{status,code});
+  }
+});
+test('invalid DB callback result fails closed',async()=>{
+  const f=fixture(signed(),null);
+  await assert.rejects(()=>admitGithubPush(f.config),/unexpected durable admission/);
+});
+test('requires an atomic callback; legacy split callbacks are not accepted',async()=>{
+  const f=fixture();
+  delete f.config.admitVerifiedEvent;
+  f.config.readExpected=async()=>({});
+  f.config.persistInbox=async()=>true;
+  await assert.rejects(()=>admitGithubPush(f.config),TypeError);
+});
+test('HTTP adapter ingests signed push and routes to one callback',async()=>{
+  const f=fixture();
   const server=createServer(createGithubWebhookHandler({
-    secret,admitVerifiedEvent:a.options.admitVerifiedEvent
+    secret,admitVerifiedEvent:f.config.admitVerifiedEvent
   }));
-  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
-  const root='http://127.0.0.1:'+server.address().port;
+  await new Promise(done=>server.listen(0,'127.0.0.1',done));
   try{
-    assert.equal((await fetch(root+'/wrong')).status,404);
-    const request=signed();
-    const res=await fetch(root+'/webhooks/github',{method:'POST',
-      headers:request.headers,body:request.rawBody});
-    assert.equal(res.status,202);assert.deepEqual(await res.json(),{code:'ACCEPTED'});
-    assert.equal(a.calls.length,1);
-  }finally{await new Promise(resolve=>server.close(resolve));}
+    const url='http://127.0.0.1:'+server.address().port+'/webhooks/github';
+    const notFound=await fetch(url);assert.equal(notFound.status,404);
+    const s=signed();
+    const r=await fetch(url,{method:'POST',headers:s.headers,body:s.rawBody});
+    assert.equal(r.status,202);assert.deepEqual(await r.json(),{code:'ACCEPTED'});
+    assert.equal(f.calls.length,1);
+  }finally{await new Promise((done,fail)=>server.close(e=>e?fail(e):done()));}
+});
+test('HTTP adapter returns 503 without leaking raw webhook or database errors',async()=>{
+  const server=createServer(createGithubWebhookHandler({
+    secret,admitVerifiedEvent:async()=>{throw Error('database-private-stack');}
+  }));
+  await new Promise(done=>server.listen(0,'127.0.0.1',done));
+  try{
+    const s=signed();
+    const r=await fetch('http://127.0.0.1:'+server.address().port+'/webhooks/github',{
+      method:'POST',headers:s.headers,body:s.rawBody});
+    assert.equal(r.status,503);
+    const body=await r.text();
+    assert.doesNotMatch(body,/database-private-stack/);
+    assert.deepEqual(JSON.parse(body),{code:'INGRESS_UNAVAILABLE'});
+  }finally{await new Promise((done,fail)=>server.close(e=>e?fail(e):done()));}
 });
