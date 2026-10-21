@@ -145,3 +145,27 @@ test('physical layout metadata is not externally writable or affected by mutated
   assert.deepEqual(s.get(h), row(1));
   s.dispose();
 });
+
+test('adversarial row getters are snapshotted before allocation; metadata cannot be shadowed', () => {
+  const s = new LayoutStore(schema, { layout: 'aos', capacity: 1 });
+  assert.throws(() => Object.defineProperty(s, 'capacity', { value: 999 }), TypeError);
+  assert.throws(() => Object.defineProperty(s, 'layout', { value: 'soa' }), TypeError);
+  let reads = 0;
+  const tricky = row(1);
+  Object.defineProperty(tricky, 'x', {
+    enumerable: true, get() { reads++; return reads === 1 ? 1.5 : NaN; }
+  });
+  const h = s.push(tricky);
+  assert.equal(reads, 1);
+  assert.equal(s.read(h, 'x'), 1.5);
+  let invalidReads = 0;
+  const invalid = row(2);
+  Object.defineProperty(invalid, 'x', {
+    enumerable: true, get() { invalidReads++; return NaN; }
+  });
+  assert.throws(() => s.push(invalid));
+  assert.equal(invalidReads, 1);
+  assert.equal(s.length, 1);
+  assert.deepEqual(s.get(h), row(1));
+  s.dispose();
+});
