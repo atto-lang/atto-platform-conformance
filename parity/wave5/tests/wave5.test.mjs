@@ -34,7 +34,7 @@ test('21 / quota, max block count and tiny zero-byte blocks charge resources',()
  const m=new ActorMemoryAuthority({maxActors:1,maxBlocksPerActor:2,maxTotalBytes:60});
  const a=m.createActor('a',60);m.allocate(a,'');m.allocate(a,'');
  assert.equal(m.stats(a).blocks,2);assert.throws(()=>m.allocate(a,''),/block count/);
- assert.throws(()=>m.createActor('b'),/capacity/);
+ assert.throws(()=>m.createActor('b',60),/capacity/);
 });
 test('21 / stale capabilities and handles never regain authority after actor reincarnation',()=>{
  const m=new ActorMemoryAuthority(),old=m.createActor('a'),h=m.allocate(old,1);

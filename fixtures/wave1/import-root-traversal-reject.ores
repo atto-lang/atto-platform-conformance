@@ -1,0 +1,4 @@
+import "+/../outside.ores";
+pub fnc main(): int {
+  return 42;
+}

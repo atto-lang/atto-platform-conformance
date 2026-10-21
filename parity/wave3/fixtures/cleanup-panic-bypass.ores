@@ -1,0 +1,9 @@
+pub fnc main(): void {
+  try {
+    panic Error("boom");
+  } catch (Error err) {
+    stdio.println("caught panic");
+  } finally {
+    stdio.println("cleanup");
+  }
+}

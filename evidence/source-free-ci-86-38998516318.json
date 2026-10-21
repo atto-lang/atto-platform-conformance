@@ -1,0 +1,74 @@
+{
+  "schema": "oreslang.source-free-ci-receipt.v1",
+  "classification": "SOURCE_FREE_CI_SECURITY_REGRESSIONS_ONLY",
+  "reviewedUtc": "2026-10-17",
+  "sourceFreeOnly": true,
+  "nativeCompilerExecuted": false,
+  "nativeGuestExecuted": false,
+  "nativeParityCertified": false,
+  "privateSourceExportAuthorized": false,
+  "carrier": {
+    "repository": "scintilla-run-test/gleam-runner-conformance",
+    "repositoryId": 1323598260,
+    "visibility": "private",
+    "headCommitSha": "2019cb7895e1c098b3692916876c28d92add3185",
+    "headTreeSha": "4f5b6938dac0041c15fd71a613717f4c2ae7edde"
+  },
+  "run": {
+    "id": 38998516318,
+    "attempt": 1,
+    "event": "push",
+    "conclusion": "success",
+    "jobId": 117296273366,
+    "jobName": "source-free-86",
+    "executionStep": "Execute 86 source-free adversarial regressions three complete rounds",
+    "executionStepConclusion": "success"
+  },
+  "results": {
+    "testsPerRound": 86,
+    "rounds": 3,
+    "expectedTotal": 258
+  },
+  "artifact": {
+    "id": 12088435863,
+    "name": "oreslang-sourcefree-86-38998516318-1",
+    "sha256": "2728c4a06f228235b6c3e28c962ebab08252bfcd960eecbac8c87627066a1866",
+    "containedReport": "86-parity.json"
+  },
+  "pinnedGitBlobs": {
+    "scripts/verify_ci_run.py": "26868f6f8e423a038e32ed56ef09da7fcdb43b52",
+    "scripts/test_verify_ci_run.py": "9d268ba9fa019fa96d3439b64dee0b9fadfdf0cf",
+    ".github/workflows/ci-run-evidence-contract.yml": "3af5567b01dfa757b52c31bd6da09711bd780593"
+  },
+  "backendPrHeads": {
+    "oreslang-source.java": {
+      "pr": 1112,
+      "sha": "9b303de2ef3d96dea4f75129704c7201b00df2e0"
+    },
+    "oreslang-source.llvm": {
+      "pr": 495,
+      "sha": "5859c447ccd0c1235629ba4a4f8e113a113ae7b2"
+    },
+    "oreslang-source.net": {
+      "pr": 56,
+      "sha": "5630c28fdb21d6f5bb07b44c800c53ce8f6aef42"
+    },
+    "oreslang-source.wasm": {
+      "pr": 52,
+      "sha": "b1acffed5503df9c681cf2c910889ee199a96c4c"
+    },
+    "oreslang-source.forge": {
+      "pr": 50,
+      "sha": "a56358127e03c37083c5061b7cfaf6e8d662c594"
+    }
+  },
+  "parityScope": "After syncing Java's source-free 86 case to LLVM/.NET/WASM/Forge, three file blobs match independently at all five draft PR heads. No native compiler/guest code was tested by this carrier.",
+  "priorReceipt": "evidence/source-free-ci-77-38996750516.json",
+  "blockers": [
+    "oreslang-platform-conformance#22",
+    "oreslang-source.java#904",
+    "oreslang-source.java#962",
+    "zero-step source-org Actions",
+    "five independently authenticated native guest artifacts pending"
+  ]
+}
