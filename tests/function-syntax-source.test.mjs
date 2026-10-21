@@ -10,12 +10,12 @@ const manifest=JSON.parse(await readFile(join(dir,"manifest.json"),"utf8"));
 
 test("function syntax corpus keeps explicit staged backend/tool expectations",()=>{
   assert.equal(manifest.schemaVersion,1);
-  assert.equal(manifest.scope,"end-delimited-function-syntax-v1");
+  assert.equal(manifest.scope,"end-delimited-function-syntax-v2");
   assert.equal(manifest.cases.length,1);
   const c=manifest.cases[0];
   assert.equal(c.id,"end-delimited-roundtrip");
   assert.equal(c.file,"end-delimited-roundtrip.ores");
-  assert.equal(c.sourceGitBlobSha1,"c91a244cb99c1aaa74b3abadf9b99d8e1f3aea86");
+  assert.equal(c.sourceGitBlobSha1,"512597025b9890efa34c1b59cc4f27524edcbeda");
   assert.deepEqual(c.expectations,{
     java:"accept-and-typecheck",
     formatter:"format-idempotently",
@@ -24,7 +24,15 @@ test("function syntax corpus keeps explicit staged backend/tool expectations",()
   assert.deepEqual(c.confirmedBackends,[]);
   assert.deepEqual(c.pendingBackends,["java","formatter","llvm"]);
   assert.equal(manifest.sourceFreeReferenceEvidence.runId,39443132577);
+  assert.equal(manifest.sourceFreeReferenceEvidence.covers,"v1-as-separator-only");
   assert.match(manifest.sourceFreeReferenceEvidence.result,/^21\/21 independent syntax-reference tests passed$/);
+  assert.equal(manifest.v2SourceFreeReferenceEvidence.repository,"zed-pkg/zed-lambdas");
+  assert.equal(manifest.v2SourceFreeReferenceEvidence.pullRequest,25);
+  assert.equal(manifest.v2SourceFreeReferenceEvidence.runId,39538775578);
+  assert.equal(manifest.v2SourceFreeReferenceEvidence.jobId,119021472417);
+  assert.equal(manifest.v2SourceFreeReferenceEvidence.privateSourceBytes,0);
+  assert.equal(manifest.v2SourceFreeReferenceEvidence.covers,"hardened-v2-18-vectors");
+  assert.match(manifest.v2SourceFreeReferenceEvidence.marker,/accepted=8 rejected=10 private_source_bytes=0$/);
   assert.match(manifest.notes,/No cross-org private compiler source export is authorized/i);
 });
 
