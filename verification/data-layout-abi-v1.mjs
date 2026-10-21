@@ -8,6 +8,9 @@ const TYPES = Object.freeze({
   char32:{size:4n,align:4n}, ref32:{size:4n,align:4n},
   i64:{size:8n,align:8n}, u64:{size:8n,align:8n}, f64:{size:8n,align:8n},
 });
+// Immutability must reach nested widths: exported TYPES is used as the source
+// of truth for later ABI geometry, not just a display-only manifest.
+for (const shape of Object.values(TYPES)) Object.freeze(shape);
 
 const U32_MAX = 0xffff_ffffn;
 const REF_ALIGN = 8n;
@@ -136,9 +139,19 @@ function computeLayoutAbi({layout, fields, capacity, tileWidth, groups}) {
     return Object.freeze({segment:place.segment,byteOffset:rowIndex*place.rowStride+place.offset});
   };
 
+  // Do not publish mutable nested layout metadata. In particular a caller
+  // must not be able to retarget address(row, field) after the compiler/verifier
+  // has accepted the physical layout, or mutate SoAoS group memberships.
+  for (const place of Object.values(locator)) Object.freeze(place);
+  const frozenSegments = Object.freeze(segments.map(segment => {
+    const immutable = segment.fields === undefined
+      ? {...segment}
+      : {...segment, fields:Object.freeze([...segment.fields])};
+    return Object.freeze(immutable);
+  }));
   return Object.freeze({
-    version:1,layout,capacity:count,fields:normalized,
-    segments:Object.freeze(segments.map(Object.freeze)),locator:Object.freeze(locator),address
+    version:1,layout,capacity:count,fields:Object.freeze(normalized),
+    segments:frozenSegments,locator:Object.freeze(locator),address
   });
 }
 
