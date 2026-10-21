@@ -106,6 +106,7 @@ export class LayoutStore {
   #schema; #types; #geometry; #data; #view; #domain = Symbol('layout-domain');
   #issued = new WeakSet(); #slots = []; #rowSlots = []; #free = [];
   #loans = new Map(); #closed = false; #maxBytes; #width; #groups; #layout; #capacity;
+  #evaluatingInput = false;
   constructor(schema, { layout = 'soa', capacity = 0, width = 8, groups = undefined,
                         maxBytes = 64 * 1024 * 1024 } = {}) {
     if (!Array.isArray(schema) || schema.length === 0) throw new TypeError('nonempty schema required');
@@ -122,7 +123,7 @@ export class LayoutStore {
     this.#maxBytes = maxBytes; this.#width = width;
     this.#groups = groups?.map(group => [...group]);
     this.#layout = layout;
-    this.#geometry = makeGeometry(this.#schema, layout, capacity, width, groups);
+    this.#geometry = makeGeometry(this.#schema, layout, capacity, width, this.#groups);
     this.#checkQuota(this.#geometry.bytes);
     this.#data = new ArrayBuffer(this.#geometry.bytes);
     this.#view = new DataView(this.#data);
@@ -133,7 +134,18 @@ export class LayoutStore {
   get capacity() { return this.#capacity; }
   get length() { return this.#rowSlots.length; }
   get byteLength() { return this.#data.byteLength; }
-  #requireOpen() { if (this.#closed) throw new Error('retired layout store'); }
+  #requireOpen() {
+    if (this.#evaluatingInput) throw new Error('reentrant store access during input validation');
+    if (this.#closed) throw new Error('retired layout store');
+  }
+  // User getters, proxies and iterators are untrusted. They may not re-enter any
+  // public store operation while we prepare an append, conversion, or borrow.
+  #evaluateInput(fn) {
+    if (this.#evaluatingInput) throw new Error('reentrant store input');
+    this.#evaluatingInput = true;
+    try { return fn(); }
+    finally { this.#evaluatingInput = false; }
+  }
   #checkQuota(bytes) {
     if (bytes > this.#maxBytes || bytes > 0x7fffffff) throw new RangeError('layout memory quota exceeded');
   }
@@ -203,7 +215,7 @@ export class LayoutStore {
   }
   push(row) {
     this.#requireOpen(); this.#requireNoLoans();
-    const prepared = this.#checkRow(row);
+    const prepared = this.#evaluateInput(() => this.#checkRow(row));
     if (this.length === this.capacity) this.reserve(Math.max(1, this.capacity * 2));
     const index = this.length, slot = this.#free.pop() ?? this.#slots.length;
     if (slot === this.#slots.length) this.#slots.push({ index, generation: 1, live: true });
@@ -216,7 +228,10 @@ export class LayoutStore {
     const index = this.#validHandle(handle), result = {};
     for (const f of this.#schema) {
       this.#checkConflict(f.name, false);
-      result[f.name] = this.#readIndex(index, f.name);
+      Object.defineProperty(result, f.name, {
+        value: this.#readIndex(index, f.name), enumerable: true,
+        configurable: true, writable: true
+      });
     }
     return result;
   }
@@ -232,8 +247,13 @@ export class LayoutStore {
     const index = this.#validHandle(handle); this.#field(field);
     return this.#geometry.position(index, field);
   }
-  borrow(field, { mutable = false } = {}) {
+  borrow(field, options = {}) {
     this.#requireOpen(); this.#field(field);
+    const mutable = this.#evaluateInput(() => {
+      if (!options || typeof options !== 'object') throw new TypeError('borrow options must be an object');
+      return options.mutable ?? false;
+    });
+    if (typeof mutable !== 'boolean') throw new TypeError('mutable loan flag must be boolean');
     const prev = this.#loans.get(field) ?? { readers: 0, writers: 0 };
     if (prev.writers || (mutable && prev.readers)) throw new Error('conflicting field loan');
     mutable ? prev.writers++ : prev.readers++;
@@ -272,9 +292,17 @@ export class LayoutStore {
     if (entry.generation === Number.MAX_SAFE_INTEGER) entry.generation = 0;
     else { entry.generation++; this.#free.push(removedSlot); }
   }
-  convert(layout, { width = this.#width, groups = this.#groups } = {}) {
+  convert(layout, options = {}) {
     this.#requireOpen(); this.#requireNoLoans();
-    const next = makeGeometry(this.#schema, layout, this.capacity, width, groups);
+    const prepared = this.#evaluateInput(() => {
+      if (!options || typeof options !== 'object') throw new TypeError('layout options must be an object');
+      const width = options.width ?? this.#width;
+      const inputGroups = options.groups ?? this.#groups;
+      const groups = inputGroups?.map(group => [...group]);
+      const next = makeGeometry(this.#schema, layout, this.capacity, width, groups);
+      return { width, groups, next };
+    });
+    const { width, groups, next } = prepared;
     this.#checkQuota(next.bytes + this.#data.byteLength);
     const memory = new ArrayBuffer(next.bytes), view = new DataView(memory);
     for (let row = 0; row < this.length; row++) {
@@ -286,9 +314,10 @@ export class LayoutStore {
     new Uint8Array(this.#data).fill(0);
     this.#data = memory; this.#view = view; this.#geometry = next;
     this.#layout = layout; this.#width = width;
-    this.#groups = groups?.map(group => [...group]);
+    this.#groups = groups;
   }
   dispose() {
+    if (this.#evaluatingInput) throw new Error('reentrant store disposal during input validation');
     if (this.#closed) return;
     this.#requireNoLoans();
     new Uint8Array(this.#data).fill(0);
