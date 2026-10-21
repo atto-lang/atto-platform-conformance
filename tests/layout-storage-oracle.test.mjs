@@ -169,3 +169,75 @@ test('adversarial row getters are snapshotted before allocation; metadata cannot
   assert.deepEqual(s.get(h), row(1));
   s.dispose();
 });
+
+test('untrusted row accessors cannot retire, grow or mutate store mid-append', () => {
+  const s = new LayoutStore([{name:'x',type:'f64'}], {capacity:2});
+  const observations = [];
+  const row = Object.defineProperty({}, 'x', {enumerable:true, get() {
+    for (const action of [
+      () => s.dispose(),
+      () => s.push({x:99}),
+      () => s.reserve(100),
+      () => s.convert('aos'),
+      () => s.borrow('x')
+    ]) {
+      assert.throws(action, /reentrant/);
+      observations.push(true);
+    }
+    return 7;
+  }});
+  const handle = s.push(row);
+  assert.equal(observations.length, 5);
+  assert.equal(s.length, 1);
+  assert.deepEqual(s.get(handle), {x:7});
+  const throwsRow = Object.defineProperty({}, 'x', {enumerable:true, get() {throw new Error('poisoned getter')}});
+  assert.throws(() => s.push(throwsRow), /poisoned getter/);
+  assert.equal(s.length, 1);
+  assert.deepEqual(s.get(handle), {x:7});
+  s.dispose();
+});
+
+test('prototype-named numeric fields survive round-trip without prototype mutation', () => {
+  for (const layout of ['aos','soa','aosoa','soaos']) {
+    const field = [{name:'__proto__',type:'i32'}];
+    const opts = layout === 'soaos' ? {groups:[['__proto__']]} : {width:4};
+    const s = new LayoutStore(field, {layout, ...opts, capacity:2});
+    const input = Object.create(null);
+    Object.defineProperty(input, '__proto__', {value:7, enumerable:true});
+    const h = s.push(input);
+    const observed = s.get(h);
+    assert.ok(Object.hasOwn(observed, '__proto__'));
+    assert.equal(observed.__proto__, 7);
+    assert.equal(Object.getPrototypeOf(observed), Object.prototype);
+    s.dispose();
+  }
+});
+
+test('borrow options validate boolean and reject reentrant proxy getters', () => {
+  const s = new LayoutStore([{name:'x',type:'f64'}]);
+  const h = s.push({x:2});
+  assert.throws(() => s.borrow('x',{mutable:'false'}), /boolean/);
+  assert.throws(() => s.borrow('x',{mutable:1}), /boolean/);
+  const opts = {get mutable() {
+    assert.throws(() => s.dispose(), /reentrant/);
+    return true;
+  }};
+  const loan = s.borrow('x', opts);
+  loan.write(h, 5);
+  assert.equal(loan.read(h), 5);
+  loan.release();
+  s.dispose();
+});
+
+test('convert options cannot reenter store during layout calculation', () => {
+  const s = new LayoutStore([{name:'x',type:'f64'}], {capacity:4});
+  const h = s.push({x:3.5});
+  const options = {get groups() {
+    assert.throws(() => s.dispose(), /reentrant/);
+    assert.throws(() => s.write(h,'x',99), /reentrant/);
+    return [['x']];
+  }};
+  s.convert('soaos',options);
+  assert.deepEqual(s.get(h),{x:3.5});
+  s.dispose();
+});
