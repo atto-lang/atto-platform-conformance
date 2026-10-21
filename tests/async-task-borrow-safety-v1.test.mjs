@@ -6,7 +6,7 @@ const contract = await readFile(new URL('../docs/ASYNC_TASK_BORROW_SAFETY_V1.md'
 const cases = JSON.parse(await readFile(new URL('../fixtures/async-task-borrow-safety-v1/cases.json', import.meta.url)));
 
 test('async Task borrow-safety v1 contract is pinned', () => {
-  assert.equal(Object.keys(cases).length, 18);
+  assert.equal(Object.keys(cases).length, 20);
   for (const phrase of [
     'Submission—not `await`—is the ownership-transfer boundary',
     'Unknown AST forms fail closed',
@@ -39,7 +39,28 @@ test('matrix covers concurrency and lifetime edge cases', () => {
     'borrow-across-await-reject',
     'gpu-borrow-without-fence-reject',
     'borrowed-future-payload-reject',
-    'mutex-capability-capture-reject',
-    'non-send-wrapper-launder-reject'
+    'rc-owned-capture-reject',
+    'non-send-wrapper-launder-reject',
+    'mutex-owned-capture-ok',
+    'send-wrapper-capture-ok'
   ]) assert.ok(cases[name], 'missing case: ' + name);
+});
+
+
+test('fixtures are self-contained for helper nominal types', () => {
+  for (const [name, source] of Object.entries(cases)) {
+    if (/\bBox\b/.test(source)) {
+      assert.match(source, /define class Box\b/, name + ': Box must be defined');
+    }
+    if (/\bBuffer\b/.test(source)) {
+      assert.match(source, /define class Buffer\b/, name + ': Buffer must be defined');
+    }
+  }
+});
+
+test('auto-trait fixtures distinguish Send synchronization from non-Send Rc', () => {
+  assert.match(cases['mutex-owned-capture-ok'], /Mutex<int>/);
+  assert.match(cases['send-wrapper-capture-ok'], /Mutex<int>/);
+  assert.match(cases['rc-owned-capture-reject'], /Rc<int>/);
+  assert.match(cases['non-send-wrapper-launder-reject'], /Rc<int>/);
 });
