@@ -135,6 +135,31 @@ test('published ABI geometry cannot be mutated after verification', () => {
   }
 });
 
+test('physical byte quotas include SoAoS strides and AoSoA padded lanes', () => {
+  const soa = {layout:'soa',fields,capacity:3};
+  const admitted = computeLayoutAbi({...soa,maxSegmentBytes:24n,maxTotalBytes:51n});
+  assert.equal(admitted.segments.reduce((sum,s) => sum+s.bytes,0n),51n);
+  assert.throws(() => computeLayoutAbi({...soa,maxSegmentBytes:23n}),RangeError);
+  assert.throws(() => computeLayoutAbi({...soa,maxTotalBytes:50n}),RangeError);
+
+  const tiled = {layout:'aosoa',fields,capacity:5,tileWidth:4};
+  assert.equal(computeLayoutAbi({...tiled,maxTotalBytes:144n}).segments[0].bytes,144n);
+  assert.throws(() => computeLayoutAbi({...tiled,maxTotalBytes:143n}),RangeError);
+  assert.throws(() => computeLayoutAbi({...tiled,maxSegmentBytes:143n}),RangeError);
+
+  const groups = {layout:'soaos',fields,capacity:3,
+    groups:[['id','flag'],['x','next']]};
+  assert.deepEqual(computeLayoutAbi({...groups,maxTotalBytes:72n})
+    .segments.map(s => s.bytes),[24n,48n]);
+  assert.throws(() => computeLayoutAbi({...groups,maxTotalBytes:71n}),RangeError);
+
+  const empty = computeLayoutAbi({layout:'soa',fields,capacity:0,maxTotalBytes:0n});
+  assert.equal(empty.segments.reduce((sum,s) => sum+s.bytes,0n),0n);
+  for (const badLimit of [-1n,0,Number.MAX_SAFE_INTEGER,null]) {
+    assert.throws(() => computeLayoutAbi({...soa,maxTotalBytes:badLimit}),RangeError);
+  }
+});
+
 test('compressed32 is unsigned, null-reserving, aligned and bounds checked', () => {
   assert.equal(MAX_COMPRESSED32_OFFSET,34359738352n);
   assert.equal(MAX_COMPRESSED32_SPAN,34359738360n);
