@@ -96,7 +96,7 @@ class FourLayoutOracle {
     this.#ensureLive(); this.#noMutationLeases();
     if (this.count >= this.#g.capacity) throw new RangeError("store capacity exhausted");
     if (!record || Object.keys(record).length !== this.#g.fields.length ||
-        this.#g.fields.some(f => !Object.hasOwn(record, f) || typeof record[f] !== "number"))
+        this.#g.fields.some(f => !Object.hasOwn(record, f)))
       throw new TypeError("record schema mismatch");
     // Snapshot potentially effectful getters before reserving an ID or mutating bytes.
     // Failed field evaluation must not consume a slot or partially publish a row.
