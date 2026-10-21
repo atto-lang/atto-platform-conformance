@@ -10,7 +10,7 @@ const manifest=JSON.parse(await readFile(join(dir,"manifest.json"),"utf8"));
 
 test("function syntax corpus keeps explicit staged backend/tool expectations",()=>{
   assert.equal(manifest.schemaVersion,1);
-  assert.equal(manifest.scope,"end-delimited-function-syntax-v2");
+  assert.equal(manifest.scope,"end-delimited-function-syntax-v2.1");
   assert.equal(manifest.cases.length,1);
   const c=manifest.cases[0];
   assert.equal(c.id,"end-delimited-roundtrip");
@@ -31,8 +31,10 @@ test("function syntax corpus keeps explicit staged backend/tool expectations",()
   assert.equal(manifest.v2SourceFreeReferenceEvidence.runId,39541133296);
   assert.equal(manifest.v2SourceFreeReferenceEvidence.jobId,119028888173);
   assert.equal(manifest.v2SourceFreeReferenceEvidence.privateSourceBytes,0);
-  assert.equal(manifest.v2SourceFreeReferenceEvidence.covers,"full-type-v2-23-vectors");
+  assert.equal(manifest.v2SourceFreeReferenceEvidence.covers,"full-type-v2-core-23-vectors");
   assert.match(manifest.v2SourceFreeReferenceEvidence.marker,/accepted=13 rejected=10 private_source_bytes=0$/);
+  assert.equal(manifest.referenceVectors.length,31);
+  assert.match(manifest.notes,/8 v2\.1 hardening vectors require fresh independent evidence/i);
   assert.match(manifest.notes,/No cross-org private compiler source export is authorized/i);
 });
 
