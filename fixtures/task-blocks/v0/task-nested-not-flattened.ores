@@ -1,0 +1,8 @@
+pub fnc main(): void {
+  let Task<Task<int>> outer = (async task |int x| -> task {
+    return x;
+  })(5);
+  let Task<int> inner = await outer;
+  let int answer = await inner;
+  return;
+}

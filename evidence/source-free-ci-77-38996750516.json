@@ -1,0 +1,73 @@
+{
+  "schema": "oreslang.source-free-ci-receipt.v1",
+  "classification": "SOURCE_FREE_CI_SECURITY_REGRESSIONS_ONLY",
+  "reviewedUtc": "2026-10-17",
+  "sourceFreeOnly": true,
+  "nativeCompilerExecuted": false,
+  "nativeGuestExecuted": false,
+  "nativeParityCertified": false,
+  "privateSourceExportAuthorized": false,
+  "carrier": {
+    "repository": "scintilla-run-test/gleam-runner-conformance",
+    "repositoryId": 1323598260,
+    "visibility": "private",
+    "headCommitSha": "cb37064568d13cd2b051940d01f148a5a13d1b07",
+    "headTreeSha": "b73b0af44ef5c1ba60d5186901f213bfaa7bd5ad"
+  },
+  "run": {
+    "id": 38996750516,
+    "attempt": 1,
+    "event": "push",
+    "conclusion": "success",
+    "jobId": 117290889613,
+    "jobName": "source-free-77",
+    "executionStep": "Execute 77 source-free adversarial regressions three complete rounds",
+    "executionStepConclusion": "success"
+  },
+  "results": {
+    "testsPerRound": 77,
+    "rounds": 3,
+    "expectedTotal": 231
+  },
+  "artifact": {
+    "id": 12087306517,
+    "name": "oreslang-sourcefree-77-38996750516-1",
+    "sha256": "f6f2f42fbb614ca5f7b9b5defa5e6eace150ffeeb29be268059b9a93efcea901",
+    "containedReport": "77-parity.json"
+  },
+  "pinnedGitBlobs": {
+    "scripts/verify_ci_run.py": "de7b3921a66c32f50115ee9933ef4e391ec34f8f",
+    "scripts/test_verify_ci_run.py": "b73b3c06da3170294b5dfb589ba2131af217d268",
+    ".github/workflows/ci-run-evidence-contract.yml": "36e375543b44b6c2cab3a1705f4a08a2dd40c9eb"
+  },
+  "backendPrHeads": {
+    "oreslang-source.java": {
+      "pr": 1112,
+      "sha": "863fcfa45bfbe010eba00bff34ae25831e6aacd1"
+    },
+    "oreslang-source.llvm": {
+      "pr": 495,
+      "sha": "4148a934fc3b56c15048930503ab5ab4615ce4fb"
+    },
+    "oreslang-source.net": {
+      "pr": 56,
+      "sha": "a31dee81d1b5bda3e9000cc65c4e59c11e5d8da5"
+    },
+    "oreslang-source.wasm": {
+      "pr": 52,
+      "sha": "d9e421e0a8f9a1d3677b67d1b391cf6f28709d5a"
+    },
+    "oreslang-source.forge": {
+      "pr": 50,
+      "sha": "379588c280823d9d2fcf2a5625fb69065d3b8d33"
+    }
+  },
+  "parityScope": "Three Git blobs identical across five final source-verifier PR heads after receipt-only documentation commits; 15 path lookups were completed at the immediately preceding heads, and the docs-only commits do not modify any pinned paths. Not full compiler/runtime parity.",
+  "blockers": [
+    "oreslang-platform-conformance#22",
+    "oreslang-source.java#904",
+    "oreslang-source.java#962",
+    "source-org zero-step CI",
+    "five missing independently authenticated native guest artifacts"
+  ]
+}
