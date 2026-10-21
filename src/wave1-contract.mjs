@@ -1,4 +1,4 @@
-+import {readFile, lstat} from 'node:fs/promises';
+import {readFile, lstat} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {resolve, dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
