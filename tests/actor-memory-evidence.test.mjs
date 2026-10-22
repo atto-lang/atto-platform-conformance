@@ -40,3 +40,16 @@ test("reject malformed identities and unknown fixture IDs", () => {
 test("unsupported target is explicit", () => {
   const r=valid(); r.supported=false; assert.equal(classify(r),"UNSUPPORTED");
 });
+
+test("synthetic reports with empty steps never imply real execution", () => {
+  const r=valid(); r.synthetic=true; r.steps=[];
+  assert.equal(classify(r),"UNOBSERVED");
+});
+test("one step cannot establish both compilation and execution", () => {
+  const r=valid(); r.steps=["execute guest"];
+  assert.equal(classify(r),"UNOBSERVED");
+});
+test("excessive steps reject bounded evidence", () => {
+  const r=valid(); r.steps=Array.from({length:101}, (_,i)=>"step "+i);
+  assert.throws(()=>classify(r),/too many steps/);
+});
