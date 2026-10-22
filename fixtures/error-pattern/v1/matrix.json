@@ -1,0 +1,1527 @@
+{
+  "schemaVersion": 1,
+  "scope": "error-pattern-open-nominal-v1",
+  "totalCases": 100,
+  "categoryCounts": {
+    "order": 20,
+    "guards": 10,
+    "open": 15,
+    "fallback": 15,
+    "result": 20,
+    "interface": 10,
+    "complement": 10
+  },
+  "reference": {
+    "javaDraftPr": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1909",
+    "javaSourceBranch": "audit/error-pattern-100-case-matrix-20261022",
+    "errorTaxonomyDraftPr": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/811",
+    "crossBackendParityClaim": false
+  },
+  "notes": [
+    "Fixture sources intentionally use local Error-like types, not the unmerged std/error catalog.",
+    "Compiler acceptance must be separately demonstrated for each backend on exact source and compiler revision.",
+    "Generated fixture materialization and manifest validation are not compiler execution evidence."
+  ],
+  "cases": [
+    {
+      "id": "order/child-before-root/FileNotFoundError",
+      "category": "order",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on FileNotFoundError specific -> { return 1; }\n    on Error other -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "order/child-before-wildcard/FileNotFoundError",
+      "category": "order",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on FileNotFoundError specific -> { return 1; }\n    on _ -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "order/root-shadows-child/FileNotFoundError",
+      "category": "order",
+      "expect": "reject",
+      "diagnosticContains": "unreachable match arm",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on Error other -> { return 1; }\n    on FileNotFoundError specific -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "order/parent-shadows-child/FileNotFoundError",
+      "category": "order",
+      "expect": "reject",
+      "diagnosticContains": "unreachable match arm",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on IOError ancestor -> { return 1; }\n    on FileNotFoundError specific -> { return 2; }\n    on _ -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "order/child-before-root/NetworkError",
+      "category": "order",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on NetworkError specific -> { return 1; }\n    on Error other -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "order/child-before-wildcard/NetworkError",
+      "category": "order",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on NetworkError specific -> { return 1; }\n    on _ -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "order/root-shadows-child/NetworkError",
+      "category": "order",
+      "expect": "reject",
+      "diagnosticContains": "unreachable match arm",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on Error other -> { return 1; }\n    on NetworkError specific -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "order/parent-shadows-child/NetworkError",
+      "category": "order",
+      "expect": "reject",
+      "diagnosticContains": "unreachable match arm",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on IOError ancestor -> { return 1; }\n    on NetworkError specific -> { return 2; }\n    on _ -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "order/child-before-root/IOError",
+      "category": "order",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on IOError specific -> { return 1; }\n    on Error other -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "order/child-before-wildcard/IOError",
+      "category": "order",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on IOError specific -> { return 1; }\n    on _ -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "order/root-shadows-child/IOError",
+      "category": "order",
+      "expect": "reject",
+      "diagnosticContains": "unreachable match arm",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on Error other -> { return 1; }\n    on IOError specific -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "order/parent-shadows-child/IOError",
+      "category": "order",
+      "expect": "reject",
+      "diagnosticContains": "unreachable match arm",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on Error ancestor -> { return 1; }\n    on IOError specific -> { return 2; }\n    on _ -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "order/child-before-root/ArgumentError",
+      "category": "order",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on ArgumentError specific -> { return 1; }\n    on Error other -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "order/child-before-wildcard/ArgumentError",
+      "category": "order",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on ArgumentError specific -> { return 1; }\n    on _ -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "order/root-shadows-child/ArgumentError",
+      "category": "order",
+      "expect": "reject",
+      "diagnosticContains": "unreachable match arm",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on Error other -> { return 1; }\n    on ArgumentError specific -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "order/parent-shadows-child/ArgumentError",
+      "category": "order",
+      "expect": "reject",
+      "diagnosticContains": "unreachable match arm",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on Error ancestor -> { return 1; }\n    on ArgumentError specific -> { return 2; }\n    on _ -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "order/child-before-root/UserError",
+      "category": "order",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on UserError specific -> { return 1; }\n    on Error other -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "order/child-before-wildcard/UserError",
+      "category": "order",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on UserError specific -> { return 1; }\n    on _ -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "order/root-shadows-child/UserError",
+      "category": "order",
+      "expect": "reject",
+      "diagnosticContains": "unreachable match arm",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on Error other -> { return 1; }\n    on UserError specific -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "order/parent-shadows-child/UserError",
+      "category": "order",
+      "expect": "reject",
+      "diagnosticContains": "unreachable match arm",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on Error ancestor -> { return 1; }\n    on UserError specific -> { return 2; }\n    on _ -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "guards/ancestor-true/FileNotFoundError",
+      "category": "guards",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on IOError conditional when true -> { return 1; }\n    on FileNotFoundError specific -> { return 2; }\n    on Error rest -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "guards/ancestor-false/FileNotFoundError",
+      "category": "guards",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on IOError conditional when false -> { return 1; }\n    on FileNotFoundError specific -> { return 2; }\n    on Error rest -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "guards/ancestor-true/NetworkError",
+      "category": "guards",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on IOError conditional when true -> { return 1; }\n    on NetworkError specific -> { return 2; }\n    on Error rest -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "guards/ancestor-false/NetworkError",
+      "category": "guards",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on IOError conditional when false -> { return 1; }\n    on NetworkError specific -> { return 2; }\n    on Error rest -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "guards/ancestor-true/IOError",
+      "category": "guards",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on Error conditional when true -> { return 1; }\n    on IOError specific -> { return 2; }\n    on Error rest -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "guards/ancestor-false/IOError",
+      "category": "guards",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on Error conditional when false -> { return 1; }\n    on IOError specific -> { return 2; }\n    on Error rest -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "guards/ancestor-true/ArgumentError",
+      "category": "guards",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on Error conditional when true -> { return 1; }\n    on ArgumentError specific -> { return 2; }\n    on Error rest -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "guards/ancestor-false/ArgumentError",
+      "category": "guards",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on Error conditional when false -> { return 1; }\n    on ArgumentError specific -> { return 2; }\n    on Error rest -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "guards/ancestor-true/UserError",
+      "category": "guards",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on Error conditional when true -> { return 1; }\n    on UserError specific -> { return 2; }\n    on Error rest -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "guards/ancestor-false/UserError",
+      "category": "guards",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on Error conditional when false -> { return 1; }\n    on UserError specific -> { return 2; }\n    on Error rest -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "open/one-leaf/FileNotFoundError",
+      "category": "open",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on FileNotFoundError specific -> { return 1; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "open/two-branches/FileNotFoundError",
+      "category": "open",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on FileNotFoundError specific -> { return 1; }\n    on NetworkError sibling -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "open/three-branches/FileNotFoundError",
+      "category": "open",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on FileNotFoundError specific -> { return 1; }\n    on NetworkError sibling1 -> { return 2; }\n    on ArgumentError sibling2 -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "open/one-leaf/NetworkError",
+      "category": "open",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on NetworkError specific -> { return 1; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "open/two-branches/NetworkError",
+      "category": "open",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on NetworkError specific -> { return 1; }\n    on FileNotFoundError sibling -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "open/three-branches/NetworkError",
+      "category": "open",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on NetworkError specific -> { return 1; }\n    on FileNotFoundError sibling1 -> { return 2; }\n    on UserError sibling2 -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "open/one-leaf/IOError",
+      "category": "open",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on IOError specific -> { return 1; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "open/two-branches/IOError",
+      "category": "open",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on IOError specific -> { return 1; }\n    on ArgumentError sibling -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "open/three-branches/IOError",
+      "category": "open",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on IOError specific -> { return 1; }\n    on ArgumentError sibling1 -> { return 2; }\n    on UserError sibling2 -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "open/one-leaf/ArgumentError",
+      "category": "open",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on ArgumentError specific -> { return 1; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "open/two-branches/ArgumentError",
+      "category": "open",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on ArgumentError specific -> { return 1; }\n    on IOError sibling -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "open/three-branches/ArgumentError",
+      "category": "open",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on ArgumentError specific -> { return 1; }\n    on IOError sibling1 -> { return 2; }\n    on UserError sibling2 -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "open/one-leaf/UserError",
+      "category": "open",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on UserError specific -> { return 1; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "open/two-branches/UserError",
+      "category": "open",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on UserError specific -> { return 1; }\n    on IOError sibling -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "open/three-branches/UserError",
+      "category": "open",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on UserError specific -> { return 1; }\n    on IOError sibling1 -> { return 2; }\n    on ArgumentError sibling2 -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "fallback/root/FileNotFoundError",
+      "category": "fallback",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on FileNotFoundError specific -> { return 1; }\n    on Error remaining -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "fallback/wildcard/FileNotFoundError",
+      "category": "fallback",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on FileNotFoundError specific when false -> { return 1; }\n    on _ -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "fallback/binding/FileNotFoundError",
+      "category": "fallback",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on FileNotFoundError specific -> { return 1; }\n    on remaining -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "fallback/root/NetworkError",
+      "category": "fallback",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on NetworkError specific -> { return 1; }\n    on Error remaining -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "fallback/wildcard/NetworkError",
+      "category": "fallback",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on NetworkError specific when false -> { return 1; }\n    on _ -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "fallback/binding/NetworkError",
+      "category": "fallback",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on NetworkError specific -> { return 1; }\n    on remaining -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "fallback/root/IOError",
+      "category": "fallback",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on IOError specific -> { return 1; }\n    on Error remaining -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "fallback/wildcard/IOError",
+      "category": "fallback",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on IOError specific when false -> { return 1; }\n    on _ -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "fallback/binding/IOError",
+      "category": "fallback",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on IOError specific -> { return 1; }\n    on remaining -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "fallback/root/ArgumentError",
+      "category": "fallback",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on ArgumentError specific -> { return 1; }\n    on Error remaining -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "fallback/wildcard/ArgumentError",
+      "category": "fallback",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on ArgumentError specific when false -> { return 1; }\n    on _ -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "fallback/binding/ArgumentError",
+      "category": "fallback",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on ArgumentError specific -> { return 1; }\n    on remaining -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "fallback/root/UserError",
+      "category": "fallback",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on UserError specific -> { return 1; }\n    on Error remaining -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "fallback/wildcard/UserError",
+      "category": "fallback",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on UserError specific when false -> { return 1; }\n    on _ -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "fallback/binding/UserError",
+      "category": "fallback",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on UserError specific -> { return 1; }\n    on remaining -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "result/ok-leaf-and-root/FileNotFoundError",
+      "category": "result",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(FileNotFoundError specific) -> { return 2; }\n    on Err(Error remaining) -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "result/ok-and-root/FileNotFoundError",
+      "category": "result",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(FileNotFoundError specific) when false -> { return 2; }\n    on Err(Error remaining) -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "result/missing-other-errors/FileNotFoundError",
+      "category": "result",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(FileNotFoundError specific) -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "result/missing-ok/FileNotFoundError",
+      "category": "result",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Err(FileNotFoundError specific) -> { return 1; }\n    on Err(Error remaining) -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "result/ok-leaf-and-root/NetworkError",
+      "category": "result",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(NetworkError specific) -> { return 2; }\n    on Err(Error remaining) -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "result/ok-and-root/NetworkError",
+      "category": "result",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(NetworkError specific) when false -> { return 2; }\n    on Err(Error remaining) -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "result/missing-other-errors/NetworkError",
+      "category": "result",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(NetworkError specific) -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "result/missing-ok/NetworkError",
+      "category": "result",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Err(NetworkError specific) -> { return 1; }\n    on Err(Error remaining) -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "result/ok-leaf-and-root/IOError",
+      "category": "result",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(IOError specific) -> { return 2; }\n    on Err(Error remaining) -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "result/ok-and-root/IOError",
+      "category": "result",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(IOError specific) when false -> { return 2; }\n    on Err(Error remaining) -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "result/missing-other-errors/IOError",
+      "category": "result",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(IOError specific) -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "result/missing-ok/IOError",
+      "category": "result",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Err(IOError specific) -> { return 1; }\n    on Err(Error remaining) -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "result/ok-leaf-and-root/ArgumentError",
+      "category": "result",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(ArgumentError specific) -> { return 2; }\n    on Err(Error remaining) -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "result/ok-and-root/ArgumentError",
+      "category": "result",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(ArgumentError specific) when false -> { return 2; }\n    on Err(Error remaining) -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "result/missing-other-errors/ArgumentError",
+      "category": "result",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(ArgumentError specific) -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "result/missing-ok/ArgumentError",
+      "category": "result",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Err(ArgumentError specific) -> { return 1; }\n    on Err(Error remaining) -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "result/ok-leaf-and-root/UserError",
+      "category": "result",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(UserError specific) -> { return 2; }\n    on Err(Error remaining) -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "result/ok-and-root/UserError",
+      "category": "result",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(UserError specific) when false -> { return 2; }\n    on Err(Error remaining) -> { return 3; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "result/missing-other-errors/UserError",
+      "category": "result",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(UserError specific) -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "result/missing-ok/UserError",
+      "category": "result",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Err(UserError specific) -> { return 1; }\n    on Err(Error remaining) -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "interface/reject-shape-forgery/ShapeA",
+      "category": "interface",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define interface CodedError as\n  fnc code() => int;\nend\ndefine class Error implements CodedError as\n  pub code(): int { return 0; }\nend\ndefine class ShapeA as\n  pub code(): int { return 1; }\nend\ndefine class ShapeB as\n  pub code(): int { return 2; }\nend\ndefine class ShapeC as\n  pub code(): int { return 3; }\nend\ndefine class ShapeD as\n  pub code(): int { return 4; }\nend\ndefine class ShapeE as\n  pub code(): int { return 5; }\nend\n\nfnc classify(Error | ShapeA value): int {\n  match value over\n    on CodedError nominal -> { return 1; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "interface/explicit-impostor-case/ShapeA",
+      "category": "interface",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define interface CodedError as\n  fnc code() => int;\nend\ndefine class Error implements CodedError as\n  pub code(): int { return 0; }\nend\ndefine class ShapeA as\n  pub code(): int { return 1; }\nend\ndefine class ShapeB as\n  pub code(): int { return 2; }\nend\ndefine class ShapeC as\n  pub code(): int { return 3; }\nend\ndefine class ShapeD as\n  pub code(): int { return 4; }\nend\ndefine class ShapeE as\n  pub code(): int { return 5; }\nend\n\nfnc classify(Error | ShapeA value): int {\n  match value over\n    on CodedError nominal -> { return 1; }\n    on ShapeA shapeOnly -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "interface/reject-shape-forgery/ShapeB",
+      "category": "interface",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define interface CodedError as\n  fnc code() => int;\nend\ndefine class Error implements CodedError as\n  pub code(): int { return 0; }\nend\ndefine class ShapeA as\n  pub code(): int { return 1; }\nend\ndefine class ShapeB as\n  pub code(): int { return 2; }\nend\ndefine class ShapeC as\n  pub code(): int { return 3; }\nend\ndefine class ShapeD as\n  pub code(): int { return 4; }\nend\ndefine class ShapeE as\n  pub code(): int { return 5; }\nend\n\nfnc classify(Error | ShapeB value): int {\n  match value over\n    on CodedError nominal -> { return 1; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "interface/explicit-impostor-case/ShapeB",
+      "category": "interface",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define interface CodedError as\n  fnc code() => int;\nend\ndefine class Error implements CodedError as\n  pub code(): int { return 0; }\nend\ndefine class ShapeA as\n  pub code(): int { return 1; }\nend\ndefine class ShapeB as\n  pub code(): int { return 2; }\nend\ndefine class ShapeC as\n  pub code(): int { return 3; }\nend\ndefine class ShapeD as\n  pub code(): int { return 4; }\nend\ndefine class ShapeE as\n  pub code(): int { return 5; }\nend\n\nfnc classify(Error | ShapeB value): int {\n  match value over\n    on CodedError nominal -> { return 1; }\n    on ShapeB shapeOnly -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "interface/reject-shape-forgery/ShapeC",
+      "category": "interface",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define interface CodedError as\n  fnc code() => int;\nend\ndefine class Error implements CodedError as\n  pub code(): int { return 0; }\nend\ndefine class ShapeA as\n  pub code(): int { return 1; }\nend\ndefine class ShapeB as\n  pub code(): int { return 2; }\nend\ndefine class ShapeC as\n  pub code(): int { return 3; }\nend\ndefine class ShapeD as\n  pub code(): int { return 4; }\nend\ndefine class ShapeE as\n  pub code(): int { return 5; }\nend\n\nfnc classify(Error | ShapeC value): int {\n  match value over\n    on CodedError nominal -> { return 1; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "interface/explicit-impostor-case/ShapeC",
+      "category": "interface",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define interface CodedError as\n  fnc code() => int;\nend\ndefine class Error implements CodedError as\n  pub code(): int { return 0; }\nend\ndefine class ShapeA as\n  pub code(): int { return 1; }\nend\ndefine class ShapeB as\n  pub code(): int { return 2; }\nend\ndefine class ShapeC as\n  pub code(): int { return 3; }\nend\ndefine class ShapeD as\n  pub code(): int { return 4; }\nend\ndefine class ShapeE as\n  pub code(): int { return 5; }\nend\n\nfnc classify(Error | ShapeC value): int {\n  match value over\n    on CodedError nominal -> { return 1; }\n    on ShapeC shapeOnly -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "interface/reject-shape-forgery/ShapeD",
+      "category": "interface",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define interface CodedError as\n  fnc code() => int;\nend\ndefine class Error implements CodedError as\n  pub code(): int { return 0; }\nend\ndefine class ShapeA as\n  pub code(): int { return 1; }\nend\ndefine class ShapeB as\n  pub code(): int { return 2; }\nend\ndefine class ShapeC as\n  pub code(): int { return 3; }\nend\ndefine class ShapeD as\n  pub code(): int { return 4; }\nend\ndefine class ShapeE as\n  pub code(): int { return 5; }\nend\n\nfnc classify(Error | ShapeD value): int {\n  match value over\n    on CodedError nominal -> { return 1; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "interface/explicit-impostor-case/ShapeD",
+      "category": "interface",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define interface CodedError as\n  fnc code() => int;\nend\ndefine class Error implements CodedError as\n  pub code(): int { return 0; }\nend\ndefine class ShapeA as\n  pub code(): int { return 1; }\nend\ndefine class ShapeB as\n  pub code(): int { return 2; }\nend\ndefine class ShapeC as\n  pub code(): int { return 3; }\nend\ndefine class ShapeD as\n  pub code(): int { return 4; }\nend\ndefine class ShapeE as\n  pub code(): int { return 5; }\nend\n\nfnc classify(Error | ShapeD value): int {\n  match value over\n    on CodedError nominal -> { return 1; }\n    on ShapeD shapeOnly -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "interface/reject-shape-forgery/ShapeE",
+      "category": "interface",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define interface CodedError as\n  fnc code() => int;\nend\ndefine class Error implements CodedError as\n  pub code(): int { return 0; }\nend\ndefine class ShapeA as\n  pub code(): int { return 1; }\nend\ndefine class ShapeB as\n  pub code(): int { return 2; }\nend\ndefine class ShapeC as\n  pub code(): int { return 3; }\nend\ndefine class ShapeD as\n  pub code(): int { return 4; }\nend\ndefine class ShapeE as\n  pub code(): int { return 5; }\nend\n\nfnc classify(Error | ShapeE value): int {\n  match value over\n    on CodedError nominal -> { return 1; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "interface/explicit-impostor-case/ShapeE",
+      "category": "interface",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define interface CodedError as\n  fnc code() => int;\nend\ndefine class Error implements CodedError as\n  pub code(): int { return 0; }\nend\ndefine class ShapeA as\n  pub code(): int { return 1; }\nend\ndefine class ShapeB as\n  pub code(): int { return 2; }\nend\ndefine class ShapeC as\n  pub code(): int { return 3; }\nend\ndefine class ShapeD as\n  pub code(): int { return 4; }\nend\ndefine class ShapeE as\n  pub code(): int { return 5; }\nend\n\nfnc classify(Error | ShapeE value): int {\n  match value over\n    on CodedError nominal -> { return 1; }\n    on ShapeE shapeOnly -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "complement/positive-and-negative/FileNotFoundError",
+      "category": "complement",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on FileNotFoundError selected -> { return 1; }\n    on !FileNotFoundError -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "complement/negative-only/FileNotFoundError",
+      "category": "complement",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on !FileNotFoundError -> { return 1; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "complement/positive-and-negative/NetworkError",
+      "category": "complement",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on NetworkError selected -> { return 1; }\n    on !NetworkError -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "complement/negative-only/NetworkError",
+      "category": "complement",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on !NetworkError -> { return 1; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "complement/positive-and-negative/IOError",
+      "category": "complement",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on IOError selected -> { return 1; }\n    on !IOError -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "complement/negative-only/IOError",
+      "category": "complement",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on !IOError -> { return 1; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "complement/positive-and-negative/ArgumentError",
+      "category": "complement",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on ArgumentError selected -> { return 1; }\n    on !ArgumentError -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "complement/negative-only/ArgumentError",
+      "category": "complement",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on !ArgumentError -> { return 1; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "complement/positive-and-negative/UserError",
+      "category": "complement",
+      "expect": "accept",
+      "diagnosticContains": null,
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on UserError selected -> { return 1; }\n    on !UserError -> { return 2; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    },
+    {
+      "id": "complement/negative-only/UserError",
+      "category": "complement",
+      "expect": "reject",
+      "diagnosticContains": "non-exhaustive match",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on !UserError -> { return 1; }\n  end\n}\n",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "dotnet",
+        "javascript"
+      ]
+    }
+  ]
+}
