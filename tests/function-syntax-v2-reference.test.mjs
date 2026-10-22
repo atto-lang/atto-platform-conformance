@@ -172,9 +172,9 @@ function parseTypeAtomChunks(chunks,state){
 
 function isCompleteTypePrefix(text){
   const normalized=normalizeHeaderTypeSource(text);
-  if(normalized===null) return false;
+  if(normalized===null || normalized.includes(";")) return false;
   const typeSource=normalized.trim();
-  if(!typeDelimitersBalanced(typeSource) || typeSource.includes(";")) return false;
+  if(!typeDelimitersBalanced(typeSource)) return false;
   const chunks=topLevelTypeChunks(typeSource);
   if(chunks.length===0) return false;
   const state={i:0};
@@ -227,7 +227,7 @@ function classifyV2Callable(source){
 
 test("v2 callable separator reference vectors",()=>{
   assert.ok(Array.isArray(manifest.referenceVectors));
-  assert.equal(manifest.referenceVectors.length,31);
+  assert.equal(manifest.referenceVectors.length,33);
   let accepted=0;
   let rejected=0;
   for(const vector of manifest.referenceVectors){
@@ -235,6 +235,6 @@ test("v2 callable separator reference vectors",()=>{
     assert.equal(actual,vector.accepted,vector.id);
     if(actual) accepted++; else rejected++;
   }
-  assert.equal(accepted,13);
-  assert.equal(rejected,18);
+  assert.equal(accepted,14);
+  assert.equal(rejected,19);
 });
