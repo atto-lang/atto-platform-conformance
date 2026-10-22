@@ -53,3 +53,16 @@ test("excessive steps reject bounded evidence", () => {
   const r=valid(); r.steps=Array.from({length:101}, (_,i)=>"step "+i);
   assert.throws(()=>classify(r),/too many steps/);
 });
+
+test("two unrelated steps cannot masquerade as compile and execute", () => {
+  const r=valid(); r.steps=["checkout","upload"];
+  assert.equal(classify(r),"UNOBSERVED");
+});
+test("missing assertions are not successful guest results", () => {
+  const r=valid(); delete r.assertions_passed;
+  assert.equal(classify(r),"UNOBSERVED");
+});
+test("unbounded step names are rejected", () => {
+  const r=valid(); r.steps=["compile "+"x".repeat(260),"execute guest"];
+  assert.throws(()=>classify(r),/step name too long/);
+});
