@@ -23,7 +23,8 @@
     "Some/Ok/Err bind one signed-i64 payload; None cannot bind a payload.",
     "Payload captures are lexically scoped to their arm. Nested matches may refer to outer captures.",
     "Duplicate, mixed, missing or wildcard-substitute ADT variants and incompatible subject or result types are compile errors.",
-    "The zero-capability pure fixture does not specify cross-backend in-memory tags, wire formats, ownership, or actor transfers."
+    "The zero-capability pure fixture does not specify cross-backend in-memory tags, wire formats, ownership, or actor transfers.",
+    "Selected-arm-only evaluation is checked by inactive branches that would raise checked integer remainder by zero if evaluated."
   ],
   "testVectors": [
     {
@@ -254,6 +255,46 @@
       ],
       "expected": {
         "int": "14"
+      }
+    },
+    {
+      "id": "lazy_some-7",
+      "function": "lazy_some",
+      "args": [
+        "7"
+      ],
+      "expected": {
+        "int": "7"
+      }
+    },
+    {
+      "id": "lazy_none-0",
+      "function": "lazy_none",
+      "args": [
+        "0"
+      ],
+      "expected": {
+        "int": "7"
+      }
+    },
+    {
+      "id": "lazy_ok-7",
+      "function": "lazy_ok",
+      "args": [
+        "7"
+      ],
+      "expected": {
+        "int": "7"
+      }
+    },
+    {
+      "id": "lazy_err--7",
+      "function": "lazy_err",
+      "args": [
+        "-7"
+      ],
+      "expected": {
+        "int": "-7"
       }
     }
   ],
