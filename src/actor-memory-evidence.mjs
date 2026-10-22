@@ -16,10 +16,13 @@ export function classifyActorMemoryEvidence(record) {
   if (record.steps.length === 0) return "NOT_EXECUTED";
   if (record.generated_guest_executed !== true) return "NOT_EXECUTED";
   if (record.steps.length < 2) return "UNOBSERVED";
+  if (record.steps.some(s => s.length > 256)) throw Error("step name too long");
+  if (!record.steps.some(s => /compile|build/i.test(s)) || !record.steps.some(s => /execute|run guest/i.test(s))) return "UNOBSERVED";
   if (typeof record.compiler_command !== "string" || !record.compiler_command.trim() ||
       typeof record.guest_command !== "string" || !record.guest_command.trim() ||
       typeof record.workflow_url !== "string" || !/^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/actions\/runs\/[1-9][0-9]*$/.test(record.workflow_url) ||
       !Number.isSafeInteger(record.job_id) || record.job_id <= 0) return "UNOBSERVED";
   if (!Number.isSafeInteger(record.exit_code)) return "UNOBSERVED";
+  if (record.assertions_passed !== true && record.assertions_passed !== false) return "UNOBSERVED";
   return record.exit_code === 0 && record.assertions_passed === true ? "PASS_EXECUTED" : "FAIL_EXECUTED";
 }
