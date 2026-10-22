@@ -21,7 +21,7 @@ test('matching contract is portable, experimental and does not claim parity',()=
   assert.deepEqual(contract.typeDomains,['Option<int>','Result<int,int>']);
   assert.ok(contract.pendingBackends.includes('wasm'));
   assert.ok(contract.pendingBackends.includes('llvm'));
-  assert.doesNotMatch(source,/\\b(?:stdio|process|fs|fetch|Worker|await|spawn|interop)\\b/);
+  assert.doesNotMatch(source,/\b(?:stdio|process|fs|fetch|Worker|await|spawn|interop)\b/);
   for(const marker of ['Some(n)','on None','Ok(n)','Err(e)','Some(m)'])assert.ok(source.includes(marker),marker);
 });
 
@@ -54,9 +54,9 @@ test('negative fixtures are distinct and require semantic rejection, not generic
     assert.equal(ids.has(item.id),false,item.id);ids.add(item.id);
     assert.equal(item.expect,'reject');
     assert.match(item.diagnosticClass,/^[a-z-]+$/);
-    assert.ok(item.source.startsWith('define module core as\\n'));
-    assert.ok(item.source.endsWith('\\nend\\n'));
-    assert.doesNotMatch(item.source,/\\b(?:stdio|process|fs|fetch|Worker|await|spawn|interop)\\b/);
+    assert.ok(item.source.startsWith('define module core as\n'));
+    assert.ok(item.source.endsWith('\nend\n'));
+    assert.doesNotMatch(item.source,/\b(?:stdio|process|fs|fetch|Worker|await|spawn|interop)\b/);
   }
   assert.equal(ids.size,9);
 });
