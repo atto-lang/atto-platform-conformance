@@ -38,12 +38,16 @@ test('positive vector oracle models Option/Result, capture and nesting correctly
       case 'result_tag':result=n<0n?-1n:1n;break;
       case 'result_value':result=n;break;
       case 'nested':result=n>0n?2n*n:-1n;break;
+      case 'lazy_some':assert.equal(n,7n);result=7n;break;
+      case 'lazy_none':assert.equal(n,0n);result=7n;break;
+      case 'lazy_ok':assert.equal(n,7n);result=7n;break;
+      case 'lazy_err':assert.equal(n,-7n);result=-7n;break;
       default:assert.fail('unexpected function '+vector.function);
     }
     assert.deepEqual(vector.expected,{int:String(result)},vector.id);
     checked(vector.expected.int);
   }
-  assert.equal(ids.size,23);
+  assert.equal(ids.size,27);
   assert.ok(ids.has('option_value-9223372036854775807'));
   assert.ok(ids.has('result_value--9223372036854775808'));
 });
