@@ -137,10 +137,13 @@ test('published ABI geometry cannot be mutated after verification', () => {
 
 test('physical byte quotas include SoAoS strides and AoSoA padded lanes', () => {
   const soa = {layout:'soa',fields,capacity:3};
-  const admitted = computeLayoutAbi({...soa,maxSegmentBytes:24n,maxTotalBytes:51n});
+  const admitted = computeLayoutAbi({...soa,maxSegmentBytes:24n,maxTotalBytes:56n});
   assert.equal(admitted.segments.reduce((sum,s) => sum+s.bytes,0n),51n);
   assert.throws(() => computeLayoutAbi({...soa,maxSegmentBytes:23n}),RangeError);
-  assert.throws(() => computeLayoutAbi({...soa,maxTotalBytes:50n}),RangeError);
+  assert.equal(admitted.payloadBytes,51n);
+  assert.equal(admitted.physicalBytes,56n);
+  assert.deepEqual(admitted.segments.map(s=>s.base),[0n,16n,40n,44n]);
+  assert.throws(() => computeLayoutAbi({...soa,maxTotalBytes:55n}),RangeError);
 
   const tiled = {layout:'aosoa',fields,capacity:5,tileWidth:4};
   assert.equal(computeLayoutAbi({...tiled,maxTotalBytes:144n}).segments[0].bytes,144n);
@@ -158,6 +161,17 @@ test('physical byte quotas include SoAoS strides and AoSoA padded lanes', () => 
   for (const badLimit of [-1n,0,Number.MAX_SAFE_INTEGER,null]) {
     assert.throws(() => computeLayoutAbi({...soa,maxTotalBytes:badLimit}),RangeError);
   }
+});
+
+test('single actor-allocation quotas account for inter-segment alignment gaps', () => {
+  const twoFields = [{name:'flag',type:'bool'},{name:'x',type:'f64'}];
+  const result = computeLayoutAbi({layout:'soa',capacity:1,
+    fields:twoFields,maxTotalBytes:16n});
+  assert.equal(result.payloadBytes,9n);
+  assert.equal(result.physicalBytes,16n);
+  assert.deepEqual(result.segments.map(s=>s.base),[0n,8n]);
+  assert.throws(()=>computeLayoutAbi({layout:'soa',capacity:1,
+    fields:twoFields,maxTotalBytes:15n}),RangeError);
 });
 
 test('compressed32 is unsigned, null-reserving, aligned and bounds checked', () => {
