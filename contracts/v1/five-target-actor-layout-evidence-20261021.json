@@ -9,8 +9,8 @@
     {
       "id": "graalvm",
       "repository": "ores-truffle-oreslang/oreslang-source.java",
-      "commit": "e365509c143c6134ea5ff4039c98121c8abadd1f",
-      "source": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1822",
+      "commit": "45356f3bf3fa342930a731cb9f4556dcf4ac02e1",
+      "source": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1859",
       "actorMemory": "actor-owned JNI/native regions and logical byte-addressed pages; Java guest frame/facade migration incomplete",
       "layouts": "native host-side DOP shards; no five-target source-level certification",
       "evidence": {
@@ -30,7 +30,7 @@
     {
       "id": "llvm",
       "repository": "ores-truffle-oreslang/oreslang-source.llvm",
-      "commit": "20b2ea03417306cdac86283554481008ff02f918",
+      "commit": "3723c2861cc92e08b8547fa68e8804af28a2f760",
       "source": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/837",
       "actorMemory": "actor-owned native heap substrate; new heterogeneous plan not yet connected to source actor allocation or guest field accesses",
       "layouts": "checked heterogeneous mixed-width AoS/SoA/AoSoA/grouped SoAoS native address planner and C++17 host regression; compiler guest lowering unverified",
@@ -51,7 +51,7 @@
     {
       "id": "wasm",
       "repository": "ores-truffle-oreslang/oreslang-source.wasm",
-      "commit": "125259ae06634538925092ab0f8b30e8ac024a9d",
+      "commit": "f04ec24e0fdcb57ed8956cdf8ca5dcaa84716406",
       "source": "https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/113",
       "actorMemory": "Wasm linear-memory actor region; source guest actor lowering unverified",
       "layouts": "ActorArena-backed mixed-width u32/f64/bool/ref32 four-layout host shard; actual Wasm guest execution unverified",
@@ -66,7 +66,7 @@
     {
       "id": "dotnet",
       "repository": "ores-truffle-oreslang/oreslang-source.net",
-      "commit": "3b703a2c7d78d8fd35f9ecd1d8a714ed8ee44a75",
+      "commit": "4a795b8b2d1be7a6ba77545759dc233a51e82885",
       "source": "https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/123",
       "actorMemory": "unmanaged ActorArena; managed CLR runtime bookkeeping only; no independent CLR GC heaps",
       "layouts": "NativeMemory actor arena-backed mixed-width u32/f64/bool/ref32 four-layout typed shard; .NET compilation unverified",
@@ -81,7 +81,7 @@
     {
       "id": "javascript",
       "repository": "ores-truffle-oreslang/oreslang-source.js",
-      "commit": "5f05daa8049ecf25546dc50e293dcac8f08e20a3",
+      "commit": "ae46f2a03577460b528d407c4f26b9f0829546da",
       "source": "https://github.com/ores-truffle-oreslang/oreslang-source.js/pull/35",
       "actorMemory": "private browser Web Worker / Node worker thread; private ArrayBuffer payloads",
       "layouts": "Worker-private mixed-width u32/f64/bool/ref32 four-layout storage; Node Worker suite added but not executed",
