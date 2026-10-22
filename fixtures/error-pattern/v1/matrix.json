@@ -718,7 +718,7 @@
       "category": "fallback",
       "expect": "accept",
       "diagnosticContains": null,
-      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on FileNotFoundError specific -> { return 1; }\n    on _ -> { return 2; }\n  end\n}\n",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on FileNotFoundError specific when false -> { return 1; }\n    on _ -> { return 2; }\n  end\n}\n",
       "confirmedBackends": [],
       "pendingBackends": [
         "java-graalvm",
@@ -763,7 +763,7 @@
       "category": "fallback",
       "expect": "accept",
       "diagnosticContains": null,
-      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on NetworkError specific -> { return 1; }\n    on _ -> { return 2; }\n  end\n}\n",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on NetworkError specific when false -> { return 1; }\n    on _ -> { return 2; }\n  end\n}\n",
       "confirmedBackends": [],
       "pendingBackends": [
         "java-graalvm",
@@ -808,7 +808,7 @@
       "category": "fallback",
       "expect": "accept",
       "diagnosticContains": null,
-      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on IOError specific -> { return 1; }\n    on _ -> { return 2; }\n  end\n}\n",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on IOError specific when false -> { return 1; }\n    on _ -> { return 2; }\n  end\n}\n",
       "confirmedBackends": [],
       "pendingBackends": [
         "java-graalvm",
@@ -853,7 +853,7 @@
       "category": "fallback",
       "expect": "accept",
       "diagnosticContains": null,
-      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on ArgumentError specific -> { return 1; }\n    on _ -> { return 2; }\n  end\n}\n",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on ArgumentError specific when false -> { return 1; }\n    on _ -> { return 2; }\n  end\n}\n",
       "confirmedBackends": [],
       "pendingBackends": [
         "java-graalvm",
@@ -898,7 +898,7 @@
       "category": "fallback",
       "expect": "accept",
       "diagnosticContains": null,
-      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on UserError specific -> { return 1; }\n    on _ -> { return 2; }\n  end\n}\n",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Error value): int {\n  match value over\n    on UserError specific when false -> { return 1; }\n    on _ -> { return 2; }\n  end\n}\n",
       "confirmedBackends": [],
       "pendingBackends": [
         "java-graalvm",
@@ -943,7 +943,7 @@
       "category": "result",
       "expect": "accept",
       "diagnosticContains": null,
-      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(Error remaining) -> { return 2; }\n  end\n}\n",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(FileNotFoundError specific) when false -> { return 2; }\n    on Err(Error remaining) -> { return 3; }\n  end\n}\n",
       "confirmedBackends": [],
       "pendingBackends": [
         "java-graalvm",
@@ -1003,7 +1003,7 @@
       "category": "result",
       "expect": "accept",
       "diagnosticContains": null,
-      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(Error remaining) -> { return 2; }\n  end\n}\n",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(NetworkError specific) when false -> { return 2; }\n    on Err(Error remaining) -> { return 3; }\n  end\n}\n",
       "confirmedBackends": [],
       "pendingBackends": [
         "java-graalvm",
@@ -1063,7 +1063,7 @@
       "category": "result",
       "expect": "accept",
       "diagnosticContains": null,
-      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(Error remaining) -> { return 2; }\n  end\n}\n",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(IOError specific) when false -> { return 2; }\n    on Err(Error remaining) -> { return 3; }\n  end\n}\n",
       "confirmedBackends": [],
       "pendingBackends": [
         "java-graalvm",
@@ -1123,7 +1123,7 @@
       "category": "result",
       "expect": "accept",
       "diagnosticContains": null,
-      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(Error remaining) -> { return 2; }\n  end\n}\n",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(ArgumentError specific) when false -> { return 2; }\n    on Err(Error remaining) -> { return 3; }\n  end\n}\n",
       "confirmedBackends": [],
       "pendingBackends": [
         "java-graalvm",
@@ -1183,7 +1183,7 @@
       "category": "result",
       "expect": "accept",
       "diagnosticContains": null,
-      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(Error remaining) -> { return 2; }\n  end\n}\n",
+      "program": "define class Error as\nend\ndefine class IOError extends Error as\nend\ndefine class FileNotFoundError extends IOError as\nend\ndefine class NetworkError extends IOError as\nend\ndefine class ArgumentError extends Error as\nend\ndefine class UserError extends Error as\nend\n\nfnc classify(Result<int, Error> value): int {\n  match value over\n    on Ok(success) -> { return 1; }\n    on Err(UserError specific) when false -> { return 2; }\n    on Err(Error remaining) -> { return 3; }\n  end\n}\n",
       "confirmedBackends": [],
       "pendingBackends": [
         "java-graalvm",
