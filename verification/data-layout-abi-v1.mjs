@@ -134,13 +134,21 @@ function computeLayoutAbi({layout, fields, capacity, tileWidth, groups, maxSegme
       throw new RangeError(`invalid ${label}: expected nonnegative bigint`);
     }
   }
-  let totalBytes = 0n;
+  let payloadBytes = 0n;
+  let physicalBytes = 0n;
+  const segmentBases = [];
   for (const segment of segments) {
     if (maxSegmentBytes !== undefined && segment.bytes > maxSegmentBytes) {
       throw new RangeError('physical ABI segment exceeds target limit');
     }
-    totalBytes += segment.bytes;
-    if (maxTotalBytes !== undefined && totalBytes > maxTotalBytes) {
+    // A single actor arena allocation must align each segment's *base*, even
+    // when individual field payloads are byte-packed (e.g. bool before f64).
+    // Charge this padding before publication, not just the sum of payloads.
+    physicalBytes = alignUp(physicalBytes, segment.align);
+    segmentBases.push(physicalBytes);
+    physicalBytes += segment.bytes;
+    payloadBytes += segment.bytes;
+    if (maxTotalBytes !== undefined && physicalBytes > maxTotalBytes) {
       throw new RangeError('physical ABI layout exceeds actor quota');
     }
   }
@@ -165,15 +173,16 @@ function computeLayoutAbi({layout, fields, capacity, tileWidth, groups, maxSegme
   // must not be able to retarget address(row, field) after the compiler/verifier
   // has accepted the physical layout, or mutate SoAoS group memberships.
   for (const place of Object.values(locator)) Object.freeze(place);
-  const frozenSegments = Object.freeze(segments.map(segment => {
+  const frozenSegments = Object.freeze(segments.map((segment, index) => {
     const immutable = segment.fields === undefined
-      ? {...segment}
-      : {...segment, fields:Object.freeze([...segment.fields])};
+      ? {...segment,base:segmentBases[index]}
+      : {...segment,base:segmentBases[index],fields:Object.freeze([...segment.fields])};
     return Object.freeze(immutable);
   }));
   return Object.freeze({
     version:1,layout,capacity:count,fields:Object.freeze(normalized),
-    segments:frozenSegments,locator:Object.freeze(locator),address
+    segments:frozenSegments,payloadBytes,physicalBytes,
+    locator:Object.freeze(locator),address
   });
 }
 
