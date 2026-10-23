@@ -1,0 +1,14 @@
+// PROPOSED SOURCE FIXTURE — NOT YET PARSER-VALIDATED.
+// Harness supplies trace(string) and pending_i64(): Future<int>.
+pub fnc main(): void {
+    let Task<int> worker = nb task {
+        defer { trace("defer"); }
+        trace("entered");
+        let int value = await pending_i64();
+        trace("normal-after-await");
+        return value;
+    };
+    worker.cancel();
+    await worker.get_done();
+    return;
+}
