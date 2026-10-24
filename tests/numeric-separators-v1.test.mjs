@@ -11,7 +11,7 @@ test("numeric source fixture contract is unique, byte-for-byte reproducible and 
   assert.equal(cases.contract,"oreslang.numeric-separators/source-v1");
   assert.equal(cases.status,"candidate-unattested");
   assert.deepEqual(cases.targetBackends,["java","llvm","net","wasm-via-llvm"]);
-  assert.equal(cases.cases.length,23);
+  assert.equal(cases.cases.length,26);
   const ids=new Set();
   const expressions=new Set();
   let positive=0,negative=0;
@@ -40,12 +40,14 @@ test("numeric source fixture contract is unique, byte-for-byte reproducible and 
       assert.equal(item.expectedI64,undefined);
     }
   }
-  assert.equal(positive,10);
-  assert.equal(negative,13);
+  assert.equal(positive,12);
+  assert.equal(negative,14);
   const byId=new Map(cases.cases.map(item=>[item.id,item]));
   for(const [id,expression,expected] of [
     ["int-i64-max","9_223_372_036_854_775_807","9223372036854775807"],
     ["int-i64-min","-9_223_372_036_854_775_808","-9223372036854775808"],
+    ["int-leading-zero-i64-min","-0_9223372036854775808","-9223372036854775808"],
+    ["int-leading-zero-i64-max","0_9223372036854775807","9223372036854775807"],
     ["int-leading-zero-run","0_0_0","0"]
   ]){
     const item=byId.get(id);
@@ -57,6 +59,7 @@ test("numeric source fixture contract is unique, byte-for-byte reproducible and 
   }
   for(const [id,category] of [
     ["bad-negative-underflow","i64-overflow"],
+    ["bad-leading-zero-underflow","i64-overflow"],
     ["bad-triple-separator","separator"],
     ["bad-minus-boundary","separator"]
   ]){
