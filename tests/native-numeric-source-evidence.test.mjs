@@ -217,3 +217,43 @@ test("real 26-case admission loop fails closed on fake compiler and mismatched d
       x.status!=="MISMATCH").length,0);
   }finally{await rm(dir,{recursive:true,force:true});}
 });
+
+
+test("linker stdout cannot certify an accepted Oreslang guest",async()=>{
+  const dir=await mkdtemp(join(tmpdir(),"ores-num-linker-denial-"));
+  try{
+    const compiler=join(dir,"compiler");
+    const clang=join(dir,"clang-install");
+    // These are deliberately synthetic, test-local programs. The fake
+    // compiler emits the correct dual-entry ABI, while fake Clang claims a
+    // successful link but writes unexpected stdout and no real executable.
+    const compilerBytes=Buffer.from(
+      "#!/bin/sh\n"+
+      "printf 'define i64 @__oreslang_guest_main() {\\nentry:\\n ret i64 42\\n}\\n"+
+      "define i32 @main() {\\nentry:\\n ret i32 0\\n}\\n'\n");
+    const clangBytes=Buffer.from(
+      "#!/bin/sh\nprintf 'UNEXPECTED_LINKER_STDOUT\\n'\nexit 0\n");
+    await writeFile(compiler,compilerBytes,{mode:0o500});
+    await writeFile(clang,clangBytes,{mode:0o500});
+    const manifest=await readFile(corpusPath);
+    const sha=x=>createHash("sha256").update(x).digest("hex");
+    const receipt=await executeNativeNumericCorpus({
+      compiler,compilerSha256:sha(compilerBytes),
+      clang,clangSha256:sha(clangBytes),clangResourceDir:dir,
+      sourceCommit:"c".repeat(40),manifestSha256:sha(manifest)
+    });
+    assert.equal(receipt.ok,false);
+    assert.equal(receipt.verified,0);
+    assert.equal(receipt.failed,26);
+    const positives=receipt.results.filter(c=>c.expect==="accept");
+    assert.equal(positives.length,12);
+    for(const result of positives){
+      assert.equal(result.status,"MISMATCH");
+      assert.equal(result.clangExit,0);
+      assert.ok(result.clangStdoutBytes>0);
+      assert.equal(result.clangStdoutSha256,
+        sha(Buffer.from("UNEXPECTED_LINKER_STDOUT\n")));
+      assert.equal(result.guestExit,undefined);
+    }
+  }finally{await rm(dir,{recursive:true,force:true});}
+});
