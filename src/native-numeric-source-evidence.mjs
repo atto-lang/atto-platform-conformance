@@ -2,7 +2,7 @@
 // This file does not attest that the declared Git head produced the binary.
 import {spawnSync} from "node:child_process";
 import {createHash} from "node:crypto";
-import {readFile,writeFile,mkdtemp,rm,lstat,realpath,copyFile,chmod} from "node:fs/promises";
+import {readFile,writeFile,mkdtemp,rm,lstat,realpath,copyFile,chmod,readdir,open} from "node:fs/promises";
 import {constants as fsConstants} from "node:fs";
 import {tmpdir} from "node:os";
 import {isAbsolute,join} from "node:path";
@@ -98,6 +98,62 @@ export async function stageNumericExecutable({file,digest,label,workspace,filena
   return dest;
 }
 
+// A resource-directory mode check alone misses mutable Clang builtin headers.
+// Snapshot its *contents*, reject symlinks/nonregular/writable entries, and
+// compare before/after execution. This is an observation, NOT a source or
+// compiler-build provenance claim. Bound traversal before reading any file.
+export async function snapshotNumericClangResources(root){
+  if(typeof root!=="string"||!isAbsolute(root)||await realpath(root)!==root)
+    throw Error("Clang resource directory must be a canonical absolute directory");
+  const pending=[{path:root,rel:""}],entries=[];
+  let total=0,files=0;
+  while(pending.length){
+    const item=pending.pop();
+    const st=await lstat(item.path,{bigint:true});
+    if(st.isSymbolicLink()||(st.mode&0o022n)!==0n)
+      throw Error("Clang resource tree contains symlink or group/world-writable entry");
+    if(++entries.length>4096)throw Error("Clang resource tree entry limit exceeded");
+    if(st.isDirectory()){
+      entries[entries.length-1]=[item.rel,"directory",Number(st.mode&0o777n)];
+      const children=await readdir(item.path);
+      for(const name of children){
+        if(name==="."||name===".."||name.includes("\0"))
+          throw Error("invalid Clang resource tree path");
+        const rel=item.rel?item.rel+"/"+name:name;
+        pending.push({path:join(item.path,name),rel});
+      }
+    }else if(st.isFile()){
+      if(st.size>128n*1024n*1024n)
+        throw Error("Clang resource file exceeds size limit");
+      total+=Number(st.size);
+      if(total>512*1024*1024)throw Error("Clang resource tree exceeds byte budget");
+      const handle=await open(item.path,fsConstants.O_RDONLY|(fsConstants.O_NOFOLLOW||0));
+      let contents;
+      try{
+        const before=await handle.stat({bigint:true});
+        if(!before.isFile()||before.size!==st.size||before.ino!==st.ino||before.dev!==st.dev)
+          throw Error("Clang resource file changed before read");
+        contents=await handle.readFile();
+        const after=await handle.stat({bigint:true});
+        const nameAfter=await lstat(item.path,{bigint:true});
+        if(BigInt(contents.length)!==before.size||
+           [before.dev,before.ino,before.size,before.mtimeNs,before.ctimeNs].some((v,i)=>
+             v!==[after.dev,after.ino,after.size,after.mtimeNs,after.ctimeNs][i])||
+           after.ino!==nameAfter.ino||after.dev!==nameAfter.dev||
+           await realpath(item.path)!==item.path)
+          throw Error("Clang resource file changed during read");
+      }finally{await handle.close();}
+      files++;
+      entries[entries.length-1]=[item.rel,"file",Number(st.mode&0o777n),
+        contents.length,sha256(contents)];
+    }else throw Error("Clang resource tree contains nonregular entry");
+  }
+  const manifest=createHash("sha256").update("oreslang-clang-resource-tree-v1\0");
+  for(const entry of entries.sort((a,b)=>a[0]<b[0]?-1:a[0]>b[0]?1:0))
+    manifest.update(JSON.stringify(entry)+"\n");
+  return Object.freeze({sha256:manifest.digest("hex"),files,entries:entries.length,bytes:total});
+}
+
 export function validateNumericCorpus(manifest){
   if(manifest?.schemaVersion!==1||manifest.contract!=="oreslang.numeric-separators/source-v1"||
     manifest.status!=="candidate-unattested"||!Array.isArray(manifest.cases)||manifest.cases.length!==26)
@@ -149,14 +205,7 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
     // executing the mutable original Clang to discover a resource path.
     // These resources and host libraries are external trusted dependencies;
     // they are NOT included in the executable SHA-256 proof.
-    if(!isAbsolute(clangResourceDir)||await realpath(clangResourceDir)!==clangResourceDir)
-      throw Error("Clang resource directory must be a canonical absolute directory");
-    const resourceStat=await lstat(clangResourceDir);
-    // Executable hashes do not cover Clang's built-in header/resource tree.
-    // Reject a directory that an unrelated local user or group can mutate.
-    // This is a permission preflight, not a proof of immutable resource bytes.
-    if(!resourceStat.isDirectory()||(resourceStat.mode&0o022)!==0)
-      throw Error("Clang resource directory must be a non-group/world-writable directory");
+    const resourceBefore=await snapshotNumericClangResources(clangResourceDir);
     const resourceDir=clangResourceDir;
     const reporter=join(root,"report.c");
     await writeFile(reporter,shim,{mode:0o400,flag:"wx"});
@@ -216,7 +265,10 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
     }
     // The executed copies must retain their hashes through the entire run.
     // A changed original also fails closed despite private-copy immutability.
-    const unchanged=await hashExecutableBounded(stagedCompiler)===compilerSha256 &&
+    const resourceAfter=await snapshotNumericClangResources(clangResourceDir);
+    const resourceUnchanged=resourceBefore.sha256===resourceAfter.sha256;
+    const unchanged=resourceUnchanged &&
+      await hashExecutableBounded(stagedCompiler)===compilerSha256 &&
       await hashExecutableBounded(stagedClang)===clangSha256 &&
       await hashExecutableBounded(compiler)===compilerSha256 &&
       await hashExecutableBounded(clang)===clangSha256;
@@ -225,6 +277,9 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
     return {schemaVersion:1,contract:"oreslang.numeric-separators/native-llvm-evidence-v1",
       backend:"llvm",sourceCommitDeclared:sourceCommit,sourceCommitAttested:false,
       compilerSha256,clangSha256,manifestSha256:sha256(manifestBytes),
+      clangResourceTreeSha256:resourceBefore.sha256,
+      clangResourceEntries:resourceBefore.entries,clangResourceBytes:resourceBefore.bytes,
+      clangResourceTreeUnchanged:resourceUnchanged,
       toolBytesExecutedFromPrivateSnapshots:true,
       clangResourceDirIsExternalDependency:true,
       verificationScope:"real native Oreslang compiler + Clang + i64 guest",
