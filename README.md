@@ -38,7 +38,8 @@ and prints full signed-i64 values (rather than truncated process exit codes):
       --compiler-sha256=64_HEX_DIGEST \
       --clang=/absolute/pinned/clang \
       --clang-sha256=64_HEX_DIGEST \
-      --source-commit=40_HEX_GIT_HEAD
+      --source-commit=40_HEX_GIT_HEAD \
+      --manifest-sha256=64_HEX_REVIEWED_FIXTURE_HASH
 
 See [native evidence instructions](docs/NATIVE_NUMERIC_EVIDENCE.md).
 Missing tools **fail** (never skip); the caller-declared commit is
