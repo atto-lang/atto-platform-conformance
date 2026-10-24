@@ -14,7 +14,8 @@ const safeEnv={
 };
 function git(sourceDir,args){
   const p=spawnSync('git',['--no-optional-locks','-c','core.fsmonitor=false',
-    '-c','core.untrackedCache=false','-C',sourceDir,...args],{
+    '-c','core.untrackedCache=false','-c','core.filemode=true',
+    '-C',sourceDir,...args],{
     encoding:'utf8',timeout:15000,maxBuffer:1024*1024,shell:false,
     windowsHide:true,env:safeEnv
   });
@@ -46,6 +47,14 @@ export async function verifySourceCheckout({sourceDir,expectedCommit,expectedTre
   const indexFlags=git(sourceDir,['ls-files','-v','-z']);
   if(indexFlags.split('\0').some(entry=>entry!==''&&entry.slice(0,2)!=='H '))
     throw Error('source checkout has sparse/assume-unchanged index entries');
+  // HEAD may legitimately contain executable regular files, but symbolic
+  // links (120000), Git submodules (160000), and unresolved index stages
+  // cannot be used as inputs to a sealed private compiler build.
+  // A clean status alone does not reject any of these tracked object kinds.
+  const tracked=git(sourceDir,['ls-files','--stage','-z']).split('\0').filter(Boolean);
+  if(!tracked.length||tracked.some(entry=>
+     !/^100(?:644|755) [a-f0-9]{40} 0\t[^\0]+$/.test(entry)))
+    throw Error('source checkout has nonregular tracked files or unresolved stages');
   return Object.freeze({schemaVersion:1,contract:'oreslang.ci/exact-source-checkout-v1',
     sourceCommit:observedCommit,sourceRootTree:observedTree,worktreeClean:true,
     commitAndTreeVerified:true,compilerBuildAttested:false,privateSourceTransferAuthorized:false});
