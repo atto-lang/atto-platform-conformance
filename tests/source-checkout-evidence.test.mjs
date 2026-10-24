@@ -87,6 +87,28 @@ test('a clean committed symlink is not an allowed source input',async()=>{
   await assert.rejects(verifySourceCheckout(opts),/nonregular tracked files/);
  }finally{await rm(f.root,{recursive:true,force:true})}
 });
+test('committed executable regular files remain admissible',async()=>{
+ const f=await setup();try{
+  await chmod(join(f.root,'source.txt'),0o755);
+  git(f.root,'add','source.txt');
+  git(f.root,'commit','-qm','allow executable regular source');
+  const opts={sourceDir:f.root,
+    expectedCommit:git(f.root,'rev-parse','HEAD'),
+    expectedTree:git(f.root,'rev-parse','HEAD^{tree}')};
+  assert.equal((await verifySourceCheckout(opts)).worktreeClean,true);
+ }finally{await rm(f.root,{recursive:true,force:true})}
+});
+test('tracked gitlink is not an allowed source input',async()=>{
+ const f=await setup();try{
+  git(f.root,'update-index','--add','--cacheinfo',
+    '160000,'+f.commit+',submodule');
+  git(f.root,'commit','-qm','record nonregular gitlink');
+  const opts={sourceDir:f.root,
+    expectedCommit:git(f.root,'rev-parse','HEAD'),
+    expectedTree:git(f.root,'rev-parse','HEAD^{tree}')};
+  await assert.rejects(verifySourceCheckout(opts),/nonregular tracked files|changes/);
+ }finally{await rm(f.root,{recursive:true,force:true})}
+});
 test('CLI fail-closed contract and successful JSON receipt',async()=>{
  const f=await setup();try{
   const ok=spawnSync(process.execPath,[script,'--source-dir='+f.root,'--commit='+f.commit,'--tree='+f.tree],{encoding:'utf8'});
