@@ -44,6 +44,12 @@ test("primary LLVM error categorization does not confuse failures",()=>{
     "oreslang-llvmc: integer literal overflows signed 64-bit"),false);
   assert.equal(nativeNumericDiagnostic("syntax",
     "fatal: command timed out"),false);
+  assert.equal(nativeNumericDiagnostic("separator",
+    "runner: file permission denied\noreslang-llvmc: malformed integer separator"),false);
+  assert.equal(nativeNumericDiagnostic("separator",
+    "clang: linker failed\noreslang-llvmc: malformed integer separator"),false);
+  assert.equal(nativeNumericDiagnostic("separator",
+    "\n\noreslang-llvmc: malformed integer separator at byte 4"),true);
 });
 
 test("real LLVM host ABI isolates i64 guest from i32 status wrapper",()=>{
@@ -178,6 +184,9 @@ test("real 26-case admission loop fails closed on fake compiler and mismatched d
     assert.equal(receipt.parityCertified,false);
     assert.equal(receipt.sourceCommitAttested,false);
     assert.equal(receipt.results.length,26);
+    assert.ok(receipt.results.every(row=>row.compilerError===null && row.compilerSignal===null));
+    assert.ok(receipt.results.every(row=>/^[a-f0-9]{64}$/.test(row.compilerStderrSha256)));
+    assert.ok(receipt.results.every(row=>/^[a-f0-9]{64}$/.test(row.compilerStdoutSha256)));
     assert.equal(receipt.results.filter(x=>x.expect==="accept"&&x.status!=="MISMATCH").length,0);
     assert.equal(receipt.results.filter(x=>x.category==="i64-overflow"&&
       x.status!=="MISMATCH").length,0);
