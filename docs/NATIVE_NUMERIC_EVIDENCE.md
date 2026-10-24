@@ -127,11 +127,18 @@ For each of the 26 exact guestSource byte sequences:
    writable by group or others**; symlink aliases and group/world-writable
    resource roots fail closed before any guest compiler invocation.
    The native runner executes only the **private snapshots**, not the mutable
-   caller paths. The mode check is a limited local integrity precaution:
-   resource contents are not copied/hashed, privileged or same-UID processes
-   may still modify them, and parent directories may have separate risks.
-   Resource files, shared libraries, the linker and host system remain
-   **external trusted dependencies**, not part of the two executable hashes.
+   caller paths. Additionally it recursively hashes all regular resource files
+   and directory modes (SHA-256, canonical-path sorting); symlinks, special
+   objects, group/world-writable nested entries and size/count budget excesses
+   fail closed. Limits: 4,096 entries, 128 MiB per file, 512 MiB total.
+   The identical resource-tree digest is required before and after the 26
+   fixtures. A mismatch revokes all 26 results. The JSON receipt reports
+   `clangResourceTreeSha256`, entry count/bytes and
+   `clangResourceTreeUnchanged`. This digest is an **observed** integrity
+   measurement, not an independently pinned toolchain or source attestation.
+   Privileged or same-UID processes, mutable parent directories, races between
+   scans, dynamic libraries, linker and host system remain external trust
+   boundaries; a stable digest cannot guarantee runtime immutability.
    Compiler build provenance still needs an independent exact-tree review.
 
 Only use this runner with reviewed compiler/source bytes: it executes real
