@@ -80,6 +80,20 @@
       "guestSource": "pub fnc main():int{return -9_223_372_036_854_775_808;}\n"
     },
     {
+      "id": "int-leading-zero-i64-min",
+      "expression": "-0_9223372036854775808",
+      "expect": "accept",
+      "expectedI64": "-9223372036854775808",
+      "guestSource": "pub fnc main():int{return -0_9223372036854775808;}\n"
+    },
+    {
+      "id": "int-leading-zero-i64-max",
+      "expression": "0_9223372036854775807",
+      "expect": "accept",
+      "expectedI64": "9223372036854775807",
+      "guestSource": "pub fnc main():int{return 0_9223372036854775807;}\n"
+    },
+    {
       "id": "int-leading-zero-run",
       "expression": "0_0_0",
       "expect": "accept",
@@ -141,6 +155,13 @@
       "expect": "reject",
       "category": "i64-overflow",
       "guestSource": "pub fnc main():int{return -9_223_372_036_854_775_809;}\n"
+    },
+    {
+      "id": "bad-leading-zero-underflow",
+      "expression": "-0_9223372036854775809",
+      "expect": "reject",
+      "category": "i64-overflow",
+      "guestSource": "pub fnc main():int{return -0_9223372036854775809;}\n"
     },
     {
       "id": "bad-triple-separator",
