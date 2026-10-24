@@ -43,7 +43,9 @@ export async function verifySourceCheckout({sourceDir,expectedCommit,expectedTre
   const observedTree=git(sourceDir,['rev-parse','--verify','HEAD^{tree}']).trim();
   if(observedCommit!==expectedCommit||observedTree!==expectedTree)
     throw Error('source checkout commit/tree identity mismatch');
-  if(git(sourceDir,['status','--porcelain=v1','--untracked-files=all','--ignore-submodules=none'])!=='')
+  // Avoid `git status`: source-controlled clean/smudge filters can execute
+  // commands during status. Read Git's index/HEAD objects and raw bytes only.
+  if(git(sourceDir,['ls-files','--others','--exclude-standard','-z'])!=='')
     throw Error('source checkout contains tracked or untracked changes');
   if(git(sourceDir,['ls-files','--others','--ignored','--exclude-standard','-z'])!=='')
     throw Error('source checkout contains ignored local files');
@@ -53,11 +55,24 @@ export async function verifySourceCheckout({sourceDir,expectedCommit,expectedTre
   const tracked=git(sourceDir,['ls-files','--stage','-z']).split('\0').filter(Boolean);
   if(!tracked.length||tracked.length>MAX_FILES)
     throw Error('source checkout has unsupported tracked file count');
+  const committed=git(sourceDir,['ls-tree','-r','--full-tree','-z','HEAD'])
+    .split('\0').filter(Boolean);
+  if(committed.length!==tracked.length)
+    throw Error('source checkout index differs from pinned HEAD tree');
+  const headEntries=new Map();
+  for(const entry of committed){
+    const match=/^(100644|100755) blob ([a-f0-9]{40})\t([^\0]+)$/.exec(entry);
+    if(!match||headEntries.has(match[3]))
+      throw Error('source HEAD contains nonregular or duplicate tree entries');
+    headEntries.set(match[3],match[1]+' '+match[2]);
+  }
   let total=0;
   for(const entry of tracked){
     const match=/^(100644|100755) ([a-f0-9]{40}) 0\t([^\0]+)$/.exec(entry);
     if(!match)throw Error('source checkout has nonregular tracked files or unresolved stages');
     const [,mode,expectedBlob,relative]=match;
+    if(headEntries.get(relative)!==mode+' '+expectedBlob)
+      throw Error('source checkout index differs from pinned HEAD tree');
     const abs=resolve(sourceDir,relative);
     if(!abs.startsWith(sourceDir+sep)||await realpath(abs)!==abs)
       throw Error('tracked source path escapes or contains a symlink');
