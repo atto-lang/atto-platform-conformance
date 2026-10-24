@@ -50,8 +50,18 @@ For each of the 26 exact guestSource byte sequences:
    full-width i64 evidence. This is verified against LLVM LlvmCodegen.cpp.
 4. Execute the compiled guest; compare its exact decimal stdout to the expected
    i64. Any extra output, nonzero exit or signal fails.
-5. Re-hash compiler and Clang binaries after the suite. Detected drift revokes
-   the entire run. Temporary source, LLVM IR, executable and shim are removed.
+5. Copy both SHA-256-verified compiler and Clang executable bytes to a new
+   mode-0700 private workspace, chmod the executable snapshots 0500, and
+   execute those snapshots (never the original caller path). Verify both
+   snapshot hashes immediately after copying; path mutations during copy
+   reject admission. Re-hash **both** snapshots and originals at suite exit.
+   Any changed executable revokes all results. Temporary binaries, source,
+   LLVM IR, executable and shim are removed.
+6. Run Clang with the original installed resource-directory path specified
+   explicitly. Resource files, shared libraries, the linker and host system
+   are **external trusted dependencies** and are not pinned by the two
+   executable hashes. Source-head compiler build provenance still requires
+   an independent reviewer and exact-tree build record.
 
 Only use this runner with reviewed compiler/source bytes: it executes real
 subprocesses and is not a sandbox for untrusted executables.
@@ -69,3 +79,20 @@ Current GitHub Actions workflows that report zero job steps supply only
 pre-execution infrastructure evidence. If Actions remains blocked, use an
 approved local/self-hosted runner and obtain independent review. Private
 mirroring must pass the mandatory pre-copy visibility and allowlist gate.
+
+## Test coverage and executable identity limitations
+
+`node --test tests/native-numeric-source-evidence.test.mjs` includes real
+subprocess checks for exit failures, Unix signals, timeouts, bounded output,
+fake compiler diagnostics, symlink rejection, wrong SHA-256, non-private
+workspace admission and mutation of a caller's tool after snapshot.
+These are **harness hardening tests**, never evidence of Oreslang execution.
+
+Even a successful 26/26 receipt has `sourceCommitAttested:false` and
+`parityCertified:false`: it is an **execution observation** pending
+independent binary build provenance, reference-backend differentials,
+runtime policy checks and reviewer approval.
+
+Only trusted local toolchains may be executed; staged executable bytes help
+prevent post-hash caller-path substitution, but do not sandbox malicious
+compilers, dynamic libraries, external Clang resources or a hostile host.
