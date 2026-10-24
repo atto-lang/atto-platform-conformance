@@ -39,6 +39,13 @@ export async function verifySourceCheckout({sourceDir,expectedCommit,expectedTre
     throw Error('source checkout commit/tree identity mismatch');
   if(git(sourceDir,['status','--porcelain=v1','--untracked-files=all','--ignore-submodules=none'])!=='')
     throw Error('source checkout contains tracked or untracked changes');
+  // Git's clean status omits ignored files and index flags can intentionally
+  // hide dirty worktree bytes. Exact-source admission must deny both.
+  if(git(sourceDir,['ls-files','--others','--ignored','--exclude-standard','-z'])!=='')
+    throw Error('source checkout contains ignored local files');
+  const indexFlags=git(sourceDir,['ls-files','-v','-z']);
+  if(indexFlags.split('\0').some(entry=>entry!==''&&entry.slice(0,2)!=='H '))
+    throw Error('source checkout has sparse/assume-unchanged index entries');
   return Object.freeze({schemaVersion:1,contract:'oreslang.ci/exact-source-checkout-v1',
     sourceCommit:observedCommit,sourceRootTree:observedTree,worktreeClean:true,
     commitAndTreeVerified:true,compilerBuildAttested:false,privateSourceTransferAuthorized:false});
