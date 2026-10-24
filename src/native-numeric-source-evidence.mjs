@@ -54,7 +54,7 @@ const shim=[
  "}",
  ""
 ].join("\n");
-function command(executable,args,timeout=30000){
+export function runNumericCommand(executable,args,timeout=30000){
   const p=spawnSync(executable,args,{encoding:"utf8",timeout,maxBuffer:4*1024*1024,
     windowsHide:true,shell:false});
   return {code:p.status,signal:p.signal||null,error:p.error?.code||null,
@@ -140,7 +140,7 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
     // the copied Clang's relative resource lookup would point at the new
     // private workspace instead. The resource dir is a trusted
     // host/toolchain dependency, not part of the two executable SHA pins.
-    const resourceQuery=command(clang,["-print-resource-dir"]);
+    const resourceQuery=runNumericCommand(clang,["-print-resource-dir"]);
     if(!succeeded(resourceQuery)||!/^[^\r\n]+\n?$/.test(resourceQuery.stdout))
       throw Error("pinned Clang resource directory unavailable");
     const resourceDir=await realpath(resourceQuery.stdout.trim());
@@ -154,7 +154,7 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
       const ll=join(root,c.id+".ll");
       const exe=join(root,c.id+".native");
       await writeFile(input,bytes,{mode:0o400,flag:"wx"});
-      const compiled=command(stagedCompiler,["--target=host",input]);
+      const compiled=runNumericCommand(stagedCompiler,["--target=host",input]);
       const evidence={id:c.id,expect:c.expect,category:c.category||null,
         fixtureSha256:sha256(bytes),compilerExit:compiled.code,
         status:"MISMATCH",observedI64:null};
@@ -167,10 +167,10 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
         try{
           const rewritten=renameNumericGuestMain(compiled.stdout);
           await writeFile(ll,rewritten,{mode:0o400,flag:"wx"});
-          const linked=command(stagedClang,["-resource-dir="+resourceDir,"-x","ir",ll,"-x","c",reporter,"-o",exe]);
+          const linked=runNumericCommand(stagedClang,["-resource-dir="+resourceDir,"-x","ir",ll,"-x","c",reporter,"-o",exe]);
           evidence.clangExit=linked.code;
           if(succeeded(linked)){
-            const guest=command(exe,[],10000);
+            const guest=runNumericCommand(exe,[],10000);
             evidence.guestExit=guest.code;
             if(succeeded(guest)&&guest.stderr===""&&
               /^-?(0|[1-9][0-9]*)\n$/.test(guest.stdout)){
@@ -197,6 +197,7 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
       toolBytesExecutedFromPrivateSnapshots:true,
       clangResourceDirIsExternalDependency:true,
       verificationScope:"real native Oreslang compiler + Clang + i64 guest",
-      verified:results.length-failed,failed,ok:failed===0&&unchanged,results};
+      verified:results.length-failed,failed,ok:failed===0&&unchanged,
+      parityCertified:false,results};
   }finally{await rm(root,{recursive:true,force:true});}
 }
