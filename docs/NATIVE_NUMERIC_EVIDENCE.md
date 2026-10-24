@@ -25,9 +25,10 @@ Example (replace all paths and pins with locally verified values):
       --compiler-sha256=EXACT_64_HEX_HASH \
       --clang=/approved/toolchain/clang \
       --clang-sha256=EXACT_64_HEX_HASH \
-      --source-commit=EXACT_40_HEX_LLVM_HEAD
+      --source-commit=EXACT_40_HEX_LLVM_HEAD \
+      --manifest-sha256=EXACT_64_HEX_FIXTURE_HASH
 
-This command has no skip mode: omitted/invalid pins exit 2.
+This command has no skip mode: omitted/invalid pins exit 2. Compute the fixture hash independently using `sha256sum fixtures/numeric-separators-source-v1.json` on the exact reviewed corpus commit; the adapter will fail before spawning any tool if those bytes differ.
 A completed but mismatching run exits 1; a matching 26-case execution exits 0
 and prints a JSON *native LLVM guest evidence* receipt.
 
