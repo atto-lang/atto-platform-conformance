@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {readFile,writeFile,mkdtemp,lstat,chmod,rm,symlink} from "node:fs/promises";
+import {readFile,writeFile,mkdtemp,lstat,mkdir,chmod,rm,symlink} from "node:fs/promises";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
 import {spawnSync} from "node:child_process";
@@ -180,6 +180,28 @@ test("bounded real child process execution distinguishes failure, signal and tim
     createHash("sha256").update(raw).digest("hex"));
   assert.notEqual(invalidUtf8.stdoutSha256,
     createHash("sha256").update(Buffer.from(invalidUtf8.stdout)).digest("hex"));
+});
+
+test("native verifier refuses group/world-writable Clang resource roots",async()=>{
+  const dir=await mkdtemp(join(tmpdir(),"ores-num-resource-perms-"));
+  const compiler=join(dir,"compiler");
+  const clang=join(dir,"clang");
+  const resources=join(dir,"resources");
+  try{
+    const script=Buffer.from("#!/bin/sh\\nexit 0\\n");
+    const sha=x=>createHash("sha256").update(x).digest("hex");
+    await writeFile(compiler,script,{mode:0o500});
+    await writeFile(clang,script,{mode:0o500});
+    await mkdir(resources,{mode:0o700});
+    await chmod(resources,0o777);
+    const manifest=await readFile(corpusPath);
+    await assert.rejects(executeNativeNumericCorpus({
+      compiler,compilerSha256:sha(script),
+      clang,clangSha256:sha(script),
+      clangResourceDir:resources,
+      sourceCommit:"a".repeat(40),manifestSha256:sha(manifest)
+    }),/non-group\\/world-writable/);
+  }finally{await rm(dir,{recursive:true,force:true});}
 });
 
 test("real 26-case admission loop fails closed on fake compiler and mismatched diagnostics",async()=>{
