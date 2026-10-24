@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "contract": "oreslang.numeric-separators/source-v1",
+  "status": "candidate-unattested",
+  "scope": "compiler-source-admission; i64 runtime checks require independent guest execution",
+  "targetBackends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm-via-llvm"
+  ],
+  "notes": [
+    "These are identical guest source bytes for a candidate cross-backend test, not evidence that any backend ran.",
+    "WASM is a pinned LLVM-to-Wasm backend and must not be counted as an independently implemented parser.",
+    "No assertion of checked-arithmetic default semantics or actor-feature parity.",
+    "Float/exponent/imaginary and actor concurrency separators have Java-only lexer coverage; .NET scalar source subset does not currently support them."
+  ],
+  "cases": [
+    {
+      "id": "unary-plus-42",
+      "expression": "+42",
+      "expect": "accept",
+      "expectedI64": "42",
+      "guestSource": "pub fnc main():int{return +42;}\n"
+    },
+    {
+      "id": "int-split-add",
+      "expression": "+(4_0+2)",
+      "expect": "accept",
+      "expectedI64": "42",
+      "guestSource": "pub fnc main():int{return +(4_0+2);}\n"
+    },
+    {
+      "id": "int-split-sub",
+      "expression": "40_0-35_8",
+      "expect": "accept",
+      "expectedI64": "42",
+      "guestSource": "pub fnc main():int{return 40_0-35_8;}\n"
+    },
+    {
+      "id": "int-split-mul",
+      "expression": "2_1*2",
+      "expect": "accept",
+      "expectedI64": "42",
+      "guestSource": "pub fnc main():int{return 2_1*2;}\n"
+    },
+    {
+      "id": "int-split-zero",
+      "expression": "+0_0",
+      "expect": "accept",
+      "expectedI64": "0",
+      "guestSource": "pub fnc main():int{return +0_0;}\n"
+    },
+    {
+      "id": "int-split-both",
+      "expression": "1_0+3_2",
+      "expect": "accept",
+      "expectedI64": "42",
+      "guestSource": "pub fnc main():int{return 1_0+3_2;}\n"
+    },
+    {
+      "id": "int-nested-unary",
+      "expression": "-+(0-42)",
+      "expect": "accept",
+      "expectedI64": "42",
+      "guestSource": "pub fnc main():int{return -+(0-42);}\n"
+    },
+    {
+      "id": "bad-trailing",
+      "expression": "1_",
+      "expect": "reject",
+      "category": "separator",
+      "guestSource": "pub fnc main():int{return 1_;}\n"
+    },
+    {
+      "id": "bad-double",
+      "expression": "1__2",
+      "expect": "reject",
+      "category": "separator",
+      "guestSource": "pub fnc main():int{return 1__2;}\n"
+    },
+    {
+      "id": "bad-plus-boundary",
+      "expression": "1_+2",
+      "expect": "reject",
+      "category": "separator",
+      "guestSource": "pub fnc main():int{return 1_+2;}\n"
+    },
+    {
+      "id": "bad-gap",
+      "expression": "1_ 2",
+      "expect": "reject",
+      "category": "separator",
+      "guestSource": "pub fnc main():int{return 1_ 2;}\n"
+    },
+    {
+      "id": "bad-int-alpha",
+      "expression": "1_a",
+      "expect": "reject",
+      "category": "separator",
+      "guestSource": "pub fnc main():int{return 1_a;}\n"
+    },
+    {
+      "id": "bad-overflow",
+      "expression": "9_223_372_036_854_775_808",
+      "expect": "reject",
+      "category": "i64-overflow",
+      "guestSource": "pub fnc main():int{return 9_223_372_036_854_775_808;}\n"
+    },
+    {
+      "id": "bad-unary-overflow",
+      "expression": "+9_223_372_036_854_775_808",
+      "expect": "reject",
+      "category": "i64-overflow",
+      "guestSource": "pub fnc main():int{return +9_223_372_036_854_775_808;}\n"
+    },
+    {
+      "id": "bad-unary-bool",
+      "expression": "+true",
+      "expect": "reject",
+      "category": "type",
+      "guestSource": "pub fnc main():int{return +true;}\n"
+    },
+    {
+      "id": "bad-unary-string",
+      "expression": "+\"x\"",
+      "expect": "reject",
+      "category": "type",
+      "guestSource": "pub fnc main():int{return +\"x\";}\n"
+    },
+    {
+      "id": "bad-unary-empty",
+      "expression": "+",
+      "expect": "reject",
+      "category": "syntax",
+      "guestSource": "pub fnc main():int{return +;}\n"
+    }
+  ]
+}
