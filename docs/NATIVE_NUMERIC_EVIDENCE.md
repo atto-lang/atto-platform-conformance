@@ -25,6 +25,7 @@ Example (replace all paths and pins with locally verified values):
       --compiler-sha256=EXACT_64_HEX_HASH \
       --clang=/approved/toolchain/clang \
       --clang-sha256=EXACT_64_HEX_HASH \
+      --clang-resource-dir=/canonical/reviewed/clang/resource/dir \
       --source-commit=EXACT_40_HEX_LLVM_HEAD \
       --manifest-sha256=EXACT_64_HEX_FIXTURE_HASH
 
@@ -57,11 +58,14 @@ For each of the 26 exact guestSource byte sequences:
    reject admission. Re-hash **both** snapshots and originals at suite exit.
    Any changed executable revokes all results. Temporary binaries, source,
    LLVM IR, executable and shim are removed.
-6. Run Clang with the original installed resource-directory path specified
-   explicitly. Resource files, shared libraries, the linker and host system
-   are **external trusted dependencies** and are not pinned by the two
-   executable hashes. Source-head compiler build provenance still requires
-   an independent reviewer and exact-tree build record.
+6. Supply Clang's reviewed canonical resource directory explicitly with
+   --clang-resource-dir. It can be determined from the trusted original
+   installation with `/absolute/path/to/clang -print-resource-dir` before
+   running the suite, then validated as a real directory. The native runner
+   executes only the **private snapshots**, not the mutable caller paths.
+   Resource files, shared libraries, the linker and host system remain
+   **external trusted dependencies**, not part of the two executable hashes.
+   Compiler build provenance still needs an independent exact-tree review.
 
 Only use this runner with reviewed compiler/source bytes: it executes real
 subprocesses and is not a sandbox for untrusted executables.
