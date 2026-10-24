@@ -48,6 +48,25 @@ test('symlinked source path fails closed',async()=>{
 test('malformed SHA fails before Git inspection',async()=>{
  const f=await setup();try{await assert.rejects(verifySourceCheckout({...f.opts,expectedCommit:'INVALID'}),/40-character/)}finally{await rm(f.root,{recursive:true,force:true})}
 });
+test('ignored extra files fail closed even when git status is clean',async()=>{
+ const f=await setup();try{
+  await writeFile(join(f.root,'.gitignore'),'ignored.bin\n');
+  git(f.root,'add','.gitignore');git(f.root,'commit','-qm','ignore pattern');
+  const opts={sourceDir:f.root,expectedCommit:git(f.root,'rev-parse','HEAD'),expectedTree:git(f.root,'rev-parse','HEAD^{tree}')};
+  await writeFile(join(f.root,'ignored.bin'),'host override');
+  assert.equal(git(f.root,'status','--porcelain=v1'),'');
+  await assert.rejects(verifySourceCheckout(opts),/ignored local files/);
+ }finally{await rm(f.root,{recursive:true,force:true})}
+});
+test('assume-unchanged and skip-worktree flags fail closed',async()=>{
+ const f=await setup();try{
+  git(f.root,'update-index','--assume-unchanged','source.txt');
+  await assert.rejects(verifySourceCheckout(f.opts),/sparse\/assume-unchanged/);
+  git(f.root,'update-index','--no-assume-unchanged','source.txt');
+  git(f.root,'update-index','--skip-worktree','source.txt');
+  await assert.rejects(verifySourceCheckout(f.opts),/sparse\/assume-unchanged/);
+ }finally{await rm(f.root,{recursive:true,force:true})}
+});
 test('CLI fail-closed contract and successful JSON receipt',async()=>{
  const f=await setup();try{
   const ok=spawnSync(process.execPath,[script,'--source-dir='+f.root,'--commit='+f.commit,'--tree='+f.tree],{encoding:'utf8'});
