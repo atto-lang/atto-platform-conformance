@@ -53,6 +53,36 @@ test("rejects host stub promoted as compiler guest",()=>{
   assert.match(result.errors.join("\n"),/compilerProduced/);
 });
 
+test("rejects omitted hostReferenceOnly at compiler-guest stage",()=>{
+  const receipt=baseReceipt();
+  delete receipt.evidence.hostReferenceOnly;
+  const result=verifyPlatformCapabilityReceipt(receipt,contract);
+  assert.equal(result.ok,false);
+  assert.match(result.errors.join("\n"),/hostReferenceOnly=false/);
+});
+
+test("rejects a reordered alternate v1 contract",()=>{
+  const weakened=structuredClone(contract);
+  weakened.stageOrder=["compiler-guest"];
+  const receipt=baseReceipt();
+  delete receipt.evidence.abiLinked;
+  delete receipt.evidence.hostReferenceOnly;
+  delete receipt.evidence.compilerProduced;
+  delete receipt.evidence.compilerSourceCommit;
+  delete receipt.evidence.compilerBinarySha256;
+  const result=verifyPlatformCapabilityReceipt(receipt,weakened);
+  assert.equal(result.ok,false);
+  assert.match(result.errors.join("\n"),/stageOrder/);
+});
+
+test("rejects alternate contract repository substitution",()=>{
+  const weakened=structuredClone(contract);
+  weakened.platforms.desktop.repository="attacker/private-carrier";
+  const result=verifyPlatformCapabilityReceipt(baseReceipt(),weakened);
+  assert.equal(result.ok,false);
+  assert.match(result.errors.join("\n"),/repository mismatch for desktop/);
+});
+
 test("rejects repository/platform substitution",()=>{
   const receipt=baseReceipt();
   receipt.repository="ores-truffle-oreslang/oreslang-platform.mobile";
