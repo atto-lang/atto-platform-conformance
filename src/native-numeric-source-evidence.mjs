@@ -22,10 +22,10 @@ export function nativeNumericDiagnostic(category,stderr){
   const primary=stderr.split(/\r?\n/).find(line=>line.trim().length>0);
   if(!primary||!primary.startsWith("oreslang-llvmc: "))return false;
   const diagnostic=primary.slice("oreslang-llvmc: ".length);
-  if(category==="separator")return /\bmalformed integer separator\b/.test(diagnostic);
-  if(category==="i64-overflow")return /\binteger literal overflows signed 64-bit\b/.test(diagnostic);
-  if(category==="type")return /\barithmetic requires (?:i64|int), got (?:bool|String|string)\b/.test(diagnostic);
-  if(category==="syntax")return /\b(?:expected (?:identifier|expression|integer literal)|unsupported native expression|unexpected token)\b/.test(diagnostic);
+  if(category==="separator")return /^malformed integer separator\b/.test(diagnostic);
+  if(category==="i64-overflow")return /^integer literal overflows signed 64-bit\b/.test(diagnostic);
+  if(category==="type")return /^arithmetic requires (?:i64|int), got (?:bool|String|string)\b/.test(diagnostic);
+  if(category==="syntax")return /^(?:expected (?:identifier|expression|integer literal)|unsupported native expression|unexpected token)\b/.test(diagnostic);
   return false;
 }
 export function renameNumericGuestMain(ir){
