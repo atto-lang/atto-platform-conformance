@@ -1,0 +1,18 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {spawnSync} from 'node:child_process';
+import {mkdtemp,writeFile,readFile,chmod,symlink,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {verifySourceCheckout} from '../bin/verify-source-checkout.mjs';
+const git=(dir,...args)=>{let p=spawnSync('git',args,{cwd:dir,encoding:'utf8',timeout:10000});assert.equal(p.status,0,p.stderr);return p.stdout.trim();};
+async function setup(){const dir=await mkdtemp(join(tmpdir(),'ores-raw-blob-'));git(dir,'init','-q');git(dir,'config','user.email','audit@example.invalid');git(dir,'config','user.name','Audit');await writeFile(join(dir,'payload.src'),'ORIGINAL\n');git(dir,'add','.');git(dir,'commit','-qm','base');return dir;}
+const pins=dir=>({sourceDir:dir,expectedCommit:git(dir,'rev-parse','HEAD'),expectedTree:git(dir,'rev-parse','HEAD^{tree}')});
+async function inRepo(fn){const dir=await setup();try{await fn(dir)}finally{await rm(dir,{recursive:true,force:true})}}
+test('pristine checkout raw file SHA matches staged Git object',()=>inRepo(async dir=>{const x=await verifySourceCheckout(pins(dir));assert.equal(x.trackedRawBytesVerified,true);assert.equal(x.trackedFileCount,1);assert.equal(x.compilerBuildAttested,false)}));
+test('malicious filter-cleaned working tree is not exact source even with clean Git status',()=>inRepo(async dir=>{git(dir,'config','filter.oresclean.clean',"sed 's/MALICIOUS/ORIGINAL/g'");git(dir,'config','filter.oresclean.smudge','cat');git(dir,'config','filter.oresclean.required','true');await writeFile(join(dir,'.gitattributes'),'*.src filter=oresclean\n');git(dir,'add','.');git(dir,'commit','-qm','enable-filter');await writeFile(join(dir,'payload.src'),'MALICIOUS\n');git(dir,'add','payload.src');assert.equal(git(dir,'status','--porcelain=v1'),'');assert.equal(git(dir,'hash-object','payload.src'),git(dir,'rev-parse','HEAD:payload.src'));assert.notEqual(git(dir,'hash-object','--no-filters','payload.src'),git(dir,'rev-parse','HEAD:payload.src'));await assert.rejects(verifySourceCheckout(pins(dir)),/raw bytes differ/)}));
+test('new tracked bytes cannot be masked by git clean filter',()=>inRepo(async dir=>{await writeFile(join(dir,'payload.src'),'REPLACED\n');git(dir,'add','payload.src');git(dir,'commit','-qm','update');const x=await verifySourceCheckout(pins(dir));assert.equal(x.trackedRawBytesVerified,true)}));
+test('local core.filemode false cannot hide executable mode change',()=>inRepo(async dir=>{git(dir,'config','core.filemode','false');await chmod(join(dir,'payload.src'),0o755);assert.equal(git(dir,'status','--porcelain'),'');await assert.rejects(verifySourceCheckout(pins(dir)),/tracked or untracked changes/)}));
+test('regular tracked executable mode is accepted',()=>inRepo(async dir=>{await chmod(join(dir,'payload.src'),0o755);git(dir,'add','payload.src');git(dir,'commit','-qm','executable');const x=await verifySourceCheckout(pins(dir));assert.equal(x.trackedFileCount,1)}));
+test('symlink tracked Git object fails closed',()=>inRepo(async dir=>{await symlink('payload.src',join(dir,'linked.src'));git(dir,'add','linked.src');git(dir,'commit','-qm','symlink');await assert.rejects(verifySourceCheckout(pins(dir)),/nonregular/)}));
+test('ignored files fail closed',()=>inRepo(async dir=>{await writeFile(join(dir,'.gitignore'),'secrets.txt\n');git(dir,'add','.gitignore');git(dir,'commit','-qm','ignore');await writeFile(join(dir,'secrets.txt'),'private');await assert.rejects(verifySourceCheckout(pins(dir)),/ignored/)}));
