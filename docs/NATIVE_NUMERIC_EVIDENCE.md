@@ -88,10 +88,14 @@ mirroring must pass the mandatory pre-copy visibility and allowlist gate.
 
 A rejected fixture cannot be accepted from a secondary or trailing forged
 `oreslang-llvmc:` line: only the **first nonblank diagnostic line** supplies
-the primary failure category. Every compiler receipt records its exit status,
+the primary failure category. That first line's message must **begin** with
+the exact expected category, rather than mentioning it inside a generic
+internal error or quoted message. Every compiler receipt records its exit status,
 signal/error, original stdout/stderr byte counts and SHA-256 checksums.
 Clang and executed-guest receipts also record their signal/error, plus
-appropriate output hashes. Hashes are computed on the *raw pipe buffers*
+appropriate output hashes and byte counts. An otherwise successful Clang
+invocation with unexpected stdout is not accepted as a clean guest build;
+Clang warnings on stderr are separately retained as hashed evidence. Hashes are computed on the *raw pipe buffers*
 before UTF-8 decoding, so binary or malformed output cannot silently change
 the evidence digest via text replacement characters. Process timeouts,
 signals and output-buffer failures fail closed.
