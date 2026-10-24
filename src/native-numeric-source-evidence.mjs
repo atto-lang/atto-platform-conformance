@@ -114,7 +114,7 @@ export function validateNumericCorpus(manifest){
   if(yes!==12||no!==14)throw Error("numeric corpus count drift");
   return manifest;
 }
-export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,clangSha256,sourceCommit,manifestSha256}={}){
+export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,clangSha256,clangResourceDir,sourceCommit,manifestSha256}={}){
   if(!revision40(sourceCommit))throw Error("exact 40-character LLVM source SHA required");
   if(!digest64(manifestSha256))throw Error("exact pinned manifest SHA-256 required");
   const manifestBytes=await readFile(fixture);
@@ -135,17 +135,15 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
       file:clang,digest:clangSha256,label:"Clang",
       workspace:root,filename:"clang"
     });
-    // A copied Clang binary moves relative to its builtin resource files.
-    // Query the original pinned installation for its canonical resource path;
-    // the copied Clang's relative resource lookup would point at the new
-    // private workspace instead. The resource dir is a trusted
-    // host/toolchain dependency, not part of the two executable SHA pins.
-    const resourceQuery=runNumericCommand(clang,["-print-resource-dir"]);
-    if(!succeeded(resourceQuery)||!/^[^\r\n]+\n?$/.test(resourceQuery.stdout))
-      throw Error("pinned Clang resource directory unavailable");
-    const resourceDir=await realpath(resourceQuery.stdout.trim());
-    if(!isAbsolute(resourceDir)||!(await lstat(resourceDir)).isDirectory())
-      throw Error("Clang resource directory invalid");
+    // A staged Clang moves relative to its builtin resource files. Require
+    // an independently reviewed canonical install directory instead of
+    // executing the mutable original Clang to discover a resource path.
+    // These resources and host libraries are external trusted dependencies;
+    // they are NOT included in the executable SHA-256 proof.
+    if(!isAbsolute(clangResourceDir)||await realpath(clangResourceDir)!==clangResourceDir ||
+       !(await lstat(clangResourceDir)).isDirectory())
+      throw Error("Clang resource directory must be a canonical absolute directory");
+    const resourceDir=clangResourceDir;
     const reporter=join(root,"report.c");
     await writeFile(reporter,shim,{mode:0o400,flag:"wx"});
     for(const c of cases){
