@@ -136,9 +136,11 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
       workspace:root,filename:"clang"
     });
     // A copied Clang binary moves relative to its builtin resource files.
-    // Obtain its canonical original resource path explicitly; it is a trusted
+    // Query the original pinned installation for its canonical resource path;
+    // the copied Clang's relative resource lookup would point at the new
+    // private workspace instead. The resource dir is a trusted
     // host/toolchain dependency, not part of the two executable SHA pins.
-    const resourceQuery=command(stagedClang,["-print-resource-dir"]);
+    const resourceQuery=command(clang,["-print-resource-dir"]);
     if(!succeeded(resourceQuery)||!/^[^\r\n]+\n?$/.test(resourceQuery.stdout))
       throw Error("pinned Clang resource directory unavailable");
     const resourceDir=await realpath(resourceQuery.stdout.trim());
