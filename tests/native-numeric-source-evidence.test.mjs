@@ -1,10 +1,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {readFile} from "node:fs/promises";
+import {readFile,writeFile,mkdtemp,lstat,chmod,rm,symlink} from "node:fs/promises";
+import {tmpdir} from "node:os";
+import {join} from "node:path";
+import {spawnSync} from "node:child_process";
+import {createHash} from "node:crypto";
+import {hashExecutableBounded} from "../src/harness.mjs";
 import {fileURLToPath} from "node:url";
 import {
   nativeNumericDiagnostic,renameNumericGuestMain,validateNumericCorpus,
-  executeNativeNumericCorpus
+  executeNativeNumericCorpus,stageNumericExecutable
 } from "../src/native-numeric-source-evidence.mjs";
 
 const corpusPath=fileURLToPath(new URL("../fixtures/numeric-separators-source-v1.json",import.meta.url));
@@ -69,4 +74,64 @@ test("native corpus execution fails closed on missing or changed fixture/tool pi
   }),/manifest SHA-256 mismatch/);
   // The fixture digest must be supplied independently, not derived from the
   // same mutable manifest inside the execution command.
+});
+
+
+test("private executable snapshots isolate mutations of original tool bytes",async()=>{
+  const dir=await mkdtemp(join(tmpdir(),"ores-num-tool-test-"));
+  const runner=join(dir,"runner");
+  const origin=join(dir,"origin");
+  try{
+    await (await import("node:fs/promises")).mkdir(runner,{mode:0o700});
+    const bytes=Buffer.from("#!/bin/sh\nprintf 'original\\n'\n");
+    await writeFile(origin,bytes,{mode:0o500});
+    const digest=createHash("sha256").update(bytes).digest("hex");
+    const staged=await stageNumericExecutable({
+      file:origin,digest,label:"synthetic compiler",
+      workspace:runner,filename:"oreslang-llvmc"
+    });
+    const stat=await lstat(staged);
+    assert.equal(stat.mode&0o777,0o500);
+    assert.equal(await hashExecutableBounded(staged),digest);
+    const first=spawnSync(staged,[],{encoding:"utf8",timeout:3000});
+    assert.equal(first.status,0);
+    assert.equal(first.stdout,"original\n");
+    // A mutation at the caller path cannot alter the already staged bytes.
+    await chmod(origin,0o700);
+    await writeFile(origin,"#!/bin/sh\nprintf 'tampered\\n'\n");
+    const second=spawnSync(staged,[],{encoding:"utf8",timeout:3000});
+    assert.equal(second.status,0);
+    assert.equal(second.stdout,"original\n");
+    assert.equal(await hashExecutableBounded(staged),digest);
+  }finally{await rm(dir,{recursive:true,force:true});}
+});
+
+test("snapshot admission rejects symlinks, wrong pins and non-private directories",async()=>{
+  const dir=await mkdtemp(join(tmpdir(),"ores-num-tool-deny-"));
+  const runner=join(dir,"runner");
+  const origin=join(dir,"origin");
+  const alias=join(dir,"alias");
+  try{
+    await (await import("node:fs/promises")).mkdir(runner,{mode:0o700});
+    const bytes=Buffer.from("#!/bin/sh\nexit 0\n");
+    await writeFile(origin,bytes,{mode:0o500});
+    await symlink(origin,alias);
+    const digest=createHash("sha256").update(bytes).digest("hex");
+    await assert.rejects(stageNumericExecutable({
+      file:alias,digest,label:"linked fake",workspace:runner,filename:"clang"
+    }),/canonical|symlink/);
+    await assert.rejects(stageNumericExecutable({
+      file:origin,digest:"f".repeat(64),label:"wrong hash",
+      workspace:runner,filename:"clang"
+    }),/SHA-256 differs/);
+    await chmod(runner,0o770);
+    await assert.rejects(stageNumericExecutable({
+      file:origin,digest,label:"group-write workspace",
+      workspace:runner,filename:"clang"
+    }),/must be private/);
+    await assert.rejects(stageNumericExecutable({
+      file:origin,digest,label:"wrong slot",
+      workspace:runner,filename:"compiler"
+    }),/unexpected numeric executable snapshot name/);
+  }finally{await rm(dir,{recursive:true,force:true});}
 });
