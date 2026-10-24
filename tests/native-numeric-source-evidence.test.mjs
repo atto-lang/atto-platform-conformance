@@ -9,7 +9,7 @@ import {hashExecutableBounded} from "../src/harness.mjs";
 import {fileURLToPath} from "node:url";
 import {
   nativeNumericDiagnostic,renameNumericGuestMain,validateNumericCorpus,
-  executeNativeNumericCorpus,stageNumericExecutable
+  executeNativeNumericCorpus,stageNumericExecutable,runNumericCommand
 } from "../src/native-numeric-source-evidence.mjs";
 
 const corpusPath=fileURLToPath(new URL("../fixtures/numeric-separators-source-v1.json",import.meta.url));
@@ -133,5 +133,55 @@ test("snapshot admission rejects symlinks, wrong pins and non-private directorie
       file:origin,digest,label:"wrong slot",
       workspace:runner,filename:"compiler"
     }),/unexpected numeric executable snapshot name/);
+  }finally{await rm(dir,{recursive:true,force:true});}
+});
+
+
+test("bounded real child process execution distinguishes failure, signal and timeout",()=>{
+  const nonzero=runNumericCommand(process.execPath,["-e","process.stderr.write('bad source');process.exit(7)"],3000);
+  assert.equal(nonzero.code,7);
+  assert.equal(nonzero.stderr,"bad source");
+  assert.equal(nonzero.error,null);
+  const signalled=runNumericCommand(process.execPath,["-e",
+    "process.kill(process.pid,'SIGTERM')"],3000);
+  assert.notEqual(signalled.signal,null);
+  const timedOut=runNumericCommand(process.execPath,["-e","while(true){}"],120);
+  assert.equal(timedOut.error,"ETIMEDOUT");
+  assert.notEqual(timedOut.code,0);
+  const tooMuch=runNumericCommand(process.execPath,["-e",
+    "process.stdout.write('x'.repeat(5*1024*1024))"],3000);
+  assert.ok(tooMuch.error||tooMuch.signal||tooMuch.code!==0);
+});
+
+test("real 26-case admission loop fails closed on fake compiler and mismatched diagnostics",async()=>{
+  const dir=await mkdtemp(join(tmpdir(),"ores-numeric-negative-"));
+  try{
+    const compiler=join(dir,"fake-compiler");
+    const clang=join(dir,"fake-clang");
+    // These programs are only deliberately untrusted test doubles, not
+    // evidence that an Oreslang guest was compiled. Every accepted source
+    // must remain a mismatch even if the test double exits with a diagnostic.
+    const compilerBytes=Buffer.from("#!/bin/sh\n"+
+      "printf 'oreslang-llvmc: malformed integer separator at byte 0\\n' >&2\nexit 1\n");
+    const clangBytes=Buffer.from("#!/bin/sh\n"+
+      "if [ \"$1\" = \"-print-resource-dir\" ]; then printf '/tmp\\n'; exit 0; fi\nexit 1\n");
+    await writeFile(compiler,compilerBytes,{mode:0o500});
+    await writeFile(clang,clangBytes,{mode:0o500});
+    const manifestBytes=await readFile(corpusPath);
+    const sha=bytes=>createHash("sha256").update(bytes).digest("hex");
+    const receipt=await executeNativeNumericCorpus({
+      compiler,compilerSha256:sha(compilerBytes),
+      clang,clangSha256:sha(clangBytes),
+      sourceCommit:"a".repeat(40),manifestSha256:sha(manifestBytes)
+    });
+    assert.equal(receipt.ok,false);
+    assert.equal(receipt.parityCertified,false);
+    assert.equal(receipt.sourceCommitAttested,false);
+    assert.equal(receipt.results.length,26);
+    assert.equal(receipt.results.filter(x=>x.expect==="accept"&&x.status!=="MISMATCH").length,0);
+    assert.equal(receipt.results.filter(x=>x.category==="i64-overflow"&&
+      x.status!=="MISMATCH").length,0);
+    assert.equal(receipt.results.filter(x=>x.category==="type"&&
+      x.status!=="MISMATCH").length,0);
   }finally{await rm(dir,{recursive:true,force:true});}
 });
