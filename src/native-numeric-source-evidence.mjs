@@ -183,9 +183,13 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
           evidence.clangExit=linked.code;
           evidence.clangSignal=linked.signal;
           evidence.clangError=linked.error;
+          evidence.clangStdoutSha256=linked.stdoutSha256;
           evidence.clangStderrSha256=linked.stderrSha256;
+          evidence.clangStdoutBytes=linked.stdoutBytes;
           evidence.clangStderrBytes=linked.stderrBytes;
-          if(succeeded(linked)){
+          // A successful linker invocation must not claim a clean guest
+          // build while silently writing unclassified stdout diagnostics.
+          if(succeeded(linked)&&linked.stdout===""){
             const guest=runNumericCommand(exe,[],10000);
             evidence.guestExit=guest.code;
             evidence.guestSignal=guest.signal;
@@ -193,6 +197,7 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
             evidence.guestStderrSha256=guest.stderrSha256;
             evidence.guestStdoutSha256=guest.stdoutSha256;
             evidence.guestStdoutBytes=guest.stdoutBytes;
+            evidence.guestStderrBytes=guest.stderrBytes;
             if(succeeded(guest)&&guest.stderr===""&&
               /^-?(0|[1-9][0-9]*)\n$/.test(guest.stdout)){
               evidence.observedI64=guest.stdout.trim();
