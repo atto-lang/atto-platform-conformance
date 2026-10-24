@@ -9,7 +9,8 @@ import {hashExecutableBounded} from "../src/harness.mjs";
 import {fileURLToPath} from "node:url";
 import {
   nativeNumericDiagnostic,renameNumericGuestMain,validateNumericCorpus,
-  executeNativeNumericCorpus,stageNumericExecutable,runNumericCommand
+  executeNativeNumericCorpus,stageNumericExecutable,runNumericCommand,
+  snapshotNumericClangResources
 } from "../src/native-numeric-source-evidence.mjs";
 
 const corpusPath=fileURLToPath(new URL("../fixtures/numeric-separators-source-v1.json",import.meta.url));
@@ -200,7 +201,60 @@ test("native verifier refuses group/world-writable Clang resource roots",async()
       clang,clangSha256:sha(script),
       clangResourceDir:resources,
       sourceCommit:"a".repeat(40),manifestSha256:sha(manifest)
-    }),/non-group[/]world-writable/);
+    }),/group[/]world-writable/);
+  }finally{await rm(dir,{recursive:true,force:true});}
+});
+
+test("Clang resource tree snapshots detect nested mutation and forbid symlinks",async()=>{
+  const dir=await mkdtemp(join(tmpdir(),"ores-clang-tree-audit-"));
+  const nested=join(dir,"include");
+  const header=join(nested,"stdint.h");
+  const link=join(nested,"alias.h");
+  try{
+    await mkdir(nested,{mode:0o700});
+    await writeFile(header,"ABCD\n",{mode:0o600});
+    const before=await snapshotNumericClangResources(dir);
+    assert.equal(before.files,1);
+    assert.equal(before.entries,3);
+    assert.match(before.sha256,/^[a-f0-9]{64}$/);
+    await writeFile(header,"WXYZ\n");
+    const after=await snapshotNumericClangResources(dir);
+    assert.notEqual(after.sha256,before.sha256,
+      "same-length changed header bytes must change resource digest");
+    await chmod(header,0o666);
+    await assert.rejects(snapshotNumericClangResources(dir),/group\/world-writable/);
+    await chmod(header,0o600);
+    await symlink(header,link);
+    await assert.rejects(snapshotNumericClangResources(dir),/symlink/);
+  }finally{await rm(dir,{recursive:true,force:true});}
+});
+
+test("runtime Clang resource changes revoke all otherwise recorded evidence",async()=>{
+  const dir=await mkdtemp(join(tmpdir(),"ores-clang-tree-drift-"));
+  try{
+    const resourceDir=join(dir,"resources");
+    const header=join(resourceDir,"test.h");
+    const compiler=join(dir,"compiler");
+    const clang=join(dir,"clang");
+    await mkdir(resourceDir,{mode:0o700});
+    await writeFile(header,"BEFORE\n",{mode:0o600});
+    const compilerBytes=Buffer.from(
+      "#!/bin/sh\nprintf 'AFTER\\n' > '"+header+"'\n"+
+      "printf 'oreslang-llvmc: malformed integer separator at byte 0\\n' >&2\nexit 1\n");
+    const clangBytes=Buffer.from("#!/bin/sh\nexit 0\n");
+    await writeFile(compiler,compilerBytes,{mode:0o500});
+    await writeFile(clang,clangBytes,{mode:0o500});
+    const sha=x=>createHash("sha256").update(x).digest("hex");
+    const manifest=await readFile(corpusPath);
+    const result=await executeNativeNumericCorpus({
+      compiler,compilerSha256:sha(compilerBytes),
+      clang,clangSha256:sha(clangBytes),clangResourceDir:resourceDir,
+      sourceCommit:"e".repeat(40),manifestSha256:sha(manifest)
+    });
+    assert.equal(result.ok,false);
+    assert.equal(result.clangResourceTreeUnchanged,false);
+    assert.equal(result.failed,26);
+    assert.ok(result.results.every(x=>x.status==="TOOLCHAIN_CHANGED"));
   }finally{await rm(dir,{recursive:true,force:true});}
 });
 
