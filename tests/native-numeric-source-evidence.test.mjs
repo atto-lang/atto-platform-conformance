@@ -41,14 +41,22 @@ test("primary LLVM error categorization does not confuse failures",()=>{
     "fatal: command timed out"),false);
 });
 
-test("LLVM entry rewrite is an i64 ABI gate, not a string substitution guess",()=>{
-  const original="; ModuleID = 'numeric'\ndefine i64 @main() {\nentry:\n ret i64 42\n}\n";
+test("real LLVM host ABI isolates i64 guest from i32 status wrapper",()=>{
+  // LLVM LlvmCodegen.cpp exports @__oreslang_guest_main() returning i64
+  // and a distinct @main() returning i32 with status conversion. A false
+  // assumption that i64 @main() exists would make every corpus case fail.
+  const original="; ModuleID = 'numeric'\n"
+    +"define i64 @__oreslang_guest_main() {\nentry:\n ret i64 -9223372036854775808\n}\n"
+    +"define i32 @main() {\nentry:\n %v = call i64 @__oreslang_guest_main()\n"
+    +" %truncated = trunc i64 %v to i32\n ret i32 %truncated\n}\n";
   const changed=renameNumericGuestMain(original);
-  assert.ok(changed.includes("define i64 @oreslang_numeric_guest_main()"));
-  assert.ok(!changed.includes("define i64 @main()"));
-  assert.throws(()=>renameNumericGuestMain("define i32 @main() { ret i32 1 }"),
-    /exactly one/);
-  assert.throws(()=>renameNumericGuestMain(original+original),/exactly one/);
+  assert.ok(changed.includes("define i64 @__oreslang_guest_main()"));
+  assert.ok(changed.includes("define i32 @oreslang_numeric_unused_host_main()"));
+  assert.ok(changed.includes("call i64 @__oreslang_guest_main()"));
+  assert.ok(!changed.includes("define i32 @main()"));
+  assert.throws(()=>renameNumericGuestMain("define i64 @main() { ret i64 1 }"),
+    /one i64/);
+  assert.throws(()=>renameNumericGuestMain(original+original),/one i64/);
   assert.throws(()=>renameNumericGuestMain(""),/missing or oversized/);
 });
 
