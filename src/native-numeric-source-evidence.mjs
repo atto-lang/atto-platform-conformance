@@ -27,19 +27,28 @@ export function nativeNumericDiagnostic(category,stderr){
 export function renameNumericGuestMain(ir){
   if(typeof ir!=="string"||ir.length<10||ir.length>4*1024*1024)
     throw Error("missing or oversized LLVM IR");
-  if((ir.match(/\bdefine\b[^\r\n]{0,300}\bi64\s+@main\s*\(\s*\)/g)||[]).length!==1)
-    throw Error("expected exactly one guest i64 main() definition");
-  const renamed=ir.replace(/@main(?=\s*\()/g,"@oreslang_numeric_guest_main");
-  if(/@main(?=\s*\()/.test(renamed))throw Error("unrenamed guest main");
+  // Actual oreslang-llvmc host-target IR has TWO entrypoints:
+  //   define i64 @__oreslang_guest_main()  ; real guest function
+  //   define i32 @main()                   ; OS ABI wrapper with exit clamping
+  // Do not attempt to rename a nonexistent i64 @main() or observe the
+  // clamped i32 host status as a full-width signed i64 guest result.
+  const guestDefs=ir.match(/\bdefine\b[^\r\n]{0,300}\bi64\s+@__oreslang_guest_main\s*\(\s*\)/g)||[];
+  const hostDefs=ir.match(/\bdefine\b[^\r\n]{0,300}\bi32\s+@main\s*\(\s*\)/g)||[];
+  if(guestDefs.length!==1||hostDefs.length!==1)
+    throw Error("expected one i64 __oreslang_guest_main and one i32 host main wrapper");
+  // Keep the actual Oreslang guest callable, retire only the host wrapper
+  // before linking an independent reporting shim that calls the guest.
+  const renamed=ir.replace(/@main(?=\s*\()/g,"@oreslang_numeric_unused_host_main");
+  if(/@main(?=\s*\()/.test(renamed))throw Error("unrenamed native host wrapper");
   return renamed;
 }
 const shim=[
  "#include <inttypes.h>",
  "#include <stdint.h>",
  "#include <stdio.h>",
- "extern int64_t oreslang_numeric_guest_main(void);",
+ "extern int64_t __oreslang_guest_main(void);",
  "int main(void) {",
- "  if (printf(\"%\" PRId64 \"\\n\", oreslang_numeric_guest_main()) < 0) return 95;",
+ "  if (printf(\"%\" PRId64 \"\\n\", __oreslang_guest_main()) < 0) return 95;",
  "  return 0;",
  "}",
  ""
