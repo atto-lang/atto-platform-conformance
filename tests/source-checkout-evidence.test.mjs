@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
-import {mkdtemp,mkdir,writeFile,appendFile,symlink,rm} from 'node:fs/promises';
+import {mkdtemp,mkdir,writeFile,appendFile,symlink,chmod,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -65,6 +65,26 @@ test('assume-unchanged and skip-worktree flags fail closed',async()=>{
   git(f.root,'update-index','--no-assume-unchanged','source.txt');
   git(f.root,'update-index','--skip-worktree','source.txt');
   await assert.rejects(verifySourceCheckout(f.opts),/sparse\/assume-unchanged/);
+ }finally{await rm(f.root,{recursive:true,force:true})}
+});
+test('core.filemode=false cannot conceal an executable-bit mutation',async()=>{
+ const f=await setup();try{
+  git(f.root,'config','core.filemode','false');
+  await chmod(join(f.root,'source.txt'),0o755);
+  assert.equal(git(f.root,'status','--porcelain=v1'),'');
+  await assert.rejects(verifySourceCheckout(f.opts),/tracked or untracked changes/);
+ }finally{await rm(f.root,{recursive:true,force:true})}
+});
+test('a clean committed symlink is not an allowed source input',async()=>{
+ const f=await setup();try{
+  await symlink('source.txt',join(f.root,'linked.src'));
+  git(f.root,'add','linked.src');
+  git(f.root,'commit','-qm','track symbolic link');
+  const opts={sourceDir:f.root,
+    expectedCommit:git(f.root,'rev-parse','HEAD'),
+    expectedTree:git(f.root,'rev-parse','HEAD^{tree}')};
+  assert.equal(git(f.root,'status','--porcelain=v1'),'');
+  await assert.rejects(verifySourceCheckout(opts),/nonregular tracked files/);
  }finally{await rm(f.root,{recursive:true,force:true})}
 });
 test('CLI fail-closed contract and successful JSON receipt',async()=>{
