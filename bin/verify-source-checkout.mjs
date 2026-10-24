@@ -63,7 +63,7 @@ export async function verifySourceCheckout({sourceDir,expectedCommit,expectedTre
   for(const entry of committed){
     const match=/^(100644|100755) blob ([a-f0-9]{40})\t([^\0]+)$/.exec(entry);
     if(!match||headEntries.has(match[3]))
-      throw Error('source HEAD contains nonregular or duplicate tree entries');
+      throw Error('source checkout has nonregular tracked files or duplicate tree entries');
     headEntries.set(match[3],match[1]+' '+match[2]);
   }
   let total=0;
