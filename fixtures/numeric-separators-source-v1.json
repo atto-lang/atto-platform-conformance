@@ -66,6 +66,27 @@
       "guestSource": "pub fnc main():int{return -+(0-42);}\n"
     },
     {
+      "id": "int-i64-max",
+      "expression": "9_223_372_036_854_775_807",
+      "expect": "accept",
+      "expectedI64": "9223372036854775807",
+      "guestSource": "pub fnc main():int{return 9_223_372_036_854_775_807;}\n"
+    },
+    {
+      "id": "int-i64-min",
+      "expression": "-9_223_372_036_854_775_808",
+      "expect": "accept",
+      "expectedI64": "-9223372036854775808",
+      "guestSource": "pub fnc main():int{return -9_223_372_036_854_775_808;}\n"
+    },
+    {
+      "id": "int-leading-zero-run",
+      "expression": "0_0_0",
+      "expect": "accept",
+      "expectedI64": "0",
+      "guestSource": "pub fnc main():int{return 0_0_0;}\n"
+    },
+    {
       "id": "bad-trailing",
       "expression": "1_",
       "expect": "reject",
@@ -113,6 +134,27 @@
       "expect": "reject",
       "category": "i64-overflow",
       "guestSource": "pub fnc main():int{return +9_223_372_036_854_775_808;}\n"
+    },
+    {
+      "id": "bad-negative-underflow",
+      "expression": "-9_223_372_036_854_775_809",
+      "expect": "reject",
+      "category": "i64-overflow",
+      "guestSource": "pub fnc main():int{return -9_223_372_036_854_775_809;}\n"
+    },
+    {
+      "id": "bad-triple-separator",
+      "expression": "1___2",
+      "expect": "reject",
+      "category": "separator",
+      "guestSource": "pub fnc main():int{return 1___2;}\n"
+    },
+    {
+      "id": "bad-minus-boundary",
+      "expression": "1_-2",
+      "expect": "reject",
+      "category": "separator",
+      "guestSource": "pub fnc main():int{return 1_-2;}\n"
     },
     {
       "id": "bad-unary-bool",
