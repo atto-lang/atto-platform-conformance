@@ -42,6 +42,15 @@ test("primary LLVM error categorization does not confuse failures",()=>{
     "oreslang-llvmc: malformed integer separator\nnote: arithmetic requires int, got bool"),false);
   assert.equal(nativeNumericDiagnostic("separator",
     "oreslang-llvmc: integer literal overflows signed 64-bit"),false);
+  assert.equal(nativeNumericDiagnostic("separator",
+    "oreslang-llvmc: internal parser error; last message: malformed integer separator"),false);
+  assert.equal(nativeNumericDiagnostic("i64-overflow",
+    "oreslang-llvmc: compilation failed; integer literal overflows signed 64-bit"),false);
+  assert.equal(nativeNumericDiagnostic("type",
+    "oreslang-llvmc: invalid program; arithmetic requires int, got bool"),false);
+  assert.equal(nativeNumericDiagnostic("syntax",
+    "oreslang-llvmc: internal bug: expected expression"),false);
+
   assert.equal(nativeNumericDiagnostic("syntax",
     "fatal: command timed out"),false);
   assert.equal(nativeNumericDiagnostic("separator",
