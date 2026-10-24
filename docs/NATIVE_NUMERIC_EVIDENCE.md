@@ -46,11 +46,22 @@ worktree (tracked changes, untracked files and dirty submodules fail closed):
 
 The expected pair above identifies LLVM PR #918 at the audit point; update
 it only following an independently reviewed new exact commit/tree pair.
-The preflight executes read-only `git` commands with a deliberately
-minimal environment, disables fsmonitor/untracked-cache hooks, rejects
-symlinked/non-root checkouts, and fails with exit code 2 on any mismatch.
-It produces `commitAndTreeVerified:true` **only** for the observed clean
-checkout and explicitly reports `compilerBuildAttested:false` and
+The preflight executes bounded, read-only Git object/index inspections
+with a deliberately minimal environment, disables fsmonitor/untracked cache
+and enforces executable file modes. It **does not invoke `git status`**,
+which can run repository-configured clean filters. Instead it compares the
+stage-0 index entries against `git ls-tree -r HEAD` and hashes **unfiltered
+raw filesystem bytes** using the Git SHA-1 blob framing for every regular
+tracked file. A clean-filter-normalized yet modified source file is
+rejected. It also rejects symlinks, gitlinks, ignored and untracked files,
+index concealment flags, SHA-256-format Git repositories, and unsupported
+file counts/sizes (at most 25,000 files, 128 MiB per file, 1 GiB total).
+A failed inspection exits 2.
+
+The receipt includes `trackedRawBytesVerified:true`, a verified file count,
+and `commitAndTreeVerified:true`, applying only to the **observed instant**.
+These checks do not freeze a checkout against later mutation and explicitly
+report `compilerBuildAttested:false` and
 `privateSourceTransferAuthorized:false`. It must run **before** compilation:
 a normal build writes output into the working tree, so compile into an
 out-of-tree build directory and separately record the compiler output's
@@ -68,7 +79,13 @@ local `core.filemode=false`, symlinked roots, nested-directory and CLI
 fail-closed behavior. The auditor forces `core.filemode=true` and only
 admits index entries with regular-file modes `100644` or `100755`; the
 current pinned LLVM PR #918 root Git tree (1,170 entries) was inspected and
-contains no nonregular file entries.
+contains no nonregular file entries. A further nine real-Git tests in
+`tests/source-checkout-raw-blobs.test.mjs` cover malicious clean-filter
+normalization, staged-index divergence, and ensuring the auditor itself
+does not invoke configured filters. The two committed exact-source test
+modules were executed together locally: **24 passing tests**, verified
+against matching Git blob IDs. The full project `npm test` and real
+Oreslang compiler execution still require an approved source runner.
 
 ## What is executed
 
