@@ -60,8 +60,13 @@ test("real LLVM host ABI isolates i64 guest from i32 status wrapper",()=>{
   assert.throws(()=>renameNumericGuestMain(""),/missing or oversized/);
 });
 
-test("native corpus execution cannot implicitly pass without pinned tools",async()=>{
+test("native corpus execution fails closed on missing or changed fixture/tool pins",async()=>{
   await assert.rejects(executeNativeNumericCorpus({}),/exact 40-character/);
   await assert.rejects(executeNativeNumericCorpus({sourceCommit:"a".repeat(40)}),
-    /absolute path and SHA-256/);
+    /manifest SHA-256 required/);
+  await assert.rejects(executeNativeNumericCorpus({
+    sourceCommit:"a".repeat(40),manifestSha256:"b".repeat(64)
+  }),/manifest SHA-256 mismatch/);
+  // The fixture digest must be supplied independently, not derived from the
+  // same mutable manifest inside the execution command.
 });
