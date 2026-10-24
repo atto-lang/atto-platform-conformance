@@ -149,9 +149,14 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
     // executing the mutable original Clang to discover a resource path.
     // These resources and host libraries are external trusted dependencies;
     // they are NOT included in the executable SHA-256 proof.
-    if(!isAbsolute(clangResourceDir)||await realpath(clangResourceDir)!==clangResourceDir ||
-       !(await lstat(clangResourceDir)).isDirectory())
+    if(!isAbsolute(clangResourceDir)||await realpath(clangResourceDir)!==clangResourceDir)
       throw Error("Clang resource directory must be a canonical absolute directory");
+    const resourceStat=await lstat(clangResourceDir);
+    // Executable hashes do not cover Clang's built-in header/resource tree.
+    // Reject a directory that an unrelated local user or group can mutate.
+    // This is a permission preflight, not a proof of immutable resource bytes.
+    if(!resourceStat.isDirectory()||(resourceStat.mode&0o022)!==0)
+      throw Error("Clang resource directory must be a non-group/world-writable directory");
     const resourceDir=clangResourceDir;
     const reporter=join(root,"report.c");
     await writeFile(reporter,shim,{mode:0o400,flag:"wx"});
