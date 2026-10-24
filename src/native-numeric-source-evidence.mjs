@@ -92,12 +92,15 @@ export function validateNumericCorpus(manifest){
   if(yes!==12||no!==14)throw Error("numeric corpus count drift");
   return manifest;
 }
-export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,clangSha256,sourceCommit}={}){
+export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,clangSha256,sourceCommit,manifestSha256}={}){
   if(!revision40(sourceCommit))throw Error("exact 40-character LLVM source SHA required");
-  await pinned(compiler,compilerSha256,"LLVM compiler");
-  await pinned(clang,clangSha256,"Clang");
+  if(!digest64(manifestSha256))throw Error("exact pinned manifest SHA-256 required");
   const manifestBytes=await readFile(fixture);
   if(manifestBytes.length>1024*1024)throw Error("manifest too large");
+  if(sha256(manifestBytes)!==manifestSha256)
+    throw Error("numeric source fixture manifest SHA-256 mismatch");
+  await pinned(compiler,compilerSha256,"LLVM compiler");
+  await pinned(clang,clangSha256,"Clang");
   const cases=validateNumericCorpus(JSON.parse(manifestBytes.toString("utf8"))).cases;
   const root=await mkdtemp(join(tmpdir(),"ores-native-corpus-"));
   const results=[];
