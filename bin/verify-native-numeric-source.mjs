@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Required real-compiler gate. No implicit skip or simulated guest fallback.
 import {executeNativeNumericCorpus} from "../src/native-numeric-source-evidence.mjs";
-const allowed=new Set(["compiler","compiler-sha256","clang","clang-sha256","source-commit","manifest-sha256"]);
+const allowed=new Set(["compiler","compiler-sha256","clang","clang-sha256","clang-resource-dir","source-commit","manifest-sha256"]);
 try{
   const args={};
   for(const arg of process.argv.slice(2)){
@@ -14,6 +14,7 @@ try{
   const evidence=await executeNativeNumericCorpus({
     compiler:args.compiler,compilerSha256:args["compiler-sha256"],
     clang:args.clang,clangSha256:args["clang-sha256"],
+    clangResourceDir:args["clang-resource-dir"],
     sourceCommit:args["source-commit"],manifestSha256:args["manifest-sha256"]
   });
   process.stdout.write(JSON.stringify(evidence,null,2)+"\n");
