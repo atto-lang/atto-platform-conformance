@@ -34,7 +34,7 @@ test('wrong root tree fails closed',async()=>{
  const f=await setup();try{await assert.rejects(verifySourceCheckout({...f.opts,expectedTree:'b'.repeat(40)}),/mismatch/)}finally{await rm(f.root,{recursive:true,force:true})}
 });
 test('tracked mutation fails closed',async()=>{
- const f=await setup();try{await appendFile(join(f.root,'source.txt'),'two\n');await assert.rejects(verifySourceCheckout(f.opts),/changes/)}finally{await rm(f.root,{recursive:true,force:true})}
+ const f=await setup();try{await appendFile(join(f.root,'source.txt'),'two\n');await assert.rejects(verifySourceCheckout(f.opts),/raw bytes differ/)}finally{await rm(f.root,{recursive:true,force:true})}
 });
 test('untracked file fails closed',async()=>{
  const f=await setup();try{await writeFile(join(f.root,'new-file'),'untracked');await assert.rejects(verifySourceCheckout(f.opts),/changes/)}finally{await rm(f.root,{recursive:true,force:true})}
@@ -72,7 +72,7 @@ test('core.filemode=false cannot conceal an executable-bit mutation',async()=>{
   git(f.root,'config','core.filemode','false');
   await chmod(join(f.root,'source.txt'),0o755);
   assert.equal(git(f.root,'status','--porcelain=v1'),'');
-  await assert.rejects(verifySourceCheckout(f.opts),/tracked or untracked changes/);
+  await assert.rejects(verifySourceCheckout(f.opts),/tracked source mode/);
  }finally{await rm(f.root,{recursive:true,force:true})}
 });
 test('a clean committed symlink is not an allowed source input',async()=>{
