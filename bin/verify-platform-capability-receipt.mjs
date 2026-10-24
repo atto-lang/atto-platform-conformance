@@ -8,16 +8,52 @@ const defaultContract=path.resolve(here,"../contracts/platform-capabilities-v1.j
 
 const hex40=/^[0-9a-f]{40}$/;
 const hex64=/^[0-9a-f]{64}$/;
+const expectedStages=Object.freeze([
+  "host-reference",
+  "abi-link",
+  "compiler-guest",
+  "target-execution",
+  "physical-hardware"
+]);
+const expectedRepositories=Object.freeze({
+  mobile:"ores-truffle-oreslang/oreslang-platform.mobile",
+  desktop:"ores-truffle-oreslang/oreslang-platform.desktop",
+  embedded:"ores-truffle-oreslang/oreslang-platform.embedded",
+  iot:"ores-truffle-oreslang/oreslang-platform.iot",
+  fpga:"ores-truffle-oreslang/oreslang-platform.fpga",
+  asic:"ores-truffle-oreslang/oreslang-platform.asic"
+});
+
+function validateContractV1(contract) {
+  const errors=[];
+  if(!contract || contract.schemaVersion!==1 ||
+     contract.contract!=="oreslang.platform-capability/1")
+    return ["unsupported or missing contract"];
+  if(!Array.isArray(contract.stageOrder) ||
+     contract.stageOrder.length!==expectedStages.length ||
+     contract.stageOrder.some((value,index)=>value!==expectedStages[index]))
+    errors.push("contract stageOrder does not match v1");
+  const keys=Object.keys(contract.platforms||{}).sort();
+  const expectedKeys=Object.keys(expectedRepositories).sort();
+  if(keys.length!==expectedKeys.length ||
+     keys.some((value,index)=>value!==expectedKeys[index]))
+    errors.push("contract platform registry does not match v1");
+  for(const [name,repo] of Object.entries(expectedRepositories)) {
+    if(contract.platforms?.[name]?.repository!==repo)
+      errors.push(`contract repository mismatch for ${name}`);
+  }
+  return errors;
+}
 
 export function verifyPlatformCapabilityReceipt(receipt, contract) {
+  const contractProblems=validateContractV1(contract);
+  if(contractProblems.length)
+    return {ok:false,errors:contractProblems};
   const errors=[];
   const fail=(message)=>errors.push(message);
   if(!receipt || typeof receipt!=="object" || Array.isArray(receipt)) {
     return {ok:false,errors:["receipt must be an object"]};
   }
-  if(!contract || contract.contract!=="oreslang.platform-capability/1")
-    return {ok:false,errors:["unsupported or missing contract"]};
-
   if(receipt.schema!=="oreslang.platform-capability/1")
     fail("schema must be oreslang.platform-capability/1");
 
@@ -29,8 +65,7 @@ export function verifyPlatformCapabilityReceipt(receipt, contract) {
   if(typeof receipt.sourceCommit!=="string" || !hex40.test(receipt.sourceCommit))
     fail("sourceCommit must be 40 lowercase hexadecimal digits");
 
-  const stages=contract.stageOrder || [];
-  const stageIndex=stages.indexOf(receipt.stage);
+  const stageIndex=expectedStages.indexOf(receipt.stage);
   if(stageIndex<0) fail("unknown promotion stage");
 
   const e=receipt.evidence;
@@ -49,8 +84,8 @@ export function verifyPlatformCapabilityReceipt(receipt, contract) {
     fail("abi-link and higher stages require abiLinked=true");
 
   if(stageIndex>=2) {
-    if(e.hostReferenceOnly===true)
-      fail("host-reference-only evidence cannot promote to compiler-guest");
+    if(e.hostReferenceOnly!==false)
+      fail("compiler-guest and higher stages require hostReferenceOnly=false");
     if(e.compilerProduced!==true)
       fail("compiler-guest and higher stages require compilerProduced=true");
     if(typeof e.compilerSourceCommit!=="string" || !hex40.test(e.compilerSourceCommit))
