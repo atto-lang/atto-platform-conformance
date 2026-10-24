@@ -148,6 +148,9 @@ test("bounded real child process execution distinguishes failure, signal and tim
   assert.equal(nonzero.code,7);
   assert.equal(nonzero.stderr,"bad source");
   assert.equal(nonzero.error,null);
+  assert.equal(nonzero.stderrBytes,10);
+  assert.equal(nonzero.stderrSha256,
+    createHash("sha256").update(Buffer.from("bad source")).digest("hex"));
   const signalled=runNumericCommand(process.execPath,["-e",
     "process.kill(process.pid,'SIGTERM')"],3000);
   assert.notEqual(signalled.signal,null);
@@ -157,6 +160,17 @@ test("bounded real child process execution distinguishes failure, signal and tim
   const tooMuch=runNumericCommand(process.execPath,["-e",
     "process.stdout.write('x'.repeat(5*1024*1024))"],3000);
   assert.ok(tooMuch.error||tooMuch.signal||tooMuch.code!==0);
+  // The evidence SHA must be over the original pipe bytes, not the decoded
+  // replacement characters produced by invalid UTF-8.
+  const invalidUtf8=runNumericCommand(process.execPath,["-e",
+    "process.stdout.write(Buffer.from([0xff,0xfe,0x41,0x00]))"],3000);
+  assert.equal(invalidUtf8.code,0);
+  assert.equal(invalidUtf8.stdoutBytes,4);
+  const raw=Buffer.from([0xff,0xfe,0x41,0x00]);
+  assert.equal(invalidUtf8.stdoutSha256,
+    createHash("sha256").update(raw).digest("hex"));
+  assert.notEqual(invalidUtf8.stdoutSha256,
+    createHash("sha256").update(Buffer.from(invalidUtf8.stdout)).digest("hex"));
 });
 
 test("real 26-case admission loop fails closed on fake compiler and mismatched diagnostics",async()=>{
