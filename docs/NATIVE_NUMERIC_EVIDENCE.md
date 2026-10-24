@@ -58,11 +58,12 @@ SHA-256 and the build logs.
 
 The helper does not authorize a cross-org mirror, certify the binary was
 built from the verified checkout, or substitute for required trusted review.
-The thirteen self-contained Node tests in
+The fifteen self-contained Node tests in
 `tests/source-checkout-evidence.test.mjs` exercise real local Git
 repositories, positive admission, tracked/untracked/ignored file denial,
 Git skip-worktree and assume-unchanged index concealment, wrong hashes,
-tracked symbolic links and Git submodules, executable-mode changes hidden by
+tracked symbolic links and Git submodules, acceptance of regular executable
+files, executable-mode changes hidden by
 local `core.filemode=false`, symlinked roots, nested-directory and CLI
 fail-closed behavior. The auditor forces `core.filemode=true` and only
 admits index entries with regular-file modes `100644` or `100755`; the
