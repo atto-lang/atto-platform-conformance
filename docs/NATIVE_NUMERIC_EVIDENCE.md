@@ -41,9 +41,12 @@ For each of the 26 exact guestSource byte sequences:
    with the required separator, signed-i64-overflow, type or syntax category.
    A Clang failure, signal, timeout, nonzero exit without the right diagnostic,
    or LLVM IR output does not satisfy an expected source rejection.
-3. Accepted inputs must emit LLVM IR with exactly one i64 main() definition.
-   Rename its guest entry and link a trusted C reporting shim with Clang. This
-   prints the entire signed i64 return value, avoiding process exit truncation.
+3. Accepted host-target LLVM IR must contain the **actual two-function
+   ABI**: exactly one `i64 @__oreslang_guest_main()` Oreslang function and
+   one `i32 @main()` OS/process wrapper. Retire only the i32 host wrapper,
+   then link a trusted C reporting shim that calls the real i64 guest symbol.
+   The ordinary wrapper clamps/converts exit status; it is **not** a source of
+   full-width i64 evidence. This is verified against LLVM LlvmCodegen.cpp.
 4. Execute the compiled guest; compare its exact decimal stdout to the expected
    i64. Any extra output, nonzero exit or signal fails.
 5. Re-hash compiler and Clang binaries after the suite. Detected drift revokes
