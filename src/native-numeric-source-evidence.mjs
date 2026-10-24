@@ -16,8 +16,11 @@ const revision40=s=>typeof s==="string"&&/^[a-f0-9]{40}$/.test(s);
 
 export function nativeNumericDiagnostic(category,stderr){
   if(typeof stderr!=="string")return false;
-  const primary=stderr.split(/\r?\n/).find(line=>line.startsWith("oreslang-llvmc: "));
-  if(!primary)return false;
+  // Only the first nonempty diagnostic line may establish a compiler
+  // rejection. Do not let an unrelated runner/Clang failure followed by
+  // a forged Oreslang line masquerade as source admission evidence.
+  const primary=stderr.split(/\r?\n/).find(line=>line.trim().length>0);
+  if(!primary||!primary.startsWith("oreslang-llvmc: "))return false;
   const diagnostic=primary.slice("oreslang-llvmc: ".length);
   if(category==="separator")return /\bmalformed integer separator\b/.test(diagnostic);
   if(category==="i64-overflow")return /\binteger literal overflows signed 64-bit\b/.test(diagnostic);
@@ -155,6 +158,9 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
       const compiled=runNumericCommand(stagedCompiler,["--target=host",input]);
       const evidence={id:c.id,expect:c.expect,category:c.category||null,
         fixtureSha256:sha256(bytes),compilerExit:compiled.code,
+        compilerSignal:compiled.signal,compilerError:compiled.error,
+        compilerStdoutSha256:sha256(Buffer.from(compiled.stdout)),
+        compilerStderrSha256:sha256(Buffer.from(compiled.stderr)),
         status:"MISMATCH",observedI64:null};
       if(c.expect==="reject"){
         if(!compiled.signal&&!compiled.error&&Number.isInteger(compiled.code)&&
@@ -167,9 +173,13 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
           await writeFile(ll,rewritten,{mode:0o400,flag:"wx"});
           const linked=runNumericCommand(stagedClang,["-resource-dir="+resourceDir,"-x","ir",ll,"-x","c",reporter,"-o",exe]);
           evidence.clangExit=linked.code;
+          evidence.clangSignal=linked.signal;
+          evidence.clangError=linked.error;
           if(succeeded(linked)){
             const guest=runNumericCommand(exe,[],10000);
             evidence.guestExit=guest.code;
+            evidence.guestSignal=guest.signal;
+            evidence.guestError=guest.error;
             if(succeeded(guest)&&guest.stderr===""&&
               /^-?(0|[1-9][0-9]*)\n$/.test(guest.stdout)){
               evidence.observedI64=guest.stdout.trim();
