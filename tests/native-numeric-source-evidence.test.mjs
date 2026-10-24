@@ -171,7 +171,7 @@ test("real 26-case admission loop fails closed on fake compiler and mismatched d
     const sha=bytes=>createHash("sha256").update(bytes).digest("hex");
     const receipt=await executeNativeNumericCorpus({
       compiler,compilerSha256:sha(compilerBytes),
-      clang,clangSha256:sha(clangBytes),
+      clang,clangSha256:sha(clangBytes),clangResourceDir:dir,
       sourceCommit:"a".repeat(40),manifestSha256:sha(manifestBytes)
     });
     assert.equal(receipt.ok,false);
