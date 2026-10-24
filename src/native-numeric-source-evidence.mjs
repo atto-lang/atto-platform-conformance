@@ -58,10 +58,16 @@ const shim=[
  ""
 ].join("\n");
 export function runNumericCommand(executable,args,timeout=30000){
-  const p=spawnSync(executable,args,{encoding:"utf8",timeout,maxBuffer:4*1024*1024,
+  // Keep stdout/stderr as bytes until after hashing, so malformed UTF-8
+  // cannot silently change the forensic receipt through replacement chars.
+  const p=spawnSync(executable,args,{timeout,maxBuffer:4*1024*1024,
     windowsHide:true,shell:false});
+  const stdout=Buffer.isBuffer(p.stdout)?p.stdout:Buffer.alloc(0);
+  const stderr=Buffer.isBuffer(p.stderr)?p.stderr:Buffer.alloc(0);
   return {code:p.status,signal:p.signal||null,error:p.error?.code||null,
-    stdout:p.stdout||"",stderr:p.stderr||""};
+    stdout:stdout.toString("utf8"),stderr:stderr.toString("utf8"),
+    stdoutBytes:stdout.length,stderrBytes:stderr.length,
+    stdoutSha256:sha256(stdout),stderrSha256:sha256(stderr)};
 }
 function succeeded(p){return p.code===0&&!p.signal&&!p.error;}
 async function pinned(file,digest,label){
@@ -159,8 +165,10 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
       const evidence={id:c.id,expect:c.expect,category:c.category||null,
         fixtureSha256:sha256(bytes),compilerExit:compiled.code,
         compilerSignal:compiled.signal,compilerError:compiled.error,
-        compilerStdoutSha256:sha256(Buffer.from(compiled.stdout)),
-        compilerStderrSha256:sha256(Buffer.from(compiled.stderr)),
+        compilerStdoutSha256:compiled.stdoutSha256,
+        compilerStderrSha256:compiled.stderrSha256,
+        compilerStdoutBytes:compiled.stdoutBytes,
+        compilerStderrBytes:compiled.stderrBytes,
         status:"MISMATCH",observedI64:null};
       if(c.expect==="reject"){
         if(!compiled.signal&&!compiled.error&&Number.isInteger(compiled.code)&&
@@ -175,11 +183,16 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
           evidence.clangExit=linked.code;
           evidence.clangSignal=linked.signal;
           evidence.clangError=linked.error;
+          evidence.clangStderrSha256=linked.stderrSha256;
+          evidence.clangStderrBytes=linked.stderrBytes;
           if(succeeded(linked)){
             const guest=runNumericCommand(exe,[],10000);
             evidence.guestExit=guest.code;
             evidence.guestSignal=guest.signal;
             evidence.guestError=guest.error;
+            evidence.guestStderrSha256=guest.stderrSha256;
+            evidence.guestStdoutSha256=guest.stdoutSha256;
+            evidence.guestStdoutBytes=guest.stdoutBytes;
             if(succeeded(guest)&&guest.stderr===""&&
               /^-?(0|[1-9][0-9]*)\n$/.test(guest.stdout)){
               evidence.observedI64=guest.stdout.trim();
