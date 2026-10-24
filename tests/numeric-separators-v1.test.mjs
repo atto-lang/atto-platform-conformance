@@ -11,13 +11,18 @@ test("numeric source fixture contract is unique, byte-for-byte reproducible and 
   assert.equal(cases.contract,"oreslang.numeric-separators/source-v1");
   assert.equal(cases.status,"candidate-unattested");
   assert.deepEqual(cases.targetBackends,["java","llvm","net","wasm-via-llvm"]);
-  assert.ok(cases.cases.length>=15);
+  assert.equal(cases.cases.length,23);
   const ids=new Set();
+  const expressions=new Set();
   let positive=0,negative=0;
+  const i64Min=-(1n<<63n);
+  const i64Max=(1n<<63n)-1n;
   for(const item of cases.cases){
     assert.match(item.id,/^[a-z][a-z0-9-]*$/);
     assert.ok(!ids.has(item.id),"duplicate case: "+item.id);
     ids.add(item.id);
+    assert.ok(!expressions.has(item.expression),"duplicate expression: "+item.expression);
+    expressions.add(item.expression);
     assert.ok(["accept","reject"].includes(item.expect));
     assert.match(item.expression,/^[A-Za-z0-9_+*\-()\s"]+$/);
     assert.equal(item.guestSource,
@@ -26,6 +31,8 @@ test("numeric source fixture contract is unique, byte-for-byte reproducible and 
     if(item.expect==="accept"){
       ++positive;
       assert.match(item.expectedI64,/^-?(0|[1-9][0-9]*)$/);
+      const expected=BigInt(item.expectedI64);
+      assert.ok(expected>=i64Min && expected<=i64Max,"out-of-range accepted result: "+item.id);
       assert.equal(item.category,undefined);
     }else{
       ++negative;
@@ -33,6 +40,29 @@ test("numeric source fixture contract is unique, byte-for-byte reproducible and 
       assert.equal(item.expectedI64,undefined);
     }
   }
-  assert.ok(positive>=6);
-  assert.ok(negative>=9);
+  assert.equal(positive,10);
+  assert.equal(negative,13);
+  const byId=new Map(cases.cases.map(item=>[item.id,item]));
+  for(const [id,expression,expected] of [
+    ["int-i64-max","9_223_372_036_854_775_807","9223372036854775807"],
+    ["int-i64-min","-9_223_372_036_854_775_808","-9223372036854775808"],
+    ["int-leading-zero-run","0_0_0","0"]
+  ]){
+    const item=byId.get(id);
+    assert.ok(item,"missing boundary accept: "+id);
+    assert.equal(item.expect,"accept");
+    assert.equal(item.expression,expression);
+    assert.equal(item.expectedI64,expected);
+    assert.equal(BigInt(expression.replaceAll("_","")),BigInt(expected));
+  }
+  for(const [id,category] of [
+    ["bad-negative-underflow","i64-overflow"],
+    ["bad-triple-separator","separator"],
+    ["bad-minus-boundary","separator"]
+  ]){
+    const item=byId.get(id);
+    assert.ok(item,"missing boundary rejection: "+id);
+    assert.equal(item.expect,"reject");
+    assert.equal(item.category,category);
+  }
 });
