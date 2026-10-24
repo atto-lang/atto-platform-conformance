@@ -58,10 +58,11 @@ SHA-256 and the build logs.
 
 The helper does not authorize a cross-org mirror, certify the binary was
 built from the verified checkout, or substitute for required trusted review.
-The nine self-contained Node tests in
+The eleven self-contained Node tests in
 `tests/source-checkout-evidence.test.mjs` exercise real local Git
-repositories, positive admission, dirty/unknown files, wrong hashes, symlink,
-nested-directory and CLI fail-closed behavior.
+repositories, positive admission, tracked/untracked/ignored file denial,
+Git skip-worktree and assume-unchanged index concealment, wrong hashes,
+symlink, nested-directory and CLI fail-closed behavior.
 
 ## What is executed
 
