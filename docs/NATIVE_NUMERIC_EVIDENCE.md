@@ -92,8 +92,13 @@ For each of the 26 exact guestSource byte sequences:
 6. Supply Clang's reviewed canonical resource directory explicitly with
    --clang-resource-dir. It can be determined from the trusted original
    installation with `/absolute/path/to/clang -print-resource-dir` before
-   running the suite, then validated as a real directory. The native runner
-   executes only the **private snapshots**, not the mutable caller paths.
+   running the suite. The native runner requires a canonical **directory not
+   writable by group or others**; symlink aliases and group/world-writable
+   resource roots fail closed before any guest compiler invocation.
+   The native runner executes only the **private snapshots**, not the mutable
+   caller paths. The mode check is a limited local integrity precaution:
+   resource contents are not copied/hashed, privileged or same-UID processes
+   may still modify them, and parent directories may have separate risks.
    Resource files, shared libraries, the linker and host system remain
    **external trusted dependencies**, not part of the two executable hashes.
    Compiler build provenance still needs an independent exact-tree review.
