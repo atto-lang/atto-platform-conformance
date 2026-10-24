@@ -200,7 +200,7 @@ test("native verifier refuses group/world-writable Clang resource roots",async()
       clang,clangSha256:sha(script),
       clangResourceDir:resources,
       sourceCommit:"a".repeat(40),manifestSha256:sha(manifest)
-    }),/non-group\\/world-writable/);
+    }),/non-group[/]world-writable/);
   }finally{await rm(dir,{recursive:true,force:true});}
 });
 
