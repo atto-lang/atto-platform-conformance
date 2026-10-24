@@ -84,6 +84,18 @@ pre-execution infrastructure evidence. If Actions remains blocked, use an
 approved local/self-hosted runner and obtain independent review. Private
 mirroring must pass the mandatory pre-copy visibility and allowlist gate.
 
+## Subprocess evidence integrity
+
+A rejected fixture cannot be accepted from a secondary or trailing forged
+`oreslang-llvmc:` line: only the **first nonblank diagnostic line** supplies
+the primary failure category. Every compiler receipt records its exit status,
+signal/error, original stdout/stderr byte counts and SHA-256 checksums.
+Clang and executed-guest receipts also record their signal/error, plus
+appropriate output hashes. Hashes are computed on the *raw pipe buffers*
+before UTF-8 decoding, so binary or malformed output cannot silently change
+the evidence digest via text replacement characters. Process timeouts,
+signals and output-buffer failures fail closed.
+
 ## Test coverage and executable identity limitations
 
 `node --test tests/native-numeric-source-evidence.test.mjs` includes real
