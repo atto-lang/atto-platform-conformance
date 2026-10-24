@@ -2,11 +2,14 @@
 // Exact Git checkout admission before a local/authorized source compilation.
 // This observes a checkout, NOT source->compiler-binary build provenance.
 import {spawnSync} from 'node:child_process';
-import {lstat,realpath} from 'node:fs/promises';
-import {isAbsolute,resolve} from 'node:path';
+import {open,lstat,realpath} from 'node:fs/promises';
+import {constants} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {isAbsolute,resolve,sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const SHA=/^[a-f0-9]{40}$/;
+const MAX_FILES=25000, MAX_SINGLE=128*1024*1024, MAX_TOTAL=1024*1024*1024;
 const safeEnv={
   PATH:process.platform==='win32' ? (process.env.SystemRoot ? process.env.SystemRoot+'\\System32' : 'C:\\Windows\\System32') : '/usr/local/bin:/usr/bin:/bin',
   GIT_CONFIG_NOSYSTEM:'1', GIT_CONFIG_GLOBAL:process.platform==='win32'?'NUL':'/dev/null',
@@ -16,7 +19,7 @@ function git(sourceDir,args){
   const p=spawnSync('git',['--no-optional-locks','-c','core.fsmonitor=false',
     '-c','core.untrackedCache=false','-c','core.filemode=true',
     '-C',sourceDir,...args],{
-    encoding:'utf8',timeout:15000,maxBuffer:1024*1024,shell:false,
+    encoding:'utf8',timeout:15000,maxBuffer:4*1024*1024,shell:false,
     windowsHide:true,env:safeEnv
   });
   if(p.error||p.signal||p.status!==0)
@@ -34,6 +37,8 @@ export async function verifySourceCheckout({sourceDir,expectedCommit,expectedTre
     throw Error('source checkout must be a canonical nonsymlink directory');
   const top=git(sourceDir,['rev-parse','--show-toplevel']).trimEnd();
   if(top!==sourceDir)throw Error('source checkout path must equal Git worktree root');
+  if(git(sourceDir,['rev-parse','--show-object-format']).trim()!=='sha1')
+    throw Error('exact-tree verifier requires SHA-1 Git object format');
   const observedCommit=git(sourceDir,['rev-parse','--verify','HEAD^{commit}']).trim();
   const observedTree=git(sourceDir,['rev-parse','--verify','HEAD^{tree}']).trim();
   if(observedCommit!==expectedCommit||observedTree!==expectedTree)
@@ -47,16 +52,35 @@ export async function verifySourceCheckout({sourceDir,expectedCommit,expectedTre
   const indexFlags=git(sourceDir,['ls-files','-v','-z']);
   if(indexFlags.split('\0').some(entry=>entry!==''&&entry.slice(0,2)!=='H '))
     throw Error('source checkout has sparse/assume-unchanged index entries');
-  // HEAD may legitimately contain executable regular files, but symbolic
-  // links (120000), Git submodules (160000), and unresolved index stages
-  // cannot be used as inputs to a sealed private compiler build.
-  // A clean status alone does not reject any of these tracked object kinds.
   const tracked=git(sourceDir,['ls-files','--stage','-z']).split('\0').filter(Boolean);
-  if(!tracked.length||tracked.some(entry=>
-     !/^100(?:644|755) [a-f0-9]{40} 0\t[^\0]+$/.test(entry)))
-    throw Error('source checkout has nonregular tracked files or unresolved stages');
+  if(!tracked.length||tracked.length>MAX_FILES)
+    throw Error('source checkout has unsupported tracked file count');
+  let total=0;
+  for(const entry of tracked){
+    const match=/^(100644|100755) ([a-f0-9]{40}) 0\t([^\0]+)$/.exec(entry);
+    if(!match)throw Error('source checkout has nonregular tracked files or unresolved stages');
+    const [,mode,expectedBlob,relative]=match;
+    const abs=resolve(sourceDir,relative);
+    if(!abs.startsWith(sourceDir+sep)||await realpath(abs)!==abs)
+      throw Error('tracked source path escapes or contains a symlink');
+    const handle=await open(abs,constants.O_RDONLY | (constants.O_NOFOLLOW||0));
+    try{
+      const fileStat=await handle.stat();
+      if(!fileStat.isFile()||fileStat.size>MAX_SINGLE||
+          Boolean(fileStat.mode&0o111)!==(mode==='100755'))
+        throw Error('tracked source mode/type/size mismatch');
+      total+=fileStat.size;
+      if(total>MAX_TOTAL)throw Error('source checkout exceeds byte budget');
+      const bytes=await handle.readFile();
+      if(bytes.length!==fileStat.size)throw Error('source file changed during reading');
+      const actualBlob=createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
+      if(actualBlob!==expectedBlob)
+        throw Error('tracked source raw bytes differ from committed Git blob');
+    }finally{await handle.close()}
+  }
   return Object.freeze({schemaVersion:1,contract:'oreslang.ci/exact-source-checkout-v1',
     sourceCommit:observedCommit,sourceRootTree:observedTree,worktreeClean:true,
+    trackedRawBytesVerified:true,trackedFileCount:tracked.length,
     commitAndTreeVerified:true,compilerBuildAttested:false,privateSourceTransferAuthorized:false});
 }
 function parseArgs(argv){
