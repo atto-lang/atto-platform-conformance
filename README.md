@@ -38,6 +38,7 @@ and prints full signed-i64 values (rather than truncated process exit codes):
       --compiler-sha256=64_HEX_DIGEST \
       --clang=/absolute/pinned/clang \
       --clang-sha256=64_HEX_DIGEST \
+      --clang-resource-dir=/reviewed/canonical/clang/resource/dir \
       --source-commit=40_HEX_GIT_HEAD \
       --manifest-sha256=64_HEX_REVIEWED_FIXTURE_HASH
 
