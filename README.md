@@ -26,6 +26,26 @@ A valid receipt proves only the shape and internal consistency of reachability
 evidence. Final artifact/synthesis inspection is still required to prove the
 dead implementation was physically omitted.
 
+## Numeric source parity: actual guest execution
+
+The candidate 26-case Java/LLVM/.NET/LLVM-derived-Wasm source corpus is in
+[numeric-separators-source-v1.json](fixtures/numeric-separators-source-v1.json).
+An opt-in **real native LLVM -> Clang -> guest** verifier checks each exact source
+and prints full signed-i64 values (rather than truncated process exit codes):
+
+    node bin/verify-native-numeric-source.mjs \
+      --compiler=/absolute/pinned/oreslang-llvmc \
+      --compiler-sha256=64_HEX_DIGEST \
+      --clang=/absolute/pinned/clang \
+      --clang-sha256=64_HEX_DIGEST \
+      --source-commit=40_HEX_GIT_HEAD
+
+See [native evidence instructions](docs/NATIVE_NUMERIC_EVIDENCE.md).
+Missing tools **fail** (never skip); the caller-declared commit is
+**not** cryptographic compiler provenance, and this does not prove Java,
+.NET or WASM guest execution. Current GitHub Actions zero-step failures
+are not compiler execution results.
+
 ## Current deliverable
 
 - Versioned fixture manifest and minimal positive/negative .ores sources targeting **six compiler backends** (`java`, `llvm`, `net`, `wasm`, `forge`, `js`); this is a target inventory, not a parity claim.
