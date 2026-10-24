@@ -53,7 +53,10 @@ which can run repository-configured clean filters. Instead it compares the
 stage-0 index entries against `git ls-tree -r HEAD` and hashes **unfiltered
 raw filesystem bytes** using the Git SHA-1 blob framing for every regular
 tracked file. A clean-filter-normalized yet modified source file is
-rejected. It also rejects symlinks, gitlinks, ignored and untracked files,
+rejected. Each opened file is also checked for stable inode, size, mode,
+nanosecond modification/change timestamps and the same pathname inode
+after reading. Finally, commit/tree/index and untracked/ignored entries
+are read again to fail closed on mid-scan Git identity drift. It also rejects symlinks, gitlinks, ignored and untracked files,
 index concealment flags, SHA-256-format Git repositories, and unsupported
 file counts/sizes (at most 25,000 files, 128 MiB per file, 1 GiB total).
 A failed inspection exits 2.
@@ -82,9 +85,14 @@ current pinned LLVM PR #918 root Git tree (1,170 entries) was inspected and
 contains no nonregular file entries. A further nine real-Git tests in
 `tests/source-checkout-raw-blobs.test.mjs` cover malicious clean-filter
 normalization, staged-index divergence, and ensuring the auditor itself
-does not invoke configured filters. The two committed exact-source test
-modules were executed together locally: **24 passing tests**, verified
-against matching Git blob IDs. The full project `npm test` and real
+does not invoke configured filters. The three committed exact-source test
+modules were executed together locally: **29 passing tests**, verified
+against matching Git blob IDs. Five additional deterministic tests in
+`tests/source-checkout-stability.test.mjs` inject source-byte rewrites,
+same-byte inode replacement, a new HEAD commit and a staged-index change
+*while a file is being read*. A point-in-time verifier still cannot
+freeze source files or attest the resulting compiler build; run builds in
+a trusted isolated environment and preserve independent build provenance. The full project `npm test` and real
 Oreslang compiler execution still require an approved source runner.
 
 ## What is executed
