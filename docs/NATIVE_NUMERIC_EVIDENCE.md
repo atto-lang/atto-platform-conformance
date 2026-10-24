@@ -33,6 +33,36 @@ This command has no skip mode: omitted/invalid pins exit 2. Compute the fixture 
 A completed but mismatching run exits 1; a matching 26-case execution exits 0
 and prints a JSON *native LLVM guest evidence* receipt.
 
+## Exact-source Git checkout preflight
+
+Before building a real compiler from an approved local LLVM checkout, verify
+the expected **commit and root Git tree** and require a completely clean
+worktree (tracked changes, untracked files and dirty submodules fail closed):
+
+    node bin/verify-source-checkout.mjs \
+      --source-dir=/approved/absolute/llvm-checkout \
+      --commit=f9e4dad86532509833400cc476abfbad2985a9c2 \
+      --tree=3a7839550b3696bc65796a405e03b305227aacad
+
+The expected pair above identifies LLVM PR #918 at the audit point; update
+it only following an independently reviewed new exact commit/tree pair.
+The preflight executes read-only `git` commands with a deliberately
+minimal environment, disables fsmonitor/untracked-cache hooks, rejects
+symlinked/non-root checkouts, and fails with exit code 2 on any mismatch.
+It produces `commitAndTreeVerified:true` **only** for the observed clean
+checkout and explicitly reports `compilerBuildAttested:false` and
+`privateSourceTransferAuthorized:false`. It must run **before** compilation:
+a normal build writes output into the working tree, so compile into an
+out-of-tree build directory and separately record the compiler output's
+SHA-256 and the build logs.
+
+The helper does not authorize a cross-org mirror, certify the binary was
+built from the verified checkout, or substitute for required trusted review.
+The nine self-contained Node tests in
+`tests/source-checkout-evidence.test.mjs` exercise real local Git
+repositories, positive admission, dirty/unknown files, wrong hashes, symlink,
+nested-directory and CLI fail-closed behavior.
+
 ## What is executed
 
 For each of the 26 exact guestSource byte sequences:
