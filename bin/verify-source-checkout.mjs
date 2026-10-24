@@ -52,11 +52,12 @@ export async function verifySourceCheckout({sourceDir,expectedCommit,expectedTre
   const indexFlags=git(sourceDir,['ls-files','-v','-z']);
   if(indexFlags.split('\0').some(entry=>entry!==''&&entry.slice(0,2)!=='H '))
     throw Error('source checkout has sparse/assume-unchanged index entries');
-  const tracked=git(sourceDir,['ls-files','--stage','-z']).split('\0').filter(Boolean);
+  const indexedBefore=git(sourceDir,['ls-files','--stage','-z']);
+  const tracked=indexedBefore.split('\0').filter(Boolean);
   if(!tracked.length||tracked.length>MAX_FILES)
     throw Error('source checkout has unsupported tracked file count');
-  const committed=git(sourceDir,['ls-tree','-r','--full-tree','-z','HEAD'])
-    .split('\0').filter(Boolean);
+  const treeBefore=git(sourceDir,['ls-tree','-r','--full-tree','-z','HEAD']);
+  const committed=treeBefore.split('\0').filter(Boolean);
   if(committed.length!==tracked.length)
     throw Error('source checkout index differs from pinned HEAD tree');
   const headEntries=new Map();
@@ -78,19 +79,41 @@ export async function verifySourceCheckout({sourceDir,expectedCommit,expectedTre
       throw Error('tracked source path escapes or contains a symlink');
     const handle=await open(abs,constants.O_RDONLY | (constants.O_NOFOLLOW||0));
     try{
-      const fileStat=await handle.stat();
-      if(!fileStat.isFile()||fileStat.size>MAX_SINGLE||
-          Boolean(fileStat.mode&0o111)!==(mode==='100755'))
+      const before=await handle.stat({bigint:true});
+      if(!before.isFile()||before.size>BigInt(MAX_SINGLE)||
+          Boolean(before.mode&0o111n)!==(mode==='100755'))
         throw Error('tracked source mode/type/size mismatch');
-      total+=fileStat.size;
+      total+=Number(before.size);
       if(total>MAX_TOTAL)throw Error('source checkout exceeds byte budget');
       const bytes=await handle.readFile();
-      if(bytes.length!==fileStat.size)throw Error('source file changed during reading');
+      if(BigInt(bytes.length)!==before.size)throw Error('source file changed during reading');
+      // A file can mutate *during* read without changing its length. Guard
+      // the same inode and nanosecond ctime/mtime across reading, and reject
+      // path replacement after an originally valid O_NOFOLLOW open.
+      const after=await handle.stat({bigint:true});
+      const pathAfter=await lstat(abs,{bigint:true});
+      if(!pathAfter.isFile()||
+          [before.dev,before.ino,before.mode,before.size,before.mtimeNs,before.ctimeNs]
+            .some((v,i)=>v!==[after.dev,after.ino,after.mode,after.size,after.mtimeNs,after.ctimeNs][i])||
+          [before.dev,before.ino,before.mode,before.size]
+            .some((v,i)=>v!==[pathAfter.dev,pathAfter.ino,pathAfter.mode,pathAfter.size][i])||
+          await realpath(abs)!==abs)
+        throw Error('tracked source changed during verification');
       const actualBlob=createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex');
       if(actualBlob!==expectedBlob)
         throw Error('tracked source raw bytes differ from committed Git blob');
     }finally{await handle.close()}
   }
+  // A source checkout and its Git index can change while the verifier
+  // scans its files. Require a final stable HEAD/tree/index/untracked read.
+  if(git(sourceDir,['rev-parse','--verify','HEAD^{commit}']).trim()!==observedCommit||
+      git(sourceDir,['rev-parse','--verify','HEAD^{tree}']).trim()!==observedTree||
+      git(sourceDir,['ls-files','--stage','-z'])!==indexedBefore||
+      git(sourceDir,['ls-tree','-r','--full-tree','-z','HEAD'])!==treeBefore||
+      git(sourceDir,['ls-files','--others','--exclude-standard','-z'])!==''||
+      git(sourceDir,['ls-files','--others','--ignored','--exclude-standard','-z'])!==''||
+      git(sourceDir,['ls-files','-v','-z'])!==indexFlags)
+    throw Error('source checkout changed during final identity fence');
   return Object.freeze({schemaVersion:1,contract:'oreslang.ci/exact-source-checkout-v1',
     sourceCommit:observedCommit,sourceRootTree:observedTree,worktreeClean:true,
     trackedRawBytesVerified:true,trackedFileCount:tracked.length,
