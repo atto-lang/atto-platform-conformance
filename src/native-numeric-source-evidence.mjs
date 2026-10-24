@@ -2,7 +2,8 @@
 // This file does not attest that the declared Git head produced the binary.
 import {spawnSync} from "node:child_process";
 import {createHash} from "node:crypto";
-import {readFile,writeFile,mkdtemp,rm,lstat,realpath} from "node:fs/promises";
+import {readFile,writeFile,mkdtemp,rm,lstat,realpath,copyFile,chmod} from "node:fs/promises";
+import {constants as fsConstants} from "node:fs";
 import {tmpdir} from "node:os";
 import {isAbsolute,join} from "node:path";
 import {fileURLToPath} from "node:url";
@@ -67,6 +68,27 @@ async function pinned(file,digest,label){
     throw Error(label+" must be a regular executable canonical realpath");
   if(await hashExecutableBounded(file)!==digest)throw Error(label+" SHA-256 differs");
 }
+// Copy the verified bytes into a private per-run directory and execute the
+// *copy*, never the mutable caller pathname. The SHA check after copying is
+// authoritative: any source-path mutation while copying fails admission.
+// This pins executable file bytes, not its dynamic libraries, compiler build
+// provenance, the Clang resource directory or the containing host.
+export async function stageNumericExecutable({file,digest,label,workspace,filename}){
+  if(!["oreslang-llvmc","clang"].includes(filename))
+    throw Error("unexpected numeric executable snapshot name");
+  if(!isAbsolute(workspace)||await realpath(workspace)!==workspace)
+    throw Error("snapshot workspace must be a canonical absolute directory");
+  const dirStat=await lstat(workspace);
+  if(!dirStat.isDirectory()||(dirStat.mode&0o077)!==0)
+    throw Error("snapshot workspace must be private to runner owner");
+  await pinned(file,digest,label);
+  const dest=join(workspace,filename);
+  await copyFile(file,dest,fsConstants.COPYFILE_EXCL);
+  await chmod(dest,0o500);
+  await pinned(dest,digest,label+" executable snapshot");
+  return dest;
+}
+
 export function validateNumericCorpus(manifest){
   if(manifest?.schemaVersion!==1||manifest.contract!=="oreslang.numeric-separators/source-v1"||
     manifest.status!=="candidate-unattested"||!Array.isArray(manifest.cases)||manifest.cases.length!==26)
@@ -105,6 +127,23 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
   const root=await mkdtemp(join(tmpdir(),"ores-native-corpus-"));
   const results=[];
   try{
+    const stagedCompiler=await stageNumericExecutable({
+      file:compiler,digest:compilerSha256,label:"LLVM compiler",
+      workspace:root,filename:"oreslang-llvmc"
+    });
+    const stagedClang=await stageNumericExecutable({
+      file:clang,digest:clangSha256,label:"Clang",
+      workspace:root,filename:"clang"
+    });
+    // A copied Clang binary moves relative to its builtin resource files.
+    // Obtain its canonical original resource path explicitly; it is a trusted
+    // host/toolchain dependency, not part of the two executable SHA pins.
+    const resourceQuery=command(stagedClang,["-print-resource-dir"]);
+    if(!succeeded(resourceQuery)||!/^[^\r\n]+\n?$/.test(resourceQuery.stdout))
+      throw Error("pinned Clang resource directory unavailable");
+    const resourceDir=await realpath(resourceQuery.stdout.trim());
+    if(!isAbsolute(resourceDir)||!(await lstat(resourceDir)).isDirectory())
+      throw Error("Clang resource directory invalid");
     const reporter=join(root,"report.c");
     await writeFile(reporter,shim,{mode:0o400,flag:"wx"});
     for(const c of cases){
@@ -113,7 +152,7 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
       const ll=join(root,c.id+".ll");
       const exe=join(root,c.id+".native");
       await writeFile(input,bytes,{mode:0o400,flag:"wx"});
-      const compiled=command(compiler,["--target=host",input]);
+      const compiled=command(stagedCompiler,["--target=host",input]);
       const evidence={id:c.id,expect:c.expect,category:c.category||null,
         fixtureSha256:sha256(bytes),compilerExit:compiled.code,
         status:"MISMATCH",observedI64:null};
@@ -126,7 +165,7 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
         try{
           const rewritten=renameNumericGuestMain(compiled.stdout);
           await writeFile(ll,rewritten,{mode:0o400,flag:"wx"});
-          const linked=command(clang,["-x","ir",ll,"-x","c",reporter,"-o",exe]);
+          const linked=command(stagedClang,["-resource-dir="+resourceDir,"-x","ir",ll,"-x","c",reporter,"-o",exe]);
           evidence.clangExit=linked.code;
           if(succeeded(linked)){
             const guest=command(exe,[],10000);
@@ -142,14 +181,20 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
       }
       results.push(evidence);
     }
+    // The executed copies must retain their hashes through the entire run.
+    // A changed original also fails closed despite private-copy immutability.
+    const unchanged=await hashExecutableBounded(stagedCompiler)===compilerSha256 &&
+      await hashExecutableBounded(stagedClang)===clangSha256 &&
+      await hashExecutableBounded(compiler)===compilerSha256 &&
+      await hashExecutableBounded(clang)===clangSha256;
+    if(!unchanged)for(const item of results)item.status="TOOLCHAIN_CHANGED";
+    const failed=results.filter(x=>!x.status.startsWith("VERIFIED_")).length;
+    return {schemaVersion:1,contract:"oreslang.numeric-separators/native-llvm-evidence-v1",
+      backend:"llvm",sourceCommitDeclared:sourceCommit,sourceCommitAttested:false,
+      compilerSha256,clangSha256,manifestSha256:sha256(manifestBytes),
+      toolBytesExecutedFromPrivateSnapshots:true,
+      clangResourceDirIsExternalDependency:true,
+      verificationScope:"real native Oreslang compiler + Clang + i64 guest",
+      verified:results.length-failed,failed,ok:failed===0&&unchanged,results};
   }finally{await rm(root,{recursive:true,force:true});}
-  const unchanged=await hashExecutableBounded(compiler)===compilerSha256 &&
-    await hashExecutableBounded(clang)===clangSha256;
-  if(!unchanged)for(const item of results)item.status="TOOLCHAIN_CHANGED";
-  const failed=results.filter(x=>!x.status.startsWith("VERIFIED_")).length;
-  return {schemaVersion:1,contract:"oreslang.numeric-separators/native-llvm-evidence-v1",
-    backend:"llvm",sourceCommitDeclared:sourceCommit,sourceCommitAttested:false,
-    compilerSha256,clangSha256,manifestSha256:sha256(manifestBytes),
-    verificationScope:"real native Oreslang compiler + Clang + i64 guest",
-    verified:results.length-failed,failed,ok:failed===0&&unchanged,results};
 }
