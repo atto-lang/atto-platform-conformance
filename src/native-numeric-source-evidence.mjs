@@ -111,8 +111,9 @@ export async function snapshotNumericClangResources(root){
     const item=pending.pop();
     const st=await lstat(item.path,{bigint:true});
     if(st.isSymbolicLink()||(st.mode&0o022n)!==0n)
-      throw Error("Clang resource tree contains symlink or group/world-writable entry");
-    if(++entries.length>4096)throw Error("Clang resource tree entry limit exceeded");
+      throw Error("Clang resource tree contains a symlink or a group/world-writable entry");
+    if(entries.length>=4096)throw Error("Clang resource tree entry limit exceeded");
+    entries.push(null);
     if(st.isDirectory()){
       entries[entries.length-1]=[item.rel,"directory",Number(st.mode&0o777n)];
       const children=await readdir(item.path);
