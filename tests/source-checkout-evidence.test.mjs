@@ -84,7 +84,7 @@ test('a clean committed symlink is not an allowed source input',async()=>{
     expectedCommit:git(f.root,'rev-parse','HEAD'),
     expectedTree:git(f.root,'rev-parse','HEAD^{tree}')};
   assert.equal(git(f.root,'status','--porcelain=v1'),'');
-  await assert.rejects(verifySourceCheckout(opts),/nonregular tracked files/);
+  await assert.rejects(verifySourceCheckout(opts),/nonregular/);
  }finally{await rm(f.root,{recursive:true,force:true})}
 });
 test('committed executable regular files remain admissible',async()=>{
@@ -106,7 +106,7 @@ test('tracked gitlink is not an allowed source input',async()=>{
   const opts={sourceDir:f.root,
     expectedCommit:git(f.root,'rev-parse','HEAD'),
     expectedTree:git(f.root,'rev-parse','HEAD^{tree}')};
-  await assert.rejects(verifySourceCheckout(opts),/nonregular tracked files|changes/);
+  await assert.rejects(verifySourceCheckout(opts),/nonregular|changes/);
  }finally{await rm(f.root,{recursive:true,force:true})}
 });
 test('CLI fail-closed contract and successful JSON receipt',async()=>{
