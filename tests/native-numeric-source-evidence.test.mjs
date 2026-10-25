@@ -214,6 +214,32 @@ test("bounded real child process execution distinguishes failure, signal and tim
     createHash("sha256").update(Buffer.from(invalidUtf8.stdout)).digest("hex"));
 });
 
+test("compiler subprocesses ignore untrusted inherited Node hooks and variables",async()=>{
+  const dir=await mkdtemp(join(tmpdir(),"ores-num-clean-env-"));
+  const preload=join(dir,"poison-hook.cjs");
+  const marker=join(dir,"hook-was-loaded");
+  const savedOptions=process.env.NODE_OPTIONS;
+  const savedPoison=process.env.ORESLANG_NUMERIC_ENV_POISON;
+  try{
+    await writeFile(preload,
+      "require('node:fs').writeFileSync("+JSON.stringify(marker)+",'loaded');\n");
+    process.env.NODE_OPTIONS="--require="+preload;
+    process.env.ORESLANG_NUMERIC_ENV_POISON="INHERITED";
+    const output=runNumericCommand(process.execPath,["-e",
+      "process.stdout.write(process.env.ORESLANG_NUMERIC_ENV_POISON || 'SANITIZED')"],3000);
+    assert.equal(output.code,0);
+    assert.equal(output.error,null);
+    assert.equal(output.stdout,"SANITIZED");
+    await assert.rejects(lstat(marker),{code:"ENOENT"});
+  }finally{
+    if(savedOptions===undefined)delete process.env.NODE_OPTIONS;
+    else process.env.NODE_OPTIONS=savedOptions;
+    if(savedPoison===undefined)delete process.env.ORESLANG_NUMERIC_ENV_POISON;
+    else process.env.ORESLANG_NUMERIC_ENV_POISON=savedPoison;
+    await rm(dir,{recursive:true,force:true});
+  }
+});
+
 test("native verifier refuses group/world-writable Clang resource roots",async()=>{
   const dir=await mkdtemp(join(tmpdir(),"ores-num-resource-perms-"));
   const compiler=join(dir,"compiler");
