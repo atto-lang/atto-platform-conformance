@@ -2,7 +2,7 @@
 // This file does not attest that the declared Git head produced the binary.
 import {spawnSync} from "node:child_process";
 import {createHash} from "node:crypto";
-import {readFile,writeFile,mkdtemp,rm,lstat,realpath,copyFile,chmod,readdir,open} from "node:fs/promises";
+import {readFile,writeFile,mkdtemp,rm,lstat,realpath,copyFile,chmod,opendir,open} from "node:fs/promises";
 import {constants as fsConstants} from "node:fs";
 import {tmpdir} from "node:os";
 import {isAbsolute,join} from "node:path";
@@ -116,10 +116,16 @@ export async function snapshotNumericClangResources(root){
     entries.push(null);
     if(st.isDirectory()){
       entries[entries.length-1]=[item.rel,"directory",Number(st.mode&0o777n)];
-      const children=await readdir(item.path);
-      for(const name of children){
-        if(name==="."||name===".."||name.includes("\0"))
+      // Stream entries, not an unbounded readdir() array: otherwise a
+      // malicious resource directory can allocate millions of pending
+      // objects before the 4096-entry check is reached.
+      const dir=await opendir(item.path);
+      for await(const child of dir){
+        const name=child.name;
+        if(name==="."||name===".."||name.includes("\0")||name.includes("/"))
           throw Error("invalid Clang resource tree path");
+        if(entries.length+pending.length>=4096)
+          throw Error("Clang resource tree entry limit exceeded");
         const rel=item.rel?item.rel+"/"+name:name;
         pending.push({path:join(item.path,name),rel});
       }
