@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * PRE-COPY confidentiality admission. Source Git hashes prove byte identity,
- * not permission to publish the bytes. Always validate repository visibility
- * before creating a tree/blob, pushing a ref or uploading an Actions artifact.
+ * VISIBILITY-ONLY check. GitHub "private" visibility, name allowlists,
+ * push permission and Git hashes do NOT approve a private source export.
+ * Cross-org publisher is separately hard-disabled by security incident #22.
  *
  * This verifier does not perform a mirror, fetch source bytes or change GitHub
  * settings. The mirror orchestrator must fail closed if this command fails.
@@ -82,7 +82,8 @@ export async function requirePrivateMirror({
       destinationRepo.archived === true || destinationRepo.permissions?.push !== true) {
     throw Error("destination must be a writable verified PRIVATE GitHub repository");
   }
-  return Object.freeze({status: "PRIVATE_MIRROR_APPROVED", source: from, destination: to});
+  return Object.freeze({status: "PRIVATE_VISIBILITY_VERIFIED_ONLY", source: from,
+    destination: to, privateSourceTransferAuthorized: false});
 }
 
 if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
