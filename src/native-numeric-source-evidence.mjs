@@ -9,6 +9,7 @@ import {isAbsolute,join} from "node:path";
 import {fileURLToPath} from "node:url";
 import {hashExecutableBounded} from "./harness.mjs";
 import {nativeNumericSafeFailureCode} from "./native-numeric-safe-diagnostics.mjs";
+import {rewriteLLVMIRHostMainReferences} from "./llvm-ir-host-symbols.mjs";
 
 const fixture=fileURLToPath(new URL("../fixtures/numeric-separators-source-v1.json",import.meta.url));
 const sha256=b=>createHash("sha256").update(b).digest("hex");
@@ -47,8 +48,9 @@ export function renameNumericGuestMain(ir){
     throw Error("expected one i64 __oreslang_guest_main and one i32 host main wrapper");
   // Keep the actual Oreslang guest callable, retire only the host wrapper
   // before linking an independent reporting shim that calls the guest.
-  const renamed=ir.replace(/@main(?=\s*\()/g,"@oreslang_numeric_unused_host_main");
-  if(/@main(?=\s*\()/.test(renamed))throw Error("unrenamed native host wrapper");
+  const {ir:renamed,referencesRewritten}=rewriteLLVMIRHostMainReferences(ir);
+  // Unquoted call sites are updated; comments and quoted metadata are not.
+  if(referencesRewritten<1)throw Error("unrenamed native host wrapper");
   return renamed;
 }
 const shim=[
