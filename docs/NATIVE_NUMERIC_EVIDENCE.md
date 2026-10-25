@@ -132,6 +132,16 @@ For each of the 26 exact guestSource byte sequences:
    declared source revision.
    The ordinary wrapper clamps/converts exit status; it is **not** a source of
    full-width i64 evidence. This is verified against LLVM LlvmCodegen.cpp.
+   For each accepted fixture, create a **new** mode-0400 C reporter only
+   *after* that source's compiler process exits. Pin its SHA-256 and compare
+   its original device/inode, mode, size and SHA-256 after Clang returns,
+   before running the native guest. A linker process that persistently edits,
+   chmods, removes or replaces the reporter cannot establish a verified guest
+   result, even if it returns exit code zero. Per-case receipts expose
+   `reporterSha256` and `reporterUnchanged`. This is an after-execution
+   integrity fence, not process isolation; malicious same-UID background
+   processes and mutations restored before the post-check remain outside
+   the evidence boundary.
 4. Execute the compiled guest; compare its exact decimal stdout to the expected
    i64. Any extra output, nonzero exit or signal fails.
 5. Copy both SHA-256-verified compiler and Clang executable bytes to a new
