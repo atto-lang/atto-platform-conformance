@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { execFileSync } from 'node:child_process';
-import { verify } from '../bin/verify-private-mirror.mjs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { privateMirrorSafeFailureCode, verify } from '../bin/verify-private-mirror.mjs';
 
 function git(repo, ...args) {
   return execFileSync('git', ['-C', repo, ...args], { encoding: 'utf8' }).trim();
@@ -114,4 +115,48 @@ test('raw byte admission rejects a Git-clean custom filter transformation',()=>{
    blobs:[{path:'main.ores',sha:git(repo,'rev-parse','HEAD:source/main.ores')}]};
   assert.throws(()=>verify(params),/raw source bytes differ from pinned Git blob/);
  }finally{rmSync(repo,{recursive:true,force:true})}
+});
+
+
+test('mirror CLI redacts absolute filesystem and Git exception details',()=>{
+  const root=mkdtempSync(join(tmpdir(),'mirror-redaction-'));
+  try{
+    const secret='SECRET_LOCAL_PATH_COMPONENT_MUST_NOT_LEAK';
+    const missing=join(root,secret,'not-a-repository');
+    const manifest=join(root,'manifest.json');
+    writeFileSync(manifest,JSON.stringify({
+      repository:missing,subtreePath:'source',
+      expectedTree:'a'.repeat(40),blobs:[]
+    }));
+    const cli=fileURLToPath(new URL('../bin/verify-private-mirror.mjs',import.meta.url));
+    const proc=spawnSync(process.execPath,[cli,manifest],{
+      encoding:'utf8',timeout:10000,
+      env:{...process.env,GITHUB_TOKEN:'UNSAFE_TOKEN_MUST_NOT_PRINT'}
+    });
+    assert.equal(proc.status,1);
+    assert.equal(proc.stdout,'');
+    assert.match(proc.stderr,/^MIRROR_UNVERIFIED: UNCLASSIFIED_GIT_OR_IO_ERROR\n$/);
+    assert.doesNotMatch(proc.stderr,/SECRET_LOCAL_PATH_COMPONENT|UNSAFE_TOKEN|not-a-repository/);
+  }finally{rmSync(root,{recursive:true,force:true})}
+});
+
+test('mirror safe failure classifier never echoes hostile exception messages',()=>{
+  const secret='/home/runner/work/private/SECRET_PATH?token=unsafe';
+  assert.equal(
+    privateMirrorSafeFailureCode(new Error('ENOENT: '+secret)),
+    'UNCLASSIFIED_GIT_OR_IO_ERROR'
+  );
+  assert.equal(
+    privateMirrorSafeFailureCode(Object.defineProperty({},'message',{get(){throw Error(secret)}})),
+    'UNCLASSIFIED_GIT_OR_IO_ERROR'
+  );
+  assert.equal(privateMirrorSafeFailureCode(new Error('exact Git subtree mismatch')),'TREE_MISMATCH');
+});
+
+test('raw verifier no longer delegates worktree-byte hashing to Git',()=>{
+  const cli=fileURLToPath(new URL('../bin/verify-private-mirror.mjs',import.meta.url));
+  const source=readFileSync(cli,'utf8');
+  assert.doesNotMatch(source,/git\(repo,\s*['"]hash-object['"]/);
+  assert.match(source,/O_NOFOLLOW/);
+  assert.match(source,/gitBlobSha1\(bytes\)/);
 });
