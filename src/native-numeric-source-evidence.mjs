@@ -17,12 +17,18 @@ const digest64=s=>typeof s==="string"&&/^[a-f0-9]{64}$/.test(s);
 const revision40=s=>typeof s==="string"&&/^[a-f0-9]{40}$/.test(s);
 
 export function nativeNumericDiagnostic(category,stderr){
-  if(typeof stderr!=="string")return false;
+  if(typeof stderr!=="string"||stderr.length===0||stderr.length>4*1024*1024)return false;
+  // Treat diagnostic framing as evidence input, not display text. Lone CR and
+  // C0/DEL controls can overwrite or hide terminal text while leaving a valid
+  // prefix for a naive regex, so reject them rather than certifying a spoofed
+  // primary diagnostic. CRLF, LF and horizontal tab remain admissible.
+  if(/(^|[^\r])\r(?!\n)/.test(stderr)||
+     /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(stderr))return false;
   // Only the first nonempty diagnostic line may establish a compiler
   // rejection. Do not let an unrelated runner/Clang failure followed by
   // a forged Oreslang line masquerade as source admission evidence.
-  const primary=stderr.split(/\r?\n/).find(line=>line.trim().length>0);
-  if(!primary||!primary.startsWith("oreslang-llvmc: "))return false;
+  const primary=stderr.split(/\r\n|\n/).find(line=>line.trim().length>0);
+  if(!primary||primary.length>4096||!primary.startsWith("oreslang-llvmc: "))return false;
   const diagnostic=primary.slice("oreslang-llvmc: ".length);
   if(category==="separator")return /^malformed integer separator\b/.test(diagnostic);
   if(category==="i64-overflow")return /^integer literal overflows signed 64-bit\b/.test(diagnostic);
