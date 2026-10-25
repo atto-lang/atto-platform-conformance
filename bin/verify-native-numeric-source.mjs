@@ -1,9 +1,13 @@
 #!/usr/bin/env node
 // Required real-compiler gate. No implicit skip or simulated guest fallback.
-import {executeNativeNumericCorpus} from "../src/native-numeric-source-evidence.mjs";
-import {nativeNumericSafeFailureCode} from "../src/native-numeric-safe-diagnostics.mjs";
-const allowed=new Set(["compiler","compiler-sha256","clang","clang-sha256","clang-resource-dir","source-commit","manifest-sha256"]);
+// Imports run within the guarded region: Node's default ESM loader errors
+// include absolute repository paths and must never escape to CI logs.
+let safeFailureCode=()=>"UNCLASSIFIED_EXECUTION_OR_IO_ERROR";
 try{
+  const diagnosticModule=await import("../src/native-numeric-safe-diagnostics.mjs");
+  safeFailureCode=diagnosticModule.nativeNumericSafeFailureCode;
+  const {executeNativeNumericCorpus}=await import("../src/native-numeric-source-evidence.mjs");
+  const allowed=new Set(["compiler","compiler-sha256","clang","clang-sha256","clang-resource-dir","source-commit","manifest-sha256"]);
   const args={};
   for(const arg of process.argv.slice(2)){
     const match=/^--([a-z][a-z0-9-]*)=(.+)$/.exec(arg);
@@ -21,9 +25,9 @@ try{
   process.stdout.write(JSON.stringify(evidence,null,2)+"\n");
   if(!evidence.ok)process.exitCode=1;
 }catch(error){
-  // Filesystem and subprocess errors often embed private absolute paths.
+  // Filesystem, import-loader and subprocess errors can embed private paths.
   // Emit only fixed, reviewable diagnostic codes to logs and CI artifacts.
   process.stderr.write("NATIVE_EVIDENCE_UNAVAILABLE: "+
-    nativeNumericSafeFailureCode(error)+"\n");
+    safeFailureCode(error)+"\n");
   process.exitCode=2;
 }
