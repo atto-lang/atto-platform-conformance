@@ -260,6 +260,18 @@ test("Clang resource tree snapshots detect nested mutation and forbid symlinks",
   }finally{await rm(dir,{recursive:true,force:true});}
 });
 
+test("Clang resource tree refuses oversized directory before growing pending queue",async()=>{
+  const root=await mkdtemp(join(tmpdir(),"ores-clang-tree-entry-budget-"));
+  try{
+    // 4096 entries plus the directory root exceeds the 4096-entry cap.
+    // Write in bounded batches rather than flooding the worker with open FDs.
+    for(let i=0;i<4096;i+=64)
+      await Promise.all(Array.from({length:64},(_,j)=>
+        writeFile(join(root,"entry-"+String(i+j).padStart(4,"0")), "")));
+    await assert.rejects(snapshotNumericClangResources(root),/entry limit exceeded/);
+  }finally{await rm(root,{recursive:true,force:true});}
+});
+
 test("runtime Clang resource changes revoke all otherwise recorded evidence",async()=>{
   const dir=await mkdtemp(join(tmpdir(),"ores-clang-tree-drift-"));
   try{
