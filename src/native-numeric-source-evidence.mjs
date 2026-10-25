@@ -8,6 +8,7 @@ import {tmpdir} from "node:os";
 import {isAbsolute,join} from "node:path";
 import {fileURLToPath} from "node:url";
 import {hashExecutableBounded} from "./harness.mjs";
+import {nativeNumericSafeFailureCode} from "./native-numeric-safe-diagnostics.mjs";
 import {rewriteLLVMIRHostMainReferences} from "./llvm-ir-host-symbols.mjs";
 
 const fixture=fileURLToPath(new URL("../fixtures/numeric-separators-source-v1.json",import.meta.url));
@@ -337,7 +338,11 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
                 evidence.status="VERIFIED_NATIVE_GUEST_I64";
             }
           }
-        }catch(e){evidence.failure=String(e.message).slice(0,180);}
+        }catch(e){
+          // Do not embed private paths from fs/child-process errors in
+          // JSON evidence that may be uploaded to CI artifacts.
+          evidence.failure=nativeNumericSafeFailureCode(e);
+        }
       }
       results.push(evidence);
     }

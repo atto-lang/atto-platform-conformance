@@ -248,3 +248,22 @@ runtime policy checks and reviewer approval.
 Only trusted local toolchains may be executed; staged executable bytes help
 prevent post-hash caller-path substitution, but do not sandbox malicious
 compilers, dynamic libraries, external Clang resources or a hostile host.
+
+## Non-sensitive error reporting (2026-10-25)
+
+Filesystem and process exceptions can contain private absolute paths, token-like
+file names, and other untrusted text. Both the numeric CLI's
+`NATIVE_EVIDENCE_UNAVAILABLE` line and the per-case JSON `failure` field
+therefore use only reviewed fixed diagnostic codes from
+`src/native-numeric-safe-diagnostics.mjs`. An unfamiliar error becomes
+`UNCLASSIFIED_EXECUTION_OR_IO_ERROR`; its original message is not printed
+or copied into a receipt. Existing SHA-256, byte-count, exit-code, signal,
+and status fields remain available for debugging without publishing raw
+filesystem error messages. Known fixed failures retain useful codes, but
+an attacker cannot append untrusted text to a recognized diagnostic.
+
+`tests/native-numeric-safe-diagnostics.test.mjs` checks path/token injection,
+exact fixed-code matching, deliberate CLI path failures and receipt-source
+redaction. The CLI-integration case requires a complete local source checkout;
+passing the isolated helper/handler tests alone is not evidence of end-to-end
+native compiler execution or source-to-binary provenance.

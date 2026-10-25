@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Required real-compiler gate. No implicit skip or simulated guest fallback.
 import {executeNativeNumericCorpus} from "../src/native-numeric-source-evidence.mjs";
+import {nativeNumericSafeFailureCode} from "../src/native-numeric-safe-diagnostics.mjs";
 const allowed=new Set(["compiler","compiler-sha256","clang","clang-sha256","clang-resource-dir","source-commit","manifest-sha256"]);
 try{
   const args={};
@@ -20,7 +21,9 @@ try{
   process.stdout.write(JSON.stringify(evidence,null,2)+"\n");
   if(!evidence.ok)process.exitCode=1;
 }catch(error){
+  // Filesystem and subprocess errors often embed private absolute paths.
+  // Emit only fixed, reviewable diagnostic codes to logs and CI artifacts.
   process.stderr.write("NATIVE_EVIDENCE_UNAVAILABLE: "+
-    String(error?.message||error).slice(0,1000)+"\n");
+    nativeNumericSafeFailureCode(error)+"\n");
   process.exitCode=2;
 }
