@@ -139,8 +139,12 @@ For each of the 26 exact guestSource byte sequences:
    execute those snapshots (never the original caller path). Verify both
    snapshot hashes immediately after copying; path mutations during copy
    reject admission. Re-hash **both** snapshots and originals at suite exit.
-   Any changed executable revokes all results. Temporary binaries, source,
-   LLVM IR, executable and shim are removed.
+   Any changed executable revokes all results. If a staged or original
+   executable disappears or becomes unreadable during the exit recheck, the
+   runner retains case evidence in a structured failed receipt, sets
+   `executableRecheckFailed: true` and `executableHashesUnchanged: false`,
+   and revokes all 26 results. Temporary binaries, source, LLVM IR,
+   executable and shim are removed.
 6. Supply Clang's reviewed canonical resource directory explicitly with
    --clang-resource-dir. It can be determined from the trusted original
    installation with `/absolute/path/to/clang -print-resource-dir` before
@@ -158,7 +162,10 @@ For each of the 26 exact guestSource byte sequences:
    The identical resource-tree digest is required before and after the 26
    fixtures. A mismatch revokes all 26 results. The JSON receipt reports
    `clangResourceTreeSha256`, entry count/bytes and
-   `clangResourceTreeUnchanged`. This digest is an **observed** integrity
+   `clangResourceTreeUnchanged`. An invalid or unreadable final resource
+   tree sets `clangResourceTreeRecheckFailed: true` and returns a failed
+   receipt with all 26 cases marked `TOOLCHAIN_CHANGED`, rather than
+   dropping the observed case diagnostics. This digest is an **observed** integrity
    measurement, not an independently pinned toolchain or source attestation.
    Privileged or same-UID processes, mutable parent directories, races between
    scans, dynamic libraries, linker and host system remain external trust
