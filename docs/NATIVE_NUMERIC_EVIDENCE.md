@@ -125,6 +125,11 @@ For each of the 26 exact guestSource byte sequences:
    ABI**: exactly one `i64 @__oreslang_guest_main()` Oreslang function and
    one `i32 @main()` OS/process wrapper. Retire only the i32 host wrapper,
    then link a trusted C reporting shim that calls the real i64 guest symbol.
+   Function definitions are counted only from actual LLVM IR `define` lines:
+   comment text, metadata and string contents containing fake signatures
+   cannot establish or duplicate the required ABI. This is an entrypoint
+   structure check, not proof that the compiler binary came from the
+   declared source revision.
    The ordinary wrapper clamps/converts exit status; it is **not** a source of
    full-width i64 evidence. This is verified against LLVM LlvmCodegen.cpp.
 4. Execute the compiled guest; compare its exact decimal stdout to the expected
