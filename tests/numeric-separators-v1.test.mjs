@@ -24,7 +24,7 @@ test("numeric source fixture contract is unique, byte-for-byte reproducible and 
     assert.ok(!expressions.has(item.expression),"duplicate expression: "+item.expression);
     expressions.add(item.expression);
     assert.ok(["accept","reject"].includes(item.expect));
-    assert.match(item.expression,/^[A-Za-z0-9_+*\-()\s"]+$/);
+    assert.match(item.expression,/^[A-Za-z0-9_+*()" \t-]+$/);
     assert.equal(item.guestSource,
       "pub fnc main():int{return "+item.expression+";}\n");
     assert.ok(!item.guestSource.includes("\0"));
