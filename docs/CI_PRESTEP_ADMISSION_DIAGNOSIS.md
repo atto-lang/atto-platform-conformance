@@ -113,7 +113,7 @@ unconditional denial. Prefer restoring same-boundary source-org CI.
 `bin/verify-private-mirror.mjs` verifies pinned Git SHA-1 object identities and
 raw worktree file bytes; it does **not** publish source or authorize a carrier.
 To avoid an unbounded `readFileSync(fd)` allocation on a large or sparse
-tracked source file, the verifier now hashes the Git `blob <size>\\0` header
+tracked source file, the verifier now hashes the Git `blob <size>\0` header
 and file bytes incrementally in **64 KiB chunks**. It rejects an individual
 regular file above **128 MiB** from `lstat` before opening it, with safe
 public code `SOURCE_FILE_SIZE_LIMIT`. The threshold is a strict admission
