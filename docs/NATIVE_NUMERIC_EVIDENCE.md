@@ -142,8 +142,16 @@ For each of the 26 exact guestSource byte sequences:
    integrity fence, not process isolation; malicious same-UID background
    processes and mutations restored before the post-check remain outside
    the evidence boundary.
-4. Execute the compiled guest; compare its exact decimal stdout to the expected
-   i64. Any extra output, nonzero exit or signal fails.
+4. Before running Clang, require that the per-case native output path
+   **does not exist**. A compiler subprocess can otherwise pre-create that
+   predictable output, and a no-op linker that exits zero would wrongly
+   appear to have produced a valid guest. After a successful Clang invocation,
+   require a canonical regular executable (not a symlink, not group/world
+   writable) and record its bounded SHA-256. Re-hash after executing the
+   guest; a modified guest invalidates that case. These checks do not
+   authenticate the source-to-binary build provenance or dynamic libraries.
+   Compare the guest's exact decimal stdout to the expected i64. Any extra
+   output, nonzero exit or signal fails.
 5. Copy both SHA-256-verified compiler and Clang executable bytes to a new
    mode-0700 private workspace, chmod the executable snapshots 0500, and
    execute those snapshots (never the original caller path). Verify both
