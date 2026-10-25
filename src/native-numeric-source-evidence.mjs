@@ -189,7 +189,7 @@ export function validateNumericCorpus(manifest){
       if(c.category!==undefined)
         throw Error("accepted fixture must not declare a rejection category");
       if(typeof c.expectedI64!=="string"||
-        !/^-?(0|[1-9][0-9]*)$/.test(c.expectedI64)||
+        !/^(?:0|[1-9][0-9]*|-[1-9][0-9]*)$/.test(c.expectedI64)||
         BigInt(c.expectedI64)<-(1n<<63n)||BigInt(c.expectedI64)>(1n<<63n)-1n)
         throw Error("invalid expected signed i64 value");
     }else if(c.expect==="reject"){
