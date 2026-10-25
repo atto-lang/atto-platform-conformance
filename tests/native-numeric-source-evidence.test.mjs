@@ -582,3 +582,40 @@ test("Clang mode-only or same-byte reporter replacement cannot certify a guest",
     }finally{await rm(dir,{recursive:true,force:true});}
   }
 });
+
+test("pre-seeded native output cannot be mistaken for Clang-produced guest",async()=>{
+  const dir=await mkdtemp(join(tmpdir(),"ores-num-preseeded-native-"));
+  try{
+    const compiler=join(dir,"compiler");
+    const clang=join(dir,"clang");
+    // The fake compiler plants an executable at the intended Clang -o path.
+    // Clang is a no-op returning 0; the planted executable is NOT proof.
+    const compilerBytes=Buffer.from(
+      "#!/bin/sh\n"+
+      "input=\"$2\"\nexe=\"$(dirname \"$input\")/$(basename \"$input\" .ores).native\"\n"+
+      "printf '#!/bin/sh\\nprintf \"42\\\\n\"\\n' > \"$exe\"\n"+
+      "chmod 0700 \"$exe\"\n"+
+      "printf 'define i64 @__oreslang_guest_main() {\\nentry:\\n ret i64 42\\n}\\n"+
+      "define i32 @main() {\\nentry:\\n ret i32 0\\n}\\n'\n");
+    const clangBytes=Buffer.from("#!/bin/sh\nexit 0\n");
+    await writeFile(compiler,compilerBytes,{mode:0o500});
+    await writeFile(clang,clangBytes,{mode:0o500});
+    const hash=x=>createHash("sha256").update(x).digest("hex");
+    const manifest=await readFile(corpusPath);
+    const receipt=await executeNativeNumericCorpus({
+      compiler,compilerSha256:hash(compilerBytes),
+      clang,clangSha256:hash(clangBytes),clangResourceDir:dir,
+      sourceCommit:"e".repeat(40),manifestSha256:hash(manifest)
+    });
+    assert.equal(receipt.ok,false);
+    assert.equal(receipt.verified,0);
+    assert.equal(receipt.failed,26);
+    const positives=receipt.results.filter(x=>x.expect==="accept");
+    assert.equal(positives.length,12);
+    for(const p of positives){
+      assert.equal(p.status,"MISMATCH");
+      assert.match(p.failure,/native executable exists before Clang link/);
+      assert.equal(p.guestExit,undefined);
+    }
+  }finally{await rm(dir,{recursive:true,force:true});}
+});
