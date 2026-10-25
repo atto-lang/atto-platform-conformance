@@ -293,8 +293,17 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
     }
     // The executed copies must retain their hashes through the entire run.
     // A changed original also fails closed despite private-copy immutability.
-    const resourceAfter=await snapshotNumericClangResources(clangResourceDir);
-    const resourceUnchanged=resourceBefore.sha256===resourceAfter.sha256;
+    // A tool can make its resource tree unscannable during execution (e.g.
+    // chmod a header writable, replace it with a symlink, or delete it).
+    // Revoke the entire batch with a structured failed receipt instead of
+    // throwing away every case's captured diagnostics and byte hashes.
+    let resourceUnchanged=false,resourceRecheckFailed=false;
+    try{
+      const resourceAfter=await snapshotNumericClangResources(clangResourceDir);
+      resourceUnchanged=resourceBefore.sha256===resourceAfter.sha256;
+    }catch{
+      resourceRecheckFailed=true;
+    }
     const unchanged=resourceUnchanged &&
       await hashExecutableBounded(stagedCompiler)===compilerSha256 &&
       await hashExecutableBounded(stagedClang)===clangSha256 &&
@@ -308,6 +317,7 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
       clangResourceTreeSha256:resourceBefore.sha256,
       clangResourceEntries:resourceBefore.entries,clangResourceBytes:resourceBefore.bytes,
       clangResourceTreeUnchanged:resourceUnchanged,
+      clangResourceTreeRecheckFailed:resourceRecheckFailed,
       toolBytesExecutedFromPrivateSnapshots:true,
       clangResourceDirIsExternalDependency:true,
       verificationScope:"real native Oreslang compiler + Clang + i64 guest",
