@@ -85,7 +85,7 @@ export function verifyPlatformCapabilityReceipt(receipt, contract) {
 
   if(stageIndex>=2) {
     if(e.hostReferenceOnly!==false)
-      fail("compiler-guest and higher stages require hostReferenceOnly=false");
+      fail("compiler-guest and higher stages forbid host-reference-only evidence; require hostReferenceOnly=false");
     if(e.compilerProduced!==true)
       fail("compiler-guest and higher stages require compilerProduced=true");
     if(typeof e.compilerSourceCommit!=="string" || !hex40.test(e.compilerSourceCommit))
