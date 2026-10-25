@@ -48,7 +48,7 @@ function safePath(path) {
 // Sparse files are rejected using fstat *before* reading any content.
 const MAX_SOURCE_FILE_BYTES = 128n * 1024n * 1024n;
 function gitBlobSha1FromHandle(fd, size) {
-  const hash = createHash('sha1').update('blob ' + size.toString() + '\\0');
+  const hash = createHash('sha1').update('blob ' + size.toString() + '\0');
   const buffer = Buffer.allocUnsafe(64 * 1024);
   let position = 0;
   const target = Number(size); // Safe after the 128-MiB cap.
