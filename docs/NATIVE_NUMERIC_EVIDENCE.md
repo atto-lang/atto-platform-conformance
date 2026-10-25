@@ -144,7 +144,10 @@ For each of the 26 exact guestSource byte sequences:
    caller paths. Additionally it recursively hashes all regular resource files
    and directory modes (SHA-256, canonical-path sorting); symlinks, special
    objects, group/world-writable nested entries and size/count budget excesses
-   fail closed. Limits: 4,096 entries, 128 MiB per file, 512 MiB total.
+   fail closed. Directory children are streamed through `opendir()` and
+   the pending queue is bounded *during* enumeration; an oversized directory
+   cannot populate an unbounded in-memory list before denial. Limits:
+   4,096 entries, 128 MiB per file, 512 MiB total.
    The identical resource-tree digest is required before and after the 26
    fixtures. A mismatch revokes all 26 results. The JSON receipt reports
    `clangResourceTreeSha256`, entry count/bytes and
