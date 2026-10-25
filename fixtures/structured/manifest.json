@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "scope": "bounded-class-i64-wasm32-v1",
+  "cases": [
+    {
+      "id": "class-mutable-borrow",
+      "file": "class-mutable.ores",
+      "sourceGitBlobSha1": "3cad92b8c5f7c4d5b97472a7247ab0c10455078b",
+      "expect": "accept",
+      "expectedI64": "42",
+      "confirmedBackends": [
+        "llvm",
+        "wasm"
+      ],
+      "pendingBackends": [
+        "graal"
+      ]
+    },
+    {
+      "id": "class-shared-borrow",
+      "file": "class-read.ores",
+      "sourceGitBlobSha1": "af05262cfcd81fd13ed7e54b2e6b03db8032e20b",
+      "expect": "accept",
+      "expectedI64": "42",
+      "confirmedBackends": [
+        "llvm",
+        "wasm",
+        "graal"
+      ],
+      "pendingBackends": []
+    },
+    {
+      "id": "class-overlapping-loans",
+      "file": "class-overlap.ores",
+      "sourceGitBlobSha1": "2664d2fa411e4e5ea84d1c817c3f9e31ac45b511",
+      "expect": "reject",
+      "diagnosticClass": "exclusive-loan-conflict",
+      "confirmedBackends": [
+        "llvm",
+        "wasm",
+        "graal"
+      ],
+      "pendingBackends": []
+    },
+    {
+      "id": "class-explicit-mutable-borrow",
+      "file": "class-explicit-mutable.ores",
+      "sourceGitBlobSha1": "a7c28cc10c8ed4a4164984fe1d8f875e616e2eda",
+      "expect": "accept",
+      "expectedI64": "42",
+      "confirmedBackends": [
+        "llvm",
+        "wasm"
+      ],
+      "pendingBackends": [
+        "graal"
+      ]
+    }
+  ],
+  "evidence": "https://github.com/akrion-sim/akrion-sim-e2e/actions/runs/38113193431",
+  "notes": "Exact GraalVM 25 run confirms shared-read result 42 and overlapping-loan rejection; the original unmarked mutable owner is rejected by Java but accepted by LLVM/Wasm. This is a documented semantic mismatch, NOT parity. A separate explicit-mut Java variant returns 42 but has not yet been proven byte-identical cross-backend. Exact explicit `let mut Player` Git blob from Wasm #3 was compiled by a real pin-verified LLVM compiler subset at bb33404, linked to Wasm32, and executed in an isolated Worker returning 42; both immutable-owner and overlapping-loan negative source fixtures were rejected before artifact publication. Therefore this fixture is confirmed for the tested LLVM/Wasm pipeline only, while Graal and full latest-repo-tree rebuild remain outstanding.",
+  "graalEvidence": "https://github.com/zed-pkg-test/java-app/actions/runs/38154510801",
+  "explicitMutableEvidence": "https://github.com/akrion-sim/akrion-sim-e2e/actions/runs/38169346910",
+  "explicitMutableCompilerCoreSha": "bb33404d2f9878e0581bc5df29eb949ab5c22095",
+  "explicitMutableCompilerScope": "Real native oreslang-llvmc built from byte-pinned latest Parser.cpp, OwnershipChecker.cpp and LlvmCodegen.cpp at bb33404d2f9878e0581bc5df29eb949ab5c22095, with remaining byte-pinned supporting C++ files from c7d3b61d95b1c8ff78d6b2efbed44c9d92791b80; not a mirror of the entire current LLVM repository tree."
+}

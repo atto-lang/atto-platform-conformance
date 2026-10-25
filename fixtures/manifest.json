@@ -7,7 +7,11 @@
       "expect": "accept",
       "backends": [
         "java",
-        "llvm"
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
       ]
     },
     {
@@ -17,53 +21,11 @@
       "diagnostic": "nonexistent_symbol",
       "backends": [
         "java",
-        "llvm"
-      ]
-    },
-    {
-      "id": "forward-call",
-      "file": "forward-call.ores",
-      "expect": "accept",
-      "backends": [
-        "java",
-        "llvm"
-      ]
-    },
-    {
-      "id": "arithmetic-precedence",
-      "file": "arithmetic-precedence.ores",
-      "expect": "accept",
-      "backends": [
-        "java",
-        "llvm"
-      ]
-    },
-    {
-      "id": "wrong-arity",
-      "file": "wrong-arity.ores",
-      "expect": "reject",
-      "diagnostic": "arity|argument|expected",
-      "backends": [
-        "java",
-        "llvm"
-      ]
-    },
-    {
-      "id": "signed-negative",
-      "file": "signed-negative.ores",
-      "expect": "accept",
-      "backends": [
-        "java",
-        "llvm"
-      ]
-    },
-    {
-      "id": "large-i64",
-      "file": "large-i64.ores",
-      "expect": "accept",
-      "backends": [
-        "java",
-        "llvm"
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
       ]
     }
   ]

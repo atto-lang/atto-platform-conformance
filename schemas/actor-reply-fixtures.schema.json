@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:oreslang:conformance:actor-reply-fixtures:v1",
+  "title": "Oreslang Actor Reply Proposal Fixtures v1",
+  "description": "Structural fixture contract. Verified source hashes and real backend admissions must be checked separately; this schema is not a compiler proof.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "scope",
+    "cases",
+    "hostReference",
+    "notes"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "scope": {
+      "const": "actor-reply-control-source-proposal-v1"
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {
+        "$ref": "#/$defs/case"
+      }
+    },
+    "hostReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo",
+        "pullRequest",
+        "kind",
+        "compilerAdmission"
+      ],
+      "properties": {
+        "repo": {
+          "const": "ores-truffle-oreslang/oreslang-wasm"
+        },
+        "pullRequest": {
+          "const": 16
+        },
+        "kind": {
+          "const": "javascript-only"
+        },
+        "compilerAdmission": {
+          "const": false
+        }
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "backend": {
+      "enum": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "browser-worker"
+      ]
+    },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "file",
+        "sourceGitBlobSha1",
+        "expect",
+        "confirmedBackends",
+        "pendingBackends"
+      ],
+      "properties": {
+        "id": {
+          "enum": [
+            "actor-explicit-respond",
+            "return-match-value",
+            "do-match-value",
+            "reject-implicit-void-return",
+            "reject-double-response",
+            "reject-do-match-void-return"
+          ]
+        },
+        "file": {
+          "type": "string",
+          "pattern": "^[a-z-]+\\.ores$"
+        },
+        "sourceGitBlobSha1": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "expect": {
+          "enum": [
+            "accept",
+            "reject"
+          ]
+        },
+        "confirmedBackends": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/backend"
+          }
+        },
+        "pendingBackends": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/backend"
+          }
+        }
+      }
+    }
+  }
+}

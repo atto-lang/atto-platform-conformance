@@ -1,0 +1,26 @@
+name: Wave 3 parity reference checks (not compiler parity)
+on:
+  pull_request:
+    paths:
+      - 'parity/wave3/**'
+      - '.github/workflows/wave3-parity.yml'
+  push:
+    branches:
+      - 'feat/parity-wave3-lifecycle-core-20261016'
+    paths:
+      - 'parity/wave3/**'
+permissions:
+  contents: read
+jobs:
+  reference-model:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Exact-source reference and manifest tests
+        run: node --test parity/wave3/tests/*.test.mjs
+      - name: Validate pinned fixture identities (not language parity)
+        run: node parity/wave3/bin/wave3.mjs --validate

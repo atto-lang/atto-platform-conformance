@@ -1,0 +1,4 @@
+pub fnc main(): void {
+  let value = (suspends task |int a| -> a)(5);
+  return;
+}

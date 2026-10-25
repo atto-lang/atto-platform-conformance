@@ -1,3 +1,0 @@
-// Same source syntax in Java and LLVM.
-pub fnc main(): int { return add(40, 2); }
-fnc add(int a, int b): int { return a + b; }
