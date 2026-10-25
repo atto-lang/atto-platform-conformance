@@ -274,6 +274,18 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
              reporterBefore.size!==BigInt(reporterBytes))
             throw Error("reporting shim failed initial immutable admission");
           evidence.reporterSha256=reporterSha256;
+          // The compiler has already run with access to the private workspace.
+          // Never execute an output it pre-created if Clang merely exits zero
+          // without linking. A genuine link starts with a nonexistent target.
+          let outputPreexists=false;
+          try{
+            await lstat(exe);
+            outputPreexists=true;
+          }catch(e){
+            if(e?.code!=="ENOENT")throw e;
+          }
+          if(outputPreexists)
+            throw Error("native executable exists before Clang link");
           const linked=runNumericCommand(stagedClang,["-resource-dir="+resourceDir,"-x","ir",ll,"-x","c",reporter,"-o",exe]);
           evidence.clangExit=linked.code;
           evidence.clangSignal=linked.signal;
@@ -297,7 +309,18 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
           // A successful linker invocation must not claim a clean guest
           // build while silently writing unclassified stdout diagnostics.
           if(succeeded(linked)&&linked.stdout===""&&reporterUnchanged){
+            // Clang must materialize a regular, non-symlink executable.
+            // Bound and record its bytes, and reject mutation while running.
+            const stat=await lstat(exe);
+            if(!stat.isFile()||stat.isSymbolicLink()||stat.size<=0||
+               (stat.mode&0o111)===0||(stat.mode&0o022)!==0||
+               await realpath(exe)!==exe)
+              throw Error("Clang did not produce a safe native executable");
+            const nativeSha=await hashExecutableBounded(exe);
+            evidence.nativeExecutableSha256=nativeSha;
             const guest=runNumericCommand(exe,[],10000);
+            evidence.nativeExecutableUnchanged=
+              await hashExecutableBounded(exe)===nativeSha;
             evidence.guestExit=guest.code;
             evidence.guestSignal=guest.signal;
             evidence.guestError=guest.error;
@@ -305,7 +328,7 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
             evidence.guestStdoutSha256=guest.stdoutSha256;
             evidence.guestStdoutBytes=guest.stdoutBytes;
             evidence.guestStderrBytes=guest.stderrBytes;
-            if(succeeded(guest)&&guest.stderr===""&&
+            if(evidence.nativeExecutableUnchanged&&succeeded(guest)&&guest.stderr===""&&
               /^-?(0|[1-9][0-9]*)\n$/.test(guest.stdout)){
               evidence.observedI64=guest.stdout.trim();
               if(evidence.observedI64===c.expectedI64)
