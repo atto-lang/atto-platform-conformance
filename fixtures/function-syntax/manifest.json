@@ -190,7 +190,7 @@
     },
     {
       "id": "multiline-block-comment-before-double-colon-rejected",
-      "source": "fnc f() -> int /*\\ncrosses a physical line\\n*/ :: return 1; end",
+      "source": "fnc f() -> int /*\ncrosses a physical line\n*/ :: return 1; end",
       "accepted": false
     }
   ],

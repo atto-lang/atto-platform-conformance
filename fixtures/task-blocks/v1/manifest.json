@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "suite": "task-cancellation-physical-cleanup-v1",
+  "status": "draft-contract-only",
+  "sourceExecutionVerified": false,
+  "backends": {
+    "java-graalvm": {
+      "verified": false,
+      "required": "JDK25 guest-source + Graal Native Image exact-head execution"
+    },
+    "llvm": {
+      "verified": false,
+      "required": "real .ores -> LLVM object -> native executable exact-head execution"
+    }
+  },
+  "harness": {
+    "hooks": [
+      "trace(string)",
+      "pending_i64(): Future<int>",
+      "pending_cleanup(): Future<void>",
+      "abort_actor()"
+    ],
+    "rule": "Hooks are hypothetical boundary adapters; neither backend may substitute host-only simulations for executing .ores source."
+  },
+  "cases": [
+    {
+      "id": "cancel-at-await-defer",
+      "source": "cancel-at-await-defer.ores",
+      "proposedSyntax": true,
+      "trigger": "cancel Task while suspended at pending_i64()",
+      "mustObserveInOrder": [
+        "entered",
+        "defer"
+      ],
+      "mustNotObserve": [
+        "normal-after-await"
+      ],
+      "terminal": "cancelled-after-physical-cleanup",
+      "mustHold": [
+        "no early Future cancellation terminal",
+        "one defer",
+        "borrowed producer not cancelled",
+        "no double resume",
+        "one actor physical carrier"
+      ],
+      "verified": false
+    },
+    {
+      "id": "stop-while-finally-await",
+      "source": "stop-while-finally-await.ores",
+      "proposedSyntax": true,
+      "trigger": "actor STOP while finally cleanup awaits pending_cleanup()",
+      "mustObserveInOrder": [
+        "entered",
+        "finally-enter",
+        "finally-exit"
+      ],
+      "mustNotObserve": [
+        "normal-after-await"
+      ],
+      "terminal": "done-after-cleanup-only",
+      "mustHold": [
+        "ordinary messages rejected after STOP",
+        "post-STOP cleanup-only admission authenticated",
+        "no guest turn overlap",
+        "get_done delayed until loan retirement"
+      ],
+      "verified": false
+    },
+    {
+      "id": "cleanup-panic-dominates-cancel",
+      "source": "cleanup-panic-dominates-cancel.ores",
+      "proposedSyntax": true,
+      "trigger": "cancel worker, then cleanup throws untrappable panic",
+      "mustObserveInOrder": [
+        "entered",
+        "defer-enter"
+      ],
+      "mustNotObserve": [
+        "normal-after-await",
+        "defer-success"
+      ],
+      "terminal": "panic-not-cancelled",
+      "mustHold": [
+        "panic is not converted to CancellationException",
+        "no false physical completion receipt",
+        "failed native loan remains quarantined"
+      ],
+      "verified": false
+    },
+    {
+      "id": "stale-continuation-incarnation",
+      "source": null,
+      "proposedSyntax": false,
+      "trigger": "reuse old store handle after actor incarnation advances",
+      "mustObserveInOrder": [],
+      "mustNotObserve": [
+        "authenticated-cleanup-dispatch"
+      ],
+      "terminal": "rejected-before-guest-execution",
+      "mustHold": [
+        "store generation and actor generation checked",
+        "no cross-actor ticket reuse",
+        "no arena release"
+      ],
+      "verified": false
+    }
+  ],
+  "releaseGate": "All four cases require independent executed receipts from both Java/GraalVM and native LLVM. Structural contract validation does not satisfy the release gate."
+}

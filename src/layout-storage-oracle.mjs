@@ -110,15 +110,22 @@ export class LayoutStore {
   constructor(schema, { layout = 'soa', capacity = 0, width = 8, groups = undefined,
                         maxBytes = 64 * 1024 * 1024 } = {}) {
     if (!Array.isArray(schema) || schema.length === 0) throw new TypeError('nonempty schema required');
+    // Snapshot caller-owned accessors once; validate exactly the schema we store.
+    const preparedSchema = Array.from(schema, f => {
+      if (!f || typeof f !== 'object') throw new TypeError('invalid field schema');
+      const name = f.name, type = f.type;
+      return Object.freeze({ name, type });
+    });
+    if (preparedSchema.length === 0) throw new TypeError('nonempty schema required');
     const names = new Set();
-    for (const f of schema) {
+    for (const f of preparedSchema) {
       if (!f || typeof f.name !== 'string' || !/^[a-zA-Z_][a-zA-Z_0-9]*$/.test(f.name) ||
           names.has(f.name) || !Object.hasOwn(TYPES, f.type)) throw new TypeError('invalid field schema');
       names.add(f.name);
     }
     if (!Number.isSafeInteger(capacity) || capacity < 0 ||
         !Number.isSafeInteger(maxBytes) || maxBytes < 0) throw new RangeError('invalid capacity or quota');
-    this.#schema = schema.map(f => Object.freeze({ name: f.name, type: f.type }));
+    this.#schema = preparedSchema;
     this.#types = new Map(this.#schema.map(f => [f.name, TYPES[f.type]]));
     this.#maxBytes = maxBytes; this.#width = width;
     this.#groups = groups?.map(group => [...group]);

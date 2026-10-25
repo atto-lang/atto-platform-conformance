@@ -294,3 +294,26 @@ test('deterministic randomized differential test across 4 layouts and 2048 opera
   check();
   stores.forEach(s=>s.dispose());
 });
+
+
+test('constructor validates the same single-read schema snapshot it stores', () => {
+  let names = 0, types = 0;
+  const first = {
+    get name() { return ++names === 1 ? 'a' : 'b'; },
+    get type() { return ++types === 1 ? 'f64' : 'invalid'; }
+  };
+  const store = new LayoutStore([first, {name:'b', type:'f64'}], {capacity:1});
+  assert.equal(names, 1);
+  assert.equal(types, 1);
+  const handle = store.push({a:3, b:4});
+  assert.deepEqual(store.get(handle), {a:3, b:4});
+  assert.throws(() => store.push({b:3, extra:4}), /missing row field/);
+  assert.equal(store.length, 1);
+  store.dispose();
+  assert.throws(() => new LayoutStore([
+    {get name() {return 'b'}, type:'f64'}, {name:'b', type:'f64'}
+  ]), /invalid field schema/);
+  const emptySnapshot = [{name:'x', type:'f64'}];
+  emptySnapshot[Symbol.iterator] = function* () {};
+  assert.throws(() => new LayoutStore(emptySnapshot), /nonempty schema/);
+});
