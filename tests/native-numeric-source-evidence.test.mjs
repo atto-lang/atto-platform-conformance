@@ -541,3 +541,44 @@ test("Clang cannot certify a native guest after tampering with its per-case C re
     }
   }finally{await rm(dir,{recursive:true,force:true});}
 });
+
+test("Clang mode-only or same-byte reporter replacement cannot certify a guest",async()=>{
+  for(const [name,attack] of [
+    ["chmod","chmod 0500 \"$arg\""],
+    ["replace","cp \"$arg\" \"$arg.copy\" && mv -f \"$arg.copy\" \"$arg\""]
+  ]){
+    const dir=await mkdtemp(join(tmpdir(),"ores-native-reporter-"+name+"-"));
+    try{
+      const compiler=join(dir,"compiler"),clang=join(dir,"clang-install");
+      const compilerBytes=Buffer.from(
+        "#!/bin/sh\n"+
+        "printf 'define i64 @__oreslang_guest_main() {\\nentry:\\n ret i64 42\\n}\\n"+
+        "define i32 @main() {\\nentry:\\n ret i32 0\\n}\\n'\n");
+      const clangBytes=Buffer.from(
+        "#!/bin/sh\nfor arg in \"$@\"; do\n"+
+        "  case \"$arg\" in\n"+
+        "    *.report.c) "+attack+" ;;\n"+
+        "  esac\n"+
+        "done\nexit 0\n");
+      await writeFile(compiler,compilerBytes,{mode:0o500});
+      await writeFile(clang,clangBytes,{mode:0o500});
+      const hash=x=>createHash("sha256").update(x).digest("hex");
+      const manifest=await readFile(corpusPath);
+      const receipt=await executeNativeNumericCorpus({
+        compiler,compilerSha256:hash(compilerBytes),
+        clang,clangSha256:hash(clangBytes),clangResourceDir:dir,
+        sourceCommit:"e".repeat(40),manifestSha256:hash(manifest)
+      });
+      assert.equal(receipt.ok,false,name);
+      assert.equal(receipt.verified,0,name);
+      const accepted=receipt.results.filter(x=>x.expect==="accept");
+      assert.equal(accepted.length,12);
+      for(const item of accepted){
+        assert.equal(item.clangExit,0,name);
+        assert.equal(item.reporterUnchanged,false,name);
+        assert.equal(item.guestExit,undefined,name);
+        assert.equal(item.status,"MISMATCH",name);
+      }
+    }finally{await rm(dir,{recursive:true,force:true});}
+  }
+});
