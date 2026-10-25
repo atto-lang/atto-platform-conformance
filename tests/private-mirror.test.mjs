@@ -53,9 +53,9 @@ test('exact-tree verifier refuses dirty, staged, untracked and hidden-checkout f
    blobs:[{path:'main.ores',sha:git(repo,'rev-parse','HEAD:source/main.ores')}]};
   assert.equal(verify(params).status,'EXACT_TREE');
   writeFileSync(join(repo,'source','main.ores'),'fnc foo(): int { return 666; }\n');
-  assert.throws(()=>verify(params),/worktree is dirty/);
+  assert.throws(()=>verify(params),/raw source bytes differ/);
   git(repo,'add','source/main.ores');
-  assert.throws(()=>verify(params),/worktree is dirty/);
+  assert.throws(()=>verify(params),/index differs/);
   git(repo,'reset','-q','--hard','HEAD');
   writeFileSync(join(repo,'source','injected.ores'),'fnc injected(): int { return 666; }\n');
   assert.throws(()=>verify(params),/untracked files/);
@@ -86,7 +86,7 @@ test('tracked symlinks must not certify mutable source outside the pinned subtre
   const params={repo,subtreePath:'source',
    expectedTree:git(repo,'rev-parse','HEAD:source'),
    blobs:[{path:'main.ores',sha:git(repo,'rev-parse','HEAD:source/main.ores')}]};
-  assert.throws(()=>verify(params),/symlink, gitlink or unexpected index/);
+  assert.throws(()=>verify(params),/nonregular|symlink/);
   writeFileSync(join(repo,'outside.ores'),'fnc danger(): int { return 999; }\n');
   assert.throws(()=>verify(params),/symlink, gitlink or unexpected index/);
  }finally{rmSync(repo,{recursive:true,force:true})}
