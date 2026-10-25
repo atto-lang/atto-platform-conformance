@@ -46,3 +46,30 @@ test('syntax-invalid diagnostic module cannot leak source path or parser excerpt
       'THIS_IS_NOT_VALID_JAVASCRIPT !!! SECRET_TOKEN_MUST_NOT_LEAK\n');
   });
 });
+
+test('missing sanitizer export cannot turn a handled error into a raw stack',async()=>{
+  await withIsolatedCLI(async src=>{
+    await writeFile(join(src,'native-numeric-safe-diagnostics.mjs'),
+      'export const wrongExport = true;\n');
+    await writeFile(join(src,'native-numeric-source-evidence.mjs'),
+      'export async function executeNativeNumericCorpus(){}\n');
+  });
+});
+
+test('malicious sanitizer result cannot become a secret-bearing log code',async()=>{
+  await withIsolatedCLI(async src=>{
+    await writeFile(join(src,'native-numeric-safe-diagnostics.mjs'),
+      'export function nativeNumericSafeFailureCode(){return "SECRET_TOKEN_MUST_NOT_LEAK";}\n');
+    await writeFile(join(src,'native-numeric-source-evidence.mjs'),
+      'export async function executeNativeNumericCorpus(){}\n');
+  });
+});
+
+test('sanitizer exceptions cannot escape the CLI error boundary',async()=>{
+  await withIsolatedCLI(async src=>{
+    await writeFile(join(src,'native-numeric-safe-diagnostics.mjs'),
+      'export function nativeNumericSafeFailureCode(){throw Error("SECRET_TOKEN_MUST_NOT_LEAK");}\n');
+    await writeFile(join(src,'native-numeric-source-evidence.mjs'),
+      'export async function executeNativeNumericCorpus(){}\n');
+  });
+});
