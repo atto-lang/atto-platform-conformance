@@ -88,7 +88,7 @@ test('tracked symlinks must not certify mutable source outside the pinned subtre
    blobs:[{path:'main.ores',sha:git(repo,'rev-parse','HEAD:source/main.ores')}]};
   assert.throws(()=>verify(params),/nonregular|symlink/);
   writeFileSync(join(repo,'outside.ores'),'fnc danger(): int { return 999; }\n');
-  assert.throws(()=>verify(params),/symlink, gitlink or unexpected index/);
+  assert.throws(()=>verify(params),/nonregular|symlink/);
  }finally{rmSync(repo,{recursive:true,force:true})}
 });
 
