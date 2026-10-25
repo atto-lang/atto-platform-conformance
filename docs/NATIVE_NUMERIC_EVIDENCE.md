@@ -33,6 +33,20 @@ This command has no skip mode: omitted/invalid pins exit 2. Compute the fixture 
 A completed but mismatching run exits 1; a matching 26-case execution exits 0
 and prints a JSON *native LLVM guest evidence* receipt.
 
+## Fail-closed numeric fixture admission
+
+The pinned 26-case manifest must pass the native verifier's schema checks
+before a compiler subprocess is launched. Guest expressions are limited to
+the single-line scalar fixture alphabet (ASCII letters/digits, underscore,
+plus/minus/multiply, parentheses, spaces/tabs and quotes); statement
+separators, braces, comments, control/newline injection and other source
+tokens are not allowed. Accepted fixtures must carry only their exact
+signed-i64 expectation, never a rejection category; rejected fixtures
+must carry an explicit error category and must not also specify an
+accepted result. The independently reviewed manifest SHA-256 remains
+mandatory: the alphabet restriction does **not** replace source review or
+authorize untrusted guest execution.
+
 ## Exact-source Git checkout preflight
 
 Before building a real compiler from an approved local LLVM checkout, verify
