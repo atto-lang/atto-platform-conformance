@@ -1,10 +1,14 @@
 /**
- * Rewrite LLVM's unquoted @main function reference without touching source
- * comments, escaped string data or quoted LLVM metadata.
+ * Rewrite LLVM's unquoted @main global symbol token without touching source
+ * comments, escaped string data or quoted LLVM metadata/identifiers.
  *
  * The native numeric adapter separately validates the exact i64 guest/i32
- * host definition count. This routine handles only lexical symbol references.
+ * host definition count. This routine handles lexical symbol references.
  */
+const isNameContinuation = char =>
+  typeof char === 'string' && /[A-Za-z0-9$._-]/.test(char);
+const isHex = char => typeof char === 'string' && /[0-9A-Fa-f]/.test(char);
+
 export function rewriteLLVMIRHostMainReferences(ir) {
   if (typeof ir !== 'string' || ir.length < 1 || ir.length > 4 * 1024 * 1024) {
     throw Error('invalid or oversized LLVM IR for symbol rewrite');
@@ -18,9 +22,12 @@ export function rewriteLLVMIRHostMainReferences(ir) {
   while (i < ir.length) {
     const char = ir[i];
     if (quoted) {
-      // LLVM quoted strings use backslash escapes including \22 hex escapes.
-      // Skip the escaped byte as a unit to avoid toggling on an escaped quote.
-      if (char === '\\' && i + 1 < ir.length) {
+      // LLVM quoted strings/identifiers can use \XX byte escapes. Consume the
+      // complete escape so an escaped quote byte cannot alter lexer state.
+      if (char === '\\' && isHex(ir[i + 1]) && isHex(ir[i + 2])) {
+        output += ir.slice(i, i + 3);
+        i += 3;
+      } else if (char === '\\' && i + 1 < ir.length) {
         output += ir.slice(i, i + 2);
         i += 2;
       } else {
@@ -37,30 +44,33 @@ export function rewriteLLVMIRHostMainReferences(ir) {
       continue;
     }
     if (char === ';') {
-      const end = ir.indexOf('\n', i);
-      if (end < 0) {
+      // Treat LF, CRLF and CR as line endings. This is deliberately lexical:
+      // comment contents are copied byte-for-byte and never inspected.
+      let end = i;
+      while (end < ir.length && ir[end] !== '\n' && ir[end] !== '\r') end++;
+      if (end === ir.length) {
         output += ir.slice(i);
-        break;
-      }
-      output += ir.slice(i, end + 1);
-      i = end + 1;
-      continue;
-    }
-    if (ir.startsWith(before, i)) {
-      let next = i + before.length;
-      while (ir[next] === ' ' || ir[next] === '\t') next++;
-      if (ir[next] === '(') {
-        output += after;
-        replacements++;
-        i += before.length;
+        i = end;
         continue;
       }
+      let afterEnd = end + 1;
+      if (ir[end] === '\r' && ir[end + 1] === '\n') afterEnd++;
+      output += ir.slice(i, afterEnd);
+      i = afterEnd;
+      continue;
+    }
+    if (ir.startsWith(before, i) && !isNameContinuation(ir[i + before.length])) {
+      output += after;
+      replacements++;
+      i += before.length;
+      continue;
     }
     output += char;
     i++;
   }
+  if (quoted) throw Error('unterminated quoted LLVM string or identifier');
   if (replacements < 1) {
-    throw Error('LLVM IR contains no unquoted main function reference');
+    throw Error('LLVM IR contains no unquoted main symbol reference');
   }
   return Object.freeze({ir: output, referencesRewritten: replacements});
 }
