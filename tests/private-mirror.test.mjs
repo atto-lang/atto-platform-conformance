@@ -92,7 +92,7 @@ test('tracked symlinks must not certify mutable source outside the pinned subtre
  }finally{rmSync(repo,{recursive:true,force:true})}
 });
 
-test('raw byte admission rejects a Git-clean custom filter transformation',()=>{
+test('raw byte admission rejects transformed bytes without executing clean filters',()=>{
  const repo=mkdtempSync(join(tmpdir(),'mirror-filter-'));
  try{
   git(repo,'init','-q');
@@ -106,10 +106,12 @@ test('raw byte admission rejects a Git-clean custom filter transformation',()=>{
   writeFileSync(join(repo,'source','main.ores'),'hello'+LF);
   git(repo,'add','.');
   git(repo,'commit','-qm','pin lowercase canonical blob');
-  // Git declares the uppercase executable checkout clean after its clean
-  // filter transforms it back to the lowercase index blob.
+
+  // After the canonical blob exists, make the repository clean filter fail if
+  // any verifier operation attempts to execute it. A safe verifier must still
+  // reject the uppercase raw bytes using direct hashing, not Git conversion.
+  git(repo,'config','filter.upper.clean','sh -c "exit 97"');
   writeFileSync(join(repo,'source','main.ores'),'HELLO'+LF);
-  assert.equal(git(repo,'status','--porcelain=v1','--','source'),'');
   const params={repo,subtreePath:'source',expectedTree:git(repo,'rev-parse','HEAD:source'),
    blobs:[{path:'main.ores',sha:git(repo,'rev-parse','HEAD:source/main.ores')}]};
   assert.throws(()=>verify(params),/raw source bytes differ from pinned Git blob/);
