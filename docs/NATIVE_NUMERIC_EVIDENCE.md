@@ -40,10 +40,12 @@ before a compiler subprocess is launched. Guest expressions are limited to
 the single-line scalar fixture alphabet (ASCII letters/digits, underscore,
 plus/minus/multiply, parentheses, spaces/tabs and quotes); statement
 separators, braces, comments, control/newline injection and other source
-tokens are not allowed. Accepted fixtures must carry only their exact
-signed-i64 expectation, never a rejection category; rejected fixtures
-must carry an explicit error category and must not also specify an
-accepted result. The independently reviewed manifest SHA-256 remains
+tokens are not allowed. Accepted fixtures must carry a **string-valued**
+canonical signed-i64 decimal expectation, never a rejection category:
+numbers and BigInt values are rejected rather than coerced to strings;
+zero must be written `"0"`, not `"-0"`, because native output is canonical.
+Rejected fixtures must carry an explicit error category and must not also
+specify an accepted result. The independently reviewed manifest SHA-256 remains
 mandatory: the alphabet restriction does **not** replace source review or
 authorize untrusted guest execution.
 
