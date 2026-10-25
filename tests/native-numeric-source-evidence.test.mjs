@@ -391,6 +391,40 @@ test("Clang resource mode tampering returns a 26-case revoked receipt, not an ex
   }finally{await rm(dir,{recursive:true,force:true});}
 });
 
+test("vanished staged compiler revokes every result while returning a failed receipt",async()=>{
+  const dir=await mkdtemp(join(tmpdir(),"ores-numeric-tool-disappearance-"));
+  try{
+    const resources=join(dir,"resources"),compiler=join(dir,"compiler");
+    const clang=join(dir,"clang");
+    await mkdir(resources,{mode:0o700});
+    await writeFile(join(resources,"header.h"),"CONST\n",{mode:0o600});
+    // This fake compiler deletes ONLY its privately staged executable.
+    // The original executable remains unchanged; the post-run rehash must
+    // discover the missing staged binary and revoke the entire receipt.
+    const compilerBytes=Buffer.from(
+      "#!/bin/sh\nrm -- \"$0\"\n"+
+      "printf 'oreslang-llvmc: malformed integer separator at byte 0\\n' >&2\nexit 1\n");
+    const clangBytes=Buffer.from("#!/bin/sh\nexit 0\n");
+    await writeFile(compiler,compilerBytes,{mode:0o500});
+    await writeFile(clang,clangBytes,{mode:0o500});
+    const hash=x=>createHash("sha256").update(x).digest("hex");
+    const manifest=await readFile(corpusPath);
+    const receipt=await executeNativeNumericCorpus({
+      compiler,compilerSha256:hash(compilerBytes),
+      clang,clangSha256:hash(clangBytes),clangResourceDir:resources,
+      sourceCommit:"e".repeat(40),manifestSha256:hash(manifest)
+    });
+    assert.equal(receipt.ok,false);
+    assert.equal(receipt.verified,0);
+    assert.equal(receipt.failed,26);
+    assert.equal(receipt.executableRecheckFailed,true);
+    assert.equal(receipt.executableHashesUnchanged,false);
+    assert.equal(receipt.clangResourceTreeUnchanged,true);
+    assert.equal(receipt.results.length,26);
+    assert.ok(receipt.results.every(x=>x.status==="TOOLCHAIN_CHANGED"));
+  }finally{await rm(dir,{recursive:true,force:true});}
+});
+
 test("real 26-case admission loop fails closed on fake compiler and mismatched diagnostics",async()=>{
   const dir=await mkdtemp(join(tmpdir(),"ores-numeric-negative-"));
   try{
