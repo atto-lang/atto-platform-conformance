@@ -26,6 +26,15 @@ A valid receipt proves only the shape and internal consistency of reachability
 evidence. Final artifact/synthesis inspection is still required to prove the
 dead implementation was physically omitted.
 
+## Platform capability promotion receipts
+
+The six `oreslang-platform.*` targets now have a shared evidence contract:
+[`contracts/platform-capabilities-v1.json`](contracts/platform-capabilities-v1.json).
+Use `bin/verify-platform-capability-receipt.mjs` to reject zero-step workflows,
+host stubs mislabeled as compiler guests, repository/platform substitution, and
+target/physical claims without the required evidence. See
+[`docs/PLATFORM_CAPABILITY_PROMOTION.md`](docs/PLATFORM_CAPABILITY_PROMOTION.md).
+
 ## Current deliverable
 
 - Versioned fixture manifest and minimal positive/negative .ores sources targeting **six compiler backends** (`java`, `llvm`, `net`, `wasm`, `forge`, `js`); this is a target inventory, not a parity claim.
