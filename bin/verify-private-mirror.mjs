@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Evidence-only Git tree verifier. Never fetches or modifies private source.
-import { execFileSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
   closeSync, constants as fsConstants, fstatSync, lstatSync, openSync,
@@ -8,10 +8,34 @@ import {
 } from 'node:fs';
 import { resolve, sep } from 'node:path';
 
+const safeGitEnv = Object.freeze({
+  PATH: process.platform === 'win32'
+    ? (process.env.SystemRoot ? process.env.SystemRoot + '\\System32' : 'C:\\Windows\\System32')
+    : '/usr/local/bin:/usr/bin:/bin',
+  GIT_CONFIG_NOSYSTEM: '1',
+  GIT_CONFIG_GLOBAL: process.platform === 'win32' ? 'NUL' : '/dev/null',
+  GIT_OPTIONAL_LOCKS: '0',
+  GIT_TERMINAL_PROMPT: '0',
+  LC_ALL: 'C'
+});
+
 function git(repo, ...args) {
-  return execFileSync('git', ['-C', repo, ...args], {
-    encoding: 'utf8', timeout: 10000, stdio: ['ignore', 'pipe', 'pipe']
-  }).trim();
+  const p = spawnSync('git', [
+    '--no-optional-locks',
+    '-c', 'core.fsmonitor=false',
+    '-c', 'core.untrackedCache=false',
+    '-c', 'core.filemode=true',
+    '-C', repo,
+    ...args
+  ], {
+    encoding: 'utf8', timeout: 10000, maxBuffer: 4 * 1024 * 1024,
+    shell: false, windowsHide: true, env: safeGitEnv
+  });
+  if (p.error || p.signal || p.status !== 0)
+    throw Error('Git mirror inspection unavailable');
+  if (p.stderr !== '')
+    throw Error('Git mirror inspection emitted unexpected stderr');
+  return p.stdout.trim();
 }
 
 function safePath(path) {
@@ -71,6 +95,13 @@ export function privateMirrorSafeFailureCode(error) {
   try { message = typeof error?.message === 'string' ? error.message : null; }
   catch { return 'UNCLASSIFIED_GIT_OR_IO_ERROR'; }
   if (typeof message !== 'string') return 'UNCLASSIFIED_GIT_OR_IO_ERROR';
+  if (message === 'Git mirror inspection unavailable' ||
+      message === 'Git mirror inspection emitted unexpected stderr')
+    return 'GIT_INSPECTION_UNAVAILABLE';
+  if (message === 'source repository path is not Git worktree root')
+    return 'WORKTREE_ROOT_MISMATCH';
+  if (message === 'exact-tree verifier requires SHA-1 Git object format')
+    return 'UNSUPPORTED_GIT_OBJECT_FORMAT';
   if (message === 'invalid source tree pin or subtree path') return 'INVALID_TREE_PIN';
   if (message === 'invalid blobs' || message === 'invalid blob pin') return 'INVALID_BLOB_PIN';
   if (message === 'exact Git subtree mismatch') return 'TREE_MISMATCH';
@@ -98,6 +129,11 @@ export function verify({ repo, subtreePath, expectedTree, blobs = [] }) {
     throw Error('invalid source tree pin or subtree path');
   }
   if (!Array.isArray(blobs)) throw Error('invalid blobs');
+  const fullRoot = realpathSync(repo);
+  if (git(repo, 'rev-parse', '--show-toplevel') !== fullRoot)
+    throw Error('source repository path is not Git worktree root');
+  if (git(repo, 'rev-parse', '--show-object-format') !== 'sha1')
+    throw Error('exact-tree verifier requires SHA-1 Git object format');
   const actual = git(repo, 'rev-parse', 'HEAD:' + subtreePath);
   if (actual !== expectedTree || git(repo, 'cat-file', '-t', actual) !== 'tree') {
     throw Error('exact Git subtree mismatch');
@@ -125,7 +161,6 @@ export function verify({ repo, subtreePath, expectedTree, blobs = [] }) {
       throw Error('source subtree has unsafe, nonregular or duplicate HEAD entries');
     head.set(match[3], {mode: match[1], sha: match[2]});
   }
-  const fullRoot = realpathSync(repo);
   for (const record of stages) {
     const match = /^(100644|100755) ([0-9a-f]{40}) 0\t(.+)$/.exec(record);
     if (!match || !safePath(match[3]) ||
