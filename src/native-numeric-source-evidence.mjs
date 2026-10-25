@@ -304,11 +304,20 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
     }catch{
       resourceRecheckFailed=true;
     }
-    const unchanged=resourceUnchanged &&
-      await hashExecutableBounded(stagedCompiler)===compilerSha256 &&
-      await hashExecutableBounded(stagedClang)===clangSha256 &&
-      await hashExecutableBounded(compiler)===compilerSha256 &&
-      await hashExecutableBounded(clang)===clangSha256;
+    // Deleted, replaced or inaccessible executable snapshots must also
+    // revoke all 26 entries with a structured failed receipt. A failed
+    // re-hash is not evidence that any executable remained trustworthy.
+    let executableHashesUnchanged=false,executableRecheckFailed=false;
+    try{
+      executableHashesUnchanged=
+        await hashExecutableBounded(stagedCompiler)===compilerSha256 &&
+        await hashExecutableBounded(stagedClang)===clangSha256 &&
+        await hashExecutableBounded(compiler)===compilerSha256 &&
+        await hashExecutableBounded(clang)===clangSha256;
+    }catch{
+      executableRecheckFailed=true;
+    }
+    const unchanged=resourceUnchanged&&executableHashesUnchanged;
     if(!unchanged)for(const item of results)item.status="TOOLCHAIN_CHANGED";
     const failed=results.filter(x=>!x.status.startsWith("VERIFIED_")).length;
     return {schemaVersion:1,contract:"oreslang.numeric-separators/native-llvm-evidence-v1",
@@ -318,6 +327,8 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
       clangResourceEntries:resourceBefore.entries,clangResourceBytes:resourceBefore.bytes,
       clangResourceTreeUnchanged:resourceUnchanged,
       clangResourceTreeRecheckFailed:resourceRecheckFailed,
+      executableRecheckFailed,
+      executableHashesUnchanged,
       toolBytesExecutedFromPrivateSnapshots:true,
       clangResourceDirIsExternalDependency:true,
       verificationScope:"real native Oreslang compiler + Clang + i64 guest",
