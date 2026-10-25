@@ -31,7 +31,7 @@ test("numeric source fixture contract is unique, byte-for-byte reproducible and 
     if(item.expect==="accept"){
       ++positive;
       assert.equal(typeof item.expectedI64,"string");
-      assert.match(item.expectedI64,/^-?(0|[1-9][0-9]*)$/);
+      assert.match(item.expectedI64,/^(?:0|[1-9][0-9]*|-[1-9][0-9]*)$/);
       const expected=BigInt(item.expectedI64);
       assert.ok(expected>=i64Min && expected<=i64Max,"out-of-range accepted result: "+item.id);
       assert.equal(item.category,undefined);
