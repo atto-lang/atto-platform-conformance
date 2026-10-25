@@ -266,6 +266,13 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
           await writeFile(ll,rewritten,{mode:0o400,flag:"wx"});
           const reporter=join(root,c.id+".report.c");
           await writeFile(reporter,shim,{mode:0o400,flag:"wx"});
+          // Capture file identity before Clang. Hash equality alone would not
+          // reveal a same-byte replacement of the trusted reporting source.
+          const reporterBefore=await lstat(reporter,{bigint:true});
+          if(!reporterBefore.isFile()||reporterBefore.isSymbolicLink()||
+             (reporterBefore.mode&0o777n)!==0o400n||
+             reporterBefore.size!==BigInt(reporterBytes))
+            throw Error("reporting shim failed initial immutable admission");
           evidence.reporterSha256=reporterSha256;
           const linked=runNumericCommand(stagedClang,["-resource-dir="+resourceDir,"-x","ir",ll,"-x","c",reporter,"-o",exe]);
           evidence.clangExit=linked.code;
@@ -280,9 +287,10 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
           // reporter bytes or metadata differ after linking.
           let reporterUnchanged=false;
           try{
-            const stat=await lstat(reporter);
-            if(stat.isFile()&&!stat.isSymbolicLink()&&stat.size===reporterBytes&&
-               (stat.mode&0o077)===0)
+            const stat=await lstat(reporter,{bigint:true});
+            if(stat.isFile()&&!stat.isSymbolicLink()&&
+               stat.dev===reporterBefore.dev&&stat.ino===reporterBefore.ino&&
+               stat.size===reporterBefore.size&&stat.mode===reporterBefore.mode)
               reporterUnchanged=sha256(await readFile(reporter))===reporterSha256;
           }catch{}
           evidence.reporterUnchanged=reporterUnchanged;
