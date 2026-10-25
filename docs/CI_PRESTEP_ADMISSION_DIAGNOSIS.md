@@ -49,3 +49,31 @@ After authorization and actual job execution:
    compiler parity or merging.
 
 This document and the diagnostic script do not authorize source export.
+
+
+## Source-free exact mirror-verifier regression
+
+An audit confirmed that Git \`status\` can execute custom clean-filter commands
+configured in the checkout (including shell commands) even if status reports
+no changes. The previous \`bin/verify-private-mirror.mjs\` invoked
+\`git status\` during pre-execution verification.
+
+The new verifier does **not invoke Git status**. It compares the exact pinned
+HEAD subtree against stage-0 Git index modes, paths and blob SHA-1 identities;
+checks ignored and untracked files through non-filter-executing \`git ls-files\`;
+denies hidden index flags, symlinks, gitlinks and file-mode drift; and checks
+raw bytes using \`git hash-object --no-filters\`. It does not execute a
+configured repository clean filter.
+
+\`tests/private-mirror-git-nonexecution.test.mjs\` contains ten source-free
+real-Git tests covering the actual malicious-filter command repro, filtered
+source modification, staged index tampering, ignored/untracked files,
+symlinks, hidden filemode changes, permissible executable files, hidden
+index flags and mismatched tree pins. The checked-in implementation and
+new test have exact byte-identical Git blob hashes to the locally
+executed copies (10 pass / 0 fail, Node.js 22.16.0 / Git 2.47.3).
+
+This is defense-in-depth **inside an already authorized private CI
+execution environment**, not authorization to transfer private Oreslang
+source to a different organization. The persistent security incident and
+protected-main source/destination-identity approvals remain mandatory.
