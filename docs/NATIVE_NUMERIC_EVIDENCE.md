@@ -184,7 +184,16 @@ the exact expected category, rather than mentioning it inside a generic
 internal error or quoted message. Every compiler receipt records its exit status,
 signal/error, original stdout/stderr byte counts and SHA-256 checksums.
 Clang and executed-guest receipts also record their signal/error, plus
-appropriate output hashes and byte counts. An otherwise successful Clang
+appropriate output hashes and byte counts. All compiler, Clang and guest
+subprocesses run with a restricted environment (fixed system linker PATH,
+C locale, UTC timezone; Windows additionally needs SystemRoot). Inherited
+`NODE_OPTIONS`, `LD_PRELOAD`, `DYLD_*`, build flags, HOME and arbitrary CI
+variables are not passed to subprocesses. Installations requiring custom
+library or linker paths must be reviewed and packaged in the approved host
+toolchain; do not restore arbitrary inherited variables to make a test pass.
+The fixed PATH may still resolve system linker binaries outside the two
+pinned executable hashes; system libraries and Windows SystemRoot remain
+external trust dependencies. An otherwise successful Clang
 invocation with unexpected stdout is not accepted as a clean guest build;
 Clang warnings on stderr are separately retained as hashed evidence. Hashes are computed on the *raw pipe buffers*
 before UTF-8 decoding, so binary or malformed output cannot silently change
