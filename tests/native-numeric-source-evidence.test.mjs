@@ -627,7 +627,7 @@ test("pre-seeded native output cannot be mistaken for Clang-produced guest",asyn
     assert.equal(positives.length,12);
     for(const p of positives){
       assert.equal(p.status,"MISMATCH");
-      assert.match(p.failure,/native executable exists before Clang link/);
+      assert.equal(p.failure,"NATIVE_EXECUTABLE_PREEXISTS");
       assert.equal(p.guestExit,undefined);
     }
   }finally{await rm(dir,{recursive:true,force:true});}
@@ -662,7 +662,7 @@ test("successful Clang status with symlink native output never executes guest",a
       assert.equal(x.clangExit,0);
       assert.equal(x.guestExit,undefined);
       assert.equal(x.status,"MISMATCH");
-      assert.match(x.failure,/safe native executable/);
+      assert.equal(x.failure,"NATIVE_EXECUTABLE_UNSAFE");
     }
   }finally{await rm(dir,{recursive:true,force:true});}
 });
