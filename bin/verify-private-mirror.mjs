@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // Evidence-only Git tree verifier. Never fetches or modifies private source.
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { lstatSync, realpathSync, readFileSync } from 'node:fs';
+import { resolve, sep } from 'node:path';
 
 function git(repo, ...args) {
   return execFileSync('git', ['-C', repo, ...args], {
@@ -25,39 +25,47 @@ export function verify({ repo, subtreePath, expectedTree, blobs = [] }) {
   if (actual !== expectedTree || git(repo, 'cat-file', '-t', actual) !== 'tree') {
     throw Error('exact Git subtree mismatch');
   }
-  // The Git object database is immutable, but the executable checkout is
-  // not. A matching HEAD tree alone must not certify a dirty staging area or
-  // working tree as SHA-exact source execution. Check before consumers run.
-  // Include ignored build/generated files: they are just as executable as
-  // tracked files, but plain porcelain status hides them.
-  const dirty = git(repo, 'status', '--porcelain=v1', '--untracked-files=all', '--ignored=matching', '--', subtreePath);
-  if (dirty) throw Error('source subtree worktree is dirty or contains untracked files');
-  // Skip-worktree / assume-unchanged flags can conceal real modifications from
-  // porcelain status; reject an attestation when either is active.
-  const indexEntries = git(repo, 'ls-files', '-v', '--', subtreePath);
-  if (indexEntries.split('\n').some(line => /^[a-zS] /.test(line))) {
+  // `git status` is forbidden here: custom clean filters can execute
+  // arbitrary commands when status inspects a dirty working tree.
+  // Inspect only immutable HEAD trees, index metadata, and raw bytes.
+  const untracked = git(repo, 'ls-files', '--others', '--exclude-standard', '-z', '--', subtreePath);
+  const ignored = git(repo, 'ls-files', '--others', '--ignored', '--exclude-standard', '-z', '--', subtreePath);
+  if (untracked || ignored) throw Error('source subtree worktree is dirty or contains untracked files');
+  const indexEntries = git(repo, 'ls-files', '-v', '-z', '--', subtreePath);
+  if (indexEntries.split('\0').filter(Boolean).some(line => !line.startsWith('H ')))
     throw Error('source subtree has hidden index entries');
+  const headEntries = git(repo, 'ls-tree', '-r', '--full-tree', '-z', 'HEAD', '--', subtreePath)
+    .split('\0').filter(Boolean);
+  const stages = git(repo, 'ls-files', '--stage', '-z', '--', subtreePath)
+    .split('\0').filter(Boolean);
+  if (!stages.length || stages.length !== headEntries.length)
+    throw Error('source subtree index differs from pinned HEAD tree');
+  const head = new Map();
+  for (const entry of headEntries) {
+    const match = /^(100644|100755) blob ([0-9a-f]{40})\t(.+)$/.exec(entry);
+    if (!match || !safePath(match[3]) || !match[3].startsWith(subtreePath + '/') ||
+        head.has(match[3]))
+      throw Error('source subtree has unsafe, nonregular or duplicate HEAD entries');
+    head.set(match[3], {mode: match[1], sha: match[2]});
   }
-  // Clean Git indexes can contain symlinks to mutable, unpinned paths or
-  // submodule gitlinks. Those bytes are not certified by this tree hash.
-  const stages = git(repo, 'ls-files', '--stage', '-z', '--', subtreePath);
-  for (const record of stages.split('\0').filter(Boolean)) {
-    const match = /^(\d{6}) [0-9a-f]{40} ([0-3])\t/.exec(record);
-    if (!match || !['100644','100755'].includes(match[1]) || match[2] !== '0') {
+  const fullRoot = realpathSync(repo);
+  for (const record of stages) {
+    const match = /^(100644|100755) ([0-9a-f]{40}) 0\t(.+)$/.exec(record);
+    if (!match || !safePath(match[3]) ||
+        !match[3].startsWith(subtreePath + '/'))
       throw Error('source subtree contains symlink, gitlink or unexpected index entry');
-    }
-    // Git status can report CLEAN even when bytes on disk differ from the
-    // pinned blob: .gitattributes EOL conversion and custom clean filters
-    // transform the worktree before comparing to the index. Hash each raw
-    // executable file with filters explicitly disabled.
-    const path = record.slice(match[0].length);
-    if (!path.startsWith(subtreePath + '/')) {
-      throw Error('tracked file lies outside the verified subtree');
-    }
-    const pinnedBlob = record.slice(7, 47);
-    if (git(repo, 'hash-object', '--no-filters', '--', path) !== pinnedBlob) {
-      throw Error('raw source bytes differ from pinned Git blob at ' + path);
-    }
+    const [, mode, pinnedBlob, file] = match;
+    const expected = head.get(file);
+    if (!expected || expected.mode !== mode || expected.sha !== pinnedBlob)
+      throw Error('source subtree index differs from pinned HEAD tree');
+    const absolute = resolve(fullRoot, file);
+    if (!absolute.startsWith(fullRoot + sep) || realpathSync(absolute) !== absolute)
+      throw Error('source subtree contains symlink or unsafe path');
+    const stat = lstatSync(absolute);
+    if (!stat.isFile() || Boolean(stat.mode & 0o111) !== (mode === '100755'))
+      throw Error('source subtree file type or mode differs from pinned Git tree');
+    if (git(repo, 'hash-object', '--no-filters', '--', file) !== pinnedBlob)
+      throw Error('raw source bytes differ from pinned Git blob at ' + file);
   }
   for (const entry of blobs) {
     if (!entry || !safePath(entry.path) || !/^[0-9a-f]{40}$/.test(entry.sha)) {
