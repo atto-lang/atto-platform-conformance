@@ -49,6 +49,13 @@ test("native corpus rejects injected source and contradictory fixture annotation
       expression:unsafe,guestSource:"pub fnc main():int{return "+unsafe+";}\n"
     })),/unsafe/,"unsafe guest character: "+JSON.stringify(badChar));
   }
+  // Numeric and BigInt values previously passed regex coercion yet could
+  // never strictly equal the compiler's decimal stdout string.
+  for(const nonStringValue of [42,42n]){
+    assert.throws(()=>validateNumericCorpus(tamper(0,{
+      expectedI64:nonStringValue
+    })),/invalid expected signed i64 value/);
+  }
   assert.throws(()=>validateNumericCorpus(tamper(0,{
     category:"separator"
   })),/accepted fixture must not declare/);
