@@ -57,11 +57,21 @@ const shim=[
  "}",
  ""
 ].join("\n");
+// Compiler and Clang binaries are SHA-pinned, but inherited NODE_OPTIONS,
+// LD_PRELOAD, DYLD_*, compiler flags or shell hooks could alter the executed
+// process without changing either pinned executable. Only permit a minimal
+// deterministic execution environment. PATH is for Clang's host linker tools,
+// not for resolving the already absolute compiler/Clang executable snapshots.
+const nativeNumericToolEnv=Object.freeze({
+  PATH:process.platform==="win32"?"C:\\Windows\\System32":"/usr/bin:/bin",
+  LC_ALL:"C", LANG:"C", TZ:"UTC",
+  ...(process.platform==="win32"?{SystemRoot:process.env.SystemRoot||"C:\\Windows"}:{})
+});
 export function runNumericCommand(executable,args,timeout=30000){
   // Keep stdout/stderr as bytes until after hashing, so malformed UTF-8
   // cannot silently change the forensic receipt through replacement chars.
   const p=spawnSync(executable,args,{timeout,maxBuffer:4*1024*1024,
-    windowsHide:true,shell:false});
+    windowsHide:true,shell:false,env:nativeNumericToolEnv});
   const stdout=Buffer.isBuffer(p.stdout)?p.stdout:Buffer.alloc(0);
   const stderr=Buffer.isBuffer(p.stderr)?p.stderr:Buffer.alloc(0);
   return {code:p.status,signal:p.signal||null,error:p.error?.code||null,
