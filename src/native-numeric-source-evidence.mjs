@@ -235,8 +235,11 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
     // they are NOT included in the executable SHA-256 proof.
     const resourceBefore=await snapshotNumericClangResources(clangResourceDir);
     const resourceDir=clangResourceDir;
-    const reporter=join(root,"report.c");
-    await writeFile(reporter,shim,{mode:0o400,flag:"wx"});
+    // Never create one mutable reporter before running 26 compiler processes.
+    // Produce a fresh trusted C shim after each successful compilation, so a
+    // prior compiler run cannot poison the next case's reporting code.
+    const reporterSha256=sha256(Buffer.from(shim));
+    const reporterBytes=Buffer.byteLength(shim);
     for(const c of cases){
       const bytes=Buffer.from(c.guestSource);
       const input=join(root,c.id+".ores");
@@ -261,6 +264,9 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
         try{
           const rewritten=renameNumericGuestMain(compiled.stdout);
           await writeFile(ll,rewritten,{mode:0o400,flag:"wx"});
+          const reporter=join(root,c.id+".report.c");
+          await writeFile(reporter,shim,{mode:0o400,flag:"wx"});
+          evidence.reporterSha256=reporterSha256;
           const linked=runNumericCommand(stagedClang,["-resource-dir="+resourceDir,"-x","ir",ll,"-x","c",reporter,"-o",exe]);
           evidence.clangExit=linked.code;
           evidence.clangSignal=linked.signal;
@@ -269,9 +275,20 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
           evidence.clangStderrSha256=linked.stderrSha256;
           evidence.clangStdoutBytes=linked.stdoutBytes;
           evidence.clangStderrBytes=linked.stderrBytes;
+          // A Clang subprocess can chmod/write the reporter even if the
+          // initial file was 0400. Never trust the resulting guest if the
+          // reporter bytes or metadata differ after linking.
+          let reporterUnchanged=false;
+          try{
+            const stat=await lstat(reporter);
+            if(stat.isFile()&&!stat.isSymbolicLink()&&stat.size===reporterBytes&&
+               (stat.mode&0o077)===0)
+              reporterUnchanged=sha256(await readFile(reporter))===reporterSha256;
+          }catch{}
+          evidence.reporterUnchanged=reporterUnchanged;
           // A successful linker invocation must not claim a clean guest
           // build while silently writing unclassified stdout diagnostics.
-          if(succeeded(linked)&&linked.stdout===""){
+          if(succeeded(linked)&&linked.stdout===""&&reporterUnchanged){
             const guest=runNumericCommand(exe,[],10000);
             evidence.guestExit=guest.code;
             evidence.guestSignal=guest.signal;
