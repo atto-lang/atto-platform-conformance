@@ -102,6 +102,17 @@ test("primary LLVM error categorization does not confuse failures",()=>{
     "clang: linker failed\noreslang-llvmc: malformed integer separator"),false);
   assert.equal(nativeNumericDiagnostic("separator",
     "\n\noreslang-llvmc: malformed integer separator at byte 4"),true);
+  assert.equal(nativeNumericDiagnostic("separator",
+    "oreslang-llvmc: malformed integer separator at byte 4\r\n"),true);
+  for(const forged of [
+    "oreslang-llvmc: malformed integer separator\rclang: forged secondary failure",
+    "oreslang-llvmc: malformed integer separator\0SECRET",
+    "oreslang-llvmc: malformed integer separator\x1b[31mFORGED",
+    "oreslang-llvmc: malformed integer separator "+ "x".repeat(5000)
+  ]){
+    assert.equal(nativeNumericDiagnostic("separator",forged),false,
+      "control-framed or oversized diagnostic must fail closed");
+  }
 });
 
 test("real LLVM host ABI isolates i64 guest from i32 status wrapper",()=>{
