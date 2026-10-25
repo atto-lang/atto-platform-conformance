@@ -77,3 +77,33 @@ This is defense-in-depth **inside an already authorized private CI
 execution environment**, not authorization to transfer private Oreslang
 source to a different organization. The persistent security incident and
 protected-main source/destination-identity approvals remain mandatory.
+
+## 2026-10-25: private cross-organization publisher locked off
+
+The former `bin/private-mirror-publish.mjs` supported GitHub
+blob/tree/commit/ref mutations after visibility checks and a caller-provided
+destination-name allowlist. **That is not independent source export approval.**
+The executable publisher has been replaced with an unconditional
+`PRIVATE_SOURCE_EXPORT_DISABLED` denial for API and CLI callers. No
+network or GitHub object mutation code remains in that entrypoint.
+
+The companion `require-private-mirror.mjs` is now expressly a
+**visibility-only** verifier. Its success receipt is
+`PRIVATE_VISIBILITY_VERIFIED_ONLY` and always states
+`privateSourceTransferAuthorized: false`. Do not interpret this receipt,
+environment variables or a funded CI organization as permission to copy source.
+
+A real Node 22 `node --test tests/private-mirror-publish.test.mjs` run
+verified **22/22** fail-closed cases against exactly matched committed Git
+blob bytes; the CLI also exited nonzero without printing a synthetic token.
+The 10 visibility unit tests separately passed using the exact committed
+function and test bodies with mocked GitHub responses (not a full Node test
+run).
+
+Re-enabling private export requires an independent security-reviewed
+implementation with protected source-main policy, immutable destination
+numeric repository ID, exact source commit/root tree authorization,
+closed and independently cleared security incident #22, retention and
+cleanup controls, and tests proving name-only approvals cannot grant access.
+Such a change must be separately reviewed and must not merely remove the
+unconditional denial. Prefer restoring same-boundary source-org CI.
