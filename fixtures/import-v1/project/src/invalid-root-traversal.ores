@@ -1,0 +1,2 @@
+import fnc helper from "+/src/../src/lib/helper";
+fnc main(): int { return helper(41); }

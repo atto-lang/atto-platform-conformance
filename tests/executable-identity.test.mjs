@@ -29,8 +29,8 @@ test("unchanged synthetic compiler receives executable/command/harness identity 
   assert.match(result.executableSha256,/^[0-9a-f]{64}$/);
   assert.match(result.commandSha256,/^[0-9a-f]{64}$/);
   assert.equal(result.harnessRuntime.node,process.version);
-  assert.ok(result.results.every(x=>x.executableBeforeSha256===result.executableSha256 &&
-                                 x.executableAfterSha256===result.executableSha256));
+  assert.ok(result.results.every(x=>x.executableSha256Before===result.executableSha256 &&
+                                 x.executableSha256After===result.executableSha256));
   assert.match(result.provenanceNote,/cannot attest/);
  }));
 
@@ -107,3 +107,4 @@ test("all five backends share the mutation guard; this synthetic stub is not run
    assert.ok(r.results.every(x=>x.status==="VERIFIED"),backend);
   }
  }));
+
