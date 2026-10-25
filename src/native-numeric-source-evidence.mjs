@@ -162,17 +162,23 @@ export function validateNumericCorpus(manifest){
   const ids=new Set(),expressions=new Set();let yes=0,no=0;
   for(const c of manifest.cases){
     if(!/^[a-z][a-z0-9-]*$/.test(c.id)||ids.has(c.id)||
-      typeof c.expression!=="string"||expressions.has(c.expression)||
+      typeof c.expression!=="string"||
+      !/^[A-Za-z0-9_+*()" \t-]+$/.test(c.expression)||
+      expressions.has(c.expression)||
       c.guestSource!=="pub fnc main():int{return "+c.expression+";}\n")
-      throw Error("duplicate/mutated guest fixture");
+      throw Error("duplicate/mutated/unsafe guest fixture");
     ids.add(c.id);expressions.add(c.expression);
     if(c.expect==="accept"){
       yes++;
+      if(c.category!==undefined)
+        throw Error("accepted fixture must not declare a rejection category");
       if(!/^-?(0|[1-9][0-9]*)$/.test(c.expectedI64)||
         BigInt(c.expectedI64)<-(1n<<63n)||BigInt(c.expectedI64)>(1n<<63n)-1n)
         throw Error("invalid expected signed i64 value");
     }else if(c.expect==="reject"){
       no++;
+      if(c.expectedI64!==undefined)
+        throw Error("rejected fixture must not declare an accepted value");
       if(!["separator","i64-overflow","type","syntax"].includes(c.category))
         throw Error("invalid rejection category");
     }else throw Error("invalid fixture expectation");
