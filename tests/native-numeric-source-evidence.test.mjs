@@ -351,8 +351,43 @@ test("runtime Clang resource changes revoke all otherwise recorded evidence",asy
     });
     assert.equal(result.ok,false);
     assert.equal(result.clangResourceTreeUnchanged,false);
+    assert.equal(result.clangResourceTreeRecheckFailed,false);
     assert.equal(result.failed,26);
     assert.ok(result.results.every(x=>x.status==="TOOLCHAIN_CHANGED"));
+  }finally{await rm(dir,{recursive:true,force:true});}
+});
+
+test("Clang resource mode tampering returns a 26-case revoked receipt, not an exception",async()=>{
+  const dir=await mkdtemp(join(tmpdir(),"ores-clang-resource-mode-drift-"));
+  try{
+    const resources=join(dir,"resources");
+    const header=join(resources,"stdint.h");
+    const compiler=join(dir,"compiler");
+    const clang=join(dir,"clang");
+    await mkdir(resources,{mode:0o700});
+    await writeFile(header,"CONST\n",{mode:0o600});
+    // Tamper only after the initial snapshot, while fake source compilation
+    // executes. The final snapshot must reject the writable resource file.
+    const compilerBytes=Buffer.from(
+      "#!/bin/sh\nchmod 0666 '"+header+"'\n"+
+      "printf 'oreslang-llvmc: malformed integer separator at byte 0\\n' >&2\nexit 1\n");
+    const clangBytes=Buffer.from("#!/bin/sh\nexit 0\n");
+    await writeFile(compiler,compilerBytes,{mode:0o500});
+    await writeFile(clang,clangBytes,{mode:0o500});
+    const hash=x=>createHash("sha256").update(x).digest("hex");
+    const manifest=await readFile(corpusPath);
+    const receipt=await executeNativeNumericCorpus({
+      compiler,compilerSha256:hash(compilerBytes),
+      clang,clangSha256:hash(clangBytes),clangResourceDir:resources,
+      sourceCommit:"e".repeat(40),manifestSha256:hash(manifest)
+    });
+    assert.equal(receipt.ok,false);
+    assert.equal(receipt.verified,0);
+    assert.equal(receipt.failed,26);
+    assert.equal(receipt.clangResourceTreeUnchanged,false);
+    assert.equal(receipt.clangResourceTreeRecheckFailed,true);
+    assert.equal(receipt.results.length,26);
+    assert.ok(receipt.results.every(x=>x.status==="TOOLCHAIN_CHANGED"));
   }finally{await rm(dir,{recursive:true,force:true});}
 });
 
