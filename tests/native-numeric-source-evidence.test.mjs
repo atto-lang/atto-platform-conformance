@@ -43,6 +43,12 @@ test("native corpus rejects injected source and contradictory fixture annotation
   assert.throws(()=>validateNumericCorpus(tamper(0,{
     expression:multiline,guestSource:"pub fnc main():int{return "+multiline+";}\n"
   })),/unsafe/);
+  for(const badChar of [";","{","}","\r","\0","!","/",":",".","#","%","\\","[","]","\u200b"]){
+    const unsafe="42"+badChar+"0";
+    assert.throws(()=>validateNumericCorpus(tamper(0,{
+      expression:unsafe,guestSource:"pub fnc main():int{return "+unsafe+";}\n"
+    })),/unsafe/,"unsafe guest character: "+JSON.stringify(badChar));
+  }
   assert.throws(()=>validateNumericCorpus(tamper(0,{
     category:"separator"
   })),/accepted fixture must not declare/);
