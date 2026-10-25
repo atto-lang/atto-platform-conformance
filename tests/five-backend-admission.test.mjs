@@ -24,7 +24,7 @@ test("compiler diagnostic is accepted only at semantic rejection exit 1", async 
       spawn: fakeCompiler(code),
     });
     const negative = result.results.find(x => x.id === "unresolved-identifier");
-    assert.equal(negative.status, "MISMATCH", `exit code ${code} must not verify rejection`);
+    assert.equal(negative.status, code<0?"INVALID_EXIT_STATUS":"MISMATCH", `exit code ${code} must not verify rejection`);
     assert.equal(result.ok, false);
   }
   const genuine = await runSuite({
@@ -50,19 +50,23 @@ test("a crash quoting the expected symbol is not a negative compiler proof", asy
   }
 });
 
-test("all five source backends are recognized but absent cases never create proof", async () => {
-  for (const backend of ["net", "forge", "wasm", "browser"]) {
-    const report = await runSuite({
-      backend, argv: command, sourceSha,
-      spawn() { throw Error("no compiler can run without a matching case"); },
-    });
-    assert.equal(report.coverage, "NO_CASES");
-    assert.equal(report.verified, 0);
-    assert.equal(report.ok, false);
-    assert.deepEqual(report.results, []);
-    const discovery = await runSuite({backend, requireConfigured: false});
-    assert.equal(discovery.ok, false);
-    assert.equal(discovery.coverage, "NO_CASES");
+test("all six source backends require real case outcomes; uncovered browser never creates proof", async () => {
+  for (const backend of ["java","llvm","net","forge","wasm","js"]) {
+    const report=await runSuite({backend,argv:command,sourceSha,spawn:fakeCompiler(1)});
+    assert.equal(report.verified,2,backend);
+    assert.equal(report.ok,true,backend);
+    assert.equal(report.runtimeVerified,false,backend);
+    const unconfigured=await runSuite({backend});
+    assert.equal(unconfigured.ok,false,backend);
   }
-  await assert.rejects(runSuite({backend:"invented",argv:command,sourceSha}), /unknown backend/);
+  const report=await runSuite({backend:"browser",argv:command,sourceSha,
+    spawn(){throw Error("no compiler can run without a matching case")}});
+  assert.equal(report.coverage,"NO_CASES");
+  assert.equal(report.verified,0);
+  assert.equal(report.ok,false);
+  assert.deepEqual(report.results,[]);
+  const discovery=await runSuite({backend:"browser",requireConfigured:false});
+  assert.equal(discovery.ok,false);
+  assert.equal(discovery.coverage,"NO_CASES");
+  await assert.rejects(runSuite({backend:"invented",argv:command,sourceSha}),/unknown backend/);
 });

@@ -7,7 +7,11 @@
       "expect": "accept",
       "backends": [
         "java",
-        "llvm"
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
       ]
     },
     {
@@ -17,7 +21,11 @@
       "diagnostic": "nonexistent_symbol",
       "backends": [
         "java",
-        "llvm"
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
       ]
     }
   ]

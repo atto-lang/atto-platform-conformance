@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "scope": "value-match-expression-v1",
+  "cases": [
+    {
+      "id": "value-option-braced",
+      "file": "value-option-braced.ores",
+      "sourceGitBlobSha1": "d06e10a5c50d2794521ca0bdbc2aae11ab4e69ca",
+      "expect": "accept",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "browser-worker"
+      ]
+    },
+    {
+      "id": "value-vs-procedural",
+      "file": "value-vs-procedural.ores",
+      "sourceGitBlobSha1": "6e533b1204e2ae03098739e82fd6a0e729fb0866",
+      "expect": "accept",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "browser-worker"
+      ]
+    },
+    {
+      "id": "value-guard-over-end",
+      "file": "value-guard-over-end.ores",
+      "sourceGitBlobSha1": "1f4514dc885c52a77c1f6048d7cce50d232b50ed",
+      "expect": "accept",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "browser-worker"
+      ]
+    },
+    {
+      "id": "reject-nonexhaustive",
+      "file": "reject-nonexhaustive.ores",
+      "sourceGitBlobSha1": "a44aec379e32d18f502e098ab92bef3fc3375241",
+      "expect": "reject",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "browser-worker"
+      ]
+    },
+    {
+      "id": "reject-mismatched-types",
+      "file": "reject-mismatched-types.ores",
+      "sourceGitBlobSha1": "5640484a4c302032b208d5c498cd1d816e66ca00",
+      "expect": "reject",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "browser-worker"
+      ]
+    },
+    {
+      "id": "reject-no-value",
+      "file": "reject-no-value.ores",
+      "sourceGitBlobSha1": "cfb364840df4303f40cc4a8898d5cbb2553d3b2b",
+      "expect": "reject",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "browser-worker"
+      ]
+    }
+  ],
+  "languageContract": {
+    "valueMatch": "each arm explicitly returns one expression to match; no implicit callable return",
+    "proceduralDoMatch": "arm return exits enclosing callable",
+    "nominalActorMessages": "not implemented in these fixtures"
+  },
+  "evidence": {
+    "referenceJavaPr": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/900",
+    "relatedMavenRun": "https://github.com/zed-pkg-test/java-app/actions/runs/38493724232",
+    "exactFixtureExecution": false
+  }
+}

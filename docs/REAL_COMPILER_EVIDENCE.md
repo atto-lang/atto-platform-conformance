@@ -1,6 +1,6 @@
 # Real compiler smoke evidence — non-promoting adapter
 
-The shared platform-conformance harness currently tests its own runner with a fake checker; this is not backend parity evidence. Independently, the **private** Java/GraalVM and LLVM source repositories now have proposed CI changes that invoke actual Oreslang compiler builds and produce compatible JSON reports.
+The shared platform-conformance harness currently tests its own runner with a fake checker; this is not backend parity evidence. Independently, the **private** Java/GraalVM and LLVM source repositories have merged compiler-smoke producer changes (Java PR #953 and LLVM PR #383) that can generate compatible JSON reports. Their merged status alone does not authenticate an executed build on a current exact commit.
 
 ## Producer workflows
 
@@ -42,15 +42,15 @@ Run the repository's Node 22+ diagnostic on the exact failed run from a machine 
 
     node bin/diagnose-actions.mjs ores-truffle-oreslang/oreslang-platform-conformance 38661631910
 
-The tool reads run and job metadata without mirroring private code, creating runners, or accessing billing. It classifies NO_EXECUTED_STEPS distinctly from EXECUTED_STEPS_WITH_FAILURE and refuses to infer a billing root cause. It always returns root_cause_established=false and permits_merging=false; a failed or incomplete run produces a nonzero exit code.
+The tool reads run and job metadata without mirroring private code, creating runners, or accessing billing. A failed job with `steps:null` is **UNOBSERVED_FAILURE**; one with an explicitly empty `steps:[]` array is **OBSERVED_NO_STEP_FAILURE**. Only an observed completed, failing step qualifies as **EXECUTED_STEP_FAILURE**; its name and whether it is runner housekeeping remain visible. A failed job with successful steps but no observed failing step is **FAILED_JOB_WITHOUT_FAILED_STEP**, not a failing test. These labels never establish billing, runner admission, or compiler parity. The tool always returns `root_cause_established:false` and `permits_merging:false`; failed or incomplete runs exit nonzero.
 
 An administrator still needs the GitHub Actions run-summary banner and org-level billing, spending-limit, Actions policy, and runner-capacity checks. A private carrier without executing steps is not a working substitute. Never copy private compiler trees into public or unapproved repositories.
 
-The six offline unit tests are included in npm test. They are diagnostic-tool tests, not compiler conformance evidence.
+The diagnostic test file currently defines 34 synthetic/offline regression tests. They are included in `npm test`, but a successful source-org exact-head execution has not been observed for draft PR #91. Their mere presence is not an executed test result or compiler conformance evidence.
 
 ## 2026-10-14 additional audit: execution and source-identity classification
 
-The GitHub Actions diagnostic classifies steps using execution evidence rather than the mere presence of entries in the steps array. A completed job that contains only skipped or queued steps is classified as NO_EXECUTED_STEPS. Missing step details yield UNKNOWN_STEP_DETAILS and incomplete pagination yields INCOMPLETE_JOB_LIST; neither permits a CI-success inference.
+The GitHub Actions diagnostic distinguishes skipped/cancelled/pending jobs, failing runner-setup steps, completed failing execution steps, jobs with only skipped steps, explicitly empty steps arrays, and wholly unavailable step details. If any job has unavailable step details, aggregate counts are unknown (`null`), with partial observed counts reported separately. Jobs are collected across pages using `filter=latest`, with unique numeric IDs; the run is read before and after job collection to detect attempt/head/workflow drift. Exact job head SHA, run ID, run attempt and actual allocated runner information are separately checked. Missing identity fields are **UNKNOWN**, not automatically verified, and explicit identity conflicts yield **JOB_IDENTITY_MISMATCH** regardless of apparent job success or failure. None of these checks independently certifies compiler tests or source-export authorization.
 
 The real Java and LLVM producers independently run git rev-parse --verify HEAD in their source worktrees, reject --source-sha when it differs, and record actual_git_checkout_sha in the report. The shared validator requires that recorded checkout SHA to equal the declared commit SHA. Under pull_request workflows, github.sha may identify GitHub's synthetic merge commit; the source identity must be interpreted as the checked-out tree, not automatically as the PR branch head.
 
@@ -77,3 +77,23 @@ malformed case variants rejected**. These targeted checks use a deterministic
 mock hash implementation, not the complete Node unit suite or native
 compiler execution. The previous private carrier's 74-pass result predates
 this change and must not be misrepresented as an exact-head pass.
+
+## 2026-10-16 report-admission hardening and exact-file CI
+
+The validator now shares the harness's conservative, case-sensitive
+`isExpectedCompilerDiagnostic` matcher. A rejected source must identify
+`nonexistent_symbol` as the **primary diagnostic subject**; seeing that
+text in a source echo, filename, secondary hint, warning or unrelated error
+does not qualify. A zero-exit successful compile/link is rejected if its
+reported output carries an error-severity diagnostic. The 42-exit guest
+execution must likewise not emit an error-severity diagnostic. These checks
+guard against inconsistent reports; no self-reported JSON can prove
+authenticity or compiler binary provenance.
+
+The narrowly scoped, private cross-organization carrier
+[Voxletra PR #13](https://github.com/voxletra/voxletra-e2e/pull/13)
+tests the exact Git blobs for this harness and validator without assuming
+full compiler-source access. The carrier is *not* an approved complete
+compiler mirror, and its unit tests are not Java/LLVM runtime parity.
+Real compiler admission requires independently verified, exact-head
+producer runs, raw compiler logs, binary provenance and reviewed artifacts.

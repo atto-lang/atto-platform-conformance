@@ -12,33 +12,27 @@ node bin/inspect-real-evidence.mjs /path/to/approved-report.json
 
 See [the real compiler evidence policy](docs/REAL_COMPILER_EVIDENCE.md). The report must come from an independently reviewed real compiler run; the JSON adapter itself cannot authenticate an external run, and **a passing schema check does not demonstrate language correctness or parity**.
 
+## Universal tree-shaking receipt
+
+The repository carries the versioned `oreslang.reachability/1` contract and a
+fail-closed verifier for backend-neutral tree-shaking receipts. See
+[`docs/TREE_SHAKING_CONTRACT.md`](docs/TREE_SHAKING_CONTRACT.md).
+
+```sh
+node bin/verify-reachability-manifest.mjs /path/to/reachability.json
+```
+
+A valid receipt proves only the shape and internal consistency of reachability
+evidence. Final artifact/synthesis inspection is still required to prove the
+dead implementation was physically omitted.
+
 ## Current deliverable
 
-### Five-backend admission hardening (2026-10-15)
-
-The manifest harness recognizes Java/Graal, LLVM, Wasm, .NET and Forge
-(plus the existing browser runtime selector) without assuming any backend
-implements an unlisted fixture. A backend with **zero registered cases**
-reports `NO_CASES` and `ok: false` even when the caller supplied a real
-executable; discovering a backend is not certifying it.
-
-A negative compile fixture is `VERIFIED` only on exit code **1** with its
-expected diagnostic and no crash/fatal marker. Exit 2, 126, 127, signals,
-timeouts, missing executables and crash-shaped diagnostics never satisfy
-semantic rejection. Identical fixture references and duplicate backend
-selectors within a manifest case are rejected.
-
-The existing Java and LLVM fixture set remains only a **compiler-admission**
-probe; it does not prove five-backend parity, guest execution, runtime safety,
-trusted-code AOT, or CI provenance. New .NET/Forge cases require real compiler
-and execution evidence before registration. See
-`tests/five-backend-admission.test.mjs` for regression coverage.
-
-- Versioned fixture manifest and minimal positive/negative .ores sources.
-- Safe subprocess-based command runner with an argv template; no shell interpolation.
+- Versioned fixture manifest and minimal positive/negative .ores sources targeting **six compiler backends** (`java`, `llvm`, `net`, `wasm`, `forge`, `js`); this is a target inventory, not a parity claim.
+- Safe subprocess-based command runner with an argv template; no shell interpolation. JavaScript is a source-check-only target pending independent ESM runtime evidence.
 - Executable harness unit tests (using a **fake checker** to verify the harness only).
 - Explicit status: unconfigured, verified, mismatch, spawn failure, timeout.
-- CI tests the harness. It does **not** claim Java/LLVM/Wasm feature parity without configured external compiler binaries.
+- CI tests the harness. It does **not** claim Java/LLVM/.NET/Wasm/Forge feature parity without configured real compiler binaries, exact revisions and independently reviewed provenance.
 
 ## Examples
 
@@ -49,6 +43,22 @@ node bin/conformance.mjs --backend=java --argv='["/absolute/path/to/java","-jar"
 # A separate exact-head native compiler:
 node bin/conformance.mjs --backend=llvm --argv='["/absolute/path/to/oreslang-llvmc","{file}"]' --source-sha=FULL_COMMIT_SHA --require
 ~~~
+
+The harness now reads bounded regular fixture bytes through verified file
+descriptors and **seals the entire suite in a private temporary snapshot before
+launching the first compiler**. Each fixture's SHA-256 records the exact copied
+input supplied to the subprocess; it never reopens a mutable checkout path
+while compiling. Symlinks, hardlinks and oversized inputs are rejected. This
+improves local test provenance but does not attest that the caller-declared
+source commit built the compiler or turn a compiler into a sandbox. The harness
+re-hashes sealed fixture bytes before and after each compiler invocation, failing
+on detected tampering (including same-UID chmod/rewrite attacks on a later case).
+This is **detection, not immutable filesystem enforcement**: an adversarial
+compiler running with the same user permissions can race or restore bytes, so
+untrusted executables still require an independently enforced sandbox. Binary
+hashing reads in bounded 64-KiB chunks and refuses executable files above
+512 MiB; binary hashes remain local receipts rather than reproducible-build
+attestations.
 
 The first argv token must be an **absolute executable path** (never a PATH lookup), and the placeholder {file} is replaced with an absolute fixture path. Provide the exact committed compiler binary/revision. The harness records SHA-256 hashes of the executable and each fixture. The user-provided source commit SHA is explicitly marked **declared, not cryptographically attested to the compiler binary**; include independent build provenance to prove the relationship. The harness does **not** install/checkout compiler source or infer that one backend supports another backend's features.
 
@@ -112,3 +122,34 @@ and GitHub Support may be required. See
 [security incident #22](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22).
 
 See https://ores-truffle-oreslang.github.io/logs/2/
+
+### Experimental JS checker target
+
+Once the JS compiler source and Node 22+ executable are available in an **authorized, private** CI checkout at exact revisions, the JS subset can run:
+
+```sh
+node bin/conformance.mjs --backend=js --argv='["/absolute/path/to/node","/absolute/path/to/oreslang-source.js/bin/oreslang-jsc.mjs","--program-v2","--check","{file}"]' --source-sha=EXACT_JS_SOURCE_COMMIT_SHA --require
+```
+
+This is a **source acceptance/rejection gate**, not a runtime test. `verified` means the two compiler-check subprocess cases met the narrow source-check expectations, **not** that any emitted JS was executed. See `docs/MATRIX.md` for the required runtime, compiler provenance, and cross-backend parity gates.
+
+
+### Six-backend admission hardening (2026-10-15)
+
+The manifest harness recognizes Java/Graal, LLVM, Wasm, .NET, Forge and JS
+(plus the existing browser runtime selector) without assuming any backend
+implements an unlisted fixture. A backend with **zero registered cases**
+reports `NO_CASES` and `ok: false` even when the caller supplied a real
+executable; discovering a backend is not certifying it.
+
+A negative compile fixture is `VERIFIED` only on exit code **1** with its
+expected diagnostic and no crash/fatal marker. Exit 2, 126, 127, signals,
+timeouts, missing executables and crash-shaped diagnostics never satisfy
+semantic rejection. Identical fixture references and duplicate backend
+selectors within a manifest case are rejected.
+
+The registered fixture set remains only a **compiler-admission**
+probe; it does not prove six-backend parity, guest execution, runtime safety,
+trusted-code AOT, or CI provenance. Registering cases does not establish compiler or execution proof. See
+`tests/six-backend-admission.test.mjs` for regression coverage.
+
