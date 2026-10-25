@@ -57,6 +57,10 @@ test("native corpus rejects injected source and contradictory fixture annotation
     })),/invalid expected signed i64 value/);
   }
   assert.throws(()=>validateNumericCorpus(tamper(0,{
+    expectedI64:"-0"
+  })),/invalid expected signed i64 value/);
+
+  assert.throws(()=>validateNumericCorpus(tamper(0,{
     category:"separator"
   })),/accepted fixture must not declare/);
   const negativeIndex=source.cases.findIndex(x=>x.expect==="reject");
