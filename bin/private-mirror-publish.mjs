@@ -46,6 +46,13 @@ export async function publishPrivateMirror({
   source,destination,sourceCommit,destinationBaseCommit,prefix,newBranch,
   approvedDestinations,token,fetchImpl=fetch
 }) {
+  // SECURITY HOLD: no external actor may authorize private source export
+  // with caller-supplied names, env vars or mock/private visibility alone.
+  // This function MUST remain non-operational until independently reviewed,
+  // protected-main, exact commit/tree + numeric destination-ID authorization
+  // is implemented, and the public-carrier incident is resolved.
+  // Intentionally throw BEFORE any input-dependent or network operation.
+  throw Error("PRIVATE_SOURCE_EXPORT_DISABLED: protected-source approval and incident clearance required");
   sha(sourceCommit);sha(destinationBaseCommit);
   if(!validPath(prefix)||!BRANCH.test(newBranch)||newBranch.includes("..")||newBranch.endsWith(".lock"))
     throw Error("invalid destination prefix or isolated CI branch");
