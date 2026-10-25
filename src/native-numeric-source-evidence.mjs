@@ -36,8 +36,12 @@ export function renameNumericGuestMain(ir){
   //   define i32 @main()                   ; OS ABI wrapper with exit clamping
   // Do not attempt to rename a nonexistent i64 @main() or observe the
   // clamped i32 host status as a full-width signed i64 guest result.
-  const guestDefs=ir.match(/\bdefine\b[^\r\n]{0,300}\bi64\s+@__oreslang_guest_main\s*\(\s*\)/g)||[];
-  const hostDefs=ir.match(/\bdefine\b[^\r\n]{0,300}\bi32\s+@main\s*\(\s*\)/g)||[];
+  // Match actual LLVM IR function definition headers, not commented-out
+  // "define" text, metadata strings, or instructions containing that word.
+  // A comment duplicating a real definition must not alter admission; a
+  // comment alone must never impersonate either required entrypoint.
+  const guestDefs=ir.match(/^[ \t]*define[ \t]+[^\r\n;]{0,300}\bi64[ \t]+@__oreslang_guest_main[ \t]*\([ \t]*\)/gm)||[];
+  const hostDefs=ir.match(/^[ \t]*define[ \t]+[^\r\n;]{0,300}\bi32[ \t]+@main[ \t]*\([ \t]*\)/gm)||[];
   if(guestDefs.length!==1||hostDefs.length!==1)
     throw Error("expected one i64 __oreslang_guest_main and one i32 host main wrapper");
   // Keep the actual Oreslang guest callable, retire only the host wrapper
