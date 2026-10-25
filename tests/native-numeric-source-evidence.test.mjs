@@ -123,6 +123,24 @@ test("real LLVM host ABI isolates i64 guest from i32 status wrapper",()=>{
   assert.throws(()=>renameNumericGuestMain(""),/missing or oversized/);
 });
 
+test("LLVM IR ABI gate counts only real definitions, never comments",()=>{
+  const guest="define i64 @__oreslang_guest_main() {\nentry:\n ret i64 42\n}\n";
+  const host="define i32 @main() {\nentry:\n ret i32 0\n}\n";
+  assert.throws(()=>renameNumericGuestMain(
+    "; define i64 @__oreslang_guest_main()\n"+host
+  ),/expected one i64/);
+  assert.throws(()=>renameNumericGuestMain(
+    guest+"; define i32 @main()\n"
+  ),/expected one i64/);
+  const comments="; define i64 @__oreslang_guest_main()\n"+
+    "; define i32 @main()\n";
+  const good=renameNumericGuestMain(comments+guest+host);
+  assert.match(good,/define i64 @__oreslang_guest_main/);
+  assert.match(good,/define i32 @oreslang_numeric_unused_host_main/);
+  assert.throws(()=>renameNumericGuestMain(guest+guest+host),/expected one i64/);
+  assert.throws(()=>renameNumericGuestMain(guest+host+host),/expected one i64/);
+});
+
 test("native corpus execution fails closed on missing or changed fixture/tool pins",async()=>{
   await assert.rejects(executeNativeNumericCorpus({}),/exact 40-character/);
   await assert.rejects(executeNativeNumericCorpus({sourceCommit:"a".repeat(40)}),
