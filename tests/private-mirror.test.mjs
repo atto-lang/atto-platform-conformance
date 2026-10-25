@@ -160,3 +160,45 @@ test('raw verifier no longer delegates worktree-byte hashing to Git',()=>{
   assert.match(source,/O_NOFOLLOW/);
   assert.match(source,/gitBlobSha1\(bytes\)/);
 });
+
+
+test('exact-tree verifier ignores hostile Git redirection environment',()=>{
+  const repo=mkdtempSync(join(tmpdir(),'mirror-git-env-source-'));
+  const decoy=mkdtempSync(join(tmpdir(),'mirror-git-env-decoy-'));
+  const saved={GIT_DIR:process.env.GIT_DIR,GIT_WORK_TREE:process.env.GIT_WORK_TREE,
+    GIT_INDEX_FILE:process.env.GIT_INDEX_FILE,GIT_CONFIG_COUNT:process.env.GIT_CONFIG_COUNT};
+  try{
+    for(const r of [repo,decoy]){
+      git(r,'init','-q');
+      git(r,'config','user.name','CI Mirror Test');
+      git(r,'config','user.email','ci@example.invalid');
+      mkdirSync(join(r,'source'));
+    }
+    writeFileSync(join(repo,'source','main.ores'),'fnc foo(): int { return 42; }\n');
+    git(repo,'add','.');
+    git(repo,'commit','-qm','real source tree');
+    writeFileSync(join(decoy,'source','main.ores'),'fnc foo(): int { return 999; }\n');
+    git(decoy,'add','.');
+    git(decoy,'commit','-qm','decoy source tree');
+    const params={repo,subtreePath:'source',
+      expectedTree:git(repo,'rev-parse','HEAD:source'),
+      blobs:[{path:'main.ores',sha:git(repo,'rev-parse','HEAD:source/main.ores')}]};
+    process.env.GIT_DIR=join(decoy,'.git');
+    process.env.GIT_WORK_TREE=decoy;
+    process.env.GIT_INDEX_FILE=join(decoy,'.git','index');
+    process.env.GIT_CONFIG_COUNT='1';
+    process.env.GIT_CONFIG_KEY_0='core.filemode';
+    process.env.GIT_CONFIG_VALUE_0='false';
+    assert.equal(verify(params).status,'EXACT_TREE');
+    assert.equal(privateMirrorSafeFailureCode(new Error('Git mirror inspection unavailable')),
+      'GIT_INSPECTION_UNAVAILABLE');
+  }finally{
+    for(const [k,v] of Object.entries(saved)){
+      if(v===undefined)delete process.env[k]; else process.env[k]=v;
+    }
+    delete process.env.GIT_CONFIG_KEY_0;
+    delete process.env.GIT_CONFIG_VALUE_0;
+    rmSync(repo,{recursive:true,force:true});
+    rmSync(decoy,{recursive:true,force:true});
+  }
+});
