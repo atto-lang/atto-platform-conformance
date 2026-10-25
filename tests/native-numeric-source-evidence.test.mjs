@@ -500,3 +500,44 @@ test("linker stdout cannot certify an accepted Oreslang guest",async()=>{
     }
   }finally{await rm(dir,{recursive:true,force:true});}
 });
+
+test("Clang cannot certify a native guest after tampering with its per-case C reporter",async()=>{
+  const dir=await mkdtemp(join(tmpdir(),"ores-native-reporter-tamper-"));
+  try{
+    const compiler=join(dir,"compiler"),clang=join(dir,"clang-install");
+    const compilerBytes=Buffer.from(
+      "#!/bin/sh\n"+
+      "printf 'define i64 @__oreslang_guest_main() {\\nentry:\\n ret i64 42\\n}\\n"+
+      "define i32 @main() {\\nentry:\\n ret i32 0\\n}\\n'\n");
+    // A fake successful linker mutates the reporting C source before return.
+    // A verified ABI and exit=0 alone must not certify guest output.
+    const clangBytes=Buffer.from(
+      "#!/bin/sh\nfor arg in \"$@\"; do\n"+
+      "  case \"$arg\" in\n"+
+      "    *.report.c) chmod 0600 \"$arg\"; printf '\\n/* forged */\\n' >> \"$arg\" ;;\n"+
+      "  esac\n"+
+      "done\nexit 0\n");
+    await writeFile(compiler,compilerBytes,{mode:0o500});
+    await writeFile(clang,clangBytes,{mode:0o500});
+    const hash=x=>createHash("sha256").update(x).digest("hex");
+    const manifest=await readFile(corpusPath);
+    const receipt=await executeNativeNumericCorpus({
+      compiler,compilerSha256:hash(compilerBytes),
+      clang,clangSha256:hash(clangBytes),clangResourceDir:dir,
+      sourceCommit:"e".repeat(40),manifestSha256:hash(manifest)
+    });
+    assert.equal(receipt.ok,false);
+    assert.equal(receipt.verified,0);
+    assert.equal(receipt.failed,26);
+    const accepted=receipt.results.filter(x=>x.expect==="accept");
+    assert.equal(accepted.length,12);
+    for(const item of accepted){
+      assert.equal(item.clangExit,0);
+      assert.equal(item.clangStdoutBytes,0);
+      assert.equal(item.reporterUnchanged,false);
+      assert.match(item.reporterSha256,/^[a-f0-9]{64}$/);
+      assert.equal(item.guestExit,undefined);
+      assert.equal(item.status,"MISMATCH");
+    }
+  }finally{await rm(dir,{recursive:true,force:true});}
+});
