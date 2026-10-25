@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "contract": "oreslang.platform-capability/1",
+  "stageOrder": [
+    "host-reference",
+    "abi-link",
+    "compiler-guest",
+    "target-execution",
+    "physical-hardware"
+  ],
+  "platforms": {
+    "mobile": {
+      "repository": "ores-truffle-oreslang/oreslang-platform.mobile",
+      "targetClass": "mobile-native"
+    },
+    "desktop": {
+      "repository": "ores-truffle-oreslang/oreslang-platform.desktop",
+      "targetClass": "desktop-native"
+    },
+    "embedded": {
+      "repository": "ores-truffle-oreslang/oreslang-platform.embedded",
+      "targetClass": "freestanding-mcu"
+    },
+    "iot": {
+      "repository": "ores-truffle-oreslang/oreslang-platform.iot",
+      "targetClass": "iot-gateway"
+    },
+    "fpga": {
+      "repository": "ores-truffle-oreslang/oreslang-platform.fpga",
+      "targetClass": "fpga"
+    },
+    "asic": {
+      "repository": "ores-truffle-oreslang/oreslang-platform.asic",
+      "targetClass": "asic"
+    }
+  },
+  "promotionRules": {
+    "all": [
+      "exact-head",
+      "executed-steps",
+      "target-artifact-digest"
+    ],
+    "abi-link": [
+      "abi-linked"
+    ],
+    "compiler-guest": [
+      "abi-linked",
+      "compiler-produced",
+      "compiler-source-revision",
+      "compiler-binary-digest",
+      "not-host-reference-only"
+    ],
+    "target-execution": [
+      "target-executed"
+    ],
+    "physical-hardware": [
+      "physical-hardware-evidence"
+    ]
+  },
+  "nonEvidence": [
+    "zero-step-workflow",
+    "queued-workflow",
+    "host-stub-for-compiler-guest",
+    "declared-source-sha-without-binary-provenance",
+    "documentation-only-claim"
+  ]
+}
