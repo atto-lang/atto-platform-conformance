@@ -2,10 +2,24 @@
 // Required real-compiler gate. No implicit skip or simulated guest fallback.
 // Imports run within the guarded region: Node's default ESM loader errors
 // include absolute repository paths and must never escape to CI logs.
-let safeFailureCode=()=>"UNCLASSIFIED_EXECUTION_OR_IO_ERROR";
+const UNCLASSIFIED="UNCLASSIFIED_EXECUTION_OR_IO_ERROR";
+const publicCodes=new Set([
+  UNCLASSIFIED,"MISSING_REQUIRED_ARGUMENT","INVALID_CLI_ARGUMENT",
+  "INVALID_SOURCE_COMMIT_PIN","INVALID_MANIFEST_PIN","MANIFEST_BYTES_MISMATCH",
+  "MANIFEST_SIZE_LIMIT","CORPUS_INVALID","CORPUS_COUNT_DRIFT",
+  "LLVM_IR_INVALID","LLVM_GUEST_ABI_INVALID","LLVM_WRAPPER_REWRITE_FAILED",
+  "REPORTER_SOURCE_INVALID","NATIVE_EXECUTABLE_PREEXISTS","NATIVE_EXECUTABLE_UNSAFE",
+  "COMPILER_DIGEST_MISMATCH","CLANG_DIGEST_MISMATCH"
+]);
+let safeFailureCode=()=>UNCLASSIFIED;
 try{
   const diagnosticModule=await import("../src/native-numeric-safe-diagnostics.mjs");
-  safeFailureCode=diagnosticModule.nativeNumericSafeFailureCode;
+  safeFailureCode=error=>{
+    try{
+      const candidate=diagnosticModule.nativeNumericSafeFailureCode?.(error);
+      return publicCodes.has(candidate)?candidate:UNCLASSIFIED;
+    }catch{return UNCLASSIFIED;}
+  };
   const {executeNativeNumericCorpus}=await import("../src/native-numeric-source-evidence.mjs");
   const allowed=new Set(["compiler","compiler-sha256","clang","clang-sha256","clang-resource-dir","source-commit","manifest-sha256"]);
   const args={};
