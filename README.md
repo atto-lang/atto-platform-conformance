@@ -141,3 +141,24 @@ node bin/conformance.mjs --backend=js --argv='["/absolute/path/to/node","/absolu
 ```
 
 This is a **source acceptance/rejection gate**, not a runtime test. `verified` means the two compiler-check subprocess cases met the narrow source-check expectations, **not** that any emitted JS was executed. See `docs/MATRIX.md` for the required runtime, compiler provenance, and cross-backend parity gates.
+
+
+### Six-backend admission hardening (2026-10-15)
+
+The manifest harness recognizes Java/Graal, LLVM, Wasm, .NET, Forge and JS
+(plus the existing browser runtime selector) without assuming any backend
+implements an unlisted fixture. A backend with **zero registered cases**
+reports `NO_CASES` and `ok: false` even when the caller supplied a real
+executable; discovering a backend is not certifying it.
+
+A negative compile fixture is `VERIFIED` only on exit code **1** with its
+expected diagnostic and no crash/fatal marker. Exit 2, 126, 127, signals,
+timeouts, missing executables and crash-shaped diagnostics never satisfy
+semantic rejection. Identical fixture references and duplicate backend
+selectors within a manifest case are rejected.
+
+The registered fixture set remains only a **compiler-admission**
+probe; it does not prove six-backend parity, guest execution, runtime safety,
+trusted-code AOT, or CI provenance. Registering cases does not establish compiler or execution proof. See
+`tests/six-backend-admission.test.mjs` for regression coverage.
+

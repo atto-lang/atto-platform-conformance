@@ -206,10 +206,13 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
  const relevant=manifest.cases.filter(x=>x.backends.includes(backend));
  if(!argv){
   return {backend,sourceSha:sourceSha||null,verificationScope:"compiler-source-check-only",runtimeVerified:false,configured:false,verified:0,failed:0,
-   skipped:relevant.length,ok:false,results:relevant.map(c=>({id:c.id,status:"UNCONFIGURED"}))};
+   skipped:relevant.length,ok:false,coverage:relevant.length?"UNCONFIGURED":"NO_CASES",results:relevant.map(c=>({id:c.id,status:"UNCONFIGURED"}))};
  }
  validateCommand(argv);
  if(!validSha(sourceSha))throw Error("configured backend requires exact 40-character lowercase source commit SHA");
+ if(!relevant.length)return {backend,declaredSourceSha:sourceSha,
+  verificationScope:"compiler-source-check-only",runtimeVerified:false,
+  configured:true,coverage:"NO_CASES",verified:0,failed:0,skipped:0,ok:false,results:[]};
  const initialExecutable=await snapshotExecutable(argv[0]);
  const executableSha256=initialExecutable?.sha256||null;
  const results=[];
@@ -249,7 +252,8 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
   else if(!initialExecutable||!executableBefore||!executableAfter)status="UNHASHABLE_EXECUTABLE";
   else if(c.expect==="accept")status=output.status===0 && !hasCompilerErrorSeverity(combined)?"VERIFIED":"MISMATCH";
   else {
-   status=output.status!==0 && isExpectedCompilerDiagnostic(combined,c.diagnostic)
+   const crashed=/\b(segmentation fault|stack trace|traceback|fatal signal|unhandled exception|process crashed)\b/i.test(combined);
+   status=output.status===1 && !crashed && isExpectedCompilerDiagnostic(combined,c.diagnostic)
      ?"VERIFIED":"MISMATCH";
   }
   results.push({id:c.id,status,fixtureSha256,
@@ -274,6 +278,7 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
  }
  const verified=results.filter(x=>x.status==="VERIFIED").length;
  const failed=results.filter(x=>x.status!=="VERIFIED").length;
- return {backend,declaredSourceSha:sourceSha,verificationScope:"compiler-source-check-only",runtimeVerified:false,executableSha256,provenanceNote:"Source revision was supplied by caller; this harness does not attest that it produced the binary.",configured:true,verified,failed,skipped:0,ok:failed===0 && verified>0 &&
+ return {backend,declaredSourceSha:sourceSha,verificationScope:"compiler-source-check-only",runtimeVerified:false,executableSha256,provenanceNote:"Source revision was supplied by caller; this harness does not attest that it produced the binary.",configured:true,verified,failed,skipped:0,coverage:"CASE_RESULTS",ok:failed===0 && verified>0 &&
   relevant.some(x=>x.expect==="accept") && relevant.some(x=>x.expect==="reject"),results};
 }
+
