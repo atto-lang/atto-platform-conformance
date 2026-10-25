@@ -19,10 +19,24 @@ test('rewrites executable call sites but preserves the i64 guest symbol',()=>{
   assert.match(r.ir,/call i32 @oreslang_numeric_unused_host_main\(\)/);
   assert.match(r.ir,/define i64 @__oreslang_guest_main\(\)/);
 });
+test('rewrites address-taken, alias and metadata value references',()=>{
+  const refs='@slot = global ptr @main\n'
+    +'@entry_alias = alias i32 (), ptr @main\n'
+    +'!0 = !{ptr @main}\n';
+  const r=rewrite(host+refs);
+  assert.equal(r.referencesRewritten,4);
+  assert.equal(r.ir,(host+refs).replaceAll('@main',renamed));
+});
 test('preserves semicolon line comments including fake functions and call sites',()=>{
   const comment='; define i32 @main() ; call i32 @main()\n';
   const r=rewrite(comment+host);
   assert.ok(r.ir.startsWith(comment));
+  assert.equal(r.referencesRewritten,1);
+});
+test('preserves CR-only and CRLF comments byte-for-byte',()=>{
+  const comments='; fake @main()\r; fake @main()\r\n';
+  const r=rewrite(comments+host);
+  assert.ok(r.ir.startsWith(comments));
   assert.equal(r.referencesRewritten,1);
 });
 test('preserves trailing LLVM comments after real declarations',()=>{
@@ -50,9 +64,17 @@ test('handles escaped double quotes and semicolons within a literal',()=>{
   assert.ok(r.ir.startsWith(metadata));
   assert.equal(r.referencesRewritten,1);
 });
+test('handles LLVM hex quote escapes without leaving quoted mode',()=>{
+  const metadata='!1 = !{!"escaped \\22 ; @main() quoted"}\n';
+  const r=rewrite(metadata+host);
+  assert.ok(r.ir.startsWith(metadata));
+  assert.equal(r.referencesRewritten,1);
+});
 test('does not rename LLVM quoted names or longer symbol names',()=>{
   const misc='declare void @"main"()\ndeclare void @mainExtra()\n'
-    +'declare void @main.v1()\ndeclare void @main_foo()\n';
+    +'declare void @main.v1()\ndeclare void @main_foo()\n'
+    +'declare void @main-foo()\ndeclare void @main$foo()\n'
+    +'declare void @main0()\n';
   const r=rewrite(misc+host);
   assert.ok(r.ir.startsWith(misc));
   assert.equal(r.referencesRewritten,1);
@@ -71,6 +93,9 @@ test('honors a semicolon in a quoted string before a real reference',()=>{
 test('comment-only or string-only main text cannot count as a real reference',()=>{
   assert.throws(()=>rewrite('; fake @main()\n'),/no unquoted main/);
   assert.throws(()=>rewrite('!0 = !{!"@main()"}\n'),/no unquoted main/);
+});
+test('unterminated quoted strings fail closed even after a real reference',()=>{
+  assert.throws(()=>rewrite(host+'!0 = !{!"unterminated @main()'),/unterminated quoted/);
 });
 test('invalid and oversized inputs fail before rewrite',()=>{
   for(const bad of [null,undefined,[],123,'', 'x'.repeat(4*1024*1024+1)]){
