@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, symlinkSync, truncateSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -158,7 +158,9 @@ test('raw verifier no longer delegates worktree-byte hashing to Git',()=>{
   const source=readFileSync(cli,'utf8');
   assert.doesNotMatch(source,/git\(repo,\s*['"]hash-object['"]/);
   assert.match(source,/O_NOFOLLOW/);
-  assert.match(source,/gitBlobSha1\(bytes\)/);
+  assert.match(source,/gitBlobSha1FromHandle\(fd, before\.size\)/);
+  assert.match(source,/readSync\(fd, buffer/);
+  assert.doesNotMatch(source,/readFileSync\(fd\)/);
 });
 
 
@@ -201,4 +203,50 @@ test('exact-tree verifier ignores hostile Git redirection environment',()=>{
     rmSync(repo,{recursive:true,force:true});
     rmSync(decoy,{recursive:true,force:true});
   }
+});
+
+test('pinned source blob spanning several 64-KiB reads hashes exact bytes',()=>{
+  const repo=mkdtempSync(join(tmpdir(),'mirror-streamed-'));
+  try{
+    git(repo,'init','-q');
+    git(repo,'config','user.name','CI Mirror Test');
+    git(repo,'config','user.email','ci@example.invalid');
+    mkdirSync(join(repo,'source'));
+    // Include NUL and binary bytes, crossing 64-KiB stream boundaries.
+    const source=Buffer.alloc(3*65536+19);
+    for(let i=0;i<source.length;i++)source[i]=(i*173+7)&255;
+    writeFileSync(join(repo,'source','large.ores'),source);
+    git(repo,'add','.');
+    git(repo,'commit','-qm','pin multi-chunk binary source');
+    const expectedTree=git(repo,'rev-parse','HEAD:source');
+    const sha=git(repo,'rev-parse','HEAD:source/large.ores');
+    assert.equal(verify({repo,subtreePath:'source',expectedTree,
+      blobs:[{path:'large.ores',sha}]}).status,'EXACT_TREE');
+    source[65536]=source[65536]^1;
+    writeFileSync(join(repo,'source','large.ores'),source);
+    assert.throws(()=>verify({repo,subtreePath:'source',expectedTree,
+      blobs:[{path:'large.ores',sha}]}),/raw source bytes differ/);
+  }finally{rmSync(repo,{recursive:true,force:true})}
+});
+
+test('sparse tracked source over 128 MiB fails before unbounded raw-byte read',()=>{
+  const repo=mkdtempSync(join(tmpdir(),'mirror-sparse-limit-'));
+  try{
+    git(repo,'init','-q');
+    git(repo,'config','user.name','CI Mirror Test');
+    git(repo,'config','user.email','ci@example.invalid');
+    mkdirSync(join(repo,'source'));
+    const source=join(repo,'source','large.ores');
+    writeFileSync(source,'small pinned source\n');
+    git(repo,'add','.');
+    git(repo,'commit','-qm','pin source before sparse tampering');
+    const expectedTree=git(repo,'rev-parse','HEAD:source');
+    // Sparse expansion changes metadata but consumes no 128-MiB RAM.
+    truncateSync(source,128*1024*1024+1);
+    const request={repo,subtreePath:'source',expectedTree};
+    assert.throws(()=>verify(request),/file exceeds raw-byte budget/);
+    assert.equal(privateMirrorSafeFailureCode(
+      new Error('source subtree file exceeds raw-byte budget')),
+      'SOURCE_FILE_SIZE_LIMIT');
+  }finally{rmSync(repo,{recursive:true,force:true})}
 });
