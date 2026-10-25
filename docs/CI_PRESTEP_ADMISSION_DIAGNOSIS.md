@@ -107,3 +107,23 @@ closed and independently cleared security incident #22, retention and
 cleanup controls, and tests proving name-only approvals cannot grant access.
 Such a change must be separately reviewed and must not merely remove the
 unconditional denial. Prefer restoring same-boundary source-org CI.
+
+## Raw private-tree verifier resource boundary
+
+`bin/verify-private-mirror.mjs` verifies pinned Git SHA-1 object identities and
+raw worktree file bytes; it does **not** publish source or authorize a carrier.
+To avoid an unbounded `readFileSync(fd)` allocation on a large or sparse
+tracked source file, the verifier now hashes the Git `blob <size>\0` header
+and file bytes incrementally in **64 KiB chunks**. It rejects an individual
+regular file above **128 MiB** from `lstat` before opening it, with safe
+public code `SOURCE_FILE_SIZE_LIMIT`. The threshold is a strict admission
+constraint, not a claim that every possible repository's source tree fits
+this verification profile. If a legitimately reviewed source file exceeds
+that threshold, revise the budget through independent review rather than
+skipping raw worktree verification. The preexisting Git index/raw file
+identity checks and no-source-export policy remain in force.
+
+The checked-in tests cover binary files spanning multiple chunks, a changed
+byte, and a sparse over-budget tracked file. A standalone Node/Git local
+smoke test is useful as resource-bound evidence only; a complete exact-head
+`npm test` and source-backed Actions execution remain separately required.
