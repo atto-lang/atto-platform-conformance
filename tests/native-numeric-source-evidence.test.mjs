@@ -28,6 +28,31 @@ test("26 numeric guest cases pass shared integrity checks without execution clai
   assert.throws(()=>validateNumericCorpus(tampered),/mutated/);
 });
 
+test("native corpus rejects injected source and contradictory fixture annotations",async()=>{
+  const source=JSON.parse(await readFile(corpusPath,"utf8"));
+  const tamper=(index,patch)=>{
+    const bad=structuredClone(source);
+    Object.assign(bad.cases[index],patch);
+    return bad;
+  };
+  const expr="42;} fnc extra(){return 9";
+  assert.throws(()=>validateNumericCorpus(tamper(0,{
+    expression:expr,guestSource:"pub fnc main():int{return "+expr+";}\n"
+  })),/unsafe/);
+  const multiline="42\n+1";
+  assert.throws(()=>validateNumericCorpus(tamper(0,{
+    expression:multiline,guestSource:"pub fnc main():int{return "+multiline+";}\n"
+  })),/unsafe/);
+  assert.throws(()=>validateNumericCorpus(tamper(0,{
+    category:"separator"
+  })),/accepted fixture must not declare/);
+  const negativeIndex=source.cases.findIndex(x=>x.expect==="reject");
+  assert.ok(negativeIndex>=0);
+  assert.throws(()=>validateNumericCorpus(tamper(negativeIndex,{
+    expectedI64:"42"
+  })),/rejected fixture must not declare/);
+});
+
 test("primary LLVM error categorization does not confuse failures",()=>{
   assert.equal(nativeNumericDiagnostic("separator",
     "oreslang-llvmc: malformed integer separator at byte 12\n"),true);
