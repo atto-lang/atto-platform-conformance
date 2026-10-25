@@ -4,7 +4,7 @@ import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
   closeSync, constants as fsConstants, fstatSync, lstatSync, openSync,
-  readFileSync, realpathSync
+  readFileSync, readSync, realpathSync
 } from 'node:fs';
 import { resolve, sep } from 'node:path';
 
@@ -44,24 +44,36 @@ function safePath(path) {
     && path.split('/').every(p => p !== '.' && p !== '..');
 }
 
-function gitBlobSha1(bytes) {
-  return createHash('sha1')
-    .update('blob ' + bytes.length + '\0')
-    .update(bytes)
-    .digest('hex');
+// Bound memory independently from the size of the Git-tracked source file.
+// Sparse files are rejected using fstat *before* reading any content.
+const MAX_SOURCE_FILE_BYTES = 128n * 1024n * 1024n;
+function gitBlobSha1FromHandle(fd, size) {
+  const hash = createHash('sha1').update('blob ' + size.toString() + '\\0');
+  const buffer = Buffer.allocUnsafe(64 * 1024);
+  let position = 0;
+  const target = Number(size); // Safe after the 128-MiB cap.
+  while (position < target) {
+    const count = readSync(fd, buffer, 0,
+      Math.min(buffer.length, target - position), position);
+    if (count <= 0)
+      throw Error('source subtree file changed during raw-byte verification');
+    hash.update(buffer.subarray(0, count));
+    position += count;
+  }
+  return hash.digest('hex');
 }
 
 function readPinnedRegularFile(absolute, expectedMode) {
-  // Resolve the pathname first, then bind the verification to one opened
-  // descriptor with O_NOFOLLOW where supported. Re-stat both the descriptor
-  // and pathname after the read so a rename/symlink race cannot silently
-  // substitute different bytes between admission checks.
+  // Bind metadata and streamed raw-byte hashing to one O_NOFOLLOW descriptor.
+  // Do not allocate a Buffer proportional to a private source file's size.
   if (realpathSync(absolute) !== absolute)
     throw Error('source subtree contains symlink or unsafe path');
   const beforeName = lstatSync(absolute, { bigint: true });
   if (!beforeName.isFile() || beforeName.isSymbolicLink() ||
       Boolean(beforeName.mode & 0o111n) !== (expectedMode === '100755'))
     throw Error('source subtree file type or mode differs from pinned Git tree');
+  if (beforeName.size > MAX_SOURCE_FILE_BYTES)
+    throw Error('source subtree file exceeds raw-byte budget');
 
   const fd = openSync(absolute, fsConstants.O_RDONLY | (fsConstants.O_NOFOLLOW || 0));
   try {
@@ -70,18 +82,17 @@ function readPinnedRegularFile(absolute, expectedMode) {
         before.size !== beforeName.size)
       throw Error('source subtree file changed before raw-byte verification');
 
-    const bytes = readFileSync(fd);
+    const digest = gitBlobSha1FromHandle(fd, before.size);
     const after = fstatSync(fd, { bigint: true });
     const afterName = lstatSync(absolute, { bigint: true });
-    if (BigInt(bytes.length) !== before.size ||
-        before.dev !== after.dev || before.ino !== after.ino ||
+    if (before.dev !== after.dev || before.ino !== after.ino ||
         before.size !== after.size || before.mtimeNs !== after.mtimeNs ||
         before.ctimeNs !== after.ctimeNs ||
         after.dev !== afterName.dev || after.ino !== afterName.ino ||
         after.size !== afterName.size ||
         realpathSync(absolute) !== absolute)
       throw Error('source subtree file changed during raw-byte verification');
-    return bytes;
+    return digest;
   } finally {
     closeSync(fd);
   }
@@ -115,6 +126,8 @@ export function privateMirrorSafeFailureCode(error) {
       message === 'source subtree contains symlink or unsafe path' ||
       message === 'source subtree file type or mode differs from pinned Git tree')
     return 'UNSAFE_SOURCE_ENTRY';
+  if (message === 'source subtree file exceeds raw-byte budget')
+    return 'SOURCE_FILE_SIZE_LIMIT';
   if (message === 'source subtree file changed before raw-byte verification' ||
       message === 'source subtree file changed during raw-byte verification')
     return 'SOURCE_CHANGED_DURING_VERIFICATION';
@@ -173,8 +186,7 @@ export function verify({ repo, subtreePath, expectedTree, blobs = [] }) {
     const absolute = resolve(fullRoot, file);
     if (!absolute.startsWith(fullRoot + sep))
       throw Error('source subtree contains symlink or unsafe path');
-    const bytes = readPinnedRegularFile(absolute, mode);
-    if (gitBlobSha1(bytes) !== pinnedBlob)
+    if (readPinnedRegularFile(absolute, mode) !== pinnedBlob)
       throw Error('raw source bytes differ from pinned Git blob at ' + file);
   }
   for (const entry of blobs) {
