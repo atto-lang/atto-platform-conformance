@@ -619,3 +619,37 @@ test("pre-seeded native output cannot be mistaken for Clang-produced guest",asyn
     }
   }finally{await rm(dir,{recursive:true,force:true});}
 });
+
+test("successful Clang status with symlink native output never executes guest",async()=>{
+  const dir=await mkdtemp(join(tmpdir(),"ores-num-native-symlink-"));
+  try{
+    const compiler=join(dir,"compiler"),clang=join(dir,"clang");
+    const compilerBytes=Buffer.from(
+      "#!/bin/sh\nprintf 'define i64 @__oreslang_guest_main() {\\nentry:\\n ret i64 42\\n}\\n"+
+      "define i32 @main() {\\nentry:\\n ret i32 0\\n}\\n'\n");
+    // This artificial linker creates only a symlink at -o and exits zero.
+    const clangBytes=Buffer.from(
+      "#!/bin/sh\nwhile [ \"$#\" -gt 0 ]; do\n"+
+      "  if [ \"$1\" = \"-o\" ]; then shift; ln -s /bin/sh \"$1\"; exit 0; fi\n"+
+      "  shift\n"+
+      "done\nexit 1\n");
+    await writeFile(compiler,compilerBytes,{mode:0o500});
+    await writeFile(clang,clangBytes,{mode:0o500});
+    const hash=x=>createHash("sha256").update(x).digest("hex");
+    const manifest=await readFile(corpusPath);
+    const receipt=await executeNativeNumericCorpus({
+      compiler,compilerSha256:hash(compilerBytes),
+      clang,clangSha256:hash(clangBytes),clangResourceDir:dir,
+      sourceCommit:"e".repeat(40),manifestSha256:hash(manifest)
+    });
+    assert.equal(receipt.ok,false);
+    assert.equal(receipt.verified,0);
+    assert.equal(receipt.failed,26);
+    for(const x of receipt.results.filter(x=>x.expect==="accept")){
+      assert.equal(x.clangExit,0);
+      assert.equal(x.guestExit,undefined);
+      assert.equal(x.status,"MISMATCH");
+      assert.match(x.failure,/safe native executable/);
+    }
+  }finally{await rm(dir,{recursive:true,force:true});}
+});
