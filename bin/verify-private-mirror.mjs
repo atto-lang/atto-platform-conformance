@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 // Evidence-only Git tree verifier. Never fetches or modifies private source.
 import { execFileSync } from 'node:child_process';
-import { lstatSync, realpathSync, readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import {
+  closeSync, constants as fsConstants, fstatSync, lstatSync, openSync,
+  readFileSync, realpathSync
+} from 'node:fs';
 import { resolve, sep } from 'node:path';
 
 function git(repo, ...args) {
@@ -14,6 +18,79 @@ function safePath(path) {
   return typeof path === 'string'
     && /^(?:[A-Za-z0-9._-]+\/)*[A-Za-z0-9._-]+$/.test(path)
     && path.split('/').every(p => p !== '.' && p !== '..');
+}
+
+function gitBlobSha1(bytes) {
+  return createHash('sha1')
+    .update('blob ' + bytes.length + '\0')
+    .update(bytes)
+    .digest('hex');
+}
+
+function readPinnedRegularFile(absolute, expectedMode) {
+  // Resolve the pathname first, then bind the verification to one opened
+  // descriptor with O_NOFOLLOW where supported. Re-stat both the descriptor
+  // and pathname after the read so a rename/symlink race cannot silently
+  // substitute different bytes between admission checks.
+  if (realpathSync(absolute) !== absolute)
+    throw Error('source subtree contains symlink or unsafe path');
+  const beforeName = lstatSync(absolute, { bigint: true });
+  if (!beforeName.isFile() || beforeName.isSymbolicLink() ||
+      Boolean(beforeName.mode & 0o111n) !== (expectedMode === '100755'))
+    throw Error('source subtree file type or mode differs from pinned Git tree');
+
+  const fd = openSync(absolute, fsConstants.O_RDONLY | (fsConstants.O_NOFOLLOW || 0));
+  try {
+    const before = fstatSync(fd, { bigint: true });
+    if (!before.isFile() || before.dev !== beforeName.dev || before.ino !== beforeName.ino ||
+        before.size !== beforeName.size)
+      throw Error('source subtree file changed before raw-byte verification');
+
+    const bytes = readFileSync(fd);
+    const after = fstatSync(fd, { bigint: true });
+    const afterName = lstatSync(absolute, { bigint: true });
+    if (BigInt(bytes.length) !== before.size ||
+        before.dev !== after.dev || before.ino !== after.ino ||
+        before.size !== after.size || before.mtimeNs !== after.mtimeNs ||
+        before.ctimeNs !== after.ctimeNs ||
+        after.dev !== afterName.dev || after.ino !== afterName.ino ||
+        after.size !== afterName.size ||
+        realpathSync(absolute) !== absolute)
+      throw Error('source subtree file changed during raw-byte verification');
+    return bytes;
+  } finally {
+    closeSync(fd);
+  }
+}
+
+export function privateMirrorSafeFailureCode(error) {
+  // CLI diagnostics are public/loggable. Never copy a filesystem, Git, or
+  // exception message into Actions logs: those messages can contain absolute
+  // runner paths, credentials, or repository-local secrets.
+  let message;
+  try { message = typeof error?.message === 'string' ? error.message : null; }
+  catch { return 'UNCLASSIFIED_GIT_OR_IO_ERROR'; }
+  if (typeof message !== 'string') return 'UNCLASSIFIED_GIT_OR_IO_ERROR';
+  if (message === 'invalid source tree pin or subtree path') return 'INVALID_TREE_PIN';
+  if (message === 'invalid blobs' || message === 'invalid blob pin') return 'INVALID_BLOB_PIN';
+  if (message === 'exact Git subtree mismatch') return 'TREE_MISMATCH';
+  if (message === 'source subtree worktree is dirty or contains untracked files')
+    return 'WORKTREE_NOT_CLEAN';
+  if (message === 'source subtree has hidden index entries') return 'HIDDEN_INDEX_STATE';
+  if (message === 'source subtree index differs from pinned HEAD tree')
+    return 'INDEX_TREE_MISMATCH';
+  if (message === 'source subtree has unsafe, nonregular or duplicate HEAD entries' ||
+      message === 'source subtree contains symlink, gitlink or unexpected index entry' ||
+      message === 'source subtree contains symlink or unsafe path' ||
+      message === 'source subtree file type or mode differs from pinned Git tree')
+    return 'UNSAFE_SOURCE_ENTRY';
+  if (message === 'source subtree file changed before raw-byte verification' ||
+      message === 'source subtree file changed during raw-byte verification')
+    return 'SOURCE_CHANGED_DURING_VERIFICATION';
+  if (message.startsWith('raw source bytes differ from pinned Git blob at '))
+    return 'RAW_BLOB_MISMATCH';
+  if (message.startsWith('exact Git blob mismatch at ')) return 'BLOB_PIN_MISMATCH';
+  return 'UNCLASSIFIED_GIT_OR_IO_ERROR';
 }
 
 export function verify({ repo, subtreePath, expectedTree, blobs = [] }) {
@@ -59,12 +136,10 @@ export function verify({ repo, subtreePath, expectedTree, blobs = [] }) {
     if (!expected || expected.mode !== mode || expected.sha !== pinnedBlob)
       throw Error('source subtree index differs from pinned HEAD tree');
     const absolute = resolve(fullRoot, file);
-    if (!absolute.startsWith(fullRoot + sep) || realpathSync(absolute) !== absolute)
+    if (!absolute.startsWith(fullRoot + sep))
       throw Error('source subtree contains symlink or unsafe path');
-    const stat = lstatSync(absolute);
-    if (!stat.isFile() || Boolean(stat.mode & 0o111) !== (mode === '100755'))
-      throw Error('source subtree file type or mode differs from pinned Git tree');
-    if (git(repo, 'hash-object', '--no-filters', '--', file) !== pinnedBlob)
+    const bytes = readPinnedRegularFile(absolute, mode);
+    if (gitBlobSha1(bytes) !== pinnedBlob)
       throw Error('raw source bytes differ from pinned Git blob at ' + file);
   }
   for (const entry of blobs) {
@@ -85,7 +160,7 @@ if (process.argv[1] && resolve(process.argv[1]) === new URL(import.meta.url).pat
     const input = JSON.parse(readFileSync(resolve(process.argv[2]), 'utf8'));
     console.log(JSON.stringify(verify({ ...input, repo: resolve(input.repository) })));
   } catch (error) {
-    console.error('MIRROR_UNVERIFIED: ' + error.message);
+    console.error('MIRROR_UNVERIFIED: ' + privateMirrorSafeFailureCode(error));
     process.exitCode = 1;
   }
 }
