@@ -27,10 +27,11 @@ const base = {
 const check = (overrides = {}, records = {}, calls = []) =>
   requirePrivateMirror({...base, fetchImpl: fixture(records, calls), ...overrides});
 
-test("accepts only explicitly approved and GitHub-verified writable private destination", async () => {
+test("checks GitHub private visibility without authorizing source export", async () => {
   const calls = [];
   assert.deepEqual(await check({}, {}, calls), {
-    status: "PRIVATE_MIRROR_APPROVED", source, destination
+    status: "PRIVATE_VISIBILITY_VERIFIED_ONLY", source, destination,
+    privateSourceTransferAuthorized: false
   });
   assert.equal(calls.length, 2);
   assert.equal(calls[0].url.endsWith("/" + source), true);
