@@ -142,16 +142,16 @@ test("LLVM IR ABI gate counts only real definitions, never comments",()=>{
 });
 
 test("LLVM numeric host wrapper rewrite preserves quoted IR metadata and comments",()=>{
-  const comments="; comment contains fake define i32 @main()\\n";
-  const metadata='source_filename = "fixture @main()"\\n'
-    +'!0 = !{!"debug string @main()"}\\n';
-  const guest="define i64 @__oreslang_guest_main() { ret i64 42 }\\n";
-  const host="define i32 @main() { ret i32 0 }\\n";
+  const comments="; comment contains fake define i32 @main()\n";
+  const metadata='source_filename = "fixture @main()"\n'
+    +'!0 = !{!"debug string @main()"}\n';
+  const guest="define i64 @__oreslang_guest_main() { ret i64 42 }\n";
+  const host="define i32 @main() { ret i32 0 }\n";
   const changed=renameNumericGuestMain(comments+metadata+guest+host);
   assert.ok(changed.startsWith(comments+metadata),
     "metadata/comments must remain byte-identical to original IR");
-  assert.match(changed,/define i32 @oreslang_numeric_unused_host_main\\(\\)/);
-  assert.match(changed,/define i64 @__oreslang_guest_main\\(\\)/);
+  assert.match(changed,/define i32 @oreslang_numeric_unused_host_main\(\)/);
+  assert.match(changed,/define i64 @__oreslang_guest_main\(\)/);
 });
 
 test("native corpus execution fails closed on missing or changed fixture/tool pins",async()=>{
