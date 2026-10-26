@@ -57,9 +57,17 @@ export function verifyPlatformCapabilityReceipt(receipt, contract) {
   if(receipt.schema!=="oreslang.platform-capability/1")
     fail("schema must be oreslang.platform-capability/1");
 
-  const platform=contract.platforms?.[receipt.platform];
-  if(!platform) fail("unknown platform");
-  else if(receipt.repository!==platform.repository)
+  // A parsed JSON object still has Object.prototype. Indexing a normal
+  // registry with "__proto__", "constructor" or "toString" returns inherited
+  // values, which could incorrectly certify an unknown platform when the
+  // receipt omits its repository. Resolve ONLY an own, explicitly registered
+  // string key, never a property inherited from the prototype chain.
+  const platformName=receipt.platform;
+  const knownPlatform=typeof platformName==="string" &&
+    Object.hasOwn(expectedRepositories,platformName) &&
+    Object.hasOwn(contract.platforms,platformName);
+  if(!knownPlatform) fail("unknown platform");
+  else if(receipt.repository!==contract.platforms[platformName].repository)
     fail("repository does not match registered platform repository");
 
   if(typeof receipt.sourceCommit!=="string" || !hex40.test(receipt.sourceCommit))
