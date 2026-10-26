@@ -177,7 +177,7 @@ test("compiler promotion requires exact compiler revision and binary digest",()=
 test("capability CLI never logs private paths or malformed JSON payloads",()=>{
   const secret="PRIVATE_RUNNER_PATH_OR_BEARER_MUST_NOT_LEAK";
   const cli=path.join(root,"bin/verify-platform-capability-receipt.mjs");
-  const safeExpected="platform receipt: INVALID_OR_UNREADABLE_JSON_INPUT\\n";
+  const safeExpected="platform receipt: INVALID_OR_UNREADABLE_JSON_INPUT\n";
   const run=input=>spawnSync(process.execPath,[cli,input],{
     encoding:"utf8",timeout:10000,
     env:{...process.env,NODE_OPTIONS:"",GITHUB_TOKEN:secret}
