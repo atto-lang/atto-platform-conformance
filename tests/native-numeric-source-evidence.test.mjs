@@ -677,3 +677,40 @@ test("successful Clang status with symlink native output never executes guest",a
     }
   }finally{await rm(dir,{recursive:true,force:true});}
 });
+
+test("compiler-side mutation or same-byte replacement revokes source admission for all 26 cases",async()=>{
+  for(const [caseName,attack] of [
+    ["content","chmod 0600 \"$2\"; printf 'tampered source\\n' > \"$2\"; chmod 0400 \"$2\""],
+    ["inode","cp \"$2\" \"$2.replacement\"; chmod 0400 \"$2.replacement\"; mv -f \"$2.replacement\" \"$2\""],
+    ["mode","chmod 0600 \"$2\""]
+  ]){
+    const dir=await mkdtemp(join(tmpdir(),"ores-numeric-input-"+caseName+"-"));
+    try{
+      const compiler=join(dir,"compiler"),clang=join(dir,"clang");
+      const compilerBytes=Buffer.from(
+        "#!/bin/sh\n"+attack+"\n"+
+        "printf 'oreslang-llvmc: malformed integer separator at byte 0\\n' >&2\n"+
+        "exit 1\n");
+      const clangBytes=Buffer.from("#!/bin/sh\nexit 0\n");
+      await writeFile(compiler,compilerBytes,{mode:0o500});
+      await writeFile(clang,clangBytes,{mode:0o500});
+      const sha=x=>createHash("sha256").update(x).digest("hex");
+      const manifest=await readFile(corpusPath);
+      const receipt=await executeNativeNumericCorpus({
+        compiler,compilerSha256:sha(compilerBytes),
+        clang,clangSha256:sha(clangBytes),clangResourceDir:dir,
+        sourceCommit:"e".repeat(40),manifestSha256:sha(manifest)
+      });
+      assert.equal(receipt.ok,false,caseName);
+      assert.equal(receipt.verified,0,caseName);
+      assert.equal(receipt.failed,26,caseName);
+      assert.equal(receipt.results.length,26,caseName);
+      for(const entry of receipt.results){
+        assert.equal(entry.status,"MISMATCH",caseName);
+        assert.equal(entry.sourceUnchanged,false,caseName);
+        assert.equal(entry.failure,"GUEST_SOURCE_CHANGED",caseName);
+        assert.equal(entry.guestExit,undefined,caseName);
+      }
+    }finally{await rm(dir,{recursive:true,force:true});}
+  }
+});
