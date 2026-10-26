@@ -1,7 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { verifyPlatformCapabilityReceipt } from "../bin/verify-platform-capability-receipt.mjs";
 
@@ -170,4 +172,27 @@ test("compiler promotion requires exact compiler revision and binary digest",()=
   assert.equal(result.ok,false);
   assert.match(result.errors.join("\n"),/compilerSourceCommit/);
   assert.match(result.errors.join("\n"),/compilerBinarySha256/);
+});
+
+test("capability CLI never logs private paths or malformed JSON payloads",()=>{
+  const secret="PRIVATE_RUNNER_PATH_OR_BEARER_MUST_NOT_LEAK";
+  const cli=path.join(root,"bin/verify-platform-capability-receipt.mjs");
+  const safeExpected="platform receipt: INVALID_OR_UNREADABLE_JSON_INPUT\\n";
+  const run=input=>spawnSync(process.execPath,[cli,input],{
+    encoding:"utf8",timeout:10000,
+    env:{...process.env,NODE_OPTIONS:"",GITHUB_TOKEN:secret}
+  });
+  const missing=run(path.join(os.tmpdir(),secret,"missing-receipt.json"));
+  assert.equal(missing.status,1);
+  assert.equal(missing.stdout,"");
+  assert.equal(missing.stderr,safeExpected);
+  const work=fs.mkdtempSync(path.join(os.tmpdir(),"ores-platform-receipt-redact-"));
+  try{
+    const malicious=path.join(work,"input.json");
+    fs.writeFileSync(malicious,secret+" INVALID_JSON");
+    const bad=run(malicious);
+    assert.equal(bad.status,1);
+    assert.equal(bad.stdout,"");
+    assert.equal(bad.stderr,safeExpected);
+  }finally{fs.rmSync(work,{recursive:true,force:true})}
 });
