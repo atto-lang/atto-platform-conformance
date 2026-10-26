@@ -75,8 +75,10 @@ export function verifyPlatformCapabilityReceipt(receipt, contract) {
   }
 
   if(e.exactHead!==true) fail("exactHead must be true");
-  if(!Number.isInteger(e.executedSteps) || e.executedSteps<=0)
-    fail("executedSteps must be a positive integer; zero-step runs are not evidence");
+  // The step count is an observed *count*, not an arbitrary-magnitude
+  // integer. Numbers beyond MAX_SAFE_INTEGER lose integer precision.
+  if(!Number.isSafeInteger(e.executedSteps) || e.executedSteps<=0)
+    fail("executedSteps must be a positive safe integer; zero-step runs are not evidence");
   if(typeof e.targetArtifactSha256!=="string" || !hex64.test(e.targetArtifactSha256))
     fail("targetArtifactSha256 must be 64 lowercase hexadecimal digits");
 
@@ -100,8 +102,10 @@ export function verifyPlatformCapabilityReceipt(receipt, contract) {
   if(stageIndex>=4 && e.physicalHardware!==true)
     fail("physical-hardware stage requires physicalHardware=true");
 
-  if(e.workflowConclusion && e.workflowConclusion!=="success")
-    fail("workflowConclusion must be success when supplied");
+  // A missing conclusion must not be treated as a successful run.
+  // This remains a schema-level assertion, not an independent GitHub check.
+  if(e.workflowConclusion!=="success")
+    fail("workflowConclusion must be success");
 
   return {ok:errors.length===0,errors};
 }
