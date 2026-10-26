@@ -43,6 +43,38 @@ test("rejects zero-step workflow evidence",()=>{
   assert.match(result.errors.join("\n"),/zero-step/);
 });
 
+test("requires a successful workflow conclusion at every promotion stage",()=>{
+  for(const stage of ["host-reference","abi-link","compiler-guest","target-execution","physical-hardware"]){
+    const receipt=baseReceipt();
+    receipt.stage=stage;
+    receipt.evidence.targetExecuted=true;
+    receipt.evidence.physicalHardware=true;
+    for(const missing of [undefined,null,"", "queued","failure","cancelled"]){
+      if(missing===undefined)delete receipt.evidence.workflowConclusion;
+      else receipt.evidence.workflowConclusion=missing;
+      const result=verifyPlatformCapabilityReceipt(receipt,contract);
+      assert.equal(result.ok,false,stage+":"+String(missing));
+      assert.match(result.errors.join("\\n"),/workflowConclusion must be success/);
+    }
+    receipt.evidence.workflowConclusion="success";
+    assert.equal(verifyPlatformCapabilityReceipt(receipt,contract).ok,true,stage);
+  }
+});
+
+test("rejects non-safe and non-integral executedSteps before stage promotion",()=>{
+  const receipt=baseReceipt();
+  for(const steps of [0,-1,0.25,Number.MAX_SAFE_INTEGER+1,1e100,NaN,Infinity,"5",null]){
+    receipt.evidence.executedSteps=steps;
+    const result=verifyPlatformCapabilityReceipt(receipt,contract);
+    assert.equal(result.ok,false,String(steps));
+    assert.match(result.errors.join("\\n"),/positive safe integer/);
+  }
+  for(const steps of [1,Number.MAX_SAFE_INTEGER]){
+    receipt.evidence.executedSteps=steps;
+    assert.equal(verifyPlatformCapabilityReceipt(receipt,contract).ok,true,String(steps));
+  }
+});
+
 test("rejects host stub promoted as compiler guest",()=>{
   const receipt=baseReceipt();
   receipt.evidence.hostReferenceOnly=true;
