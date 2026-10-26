@@ -24,6 +24,39 @@ const expectedRepositories=Object.freeze({
   asic:"ores-truffle-oreslang/oreslang-platform.asic"
 });
 
+const expectedTargetClasses=Object.freeze({
+  mobile:"mobile-native",
+  desktop:"desktop-native",
+  embedded:"freestanding-mcu",
+  iot:"iot-gateway",
+  fpga:"fpga",
+  asic:"asic"
+});
+const expectedPromotionRules=Object.freeze({
+  all:["exact-head","executed-steps","target-artifact-digest"],
+  "abi-link":["abi-linked"],
+  "compiler-guest":[
+    "abi-linked","compiler-produced","compiler-source-revision",
+    "compiler-binary-digest","not-host-reference-only"
+  ],
+  "target-execution":["target-executed"],
+  "physical-hardware":["physical-hardware-evidence"]
+});
+const expectedNonEvidence=Object.freeze([
+  "zero-step-workflow","queued-workflow","host-stub-for-compiler-guest",
+  "declared-source-sha-without-binary-provenance","documentation-only-claim"
+]);
+function sameExactKeys(object,expected) {
+  if(!object||typeof object!=="object"||Array.isArray(object))return false;
+  const actual=Object.keys(object).sort(),required=[...expected].sort();
+  return actual.length===required.length&&
+    actual.every((value,index)=>value===required[index]);
+}
+function sameStringSequence(actual,expected) {
+  return Array.isArray(actual)&&actual.length===expected.length&&
+    actual.every((v,i)=>typeof v==="string"&&v===expected[i]);
+}
+
 function validateContractV1(contract) {
   const errors=[];
   if(!contract || contract.schemaVersion!==1 ||
@@ -39,9 +72,25 @@ function validateContractV1(contract) {
      keys.some((value,index)=>value!==expectedKeys[index]))
     errors.push("contract platform registry does not match v1");
   for(const [name,repo] of Object.entries(expectedRepositories)) {
-    if(contract.platforms?.[name]?.repository!==repo)
+    const info=contract.platforms?.[name];
+    if(info?.repository!==repo)
       errors.push(`contract repository mismatch for ${name}`);
+    if(!sameExactKeys(info,["repository","targetClass"])||
+       info?.targetClass!==expectedTargetClasses[name])
+      errors.push(`contract target class or platform fields mismatch for ${name}`);
   }
+  if(!sameExactKeys(contract.promotionRules,Object.keys(expectedPromotionRules)))
+    errors.push("contract promotionRules keys do not match v1");
+  else for(const [stage,rules] of Object.entries(expectedPromotionRules)) {
+    if(!sameStringSequence(contract.promotionRules[stage],rules))
+      errors.push(`contract promotionRules mismatch for ${stage}`);
+  }
+  if(!sameStringSequence(contract.nonEvidence,expectedNonEvidence))
+    errors.push("contract nonEvidence does not match v1");
+  if(!sameExactKeys(contract,[
+    "schemaVersion","contract","stageOrder","platforms","promotionRules","nonEvidence"
+  ]))
+    errors.push("contract top-level fields do not match v1");
   return errors;
 }
 
