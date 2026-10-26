@@ -255,6 +255,11 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
       const ll=join(root,c.id+".ll");
       const exe=join(root,c.id+".native");
       await writeFile(input,bytes,{mode:0o400,flag:"wx"});
+      const sourceBefore=await lstat(input,{bigint:true});
+      if(!sourceBefore.isFile()||sourceBefore.isSymbolicLink()||
+         (sourceBefore.mode&0o777n)!==0o400n||
+         sourceBefore.size!==BigInt(bytes.length))
+        throw Error("guest input failed initial admission");
       const compiled=runNumericCommand(stagedCompiler,["--target=host",input]);
       const evidence={id:c.id,expect:c.expect,category:c.category||null,
         fixtureSha256:sha256(bytes),compilerExit:compiled.code,
@@ -264,7 +269,24 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
         compilerStdoutBytes:compiled.stdoutBytes,
         compilerStderrBytes:compiled.stderrBytes,
         status:"MISMATCH",observedI64:null};
-      if(c.expect==="reject"){
+      // Never accept the recorded fixture hash as evidence of what was
+      // compiled unless the on-disk source survives that compiler invocation
+      // with identical inode, device, mode, size and raw bytes.
+      let sourceUnchanged=false;
+      try{
+        const sourceAfter=await lstat(input,{bigint:true});
+        if(sourceAfter.isFile()&&!sourceAfter.isSymbolicLink()&&
+           sourceAfter.dev===sourceBefore.dev&&sourceAfter.ino===sourceBefore.ino&&
+           sourceAfter.mode===sourceBefore.mode&&sourceAfter.size===sourceBefore.size){
+          const diskBytes=await readFile(input);
+          sourceUnchanged=diskBytes.length===bytes.length&&
+            sha256(diskBytes)===evidence.fixtureSha256;
+        }
+      }catch{}
+      evidence.sourceUnchanged=sourceUnchanged;
+      if(!sourceUnchanged){
+        evidence.failure="GUEST_SOURCE_CHANGED";
+      }else if(c.expect==="reject"){
         if(!compiled.signal&&!compiled.error&&Number.isInteger(compiled.code)&&
           compiled.code!==0&&compiled.stdout.length===0&&
           nativeNumericDiagnostic(c.category,compiled.stderr))
