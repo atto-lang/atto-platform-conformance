@@ -141,8 +141,11 @@ if(invoked) {
       process.exit(1);
     }
     console.log("platform capability receipt: PASS");
-  } catch(error) {
-    console.error(`platform receipt: ${error instanceof Error ? error.message : String(error)}`);
+  } catch {
+    // Raw JSON parser and filesystem exceptions routinely embed absolute
+    // private checkout paths, fragments of input, and untrusted metadata.
+    // CI logs are public to more principals than local runner files.
+    console.error("platform receipt: INVALID_OR_UNREADABLE_JSON_INPUT");
     process.exit(1);
   }
 }
