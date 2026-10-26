@@ -79,6 +79,16 @@ the underlying evidence.
 v1 registers `mobile`, `desktop`, `embedded`, `iot`, `fpga`, and
 `asic` and binds each identifier to its canonical private repository. This
 prevents a receipt for one repository from being presented as evidence for a
-different platform.
+different platform. The verifier performs an **own-key registry check**:
+inherited JavaScript property names such as `__proto__`, `constructor` and
+`toString`, and non-string platform identifiers, are not registered platforms.
+An omitted receipt repository never counts as a match for an inherited key.
+
+The CLI emits a fixed `INVALID_OR_UNREADABLE_JSON_INPUT` code for malformed
+or inaccessible receipt/contract JSON, rather than copying filesystem errors,
+private checkout paths or hostile input fragments into CI logs. Only the
+structured validation errors in an accessible receipt are reported verbatim.
+A passing schema validation remains an assertion about evidence shape, not
+independent workflow authentication or private-source publication approval.
 
 This contract should be referenced by each platform repo as its promotion gate.
