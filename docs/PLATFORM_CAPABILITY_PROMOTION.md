@@ -74,6 +74,20 @@ the verifier does not independently prove that a workflow log, binary, source
 revision, emulator, or physical device is trustworthy; reviewers still inspect
 the underlying evidence.
 
+The verifier treats `platform-capabilities-v1.json` as a **strict v1 policy**,
+not an editable suggestion. Alongside the exact stage order and registered
+repository names, it checks each platform's `targetClass`, the complete
+`promotionRules` stage-key set and ordered requirements, the complete
+`nonEvidence` exclusions, and the allowed top-level/platform fields.
+Altered, omitted or injected policy fields fail closed even when an otherwise
+valid receipt satisfies the verifier's hardcoded stage checks. Future policy
+changes must explicitly version the schema and update implementation/tests;
+editing a supplied JSON contract cannot weaken or silently redefine v1.
+
+The contract and receipt contain **self-reported evidence metadata**, not
+trusted attestation. Never accept the schema validator alone as authorization
+to export private Git objects or as proof of a real source-compiler run.
+
 ## Platform registry
 
 v1 registers `mobile`, `desktop`, `embedded`, `iot`, `fpga`, and
