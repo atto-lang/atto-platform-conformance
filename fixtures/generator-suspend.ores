@@ -1,0 +1,9 @@
+suspend gen* values(): AsyncIterator<int> {
+  yield 1;
+  yield 2;
+  return;
+}
+
+fnc main(): int {
+  return 0;
+}
