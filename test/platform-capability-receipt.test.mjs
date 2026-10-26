@@ -115,6 +115,27 @@ test("rejects alternate contract repository substitution",()=>{
   assert.match(result.errors.join("\n"),/repository mismatch for desktop/);
 });
 
+test("rejects inherited prototype names as fake registered platforms",()=>{
+  for(const platform of ["__proto__","constructor","toString","valueOf","hasOwnProperty"]){
+    const receipt=baseReceipt();
+    receipt.platform=platform;
+    delete receipt.repository; // formerly matched undefined inherited repository
+    const result=verifyPlatformCapabilityReceipt(receipt,contract);
+    assert.equal(result.ok,false,platform);
+    assert.match(result.errors.join("\n"),/unknown platform/,platform);
+  }
+});
+
+test("rejects nonstring platform keys even when coercion names a registered platform",()=>{
+  const receipt=baseReceipt();
+  for(const platform of [null,undefined,42,[],{toString:()=> "desktop"}]){
+    receipt.platform=platform;
+    const result=verifyPlatformCapabilityReceipt(receipt,contract);
+    assert.equal(result.ok,false,String(platform));
+    assert.match(result.errors.join("\n"),/unknown platform/);
+  }
+});
+
 test("rejects repository/platform substitution",()=>{
   const receipt=baseReceipt();
   receipt.repository="ores-truffle-oreslang/oreslang-platform.mobile";
