@@ -206,6 +206,24 @@ For each of the 26 exact guestSource byte sequences:
    boundaries; a stable digest cannot guarantee runtime immutability.
    Compiler build provenance still needs an independent exact-tree review.
 
+Before issuing the final batch receipt, the runner rechecks **every retained
+evidence artifact**: all 26 compiler input files plus each accepted case's
+LLVM IR, C reporter and native executable when they reached an admitted
+execution path. The final scan checks original device/inode, mode, size
+and SHA-256, using bounded hashes for executables. A later compiler process
+that modifies an earlier case revokes all 26 statuses to
+`EVIDENCE_ARTIFACT_CHANGED`; unreadable/deleted files are captured in the
+structured `evidenceArtifactTreeRecheckFailed` flag rather than discarding
+the receipt. Receipts also report `evidenceArtifactTreeUnchanged` and
+`evidenceArtifactEntries`. A clean fully executed 12-accept/14-reject
+batch retains 62 artifact records (26 source + 12 IR + 12 reporters +
+12 executables).
+
+This is post-execution detection only. It does not guarantee an immutable
+build sandbox, block brief changes reverted between observations, or prove
+that the SHA-pinned compiler was built from its declared Git commit. Source
+transfer policy is independent of these checks.
+
 Only use this runner with reviewed compiler/source bytes: it executes real
 subprocesses and is not a sandbox for untrusted executables.
 
