@@ -18,6 +18,24 @@ export function expectedRows(contract) {
       });
     });
   }
+  (contract.abi_cases ?? []).forEach((entry, index) => {
+    rows.push({
+      id:"abi:" + index,
+      section:"abi",
+      index,
+      expected:entry.equal ? "ABI_EQUAL" : "ABI_DIFFERENT",
+      diagnostic:null,
+    });
+  });
+  (contract.access_cases ?? []).forEach((entry, index) => {
+    rows.push({
+      id:"access:" + index,
+      section:"access",
+      index,
+      expected:entry.expect ? "ACCESS_ALLOW" : "ACCESS_DENY",
+      diagnostic:null,
+    });
+  });
   return rows;
 }
 
@@ -60,7 +78,7 @@ export function verifyReport(contract, report) {
       if (got.diagnostic !== want.diagnostic)
         errors.push("DIAGNOSTIC_MISMATCH:" + want.id + ":" + got.diagnostic + "!=" + want.diagnostic);
     } else if (got.diagnostic != null) {
-      errors.push("ACCEPT_HAS_DIAGNOSTIC:" + want.id);
+      errors.push("NONREJECT_HAS_DIAGNOSTIC:" + want.id);
     }
   }
 
