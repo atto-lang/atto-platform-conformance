@@ -7,9 +7,13 @@ const contract = JSON.parse(fs.readFileSync(
 
 const rows = expectedRows(contract);
 assert.equal(rows.length,
-  contract.modifier_cases.length + contract.cases.length + contract.syntax_cases.length);
-assert.equal(contract.syntax_cases.length, 31);
-assert.equal(contract.cases.length, 23);
+  contract.modifier_cases.length + contract.cases.length + contract.syntax_cases.length +
+  contract.abi_cases.length + contract.access_cases.length);
+assert.equal(contract.syntax_cases.length, 32);
+assert.equal(contract.cases.length, 46);
+assert.equal(contract.abi_cases.length, 7);
+assert.equal(contract.access_cases.length, 7);
+assert.equal(rows.length, 97);
 
 const good = {
   schema:"oreslang.explicit-exports.backend-report.v1",
@@ -38,6 +42,20 @@ wrongDiagnostic.results.find(row => row.id === rejected.id).diagnostic = "GENERI
 assert(verifyReport(contract, wrongDiagnostic)
   .some(error => error.startsWith("DIAGNOSTIC_MISMATCH:")));
 
+const wrongAbi = structuredClone(good);
+const abi = rows.find(row => row.section === "abi");
+wrongAbi.results.find(row => row.id === abi.id).status =
+  abi.expected === "ABI_EQUAL" ? "ABI_DIFFERENT" : "ABI_EQUAL";
+assert(verifyReport(contract, wrongAbi)
+  .some(error => error.startsWith("STATUS_MISMATCH:abi:")));
+
+const wrongAccess = structuredClone(good);
+const access = rows.find(row => row.section === "access");
+wrongAccess.results.find(row => row.id === access.id).status =
+  access.expected === "ACCESS_ALLOW" ? "ACCESS_DENY" : "ACCESS_ALLOW";
+assert(verifyReport(contract, wrongAccess)
+  .some(error => error.startsWith("STATUS_MISMATCH:access:")));
+
 const missing = structuredClone(good);
 missing.results.pop();
 assert(verifyReport(contract, missing).some(error => error.startsWith("MISSING_RESULT:")));
@@ -52,5 +70,7 @@ console.log(JSON.stringify({
   required_cases:rows.length,
   syntax_cases:contract.syntax_cases.length,
   semantic_cases:contract.cases.length,
-  modifier_cases:contract.modifier_cases.length
+  modifier_cases:contract.modifier_cases.length,
+  abi_cases:contract.abi_cases.length,
+  access_cases:contract.access_cases.length
 }));
