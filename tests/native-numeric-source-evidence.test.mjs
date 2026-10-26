@@ -767,13 +767,14 @@ test("later compiler invocation revokes every earlier admitted artifact",async()
     ["source","unary-plus-42.ores"],
     ["IR","unary-plus-42.ll"],
     ["reporter","unary-plus-42.report.c"],
-    ["native","unary-plus-42.native"]
+    ["native","unary-plus-42.native"],
+    ["deleted reporter","unary-plus-42.report.c"]
   ]){
     const dir=await mkdtemp(join(tmpdir(),"ores-numeric-final-batch-"+name+"-"));
     try{
       const compiler=join(dir,"compiler"),clang=join(dir,"clang-install");
       const lateAttack=priorArtifact?
-        "    chmod 0600 \"$base/"+priorArtifact+"\"\n":"";
+        "    "+(name==="deleted reporter"?"rm -f":"chmod 0600")+" \"$base/"+priorArtifact+"\"\n":"";
       // Fake compiler and linker emit deterministic shell executables with
       // expected values; this tests evidence state transitions, NOT native
       // LLVM compiler correctness or source provenance.
@@ -820,7 +821,7 @@ test("later compiler invocation revokes every earlier admitted artifact",async()
       });
       assert.equal(receipt.results.length,26,name);
       assert.equal(receipt.evidenceArtifactEntries,62,name);
-      assert.equal(receipt.evidenceArtifactTreeRecheckFailed,false,name);
+      assert.equal(receipt.evidenceArtifactTreeRecheckFailed,name==="deleted reporter",name);
       assert.equal(receipt.evidenceArtifactTreeUnchanged,!priorArtifact,name);
       assert.equal(receipt.ok,!priorArtifact,name);
       assert.equal(receipt.verified,priorArtifact?0:26,name);
