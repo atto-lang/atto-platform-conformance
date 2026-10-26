@@ -109,6 +109,30 @@ test("rejects a reordered alternate v1 contract",()=>{
   assert.match(result.errors.join("\n"),/stageOrder/);
 });
 
+test("rejects changed stage rules and evidence exclusions in a v1 contract",()=>{
+  const receipt=baseReceipt();
+  for(const mutate of [
+    contract=>{contract.promotionRules.all=[];},
+    contract=>{contract.promotionRules["compiler-guest"]=["host-reference"];},
+    contract=>{delete contract.promotionRules["compiler-guest"];},
+    contract=>{contract.promotionRules.exploit=[];},
+    contract=>{contract.nonEvidence=[];},
+    contract=>{contract.nonEvidence.push("invented-extra-exclusion");},
+    contract=>{delete contract.nonEvidence;},
+    contract=>{contract.platforms.desktop.targetClass="browser-only";},
+    contract=>{delete contract.platforms.desktop.targetClass;},
+    contract=>{contract.platforms.desktop.attackerField="yes";},
+    contract=>{contract.unverifiedPolicy="promote-anything";}
+  ]) {
+    const weakened=structuredClone(contract);
+    mutate(weakened);
+    const result=verifyPlatformCapabilityReceipt(receipt,weakened);
+    assert.equal(result.ok,false,JSON.stringify(weakened));
+    assert.match(result.errors.join("\n"),/contract/);
+  }
+  assert.equal(verifyPlatformCapabilityReceipt(receipt,contract).ok,true);
+});
+
 test("rejects alternate contract repository substitution",()=>{
   const weakened=structuredClone(contract);
   weakened.platforms.desktop.repository="attacker/private-carrier";
