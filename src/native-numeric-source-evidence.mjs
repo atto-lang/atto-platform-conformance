@@ -295,6 +295,17 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
         try{
           const rewritten=renameNumericGuestMain(compiled.stdout);
           await writeFile(ll,rewritten,{mode:0o400,flag:"wx"});
+          // The compiler's emitted IR is a distinct input to Clang. A linker
+          // process must not be able to replace or rewrite that input and
+          // leave a seemingly verified native guest evidence receipt.
+          const irBytes=Buffer.from(rewritten);
+          const irSha256=sha256(irBytes);
+          const irBefore=await lstat(ll,{bigint:true});
+          if(!irBefore.isFile()||irBefore.isSymbolicLink()||
+             (irBefore.mode&0o777n)!==0o400n||
+             irBefore.size!==BigInt(irBytes.length))
+            throw Error("LLVM IR failed initial immutable admission");
+          evidence.llvmIrSha256=irSha256;
           const reporter=join(root,c.id+".report.c");
           await writeFile(reporter,shim,{mode:0o400,flag:"wx"});
           // Capture file identity before Clang. Hash equality alone would not
@@ -337,9 +348,24 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
               reporterUnchanged=sha256(await readFile(reporter))===reporterSha256;
           }catch{}
           evidence.reporterUnchanged=reporterUnchanged;
+          // Recheck the *other* Clang input as well. File metadata alone
+          // cannot detect in-place same-size changes; compare raw bytes.
+          let llvmIrUnchanged=false;
+          try{
+            const irAfter=await lstat(ll,{bigint:true});
+            if(irAfter.isFile()&&!irAfter.isSymbolicLink()&&
+               irAfter.dev===irBefore.dev&&irAfter.ino===irBefore.ino&&
+               irAfter.mode===irBefore.mode&&irAfter.size===irBefore.size){
+              const observedIr=await readFile(ll);
+              llvmIrUnchanged=observedIr.length===irBytes.length&&
+                sha256(observedIr)===irSha256;
+            }
+          }catch{}
+          evidence.llvmIrUnchanged=llvmIrUnchanged;
           // A successful linker invocation must not claim a clean guest
           // build while silently writing unclassified stdout diagnostics.
-          if(succeeded(linked)&&linked.stdout===""&&reporterUnchanged){
+          if(succeeded(linked)&&linked.stdout===""&&
+             reporterUnchanged&&llvmIrUnchanged){
             // Clang must materialize a regular, non-symlink executable.
             // Bound and record its bytes, and reject mutation while running.
             const stat=await lstat(exe);
