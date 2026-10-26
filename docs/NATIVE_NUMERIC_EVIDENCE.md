@@ -115,8 +115,16 @@ Oreslang compiler execution still require an approved source runner.
 
 For each of the 26 exact guestSource byte sequences:
 
-1. Compile using the pinned native Oreslang LLVM frontend with --target=host.
-   Rejected programs must not leak any LLVM IR on stdout.
+1. Write each guest source from the pinned fixture bytes to an exclusive,
+   mode-0400 file, then compile with the pinned native Oreslang LLVM frontend
+   using --target=host. Record the source inode/device/mode/size and SHA-256;
+   after the compiler returns, require the identical file identity, metadata
+   and raw bytes **before** certifying either an accepted guest or a rejection.
+   Modified, removed, permission-changed or same-byte-replaced source files
+   produce `GUEST_SOURCE_CHANGED` and cannot count as verified results.
+   This protects against persistent compiler-side input mutation; it is not
+   a sandbox or a guarantee against temporary mutations restored before the
+   check. Rejected programs must not leak any LLVM IR on stdout.
 2. Negative cases must fail via the actual primary oreslang-llvmc diagnostic
    with the required separator, signed-i64-overflow, type or syntax category.
    A Clang failure, signal, timeout, nonzero exit without the right diagnostic,
