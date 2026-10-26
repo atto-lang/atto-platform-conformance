@@ -10,11 +10,10 @@ on:
     paths:
       - .github/workflows/source-local-runner-allocation-canary.yml
   workflow_dispatch:
-permissions:
-  contents: read
+permissions: {}
 jobs:
   source-local-canary:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - name: Confirm a runner executed a shell step
