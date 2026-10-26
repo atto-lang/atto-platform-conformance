@@ -228,6 +228,10 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
   const cases=validateNumericCorpus(JSON.parse(manifestBytes.toString("utf8"))).cases;
   const root=await mkdtemp(join(tmpdir(),"ores-native-corpus-"));
   const results=[];
+  // A later compiler invocation can still alter an earlier fixture, IR,
+  // reporter or native executable. Retain identity and hashes for a final
+  // suite-wide observation before claiming any verified evidence.
+  const retainedArtifacts=[];
   try{
     const stagedCompiler=await stageNumericExecutable({
       file:compiler,digest:compilerSha256,label:"LLVM compiler",
@@ -284,6 +288,8 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
         }
       }catch{}
       evidence.sourceUnchanged=sourceUnchanged;
+      retainedArtifacts.push({path:input,stat:sourceBefore,
+        digest:evidence.fixtureSha256,executable:false});
       if(!sourceUnchanged){
         evidence.failure="GUEST_SOURCE_CHANGED";
       }else if(c.expect==="reject"){
@@ -366,11 +372,15 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
           // build while silently writing unclassified stdout diagnostics.
           if(succeeded(linked)&&linked.stdout===""&&
              reporterUnchanged&&llvmIrUnchanged){
+            retainedArtifacts.push(
+              {path:ll,stat:irBefore,digest:irSha256,executable:false},
+              {path:reporter,stat:reporterBefore,digest:reporterSha256,executable:false}
+            );
             // Clang must materialize a regular, non-symlink executable.
             // Bound and record its bytes, and reject mutation while running.
-            const stat=await lstat(exe);
-            if(!stat.isFile()||stat.isSymbolicLink()||stat.size<=0||
-               (stat.mode&0o111)===0||(stat.mode&0o022)!==0||
+            const stat=await lstat(exe,{bigint:true});
+            if(!stat.isFile()||stat.isSymbolicLink()||stat.size<=0n||
+               (stat.mode&0o111n)===0n||(stat.mode&0o022n)!==0n||
                await realpath(exe)!==exe)
               throw Error("Clang did not produce a safe native executable");
             const nativeSha=await hashExecutableBounded(exe);
@@ -378,6 +388,8 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
             const guest=runNumericCommand(exe,[],10000);
             evidence.nativeExecutableUnchanged=
               await hashExecutableBounded(exe)===nativeSha;
+            if(evidence.nativeExecutableUnchanged)
+              retainedArtifacts.push({path:exe,stat,digest:nativeSha,executable:true});
             evidence.guestExit=guest.code;
             evidence.guestSignal=guest.signal;
             evidence.guestError=guest.error;
@@ -426,8 +438,34 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
     }catch{
       executableRecheckFailed=true;
     }
-    const unchanged=resourceUnchanged&&executableHashesUnchanged;
-    if(!unchanged)for(const item of results)item.status="TOOLCHAIN_CHANGED";
+    // The final result must account for mutations made by *later* fixture
+    // subprocesses. Per-case post-execution checks alone are insufficient.
+    let evidenceArtifactTreeUnchanged=true,evidenceArtifactTreeRecheckFailed=false;
+    try{
+      for(const artifact of retainedArtifacts){
+        const current=await lstat(artifact.path,{bigint:true});
+        if(!current.isFile()||current.isSymbolicLink()||
+           current.dev!==artifact.stat.dev||current.ino!==artifact.stat.ino||
+           current.mode!==artifact.stat.mode||current.size!==artifact.stat.size){
+          evidenceArtifactTreeUnchanged=false;
+          break;
+        }
+        const digest=artifact.executable?
+          await hashExecutableBounded(artifact.path):sha256(await readFile(artifact.path));
+        if(digest!==artifact.digest){
+          evidenceArtifactTreeUnchanged=false;
+          break;
+        }
+      }
+    }catch{
+      evidenceArtifactTreeUnchanged=false;
+      evidenceArtifactTreeRecheckFailed=true;
+    }
+    const toolchainUnchanged=resourceUnchanged&&executableHashesUnchanged;
+    const unchanged=toolchainUnchanged&&evidenceArtifactTreeUnchanged;
+    if(!toolchainUnchanged)for(const item of results)item.status="TOOLCHAIN_CHANGED";
+    else if(!evidenceArtifactTreeUnchanged)
+      for(const item of results)item.status="EVIDENCE_ARTIFACT_CHANGED";
     const failed=results.filter(x=>!x.status.startsWith("VERIFIED_")).length;
     return {schemaVersion:1,contract:"oreslang.numeric-separators/native-llvm-evidence-v1",
       backend:"llvm",sourceCommitDeclared:sourceCommit,sourceCommitAttested:false,
@@ -438,6 +476,8 @@ export async function executeNativeNumericCorpus({compiler,compilerSha256,clang,
       clangResourceTreeRecheckFailed:resourceRecheckFailed,
       executableRecheckFailed,
       executableHashesUnchanged,
+      evidenceArtifactTreeUnchanged,evidenceArtifactTreeRecheckFailed,
+      evidenceArtifactEntries:retainedArtifacts.length,
       toolBytesExecutedFromPrivateSnapshots:true,
       clangResourceDirIsExternalDependency:true,
       verificationScope:"real native Oreslang compiler + Clang + i64 guest",
