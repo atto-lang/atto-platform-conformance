@@ -143,7 +143,15 @@ For each of the 26 exact guestSource byte sequences:
    For each accepted fixture, create a **new** mode-0400 C reporter only
    *after* that source's compiler process exits. Pin its SHA-256 and compare
    its original device/inode, mode, size and SHA-256 after Clang returns,
-   before running the native guest. A linker process that persistently edits,
+   before running the native guest.
+   Treat the rewritten LLVM IR (`.ll`) as a second Clang input with
+   equivalent checks: pin its byte SHA-256 and original device/inode, mode
+   and size before invoking Clang; reject native guest evidence if the
+   IR was rewritten, chmodded, deleted or replaced during linking. Expose
+   `llvmIrSha256` and `llvmIrUnchanged` per accepted fixture. This is
+   a post-invocation integrity check, **not** an operating-system sandbox,
+   immutable source-to-binary build proof, or protection against a process
+   that alters and restores bytes between observations. A linker process that persistently edits,
    chmods, removes or replaces the reporter cannot establish a verified guest
    result, even if it returns exit code zero. Per-case receipts expose
    `reporterSha256` and `reporterUnchanged`. This is an after-execution
