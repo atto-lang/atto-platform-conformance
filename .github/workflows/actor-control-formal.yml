@@ -1,0 +1,29 @@
+name: Actor CONTROL priority formal model
+on:
+  push:
+    paths:
+      - 'formal/actor_control_model.py'
+      - 'formal/ActorControlPriority.md'
+      - 'tests/test_actor_control_formal.py'
+      - '.github/workflows/actor-control-formal.yml'
+  pull_request:
+    paths:
+      - 'formal/actor_control_model.py'
+      - 'formal/ActorControlPriority.md'
+      - 'tests/test_actor_control_formal.py'
+      - '.github/workflows/actor-control-formal.yml'
+permissions:
+  contents: read
+jobs:
+  exhaustive-model:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Exhaustive interleavings and required mutation oracles
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s tests -p test_actor_control_formal.py -v
+          python3 formal/actor_control_model.py --json

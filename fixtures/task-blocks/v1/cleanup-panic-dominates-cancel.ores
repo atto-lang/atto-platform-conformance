@@ -1,0 +1,18 @@
+// PROPOSED SOURCE FIXTURE — NOT YET PARSER-VALIDATED.
+// Harness triggers cancellation at pending_i64 and observes untrappable panic.
+pub fnc main(): void {
+    let Task<int> worker = nb task {
+        defer {
+            trace("defer-enter");
+            panic("cleanup panic");
+            trace("defer-success");
+        }
+        trace("entered");
+        let int value = await pending_i64();
+        trace("normal-after-await");
+        return value;
+    };
+    worker.cancel();
+    await worker.get_done();
+    return;
+}

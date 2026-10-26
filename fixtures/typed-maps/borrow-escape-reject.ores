@@ -1,0 +1,9 @@
+define class MyMap extends Map<string, unknown> as
+end
+
+fnc invalid(): void {
+  val m = new MyMap();
+  val int x = 7;
+  m.put("extra", &x);
+  return;
+}

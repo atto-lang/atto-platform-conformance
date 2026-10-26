@@ -1,0 +1,7 @@
+define class Foo as
+  pub method value(): int { return 4; }
+  pub method invalid(): int {
+    val Fnc<int> callback = || -> self.value();
+    return callback();
+  }
+end

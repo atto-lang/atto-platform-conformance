@@ -7,14 +7,14 @@ import {loadManifest,validateManifestSchema,assertRegularFixture} from "../src/h
 
 const fixture=()=>({
  schemaVersion:1,cases:[
-  {id:"int-arithmetic",file:"int-arithmetic.ores",expect:"accept",backends:["java","llvm","net","wasm","forge"]},
+  {id:"int-arithmetic",file:"int-arithmetic.ores",expect:"accept",backends:["java","llvm","net","wasm","forge","js"]},
   {id:"unresolved-identifier",file:"unresolved-identifier.ores",expect:"reject",
-   diagnostic:"nonexistent_symbol",backends:["java","llvm","net","wasm","forge"]}
+   diagnostic:"nonexistent_symbol",backends:["java","llvm","net","wasm","forge","js"]}
  ]
 });
 const mutate=(change)=>{const m=fixture();change(m);return m};
 
-test("current real fixture manifest has positive and negative coverage for all five backends",async()=>{
+test("current real fixture manifest has positive and negative coverage for all six compiler backends",async()=>{
  const actual=await loadManifest();
  assert.deepEqual(validateManifestSchema(actual),actual);
 });
@@ -25,6 +25,8 @@ test("missing positive or negative coverage cannot be admitted",()=>{
   m=>m.cases[1].backends=m.cases[1].backends.filter(x=>x!=="java"),
   m=>m.cases[0].backends=m.cases[0].backends.filter(x=>x!=="forge"),
   m=>m.cases[1].backends=m.cases[1].backends.filter(x=>x!=="net"),
+  m=>m.cases[0].backends=m.cases[0].backends.filter(x=>x!=="js"),
+  m=>m.cases[1].backends=m.cases[1].backends.filter(x=>x!=="js"),
   m=>m.cases[0].backends.push("browser"),
   m=>m.cases[1].backends.push("browser")
  ];
