@@ -714,3 +714,49 @@ test("compiler-side mutation or same-byte replacement revokes source admission f
     }finally{await rm(dir,{recursive:true,force:true});}
   }
 });
+
+test("Clang cannot certify source-to-native evidence after modifying its LLVM IR input",async()=>{
+  for(const [caseName,attack] of [
+    ["content","chmod 0600 \"$arg\"; printf '\\n; changed by linker\\n' >> \"$arg\"; chmod 0400 \"$arg\""],
+    ["inode","cp \"$arg\" \"$arg.copy\"; chmod 0400 \"$arg.copy\"; mv -f \"$arg.copy\" \"$arg\""],
+    ["mode","chmod 0600 \"$arg\""]
+  ]){
+    const dir=await mkdtemp(join(tmpdir(),"ores-native-ir-"+caseName+"-"));
+    try{
+      const compiler=join(dir,"compiler"),clang=join(dir,"clang");
+      // Deliberately synthetic test doubles, not a real Oreslang compiler.
+      const compilerBytes=Buffer.from(
+        "#!/bin/sh\n"+
+        "printf 'define i64 @__oreslang_guest_main() {\\nentry:\\n ret i64 42\\n}\\n"+
+        "define i32 @main() {\\nentry:\\n ret i32 0\\n}\\n'\n");
+      const clangBytes=Buffer.from(
+        "#!/bin/sh\nfor arg in \"$@\"; do\n"+
+        "  case \"$arg\" in\n"+
+        "    *.ll) "+attack+" ;;\n"+
+        "  esac\n"+
+        "done\nexit 0\n");
+      await writeFile(compiler,compilerBytes,{mode:0o500});
+      await writeFile(clang,clangBytes,{mode:0o500});
+      const hash=x=>createHash("sha256").update(x).digest("hex");
+      const manifest=await readFile(corpusPath);
+      const receipt=await executeNativeNumericCorpus({
+        compiler,compilerSha256:hash(compilerBytes),
+        clang,clangSha256:hash(clangBytes),clangResourceDir:dir,
+        sourceCommit:"e".repeat(40),manifestSha256:hash(manifest)
+      });
+      assert.equal(receipt.ok,false,caseName);
+      assert.equal(receipt.verified,0,caseName);
+      assert.equal(receipt.failed,26,caseName);
+      const accepted=receipt.results.filter(x=>x.expect==="accept");
+      assert.equal(accepted.length,12,caseName);
+      for(const result of accepted){
+        assert.equal(result.clangExit,0,caseName);
+        assert.equal(result.reporterUnchanged,true,caseName);
+        assert.match(result.llvmIrSha256,/^[a-f0-9]{64}$/);
+        assert.equal(result.llvmIrUnchanged,false,caseName);
+        assert.equal(result.guestExit,undefined,caseName);
+        assert.equal(result.status,"MISMATCH",caseName);
+      }
+    }finally{await rm(dir,{recursive:true,force:true});}
+  }
+});
