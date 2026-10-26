@@ -19,10 +19,18 @@ A repository may only claim a stage when a receipt passes
 
 ## Mandatory rules
 
-Every stage requires an exact source commit, at least one actually executed CI
-step, and a SHA-256 digest for the tested target artifact. A queued workflow,
-a job that fails before any steps, or documentation saying that a test exists
-is not execution evidence.
+Every stage requires an exact source commit, a **positive safe-integer**
+count of executed CI steps, an explicit `workflowConclusion: "success"`, and
+a SHA-256 digest for the tested target artifact. Omitted, queued, cancelled or
+failed workflow conclusions are not admitted, nor are fractional or imprecisely
+large step counts. A job that fails before any steps, or documentation saying
+that a test exists, is not execution evidence.
+
+These fields are *receipt assertions*, not independently authenticated CI data.
+Passing this shape validator alone must never be described as a real compiler
+test, verified binary provenance, or authorization to publish private source.
+Reviewers must compare claims with the actual source-org workflow, runner-backed
+steps and artifacts before promoting any capability.
 
 `compiler-guest` and higher additionally require:
 
