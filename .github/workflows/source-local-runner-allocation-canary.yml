@@ -10,8 +10,7 @@ on:
     paths:
       - .github/workflows/source-local-runner-allocation-canary.yml
   workflow_dispatch:
-permissions:
-  contents: read
+permissions: {}
 jobs:
   source-local-canary:
     runs-on: ubuntu-24.04
