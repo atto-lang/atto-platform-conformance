@@ -760,3 +760,76 @@ test("Clang cannot certify source-to-native evidence after modifying its LLVM IR
     }finally{await rm(dir,{recursive:true,force:true});}
   }
 });
+
+test("later compiler invocation revokes every earlier admitted artifact",async()=>{
+  for(const [name,priorArtifact] of [
+    ["clean",null],
+    ["source","unary-plus-42.ores"],
+    ["IR","unary-plus-42.ll"],
+    ["reporter","unary-plus-42.report.c"],
+    ["native","unary-plus-42.native"]
+  ]){
+    const dir=await mkdtemp(join(tmpdir(),"ores-numeric-final-batch-"+name+"-"));
+    try{
+      const compiler=join(dir,"compiler"),clang=join(dir,"clang-install");
+      const lateAttack=priorArtifact?
+        "    chmod 0600 \"$base/"+priorArtifact+"\"\n":"";
+      // Fake compiler and linker emit deterministic shell executables with
+      // expected values; this tests evidence state transitions, NOT native
+      // LLVM compiler correctness or source provenance.
+      const compilerBytes=Buffer.from(
+        "#!/bin/sh\n"+
+        "base=\"$(dirname \"$2\")\"\n"+
+        "case \"$2\" in\n"+
+        "  *bad-unary-empty.ores)\n"+lateAttack+
+        "    printf 'oreslang-llvmc: expected expression\\n' >&2; exit 1 ;;\n"+
+        "  *bad-unary-bool.ores|*bad-unary-string.ores)\n"+
+        "    printf 'oreslang-llvmc: arithmetic requires i64, got bool\\n' >&2; exit 1 ;;\n"+
+        "  *bad-overflow.ores|*bad-unary-overflow.ores|*bad-negative-underflow.ores|*bad-leading-zero-underflow.ores)\n"+
+        "    printf 'oreslang-llvmc: integer literal overflows signed 64-bit\\n' >&2; exit 1 ;;\n"+
+        "  *bad-*.ores)\n"+
+        "    printf 'oreslang-llvmc: malformed integer separator at byte 0\\n' >&2; exit 1 ;;\n"+
+        "esac\n"+
+        "printf 'define i64 @__oreslang_guest_main() {\\nentry:\\n ret i64 42\\n}\\n"+
+        "define i32 @main() {\\nentry:\\n ret i32 0\\n}\\n'\n");
+      const clangBytes=Buffer.from(
+        "#!/bin/sh\n"+
+        "while [ \"$#\" -gt 0 ]; do\n"+
+        "  if [ \"$1\" = '-o' ]; then shift; output=\"$1\"; break; fi\n"+
+        "  shift\n"+
+        "done\n"+
+        "case \"$output\" in\n"+
+        "  *int-i64-max.native|*int-leading-zero-i64-max.native) val=9223372036854775807 ;;\n"+
+        "  *int-i64-min.native|*int-leading-zero-i64-min.native) val=-9223372036854775808 ;;\n"+
+        "  *int-split-zero.native|*int-leading-zero-run.native) val=0 ;;\n"+
+        "  *) val=42 ;;\n"+
+        "esac\n"+
+        "cat > \"$output\" <<EOF\n"+
+        "#!/bin/sh\n"+
+        "printf '%s\\n' '$val'\n"+
+        "EOF\n"+
+        "chmod 0500 \"$output\"\n");
+      await writeFile(compiler,compilerBytes,{mode:0o500});
+      await writeFile(clang,clangBytes,{mode:0o500});
+      const sha=x=>createHash("sha256").update(x).digest("hex");
+      const manifest=await readFile(corpusPath);
+      const receipt=await executeNativeNumericCorpus({
+        compiler,compilerSha256:sha(compilerBytes),
+        clang,clangSha256:sha(clangBytes),clangResourceDir:dir,
+        sourceCommit:"e".repeat(40),manifestSha256:sha(manifest)
+      });
+      assert.equal(receipt.results.length,26,name);
+      assert.equal(receipt.evidenceArtifactEntries,62,name);
+      assert.equal(receipt.evidenceArtifactTreeRecheckFailed,false,name);
+      assert.equal(receipt.evidenceArtifactTreeUnchanged,!priorArtifact,name);
+      assert.equal(receipt.ok,!priorArtifact,name);
+      assert.equal(receipt.verified,priorArtifact?0:26,name);
+      assert.equal(receipt.failed,priorArtifact?26:0,name);
+      for(const result of receipt.results){
+        assert.equal(result.status,priorArtifact?
+          "EVIDENCE_ARTIFACT_CHANGED":
+          result.expect==="reject"?"VERIFIED_COMPILER_REJECTION":"VERIFIED_NATIVE_GUEST_I64",name);
+      }
+    }finally{await rm(dir,{recursive:true,force:true});}
+  }
+});
