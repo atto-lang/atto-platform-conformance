@@ -58,6 +58,8 @@ An executed case adds:
 }
 ```
 
+For `rejected-as-required`, the `execution` block additionally MUST contain `compilerExitCode` (a nonzero integer from the actual negative compiler invocation) and `expectedDiagnostic` (a 3–512 character diagnostic asserted by the harness). The generic `execution.exitCode: 0` is the **harness** success status and does not erase the compiler rejection. Merely seeing a nonzero compiler exit without checking its expected diagnostic is insufficient.
+
 Here the nonzero numbers and paths are structural examples only; they are **not evidence of any Oreslang run**. For `runnerKind: "local"`, `runUrl` may be omitted but execution evidence still needs independent review.
 
 Important: the verifier's success exit means `RECEIPT_SHAPE_ONLY_NO_PROMOTION`, **not** `backend PASS`. `shapeValidCases` and `missingCases` are inventory fields, not proof grades. A partial receipt is always partial; unsupported or pending cases must never be summarized as implemented. Case semantics live in the draft common-source contract, not in this JSON checker.
