@@ -1,0 +1,10 @@
+// Proposed source contract: original producer is not rerun by Task.from_future.
+pub fnc main(): void {
+  let Task<int> producer = task {
+    return 42;
+  };
+  let Future<int> existing = Future.from_task(producer);
+  let Task<int> adapter = Task.from_future(existing);
+  let int answer = await adapter;
+  return;
+}
