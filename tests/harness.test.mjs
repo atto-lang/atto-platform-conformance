@@ -43,6 +43,7 @@ test("unconfigured is explicit and never counted as verified",async()=>{
  assert.equal(r.configured,false);
  assert.equal(r.verified,0);
  assert.equal(r.skipped,fixtureCount);
+ assert.equal(r.unsupported,0);
  assert.ok(r.results.every(x=>x.status==="UNCONFIGURED"));
 });
 test("required unconfigured suite exits with non-success state",async()=>{
@@ -57,6 +58,7 @@ test("declared unsupported generator targets never become fake verification",asy
  assert.equal(r.configured,true);
  assert.equal(r.verified,executableFixtureCount);
  assert.equal(r.failed,unsupportedFixtureCount);
+ assert.equal(r.unsupported,unsupportedFixtureCount);
  assert.equal(r.ok,false);
  assert.equal(r.results.filter(x=>x.status==="VERIFIED").length,executableFixtureCount);
  assert.equal(r.results.filter(x=>x.status==="UNSUPPORTED").length,unsupportedFixtureCount);
@@ -67,6 +69,7 @@ test("LLVM capability ledger is explicit rather than inferred from parser reject
  const r=await runSuite({backend:"llvm",argv:cmd,sourceSha:sha});
  assert.equal(r.verified,executableFixtureCount);
  assert.equal(r.results.filter(x=>x.status==="UNSUPPORTED").length,unsupportedFixtureCount);
+ assert.equal(r.unsupported,unsupportedFixtureCount);
  assert.equal(r.ok,false);
 });
 test("missing executable is not mistaken for valid reject",async()=>{
