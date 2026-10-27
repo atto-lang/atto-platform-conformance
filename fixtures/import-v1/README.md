@@ -46,7 +46,12 @@ imports. It is deliberately **not** compiler execution evidence:
   resolved source remains inside that root's physical target;
 - an in-root file alias canonicalizes to one physical source identity;
 - a child file symlink that escapes the physical root is rejected;
-- a child directory symlink that escapes the physical root is rejected.
+- a child directory symlink that escapes the physical root is rejected;
+- a dangling higher-priority leaf or broken intermediate alias rejects instead
+  of falling through to a lower ambient root;
+- an existing higher-priority non-directory prefix rejects instead of falling
+  through;
+- an explicitly configured root that exists but is not a directory rejects.
 
 The reference test uses temporary real filesystem symlinks and canonical paths,
 but it is source-free and contains no private backend implementation. A backend
