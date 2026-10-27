@@ -1,0 +1,1926 @@
+{
+  "schema": "oreslang.explicit-exports.v1",
+  "version": 1,
+  "canonical_scopes": [
+    "file",
+    "pkg",
+    "public"
+  ],
+  "native_exposure": "separate",
+  "local_export_resolves_imports": false,
+  "export_transparent_to_import_prelude": true,
+  "declaration_modifier_orders": [
+    "pub define",
+    "define pub"
+  ],
+  "scope_aliases": {
+    "pub": "public",
+    "export": "public",
+    "pub[file]": "file",
+    "pub(file)": "file",
+    "pub[pkg]": "pkg",
+    "pub(pkg)": "pkg",
+    "pub[package]": "pkg",
+    "pub(package)": "pkg",
+    "export[file]": "file",
+    "export(file)": "file",
+    "export[pkg]": "pkg",
+    "export(pkg)": "pkg",
+    "export[package]": "pkg",
+    "export(package)": "pkg"
+  },
+  "modifier_cases": [
+    {
+      "source": "pub define class X",
+      "expect": {
+        "kind": "class",
+        "visibility": "public"
+      }
+    },
+    {
+      "source": "define pub class X",
+      "expect": {
+        "kind": "class",
+        "visibility": "public"
+      }
+    },
+    {
+      "source": "pub[pkg] define actor X",
+      "expect": {
+        "kind": "actor",
+        "visibility": "pkg"
+      }
+    },
+    {
+      "source": "define pub(package) actor X",
+      "expect": {
+        "kind": "actor",
+        "visibility": "pkg"
+      }
+    },
+    {
+      "source": "pub define pub class X",
+      "error": "DUPLICATE_VISIBILITY"
+    }
+  ],
+  "cases": [
+    {
+      "name": "forward export before declaration",
+      "items": [
+        {
+          "op": "export",
+          "name": "X",
+          "kind": "class",
+          "scope": "public"
+        },
+        {
+          "op": "decl",
+          "name": "X",
+          "kind": "class",
+          "visibility": "default"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "X",
+            "external": "X",
+            "scope": "public"
+          }
+        ]
+      }
+    },
+    {
+      "name": "export after declaration",
+      "items": [
+        {
+          "op": "decl",
+          "name": "X",
+          "kind": "class",
+          "visibility": "default"
+        },
+        {
+          "op": "export",
+          "name": "X",
+          "kind": "class",
+          "scope": "public"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "X",
+            "external": "X",
+            "scope": "public"
+          }
+        ]
+      }
+    },
+    {
+      "name": "export does not close import prelude",
+      "items": [
+        {
+          "op": "export",
+          "name": "X",
+          "kind": "class",
+          "scope": "public"
+        },
+        {
+          "op": "import",
+          "name": "Dep",
+          "kind": "class"
+        },
+        {
+          "op": "decl",
+          "name": "X",
+          "kind": "class",
+          "visibility": "default"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "X",
+            "external": "X",
+            "scope": "public"
+          }
+        ]
+      }
+    },
+    {
+      "name": "declaration closes import prelude",
+      "items": [
+        {
+          "op": "decl",
+          "name": "X",
+          "kind": "class",
+          "visibility": "default"
+        },
+        {
+          "op": "import",
+          "name": "Dep",
+          "kind": "class"
+        },
+        {
+          "op": "export",
+          "name": "X",
+          "kind": "class",
+          "scope": "public"
+        }
+      ],
+      "error": "EXPORT_IMPORT_PRELUDE"
+    },
+    {
+      "name": "inline pub creates implicit binding",
+      "items": [
+        {
+          "op": "decl",
+          "name": "X",
+          "kind": "class",
+          "visibility": "public"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "X",
+            "external": "X",
+            "scope": "public"
+          }
+        ]
+      }
+    },
+    {
+      "name": "inline pkg plus matching explicit export is idempotent",
+      "items": [
+        {
+          "op": "decl",
+          "name": "Worker",
+          "kind": "actor",
+          "visibility": "pkg"
+        },
+        {
+          "op": "export",
+          "name": "Worker",
+          "kind": "actor",
+          "scope": "pkg"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "Worker",
+            "external": "Worker",
+            "scope": "pkg"
+          }
+        ]
+      }
+    },
+    {
+      "name": "explicit private cannot be exported",
+      "items": [
+        {
+          "op": "decl",
+          "name": "Secret",
+          "kind": "class",
+          "visibility": "private"
+        },
+        {
+          "op": "export",
+          "name": "Secret",
+          "kind": "class",
+          "scope": "public"
+        }
+      ],
+      "error": "EXPORT_EXPLICIT_PRIVATE"
+    },
+    {
+      "name": "scope conflict cannot widen",
+      "items": [
+        {
+          "op": "decl",
+          "name": "Worker",
+          "kind": "actor",
+          "visibility": "pkg"
+        },
+        {
+          "op": "export",
+          "name": "Worker",
+          "kind": "actor",
+          "scope": "public"
+        }
+      ],
+      "error": "EXPORT_SCOPE_CONFLICT"
+    },
+    {
+      "name": "scope conflict cannot narrow",
+      "items": [
+        {
+          "op": "decl",
+          "name": "Worker",
+          "kind": "actor",
+          "visibility": "public"
+        },
+        {
+          "op": "export",
+          "name": "Worker",
+          "kind": "actor",
+          "scope": "pkg"
+        }
+      ],
+      "error": "EXPORT_SCOPE_CONFLICT"
+    },
+    {
+      "name": "typed kind mismatch",
+      "items": [
+        {
+          "op": "decl",
+          "name": "X",
+          "kind": "class",
+          "visibility": "default"
+        },
+        {
+          "op": "export",
+          "name": "X",
+          "kind": "actor",
+          "scope": "public"
+        }
+      ],
+      "error": "EXPORT_KIND_MISMATCH"
+    },
+    {
+      "name": "unknown local export",
+      "items": [
+        {
+          "op": "export",
+          "name": "Missing",
+          "kind": "class",
+          "scope": "public"
+        }
+      ],
+      "error": "EXPORT_UNKNOWN_TARGET"
+    },
+    {
+      "name": "local export cannot reexport imported name",
+      "items": [
+        {
+          "op": "import",
+          "name": "X",
+          "kind": "class"
+        },
+        {
+          "op": "export",
+          "name": "X",
+          "kind": "class",
+          "scope": "public"
+        }
+      ],
+      "error": "EXPORT_IMPORTED_NAME"
+    },
+    {
+      "name": "alias only exposes alias for default private declaration",
+      "items": [
+        {
+          "op": "decl",
+          "name": "Internal",
+          "kind": "class",
+          "visibility": "default"
+        },
+        {
+          "op": "export",
+          "name": "Internal",
+          "kind": "class",
+          "external": "Public",
+          "scope": "public"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "Internal",
+            "external": "Public",
+            "scope": "public"
+          }
+        ]
+      }
+    },
+    {
+      "name": "inline pub plus alias exposes both names",
+      "items": [
+        {
+          "op": "decl",
+          "name": "Internal",
+          "kind": "class",
+          "visibility": "public"
+        },
+        {
+          "op": "export",
+          "name": "Internal",
+          "kind": "class",
+          "external": "Public",
+          "scope": "public"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "Internal",
+            "external": "Internal",
+            "scope": "public"
+          },
+          {
+            "local": "Internal",
+            "external": "Public",
+            "scope": "public"
+          }
+        ]
+      }
+    },
+    {
+      "name": "alias collision",
+      "items": [
+        {
+          "op": "decl",
+          "name": "A",
+          "kind": "class",
+          "visibility": "default"
+        },
+        {
+          "op": "decl",
+          "name": "B",
+          "kind": "class",
+          "visibility": "default"
+        },
+        {
+          "op": "export",
+          "name": "A",
+          "kind": "class",
+          "external": "Public",
+          "scope": "public"
+        },
+        {
+          "op": "export",
+          "name": "B",
+          "kind": "class",
+          "external": "Public",
+          "scope": "public"
+        }
+      ],
+      "error": "EXPORT_ALIAS_COLLISION"
+    },
+    {
+      "name": "duplicate identical export is idempotent",
+      "items": [
+        {
+          "op": "decl",
+          "name": "X",
+          "kind": "class",
+          "visibility": "default"
+        },
+        {
+          "op": "export",
+          "name": "X",
+          "kind": "class",
+          "scope": "public"
+        },
+        {
+          "op": "export",
+          "name": "X",
+          "kind": "class",
+          "scope": "public"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "X",
+            "external": "X",
+            "scope": "public"
+          }
+        ]
+      }
+    },
+    {
+      "name": "public signature leaks package type",
+      "items": [
+        {
+          "op": "decl",
+          "name": "Hidden",
+          "kind": "type",
+          "visibility": "pkg"
+        },
+        {
+          "op": "decl",
+          "name": "Api",
+          "kind": "class",
+          "visibility": "default",
+          "signatureRefs": [
+            "Hidden"
+          ]
+        },
+        {
+          "op": "export",
+          "name": "Api",
+          "kind": "class",
+          "scope": "public"
+        }
+      ],
+      "error": "EXPORT_API_LEAK"
+    },
+    {
+      "name": "package signature may use package type",
+      "items": [
+        {
+          "op": "decl",
+          "name": "Hidden",
+          "kind": "type",
+          "visibility": "pkg"
+        },
+        {
+          "op": "decl",
+          "name": "Api",
+          "kind": "class",
+          "visibility": "default",
+          "signatureRefs": [
+            "Hidden"
+          ]
+        },
+        {
+          "op": "export",
+          "name": "Api",
+          "kind": "class",
+          "scope": "pkg"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "Api",
+            "external": "Api",
+            "scope": "pkg"
+          },
+          {
+            "local": "Hidden",
+            "external": "Hidden",
+            "scope": "pkg"
+          }
+        ]
+      }
+    },
+    {
+      "name": "package signature leaks file type",
+      "items": [
+        {
+          "op": "decl",
+          "name": "Hidden",
+          "kind": "type",
+          "visibility": "file"
+        },
+        {
+          "op": "decl",
+          "name": "Api",
+          "kind": "class",
+          "visibility": "default",
+          "signatureRefs": [
+            "Hidden"
+          ]
+        },
+        {
+          "op": "export",
+          "name": "Api",
+          "kind": "class",
+          "scope": "pkg"
+        }
+      ],
+      "error": "EXPORT_API_LEAK"
+    },
+    {
+      "name": "untyped export resolves one local symbol",
+      "items": [
+        {
+          "op": "decl",
+          "name": "Count",
+          "kind": "type",
+          "visibility": "default"
+        },
+        {
+          "op": "export",
+          "name": "Count",
+          "scope": "public"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "Count",
+            "external": "Count",
+            "scope": "public"
+          }
+        ]
+      }
+    },
+    {
+      "name": "untyped export rejects ambiguous type value spelling",
+      "items": [
+        {
+          "op": "decl",
+          "name": "Thing",
+          "kind": "type",
+          "visibility": "default"
+        },
+        {
+          "op": "decl",
+          "name": "Thing",
+          "kind": "const",
+          "visibility": "default"
+        },
+        {
+          "op": "export",
+          "name": "Thing",
+          "scope": "public"
+        }
+      ],
+      "error": "EXPORT_AMBIGUOUS_TARGET"
+    },
+    {
+      "name": "file export remains file scoped",
+      "items": [
+        {
+          "op": "decl",
+          "name": "Local",
+          "kind": "type",
+          "visibility": "default"
+        },
+        {
+          "op": "export",
+          "name": "Local",
+          "kind": "type",
+          "scope": "file"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "Local",
+            "external": "Local",
+            "scope": "file"
+          }
+        ]
+      }
+    },
+    {
+      "name": "same spelling distinct symbols cannot share one external alias",
+      "items": [
+        {
+          "op": "decl",
+          "name": "Thing",
+          "kind": "type",
+          "visibility": "default"
+        },
+        {
+          "op": "decl",
+          "name": "Thing",
+          "kind": "const",
+          "visibility": "default"
+        },
+        {
+          "op": "export",
+          "name": "Thing",
+          "kind": "type",
+          "external": "Shared",
+          "scope": "public"
+        },
+        {
+          "op": "export",
+          "name": "Thing",
+          "kind": "const",
+          "external": "Shared",
+          "scope": "public"
+        }
+      ],
+      "error": "EXPORT_ALIAS_COLLISION"
+    },
+    {
+      "name": "fnc exports complete overload family",
+      "items": [
+        {
+          "op": "export",
+          "name": "work",
+          "kind": "fnc",
+          "scope": "public",
+          "external": "work"
+        },
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "fnc",
+          "visibility": "default",
+          "signature": "(int)->int"
+        },
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "fnc",
+          "visibility": "default",
+          "signature": "(string)->string"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "work",
+            "external": "work",
+            "scope": "public"
+          }
+        ]
+      }
+    },
+    {
+      "name": "fnc inferred family alias",
+      "items": [
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "fnc",
+          "visibility": "default",
+          "signature": "(int)->int"
+        },
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "fnc",
+          "visibility": "default",
+          "signature": "(string)->string"
+        },
+        {
+          "op": "export",
+          "name": "work",
+          "scope": "public",
+          "external": "run"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "work",
+            "external": "run",
+            "scope": "public"
+          }
+        ]
+      }
+    },
+    {
+      "name": "fnc inline public family with alias",
+      "items": [
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "fnc",
+          "visibility": "public",
+          "signature": "(int)->int"
+        },
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "fnc",
+          "visibility": "public",
+          "signature": "(string)->string"
+        },
+        {
+          "op": "export",
+          "name": "work",
+          "kind": "fnc",
+          "scope": "public",
+          "external": "run"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "work",
+            "external": "work",
+            "scope": "public"
+          },
+          {
+            "local": "work",
+            "external": "run",
+            "scope": "public"
+          }
+        ]
+      }
+    },
+    {
+      "name": "fnc incompatible family scopes",
+      "items": [
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "fnc",
+          "visibility": "default",
+          "signature": "(int)->int"
+        },
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "fnc",
+          "visibility": "pkg",
+          "signature": "(string)->string"
+        },
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "fnc",
+          "visibility": "public",
+          "signature": "(bool)->bool"
+        },
+        {
+          "op": "export",
+          "name": "work",
+          "kind": "fnc",
+          "scope": "public",
+          "external": "work"
+        }
+      ],
+      "error": "OVERLOAD_VISIBILITY_CONFLICT"
+    },
+    {
+      "name": "fnc private family cannot partially export",
+      "items": [
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "fnc",
+          "visibility": "private",
+          "signature": "(int)->int"
+        },
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "fnc",
+          "visibility": "default",
+          "signature": "(string)->string"
+        },
+        {
+          "op": "export",
+          "name": "work",
+          "kind": "fnc",
+          "scope": "public",
+          "external": "work"
+        }
+      ],
+      "error": "EXPORT_EXPLICIT_PRIVATE"
+    },
+    {
+      "name": "fnc duplicate overload signature",
+      "items": [
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "fnc",
+          "visibility": "default",
+          "signature": "(int)->int"
+        },
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "fnc",
+          "visibility": "default",
+          "signature": "(int)->int"
+        },
+        {
+          "op": "export",
+          "name": "work",
+          "kind": "fnc",
+          "scope": "public",
+          "external": "work"
+        }
+      ],
+      "error": "DUPLICATE_OVERLOAD_SIGNATURE"
+    },
+    {
+      "name": "routine exports complete overload family",
+      "items": [
+        {
+          "op": "export",
+          "name": "work",
+          "kind": "routine",
+          "scope": "public",
+          "external": "work"
+        },
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "routine",
+          "visibility": "default",
+          "signature": "(int)->int"
+        },
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "routine",
+          "visibility": "default",
+          "signature": "(string)->string"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "work",
+            "external": "work",
+            "scope": "public"
+          }
+        ]
+      }
+    },
+    {
+      "name": "routine inferred family alias",
+      "items": [
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "routine",
+          "visibility": "default",
+          "signature": "(int)->int"
+        },
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "routine",
+          "visibility": "default",
+          "signature": "(string)->string"
+        },
+        {
+          "op": "export",
+          "name": "work",
+          "scope": "public",
+          "external": "run"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "work",
+            "external": "run",
+            "scope": "public"
+          }
+        ]
+      }
+    },
+    {
+      "name": "routine inline public family with alias",
+      "items": [
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "routine",
+          "visibility": "public",
+          "signature": "(int)->int"
+        },
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "routine",
+          "visibility": "public",
+          "signature": "(string)->string"
+        },
+        {
+          "op": "export",
+          "name": "work",
+          "kind": "routine",
+          "scope": "public",
+          "external": "run"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "work",
+            "external": "work",
+            "scope": "public"
+          },
+          {
+            "local": "work",
+            "external": "run",
+            "scope": "public"
+          }
+        ]
+      }
+    },
+    {
+      "name": "routine incompatible family scopes",
+      "items": [
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "routine",
+          "visibility": "default",
+          "signature": "(int)->int"
+        },
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "routine",
+          "visibility": "pkg",
+          "signature": "(string)->string"
+        },
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "routine",
+          "visibility": "public",
+          "signature": "(bool)->bool"
+        },
+        {
+          "op": "export",
+          "name": "work",
+          "kind": "routine",
+          "scope": "public",
+          "external": "work"
+        }
+      ],
+      "error": "OVERLOAD_VISIBILITY_CONFLICT"
+    },
+    {
+      "name": "routine private family cannot partially export",
+      "items": [
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "routine",
+          "visibility": "private",
+          "signature": "(int)->int"
+        },
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "routine",
+          "visibility": "default",
+          "signature": "(string)->string"
+        },
+        {
+          "op": "export",
+          "name": "work",
+          "kind": "routine",
+          "scope": "public",
+          "external": "work"
+        }
+      ],
+      "error": "EXPORT_EXPLICIT_PRIVATE"
+    },
+    {
+      "name": "routine duplicate overload signature",
+      "items": [
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "routine",
+          "visibility": "default",
+          "signature": "(int)->int"
+        },
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "routine",
+          "visibility": "default",
+          "signature": "(int)->int"
+        },
+        {
+          "op": "export",
+          "name": "work",
+          "kind": "routine",
+          "scope": "public",
+          "external": "work"
+        }
+      ],
+      "error": "DUPLICATE_OVERLOAD_SIGNATURE"
+    },
+    {
+      "name": "default overload inherits consistent explicit family scope",
+      "items": [
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "fnc",
+          "visibility": "public",
+          "signature": "(int)->int"
+        },
+        {
+          "op": "decl",
+          "name": "work",
+          "kind": "fnc",
+          "visibility": "default",
+          "signature": "(bool)->bool"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "work",
+            "external": "work",
+            "scope": "public"
+          }
+        ]
+      }
+    },
+    {
+      "name": "public alias remains capped by file module",
+      "items": [
+        {
+          "op": "decl",
+          "name": "Internal",
+          "kind": "class",
+          "visibility": "default"
+        },
+        {
+          "op": "export",
+          "name": "Internal",
+          "kind": "class",
+          "scope": "public",
+          "external": "Api"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "Internal",
+            "external": "Api",
+            "scope": "file"
+          }
+        ]
+      },
+      "context": {
+        "ownerScope": "file"
+      }
+    },
+    {
+      "name": "public and alias both capped by file module",
+      "items": [
+        {
+          "op": "decl",
+          "name": "Internal",
+          "kind": "class",
+          "visibility": "public"
+        },
+        {
+          "op": "export",
+          "name": "Internal",
+          "kind": "class",
+          "scope": "public",
+          "external": "Api"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "Internal",
+            "external": "Internal",
+            "scope": "file"
+          },
+          {
+            "local": "Internal",
+            "external": "Api",
+            "scope": "file"
+          }
+        ]
+      },
+      "context": {
+        "ownerScope": "file"
+      }
+    },
+    {
+      "name": "public alias remains capped by pkg module",
+      "items": [
+        {
+          "op": "decl",
+          "name": "Internal",
+          "kind": "class",
+          "visibility": "default"
+        },
+        {
+          "op": "export",
+          "name": "Internal",
+          "kind": "class",
+          "scope": "public",
+          "external": "Api"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "Internal",
+            "external": "Api",
+            "scope": "pkg"
+          }
+        ]
+      },
+      "context": {
+        "ownerScope": "pkg"
+      }
+    },
+    {
+      "name": "public and alias both capped by pkg module",
+      "items": [
+        {
+          "op": "decl",
+          "name": "Internal",
+          "kind": "class",
+          "visibility": "public"
+        },
+        {
+          "op": "export",
+          "name": "Internal",
+          "kind": "class",
+          "scope": "public",
+          "external": "Api"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "Internal",
+            "external": "Internal",
+            "scope": "pkg"
+          },
+          {
+            "local": "Internal",
+            "external": "Api",
+            "scope": "pkg"
+          }
+        ]
+      },
+      "context": {
+        "ownerScope": "pkg"
+      }
+    },
+    {
+      "name": "package member in file module remains file scoped",
+      "items": [
+        {
+          "op": "decl",
+          "name": "X",
+          "kind": "class",
+          "visibility": "pkg"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "X",
+            "external": "X",
+            "scope": "file"
+          }
+        ]
+      },
+      "context": {
+        "ownerScope": "file"
+      }
+    },
+    {
+      "name": "recursive signature cycle with equal visibility",
+      "items": [
+        {
+          "op": "decl",
+          "name": "A",
+          "kind": "type",
+          "visibility": "public",
+          "signatureRefs": [
+            "B"
+          ]
+        },
+        {
+          "op": "decl",
+          "name": "B",
+          "kind": "type",
+          "visibility": "public",
+          "signatureRefs": [
+            "A"
+          ]
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "A",
+            "external": "A",
+            "scope": "public"
+          },
+          {
+            "local": "B",
+            "external": "B",
+            "scope": "public"
+          }
+        ]
+      }
+    },
+    {
+      "name": "recursive signature leaks narrow type through alias",
+      "items": [
+        {
+          "op": "decl",
+          "name": "Hidden",
+          "kind": "type",
+          "visibility": "private"
+        },
+        {
+          "op": "decl",
+          "name": "Wrapper",
+          "kind": "type",
+          "visibility": "default",
+          "signatureRefs": [
+            "Hidden"
+          ]
+        },
+        {
+          "op": "decl",
+          "name": "Api",
+          "kind": "class",
+          "visibility": "default",
+          "signatureRefs": [
+            "Wrapper"
+          ]
+        },
+        {
+          "op": "export",
+          "name": "Wrapper",
+          "kind": "type",
+          "scope": "public",
+          "external": "Wrapper"
+        },
+        {
+          "op": "export",
+          "name": "Api",
+          "kind": "class",
+          "scope": "public",
+          "external": "Api"
+        }
+      ],
+      "error": "EXPORT_API_LEAK"
+    },
+    {
+      "name": "all overload signatures checked for leakage",
+      "items": [
+        {
+          "op": "decl",
+          "name": "Hidden",
+          "kind": "type",
+          "visibility": "private"
+        },
+        {
+          "op": "decl",
+          "name": "f",
+          "kind": "fnc",
+          "visibility": "default",
+          "signature": "()->int"
+        },
+        {
+          "op": "decl",
+          "name": "f",
+          "kind": "fnc",
+          "visibility": "default",
+          "signature": "(Hidden)->int",
+          "signatureRefs": [
+            "Hidden"
+          ]
+        },
+        {
+          "op": "export",
+          "name": "f",
+          "kind": "fnc",
+          "scope": "public",
+          "external": "f"
+        }
+      ],
+      "error": "EXPORT_API_LEAK"
+    },
+    {
+      "name": "alias makes nominal type accessible without exposing local spelling",
+      "items": [
+        {
+          "op": "decl",
+          "name": "Internal",
+          "kind": "type",
+          "visibility": "default"
+        },
+        {
+          "op": "export",
+          "name": "Internal",
+          "kind": "type",
+          "scope": "public",
+          "external": "PublicType"
+        },
+        {
+          "op": "decl",
+          "name": "Api",
+          "kind": "class",
+          "visibility": "default",
+          "signatureRefs": [
+            "Internal"
+          ]
+        },
+        {
+          "op": "export",
+          "name": "Api",
+          "kind": "class",
+          "scope": "public",
+          "external": "Api"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "Internal",
+            "external": "PublicType",
+            "scope": "public"
+          },
+          {
+            "local": "Api",
+            "external": "Api",
+            "scope": "public"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Symbol self identity resolves local declaration",
+      "items": [
+        {
+          "op": "decl",
+          "name": "#ready",
+          "kind": "symbol",
+          "visibility": "default"
+        },
+        {
+          "op": "export",
+          "name": "#ready",
+          "kind": "symbol",
+          "scope": "public",
+          "external": "#ready"
+        }
+      ],
+      "expect": {
+        "bindings": [
+          {
+            "local": "#ready",
+            "external": "#ready",
+            "scope": "public"
+          }
+        ]
+      }
+    }
+  ],
+  "syntax_policy": {
+    "semicolon_required": true,
+    "empty_group_allowed": false,
+    "singleton_group_allowed": true,
+    "trailing_comma_allowed": true,
+    "nested_group_allowed": false,
+    "wildcard_allowed": false,
+    "qualified_target_allowed": false,
+    "local_export_from_allowed": false,
+    "per_item_scope_allowed": false,
+    "symbol_alias_allowed": "self_identity_only",
+    "malformed_export_falls_back_to_identifier": false,
+    "literal_alias_allowed": false,
+    "typed_export_uses_declaration_kind": true
+  },
+  "syntax_cases": [
+    {
+      "source": "export X;",
+      "expect": {
+        "scope": "public",
+        "kind": null,
+        "items": [
+          {
+            "name": "X"
+          }
+        ]
+      }
+    },
+    {
+      "source": "export[pkg] actor Counter;",
+      "expect": {
+        "scope": "pkg",
+        "kind": "actor",
+        "items": [
+          {
+            "name": "Counter"
+          }
+        ]
+      }
+    },
+    {
+      "source": "export(package) class {X, Y as Z,};",
+      "expect": {
+        "scope": "pkg",
+        "kind": "class",
+        "items": [
+          {
+            "name": "X"
+          },
+          {
+            "name": "Y",
+            "external": "Z"
+          }
+        ]
+      }
+    },
+    {
+      "source": "export {X, Y as Z, #ready,};",
+      "expect": {
+        "scope": "public",
+        "kind": null,
+        "items": [
+          {
+            "name": "X"
+          },
+          {
+            "name": "Y",
+            "external": "Z"
+          },
+          {
+            "name": "#ready",
+            "symbol": true
+          }
+        ]
+      }
+    },
+    {
+      "source": "export symbol {#ready, #failed,};",
+      "expect": {
+        "scope": "public",
+        "kind": "symbol",
+        "items": [
+          {
+            "name": "#ready",
+            "symbol": true
+          },
+          {
+            "name": "#failed",
+            "symbol": true
+          }
+        ]
+      }
+    },
+    {
+      "source": "export class {X};",
+      "expect": {
+        "scope": "public",
+        "kind": "class",
+        "items": [
+          {
+            "name": "X"
+          }
+        ]
+      }
+    },
+    {
+      "source": "export X",
+      "error": "EXPORT_SEMICOLON_REQUIRED"
+    },
+    {
+      "source": "export {};",
+      "error": "EXPORT_EMPTY_GROUP"
+    },
+    {
+      "source": "export class {};",
+      "error": "EXPORT_EMPTY_GROUP"
+    },
+    {
+      "source": "export actor {,X};",
+      "error": "EXPORT_MALFORMED_LIST"
+    },
+    {
+      "source": "export actor {X,,Y};",
+      "error": "EXPORT_MALFORMED_LIST"
+    },
+    {
+      "source": "export actor {X Y};",
+      "error": "EXPORT_MALFORMED_LIST"
+    },
+    {
+      "source": "export actor {{X}};",
+      "error": "EXPORT_NESTED_GROUP"
+    },
+    {
+      "source": "export *;",
+      "error": "EXPORT_WILDCARD_UNSUPPORTED"
+    },
+    {
+      "source": "export * from \"./dep\";",
+      "error": "EXPORT_REEXPORT_UNSUPPORTED"
+    },
+    {
+      "source": "export from \"./dep\" {X};",
+      "error": "EXPORT_REEXPORT_UNSUPPORTED"
+    },
+    {
+      "source": "export dep.X;",
+      "error": "EXPORT_QUALIFIED_TARGET_UNSUPPORTED"
+    },
+    {
+      "source": "export dep::X;",
+      "error": "EXPORT_QUALIFIED_TARGET_UNSUPPORTED"
+    },
+    {
+      "source": "export Foo<int>;",
+      "error": "EXPORT_GENERIC_TARGET_UNSUPPORTED"
+    },
+    {
+      "source": "export foo(int);",
+      "error": "EXPORT_CALLABLE_SIGNATURE_UNSUPPORTED"
+    },
+    {
+      "source": "export {class X, actor Y};",
+      "error": "EXPORT_KIND_PREFIX_IN_GROUP"
+    },
+    {
+      "source": "export actor {actor X};",
+      "error": "EXPORT_KIND_PREFIX_IN_GROUP"
+    },
+    {
+      "source": "export symbol #ready as Ready;",
+      "error": "EXPORT_SYMBOL_BINDING_ALIAS_UNSUPPORTED"
+    },
+    {
+      "source": "export symbol #ready as #ok;",
+      "error": "EXPORT_SYMBOL_IDENTITY_MISMATCH"
+    },
+    {
+      "source": "export[pkg][file] X;",
+      "error": "EXPORT_MULTIPLE_SCOPES"
+    },
+    {
+      "source": "export[project] X;",
+      "error": "EXPORT_UNKNOWN_SCOPE"
+    },
+    {
+      "source": "export symbol #ready as #ready;",
+      "expect": {
+        "scope": "public",
+        "kind": "symbol",
+        "items": [
+          {
+            "name": "#ready",
+            "symbol": true,
+            "selfIdentity": true
+          }
+        ]
+      }
+    },
+    {
+      "source": "export symbol ready as #ready;",
+      "error": "EXPORT_SYMBOL_IDENTITY_TARGET_REQUIRES_SYMBOL_SOURCE"
+    },
+    {
+      "source": "export string ready as 'ready';",
+      "error": "EXPORT_UNKNOWN_DECLARATION_KIND"
+    },
+    {
+      "source": "export const ready as 'ready';",
+      "error": "EXPORT_LITERAL_ALIAS_UNSUPPORTED"
+    },
+    {
+      "source": "export class Foo as \"foo\";",
+      "error": "EXPORT_LITERAL_ALIAS_UNSUPPORTED"
+    },
+    {
+      "source": "export symbol ready as 'ready';",
+      "error": "EXPORT_LITERAL_ALIAS_UNSUPPORTED"
+    }
+  ],
+  "revision": "explicit-exports-v1.2026-10-26.5",
+  "abi_cases": [
+    {
+      "name": "redundant explicit export and provenance do not alter ABI",
+      "left": [
+        {
+          "op": "decl",
+          "name": "X",
+          "kind": "class",
+          "visibility": "public",
+          "signature": "X:v1"
+        }
+      ],
+      "right": [
+        {
+          "op": "decl",
+          "name": "X",
+          "kind": "class",
+          "visibility": "public",
+          "signature": "X:v1",
+          "source_span": "moved",
+          "origin": "explicit_export"
+        },
+        {
+          "op": "export",
+          "name": "X",
+          "kind": "class",
+          "scope": "public",
+          "external": "X"
+        },
+        {
+          "op": "export",
+          "name": "X",
+          "kind": "class",
+          "scope": "public",
+          "external": "X"
+        }
+      ],
+      "equal": true
+    },
+    {
+      "name": "export location does not alter ABI",
+      "left": [
+        {
+          "op": "export",
+          "name": "X",
+          "kind": "class",
+          "scope": "public",
+          "external": "X"
+        },
+        {
+          "op": "decl",
+          "name": "X",
+          "kind": "class",
+          "visibility": "default"
+        }
+      ],
+      "right": [
+        {
+          "op": "decl",
+          "name": "X",
+          "kind": "class",
+          "visibility": "default"
+        },
+        {
+          "op": "export",
+          "name": "X",
+          "kind": "class",
+          "scope": "public",
+          "external": "X"
+        }
+      ],
+      "equal": true
+    },
+    {
+      "name": "declaration order does not alter ABI",
+      "left": [
+        {
+          "op": "decl",
+          "name": "X",
+          "kind": "class",
+          "visibility": "public",
+          "signature": "X:v1"
+        },
+        {
+          "op": "decl",
+          "name": "Y",
+          "kind": "class",
+          "visibility": "public"
+        }
+      ],
+      "right": [
+        {
+          "op": "decl",
+          "name": "Y",
+          "kind": "class",
+          "visibility": "public"
+        },
+        {
+          "op": "decl",
+          "name": "X",
+          "kind": "class",
+          "visibility": "public",
+          "signature": "X:v1"
+        }
+      ],
+      "equal": true
+    },
+    {
+      "name": "alias change alters ABI",
+      "left": [
+        {
+          "op": "decl",
+          "name": "X",
+          "kind": "class",
+          "visibility": "default"
+        },
+        {
+          "op": "export",
+          "name": "X",
+          "kind": "class",
+          "scope": "public",
+          "external": "A"
+        }
+      ],
+      "right": [
+        {
+          "op": "decl",
+          "name": "X",
+          "kind": "class",
+          "visibility": "default"
+        },
+        {
+          "op": "export",
+          "name": "X",
+          "kind": "class",
+          "scope": "public",
+          "external": "B"
+        }
+      ],
+      "equal": false
+    },
+    {
+      "name": "scope change alters ABI",
+      "left": [
+        {
+          "op": "decl",
+          "name": "X",
+          "kind": "class",
+          "visibility": "default"
+        },
+        {
+          "op": "export",
+          "name": "X",
+          "kind": "class",
+          "scope": "public",
+          "external": "X"
+        }
+      ],
+      "right": [
+        {
+          "op": "decl",
+          "name": "X",
+          "kind": "class",
+          "visibility": "default"
+        },
+        {
+          "op": "export",
+          "name": "X",
+          "kind": "class",
+          "scope": "pkg",
+          "external": "X"
+        }
+      ],
+      "equal": false
+    },
+    {
+      "name": "signature change alters ABI",
+      "left": [
+        {
+          "op": "decl",
+          "name": "X",
+          "kind": "class",
+          "visibility": "public",
+          "signature": "X:v1"
+        }
+      ],
+      "right": [
+        {
+          "op": "decl",
+          "name": "X",
+          "kind": "class",
+          "visibility": "public",
+          "signature": "X:v2"
+        }
+      ],
+      "equal": false
+    },
+    {
+      "name": "overload order does not alter ABI",
+      "left": [
+        {
+          "op": "decl",
+          "name": "f",
+          "kind": "fnc",
+          "visibility": "public",
+          "signature": "(int)->int"
+        },
+        {
+          "op": "decl",
+          "name": "f",
+          "kind": "fnc",
+          "visibility": "public",
+          "signature": "(bool)->bool"
+        }
+      ],
+      "right": [
+        {
+          "op": "decl",
+          "name": "f",
+          "kind": "fnc",
+          "visibility": "public",
+          "signature": "(bool)->bool"
+        },
+        {
+          "op": "decl",
+          "name": "f",
+          "kind": "fnc",
+          "visibility": "public",
+          "signature": "(int)->int"
+        }
+      ],
+      "equal": true
+    }
+  ],
+  "access_cases": [
+    {
+      "name": "file allows same source",
+      "member": "public",
+      "owner": "file",
+      "callerFile": "a",
+      "callerPackage": "p",
+      "expect": true
+    },
+    {
+      "name": "file denies same package different source",
+      "member": "public",
+      "owner": "file",
+      "callerFile": "b",
+      "callerPackage": "p",
+      "expect": false
+    },
+    {
+      "name": "package allows different source",
+      "member": "public",
+      "owner": "pkg",
+      "callerFile": "b",
+      "callerPackage": "p",
+      "expect": true
+    },
+    {
+      "name": "package denies different instance",
+      "member": "public",
+      "owner": "pkg",
+      "callerFile": "b",
+      "callerPackage": "other-instance",
+      "expect": false
+    },
+    {
+      "name": "file member denies even in public module",
+      "member": "file",
+      "owner": "public",
+      "callerFile": "b",
+      "callerPackage": "p",
+      "expect": false
+    },
+    {
+      "name": "package member cannot escape file parent",
+      "member": "pkg",
+      "owner": "file",
+      "callerFile": "b",
+      "callerPackage": "p",
+      "expect": false
+    },
+    {
+      "name": "public parent and member permit external caller",
+      "member": "public",
+      "owner": "public",
+      "callerFile": "b",
+      "callerPackage": "q",
+      "expect": true
+    }
+  ],
+  "diagnostic_namespace": "EXPORT_*",
+  "diagnostic_policy": "canonical categories are shared across backends; message text may vary"
+}
