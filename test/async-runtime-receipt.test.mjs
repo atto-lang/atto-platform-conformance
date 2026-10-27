@@ -71,7 +71,7 @@ test("accepts contract-only pending and does not certify support",()=>{
 });
 test("guard requires compiler-rejection evidence",()=>check(r=>{r.cases[0].claim="guarded"},false,"guarded requires compiler rejection"));
 test("guard with executed rejection is a shape-only record, not proof",()=>{
-  const res=check(r=>{r.cases[0].claim="guarded";r.cases[0].evidence="rejected-as-required";delete r.cases[0].execution.nativeExecutableSha256},true);
+  const res=check(r=>{r.cases[0].claim="guarded";r.cases[0].evidence="rejected-as-required";delete r.cases[0].execution.nativeExecutableSha256;r.cases[0].execution.compilerExitCode=1;r.cases[0].execution.expectedDiagnostic="unsupported state loan"},true);
   assert.equal(res.shapeValidCases.length,1);
 });
 test("rejects invalid receipt objects without throwing",()=>{
@@ -79,3 +79,15 @@ test("rejects invalid receipt objects without throwing",()=>{
   assert.equal(res.ok,false);
   assert.equal(res.shapeOnly,true);
 });
+
+test("expected compile rejection requires nonzero compiler exit",()=>check(r=>{
+  r.cases[0].claim="guarded";
+  r.cases[0].evidence="rejected-as-required";
+  r.cases[0].execution.expectedDiagnostic="unsupported async state loan";
+  r.cases[0].execution.compilerExitCode=0;
+},false,"nonzero compilerExitCode"));
+test("expected compile rejection requires diagnostic",()=>check(r=>{
+  r.cases[0].claim="guarded";
+  r.cases[0].evidence="rejected-as-required";
+  r.cases[0].execution.compilerExitCode=1;
+},false,"expectedDiagnostic"));
