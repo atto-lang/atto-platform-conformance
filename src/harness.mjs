@@ -213,14 +213,14 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
  const manifest=await loadManifest();
  const relevant=manifest.cases.filter(x=>x.backends.includes(backend));
  if(!argv){
-  return {backend,sourceSha:sourceSha||null,verificationScope:"compiler-source-check-only",runtimeVerified:false,configured:false,verified:0,failed:0,
+  return {backend,sourceSha:sourceSha||null,verificationScope:"compiler-source-check-only",runtimeVerified:false,configured:false,verified:0,failed:0,unsupported:0,
    skipped:relevant.length,ok:false,coverage:relevant.length?"UNCONFIGURED":"NO_CASES",results:relevant.map(c=>({id:c.id,status:"UNCONFIGURED"}))};
  }
  validateCommand(argv);
  if(!validSha(sourceSha))throw Error("configured backend requires exact 40-character lowercase source commit SHA");
  if(!relevant.length)return {backend,declaredSourceSha:sourceSha,
   verificationScope:"compiler-source-check-only",runtimeVerified:false,
-  configured:true,coverage:"NO_CASES",verified:0,failed:0,skipped:0,ok:false,results:[]};
+  configured:true,coverage:"NO_CASES",verified:0,failed:0,unsupported:0,skipped:0,ok:false,results:[]};
  const initialExecutable=await snapshotExecutable(argv[0]);
  const executableSha256=initialExecutable?.sha256||null;
  const results=[];
@@ -295,8 +295,9 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
   }
  }
  const verified=results.filter(x=>x.status==="VERIFIED").length;
+ const unsupported=results.filter(x=>x.status==="UNSUPPORTED").length;
  const failed=results.filter(x=>x.status!=="VERIFIED").length;
- return {backend,declaredSourceSha:sourceSha,verificationScope:"compiler-source-check-only",runtimeVerified:false,executableSha256,provenanceNote:"Source revision was supplied by caller; this harness does not attest that it produced the binary.",configured:true,verified,failed,skipped:0,coverage:"CASE_RESULTS",ok:failed===0 && verified>0 &&
+ return {backend,declaredSourceSha:sourceSha,verificationScope:"compiler-source-check-only",runtimeVerified:false,executableSha256,provenanceNote:"Source revision was supplied by caller; this harness does not attest that it produced the binary.",configured:true,verified,failed,unsupported,skipped:0,coverage:"CASE_RESULTS",ok:failed===0 && verified>0 &&
   relevant.some(x=>x.expect==="accept") && relevant.some(x=>x.expect==="reject"),results};
 }
 
