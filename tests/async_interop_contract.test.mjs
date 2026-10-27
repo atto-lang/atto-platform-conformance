@@ -9,7 +9,7 @@ const read = path => readFileSync(resolve(ROOT, path), 'utf8');
 const requiredBackends = ['java-graalvm', 'llvm', 'wasm', 'forge', 'net'];
 const contracts = [
   ['future-task-interop', 'future-task-bidirectional-v1', 22],
-  ['observable-future-task-interop', 'observable-future-task-interop-v1', 32],
+  ['observable-future-task-interop', 'observable-future-task-interop-v1', 40],
 ];
 for (const [dir, expected, count] of contracts) {
   test('pending manifest and fixture gate: ' + expected, () => {
@@ -195,5 +195,31 @@ test('enumerate 1562 terminal/event orderings; one-shot, bounded, no producer ca
     };
     walk([],0);
     assert.equal(count,781);
+  }
+});
+
+test('reference trace vectors agree with the independent terminal reducer', () => {
+  const vectors = JSON.parse(read('fixtures/observable-future-task-interop/v1/reference-traces.json'));
+  assert.equal(vectors.schemaVersion,1);
+  assert.equal(vectors.contract,'observable-future-task-traces-v1');
+  assert.equal(vectors.status,'reference-model-only-not-backend-verified');
+  assert.equal(vectors.modeRequired,true);
+  assert.ok(vectors.records.length >= 14);
+  const seen = new Set();
+  for (const row of vectors.records) {
+    assert.equal(seen.has(row.id), false, row.id);
+    seen.add(row.id);
+    const events = row.events.map(([kind,payload]) => {
+      if (kind === 'next') return value(payload);
+      if (kind === 'complete') return complete;
+      if (kind === 'error') return error(payload);
+      if (kind === 'cancel') return {kind:'cancel',authenticated:payload==='authorized'};
+      throw Error('bad reference event');
+    });
+    const x = scenario(row.mode,events);
+    const outcome = x.r.result ?? {state:'PENDING'};
+    assert.deepEqual(outcome,row.expected,row.id);
+    assert.ok(x.detached() <= 1);
+    assert.equal(x.r.cancelledProducer,false);
   }
 });
