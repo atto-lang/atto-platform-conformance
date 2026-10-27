@@ -26,6 +26,22 @@ for (const [dir, expected, count] of contracts) {
     for (const state of Object.values(m.backendStatus)) assert.equal(state, 'pending');
     assert.equal(m.cases.length, count);
     assert.equal(new Set(m.cases.map(c => c.id)).size, count);
+    if (dir.startsWith('observable')) {
+      assert.equal(m.referenceTraces, 'reference-traces.json');
+      assert.equal(m.promotionRequirements.requiresSourceFixtureToValueTraceBinding, true);
+      assert.equal(m.promotionRequirements.sourceOnlyExitZeroDoesNotCount, true);
+      assert.equal(m.promotionRequirements.negativeNeedsExpectedDiagnostic, true);
+      assert.equal(m.promotionRequirements.requiresNonzeroExecutedSteps, true);
+      const traces = JSON.parse(read(root + m.referenceTraces));
+      const traceIds = new Set(traces.records.map(t => t.id));
+      assert.equal(traceIds.size, traces.records.length);
+      const linked = m.cases.filter(c => c.expectedTraceIds);
+      assert.ok(linked.length >= 14);
+      for (const c of linked) {
+        assert.ok(c.expectedTraceIds.length > 0, c.id);
+        for (const id of c.expectedTraceIds) assert.ok(traceIds.has(id), c.id + ': missing ' + id);
+      }
+    }
     for (const c of m.cases) {
       assert.equal(c.status, 'pending', c.id);
       assert.equal(c.verified, false, c.id);
