@@ -5,7 +5,6 @@ A passing result is NOT a hardware WCET certificate or compiler-correctness proo
 """
 import argparse
 import ctypes
-import ctypes.util
 import hashlib
 import json
 import re
@@ -46,9 +45,9 @@ def validate_output(output):
 
 
 def run(path, required_version, explicit_lib=None):
-    shared_lib = explicit_lib or ctypes.util.find_library('z3')
-    if not shared_lib:
-        raise RuntimeError('no libz3 solver installed (NOT_EXECUTED)')
+    if explicit_lib is None or not Path(explicit_lib).is_file():
+        raise RuntimeError('exact solver library path is required for digest-bound evidence')
+    shared_lib = Path(explicit_lib)
     z = ctypes.CDLL(str(shared_lib))
     z.Z3_get_full_version.restype = ctypes.c_char_p
     version = z.Z3_get_full_version().decode()
@@ -76,7 +75,7 @@ def run(path, required_version, explicit_lib=None):
         z.Z3_del_context(ctx)
     return {'status': 'abstract_smt_checked', 'solver': 'Z3',
             'solver_version': version,
-            'solver_library_sha256': hashlib.sha256(Path(shared_lib).read_bytes()).hexdigest() if Path(shared_lib).is_file() else 'system_shared_library_not_resolved',
+            'solver_library_sha256': hashlib.sha256(shared_lib.read_bytes()).hexdigest(),
             'model_sha256': hashlib.sha256(data).hexdigest(),
             'queries': ['unsat', 'sat'], 'counterexample': witness,
             'compiler_proof': False, 'wcet_certificate': False}
@@ -86,7 +85,7 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument('model', type=Path)
     p.add_argument('--z3-version', default='4.13.3.0')
-    p.add_argument('--z3-lib', type=Path)
+    p.add_argument('--z3-lib', type=Path, required=True)
     args = p.parse_args()
     try:
         receipt = run(args.model, args.z3_version, args.z3_lib)
