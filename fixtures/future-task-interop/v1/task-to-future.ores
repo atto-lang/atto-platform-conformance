@@ -1,0 +1,9 @@
+// Proposed source contract: one Task, one Future result projection.
+pub fnc main(): void {
+  let Task<int> producer = task {
+    return 42;
+  };
+  let Future<int> result = Future.from_task(producer);
+  let int answer = await result;
+  return;
+}
