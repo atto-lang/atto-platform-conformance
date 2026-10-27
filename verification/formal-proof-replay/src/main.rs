@@ -91,8 +91,9 @@ fn sha256(path: &Path) -> Result<String,String> {
     Ok(first.to_owned())
 }
 fn verdict(stdout: &str, expected: &Expect) -> Result<(),String> {
-    let s=stdout.strip_suffix('\n').unwrap_or(stdout);
-    let ok = match expected { Expect::Unsat=>s=="unsat",Expect::Sat=>s=="sat" };
+    // Never repair a malformed actual solver transcript by removing a newline:
+    // Z3's successful single-query responses are precisely one complete line.
+    let ok = match expected { Expect::Unsat=>stdout=="unsat\n",Expect::Sat=>stdout=="sat\n" };
     require(ok, "solver returned unknown, partial, extra, or wrong proof/negative-control result")
 }
 fn run() -> Result<(),String> {
@@ -230,7 +231,9 @@ mod tests {
     #[test] fn solver_output_is_exact_and_fail_closed() {
         assert!(verdict("unsat\n",&Expect::Unsat).is_ok());
         assert!(verdict("sat\n",&Expect::Sat).is_ok());
-        for v in ["unknown\n","sat\nunsat\n","unsat\nsat\n","","(error \"failed\")\n"] {
+        for v in ["unknown\n","sat\nunsat\n","unsat\nsat\n",
+            "unsat", "sat", "unsat\n\n", "unsat\r\n", "unsat \n",
+            "unsat\n(error \"failed\")\n","","(error \"failed\")\n"] {
             assert!(verdict(v,&Expect::Unsat).is_err(),"{v}");
         }
     }
