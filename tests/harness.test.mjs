@@ -8,12 +8,13 @@ import {join} from "node:path";
 import {runSuite,validateCommand,loadManifest,COMPILER_BACKENDS} from "../src/harness.mjs";
 const sha="012345678901234567890123456789abcdefabcd";
 const cmd=[process.execPath,new URL("./fake-checker.mjs",import.meta.url).pathname,"{file}"];
-test("manifest parses exact fixtures",async()=>{const m=await loadManifest();assert.equal(m.cases.length,2)});
+const fixtureCount=5;
+test("manifest parses exact fixtures",async()=>{const m=await loadManifest();assert.equal(m.cases.length,fixtureCount)});
 test("unconfigured is explicit and never counted as verified",async()=>{
  const r=await runSuite({backend:"java"});
  assert.equal(r.configured,false);
  assert.equal(r.verified,0);
- assert.equal(r.skipped,2);
+ assert.equal(r.skipped,fixtureCount);
  assert.ok(r.results.every(x=>x.status==="UNCONFIGURED"));
 });
 test("required unconfigured suite exits with non-success state",async()=>{
@@ -26,17 +27,17 @@ test("required unconfigured suite exits with non-success state",async()=>{
 test("fake checker only exercises harness accept and reject handling",async()=>{
  const r=await runSuite({backend:"java",argv:cmd,sourceSha:sha});
  assert.equal(r.configured,true);
- assert.equal(r.verified,2);
+ assert.equal(r.verified,fixtureCount);
  assert.equal(r.failed,0);
  assert.ok(r.results.every(x=>x.status==="VERIFIED"));
 });
 test("same fixtures can be selected for LLVM, without claiming LLVM executed",async()=>{
  const r=await runSuite({backend:"llvm",argv:cmd,sourceSha:sha});
- assert.equal(r.verified,2);
+ assert.equal(r.verified,fixtureCount);
 });
 test("missing executable is not mistaken for valid reject",async()=>{
  const r=await runSuite({backend:"llvm",argv:["/no/such/executable/oreslang","{file}"],sourceSha:sha});
- assert.equal(r.failed,2);
+ assert.equal(r.failed,fixtureCount);
  assert.ok(r.results.every(x=>x.status==="SPAWN_ERROR"));
 });
 test("no compiler revision or unsafe argument template fails closed",async()=>{
@@ -45,11 +46,11 @@ test("no compiler revision or unsafe argument template fails closed",async()=>{
 });
 test("nonzero exit without expected error is never accepted",async()=>{
  const r=await runSuite({backend:"java",argv:cmd,sourceSha:sha,spawn:()=>({status:2,stdout:"",stderr:"disk failure"})});
- assert.equal(r.failed,2);
+ assert.equal(r.failed,fixtureCount);
 });
 test("timeout and signal are never green",async()=>{
  const r=await runSuite({backend:"llvm",argv:cmd,sourceSha:sha,spawn:()=>({status:null,signal:null,error:{code:"ETIMEDOUT"}})});
- assert.equal(r.failed,2);
+ assert.equal(r.failed,fixtureCount);
  assert.ok(r.results.every(x=>x.status==="TIMEOUT"));
 });
 
@@ -70,7 +71,7 @@ test("verified harness results retain executable and fixture SHA-256 evidence",a
 test("crash text quoting the symbol is not a real compile-time diagnostic",async()=>{
  const r=await runSuite({backend:"llvm",argv:cmd,sourceSha:sha,spawn:()=>({status:1,stdout:"",stderr:"crash during compilation: nonexistent_symbol"})});
  assert.equal(r.verified,0);
- assert.equal(r.failed,2);
+ assert.equal(r.failed,fixtureCount);
 });
 test("bad timeouts and PATH-dependent commands are rejected",async()=>{
  for(const timeoutMs of [0,99,120001,NaN,Infinity])await assert.rejects(runSuite({backend:"java",timeoutMs}),/timeoutMs/);
@@ -109,7 +110,7 @@ test("missing real tools cannot yield verification for newly admitted backends",
  for(const backend of ["net","wasm","forge","js"]){
   const r=await runSuite({backend,argv:["/no/such/oreslang-compiler","{file}"],sourceSha:sha});
   assert.equal(r.ok,false,backend);
-  assert.equal(r.failed,2,backend);
+  assert.equal(r.failed,fixtureCount,backend);
   assert.ok(r.results.every(x=>x.status==="SPAWN_ERROR"),backend);
  }
  await assert.rejects(runSuite({backend:"not-a-compiler"}),/unknown backend/);
@@ -180,10 +181,10 @@ test("late compiler replacement revokes previous successful fixture evidence",as
    if(++calls===2)writeFileSync(executable,"version-B");
    return {status:0,signal:null,stdout:"",stderr:""};
   }});
-  assert.equal(calls,2);
+  assert.equal(calls,fixtureCount);
   assert.equal(r.ok,false);
   assert.equal(r.verified,0);
-  assert.equal(r.failed,2);
+  assert.equal(r.failed,fixtureCount);
   assert.equal(r.results[0].status,"EXECUTABLE_CHANGED");
   assert.equal(r.results[0].priorVerificationRevoked,true);
   assert.equal(r.results[1].status,"EXECUTABLE_CHANGED");

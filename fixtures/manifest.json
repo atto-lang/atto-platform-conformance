@@ -27,6 +27,45 @@
         "forge",
         "js"
       ]
+    },
+    {
+      "id": "generator-sync",
+      "file": "generator-sync.ores",
+      "expect": "accept",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ]
+    },
+    {
+      "id": "generator-async",
+      "file": "generator-async.ores",
+      "expect": "accept",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ]
+    },
+    {
+      "id": "generator-suspend",
+      "file": "generator-suspend.ores",
+      "expect": "accept",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ]
     }
   ]
 }

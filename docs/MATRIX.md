@@ -58,3 +58,20 @@ independently reviewed build and runtime evidence.
 ## JavaScript backend admission
 
 The `js` entries in `fixtures/manifest.json` are **inventory targets** only. The same two source fixtures can be checked by the isolated, experimental Oreslang JS program-v2 frontend with Node 22+ and `oreslang-jsc --program-v2 --check {file}`, using an absolute Node executable and an exact JS-source commit. The shared `runSuite` result carries `verificationScope: "compiler-source-check-only"` and `runtimeVerified: false`, even when both checks pass. A passing check cannot prove that generated ESM executes or returns integer 42, cannot attest the declared source SHA, and cannot establish Java or LLVM parity. Independent pinned GitHub runner evidence for compilation **and actual ESM execution**, diagnostic rejection, and build provenance is required before promoting any JS behavior to the supported-feature matrix.
+
+
+## Generator and async-iterator parity target
+
+The manifest now carries three positive source-admission targets for every compiler backend:
+
+- `gen* values(): Iterator<int>`
+- `async gen* values(): AsyncIterator<int>`
+- `suspend gen* values(): AsyncIterator<int>`
+
+These are **parity targets, not support claims**. A backend that cannot parse/type-check
+one of these fixtures must report a mismatch/unsupported state until it has a real
+implementation. In particular, accepting the syntax without lowering lazy pulls,
+typed `yield`/`yield*`, close/cancellation cleanup, and async continuation semantics
+does not establish runtime parity. Java implementation work is tracked in
+`oreslang-source.java#2110`; the scheduler-owned async-generator proof remains
+separately blocked by Java #721/#883/#677.
