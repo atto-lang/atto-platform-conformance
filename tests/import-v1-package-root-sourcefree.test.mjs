@@ -152,10 +152,13 @@ async function verifyConfiguredPath(root,value,{directory=false}={}) {
   }
   const physical=await realpath(existing);
   requireContained(root,physical);
-  if(existing===candidate && directory && !(await stat(physical)).isDirectory())
+  const existingDirectory=(await stat(physical)).isDirectory();
+  if(existing===candidate && directory && !existingDirectory)
     throw new Error("configured package root is not directory");
+  if(existing!==candidate && !existingDirectory)
+    throw new Error("configured package path has non-directory ancestor");
 
-  let cursor=(await stat(physical)).isDirectory()?physical:dirname(physical);
+  let cursor=existingDirectory?physical:dirname(physical);
   while(cursor!==root) {
     if(await hasMarker(cursor)) throw new Error("nested package boundary");
     const parent=dirname(cursor);
@@ -347,6 +350,36 @@ test("malformed nearest modern marker blocks parent + authority",async()=>{
     await assert.rejects(
       resolveProjectRootFromImporter(importer,"+lib/helper"),
       /regular non-symlink/
+    );
+  });
+});
+
+
+test("dangling nested legacy marker blocks parent + authority",async t=>{
+  await withSandbox(async base=>{
+    const root=join(base,"parent"),nested=join(root,"nested");
+    await mkdir(nested,{recursive:true});
+    await writeFile(join(root,PACKAGE_MANIFEST),"modern");
+    if(!await symlinkOrSkip(
+      t,
+      join(nested,"missing-legacy.toml"),
+      join(nested,LEGACY_MANIFEST)
+    )) return;
+    const importer=join(nested,"main.ores"); await writeFile(importer,"x");
+    await assert.rejects(
+      resolveProjectRootFromImporter(importer,"+lib/helper"),
+      /nearest package authority is legacy/
+    );
+  });
+});
+
+test("modern configured missing path rejects non-directory ancestor",async()=>{
+  await withSandbox(async base=>{
+    const root=join(base,"pkg"); await mkdir(root);
+    await writeFile(join(root,"blocked"),"not a directory");
+    await assert.rejects(
+      verifyConfiguredPath(root,"blocked/generated",{directory:true}),
+      /non-directory ancestor/
     );
   });
 });
