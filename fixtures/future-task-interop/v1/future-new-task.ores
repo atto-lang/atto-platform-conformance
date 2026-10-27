@@ -1,0 +1,8 @@
+// Proposed constructor overload; launches exactly one Task.
+pub fnc main(): void {
+  let Future<int> result = Future.new(task {
+    return 42;
+  });
+  let int answer = await result;
+  return;
+}
