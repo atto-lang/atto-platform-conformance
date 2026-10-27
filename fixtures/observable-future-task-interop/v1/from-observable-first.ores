@@ -1,0 +1,9 @@
+// #first yields Option<T>; empty completes None.
+pub fnc main(): void {
+  const Observable<String> obs = Observable.from_task(
+    task { return "first"; }
+  );
+  const Future<Option<String>> result = Future.from_observable(obs, mode=#first);
+  const Option<String> maybe = await result;
+  return;
+}

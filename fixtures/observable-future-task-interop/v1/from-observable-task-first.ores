@@ -1,0 +1,7 @@
+// Task from first Observable item keeps Option result type.
+pub fnc main(): void {
+  const Observable<int> obs = Observable.from_task(task { return 15; });
+  const Task<Option<int>> adapter = Task.from_observable(obs, mode=#first);
+  const Option<int> value = await adapter;
+  return;
+}

@@ -1,0 +1,8 @@
+// to_obs() on a Future is an observer-only alias for from_future.
+pub fnc main(): void {
+  const Future<String> f = Future.from_task(task { return "result"; });
+  const Observable<String> obs = f.to_obs();
+  const Future<Option<String>> first = Future.from_observable(obs, mode=#first);
+  const Option<String> value = await first;
+  return;
+}

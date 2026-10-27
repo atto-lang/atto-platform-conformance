@@ -1,0 +1,9 @@
+// One scope-owned adapter Task and one subscription, no producer replay.
+pub fnc main(): void {
+  const Observable<int> obs = Observable.from_future(
+    Future.from_task(task { return 42; })
+  );
+  const Task<int> adapter = Task.from_observable(obs, mode=#single);
+  const int value = await adapter;
+  return;
+}

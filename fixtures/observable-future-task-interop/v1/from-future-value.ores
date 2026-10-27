@@ -1,0 +1,8 @@
+// Proposed: an existing Future becomes a one-value Observable.
+pub fnc main(): void {
+  const Future<String> f = Future.from_task(task { return "result"; });
+  const Observable<String> obs = Observable.from_future(f);
+  const Future<String> one = Future.from_observable(obs, mode=#single);
+  const String answer = await one;
+  return;
+}

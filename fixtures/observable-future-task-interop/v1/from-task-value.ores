@@ -1,0 +1,8 @@
+// Proposed: no second execution of the Task.
+pub fnc main(): void {
+  const Task<String> producer = task { return "result"; };
+  const Observable<String> obs = Observable.from_task(producer);
+  const Future<String> result = Future.from_observable(obs, mode=#single);
+  const String answer = await result;
+  return;
+}

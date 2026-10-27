@@ -1,0 +1,8 @@
+// to_obs() on a Task is an observer-only alias for from_task.
+pub fnc main(): void {
+  const Task<int> t = task { return 42; };
+  const Observable<int> obs = t.to_obs();
+  const Future<int> one = Future.from_observable(obs, mode=#single);
+  const int value = await one;
+  return;
+}
