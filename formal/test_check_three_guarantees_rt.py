@@ -30,11 +30,11 @@ class SolverReceiptTests(unittest.TestCase):
 
     def test_solver_missing_query_is_never_proved(self):
         with self.assertRaisesRegex(ValueError, 'exact unsat/sat'):
-            validate_output(WITNESS.replace('unsat\\n', '', 1))
+            validate_output(WITNESS.replace('unsat\n', '', 1))
 
     def test_solver_extra_query_is_not_ignored(self):
         with self.assertRaisesRegex(ValueError, 'exact unsat/sat'):
-            validate_output(WITNESS.replace('sat\\n', 'sat\\nsat\\n', 1))
+            validate_output(WITNESS.replace('sat\n', 'sat\nsat\n', 1))
 
     def test_solver_error_is_not_ignored(self):
         with self.assertRaisesRegex(ValueError, 'reported an error'):
