@@ -15,7 +15,7 @@ export class UnifiedExecutionModel {
     this.events = [];
   }
   hasDataCredit() {
-    return this.ready.length + (this.active?.next === 'queued' ? 1 : 0) < this.queueCapacity;
+    return this.ready.length + (this.active ? 1 : 0) < this.queueCapacity;
   }
   submit({id, actor = null, generation = 1, steps, captures = []}) {
     if (typeof id !== 'string' || !id || this.tasks.has(id)) throw new Error('invalid/duplicate task identity');
@@ -84,6 +84,10 @@ export class UnifiedExecutionModel {
     } else {
       task.state = next;
     }
+    if (task.state === 'suspended' && task.pendingWake) {
+      task.pendingWake = false;
+      task.state = 'queued';
+    }
     if (task.state === 'queued') {
       if (this.ready.length >= this.queueCapacity) throw new Error('ready queue overflow');
       this.ready.push(id);
@@ -96,12 +100,17 @@ export class UnifiedExecutionModel {
   wake({id, generation, token}) {
     const task = this.tasks.get(id);
     // A reactor may only publish a bounded ticket; never execute source here.
-    if (!task || task.generation !== generation || task.state !== 'suspended' ||
-        task.waitToken !== token || task.cancelRequested || !this.hasDataCredit())
+    const finishingRegistration = task?.state === 'running' && this.active?.id === id &&
+      this.active.next === 'suspended';
+    if (!task || task.generation !== generation || task.waitToken !== token ||
+        task.cancelRequested || task.pendingWake ||
+        (!finishingRegistration && (task.state !== 'suspended' || !this.hasDataCredit())))
       return false;
     task.waitToken = null;
-    task.state = 'queued'; task.wakes++;
-    this.ready.push(id);
+    if (finishingRegistration) task.pendingWake = true;
+    else { task.state = 'queued'; this.ready.push(id); }
+    task.wakes++;
+
     this.events.push(`wake:${id}`);
     return true;
   }
