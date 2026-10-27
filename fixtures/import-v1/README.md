@@ -63,3 +63,28 @@ LLVM and .NET contain backend-specific physical/symlink escape regressions;
 Java has current-main candidate hardening in PR #2147; Wasm and Forge still
 fail closed on unsupported source-import graphs and therefore do not gain a
 positive multi-file-import claim from this reference matrix.
+
+
+## Source-free explicit-filesystem import reference
+
+`tests/import-v1-explicit-filesystem-sourcefree.test.mjs` adds a second
+source-free reference matrix for explicit filesystem imports. It is policy
+evidence only, not compiler execution proof.
+
+The matrix preserves the intentional compatibility boundary while hardening
+physical source identity:
+
+- manifest-backed relative imports remain inside the physical project root;
+- relative file and directory symlink escapes reject;
+- a symlinked importer is resolved by physical identity, so it cannot launder
+  an outside sibling back into the project;
+- nested package markers reject relative cross-package imports;
+- in-root aliases canonicalize to one physical source identity;
+- absolute imports remain explicitly supported and canonicalize their target;
+- no-manifest `../` relative imports remain supported;
+- dangling explicit aliases fail closed.
+
+The current Java implementation stack uses the legacy
+`.oreslangc.cfg.toml` marker for this narrow compatibility slice. Migration to
+the language-level `.ores.pkg.toml` package contract is a separate parity
+gate and must not be inferred from this source-free matrix.
