@@ -94,3 +94,7 @@ Required checks across **java/graalvm, llvm, wasm, forge, net** (embedded only w
 8. True native **full AOT** (LLVM executable; Java/GraalVM Native Image), plus source-level parser/type/effect/ownership negatives and sanitizer verification. JVM interpreter-only or host-only tests do not prove source parity.
 
 Per vector, require repository and exact commit/tree SHA, source fixture SHA, compiler binary version, executor/profile, result and normalized trace, executed test command, runner ID and real steps, ownership/quiescence receipts, and explicit PASS/FAIL/UNSUPPORTED/INFRASTRUCTURE_ERROR. Keep all `runtimeVerified=false` flags until evidence exists. No private source cross-org replication without the repository's reviewed authorization gate.
+
+## Observable bridge extension (same shared concurrency substrate)
+
+See [Observable ↔ Future / Task interop v1](OBSERVABLE_FUTURE_TASK_INTEROP_V1.md) and `fixtures/observable-future-task-interop/v1/manifest.json`. The canonical conversions add `Observable.from_future(f)`, `Observable.from_task(t)`, `f.to_obs()`, `t.to_obs()`, `Future.from_observable(obs, mode=#single|#first)` and `Task.from_observable(obs, mode=#single|#first)`. The source-syntax examples are proposals, not executed compiler passes. `#single` waits for exactly one value plus completion; `#first` returns `Option<T>` and detaches after the first value. No hidden extra producer Tasks, callback carrier reentry, producer cancellation by a borrowed subscription, or false upstream physical-retirement proof.
