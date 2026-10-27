@@ -81,3 +81,20 @@ test('unknown and malformed fingerprint inventories do not become approvals',()=
   assert.equal(triageCarrierTree(base,null,['not-a-sha']).classification,'UNVERIFIABLE_FINGERPRINTS');
   assert.equal(triageCarrierTree(base,null,[]).classification,'SOURCE_FREE_UNPROVEN');
 });
+
+test('source-like scripting and extension-language blobs remain suspicious even with a matching pin',()=>{
+  for (const path of [
+    'payload/index.js', 'payload/runtime.mjs', 'payload/launch.cjs',
+    'scripts/runner.ts', 'scripts/frontend.tsx', 'scripts/widget.jsx',
+    'deps/worker.py', 'deps/compiler.pyw', 'audit/patch.rb',
+    'tools/inspect.sh', 'tools/boot.bash', 'tools/restart.zsh',
+    'scripts/admin.ps1', 'plugins/init.lua', 'service/router.php',
+  ]) {
+    const payload={...base,tree:[entry(path)]};
+    const result=triageCarrierTree(payload,payload);
+    assert.equal(result.classification,'POTENTIAL_SOURCE_BEARING',path);
+    assert.equal(result.authorizes_source_transfer,false,path);
+  }
+  const benign={...base,tree:[entry('fixtures/expected.json')]};
+  assert.equal(triageCarrierTree(benign,benign).classification,'MATCHES_SUPPLIED_PIN');
+});
