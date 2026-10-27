@@ -54,6 +54,33 @@ function failClosedReceipt(contract) {
   };
 }
 
+test('policy flags cannot be omitted, null, or truthy strings', async () => {
+  const contract = await loadAsyncIoContract();
+  for (const flag of ['runner_admission_only', 'worker_pool_blocking_fallback',
+    'per_operation_blocking_thread', 'busy_polling']) {
+    for (const invalid of [undefined, null, 'false', 'true', 0, 1, true]) {
+      const receipt = providerReceipt(contract);
+      if (invalid === undefined) delete receipt[flag];
+      else receipt[flag] = invalid;
+      assert.throws(() => verifyAsyncIoReceipt(receipt, contract), flag);
+    }
+  }
+  for (const flag of ['provider_parity', 'cross_backend_parity']) {
+    for (const invalid of [undefined, null, 'false', 'true', 0, 1]) {
+      const receipt = providerReceipt(contract);
+      if (invalid === undefined) delete receipt.claims[flag];
+      else receipt.claims[flag] = invalid;
+      assert.throws(() => verifyAsyncIoReceipt(receipt, contract), /explicit boolean/);
+    }
+  }
+});
+
+test('offline consistency is never authenticated conformance', async () => {
+  const contract = await loadAsyncIoContract();
+  assert.equal(verifyAsyncIoReceipt(providerReceipt(contract), contract).classification,
+    'ASYNC_IO_RECORD_CONSISTENT_UNATTESTED');
+});
+
 test('provider receipt requires the complete nonblocking lifecycle matrix', async () => {
   const contract = await loadAsyncIoContract();
   const receipt = providerReceipt(contract);

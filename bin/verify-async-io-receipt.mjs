@@ -46,11 +46,16 @@ export function verifyAsyncIoReceipt(receipt, contract) {
   if (!Number.isSafeInteger(receipt.executed_steps) || receipt.executed_steps < 1) {
     throw new Error('at least one real CI/test step must execute');
   }
-  if (receipt.runner_admission_only === true) {
+  if (receipt.runner_admission_only !== false) {
     throw new Error('runner-admission-only evidence is not executable conformance evidence');
   }
 
-  const claims = requireObject(receipt.claims ?? {}, 'claims');
+  const claims = requireObject(receipt.claims, 'claims');
+  for (const flag of ['provider_parity', 'cross_backend_parity']) {
+    if (typeof claims[flag] !== 'boolean') {
+      throw new Error('claims.' + flag + ' must be an explicit boolean');
+    }
+  }
   if (claims.cross_backend_parity === true) {
     throw new Error('a single-backend receipt cannot claim cross-backend parity');
   }
@@ -85,17 +90,18 @@ export function verifyAsyncIoReceipt(receipt, contract) {
     }
   }
 
-  if (receipt.worker_pool_blocking_fallback === true) {
+  if (receipt.worker_pool_blocking_fallback !== false) {
     throw new Error('worker-pool blocking fallback is forbidden');
   }
-  if (receipt.per_operation_blocking_thread === true) {
+  if (receipt.per_operation_blocking_thread !== false) {
     throw new Error('per-operation blocking thread is forbidden');
   }
-  if (receipt.busy_polling === true) {
+  if (receipt.busy_polling !== false) {
     throw new Error('busy polling is forbidden');
   }
 
   return {
+    classification: 'ASYNC_IO_RECORD_CONSISTENT_UNATTESTED',
     backend: receipt.backend,
     mode: receipt.mode,
     source_commit_sha: receipt.source_commit_sha,
@@ -116,7 +122,7 @@ async function main() {
   if (raw.length > 1024 * 1024) throw new Error('receipt exceeds 1 MiB');
   const verified = verifyAsyncIoReceipt(JSON.parse(raw), contract);
   process.stdout.write(
-    'ASYNC_IO_RECEIPT_VERIFIED '
+    verified.classification + ' '
       + verified.backend + ' '
       + verified.mode + ' '
       + verified.source_tree_sha + '\n'
