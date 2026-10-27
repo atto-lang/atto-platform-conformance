@@ -260,3 +260,58 @@ test("dot-prefixed names remain bare rather than explicit-relative",async()=>{
     );
   });
 });
+
+
+test("nested package reached through directory alias still rejects",async t=>{
+  await withSandbox(async base=>{
+    const project=join(base,"project");
+    const src=join(project,"src");
+    const child=join(src,"child");
+    await mkdir(child,{recursive:true});
+    const importer=join(src,"main.ores");
+    await writeFile(importer,"x");
+    await writeFile(join(child,LEGACY_PACKAGE_MARKER),"schema_version = \"1\"\n");
+    await writeFile(join(child,"secret.ores"),"x");
+    if(!await symlinkOrSkip(t,child,join(src,"alias"))) return;
+    await assert.rejects(
+      resolveExplicit({importer,specifier:"./alias/secret",projectRoot:project}),
+      /nested package boundary/
+    );
+  });
+});
+
+test("malformed nested package marker still claims authority",async()=>{
+  await withSandbox(async base=>{
+    const project=join(base,"project");
+    const child=join(project,"src","child");
+    await mkdir(child,{recursive:true});
+    const importer=join(project,"src","main.ores");
+    await writeFile(importer,"x");
+    await writeFile(join(child,LEGACY_PACKAGE_MARKER),"this is not valid toml = [\n");
+    await writeFile(join(child,"secret.ores"),"x");
+    await assert.rejects(
+      resolveExplicit({importer,specifier:"./child/secret",projectRoot:project}),
+      /nested package boundary/
+    );
+  });
+});
+
+test("dangling nested package marker still claims authority",async t=>{
+  await withSandbox(async base=>{
+    const project=join(base,"project");
+    const child=join(project,"src","child");
+    await mkdir(child,{recursive:true});
+    const importer=join(project,"src","main.ores");
+    await writeFile(importer,"x");
+    if(!await symlinkOrSkip(
+      t,
+      join(child,"missing-manifest.toml"),
+      join(child,LEGACY_PACKAGE_MARKER)
+    )) return;
+    await writeFile(join(child,"secret.ores"),"x");
+    await assert.rejects(
+      resolveExplicit({importer,specifier:"./child/secret",projectRoot:project}),
+      /nested package boundary/
+    );
+  });
+});
