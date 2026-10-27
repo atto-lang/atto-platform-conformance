@@ -21,6 +21,12 @@ test("unsupported capability ledger is constrained to positive listed backends",
   ]
  };
  assert.doesNotThrow(()=>validateManifestSchema(structuredClone(base)));
+ const noExecutablePositive=structuredClone(base);
+ noExecutablePositive.cases[0].unsupportedBackends=["java"];
+ assert.throws(
+   ()=>validateManifestSchema(noExecutablePositive),
+   /missing positive\/negative fixture coverage for java/
+ );
  for(const mutate of [
   manifest=>{manifest.cases[0].unsupportedBackends=["not-a-backend"]},
   manifest=>{manifest.cases[0].unsupportedBackends=["java","java"]},
