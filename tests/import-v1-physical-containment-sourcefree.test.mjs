@@ -211,3 +211,21 @@ test("existing configured root that is not a directory rejects",async()=>{
     await rm(base,{recursive:true,force:true});
   }
 });
+
+
+test("dot-prefixed bare names resolve through configured roots",async()=>{
+  const base=await mkdtemp(join(tmpdir(),"ores-import-dot-bare-"));
+  try {
+    const root=join(base,"root");
+    await mkdir(join(root,".hidden"),{recursive:true});
+    await mkdir(join(root,"..backup"),{recursive:true});
+    const hidden=join(root,".hidden","util.ores");
+    const backup=join(root,"..backup","util.ores");
+    await writeFile(hidden,"pub fnc hidden(): int { return 1; }\n");
+    await writeFile(backup,"pub fnc backup(): int { return 2; }\n");
+    assert.equal(await resolveRoots([root],".hidden/util"),await realpath(hidden));
+    assert.equal(await resolveRoots([root],"..backup/util"),await realpath(backup));
+  } finally {
+    await rm(base,{recursive:true,force:true});
+  }
+});
