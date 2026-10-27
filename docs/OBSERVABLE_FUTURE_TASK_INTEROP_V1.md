@@ -85,3 +85,17 @@ See `fixtures/observable-future-task-interop/v1/manifest.json` for positive/nega
 Require real parser/formatter/type/effect/ownership validation and actual guest execution for Java/GraalVM and LLVM full-native AOT, plus explicit WASM/Forge/.NET parity. Cases cover success, failure, authenticated cancellation, void, late subscribers, duplicate subscriptions, synchronous registration, second item violation, first empty vs single empty, infinite single, cancellation/STOP/hot generation, affine result double-read rejection, demand/backpressure quotas, callback scheduler confinement, TaskScope physical retirement, and five-backend conformance. Exact source SHA, compiler executable hash, runner id/executed steps, trace and sanitizer output are mandatory before marking any vector verified.
 
 Source-org zero-step Actions are infrastructure failures, not test passes. Do not export private source to an unapproved carrier; do not infer cross-backend support from documentation.
+
+
+## Security audit closure rules (2026-10-27)
+
+The binding audit `docs/OBSERVABLE_TASK_FUTURE_INTEROP_AUDIT_20261027.md` identifies eight mandatory release blockers I-01 through I-08. They remain OPEN for real source/runtime parity until checked execution evidence exists. Especially:
+
+- **I-01 (capability identity)**: a result Observer/Observable projection must *not* return the same cancellable source Future identity. `cancel()` on the observer must detach only its own registration; private producer cancellation token never escapes.
+- **I-02 (two retirement witnesses)**: winning `#first` and detaching subscription are not proof the original Task/actor producer has stopped. Adapter-owned subscription callbacks must physically drain before releasing borrowed arenas or publishing a clean `get_done` receipt.
+- **I-03 (terminal-before-registration)**: synchronous success/error/cancel while subscribing is provisional until the unsubscribe token and its cleanup contract have been validated. An invalid/throwing detach action prevents clean physical retirement; retain/quarantine the resource loan rather than claiming success.
+- **I-04 (void cardinality)**: `Future<void>` and `Task<void>` project to event-only `Observable<void>`: no on_next. Consequently `mode=#single` is EmptyObservableError; `mode=#first` yields None. A nested `Option<T>` value of None is still **one emitted value**, never treated as zero events.
+- **I-05 (affine claims)**: a second subscriber must not gain a duplicate claim to move-only T. Require static exclusive ownership or a runtime unforgeable one-subscriber permit and fail closed.
+- **I-08 (observed evidence)**: the manifest's `reference-traces.json` is an *independent pure model*, not guest execution. A green compiler fixture needs expected typed value/trace/cancel classification and actual binary behavior, not just successful exit or generic syntax rejection.
+
+No design-level oracle, local Node reference model, interpreter-only path, or GitHub Actions job with zero executed steps certifies Java Native Image, LLVM AOT or five-backend parity.
