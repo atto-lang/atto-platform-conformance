@@ -6,7 +6,7 @@ This extends the already active [formal core verification program](https://githu
 
 ## Formal objects
 
-- `ThreeGuarantees.tla` and three TLC config files: 3 finite generations, 2 session handles, image capacity 2, V1→V2→V3 staging, generation pins, consumed session tokens, admitted authorization, timed-out but unsettled requests, settlements, safe retirement.
+- `ThreeGuarantees.tla` and four TLC config files: 3 finite generations, 2 session handles, image capacity 2, V1→V2→V3 staging, generation pins, consumed session tokens, admitted authorization, timed-out but unsettled requests, settlements, safe retirement.
 - `ThreeGuaranteesRT.smt2`: a symbolic integer abstraction of response-time admission with all bound components and exact certificate match; a deliberately unsafe omission of cleanup must have a satisfying counterexample.
 - `three-guarantees-bounded.mjs`: an **independent source-free finite-state executable checker**, with BFS shortest counterexample traces and an exhaustive small-range RT arithmetic check.
 - `three-guarantees-bounded.test.mjs`: affirmative model checks and mandatory unsafe mutants, which ensure the model isn't trivially vacuous.
@@ -21,24 +21,29 @@ Local source-free finite reference: **1,017** reachable model states and **37,90
 
 ### TLC execution gate (required before advancing from unverified TLA model)
 
+The workflow runs `python3 formal/check_three_guarantees_tla_static.py` before invoking TLC, detecting missing or duplicated state assignments and incomplete mutation configs. This is a **structural lint only**, not model checking.
+
 Pin a trusted, reviewable `tla2tools.jar` and record its cryptographic digest and version. From the `formal` directory:
 
 ```sh
 java -cp /path/to/pinned/tla2tools.jar tlc2.TLC -deadlock -config ThreeGuarantees.cfg ThreeGuarantees.tla
 java -cp /path/to/pinned/tla2tools.jar tlc2.TLC -deadlock -config ThreeGuaranteesUnsafePurge.cfg ThreeGuarantees.tla
 java -cp /path/to/pinned/tla2tools.jar tlc2.TLC -deadlock -config ThreeGuaranteesUnsafeTimeout.cfg ThreeGuarantees.tla
+java -cp /path/to/pinned/tla2tools.jar tlc2.TLC -deadlock -config ThreeGuaranteesUnsafePublish.cfg ThreeGuarantees.tla
 ```
 
 Expected: normal model finishes without invariant violation; **all three mutant runs must fail** on `NoDanglingPins`, `NoSpentPhaseResurrection`, and `PublishedValidated` respectively. Do not accept a zero-step, skipped, timeout, incomplete-state, parse-error or tool-missing result as a valid counterexample/proof. A CI gate should check actual invariant names and counterexample traces, not merely expect nonzero exit.
 
 For SMT, run a pinned Z3/CVC5 binary and assert the ordered answers are **unsat, sat**, followed by a valid counterexample model for the deliberately broken deadline rule. If the solver reports `unknown`, parse error, timeout, or incomplete model, the gate fails.
 
+The exact-source local SMT smoke command is `python3 formal/check_three_guarantees_rt.py formal/ThreeGuaranteesRT.smt2 --z3-version 4.13.3.0 --z3-lib /usr/lib/x86_64-linux-gnu/libz3.so.4` (replace the library path with the reviewed absolute path for the local system). The verifier records the Z3 shared-library SHA and rejects unexpected solver results, malformed witnesses and wrong versions.
+
 ## Mathematical and implementation proof boundaries
 
 | Level | Obligation | Evidence status |
 | --- | --- | --- |
 | F0: declarative contract | Finite code closure, actor phase invariants, rollback and timing definitions | Specified in common-source PR #168 |
-| F1: abstract machine | TLA+ safety, selected fairness/liveness claims, SMT arithmetic and bad-rule counterexamples | Models authored; bounded JS check executed; solver runs pending |
+| F1: abstract machine | TLA+ safety, selected fairness/liveness claims, SMT arithmetic and bad-rule counterexamples | Models authored; bounded JS check and local exact-blob Z3 SMT model executed; TLC and backend refinement still pending |
 | F2: compiler-source binding | Source `.ores` → compiler-owned typed HIR/MIR facts, CFG, capabilities, ownership, version/phase identity and effect closure; no forged user claims | **Not verified** |
 | F3: translation validation | LLVM-native and generated Graal guest code correspond to HIR/MIR and preserve admitted transition/effect invariants; AOT linked closure attested | **Not verified** |
 | F4: executable refinement | Compare structured event traces from real compiler-built **LLVM native** and **program-specific Graal Native Image guest** executables against the abstract model; hostile negative fixtures | **Not verified** |
