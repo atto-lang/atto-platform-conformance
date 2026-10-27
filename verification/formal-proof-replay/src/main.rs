@@ -5,7 +5,8 @@ use std::collections::{BTreeMap, HashSet};
 use std::env;
 use std::fs;
 use std::path::{Component, Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, Stdio};
+use std::io::Read;
 
 const MAX_QUERY: u64 = 262_144;
 const MAX_OUTPUT: usize = 4096;
@@ -39,10 +40,25 @@ fn parse_spec(s: &str, expect: Expect) -> Result<Spec,String> {
        sha256:fields[2].to_owned(),expect})
 }
 fn capture(command: &mut Command, label: &str) -> Result<String,String> {
-    let result=command.output().map_err(|e| format!("{label}: could not execute: {e}"))?;
-    require(result.status.success(), &format!("{label}: executable failed (status {})",result.status))?;
-    require(result.stdout.len()<=MAX_OUTPUT, &format!("{label}: excess output"))?;
-    String::from_utf8(result.stdout).map_err(|_| format!("{label}: non-UTF8 stdout"))
+    // The output must be bounded *before* allocating it, not after Command::output().
+    // stderr is discarded intentionally: untrusted solver diagnostics must not
+    // fill another pipe or become part of the verdict.
+    let mut child=command.stdout(Stdio::piped()).stderr(Stdio::null()).spawn()
+        .map_err(|e| format!("{label}: could not execute: {e}"))?;
+    let mut bytes=Vec::new();
+    let read=child.stdout.take().ok_or("child has no stdout")?
+        .take((MAX_OUTPUT+1) as u64).read_to_end(&mut bytes);
+    if let Err(e)=read {
+        let _=child.kill(); let _=child.wait();
+        return Err(format!("{label}: stdout read failed: {e}"));
+    }
+    if bytes.len()>MAX_OUTPUT {
+        let _=child.kill(); let _=child.wait();
+        return Err(format!("{label}: excess stdout"));
+    }
+    let result=child.wait().map_err(|e| format!("{label}: wait failed: {e}"))?;
+    require(result.success(), &format!("{label}: executable failed (status {result})"))?;
+    String::from_utf8(bytes).map_err(|_| format!("{label}: non-UTF8 stdout"))
 }
 fn exact_path(root: &Path, relative: &str) -> Result<PathBuf,String> {
     path_component_check(relative)?;
@@ -111,6 +127,14 @@ fn run() -> Result<(),String> {
     let actual_blob=capture(Command::new("git").arg("-C").arg(&repo)
         .arg("hash-object").arg("--").arg(&source),"git hash-object")?;
     require(actual_blob.trim_end()==blob,"source Git blob differs from pinned bytes")?;
+    // A matching working-tree hash does not establish that HEAD contains
+    // those bytes at this path. Bind both commit tree path and file contents.
+    let tree=capture(Command::new("git").arg("-C").arg(&repo)
+        .args(["ls-tree","-z","HEAD","--",source_rel]),"git ls-tree")?;
+    let expected_regular=format!("100644 blob {blob}\t{source_rel}\0");
+    let expected_executable=format!("100755 blob {blob}\t{source_rel}\0");
+    require(tree==expected_regular || tree==expected_executable,
+        "source file is missing from the pinned commit tree or has a different blob/mode")?;
     let solver=fs::canonicalize(get("--solver")?).map_err(|e|format!("solver path: {e}"))?;
     require(solver.is_file(),"solver must be a regular executable")?;
     require(sha256(&solver)?==solver_sha,"solver executable SHA256 mismatch")?;
@@ -146,6 +170,20 @@ mod tests {
         for s in ["bad:x:zz",":x:aaaaaaaa","xx:../m:abcdef","xx:/tmp/file:bad"] {
             assert!(parse_spec(s,Expect::Sat).is_err(),"{s}");
         }
+    }
+    #[test] fn bounded_stdout_rejects_unbounded_process_output() {
+        let mut cmd=Command::new("sh");
+        cmd.args(["-c","yes UNSAFE | head -c 200000"]);
+        assert!(capture(&mut cmd, "flood").is_err());
+        let mut tiny=Command::new("sh");
+        tiny.args(["-c","printf 'unsat\\n'"]);
+        assert_eq!(capture(&mut tiny,"tiny").unwrap(),"unsat\\n");
+    }
+    #[test] fn commit_tree_binding_is_exact_and_mode_constrained() {
+        let blob="a".repeat(40); let path="stdlib/core.ores";
+        let expected=format!("100644 blob {blob}\\t{path}\\0");
+        assert_eq!(expected.as_bytes().last(),Some(&0));
+        assert_ne!(expected,format!("100644 blob {}\\t{path}\\0","b".repeat(40)));
     }
     #[test] fn solver_output_is_exact_and_fail_closed() {
         assert!(verdict("unsat\n",&Expect::Unsat).is_ok());
