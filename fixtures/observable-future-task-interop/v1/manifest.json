@@ -1,0 +1,368 @@
+{
+  "schemaVersion": 1,
+  "contract": "observable-future-task-interop-v1",
+  "status": "proposal-not-executable",
+  "sourceExecutionVerified": false,
+  "runtimeVerified": false,
+  "backendStatus": {
+    "java-graalvm": "pending",
+    "llvm": "pending",
+    "wasm": "pending",
+    "forge": "pending",
+    "net": "pending"
+  },
+  "evidence": [],
+  "caseStatusDefault": "pending",
+  "cases": [
+    {
+      "id": "from-future-value",
+      "source": "from-future-value.ores",
+      "kind": "positive",
+      "assert": [
+        "one_producer",
+        "one_value_then_complete",
+        "no_new_task"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "from-task-value",
+      "source": "from-task-value.ores",
+      "kind": "positive",
+      "assert": [
+        "one_task",
+        "one_value_then_complete",
+        "no_double_schedule"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "future-to-obs-alias",
+      "source": "future-to-obs.ores",
+      "kind": "positive",
+      "assert": [
+        "same_as_from_future",
+        "one_value"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "task-to-obs-alias",
+      "source": "task-to-obs.ores",
+      "kind": "positive",
+      "assert": [
+        "same_as_from_task",
+        "one_value"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "observable-to-future-single",
+      "source": "from-observable-single.ores",
+      "kind": "positive",
+      "assert": [
+        "exactly_one",
+        "await_completion",
+        "no_task_adapter"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "observable-to-task-single",
+      "source": "from-observable-task.ores",
+      "kind": "positive",
+      "assert": [
+        "one_subscription",
+        "one_adapter_task",
+        "value_result"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "observable-to-future-first-option",
+      "source": "from-observable-first.ores",
+      "kind": "positive",
+      "assert": [
+        "typed_option_result",
+        "detach_after_first"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "observable-to-task-first-option",
+      "source": "from-observable-task-first.ores",
+      "kind": "positive",
+      "assert": [
+        "typed_task_option_result",
+        "one_adapter_task"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "reject-bare-await-observable",
+      "source": "reject-bare-await.ores",
+      "kind": "compile_reject",
+      "assert": [
+        "not_awaitable",
+        "cardinality_required"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "reject-missing-mode",
+      "source": "reject-missing-mode.ores",
+      "kind": "compile_reject",
+      "assert": [
+        "explicit_mode_required"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "reject-invalid-mode",
+      "source": "reject-invalid-mode.ores",
+      "kind": "compile_reject",
+      "assert": [
+        "known_mode_only",
+        "no_string_mode"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "single-empty-error",
+      "kind": "runtime",
+      "assert": [
+        "empty_observable_error",
+        "not_none"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "single-more-than-one-error",
+      "kind": "runtime",
+      "assert": [
+        "too_many_elements_error",
+        "unsubscribe_once",
+        "do_not_publish_first"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "single-one-pending-completion",
+      "kind": "runtime",
+      "assert": [
+        "must_wait_for_complete",
+        "cannot_act_like_first",
+        "deadline_or_cancel_required"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "first-empty-is-none",
+      "kind": "runtime",
+      "assert": [
+        "option_none",
+        "no_error"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "first-unsubscribes",
+      "kind": "runtime",
+      "assert": [
+        "first_value_only",
+        "unsubscribe",
+        "independent_hot_producer_unchanged"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "cancel-reduction-owned-subscription",
+      "kind": "runtime",
+      "assert": [
+        "detach_owned_subscriber",
+        "no_independent_producer_cancel",
+        "bounded_cleanup"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "cancel-task-adapter-owned-subscription",
+      "kind": "runtime",
+      "assert": [
+        "adapter_physical_retirement",
+        "producer_kept_alive",
+        "one_subscription"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "observer-unsubscribe-doesnt-cancel-future",
+      "kind": "runtime",
+      "assert": [
+        "borrowed_observer_detaches_only",
+        "future_still_completes"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "observer-unsubscribe-doesnt-cancel-task",
+      "kind": "runtime",
+      "assert": [
+        "origin_task_scope_still_owns",
+        "producer_get_done_separate"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "late-subscriber-one-shot-replay",
+      "kind": "runtime",
+      "assert": [
+        "same_result_no_rerun",
+        "single_event_order",
+        "no_unbounded_cache"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "future-void-event-only",
+      "kind": "runtime",
+      "assert": [
+        "zero_values",
+        "one_completion",
+        "no_fake_void_payload"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "error-and-authentic-cancellation",
+      "kind": "runtime",
+      "assert": [
+        "failed_distinct_from_cancelled",
+        "cause_preserved",
+        "panic_control"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "synchronous-registration-first-race",
+      "kind": "runtime",
+      "assert": [
+        "valid_detach_token_before_publish",
+        "single_terminal",
+        "no_leak"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "synchronous-registration-multiple-race",
+      "kind": "runtime",
+      "assert": [
+        "second_value_rejected",
+        "registration_failure_not_success",
+        "detach_once"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "multi-subscriber-affine-reject",
+      "kind": "compile_reject",
+      "assert": [
+        "no_double_move",
+        "exclusive_result_claim"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "cross-domain-actor-generation-reject",
+      "kind": "compile_reject",
+      "assert": [
+        "send_sync_checked",
+        "sealed_state",
+        "generation_guard"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "single-carrier-callback-confinement",
+      "kind": "runtime",
+      "assert": [
+        "guest_callbacks_only_on_scheduler",
+        "single_carrier_progress",
+        "no_reentrant_loop"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "subscription-backpressure-quotas",
+      "kind": "runtime",
+      "assert": [
+        "bounded_admission",
+        "one_item_credit",
+        "no_unbounded_observer_queue"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "adapter-done-not-upstream-quiescence",
+      "kind": "runtime",
+      "assert": [
+        "no_premature_reclamation",
+        "scope_retirement_independent"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "hot-vs-cold-subscription-behavior",
+      "kind": "runtime",
+      "assert": [
+        "started_source_not_rerun",
+        "cold_source_owns_startup",
+        "no_implicit_multicast"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "real-full-aot-cross-backend",
+      "kind": "runtime",
+      "assert": [
+        "java_native_image",
+        "llvm_native_binary",
+        "wasm_forge_net_status",
+        "exact_sha_receipts"
+      ],
+      "status": "pending",
+      "verified": false
+    }
+  ]
+}
