@@ -62,7 +62,7 @@ export function validateAsyncReceipt(receipt) {
     }
     if(!errors.some(x=>x.startsWith(loc+" ")))shapeValid.push(c.id);
   }
-  return {ok:errors.length===0,shapeOnly:true,shapeValidCases:verified,missingCases:ids.filter(id=>!seen.has(id)),errors};
+  return {ok:errors.length===0,shapeOnly:true,shapeValidCases:shapeValid,missingCases:ids.filter(id=>!seen.has(id)),errors};
 }
 
 if (process.argv[1] && resolve(process.argv[1])===fileURLToPath(import.meta.url)) {
