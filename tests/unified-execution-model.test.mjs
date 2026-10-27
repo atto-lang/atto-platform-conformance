@@ -35,14 +35,14 @@ test('early completion and repeated/stale I/O wake cannot execute inline or repl
   const m = new Model();
   m.submit({id:'a',generation:2,steps:[io('fd'),cpu(2),done()]});
   m.dispatch();
-  assert.equal(m.wake({id:'a',generation:2,token:'fd'}),false);
-  assert.throws(()=>m.dispatch(),/carrier/);
-  m.release();
-  const n=m.events.length;
-  assert.equal(m.wake({id:'a',generation:1,token:'fd'}),false);
   assert.equal(m.wake({id:'a',generation:2,token:'fd'}),true);
+  assert.throws(()=>m.dispatch(),/carrier/);
   assert.equal(m.wake({id:'a',generation:2,token:'fd'}),false);
-  assert.deepEqual(m.events.slice(n),['wake:a']);
+  m.release();
+  assert.equal(m.inspect('a').state,'queued');
+  assert.equal(m.wake({id:'a',generation:1,token:'fd'}),false);
+  assert.equal(m.wake({id:'a',generation:2,token:'fd'}),false);
+  assert.deepEqual(m.events.slice(0,3),['enter:a','wake:a','exit:a']);
   assert.equal(tick(m).id,'a');
   assert.equal(m.inspect('a').wakes,1);
 });
@@ -132,4 +132,16 @@ test('resumable CPU slice reserves a ready ticket against late admission',()=>{
   assert.equal(m.ready.length,1);
   while(!m.inspect('a').physicallyRetired) tick(m);
   assert.equal(m.submit({id:'b',steps:[done()]}),true);
+});
+
+test('wake during registration reserves ready credit even at capacity one',()=>{
+  const m=new Model({queueCapacity:1});
+  m.submit({id:'a',steps:[io('fd'),done()]});
+  m.dispatch();
+  assert.equal(m.submit({id:'b',steps:[done()]}),false);
+  assert.equal(m.wake({id:'a',generation:1,token:'fd'}),true);
+  m.release();
+  assert.equal(m.ready.length,1);
+  assert.equal(tick(m).id,'a');
+  assert.equal(m.inspect('a').physicallyRetired,true);
 });
