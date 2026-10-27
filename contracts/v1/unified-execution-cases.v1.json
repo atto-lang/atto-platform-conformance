@@ -131,7 +131,10 @@
         "fresh-resumable-continuation",
         "one-actor-physical-turn",
         "no-mailbox-overtake",
-        "owned-loan-before-suspend"
+        "owned-loan-before-suspend",
+        "preinvoke-guard-admission",
+        "unproven-dynamic-callable-fails-closed",
+        "async-child-no-side-effects-under-guard"
       ]
     },
     {
@@ -143,7 +146,9 @@
         "bounded-fuel",
         "no-increment-replay",
         "experimental-profile-only",
-        "host-driver-not-production-scheduler"
+        "host-driver-not-production-scheduler",
+        "cancelled-peer-isolation",
+        "release-optimized-and-sanitized-host-oracle-not-guest-proof"
       ]
     }
   ]
