@@ -1,0 +1,46 @@
+name: Three guarantees bounded formal reference
+
+on:
+  pull_request:
+    paths:
+      - 'formal/ThreeGuarantees*'
+      - 'formal/three-guarantees-bounded*'
+      - '.github/workflows/three-guarantees-formal-reference.yml'
+  push:
+    paths:
+      - 'formal/ThreeGuarantees*'
+      - 'formal/three-guarantees-bounded*'
+      - '.github/workflows/three-guarantees-formal-reference.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  model-reference:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact source SHA and clean checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git diff --exit-code HEAD --
+          test -z "$(git ls-files --others --exclude-standard)"
+          echo "MODEL_SOURCE_SHA=$EXPECTED_HEAD"
+          echo "MODEL_TREE_SHA=$(git rev-parse 'HEAD^{tree}')"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22.16.0'
+      - name: Execute safe model and counterexample mutants
+        run: node --test formal/three-guarantees-bounded.test.mjs
+
+# This job proves only an executed bounded JS model check. TLC/Z3 solver
+# and compiled Oreslang LLVM/Graal guest refinement are separate evidence gates.
