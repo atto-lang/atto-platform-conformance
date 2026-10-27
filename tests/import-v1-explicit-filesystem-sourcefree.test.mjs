@@ -164,6 +164,25 @@ test("manifest-backed relative import rejects nested package marker",async()=>{
   });
 });
 
+test("manifest-backed symlinked importer cannot launder outside sibling",async t=>{
+  await withSandbox(async base=>{
+    const project=join(base,"project");
+    const src=join(project,"src");
+    const outside=join(base,"outside");
+    await mkdir(src,{recursive:true});
+    await mkdir(outside);
+    const physicalImporter=join(outside,"main.ores");
+    await writeFile(physicalImporter,"x");
+    await writeFile(join(outside,"helper.ores"),"x");
+    const importer=join(src,"main.ores");
+    if(!await symlinkOrSkip(t,physicalImporter,importer)) return;
+    await assert.rejects(
+      resolveExplicit({importer,specifier:"./helper",projectRoot:project}),
+      /escapes physical project root/
+    );
+  });
+});
+
 test("manifest-backed in-root alias canonicalizes",async t=>{
   await withSandbox(async base=>{
     const project=join(base,"project"); const src=join(project,"src");
