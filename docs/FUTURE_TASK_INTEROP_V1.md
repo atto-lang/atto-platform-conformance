@@ -18,7 +18,7 @@ Tracks conformance issue #152, Java task #1468, Java Future constructor #1676, J
 | --- | --- | --- | --- |
 | `Future.from_task(task)` | `Future<T>` | **zero new Tasks**; projects one result | originating TaskScope still owns Task |
 | `task.as_future()` | `Future<T>` | same as `Future.from_task` | same; source alias, if admitted |
-| `Future.new(task { return value; })` | `Future<T>` | **exactly one** eager Task | creating TaskScope |
+| `Future.from_task(task { return value; })` | `Future<T>` | **exactly one** eager Task from the block, **zero adapter Tasks** | creating TaskScope |
 | `Task.from_future(future)` | `Task<T>` | **exactly one** small waiter Task | adapter's TaskScope owns only adapter; not upstream producer |
 | `Task.from_future(future, scope)` | `Task<T>` | same, explicit admitted scope/domain | adapter scope, not upstream producer |
 | `task.get_done()` / `scope.get_done()` | physical-lifecycle observer | zero | required for safe memory reclamation |
@@ -28,14 +28,25 @@ The names above are **proposals**. The historical Java host `OresTask.asFuture()
 ### Task → Future: result projection, not another task
 
 ```oreslang
-let Task<int> t = task { return 42; };
-let Future<int> f = Future.from_task(t);
-let int value = await f;
+const Future<String> f = Future.from_task(
+    task {
+        return "result";
+    }
+);
+
+const Task<String> t = Task.from_future(f);
+
+const String result = await t;
 ```
+
+A named Task can also be projected: `Future.from_task(t)` is identical to
+`Future.from_task(task { ... })` after the task has been created. The full
+round trip above starts exactly one producer Task and one waiter adapter Task,
+not a second producer or an extra OS threadpool.
 
 Return/failure/cancellation classification and trace context originate from the one Task; no nested `Future<Task<T>>` or `Future<Future<T>>` is synthesized. Do not add an actor hop, OS thread or new TaskScope to implement this. Observer cancellation/detachment **never** cancels the Task unless a separate, authenticated, explicitly transferred cancellation capability is supplied. `Future.cancel()` on this view cancels **the view**, detaching its listener; it must not cancel the underlying producer. The source Task and its scope remain alive and independently observable.
 
-The parser may admit `Future.new(task { return ...; })` as a constructor overload equivalent to the projection above. One Task is created by the `task` expression, not two. Bare `new Task(|c| -> ...)` is **not** an alias for a task block; Task is not a callback-completer constructor.
+**Canonical syntax only:** `Future.from_task(task { return ...; })`. Do **not** introduce `Future.new(task { ... })` as a Task conversion alias or constructor overload. The `task` expression launches exactly one Task, and `from_task` observes its result without starting another Task. This restriction is specific to Task interop; distinct existing Future providers may retain their separately typed constructors. Bare `new Task(|c| -> ...)` is **not** an alias for a task block; Task is not a callback-completer constructor.
 
 ### Future → Task: dependent awaiter, not replay
 
