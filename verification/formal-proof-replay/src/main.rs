@@ -42,25 +42,32 @@ fn parse_spec(s: &str, expect: Expect) -> Result<Spec,String> {
        sha256:fields[2].to_owned(),expect})
 }
 fn capture(command: &mut Command, label: &str) -> Result<String,String> {
-    // The output must be bounded *before* allocating it, not after Command::output().
-    // stderr is discarded intentionally: untrusted solver diagnostics must not
-    // fill another pipe or become part of the verdict.
-    let mut child=command.stdout(Stdio::piped()).stderr(Stdio::null()).spawn()
+    // The two output pipes must be drained concurrently with strict limits:
+    // otherwise a solver can report a plausible SAT answer on stdout while
+    // hiding a diagnostic on stderr, or deadlock by filling its stderr pipe.
+    let mut child=command.stdout(Stdio::piped()).stderr(Stdio::piped()).spawn()
         .map_err(|e| format!("{label}: could not execute: {e}"))?;
-    let mut bytes=Vec::new();
-    let read=child.stdout.take().ok_or("child has no stdout")?
-        .take((MAX_OUTPUT+1) as u64).read_to_end(&mut bytes);
-    if let Err(e)=read {
+    let mut err_pipe=child.stderr.take().ok_or("child has no stderr")?;
+    let err_reader=std::thread::spawn(move || -> std::io::Result<Vec<u8>> {
+        let mut bytes=Vec::new();
+        err_pipe.take((MAX_OUTPUT+1) as u64).read_to_end(&mut bytes)?;
+        Ok(bytes)
+    });
+    let mut stdout=Vec::new();
+    let output=child.stdout.take().ok_or("child has no stdout")?
+        .take((MAX_OUTPUT+1) as u64).read_to_end(&mut stdout);
+    if output.is_err() || stdout.len()>MAX_OUTPUT {
         let _=child.kill(); let _=child.wait();
-        return Err(format!("{label}: stdout read failed: {e}"));
+        let _=err_reader.join();
+        return Err(format!("{label}: stdout failed or exceeded output limit"));
     }
-    if bytes.len()>MAX_OUTPUT {
-        let _=child.kill(); let _=child.wait();
-        return Err(format!("{label}: excess stdout"));
-    }
-    let result=child.wait().map_err(|e| format!("{label}: wait failed: {e}"))?;
-    require(result.success(), &format!("{label}: executable failed (status {result})"))?;
-    String::from_utf8(bytes).map_err(|_| format!("{label}: non-UTF8 stdout"))
+    let status=child.wait().map_err(|e| format!("{label}: wait failed: {e}"))?;
+    let stderr=err_reader.join()
+        .map_err(|_|format!("{label}: stderr reader panicked"))?
+        .map_err(|e|format!("{label}: stderr read failed: {e}"))?;
+    require(stderr.is_empty(),&format!("{label}: unexpected solver/tool diagnostic on stderr"))?;
+    require(status.success(), &format!("{label}: executable failed (status {status})"))?;
+    String::from_utf8(stdout).map_err(|_| format!("{label}: non-UTF8 stdout"))
 }
 fn exact_path(root: &Path, relative: &str) -> Result<PathBuf,String> {
     path_component_check(relative)?;
@@ -190,6 +197,14 @@ mod tests {
         let mut tiny=Command::new("sh");
         tiny.args(["-c","printf 'unsat\\n'"]);
         assert_eq!(capture(&mut tiny,"tiny").unwrap(),"unsat\n");
+    }
+    #[test] fn valid_answer_with_stderr_diagnostic_is_rejected() {
+        let mut command=Command::new("sh");
+        command.args(["-c","printf 'unsat\\n'; printf 'solver reported error\\n' >&2"]);
+        assert!(capture(&mut command,"stderr-check").is_err());
+        let mut command=Command::new("sh");
+        command.args(["-c","printf 'sat\\n'; exit 91"]);
+        assert!(capture(&mut command,"exit-check").is_err());
     }
     #[test] fn commit_tree_binding_is_exact_and_mode_constrained() {
         let blob="a".repeat(40); let path="stdlib/core.ores";
