@@ -68,6 +68,12 @@ export function validateManifestSchema(manifest){
      item.backends.some(x=>!SUPPORTED_BACKENDS.has(x))||
      new Set(item.backends).size!==item.backends.length)
    throw Error("invalid fixture expectation/backends");
+  if(item.unsupportedBackends!==undefined){
+   if(item.expect!=="accept"||!Array.isArray(item.unsupportedBackends)||
+      new Set(item.unsupportedBackends).size!==item.unsupportedBackends.length||
+      item.unsupportedBackends.some(x=>!item.backends.includes(x)))
+    throw Error("invalid unsupported backend capability ledger");
+  }
   if(item.expect==="reject"&&!validDiagnosticSymbol(item.diagnostic))
    throw Error("negative fixture must require a literal identifier diagnostic");
   if(item.expect==="accept"&&item.diagnostic!==undefined)
@@ -230,6 +236,16 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
   }
   for(const {c,snapshotPath,fixtureSha256} of sealed){
   await assertSealedFixture(snapshotPath,fixtureSha256);
+  if(c.unsupportedBackends?.includes(backend)){
+   results.push({
+    id:c.id,status:"UNSUPPORTED",fixtureSha256,
+    executableSha256Before:null,executableSha256After:null,
+    executableResolvedPathBefore:null,executableResolvedPathAfter:null,
+    exitCode:null,signal:null,stdout:"",stderr:"",
+    capabilityNote:"declared unsupported by merged-backend capability ledger; fixture was not executed"
+   });
+   continue;
+  }
   const cmd=argv.map(x=>x==="{file}"?snapshotPath:x);
   const executableBefore=await snapshotExecutable(argv[0]);
   const output=spawn(cmd[0],cmd.slice(1),{encoding:"utf8",timeout:timeoutMs,cwd:root,maxBuffer:1024*1024,windowsHide:true});
