@@ -105,6 +105,33 @@ async function resolveProjectRootImport(manifest,specifier) {
   return source;
 }
 
+async function nearestPackageAuthority(importer) {
+  const physicalImporter=await realpath(importer);
+  let cursor=dirname(physicalImporter);
+  for(;;) {
+    const modern=join(cursor,PACKAGE_MANIFEST);
+    if(await nodeInfo(modern)!==null) {
+      return {manifest:modern,root:await loadModernRoot(modern)};
+    }
+
+    const legacy=join(cursor,LEGACY_MANIFEST);
+    const legacyInfo=await nodeInfo(legacy);
+    if(legacyInfo!==null) {
+      throw new Error("nearest package authority is legacy");
+    }
+
+    const parent=dirname(cursor);
+    if(parent===cursor) break;
+    cursor=parent;
+  }
+  throw new Error("project-root import requires .ores.pkg.toml");
+}
+
+async function resolveProjectRootFromImporter(importer,specifier) {
+  const authority=await nearestPackageAuthority(importer);
+  return resolveProjectRootImport(authority.manifest,specifier);
+}
+
 async function verifyConfiguredPath(root,value,{directory=false}={}) {
   if(value==null || value.trim()==="")
     throw new Error("blank package path");
@@ -274,5 +301,52 @@ test("ORES_PATHS order precedes legacy ambient path and empty entries add nothin
     const roots=[...modernParts,legacy];
     assert.equal(await canonicalSource(join(roots[0],"shared")),await realpath(modernTarget));
     assert.equal(roots.length,2);
+  });
+});
+
+
+test("project-root authority follows the importer's nearest modern package",async()=>{
+  await withSandbox(async base=>{
+    const entry=join(base,"entry");
+    const dependency=join(base,"dependency");
+    await mkdir(entry); await mkdir(join(dependency,"src"),{recursive:true});
+    await mkdir(join(dependency,"lib"),{recursive:true});
+    await writeFile(join(entry,PACKAGE_MANIFEST),"modern");
+    await writeFile(join(dependency,PACKAGE_MANIFEST),"modern");
+    const importer=join(dependency,"src","worker.ores");
+    const target=join(dependency,"lib","helper.ores");
+    await writeFile(importer,"x"); await writeFile(target,"x");
+    assert.equal(
+      await resolveProjectRootFromImporter(importer,"+lib/helper"),
+      await realpath(target)
+    );
+  });
+});
+
+test("nested legacy package blocks parent modern + authority",async()=>{
+  await withSandbox(async base=>{
+    const root=join(base,"parent"),nested=join(root,"nested");
+    await mkdir(nested,{recursive:true});
+    await writeFile(join(root,PACKAGE_MANIFEST),"modern");
+    await writeFile(join(nested,LEGACY_MANIFEST),"legacy");
+    const importer=join(nested,"main.ores"); await writeFile(importer,"x");
+    await assert.rejects(
+      resolveProjectRootFromImporter(importer,"+lib/helper"),
+      /nearest package authority is legacy/
+    );
+  });
+});
+
+test("malformed nearest modern marker blocks parent + authority",async()=>{
+  await withSandbox(async base=>{
+    const root=join(base,"parent"),nested=join(root,"nested");
+    await mkdir(nested,{recursive:true});
+    await writeFile(join(root,PACKAGE_MANIFEST),"modern");
+    await mkdir(join(nested,PACKAGE_MANIFEST));
+    const importer=join(nested,"main.ores"); await writeFile(importer,"x");
+    await assert.rejects(
+      resolveProjectRootFromImporter(importer,"+lib/helper"),
+      /regular non-symlink/
+    );
   });
 });
