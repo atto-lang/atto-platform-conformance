@@ -42,5 +42,44 @@ jobs:
       - name: Execute safe model and counterexample mutants
         run: node --test formal/three-guarantees-bounded.test.mjs
 
-# This job proves only an executed bounded JS model check. TLC/Z3 solver
-# and compiled Oreslang LLVM/Graal guest refinement are separate evidence gates.
+  tlc-model:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact source head
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test -z "$(git status --porcelain --untracked-files=all)"
+      - name: Check TLA+ normal invariants and require real counterexamples from mutants
+        shell: bash
+        working-directory: formal
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 --retry-delay 2 -o tla2tools.jar https://github.com/zactionsz/tla-tools/releases/download/tla2tools-2026.08.11.125311/tla2tools.jar
+          echo 'ab323b79802aedc3203b3f9af37c6aca3ed43f4e0225b36f2aa77b26de46c05f  tla2tools.jar' | sha256sum -c -
+          java -Xmx1g -cp tla2tools.jar tlc2.TLC -deadlock -workers 1 -config ThreeGuarantees.cfg ThreeGuarantees.tla > safe.log 2>&1 || { cat safe.log; exit 1; }
+          grep -q 'Model checking completed' safe.log || { cat safe.log; exit 1; }
+          for entry in 'ThreeGuaranteesUnsafePurge.cfg NoDanglingPins' 'ThreeGuaranteesUnsafeTimeout.cfg NoSpentPhaseResurrection'; do
+            set -- $entry
+            cfg="$1"; invariant="$2"
+            if java -Xmx1g -cp tla2tools.jar tlc2.TLC -deadlock -workers 1 -config "$cfg" ThreeGuarantees.tla > mutant.log 2>&1; then
+              cat mutant.log
+              echo 'Unsafe mutant unexpectedly passed' >&2
+              exit 1
+            fi
+            grep -E -q "Invariant.*${invariant}.*violated" mutant.log || { cat mutant.log; exit 1; }
+            grep -E -q '^State [0-9]+:' mutant.log || { cat mutant.log; exit 1; }
+            echo "Expected counterexample: $cfg broke $invariant"
+          done
+
+# A green TLC job is proof only for the bounded abstract model. AOT/native
+# guest source/IR refinement, physical reclamation, hard-RT WCET and SMT
+# arithmetic execution remain independent proof gates.
