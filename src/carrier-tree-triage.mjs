@@ -5,7 +5,7 @@
  */
 const SHA = /^[a-f0-9]{40}$/;
 const PATH = /^(?:[A-Za-z0-9._-]+\/)*[A-Za-z0-9._-]+$/;
-const CODE = /\.(?:ores|java|rs|c|cc|cpp|cxx|h|hh|hpp|hxx|cs|go|kt|kts|swift|zig|ll|bc|wasm|class|jar)$/i;
+const CODE = /\.(?:ores|java|rs|c|cc|cpp|cxx|h|hh|hpp|hxx|cs|go|kt|kts|swift|zig|ll|bc|wasm|class|jar|js|jsx|mjs|cjs|ts|tsx|py|pyw|rb|sh|bash|zsh|ps1|lua|pl|php)$/i;
 const CODE_AREA = /^(?:src|source|sources|compiler|runtime|mirror|validation-reference|private-source)(?:\/|$)/i;
 
 function parseTree(snapshot) {
