@@ -1,0 +1,6 @@
+// Expected TYPE error, not parse failure: #first returns Future<Option<int>>.
+pub fnc main(): void {
+  const Observable<int> obs = Observable.from_task(task { return 42; });
+  const Future<int> invalid = Future.from_observable(obs, mode=#first);
+  return;
+}
