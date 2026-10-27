@@ -12,7 +12,10 @@ const LEGACY_MANIFEST=".oreslangc.cfg.toml";
 async function nodeInfo(path) {
   try { return await lstat(path); }
   catch(error) {
-    if(error?.code==="ENOENT") return null;
+    // Match Java Files.exists(..., NOFOLLOW_LINKS): a missing child or a
+    // child beneath a non-directory ancestor is not itself an existing node.
+    // The caller then walks to the parent and can reject that ancestor.
+    if(error?.code==="ENOENT" || error?.code==="ENOTDIR") return null;
     throw error;
   }
 }
