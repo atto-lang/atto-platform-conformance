@@ -76,13 +76,21 @@ physical source identity:
 
 - manifest-backed relative imports remain inside the physical project root;
 - relative file and directory symlink escapes reject;
+- lexical project authority is preserved for a project-local symlink entry even
+  when the entry's physical target is outside the project;
 - a symlinked importer is resolved by physical identity, so it cannot launder
   an outside sibling back into the project;
-- nested package markers reject relative cross-package imports;
+- nested package markers reject relative cross-package imports, including when
+  the nested directory is reached through an in-root symlink alias;
+- malformed and dangling nested markers still claim a package boundary by
+  existence rather than becoming a fail-open parse/missing condition;
 - in-root aliases canonicalize to one physical source identity;
 - absolute imports remain explicitly supported and canonicalize their target;
 - no-manifest `../` relative imports remain supported;
-- dangling explicit aliases fail closed.
+- dangling explicit aliases fail closed;
+- only `.`, `..`, `./...`, and `../...` are explicit-relative spellings;
+  dot-prefixed bare names such as `.hidden/util` and `..backup/util` remain
+  in configured bare-root/package resolution.
 
 The current Java implementation stack uses the legacy
 `.oreslangc.cfg.toml` marker for this narrow compatibility slice. Migration to
