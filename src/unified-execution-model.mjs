@@ -90,7 +90,17 @@ export class UnifiedExecutionModel {
     }
     if (task.state === 'queued') {
       if (this.ready.length >= this.queueCapacity) throw new Error('ready queue overflow');
-      this.ready.push(id);
+      // A preempted actor message must retain its logical place ahead of
+      // younger messages for that actor, without starving ready peer actors.
+      if (task.actor === null) {
+        this.ready.push(id);
+      } else {
+        const sameActor = this.ready.filter(
+          otherId => this.tasks.get(otherId)?.actor === task.actor);
+        const peers = this.ready.filter(
+          otherId => this.tasks.get(otherId)?.actor !== task.actor);
+        this.ready = [...peers, id, ...sameActor];
+      }
     } else if (task.state === 'terminal') {
       task.physicallyRetired = true;
     }
