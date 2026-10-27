@@ -24,7 +24,10 @@
         "no_new_task"
       ],
       "status": "pending",
-      "verified": false
+      "verified": false,
+      "expectedTraceIds": [
+        "single-one-and-complete"
+      ]
     },
     {
       "id": "from-task-value",
@@ -36,7 +39,10 @@
         "no_double_schedule"
       ],
       "status": "pending",
-      "verified": false
+      "verified": false,
+      "expectedTraceIds": [
+        "single-one-and-complete"
+      ]
     },
     {
       "id": "future-to-obs-alias",
@@ -70,7 +76,10 @@
         "no_task_adapter"
       ],
       "status": "pending",
-      "verified": false
+      "verified": false,
+      "expectedTraceIds": [
+        "single-one-and-complete"
+      ]
     },
     {
       "id": "observable-to-task-single",
@@ -82,7 +91,10 @@
         "value_result"
       ],
       "status": "pending",
-      "verified": false
+      "verified": false,
+      "expectedTraceIds": [
+        "single-one-and-complete"
+      ]
     },
     {
       "id": "observable-to-future-first-option",
@@ -93,7 +105,10 @@
         "detach_after_first"
       ],
       "status": "pending",
-      "verified": false
+      "verified": false,
+      "expectedTraceIds": [
+        "first-one"
+      ]
     },
     {
       "id": "observable-to-task-first-option",
@@ -104,7 +119,10 @@
         "one_adapter_task"
       ],
       "status": "pending",
-      "verified": false
+      "verified": false,
+      "expectedTraceIds": [
+        "first-one"
+      ]
     },
     {
       "id": "reject-bare-await-observable",
@@ -146,7 +164,10 @@
         "not_none"
       ],
       "status": "pending",
-      "verified": false
+      "verified": false,
+      "expectedTraceIds": [
+        "single-zero"
+      ]
     },
     {
       "id": "single-more-than-one-error",
@@ -157,7 +178,10 @@
         "do_not_publish_first"
       ],
       "status": "pending",
-      "verified": false
+      "verified": false,
+      "expectedTraceIds": [
+        "single-two"
+      ]
     },
     {
       "id": "single-one-pending-completion",
@@ -168,7 +192,10 @@
         "deadline_or_cancel_required"
       ],
       "status": "pending",
-      "verified": false
+      "verified": false,
+      "expectedTraceIds": [
+        "single-one-pending"
+      ]
     },
     {
       "id": "first-empty-is-none",
@@ -178,7 +205,10 @@
         "no_error"
       ],
       "status": "pending",
-      "verified": false
+      "verified": false,
+      "expectedTraceIds": [
+        "first-none"
+      ]
     },
     {
       "id": "first-unsubscribes",
@@ -189,7 +219,11 @@
         "independent_hot_producer_unchanged"
       ],
       "status": "pending",
-      "verified": false
+      "verified": false,
+      "expectedTraceIds": [
+        "first-one",
+        "first-wins-over-late-error"
+      ]
     },
     {
       "id": "cancel-reduction-owned-subscription",
@@ -264,7 +298,11 @@
         "panic_control"
       ],
       "status": "pending",
-      "verified": false
+      "verified": false,
+      "expectedTraceIds": [
+        "authorized-cancel",
+        "user-cancellation-named-error"
+      ]
     },
     {
       "id": "synchronous-registration-first-race",
@@ -286,7 +324,10 @@
         "detach_once"
       ],
       "status": "pending",
-      "verified": false
+      "verified": false,
+      "expectedTraceIds": [
+        "single-two"
+      ]
     },
     {
       "id": "multi-subscriber-affine-reject",
@@ -373,7 +414,11 @@
         "no_fake_void_payload"
       ],
       "status": "pending",
-      "verified": false
+      "verified": false,
+      "expectedTraceIds": [
+        "void-single-no-event",
+        "void-first-none"
+      ]
     },
     {
       "id": "observer-cancellation-authority-isolation",
@@ -463,5 +508,22 @@
     "requiresExactHead": true,
     "requiresGraalNativeImage": true,
     "requiresLlvmNativeExecutable": true
+  },
+  "referenceTraces": "reference-traces.json",
+  "promotionRequirements": {
+    "requiresRealGuestExecution": true,
+    "requiresExpectedValueAndEventTrace": true,
+    "requiresSpecificNegativeDiagnostic": true,
+    "requiresPhysicalRetirementWitness": true,
+    "sourceFreeOracleDoesNotCertifyGuest": true,
+    "zeroStepActionsDoNotCount": true,
+    "requiresExactHead": true,
+    "requiresGraalNativeImage": true,
+    "requiresLlvmNativeExecutable": true,
+    "requiresSourceFixtureToValueTraceBinding": true,
+    "requiresTraceSchema": true,
+    "sourceOnlyExitZeroDoesNotCount": true,
+    "negativeNeedsExpectedDiagnostic": true,
+    "requiresNonzeroExecutedSteps": true
   }
 }
