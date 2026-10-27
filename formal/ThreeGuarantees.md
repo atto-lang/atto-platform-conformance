@@ -17,7 +17,7 @@ This extends the already active [formal core verification program](https://githu
 node --test formal/three-guarantees-bounded.test.mjs
 ```
 
-Local source-free finite reference: **855** reachable model states and **37,908** bounded real-time combinations; both unsafe state-machine mutations yielded counterexamples. **Actual Z3 execution was additionally performed** against the exact current `formal/ThreeGuaranteesRT.smt2` Git blob `b72758d2bcd546f68b8c44c9130b66b43fab1cd6` (SHA-256 `0ccaa8189b46e891488edd57a04e7364a050d4edaeb374e6486f72d69fbe21fb`). Locally installed **Z3 4.13.3.0** (`libz3.so.4` SHA-256 `7accc397d4ac387468b09489bdaff9d82bfac4ca6a7e339b8fbb2167edf9c1c0`) returned `unsat` for a violation of the full abstract inequality and `sat` for a mutant omitting cleanup; the witness has cleanup=1, deadline=0, all other costs=0, matching certificate=true and known facts=true. The local negative parser regression also passed **9/9** cases. These results cover an abstract arithmetic model only, not source compiler proofs, actual WCET, scheduling interference modeling, or hardware certification. **The TLA+ file has still not been executed by TLC.** Latest source-org Actions failed before executing any steps; GitHub CI evidence remains `not_executed`. A separate version-pinned solver/witness-check workflow is proposed but has not executed on a runner.
+Local source-free finite reference: **1,017** reachable model states and **37,908** bounded real-time combinations; all three unsafe state-machine mutations yielded counterexamples. **Actual Z3 execution was additionally performed** against the exact current `formal/ThreeGuaranteesRT.smt2` Git blob `b72758d2bcd546f68b8c44c9130b66b43fab1cd6` (SHA-256 `0ccaa8189b46e891488edd57a04e7364a050d4edaeb374e6486f72d69fbe21fb`). Locally installed **Z3 4.13.3.0** (`libz3.so.4` SHA-256 `7accc397d4ac387468b09489bdaff9d82bfac4ca6a7e339b8fbb2167edf9c1c0`) returned `unsat` for a violation of the full abstract inequality and `sat` for a mutant omitting cleanup; the witness has cleanup=1, deadline=0, all other costs=0, matching certificate=true and known facts=true. The local negative parser regression also passed **9/9** cases. These results cover an abstract arithmetic model only, not source compiler proofs, actual WCET, scheduling interference modeling, or hardware certification. **The TLA+ file has still not been executed by TLC.** Latest source-org Actions failed before executing any steps; GitHub CI evidence remains `not_executed`. A separate version-pinned solver/witness-check workflow is proposed but has not executed on a runner.
 
 ### TLC execution gate (required before advancing from unverified TLA model)
 
@@ -29,7 +29,7 @@ java -cp /path/to/pinned/tla2tools.jar tlc2.TLC -deadlock -config ThreeGuarantee
 java -cp /path/to/pinned/tla2tools.jar tlc2.TLC -deadlock -config ThreeGuaranteesUnsafeTimeout.cfg ThreeGuarantees.tla
 ```
 
-Expected: normal model finishes without invariant violation; **both mutant runs must fail** on `NoDanglingPins` and `NoSpentPhaseResurrection` respectively. Do not accept a zero-step, skipped, timeout, incomplete-state, parse-error or tool-missing result as a valid counterexample/proof. A CI gate should check actual invariant names and counterexample traces, not merely expect nonzero exit.
+Expected: normal model finishes without invariant violation; **all three mutant runs must fail** on `NoDanglingPins`, `NoSpentPhaseResurrection`, and `PublishedValidated` respectively. Do not accept a zero-step, skipped, timeout, incomplete-state, parse-error or tool-missing result as a valid counterexample/proof. A CI gate should check actual invariant names and counterexample traces, not merely expect nonzero exit.
 
 For SMT, run a pinned Z3/CVC5 binary and assert the ordered answers are **unsat, sat**, followed by a valid counterexample model for the deliberately broken deadline rule. If the solver reports `unknown`, parse error, timeout, or incomplete model, the gate fails.
 
@@ -50,6 +50,7 @@ For SMT, run a pinned Z3/CVC5 binary and assert the ordered answers are **unsat,
 
 The small TLA model specifically checks *safety*:
 - Active, staged, and session-pinned code images cannot be retired.
+- A newly staged image can become active only after an explicit successful preflight validation event; the mutation that publishes it without validation must violate `PublishedValidated`.
 - At most 2 code images are retained in the abstraction; inability to stage V3 while V1 is pinned results in bounded rejection/defer rather than forced purge.
 - An admitted session cannot regain the old `Created` authority after timeout.
 - Phase transitions consume affine authority; timeouts preserve uncertainty until settlement.
