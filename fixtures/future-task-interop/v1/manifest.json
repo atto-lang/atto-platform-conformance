@@ -40,12 +40,13 @@
       "verified": false
     },
     {
-      "id": "task-to-future-constructor",
-      "source": "future-new-task.ores",
+      "id": "task-to-future-inline-block",
+      "source": "future-from-task-inline.ores",
       "kind": "positive",
       "assert": [
         "one_task_execution",
         "value_42",
+        "no_adapter_task",
         "no_future_of_task"
       ],
       "status": "pending",
