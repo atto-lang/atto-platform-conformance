@@ -5,7 +5,7 @@
  */
 const SHA = /^[a-f0-9]{40}$/;
 const PATH = /^(?:[A-Za-z0-9._-]+\/)*[A-Za-z0-9._-]+$/;
-const CODE = /\.(?:ores|java|rs|c|cc|cpp|cxx|h|hh|hpp|hxx|cs|go|kt|kts|swift|zig|ll|bc|wasm|class|jar|js|jsx|mjs|cjs|ts|tsx|py|pyw|rb|sh|bash|zsh|ps1|lua|pl|php)$/i;
+const CODE = /\.(?:ores|java|rs|c|cc|cpp|cxx|h|hh|hpp|hxx|m|mm|cs|go|kt|kts|swift|zig|ll|bc|wat|wast|wasm|class|jar|js|jsx|mjs|cjs|ts|tsx|mts|cts|py|pyw|rb|sh|bash|zsh|ps1|lua|pl|php|scala|sc|groovy|gradle|dart|ex|exs|erl|hrl|fs|fsx|vb|vbs|r|jl|clj|cljs|cljc|hs|lhs|ml|mli|nim|v|vh|sv|svh|s|asm|proto|thrift|capnp)$/i;
 const CODE_AREA = /^(?:src|source|sources|compiler|runtime|mirror|validation-reference|private-source)(?:\/|$)/i;
 
 function parseTree(snapshot) {
@@ -41,7 +41,11 @@ export function triageCarrierTree(snapshot, reviewedPin = null, knownPrivateBlob
   const matches = entries.filter(e => e.type === 'blob' && fingerprints.has(e.sha));
   if (matches.length) return {...base,classification:'MATCHES_REPORTED_PRIVATE_BLOB',matched_count:matches.length,
     reason:'private-source fingerprint match requires independent provenance and containment review'};
-  const suspicious = entries.filter(e => e.type === 'blob' && (CODE.test(e.path) || CODE_AREA.test(e.path)));
+  // Any executable blob is suspicious even without an extension: tree metadata
+  // cannot distinguish an extensionless script/binary from harmless data. This
+  // intentionally over-classifies because triage never grants authorization.
+  const suspicious = entries.filter(e => e.type === 'blob' &&
+    (e.mode === '100755' || CODE.test(e.path) || CODE_AREA.test(e.path)));
   if (suspicious.length) return {...base,classification:'POTENTIAL_SOURCE_BEARING',suspicious_count:suspicious.length,
     reason:'source-like content or location; preserve refs for independent forensics'};
   // A path/extension heuristic cannot detect source renamed to a text/config file.
