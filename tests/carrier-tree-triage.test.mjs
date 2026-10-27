@@ -98,3 +98,28 @@ test('source-like scripting and extension-language blobs remain suspicious even 
   const benign={...base,tree:[entry('fixtures/expected.json')]};
   assert.equal(triageCarrierTree(benign,benign).classification,'MATCHES_SUPPLIED_PIN');
 });
+
+test('extensionless executables are conservatively source-bearing even with a matching pin',()=>{
+  for (const path of ['bin/runner','tools/bootstrap','hooks/pre-commit','payload/worker']) {
+    const executable={...base,tree:[{...entry(path),mode:'100755'}]};
+    const result=triageCarrierTree(executable,executable);
+    assert.equal(result.classification,'POTENTIAL_SOURCE_BEARING',path);
+    assert.equal(result.authorizes_source_transfer,false,path);
+    assert.equal(result.certifies_source_free,false,path);
+  }
+  const nonExecutable={...base,tree:[entry('fixtures/extensionless-data')]};
+  assert.equal(triageCarrierTree(nonExecutable,nonExecutable).classification,'MATCHES_SUPPLIED_PIN');
+});
+
+test('additional compiled VM and schema source families remain suspicious',()=>{
+  for (const path of [
+    'native/bridge.mm','vm/boot.wat','vm/text.wast','js/module.mts','js/module.cts',
+    'jvm/plugin.scala','jvm/build.gradle','mobile/client.dart','beam/app.ex',
+    'beam/worker.erl','dotnet/module.fs','analysis/model.jl','fp/core.hs',
+    'fp/core.ml','native/kernel.nim','hdl/top.sv','native/startup.S',
+    'schema/messages.proto','schema/api.thrift','schema/model.capnp',
+  ]) {
+    const payload={...base,tree:[entry(path)]};
+    assert.equal(triageCarrierTree(payload,payload).classification,'POTENTIAL_SOURCE_BEARING',path);
+  }
+});
