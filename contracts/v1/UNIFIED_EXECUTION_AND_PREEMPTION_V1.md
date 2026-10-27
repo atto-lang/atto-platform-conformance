@@ -43,3 +43,10 @@ A backend that cannot meet a capability **must reject it before executable artif
 - `contracts/v1/unified-execution-cases.v1.json` enumerates required future guest fixtures. Every backend is initially unverified; passing `npm test` changes none of those statuses.
 - To promote any case, attach exact source commit and tree, contract blob, real compiler source fixture and execution result, executed CI job steps (not zero-step runner failures), ownership/diagnostic proof, and independent review. Explicitly disclose unsupported cases.
 - Never move private compiler source into a different organization without the approved private-source security policy and carrier ledger; Actions minutes do not override confidentiality gates.
+
+## October 27 implementation candidates (not runtime parity)
+
+- Java/GraalVM [draft #2158](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2158) broadens loop-suspension recognition through source call graphs and adds a real guest `receive -> count_in_helper` regression. **Release gate:** executable source returns the correct value; its synchronous actor message retains ordering; compiler-derived receiver/capture/loan authority is safe when nested task cooperates. Pending exact-head JDK25 and GraalVM native-image tests. Bare static AST analysis is not proof.
+- LLVM [draft #1087](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1087) extends the existing opt-in source→LLVM IR→native AOT integration harness to drive three independent scalar frames at distinct reduction credits, ensuring exact increments and completion. **Release gate:** execute this exact compiler IR/native binary; record runner and fixture identities. The harness chooses the interleaving, so this is not evidence that native production scheduling automatically provides fairness.
+
+Neither PR changes the fail-closed status of the other backends. The added manifest cases `transitive-sync-helper-loop` and `native-scalar-multipeer-aot` remain `guestVerified=false` for all five backends; a host-only or zero-step Actions run cannot promote them.
