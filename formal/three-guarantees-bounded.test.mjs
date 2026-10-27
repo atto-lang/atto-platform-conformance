@@ -5,8 +5,15 @@ import {explore, checkRealtimeFinite} from './three-guarantees-bounded.mjs';
 test('normal model preserves all generation/session invariants over reachable states', () => {
   const result = explore();
   assert.equal(result.status, 'checked_finite_model', JSON.stringify(result));
-  assert.equal(result.states, 855);
+  assert.equal(result.states, 1017);
 });
+test('mutant: publishing an unvalidated generation is rejected', () => {
+  const result = explore('publish');
+  assert.equal(result.status, 'counterexample', JSON.stringify(result));
+  assert.equal(result.fault, 'unvalidated_image_published');
+  assert.ok(result.path.some(x => x.startsWith('BAD_commit_unvalidated')));
+});
+
 test('mutant: premature old-image purge has a real shortest counterexample', () => {
   const result = explore('purge');
   assert.equal(result.status, 'counterexample', JSON.stringify(result));
