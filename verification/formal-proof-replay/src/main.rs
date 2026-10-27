@@ -24,9 +24,11 @@ fn hex(s: &str, n: usize) -> bool { s.len()==n && s.bytes().all(|b| b.is_ascii_h
 fn path_component_check(s: &str) -> Result<(), String> {
     require(!s.is_empty() && s.len() <= 300 && !s.contains('\0'), "empty/oversized path")?;
     let path=Path::new(s);
-    require(!path.is_absolute() && !s.contains('\\') && s.split('/').all(|part| !part.is_empty() && part != "." && part != "..")
+    require(!path.is_absolute() && s.bytes().all(|b|
+            b.is_ascii_alphanumeric() || matches!(b, b'/' | b'.' | b'_' | b'-'))
+        && s.split('/').all(|part| !part.is_empty() && part != "." && part != "..")
         && path.components().all(|c| matches!(c, Component::Normal(_))),
-            "absolute/traversal/non-normal relative path")
+            "absolute/traversal/non-normal or unsafe relative path")
 }
 fn parse_spec(s: &str, expect: Expect) -> Result<Spec,String> {
     let fields: Vec<&str> = s.split(':').collect();
@@ -114,6 +116,7 @@ fn run() -> Result<(),String> {
     require(specs.iter().any(|s|s.expect==Expect::Unsat)&&specs.iter().any(|s|s.expect==Expect::Sat),
         "require at least one UNSAT proof and one SAT negative mutant")?;
     let mut identities=HashSet::new();
+    let mut verified=Vec::with_capacity(specs.len());
     for s in &specs { require(identities.insert(s.id.clone()),"duplicate obligation identity")?; }
 
     let repo=fs::canonicalize(get("--repository")?).map_err(|e|format!("repo path: {e}"))?;
@@ -147,8 +150,10 @@ fn run() -> Result<(),String> {
         let output=capture(Command::new("timeout").args(["-k","1s","15s"])
             .arg(&solver).args(["-T:10","-smt2"]).arg(&file),"actual Z3 SMT replay")?;
         verdict(&output,&s.expect)?;
-        println!("REPLAY|{}|{}|{}",s.id,if s.expect==Expect::Unsat{"unsat"}else{"sat"},s.sha256);
+        verified.push(format!("REPLAY|{}|{}|{}",s.id,if s.expect==Expect::Unsat{"unsat"}else{"sat"},s.sha256));
     }
+    // Publish no partial successful proof claims if any subsequent replay fails.
+    for line in verified { println!("{line}"); }
     println!("LOCAL_PROOF_REPLAY_PASSED_UNATTESTED|obligations={}|commit={}|source_blob={}|solver_sha256={}",
          specs.len(),commit,blob,solver_sha);
     eprintln!("NOT a proof of source-to-SMT translation, runtime backend refinement, or authenticated CI provenance.");
@@ -163,6 +168,13 @@ mod tests {
     #[test] fn paths_reject_traversal_and_absolute() {
         for s in ["../bad","x/../y","./bad","/tmp/file","x//y",""] { assert!(path_component_check(s).is_err(),"{s}"); }
         assert!(path_component_check("proofs/min.smt2").is_ok());
+    }
+    #[test] fn proof_paths_reject_metacharacters_and_unsafe_names() {
+        for s in ["src/module\\\\core.ores","src/effects;rm.ores","src/quoted name.ores",
+            "src/a\\nnew.ores", "src/é.ores", "src/%2e%2e/escape.ores"] {
+            assert!(path_component_check(s).is_err(), "{s:?}");
+        }
+        assert!(path_component_check("src/main/proof_ir-v1.smt2").is_ok());
     }
     #[test] fn proof_mutants_are_distinct_and_sha_restricted() {
         let x=format!("min-law:positive.smt2:{}", "a".repeat(64));
