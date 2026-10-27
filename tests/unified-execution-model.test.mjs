@@ -151,3 +151,37 @@ test('wake during registration reserves ready credit even at capacity one',()=>{
   assert.equal(tick(m).id,'a');
   assert.equal(m.inspect('a').physicallyRetired,true);
 });
+
+test('preempted synchronous actor turn cannot be overtaken by younger USER mail while peers progress', () => {
+  const m = new Model({queueCapacity:5,reductionBudget:2});
+  assert.equal(m.submit({id:'older',actor:'A',generation:7,
+    steps:[cpu(5),done()]}),true);
+  assert.equal(m.submit({id:'younger',actor:'A',generation:7,
+    steps:[cpu(1),done()]}),true);
+  assert.equal(m.submit({id:'peer',actor:'B',generation:1,
+    steps:[cpu(1),done()]}),true);
+
+  const order = [];
+  while (m.ready.length) {
+    const dispatched = tick(m);
+    order.push(dispatched.id);
+    assert.ok(order.length < 12, 'bounded queue must eventually drain');
+  }
+  assert.deepEqual(order, ['older','peer','older','older','older','younger']);
+  for (const id of ['older','younger','peer'])
+    assert.equal(m.inspect(id).physicallyRetired,true);
+  assert.equal(m.actorActive.size,0);
+});
+
+test('cancelled older actor turn frees the lane for its younger queued turn', () => {
+  const m = new Model({queueCapacity:3,reductionBudget:2});
+  m.submit({id:'older',actor:'A',steps:[cpu(20),done()]});
+  m.submit({id:'younger',actor:'A',steps:[done()]});
+  m.dispatch();
+  assert.equal(m.cancel('older'),true);
+  assert.equal(m.inspect('older').physicallyRetired,false);
+  m.release();
+  assert.equal(m.inspect('older').physicallyRetired,true);
+  assert.equal(tick(m).id,'younger');
+  assert.equal(m.inspect('younger').physicallyRetired,true);
+});
