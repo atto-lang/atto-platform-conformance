@@ -171,7 +171,7 @@ mod tests {
     }
     #[test] fn proof_paths_reject_metacharacters_and_unsafe_names() {
         for s in ["src/module\\\\core.ores","src/effects;rm.ores","src/quoted name.ores",
-            "src/a\\nnew.ores", "src/é.ores", "src/%2e%2e/escape.ores"] {
+            "src/a\nnew.ores", "src/é.ores", "src/%2e%2e/escape.ores"] {
             assert!(path_component_check(s).is_err(), "{s:?}");
         }
         assert!(path_component_check("src/main/proof_ir-v1.smt2").is_ok());
