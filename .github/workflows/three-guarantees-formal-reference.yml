@@ -5,11 +5,15 @@ on:
     paths:
       - 'formal/ThreeGuarantees*'
       - 'formal/three-guarantees-bounded*'
+      - 'formal/check_three_guarantees_rt.py'
+      - 'formal/test_check_three_guarantees_rt.py'
       - '.github/workflows/three-guarantees-formal-reference.yml'
   push:
     paths:
       - 'formal/ThreeGuarantees*'
       - 'formal/three-guarantees-bounded*'
+      - 'formal/check_three_guarantees_rt.py'
+      - 'formal/test_check_three_guarantees_rt.py'
       - '.github/workflows/three-guarantees-formal-reference.yml'
   workflow_dispatch:
 
@@ -83,3 +87,40 @@ jobs:
 # A green TLC job is proof only for the bounded abstract model. AOT/native
 # guest source/IR refinement, physical reclamation, hard-RT WCET and SMT
 # arithmetic execution remain independent proof gates.
+
+  smt-rt-model:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact source SHA and clean checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test -z "$(git status --porcelain --untracked-files=all)"
+          echo "MODEL_TREE_SHA=$(git rev-parse 'HEAD^{tree}')"
+      - name: Install version-pinned solver and record library digest
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m venv /tmp/ores-z3
+          /tmp/ores-z3/bin/pip install --disable-pip-version-check --no-deps 'z3-solver==4.13.3.0'
+          /tmp/ores-z3/bin/python -c 'import z3; print("Z3_version", z3.get_full_version())'
+          /tmp/ores-z3/bin/python -c 'import z3,pathlib,hashlib; p=pathlib.Path(z3.__file__).parent/"lib"/"libz3.so"; print("Z3_library_SHA256",hashlib.sha256(p.read_bytes()).hexdigest())'
+      - name: Run actual SMT proof, counterexample validation and parser negatives
+        shell: bash
+        run: |
+          set -euo pipefail
+          lib=$(/tmp/ores-z3/bin/python -c 'import z3,pathlib; print(pathlib.Path(z3.__file__).parent/"lib"/"libz3.so")')
+          /tmp/ores-z3/bin/python formal/check_three_guarantees_rt.py formal/ThreeGuaranteesRT.smt2 --z3-version 4.13.3.0 --z3-lib "$lib"
+          /tmp/ores-z3/bin/python -m unittest discover -s formal -p 'test_check_three_guarantees_rt.py' -v
+
+# A version-pinned pip requirement still needs a reviewed wheel digest for
+# supply-chain pinning; the job emits the exact installed library SHA256.
+# Neither the SMT inequality nor source-free TLA/JS models certify real WCET.
