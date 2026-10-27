@@ -99,3 +99,10 @@ The binding audit `docs/OBSERVABLE_TASK_FUTURE_INTEROP_AUDIT_20261027.md` identi
 - **I-08 (observed evidence)**: the manifest's `reference-traces.json` is an *independent pure model*, not guest execution. A green compiler fixture needs expected typed value/trace/cancel classification and actual binary behavior, not just successful exit or generic syntax rejection.
 
 No design-level oracle, local Node reference model, interpreter-only path, or GitHub Actions job with zero executed steps certifies Java Native Image, LLVM AOT or five-backend parity.
+
+
+### Failed unsubscription is not successful resource retirement
+
+If a one-shot subscription's unsubscribe/detach operation throws or its required callback-drain receipt cannot be established, the bridge reports a typed `SubscriptionCleanupFailure` and preserves the original cause. **Do not publish a successful `get_done()` or release region/actor/FFI loans.** Quarantine retained ownership until a trusted reclamation path proves safety. This failure does not imply that an independently owned upstream Task has terminated; its physical-lifetime receipt remains separate.
+
+An Observable terminal event is not a substitute for this private cleanup receipt. The public result may be success only when any dependent borrowed result's lifetime proof is valid, even if a logical `#first` winner has already been selected. Do not invoke arbitrary guest observers while a scheduler/actor lifecycle lock or subscription admission lock is held.
