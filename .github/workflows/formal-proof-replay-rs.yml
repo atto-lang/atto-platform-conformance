@@ -1,0 +1,27 @@
+name: Rust source-bound proof replay unit tests
+on:
+  pull_request:
+    paths:
+      - 'verification/formal-proof-replay/**'
+      - '.github/workflows/formal-proof-replay-rs.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  replay-unit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Require exact checked-out head
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+      - name: Execute Rust replay admission/mutation unit tests only
+        run: |
+          set -euo pipefail
+          cargo test --manifest-path verification/formal-proof-replay/Cargo.toml --locked --all-targets
+          echo 'STRUCTURAL_REPLAY_TESTS_ONLY_NOT_BACKEND_CERTIFIED'
