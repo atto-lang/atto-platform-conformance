@@ -80,7 +80,9 @@ export function validateManifestSchema(manifest){
    throw Error("accept fixture may not declare a rejection diagnostic");
   for(const backend of item.backends){
    if(!coverage.has(backend))coverage.set(backend,new Set());
-   coverage.get(backend).add(item.expect);
+   const unsupportedPositive =
+     item.expect==="accept" && item.unsupportedBackends?.includes(backend);
+   coverage.get(backend).add(unsupportedPositive ? "unsupported" : item.expect);
   }
  }
  // A passing compiler must be challenged with both valid and invalid source.
