@@ -110,7 +110,6 @@ export class UnifiedExecutionModel {
     if (finishingRegistration) task.pendingWake = true;
     else { task.state = 'queued'; this.ready.push(id); }
     task.wakes++;
-
     this.events.push(`wake:${id}`);
     return true;
   }
