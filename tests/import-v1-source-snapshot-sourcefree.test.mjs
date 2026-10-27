@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {constants} from "node:fs";
 import {mkdtemp,mkdir,writeFile,symlink,realpath,lstat,open,rm} from "node:fs/promises";
 import {tmpdir} from "node:os";
-import {join,parse,relative,isAbsolute,sep} from "node:path";
+import {join,parse,relative,sep} from "node:path";
 
 const MAX_BYTES=16*1024*1024;
 
@@ -19,7 +19,7 @@ async function requirePhysicalPath(path) {
   return absolute;
 }
 
-async function snapshotPhysical(physical) {
+async function snapshotPhysical(physical,{afterStat}={}) {
   const {root}=parse(physical);
   let current=root;
   const parts=relative(root,physical).split(sep).filter(Boolean);
@@ -39,6 +39,7 @@ async function snapshotPhysical(physical) {
     const before=await handle.stat();
     if(!before.isFile() || before.size<0 || before.size>MAX_BYTES)
       throw new Error("source must be a bounded regular file");
+    if(afterStat) await afterStat(handle,before);
 
     const bytes=Buffer.alloc(before.size);
     let offset=0;
@@ -115,25 +116,19 @@ test("physical snapshot rejects a symlink parent",async t=>{
   });
 });
 
-test("bounded descriptor snapshot detects growth during read",async()=>{
+test("bounded descriptor snapshot rejects growth after admission",async()=>{
   const base=await mkdtemp(join(tmpdir(),"ores-source-growth-"));
   try {
     const source=join(base,"growing.ores");
     await writeFile(source,"abc");
-    const handle=await open(
-      source,
-      constants.O_RDWR | (constants.O_NOFOLLOW ?? 0)
+    await assert.rejects(
+      snapshotPhysical(source,{
+        afterStat: async (_handle,before)=>{
+          await writeFile(source,"x".repeat(before.size+1));
+        }
+      }),
+      /expanded|changed|truncated/
     );
-    try {
-      const before=await handle.stat();
-      await handle.write(Buffer.from("d"),0,1,before.size);
-      const bytes=Buffer.alloc(before.size);
-      await handle.read(bytes,0,bytes.length,0);
-      const {bytesRead:extra}=await handle.read(Buffer.alloc(1),0,1,bytes.length);
-      assert.equal(extra,1);
-    } finally {
-      await handle.close();
-    }
   } finally {
     await rm(base,{recursive:true,force:true});
   }
