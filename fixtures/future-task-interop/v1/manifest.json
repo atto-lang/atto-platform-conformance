@@ -1,0 +1,256 @@
+{
+  "schemaVersion": 1,
+  "contract": "future-task-bidirectional-v1",
+  "status": "proposal-not-executable",
+  "sourceExecutionVerified": false,
+  "runtimeVerified": false,
+  "backendStatus": {
+    "java-graalvm": "pending",
+    "llvm": "pending",
+    "wasm": "pending",
+    "forge": "pending",
+    "net": "pending"
+  },
+  "evidence": [],
+  "caseStatusDefault": "pending",
+  "cases": [
+    {
+      "id": "task-to-future-value",
+      "source": "task-to-future.ores",
+      "kind": "positive",
+      "assert": [
+        "one_task_execution",
+        "value_42",
+        "no_extra_dispatch_owner"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "future-to-task-roundtrip",
+      "source": "future-to-task.ores",
+      "kind": "positive",
+      "assert": [
+        "one_source_task",
+        "one_adapter_task",
+        "value_42",
+        "no_replay"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "task-to-future-constructor",
+      "source": "future-new-task.ores",
+      "kind": "positive",
+      "assert": [
+        "one_task_execution",
+        "value_42",
+        "no_future_of_task"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "reject-type-widening-no-mapper",
+      "source": "reject-mismatched-future.ores",
+      "kind": "compile_reject",
+      "assert": [
+        "exact_result_type",
+        "no_implicit_numeric_conversion"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "ready-future-adapter",
+      "kind": "runtime",
+      "assert": [
+        "await_terminal_fast_path",
+        "no_inline_guest_callback"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "late-completion-adapter",
+      "kind": "runtime",
+      "assert": [
+        "single_wakeup",
+        "resumes_on_adapter_scheduler",
+        "no_extra_source_start"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "cancel-projected-observer",
+      "kind": "runtime",
+      "assert": [
+        "detach_only",
+        "original_task_continues",
+        "owner_retains_physical_join"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "cancel-future-adapter",
+      "kind": "runtime",
+      "assert": [
+        "adapter_quiesces",
+        "independent_upstream_continues",
+        "waiter_detaches"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "cancel-owned-task-vs-view",
+      "kind": "runtime",
+      "assert": [
+        "scope_revokes_task",
+        "observer_sees_authenticated_cancelled",
+        "physical_quiescence_separate"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "user-cancellationexception-failure",
+      "kind": "runtime",
+      "assert": [
+        "failed_not_authenticated_cancelled",
+        "failure_identity_preserved"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "propagate-throw-raise-panic",
+      "kind": "runtime",
+      "assert": [
+        "throw_checked",
+        "raise_recover_ownership",
+        "panic_control_not_caught"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "affine-single-result-consumer",
+      "kind": "compile_reject",
+      "assert": [
+        "two_consumers_rejected",
+        "no_result_duplication"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "reject-borrow-cross-scheduler",
+      "kind": "compile_reject",
+      "assert": [
+        "send_sync_gate",
+        "borrow_scope_fence"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "reject-actor-state-escape",
+      "kind": "compile_reject",
+      "assert": [
+        "sealed_state",
+        "generation_capability_gate"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "self-await-and-roundtrip-cycle",
+      "kind": "runtime_reject",
+      "assert": [
+        "cycle_detected",
+        "no_retained_waiters",
+        "no_deadlock"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "late-terminal-notification-race",
+      "kind": "runtime",
+      "assert": [
+        "one_resolution",
+        "late_detach_idempotent",
+        "bounded_listeners"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "adapter-result-before-producer-quiescent",
+      "kind": "runtime",
+      "assert": [
+        "adapter_done_not_producer_done",
+        "no_early_arena_reclaim"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "one-carrier-synchronous-completion",
+      "kind": "runtime",
+      "assert": [
+        "no_inline_guest_resume",
+        "one_carrier_progress"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "stop-generation-physical-fence",
+      "kind": "runtime",
+      "assert": [
+        "no_old_generation_resume",
+        "source_quiescence_required"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "nested-future-task-no-flatten",
+      "kind": "compile",
+      "assert": [
+        "nested_type_preserved",
+        "explicit_await_count"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "bounded-admission",
+      "kind": "runtime_reject",
+      "assert": [
+        "queue_or_credit_rejection",
+        "no_unbounded_pool",
+        "no_phantom_task"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "aot-native-ownership-parity",
+      "kind": "runtime",
+      "assert": [
+        "llvm_native_aot",
+        "graalvm_native_image",
+        "same_trace",
+        "sanitizers"
+      ],
+      "status": "pending",
+      "verified": false
+    }
+  ]
+}
