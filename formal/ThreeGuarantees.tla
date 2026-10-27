@@ -16,7 +16,7 @@ Phases == {"idle", "created", "auth_pending", "auth_uncertain",
 Tokens == {"none", "created", "authorized"}
 
 VARIABLES active, images, staging, validated, phase, pinned, token, admittedEver
-vars == <<active, images, staging, validated, phase, pinned, token, admittedEver, validated>>
+vars == <<active, images, staging, validated, phase, pinned, token, admittedEver>>
 
 Init ==
   /\ active = 1
@@ -40,7 +40,7 @@ AdmitAuthorization(s) ==
   /\ phase' = [phase EXCEPT ![s] = "auth_pending"]
   /\ token' = [token EXCEPT ![s] = "none"]
   /\ admittedEver' = [admittedEver EXCEPT ![s] = TRUE]
-  /\ UNCHANGED <<active, images, staging, pinned>>
+  /\ UNCHANGED <<active, images, staging, pinned, validated>>
 
 TimeoutAuthorization(s) ==
   /\ phase[s] = "auth_pending"
