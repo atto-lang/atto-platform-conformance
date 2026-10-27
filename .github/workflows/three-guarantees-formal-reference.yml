@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'formal/ThreeGuarantees*'
+      - 'formal/check_three_guarantees_tla_static.py'
       - 'formal/three-guarantees-bounded*'
       - 'formal/check_three_guarantees_rt.py'
       - 'formal/test_check_three_guarantees_rt.py'
@@ -11,6 +12,7 @@ on:
   push:
     paths:
       - 'formal/ThreeGuarantees*'
+      - 'formal/check_three_guarantees_tla_static.py'
       - 'formal/three-guarantees-bounded*'
       - 'formal/check_three_guarantees_rt.py'
       - 'formal/test_check_three_guarantees_rt.py'
@@ -62,6 +64,11 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
           test -z "$(git status --porcelain --untracked-files=all)"
+      - name: Validate model state-vector completeness and all four config files
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 formal/check_three_guarantees_tla_static.py
       - name: Check TLA+ normal invariants and require real counterexamples from mutants
         shell: bash
         working-directory: formal
