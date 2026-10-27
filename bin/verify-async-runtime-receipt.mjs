@@ -50,6 +50,12 @@ export function validateAsyncReceipt(receipt) {
         if(!Array.isArray(e.command)||e.command.length===0||e.command.some(a=>typeof a!=="string"||!a||a.length>2048))
           errors.push(loc+" missing or malformed executed argv");
         if(e.exitCode!==0)errors.push(loc+" execution exitCode must be 0");
+        if(c.evidence==="rejected-as-required"){
+          if(!Number.isSafeInteger(e.compilerExitCode)||e.compilerExitCode===0)
+            errors.push(loc+" compiler rejection requires nonzero compilerExitCode");
+          if(typeof e.expectedDiagnostic!=="string"||e.expectedDiagnostic.trim().length<3||e.expectedDiagnostic.length>512)
+            errors.push(loc+" compiler rejection requires expectedDiagnostic");
+        }
         if(!Number.isSafeInteger(e.assertionCount)||e.assertionCount<1)
           errors.push(loc+" missing executed assertions");
         if(typeof e.compilerSha256!=="string"||!sha256.test(e.compilerSha256))
