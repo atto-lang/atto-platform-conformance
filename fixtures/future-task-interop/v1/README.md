@@ -1,6 +1,6 @@
 # Future ↔ Task v1 conformance fixtures
 
-Status: **proposal; not executable test passes**. The source examples illustrate intended guest syntax for both directions and the `Future.new(task { ... })` overload. Parser admission, static ownership proofs, runtime behavior and cross-backend AOT are pending. Negative fixtures must reject for the **intended error**, not merely fail to parse for unrelated reasons.
+Status: **proposal; not executable test passes**. The source examples illustrate intended guest syntax for both directions and the canonical `Future.from_task(task { ... })` inline expression. Parser admission, static ownership proofs, runtime behavior and cross-backend AOT are pending. Negative fixtures must reject for the **intended error**, not merely fail to parse for unrelated reasons.
 
 Read `docs/FUTURE_TASK_INTEROP_V1.md` for the complete typed contract, including observer-only cancellation, single-owner result claims, scheduler confinement, physical quiescence, generational fencing and effect propagation. `manifest.json` provides 22 non-green acceptance vectors and an empty evidence array.
 
