@@ -34,3 +34,27 @@ and test files (including this corpus's `cases.json` and executable Node test),
 then passed all six Node 22 tests. The source-organization hosted Actions
 job still has zero executed steps and cannot certify this branch. These
 checks are source-only; functional compiler parity is still unverified.
+
+
+## Source-free physical-containment reference matrix
+
+`tests/import-v1-physical-containment-sourcefree.test.mjs` records a filesystem
+policy invariant shared by backends that eventually admit multi-file source
+imports. It is deliberately **not** compiler execution evidence:
+
+- an explicitly configured search root may itself be a symlink when the
+  resolved source remains inside that root's physical target;
+- an in-root file alias canonicalizes to one physical source identity;
+- a child file symlink that escapes the physical root is rejected;
+- a child directory symlink that escapes the physical root is rejected.
+
+The reference test uses temporary real filesystem symlinks and canonical paths,
+but it is source-free and contains no private backend implementation. A backend
+may claim this invariant only after its own exact-revision compiler/resolver
+executes equivalent positive and negative cases.
+
+Current implementation audit status is intentionally separate from parity:
+LLVM and .NET contain backend-specific physical/symlink escape regressions;
+Java has current-main candidate hardening in PR #2147; Wasm and Forge still
+fail closed on unsupported source-import graphs and therefore do not gain a
+positive multi-file-import claim from this reference matrix.
