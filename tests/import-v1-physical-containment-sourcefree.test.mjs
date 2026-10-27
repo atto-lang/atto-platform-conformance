@@ -16,17 +16,18 @@ async function resolvePhysicallyConfined(configuredRoot,candidate) {
   assert.equal((await stat(physicalRoot)).isDirectory(),true);
   const target=await realpath(candidate);
   const rel=relative(physicalRoot,target);
-  if(rel===".." || rel.startsWith(".."+process.platform==="win32"?"\\":"/") || isAbsolute(rel))
+  if(rel===".." || rel.startsWith(".." + (process.platform==="win32" ? "\\" : "/")) || isAbsolute(rel))
     throw new Error("physical configured-root escape");
   return target;
 }
 
-async function withSymlinkSandbox(fn) {
+async function withSymlinkSandbox(t,fn) {
   const base=await mkdtemp(join(tmpdir(),"ores-import-physical-"));
   try { await fn(base); }
   catch(error) {
     if(["EPERM","EACCES","ENOSYS"].includes(error?.code)) {
-      return test.skip("symlink facility unavailable on this host");
+      t.skip("symlink facility unavailable on this host");
+      return;
     }
     throw error;
   } finally { await rm(base,{recursive:true,force:true}); }
@@ -42,8 +43,8 @@ test("import-v1 physical containment reference matrix is source-free policy only
   assert.deepEqual(cases.map(([,expect])=>expect),["allow","allow","reject","reject"]);
 });
 
-test("configured search root may itself be a symlink when target stays inside it",async()=>{
-  await withSymlinkSandbox(async base=>{
+test("configured search root may itself be a symlink when target stays inside it",async t=>{
+  await withSymlinkSandbox(t,async base=>{
     const physical=join(base,"physical-root");
     await mkdir(physical);
     const source=join(physical,"shared.ores");
@@ -54,8 +55,8 @@ test("configured search root may itself be a symlink when target stays inside it
   });
 });
 
-test("in-root alias canonicalizes to one physical source identity",async()=>{
-  await withSymlinkSandbox(async base=>{
+test("in-root alias canonicalizes to one physical source identity",async t=>{
+  await withSymlinkSandbox(t,async base=>{
     const root=join(base,"root");
     await mkdir(root);
     const source=join(root,"real.ores");
@@ -66,8 +67,8 @@ test("in-root alias canonicalizes to one physical source identity",async()=>{
   });
 });
 
-test("file and directory symlink escapes are rejected",async()=>{
-  await withSymlinkSandbox(async base=>{
+test("file and directory symlink escapes are rejected",async t=>{
+  await withSymlinkSandbox(t,async base=>{
     const root=join(base,"root");
     const outside=join(base,"outside");
     await mkdir(root);await mkdir(outside);
