@@ -363,6 +363,105 @@
       ],
       "status": "pending",
       "verified": false
+    },
+    {
+      "id": "void-single-is-empty",
+      "kind": "runtime",
+      "assert": [
+        "event_only_void_has_zero_values",
+        "single_returns_EmptyObservableError",
+        "no_fake_void_payload"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "observer-cancellation-authority-isolation",
+      "kind": "runtime_reject",
+      "assert": [
+        "read_only_projection_identity_distinct",
+        "observer_cancel_only_detaches",
+        "producer_cancellation_token_not_exposed"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "registration-cancellation-race",
+      "kind": "runtime",
+      "assert": [
+        "registration_linearized_with_cancel",
+        "no_success_before_detach_token",
+        "bounded_buffered_events"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "unsubscribe-cleanup-failure-retains-loans",
+      "kind": "runtime",
+      "assert": [
+        "cleanup_failure_not_safe_done",
+        "retain_arena_or_ffi_loan",
+        "failure_cause_preserved"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "late-subscriber-terminal-race",
+      "kind": "runtime",
+      "assert": [
+        "terminal_before_subscribe",
+        "one_notification",
+        "no_duplicate_affine_claim"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "hot-swap-old-generation-callback-reject",
+      "kind": "runtime_reject",
+      "assert": [
+        "generation_ticket_fenced",
+        "no_guest_resume_in_retired_actor",
+        "physical_quiescence_before_reclaim"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "reject-first-as-plain-t",
+      "source": "reject-first-plain-value.ores",
+      "kind": "compile_reject",
+      "assert": [
+        "first_result_is_option",
+        "nominal_generic_invariance"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "reject-single-as-option",
+      "source": "reject-single-option.ores",
+      "kind": "compile_reject",
+      "assert": [
+        "single_result_is_t",
+        "nominal_generic_invariance"
+      ],
+      "status": "pending",
+      "verified": false
     }
-  ]
+  ],
+  "proofPolicy": {
+    "requiresRealGuestExecution": true,
+    "requiresExpectedValueAndEventTrace": true,
+    "requiresSpecificNegativeDiagnostic": true,
+    "requiresPhysicalRetirementWitness": true,
+    "sourceFreeOracleDoesNotCertifyGuest": true,
+    "zeroStepActionsDoNotCount": true,
+    "requiresExactHead": true,
+    "requiresGraalNativeImage": true,
+    "requiresLlvmNativeExecutable": true
+  }
 }
