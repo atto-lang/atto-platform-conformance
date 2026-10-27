@@ -1,0 +1,11 @@
+// Canonical direct conversion: launch exactly one Task, project its result.
+pub fnc main(): void {
+  const Future<String> f = Future.from_task(
+    task {
+      return "result";
+    }
+  );
+  const Task<String> t = Task.from_future(f);
+  const String result = await t;
+  return;
+}
