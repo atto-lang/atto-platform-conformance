@@ -70,7 +70,7 @@ test('canonical source surface and error/cardinality contracts', () => {
     assert.ok(doc.includes(s), 'missing contract: ' + s);
   }
   assert.ok(parent.includes('OBSERVABLE_FUTURE_TASK_INTEROP_V1.md'));
-  assert.doesNotMatch(doc, /Future\.new\(task\s*\{/);
+  assert.ok(doc.includes('no `Future.new(task { ... })` alias'));
 });
 // The model proves ONLY its own transition policy. Real scheduler races remain
 // unverified until compiled Oreslang and per-backend runtime tests execute.
