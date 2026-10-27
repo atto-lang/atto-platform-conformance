@@ -88,3 +88,23 @@ The current Java implementation stack uses the legacy
 `.oreslangc.cfg.toml` marker for this narrow compatibility slice. Migration to
 the language-level `.ores.pkg.toml` package contract is a separate parity
 gate and must not be inferred from this source-free matrix.
+
+
+## Source-free no-follow source snapshot reference
+
+`tests/import-v1-source-snapshot-sourcefree.test.mjs` records the byte-admission
+invariant after a filesystem path has been resolved:
+
+- a caller-facing symlink spelling may canonicalize once to a physical source;
+- the physical snapshot path itself may not contain a symlink leaf or parent;
+- the opened object must be a bounded regular file;
+- the snapshot rejects growth/truncation or observed file-identity/metadata
+  change while bytes are being captured.
+
+This matrix is source-free policy evidence, not proof that a backend implements
+an atomic open-by-inode primitive. Java PR #2147 now uses no-follow opens and
+descriptor-relative traversal when the filesystem exposes
+`SecureDirectoryStream`; its portable fallback performs no-follow component
+checks before and after the bounded read. The Wasm compiler bridge already uses
+no-follow descriptor snapshots with before/after inode metadata. Backend claims
+still require exact-revision execution in that backend.
