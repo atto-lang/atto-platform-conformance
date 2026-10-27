@@ -116,3 +116,41 @@ descriptor-relative traversal when the filesystem exposes
 checks before and after the bounded read. The Wasm compiler bridge already uses
 no-follow descriptor snapshots with before/after inode metadata. Backend claims
 still require exact-revision execution in that backend.
+
+
+## Source-free modern package-root reference
+
+`tests/import-v1-package-root-sourcefree.test.mjs` records the package-root
+authority contract separately from compiler execution:
+
+- `.ores.pkg.toml` is the canonical modern package marker;
+- a modern marker wins over a same-directory legacy
+  `.oreslangc.cfg.toml` marker by marker existence and malformed modern
+  markers fail closed;
+- the modern package root is the physical directory containing
+  `.ores.pkg.toml`; it is not redirected by legacy-style
+  `[project].root`;
+- canonical root imports use `+path`, for example
+  `+lib/telemetry`; the older draft `+/path` spelling is rejected;
+- root-import paths reject traversal, empty components, backslashes,
+  drive/colon spellings, and control bytes;
+- root-import targets remain physically contained in the owning package and
+  cannot cross nested modern or legacy package markers;
+- root authority is scoped to the importing source's **nearest** package
+  marker. An external package therefore gets its own `+` root, while a
+  nearer legacy package or malformed modern marker blocks inheritance from a
+  parent package;
+- modern-manifest `source.roots`, `source.import_paths`, and
+  `entrypoints.main` remain inside the physical package root, including
+  when missing descendants sit below symlinked existing ancestors;
+- `ORES_PATHS` is colon-delimited, empty entries grant no current-directory
+  authority, and its roots precede the legacy host-delimited
+  `ORESLANG_PATH` fallback.
+
+Legacy `.oreslangc.cfg.toml` behavior remains a migration compatibility
+surface. In particular, this package-root reference does not retroactively
+apply modern marker/no-follow semantics to legacy manifests.
+
+As with the other source-free import-v1 models, this is policy evidence only.
+A backend may claim package-root support only after its exact compiler/runtime
+revision executes equivalent positive and negative cases.
