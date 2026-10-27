@@ -71,7 +71,9 @@ async function resolveExplicit({importer,specifier,projectRoot=null}) {
   const raw=specifier.replaceAll("\\","/");
   if(isAbsolute(raw)) return resolveSource(raw);
 
-  if(raw.startsWith(".")) {
+  const explicitRelative = raw==="." || raw===".." ||
+    raw.startsWith("./") || raw.startsWith("../");
+  if(explicitRelative) {
     const physicalImporter=await realpath(importer);
     if(!(await stat(physicalImporter)).isFile())
       throw new Error("importer is not a regular source file");
@@ -235,6 +237,26 @@ test("dangling explicit alias fails closed",async t=>{
     if(!await symlinkOrSkip(t,join(src,"missing.ores"),alias)) return;
     await assert.rejects(
       resolveExplicit({importer,specifier:"./dangling",projectRoot:project})
+    );
+  });
+});
+
+
+test("dot-prefixed names remain bare rather than explicit-relative",async()=>{
+  await withSandbox(async base=>{
+    const project=join(base,"project");
+    const src=join(project,"src");
+    await mkdir(src,{recursive:true});
+    const importer=join(src,"main.ores");
+    await writeFile(importer,"x");
+
+    assert.equal(
+      await resolveExplicit({importer,specifier:".hidden/util",projectRoot:project}),
+      null
+    );
+    assert.equal(
+      await resolveExplicit({importer,specifier:"..backup/util",projectRoot:project}),
+      null
     );
   });
 });
