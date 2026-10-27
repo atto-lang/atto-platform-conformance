@@ -1,0 +1,240 @@
+{
+  "schemaVersion": 1,
+  "contract": "observable-future-task-traces-v1",
+  "status": "reference-model-only-not-backend-verified",
+  "modeRequired": true,
+  "terminalOutcomes": [
+    "SUCCESS",
+    "FAILED",
+    "CANCELLED",
+    "PENDING"
+  ],
+  "records": [
+    {
+      "id": "single-one-and-complete",
+      "mode": "single",
+      "events": [
+        [
+          "next",
+          42
+        ],
+        [
+          "complete"
+        ]
+      ],
+      "expected": {
+        "state": "SUCCESS",
+        "value": 42
+      },
+      "note": "exactly one result, completed"
+    },
+    {
+      "id": "single-one-pending",
+      "mode": "single",
+      "events": [
+        [
+          "next",
+          42
+        ]
+      ],
+      "expected": {
+        "state": "PENDING"
+      },
+      "note": "one alone is insufficient"
+    },
+    {
+      "id": "single-zero",
+      "mode": "single",
+      "events": [
+        [
+          "complete"
+        ]
+      ],
+      "expected": {
+        "state": "FAILED",
+        "error": "EmptyObservableError"
+      }
+    },
+    {
+      "id": "single-two",
+      "mode": "single",
+      "events": [
+        [
+          "next",
+          1
+        ],
+        [
+          "next",
+          2
+        ]
+      ],
+      "expected": {
+        "state": "FAILED",
+        "error": "TooManyElementsError"
+      }
+    },
+    {
+      "id": "first-one",
+      "mode": "first",
+      "events": [
+        [
+          "next",
+          3
+        ],
+        [
+          "next",
+          4
+        ]
+      ],
+      "expected": {
+        "state": "SUCCESS",
+        "value": {
+          "some": 3
+        }
+      },
+      "note": "unsubscribe at first; subsequent events ignored"
+    },
+    {
+      "id": "first-none",
+      "mode": "first",
+      "events": [
+        [
+          "complete"
+        ]
+      ],
+      "expected": {
+        "state": "SUCCESS",
+        "value": {
+          "none": true
+        }
+      }
+    },
+    {
+      "id": "single-first-error",
+      "mode": "single",
+      "events": [
+        [
+          "error",
+          "BadInput"
+        ]
+      ],
+      "expected": {
+        "state": "FAILED",
+        "error": "BadInput"
+      }
+    },
+    {
+      "id": "first-error-before-value",
+      "mode": "first",
+      "events": [
+        [
+          "error",
+          "BadInput"
+        ],
+        [
+          "next",
+          3
+        ]
+      ],
+      "expected": {
+        "state": "FAILED",
+        "error": "BadInput"
+      }
+    },
+    {
+      "id": "single-error-after-first",
+      "mode": "single",
+      "events": [
+        [
+          "next",
+          42
+        ],
+        [
+          "error",
+          "BadInput"
+        ]
+      ],
+      "expected": {
+        "state": "FAILED",
+        "error": "BadInput"
+      }
+    },
+    {
+      "id": "first-wins-over-late-error",
+      "mode": "first",
+      "events": [
+        [
+          "next",
+          3
+        ],
+        [
+          "error",
+          "BadInput"
+        ]
+      ],
+      "expected": {
+        "state": "SUCCESS",
+        "value": {
+          "some": 3
+        }
+      }
+    },
+    {
+      "id": "authorized-cancel",
+      "mode": "single",
+      "events": [
+        [
+          "cancel",
+          "authorized"
+        ]
+      ],
+      "expected": {
+        "state": "CANCELLED"
+      }
+    },
+    {
+      "id": "user-cancellation-named-error",
+      "mode": "single",
+      "events": [
+        [
+          "error",
+          "CancellationException"
+        ]
+      ],
+      "expected": {
+        "state": "FAILED",
+        "error": "CancellationException"
+      }
+    },
+    {
+      "id": "void-single-no-event",
+      "mode": "single",
+      "events": [
+        [
+          "complete"
+        ]
+      ],
+      "expected": {
+        "state": "FAILED",
+        "error": "EmptyObservableError"
+      },
+      "note": "Future<void> converts to event-only Observable<void>, not on_next(null)"
+    },
+    {
+      "id": "void-first-none",
+      "mode": "first",
+      "events": [
+        [
+          "complete"
+        ]
+      ],
+      "expected": {
+        "state": "SUCCESS",
+        "value": {
+          "none": true
+        }
+      },
+      "note": "no synthetic void payload"
+    }
+  ]
+}
