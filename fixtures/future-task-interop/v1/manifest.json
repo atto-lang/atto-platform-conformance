@@ -253,5 +253,8 @@
       "status": "pending",
       "verified": false
     }
+  ],
+  "relatedContracts": [
+    "observable-future-task-interop-v1"
   ]
 }
