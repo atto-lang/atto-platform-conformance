@@ -23,7 +23,8 @@ fn hex(s: &str, n: usize) -> bool { s.len()==n && s.bytes().all(|b| b.is_ascii_h
 fn path_component_check(s: &str) -> Result<(), String> {
     require(!s.is_empty() && s.len() <= 300 && !s.contains('\0'), "empty/oversized path")?;
     let path=Path::new(s);
-    require(!path.is_absolute() && path.components().all(|c| matches!(c, Component::Normal(_))),
+    require(!path.is_absolute() && !s.contains('\\') && s.split('/').all(|part| !part.is_empty() && part != "." && part != "..")
+        && path.components().all(|c| matches!(c, Component::Normal(_))),
             "absolute/traversal/non-normal relative path")
 }
 fn parse_spec(s: &str, expect: Expect) -> Result<Spec,String> {
@@ -46,6 +47,12 @@ fn capture(command: &mut Command, label: &str) -> Result<String,String> {
 fn exact_path(root: &Path, relative: &str) -> Result<PathBuf,String> {
     path_component_check(relative)?;
     let path=root.join(relative);
+    let mut traversed=root.to_path_buf();
+    for component in Path::new(relative).components() {
+        traversed.push(component.as_os_str());
+        let part=fs::symlink_metadata(&traversed).map_err(|e|format!("path component missing: {e}"))?;
+        require(!part.file_type().is_symlink(), "symlinked path component rejected")?;
+    }
     let meta=fs::symlink_metadata(&path).map_err(|e|format!("input missing: {e}"))?;
     require(meta.file_type().is_file() && !meta.file_type().is_symlink(), "input not a regular non-symlink file")?;
     let canonical=fs::canonicalize(&path).map_err(|e|format!("canonicalization failed: {e}"))?;
