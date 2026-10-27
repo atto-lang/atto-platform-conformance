@@ -12,12 +12,12 @@ export function validateAsyncReceipt(receipt) {
   const sha40=/^[0-9a-f]{40}$/,sha256=/^[0-9a-f]{64}$/;
   const errors=[];
   const obj=v=>v!==null&&typeof v==="object"&&!Array.isArray(v);
-  if(!obj(receipt)) return {ok:false,shapeOnly:true,verifiedCases:[],missingCases:ids,errors:["receipt must be an object"]};
+  if(!obj(receipt)) return {ok:false,shapeOnly:true,shapeValidCases:[],missingCases:ids,errors:["receipt must be an object"]};
   if(receipt.schema!=="oreslang.async-runtime-receipt/1")errors.push("invalid receipt schema");
   if(!backendSet.has(receipt.backend))errors.push("unknown backend");
   for(const p of ["sourceCommit","sourceTree","contractBlob"])if(typeof receipt[p]!=="string"||!sha40.test(receipt[p]))errors.push(p+" must be a lowercase 40-hex Git SHA");
   if(!Array.isArray(receipt.cases)||receipt.cases.length===0)errors.push("cases must be a nonempty array");
-  const seen=new Set(),verified=[];
+  const seen=new Set(),shapeValid=[];
   for(const [i,c] of (Array.isArray(receipt.cases)?receipt.cases:[]).entries()){
     const loc="cases["+i+"]";
     if(!obj(c)){errors.push(loc+" must be an object");continue}
@@ -60,9 +60,9 @@ export function validateAsyncReceipt(receipt) {
     } else if(c.claim==="supported"||c.claim==="guarded"){
       errors.push(loc+" no executable evidence for claim");
     }
-    if(!errors.some(x=>x.startsWith(loc+" ")))verified.push(c.id);
+    if(!errors.some(x=>x.startsWith(loc+" ")))shapeValid.push(c.id);
   }
-  return {ok:errors.length===0,shapeOnly:true,verifiedCases:verified,missingCases:ids.filter(id=>!seen.has(id)),errors};
+  return {ok:errors.length===0,shapeOnly:true,shapeValidCases:verified,missingCases:ids.filter(id=>!seen.has(id)),errors};
 }
 
 if (process.argv[1] && resolve(process.argv[1])===fileURLToPath(import.meta.url)) {
