@@ -157,8 +157,23 @@ fn run() -> Result<(),String> {
         let output=capture(Command::new("timeout").args(["-k","1s","15s"])
             .arg(&solver).args(["-T:10","-smt2"]).arg(&file),"actual Z3 SMT replay")?;
         verdict(&output,&s.expect)?;
+        // Recheck actual bytes after the solver reads them. This detects
+        // accidental replacement during replay (not an atomic snapshot).
+        require(sha256(&file)?==s.sha256,
+            "SMT query was modified during solver replay")?;
         verified.push(format!("REPLAY|{}|{}|{}",s.id,if s.expect==Expect::Unsat{"unsat"}else{"sat"},s.sha256));
     }
+    // No success lines may escape if checkout, solver or source bytes changed
+    // while later obligations were running.
+    let final_head=capture(Command::new("git").arg("-C").arg(&repo)
+        .args(["rev-parse","HEAD"]),"git final rev-parse")?;
+    require(final_head.trim_end()==commit,"checkout moved during solver replay")?;
+    let final_source=capture(Command::new("git").arg("-C").arg(&repo)
+        .arg("hash-object").arg("--").arg(&source),"git final hash-object")?;
+    require(final_source.trim_end()==blob,
+        "source bytes changed during solver replay")?;
+    require(sha256(&solver)?==solver_sha,
+        "solver executable changed during replay")?;
     // Publish no partial successful proof claims if any subsequent replay fails.
     for line in verified { println!("{line}"); }
     println!("LOCAL_PROOF_REPLAY_PASSED_UNATTESTED|obligations={}|commit={}|source_blob={}|solver_sha256={}",
