@@ -177,13 +177,13 @@ mod tests {
         assert!(capture(&mut cmd, "flood").is_err());
         let mut tiny=Command::new("sh");
         tiny.args(["-c","printf 'unsat\\n'"]);
-        assert_eq!(capture(&mut tiny,"tiny").unwrap(),"unsat\\n");
+        assert_eq!(capture(&mut tiny,"tiny").unwrap(),"unsat\n");
     }
     #[test] fn commit_tree_binding_is_exact_and_mode_constrained() {
         let blob="a".repeat(40); let path="stdlib/core.ores";
-        let expected=format!("100644 blob {blob}\\t{path}\\0");
+        let expected=format!("100644 blob {blob}\t{path}\0");
         assert_eq!(expected.as_bytes().last(),Some(&0));
-        assert_ne!(expected,format!("100644 blob {}\\t{path}\\0","b".repeat(40)));
+        assert_ne!(expected,format!("100644 blob {}\t{path}\0","b".repeat(40)));
     }
     #[test] fn solver_output_is_exact_and_fail_closed() {
         assert!(verdict("unsat\n",&Expect::Unsat).is_ok());
