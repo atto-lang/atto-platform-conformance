@@ -24,7 +24,7 @@ def validate_output(output):
     witness = {}
     for field in (*FIELDS, 'allKnown', 'certMatches'):
         kind = 'Bool' if field in ('allKnown', 'certMatches') else 'Int'
-        match = re.search(r'\\(define-fun\\s+' + field + r'\\s+\\(\\)\\s+' + kind + r'\\s+([^\\s()]+|\\(-\\s+\\d+\\))\\s*\\)', output)
+        match = re.search(r'\(define-fun\s+' + field + r'\s+\(\)\s+' + kind + r'\s+([^\s()]+|\(-\s+\d+\))\s*\)', output)
         if not match:
             raise ValueError('missing/invalid counterexample field ' + field)
         raw = match.group(1)
