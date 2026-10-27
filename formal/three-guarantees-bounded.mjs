@@ -4,7 +4,7 @@ const MAX_IMAGES = 2;
 const GENS = 3;
 const clone = x => structuredClone(x);
 const init = () => ({
-  active: 0, images: [0], staged: -1,
+  active: 0, images: [0], staged: -1, validated: [0],
   sessions: Array.from({length: SESSION_COUNT}, () => ({
     phase: 'idle', generation: -1, token: 'none', admittedEver: false
   }))
@@ -63,9 +63,21 @@ export function transitions(s, mutation = 'none') {
     add('stage_v' + (v + 1), t);
   }
   if (s.staged !== -1) {
-    const t = clone(s);
-    t.active = s.staged; t.staged = -1;
-    add('commit_v' + (t.active + 1), t);
+    if (!s.validated.includes(s.staged)) {
+      const t = clone(s);
+      t.validated.push(s.staged);
+      t.validated.sort();
+      add('validate_v' + (s.staged + 1), t);
+      if (mutation === 'publish') {
+        const u = clone(s);
+        u.active = s.staged; u.staged = -1;
+        add('BAD_commit_unvalidated_v' + (u.active + 1), u);
+      }
+    } else {
+      const t = clone(s);
+      t.active = s.staged; t.staged = -1;
+      add('commit_v' + (t.active + 1), t);
+    }
   }
   for (const v of s.images) {
     if (v === s.active || v === s.staged) continue;
@@ -73,6 +85,7 @@ export function transitions(s, mutation = 'none') {
     if (!pinned || mutation === 'purge') {
       const t = clone(s);
       t.images = t.images.filter(x => x !== v);
+      t.validated = t.validated.filter(x => x !== v);
       add((pinned ? 'BAD_' : '') + 'retire_v' + (v + 1), t);
     }
   }
@@ -81,6 +94,8 @@ export function transitions(s, mutation = 'none') {
 
 export function violation(s) {
   if (!s.images.includes(s.active)) return 'active_image_missing';
+  if (!s.validated.includes(s.active)) return 'unvalidated_image_published';
+  if (s.validated.some(v => !s.images.includes(v))) return 'validation_outlived_image';
   if (s.images.length > MAX_IMAGES) return 'image_capacity_exceeded';
   if (s.staged !== -1 && !s.images.includes(s.staged)) return 'staged_image_missing';
   for (const [i, se] of s.sessions.entries()) {
