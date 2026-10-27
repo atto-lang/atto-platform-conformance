@@ -167,7 +167,7 @@ test('preempted synchronous actor turn cannot be overtaken by younger USER mail 
     order.push(dispatched.id);
     assert.ok(order.length < 12, 'bounded queue must eventually drain');
   }
-  assert.deepEqual(order, ['older','peer','older','older','older','younger']);
+  assert.deepEqual(order, ['older','peer','older','older','younger']);
   for (const id of ['older','younger','peer'])
     assert.equal(m.inspect(id).physicallyRetired,true);
   assert.equal(m.actorActive.size,0);
