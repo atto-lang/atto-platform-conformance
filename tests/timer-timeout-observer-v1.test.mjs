@@ -10,7 +10,7 @@ test('timer acceptance manifest is complete and explicitly unattested', () => {
   assert.equal(manifest.contract, 'timer-timeout-observer-v1');
   assert.equal(manifest.status, 'candidate-unattested');
   assert.deepEqual(manifest.backends, ['java', 'llvm', 'net', 'wasm', 'forge']);
-  assert.equal(manifest.cases.length, 16);
+  assert.equal(manifest.cases.length, 17);
   assert.equal(new Set(manifest.cases.map(x => x.id)).size, manifest.cases.length);
   assert.ok(manifest.requires.includes('real_executed_steps'));
   assert.ok(manifest.requires.includes('compiled_guest_binary_identity'));
@@ -27,7 +27,7 @@ test('timer acceptance manifest is complete and explicitly unattested', () => {
 });
 
 test('source async timer wait never needs an explicit nested Task', () => {
-  for (const id of ['sleep_direct_async', 'after_direct_async', 'timeout_direct_async']) {
+  for (const id of ['sleep_direct_async', 'after_direct_async', 'timeout_direct_async', 'sync_public_main_await']) {
     const row = manifest.cases.find(x => x.id === id);
     assert.ok(row, 'missing ' + id);
     assert.match(row.source, /await\s+time\./);
