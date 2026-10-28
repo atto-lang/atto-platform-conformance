@@ -46,6 +46,26 @@ Task/TaskScope cancellation. Logical terminal publication and physical guest
 frame/native callback **retirement are separate receipts**. No actor heap
 or captured resource may be reclaimed merely because a timeout won.
 
+## Suspension authority across actor entrypoints
+
+The ordinary `async`/`suspends` effect requirement applies to ordinary
+synchronous helpers and instance methods. There are three existing
+scheduler-owned exceptions, all of which reuse their current continuation
+without spawning a fresh guest Task:
+
+- The public process-root `main` entrypoint.
+- The synchronous `actor fnc` entrypoint that already owns a mailbox turn.
+- A class-based actor's synchronous `receive(ActorMail<T>)` hook, whose
+  mailbox turn is resumable and remains serialized by the actor runtime.
+
+Actor `on_start` must be synchronous through readiness completion, and
+ordinary non-actor methods do not acquire suspension authority by calling a
+Future-producing builtin. All borrowing/loan checks are still required,
+and should produce their specific diagnostic rather than being hidden by a
+generic outer effect error. This actor suspension authority does **not**
+authorize `time.*` registrations inside actors while their timer ownership
+and retirement path remains fail-closed.
+
 ## Timer and interval ownership
 
 A timer stores owner domain + generation/incarnation + resource identity.
