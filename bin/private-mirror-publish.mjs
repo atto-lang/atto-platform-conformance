@@ -129,6 +129,13 @@ export async function publishPrivateMirror({
     "/git/trees/"+targetTree.sha+"?recursive=1",token,{fetchImpl});
   if(materialized?.truncated!==false||!Array.isArray(materialized.tree))
     throw Error("materialized destination snapshot cannot be verified");
+  // Match the complete Git subtree identity as well as each file. This
+  // catches a publisher/tree assembly mismatch independently of our manifest
+  // walk, before the source snapshot becomes reachable from any CI ref.
+  const prefixRoots=materialized.tree.filter(e=>e?.path===prefix);
+  if(prefixRoots.length!==1||prefixRoots[0].type!=="tree"||
+     prefixRoots[0].sha!==srcCommit.tree.sha)
+    throw Error("materialized snapshot source subtree SHA mismatch");
   const expected=new Map(entries.map(e=>[e.path,e]));
   let verified=0;
   const seenMaterialized=new Set();
@@ -169,7 +176,7 @@ export async function publishPrivateMirror({
   if(verifyRef?.ref!==createdRef.ref||verifyRef?.object?.sha!==result.sha)
     throw Error("isolated CI ref read-after-write mismatch");
   return Object.freeze({status:"PRIVATE_MIRROR_PUBLISHED",destination,newBranch,
-    sourceCommit,commit:result.sha,blobs:files.length});
+    sourceCommit,sourceTree:srcCommit.tree.sha,commit:result.sha,blobs:files.length});
 }
 
 if(process.argv[1]&&pathToFileURL(process.argv[1]).href===import.meta.url){
