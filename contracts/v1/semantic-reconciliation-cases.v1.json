@@ -188,6 +188,151 @@
         "net": "PENDING_GUEST_PROOF",
         "wasm": "PENDING_GUEST_PROOF"
       }
+    },
+    {
+      "id": "rt-copy-scalar",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  val int original = 7;\n  val int copied = rt copy original;\n  return original + copied;\n}\n",
+      "rationale": "rt copy of statically Copy scalar duplicates the value, not the ownership slot.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-copy-move-only",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_COPY_REQUIRED",
+      "source": "define class Box as\n  pub let int value = 7;\nend\npub fnc main(): int {\n  let Box owned = new Box();\n  val Box copy = rt copy owned;\n  return copy.value;\n}\n",
+      "rationale": "rt copy of a move-only class must fail rather than manufacturing an alias.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-share-scalar",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  val int original = 3;\n  val int shared = rt share original;\n  return original + shared;\n}\n",
+      "rationale": "Copy-safe scalar sharing creates no shared mutable storage or implicit actor transfer.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-share-move-only",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_SHARE_REQUIRED",
+      "source": "define class Box as\n  pub let int value = 7;\nend\npub fnc main(): int {\n  let Box owned = new Box();\n  val Box alias = rt share owned;\n  return alias.value;\n}\n",
+      "rationale": "rt share does not grant a move-only object shared mutable aliases or Share proof.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-take-named-owner",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "define class Box as\n  pub let int value = 7;\nend\npub fnc main(): int {\n  let Box owned = new Box();\n  val Box moved = rt take owned;\n  return moved.value;\n}\n",
+      "rationale": "Transferring a complete named owner is the supported path; its prior binding is unusable.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-take-member-projection",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_PARTIAL_MOVE",
+      "source": "define class Box as\n  pub let int value = 7;\nend\npub fnc main(): int {\n  let mut Box owned = new Box();\n  val int duplicate = rt take owned.value;\n  return owned.value + duplicate;\n}\n",
+      "rationale": "No path-aware partial-move state exists for fields; projected rt take cannot preserve unique ownership.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-borrow-lexical",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "define class Box as\n  pub let int value = 7;\nend\npub fnc main(): int {\n  let Box owned = new Box();\n  val borrow Box view = rt borrow owned;\n  return view.value;\n}\n",
+      "rationale": "A lexical shared borrow reads the original owner without moving it.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-borrow-after-take",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_USE_AFTER_MOVE",
+      "source": "define class Box as\n  pub let int value = 7;\nend\npub fnc main(): int {\n  let Box owned = new Box();\n  val Box moved = rt take owned;\n  val borrow Box invalid = rt borrow owned;\n  return moved.value + invalid.value;\n}\n",
+      "rationale": "Cannot mint a borrow from a binding whose ownership was transferred.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-mut-borrow-mutable",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "define class Box as\n  pub let int value = 7;\nend\npub fnc main(): int {\n  let mut Box owned = new Box();\n  val borrow mut Box view = rt mut borrow owned;\n  view.value = 8;\n  return view.value;\n}\n",
+      "rationale": "An exclusive lexical view is valid only from an owned mutable binding.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-mut-borrow-immutable",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_MUTABILITY",
+      "source": "define class Box as\n  pub let int value = 7;\nend\npub fnc main(): int {\n  val Box owned = new Box();\n  val borrow mut Box view = rt mut borrow owned;\n  view.value = 8;\n  return view.value;\n}\n",
+      "rationale": "rt mut borrow cannot manufacture mutability from an immutable owner.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
     }
   ],
   "runtimeCases": [

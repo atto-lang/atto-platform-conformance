@@ -4,8 +4,13 @@ import {loadSemanticManifest, validateSemanticManifest, classifySemanticCompiler
 
 test("semantic inventory has complete four-backend negative and positive coverage, never implied guest parity", async () => {
  const cases = await loadSemanticManifest();
- assert.equal(cases.compilerCases.length,12);
+ assert.equal(cases.compilerCases.length,22);
  assert.equal(cases.runtimeCases.length,2);
+ const ownership = cases.compilerCases.filter(c => c.concern === "ownership");
+ assert.equal(ownership.length,10);
+ assert.equal(ownership.filter(c => c.expect === "accept").length,5);
+ assert.equal(ownership.filter(c => c.expect === "reject").length,5);
+ assert.ok(ownership.some(c => c.id === "rt-take-member-projection" && c.diagnosticCode === "E_PARTIAL_MOVE"));
  const futureMap = cases.compilerCases.filter(c => c.id.startsWith("future-map-"));
  assert.deepEqual(futureMap.map(c=>c.expect),["accept","reject"]);
  assert.match(futureMap[0].source,/Future<Future<int>>/);
