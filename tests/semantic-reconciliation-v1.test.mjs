@@ -14,6 +14,11 @@ test("semantic inventory has complete five-backend negative and positive coverag
  const futureMap = cases.compilerCases.filter(c => c.id.startsWith("future-map-"));
  assert.deepEqual(futureMap.map(c=>c.expect),["accept","reject"]);
  assert.match(futureMap[0].source,/Future<Future<int>>/);
+ assert.match(futureMap[0].source,/pub suspends fnc main\(\): void/);
+ assert.match(futureMap[0].source,/val Future<int> inner = await pending/);
+ assert.match(futureMap[0].source,/stdio\.stdout\.write\(await inner\)/);
+ const twoAwait=cases.compilerCases.find(c=>c.id==="nested-future-two-awaits");
+ assert.match(twoAwait.source,/pub suspends fnc main\(\): int \{ return use\(\); \}/);
  assert.match(futureMap[1].source,/Future<int> pending/);
  assert.equal(futureMap[1].diagnosticCode,"E_WRAPPER_LAYER");
  assert.equal(cases.status,"TARGET_ONLY_NOT_IMPLEMENTATION_EVIDENCE");
