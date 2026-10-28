@@ -1,4 +1,0 @@
-pub fnc main(): void {
-  let Task<int> invalid = suspends task { return 1; };
-  return;
-}

@@ -1,5 +1,0 @@
-define actor Worker as
-  receive(self, Mail m): void {
-    self.process(m);
-  }
-end
