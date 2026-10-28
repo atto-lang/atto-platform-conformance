@@ -123,3 +123,26 @@ test('additional compiled VM and schema source families remain suspicious',()=>{
     assert.equal(triageCarrierTree(payload,payload).classification,'POTENTIAL_SOURCE_BEARING',path);
   }
 });
+
+test('executable build and workflow configuration is conservatively source-bearing',()=>{
+  for (const path of [
+    '.github/workflows/ci.yml','.github/workflows/release.yaml','Dockerfile','build/Dockerfile',
+    'Makefile','native/CMakeLists.txt','pom.xml','web/package.json','Cargo.toml','go.mod',
+    'android/build.gradle','android/settings.gradle','BUILD','pkg/WORKSPACE','rules/defs.bzl',
+    'rules/toolchain.bazel','scripts/config.json','tools/manifest.txt',
+  ]) {
+    const payload={...base,tree:[entry(path)]};
+    const result=triageCarrierTree(payload,payload);
+    assert.equal(result.classification,'POTENTIAL_SOURCE_BEARING',path);
+    assert.equal(result.authorizes_source_transfer,false,path);
+  }
+});
+
+test('platform path aliases that can collapse or target devices are unverifiable',()=>{
+  for (const path of [
+    '.git./config','foo./bar.txt','CON','con.txt','NUL.json','aux.cfg','COM1.log','lpt9.dat',
+    'dir/PRN.md','dir/CLOCK$.txt',
+  ]) {
+    assert.equal(triage({tree:[entry(path)]}).classification,'UNVERIFIABLE_TREE',path);
+  }
+});
