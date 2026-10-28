@@ -124,6 +124,43 @@ subtree SHA* as well as all file blob SHA/mode identities before creating
 the commit and isolated CI ref; the receipt includes `sourceTree`.
 Synthetic/mock publisher tests are **not** external release-admission evidence.
 
+#### Bounded and resumable publication
+
+For long-lived private compiler mirrors, the same mandatory publisher can stage
+at most **64 blobs per invocation** (batch size 1–64) without creating a
+destination commit, branch, checkout, or Actions artifact until the *entire*
+snapshot has been materialized and validated. For example, append `32` as
+the final CLI argument to the above command. The result is a
+`PRIVATE_MIRROR_STAGED` receipt containing a `checkpoint`. Invoke the
+**same exact command** with `32` and the serialized checkpoint JSON as its
+last two arguments, repeating until it returns `PRIVATE_MIRROR_PUBLISHED`:
+
+```sh
+# At each invocation, insert the exact JSON "checkpoint" field of the previous
+# PRIVATE_MIRROR_STAGED response as the last quoted CLI argument.
+node bin/private-mirror-publish.mjs SOURCE_REPO SOURCE_SHA40 \
+  APPROVED_PRIVATE_DEST DEST_BASE_SHA40 snapshots/source-sha \
+  ci/private-immutable-source-proof 32 'CHECKPOINT_JSON_FROM_PREVIOUS_RUN'
+```
+
+Use the same approved destination, pinned source commit, immutable destination
+base, prefix and isolated branch at every resume. No token appears in the
+checkpoint; the publisher still requires trusted authenticated GitHub metadata
+and an explicit approved private destination **before every invocation and
+every destination write**. The checkpoint pins both root trees, source and
+destination identities, file count, next sorted-file index and the last staged
+blob SHA. Resume confirms that last immutable blob exists at the destination.
+A forged or missing cursor is rejected, while a failed invocation can be
+retried from the *last successful checkpoint* (Git blobs are content-addressed
+and duplicate uploads are safe). No partial run creates a reachable CI branch.
+
+For an interrupted final step, **do not** infer success from a staged receipt.
+Inspect the exact expected ref and materialized tree independently before
+any release or CI promotion. Final publication requires both the complete
+source subtree SHA and every expected file SHA/mode to match. Read-only
+metadata approval and passing unit tests are **not** independent security
+review of a destination's authorization policy.
+
 The CLI fails closed unless the source and destination both resolve as
 GitHub-verified **private** repositories and the destination is explicitly
 allowlisted, not archived and writable by the credential. A 403, missing token,
