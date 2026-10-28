@@ -4,14 +4,22 @@ on:
 permissions: {}
 jobs:
   runner-admission:
+    if: github.repository == 'ores-truffle-oreslang/oreslang-platform-conformance'
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions: {}
     steps:
-      - name: Prove runner allocated and shell executed
+      - name: Prove source-local runner and meaningful shell execution
         shell: bash
+        env:
+          EXPECTED_REPOSITORY: ores-truffle-oreslang/oreslang-platform-conformance
         run: |
           set -euo pipefail
-          printf 'runner admission: shell executed\n'
-          printf 'run=%s attempt=%s sha=%s\n' "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_SHA"
+          test "$GITHUB_REPOSITORY" = "$EXPECTED_REPOSITORY"
+          test "$GITHUB_EVENT_NAME" = workflow_dispatch
           test -n "${RUNNER_NAME:-}"
           test -n "${RUNNER_OS:-}"
+          test -n "${GITHUB_RUN_ID:-}"
+          test -n "${GITHUB_RUN_ATTEMPT:-}"
+          test -n "${GITHUB_SHA:-}"
+          printf 'RUNNER_ADMISSION_EXECUTED repo=%s run=%s attempt=%s sha=%s os=%s\n' "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_SHA" "$RUNNER_OS"
