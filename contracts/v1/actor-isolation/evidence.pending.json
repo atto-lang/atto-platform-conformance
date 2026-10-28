@@ -55,6 +55,11 @@
       "backend": "forge",
       "status": "pending",
       "reason": "Full identical source-actor contract has not executed on this backend"
+    },
+    {
+      "backend": "cranelift",
+      "status": "pending",
+      "reason": "Standalone Cranelift backend has not executed the shared isolation fixture"
     }
   ]
 }
