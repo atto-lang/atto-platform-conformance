@@ -1,0 +1,13 @@
+// Shared actor guest source v1: compiler must emit this actor's handler.
+// Backend adapter MUST construct two distinct instances A/B of the same compiled type.
+// Source alone does not prove foreign-loan, retirement, or physical scrub behavior.
+define actor IsolationCounter as {
+  let total: int = 0;
+  pub fnc on_message(int increment): int {
+    total = total + increment;
+    return total;
+  }
+}
+pub fnc main(): int {
+  return 42;
+}
