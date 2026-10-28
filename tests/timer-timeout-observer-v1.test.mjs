@@ -21,7 +21,8 @@ test('timer acceptance manifest is complete and explicitly unattested', () => {
     if (row.kind === 'runtime_race') {
       assert.ok(Array.isArray(row.events) && row.events.length >= 2, row.id);
     } else {
-      assert.match(row.source, /\b(?:pub\s+)?(?:async\s+)?fnc\b/);
+      assert.match(row.source, /\b(?:fnc|routine)\b|\bdefine\s+(?:actor|class)\b/,
+        'not a source-language fixture: ' + row.id);
     }
   }
 });
