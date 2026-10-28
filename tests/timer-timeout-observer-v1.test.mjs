@@ -44,7 +44,7 @@ test('actor suspension authority is admitted only on mailbox turns', () => {
     assert.equal(c.expected.compiler, 'accept');
     assert.equal(c.expected.source_async_modifier_required, false);
     assert.equal(c.expected.explicit_task_required, false);
-    assert.match(c.source, /await\\s+/);
+    assert.match(c.source, /await\s+/);
   }
   for (const id of ['actor_on_start_await_reject', 'plain_instance_method_await_reject']) {
     assert.equal(byId[id]?.expected.error, 'SuspensionEffectError');
