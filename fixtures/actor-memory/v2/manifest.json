@@ -41,27 +41,47 @@
     "java": {
       "status": "NOT_EXECUTED",
       "guestCompiled": false,
-      "guestExecuted": false
+      "guestExecuted": false,
+      "knownStaticBlockers": [
+        "#2205 native arena integration is host-only draft; compiled source actor allocation parity not proven"
+      ]
     },
     "llvm": {
       "status": "NOT_EXECUTED",
       "guestCompiled": false,
-      "guestExecuted": false
+      "guestExecuted": false,
+      "knownStaticBlockers": [
+        "CMakeLists.txt native_critical_actor_state_not_lowered: sealed state handle_state lowering is explicitly rejected",
+        "CMakeLists.txt source-actor-await-done-effect-after: native source rejects actor effects after get_done",
+        "CMakeLists.txt native_exit_reject_unsupported_async_root: root async main is unsupported"
+      ],
+      "expectedCurrentOutcome": "UNSUPPORTED_LOWERING_PENDING_ACTUAL_COMPILER_RUN"
     },
     "net": {
       "status": "NOT_EXECUTED",
       "guestCompiled": false,
-      "guestExecuted": false
+      "guestExecuted": false,
+      "knownStaticBlockers": [
+        "PR #224 StructuredSource compiler rejects nominal actor declarations",
+        "merged #193 NativeAOT survivor probe tests trusted C# host actors, not .ores actor lowering"
+      ],
+      "expectedCurrentOutcome": "UNSUPPORTED_LOWERING_PENDING_ACTUAL_COMPILER_RUN"
     },
     "wasm": {
       "status": "NOT_EXECUTED",
       "guestCompiled": false,
-      "guestExecuted": false
+      "guestExecuted": false,
+      "knownStaticBlockers": [
+        "#160 pooled source actor and private arena integration remains draft, not this fixture executed"
+      ]
     },
     "forge": {
       "status": "NOT_EXECUTED",
       "guestCompiled": false,
-      "guestExecuted": false
+      "guestExecuted": false,
+      "knownStaticBlockers": [
+        "compiled sealed actor state and loan lowering not evidenced"
+      ]
     }
   },
   "admission": {
