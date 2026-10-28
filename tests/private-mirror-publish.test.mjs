@@ -144,7 +144,7 @@ test("GitHub API errors redact response body and bearer tokens",async()=>{
 
 test("pre-existing destination files under snapshot prefix are rejected before any source blob publication",async()=>{
  for(const existing of [
-   {path:"snapshots/checked",type:"tree",sha:D},
+   {path:"snapshots/checked",type:"tree"},
    {path:"snapshots/checked/old-source.ores",type:"blob"},
    {path:"snapshots",type:"blob"}
  ]){
@@ -245,7 +245,7 @@ test("bounded Java and LLVM sized trees still require private authorization and 
   }));
   const materializedTree={truncated:false,tree:[
    {path:"snapshots",type:"tree"},
-   {path:"snapshots/checked",type:"tree"},
+   {path:"snapshots/checked",type:"tree",sha:D},
    ...files.map(f=>({path:"snapshots/checked/"+f.path,
       type:"blob",mode:f.mode,sha:f.sha}))
   ]};
