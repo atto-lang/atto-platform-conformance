@@ -16,7 +16,7 @@ and executes them with an exact source SHA and binary identity.
   `Task` wrapper or spawn an extra Task per await**. The calling async
   callable has an implicit scheduler-owned resumable continuation frame.
   An ordinary synchronous helper cannot directly await outside an explicitly
-  `suspends`-capable or async context. The public process-root `main`
+  `suspends`-capable or async context. The uniquely resolved zero-argument source `main` entrypoint
   entrypoint is the exception: it already has a scheduler-owned implicit
   Task and may directly `await` without an additional source Task.
 - `time.set_timer(d, callback)` creates a timer capability, not a new actor.
@@ -53,7 +53,9 @@ synchronous helpers and instance methods. There are three existing
 scheduler-owned exceptions, all of which reuse their current continuation
 without spawning a fresh guest Task:
 
-- The public process-root `main` entrypoint.
+- The uniquely resolved zero-argument `main` entrypoint, including non-public
+  root or module declarations. A helper overload of `main` with arguments
+  does not inherit root-turn suspension authority.
 - The synchronous `actor fnc` entrypoint that already owns a mailbox turn.
 - A class-based actor's synchronous `receive(ActorMail<T>)` hook, whose
   mailbox turn is resumable and remains serialized by the actor runtime.
