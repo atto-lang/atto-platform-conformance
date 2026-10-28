@@ -1,1 +1,0 @@
-pub suspends routine run(input: GpuBuffer<f32>): GpuBuffer<f32> { return gpu { kernel(rt take input) }; }

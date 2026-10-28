@@ -1,3 +1,0 @@
-pub fnc main(): int {
-  return wave1_missing_name;
-}

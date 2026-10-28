@@ -1,4 +1,0 @@
-pub fnc main(): int {
-  let int local = 40;
-  return local + 2;
-}

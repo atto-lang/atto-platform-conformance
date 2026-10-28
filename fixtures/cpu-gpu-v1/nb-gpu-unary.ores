@@ -1,1 +1,0 @@
-pub routine run(input: GpuBuffer<f32>): Future<GpuBuffer<f32>> { return nb gpu { kernel(rt take input) }; }
