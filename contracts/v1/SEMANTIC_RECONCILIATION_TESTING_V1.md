@@ -45,3 +45,13 @@ caller-declared, not build-attested, and `E_WRAPPER_LAYER` is a proposed
 diagnostic that still needs compiler reconciliation. Forge is a fifth pending
 target, not an implemented compiler gate. Keep private source inside approved
 security boundaries; do not substitute mocks or zero-step CI for execution.
+
+## Reachable guest extraction paths (not yet executed)
+
+The positive `future-map-preserves-nested-return` fixture uses an explicitly
+`suspends` main that awaits the outer mapped Future and then the inner Future,
+writing `40`. The `nested-future-two-awaits` main calls its suspending
+`use()` path rather than returning a dummy constant. This ensures later guest
+execution can observe the intended extraction semantics, but this runner
+remains compiler-admission only: it does **not** assert stdout, exit or actor
+lifecycle, and no backend may be marked verified from source inspection.
