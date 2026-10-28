@@ -249,3 +249,56 @@ test('invalid actor identity fails before task or mailbox admission', () => {
     assert.throws(()=>m.submit({id:'x',actor,steps:[done()]}),/actor identity/);
   assert.equal(m.tasks.size,0);
 });
+
+
+test('one-shot I/O completion survives DATA saturation without a reactor retry', () => {
+  const m = new Model({queueCapacity:1,controlCapacity:1});
+  m.submit({id:'io',steps:[io('once'),done()]});
+  assert.equal(tick(m).next,'suspended');
+  m.submit({id:'busy',steps:[done()]});
+  assert.equal(m.wake({id:'io',generation:1,token:'once'}),true);
+  assert.equal(m.inspect('io').state,'suspended', 'completion latched until credit');
+  assert.equal(m.wake({id:'io',generation:1,token:'once'}),false);
+  assert.equal(tick(m).id,'busy');
+  assert.equal(m.inspect('io').state,'queued', 'release automatically promotes latch');
+  assert.equal(tick(m).id,'io');
+  assert.equal(m.inspect('io').wakes,1);
+  assert.equal(m.inspect('io').physicallyRetired,true);
+});
+
+test('actor owner wake survives simultaneous DATA and CONTROL saturation', () => {
+  const m = new Model({queueCapacity:1,controlCapacity:1});
+  m.submit({id:'old',actor:'A',steps:[io('old-fd'),done()]});
+  tick(m);
+  m.submit({id:'other',actor:'B',steps:[io('other-fd'),done()]});
+  tick(m);
+  assert.equal(m.cancel('other'),true); // Occupies CONTROL.
+  m.submit({id:'young',actor:'A',steps:[done()]}); // Occupies DATA.
+  assert.equal(m.wake({id:'old',generation:1,token:'old-fd'}),true);
+  assert.equal(m.inspect('old').state,'suspended');
+  assert.equal(m.wake({id:'old',generation:1,token:'old-fd'}),false);
+  assert.equal(tick(m).id,'other'); // Frees CONTROL; owner wake is promoted.
+  assert.equal(m.control.length,1);
+  assert.equal(tick(m).id,'old');
+  assert.equal(tick(m).id,'young');
+  assert.equal(m.actorTurns.size,0);
+});
+
+test('suspended cancellation is accepted and deferred when CONTROL is full', () => {
+  const m = new Model({queueCapacity:1,controlCapacity:1});
+  m.submit({id:'first',steps:[io('a'),done()]});
+  tick(m);
+  m.submit({id:'second',steps:[io('b'),done()]});
+  tick(m);
+  m.submit({id:'busy',steps:[done()]});
+  assert.equal(m.cancel('first'),true);
+  assert.equal(m.cancel('second'),true, 'cancel request cannot be dropped');
+  assert.equal(m.inspect('second').state,'suspended');
+  assert.equal(m.inspect('second').physicallyRetired,false);
+  assert.equal(tick(m).id,'first');
+  assert.equal(m.inspect('second').state,'queued');
+  assert.equal(tick(m).id,'second');
+  assert.equal(m.inspect('second').terminal,'cancelled');
+  assert.equal(m.inspect('second').physicallyRetired,true);
+  assert.equal(tick(m).id,'busy');
+});

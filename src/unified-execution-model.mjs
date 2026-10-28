@@ -21,6 +21,22 @@ export class UnifiedExecutionModel {
   hasControlCredit() {
     return this.control.length + (this.active?.queueKind === 'control' ? 1 : 0) < this.controlCapacity;
   }
+  // Each suspended task owns at most one completion/cancellation latch. A
+  // one-shot reactor event must survive full DATA and CONTROL queues; it is
+  // promoted automatically when a bounded queue credit becomes available.
+  drainPendingWakes() {
+    for (const task of this.tasks.values()) {
+      if (task.state !== 'suspended' || !task.pendingWake) continue;
+      const owner = task.actor !== null && this.actorTurns.get(task.actor)?.[0] === task.id;
+      const controlEligible = task.actor === null || owner;
+      const useControl = controlEligible && this.hasControlCredit() &&
+        (task.cancelRequested || !this.hasDataCredit());
+      if (!useControl && !this.hasDataCredit()) continue;
+      task.pendingWake = false;
+      task.state = 'queued';
+      (useControl ? this.control : this.ready).push(task.id);
+    }
+  }
   submit({id, actor = null, generation = 1, steps, captures = []}) {
     if (typeof id !== 'string' || !id || this.tasks.has(id)) throw new Error('invalid/duplicate task identity');
     if (actor !== null && (typeof actor !== 'string' || !actor)) throw new Error('invalid actor identity');
@@ -28,6 +44,7 @@ export class UnifiedExecutionModel {
     if (!Array.isArray(steps) || steps.length === 0) throw new Error('missing steps');
     if (!Array.isArray(captures) || captures.some(x => !['take', 'copy', 'share'].includes(x)))
       throw new Error('unproven capture / borrow escape');
+    this.drainPendingWakes(); // A completed I/O has priority over new admission.
     if (!this.hasDataCredit()) return false;
     const normalized = steps.map(step => {
       if (step?.kind === 'cpu' && Number.isSafeInteger(step.cost) && step.cost > 0)
@@ -49,6 +66,7 @@ export class UnifiedExecutionModel {
   }
   dispatch() {
     if (this.active) throw new Error('carrier still executing');
+    this.drainPendingWakes();
     // Do not dispatch younger same-actor messages while their owner is suspended.
     let queue, index = -1, queueKind;
     for (const [candidate, kind] of [[this.control, 'control'], [this.ready, 'data']]) {
@@ -124,6 +142,8 @@ export class UnifiedExecutionModel {
       }
       }
     } else if (task.state === 'terminal') {
+      task.pendingWake = false;
+      task.waitToken = null;
       task.physicallyRetired = true;
       if (task.actor !== null) {
         const turns = this.actorTurns.get(task.actor);
@@ -133,37 +153,36 @@ export class UnifiedExecutionModel {
       }
     }
     this.events.push(`exit:${id}`);
+    this.drainPendingWakes();
     return task.state;
   }
   wake({id, generation, token}) {
     const task = this.tasks.get(id);
-    // A reactor may only publish a bounded ticket; never execute source here.
+    // A reactor publishes one durable completion bit, never guest execution.
     const finishingRegistration = task?.state === 'running' && this.active?.id === id &&
       this.active.next === 'suspended';
-    const reserveControl = !this.hasDataCredit() && task?.actor != null &&
-      this.actorTurns.get(task.actor)?.[0] === id && this.hasControlCredit();
     if (!task || task.generation !== generation || task.waitToken !== token ||
         task.cancelRequested || task.pendingWake ||
-        (!finishingRegistration && (task.state !== 'suspended' ||
-          (!this.hasDataCredit() && !reserveControl))))
+        (!finishingRegistration && task.state !== 'suspended'))
       return false;
     task.waitToken = null;
-    if (finishingRegistration) task.pendingWake = true;
-    else { task.state = 'queued'; (reserveControl ? this.control : this.ready).push(id); }
+    task.pendingWake = true;
     task.wakes++;
     this.events.push(`wake:${id}`);
+    // If both lanes are saturated, retain the completion in this task until
+    // release() frees a credit. No reactor callback retry is required.
+    if (!finishingRegistration) this.drainPendingWakes();
     return true;
   }
   cancel(id) {
     const task = this.tasks.get(id);
     if (!task || task.physicallyRetired || task.cancelRequested) return false;
-    if (task.state === 'suspended') {
-      if (!this.hasControlCredit()) return false;
-      task.waitToken = null;
-      task.state = 'queued';
-      this.control.push(id);
-    }
     task.cancelRequested = true;
+    if (task.state === 'suspended') {
+      task.waitToken = null;
+      task.pendingWake = true;
+      this.drainPendingWakes();
+    }
     this.events.push(`cancel:${id}`);
     return true;
   }
