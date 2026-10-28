@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {loadSemanticManifest, validateSemanticManifest, classifySemanticCompilerResult, selectSemanticCases, runSemanticAdmission} from "../src/semantic-reconciliation-v1.mjs";
+import {loadSemanticManifest, loadSemanticManifestSnapshot, validateSemanticManifest, classifySemanticCompilerResult, selectSemanticCases, runSemanticAdmission} from "../src/semantic-reconciliation-v1.mjs";
+import {readFile} from "node:fs/promises";
+import {createHash} from "node:crypto";
 
 test("semantic inventory has complete five-backend negative and positive coverage, never implied guest parity", async () => {
  const cases = await loadSemanticManifest();
@@ -77,4 +79,17 @@ test("bounded Future.map suite is paired and cannot claim full-inventory parity"
  assert.equal(r.fullInventoryMatched,false);
  assert.deepEqual(r.selectedCaseIds,pair.map(c=>c.id));
  await assert.rejects(()=>runSemanticAdmission({backend:"java",suite:"unknown"}),/unsupported semantic suite/);
+});
+
+test("manifest provenance hashes the same exact bytes used for validation",async()=>{
+ const snapshot=await loadSemanticManifestSnapshot();
+ const bytes=await readFile(new URL("../contracts/v1/semantic-reconciliation-cases.v1.json",import.meta.url));
+ const expected=createHash("sha256").update(bytes).digest("hex");
+ assert.match(snapshot.manifestSha256,/^[0-9a-f]{64}$/);
+ assert.equal(snapshot.manifestSha256,expected);
+ assert.equal(snapshot.doc.compilerCases.length,26);
+ assert.equal(selectSemanticCases(snapshot.doc,"all").length,26);
+ const second=await loadSemanticManifestSnapshot();
+ assert.equal(second.manifestSha256,expected);
+ assert.deepEqual(second.doc.backends,["java","llvm","net","wasm","forge"]);
 });
