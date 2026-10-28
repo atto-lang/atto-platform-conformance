@@ -64,8 +64,12 @@ export function classifySemanticCompilerResult(c, output) {
   // A random syntax rejection or a source echo cannot prove the invariant. The
   // exact proposed diagnostic code must be a primary error diagnostic.
   const expected = "error[" + c.diagnosticCode + "]:";
-  const exact = lines.split(/\r?\n/).some(line => line.trimStart().startsWith(expected));
-  return output.status === 1 && exact ? "MATCHED_UNATTESTED" : "MISMATCH";
+  // Exactly one primary diagnostic: multiple errors can hide an unrelated
+  // earlier rejection behind a later matching semantic diagnostic.
+  const errors = lines.split(/\r?\n/).map(line => line.trimStart())
+    .filter(line => /^error(?:\\[[A-Za-z0-9_]+\\])?:/.test(line));
+  return output.status === 1 && errors.length === 1 && errors[0].startsWith(expected)
+    ? "MATCHED_UNATTESTED" : "MISMATCH";
 }
 export async function runSemanticAdmission({backend, argv, sourceSha, timeoutMs = 12000} = {}) {
   const doc = await loadSemanticManifest();
