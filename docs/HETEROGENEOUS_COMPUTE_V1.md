@@ -126,3 +126,20 @@ node bin/verify-heterogeneous-receipt.mjs path/to/receipt.json
 The same Node v22+ harness is used by this repository's other conformance
 checkers. This verifier intentionally creates **no passing receipts** for the
 backends. The feature registry does **not** assert current implementation.
+
+
+## First shared guest-contract vector inventory
+
+`fixtures/heterogeneous-v1/tensor-span-v1.json` defines 26 signed-i64
+strided-view metadata cases. `test/heterogeneous-tensor-span-v1.test.mjs`
+checks their semantics using an independent arbitrary-precision oracle.
+Java PR #2228 and LLVM PR #1139 compile native Oreslang source covering
+the common 15-case core. Those PRs must eventually consume/generate the
+full shared fixture rather than maintain independent literal copies.
+
+The vector file is **not** a compiler test or an allocation/ownership proof.
+A nonempty span is admissible only when `start + (count - 1) * stride` is
+within the backing element count. The runtime must additionally validate
+allocation provenance, generations, live loans, byte lengths and permissions
+before data access. Signed i64 subtraction/division must be guarded to
+avoid overflow, including i64::MAX dimension inputs.
