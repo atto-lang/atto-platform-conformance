@@ -47,6 +47,47 @@
       "note": "The public root entrypoint already owns an implicit scheduler Task; this exception does not extend to ordinary synchronous helpers"
     },
     {
+      "id": "actor_receive_await",
+      "kind": "source_candidate",
+      "source": "define actor Worker as receive(ActorMail<String> mail): void { val Channel<int> ch = Channel.new<int>(1); val Future<void> sent = nb writech ch, 7; await sent; self.end(); return; } end",
+      "expected": {
+        "compiler": "accept",
+        "source_async_modifier_required": false,
+        "explicit_task_required": false
+      },
+      "note": "Actor.receive is synchronous in declaration, but the mailbox owns the resumable continuation"
+    },
+    {
+      "id": "actor_fnc_mailbox_await",
+      "kind": "source_candidate",
+      "source": "actor fnc worker(): int { val Channel<int> ch = Channel.new<int>(1); val Future<void> sent = nb writech ch, 42; await sent; return readch ch; } pub routine main(): void { stdio.stdout.write(worker()); return; }",
+      "expected": {
+        "compiler": "accept",
+        "prints": "42",
+        "source_async_modifier_required": false,
+        "explicit_task_required": false
+      },
+      "note": "Actor fnc owns its mailbox turn, unlike ordinary sync fnc"
+    },
+    {
+      "id": "actor_on_start_await_reject",
+      "kind": "reject_candidate",
+      "source": "define actor Worker as on_start(): void { val Channel<int> ch = Channel.new<int>(1); val Future<void> sent = nb writech ch, 1; await sent; return; } receive(ActorMail<String> mail): void { self.end(); return; } end",
+      "expected": {
+        "error": "SuspensionEffectError"
+      },
+      "note": "Actor startup must complete on its lifecycle turn before readiness; suspension remains forbidden"
+    },
+    {
+      "id": "plain_instance_method_await_reject",
+      "kind": "reject_candidate",
+      "source": "define class Helper as pub execute(): void { val Channel<int> ch = Channel.new<int>(1); val Future<void> sent = nb writech ch, 1; await sent; return; } end",
+      "expected": {
+        "error": "SuspensionEffectError"
+      },
+      "note": "An ordinary class method without async/suspends lacks suspension authority"
+    },
+    {
       "id": "timeout_direct_async",
       "kind": "source_candidate",
       "source": "pub async fnc main(): int { let v = await time.timeout(1s, compute_async()); return v; }",
