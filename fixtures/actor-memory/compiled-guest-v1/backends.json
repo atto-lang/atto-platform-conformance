@@ -1,7 +1,20 @@
 {
-  "schemaVersion": 1,
-  "scope": "compiled-actor-private-heaps-v1",
-  "sourceGitBlobSha1": "016733b1fbc8bdfbde7414a15b877a190dd92806",
+  "schemaVersion": 2,
+  "scope": "compiled-actor-private-heaps-v2",
+  "sourceGitBlobSha1": "430565092d8a4ff114f601a54b771ef3d42eae58",
+  "sourceSha256": "8a09c21d17e8f78b8964f0bda575301e9953295f5a78386d6a04e6772d4ff211",
+  "negativeCases": {
+    "foreign-state": {
+      "sourceSha256": "3071307899db9c4f4f3acc44465d60dd77d2ee2d2c0930d4bcc23e7fd9a8e94c",
+      "requiredDiagnosticClass": "FOREIGN_ACTOR_STATE_DENIED",
+      "requireNoOutputArtifact": true
+    },
+    "read-loan-write": {
+      "sourceSha256": "c1e0c4ac183fd3b2d1834a038fc89e2d36f9e876b75285bc196f6888bf1a5c21",
+      "requiredDiagnosticClass": "WRITE_WITH_READ_LOAN_DENIED",
+      "requireNoOutputArtifact": true
+    }
+  },
   "verifiedGuestBackends": [],
   "backends": {
     "java": "UNSUPPORTED_OR_NOT_VERIFIED",
@@ -11,5 +24,6 @@
     "forge": "UNSUPPORTED_OR_NOT_VERIFIED"
   },
   "hostTestsAreGuestEvidence": false,
+  "sourceFreeTestsAreGuestEvidence": false,
   "selfAttestedTraceIsGuestEvidence": false
 }
