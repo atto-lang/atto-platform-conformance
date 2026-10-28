@@ -34,6 +34,8 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
         data={sha:C,encoding:"base64",content:"NDI7Cg==",size:4};
     } else {
       if(suffix==="/git/commits/"+B)data={tree:{sha:E}};
+      else if(suffix==="/git/blobs/"+C)
+        data={sha:C,encoding:"base64",content:"NDI7Cg==",size:4};
       else if(suffix==="/git/trees/"+E+"?recursive=1")
         data=destinationTree||{truncated:false,tree:[{path:"unrelated/readme.txt",type:"blob"}]};
       else if(suffix==="/git/trees/"+D+"?recursive=1")
@@ -280,5 +282,88 @@ test("materialized subtree Git SHA is required before creating a commit or CI re
   await assert.rejects(promise,/materialized snapshot source subtree SHA mismatch/);
   assert.equal(h.events.some(e=>e.path===destination+"/git/commits"&&e.method==="POST"),false);
   assert.equal(h.events.some(e=>e.path===destination+"/git/refs"&&e.method==="POST"),false);
+ }
+});
+
+const threeSourceFiles=Array.from({length:3},(_,i)=>({
+ type:"blob",path:"private-"+i+".ores",sha:C,size:4,mode:"100644"
+}));
+const threeSourceTree={truncated:false,tree:threeSourceFiles};
+const threeMaterializedTree={truncated:false,tree:[
+ {path:"snapshots",type:"tree"},
+ {path:"snapshots/checked",type:"tree",sha:D},
+ ...threeSourceFiles.map(f=>({path:"snapshots/checked/"+f.path,
+  type:"blob",mode:f.mode,sha:f.sha}))
+]};
+test("resumable stages keep the branch unreachable until all exact blobs verify",async()=>{
+ const h=fixture({sourceTree:threeSourceTree,materializedTree:threeMaterializedTree});
+ const first=await publishPrivateMirror({...opts,fetchImpl:h.request,maxBlobsPerRun:2});
+ assert.equal(first.status,"PRIVATE_MIRROR_STAGED");
+ assert.equal(first.checkpoint.nextIndex,2);
+ assert.equal(first.copiedThisBatch,2);
+ assert.equal(first.remaining,1);
+ assert.equal(first.checkpoint.sourceCommit,A);
+ assert.equal(first.checkpoint.sourceTree,D);
+ assert.equal(first.checkpoint.destinationBaseTree,E);
+ assert.deepEqual(h.events.filter(x=>x.method==="POST").map(x=>x.path),
+  [destination+"/git/blobs",destination+"/git/blobs"]);
+ const second=await publishPrivateMirror({...opts,fetchImpl:h.request,maxBlobsPerRun:2,
+  checkpoint:first.checkpoint});
+ assert.equal(second.status,"PRIVATE_MIRROR_PUBLISHED");
+ assert.equal(second.blobs,3);
+ assert.deepEqual(h.events.filter(x=>x.method==="POST").map(x=>x.path),[
+  destination+"/git/blobs",destination+"/git/blobs",
+  destination+"/git/blobs",destination+"/git/trees",
+  destination+"/git/commits",destination+"/git/refs"
+ ]);
+ const lastResumeBlob=destination+"/git/blobs/"+C;
+ assert.ok(h.events.some(x=>x.method==="GET"&&x.path===lastResumeBlob));
+});
+test("tampered resume pins and cursor are rejected before ANY new blobs are fetched",async()=>{
+ const h=fixture({sourceTree:threeSourceTree,materializedTree:threeMaterializedTree});
+ const first=await publishPrivateMirror({...opts,fetchImpl:h.request,maxBlobsPerRun:1});
+ const base=first.checkpoint;
+ for(const changes of [
+  {sourceCommit:B},{sourceTree:E},{destinationBaseTree:D},
+  {destination:"other/private"},{prefix:"snapshots/other"},
+  {newBranch:"ci/private-replay"},{nextIndex:3},{nextIndex:0},
+  {nextIndex:1.5},{lastBlobSha:D},{totalBlobs:20}
+ ]){
+  const before=h.events.length;
+  await assert.rejects(publishPrivateMirror({...opts,fetchImpl:h.request,
+   maxBlobsPerRun:1,checkpoint:{...base,...changes}}));
+  assert.equal(h.events.filter(x=>x.method==="POST").length,1,
+    "tampered cursor must not stage any new source bytes");
+  // Legitimate metadata/immutable manifest reads may happen before rejection.
+  assert.ok(h.events.length>=before);
+ }
+});
+test("missing checkpointed Git blob fails closed without creating a snapshot ref",async()=>{
+ const h=fixture({sourceTree:threeSourceTree,materializedTree:threeMaterializedTree,
+  errors:{["/git/blobs/"+C]:true}});
+ const first=await publishPrivateMirror({...opts,fetchImpl:h.request,maxBlobsPerRun:1});
+ await assert.rejects(publishPrivateMirror({...opts,fetchImpl:h.request,
+  maxBlobsPerRun:1,checkpoint:first.checkpoint}));
+ assert.equal(h.events.filter(x=>x.method==="POST").length,1);
+ assert.equal(h.events.some(x=>x.path===destination+"/git/refs"),false);
+});
+test("privacy revocation between bounded batches fails before a second mutation",async()=>{
+ const h=fixture({sourceTree:threeSourceTree,materializedTree:threeMaterializedTree,
+  meta:(name,n)=>name===destination&&n>=4?{...good(name),visibility:"public",private:false}:good(name)});
+ const first=await publishPrivateMirror({...opts,fetchImpl:h.request,maxBlobsPerRun:1});
+ assert.equal(first.status,"PRIVATE_MIRROR_STAGED");
+ await assert.rejects(publishPrivateMirror({...opts,fetchImpl:h.request,
+  maxBlobsPerRun:1,checkpoint:first.checkpoint}),/writable verified PRIVATE/);
+ assert.equal(h.events.filter(x=>x.method==="POST").length,1);
+});
+test("malformed bounded batch sizes and checkpoint shapes never contact GitHub",async()=>{
+ for(const extra of [
+  {maxBlobsPerRun:0},{maxBlobsPerRun:65},{maxBlobsPerRun:-1},
+  {maxBlobsPerRun:1.1},{maxBlobsPerRun:"5"},
+  {checkpoint:null},{checkpoint:[]},{checkpoint:{}}
+ ]){
+  const h=fixture();
+  await assert.rejects(publishPrivateMirror({...opts,fetchImpl:h.request,...extra}));
+  assert.equal(h.events.length,0);
  }
 });
