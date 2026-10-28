@@ -36,6 +36,17 @@
       }
     },
     {
+      "id": "sync_public_main_await",
+      "kind": "source_candidate",
+      "source": "pub routine main(): void { await time.sleep(0ms); stdio.println(42); return; }",
+      "expected": {
+        "prints": "42",
+        "explicit_task_required": false,
+        "minimum_resume_turns": 1
+      },
+      "note": "The public root entrypoint already owns an implicit scheduler Task; this exception does not extend to ordinary synchronous helpers"
+    },
+    {
       "id": "timeout_direct_async",
       "kind": "source_candidate",
       "source": "pub async fnc main(): int { let v = await time.timeout(1s, compute_async()); return v; }",
@@ -47,7 +58,7 @@
     {
       "id": "sync_await_reject",
       "kind": "reject_candidate",
-      "source": "pub fnc main(): int { await time.sleep(1ms); return 42; }",
+      "source": "pub fnc helper(): int { await time.sleep(1ms); return 42; }",
       "expected": {
         "error": "SuspensionEffectError"
       }
