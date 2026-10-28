@@ -2,7 +2,7 @@
 export const ISOLATION_SCHEMA = "oreslang.actor-isolation.evidence.v1";
 export const ISOLATION_FIXTURE = "contracts/v1/actor-isolation/actor-isolation-v1.ores";
 export const ISOLATION_BLOB = "2120772dea0e55bff6af95fec059555d9f4ea99b";
-export const ISOLATION_BACKENDS = Object.freeze(["java", "llvm", "net", "wasm", "forge"]);
+export const ISOLATION_BACKENDS = Object.freeze(["java", "llvm", "net", "wasm", "forge", "cranelift"]);
 export const ISOLATION_CASES = Object.freeze([
   ["independent_private_state", "guest-runtime"],
   ["foreign_actor_access_denied", "compiler-negative"],
@@ -45,7 +45,7 @@ function validateCase(p, expectedId, type) {
   keys(p, ["id", "outcome", "compiler", "guest", "guestAssertions",
            "actors", "violationRejected", "hostBeforeFree"], "case " + expectedId);
   if (p.id !== expectedId || p.outcome !== "pass") fail(expectedId + " failed or skipped");
-  if (p.actors.length !== 2 || p.actors[0] !== "A" || p.actors[1] !== "B")
+  if (!Array.isArray(p.actors) || p.actors.length !== 2 || p.actors[0] !== "A" || p.actors[1] !== "B")
     fail(expectedId + " must identify both physical actor instances");
   if (type === "compiler-negative") {
     if (p.compiler !== "rejected-no-ir" || p.guest !== "not-applicable" ||
@@ -81,7 +81,7 @@ export function validateIsolationManifest(m) {
       fail("canonical case inventory/order differs");
   });
   if (!Array.isArray(m.backends) || m.backends.length !== ISOLATION_BACKENDS.length)
-    fail("five backend records required");
+    fail("six backend records required");
   distinctExact(m.backends.map(x => x.backend), ISOLATION_BACKENDS, "backend inventory");
   for (const r of m.backends) {
     keys(r, ["backend", "status", "reason"], "backend baseline");
