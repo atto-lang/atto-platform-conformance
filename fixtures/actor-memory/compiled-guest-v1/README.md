@@ -1,6 +1,6 @@
 # Shared compiled actor-private heap guest acceptance v1
 
-This is ONE canonical `.ores` source input, **not** a statement that every backend already compiles it. It is based on the existing LLVM source-actor owned-heap fixture, with B receiving another message after A's STOP. Canonical Git blob: `51519bdf9084d7d8457b1e5a39c92a5efe2b63ce`.
+This is ONE canonical `.ores` source input, **not** a statement that every backend already compiles it. It is based on the existing LLVM source-actor owned-heap fixture, with B receiving another message after A's graceful STOP and physical join. Plain `stop` remains abortive and can abandon DATA; the graceful path is a new LLVM candidate, not yet demonstrated on other backends. Canonical Git blob: `016733b1fbc8bdfbde7414a15b877a190dd92806`.
 
 ## Observed guest contract
 
