@@ -12,9 +12,11 @@ const manifest = JSON.parse(readFileSync(path.join(dir, "manifest.json"), "utf8"
 const caseMap = new Map(manifest.cases.map((entry) => [entry.id, entry]));
 const expectedCaseContracts = new Map([
     ["flat-map-one-layer", { kind: "positive", stdout: "42", type: "Future<int>" }],
+    ["flat-map-preserves-deeper-nesting", { kind: "positive", stdout: "84", type: "Future<Future<int>>" }],
     ["map-preserves-nested", { kind: "positive", stdout: "42", type: "Future<Future<int>>" }],
     ["flatten-one-layer", { kind: "positive", stdout: "42", type: "Future<int>" }],
     ["reject-flat-map-scalar", { kind: "compile_reject", diagnosticCategory: "FUTURE_CALLBACK_NOT_FUTURE" }],
+    ["reject-flat-map-deeper-nesting", { kind: "compile_reject", diagnosticCategory: "WRAPPER_LAYER_MISMATCH" }],
     ["reject-implicit-map-flatten", { kind: "compile_reject", diagnosticCategory: "WRAPPER_LAYER_MISMATCH" }],
     ["reject-one-await-flatten", { kind: "compile_reject", diagnosticCategory: "WRAPPER_LAYER_MISMATCH" }],
 ]);
@@ -64,7 +66,7 @@ test("v2 conformance manifest never promotes unexecuted source", () => {
     assert.equal(caseMap.size, expectedCaseContracts.size, "duplicate case identifiers are forbidden");
     assert.deepEqual([...caseMap.keys()].sort(), [...expectedCaseContracts.keys()].sort(),
         "case identifiers must match the v2 acceptance contract exactly");
-    assert.equal(new Set(manifest.cases.map((entry) => entry.source)).size, 6,
+    assert.equal(new Set(manifest.cases.map((entry) => entry.source)).size, expectedCaseContracts.size,
         "multiple cases must not silently reuse one fixture");
 
     const files = readdirSync(dir).filter((entry) => entry.endsWith(".ores")).sort();
@@ -124,4 +126,15 @@ test("explicit flatten and await each remove only one layer", () => {
     const invalid = fixture("reject-one-await-flatten");
     assert.match(invalid, /Future<Future<int>> nested/);
     assert.match(invalid, /val int invalid\s*=\s*await nested/);
+});
+
+test("flat_map flattens one layer but preserves a deeper Future", () => {
+    const positive = fixture("flat-map-preserves-deeper-nesting");
+    assert.match(positive, /Future<Future<int>> nested\\s*=\\s*seed\\(\\)\\.flat_map\\(/);
+    assert.match(positive, /return double_it\\(number\\)\\.map\\(/);
+    assert.match(positive, /Future<int> inner\\s*=\\s*await nested/);
+    assert.match(positive, /await inner/);
+    const negative = fixture("reject-flat-map-deeper-nesting");
+    assert.match(negative, /Future<int> invalid\\s*=\\s*seed\\(\\)\\.flat_map\\(/);
+    assert.match(negative, /return double_it\\(number\\)\\.map\\(/);
 });
