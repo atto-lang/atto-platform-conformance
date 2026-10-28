@@ -67,7 +67,7 @@ export function classifySemanticCompilerResult(c, output) {
   // Exactly one primary diagnostic: multiple errors can hide an unrelated
   // earlier rejection behind a later matching semantic diagnostic.
   const errors = lines.split(/\r?\n/).map(line => line.trimStart())
-    .filter(line => /^error(?:\\[[A-Za-z0-9_]+\\])?:/.test(line));
+    .filter(line => /^error(?:\[[A-Za-z0-9_]+\])?:/.test(line));
   return output.status === 1 && errors.length === 1 && errors[0].startsWith(expected)
     ? "MATCHED_UNATTESTED" : "MISMATCH";
 }
