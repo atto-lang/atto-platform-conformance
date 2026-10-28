@@ -185,3 +185,67 @@ test('cancelled older actor turn frees the lane for its younger queued turn', ()
   assert.equal(tick(m).id,'younger');
   assert.equal(m.inspect('younger').physicallyRetired,true);
 });
+
+test('suspended actor I/O retains logical turn while peer actor progresses', () => {
+  const m = new Model({queueCapacity:4});
+  m.submit({id:'old',actor:'A',steps:[io('fd'),cpu(1),done()]});
+  m.submit({id:'young',actor:'A',steps:[cpu(1),done()]});
+  m.submit({id:'peer',actor:'B',steps:[done()]});
+  assert.equal(tick(m).id,'old');
+  assert.equal(m.actorActive.size,0);
+  assert.deepEqual(m.actorTurns.get('A'),['old','young']);
+  assert.equal(tick(m).id,'peer');
+  assert.equal(m.dispatch(),null, 'younger same-actor USER must not reenter');
+  assert.equal(m.wake({id:'old',generation:1,token:'fd'}),true);
+  assert.equal(tick(m).id,'old');
+  assert.equal(tick(m).id,'young');
+  assert.equal(m.actorTurns.size,0);
+});
+
+test('actor logical owner survives suspension across generation boundaries', () => {
+  const m = new Model({queueCapacity:2});
+  m.submit({id:'old',actor:'A',generation:1,steps:[io('fd'),done()]});
+  m.submit({id:'young',actor:'A',generation:2,steps:[done()]});
+  tick(m);
+  assert.equal(m.dispatch(),null);
+  assert.equal(m.wake({id:'old',generation:2,token:'fd'}),false);
+  assert.equal(m.wake({id:'old',generation:1,token:'fd'}),true);
+  assert.equal(tick(m).id,'old');
+  assert.equal(tick(m).id,'young');
+});
+
+test('saturated DATA cannot strand suspended actor owner wake', () => {
+  const m = new Model({queueCapacity:1,controlCapacity:1,reductionBudget:2});
+  m.submit({id:'old',actor:'A',steps:[io('fd'),cpu(5),done()]});
+  tick(m);
+  m.submit({id:'young',actor:'A',steps:[done()]});
+  assert.equal(m.dispatch(),null);
+  assert.equal(m.wake({id:'old',generation:1,token:'fd'}),true);
+  assert.equal(m.control.length,1);
+  assert.equal(m.wake({id:'old',generation:1,token:'fd'}),false);
+  assert.equal(tick(m).id,'old');
+  assert.equal(m.control.length,1, 'preempted CONTROL continuation retains reserve');
+  assert.equal(m.cancel('young'),true);
+  assert.equal(tick(m).id,'old');
+  assert.equal(tick(m).id,'old');
+  assert.equal(tick(m).id,'young');
+  assert.equal(m.actorTurns.size,0);
+});
+
+test('cancel suspended actor owner retires before younger USER turn', () => {
+  const m = new Model({queueCapacity:1,controlCapacity:1});
+  m.submit({id:'old',actor:'A',steps:[io('fd'),done()]});
+  tick(m);
+  m.submit({id:'young',actor:'A',steps:[done()]});
+  assert.equal(m.cancel('old'),true);
+  assert.equal(m.inspect('old').physicallyRetired,false);
+  assert.equal(tick(m).id,'old');
+  assert.equal(tick(m).id,'young');
+});
+
+test('invalid actor identity fails before task or mailbox admission', () => {
+  const m = new Model();
+  for (const actor of ['',0,{},false])
+    assert.throws(()=>m.submit({id:'x',actor,steps:[done()]}),/actor identity/);
+  assert.equal(m.tasks.size,0);
+});

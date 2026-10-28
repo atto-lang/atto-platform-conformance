@@ -12,13 +12,18 @@ export class UnifiedExecutionModel {
     this.control = [];
     this.active = null;
     this.actorActive = new Set();
+    this.actorTurns = new Map(); // Retained across carrier release and I/O waits.
     this.events = [];
   }
   hasDataCredit() {
-    return this.ready.length + (this.active ? 1 : 0) < this.queueCapacity;
+    return this.ready.length + (this.active?.queueKind === 'data' ? 1 : 0) < this.queueCapacity;
+  }
+  hasControlCredit() {
+    return this.control.length + (this.active?.queueKind === 'control' ? 1 : 0) < this.controlCapacity;
   }
   submit({id, actor = null, generation = 1, steps, captures = []}) {
     if (typeof id !== 'string' || !id || this.tasks.has(id)) throw new Error('invalid/duplicate task identity');
+    if (actor !== null && (typeof actor !== 'string' || !actor)) throw new Error('invalid actor identity');
     if (!Number.isSafeInteger(generation) || generation <= 0) throw new Error('invalid generation');
     if (!Array.isArray(steps) || steps.length === 0) throw new Error('missing steps');
     if (!Array.isArray(captures) || captures.some(x => !['take', 'copy', 'share'].includes(x)))
@@ -35,21 +40,33 @@ export class UnifiedExecutionModel {
     const task = {id, actor, generation, steps:normalized, pc:0, state:'queued',
       terminal:null, physicallyRetired:false, dispatches:0, wakes:0, cancelRequested:false};
     this.tasks.set(id, task);
+    if (actor !== null) {
+      if (!this.actorTurns.has(actor)) this.actorTurns.set(actor, []);
+      this.actorTurns.get(actor).push(id);
+    }
     this.ready.push(id);
     return true;
   }
   dispatch() {
     if (this.active) throw new Error('carrier still executing');
-    const queue = this.control.length ? this.control : this.ready;
-    const id = queue.shift();
-    if (!id) return null;
+    // Do not dispatch younger same-actor messages while their owner is suspended.
+    let queue, index = -1, queueKind;
+    for (const [candidate, kind] of [[this.control, 'control'], [this.ready, 'data']]) {
+      const found = candidate.findIndex(id => {
+        const task = this.tasks.get(id);
+        if (!task || task.state !== 'queued') throw new Error('stale/duplicate queue ticket');
+        return task.actor === null || this.actorTurns.get(task.actor)?.[0] === id;
+      });
+      if (found !== -1) { queue = candidate; index = found; queueKind = kind; break; }
+    }
+    if (index === -1) return null;
+    const [id] = queue.splice(index, 1);
     const task = this.tasks.get(id);
-    if (!task || task.state !== 'queued') throw new Error('stale/duplicate queue ticket');
     const actorKey = task.actor === null ? null : `${task.actor}:${task.generation}`;
     if (actorKey && this.actorActive.has(actorKey)) throw new Error('actor physical turn overlap');
     if (actorKey) this.actorActive.add(actorKey);
     task.state = 'running'; task.dispatches++;
-    this.active = {id, actorKey, next:'queued'};
+    this.active = {id, actorKey, queueKind, next:'queued'};
     this.events.push(`enter:${id}`);
     if (task.cancelRequested) {
       task.terminal = 'cancelled'; this.active.next = 'terminal';
@@ -75,7 +92,7 @@ export class UnifiedExecutionModel {
   }
   release() {
     if (!this.active) throw new Error('no active carrier');
-    const {id, actorKey, next} = this.active;
+    const {id, actorKey, next, queueKind} = this.active;
     const task = this.tasks.get(id);
     if (actorKey) this.actorActive.delete(actorKey);
     this.active = null;
@@ -89,7 +106,11 @@ export class UnifiedExecutionModel {
       task.state = 'queued';
     }
     if (task.state === 'queued') {
-      if (this.ready.length >= this.queueCapacity) throw new Error('ready queue overflow');
+      if (queueKind === 'control') {
+        if (this.control.length >= this.controlCapacity) throw new Error('control queue overflow');
+        this.control.push(id);
+      } else {
+        if (this.ready.length >= this.queueCapacity) throw new Error('ready queue overflow');
       // A preempted actor message must retain its logical place ahead of
       // younger messages for that actor, without starving ready peer actors.
       if (task.actor === null) {
@@ -101,8 +122,15 @@ export class UnifiedExecutionModel {
           otherId => this.tasks.get(otherId)?.actor !== task.actor);
         this.ready = [...peers, id, ...sameActor];
       }
+      }
     } else if (task.state === 'terminal') {
       task.physicallyRetired = true;
+      if (task.actor !== null) {
+        const turns = this.actorTurns.get(task.actor);
+        if (!turns || turns[0] !== id) throw new Error('actor logical turn mismatch');
+        turns.shift();
+        if (turns.length === 0) this.actorTurns.delete(task.actor);
+      }
     }
     this.events.push(`exit:${id}`);
     return task.state;
@@ -112,13 +140,16 @@ export class UnifiedExecutionModel {
     // A reactor may only publish a bounded ticket; never execute source here.
     const finishingRegistration = task?.state === 'running' && this.active?.id === id &&
       this.active.next === 'suspended';
+    const reserveControl = !this.hasDataCredit() && task?.actor != null &&
+      this.actorTurns.get(task.actor)?.[0] === id && this.hasControlCredit();
     if (!task || task.generation !== generation || task.waitToken !== token ||
         task.cancelRequested || task.pendingWake ||
-        (!finishingRegistration && (task.state !== 'suspended' || !this.hasDataCredit())))
+        (!finishingRegistration && (task.state !== 'suspended' ||
+          (!this.hasDataCredit() && !reserveControl))))
       return false;
     task.waitToken = null;
     if (finishingRegistration) task.pendingWake = true;
-    else { task.state = 'queued'; this.ready.push(id); }
+    else { task.state = 'queued'; (reserveControl ? this.control : this.ready).push(id); }
     task.wakes++;
     this.events.push(`wake:${id}`);
     return true;
@@ -127,7 +158,7 @@ export class UnifiedExecutionModel {
     const task = this.tasks.get(id);
     if (!task || task.physicallyRetired || task.cancelRequested) return false;
     if (task.state === 'suspended') {
-      if (this.control.length >= this.controlCapacity) return false;
+      if (!this.hasControlCredit()) return false;
       task.waitToken = null;
       task.state = 'queued';
       this.control.push(id);
