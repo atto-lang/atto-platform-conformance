@@ -1,0 +1,60 @@
+{
+  "schema": "oreslang.actor-isolation.evidence.v1",
+  "fixture": {
+    "path": "contracts/v1/actor-isolation/actor-isolation-v1.ores",
+    "gitBlobSha": "2120772dea0e55bff6af95fec059555d9f4ea99b"
+  },
+  "cases": [
+    {
+      "id": "independent_private_state",
+      "evidence": "guest-runtime"
+    },
+    {
+      "id": "foreign_actor_access_denied",
+      "evidence": "compiler-negative"
+    },
+    {
+      "id": "read_loan_blocks_A_mutation_B_progresses",
+      "evidence": "guest-runtime"
+    },
+    {
+      "id": "destroy_A_preserves_B",
+      "evidence": "guest-and-host"
+    },
+    {
+      "id": "stale_handle_after_reclamation_denied",
+      "evidence": "guest-and-host"
+    },
+    {
+      "id": "private_state_scrub_before_physical_free",
+      "evidence": "host-before-free"
+    }
+  ],
+  "backends": [
+    {
+      "backend": "java",
+      "status": "pending",
+      "reason": "Full identical source-actor contract has not executed on this backend"
+    },
+    {
+      "backend": "llvm",
+      "status": "pending",
+      "reason": "Full identical source-actor contract has not executed on this backend"
+    },
+    {
+      "backend": "net",
+      "status": "pending",
+      "reason": "Full identical source-actor contract has not executed on this backend"
+    },
+    {
+      "backend": "wasm",
+      "status": "pending",
+      "reason": "Full identical source-actor contract has not executed on this backend"
+    },
+    {
+      "backend": "forge",
+      "status": "pending",
+      "reason": "Full identical source-actor contract has not executed on this backend"
+    }
+  ]
+}
