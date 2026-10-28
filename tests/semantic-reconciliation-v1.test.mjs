@@ -66,7 +66,8 @@ test("bounded Future.map suite is paired and cannot claim full-inventory parity"
  const pair=selectSemanticCases(doc,"future-map");
  assert.deepEqual(pair.map(c=>c.id),["future-map-preserves-nested-return","future-map-rejects-implicit-adoption"]);
  assert.deepEqual(pair.map(c=>c.expect),["accept","reject"]);
- assert.equal(selectSemanticCases(doc,"all").length,22);
+ assert.equal(selectSemanticCases(doc,"all").length,doc.compilerCases.length);
+ assert.equal(doc.compilerCases.length,26);
  assert.throws(()=>selectSemanticCases(doc,"unknown"),/unsupported semantic suite/);
  const broken=structuredClone(doc);
  broken.compilerCases=broken.compilerCases.filter(c=>c.id!=="future-map-rejects-implicit-adoption");
