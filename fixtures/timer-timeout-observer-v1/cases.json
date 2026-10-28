@@ -47,6 +47,35 @@
       "note": "The public root entrypoint already owns an implicit scheduler Task; this exception does not extend to ordinary synchronous helpers"
     },
     {
+      "id": "private_root_main_await",
+      "kind": "source_candidate",
+      "source": "fnc main(): void { await time.after(0ms); stdio.println(45); return; }",
+      "expected": {
+        "prints": "45",
+        "explicit_task_required": false
+      },
+      "note": "Root main is selected by zero-arity entrypoint identity, not public modifier"
+    },
+    {
+      "id": "private_module_main_await",
+      "kind": "source_candidate",
+      "source": "define module helper fnc main(): void { await time.after(0ms); stdio.println(46); return; } end",
+      "expected": {
+        "prints": "46",
+        "explicit_task_required": false
+      },
+      "note": "One unique module main is selected when no root main exists"
+    },
+    {
+      "id": "nonentry_main_overload_reject",
+      "kind": "reject_candidate",
+      "source": "define module helper fnc main(int unused): void { await time.after(0ms); return; } end",
+      "expected": {
+        "error": "SuspensionEffectError"
+      },
+      "note": "A nonzero-arity function named main is not a scheduler-owned entrypoint"
+    },
+    {
       "id": "actor_receive_await",
       "kind": "source_candidate",
       "source": "define actor Worker as receive(ActorMail<String> mail): void { val Channel<int> ch = Channel.new<int>(1); val Future<void> sent = nb writech ch, 7; await sent; self.end(); return; } end",
