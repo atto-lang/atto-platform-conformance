@@ -11,6 +11,13 @@ const dir = fileURLToPath(new URL("../fixtures/future-chaining/v2/", import.meta
 const manifest = JSON.parse(readFileSync(path.join(dir, "manifest.json"), "utf8"));
 const caseMap = new Map(manifest.cases.map((entry) => [entry.id, entry]));
 
+function gitBlobSha1(bytes) {
+    return createHash("sha1")
+        .update(`blob ${bytes.length}\0`)
+        .update(bytes)
+        .digest("hex");
+}
+
 function fixture(id) {
     const record = caseMap.get(id);
     assert.ok(record, `missing case: ${id}`);
@@ -20,7 +27,12 @@ function fixture(id) {
     const stat = lstatSync(full);
     assert.ok(stat.isFile() && !stat.isSymbolicLink(), `not an ordinary fixture: ${filename}`);
     assert.ok(stat.size > 0 && stat.size < 4096, `fixture size outside cap: ${filename}`);
-    const code = readFileSync(full, "utf8");
+    const raw = readFileSync(full);
+    assert.equal(raw.length, stat.size, `fixture size changed during read: ${filename}`);
+    assert.match(record.sourceGitBlobSha1, /^[a-f0-9]{40}$/, `missing source blob pin: ${filename}`);
+    assert.equal(gitBlobSha1(raw), record.sourceGitBlobSha1, `fixture content drift: ${filename}`);
+    const code = raw.toString("utf8");
+    assert.deepEqual(Buffer.from(code, "utf8"), raw, `invalid UTF-8: ${filename}`);
     assert.ok(code.endsWith("\n"), `missing terminal newline: ${filename}`);
     assert.equal(code.includes("\r"), false, `non-LF line endings: ${filename}`);
     assert.match(code, /pub (?:suspends )?fnc main\(\): void/);
@@ -30,6 +42,7 @@ function fixture(id) {
 test("v2 conformance manifest never promotes unexecuted source", () => {
     assert.equal(manifest.schemaVersion, 2);
     assert.equal(manifest.contract, "future-chaining-explicit-layers-v2");
+    assert.equal(manifest.status, "proposal-not-executable");
     assert.equal(manifest.sourceExecutionVerified, false);
     assert.equal(manifest.runtimeVerified, false);
     assert.equal(manifest.caseStatusDefault, "pending");
@@ -41,6 +54,8 @@ test("v2 conformance manifest never promotes unexecuted source", () => {
     assert.deepEqual(manifest.evidence, []);
     assert.equal(manifest.cases.length, 6);
     assert.equal(caseMap.size, 6, "duplicate case identifiers are forbidden");
+    assert.equal(new Set(manifest.cases.map((entry) => entry.source)).size, 6,
+        "multiple cases must not silently reuse one fixture");
 
     const files = readdirSync(dir).filter((entry) => entry.endsWith(".ores")).sort();
     assert.deepEqual(
@@ -58,9 +73,17 @@ test("v2 conformance manifest never promotes unexecuted source", () => {
             assert.match(entry.expected.diagnosticCategory, /^[A-Z_]+$/);
             assert.equal(entry.expected.stdout, undefined);
         }
-        const code = fixture(entry.id);
-        assert.equal(createHash("sha256").update(code).digest("hex").length, 64);
+        fixture(entry.id);
     }
+});
+
+test("source blob identity changes when a fixture is modified", () => {
+    const record = caseMap.get("flat-map-one-layer");
+    const original = readFileSync(path.join(dir, record.source));
+    const mutated = Buffer.from(original);
+    mutated[0] ^= 1;
+    assert.equal(gitBlobSha1(original), record.sourceGitBlobSha1);
+    assert.notEqual(gitBlobSha1(mutated), record.sourceGitBlobSha1);
 });
 
 test("map does not accidentally become a flattening combinator", () => {
