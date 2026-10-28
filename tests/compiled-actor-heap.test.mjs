@@ -9,22 +9,23 @@ const mk = () => {
   const b = {actorId:'actor:b:9', heapId:'heap:b:9'};
   const row = (actor, message, value) => ({type:'guest-handler-result',actor, message, value,...(actor==='a'?a:b)});
   return {
-    schemaVersion:1, backend:'llvm', sourceGitBlobSha1:'51519bdf9084d7d8457b1e5a39c92a5efe2b63ce',
+    schemaVersion:1, backend:'llvm', sourceGitBlobSha1:'016733b1fbc8bdfbde7414a15b877a190dd92806',
     sourceCommitSha1:'a'.repeat(40), compilerSha256:'b'.repeat(64), artifactSha256:'c'.repeat(64),
     runnerJobUrl:'https://github.com/example-org/example-repo/actions/runs/100/job/200',
     events:[
       {type:'spawn',actor:'a',...a}, {type:'spawn',actor:'b',...b},
       row('a',1,2),row('b',5,10),row('a',2,8),row('b',6,32),
-      row('a',3,22),row('b',7,78),row('a',4,52),row('b',8,172),
+      row('a',3,22),row('b',7,78),row('a',4,52),
       {type:'foreign-read-denied',requester:b.actorId,owner:a.actorId,reason:'owner-authority'},
       {type:'foreign-write-denied',requester:b.actorId,owner:a.actorId,reason:'owner-authority'},
       {type:'loan-open',actorId:a.actorId,heapId:a.heapId,loanId:'loan-a',mode:'read'},
       {type:'own-write-denied',actorId:a.actorId,heapId:a.heapId,reason:'read-loan-live'},
+      row('b',8,172),
       {type:'stop-requested',...a},
       {type:'reclaim-deferred',...a,reason:'loan-not-quiescent'},
-      row('b',9,362),
       {type:'loan-close',...a,loanId:'loan-a'},
       {type:'physically-reclaimed',...a},
+      row('b',9,362),
       {type:'survivor-read',...b,value:362},
       {type:'stop-requested',...b},
       {type:'physically-reclaimed',...b},
@@ -45,12 +46,12 @@ const denied = (title, mutate) => test(title, () => {
 denied('deny shared physical actor heap identity', r => {r.events[1].heapId = r.events[0].heapId;});
 denied('deny same runtime actor identity', r => {r.events[1].actorId = r.events[0].actorId;});
 denied('deny crossed actor heap owner', r => {r.events[4].heapId=r.events[1].heapId;});
-denied('deny false handler result, though exit code is 43', r => {r.events[9].value=171;});
-denied('deny omitted foreign authority rejection', r => {r.events.splice(10,1);});
-denied('deny foreign access presented as permitted', r => {r.events[11].reason='allowed';});
-denied('deny missing loan write barrier', r => {r.events[13].type='own-write-accepted';});
-denied('deny early physical free before loan close', r => {const e=r.events; [e[17],e[18]]=[e[18],e[17]];});
-denied('deny B stalled after A stops', r => {r.events[16].value=0;});
+denied('deny false handler result, though exit code is 43', r => {r.events[13].value=171;});
+denied('deny omitted foreign authority rejection', r => {r.events.splice(9,1);});
+denied('deny foreign access presented as permitted', r => {r.events[10].reason='allowed';});
+denied('deny missing loan write barrier', r => {r.events[12].type='own-write-accepted';});
+denied('deny early physical free before loan close', r => {const e=r.events; [e[16],e[17]]=[e[17],e[16]];});
+denied('deny B stalled after A stops', r => {r.events[18].value=0;});
 denied('deny missing B surviving A physical free', r => {r.events[19].value=0;});
 denied('deny forged verified flag', r => {r.verified=true;});
 denied('deny status promotions in input', r => {r.status='VERIFIED';});
