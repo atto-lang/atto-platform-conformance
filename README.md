@@ -115,6 +115,15 @@ but running that preflight by itself **does not** authorize a subsequent
 unprotected git push. Do not use generic copy/push commands in place of the
 guarded publisher.
 
+The guarded publisher admits up to **1,500 regular source blobs**
+(the current Java and LLVM source trees have 1,177 and 1,291 respectively),
+with the existing **40 MiB total**, **1 MiB per-file**, and **3,000 tree-entry**
+limits. Symlinks, gitlinks, unsafe/case-colliding paths and partial trees
+still fail closed. The publisher must verify the *materialized Git source
+subtree SHA* as well as all file blob SHA/mode identities before creating
+the commit and isolated CI ref; the receipt includes `sourceTree`.
+Synthetic/mock publisher tests are **not** external release-admission evidence.
+
 The CLI fails closed unless the source and destination both resolve as
 GitHub-verified **private** repositories and the destination is explicitly
 allowlisted, not archived and writable by the credential. A 403, missing token,
