@@ -10,6 +10,14 @@ import test from "node:test";
 const dir = fileURLToPath(new URL("../fixtures/future-chaining/v2/", import.meta.url));
 const manifest = JSON.parse(readFileSync(path.join(dir, "manifest.json"), "utf8"));
 const caseMap = new Map(manifest.cases.map((entry) => [entry.id, entry]));
+const expectedCaseContracts = new Map([
+    ["flat-map-one-layer", { kind: "positive", stdout: "42", type: "Future<int>" }],
+    ["map-preserves-nested", { kind: "positive", stdout: "42", type: "Future<Future<int>>" }],
+    ["flatten-one-layer", { kind: "positive", stdout: "42", type: "Future<int>" }],
+    ["reject-flat-map-scalar", { kind: "compile_reject", diagnosticCategory: "FUTURE_CALLBACK_NOT_FUTURE" }],
+    ["reject-implicit-map-flatten", { kind: "compile_reject", diagnosticCategory: "WRAPPER_LAYER_MISMATCH" }],
+    ["reject-one-await-flatten", { kind: "compile_reject", diagnosticCategory: "WRAPPER_LAYER_MISMATCH" }],
+]);
 
 function gitBlobSha1(bytes) {
     return createHash("sha1")
@@ -52,8 +60,10 @@ test("v2 conformance manifest never promotes unexecuted source", () => {
         assert.equal(value, "pending");
     }
     assert.deepEqual(manifest.evidence, []);
-    assert.equal(manifest.cases.length, 6);
-    assert.equal(caseMap.size, 6, "duplicate case identifiers are forbidden");
+    assert.equal(manifest.cases.length, expectedCaseContracts.size);
+    assert.equal(caseMap.size, expectedCaseContracts.size, "duplicate case identifiers are forbidden");
+    assert.deepEqual([...caseMap.keys()].sort(), [...expectedCaseContracts.keys()].sort(),
+        "case identifiers must match the v2 acceptance contract exactly");
     assert.equal(new Set(manifest.cases.map((entry) => entry.source)).size, 6,
         "multiple cases must not silently reuse one fixture");
 
@@ -62,16 +72,18 @@ test("v2 conformance manifest never promotes unexecuted source", () => {
         files, manifest.cases.map((entry) => entry.source).sort(),
         "orphaned and missing fixtures must fail");
     for (const entry of manifest.cases) {
+        const expected = expectedCaseContracts.get(entry.id);
+        assert.ok(expected, `unexpected case: ${entry.id}`);
         assert.equal(entry.status, "pending");
         assert.equal(entry.verified, false);
-        assert.ok(["positive", "compile_reject"].includes(entry.kind));
+        assert.equal(entry.kind, expected.kind);
         assert.ok(entry.assert?.length > 0);
         if (entry.kind === "positive") {
-            assert.equal(entry.expected.stdout, "42");
-            assert.equal(entry.expected.diagnosticCategory, undefined);
+            assert.deepEqual(entry.expected, { stdout: expected.stdout, type: expected.type },
+                `positive expectation drift: ${entry.id}`);
         } else {
-            assert.match(entry.expected.diagnosticCategory, /^[A-Z_]+$/);
-            assert.equal(entry.expected.stdout, undefined);
+            assert.deepEqual(entry.expected, { diagnosticCategory: expected.diagnosticCategory },
+                `negative expectation drift: ${entry.id}`);
         }
         fixture(entry.id);
     }
