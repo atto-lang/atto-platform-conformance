@@ -10,7 +10,7 @@ Run a real configured target, *only when an authorized compiler binary exists*:
 node bin/semantic-reconciliation-gate.mjs --backend=java --argv='["/absolute/path/to/compiler","--check","{file}"]' --source-sha=0123456789abcdef0123456789abcdef01234567
 ```
 
-Repeat independently for `llvm`, `net`, and `wasm`; a declared source SHA is not cryptographic build attestation. The result is **local source admission only**, not guest execution, AOT, actor interleaving, hard-real-time behavior, source-build provenance, or certified parity. A missing binary returns UNCONFIGURED and a nonzero exit. The runtime trace cases remain PENDING until real guest execution and deterministic scheduler traces are captured with exact source/compiler/tree/job-step evidence. No mocked compiler, source-free oracle, or zero-step workflow may promote them.
+Repeat independently for `llvm`, `net`, `wasm`, and `forge`; a declared source SHA is not cryptographic build attestation. The result is **local source admission only**, not guest execution, AOT, actor interleaving, hard-real-time behavior, source-build provenance, or certified parity. A missing binary returns UNCONFIGURED and a nonzero exit. The runtime trace cases remain PENDING until real guest execution and deterministic scheduler traces are captured with exact source/compiler/tree/job-step evidence. No mocked compiler, source-free oracle, or zero-step workflow may promote them.
 
 **Ownership of normative changes:** language/backend reviewers must reconcile the common-source contract index, Java #2193, Java #1101/#1287/#2048, optional parameter #1335, actor and NIO state-loan rules, and strict I/O. This PR does not override those still-open documents or change runtime code.
 
@@ -23,3 +23,25 @@ Added source-admission cases for `rt copy`, `rt share`, `rt take`, `rt borrow`, 
 The proposed target `E_PARTIAL_MOVE` specifically prevents `rt take owned.field` from duplicating ownership where the current compiler has no field-slot partial-move ledger; it corresponds to [Java #2197](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2197). Negative diagnostics are proposed cross-backend semantic identities, not already-implemented error-code ABIs. Reviewers must reconcile them with existing human-readable backend diagnostics before certification, without replacing a real compiler error with arbitrary parser rejection.
 
 The broader pointerless syntax migration remains in [Java #1841](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1841). Do not duplicate that migration in this fixture-only PR.
+
+## Bounded Future.map admission gate
+
+Use `--suite=future-map` to execute exactly the
+`future-map-preserves-nested-return` positive and
+`future-map-rejects-implicit-adoption` negative. Omit the flag to run all
+22 compiler vectors. Unknown suites fail closed.
+
+```sh
+node bin/semantic-reconciliation-gate.mjs --backend=java --suite=future-map \
+  --argv='["/absolute/path/to/compiler","--check","{file}"]' \
+  --source-sha=0123456789abcdef0123456789abcdef01234567
+```
+
+Only an actual pinned compiler may establish admission. A selected pair returns
+`SELECTED_SOURCE_ADMISSION_MATCHED_UNATTESTED` and
+`fullInventoryMatched=false`: this is neither full-inventory proof nor guest
+runtime, AOT, cancellation, or cross-backend parity. The source SHA is
+caller-declared, not build-attested, and `E_WRAPPER_LAYER` is a proposed
+diagnostic that still needs compiler reconciliation. Forge is a fifth pending
+target, not an implemented compiler gate. Keep private source inside approved
+security boundaries; do not substitute mocks or zero-step CI for execution.
