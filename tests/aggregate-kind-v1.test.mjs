@@ -1,10 +1,16 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, lstatSync } from "node:fs";
 import { createHash } from "node:crypto";
 
 const root = new URL("../fixtures/aggregate-kind/v1/", import.meta.url);
-const source = file => readFileSync(new URL(file, root));
+const source = file => {
+  const url = new URL(file, root);
+  const metadata = lstatSync(url);
+  assert.ok(metadata.isFile() && !metadata.isSymbolicLink(),
+    "aggregate fixture must be a regular source file: " + file);
+  return readFileSync(url);
+};
 const original = JSON.parse(readFileSync(new URL("manifest.json", root), "utf8"));
 const sha = data => createHash("sha1").update(Buffer.concat([
   Buffer.from("blob " + data.length + "\0"), data
@@ -14,6 +20,12 @@ function validate(m, load = source) {
   assert.equal(m.schemaVersion, 1);
   assert.equal(m.scope, "aggregate-kind-exact-shapes-v1");
   assert.equal(m.cases.length, 20);
+  // A manifest that pins its declared blobs but silently ignores injected
+  // .ores files is not an exhaustive acceptance corpus. Reject extras,
+  // deletions and symlink substitutions rather than trusting a partial plan.
+  const declared = m.cases.map(c => c.file).sort();
+  const actual = readdirSync(root).filter(name => name.endsWith(".ores")).sort();
+  assert.deepEqual(actual, declared, "unmanifested aggregate source fixtures");
   assert.equal(m.referenceJavaPr, "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2181");
   assert.equal(m.exactJavaHead, "9cf102b3e4a2bdaab31d6d48f0ddb4f8eb67dba5");
   assert.deepEqual(Object.keys(m.backendClaims).sort(),
