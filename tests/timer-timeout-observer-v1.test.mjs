@@ -47,6 +47,10 @@ test('actor suspension authority is admitted only on mailbox turns', () => {
     assert.equal(c.expected.explicit_task_required, false);
     assert.match(c.source, /await\s+/);
   }
+  assert.equal(byId.actor_receive_await.expected.prints, 'resumed');
+  assert.equal(byId.actor_receive_await.expected.physical_retirement_before_done, true);
+  assert.match(byId.actor_receive_await.source, /await worker\.get_done\(\)/);
+  assert.match(byId.actor_receive_await.source, /worker\.outputs\.next\(\)/);
   for (const id of ['actor_on_start_await_reject', 'plain_instance_method_await_reject']) {
     assert.equal(byId[id]?.expected.error, 'SuspensionEffectError');
   }
