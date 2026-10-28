@@ -106,6 +106,38 @@
       ],
       "status": "pending",
       "verified": false
+    },
+    {
+      "id": "flat-map-preserves-deeper-nesting",
+      "source": "flat-map-preserves-deeper-nesting.ores",
+      "sourceGitBlobSha1": "2cf2bff1a2f516fde2b8f85272bacf52de180d55",
+      "kind": "positive",
+      "expected": {
+        "stdout": "84",
+        "type": "Future<Future<int>>"
+      },
+      "assert": [
+        "flat_map_exactly_one_layer",
+        "inner_future_kept",
+        "two_awaits",
+        "value_84"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "reject-flat-map-deeper-nesting",
+      "source": "reject-flat-map-deeper-nesting.ores",
+      "sourceGitBlobSha1": "979ea56ccb11c8e90ca2dcc7029ff081364eb8e4",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnosticCategory": "WRAPPER_LAYER_MISMATCH"
+      },
+      "assert": [
+        "flat_map_does_not_recursively_flatten"
+      ],
+      "status": "pending",
+      "verified": false
     }
   ]
 }
