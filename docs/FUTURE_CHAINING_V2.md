@@ -45,7 +45,7 @@ Only `snake_case` is canonical for newly specified Oreslang methods. Do not sile
 
 ## 4. Acceptance and evidence
 
-The manifest records three positive guest-source targets plus three negative type-check targets. These are *not* assertions of current backend support. Targets: Java/GraalVM (JVM and Native Image), LLVM native, .NET full NativeAOT, wasm32 guest, Forge native. Unsupported semantics must fail closed, without parser-only success being reported as runtime support.
+The manifest records four positive guest-source targets plus four negative type-check targets, including deeper nested Futures that must retain their remaining layer after `flat_map`. These are *not* assertions of current backend support. Targets: Java/GraalVM (JVM and Native Image), LLVM native, .NET full NativeAOT, wasm32 guest, Forge native. Unsupported semantics must fail closed, without parser-only success being reported as runtime support.
 
 For each case, an authorized real compiler must emit exact fixture digest, compiler commit/tree, binary SHA-256, invocation, meaningful runner steps, explicit positive stdout/value or specific negative diagnostic, scheduler event trace, producer count, cancellation authority, and independent physical `get_done` receipts where applicable. Status is PASS/FAIL/UNSUPPORTED/INFRASTRUCTURE_ERROR or PENDING; a zero-step job or a Node source-free manifest test cannot promote PENDING.
 
