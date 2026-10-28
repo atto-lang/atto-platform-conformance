@@ -10,7 +10,7 @@ test('timer acceptance manifest is complete and explicitly unattested', () => {
   assert.equal(manifest.contract, 'timer-timeout-observer-v1');
   assert.equal(manifest.status, 'candidate-unattested');
   assert.deepEqual(manifest.backends, ['java', 'llvm', 'net', 'wasm', 'forge']);
-  assert.equal(manifest.cases.length, 17);
+  assert.equal(manifest.cases.length, 21);
   assert.equal(new Set(manifest.cases.map(x => x.id)).size, manifest.cases.length);
   assert.ok(manifest.requires.includes('real_executed_steps'));
   assert.ok(manifest.requires.includes('compiled_guest_binary_identity'));
@@ -34,6 +34,23 @@ test('source async timer wait never needs an explicit nested Task', () => {
     assert.equal(row.expected.explicit_task_required, false);
     assert.doesNotMatch(row.source, /\btask\s*\{/);
   }
+});
+
+test('actor suspension authority is admitted only on mailbox turns', () => {
+  const byId = Object.fromEntries(manifest.cases.map(c => [c.id, c]));
+  for (const id of ['actor_receive_await', 'actor_fnc_mailbox_await']) {
+    const c = byId[id];
+    assert.ok(c, 'missing ' + id);
+    assert.equal(c.expected.compiler, 'accept');
+    assert.equal(c.expected.source_async_modifier_required, false);
+    assert.equal(c.expected.explicit_task_required, false);
+    assert.match(c.source, /await\\s+/);
+  }
+  for (const id of ['actor_on_start_await_reject', 'plain_instance_method_await_reject']) {
+    assert.equal(byId[id]?.expected.error, 'SuspensionEffectError');
+  }
+  assert.equal(byId.sync_await_reject?.expected.error, 'SuspensionEffectError');
+  assert.match(byId.sync_public_main_await.source, /routine main/);
 });
 
 test('timer isolation, retirement and reentrant intervals are covered', () => {
