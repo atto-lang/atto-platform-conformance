@@ -1,6 +1,9 @@
 name: Source-local runner admission (no checkout)
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - ci/source-local-runner-admission-20261028
 permissions: {}
 jobs:
   runner-admission:
@@ -16,7 +19,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$GITHUB_REPOSITORY" = "$EXPECTED_REPOSITORY"
-          test "$GITHUB_EVENT_NAME" = workflow_dispatch
+          case "$GITHUB_EVENT_NAME" in push|workflow_dispatch) ;; *) exit 1 ;; esac
           test -n "${RUNNER_NAME:-}"
           test -n "${RUNNER_OS:-}"
           test -n "${GITHUB_RUN_ID:-}"
