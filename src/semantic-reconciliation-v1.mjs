@@ -7,7 +7,7 @@ import {fileURLToPath} from "node:url";
 import {validateCommand, hasCompilerErrorSeverity, hashExecutableBounded} from "./harness.mjs";
 
 const FILE = new URL("../contracts/v1/semantic-reconciliation-cases.v1.json", import.meta.url);
-const TARGETS = Object.freeze(["java", "llvm", "net", "wasm"]);
+const TARGETS = Object.freeze(["java", "llvm", "net", "wasm", "forge"]);
 const sha256 = s => createHash("sha256").update(s).digest("hex");
 
 export function validateSemanticManifest(doc) {
@@ -56,6 +56,23 @@ export function validateSemanticManifest(doc) {
 export async function loadSemanticManifest() {
   return validateSemanticManifest(JSON.parse(await readFile(FILE, "utf8")));
 }
+// A subset never certifies all compiler vectors or runtime parity.
+const SUITE_CASE_IDS = Object.freeze({
+  "future-map": Object.freeze([
+    "future-map-preserves-nested-return",
+    "future-map-rejects-implicit-adoption"
+  ])
+});
+export function selectSemanticCases(doc, suite = "all") {
+  if (suite === "all") return doc.compilerCases;
+  if (!Object.hasOwn(SUITE_CASE_IDS, suite)) throw Error("unsupported semantic suite: " + suite);
+  const cases = SUITE_CASE_IDS[suite].map(id => doc.compilerCases.find(c => c.id === id));
+  if (cases.some(c => !c) || cases.length !== 2 ||
+      cases[0].expect !== "accept" || cases[1].expect !== "reject" ||
+      cases.some(c => c.concern !== "futures"))
+    throw Error("invalid or incomplete semantic suite: " + suite);
+  return cases;
+}
 export function classifySemanticCompilerResult(c, output) {
   if (output.error || output.signal || !Number.isInteger(output.status)) return "INFRA_OR_CRASH";
   const lines = String(output.stdout || "") + "\n" + String(output.stderr || "");
@@ -71,10 +88,13 @@ export function classifySemanticCompilerResult(c, output) {
   return output.status === 1 && errors.length === 1 && errors[0].startsWith(expected)
     ? "MATCHED_UNATTESTED" : "MISMATCH";
 }
-export async function runSemanticAdmission({backend, argv, sourceSha, timeoutMs = 12000} = {}) {
+export async function runSemanticAdmission({backend, argv, sourceSha, timeoutMs = 12000, suite = "all"} = {}) {
   const doc = await loadSemanticManifest();
   if (!TARGETS.includes(backend)) throw Error("unsupported semantic backend");
-  if (!argv) return {backend, configured:false, ok:false, status:"UNCONFIGURED", guestRuntimeVerified:false, parityVerified:false};
+  const selectedCases = selectSemanticCases(doc, suite);
+  const selectedCaseIds = selectedCases.map(c => c.id);
+  if (!argv) return {backend, suite, selectedCaseIds, fullInventoryMatched:false,
+    configured:false, ok:false, status:"UNCONFIGURED", guestRuntimeVerified:false, parityVerified:false};
   validateCommand(argv);
   if (!/^[0-9a-f]{40}$/.test(sourceSha || "")) throw Error("40-hex source SHA required");
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 100 || timeoutMs > 120000) throw Error("invalid timeout");
@@ -86,7 +106,7 @@ export async function runSemanticAdmission({backend, argv, sourceSha, timeoutMs 
   const temp = await mkdtemp(join(tmpdir(), "ores-semantic-"));
   const results = [];
   try {
-    for (const c of doc.compilerCases) {
+    for (const c of selectedCases) {
       const filename = join(temp, c.id + ".ores");
       await writeFile(filename, c.source, {mode:0o400, flag:"wx"});
       const before = await readFile(filename);
@@ -107,10 +127,14 @@ export async function runSemanticAdmission({backend, argv, sourceSha, timeoutMs 
   if (finalHash !== originalHash) {
     for (const r of results) r.status = "EXECUTABLE_CHANGED";
   }
-  const ok = results.length === doc.compilerCases.length &&
+  const ok = results.length === selectedCases.length &&
     results.every(r => r.status === "MATCHED_UNATTESTED");
-  return {backend, declaredSourceSha:sourceSha, compilerSha256:originalHash,
-    sourceCases:results, configured:true, ok, status:ok?"SOURCE_ADMISSION_MATCHED_UNATTESTED":"NOT_VERIFIED",
+  const fullInventoryMatched = ok && suite === "all";
+  const status = !ok ? "NOT_VERIFIED" : fullInventoryMatched
+    ? "SOURCE_ADMISSION_MATCHED_UNATTESTED" : "SELECTED_SOURCE_ADMISSION_MATCHED_UNATTESTED";
+  return {backend, suite, selectedCaseIds, totalCompilerCases:doc.compilerCases.length,
+    fullInventoryMatched, declaredSourceSha:sourceSha, compilerSha256:originalHash,
+    sourceCases:results, configured:true, ok, status,
     verificationScope:"compiler-source-check-only", runtimeCases:"PENDING",
     guestRuntimeVerified:false, parityVerified:false,
     provenance:"caller-declared SHA is NOT attested to the compiled executable"};
