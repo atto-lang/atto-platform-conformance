@@ -10,7 +10,7 @@ test('timer acceptance manifest is complete and explicitly unattested', () => {
   assert.equal(manifest.contract, 'timer-timeout-observer-v1');
   assert.equal(manifest.status, 'candidate-unattested');
   assert.deepEqual(manifest.backends, ['java', 'llvm', 'net', 'wasm', 'forge']);
-  assert.equal(manifest.cases.length, 21);
+  assert.equal(manifest.cases.length, 24);
   assert.equal(new Set(manifest.cases.map(x => x.id)).size, manifest.cases.length);
   assert.ok(manifest.requires.includes('real_executed_steps'));
   assert.ok(manifest.requires.includes('compiled_guest_binary_identity'));
@@ -52,6 +52,9 @@ test('actor suspension authority is admitted only on mailbox turns', () => {
   }
   assert.equal(byId.sync_await_reject?.expected.error, 'SuspensionEffectError');
   assert.match(byId.sync_public_main_await.source, /routine main/);
+  assert.equal(byId.private_root_main_await?.expected.explicit_task_required, false);
+  assert.equal(byId.private_module_main_await?.expected.explicit_task_required, false);
+  assert.equal(byId.nonentry_main_overload_reject?.expected.error, 'SuspensionEffectError');
 });
 
 test('timer isolation, retirement and reentrant intervals are covered', () => {
