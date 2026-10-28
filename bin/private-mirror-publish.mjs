@@ -60,7 +60,10 @@ export async function publishPrivateMirror({
   const srcTree=await githubRequest(source,"/git/trees/"+srcCommit.tree.sha+"?recursive=1",token,{fetchImpl});
   if(srcTree.truncated!==false||!Array.isArray(srcTree.tree))throw Error("source tree incomplete");
   const files=srcTree.tree.filter(x=>x.type==="blob");
-  if(files.length===0||files.length>750||srcTree.tree.length>3000)
+  // Current Java/LLVM compiler trees have 1,177/1,291 regular files.
+  // Raise only the bounded count, not byte, per-file, path or privacy limits.
+  const MAX_SOURCE_FILES = 1500;
+  if(files.length===0||files.length>MAX_SOURCE_FILES||srcTree.tree.length>3000)
     throw Error("unsupported source tree size");
   let totalBytes=0;
   const paths=new Set();
