@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 // This validates only a candidate trace. It cannot authenticate the compiler,
 // executable, runner, or the fact that the events came from compiled guest code.
-const FIXTURE_BLOB = '51519bdf9084d7d8457b1e5a39c92a5efe2b63ce';
+const FIXTURE_BLOB = '016733b1fbc8bdfbde7414a15b877a190dd92806';
 const BACKENDS = new Set(['java', 'llvm', 'net', 'wasm', 'forge']);
 const fail = (message) => { throw new Error(`compiled actor guest: ${message}`); };
 const exact = (value, keys, label) => {
@@ -56,16 +56,17 @@ export function verifyCompiledActorHeap(candidate, sourceBytes) {
   state('a', 1, 2); state('b', 5, 10);
   state('a', 2, 8); state('b', 6, 32);
   state('a', 3, 22); state('b', 7, 78);
-  state('a', 4, 52); state('b', 8, 172);
+  state('a', 4, 52);
   witness(es[k++], { type: 'foreign-read-denied', requester: b.actorId, owner: a.actorId, reason: 'owner-authority' });
   witness(es[k++], { type: 'foreign-write-denied', requester: b.actorId, owner: a.actorId, reason: 'owner-authority' });
   witness(es[k++], { type: 'loan-open', actorId: a.actorId, heapId: a.heapId, loanId: 'loan-a', mode: 'read' });
   witness(es[k++], { type: 'own-write-denied', actorId: a.actorId, heapId: a.heapId, reason: 'read-loan-live' });
+  state('b', 8, 172); // B must make guest-handler progress while A has an active loan.
   witness(es[k++], { type: 'stop-requested', actorId: a.actorId, heapId: a.heapId });
   witness(es[k++], { type: 'reclaim-deferred', actorId: a.actorId, heapId: a.heapId, reason: 'loan-not-quiescent' });
-  state('b', 9, 362); // Progress must continue while A's read loan pins its pages.
-  witness(es[k++], { type: 'loan-close', actorId: a.actorId, heapId: a.heapId, loanId: 'loan-a' });
+    witness(es[k++], { type: 'loan-close', actorId: a.actorId, heapId: a.heapId, loanId: 'loan-a' });
   witness(es[k++], { type: 'physically-reclaimed', actorId: a.actorId, heapId: a.heapId });
+  state('b', 9, 362); // The guest emits this send AFTER A's graceful_stop joins physical reclaim.
   witness(es[k++], { type: 'survivor-read', actorId: b.actorId, heapId: b.heapId, value: 362 });
   witness(es[k++], { type: 'stop-requested', actorId: b.actorId, heapId: b.heapId });
   witness(es[k++], { type: 'physically-reclaimed', actorId: b.actorId, heapId: b.heapId });
