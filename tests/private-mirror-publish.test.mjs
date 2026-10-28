@@ -234,3 +234,36 @@ test("duplicate entries in materialized tree cannot disguise omitted source blob
  await assert.rejects(promise,/materialized snapshot contains duplicate paths/);
  assert.equal(h.events.some(e=>e.path===destination+"/git/refs"),false);
 });
+
+
+test("bounded Java and LLVM sized trees still require private authorization and exact materialization",async()=>{
+ for(const count of [1177,1291]){
+  // These are deterministic synthetic Git blob inventories, not actual source
+  // copies. Repeated immutable blob SHA is legal for distinct Git tree paths.
+  const files=Array.from({length:count},(_,i)=>({
+   type:"blob",path:`src/file-${i}.ores`,sha:C,size:4,mode:"100644"
+  }));
+  const materializedTree={truncated:false,tree:[
+   {path:"snapshots",type:"tree"},
+   {path:"snapshots/checked",type:"tree"},
+   ...files.map(f=>({path:"snapshots/checked/"+f.path,
+      type:"blob",mode:f.mode,sha:f.sha}))
+  ]};
+  const {h,promise}=run({sourceTree:{truncated:false,tree:files},materializedTree});
+  const receipt=await promise;
+  assert.equal(receipt.blobs,count);
+  assert.equal(h.events.filter(e=>e.path===destination+"/git/blobs"&&e.method==="POST").length,count);
+  assert.equal(h.events.filter(e=>e.path===destination+"/git/refs"&&e.method==="POST").length,1);
+  assert.ok(h.seen.source>=count+4&&h.seen.destination>=count+4,
+    "every write requires renewed private-visibility admission");
+ }
+});
+test("bounded file-count cap refuses oversized trees before copying any source blobs",async()=>{
+ const files=Array.from({length:1501},(_,i)=>({
+  type:"blob",path:`src/file-${i}.ores`,sha:C,size:4,mode:"100644"
+ }));
+ const {h,promise}=run({sourceTree:{truncated:false,tree:files}});
+ await assert.rejects(promise,/unsupported source tree size/);
+ assert.equal(h.events.some(e=>e.path===source+"/git/blobs/"+C),false);
+ assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+});
