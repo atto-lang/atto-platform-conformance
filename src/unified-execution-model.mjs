@@ -30,7 +30,7 @@ export class UnifiedExecutionModel {
       const owner = task.actor !== null && this.actorTurns.get(task.actor)?.[0] === task.id;
       const controlEligible = task.actor === null || owner;
       const useControl = controlEligible && this.hasControlCredit() &&
-        (task.cancelRequested || !this.hasDataCredit());
+        (task.cancelRequested || (owner && !this.hasDataCredit()));
       if (!useControl && !this.hasDataCredit()) continue;
       task.pendingWake = false;
       task.state = 'queued';
