@@ -339,10 +339,14 @@ test("tampered resume pins and cursor are rejected before ANY new blobs are fetc
  }
 });
 test("missing checkpointed Git blob fails closed without creating a snapshot ref",async()=>{
- const h=fixture({sourceTree:threeSourceTree,materializedTree:threeMaterializedTree,
-  errors:{["/git/blobs/"+C]:true}});
+ const h=fixture({sourceTree:threeSourceTree,materializedTree:threeMaterializedTree});
  const first=await publishPrivateMirror({...opts,fetchImpl:h.request,maxBlobsPerRun:1});
- await assert.rejects(publishPrivateMirror({...opts,fetchImpl:h.request,
+ const rejectDestinationBlob=async(url,options)=>{
+  if(url==="https://api.github.com/repos/"+destination+"/git/blobs/"+C)
+    return {status:404,json:async()=>({message:"not found"})};
+  return h.request(url,options);
+ };
+ await assert.rejects(publishPrivateMirror({...opts,fetchImpl:rejectDestinationBlob,
   maxBlobsPerRun:1,checkpoint:first.checkpoint}));
  assert.equal(h.events.filter(x=>x.method==="POST").length,1);
  assert.equal(h.events.some(x=>x.path===destination+"/git/refs"),false);
