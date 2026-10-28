@@ -116,7 +116,7 @@ test('manifest cannot treat source-free model as five-backend guest execution',(
   assert.equal(manifest.guestExecutionVerified,false);
   assert.deepEqual(Object.keys(manifest.backends).sort(),['forge','java','llvm','net','wasm']);
   assert.equal(new Set(manifest.cases.map(x=>x.id)).size,manifest.cases.length);
-  for (const id of ['transitive-sync-helper-loop','native-scalar-multipeer-aot','future-chain-no-yield-admission']) {
+  for (const id of ['transitive-sync-helper-loop','native-scalar-multipeer-aot','future-chain-no-yield-admission','sealed-actor-receiver-lease-retirement']) {
     const candidate = manifest.cases.find(x=>x.id===id);
     assert.ok(candidate, `missing source-level verification gate: ${id}`);
     assert.equal(candidate.guestVerified,false);
