@@ -6,7 +6,9 @@
 const SHA = /^[a-f0-9]{40}$/;
 const PATH = /^(?:[A-Za-z0-9._-]+\/)*[A-Za-z0-9._-]+$/;
 const CODE = /\.(?:ores|java|rs|c|cc|cpp|cxx|h|hh|hpp|hxx|m|mm|cs|go|kt|kts|swift|zig|ll|bc|wat|wast|wasm|class|jar|js|jsx|mjs|cjs|ts|tsx|mts|cts|py|pyw|rb|sh|bash|zsh|ps1|lua|pl|php|scala|sc|groovy|gradle|dart|ex|exs|erl|hrl|fs|fsx|vb|vbs|r|jl|clj|cljs|cljc|hs|lhs|ml|mli|nim|v|vh|sv|svh|s|asm|proto|thrift|capnp)$/i;
-const CODE_AREA = /^(?:src|source|sources|compiler|runtime|mirror|validation-reference|private-source)(?:\/|$)/i;
+const CODE_AREA = /^(?:src|source|sources|compiler|runtime|mirror|validation-reference|private-source|scripts|tools)(?:\/|$)/i;
+const EXECUTABLE_CONFIG = /^(?:\.github\/workflows\/[^/]+\.(?:ya?ml)|(?:[^/]+\/)*(?:Dockerfile|Makefile|CMakeLists\.txt|pom\.xml|package\.json|Cargo\.toml|go\.mod|build\.gradle|settings\.gradle|BUILD|WORKSPACE)|(?:[^/]+\/)*[^/]+\.(?:bzl|bazel))$/i;
+const WINDOWS_RESERVED = /^(?:con|prn|aux|nul|clock\$|com[1-9]|lpt[1-9])(?:\..*)?$/i;
 
 function parseTree(snapshot) {
   if (!snapshot || !Number.isSafeInteger(snapshot.repository_id) || snapshot.repository_id <= 0 ||
@@ -17,7 +19,8 @@ function parseTree(snapshot) {
   const entries = [];
   for (const e of snapshot.tree) {
     if (!e || typeof e.path !== 'string' || e.path.length > 1024 ||
-        !PATH.test(e.path) || e.path.split('/').some(x => x === '.' || x === '..' || x.toLowerCase() === '.git') ||
+        !PATH.test(e.path) || e.path.split('/').some(x => x === '.' || x === '..' || x.toLowerCase() === '.git' ||
+          x.endsWith('.') || WINDOWS_RESERVED.test(x)) ||
         !SHA.test(e.sha ?? '') || !['blob', 'tree'].includes(e.type) ||
         (e.type === 'blob' && !['100644', '100755'].includes(e.mode)) ||
         (e.type === 'tree' && e.mode !== '040000')) return null;
@@ -45,7 +48,7 @@ export function triageCarrierTree(snapshot, reviewedPin = null, knownPrivateBlob
   // cannot distinguish an extensionless script/binary from harmless data. This
   // intentionally over-classifies because triage never grants authorization.
   const suspicious = entries.filter(e => e.type === 'blob' &&
-    (e.mode === '100755' || CODE.test(e.path) || CODE_AREA.test(e.path)));
+    (e.mode === '100755' || CODE.test(e.path) || CODE_AREA.test(e.path) || EXECUTABLE_CONFIG.test(e.path)));
   if (suspicious.length) return {...base,classification:'POTENTIAL_SOURCE_BEARING',suspicious_count:suspicious.length,
     reason:'source-like content or location; preserve refs for independent forensics'};
   // A path/extension heuristic cannot detect source renamed to a text/config file.
