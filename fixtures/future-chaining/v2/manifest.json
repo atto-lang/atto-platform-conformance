@@ -29,8 +29,7 @@
         "single_layer_composition"
       ],
       "status": "pending",
-      "verified": false,
-      "gitBlobSha": "db7006ae3b564c8ebcb80680ac113a72c065f507"
+      "verified": false
     },
     {
       "id": "map-preserves-nested",
@@ -47,8 +46,7 @@
         "producer_not_replayed"
       ],
       "status": "pending",
-      "verified": false,
-      "gitBlobSha": "c62fbae210bc2c501cb1b30a6887219086f78391"
+      "verified": false
     },
     {
       "id": "flatten-one-layer",
@@ -65,8 +63,7 @@
         "no_implicit_map_flatten"
       ],
       "status": "pending",
-      "verified": false,
-      "gitBlobSha": "ce032c78f574d0d61f0496a719d881af63dc580c"
+      "verified": false
     },
     {
       "id": "reject-flat-map-scalar",
@@ -80,8 +77,7 @@
         "flat_map_callback_must_return_future"
       ],
       "status": "pending",
-      "verified": false,
-      "gitBlobSha": "5f9f51d91f32bb1a7154f7bc1d1a4ece1015d94c"
+      "verified": false
     },
     {
       "id": "reject-implicit-map-flatten",
@@ -95,8 +91,7 @@
         "map_preserves_nested_future"
       ],
       "status": "pending",
-      "verified": false,
-      "gitBlobSha": "8a2f07c2453763ed585462556cf1c4c5330774fd"
+      "verified": false
     },
     {
       "id": "reject-one-await-flatten",
@@ -110,8 +105,7 @@
         "await_unwraps_one_layer"
       ],
       "status": "pending",
-      "verified": false,
-      "gitBlobSha": "e99a49f2b30964cbdbba4cb6250859fbc1180fd6"
+      "verified": false
     }
   ]
 }
