@@ -6,7 +6,8 @@
     "java",
     "llvm",
     "net",
-    "wasm"
+    "wasm",
+    "forge"
   ],
   "rules": [
     "no-implicit-option-or-future-flatten",
@@ -26,7 +27,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     },
     {
@@ -41,7 +43,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     },
     {
@@ -55,7 +58,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     },
     {
@@ -70,7 +74,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     },
     {
@@ -84,7 +89,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     },
     {
@@ -99,7 +105,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     },
     {
@@ -113,7 +120,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     },
     {
@@ -128,7 +136,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     },
     {
@@ -142,7 +151,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     },
     {
@@ -157,7 +167,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     },
     {
@@ -171,7 +182,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     },
     {
@@ -186,7 +198,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     },
     {
@@ -200,7 +213,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     },
     {
@@ -215,7 +229,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     },
     {
@@ -229,7 +244,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     },
     {
@@ -244,7 +260,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     },
     {
@@ -258,7 +275,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     },
     {
@@ -273,7 +291,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     },
     {
@@ -287,7 +306,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     },
     {
@@ -302,7 +322,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     },
     {
@@ -316,7 +337,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     },
     {
@@ -331,7 +353,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     }
   ],
@@ -364,7 +387,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     },
     {
@@ -385,7 +409,8 @@
         "java": "PENDING_GUEST_PROOF",
         "llvm": "PENDING_GUEST_PROOF",
         "net": "PENDING_GUEST_PROOF",
-        "wasm": "PENDING_GUEST_PROOF"
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
       }
     }
   ]
