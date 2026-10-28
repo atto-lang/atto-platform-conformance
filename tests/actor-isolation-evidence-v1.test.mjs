@@ -44,7 +44,7 @@ test("fixture is the exact reviewed Git blob rather than a filename label",()=>{
     .update(Buffer.from("blob " + bytes.length + "\0")).update(bytes).digest("hex");
   assert.equal(actual,ISOLATION_BLOB);
 });
-test("six cases across exactly five pending backends cannot certify parity",()=>{
+test("six cases across exactly six pending backends cannot certify parity",()=>{
   const m=run();
   const result=validateIsolationManifest(m);
   assert.equal(result.status,"PENDING");
