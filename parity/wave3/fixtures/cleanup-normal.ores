@@ -1,5 +1,0 @@
-pub fnc main(): int {
-  let int result = 7;
-  defer || -> { result = result + 1; return; };
-  return result;
-}

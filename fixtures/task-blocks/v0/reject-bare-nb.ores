@@ -1,6 +1,0 @@
-pub fnc main(): void {
-  nb {
-    return;
-  }
-  return;
-}

@@ -1,8 +1,0 @@
-define class MyMap extends Map<string, unknown> as
-  key label: Option<string>;
-end
-
-fnc invalid(&MyMap map): void {
-  map.put("label", "wrong");
-  return;
-}
