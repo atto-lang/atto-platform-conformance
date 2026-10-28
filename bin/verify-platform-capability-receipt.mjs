@@ -57,7 +57,11 @@ export function verifyPlatformCapabilityReceipt(receipt, contract) {
   if(receipt.schema!=="oreslang.platform-capability/1")
     fail("schema must be oreslang.platform-capability/1");
 
-  const platform=contract.platforms?.[receipt.platform];
+  // Never resolve platform names through Object.prototype: '__proto__' or
+  // 'constructor' must not bypass canonical repository binding.
+  const platform=typeof receipt.platform === "string" &&
+    Object.hasOwn(contract.platforms,receipt.platform)
+    ? contract.platforms[receipt.platform] : undefined;
   if(!platform) fail("unknown platform");
   else if(receipt.repository!==platform.repository)
     fail("repository does not match registered platform repository");
