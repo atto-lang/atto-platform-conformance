@@ -25,7 +25,7 @@ export function validateSemanticManifest(doc) {
     ids.add(c.id);
     if (!allowed.has(c.concern) || !["accept","reject"].includes(c.expect)) throw Error("invalid concern/expectation");
     if (typeof c.source !== "string" || c.source.length < 20 || c.source.length > 8192 ||
-        c.source.includes("\0") || !/\b(?:pub fnc|define actor)\b/.test(c.source) ||
+        c.source.includes("\0") || !/\b(?:pub(?:\s+(?:async|suspends))?\s+fnc|define actor)\b/.test(c.source) ||
         typeof c.rationale !== "string" || !c.rationale || !/^https:\/\/github.com\/ores-truffle-oreslang\//.test(c.authority))
       throw Error("invalid self-contained source or authority");
     if (c.expect === "reject") {
