@@ -76,6 +76,20 @@ test('cancel during running dispatch cannot release active actor lifetime', () =
   assert.equal(m.actorActive.size,0);
 });
 
+test('cancel after logical terminal but before physical retirement is rejected', () => {
+  const m = new Model();
+  m.submit({id:'a',steps:[done()]});
+  const completed = m.dispatch();
+  assert.equal(completed.terminal,'success');
+  assert.equal(m.inspect('a').physicallyRetired,false);
+  assert.equal(m.cancel('a'),false,
+    'logical terminal must linearize before a later cancellation request');
+  assert.equal(m.inspect('a').cancelRequested,false);
+  m.release();
+  assert.deepEqual(m.inspect('a'),{state:'terminal',terminal:'success',physicallyRetired:true,
+    dispatches:1,wakes:0,cancelRequested:false});
+});
+
 test('bounded admission and immutable capture transfer gate', () => {
   const m=new Model({queueCapacity:1});
   assert.throws(()=>m.submit({id:'bad',captures:['mut_borrow'],steps:[done()]}),/borrow/);
