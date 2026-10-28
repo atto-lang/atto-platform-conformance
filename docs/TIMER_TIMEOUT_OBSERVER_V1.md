@@ -15,8 +15,10 @@ and executes them with an exact source SHA and binary identity.
   `await time.timeout(d, existing_future)` **must NOT require an explicit
   `Task` wrapper or spawn an extra Task per await**. The calling async
   callable has an implicit scheduler-owned resumable continuation frame.
-  A plain synchronous function cannot directly await outside an explicitly
-  `suspends`-capable or async context.
+  An ordinary synchronous helper cannot directly await outside an explicitly
+  `suspends`-capable or async context. The public process-root `main`
+  entrypoint is the exception: it already has a scheduler-owned implicit
+  Task and may directly `await` without an additional source Task.
 - `time.set_timer(d, callback)` creates a timer capability, not a new actor.
   It dispatches callback work only via the owning scheduler/actor serialized
   turn. Timer/broker threads never invoke guest code.
