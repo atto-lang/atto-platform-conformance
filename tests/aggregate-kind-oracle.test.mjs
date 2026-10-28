@@ -56,11 +56,24 @@ test('named initializer effects are once and in source order, not layout order',
   const trace = [];
   const target = shape('struct', [['foo','int'], ['bar','int']]);
   const built = construct(target, [
-    ['bar', () => {trace.push('bar'); return 2;}],
     ['foo', () => {trace.push('foo'); return 1;}],
+    ['bar', () => {trace.push('bar'); return 2;}],
   ]);
-  assert.deepEqual(trace, ['bar','foo']);
+  assert.deepEqual(trace, ['foo','bar']);
   assert.deepEqual(built.orderedFields, [['bar',2],['foo',1]]);
+  assert.notDeepEqual(trace, built.orderedFields.map(([name]) => name),
+    'source evaluation order must differ from sorted layout order in this regression');
+});
+
+test('initializer exceptions stop later field evaluation without retry', () => {
+  const target = shape('struct', [['foo','int'], ['bar','int']]);
+  const failure = new Error('initializer failed');
+  const trace = [];
+  assert.throws(() => construct(target, [
+    ['foo', () => {trace.push('foo'); throw failure;}],
+    ['bar', () => {trace.push('bar'); return 2;}],
+  ]), error => error === failure);
+  assert.deepEqual(trace, ['foo']);
 });
 
 test('invalid closed-field constructors reject before executing any effects', () => {
