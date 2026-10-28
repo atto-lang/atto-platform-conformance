@@ -51,8 +51,8 @@
       "id": "nested-future-two-awaits",
       "concern": "futures",
       "expect": "accept",
-      "source": "pub fnc nested(): Future<Future<int>> {\n  return Future.resolved(Future.resolved(42));\n}\npub suspends fnc use(): int {\n  val Future<int> inner = await nested();\n  return await inner;\n}\npub fnc main(): int { return 42; }\n",
-      "rationale": "One await returns Future<int>, not int.",
+      "source": "pub fnc nested(): Future<Future<int>> {\n  return Future.resolved(Future.resolved(42));\n}\npub suspends fnc use(): int {\n  val Future<int> inner = await nested();\n  return await inner;\n}\npub suspends fnc main(): int { return use(); }\n",
+      "rationale": "One await returns Future<int>, not int. The suspends main entrypoint invokes use(), making two-layer extraction observable in a subsequent guest execution gate.",
       "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/NESTED_OPTION_FUTURE_EXTRACTION.md",
       "backends": {
         "java": "PENDING_GUEST_PROOF",
@@ -82,8 +82,8 @@
       "id": "future-map-preserves-nested-return",
       "concern": "futures",
       "expect": "accept",
-      "source": "pub async fnc base(): int { return 20; }\npub async fnc twice(int value): int { return value * 2; }\npub fnc main(): void {\n  val Future<Future<int>> pending = base().map(|int n| -> {\n    return twice(n);\n  });\n  return;\n}\n",
-      "rationale": "Future.map returns Future<U> for callback result U; callback returning Future<int> produces Future<Future<int>> without implicit adoption.",
+      "source": "pub async fnc base(): int { return 20; }\npub async fnc twice(int value): int { return value * 2; }\npub suspends fnc main(): void {\n  val Future<Future<int>> pending = base().map(|int n| -> {\n    return twice(n);\n  });\n  val Future<int> inner = await pending;\n  stdio.stdout.write(await inner);\n  return;\n}\n",
+      "rationale": "Future.map returns Future<U> for callback result U; callback returning Future<int> produces Future<Future<int>> without implicit adoption. The suspends main entrypoint reaches both awaits and writes 40 when executed as guest; compiler admission alone does not execute it.",
       "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/NESTED_OPTION_FUTURE_EXTRACTION.md",
       "backends": {
         "java": "PENDING_GUEST_PROOF",
