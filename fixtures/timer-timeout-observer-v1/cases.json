@@ -78,13 +78,15 @@
     {
       "id": "actor_receive_await",
       "kind": "source_candidate",
-      "source": "define actor Worker as receive(ActorMail<String> mail): void { val Channel<int> ch = Channel.new<int>(1); val Future<void> sent = nb writech ch, 7; await sent; self.end(); return; } end",
+      "source": "define actor Worker as receive(ActorMail<String> mail): void { val Channel<int> ch = Channel.new<int>(1); val Future<void> sent = nb writech ch, 7; await sent; self.send(\"resumed\"); self.end(); return; } end pub async routine main(): void { val worker = spawn Worker(); await worker.get_ready(); worker.send(\"go\"); val output = (await worker.outputs.next()).value.unwrap(); stdio.stdout.write(output.value); await worker.get_done(); return; }",
       "expected": {
         "compiler": "accept",
         "source_async_modifier_required": false,
-        "explicit_task_required": false
+        "explicit_task_required": false,
+        "prints": "resumed",
+        "physical_retirement_before_done": true
       },
-      "note": "Actor.receive is synchronous in declaration, but the mailbox owns the resumable continuation"
+      "note": "Compiled guest must execute an owned mailbox receive await and emit resumed, then observe get_done physical retirement; no nested source Task"
     },
     {
       "id": "actor_fnc_mailbox_await",
