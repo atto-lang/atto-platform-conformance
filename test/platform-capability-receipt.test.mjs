@@ -83,6 +83,17 @@ test("rejects alternate contract repository substitution",()=>{
   assert.match(result.errors.join("\n"),/repository mismatch for desktop/);
 });
 
+test("rejects inherited platform names and missing canonical repository",()=>{
+  for(const name of ["__proto__","toString","constructor","valueOf"]) {
+    const receipt=baseReceipt();
+    receipt.platform=name;
+    delete receipt.repository;
+    const result=verifyPlatformCapabilityReceipt(receipt,contract);
+    assert.equal(result.ok,false,name);
+    assert.match(result.errors.join("\n"),/unknown platform/);
+  }
+});
+
 test("rejects repository/platform substitution",()=>{
   const receipt=baseReceipt();
   receipt.repository="ores-truffle-oreslang/oreslang-platform.mobile";
