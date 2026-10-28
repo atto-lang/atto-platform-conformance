@@ -356,6 +356,68 @@
         "wasm": "PENDING_GUEST_PROOF",
         "forge": "PENDING_GUEST_PROOF"
       }
+    },
+    {
+      "id": "rt-share-channel-sendsafe",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "pub fnc share(Channel<int> stream): void {\n  val Channel<int> shared = rt share stream;\n  return;\n}\npub fnc main(): int { return 0; }\n",
+      "rationale": "Channel<int> has compiler-verified payload Send and explicit synchronized shared handle authority.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-share-channel-nonsend-payload",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_SHARE_REQUIRED",
+      "source": "pub fnc share(Channel<Rc<int>> stream): void {\n  val Channel<Rc<int>> invalid = rt share stream;\n  return;\n}\npub fnc main(): int { return 0; }\n",
+      "rationale": "The Channel handle can be copied, but Rc<int> payload is not Send and cannot imply Share.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-share-mutex-sendsafe",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "pub fnc share(SharedMutex<int> mutex): void {\n  val SharedMutex<int> shared = rt share mutex;\n  return;\n}\npub fnc main(): int { return 0; }\n",
+      "rationale": "SharedMutex<int> provides an explicitly synchronized shared capability with a Send-safe payload.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "rt-share-copyonly-selectset",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_SHARE_REQUIRED",
+      "source": "pub fnc share(SelectSet choices): void {\n  val SelectSet duplicate = rt copy choices;\n  val SelectSet invalid = rt share choices;\n  return;\n}\npub fnc main(): int { return 0; }\n",
+      "rationale": "SelectSet is Copy in the Java ownership classifier, but has no Share proof; duplicating handle is not cross-domain alias authority.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
     }
   ],
   "runtimeCases": [
