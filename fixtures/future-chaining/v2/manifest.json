@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 2,
+  "contract": "future-chaining-explicit-layers-v2",
+  "status": "proposal-not-executable",
+  "sourceExecutionVerified": false,
+  "runtimeVerified": false,
+  "caseStatusDefault": "pending",
+  "backendStatus": {
+    "java-graalvm": "pending",
+    "llvm": "pending",
+    "wasm": "pending",
+    "forge": "pending",
+    "net": "pending"
+  },
+  "evidence": [],
+  "cases": [
+    {
+      "id": "flat-map-one-layer",
+      "source": "flat-map-one-layer.ores",
+      "kind": "positive",
+      "expected": {
+        "stdout": "42",
+        "type": "Future<int>"
+      },
+      "assert": [
+        "canonical_flat_map",
+        "one_async_stage",
+        "single_layer_composition"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "map-preserves-nested",
+      "source": "map-preserves-nested.ores",
+      "kind": "positive",
+      "expected": {
+        "stdout": "42",
+        "type": "Future<Future<int>>"
+      },
+      "assert": [
+        "map_does_not_flatten",
+        "await_one_layer",
+        "producer_not_replayed"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "flatten-one-layer",
+      "source": "flatten-one-layer.ores",
+      "kind": "positive",
+      "expected": {
+        "stdout": "42",
+        "type": "Future<int>"
+      },
+      "assert": [
+        "explicit_flatten",
+        "one_layer_only",
+        "no_implicit_map_flatten"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "reject-flat-map-scalar",
+      "source": "reject-flat-map-scalar.ores",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnosticCategory": "FUTURE_CALLBACK_NOT_FUTURE"
+      },
+      "assert": [
+        "flat_map_callback_must_return_future"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "reject-implicit-map-flatten",
+      "source": "reject-implicit-map-flatten.ores",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnosticCategory": "WRAPPER_LAYER_MISMATCH"
+      },
+      "assert": [
+        "map_preserves_nested_future"
+      ],
+      "status": "pending",
+      "verified": false
+    },
+    {
+      "id": "reject-one-await-flatten",
+      "source": "reject-one-await-flatten.ores",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnosticCategory": "WRAPPER_LAYER_MISMATCH"
+      },
+      "assert": [
+        "await_unwraps_one_layer"
+      ],
+      "status": "pending",
+      "verified": false
+    }
+  ]
+}
