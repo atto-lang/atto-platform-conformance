@@ -20,7 +20,7 @@ Status: **proposed backend-neutral normative contract and source-free reference 
 
 ## Cancellation, I/O and physical retirement
 
-6. Kernel readiness/reactor callbacks perform bounded host bookkeeping only; they must not execute source callbacks. Registration/completion races and duplicated/stale wake events admit at most one fresh dispatch under current owner generation.
+6. Kernel readiness/reactor callbacks perform bounded host bookkeeping only; they must not execute source callbacks. Each I/O registration issues an opaque per-task registration ticket/epoch in addition to task identity, owner generation and token. A completion without that exact live ticket fails closed; reusing the same descriptor/token for a later wait must not allow an old completion to wake it. Registration/completion races and duplicated/stale wake events admit at most one fresh dispatch under current owner generation. Cancellation and retirement revoke the ticket.
 7. Cancellation request, Future terminal delivery, removed waiter, and Task logical terminal **do not** themselves authorize actor arena / FFI / capture reclamation. Retire only after the last guest carrier exits, cleanup/defers finish, scoped descendants physically drain, and any device/foreign fence is satisfied.
 8. Native blocking APIs must use an explicitly bounded blocking/dirty execution pool or be rejected. Nonblocking advertised `_blocking` source APIs may have sequential source semantics but cannot park the ordinary carrier during readiness wait.
 9. User-created FFI/atomic/shared-memory facilities require separate permissions and Send/Sync/ownership proofs. No blanket actor-state access or unsynchronized mutable heap sharing is implied by a shared execution substrate.

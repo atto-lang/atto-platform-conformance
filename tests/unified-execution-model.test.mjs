@@ -6,6 +6,8 @@ const cpu = cost => ({kind:'cpu',cost});
 const done = () => ({kind:'done'});
 const io = token => ({kind:'io',token});
 const tick = m => { const x=m.dispatch(); if (x) m.release(); return x; };
+// Capture the registration receipt issued for each existing test's event.
+const wake = (m, event) => m.wake({...event, ticket:m.tasks.get(event.id)?.waitTicket});
 
 test('CPU hog is cooperatively preempted, and peer runs before it finishes', () => {
   const m = new Model({reductionBudget:3});
@@ -26,7 +28,7 @@ test('pending I/O suspends without retaining a physical execution carrier', () =
   assert.equal(m.inspect('a').physicallyRetired,false);
   m.submit({id:'b',steps:[cpu(1),done()]});
   assert.equal(tick(m).id,'b');
-  assert.equal(m.wake({id:'a',generation:1,token:'socket-1'}),true);
+  assert.equal(wake(m,{id:'a',generation:1,token:'socket-1'}),true);
   assert.equal(tick(m).id,'a');
   assert.equal(m.inspect('a').physicallyRetired,true);
 });
@@ -35,13 +37,13 @@ test('early completion and repeated/stale I/O wake cannot execute inline or repl
   const m = new Model();
   m.submit({id:'a',generation:2,steps:[io('fd'),cpu(2),done()]});
   m.dispatch();
-  assert.equal(m.wake({id:'a',generation:2,token:'fd'}),true);
+  assert.equal(wake(m,{id:'a',generation:2,token:'fd'}),true);
   assert.throws(()=>m.dispatch(),/carrier/);
-  assert.equal(m.wake({id:'a',generation:2,token:'fd'}),false);
+  assert.equal(wake(m,{id:'a',generation:2,token:'fd'}),false);
   m.release();
   assert.equal(m.inspect('a').state,'queued');
-  assert.equal(m.wake({id:'a',generation:1,token:'fd'}),false);
-  assert.equal(m.wake({id:'a',generation:2,token:'fd'}),false);
+  assert.equal(wake(m,{id:'a',generation:1,token:'fd'}),false);
+  assert.equal(wake(m,{id:'a',generation:2,token:'fd'}),false);
   assert.deepEqual(m.events.slice(0,3),['enter:a','wake:a','exit:a']);
   assert.equal(tick(m).id,'a');
   assert.equal(m.inspect('a').wakes,1);
@@ -54,7 +56,7 @@ test('cancellation request is not physical retirement; cleanup needs new dispatc
   m.submit({id:'busy',steps:[cpu(10),done()]});
   assert.equal(m.cancel('a'),true);
   assert.equal(m.inspect('a').physicallyRetired,false);
-  assert.equal(m.wake({id:'a',generation:1,token:'io'}),false);
+  assert.equal(wake(m,{id:'a',generation:1,token:'io'}),false);
   assert.equal(m.dispatch().id,'a'); // Reserved CONTROL progress despite DATA saturation
   assert.equal(m.inspect('a').physicallyRetired,false);
   m.release();
@@ -105,7 +107,7 @@ test('unsupported operations, invalid budgets and unknown owners fail closed',()
   const m=new Model();
   assert.throws(()=>m.submit({id:'x',steps:[{kind:'ffi-block'}]}),/unsupported/);
   assert.equal(m.inspect('x'),null);
-  assert.equal(m.wake({id:'unknown',generation:1,token:'fd'}),false);
+  assert.equal(wake(m,{id:'unknown',generation:1,token:'fd'}),false);
   assert.equal(m.cancel('unknown'),false);
 });
 
@@ -145,7 +147,7 @@ test('wake during registration reserves ready credit even at capacity one',()=>{
   m.submit({id:'a',steps:[io('fd'),done()]});
   m.dispatch();
   assert.equal(m.submit({id:'b',steps:[done()]}),false);
-  assert.equal(m.wake({id:'a',generation:1,token:'fd'}),true);
+  assert.equal(wake(m,{id:'a',generation:1,token:'fd'}),true);
   m.release();
   assert.equal(m.ready.length,1);
   assert.equal(tick(m).id,'a');
@@ -196,7 +198,7 @@ test('suspended actor I/O retains logical turn while peer actor progresses', () 
   assert.deepEqual(m.actorTurns.get('A'),['old','young']);
   assert.equal(tick(m).id,'peer');
   assert.equal(m.dispatch(),null, 'younger same-actor USER must not reenter');
-  assert.equal(m.wake({id:'old',generation:1,token:'fd'}),true);
+  assert.equal(wake(m,{id:'old',generation:1,token:'fd'}),true);
   assert.equal(tick(m).id,'old');
   assert.equal(tick(m).id,'young');
   assert.equal(m.actorTurns.size,0);
@@ -208,8 +210,8 @@ test('actor logical owner survives suspension across generation boundaries', () 
   m.submit({id:'young',actor:'A',generation:2,steps:[done()]});
   tick(m);
   assert.equal(m.dispatch(),null);
-  assert.equal(m.wake({id:'old',generation:2,token:'fd'}),false);
-  assert.equal(m.wake({id:'old',generation:1,token:'fd'}),true);
+  assert.equal(wake(m,{id:'old',generation:2,token:'fd'}),false);
+  assert.equal(wake(m,{id:'old',generation:1,token:'fd'}),true);
   assert.equal(tick(m).id,'old');
   assert.equal(tick(m).id,'young');
 });
@@ -220,9 +222,9 @@ test('saturated DATA cannot strand suspended actor owner wake', () => {
   tick(m);
   m.submit({id:'young',actor:'A',steps:[done()]});
   assert.equal(m.dispatch(),null);
-  assert.equal(m.wake({id:'old',generation:1,token:'fd'}),true);
+  assert.equal(wake(m,{id:'old',generation:1,token:'fd'}),true);
   assert.equal(m.control.length,1);
-  assert.equal(m.wake({id:'old',generation:1,token:'fd'}),false);
+  assert.equal(wake(m,{id:'old',generation:1,token:'fd'}),false);
   assert.equal(tick(m).id,'old');
   assert.equal(m.control.length,1, 'preempted CONTROL continuation retains reserve');
   assert.equal(m.cancel('young'),true);
@@ -256,9 +258,9 @@ test('one-shot I/O completion survives DATA saturation without a reactor retry',
   m.submit({id:'io',steps:[io('once'),done()]});
   assert.equal(tick(m).next,'suspended');
   m.submit({id:'busy',steps:[done()]});
-  assert.equal(m.wake({id:'io',generation:1,token:'once'}),true);
+  assert.equal(wake(m,{id:'io',generation:1,token:'once'}),true);
   assert.equal(m.inspect('io').state,'suspended', 'completion latched until credit');
-  assert.equal(m.wake({id:'io',generation:1,token:'once'}),false);
+  assert.equal(wake(m,{id:'io',generation:1,token:'once'}),false);
   assert.equal(tick(m).id,'busy');
   assert.equal(m.inspect('io').state,'queued', 'release automatically promotes latch');
   assert.equal(tick(m).id,'io');
@@ -274,9 +276,9 @@ test('actor owner wake survives simultaneous DATA and CONTROL saturation', () =>
   tick(m);
   assert.equal(m.cancel('other'),true); // Occupies CONTROL.
   m.submit({id:'young',actor:'A',steps:[done()]}); // Occupies DATA.
-  assert.equal(m.wake({id:'old',generation:1,token:'old-fd'}),true);
+  assert.equal(wake(m,{id:'old',generation:1,token:'old-fd'}),true);
   assert.equal(m.inspect('old').state,'suspended');
-  assert.equal(m.wake({id:'old',generation:1,token:'old-fd'}),false);
+  assert.equal(wake(m,{id:'old',generation:1,token:'old-fd'}),false);
   assert.equal(tick(m).id,'other'); // Frees CONTROL; owner wake is promoted.
   assert.equal(m.control.length,1);
   assert.equal(tick(m).id,'old');
@@ -301,4 +303,38 @@ test('suspended cancellation is accepted and deferred when CONTROL is full', () 
   assert.equal(m.inspect('second').terminal,'cancelled');
   assert.equal(m.inspect('second').physicallyRetired,true);
   assert.equal(tick(m).id,'busy');
+});
+
+
+test('reused I/O token rejects stale completion from an earlier registration epoch', () => {
+  const m = new Model({reductionBudget:4});
+  m.submit({id:'a',generation:3,steps:[io('same-fd'),cpu(1),io('same-fd'),done()]});
+  const first = m.dispatch();
+  assert.equal(first.next,'suspended');
+  assert.equal(first.waitTicket,1);
+  m.release();
+  assert.equal(m.wake({id:'a',generation:3,token:'same-fd',ticket:first.waitTicket}),true);
+  const second = m.dispatch();
+  assert.equal(second.next,'suspended');
+  assert.equal(second.waitTicket,2);
+  m.release();
+  assert.equal(m.wake({id:'a',generation:3,token:'same-fd',ticket:first.waitTicket}),false);
+  assert.equal(m.wake({id:'a',generation:3,token:'same-fd'}),false,
+    'unqualified event must not authorize the new registration');
+  assert.equal(m.inspect('a').state,'suspended');
+  assert.equal(m.wake({id:'a',generation:3,token:'same-fd',ticket:second.waitTicket}),true);
+  assert.equal(tick(m).id,'a');
+  assert.equal(m.inspect('a').wakes,2);
+  assert.equal(m.inspect('a').physicallyRetired,true);
+});
+
+test('cancellation revokes an issued I/O registration receipt', () => {
+  const m = new Model();
+  m.submit({id:'a',steps:[io('fd'),done()]});
+  const registration = m.dispatch();
+  m.release();
+  assert.equal(m.cancel('a'),true);
+  assert.equal(m.wake({id:'a',generation:1,token:'fd',ticket:registration.waitTicket}),false);
+  assert.equal(tick(m).id,'a');
+  assert.equal(m.inspect('a').terminal,'cancelled');
 });

@@ -55,7 +55,8 @@ export class UnifiedExecutionModel {
       throw new Error('unsupported step');
     });
     const task = {id, actor, generation, steps:normalized, pc:0, state:'queued',
-      terminal:null, physicallyRetired:false, dispatches:0, wakes:0, cancelRequested:false};
+      terminal:null, physicallyRetired:false, dispatches:0, wakes:0, cancelRequested:false,
+      waitEpoch:0, waitTicket:null};
     this.tasks.set(id, task);
     if (actor !== null) {
       if (!this.actorTurns.has(actor)) this.actorTurns.set(actor, []);
@@ -97,6 +98,8 @@ export class UnifiedExecutionModel {
         }
         if (step.kind === 'io') {
           task.waitToken = step.token;
+          // Fence delayed completions when a descriptor/token is reused.
+          task.waitTicket = ++task.waitEpoch;
           task.pc++; this.active.next = 'suspended'; break;
         }
         const charge = Math.min(left, step.cost);
@@ -106,7 +109,8 @@ export class UnifiedExecutionModel {
         if (left === 0) this.events.push(`budget:${id}`);
       }
     }
-    return {id, next:this.active.next, terminal:task.terminal};
+    return {id, next:this.active.next, terminal:task.terminal,
+      waitTicket:this.active.next === 'suspended' ? task.waitTicket : null};
   }
   release() {
     if (!this.active) throw new Error('no active carrier');
@@ -144,6 +148,7 @@ export class UnifiedExecutionModel {
     } else if (task.state === 'terminal') {
       task.pendingWake = false;
       task.waitToken = null;
+      task.waitTicket = null;
       task.physicallyRetired = true;
       if (task.actor !== null) {
         const turns = this.actorTurns.get(task.actor);
@@ -156,16 +161,18 @@ export class UnifiedExecutionModel {
     this.drainPendingWakes();
     return task.state;
   }
-  wake({id, generation, token}) {
+  wake({id, generation, token, ticket}) {
     const task = this.tasks.get(id);
     // A reactor publishes one durable completion bit, never guest execution.
     const finishingRegistration = task?.state === 'running' && this.active?.id === id &&
       this.active.next === 'suspended';
     if (!task || task.generation !== generation || task.waitToken !== token ||
+        !Number.isSafeInteger(ticket) || ticket <= 0 || task.waitTicket !== ticket ||
         task.cancelRequested || task.pendingWake ||
         (!finishingRegistration && task.state !== 'suspended'))
       return false;
     task.waitToken = null;
+    task.waitTicket = null;
     task.pendingWake = true;
     task.wakes++;
     this.events.push(`wake:${id}`);
@@ -180,6 +187,7 @@ export class UnifiedExecutionModel {
     task.cancelRequested = true;
     if (task.state === 'suspended') {
       task.waitToken = null;
+      task.waitTicket = null;
       task.pendingWake = true;
       this.drainPendingWakes();
     }
