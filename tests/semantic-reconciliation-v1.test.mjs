@@ -1,7 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {loadSemanticManifest, loadSemanticManifestSnapshot, validateSemanticManifest, classifySemanticCompilerResult, selectSemanticCases, runSemanticAdmission} from "../src/semantic-reconciliation-v1.mjs";
-import {readFile} from "node:fs/promises";
+import {loadSemanticManifest, loadSemanticManifestSnapshot, validateSemanticManifest, classifySemanticCompilerResult, selectSemanticCases, semanticFixtureUnchanged, runSemanticAdmission} from "../src/semantic-reconciliation-v1.mjs";
+import {readFile, writeFile, mkdtemp, lstat, rm, symlink, rename, unlink} from "node:fs/promises";
+import {tmpdir} from "node:os";
+import {join} from "node:path";
 import {createHash} from "node:crypto";
 
 test("semantic inventory has complete five-backend negative and positive coverage, never implied guest parity", async () => {
@@ -92,4 +94,28 @@ test("manifest provenance hashes the same exact bytes used for validation",async
  const second=await loadSemanticManifestSnapshot();
  assert.equal(second.manifestSha256,expected);
  assert.deepEqual(second.doc.backends,["java","llvm","net","wasm","forge"]);
+});
+
+test("post-compiler fixture proof rejects symlinks, replacement inodes and deletion",async()=>{
+ const dir=await mkdtemp(join(tmpdir(),"ores-semantic-mutation-test-"));
+ const file=join(dir,"source.ores"),replacement=join(dir,"replacement.ores");
+ const bytes="pub fnc main(): int { return 42; }\\n";
+ const digest=createHash("sha256").update(bytes).digest("hex");
+ try {
+   await writeFile(file,bytes,{mode:0o400,flag:"wx"});
+   const original=await lstat(file);
+   assert.equal(await semanticFixtureUnchanged(file,original,digest),true);
+   await writeFile(replacement,bytes,{mode:0o400,flag:"wx"});
+   await unlink(file);
+   await symlink(replacement,file);
+   assert.equal(await semanticFixtureUnchanged(file,original,digest),false,
+     "a symlink to identical bytes must never count as the original fixture");
+   await unlink(file);
+   await rename(replacement,file);
+   assert.equal(await semanticFixtureUnchanged(file,original,digest),false,
+     "a new inode with identical bytes is a source substitution");
+   await unlink(file);
+   assert.equal(await semanticFixtureUnchanged(file,original,digest),false,
+     "missing source must be SOURCE_MUTATED, not an uncaught admission pass");
+ } finally { await rm(dir,{recursive:true,force:true}); }
 });
