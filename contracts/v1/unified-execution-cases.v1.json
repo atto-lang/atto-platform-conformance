@@ -150,6 +150,18 @@
         "cancelled-peer-isolation",
         "release-optimized-and-sanitized-host-oracle-not-guest-proof"
       ]
+    },
+    {
+      "id": "future-chain-no-yield-admission",
+      "guestVerified": false,
+      "requirements": [
+        "future-continuation-is-task-admission",
+        "no-yield-guard-preflight",
+        "before-callback-arguments",
+        "no-nested-source-task-on-reject",
+        "settled-future-not-exempt",
+        "physical-retirement-before-lease-reclamation"
+      ]
     }
   ]
 }
