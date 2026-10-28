@@ -1,10 +1,10 @@
-import {readFile, writeFile, mkdtemp, rm, stat} from "node:fs/promises";
+import {readFile, writeFile, mkdtemp, rm, lstat} from "node:fs/promises";
 import {tmpdir} from "node:os";
 import {join, isAbsolute} from "node:path";
 import {spawnSync} from "node:child_process";
 import {createHash} from "node:crypto";
 import {fileURLToPath} from "node:url";
-import {validateCommand, hasCompilerErrorSeverity, hashExecutableBounded} from "./harness.mjs";
+import {validateCommand, hasCompilerErrorSeverity, hashExecutableBounded, readRegularFixtureBytes} from "./harness.mjs";
 
 const FILE = new URL("../contracts/v1/semantic-reconciliation-cases.v1.json", import.meta.url);
 const TARGETS = Object.freeze(["java", "llvm", "net", "wasm", "forge"]);
@@ -97,6 +97,30 @@ export function classifySemanticCompilerResult(c, output) {
   return output.status === 1 && errors.length === 1 && errors[0].startsWith(expected)
     ? "MATCHED_UNATTESTED" : "MISMATCH";
 }
+// The compiler is an untrusted process with the same filesystem access as
+// this runner. Reject any changed path identity, symlink, hard-link, or bytes
+// after running it; never follow a substitute path or read unbounded data.
+// This is post-execution tamper detection, not a sandbox against a racing
+// malicious compiler or proof of immutable source/build provenance.
+function sameFixtureIdentity(a, b) {
+  return a.dev === b.dev && a.ino === b.ino && a.mode === b.mode &&
+    a.size === b.size && a.nlink === b.nlink &&
+    a.mtimeMs === b.mtimeMs && a.ctimeMs === b.ctimeMs;
+}
+export async function semanticFixtureUnchanged(filename, beforeStat, beforeSha256) {
+  try {
+    const first = await lstat(filename);
+    if (!first.isFile() || first.isSymbolicLink() || first.nlink !== 1 ||
+        !sameFixtureIdentity(beforeStat, first)) return false;
+    const bytes = await readRegularFixtureBytes(filename);
+    const last = await lstat(filename);
+    return sameFixtureIdentity(first, last) && sha256(bytes) === beforeSha256;
+  } catch {
+    // Unlink, permission denial, descriptor races and malformed replacement
+    // paths are all mutation, not a passing or skipped admission result.
+    return false;
+  }
+}
 export async function runSemanticAdmission({backend, argv, sourceSha, timeoutMs = 12000, suite = "all"} = {}) {
   const {doc, manifestSha256} = await loadSemanticManifestSnapshot();
   if (!TARGETS.includes(backend)) throw Error("unsupported semantic backend");
@@ -118,15 +142,14 @@ export async function runSemanticAdmission({backend, argv, sourceSha, timeoutMs 
     for (const c of selectedCases) {
       const filename = join(temp, c.id + ".ores");
       await writeFile(filename, c.source, {mode:0o400, flag:"wx"});
-      const before = await readFile(filename);
+      const beforeStat = await lstat(filename);
+      const before = await readRegularFixtureBytes(filename);
       const fixtureSha256 = sha256(before);
       const cmd = argv.map(a => a === "{file}" ? filename : a);
       const p = spawnSync(cmd[0], cmd.slice(1), {encoding:"utf8", cwd:temp,
         shell:false, timeout:timeoutMs, maxBuffer:1048576, windowsHide:true});
-      const after = await readFile(filename);
-      const statAfter = await stat(filename);
       let status = classifySemanticCompilerResult(c,p);
-      if (sha256(after) !== fixtureSha256 || !statAfter.isFile() || statAfter.nlink !== 1)
+      if (!(await semanticFixtureUnchanged(filename, beforeStat, fixtureSha256)))
         status = "SOURCE_MUTATED";
       results.push({id:c.id, expect:c.expect, status, fixtureSha256,
         observedExit:p.status, observedDiagnosticCode:c.diagnosticCode || null});
