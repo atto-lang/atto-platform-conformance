@@ -130,11 +130,11 @@ test("explicit flatten and await each remove only one layer", () => {
 
 test("flat_map flattens one layer but preserves a deeper Future", () => {
     const positive = fixture("flat-map-preserves-deeper-nesting");
-    assert.match(positive, /Future<Future<int>> nested\\s*=\\s*seed\\(\\)\\.flat_map\\(/);
-    assert.match(positive, /return double_it\\(number\\)\\.map\\(/);
-    assert.match(positive, /Future<int> inner\\s*=\\s*await nested/);
+    assert.match(positive, /Future<Future<int>> nested\s*=\s*seed\(\)\.flat_map\(/);
+    assert.match(positive, /return double_it\(number\)\.map\(/);
+    assert.match(positive, /Future<int> inner\s*=\s*await nested/);
     assert.match(positive, /await inner/);
     const negative = fixture("reject-flat-map-deeper-nesting");
-    assert.match(negative, /Future<int> invalid\\s*=\\s*seed\\(\\)\\.flat_map\\(/);
-    assert.match(negative, /return double_it\\(number\\)\\.map\\(/);
+    assert.match(negative, /Future<int> invalid\s*=\s*seed\(\)\.flat_map\(/);
+    assert.match(negative, /return double_it\(number\)\.map\(/);
 });
