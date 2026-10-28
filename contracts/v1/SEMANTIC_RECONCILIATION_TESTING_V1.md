@@ -29,7 +29,7 @@ The broader pointerless syntax migration remains in [Java #1841](https://github.
 Use `--suite=future-map` to execute exactly the
 `future-map-preserves-nested-return` positive and
 `future-map-rejects-implicit-adoption` negative. Omit the flag to run all
-22 compiler vectors. Unknown suites fail closed.
+26 compiler vectors. Unknown suites fail closed.
 
 ```sh
 node bin/semantic-reconciliation-gate.mjs --backend=java --suite=future-map \
@@ -55,3 +55,12 @@ writing `40`. The `nested-future-two-awaits` main calls its suspending
 execution can observe the intended extraction semantics, but this runner
 remains compiler-admission only: it does **not** assert stdout, exit or actor
 lifecycle, and no backend may be marked verified from source inspection.
+
+### Inventory drift guard (October 28)
+
+The exact source-free manifest currently has 26 compiler vectors plus 2 pending
+runtime traces. The bounded-suite unit test checks both the manifest-wide
+length and equivalence between `--suite=all` and the validated manifest, so
+adding future vectors cannot leave a stale hard-coded subset count undetected.
+This is a repository source/test assertion only; no project Node CI or Oreslang
+guest execution is claimed until an actual job has non-empty executed steps.
