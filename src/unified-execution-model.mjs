@@ -183,7 +183,7 @@ export class UnifiedExecutionModel {
   }
   cancel(id) {
     const task = this.tasks.get(id);
-    if (!task || task.physicallyRetired || task.cancelRequested) return false;
+    if (!task || task.physicallyRetired || task.terminal !== null || task.cancelRequested) return false;
     task.cancelRequested = true;
     if (task.state === 'suspended') {
       task.waitToken = null;
