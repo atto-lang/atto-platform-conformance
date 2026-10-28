@@ -1,0 +1,218 @@
+{
+  "schemaVersion": "semantic-reconciliation/v1",
+  "status": "TARGET_ONLY_NOT_IMPLEMENTATION_EVIDENCE",
+  "contractIndex": "https://github.com/ores-truffle-oreslang/oreslang-common-source/blob/main/docs/CONFORMANCE.md",
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm"
+  ],
+  "rules": [
+    "no-implicit-option-or-future-flatten",
+    "nonreentrant-actor-state-and-scoped-critical",
+    "explicit-suspends-effect-boundaries",
+    "unambiguous-optional-arity"
+  ],
+  "compilerCases": [
+    {
+      "id": "nested-option-one-layer",
+      "concern": "wrappers",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  val Option<Option<int>> nested = Some(Some(42));\n  val Option<int> inner = nested.unwrap();\n  return inner.unwrap();\n}\n",
+      "rationale": "Explicit two one-layer unwraps preserve generic layers.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/NESTED_OPTION_FUTURE_EXTRACTION.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "nested-option-coercion",
+      "concern": "wrappers",
+      "expect": "reject",
+      "diagnosticCode": "E_WRAPPER_LAYER",
+      "source": "pub fnc main(): int {\n  val Option<Option<int>> nested = Some(Some(42));\n  val Option<int> wrong = nested;\n  return 0;\n}\n",
+      "rationale": "Assignment must not silently erase one Option layer.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/NESTED_OPTION_FUTURE_EXTRACTION.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "nested-future-two-awaits",
+      "concern": "futures",
+      "expect": "accept",
+      "source": "pub fnc nested(): Future<Future<int>> {\n  return Future.resolved(Future.resolved(42));\n}\npub suspends fnc use(): int {\n  val Future<int> inner = await nested();\n  return await inner;\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "One await returns Future<int>, not int.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/NESTED_OPTION_FUTURE_EXTRACTION.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "nested-future-coercion",
+      "concern": "futures",
+      "expect": "reject",
+      "diagnosticCode": "E_WRAPPER_LAYER",
+      "source": "pub fnc nested(): Future<Future<int>> {\n  return Future.resolved(Future.resolved(42));\n}\npub suspends fnc use(): int {\n  val int wrong = await nested();\n  return wrong;\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "No Future<Future<T>> type canonicalization or implicit flattening.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/NESTED_OPTION_FUTURE_EXTRACTION.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "actor-scoped-critical-write",
+      "concern": "actors",
+      "expect": "accept",
+      "source": "define actor Counter as\n  state { value: int = 0; }\n  receive(ActorMail<int> m): void with state.write {\n    using state.write(critical |s| -> {\n      s.value = s.value + m.value;\n    });\n    return;\n  }\nend\npub fnc main(): int { return 42; }\n",
+      "rationale": "Sealed lexical state access requires a verified write effect and critical state loan.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/ACTOR_FAMILIES_SEALED_STATE_V1.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "actor-state-loan-escape",
+      "concern": "actors",
+      "expect": "reject",
+      "diagnosticCode": "E_BORROW_ESCAPE",
+      "source": "define actor Counter as\n  state { value: int = 0; }\n  receive(ActorMail<int> m): void with state.read {\n    val any escaped = self.handle_state(|s| -> { return s; });\n    return;\n  }\nend\npub fnc main(): int { return 42; }\n",
+      "rationale": "Actor state reference must not escape handle_state or its lexical scope.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/ACTOR_FAMILIES_SEALED_STATE_V1.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "suspends-explicit-effect",
+      "concern": "effects",
+      "expect": "accept",
+      "source": "pub suspends fnc get(): int {\n  val Future<int> pending = Future.resolved(42);\n  return await pending;\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "Await must be in a correctly checked suspending context.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/SUSPENSION_CONTRACT.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "ordinary-fnc-await",
+      "concern": "effects",
+      "expect": "reject",
+      "diagnosticCode": "E_SUSPENSION_EFFECT",
+      "source": "pub fnc invalid(): int {\n  val Future<int> pending = Future.resolved(42);\n  return await pending;\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "Ordinary effect-unannotated function must not silently gain suspension.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/SUSPENSION_CONTRACT.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "unique-named-optional-call",
+      "concern": "overload",
+      "expect": "accept",
+      "source": "pub fnc choose(int a, int? b): int {\n  return a;\n}\npub fnc main(): int {\n  return choose(a: 42);\n}\n",
+      "rationale": "Unique named call shape, once-only source-order binding.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/NAMED_ARGUMENTS_CONTRACT.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "ambiguous-optional-overloads",
+      "concern": "overload",
+      "expect": "reject",
+      "diagnosticCode": "E_AMBIGUOUS_CALL",
+      "source": "pub fnc choose(int a): int {\n  return a;\n}\npub fnc choose(int a, int? b): int {\n  return a;\n}\npub fnc main(): int {\n  return choose(42);\n}\n",
+      "rationale": "Even distinct declaration arities cannot admit intersecting supplied-call shapes.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/NAMED_ARGUMENTS_CONTRACT.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    }
+  ],
+  "runtimeCases": [
+    {
+      "id": "actor-suspended-turn-not-reentrant",
+      "concern": "actors",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/ACTOR_FAMILIES_SEALED_STATE_V1.md",
+      "expectedTrace": [
+        "enter_A",
+        "suspend_A",
+        "resume_A",
+        "exit_A",
+        "enter_B"
+      ],
+      "forbiddenTrace": [
+        "enter_A",
+        "suspend_A",
+        "enter_B",
+        "mutate_state_B",
+        "resume_A"
+      ],
+      "requirements": [
+        "logical turn ticket retained during suspension",
+        "no raw state loan across await",
+        "fresh generation-validated loan on resume",
+        "CONTROL must remain live"
+      ],
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "eager-expressions-explicit-lazy-generator",
+      "concern": "evaluation",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-common-source/blob/main/docs/GENERATORS_V1.md",
+      "expectedTrace": [
+        "ordinary_call_effect",
+        "ordinary_call_returns",
+        "next_statement"
+      ],
+      "requirements": [
+        "ordinary call executes eagerly",
+        "gen* only executes on next pull",
+        "Future pipeline composition must be explicit and typed"
+      ],
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    }
+  ]
+}
