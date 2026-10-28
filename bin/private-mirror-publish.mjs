@@ -11,6 +11,8 @@ import {requirePrivateMirror} from "./require-private-mirror.mjs";
 const OID=/^[a-f0-9]{40}$/;
 const PATH=/^[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*$/;
 const BRANCH=/^ci\/private-[A-Za-z0-9][A-Za-z0-9._-]{0,75}$/;
+const MAX_BATCH_BLOBS=64;
+const CHECKPOINT_SCHEMA="oreslang.private-mirror-checkpoint/1";
 
 function validPath(path) {
   return typeof path==="string" && path.length<=512 && PATH.test(path) &&
@@ -44,9 +46,18 @@ async function githubRequest(repo,path,token,{method="GET",body,fetchImpl=fetch}
 
 export async function publishPrivateMirror({
   source,destination,sourceCommit,destinationBaseCommit,prefix,newBranch,
-  approvedDestinations,token,fetchImpl=fetch
+  approvedDestinations,token,fetchImpl=fetch,
+  maxBlobsPerRun,checkpoint
 }) {
   sha(sourceCommit);sha(destinationBaseCommit);
+  if(maxBlobsPerRun!==undefined&&(!Number.isSafeInteger(maxBlobsPerRun)||
+      maxBlobsPerRun<1||maxBlobsPerRun>MAX_BATCH_BLOBS))
+    throw Error("invalid bounded private mirror batch size");
+  if(checkpoint!==undefined&&(
+      checkpoint===null||typeof checkpoint!=="object"||Array.isArray(checkpoint)||
+      Object.keys(checkpoint).sort().join(",")!==
+      "destination,destinationBaseCommit,destinationBaseTree,lastBlobSha,newBranch,nextIndex,prefix,schema,source,sourceCommit,sourceTree,totalBlobs"))
+    throw Error("invalid private mirror checkpoint shape");
   if(!validPath(prefix)||!BRANCH.test(newBranch)||newBranch.includes("..")||newBranch.endsWith(".lock"))
     throw Error("invalid destination prefix or isolated CI branch");
   const authorize=()=>requirePrivateMirror({
@@ -59,7 +70,9 @@ export async function publishPrivateMirror({
   if(!srcCommit?.tree?.sha||!OID.test(srcCommit.tree.sha))throw Error("source commit has no pinned tree");
   const srcTree=await githubRequest(source,"/git/trees/"+srcCommit.tree.sha+"?recursive=1",token,{fetchImpl});
   if(srcTree.truncated!==false||!Array.isArray(srcTree.tree))throw Error("source tree incomplete");
-  const files=srcTree.tree.filter(x=>x.type==="blob");
+  // GitHub's recursive-tree enumeration order must not change resume indices.
+  const files=srcTree.tree.filter(x=>x.type==="blob")
+    .sort((a,b)=>a.path<b.path?-1:a.path>b.path?1:0);
   // Current Java/LLVM compiler trees have 1,177/1,291 regular files.
   // Raise only the bounded count, not byte, per-file, path or privacy limits.
   const MAX_SOURCE_FILES = 1500;
@@ -103,8 +116,33 @@ export async function publishPrivateMirror({
        (wanted.startsWith(current+"/")&&item.type!=="tree"))
       throw Error("destination snapshot prefix is not empty or conflicts with existing path");
   }
-  const entries=[];
-  for(const file of files){
+  const pin={schema:CHECKPOINT_SCHEMA,source,destination,sourceCommit,
+    sourceTree:srcCommit.tree.sha,destinationBaseCommit,
+    destinationBaseTree:base.tree.sha,prefix,newBranch,totalBlobs:files.length};
+  let start=0;
+  if(checkpoint!==undefined){
+    for(const [key,value] of Object.entries(pin)){
+      if(checkpoint[key]!==value)throw Error("stale or modified private mirror checkpoint");
+    }
+    start=checkpoint.nextIndex;
+    if(!Number.isSafeInteger(start)||start<1||start>=files.length||
+       checkpoint.lastBlobSha!==files[start-1].sha)
+      throw Error("invalid or forged private mirror resume cursor");
+    // Prove the last checkpointed Git object really exists at the destination.
+    // Earlier objects are independently revalidated by the exact full subtree
+    // SHA and manifest walk before any commit/ref can be created.
+    const last=files[start-1];
+    const staged=await githubRequest(destination,"/git/blobs/"+last.sha,token,{fetchImpl});
+    if(staged?.sha!==last.sha||staged.size!==last.size||
+       staged.encoding!=="base64"||typeof staged.content!=="string")
+      throw Error("missing or tampered checkpointed private mirror blob");
+  }
+  const batchLimit=maxBlobsPerRun===undefined?files.length:maxBlobsPerRun;
+  const end=Math.min(files.length,start+batchLimit);
+  const entries=files.map(file=>({path:prefix+"/"+file.path,mode:file.mode,
+    type:"blob",sha:file.sha}));
+  for(let index=start;index<end;index++){
+    const file=files[index];
     const srcBlob=await githubRequest(source,"/git/blobs/"+file.sha,token,{fetchImpl});
     if(srcBlob?.sha!==file.sha||srcBlob.encoding!=="base64"||
        typeof srcBlob.content!=="string"||srcBlob.size!==file.size)
@@ -115,7 +153,13 @@ export async function publishPrivateMirror({
       method:"POST",body:{content:srcBlob.content,encoding:"base64"},fetchImpl
     });
     if(pushed.sha!==file.sha)throw Error("destination blob SHA differs from source");
-    entries.push({path:prefix+"/"+file.path,mode:file.mode,type:"blob",sha:pushed.sha});
+  }
+  if(end<files.length){
+    // A staging receipt never creates a destination commit, ref, artifact or
+    // executable checkout. The immutable source manifest is pinned on resume.
+    return Object.freeze({status:"PRIVATE_MIRROR_STAGED",
+      checkpoint:Object.freeze({...pin,nextIndex:end,lastBlobSha:files[end-1].sha}),
+      copiedThisBatch:end-start,remaining:files.length-end});
   }
   await authorize();
   const targetTree=await githubRequest(destination,"/git/trees",token,{
@@ -181,12 +225,14 @@ export async function publishPrivateMirror({
 
 if(process.argv[1]&&pathToFileURL(process.argv[1]).href===import.meta.url){
   try{
-    if(process.argv.length!==8)
-      throw Error("usage: private-mirror-publish.mjs <source> <sourceSHA> <destination> <baseSHA> <prefix> <ci/private-branch>");
+    if(![8,9,10].includes(process.argv.length))
+      throw Error("usage: private-mirror-publish.mjs <source> <sourceSHA> <destination> <baseSHA> <prefix> <ci/private-branch> [batchSize [checkpointJSON]]");
     const result=await publishPrivateMirror({
       source:process.argv[2],sourceCommit:process.argv[3],
       destination:process.argv[4],destinationBaseCommit:process.argv[5],
       prefix:process.argv[6],newBranch:process.argv[7],
+      maxBlobsPerRun:process.argv[8]===undefined?undefined:Number(process.argv[8]),
+      checkpoint:process.argv[9]===undefined?undefined:JSON.parse(process.argv[9]),
       approvedDestinations:(process.env.ORES_APPROVED_PRIVATE_MIRRORS||"").split(",").filter(Boolean),
       token:process.env.GH_TOKEN||process.env.GITHUB_TOKEN
     });
