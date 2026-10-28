@@ -418,6 +418,161 @@
         "wasm": "PENDING_GUEST_PROOF",
         "forge": "PENDING_GUEST_PROOF"
       }
+    },
+    {
+      "id": "implicit-field-scalar-copy",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "define class Box as\n  pub let int value = 7;\nend\nfnc inspect(Box box): int {\n  val int detached = box.value;\n  return detached;\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "Reading a Copy scalar member does not transfer the containing object's ownership.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "implicit-field-move-only-consume",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_PARTIAL_MOVE",
+      "source": "define class Box as\n  pub let int value = 7;\nend\ndefine class Holder as\n  pub let Box item;\nend\nfnc consume(Box box): int { return box.value; }\nfnc invalid(Holder holder): int {\n  return consume(holder.item);\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "Passing a move-only field by value cannot leave its containing field slot live without a path-aware partial-move ledger.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "implicit-index-scalar-copy",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "fnc read(Array<int> items): int {\n  return items[0];\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "Reading an indexed Copy scalar is not a move of the array's element storage.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "implicit-index-move-only-return",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_PARTIAL_MOVE",
+      "source": "define class Box as\n  pub let int value = 7;\nend\nfnc invalid(Array<Box> items): Box {\n  return items[0];\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "Returning an indexed move-only element by value must not silently retain a live array slot.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "take-conditional-copy-value",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "fnc valid(bool choose): int {\n  val int first = 11;\n  val int second = 12;\n  return choose ? first : second;\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "Ordinary conditional evaluation of Copy scalars is permitted; it does not claim to invalidate a selected owner.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "take-conditional-untracked-place",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_PARTIAL_MOVE",
+      "source": "fnc invalid(bool choose): int {\n  val int first = 11;\n  val int second = 12;\n  val int escaped = rt take (choose ? first : second);\n  return escaped;\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "A conditional expression cannot select a source owner for rt take without a tracked place invalidation, even when both branches are Copy.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "take-cast-scalar-read",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "define class Box as\n  pub let int value = 7;\nend\nfnc valid(Box box): int {\n  val int detached = box.value as int;\n  return detached;\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "An ordinary scalar cast may read a Copy member without moving the containing owner.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "take-cast-untracked-place",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_PARTIAL_MOVE",
+      "source": "define class Box as\n  pub let int value = 7;\nend\nfnc invalid(): int {\n  let mut Box box = new Box();\n  val int escaped = rt take (box.value as int);\n  return escaped;\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "Casting a field expression must not launder an untracked source place into an rt take.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "assignment-ordinary-mutation",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "fnc valid(): int {\n  let mut int slot = 7;\n  slot = 12;\n  return slot;\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "An ordinary assignment to a mutable scalar binding is not an ownership transfer.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "take-assignment-untracked-place",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_PARTIAL_MOVE",
+      "source": "define class Box as\n  pub let int value = 7;\nend\nfnc invalid(): void {\n  let mut Box box = new Box();\n  val int escaped = rt take (box.value = 12);\n  return;\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "rt take of an assignment expression cannot prove that the source storage place was invalidated.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/OWNERSHIP_SMART_POINTERS_DOP.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
     }
   ],
   "runtimeCases": [

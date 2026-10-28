@@ -8,12 +8,12 @@ import {createHash} from "node:crypto";
 
 test("semantic inventory has complete five-backend negative and positive coverage, never implied guest parity", async () => {
  const cases = await loadSemanticManifest();
- assert.equal(cases.compilerCases.length,26);
+ assert.equal(cases.compilerCases.length,36);
  assert.equal(cases.runtimeCases.length,2);
  const ownership = cases.compilerCases.filter(c => c.concern === "ownership");
- assert.equal(ownership.length,14);
- assert.equal(ownership.filter(c => c.expect === "accept").length,7);
- assert.equal(ownership.filter(c => c.expect === "reject").length,7);
+ assert.equal(ownership.length,24);
+ assert.equal(ownership.filter(c => c.expect === "accept").length,12);
+ assert.equal(ownership.filter(c => c.expect === "reject").length,12);
  assert.ok(ownership.some(c => c.id === "rt-take-member-projection" && c.diagnosticCode === "E_PARTIAL_MOVE"));
  const futureMap = cases.compilerCases.filter(c => c.id.startsWith("future-map-"));
  assert.deepEqual(futureMap.map(c=>c.expect),["accept","reject"]);
@@ -31,6 +31,34 @@ test("semantic inventory has complete five-backend negative and positive coverag
    assert.ok(Object.values(item.backends).every(s=>s==="PENDING_GUEST_PROOF"));
  }
 });
+test("implicit by-value extraction targets are paired, exact and unverified on all backends", async () => {
+ const manifest=await loadSemanticManifest();
+ const pairs=[
+   ["implicit-field-scalar-copy","implicit-field-move-only-consume",/consume\(holder\.item\)/],
+   ["implicit-index-scalar-copy","implicit-index-move-only-return",/return items\[0\]/],
+   ["take-conditional-copy-value","take-conditional-untracked-place",/rt take \(choose \? first : second\)/],
+   ["take-cast-scalar-read","take-cast-untracked-place",/rt take \(box\.value as int\)/],
+   ["assignment-ordinary-mutation","take-assignment-untracked-place",/rt take \(box\.value = 12\)/]
+ ];
+ for(const [positive,negative,pattern] of pairs) {
+   const ok=manifest.compilerCases.find(c=>c.id===positive);
+   const bad=manifest.compilerCases.find(c=>c.id===negative);
+   assert.ok(ok && bad, "missing extraction pair: "+positive);
+   assert.equal(ok.concern,"ownership");
+   assert.equal(ok.expect,"accept");
+   assert.equal(bad.concern,"ownership");
+   assert.equal(bad.expect,"reject");
+   assert.equal(bad.diagnosticCode,"E_PARTIAL_MOVE");
+   assert.match(bad.source,pattern);
+   assert.match(ok.source,/pub fnc main\(\): int/);
+   assert.match(bad.source,/pub fnc main\(\): int/);
+   for(const c of [ok,bad]) {
+     assert.deepEqual(Object.keys(c.backends),["java","llvm","net","wasm","forge"]);
+     assert.ok(Object.values(c.backends).every(v=>v==="PENDING_GUEST_PROOF"));
+   }
+ }
+});
+
 test("duplicate case ids, missing variants and fake backend promotion are rejected",async()=>{
  const base = await loadSemanticManifest();
  const clone = () => structuredClone(base);
@@ -71,7 +99,7 @@ test("bounded Future.map suite is paired and cannot claim full-inventory parity"
  assert.deepEqual(pair.map(c=>c.id),["future-map-preserves-nested-return","future-map-rejects-implicit-adoption"]);
  assert.deepEqual(pair.map(c=>c.expect),["accept","reject"]);
  assert.equal(selectSemanticCases(doc,"all").length,doc.compilerCases.length);
- assert.equal(doc.compilerCases.length,26);
+ assert.equal(doc.compilerCases.length,36);
  assert.throws(()=>selectSemanticCases(doc,"unknown"),/unsupported semantic suite/);
  const broken=structuredClone(doc);
  broken.compilerCases=broken.compilerCases.filter(c=>c.id!=="future-map-rejects-implicit-adoption");
@@ -89,8 +117,8 @@ test("manifest provenance hashes the same exact bytes used for validation",async
  const expected=createHash("sha256").update(bytes).digest("hex");
  assert.match(snapshot.manifestSha256,/^[0-9a-f]{64}$/);
  assert.equal(snapshot.manifestSha256,expected);
- assert.equal(snapshot.doc.compilerCases.length,26);
- assert.equal(selectSemanticCases(snapshot.doc,"all").length,26);
+ assert.equal(snapshot.doc.compilerCases.length,36);
+ assert.equal(selectSemanticCases(snapshot.doc,"all").length,36);
  const second=await loadSemanticManifestSnapshot();
  assert.equal(second.manifestSha256,expected);
  assert.deepEqual(second.doc.backends,["java","llvm","net","wasm","forge"]);

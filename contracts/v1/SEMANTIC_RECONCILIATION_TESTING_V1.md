@@ -24,12 +24,28 @@ The proposed target `E_PARTIAL_MOVE` specifically prevents `rt take owned.field`
 
 The broader pointerless syntax migration remains in [Java #1841](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1841). Do not duplicate that migration in this fixture-only PR.
 
+## Implicit extraction and untracked rt take: five paired target gates
+
+Five additional accept/reject pairs (10 compiler targets) distinguish legal
+Copy reads from untracked by-value moves and explicit `rt take` laundering.
+The negative paths cover `consume(holder.item)`, `return items[0]` for a
+move-only array element, conditional `rt take`, cast-wrapped `rt take`,
+and `rt take` of an assignment result. Each positive control checks the
+corresponding non-moving Copy read, conditional, cast, or ordinary assignment.
+
+These targets follow the Java #2197 fail-closed design, but **none of the five
+backend compilers has executed these fixtures**. `E_PARTIAL_MOVE` is a
+proposed diagnostic identity requiring independent ratification, not a
+shipping error-code claim. A parser failure or unrelated diagnostic cannot
+satisfy the negative oracle. The inventory now contains **36 compiler
+targets (24 ownership) and 2 pending runtime traces**.
+
 ## Bounded Future.map admission gate
 
 Use `--suite=future-map` to execute exactly the
 `future-map-preserves-nested-return` positive and
 `future-map-rejects-implicit-adoption` negative. Omit the flag to run all
-26 compiler vectors. Unknown suites fail closed.
+36 compiler vectors. Unknown suites fail closed.
 
 ```sh
 node bin/semantic-reconciliation-gate.mjs --backend=java --suite=future-map \
@@ -58,7 +74,7 @@ lifecycle, and no backend may be marked verified from source inspection.
 
 ### Inventory drift guard (October 28)
 
-The exact source-free manifest currently has 26 compiler vectors plus 2 pending
+The exact source-free manifest currently has 36 compiler vectors plus 2 pending
 runtime traces. The bounded-suite unit test checks both the manifest-wide
 length and equivalence between `--suite=all` and the validated manifest, so
 adding future vectors cannot leave a stale hard-coded subset count undetected.

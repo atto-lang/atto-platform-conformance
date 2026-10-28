@@ -17,7 +17,7 @@ export function validateSemanticManifest(doc) {
       doc.status !== "TARGET_ONLY_NOT_IMPLEMENTATION_EVIDENCE") throw Error("invalid semantic contract header");
   if (JSON.stringify(doc.backends) !== JSON.stringify(TARGETS)) throw Error("backend target dropped/changed");
   if (!Array.isArray(doc.rules) || doc.rules.length < 4 || new Set(doc.rules).size !== doc.rules.length) throw Error("invalid rule set");
-  if (!Array.isArray(doc.compilerCases) || doc.compilerCases.length !== 26 ||
+  if (!Array.isArray(doc.compilerCases) || doc.compilerCases.length !== 36 ||
       !Array.isArray(doc.runtimeCases) || doc.runtimeCases.length !== 2) throw Error("missing cases");
   const ids = new Set(), kinds = new Map(), allowed = new Set(["wrappers","futures","actors","effects","overload","ownership"]);
   for (const c of doc.compilerCases) {
