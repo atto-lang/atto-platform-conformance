@@ -1,5 +1,0 @@
-define module Parcel as
-  pub fnc main(): int {
-    return 42;
-  }
-end

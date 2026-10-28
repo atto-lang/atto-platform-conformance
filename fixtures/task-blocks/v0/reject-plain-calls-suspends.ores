@@ -1,3 +1,0 @@
-suspends fnc read_value(): int { return 9; }
-fnc plain(): int { return read_value(); }
-pub fnc main(): void { return; }

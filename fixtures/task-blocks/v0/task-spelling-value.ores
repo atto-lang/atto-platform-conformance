@@ -1,5 +1,0 @@
-pub fnc main(): void {
-  let Task<int> job = task { return 42; };
-  let int value = await job;
-  return;
-}
