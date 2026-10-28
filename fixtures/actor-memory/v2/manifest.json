@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 2,
+  "id": "actor-private-state-physical-retirement-v2",
+  "scope": "one canonical guest-language contract; no host tests counted as guest proof",
+  "evidenceLevel": "UNVERIFIED_GUEST",
+  "source": {
+    "file": "peer-owned-state.ores",
+    "sha256": "b299adf7e5e75c806dcb5da4fa684127e046b68ad3c165844072a2ec2175ea2a",
+    "expectedStdoutI64Multiset": {
+      "1": 2,
+      "2": 2
+    },
+    "requiredOrder": "A.done completes before B's second message is sent",
+    "physicalRetirementProof": "requires backend-owned allocator/physical-quiescence receipt; stdout alone insufficient"
+  },
+  "negativeCases": [
+    {
+      "id": "foreign-state",
+      "file": "foreign-state-reject.ores",
+      "sha256": "75df6deb085330eeea9c1efb6ff411960cb35d58d1a7c3c90e3a8cf735cccbcf",
+      "requiredDiagnosticClass": "FOREIGN_ACTOR_STATE_DENIED",
+      "requireNoOutputArtifact": true
+    },
+    {
+      "id": "read-loan-write",
+      "file": "read-loan-write-reject.ores",
+      "sha256": "1064eed695f4a76881412900eb19fc642c4d980296c6dbe86ad763010b7d8690",
+      "requiredDiagnosticClass": "WRITE_WITH_READ_LOAN_DENIED",
+      "requireNoOutputArtifact": true
+    }
+  ],
+  "additionalRuntimeGates": [
+    "Actor A/B same type have disjoint mutable arenas even at identical logical offset",
+    "A read loan blocks A writes and physical destruction without stalling B",
+    "B can mutate after A is physically reclaimed; A's native budget refunds exactly once",
+    "No raw private capability can cross ActorRef/mailbox/closure/FFI boundaries",
+    "Suspended/cancelled handlers retain receiver and state loans until all physical continuations and callbacks have ceased",
+    "Stale/foreign capabilities fail closed after turn/generation retirement"
+  ],
+  "backends": {
+    "java": {
+      "status": "NOT_EXECUTED",
+      "guestCompiled": false,
+      "guestExecuted": false
+    },
+    "llvm": {
+      "status": "NOT_EXECUTED",
+      "guestCompiled": false,
+      "guestExecuted": false
+    },
+    "net": {
+      "status": "NOT_EXECUTED",
+      "guestCompiled": false,
+      "guestExecuted": false
+    },
+    "wasm": {
+      "status": "NOT_EXECUTED",
+      "guestCompiled": false,
+      "guestExecuted": false
+    },
+    "forge": {
+      "status": "NOT_EXECUTED",
+      "guestCompiled": false,
+      "guestExecuted": false
+    }
+  },
+  "admission": {
+    "required": [
+      "independent security/codeowner review",
+      "publication guard authorization",
+      "source HEAD and tree attestations",
+      "nonzero successful compiler and guest execution steps",
+      "semantic negative diagnostics and no output artifact",
+      "physical quiescence evidence"
+    ],
+    "forbiddenEvidenceSubstitutes": [
+      "host arena tests",
+      "synthetic source-free tests",
+      "zero-step GitHub Actions",
+      "unverified mirror output",
+      "compiler-check without runtime execution"
+    ]
+  }
+}

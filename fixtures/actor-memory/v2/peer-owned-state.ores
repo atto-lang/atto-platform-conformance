@@ -1,0 +1,39 @@
+// Canonical two-instance actor state guest acceptance probe (v2).
+// Backend must compile this source as an actor program and execute the result.
+// Expected stdout multiset: {"1": 2, "2": 2}; interleaving is not specified.
+define actor Counter as
+    state {
+        count: int = 0;
+    }
+
+    pub increment(): int using state.read, state.write {
+        return self.handle_state(critical |s| -> {
+            s.count = s.count + 1;
+            return s.count;
+        });
+    }
+
+    receive(ActorMail<String> mail): void {
+        val next = self.increment();
+        stdio.println(next);
+        if (next == 2) {
+            self.end();
+        } fi
+        return;
+    }
+end
+
+pub async routine main(): void {
+    val a = spawn Counter();
+    val b = spawn Counter();
+    await a.ready;
+    await b.ready;
+    a.send("one");
+    b.send("one");
+    a.send("two");
+    // Runtime must certify A has physically retired before B's final send.
+    await a.done;
+    b.send("two");
+    await b.done;
+    return;
+}

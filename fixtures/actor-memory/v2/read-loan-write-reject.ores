@@ -1,0 +1,11 @@
+// Must reject attempted mutation with only state.read effect/loan.
+// Rejecting the syntax alone is not proof of borrow-checker enforcement.
+define actor Counter as
+    state { count: int = 0; }
+    pub illegal(): int using state.read {
+        return self.handle_state(critical |s| -> {
+            s.count = 99;
+            return s.count;
+        });
+    }
+end

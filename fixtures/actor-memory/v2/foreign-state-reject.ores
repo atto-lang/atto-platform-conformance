@@ -1,0 +1,14 @@
+// Must reject direct mutable state access through another actor's reference.
+// A rejection for a missing actor language feature is UNSUPPORTED, not a pass.
+define actor Counter as
+    state { count: int = 0; }
+end
+
+pub async routine main(): void {
+    val a = spawn Counter();
+    val b = spawn Counter();
+    await a.ready;
+    await b.ready;
+    a.state.count = 99;
+    return;
+}
