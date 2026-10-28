@@ -162,6 +162,20 @@
         "settled-future-not-exempt",
         "physical-retirement-before-lease-reclamation"
       ]
+    },
+    {
+      "id": "sealed-actor-receiver-lease-retirement",
+      "guestVerified": false,
+      "requirements": [
+        "immutable-source-actor-identity",
+        "same-actor-runtime-and-physical-lease-on-launch",
+        "same-owner-revalidated-on-every-resume",
+        "deny-detached-actor-state-copies",
+        "no-younger-user-mail-during-cooperative-turn",
+        "cancel-request-not-physical-retirement",
+        "actor-done-after-cleanup-and-carrier-exit",
+        "multi-actor-receiver-isolation"
+      ]
     }
   ]
 }
