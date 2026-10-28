@@ -53,8 +53,17 @@ export function validateSemanticManifest(doc) {
   }
   return doc;
 }
+// Snapshot the exact manifest bytes used for admission, not merely its parsed
+// cases. This digest is evidence of what was read, NOT source-build attestation.
+export async function loadSemanticManifestSnapshot() {
+  const bytes = await readFile(FILE);
+  return {
+    doc: validateSemanticManifest(JSON.parse(bytes.toString("utf8"))),
+    manifestSha256: sha256(bytes)
+  };
+}
 export async function loadSemanticManifest() {
-  return validateSemanticManifest(JSON.parse(await readFile(FILE, "utf8")));
+  return (await loadSemanticManifestSnapshot()).doc;
 }
 // A subset never certifies all compiler vectors or runtime parity.
 const SUITE_CASE_IDS = Object.freeze({
@@ -89,7 +98,7 @@ export function classifySemanticCompilerResult(c, output) {
     ? "MATCHED_UNATTESTED" : "MISMATCH";
 }
 export async function runSemanticAdmission({backend, argv, sourceSha, timeoutMs = 12000, suite = "all"} = {}) {
-  const doc = await loadSemanticManifest();
+  const {doc, manifestSha256} = await loadSemanticManifestSnapshot();
   if (!TARGETS.includes(backend)) throw Error("unsupported semantic backend");
   const selectedCases = selectSemanticCases(doc, suite);
   const selectedCaseIds = selectedCases.map(c => c.id);
@@ -127,13 +136,19 @@ export async function runSemanticAdmission({backend, argv, sourceSha, timeoutMs 
   if (finalHash !== originalHash) {
     for (const r of results) r.status = "EXECUTABLE_CHANGED";
   }
+  const finalManifestSha256 = await readFile(FILE).then(sha256).catch(() => null);
+  const manifestUnchanged = finalManifestSha256 === manifestSha256;
+  if (!manifestUnchanged) {
+    for (const r of results) r.status = "MANIFEST_CHANGED";
+  }
   const ok = results.length === selectedCases.length &&
     results.every(r => r.status === "MATCHED_UNATTESTED");
   const fullInventoryMatched = ok && suite === "all";
   const status = !ok ? "NOT_VERIFIED" : fullInventoryMatched
     ? "SOURCE_ADMISSION_MATCHED_UNATTESTED" : "SELECTED_SOURCE_ADMISSION_MATCHED_UNATTESTED";
   return {backend, suite, selectedCaseIds, totalCompilerCases:doc.compilerCases.length,
-    fullInventoryMatched, declaredSourceSha:sourceSha, compilerSha256:originalHash,
+    fullInventoryMatched, manifestSha256, manifestUnchanged,
+    declaredSourceSha:sourceSha, compilerSha256:originalHash,
     sourceCases:results, configured:true, ok, status,
     verificationScope:"compiler-source-check-only", runtimeCases:"PENDING",
     guestRuntimeVerified:false, parityVerified:false,
