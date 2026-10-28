@@ -1,0 +1,209 @@
+{
+  "contract": "timer-timeout-observer-v1",
+  "status": "candidate-unattested",
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "requires": [
+    "guest_source_execution",
+    "exact_source_sha",
+    "compiled_guest_binary_identity",
+    "real_executed_steps",
+    "retirement_receipts_where_applicable"
+  ],
+  "cases": [
+    {
+      "id": "sleep_direct_async",
+      "kind": "source_candidate",
+      "source": "pub async fnc main(): int { await time.sleep(1ms); return 42; }",
+      "expected": {
+        "result": 42,
+        "explicit_task_required": false
+      }
+    },
+    {
+      "id": "after_direct_async",
+      "kind": "source_candidate",
+      "source": "pub async fnc main(): int { await time.after(0ms); return 42; }",
+      "expected": {
+        "result": 42,
+        "explicit_task_required": false,
+        "minimum_resume_turns": 1
+      }
+    },
+    {
+      "id": "timeout_direct_async",
+      "kind": "source_candidate",
+      "source": "pub async fnc main(): int { let v = await time.timeout(1s, compute_async()); return v; }",
+      "expected": {
+        "explicit_task_required": false
+      },
+      "note": "Requires independently declared compute_async in source integration fixture"
+    },
+    {
+      "id": "sync_await_reject",
+      "kind": "reject_candidate",
+      "source": "pub fnc main(): int { await time.sleep(1ms); return 42; }",
+      "expected": {
+        "error": "SuspensionEffectError"
+      }
+    },
+    {
+      "id": "negative_duration_reject",
+      "kind": "reject_candidate",
+      "source": "pub async fnc main(): int { await time.sleep(-1ms); return 42; }",
+      "expected": {
+        "error": "InvalidDurationError"
+      }
+    },
+    {
+      "id": "zero_interval_reject",
+      "kind": "reject_candidate",
+      "source": "pub async fnc main(): int { let ticks = time.interval(0ms); return 42; }",
+      "expected": {
+        "error": "InvalidDurationError"
+      }
+    },
+    {
+      "id": "already_terminal_beats_zero_deadline",
+      "kind": "runtime_race",
+      "events": [
+        "producer_success(42)",
+        "timeout_register(0)",
+        "await_observer"
+      ],
+      "expected": {
+        "observer": "success(42)",
+        "producer": "success(42)",
+        "no_extra_task": true
+      }
+    },
+    {
+      "id": "timeout_does_not_cancel_shared_producer",
+      "kind": "runtime_race",
+      "events": [
+        "producer_pending",
+        "timeout_register(0)",
+        "deadline_claim",
+        "producer_success(42)"
+      ],
+      "expected": {
+        "observer": "TimeoutError",
+        "producer": "success(42)",
+        "retained_waiters": 0
+      }
+    },
+    {
+      "id": "observer_cancel_detaches",
+      "kind": "runtime_race",
+      "events": [
+        "producer_pending",
+        "timeout_register(1h)",
+        "observer_cancel",
+        "producer_success(7)"
+      ],
+      "expected": {
+        "observer": "cancelled",
+        "producer": "success(7)",
+        "retained_waiters": 0,
+        "live_timers": 0
+      }
+    },
+    {
+      "id": "source_failure_identity",
+      "kind": "runtime_race",
+      "events": [
+        "producer_fail(original_error)",
+        "timeout_register(1s)"
+      ],
+      "expected": {
+        "observer": "fail(original_error)",
+        "preserve_error_identity": true
+      }
+    },
+    {
+      "id": "cancel_expiry_single_winner",
+      "kind": "runtime_race",
+      "events": [
+        "register(0)",
+        "concurrent(cancel,expire)"
+      ],
+      "expected": {
+        "terminal_count": 1,
+        "timer_slot_releases": 1
+      }
+    },
+    {
+      "id": "owner_close_fences_stale_callback",
+      "kind": "runtime_race",
+      "events": [
+        "register_callback(owner_generation=1)",
+        "owner_close",
+        "reuse_actor_slot(generation=2)",
+        "expire_old"
+      ],
+      "expected": {
+        "guest_callback_calls": 0,
+        "retirement_receipt_required": true
+      }
+    },
+    {
+      "id": "interval_reentrant_second_tick",
+      "kind": "runtime_race",
+      "events": [
+        "interval_next",
+        "tick(1)",
+        "inline_observer(interval_next)",
+        "tick(2)"
+      ],
+      "expected": {
+        "ticks": [
+          1,
+          2
+        ],
+        "missed_tick_backlog": 0,
+        "simultaneous_consumers": 1
+      }
+    },
+    {
+      "id": "interval_cancel_close_once",
+      "kind": "runtime_race",
+      "events": [
+        "register_idle_interval",
+        "concurrent(cancel,owner_close)"
+      ],
+      "expected": {
+        "global_interval_slot_releases": 1
+      }
+    },
+    {
+      "id": "actor_self_callback_await_reject",
+      "kind": "runtime_race",
+      "events": [
+        "actor_serial_handler_register_callback",
+        "actor_serial_handler_await_callback_done"
+      ],
+      "expected": {
+        "error": "SelfAwaitDeadlockError",
+        "guest_callback_calls": 0
+      }
+    },
+    {
+      "id": "callback_never_on_clock_thread",
+      "kind": "runtime_race",
+      "events": [
+        "register_callback",
+        "expire",
+        "dispatch_guest_callback"
+      ],
+      "expected": {
+        "clock_thread_guest_calls": 0,
+        "owner_dispatches": 1
+      }
+    }
+  ]
+}
