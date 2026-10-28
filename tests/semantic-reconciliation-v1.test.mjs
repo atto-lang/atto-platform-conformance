@@ -4,8 +4,13 @@ import {loadSemanticManifest, validateSemanticManifest, classifySemanticCompiler
 
 test("semantic inventory has complete four-backend negative and positive coverage, never implied guest parity", async () => {
  const cases = await loadSemanticManifest();
- assert.equal(cases.compilerCases.length,10);
+ assert.equal(cases.compilerCases.length,12);
  assert.equal(cases.runtimeCases.length,2);
+ const futureMap = cases.compilerCases.filter(c => c.id.startsWith("future-map-"));
+ assert.deepEqual(futureMap.map(c=>c.expect),["accept","reject"]);
+ assert.match(futureMap[0].source,/Future<Future<int>>/);
+ assert.match(futureMap[1].source,/Future<int> pending/);
+ assert.equal(futureMap[1].diagnosticCode,"E_WRAPPER_LAYER");
  assert.equal(cases.status,"TARGET_ONLY_NOT_IMPLEMENTATION_EVIDENCE");
  for(const item of [...cases.compilerCases,...cases.runtimeCases]) {
    assert.deepEqual(Object.keys(item.backends),["java","llvm","net","wasm"]);

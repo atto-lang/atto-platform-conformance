@@ -74,6 +74,35 @@
       }
     },
     {
+      "id": "future-map-preserves-nested-return",
+      "concern": "futures",
+      "expect": "accept",
+      "source": "pub async fnc base(): int { return 20; }\npub async fnc twice(int value): int { return value * 2; }\npub fnc main(): void {\n  val Future<Future<int>> pending = base().map(|int n| -> {\n    return twice(n);\n  });\n  return;\n}\n",
+      "rationale": "Future.map returns Future<U> for callback result U; callback returning Future<int> produces Future<Future<int>> without implicit adoption.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/NESTED_OPTION_FUTURE_EXTRACTION.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "future-map-rejects-implicit-adoption",
+      "concern": "futures",
+      "expect": "reject",
+      "diagnosticCode": "E_WRAPPER_LAYER",
+      "source": "pub async fnc base(): int { return 20; }\npub async fnc twice(int value): int { return value * 2; }\npub fnc main(): void {\n  val Future<int> pending = base().map(|int n| -> {\n    return twice(n);\n  });\n  return;\n}\n",
+      "rationale": "Future.map must not silently flatten a callback-returned Future layer or turn it into a Future<int>.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/blob/main/docs/NESTED_OPTION_FUTURE_EXTRACTION.md",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
       "id": "actor-scoped-critical-write",
       "concern": "actors",
       "expect": "accept",
