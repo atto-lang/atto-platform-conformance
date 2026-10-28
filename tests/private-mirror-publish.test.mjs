@@ -39,7 +39,7 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
       else if(suffix==="/git/trees/"+D+"?recursive=1")
         data=materializedTree||{truncated:false,tree:[
           {path:"snapshots",type:"tree"},
-          {path:"snapshots/checked",type:"tree"},
+          {path:"snapshots/checked",type:"tree",sha:D},
           {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C}
         ]};
       else if(suffix==="/git/blobs"&&method==="POST")
@@ -66,7 +66,7 @@ test("real destination Git-object publisher guards every write and only creates 
  const {h,promise}=run();
  const receipt=await promise;
  assert.deepEqual(receipt,{status:"PRIVATE_MIRROR_PUBLISHED",destination,
-  newBranch:opts.newBranch,sourceCommit:A,commit:E,blobs:1});
+  newBranch:opts.newBranch,sourceCommit:A,sourceTree:D,commit:E,blobs:1});
  const writes=h.events.filter(x=>x.method==="POST");
  assert.deepEqual(writes.map(x=>x.path),[
   destination+"/git/blobs",destination+"/git/trees",
@@ -144,7 +144,7 @@ test("GitHub API errors redact response body and bearer tokens",async()=>{
 
 test("pre-existing destination files under snapshot prefix are rejected before any source blob publication",async()=>{
  for(const existing of [
-   {path:"snapshots/checked",type:"tree"},
+   {path:"snapshots/checked",type:"tree",sha:D},
    {path:"snapshots/checked/old-source.ores",type:"blob"},
    {path:"snapshots",type:"blob"}
  ]){
@@ -266,4 +266,18 @@ test("bounded file-count cap refuses oversized trees before copying any source b
  await assert.rejects(promise,/unsupported source tree size/);
  assert.equal(h.events.some(e=>e.path===source+"/git/blobs/"+C),false);
  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+});
+
+test("materialized subtree Git SHA is required before creating a commit or CI ref",async()=>{
+ for(const subtree of [undefined,E]){
+  const materializedTree={truncated:false,tree:[
+   {path:"snapshots",type:"tree"},
+   {path:"snapshots/checked",type:"tree",sha:subtree},
+   {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C}
+  ]};
+  const {h,promise}=run({materializedTree});
+  await assert.rejects(promise,/materialized snapshot source subtree SHA mismatch/);
+  assert.equal(h.events.some(e=>e.path===destination+"/git/commits"&&e.method==="POST"),false);
+  assert.equal(h.events.some(e=>e.path===destination+"/git/refs"&&e.method==="POST"),false);
+ }
 });
