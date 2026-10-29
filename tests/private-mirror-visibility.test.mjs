@@ -4,7 +4,7 @@ import {createHash} from "node:crypto";
 import {requirePrivateMirror} from "../bin/require-private-mirror.mjs";
 
 const source = "ores-truffle-oreslang/oreslang-source.llvm";
-const A="a".repeat(40),T="d".repeat(40),M="b".repeat(40),C="c".repeat(40),destinationId=1234;
+const A="a".repeat(40),T="d".repeat(40),M="b".repeat(40),C="c".repeat(40),destinationId=1357615104;
 const encoded=text=>({type:"file",encoding:"base64",sha:createHash("sha1").update("blob "+Buffer.byteLength(text)+"\0").update(text).digest("hex"),
   content:Buffer.from(text).toString("base64")});
 const securityOwners="@ORESoftware";
@@ -29,7 +29,7 @@ const rules=()=>({enforce_admins:{enabled:true},
   required_pull_request_reviews:{require_code_owner_reviews:true,
     dismiss_stale_reviews:true,required_approving_review_count:1,
     bypass_pull_request_allowances:{users:[],teams:[],apps:[]}}});
-const destination = "akrion-sim/akrion-sim-e2e";
+const destination = "sagitta-stack/sagitta-infra";
 const incidentPath22="ores-truffle-oreslang/oreslang-platform-conformance/issues/22";
 const incidentPath77="ores-truffle-oreslang/oreslang-platform-conformance/issues/77";
 const incidentPath212="ores-truffle-oreslang/oreslang-platform-conformance/issues/212";
