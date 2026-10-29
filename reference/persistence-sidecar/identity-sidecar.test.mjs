@@ -74,3 +74,22 @@ test('same identity and different named states preserve separate CAS versions',(
     p.close();
   }finally{f.cleanup();}
 });
+
+test('getter-backed identity is snapshotted once for tenant and durable storage key',()=>{
+  const f=fixture();try{
+    const p=f.open();
+    let keyReads=0;
+    const mutable={tenant:'tenant-a',namespace:'commerce',actor_type:'cart',
+      get key(){keyReads++;return keyReads===1?s('stable'):s('poison');}};
+    p.activate({id:mutable,epoch:1});
+    assert.equal(keyReads,1);
+    assert.equal(p.load({id:id(s('stable')),stateName:'main'}).version,0);
+    assert.throws(()=>p.load({id:id(s('poison')),stateName:'main'}),/UNKNOWN_ACTOR_ID/);
+    let tenantReads=0;
+    const hostile={...id(s('hostile')),
+      get tenant(){tenantReads++;return tenantReads===1?'tenant-b':'tenant-a';}};
+    assert.throws(()=>p.activate({id:hostile,epoch:1}),/WRONG_TENANT/);
+    assert.equal(tenantReads,1);
+    p.close();
+  }finally{f.cleanup();}
+});
