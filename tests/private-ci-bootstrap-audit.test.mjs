@@ -402,7 +402,7 @@ test("bootstrap parser rejects boolean schema and ambiguous policy lines",()=>{
 });
 
 test("GitHub policy file decoder rejects BOM and NUL bytes before policy admission",async()=>{
-  for(const bad of ["\\ufeff"+checks, checks+"\\u0000"]){
+  for(const bad of [String.fromCharCode(0xfeff)+checks, checks+String.fromCharCode(0)]){
     await assert.rejects(run({checks:bad}),/forbidden BOM\/NUL bytes/);
   }
 });
