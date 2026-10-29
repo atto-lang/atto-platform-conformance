@@ -302,3 +302,13 @@ test("GitHub line-wrapped canonical source blob remains independently valid",asy
  assert.equal(posted.body.content,"NDI7Cg==",
    "publish only normalized SHA-verified base64 bytes");
 });
+
+test("portable source path guard rejects Windows device names before mutation", async () => {
+  for (const path of ["CON", "AUX.ores", "NUL.JSON", "COM1.txt", "LPT9", "foo."]) {
+    const {h,promise}=run({sourceTree:{truncated:false,tree:[
+      {type:"blob",path,sha:C,size:4,mode:"100644"}
+    ]}});
+    await assert.rejects(promise,/unsafe or oversized private source tree entry/);
+    assert.equal(h.events.filter(x=>x.method==="POST").length,0);
+  }
+});
