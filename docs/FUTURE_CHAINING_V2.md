@@ -52,9 +52,12 @@ stage merely because it implements `java.util.concurrent.Future`. An owning
 has no right to revoke unrelated consumers' work.
 
 A `CancellationException` reached through exceptional-completion propagation
-is **not itself proof** of authenticated cancellation. The Java bridge may
-recognize cancellation only if its host `Future` reports a cancelled state;
-a stage without reliable cancellation state must preserve the exceptional
+is **not itself proof** of authenticated cancellation. The Java bridge requires
+**both** a cancellation-shaped terminal exception and the foreign
+`Future.isCancelled()` host state before mapping into CANCELLED. A host stage
+that spuriously reports `isCancelled() == true` while supplying an unrelated
+`IllegalStateException` must remain FAILED and retain the original error.
+A stage without reliable cancellation state must preserve the exceptional
 failure rather than invent cancellation authority. Host implementations can
 differ in what `isCancelled()` means: `CompletableFuture` itself treats direct
 exceptional completion with `CancellationException` as cancelled. This means
