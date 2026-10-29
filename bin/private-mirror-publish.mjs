@@ -15,7 +15,7 @@ const BRANCH=/^ci\/private-[A-Za-z0-9][A-Za-z0-9._-]{0,75}$/;
 
 // Do not silently rewrite source/destination path components. Git on macOS
 // or Windows may otherwise materialize a different path than the pinned tree.
-const WINDOWS_DEVICE=/^(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\\.|$)/i;
+const WINDOWS_DEVICE=/^(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|$)/i;
 function validPath(path) {
   return typeof path==="string" && path.length<=512 && PATH.test(path) &&
     path.split("/").every(x=>x!=="."&&x!==".."&&x.toLowerCase()!==".git"&&
