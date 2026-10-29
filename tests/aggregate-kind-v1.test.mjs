@@ -32,6 +32,12 @@ function validate(m, load = source) {
     ["forge","java-graalvm","llvm","net","wasm"]);
   assert.ok(Object.values(m.backendClaims).every(v =>
     v === "pending-exact-head" || v === "not-yet-proven"));
+  const evidenceKeys = [
+    "exactHeadMaven", "exactHeadNative", "llvmGuest", "wasm32Guest",
+    "netNativeAot", "forgeGuest", "formatterRoundtrip"
+  ];
+  assert.deepEqual(Object.keys(m.evidence).sort(), evidenceKeys.sort(),
+    "must retain all seven explicit unverified evidence fields");
   assert.ok(Object.values(m.evidence).every(v => v === false));
   const seen = new Set();
   for (const c of m.cases) {
@@ -61,6 +67,21 @@ test("aggregate kinds: reject invented native parity", () => {
   const m = structuredClone(original);
   m.backendClaims.llvm = "verified";
   assert.throws(() => validate(m));
+});
+test("aggregate kinds: missing or renamed evidence fields fail closed", () => {
+  const missing = structuredClone(original);
+  missing.evidence = {};
+  assert.throws(() => validate(missing), /must retain all seven/);
+  const removed = structuredClone(original);
+  delete removed.evidence.llvmGuest;
+  assert.throws(() => validate(removed), /must retain all seven/);
+  const renamed = structuredClone(original);
+  renamed.evidence.llvmGuestVerified = renamed.evidence.llvmGuest;
+  delete renamed.evidence.llvmGuest;
+  assert.throws(() => validate(renamed), /must retain all seven/);
+  const unexpected = structuredClone(original);
+  unexpected.evidence.unreviewedCompiler = false;
+  assert.throws(() => validate(unexpected), /must retain all seven/);
 });
 test("aggregate kinds: reject fabricated Java execution", () => {
   const m = structuredClone(original);
