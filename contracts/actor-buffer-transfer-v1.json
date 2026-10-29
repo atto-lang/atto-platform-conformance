@@ -373,6 +373,139 @@
           "expect": 99
         }
       ]
+    },
+    {
+      "id": "bounded-mailbox-rejection-preserves-sender",
+      "expectedPayloadCopies": 0,
+      "steps": [
+        {
+          "op": "alloc",
+          "handle": "h",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 3
+        },
+        {
+          "op": "alloc",
+          "handle": "h2",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 2
+        },
+        {
+          "op": "queue_send",
+          "queue": "inbox",
+          "capacity": 1,
+          "handle": "h",
+          "as": "actor1@1",
+          "to": "actor2@1"
+        },
+        {
+          "op": "queue_send",
+          "queue": "inbox",
+          "capacity": 1,
+          "handle": "h2",
+          "as": "actor1@1",
+          "to": "actor2@1",
+          "reject": "BACKPRESSURE"
+        },
+        {
+          "op": "read",
+          "handle": "h2",
+          "as": "actor1@1",
+          "index": 0,
+          "expect": 0
+        },
+        {
+          "op": "queue_receive",
+          "queue": "inbox",
+          "as": "actor2@1",
+          "out": "received"
+        },
+        {
+          "op": "read",
+          "handle": "received",
+          "as": "actor2@1",
+          "index": 0,
+          "expect": 0
+        },
+        {
+          "op": "read",
+          "handle": "h",
+          "as": "actor1@1",
+          "index": 0,
+          "reject": "STALE"
+        }
+      ]
+    },
+    {
+      "id": "mailbox-close-drains-accepted-data-and-preserves-rejected-owner",
+      "expectedPayloadCopies": 0,
+      "steps": [
+        {
+          "op": "alloc",
+          "handle": "h",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 4
+        },
+        {
+          "op": "alloc",
+          "handle": "h2",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 4
+        },
+        {
+          "op": "queue_send",
+          "queue": "inbox",
+          "capacity": 1,
+          "handle": "h",
+          "as": "actor1@1",
+          "to": "actor2@1"
+        },
+        {
+          "op": "queue_close",
+          "queue": "inbox"
+        },
+        {
+          "op": "queue_send",
+          "queue": "inbox",
+          "capacity": 1,
+          "handle": "h2",
+          "as": "actor1@1",
+          "to": "actor2@1",
+          "reject": "CLOSED"
+        },
+        {
+          "op": "read",
+          "handle": "h2",
+          "as": "actor1@1",
+          "index": 0,
+          "expect": 0
+        },
+        {
+          "op": "read",
+          "handle": "h",
+          "as": "actor2@1",
+          "index": 0,
+          "reject": "STALE"
+        },
+        {
+          "op": "queue_receive",
+          "queue": "inbox",
+          "as": "actor2@1",
+          "out": "none",
+          "reject": "CLOSED"
+        },
+        {
+          "op": "alloc",
+          "handle": "max",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 12
+        }
+      ]
     }
   ]
 }
