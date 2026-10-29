@@ -66,8 +66,16 @@ Test cases should include: cancellation of a borrowed adapter while the host
 stage and independent observer continue; explicit host cancellation; propagated
 `CancellationException` on an uncancelled dependent stage (must stay FAILED);
 late host completion after observer cancellation; and a completion/cancellation
-race. Separately verify that a terminal Future's host notification-drain
-receipt does **not** imply physical `Task.get_done()` retirement.
+race. A generic foreign `CompletionStage` does not provide callback
+unregistration, so the adapter's completion closure should retain the
+Oreslang observer only **weakly**. This prevents a permanently pending host
+stage from retaining a dropped observer's actor/task object graph while still
+allowing a strongly held observer to receive ordinary completion. A retained,
+late foreign callback must not resurrect cancellation. Weak capture does not
+guarantee collection, unsubscribe the foreign callback, or establish a bounded
+foreign-stage registration budget; those remain separate integration concerns.
+Separately verify that a terminal Future's host notification-drain receipt
+does **not** imply physical `Task.get_done()` retirement.
 
 The Java test target is
 `src/test/java/dev/oreslang/runtime/OresFutureHostAdapterIsolationTest.java`
