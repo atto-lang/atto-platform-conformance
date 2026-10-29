@@ -105,7 +105,9 @@ test("reject fake step successes, mutated job order and clock provenance",()=>{
     x=>x.ci.executedSteps[1].name="Pre Download actor",
     x=>x.ci.executedSteps[1].extraPassed=true,
     x=>x.ci.executedSteps[0]="Build pinned compiler",
-    x=>x.ci.executedSteps[1].startedAt="2026-10-27T23:59:57Z"
+    x=>x.ci.executedSteps[1].startedAt="2026-10-27T23:59:57Z",
+    x=>x.ci.executedSteps[0].completedAt="2026-10-28T00:00:04Z",
+    x=>x.ci.executedSteps[1].startedAt="2026-10-28T00:00:00Z"
   ]){const e=evidence();mutate(e);assert.throws(()=>validateIsolationClaim(run(),e),BAD);}
 });
 test("deliberate foreign access, outstanding loan and stale handle violations fail",()=>{
