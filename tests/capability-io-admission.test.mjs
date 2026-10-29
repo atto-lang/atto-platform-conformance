@@ -255,3 +255,43 @@ test('filesystem path alias is separately checked before authorization', () => {
     resource:'/allowed/file',destination:'/other/file'});
   assert.equal(broker.admit(actor,original).status,'DENIED_PERMISSION');
 });
+
+test('global shutdown fences all dispatch, keeps credits until host quiescence', () => {
+  const broker = fixture({maxInFlight:2});
+  const a = broker.registerActor();
+  const b = broker.registerActor();
+  const bound = target(broker);
+  const first = admission(broker,a,bound);
+  const second = admission(broker,b,bound);
+  assert.equal(broker.dispatch(a,first,bound),true);
+  assert.equal(broker.shutdown(),true);
+  assert.equal(broker.shutdown(),false);
+  assert.equal(broker.snapshot().closed,true);
+  assert.equal(broker.snapshot().inFlight,2);
+  assert.equal(broker.dispatch(b,second,bound),false);
+  assert.equal(broker.admit(a,bound).status,'DENIED_SHUTDOWN');
+  assert.throws(()=>broker.registerActor(),/shut down/);
+  assert.throws(()=>target(broker),/shut down/);
+  assert.equal(broker.retire(a,first,false),false);
+  assert.equal(broker.complete(a,first),true);
+  assert.equal(broker.retire(a,first,true),true);
+  assert.equal(broker.retire(b,second,true),true);
+  assert.equal(broker.snapshot().inFlight,0);
+});
+
+test('authorization callback cannot commit admission after global shutdown', () => {
+  const open=allow();
+  let broker;
+  broker = new ReferenceCapabilityIoBroker({
+    layers:{host:open,artifact:open,runtime:open,actor:open,delegated:open},
+    maxInFlight:1,
+    scopeMatches(_permission,resource,scope) {
+      broker.shutdown();
+      return resource===scope;
+    }
+  });
+  const actor=broker.registerActor();
+  const bound=target(broker);
+  assert.equal(broker.admit(actor,bound).status,'DENIED_SHUTDOWN');
+  assert.equal(broker.snapshot().inFlight,0);
+});
