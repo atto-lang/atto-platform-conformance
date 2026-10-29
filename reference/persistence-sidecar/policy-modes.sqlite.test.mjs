@@ -182,3 +182,21 @@ test('event reducer cannot reenter actor state while staging command',()=>{
     db.close();
   } finally {f.close();}
 });
+
+test('stale actor epoch cannot restore durable state after migration',()=>{
+  const f=fixture();
+  try {
+    const db=f.open();
+    db.grantEpoch({tenantId:'tenant-a',actor:'counter',epoch:1});
+    const first=create(db,'#snapshot',{epoch:1});
+    first.stage_snapshot('before-migration',s=>{s.count=31;});
+    first.apply_commit(db.flush()[0]);
+    db.grantEpoch({tenantId:'tenant-a',actor:'counter',epoch:2});
+    const stale=create(db,'#snapshot',{epoch:1});
+    assert.throws(()=>stale.restore(),/STALE_EPOCH/);
+    const current=create(db,'#snapshot',{epoch:2});
+    current.restore();
+    assert.equal(read(current),31);
+    db.close();
+  } finally {f.close();}
+});
