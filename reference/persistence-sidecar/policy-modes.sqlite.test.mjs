@@ -106,3 +106,79 @@ test('real SQLite stale epochs and serialization restrictions reject unsafe writ
     db.close();
   } finally {f.close();}
 });
+
+test('forged committed ACK cannot publish state without a persisted op',()=>{
+  const f=fixture();
+  try {
+    const db=f.open();
+    db.grantEpoch({tenantId:'tenant-a',actor:'counter',epoch:1});
+    const actor=create(db,'#snapshot');
+    actor.stage_snapshot('forgery',s=>{s.count=777;});
+    const fake={opId:'forgery',status:'committed',durable:true,version:1};
+    assert.throws(()=>actor.apply_commit(fake),/OUTCOME_UNKNOWN/);
+    assert.equal(read(actor),0);
+    assert.equal(actor.has_pending_write,true);
+    assert.equal(db.load({tenantId:'tenant-a',actor:'counter',stateName:'main'}).version,0);
+    assert.equal(db.flush()[0].status,'committed');
+    actor.apply_commit(fake);
+    assert.equal(read(actor),777);
+    db.close();
+  } finally {f.close();}
+});
+
+test('provider verifies original payload digest, epoch and version',()=>{
+  const f=fixture();
+  try {
+    const db=f.open();
+    db.grantEpoch({tenantId:'tenant-a',actor:'counter',epoch:1});
+    const e={tenantId:'tenant-a',actor:'counter',stateName:'main',opId:'proof-1',epoch:1,
+      expectedVersion:0,kind:'snapshot',schemaVersion:1,payload:Buffer.from('{"count":8}')};
+    db.enqueue(e);
+    assert.equal(db.verifyCommit(e),null);
+    assert.equal(db.flush()[0].status,'committed');
+    assert.equal(db.verifyCommit(e).version,1);
+    assert.throws(()=>db.verifyCommit({...e,payload:Buffer.from('{"count":9}')}),/COMMIT_MISMATCH/);
+    assert.throws(()=>db.verifyCommit({...e,expectedVersion:1}),/COMMIT_MISMATCH/);
+    db.grantEpoch({tenantId:'tenant-a',actor:'counter',epoch:2});
+    assert.throws(()=>db.verifyCommit(e),/STALE_EPOCH/);
+    db.close();
+  } finally {f.close();}
+});
+
+test('nested critical-write and snapshot mutation are rejected before enqueue',()=>{
+  const actor=create(null,'#none');
+  assert.throws(()=>actor.handle_state('critical-write',s=>{
+    actor.handle_state('critical-write',inner=>{inner.count=99;});
+    s.count=11;
+  }),/ACTOR_REENTRANCY_DENIED/);
+  assert.equal(read(actor),0);
+  const f=fixture();
+  try {
+    const db=f.open();
+    db.grantEpoch({tenantId:'tenant-a',actor:'counter',epoch:1});
+    const durable=create(db,'#snapshot');
+    assert.throws(()=>durable.stage_snapshot('outer',draft=>{
+      durable.stage_snapshot('inner',inner=>{inner.count=99;});
+      draft.count=11;
+    }),/ACTOR_REENTRANCY_DENIED/);
+    assert.equal(db.flush().length,0);
+    assert.equal(durable.has_pending_write,false);
+    db.close();
+  } finally {f.close();}
+});
+
+test('event reducer cannot reenter actor state while staging command',()=>{
+  const f=fixture();
+  try {
+    const db=f.open();
+    db.grantEpoch({tenantId:'tenant-a',actor:'counter',epoch:1});
+    let actor;
+    actor=create(db,'#event_sourced',{reducer:(s,e)=>{
+      actor.handle_state('critical-read',state=>state.count);
+      return {count:s.count+e.delta};
+    }});
+    assert.throws(()=>actor.stage_event('reenter',{delta:3}),/ACTOR_REENTRANCY_DENIED/);
+    assert.equal(db.flush().length,0);
+    db.close();
+  } finally {f.close();}
+});
