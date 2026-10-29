@@ -73,3 +73,21 @@ After protections and runner admission, execute Java and LLVM exact-head, genuin
 ## Review requirements
 
 Conformance [PR #203](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/pull/203) and alternative synthetic [PR #14](https://github.com/honeypot-r-us-test/hnpt-e2e/pull/14) remain **draft**. No independent source authorization or production merge is implied by this runbook.
+
+
+## P0-D — Extract the provider's actual failed-job annotations (requires Checks read)
+
+The GitHub Actions app (ID 15368) published **two check annotations** for the source-local runner-admission job on exact SHA `7d9620f2cd64c5b128ff267086ba9d4830114f1f`. The linked GitHub App integration can see the annotations count but is denied access to their messages. An administrator with an appropriately authorized `gh` login can retrieve these **without any new workflow run or source checkout**:
+
+```sh
+# From the reviewed conformance PR #203 working tree. No token in argv or output.
+node scripts/collect-source-runner-failure.mjs \
+  40815105000 1 7d9620f2cd64c5b128ff267086ba9d4830114f1f \
+  ci/source-local-runner-admission-20261028
+```
+
+The collector only reads the exact run, its exact-attempt job page, and the corresponding GitHub check-run annotations from the *same source repository*. It validates run ID, attempt, repository, SHA, branch, workflow path and unique job identity, redacts common token patterns, and returns a diagnostic receipt with `sourceExportAuthorized:false` and `guestExecutionProven:false`. Exit **1** means a correctly identified zero-runner job; exit **2** means the read/identity gate failed; exit **0** means the job was not a preallocation failure, **not** that its compiler/runtime or security gates passed. Review provider annotation text for sensitive content before sharing it in an issue.
+
+The exact commit-pinned Node test suite is `node --test tests/collect-source-runner-failure.test.mjs` and contains 28 source-free positive/negative cases. The triage script is deliberately not an export driver or branch-protection writer.
+
+**Additional reconciliation:** conformance's independent draft bootstrap auditor in PR #57 still pins policy workflow blobs that are not equal to the current `.NET/Wasm/Forge` `main` policy workflow blob `fa03fc77b5e253a8b51c875f72359b18f82f1cf7` (its draft auditor pins `1e18ea42fc8a819e26a90f9b2dfea7cbdc129e76`). Java and LLVM do not yet have that exact canonical policy path on current `main`. These are **hard bootstrap review/pinning discrepancies**, not a reason to automatically accept a new blob or weaken the pinned policy. Reconcile workflow versions and re-review source identities, ownership, and exact security checks before trying to pass the bootstrap auditor; never silently repin security-sensitive workflow identities.
