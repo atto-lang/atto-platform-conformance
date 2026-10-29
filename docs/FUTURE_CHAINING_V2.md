@@ -43,6 +43,39 @@ Only `snake_case` is canonical for newly specified Oreslang methods. Do not sile
 5. `Future.all/zip/any/race` observe existing Futures; do not treat fail-fast result settlement as producer retirement. `Task.parallel_limit` admits lazy child TaskSteps, holds concurrency credits until `get_done` confirms retirement, and drains owned children before scope reclamation. Preserve parent cancellation/authentic ownership boundaries and stable error aggregation.
 6. Retry operates on a *new* Step per attempt with explicit idempotence/effects, bounded attempts, timeouts/backoff and admission quotas. Never retry an existing settled Future. Stream `merge_map`/etc require bounded demand, with `switch_map` only cancelling owned inner work.
 
+### 3.1. Cross-runtime host-stage observation (Java and analogous foreign futures)
+
+The Java `OresFuture.from(CompletionStage<T>)` bridge is an **observer adapter**:
+cancelling the observed `OresFuture` must not call `cancel()` on its foreign
+stage merely because it implements `java.util.concurrent.Future`. An owning
+`TaskScope` or capability may cancel the producer separately; an observer
+has no right to revoke unrelated consumers' work.
+
+A `CancellationException` reached through exceptional-completion propagation
+is **not itself proof** of authenticated cancellation. The Java bridge may
+recognize cancellation only if its host `Future` reports a cancelled state;
+a stage without reliable cancellation state must preserve the exceptional
+failure rather than invent cancellation authority. Host implementations can
+differ in what `isCancelled()` means: `CompletableFuture` itself treats direct
+exceptional completion with `CancellationException` as cancelled. This means
+a foreign stage's reported cancellation is a host signal, **not cryptographic
+or Oreslang-owner authentication**. Full guest-level authenticated cancellation
+continues to require an Oreslang runtime-owned outcome/capability.
+
+Test cases should include: cancellation of a borrowed adapter while the host
+stage and independent observer continue; explicit host cancellation; propagated
+`CancellationException` on an uncancelled dependent stage (must stay FAILED);
+late host completion after observer cancellation; and a completion/cancellation
+race. Separately verify that a terminal Future's host notification-drain
+receipt does **not** imply physical `Task.get_done()` retirement.
+
+The Java test target is
+`src/test/java/dev/oreslang/runtime/OresFutureHostAdapterIsolationTest.java`
+on draft #2201. These are host-runtime regression tests only. They cannot be
+used as substitutes for source-language guest execution, Native Image, actor
+generation fencing, or independent backend receipts. Status is **PENDING** until
+the exact-head Java JUnit suite actually executes.
+
 ## 4. Acceptance and evidence
 
 The manifest records four positive guest-source targets plus four negative type-check targets, including deeper nested Futures that must retain their remaining layer after `flat_map`. These are *not* assertions of current backend support. Targets: Java/GraalVM (JVM and Native Image), LLVM native, .NET full NativeAOT, wasm32 guest, Forge native. Unsupported semantics must fail closed, without parser-only success being reported as runtime support.
