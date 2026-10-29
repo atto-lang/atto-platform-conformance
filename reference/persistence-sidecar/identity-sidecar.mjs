@@ -1,6 +1,6 @@
 // Trusted-host integration reference ONLY. Not an authenticated network service.
 import { BatchPersistenceSidecar, AdmissionError } from './sidecar.mjs';
-import { encode_actor_id, actor_storage_key } from './identity.mjs';
+import { encode_actor_id, decode_actor_id, actor_storage_key_from_bytes } from './identity.mjs';
 
 const deny = code => { throw new AdmissionError(code); };
 
@@ -22,11 +22,14 @@ export class TrustedActorIdentitySidecar {
     this.#insert = this.#engine.db.prepare('INSERT INTO actor_id_bindings VALUES(?,?,?)');
   }
   #binding(id, create) {
-    if (!id || id.tenant !== this.#tenant) deny('WRONG_TENANT');
-    // Fail closed for invalid, noncanonical or oversized logical identity input.
-    let bytes, actor;
-    try { bytes = encode_actor_id(id); actor = actor_storage_key(id); }
-    catch { deny('INVALID_ACTOR_ID'); }
+    // Canonicalize just once: untrusted mutable JS accessors must not change tenant or hash later.
+    let bytes, actor, tenant;
+    try {
+      bytes = encode_actor_id(id);
+      tenant = decode_actor_id(bytes).tenant;
+      actor = actor_storage_key_from_bytes(bytes);
+    } catch { deny('INVALID_ACTOR_ID'); }
+    if (tenant !== this.#tenant) deny('WRONG_TENANT');
     if (create) {
       this.#engine.db.exec('BEGIN IMMEDIATE');
       try {
