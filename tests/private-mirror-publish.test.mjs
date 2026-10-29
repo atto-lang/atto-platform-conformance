@@ -312,3 +312,21 @@ test("portable source path guard rejects Windows device names before mutation", 
     assert.equal(h.events.filter(x=>x.method==="POST").length,0);
   }
 });
+
+test("file-directory aliases are refused before source byte reads or destination writes", async () => {
+  for (const names of [["cache","cache/child.ores"],["cache/child.ores","cache"],["Cache","cache/child.ores"]]) {
+    const sourceTree={truncated:false,tree:names.map(path=>
+      ({type:"blob",path,sha:C,size:4,mode:"100644"}))};
+    const {h,promise}=run({sourceTree});
+    await assert.rejects(promise,/file\/directory-alias source path/);
+    assert.equal(h.events.filter(x=>x.method==="POST").length,0);
+    assert.equal(h.events.some(x=>x.path===source+"/git/blobs/"+C),false);
+  }
+});
+test("portable destination prefix cannot be a reserved Windows path", async () => {
+  for (const prefix of ["CON", "run/COM1.txt", "reports/AUX.ores", "cache/dir."]) {
+    const {h,promise}=run({}, {prefix});
+    await assert.rejects(promise,/invalid destination prefix/);
+    assert.equal(h.events.length,0);
+  }
+});
