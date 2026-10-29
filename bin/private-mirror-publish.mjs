@@ -13,9 +13,13 @@ const OID=/^[a-f0-9]{40}$/;
 const PATH=/^[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*$/;
 const BRANCH=/^ci\/private-[A-Za-z0-9][A-Za-z0-9._-]{0,75}$/;
 
+// Do not silently rewrite source/destination path components. Git on macOS
+// or Windows may otherwise materialize a different path than the pinned tree.
+const WINDOWS_DEVICE=/^(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\\.|$)/i;
 function validPath(path) {
   return typeof path==="string" && path.length<=512 && PATH.test(path) &&
-    path.split("/").every(x=>x!=="."&&x!==".."&&x.toLowerCase()!==".git");
+    path.split("/").every(x=>x!=="."&&x!==".."&&x.toLowerCase()!==".git"&&
+      !x.endsWith(".")&&!WINDOWS_DEVICE.test(x));
 }
 function sha(value) {
   if(typeof value!=="string"||!OID.test(value))throw Error("invalid immutable Git commit or blob SHA");
@@ -96,6 +100,16 @@ export async function publishPrivateMirror({
     paths.add(folded);
     totalBytes+=file.size;
     if(totalBytes>41943040)throw Error("private mirror exceeds 40MiB limit");
+  }
+  // Reject anomalous Git-tree API responses that claim both a regular file
+  // and a directory at the same case-folded pathname. Never read or write
+  // private source bytes until the entire manifest is unambiguous.
+  for(const folded of paths){
+    const segments=folded.split("/");
+    for(let i=1;i<segments.length;i++){
+      if(paths.has(segments.slice(0,i).join("/")))
+        throw Error("file/directory-alias source path");
+    }
   }
   // Fail closed on special paths: executable symlinks and gitlinks are not
   // copied; unknown tree objects must not silently disappear.
