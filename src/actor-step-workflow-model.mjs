@@ -128,6 +128,7 @@ export class ActorStepWorkflowModel {
     const allowed={start:[],task_result:['nodeId','key','worker','outcome','tag','receipt'],
       signal:['nodeId','signal','authority'],cancel:['authority']};
     strictKeys(message,['id','type','tenantId','runId',...allowed[message.type]]);
+    check(Buffer.byteLength(canonical(message),'utf8')<=4096,'MESSAGE_TOO_LARGE');
     if(message.type==='task_result') {
       check(durableId(message.nodeId) && nonempty(message.key) &&
         nonempty(message.worker) && (message.outcome==='ok'||message.outcome==='error') &&
@@ -138,7 +139,6 @@ export class ActorStepWorkflowModel {
     } else if(message.type==='cancel') {
       check(nonempty(message.authority), 'BAD_CANCEL');
     }
-    check(Buffer.byteLength(canonical(message),'utf8')<=4096,'MESSAGE_TOO_LARGE');
     const db=this.snapshot();
     if(has(db.seen,message.id)) {
       check(db.seen[message.id]===digest(message), 'DELIVERY_CONFLICT');return false;
