@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - diag/source-free-persistence-runner-20261029
+  pull_request:
+    branches:
+      - feat/actor-persistence-symbol-modes-20261029
   workflow_dispatch:
 permissions: {}
 jobs:
