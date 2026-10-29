@@ -19,12 +19,19 @@ class FakeSidecar {
         continue;
       }
       row.version++;
-      if(e.kind==='snapshot') row.snapshot={version:row.version,schemaVersion:e.schemaVersion,payload:Buffer.from(e.payload)};
-      else row.events.push({version:row.version,schemaVersion:e.schemaVersion,payload:Buffer.from(e.payload)});
+      if(e.kind==='snapshot') row.snapshot={version:row.version,schemaVersion:e.schemaVersion,opId:e.opId,payload:Buffer.from(e.payload)};
+      else row.events.push({version:row.version,schemaVersion:e.schemaVersion,opId:e.opId,payload:Buffer.from(e.payload)});
       this.store.set(key,row);
       results.push({opId:e.opId,status:'committed',durable:true,version:row.version});
     }
     return results;
+  }
+  verifyCommit(e) {
+    const row=this.load(e);
+    const saved=e.kind==='snapshot'?row.snapshot:row.events.find(x=>x.opId===e.opId);
+    if(!saved || saved.opId!==e.opId || saved.version!==e.expectedVersion+1 ||
+       saved.schemaVersion!==e.schemaVersion || !saved.payload.equals(e.payload)) return null;
+    return {opId:e.opId,status:'committed',durable:true,version:saved.version};
   }
   load({tenantId,actor,stateName}) {
     const row=this.store.get(JSON.stringify([tenantId,actor,stateName]));
