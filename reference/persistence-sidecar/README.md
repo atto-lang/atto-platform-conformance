@@ -10,6 +10,8 @@ node --disable-warning=ExperimentalWarning --test reference/persistence-sidecar/
 
 The Node built-in `DatabaseSync` uses synchronous SQLite operations: **never run this implementation on an Oreslang actor scheduler carrier**. Production sidecars require async native I/O suspension and a provider interface, plus a trusted control-plane channel for epoch grants.
 
+The [four symbol persistence modes and sealed-state contract](../../docs/PERSISTENCE_SYMBOL_MODES_V1.md) are modeled in `policy-modes.mjs`. Run all model and real SQLite host reference tests with `node --disable-warning=ExperimentalWarning --test reference/persistence-sidecar/*.test.mjs`. The policy adapter verifies the stored operation digest, current activation epoch and version before publishing committed state, and rejects nested lexical mutations. These remain **host-only** results, not source-compiled Oreslang actor or VM-isolate tests.
+
 ## Data and isolation
 
 One `BatchPersistenceSidecar` instance has a single configured tenant. An actor's bytes are copied on admission, not borrowed; the sidecar never obtains source actor heap pointers. The trusted directory/controller alone can invoke `grantEpoch`; the reference model does **not** expose a secure network endpoint or authenticate control-plane calls.
