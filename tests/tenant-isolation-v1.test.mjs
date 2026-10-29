@@ -122,7 +122,7 @@ test("shutdown fences new admission and waits for a real inflight turn",async()=
   await started;
   fails(()=>vm.stop(h),"DRAIN_REQUIRED");
   vm.shutdown(h);
-  fails(()=>vm.invoke(h,()=>1),"ADMISSION_CLOSED");
+  await assert.rejects(vm.invoke(h,()=>1),/ADMISSION_CLOSED/);
   fails(()=>vm.stop(h),"DRAIN_REQUIRED");
   release();
   assert.equal(await call,3);
