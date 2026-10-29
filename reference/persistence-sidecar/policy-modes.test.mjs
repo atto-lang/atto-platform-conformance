@@ -33,6 +33,10 @@ class FakeSidecar {
        saved.schemaVersion!==e.schemaVersion || !saved.payload.equals(e.payload)) return null;
     return {opId:e.opId,status:'committed',durable:true,version:saved.version};
   }
+  loadFenced({tenantId,actor,stateName,epoch}) {
+    if(!Number.isSafeInteger(epoch) || epoch < 1) throw new Error('STALE_EPOCH');
+    return this.load({tenantId,actor,stateName});
+  }
   load({tenantId,actor,stateName}) {
     const row=this.store.get(JSON.stringify([tenantId,actor,stateName]));
     return row??{version:0,snapshot:null,events:[]};
