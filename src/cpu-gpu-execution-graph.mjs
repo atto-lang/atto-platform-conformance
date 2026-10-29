@@ -150,28 +150,49 @@ export function lower(root,{parameters={}}={}){
   nodes:Object.freeze(nodes.slice())});
 }
 /** Test oracle only: no device, transfer, asynchronous or actor scheduler. */
+/** Conservative CPU-only *reference* executor, never GPU/async or guest source proof.
+ * An externally supplied graph is not trusted merely because it has schemaVersion 1.
+ * Re-validate canonical SSA operands, sequencing edges and integer encoding before use.
+ */
 export function executeCpuI64(graph){
- if(!record(graph)||graph.schemaVersion!==1||graph.resultType!=="i64"||
-    !Array.isArray(graph.nodes)||!Number.isInteger(graph.returnId)||
-    graph.returnId<0||graph.returnId>=graph.nodes.length||graph.nodes.length>maxNodes)
-  bad("INVALID_GRAPH","CPU i64 oracle requires verified i64 graph");
+ const exactKeys=(value,required)=>record(value)&&
+   Object.keys(value).length===required.length&&required.every(k=>Object.hasOwn(value,k));
+ if(!exactKeys(graph,["schemaVersion","resultType","returnId","deviceKernels","effects","nodes"])||
+    graph.schemaVersion!==1||graph.resultType!=="i64"||!Number.isInteger(graph.deviceKernels)||
+    !Array.isArray(graph.effects)||!Array.isArray(graph.nodes)||graph.nodes.length<1||
+    graph.nodes.length>maxNodes||graph.returnId!==graph.nodes.length-1)
+   bad("INVALID_GRAPH","CPU-only i64 graph header or terminal value invalid");
+ if(graph.deviceKernels!==0||graph.effects.length!==1||graph.effects[0]!=="Host")
+   bad("DEVICE_OR_ASYNC_UNAVAILABLE","CPU-only oracle cannot execute device, transfer or async effects");
  const values=[];
  for(let i=0;i<graph.nodes.length;i++){
-  const n=graph.nodes[i];
-  if(!record(n)||n.id!==i||n.domain!=="CPU"||
-     !Array.isArray(n.dependencies)||n.dependencies.some(d=>!Number.isInteger(d)||d<0||d>=i))
-   bad("DEVICE_OR_ASYNC_UNAVAILABLE","CPU oracle has no GPU, transfer or async provider");
-  if(n.opcode==="CONST_I64"){
-   if(n.type!=="i64"||typeof n.meta?.value!=="string")bad("INVALID_GRAPH","constant");
-   values[i]=checked(BigInt(n.meta.value));
-  }else if(n.opcode==="ADD_I64"){
-   const {left,right}=n.meta||{};
-   if(!Number.isInteger(left)||!Number.isInteger(right)||left<0||right<0||
-      left>=i||right>=i||!n.dependencies.includes(left)||!n.dependencies.includes(right)||
-      graph.nodes[left].type!=="i64"||graph.nodes[right].type!=="i64")
-    bad("INVALID_GRAPH","ADD operand IDs must be prior typed SSA values");
-   values[i]=checked(values[left]+values[right]);
-  }else bad("DEVICE_OR_ASYNC_UNAVAILABLE","unsupported CPU-only opcode");
+   const n=graph.nodes[i];
+   if(!exactKeys(n,["id","opcode","domain","type","dependencies","meta"])||
+      n.id!==i||n.domain!=="CPU"||n.type!=="i64"||
+      !Array.isArray(n.dependencies)||!record(n.meta))
+     bad("INVALID_GRAPH","CPU i64 node shape invalid");
+   const expected=i===0?[]:[i-1];
+   if(n.opcode==="CONST_I64"){
+     if(!exactKeys(n.meta,["value"])||typeof n.meta.value!=="string"||
+        n.meta.value.length>20||!/^(?:0|-[1-9][0-9]*|[1-9][0-9]*)$/.test(n.meta.value))
+       bad("INVALID_GRAPH","constant is not canonical signed i64 text");
+     values[i]=checked(BigInt(n.meta.value));
+   }else if(n.opcode==="ADD_I64"){
+     if(!exactKeys(n.meta,["left","right"]))
+       bad("INVALID_GRAPH","invalid ADD operands");
+     const {left,right}=n.meta;
+     if(!Number.isInteger(left)||!Number.isInteger(right)||
+        left<0||right<0||left>=i||right>=i)
+       bad("INVALID_GRAPH","ADD requires prior SSA operands");
+     expected.push(left,right);
+     values[i]=checked(values[left]+values[right]);
+   }else{
+     bad("DEVICE_OR_ASYNC_UNAVAILABLE","CPU-only reference cannot execute device/async opcodes");
+   }
+   const canonical=[...new Set(expected)].sort((a,b)=>a-b);
+   if(n.dependencies.length!==canonical.length||
+      n.dependencies.some((dep,j)=>dep!==canonical[j]))
+     bad("INVALID_GRAPH","dependencies must equal canonical prior SSA and sequencing edges");
  }
  return values[graph.returnId];
 }
