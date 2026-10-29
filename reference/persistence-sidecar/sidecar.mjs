@@ -145,6 +145,29 @@ export class BatchPersistenceSidecar {
     for (const {e,k} of batch) { this.pending.delete(k); this.queuedBytes -= e.payload.length + 128; }
     return results;
   }
+  // Trusted host-only commit witness: never treat a caller-supplied ACK as storage proof.
+  // An operation's persisted digest, epoch and version must match the original queued bytes.
+  verifyCommit(e) {
+    const {tenantId,actor,stateName,opId,epoch,expectedVersion,kind,schemaVersion,payload} = e ?? {};
+    if (tenantId !== this.tenantId) fail('WRONG_TENANT');
+    if (![actor,stateName,opId].every(ident) || !uint(epoch) || epoch < 1 ||
+        !uint(expectedVersion) || !uint(schemaVersion) || schemaVersion < 1 ||
+        !['snapshot','event'].includes(kind) || !Buffer.isBuffer(payload)) fail('INVALID_COMMIT_PROOF');
+    if (this.getFence.get(tenantId,actor)?.epoch !== epoch) fail('STALE_EPOCH');
+    const op=this.getOp.get(tenantId,actor,stateName,opId);
+    if (!op) return null;
+    if (op.digest !== digest(e) || op.kind !== kind || op.version !== expectedVersion + 1)
+      fail('COMMIT_MISMATCH');
+    return {opId,status:'committed',durable:true,version:op.version};
+  }
+  // Loading durable actor state is activation-scoped; old epochs must not restore it.
+  loadFenced({tenantId,actor,stateName,epoch}) {
+    if (tenantId !== this.tenantId) fail('WRONG_TENANT');
+    if (!ident(actor) || !ident(stateName) || !uint(epoch) || epoch < 1)
+      fail('INVALID_READ');
+    if (this.getFence.get(tenantId,actor)?.epoch !== epoch) fail('STALE_EPOCH');
+    return this.load({tenantId,actor,stateName});
+  }
   load({tenantId,actor,stateName}) {
     if (tenantId !== this.tenantId) fail('WRONG_TENANT');
     if (![actor,stateName].every(ident)) fail('INVALID_READ');
