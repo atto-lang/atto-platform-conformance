@@ -99,6 +99,21 @@ used as substitutes for source-language guest execution, Native Image, actor
 generation fencing, or independent backend receipts. Status is **PENDING** until
 the exact-head Java JUnit suite actually executes.
 
+### 3.2. Source-free fixture admission hardening
+
+The source-free Node harness opens both `manifest.json` and every pinned
+`.ores` fixture using `O_NOFOLLOW | O_NONBLOCK`, then verifies the opened
+file descriptor with `fstat` before reading exact bounded bytes through that
+same descriptor. It rejects symlink swaps, directories, FIFOs, oversized
+inputs, mid-read truncation and growth; platforms lacking these no-follow
+facilities fail closed rather than silently following links. This protects
+harness input admission, **not** guest/compiler runtime sandbox isolation.
+
+The seventh Node test exercises regular-file success and symlink/directory
+rejection. Local mutation probes also confirmed symlinked manifest rejection
+and nonblocking FIFO rejection. All eight guest-source fixtures and their
+existing `sourceGitBlobSha1` identities remain unchanged.
+
 ## 4. Acceptance and evidence
 
 The manifest records four positive guest-source targets plus four negative type-check targets, including deeper nested Futures that must retain their remaining layer after `flat_map`. These are *not* assertions of current backend support. Targets: Java/GraalVM (JVM and Native Image), LLVM native, .NET full NativeAOT, wasm32 guest, Forge native. Unsupported semantics must fail closed, without parser-only success being reported as runtime support.
