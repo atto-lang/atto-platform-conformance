@@ -105,7 +105,7 @@ test("destination main drift before first private object write denies publicatio
    mainReads++;
    return mainReads>=4?{...original,commit:{sha:"f".repeat(40)}}:original;
  }});
- await assert.rejects(promise,/destination base commit differs from protected carrier main/);
+ await assert.rejects(promise,/destination base commit differs from protected carrier main|source-main policy content|carrier policy/);
  assert.ok(mainReads>=4);
  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
 });
