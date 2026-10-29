@@ -114,6 +114,7 @@ test('bad graph: cycles, orphan branches, wrong targets, unbounded retries and r
     {start:'a',nodes:{a:{kind:'task',worker:'w',next:'a',maxAttempts:1}}},
     {start:'a',nodes:{a:{kind:'task',worker:'w',next:'missing',maxAttempts:1}}},
     {start:'a',nodes:{a:{kind:'task',worker:'w',next:null,maxAttempts:99}}},
+    {start:'cancel/foo',nodes:{'cancel/foo':{kind:'succeed'}}},
     {start:'a',nodes:{a:{kind:'succeed'},b:{kind:'fail'}}},
     {start:'a',nodes:{a:{kind:'parallel',branches:['b','c'],next:'done'},b:{kind:'task',worker:'w',next:'done',maxAttempts:1},c:{kind:'task',worker:'w',next:null,maxAttempts:1},done:{kind:'succeed'}}}
   ];
