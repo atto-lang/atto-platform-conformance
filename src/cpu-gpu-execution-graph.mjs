@@ -31,8 +31,9 @@ export const Ast=Object.freeze({
  Await:value=>({kind:"Await",value}),
  Seq:(...values)=>({kind:"Seq",values})
 });
-function snapshot(ast,depth=0){
+function snapshot(ast,depth=0,budget={remaining:maxNodes}){
  if(depth>maxDepth)bad("DEPTH_LIMIT","AST too deep");
+ if(--budget.remaining<0)bad("NODE_LIMIT","AST exceeds total node budget");
  if(!record(ast)||typeof ast.kind!=="string")bad("INVALID_AST","not an AST node");
  const spec={
   CpuRegion:["body","nb"],GpuRegion:["body","nb"],I64:["value"],
@@ -50,16 +51,16 @@ function snapshot(ast,depth=0){
    v={kind:"Param",name:ast.name,type:ast.type};break;
   case "CpuRegion":case "GpuRegion":
    if(typeof ast.nb!=="boolean")bad("INVALID_AST","nb must be boolean");
-   v={kind:ast.kind,body:snapshot(ast.body,depth+1),nb:ast.nb};break;
+   v={kind:ast.kind,body:snapshot(ast.body,depth+1,budget),nb:ast.nb};break;
   case "Add":
-   v={kind:"Add",left:snapshot(ast.left,depth+1),right:snapshot(ast.right,depth+1)};break;
+   v={kind:"Add",left:snapshot(ast.left,depth+1,budget),right:snapshot(ast.right,depth+1,budget)};break;
   case "Kernel":
    if(!id(ast.name))bad("INVALID_KERNEL","name");
-   v={kind:"Kernel",name:ast.name,value:snapshot(ast.value,depth+1)};break;
+   v={kind:"Kernel",name:ast.name,value:snapshot(ast.value,depth+1,budget)};break;
   case "Seq":
    if(!Array.isArray(ast.values)||ast.values.length>maxNodes)bad("NODE_LIMIT","sequence");
-   v={kind:"Seq",values:Object.freeze(ast.values.map(x=>snapshot(x,depth+1)))};break;
-  default: v={kind:ast.kind,value:snapshot(ast.value,depth+1)};
+   v={kind:"Seq",values:Object.freeze(ast.values.map(x=>snapshot(x,depth+1,budget)))};break;
+  default: v={kind:ast.kind,value:snapshot(ast.value,depth+1,budget)};
  }
  return Object.freeze(v);
 }
@@ -87,7 +88,8 @@ export function lower(root,{parameters={}}={}){
     if(domain!=="CPU")bad("DEVICE_EFFECT","host arithmetic in GPU kernel");
     effects.add("Host");return emit("CONST_I64","CPU","i64",[],{value:String(node.value)});
    case "Param":
-    if(parameters[node.name]!==node.type)bad("PARAM_TYPE","undeclared/mistyped parameter");
+    if(!Object.hasOwn(parameters,node.name)||parameters[node.name]!==node.type)
+     bad("PARAM_TYPE","undeclared/mistyped parameter");
     if(isOwnedBuffer(node.type) && moved.has(node.name))bad("USE_AFTER_MOVE",node.name);
     if(isOwnedBuffer(node.type))moved.add(node.name);
     return emit("PARAM","HOST",node.type,[],{name:node.name});
