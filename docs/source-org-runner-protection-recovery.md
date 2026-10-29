@@ -16,7 +16,11 @@ Five private compiler repositories: `oreslang-source.java`, `oreslang-source.llv
 | Wasm | **false** | #76 | merged Oct 22 | `private-ci-policy.yml` |
 | Forge | **false** | #77 | merged Oct 25 | `private-ci-policy.yml` |
 
+**Current follow-on security PR review anchors:** Java [#2187](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2187) consolidates private-CI gates, [#2188](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2188) proposes a source-local exact-main runner, and [#2237](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2237) adds protected-carrier reattestation; all are still draft. LLVM [#1146](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1146) is a draft default-deny export gate and [#1148](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1148) proposes a hard block for new open [conformance incident #212](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/212). These do **not** replace completed independent source-org protected-main and runner checks. Do not resurrect the closed-unmerged Java #1217 as a current review anchor.
+
 All five current `.github/private-ci-approved-repositories.txt` files contain **zero active entries**. .NET/Wasm/Forge current `.github/private-ci-approved-source-snapshots.txt` files likewise have **zero active entries**. Their current `.github/private-ci-required-checks.json` manifests each specify `private-ci-policy` from GitHub Actions App **15368**. This manifest text is **not** equivalent to active repository branch protection. The source GitHub connector cannot read protection settings beyond `protected:false` or change admin controls (403).
+
+**Active incident restriction:** Conformance [#212](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/212) reports exact LLVM source-tree placement in an unapproved carrier repository. The open incident and pre-existing #22/#77/#127 security gates block additional private-source transfers; do not interpret a successful carrier compiler run as retroactive export approval. Preserve evidence and obtain independent security-owner disposition before any new carrier authorization.
 
 ### Operator read-only evidence commands
 
