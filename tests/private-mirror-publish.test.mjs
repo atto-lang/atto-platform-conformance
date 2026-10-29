@@ -371,3 +371,47 @@ test("malformed bounded batch sizes and checkpoint shapes never contact GitHub",
   assert.equal(h.events.length,0);
  }
 });
+
+test("case-colliding source directories reject BEFORE any private blob write",async()=>{
+ const sourceTree={truncated:false,tree:[
+  {path:"Foo",type:"tree",mode:"040000",sha:D},
+  {path:"foo",type:"tree",mode:"040000",sha:D},
+  {path:"Foo/one.ores",type:"blob",mode:"100644",sha:C,size:4},
+  {path:"foo/two.ores",type:"blob",mode:"100644",sha:C,size:4}
+ ]};
+ const h=fixture({sourceTree});
+ await assert.rejects(
+   publishPrivateMirror({...opts,fetchImpl:h.request,maxBlobsPerRun:1}),
+   /cross-platform-colliding source directory component/);
+ assert.equal(h.events.filter(x=>x.method==="POST").length,0);
+});
+test("Windows-reserved filenames and trailing-dot paths reject before source bytes",async()=>{
+ for(const path of ["CON","nul.ores","LPT1.txt","AUX.md","dir/file.","dir/COM9.ores"]){
+  const h=fixture({sourceTree:{truncated:false,tree:[
+   {path,type:"blob",mode:"100644",sha:C,size:4}]}});
+  await assert.rejects(publishPrivateMirror({...opts,fetchImpl:h.request}),
+   /unsafe or oversized private source tree entry/);
+  assert.equal(h.events.filter(x=>x.method==="POST").length,0,path);
+  assert.equal(h.events.some(x=>x.path===source+"/git/blobs/"+C),false,path);
+ }
+});
+test("case-mismatched destination ancestor cannot silently alias source prefix",async()=>{
+ const h=fixture({destinationTree:{truncated:false,tree:[
+  {path:"Snapshots",type:"tree",sha:D,mode:"040000"},
+  {path:"unrelated/readme.txt",type:"blob"}
+ ]}});
+ await assert.rejects(publishPrivateMirror({...opts,fetchImpl:h.request}),
+  /destination snapshot prefix is not empty or conflicts/);
+ assert.equal(h.events.filter(x=>x.method==="POST").length,0);
+});
+test("source directory SHA and mode must be valid before any publication",async()=>{
+ for(const bad of [{path:"lib",type:"tree",mode:"100644",sha:D},
+                   {path:"lib",type:"tree",mode:"040000",sha:"not-a-sha"},
+                   {path:"tmp.",type:"tree",mode:"040000",sha:D}]){
+  const h=fixture({sourceTree:{truncated:false,tree:[
+   bad,{path:"main.ores",type:"blob",mode:"100644",sha:C,size:4}]}});
+  await assert.rejects(publishPrivateMirror({...opts,fetchImpl:h.request}),
+   /unsafe private source directory entry/);
+  assert.equal(h.events.filter(x=>x.method==="POST").length,0);
+ }
+});
