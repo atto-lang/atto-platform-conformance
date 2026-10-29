@@ -73,7 +73,7 @@ export async function publishPrivateMirror({
 }) {
   sha(sourceCommit);sha(sourceTree);sha(destinationBaseCommit);
   if(!validPath(prefix)||!BRANCH.test(newBranch)||newBranch.includes("..")||
-     newBranch.endsWith(".")||/\\.lock$/i.test(newBranch))
+     newBranch.endsWith(".")||newBranch.toLowerCase().endsWith(".lock"))
     throw Error("invalid destination prefix or isolated CI branch");
   // Do not graft a confidential source snapshot onto an arbitrary or stale
   // destination commit. A protected destination main is required by admission;
