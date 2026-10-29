@@ -58,6 +58,9 @@ Draft PR #57's `bin/private-mirror-publish.mjs` checks:
 5. No preexisting destination files under the isolated prefix.
 6. Reauthorization before each blob, tree, commit or new-ref POST; exact
    destination Git blob receipts, materialized tree contents, and ref readback.
+   The destination base Git commit must return the exact approved SHA. The
+   newly created commit must read back with exactly the verified tree and one
+   protected-main parent **before** publishing any ref.
 7. No overwriting existing refs or publishing to `main`.
 
 A rejected remote **blob POST may leave an unreachable/dangling Git blob**.
@@ -106,3 +109,18 @@ previously executed on a real GitHub Actions runner (64/64 tests at
 [run 40820019157](https://github.com/honeypot-r-us-test/hnpt-e2e/actions/runs/40820019157)).
 This proves funded source-free capacity only. **Never mirror a private Oreslang
 Git tree on that basis.**
+
+## Executed evidence and limits
+
+At the exact source-export draft SHA recorded on the associated PR, the
+isolated JavaScript V8 harness executed **97/97** regression cases against
+exact GitHub-fetched modules (28 bootstrap, 36 authorization, 33 publisher),
+including base-head drift, malformed source directory trees, forged base
+commits and forged newly-created commit parent/tree receipts. This harness
+uses independently validated SHA-1/Base64/Buffer compatibility functions.
+It is **not** a native Node.js test runner and is **not** a source-org
+GitHub Actions execution. The native Node 22 regression suite must still
+run on an authorized checkout before merging. On PR #203, two separate
+diagnostic suites (50 and 45 cases) have run locally under native Node
+22.16.0 with exact code/test Git blob hashes. Those checks do not prove
+compiler or private-source publication.
