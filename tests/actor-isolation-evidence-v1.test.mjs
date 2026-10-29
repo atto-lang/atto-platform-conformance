@@ -24,7 +24,12 @@ function evidence() {
     ci:{workflowPath:".github/workflows/actor-isolation.yml",runId:1234,
       attempt:1,jobId:4321,runnerId:6789,compilerStep:"Build pinned compiler",
       guestStep:"Run compiled Oreslang isolation contract",
-      executedSteps:["Build pinned compiler","Run compiled Oreslang isolation contract"],
+      executedSteps:[
+        {name:"Build pinned compiler",number:4,conclusion:"success",
+         startedAt:"2026-10-28T00:00:00Z",completedAt:"2026-10-28T00:00:01Z"},
+        {name:"Run compiled Oreslang isolation contract",number:5,
+         conclusion:"success",startedAt:"2026-10-28T00:00:02Z",
+         completedAt:"2026-10-28T00:00:03Z"}],
       conclusion:"success"},
     registration: ISOLATION_CASES.map(c=>c[0]),
     caseResults: ISOLATION_CASES.map(([id,type])=>({
@@ -79,13 +84,28 @@ test("reject missing test registration and duplicate case names",()=>{
 test("reject zero-step, skipped guest, and no compiler step",()=>{
   for (const mutate of [
     x=>x.ci.executedSteps=[],
-    x=>x.ci.executedSteps=["Build pinned compiler"],
+    x=>x.ci.executedSteps=[x.ci.executedSteps[0]],
     x=>x.ci.guestStep="Set up job",
     x=>x.ci.compilerStep=x.ci.guestStep,
     x=>x.ci.conclusion="skipped",
     x=>x.ci.jobId=0,
     x=>x.caseResults[0].guest="skipped",
     x=>x.caseResults[0].guestAssertions=0
+  ]){const e=evidence();mutate(e);assert.throws(()=>validateIsolationClaim(run(),e),BAD);}
+});
+test("reject fake step successes, mutated job order and clock provenance",()=>{
+  for (const mutate of [
+    x=>x.ci.executedSteps[0].conclusion="skipped",
+    x=>x.ci.executedSteps[1].conclusion="failure",
+    x=>x.ci.executedSteps[1].number=x.ci.executedSteps[0].number,
+    x=>x.ci.executedSteps.reverse(),
+    x=>x.ci.executedSteps[0].completedAt="2026-10-27T23:59:59Z",
+    x=>x.ci.executedSteps[1].startedAt="yesterday",
+    x=>x.ci.executedSteps[1].name=x.ci.executedSteps[0].name,
+    x=>x.ci.executedSteps[1].name="Pre Download actor",
+    x=>x.ci.executedSteps[1].extraPassed=true,
+    x=>x.ci.executedSteps[0]="Build pinned compiler",
+    x=>x.ci.executedSteps[1].startedAt="2026-10-27T23:59:57Z"
   ]){const e=evidence();mutate(e);assert.throws(()=>validateIsolationClaim(run(),e),BAD);}
 });
 test("deliberate foreign access, outstanding loan and stale handle violations fail",()=>{
