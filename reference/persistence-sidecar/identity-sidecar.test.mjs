@@ -93,3 +93,20 @@ test('getter-backed identity is snapshotted once for tenant and durable storage 
     p.close();
   }finally{f.cleanup();}
 });
+test('1,000 typed actor IDs group-commit and survive process reopen',()=>{
+  const f=fixture();try{
+    const open=()=>new TrustedActorIdentitySidecar({path:f.path,tenantId:'tenant-a',
+      maxQueuedEntries:1100,maxBatchEntries:1100,maxBatchBytes:200000});
+    let p=open();
+    for(let i=0;i<1000;i++){
+      const x=id(s('actor-'+i));p.activate({id:x,epoch:1});
+      assert.equal(p.enqueue(w(x,'op-'+i)).durable,false);
+    }
+    const receipts=p.flush();
+    assert.equal(receipts.length,1000);
+    assert.ok(receipts.every(x=>x.status==='committed'&&x.durable&&x.version===1));
+    p.close();p=open();
+    for(let i=0;i<1000;i++)assert.equal(p.load({id:id(s('actor-'+i)),stateName:'main'}).version,1);
+    p.close();
+  }finally{f.cleanup();}
+});
