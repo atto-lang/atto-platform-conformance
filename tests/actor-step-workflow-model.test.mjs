@@ -15,7 +15,7 @@ const msg=(id,type,extra={})=>({id,type,tenantId:'tenant-a',runId:'run-a',...ext
 const init=(p=plan)=>{const m=new ActorStepWorkflowModel({plan:p,tenantId:'tenant-a',runId:'run-a'});return [m,m.activate()];};
 const send=(m,e,x,opts)=>{m.enqueue(x);return m.apply(e,x.id,opts);};
 const result=(m,e,id,node,attempt,outcome='ok',tag='approved',receipt='receipt')=>send(m,e,msg(id,'task_result',{
-  nodeId:node,key:`run-a/${node}/${attempt}`,worker:plan.nodes[node].worker,outcome,tag,receipt}));
+  nodeId:node,key:`tenant-a/run-a/${node}/${attempt}`,worker:plan.nodes[node].worker,outcome,tag,receipt}));
 const start=(m,e)=>send(m,e,msg('begin','start'));
 
 test('sequential actor step, choice, parallel fan-out and exact join, then authorized approval',()=>{
@@ -39,7 +39,7 @@ test('failed step retries once with a distinct durable intent, then fails closed
   const [m,e]=init();start(m,e);
   result(m,e,'bad1','validate',1,'error','bad','receipt-1');
   assert.equal(m.snapshot().state.pending.validate.attempt,2);
-  assert.equal(m.snapshot().outbox['run-a/validate/1'].status,'acknowledged');
+  assert.equal(m.snapshot().outbox['tenant-a/run-a/validate/1'].status,'acknowledged');
   result(m,e,'bad2','validate',2,'error','bad','receipt-2');
   assert.equal(m.snapshot().state.status,'FAILED');
 });
@@ -69,7 +69,7 @@ test('freeze and restore fences old activation; pending child intent is preserve
   const restored=new ActorStepWorkflowModel({plan,tenantId:'tenant-a',runId:'run-a',store:frozen});
   const e2=restored.activate();assert.ok(e2>e);
   assert.throws(()=>restored.apply(e,'begin'),/STALE_ACTIVATION_EPOCH/);
-  assert.equal(restored.snapshot().outbox['run-a/validate/1'].status,'pending');
+  assert.equal(restored.snapshot().outbox['tenant-a/run-a/validate/1'].status,'pending');
   result(restored,e2,'validated','validate',1);
   assert.equal(restored.snapshot().state.current,'both');
 });
@@ -85,7 +85,7 @@ test('parallel failure emits cancellation requests and never reaches join',()=>{
   const [m,e]=init();start(m,e);result(m,e,'valid','validate',1);
   result(m,e,'failed-invoice','invoice',1,'error','bad','receipt-invoice');
   const s=m.snapshot();assert.equal(s.state.status,'FAILED');
-  assert.equal(s.outbox['run-a/cancel/reserve/1'].kind,'cancel_step_actor');
+  assert.equal(s.outbox['tenant-a/run-a/cancel/reserve/1'].kind,'cancel_step_actor');
   assert.equal(s.state.pending.reserve,undefined);
   assert.throws(()=>result(m,e,'late','reserve',1),/STALE_TASK_RESULT/);
 });
@@ -95,7 +95,7 @@ test('cancel requires owner authority and does not claim physical cancellation',
   assert.throws(()=>send(m,e,msg('bad-cancel','cancel',{authority:'visitor'})),/UNAUTHORIZED_CANCEL/);
   send(m,e,msg('cancel','cancel',{authority:'workflow-owner'}));
   assert.equal(m.snapshot().state.status,'CANCELLED');
-  assert.ok(m.snapshot().outbox['run-a/cancel/validate/1']);
+  assert.ok(m.snapshot().outbox['tenant-a/run-a/cancel/validate/1']);
 });
 
 test('other tenants, reused message IDs and proto keys cannot bypass admission',()=>{
@@ -129,10 +129,10 @@ test('choice default routes to terminal fail without executing other actor steps
 
 test('read-only model records distinct intent and receipt, not executed external effects',()=>{
   const [m,e]=init();start(m,e);
-  assert.equal(m.snapshot().outbox['run-a/validate/1'].status,'pending');
+  assert.equal(m.snapshot().outbox['tenant-a/run-a/validate/1'].status,'pending');
   result(m,e,'valid','validate',1);
-  assert.equal(m.snapshot().outbox['run-a/validate/1'].status,'acknowledged');
-  assert.equal(m.snapshot().outbox['run-a/validate/1'].receipt,'receipt');
+  assert.equal(m.snapshot().outbox['tenant-a/run-a/validate/1'].status,'acknowledged');
+  assert.equal(m.snapshot().outbox['tenant-a/run-a/validate/1'].receipt,'receipt');
 });
 
 
@@ -149,7 +149,7 @@ test('parallel joins choose a deterministic tag independent of completion order'
     for(let i=0;i<order.length;i++) {
       const node=order[i];
       send(m,e,msg(`result-${i}`,'task_result',{
-        nodeId:node,key:`run-a/${node}/1`,worker:p.nodes[node].worker,
+        nodeId:node,key:`tenant-a/run-a/${node}/1`,worker:p.nodes[node].worker,
         outcome:'ok',tag:i===0?'different':'another',receipt:`r-${i}`}));
     }
     assert.equal(m.snapshot().state.status,'COMPLETED');
@@ -186,7 +186,7 @@ test('run IDs with separators cannot ambiguously alias intent keys',()=>{
     assert.throws(()=>new ActorStepWorkflowModel({plan,tenantId:'tenant-a',runId:id}),/BAD_RUN_ID/);
   }
   const [m,e]=init();start(m,e);
-  assert.ok(m.snapshot().outbox['run-a/validate/1']);
+  assert.ok(m.snapshot().outbox['tenant-a/run-a/validate/1']);
 });
 
 test('identical result redelivery consumes inbox but cannot manufacture state transitions',()=>{
@@ -207,7 +207,7 @@ test('simulation of crash during duplicate receipt leaves inbox for safe replay'
   result(m,e,'first','validate',1);
   const previous=m.snapshot();
   const dup=msg('redelivery','task_result',{
-    nodeId:'validate',key:'run-a/validate/1',worker:'validator',
+    nodeId:'validate',key:'tenant-a/run-a/validate/1',worker:'validator',
     outcome:'ok',tag:'approved',receipt:'receipt'
   });
   m.enqueue(dup);
@@ -222,12 +222,26 @@ test('simulation of crash during duplicate receipt leaves inbox for safe replay'
 test('reject malformed task receipts and approval envelopes before durable inbox admission',()=>{
   const [m]=init();
   const bad=[
-    msg('no-node','task_result',{key:'run-a/validate/1',worker:'validator',outcome:'ok',tag:'approved',receipt:'r'}),
-    msg('bad-outcome','task_result',{nodeId:'validate',key:'run-a/validate/1',worker:'validator',outcome:'unknown',tag:'approved',receipt:'r'}),
-    msg('bad-receipt','task_result',{nodeId:'validate',key:'run-a/validate/1',worker:'validator',outcome:'ok',tag:'approved',receipt:''}),
+    msg('no-node','task_result',{key:'tenant-a/run-a/validate/1',worker:'validator',outcome:'ok',tag:'approved',receipt:'r'}),
+    msg('bad-outcome','task_result',{nodeId:'validate',key:'tenant-a/run-a/validate/1',worker:'validator',outcome:'unknown',tag:'approved',receipt:'r'}),
+    msg('bad-receipt','task_result',{nodeId:'validate',key:'tenant-a/run-a/validate/1',worker:'validator',outcome:'ok',tag:'approved',receipt:''}),
     msg('bad-signal','signal',{nodeId:'approval',signal:'accept',authority:''}),
     msg('bad-cancel','cancel',{authority:''})
   ];
   for(const entry of bad) assert.throws(()=>m.enqueue(entry),/BAD_TASK_RESULT|BAD_SIGNAL|BAD_CANCEL/);
   assert.deepEqual(m.snapshot().inbox,{});
+});
+
+
+test('tenant identity is included in all durable intent keys',()=>{
+  const [a,epochA]=init();start(a,epochA);
+  const b=new ActorStepWorkflowModel({plan,tenantId:'tenant-b',runId:'run-a'});
+  const epochB=b.activate();
+  b.enqueue({id:'begin',type:'start',tenantId:'tenant-b',runId:'run-a'});
+  b.apply(epochB,'begin');
+  const first=Object.keys(a.snapshot().outbox)[0];
+  const second=Object.keys(b.snapshot().outbox)[0];
+  assert.equal(first,'tenant-a/run-a/validate/1');
+  assert.equal(second,'tenant-b/run-a/validate/1');
+  assert.ok(first!==second);
 });
