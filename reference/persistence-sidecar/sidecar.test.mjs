@@ -110,3 +110,22 @@ test('zero-size payload flood is bounded by queued entry quota',()=>{
     s.close();
   }finally{f.close();}
 });
+
+test('stale activation cannot retrieve old committed dedup receipt',()=>{
+  const f=fixture();try{const s=f.open();s.grantEpoch({tenantId:'tenant-a',actor:'a',epoch:1});
+    s.enqueue(write('a','original'));assert.equal(s.flush()[0].status,'committed');
+    s.grantEpoch({tenantId:'tenant-a',actor:'a',epoch:2});
+    assert.throws(()=>s.enqueue(write('a','original')),/STALE_EPOCH/);
+    assert.throws(()=>s.enqueue(write('a','original',{epoch:2,expectedVersion:1})),/OP_ID_CONFLICT/);
+    s.close();
+  }finally{f.close();}
+});
+test('control-character identities are rejected at admission',()=>{
+  const f=fixture();try{const s=f.open();
+    for(const actor of ['bad\0id','bad\nactor','bad\tactor']){
+      assert.throws(()=>s.grantEpoch({tenantId:'tenant-a',actor,epoch:1}),/INVALID_EPOCH/);
+      assert.throws(()=>s.enqueue(write(actor,'op')),/INVALID_WRITE/);
+    }
+    s.close();
+  }finally{f.close();}
+});
