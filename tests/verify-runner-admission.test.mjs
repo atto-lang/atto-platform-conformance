@@ -54,6 +54,7 @@ test('valid exact-run, exact-attempt, runner-backed successful canary passes', (
   const result = assess();
   assert.equal(result.admitted, true);
   assert.equal(result.meaningfulStepExecuted, true);
+  assert.equal(result.runnerBackedExecutionObserved, true);
   assert.equal(result.backendGuestExecution, false);
 });
 for (const [label, mutate] of bad) {
@@ -63,8 +64,50 @@ test('failed meaningful step is observed but not accepted as success', () => {
   const result = assess(f => { f.jobs.jobs[0].steps[1].conclusion = 'failure'; f.jobs.jobs[0].conclusion = 'failure'; });
   assert.equal(result.runnerAllocated, true);
   assert.equal(result.meaningfulStepExecuted, true);
+  assert.equal(result.runnerBackedExecutionObserved, true);
   assert.equal(result.admitted, false);
 });
 
 test('fail closed: expected metadata missing', () => { const f = fixture(); assert.equal(verifyRunnerAdmission(f.run, f.jobs, undefined).admitted, false); });
 test('fail closed: malformed expected SHA', () => { const f = fixture(); assert.equal(verifyRunnerAdmission(f.run, f.jobs, { ...expected, sha: '' }).admitted, false); });
+
+const receiptBad = [
+  ['runner ID zero', f => { f.jobs.jobs[0].runner_id = 0; }],
+  ['empty runner name', f => { f.jobs.jobs[0].runner_name = ''; }],
+  ['housekeeping only', f => { f.jobs.jobs[0].steps.splice(1, 1); }],
+  ['wrong pinned run ID', f => { f.run.id = 43; f.jobs.jobs[0].run_id = 43; }],
+  ['wrong pinned attempt', f => { f.run.run_attempt = 2; f.jobs.jobs[0].run_attempt = 2; }],
+  ['wrong pinned SHA', f => { f.run.head_sha = '0'.repeat(40); f.jobs.jobs[0].head_sha = f.run.head_sha; }],
+  ['wrong runner job SHA', f => { f.jobs.jobs[0].head_sha = '0'.repeat(40); }],
+  ['truncated jobs response', f => { f.jobs.total_count = 2; }],
+  ['run is not completed', f => { f.run.status = 'in_progress'; }],
+  ['job is not completed', f => { f.jobs.jobs[0].status = 'queued'; }],
+  ['wrong workflow path', f => { f.run.path = '.github/workflows/different.yml'; }],
+  ['wrong repository', f => { f.run.repository.full_name = 'untrusted/destination'; }],
+];
+for (const [label, mutate] of receiptBad) {
+  test(`runner-backed execution fails closed: ${label}`, () => {
+    const f = fixture(); mutate(f);
+    assert.equal(verifyRunnerAdmission(f.run, f.jobs, expected).runnerBackedExecutionObserved, false);
+  });
+}
+test('runner backed execution is observed even when canary itself fails', () => {
+  const f = fixture();
+  f.run.conclusion = 'failure';
+  f.jobs.jobs[0].conclusion = 'failure';
+  f.jobs.jobs[0].steps[1].conclusion = 'failure';
+  const result = verifyRunnerAdmission(f.run, f.jobs, expected);
+  assert.equal(result.admitted, false);
+  assert.equal(result.runnerBackedExecutionObserved, true);
+  assert.equal(result.backendGuestExecution, false);
+});
+
+test('run failed with executed non-canary step but canary succeeded is still not admitted', () => {
+  const f = fixture();
+  f.run.conclusion = 'failure';
+  f.jobs.jobs[0].conclusion = 'failure';
+  f.jobs.jobs[0].steps.push({ name: 'An unrelated executed failure', status: 'completed', conclusion: 'failure' });
+  const result = verifyRunnerAdmission(f.run, f.jobs, expected);
+  assert.equal(result.admitted, false);
+  assert.equal(result.runnerBackedExecutionObserved, true);
+});
