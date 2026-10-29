@@ -27,7 +27,7 @@ export function admitStepPlan(plan) {
   strictKeys(plan,['start','nodes']);
   check(nonempty(plan.start) && record(plan.nodes), 'BAD_PLAN');
   const entries=Object.entries(plan.nodes);
-  check(entries.length>0 && entries.length<=64 && entries.every(([id])=>nonempty(id)), 'BAD_PLAN_SIZE');
+  check(entries.length>0 && entries.length<=64 && entries.every(([id])=>/^[A-Za-z][A-Za-z0-9_-]{0,63}$/.test(id)), 'BAD_PLAN_SIZE');
   const refs=[]; const branchOwners=new Map();
   for(const [id,n] of entries) {
     check(record(n) && nonempty(n.kind), 'BAD_NODE');
