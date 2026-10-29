@@ -7,7 +7,8 @@ export class AdmissionError extends Error {
   constructor(code) { super(code); this.name = 'AdmissionError'; this.code = code; }
 }
 const fail = (code) => { throw new AdmissionError(code); };
-const ident = (s) => typeof s === 'string' && s.length > 0 && Buffer.byteLength(s, 'utf8') <= 128;
+const ident = (s) => typeof s === 'string' && s.length > 0 &&
+  !/[\x00-\x1f\x7f]/.test(s) && Buffer.byteLength(s, 'utf8') <= 128;
 const uint = (n) => Number.isSafeInteger(n) && n >= 0;
 const key = (e) => JSON.stringify([e.actor, e.stateName, e.opId]);
 const digest = (e) => createHash('sha256').update(JSON.stringify([
@@ -78,6 +79,8 @@ export class BatchPersistenceSidecar {
     // Snapshot bytes are copied on admission so callers cannot mutate an enqueued write.
     const e = {tenantId,actor,stateName,opId,epoch,expectedVersion,kind,schemaVersion,payload:Buffer.from(payload)};
     const hash = digest(e), k = key(e);
+    // Fence before any dedup receipt, including a retry of an already committed operation.
+    if (this.getFence.get(tenantId,actor)?.epoch !== epoch) fail('STALE_EPOCH');
     const existing = this.getOp.get(tenantId,actor,stateName,opId);
     if (existing) {
       if (existing.digest !== hash) fail('OP_ID_CONFLICT');
@@ -88,7 +91,6 @@ export class BatchPersistenceSidecar {
       if (queued.hash !== hash) fail('OP_ID_CONFLICT');
       return {status:'admitted',durable:false,duplicate:true};
     }
-    if (this.getFence.get(tenantId,actor)?.epoch !== epoch) fail('STALE_EPOCH');
     if (this.queue.length >= this.maxQueuedEntries ||
       this.queuedBytes + e.payload.length + 128 > this.maxQueuedBytes) fail('BACKPRESSURE');
     this.queue.push({e,hash,k});
@@ -108,15 +110,15 @@ export class BatchPersistenceSidecar {
     try {
       for (const {e,hash} of batch) {
         const {tenantId:t,actor:a,stateName:s,opId:o}=e;
+        if (this.getFence.get(t,a)?.epoch !== e.epoch) {
+          results.push({opId:o,status:'rejected',durable:false,code:'STALE_EPOCH'}); continue;
+        }
         const prior=this.getOp.get(t,a,s,o);
         if (prior) {
           results.push(prior.digest===hash
             ? {opId:o,status:'committed',durable:true,duplicate:true,version:prior.version}
             : {opId:o,status:'rejected',durable:false,code:'OP_ID_CONFLICT'});
           continue;
-        }
-        if (this.getFence.get(t,a)?.epoch !== e.epoch) {
-          results.push({opId:o,status:'rejected',durable:false,code:'STALE_EPOCH'}); continue;
         }
         const version=this.getHead.get(t,a,s)?.version??0;
         if (version!==e.expectedVersion) {
