@@ -128,6 +128,16 @@ export class ActorStepWorkflowModel {
     const allowed={start:[],task_result:['nodeId','key','worker','outcome','tag','receipt'],
       signal:['nodeId','signal','authority'],cancel:['authority']};
     strictKeys(message,['id','type','tenantId','runId',...allowed[message.type]]);
+    if(message.type==='task_result') {
+      check(durableId(message.nodeId) && nonempty(message.key) &&
+        nonempty(message.worker) && (message.outcome==='ok'||message.outcome==='error') &&
+        nonempty(message.tag) && nonempty(message.receipt), 'BAD_TASK_RESULT');
+    } else if(message.type==='signal') {
+      check(durableId(message.nodeId) && nonempty(message.signal) &&
+        nonempty(message.authority), 'BAD_SIGNAL');
+    } else if(message.type==='cancel') {
+      check(nonempty(message.authority), 'BAD_CANCEL');
+    }
     check(Buffer.byteLength(canonical(message),'utf8')<=4096,'MESSAGE_TOO_LARGE');
     const db=this.snapshot();
     if(has(db.seen,message.id)) {
@@ -136,6 +146,8 @@ export class ActorStepWorkflowModel {
     if(has(db.inbox,message.id)) {
       check(digest(db.inbox[message.id])===digest(message), 'DELIVERY_CONFLICT');return false;
     }
+    // Prevent unbounded growth from valid receipts redelivered under fresh IDs.
+    check(Object.keys(db.seen).length<1024,'REPLAY_LEDGER_EXHAUSTED');
     check(Object.keys(db.inbox).length<256,'INBOX_CAPACITY');
     put(db.inbox,message.id,copy(message));this.#commit(db);return true;
   }
