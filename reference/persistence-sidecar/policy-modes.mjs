@@ -163,7 +163,8 @@ export class PolicyActorReference {
     return this.#withScope(() => {
     if (this.#pending) deny('PENDING_OUTCOME_MUST_RESOLVE');
     if (this.policy.mode === '#none') { this.#state = clone_json(this.initialState); this.#version = 0; return; }
-    const loaded = this.sidecar.load({tenantId:this.tenantId,actor:this.actor,stateName:this.stateName});
+    if (typeof this.sidecar.loadFenced !== 'function') deny('UNVERIFIABLE_RESTORE');
+    const loaded = this.sidecar.loadFenced({tenantId:this.tenantId,actor:this.actor,stateName:this.stateName,epoch:this.epoch});
     let value = clone_json(this.initialState), version = 0;
     if (loaded.snapshot) {
       if (loaded.snapshot.schemaVersion !== this.schemaVersion) deny('SCHEMA_MIGRATION_REQUIRED');
