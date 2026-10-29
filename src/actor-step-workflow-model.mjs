@@ -153,7 +153,7 @@ export class ActorStepWorkflowModel {
   }
   // A pending intent is a request to dispatch a child actor, NOT a delivery receipt.
   #issue(db,id,attempt) {
-    const node=this.#plan.nodes[id], key=`${db.runId}/${id}/${attempt}`;
+    const node=this.#plan.nodes[id], key=`${db.tenantId}/${db.runId}/${id}/${attempt}`;
     check(!has(db.outbox,key),'DUPLICATE_INTENT');
     put(db.outbox,key,{kind:'spawn_step_actor',nodeId:id,worker:node.worker,attempt,key,status:'pending'});
     put(db.state.pending,id,{attempt,key});
@@ -178,7 +178,7 @@ export class ActorStepWorkflowModel {
   }
   #cancelOutstanding(db) {
     for(const [id,pending] of Object.entries(db.state.pending)) {
-      const key=`${db.runId}/cancel/${id}/${pending.attempt}`;
+      const key=`${db.tenantId}/${db.runId}/cancel/${id}/${pending.attempt}`;
       if(!has(db.outbox,key)) put(db.outbox,key,{kind:'cancel_step_actor',nodeId:id,
         worker:this.#plan.nodes[id].worker,attempt:pending.attempt,key,status:'pending'});
     }
