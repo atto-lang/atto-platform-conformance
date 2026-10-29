@@ -80,8 +80,20 @@ foreign-stage registration budget; those remain separate integration concerns.
 Separately verify that a terminal Future's host notification-drain receipt
 does **not** imply physical `Task.get_done()` retirement.
 
-The Java test target is
+The same non-retention boundary applies to callback-only host registrars:
+`OresFuture.fromCallback(registrar)` provides a single-shot completion
+capability that an untrusted foreign registrar may retain indefinitely.
+Its callback may only weakly retain the observer; a strongly held observer
+must still accept exactly one producer settlement. A first late callback
+after observer cancellation is ignored, while a second notification remains
+a deterministic duplicate error. This weak reachability is **not** a
+garbage-collection receipt or proof that a foreign registration was freed.
+There must be no attempt to revoke the foreign producer merely to release
+a borrowed listener.
+
+The Java regression targets are
 `src/test/java/dev/oreslang/runtime/OresFutureHostAdapterIsolationTest.java`
+and `src/test/java/dev/oreslang/runtime/OresFutureCallbackRetentionTest.java`
 on draft #2201. These are host-runtime regression tests only. They cannot be
 used as substitutes for source-language guest execution, Native Image, actor
 generation fencing, or independent backend receipts. Status is **PENDING** until
