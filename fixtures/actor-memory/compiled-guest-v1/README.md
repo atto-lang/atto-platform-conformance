@@ -30,6 +30,7 @@ Two canonical negatives are part of the same contract:
 
 - `foreign-state-reject.ores` must fail with `FOREIGN_ACTOR_STATE_DENIED` and emit no artifact.
 - `read-loan-write-reject.ores` must fail with `WRITE_WITH_READ_LOAN_DENIED` and emit no artifact.
+  This negative uses the otherwise supported `on_message` handler, so rejection must come from its illegal `critical-read` mutation—not from an unsupported actor method name.
 
 A backend that merely does not parse or lower the required actor/state construct is `UNSUPPORTED_OR_NOT_VERIFIED`; generic unsupported syntax is not a semantic pass.
 

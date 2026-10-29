@@ -35,7 +35,7 @@ const mk = () => {
         exitCode:1,diagnosticClass:'FOREIGN_ACTOR_STATE_DENIED',outputArtifacts:0
       },
       'read-loan-write':{
-        sourceSha256:'c1e0c4ac183fd3b2d1834a038fc89e2d36f9e876b75285bc196f6888bf1a5c21',
+        sourceSha256:'9af717d6cea42dbb6e1192981c227222ad837a8e54785ce205c676d1d33be3b5',
         exitCode:1,diagnosticClass:'WRITE_WITH_READ_LOAN_DENIED',outputArtifacts:0
       }
     },

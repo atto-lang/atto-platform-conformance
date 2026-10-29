@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 // GitHub, the compiler binary, or that a candidate trace came from real execution.
 const FIXTURE_BLOB = '430565092d8a4ff114f601a54b771ef3d42eae58';
 const FOREIGN_SHA256 = '3071307899db9c4f4f3acc44465d60dd77d2ee2d2c0930d4bcc23e7fd9a8e94c';
-const READ_LOAN_SHA256 = 'c1e0c4ac183fd3b2d1834a038fc89e2d36f9e876b75285bc196f6888bf1a5c21';
+const READ_LOAN_SHA256 = '9af717d6cea42dbb6e1192981c227222ad837a8e54785ce205c676d1d33be3b5';
 const BACKENDS = new Set(['java', 'llvm', 'net', 'wasm', 'forge']);
 const REQUIRED_STEPS = ['compiler_build', 'guest_compile', 'guest_execute',
   'reject_foreign_access', 'reject_read_loan_write'];
