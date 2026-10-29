@@ -14,7 +14,7 @@ The Node built-in `DatabaseSync` uses synchronous SQLite operations: **never run
 
 One `BatchPersistenceSidecar` instance has a single configured tenant. An actor's bytes are copied on admission, not borrowed; the sidecar never obtains source actor heap pointers. The trusted directory/controller alone can invoke `grantEpoch`; the reference model does **not** expose a secure network endpoint or authenticate control-plane calls.
 
-`enqueue` returns `{status:'admitted', durable:false}` until `flush` commits a SQLite transaction. `flush` returns `committed/durable:true` or a typed rejection. Payloads are capped, queue entries are capped, and each admitted message incurs nonzero quota even for an empty payload. Writes carry an expected state version and a durable operation ID.
+`enqueue` returns `{status:'admitted', durable:false}` until `flush` commits a SQLite transaction. `flush` returns `committed/durable:true` or a typed rejection. Payloads are capped, queue entries are capped, and each admitted message reserves at least a 128-byte envelope charge **plus** its payload bytes and UTF-8 actor/state/operation identifier bytes. This is a conservative lower-bound credit charge, not a measurement of every JavaScript heap allocation. An empty payload still consumes nonzero credits. Writes carry an expected state version and a durable operation ID.
 
 SQLite is configured for WAL and `synchronous=FULL`. That is a provider-level commit contract, **not** proof of actual power-loss durability on all hardware, replicated consensus or distributed exactly-once effects. A commit exception is conservatively `OUTCOME_UNKNOWN`, to be resolved by retrying the same operation ID.
 
