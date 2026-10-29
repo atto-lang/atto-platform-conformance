@@ -13,6 +13,16 @@ const base = {
 const check = (overrides = {}, records = {}, calls = []) =>
   requirePrivateMirror({...base, fetchImpl: fixture(records, calls), ...overrides});
 
+test("trusted synthetic source and carrier policy fixtures match reviewed immutable Git blob IDs", () => {
+  const gitBlobSha=text=>createHash("sha1")
+    .update("blob "+Buffer.byteLength(text)+"\\0")
+    .update(text).digest("hex");
+  assert.equal(gitBlobSha(sourcePolicyWorkflow),
+    "1e18ea42fc8a819e26a90f9b2dfea7cbdc129e76");
+  assert.equal(gitBlobSha(carrierPolicyWorkflow),
+    "645f7f8f5ec6d907fb2a1b7ea9f93c8e28f3855a");
+});
+
 test("accepts only explicitly approved and GitHub-verified writable private destination", async () => {
   const calls = [];
   assert.deepEqual(await check({}, {}, calls), {
