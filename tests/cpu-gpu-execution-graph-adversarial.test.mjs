@@ -1,0 +1,61 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {Ast, lower, executeCpuI64} from "../src/cpu-gpu-execution-graph.mjs";
+
+const {CpuRegion:cpu, I64:i64, Add:add, Seq:seq, Await:awaitNode} = Ast;
+const original = () => lower(cpu(add(i64(40n), i64(2n))));
+const copy = () => structuredClone(original());
+const rejects = (code, run) => assert.throws(run, error => error?.code === code);
+
+test("CPU reference runs canonical checked scalar graph", () => {
+  assert.equal(executeCpuI64(original()), 42n);
+  assert.equal(executeCpuI64(lower(cpu(seq(i64(900n), add(i64(40n), i64(2n))))), 42n);
+});
+
+test("CPU-only evaluator rejects forged headers and result identity", () => {
+  let g = copy(); g.returnId = 0;
+  rejects("INVALID_GRAPH", () => executeCpuI64(g));
+  g = copy(); g.resultType = "Future<i64>";
+  rejects("INVALID_GRAPH", () => executeCpuI64(g));
+  g = copy(); g.nodes[0].extra = "untrusted";
+  rejects("INVALID_GRAPH", () => executeCpuI64(g));
+  g = copy(); g.extra = true;
+  rejects("INVALID_GRAPH", () => executeCpuI64(g));
+  g = copy(); delete g.nodes[0].domain;
+  rejects("INVALID_GRAPH", () => executeCpuI64(g));
+});
+
+test("CPU-only evaluator checks all operands and canonical dependency edges", () => {
+  let g = copy(); g.nodes[2].dependencies = [1];
+  rejects("INVALID_GRAPH", () => executeCpuI64(g));
+  g = copy(); g.nodes[2].dependencies = [0, 0, 1];
+  rejects("INVALID_GRAPH", () => executeCpuI64(g));
+  g = copy(); g.nodes[2].dependencies = [1, 0];
+  rejects("INVALID_GRAPH", () => executeCpuI64(g));
+  g = copy(); g.nodes[2].meta.left = -1;
+  rejects("INVALID_GRAPH", () => executeCpuI64(g));
+  g = copy(); g.nodes[2].meta.right = 3;
+  rejects("INVALID_GRAPH", () => executeCpuI64(g));
+  g = copy(); g.nodes[2].meta.extra = "false-proof";
+  rejects("INVALID_GRAPH", () => executeCpuI64(g));
+});
+
+test("CPU-only evaluator rejects noncanonical or oversized i64 constants", () => {
+  for (const value of ["0x28", "00", "-0", "+40", " 40", "9".repeat(10000)]) {
+    const g = copy(); g.nodes[0].meta.value = value;
+    rejects("INVALID_GRAPH", () => executeCpuI64(g));
+  }
+  rejects("INVALID_I64", () =>
+    executeCpuI64(lower(cpu(add(i64(9223372036854775807n), i64(1n))))));
+});
+
+test("device, transfer and asynchronous graphs cannot pretend to be CPU execution", () => {
+  let g = copy(); g.deviceKernels = 1;
+  rejects("DEVICE_OR_ASYNC_UNAVAILABLE", () => executeCpuI64(g));
+  g = copy(); g.effects = ["Host", "Suspend"];
+  rejects("DEVICE_OR_ASYNC_UNAVAILABLE", () => executeCpuI64(g));
+  g = copy(); g.nodes[2].opcode = "DEVICE_KERNEL";
+  rejects("DEVICE_OR_ASYNC_UNAVAILABLE", () => executeCpuI64(g));
+  const pending = lower(cpu(awaitNode(cpu(i64(42n), true))));
+  rejects("DEVICE_OR_ASYNC_UNAVAILABLE", () => executeCpuI64(pending));
+});
