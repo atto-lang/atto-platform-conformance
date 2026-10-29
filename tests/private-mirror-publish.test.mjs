@@ -352,3 +352,45 @@ test("portable destination prefix cannot be a reserved Windows path", async () =
     assert.equal(h.events.length,0);
   }
 });
+
+test("unsafe source tree directory entries deny before blob reads or destination mutations",async()=>{
+ for(const entry of [
+  {type:"tree",path:"CON",mode:"040000",sha:E},
+  {type:"tree",path:"src/.",mode:"040000",sha:E},
+  {type:"tree",path:"src",mode:"100644",sha:E},
+  {type:"tree",path:"src",mode:"040000",sha:"invalid"},
+  {type:"tree",path:"SRC",mode:"040000",sha:E}
+ ]){
+  const base={type:"blob",path:entry.path==="SRC"?"src":"main.ores",sha:C,size:4,mode:"100644"};
+  const {h,promise}=run({sourceTree:{truncated:false,tree:[entry,base]}});
+  await assert.rejects(promise,/unsafe Git source tree directory identity|duplicate or case-colliding Git source tree entry/);
+  assert.equal(h.events.some(e=>e.path.includes("/git/blobs/")),false);
+  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+ }
+});
+test("case-inconsistent explicit tree parent and blob child deny before copying private bytes",async()=>{
+ for(const paths of [
+  [{type:"tree",path:"SRC",mode:"040000",sha:E},{type:"blob",path:"src/main.ores",mode:"100644",size:4,sha:C}],
+  [{type:"tree",path:"src",mode:"040000",sha:E},{type:"tree",path:"SRC",mode:"040000",sha:D},{type:"blob",path:"src/main.ores",mode:"100644",size:4,sha:C}]
+ ]){
+  const {h,promise}=run({sourceTree:{truncated:false,tree:paths}});
+  await assert.rejects(promise,/source tree file\/directory alias or inconsistent case|duplicate or case-colliding Git source tree entry/);
+  assert.equal(h.events.some(e=>e.path.includes("/git/blobs/")),false);
+  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+ }
+});
+test("properly nested Git tree entries retain exact-case private source support in synthetic tests",async()=>{
+ const sourceTree={truncated:false,tree:[
+  {type:"tree",path:"src",mode:"040000",sha:E},
+  {type:"blob",path:"src/main.ores",mode:"100644",size:4,sha:C}
+ ]};
+ const materializedTree={truncated:false,tree:[
+  {path:"snapshots",type:"tree"},
+  {path:"snapshots/checked",type:"tree"},
+  {path:"snapshots/checked/src",type:"tree"},
+  {path:"snapshots/checked/src/main.ores",type:"blob",mode:"100644",sha:C}
+ ]};
+ const {promise}=run({sourceTree,materializedTree});
+ const receipt=await promise;
+ assert.equal(receipt.blobs,1);
+});
