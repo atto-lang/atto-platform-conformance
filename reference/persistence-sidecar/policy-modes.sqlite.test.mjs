@@ -237,6 +237,7 @@ test('fabricated rejection cannot erase pending durable operation',()=>{
   } finally {f.close();}
 });
 
+
 test('duplicate committed receipt must be independently verified before publication',()=>{
   const fake={enqueue:()=>({status:'committed',durable:true,duplicate:true,version:1}),verifyCommit:()=>null};
   const actor=create(fake,'#snapshot');
