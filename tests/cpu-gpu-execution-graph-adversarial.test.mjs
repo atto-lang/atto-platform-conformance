@@ -59,3 +59,16 @@ test("device, transfer and asynchronous graphs cannot pretend to be CPU executio
   const pending = lower(cpu(awaitNode(cpu(i64(42n), true))));
   rejects("DEVICE_OR_ASYNC_UNAVAILABLE", () => executeCpuI64(pending));
 });
+
+test("bounded AST snapshot accounts for nested trees, not only single Seq width", () => {
+  const left = Array.from({length:1024}, () => i64(1n));
+  const right = Array.from({length:1024}, () => i64(2n));
+  rejects("NODE_LIMIT", () => lower(cpu(seq(seq(...left), seq(...right)))));
+});
+
+test("parameter admission requires an own declared type, never prototype inheritance", () => {
+  const inherited = Object.create({device:"GpuBuffer<f32>"});
+  rejects("PARAM_TYPE", () =>
+    lower(Ast.GpuRegion(Ast.Kernel("scale", Ast.Param("device", "GpuBuffer<f32>"))),
+      {parameters:inherited}));
+});
