@@ -236,3 +236,54 @@ test('fabricated rejection cannot erase pending durable operation',()=>{
     db.close();
   } finally {f.close();}
 });
+
+test('duplicate committed receipt must be independently verified before publication',()=>{
+  const fake={enqueue:()=>({status:'committed',durable:true,duplicate:true,version:1}),verifyCommit:()=>null};
+  const actor=create(fake,'#snapshot');
+  assert.throws(()=>actor.stage_snapshot('forged-duplicate',s=>{s.count=91;}),/OUTCOME_UNKNOWN/);
+  assert.equal(read(actor),0);
+  assert.equal(actor.version,0);
+  const missing={enqueue:fake.enqueue};
+  const withoutProof=create(missing,'#snapshot');
+  assert.throws(()=>withoutProof.stage_snapshot('forged-duplicate',s=>{s.count=92;}),/UNVERIFIABLE_COMMIT/);
+  assert.equal(read(withoutProof),0);
+});
+
+test('genuine idempotent duplicate may publish only when stored digest and epoch match',()=>{
+  const f=fixture();
+  try {
+    const db=f.open();
+    db.grantEpoch({tenantId:'tenant-a',actor:'counter',epoch:1});
+    const first=create(db,'#snapshot');
+    first.stage_snapshot('same-op',s=>{s.count=17;});
+    db.flush(); // commit delivered but ACK was lost
+    const restarted=create(db,'#snapshot');
+    const ack=restarted.stage_snapshot('same-op',s=>{s.count=17;});
+    assert.equal(ack.duplicate,true);
+    assert.equal(read(restarted),17);
+    assert.equal(restarted.version,1);
+    const mismatch=create(db,'#snapshot');
+    assert.throws(()=>mismatch.stage_snapshot('same-op',s=>{s.count=18;}),/OP_ID_CONFLICT/);
+    db.close();
+  } finally {f.close();}
+});
+
+test('actor policy, tenant, epoch, sidecar and initial state are immutable after activation',()=>{
+  const f=fixture();
+  try {
+    const db=f.open();
+    db.grantEpoch({tenantId:'tenant-a',actor:'counter',epoch:1});
+    const actor=create(db,'#snapshot');
+    assert.ok(Object.isFrozen(actor));
+    assert.ok(Object.isFrozen(actor.policy));
+    assert.ok(Object.isFrozen(actor.initialState));
+    assert.throws(()=>{actor.policy={mode:'#none'};},TypeError);
+    assert.throws(()=>{actor.tenantId='tenant-b';},TypeError);
+    assert.throws(()=>{actor.epoch=2;},TypeError);
+    assert.throws(()=>{actor.sidecar=null;},TypeError);
+    assert.throws(()=>{actor.initialState.count=777;},TypeError);
+    assert.throws(()=>actor.handle_state('critical-write',s=>{s.count=30;}),/PERSISTED_WRITE_REQUIRES_COMMIT/);
+    assert.equal(read(actor),0);
+    db.close();
+  } finally {f.close();}
+});
