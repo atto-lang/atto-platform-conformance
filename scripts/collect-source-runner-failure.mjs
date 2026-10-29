@@ -28,7 +28,9 @@ function shortText(input) {
   return input.slice(0, 4000)
     .replace(/(?:ghp_|gho_|ghu_|ghs_|ghr_)[a-zA-Z0-9_]{10,}/g, '[REDACTED_GH_TOKEN]')
     .replace(/github_pat_[a-zA-Z0-9_]{10,}/g, '[REDACTED_GH_PAT]')
-    .replace(/Bearer\s+\S+/gi, 'Bearer [REDACTED]');
+    .replace(/Bearer\s+\S+/gi, 'Bearer [REDACTED]')
+    .replace(/(https?:\/\/)[^\s/@:]+:[^\s/@]+@/gi, '$1[REDACTED]@')
+    .replace(/\b((?:authorization|x-api-key|api[_-]?key|client[_-]?secret|password|passwd|token|secret)\s*[:=]\s*)(?:\"[^\"]*\"|'[^']*'|[^\s,;]+)/gi, '$1[REDACTED]');
 }
 export function validateReceipt(run, jobPage, target) {
   must(run && run.id === target.runId, 'run ID differs from caller pin');
@@ -38,10 +40,12 @@ export function validateReceipt(run, jobPage, target) {
   must(typeof run.path === 'string' && run.path.split('@')[0] === WORKFLOW, 'wrong workflow');
   must(['push', 'workflow_dispatch'].includes(run.event), 'unapproved trigger');
   must(run.run_attempt === target.attempt, 'run attempt differs from caller pin');
+  must(run.status === 'completed' && run.conclusion === 'failure', 'expected completed failed workflow');
   must(jobPage && Array.isArray(jobPage.jobs) && jobPage.total_count === 1 && jobPage.jobs.length === 1, 'incomplete or unexpected job list');
   const job = jobPage.jobs[0];
   must(job?.name === JOB && isId(job.id), 'unexpected runner-admission job');
   must(job.run_id === run.id && job.run_attempt === target.attempt && job.head_sha === target.sha, 'job identity mismatch');
+  must(job.status === 'completed' && job.conclusion === 'failure', 'expected completed failed job');
   const realRunner = isId(job.runner_id) && typeof job.runner_name === 'string' && job.runner_name.trim() !== '';
   const meaningful = Array.isArray(job.steps) ? job.steps.filter(s =>
     typeof s?.name === 'string' && s.name.trim() !== '' &&
@@ -67,11 +71,14 @@ export async function collectEvidence(target, get) {
   const receipt = validateReceipt(run, jobs, target);
   const annotations = await get(root + '/check-runs/' + receipt.jobId + '/annotations?per_page=100');
   must(Array.isArray(annotations), 'annotation API response not an array');
+  must(annotations.length < 100, 'annotation response may be paginated; no partial evidence accepted');
+  must(annotations.every(a => a && typeof a.message === 'string' &&
+    ['notice', 'warning', 'failure'].includes(a.annotation_level)), 'invalid annotation payload');
   const providerAnnotations = annotations.map(a => ({
     level: shortText(a?.annotation_level), title: shortText(a?.title),
     message: shortText(a?.message),
   }));
-  return { ...receipt, providerAnnotations, possibleMoreAnnotations: annotations.length === 100,
+  return { ...receipt, providerAnnotations, possibleMoreAnnotations: false,
     sourceExportAuthorized: false };
 }
 export function githubReadOnlyGet(path) {
@@ -87,7 +94,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     console.log(JSON.stringify(receipt, null, 2));
     process.exitCode = receipt.preAllocationFailure ? 1 : 0;
   } catch (e) {
-    console.error('RUNNER_ADMISSION_DIAGNOSTIC_DENIED: ' + e.message);
+    // Errors can embed raw provider responses; never echo untrusted API output.
+    console.error('RUNNER_ADMISSION_DIAGNOSTIC_DENIED: failed API read or receipt validation (details withheld)');
     process.exitCode = 2;
   }
 }
