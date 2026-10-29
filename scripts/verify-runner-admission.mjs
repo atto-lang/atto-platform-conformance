@@ -49,9 +49,35 @@ export function verifyRunnerAdmission(run, jobPage, expected) {
   reject(Boolean(canaryStep), 'no completed canary step');
   reject(job?.conclusion === 'success' && canaryStep?.conclusion === 'success', 'canary did not succeed');
 
+  // Runner execution is a different claim from a successful canary. In particular,
+  // a compiler or guest test which *ran and failed* must not be hidden as zero-step CI.
+  // Bind this observation to the caller-pinned run/attempt/commit and the complete
+  // Jobs API response; a forged/mismatched receipt is not observed execution.
+  const receiptIdentityMatched =
+    Number.isSafeInteger(expected?.runId) && expected.runId > 0 &&
+    Number.isSafeInteger(expected?.attempt) && expected.attempt > 0 &&
+    typeof expected?.sha === 'string' && /^[0-9a-f]{40}$/i.test(expected.sha) &&
+    typeof expected?.repository === 'string' && expected.repository.length > 0 &&
+    typeof expected?.branch === 'string' && expected.branch.length > 0 &&
+    run?.id === expected.runId &&
+    run?.repository?.full_name === expected.repository &&
+    run?.head_sha === expected.sha &&
+    run?.head_branch === expected.branch &&
+    typeof run?.path === 'string' && run.path.split('@')[0] === CANARY_WORKFLOW &&
+    ['push', 'workflow_dispatch'].includes(run?.event) &&
+    run?.run_attempt === expected.attempt &&
+    run?.status === 'completed' &&
+    Array.isArray(jobPage?.jobs) && Number.isSafeInteger(jobPage.total_count) &&
+    jobPage.total_count === jobPage.jobs.length &&
+    matches.length === 1 && Number.isSafeInteger(job?.id) && job.id > 0 &&
+    job?.run_id === run.id && job?.run_attempt === run.run_attempt &&
+    job?.head_sha === run.head_sha && job?.status === 'completed';
+  const runnerBackedExecutionObserved = receiptIdentityMatched && runnerAllocated && meaningful.length > 0;
+
   return {
     admitted: reasons.length === 0,
     runnerAllocated,
+    runnerBackedExecutionObserved,
     meaningfulStepExecuted: meaningful.length > 0,
     backendGuestExecution: false,
     runId: run?.id ?? null,
