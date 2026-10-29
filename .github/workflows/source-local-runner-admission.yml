@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - ci/source-local-runner-admission-20261028
+    paths:
+      - '.github/workflows/source-local-runner-admission.yml'
 permissions: {}
 jobs:
   runner-admission:
@@ -25,4 +27,5 @@ jobs:
           test -n "${GITHUB_RUN_ID:-}"
           test -n "${GITHUB_RUN_ATTEMPT:-}"
           test -n "${GITHUB_SHA:-}"
+          test ! -e "$GITHUB_WORKSPACE/.git"
           printf 'RUNNER_ADMISSION_EXECUTED repo=%s run=%s attempt=%s sha=%s os=%s\n' "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" "$GITHUB_SHA" "$RUNNER_OS"
