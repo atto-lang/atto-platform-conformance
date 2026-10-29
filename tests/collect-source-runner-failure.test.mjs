@@ -13,6 +13,8 @@ const base = () => ({
     conclusion: 'failure', runner_id: 0, runner_name: '', steps: [] }] },
   annotations: [{ annotation_level: 'failure', title: 'Provider message',
     message: 'Job did not start due to policy (synthetic fixture)' }],
+  checks: { total_count: 1, check_runs: [{ id: 123254216351, name: 'runner-admission', head_sha: sha,
+    status: 'completed', conclusion: 'failure', app: {id:15368}, output: { annotations_count: 1 } }] },
 });
 function withMutation(f) { const data = base(); f?.(data); return data; }
 test('parse positive exact target', () => assert.deepEqual(parseTarget([String(target.runId), '1', sha, BRANCH]), target));
@@ -55,16 +57,16 @@ test('housekeeping-only work does not count as meaningful',()=>{
   assert.equal(validateReceipt(d.run,d.jobs,target).runnerBackedExecutionObserved,false);
 });
 test('collect evidence only uses approved three read-only routes and returns annotations', async()=>{
-  const d=base(), paths=[];const urls=['repos/' + REPOSITORY + '/actions/runs/' + target.runId,'repos/' + REPOSITORY + '/actions/runs/' + target.runId + '/attempts/1/jobs?per_page=100','repos/' + REPOSITORY + '/check-runs/123254216351/annotations?per_page=100'];
-  const x=await collectEvidence(target, async p=>{paths.push(p);return [d.run,d.jobs,d.annotations][paths.length-1];});
-  assert.deepEqual(paths,urls);assert.equal(x.providerAnnotations.length,1);assert.equal(x.sourceExportAuthorized,false);assert.equal(x.preAllocationFailure,true);
+  const d=base(), paths=[];const urls=['repos/' + REPOSITORY + '/actions/runs/' + target.runId,'repos/' + REPOSITORY + '/actions/runs/' + target.runId + '/attempts/1/jobs?per_page=100', 'repos/' + REPOSITORY + '/commits/' + sha + '/check-runs?per_page=100', 'repos/' + REPOSITORY + '/check-runs/123254216351/annotations?per_page=100'];
+  const x=await collectEvidence(target, async p=>{paths.push(p);return [d.run,d.jobs,d.checks,d.annotations][paths.length-1];});
+  assert.deepEqual(paths,urls);assert.equal(x.providerAnnotations.length,1);assert.equal(x.checkAppId,15368);assert.equal(x.expectedAnnotationCount,1);assert.equal(x.sourceExportAuthorized,false);assert.equal(x.preAllocationFailure,true);
 });
 test('collect refuses malformed annotation API and does not mark success', async()=>{
-  const d=base();let i=0;await assert.rejects(collectEvidence(target,async()=>[d.run,d.jobs,{error:'403'}][i++]));
+  const d=base();let i=0;await assert.rejects(collectEvidence(target,async()=>[d.run,d.jobs,d.checks,{error:'403'}][i++]));
 });
 test('mask credential-like tokens in annotation output',async()=>{
   const d=base();d.annotations[0].message='Bearer abcdef ghp_abcdefghijklmnopqrstuvwxyz123456789';let i=0;
-  const x=await collectEvidence(target,async()=>[d.run,d.jobs,d.annotations][i++]);
+  const x=await collectEvidence(target,async()=>[d.run,d.jobs,d.checks,d.annotations][i++]);
   assert.doesNotMatch(x.providerAnnotations[0].message,/ghp_|Bearer abcdef/);
 });
 test('reject paths outside source-local approved read-only subset',()=>{
@@ -87,19 +89,54 @@ test('refuse not-completed job in failed-run collector',()=>{
 });
 test('refuse truncated 100-entry annotation page instead of presenting partial evidence',async()=>{
   const d=base();let i=0; const many=Array.from({length:100},()=>({...d.annotations[0]}));
-  await assert.rejects(collectEvidence(target,async()=>[d.run,d.jobs,many][i++]));
+  await assert.rejects(collectEvidence(target,async()=>[d.run,d.jobs,d.checks,many][i++]));
 });
 test('refuse malformed annotation with missing message',async()=>{
   const d=base();let i=0;const bad=[{title:'broken',annotation_level:'failure'}];
-  await assert.rejects(collectEvidence(target,async()=>[d.run,d.jobs,bad][i++]));
+  await assert.rejects(collectEvidence(target,async()=>[d.run,d.jobs,d.checks,bad][i++]));
 });
 test('refuse invalid annotation level',async()=>{
   const d=base();let i=0;const bad=[{message:'hi',annotation_level:'imposter'}];
-  await assert.rejects(collectEvidence(target,async()=>[d.run,d.jobs,bad][i++]));
+  await assert.rejects(collectEvidence(target,async()=>[d.run,d.jobs,d.checks,bad][i++]));
 });
 test('redact generic secrets and URL userinfo in provider annotation',async()=>{
   const d=base();let i=0;d.annotations[0].message='password=superSecret token:1234567890 https://alice:secretpass@example.com/path authorization:BearerToken x-api-key=key123';
-  const x=await collectEvidence(target,async()=>[d.run,d.jobs,d.annotations][i++]);
+  const x=await collectEvidence(target,async()=>[d.run,d.jobs,d.checks,d.annotations][i++]);
   const v=x.providerAnnotations[0].message;
   for (const secret of ['superSecret','1234567890','secretpass','BearerToken','key123']) assert.ok(!v.includes(secret), secret);
+});
+
+const invalidChecks = [
+  ['untrusted check app issuer', d=>{d.checks.check_runs[0].app.id=999;}],
+  ['wrong SHA check', d=>{d.checks.check_runs[0].head_sha='0'.repeat(40);}],
+  ['wrong check job ID', d=>{d.checks.check_runs[0].id=17;}],
+  ['missing unique check', d=>{d.checks.check_runs=[];d.checks.total_count=0;}],
+  ['truncated check pagination', d=>{d.checks.total_count=2;}],
+  ['check conclusion success', d=>{d.checks.check_runs[0].conclusion='success';}],
+  ['wrong check name', d=>{d.checks.check_runs[0].name='unrelated-check';}],
+  ['unknown annotation count', d=>{d.checks.check_runs[0].output={};}],
+  ['negative annotation count', d=>{d.checks.check_runs[0].output.annotations_count=-1;}],
+  ['100-or-more annotations', d=>{d.checks.check_runs[0].output.annotations_count=100;}],
+  ['too few annotation responses', d=>{d.checks.check_runs[0].output.annotations_count=2;}],
+  ['too many annotation responses', d=>{d.checks.check_runs[0].output.annotations_count=0;}],
+];
+for (const [label, mutate] of invalidChecks) {
+  test('fail closed on check run provenance: '+label,async()=>{
+    const d=base();mutate(d);let i=0;
+    await assert.rejects(collectEvidence(target,async()=>[d.run,d.jobs,d.checks,d.annotations][i++]));
+  });
+}
+test('annotation source output count of exactly two independently matches returned messages',async()=>{
+  const d=base();d.checks.check_runs[0].output.annotations_count=2;
+  d.annotations.push({annotation_level:'warning',title:'Second',message:'synthetic second'});
+  let i=0;const x=await collectEvidence(target,async()=>[d.run,d.jobs,d.checks,d.annotations][i++]);
+  assert.equal(x.expectedAnnotationCount,2);
+  assert.equal(x.providerAnnotations.length,2);
+});
+test('allow check-runs source metadata read; reject similar unapproved paths',()=>{
+  const allowed='repos/' + REPOSITORY + '/commits/' + sha + '/check-runs?per_page=100';
+  // A permitted path reaches gh; this environment does not have gh, so failure
+  // from the gh execution is expected instead of the read-only path policy.
+  assert.throws(()=>githubReadOnlyGet(allowed));
+  assert.throws(()=>githubReadOnlyGet('repos/' + REPOSITORY + '/commits/' + sha + '/check-runs?per_page=100&extra=1'));
 });
