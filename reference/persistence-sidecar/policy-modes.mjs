@@ -67,7 +67,12 @@ function synchronous(callback, data) {
 // This models scoped state access and durable acknowledgement for host tests only.
 // The real language must forbid direct actor-state access in parser/typechecker/borrow checker.
 export class PolicyActorReference {
-  #state; #version = 0; #pending = null;
+  #state; #version = 0; #pending = null; #inScope = false;
+  #withScope(fn) {
+    if (this.#inScope) deny('ACTOR_REENTRANCY_DENIED');
+    this.#inScope = true;
+    try { return fn(); } finally { this.#inScope = false; }
+  }
   constructor({sidecar = null, tenantId, actor, stateName = 'main', epoch = 1,
                policy = '#none', initialState, reducer = null, schemaVersion = 1}) {
     this.policy = resolve_persistence_policy(policy);
@@ -87,6 +92,7 @@ export class PolicyActorReference {
   get has_pending_write() { return this.#pending !== null; }
   // No mutable state reference is exposed to callers.
   handle_state(access, callback) {
+    return this.#withScope(() => {
     if (typeof callback !== 'function') deny('INVALID_STATE_ACCESS');
     if (access === 'critical-read')
       return clone_json(synchronous(callback, freeze_deep(clone_json(this.#state))));
@@ -96,6 +102,7 @@ export class PolicyActorReference {
     const draft = clone_json(this.#state);
     synchronous(callback, draft);
     this.#state = clone_json(draft);
+    });
   }
   #enqueue(opId, kind, payload, nextState) {
     if (this.#pending) deny('WRITE_ALREADY_PENDING');
@@ -111,35 +118,49 @@ export class PolicyActorReference {
       return receipt;
     }
     if (receipt.status !== 'admitted' || receipt.durable) deny('INVALID_ADMISSION_RECEIPT');
-    this.#pending = {opId, nextState: clone_json(nextState), nextVersion: this.#version + 1};
+    this.#pending = {opId, envelope, nextState: clone_json(nextState), nextVersion: this.#version + 1};
     return receipt; // Never a durable success; caller must flush + apply_commit.
   }
   stage_snapshot(opId, critical_write_callback) {
+    return this.#withScope(() => {
     if (this.policy.storageKind !== 'snapshot') deny('WRONG_STORAGE_KIND');
     if (this.#pending) deny('WRITE_ALREADY_PENDING');
     const draft = clone_json(this.#state);
     synchronous(critical_write_callback, draft);
     return this.#enqueue(opId, 'snapshot', draft, draft);
+    });
   }
   stage_event(opId, event) {
+    return this.#withScope(() => {
     if (this.policy.storageKind !== 'event') deny('WRONG_STORAGE_KIND');
     if (this.#pending) deny('WRITE_ALREADY_PENDING');
     const e = clone_json(event);
     const nextState = clone_json(synchronous((x) => this.reducer(clone_json(this.#state), x), e));
     return this.#enqueue(opId, 'event', e, nextState);
+    });
   }
   apply_commit(receipt) {
+    return this.#withScope(() => {
     const p = this.#pending;
     if (!p || !receipt || receipt.opId !== p.opId) deny('UNMATCHED_RECEIPT');
     if (receipt.status === 'rejected') { this.#pending = null; deny('RELOAD_REQUIRED'); }
     if (receipt.status !== 'committed' || receipt.durable !== true ||
         receipt.version !== p.nextVersion) deny('OUTCOME_UNKNOWN');
+    // Public receipts are not proof of a transaction. Confirm by reading the
+    // trusted provider's persisted operation record before publishing state.
+    if (typeof this.sidecar.verifyCommit !== 'function') deny('UNVERIFIABLE_COMMIT');
+    const verified = this.sidecar.verifyCommit(p.envelope);
+    if (!verified || verified.version !== receipt.version ||
+        verified.opId !== receipt.opId || verified.status !== 'committed' ||
+        verified.durable !== true) deny('OUTCOME_UNKNOWN');
     this.#state = clone_json(p.nextState);
     this.#version = receipt.version;
     this.#pending = null;
     return {status: 'committed', durable: true, version: this.#version};
+    });
   }
   restore() {
+    return this.#withScope(() => {
     if (this.#pending) deny('PENDING_OUTCOME_MUST_RESOLVE');
     if (this.policy.mode === '#none') { this.#state = clone_json(this.initialState); this.#version = 0; return; }
     const loaded = this.sidecar.load({tenantId:this.tenantId,actor:this.actor,stateName:this.stateName});
@@ -159,5 +180,6 @@ export class PolicyActorReference {
     if (version !== loaded.version) deny('JOURNAL_GAP');
     this.#state = value;
     this.#version = version;
+    });
   }
 }
