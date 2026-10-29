@@ -72,11 +72,22 @@ export async function publishPrivateMirror({
   approvedDestinations,token,fetchImpl=fetch
 }) {
   sha(sourceCommit);sha(sourceTree);sha(destinationBaseCommit);
-  if(!validPath(prefix)||!BRANCH.test(newBranch)||newBranch.includes("..")||newBranch.endsWith(".lock"))
+  if(!validPath(prefix)||!BRANCH.test(newBranch)||newBranch.includes("..")||
+     newBranch.endsWith(".")||/\\.lock$/i.test(newBranch))
     throw Error("invalid destination prefix or isolated CI branch");
-  const authorize=()=>requirePrivateMirror({
-    source,destination,sourceCommit,sourceTree,approvedDestinations,token,fetchImpl
-  });
+  // Do not graft a confidential source snapshot onto an arbitrary or stale
+  // destination commit. A protected destination main is required by admission;
+  // the caller's immutable base must also equal that protected main HEAD.
+  // Recheck before EACH remote mutation to deny base drift after admission.
+  const authorize=async()=>{
+    await requirePrivateMirror({
+      source,destination,sourceCommit,sourceTree,approvedDestinations,token,fetchImpl
+    });
+    const protectedMain=await githubRequest(destination,"/branches/main",token,{fetchImpl});
+    if(protectedMain?.name!=="main"||protectedMain.protected!==true||
+       protectedMain?.commit?.sha!==destinationBaseCommit)
+      throw Error("destination base commit differs from protected carrier main");
+  };
   // FIRST external operation: authorization, before ANY source bytes are fetched
   // and before ANY destination object/ref is created.
   await authorize();
