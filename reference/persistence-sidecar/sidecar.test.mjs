@@ -129,3 +129,24 @@ test('control-character identities are rejected at admission',()=>{
     s.close();
   }finally{f.close();}
 });
+
+test('reject malformed Unicode and noncanonical persistence identifiers',()=>{
+  const f=fixture();
+  try {
+    const s=f.open();
+    for (const actor of ['\ud800','\udfff','e\u0301','a\0b','a\nb']) {
+      assert.throws(()=>s.grantEpoch({tenantId:'tenant-a',actor,epoch:1}), /INVALID_EPOCH/);
+      assert.throws(()=>s.enqueue(write(actor,'op')), /INVALID_WRITE/);
+      assert.throws(()=>s.load({tenantId:'tenant-a',actor,stateName:'main'}), /INVALID_READ/);
+    }
+    s.grantEpoch({tenantId:'tenant-a',actor:'�',epoch:1});
+    assert.equal(s.enqueue(write('�','ok')).status,'admitted');
+    for (const stateName of ['\ud800','e\u0301']) {
+      assert.throws(()=>s.enqueue(write('�','op',{stateName})), /INVALID_WRITE/);
+      assert.throws(()=>s.load({tenantId:'tenant-a',actor:'�',stateName}), /INVALID_READ/);
+    }
+    assert.throws(()=>s.enqueue(write('�','\ud800')), /INVALID_WRITE/);
+    assert.equal(s.flush()[0].status,'committed');
+    s.close();
+  } finally { f.close(); }
+});
