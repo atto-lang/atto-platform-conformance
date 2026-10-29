@@ -96,16 +96,16 @@ function fixture(records = {}, calls = []) {
         encoded(A+" "+T+" "+destinationId+"\n"),
       [destination+"/contents/.github/workflows/private-ci-carrier-admission.yml?ref="+C]:
         encoded(carrierPolicyWorkflow),
-      [destination+"/commits?sha="+C+"&path=.github%2Fprivate-ci-independent-reviewer.json&per_page=1]:
+      [destination+"/commits?sha="+C+"&path=.github%2Fprivate-ci-independent-reviewer.json&per_page=1"]:
         [{sha:carrierAuthorizationCommit}],
-      [destination+"/commits?sha="+C+"&path=.github%2Fprivate-ci-approved-source-snapshots.txt&per_page=1]:
+      [destination+"/commits?sha="+C+"&path=.github%2Fprivate-ci-approved-source-snapshots.txt&per_page=1"]:
         [{sha:carrierAuthorizationCommit}],
-      [destination+"/commits/"+carrierAuthorizationCommit+"/pulls?per_page=20]:[{
+      [destination+"/commits/"+carrierAuthorizationCommit+"/pulls?per_page=20"]:[{
         number:701,state:"closed",merged_at:"2026-10-18T14:00:00Z",
         base:{ref:"main",repo:{full_name:destination}},head:{sha:carrierPrHead,repo:{full_name:destination}},
         user:{id:400000002}
       }],
-      [destination+"/pulls/701/reviews?per_page=100]:[{
+      [destination+"/pulls/701/reviews?per_page=100"]:[{
         id:9002,state:"APPROVED",commit_id:carrierPrHead,
         submitted_at:"2026-10-18T13:59:00Z",user:reviewer
       }],
@@ -124,18 +124,18 @@ function fixture(records = {}, calls = []) {
         encoded(A+" "+T+" "+destinationId+"\n"),
       [source+"/contents/.github/workflows/private-ci-policy.yml?ref="+M]:
         encoded(sourcePolicyWorkflow),
-      [source+"/commits?sha="+M+"&path=.github%2Fprivate-ci-approved-repositories.txt&per_page=1]:
+      [source+"/commits?sha="+M+"&path=.github%2Fprivate-ci-approved-repositories.txt&per_page=1"]:
         [{sha:sourceAuthorizationCommit}],
-      [source+"/commits?sha="+M+"&path=.github%2Fprivate-ci-approved-source-snapshots.txt&per_page=1]:
+      [source+"/commits?sha="+M+"&path=.github%2Fprivate-ci-approved-source-snapshots.txt&per_page=1"]:
         [{sha:sourceAuthorizationCommit}],
-      [source+"/commits?sha="+M+"&path=.github%2Fprivate-ci-independent-reviewer.json&per_page=1]:
+      [source+"/commits?sha="+M+"&path=.github%2Fprivate-ci-independent-reviewer.json&per_page=1"]:
         [{sha:sourceAuthorizationCommit}],
-      [source+"/commits/"+sourceAuthorizationCommit+"/pulls?per_page=20]:[{
+      [source+"/commits/"+sourceAuthorizationCommit+"/pulls?per_page=20"]:[{
         number:501,state:"closed",merged_at:"2026-10-18T14:00:00Z",
         base:{ref:"main",repo:{full_name:source}},head:{sha:sourcePrHead,repo:{full_name:source}},
         user:{id:400000001}
       }],
-      [source+"/pulls/501/reviews?per_page=100]:[{
+      [source+"/pulls/501/reviews?per_page=100"]:[{
         id:9001,state:"APPROVED",commit_id:sourcePrHead,
         submitted_at:"2026-10-18T13:59:00Z",user:reviewer
       }],
