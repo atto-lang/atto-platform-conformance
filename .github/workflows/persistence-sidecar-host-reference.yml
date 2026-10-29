@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'reference/persistence-sidecar/**'
+      - 'docs/ACTOR_IDENTITY_V1.md'
       - '.github/workflows/persistence-sidecar-host-reference.yml'
   workflow_dispatch:
 permissions:
@@ -19,4 +20,4 @@ jobs:
       - name: Check SQLite host engine and run reference tests (NOT guest proof)
         run: |
           node --version
-          node --disable-warning=ExperimentalWarning --test reference/persistence-sidecar/sidecar.test.mjs
+          node --disable-warning=ExperimentalWarning --test reference/persistence-sidecar/sidecar.test.mjs reference/persistence-sidecar/identity.test.mjs
