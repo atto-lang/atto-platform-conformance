@@ -109,6 +109,18 @@ test("destination main drift before first private object write denies publicatio
  assert.ok(mainReads>=4);
  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
 });
+test("carrier main drift after one blob write prevents tree, commit and ref publication",async()=>{
+ let mainReads=0;
+ const {h,promise}=run({mainBranch:(original)=>{
+   mainReads++;
+   return mainReads>=7?{...original,commit:{sha:"f".repeat(40)}}:original;
+ }});
+ await assert.rejects(promise);
+ assert.ok(mainReads>=7);
+ const posts=h.events.filter(e=>e.method==="POST").map(e=>e.path);
+ assert.deepEqual(posts,[destination+"/git/blobs"],
+   "a dangling blob may be written, but no tree, commit or ref may be published");
+});
 test("trailing-dot and mixed-case lock suffix branch refs fail before contacting GitHub",async()=>{
  for(const newBranch of ["ci/private-probe.","ci/private-probe.LOCK","ci/private-probe.Lock"]){
   const {h,promise}=run({}, {newBranch});
