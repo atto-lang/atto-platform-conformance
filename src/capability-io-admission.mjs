@@ -40,6 +40,8 @@ export class ReferenceCapabilityIoBroker {
   #actors = new WeakMap();
   #targets = new WeakMap();
   #tickets = new WeakMap();
+  #activeTickets = new Set(); // bounded by maxInFlight, permits shutdown drain
+  #closed = false;
 
   constructor({ layers, scopeMatches, maxInFlight }) {
     if (typeof scopeMatches !== 'function')
@@ -52,6 +54,7 @@ export class ReferenceCapabilityIoBroker {
   // Only the trusted runtime may call these host-side methods. Neither object
   // references nor actor labels are proof of identity without isolate mediation.
   registerActor(parent = null, policy = null) {
+    if (this.#closed) throw new Error('host I/O broker is shut down');
     if (parent !== null && !this.#liveActor(parent))
       throw new Error('parent actor authority unavailable');
     const handle = Object.freeze(Object.create(null));
@@ -72,6 +75,7 @@ export class ReferenceCapabilityIoBroker {
   }
 
   bindTarget({ permission, resource, transport, destination }) {
+    if (this.#closed) throw new Error('host I/O broker is shut down');
     if (!OP_PERMISSIONS.includes(permission) || typeof resource !== 'string' ||
         !resource || typeof transport !== 'string' || !transport ||
         typeof destination !== 'string' || !destination ||
@@ -90,6 +94,7 @@ export class ReferenceCapabilityIoBroker {
   }
 
   admit(actor, target) {
+    if (this.#closed) return { status: 'DENIED_SHUTDOWN' };
     if (!this.#liveActor(actor)) return { status: 'DENIED_ACTOR' };
     const binding = this.#targets.get(target);
     if (!binding) return { status: 'DENIED_TARGET' };
@@ -121,6 +126,7 @@ export class ReferenceCapabilityIoBroker {
       current = currentState.parent;
     }
     // A reentrant matcher can revoke the actor during any of the checks.
+    if (this.#closed) return { status: 'DENIED_SHUTDOWN' };
     if (!this.#liveActor(actor)) return { status: 'DENIED_ACTOR' };
     if (this.#used >= this.#maxInFlight) return { status: 'BACKPRESSURE' };
     const ticket = Object.freeze(Object.create(null));
@@ -128,6 +134,7 @@ export class ReferenceCapabilityIoBroker {
       actor, target, state: 'ACTIVE', result: null, retired: false,
     });
     this.#actors.get(actor).tickets.add(ticket);
+    this.#activeTickets.add(ticket);
     this.#used++;
     return { status: 'ADMITTED', ticket };
   }
@@ -138,7 +145,7 @@ export class ReferenceCapabilityIoBroker {
   dispatch(actor, ticket, actualTarget) {
     const record = this.#tickets.get(ticket);
     if (!record || record.actor !== actor || record.retired ||
-        record.state !== 'ACTIVE' || !this.#liveActor(actor)) return false;
+        record.state !== 'ACTIVE' || !this.#liveActor(actor) || this.#closed) return false;
     const pinned = this.#targets.get(record.target);
     const actual = this.#targets.get(actualTarget);
     if (pinned === undefined || pinned !== actual || record.target !== actualTarget)
@@ -182,6 +189,7 @@ export class ReferenceCapabilityIoBroker {
     }
     record.retired = true;
     this.#actors.get(actor).tickets.delete(ticket);
+    this.#activeTickets.delete(ticket);
     this.#used--;
     return true;
   }
@@ -195,7 +203,17 @@ export class ReferenceCapabilityIoBroker {
     return true;
   }
 
+  shutdown() {
+    if (this.#closed) return false;
+    this.#closed = true;
+    for (const ticket of this.#activeTickets) {
+      const record = this.#tickets.get(ticket);
+      if (record) this.cancel(record.actor, ticket);
+    }
+    return true;
+  }
+
   snapshot() {
-    return Object.freeze({ inFlight: this.#used, maxInFlight: this.#maxInFlight });
+    return Object.freeze({ inFlight: this.#used, maxInFlight: this.#maxInFlight, closed: this.#closed });
   }
 }
