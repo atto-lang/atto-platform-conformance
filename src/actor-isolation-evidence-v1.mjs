@@ -41,6 +41,25 @@ function step(s, name) {
       /^(?:pre|post)\s|^(?:set up job|complete job|initialize containers)$/i.test(s))
     fail(name + " is not an executable step");
 }
+// Github's job step summaries are untrusted inputs until independently fetched;
+// requiring actual-success-shaped steps limits counterfeit zero-step/skip reports.
+function utc(v, name) {
+  if (typeof v !== "string" ||
+      !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,6})?Z$/.test(v) ||
+      !Number.isFinite(Date.parse(v)))
+    fail(name + " must be an ISO UTC timestamp");
+  return Date.parse(v);
+}
+function executedStep(record, i) {
+  keys(record, ["name", "number", "conclusion", "startedAt", "completedAt"],
+       "executed step " + i);
+  step(record.name, "executed step name");
+  positive(record.number, "executed step number");
+  if (record.conclusion !== "success") fail("executed step was not successful");
+  const start = utc(record.startedAt, "step start");
+  const end = utc(record.completedAt, "step end");
+  if (end < start) fail("executed step completed before it started");
+}
 function validateCase(p, expectedId, type) {
   keys(p, ["id", "outcome", "compiler", "guest", "guestAssertions",
            "actors", "violationRejected", "hostBeforeFree"], "case " + expectedId);
@@ -122,10 +141,20 @@ export function validateIsolationClaim(m, e) {
     fail("compiler and guest must be distinct CI steps");
   if (!Array.isArray(e.ci.executedSteps) || e.ci.executedSteps.length < 2)
     fail("zero-step CI cannot certify guest execution");
-  for (const s of e.ci.executedSteps) step(s, "executed step");
-  if (!e.ci.executedSteps.includes(e.ci.compilerStep) ||
-      !e.ci.executedSteps.includes(e.ci.guestStep))
-    fail("missing actual compiler/guest execution steps");
+  e.ci.executedSteps.forEach(executedStep);
+  const names = e.ci.executedSteps.map(x => x.name);
+  const numbers = e.ci.executedSteps.map(x => x.number);
+  if (new Set(names).size !== names.length ||
+      new Set(numbers).size !== numbers.length ||
+      numbers.some((n,i) => i > 0 && n <= numbers[i-1]))
+    fail("executed steps must have unique names and ordered step numbers");
+  const compilerIndex = names.indexOf(e.ci.compilerStep);
+  const guestIndex = names.indexOf(e.ci.guestStep);
+  if (compilerIndex < 0 || guestIndex < 0 || compilerIndex >= guestIndex)
+    fail("compiler and guest must be distinct, executed, ordered CI steps");
+  if (e.ci.executedSteps.some((x,i,steps) =>
+       i > 0 && Date.parse(x.startedAt) < Date.parse(steps[i-1].startedAt)))
+    fail("CI step timestamps are not ordered");
   distinctExact(e.registration, ISOLATION_CASES.map(([id]) => id),
                 "test registration");
   if (!Array.isArray(e.caseResults) || e.caseResults.length !== ISOLATION_CASES.length)
