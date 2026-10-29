@@ -4,7 +4,7 @@ import {createHash} from "node:crypto";
 import {publishPrivateMirror} from "../bin/private-mirror-publish.mjs";
 import {source,destination,fixture as authorizedFixture,good as authorizedGood} from "./private-ci-authorization-fixture.mjs";
 
-const A="a".repeat(40),B="b".repeat(40),C="5e5201f1b1618f87282bf41ce89ca710404cce95",
+const A="a".repeat(40),B="c".repeat(40),C="5e5201f1b1618f87282bf41ce89ca710404cce95",
  D="d".repeat(40),E="e".repeat(40),M="f".repeat(40);
 const opts={source,destination,sourceCommit:A,sourceTree:D,destinationBaseCommit:B,
   prefix:"snapshots/checked",newBranch:"ci/private-test-proof",
@@ -13,7 +13,7 @@ const good=authorizedGood;
 const encoded=text=>({type:"file",encoding:"base64",sha:createHash("sha1").update("blob "+Buffer.byteLength(text)+"\0").update(text).digest("hex"),
   content:Buffer.from(text).toString("base64")});
 
-function fixture({sourceTree,destinationTree,materializedTree,sourceBlobContent="NDI7Cg==",blobSha=C,refSha=E,meta,errors}={}){
+function fixture({sourceTree,destinationTree,materializedTree,sourceBlobContent="NDI7Cg==",blobSha=C,refSha=E,meta,errors,mainBranch}={}){
   const events=[],seen={source:0,destination:0};
   const admissionRequest=authorizedFixture();
   const request=async(url,options)=>{
@@ -23,6 +23,10 @@ function fixture({sourceTree,destinationTree,materializedTree,sourceBlobContent=
     // synthetic admission fixture; publisher-specific Git objects below remain mock-only.
     if(path.startsWith("ores-truffle-oreslang/oreslang-platform-conformance/issues/"))
       return admissionRequest(url,options);
+    if(path===destination+"/branches/main"&&typeof mainBranch==="function"){
+      const authorized=await admissionRequest(url,options);
+      return {status:200,json:async()=>mainBranch(await authorized.json())};
+    }
     const src=path===source||path.startsWith(source+"/"),name=src?source:destination;
     if(path===name){
       seen[src?"source":"destination"]++;
@@ -84,6 +88,33 @@ test("real destination Git-object publisher guards every write and only creates 
  assert.ok(h.seen.source>=5&&h.seen.destination>=5,"reverify before every write");
  assert.ok(h.events.some(e=>e.path===destination+"/git/ref/heads/"+opts.newBranch),
    "verify CI ref persisted with pinned SHA");
+});
+test("destination base commit must equal protected carrier main before source blob reads",async()=>{
+ for(const destBase of ["b".repeat(40),"f".repeat(40)]){
+  const {h,promise}=run({}, {destinationBaseCommit:destBase});
+  await assert.rejects(promise,/destination base commit differs from protected carrier main/);
+  assert.equal(h.events.some(e=>e.path.includes("/git/blobs/")),false);
+  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+ }
+});
+test("destination main drift before first private object write denies publication",async()=>{
+ // An admission probe passes the approved base, then a later recheck sees
+ // a different commit. All requests are mock-only and never export source.
+ let mainReads=0;
+ const {h,promise}=run({mainBranch:(original)=>{
+   mainReads++;
+   return mainReads>=7?{...original,commit:{sha:"f".repeat(40)}}:original;
+ }});
+ await assert.rejects(promise,/destination base commit differs from protected carrier main/);
+ assert.ok(mainReads>=7);
+ assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+});
+test("trailing-dot and mixed-case lock suffix branch refs fail before contacting GitHub",async()=>{
+ for(const newBranch of ["ci/private-probe.","ci/private-probe.LOCK","ci/private-probe.Lock"]){
+  const {h,promise}=run({}, {newBranch});
+  await assert.rejects(promise,/invalid destination prefix or isolated CI branch/);
+  assert.equal(h.events.length,0);
+ }
 });
 test("public destinations fail BEFORE fetching private source or writing anything",async()=>{
  const {h,promise}=run({meta:(name)=>name===destination?{...good(name),private:false,visibility:"public"}:good(name)});
