@@ -133,10 +133,8 @@ test('annotation source output count of exactly two independently matches return
   assert.equal(x.expectedAnnotationCount,2);
   assert.equal(x.providerAnnotations.length,2);
 });
-test('allow check-runs source metadata read; reject similar unapproved paths',()=>{
-  const allowed='repos/' + REPOSITORY + '/commits/' + sha + '/check-runs?per_page=100';
-  // A permitted path reaches gh; this environment does not have gh, so failure
-  // from the gh execution is expected instead of the read-only path policy.
-  assert.throws(()=>githubReadOnlyGet(allowed));
+test('reject check-runs metadata write and unapproved API query paths without network',()=>{
   assert.throws(()=>githubReadOnlyGet('repos/' + REPOSITORY + '/commits/' + sha + '/check-runs?per_page=100&extra=1'));
+  assert.throws(()=>githubReadOnlyGet('repos/' + REPOSITORY + '/commits/' + sha + '/check-runs'));
+  assert.throws(()=>githubReadOnlyGet('repos/' + REPOSITORY + '/commits/invalid/check-runs?per_page=100'));
 });
