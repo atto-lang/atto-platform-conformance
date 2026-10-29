@@ -77,7 +77,10 @@ function diagnosticMatches(kind, stderr) {
       || /\bFUTURE_CALLBACK_NOT_FUTURE\b/.test(stderr);
   if (kind === 'WRAPPER_LAYER_MISMATCH')
     return /\bWRAPPER_LAYER_MISMATCH\b/.test(stderr)
-      || /has type Future<[^\n]+ but expected (?:Future<|int\b)/.test(stderr);
+      || /has type Future<[^\n]+ but expected (?:Future<|int\b)/.test(stderr)
+      // Java Types.Named is a record; raw checker diagnostics use Named[name=Future,...].
+      || /has type Named\[name=Future, arguments=\[Named\[name=Future,[^\n]+ but expected Named\[name=Future/.test(stderr)
+      || /has type Named\[name=Future,[^\n]+ but expected INT\b/.test(stderr);
   return false;
 }
 function invoke(compiler, dir, source, check) {
