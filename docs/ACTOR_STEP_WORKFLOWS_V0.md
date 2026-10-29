@@ -124,3 +124,25 @@ requires independent review before resuming private-source exports. An exact
 blob match and a verified PRIVATE destination are necessary but insufficient.
 No cross-organization copy, test-branch source mirror, or protected-main change
 was performed in this continuation.
+
+## Native Node 22 exact-source regression gate (2026-10-28)
+
+The same private source-model and test-file bytes now run in the local Node.js
+22.16.0 `node --test` harness with the real `node:crypto` SHA-256 implementation
+and `structuredClone` (without the earlier surrogate shims).
+
+- Model Git blob: `c58554c865549d20f3539886193c09cbb433040a`.
+- Test Git blob: `8091d8f424369a96ed4b9806d00fe93e35b66922`.
+- Result: **20/20 host-only tests PASS** under native Node 22.16.0.
+- New multi-tenant collision test ensures step/cancel outbox keys use
+  `tenant_id/run_id/node_id/attempt`; identical `run_id` values across tenants
+  cannot alias a dispatch key in the model.
+- The Java source-workflow baseline is staged separately in
+  `oreslang-source.java` branch
+  `feat/actor-step-source-guest-baseline-20261028`: three sequential
+  and two parallel native `.ores` step actors plus a JUnit polyglot executor.
+  Java 21 syntax is checked with minimal interface stubs only;
+  actual Oreslang guest compiler/runtime execution is **NOT_EXECUTED**.
+- This local pass is **not** GitHub-hosted CI or a trusted build provenance
+  attestation. Source-org CI has been failing before runner steps and
+  cross-org exports still require independent security approval.
