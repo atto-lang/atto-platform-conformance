@@ -17,7 +17,7 @@ const CHECKPOINT_SCHEMA="oreslang.private-mirror-checkpoint/1";
 function validPath(path) {
   return typeof path==="string" && path.length<=512 && PATH.test(path) &&
     path.split("/").every(x=>x!=="."&&x!==".."&&x.toLowerCase()!==".git"&&
-      !x.endsWith(".")&&!/^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\\.|$)/i.test(x));
+      !x.endsWith(".")&&!/^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(x));
 }
 function sha(value) {
   if(typeof value!=="string"||!OID.test(value))throw Error("invalid immutable Git commit or blob SHA");
