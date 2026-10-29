@@ -33,6 +33,7 @@ const rules=()=>({enforce_admins:{enabled:true},
 const destination = "sagitta-stack/sagitta-infra";
 const incidentPath22="ores-truffle-oreslang/oreslang-platform-conformance/issues/22";
 const incidentPath77="ores-truffle-oreslang/oreslang-platform-conformance/issues/77";
+const incidentPath127="ores-truffle-oreslang/oreslang-platform-conformance/issues/127";
 const incidentPath212="ores-truffle-oreslang/oreslang-platform-conformance/issues/212";
 const incident22={
   number:22,state:"closed",state_reason:"completed",
@@ -47,6 +48,13 @@ const incident77={
   html_url:"https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/77",
   repository_url:"https://api.github.com/repos/ores-truffle-oreslang/oreslang-platform-conformance",
   closed_at:"2026-10-18T14:00:00Z"
+};
+const incident127={
+  number:127,state:"closed",state_reason:"completed",
+  title:"P0 SECURITY: investigate source-bearing Oreslang CI placement in dummy-stack private carrier during unprotected policy window",
+  html_url:"https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/127",
+  repository_url:"https://api.github.com/repos/ores-truffle-oreslang/oreslang-platform-conformance",
+  closed_at:"2026-10-29T04:24:00Z"
 };
 const incident212={
   number:212,state:"closed",state_reason:"completed",
@@ -88,6 +96,7 @@ function fixture(records = {}, calls = []) {
     const defaults={
       [incidentPath22]:incident22,
       [incidentPath77]:incident77,
+      [incidentPath127]:incident127,
       [incidentPath212]:incident212,
       [destination+"/branches/main"]:{name:"main",protected:true,commit:{sha:C}},
       [destination+"/branches/main/protection"]:carrierRules(),
@@ -188,7 +197,7 @@ test("rejects wrong or public source metadata even when destination is private",
   ]) {
     const calls = [];
     await assert.rejects(check({}, {[source]: metadata}, calls), /private source metadata/);
-    assert.equal(calls.length, 4, "cannot inspect target after all three incidents + source rejection");
+    assert.equal(calls.length, 5, "cannot inspect target after all four incidents + source rejection");
   }
 });
 
@@ -416,11 +425,12 @@ test("noncanonical base64 and invalid policy UTF8 must deny",async()=>{
 });
 
 
-test("all three P0 incidents must be exactly completed before source metadata is inspected",async()=>{
+test("all four P0 incidents must be exactly completed before source metadata is inspected",async()=>{
   for(const [path,incident,prior] of [
     [incidentPath22,incident22,0],
     [incidentPath77,incident77,1],
-    [incidentPath212,incident212,2]
+    [incidentPath127,incident127,2],
+    [incidentPath212,incident212,3]
   ]){
     for(const bad of [
       {...incident,state:"open",state_reason:null,closed_at:null},
