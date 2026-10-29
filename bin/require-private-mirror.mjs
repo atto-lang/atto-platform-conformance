@@ -34,6 +34,10 @@ const REQUIRED_INCIDENTS = Object.freeze([
   // remains open. Incident closure is necessary, not sufficient: the reviewed
   // source-commit/tree, destination ID and protected-main gates still apply.
   Object.freeze({
+    number:127,
+    title:"P0 SECURITY: investigate source-bearing Oreslang CI placement in dummy-stack private carrier during unprotected policy window"
+  }),
+  Object.freeze({
     number:212,
     title:"P0 review: LLVM private source exact tree executed in unapproved honeypot carrier"
   })
