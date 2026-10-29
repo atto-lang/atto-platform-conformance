@@ -156,3 +156,20 @@ test('exhaustive local event orders preserve nonnegative credits and no reuse be
     assert.equal(broker.snapshot().inFlight, retired ? 0 : before);
   }
 });
+
+test('matcher reentrancy cannot publish admission after actor revocation', () => {
+  const open = allow();
+  let broker;
+  let actor;
+  broker = new ReferenceCapabilityIoBroker({
+    maxInFlight: 1,
+    layers: { host: open, artifact: open, runtime: open, actor: open, delegated: open },
+    scopeMatches(_permission, resource, scope) {
+      broker.revoke(actor);
+      return resource === scope;
+    },
+  });
+  actor = broker.registerActor();
+  assert.equal(broker.admit(actor, target(broker)).status, 'DENIED_ACTOR');
+  assert.equal(broker.snapshot().inFlight, 0);
+});
