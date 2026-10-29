@@ -50,11 +50,21 @@ export class ReferenceCapabilityIoBroker {
 
   // Only the trusted runtime may call these host-side methods. Neither object
   // references nor actor labels are proof of identity without isolate mediation.
-  registerActor(parent = null) {
+  registerActor(parent = null, policy = null) {
     if (parent !== null && !this.#liveActor(parent))
       throw new Error('parent actor authority unavailable');
     const handle = Object.freeze(Object.create(null));
-    const state = { live: true, children: new Set(), tickets: new Set() };
+    const state = { live: true, parent, children: new Set(), tickets: new Set(),
+      policy: this.#layers.actor };
+    if (policy !== null) {
+      const validated = validatePolicy(policy);
+      for (const rule of Object.values(validated)) {
+        Object.freeze(rule.allow);
+        Object.freeze(rule.deny);
+        Object.freeze(rule);
+      }
+      state.policy = Object.freeze(validated);
+    }
     this.#actors.set(handle, state);
     if (parent !== null) this.#actors.get(parent).children.add(handle);
     return handle;
@@ -94,7 +104,21 @@ export class ReferenceCapabilityIoBroker {
         !evaluatePermission(this.#layers, 'net', binding.destination, this.#matches)) {
       return { status: 'DENIED_PERMISSION' };
     }
-    // A reentrant matcher can revoke the actor during either check.
+    // Every ancestor further restricts a child's effective authority. Merely
+    // registering a more permissive child policy cannot mint capabilities.
+    for (let current = actor; current !== null; ) {
+      const currentState = this.#actors.get(current);
+      if (!currentState?.live) return { status: 'DENIED_ACTOR' };
+      const constrained = {...this.#layers, actor: currentState.policy};
+      if (!evaluatePermission(constrained, binding.permission,
+                              binding.resource, this.#matches) ||
+          (binding.permission === 'net' && binding.destination !== binding.resource &&
+           !evaluatePermission(constrained, 'net', binding.destination, this.#matches))) {
+        return { status: 'DENIED_PERMISSION' };
+      }
+      current = currentState.parent;
+    }
+    // A reentrant matcher can revoke the actor during any of the checks.
     if (!this.#liveActor(actor)) return { status: 'DENIED_ACTOR' };
     if (this.#used >= this.#maxInFlight) return { status: 'BACKPRESSURE' };
     const ticket = Object.freeze(Object.create(null));
