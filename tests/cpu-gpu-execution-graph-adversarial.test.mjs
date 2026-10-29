@@ -9,7 +9,7 @@ const rejects = (code, run) => assert.throws(run, error => error?.code === code)
 
 test("CPU reference runs canonical checked scalar graph", () => {
   assert.equal(executeCpuI64(original()), 42n);
-  assert.equal(executeCpuI64(lower(cpu(seq(i64(900n), add(i64(40n), i64(2n))))), 42n);
+  assert.equal(executeCpuI64(lower(cpu(seq(i64(900n), add(i64(40n), i64(2n)))))), 42n);
 });
 
 test("CPU-only evaluator rejects forged headers and result identity", () => {
