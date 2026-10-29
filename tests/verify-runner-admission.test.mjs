@@ -6,9 +6,11 @@ const expected = {
   repository: 'ores-truffle-oreslang/oreslang-platform-conformance',
   sha: '719cf58796de5d59753aeba67d1787e850d228e5',
   branch: 'ci/source-local-runner-admission-20261028',
+  runId: 42,
+  attempt: 1,
 };
 function fixture() {
-  const run = { id: 42, repository: { full_name: expected.repository }, head_sha: expected.sha, head_branch: expected.branch, path: CANARY_WORKFLOW, event: 'push', run_attempt: 1, status: 'completed' };
+  const run = { id: 42, repository: { full_name: expected.repository }, head_sha: expected.sha, head_branch: expected.branch, path: CANARY_WORKFLOW, event: 'push', run_attempt: 1, status: 'completed', conclusion: 'success' };
   const jobs = { total_count: 1, jobs: [{ id: 123, name: 'runner-admission', run_id: 42, run_attempt: 1, head_sha: expected.sha, runner_id: 10002, runner_name: 'GitHub Actions 10002', status: 'completed', conclusion: 'success', steps: [
     { name: 'Set up job', status: 'completed', conclusion: 'success' },
     { name: CANARY_STEP, status: 'completed', conclusion: 'success' },
@@ -20,6 +22,12 @@ function assess(modify) { const f = fixture(); modify?.(f); return verifyRunnerA
 
 const bad = [
   ['run id', f => { f.run.id = 41; }],
+  ['wrong run id expectation', f => { f.run.id = 41; f.jobs.jobs[0].run_id = 41; }],
+  ['wrong expected attempt', f => { f.run.run_attempt = 2; f.jobs.jobs[0].run_attempt = 2; }],
+  ['run failed with successful job', f => { f.run.conclusion = 'failure'; }],
+  ['invalid job id', f => { f.jobs.jobs[0].id = 0; }],
+  ['invalid workflow path type', f => { f.run.path = 47; }],
+  ['null job item', f => { f.jobs.jobs[0] = null; }],
   ['wrong repository', f => { f.run.repository.full_name = 'untrusted/x'; }],
   ['wrong sha', f => { f.run.head_sha = '0'.repeat(40); }],
   ['wrong branch', f => { f.run.head_branch = 'main'; }],
@@ -57,3 +65,6 @@ test('failed meaningful step is observed but not accepted as success', () => {
   assert.equal(result.meaningfulStepExecuted, true);
   assert.equal(result.admitted, false);
 });
+
+test('fail closed: expected metadata missing', () => { const f = fixture(); assert.equal(verifyRunnerAdmission(f.run, f.jobs, undefined).admitted, false); });
+test('fail closed: malformed expected SHA', () => { const f = fixture(); assert.equal(verifyRunnerAdmission(f.run, f.jobs, { ...expected, sha: '' }).admitted, false); });
