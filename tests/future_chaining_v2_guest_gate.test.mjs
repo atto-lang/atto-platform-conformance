@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { readFileSync, writeFileSync, mkdtempSync, rmSync, symlinkSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync, rmSync, symlinkSync, realpathSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import test from 'node:test';
 
 // Tests prove *failure isolation only*. They do NOT execute an Oreslang guest.
+const native = realpathSync(process.execPath);
 const script = fileURLToPath(new URL('../tools/run-future-chaining-v2-guests.mjs', import.meta.url));
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 const invoke = (...args) => spawnSync(process.execPath, [script, ...args], {
@@ -53,8 +54,8 @@ test('a fake script cannot impersonate a native compiler even if its digest is p
 test('a compiler artifact digest mismatch fails before any guest invocation', () => {
   const dir = mkdtempSync(path.join(tmpdir(), 'ores-future-gate-test-'));
   try {
-    const p = provenance(process.execPath, '0'.repeat(64), dir);
-    const r = invoke('--compiler', process.execPath, '--provenance', p);
+    const p = provenance(native, '0'.repeat(64), dir);
+    const r = invoke('--compiler', native, '--provenance', p);
     assert.notEqual(r.status, 0);
     assert.match(r.stderr, /SHA-256/);
   } finally { rmSync(dir, { recursive: true, force: true }); }
@@ -64,8 +65,8 @@ test('the compiler path may not be an indirection symlink', () => {
   const dir = mkdtempSync(path.join(tmpdir(), 'ores-future-gate-test-'));
   try {
     const link = path.join(dir, 'linked-binary');
-    symlinkSync(process.execPath, link);
-    const p = provenance(link, digest(readFileSync(process.execPath)), dir);
+    symlinkSync(native, link);
+    const p = provenance(link, digest(readFileSync(native)), dir);
     const r = invoke('--compiler', link, '--provenance', p);
     assert.notEqual(r.status, 0);
     assert.match(r.stderr, /ELOOP|invalid regular file|FAIL_CLOSED/);
@@ -75,8 +76,8 @@ test('the compiler path may not be an indirection symlink', () => {
 test('an unrelated real native executable cannot be promoted to guest success', () => {
   const dir = mkdtempSync(path.join(tmpdir(), 'ores-future-gate-test-'));
   try {
-    const p = provenance(process.execPath, digest(readFileSync(process.execPath)), dir);
-    const r = invoke('--compiler', process.execPath, '--provenance', p);
+    const p = provenance(native, digest(readFileSync(native)), dir);
+    const r = invoke('--compiler', native, '--provenance', p);
     assert.notEqual(r.status, 0);
     assert.match(r.stdout, /"status": "FAILED"/);
     assert.doesNotMatch(r.stdout, /"status": "COMPILER_EXECUTION_OBSERVED_PROVENANCE_UNATTESTED"/);
