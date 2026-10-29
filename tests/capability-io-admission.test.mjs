@@ -173,3 +173,39 @@ test('matcher reentrancy cannot publish admission after actor revocation', () =>
   assert.equal(broker.admit(actor, target(broker)).status, 'DENIED_ACTOR');
   assert.equal(broker.snapshot().inFlight, 0);
 });
+
+test('single dispatch token cannot start the same host operation twice', () => {
+  const broker = fixture();
+  const actor = broker.registerActor();
+  const bound = target(broker);
+  const ticket = admission(broker, actor, bound);
+  assert.equal(broker.dispatch(actor, ticket, bound), true);
+  assert.equal(broker.dispatch(actor, ticket, bound), false);
+  assert.equal(broker.cancel(actor, ticket), true);
+  assert.equal(broker.complete(actor, ticket), true);
+  assert.equal(broker.retire(actor, ticket, true), true);
+  assert.equal(broker.snapshot().inFlight, 0);
+});
+
+test('approved hostname cannot launder a denied actual network destination', () => {
+  const broker = fixture();
+  const actor = broker.registerActor();
+  const forged = broker.bindTarget({permission: 'net',resource:'203.0.113.5:443',
+    transport:'tcp',destination:'169.254.169.254:80'});
+  assert.equal(broker.admit(actor, forged).status, 'DENIED_PERMISSION');
+  assert.equal(broker.snapshot().inFlight, 0);
+});
+
+test('a separately authorized destination can be bound without equating hostname and address', () => {
+  const all = allow();
+  all.net.allow.push('198.51.100.99:443');
+  const broker = fixture({layers: {host:all,artifact:all,runtime:all,actor:all,delegated:all}});
+  const actor = broker.registerActor();
+  const bound = broker.bindTarget({permission:'net',resource:'203.0.113.5:443',
+    transport:'tcp',destination:'198.51.100.99:443'});
+  const ticket = admission(broker,actor,bound);
+  assert.equal(broker.dispatch(actor,ticket,bound),true);
+  assert.equal(broker.dispatch(actor,ticket,bound),false);
+  assert.equal(broker.complete(actor,ticket),true);
+  assert.equal(broker.retire(actor,ticket,true),true);
+});
