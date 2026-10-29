@@ -7,7 +7,7 @@ export class AdmissionError extends Error {
   constructor(code) { super(code); this.name = 'AdmissionError'; this.code = code; }
 }
 const fail = (code) => { throw new AdmissionError(code); };
-const ident = (s) => typeof s === 'string' && s.length > 0 &&
+const ident = (s) => typeof s === 'string' && s.length > 0 && s.length <= 128 &&
   s === s.normalize('NFC') &&
   !/[\x00-\x1f\x7f\uD800-\uDFFF]/u.test(s) && Buffer.byteLength(s, 'utf8') <= 128;
 const uint = (n) => Number.isSafeInteger(n) && n >= 0;
@@ -92,11 +92,15 @@ export class BatchPersistenceSidecar {
       if (queued.hash !== hash) fail('OP_ID_CONFLICT');
       return {status:'admitted',durable:false,duplicate:true};
     }
+    // Reserve payload and all variable-length identifier bytes; 128 covers a fixed
+    // minimum envelope charge, not a claim to measure all JS heap overhead.
+    const charge = 128 + e.payload.length + Buffer.byteLength(e.actor) +
+      Buffer.byteLength(e.stateName) + Buffer.byteLength(e.opId);
     if (this.queue.length >= this.maxQueuedEntries ||
-      this.queuedBytes + e.payload.length + 128 > this.maxQueuedBytes) fail('BACKPRESSURE');
-    this.queue.push({e,hash,k});
+      charge > this.maxQueuedBytes - this.queuedBytes) fail('BACKPRESSURE');
+    this.queue.push({e,hash,k,charge});
     this.pending.set(k, {hash});
-    this.queuedBytes += e.payload.length + 128;
+    this.queuedBytes += charge;
     return {status:'admitted',durable:false,duplicate:false};
   }
   flush() {
@@ -142,7 +146,7 @@ export class BatchPersistenceSidecar {
       throw new AdmissionError('OUTCOME_UNKNOWN');
     }
     this.queue.splice(0,count);
-    for (const {e,k} of batch) { this.pending.delete(k); this.queuedBytes -= e.payload.length + 128; }
+    for (const {k,charge} of batch) { this.pending.delete(k); this.queuedBytes -= charge; }
     return results;
   }
   load({tenantId,actor,stateName}) {
