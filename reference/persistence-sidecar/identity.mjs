@@ -5,7 +5,9 @@ const domain=Buffer.from('ORESLANG_ACTOR_ID_V1\x00');
 export class ActorIdError extends Error { constructor(code){super(code);this.code=code;} }
 const fail=code=>{throw new ActorIdError(code);};
 function str(s,max){
-  if(typeof s!=='string'||!s||s!==s.normalize('NFC')||/[\x00-\x1f\x7f\uD800-\uDFFF]/u.test(s))fail('INVALID_STRING');
+  if(typeof s!=='string'||!s)fail('INVALID_STRING');
+  if(s.length>max)fail('TOO_LONG'); // avoid normalizing unbounded input
+  if(s!==s.normalize('NFC')||/[\x00-\x1f\x7f\uD800-\uDFFF]/u.test(s))fail('INVALID_STRING');
   const b=Buffer.from(s);if(b.length>max)fail('TOO_LONG');return b;
 }
 function field(b){const h=Buffer.alloc(2);h.writeUInt16BE(b.length);return Buffer.concat([h,b]);}
@@ -62,7 +64,8 @@ export function decode_actor_id(b){
   if(p!==b.length||!encode_actor_id(id).equals(b))fail('NONCANONICAL');return id;
 }
 export function parse_actor_ref_token(token){
-  if(typeof token!=='string'||!/^oa1_[A-Za-z0-9_-]+$/.test(token))fail('INVALID_TOKEN');
+  // 1,024 canonical bytes require at most 1,366 base64url characters.
+  if(typeof token!=='string'||token.length>1370||!/^oa1_[A-Za-z0-9_-]+$/.test(token))fail('INVALID_TOKEN');
   const b=Buffer.from(token.slice(4),'base64url');
   if(b.toString('base64url')!==token.slice(4))fail('NONCANONICAL');return decode_actor_id(b);
 }
