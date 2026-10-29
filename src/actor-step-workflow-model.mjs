@@ -12,6 +12,14 @@ const record = v => v !== null && typeof v === 'object' && !Array.isArray(v) &&
 const copy = v => structuredClone(v);
 const put = (obj,key,v) => Object.defineProperty(obj,key,{value:v,enumerable:true,writable:true,configurable:true});
 const has = (obj,key) => Object.hasOwn(obj,key);
+const durableId = v => typeof v === 'string' && /^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/.test(v);
+const deepFreeze = v => {
+  if (record(v) || Array.isArray(v)) {
+    for (const value of Object.values(v)) deepFreeze(value);
+    Object.freeze(v);
+  }
+  return v;
+};
 const canonical = v => {
   if (v === null || typeof v === 'string' || typeof v === 'boolean') return JSON.stringify(v);
   if (typeof v === 'number') { check(integer(v), 'NON_CANONICAL_VALUE'); return JSON.stringify(v); }
@@ -74,44 +82,48 @@ export function admitStepPlan(plan) {
   };
   visit(plan.start);
   check(visited.size===entries.length,'UNREACHABLE_NODE');
-  return Object.freeze(copy(plan));
+  return deepFreeze(copy(plan));
 }
 
 export class ActorStepWorkflowModel {
+  #plan;
+  #planDigest;
+  #db;
   constructor({plan,tenantId,runId,store=null}={}) {
-    this.plan=admitStepPlan(plan);
-    this.planDigest=digest(this.plan);
+    this.#plan=admitStepPlan(plan);
+    this.#planDigest=digest(this.#plan);
     if(store!==null) {
       check(record(store) && store.formatVersion===0 && store.stateSchemaVersion===1 &&
         store.codeGeneration==='actor-step-oracle-v0', 'INCOMPATIBLE_SNAPSHOT');
       const saved=copy(store), savedDigest=saved.snapshotDigest;
       delete saved.snapshotDigest;
       check(typeof savedDigest==='string' && savedDigest===digest(saved), 'CORRUPT_SNAPSHOT');
-      check(saved.planDigest===this.planDigest && saved.tenantId===tenantId &&
+      check(durableId(tenantId) && durableId(runId) &&
+        saved.planDigest===this.#planDigest && saved.tenantId===tenantId &&
         saved.runId===runId && integer(saved.epoch) && integer(saved.version) &&
         record(saved.state) && record(saved.inbox) && record(saved.seen) && record(saved.outbox) &&
         Array.isArray(saved.events), 'INCOMPATIBLE_SNAPSHOT');
-      this.db=seal({...saved,active:false}); // A restored process never owns the old lease.
+      this.#db=seal({...saved,active:false}); // A restored process never owns the old lease.
     } else {
-      check(nonempty(tenantId) && nonempty(runId), 'BAD_RUN_ID');
-      this.db=seal({formatVersion:0,stateSchemaVersion:1,codeGeneration:'actor-step-oracle-v0',
-        tenantId,runId,planDigest:this.planDigest,epoch:0,active:false,version:0,
+      check(durableId(tenantId) && durableId(runId), 'BAD_RUN_ID');
+      this.#db=seal({formatVersion:0,stateSchemaVersion:1,codeGeneration:'actor-step-oracle-v0',
+        tenantId,runId,planDigest:this.#planDigest,epoch:0,active:false,version:0,
         state:{status:'CREATED',current:null,pending:{},join:null,attempts:{},lastTag:null},
         inbox:{},seen:{},outbox:{},events:[]});
     }
   }
-  snapshot() { return copy(this.db); }
-  commit(db) {this.db=seal(db);}
-  checkLease(epoch) {check(this.db.active && epoch===this.db.epoch, 'STALE_ACTIVATION_EPOCH');}
+  snapshot() { return copy(this.#db); }
+  #commit(db) {this.#db=seal(db);}
+  #checkLease(epoch) {check(this.#db.active && epoch===this.#db.epoch, 'STALE_ACTIVATION_EPOCH');}
   activate() {
-    check(!this.db.active,'ALREADY_ACTIVE');
-    check(integer(this.db.epoch+1),'EPOCH_EXHAUSTED');
-    const db=this.snapshot();db.epoch++;db.active=true;this.commit(db);return db.epoch;
+    check(!this.#db.active,'ALREADY_ACTIVE');
+    check(integer(this.#db.epoch+1),'EPOCH_EXHAUSTED');
+    const db=this.snapshot();db.epoch++;db.active=true;this.#commit(db);return db.epoch;
   }
-  freeze(epoch) {this.checkLease(epoch);const db=this.snapshot();db.active=false;this.commit(db);return this.snapshot();}
+  freeze(epoch) {this.#checkLease(epoch);const db=this.snapshot();db.active=false;this.#commit(db);return this.snapshot();}
   enqueue(message) {
     check(record(message) && nonempty(message.id) && nonempty(message.type), 'BAD_MESSAGE');
-    check(message.tenantId===this.db.tenantId && message.runId===this.db.runId,'WRONG_RUN');
+    check(message.tenantId===this.#db.tenantId && message.runId===this.#db.runId,'WRONG_RUN');
     check(['start','task_result','signal','cancel'].includes(message.type),'UNKNOWN_MESSAGE_TYPE');
     const allowed={start:[],task_result:['nodeId','key','worker','outcome','tag','receipt'],
       signal:['nodeId','signal','authority'],cancel:['authority']};
@@ -125,25 +137,25 @@ export class ActorStepWorkflowModel {
       check(digest(db.inbox[message.id])===digest(message), 'DELIVERY_CONFLICT');return false;
     }
     check(Object.keys(db.inbox).length<256,'INBOX_CAPACITY');
-    put(db.inbox,message.id,copy(message));this.commit(db);return true;
+    put(db.inbox,message.id,copy(message));this.#commit(db);return true;
   }
   // A pending intent is a request to dispatch a child actor, NOT a delivery receipt.
-  issue(db,id,attempt) {
-    const node=this.plan.nodes[id], key=`${db.runId}/${id}/${attempt}`;
+  #issue(db,id,attempt) {
+    const node=this.#plan.nodes[id], key=`${db.runId}/${id}/${attempt}`;
     check(!has(db.outbox,key),'DUPLICATE_INTENT');
     put(db.outbox,key,{kind:'spawn_step_actor',nodeId:id,worker:node.worker,attempt,key,status:'pending'});
     put(db.state.pending,id,{attempt,key});
     put(db.state.attempts,id,attempt);
   }
-  enter(db,id,tag=null) {
+  #enter(db,id,tag=null) {
     const s=db.state;
     for(let depth=0;depth<=64;depth++) {
-      const n=this.plan.nodes[id];s.current=id;
+      const n=this.#plan.nodes[id];s.current=id;
       if(n.kind==='choice') {id=has(n.routes,tag)?n.routes[tag]:n.otherwise;continue;}
-      if(n.kind==='task') {s.status='RUNNING';this.issue(db,id,1);return;}
+      if(n.kind==='task') {s.status='RUNNING';this.#issue(db,id,1);return;}
       if(n.kind==='parallel') {
         s.status='RUNNING';s.join={nodeId:id,next:n.next,remaining:[...n.branches]};
-        for(const branch of n.branches) this.issue(db,branch,1);
+        for(const branch of n.branches) this.#issue(db,branch,1);
         return;
       }
       if(n.kind==='wait') {s.status='WAITING';return;}
@@ -152,34 +164,35 @@ export class ActorStepWorkflowModel {
     }
     throw new Error('ROUTING_BUDGET_EXHAUSTED');
   }
-  cancelOutstanding(db) {
+  #cancelOutstanding(db) {
     for(const [id,pending] of Object.entries(db.state.pending)) {
       const key=`${db.runId}/cancel/${id}/${pending.attempt}`;
       if(!has(db.outbox,key)) put(db.outbox,key,{kind:'cancel_step_actor',nodeId:id,
-        worker:this.plan.nodes[id].worker,attempt:pending.attempt,key,status:'pending'});
+        worker:this.#plan.nodes[id].worker,attempt:pending.attempt,key,status:'pending'});
     }
     db.state.pending={};db.state.join=null;
   }
   apply(epoch,id,{crashBeforeCommit=false}={}) {
-    this.checkLease(epoch);
+    this.#checkLease(epoch);
     check(nonempty(id),'BAD_MESSAGE_ID');
-    if(has(this.db.seen,id)) return false;
-    check(has(this.db.inbox,id),'UNKNOWN_INBOX');
+    if(has(this.#db.seen,id)) return false;
+    check(has(this.#db.inbox,id),'UNKNOWN_INBOX');
     const db=this.snapshot(),m=db.inbox[id],s=db.state;
+    let receiptReplay=false;
     delete db.inbox[id];put(db.seen,id,digest(m));
     if(m.type==='start') {
-      check(s.status==='CREATED','ALREADY_STARTED');this.enter(db,this.plan.start);
+      check(s.status==='CREATED','ALREADY_STARTED');this.#enter(db,this.#plan.start);
     } else if(m.type==='cancel') {
       check(m.authority==='workflow-owner','UNAUTHORIZED_CANCEL');
       if(!['COMPLETED','FAILED','CANCELLED'].includes(s.status)) {
-        this.cancelOutstanding(db);s.status='CANCELLED';
+        this.#cancelOutstanding(db);s.status='CANCELLED';
       }
     } else if(m.type==='signal') {
       check(s.status==='WAITING','NOT_WAITING');
-      const node=this.plan.nodes[s.current];
+      const node=this.#plan.nodes[s.current];
       check(m.nodeId===s.current && m.signal===node.signal && m.authority===node.authority,
         'UNAUTHORIZED_SIGNAL');
-      this.enter(db,node.next);
+      this.#enter(db,node.next);
     } else if(m.type==='task_result') {
       check(nonempty(m.nodeId) && nonempty(m.key) && nonempty(m.worker) &&
         (m.outcome==='ok'||m.outcome==='error') && nonempty(m.tag), 'BAD_TASK_RESULT');
@@ -189,34 +202,40 @@ export class ActorStepWorkflowModel {
       if(intent.status==='acknowledged') {
         check(intent.receipt===m.receipt && intent.outcome===m.outcome &&
           intent.tag===m.tag && nonempty(m.receipt), 'RECEIPT_CONFLICT');
+        receiptReplay=true;
       } else {
         check(s.status==='RUNNING' && has(s.pending,m.nodeId) &&
           s.pending[m.nodeId].key===m.key && nonempty(m.receipt), 'STALE_TASK_RESULT');
         intent.status='acknowledged';intent.receipt=m.receipt;
         intent.outcome=m.outcome;intent.tag=m.tag;
-        const n=this.plan.nodes[m.nodeId];
+        const n=this.#plan.nodes[m.nodeId];
         if(m.outcome==='error' && s.pending[m.nodeId].attempt<n.maxAttempts) {
           const attempt=s.pending[m.nodeId].attempt+1;
-          this.issue(db,m.nodeId,attempt);
+          this.#issue(db,m.nodeId,attempt);
         } else {
           delete s.pending[m.nodeId];
           if(m.outcome==='error') {
-            if(s.join!==null) {this.cancelOutstanding(db);s.status='FAILED';}
-            else if(n.onError!==undefined) this.enter(db,n.onError,m.tag);
+            if(s.join!==null) {this.#cancelOutstanding(db);s.status='FAILED';}
+            else if(n.onError!==undefined) this.#enter(db,n.onError,m.tag);
             else {s.status='FAILED';s.current=m.nodeId;}
           } else if(s.join!==null) {
             s.join.remaining=s.join.remaining.filter(b=>b!==m.nodeId);
             if(s.join.remaining.length===0) {
-              const next=s.join.next;s.join=null;this.enter(db,next,'joined');
+              const next=s.join.next;s.join=null;this.#enter(db,next,'joined');
             }
-          } else {s.lastTag=m.tag;this.enter(db,n.next,m.tag);}
+          } else {s.lastTag=m.tag;this.#enter(db,n.next,m.tag);}
         }
       }
     } else throw new Error('UNKNOWN_MESSAGE_TYPE');
+    if (receiptReplay) {
+      // Consume the duplicate inbox delivery without manufacturing a new transition.
+      if(crashBeforeCommit) throw new Error('SIMULATED_CRASH_BEFORE_COMMIT');
+      this.#commit(db);return true;
+    }
     check(integer(db.version+1) && db.events.length<512,'WORKFLOW_BUDGET');
     db.version++;
     db.events.push({messageId:id,type:m.type,status:s.status,version:db.version});
     if(crashBeforeCommit) throw new Error('SIMULATED_CRASH_BEFORE_COMMIT');
-    this.commit(db);return true;
+    this.#commit(db);return true;
   }
 }
