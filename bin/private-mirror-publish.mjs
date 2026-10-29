@@ -122,11 +122,30 @@ export async function publishPrivateMirror({
         throw Error("file/directory-alias source path");
     }
   }
-  // Fail closed on special paths: executable symlinks and gitlinks are not
-  // copied; unknown tree objects must not silently disappear.
-  for(const file of srcTree.tree){
-    if(!["tree","blob"].includes(file.type))
+  // Validate directory objects as well as source blobs. A malformed Git
+  // tree may conceal a case-folded file/directory collision or unsafe
+  // directory name that would materialize differently on another platform.
+  const sourcePaths=new Map();
+  for(const entry of srcTree.tree){
+    if(!["tree","blob"].includes(entry?.type))
       throw Error("unsupported source tree object");
+    if(!validPath(entry.path)||!OID.test(entry.sha)||
+       (entry.type==="tree"&&entry.mode!=="040000"))
+      throw Error("unsafe Git source tree directory identity");
+    const folded=entry.path.toLowerCase();
+    if(sourcePaths.has(folded))
+      throw Error("duplicate or case-colliding Git source tree entry");
+    sourcePaths.set(folded,{path:entry.path,type:entry.type});
+  }
+  for(const [folded,entry] of sourcePaths){
+    const components=folded.split("/");
+    const exact=entry.path.split("/");
+    for(let i=1;i<components.length;i++){
+      const parent=sourcePaths.get(components.slice(0,i).join("/"));
+      if(parent&&(parent.type!=="tree"||
+         parent.path!==exact.slice(0,i).join("/")))
+        throw Error("source tree file/directory alias or inconsistent case");
+    }
   }
   const base=await githubRequest(destination,"/git/commits/"+destinationBaseCommit,token,{fetchImpl});
   if(!OID.test(base?.tree?.sha||""))throw Error("destination base is not an immutable commit");
