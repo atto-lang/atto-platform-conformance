@@ -29,7 +29,7 @@
       "cases": [
         {
           "id": "bare-type-slot",
-          "source": "define class Connection as\n  pub String method;\n  \nend\n",
+          "source": "define class Target as\n  pub String method;\n  initialize() -> void { self.method = \"GET\"; }\nend\n",
           "expected": {
             "outcome": "accept",
             "phase": "check"
@@ -38,7 +38,7 @@
         },
         {
           "id": "explicit-val-slot",
-          "source": "define class Connection as\n  pub val String method;\n  \nend\n",
+          "source": "define class Target as\n  pub val String method;\n  initialize() -> void { self.method = \"GET\"; }\nend\n",
           "expected": {
             "outcome": "accept",
             "phase": "check"
