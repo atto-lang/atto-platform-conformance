@@ -48,3 +48,11 @@ Five draft backend PRs have host-reference or fail-closed changes, **not source-
 - Forge [#142](https://github.com/ores-truffle-oreslang/oreslang-source.forge/pull/142): matching C++17 lifecycle reference and race/sanitizer tests.
 
 **Promotion remains blocked** on actual I/O-broker integration, native/guest execution evidence, trusted permission and address binding, physical OS-resource retirement, authenticated actor lineage, and authorized executed CI. The local source-free Node oracle can validate the safety algebra but cannot certify these other requirements.
+
+## 2026-10-29 targeted backend transport corrections
+
+- **Java direct TCP:** `NativeIo.connect` now requires both the requested hostname endpoint and selected numeric IP endpoint to pass NET permission checks, resolves once, and supplies `InetSocketAddress(InetAddress, port)` to physical connect. The TCP connection's subsequent read/write paths recheck both identities. Deterministic no-network JUnit tests cover numeric denial, explicit denies, disallowed remote identities and IPv6. **Important:** this path still uses blocking DNS/socket/read/write and is NOT certified as actor-safe nonblocking I/O. Existing direct `NativeIo.httpText` still uses JDK `HttpClient.send` and needs separate pinned/nonblocking transport review.
+- **Forge pinned TCP:** the trusted host adapter no longer clears `O_NONBLOCK` on the returned file descriptor, and the existing native loopback test now asserts the flag. Its synchronous `poll` wait during connect remains a transport-integration limitation; this is not evidence of nonparking actor I/O.
+- **LLVM/.NET/Java/Forge:** host lifecycle shutdown fences future dispatch and retains physical credits; C++ LLVM/Forge tests include 16 competing threads racing one ticket. WASM remains zero host imports with immutable, descriptor-derived option snapshots.
+
+All source PRs remain draft. These fixes do not bypass the existing private-source carrier security hold and do not authorize guest source execution from another organization.
