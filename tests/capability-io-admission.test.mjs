@@ -239,3 +239,19 @@ test('actor policy snapshots cannot be relaxed after registration', () => {
     'DENIED_PERMISSION');
   assert.equal(broker.admit(actor,target(broker)).status,'ADMITTED');
 });
+test('transport/permission confusion cannot turn filesystem grants into network I/O', () => {
+  const broker = fixture();
+  for (const [permission, transport] of [['read','tcp'],['write','http'],['net','file']]) {
+    assert.throws(() => broker.bindTarget({permission,resource:'203.0.113.5:443',
+      destination:'203.0.113.5:443',transport}), /complete normalized identity/);
+  }
+});
+
+test('filesystem path alias is separately checked before authorization', () => {
+  const read = denyAllPolicy(); read.read.allow.push('/allowed/file');
+  const broker = fixture({layers:{host:read,artifact:read,runtime:read,actor:read,delegated:read}});
+  const actor = broker.registerActor();
+  const original = broker.bindTarget({permission:'read',transport:'file',
+    resource:'/allowed/file',destination:'/other/file'});
+  assert.equal(broker.admit(actor,original).status,'DENIED_PERMISSION');
+});
