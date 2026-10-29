@@ -257,7 +257,7 @@ test("duplicate entries in materialized tree cannot disguise omitted source blob
   {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C}
  ]};
  const {h,promise}=run({materializedTree:tree});
- await assert.rejects(promise,/materialized snapshot contains duplicate paths/);
+ await assert.rejects(promise,/materialized snapshot contains case-colliding source paths/);
  assert.equal(h.events.some(e=>e.path===destination+"/git/refs"),false);
 });
 
