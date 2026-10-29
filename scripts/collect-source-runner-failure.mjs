@@ -25,12 +25,13 @@ function must(condition, reason) {
 function shortText(input) {
   // Logs/annotations may contain unexpected secrets: mask credential-like strings.
   if (typeof input !== 'string') return '';
-  return input.slice(0, 4000)
+  return input
     .replace(/(?:ghp_|gho_|ghu_|ghs_|ghr_)[a-zA-Z0-9_]{10,}/g, '[REDACTED_GH_TOKEN]')
     .replace(/github_pat_[a-zA-Z0-9_]{10,}/g, '[REDACTED_GH_PAT]')
     .replace(/Bearer\s+\S+/gi, 'Bearer [REDACTED]')
     .replace(/(https?:\/\/)[^\s/@:]+:[^\s/@]+@/gi, '$1[REDACTED]@')
-    .replace(/\b((?:authorization|x-api-key|api[_-]?key|client[_-]?secret|password|passwd|token|secret)\s*[:=]\s*)(?:\"[^\"]*\"|'[^']*'|[^\s,;]+)/gi, '$1[REDACTED]');
+    .replace(/\b((?:authorization|x-api-key|api[_-]?key|client[_-]?secret|password|passwd|token|secret)\s*[:=]\s*)(?:\"[^\"]*\"|'[^']*'|[^\s,;]+)/gi, '$1[REDACTED]')
+    .slice(0, 4000);
 }
 export function validateReceipt(run, jobPage, target) {
   must(run && run.id === target.runId, 'run ID differs from caller pin');
@@ -69,21 +70,40 @@ export async function collectEvidence(target, get) {
   const run = await get(root + '/actions/runs/' + target.runId);
   const jobs = await get(root + '/actions/runs/' + target.runId + '/attempts/' + target.attempt + '/jobs?per_page=100');
   const receipt = validateReceipt(run, jobs, target);
+  // Authenticate check issuer and expected annotation count before printing a
+  // possibly partial provider diagnosis. This endpoint is source-repository
+  // metadata only; it neither checks out source nor requests token scopes.
+  const checks = await get(root + '/commits/' + target.sha + '/check-runs?per_page=100');
+  must(checks && Array.isArray(checks.check_runs) &&
+    Number.isSafeInteger(checks.total_count) &&
+    checks.total_count === checks.check_runs.length && checks.total_count < 100,
+    'check-runs page incomplete or malformed');
+  const matches = checks.check_runs.filter(c => c?.id === receipt.jobId);
+  must(matches.length === 1, 'exact job check not uniquely present');
+  const check = matches[0];
+  must(check.name === JOB && check.head_sha === target.sha &&
+    check.status === 'completed' && check.conclusion === 'failure' &&
+    check.app?.id === 15368, 'check-run identity or GitHub Actions issuer mismatch');
+  const expectedAnnotationCount = check.output?.annotations_count;
+  must(Number.isSafeInteger(expectedAnnotationCount) &&
+    expectedAnnotationCount >= 0 && expectedAnnotationCount < 100,
+    'unknown, invalid or paginated annotation count');
   const annotations = await get(root + '/check-runs/' + receipt.jobId + '/annotations?per_page=100');
   must(Array.isArray(annotations), 'annotation API response not an array');
-  must(annotations.length < 100, 'annotation response may be paginated; no partial evidence accepted');
+  must(annotations.length === expectedAnnotationCount, 'missing or unexpected provider annotations');
   must(annotations.every(a => a && typeof a.message === 'string' &&
     ['notice', 'warning', 'failure'].includes(a.annotation_level)), 'invalid annotation payload');
   const providerAnnotations = annotations.map(a => ({
     level: shortText(a?.annotation_level), title: shortText(a?.title),
     message: shortText(a?.message),
   }));
-  return { ...receipt, providerAnnotations, possibleMoreAnnotations: false,
+  return { ...receipt, checkRunId: check.id, checkAppId: check.app.id,
+    expectedAnnotationCount, providerAnnotations, possibleMoreAnnotations: false,
     sourceExportAuthorized: false };
 }
 export function githubReadOnlyGet(path) {
   // Only hard-coded repository paths produced by collectEvidence are allowed.
-  must(/^repos\/ores-truffle-oreslang\/oreslang-platform-conformance\/(actions\/runs\/[1-9][0-9]*(?:\/attempts\/[1-9][0-9]*\/jobs\?per_page=100)?|check-runs\/[1-9][0-9]*\/annotations\?per_page=100)$/.test(path), 'API path must be read-only and in allowed source repository');
+  must(/^repos\/ores-truffle-oreslang\/oreslang-platform-conformance\/(actions\/runs\/[1-9][0-9]*(?:\/attempts\/[1-9][0-9]*\/jobs\?per_page=100)?|commits\/[0-9a-f]{40}\/check-runs\?per_page=100|check-runs\/[1-9][0-9]*\/annotations\?per_page=100)$/.test(path), 'API path must be read-only and in allowed source repository');
   return JSON.parse(execFileSync('gh', ['api', '--hostname', 'github.com', path],
     { encoding: 'utf8', maxBuffer: 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] }));
 }
