@@ -150,3 +150,26 @@ test('reject malformed Unicode and noncanonical persistence identifiers',()=>{
     s.close();
   } finally { f.close(); }
 });
+
+test('queue accounting reserves bytes for all identifier fields',()=>{
+ const f=fixture({maxQueuedBytes:600,maxBatchBytes:200});
+ try {
+  const x=f.open(),actor='a'.repeat(128),stateName='s'.repeat(128),opId='o'.repeat(128);
+  x.grantEpoch({tenantId:'tenant-a',actor,epoch:1});
+  assert.equal(x.enqueue(write(actor,opId,{stateName,payload:Buffer.alloc(0)})).status,'admitted');
+  assert.equal(x.queuedBytes,512);
+  assert.throws(()=>x.enqueue(write(actor,'p'.repeat(128),{stateName,payload:Buffer.alloc(0)})),/BACKPRESSURE/);
+  assert.equal(x.flush()[0].status,'committed');
+  assert.equal(x.queuedBytes,0);
+  x.close();
+ } finally { f.close(); }
+});
+test('an oversized queue entry consumes no credits',()=>{
+ const f=fixture({maxQueuedBytes:400});
+ try {
+  const x=f.open(),actor='a'.repeat(128);
+  x.grantEpoch({tenantId:'tenant-a',actor,epoch:1});
+  assert.throws(()=>x.enqueue(write(actor,'o'.repeat(128),{stateName:'s'.repeat(128),payload:Buffer.alloc(0)})),/BACKPRESSURE/);
+  assert.equal(x.queuedBytes,0);assert.equal(x.queue.length,0);x.close();
+ } finally {f.close();}
+});
