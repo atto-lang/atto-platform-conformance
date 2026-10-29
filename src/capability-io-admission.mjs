@@ -6,6 +6,7 @@ import { evaluatePermission, validatePolicy } from './permission-manifest.mjs';
 
 const LAYERS = Object.freeze(['host', 'artifact', 'runtime', 'actor', 'delegated']);
 const OP_PERMISSIONS = Object.freeze(['net', 'read', 'write']);
+const NET_TRANSPORTS = Object.freeze(['tcp', 'udp', 'http', 'https', 'tls', 'ws', 'wss']);
 
 function frozenLayers(layers) {
   if (!layers || typeof layers !== 'object' || Array.isArray(layers) ||
@@ -73,7 +74,8 @@ export class ReferenceCapabilityIoBroker {
   bindTarget({ permission, resource, transport, destination }) {
     if (!OP_PERMISSIONS.includes(permission) || typeof resource !== 'string' ||
         !resource || typeof transport !== 'string' || !transport ||
-        typeof destination !== 'string' || !destination) {
+        typeof destination !== 'string' || !destination ||
+        (permission === 'net' ? !NET_TRANSPORTS.includes(transport) : transport !== 'file')) {
       throw new TypeError('trusted bound target requires a complete normalized identity');
     }
     // The caller is the trusted transport adapter. The host must validate and
@@ -100,8 +102,8 @@ export class ReferenceCapabilityIoBroker {
     // A hostname grant must not launder a different actual network endpoint.
     // The target is supplied only by the trusted transport adapter, which
     // must still pin its resource and destination to the OS connection.
-    if (binding.permission === 'net' && binding.destination !== binding.resource &&
-        !evaluatePermission(this.#layers, 'net', binding.destination, this.#matches)) {
+    if (binding.destination !== binding.resource &&
+        !evaluatePermission(this.#layers, binding.permission, binding.destination, this.#matches)) {
       return { status: 'DENIED_PERMISSION' };
     }
     // Every ancestor further restricts a child's effective authority. Merely
@@ -112,8 +114,8 @@ export class ReferenceCapabilityIoBroker {
       const constrained = {...this.#layers, actor: currentState.policy};
       if (!evaluatePermission(constrained, binding.permission,
                               binding.resource, this.#matches) ||
-          (binding.permission === 'net' && binding.destination !== binding.resource &&
-           !evaluatePermission(constrained, 'net', binding.destination, this.#matches))) {
+          (binding.destination !== binding.resource &&
+           !evaluatePermission(constrained, binding.permission, binding.destination, this.#matches))) {
         return { status: 'DENIED_PERMISSION' };
       }
       current = currentState.parent;
