@@ -148,7 +148,8 @@ export async function publishPrivateMirror({
     }
   }
   const base=await githubRequest(destination,"/git/commits/"+destinationBaseCommit,token,{fetchImpl});
-  if(!OID.test(base?.tree?.sha||""))throw Error("destination base is not an immutable commit");
+  if(base?.sha!==destinationBaseCommit||!OID.test(base?.tree?.sha||""))
+    throw Error("destination base commit/tree differs from protected immutable commit");
   // Git's base_tree PATCH-like behavior *preserves* unrelated entries.
   // A pre-existing subtree at the chosen prefix could carry stale source
   // code or injected files into the new snapshot without being overwritten.
@@ -238,6 +239,14 @@ export async function publishPrivateMirror({
       tree:targetTree.sha,parents:[destinationBaseCommit]},fetchImpl
   });
   sha(result.sha);
+  // A returned commit SHA alone does not prove that the accepted Git object
+  // really has our verified tree and exactly one approved protected-main
+  // parent. Read it back before making the commit reachable via a branch ref.
+  const committed=await githubRequest(destination,"/git/commits/"+result.sha,token,{fetchImpl});
+  if(committed?.sha!==result.sha||committed?.tree?.sha!==targetTree.sha||
+     !Array.isArray(committed.parents)||committed.parents.length!==1||
+     committed.parents[0]?.sha!==destinationBaseCommit)
+    throw Error("destination committed tree or immutable parent differs from pinned publication");
   await authorize();
   const createdRef=await githubRequest(destination,"/git/refs",token,{
     method:"POST",body:{ref:"refs/heads/"+newBranch,sha:result.sha},fetchImpl
