@@ -85,6 +85,9 @@ export class ReferenceCapabilityIoBroker {
                             binding.resource, this.#matches)) {
       return { status: 'DENIED_PERMISSION' };
     }
+    // The trusted matcher can reenter host-side code. If it revoked this
+    // actor, no admission may be published after the authority disappeared.
+    if (!this.#liveActor(actor)) return { status: 'DENIED_ACTOR' };
     if (this.#used >= this.#maxInFlight) return { status: 'BACKPRESSURE' };
     const ticket = Object.freeze(Object.create(null));
     this.#tickets.set(ticket, {
