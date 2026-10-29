@@ -8,7 +8,7 @@ The canonical v1 test vectors are in `contracts/actor-buffer-transfer-v1.json`; 
 node --test tests/actor-buffer-transfer-v1.test.mjs
 ```
 
-The reference tests verify eight situations: zero-payload-copy exclusive ownership move; actor incarnation mismatch; immutable loans blocking mutation/move/drop; scoped and reader-bound loan revocation; foreign-tenant handle rejection; heap/slot quota enforcement; retirement with outstanding loans; and explicit cross-tenant copy that remains independent of its source.
+The reference tests verify ten situations: zero-payload-copy exclusive ownership move; actor incarnation mismatch; immutable loans blocking mutation/move/drop; scoped and reader-bound loan revocation; foreign-tenant handle rejection; heap/slot quota enforcement; retirement with outstanding loans; explicit cross-tenant copy that remains independent of its source; bounded mailbox backpressure preserving sender ownership; and terminal mailbox close reclaiming admitted DATA while preserving rejected sender values.
 
 ## Normative semantics for target adapters
 
@@ -29,3 +29,9 @@ The reference tests verify eight situations: zero-payload-copy exclusive ownersh
 5. Run differential and negative tests across all five, with sanitizer/TSan stress where available. Do not promote `PENDING_REAL_GUEST_EVIDENCE` in the JSON until those exact runtime receipts exist.
 
 Read alongside the LLVM host contract in `docs/TRUSTED_ACTOR_BUFFER_MOVE_V0.md`, the actor DATA vs network codec rules, and the isolate research/admission plan. This specification is not authorization to export private source to an alternate CI organization.
+
+## Mailbox acceptance and rejection (reference-only extension)
+
+Two additional v1 source-free vectors add `queue_send`, `queue_receive`, and `queue_close` semantics: full inboxes reject before any generation/owner change; accepted moves invalidate old sender aliases; closing the mailbox reclaims admitted unread bytes, frees their tenant allocation quota, and rejects future DATA without taking the sender's ownership. They model **sequential** linearization points only. They do not demonstrate racing shutdown, real scheduler tickets, lock correctness, or actual Oreslang source execution. The LLVM host-side admission gate and race CTest are in draft PR #1161.
+
+At this revision the local exact-blob Node reference oracle passes **12/12** tests. Every listed backend remains `PENDING_REAL_GUEST_EVIDENCE`.
