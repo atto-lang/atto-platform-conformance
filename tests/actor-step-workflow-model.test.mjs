@@ -217,3 +217,17 @@ test('simulation of crash during duplicate receipt leaves inbox for safe replay'
   assert.equal(m.apply(e,dup.id),true);
   assert.equal(m.snapshot().version,previous.version);
 });
+
+
+test('reject malformed task receipts and approval envelopes before durable inbox admission',()=>{
+  const [m]=init();
+  const bad=[
+    msg('no-node','task_result',{key:'run-a/validate/1',worker:'validator',outcome:'ok',tag:'approved',receipt:'r'}),
+    msg('bad-outcome','task_result',{nodeId:'validate',key:'run-a/validate/1',worker:'validator',outcome:'unknown',tag:'approved',receipt:'r'}),
+    msg('bad-receipt','task_result',{nodeId:'validate',key:'run-a/validate/1',worker:'validator',outcome:'ok',tag:'approved',receipt:''}),
+    msg('bad-signal','signal',{nodeId:'approval',signal:'accept',authority:''}),
+    msg('bad-cancel','cancel',{authority:''})
+  ];
+  for(const entry of bad) assert.throws(()=>m.enqueue(entry),/BAD_TASK_RESULT|BAD_SIGNAL|BAD_CANCEL/);
+  assert.deepEqual(m.snapshot().inbox,{});
+});
