@@ -2,30 +2,27 @@ import {test} from "node:test";
 import assert from "node:assert/strict";
 import {createHash} from "node:crypto";
 import {publishPrivateMirror} from "../bin/private-mirror-publish.mjs";
+import {source,destination,fixture as authorizedFixture,good as authorizedGood} from "./private-ci-authorization-fixture.mjs";
 
-const source="ores-truffle-oreslang/oreslang-source.java";
-const destination="akrion-sim/akrion-sim-e2e";
 const A="a".repeat(40),B="b".repeat(40),C="5e5201f1b1618f87282bf41ce89ca710404cce95",
  D="d".repeat(40),E="e".repeat(40),M="f".repeat(40);
 const opts={source,destination,sourceCommit:A,sourceTree:D,destinationBaseCommit:B,
   prefix:"snapshots/checked",newBranch:"ci/private-test-proof",
-  approvedDestinations:[destination],token:"opaque-test-token"};
-const good=name=>({full_name:name,private:true,visibility:"private",
-  id:name===source?1400792274:1234,archived:false,disabled:false,
-  permissions:{push:true}});
+  approvedDestinations:[destination],token:"restricted-test-token"};
+const good=authorizedGood;
 const encoded=text=>({type:"file",encoding:"base64",sha:createHash("sha1").update("blob "+Buffer.byteLength(text)+"\0").update(text).digest("hex"),
   content:Buffer.from(text).toString("base64")});
-const protection=()=>({enforce_admins:{enabled:true},
-  required_status_checks:{strict:true,contexts:["native-tests"]},
-  required_pull_request_reviews:{require_code_owner_reviews:true,
-    dismiss_stale_reviews:true,required_approving_review_count:1,
-    bypass_pull_request_allowances:{users:[],teams:[],apps:[]}}});
 
 function fixture({sourceTree,destinationTree,materializedTree,sourceBlobContent="NDI7Cg==",blobSha=C,refSha=E,meta,errors}={}){
   const events=[],seen={source:0,destination:0};
+  const admissionRequest=authorizedFixture();
   const request=async(url,options)=>{
     const method=options.method,path=url.replace(/^https:\/\/api.github.com\/repos\//,"");
     events.push({path,method,body:options.body?JSON.parse(options.body):undefined});
+    // Incident, review and policy metadata come from the shared exact-pinned
+    // synthetic admission fixture; publisher-specific Git objects below remain mock-only.
+    if(path.startsWith("ores-truffle-oreslang/oreslang-platform-conformance/issues/"))
+      return admissionRequest(url,options);
     const src=path===source||path.startsWith(source+"/"),name=src?source:destination;
     if(path===name){
       seen[src?"source":"destination"]++;
@@ -36,13 +33,7 @@ function fixture({sourceTree,destinationTree,materializedTree,sourceBlobContent=
     if(errors?.[suffix])return{status:403,json:async()=>({message:"Bearer opaque-test-token"})};
     let data;
     if(src){
-      if(suffix==="/branches/main")data={name:"main",protected:true,commit:{sha:M}};
-      else if(suffix==="/branches/main/protection")data=protection();
-      else if(suffix==="/contents/.github/private-ci-approved-repositories.txt?ref="+M)
-        data=encoded(destination+" 1234\n");
-      else if(suffix==="/contents/.github/private-ci-approved-source-snapshots.txt?ref="+M)
-        data=encoded(A+" "+D+" 1234\n");
-      else if(suffix==="/git/commits/"+A)data={sha:A,tree:{sha:D}};
+      if(suffix==="/git/commits/"+A)data={sha:A,tree:{sha:D}};
       else if(suffix==="/git/trees/"+D+"?recursive=1")
         data=sourceTree||{truncated:false,tree:[{type:"blob",path:"main.ores",sha:C,size:4,mode:"100644"}]};
       else if(suffix==="/git/blobs/"+C)
@@ -68,7 +59,7 @@ function fixture({sourceTree,destinationTree,materializedTree,sourceBlobContent=
       else if(suffix==="/git/ref/heads/"+opts.newBranch&&method==="GET")
         data={ref:"refs/heads/"+opts.newBranch,object:{sha:refSha}};
     }
-    if(!data)throw Error("unexpected mock request "+path);
+    if(!data)return admissionRequest(url,options);
     return{status:method==="POST"?201:200,json:async()=>data};
   };
   return{request,events,seen};
@@ -151,7 +142,7 @@ test("loss of private visibility before publishing branch prevents ref creation"
 test("GitHub API errors redact response body and bearer tokens",async()=>{
  const {h,promise}=run({errors:{"/git/blobs":true}});
  await assert.rejects(promise,error=>{
-  assert.equal(error.message.includes("opaque-test-token"),false);
+  assert.equal(error.message.includes("restricted-test-token"),false);
   return true;
  });
  assert.equal(h.events.some(e=>e.path===destination+"/git/refs"),false);
