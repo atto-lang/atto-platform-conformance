@@ -172,8 +172,11 @@ test("accepts only explicitly approved and GitHub-verified writable private dest
     sourceCommit:A,sourceTree:T,destinationId
   });
   assert.ok(calls.length >= 30);
-  assert.equal(calls[0].url.endsWith("/" + source), true);
-  assert.equal(calls[1].url.endsWith("/" + destination), true);
+  // Four independent exposure incidents are checked before source metadata.
+  for(const [index,number] of [22,77,127,212].entries())
+    assert.equal(calls[index].url.endsWith("/issues/"+number),true);
+  assert.equal(calls[4].url.endsWith("/" + source), true);
+  assert.equal(calls[5].url.endsWith("/" + destination), true);
 });
 
 test("rejects public, internal, contradictory, archived and unwritable destinations", async () => {
@@ -280,7 +283,7 @@ test("unprotected source or missing enforceable codeowner review rejects",async(
   {[source+"/branches/main/protection"]:{status:403}}
  ]) {
   const calls=[];
-  await assert.rejects(check({},records,calls),/protected source main|codeowner|unavailable/);
+  await assert.rejects(check({},records,calls),/protected source main|codeowner|unavailable|review\/admin\/no-bypass protection mismatch/);
   assert.equal(calls.filter(x=>x.options.method!=="GET").length,0);
  }
 });
@@ -353,19 +356,14 @@ test("additional required checks are allowed only when every check is app-bound 
  const unbound={...baseline,required_status_checks:{strict:true,contexts:[],checks:[
   {context:"private-ci-policy",app_id:15368},{context:"security-lint",app_id:null}
  ]}};
- await assert.rejects(check({}, {[key]:unbound}),/context\/app identity invalid/);
+ await assert.rejects(check({}, {[key]:unbound}),/required check identity invalid/);
 });
 
 test("the existing independently reviewed ORESoftware owner remains an accepted exact security owner",async()=>{
  const path=source+"/contents/.github/CODEOWNERS?ref="+M;
- const owner="@ORESoftware";
- const text=[
-  "/.github/CODEOWNERS "+owner,
-  "/.github/private-ci-approved-repositories.txt "+owner,
-  "/.github/private-ci-approved-source-snapshots.txt "+owner,
-  "/.github/private-ci-required-checks.json "+owner,
-  "/.github/workflows/private-ci-policy.yml "+owner
- ].join("\n")+"\n";
+ // Additional earlier ownership declarations must not displace the exact
+ // terminal security rules checked for the approved owner.
+ const text="/src/ @different-dev-team\n"+codeowners;
  assert.deepEqual((await check({}, {[path]:encoded(text)})).destinationId,destinationId);
 });
 
@@ -385,15 +383,15 @@ test("strict app-bound required CI and reviewer bypass protection are mandatory"
  const key=source+"/branches/main/protection";
  const baseline=rules();
  for(const [bad,pattern] of [
-  [{...baseline,required_status_checks:undefined},/required status checks/],
-  [{...baseline,required_status_checks:{strict:false,contexts:[],checks:[{context:"private-ci-policy",app_id:15368}]}},/required status checks/],
-  [{...baseline,required_status_checks:{strict:true,contexts:["legacy"],checks:[{context:"private-ci-policy",app_id:15368}]}},/required status checks/],
-  [{...baseline,required_status_checks:{strict:true,contexts:[],checks:[]}},/required status checks/],
-  [{...baseline,required_status_checks:{strict:true,contexts:[],checks:[{context:"private-ci-policy",app_id:9999}]}},/context\/app identity/],
+  [{...baseline,required_status_checks:undefined},/strict app-bound required checks missing/],
+  [{...baseline,required_status_checks:{strict:false,contexts:[],checks:[{context:"private-ci-policy",app_id:15368}]}},/strict app-bound required checks missing/],
+  [{...baseline,required_status_checks:{strict:true,contexts:["legacy"],checks:[{context:"private-ci-policy",app_id:15368}]}},/strict app-bound required checks missing/],
+  [{...baseline,required_status_checks:{strict:true,contexts:[],checks:[]}},/private-ci-policy check\/app binding missing/],
+  [{...baseline,required_status_checks:{strict:true,contexts:[],checks:[{context:"private-ci-policy",app_id:9999}]}},/private-ci-policy check\/app binding missing/],
   [{...baseline,required_pull_request_reviews:{...baseline.required_pull_request_reviews,
-    bypass_pull_request_allowances:{users:[{login:"owner"}],teams:[],apps:[]}}},/codeowner review proof/],
+    bypass_pull_request_allowances:{users:[{login:"owner"}],teams:[],apps:[]}}},/review\/admin\/no-bypass protection mismatch/],
   [{...baseline,required_pull_request_reviews:{...baseline.required_pull_request_reviews,
-    bypass_pull_request_allowances:undefined}},/codeowner review proof/]
+    bypass_pull_request_allowances:undefined}},/review\/admin\/no-bypass protection mismatch/]
  ]){
    await assert.rejects(check({}, {[key]:bad}),pattern);
  }
@@ -499,7 +497,7 @@ test("policy bytes and exact line grammar reject BOM NUL and surrounding whitesp
   const ownersPath=destination+"/contents/.github/CODEOWNERS?ref="+C;
   await assert.rejects(check({}, {[destPath]:encoded(" "+destination+" "+destinationId+"\n")}),/ambiguous surrounding whitespace/);
   await assert.rejects(check({}, {[ownersPath]:encoded(carrierCodeowners.replace("/.github/CODEOWNERS @ORESoftware","/.github/CODEOWNERS @ORESoftware "))}),/ambiguous surrounding whitespace/);
-  for(const text of ["\\ufeff"+requiredChecks, requiredChecks+"\\u0000"]){
+  for(const text of [String.fromCharCode(0xfeff)+requiredChecks, requiredChecks+String.fromCharCode(0)]){
     await assert.rejects(check({}, {[checksPath]:encoded(text)}),/forbidden BOM\/NUL/);
   }
 });
