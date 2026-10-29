@@ -83,10 +83,13 @@ export class PolicyActorReference {
     this.epoch = epoch;
     this.schemaVersion = schemaVersion;
     this.reducer = reducer;
-    this.initialState = clone_json(initialState);
+    this.initialState = freeze_deep(clone_json(initialState));
     this.#state = clone_json(initialState);
     if (this.policy.storageKind && !sidecar) deny('MISSING_STORAGE');
     if (this.policy.storageKind === 'event' && typeof reducer !== 'function') deny('MISSING_REDUCER');
+    // Trust-bound configuration may not be changed after actor activation.
+    // Private #state/#version/#pending still evolve despite freezing the shell.
+    Object.freeze(this);
   }
   get version() { return this.#version; }
   get has_pending_write() { return this.#pending !== null; }
@@ -113,8 +116,15 @@ export class PolicyActorReference {
     if (receipt.status === 'committed') {
       if (!receipt.durable || !receipt.duplicate || receipt.version !== this.#version + 1)
         deny('RELOAD_REQUIRED');
+      // Already-committed duplicate receipts are no more trustworthy than
+      // async commit receipts. Check persisted op ID, exact bytes, and epoch.
+      if (typeof this.sidecar.verifyCommit !== 'function') deny('UNVERIFIABLE_COMMIT');
+      const verified = this.sidecar.verifyCommit(envelope);
+      if (!verified || verified.opId !== opId || verified.status !== 'committed' ||
+          verified.durable !== true || verified.version !== receipt.version)
+        deny('OUTCOME_UNKNOWN');
       this.#state = clone_json(nextState);
-      this.#version = receipt.version;
+      this.#version = verified.version;
       return receipt;
     }
     if (receipt.status !== 'admitted' || receipt.durable) deny('INVALID_ADMISSION_RECEIPT');
