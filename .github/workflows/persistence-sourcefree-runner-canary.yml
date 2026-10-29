@@ -1,0 +1,24 @@
+# Source-free runner-allocation diagnosis only. Never checks out or reads private code.
+name: Persistence source-free runner admission canary
+on:
+  push:
+    branches:
+      - diag/source-free-persistence-runner-20261029
+  workflow_dispatch:
+permissions: {}
+jobs:
+  admit:
+    if: github.repository == 'ores-truffle-oreslang/oreslang-platform-conformance'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Prove actual runner and step execution without source checkout
+        shell: bash
+        env:
+          SOURCE_COMMIT: ${{ github.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          test -n "${RUNNER_NAME:-}"
+          test "${REPO}" = "ores-truffle-oreslang/oreslang-platform-conformance"
+          printf 'SOURCE_FREE_RUNNER_STEP_EXECUTED runner=%s repo=%s commit=%s\n' "$RUNNER_NAME" "$REPO" "$SOURCE_COMMIT"
