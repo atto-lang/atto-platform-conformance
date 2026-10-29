@@ -42,3 +42,10 @@ test('cross-backend golden identity vector',()=>{
  assert.equal(encode_actor_id(v).toString('hex'),'4f41494401000874656e616e742d610008636f6d6d65726365000d73686f7070696e675f6361727401000b637573746f6d65722d3432');
  assert.equal(actor_id_hash(v),'b2dbb6759eda51e096106dd0a0c9b87b29ba03d9df9008650152674bdd5f3498');
 });
+
+test('oversized actor reference is rejected before decoding',()=>{
+  const huge='a'.repeat(100_000);
+  assert.throws(()=>parse_actor_ref_token('oa1_'+huge), /INVALID_TOKEN/);
+  assert.throws(()=>encode_actor_id(id(s(huge))), /TOO_LONG/);
+  assert.throws(()=>encode_actor_id(id(s('ok'),{tenant:huge})), /TOO_LONG/);
+});
