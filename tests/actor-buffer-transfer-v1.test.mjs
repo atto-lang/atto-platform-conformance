@@ -12,6 +12,8 @@ const requireThat=(truth,code)=>{if(!truth)throw error(code);};
 
 function runCase(sample,limits=contract.limits){
   const tenants=new Map(), handles=new Map(), loans=new Map(), queues=new Map();
+  const retiredActors=new Set();
+  const actorKey=(tenant,actor)=>tenant+":"+actor;
   let payloadCopies=0;
   function domain(name){
     if(!tenants.has(name))
@@ -21,6 +23,7 @@ function runCase(sample,limits=contract.limits){
   function reserve(tenant,owner,size){
     const t=domain(tenant);
     requireThat(!t.retired,"RETIRED");
+    requireThat(!retiredActors.has(actorKey(tenant,owner)),"RETIRED_ACTOR");
     requireThat(Number.isInteger(size)&&size>0&&
       size<=limits.perTenantBytes-t.used&&
       t.slots.size<limits.perTenantBuffers,"QUOTA");
@@ -33,6 +36,7 @@ function runCase(sample,limits=contract.limits){
     const h=handles.get(name);requireThat(h,"UNKNOWN");
     const slot=h.slot;
     requireThat(!domain(slot.tenant).retired,"RETIRED");
+    requireThat(!retiredActors.has(actorKey(slot.tenant,actor)),"RETIRED_ACTOR");
     if(tenant!==undefined)requireThat(tenant===slot.tenant,"FOREIGN");
     requireThat(slot.live&&slot.generation===h.generation,"STALE");
     requireThat(slot.owner===actor,"OWNER");
@@ -110,6 +114,7 @@ function runCase(sample,limits=contract.limits){
     case "borrow":{
       const slot=ref(s.handle,s.as);
       requireThat(!loans.has(s.loan),"DUPLICATE");
+      requireThat(!retiredActors.has(actorKey(slot.tenant,s.reader)),"RETIRED_ACTOR");
       slot.loans++;loans.set(s.loan,{slot,reader:s.reader,active:true});
       break;
     }
@@ -132,6 +137,24 @@ function runCase(sample,limits=contract.limits){
       requireThat(slot.loans===0,"BORROWED");
       slot.bytes.fill(0);slot.live=false;
       const t=domain(slot.tenant);t.used-=slot.bytes.length;t.slots.delete(slot);
+      break;
+    }
+    case "retire_actor":{
+      const t=domain(s.tenant);
+      requireThat(!t.retired,"RETIRED");
+      const key=actorKey(s.tenant,s.actor);
+      requireThat(!retiredActors.has(key),"RETIRED_ACTOR");
+      for(const slot of t.slots){
+        if(slot.owner===s.actor&&slot.loans>0)throw error("BORROWED");
+      }
+      for(const loan of loans.values())
+        if(loan.active&&loan.slot.tenant===s.tenant&&loan.reader===s.actor)
+          throw error("BORROWED");
+      for(const slot of [...t.slots]){
+        if(slot.owner!==s.actor)continue;
+        slot.bytes.fill(0);slot.live=false;t.used-=slot.bytes.length;t.slots.delete(slot);
+      }
+      retiredActors.add(key);
       break;
     }
     case "retire":{
@@ -167,8 +190,8 @@ test("actor-buffer contract explicitly refuses to claim runtime verification",()
   assert.deepEqual(Object.keys(contract.backends).sort(),backendNames.slice().sort());
   for(const backend of backendNames)
     assert.equal(contract.backends[backend],"PENDING_REAL_GUEST_EVIDENCE");
-  assert.equal(contract.cases.length,10);
-  assert.equal(new Set(contract.cases.map(x=>x.id)).size,10);
+  assert.equal(contract.cases.length,11);
+  assert.equal(new Set(contract.cases.map(x=>x.id)).size,11);
   assert.equal(contract.limits.perTenantBytes,16);
   assert.equal(contract.limits.perTenantBuffers,2);
 });
