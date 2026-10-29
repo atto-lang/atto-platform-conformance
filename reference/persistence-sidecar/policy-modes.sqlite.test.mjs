@@ -200,3 +200,39 @@ test('stale actor epoch cannot restore durable state after migration',()=>{
     db.close();
   } finally {f.close();}
 });
+
+test('lost durable ACK can only be resolved through persisted operation record',()=>{
+  const f=fixture();
+  try {
+    const db=f.open();
+    db.grantEpoch({tenantId:'tenant-a',actor:'counter',epoch:1});
+    const actor=create(db,'#snapshot');
+    assert.equal(actor.stage_snapshot('lost-response',s=>{s.count=51;}).status,'admitted');
+    assert.equal(actor.resolve_pending().status,'pending');
+    assert.equal(read(actor),0);
+    assert.equal(db.flush()[0].status,'committed');
+    // Lost/forged response: never trust it; consult the persisted operation.
+    assert.equal(actor.resolve_pending().status,'committed');
+    assert.equal(read(actor),51);
+    assert.equal(actor.version,1);
+    assert.throws(()=>actor.resolve_pending(),/NO_PENDING_WRITE/);
+    db.close();
+  } finally {f.close();}
+});
+
+test('fabricated rejection cannot erase pending durable operation',()=>{
+  const f=fixture();
+  try {
+    const db=f.open();
+    db.grantEpoch({tenantId:'tenant-a',actor:'counter',epoch:1});
+    const actor=create(db,'#snapshot');
+    actor.stage_snapshot('maybe-committed',s=>{s.count=57;});
+    assert.throws(()=>actor.apply_commit({opId:'maybe-committed',status:'rejected',code:'VERSION_CONFLICT'}),/OUTCOME_UNKNOWN/);
+    assert.equal(actor.has_pending_write,true);
+    assert.equal(actor.resolve_pending().status,'pending');
+    db.flush();
+    assert.equal(actor.resolve_pending().status,'committed');
+    assert.equal(read(actor),57);
+    db.close();
+  } finally {f.close();}
+});
