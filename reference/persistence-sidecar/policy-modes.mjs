@@ -143,7 +143,10 @@ export class PolicyActorReference {
     return this.#withScope(() => {
     const p = this.#pending;
     if (!p || !receipt || receipt.opId !== p.opId) deny('UNMATCHED_RECEIPT');
-    if (receipt.status === 'rejected') { this.#pending = null; deny('RELOAD_REQUIRED'); }
+    // A caller-supplied rejection is not evidence that storage rejected the operation.
+    // The operation might already be durable with a lost ACK. Retain pending
+    // identity until a trusted provider lookup establishes its outcome.
+    if (receipt.status === 'rejected') deny('OUTCOME_UNKNOWN');
     if (receipt.status !== 'committed' || receipt.durable !== true ||
         receipt.version !== p.nextVersion) deny('OUTCOME_UNKNOWN');
     // Public receipts are not proof of a transaction. Confirm by reading the
@@ -157,6 +160,25 @@ export class PolicyActorReference {
     this.#version = receipt.version;
     this.#pending = null;
     return {status: 'committed', durable: true, version: this.#version};
+    });
+  }
+  // Lost ACK / uncertain commit reconciliation: only the trusted persisted op
+  // record may authorize publication. A queued but uncommitted write remains
+  // pending (and must be retried with the SAME opId, never a new operation).
+  resolve_pending() {
+    return this.#withScope(() => {
+      const p = this.#pending;
+      if (!p) deny('NO_PENDING_WRITE');
+      if (typeof this.sidecar.verifyCommit !== 'function') deny('UNVERIFIABLE_COMMIT');
+      const verified = this.sidecar.verifyCommit(p.envelope);
+      if (!verified) return {status:'pending', durable:false, opId:p.opId};
+      if (verified.opId !== p.opId || verified.status !== 'committed' ||
+          verified.durable !== true || verified.version !== p.nextVersion)
+        deny('OUTCOME_UNKNOWN');
+      this.#state = clone_json(p.nextState);
+      this.#version = verified.version;
+      this.#pending = null;
+      return {status:'committed', durable:true, version:this.#version};
     });
   }
   restore() {
