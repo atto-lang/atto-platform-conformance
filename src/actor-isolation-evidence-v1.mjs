@@ -153,8 +153,11 @@ export function validateIsolationClaim(m, e) {
   if (compilerIndex < 0 || guestIndex < 0 || compilerIndex >= guestIndex)
     fail("compiler and guest must be distinct, executed, ordered CI steps");
   if (e.ci.executedSteps.some((x,i,steps) =>
-       i > 0 && Date.parse(x.startedAt) < Date.parse(steps[i-1].startedAt)))
-    fail("CI step timestamps are not ordered");
+       i > 0 && Date.parse(x.startedAt) < Date.parse(steps[i-1].completedAt)))
+    fail("CI steps overlap or begin before previous step completed");
+  if (Date.parse(e.ci.executedSteps[guestIndex].startedAt) <
+      Date.parse(e.ci.executedSteps[compilerIndex].completedAt))
+    fail("guest execution began before compiler build completed");
   distinctExact(e.registration, ISOLATION_CASES.map(([id]) => id),
                 "test registration");
   if (!Array.isArray(e.caseResults) || e.caseResults.length !== ISOLATION_CASES.length)
