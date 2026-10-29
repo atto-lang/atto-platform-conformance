@@ -42,7 +42,7 @@ The guest actor always owns in-memory state; the sidecar owns only bounded seria
 
 ## Sidecar architecture and scale
 
-- **One sidecar per tenant shard, not one per actor.** Partition by hash of `(tenant_id, actor_id, state_name)` into a configurable fixed-size pool of persistence-sidecar actors; thousands of actors can share one sidecar connection pool. Avoid an unbounded single-sidecar bottleneck.
+- **One sidecar per tenant shard, not one per actor.** For the default actor-ordered policy, partition by a stable versioned hash of canonical `(tenant_id, namespace, actor_type_id, actor_key)` so all named slots for one actor share an ordering boundary; thousands of actors can share one sidecar pool. A per-slot/provider partitioning override may be offered only with explicitly weaker cross-slot ordering and transactional guarantees. Do not embed the shard number in ActorId, and use versioned consistent hashing for rebalance. See [ActorId v1](./ACTOR_IDENTITY_V1.md).
 - **Each sidecar has its own actor arena and mailbox.** Request messages are bounded serialized owned data; nothing points into the initiating actor's arena. No actor mutable state escapes into sidecar state.
 - **Quotas apply at each layer**: requesting actor outstanding writes, actor-local mailbox, sidecar queued entries/bytes, tenant in-flight bytes and IOPS, destination connection pool, storage capacity and WAL bytes. Zero-length messages consume nonzero credits.
 - **Batch on the first bound**: `max_batch_entries`, `max_batch_bytes`, `max_wait_ms` or an explicit flush barrier; a committed/write-through request can force a batch without waiting for a long timer. Prefer configurable initial profile of 256 entries, 1 MiB and 5ms, measured on workload.
