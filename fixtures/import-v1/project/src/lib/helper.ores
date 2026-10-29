@@ -1,3 +1,0 @@
-pub fnc helper(int value): int {
-  return value + 1;
-}

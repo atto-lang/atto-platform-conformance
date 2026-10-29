@@ -1,8 +1,0 @@
-suspends fnc read_value(): int { return 11; }
-pub fnc main(): void {
-  let Task<int> job = task {
-    return read_value();
-  };
-  let int result = await job;
-  return;
-}

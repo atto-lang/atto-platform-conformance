@@ -1,1 +1,0 @@
-pub routine run(): Future<int> { return nb cpu { 42 }; }

@@ -1,5 +1,0 @@
-suspends fnc compute_blocking(): int { return 3; }
-suspends fnc caller(): int {
-  let operation = |int a| -> compute_blocking();
-  return 1;
-}
