@@ -13,7 +13,7 @@ const good=authorizedGood;
 const encoded=text=>({type:"file",encoding:"base64",sha:createHash("sha1").update("blob "+Buffer.byteLength(text)+"\0").update(text).digest("hex"),
   content:Buffer.from(text).toString("base64")});
 
-function fixture({sourceTree,destinationTree,materializedTree,sourceBlobContent="NDI7Cg==",blobSha=C,refSha=E,meta,errors,mainBranch}={}){
+function fixture({sourceTree,destinationTree,materializedTree,sourceBlobContent="NDI7Cg==",blobSha=C,refSha=E,meta,errors,mainBranch,baseCommit,createdCommit}={}){
   const events=[],seen={source:0,destination:0};
   const admissionRequest=authorizedFixture();
   const request=async(url,options)=>{
@@ -43,7 +43,8 @@ function fixture({sourceTree,destinationTree,materializedTree,sourceBlobContent=
       else if(suffix==="/git/blobs/"+C)
         data={sha:C,encoding:"base64",content:sourceBlobContent,size:4};
     } else {
-      if(suffix==="/git/commits/"+B)data={tree:{sha:E}};
+      if(suffix==="/git/commits/"+B)data=baseCommit||{sha:B,tree:{sha:E}};
+      else if(suffix==="/git/commits/"+E)data=createdCommit||{sha:E,tree:{sha:D},parents:[{sha:B}]};
       else if(suffix==="/git/trees/"+E+"?recursive=1")
         data=destinationTree||{truncated:false,tree:[{path:"unrelated/readme.txt",type:"blob"}]};
       else if(suffix==="/git/trees/"+D+"?recursive=1")
@@ -126,6 +127,32 @@ test("trailing-dot and mixed-case lock suffix branch refs fail before contacting
   const {h,promise}=run({}, {newBranch});
   await assert.rejects(promise,/invalid destination prefix or isolated CI branch/);
   assert.equal(h.events.length,0);
+ }
+});
+test("destination base commit response must attest the exact protected main commit",async()=>{
+ for(const baseCommit of [
+  {sha:"f".repeat(40),tree:{sha:E}},
+  {sha:B,tree:{sha:"untrusted"}}
+ ]){
+  const {h,promise}=run({baseCommit});
+  await assert.rejects(promise,/destination base commit\/tree differs from protected immutable commit/);
+  assert.equal(h.events.some(e=>e.path.includes("/git/blobs/")),false);
+  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+ }
+});
+test("new immutable commit must read back exact tree and approved parent before ref publication",async()=>{
+ for(const createdCommit of [
+  {sha:"f".repeat(40),tree:{sha:D},parents:[{sha:B}]},
+  {sha:E,tree:{sha:"f".repeat(40)},parents:[{sha:B}]},
+  {sha:E,tree:{sha:D},parents:[]},
+  {sha:E,tree:{sha:D},parents:[{sha:"f".repeat(40)}]},
+  {sha:E,tree:{sha:D},parents:[{sha:B},{sha:B}]}
+ ]){
+  const {h,promise}=run({createdCommit});
+  await assert.rejects(promise,/destination committed tree or immutable parent differs/);
+  const posts=h.events.filter(e=>e.method==="POST").map(e=>e.path);
+  assert.deepEqual(posts,[destination+"/git/blobs",destination+"/git/trees",destination+"/git/commits"]);
+  assert.equal(h.events.some(e=>e.path===destination+"/git/refs"),false);
  }
 });
 test("public destinations fail BEFORE fetching private source or writing anything",async()=>{
