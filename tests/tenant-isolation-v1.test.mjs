@@ -1,0 +1,142 @@
+// Source-free host-policy reference model. This does NOT execute real .ores
+// actors or prove physical isolation on Java/LLVM/Wasm/.NET/Forge/JS.
+import test from "node:test";
+import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
+
+const contract = JSON.parse(readFileSync(
+  new URL("../contracts/tenant-isolation-v1.json", import.meta.url), "utf8"));
+
+class TenantReference {
+  #entries = new Map();
+  #next = 1;
+  #limit;
+  #capacity;
+  constructor({maxTenants = 2, maxInflight = 1} = {}) {
+    assert.ok(Number.isSafeInteger(maxTenants) && maxTenants > 0);
+    assert.ok(Number.isSafeInteger(maxInflight) && maxInflight > 0);
+    this.#limit = maxTenants;
+    this.#capacity = maxInflight;
+  }
+  #check(handle) {
+    const e = handle && this.#entries.get(handle.id);
+    if (!e || e.handle !== handle || e.epoch !== handle.epoch) {
+      throw Error("STALE_TENANT_HANDLE");
+    }
+    return e;
+  }
+  create(id, {untrusted = false, boundary = "trusted-inprocess"} = {}) {
+    if (typeof id !== "string" || !/^[A-Za-z0-9_.-]{1,128}$/.test(id)) throw Error("INVALID_ID");
+    // A label or permission flag must NEVER convert logical memory isolation
+    // into an OS-native security boundary.
+    if (untrusted && boundary !== "os-sandbox-verified") throw Error("SECURITY_BOUNDARY_REQUIRED");
+    if (boundary === "os-sandbox-verified") throw Error("OS_SANDBOX_NOT_IMPLEMENTED");
+    if (this.#entries.has(id)) throw Error("DUPLICATE_TENANT");
+    if (this.#entries.size >= this.#limit) throw Error("TENANT_QUOTA");
+    if (this.#next >= Number.MAX_SAFE_INTEGER) throw Error("GENERATION_EXHAUSTED");
+    const handle = Object.freeze({id, epoch:this.#next++});
+    this.#entries.set(id,{handle,epoch:handle.epoch,phase:"created",
+      state:0,work:0,leases:0,maxInflight:this.#capacity});
+    return handle;
+  }
+  start(h) {const e=this.#check(h);if(e.phase!=="created") throw Error("PHASE");e.phase="running";}
+  async invoke(h,call) {
+    const e=this.#check(h);
+    if(e.phase!=="running" || e.work>=e.maxInflight) throw Error("ADMISSION_CLOSED");
+    e.work++;
+    try {
+      // A mutable state snapshot and result belong only to the calling
+      // tenant. A user callback cannot receive another tenant's state.
+      const delta=await call(e.state);
+      if(e.phase!=="running" && e.phase!=="quiescing")throw Error("STOPPED");
+      if(!Number.isSafeInteger(delta))throw Error("INVALID_RESULT");
+      const next=e.state+delta;
+      if(!Number.isSafeInteger(next))throw Error("OVERFLOW");
+      e.state=next;
+      return next;
+    } catch(err) {
+      // A guest failure quarantines the incarnation. Inflight work must
+      // drain before destruction; stale handles remain rejected afterwards.
+      e.phase="quiescing";
+      throw err;
+    } finally {
+      e.work--;
+    }
+  }
+  snapshot(h) {const e=this.#check(h);return {phase:e.phase,epoch:e.epoch,state:e.state,active:e.work};}
+  shutdown(h) {const e=this.#check(h);if(e.phase!=="running"&&e.phase!=="created")throw Error("PHASE");e.phase="quiescing";}
+  stop(h) {const e=this.#check(h);if(e.phase!=="quiescing"||e.work||e.leases)throw Error("DRAIN_REQUIRED");e.phase="stopped";}
+  destroy(h) {const e=this.#check(h);if(e.phase!=="stopped")throw Error("STOP_REQUIRED");this.#entries.delete(h.id);}
+}
+const fails=(f,why)=>assert.throws(f,new RegExp(why));
+
+test("manifest enumerates actual backends and refuses promotional security claims",()=>{
+  assert.equal(contract.schema,"oreslang.tenant-isolation.v1");
+  assert.equal(contract.status,"SOURCE_FREE_REFERENCE_NOT_BACKEND_EXECUTION");
+  assert.deepEqual(Object.keys(contract.backendProfiles).sort(),["forge","java","js","llvm","net","wasm"]);
+  assert.ok(contract.requiredScenarios.includes("exact-pr-tree-nonzero-step-ci-evidence"));
+  for(const b of Object.values(contract.backendProfiles)) {
+    assert.match(b.currentGuarantee,/not |distinct |do not /);
+    assert.match(b.hostileTenant,/PROCESS_SANDBOX/);
+  }
+});
+test("distinct tenants retain private mutable state",async()=>{
+  const vm=new TenantReference();
+  const a=vm.create("tenant-a"),b=vm.create("tenant-b");
+  vm.start(a);vm.start(b);
+  assert.equal(await vm.invoke(a,()=>1),1);
+  assert.equal(await vm.invoke(b,()=>1),1);
+  assert.equal(await vm.invoke(a,()=>1),2);
+  assert.equal(await vm.invoke(b,()=>1),2);
+});
+test("stale incarnation handles cannot regain ownership after restart",async()=>{
+  const vm=new TenantReference({maxTenants:1});
+  const old=vm.create("t");vm.start(old);
+  assert.equal(await vm.invoke(old,()=>42),42);
+  vm.shutdown(old);vm.stop(old);vm.destroy(old);
+  const fresh=vm.create("t");vm.start(fresh);
+  fails(()=>vm.snapshot(old),"STALE_TENANT_HANDLE");
+  assert.equal(await vm.invoke(fresh,()=>1),1);
+  assert.notEqual(fresh.epoch,old.epoch);
+});
+test("duplicate and aggregate admissions are bounded",()=>{
+  const vm=new TenantReference({maxTenants:1});
+  vm.create("tenant");
+  fails(()=>vm.create("tenant"),"DUPLICATE_TENANT");
+  fails(()=>vm.create("other"),"TENANT_QUOTA");
+  fails(()=>vm.create("../bad"),"INVALID_ID");
+});
+test("untrusted execution never downgrades to logical or Worker isolation",()=>{
+  const vm=new TenantReference();
+  fails(()=>vm.create("bad",{untrusted:true,boundary:"trusted-inprocess"}),"SECURITY_BOUNDARY_REQUIRED");
+  fails(()=>vm.create("bad",{untrusted:true,boundary:"wasm-store"}),"SECURITY_BOUNDARY_REQUIRED");
+  fails(()=>vm.create("bad",{untrusted:true,boundary:"os-sandbox-verified"}),"OS_SANDBOX_NOT_IMPLEMENTED");
+});
+test("shutdown fences new admission and waits for a real inflight turn",async()=>{
+  const vm=new TenantReference();
+  const h=vm.create("t");vm.start(h);
+  let release, entered;
+  const started=new Promise(resolve=>{entered=resolve;});
+  const blocker=new Promise(resolve=>{release=resolve;});
+  const call=vm.invoke(h,async()=>{entered();await blocker;return 3;});
+  await started;
+  fails(()=>vm.stop(h),"DRAIN_REQUIRED");
+  vm.shutdown(h);
+  fails(()=>vm.invoke(h,()=>1),"ADMISSION_CLOSED");
+  fails(()=>vm.stop(h),"DRAIN_REQUIRED");
+  release();
+  assert.equal(await call,3);
+  vm.stop(h);
+  vm.destroy(h);
+  fails(()=>vm.snapshot(h),"STALE_TENANT_HANDLE");
+});
+test("execution failure quarantines tenant and restart restores fresh state",async()=>{
+  const vm=new TenantReference({maxTenants:1});
+  const h=vm.create("tenant");vm.start(h);
+  await assert.rejects(vm.invoke(h,async()=>{throw Error("GUEST_TRAP");}),/GUEST_TRAP/);
+  assert.equal(vm.snapshot(h).phase,"quiescing");
+  await assert.rejects(vm.invoke(h,()=>1),/ADMISSION_CLOSED/);
+  vm.stop(h);vm.destroy(h);
+  const newH=vm.create("tenant");vm.start(newH);
+  assert.equal(await vm.invoke(newH,()=>1),1);
+});
