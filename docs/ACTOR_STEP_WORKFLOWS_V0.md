@@ -78,3 +78,49 @@ and bounded graph admission. No actual backend is invoked.
 
 No cross-organization private-source mirroring is authorized by this patch;
 source-free model tests do not grant private source transfer authority.
+
+## Security hardening continuation (2026-10-28)
+
+- The coordinator's live plan, snapshot storage and transition commit are
+  private fields/methods, and admitted plan objects are deeply frozen. Caller
+  mutation of a returned snapshot cannot alter live coordinator state.
+- Run identity and node IDs are restricted to bounded, separator-safe strings,
+  preventing ambiguous `run_id/node_id/attempt` intent keys.
+- Identical completion receipts delivered under distinct inbox IDs consume their
+  deliveries without manufacturing new workflow state transitions or events.
+  Conflicting receipt/outcome/tag combinations remain rejected.
+- Inbox admission rejects malformed task completions, signal envelopes, and
+  cancellation requests before journaling them. Each message is size-bounded,
+  the inbox has 256 slots, and the replay receipt ledger is capped at 1,024
+  entries. Exhaustion fails closed and must be paired with an authenticated
+  durable compaction/epoch protocol before production deployment.
+- These are **host-only model safeguards**. The sample string `authority` and
+  task `worker` fields do not authenticate an actual actor reference or a human.
+  A real workflow engine must bind them to capability-scoped identities.
+
+### Verification classification
+
+- **Local semantic model:** 19/19 source-fetched test functions passed when
+  executed in a strict-mode isolated V8 evaluator with deterministic surrogate
+  hashing, JSON clone, and byte-length helpers. This is useful for control-flow
+  regression checking but does **not** test the exact Node 22 crypto, cloning,
+  Buffer or `node:test` runtime. It also does not certify the GitHub Actions
+  workflow, actor execution, durable SQL, or backend parity.
+- **Exact-head source-org Actions:** runs 40812685124 and 40812680099 both
+  returned failed harness jobs with `steps=null`, which is **runner/pre-step
+  evidence only**, not a test failure.
+- **Alternate-org source-free canaries:** private `akrion-sim/akrion-sim-e2e`
+  run 40812378019 and `voxletra/voxletra-e2e` run 40812432820 likewise
+  have zero executed steps. No Oreslang source was mirrored.
+- **Independent alternate runner admitted:** private
+  `honeypot-r-us-test/hnpt-lib-core` run 40812623834 completed real
+  source-free Node steps successfully, demonstrating that an alternative
+  private runner *can* execute some jobs, not that it is authorized to receive
+  this private Oreslang Git tree.
+
+**Private source transfer policy:** the still-open
+[`oreslang-platform-conformance#22`](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22)
+requires independent review before resuming private-source exports. An exact
+blob match and a verified PRIVATE destination are necessary but insufficient.
+No cross-organization copy, test-branch source mirror, or protected-main change
+was performed in this continuation.
