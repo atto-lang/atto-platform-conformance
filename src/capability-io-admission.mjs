@@ -87,6 +87,14 @@ export class ReferenceCapabilityIoBroker {
     }
     // The trusted matcher can reenter host-side code. If it revoked this
     // actor, no admission may be published after the authority disappeared.
+    // A hostname grant must not launder a different actual network endpoint.
+    // The target is supplied only by the trusted transport adapter, which
+    // must still pin its resource and destination to the OS connection.
+    if (binding.permission === 'net' && binding.destination !== binding.resource &&
+        !evaluatePermission(this.#layers, 'net', binding.destination, this.#matches)) {
+      return { status: 'DENIED_PERMISSION' };
+    }
+    // A reentrant matcher can revoke the actor during either check.
     if (!this.#liveActor(actor)) return { status: 'DENIED_ACTOR' };
     if (this.#used >= this.#maxInFlight) return { status: 'BACKPRESSURE' };
     const ticket = Object.freeze(Object.create(null));
@@ -107,12 +115,16 @@ export class ReferenceCapabilityIoBroker {
         record.state !== 'ACTIVE' || !this.#liveActor(actor)) return false;
     const pinned = this.#targets.get(record.target);
     const actual = this.#targets.get(actualTarget);
-    return pinned !== undefined && pinned === actual && record.target === actualTarget;
+    if (pinned === undefined || pinned !== actual || record.target !== actualTarget)
+      return false;
+    // One admission ticket authorizes at most one host operation start.
+    record.state = 'DISPATCHED';
+    return true;
   }
 
   cancel(actor, ticket) {
     const record = this.#tickets.get(ticket);
-    if (!record || record.actor !== actor || record.retired || record.state !== 'ACTIVE')
+    if (!record || record.actor !== actor || record.retired || !['ACTIVE', 'DISPATCHED'].includes(record.state))
       return false;
     record.state = 'CANCEL_REQUESTED';
     return true;
@@ -121,7 +133,7 @@ export class ReferenceCapabilityIoBroker {
   complete(actor, ticket, result = 'OK') {
     const record = this.#tickets.get(ticket);
     if (!record || record.actor !== actor || record.retired ||
-        (record.state !== 'ACTIVE' && record.state !== 'CANCEL_REQUESTED')) return false;
+        !['ACTIVE', 'DISPATCHED', 'CANCEL_REQUESTED'].includes(record.state)) return false;
     // Cancellation/revocation wins over a racing completion. No guest callback
     // is executed here: this only records trusted host state.
     record.result = record.state === 'CANCEL_REQUESTED' || !this.#liveActor(actor)
