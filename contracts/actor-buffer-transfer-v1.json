@@ -506,6 +506,63 @@
           "size": 12
         }
       ]
+    },
+    {
+      "id": "reader-incarnation-retirement-pinned-by-foreign-loan",
+      "expectedPayloadCopies": 0,
+      "steps": [
+        {
+          "op": "alloc",
+          "handle": "h",
+          "tenant": "alpha",
+          "owner": "actor1@1",
+          "size": 2
+        },
+        {
+          "op": "borrow",
+          "handle": "h",
+          "as": "actor1@1",
+          "reader": "actor2@1",
+          "loan": "l"
+        },
+        {
+          "op": "retire_actor",
+          "tenant": "alpha",
+          "actor": "actor2@1",
+          "reject": "BORROWED"
+        },
+        {
+          "op": "loan_read",
+          "loan": "l",
+          "as": "actor2@1",
+          "index": 0,
+          "expect": 0
+        },
+        {
+          "op": "release",
+          "loan": "l"
+        },
+        {
+          "op": "retire_actor",
+          "tenant": "alpha",
+          "actor": "actor2@1"
+        },
+        {
+          "op": "borrow",
+          "handle": "h",
+          "as": "actor1@1",
+          "reader": "actor2@1",
+          "loan": "l2",
+          "reject": "RETIRED_ACTOR"
+        },
+        {
+          "op": "read",
+          "handle": "h",
+          "as": "actor1@1",
+          "index": 0,
+          "expect": 0
+        }
+      ]
     }
   ]
 }
