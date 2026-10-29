@@ -1,14 +1,44 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFileSync, lstatSync, readdirSync } from "node:fs";
+import { readFileSync, openSync, fstatSync, readSync, closeSync, readdirSync, constants, symlinkSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import test from "node:test";
+import { tmpdir } from "node:os";
 
 // SOURCE-FREE contract validation. These tests NEVER claim Oreslang compiler,
 // guest runtime, physical quiescence, or five-backend parity.
 const dir = fileURLToPath(new URL("../fixtures/future-chaining/v2/", import.meta.url));
-const manifest = JSON.parse(readFileSync(path.join(dir, "manifest.json"), "utf8"));
+function readPinnedRegularFile(full, filename, maxSize) {
+    // O_NOFOLLOW closes the lstat/open symlink-swap window; O_NONBLOCK
+    // prevents a substituted FIFO from hanging the conformance runner.
+    assert.ok(Number.isInteger(constants.O_NOFOLLOW)
+        && Number.isInteger(constants.O_NONBLOCK),
+        "safe no-follow fixture admission is unsupported on this platform");
+    const fd = openSync(full,
+        constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
+    try {
+        const stat = fstatSync(fd);
+        assert.ok(stat.isFile(), `not an ordinary fixture: ${filename}`);
+        assert.ok(stat.size > 0 && stat.size < maxSize, `size outside cap: ${filename}`);
+        const raw = Buffer.alloc(stat.size);
+        let offset = 0;
+        while (offset < raw.length) {
+            const count = readSync(fd, raw, offset, raw.length - offset, offset);
+            assert.ok(count > 0, `shortened during read: ${filename}`);
+            offset += count;
+        }
+        const extra = Buffer.alloc(1);
+        assert.equal(readSync(fd, extra, 0, 1, raw.length), 0,
+            `grew during read: ${filename}`);
+        return raw;
+    } finally {
+        closeSync(fd);
+    }
+}
+
+const manifest = JSON.parse(readPinnedRegularFile(
+    path.join(dir, "manifest.json"), "manifest.json", 65536).toString("utf8"));
 const caseMap = new Map(manifest.cases.map((entry) => [entry.id, entry]));
 const expectedCaseContracts = new Map([
     ["flat-map-one-layer", { kind: "positive", stdout: "42", type: "Future<int>" }],
@@ -34,11 +64,7 @@ function fixture(id) {
     const filename = record.source;
     assert.match(filename, /^[a-z0-9-]+\.ores$/);
     const full = path.join(dir, filename);
-    const stat = lstatSync(full);
-    assert.ok(stat.isFile() && !stat.isSymbolicLink(), `not an ordinary fixture: ${filename}`);
-    assert.ok(stat.size > 0 && stat.size < 4096, `fixture size outside cap: ${filename}`);
-    const raw = readFileSync(full);
-    assert.equal(raw.length, stat.size, `fixture size changed during read: ${filename}`);
+    const raw = readPinnedRegularFile(full, filename, 4096);
     assert.match(record.sourceGitBlobSha1, /^[a-f0-9]{40}$/, `missing source blob pin: ${filename}`);
     assert.equal(gitBlobSha1(raw), record.sourceGitBlobSha1, `fixture content drift: ${filename}`);
     const code = raw.toString("utf8");
@@ -137,4 +163,21 @@ test("flat_map flattens one layer but preserves a deeper Future", () => {
     const negative = fixture("reject-flat-map-deeper-nesting");
     assert.match(negative, /Future<int> invalid\s*=\s*seed\(\)\.flat_map\(/);
     assert.match(negative, /return double_it\(number\)\.map\(/);
+});
+
+test("no-follow reader rejects symlinks and directories without following them", () => {
+    const temp = mkdtempSync(path.join(tmpdir(), "ores-future-fixtures-"));
+    try {
+        const original = path.join(temp, "real.ores");
+        const link = path.join(temp, "linked.ores");
+        writeFileSync(original, "safe\n");
+        symlinkSync(original, link);
+        assert.equal(readPinnedRegularFile(original, "real.ores", 4096).toString(), "safe\n");
+        assert.throws(() => readPinnedRegularFile(link, "linked.ores", 4096),
+            { code: "ELOOP" }, "a symlink must not be followed even if it targets a regular file");
+        assert.throws(() => readPinnedRegularFile(temp, "directory", 4096),
+            /not an ordinary fixture/, "directories must be rejected after fd admission");
+    } finally {
+        rmSync(temp, { recursive: true, force: true });
+    }
 });
