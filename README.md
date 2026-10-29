@@ -119,7 +119,12 @@ The guarded publisher admits up to **1,500 regular source blobs**
 (the current Java and LLVM source trees have 1,177 and 1,291 respectively),
 with the existing **40 MiB total**, **1 MiB per-file**, and **3,000 tree-entry**
 limits. Symlinks, gitlinks, unsafe/case-colliding paths and partial trees
-still fail closed. The publisher must verify the *materialized Git source
+still fail closed. The cross-platform source admission also rejects
+case-colliding **directory components**, unsafe directory Git modes/SHAs,
+Windows-reserved device names (including file extensions), trailing-dot
+path segments, and source-prefix ancestors whose spelling conflicts with
+existing destination directories; these cannot be safely checked out on
+Windows or case-insensitive macOS volumes. The publisher must verify the *materialized Git source
 subtree SHA* as well as all file blob SHA/mode identities before creating
 the commit and isolated CI ref; the receipt includes `sourceTree`.
 Synthetic/mock publisher tests are **not** external release-admission evidence.
