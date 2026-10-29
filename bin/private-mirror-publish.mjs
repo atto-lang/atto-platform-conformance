@@ -16,7 +16,8 @@ const CHECKPOINT_SCHEMA="oreslang.private-mirror-checkpoint/1";
 
 function validPath(path) {
   return typeof path==="string" && path.length<=512 && PATH.test(path) &&
-    path.split("/").every(x=>x!=="."&&x!==".."&&x.toLowerCase()!==".git");
+    path.split("/").every(x=>x!=="."&&x!==".."&&x.toLowerCase()!==".git"&&
+      !x.endsWith(".")&&!/^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\\.|$)/i.test(x));
 }
 function sha(value) {
   if(typeof value!=="string"||!OID.test(value))throw Error("invalid immutable Git commit or blob SHA");
@@ -93,9 +94,30 @@ export async function publishPrivateMirror({
   }
   // Fail closed on special paths: executable symlinks and gitlinks are not
   // copied; unknown tree objects must not silently disappear.
-  for(const file of srcTree.tree){
-    if(!["tree","blob"].includes(file.type))
+  // GitHub can store distinct case-folding directories (e.g. Foo/ and foo/)
+  // that Windows/macOS checkouts cannot represent unambiguously. Every
+  // directory component must have exactly one canonical spelling, not just
+  // complete file paths. Never silently lose a Git entry on checkout.
+  const directorySpelling=new Map();
+  const sourceEntries=new Set();
+  for(const item of srcTree.tree){
+    if(!["tree","blob"].includes(item.type))
       throw Error("unsupported source tree object");
+    if(!validPath(item.path)||!OID.test(item.sha)||
+       (item.type==="tree"&&item.mode!=="040000"))
+      throw Error("unsafe private source directory entry");
+    if(sourceEntries.has(item.path))
+      throw Error("duplicate private source tree entry");
+    sourceEntries.add(item.path);
+    const components=item.path.split("/");
+    let ancestor="";
+    for(let index=0;index<components.length;index++){
+      ancestor+=(index?"/":"")+components[index];
+      const folded=ancestor.toLowerCase();
+      if(directorySpelling.has(folded)&&directorySpelling.get(folded)!==ancestor)
+        throw Error("cross-platform-colliding source directory component");
+      directorySpelling.set(folded,ancestor);
+    }
   }
   const base=await githubRequest(destination,"/git/commits/"+destinationBaseCommit,token,{fetchImpl});
   if(!OID.test(base?.tree?.sha||""))throw Error("destination base is not an immutable commit");
@@ -113,7 +135,8 @@ export async function publishPrivateMirror({
     // Prevent silent overlay on case-insensitive macOS/Windows checkouts.
     const current=item.path.toLowerCase(), wanted=prefix.toLowerCase();
     if(current===wanted||current.startsWith(wanted+"/")||
-       (wanted.startsWith(current+"/")&&item.type!=="tree"))
+       (wanted.startsWith(current+"/")&&
+        (item.type!=="tree"||!prefix.startsWith(item.path+"/"))))
       throw Error("destination snapshot prefix is not empty or conflicts with existing path");
   }
   const pin={schema:CHECKPOINT_SCHEMA,source,destination,sourceCommit,
