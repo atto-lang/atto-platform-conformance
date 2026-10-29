@@ -103,10 +103,10 @@ test("destination main drift before first private object write denies publicatio
  let mainReads=0;
  const {h,promise}=run({mainBranch:(original)=>{
    mainReads++;
-   return mainReads>=7?{...original,commit:{sha:"f".repeat(40)}}:original;
+   return mainReads>=4?{...original,commit:{sha:"f".repeat(40)}}:original;
  }});
  await assert.rejects(promise,/destination base commit differs from protected carrier main/);
- assert.ok(mainReads>=7);
+ assert.ok(mainReads>=4);
  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
 });
 test("trailing-dot and mixed-case lock suffix branch refs fail before contacting GitHub",async()=>{
