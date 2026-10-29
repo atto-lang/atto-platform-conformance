@@ -29,6 +29,13 @@ const REQUIRED_INCIDENTS = Object.freeze([
   Object.freeze({
     number:77,
     title:"P0 SECURITY: audit repeated private Oreslang source carriers in Scintilla"
+  }),
+  // Never authorize new copies while the unauthorized LLVM carrier incident
+  // remains open. Incident closure is necessary, not sufficient: the reviewed
+  // source-commit/tree, destination ID and protected-main gates still apply.
+  Object.freeze({
+    number:212,
+    title:"P0 review: LLVM private source exact tree executed in unapproved honeypot carrier"
   })
 ]);
 const CARRIER_CHECK = Object.freeze({context:"carrier-policy",appId:15368});
