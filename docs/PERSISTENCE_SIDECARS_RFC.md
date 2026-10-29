@@ -4,6 +4,8 @@ Status: **PROPOSED**. This extends [the virtual actors RFC](./VIRTUAL_ACTORS_VM_
 
 Relevant Orleans design: named persistent grain states and configurable providers; journaled grains and confirmation; timers vs durable reminders. Unlike an actor's identity, an activation, its in-memory arena and its durable state have different lifetimes.
 
+**Symbol policy contract:** [four v1 actor persistence modes](PERSISTENCE_SYMBOL_MODES_V1.md) — `#none`, `#snapshot`, `#event_sourced`, `#batched_sidecar`, with `#batched_sidecar` requiring an explicit snapshot or event-sourced underlying policy and with sealed state/commit acknowledgment preserved.
+
 ## Persistence policies
 
 Each actor type/instance may select persistence for separately named state slots. Semantics are configurable *at activation admission* rather than changed implicitly during a turn:
