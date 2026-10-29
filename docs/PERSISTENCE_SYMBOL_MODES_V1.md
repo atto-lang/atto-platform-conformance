@@ -42,6 +42,12 @@ No `#batched_sidecar` with `#none` or an unspecified underlying mode. No `#admit
 7. Restoring a durable activation validates provider-side epoch fencing, schema fingerprint, event offsets and tenant permissions. An arena allocation, file descriptor, native pointer, borrow, ActorRef capability or scheduler handle must not be serialized.
 8. Strict hard-real-time actor turns cannot block on SQLite/disk/network or run unbounded replay. The host SQLite model uses synchronous I/O **only as a standalone test reference**, never on an Oreslang carrier. Production requires bounded admission and async provider suspension.
 
+## Lost acknowledgements and pending-write reconciliation
+
+A durable actor must not infer a failed write from a missing or rejected caller-supplied receipt. It must preserve the exact `operation_id`, original owned payload digest, `expected_version`, named state slot, tenant and granted `activation_epoch`, then query the **trusted provider-side persisted operation record**. The host reference exposes `resolve_pending()`: a record that matches the original operation and current epoch publishes the committed state; an absent record returns `pending` and retains exclusive pending state. A forged `rejected` receipt is treated as `OUTCOME_UNKNOWN`, not permission to erase the pending write. Retry the original operation ID only after authoritative reconciliation, never generate a new ID for the same attempted effect.
+
+This reference does **not** yet implement safe cancellation/abort of an unresolved operation, a durable actor inbox across runtime crashes, external side-effect deduplication, or provider failover. It deliberately fails closed on these paths. Native async adapters must preserve the operation record and handle unknown outcomes without holding `critical-write` state loans across `await`.
+
 ## Executable host reference (not native guest)
 
 - `reference/persistence-sidecar/policy-modes.mjs`: symbol-mode validator, JSON-only owned state encoding, lexical scope model, staged snapshots/events, commit-gated state publication and restore/replay.
