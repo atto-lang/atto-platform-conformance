@@ -72,3 +72,16 @@ test("parameter admission requires an own declared type, never prototype inherit
     lower(Ast.GpuRegion(Ast.Kernel("scale", Ast.Param("device", "GpuBuffer<f32>"))),
       {parameters:inherited}));
 });
+
+test("AST admission rejects inherited fields and Object prototype property names", () => {
+  for (const kind of ["constructor", "__proto__", "toString", "hasOwnProperty"]) {
+    rejects("INVALID_AST", () => lower({kind, value:i64(1n)}));
+  }
+  const missing = Object.create({value:40n});
+  missing.kind = "I64";
+  rejects("INVALID_AST", () => lower(cpu(missing)));
+  const inheritedKind = Object.create({kind:"I64"});
+  inheritedKind.value = 40n;
+  rejects("INVALID_AST", () => lower(cpu(inheritedKind)));
+  rejects("INVALID_AST", () => lower(cpu({kind:"I64",value:40n,ignored:1})));
+});
