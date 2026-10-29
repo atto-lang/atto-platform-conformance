@@ -35,8 +35,14 @@ export function encode_actor_id(id){
   const b=Buffer.concat([magic,field(str(id.tenant,128)),field(str(id.namespace,128)),field(str(id.actor_type,128)),key(id.key)]);
   if(b.length>1024)fail('ID_TOO_LONG');return b;
 }
-export const actor_id_hash=id=>createHash('sha256').update(domain).update(encode_actor_id(id)).digest('hex');
-export const actor_storage_key=id=>'oa1h_'+Buffer.from(actor_id_hash(id),'hex').toString('base64url');
+const hash_bytes=bytes=>createHash('sha256').update(domain).update(bytes).digest();
+export const actor_id_hash=id=>hash_bytes(encode_actor_id(id)).toString('hex');
+export const actor_storage_key=id=>'oa1h_'+hash_bytes(encode_actor_id(id)).toString('base64url');
+// For trusted storage brokers: bind one canonical snapshot, never re-read mutable ID fields.
+export function actor_storage_key_from_bytes(bytes) {
+  decode_actor_id(bytes); // strict v1/version/canonicality check before deriving a key
+  return 'oa1h_'+hash_bytes(bytes).toString('base64url');
+}
 export const actor_ref_token=id=>'oa1_'+encode_actor_id(id).toString('base64url');
 export function decode_actor_id(b){
   if(!Buffer.isBuffer(b)||b.length<5||b.length>1024||!b.subarray(0,5).equals(magic))fail('INVALID_ENCODING');
