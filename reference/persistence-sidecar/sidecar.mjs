@@ -8,7 +8,8 @@ export class AdmissionError extends Error {
 }
 const fail = (code) => { throw new AdmissionError(code); };
 const ident = (s) => typeof s === 'string' && s.length > 0 &&
-  !/[\x00-\x1f\x7f]/.test(s) && Buffer.byteLength(s, 'utf8') <= 128;
+  s === s.normalize('NFC') &&
+  !/[\x00-\x1f\x7f\uD800-\uDFFF]/u.test(s) && Buffer.byteLength(s, 'utf8') <= 128;
 const uint = (n) => Number.isSafeInteger(n) && n >= 0;
 const key = (e) => JSON.stringify([e.actor, e.stateName, e.opId]);
 const digest = (e) => createHash('sha256').update(JSON.stringify([
