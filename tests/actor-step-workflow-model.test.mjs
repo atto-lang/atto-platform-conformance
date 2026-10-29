@@ -162,3 +162,58 @@ test('unexpected persisted credentials and oversized payloads are rejected at in
   assert.throws(()=>m.enqueue(msg('m2','signal',{nodeId:'approval',signal:'accept',authority:'a'.repeat(5000)})),/MESSAGE_TOO_LARGE/);
   assert.deepEqual(m.snapshot().inbox,{});
 });
+
+
+test('model has no public commit, plan or database mutation authority',()=>{
+  const [m,e]=init();
+  assert.equal(m.commit,undefined);
+  assert.equal(m.plan,undefined);
+  assert.equal(m.db,undefined);
+  const admitted=admitStepPlan(plan);
+  assert.ok(Object.isFrozen(admitted.nodes.validate));
+  assert.ok(Object.isFrozen(admitted.nodes.both.branches));
+  assert.throws(()=>{admitted.nodes.validate.worker='attacker';},TypeError);
+  assert.throws(()=>{admitted.nodes.both.branches[0]='attacker';},TypeError);
+  const tampered=m.snapshot();
+  tampered.state.status='COMPLETED';tampered.outbox['injected']={kind:'spawn_step_actor'};
+  assert.equal(m.snapshot().state.status,'CREATED');
+  assert.deepEqual(m.snapshot().outbox,{});
+  start(m,e);assert.equal(m.snapshot().state.status,'RUNNING');
+});
+
+test('run IDs with separators cannot ambiguously alias intent keys',()=>{
+  for(const id of ['/a','a/b','a:b','a b','', 'a'.repeat(65)]) {
+    assert.throws(()=>new ActorStepWorkflowModel({plan,tenantId:'tenant-a',runId:id}),/BAD_RUN_ID/);
+  }
+  const [m,e]=init();start(m,e);
+  assert.ok(m.snapshot().outbox['run-a/validate/1']);
+});
+
+test('identical result redelivery consumes inbox but cannot manufacture state transitions',()=>{
+  const [m,e]=init();start(m,e);
+  result(m,e,'first','validate',1);
+  const before=m.snapshot();
+  result(m,e,'other-delivery','validate',1);
+  const after=m.snapshot();
+  assert.equal(after.version,before.version);
+  assert.equal(after.events.length,before.events.length);
+  assert.deepEqual(after.state,before.state);
+  assert.ok(Object.hasOwn(after.seen,'other-delivery'));
+  assert.throws(()=>result(m,e,'conflicting-outcome','validate',1,'error','bad','receipt'),/RECEIPT_CONFLICT/);
+});
+
+test('simulation of crash during duplicate receipt leaves inbox for safe replay',()=>{
+  const [m,e]=init();start(m,e);
+  result(m,e,'first','validate',1);
+  const previous=m.snapshot();
+  const dup=msg('redelivery','task_result',{
+    nodeId:'validate',key:'run-a/validate/1',worker:'validator',
+    outcome:'ok',tag:'approved',receipt:'receipt'
+  });
+  m.enqueue(dup);
+  assert.throws(()=>m.apply(e,dup.id,{crashBeforeCommit:true}),/SIMULATED_CRASH/);
+  assert.ok(Object.hasOwn(m.snapshot().inbox,dup.id));
+  assert.equal(m.snapshot().version,previous.version);
+  assert.equal(m.apply(e,dup.id),true);
+  assert.equal(m.snapshot().version,previous.version);
+});
