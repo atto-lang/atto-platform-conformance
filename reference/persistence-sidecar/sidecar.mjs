@@ -159,6 +159,14 @@ export class BatchPersistenceSidecar {
       fail('COMMIT_MISMATCH');
     return {opId,status:'committed',durable:true,version:op.version};
   }
+  // Loading durable actor state is activation-scoped; old epochs must not restore it.
+  loadFenced({tenantId,actor,stateName,epoch}) {
+    if (tenantId !== this.tenantId) fail('WRONG_TENANT');
+    if (!ident(actor) || !ident(stateName) || !uint(epoch) || epoch < 1)
+      fail('INVALID_READ');
+    if (this.getFence.get(tenantId,actor)?.epoch !== epoch) fail('STALE_EPOCH');
+    return this.load({tenantId,actor,stateName});
+  }
   load({tenantId,actor,stateName}) {
     if (tenantId !== this.tenantId) fail('WRONG_TENANT');
     if (![actor,stateName].every(ident)) fail('INVALID_READ');
