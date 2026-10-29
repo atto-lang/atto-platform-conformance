@@ -35,3 +35,8 @@ A snapshot updates a named state slot's snapshot and version. A journal event ap
 **Missing production requirements:** async provider, real Oreslang guest actors, journal pruning, snapshots across schema upgrades, distributed lease/epoch authority, signed/authenticated tenant envelope, shard routing and fairness, deadline-driven flushing, cross-process crash testing, faked storage failures, remote replica acknowledgments, transactional outbox, and exact-head five-backend guest execution.
 
 See [the persistence RFC](../../docs/PERSISTENCE_SIDECARS_RFC.md) and [the virtual actor RFC](../../docs/VIRTUAL_ACTORS_VM_ISOLATES_RFC.md).
+## Security audit (2026-10-29)
+
+- Epoch fences precede persisted op-id deduplication both during queue admission and SQLite transaction commit. A stale activation may not retrieve a previously committed success receipt.
+- Tenant, actor, state and operation identifiers reject ASCII control characters, including NUL.
+- Local Node 22.16 host SQLite model: **11/11 tests passed**. GitHub Actions for this exact source head failed before any recorded job steps; that run is NOT_EXECUTED for test purposes.
