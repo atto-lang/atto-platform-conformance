@@ -40,9 +40,12 @@ function snapshot(ast,depth=0,budget={remaining:maxNodes}){
   Add:["left","right"],Param:["name","type"],Upload:["value"],
   Download:["value"],Kernel:["name","value"],Await:["value"],Seq:["values"]
  }[ast.kind];
- if(!spec)bad("INVALID_AST","unknown AST kind");
- if(Object.keys(ast).some(k=>k!=="kind" && !spec.includes(k)))
-  bad("INVALID_AST","unexpected AST field");
+ if(!Array.isArray(spec)||!Object.hasOwn(ast,"kind"))
+  bad("INVALID_AST","unknown or inherited AST kind");
+ if(Object.keys(ast).length!==spec.length+1 ||
+    !spec.every(k=>Object.hasOwn(ast,k)) ||
+    Object.keys(ast).some(k=>k!=="kind" && !spec.includes(k)))
+  bad("INVALID_AST","missing, inherited or unexpected AST field");
  let v;
  switch(ast.kind){
   case "I64": v={kind:"I64",value:checked(ast.value)};break;
