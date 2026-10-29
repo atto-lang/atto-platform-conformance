@@ -72,3 +72,34 @@ test('reject paths outside source-local approved read-only subset',()=>{
   assert.throws(()=>githubReadOnlyGet('repos/' + REPOSITORY + '/git/blobs/123'));
   assert.throws(()=>githubReadOnlyGet('repos/' + REPOSITORY + '/actions/runs/1/rerun'));
 });
+
+test('refuse successful run in failed-run collector',()=>{
+  const d=base();d.run.conclusion='success';assert.throws(()=>validateReceipt(d.run,d.jobs,target));
+});
+test('refuse queued run in failed-run collector',()=>{
+  const d=base();d.run.status='queued';assert.throws(()=>validateReceipt(d.run,d.jobs,target));
+});
+test('refuse successful job in failed-run collector',()=>{
+  const d=base();d.jobs.jobs[0].conclusion='success';assert.throws(()=>validateReceipt(d.run,d.jobs,target));
+});
+test('refuse not-completed job in failed-run collector',()=>{
+  const d=base();d.jobs.jobs[0].status='in_progress';assert.throws(()=>validateReceipt(d.run,d.jobs,target));
+});
+test('refuse truncated 100-entry annotation page instead of presenting partial evidence',async()=>{
+  const d=base();let i=0; const many=Array.from({length:100},()=>({...d.annotations[0]}));
+  await assert.rejects(collectEvidence(target,async()=>[d.run,d.jobs,many][i++]));
+});
+test('refuse malformed annotation with missing message',async()=>{
+  const d=base();let i=0;const bad=[{title:'broken',annotation_level:'failure'}];
+  await assert.rejects(collectEvidence(target,async()=>[d.run,d.jobs,bad][i++]));
+});
+test('refuse invalid annotation level',async()=>{
+  const d=base();let i=0;const bad=[{message:'hi',annotation_level:'imposter'}];
+  await assert.rejects(collectEvidence(target,async()=>[d.run,d.jobs,bad][i++]));
+});
+test('redact generic secrets and URL userinfo in provider annotation',async()=>{
+  const d=base();let i=0;d.annotations[0].message='password=superSecret token:1234567890 https://alice:secretpass@example.com/path authorization:BearerToken x-api-key=key123';
+  const x=await collectEvidence(target,async()=>[d.run,d.jobs,d.annotations][i++]);
+  const v=x.providerAnnotations[0].message;
+  for (const secret of ['superSecret','1234567890','secretpass','BearerToken','key123']) assert.ok(!v.includes(secret), secret);
+});
