@@ -209,3 +209,33 @@ test('a separately authorized destination can be bound without equating hostname
   assert.equal(broker.complete(actor,ticket),true);
   assert.equal(broker.retire(actor,ticket,true),true);
 });
+
+test('per-actor grants remain attenuated by all ancestors even if child broadens requests', () => {
+  const shared = denyAllPolicy();
+  shared.net.allow.push('*');
+  const broker = fixture({layers:{host:shared,artifact:shared,runtime:shared,
+    actor:shared,delegated:shared},maxInFlight:3});
+  const rootPolicy = denyAllPolicy();
+  rootPolicy.net.allow.push('203.0.113.5:443');
+  const childPolicy = denyAllPolicy();
+  childPolicy.net.allow.push('*');
+  const parent = broker.registerActor(null,rootPolicy);
+  const child = broker.registerActor(parent,childPolicy);
+  const other = target(broker,'198.51.100.12:443');
+  assert.equal(broker.admit(parent,other).status,'DENIED_PERMISSION');
+  assert.equal(broker.admit(child,other).status,'DENIED_PERMISSION');
+  assert.equal(broker.admit(child,target(broker)).status,'ADMITTED');
+  assert.equal(broker.admit(broker.registerActor(),other).status,'ADMITTED');
+});
+
+test('actor policy snapshots cannot be relaxed after registration', () => {
+  const shared = denyAllPolicy(); shared.net.allow.push('*');
+  const broker = fixture({layers:{host:shared,artifact:shared,runtime:shared,
+    actor:shared,delegated:shared}});
+  const policy = denyAllPolicy(); policy.net.allow.push('203.0.113.5:443');
+  const actor = broker.registerActor(null,policy);
+  policy.net.allow.push('198.51.100.12:443');
+  assert.equal(broker.admit(actor,target(broker,'198.51.100.12:443')).status,
+    'DENIED_PERMISSION');
+  assert.equal(broker.admit(actor,target(broker)).status,'ADMITTED');
+});
