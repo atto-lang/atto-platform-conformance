@@ -15,7 +15,7 @@ const check = (overrides = {}, records = {}, calls = []) =>
 
 test("trusted synthetic source and carrier policy fixtures match reviewed immutable Git blob IDs", () => {
   const gitBlobSha=text=>createHash("sha1")
-    .update("blob "+Buffer.byteLength(text)+"\\0")
+    .update("blob "+Buffer.byteLength(text)+"\0")
     .update(text).digest("hex");
   assert.equal(gitBlobSha(sourcePolicyWorkflow),
     "1e18ea42fc8a819e26a90f9b2dfea7cbdc129e76");
