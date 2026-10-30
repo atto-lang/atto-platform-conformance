@@ -6,10 +6,13 @@
  * All methods here represent TRUSTED runtime calls, not guest APIs.
  */
 const invalid=msg=>{throw new Error('INVALID_REQUEST_CONTEXT_MODEL: '+msg);};
+const isPlain=o=>o!==null&&typeof o==='object'&&!Array.isArray(o)&&
+  (Object.getPrototypeOf(o)===Object.prototype||Object.getPrototypeOf(o)===null)&&
+  Object.values(Object.getOwnPropertyDescriptors(o)).every(d=>Object.hasOwn(d,'value'));
 const id=s=>typeof s==='string'&&/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$/.test(s);
 const validInt=n=>Number.isSafeInteger(n)&&n>0;
 const immutableMeta=x=>{
-  if(!x||Array.isArray(x)||typeof x!=='object'||
+  if(!isPlain(x)||
      Reflect.ownKeys(x).some(k=>typeof k!=='string'||
        !['request_id','trace_id','tenant_id','deadline_tick'].includes(k)))
     invalid('unknown request metadata');
@@ -18,12 +21,12 @@ const immutableMeta=x=>{
   return Object.freeze({...x});
 };
 const ownerKey=o=>{
-  if(!o||Array.isArray(o)||typeof o!=='object'||
+  if(!isPlain(o)||
     Reflect.ownKeys(o).length!==3||!validInt(o.domain)||
     !validInt(o.slot)||!validInt(o.generation))invalid('actor owner');
   return [o.domain,o.slot,o.generation].join('/');
 };
-const key=h=>h&&validInt(h.slot)&&validInt(h.generation)&&
+const key=h=>isPlain(h)&&validInt(h.slot)&&validInt(h.generation)&&
   Reflect.ownKeys(h).length===2;
 
 export class RequestContextScopeModel {
