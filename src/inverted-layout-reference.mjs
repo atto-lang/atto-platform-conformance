@@ -4,6 +4,8 @@
 const SCALARS = new Set(["i64", "f64", "bool"]);
 const KINDS = new Set(["struct", "class", "inverted-struct", "inverted-class"]);
 const MAX_FIELDS = 64;
+// Private compiler-minted type witness, never inferred from user-authored layout data.
+const COMPILED_LAYOUTS = new WeakSet();
 
 function fail(message) { throw new TypeError("inverted layout: " + message); }
 function own(value, key) { return Object.hasOwn(value, key); }
@@ -23,7 +25,7 @@ export function compile_inverted_layout(types, typeName) {
   if (fields.length === 0 || fields.length > MAX_FIELDS) fail("invalid field count");
   const cache = new Map();
   function descriptor(type, path = []) {
-    if (SCALARS.has(type)) return {type, kind: "scalar"};
+    if (SCALARS.has(type)) return Object.freeze({type, kind: "scalar"});
     if (typeof type !== "string" || !own(types, type)) fail("unknown field type");
     if (path.includes(type) || path.length >= 16) fail("recursive or overdeep value");
     if (cache.has(type)) return cache.get(type);
@@ -47,10 +49,12 @@ export function compile_inverted_layout(types, typeName) {
     if (!name || typeof type !== "string") fail("invalid direct field");
     return Object.freeze({name, descriptor: descriptor(type, [typeName])});
   });
-  return Object.freeze({
+  const layout = Object.freeze({
     typeName, typeKind: root.kind, layout: "soa",
     columns: Object.freeze(columns), nesting: "one-level"
   });
+  COMPILED_LAYOUTS.add(layout);
+  return layout;
 }
 
 function copyValue(spec, value) {
@@ -82,9 +86,9 @@ export class InvertedReferenceStore {
   #closed = false;
   #capacity;
   constructor(layout, capacity = 1024) {
-    if (!layout || layout.layout !== "soa" || layout.nesting !== "one-level" ||
-        !Array.isArray(layout.columns) || !Number.isSafeInteger(capacity) ||
-        capacity < 0) fail("invalid owner initialization");
+    if (!layout || typeof layout !== "object" || !COMPILED_LAYOUTS.has(layout) ||
+        !Number.isSafeInteger(capacity) || capacity < 0)
+      fail("invalid or untrusted owner initialization");
     this.#layout = layout;
     this.#capacity = capacity;
     for (const c of layout.columns) {
