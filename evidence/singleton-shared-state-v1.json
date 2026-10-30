@@ -21,8 +21,8 @@
     },
     "forge": {
       "status": "host-foundation-only",
-      "sourceHead": "7e127a6214f2a13870a0b3bf57eb14d329f178e9",
-      "sourceTree": "9dd436bbe3205110945ce9a144a828f11c73006c",
+      "sourceHead": "3bceb2eaddb0da612220f1b2836360181ee2e6b0",
+      "sourceTree": "53bb2b0573e48cabdbe506fe120b6dafe8edbc60",
       "pullRequest": "ores-truffle-oreslang/oreslang-source.forge#146",
       "executedCaseIds": [],
       "hostFoundationCaseIds": [
@@ -40,7 +40,7 @@
         "table-owner-retirement-revokes-access",
         "table-replacement-rejects-stale-capability"
       ],
-      "limitation": "Host/runtime tests and classified ORES-SINGLETON-UNSUPPORTED admission are not guest singleton/table evidence. Current hosted source and carrier jobs have not provided runner-executed evidence."
+      "limitation": "Host/runtime tests now include runtime-minted caller identity plus automatic table retirement on actor close, restart and destruction. Host tests and classified ORES-SINGLETON-UNSUPPORTED admission are still not guest singleton/table evidence; current hosted jobs have not provided runner-executed evidence."
     }
   }
 }
