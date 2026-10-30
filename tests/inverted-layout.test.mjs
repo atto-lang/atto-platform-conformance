@@ -81,7 +81,12 @@ test("validate all fields before insertion; overflow and failed insertion do not
   assert.throws(() => store.push(particle(2)), /full/);
   assert.equal(store.length, 1);
   assert.equal(store.get_field(h, "id"), 1n);
-  assert.throws(() => store.set_field(h, "id", 1n << 63n), /invalid scalar/);
+  const signed = new InvertedReferenceStore(compile_inverted_layout({
+    S: {kind: "inverted-struct", fields: {x: {type: "i64", mutable: true}}}
+  }, "S"), 1);
+  const sh = signed.push({x: 1n});
+  assert.throws(() => signed.set_field(sh, "x", 1n << 63n), /invalid scalar/);
+  assert.equal(signed.get_field(sh, "x"), 1n);
   assert.equal(store.get_field(h, "id"), 1n);
 });
 
