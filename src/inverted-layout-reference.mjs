@@ -49,6 +49,20 @@ export function compile_inverted_layout(types, typeName) {
   if (!KINDS.has(root.kind)) fail("invalid root type declaration");
   const fields = fieldsOf(root.fields);
   if (!fields.length || fields.length > MAX_FIELDS) fail("invalid field count");
+  // Direct field syntax defaults to Oreslang's implicit immutable val.
+  // {type, mutable:true} explicitly models a `let` member.  Immutable
+  // members are initialized at push only and cannot acquire write loans.
+  function directField(spec) {
+    if (typeof spec === "string") return {type: spec, mutable: false};
+    if (!exactObject(spec)) fail("invalid direct field binding");
+    const keys = Reflect.ownKeys(spec);
+    if (keys.length !== 2 || !keys.includes("type") || !keys.includes("mutable"))
+      fail("invalid direct field binding");
+    const type = data(spec, "type"), mutable = data(spec, "mutable");
+    if (typeof type !== "string" || typeof mutable !== "boolean")
+      fail("invalid direct field binding");
+    return {type, mutable};
+  }
   const cache = new Map();
   function descriptor(type, path = []) {
     if (SCALARS.has(type)) return Object.freeze({
@@ -76,13 +90,13 @@ export function compile_inverted_layout(types, typeName) {
     return spec;
   }
   let rowWidth = 0;
-  const columns = fields.map(([name, type]) => {
-    if (typeof type !== "string") fail("invalid direct field");
+  const columns = fields.map(([name, field]) => {
+    const {type, mutable} = directField(field);
     const d = descriptor(type, [typeName]);
     rowWidth += d.width;
     if (!Number.isSafeInteger(rowWidth) || rowWidth > MAX_PACKED_BYTES)
       fail("row exceeds byte budget");
-    return Object.freeze({name, descriptor: d});
+    return Object.freeze({name, descriptor: d, mutable});
   });
   const layout = Object.freeze({
     typeName, typeKind: root.kind, layout: "soa", rowWidth,
@@ -217,6 +231,8 @@ export class InvertedReferenceStore {
     const row = this.#resolve(handle);
     const loan = this.#loans.get(name);
     if (!loan) fail("unknown field");
+    if (!this.#layout.columns.find(c => c.name === name).mutable)
+      throw new Error("immutable field cannot be written");
     if (loan.writer || loan.readers) throw new Error("field loan conflict");
     const detached = copyValue(this.#spec(name), value);
     this.#column(name)[row] = detached;
@@ -252,6 +268,8 @@ export class InvertedReferenceStore {
   borrow_column(name, write = false) {
     if (typeof write !== "boolean") fail("column loan mode must be boolean");
     const col = this.#column(name);
+    if (write && !this.#layout.columns.find(c => c.name === name).mutable)
+      throw new Error("immutable field cannot be borrowed for writing");
     const loan = this.#loans.get(name);
     if (loan.writer || (write && loan.readers)) throw new Error("field loan conflict");
     if (write) loan.writer = true; else loan.readers++;
