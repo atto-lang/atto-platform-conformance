@@ -6,9 +6,16 @@
     "mathUnaryPrecisionGitBlob": "3249d837ae6bcf6e2c2c23cac872becf92d0c8e0",
     "bigIntExactGitBlob": "b49c7a7d9395f7298e5534c4a6e5b90d4a2a518c",
     "decimalPrecisionGitBlob": "3bbb44277f3816add53da40a1e161e466ab162b1",
-    "numericPublicApiGitBlob": "1b0f0295de78ce7d33b2dc0b07eed3cc78cf6983"
+    "numericPublicApiGitBlob": "1b0f0295de78ce7d33b2dc0b07eed3cc78cf6983",
+    "binaryFloatingGitBlob": "4f5a8da960f017f9254872cccd565cfff5fc8f33"
   },
-  "backends": ["java", "llvm", "net", "wasm", "forge"],
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
   "allowedTargetStates": [
     "candidate",
     "candidate-stacked",
@@ -21,7 +28,10 @@
       "file": "math-i64-unary.ores",
       "gitBlob": "cf009a7db44457442f8a806f4e38d6b798fc1264",
       "mode": "execute",
-      "oracle": {"kind": "integer", "value": 43},
+      "oracle": {
+        "kind": "integer",
+        "value": 43
+      },
       "targets": {
         "java": "candidate-stacked",
         "llvm": "blocked-missing-guest-lowering",
@@ -35,7 +45,10 @@
       "file": "math-i64-min-overflow.ores",
       "gitBlob": "212d0c3fa3f008cf84e45d94c7a283c422a1a24f",
       "mode": "runtime-error",
-      "oracle": {"kind": "error", "category": "ArithmeticOverflowError"},
+      "oracle": {
+        "kind": "error",
+        "category": "ArithmeticOverflowError"
+      },
       "targets": {
         "java": "candidate-stacked",
         "llvm": "blocked-missing-guest-lowering",
@@ -49,7 +62,10 @@
       "file": "math-f64-sign.ores",
       "gitBlob": "7348105dec586ac55cee1106d4950d138dc871c2",
       "mode": "execute",
-      "oracle": {"kind": "integer", "value": 42},
+      "oracle": {
+        "kind": "integer",
+        "value": 42
+      },
       "targets": {
         "java": "candidate-stacked",
         "llvm": "blocked-missing-guest-lowering",
@@ -63,7 +79,10 @@
       "file": "math-bigint-unary.ores",
       "gitBlob": "243696add6a2fe5db464dfb827b111adf9060481",
       "mode": "execute",
-      "oracle": {"kind": "integer", "value": 42},
+      "oracle": {
+        "kind": "integer",
+        "value": 42
+      },
       "targets": {
         "java": "candidate-stacked",
         "llvm": "blocked-missing-guest-lowering",
@@ -77,7 +96,10 @@
       "file": "math-decimal-unary.ores",
       "gitBlob": "c787ba49a0d5e496aa1cd22616c1886bc67616fe",
       "mode": "execute",
-      "oracle": {"kind": "integer", "value": 42},
+      "oracle": {
+        "kind": "integer",
+        "value": 42
+      },
       "targets": {
         "java": "candidate-stacked",
         "llvm": "blocked-missing-guest-lowering",
@@ -91,7 +113,10 @@
       "file": "f32-distinct-or-reject.ores",
       "gitBlob": "eefe4b53a2d0d46242f81dbdbc58dd81ebb48a7a",
       "mode": "reject-until-distinct-binary32",
-      "oracle": {"kind": "diagnostic", "category": "binary32-distinct-representation-required"},
+      "oracle": {
+        "kind": "diagnostic",
+        "category": "binary32-distinct-representation-required"
+      },
       "targets": {
         "java": "blocked-distinct-binary32",
         "llvm": "blocked-distinct-binary32",
