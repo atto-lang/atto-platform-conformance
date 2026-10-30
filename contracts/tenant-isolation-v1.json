@@ -4,7 +4,11 @@
   "status": "SOURCE_FREE_REFERENCE_NOT_BACKEND_EXECUTION",
   "design": {
     "unit": "tenant incarnation owns one IsolateVM security/accounting domain; multiple actors may live within it",
-    "identity": "tenantId, generation, opaqueHostAuthority scoped to ONE root VM; numeric ID/generation equality must never convey authority between separate roots",
+    "identity": [
+      "tenantId",
+      "generation",
+      "opaqueHostAuthority"
+    ],
     "phases": [
       "created",
       "running",
@@ -20,7 +24,8 @@
     "trust": "logical heap/arena quotas are not physical security boundaries",
     "untrusted": "hostile tenant workloads need a proven runtime sandbox plus process/OS security enforcement; no silent backend downgrade",
     "aot": "signed/approved native artifacts required before any unsafe deserialization; caller-supplied SHA is only identity check",
-    "shutdown": "fence queued/running work, drain references and resource loans, then reclaim; never resolve shutdown before physical retirement"
+    "shutdown": "fence queued/running work, drain references and resource loans, then reclaim; never resolve shutdown before physical retirement",
+    "root_authority": "Opaque authority belongs to one root VM; matching tenant ID and numeric generation from another root never grants access"
   },
   "backendProfiles": {
     "java": {
