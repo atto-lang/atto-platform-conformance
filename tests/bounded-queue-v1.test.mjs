@@ -15,11 +15,11 @@ async function json(url){return JSON.parse(await readFile(url,"utf8"))}
 test("bounded queue v1 has all safety and progress invariants",async()=>{
   const result=validateBoundedQueueContract(await json(contractPath));
   assert.equal(result.ok,true);
-  assert.equal(result.invariants,14);
-  assert.equal(result.scenarios,5);
+  assert.equal(result.invariants,15);
+  assert.equal(result.scenarios,6);
   assert.equal(result.backends,5);
   assert.equal(INVARIANTS[0],"BQ01");
-  assert.equal(INVARIANTS.at(-1),"BQ14");
+  assert.equal(INVARIANTS.at(-1),"BQ15");
 });
 
 test("pending backend ledger is five-backend and never self-certifies",async()=>{
@@ -84,4 +84,16 @@ test("close linearizes through actual channel rather than a consumable token",as
   assert.match(contract.arbitration.close_linearization,/actual item channel/);
   assert.match(contract.arbitration.pending_push[1],/Channel\.close/);
   assert.match(contract.arbitration.receive_linearization,/FIFO/);
+});
+
+test("full returns exact payload ownership instead of consuming it",async()=>{
+  const contract=await json(contractPath);
+  const scenario=contract.scenarios.find(x=>x.id==="full_returns_payload");
+  assert.deepEqual(scenario.expected,[
+    "admitted:owned-0","full:t1:return-exact-owned-1"
+  ]);
+  assert.match(
+    contract.required_invariants.find(x=>x.id==="BQ15").rule,
+    /exact original payload/
+  );
 });
