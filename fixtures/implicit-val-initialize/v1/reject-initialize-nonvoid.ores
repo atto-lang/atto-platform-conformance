@@ -1,0 +1,7 @@
+define class Connection as
+  final int connection_id;
+  initialize(int id) -> int {
+    self.connection_id = id;
+    return id;
+  }
+end
