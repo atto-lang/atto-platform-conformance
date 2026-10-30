@@ -51,11 +51,24 @@ export function validateBoundedQueueContract(contract) {
     nonempty(invariant.rule,"invariant rule");
   }
   object(contract.arbitration,"arbitration");
-  exactKeys(contract.arbitration,["push_priority","pop_priority","statement"],"arbitration");
-  if(JSON.stringify(contract.arbitration.push_priority)!==JSON.stringify(["cancel","close","write"]))
-    fail("push priority must be cancel, close, write");
-  if(JSON.stringify(contract.arbitration.pop_priority)!==JSON.stringify(["item","close"]))
-    fail("pop priority must drain item before close");
+  exactKeys(contract.arbitration,[
+    "pending_push","close_linearization","receive_linearization"
+  ],"arbitration");
+  if(!Array.isArray(contract.arbitration.pending_push)
+      || contract.arbitration.pending_push.length!==3)
+    fail("pending push linearization requires exactly three rules");
+  for(const rule of contract.arbitration.pending_push)
+    nonempty(rule,"pending push linearization rule");
+  if(!contract.arbitration.pending_push[0].includes("cancellation"))
+    fail("pending push must state cancellation-before-commit semantics");
+  if(!contract.arbitration.pending_push[1].includes("Channel.close"))
+    fail("close must linearize through the actual item channel");
+  if(!contract.arbitration.pending_push[2].includes("commit"))
+    fail("write commit must be final");
+  nonempty(contract.arbitration.close_linearization,"close linearization");
+  if(!contract.arbitration.close_linearization.includes("actual item channel"))
+    fail("synthetic close-token models are forbidden");
+  nonempty(contract.arbitration.receive_linearization,"receive linearization");
   if(!Array.isArray(contract.scenarios) || contract.scenarios.length<5) fail("required scenarios missing");
   const scenarioIds=new Set();
   for(const scenario of contract.scenarios){
@@ -108,7 +121,7 @@ export function validateBoundedQueueBackendStatus(status) {
     seen.add(record.backend);
     if(!["implemented-unexecuted","unsupported"].includes(record.source_lowering))
       fail("invalid source lowering state");
-    if(!["contract-tests-added-unexecuted","unsupported"].includes(record.runtime_substrate))
+    if(!["implementation-added-unexecuted","contract-tests-added-unexecuted","unsupported"].includes(record.runtime_substrate))
       fail("invalid runtime substrate state");
     if(record.guest_execution!=="NOT_EXECUTED")
       fail("pending backend cannot claim guest execution");
