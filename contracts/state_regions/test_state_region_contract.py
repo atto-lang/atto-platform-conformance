@@ -46,6 +46,32 @@ def provenance_authorizes(borrow, release):
     return all(borrow.get(key) == release.get(key) for key in keys)
 
 
+def valid_compile_time_requirement(value):
+    if value.get("contractVersion") != "1.0":
+        return False
+    if not isinstance(value.get("regionBinding"), str) or not value["regionBinding"].strip():
+        return False
+    if value.get("executionBinding") != "current-logical-execution":
+        return False
+    if value.get("generationFence") is not True:
+        return False
+    if not isinstance(value.get("loanId"), int) or value["loanId"] <= 0:
+        return False
+    if not isinstance(value.get("place"), str) or not value["place"].strip():
+        return False
+    if value.get("kind") not in ("read", "write"):
+        return False
+    if value.get("action") not in ("borrow", "release"):
+        return False
+
+    # Compile time must never fabricate concrete scheduler/region incarnations.
+    forbidden_runtime_fields = {
+        "regionId", "regionGeneration", "runtimeDomain", "executionId",
+        "executionSlot", "executionGeneration",
+    }
+    return not (forbidden_runtime_fields & value.keys())
+
+
 @dataclass
 class Region:
     owner: str
@@ -164,6 +190,36 @@ class Handler:
 
 
 class StateRegionContract(unittest.TestCase):
+    def test_compile_time_requirement_never_contains_runtime_identity(self):
+        requirement = {
+            "contractVersion": "1.0",
+            "regionBinding": "inventory",
+            "executionBinding": "current-logical-execution",
+            "generationFence": True,
+            "loanId": 501,
+            "place": "inventory.stock",
+            "kind": "write",
+            "action": "borrow",
+        }
+        self.assertTrue(valid_compile_time_requirement(requirement))
+        for field, value in (
+            ("executionId", 1001),
+            ("executionGeneration", 6),
+            ("executionSlot", 41),
+            ("runtimeDomain", 7),
+            ("regionId", 9),
+            ("regionGeneration", 3),
+        ):
+            with self.subTest(field=field):
+                forged = dict(requirement)
+                forged[field] = value
+                self.assertFalse(valid_compile_time_requirement(forged))
+        unfenced = dict(requirement, generationFence=False)
+        self.assertFalse(valid_compile_time_requirement(unfenced))
+        wrong_execution = dict(
+            requirement, executionBinding="guest-supplied-execution")
+        self.assertFalse(valid_compile_time_requirement(wrong_execution))
+
     def test_canonical_machine_readable_provenance_vectors(self):
         vector_path = Path(__file__).with_name(
             "state-region-provenance-vectors.json")
