@@ -181,6 +181,51 @@
         "forge"
       ],
       "expectedI64": "5"
+    },
+    {
+      "id": "initialize-mutable-let-twice",
+      "file": "initialize-mutable-let-twice.ores",
+      "sourceGitBlobSha1": "ef1018ced5d0048a68b78b9786995c0559a3c0c9",
+      "expect": "accept",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "expectedI64": "42"
+    },
+    {
+      "id": "reject-initialize-missing-let",
+      "file": "reject-initialize-missing-let.ores",
+      "sourceGitBlobSha1": "a661fc028ef576b5ffd8728f69b43550765fb438",
+      "expect": "reject",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "diagnosticClass": "uninitialized-mutable-field"
+    },
+    {
+      "id": "reject-early-self-escape-let",
+      "file": "reject-early-self-escape-let.ores",
+      "sourceGitBlobSha1": "dd6859fc33e22778d6251d1f0a186a11fe403010",
+      "expect": "reject",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "diagnosticClass": "partial-object-escape"
     }
   ],
   "readiness": "PROPOSED_NOT_EXECUTED",
