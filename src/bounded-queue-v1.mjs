@@ -7,7 +7,7 @@ export const BACKENDS = Object.freeze([
 ]);
 
 export const INVARIANTS = Object.freeze(
-  Array.from({length:14}, (_, index) => "BQ" + String(index + 1).padStart(2, "0"))
+  Array.from({length:15}, (_, index) => "BQ" + String(index + 1).padStart(2, "0"))
 );
 
 const SHA1=/^[a-f0-9]{40}$/;
@@ -42,7 +42,7 @@ export function validateBoundedQueueContract(contract) {
   if(contract.schema!=="oreslang.bounded_queue_contract.v1") fail("wrong contract schema");
   if(contract.contract_id!=="bounded-queue-v1") fail("wrong contract id");
   if(!Array.isArray(contract.required_invariants) || contract.required_invariants.length!==INVARIANTS.length)
-    fail("exactly 14 invariants required");
+    fail("exactly 15 invariants required");
   const ids=contract.required_invariants.map(x=>object(x,"invariant").id);
   if(JSON.stringify(ids)!==JSON.stringify(INVARIANTS)) fail("invariant ids must be BQ01..BQ14 in order");
   for(const invariant of contract.required_invariants){
@@ -84,7 +84,7 @@ export function validateBoundedQueueContract(contract) {
   }
   for(const required of [
     "pending_writers_fifo","cancel_older_then_progress","close_with_pending",
-    "full_is_nonretaining","stale_ticket_after_close"
+    "full_is_nonretaining","stale_ticket_after_close","full_returns_payload"
   ]) if(!scenarioIds.has(required)) fail("missing scenario: "+required);
   if(JSON.stringify(contract.backends)!==JSON.stringify(BACKENDS)) fail("exact five backend order required");
   nonempty(contract.evidence_rule,"evidence rule");
