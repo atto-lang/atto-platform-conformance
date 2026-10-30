@@ -26,7 +26,7 @@ The Java and LLVM `main` branch API returned `protected=false`. Both private-CI 
 7. **Loan privilege coercion:** non-boolean write flags reject, preventing accidental truthy elevation in the reference API.
 8. **No aliasing of packed cells:** read/snapshot/loan getter values are detached; failed row admission cannot publish partial store changes.
 
-**Regression evidence:** 20 `tests/inverted-layout.test.mjs` cases including a 2,000-operation seeded differential oracle passed in an isolated strict-mode V8 evaluation of the PR's exact referenced source and test content. This is not a genuine `npm test`, hosted CI run, full source graph, native sanitizer, or compiled Oreslang guest result.
+**Regression evidence:** 23 `tests/inverted-layout.test.mjs` cases including a 2,000-operation seeded differential oracle passed in an isolated strict-mode V8 evaluation of the PR's exact referenced source and test content. This is not a genuine `npm test`, hosted CI run, full source graph, native sanitizer, or compiled Oreslang guest result.
 
 ## P0: Native loan escape still open
 
@@ -48,3 +48,10 @@ LLVM `Loan::span()` exposes a raw C++ `span`, which can outlive the loan and can
 6. Confirm branch protection and source-private approved destination policy before any cross-org testing; require independent review, pinned whole-tree/provenance and compiled Oreslang runtime artifacts (not just host/oracle green checks).
 
 **Until these gates pass, every backend remains UNVERIFIED for executable inverted-struct/inverted-class/explicit-inverted-collection parity.**
+
+
+### Experimental executable-guest source track (draft LLVM #1213)
+
+The separate opt-in `oreslang-llvmc --experimental-inverted-i64` source adapter now emits actual physical stack-resident i64 SoA LLVM IR for an `inverted struct` and an explicitly allocated `InvertedArray<T>`. This is intentionally a **pre-HIR experimental subset** and not the production source parser, general `DopInvertedColumns` ownership-checked handle ABI, or proven guest execution. It supports signed i64 literals, capacity 1..256, positional push, checked get, and checked set only for explicitly `let` fields; implicit `val` fields are immutable after insertion. Unsupported dynamic indices, row deletion, nesting, actor/state/lifetime/borrow semantics and cross-backend execution stay rejected. The new three exactly SHA-matched `.ores` fixtures are pinned under `fixtures/inverted-layout/experimental-i64/` with `contracts/experiments/inverted-i64/manifest.json`, preserving every backend's `NOT_EXECUTED` state.
+
+The shared JS oracle now models **implicit immutable val** and explicitly mutable direct field bindings; 23/23 isolated strict-mode V8 reference tests passed on the audited implementation and test blobs. Exact-head hosted Node, actual LLVM compiler/Clang native guest tests and five-backend parity remain unverified.
