@@ -4,11 +4,7 @@
   "status": "SOURCE_FREE_REFERENCE_NOT_BACKEND_EXECUTION",
   "design": {
     "unit": "tenant incarnation owns one IsolateVM security/accounting domain; multiple actors may live within it",
-    "identity": [
-      "tenantId",
-      "generation",
-      "opaqueHostAuthority"
-    ],
+    "identity": "tenantId, generation, opaqueHostAuthority scoped to ONE root VM; numeric ID/generation equality must never convey authority between separate roots",
     "phases": [
       "created",
       "running",
@@ -72,6 +68,8 @@
     "verified-real-compiler-artifact-required",
     "exact-pr-tree-nonzero-step-ci-evidence",
     "same-tenant-scalar-turn-nonreentrant",
-    "resource-loan-drain-before-stop"
+    "resource-loan-drain-before-stop",
+    "foreign-vm-root-handle-rejected-even-if-generation-collides",
+    "typed-untrusted-boundary-fails-closed"
   ]
 }
