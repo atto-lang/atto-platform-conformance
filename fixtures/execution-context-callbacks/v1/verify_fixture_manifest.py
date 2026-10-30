@@ -9,6 +9,9 @@ ROOT = Path(__file__).resolve().parent
 MANIFEST = ROOT / "manifest.json"
 SOURCE = ROOT / "callback_sync_resolve.ores"
 
+EXPECTED_SOURCE_BLOB = "83f7db76fd6437d7d4994210e78034b93a5bff26"
+EXPECTED_MANIFEST_BLOB = "21ca719f9e9998ea5aa24111687a8151d4f67adc"
+
 
 def git_blob_id(path: Path) -> str:
     data = path.read_bytes()
@@ -24,6 +27,8 @@ def require(ok: bool, message: str) -> None:
 
 
 def main() -> None:
+    require(git_blob_id(SOURCE) == EXPECTED_SOURCE_BLOB, "source blob drift")
+    require(git_blob_id(MANIFEST) == EXPECTED_MANIFEST_BLOB, "manifest blob drift")
     manifest = json.loads(MANIFEST.read_text())
     require(manifest.get("version") == 1, "version")
     require(
@@ -59,7 +64,7 @@ def main() -> None:
 
     print(
         "CALLBACK_SOURCE_FIXTURE_V1_PASS "
-        f"source_blob={git_blob_id(SOURCE)} manifest_blob={git_blob_id(MANIFEST)}"
+        f"source_blob={EXPECTED_SOURCE_BLOB} manifest_blob={EXPECTED_MANIFEST_BLOB}"
     )
 
 
