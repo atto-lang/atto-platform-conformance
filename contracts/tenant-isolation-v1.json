@@ -18,7 +18,7 @@
     ],
     "memory": "tenant-owned mutable state never crosses into another tenant; cross-tenant delivery copies or re-encodes values",
     "actor_execution": "no actor reentrancy, including across suspension or independent lock queues",
-    "resource_accounting": "limit tenant admissions, per-tenant guest memory/actors and inflight work; account host overhead separately",
+    "resource_accounting": "limit tenant admissions, per-tenant guest memory/actors and inflight work; account host overhead separately; the scalar reference turn is non-reentrant even if tenant inflight capacity exceeds one",
     "failure": "guest trap or unrecoverable execution error quarantines incarnation, disallows future calls and must retire its resources before reuse",
     "capabilities": "fail-closed denial of FFI, WASI, filesystem, network, native memory and host imports unless explicitly authorized",
     "trust": "logical heap/arena quotas are not physical security boundaries",
@@ -70,6 +70,8 @@
     "no-implicit-host-capabilities",
     "no-implicit-untrusted-sandbox-downgrade",
     "verified-real-compiler-artifact-required",
-    "exact-pr-tree-nonzero-step-ci-evidence"
+    "exact-pr-tree-nonzero-step-ci-evidence",
+    "same-tenant-scalar-turn-nonreentrant",
+    "resource-loan-drain-before-stop"
   ]
 }
