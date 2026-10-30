@@ -54,6 +54,25 @@ The model checks core capability admission/release, writer exclusion, read shari
 Research anchors: Boyapati/Lee/Rinard (OOPSLA 2002); GhostCell (ICFP 2021); Castegren/Wrigstad (ECOOP 2016); cooperability (Yi et al. 2015); observationally cooperative multithreading; AME (HotOS 2007). These motivate the contract; they do not prove this implementation.
 
 
+## Compile-time requirement versus runtime provenance
+
+The compiler must **not invent concrete runtime execution IDs or generations**.
+State-region authority has two layers:
+
+1. **Compile-time requirement** — `state-region-loan-requirement.*` records a
+   region binding expression/place, lexical loan ID, access mode and the
+   requirement to bind to the `current-logical-execution` with a generation
+   fence. This is what source/HIR/MIR lowering may carry.
+2. **Runtime provenance** — `state-region-loan-provenance.*` is materialized
+   only when the scheduler/runtime has the actual region incarnation and
+   authenticated execution context. It contains concrete region generation,
+   runtime domain, logical execution and execution-slot generation.
+
+A backend fails closed if it cannot materialize the runtime provenance from the
+compile-time requirement without trusting guest-provided identity fields.
+Release authorization compares the runtime provenance/ticket created at borrow
+time; source code cannot supply or forge those concrete fields.
+
 ## Exact task-bound loan identity
 
 A shared-state loan is not authorized by a lexical `loan_id` alone. Cross-turn or
