@@ -65,7 +65,8 @@ function provenanceAt(p, digest) {
 function pinNativeExecutable(bytes, p, digest) {
   const magic = bytes.subarray(0, 4).toString('hex');
   assert.ok(magic === '7f454c46' || bytes.subarray(0, 2).toString('ascii') === 'MZ'
-    || new Set(['feedface', 'feedfacf', 'cefaedfe', 'cffaedfe', 'cafebabe']).has(magic),
+    || // 0xCAFEBABE is ambiguous with JVM .class files and is not accepted here.
+    || new Set(['feedface', 'feedfacf', 'cefaedfe', 'cffaedfe']).has(magic),
     'requires native executable, not a script/JAR launcher with unpinned dependencies');
   assert.equal(hash('sha256', bytes), digest);
   writeFileSync(p, bytes, { mode: 0o500, flag: 'wx' });
@@ -85,7 +86,7 @@ function diagnosticMatches(kind, stderr) {
 }
 function invoke(compiler, dir, source, check) {
   const run = spawnSync(compiler, check
-    ? ['--no-prompt', '--check', source] : ['--no-prompt', source], {
+    ? ['--no-prompt', '--check', source] : source == null ? ['--build-info'] : ['--no-prompt', source], {
     cwd: dir, encoding: 'utf8', timeout: 30000, maxBuffer: 262144,
     env: { PATH: '/usr/bin:/bin', LANG: 'C.UTF-8', LC_ALL: 'C.UTF-8',
       HOME: dir, TMPDIR: dir, CI: 'true', NO_COLOR: '1' }
@@ -128,6 +129,28 @@ function main(argv) {
   try {
     const compiler = path.join(dir, 'pinned-oreslang-compiler');
     pinNativeExecutable(bytes, compiler, digest);
+    // Native byte signatures and operator-provided hashes cannot establish
+    // compiler identity. Require the production OresMain NativeBuildMode
+    // handshake before accepting any Oreslang-language test result.
+    const probe = invoke(compiler, dir, null, false);
+    assert.equal(probe.exit, 0, 'compiler --build-info did not exit successfully');
+    assert.equal(probe.signal, null, 'compiler --build-info was terminated by a signal');
+    assert.equal(probe.error, null, 'compiler --build-info failed to execute');
+    assert.equal(probe.stderr, '', 'compiler --build-info must not write stderr');
+    assert.ok(probe.stdout.length < 1024, 'compiler --build-info unexpectedly large');
+    const info = JSON.parse(probe.stdout);
+    assert.deepEqual(Object.keys(info).sort(), [
+      'build_mode', 'default_execution_mode',
+      'guest_execution', 'managed_reference_mode'
+    ].sort(), 'compiler --build-info field mismatch');
+    assert.equal(info.build_mode, 'aot', 'compiler must be an AOT native image');
+    assert.equal(info.default_execution_mode, 'aot',
+      'compiler must default to AOT execution');
+    assert.equal(info.guest_execution, 'interpreter-no-jit',
+      'compiler must not claim JIT guest execution in AOT mode');
+    assert.ok(['compressed32', 'native64'].includes(info.managed_reference_mode),
+      'unexpected native reference mode');
+    report.compilerBuildInfo = info;
     for (const c of manifest.cases) {
       assert.match(c.source, /^[a-z0-9-]+\.ores$/);
       const sourceBytes = readRegular(path.join(root, c.source), 4096);
