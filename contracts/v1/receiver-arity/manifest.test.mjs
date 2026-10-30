@@ -7,7 +7,7 @@ import {dirname,join} from "node:path";
 
 const root=dirname(fileURLToPath(import.meta.url));
 function gitBlobSha(bytes) {
-  const header=Buffer.from("blob "+bytes.length+"\\0","utf8");
+  const header=Buffer.concat([Buffer.from("blob "+bytes.length),Buffer.from([0])]);
   return createHash("sha1").update(header).update(bytes).digest("hex");
 }
 
