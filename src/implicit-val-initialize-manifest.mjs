@@ -22,7 +22,7 @@ export async function verifyImplicitValInitializeFixtureManifest(directory) {
   if (manifest.schemaVersion !== 1
     || manifest.scope !== "implicit-val-explicit-void-initialize-v1"
     || !Array.isArray(manifest.cases)
-    || manifest.cases.length !== 12) {
+    || manifest.cases.length !== 15) {
     throw new Error("unexpected manifest schema, scope, or fixture count");
   }
   if (manifest.readiness !== "PROPOSED_NOT_EXECUTED"
@@ -79,8 +79,8 @@ export async function verifyImplicitValInitializeFixtureManifest(directory) {
       throw new Error(`fixture Git blob SHA mismatch: ${entry.file}`);
     }
   }
-  if (accepted !== 7 || rejected !== 5) {
-    throw new Error("expected exactly seven accept and five reject vectors");
+  if (accepted !== 8 || rejected !== 7) {
+    throw new Error("expected exactly eight accept and seven reject vectors");
   }
   return Object.freeze({
     fixtureCount: manifest.cases.length,
