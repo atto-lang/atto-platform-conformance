@@ -10,16 +10,18 @@
   "records": [
     {
       "backend": "oreslang-source.java",
-      "source_lowering": "unsupported",
+      "source_lowering": "implemented-unexecuted",
       "runtime_substrate": "implementation-added-unexecuted",
       "guest_execution": "NOT_EXECUTED",
       "reference": {
         "source_contract_pull_request": 2310,
         "source_contract_head_commit": "d5aac011ca6dfc6b00cc05e0b01e08a6b59be59f",
         "runtime_pull_request": 2311,
-        "runtime_head_commit": "1a01de72e011ea531843c0245d701a1a8752ceb9"
+        "runtime_head_commit": "beaa61c33fa6436fa85891c7fbbb0e1e5ce3cffa",
+        "source_builtin_pull_request": 2312,
+        "source_builtin_head_commit": "3524a7cc8cb1a2a9214e6fdfe0927a735e7f5a05"
       },
-      "reason": "Readable source/reference semantics and Java runtime implementation exist, but the first-class copyable BoundedQueue<T>/QueueTicket source builtins are not yet lowered; exact-head jobs remain unexecuted."
+      "reason": "Java now has runtime and first-class source builtin implementations, including ownership-preserving QueuePush<T> recovery, but no exact-head JDK/Maven job has executed."
     },
     {
       "backend": "oreslang-source.llvm",
