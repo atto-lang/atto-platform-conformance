@@ -1,41 +1,65 @@
 #!/usr/bin/env python3
-"""Source-free executable state-region contract model (not a compiler/runtime proof).
+"""Source-free state-region contract model; not a compiler/runtime proof.
 
-Run: python3 -m unittest discover -s contracts/state_regions -p 'test_*.py' -v
-No private source, dependencies, threads, or GitHub credentials are needed.
+Run:
+  python3 -m unittest discover -s contracts/state_regions -p 'test_*.py' -v
+
+The model is deliberately allocation/simple-state oriented. It models exact
+logical task identity + generation, not physical worker-thread identity.
 """
 import unittest
 from dataclasses import dataclass, field
 
+
 class AdmissionError(Exception):
     pass
+
+
+@dataclass(frozen=True)
+class TaskIdentity:
+    runtime_domain: int
+    execution: int
+    slot: int
+    generation: int
+
+    def valid(self):
+        return all(v > 0 for v in (
+            self.runtime_domain, self.execution, self.slot, self.generation
+        ))
+
+
+def task(n, generation=1, domain=1):
+    return TaskIdentity(domain, 1000 + n, 10 + n, generation)
+
 
 @dataclass
 class Region:
     owner: str
     readers: dict = field(default_factory=dict)
-    writer: str | None = None
+    writer: TaskIdentity | None = None
     pins: set = field(default_factory=set)
     retired: bool = False
     allocations: int = 1
     releases: int = 0
     value: int = 0
 
-    def acquire(self, task, mode):
+    def acquire(self, task_id, mode):
+        if not isinstance(task_id, TaskIdentity) or not task_id.valid():
+            raise AdmissionError("invalid task identity")
         if self.retired:
             raise AdmissionError("region retired")
         if mode == "read":
             if self.writer is not None:
                 raise AdmissionError("exclusive writer live")
-            self.readers[task] = self.readers.get(task, 0) + 1
+            self.readers[task_id] = self.readers.get(task_id, 0) + 1
         elif mode == "write":
             if self.writer is not None or self.readers:
                 raise AdmissionError("conflicting loan")
-            self.writer = task
+            self.writer = task_id
         else:
             raise AdmissionError("invalid mode")
-        self.pins.add(task)
-        return Capability(self, task, mode)
+        self.pins.add(task_id)
+        return Capability(self, task_id, mode)
 
     def retire(self):
         if self.readers or self.writer is not None or self.pins:
@@ -45,65 +69,75 @@ class Region:
         self.retired = True
         self.releases += 1
 
+
 @dataclass
 class Capability:
     region: Region
-    task: str
+    task: TaskIdentity
     mode: str
     released: bool = False
 
-    def update(self, delta):
-        if self.released or self.mode != "write" or self.region.writer != self.task:
+    def _authorize(self, by_task):
+        if by_task != self.task:
+            raise AdmissionError("foreign task capability use")
+        if self.released:
+            raise AdmissionError("released capability")
+
+    def update(self, by_task, delta):
+        self._authorize(by_task)
+        if self.mode != "write" or self.region.writer != self.task:
             raise AdmissionError("write without live exclusive capability")
         self.region.value += delta
 
-    def read(self):
-        if self.released or self.region.retired:
+    def read(self, by_task):
+        self._authorize(by_task)
+        if self.region.retired:
             raise AdmissionError("expired read capability")
         return self.region.value
 
-    def release(self):
-        if self.released:
-            raise AdmissionError("double release")
+    def release(self, by_task):
+        self._authorize(by_task)
         if self.mode == "write":
             if self.region.writer != self.task:
                 raise AdmissionError("wrong owner")
             self.region.writer = None
         else:
-            n = self.region.readers.get(self.task, 0)
-            if n < 1:
+            count = self.region.readers.get(self.task, 0)
+            if count < 1:
                 raise AdmissionError("missing reader")
-            if n == 1:
+            if count == 1:
                 del self.region.readers[self.task]
             else:
-                self.region.readers[self.task] = n - 1
+                self.region.readers[self.task] = count - 1
         self.released = True
-        # Task may still be alive outside this scope, but must explicitly
-        # maintain a separate continuation/pin if it retains region access.
+        # A task may have nested read loans. Dropping one does not unpin the
+        # region while another loan from the same exact task identity remains.
         if self.region.writer != self.task and self.task not in self.region.readers:
             self.region.pins.discard(self.task)
 
+
 @dataclass
 class Handler:
-    ident: str
+    ident: TaskIdentity
     held: list = field(default_factory=list)
     admission_count: int = 0
     budget_checks: int = 0
 
     def enter(self, region, mode):
-        # Acquisition is an admission opportunity even if uncontended.
+        # Acquisition is an actor-visible admission opportunity even if the
+        # underlying lock is uncontended.
         self.admit()
         cap = region.acquire(self.ident, mode)
         self.held.append(cap)
         return cap
 
     def leave(self, cap):
-        cap.release()
+        cap.release(self.ident)
         self.held.remove(cap)
         self.admit()
 
     def admit(self):
-        if any(not c.released for c in self.held):
+        if any(not cap.released for cap in self.held):
             raise AdmissionError("actor admission with live capability")
         self.admission_count += 1
 
@@ -111,113 +145,149 @@ class Handler:
         self.admit()
 
     def budget_checkpoint(self):
-        # Worker fairness checkpoint; NOT actor reentrancy or unlocking.
+        # Worker fairness only: no actor-visible admission and no unlock.
         self.budget_checks += 1
+
 
 class StateRegionContract(unittest.TestCase):
     def test_local_exclusive_mutation_no_lock_or_copy(self):
+        ident = task(1)
         r = Region("task")
-        h = Handler("task")
-        c = h.enter(r, "write")
+        h = Handler(ident)
+        cap = h.enter(r, "write")
         for _ in range(1000):
-            c.update(1)
-        self.assertEqual(c.read(), 1000)
+            cap.update(ident, 1)
+        self.assertEqual(cap.read(ident), 1000)
         self.assertEqual(r.allocations, 1)
-        h.leave(c)
+        h.leave(cap)
         r.retire()
         self.assertEqual(r.releases, 1)
 
     def test_multiple_readers_exclude_writer(self):
         r = Region("actor")
-        a = Handler("a")
-        b = Handler("b")
+        a = Handler(task(1))
+        b = Handler(task(2))
         x = a.enter(r, "read")
         y = b.enter(r, "read")
         with self.assertRaisesRegex(AdmissionError, "conflicting loan"):
-            r.acquire("c", "write")
+            r.acquire(task(3), "write")
         a.leave(x)
         b.leave(y)
         z = a.enter(r, "write")
         a.leave(z)
 
     def test_nested_reader_release_preserves_pin(self):
+        ident = task(4)
         r = Region("actor")
-        a = r.acquire("worker", "read")
-        b = r.acquire("worker", "read")
-        a.release()
-        self.assertIn("worker", r.pins)
+        a = r.acquire(ident, "read")
+        b = r.acquire(ident, "read")
+        a.release(ident)
+        self.assertIn(ident, r.pins)
         with self.assertRaises(AdmissionError):
             r.retire()
-        b.release()
-        self.assertNotIn("worker", r.pins)
+        b.release(ident)
+        self.assertNotIn(ident, r.pins)
         r.retire()
 
     def test_writer_excludes_readers_and_writers(self):
         r = Region("actor")
-        cap = r.acquire("a", "write")
+        owner = task(5)
+        cap = r.acquire(owner, "write")
         for mode in ("read", "write"):
             with self.assertRaises(AdmissionError):
-                r.acquire("b", mode)
-        cap.release()
+                r.acquire(task(6), mode)
+        cap.release(owner)
+
+    def test_task_identity_and_generation_bind_capability(self):
+        r = Region("actor")
+        owner = task(7, generation=9)
+        foreign_execution = task(8, generation=9)
+        stale_generation = TaskIdentity(
+            owner.runtime_domain, owner.execution, owner.slot, owner.generation - 1
+        )
+        cap = r.acquire(owner, "write")
+        with self.assertRaisesRegex(AdmissionError, "foreign task"):
+            cap.update(foreign_execution, 1)
+        with self.assertRaisesRegex(AdmissionError, "foreign task"):
+            cap.release(stale_generation)
+        cap.update(owner, 1)
+        self.assertEqual(cap.read(owner), 1)
+        cap.release(owner)
+
+    def test_invalid_zero_identity_is_rejected(self):
+        r = Region("actor")
+        invalid = TaskIdentity(1, 2, 3, 0)
+        with self.assertRaisesRegex(AdmissionError, "invalid task"):
+            r.acquire(invalid, "read")
 
     def test_reentrancy_on_acquire_and_release(self):
-        h = Handler("a")
+        ident = task(9)
+        h = Handler(ident)
         r = Region("actor")
-        c = h.enter(r, "write")
+        cap = h.enter(r, "write")
         self.assertEqual(h.admission_count, 1)
         with self.assertRaisesRegex(AdmissionError, "live capability"):
             h.cooperate()
         h.budget_checkpoint()
         self.assertEqual(h.admission_count, 1)
-        h.leave(c)
+        h.leave(cap)
         self.assertEqual(h.admission_count, 2)
         self.assertEqual(h.budget_checks, 1)
 
-    def test_no_retire_while_live_loan_or_pin(self):
+    def test_no_retire_while_live_loan_or_external_pin(self):
+        ident = task(10)
         r = Region("actor")
-        c = r.acquire("worker", "read")
+        cap = r.acquire(ident, "read")
         with self.assertRaisesRegex(AdmissionError, "live loans"):
             r.retire()
-        c.release()
-        r.pins.add("suspended-continuation")
+        cap.release(ident)
+        continuation_pin = ("continuation", ident, 55)
+        r.pins.add(continuation_pin)
         with self.assertRaisesRegex(AdmissionError, "live loans"):
             r.retire()
-        r.pins.clear()
+        r.pins.remove(continuation_pin)
         r.retire()
         with self.assertRaisesRegex(AdmissionError, "double retire"):
             r.retire()
 
     def test_no_capability_use_after_release_or_retire(self):
-        r = Region("a")
-        c = r.acquire("a", "write")
-        c.release()
+        ident = task(11)
+        r = Region("actor")
+        cap = r.acquire(ident, "write")
+        cap.release(ident)
         with self.assertRaises(AdmissionError):
-            c.update(1)
+            cap.update(ident, 1)
         with self.assertRaises(AdmissionError):
-            c.read()
+            cap.read(ident)
         r.retire()
         with self.assertRaises(AdmissionError):
-            r.acquire("a", "read")
+            r.acquire(ident, "read")
 
     def test_same_actor_different_handlers_do_not_share_writer(self):
         r = Region("actor")
-        a = r.acquire("handler-a", "write")
+        a = task(12)
+        b = task(13)
+        cap = r.acquire(a, "write")
         with self.assertRaises(AdmissionError):
-            r.acquire("handler-b", "write")
-        a.release()
+            r.acquire(b, "write")
+        with self.assertRaisesRegex(AdmissionError, "foreign task"):
+            cap.release(b)
+        cap.release(a)
 
     def test_model_has_no_implicit_snapshot_allocation(self):
+        ident = task(14)
         r = Region("actor")
-        h = Handler("a")
+        h = Handler(ident)
         for _ in range(100):
-            c = h.enter(r, "write")
-            c.update(1)
-            h.leave(c)
+            cap = h.enter(r, "write")
+            cap.update(ident, 1)
+            h.leave(cap)
         self.assertEqual(r.value, 100)
         self.assertEqual(r.allocations, 1)
         self.assertEqual(r.releases, 0)
         r.retire()
         self.assertEqual(r.releases, 1)
+
 
 if __name__ == "__main__":
     unittest.main()
