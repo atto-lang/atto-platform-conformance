@@ -198,3 +198,20 @@ test('fenced recovery checks current epoch in same SQLite snapshot',()=>{
     s.close();
   }finally{f.close();}
 });
+
+test('restore rejects oversized persisted snapshot and journal event',()=>{
+  const f=fixture();try{
+    const s=f.open();
+    s.grantEpoch({tenantId:'tenant-a',actor:'oversized-snapshot',epoch:1});
+    s.enqueue(write('oversized-snapshot','snap'));
+    assert.equal(s.flush()[0].status,'committed');
+    s.db.exec("UPDATE snapshots SET payload=zeroblob(1048577) WHERE actor='oversized-snapshot'");
+    assert.throws(()=>s.loadFenced({tenantId:'tenant-a',actor:'oversized-snapshot',stateName:'main',epoch:1}),/INVALID_ACTOR_SNAPSHOT/);
+    s.grantEpoch({tenantId:'tenant-a',actor:'oversized-event',epoch:1});
+    s.enqueue(write('oversized-event','evt',{kind:'event',payload:Buffer.from('x')}));
+    assert.equal(s.flush()[0].status,'committed');
+    s.db.exec("UPDATE events SET payload=zeroblob(1048577) WHERE actor='oversized-event'");
+    assert.throws(()=>s.loadFenced({tenantId:'tenant-a',actor:'oversized-event',stateName:'main',epoch:1}),/ACTOR_EVENT_REPLAY_BYTES_LIMIT/);
+    s.close();
+  }finally{f.close();}
+});
