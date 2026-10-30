@@ -37,7 +37,7 @@ test('constructor failure returns exactly the original credit', () => {
   assert.equal(m.snapshot().accountedBytes, 33);
   m.abort(ticket, m.root);
   assert.equal(m.snapshot().accountedBytes, 0);
-  assert.throws(() => m.abort(ticket), {code:'INVALID_OR_CONSUMED_PERMIT'});
+  assert.throws(() => m.abort(ticket, m.root), {code:'INVALID_OR_CONSUMED_PERMIT'});
   const reused = m.reserve(m.root, 40);
   m.abort(reused, m.root);
 });
@@ -51,7 +51,7 @@ test('transfer leaves the original handle quota charged until physical close', (
   assert.equal(m.snapshot().handles, 1);
   assert.equal(m.snapshot().accountedBytes, 12);
   assert.throws(() => m.reserve(m.root, 0), {code:'CONTEXT_QUOTA'});
-  assert.throws(() => m.abort(ticket), {code:'INVALID_OR_CONSUMED_PERMIT'});
+  assert.throws(() => m.abort(ticket, m.root), {code:'INVALID_OR_CONSUMED_PERMIT'});
   assert.equal(m.physicalClose(handle), true);
   assert.equal(m.snapshot().physicallyRetired, true);
 });
