@@ -1,10 +1,37 @@
 import {createHash} from "node:crypto";
-import {lstat, readFile} from "node:fs/promises";
+import {constants} from "node:fs";
+import {open} from "node:fs/promises";
 import {join, resolve} from "node:path";
 
 const BACKENDS = ["java", "llvm", "net", "wasm", "forge"];
 const SHA1 = /^[a-f0-9]{40}$/;
 const NAME = /^[a-z][a-z0-9-]*\.ores$/;
+
+/** Open the checked file itself, never following a mutable symbolic link. */
+async function readBoundedRegularFile(path, limit, subject) {
+  if (!Number.isInteger(constants.O_NOFOLLOW)) {
+    throw new Error("safe no-follow file reads are unavailable on this platform");
+  }
+  let handle;
+  try {
+    handle = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW);
+  } catch (error) {
+    throw new Error(`${subject} must be a regular file (no symlinks)`, {cause: error});
+  }
+  try {
+    const stat = await handle.stat();
+    if (!stat.isFile() || stat.size > limit) {
+      throw new Error(`${subject} must be a regular file no larger than ${limit} bytes`);
+    }
+    const bytes = await handle.readFile();
+    if (bytes.length > limit) {
+      throw new Error(`${subject} exceeded the size limit during read`);
+    }
+    return bytes;
+  } finally {
+    await handle.close();
+  }
+}
 
 /**
  * Checks the bytes and admission status of the proposed syntax fixtures.
@@ -14,11 +41,9 @@ const NAME = /^[a-z][a-z0-9-]*\.ores$/;
 export async function verifyImplicitValInitializeFixtureManifest(directory) {
   const root = resolve(directory);
   const manifestPath = join(root, "manifest.json");
-  const info = await lstat(manifestPath);
-  if (!info.isFile() || info.size > 128 * 1024) {
-    throw new Error("manifest must be a regular file no larger than 128 KiB");
-  }
-  const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+  const manifest = JSON.parse(
+    (await readBoundedRegularFile(manifestPath, 128 * 1024, "manifest")).toString("utf8")
+  );
   if (manifest.schemaVersion !== 1
     || manifest.scope !== "implicit-val-explicit-void-initialize-v1"
     || !Array.isArray(manifest.cases)
@@ -68,11 +93,7 @@ export async function verifyImplicitValInitializeFixtureManifest(directory) {
       throw new Error("fixture must be explicitly accepted or rejected");
     }
     const filename = join(root, entry.file);
-    const stat = await lstat(filename);
-    if (!stat.isFile() || stat.size > 32 * 1024) {
-      throw new Error("fixture must be a regular file no larger than 32 KiB");
-    }
-    const bytes = await readFile(filename);
+    const bytes = await readBoundedRegularFile(filename, 32 * 1024, "fixture");
     const blobSha = createHash("sha1")
       .update(`blob ${bytes.length}\0`).update(bytes).digest("hex");
     if (blobSha !== entry.sourceGitBlobSha1) {
