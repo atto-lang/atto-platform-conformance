@@ -52,3 +52,44 @@ The zero-alloc target is **not** demonstrated by this Python model. Compiler-pro
 The model checks core capability admission/release, writer exclusion, read sharing, no post-release access, non-admission under a live capability, budget-check distinction, no implicit snapshot allocation **in the model**, and reclamation only after all tracked pins retire. It has no actual concurrency and intentionally cannot certify compiler execution or GC behavior.
 
 Research anchors: Boyapati/Lee/Rinard (OOPSLA 2002); GhostCell (ICFP 2021); Castegren/Wrigstad (ECOOP 2016); cooperability (Yi et al. 2015); observationally cooperative multithreading; AME (HotOS 2007). These motivate the contract; they do not prove this implementation.
+
+
+## Exact task-bound loan identity
+
+A shared-state loan is not authorized by a lexical `loan_id` alone. Cross-turn or
+region-backed access must bind all of:
+
+- `region_id` + `region_generation`
+- `runtime_domain` + logical `execution_id`
+- generation-checked `execution_slot` + `execution_generation`
+- lexical `loan_id`, place and read/write mode
+
+A release with a mismatched task, stale execution generation, different region,
+or missing required provenance must fail closed. Physical carrier/thread identity
+is deliberately not part of the authority: a logical task may migrate carriers
+while its authenticated execution identity remains stable.
+
+Canonical machine-readable shapes are
+`state-region-loan-provenance.schema.json` and
+`state-region-loan-provenance.tsp`. These records are conformance evidence;
+they never mint a runtime capability.
+
+## Executed source-free evidence — 2026-10-30
+
+A separately authored source-free canary was executed in
+`honeypot-r-us-test/hnpt-e2e`, branch
+`test/state-region-source-free-canary-20261030`.
+
+Exact canary head: `73c3fed5939a1e7158a9c9c625232118c261425e`.
+GitHub Actions run: `41003990044`.
+
+The real hosted Ubuntu runner executed and passed:
+1. the 11-test Python state-region contract;
+2. an optimized C11 `-O2 -DNDEBUG -Wall -Wextra -Wpedantic -Werror` build/run;
+3. an AddressSanitizer + UBSan build/run.
+
+This proves alternate-runner capacity and the independent source-free model only.
+It does **not** execute or certify the private LLVM compiler/runtime head.
+The LLVM source repository's approved private-CI destination list is currently
+empty, so no private source tree was transferred. Exact private-head workflows
+continue to record zero executed steps and therefore provide no compiler result.
