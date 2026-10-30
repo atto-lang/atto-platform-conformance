@@ -80,7 +80,8 @@ class Capability:
         self.released = True
         # Task may still be alive outside this scope, but must explicitly
         # maintain a separate continuation/pin if it retains region access.
-        self.region.pins.discard(self.task)
+        if self.region.writer != self.task and self.task not in self.region.readers:
+            self.region.pins.discard(self.task)
 
 @dataclass
 class Handler:
@@ -138,6 +139,18 @@ class StateRegionContract(unittest.TestCase):
         b.leave(y)
         z = a.enter(r, "write")
         a.leave(z)
+
+    def test_nested_reader_release_preserves_pin(self):
+        r = Region("actor")
+        a = r.acquire("worker", "read")
+        b = r.acquire("worker", "read")
+        a.release()
+        self.assertIn("worker", r.pins)
+        with self.assertRaises(AdmissionError):
+            r.retire()
+        b.release()
+        self.assertNotIn("worker", r.pins)
+        r.retire()
 
     def test_writer_excludes_readers_and_writers(self):
         r = Region("actor")
