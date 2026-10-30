@@ -47,4 +47,10 @@ test("unknown, inherited and accessor receipt fields do not count as evidence", 
   Object.defineProperty(x, "execution", {get(){invoked++;return valid().execution}, enumerable:true});
   assert.equal(check(x).ok,false);
   assert.equal(invoked,0);
+  const nested = valid();let nestedCalls=0;
+  Object.defineProperty(nested.execution, "completedSteps", {
+    enumerable:true,set(_v){nestedCalls++}
+  });
+  assert.equal(check(nested).ok,false);
+  assert.equal(nestedCalls,0);
 });
