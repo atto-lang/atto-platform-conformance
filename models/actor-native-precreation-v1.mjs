@@ -91,18 +91,22 @@ export class NativePrecreationModel {
     return permit;
   }
 
-  attach(permit, resource) {
+  attach(permit, resource, callerScope) {
     const record = this.#pending.get(permit);
     if (!record) this.#deny('INVALID_OR_CONSUMED_PERMIT');
     if (!resource || typeof resource !== 'object') this.#deny('INVALID_RESOURCE');
     if (this.#registered.has(resource)) this.#deny('DUPLICATE_RESOURCE');
-    // A physical handle already exists: on STOP, keep ownership without
-    // publishing it to untrusted guest code or returning a quota credit.
-    let rejected = this.#closed;
+    // Actor ancestry is a quota intersection, NOT an identity. Even siblings
+    // with identical parent permission scopes cannot consume each other's
+    // precreation receipts. A real handle is nevertheless retained and
+    // quarantined instead of falsely refunding the permit.
+    const foreign = callerScope !== record.scope;
+    let rejected = this.#closed || foreign;
     for (const node of record.lineage)
       if (!node.actorLive || node.revoked) rejected = true;
     this.#pending.delete(permit);
     this.#registered.set(resource, {...record, quarantined:rejected});
+    if (foreign) this.#deny('FOREIGN_ACTOR_INCARNATION');
     return rejected ? 'QUARANTINED' : 'PUBLISHED';
   }
 
