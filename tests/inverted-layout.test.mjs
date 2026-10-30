@@ -177,3 +177,113 @@ test("root inverted struct can be used with same checked owner lifecycle", () =>
   store.erase_swap(h);
   assert.throws(() => store.snapshot(h), /stale/);
 });
+
+
+test("reject forged/unbranded layout descriptors even if their visible shape matches", () => {
+  const compiled = compile_inverted_layout(types, "Position");
+  const counterfeit = {...compiled, columns: compiled.columns};
+  assert.throws(() => new InvertedReferenceStore(counterfeit), /untrusted/);
+  assert.throws(() => new InvertedReferenceStore({...compiled}), /untrusted/);
+  assert.throws(() => new InvertedReferenceStore(null), /untrusted/);
+  const actual = new InvertedReferenceStore(compiled, 1);
+  const h = actual.push({x: 1, y: 2});
+  assert.equal(actual.snapshot(h).x, 1);
+});
+
+test("deep freeze prevents mutation of compiled scalar and nested field type", () => {
+  const layout = compile_inverted_layout(types, "Particle");
+  assert.equal(Object.isFrozen(layout), true);
+  assert.equal(Object.isFrozen(layout.columns), true);
+  assert.equal(Object.isFrozen(layout.columns[0]), true);
+  assert.equal(Object.isFrozen(layout.columns[0].descriptor), true);
+  assert.equal(Object.isFrozen(layout.columns[0].descriptor.fields), true);
+  assert.equal(Object.isFrozen(layout.columns[0].descriptor.fields[0].descriptor), true);
+  assert.throws(() => { layout.columns[0].descriptor.fields[0].descriptor.type = "bool"; }, TypeError);
+  assert.throws(() => { layout.columns.push({name: "injected"}); }, TypeError);
+  const s = new InvertedReferenceStore(layout, 1);
+  assert.equal(s.push(particle(1)).slot, 0);
+});
+
+test("schema snapshot is independent of mutation of caller declarations", () => {
+  const declared = {P: {kind: "struct", fields: {x: "f64", y: "bool"}}};
+  const layout = compile_inverted_layout(declared, "P");
+  declared.P.fields.x = "i64";
+  declared.P.fields.extra = "i64";
+  declared.P.kind = "inverted-class";
+  const store = new InvertedReferenceStore(layout, 2);
+  const h = store.push({x: 1.5, y: true});
+  assert.deepEqual(store.snapshot(h), {x: 1.5, y: true});
+  assert.throws(() => store.push({x: 2n, y: true}), /invalid scalar/);
+});
+
+test("schema and row accessors are rejected before side effects or publication", () => {
+  const badType = {T: {kind: "struct", fields: {x: "f64"}}};
+  Object.defineProperty(badType.T.fields, "danger", {
+    enumerable: true, get() { throw Error("effectful schema getter executed"); }
+  });
+  assert.throws(() => compile_inverted_layout(badType, "T"), /accessor/);
+  const store = make("Particle", 2);
+  const row = particle(1);
+  Object.defineProperty(row, "mass", {
+    enumerable: true, get() { throw Error("effectful payload getter executed"); }
+  });
+  assert.throws(() => store.push(row), /accessor/);
+  assert.equal(store.length, 0);
+  const clean = particle(2);
+  const h = store.push(clean);
+  assert.equal(store.get_field(h, "mass"), 2.5);
+  const badPacked = particle(3);
+  Object.defineProperty(badPacked.position, "x", {
+    enumerable: true, get() { throw Error("effectful packed getter executed"); }
+  });
+  assert.throws(() => store.push(badPacked), /accessor/);
+  assert.equal(store.length, 1);
+});
+
+test("reject prototype pollution keys, symbol schema keys, rogue modifiers and extras", () => {
+  const members = Object.create(null);
+  members.__proto__ = "f64";
+  assert.throws(() => compile_inverted_layout({
+    Bad: {kind: "inverted-struct", fields: members}
+  }, "Bad"), /invalid field name/);
+  assert.throws(() => compile_inverted_layout({
+    Bad: {kind: "inverted-class", fields: {x: "f64"}, extends: "Parent"}
+  }, "Bad"), /unsupported declaration metadata/);
+  assert.throws(() => compile_inverted_layout({
+    Bad: {kind: "struct", fields: {[Symbol("extra")]: "f64", x: "f64"}}
+  }, "Bad"), /invalid field name/);
+  const store = make("Position", 2);
+  assert.throws(() => store.push({x: 1, y: 2, unexpected: 3}), /inexact row shape/);
+  assert.equal(store.length, 0);
+});
+
+test("bounded packed widths and collection byte quotas fail before owner allocation", () => {
+  const declared = {Leaf: {kind: "struct", fields: {x: "f64", y: "f64"}}};
+  let child = "Leaf";
+  for (let i = 0; i < 14; i++) {
+    declared["Node" + i] = {kind: "struct", fields: {left: child, right: child}};
+    child = "Node" + i;
+  }
+  declared.Root = {kind: "inverted-struct", fields: {value: child}};
+  assert.throws(() => compile_inverted_layout(declared, "Root"), /byte budget/);
+  const layout = compile_inverted_layout(types, "Position");
+  assert.throws(() => new InvertedReferenceStore(layout, 2000000), /invalid or untrusted/);
+  const store = new InvertedReferenceStore(layout, 0);
+  assert.equal(store.length, 0);
+  assert.throws(() => store.push({x: 1, y: 2}), /full/);
+});
+
+test("nested struct loan writes detach input and cannot mutate authoritative row by alias", () => {
+  const store = make();
+  const h = store.push(particle(2));
+  const writer = store.borrow_column("position", true);
+  const replacement = vec(30);
+  writer.set(0, replacement);
+  replacement.x = 9999;
+  const got = writer.get(0);
+  got.x = -333;
+  assert.equal(writer.get(0).x, 30);
+  assert.throws(() => store.set_field(h, "position", vec(4)), /loan conflict/);
+  writer.close();
+  assert.equal(store.snapshot(h).position.x, 30);
+});
