@@ -133,3 +133,47 @@ Research and industry design references:
 - Kotlin CoroutineContext: https://kotlinlang.org/docs/coroutine-context-and-dispatchers.html
 - Java 25 ScopedValue: https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/lang/ScopedValue.html
 - Orleans RequestContext: https://learn.microsoft.com/en-us/dotnet/orleans/grains/request-context
+
+
+## Addendum: exact DATA-envelope identity and physical pin fencing (2026-10-30)
+
+Actor incarnation authorization is **necessary but insufficient** when multiple
+HTTP requests share a reusable actor. A trusted ingress/dispatch bridge MUST
+assign a nonzero, nonwrapping, runtime-minted per-request DATA dispatch ticket,
+bind it to the exchange generation, request registry domain/slot generation,
+and actor domain/slot/incarnation, and submit that ticket as the *actual* actor
+scheduler mailbox payload. The context lookup implementation MUST compare
+that ticket against the scheduler's current authenticated DATA callback.
+A caller that merely knows a second request's handle or exchange token must
+not select that request from another DATA callback in the same actor.
+
+A DATA callback with the wrong envelope, a CONTROL/wake/panic callback,
+a producer/foreign thread, and a retired actor all have **no request context**.
+A suspended request may resume only on a fresh, authenticated owning
+scheduler turn, using its own durable continuation lease, and the same
+request's dispatch identity until a dedicated per-continuation resume ticket
+is available. A terminal continuation is one-shot: a second resume rejects
+even if the message ticket is repeated. Detached tasks and HTTP headers
+must not mint dispatch tickets.
+
+The physical exchange pin must prohibit exchange reuse *even after* the
+exchange has returned to the reactor phase, until its exact-generation
+context/body pin has retired. Request metadata and transport buffers must
+not recycle until all active actor turns, source Task descendants, I/O
+callbacks, and read loans have physically exited or released leases.
+
+LLVM draft #1210 implements a host-only current-DATA-payload check and
+a pinned native exchange/RequestSlotTable reference; its native CTest
+proposes two queued requests on one serial actor, wrong ticket/replay
+rejection, cancellation, same-actor cross-buffer checks, and 3/8/15
+carrier regressions. **No source-level HTTP actor dispatch or native
+exact-head CTest PASS is claimed by this addendum.** Native scheduler
+message payload identity is host-private and is not a guest authorization
+token. Compiled source must be unable to call the scheduler's host-only
+send/turn-control functions directly.
+
+The Java/GraalVM, LLVM, Wasm, .NET Native AOT and Forge parity gates must
+require the same wrong-envelope and one-shot-continuation fixtures,
+not only matching trace_id across await. For true hard real-time use, the
+host's current mutex-based substrate requires separate WCET/priority
+inversion and allocation evidence.
