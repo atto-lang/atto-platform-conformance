@@ -65,7 +65,7 @@ function provenanceAt(p, digest) {
 function pinNativeExecutable(bytes, p, digest) {
   const magic = bytes.subarray(0, 4).toString('hex');
   assert.ok(magic === '7f454c46' || bytes.subarray(0, 2).toString('ascii') === 'MZ'
-    || // 0xCAFEBABE is ambiguous with JVM .class files and is not accepted here.
+    // 0xCAFEBABE is ambiguous with JVM .class files; reject it.
     || new Set(['feedface', 'feedfacf', 'cefaedfe', 'cffaedfe']).has(magic),
     'requires native executable, not a script/JAR launcher with unpinned dependencies');
   assert.equal(hash('sha256', bytes), digest);
