@@ -177,3 +177,43 @@ require the same wrong-envelope and one-shot-continuation fixtures,
 not only matching trace_id across await. For true hard real-time use, the
 host's current mutex-based substrate requires separate WCET/priority
 inversion and allocation evidence.
+
+
+## Addendum: initial DATA claim, replay, and abandoned admission (2026-10-30)
+
+A request-bearing HTTP exchange MUST NOT transition from QUEUED to ACTOR
+on the ingress/reactor thread. The transition may be claimed only by the
+authentic scheduler DATA callback whose actual delivered payload matches
+the exchange's nonwrapping dispatch ticket and whose actor identity
+matches the complete scheduler-domain/slot/incarnation tuple. Host APIs
+that provide a legacy owner-only claim MUST reject request-bearing
+tokens, including forged tokens with the correct actor tuple.
+
+An authenticated initial request delivery is consumable ONCE per
+exchange generation. Repeating the same DATA message later is replay,
+not a new handler invocation. An actual suspended continuation may
+execute on a subsequent scheduler turn only via a separately
+registry-constructed, one-shot continuation lease and exact matching
+request identity. A continuation may be declined or canceled, but it
+must never become a second initial handler invocation.
+
+Trusted ingress admission first binds and physically pins context +
+request body, then submits the exchange's exact ticket to the actor
+scheduler. A rejected admission must roll back QUEUED->REACTOR
+before the producer releases physical pins and closes the request/body
+slots. This includes MAILBOX_FULL and TERMINATED refusals.
+
+An accepted but abandoned queued DATA message (e.g., actor stop)
+must be distinguished from a completed callback and a rejected send.
+The host may roll back this exchange only after the scheduler attests
+the relevant actor's terminal, physically drained state; then context
+and buffer handles may be closed and their pins released. No claimed
+handler execution is inferred from an accepted mailbox receipt.
+
+The LLVM host-only draft adds corresponding regressions for claim from
+reactor, spoofed DATA payload, repeated initial dispatch, two different
+queued requests within one serial actor, wrong borrowed body, full
+mailbox, terminated actor and accepted-but-abandoned drain. These are
+source tests awaiting exact-head CTest execution, not backend
+conformance certification. Runtime-priority ceilings and quiescence
+checks remain separately required for deterministic real-time use.
