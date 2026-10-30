@@ -149,13 +149,21 @@ export class BatchPersistenceSidecar {
     for (const {k,charge} of batch) { this.pending.delete(k); this.queuedBytes -= charge; }
     return results;
   }
-  load({tenantId,actor,stateName}) {
+  loadFenced({tenantId,actor,stateName,epoch}) {
+    if(!uint(epoch) || epoch===0) fail('INVALID_EPOCH');
+    return this.load({tenantId,actor,stateName,epoch});
+  }
+  // Unfenced load is privileged host-only inspection/migration.
+  // Guest actor restoration must use loadFenced and a trusted epoch.
+  load({tenantId,actor,stateName,epoch}) {
     if (tenantId !== this.tenantId) fail('WRONG_TENANT');
     if (![actor,stateName].every(ident)) fail('INVALID_READ');
     // Reconstruct all fields from one SQLite read snapshot. Never publish
     // state if any acknowledged event is missing or reordered.
     this.db.exec('BEGIN');
     try {
+      if (epoch !== undefined && this.getFence.get(tenantId,actor)?.epoch !== epoch)
+        fail('STALE_EPOCH');
       const version=this.getHead.get(tenantId,actor,stateName)?.version??0;
       const snapshot=this.db.prepare('SELECT version,schema_version,payload FROM snapshots WHERE tenant=? AND actor=? AND state_name=?').get(tenantId,actor,stateName);
       const since=snapshot?.version??0;
