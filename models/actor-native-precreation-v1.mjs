@@ -110,9 +110,13 @@ export class NativePrecreationModel {
     return rejected ? 'QUARANTINED' : 'PUBLISHED';
   }
 
-  abort(permit) {
+  abort(permit, callerScope) {
     const record = this.#pending.get(permit);
     if (!record) this.#deny('INVALID_OR_CONSUMED_PERMIT');
+    // Only the creator's actor-incarnation identity can abort a pending
+    // allocation. A foreign sibling cannot refund credits underneath it.
+    if (callerScope !== record.scope)
+      this.#deny('FOREIGN_ACTOR_INCARNATION');
     this.#pending.delete(permit);
     this.#refund(record);
   }
