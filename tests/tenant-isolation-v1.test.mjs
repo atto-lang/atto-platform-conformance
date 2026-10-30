@@ -94,6 +94,7 @@ test("manifest enumerates actual backends and refuses promotional security claim
   assert.equal(contract.schema,"oreslang.tenant-isolation.v1");
   assert.equal(contract.status,"SOURCE_FREE_REFERENCE_NOT_BACKEND_EXECUTION");
   assert.deepEqual(contract.design.identity,["tenantId","generation","opaqueHostAuthority"]);
+  assert.match(contract.design.tenant_id_validation,/excluding reserved path components/);
   assert.match(contract.design.root_authority,/matching tenant ID and numeric generation/);
   assert.deepEqual(Object.keys(contract.backendProfiles).sort(),["forge","java","js","llvm","net","wasm"]);
   assert.ok(contract.requiredScenarios.includes("exact-pr-tree-nonzero-step-ci-evidence"));
