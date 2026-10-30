@@ -1,8 +1,8 @@
 {
   "schema": "oreslang.bounded_queue_contract.v1",
   "contract_id": "bounded-queue-v1",
-  "transport_model": "bounded Channel<T> with select arbitration",
-  "ticket_model": "one-shot generation-bound cancellation capability",
+  "transport_model": "canonical bounded Channel<T> coordinator; no second waiter list",
+  "ticket_model": "one-shot generation-bound local cancellation capability",
   "required_invariants": [
     {
       "id": "BQ01",
@@ -42,7 +42,7 @@
     {
       "id": "BQ08",
       "name": "close_settles_pending",
-      "rule": "close settles uncommitted pending writers without admitting their payloads"
+      "rule": "actual item-channel close settles all uncommitted pending writers without admitting their payloads"
     },
     {
       "id": "BQ09",
@@ -72,20 +72,17 @@
     {
       "id": "BQ14",
       "name": "no_busy_polling",
-      "rule": "blocking admission suspends through scheduler/select registration rather than polling"
+      "rule": "pending admission suspends through canonical scheduler/channel registration rather than polling or a library waiter loop"
     }
   ],
   "arbitration": {
-    "push_priority": [
-      "cancel",
-      "close",
-      "write"
+    "pending_push": [
+      "ticket cancellation competes with the uncommitted channel write",
+      "Channel.close terminally settles an uncommitted pending write",
+      "write commit permanently admits the payload"
     ],
-    "pop_priority": [
-      "item",
-      "close"
-    ],
-    "statement": "priority applies only while the write is uncommitted; committed admission is final"
+    "close_linearization": "close the actual item channel under the canonical channel coordinator; never emulate closure with a consumable token",
+    "receive_linearization": "already-committed FIFO data drains before the channel reports closed+empty terminal state"
   },
   "scenarios": [
     {
