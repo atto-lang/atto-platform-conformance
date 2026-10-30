@@ -335,3 +335,39 @@ test('fenced commit proof and restore read under one SQLite transaction',()=>{
     db.close();
   } finally {f.close();}
 });
+
+test('another SQLite connection cannot rotate activation epoch during fenced reads',()=>{
+  const f=fixture();
+  try {
+    const db=f.open(), competing=f.open();
+    db.grantEpoch({tenantId:'tenant-a',actor:'counter',epoch:1});
+    const actor=create(db,'#snapshot');
+    actor.stage_snapshot('locked-op',s=>{s.count=22;});
+    const receipt=db.flush()[0];
+    const rotate=()=>competing.grantEpoch({tenantId:'tenant-a',actor:'counter',epoch:2});
+    const mustBlock=()=>assert.throws(rotate,/database is locked|SQLITE_BUSY/i);
+    const readOp=db.getOp.get.bind(db.getOp);
+    db.getOp.get=(...args)=>{
+      assert.equal(db.db.isTransaction,true);
+      mustBlock();
+      return readOp(...args);
+    };
+    actor.apply_commit(receipt);
+    assert.equal(read(actor),22);
+    const readRows=db.load.bind(db);
+    db.load=(args)=>{
+      assert.equal(db.db.isTransaction,true);
+      mustBlock();
+      return readRows(args);
+    };
+    const restored=create(db,'#snapshot');
+    restored.restore();
+    assert.equal(read(restored),22);
+    assert.equal(db.db.isTransaction,false);
+    rotate(); // The competing host can advance the fence only after read completion.
+    assert.throws(()=>create(db,'#snapshot').restore(),/STALE_EPOCH/);
+    assert.equal(db.db.isTransaction,false);
+    competing.close();
+    db.close();
+  } finally {f.close();}
+});
