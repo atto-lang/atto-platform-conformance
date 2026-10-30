@@ -73,13 +73,42 @@ test('the compiler path may not be an indirection symlink', () => {
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
+
+test('a Java .class magic header cannot masquerade as a native compiler', () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'ores-future-gate-test-'));
+  try {
+    const file = path.join(dir, 'Fake.class');
+    // Java class files and Mach-O fat binaries share CAFEBABE; the gate must
+    // refuse the ambiguous magic rather than count it as native execution.
+    const bytes = Buffer.from('cafebabe0000004100000000', 'hex');
+    writeFileSync(file, bytes);
+    const p = provenance(file, digest(bytes), dir);
+    const r = invoke('--compiler', file, '--provenance', p);
+    assert.notEqual(r.status, 0);
+    assert.match(r.stderr, /native executable/);
+    assert.doesNotMatch(r.stdout, /COMPILER_EXECUTION_OBSERVED/);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('native executable must provide the exact AOT OresMain build-info handshake', () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'ores-future-gate-test-'));
+  try {
+    const p = provenance(native, digest(readFileSync(native)), dir);
+    const r = invoke('--compiler', native, '--provenance', p);
+    assert.notEqual(r.status, 0);
+    assert.match(r.stderr, /compiler --build-info did not exit successfully/);
+    assert.doesNotMatch(r.stdout, /COMPILER_EXECUTION_OBSERVED/);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
 test('an unrelated real native executable cannot be promoted to guest success', () => {
   const dir = mkdtempSync(path.join(tmpdir(), 'ores-future-gate-test-'));
   try {
     const p = provenance(native, digest(readFileSync(native)), dir);
     const r = invoke('--compiler', native, '--provenance', p);
     assert.notEqual(r.status, 0);
-    assert.match(r.stdout, /"status": "FAILED"/);
+    assert.match(r.stderr, /compiler --build-info did not exit successfully/);
+    assert.match(r.stderr, /FAIL_CLOSED/);
     assert.doesNotMatch(r.stdout, /"status": "COMPILER_EXECUTION_OBSERVED_PROVENANCE_UNATTESTED"/);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
