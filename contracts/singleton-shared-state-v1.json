@@ -21,7 +21,8 @@
     "mutableSharedState": "capability-checked-bounded-table",
     "callerIdentity": "runtime-derived-opaque-actor-incarnation",
     "tableAtomicity": "single-operation-linearizable",
-    "staleAuthority": "must-not-authorize-replacement-or-restarted-actor"
+    "staleAuthority": "must-not-authorize-replacement-or-restarted-actor",
+    "singletonDeclarationIdentity": "compiler-resolved-module-and-declaration-id-not-guest-supplied"
   },
   "scenarios": [
     {
@@ -174,6 +175,7 @@
       "kind": "runtime",
       "requires": [
         "automatic-owner-lifecycle-registration",
+        "bounded-lifecycle-resource-registry",
         "close-restart-destruction-retire-owned-tables",
         "inflight-operation-linearization"
       ]
