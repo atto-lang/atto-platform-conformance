@@ -310,7 +310,7 @@ test('subtree budgets prevent one actor family from exhausting an unrelated sibl
   assert.equal(broker.admit(sibling,bound).status,'BACKPRESSURE_SUBTREE');
   const u = admission(broker,unrelated,bound);
   assert.equal(broker.snapshot().inFlight,3);
-  assert.equal(broker.complete(n),false); // no authority without actor identity
+  assert.equal(broker.complete(sibling,n),false); // cross-actor settlement forbidden
   assert.equal(broker.complete(narrow,n),true);
   assert.equal(broker.retire(narrow,n,true),true);
   const g = admission(broker,grandchild,bound);
@@ -390,4 +390,28 @@ test('all subtree receipts settle exactly once under cancellation/revoke orderin
     assert.equal(broker.retire(child,ticket,true),false);
     assert.equal(broker.snapshot().inFlight,0);
   }
+});
+
+test('reentrant authorization cannot overbook an actor subtree quota', () => {
+  const open = allow();
+  let broker, actor, bound, attempted = false, inner;
+  broker = new ReferenceCapabilityIoBroker({
+    layers:{host:open,artifact:open,runtime:open,actor:open,delegated:open},
+    maxInFlight:3,
+    scopeMatches(_permission,resource,scope) {
+      if (!attempted) {
+        attempted = true;
+        inner = broker.admit(actor,bound);
+      }
+      return resource===scope;
+    }
+  });
+  actor = broker.registerActor(null,null,{maxSubtreeInFlight:1});
+  bound = target(broker);
+  assert.equal(broker.admit(actor,bound).status,'BACKPRESSURE_SUBTREE');
+  assert.equal(inner.status,'ADMITTED');
+  assert.equal(broker.snapshot().inFlight,1);
+  assert.equal(broker.complete(actor,inner.ticket),true);
+  assert.equal(broker.retire(actor,inner.ticket,true),true);
+  assert.equal(broker.snapshot().inFlight,0);
 });
