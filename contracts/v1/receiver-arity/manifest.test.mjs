@@ -30,8 +30,18 @@ test("receiver-arity fixtures are exact, distinct, and cover both declaration or
     assert.equal(gitBlobSha(source),entry.gitBlobSha,
       "Git blob changed without updating manifest: "+entry.id);
     assert.ok(source.length>0&&source.length<1048576);
-    assert.match(source.toString("utf8"),/^define (?:class|actor) /);
     assert.ok(entry.scope==="class"||entry.scope==="actor");
+    const sourceText=source.toString("utf8");
+    assert.ok(sourceText.startsWith("define "+entry.scope+" "),
+      "fixture declaration owner disagrees with manifest scope: "+entry.id);
+    if(entry.expect==="reject") {
+      // Structural source classification only: this is not a parser or
+      // compiler-owned duplicate-slot diagnostic.
+      const decls=sourceText.match(/^[ \\t]+x\\(/gm)||[];
+      assert.equal(decls.length,2,"duplicate-slot fixture must declare two x methods");
+      assert.match(sourceText,/mut self/,"duplicate fixture must cover mutable receiver");
+      assert.match(sourceText,/\\breturn 42;/,"fixture must contain deterministic entry");
+    }
     if(entry.expect==="accept") {
       counts.accept++;
       assert.equal(entry.expectedInt,42);
