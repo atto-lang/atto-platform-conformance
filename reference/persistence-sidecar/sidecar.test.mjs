@@ -173,3 +173,16 @@ test('an oversized queue entry consumes no credits',()=>{
   assert.equal(x.queuedBytes,0);assert.equal(x.queue.length,0);x.close();
  } finally {f.close();}
 });
+
+test('truncated committed journal is rejected during restore',()=>{
+  const f=fixture();try{
+    const s=f.open();s.grantEpoch({tenantId:'tenant-a',actor:'tampered',epoch:1});
+    s.enqueue(write('tampered','first',{kind:'event',payload:Buffer.from('a')}));
+    s.flush();
+    s.enqueue(write('tampered','second',{kind:'event',expectedVersion:1,payload:Buffer.from('b')}));
+    s.flush();
+    s.db.exec("DELETE FROM events WHERE actor='tampered' AND version=1");
+    assert.throws(()=>s.load({tenantId:'tenant-a',actor:'tampered',stateName:'main'}),/INCOMPLETE_ACTOR_JOURNAL/);
+    s.close();
+  }finally{f.close();}
+});
