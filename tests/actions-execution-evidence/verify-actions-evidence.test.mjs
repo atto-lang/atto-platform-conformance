@@ -55,3 +55,12 @@ test('untrusted expected data and forged accessors are rejected',()=>{
   assert.equal(calls,0);
   assert.equal(assessActionsJob({...base(),run:Object.create(base().run)}).classification,'INVALID');
 });
+test('malformed input and step records fail closed without throwing',()=>{
+  assert.equal(assessActionsJob(null).classification,'INVALID');
+  assert.equal(assessActionsJob({}).classification,'INVALID');
+  deny(x=>x.job.steps=[null],/step inventory/);
+  deny(x=>x.job.steps=new Array(257).fill({number:1}),/step inventory/);
+});
+test('a failed duplicate with an identical required name is not acceptable',()=>{
+  deny(x=>x.job.steps.push({number:4,name:'npm test',status:'completed',conclusion:'failure'}),/required executed/);
+});
