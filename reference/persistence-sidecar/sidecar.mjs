@@ -167,21 +167,30 @@ export class BatchPersistenceSidecar {
       const version=this.getHead.get(tenantId,actor,stateName)?.version??0;
       const snapshot=this.db.prepare('SELECT version,schema_version,payload FROM snapshots WHERE tenant=? AND actor=? AND state_name=?').get(tenantId,actor,stateName);
       const since=snapshot?.version??0;
-      const events=this.db.prepare('SELECT version,schema_version,op_id,payload FROM events WHERE tenant=? AND actor=? AND state_name=? AND version>? ORDER BY version ASC').all(tenantId,actor,stateName,since);
       if (!uint(version) || !uint(since) || since>version ||
-          (snapshot && (!uint(snapshot.schema_version) || snapshot.schema_version===0 || !ArrayBuffer.isView(snapshot.payload))))
+          (snapshot && (!uint(snapshot.schema_version) || snapshot.schema_version===0 ||
+            !ArrayBuffer.isView(snapshot.payload))))
         fail('INCOMPLETE_ACTOR_JOURNAL');
-      let expected=since;
-      for(const e of events) {
+      if(snapshot && snapshot.payload.byteLength>1048576) fail('INVALID_ACTOR_SNAPSHOT');
+      let expected=since, replayBytes=0;
+      const events=[];
+      // Iterate rather than .all(): avoid eagerly materializing unbounded
+      // event histories before checking admission and replay limits.
+      const query=this.db.prepare('SELECT version,schema_version,op_id,payload FROM events WHERE tenant=? AND actor=? AND state_name=? AND version>? ORDER BY version ASC');
+      for(const e of query.iterate(tenantId,actor,stateName,since)) {
         if(!uint(e.version) || e.version!==expected+1 ||
            !uint(e.schema_version) || e.schema_version===0 || !ArrayBuffer.isView(e.payload))
           fail('INCOMPLETE_ACTOR_JOURNAL');
+        if(events.length>=10000) fail('ACTOR_JOURNAL_REPLAY_LIMIT');
+        if(e.payload.byteLength>1048576 || e.payload.byteLength>16777216-replayBytes)
+          fail('ACTOR_EVENT_REPLAY_BYTES_LIMIT');
+        replayBytes+=e.payload.byteLength;
+        events.push({version:e.version,schemaVersion:e.schema_version,opId:e.op_id,payload:Buffer.from(e.payload)});
         expected=e.version;
-        if(expected-since>10000) fail('ACTOR_JOURNAL_REPLAY_LIMIT');
       }
       if(expected!==version) fail('INCOMPLETE_ACTOR_JOURNAL');
       const restored={version, snapshot:snapshot?{version:snapshot.version,schemaVersion:snapshot.schema_version,payload:Buffer.from(snapshot.payload)}:null,
-        events:events.map(x=>({version:x.version,schemaVersion:x.schema_version,opId:x.op_id,payload:Buffer.from(x.payload)}))};
+        events};
       this.db.exec('COMMIT');
       return restored;
     } catch (error) {
