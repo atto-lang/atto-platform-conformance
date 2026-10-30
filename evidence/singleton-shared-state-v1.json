@@ -21,8 +21,8 @@
     },
     "forge": {
       "status": "host-foundation-only",
-      "sourceHead": "05097d54cc1b27eb3e3c774a728a0abf6d111c70",
-      "sourceTree": "305c20e43584ed6449c9d7802588b6c95b456c65",
+      "sourceHead": "c6d6f26000ba384a90fdbdf4353c6d0154620fba",
+      "sourceTree": "f229ce991bd86d199c1b434594b901d879804117",
       "pullRequest": "ores-truffle-oreslang/oreslang-source.forge#146",
       "executedCaseIds": [],
       "hostFoundationCaseIds": [
@@ -40,9 +40,10 @@
         "table-owner-retirement-revokes-access",
         "table-replacement-rejects-stale-capability",
         "singleton-import-alias-same-identity",
-        "singleton-domain-isolation"
+        "singleton-domain-isolation",
+        "singleton-cross-task-initialization-cycle"
       ],
-      "limitation": "Host/runtime tests now include a bounded application-domain singleton registry (same resolved declaration ID across actors/import aliases, foreign/stale caller rejection), runtime-minted shared-table caller identity, bounded actor-owned resource registration, and automatic table retirement on actor close/restart/destruction. These remain host-foundation results: source `define singleton` is still intentionally unsupported and no guest singleton/table case is counted as executed."
+      "limitation": "Host/runtime tests now cover a bounded application-domain singleton registry, same resolved declaration ID across actors/import aliases, foreign/stale caller rejection, direct and cross-thread initializer-cycle rejection, runtime-minted table caller identity, bounded actor-owned resource registration, automatic table retirement on actor close/restart/destruction, and an explicit LeakSanitizer capability profile. Numeric domain IDs are still trusted host input in the Forge bootstrap and are not yet opaque domain-incarnation capabilities. Source `define singleton` remains intentionally unsupported, and current hosted jobs execute zero steps, so no guest or latest-head runner execution is claimed."
     }
   }
 }
