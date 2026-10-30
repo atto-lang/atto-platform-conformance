@@ -6,7 +6,8 @@ const types = Object.freeze({
   Vec3: {kind: "struct", fields: {x: "f64", y: "f64", z: "f64"}},
   Point: {kind: "struct", fields: {x: "f64", y: "f64"}},
   Particle: {kind: "inverted-class", fields: {
-    position: "Vec3", velocity: "Vec3", mass: "f64", alive: "bool", id: "i64"
+    position: {type: "Vec3", mutable: true}, velocity: "Vec3",
+    mass: {type: "f64", mutable: true}, alive: {type: "bool", mutable: true}, id: "i64"
   }},
   Position: {kind: "inverted-struct", fields: {x: "f64", y: "f64"}},
   Ordinary: {kind: "class", fields: {id: "i64", position: "Vec3"}}
@@ -303,4 +304,50 @@ test("untrusted nested symbol-bearing names cannot bypass fixed schema eligibili
   typesWithUnsafe.Root = {kind: "inverted-struct", fields: {child: "__proto__"}};
   typesWithUnsafe.__proto__ = {kind: "struct", fields: {x: "f64"}};
   assert.throws(() => compile_inverted_layout(typesWithUnsafe, "Root"), /unknown field type/);
+});
+
+
+test("implicit val fields are immutable after row initialization", () => {
+  const store = make("Particle", 2);
+  const h = store.push(particle(1));
+  assert.equal(store.get_field(h, "id"), 1n);
+  assert.throws(() => store.set_field(h, "id", 2n), /immutable field/);
+  assert.throws(() => store.borrow_column("id", true), /immutable field/);
+  assert.throws(() => store.set_field(h, "velocity", vec(4)), /immutable field/);
+  const reader = store.borrow_column("id", false);
+  assert.equal(reader.get(0), 1n);
+  reader.close();
+  assert.deepEqual(store.snapshot(h), particle(1));
+  // Struct roots also default to implicit val.
+  const positions = make("Position", 1);
+  const position = positions.push({x: 1, y: 2});
+  assert.throws(() => positions.set_field(position, "x", 9), /immutable field/);
+});
+
+test("explicit let fields permit checked writes but do not weaken other fields", () => {
+  const store = make("Particle", 2);
+  const h = store.push(particle(3));
+  assert.equal(store.get_field(h, "id"), 3n);
+  store.set_field(h, "mass", 42.5);
+  const writer = store.borrow_column("alive", true);
+  writer.set(0, false);
+  writer.close();
+  assert.equal(store.get_field(h, "mass"), 42.5);
+  assert.equal(store.get_field(h, "alive"), false);
+  assert.throws(() => store.borrow_column("velocity", true), /immutable field/);
+});
+
+test("malformed direct field binding cannot mint write capability", () => {
+  const invalid = [
+    {type: "i64", mutable: 1},
+    {type: "i64", mutable: "true"},
+    {type: "i64", mutable: true, extra: false},
+    {type: "i64"},
+    Object.defineProperty({type: "i64"}, "mutable", {get() {throw Error("getter executed");}}),
+  ];
+  for (const field of invalid) {
+    assert.throws(() => compile_inverted_layout({
+      Root: {kind: "inverted-struct", fields: {x: field}}
+    }, "Root"), /invalid direct field binding|accessor/);
+  }
 });
