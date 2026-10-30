@@ -186,3 +186,15 @@ test('truncated committed journal is rejected during restore',()=>{
     s.close();
   }finally{f.close();}
 });
+
+test('fenced recovery checks current epoch in same SQLite snapshot',()=>{
+  const f=fixture();try{
+    const s=f.open();s.grantEpoch({tenantId:'tenant-a',actor:'reactivated',epoch:1});
+    s.enqueue(write('reactivated','first'));assert.equal(s.flush()[0].status,'committed');
+    s.grantEpoch({tenantId:'tenant-a',actor:'reactivated',epoch:2});
+    assert.throws(()=>s.loadFenced({tenantId:'tenant-a',actor:'reactivated',stateName:'main',epoch:1}),/STALE_EPOCH/);
+    assert.equal(s.loadFenced({tenantId:'tenant-a',actor:'reactivated',stateName:'main',epoch:2}).version,1);
+    assert.throws(()=>s.loadFenced({tenantId:'tenant-a',actor:'reactivated',stateName:'main',epoch:0}),/INVALID_EPOCH/);
+    s.close();
+  }finally{f.close();}
+});
