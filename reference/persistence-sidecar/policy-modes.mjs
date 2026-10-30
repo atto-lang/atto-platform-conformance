@@ -38,6 +38,9 @@ function clone_json(value) {
     if (!v || typeof v !== 'object' || seen.has(v)) deny('NOT_SERIALIZABLE');
     if (!Array.isArray(v) && Object.getPrototypeOf(v) !== Object.prototype &&
         Object.getPrototypeOf(v) !== null) deny('NOT_SERIALIZABLE');
+    // JSON silently drops symbol-keyed fields, including non-enumerable
+    // capability/metadata slots. Reject instead of persistently losing them.
+    if (Object.getOwnPropertySymbols(v).length) deny('NOT_SERIALIZABLE');
     seen.add(v);
     for (const [k, d] of Object.entries(Object.getOwnPropertyDescriptors(v))) {
       if (!('value' in d) || k === '__proto__' || k === 'constructor' || k === 'prototype')
