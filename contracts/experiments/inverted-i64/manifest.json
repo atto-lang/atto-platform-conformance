@@ -76,7 +76,7 @@
       42
     ],
     "out_of_bounds_native_exit": 132,
-    "source_negative_expected_diagnostic_cases_passed": 11,
+    "source_negative_expected_diagnostic_cases_passed": 18,
     "gcc_asan_ubsan_positive_source_compiles_passed": 2,
     "full_oreslang_llvmc_executed": false,
     "scope": "local minimal driver invoking exact header, not main.cpp or CMake workflow",
