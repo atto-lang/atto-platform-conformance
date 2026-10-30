@@ -1,0 +1,67 @@
+{
+  "contract": "oreslang.inverted-i64-experimental-guest",
+  "version": 0,
+  "scope": "LLVM_EXPLICIT_OPT_IN_SOURCE_TO_IR_NOT_PRODUCTION_OR_PARITY",
+  "toolchain": "oreslang-llvmc --experimental-inverted-i64 -> textual LLVM IR -> clang -> native executable",
+  "claimed_backend_guest_results": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  },
+  "limits": {
+    "type": "inverted struct only",
+    "member": "int (signed i64) only",
+    "max_fields": 8,
+    "capacity_min": 1,
+    "capacity_max": 256,
+    "total_cells_max": 1024,
+    "operations": [
+      "push positional i64 constants",
+      "set checked index on let fields",
+      "get checked index",
+      "return get expression"
+    ],
+    "unsupported": [
+      "inverted class",
+      "nested packed structs",
+      "dynamic indices",
+      "row deletion",
+      "row handles",
+      "borrows",
+      "actors",
+      "async/await",
+      "source methods",
+      "general module graph",
+      "Wasm32/Native AOT parity"
+    ]
+  },
+  "vectors": [
+    {
+      "id": "positive-column-get",
+      "fixture": "positive-column-get.ores",
+      "expected_compile": "accept",
+      "expected_native_exit_code": 42
+    },
+    {
+      "id": "positive-column-bounded",
+      "fixture": "positive-column-bounded.ores",
+      "expected_compile": "accept",
+      "expected_native_exit_code": 42
+    },
+    {
+      "id": "negative-out-of-bounds",
+      "fixture": "negative-out-of-bounds.ores",
+      "expected_compile": "accept",
+      "expected_runtime": "trap"
+    }
+  ],
+  "source_blob_shas": {
+    "positive-column-get.ores": "a17849d07ac3974923e8dd575348d3452f9a51b0",
+    "positive-column-bounded.ores": "b30cd7ee3a72d8c7dcf7d8a862684a36c5f2ee0b",
+    "negative-out-of-bounds.ores": "4adbae1b55a02756d1f0a2eb2fc24f21aa19f12f"
+  },
+  "evidence": "SOURCE_BLOBS_PINNED_COMPILER_EXECUTION_PENDING",
+  "implementation_pr": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1213"
+}
