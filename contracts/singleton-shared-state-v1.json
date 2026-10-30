@@ -173,9 +173,9 @@
       "id": "table-owner-retirement-revokes-access",
       "kind": "runtime",
       "requires": [
-        "trusted-lifecycle-hook",
-        "closed-after-owner-stop",
-        "inflight-read-safe"
+        "automatic-owner-lifecycle-registration",
+        "close-restart-destruction-retire-owned-tables",
+        "inflight-operation-linearization"
       ]
     },
     {
