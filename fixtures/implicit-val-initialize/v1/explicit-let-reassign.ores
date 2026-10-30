@@ -1,6 +1,6 @@
 define class Connection as
   let int connection_id: 3;
-  mutate(mut self) -> void {
+  mutate(mut self)(): void {
     self.connection_id = 5;
   }
 end
