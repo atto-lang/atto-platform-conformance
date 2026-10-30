@@ -47,6 +47,8 @@ test("native Math v1 manifest pins every source file and never self-certifies pa
     "3bbb44277f3816add53da40a1e161e466ab162b1");
   assert.equal(manifest.contracts.numericPublicApiGitBlob,
     "1b0f0295de78ce7d33b2dc0b07eed3cc78cf6983");
+  assert.equal(manifest.contracts.binaryFloatingGitBlob,
+    "4f5a8da960f017f9254872cccd565cfff5fc8f33");
 });
 
 test("f32 remains fail-closed until a distinct binary32 implementation exists", async () => {
