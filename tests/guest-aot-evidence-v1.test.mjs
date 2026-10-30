@@ -54,3 +54,24 @@ test("unknown, inherited and accessor receipt fields do not count as evidence", 
   assert.equal(check(nested).ok,false);
   assert.equal(nestedCalls,0);
 });
+
+test("receipt reflection traps cannot crash evidence evaluation",()=>{
+  const inputs=[
+    new Proxy(valid(),{getPrototypeOf(){throw Error("trap")}}),
+    new Proxy(valid(),{get(){throw Error("trap")}}),
+    {...valid(),execution:new Proxy(valid().execution,{
+      getOwnPropertyDescriptor(){throw Error("trap")}
+    })},
+  ];
+  for(const x of inputs) {
+    const result=check(x);
+    assert.equal(result.ok,false);
+    assert.equal(result.classification,"INVALID");
+  }
+});
+test("hostile trusted-hash selector is denied rather than coerced",()=>{
+  const expected=new Proxy({sourceTree:"c".repeat(40)},{
+    get(){throw Error("unexpected selector trap")}
+  });
+  assert.equal(check(valid(),expected).classification,"INVALID");
+});
