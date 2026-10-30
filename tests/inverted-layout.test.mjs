@@ -1,0 +1,179 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {compile_inverted_layout, InvertedReferenceStore} from "../src/inverted-layout-reference.mjs";
+
+const types = Object.freeze({
+  Vec3: {kind: "struct", fields: {x: "f64", y: "f64", z: "f64"}},
+  Point: {kind: "struct", fields: {x: "f64", y: "f64"}},
+  Particle: {kind: "inverted-class", fields: {
+    position: "Vec3", velocity: "Vec3", mass: "f64", alive: "bool", id: "i64"
+  }},
+  Position: {kind: "inverted-struct", fields: {x: "f64", y: "f64"}},
+  Ordinary: {kind: "class", fields: {id: "i64", position: "Vec3"}}
+});
+const vec = (x) => ({x, y: x + 1, z: x + 2});
+const particle = (id) => ({
+  position: vec(id), velocity: vec(id + 10), mass: id + 0.5, alive: true, id: BigInt(id)
+});
+const make = (type = "Particle", count = 20) =>
+  new InvertedReferenceStore(compile_inverted_layout(types, type), count);
+
+test("inverted structs and inverted classes are independently named", () => {
+  const s = compile_inverted_layout(types, "Position");
+  assert.equal(s.typeKind, "inverted-struct");
+  assert.deepEqual(s.columns.map(c => c.name), ["x", "y"]);
+  const c = compile_inverted_layout(types, "Particle");
+  assert.equal(c.typeKind, "inverted-class");
+  assert.equal(c.columns.length, 5);
+  assert.equal(c.columns[0].descriptor.kind, "packed-struct");
+  assert.deepEqual(c.columns[0].descriptor.fields.map(f => f.name), ["x", "y", "z"]);
+  assert.equal(c.layout, "soa");
+  assert.equal(c.nesting, "one-level");
+});
+
+test("ordinary struct/class may be explicitly inverted at collection boundary", () => {
+  for (const type of ["Point", "Ordinary"]) {
+    const layout = compile_inverted_layout(types, type);
+    assert.equal(layout.typeKind, types[type].kind);
+    assert.equal(layout.columns.length, 2);
+  }
+});
+
+test("nested ordinary Vec3 is exactly one packed value column, never x/y/z columns", () => {
+  const store = make();
+  const input = particle(1);
+  const h = store.push(input);
+  assert.deepEqual(store.column_names, ["position", "velocity", "mass", "alive", "id"]);
+  input.position.x = -999;
+  assert.equal(store.get_field(h, "position").x, 1);
+  const detached = store.get_field(h, "position");
+  detached.y = -999;
+  assert.equal(store.snapshot(h).position.y, 2);
+  assert.deepEqual(store.snapshot(h), particle(1));
+});
+
+test("nested inverted struct/class always rejects absent an explicit supported layout boundary", () => {
+  const bad = {
+    Inner: {kind: "inverted-struct", fields: {x: "f64"}},
+    Outer: {kind: "inverted-class", fields: {inner: "Inner"}}
+  };
+  assert.throws(() => compile_inverted_layout(bad, "Outer"), /nested type requires ordinary fixed struct/);
+  bad.Inner.kind = "inverted-class";
+  assert.throws(() => compile_inverted_layout(bad, "Outer"), /nested type requires ordinary fixed struct/);
+});
+
+test("reject pointers, variable-length fields, absent schemas, recursive layouts, bad capacity", () => {
+  for (const type of ["String", "Pointer", "Array<f64>", "Missing"])
+    assert.throws(() => compile_inverted_layout({
+      Bad: {kind: "struct", fields: {field: type}}}, "Bad"), /unknown field type/);
+  assert.throws(() => compile_inverted_layout({
+    Recursive: {kind: "struct", fields: {value: "Recursive"}}}, "Recursive"), /recursive/);
+  assert.throws(() => new InvertedReferenceStore(compile_inverted_layout(types, "Point"), -1));
+});
+
+test("validate all fields before insertion; overflow and failed insertion do not change length", () => {
+  const store = make("Particle", 1);
+  assert.throws(() => store.push({...particle(1), id: 1}), /invalid scalar/);
+  assert.equal(store.length, 0);
+  const h = store.push(particle(1));
+  assert.equal(store.length, 1);
+  assert.throws(() => store.push(particle(2)), /full/);
+  assert.equal(store.length, 1);
+  assert.equal(store.get_field(h, "id"), 1n);
+  assert.throws(() => store.set_field(h, "id", 1n << 63n), /invalid scalar/);
+  assert.equal(store.get_field(h, "id"), 1n);
+});
+
+test("generation-checked handles survive swap deletion; stale, fabricated and foreign fail", () => {
+  const a = make("Particle", 5), b = make("Particle", 5);
+  const first = a.push(particle(1)), second = a.push(particle(2)), third = a.push(particle(3));
+  b.push(particle(4));
+  assert.throws(() => a.get_field({slot: 0, generation: 1}, "mass"), /unissued/);
+  assert.throws(() => b.get_field(first, "mass"), /foreign/);
+  a.erase_swap(second);
+  assert.equal(a.get_field(third, "mass"), 3.5);
+  assert.equal(a.get_field(a.handle_at(1), "id"), 3n);
+  assert.throws(() => a.get_field(second, "mass"), /stale/);
+  const reused = a.push(particle(5));
+  assert.equal(reused.slot, second.slot);
+  assert.notEqual(reused.generation, second.generation);
+  assert.equal(a.get_field(first, "id"), 1n);
+  assert.throws(() => a.get_field(second, "id"), /stale/);
+  assert.throws(() => a.handle_at(20), /out of bounds/);
+  assert.throws(() => a.handle_at(1.5), /out of bounds/);
+});
+
+test("field-disjoint write loans coexist while overlapping loans reject", () => {
+  const store = make();
+  const h = store.push(particle(7));
+  const x = store.borrow_column("mass", true);
+  const y = store.borrow_column("alive", true);
+  assert.throws(() => store.borrow_column("mass", false), /conflict/);
+  assert.throws(() => store.push(particle(8)), /active column loan/);
+  assert.throws(() => store.erase_swap(h), /active column loan/);
+  assert.throws(() => store.snapshot(h), /conflicts/);
+  assert.throws(() => store.close(), /active column loan/);
+  x.set(0, 42);
+  y.set(0, false);
+  assert.equal(x.get(0), 42);
+  x.close(); y.close();
+  assert.equal(store.get_field(h, "mass"), 42);
+  assert.equal(store.get_field(h, "alive"), false);
+  assert.throws(() => x.get(0), /closed field loan/);
+});
+
+test("read loans may coexist, do not expose mutable alias, and block writes", () => {
+  const store = make();
+  const h = store.push(particle(1));
+  const a = store.borrow_column("position");
+  const b = store.borrow_column("position");
+  const detached = a.get(0);
+  detached.x = 500;
+  assert.equal(b.get(0).x, 1);
+  assert.throws(() => a.set(0, vec(5)), /readonly/);
+  assert.throws(() => store.set_field(h, "position", vec(6)), /loan conflict/);
+  assert.throws(() => store.borrow_column("position", true), /conflict/);
+  a.close(); b.close();
+  store.set_field(h, "position", vec(6));
+  assert.equal(store.snapshot(h).position.x, 6);
+});
+
+test("randomized differential oracle for insert/snapshot/swap-delete and id retention", () => {
+  const store = make("Particle", 500);
+  const oracle = new Map();
+  const live = [];
+  let seed = 0x12345678;
+  const random = () => { seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5; return seed >>> 0; };
+  let id = 1;
+  for (let turn = 0; turn < 2000; turn++) {
+    if (live.length === 0 || (live.length < 400 && random() % 3 !== 0)) {
+      const row = particle(id++);
+      const handle = store.push(row);
+      live.push(handle);
+      oracle.set(handle, row);
+    } else {
+      const ix = random() % live.length;
+      const [handle] = live.splice(ix, 1);
+      store.erase_swap(handle);
+      oracle.delete(handle);
+      assert.throws(() => store.snapshot(handle), /stale/);
+    }
+    assert.equal(store.length, live.length);
+    if (live.length) {
+      const h = live[random() % live.length];
+      assert.deepEqual(store.snapshot(h), oracle.get(h));
+    }
+  }
+  store.close();
+  assert.throws(() => store.get_field(live[0], "id"), /closed/);
+  assert.throws(() => store.push(particle(id)), /closed/);
+});
+
+test("root inverted struct can be used with same checked owner lifecycle", () => {
+  const store = make("Position", 2);
+  const h = store.push({x: -0, y: NaN});
+  assert.equal(Object.is(store.get_field(h, "x"), -0), true);
+  assert.equal(Number.isNaN(store.snapshot(h).y), true);
+  store.erase_swap(h);
+  assert.throws(() => store.snapshot(h), /stale/);
+});
