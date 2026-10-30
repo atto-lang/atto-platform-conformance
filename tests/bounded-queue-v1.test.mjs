@@ -38,7 +38,7 @@ test("runtime substrate does not impersonate source or guest parity",async()=>{
   const llvm=status.records.find(x=>x.backend==="oreslang-source.llvm");
   const net=status.records.find(x=>x.backend==="oreslang-source.net");
   assert.equal(java.runtime_substrate,"implementation-added-unexecuted");
-  assert.equal(java.source_lowering,"unsupported");
+  assert.equal(java.source_lowering,"implemented-unexecuted");
   assert.equal(java.guest_execution,"NOT_EXECUTED");
   assert.equal(llvm.runtime_substrate,"contract-tests-added-unexecuted");
   assert.equal(llvm.source_lowering,"unsupported");
