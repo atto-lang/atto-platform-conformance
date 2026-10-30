@@ -82,3 +82,39 @@ matching Future-layer/callback diagnostic fingerprint.
 execute arbitrary code. Run it only in a separately isolated, least-privilege,
 network-controlled environment with no secrets and with explicit authorization
 for any private code transfer.
+
+## Native-image identity hardening and local source-free evidence (2026-10-30)
+
+Before a guest check may count, the runner executes the pinned candidate with
+`--build-info` under its credential-free, temporary workspace. The exact
+native Oreslang launcher response must have **only** these fields:
+
+- `build_mode: "aot"`
+- `default_execution_mode: "aot"`
+- `guest_execution: "interpreter-no-jit"`
+- `managed_reference_mode: "compressed32"` or `"native64"`
+
+Any nonzero exit, signal, execution error, unexpected stderr, missing/extra
+field, wrong value, or oversized response fails closed. This is a behavioral
+shape check **not a cryptographic signature or proof of origin**: independent
+source-tree-to-binary attestation remains mandatory before release acceptance.
+
+A `CAFEBABE` prefix is deliberately **rejected** rather than accepted as
+Mach-O fat-binary evidence, because the same prefix also identifies Java
+classfiles. Executable discovery remains conservative until an unambiguous
+native format verifier and its adversarial tests are added.
+
+**Local test evidence:** using Node `v22.16.0` on an ephemeral workspace, the
+runner and regression test were independently verified against committed Git
+blob SHA-1 identities `6c0c9d9fc78fcf2d59a7e768a0308989651e4ebf` and
+`1ca7cb6f6d3c2d116b619103b2751499df45ea8a`. All seven source-free gate
+negative controls executed and passed (7/7). The eight independently
+reconstructed `.ores` fixtures matched their separately committed source
+Git blob hashes (8/8); a manifest `verified=true` fault injection was rejected
+and a fixture content-mutation hash drift was detected. The local manifest was
+reconstructed from its contract fields, **not** asserted to match the original
+manifest Git blob byte-for-byte; this does not imply the full repository
+`npm test` suite executed. No production Oreslang native binary was present,
+so guest compilation, runtime stdout, Native Image provenance and backend parity
+remain **NOT_EXECUTED**. The source organization's Actions runner still reports
+pre-step failures; no private cross-organization source export took place.
