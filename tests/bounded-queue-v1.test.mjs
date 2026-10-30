@@ -34,8 +34,12 @@ test("pending backend ledger is five-backend and never self-certifies",async()=>
 
 test("runtime substrate does not impersonate source or guest parity",async()=>{
   const status=await json(statusPath);
+  const java=status.records.find(x=>x.backend==="oreslang-source.java");
   const llvm=status.records.find(x=>x.backend==="oreslang-source.llvm");
   const net=status.records.find(x=>x.backend==="oreslang-source.net");
+  assert.equal(java.runtime_substrate,"implementation-added-unexecuted");
+  assert.equal(java.source_lowering,"unsupported");
+  assert.equal(java.guest_execution,"NOT_EXECUTED");
   assert.equal(llvm.runtime_substrate,"contract-tests-added-unexecuted");
   assert.equal(llvm.source_lowering,"unsupported");
   assert.equal(net.runtime_substrate,"contract-tests-added-unexecuted");
@@ -60,7 +64,8 @@ test("reject fake promotion and vector drift",async()=>{
   assert.throws(()=>validateBoundedQueueBackendStatus(status),/INVALID_BOUNDED_QUEUE_V1/);
 
   const contract=await json(contractPath);
-  contract.arbitration.push_priority=["write","cancel","close"];
+  contract.arbitration.close_linearization=
+    "publish a consumable synthetic close token";
   assert.throws(()=>validateBoundedQueueContract(contract),/INVALID_BOUNDED_QUEUE_V1/);
 });
 
@@ -72,4 +77,11 @@ test("cancelled older waiter vector forbids ghost delivery",async()=>{
     "value:0","admitted:t2","value:2"
   ]);
   assert.equal(scenario.expected.includes("value:1"),false);
+});
+
+test("close linearizes through actual channel rather than a consumable token",async()=>{
+  const contract=await json(contractPath);
+  assert.match(contract.arbitration.close_linearization,/actual item channel/);
+  assert.match(contract.arbitration.pending_push[1],/Channel\.close/);
+  assert.match(contract.arbitration.receive_linearization,/FIFO/);
 });
