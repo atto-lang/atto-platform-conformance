@@ -73,6 +73,11 @@
       "id": "BQ14",
       "name": "no_busy_polling",
       "rule": "pending admission suspends through canonical scheduler/channel registration rather than polling or a library waiter loop"
+    },
+    {
+      "id": "BQ15",
+      "name": "rejected_push_returns_payload_ownership",
+      "rule": "every non-admitted push returns the exact original payload; only successful admission permanently transfers ownership into the queue"
     }
   ],
   "arbitration": {
@@ -173,6 +178,18 @@
         "ticket:t1",
         "closed",
         "stale-ticket:t1"
+      ]
+    },
+    {
+      "id": "full_returns_payload",
+      "capacity": 1,
+      "actions": [
+        "push_now:owned-0",
+        "try_push:owned-1:t1"
+      ],
+      "expected": [
+        "admitted:owned-0",
+        "full:t1:return-exact-owned-1"
       ]
     }
   ],
