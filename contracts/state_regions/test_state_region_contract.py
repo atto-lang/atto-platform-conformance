@@ -7,8 +7,10 @@ Run:
 The model is deliberately allocation/simple-state oriented. It models exact
 logical task identity + generation, not physical worker-thread identity.
 """
+import json
 import unittest
 from dataclasses import dataclass, field
+from pathlib import Path
 
 
 class AdmissionError(Exception):
@@ -30,6 +32,18 @@ class TaskIdentity:
 
 def task(n, generation=1, domain=1):
     return TaskIdentity(domain, 1000 + n, 10 + n, generation)
+
+
+def provenance_authorizes(borrow, release):
+    if borrow.get("contractVersion") != "1.0" or release.get("contractVersion") != "1.0":
+        return False
+    if borrow.get("action") != "borrow" or release.get("action") != "release":
+        return False
+    keys = (
+        "regionId", "regionGeneration", "runtimeDomain", "executionId",
+        "executionSlot", "executionGeneration", "loanId", "place", "kind",
+    )
+    return all(borrow.get(key) == release.get(key) for key in keys)
 
 
 @dataclass
@@ -150,6 +164,18 @@ class Handler:
 
 
 class StateRegionContract(unittest.TestCase):
+    def test_canonical_machine_readable_provenance_vectors(self):
+        vector_path = Path(__file__).with_name(
+            "state-region-provenance-vectors.json")
+        vectors = json.loads(vector_path.read_text(encoding="utf-8"))
+        borrow = vectors["borrow"]
+        self.assertTrue(
+            provenance_authorizes(borrow, vectors["validRelease"]))
+        for case in vectors["invalidReleases"]:
+            with self.subTest(case=case["name"]):
+                self.assertFalse(
+                    provenance_authorizes(borrow, case["release"]))
+
     def test_local_exclusive_mutation_no_lock_or_copy(self):
         ident = task(1)
         r = Region("task")
