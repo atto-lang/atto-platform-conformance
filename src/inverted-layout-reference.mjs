@@ -4,11 +4,38 @@
 const SCALARS = new Set(["i64", "f64", "bool"]);
 const KINDS = new Set(["struct", "class", "inverted-struct", "inverted-class"]);
 const MAX_FIELDS = 64;
+const MAX_PACKED_BYTES = 64 * 1024;
+const MAX_STORE_BYTES = 16 * 1024 * 1024;
+const FORBIDDEN_NAMES = new Set(["__proto__", "prototype", "constructor"]);
 // Private compiler-minted type witness, never inferred from user-authored layout data.
 const COMPILED_LAYOUTS = new WeakSet();
 
 function fail(message) { throw new TypeError("inverted layout: " + message); }
 function own(value, key) { return Object.hasOwn(value, key); }
+function data(value, key) {
+  const d = Object.getOwnPropertyDescriptor(value, key);
+  if (!d || !Object.hasOwn(d, "value")) fail("accessor field not admitted");
+  return d.value;
+}
+function validName(n) {
+  return typeof n === "string" && n.length > 0 &&
+    !FORBIDDEN_NAMES.has(n) && !n.includes(String.fromCharCode(0));
+}
+function fieldsOf(value) {
+  if (!exactObject(value)) fail("invalid field map");
+  return Reflect.ownKeys(value).map(name => {
+    if (!validName(name)) fail("invalid field name");
+    return [name, data(value, name)];
+  });
+}
+function declaration(value) {
+  if (!exactObject(value)) fail("invalid declaration");
+  for (const k of Reflect.ownKeys(value)) {
+    if (k !== "kind" && k !== "fields") fail("unsupported declaration metadata");
+    data(value, k);
+  }
+  return {kind: data(value, "kind"), fields: data(value, "fields")};
+}
 function exactObject(value) {
   return value !== null && typeof value === "object" &&
     !Array.isArray(value) && (Object.getPrototypeOf(value) === Object.prototype ||
@@ -16,47 +43,54 @@ function exactObject(value) {
 }
 
 export function compile_inverted_layout(types, typeName) {
-  if (!exactObject(types) || typeof typeName !== "string" || !own(types, typeName))
+  if (!exactObject(types) || !validName(typeName) || !own(types, typeName))
     fail("unknown nominal type");
-  const root = types[typeName];
-  if (!exactObject(root) || !KINDS.has(root.kind) || !exactObject(root.fields))
-    fail("invalid root type declaration");
-  const fields = Object.entries(root.fields);
-  if (fields.length === 0 || fields.length > MAX_FIELDS) fail("invalid field count");
+  const root = declaration(data(types, typeName));
+  if (!KINDS.has(root.kind)) fail("invalid root type declaration");
+  const fields = fieldsOf(root.fields);
+  if (!fields.length || fields.length > MAX_FIELDS) fail("invalid field count");
   const cache = new Map();
   function descriptor(type, path = []) {
-    if (SCALARS.has(type)) return Object.freeze({type, kind: "scalar"});
+    if (SCALARS.has(type)) return Object.freeze({
+      type, kind: "scalar", width: type === "bool" ? 1 : 8
+    });
     if (typeof type !== "string" || !own(types, type)) fail("unknown field type");
     if (path.includes(type) || path.length >= 16) fail("recursive or overdeep value");
     if (cache.has(type)) return cache.get(type);
-    const declared = types[type];
-    // No implicit second-level inversion, even if this named type is inverted.
-    if (!exactObject(declared) || declared.kind !== "struct" ||
-        !exactObject(declared.fields)) fail("nested type requires ordinary fixed struct");
-    const entries = Object.entries(declared.fields);
-    if (!entries.length || entries.length > MAX_FIELDS) fail("invalid nested struct size");
-    const names = new Set();
-    const children = entries.map(([name, child]) => {
-      if (!name || names.has(name)) fail("duplicate or empty member");
-      names.add(name);
-      return Object.freeze({name, descriptor: descriptor(child, [...path, type])});
+    const decl = declaration(data(types, type));
+    if (decl.kind !== "struct") fail("nested type requires ordinary fixed struct");
+    const nested = fieldsOf(decl.fields);
+    if (!nested.length || nested.length > MAX_FIELDS) fail("invalid nested struct size");
+    let width = 0;
+    const members = nested.map(([name, child]) => {
+      const d = descriptor(child, [...path, type]);
+      width += d.width;
+      if (!Number.isSafeInteger(width) || width > MAX_PACKED_BYTES)
+        fail("packed value exceeds byte budget");
+      return Object.freeze({name, descriptor: d});
     });
-    const spec = Object.freeze({type, kind: "packed-struct", fields: Object.freeze(children)});
+    const spec = Object.freeze({
+      type, kind: "packed-struct", width, fields: Object.freeze(members)
+    });
     cache.set(type, spec);
     return spec;
   }
+  let rowWidth = 0;
   const columns = fields.map(([name, type]) => {
-    if (!name || typeof type !== "string") fail("invalid direct field");
-    return Object.freeze({name, descriptor: descriptor(type, [typeName])});
+    if (typeof type !== "string") fail("invalid direct field");
+    const d = descriptor(type, [typeName]);
+    rowWidth += d.width;
+    if (!Number.isSafeInteger(rowWidth) || rowWidth > MAX_PACKED_BYTES)
+      fail("row exceeds byte budget");
+    return Object.freeze({name, descriptor: d});
   });
   const layout = Object.freeze({
-    typeName, typeKind: root.kind, layout: "soa",
+    typeName, typeKind: root.kind, layout: "soa", rowWidth,
     columns: Object.freeze(columns), nesting: "one-level"
   });
   COMPILED_LAYOUTS.add(layout);
   return layout;
 }
-
 function copyValue(spec, value) {
   if (spec.kind === "scalar") {
     if (spec.type === "bool" && typeof value === "boolean") return value;
@@ -65,12 +99,12 @@ function copyValue(spec, value) {
         value >= -(1n << 63n) && value < (1n << 63n)) return value;
     fail("invalid scalar value for " + spec.type);
   }
-  if (!exactObject(value) || Object.keys(value).length !== spec.fields.length)
+  if (!exactObject(value) || Reflect.ownKeys(value).length !== spec.fields.length)
     fail("invalid packed value shape");
   const result = {};
   for (const f of spec.fields) {
     if (!own(value, f.name)) fail("missing packed member");
-    result[f.name] = copyValue(f.descriptor, value[f.name]);
+    result[f.name] = copyValue(f.descriptor, data(value, f.name));
   }
   return result; // deep detached copy; never a mutable alias to caller input
 }
@@ -87,7 +121,8 @@ export class InvertedReferenceStore {
   #capacity;
   constructor(layout, capacity = 1024) {
     if (!layout || typeof layout !== "object" || !COMPILED_LAYOUTS.has(layout) ||
-        !Number.isSafeInteger(capacity) || capacity < 0)
+        !Number.isSafeInteger(capacity) || capacity < 0 ||
+        layout.rowWidth * capacity > MAX_STORE_BYTES)
       fail("invalid or untrusted owner initialization");
     this.#layout = layout;
     this.#capacity = capacity;
@@ -139,13 +174,13 @@ export class InvertedReferenceStore {
   push(row) {
     this.#open();
     this.#noLoans();
-    if (!exactObject(row) || Object.keys(row).length !== this.#columns.size)
+    if (!exactObject(row) || Reflect.ownKeys(row).length !== this.#columns.size)
       fail("inexact row shape");
     if (this.#rows.length === this.#capacity) throw new RangeError("inverted store full");
     // Validate and detach ALL members before touching the store.
     const values = this.#layout.columns.map(f => {
       if (!own(row, f.name)) fail("missing row member");
-      return copyValue(f.descriptor, row[f.name]);
+      return copyValue(f.descriptor, data(row, f.name));
     });
     const slot = this.#free.length ? this.#free[this.#free.length - 1] : this.#slots.length;
     const s = this.#slots[slot] || {row: 0, generation: 1, live: false};
