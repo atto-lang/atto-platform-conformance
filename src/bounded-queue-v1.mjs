@@ -44,7 +44,7 @@ export function validateBoundedQueueContract(contract) {
   if(!Array.isArray(contract.required_invariants) || contract.required_invariants.length!==INVARIANTS.length)
     fail("exactly 15 invariants required");
   const ids=contract.required_invariants.map(x=>object(x,"invariant").id);
-  if(JSON.stringify(ids)!==JSON.stringify(INVARIANTS)) fail("invariant ids must be BQ01..BQ14 in order");
+  if(JSON.stringify(ids)!==JSON.stringify(INVARIANTS)) fail("invariant ids must be BQ01..BQ15 in order");
   for(const invariant of contract.required_invariants){
     exactKeys(invariant,["id","name","rule"],"invariant");
     nonempty(invariant.name,"invariant name");
