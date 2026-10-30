@@ -161,3 +161,12 @@ test('malformed host-owner, handle and leases fail closed',()=>{
   bad(()=>s.with_turn(h,A,'../carrier',true,()=>{}));
   bad(()=>s.release_child(999));
 });
+
+test('accessor-backed identities and request headers cannot execute during admission',()=>{
+  const s=new Store(1),m=meta(1),owner={...A};
+  Object.defineProperty(m,'trace_id',{get(){throw new Error('unauthorized side effect');}});
+  bad(()=>s.create(A,m));
+  Object.defineProperty(owner,'slot',{get(){throw new Error('owner getter');}});
+  bad(()=>s.create(owner,meta(1)));
+  assert.equal(s.available,1);
+});
