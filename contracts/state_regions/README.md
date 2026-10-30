@@ -76,20 +76,29 @@ they never mint a runtime capability.
 
 ## Executed source-free evidence — 2026-10-30
 
-A separately authored source-free canary was executed in
+A separately authored source-free contract suite ran in
 `honeypot-r-us-test/hnpt-e2e`, branch
 `test/state-region-source-free-canary-20261030`.
 
-Exact canary head: `73c3fed5939a1e7158a9c9c625232118c261425e`.
-GitHub Actions run: `41003990044`.
+Latest exact carrier head:
+`1b5e265ac56c6fbc88dc97fe6bdc3549604c7d2c`.
 
-The real hosted Ubuntu runner executed and passed:
-1. the 11-test Python state-region contract;
-2. an optimized C11 `-O2 -DNDEBUG -Wall -Wextra -Wpedantic -Werror` build/run;
-3. an AddressSanitizer + UBSan build/run.
+Real GitHub-hosted runs:
+- `41005574007`: JDK 25 provenance canary, 12-test Python state-region model
+  including canonical JSON vectors, optimized C11 `-DNDEBUG -Werror`, and
+  ASan + UBSan — all PASS.
+- `41005574006`: Node 22/WASM provenance, .NET 10 provenance, and C++20/Forge
+  provenance — all PASS.
 
-This proves alternate-runner capacity and the independent source-free model only.
-It does **not** execute or certify the private LLVM compiler/runtime head.
-The LLVM source repository's approved private-CI destination list is currently
-empty, so no private source tree was transferred. Exact private-head workflows
-continue to record zero executed steps and therefore provide no compiler result.
+An earlier .NET source-free canary exposed two genuine harness compilation
+defects (top-level statement placement, then missing explicit core namespaces);
+both were fixed before the green run. Those were carrier-model defects, not
+private backend results.
+
+This proves alternate-runner capacity, current toolchain availability, and the
+independent contract only. It does **not** execute or certify any private
+Java/LLVM/.NET/WASM/Forge compiler/runtime head.
+
+No private source tree was transferred. Source-repository export policy must
+authorize the exact destination and exact source snapshot before any such
+transfer, regardless of runner budget.
