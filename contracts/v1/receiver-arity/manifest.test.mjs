@@ -37,10 +37,10 @@ test("receiver-arity fixtures are exact, distinct, and cover both declaration or
     if(entry.expect==="reject") {
       // Structural source classification only: this is not a parser or
       // compiler-owned duplicate-slot diagnostic.
-      const decls=sourceText.match(/^[ \\t]+x\\(/gm)||[];
+      const decls=sourceText.split("\n").filter(line=>line.trimStart().startsWith("x("));
       assert.equal(decls.length,2,"duplicate-slot fixture must declare two x methods");
-      assert.match(sourceText,/mut self/,"duplicate fixture must cover mutable receiver");
-      assert.match(sourceText,/\\breturn 42;/,"fixture must contain deterministic entry");
+      assert.ok(sourceText.includes("mut self"),"duplicate fixture must cover mutable receiver");
+      assert.ok(sourceText.includes("return 42;"),"fixture must contain deterministic entry");
     }
     if(entry.expect==="accept") {
       counts.accept++;
