@@ -7,7 +7,7 @@ const MAX_FIELDS = 64;
 const MAX_PACKED_BYTES = 64 * 1024;
 const MAX_STORE_BYTES = 16 * 1024 * 1024;
 const FORBIDDEN_NAMES = new Set(["__proto__", "prototype", "constructor"]);
-// Private compiler-minted type witness, never inferred from user-authored layout data.
+// Private module-issued layout witness; not proof of an Oreslang compiler.
 const COMPILED_LAYOUTS = new WeakSet();
 
 function fail(message) { throw new TypeError("inverted layout: " + message); }
@@ -54,7 +54,7 @@ export function compile_inverted_layout(types, typeName) {
     if (SCALARS.has(type)) return Object.freeze({
       type, kind: "scalar", width: type === "bool" ? 1 : 8
     });
-    if (typeof type !== "string" || !own(types, type)) fail("unknown field type");
+    if (typeof type !== "string" || !validName(type) || !own(types, type)) fail("unknown field type");
     if (path.includes(type) || path.length >= 16) fail("recursive or overdeep value");
     if (cache.has(type)) return cache.get(type);
     const decl = declaration(data(types, type));
@@ -250,6 +250,7 @@ export class InvertedReferenceStore {
     this.#free.push(dead);
   }
   borrow_column(name, write = false) {
+    if (typeof write !== "boolean") fail("column loan mode must be boolean");
     const col = this.#column(name);
     const loan = this.#loans.get(name);
     if (loan.writer || (write && loan.readers)) throw new Error("field loan conflict");
