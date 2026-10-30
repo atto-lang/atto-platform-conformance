@@ -4,20 +4,22 @@
   "source_contract": {
     "repository": "ores-truffle-oreslang/rx-oreslang-channels",
     "pull_request": 26,
-    "head_commit": "44186cf0371119fcbb3dae8c8b4eac455ccd21bf",
+    "head_commit": "d332649244b6142790f45d4a29c1d3f385dd6b31",
     "execution_status": "NOT_EXECUTED"
   },
   "records": [
     {
       "backend": "oreslang-source.java",
-      "source_lowering": "implemented-unexecuted",
-      "runtime_substrate": "contract-tests-added-unexecuted",
+      "source_lowering": "unsupported",
+      "runtime_substrate": "implementation-added-unexecuted",
       "guest_execution": "NOT_EXECUTED",
       "reference": {
-        "pull_request": 2310,
-        "head_commit": "6e9ba91b5891243e24a50a85985cd0828fe642e5"
+        "source_contract_pull_request": 2310,
+        "source_contract_head_commit": "d5aac011ca6dfc6b00cc05e0b01e08a6b59be59f",
+        "runtime_pull_request": 2311,
+        "runtime_head_commit": "1a01de72e011ea531843c0245d701a1a8752ceb9"
       },
-      "reason": "Generic channel/select source surface and pending-writer runtime tests exist, but exact-head jobs have zero executed steps."
+      "reason": "Readable source/reference semantics and Java runtime implementation exist, but the first-class copyable BoundedQueue<T>/QueueTicket source builtins are not yet lowered; exact-head jobs remain unexecuted."
     },
     {
       "backend": "oreslang-source.llvm",
