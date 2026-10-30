@@ -101,3 +101,18 @@ P1: Java real source actor adapter; LLVM actor heap lowering and native async si
 P2: async durable sidecar actors, per-tenant shard pool, provider SDKs, backpressure, 10k actor contention and fault-injection evidence.
 P3: restore and passivation, snapshot/journal compaction, reminders, migration/fencing, transactional effects.
 P4: .NET Native AOT, Wasm and Cranelift source actors; strict cross-backend native conformance, with Forge separately.
+
+
+## Source actor integration acceptance update (2026-10-29)
+
+New implementation work is tracked in [Java #2282](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2282) and [LLVM #1180](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1180).
+
+**PS16 — Real runtime-private heap reactivation (HOST_INTEGRATION_PENDING):**
+- Java must execute `ActorRuntime.spawnPrivateTrusted` with an owner-checked `PrivateMemoryBlock`, the new actor-incarnation-bound `ActorPersistenceBridge`, and an on-disk SQLite provider, prove the SQLite acknowledgment occurs before the actor reports success, stop the actor, then restore into a different runtime/actor private-memory region. Host-only source and CI fixture are now committed, **not yet executed under the real Java repository**.
+- LLVM must compile the repository's authentic `ActorOwnedHeap` with the SQLite provider, reject stale heap handles across generation changes, and restore scalar state into a new arena generation. Native integration fixture and CTest are committed, **not yet executed under the real native repository**.
+- Both implementations must test cross-tenant/actor denial, after-stop callback rejection, operation-ID replay fencing, mailbox-execution ownership, and no raw pointer serialization. **Runtime host integration cannot be promoted to source-guest parity.**
+
+**PS17 — Source-compiler guest actor reactivation (NOT_IMPLEMENTED):**
+Compile a genuine `.ores` actor using native syntax and sealed `handle_state(critical-read / critical-write)`, lower a typed persistence operation through the verified runtime bridge, run a real provider-backed actor lifecycle (activate → commit → passivate → activate → restore), and independently compare observable results on Java and LLVM. Record compiler SHA-256, exact source SHA, binary provenance, nonzero-step runner logs, serialized state schema and negative admission fixtures. Until every requirement is proven, do not report source actor persistence as implemented. Other backends (.NET, Wasm, Cranelift, Forge) remain pending independent actual guest execution.
+
+**CI admission:** the latest source-org workflows continued to fail with zero recorded steps. A private cross-org mirror must first pass the existing authenticated pre-copy allowlist, verified private visibility, complete exact-tree and per-blob checks, and actual runner admission; no source bytes should be copied merely to probe runner availability.
