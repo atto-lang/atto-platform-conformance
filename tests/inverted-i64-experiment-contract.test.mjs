@@ -22,6 +22,7 @@ test("experimental i64 guest status cannot be represented as verified backend pa
   assert.deepEqual(spec.local_source_adapter.positive_native_exit_codes, [42, 42]);
   assert.equal(spec.local_source_adapter.out_of_bounds_native_exit, 132);
   assert.equal(spec.local_source_adapter.source_negative_expected_diagnostic_cases_passed, 11);
+  assert.equal(spec.local_source_adapter.clang_asan_ubsan_native_ir_guests_passed, 2);
   assert.equal(spec.local_source_adapter.full_oreslang_llvmc_executed, false);
   assert.deepEqual(Object.keys(spec.claimed_backend_guest_results).sort(),
     ["java", "llvm", "wasm", "net", "forge"].sort());
