@@ -287,3 +287,20 @@ test("nested struct loan writes detach input and cannot mutate authoritative row
   writer.close();
   assert.equal(store.snapshot(h).position.x, 30);
 });
+
+test("loan privilege must be an explicit boolean, not an accidental truthy value", () => {
+  const store = make("Position", 1);
+  store.push({x: 1, y: 2});
+  for (const value of [1, "write", [], {}, null])
+    assert.throws(() => store.borrow_column("x", value), /must be boolean/);
+  const reader = store.borrow_column("x", false);
+  assert.equal(reader.get(0), 1);
+  reader.close();
+});
+
+test("untrusted nested symbol-bearing names cannot bypass fixed schema eligibility", () => {
+  const typesWithUnsafe = Object.create(null);
+  typesWithUnsafe.Root = {kind: "inverted-struct", fields: {child: "__proto__"}};
+  typesWithUnsafe.__proto__ = {kind: "struct", fields: {x: "f64"}};
+  assert.throws(() => compile_inverted_layout(typesWithUnsafe, "Root"), /unknown field type/);
+});
