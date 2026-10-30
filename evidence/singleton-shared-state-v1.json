@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "contract": "singleton-shared-state-v1",
+  "conformant": false,
+  "backends": {
+    "java": {
+      "status": "pending-guest",
+      "executedCaseIds": []
+    },
+    "llvm": {
+      "status": "pending-guest",
+      "executedCaseIds": []
+    },
+    "net": {
+      "status": "pending-guest",
+      "executedCaseIds": []
+    },
+    "wasm": {
+      "status": "pending-guest",
+      "executedCaseIds": []
+    },
+    "forge": {
+      "status": "host-foundation-only",
+      "sourceHead": "7e127a6214f2a13870a0b3bf57eb14d329f178e9",
+      "sourceTree": "9dd436bbe3205110945ce9a144a828f11c73006c",
+      "pullRequest": "ores-truffle-oreslang/oreslang-source.forge#146",
+      "executedCaseIds": [],
+      "hostFoundationCaseIds": [
+        "singleton-concurrent-first-access-once",
+        "singleton-sticky-initializer-failure",
+        "singleton-direct-initialization-cycle",
+        "table-caller-identity-not-guest-forgeable",
+        "table-stale-actor-incarnation-rejected",
+        "table-private-protected-public-rights",
+        "table-concurrent-counter-exact",
+        "table-insert-new-single-winner",
+        "table-cas-single-winner",
+        "table-capacity-failure-preserves-contents",
+        "table-overflow-failure-preserves-value",
+        "table-owner-retirement-revokes-access",
+        "table-replacement-rejects-stale-capability"
+      ],
+      "limitation": "Host/runtime tests and classified ORES-SINGLETON-UNSUPPORTED admission are not guest singleton/table evidence. Current hosted source and carrier jobs have not provided runner-executed evidence."
+    }
+  }
+}
