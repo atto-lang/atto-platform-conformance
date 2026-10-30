@@ -10,7 +10,10 @@ const actualStep = step => plain(step) && positive(step.number) &&
   step.status === 'completed' && step.conclusion === 'success';
 const housekeeping = name => /^(?:Set up job|Complete job|Post |Run actions\/|Run docker\/)/.test(name);
 
-export function assessActionsJob({run, job, expected}) {
+export function assessActionsJob(input) {
+  if (!plain(input))
+    return {classification: 'INVALID', errors: ['plain evidence input required']};
+  const {run, job, expected} = input;
   const errors = [];
   const fail = reason => errors.push(reason);
   if (!plain(run) || !plain(job) || !plain(expected))
@@ -35,15 +38,16 @@ export function assessActionsJob({run, job, expected}) {
     fail('job does not belong to exact run attempt and head');
   if (!Array.isArray(job.steps) || job.steps.length > 256 ||
       job.steps.some(step => !plain(step)))
-    fail('invalid or unbounded step inventory');
-  const steps = Array.isArray(job.steps) ? job.steps : [];
+    return {classification: 'INVALID', errors: [...errors, 'invalid or unbounded step inventory']};
+  const steps = job.steps;
   const executed = steps.filter(actualStep);
   if (!positive(job.runner_id) || !job.runner_name ||
       typeof job.runner_name !== 'string' || job.runner_name.length > 160 ||
       !executed.some(step => typeof step.name === 'string' && !housekeeping(step.name)))
     fail('runner unassigned or zero substantive executed steps');
   for (const name of expected.requiredSteps) {
-    if (executed.filter(step => step.name === name).length !== 1)
+    if (steps.filter(step => step.name === name).length !== 1 ||
+        executed.filter(step => step.name === name).length !== 1)
       fail('required executed step absent, repeated or unsuccessful: ' + name);
   }
   if (new Set(steps.map(step => step.number)).size !== steps.length)
