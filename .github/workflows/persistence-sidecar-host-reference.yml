@@ -4,6 +4,8 @@ on:
     paths:
       - 'reference/persistence-sidecar/**'
       - 'docs/ACTOR_IDENTITY_V1.md'
+      - 'docs/PERSISTENCE_SIDECARS_RFC.md'
+      - 'docs/PERSISTENCE_SYMBOL_MODES_V1.md'
       - '.github/workflows/persistence-sidecar-host-reference.yml'
   workflow_dispatch:
 permissions:
@@ -14,10 +16,25 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Record and execute the exact PR head, not a synthetic merge ref.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
-      - name: Check SQLite host engine and run reference tests (NOT guest proof)
+          node-version: '22.16.0'
+      - name: Verify and record checked-out source identity
+        shell: bash
         run: |
+          set -euo pipefail
+          actual_sha="$(git rev-parse HEAD)"
+          actual_tree="$(git rev-parse 'HEAD^{tree}')"
+          printf 'CHECKED_OUT_COMMIT=%s\nCHECKED_OUT_TREE=%s\n' "$actual_sha" "$actual_tree"
+          test "$actual_sha" = '${{ github.event.pull_request.head.sha || github.sha }}'
+          git ls-files 'reference/persistence-sidecar/*.test.mjs'
+      - name: Check SQLite host engine and run reference tests (NOT guest proof)
+        shell: bash
+        run: |
+          set -euo pipefail
           node --version
           node --disable-warning=ExperimentalWarning --test reference/persistence-sidecar/*.test.mjs
