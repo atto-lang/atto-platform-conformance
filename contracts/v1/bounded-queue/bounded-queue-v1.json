@@ -1,0 +1,204 @@
+{
+  "schema": "oreslang.bounded_queue_contract.v1",
+  "contract_id": "bounded-queue-v1",
+  "transport_model": "canonical bounded Channel<T> coordinator; no second waiter list",
+  "ticket_model": "one-shot generation-bound local cancellation capability",
+  "required_invariants": [
+    {
+      "id": "BQ01",
+      "name": "bounded_capacity",
+      "rule": "admitted item count never exceeds configured capacity"
+    },
+    {
+      "id": "BQ02",
+      "name": "immediate_full_nonretaining",
+      "rule": "try_push on full returns Full and retains no pending writer"
+    },
+    {
+      "id": "BQ03",
+      "name": "one_shot_ticket",
+      "rule": "one ticket authorizes at most one push attempt"
+    },
+    {
+      "id": "BQ04",
+      "name": "cancel_before_admit_no_ghost",
+      "rule": "cancellation that wins before write commit removes the writer and its payload never appears"
+    },
+    {
+      "id": "BQ05",
+      "name": "cancel_after_admit_nonrevocable",
+      "rule": "successful admission cannot be revoked by later cancellation"
+    },
+    {
+      "id": "BQ06",
+      "name": "pending_writer_fifo",
+      "rule": "live pending writers commit in deterministic registration order as capacity becomes available"
+    },
+    {
+      "id": "BQ07",
+      "name": "cancelled_older_progress",
+      "rule": "cancelling an older pending writer cannot prevent a later live writer from advancing"
+    },
+    {
+      "id": "BQ08",
+      "name": "close_settles_pending",
+      "rule": "actual item-channel close settles all uncommitted pending writers without admitting their payloads"
+    },
+    {
+      "id": "BQ09",
+      "name": "close_drains_fifo",
+      "rule": "already-admitted items remain FIFO-readable after close"
+    },
+    {
+      "id": "BQ10",
+      "name": "closed_empty_terminal",
+      "rule": "closed plus drained is terminal and does not manufacture data"
+    },
+    {
+      "id": "BQ11",
+      "name": "bounded_waiter_budget",
+      "rule": "pending writer retention is bounded and exhaustion fails closed"
+    },
+    {
+      "id": "BQ12",
+      "name": "local_capability_confinement",
+      "rule": "queue/ticket channel capabilities cannot cross actor message boundaries"
+    },
+    {
+      "id": "BQ13",
+      "name": "generation_invalidation",
+      "rule": "unclaimed pre-close tickets cannot authorize post-close admission"
+    },
+    {
+      "id": "BQ14",
+      "name": "no_busy_polling",
+      "rule": "pending admission suspends through canonical scheduler/channel registration rather than polling or a library waiter loop"
+    },
+    {
+      "id": "BQ15",
+      "name": "rejected_push_returns_payload_ownership",
+      "rule": "every non-admitted push returns the exact original payload; only successful admission permanently transfers ownership into the queue"
+    }
+  ],
+  "arbitration": {
+    "pending_push": [
+      "ticket cancellation competes with the uncommitted channel write",
+      "Channel.close terminally settles an uncommitted pending write",
+      "write commit permanently admits the payload"
+    ],
+    "close_linearization": "close the actual item channel under the canonical channel coordinator; never emulate closure with a consumable token",
+    "receive_linearization": "already-committed FIFO data drains before the channel reports closed+empty terminal state"
+  },
+  "scenarios": [
+    {
+      "id": "pending_writers_fifo",
+      "capacity": 1,
+      "actions": [
+        "push_now:0",
+        "pending_push:1:t1",
+        "pending_push:2:t2",
+        "pop",
+        "pop",
+        "pop"
+      ],
+      "expected": [
+        "admitted:0",
+        "pending:t1",
+        "pending:t2",
+        "value:0",
+        "admitted:t1",
+        "value:1",
+        "admitted:t2",
+        "value:2"
+      ]
+    },
+    {
+      "id": "cancel_older_then_progress",
+      "capacity": 1,
+      "actions": [
+        "push_now:0",
+        "pending_push:1:t1",
+        "pending_push:2:t2",
+        "cancel:t1",
+        "pop",
+        "pop"
+      ],
+      "expected": [
+        "admitted:0",
+        "pending:t1",
+        "pending:t2",
+        "cancelled:t1",
+        "value:0",
+        "admitted:t2",
+        "value:2"
+      ]
+    },
+    {
+      "id": "close_with_pending",
+      "capacity": 1,
+      "actions": [
+        "push_now:0",
+        "pending_push:1:t1",
+        "close",
+        "pop",
+        "pop"
+      ],
+      "expected": [
+        "admitted:0",
+        "pending:t1",
+        "closed",
+        "closed:t1",
+        "value:0",
+        "terminal"
+      ]
+    },
+    {
+      "id": "full_is_nonretaining",
+      "capacity": 1,
+      "actions": [
+        "push_now:0",
+        "try_push:1:t1",
+        "pop"
+      ],
+      "expected": [
+        "admitted:0",
+        "full:t1",
+        "value:0"
+      ]
+    },
+    {
+      "id": "stale_ticket_after_close",
+      "capacity": 1,
+      "actions": [
+        "ticket:t1",
+        "close",
+        "try_push:1:t1"
+      ],
+      "expected": [
+        "ticket:t1",
+        "closed",
+        "stale-ticket:t1"
+      ]
+    },
+    {
+      "id": "full_returns_payload",
+      "capacity": 1,
+      "actions": [
+        "push_now:owned-0",
+        "try_push:owned-1:t1"
+      ],
+      "expected": [
+        "admitted:owned-0",
+        "full:t1:return-exact-owned-1"
+      ]
+    }
+  ],
+  "backends": [
+    "oreslang-source.java",
+    "oreslang-source.llvm",
+    "oreslang-source.net",
+    "oreslang-source.wasm",
+    "oreslang-source.forge"
+  ],
+  "evidence_rule": "Each backend must execute independently. Source support, runtime substrate tests, and guest execution are separate gates. Zero-step CI is NOT_EXECUTED."
+}
