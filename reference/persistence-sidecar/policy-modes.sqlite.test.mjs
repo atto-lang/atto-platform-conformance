@@ -288,3 +288,50 @@ test('actor policy, tenant, epoch, sidecar and initial state are immutable after
     db.close();
   } finally {f.close();}
 });
+
+test('fenced commit proof and restore read under one SQLite transaction',()=>{
+  const f=fixture();
+  try {
+    const db=f.open();
+    db.grantEpoch({tenantId:'tenant-a',actor:'counter',epoch:1});
+    const actor=create(db,'#snapshot');
+    actor.stage_snapshot('transaction-proof',s=>{s.count=83;});
+    const savedGet=db.getOp.get.bind(db.getOp);
+    let proofObserved=false;
+    db.getOp.get=(...params)=>{
+      assert.equal(db.db.isTransaction,true,'operation proof must hold a SQLite transaction');
+      proofObserved=true;
+      return savedGet(...params);
+    };
+    actor.apply_commit(db.flush()[0]);
+    assert.equal(proofObserved,true);
+
+    const savedLoad=db.load.bind(db);
+    let restoreObserved=false;
+    db.load=(params)=>{
+      assert.equal(db.db.isTransaction,true,'fenced restore must hold a SQLite transaction');
+      restoreObserved=true;
+      return savedLoad(params);
+    };
+    const restored=create(db,'#snapshot');
+    restored.restore();
+    assert.equal(restoreObserved,true);
+    assert.equal(read(restored),83);
+    assert.equal(db.db.isTransaction,false);
+
+    // An injected read fault must not leave the write reservation held.
+    db.load=()=>{
+      assert.equal(db.db.isTransaction,true);
+      throw new Error('INJECTED_RESTORE_FAILURE');
+    };
+    assert.throws(()=>create(db,'#snapshot').restore(),/INJECTED_RESTORE_FAILURE/);
+    assert.equal(db.db.isTransaction,false);
+
+    const other=f.open();
+    other.grantEpoch({tenantId:'tenant-a',actor:'counter',epoch:2});
+    assert.throws(()=>create(db,'#snapshot').restore(),/STALE_EPOCH/);
+    assert.equal(db.db.isTransaction,false);
+    other.close();
+    db.close();
+  } finally {f.close();}
+});
