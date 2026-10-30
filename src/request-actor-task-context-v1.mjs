@@ -27,7 +27,7 @@ const key=h=>h&&validInt(h.slot)&&validInt(h.generation)&&
   Reflect.ownKeys(h).length===2;
 
 export class RequestContextScopeModel {
-  #slots;#free;#carrier=new Map();#nextLease=1;#leases=new Map();
+  #slots;#free;#carrier=new Map();#nextLease=1;#leases=new Map();#liveRequests=new Set();
   constructor(capacity=16) {
     if(!validInt(capacity)||capacity>128)invalid('bounded capacity 1..128');
     this.#slots=Array.from({length:capacity},()=>({
@@ -43,6 +43,7 @@ export class RequestContextScopeModel {
   #recycle(h,s) {
     if(s.leases) return;
     if(s.phase!=='CLOSING')invalid('recycle while active');
+    this.#liveRequests.delete(s.meta.tenant_id+"/"+s.meta.request_id);
     s.owner=null;s.meta=null;
     if(s.generation===Number.MAX_SAFE_INTEGER){s.phase='RETIRED';return;}
     s.phase='FREE';this.#free.push(h.slot-1);
@@ -64,11 +65,15 @@ export class RequestContextScopeModel {
   }
   create(actor,metadata){
     const owner=ownerKey(actor),meta=immutableMeta(metadata);
+    const requestKey=meta.tenant_id+"/"+meta.request_id;
+    if(this.#liveRequests.has(requestKey))
+      invalid('duplicate live tenant/request identity');
     if(!this.#free.length)return null; // bounded admission failure
     const idx=this.#free.pop(),s=this.#slots[idx];
     if(s.phase!=='FREE'||s.generation===Number.MAX_SAFE_INTEGER)
       invalid('slot reuse invariant');
     s.generation++;s.phase='OPEN';s.owner=owner;s.meta=meta;s.leases=0;
+    this.#liveRequests.add(requestKey);
     return Object.freeze({slot:idx+1,generation:s.generation});
   }
   // Trusted scheduler may call this only after actor-incarnation/turn admission.
