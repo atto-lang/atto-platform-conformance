@@ -36,14 +36,29 @@ class TenantReference {
     if (this.#next >= Number.MAX_SAFE_INTEGER) throw Error("GENERATION_EXHAUSTED");
     const handle = Object.freeze({id, epoch:this.#next++});
     this.#entries.set(id,{handle,epoch:handle.epoch,phase:"created",
-      state:0,work:0,leases:0,maxInflight:this.#capacity});
+      state:0,work:0,leases:new Set(),scalarTurn:false,maxInflight:this.#capacity});
     return handle;
   }
   start(h) {const e=this.#check(h);if(e.phase!=="created") throw Error("PHASE");e.phase="running";}
+  lease(h) {
+    const e=this.#check(h);
+    if(e.phase!=="running") throw Error("ADMISSION_CLOSED");
+    const loan=Object.freeze({identity:Symbol("resource-lease")});
+    e.leases.add(loan);
+    return loan;
+  }
+  release(h,loan) {
+    const e=this.#check(h);
+    if(!e.leases.delete(loan)) throw Error("FOREIGN_OR_REPLAYED_LEASE");
+  }
   async invoke(h,call) {
     const e=this.#check(h);
-    if(e.phase!=="running" || e.work>=e.maxInflight) throw Error("ADMISSION_CLOSED");
+    // The scalar reference represents ONE actor turn. A higher per-tenant
+    // admission capacity must never imply concurrent execution of one actor.
+    if(e.phase!=="running" || e.work>=e.maxInflight || e.scalarTurn)
+      throw Error("ADMISSION_CLOSED");
     e.work++;
+    e.scalarTurn=true;
     try {
       // A mutable state snapshot and result belong only to the calling
       // tenant. A user callback cannot receive another tenant's state.
@@ -61,11 +76,12 @@ class TenantReference {
       throw err;
     } finally {
       e.work--;
+      e.scalarTurn=false;
     }
   }
   snapshot(h) {const e=this.#check(h);return {phase:e.phase,epoch:e.epoch,state:e.state,active:e.work};}
   shutdown(h) {const e=this.#check(h);if(e.phase!=="running"&&e.phase!=="created")throw Error("PHASE");e.phase="quiescing";}
-  stop(h) {const e=this.#check(h);if(e.phase!=="quiescing"||e.work||e.leases)throw Error("DRAIN_REQUIRED");e.phase="stopped";}
+  stop(h) {const e=this.#check(h);if(e.phase!=="quiescing"||e.work||e.leases.size)throw Error("DRAIN_REQUIRED");e.phase="stopped";}
   destroy(h) {const e=this.#check(h);if(e.phase!=="stopped")throw Error("STOP_REQUIRED");this.#entries.delete(h.id);}
 }
 const fails=(f,why)=>assert.throws(f,new RegExp(why));
@@ -139,4 +155,35 @@ test("execution failure quarantines tenant and restart restores fresh state",asy
   vm.stop(h);vm.destroy(h);
   const newH=vm.create("tenant");vm.start(newH);
   assert.equal(await vm.invoke(newH,()=>1),1);
+});
+
+test("resource leases are host-owned and foreign or replayed releases are refused",()=>{
+  const vm=new TenantReference();
+  const a=vm.create("a"),b=vm.create("b");
+  vm.start(a);vm.start(b);
+  const loan=vm.lease(a);
+  fails(()=>vm.release(b,loan),"FOREIGN_OR_REPLAYED_LEASE");
+  vm.shutdown(a);
+  fails(()=>vm.lease(a),"ADMISSION_CLOSED");
+  fails(()=>vm.stop(a),"DRAIN_REQUIRED");
+  vm.release(a,loan);
+  fails(()=>vm.release(a,loan),"FOREIGN_OR_REPLAYED_LEASE");
+  vm.stop(a);vm.destroy(a);
+  fails(()=>vm.release(a,loan),"STALE_TENANT_HANDLE");
+  vm.shutdown(b);vm.stop(b);vm.destroy(b);
+});
+
+test("scalar actor turns are non-reentrant even with extra tenant capacity",async()=>{
+  const vm=new TenantReference({maxInflight:3});
+  const h=vm.create("tenant");vm.start(h);
+  let signal,release;
+  const started=new Promise(r=>{signal=r;});
+  const blocked=new Promise(r=>{release=r;});
+  const active=vm.invoke(h,async()=>{signal();await blocked;return 4;});
+  await started;
+  await assert.rejects(vm.invoke(h,()=>10),/ADMISSION_CLOSED/);
+  assert.equal(vm.snapshot(h).active,1);
+  release();
+  assert.equal(await active,4);
+  assert.equal(await vm.invoke(h,()=>2),6);
 });
