@@ -87,3 +87,26 @@ test("symlink replacement never follows the fixture", async () => {
     );
   });
 });
+
+test("manifest symlinks fail closed before JSON is parsed", async () => {
+  await withFixtureCopy(async (dir) => {
+    const path = join(dir, "manifest.json");
+    await rm(path);
+    await symlink(join(fixtures, "manifest.json"), path);
+    await assert.rejects(
+      verifyImplicitValInitializeFixtureManifest(dir),
+      /manifest must be a regular file/
+    );
+  });
+});
+
+test("oversized fixture is rejected before a SHA is accepted", async () => {
+  await withFixtureCopy(async (dir) => {
+    const path = join(dir, "initialize-colon-braces.ores");
+    await writeFile(path, Buffer.alloc(33 * 1024));
+    await assert.rejects(
+      verifyImplicitValInitializeFixtureManifest(dir),
+      /fixture must be a regular file no larger than 32768 bytes/
+    );
+  });
+});
