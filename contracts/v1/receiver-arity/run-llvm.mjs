@@ -45,20 +45,26 @@ export function classFixtures() {
      manifest.status!=="normative-target-not-execution-evidence"||
      !Array.isArray(manifest.cases)||manifest.cases.length!==12)
     throw Error("receiver corpus version/inventory changed");
-  const seen=new Set(),selected=[];
+  const seen=new Set(),seenPaths=new Set(),selected=[];
+  const pendingActorIds=new Set();
   let actors=0;
   for(const item of manifest.cases) {
     if(!/^[a-z][a-z0-9-]{0,90}$/.test(item.id)||
-       !/^fixtures\/[a-z0-9-]+\.ores$/.test(item.path)||seen.has(item.id))
+       !/^fixtures\/[a-z0-9-]+\.ores$/.test(item.path)||
+       seen.has(item.id)||seenPaths.has(item.path))
       throw Error("invalid or duplicate fixture path/identity");
-    seen.add(item.id);
+    seen.add(item.id);seenPaths.add(item.path);
     const bytes=boundedFile(join(root,item.path),maxFixture);
     if(!/^[a-f0-9]{40}$/.test(item.gitBlobSha)||
        gitBlobSha(bytes)!==item.gitBlobSha)throw Error("Git blob hash mismatch");
     if(!["class","actor"].includes(item.scope)||
        !bytes.toString("utf8").startsWith("define "+item.scope+" "))
       throw Error("fixture owner mismatch");
-    if(item.scope==="actor") {actors++;continue} // NOT executable in LLVM class gate
+    if(item.scope==="actor") {
+      if(item.expect!=="reject"||item.diagnosticClass!=="duplicate-method-slot"||
+         !/^x\/[01]$/.test(item.slot))throw Error("unexpected actor parity target");
+      pendingActorIds.add(item.id);actors++;continue; // NOT executed in class gate
+    }
     if(item.expect==="accept"&&item.expectedInt!==42)
       throw Error("unsupported positive expected value");
     if(item.expect==="reject"&&
@@ -73,6 +79,12 @@ export function classFixtures() {
      selected.filter(x=>x.item.expect==="accept").length!==4||
      selected.filter(x=>x.item.expect==="reject").length!==4)
     throw Error("class/actor expected inventory drift");
+  for(const owner of ["class","actor"]) for(const arity of ["zero","one"])
+    for(const order of ["implicit-then-mut","mut-then-implicit"]) {
+      const id=owner+"-"+arity+"-"+order+"-reject";
+      if(owner==="actor"?!pendingActorIds.has(id):!seen.has(id))
+        throw Error("missing exact receiver collision case: "+id);
+    }
   return {cases:selected,manifestSha256:sha256(data),actorsPending:actors};
 }
 export function assertDuplicateRejection(result,slot) {
