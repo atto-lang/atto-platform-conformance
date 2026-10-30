@@ -217,3 +217,26 @@ mailbox, terminated actor and accepted-but-abandoned drain. These are
 source tests awaiting exact-head CTest execution, not backend
 conformance certification. Runtime-priority ceilings and quiescence
 checks remain separately required for deterministic real-time use.
+
+## Addendum: cancellation-after-acceptance and two-phase physical drainage
+
+An HTTP DATA message with a successful mailbox ACCEPTED receipt is not
+guaranteed to run guest code. The request may be cancelled after mailbox
+admission but before its scheduled turn. The runtime must still consume or
+abandon the exact mailbox ticket, reject guest context/body lookup, and
+eventually complete or terminally roll back the exchange without leaking
+physical context/buffer pins.
+
+Request-owned memory remains physically pinned by each independently active
+source Task/continuation and asynchronous I/O completion. Closing the request
+revokes new lookups immediately but must NOT free the slot while any lease
+remains. In the adversarial fixture, hold two physical leases, cancel,
+release the child Task lease first (slot still unavailable), then release
+the I/O callback lease (slot becomes reusable with a new generation).
+This test must use real physical thread/worker cleanup on native backends,
+not merely logical Task completion or scheduler queue drainage.
+
+LLVM draft #1210 now contains host-only source tests for these conditions.
+Those committed tests have not been executed successfully at exact head.
+Actual source Task lowering, I/O callback ownership and hard-real-time
+latency proofs remain independent, mandatory promotion gates.
