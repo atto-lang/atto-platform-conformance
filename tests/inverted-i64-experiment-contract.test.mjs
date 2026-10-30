@@ -15,7 +15,14 @@ const shas = Object.freeze({
 test("experimental i64 guest status cannot be represented as verified backend parity", () => {
   assert.equal(spec.version, 0);
   assert.equal(spec.scope, "LLVM_EXPLICIT_OPT_IN_SOURCE_TO_IR_NOT_PRODUCTION_OR_PARITY");
-  assert.equal(spec.evidence, "SOURCE_BLOBS_PINNED_COMPILER_EXECUTION_PENDING");
+  assert.equal(spec.evidence,
+    "LOCAL_EXACT_HEADER_AND_GUEST_FIXTURES_EXECUTED_FULL_COMPILER_NOT_EXECUTED");
+  assert.equal(spec.local_source_adapter.compiled_header_blob_sha,
+    "43fb26ec69974d8148b9d4142d738f17bbbefa14");
+  assert.deepEqual(spec.local_source_adapter.positive_native_exit_codes, [42, 42]);
+  assert.equal(spec.local_source_adapter.out_of_bounds_native_exit, 132);
+  assert.equal(spec.local_source_adapter.source_negative_expected_diagnostic_cases_passed, 11);
+  assert.equal(spec.local_source_adapter.full_oreslang_llvmc_executed, false);
   assert.deepEqual(Object.keys(spec.claimed_backend_guest_results).sort(),
     ["java", "llvm", "wasm", "net", "forge"].sort());
   for (const state of Object.values(spec.claimed_backend_guest_results))
