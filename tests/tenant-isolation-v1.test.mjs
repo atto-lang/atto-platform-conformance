@@ -108,6 +108,24 @@ test("distinct tenants retain private mutable state",async()=>{
   assert.equal(await vm.invoke(a,()=>1),2);
   assert.equal(await vm.invoke(b,()=>1),2);
 });
+test("independent VM roots reject same-name same-generation foreign handles", async()=>{
+  const rootA=new TenantReference();
+  const rootB=new TenantReference();
+  const a=rootA.create("tenant");
+  const b=rootB.create("tenant");
+  assert.equal(a.epoch,b.epoch,
+    "the roots deliberately share the same numeric generation");
+  rootA.start(a);rootB.start(b);
+  await assert.rejects(rootA.invoke(b,()=>99),/STALE_TENANT_HANDLE/);
+  await assert.rejects(rootB.invoke(a,()=>99),/STALE_TENANT_HANDLE/);
+  fails(()=>rootA.snapshot(b),"STALE_TENANT_HANDLE");
+  fails(()=>rootB.shutdown(a),"STALE_TENANT_HANDLE");
+  assert.equal(await rootA.invoke(a,()=>1),1);
+  assert.equal(await rootB.invoke(b,()=>1),1);
+  rootA.shutdown(a);rootA.stop(a);rootA.destroy(a);
+  rootB.shutdown(b);rootB.stop(b);rootB.destroy(b);
+});
+
 test("stale incarnation handles cannot regain ownership after restart",async()=>{
   const vm=new TenantReference({maxTenants:1});
   const old=vm.create("t");vm.start(old);
