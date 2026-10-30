@@ -27,10 +27,13 @@ class TenantReference {
   }
   create(id, {untrusted = false, boundary = "trusted-inprocess"} = {}) {
     if (typeof id !== "string" || !/^[A-Za-z0-9_.-]{1,128}$/.test(id)) throw Error("INVALID_ID");
-    // A label or permission flag must NEVER convert logical memory isolation
-    // into an OS-native security boundary.
+    if (typeof untrusted !== "boolean") throw Error("INVALID_TRUST_FLAG");
+    if (typeof boundary !== "string") throw Error("INVALID_BOUNDARY");
+    // Never downgrade an explicit request for a stronger security domain.
+    // This model implements ONLY trusted in-process reference execution.
     if (untrusted && boundary !== "os-sandbox-verified") throw Error("SECURITY_BOUNDARY_REQUIRED");
     if (boundary === "os-sandbox-verified") throw Error("OS_SANDBOX_NOT_IMPLEMENTED");
+    if (boundary !== "trusted-inprocess") throw Error("UNSUPPORTED_BOUNDARY");
     if (this.#entries.has(id)) throw Error("DUPLICATE_TENANT");
     if (this.#entries.size >= this.#limit) throw Error("TENANT_QUOTA");
     if (this.#next >= Number.MAX_SAFE_INTEGER) throw Error("GENERATION_EXHAUSTED");
@@ -127,6 +130,13 @@ test("untrusted execution never downgrades to logical or Worker isolation",()=>{
   fails(()=>vm.create("bad",{untrusted:true,boundary:"trusted-inprocess"}),"SECURITY_BOUNDARY_REQUIRED");
   fails(()=>vm.create("bad",{untrusted:true,boundary:"wasm-store"}),"SECURITY_BOUNDARY_REQUIRED");
   fails(()=>vm.create("bad",{untrusted:true,boundary:"os-sandbox-verified"}),"OS_SANDBOX_NOT_IMPLEMENTED");
+  // These requests previously could be silently admitted whenever the
+  // untrusted flag was false; forbid unknown modes independently of trust.
+  fails(()=>vm.create("trusted",{boundary:"wasm-store"}),"UNSUPPORTED_BOUNDARY");
+  fails(()=>vm.create("trusted",{boundary:"vm-isolate"}),"UNSUPPORTED_BOUNDARY");
+  fails(()=>vm.create("trusted",{boundary:"something-else"}),"UNSUPPORTED_BOUNDARY");
+  fails(()=>vm.create("trusted",{boundary:5}),"INVALID_BOUNDARY");
+  fails(()=>vm.create("trusted",{untrusted:"false"}),"INVALID_TRUST_FLAG");
 });
 test("shutdown fences new admission and waits for a real inflight turn",async()=>{
   const vm=new TenantReference();
