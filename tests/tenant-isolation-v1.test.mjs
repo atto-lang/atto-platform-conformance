@@ -26,7 +26,8 @@ class TenantReference {
     return e;
   }
   create(id, {untrusted = false, boundary = "trusted-inprocess"} = {}) {
-    if (typeof id !== "string" || !/^[A-Za-z0-9_.-]{1,128}$/.test(id)) throw Error("INVALID_ID");
+    if (typeof id !== "string" || !/^[A-Za-z0-9_.-]{1,128}$/.test(id) ||
+        id === "." || id === "..") throw Error("INVALID_ID");
     if (typeof untrusted !== "boolean") throw Error("INVALID_TRUST_FLAG");
     if (typeof boundary !== "string") throw Error("INVALID_BOUNDARY");
     // Never downgrade an explicit request for a stronger security domain.
@@ -144,6 +145,8 @@ test("duplicate and aggregate admissions are bounded",()=>{
   fails(()=>vm.create("tenant"),"DUPLICATE_TENANT");
   fails(()=>vm.create("other"),"TENANT_QUOTA");
   fails(()=>vm.create("../bad"),"INVALID_ID");
+  fails(()=>vm.create("."),"INVALID_ID");
+  fails(()=>vm.create(".."),"INVALID_ID");
 });
 test("untrusted execution never downgrades to logical or Worker isolation",()=>{
   const vm=new TenantReference();
