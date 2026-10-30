@@ -20,12 +20,12 @@ async function withFixtureCopy(check) {
   }
 }
 
-test("12 exact byte-pinned fixtures, zero runtime certification", async () => {
+test("15 exact byte-pinned fixtures, zero runtime certification", async () => {
   const result = await verifyImplicitValInitializeFixtureManifest(fixtures);
   assert.deepEqual(result, {
-    fixtureCount: 12,
-    accepted: 7,
-    rejected: 5,
+    fixtureCount: 15,
+    accepted: 8,
+    rejected: 7,
     gitBlobIntegrity: "VERIFIED",
     backendProof: "NOT_EXECUTED",
   });
