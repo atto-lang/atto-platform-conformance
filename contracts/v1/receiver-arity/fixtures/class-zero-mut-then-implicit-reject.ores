@@ -1,0 +1,5 @@
+define class Foo as
+  x(mut self)():void{return;}
+  x():void{return;}
+end
+pub fnc main():int{return 42;}
