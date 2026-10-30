@@ -25,7 +25,8 @@
     "untrusted": "hostile tenant workloads need a proven runtime sandbox plus process/OS security enforcement; no silent backend downgrade",
     "aot": "signed/approved native artifacts required before any unsafe deserialization; caller-supplied SHA is only identity check",
     "shutdown": "fence queued/running work, drain references and resource loans, then reclaim; never resolve shutdown before physical retirement",
-    "root_authority": "Opaque authority belongs to one root VM; matching tenant ID and numeric generation from another root never grants access"
+    "root_authority": "Opaque authority belongs to one root VM; matching tenant ID and numeric generation from another root never grants access",
+    "tenant_id_validation": "ASCII [A-Za-z0-9_.-], 1..128 bytes, excluding reserved path components '.' and '..'; strings are identifiers, not filesystem paths"
   },
   "backendProfiles": {
     "java": {
@@ -75,6 +76,7 @@
     "same-tenant-scalar-turn-nonreentrant",
     "resource-loan-drain-before-stop",
     "foreign-vm-root-handle-rejected-even-if-generation-collides",
-    "typed-untrusted-boundary-fails-closed"
+    "typed-untrusted-boundary-fails-closed",
+    "reserved-dot-tenant-id-denial"
   ]
 }
