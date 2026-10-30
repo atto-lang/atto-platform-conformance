@@ -17,7 +17,7 @@ test("receiver-arity fixtures are exact, distinct, and cover both declaration or
   assert.equal(manifest.schema,"oreslang-receiver-arity-v1");
   assert.equal(manifest.status,"normative-target-not-execution-evidence");
   assert.deepEqual(manifest.requiredBackends,["java","llvm","wasm","net","forge"]);
-  assert.equal(manifest.cases.length,9);
+  assert.equal(manifest.cases.length,12);
   const ids=new Set(),paths=new Set();
   const counts={accept:0,reject:0};
   for(const entry of manifest.cases) {
@@ -44,8 +44,11 @@ test("receiver-arity fixtures are exact, distinct, and cover both declaration or
       assert.equal(entry.expectedInt,undefined);
     }
   }
-  assert.deepEqual(counts,{accept:4,reject:5});
-  for(const arity of [0,1]) for(const order of ["implicit-then-mut","mut-then-implicit"]) {
-    assert.ok(ids.has("class-"+(arity===0?"zero":"one")+"-"+order+"-reject"));
+  assert.deepEqual(counts,{accept:4,reject:8});
+  for(const scope of ["class","actor"]) {
+    for(const arity of [0,1]) for(const order of ["implicit-then-mut","mut-then-implicit"]) {
+      assert.ok(ids.has(scope+"-"+(arity===0?"zero":"one")+"-"+order+"-reject"),
+        "missing collision order "+scope+"/"+arity+"/"+order);
+    }
   }
 });
