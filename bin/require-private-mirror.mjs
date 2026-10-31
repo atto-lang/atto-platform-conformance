@@ -70,9 +70,15 @@ export async function requirePrivateMirror({
   // user request cannot replace independently verified per-snapshot approval.
   // Reject BEFORE any GitHub request; a future authorized transfer must use
   // a separately reviewed policy/receipt path, not an env bypass.
-  if (from.split("/")[0].toLowerCase() !==
-      to.split("/")[0].toLowerCase()) {
-    throw Error("cross-organization private mirror suspended pending independent Oreslang incident dispositions #22 and #77");
+  const sourceOwner = from.split("/")[0].toLowerCase();
+  const targetOwner = to.split("/")[0].toLowerCase();
+  if (sourceOwner !== targetOwner ||
+      (sourceOwner === "ores-truffle-oreslang" &&
+       from.toLowerCase() !== to.toLowerCase())) {
+    // Even a different private repo INSIDE the source org would create a
+    // new source-bearing carrier outside the source repo's protected policy.
+    // Original-repo exact-head Actions need no Git-object mirror at all.
+    throw Error("private source mirror suspended pending independent Oreslang incident dispositions #22 and #77");
   }
   if (!Array.isArray(approvedDestinations) ||
       approvedDestinations.length === 0 || approvedDestinations.length > 32 ||
