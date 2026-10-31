@@ -49,7 +49,10 @@ export function evaluateEvidence(input) {
     if (!Array.isArray(jobs.jobs) || !Number.isSafeInteger(jobs.total_count) ||
         jobs.total_count !== jobs.jobs.length) return fail('incomplete job pagination');
     const selected = jobs.jobs.filter(j => j.name === expected.job_name);
-    if (selected.length === 1 && (!isId(selected[0].runner_id) ||
+    if (selected.length === 1 && isId(selected[0].id) &&
+        selected[0].run_id === run.id && selected[0].run_attempt === run.run_attempt &&
+        selected[0].head_sha === run.head_sha &&
+        (!isId(selected[0].runner_id) ||
         !Array.isArray(selected[0].steps) || !selected[0].steps.length)) {
       return { classification: 'RUNNER_ADMISSION_FAILURE', reason: 'no assigned runner or executed steps',
         run_id: run.id, attempt: run.run_attempt, job_id: selected[0].id ?? null };
@@ -61,7 +64,8 @@ export function evaluateEvidence(input) {
   const selected = jobs.jobs.filter(j => j.name === expected.job_name);
   if (selected.length !== 1) return fail('selected job missing or ambiguous');
   const job = selected[0];
-  if (!isId(job.id) || job.run_id !== run.id || job.run_attempt !== run.run_attempt) {
+  if (!isId(job.id) || job.run_id !== run.id || job.run_attempt !== run.run_attempt ||
+      job.head_sha !== run.head_sha) {
     return fail('job not bound to exact run attempt');
   }
   if (!isId(job.runner_id) || !Array.isArray(job.steps) || !job.steps.length) {
