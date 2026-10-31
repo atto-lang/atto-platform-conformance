@@ -95,6 +95,17 @@ test("publisher cannot create a source-bearing alternate private repo inside Ore
  assert.equal(h.events.length,0);
 });
 
+test("publisher refuses Oreslang source self-mirror before fetching or creating a branch",async()=>{
+ const h=fixture();
+ await assert.rejects(publishPrivateMirror({...opts,
+   source:"ores-truffle-oreslang/oreslang-source.java",
+   destination:"ores-truffle-oreslang/oreslang-source.java",
+   approvedDestinations:["ores-truffle-oreslang/oreslang-source.java"],
+   fetchImpl:h.request
+ }), /incident dispositions #22 and #77/);
+ assert.equal(h.events.length,0);
+});
+
 test("real destination Git-object publisher guards every write and only creates a new CI ref",async()=>{
  const {h,promise}=run();
  const receipt=await promise;
