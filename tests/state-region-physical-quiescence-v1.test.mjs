@@ -77,9 +77,9 @@ class PhysicalQuiescenceOracle {
   }
 }
 
-test("eight canonical physical quiescence vectors and failure cases", () => {
+test("ten canonical physical quiescence vectors including both actor-IO drain orders", () => {
   assert.equal(contract.contractVersion, "1.0");
-  assert.equal(contract.physicalLifetimeVectors.length, 8);
+  assert.equal(contract.physicalLifetimeVectors.length, 10);
   for (const vector of contract.physicalLifetimeVectors) {
     const model = new PhysicalQuiescenceOracle(vector.capacity ?? 64);
     for (const action of vector.actions) {
