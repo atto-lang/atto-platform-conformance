@@ -110,6 +110,20 @@ test('runner admission classification requires failed zero-runner job with expli
     assert.equal(grade(x), 'UNVERIFIED');
   }
 });
+test('cancelled, timed-out, skipped and neutral workflow outcomes cannot masquerade as admission failure', () => {
+  const baseline = fixture();
+  baseline.jobs.jobs[0].conclusion = 'failure';
+  baseline.jobs.jobs[0].runner_id = 0;
+  baseline.jobs.jobs[0].steps = [];
+  for (const conclusion of [undefined, null, 'cancelled', 'timed_out',
+    'neutral', 'skipped', 'action_required', 'stale']) {
+    const x = structuredClone(baseline);
+    x.run.conclusion = conclusion;
+    assert.equal(grade(x), 'UNVERIFIED', `unexpected classification: ${conclusion}`);
+  }
+  baseline.run.conclusion = 'failure';
+  assert.equal(grade(baseline), 'RUNNER_ADMISSION_FAILURE');
+});
 test('a foreign failed job cannot impersonate an admission failure', () => {
   const x = fixture(); x.run.conclusion = 'failure'; x.jobs.jobs[0].conclusion = 'failure';
   x.jobs.jobs[0].runner_id = 0; x.jobs.jobs[0].steps = []; x.jobs.jobs[0].run_id = 444;
