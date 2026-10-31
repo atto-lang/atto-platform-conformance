@@ -21,8 +21,8 @@
     },
     "forge": {
       "status": "host-foundation-only",
-      "sourceHead": "c6d6f26000ba384a90fdbdf4353c6d0154620fba",
-      "sourceTree": "f229ce991bd86d199c1b434594b901d879804117",
+      "sourceHead": "ad04751751a15d39556c6c20f432ff5d9ce1c883",
+      "sourceTree": "a6e0f3d8b696e7d1f2b23124a871f4772ca3479b",
       "pullRequest": "ores-truffle-oreslang/oreslang-source.forge#146",
       "executedCaseIds": [],
       "hostFoundationCaseIds": [
@@ -43,7 +43,18 @@
         "singleton-domain-isolation",
         "singleton-cross-task-initialization-cycle"
       ],
-      "limitation": "Host/runtime tests now cover a bounded application-domain singleton registry, same resolved declaration ID across actors/import aliases, foreign/stale caller rejection, direct and cross-thread initializer-cycle rejection, runtime-minted table caller identity, bounded actor-owned resource registration, automatic table retirement on actor close/restart/destruction, and an explicit LeakSanitizer capability profile. Numeric domain IDs are still trusted host input in the Forge bootstrap and are not yet opaque domain-incarnation capabilities. Source `define singleton` remains intentionally unsupported, and current hosted jobs execute zero steps, so no guest or latest-head runner execution is claimed."
+      "limitation": "Current Forge exact head adds a source-local stage-0 compiler/runtime bridge for the empty `define singleton Name as end` shell, compiler-owned bootstrap declaration identity, a prepublication receiver-reference diagnostic, real scalar-source initializer execution in the stage-0 harness, and concurrent registry publication logic. None of those new cases has hosted exact-head execution: Actions run 41158620340 created release/sanitized/sanitized-leaks jobs and all three have zero executed steps. The bootstrap declaration ID uses deterministic FNV-1a components and is not final collision-proof artifact/wire identity. Numeric domain IDs remain trusted host input. Final singleton body/member syntax, deep immutability/effects, cancellation, worker/isolate execution, shared-table guest API and hard-RT guarantees remain pending.",
+      "sourceLocalUnexecutedCaseIds": [
+        "singleton-concurrent-first-access-once",
+        "singleton-prepublication-self-escape"
+      ],
+      "latestWorkflowRun": {
+        "runId": 41158620340,
+        "runAttempt": 1,
+        "executedSteps": 0,
+        "runnerAssigned": false,
+        "classification": "runner-admission-non-evidence"
+      }
     }
   }
 }
