@@ -4,7 +4,7 @@ import { readFile, lstat } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SOURCE_CASES, UNIMPLEMENTED_GATES, validateCaseInventory,
-  gitBlobHash, validateInvocation, compilerArtifactPaths, classifyCompilerResult, promoteCaseOutcome,
+  gitBlobHash, verifyFixtureBlob, validateInvocation, compilerArtifactPaths, classifyCompilerResult, promoteCaseOutcome,
   runSourceAdmission } from "../src/actor-ownership-source-gate-v1.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -124,5 +124,15 @@ test("compiler receipts explicitly refuse provenance and certification claims", 
     assert.equal(result.certificationEligible, false);
     assert.equal(result.provenanceVerified, false);
     assert.equal(result.guestExecuted, false);
+  }
+});
+
+test("mutated bytes of each of the nine fixtures reject source identity before compilation", async () => {
+  for (const c of SOURCE_CASES) {
+    const source = await readFile(join(root, "fixtures", "actor-ownership-v1", c.file));
+    assert.equal(verifyFixtureBlob(c, source), gitBlobHash(source));
+    const mutated = Buffer.concat([source, Buffer.from("\n// unreviewed injection\n")]);
+    assert.throws(() => verifyFixtureBlob(c, mutated), /fixture source identity mismatch/, c.id);
+    assert.throws(() => verifyFixtureBlob(c, source.toString("utf8")), /binary bytes/, c.id);
   }
 });
