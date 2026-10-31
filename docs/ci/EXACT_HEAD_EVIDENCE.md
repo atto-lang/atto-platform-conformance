@@ -34,6 +34,12 @@ a failed job with recorded steps must **never** be classified as runner
 admission merely because its `runner_id` is absent or zero. The verifier
 does not diagnose the actual failure from step metadata alone.
 
+Malformed JSON is also hostile evidence: `jobs.jobs` must contain only
+non-null job objects, and a selected job's `steps` must contain only non-null
+step objects. The evaluator returns `UNVERIFIED` rather than throwing on
+null, array, boolean or string entries. This is fail-closed validation, not
+proof that an otherwise structurally valid bundle is authentic.
+
 Inputs are forensic records, **not inherently authenticated assertions**. A
 bundle author could fabricate values. Independently cross-check original GitHub
 URLs, evidence artifact digests, job logs, compiler identity, actual emitted
