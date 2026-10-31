@@ -5,6 +5,7 @@ on:
       - contracts/singleton-shared-state-v1.json
       - evidence/singleton-shared-state-v1.json
       - verification/verify-singleton-shared-state-v1.mjs
+      - verification/evidence-provenance.mjs
       - .github/workflows/singleton-shared-state-v1.yml
   workflow_dispatch:
 permissions:
