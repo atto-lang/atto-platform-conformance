@@ -37,6 +37,23 @@ test("experimental i64 guest status cannot be represented as verified backend pa
     assert.equal(spec.current_branch_typed_mir[key], "NOT_EXECUTED");
   assert.equal(spec.current_branch_typed_mir.guest_source_to_verified_mir,
     "CODE_STAGED_NOT_EXECUTED");
+  assert.equal(spec.current_branch_mir_llvm_codegen.emitter_blob_sha,
+    "27c6ec16303b33749be973e9bdacbc1c0d874e5d");
+  assert.equal(spec.current_branch_mir_llvm_codegen.source_adapter_blob_sha,
+    "e6d5138595e764392f48c7e064fadeb84739370a");
+  assert.equal(spec.current_branch_mir_llvm_codegen.guest_test_blob_sha,
+    "de192aa8babf1dfbd802769e6a3a373ea640ee20");
+  assert.equal(spec.current_branch_mir_llvm_codegen.native_test_driver_blob_sha,
+    "102460fbd0675f7cc7d2737dd9c4f6045bd57aee");
+  assert.equal(spec.current_branch_mir_llvm_codegen.native_test_script_blob_sha,
+    "3de33a763886b3d651ed7fb0c1110d60a752aa42");
+  for (const key of ["exact_head_standalone_ctest", "full_compiler_ctest",
+                     "current_emitter_native_execution", "current_emitter_asan_ubsan"])
+    assert.equal(spec.current_branch_mir_llvm_codegen[key], "NOT_EXECUTED");
+  assert.equal(spec.current_branch_mir_llvm_codegen.source_to_mir_guest,
+    "CODE_STAGED_NOT_EXECUTED");
+  assert.equal(spec.current_branch_mir_llvm_codegen.production_inverted_lowering,
+    "NOT_IMPLEMENTED");
   assert.equal(spec.local_mir_llvm_i64_codegen.source_emitter_blob_sha,
     "1a4cc742a6d3bdc31c7e48eb8712d74ee8fa8196");
   assert.equal(spec.local_mir_llvm_i64_codegen.test_driver_blob_sha,
@@ -51,7 +68,7 @@ test("experimental i64 guest status cannot be represented as verified backend pa
   assert.equal(spec.local_mir_llvm_i64_codegen.production_oreslang_llvmc_codegen,
     "NOT_IMPLEMENTED");
   assert.equal(spec.current_branch_adapter.blob_sha,
-    "c5ee913781323711187d5506721dcb47c075d86a");
+    "e6d5138595e764392f48c7e064fadeb84739370a");
   assert.equal(spec.current_branch_adapter.typed_hir_blob_sha,
     "e04b19c37460a5b859d7ad2497583d296cb395b2");
   assert.equal(spec.current_branch_adapter.production_parser_blob_sha,
