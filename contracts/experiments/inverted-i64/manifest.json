@@ -81,5 +81,14 @@
     "full_oreslang_llvmc_executed": false,
     "scope": "local minimal driver invoking exact header, not main.cpp or CMake workflow",
     "clang_asan_ubsan_native_ir_guests_passed": 2
+  },
+  "current_branch_adapter": {
+    "blob_sha": "d8c16d7057de9d3292a72423147e27db492d3c23",
+    "typed_hir_blob_sha": "e04b19c37460a5b859d7ad2497583d296cb395b2",
+    "production_parser_blob_sha": "c0252d54142522de2cc259afa0e08ec9fce01990",
+    "code_scope": "experimental i64 .ores compiler now routes through shared bounded typed HIR; normal production compiler still fail closed",
+    "exact_current_head_compilation": "NOT_EXECUTED",
+    "exact_current_head_native_guest": "NOT_EXECUTED",
+    "full_compiler_ctest": "NOT_EXECUTED"
   }
 }
