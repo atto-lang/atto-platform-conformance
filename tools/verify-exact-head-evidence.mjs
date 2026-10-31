@@ -25,7 +25,8 @@ export function evaluateEvidence(input) {
     return fail('commit SHA/tree mismatch');
   }
   if (run.id !== expected.run_id || run.run_attempt !== expected.attempt ||
-      run.repository?.full_name !== expected.repository || run.status !== 'completed') {
+      run.repository?.full_name !== expected.repository || run.status !== 'completed' ||
+      !isSha(run.head_sha)) {
     return fail('workflow run identity/status mismatch');
   }
   if (run.event !== 'pull_request' && run.event !== 'workflow_dispatch') {
