@@ -69,6 +69,20 @@ test("Oreslang same-org private carrier is also suspended during the incident ho
   }
 });
 
+test("Oreslang source self-mirror is denied before metadata or object requests", async () => {
+  for (const repository of [
+    "ores-truffle-oreslang/oreslang-source.java",
+    "ORES-TRUFFLE-ORESLANG/oreslang-source.llvm"
+  ]) {
+    const calls = [];
+    await assert.rejects(check({
+      source: repository, destination: repository,
+      approvedDestinations: [repository]
+    }, {}, calls), /incident dispositions #22 and #77/);
+    assert.equal(calls.length, 0, "self-repository mirroring must never acquire source bytes");
+  }
+});
+
 test("accepts only explicitly approved and GitHub-verified writable private destination", async () => {
   const calls = [];
   assert.deepEqual(await check({}, {}, calls), {
