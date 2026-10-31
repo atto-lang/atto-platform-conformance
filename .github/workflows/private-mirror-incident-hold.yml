@@ -2,12 +2,13 @@ name: Private mirror incident-hold source-local tests
 on:
   pull_request:
     paths:
-      - 'bin/require-private-mirror.mjs'
-      - 'bin/private-mirror-publish.mjs'
+      # Any new CLI/workflow mirror entrypoint must re-run this negative gate.
+      - 'bin/**'
+      - 'tools/**'
+      - '.github/workflows/**'
       - 'tests/private-mirror-visibility.test.mjs'
       - 'tests/private-mirror-publish.test.mjs'
       - 'tests/private-mirror-entrypoints.test.mjs'
-      - '.github/workflows/private-mirror-incident-hold.yml'
   workflow_dispatch:
 permissions:
   contents: read
