@@ -177,6 +177,8 @@
       "conforms AST",
       "type constraint descriptors AST"
     ],
-    "limits": "literal-only local two i64 fields, bounded capacity <=256, main only; no escaped row handles"
+    "limits": "literal-only local two i64 fields, bounded capacity <=256, main only; no escaped row handles",
+    "production_parser_ast_negative_test_blob_sha": "981972662a4664df81d03fc4a8318128dc87fddc",
+    "hardening": "production AST verifier and real parser-resolver reject sum types, conforms declarations and type-constraint descriptors that lack MIR lowering; tests committed, not executed"
   }
 }
