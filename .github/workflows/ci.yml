@@ -34,7 +34,11 @@ jobs:
         run: |
           python3 -m venv "$RUNNER_TEMP/ores-evidence-schema-venv"
           "$RUNNER_TEMP/ores-evidence-schema-venv/bin/python" -m pip install --disable-pip-version-check --no-input "jsonschema==4.26.0"
+          set -euo pipefail
           "$RUNNER_TEMP/ores-evidence-schema-venv/bin/python" -m unittest discover -s tests -p 'test_*_schema.py' -v
+          receipt="$("$RUNNER_TEMP/ores-evidence-schema-venv/bin/python" bin/check-zorde-handoff.py evidence/zorde-contract-handoff.pending.json)"
+          test "$receipt" = ZORDE_HANDOFF_SHAPE_ONLY_UNAUTHENTICATED
+          echo "$receipt"
       - name: Confirm mandatory real compiler gate cannot pass unconfigured
         run: |
           for backend in java llvm net wasm forge; do
