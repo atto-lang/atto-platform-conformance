@@ -4,7 +4,7 @@ import { readFile, lstat } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SOURCE_CASES, UNIMPLEMENTED_GATES, validateCaseInventory,
-  gitBlobHash, validateInvocation, classifyCompilerResult, promoteCaseOutcome,
+  gitBlobHash, validateInvocation, compilerArtifactPaths, classifyCompilerResult, promoteCaseOutcome,
   runSourceAdmission } from "../src/actor-ownership-source-gate-v1.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -91,4 +91,21 @@ test("unratified ownership-negative cases are never promoted from their matching
   const established = SOURCE_CASES.find(c => c.id === "OW03_NESTED_RETURN");
   assert.equal(promoteCaseOutcome(established, "SOURCE_REJECTED_AS_EXPECTED"), "SOURCE_REJECTED_AS_EXPECTED");
   assert.throws(() => validateCaseInventory([{ ...established, candidate: true, expect: "accept" }]), /invalid/);
+});
+
+
+test("Java -jar compiler payload and Node entrypoint are pinned; unpinned classpaths fail closed", () => {
+  assert.deepEqual(compilerArtifactPaths(["/usr/bin/java", "-jar", "/opt/ores/compiler.jar", "{file}"]),
+    ["/opt/ores/compiler.jar"]);
+  assert.deepEqual(compilerArtifactPaths(["/usr/bin/node", "/opt/ores/oresc.mjs", "{file}"]),
+    ["/opt/ores/oresc.mjs"]);
+  assert.deepEqual(compilerArtifactPaths(["/opt/ores/oresc", "{file}"], ["/opt/ores/runtime.dat"]),
+    ["/opt/ores/runtime.dat"]);
+  for (const bad of [
+    ["/usr/bin/java", "-jar", "../private.jar", "{file}"],
+    ["/usr/bin/java", "-cp", "a:b", "dev.ores.Main", "{file}"],
+    ["/usr/bin/java", "--module-path", "mods", "dev.ores.Main", "{file}"],
+    ["/usr/bin/node", "relative-script.mjs", "{file}"]
+  ]) assert.throws(() => compilerArtifactPaths(bad), /artifact|classpath|compiler/);
+  assert.throws(() => compilerArtifactPaths(["/opt/ores/oresc", "{file}"], ["/tmp/x", "/tmp/x"]), /unique/);
 });
