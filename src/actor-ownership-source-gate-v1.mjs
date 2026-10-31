@@ -76,6 +76,13 @@ export function compilerArtifactPaths(argv, explicit = []) {
   if (!Array.isArray(explicit) || explicit.length > 16)
     throw Error("invalid compiler artifact inventory");
   const paths = [...explicit];
+  // Restrict Java launchers to a directly pinned -jar entrypoint: JVM agents,
+  // boot classpaths and injected module patches are separate code artifacts.
+  // Without an independent launcher contract, do not admit JVM arguments.
+  if (/(?:^|\/)java$/.test(argv[0]) &&
+      (argv[1] !== "-jar" || !isAbsolute(argv[2] || ""))) {
+    throw Error("Java compiler launcher requires a pinned -jar without JVM preflags");
+  }
   // No untracked Node CLI flags or alternate module entrypoints: force a
   // directly pinned, absolute compiler script, or use a dedicated wrapper.
   if (/(?:^|\/)node(?:js)?$/.test(argv[0]) &&
@@ -106,6 +113,14 @@ async function digestRegularFile(path, maxSize) {
   if (!stat.isFile() || stat.size > maxSize || stat.nlink !== 1) throw Error("unsafe/nonregular/oversized file");
   return { path: resolved, sha256: sha256(await readFile(resolved)) };
 }
+/** A compiler must not inherit NODE_OPTIONS, JAVA_TOOL_OPTIONS, LD_PRELOAD, CLASSPATH,
+ * or arbitrary shell process state from the invoking runner. Do not silently
+ * create a privileged/ambient compiler context. */
+export function isolatedCompilerEnvironment(scratch) {
+  if (!isAbsolute(scratch)) throw Error("compiler scratch directory must be absolute");
+  return Object.freeze({ LANG: "C", LC_ALL: "C", TZ: "UTC", HOME: scratch,
+    TMPDIR: scratch, TMP: scratch, TEMP: scratch });
+}
 export async function runSourceAdmission({ backend, argv, sourceSha, artifacts = [], spawn = spawnSync }) {
   validateCaseInventory();
   if (!["java", "llvm"].includes(backend)) throw Error("unsupported backend selector");
@@ -133,7 +148,10 @@ export async function runSourceAdmission({ backend, argv, sourceSha, artifacts =
       await writeFile(snapshot, bytes, { flag: "wx", mode: 0o400 });
       if (!bytes.equals(await readFile(snapshot))) throw Error("fixture snapshot changed before compile");
       const command = argv.map(s => s === "{file}" ? snapshot : s);
-      const response = spawn(executable.path, command.slice(1), { encoding: "utf8", timeout: 15000, maxBuffer: 128 * 1024, shell: false });
+      const response = spawn(executable.path, command.slice(1), {
+        encoding: "utf8", timeout: 15000, maxBuffer: 128 * 1024,
+        shell: false, cwd: scratch, env: isolatedCompilerEnvironment(scratch)
+      });
       const after = await digestRegularFile(argv[0], 512 * 1024 * 1024);
       changed = executable.sha256 !== after.sha256 || executable.path !== after.path;
       const artifactAfter = await Promise.all(artifactPaths.map(p => digestRegularFile(p, 512 * 1024 * 1024)));
