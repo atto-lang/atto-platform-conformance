@@ -1,6 +1,6 @@
 # P0: Cross-organization private Oreslang source-copy hold
 
-**Status: enforced, non-authorizing.** Incidents #22 and #77 in this
+**Status: proposed on DRAFT PR #263; NOT MERGED, non-authorizing.** Incidents #22 and #77 in this
 repository are open. Their independently reviewed disposition and per-snapshot
 transfer approval have not been established. A private GitHub carrier, an
 existing source blob in that carrier, a matching Git SHA, an allowlisted
@@ -9,10 +9,13 @@ to copy private Oreslang source across organization boundaries.
 
 ## Enforcement
 
-The shared `bin/require-private-mirror.mjs` preflight now rejects any
-`ores-truffle-oreslang/*` private source whose destination owner is not
-`ores-truffle-oreslang`, **before an HTTP request occurs**. GitHub owner
-matching is case-insensitive. `bin/private-mirror-publish.mjs` already calls
+The proposed `bin/require-private-mirror.mjs` preflight denies **every
+cross-organization** private Git-tree copy, including a relay via a
+previously populated private carrier. It also denies
+`ores-truffle-oreslang/*` copies into a **different repository within
+the same organization**, as no private-source transfer has been approved.
+GitHub owner/repository comparisons are case-insensitive. The refusal happens
+**before an HTTP request occurs**. `bin/private-mirror-publish.mjs` already calls
 this preflight before fetching source commit/tree/blob data or creating
 destination blobs, trees, commits, or branch refs; repeated per-write
 authorization must remain in place. An environment allowlist alone cannot
@@ -31,7 +34,8 @@ historically copied Git blobs and Actions caches are gone.
 
 `tests/private-mirror-visibility.test.mjs` and
 `tests/private-mirror-publish.test.mjs` contain cross-org negative cases,
-including mixed-case source owner spelling. They prove **zero source fetch
+including mixed-case source owner spelling, cross-organization relay sources,
+and same-organization alternate Oreslang repositories. They prove **zero source fetch
 and zero destination writes** even when a private destination appears on an
 environment allowlist. Existing positive tests now operate only on synthetic,
 same-organization private repository identities, without real source bytes.
@@ -43,9 +47,23 @@ availability—not source transfer approval or conformance.
 
 ## Current test boundary (2026-10-31)
 
-The current policy/publisher code and both test modules were evaluated with
-isolated mocked GitHub responses under V8 and their complete test bodies
-passed 28/28 cases (281 assertions) before the mixed-case extension. This
-was not a hosted Node `--test` run. Source-org hosted jobs have recorded
-zero steps/runner absent; do not call the new workflow passing until it
-executes. No cross-organization private source was transferred.
+The current policy/publisher code and both checked-in test modules
+passed **32/32 test cases and 297 assertions** in an isolated V8 execution
+harness with mocked GitHub responses. The separate three-case
+`private-mirror-entrypoints.test.mjs` scanner also passed under a synthetic
+filesystem harness, and its detection function was individually applied
+to all **40** executable `bin/`, `tools/` and workflow files in this
+repository: only the guarded publisher matched its direct-writer patterns.
+The policy scanner is defense-in-depth and does not inspect every potential
+external program, dynamic command, or other GitHub organization.
+These results are **not** hosted Node `--test` execution.
+Source-org hosted jobs have failed before runner assignment; do not call the
+new workflow passing until it executes. No private source was transferred.
+
+## Runner-admission evidence
+
+The prior source-free retry in private `honeypot-r-us-test/hnpt-infra`,
+Actions run `41147809804` attempt 2, failed with no assigned runner and
+zero executed steps. Its earlier successful unrelated source-free run does
+not establish present runner capacity. The actual GitHub Actions policy,
+spending, or admission error still requires an administrator to investigate.
