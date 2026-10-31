@@ -380,3 +380,25 @@ has been demonstrated** while source-org workflow jobs fail before
 runner assignment. Compiler source-Task and native NIO callback wiring
 remain required before Oreslang language parity or hard-real-time
 guarantees may be claimed.
+
+## Addendum: full actor-incarnation binding for request-owned I/O (2026-10-30)
+
+An asynchronous operation's ordinary ticket (actor ID, operation generation,
+operation ID) is NOT sufficient to authorize borrowing an HTTP request's
+physical lease if it does not also establish the complete owning actor
+incarnation. The host creates a trusted request-specific operation binding
+with scheduler domain, actor slot, and actor generation, immutable for that
+I/O gate's lifetime. Request physical lease admission checks all three
+against the request context's trusted owner BEFORE reserving the operation
+or retaining any request storage.
+
+An I/O gate constructed only with the legacy operation ticket is still
+usable for unrelated host I/O, but MUST NOT grant request-context lease
+authority. Reject cross-actor requests even when domain and generation
+match but actor slots differ, and reject restarted incarnations in the
+same slot. A wrong full owner must leave the I/O binding state UNBOUND
+and must not affect a request owned by another actor.
+
+LLVM draft PR #1210 now stages this host-side full-owner binding and native
+negative tests. Exact-head executable GCC/Clang/sanitizer verification and
+actual NIO registration/callback integration remain separate mandatory gates.
