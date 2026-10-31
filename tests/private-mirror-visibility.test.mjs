@@ -56,6 +56,19 @@ test("cross-org relay and mixed-case owner aliases are denied before any metadat
   }
 });
 
+test("Oreslang same-org private carrier is also suspended during the incident hold", async () => {
+  for (const [source, destination] of [
+    ["ores-truffle-oreslang/oreslang-source.java", "ores-truffle-oreslang/alternate-ci-private"],
+    ["ORES-TRUFFLE-ORESLANG/oreslang-source.llvm", "ores-truffle-oreslang/private-runner-carrier"]
+  ]) {
+    const calls = [];
+    await assert.rejects(check({
+      source, destination, approvedDestinations:[destination]
+    }, {}, calls), /incident dispositions #22 and #77/);
+    assert.equal(calls.length, 0, "no private-source metadata should be fetched");
+  }
+});
+
 test("accepts only explicitly approved and GitHub-verified writable private destination", async () => {
   const calls = [];
   assert.deepEqual(await check({}, {}, calls), {
