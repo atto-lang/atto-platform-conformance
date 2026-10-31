@@ -202,3 +202,29 @@ Separate exact-source host results (also not compiler guest proof):
 The hosted source-org workflows on the corresponding PR heads still fail
 with zero runner steps. The compiler guest, full runtime/FFI, real actor
 reclamation and cross-backend parity evidence remains **not executed**.
+
+
+## Dual carrier-and-native-I/O STOP vectors — 2026-10-31
+
+`physical-quiescence-v1.json` now has **10** vectors, including two
+additional logical lifetime contracts:
+
+- `native-io-retired-before-carrier-physical-join`: native worker completes
+  first; the actor carrier must still retain memory.
+- `carrier-retired-before-native-io-physical-join`: carrier exits first;
+  the native callback must still retain memory.
+
+Both require STOP to reject reclamation until the **last** physical lifetime
+claim retires. An on-demand independent in-process V8 oracle executed the
+exact repository JSON blob
+`0f291e1bfe41b5c59c7e915852591cdf4f7e20ac`
+and checked all 10 vectors and their expected end state. The checked-in
+`tests/state-region-physical-quiescence-v1.test.mjs`
+was updated to require ten cases. Neither this independent model nor the
+metadata checks constitute an executed Oreslang compiler, a real native
+callback, or five-backend parity.
+
+The corresponding real private-actor integration JUnit is in Java #2305;
+its physical actor-lifetime integration execution remains unverified until
+stepful CI or an authorized local full-source build. The LLVM runtime pin
+test remains similarly source-org admission-blocked.
