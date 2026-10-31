@@ -191,6 +191,37 @@ test("execution failure quarantines tenant and restart restores fresh state",asy
   assert.equal(await vm.invoke(newH,()=>1),1);
 });
 
+test("failed tenant cannot poison healthy neighbor and reincarnation resets only failed state",async()=>{
+  const root=new TenantReference({maxTenants:2});
+  const healthy=root.create("healthy");
+  const failed=root.create("failing");
+  root.start(healthy);root.start(failed);
+  assert.equal(await root.invoke(healthy,()=>1),1);
+  assert.equal(await root.invoke(failed,()=>4),4);
+
+  await assert.rejects(root.invoke(failed,async()=>{
+    throw Error("GUEST_TRAP");
+  }),/GUEST_TRAP/);
+  assert.equal(root.snapshot(failed).phase,"quiescing");
+  await assert.rejects(root.invoke(failed,()=>1),/ADMISSION_CLOSED/);
+  assert.equal(root.snapshot(healthy).phase,"running");
+  assert.equal(await root.invoke(healthy,()=>1),2,
+    "failure of one incarnation may not interrupt another tenant's progress");
+
+  root.stop(failed);root.destroy(failed);
+  fails(()=>root.snapshot(failed),"STALE_TENANT_HANDLE");
+  const fresh=root.create("failing");
+  root.start(fresh);
+  assert.notEqual(fresh.epoch,failed.epoch);
+  assert.equal(await root.invoke(fresh,()=>1),1,
+    "reincarnated failed tenant must start with clean state");
+  assert.equal(await root.invoke(healthy,()=>1),3,
+    "healthy tenant must retain its state after neighbor's reincarnation");
+  await assert.rejects(root.invoke(failed,()=>99),/STALE_TENANT_HANDLE/);
+  root.shutdown(fresh);root.stop(fresh);root.destroy(fresh);
+  root.shutdown(healthy);root.stop(healthy);root.destroy(healthy);
+});
+
 test("resource leases are host-owned and foreign or replayed releases are refused",()=>{
   const vm=new TenantReference();
   const a=vm.create("a"),b=vm.create("b");
