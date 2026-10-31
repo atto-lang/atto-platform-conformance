@@ -84,6 +84,17 @@ test("publisher refuses a prepopulated private relay to another org with no GitH
  assert.equal(h.events.length,0);
 });
 
+test("publisher cannot create a source-bearing alternate private repo inside Oreslang org",async()=>{
+ const h=fixture();
+ await assert.rejects(publishPrivateMirror({...opts,
+   source:"ores-truffle-oreslang/oreslang-source.llvm",
+   destination:"ores-truffle-oreslang/private-lifetime-carrier",
+   approvedDestinations:["ores-truffle-oreslang/private-lifetime-carrier"],
+   fetchImpl:h.request
+ }), /incident dispositions #22 and #77/);
+ assert.equal(h.events.length,0);
+});
+
 test("real destination Git-object publisher guards every write and only creates a new CI ref",async()=>{
  const {h,promise}=run();
  const receipt=await promise;
