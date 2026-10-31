@@ -42,6 +42,20 @@ test("unresolved Oreslang cross-org incident hold rejects BEFORE credential, met
   }
 });
 
+test("cross-org relay and mixed-case owner aliases are denied before any metadata or source read", async () => {
+  for (const {source, destination} of [
+    {source: "akrion-sim/existing-source-relay", destination: "voxletra/another-private-carrier"},
+    {source: "synthetic-private/source", destination: "OTHER-PRIVATE/carrier"},
+    {source: "Synthetic-Private/source", destination: "other-private/carrier"}
+  ]) {
+    const calls = [];
+    await assert.rejects(check({
+      source, destination, approvedDestinations: [destination]
+    }, {}, calls), /incident dispositions #22 and #77/);
+    assert.equal(calls.length, 0, "relay or owner alias must never access private API");
+  }
+});
+
 test("accepts only explicitly approved and GitHub-verified writable private destination", async () => {
   const calls = [];
   assert.deepEqual(await check({}, {}, calls), {
