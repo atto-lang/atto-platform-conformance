@@ -52,6 +52,21 @@ test("experimental i64 guest status cannot be represented as verified backend pa
     assert.equal(spec.current_branch_mir_llvm_codegen[key], "NOT_EXECUTED");
   assert.equal(spec.current_branch_mir_llvm_codegen.source_to_mir_guest,
     "CODE_STAGED_NOT_EXECUTED");
+  assert.equal(spec.current_production_schema_mir_preflight.header_blob_sha,
+    "0dd7b78bec0863adf0ef35538ca16d1d8b056cad");
+  assert.equal(spec.current_production_schema_mir_preflight.production_parser_blob_sha,
+    "0ab878ccf4286c04babf56192148b156de1b472d");
+  assert.equal(spec.current_production_schema_mir_preflight.standalone_cpp17_test_blob_sha,
+    "65f40eb8b37f614eb65dcbd61b7f9d8a0bc76a09");
+  assert.equal(spec.current_production_schema_mir_preflight.production_parser_ast_test_blob_sha,
+    "d66ed5915bec93dc41ceca46473d422a5b896588");
+  for (const key of ["exact_head_compiler_cpp17_execution",
+                     "exact_head_parser_ast_execution",
+                     "exact_head_gcc_clang_sanitizers"])
+    assert.equal(spec.current_production_schema_mir_preflight[key], "NOT_EXECUTED");
+  for (const key of ["source_operations_to_production_mir",
+                     "runtime_generation_handles", "production_guest_codegen"])
+    assert.equal(spec.current_production_schema_mir_preflight[key], "NOT_IMPLEMENTED");
   assert.equal(spec.current_branch_mir_llvm_codegen.production_inverted_lowering,
     "NOT_IMPLEMENTED");
   assert.equal(spec.local_mir_llvm_i64_codegen.source_emitter_blob_sha,
