@@ -73,6 +73,17 @@ test("source publication refuses open cross-org incident hold before ANY private
  assert.equal(h.events.length,0);
 });
 
+test("publisher refuses a prepopulated private relay to another org with no GitHub request",async()=>{
+ const h=fixture();
+ await assert.rejects(publishPrivateMirror({...opts,
+   source:"akrion-sim/previous-oreslang-source-relay",
+   destination:"voxletra/another-private-carrier",
+   approvedDestinations:["voxletra/another-private-carrier"],
+   fetchImpl:h.request
+ }), /incident dispositions #22 and #77/);
+ assert.equal(h.events.length,0);
+});
+
 test("real destination Git-object publisher guards every write and only creates a new CI ref",async()=>{
  const {h,promise}=run();
  const receipt=await promise;
