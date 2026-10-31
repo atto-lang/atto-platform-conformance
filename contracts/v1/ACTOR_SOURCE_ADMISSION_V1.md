@@ -47,3 +47,12 @@ All source fixture labels are provisional and backend-specific. This runner inte
 3. Implement AO01/AO02/AO03/AO04 event instrumentation and mutation-negative trace refinement; require genuine compiled guest events.
 4. Execute complete semantic, race, source, isolation and cancellation suites on approved private runners with recorded nonzero steps.
 5. Merge independently only when exact-head checks are available, with additional security review for tenant/physical isolation claims.
+
+
+## 2026-10-31 fixture-integrity and certification hardening
+
+All **nine** fixture files are now pinned to literal Git blob IDs inside the source inventory, not only the three copied from upstream LLVM. The source runner refuses to execute a case if its actual bytes do not match the pinned object. The independent local test mutates each fixture byte stream and confirms a mismatch is rejected. Two provisional Java ownership negatives remain `CANDIDATE_UNRATIFIED` until actual compiler diagnostics and semantic review establish the intended rejection.
+
+The source runner now returns `certificationEligible: false` and `provenanceVerified: false` both when unconfigured and when source-admission checks appear to pass. These flags are **not configurable by a caller**. The `ok` field means only that all applicable source-admission cases produced expected observations against the supplied executable; it **does not** attest that the executable is a genuine compiler, was built from `--source-sha`, or compiled/ran guest code.
+
+Local exact-Git-blob reconstruction ran `node --test tests/actor-ownership-source-v1.test.mjs tests/actor-ownership-subprocess-v1.test.mjs`: **17/17 Node.js 22.16.0 tests passed**, including binary/JAR integrity checks, real synthetic subprocess isolation, and nine adversarial fixture-byte mutations. This is local source-free testing, **not a full repository `npm test` run**, source-org Actions, native compilation, or guest runtime proof. Use independently recorded full-suite and native receipts for promotion.
