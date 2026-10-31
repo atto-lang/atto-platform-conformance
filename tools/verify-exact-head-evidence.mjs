@@ -58,8 +58,10 @@ export function evaluateEvidence(input) {
     if (selected.length === 1 && isId(selected[0].id) &&
         selected[0].run_id === run.id && selected[0].run_attempt === run.run_attempt &&
         selected[0].head_sha === run.head_sha &&
+        selected[0].status === 'completed' && selected[0].conclusion === 'failure' &&
+        selected[0].runner_id === 0 &&
         Array.isArray(selected[0].steps) && selected[0].steps.length === 0) {
-      return { classification: 'RUNNER_ADMISSION_FAILURE', reason: 'no assigned runner or executed steps',
+      return { classification: 'RUNNER_ADMISSION_FAILURE', reason: 'failed job with runner_id=0 and explicitly zero steps',
         run_id: run.id, attempt: run.run_attempt, job_id: selected[0].id ?? null };
     }
     return fail('workflow not successful');
@@ -79,8 +81,9 @@ export function evaluateEvidence(input) {
       !job.steps.every(s => s !== null && typeof s === 'object' && !Array.isArray(s)))
     return fail('job step metadata missing or invalid');
   if (job.steps.length === 0) {
-    return { classification: 'RUNNER_ADMISSION_FAILURE', reason: 'no executed steps recorded',
-      run_id: run.id, attempt: run.run_attempt, job_id: job.id };
+    // An allegedly successful workflow with no executed steps has inconsistent
+    // metadata. It is not a proven runner-admission failure or a CI pass.
+    return fail('successful run contains a job with zero recorded steps');
   }
   // Incomplete runner metadata cannot override positive step evidence.
   if (!isId(job.runner_id)) return fail('runner identity missing for recorded steps');
