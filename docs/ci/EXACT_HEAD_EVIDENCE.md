@@ -65,3 +65,17 @@ and missing path. These changes do **not** authenticate bundle authors,
 reconcile fabricated metadata, validate logs, or authorize private-source
 transfer. The actual job/checkout receipts must still be independently
 retrieved from GitHub.
+
+## Strict zero-step classification (2026-10-31)
+
+Only a **failed completed workflow** containing exactly one selected **failed completed job** with
+`runner_id: 0`, explicit `steps: []`, and matching repository/run ID/attempt/job head
+is classified `RUNNER_ADMISSION_FAILURE`. The classification is a metadata
+finding, not an independently established root cause (billing, policy, capacity,
+or entitlement).
+
+A missing/null runner ID, a positive runner ID with zero recorded steps,
+missing/null steps, a successful workflow with zero steps, or contradictory job
+status/conclusion is **`UNVERIFIED`**, not proven runner admission or compiler
+success. The evaluator does not silently use positive execution status to fill
+missing job records. Independent API/job-log verification is still required.
