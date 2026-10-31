@@ -269,3 +269,44 @@ test("duplicate entries in materialized tree cannot disguise omitted source blob
  await assert.rejects(promise,/materialized snapshot contains duplicate paths/);
  assert.equal(h.events.some(e=>e.path===destination+"/git/refs"),false);
 });
+
+test("unprotected source policy, unresolved incidents and spoofed ledger deny before any tree or blob fetch",async()=>{
+ const wrongApproval=overrides=>({...approvedRecord(),...overrides});
+ const cases=[
+  {branch:{name:"main",protected:false}},
+  {protection:{required_pull_request_reviews:{required_approving_review_count:1,
+    dismiss_stale_reviews:true,require_code_owner_reviews:true},enforce_admins:{enabled:true}}},
+  {protection:{required_pull_request_reviews:{required_approving_review_count:2,
+    dismiss_stale_reviews:false,require_code_owner_reviews:true},enforce_admins:{enabled:true}}},
+  {protection:{required_pull_request_reviews:{required_approving_review_count:2,
+    dismiss_stale_reviews:true,require_code_owner_reviews:false},enforce_admins:{enabled:true}}},
+  {protection:{required_pull_request_reviews:{required_approving_review_count:2,
+    dismiss_stale_reviews:true,require_code_owner_reviews:true},enforce_admins:{enabled:false}}},
+  {incidents:{"/issues/22":{number:22,state:"open"}}},
+  {incidents:{"/issues/77":{number:77,state:"open"}}},
+  {ledger:{schema:"ores.private-ci.source-export-ledger/v1",approvals:[]}},
+  {ledger:{schema:"ores.private-ci.source-export-ledger/v1",
+    approvals:[wrongApproval({destinationId:123457})]}},
+  {ledger:{schema:"ores.private-ci.source-export-ledger/v1",
+    approvals:[wrongApproval({sourceCommit:C})]}},
+  {ledger:{schema:"ores.private-ci.source-export-ledger/v1",
+    approvals:[wrongApproval({sourceTree:C})]}},
+  {ledger:{schema:"ores.private-ci.source-export-ledger/v1",
+    approvals:[wrongApproval({approvedBy:["proposer","reviewer-two"]})]}},
+  {ledger:{schema:"ores.private-ci.source-export-ledger/v1",
+    approvals:[wrongApproval({expiresAtMs:Date.now()-1000})]}},
+  {ledger:{schema:"ores.private-ci.source-export-ledger/v1",
+    approvals:[wrongApproval({maxArtifactRetentionDays:30})]}},
+  {ledger:{schema:"ores.private-ci.source-export-ledger/v1",
+    approvals:[wrongApproval({incident77Approval:{incident:77,
+       status:"UNREVIEWED",reviewer:"reviewer-two"}})]}},
+ ];
+ for(const [i,security] of cases.entries()){
+  const {h,promise}=run({security});
+  await assert.rejects(promise,/SOURCE_EXPORT_NOT_INDEPENDENTLY_AUTHORIZED/,String(i));
+  assert.equal(h.events.some(e=>e.path===source+"/git/trees/"+D+"?recursive=1"),false,
+    "source tree must not be read on failed approval");
+  assert.equal(h.events.some(e=>e.path.startsWith(source+"/git/blobs/")),false);
+  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+ }
+});
