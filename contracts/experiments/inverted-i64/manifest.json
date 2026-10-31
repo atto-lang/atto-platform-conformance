@@ -103,5 +103,32 @@
     "guest_source_to_verified_mir": "CODE_STAGED_NOT_EXECUTED",
     "full_oreslang_llvmc_execution": "NOT_EXECUTED",
     "runner_evidence": "GCC/Clang matrix exact-head jobs failed before any steps"
+  },
+  "local_mir_llvm_i64_codegen": {
+    "source_emitter_blob_sha": "1a4cc742a6d3bdc31c7e48eb8712d74ee8fa8196",
+    "test_driver_blob_sha": "eb5cc1edd0f8986b86b6b4fcb56a58602e9b07a9",
+    "clang_script_blob_sha": "6e54a1b07c181c1ec4250e30277d6e95e1886b0f",
+    "source_scope": "exact committed C++17 codegen header+driver; isolated local stand-in Parser/HIR/runtime dependencies; NOT full repo native compiler",
+    "local_compiler_headers": [
+      "GCC 14.2 C++17 -Wall -Wextra -Wpedantic -Werror",
+      "Clang 17 C++17 -Wall -Wextra -Wpedantic -Werror"
+    ],
+    "local_native_guest_clang": "Clang 17 x86-64 Linux",
+    "exit_42_runs": 2,
+    "runtime_bounds_trap_exit": 132,
+    "compile_time_negative_cases": [
+      "immutable field write",
+      "missing push operands"
+    ],
+    "ir_checks": [
+      "icmp ult i64 bounds",
+      "icmp ne i64 live generation",
+      "load i1 owner alive",
+      "llvm.trap"
+    ],
+    "real_repo_full_ctest": "NOT_EXECUTED",
+    "production_oreslang_llvmc_codegen": "NOT_IMPLEMENTED",
+    "full_exact_source_tree_runtime_proof": "NOT_EXECUTED",
+    "asan_ubsan": "NOT_EXECUTED"
   }
 }
