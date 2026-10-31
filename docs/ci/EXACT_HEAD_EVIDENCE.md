@@ -79,3 +79,20 @@ missing/null steps, a successful workflow with zero steps, or contradictory job
 status/conclusion is **`UNVERIFIED`**, not proven runner admission or compiler
 success. The evaluator does not silently use positive execution status to fill
 missing job records. Independent API/job-log verification is still required.
+
+## Cancelled, skipped and other nonfailure run conclusions (2026-10-31)
+
+An explicitly completed failed job with `runner_id: 0` and `steps: []` is **not**
+sufficient if its enclosing workflow concluded `cancelled`, `timed_out`,
+`skipped`, `neutral`, `action_required`, or has no conclusion. These outcomes
+are `UNVERIFIED`, not `RUNNER_ADMISSION_FAILURE`.
+
+Only a workflow whose status is `completed` **and conclusion is `failure`**
+may produce `RUNNER_ADMISSION_FAILURE` when all the other exact source/run,
+failed job, zero-runner and zero-step checks are met. The label is still a
+classification of recorded metadata, not proof of a particular GitHub billing
+or runner-availability root cause.
+
+The additional regression makes 16 Node tests in the focused suite. Local
+execution on exact Git-blob-matched files does not replace originating
+GitHub-hosted Actions or platform/compiler/guest testing.
