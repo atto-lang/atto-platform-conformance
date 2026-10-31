@@ -47,7 +47,9 @@ export function evaluateEvidence(input) {
   if (run.conclusion !== 'success') {
     // Still inspect jobs to preserve the primary failure classification.
     if (!Array.isArray(jobs.jobs) || !Number.isSafeInteger(jobs.total_count) ||
-        jobs.total_count !== jobs.jobs.length) return fail('incomplete job pagination');
+        jobs.total_count !== jobs.jobs.length ||
+        !jobs.jobs.every(j => j !== null && typeof j === 'object' && !Array.isArray(j)))
+      return fail('incomplete or malformed job metadata');
     const selected = jobs.jobs.filter(j => j.name === expected.job_name);
     // Missing step metadata or a runner_id is not proof that no step ran.
     // A failed job can record actual compilation/guest failures even when its
@@ -63,7 +65,9 @@ export function evaluateEvidence(input) {
     return fail('workflow not successful');
   }
   if (!Array.isArray(jobs.jobs) || !Number.isSafeInteger(jobs.total_count) ||
-      jobs.total_count !== jobs.jobs.length) return fail('incomplete job pagination');
+      jobs.total_count !== jobs.jobs.length ||
+      !jobs.jobs.every(j => j !== null && typeof j === 'object' && !Array.isArray(j)))
+    return fail('incomplete or malformed job metadata');
   const selected = jobs.jobs.filter(j => j.name === expected.job_name);
   if (selected.length !== 1) return fail('selected job missing or ambiguous');
   const job = selected[0];
@@ -71,7 +75,9 @@ export function evaluateEvidence(input) {
       job.head_sha !== run.head_sha) {
     return fail('job not bound to exact run attempt');
   }
-  if (!Array.isArray(job.steps)) return fail('job step metadata missing or invalid');
+  if (!Array.isArray(job.steps) ||
+      !job.steps.every(s => s !== null && typeof s === 'object' && !Array.isArray(s)))
+    return fail('job step metadata missing or invalid');
   if (job.steps.length === 0) {
     return { classification: 'RUNNER_ADMISSION_FAILURE', reason: 'no executed steps recorded',
       run_id: run.id, attempt: run.run_attempt, job_id: job.id };
