@@ -77,10 +77,12 @@ export async function requireIndependentSourceExportApproval({
   const branch=await get(POLICY_REPO,"/branches/main",token,fetchImpl);
   if(branch?.name!=="main"||branch.protected!==true)deny();
   const protection=await get(POLICY_REPO,"/branches/main/protection",token,fetchImpl);
-  if(protection?.required_pull_request_reviews?.required_approving_review_count<2||
-    protection.required_pull_request_reviews.dismiss_stale_reviews!==true||
-    protection.required_pull_request_reviews.require_code_owner_reviews!==true||
-    protection.enforce_admins?.enabled!==true)deny();
+  const review=protection?.required_pull_request_reviews;
+  if(!review||!Number.isSafeInteger(review.required_approving_review_count)||
+    review.required_approving_review_count<2||
+    review.dismiss_stale_reviews!==true||
+    review.require_code_owner_reviews!==true||
+    protection?.enforce_admins?.enabled!==true)deny();
   // Both historical export incidents must be resolved by their owners.
   for(const number of [22,77]){
     const incident=await get(POLICY_REPO,"/issues/"+number,token,fetchImpl);
