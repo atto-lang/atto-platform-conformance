@@ -31,3 +31,18 @@ jobs:
           path: runner-canary.json
           if-no-files-found: error
           retention-days: 1
+
+  ubuntu-latest-comparison:
+    # Independent label control; no checkout or artifact upload. A zero-step
+    # failure here too points to admission rather than a ubuntu-24.04 label.
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Verify alternative GitHub-hosted runner label without checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_REPOSITORY}" = 'ores-truffle-oreslang/oreslang-platform-conformance'
+          test -n "${GITHUB_SHA}"
+          test "${RUNNER_OS}" = Linux
+          printf 'RUNNER_ALLOCATED label=ubuntu-latest source_checkout=false source_export=false compiler_tested=false run_id=%s\n' "${GITHUB_RUN_ID}"
