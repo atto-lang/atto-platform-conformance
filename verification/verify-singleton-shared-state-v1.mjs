@@ -325,6 +325,12 @@ export function verify(contract, evidence) {
     }
   }
 
+  // This static JSON verifier cannot independently authenticate GitHub runner,
+  // compiler or guest execution evidence. Promotion is deliberately disabled
+  // until a separate trusted artifact/job attestor is implemented and reviewed.
+  if (evidence?.conformant === true)
+    errors.push("conformant=true requires independent GitHub job/artifact attestation; structural JSON alone cannot promote v1");
+
   if (evidence?.conformant === true &&
       REQUIRED_BACKENDS.some(name => backends[name]?.status !== "guest-executed"))
     errors.push("conformant=true requires guest-executed evidence for all five backends");
@@ -376,6 +382,29 @@ function selfTest(contract, evidence) {
       executedCaseIds:[contract.scenarios[0].id],
       workflowRun:{runnerAssigned:true, executedSteps:2}
     };
+  });
+  expectReject("forged complete five-backend guest receipts cannot promote", (_c, e) => {
+    e.conformant = true;
+    for (const name of REQUIRED_BACKENDS) {
+      const sourceHead = "a".repeat(40), sourceTree = "b".repeat(40);
+      const compilerSha256 = "c".repeat(64), runId = 100, jobId = 200;
+      e.backends[name] = {
+        status: "guest-executed", sourceHead, sourceTree, compilerSha256,
+        executedCaseIds: contract.scenarios.map(s => s.id),
+        workflowRun: {
+          runId, jobId, runAttempt: 1, runnerId: 300, headSha: sourceHead,
+          conclusion: "success", runnerAssigned: true, executedSteps: 10
+        },
+        caseReceipts: contract.scenarios.map(s => ({
+          id: s.id, result: "pass",
+          mode: s.kind === "compile" ? "semantic-check" : "guest-execution",
+          guestSourceSha256: "d".repeat(64), compilerSha256, workflowRunId: runId, jobId,
+          ...(s.kind === "compile" ? {diagnosticCategory: "ORES-SINGLETON-SEMANTIC"} :
+                                     {guestArtifactSha256: "e".repeat(64)})
+        })),
+        sanitizersPassed: true, crossWorkerOrIsolateExecuted: true
+      };
+    }
   });
   expectReject("false five-backend conformance", (_c, e) => { e.conformant = true; });
   if (failures.length) throw new Error("self-test failed to reject: " + failures.join(", "));
