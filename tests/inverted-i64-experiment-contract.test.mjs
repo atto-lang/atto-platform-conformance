@@ -69,6 +69,29 @@ test("experimental i64 guest status cannot be represented as verified backend pa
     assert.equal(spec.current_production_schema_mir_preflight[key], "NOT_IMPLEMENTED");
   assert.equal(spec.current_branch_mir_llvm_codegen.production_inverted_lowering,
     "NOT_IMPLEMENTED");
+  // Current source work has advanced beyond the older experimental and
+  // schema-only snapshots. These hashes refer to a restricted PRODUCTION
+  // code path, but no actual current-head native execution receipt exists.
+  const production = spec.current_production_source_mir;
+  assert.equal(production.production_source_mir_blob_sha,
+    "3e13b44cd7127fdc5802128bbcdf4ac5276f5fa5");
+  assert.equal(production.production_source_mir_ast_negative_test_blob_sha,
+    "8715497b5bc519d2d450a12b27da272ff8ab39c7");
+  assert.equal(production.native_parser_blob_sha,
+    "d5f27ca6d1e6b60be9a7620525848f19f1237c1b");
+  assert.equal(production.native_main_blob_sha,
+    "82f22ce2e899d2d27a7ec21ff365efc6b241b640");
+  assert.equal(production.native_guest_test_blob_sha,
+    "13e163228e041e92ec1e0ed1866d3a2844532aa5");
+  assert.equal(production.llvm_emitter_blob_sha,
+    "27c6ec16303b33749be973e9bdacbc1c0d874e5d");
+  assert.deepEqual(production.declaration_rejection, [
+    "sum type AST", "conforms AST", "type constraint descriptors AST"
+  ]);
+  for (const key of ["current_head_cpp17_source_test", "current_head_full_compiler",
+                     "current_head_native_guest", "current_head_sanitizers"])
+    assert.equal(production[key], "NOT_EXECUTED");
+
   assert.equal(spec.local_mir_llvm_i64_codegen.source_emitter_blob_sha,
     "1a4cc742a6d3bdc31c7e48eb8712d74ee8fa8196");
   assert.equal(spec.local_mir_llvm_i64_codegen.test_driver_blob_sha,
