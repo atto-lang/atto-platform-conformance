@@ -98,6 +98,7 @@ test("manifest enumerates actual backends and refuses promotional security claim
   assert.match(contract.design.root_authority,/matching tenant ID and numeric generation/);
   assert.deepEqual(Object.keys(contract.backendProfiles).sort(),["forge","java","js","llvm","net","wasm"]);
   assert.ok(contract.requiredScenarios.includes("exact-pr-tree-nonzero-step-ci-evidence"));
+  assert.ok(contract.requiredScenarios.includes("neighbor-survives-tenant-trap-and-reincarnation"));
   for(const b of Object.values(contract.backendProfiles)) {
     assert.match(b.currentGuarantee,/not |distinct |do not /);
     assert.match(b.hostileTenant,/PROCESS_SANDBOX/);
