@@ -28,6 +28,12 @@ and, for `workflow_dispatch`, `checkout`:
   exact-checkout receipt: repository, `head_sha`, `tree_sha`, `run_id`,
   `attempt`, `job_id`, `step_number`. Bind the receipt to a successful step.
 
+An **explicit** `steps=[]` on the correctly bound job is the only zero-step
+admission indicator. Missing `steps` metadata must remain `UNVERIFIED`;
+a failed job with recorded steps must **never** be classified as runner
+admission merely because its `runner_id` is absent or zero. The verifier
+does not diagnose the actual failure from step metadata alone.
+
 Inputs are forensic records, **not inherently authenticated assertions**. A
 bundle author could fabricate values. Independently cross-check original GitHub
 URLs, evidence artifact digests, job logs, compiler identity, actual emitted
