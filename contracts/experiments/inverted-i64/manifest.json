@@ -90,5 +90,15 @@
     "exact_current_head_compilation": "NOT_EXECUTED",
     "exact_current_head_native_guest": "NOT_EXECUTED",
     "full_compiler_ctest": "NOT_EXECUTED"
+  },
+  "current_branch_typed_mir": {
+    "mir_blob_sha": "c0120557c08269e7caba9dbb97fd776124a239ca",
+    "native_test_blob_sha": "510cc15b06a926b1ffcd719ac36e4aa1c2365f60",
+    "scope": "experimental two-i64-column verified MIR to checked native C++ owner, not production LLVM backend",
+    "native_runtime_execution": "NOT_EXECUTED",
+    "asan_ubsan_execution": "NOT_EXECUTED",
+    "guest_source_to_verified_mir": "NOT_IMPLEMENTED",
+    "full_oreslang_llvmc_execution": "NOT_EXECUTED",
+    "runner_evidence": "inverted layout GCC/Clang matrix failed zero steps at admission"
   }
 }
