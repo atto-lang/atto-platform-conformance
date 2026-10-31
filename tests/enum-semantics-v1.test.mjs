@@ -29,7 +29,7 @@ test("enum fixture inventory is closed and has no fabricated backend confirmatio
    assert.equal("expectedStdout" in c,false);
   }else{
    assert.equal("diagnosticCategory" in c,false);
-   assert.match(c.expectedStdout,/^(?:[0-9]+\\n)+$/);
+   assert.match(c.expectedStdout,/^(?:[0-9]+\n)+$/);
   }
  }
  assert.deepEqual(kinds,new Set(["accept","reject"]));
