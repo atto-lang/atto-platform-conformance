@@ -25,16 +25,20 @@ test("experimental i64 guest status cannot be represented as verified backend pa
   assert.equal(spec.local_source_adapter.clang_asan_ubsan_native_ir_guests_passed, 2);
   assert.equal(spec.local_source_adapter.full_oreslang_llvmc_executed, false);
   assert.equal(spec.current_branch_typed_mir.mir_blob_sha,
-    "c0120557c08269e7caba9dbb97fd776124a239ca");
+    "a62b423273910dd79165b5c90e0e2d245a35319b");
+  assert.equal(spec.current_branch_typed_mir.native_adapter_blob_sha,
+    "f96e30877caba43b98e24d238a6a9a1766170e92");
   assert.equal(spec.current_branch_typed_mir.native_test_blob_sha,
-    "510cc15b06a926b1ffcd719ac36e4aa1c2365f60");
-  for (const key of ["native_runtime_execution", "asan_ubsan_execution",
-                     "full_oreslang_llvmc_execution"])
+    "a92c2e1a260ea603f0dea004371c9298ecedafc1");
+  assert.equal(spec.current_branch_typed_mir.compiler_cpp17_test_blob_sha,
+    "529a188e306c6d62062763e1313c9b30c5892bfe");
+  for (const key of ["native_runtime_execution", "compiler_cpp17_execution",
+                     "asan_ubsan_execution", "full_oreslang_llvmc_execution"])
     assert.equal(spec.current_branch_typed_mir[key], "NOT_EXECUTED");
   assert.equal(spec.current_branch_typed_mir.guest_source_to_verified_mir,
-    "NOT_IMPLEMENTED");
+    "CODE_STAGED_NOT_EXECUTED");
   assert.equal(spec.current_branch_adapter.blob_sha,
-    "d8c16d7057de9d3292a72423147e27db492d3c23");
+    "c5ee913781323711187d5506721dcb47c075d86a");
   assert.equal(spec.current_branch_adapter.typed_hir_blob_sha,
     "e04b19c37460a5b859d7ad2497583d296cb395b2");
   assert.equal(spec.current_branch_adapter.production_parser_blob_sha,
