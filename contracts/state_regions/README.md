@@ -149,3 +149,27 @@ release back to the submitting thread. Compiler proofs must enforce lexical
 borrows and suspension. Java host bridge PR #2305 and LLVM native Task/actor
 pin PR #1192 target these requirements through different physical backings.
 Both remain drafts pending full executable guest and CI evidence.
+
+## Existing native guest source fixture registry
+
+`critical-state-guest-fixtures-v1.json` pins **nine genuine Oreslang
+source fixture locators** from Java draft PR #2245 to immutable Git
+commit `a88c48773861daa6dc6bc46cb3a0923bd198d842`, with the verified
+per-file Git blob SHA and expected result: one positive actor-state
+read/write program and eight expected compile rejections (read mutation,
+mutable reborrow, unknown/forged mode, `await` in protected read/write,
+escaping state and direct sealed-state access).
+
+This registry intentionally copies **no private source bytes** across
+repositories. The companion
+`tests/critical-state-guest-fixture-registry-v1.test.mjs` asserts
+unique source identities, exact hash notation, expected diagnostic types
+and a fail-closed status for all five backends. It is metadata integrity
+testing, not the execution of the source fixture against a compiler.
+All per-backend receipt states remain `not-executed` until the specific
+compiler actually compiles or rejects the immutable fixture and its
+runtime host executes the positive case.
+
+Additional source fixtures must be added for task/FFI STOP, retirement,
+retained completion, alias escaping and allocation measurements; the
+physical-lifetime JSON reference model cannot replace compiled guest tests.
