@@ -83,10 +83,10 @@
     "clang_asan_ubsan_native_ir_guests_passed": 2
   },
   "current_branch_adapter": {
-    "blob_sha": "c5ee913781323711187d5506721dcb47c075d86a",
+    "blob_sha": "e6d5138595e764392f48c7e064fadeb84739370a",
     "typed_hir_blob_sha": "e04b19c37460a5b859d7ad2497583d296cb395b2",
     "production_parser_blob_sha": "c0252d54142522de2cc259afa0e08ec9fce01990",
-    "code_scope": "experimental i64 .ores compiler now routes through shared bounded typed HIR; normal production compiler still fail closed",
+    "code_scope": "experimental two-i64 .ores path now passes through production-shaped HIR, independently verified MIR and MIR-owned LLVM IR; one/3..8-field path retains older experimental adapter; ordinary compiler fail-closed",
     "exact_current_head_compilation": "NOT_EXECUTED",
     "exact_current_head_native_guest": "NOT_EXECUTED",
     "full_compiler_ctest": "NOT_EXECUTED"
@@ -130,5 +130,20 @@
     "production_oreslang_llvmc_codegen": "NOT_IMPLEMENTED",
     "full_exact_source_tree_runtime_proof": "NOT_EXECUTED",
     "asan_ubsan": "NOT_EXECUTED"
+  },
+  "current_branch_mir_llvm_codegen": {
+    "emitter_blob_sha": "27c6ec16303b33749be973e9bdacbc1c0d874e5d",
+    "source_adapter_blob_sha": "e6d5138595e764392f48c7e064fadeb84739370a",
+    "guest_test_blob_sha": "de192aa8babf1dfbd802769e6a3a373ea640ee20",
+    "native_test_driver_blob_sha": "102460fbd0675f7cc7d2737dd9c4f6045bd57aee",
+    "native_test_script_blob_sha": "3de33a763886b3d651ed7fb0c1110d60a752aa42",
+    "negative_two_column_bounds_blob_sha": "8bac2b6554f231b16da75be038d636537656c9e0",
+    "scope": "two-field opt-in real .ores source-to-verified-MIR and physical LLVM IR, plus bounded volatile scrub on close; no escaping handles; default production gate rejects",
+    "source_to_mir_guest": "CODE_STAGED_NOT_EXECUTED",
+    "exact_head_standalone_ctest": "NOT_EXECUTED",
+    "full_compiler_ctest": "NOT_EXECUTED",
+    "current_emitter_native_execution": "NOT_EXECUTED",
+    "current_emitter_asan_ubsan": "NOT_EXECUTED",
+    "production_inverted_lowering": "NOT_IMPLEMENTED"
   }
 }
