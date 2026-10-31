@@ -28,13 +28,18 @@ const check = (overrides = {}, records = {}, calls = []) =>
   requirePrivateMirror({...base, fetchImpl: fixture(records, calls), ...overrides});
 
 test("unresolved Oreslang cross-org incident hold rejects BEFORE credential, metadata or source access", async () => {
-  const calls = [];
-  await assert.rejects(check({
-    source: "ores-truffle-oreslang/oreslang-source.java",
-    destination: "akrion-sim/akrion-sim-e2e",
-    approvedDestinations: ["akrion-sim/akrion-sim-e2e"]
-  }, {}, calls), /incident dispositions #22 and #77/);
-  assert.equal(calls.length, 0, "no GitHub API request may precede containment");
+  for (const sourceName of [
+    "ores-truffle-oreslang/oreslang-source.java",
+    "OREs-TRUFFLE-oreslang/oreslang-source.java"
+  ]) {
+    const calls = [];
+    await assert.rejects(check({
+      source: sourceName,
+      destination: "akrion-sim/akrion-sim-e2e",
+      approvedDestinations: ["akrion-sim/akrion-sim-e2e"]
+    }, {}, calls), /incident dispositions #22 and #77/);
+    assert.equal(calls.length, 0, "no GitHub API request may precede containment");
+  }
 });
 
 test("accepts only explicitly approved and GitHub-verified writable private destination", async () => {
