@@ -73,11 +73,12 @@ export async function requirePrivateMirror({
   const sourceOwner = from.split("/")[0].toLowerCase();
   const targetOwner = to.split("/")[0].toLowerCase();
   if (sourceOwner !== targetOwner ||
-      (sourceOwner === "ores-truffle-oreslang" &&
-       from.toLowerCase() !== to.toLowerCase())) {
-    // Even a different private repo INSIDE the source org would create a
-    // new source-bearing carrier outside the source repo's protected policy.
-    // Original-repo exact-head Actions need no Git-object mirror at all.
+      sourceOwner === "ores-truffle-oreslang") {
+    // All private Oreslang source publishing is suspended, including a
+    // self-repository "mirror": it would create a new source-bearing Git
+    // branch without the protected-head authorization and receipt gates.
+    // Existing source-local exact-head Actions need no object copying.
+    // Relay-to-relay copies in different orgs are independently forbidden.
     throw Error("private source mirror suspended pending independent Oreslang incident dispositions #22 and #77");
   }
   if (!Array.isArray(approvedDestinations) ||
