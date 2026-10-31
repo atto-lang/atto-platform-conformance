@@ -70,8 +70,8 @@ export async function requirePrivateMirror({
   // previously approved carrier may not fetch a private Oreslang blob.
   // Remove this hold only in a separately reviewed security change AFTER
   // independently verified incident dispositions and per-snapshot approval.
-  if (from.split("/")[0] === "ores-truffle-oreslang" &&
-      to.split("/")[0] !== "ores-truffle-oreslang") {
+  if (from.split("/")[0].toLowerCase() === "ores-truffle-oreslang" &&
+      to.split("/")[0].toLowerCase() !== "ores-truffle-oreslang") {
     throw Error("Oreslang cross-organization private mirror suspended pending independent incident dispositions #22 and #77");
   }
   if (!Array.isArray(approvedDestinations) ||
