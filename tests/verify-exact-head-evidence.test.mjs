@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { evaluateEvidence } from '../tools/verify-exact-head-evidence.mjs';
+import { mkdtempSync, writeFileSync, symlinkSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { evaluateEvidence, readEvidenceBundle } from '../tools/verify-exact-head-evidence.mjs';
 
 const a = 'a'.repeat(40), b = 'b'.repeat(40), c = 'c'.repeat(40);
 function fixture(event = 'pull_request') {
@@ -74,4 +78,33 @@ test('unsupported workflow events and invalid selection do not pass', () => {
   const x = fixture(); x.run.event = 'push'; assert.equal(grade(x), 'UNVERIFIED');
   const y = fixture(); y.expected.required_steps = []; assert.equal(grade(y), 'UNVERIFIED');
   const z = fixture(); z.expected.job_name = 'other'; assert.equal(grade(z), 'UNVERIFIED');
+});
+
+test('bounded evidence bundle loader rejects FIFO, symlink, oversized and empty files', {skip: process.platform === 'win32'}, () => {
+  const directory = mkdtempSync(join(tmpdir(), 'ores-actions-evidence-'));
+  try {
+    const valid = join(directory, 'valid.json');
+    const empty = join(directory, 'empty.json');
+    const tooLarge = join(directory, 'oversize.json');
+    const link = join(directory, 'link.json');
+    const fifo = join(directory, 'fifo.json');
+    writeFileSync(valid, JSON.stringify(fixture()));
+    writeFileSync(empty, '');
+    writeFileSync(tooLarge, 'X'.repeat(256 * 1024 + 1));
+    symlinkSync(valid, link);
+    execFileSync('mkfifo', [fifo]);
+    assert.equal(grade(readEvidenceBundle(valid)), 'EXECUTION_STEPS_RECORDED');
+    assert.throws(() => readEvidenceBundle(empty));
+    assert.throws(() => readEvidenceBundle(tooLarge));
+    assert.throws(() => readEvidenceBundle(link));
+    // O_NONBLOCK prevents an untrusted FIFO from waiting for a writer.
+    assert.throws(() => readEvidenceBundle(fifo));
+  } finally {
+    rmSync(directory, {recursive: true, force: true});
+  }
+});
+
+test('untrusted evidence path cannot be omitted', () => {
+  assert.throws(() => readEvidenceBundle(''));
+  assert.throws(() => readEvidenceBundle(null));
 });
