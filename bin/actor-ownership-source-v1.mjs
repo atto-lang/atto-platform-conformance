@@ -6,14 +6,15 @@ import { runSourceAdmission } from "../src/actor-ownership-source-gate-v1.mjs";
 try {
   const args = {};
   for (const token of process.argv.slice(2)) {
-    const match = /^--(backend|argv|source-sha)=(.+)$/.exec(token);
+    const match = /^--(backend|argv|artifacts|source-sha)=(.+)$/.exec(token);
     if (!match || Object.hasOwn(args, match[1])) throw Error("invalid or duplicate option");
     args[match[1]] = match[2];
   }
   if (!args.backend) throw Error("--backend=java|llvm required");
   const argv = args.argv ? JSON.parse(args.argv) : undefined;
+  const artifacts = args.artifacts ? JSON.parse(args.artifacts) : [];
   const result = await runSourceAdmission({
-    backend: args.backend, argv, sourceSha: args["source-sha"]
+    backend: args.backend, argv, artifacts, sourceSha: args["source-sha"]
   });
   console.log(JSON.stringify(result, null, 2));
   if (!result.ok) process.exitCode = 1;
