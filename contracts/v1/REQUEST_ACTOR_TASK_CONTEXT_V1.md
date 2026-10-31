@@ -267,3 +267,34 @@ sources for concurrent duplicate submission, raw-ticket bypass and
 generation reuse, plus a focused source-org GCC/Clang/ASan+UBSan workflow.
 The workflow has failed before runner assignment: no exact-head pass or
 real five-backend parity claim is supported yet.
+
+
+## Addendum: last-lease fence before exchange reuse (2026-10-30)
+
+Closing a request revokes new access but does not make an HTTP exchange
+eligible for a new request. After terminal completion or a rejected/
+abandoned admission returns the exchange to REACTOR, the original
+exchange owner may retire its generation only when the request is in
+CLOSING state and its own exchange lease is the **sole remaining**
+physical request-context lease. All independently retained child Task,
+continuation and asynchronous I/O leases must have been relinquished
+by their physical owners. A logical done flag, message dequeue, or
+closed handle is not sufficient.
+
+The host must release the last request-context lease **before**
+clearing the exchange's generation reuse pin, so a new ingress
+cannot race with the old owner's context lease destructor. The
+retirement predicate must be checked against the exact slot generation
+under the registry's synchronization mechanism. In a fail-closed
+runtime, attempting to destroy a pinned exchange before physical
+quiescence is a fatal lifecycle violation, not silent recycling.
+
+Required adversarial execution fixture: two real concurrent workers
+retain child and I/O leases; close the request and roll back the
+unsubmitted exchange; after child completion, reuse is still denied;
+after I/O completion the exchange owner alone remains, so final owner
+release makes the slot and exchange reusable under a NEW generation.
+Assert stale handle and ticket denial. LLVM draft #1210 now contains
+the host-only gate and source regression. This is **not** evidence of
+compiled Oreslang Task/I/O lowering or a successful exact-head
+native/sanitizer test. No hard real-time latency claim is implied.
