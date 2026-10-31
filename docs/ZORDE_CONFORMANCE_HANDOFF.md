@@ -30,6 +30,24 @@ proof. WIT parsing cannot establish canonical-ABI correctness, async safety,
 borrow lifetime safety, or a valid Oreslang guest implementation. The schema
 does not even claim that any trusted authority emitted the report.
 
+## Pinned non-executable source snapshot
+
+`evidence/zorde-contract-handoff.pending.json` records one inspected **source**
+snapshot, not a verified execution:
+
+- Source commit: `bafdbe8fd41aa7a220491acc03be4c6ce57a58fa`
+- Source root tree: `8774cc6b4f817d469dd0bedca8301004917e3d9d`
+- TypeSpec Git blob: `c5728bd100f1dd36007918038fe54610e0259268`
+- JSON Schema Git blob: `0d8f3ca66952969e8aa9125e9ef427c313b89321`
+- WIT Git blob: `8100dbe91514e38a11beea8070a5a5cfc6b639fc`
+
+These identities were read through GitHub's connector at that exact source
+commit. The pinned pending receipt is checked by a local schema test against
+a fixed reviewed snapshot; it must not be automatically rewritten on upstream
+changes. Independent cross-repository retrieval and authorization remain a
+separate reviewed gate. Every execution lane is `NOT_EXECUTED`; no source
+is mirrored into CI carriers by this fixture.
+
 ## Local source-free checks
 
 With Python 3 and independently installed `jsonschema==4.26.0`:
