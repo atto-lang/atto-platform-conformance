@@ -13,12 +13,12 @@ export const SOURCE_CASES = Object.freeze([
   { id: "AO01_SOURCE_ORDER", file: "actor-interleaved-stop.ores", backends: ["llvm"], expect: "accept", originBlob: "c7488835f34e926dfa4c8766c8917301fe84da09", limitations: "does not prove physical actor overlap or exclusivity" },
   { id: "AO03_AFTER_STOP", file: "actor-send-after-stop.ores", backends: ["llvm"], expect: "reject", diagnostic: "actor message sent after stop", originBlob: "ba046cb355fd16d9b5f6f7b39ace45356ef497db", limitations: "source rejection, not a stale native completion trace" },
   { id: "AO04_PRIVATE_STATE", file: "isolated-actor-sealed-write.ores", backends: ["llvm"], expect: "accept", originBlob: "9bec6500694b826ccb3c0d2fc292bba816437dbc", limitations: "one isolated actor; two-heap physical evidence still required" },
-  { id: "OW01_MOVE_AFTER_TAKE", file: "move-after-take.ores", backends: ["java"], expect: "reject", candidate: true, diagnostic: "moved", limitations: "candidate syntax; needs current-head compiler semantic diagnostic" },
-  { id: "OW02_ALIAS_MUTABLE", file: "double-mutable-borrow.ores", backends: ["java"], expect: "reject", candidate: true, diagnostic: "borrow", limitations: "candidate syntax; needs current-head compiler semantic diagnostic" },
-  { id: "OW03_NESTED_RETURN", file: "nested-loan-return.ores", backends: ["java"], expect: "reject", diagnostic: "cannot return a nested borrowed reference", limitations: "ported from Java draft #2098; not evidence on main" },
-  { id: "OW03_CLOSURE_ESCAPE", file: "borrowed-closure-escape.ores", backends: ["java"], expect: "reject", diagnostic: "closure cannot capture borrowed value", limitations: "ported from Java draft #2098; not evidence on main" },
-  { id: "OW03_SUSPENSION_ESCAPE", file: "borrowed-suspension.ores", backends: ["java"], expect: "reject", diagnostic: "ordinary borrow is live", limitations: "ported from Java draft #2098; not evidence on main" },
-  { id: "OW04_TASK_CAPTURE", file: "borrowed-task-capture.ores", backends: ["java"], expect: "reject", diagnostic: "cannot retain nested borrowed references", limitations: "ported from Java draft #2098; not evidence on main" }
+  { id: "OW01_MOVE_AFTER_TAKE", file: "move-after-take.ores", expectedBlob: "03098466e48389f78ad0e1c7eca6fdc96c0a19e1", backends: ["java"], expect: "reject", candidate: true, diagnostic: "moved", limitations: "candidate syntax; needs current-head compiler semantic diagnostic" },
+  { id: "OW02_ALIAS_MUTABLE", file: "double-mutable-borrow.ores", expectedBlob: "294694220fd727f06368cedef0d70687da55150e", backends: ["java"], expect: "reject", candidate: true, diagnostic: "borrow", limitations: "candidate syntax; needs current-head compiler semantic diagnostic" },
+  { id: "OW03_NESTED_RETURN", file: "nested-loan-return.ores", expectedBlob: "86c6e4e9af730133a0215f37c2b0b17f5d8bd7be", backends: ["java"], expect: "reject", diagnostic: "cannot return a nested borrowed reference", limitations: "ported from Java draft #2098; not evidence on main" },
+  { id: "OW03_CLOSURE_ESCAPE", file: "borrowed-closure-escape.ores", expectedBlob: "a942aca3f735aa85a7772218f5a1384b7e788943", backends: ["java"], expect: "reject", diagnostic: "closure cannot capture borrowed value", limitations: "ported from Java draft #2098; not evidence on main" },
+  { id: "OW03_SUSPENSION_ESCAPE", file: "borrowed-suspension.ores", expectedBlob: "2e66fbf1efe7b2cbd5a9a66ebb24935171c4ad87", backends: ["java"], expect: "reject", diagnostic: "ordinary borrow is live", limitations: "ported from Java draft #2098; not evidence on main" },
+  { id: "OW04_TASK_CAPTURE", file: "borrowed-task-capture.ores", expectedBlob: "164191466c153ff3d76291075ea7c6d2697d4171", backends: ["java"], expect: "reject", diagnostic: "cannot retain nested borrowed references", limitations: "ported from Java draft #2098; not evidence on main" }
 ]);
 export const UNIMPLEMENTED_GATES = Object.freeze(["AO01_PHYSICAL_PARALLELISM", "AO02_CONTROL_PRIORITY", "AO03_STALE_NATIVE_COMPLETION", "AO04_DISTINCT_PHYSICAL_HEAPS", "OW04_SEND_SYNC_DERIVATION", "OW05_REGION_GENERATION_FENCE"]);
 const nameOk = x => typeof x === "string" && /^[a-z0-9-]{1,100}\.ores$/.test(x);
@@ -38,7 +38,9 @@ export function validateCaseInventory(cases = SOURCE_CASES) {
         (c.expect === "reject" && (!c.diagnostic || !/^[a-z ]{3,120}$/.test(c.diagnostic))) ||
         (c.expect === "accept" && c.diagnostic !== undefined) ||
         (c.candidate !== undefined && (c.candidate !== true || c.expect !== "reject")) ||
-        (c.originBlob !== undefined && !shaOk(c.originBlob))) throw Error("invalid source-case metadata");
+        (c.originBlob !== undefined && !shaOk(c.originBlob)) ||
+        (c.expectedBlob !== undefined && !shaOk(c.expectedBlob)) ||
+        (!c.originBlob && !c.expectedBlob)) throw Error("invalid source-case metadata");
     ids.add(c.id); files.add(c.file);
   }
   return true;
@@ -125,7 +127,10 @@ export async function runSourceAdmission({ backend, argv, sourceSha, artifacts =
   validateCaseInventory();
   if (!["java", "llvm"].includes(backend)) throw Error("unsupported backend selector");
   const applicable = SOURCE_CASES.filter(c => c.backends.includes(backend));
-  if (!argv) return { backend, ok: false, verificationScope: "NOT_EXECUTED", guestExecuted: false, runtimeTraceVerified: false, physicalIsolationVerified: false, results: applicable.map(c => ({ id: c.id, status: "UNCONFIGURED" })) };
+  if (!argv) return { backend, ok: false, certificationEligible: false,
+    provenanceVerified: false, verificationScope: "NOT_EXECUTED", guestExecuted: false,
+    runtimeTraceVerified: false, physicalIsolationVerified: false,
+    results: applicable.map(c => ({ id: c.id, status: "UNCONFIGURED" })) };
   validateInvocation(argv, sourceSha);
   const executable = await digestRegularFile(argv[0], 512 * 1024 * 1024);
   const artifactPaths = compilerArtifactPaths(argv, artifacts);
@@ -137,7 +142,7 @@ export async function runSourceAdmission({ backend, argv, sourceSha, artifacts =
     if (!st.isFile() || st.nlink !== 1 || st.size > 64 * 1024) throw Error("unsafe fixture file: " + c.id);
     const bytes = await readFile(file);
     const blob = gitBlobHash(bytes);
-    if (c.originBlob && c.originBlob !== blob) throw Error("fixture source identity mismatch: " + c.id);
+    if ((c.expectedBlob || c.originBlob) !== blob) throw Error("fixture source identity mismatch: " + c.id);
     // Run on a per-case private snapshot, not a mutable checkout pathname.
     // Rehash both the snapshot and the original to detect tampering; this is
     // detection, not a security sandbox against same-UID adversarial compilers.
@@ -182,6 +187,7 @@ export async function runSourceAdmission({ backend, argv, sourceSha, artifacts =
   }
   const ok = results.length === applicable.length && results.every(r => ["SOURCE_ACCEPTED", "SOURCE_REJECTED_AS_EXPECTED"].includes(r.status));
   return { backend, declaredSourceSha: sourceSha, executableSha256: executable.sha256,
+    certificationEligible: false, provenanceVerified: false,
     compilerArtifactSha256: pinnedArtifacts.map((a,i) => ({ path: artifactPaths[i], sha256: a.sha256 })),
     verificationScope: "UNATTESTED_COMPILER_SOURCE_ADMISSION_ONLY", guestExecuted: false,
     runtimeTraceVerified: false, physicalIsolationVerified: false, ok, results };
