@@ -42,11 +42,11 @@ test("experimental i64 guest status cannot be represented as verified backend pa
   assert.equal(spec.current_branch_mir_llvm_codegen.source_adapter_blob_sha,
     "e6d5138595e764392f48c7e064fadeb84739370a");
   assert.equal(spec.current_branch_mir_llvm_codegen.guest_test_blob_sha,
-    "de192aa8babf1dfbd802769e6a3a373ea640ee20");
+    "9cc616cede6453f5f3a9f375df19f588562fbfc7");
   assert.equal(spec.current_branch_mir_llvm_codegen.native_test_driver_blob_sha,
     "102460fbd0675f7cc7d2737dd9c4f6045bd57aee");
   assert.equal(spec.current_branch_mir_llvm_codegen.native_test_script_blob_sha,
-    "3de33a763886b3d651ed7fb0c1110d60a752aa42");
+    "e280b5694aab84909bb68cf47f36bad78a77aa7e");
   for (const key of ["exact_head_standalone_ctest", "full_compiler_ctest",
                      "current_emitter_native_execution", "current_emitter_asan_ubsan"])
     assert.equal(spec.current_branch_mir_llvm_codegen[key], "NOT_EXECUTED");
@@ -84,9 +84,12 @@ test("experimental i64 guest status cannot be represented as verified backend pa
   assert.equal(production.native_main_blob_sha,
     "82f22ce2e899d2d27a7ec21ff365efc6b241b640");
   assert.equal(production.native_guest_test_blob_sha,
-    "13e163228e041e92ec1e0ed1866d3a2844532aa5");
+    "836e2d40074c63a33bf66c19df5e6e10d68ba89a");
   assert.equal(production.llvm_emitter_blob_sha,
     "27c6ec16303b33749be973e9bdacbc1c0d874e5d");
+  assert.match(production.runtime_bounds_trap_gate, /SIGILL\/SIGTRAP/);
+  assert.match(production.runner_admission, /zero steps/);
+  assert.match(production.runner_admission, /no private source transfer/);
   assert.deepEqual(production.declaration_rejection, [
     "sum type AST", "conforms AST", "type constraint descriptors AST"
   ]);
