@@ -1,0 +1,10 @@
+// OW01 candidate: a taken non-Copy object must not be used again.
+define class Box as
+  pub val int value;
+end
+fnc bad(): void {
+  val owned = new Box(7);
+  rt take owned;
+  val illegally_reused = owned;
+  return;
+}
