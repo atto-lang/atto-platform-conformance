@@ -215,6 +215,10 @@
       "forge"
     ],
     "wasmWorkerOrIsolateExecutionRequired": true,
-    "noSleepBasedRaceProof": true
+    "noSleepBasedRaceProof": true,
+    "perCaseExecutionReceiptsRequired": true,
+    "workflowRunJobIdentityRequired": true,
+    "negativeSemanticDiagnosticsRequired": true,
+    "nativeSanitizerReceiptsRequired": true
   }
 }
