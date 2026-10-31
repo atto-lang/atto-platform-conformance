@@ -335,3 +335,48 @@ of an exact-head executable pass, or a hard real-time WCET guarantee.
 Backends must not claim guest parity until the compiler invokes these
 gates on actual Task creation, suspension, callback, cancellation,
 physical completion and memory-reclamation paths.
+
+## Addendum: atomic I/O request-bind vs retirement race (2026-10-30)
+
+A physical request lease must not be attached to an asynchronous I/O
+operation that has already retired, nor may that operation retire while
+the request lease is being attached. A read of the I/O terminal flag
+followed by an unrelated request-registry retain is insufficient.
+
+The existing operation's exact actor/generation/operation identity must
+authorize one atomic four-state handoff:
+
+- UNBOUND: no request registration exists; ordinary physical retirement
+  may atomically seal this state only after broker quiescence, all loans
+  released, and scheduler cleanup turn finished.
+- RESERVED: one producer owns exclusive, unpublished registration while
+  pinning the request context. A failed registry lookup or terminal state
+  change may revert this state to UNBOUND. Ordinary retirement must fail.
+- PUBLISHED: a retained request-context lease is owned by the I/O frame.
+  Publication is irreversible: an admission-abort path must not discard
+  a published lease or permit duplicate registration. Ordinary retirement
+  must fail; only the bound request owner may retire after the full I/O
+  physical-quiescence proof.
+- RETIRED: neither reservation, publication, unbinding, nor any second
+  retirement may succeed.
+
+The UNBOUND-to-RESERVED and UNBOUND-to-RETIRED CAS operations share the
+same atomic word. Reservation is then committed to PUBLISHED only after
+request-registry pin acquisition; on completion, the owner performs
+PUBLISHED-to-RETIRED before dropping the physical request lease.
+Cancellation alone never implies broker quiescence. All transitions
+must reject wrong operation generations and duplicate request owners.
+
+Required test: race two threads registering a request vs cancellation,
+broker quiescence and final retirement; if registration wins, ordinary
+retirement is denied and bound-owner retirement must succeed; if terminal
+retirement wins, binding must fail; both terminal outcomes prohibit later
+binding, double retirement and aborting a PUBLISHED request. Run the
+same cases under sanitizer instrumentation.
+
+LLVM PR #1210 contains host-only source for these transitions and
+regressions; **no exact-head native compiler, CTest or sanitizer PASS
+has been demonstrated** while source-org workflow jobs fail before
+runner assignment. Compiler source-Task and native NIO callback wiring
+remain required before Oreslang language parity or hard-real-time
+guarantees may be claimed.
