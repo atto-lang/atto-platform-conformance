@@ -9,14 +9,49 @@ const A="a".repeat(40),B="b".repeat(40),C="c".repeat(40),
 const opts={source,destination,sourceCommit:A,destinationBaseCommit:B,
   prefix:"snapshots/checked",newBranch:"ci/private-test-proof",
   approvedDestinations:[destination],token:"opaque-test-token"};
-const good=name=>({full_name:name,private:true,visibility:"private",
-  archived:false,permissions:{push:true}});
+const good=name=>({full_name:name,id:name===destination?123456:123455,
+  private:true,visibility:"private",archived:false,permissions:{push:true}});
+const authority="ores-truffle-oreslang/oreslang-platform-conformance";
+const approvedRecord=()=>({
+  schema:"ores.private-ci.source-export/v1",
+  source,destination,sourceCommit:A,sourceTree:D,destinationId:123456,
+  requestedBy:"proposer",approvedBy:["reviewer-one","reviewer-two"],
+  incident22Approval:{incident:22,status:"INDEPENDENTLY_CLEARED",reviewer:"reviewer-one"},
+  incident77Approval:{incident:77,status:"INDEPENDENTLY_CLEARED",reviewer:"reviewer-two"},
+  createdAtMs:Date.now()-60000,expiresAtMs:Date.now()+60000,
+  maxArtifactRetentionDays:1,status:"APPROVED_FOR_EXACT_SOURCE_ONLY"
+});
 
-function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E,meta,errors}={}){
+function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E,meta,errors,security}={}){
   const events=[],seen={source:0,destination:0};
   const request=async(url,options)=>{
     const method=options.method,path=url.replace(/^https:\/\/api.github.com\/repos\//,"");
     events.push({path,method,body:options.body?JSON.parse(options.body):undefined});
+    // Simulated trusted GitHub policy API: NONE of this is an actual approval.
+    // The real source main remains unprotected, incidents 22/77 OPEN and
+    // there is no approved ledger. These are isolated mock unit fixtures.
+    if(path.startsWith(authority+"/")){
+      const suffix=path.slice(authority.length);
+      let data;
+      if(suffix==="/branches/main")
+        data=security?.branch??{name:"main",protected:true};
+      else if(suffix==="/branches/main/protection")
+        data=security?.protection??{
+          required_pull_request_reviews:{required_approving_review_count:2,
+            dismiss_stale_reviews:true,require_code_owner_reviews:true},
+          enforce_admins:{enabled:true}
+        };
+      else if(suffix==="/issues/22"||suffix==="/issues/77")
+        data=security?.incidents?.[suffix]??{number:Number(suffix.slice(-2)),state:"closed"};
+      else if(suffix==="/contents/security/private-ci-source-export-approvals.v1.json?ref=main"){
+        const ledger=security?.ledger??{schema:"ores.private-ci.source-export-ledger/v1",
+          approvals:[approvedRecord()]};
+        data={path:"security/private-ci-source-export-approvals.v1.json",
+          encoding:"base64",content:Buffer.from(JSON.stringify(ledger)+"\\n").toString("base64")};
+      }
+      if(!data)throw Error("unrecognized policy path "+path);
+      return{status:200,json:async()=>data};
+    }
     const src=path===source||path.startsWith(source+"/"),name=src?source:destination;
     if(path===name){
       seen[src?"source":"destination"]++;
