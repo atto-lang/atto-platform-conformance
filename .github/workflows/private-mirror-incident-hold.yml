@@ -6,6 +6,7 @@ on:
       - 'bin/private-mirror-publish.mjs'
       - 'tests/private-mirror-visibility.test.mjs'
       - 'tests/private-mirror-publish.test.mjs'
+      - 'tests/private-mirror-entrypoints.test.mjs'
       - '.github/workflows/private-mirror-incident-hold.yml'
   workflow_dispatch:
 permissions:
@@ -33,6 +34,6 @@ jobs:
         run: |
           set -euo pipefail
           node --version
-          node --test tests/private-mirror-visibility.test.mjs tests/private-mirror-publish.test.mjs
+          node --test tests/private-mirror-visibility.test.mjs tests/private-mirror-publish.test.mjs tests/private-mirror-entrypoints.test.mjs
           echo "MIRROR_POLICY_TESTS_EXECUTED=true"
           echo "PRIVATE_SOURCE_CROSS_ORG_TRANSFER=NOT_AUTHORIZED"
