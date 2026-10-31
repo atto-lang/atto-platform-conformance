@@ -304,6 +304,110 @@
         "pins": 0,
         "closed": true
       }
+    },
+    {
+      "id": "native-io-retired-before-carrier-physical-join",
+      "actions": [
+        [
+          "pin",
+          "carrier"
+        ],
+        [
+          "start",
+          "carrier",
+          true
+        ],
+        [
+          "pin",
+          "native_io"
+        ],
+        [
+          "start",
+          "native_io",
+          true
+        ],
+        [
+          "retire"
+        ],
+        [
+          "close",
+          false
+        ],
+        [
+          "finish",
+          "native_io"
+        ],
+        [
+          "close",
+          false
+        ],
+        [
+          "finish",
+          "carrier"
+        ],
+        [
+          "close",
+          true
+        ]
+      ],
+      "expected": {
+        "guestStarts": 2,
+        "rejectedStarts": 0,
+        "pins": 0,
+        "closed": true
+      }
+    },
+    {
+      "id": "carrier-retired-before-native-io-physical-join",
+      "actions": [
+        [
+          "pin",
+          "carrier"
+        ],
+        [
+          "start",
+          "carrier",
+          true
+        ],
+        [
+          "pin",
+          "native_io"
+        ],
+        [
+          "start",
+          "native_io",
+          true
+        ],
+        [
+          "retire"
+        ],
+        [
+          "close",
+          false
+        ],
+        [
+          "finish",
+          "carrier"
+        ],
+        [
+          "close",
+          false
+        ],
+        [
+          "finish",
+          "native_io"
+        ],
+        [
+          "close",
+          true
+        ]
+      ],
+      "expected": {
+        "guestStarts": 2,
+        "rejectedStarts": 0,
+        "pins": 0,
+        "closed": true
+      }
     }
   ],
   "guestCompilerGates": [
