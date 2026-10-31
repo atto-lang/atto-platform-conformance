@@ -30,7 +30,7 @@ test("every .ores fixture is a real regular source file and canonical upstream b
     assert.equal(st.nlink, 1, c.id);
     const bytes = await readFile(file);
     assert.ok(bytes.length > 50 && bytes.length < 64 * 1024, c.id);
-    if (c.originBlob) assert.equal(gitBlobHash(bytes), c.originBlob, c.id);
+    assert.equal(gitBlobHash(bytes), c.expectedBlob || c.originBlob, c.id);
     assert.match(bytes.toString("utf8"), /\b(?:fnc|actor)\b/, c.id);
   }
 });
@@ -109,4 +109,20 @@ test("Java -jar compiler payload and Node entrypoint are pinned; unpinned classp
     ["/usr/bin/node", "--no-warnings", "/opt/compiler.mjs", "{file}"]
   ]) assert.throws(() => compilerArtifactPaths(bad), /artifact|classpath|compiler/);
   assert.throws(() => compilerArtifactPaths(["/opt/ores/oresc", "{file}"], ["/tmp/x", "/tmp/x"]), /unique/);
+});
+
+test("every source negative is pinned to a canonical Git blob, not just upstream-origin cases", () => {
+  assert.equal(SOURCE_CASES.filter(x => x.expectedBlob || x.originBlob).length, 9);
+  for (const c of SOURCE_CASES) assert.match(c.expectedBlob || c.originBlob, /^[a-f0-9]{40}$/);
+  assert.throws(() => validateCaseInventory([{ ...SOURCE_CASES[3], expectedBlob: undefined, originBlob: undefined }]), /invalid/);
+  assert.throws(() => validateCaseInventory([{ ...SOURCE_CASES[3], expectedBlob: "abc" }]), /invalid/);
+});
+
+test("compiler receipts explicitly refuse provenance and certification claims", async () => {
+  for (const backend of ["java", "llvm"]) {
+    const result = await runSourceAdmission({ backend });
+    assert.equal(result.certificationEligible, false);
+    assert.equal(result.provenanceVerified, false);
+    assert.equal(result.guestExecuted, false);
+  }
 });
