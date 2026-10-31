@@ -51,6 +51,12 @@
       "issue_id": 6071264936,
       "status": "hold",
       "packet": "docs/security/P0_PRIVATE_CARRIER_CLASSIFICATION_198_200_2026-10-30.md"
+    },
+    {
+      "number": 252,
+      "issue_id": 6129229261,
+      "status": "hold",
+      "packet": "docs/security/P0_PRIVATE_CARRIER_CLASSIFICATION_252_2026-10-31.md"
     }
   ],
   "required_independent_disposition_fields": [
