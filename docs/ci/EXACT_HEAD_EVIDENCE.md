@@ -41,3 +41,15 @@ resolve runner admission, billing, permissions, or trusted runner provisioning
 before claiming Java JUnit, LLVM CTest, Native Image or Oreslang guest verdicts.
 Use approved same-organization source runners; do not export private source to
 alternate organizations without independently approved, protected authorization.
+
+## Untrusted input file admission (2026-10-30 follow-up)
+
+The CLI now opens bundles through a single descriptor with `O_NOFOLLOW` and
+`O_NONBLOCK`, requires a nonempty regular file, and bounds reads to 256 KiB,
+including a post-open length check. On an unsupported host it fails closed.
+This prevents a FIFO from hanging triage and bounds memory used for the input
+file. Tests cover a regular bundle, empty file, oversized file, symlink, FIFO
+and missing path. These changes do **not** authenticate bundle authors,
+reconcile fabricated metadata, validate logs, or authorize private-source
+transfer. The actual job/checkout receipts must still be independently
+retrieved from GitHub.
