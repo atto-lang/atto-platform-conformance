@@ -61,6 +61,24 @@ export function verify(contract, evidence) {
       continue;
     }
     for (const id of executed) if (!ids.includes(id)) errors.push(`${name}: unknown case ${id}`);
+    if (entry.status !== "guest-executed" && executed.length !== 0)
+      errors.push(`${name}: non-guest status cannot contain executedCaseIds`);
+
+    for (const field of ["hostFoundationCaseIds", "sourceLocalUnexecutedCaseIds"]) {
+      const cases = entry[field];
+      if (cases === undefined) continue;
+      if (!Array.isArray(cases)) {
+        errors.push(`${name}: ${field} must be an array`);
+        continue;
+      }
+      if (new Set(cases).size !== cases.length)
+        errors.push(`${name}: duplicate ${field}`);
+      for (const id of cases) {
+        if (!ids.includes(id)) errors.push(`${name}: unknown ${field} case ${id}`);
+        if (executed.includes(id))
+          errors.push(`${name}: ${field} case ${id} cannot also be executed`);
+      }
+    }
 
     if (entry.status === "guest-executed") {
       if (!SHA40.test(entry.sourceHead ?? "")) errors.push(`${name}: exact source head required`);
@@ -117,6 +135,12 @@ function selfTest(contract, evidence) {
       executedCaseIds:[contract.scenarios[0].id],
       workflowRun:{runnerAssigned:true, executedSteps:2}
     };
+  });
+  expectReject("host foundation smuggled as executed", (_c, e) => {
+    e.backends.forge.executedCaseIds = [contract.scenarios[0].id];
+  });
+  expectReject("unknown source-local case", (_c, e) => {
+    e.backends.forge.sourceLocalUnexecutedCaseIds = ["not-a-contract-case"];
   });
   expectReject("false five-backend conformance", (_c, e) => { e.conformant = true; });
   selfTestEvidenceProvenance(contract);
