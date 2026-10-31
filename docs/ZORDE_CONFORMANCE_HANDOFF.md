@@ -53,10 +53,11 @@ is mirrored into CI carriers by this fixture.
 With Python 3 and independently installed `jsonschema==4.26.0`:
 
 ```sh
-python3 -m unittest discover -s tests -p test_zorde_handoff_schema.py -v
+python3 bin/check-zorde-handoff.py evidence/zorde-contract-handoff.pending.json
+python3 -m unittest discover -s tests -p 'test_zorde_*_schema.py' -v
 ```
 
-The tests are synthetic positive/negative **schema tests** and are not evidence
+The CLI reads only bounded regular files (maximum 64 KiB), refuses final-component symlinks, hardlinks, duplicate JSON keys, nonfinite numbers and invalid schema claims. On success it prints the fixed `ZORDE_HANDOFF_SHAPE_ONLY_UNAUTHENTICATED` label. It does **not** authenticate the cited GitHub commit, tree, source blobs, CI execution, or private-source authorization. A same-UID concurrent writer could still race local reads: this is an admission parser, not an OS sandbox or immutable-file attestor.\n\nThe tests are synthetic positive/negative **schema tests** and are not evidence
 that private source, TypeSpec, WIT, Rust, or Oreslang guest code ran.
 
 ## Promotion checklist (outside the schema)
