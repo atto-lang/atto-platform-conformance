@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "suite": "zorde-dual-authority-wit-v1",
+  "source": {
+    "repository": "ores-truffle-oreslang/oreslang-serialization-and-validation",
+    "commitSha": "bafdbe8fd41aa7a220491acc03be4c6ce57a58fa",
+    "treeSha": "8774cc6b4f817d469dd0bedca8301004917e3d9d"
+  },
+  "authorities": {
+    "typeSpec": {
+      "path": "contracts/zorde/main.tsp",
+      "gitBlobSha": "c5728bd100f1dd36007918038fe54610e0259268"
+    },
+    "jsonSchema": {
+      "path": "contracts/zorde/authored.schema.json",
+      "gitBlobSha": "0d8f3ca66952969e8aa9125e9ef427c313b89321"
+    },
+    "wit": {
+      "path": "wit/zorde-validation.wit",
+      "gitBlobSha": "8100dbe91514e38a11beea8070a5a5cfc6b639fc"
+    }
+  },
+  "checks": {
+    "dualAuthority": {
+      "status": "NOT_EXECUTED",
+      "executedSteps": 0,
+      "executedTests": 0,
+      "evidenceSha256": null
+    },
+    "witParser": {
+      "status": "NOT_EXECUTED",
+      "executedSteps": 0,
+      "executedTests": 0,
+      "evidenceSha256": null
+    },
+    "nativeGuest": {
+      "status": "NOT_EXECUTED",
+      "executedSteps": 0,
+      "executedTests": 0,
+      "evidenceSha256": null
+    }
+  },
+  "disposition": "STRUCTURE_ONLY_UNAUTHENTICATED",
+  "privateSourceExportAuthorized": false
+}
