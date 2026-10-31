@@ -87,13 +87,17 @@ export function classFixtures() {
     }
   return {cases:selected,manifestSha256:sha256(data),actorsPending:actors};
 }
-export function assertDuplicateRejection(result,slot) {
-  if(!/^x\/[01]$/.test(slot)||result.error||result.signal||
-     result.status!==1||result.stdout!==""||
-     !String(result.stderr||"").startsWith("oreslang-llvmc: ")||
-     !String(result.stderr).includes(
-       "duplicate native method name/arity '"+slot+"'"))
-    throw Error("not a compiler-owned duplicate method slot error: "+slot);
+export function assertDuplicateRejection(result,slot,sourceName) {
+  const first=String(result?.stderr||"").split(/\r?\n/,1)[0];
+  const expected="oreslang-llvmc: duplicate native method name/arity '"+
+    slot+"' (self receiver does not count toward arity) at byte ";
+  const trailing=first.startsWith(expected)?first.slice(expected.length):"";
+  const match=/^([0-9]+) \[file: ([a-z0-9-]+\.ores)\]$/.exec(trailing);
+  if(!/^x\/[01]$/.test(slot)||result?.error||result?.signal||
+     result?.status!==1||result?.stdout!==""||!match||
+     !Number.isSafeInteger(Number(match[1]))||
+     (sourceName!==undefined&&match[2]!==sourceName))
+    throw Error("not a compiler-owned primary duplicate method slot error: "+slot);
   return true;
 }
 function execute(command,args,options={}) {
@@ -120,7 +124,7 @@ export function runClassGate({compiler,compilerSha256,compilerSourceSha,clang="c
       fs.writeFileSync(file,bytes,{flag:"wx",mode:0o400});
       const compiled=execute(pinned,[file],{cwd:dir});
       if(item.expect==="reject") {
-        assertDuplicateRejection(compiled,item.slot);
+        assertDuplicateRejection(compiled,item.slot,item.id+".ores");
         results.push({id:item.id,outcome:"compiler-owned-rejection",slot:item.slot});
       }else{
         if(compiled.status!==0||!compiled.stdout.includes("; ModuleID"))
