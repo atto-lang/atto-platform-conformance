@@ -173,3 +173,32 @@ runtime host executes the positive case.
 Additional source fixtures must be added for task/FFI STOP, retirement,
 retained completion, alias escaping and allocation measurements; the
 physical-lifetime JSON reference model cannot replace compiled guest tests.
+
+
+## Exact-blob local guest-fixture registry checks — 2026-10-31
+
+The checked-in registry and its Node 22 test were reconstructed
+byte-for-byte from the exact source-repository Git blobs:
+- `critical-state-guest-fixtures-v1.json`:
+  `a09e0eb5c8b421b2acda68912d48166338db7784`
+- `critical-state-guest-fixture-registry-v1.test.mjs`:
+  `ad83e5f30631c5bee1b64ceddacc3702e3d1c2b2`
+
+With these exact blobs, the local command
+`node --test tests/critical-state-guest-fixture-registry-v1.test.mjs`
+executed **2/2 PASS**, confirming unique immutable Oreslang source locators,
+one positive/eight negative expectations, and a fail-closed
+`not-executed` status for all 45 backend/fixture records. This authenticates
+the bytes of the **metadata registry and Node test**, not the original
+private `.ores` source contents or any backend execution.
+
+Separate exact-source host results (also not compiler guest proof):
+- Java #2305: two exact compiled Java host classes + checked-in smoke,
+  JDK21 **8,022 assertions PASS** across 2,000 start/retire races.
+  It also corrected an accepted-turn callback replay.
+- LLVM #1192: standalone native C++20 region prototype, GCC/Clang optimized
+  and ASan/UBSan **4/4 PASS**, each with 100,000 measured mutations.
+
+The hosted source-org workflows on the corresponding PR heads still fail
+with zero runner steps. The compiler guest, full runtime/FFI, real actor
+reclamation and cross-backend parity evidence remains **not executed**.
