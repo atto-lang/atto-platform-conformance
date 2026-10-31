@@ -67,7 +67,7 @@ class HandoffCLIAdversarialTests(unittest.TestCase):
             duplicate.encode("utf-8"),
             b'{"a":NaN}', b'{"a":Infinity}', b'{"a":-Infinity}',
             b'{"a":1}' + b" " * 70000,
-            b"\\xff",
+            b"\xff",
         )
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / "candidate.json"
