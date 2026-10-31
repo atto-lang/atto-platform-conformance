@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { verifyEvidenceProvenance, selfTestEvidenceProvenance } from "./evidence-provenance.mjs";
 
 const REQUIRED_BACKENDS = ["java", "llvm", "net", "wasm", "forge"];
 const ALLOWED_STATUS = new Set(["pending-guest", "host-foundation-only", "guest-executed"]);
@@ -78,6 +79,8 @@ export function verify(contract, evidence) {
     }
   }
 
+  errors.push(...verifyEvidenceProvenance(contract, evidence));
+
   if (evidence?.conformant === true &&
       REQUIRED_BACKENDS.some(name => backends[name]?.status !== "guest-executed"))
     errors.push("conformant=true requires guest-executed evidence for all five backends");
@@ -116,6 +119,7 @@ function selfTest(contract, evidence) {
     };
   });
   expectReject("false five-backend conformance", (_c, e) => { e.conformant = true; });
+  selfTestEvidenceProvenance(contract);
   if (failures.length) throw new Error("self-test failed to reject: " + failures.join(", "));
 }
 
