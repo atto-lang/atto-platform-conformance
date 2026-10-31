@@ -105,7 +105,8 @@ test("Java -jar compiler payload and Node entrypoint are pinned; unpinned classp
     ["/usr/bin/java", "-jar", "../private.jar", "{file}"],
     ["/usr/bin/java", "-cp", "a:b", "dev.ores.Main", "{file}"],
     ["/usr/bin/java", "--module-path", "mods", "dev.ores.Main", "{file}"],
-    ["/usr/bin/node", "relative-script.mjs", "{file}"]
+    ["/usr/bin/node", "relative-script.mjs", "{file}"],
+    ["/usr/bin/node", "--no-warnings", "/opt/compiler.mjs", "{file}"]
   ]) assert.throws(() => compilerArtifactPaths(bad), /artifact|classpath|compiler/);
   assert.throws(() => compilerArtifactPaths(["/opt/ores/oresc", "{file}"], ["/tmp/x", "/tmp/x"]), /unique/);
 });
