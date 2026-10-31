@@ -76,6 +76,13 @@ export function compilerArtifactPaths(argv, explicit = []) {
   if (!Array.isArray(explicit) || explicit.length > 16)
     throw Error("invalid compiler artifact inventory");
   const paths = [...explicit];
+  // No untracked Node CLI flags or alternate module entrypoints: force a
+  // directly pinned, absolute compiler script, or use a dedicated wrapper.
+  if (/(?:^|\/)node(?:js)?$/.test(argv[0]) &&
+      (typeof argv[1] !== "string" || !isAbsolute(argv[1]) ||
+       !/\.(?:mjs|cjs|js)$/.test(argv[1]))) {
+    throw Error("Node compiler must name a directly pinned absolute script");
+  }
   for (let i = 1; i < argv.length; i++) {
     const token = argv[i];
     if (["-cp", "-classpath", "--class-path", "--module-path"].includes(token))
