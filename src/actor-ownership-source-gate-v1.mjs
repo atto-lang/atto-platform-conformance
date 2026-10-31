@@ -1,6 +1,7 @@
 // Source-compiler admission only. This tool does not establish guest execution,
 // actor physical isolation, trace refinement, or compiler-source provenance.
-import { readFile, lstat, realpath } from "node:fs/promises";
+import { readFile, lstat, realpath, mkdtemp, writeFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { dirname, isAbsolute, join, resolve } from "node:path";
@@ -80,14 +81,37 @@ export async function runSourceAdmission({ backend, argv, sourceSha, spawn = spa
     const bytes = await readFile(file);
     const blob = gitBlobHash(bytes);
     if (c.originBlob && c.originBlob !== blob) throw Error("fixture source identity mismatch: " + c.id);
-    const command = argv.map(s => s === "{file}" ? file : s);
-    const response = spawn(executable.path, command.slice(1), { encoding: "utf8", timeout: 15000, maxBuffer: 128 * 1024, shell: false });
-    const after = await digestRegularFile(argv[0], 512 * 1024 * 1024);
-    const changed = executable.sha256 !== after.sha256 || executable.path !== after.path;
-    results.push({ id: c.id, fixtureGitBlob: blob, fixtureSha256: sha256(bytes), expected: c.expect,
-      status: changed ? "EXECUTABLE_CHANGED" : classifyCompilerResult(c, response), limitations: c.limitations,
-      compilerStdoutSha256: sha256(Buffer.from(String(response.stdout ?? ""))),
-      compilerStderrSha256: sha256(Buffer.from(String(response.stderr ?? ""))) });
+    // Run on a per-case private snapshot, not a mutable checkout pathname.
+    // Rehash both the snapshot and the original to detect tampering; this is
+    // detection, not a security sandbox against same-UID adversarial compilers.
+    const scratch = await mkdtemp(join(tmpdir(), "ores-actor-source-"));
+    let changed = false;
+    try {
+      const snapshot = join(scratch, c.file);
+      await writeFile(snapshot, bytes, { flag: "wx", mode: 0o400 });
+      if (!bytes.equals(await readFile(snapshot))) throw Error("fixture snapshot changed before compile");
+      const command = argv.map(s => s === "{file}" ? snapshot : s);
+      const response = spawn(executable.path, command.slice(1), { encoding: "utf8", timeout: 15000, maxBuffer: 128 * 1024, shell: false });
+      const after = await digestRegularFile(argv[0], 512 * 1024 * 1024);
+      changed = executable.sha256 !== after.sha256 || executable.path !== after.path;
+      const fixtureChanged = !bytes.equals(await readFile(snapshot)) ||
+        !bytes.equals(await readFile(file));
+      results.push({ id: c.id, fixtureGitBlob: blob, fixtureSha256: sha256(bytes), expected: c.expect,
+        status: changed ? "EXECUTABLE_CHANGED" : fixtureChanged ? "FIXTURE_CHANGED" : classifyCompilerResult(c, response),
+        limitations: c.limitations,
+        compilerStdoutSha256: sha256(Buffer.from(String(response.stdout ?? ""))),
+        compilerStderrSha256: sha256(Buffer.from(String(response.stderr ?? ""))) });
+      if (changed) {
+        for (const result of results) {
+          if (result.status === "SOURCE_ACCEPTED" || result.status === "SOURCE_REJECTED_AS_EXPECTED") {
+            result.status = "EXECUTABLE_CHANGED";
+            result.priorVerificationRevoked = true;
+          }
+        }
+      }
+    } finally {
+      await rm(scratch, { recursive: true, force: true });
+    }
     if (changed) break;
   }
   const ok = results.length === applicable.length && results.every(r => ["SOURCE_ACCEPTED", "SOURCE_REJECTED_AS_EXPECTED"].includes(r.status));
