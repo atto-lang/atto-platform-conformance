@@ -163,6 +163,32 @@ test('manual dispatch requires job-bound source/tree checkout receipt', () => {
     const y = fixture('workflow_dispatch'); edit(y); assert.equal(grade(y), 'UNVERIFIED');
   }
 });
+test('manual dispatch rejects missing or malformed workflow and job head identities', () => {
+  // A manual run uses the workflow-branch SHA rather than the guest SHA.
+  // Even with a plausible source/tree checkout receipt, a missing run head
+  // must never become valid merely because the job head is equally absent.
+  for (const mutate of [
+    x => { delete x.run.head_sha; delete x.jobs.jobs[0].head_sha; },
+    x => { x.run.head_sha = null; x.jobs.jobs[0].head_sha = null; },
+    x => { x.run.head_sha = 'malformed'; x.jobs.jobs[0].head_sha = 'malformed'; },
+    x => { x.run.head_sha = 'A'.repeat(40); x.jobs.jobs[0].head_sha = 'A'.repeat(40); },
+    x => { x.jobs.jobs[0].head_sha = null; },
+  ]) {
+    const x = fixture('workflow_dispatch');
+    mutate(x);
+    assert.equal(grade(x), 'UNVERIFIED');
+  }
+  const failed = fixture('workflow_dispatch');
+  failed.run.conclusion = 'failure';
+  failed.jobs.jobs[0].conclusion = 'failure';
+  failed.jobs.jobs[0].runner_id = 0;
+  failed.jobs.jobs[0].steps = [];
+  delete failed.run.head_sha;
+  delete failed.jobs.jobs[0].head_sha;
+  assert.equal(grade(failed), 'UNVERIFIED');
+  assert.equal(grade(fixture('workflow_dispatch')), 'EXECUTION_STEPS_RECORDED');
+});
+
 test('unsupported workflow events and invalid selection do not pass', () => {
   const x = fixture(); x.run.event = 'push'; assert.equal(grade(x), 'UNVERIFIED');
   const y = fixture(); y.expected.required_steps = []; assert.equal(grade(y), 'UNVERIFIED');
