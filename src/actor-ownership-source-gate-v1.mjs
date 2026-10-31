@@ -59,6 +59,11 @@ export function classifyCompilerResult(c, result) {
   const diagnostic = firstError.replace(/^.*?\berror(?:\[[\w-]+\])?\s*:\s*/i, "").toLowerCase();
   return diagnostic.includes(c.diagnostic.toLowerCase()) ? "SOURCE_REJECTED_AS_EXPECTED" : "DIAGNOSTIC_MISMATCH";
 }
+/** Candidate tests cannot certify a language rule even if a compiler happens to reject the source. */
+export function promoteCaseOutcome(testCase, observed) {
+  return testCase.candidate === true && observed === "SOURCE_REJECTED_AS_EXPECTED"
+    ? "CANDIDATE_UNRATIFIED" : observed;
+}
 export function validateInvocation(argv, sourceSha) {
   if (!shaOk(sourceSha)) throw Error("40-character source SHA is required (declaration, not attestation)");
   if (!Array.isArray(argv) || argv.length === 0 || !isAbsolute(argv[0]) ||
@@ -103,7 +108,7 @@ export async function runSourceAdmission({ backend, argv, sourceSha, spawn = spa
         !bytes.equals(await readFile(file));
       const classified = classifyCompilerResult(c, response);
       const status = changed ? "EXECUTABLE_CHANGED" : fixtureChanged ? "FIXTURE_CHANGED" :
-        c.candidate && classified === "SOURCE_REJECTED_AS_EXPECTED" ? "CANDIDATE_UNRATIFIED" : classified;
+        promoteCaseOutcome(c, classified);
       results.push({ id: c.id, fixtureGitBlob: blob, fixtureSha256: sha256(bytes), expected: c.expect,
         status, observedCompilerOutcome: classified,
         promotionBlocked: c.candidate === true, limitations: c.limitations,
