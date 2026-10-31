@@ -23,6 +23,12 @@ and, for `workflow_dispatch`, `checkout`:
   `total_count`, `jobs[].runner_id`, `jobs[].run_attempt`,
   `jobs[].run_id`, and `jobs[].steps[]`. Follow pagination and **fail closed** if
   not all jobs can be retrieved. Never fabricate missing fields.
+Both `run.head_sha` and the selected `job.head_sha` must be present as valid,
+matching 40-character Git SHAs for **every** supported event. On
+`workflow_dispatch`, these identify the workflow branch and **do not** replace
+the separately required exact source/tree checkout receipt. A missing run/job
+head is always `UNVERIFIED`, even if both missing fields compare equal.
+
 - `checkout`: for manual `workflow_dispatch` (where `run.head_sha` normally
   references the workflow branch instead of the tested source), a job-generated
   exact-checkout receipt: repository, `head_sha`, `tree_sha`, `run_id`,
