@@ -30,7 +30,7 @@ const check = (overrides = {}, records = {}, calls = []) =>
 test("accepts only explicitly approved and GitHub-verified writable private destination", async () => {
   const calls = [];
   assert.deepEqual(await check({}, {}, calls), {
-    status: "PRIVATE_MIRROR_APPROVED", source, destination
+    status: "PRIVATE_DESTINATION_VISIBILITY_OK_NOT_EXPORT_AUTHORIZED", source, destination
   });
   assert.equal(calls.length, 2);
   assert.equal(calls[0].url.endsWith("/" + source), true);
