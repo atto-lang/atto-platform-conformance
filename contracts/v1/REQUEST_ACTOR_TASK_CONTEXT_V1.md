@@ -298,3 +298,40 @@ Assert stale handle and ticket denial. LLVM draft #1210 now contains
 the host-only gate and source regression. This is **not** evidence of
 compiled Oreslang Task/I/O lowering or a successful exact-head
 native/sanitizer test. No hard real-time latency claim is implied.
+
+## Addendum: native Task and I/O physical ownership bridge (2026-10-30)
+
+A source Task's request-context lease MUST be acquired while its exact
+structured parent, cancellation state and retirement state are validated
+under one Task-graph admission boundary. A child from an unrelated parent
+or an already-cancelled/retired Task must not acquire a request physical
+lease. Checking the parent first and retaining the request in a separate
+unsynchronized operation is insufficient because adoption/cancellation
+could race between those operations.
+
+A Task's lease must remain held through physically completed execution
+and rejection of retirement while structured descendants are still live.
+Cancellation is logical revocation and is NOT physical Task exit. A
+TaskCancellation retirement acknowledgement releases this lease only
+when the trusted owner certifies that the worker has exited all source
+code and no structured descendants remain.
+
+For asynchronous I/O, the lease belongs to the exact already-minted
+operation ticket (actor/operation generation). Cancellation, timeout or
+success is only *terminal arbitration*. The request physical lease may
+retire only after: the broker can no longer access request memory or
+call back; broker quiescence is acknowledged; the scheduler-owned
+continuation/cleanup turn has finished; all read/write loans have
+been returned; and the operation's retirement gate succeeds. A wrong
+ticket or foreign actor request authority fails closed.
+
+LLVM draft PR #1210 now contains a host-only bridge
+NativeRequestPhysicalWork.hpp, parent-checked TaskCancellation admission,
+and physical-work regressions using actual TaskCancellation and
+PinnedContinuationGate objects. The focused native CI workflow also
+includes their independent test targets. This is NOT native source
+Task/await lowering, proof of external broker teardown wiring, evidence
+of an exact-head executable pass, or a hard real-time WCET guarantee.
+Backends must not claim guest parity until the compiler invokes these
+gates on actual Task creation, suspension, callback, cancellation,
+physical completion and memory-reclamation paths.
