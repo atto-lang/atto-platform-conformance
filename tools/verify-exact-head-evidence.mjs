@@ -49,11 +49,14 @@ export function evaluateEvidence(input) {
     if (!Array.isArray(jobs.jobs) || !Number.isSafeInteger(jobs.total_count) ||
         jobs.total_count !== jobs.jobs.length) return fail('incomplete job pagination');
     const selected = jobs.jobs.filter(j => j.name === expected.job_name);
+    // Missing step metadata or a runner_id is not proof that no step ran.
+    // A failed job can record actual compilation/guest failures even when its
+    // runner metadata is unavailable. Only an explicit empty steps array
+    // establishes the admission-only, zero-step classification.
     if (selected.length === 1 && isId(selected[0].id) &&
         selected[0].run_id === run.id && selected[0].run_attempt === run.run_attempt &&
         selected[0].head_sha === run.head_sha &&
-        (!isId(selected[0].runner_id) ||
-        !Array.isArray(selected[0].steps) || !selected[0].steps.length)) {
+        Array.isArray(selected[0].steps) && selected[0].steps.length === 0) {
       return { classification: 'RUNNER_ADMISSION_FAILURE', reason: 'no assigned runner or executed steps',
         run_id: run.id, attempt: run.run_attempt, job_id: selected[0].id ?? null };
     }
@@ -68,10 +71,13 @@ export function evaluateEvidence(input) {
       job.head_sha !== run.head_sha) {
     return fail('job not bound to exact run attempt');
   }
-  if (!isId(job.runner_id) || !Array.isArray(job.steps) || !job.steps.length) {
-    return { classification: 'RUNNER_ADMISSION_FAILURE', reason: 'no assigned runner or executed steps',
+  if (!Array.isArray(job.steps)) return fail('job step metadata missing or invalid');
+  if (job.steps.length === 0) {
+    return { classification: 'RUNNER_ADMISSION_FAILURE', reason: 'no executed steps recorded',
       run_id: run.id, attempt: run.run_attempt, job_id: job.id };
   }
+  // Incomplete runner metadata cannot override positive step evidence.
+  if (!isId(job.runner_id)) return fail('runner identity missing for recorded steps');
   if (job.status !== 'completed' || job.conclusion !== 'success') return fail('target job not successful');
   const seen = new Set();
   for (const step of job.steps) {
