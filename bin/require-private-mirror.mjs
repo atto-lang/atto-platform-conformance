@@ -82,7 +82,7 @@ export async function requirePrivateMirror({
       destinationRepo.archived === true || destinationRepo.permissions?.push !== true) {
     throw Error("destination must be a writable verified PRIVATE GitHub repository");
   }
-  return Object.freeze({status: "PRIVATE_MIRROR_APPROVED", source: from, destination: to});
+  return Object.freeze({status: "PRIVATE_DESTINATION_VISIBILITY_OK_NOT_EXPORT_AUTHORIZED", source: from, destination: to});
 }
 
 if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
