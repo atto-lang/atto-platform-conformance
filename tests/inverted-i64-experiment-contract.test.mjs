@@ -77,6 +77,8 @@ test("experimental i64 guest status cannot be represented as verified backend pa
     "3e13b44cd7127fdc5802128bbcdf4ac5276f5fa5");
   assert.equal(production.production_source_mir_ast_negative_test_blob_sha,
     "8715497b5bc519d2d450a12b27da272ff8ab39c7");
+  assert.equal(production.production_parser_ast_negative_test_blob_sha,
+    "981972662a4664df81d03fc4a8318128dc87fddc");
   assert.equal(production.native_parser_blob_sha,
     "d5f27ca6d1e6b60be9a7620525848f19f1237c1b");
   assert.equal(production.native_main_blob_sha,
