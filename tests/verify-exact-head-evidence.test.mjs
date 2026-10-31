@@ -62,6 +62,30 @@ test('successful workflow does not convert missing metadata into admission evide
   assert.equal(grade(z), 'RUNNER_ADMISSION_FAILURE');
 });
 
+test('malformed JSON job arrays and step entries fail closed without throwing', () => {
+  for (const edit of [
+    x => x.jobs.jobs[0] = null,
+    x => x.jobs.jobs[0] = [],
+    x => x.jobs.jobs[0] = 'not-a-job',
+    x => x.jobs.jobs[0].steps = [null],
+    x => x.jobs.jobs[0].steps = [true],
+    x => x.jobs.jobs[0].steps = [[]],
+  ]) {
+    const x = fixture();
+    edit(x);
+    assert.doesNotThrow(() => grade(x));
+    assert.equal(grade(x), 'UNVERIFIED');
+  }
+  // Failed runs must also reject malformed jobs without a dereference error.
+  for (const malformed of [null, [], 'not-a-job']) {
+    const x = fixture();
+    x.run.conclusion = 'failure';
+    x.jobs.jobs[0] = malformed;
+    assert.doesNotThrow(() => grade(x));
+    assert.equal(grade(x), 'UNVERIFIED');
+  }
+});
+
 test('a foreign failed job cannot impersonate an admission failure', () => {
   const x = fixture(); x.run.conclusion = 'failure'; x.jobs.jobs[0].runner_id = 0;
   x.jobs.jobs[0].steps = []; x.jobs.jobs[0].run_id = 444;
