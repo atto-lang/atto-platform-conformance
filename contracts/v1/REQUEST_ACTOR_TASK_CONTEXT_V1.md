@@ -402,3 +402,36 @@ and must not affect a request owned by another actor.
 LLVM draft PR #1210 now stages this host-side full-owner binding and native
 negative tests. Exact-head executable GCC/Clang/sanitizer verification and
 actual NIO registration/callback integration remain separate mandatory gates.
+
+## Addendum: transactional request-owned NIO watch admission (2026-10-30)
+
+Attaching a physical request lease to an I/O operation is not the same
+as successfully registering that operation with its physical broker.
+The host must first reserve the exact I/O operation generation and retain
+its request-context lease, then perform the actual nonparking watch
+registration (or equivalent broker admission). Only a genuinely accepted
+watch is eligible to PUBLISH the lease irreversibly. A rejected watch
+must leave no broker with access to the request, revert its unpublished
+reservation and release the temporary context lease.
+
+The reservation prevents any ordinary operation retirement while watch
+admission is in progress. A completion that occurs synchronously within
+the successful registration call may settle the gate before publication;
+the host MUST still publish the accepted request lease and then require
+broker acknowledgment, scheduler-owned cleanup completion, and zero
+outstanding loans before retirement. It must not invoke guest code inline
+with the registering producer.
+
+A host registration callback may return false only when physical watch
+admission genuinely failed and the broker cannot touch any request memory.
+It must not throw after a watch has been accepted, since rejection
+cleanup cannot safely revoke an already-published kernel registration.
+The native VM/NIO implementation must satisfy that postcondition and
+bind the returned backend watch identity to the exact operation ticket.
+A successful cancellation request alone is NOT broker-quiescence proof.
+
+LLVM draft PR #1210 stages a host callback-based transactional
+registration bridge and negative tests for rejected/throwing admission
+and synchronous terminal settlement during watch setup. Source-level
+NIO registration and compiled guest `await` remain unverified, and the
+test source is not equivalent to an executed exact-head pass.
