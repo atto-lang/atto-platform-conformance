@@ -1,0 +1,4 @@
+// OW03: a nested borrowed value may not escape through an owned return.
+fnc leaked(Option<borrow int> borrowed): Option<borrow int> {
+  return borrowed;
+}
