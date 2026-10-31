@@ -32,7 +32,8 @@ test('passing PR metadata is a candidate, never parity certification', () => {
   assert.equal(r.source_transfer_authorized, false);
 });
 test('runner admission failure is distinguished from guest failure', () => {
-  const x = fixture(); x.run.conclusion = 'failure'; x.jobs.jobs[0].runner_id = 0; x.jobs.jobs[0].steps = [];
+  const x = fixture(); x.run.conclusion = 'failure'; x.jobs.jobs[0].conclusion = 'failure';
+  x.jobs.jobs[0].runner_id = 0; x.jobs.jobs[0].steps = [];
   assert.equal(grade(x), 'RUNNER_ADMISSION_FAILURE');
 });
 test('recorded failing steps cannot be relabeled as runner admission', () => {
@@ -58,8 +59,8 @@ test('successful workflow does not convert missing metadata into admission evide
   y.jobs.jobs[0].runner_id = 0; // Two recorded steps; no reliable runner identity.
   assert.equal(grade(y), 'UNVERIFIED');
   const z = fixture();
-  z.jobs.jobs[0].steps = []; // Explicit zero-step evidence remains admission-only.
-  assert.equal(grade(z), 'RUNNER_ADMISSION_FAILURE');
+  z.jobs.jobs[0].steps = []; // Success with zero steps is contradictory metadata.
+  assert.equal(grade(z), 'UNVERIFIED');
 });
 
 test('malformed JSON job arrays and step entries fail closed without throwing', () => {
@@ -86,13 +87,36 @@ test('malformed JSON job arrays and step entries fail closed without throwing', 
   }
 });
 
+test('runner admission classification requires failed zero-runner job with explicit zero steps', () => {
+  const baseline = fixture();
+  baseline.run.conclusion = 'failure';
+  baseline.jobs.jobs[0].conclusion = 'failure';
+  baseline.jobs.jobs[0].runner_id = 0;
+  baseline.jobs.jobs[0].steps = [];
+  assert.equal(grade(baseline), 'RUNNER_ADMISSION_FAILURE');
+  for (const mutate of [
+    x => x.jobs.jobs[0].runner_id = 10, // Runner really allocated.
+    x => delete x.jobs.jobs[0].runner_id, // Missing metadata is not zero.
+    x => x.jobs.jobs[0].runner_id = null,
+    x => x.jobs.jobs[0].conclusion = 'success',
+    x => x.jobs.jobs[0].conclusion = null,
+    x => x.jobs.jobs[0].status = 'queued',
+    x => x.run.conclusion = 'success',
+    x => x.jobs.jobs[0].steps = null, // Missing step details.
+    x => x.jobs.jobs[0].steps = [{name: 'Compile'}], // Recorded execution.
+  ]) {
+    const x = structuredClone(baseline);
+    mutate(x);
+    assert.equal(grade(x), 'UNVERIFIED');
+  }
+});
 test('a foreign failed job cannot impersonate an admission failure', () => {
-  const x = fixture(); x.run.conclusion = 'failure'; x.jobs.jobs[0].runner_id = 0;
-  x.jobs.jobs[0].steps = []; x.jobs.jobs[0].run_id = 444;
+  const x = fixture(); x.run.conclusion = 'failure'; x.jobs.jobs[0].conclusion = 'failure';
+  x.jobs.jobs[0].runner_id = 0; x.jobs.jobs[0].steps = []; x.jobs.jobs[0].run_id = 444;
   assert.equal(grade(x), 'UNVERIFIED');
 });
 test('no success can be inferred from zero steps', () => {
-  const x = fixture(); x.jobs.jobs[0].steps = []; assert.equal(grade(x), 'RUNNER_ADMISSION_FAILURE');
+  const x = fixture(); x.jobs.jobs[0].steps = []; assert.equal(grade(x), 'UNVERIFIED');
 });
 test('wrong tree, head and workflow identity reject', () => {
   for (const edit of [x => x.commit.commit.tree.sha = c, x => x.commit.sha = c,
