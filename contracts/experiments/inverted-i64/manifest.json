@@ -158,5 +158,25 @@
     "source_operations_to_production_mir": "NOT_IMPLEMENTED",
     "runtime_generation_handles": "NOT_IMPLEMENTED",
     "production_guest_codegen": "NOT_IMPLEMENTED"
+  },
+  "current_production_source_mir": {
+    "scope": "normal oreslang-llvmc parses precisely one local two-i64 inverted struct + main; verifies source AST to typed MIR; stack-local guest with no escaping handles, no async actors, no hard RT",
+    "production_source_mir_blob_sha": "3e13b44cd7127fdc5802128bbcdf4ac5276f5fa5",
+    "production_source_mir_ast_negative_test_blob_sha": "8715497b5bc519d2d450a12b27da272ff8ab39c7",
+    "native_parser_blob_sha": "d5f27ca6d1e6b60be9a7620525848f19f1237c1b",
+    "native_main_blob_sha": "82f22ce2e899d2d27a7ec21ff365efc6b241b640",
+    "native_guest_test_blob_sha": "13e163228e041e92ec1e0ed1866d3a2844532aa5",
+    "llvm_emitter_blob_sha": "27c6ec16303b33749be973e9bdacbc1c0d874e5d",
+    "current_head_cpp17_source_test": "NOT_EXECUTED",
+    "current_head_full_compiler": "NOT_EXECUTED",
+    "current_head_native_guest": "NOT_EXECUTED",
+    "current_head_sanitizers": "NOT_EXECUTED",
+    "runner_admission": "source-org jobs failed with steps=0",
+    "declaration_rejection": [
+      "sum type AST",
+      "conforms AST",
+      "type constraint descriptors AST"
+    ],
+    "limits": "literal-only local two i64 fields, bounded capacity <=256, main only; no escaped row handles"
   }
 }
