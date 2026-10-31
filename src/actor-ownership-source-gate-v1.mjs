@@ -26,6 +26,16 @@ const shaOk = x => typeof x === "string" && /^[a-f0-9]{40}$/.test(x);
 export function gitBlobHash(bytes) {
   return createHash("sha1").update(Buffer.from(`blob ${bytes.length}\0`)).update(bytes).digest("hex");
 }
+export function verifyFixtureBlob(testCase, bytes) {
+  if (!Buffer.isBuffer(bytes)) throw Error("fixture must be read as binary bytes");
+  const actual = gitBlobHash(bytes);
+  if ((!testCase.expectedBlob && !testCase.originBlob) ||
+      (testCase.expectedBlob && testCase.expectedBlob !== actual) ||
+      (testCase.originBlob && testCase.originBlob !== actual)) {
+    throw Error("fixture source identity mismatch: " + testCase.id);
+  }
+  return actual;
+}
 export function validateCaseInventory(cases = SOURCE_CASES) {
   if (!Array.isArray(cases) || cases.length === 0 || cases.length > 80) throw Error("invalid source-case inventory");
   const ids = new Set(), files = new Set();
@@ -141,8 +151,7 @@ export async function runSourceAdmission({ backend, argv, sourceSha, artifacts =
     const st = await lstat(file);
     if (!st.isFile() || st.nlink !== 1 || st.size > 64 * 1024) throw Error("unsafe fixture file: " + c.id);
     const bytes = await readFile(file);
-    const blob = gitBlobHash(bytes);
-    if ((c.expectedBlob || c.originBlob) !== blob) throw Error("fixture source identity mismatch: " + c.id);
+    const blob = verifyFixtureBlob(c, bytes);
     // Run on a per-case private snapshot, not a mutable checkout pathname.
     // Rehash both the snapshot and the original to detect tampering; this is
     // detection, not a security sandbox against same-UID adversarial compilers.
