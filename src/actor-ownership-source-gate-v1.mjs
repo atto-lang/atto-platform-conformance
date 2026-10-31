@@ -71,18 +71,43 @@ export function validateInvocation(argv, sourceSha) {
       argv.filter(x => x === "{file}").length !== 1 ||
       argv.some(x => x.includes("{file}") && x !== "{file}")) throw Error("absolute compiler executable and exactly one standalone {file} required");
 }
+/** A runtime launcher is not the compiler artifact: pin Java JARs and Node entrypoints too. */
+export function compilerArtifactPaths(argv, explicit = []) {
+  if (!Array.isArray(explicit) || explicit.length > 16)
+    throw Error("invalid compiler artifact inventory");
+  const paths = [...explicit];
+  for (let i = 1; i < argv.length; i++) {
+    const token = argv[i];
+    if (["-cp", "-classpath", "--class-path", "--module-path"].includes(token))
+      throw Error("classpath/modulepath launcher requires a pinned wrapper executable");
+    if (token === "-jar") {
+      if (!argv[i + 1]) throw Error("missing compiler JAR");
+      paths.push(argv[++i]);
+    } else if (i === 1 && /(?:^|\/)node(?:js)?$/.test(argv[0]) &&
+               /\.(?:mjs|cjs|js)$/.test(token)) {
+      paths.push(token);
+    }
+  }
+  if (paths.some(p => typeof p !== "string" || !isAbsolute(p) ||
+       p.includes("\0") || p.includes("{file}") || p.length > 2048) ||
+      new Set(paths).size !== paths.length)
+    throw Error("compiler artifacts must be unique absolute file paths");
+  return paths;
+}
 async function digestRegularFile(path, maxSize) {
   const resolved = await realpath(path), stat = await lstat(resolved);
   if (!stat.isFile() || stat.size > maxSize || stat.nlink !== 1) throw Error("unsafe/nonregular/oversized file");
   return { path: resolved, sha256: sha256(await readFile(resolved)) };
 }
-export async function runSourceAdmission({ backend, argv, sourceSha, spawn = spawnSync }) {
+export async function runSourceAdmission({ backend, argv, sourceSha, artifacts = [], spawn = spawnSync }) {
   validateCaseInventory();
   if (!["java", "llvm"].includes(backend)) throw Error("unsupported backend selector");
   const applicable = SOURCE_CASES.filter(c => c.backends.includes(backend));
   if (!argv) return { backend, ok: false, verificationScope: "NOT_EXECUTED", guestExecuted: false, runtimeTraceVerified: false, physicalIsolationVerified: false, results: applicable.map(c => ({ id: c.id, status: "UNCONFIGURED" })) };
   validateInvocation(argv, sourceSha);
   const executable = await digestRegularFile(argv[0], 512 * 1024 * 1024);
+  const artifactPaths = compilerArtifactPaths(argv, artifacts);
+  const pinnedArtifacts = await Promise.all(artifactPaths.map(p => digestRegularFile(p, 512 * 1024 * 1024)));
   const results = [];
   for (const c of applicable) {
     const file = join(root, "fixtures", "actor-ownership-v1", c.file);
@@ -104,20 +129,23 @@ export async function runSourceAdmission({ backend, argv, sourceSha, spawn = spa
       const response = spawn(executable.path, command.slice(1), { encoding: "utf8", timeout: 15000, maxBuffer: 128 * 1024, shell: false });
       const after = await digestRegularFile(argv[0], 512 * 1024 * 1024);
       changed = executable.sha256 !== after.sha256 || executable.path !== after.path;
+      const artifactAfter = await Promise.all(artifactPaths.map(p => digestRegularFile(p, 512 * 1024 * 1024)));
+      const artifactChanged = artifactAfter.some((a, i) =>
+        a.sha256 !== pinnedArtifacts[i].sha256 || a.path !== pinnedArtifacts[i].path);
       const fixtureChanged = !bytes.equals(await readFile(snapshot)) ||
         !bytes.equals(await readFile(file));
       const classified = classifyCompilerResult(c, response);
-      const status = changed ? "EXECUTABLE_CHANGED" : fixtureChanged ? "FIXTURE_CHANGED" :
+      const status = changed ? "EXECUTABLE_CHANGED" : artifactChanged ? "COMPILER_ARTIFACT_CHANGED" : fixtureChanged ? "FIXTURE_CHANGED" :
         promoteCaseOutcome(c, classified);
       results.push({ id: c.id, fixtureGitBlob: blob, fixtureSha256: sha256(bytes), expected: c.expect,
         status, observedCompilerOutcome: classified,
         promotionBlocked: c.candidate === true, limitations: c.limitations,
         compilerStdoutSha256: sha256(Buffer.from(String(response.stdout ?? ""))),
         compilerStderrSha256: sha256(Buffer.from(String(response.stderr ?? ""))) });
-      if (changed || fixtureChanged) {
+      if (changed || artifactChanged || fixtureChanged) {
         for (const result of results) {
           if (result.status === "SOURCE_ACCEPTED" || result.status === "SOURCE_REJECTED_AS_EXPECTED") {
-            result.status = changed ? "EXECUTABLE_CHANGED" : "FIXTURE_CHANGED";
+            result.status = changed ? "EXECUTABLE_CHANGED" : artifactChanged ? "COMPILER_ARTIFACT_CHANGED" : "FIXTURE_CHANGED";
             result.priorVerificationRevoked = true;
           }
         }
@@ -125,10 +153,11 @@ export async function runSourceAdmission({ backend, argv, sourceSha, spawn = spa
     } finally {
       await rm(scratch, { recursive: true, force: true });
     }
-    if (changed) break;
+    if (changed || results.at(-1)?.status === "COMPILER_ARTIFACT_CHANGED" || results.at(-1)?.status === "FIXTURE_CHANGED") break;
   }
   const ok = results.length === applicable.length && results.every(r => ["SOURCE_ACCEPTED", "SOURCE_REJECTED_AS_EXPECTED"].includes(r.status));
   return { backend, declaredSourceSha: sourceSha, executableSha256: executable.sha256,
+    compilerArtifactSha256: pinnedArtifacts.map((a,i) => ({ path: artifactPaths[i], sha256: a.sha256 })),
     verificationScope: "UNATTESTED_COMPILER_SOURCE_ADMISSION_ONLY", guestExecuted: false,
     runtimeTraceVerified: false, physicalIsolationVerified: false, ok, results };
 }
