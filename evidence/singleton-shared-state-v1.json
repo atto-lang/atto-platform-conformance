@@ -21,8 +21,8 @@
     },
     "forge": {
       "status": "host-foundation-only",
-      "sourceHead": "ad04751751a15d39556c6c20f432ff5d9ce1c883",
-      "sourceTree": "a6e0f3d8b696e7d1f2b23124a871f4772ca3479b",
+      "sourceHead": "818ac53b00165d1cf48232a9cac7cf1d422d61ea",
+      "sourceTree": "6efdf1ae08d79092f41a79b675e7fe93771d7c1e",
       "pullRequest": "ores-truffle-oreslang/oreslang-source.forge#146",
       "executedCaseIds": [],
       "hostFoundationCaseIds": [
@@ -43,16 +43,33 @@
         "singleton-domain-isolation",
         "singleton-cross-task-initialization-cycle"
       ],
-      "limitation": "Current Forge exact head adds a source-local stage-0 compiler/runtime bridge for the empty `define singleton Name as end` shell, compiler-owned bootstrap declaration identity, a prepublication receiver-reference diagnostic, real scalar-source initializer execution in the stage-0 harness, and concurrent registry publication logic. None of those new cases has hosted exact-head execution: Actions run 41158620340 created release/sanitized/sanitized-leaks jobs and all three have zero executed steps. The bootstrap declaration ID uses deterministic FNV-1a components and is not final collision-proof artifact/wire identity. Numeric domain IDs remain trusted host input. Final singleton body/member syntax, deep immutability/effects, cancellation, worker/isolate execution, shared-table guest API and hard-RT guarantees remain pending.",
+      "limitation": "Current Forge exact head contains the source-local stage-0 compiler/runtime bridge for the empty `define singleton Name as end` shell, compiler-owned bootstrap declaration identity, `ORES-SINGLETON-PREPUBLICATION-ESCAPE` classification, real scalar-source initializer execution in the stage-0 harness, and concurrent registry publication logic. None is hosted exact-head execution evidence: Actions run 41158756271 created release/sanitized/sanitized-leaks jobs and all three have zero executed steps. The bootstrap declaration ID uses deterministic FNV-1a components and is not final collision-proof artifact/wire identity. Numeric domain IDs remain trusted host input. Final singleton body/member syntax, deep immutability/effects, cancellation, worker/isolate execution, shared-table guest API and hard-RT guarantees remain pending.",
       "sourceLocalUnexecutedCaseIds": [
         "singleton-concurrent-first-access-once",
         "singleton-prepublication-self-escape"
       ],
       "latestWorkflowRun": {
-        "runId": 41158620340,
+        "runId": 41158756271,
         "runAttempt": 1,
         "executedSteps": 0,
         "runnerAssigned": false,
+        "jobs": [
+          {
+            "jobId": 124411318283,
+            "name": "host-runtime (release)",
+            "executedSteps": 0
+          },
+          {
+            "jobId": 124411318434,
+            "name": "host-runtime (sanitized)",
+            "executedSteps": 0
+          },
+          {
+            "jobId": 124411318482,
+            "name": "host-runtime (sanitized-leaks)",
+            "executedSteps": 0
+          }
+        ],
         "classification": "runner-admission-non-evidence"
       }
     }
