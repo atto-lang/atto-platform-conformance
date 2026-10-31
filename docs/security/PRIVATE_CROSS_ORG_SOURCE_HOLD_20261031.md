@@ -11,9 +11,10 @@ to copy private Oreslang source across organization boundaries.
 
 The proposed `bin/require-private-mirror.mjs` preflight denies **every
 cross-organization** private Git-tree copy, including a relay via a
-previously populated private carrier. It also denies
-`ores-truffle-oreslang/*` copies into a **different repository within
-the same organization**, as no private-source transfer has been approved.
+previously populated private carrier. It also denies **all** `ores-truffle-oreslang/*` source publication,
+including copies to a different repo in the same organization or to a
+new branch of the **source repository itself**: no source-bearing handoff
+namespace has been approved.
 GitHub owner/repository comparisons are case-insensitive. The refusal happens
 **before an HTTP request occurs**. `bin/private-mirror-publish.mjs` already calls
 this preflight before fetching source commit/tree/blob data or creating
@@ -35,7 +36,8 @@ historically copied Git blobs and Actions caches are gone.
 `tests/private-mirror-visibility.test.mjs` and
 `tests/private-mirror-publish.test.mjs` contain cross-org negative cases,
 including mixed-case source owner spelling, cross-organization relay sources,
-and same-organization alternate Oreslang repositories. They prove **zero source fetch
+same-organization alternate Oreslang repositories and self-repository
+branch creation. They prove **zero source fetch
 and zero destination writes** even when a private destination appears on an
 environment allowlist. Existing positive tests now operate only on synthetic,
 same-organization private repository identities, without real source bytes.
@@ -48,7 +50,7 @@ availability—not source transfer approval or conformance.
 ## Current test boundary (2026-10-31)
 
 The current policy/publisher code and both checked-in test modules
-passed **32/32 test cases and 297 assertions** in an isolated V8 execution
+passed **34/34 test cases and 303 assertions** in an isolated V8 execution
 harness with mocked GitHub responses. The separate three-case
 `private-mirror-entrypoints.test.mjs` scanner also passed under a synthetic
 filesystem harness, and its detection function was individually applied
@@ -67,3 +69,6 @@ Actions run `41147809804` attempt 2, failed with no assigned runner and
 zero executed steps. Its earlier successful unrelated source-free run does
 not establish present runner capacity. The actual GitHub Actions policy,
 spending, or admission error still requires an administrator to investigate.
+
+For the exact zero-step job IDs and the read-only administrator investigation
+order, see [runner-admission packet](RUNNER_ADMISSION_DIAGNOSTIC_PACKET_20261031.md).
