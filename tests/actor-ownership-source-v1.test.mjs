@@ -1,0 +1,74 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFile, lstat } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { SOURCE_CASES, UNIMPLEMENTED_GATES, validateCaseInventory,
+  gitBlobHash, validateInvocation, classifyCompilerResult,
+  runSourceAdmission } from "../src/actor-ownership-source-gate-v1.mjs";
+
+const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const checksum = "a".repeat(40);
+
+test("inventory is unique, bounded, classified, and never promises all AO/OW proofs", () => {
+  assert.equal(validateCaseInventory(), true);
+  assert.equal(SOURCE_CASES.length, 9);
+  assert.ok(UNIMPLEMENTED_GATES.includes("AO01_PHYSICAL_PARALLELISM"));
+  assert.ok(UNIMPLEMENTED_GATES.includes("AO04_DISTINCT_PHYSICAL_HEAPS"));
+  assert.ok(UNIMPLEMENTED_GATES.includes("OW05_REGION_GENERATION_FENCE"));
+  assert.throws(() => validateCaseInventory([SOURCE_CASES[0], SOURCE_CASES[0]]), /invalid/);
+  assert.throws(() => validateCaseInventory([{ ...SOURCE_CASES[0], file: "../bypass.ores" }]), /invalid/);
+});
+
+test("every .ores fixture is a real regular source file and canonical upstream blobs remain equal", async () => {
+  for (const c of SOURCE_CASES) {
+    const file = join(root, "fixtures", "actor-ownership-v1", c.file);
+    const st = await lstat(file);
+    assert.ok(st.isFile(), c.id);
+    assert.equal(st.nlink, 1, c.id);
+    const bytes = await readFile(file);
+    assert.ok(bytes.length > 50 && bytes.length < 64 * 1024, c.id);
+    if (c.originBlob) assert.equal(gitBlobHash(bytes), c.originBlob, c.id);
+    assert.match(bytes.toString("utf8"), /\b(?:fnc|actor)\b/, c.id);
+  }
+});
+
+test("unconfigured Java and LLVM are never reported as compiler or guest passes", async () => {
+  for (const backend of ["java", "llvm"]) {
+    const r = await runSourceAdmission({ backend });
+    assert.equal(r.ok, false);
+    assert.equal(r.verificationScope, "NOT_EXECUTED");
+    assert.ok(r.results.length > 0);
+    assert.ok(r.results.every(x => x.status === "UNCONFIGURED"));
+    assert.equal(r.results.filter(x => x.status === "SOURCE_ACCEPTED").length, 0);
+  }
+});
+
+test("compiler invocation requires exact source SHA and absolute executable, no shell interpolation", () => {
+  assert.doesNotThrow(() => validateInvocation(["/tmp/compiler", "--check", "{file}"], checksum));
+  for (const argv of [
+    ["compiler", "{file}"], ["/tmp/compiler", "prefix{file}"],
+    ["/tmp/compiler", "{file}", "{file}"], ["/tmp/compiler", "whatever"],
+    ["/tmp/compiler", "ok\0bad", "{file}"]
+  ]) assert.throws(() => validateInvocation(argv, checksum));
+  assert.throws(() => validateInvocation(["/tmp/compiler", "{file}"], "fake"));
+});
+
+test("semantic negative requires exit one and matching primary error, never a crash or source echo", () => {
+  const c = SOURCE_CASES.find(x => x.id === "OW03_NESTED_RETURN");
+  const yes = { status: 1, stdout: "", stderr: "error: cannot return a nested borrowed reference" };
+  assert.equal(classifyCompilerResult(c, yes), "SOURCE_REJECTED_AS_EXPECTED");
+  assert.equal(classifyCompilerResult(c, { ...yes, status: 0 }), "UNEXPECTED_COMPILER_RESULT");
+  assert.equal(classifyCompilerResult(c, { ...yes, status: 2 }), "UNEXPECTED_COMPILER_RESULT");
+  assert.equal(classifyCompilerResult(c, { ...yes, stderr: "note: error: cannot return a nested borrowed reference" }), "UNEXPECTED_COMPILER_RESULT");
+  assert.equal(classifyCompilerResult(c, { ...yes, stderr: "error: unresolved identifier" }), "DIAGNOSTIC_MISMATCH");
+  assert.equal(classifyCompilerResult(c, { ...yes, stderr: "panic: compiler crashed\nerror: cannot return a nested borrowed reference" }), "COMPILER_CRASH");
+  assert.equal(classifyCompilerResult(c, { ...yes, signal: "SIGSEGV" }), "EXECUTION_FAILED");
+});
+
+test("successful source admission does not imply compiled guest operation or a trace", () => {
+  const c = SOURCE_CASES.find(x => x.id === "AO01_SOURCE_ORDER");
+  assert.equal(classifyCompilerResult(c, { status: 0, stdout: "PASS 43", stderr: "" }), "SOURCE_ACCEPTED");
+  assert.equal(classifyCompilerResult(c, { status: 0, stdout: "error: invalid actor", stderr: "" }), "UNEXPECTED_COMPILER_RESULT");
+  assert.equal(classifyCompilerResult(c, { status: 1, stdout: "", stderr: "error: failed to compile" }), "UNEXPECTED_COMPILER_RESULT");
+});
