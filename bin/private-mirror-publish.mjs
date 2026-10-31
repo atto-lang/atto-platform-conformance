@@ -7,6 +7,7 @@
  */
 import {pathToFileURL} from "node:url";
 import {requirePrivateMirror} from "./require-private-mirror.mjs";
+import {requireIndependentSourceExportApproval} from "./require-private-transfer-approval.mjs";
 
 const OID=/^[a-f0-9]{40}$/;
 const PATH=/^[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*$/;
@@ -49,15 +50,27 @@ export async function publishPrivateMirror({
   sha(sourceCommit);sha(destinationBaseCommit);
   if(!validPath(prefix)||!BRANCH.test(newBranch)||newBranch.includes("..")||newBranch.endsWith(".lock"))
     throw Error("invalid destination prefix or isolated CI branch");
-  const authorize=()=>requirePrivateMirror({
-    source,destination,approvedDestinations,token,fetchImpl
-  });
-  // FIRST external operation: authorization, before ANY source bytes are fetched
-  // and before ANY destination object/ref is created.
+  // Source commit/tree identity is derived from immutable Git commit metadata,
+  // not an untrusted caller claim. No tree or blob is read before approval.
+  let pinnedSourceTree=null;
+  const authorize=async()=>{
+    await requirePrivateMirror({
+      source,destination,approvedDestinations,token,fetchImpl
+    });
+    if(pinnedSourceTree!==null){
+      await requireIndependentSourceExportApproval({
+        source,destination,sourceCommit,sourceTree:pinnedSourceTree,token,fetchImpl
+      });
+    }
+  };
   await authorize();
   const srcCommit=await githubRequest(source,"/git/commits/"+sourceCommit,token,{fetchImpl});
   if(!srcCommit?.tree?.sha||!OID.test(srcCommit.tree.sha))throw Error("source commit has no pinned tree");
-  const srcTree=await githubRequest(source,"/git/trees/"+srcCommit.tree.sha+"?recursive=1",token,{fetchImpl});
+  pinnedSourceTree=srcCommit.tree.sha;
+  // Source tree/blob reads, and all subsequent writes, require independently
+  // approved exact source snapshot bound to destination immutable numeric ID.
+  await authorize();
+  const srcTree=await githubRequest(source,"/git/trees/"+pinnedSourceTree+"?recursive=1",token,{fetchImpl});
   if(srcTree.truncated!==false||!Array.isArray(srcTree.tree))throw Error("source tree incomplete");
   const files=srcTree.tree.filter(x=>x.type==="blob");
   if(files.length===0||files.length>750||srcTree.tree.length>3000)
