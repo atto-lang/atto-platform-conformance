@@ -24,6 +24,15 @@ test("experimental i64 guest status cannot be represented as verified backend pa
   assert.equal(spec.local_source_adapter.source_negative_expected_diagnostic_cases_passed, 18);
   assert.equal(spec.local_source_adapter.clang_asan_ubsan_native_ir_guests_passed, 2);
   assert.equal(spec.local_source_adapter.full_oreslang_llvmc_executed, false);
+  assert.equal(spec.current_branch_adapter.blob_sha,
+    "d8c16d7057de9d3292a72423147e27db492d3c23");
+  assert.equal(spec.current_branch_adapter.typed_hir_blob_sha,
+    "e04b19c37460a5b859d7ad2497583d296cb395b2");
+  assert.equal(spec.current_branch_adapter.production_parser_blob_sha,
+    "c0252d54142522de2cc259afa0e08ec9fce01990");
+  for (const key of ["exact_current_head_compilation",
+                     "exact_current_head_native_guest", "full_compiler_ctest"])
+    assert.equal(spec.current_branch_adapter[key], "NOT_EXECUTED");
   assert.deepEqual(Object.keys(spec.claimed_backend_guest_results).sort(),
     ["java", "llvm", "wasm", "net", "forge"].sort());
   for (const state of Object.values(spec.claimed_backend_guest_results))
