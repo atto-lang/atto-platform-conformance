@@ -12,7 +12,8 @@ function fixture(event = 'pull_request') {
     run: { id: 111, run_attempt: 2, repository: { full_name: 'ores-truffle-oreslang/oreslang-source.llvm' },
       event, head_sha: event === 'workflow_dispatch' ? c : a, status: 'completed', conclusion: 'success' },
     jobs: { total_count: 1, jobs: [{ id: 555, run_id: 111, run_attempt: 2,
-      runner_id: 99, name: 'compiler', status: 'completed', conclusion: 'success',
+      runner_id: 99, head_sha: event === 'workflow_dispatch' ? c : a,
+      name: 'compiler', status: 'completed', conclusion: 'success',
       steps: [{ number: 1, name: 'Compile Oreslang guest', status: 'completed', conclusion: 'success' },
         { number: 2, name: 'Execute compiled guest', status: 'completed', conclusion: 'success' }] }] },
     checkout: { repository: 'ores-truffle-oreslang/oreslang-source.llvm', head_sha: a,
@@ -30,6 +31,11 @@ test('runner admission failure is distinguished from guest failure', () => {
   const x = fixture(); x.run.conclusion = 'failure'; x.jobs.jobs[0].runner_id = 0; x.jobs.jobs[0].steps = [];
   assert.equal(grade(x), 'RUNNER_ADMISSION_FAILURE');
 });
+test('a foreign failed job cannot impersonate an admission failure', () => {
+  const x = fixture(); x.run.conclusion = 'failure'; x.jobs.jobs[0].runner_id = 0;
+  x.jobs.jobs[0].steps = []; x.jobs.jobs[0].run_id = 444;
+  assert.equal(grade(x), 'UNVERIFIED');
+});
 test('no success can be inferred from zero steps', () => {
   const x = fixture(); x.jobs.jobs[0].steps = []; assert.equal(grade(x), 'RUNNER_ADMISSION_FAILURE');
 });
@@ -42,7 +48,8 @@ test('wrong tree, head and workflow identity reject', () => {
 });
 test('wrong run/job attempt and incomplete pages reject', () => {
   for (const edit of [x => x.jobs.jobs[0].run_id = 999,
-    x => x.jobs.jobs[0].run_attempt = 1, x => x.jobs.total_count = 2,
+    x => x.jobs.jobs[0].run_attempt = 1, x => x.jobs.jobs[0].head_sha = c,
+    x => x.jobs.total_count = 2,
     x => x.jobs.jobs.push(structuredClone(x.jobs.jobs[0]))]) {
     const x = fixture(); edit(x); assert.equal(grade(x), 'UNVERIFIED');
   }
