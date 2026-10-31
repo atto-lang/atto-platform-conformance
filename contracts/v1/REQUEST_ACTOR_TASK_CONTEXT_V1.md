@@ -467,3 +467,34 @@ NativeOresVMNio C ABI and a focused source-free stub-broker test.
 The ABI stub does NOT run epoll, an authentic VM, a compiled Oreslang
 HTTP actor, or physical callback/Task quiescence; exact-head CI execution
 and full backend conformance remain pending.
+
+## Addendum: real Linux VM + epoll physical-broker shutdown fixture
+
+LLVM's host-only integration suite now additionally stages
+`native_request_nio_epoll_integration_test.cpp`, which links the real
+NativeOresVM (C), actor scheduler and future runtime (C), and real
+NativeOresVMNio/NativeEpollReactorABI (C++) in a single native executable.
+The test opens a native VM, enables a lazily started Linux epoll reactor,
+spawns an actual native actor, binds an exact request-context exchange and
+registered watch to that actor generation, and exercises two paths:
+readiness on a nonblocking Linux pipe and explicit cancellation of a
+different nonblocking watch.
+
+The test requires the exact watch ticket, reactor and FD on terminal
+completion; refuses foreign or repeated terminal settlement; closes the
+request while the I/O operation is still physically retained; and
+requires VM/backend teardown (which joins reactor workers) before
+issuing the broker-quiescence ACK. It then requires a distinct completed
+cleanup/resume handshake before the I/O request pin, exchange pin and
+request slot can be reclaimed. The test runs a **trusted host-driven**
+cleanup gate: it does NOT demonstrate compiled guest `await` or a
+scheduler-delivered cleanup turn. A real VM shutdown must not be replaced
+with a forged ACK in production.
+
+This real-backend fixture differs from the earlier fake-broker ABI test,
+which remains useful for rejected watch registration and deterministic
+mismatched-completion probes. Both are committed in CMake/CTest and
+the focused exact-head GCC/Clang/ASan+UBSan workflow. They remain
+**NOT EXECUTED** until an authorized runner or local private checkout
+builds the exact Git tree. No end-to-end source guest parity, WCET or
+live-source Task lowering claim follows from checked-in test source.
