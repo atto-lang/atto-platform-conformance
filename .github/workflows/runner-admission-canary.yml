@@ -1,0 +1,25 @@
+name: Runner admission canary
+on:
+  pull_request:
+    paths:
+      - .github/workflows/runner-admission-canary.yml
+      - verification/evidence-provenance.mjs
+      - verification/verify-singleton-shared-state-v1.mjs
+      - contracts/singleton-shared-state-v1.json
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  admission:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Prove runner assignment and step execution
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${RUNNER_NAME:-}"
+          echo "runner=${RUNNER_NAME}"
+          echo "run_id=${GITHUB_RUN_ID}"
+          echo "run_attempt=${GITHUB_RUN_ATTEMPT}"
+          echo "sha=${GITHUB_SHA}"
