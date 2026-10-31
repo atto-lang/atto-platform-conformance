@@ -37,3 +37,30 @@ The GitHub integration's branch protection endpoint returned HTTP 403. Changing 
 
 **Administrative order:** independent incident review and containment; effective protected main and CODEOWNER policy; independent review of source-only gates; fresh source-free runner admission proof with nonzero steps; provision one-use source-org runner; execute reviewed exact-head guest/compiler tests; bind their logs and receipts to immutable SHAs.
 No merge or export is authorized by this checkpoint.
+
+## Platform-family sweep — 2026-10-30 (seven repositories)
+
+Read-only GitHub API inspection checked six `oreslang-platform.*` repositories
+and `oreslang-platform-conformance`. Each `main` returned `protected=false`.
+The following exact-head PR runs were completed with `failure` and each
+sampled job's separate GitHub step lookup returned `steps=[]`. The empty
+step evidence prevents treating these as source compile, model, host, device
+or guest verdicts. This table does not claim to exhaust all matrix jobs.
+
+| Repo | Main commit | Draft PR head | Sampled workflow run | Sampled job / executed steps |
+|---|---|---|---|---|
+| IoT | `4ec351809978296a9aaf6251062515fb90ea2c4c` | #17 `f6db5d71bc2ce4a0d2d919985ada8d021b56572c` | [40790398169](https://github.com/ores-truffle-oreslang/oreslang-platform.iot/actions/runs/40790398169) | sanitizers #123173912027 / 0 |
+| Mobile | `9cbfdafe42e620ed2703f0ac7c7c27e5cd2556bf` | #18 `292677d91d165a6fe302810e1f709732270b8c87` | [40820091089](https://github.com/ores-truffle-oreslang/oreslang-platform.mobile/actions/runs/40820091089) | host (gcc) #123270278417 / 0 |
+| ASIC | `a9a99edd11cb638ce59ab08bf3936ee54f06d246` | #12 `abbc0109d47c8b00535dc755d0824eb4c49adcd8` | [40790838120](https://github.com/ores-truffle-oreslang/oreslang-platform.asic/actions/runs/40790838120) | structural-proof #123175366671 / 0 |
+| FPGA | `60947fb0494d0e5e1b54a9cb3d3f6679899bcf60` | #12 `dc8e0d8ddd2e079fd2b479f655a59bceeaeaacd7` | [40790751226](https://github.com/ores-truffle-oreslang/oreslang-platform.fpga/actions/runs/40790751226) | virtual-hx8k #123175071254 / 0 |
+| Embedded | `974264bd6614ba33a02c7150c0e4cf64a75d3d8a` | #27 `c68075c7a60ec44860f291160ed81f9979c7ed6d` | [40441695595](https://github.com/ores-truffle-oreslang/oreslang-platform.embedded/actions/runs/40441695595) | host (gcc) #121983307229 / 0 |
+| Desktop | `a263a6fd481ed2fad1382d267ae048735c1e01d6` | #17 `22cdc0abc119bec37be40e0a04d48d2dbdb47f86` | [41165671334](https://github.com/ores-truffle-oreslang/oreslang-platform.desktop/actions/runs/41165671334) | linux-gcc #124432584698 / 0 |
+| Conformance | `bffe4a84f5d16a443cfaec80bac9e7661a273ef9` | #253 `326dd0403dd093fa6c87a481fe84d9075d59b3f0` | [41166276399](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/actions/runs/41166276399) | harness #124434426770 / 0 |
+
+Priority: restore actual source-org runner admission, independently configure
+protected branches/rulesets, then run exact-head native, sanitizer, JNI/iOS,
+FPGA/ASIC synthesis model, device and compiled-guest tests *as applicable*.
+Source-free runner capacity checks and syntax-only receipts must not be
+promoted to evidence of physical-device execution or guest parity. Private
+source stays inside its authorized organization until every open transfer
+incident receives independent closure and source/destination approval.
