@@ -1,0 +1,369 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:oreslang:conformance:zorde-handoff:v1",
+  "title": "Zorde cross-repository conformance handoff v1 (shape-only, never attestation)",
+  "description": "A strictly non-promoting receipt envelope. JSON Schema validation does not authenticate GitHub execution, authorize source export, establish TypeSpec/JSON Schema semantic equivalence, or prove native WIT or guest execution.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "suite",
+    "source",
+    "authorities",
+    "checks",
+    "disposition",
+    "privateSourceExportAuthorized"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "suite": {
+      "const": "zorde-dual-authority-wit-v1"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "commitSha",
+        "treeSha"
+      ],
+      "properties": {
+        "repository": {
+          "const": "ores-truffle-oreslang/oreslang-serialization-and-validation"
+        },
+        "commitSha": {
+          "type": "string",
+          "pattern": "^(?!0{40}$)[0-9a-f]{40}$"
+        },
+        "treeSha": {
+          "type": "string",
+          "pattern": "^(?!0{40}$)[0-9a-f]{40}$"
+        }
+      }
+    },
+    "authorities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "typeSpec",
+        "jsonSchema",
+        "wit"
+      ],
+      "properties": {
+        "typeSpec": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "gitBlobSha"
+          ],
+          "properties": {
+            "path": {
+              "const": "contracts/zorde/main.tsp"
+            },
+            "gitBlobSha": {
+              "type": "string",
+              "pattern": "^(?!0{40}$)[0-9a-f]{40}$"
+            }
+          }
+        },
+        "jsonSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "gitBlobSha"
+          ],
+          "properties": {
+            "path": {
+              "const": "contracts/zorde/authored.schema.json"
+            },
+            "gitBlobSha": {
+              "type": "string",
+              "pattern": "^(?!0{40}$)[0-9a-f]{40}$"
+            }
+          }
+        },
+        "wit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "gitBlobSha"
+          ],
+          "properties": {
+            "path": {
+              "const": "wit/zorde-validation.wit"
+            },
+            "gitBlobSha": {
+              "type": "string",
+              "pattern": "^(?!0{40}$)[0-9a-f]{40}$"
+            }
+          }
+        }
+      }
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dualAuthority",
+        "witParser",
+        "nativeGuest"
+      ],
+      "properties": {
+        "dualAuthority": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "executedSteps",
+            "executedTests",
+            "evidenceSha256"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "NOT_EXECUTED",
+                "EXECUTED_UNATTESTED",
+                "REJECTED"
+              ]
+            },
+            "executedSteps": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "executedTests": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "evidenceSha256": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "pattern": "^(?!0{64}$)[0-9a-f]{64}$"
+                }
+              ]
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "NOT_EXECUTED"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "executedSteps": {
+                    "const": 0
+                  },
+                  "executedTests": {
+                    "const": 0
+                  },
+                  "evidenceSha256": {
+                    "type": "null"
+                  }
+                }
+              },
+              "else": {
+                "properties": {
+                  "executedSteps": {
+                    "minimum": 1
+                  },
+                  "executedTests": {
+                    "minimum": 1
+                  },
+                  "evidenceSha256": {
+                    "type": "string",
+                    "pattern": "^(?!0{64}$)[0-9a-f]{64}$"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "witParser": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "executedSteps",
+            "executedTests",
+            "evidenceSha256"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "NOT_EXECUTED",
+                "EXECUTED_UNATTESTED",
+                "REJECTED"
+              ]
+            },
+            "executedSteps": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "executedTests": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "evidenceSha256": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "pattern": "^(?!0{64}$)[0-9a-f]{64}$"
+                }
+              ]
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "NOT_EXECUTED"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "executedSteps": {
+                    "const": 0
+                  },
+                  "executedTests": {
+                    "const": 0
+                  },
+                  "evidenceSha256": {
+                    "type": "null"
+                  }
+                }
+              },
+              "else": {
+                "properties": {
+                  "executedSteps": {
+                    "minimum": 1
+                  },
+                  "executedTests": {
+                    "minimum": 1
+                  },
+                  "evidenceSha256": {
+                    "type": "string",
+                    "pattern": "^(?!0{64}$)[0-9a-f]{64}$"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "nativeGuest": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "executedSteps",
+            "executedTests",
+            "evidenceSha256"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "NOT_EXECUTED",
+                "EXECUTED_UNATTESTED",
+                "REJECTED"
+              ]
+            },
+            "executedSteps": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "executedTests": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000
+            },
+            "evidenceSha256": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "pattern": "^(?!0{64}$)[0-9a-f]{64}$"
+                }
+              ]
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "NOT_EXECUTED"
+                  }
+                },
+                "required": [
+                  "status"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "executedSteps": {
+                    "const": 0
+                  },
+                  "executedTests": {
+                    "const": 0
+                  },
+                  "evidenceSha256": {
+                    "type": "null"
+                  }
+                }
+              },
+              "else": {
+                "properties": {
+                  "executedSteps": {
+                    "minimum": 1
+                  },
+                  "executedTests": {
+                    "minimum": 1
+                  },
+                  "evidenceSha256": {
+                    "type": "string",
+                    "pattern": "^(?!0{64}$)[0-9a-f]{64}$"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "disposition": {
+      "const": "STRUCTURE_ONLY_UNAUTHENTICATED"
+    },
+    "privateSourceExportAuthorized": {
+      "const": false
+    }
+  }
+}
