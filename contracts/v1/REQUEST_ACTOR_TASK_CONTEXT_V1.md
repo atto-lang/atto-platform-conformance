@@ -240,3 +240,30 @@ LLVM draft #1210 now contains host-only source tests for these conditions.
 Those committed tests have not been executed successfully at exact head.
 Actual source Task lowering, I/O callback ownership and hard-real-time
 latency proofs remain independent, mandatory promotion gates.
+
+
+## Addendum: one-time mailbox admission reservation (2026-10-30)
+
+An exchange generation is eligible for at most ONE initial DATA-mailbox
+submission, even when two trusted ingress threads race with the same
+BoundExchange. The initial producer must claim a generation-scoped atomic
+admission reservation before invoking the scheduler try-send operation.
+
+A losing duplicate producer returns an admission error and MUST NOT
+roll back, close, replace, or otherwise invalidate the winning producer's
+exchange or context/body pins. A winning producer whose scheduler
+admission is rejected rolls back its own queued exchange exactly once.
+The reservation remains consumed for that generation, even on rejection.
+
+Reusing the same physical exchange after terminal completion, reactor
+reclamation and physical pin release increments its generation and allows
+one fresh submission with a newly minted dispatch identity. Stale DATA
+tickets cannot claim the new generation. A raw mailbox send that bypasses
+the reserved submission bridge is never authorization to claim a
+request-bearing exchange or access request metadata.
+
+LLVM draft PR #1210 now contains host-only implementation and regression
+sources for concurrent duplicate submission, raw-ticket bypass and
+generation reuse, plus a focused source-org GCC/Clang/ASan+UBSan workflow.
+The workflow has failed before runner assignment: no exact-head pass or
+real five-backend parity claim is supported yet.
