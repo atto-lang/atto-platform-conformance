@@ -83,7 +83,7 @@
     "clang_asan_ubsan_native_ir_guests_passed": 2
   },
   "current_branch_adapter": {
-    "blob_sha": "d8c16d7057de9d3292a72423147e27db492d3c23",
+    "blob_sha": "c5ee913781323711187d5506721dcb47c075d86a",
     "typed_hir_blob_sha": "e04b19c37460a5b859d7ad2497583d296cb395b2",
     "production_parser_blob_sha": "c0252d54142522de2cc259afa0e08ec9fce01990",
     "code_scope": "experimental i64 .ores compiler now routes through shared bounded typed HIR; normal production compiler still fail closed",
@@ -92,13 +92,16 @@
     "full_compiler_ctest": "NOT_EXECUTED"
   },
   "current_branch_typed_mir": {
-    "mir_blob_sha": "c0120557c08269e7caba9dbb97fd776124a239ca",
-    "native_test_blob_sha": "510cc15b06a926b1ffcd719ac36e4aa1c2365f60",
-    "scope": "experimental two-i64-column verified MIR to checked native C++ owner, not production LLVM backend",
+    "mir_blob_sha": "a62b423273910dd79165b5c90e0e2d245a35319b",
+    "native_adapter_blob_sha": "f96e30877caba43b98e24d238a6a9a1766170e92",
+    "native_test_blob_sha": "a92c2e1a260ea603f0dea004371c9298ecedafc1",
+    "compiler_cpp17_test_blob_sha": "529a188e306c6d62062763e1313c9b30c5892bfe",
+    "scope": "compiler-compatible C++17 verified HIR->MIR; separate C++20 two-i64 native owner executor; experimental guest compiler revalidates MIR and guard count, production remains fail closed",
     "native_runtime_execution": "NOT_EXECUTED",
+    "compiler_cpp17_execution": "NOT_EXECUTED",
     "asan_ubsan_execution": "NOT_EXECUTED",
-    "guest_source_to_verified_mir": "NOT_IMPLEMENTED",
+    "guest_source_to_verified_mir": "CODE_STAGED_NOT_EXECUTED",
     "full_oreslang_llvmc_execution": "NOT_EXECUTED",
-    "runner_evidence": "inverted layout GCC/Clang matrix failed zero steps at admission"
+    "runner_evidence": "GCC/Clang matrix exact-head jobs failed before any steps"
   }
 }
