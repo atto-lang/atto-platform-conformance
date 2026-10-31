@@ -2,8 +2,8 @@ import {test} from "node:test";
 import assert from "node:assert/strict";
 import {publishPrivateMirror} from "../bin/private-mirror-publish.mjs";
 
-const source="ores-truffle-oreslang/oreslang-source.java";
-const destination="akrion-sim/akrion-sim-e2e";
+const source="synthetic-private/source";
+const destination="synthetic-private/carrier";
 const A="a".repeat(40),B="b".repeat(40),C="c".repeat(40),
  D="d".repeat(40),E="e".repeat(40);
 const opts={source,destination,sourceCommit:A,destinationBaseCommit:B,
@@ -62,6 +62,17 @@ const run=(t={},overrides={})=>{
  const h=fixture(t);
  return {h,promise:publishPrivateMirror({...opts,fetchImpl:h.request,...overrides})};
 };
+test("source publication refuses open cross-org incident hold before ANY private source GET or destination POST",async()=>{
+ const h=fixture();
+ await assert.rejects(publishPrivateMirror({...opts,
+   source:"ores-truffle-oreslang/oreslang-source.java",
+   destination:"akrion-sim/akrion-sim-e2e",
+   approvedDestinations:["akrion-sim/akrion-sim-e2e"],
+   fetchImpl:h.request
+ }), /incident dispositions #22 and #77/);
+ assert.equal(h.events.length,0);
+});
+
 test("real destination Git-object publisher guards every write and only creates a new CI ref",async()=>{
  const {h,promise}=run();
  const receipt=await promise;
