@@ -122,5 +122,42 @@ class HandoffSchemaTests(unittest.TestCase):
             self.assertFalse(accepted(x))
 
 
+    def test_pinned_real_contract_metadata_is_only_pending(self):
+        # Bytes remain in the source repository; these are Git object identities,
+        # NOT source transfer authorization or executed TypeSpec/WIT evidence.
+        pinned = json.loads(
+            (ROOT / "evidence/zorde-contract-handoff.pending.json").read_text("utf-8")
+        )
+        self.assertTrue(accepted(pinned))
+        self.assertEqual(pinned["source"], {
+            "repository": "ores-truffle-oreslang/oreslang-serialization-and-validation",
+            "commitSha": "bafdbe8fd41aa7a220491acc03be4c6ce57a58fa",
+            "treeSha": "8774cc6b4f817d469dd0bedca8301004917e3d9d",
+        })
+        self.assertEqual(
+            {name: value["gitBlobSha"] for name, value in pinned["authorities"].items()},
+            {
+                "typeSpec": "c5728bd100f1dd36007918038fe54610e0259268",
+                "jsonSchema": "0d8f3ca66952969e8aa9125e9ef427c313b89321",
+                "wit": "8100dbe91514e38a11beea8070a5a5cfc6b639fc",
+            }
+        )
+        self.assertEqual(pinned["disposition"], "STRUCTURE_ONLY_UNAUTHENTICATED")
+        self.assertIs(pinned["privateSourceExportAuthorized"], False)
+        for check in pinned["checks"].values():
+            self.assertEqual(check, pending())
+
+        # A human-edited forged promotion cannot be blessed by schema-only CI.
+        for mutation in (
+            lambda v: v.update(disposition="VERIFIED"),
+            lambda v: v.update(privateSourceExportAuthorized=True),
+            lambda v: v["checks"]["nativeGuest"].update(status="VERIFIED"),
+            lambda v: v["checks"]["dualAuthority"].update(executedSteps=1),
+        ):
+            forged = copy.deepcopy(pinned)
+            mutation(forged)
+            self.assertFalse(accepted(forged))
+
+
 if __name__ == "__main__":
     unittest.main()
