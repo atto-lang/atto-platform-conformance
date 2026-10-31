@@ -4,7 +4,7 @@ import { readFile, lstat } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SOURCE_CASES, UNIMPLEMENTED_GATES, validateCaseInventory,
-  gitBlobHash, validateInvocation, classifyCompilerResult,
+  gitBlobHash, validateInvocation, classifyCompilerResult, promoteCaseOutcome,
   runSourceAdmission } from "../src/actor-ownership-source-gate-v1.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -13,6 +13,8 @@ const checksum = "a".repeat(40);
 test("inventory is unique, bounded, classified, and never promises all AO/OW proofs", () => {
   assert.equal(validateCaseInventory(), true);
   assert.equal(SOURCE_CASES.length, 9);
+  assert.deepEqual(SOURCE_CASES.filter(c => c.candidate === true).map(c => c.id),
+    ["OW01_MOVE_AFTER_TAKE", "OW02_ALIAS_MUTABLE"]);
   assert.ok(UNIMPLEMENTED_GATES.includes("AO01_PHYSICAL_PARALLELISM"));
   assert.ok(UNIMPLEMENTED_GATES.includes("AO04_DISTINCT_PHYSICAL_HEAPS"));
   assert.ok(UNIMPLEMENTED_GATES.includes("OW05_REGION_GENERATION_FENCE"));
@@ -38,6 +40,9 @@ test("unconfigured Java and LLVM are never reported as compiler or guest passes"
     const r = await runSourceAdmission({ backend });
     assert.equal(r.ok, false);
     assert.equal(r.verificationScope, "NOT_EXECUTED");
+    assert.equal(r.guestExecuted, false);
+    assert.equal(r.runtimeTraceVerified, false);
+    assert.equal(r.physicalIsolationVerified, false);
     assert.ok(r.results.length > 0);
     assert.ok(r.results.every(x => x.status === "UNCONFIGURED"));
     assert.equal(r.results.filter(x => x.status === "SOURCE_ACCEPTED").length, 0);
@@ -64,6 +69,8 @@ test("semantic negative requires exit one and matching primary error, never a cr
   assert.equal(classifyCompilerResult(c, { ...yes, stderr: "error: unresolved identifier" }), "DIAGNOSTIC_MISMATCH");
   assert.equal(classifyCompilerResult(c, { ...yes, stderr: "panic: compiler crashed\nerror: cannot return a nested borrowed reference" }), "COMPILER_CRASH");
   assert.equal(classifyCompilerResult(c, { ...yes, signal: "SIGSEGV" }), "EXECUTION_FAILED");
+  assert.equal(classifyCompilerResult(c, { status: 1, stdout: "error: cannot return a nested borrowed reference", stderr: "" }),
+    "UNEXPECTED_COMPILER_RESULT", "stdout source echoes cannot impersonate compiler diagnostics");
 });
 
 test("successful source admission does not imply compiled guest operation or a trace", () => {
@@ -71,4 +78,17 @@ test("successful source admission does not imply compiled guest operation or a t
   assert.equal(classifyCompilerResult(c, { status: 0, stdout: "PASS 43", stderr: "" }), "SOURCE_ACCEPTED");
   assert.equal(classifyCompilerResult(c, { status: 0, stdout: "error: invalid actor", stderr: "" }), "UNEXPECTED_COMPILER_RESULT");
   assert.equal(classifyCompilerResult(c, { status: 1, stdout: "", stderr: "error: failed to compile" }), "UNEXPECTED_COMPILER_RESULT");
+});
+
+
+test("unratified ownership-negative cases are never promoted from their matching diagnostics", () => {
+  const a = SOURCE_CASES.find(c => c.id === "OW01_MOVE_AFTER_TAKE");
+  const b = SOURCE_CASES.find(c => c.id === "OW02_ALIAS_MUTABLE");
+  for (const c of [a, b]) {
+    assert.equal(promoteCaseOutcome(c, "SOURCE_REJECTED_AS_EXPECTED"), "CANDIDATE_UNRATIFIED");
+    assert.equal(promoteCaseOutcome(c, "DIAGNOSTIC_MISMATCH"), "DIAGNOSTIC_MISMATCH");
+  }
+  const established = SOURCE_CASES.find(c => c.id === "OW03_NESTED_RETURN");
+  assert.equal(promoteCaseOutcome(established, "SOURCE_REJECTED_AS_EXPECTED"), "SOURCE_REJECTED_AS_EXPECTED");
+  assert.throws(() => validateCaseInventory([{ ...established, candidate: true, expect: "accept" }]), /invalid/);
 });
