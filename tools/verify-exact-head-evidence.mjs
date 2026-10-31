@@ -45,6 +45,11 @@ export function evaluateEvidence(input) {
     }
   }
   if (run.conclusion !== 'success') {
+    // Only a failed *workflow* can support an admission-failure diagnosis.
+    // Cancelled, timed-out, skipped, neutral, action-required and missing
+    // conclusions remain UNVERIFIED even if a job has no runner or steps.
+    if (run.conclusion !== 'failure')
+      return fail('workflow conclusion is not an executed failure');
     // Still inspect jobs to preserve the primary failure classification.
     if (!Array.isArray(jobs.jobs) || !Number.isSafeInteger(jobs.total_count) ||
         jobs.total_count !== jobs.jobs.length ||
