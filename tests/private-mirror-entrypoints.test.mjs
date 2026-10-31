@@ -21,7 +21,8 @@ function sourceFiles(dir, list=[]) {
   return list;
 }
 function suspiciousWrites(src) {
-  return /\bgit\s+push\b/i.test(src) ||
+  return /\bgit\s+(?:-C\s+\S+\s+)?push\b/i.test(src) ||
+    /\b(?:execFileSync|execFile|spawnSync|spawn)\s*\(\s*["']git["']\s*,\s*\[\s*["']push["']/i.test(src) ||
     /\bgh\s+api\b/i.test(src) ||
     /\/git\/(?:blobs|trees|commits|refs)\b/i.test(src) ||
     (/\b(?:POST|PATCH|PUT|DELETE)\b/.test(src) &&
@@ -33,6 +34,10 @@ function audit(path, src) {
     // implementation, but a missing guard is a mandatory review failure.
     assert.match(src,/from\s+["']\.\/require-private-mirror\.mjs["']/);
     assert.match(src,/await\s+authorize\(\)/);
+    assert.match(src,/const\s+authorize\s*=\s*\(\)\s*=>\s*requirePrivateMirror/);
+    assert.ok(src.indexOf("await authorize();") >= 0 &&
+      src.indexOf("await authorize();") < src.indexOf("const srcCommit=await githubRequest("),
+      "publisher must authorize BEFORE fetching the private source commit");
     return;
   }
   assert.equal(suspiciousWrites(src),false,
@@ -53,6 +58,8 @@ test("only the guarded source publisher may own Git object/ref write surfaces",(
 test("static admission gate rejects direct Git pushes and GitHub object API bypasses",()=>{
   for (const code of [
     "git push --force https://github.com/other/repo.git HEAD:refs/heads/a",
+    "git -C /tmp/checkout push origin HEAD:refs/heads/ci-export",
+    "execFileSync('git',['push','origin','HEAD:refs/heads/ci-export'])",
     "gh api repos/other/repo/git/refs --method POST -f ref=refs/heads/test",
     'fetch("https://api.github.com/repos/x/y/git/blobs",{method:"POST"})',
     'const resource="/git/trees"; transfer(resource);'
