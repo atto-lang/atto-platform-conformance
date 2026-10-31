@@ -145,5 +145,18 @@
     "current_emitter_native_execution": "NOT_EXECUTED",
     "current_emitter_asan_ubsan": "NOT_EXECUTED",
     "production_inverted_lowering": "NOT_IMPLEMENTED"
+  },
+  "current_production_schema_mir_preflight": {
+    "header_blob_sha": "0dd7b78bec0863adf0ef35538ca16d1d8b056cad",
+    "production_parser_blob_sha": "0ab878ccf4286c04babf56192148b156de1b472d",
+    "standalone_cpp17_test_blob_sha": "65f40eb8b37f614eb65dcbd61b7f9d8a0bc76a09",
+    "production_parser_ast_test_blob_sha": "d66ed5915bec93dc41ceca46473d422a5b896588",
+    "scope": "production nominal inverted Program AST -> bounded schema-only HIR -> independently verified MIR Allocate/Close probe, with fail-closed real source lowering",
+    "exact_head_compiler_cpp17_execution": "NOT_EXECUTED",
+    "exact_head_parser_ast_execution": "NOT_EXECUTED",
+    "exact_head_gcc_clang_sanitizers": "NOT_EXECUTED",
+    "source_operations_to_production_mir": "NOT_IMPLEMENTED",
+    "runtime_generation_handles": "NOT_IMPLEMENTED",
+    "production_guest_codegen": "NOT_IMPLEMENTED"
   }
 }
