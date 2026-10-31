@@ -134,9 +134,9 @@
   "current_branch_mir_llvm_codegen": {
     "emitter_blob_sha": "27c6ec16303b33749be973e9bdacbc1c0d874e5d",
     "source_adapter_blob_sha": "e6d5138595e764392f48c7e064fadeb84739370a",
-    "guest_test_blob_sha": "de192aa8babf1dfbd802769e6a3a373ea640ee20",
+    "guest_test_blob_sha": "9cc616cede6453f5f3a9f375df19f588562fbfc7",
     "native_test_driver_blob_sha": "102460fbd0675f7cc7d2737dd9c4f6045bd57aee",
-    "native_test_script_blob_sha": "3de33a763886b3d651ed7fb0c1110d60a752aa42",
+    "native_test_script_blob_sha": "e280b5694aab84909bb68cf47f36bad78a77aa7e",
     "negative_two_column_bounds_blob_sha": "8bac2b6554f231b16da75be038d636537656c9e0",
     "scope": "two-field opt-in real .ores source-to-verified-MIR and physical LLVM IR, plus bounded volatile scrub on close; no escaping handles; default production gate rejects",
     "source_to_mir_guest": "CODE_STAGED_NOT_EXECUTED",
@@ -165,13 +165,13 @@
     "production_source_mir_ast_negative_test_blob_sha": "8715497b5bc519d2d450a12b27da272ff8ab39c7",
     "native_parser_blob_sha": "d5f27ca6d1e6b60be9a7620525848f19f1237c1b",
     "native_main_blob_sha": "82f22ce2e899d2d27a7ec21ff365efc6b241b640",
-    "native_guest_test_blob_sha": "13e163228e041e92ec1e0ed1866d3a2844532aa5",
+    "native_guest_test_blob_sha": "836e2d40074c63a33bf66c19df5e6e10d68ba89a",
     "llvm_emitter_blob_sha": "27c6ec16303b33749be973e9bdacbc1c0d874e5d",
     "current_head_cpp17_source_test": "NOT_EXECUTED",
     "current_head_full_compiler": "NOT_EXECUTED",
     "current_head_native_guest": "NOT_EXECUTED",
     "current_head_sanitizers": "NOT_EXECUTED",
-    "runner_admission": "source-org jobs failed with steps=0",
+    "runner_admission": "source-org run #41217921239 had GCC/Clang normal/sanitizer 4/4 zero-step jobs; alternate source-free scintilla-run/scintilla-run-e2e run #41217749367 attempt 2 failed zero steps; no private source transfer",
     "declaration_rejection": [
       "sum type AST",
       "conforms AST",
@@ -179,6 +179,7 @@
     ],
     "limits": "literal-only local two i64 fields, bounded capacity <=256, main only; no escaped row handles",
     "production_parser_ast_negative_test_blob_sha": "981972662a4664df81d03fc4a8318128dc87fddc",
-    "hardening": "production AST verifier and real parser-resolver reject sum types, conforms declarations and type-constraint descriptors that lack MIR lowering; tests committed, not executed"
+    "hardening": "production AST verifier and real parser-resolver reject sum types, conforms declarations and type-constraint descriptors that lack MIR lowering; tests committed, not executed",
+    "runtime_bounds_trap_gate": "MIR and full production guest require emitted checked LLVM trap and SIGILL/SIGTRAP, not arbitrary nonzero status"
   }
 }
