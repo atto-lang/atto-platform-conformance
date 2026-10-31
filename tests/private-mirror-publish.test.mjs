@@ -47,7 +47,7 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
         const ledger=security?.ledger??{schema:"ores.private-ci.source-export-ledger/v1",
           approvals:[approvedRecord()]};
         data={path:"security/private-ci-source-export-approvals.v1.json",
-          encoding:"base64",content:Buffer.from(JSON.stringify(ledger)+"\\n").toString("base64")};
+          encoding:"base64",content:Buffer.from(JSON.stringify(ledger)+"\n").toString("base64")};
       }
       if(!data)throw Error("unrecognized policy path "+path);
       return{status:200,json:async()=>data};
