@@ -1,0 +1,38 @@
+name: Private mirror incident-hold source-local tests
+on:
+  pull_request:
+    paths:
+      - 'bin/require-private-mirror.mjs'
+      - 'bin/private-mirror-publish.mjs'
+      - 'tests/private-mirror-visibility.test.mjs'
+      - 'tests/private-mirror-publish.test.mjs'
+      - '.github/workflows/private-mirror-incident-hold.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fail-closed-export-admission:
+    # Never check out PR source from an unrelated organization or carrier.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Confirm exact source-repository head
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          echo "SOURCE_LOCAL_SECURITY_TEST_HEAD=$EXPECTED_HEAD"
+      - name: Execute complete private mirror policy and publisher unit tests
+        run: |
+          set -euo pipefail
+          node --version
+          node --test tests/private-mirror-visibility.test.mjs tests/private-mirror-publish.test.mjs
+          echo "MIRROR_POLICY_TESTS_EXECUTED=true"
+          echo "PRIVATE_SOURCE_CROSS_ORG_TRANSFER=NOT_AUTHORIZED"
