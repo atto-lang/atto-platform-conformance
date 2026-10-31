@@ -77,6 +77,7 @@
     "resource-loan-drain-before-stop",
     "foreign-vm-root-handle-rejected-even-if-generation-collides",
     "typed-untrusted-boundary-fails-closed",
-    "reserved-dot-tenant-id-denial"
+    "reserved-dot-tenant-id-denial",
+    "neighbor-survives-tenant-trap-and-reincarnation"
   ]
 }
