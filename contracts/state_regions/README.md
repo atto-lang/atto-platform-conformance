@@ -121,3 +121,31 @@ Java/LLVM/.NET/WASM/Forge compiler/runtime head.
 No private source tree was transferred. Source-repository export policy must
 authorize the exact destination and exact source snapshot before any such
 transfer, regardless of runner budget.
+
+
+## Physical-lifetime admission vectors (2026-10-30)
+
+`physical-quiescence-v1.json` records eight versioned, backend-neutral
+retirement scenarios: admitted running turns, turns queued before STOP,
+late-start rejection, queued rejection, cancellation with outstanding
+lifetime pins, multiple outstanding Task/FFI pins, duplicate completion and
+bounded pin exhaustion. A separate eight-case compiler admission registry
+describes required borrow-escape, mutable aliasing, await/select/cooperate,
+early retirement and checked-overflow behavior. It is a **test inventory**,
+not actual compiled Oreslang source or a runtime certification.
+
+`node --test tests/state-region-physical-quiescence-v1.test.mjs`
+runs the independent source-free lifecycle reference oracle. It checks the
+fixture expectations and 256 deterministic completion/STOP schedules. A
+successful oracle run only means the specification is internally consistent.
+It does **not** imply LLVM, Java/Graal, Wasm, .NET or Forge source lowering
+is implemented, and does not justify a backend PASS in the evidence ledger.
+
+Runtime separation: region lifetime pins keep memory alive, while a different
+loan grants read/write authority. A queued pinned turn must separately claim
+a one-time start under the retirement admission fence before it can execute.
+An executor that throws **after** a turn started cannot transfer lifetime
+release back to the submitting thread. Compiler proofs must enforce lexical
+borrows and suspension. Java host bridge PR #2305 and LLVM native Task/actor
+pin PR #1192 target these requirements through different physical backings.
+Both remain drafts pending full executable guest and CI evidence.
