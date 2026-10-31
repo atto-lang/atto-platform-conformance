@@ -17,6 +17,14 @@ or executed steps*. This does **not** show a compiler, test, sanitizer or
 security regression. It also does **not** establish that paid GitHub Actions
 minutes are depleted.
 
+The **source organization's own** metadata-only canary also fails at
+admission: conformance run `41233909216` records two jobs,
+`ubuntu-latest-comparison` (`124633551130`) and
+`source-local-canary` (`124633551386`), each with **zero steps and
+no runner**. This rules out a requirement for an Oreslang source checkout
+or native toolchain as the cause of *that* canary failure, but it does not
+identify the administrator-side billing, runner, GitHub plan or policy reason.
+
 A source-free private alternate-org retry, `honeypot-r-us-test/hnpt-infra`
 run `41147809804` attempt 2, job `124625232510`, likewise completed
 without any runner/steps. Historical successes in alternate organizations
