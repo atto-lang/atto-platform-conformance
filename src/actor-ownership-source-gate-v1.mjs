@@ -13,8 +13,8 @@ export const SOURCE_CASES = Object.freeze([
   { id: "AO01_SOURCE_ORDER", file: "actor-interleaved-stop.ores", backends: ["llvm"], expect: "accept", originBlob: "c7488835f34e926dfa4c8766c8917301fe84da09", limitations: "does not prove physical actor overlap or exclusivity" },
   { id: "AO03_AFTER_STOP", file: "actor-send-after-stop.ores", backends: ["llvm"], expect: "reject", diagnostic: "actor message sent after stop", originBlob: "ba046cb355fd16d9b5f6f7b39ace45356ef497db", limitations: "source rejection, not a stale native completion trace" },
   { id: "AO04_PRIVATE_STATE", file: "isolated-actor-sealed-write.ores", backends: ["llvm"], expect: "accept", originBlob: "9bec6500694b826ccb3c0d2fc292bba816437dbc", limitations: "one isolated actor; two-heap physical evidence still required" },
-  { id: "OW01_MOVE_AFTER_TAKE", file: "move-after-take.ores", backends: ["java"], expect: "reject", diagnostic: "moved", limitations: "candidate syntax; needs current-head compiler semantic diagnostic" },
-  { id: "OW02_ALIAS_MUTABLE", file: "double-mutable-borrow.ores", backends: ["java"], expect: "reject", diagnostic: "borrow", limitations: "candidate syntax; needs current-head compiler semantic diagnostic" },
+  { id: "OW01_MOVE_AFTER_TAKE", file: "move-after-take.ores", backends: ["java"], expect: "reject", candidate: true, diagnostic: "moved", limitations: "candidate syntax; needs current-head compiler semantic diagnostic" },
+  { id: "OW02_ALIAS_MUTABLE", file: "double-mutable-borrow.ores", backends: ["java"], expect: "reject", candidate: true, diagnostic: "borrow", limitations: "candidate syntax; needs current-head compiler semantic diagnostic" },
   { id: "OW03_NESTED_RETURN", file: "nested-loan-return.ores", backends: ["java"], expect: "reject", diagnostic: "cannot return a nested borrowed reference", limitations: "ported from Java draft #2098; not evidence on main" },
   { id: "OW03_CLOSURE_ESCAPE", file: "borrowed-closure-escape.ores", backends: ["java"], expect: "reject", diagnostic: "closure cannot capture borrowed value", limitations: "ported from Java draft #2098; not evidence on main" },
   { id: "OW03_SUSPENSION_ESCAPE", file: "borrowed-suspension.ores", backends: ["java"], expect: "reject", diagnostic: "ordinary borrow is live", limitations: "ported from Java draft #2098; not evidence on main" },
@@ -37,6 +37,7 @@ export function validateCaseInventory(cases = SOURCE_CASES) {
         new Set(c.backends).size !== c.backends.length ||
         (c.expect === "reject" && (!c.diagnostic || !/^[a-z ]{3,120}$/.test(c.diagnostic))) ||
         (c.expect === "accept" && c.diagnostic !== undefined) ||
+        (c.candidate !== undefined && (c.candidate !== true || c.expect !== "reject")) ||
         (c.originBlob !== undefined && !shaOk(c.originBlob))) throw Error("invalid source-case metadata");
     ids.add(c.id); files.add(c.file);
   }
@@ -48,8 +49,12 @@ export function classifyCompilerResult(c, result) {
   if (stdout.length + stderr.length > 256 * 1024) return "OUTPUT_TOO_LARGE";
   const combined = stderr + "\n" + stdout;
   if (/\b(?:panic|segmentation fault|stack trace|stacktrace|internal compiler error|fatal error)\b/i.test(combined)) return "COMPILER_CRASH";
-  const firstError = combined.split(/\r?\n/).find(line => /^(?:[^\n:]{1,180}:\d+(?::\d+)?:\s*)?(?:fatal\s+)?error(?:\[[\w-]+\])?\s*:/i.test(line.trimStart()));
-  if (c.expect === "accept") return result.status === 0 && !firstError ? "SOURCE_ACCEPTED" : "UNEXPECTED_COMPILER_RESULT";
+  // A source snippet echoed on stdout must not impersonate a semantic rejection.
+  // Reject ambiguous stdout-only diagnostics until a backend-specific adapter is reviewed.
+  const errorLine = /^(?:[^\n:]{1,180}:\d+(?::\d+)?:\s*)?(?:fatal\s+)?error(?:\[[\w-]+\])?\s*:/i;
+  const firstError = stderr.split(/\r?\n/).find(line => errorLine.test(line.trimStart()));
+  const echoedError = stdout.split(/\r?\n/).some(line => errorLine.test(line.trimStart()));
+  if (c.expect === "accept") return result.status === 0 && !firstError && !echoedError ? "SOURCE_ACCEPTED" : "UNEXPECTED_COMPILER_RESULT";
   if (result.status !== 1 || !firstError) return "UNEXPECTED_COMPILER_RESULT";
   const diagnostic = firstError.replace(/^.*?\berror(?:\[[\w-]+\])?\s*:\s*/i, "").toLowerCase();
   return diagnostic.includes(c.diagnostic.toLowerCase()) ? "SOURCE_REJECTED_AS_EXPECTED" : "DIAGNOSTIC_MISMATCH";
@@ -70,7 +75,7 @@ export async function runSourceAdmission({ backend, argv, sourceSha, spawn = spa
   validateCaseInventory();
   if (!["java", "llvm"].includes(backend)) throw Error("unsupported backend selector");
   const applicable = SOURCE_CASES.filter(c => c.backends.includes(backend));
-  if (!argv) return { backend, ok: false, verificationScope: "NOT_EXECUTED", results: applicable.map(c => ({ id: c.id, status: "UNCONFIGURED" })) };
+  if (!argv) return { backend, ok: false, verificationScope: "NOT_EXECUTED", guestExecuted: false, runtimeTraceVerified: false, physicalIsolationVerified: false, results: applicable.map(c => ({ id: c.id, status: "UNCONFIGURED" })) };
   validateInvocation(argv, sourceSha);
   const executable = await digestRegularFile(argv[0], 512 * 1024 * 1024);
   const results = [];
@@ -96,15 +101,18 @@ export async function runSourceAdmission({ backend, argv, sourceSha, spawn = spa
       changed = executable.sha256 !== after.sha256 || executable.path !== after.path;
       const fixtureChanged = !bytes.equals(await readFile(snapshot)) ||
         !bytes.equals(await readFile(file));
+      const classified = classifyCompilerResult(c, response);
+      const status = changed ? "EXECUTABLE_CHANGED" : fixtureChanged ? "FIXTURE_CHANGED" :
+        c.candidate && classified === "SOURCE_REJECTED_AS_EXPECTED" ? "CANDIDATE_UNRATIFIED" : classified;
       results.push({ id: c.id, fixtureGitBlob: blob, fixtureSha256: sha256(bytes), expected: c.expect,
-        status: changed ? "EXECUTABLE_CHANGED" : fixtureChanged ? "FIXTURE_CHANGED" : classifyCompilerResult(c, response),
-        limitations: c.limitations,
+        status, observedCompilerOutcome: classified,
+        promotionBlocked: c.candidate === true, limitations: c.limitations,
         compilerStdoutSha256: sha256(Buffer.from(String(response.stdout ?? ""))),
         compilerStderrSha256: sha256(Buffer.from(String(response.stderr ?? ""))) });
-      if (changed) {
+      if (changed || fixtureChanged) {
         for (const result of results) {
           if (result.status === "SOURCE_ACCEPTED" || result.status === "SOURCE_REJECTED_AS_EXPECTED") {
-            result.status = "EXECUTABLE_CHANGED";
+            result.status = changed ? "EXECUTABLE_CHANGED" : "FIXTURE_CHANGED";
             result.priorVerificationRevoked = true;
           }
         }
