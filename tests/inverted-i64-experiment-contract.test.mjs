@@ -37,6 +37,19 @@ test("experimental i64 guest status cannot be represented as verified backend pa
     assert.equal(spec.current_branch_typed_mir[key], "NOT_EXECUTED");
   assert.equal(spec.current_branch_typed_mir.guest_source_to_verified_mir,
     "CODE_STAGED_NOT_EXECUTED");
+  assert.equal(spec.local_mir_llvm_i64_codegen.source_emitter_blob_sha,
+    "1a4cc742a6d3bdc31c7e48eb8712d74ee8fa8196");
+  assert.equal(spec.local_mir_llvm_i64_codegen.test_driver_blob_sha,
+    "eb5cc1edd0f8986b86b6b4fcb56a58602e9b07a9");
+  assert.equal(spec.local_mir_llvm_i64_codegen.clang_script_blob_sha,
+    "6e54a1b07c181c1ec4250e30277d6e95e1886b0f");
+  assert.equal(spec.local_mir_llvm_i64_codegen.exit_42_runs, 2);
+  assert.equal(spec.local_mir_llvm_i64_codegen.runtime_bounds_trap_exit, 132);
+  for (const key of ["real_repo_full_ctest", "full_exact_source_tree_runtime_proof",
+                     "asan_ubsan"])
+    assert.equal(spec.local_mir_llvm_i64_codegen[key], "NOT_EXECUTED");
+  assert.equal(spec.local_mir_llvm_i64_codegen.production_oreslang_llvmc_codegen,
+    "NOT_IMPLEMENTED");
   assert.equal(spec.current_branch_adapter.blob_sha,
     "c5ee913781323711187d5506721dcb47c075d86a");
   assert.equal(spec.current_branch_adapter.typed_hir_blob_sha,
