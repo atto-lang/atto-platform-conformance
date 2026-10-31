@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Source-free GitHub Actions metadata evaluator. Never certifies semantic parity.
-import { readFileSync } from 'node:fs';
+import { openSync, closeSync, fstatSync, readSync, constants } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const SHA = /^[0-9a-f]{40}$/;
@@ -95,10 +95,41 @@ export function evaluateEvidence(input) {
     semantic_parity_certified: false, source_transfer_authorized: false };
 }
 
+// Offline input is still untrusted. Opening an attacker-supplied FIFO with
+// readFileSync can hang evidence triage before any semantic checks run.
+// Refuse non-regular files, final-component symlinks and overlarge bundles.
+// This is not an authenticated GitHub receipt or a filesystem sandbox.
+const MAX_EVIDENCE_BYTES = 256 * 1024;
+export function readEvidenceBundle(filename) {
+  if (typeof filename !== 'string' || filename.length === 0)
+    throw Error('evidence path required');
+  if (!Number.isInteger(constants.O_NOFOLLOW) || !Number.isInteger(constants.O_NONBLOCK))
+    throw Error('safe evidence-file flags unavailable');
+  const fd = openSync(filename, constants.O_RDONLY | constants.O_NOFOLLOW |
+    constants.O_NONBLOCK);
+  try {
+    const stat = fstatSync(fd);
+    if (!stat.isFile() || stat.size < 1 || stat.size > MAX_EVIDENCE_BYTES)
+      throw Error('evidence must be a nonempty regular file <=256 KiB');
+    const bytes = Buffer.alloc(MAX_EVIDENCE_BYTES + 1);
+    let length = 0;
+    while (length < bytes.length) {
+      const count = readSync(fd, bytes, length, bytes.length - length, null);
+      if (count === 0) break;
+      length += count;
+    }
+    if (length < 1 || length > MAX_EVIDENCE_BYTES)
+      throw Error('evidence file empty or exceeded 256 KiB');
+    return JSON.parse(bytes.toString('utf8', 0, length));
+  } finally {
+    closeSync(fd);
+  }
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
     if (process.argv.length !== 3) throw Error('usage: node tools/verify-exact-head-evidence.mjs <bundle.json>');
-    const data = JSON.parse(readFileSync(process.argv[2], 'utf8'));
+    const data = readEvidenceBundle(process.argv[2]);
     const result = evaluateEvidence(data);
     console.log(JSON.stringify(result, null, 2));
     if (result.classification !== 'EXECUTION_STEPS_RECORDED') process.exitCode = 1;
