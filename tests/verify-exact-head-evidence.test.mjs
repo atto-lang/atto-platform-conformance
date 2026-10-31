@@ -35,6 +35,33 @@ test('runner admission failure is distinguished from guest failure', () => {
   const x = fixture(); x.run.conclusion = 'failure'; x.jobs.jobs[0].runner_id = 0; x.jobs.jobs[0].steps = [];
   assert.equal(grade(x), 'RUNNER_ADMISSION_FAILURE');
 });
+test('recorded failing steps cannot be relabeled as runner admission', () => {
+  const x = fixture();
+  x.run.conclusion = 'failure';
+  x.jobs.jobs[0].conclusion = 'failure';
+  x.jobs.jobs[0].runner_id = 0; // Incomplete runner metadata is not zero-step proof.
+  x.jobs.jobs[0].steps[1].conclusion = 'failure';
+  assert.equal(grade(x), 'UNVERIFIED');
+
+  const y = fixture();
+  y.run.conclusion = 'failure';
+  y.jobs.jobs[0].runner_id = 0;
+  delete y.jobs.jobs[0].steps; // Omitted metadata is not an empty list.
+  assert.equal(grade(y), 'UNVERIFIED');
+});
+
+test('successful workflow does not convert missing metadata into admission evidence', () => {
+  const x = fixture();
+  delete x.jobs.jobs[0].steps;
+  assert.equal(grade(x), 'UNVERIFIED');
+  const y = fixture();
+  y.jobs.jobs[0].runner_id = 0; // Two recorded steps; no reliable runner identity.
+  assert.equal(grade(y), 'UNVERIFIED');
+  const z = fixture();
+  z.jobs.jobs[0].steps = []; // Explicit zero-step evidence remains admission-only.
+  assert.equal(grade(z), 'RUNNER_ADMISSION_FAILURE');
+});
+
 test('a foreign failed job cannot impersonate an admission failure', () => {
   const x = fixture(); x.run.conclusion = 'failure'; x.jobs.jobs[0].runner_id = 0;
   x.jobs.jobs[0].steps = []; x.jobs.jobs[0].run_id = 444;
