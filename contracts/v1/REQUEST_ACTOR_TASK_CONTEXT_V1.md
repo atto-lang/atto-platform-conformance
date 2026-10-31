@@ -435,3 +435,35 @@ registration bridge and negative tests for rejected/throwing admission
 and synchronous terminal settlement during watch setup. Source-level
 NIO registration and compiled guest `await` remain unverified, and the
 test source is not equivalent to an executed exact-head pass.
+
+## Addendum: exact native VM/NIO watch identity and completion admission
+
+A successful physical NIO watch registration must return an immutable
+backend watch identity. The host keeps that watch (ticket and reactor) and
+its associated descriptor together with the exact request-owned I/O
+operation and physical request-context lease. An event for another watch
+ticket, reactor, descriptor, operation or actor incarnation cannot settle
+the request's continuation or authorize memory reclamation.
+
+The trusted NIO registration path must use the transactional request-lease
+reservation protocol: reserve, pin request, call the native watch-admission
+API, and only PUBLISH the lease on a genuinely successful watch admission.
+A rejected watch must roll back its unpublished reservation and release
+its temporary pin, without inventing a broker completion. Host registration
+callbacks must not throw; an exception after watch acceptance cannot
+safely be mistaken for rejection.
+
+After consuming a matching terminal watch record, the owning operation
+may atomically settle its terminal result. READY, CANCELLED and STOPPED
+map to success, cancellation and closed respectively. This result is
+NOT proof that the broker can no longer touch its buffers. A separate
+physical broker-quiescence acknowledgment plus scheduler-owned cleanup,
+zero active loans and terminal operation retirement are still required
+before releasing the request lease. Duplicate or mismatched completion
+records must not settle another operation.
+
+LLVM PR #1210 now stages NativeRequestNioWatch.hpp against the actual
+NativeOresVMNio C ABI and a focused source-free stub-broker test.
+The ABI stub does NOT run epoll, an authentic VM, a compiled Oreslang
+HTTP actor, or physical callback/Task quiescence; exact-head CI execution
+and full backend conformance remain pending.
