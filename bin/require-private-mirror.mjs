@@ -61,6 +61,19 @@ export async function requirePrivateMirror({
   // be attempted when approval, credentials or names are missing.
   const from = repoName(source);
   const to = repoName(destination);
+  // P0 incident containment: conformance #22 and #77 remain open, and the
+  // protected source policy has NOT independently authorized cross-org
+  // Oreslang exports. An environment allowlist, a private destination or
+  // an explicit request to test cannot override this mandatory hold.
+  //
+  // This gate runs BEFORE credential or GitHub metadata checks. Even a
+  // previously approved carrier may not fetch a private Oreslang blob.
+  // Remove this hold only in a separately reviewed security change AFTER
+  // independently verified incident dispositions and per-snapshot approval.
+  if (from.split("/")[0] === "ores-truffle-oreslang" &&
+      to.split("/")[0] !== "ores-truffle-oreslang") {
+    throw Error("Oreslang cross-organization private mirror suspended pending independent incident dispositions #22 and #77");
+  }
   if (!Array.isArray(approvedDestinations) ||
       approvedDestinations.length === 0 || approvedDestinations.length > 32 ||
       !approvedDestinations.every(v => typeof v === "string" && FULL_NAME.test(v)) ||
