@@ -1,7 +1,7 @@
 import fs from "node:fs";
 
 const REQUIRED_BACKENDS = ["java", "llvm", "net", "wasm", "forge"];
-const ALLOWED_STATUS = new Set(["pending-guest", "host-foundation-only", "guest-executed"]);
+const ALLOWED_STATUS = new Set(["pending-guest", "host-foundation-only", "guest-partial", "guest-executed"]);
 const SHA40 = /^[0-9a-f]{40}$/;
 const SHA256 = /^[0-9a-f]{64}$/;
 const FROZEN_V1_SCENARIOS = [
@@ -261,7 +261,7 @@ export function verify(contract, evidence) {
     for (const id of executed) if (!ids.includes(id)) errors.push(`${name}: unknown case ${id}`);
     if (new Set(executed).size !== executed.length)
       errors.push(`${name}: duplicate executed case id`);
-    if (entry.status !== "guest-executed" && executed.length !== 0)
+    if (["pending-guest", "host-foundation-only"].includes(entry.status) && executed.length !== 0)
       errors.push(`${name}: pending/host-only backend cannot claim executed guest cases`);
     if (entry.status === "host-foundation-only") {
       const hostCases = entry.hostFoundationCaseIds ?? [];
@@ -271,7 +271,10 @@ export function verify(contract, evidence) {
     }
 
 
-    if (entry.status === "guest-executed") {
+    if (entry.status === "guest-executed" || entry.status === "guest-partial") {
+      if (entry.status === "guest-partial" &&
+          (executed.length < 1 || executed.length >= ids.length))
+        errors.push(`${name}: partial guest coverage must contain between 1 and 19 cases`);
       if (!SHA40.test(entry.sourceHead ?? "")) errors.push(`${name}: exact source head required`);
       if (!SHA40.test(entry.sourceTree ?? "")) errors.push(`${name}: exact source tree required`);
       if (!SHA256.test(entry.compilerSha256 ?? "")) errors.push(`${name}: compiler SHA-256 required`);
@@ -289,13 +292,13 @@ export function verify(contract, evidence) {
       // Structural receipt validation is not independent runner attestation.
       // CI must verify the linked job, source, compiler, artifacts and case logs.
       const receipts = entry.caseReceipts;
-      if (!Array.isArray(receipts) || receipts.length !== ids.length) {
-        errors.push(`${name}: one guest receipt per v1 case required`);
+      if (!Array.isArray(receipts) || receipts.length !== executed.length) {
+        errors.push(`${name}: one guest receipt per claimed case required`);
       } else {
         const receiptIds = receipts.map(r => r?.id);
-        if (new Set(receiptIds).size !== ids.length ||
-            receiptIds.some(id => !ids.includes(id)))
-          errors.push(`${name}: guest receipts must cover exactly the v1 case ids`);
+        if (new Set(receiptIds).size !== executed.length ||
+            receiptIds.some(id => !executed.includes(id)))
+          errors.push(`${name}: guest receipts must match exactly the claimed case ids`);
         for (const receipt of receipts) {
           if (!receipt || !ids.includes(receipt.id)) continue;
           const scenario = scenarios.find(s => s.id === receipt.id);
@@ -317,10 +320,12 @@ export function verify(contract, evidence) {
         }
       }
       const missing = ids.filter(id => !executed.includes(id));
-      if (missing.length) errors.push(`${name}: missing executed cases: ${missing.join(",")}`);
-      if (name === "wasm" && entry.crossWorkerOrIsolateExecuted !== true)
+      if (entry.status === "guest-executed" && missing.length)
+        errors.push(`${name}: missing executed cases: ${missing.join(",")}`);
+      if (entry.status === "guest-executed" && name === "wasm" && entry.crossWorkerOrIsolateExecuted !== true)
         errors.push("wasm: cross-worker/isolate execution required");
-      if ((name === "llvm" || name === "forge") && entry.sanitizersPassed !== true)
+      if (entry.status === "guest-executed" &&
+          (name === "llvm" || name === "forge") && entry.sanitizersPassed !== true)
         errors.push(`${name}: ASan/UBSan evidence required`);
     }
   }
@@ -361,6 +366,16 @@ function selfTest(contract, evidence) {
   });
   expectReject("host-only guest execution claim", (_c, e) => {
     e.backends.forge.executedCaseIds = [contract.scenarios[0].id];
+  });
+  expectReject("partial claim lacking case receipts", (_c, e) => {
+    e.backends.java = {
+      status: "guest-partial", sourceHead: "a".repeat(40),
+      sourceTree: "b".repeat(40), compilerSha256: "c".repeat(64),
+      executedCaseIds: [contract.scenarios[0].id],
+      workflowRun: {runId: 100, runAttempt: 1, jobId: 200, runnerId: 300,
+                    headSha: "a".repeat(40), conclusion: "success",
+                    runnerAssigned: true, executedSteps: 2}
+    };
   });
   expectReject("zero-step evidence", (_c, e) => {
     e.backends.java = {
