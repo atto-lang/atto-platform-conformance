@@ -30,9 +30,11 @@ function evidenceBasics(e,backend,status){
     'runner','compiler_executed','guest_executed','negative_proof_sha256','checks'],'evidence');
   if(!SHA40.test(e.source_sha)||!SHA40.test(e.source_tree)
       ||!SHA256.test(e.compiler_sha256)
-      ||(status==='unsupported_confirmed'
-        ? e.image_sha256!==null
-        : !SHA256.test(e.image_sha256)))
+      ||(status==='pass_executed'
+        ? !SHA256.test(e.image_sha256)
+        : status==='unsupported_confirmed'
+          ? e.image_sha256!==null
+          : e.image_sha256!==null&&!SHA256.test(e.image_sha256)))
     reject('invalid exact source/compiler/image digests');
   expectedKeys(e.runner,['head_sha','run_id','job_id','run_attempt','steps_executed','backend'],'runner');
   if(e.runner.head_sha!==e.source_sha||e.runner.backend!==backend
