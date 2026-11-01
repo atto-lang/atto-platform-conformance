@@ -228,6 +228,38 @@ test("Wasm and NativeAOT guest steps cannot be replaced by generic run markers",
     fails(x,pattern);
   }
 });
+test("every target denies source-free canary and zero-step job impersonation",()=>{
+  for(const toolchain of TOOLCHAINS){
+    const sourceFree=receipt("desktop",toolchain);
+    sourceFree.run.steps=["verify-exact-head","compile-ores-source","source-free-canary"];
+    fails(sourceFree,/positive case requires guest execution step/);
+    const zeroSteps=receipt("desktop",toolchain);
+    zeroSteps.run.steps=[];
+    fails(zeroSteps,/missing bounded executed compiler steps/);
+    const zeroRunner=receipt("desktop",toolchain);
+    zeroRunner.run.runnerId=0;
+    fails(zeroRunner,/missing executed runner evidence/);
+  }
+});
+test("all five target receipts reject wrong exact platform head or foreign repository",()=>{
+  for(const toolchain of TOOLCHAINS){
+    const wrongHead=receipt("embedded",toolchain);
+    wrongHead.run.headSha="f".repeat(40);
+    fails(wrongHead,/run repository\/head does not bind/);
+    const crossOrg=receipt("embedded",toolchain);
+    crossOrg.run.repository="external-ci/unapproved-carrier";
+    fails(crossOrg,/run repository\/head does not bind/);
+  }
+});
+test("native and AOT-looking observations remain claims, never authenticated receipts",()=>{
+  for(const platform of PLATFORMS)for(const toolchain of TOOLCHAINS){
+    const result=validateObservation(receipt(platform,toolchain),contract);
+    assert.equal(result.independentlyAuthenticated,false);
+    assert.equal(result.certifiedParity,false);
+    assert.equal(result.status,"STRUCTURAL_OBSERVATION_ONLY");
+  }
+});
+
 test("an unconfigured compiler cannot pass simply because the same host fixture exists",()=>{
   assert.deepEqual(compareObservations([],contract),{status:"INCOMPLETE",
     observed:0,missing:300,divergent:0,independentlyAuthenticated:false,certifiedParity:false});
