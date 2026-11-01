@@ -28,8 +28,10 @@ class RawCheckoutPreflightTests(unittest.TestCase):
         git(self.root, "commit", "-qm", "base")
         self.expected = git(self.root, "rev-parse", "HEAD")
 
-    def run_checker(self, expected=None):
+    def run_checker(self, expected=None, extra_env=None):
         env = dict(os.environ, EXPECTED_SHA=expected or self.expected)
+        if extra_env:
+            env.update(extra_env)
         return subprocess.run(
             [sys.executable, str(SCRIPT)], cwd=self.root, env=env,
             text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -45,6 +47,39 @@ class RawCheckoutPreflightTests(unittest.TestCase):
     def test_modified_bytes(self):
         (self.root / "tracked.txt").write_text("changed\n")
         self.assertNotEqual(self.run_checker().returncode, 0)
+
+    def test_inherited_git_control_environment_is_rejected_preflight(self):
+        # These variables can change which Git tree/index/configuration is
+        # inspected without changing the physical checkout being executed.
+        overrides = {
+            "GIT_DIR": str(self.root / ".git"),
+            "GIT_WORK_TREE": str(self.root),
+            "GIT_INDEX_FILE": str(self.root / ".git" / "index"),
+            "GIT_OBJECT_DIRECTORY": str(self.root / ".git" / "objects"),
+            "GIT_ALTERNATE_OBJECT_DIRECTORIES": str(self.root / ".git" / "objects"),
+            "GIT_CONFIG_GLOBAL": str(self.root / ".gitconfig"),
+            "GIT_CONFIG_SYSTEM": str(self.root / ".gitconfig"),
+            "GIT_CONFIG_COUNT": "0",
+            "GIT_NAMESPACE": "attacker",
+            "GIT_COMMON_DIR": str(self.root / ".git"),
+            "GIT_REPLACE_REF_BASE": "refs/replace-malicious/",
+        }
+        for key, value in overrides.items():
+            with self.subTest(env=key):
+                result = self.run_checker(extra_env={key: value})
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("inherited Git control environment", result.stderr)
+
+    def test_permitted_git_transport_environment_does_not_override_verification(self):
+        self.assertEqual(self.run_checker(extra_env={
+            "GIT_TERMINAL_PROMPT": "1",
+            "GIT_NO_REPLACE_OBJECTS": "0",
+        }).returncode, 0)
+        (self.root / "tracked.txt").write_text("adversarial contents\n")
+        self.assertNotEqual(self.run_checker(extra_env={
+            "GIT_TERMINAL_PROMPT": "1",
+            "GIT_NO_REPLACE_OBJECTS": "0",
+        }).returncode, 0)
 
     def test_untracked(self):
         (self.root / "extra").write_text("x")
