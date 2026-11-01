@@ -1,0 +1,212 @@
+{
+  "schema": "oreslang.critical-suspension.contract/1",
+  "status": "proposed-unimplemented",
+  "target_backends": [
+    "java-graal",
+    "llvm",
+    "cranelift",
+    "dotnet-nativeaot",
+    "wasm"
+  ],
+  "required_semantics": {
+    "critical_acquire_may_suspend": true,
+    "critical_body_must_not_suspend": true,
+    "critical_uncontended_no_forced_yield": true,
+    "try_critical_never_waits": true,
+    "serial_actor_turn_distinct_from_mutex": true,
+    "async_modifier_only_for_generators": true,
+    "positive_guest_evidence_required": true
+  },
+  "cases": [
+    {
+      "id": "sync-fnc",
+      "phase": "compile-pass",
+      "evidence_required": "compiler-invocation",
+      "proposed_source": "fnc plain(): int { return 7; }"
+    },
+    {
+      "id": "suspends-fnc",
+      "phase": "compile-pass",
+      "evidence_required": "compiler-invocation",
+      "proposed_source": "suspends fnc plain(): int { return 7; }"
+    },
+    {
+      "id": "critical-fnc-sync",
+      "phase": "compile-pass",
+      "evidence_required": "compiler-invocation",
+      "proposed_source": "critical fnc increment(): void { do_increment(); }"
+    },
+    {
+      "id": "critical-block-in-suspends",
+      "phase": "compile-pass",
+      "evidence_required": "compiler-invocation",
+      "proposed_source": "suspends fnc update(): void { critical gate { do_increment(); } }"
+    },
+    {
+      "id": "try-critical-in-sync",
+      "phase": "compile-pass",
+      "evidence_required": "compiler-invocation",
+      "proposed_source": "fnc attempt(): bool { try critical gate { return true; } else { return false; } }"
+    },
+    {
+      "id": "async-generator-lazy",
+      "phase": "compile-pass",
+      "evidence_required": "compiler-invocation",
+      "proposed_source": "async gen* values(): AsyncIterator<int> { yield 7; return; }"
+    },
+    {
+      "id": "sync-generator",
+      "phase": "compile-pass",
+      "evidence_required": "compiler-invocation",
+      "proposed_source": "gen* values(): Iterator<int> { yield 7; return; }"
+    },
+    {
+      "id": "suspend-generator-compat",
+      "phase": "compile-pass",
+      "evidence_required": "compiler-invocation",
+      "proposed_source": "suspend gen* values(): AsyncIterator<int> { yield 7; return; }"
+    },
+    {
+      "id": "critical-suspends-order-a",
+      "phase": "compile-reject",
+      "evidence_required": "compiler-invocation",
+      "proposed_source": "critical suspends fnc bad(): void { return; }"
+    },
+    {
+      "id": "critical-suspends-order-b",
+      "phase": "compile-reject",
+      "evidence_required": "compiler-invocation",
+      "proposed_source": "suspends critical fnc bad(): void { return; }"
+    },
+    {
+      "id": "async-fnc-rejected",
+      "phase": "compile-reject",
+      "evidence_required": "compiler-invocation",
+      "proposed_source": "async fnc bad(): int { return 7; }"
+    },
+    {
+      "id": "async-routine-rejected",
+      "phase": "compile-reject",
+      "evidence_required": "compiler-invocation",
+      "proposed_source": "async routine bad(): void { return; }"
+    },
+    {
+      "id": "critical-block-sync-caller",
+      "phase": "compile-reject",
+      "evidence_required": "compiler-invocation",
+      "proposed_source": "fnc bad(): void { critical gate { do_increment(); } }"
+    },
+    {
+      "id": "await-in-critical",
+      "phase": "compile-reject",
+      "evidence_required": "compiler-invocation",
+      "proposed_source": "suspends fnc bad(): void { critical gate { await fetch(); } }"
+    },
+    {
+      "id": "indirect-suspends-in-critical",
+      "phase": "compile-reject",
+      "evidence_required": "compiler-invocation",
+      "proposed_source": "suspends fnc fetch(): void { return; } suspends fnc bad(): void { critical gate { fetch(); } }"
+    },
+    {
+      "id": "callback-suspends-in-critical",
+      "phase": "compile-reject",
+      "evidence_required": "compiler-invocation",
+      "proposed_source": "suspends fnc bad(cb: suspends fnc(): void): void { critical gate { cb(); } }"
+    },
+    {
+      "id": "blocking-ffi-in-critical",
+      "phase": "compile-reject",
+      "evidence_required": "compiler-invocation",
+      "proposed_source": "suspends fnc bad(): void { critical gate { blocking_socket_read(); } }"
+    },
+    {
+      "id": "yield-in-critical",
+      "phase": "compile-reject",
+      "evidence_required": "compiler-invocation",
+      "proposed_source": "async gen* bad(): AsyncIterator<int> { critical gate { yield 1; } return; }"
+    },
+    {
+      "id": "unguarded-state-escape",
+      "phase": "compile-reject",
+      "evidence_required": "compiler-invocation",
+      "proposed_source": "suspends fnc bad(): void { critical gate { return borrowed_state_view(); } }"
+    },
+    {
+      "id": "recursive-gate-reentry",
+      "phase": "compile-reject",
+      "evidence_required": "compiler-invocation",
+      "proposed_source": "suspends fnc bad(): void { critical gate { critical gate { do_increment(); } } }"
+    },
+    {
+      "id": "uncontended-no-admission-yield",
+      "phase": "runtime",
+      "evidence_required": "compiled-native-guest"
+    },
+    {
+      "id": "contended-continuation-fifo",
+      "phase": "runtime",
+      "evidence_required": "compiled-native-guest"
+    },
+    {
+      "id": "try-critical-immediate-busy",
+      "phase": "runtime",
+      "evidence_required": "compiled-native-guest"
+    },
+    {
+      "id": "queued-cancellation-no-execution",
+      "phase": "runtime",
+      "evidence_required": "compiled-native-guest"
+    },
+    {
+      "id": "cancel-vs-grant-single-winner",
+      "phase": "runtime",
+      "evidence_required": "compiled-native-guest"
+    },
+    {
+      "id": "trap-guard-release",
+      "phase": "runtime",
+      "evidence_required": "compiled-native-guest"
+    },
+    {
+      "id": "restart-stale-ticket-fenced",
+      "phase": "runtime",
+      "evidence_required": "compiled-native-guest"
+    },
+    {
+      "id": "actor-turn-across-await-no-carrier",
+      "phase": "runtime",
+      "evidence_required": "compiled-native-guest"
+    },
+    {
+      "id": "supervisor-control-while-user-awaits",
+      "phase": "runtime",
+      "evidence_required": "compiled-native-guest"
+    },
+    {
+      "id": "lock-order-self-await-rejection",
+      "phase": "runtime",
+      "evidence_required": "compiled-native-guest"
+    },
+    {
+      "id": "execution-budget-no-partial-retire",
+      "phase": "runtime",
+      "evidence_required": "compiled-native-guest"
+    },
+    {
+      "id": "async-generator-close-exact-once",
+      "phase": "runtime",
+      "evidence_required": "compiled-native-guest"
+    },
+    {
+      "id": "rw-shared-state-no-lost-updates",
+      "phase": "runtime",
+      "evidence_required": "compiled-native-guest"
+    },
+    {
+      "id": "hot-upgrade-generation-fence",
+      "phase": "runtime",
+      "evidence_required": "compiled-native-guest"
+    }
+  ]
+}
