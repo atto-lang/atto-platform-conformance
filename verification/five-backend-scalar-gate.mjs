@@ -128,7 +128,7 @@ export function validateFiveBackendScalarEligibility(doc) {
           reject('wrong successful guest value');
         // For CLI/NativeAOT transports, stdout itself is the typed witness.
         if ((e.backend === 'net' || e.backend === 'cranelift') &&
-            c.stdout !== c.value_i64 + '\\n')
+            c.stdout !== c.value_i64 + '\n')
           reject('stdout transport does not match normalized result');
         if (e.backend === 'wasm' && c.stdout !== '')
           reject('Wasm export must not invent guest stdout');
