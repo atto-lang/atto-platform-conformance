@@ -71,10 +71,28 @@ test(".NET must be strict Native AOT; LLVM/Cranelift/Forge sanitized",()=>{
   for(const backend of ["llvm","cranelift","forge"])
     assert.ok(release({backend,shapeReady:true,independentlyAuthenticated:true})
       .errors.includes("NATIVE_SANITIZERS_REQUIRED"));
-  assert.equal(release({backend:"net",strictAot:true,shapeReady:true,
-    independentlyAuthenticated:true}).ready,true);
+  const locallyClaimed = release({backend:"net",strictAot:true,shapeReady:true,
+    independentlyAuthenticated:true});
+  assert.equal(locallyClaimed.shapeRequirementsMet,true);
+  assert.equal(locallyClaimed.ready,false,
+    "offline flags must never authorize release");
+  assert.equal(locallyClaimed.independentProviderVerificationRequired,true);
 });
 test("local receipt shape alone cannot authorize merger or parity",()=>{
   assert.equal(release({backend:"java",shapeReady:true}).ready,false);
   assert.equal(check(HEAD,receipt()).parityCertified,false);
+});
+
+test("AF20: missing named test step never counts as executed",()=>{
+  reject(r=>{delete r.jobs[0].requiredTestStep;
+    r.jobs[0].steps.push({status:"completed",conclusion:"success"});},
+    "REQUIRED_TEST_STEP_NOT_EXECUTED");
+  reject(r=>r.jobs[0].requiredTestStep="   ","REQUIRED_TEST_STEP_NOT_EXECUTED");
+});
+test("AF20: coerced objects cannot masquerade as Git commit digests",()=>{
+  reject(r=>r.sourceTree={toString:()=> "b".repeat(40)},"TREE_SHA_MISSING");
+  reject(r=>r.compilerSha256={toString:()=> "c".repeat(64)},"COMPILER_DIGEST_MISSING");
+});
+test("AF20: forged scenario objects cannot count as canonical IDs",()=>{
+  reject(r=>r.scenarioIds=[{toString:()=> "AF01"}],"SCENARIOS_INVALID");
 });
