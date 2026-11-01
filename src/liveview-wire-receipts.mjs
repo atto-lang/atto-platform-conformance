@@ -11,7 +11,7 @@ const fields=(o,keys)=>check(o!==null && typeof o==='object'&&!Array.isArray(o)&
   'field contract mismatch: '+keys.join(','));
 export function gitBlob(content){
   const data=Buffer.from(content,'utf8');
-  return createHash('sha1').update(Buffer.from('blob '+data.length+'\\0')).update(data).digest('hex');
+  return createHash('sha1').update(Buffer.concat([Buffer.from('blob '+data.length+' '),Buffer.from([0])])).update(data).digest('hex');
 }
 export function validateVectors(registry,raw){
   fields(registry,['schema','purpose','cases']);
