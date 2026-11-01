@@ -4,14 +4,24 @@ const failure = (error) => ({ok:false,error});
 const success = (value={}) => ({ok:true,...value});
 const topicName = (s) => typeof s === "string" && /^[A-Za-z][A-Za-z0-9._/-]{0,127}$/.test(s);
 const active = (a) => a && a.alive;
+const safeKeys = (value) => {
+  if (!Array.isArray(value) && Object.getPrototypeOf(value)!==Object.prototype &&
+      Object.getPrototypeOf(value)!==null) return null;
+  const keys=Reflect.ownKeys(value);
+  if (keys.some(k=>typeof k!=="string" ||
+      !Object.hasOwn(Object.getOwnPropertyDescriptor(value,k),"value"))) return null;
+  return keys;
+};
 
 export function share(value) {
   const seen = new Set();
   function freeze(v) {
     if (v === null || typeof v !== "object") return v;
     if (seen.has(v)) throw new TypeError("cyclic shared payload");
+    const keys=safeKeys(v);
+    if (!keys) throw new TypeError("non-Sendable shared payload");
     seen.add(v);
-    for (const item of Object.values(v)) freeze(item);
+    for (const key of keys) freeze(Object.getOwnPropertyDescriptor(v,key).value);
     return Object.freeze(v);
   }
   return freeze(value);
@@ -195,8 +205,10 @@ export class PubSubReference {
     function check(x) {
       if (x===null || typeof x!=="object") return typeof x!=="function" && typeof x!=="symbol";
       if (seen.has(x) || !Object.isFrozen(x)) return false;
+      const keys=safeKeys(x);
+      if (!keys) return false;
       seen.add(x);
-      return Object.values(x).every(check);
+      return keys.every(k=>check(Object.getOwnPropertyDescriptor(x,k).value));
     }
     return check(v);
   }
