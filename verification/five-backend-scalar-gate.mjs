@@ -53,7 +53,7 @@ const nonempty = v => typeof v === 'string' && v.trim().length > 0;
 // Evidence labels are bounded single-line, well-formed UTF-8, never terminal controls.
 const safeEvidenceLine = v => nonempty(v) && v.isWellFormed() &&
   Buffer.byteLength(v, 'utf8') <= 4096 &&
-  !/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/u.test(v);
+  !/[\u0000-\u001f\u007f-\u009f\u200e\u200f\u2028-\u202e\u2066-\u2069]/u.test(v);
 const reject = why => {throw new Error(why);};
 
 // IMPORTANT: A signed, complete, internally consistent forged receipt can pass.
@@ -109,7 +109,7 @@ export function validateFiveBackendScalarEligibility(doc) {
       }
       jobIds.add(e.repository + '/' + j.id);
       for (const [index, s] of j.steps.entries()) {
-        if (!s || s.number !== index + 1 || !nonempty(s.name) ||
+        if (!s || s.number !== index + 1 || !safeEvidenceLine(s.name) ||
             s.status !== 'completed' || s.conclusion !== 'success')
           reject('unexecuted, skipped or out-of-order step');
       }

@@ -99,3 +99,16 @@ Runner names and guest command labels must be bounded single-line strings
 without control bytes. Eight negative and one valid multibyte UTF-8 control
 exercise this source-free eligibility gate. None authenticates the receipt
 producer or proves any of the seven real backend guest profiles executed.
+
+
+## Provenance label spoofing controls
+
+Runner names, guest command labels **and each reported step name** are
+bounded to 4,096 UTF-8 bytes, must be well-formed Unicode, and cannot
+contain newlines, terminal controls, Unicode bidirectional formatting
+overrides/isolates, or line separators. Six new source-free controls cover
+step-name newline/oversize/unpaired-surrogate injection, runner/command
+bidi spoofing, and a valid internationalized-label positive case.
+This protects only report parsing; self-asserted labels and complete
+fabricated receipts remain untrusted until independently retrieved from
+GitHub's authoritative run/job/step APIs.

@@ -191,3 +191,21 @@ test('valid multibyte UTF-8 overflow diagnostic remains eligible structurally', 
  c.stderr_sha256=digest(c.stderr);
  assert.equal(admit(d),true);
 });
+
+denies('reject newline-injected completed step name',
+ d => {d.executions[0].run.jobs[0].steps[0].name='checkout\\nFORGED PASS'}, /step/);
+denies('reject bidirectional spoofing in runner identity',
+ d => {d.executions[0].run.jobs[0].runner_name='trusted\\u202evil'}, /unexecuted/);
+denies('reject bidi isolate in guest command',
+ d => {d.executions[0].cases[0].guest_command='run\\u2066--fake'}, /guest case/);
+denies('reject oversized step identity',
+ d => {d.executions[0].run.jobs[0].steps[0].name='x'.repeat(4097)}, /step/);
+denies('reject unpaired surrogate in step identity',
+ d => {d.executions[0].run.jobs[0].steps[0].name='step\\uD800'}, /step/);
+test('bounded well-formed internationalized evidence labels are structurally eligible', () => {
+ const doc=makeEligible();
+ doc.executions[0].run.jobs[0].runner_name='Prüfung-Host';
+ doc.executions[0].run.jobs[0].steps[0].name='préparer le compilateur';
+ doc.executions[0].cases[0].guest_command='exécuter un test';
+ assert.equal(admit(doc),true);
+});
