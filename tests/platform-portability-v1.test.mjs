@@ -154,11 +154,11 @@ test("missing toolchain and changed source hashes are not silently accepted",()=
   const b=structuredClone(contract);
   b.cases[0].sha256=HEX64;assert.throws(()=>validateContract(b),/identity drift/);
 });
-test("native Cranelift JIT is not interchangeable with Wasmtime Wasm checking",()=>{
+test("native Cranelift JIT is not interchangeable with the separate Wasm backend",()=>{
   const r=receipt("mobile","cranelift");r.engine=null;fails(r,/plain exact fields/);
   const n=receipt("mobile","cranelift");
   n.run.steps=n.run.steps.filter(x=>x!=="run-cranelift-native-jit");
-  fails(n,/missing Cranelift engine execution/);
+  fails(n,/missing native Cranelift JIT and IR execution/);
 });
 test("Cranelift native JIT CLIF identity binds the reported artifact",()=>{
   const r=receipt("desktop","cranelift");
