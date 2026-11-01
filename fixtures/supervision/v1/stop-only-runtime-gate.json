@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "scope": "supervisor-stop-only-runtime-gate-v1",
+  "evidenceClass": "focused-host-control-and-source-lowering-not-guest-parity",
+  "backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "cranelift",
+    "net"
+  ],
+  "logicalFailureFields": [
+    "supervisor_id",
+    "group_id",
+    "physical_actor_id",
+    "logical_child_id",
+    "incarnation",
+    "kind",
+    "origin_kind",
+    "diagnostic"
+  ],
+  "stopTurnFields": [
+    "supervisor_id",
+    "group_id",
+    "turn_generation",
+    "physical_actor_id",
+    "incarnation",
+    "host_effect_receipt"
+  ],
+  "lifecycleOrder": [
+    "physical-child-finalization",
+    "immutable-terminal-failure",
+    "reserved-control-turn",
+    "generation-fenced-stop-intent",
+    "host-effect",
+    "authoritative-ack-or-quarantine"
+  ],
+  "enforce": [
+    "terminal-throw-raise-promoted-to-panic-with-origin",
+    "no-actor-local-panic-interception",
+    "fail-closed-foreign-or-stale-identity",
+    "single-flight-control",
+    "bounded-control-capacity",
+    "stop-effect-at-most-once-per-generation",
+    "unknown-host-outcome-is-quarantined-not-retried",
+    "no-fake-guest-authority-or-serialized-supervisor-handle"
+  ],
+  "backendGate": {
+    "java": {
+      "focusedHostStop": true,
+      "sourceStopPlan": true,
+      "guestSourceParity": false
+    },
+    "llvm": {
+      "focusedHostStop": true,
+      "sourceStopPlan": false,
+      "guestSourceParity": false
+    },
+    "wasm": {
+      "focusedHostStop": false,
+      "sourceStopPlan": false,
+      "guestSourceParity": false
+    },
+    "cranelift": {
+      "focusedHostStop": false,
+      "sourceStopPlan": false,
+      "guestSourceParity": false
+    },
+    "net": {
+      "focusedHostStop": false,
+      "sourceStopPlan": false,
+      "guestSourceParity": false
+    }
+  },
+  "evidence": {
+    "javaControl": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41358923195",
+    "javaCompiler": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41359448732",
+    "llvmControl": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41359210787"
+  }
+}
