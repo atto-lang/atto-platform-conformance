@@ -12,7 +12,7 @@ const opts={source,destination,sourceCommit:A,destinationBaseCommit:B,
 const good=name=>({full_name:name,private:true,visibility:"private",
   archived:false,permissions:{push:true}});
 
-function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E,meta,errors}={}){
+function fixture({sourceTree,destinationTree,materializedTree,sourceBlob,blobSha=C,refSha=E,meta,errors}={}){
   const events=[],seen={source:0,destination:0};
   const request=async(url,options)=>{
     const method=options.method,path=url.replace(/^https:\/\/api.github.com\/repos\//,"");
@@ -31,7 +31,7 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
       else if(suffix==="/git/trees/"+D+"?recursive=1")
         data=sourceTree||{truncated:false,tree:[{type:"blob",path:"main.ores",sha:C,size:4,mode:"100644"}]};
       else if(suffix==="/git/blobs/"+C)
-        data={sha:C,encoding:"base64",content:"NDI7Cg==",size:4};
+        data=sourceBlob||{sha:C,encoding:"base64",content:"NDI7Cg==",size:4};
     } else {
       if(suffix==="/git/commits/"+B)data={tree:{sha:E}};
       else if(suffix==="/git/trees/"+E+"?recursive=1")
@@ -278,3 +278,92 @@ test("duplicate entries in materialized tree cannot disguise omitted source blob
  await assert.rejects(promise,/materialized snapshot contains duplicate paths/);
  assert.equal(h.events.some(e=>e.path===destination+"/git/refs"),false);
 });
+test("incident hold prevents publisher access for mixed-case source owner and self mirror",async()=>{
+ for(const [from,to] of [
+  ["OrEs-TrUfFlE-OrEsLaNg/oreslang-source.llvm","ores-truffle-oreslang/other-repo"],
+  ["ores-truffle-oreslang/oreslang-source.java","ores-truffle-oreslang/oreslang-source.java"],
+  ["scintilla-run-test/source-bearing-ref","another-org/private-test"]
+ ]){
+  const requests=[];
+  await assert.rejects(publishPrivateMirror({...opts,
+   source:from,destination:to,approvedDestinations:[to],
+   fetchImpl:async(url,request)=>{requests.push([url,request.method]);throw Error("unsafe request");}
+  }),/incident dispositions #22 and #77/);
+  assert.equal(requests.length,0,"no source reads or writes on suspended origin");
+ }
+});
+
+test("invalid source blob SHA, encoding and size never cause destination mutation",async()=>{
+ for(const sourceBlob of [
+  {sha:D,encoding:"base64",content:"NDI7Cg==",size:4},
+  {sha:C,encoding:"utf-8",content:"42;\n",size:4},
+  {sha:C,encoding:"base64",content:"NDI7Cg==",size:5},
+  {sha:C,encoding:"base64",content:7,size:4}
+ ]){
+  const {h,promise}=run({sourceBlob});
+  await assert.rejects(promise,/source blob content identity or encoding mismatch/);
+  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+  assert.equal(h.events.some(e=>e.path===destination+"/git/refs"),false);
+ }
+});
+
+test("source tree larger than 750 blobs is rejected before fetching source blobs",async()=>{
+ const tree={truncated:false,tree:Array.from({length:751},(_,i)=>({
+  type:"blob",path:"p"+i+".ores",sha:C,size:1,mode:"100644"
+ }))};
+ const {h,promise}=run({sourceTree:tree});
+ await assert.rejects(promise,/unsupported source tree size/);
+ assert.equal(h.events.some(e=>e.path.includes("/git/blobs")),false);
+ assert.equal(h.events.some(e=>e.method==="POST"),false);
+});
+
+test("total source bytes over 40MiB is rejected before fetching or publishing blobs",async()=>{
+ const tree={truncated:false,tree:Array.from({length:41},(_,i)=>({
+  type:"blob",path:"big"+i+".ores",sha:C,size:1048576,mode:"100644"
+ }))};
+ const {h,promise}=run({sourceTree:tree});
+ await assert.rejects(promise,/exceeds 40MiB/);
+ assert.equal(h.events.some(e=>e.path.includes("/git/blobs")),false);
+ assert.equal(h.events.some(e=>e.method==="POST"),false);
+});
+
+test("loss of destination privacy after a blob but before tree prevents tree, commit and ref writes",async()=>{
+ const {h,promise}=run({meta:(name,n)=>
+  name===destination&&n>=3 ? {...good(name),visibility:"public",private:false} : good(name)
+ });
+ await assert.rejects(promise,/writable verified PRIVATE/);
+ const writes=h.events.filter(e=>e.method==="POST").map(e=>e.path);
+ assert.deepEqual(writes,[destination+"/git/blobs"]);
+});
+
+test("loss of destination privacy after tree but before commit prevents commit and ref writes",async()=>{
+ const {h,promise}=run({meta:(name,n)=>
+  name===destination&&n>=4 ? {...good(name),visibility:"public",private:false} : good(name)
+ });
+ await assert.rejects(promise,/writable verified PRIVATE/);
+ const writes=h.events.filter(e=>e.method==="POST").map(e=>e.path);
+ assert.deepEqual(writes,[destination+"/git/blobs",destination+"/git/trees"]);
+});
+
+test("publisher rejects injected prefixes and malformed object identity before network I/O",async()=>{
+ for(const overrides of [
+  {prefix:"snapshots/.git/objects"},
+  {prefix:"snapshots//test"},
+  {prefix:"snapshots/../test"},
+  {prefix:"snapshots\\\\private"},
+  {prefix:"snapshots/a b"},
+  {newBranch:"ci/private-foo/secondary"},
+  {newBranch:"ci/private-foo..bar"},
+  {newBranch:"ci/private-ref.lock"},
+  {sourceCommit:"A".repeat(40)},
+  {destinationBaseCommit:"b".repeat(39)}
+ ]){
+  const {h,promise}=run({},overrides);
+  await assert.rejects(promise);
+  assert.equal(h.events.length,0,"invalid identity/path must fail before HTTP");
+ }
+});
+
+// The synthetic test fixture intentionally exercises the publishing mechanics.
+// It must not become a real-world authorization for a source-bearing relay.
+test.todo("publisher rejects a source-bearing same-owner alternate-repository relay without provenance authorization");
