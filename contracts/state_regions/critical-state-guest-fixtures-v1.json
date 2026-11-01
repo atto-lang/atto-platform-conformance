@@ -15,6 +15,7 @@
         "java": "not-executed",
         "llvm": "not-executed",
         "wasm": "not-executed",
+        "cranelift": "not-executed",
         "net": "not-executed",
         "forge": "not-executed"
       }
@@ -31,6 +32,7 @@
         "java": "not-executed",
         "llvm": "not-executed",
         "wasm": "not-executed",
+        "cranelift": "not-executed",
         "net": "not-executed",
         "forge": "not-executed"
       }
@@ -47,6 +49,7 @@
         "java": "not-executed",
         "llvm": "not-executed",
         "wasm": "not-executed",
+        "cranelift": "not-executed",
         "net": "not-executed",
         "forge": "not-executed"
       }
@@ -63,6 +66,7 @@
         "java": "not-executed",
         "llvm": "not-executed",
         "wasm": "not-executed",
+        "cranelift": "not-executed",
         "net": "not-executed",
         "forge": "not-executed"
       }
@@ -79,6 +83,7 @@
         "java": "not-executed",
         "llvm": "not-executed",
         "wasm": "not-executed",
+        "cranelift": "not-executed",
         "net": "not-executed",
         "forge": "not-executed"
       }
@@ -95,6 +100,7 @@
         "java": "not-executed",
         "llvm": "not-executed",
         "wasm": "not-executed",
+        "cranelift": "not-executed",
         "net": "not-executed",
         "forge": "not-executed"
       }
@@ -111,6 +117,7 @@
         "java": "not-executed",
         "llvm": "not-executed",
         "wasm": "not-executed",
+        "cranelift": "not-executed",
         "net": "not-executed",
         "forge": "not-executed"
       }
@@ -127,6 +134,7 @@
         "java": "not-executed",
         "llvm": "not-executed",
         "wasm": "not-executed",
+        "cranelift": "not-executed",
         "net": "not-executed",
         "forge": "not-executed"
       }
@@ -143,6 +151,7 @@
         "java": "not-executed",
         "llvm": "not-executed",
         "wasm": "not-executed",
+        "cranelift": "not-executed",
         "net": "not-executed",
         "forge": "not-executed"
       }
