@@ -42,7 +42,8 @@ test('identity and artifact substitutions fail closed',()=>{
   x=>x.fixtureRepository='foreign/source',x=>x.fixtureCommitSha='short',x=>x.fixtureCommitSha=H,
   x=>x.fixtureTreeSha=null,x=>x.compilerCommitSha=null,x=>x.compilerTreeSha='A'.repeat(40),
   x=>x.compilerBinarySha256='bad',x=>x.guestArtifactSha256=null,
-  x=>x.run.repository='evil/workflow',x=>x.run.headSha=T])reject(mutate);
+  x=>x.run.repository='evil/workflow',x=>x.run.repository=x.compilerRepository,
+  x=>x.run.headSha=T,x=>x.run.headSha=x.compilerCommitSha])reject(mutate);
 });
 test('a failed, skipped, incomplete or identity-swapped run cannot certify a guest',()=>{
  for(const mutate of [x=>x.run.conclusion='failure',x=>x.run.status='queued',x=>x.run.id=0,
