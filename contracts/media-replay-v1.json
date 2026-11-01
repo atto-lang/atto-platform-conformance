@@ -48,7 +48,14 @@
     "HASH_MISMATCH",
     "OUT_OF_ORDER",
     "INVALID_DUPLICATE",
-    "INVALID_RESET"
+    "INVALID_RESET",
+    "DUPLICATE_CONFLICT",
+    "DUPLICATE_EXPIRED",
+    "RESET_NOT_SETTLED",
+    "NO_PENDING_DISCONTINUITY",
+    "INVALID_DISCONTINUITY",
+    "DISCONTINUITY_MISMATCH",
+    "UNVERIFIED_RESTART"
   ],
   "required_scenarios": [
     "default_2mib",
@@ -76,7 +83,16 @@
     "receiver_reset_requires_anchor",
     "receiver_codec_transition",
     "receiver_fenced_epoch",
-    "receiver_malformed_digest"
+    "receiver_malformed_digest",
+    "reset_does_not_forge_applied_watermark",
+    "unsettled_discontinuity",
+    "conflicting_duplicate_hash",
+    "expired_duplicate_receipt",
+    "generation_reset_cancels_pending",
+    "network_loss_sender_receiver_replay",
+    "codec_reset_discontinuity_ack",
+    "forged_restart_refusal",
+    "duplicate_discontinuity_refusal"
   ],
   "target_backends": {
     "java": {
@@ -117,9 +133,23 @@
   ],
   "receiver_semantics": {
     "offer": "Validate identity, owned payload integrity, next sequence/offset and codec dependency without advancing applied checkpoint.",
-    "commit": "Advance cumulative checkpoint only after downstream decode/application succeeded; duplicates return existing checkpoint with no side effects.",
-    "resetAt": "Only an authenticated explicit decoder restart may skip sequence/offset; first committed access unit must be codec-certified random access.",
+    "commit": "Only after successful decoder/application transaction, advance applied checkpoint and attach explicit gap proof for any skipped sequences. Keep bounded digest ledger for duplicate conflict checks.",
+    "resetAt": "Does not alter lastAppliedSequence/EndOffset until first verified random-access chunk is committed; pending reset cannot be replaced.",
     "acknowledgment": "Receiver's committed checkpoint, never the last network-received chunk, determines sender replay and ACK retention."
   },
-  "vector_file": "contracts/media-replay-v1-vectors.json"
+  "vector_file": "contracts/media-replay-v1-vectors.json",
+  "sender_recovery_receipt": {
+    "operation": "acknowledgeDiscontinuity",
+    "state": "host reference only; trusted adapter must authenticate the request",
+    "validation": [
+      "stream ID and generation equal owner",
+      "previous applied sequence and endOffset equal acknowledged watermark",
+      "skipped range begins immediately after that watermark and ends before restart",
+      "restartSequence points to a retained codec-verified random-access unit",
+      "restartOffset and final acknowledged endOffset match actually emitted chunks"
+    ],
+    "result": "frees explicitly abandoned bytes while retaining a separately visible lastDiscontinuity; never interprets skipped units as successfully decoded"
+  },
+  "host_reference_test_count": 41,
+  "execution_evidence": "Local Node v22.16.0 host model: 41 tests passed; this does not prove any Oreslang guest source backend."
 }
