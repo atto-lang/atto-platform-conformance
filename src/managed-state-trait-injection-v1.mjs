@@ -9,6 +9,8 @@ export function decide(x){
   if(x.bindings.length!==1)return "DUPLICATE_STATE_BINDING";
   const b=x.bindings[0];
   if(!b||typeof b!=="object"||Array.isArray(b))return "INVALID_BINDING";
+  const bindingKeys=b.origin==="state_block"?["origin","type","initialized"]:["origin","type","issuer","scope","initialized"];
+  if(Object.keys(b).some(k=>!bindingKeys.includes(k)))return "UNKNOWN_FIELD";
   if(!["state_block","injected"].includes(b.origin))return "RAW_STORAGE_FORBIDDEN";
   if(b.type!==x.required_type)return "STATE_TYPE_MISMATCH";
   if(b.origin==="state_block"&&b.initialized!==true)return "UNINITIALIZED_STATE";
@@ -20,6 +22,9 @@ export function decide(x){
   const a=x.access??{};
   if(!a||typeof a!=="object"||Array.isArray(a))return "INVALID_ACCESS";
   if(Object.keys(a).some(k=>!["mode","guard","mutates","escapes","heap_escape","suspends","cross_domain","stale_generation","reentrant","direct_access","forged_control"].includes(k)))return "UNKNOWN_FIELD";
+  for(const key of ["mutates","escapes","heap_escape","suspends","cross_domain","stale_generation","reentrant","direct_access","forged_control"]){
+    if(Object.hasOwn(a,key)&&typeof a[key]!=="boolean")return "INVALID_ACCESS";
+  }
   if(a.forged_control)return "CONTROL_FORGERY";
   if(a.direct_access)return "DIRECT_STATE_ACCESS";
   if(a.escapes||a.heap_escape)return "STATE_LOAN_ESCAPE";
