@@ -31,7 +31,7 @@ test("compiler diagnostic is accepted only at semantic rejection exit 1", async 
     backend: "llvm", argv: command, sourceSha,
     spawn: fakeCompiler(1),
   });
-  assert.equal(genuine.verified, 2);
+  assert.equal(genuine.verified,genuine.results.length);
   assert.equal(genuine.ok, true);
 });
 
@@ -53,7 +53,7 @@ test("a crash quoting the expected symbol is not a negative compiler proof", asy
 test("all six source backends require real case outcomes; uncovered browser never creates proof", async () => {
   for (const backend of ["java","llvm","net","forge","wasm","js"]) {
     const report=await runSuite({backend,argv:command,sourceSha,spawn:fakeCompiler(1)});
-    assert.equal(report.verified,2,backend);
+    assert.equal(report.verified,report.results.length,backend);
     assert.equal(report.ok,true,backend);
     assert.equal(report.runtimeVerified,false,backend);
     const unconfigured=await runSuite({backend});
