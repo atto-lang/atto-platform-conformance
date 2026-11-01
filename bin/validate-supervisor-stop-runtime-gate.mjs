@@ -38,7 +38,7 @@ const evidence = Object.freeze({
   javaLedger: "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41359927149",
   wasmLedger: "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41363000747",
   craneliftLedger: "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41363000747",
-  netLedger: "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41362382131"
+  netLedger: "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41363153493"
 });
 
 export function readSupervisorStopRuntimeGate() {
