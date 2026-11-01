@@ -110,6 +110,46 @@
     {
       "id": "mutex-suspending-guard",
       "expected": "deny"
+    },
+    {
+      "id": "mutex-escaped-guard-write-reject",
+      "expected": "deny"
+    },
+    {
+      "id": "mutex-return-write-guard-reject",
+      "expected": "deny"
+    },
+    {
+      "id": "mutex-read-read-reentrancy",
+      "expected": "accept"
+    },
+    {
+      "id": "mutex-write-within-read-reject",
+      "expected": "deny"
+    },
+    {
+      "id": "mutex-read-within-write-reject",
+      "expected": "deny"
+    },
+    {
+      "id": "mutex-after-throw-guard-revoked",
+      "expected": "deny"
+    },
+    {
+      "id": "mutex-write-after-read-release",
+      "expected": "accept"
+    },
+    {
+      "id": "mutex-suspension-always-revokes",
+      "expected": "deny"
+    },
+    {
+      "id": "box-move-under-live-heap-loan",
+      "expected": "deny"
+    },
+    {
+      "id": "box-double-use-after-drop",
+      "expected": "deny"
     }
   ],
   "guest_fixtures_executed": 0,
