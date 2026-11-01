@@ -126,10 +126,16 @@ export function compilerArtifactPaths(argv, explicit = []) {
     throw Error("compiler artifacts must be unique absolute file paths");
   return paths;
 }
-async function digestRegularFile(path, maxSize) {
+async function digestRegularFile(path, maxSize, { executable = false } = {}) {
   const resolved = await realpath(path), stat = await lstat(resolved);
   if (!stat.isFile() || stat.size > maxSize || stat.nlink !== 1) throw Error("unsafe/nonregular/oversized file");
-  return { path: resolved, sha256: sha256(await readFile(resolved)) };
+  const bytes = await readFile(resolved);
+  // Reject disguised #! wrappers as the primary compiler executable: they
+  // delegate execution to an untracked interpreter or /usr/bin/env. A Node
+  // compiler must use a separately pinned node + absolute entrypoint form.
+  if (executable && bytes[0] === 0x23 && bytes[1] === 0x21)
+    throw Error("shebang compiler launcher requires a separately pinned interpreter and entrypoint");
+  return { path: resolved, sha256: sha256(bytes) };
 }
 /** A compiler must not inherit NODE_OPTIONS, JAVA_TOOL_OPTIONS, LD_PRELOAD, CLASSPATH,
  * or arbitrary shell process state from the invoking runner. Do not silently
@@ -148,7 +154,7 @@ export async function runSourceAdmission({ backend, argv, sourceSha, artifacts =
     runtimeTraceVerified: false, physicalIsolationVerified: false,
     results: applicable.map(c => ({ id: c.id, status: "UNCONFIGURED" })) };
   validateInvocation(argv, sourceSha);
-  const executable = await digestRegularFile(argv[0], 512 * 1024 * 1024);
+  const executable = await digestRegularFile(argv[0], 512 * 1024 * 1024, { executable: true });
   const artifactPaths = compilerArtifactPaths([executable.path, ...argv.slice(1)], artifacts);
   const pinnedArtifacts = await Promise.all(artifactPaths.map(p => digestRegularFile(p, 512 * 1024 * 1024)));
   const results = [];
