@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {loadSemanticManifest, loadSemanticManifestSnapshot, validateSemanticManifest, classifySemanticCompilerResult, selectSemanticCases, semanticFixtureUnchanged, runSemanticAdmission} from "../src/semantic-reconciliation-v1.mjs";
+import {loadSemanticManifest, loadSemanticManifestSnapshot, validateSemanticManifest, classifySemanticCompilerResult, observedSemanticDiagnostic, selectSemanticCases, semanticFixtureUnchanged, runSemanticAdmission} from "../src/semantic-reconciliation-v1.mjs";
 import {readFile, writeFile, mkdtemp, lstat, rm, symlink, rename, unlink} from "node:fs/promises";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
@@ -115,6 +115,62 @@ test("diagnostic oracle requires actual exact semantic error, not arbitrary type
  assert.equal(classifySemanticCompilerResult(c,{status:1,stderr:"error["+code+"]: implicit conversion"}),"MATCHED_UNATTESTED");
  assert.equal(classifySemanticCompilerResult(c,{status:null,signal:"SIGSEGV",stderr:"error["+code+"]: fake"}),"INFRA_OR_CRASH");
 });
+
+test("semantic error receipts require one observed primary stderr code and no emitted IR", async () => {
+ const candidate=(await loadSemanticManifest()).compilerCases.find(c => c.id==="heap-array-resize-live-loan");
+ const correct="error[E_BORROW_CONFLICT]: cannot resize borrowed array";
+ assert.equal(classifySemanticCompilerResult(candidate,{status:1,stderr:correct}),"MATCHED_UNATTESTED");
+ assert.equal(observedSemanticDiagnostic({stderr:correct}),"E_BORROW_CONFLICT");
+ assert.equal(observedSemanticDiagnostic({stderr:"error: unknown syntax"}),null);
+ assert.equal(observedSemanticDiagnostic({stderr:"error[E_BORROW_CONFLICT]:"}),null);
+ assert.equal(classifySemanticCompilerResult(candidate,{status:1,stdout:correct}),"MISMATCH",
+   "a source echo or stdout diagnostic is not compiler proof");
+ assert.equal(classifySemanticCompilerResult(candidate,{status:1,stderr:correct,stdout:"define i64 @main() {"}),"MISMATCH");
+ assert.equal(classifySemanticCompilerResult(candidate,{status:1,stderr:correct+"\n; ModuleID = leaked"}),"MISMATCH");
+ assert.equal(classifySemanticCompilerResult(candidate,{status:1,stderr:correct+"\ndeclare i64 @leak()"}),"MISMATCH");
+ assert.equal(classifySemanticCompilerResult(candidate,{status:1,stderr:correct+"\nerror: unrelated parse failure"}),"MISMATCH");
+ assert.equal(classifySemanticCompilerResult(candidate,{status:1,stderr:correct+"\nerror[E_WRAPPER_LAYER]: wrong source"}),"MISMATCH");
+ assert.equal(classifySemanticCompilerResult(candidate,{status:1,stderr:"error[E_WRAPPER_LAYER]: wrong reason"}),"MISMATCH");
+ assert.equal(classifySemanticCompilerResult(candidate,{status:0,stderr:correct}),"MISMATCH");
+ assert.equal(classifySemanticCompilerResult(candidate,{status:null,signal:"SIGABRT",stderr:correct}),"INFRA_OR_CRASH");
+});
+
+test("fake compiler cannot promote source rejection after publishing an artifact", async () => {
+ // This tests only the harness. A synthetic process can never establish
+ // Oreslang compiler support or real backend parity.
+ const dir=await mkdtemp(join(tmpdir(),"ores-semantic-artifact-denial-"));
+ const script=join(dir,"fake-compiler.cjs");
+ try {
+   await writeFile(script, [
+     '"use strict";',
+     'const fs = require("node:fs");',
+     'const source = process.argv.at(-1);',
+     'if (source.includes("future-map-rejects-implicit-adoption")) {',
+     '  fs.writeFileSync("partial.wasm", "invalid guest artifact");',
+     '  console.error("error[E_WRAPPER_LAYER]: rejected by synthetic compiler");',
+     '  process.exitCode = 1;',
+     '}'
+   ].join("\n"));
+   const receipt=await runSemanticAdmission({
+     backend:"java",suite:"future-map",sourceSha:"1".repeat(40),
+     argv:[process.execPath,script,"{file}"]
+   });
+   assert.equal(receipt.ok,false);
+   assert.equal(receipt.status,"NOT_VERIFIED");
+   assert.equal(receipt.fullInventoryMatched,false);
+   assert.equal(receipt.guestRuntimeVerified,false);
+   assert.equal(receipt.parityVerified,false);
+   const positive=receipt.sourceCases.find(x=>x.id==="future-map-preserves-nested-return");
+   const negative=receipt.sourceCases.find(x=>x.id==="future-map-rejects-implicit-adoption");
+   assert.equal(positive.status,"MATCHED_UNATTESTED");
+   assert.equal(negative.status,"UNEXPECTED_COMPILER_ARTIFACT");
+   assert.equal(negative.expectedDiagnosticCode,"E_WRAPPER_LAYER");
+   assert.equal(negative.observedDiagnosticCode,"E_WRAPPER_LAYER");
+ } finally {
+   await rm(dir,{recursive:true,force:true});
+ }
+});
+
 test("without actual compiler execution no backend may be declared verified",async()=>{
  for (const backend of ["java","llvm","net","wasm","forge"]) {
    const r=await runSemanticAdmission({backend});
