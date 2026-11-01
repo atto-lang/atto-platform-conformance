@@ -27,6 +27,12 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
+      - name: Verify exact raw checkout before running report logic
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          python3 scripts/verify_raw_checkout.py
       - name: Require Node 20+
         run: |
           set -euo pipefail
