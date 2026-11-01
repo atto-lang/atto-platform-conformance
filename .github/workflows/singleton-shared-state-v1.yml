@@ -26,6 +26,6 @@ jobs:
           set -euo pipefail
           [[ "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]
           test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
-          git diff --quiet HEAD
+          python3 scripts/verify_raw_checkout.py
       - name: Verify fail-closed five-backend contract
         run: node verification/verify-singleton-shared-state-v1.mjs
