@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
+import {createHash} from "node:crypto";
 import {
   BoxReference, VectorReference, ArcReference, GuardedCellReference
 } from "../src/heap-containers-v1-reference.mjs";
@@ -172,6 +173,7 @@ function validateManifest(doc) {
   assert.deepEqual(Object.keys(doc).sort(), [
     "backends", "candidate_alias", "canonical_resizable_type",
     "cases", "compiler_assertions_executed", "evidence_status",
+    "guest_fixtures",
     "existing_resizable_family", "guest_fixtures_executed",
     "runtime_backends_verified", "schema_version", "source_language_support",
     "suite"
@@ -189,6 +191,23 @@ function validateManifest(doc) {
   assert.equal(doc.guest_fixtures_executed, 0);
   assert.equal(doc.compiler_assertions_executed, 0);
   assert.equal(doc.runtime_backends_verified, 0);
+  const fixtureIds = [
+    "array-growth-positive", "heap-projected-mut-borrow-positive",
+    "heap-conflicting-loans-reject", "array-grow-live-loan-reject",
+    "box-owner-after-take-reject"
+  ];
+  assert.equal(doc.guest_fixtures.length, fixtureIds.length);
+  for (const [i, fixture] of doc.guest_fixtures.entries()) {
+    assert.deepEqual(Object.keys(fixture).sort(),
+      ["id", "path", "blob_sha1", "expectation", "execution"].sort());
+    assert.equal(fixture.id, fixtureIds[i]);
+    assert.equal(fixture.path, "fixtures/heap-containers-v1/" + fixture.id + ".ores");
+    assert.match(fixture.blob_sha1, /^[0-9a-f]{40}$/);
+    assert.equal(fixture.execution, "not-executed");
+    assert.deepEqual(fixture.expectation, i < 2 ?
+      {kind: "return", exit_code: 42} :
+      {kind: "reject", emitted_executable_ir_bytes: 0});
+  }
   assert.equal(doc.cases.length, Object.keys(checked).length);
   const seen = new Set();
   for (const c of doc.cases) {
@@ -226,6 +245,23 @@ test("manifest denies fabricated guest or compiler counts", () => {
   fake.compiler_assertions_executed = 1;
   assert.throws(() => validateManifest(fake));
 });
+test("five canonical guest fixtures are exact Git blobs, not fabricated executions", () => {
+  validateManifest(contract);
+  for (const fixture of contract.guest_fixtures) {
+    const bytes = readFileSync(new URL("../" + fixture.path, import.meta.url));
+    const actual = createHash("sha1")
+      .update("blob " + bytes.length + "\0")
+      .update(bytes).digest("hex");
+    assert.equal(actual, fixture.blob_sha1, "fixture drift: " + fixture.id);
+    const source = bytes.toString("utf8");
+    assert.match(source, /pub fnc main\(\): int/);
+    assert.doesNotMatch(source, /rt borrow mut|\b(?:let|val|const)\s+&/);
+  }
+  const negatives = contract.guest_fixtures.filter(x => x.expectation.kind === "reject");
+  assert.equal(negatives.length, 3);
+  assert.equal(contract.guest_fixtures_executed, 0);
+});
+
 for (const {id, expected} of contract.cases) {
   test("heap ownership oracle: " + id, () => {
     if (expected === "deny") {
