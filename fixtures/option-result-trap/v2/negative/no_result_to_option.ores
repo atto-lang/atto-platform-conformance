@@ -1,0 +1,6 @@
+// ORT2-NEG-NO_RESULT_TO_OPTION: must produce a semantic type error, never launch guest.
+fnc invalid(): void {
+  val Result<int,String> a = Err("e");
+  val Option<int> b = a;
+  return;
+}
