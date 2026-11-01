@@ -53,8 +53,10 @@ require separate reasoning beyond memory/data-race safety.
 ## What is implemented in this pull request
 
 The immutable contract in contracts/heap-containers-v1.json pins
-23 positive and negative cases and six independently unverified
-backends. src/heap-containers-v1-reference.mjs is a deliberately
+23 positive and negative reference cases, five immutable .ores
+source fixtures (two positive, three negative), and six independently
+unverified backends. The five fixtures are exact Git-blob-SHA1 pinned; they
+have NOT been compiled or executed by any backend. src/heap-containers-v1-reference.mjs is a deliberately
 bounded, scalar-only semantic oracle for Box owner/loan/drop,
 Vector grow/bounds/epoch, Arc strong/Weak lifecycle and guarded
 synchronous shared mutation. tests/heap-containers-v1.test.mjs
