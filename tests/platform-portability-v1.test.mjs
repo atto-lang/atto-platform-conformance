@@ -33,7 +33,9 @@ function receipt(platform="desktop",toolchain="llvm",caseId="scalar-42"){
           ...(toolchain==="cranelift"?["run-cranelift-native-jit","inspect-cranelift-ir"]:[])]
     },
     result:negative?{kind:"reject",diagnosticCode:"UNKNOWN_IDENTIFIER",
-      diagnostic:"error: unresolved identifier "+(caseId==="unknown-name"?
+      diagnostic:(toolchain==="cranelift"?
+        "orescranelift: unbound or unsupported identifier: ":
+        "error: unresolved identifier ")+(caseId==="unknown-name"?
         "missing_platform_binding":"absent_platform_function")}:
       {kind:"pass",value:v.expectedValue},
     engine:toolchain==="cranelift"?
@@ -159,6 +161,12 @@ test("native Cranelift JIT is not interchangeable with the separate Wasm backend
   const n=receipt("mobile","cranelift");
   n.run.steps=n.run.steps.filter(x=>x!=="run-cranelift-native-jit");
   fails(n,/missing native Cranelift JIT and IR execution/);
+});
+test("Cranelift negative diagnostics require its actual compiler prefix",()=>{
+  const x=receipt("iot","cranelift","unknown-name");
+  assert.equal(validateObservation(x,contract).certifiedParity,false);
+  x.result.diagnostic="error: unexpected identifier missing_platform_binding";
+  fails(x,/primary semantic diagnostic/);
 });
 test("Cranelift native JIT CLIF identity binds the reported artifact",()=>{
   const r=receipt("desktop","cranelift");
