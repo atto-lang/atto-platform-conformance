@@ -53,7 +53,7 @@ require separate reasoning beyond memory/data-race safety.
 ## What is implemented in this pull request
 
 The immutable contract in contracts/heap-containers-v1.json pins
-36 positive and negative reference cases, five immutable .ores
+39 positive and negative reference cases, five immutable .ores
 source fixtures (two positive, three negative), and six independently
 unverified backends. The five fixtures are exact Git-blob-SHA1 pinned; they
 have NOT been compiled or executed by any backend. src/heap-containers-v1-reference.mjs is a deliberately
@@ -115,6 +115,18 @@ The targeted five-backend work is tracked separately, each behind real execution
 Source-org exact-head workflows on these PRs had zero recorded steps in sampled
 runs on November 1, 2026, so they do **not** constitute test execution.
 Negative feature rejection is important safety, but not positive runtime parity.
+
+## November 1 strong-exception-safety follow-up
+
+The bounded reference model now validates a Vector element **before**
+reserving or changing its storage relocation epoch. Three new accepted
+regressions require rejected pushes and over-budget reservations to preserve
+length, capacity, contents, and view epoch. The current reference inventory
+is **39 cases / 44 isolated V8 checks** (not Node tests or guest compilations).
+The Java [source compiler PR #2431](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2431)
+also rejects oversized resizable sequence **literal initializers** and
+contradictory inline/max capacity metadata; this is distinct from enforcing
+quotas after runtime mutation, which remains unverified.
 
 ## Additional reference-model security findings
 
