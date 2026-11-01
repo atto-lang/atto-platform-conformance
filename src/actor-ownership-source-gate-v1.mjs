@@ -88,6 +88,12 @@ export function compilerArtifactPaths(argv, explicit = []) {
   if (!Array.isArray(explicit) || explicit.length > 16)
     throw Error("invalid compiler artifact inventory");
   const paths = [...explicit];
+  // An executable named sh/env/python/etc. can load arbitrary untracked code
+  // even with shell:false. Require a dedicated pinned compiler executable,
+  // or the separately tracked Java -jar / Node script contracts below.
+  const launcherName = argv[0].replace(/\\/g, "/").split("/").at(-1);
+  if (/^(?:sh|bash|dash|zsh|fish|ksh|env|busybox|python(?:\d+(?:\.\d+)*)?|pypy(?:\d+(?:\.\d+)*)?|perl|ruby|php|pwsh|powershell|cmd\.exe|npm|npx)$/i.test(launcherName))
+    throw Error("indirect launcher cannot establish pinned compiler artifact identity");
   // Restrict Java launchers to a directly pinned -jar entrypoint: JVM agents,
   // boot classpaths and injected module patches are separate code artifacts.
   // Without an independent launcher contract, do not admit JVM arguments.
@@ -143,7 +149,7 @@ export async function runSourceAdmission({ backend, argv, sourceSha, artifacts =
     results: applicable.map(c => ({ id: c.id, status: "UNCONFIGURED" })) };
   validateInvocation(argv, sourceSha);
   const executable = await digestRegularFile(argv[0], 512 * 1024 * 1024);
-  const artifactPaths = compilerArtifactPaths(argv, artifacts);
+  const artifactPaths = compilerArtifactPaths([executable.path, ...argv.slice(1)], artifacts);
   const pinnedArtifacts = await Promise.all(artifactPaths.map(p => digestRegularFile(p, 512 * 1024 * 1024)));
   const results = [];
   for (const c of applicable) {
