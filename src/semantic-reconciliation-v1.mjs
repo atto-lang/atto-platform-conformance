@@ -1,4 +1,4 @@
-import {readFile, writeFile, mkdtemp, rm, lstat} from "node:fs/promises";
+import {readFile, writeFile, mkdtemp, rm, lstat, readdir} from "node:fs/promises";
 import {tmpdir} from "node:os";
 import {join, isAbsolute} from "node:path";
 import {spawnSync} from "node:child_process";
@@ -82,21 +82,36 @@ export function selectSemanticCases(doc, suite = "all") {
     throw Error("invalid or incomplete semantic suite: " + suite);
   return cases;
 }
+// Do not confuse the manifest's expected diagnostic with one actually emitted
+// by the compiler. Observed codes must come from a unique primary stderr error.
+export function observedSemanticDiagnostic(output) {
+  const diagnostics = String(output?.stderr || "").split(/\r?\n/).map(x => x.trimStart())
+    .filter(x => /^error(?:\[[A-Za-z0-9_]+\])?:/.test(x));
+  if (diagnostics.length !== 1) return null;
+  const matched = /^error\[(E_[A-Z_]{4,64})\]:\s*\S/.exec(diagnostics[0]);
+  return matched ? matched[1] : null;
+}
+
 export function classifySemanticCompilerResult(c, output) {
   if (output.error || output.signal || !Number.isInteger(output.status)) return "INFRA_OR_CRASH";
-  const lines = String(output.stdout || "") + "\n" + String(output.stderr || "");
-  if (/\b(segmentation fault|fatal signal|unhandled exception|traceback)\b/i.test(lines)) return "INFRA_OR_CRASH";
-  if (c.expect === "accept") return output.status === 0 && !hasCompilerErrorSeverity(lines) ? "MATCHED_UNATTESTED" : "MISMATCH";
-  // A random syntax rejection or a source echo cannot prove the invariant. The
-  // exact proposed diagnostic code must be a primary error diagnostic.
-  const expected = "error[" + c.diagnosticCode + "]:";
-  // Exactly one primary diagnostic: multiple errors can hide an unrelated
-  // earlier rejection behind a later matching semantic diagnostic.
-  const errors = lines.split(/\r?\n/).map(line => line.trimStart())
-    .filter(line => /^error(?:\[[A-Za-z0-9_]+\])?:/.test(line));
-  return output.status === 1 && errors.length === 1 && errors[0].startsWith(expected)
+  const stdout = String(output.stdout || "");
+  const stderr = String(output.stderr || "");
+  const lines = stdout + "\n" + stderr;
+  if (/\b(segmentation fault|fatal signal|unhandled exception|traceback|compiler panicked)\b/i.test(lines))
+    return "INFRA_OR_CRASH";
+  if (c.expect === "accept")
+    return output.status === 0 && !hasCompilerErrorSeverity(lines) ? "MATCHED_UNATTESTED" : "MISMATCH";
+  // A rejection must have no emitted stdout (including partial IR), and its
+  // single *stderr* primary error must be the exact semantic diagnostic.
+  // Requiring stderr prevents a printed/echoed "error[E_X]" from masquerading
+  // as the compiler's diagnosis when a separate parser error caused failure.
+  if (stdout.trim() !== "") return "MISMATCH";
+  if (/(?:^|\n)\s*(?:define\s+[^\n]*@|declare\s+[^\n]*@|; ModuleID\s*=|source_filename\s*=|target (?:triple|datalayout)\s*=|attributes\s+#\d+\s*=)/m.test(stderr))
+    return "MISMATCH";
+  return output.status === 1 && observedSemanticDiagnostic(output) === c.diagnosticCode
     ? "MATCHED_UNATTESTED" : "MISMATCH";
 }
+
 // The compiler is an untrusted process with the same filesystem access as
 // this runner. Reject any changed path identity, symlink, hard-link, or bytes
 // after running it; never follow a substitute path or read unbounded data.
@@ -146,13 +161,21 @@ export async function runSemanticAdmission({backend, argv, sourceSha, timeoutMs 
       const before = await readRegularFixtureBytes(filename);
       const fixtureSha256 = sha256(before);
       const cmd = argv.map(a => a === "{file}" ? filename : a);
+      // Record source-directory entries before compiler execution. A negative
+      // admission may never leave IR, binary, pointer, or scratch artifacts.
+      const entriesBefore = (await readdir(temp)).sort();
       const p = spawnSync(cmd[0], cmd.slice(1), {encoding:"utf8", cwd:temp,
         shell:false, timeout:timeoutMs, maxBuffer:1048576, windowsHide:true});
       let status = classifySemanticCompilerResult(c,p);
+      const entriesAfter = await readdir(temp).then(x => x.sort()).catch(() => null);
+      if (c.expect === "reject" &&
+          (entriesAfter === null || JSON.stringify(entriesAfter) !== JSON.stringify(entriesBefore)))
+        status = "UNEXPECTED_COMPILER_ARTIFACT";
       if (!(await semanticFixtureUnchanged(filename, beforeStat, fixtureSha256)))
         status = "SOURCE_MUTATED";
       results.push({id:c.id, expect:c.expect, status, fixtureSha256,
-        observedExit:p.status, observedDiagnosticCode:c.diagnosticCode || null});
+        observedExit:p.status, expectedDiagnosticCode:c.diagnosticCode || null,
+        observedDiagnosticCode:observedSemanticDiagnostic(p)});
     }
   } finally { await rm(temp, {recursive:true, force:true}); }
   const finalHash = await hashExecutableBounded(exe).catch(() => null);
