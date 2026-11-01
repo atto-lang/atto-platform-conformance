@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'contracts/actor-sync-v1.json'
+      - 'fixtures/actor-sync-v1/**'
       - 'bin/verify-actor-sync-v1.mjs'
       - 'bin/actor-sync-v1.test.mjs'
       - '.github/workflows/actor-sync-contract-v1.yml'
