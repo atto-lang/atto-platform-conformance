@@ -3,7 +3,7 @@ import {constants} from "node:fs";
 import {open} from "node:fs/promises";
 import {join, resolve} from "node:path";
 
-const BACKENDS = ["java", "llvm", "net", "wasm", "forge"];
+const BACKENDS = ["java", "llvm", "wasm", "cranelift", "net", "forge"];
 const SHA1 = /^[a-f0-9]{40}$/;
 const NAME = /^[a-z][a-z0-9-]*\.ores$/;
 
