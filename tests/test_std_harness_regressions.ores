@@ -14,10 +14,24 @@ fnc result_fallback_is_explicit(): TestOutcome {
     Result.unwrap_or(invalid, 3) == 3,
     "Result fallback must not transform a present Ok value");
 }
+fnc option_some_zero_is_not_absent(): TestOutcome {
+  val Option<int> zero = Some(0);
+  return expect_equal_int(Option.unwrap_or(zero, 99), 0,
+    "Some(0) must not collapse to missing Option");
+}
+
+fnc result_error_fallback_preserves_type(): TestOutcome {
+  val Result<int, int> rejected = Err(-42);
+  return expect_equal_int(Result.unwrap_or(rejected, 17), 17,
+    "Result failure uses explicit default without implicit conversion");
+}
+
 pub routine main(): void {
   val TestSuite suite = new TestSuite("option-result-portability", arr[
     new TestCase("option_fallback_respects_present_value", option_fallback_respects_present_value, false, ""),
-    new TestCase("result_fallback_is_explicit", result_fallback_is_explicit, false, "")
+    new TestCase("result_fallback_is_explicit", result_fallback_is_explicit, false, ""),
+    new TestCase("option_some_zero_is_not_absent", option_some_zero_is_not_absent, false, ""),
+    new TestCase("result_error_fallback_preserves_type", result_error_fallback_preserves_type, false, "")
   ]);
   val TestOptions options = new TestOptions("", false, true);
   val RunSummary summary = run_suite(rt borrow suite, rt borrow options);
