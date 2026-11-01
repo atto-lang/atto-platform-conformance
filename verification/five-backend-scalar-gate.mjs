@@ -155,6 +155,12 @@ export function validateFiveBackendScalarEligibility(doc) {
         // An exit failure without diagnostic could be a CLI or loader error.
         if (e.backend !== 'wasm' && !nonempty(c.stderr))
           reject('native overflow requires diagnostic');
+        // Cranelift's backend emits this exact text ONLY after native JIT
+        // returns its checked-overflow status. A parser/loader failure with
+        // an unrelated stderr must never qualify for this runtime profile.
+        if (e.backend === 'cranelift' &&
+            c.stderr !== 'orescranelift: i64 arithmetic overflow\n')
+          reject('Cranelift overflow requires JIT-owned diagnostic');
         if (c.semantic_phase !== 'guest-overflow' || c.value_i64 !== null ||
             c.stdout !== '' || c.error_category !== 'checked-i64-overflow' ||
             (e.backend !== 'wasm' && c.exit_code === 0) ||

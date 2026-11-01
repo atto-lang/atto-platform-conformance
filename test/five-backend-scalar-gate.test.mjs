@@ -45,7 +45,9 @@ function makeEligible() {
       cases: fixtures.map(f => {
         const accept = Object.hasOwn(vectors, f.id);
         const stdout = accept && ['cranelift','net'].includes(e.backend) ? vectors[f.id] : '';
-        const stderr = accept ? '' : 'error: checked-i64-overflow';
+        const stderr = accept ? '' : (e.backend === 'cranelift'
+          ? 'orescranelift: i64 arithmetic overflow\n'
+          : 'error: checked-i64-overflow');
         return {
           id: f.id, kind: accept ? 'accept' : 'overflow',
           source_sha256: f.source_sha256,
@@ -221,5 +223,20 @@ denies('reject variation-selector step-name provenance spoofing',
 test('visible combining-accent provenance remains eligible', () => {
  const d=makeEligible();
  d.executions[0].run.jobs[0].runner_name='e\u0301quipe-runner';
+ assert.equal(admit(d),true);
+});
+
+denies('reject Cranelift parser failure masquerading as checked JIT overflow',
+ d => {const c=d.executions.find(x=>x.backend==='cranelift').cases[6];
+       c.stderr='orescranelift: i64 literal out of range\n';
+       c.stderr_sha256=digest(c.stderr);}, /Cranelift overflow requires JIT-owned diagnostic/);
+denies('reject Cranelift loader failure masquerading as checked JIT overflow',
+ d => {const c=d.executions.find(x=>x.backend==='cranelift').cases[7];
+       c.stderr='orescranelift: missing source file\n';
+       c.stderr_sha256=digest(c.stderr);}, /Cranelift overflow requires JIT-owned diagnostic/);
+test('Cranelift exact JIT diagnostic remains structurally eligible', () => {
+ const d=makeEligible();
+ const c=d.executions.find(x=>x.backend==='cranelift').cases[6];
+ assert.equal(c.stderr,'orescranelift: i64 arithmetic overflow\n');
  assert.equal(admit(d),true);
 });

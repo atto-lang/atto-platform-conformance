@@ -122,3 +122,18 @@ can alter visible identity without altering the raw string. Four adversarial
 negative controls and one valid combining-accent control exercise this rule.
 This is **not** proof that any job or guest executed: an independent verifier
 must still retrieve authoritative run, job, step and guest evidence.
+
+
+## Cranelift native JIT overflow diagnostic binding
+
+Cranelift's checked-i64 backend returns an explicit status from the
+compiled JIT function and `src/main.rs` renders the exact stderr line
+`orescranelift: i64 arithmetic overflow` followed by LF. A completely
+different parser or loader failure must not be accepted as a runtime
+overflow because its receipt self-asserts `checked-i64-overflow`.
+Cranelift structural receipts now demand the **exact JIT diagnostic**
+in addition to exit status, empty stdout and matching raw stderr digest.
+Two negative mutation controls and one positive control test this.
+The gate is still source-free and cannot authenticate a forged stderr:
+independent exact-head native guest, runner, binary and compiler evidence
+remain mandatory.
