@@ -1,5 +1,5 @@
 // Source-free host-policy reference model. This does NOT execute real .ores
-// actors or prove physical isolation on Java/LLVM/Wasm/.NET/Forge/JS.
+// actors or prove physical isolation on Java/LLVM/Wasm/Cranelift/.NET/Forge/JS.
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
@@ -94,8 +94,16 @@ test("manifest enumerates actual backends and refuses promotional security claim
   assert.equal(contract.status,"SOURCE_FREE_REFERENCE_NOT_BACKEND_EXECUTION");
   assert.deepEqual(contract.design.identity,["tenantId","generation","opaqueHostAuthority"]);
   assert.match(contract.design.root_authority,/matching tenant ID and numeric generation/);
-  assert.deepEqual(Object.keys(contract.backendProfiles).sort(),["forge","java","js","llvm","net","wasm"]);
+  assert.deepEqual(Object.keys(contract.backendProfiles).sort(),["cranelift","forge","java","js","llvm","net","wasm"]);
   assert.ok(contract.requiredScenarios.includes("exact-pr-tree-nonzero-step-ci-evidence"));
+  assert.match(contract.backendProfiles.cranelift.draft,/scalar native JIT/);
+  assert.match(contract.backendProfiles.cranelift.currentGuarantee,/not an actor IsolateVM/);
+  for (const caseName of [
+    "cranelift-scalar-only-actor-admission-rejected",
+    "tenant-close-revokes-pinned-actor-memory",
+    "zeroized-actor-region-before-final-free",
+    "native-actor-control-and-data-stepful-integration"
+  ]) assert.ok(contract.requiredScenarios.includes(caseName));
   for(const b of Object.values(contract.backendProfiles)) {
     assert.match(b.currentGuarantee,/not |distinct |do not /);
     assert.match(b.hostileTenant,/PROCESS_SANDBOX/);

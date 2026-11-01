@@ -43,6 +43,11 @@
       "currentGuarantee": "distinct Wasm linear memories in one process; not OS security",
       "hostileTenant": "PROCESS_SANDBOX_REQUIRED"
     },
+    "cranelift": {
+      "draft": "Rust Cranelift stage-0 scalar native JIT, actor lowering rejected",
+      "currentGuarantee": "not an actor IsolateVM or tenant heap and not safe for hostile source execution",
+      "hostileTenant": "PROCESS_SANDBOX_NOT_IMPLEMENTED"
+    },
     "net": {
       "draft": "NativeAOT OresVmHost logical state",
       "currentGuarantee": "not separate CLR heaps, AppDomains or OS processes",
@@ -75,6 +80,10 @@
     "same-tenant-scalar-turn-nonreentrant",
     "resource-loan-drain-before-stop",
     "foreign-vm-root-handle-rejected-even-if-generation-collides",
-    "typed-untrusted-boundary-fails-closed"
+    "typed-untrusted-boundary-fails-closed",
+    "cranelift-scalar-only-actor-admission-rejected",
+    "tenant-close-revokes-pinned-actor-memory",
+    "zeroized-actor-region-before-final-free",
+    "native-actor-control-and-data-stepful-integration"
   ]
 }
