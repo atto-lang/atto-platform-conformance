@@ -62,7 +62,7 @@ const mk = () => {
 };
 
 test('valid receipt remains candidate-only across all backends', () => {
-  for (const backend of ['java','llvm','net','wasm','forge']) {
+  for (const backend of ['java','llvm','net','wasm','cranelift','forge']) {
     const receipt = mk();
     receipt.backend = backend;
     const result = verifyCompiledActorHeap(receipt, source);
