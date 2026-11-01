@@ -5,6 +5,14 @@ export const BACKENDS=Object.freeze(['java','llvm','wasm','forge','net']);
 // Cranelift is a separate Rust/JIT backend, not an alias of native Forge.
 // Preserve the original five-backend receipt schema unchanged.
 export const SIX_BACKENDS=Object.freeze([...BACKENDS,'cranelift']);
+const SIX_BACKEND_PROFILES=Object.freeze({
+  java: Object.freeze(['jvm','native-image']),
+  llvm: Object.freeze(['native']),
+  wasm: Object.freeze(['wasi','browser']),
+  forge: Object.freeze(['forge-native']),
+  net: Object.freeze(['net-native-aot']),
+  cranelift: Object.freeze(['cranelift-native']),
+});
 export const FIXTURE_BLOB='931f58c1acd40e4c7e1b0b061f1711a0afe3c9b8';
 const HASH40=/^[0-9a-f]{40}$/;const HASH64=/^[0-9a-f]{64}$/;
 const ID=/^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -63,8 +71,10 @@ function validateReceiptFor(report,registry,expectedBackends,schema){
     check(b.repository==='ores-truffle-oreslang/oreslang-source.'+b.backend,'backend repository mismatch');
     check(HASH40.test(b.head_sha)&&HASH40.test(b.tree_sha),'non-pinned SHA');
     check(typeof b.profile==='string' && /^(?:jvm|native-image|native|wasi|browser|net-native-aot|forge-native|cranelift-native)$/.test(b.profile),'unknown execution profile');
-    if (b.backend==='cranelift') check(b.profile==='cranelift-native','Cranelift requires its own native JIT profile');
-    if (b.backend==='forge') check(b.profile!=='cranelift-native','Forge cannot reuse Cranelift evidence');
+    if (expectedBackends===SIX_BACKENDS) {
+      check(SIX_BACKEND_PROFILES[b.backend].includes(b.profile),
+        'six-backend profile mismatch: '+b.backend);
+    }
     fields(b.runner,['run_id','job_id','runner_id','step_count','head_sha']);
     for(const n of ['run_id','job_id','runner_id','step_count'])
       check(Number.isSafeInteger(b.runner[n]) && b.runner[n]>0,'zero-step or missing runner');
