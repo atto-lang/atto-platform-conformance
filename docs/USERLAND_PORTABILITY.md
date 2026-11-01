@@ -21,11 +21,13 @@ require positive real-source evidence before their capability claims advance.
 ## Execution contract
 
 For each profile, independently compile and run all five **unchanged** `.ores`
-fixtures. Preserve exact stdout bytes including newline and exit code 0. Do
+fixtures **on the original private PoC repository runner** at the pinned fixture
+commit; the compiler repository and binary are independently recorded and
+verified, but the test run must not move the PoC source to a compiler repo. Preserve exact stdout bytes including newline and exit code 0. Do
 not implement or replace the `.ores` algorithms in Java/C#/Rust/JavaScript,
 substitute model results, or silently skip unsupported fixtures. Keep
 `src/libraries` immutable and verify the full exact source/oracle blobs on an
-authorized original repository checkout. Record compiler source commit/tree,
+authorized original repository checkout. Record separate PoC run/source SHA and compiler source commit/tree,
 compiler artifact SHA-256, target guest artifact SHA-256, run/job attempt,
 actual assigned runner, checkout/compile/guest steps and each guest binary hash.
 
