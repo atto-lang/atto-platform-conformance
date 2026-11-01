@@ -21,6 +21,7 @@
     "llvm": "UNSUPPORTED_OR_NOT_VERIFIED",
     "net": "UNSUPPORTED_OR_NOT_VERIFIED",
     "wasm": "UNSUPPORTED_OR_NOT_VERIFIED",
+    "cranelift": "UNSUPPORTED_OR_NOT_VERIFIED",
     "forge": "UNSUPPORTED_OR_NOT_VERIFIED"
   },
   "hostTestsAreGuestEvidence": false,
