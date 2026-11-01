@@ -32,7 +32,8 @@ function receipt(platform="desktop",toolchain="llvm",caseId="scalar-42"){
           ...(toolchain==="cranelift"?["run-wasmtime-cranelift"]:[])]
     },
     result:negative?{kind:"reject",diagnosticCode:"UNKNOWN_IDENTIFIER",
-      diagnostic:"error: unresolved identifier"}:
+      diagnostic:"error: unresolved identifier "+(caseId==="unknown-name"?
+        "missing_platform_binding":"absent_platform_function")}:
       {kind:"pass",value:v.expectedValue},
     engine:toolchain==="cranelift"?
       {name:"wasmtime-cranelift",sourceCommit:"f".repeat(40),
@@ -88,6 +89,17 @@ test("negative source checks require explicit primary identifier diagnostics",()
     fails(x,/plain exact fields required/);
   }
 });
+test("negative diagnostics reject unrelated or echo-only error lines",()=>{
+  for(const c of ["unknown-name","unknown-name-two"]){
+    const x=receipt("iot","llvm",c);
+    x.result.diagnostic="error: unrelated compiler failure";
+    fails(x,/rejected identifier/);
+    x.result.diagnostic="note: unknown identifier "+
+      (c==="unknown-name"?"missing_platform_binding":"absent_platform_function");
+    fails(x,/primary semantic diagnostic/);
+  }
+});
+
 test("corpus mutations reject a substituted .ores payload",async()=>{
   const dir=await mkdtemp(join(tmpdir(),"platform-ores-tamper-"));
   try{
