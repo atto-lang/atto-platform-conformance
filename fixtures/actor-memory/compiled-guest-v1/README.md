@@ -66,3 +66,28 @@ node tools/verify-compiled-actor-heap.mjs \
 Only after synchronous ownership/reclamation passes on all six backends should phase 2 add suspension, cancellation, timer/FFI callbacks and receiver/state loans pinned until physical quiescence.
 
 Zero-step Actions, source-free canaries, host-only storage tests, unverified mirror output and compiler-only checks remain non-evidence for this compiled guest contract. Cross-organization private-source publication requires separate independently reviewed authorization.
+
+## Backend-specific physical storage is mandatory
+
+All six toolchains must eventually satisfy **the same actor-language semantics**,
+but must not share one host heap implementation or mistake a logical actor ID
+for independent memory. The fail-closed architecture manifest is
+[`physical-domains-v1.json`](physical-domains-v1.json), validated with
+`node --test tests/actor-heap-physical-domains.test.mjs`. Those tests assert
+requirements and current unsupported states, **not execution parity**.
+
+| Toolchain | Required actor-owned physical backing | Distinct tenant boundary |
+| --- | --- | --- |
+| GraalVM/Java | One bounded, off-heap native arena plus custom actor-relative linear heap per actor incarnation; managed Java facades cannot be treated as actor-private GC heaps. | Trusted JVM process; Graal context alone is not an OS sandbox. |
+| LLVM | Native allocator/arena per actor incarnation under tenant IsolateVM ownership; deterministic lifetime and zero-GC turn budget subject to separately executed RT tests. | IsolateVM native regions; not process-crash/security isolation. |
+| Wasm | Dedicated actor linear memory/instance or owner-checked nonoverlapping regions within a tenant; one Store/Instance per *tenant* does not automatically provide one heap per *actor*. | Separate Wasmtime Store/Instance per tenant; in-process Wasm isolation, not OS process isolation. |
+| Cranelift | **Deny** actor heap and loan lowering until a separately owned native actor arena, compiler lowering and runtime are implemented. | Stage-0 scalar JIT does not implement tenant or actor isolates. |
+| .NET Native AOT | One actor-owned **unmanaged** allocation domain/arena with generation-fenced handles, process budget, lifetime pins, deterministic reclaim; not separate CLR GC heaps. | Host IsolateVM admission is a logical boundary, not an OS/CLR sandbox. |
+| Forge | Per-actor reserved native scalar heap under actor-turn admission, rather than Java arenas or Wasmtime Stores. | Trusted native host unless independently sandboxed. |
+
+An individual backend can report host heap substrate execution without promoting
+compiled `.ores` state/loans/actor scheduling. The canonical 23-event guest
+oracle and two semantic negatives remain mandatory for **every** backend.
+A complete promotion additionally requires authenticated exact-head runner
+provenance, nonzero executed steps, independent review, negative receipts and
+the required physical-retirement/continuation-fence evidence.
