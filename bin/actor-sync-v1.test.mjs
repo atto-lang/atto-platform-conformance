@@ -72,7 +72,7 @@ test("canonical .ores module and guest fixture are Git-blob pinned",()=>{
  assert.deepEqual(manifest.backendTargets,["java","llvm","wasm","cranelift","net"]);
  const gitBlob=relative=>{
    const bytes=readFileSync(new URL("../fixtures/actor-sync-v1/"+relative,import.meta.url));
-   return createHash("sha1").update(Buffer.from("blob "+bytes.length+"\\0"))
+   return createHash("sha1").update(Buffer.from("blob "+bytes.length+"\0"))
      .update(bytes).digest("hex");
  };
  assert.equal(gitBlob(manifest.sourceModule.path),manifest.sourceModule.gitBlobSha1);
@@ -81,7 +81,7 @@ test("canonical .ores module and guest fixture are Git-blob pinned",()=>{
  const fixture=manifest.fixtures[0];
  assert.equal(gitBlob(fixture.path),fixture.gitBlobSha1);
  assert.equal(fixture.expect,"accept-and-execute");
- assert.equal(fixture.stdout,"true\\ntrue\\nfalse\\ntrue\\ntrue\\nfalse\\ntrue\\ntrue\\n3\\n5\\n");
+ assert.equal(fixture.stdout,"true\ntrue\nfalse\ntrue\ntrue\nfalse\ntrue\ntrue\n3\n5\n");
  assert.deepEqual(Object.keys(fixture.backendStatus),manifest.backendTargets);
  for(const b of manifest.backendTargets)
    assert.equal(fixture.backendStatus[b],b==="cranelift"?"UNSUPPORTED":"NOT_EXECUTED");
