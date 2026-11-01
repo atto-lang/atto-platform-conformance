@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "contract": "ores.immutable-default/v1",
+  "sourceContract": "oreslang-common-source#203",
+  "status": "authored-fixtures-only-NOT-executed",
+  "backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "cranelift",
+    "net"
+  ],
+  "backendCapabilities": {
+    "java": "candidate-on-unverified-draft",
+    "llvm": "candidate-on-unverified-draft",
+    "wasm": "llvm-frontend-delegated-guest-not-verified",
+    "cranelift": "native-i64-draft-unverified",
+    "net": "shipping-parser-unsupported"
+  },
+  "cases": [
+    {
+      "id": "IDB-01",
+      "file": "fixtures/immutable-default/v1/typed-default.ores",
+      "expect": "accept",
+      "oracle": "7",
+      "source": "fnc main(): int { int x = 7; return x; }\n"
+    },
+    {
+      "id": "IDB-02",
+      "file": "fixtures/immutable-default/v1/const-inferred.ores",
+      "expect": "accept",
+      "oracle": "7",
+      "source": "fnc main(): int { const x = 7; return x; }\n"
+    },
+    {
+      "id": "IDB-03",
+      "file": "fixtures/immutable-default/v1/const-typed.ores",
+      "expect": "accept",
+      "oracle": "7",
+      "source": "fnc main(): int { const int x = 7; return x; }\n"
+    },
+    {
+      "id": "IDB-04",
+      "file": "fixtures/immutable-default/v1/const-colon.ores",
+      "expect": "accept",
+      "oracle": "7",
+      "source": "fnc main(): int { const x: int = 7; return x; }\n"
+    },
+    {
+      "id": "IDB-05",
+      "file": "fixtures/immutable-default/v1/dependent-locals.ores",
+      "expect": "accept",
+      "oracle": "21",
+      "source": "fnc main(): int { int x = 7; const y = x * 3; return y; }\n"
+    },
+    {
+      "id": "IDB-06",
+      "file": "fixtures/immutable-default/v1/negative-literal.ores",
+      "expect": "accept",
+      "oracle": "-9223372036854775808",
+      "source": "fnc main(): int { const x = -9223372036854775808; return x; }\n"
+    },
+    {
+      "id": "IDB-07",
+      "file": "fixtures/immutable-default/v1/typed-rebind.ores",
+      "expect": "reject",
+      "oracle": "immutable-binding",
+      "source": "fnc main(): int { int x = 7; x = 8; return x; }\n"
+    },
+    {
+      "id": "IDB-08",
+      "file": "fixtures/immutable-default/v1/const-rebind.ores",
+      "expect": "reject",
+      "oracle": "immutable-binding",
+      "source": "fnc main(): int { const x = 7; x = 8; return x; }\n"
+    },
+    {
+      "id": "IDB-09",
+      "file": "fixtures/immutable-default/v1/compound-assign.ores",
+      "expect": "reject",
+      "oracle": "immutable-binding",
+      "source": "fnc main(): int { int x = 7; x += 1; return x; }\n"
+    },
+    {
+      "id": "IDB-10",
+      "file": "fixtures/immutable-default/v1/mutable-loan.ores",
+      "expect": "reject",
+      "oracle": "immutable-borrow",
+      "source": "fnc main(): int { int x = 7; rt mut borrow x; return x; }\n"
+    },
+    {
+      "id": "IDB-11",
+      "file": "fixtures/immutable-default/v1/self-reference.ores",
+      "expect": "reject",
+      "oracle": "unknown-initializer",
+      "source": "fnc main(): int { const x = x + 1; return x; }\n"
+    },
+    {
+      "id": "IDB-12",
+      "file": "fixtures/immutable-default/v1/forward-reference.ores",
+      "expect": "reject",
+      "oracle": "unknown-initializer",
+      "source": "fnc main(): int { int x = y; int y = 7; return x; }\n"
+    },
+    {
+      "id": "IDB-13",
+      "file": "fixtures/immutable-default/v1/duplicate-local.ores",
+      "expect": "reject",
+      "oracle": "duplicate-binding",
+      "source": "fnc main(): int { int x = 7; const x = 8; return x; }\n"
+    },
+    {
+      "id": "IDB-14",
+      "file": "fixtures/immutable-default/v1/missing-initializer.ores",
+      "expect": "reject",
+      "oracle": "missing-initializer",
+      "source": "fnc main(): int { const x; return 7; }\n"
+    },
+    {
+      "id": "IDB-15",
+      "file": "fixtures/immutable-default/v1/inferred-unknown.ores",
+      "expect": "reject",
+      "oracle": "unknown-initializer",
+      "source": "fnc main(): int { const x = undefined_name; return x; }\n"
+    },
+    {
+      "id": "IDB-16",
+      "file": "fixtures/immutable-default/v1/type-mismatch.ores",
+      "expect": "reject",
+      "oracle": "type-mismatch",
+      "source": "fnc main(): int { string x = 7; return 0; }\n"
+    },
+    {
+      "id": "IDB-17",
+      "file": "fixtures/immutable-default/v1/eager-overflow.ores",
+      "expect": "runtime-trap",
+      "oracle": "checked-i64-overflow",
+      "source": "fnc main(): int { const unused = 9223372036854775807 + 1; return 7; }\n"
+    },
+    {
+      "id": "IDB-18",
+      "file": "fixtures/immutable-default/v1/param-shadow.ores",
+      "expect": "reject",
+      "oracle": "duplicate-binding",
+      "source": "fnc main(int x): int { int x = 7; return x; }\n"
+    }
+  ]
+}
