@@ -65,3 +65,25 @@ compiler/runtime source to a different organization** to obtain runner minutes.
 
 The focused workflow only executes Node host tests. CI success, if achieved,
 proves the source-free fixture/receipt guards, NOT compiled Oreslang correctness.
+
+## Raw output digest integrity (draft hardening)
+
+Each of the eight cases in every mode now requires bounded, literal UTF-8
+`stdout` **and** `stderr` fields. The reported `stdout_sha256` and
+`stderr_sha256` must equal SHA-256 over the exact UTF-8 bytes of those
+fields. Both streams are capped at **32,768 bytes each**; a receipt carrying
+an omitted stream, fabricated syntactically valid SHA, altered output, or
+multibyte UTF-8 data exceeding the cap is denied.
+
+Older reports that only supplied opaque hash strings without captured stderr
+are intentionally **not** eligible; they need a fresh, approved exact-head
+producer run with both raw streams and digests. This checks internal receipt
+consistency only. An attacker can still forge an internally consistent
+receipt, so require independent GitHub Actions job/step/API readback,
+actual compiled guest evidence, exact compiler/source hashes, and authorized
+runner provenance before making any five-backend parity claim.
+
+The source-free negative tests include missing/mismatched output hashes,
+tampered stdout and stderr, omitted stderr, oversized ASCII output, and
+oversized multibyte UTF-8. They are host-level structural checks and do not
+compile or execute a real Oreslang program.
