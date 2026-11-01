@@ -20,9 +20,9 @@
       "engine": null
     },
     "cranelift": {
-      "compilerRepo": "ores-truffle-oreslang/oreslang-source.wasm",
-      "route": "wasm-via-wasmtime-cranelift",
-      "engine": "wasmtime-cranelift"
+      "compilerRepo": "ores-truffle-oreslang/oreslang-source.cranelift",
+      "route": "native-cranelift-jit",
+      "engine": "cranelift-jit"
     },
     "net": {
       "compilerRepo": "ores-truffle-oreslang/oreslang-source.net",
@@ -131,9 +131,9 @@
     "compilerBinarySha256": true,
     "artifactSha256": true,
     "executedJobSteps": true,
-    "craneliftEngineBinarySha256": true,
-    "craneliftWasmModuleSha256": true,
     "independentReviewRequired": true,
-    "privateSourceExportHold": true
+    "privateSourceExportHold": true,
+    "craneliftNativeJitExecuted": true,
+    "craneliftCompilerRepoBound": true
   }
 }
