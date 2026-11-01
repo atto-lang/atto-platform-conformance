@@ -53,13 +53,16 @@ test('real unsupported category remains a blocked parity slice',()=>{
   assert.equal(result.pending.length,39);
   assert.equal(result.production_hot_load_certified,false);
 });
-test('honestly failing observed test remains failure, not pass',()=>{
+test('honestly failing pre-image compilation remains failure, not fabricated image',()=>{
   const r=pendingUhl1Report(),c=r.records[0];
   c.status='fail_executed';
   c.evidence=syntheticEvidence(c.backend,c.scenario);
+  c.evidence.image_sha256=null;
+  c.evidence.guest_executed=false;
   const result=evaluateUhl1Report(r);
   assert.equal(result.failed.length,1);
   assert.equal(result.structurally_passing,0);
+  assert.equal(result.production_hot_load_certified,false);
 });
 denies('reject missing backend/scenario row',r=>r.records.pop());
 denies('reject duplicate backend/scenario receipt',r=>r.records[7].scenario=r.records[0].scenario);
