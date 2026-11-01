@@ -185,7 +185,41 @@ export function validateObservation(o,c){
       good(o.run.steps.includes("run-cranelift-native-jit")&&
         o.run.steps.includes("inspect-cranelift-ir"),
         "missing native Cranelift JIT and IR execution steps");
-  }else good(o.engine===null,"unexpected engine evidence on non-Cranelift toolchain");
+  }else if(o.toolchain==="wasm"){
+    // This backend is a bridge, not an independent guest parser: real Oreslang
+    // source lowering currently comes from LLVM before Clang/LLD emits Wasm.
+    exactKeys(o.engine,["name","upstreamCompilerRepo","upstreamCompilerCommit",
+      "upstreamCompilerBinarySha256","wasmModuleSha256","wasmHostBinarySha256","zeroImports"]);
+    good(o.engine.name==="llvm-to-wasm"&&
+      o.engine.upstreamCompilerRepo==="ores-truffle-oreslang/oreslang-source.llvm"&&
+      sha40(o.engine.upstreamCompilerCommit)&&sha64(o.engine.upstreamCompilerBinarySha256)&&
+      o.engine.wasmModuleSha256===o.artifactSha256&&
+      sha64(o.engine.wasmHostBinarySha256)&&o.engine.zeroImports===true,
+      "Wasm bridge requires pinned LLVM frontend, zero-import module and guest host");
+    if(v.expect==="execute")
+      good(o.run.steps.includes("compile-wasm-module")&&
+        o.run.steps.includes("execute-wasm-guest"),"missing compiled Wasm module execution");
+  }else if(o.toolchain==="net"){
+    exactKeys(o.engine,["name","nativeAotHostSha256","compilerBinarySha256",
+      "managedJitFallback"]);
+    good(o.engine.name==="dotnet-nativeaot"&&
+      o.engine.nativeAotHostSha256===o.artifactSha256&&
+      o.engine.compilerBinarySha256===o.compilerBinarySha256&&
+      o.engine.managedJitFallback===false,
+      ".NET needs NativeAOT host artifact and no managed JIT fallback");
+    if(v.expect==="execute")
+      good(o.run.steps.includes("publish-native-aot")&&
+        o.run.steps.includes("execute-native-aot-guest"),
+        "missing NativeAOT build and guest execution");
+  }else if(o.toolchain==="java"){
+    exactKeys(o.engine,["name","guestEngineSha256","runtimeVersion"]);
+    good(o.engine.name==="graal-truffle"&&sha64(o.engine.guestEngineSha256)&&
+      typeof o.engine.runtimeVersion==="string"&&
+      /^[0-9a-zA-Z_.-]{1,40}$/.test(o.engine.runtimeVersion),
+      "Java/Graal requires pinned Truffle engine and runtime version");
+    if(v.expect==="execute")
+      good(o.run.steps.includes("execute-graal-guest"),"missing Graal guest execution");
+  }else good(o.engine===null,"unexpected engine evidence on LLVM native lane");
   return {status:"STRUCTURAL_OBSERVATION_ONLY",independentlyAuthenticated:false,certifiedParity:false};
 }
 export function compareObservations(records,c){
