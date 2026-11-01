@@ -166,6 +166,62 @@ const checked = {
   "mutex-suspending-guard": () => {
     const cell = new GuardedCellReference(1);
     cell.with_write(async () => 3);
+  },
+  "mutex-escaped-guard-write-reject": () => {
+    const cell = new GuardedCellReference(1);
+    let stolen;
+    cell.with_write(guard => { stolen = guard; });
+    stolen.write(99);
+  },
+  "mutex-return-write-guard-reject": () => {
+    const cell = new GuardedCellReference(1);
+    cell.with_write(guard => guard);
+  },
+  "mutex-read-read-reentrancy": () => {
+    const cell = new GuardedCellReference(4);
+    assert.equal(cell.with_read(first => cell.with_read(second => first + second)), 8);
+  },
+  "mutex-write-within-read-reject": () => {
+    const cell = new GuardedCellReference(1);
+    cell.with_read(() => cell.with_write(guard => guard.write(2)));
+  },
+  "mutex-read-within-write-reject": () => {
+    const cell = new GuardedCellReference(1);
+    cell.with_write(() => cell.with_read(value => value));
+  },
+  "mutex-after-throw-guard-revoked": () => {
+    const cell = new GuardedCellReference(1);
+    let escaped;
+    assert.throws(() => cell.with_write(guard => {
+      escaped = guard;
+      throw new Error("unwind");
+    }), /unwind/);
+    escaped.write(2);
+  },
+  "mutex-write-after-read-release": () => {
+    const cell = new GuardedCellReference(1);
+    assert.equal(cell.with_read(value => value), 1);
+    cell.with_write(guard => guard.write(3));
+    assert.equal(cell.with_read(value => value), 3);
+  },
+  "mutex-suspension-always-revokes": () => {
+    const cell = new GuardedCellReference(1);
+    let escaped;
+    assert.throws(() => cell.with_write(guard => {
+      escaped = guard;
+      return Promise.resolve(9);
+    }), /suspending/);
+    escaped.write(9);
+  },
+  "box-move-under-live-heap-loan": () => {
+    const box = new BoxReference(2);
+    box.borrow("read");
+    box.move();
+  },
+  "box-double-use-after-drop": () => {
+    const box = new BoxReference(2);
+    box.drop();
+    box.borrow();
   }
 };
 
