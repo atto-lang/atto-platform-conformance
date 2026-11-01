@@ -22,5 +22,5 @@ capability boundary and may carry allowed `ActorRef` capabilities. Restart or
 hot reload must revoke old I/O authority and must never let a new generation
 reopen queued input/output/errors/events/metadata from a retired generation.
 
-See Java #2109, platform-conformance #177, Java #2420, LLVM #1272, .NET #304,
+See Java #2109, platform-conformance #177, Java #2420, LLVM #1273, .NET #304,
 Wasm #242, and Cranelift #48/#52.
