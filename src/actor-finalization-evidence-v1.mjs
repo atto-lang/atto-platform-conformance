@@ -20,6 +20,7 @@ export function validateActorFinalizationReceipt(expectedHead, receipt) {
   if (!Array.isArray(receipt.jobs) || receipt.jobs.length === 0)
     errors.push("NO_JOBS");
   else {
+    if (receipt.jobs.length > 64) errors.push("JOB_OR_STEP_BUDGET_EXCEEDED");
     const jobIds = new Set();
     for (const job of receipt.jobs) {
       if (!job || typeof job !== "object") {
@@ -32,8 +33,10 @@ export function validateActorFinalizationReceipt(expectedHead, receipt) {
         errors.push("RUNNER_NOT_ASSIGNED");
       if (!Array.isArray(job.steps) || job.steps.length === 0)
         errors.push("ZERO_EXECUTED_STEPS");
+      else if (job.steps.length > 128) errors.push("JOB_OR_STEP_BUDGET_EXCEEDED");
       else if (typeof job.requiredTestStep !== "string" ||
                job.requiredTestStep.trim().length === 0 ||
+               job.requiredTestStep.length > 128 ||
                !job.steps.some(step => step &&
                  step.name === job.requiredTestStep &&
                  step.status === "completed" && step.conclusion === "success"))
@@ -48,6 +51,7 @@ export function validateActorFinalizationReceipt(expectedHead, receipt) {
   if (receipt.compilerExecuted !== true || receipt.nativeGuestExecuted !== true)
     errors.push("GUEST_EXECUTION_NOT_SHOWN");
   if (!Array.isArray(receipt.scenarioIds) || receipt.scenarioIds.length === 0 ||
+      receipt.scenarioIds.length > 20 ||
       new Set(receipt.scenarioIds).size !== receipt.scenarioIds.length ||
       receipt.scenarioIds.some(id => typeof id !== "string" || !/^AF(?:0[1-9]|1[0-9]|20)$/.test(id)))
     errors.push("SCENARIOS_INVALID");
