@@ -2,7 +2,7 @@
   "schema": "oreslang.proxy_lb_backend_status.v1",
   "contract_id": "proxy-lb-selection-v1",
   "source_contract": "ores-truffle-oreslang/oreslang-reverse-proxy-demo.ores",
-  "source_head_at_audit": "ffb56ab91e298424a4e59edea470c15c71bbfc3e",
+  "source_head_at_audit": "c72c0c26adf7e8ada9a95fd8eca78eb8eae58a63",
   "snapshot_date": "2026-11-01",
   "parity_certified": false,
   "release_ready": false,
@@ -56,5 +56,8 @@
     "actor-owned atomic reservation, cancellation/ABA, stale health epoch",
     "physical DNS pinning, bounded I/O, TLS and HTTP framing",
     "nonzero runner IDs and executed steps on isolated approved runners"
-  ]
+  ],
+  "source_contract_branch": "feature/declarative-lb-pools-20261031",
+  "forward_contract_branch": "feature/forward-egress-lease-20261031",
+  "forward_head_at_audit": "249061fdbc112c40330e99ea050042921d562e48"
 }
