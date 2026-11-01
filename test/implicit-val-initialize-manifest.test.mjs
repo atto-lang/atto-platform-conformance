@@ -110,3 +110,16 @@ test("oversized fixture is rejected before a SHA is accepted", async () => {
     );
   });
 });
+
+test("Cranelift is a distinct required backend, never an alias of Forge", async () => {
+  await withFixtureCopy(async (dir) => {
+    const path = join(dir, "manifest.json");
+    const manifest = JSON.parse(await readFile(path, "utf8"));
+    manifest.cases[0].pendingBackends = ["java", "llvm", "wasm", "net", "forge"];
+    await writeFile(path, JSON.stringify(manifest));
+    await assert.rejects(
+      verifyImplicitValInitializeFixtureManifest(dir),
+      /must not invent backend confirmations/
+    );
+  });
+});
