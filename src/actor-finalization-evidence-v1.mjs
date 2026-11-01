@@ -1,19 +1,19 @@
 // Source-free actor-finalization AF20 receipt *shape* validation.
 // A self-reported receipt can never certify independently authenticated execution.
-const hex40 = /^[a-f0-9]{40}$/;
-const hex64 = /^[a-f0-9]{64}$/;
+const hex40 = value => typeof value === "string" && /^[a-f0-9]{40}$/.test(value);
+const hex64 = value => typeof value === "string" && /^[a-f0-9]{64}$/.test(value);
 export const ACTOR_FINALIZATION_BACKENDS = Object.freeze(
   ["java", "llvm", "wasm", "cranelift", "net"]);
 const nativeSanitizerTargets = new Set(["llvm", "cranelift", "forge"]);
 export function validateActorFinalizationReceipt(expectedHead, receipt) {
   const errors = [];
-  if (!hex40.test(expectedHead ?? "")) errors.push("INVALID_EXPECTED_HEAD");
+  if (!hex40(expectedHead)) errors.push("INVALID_EXPECTED_HEAD");
   if (!receipt || typeof receipt !== "object" || Array.isArray(receipt))
     return {shapeReady: false, independentlyAuthenticated: false,
       parityCertified: false, errors: [...errors, "MALFORMED_RECEIPT"]};
-  if (!hex40.test(receipt.sourceHead ?? "") || receipt.sourceHead !== expectedHead)
+  if (!hex40(receipt.sourceHead) || receipt.sourceHead !== expectedHead)
     errors.push("EXACT_HEAD_MISMATCH");
-  if (!hex40.test(receipt.sourceTree ?? "")) errors.push("TREE_SHA_MISSING");
+  if (!hex40(receipt.sourceTree)) errors.push("TREE_SHA_MISSING");
   if (receipt.workflowStatus !== "completed" ||
       receipt.workflowConclusion !== "success")
     errors.push("WORKFLOW_NOT_SUCCESSFUL");
@@ -32,22 +32,24 @@ export function validateActorFinalizationReceipt(expectedHead, receipt) {
         errors.push("RUNNER_NOT_ASSIGNED");
       if (!Array.isArray(job.steps) || job.steps.length === 0)
         errors.push("ZERO_EXECUTED_STEPS");
-      else if (!job.steps.some(step => step &&
-               step.name === job.requiredTestStep &&
-               step.status === "completed" && step.conclusion === "success"))
+      else if (typeof job.requiredTestStep !== "string" ||
+               job.requiredTestStep.trim().length === 0 ||
+               !job.steps.some(step => step &&
+                 step.name === job.requiredTestStep &&
+                 step.status === "completed" && step.conclusion === "success"))
         errors.push("REQUIRED_TEST_STEP_NOT_EXECUTED");
       if (job.conclusion !== "success") errors.push("JOB_NOT_SUCCESSFUL");
     }
   }
-  if (!hex64.test(receipt.compilerSha256 ?? ""))
+  if (!hex64(receipt.compilerSha256))
     errors.push("COMPILER_DIGEST_MISSING");
-  if (!hex64.test(receipt.artifactSha256 ?? ""))
+  if (!hex64(receipt.artifactSha256))
     errors.push("ARTIFACT_DIGEST_MISSING");
   if (receipt.compilerExecuted !== true || receipt.nativeGuestExecuted !== true)
     errors.push("GUEST_EXECUTION_NOT_SHOWN");
   if (!Array.isArray(receipt.scenarioIds) || receipt.scenarioIds.length === 0 ||
       new Set(receipt.scenarioIds).size !== receipt.scenarioIds.length ||
-      receipt.scenarioIds.some(id => !/^AF(?:0[1-9]|1[0-9]|20)$/.test(id)))
+      receipt.scenarioIds.some(id => typeof id !== "string" || !/^AF(?:0[1-9]|1[0-9]|20)$/.test(id)))
     errors.push("SCENARIOS_INVALID");
   if (receipt.rejectionOnly === true || receipt.hostModelOnly === true)
     errors.push("SAFETY_OR_MODEL_NOT_GUEST_PARITY");
@@ -87,5 +89,9 @@ export function actorFinalizationReleaseGate({
   if (backend === "net" && !strictAot) errors.push("NET_NATIVE_AOT_REQUIRED");
   if (nativeSanitizerTargets.has(backend) && !sanitized)
     errors.push("NATIVE_SANITIZERS_REQUIRED");
-  return {ready: errors.length === 0, errors};
+  // Neither independentlyAuthenticated nor any other flag supplied to this
+  // OFFLINE function proves the provider event. The source-free release gate
+  // has no GitHub authority and cannot return true for releaseReady.
+  return {ready: false, shapeRequirementsMet: errors.length === 0,
+    independentProviderVerificationRequired: true, errors};
 }
