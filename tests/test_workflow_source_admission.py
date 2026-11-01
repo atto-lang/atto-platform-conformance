@@ -43,7 +43,7 @@ class WorkflowSourceAdmissionTests(unittest.TestCase):
             with self.subTest(workflow=path.name):
                 self.assertNotRegex(
                     source,
-                    r"(?m)^\\s*(?:test\\s+-z\\s+.*)?git\\s+(?:status|diff|hash-object)\\b",
+                    r"(?m)^\s*(?:test\s+-z\s+.*)?git\s+(?:status|diff|hash-object)\b",
                     "worktree validation must not invoke checkout-owned Git filters",
                 )
                 self.assertNotIn("$(git status", source)
