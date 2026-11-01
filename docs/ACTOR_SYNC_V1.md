@@ -58,3 +58,13 @@ Do not claim `PASS` from host-only C++/Rust/JS/Python unit tests, syntax rejecti
 3. Java/GraalVM first guest vertical slice, then LLVM guest+sanitizer; each must pin exact head and execute real guest.
 4. Wasm/Wasmtime, .NET Native AOT and Cranelift implementations independently; Cranelift requires prior actor support.
 5. Run the AS01–AS24 cases against **identical guest fixture bytes**, negative oracle and fault harness, proving cross-backend semantic behavior. Keep draft until stepful CI and independent review, including no unauthorized private source transfer.
+
+## Source module milestone (2026-11-01)
+
+The [Java/Graal source-progress draft PR #2442](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2442) implements `stdlib/actor_sync.ores` in native Oreslang. It is **local metadata behavior** only: `CommitWindow` for uncertain durable receipts and `ReplicaCursor` for strict sequence/gap/epoch checks. The source does not perform storage I/O, activate real actors, authorize callers or publish a changefeed.
+
+The canonical copy is `fixtures/actor-sync-v1/stdlib/actor_sync.ores` (Git blob `48c85c40b53d33a4a420cf4bb77e00fe3df3bb94`). The executable guest input `fixtures/actor-sync-v1/cursor-progression.ores` (Git blob `a454e7107ab62bbaa38cca44627c794b3bf0d4c2`) is **byte identical** to the Java PR test resource. `fixtures/actor-sync-v1/manifest.json` pins both hashes, expected stdout and distinct NOT_EXECUTED/UNSUPPORTED backend states. Java JUnit exercises the guest source through `LinkedProgramRunner`, but its hosted checks have not executed due to CI runner admission.
+
+Keep AS01–AS24 marked NOT_EXECUTED/UNSUPPORTED because the fixture proves, at most once executable, portable *cursor semantics*, not real durable actor activation, authenticated persistence or network synchronization. A complete guest ABI additionally needs the full asynchronous storage, supervision and tenancy semantics in the preceding sections.
+
+The Java userland module deliberately uses signed 32-bit `int` revisions, capped at 2147483646; the native SQLite reference stores 64-bit revisions. Cross-toolchain ABI numeric widths and overflow behavior **must** be reconciled before native persistence can be marked interoperable.
