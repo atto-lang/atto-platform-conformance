@@ -172,6 +172,7 @@ export async function runSemanticAdmission({backend, argv, sourceSha, timeoutMs 
   catch { return {backend, configured:false, ok:false, status:"UNHASHABLE_EXECUTABLE", guestRuntimeVerified:false, parityVerified:false}; }
   const temp = await mkdtemp(join(tmpdir(), "ores-semantic-"));
   const results = [];
+  const fixtureSnapshots = [];
   try {
     for (const c of selectedCases) {
       const filename = join(temp, c.id + ".ores");
@@ -179,22 +180,29 @@ export async function runSemanticAdmission({backend, argv, sourceSha, timeoutMs 
       const beforeStat = await lstat(filename);
       const before = await readRegularFixtureBytes(filename);
       const fixtureSha256 = sha256(before);
+      fixtureSnapshots.push({filename, beforeStat, fixtureSha256});
       const cmd = argv.map(a => a === "{file}" ? filename : a);
-      // Record source-directory entries before compiler execution. A negative
-      // admission may never leave IR, binary, pointer, or scratch artifacts.
+      // Record source-directory entries before compiler execution. A source
+      // admission check must not leave IR, binaries, or scratch artifacts.
       const entriesBefore = (await readdir(temp)).sort();
       const p = spawnSync(cmd[0], cmd.slice(1), {encoding:"utf8", cwd:temp,
         shell:false, timeout:timeoutMs, maxBuffer:1048576, windowsHide:true});
       let status = classifySemanticCompilerResult(c,p);
       const entriesAfter = await readdir(temp).then(x => x.sort()).catch(() => null);
-      if (c.expect === "reject" &&
-          (entriesAfter === null || JSON.stringify(entriesAfter) !== JSON.stringify(entriesBefore)))
+      if (entriesAfter === null || JSON.stringify(entriesAfter) !== JSON.stringify(entriesBefore))
         status = "UNEXPECTED_COMPILER_ARTIFACT";
       if (!(await semanticFixtureUnchanged(filename, beforeStat, fixtureSha256)))
         status = "SOURCE_MUTATED";
       results.push({id:c.id, expect:c.expect, status, fixtureSha256,
         observedExit:p.status, expectedDiagnosticCode:c.diagnosticCode || null,
         observedDiagnosticCode:observedSemanticDiagnostic(p)});
+    }
+    // A later compiler can rewrite an earlier source fixture without
+    // changing its own input. Invalidate the earlier result too.
+    for (const [index, snapshot] of fixtureSnapshots.entries()) {
+      if (!(await semanticFixtureUnchanged(
+          snapshot.filename, snapshot.beforeStat, snapshot.fixtureSha256)))
+        results[index].status = "SOURCE_MUTATED";
     }
   } finally { await rm(temp, {recursive:true, force:true}); }
   const finalHash = await hashExecutableBounded(exe).catch(() => null);
