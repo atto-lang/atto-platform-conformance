@@ -15,7 +15,7 @@ const isObject=x=>x!==null && typeof x==="object" && !Array.isArray(x);
 export function verifyOptionResultTrapReceipt(receipt,manifest,fixtureDigest) {
   const errors=[];
   const fail=message=>errors.push(message);
-  if(!isObject(manifest) || !["oreslang.option-result-trap.fixtures/v1","oreslang.option-result-trap.modular/v2"].includes(manifest.schema))
+  if(!isObject(manifest) || !["oreslang.option-result-trap.fixtures/v1","oreslang.option-result-trap.modular/v2","oreslang.option-result-trap.scalar/v3"].includes(manifest.schema))
     return {ok:false,errors:["unknown fixture manifest schema"]};
   if(!isObject(receipt)) return {ok:false,errors:["receipt must be an object"]};
   if(receipt.schema!=="oreslang.option-result-trap.receipt/v1") fail("unknown receipt schema");
@@ -67,6 +67,19 @@ export function verifyOptionResultTrapReceipt(receipt,manifest,fixtureDigest) {
     if(typeof e.stdout!=="string"||e.stdout.includes(c.forbidden_stdout))
       fail("forbidden post-panic output observed");
     if(!nonEmpty(e.guestStep)||!e.steps.includes(e.guestStep)) fail("guest panic execution step missing or not executed");
+  } else if(c?.kind==="guest_i64") {
+    // The result must come from the actual guest entry return, not process
+    // status 0 or stdout produced by a host-side reference implementation.
+    if(e.compilerExitCode!==0||e.guestLaunched!==true||e.guestExitCode!==0)
+      fail("successful compiler-produced scalar guest execution required");
+    if(e.guestReturnType!==c.return_type||
+       typeof e.guestReturnValue!=="string"||
+       e.guestReturnValue!==c.expected_return)
+      fail("guest int return missing or differs from the scalar oracle");
+    if(!nonEmpty(e.guestStep)||!e.steps.includes(e.guestStep))
+      fail("scalar guest execution step missing or not executed");
+    if(e.guestResultSource!=="compiler_guest")
+      fail("scalar result must originate from compiler-generated guest");
   } else if(c?.kind==="compile_reject") {
     if(e.compilerExitCode!==1||e.guestLaunched!==false||
        e.guestExitCode!==null || e.guestStep!==null)
@@ -113,7 +126,7 @@ export function readPinnedRegular(filename,maxBytes=131072) {
 }
 function pinnedPath(rel) {
   if(typeof rel!=="string"||
-     !/^fixtures\/option-result-trap\/v[12]\/(?:negative\/)?[a-z_]+\.ores$/.test(rel))
+     !/^fixtures\/option-result-trap\/v[123]\/(?:negative\/)?[a-z_]+\.ores$/.test(rel))
     throw new Error("untrusted fixture relative path");
   const full=resolve(root,rel);
   if(!full.startsWith(root+sep))throw new Error("fixture escapes checkout");
@@ -134,15 +147,16 @@ const gitBlobSha=bytes=>createHash("sha1")
   .update(Buffer.from("blob "+bytes.length+"\0")).update(bytes).digest("hex");
 function readPinnedCase(caseId) {
   const v2=typeof caseId==="string" && caseId.startsWith("ORT2-");
-  const folder=v2?"v2":"v1";
+  const v3=typeof caseId==="string" && caseId.startsWith("ORT3-");
+  const folder=v3?"v3":v2?"v2":"v1";
   const base=resolve(root,"fixtures/option-result-trap",folder);
   const manifestBytes=readPinnedRegular(resolve(base,"manifest.json"));
   const manifest=JSON.parse(manifestBytes.toString("utf8"));
-  const lockPath=resolve(base,v2?"fixture-lock-v2.json":"fixture-lock-v1.json");
+  const lockPath=resolve(base,v3?"fixture-lock-v3.json":v2?"fixture-lock-v2.json":"fixture-lock-v1.json");
   const lock=JSON.parse(readPinnedRegular(lockPath).toString("utf8"));
-  const expectedManifest=v2?"oreslang.option-result-trap.modular/v2":
+  const expectedManifest=v3?"oreslang.option-result-trap.scalar/v3":v2?"oreslang.option-result-trap.modular/v2":
     "oreslang.option-result-trap.fixtures/v1";
-  const expectedLock=v2?"oreslang.option-result-trap.modular-lock/v2":
+  const expectedLock=v3?"oreslang.option-result-trap.scalar-lock/v3":v2?"oreslang.option-result-trap.modular-lock/v2":
     "oreslang.option-result-trap.fixture-lock/v1";
   if(!isObject(manifest)||manifest.schema!==expectedManifest||
      manifest.status!=="authored_not_executed"||
