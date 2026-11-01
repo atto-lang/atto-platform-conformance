@@ -115,7 +115,11 @@ export class VectorReference {
     return this.#values.length ? { present: true, value: this.#values.pop() } :
       { present: false };
   }
-  get(index) { this.#index(index); return this.#values[index]; }
+  get(index) {
+    ensure(!this.#writer, "vector read conflicts with exclusive loan");
+    this.#index(index);
+    return this.#values[index];
+  }
   set(index, value) {
     this.#exclusive();
     this.#index(index);
