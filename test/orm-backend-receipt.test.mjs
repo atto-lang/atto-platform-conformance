@@ -66,3 +66,14 @@ test('refuses modified contract registry, case-count or expectations',()=>{
     assert.equal(verifyOrmReceipt(fixture(),bad,bytes).ok,false);
   }
 });
+test('rejects substituted known oracle identity and altered backend mode whitelist',()=>{
+  const changed=structuredClone(contract);
+  changed.cases[0].id='invented_accept_case';
+  assert.equal(verifyOrmReceipt(fixture(),changed,bytes).ok,false);
+  const swapped=structuredClone(contract);
+  swapped.cases[0].expect='reject';
+  assert.equal(verifyOrmReceipt(fixture(),swapped,bytes).ok,false);
+  const modes=structuredClone(contract);
+  modes.backends.java.modes=['x86-host-python'];
+  assert.equal(verifyOrmReceipt(fixture(),modes,bytes).ok,false);
+});
