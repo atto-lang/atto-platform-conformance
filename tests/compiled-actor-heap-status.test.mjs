@@ -16,7 +16,7 @@ test('the shared compiled guest contract cannot self-certify any backend', () =>
   assert.equal(status.sourceGitBlobSha1, '430565092d8a4ff114f601a54b771ef3d42eae58');
   assert.equal(status.sourceSha256, '8a09c21d17e8f78b8964f0bda575301e9953295f5a78386d6a04e6772d4ff211');
   assert.deepEqual(status.verifiedGuestBackends, []);
-  assert.deepEqual(Object.keys(status.backends).sort(), ['forge','java','llvm','net','wasm']);
+  assert.deepEqual(Object.keys(status.backends).sort(), ['cranelift','forge','java','llvm','net','wasm']);
   assert.ok(Object.values(status.backends).every(x => x === 'UNSUPPORTED_OR_NOT_VERIFIED'));
   assert.deepEqual(Object.keys(status.negativeCases).sort(), ['foreign-state','read-loan-write']);
   assert.equal(status.negativeCases['foreign-state'].requiredDiagnosticClass, 'FOREIGN_ACTOR_STATE_DENIED');
