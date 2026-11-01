@@ -22,7 +22,7 @@ export function verifyUserlandReceipt(r,c) {
       !hex64(r.compilerBinarySha256) || !hex64(r.guestArtifactSha256))
     return bad('missing or substituted compiler, fixture or artifact identity');
   const run=r.run;
-  if (!obj(run) || run.repository!==r.compilerRepository || run.headSha!==r.compilerCommitSha ||
+  if (!obj(run) || run.repository!==r.fixtureRepository || run.headSha!==r.fixtureCommitSha ||
       !id(run.id) || !id(run.attempt) || run.status!=='completed' || run.conclusion!=='success' ||
       !Array.isArray(run.jobs) || run.jobs.length!==1)
     return bad('incomplete or unsuccessful exact-head workflow');
