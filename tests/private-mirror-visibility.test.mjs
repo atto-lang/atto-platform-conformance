@@ -186,3 +186,72 @@ test("transport and JSON parse errors redact credentials even if client errors i
     });
   }
 });
+
+test("incident hold handles mixed-case owner and repository aliases before contacting GitHub",async()=>{
+ for(const [from,to] of [
+  ["OrEs-TrUfFlE-OrEsLaNg/oreslang-source.java","ores-truffle-oreslang/other-private"],
+  ["ores-truffle-oreslang/ORESLANG-SOURCE.LLVM","ores-truffle-oreslang/oreslang-source.llvm"],
+  ["ORES-TRUFFLE-ORESLANG/oreslang-source.java","OREs-Truffle-OresLang/oreslang-source.java"],
+  ["ores-truffle-oreslang/oreslang-source.java","PRIVATE-CARRIER/source-copy"]
+ ]){
+  const calls=[];
+  await assert.rejects(check({source:from,destination:to,
+   approvedDestinations:[to]}, {}, calls),/incident dispositions #22 and #77/);
+  assert.equal(calls.length,0,"incident hold must precede GitHub HTTP");
+ }
+});
+
+test("cross-owner relay hold precedes missing token, empty allowlist and throwing transport",async()=>{
+ const from="scintilla-run-test/private-oreslang-relay",to="other-ci-org/private-copy";
+ for(const override of [
+  {token:undefined},{approvedDestinations:[]},
+  {token:"",approvedDestinations:[to]},
+  {fetchImpl:async()=>{throw Error("unexpected fetch");}}
+ ]){
+  const calls=[];
+  await assert.rejects(check({source:from,destination:to,
+   approvedDestinations:[to],...override}, {}, calls),/incident dispositions #22 and #77/);
+  assert.equal(calls.length,0);
+ }
+});
+
+test("destination identifier injection and ambiguous allowlist aliases are rejected before HTTP",async()=>{
+ for(const bad of ["org/repo/extra","org/repo%2Fother","org/repo?x=1",
+                    "org/repo#tag","org/..","org\\\\repo","org/repo\nX-Token: abc"]){
+  const calls=[];
+  await assert.rejects(check({destination:bad}, {}, calls),/invalid GitHub/);
+  assert.equal(calls.length,0);
+ }
+ const calls=[];
+ await assert.rejects(check({approvedDestinations:[destination.toUpperCase()]}, {}, calls),
+   /allowlist/);
+ assert.equal(calls.length,0,"approval aliases must not silently expand authorization");
+});
+
+test("source full_name mismatch and invalid private flag stop before destination lookup",async()=>{
+ for(const sourceMeta of [
+  {...good(source),full_name:"synthetic-private/another-source"},
+  {...good(source),private:"true"},
+  {...good(source),visibility:"public"}
+ ]){
+  const calls=[];
+  await assert.rejects(check({}, {[source]:sourceMeta}, calls),
+    /invalid or mismatched|private source metadata/);
+  assert.equal(calls.length,1);
+  assert.equal(calls[0].url.endsWith("/"+source),true);
+ }
+});
+
+test("rate limits, redirects and server errors cannot produce private-destination approval",async()=>{
+ for(const status of [301,302,307,429,500,503]){
+  const calls=[];
+  await assert.rejects(check({}, {[destination]:{status}},calls),/unverifiable/);
+  assert.equal(calls.length,2);
+  assert.equal(calls.some(x=>x.options.redirect!=="error"),false);
+ }
+});
+
+// The existing synthetic-positive same-owner path also admits a historical
+// source-bearing relay inside an alternate organization. That requires a
+// provenance-aware fail-closed production fix, not a test-only bypass.
+test.todo("deny historical Oreslang private-source relay between two repositories of the same alternate owner");
