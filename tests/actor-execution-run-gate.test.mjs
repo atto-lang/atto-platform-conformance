@@ -60,3 +60,12 @@ test('all six backends share the same admission triage',()=>{
     assert.equal(status(x),'candidate-only',backend);
   }
 });
+
+test('failed compiler test with executed steps must not look like runner admission failure',()=>{
+  const x=base();
+  x.run.conclusion='failure';x.job.conclusion='failure';x.job.steps[1].conclusion='failure';
+  const audit=auditActorExecutionJob(x);
+  assert.equal(audit.stage,'execution-incomplete');
+  assert.ok(audit.blockers.some(s=>s.includes('did not succeed')));
+  assert.ok(audit.blockers.some(s=>s.includes('skipped, failed or incomplete')));
+});
