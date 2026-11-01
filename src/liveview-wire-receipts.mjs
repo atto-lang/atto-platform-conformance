@@ -2,6 +2,9 @@
 // No report, even one with plausible hashes, authenticates native execution.
 import {createHash} from 'node:crypto';
 export const BACKENDS=Object.freeze(['java','llvm','wasm','forge','net']);
+// Cranelift is a separate Rust/JIT backend, not an alias of native Forge.
+// Preserve the original five-backend receipt schema unchanged.
+export const SIX_BACKENDS=Object.freeze([...BACKENDS,'cranelift']);
 export const FIXTURE_BLOB='931f58c1acd40e4c7e1b0b061f1711a0afe3c9b8';
 const HASH40=/^[0-9a-f]{40}$/;const HASH64=/^[0-9a-f]{64}$/;
 const ID=/^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -46,19 +49,22 @@ export function validateVectors(registry,raw){
   }
   return {vector_count:ids.size,fixture_blob:FIXTURE_BLOB,source_only:true};
 }
-export function validateReceipt(report,registry){
+function validateReceiptFor(report,registry,expectedBackends,schema){
   fields(report,['schema','fixture_blob','backends']);
-  check(report.schema==='ores-liveview-wire-backend-receipt-v1','backend receipt schema');
+  check(report.schema===schema,'backend receipt schema');
   check(report.fixture_blob===FIXTURE_BLOB,'wrong fixture');
-  check(Array.isArray(report.backends)&&report.backends.length===5,'exact five backend records required');
+  check(Array.isArray(report.backends)&&report.backends.length===expectedBackends.length,
+    'exact '+expectedBackends.length+' backend records required');
   const seen=new Set(),allCases=new Set(registry.cases.map(x=>x.id));
   for(const b of report.backends){
     fields(b,['backend','repository','head_sha','tree_sha','profile','runner','guest','results']);
-    check(BACKENDS.includes(b.backend)&&!seen.has(b.backend),'unknown/duplicate backend');
+    check(expectedBackends.includes(b.backend)&&!seen.has(b.backend),'unknown/duplicate backend');
     seen.add(b.backend);
     check(b.repository==='ores-truffle-oreslang/oreslang-source.'+b.backend,'backend repository mismatch');
     check(HASH40.test(b.head_sha)&&HASH40.test(b.tree_sha),'non-pinned SHA');
-    check(typeof b.profile==='string' && /^(?:jvm|native-image|native|wasi|browser|net-native-aot|forge-native)$/.test(b.profile),'unknown execution profile');
+    check(typeof b.profile==='string' && /^(?:jvm|native-image|native|wasi|browser|net-native-aot|forge-native|cranelift-native)$/.test(b.profile),'unknown execution profile');
+    if (b.backend==='cranelift') check(b.profile==='cranelift-native','Cranelift requires its own native JIT profile');
+    if (b.backend==='forge') check(b.profile!=='cranelift-native','Forge cannot reuse Cranelift evidence');
     fields(b.runner,['run_id','job_id','runner_id','step_count','head_sha']);
     for(const n of ['run_id','job_id','runner_id','step_count'])
       check(Number.isSafeInteger(b.runner[n]) && b.runner[n]>0,'zero-step or missing runner');
@@ -80,4 +86,16 @@ export function validateReceipt(report,registry){
   return {structurally_complete:true,runner_provenance_authenticated:false,
     guest_execution_authenticated:false,backend_parity_certified:false,
     backend_count:seen.size,fixture_blob:FIXTURE_BLOB};
+}
+
+/** Backward-compatible original five-backend structural receipt contract. */
+export function validateReceipt(report,registry){
+  return validateReceiptFor(report,registry,BACKENDS,
+    'ores-liveview-wire-backend-receipt-v1');
+}
+
+/** Strict six-backend extension: no silent Forge/Cranelift aliasing. */
+export function validateSixBackendReceipt(report,registry){
+  return validateReceiptFor(report,registry,SIX_BACKENDS,
+    'ores-liveview-wire-six-backend-receipt-v1');
 }
