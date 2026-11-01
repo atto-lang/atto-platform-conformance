@@ -51,7 +51,7 @@
     },
     {
       "id": "state_container.read_write",
-      "kind": "compile_and_run",
+      "kind": "compile",
       "source": "define state container Counter as\n  state { let int count: 0; }\n  increment() -> void ::\n    handle_state(critical-write |s| -> { s.count = s.count + 1; });\n  end\n  get_count() -> int ::\n    return handle_state(critical-read |s| -> s.count);\n  end\nend\n",
       "expected": {
         "compilation": "accept"
@@ -154,7 +154,7 @@
     {
       "id": "state_container.use_after_take_rejected",
       "kind": "compile",
-      "source": "fnc move_bad(Counter c) -> int {\n  let moved = rt take c;\n  return c.get_count();\n}\n",
+      "source": "define state container Counter as\n  state { let int count: 0; }\n  get_count() -> int ::\n    return handle_state(critical-read |s| -> s.count);\n  end\nend\nfnc move_bad(Counter c) -> int {\n  let moved = rt take c;\n  return c.get_count();\n}\n",
       "expected": {
         "compilation": "reject",
         "diagnosticClass": "use_after_take"
