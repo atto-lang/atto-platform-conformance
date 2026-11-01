@@ -154,10 +154,19 @@ def raw_contents(root_fd, path, mode):
             os.close(fd)
 
 
+def assert_no_replace_refs():
+    # Replacement refs can substitute arbitrary commit/tree objects without
+    # changing HEAD. Reject even dormant refs instead of relying only on
+    # GIT_NO_REPLACE_OBJECTS=1 for this one process.
+    if git("for-each-ref", "--format=%(refname)", "refs/replace").strip():
+        raise ValueError("Git replace refs are forbidden in source checkout")
+
+
 def verify(expected):
     validate_git_environment()
     if not re.fullmatch(r"[0-9a-f]{40}", expected or ""):
         raise ValueError("missing or invalid full expected source SHA")
+    assert_no_replace_refs()
     if git("rev-parse", "--show-object-format").strip() != b"sha1":
         raise ValueError("unsupported Git object format")
     if git("rev-parse", "HEAD").strip().decode("ascii") != expected:
@@ -194,6 +203,7 @@ def verify(expected):
         raise ValueError("HEAD/index changed during verification")
     if git("ls-files", "--others", "-z"):
         raise ValueError("untracked files appeared during verification")
+    assert_no_replace_refs()
 
 
 if __name__ == "__main__":
