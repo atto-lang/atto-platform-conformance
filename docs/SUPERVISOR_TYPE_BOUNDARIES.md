@@ -41,3 +41,24 @@ Trait and interface methods cannot grant `ActorRef`/supervisor identity, mutate 
 Cross-backend parity means identical **semantic dispositions**, not pretending that five different host mechanisms execute one source declaration. Passes require exact SHA, real compiler/source execution, failure-origin and generation identity, bounded priority CONTROL, physical finalization, await/restart effect commit and independent review. The adjacent `type-boundaries.json` is a static inventory only; `node --test` proves the inventory cannot silently declare unsupported backends conformant, but does not run any toolchain.
 
 Stacked Java #2423, LLVM #1279, WASM #248, Cranelift #60, .NET #311. Independent source execution requires the existing supervision contract PR #13 to progress through its runtime gates.
+
+
+## Executed private exact-source verification — 2026-11-01
+
+Funded private runner: https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41355153627
+
+The runner used a temporary private, token-free test tree and verified *Git blob SHA equality* between each compiler source/test file and the reviewed source branch before execution. These are **real source-admission tests**, not fake/mock compiler checks, but intentionally narrow:
+
+| Backend | Actually built/executed | What remains unproven |
+| --- | --- | --- |
+| Java | JDK 25 compiler compiled production `Parser`, `Lexer`, `Token`, `Ast`; executed 3 positive + 16 negative supervisor declaration cases | Full `OresCompiler`/JUnit/Maven, general guest CONTROL, full host/runtime and native-image |
+| LLVM | Real C++ production parser, `MethodResolver`, `NativeScalarTypes`, `OwnershipChecker`, and focused parser test built against LLVM Support under `-Wall -Wextra -Wpedantic -Werror`; executable succeeded | LLVM IR supervisor lowering, actor runtime CONTROL execution and ASan/UBSan |
+| WASM | Exact JS source lexer/admission tests and source-fixture registry mutation checks through Node 22 | Actual Wasm supervisor guest ABI, CONTROL and compiled actor runtime |
+| Cranelift | Rust 1.99.1 `cargo test --locked` (12 passed), `cargo fmt --check`; actual JIT/scalar CLI and explicit supervisor rejection | Compiled guest actor/supervisor runtime, typed `Failure`, CONTROL |
+| .NET | .NET 10 production `OresParser` source compiled and executed, 9 negative + 4 positive controls, then built **NativeAOT** and executed same harness | Full structured compiler source tests, guest CONTROL and supervisor lifecycle |
+
+Separate initial private source-policy test: https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41354010324
+
+No verdict of `guestSourceParity: true` is permitted by these focused tests. The general `define supervisor` declaration remains a fail-closed, source-level feature gate across backends until the authenticated, generation-fenced guest CONTROL lifecycle is implemented and exercised.
+
+The native LLVM parser also required correcting a preexisting misleadingly indented conditional under strict `-Werror` in the native source PR. The Cranelift CLI test was formatted to pass the full Rust formatting gate. A separate GraalVM parser native-image job is tracked independently; JDK 25 parser success must not be conflated with GraalVM AOT success.
