@@ -200,6 +200,38 @@ test("fake compiler cannot promote source rejection after publishing an artifact
  }
 });
 
+
+test("later compiler source mutation invalidates an earlier accepted result",async()=>{
+ // A source-free synthetic process checks the verifier's suite-wide receipt.
+ const dir=await mkdtemp(join(tmpdir(),"ores-semantic-previous-source-"));
+ const script=join(dir,"fake-previous-source.cjs");
+ try {
+   await writeFile(script,[
+     '"use strict";',
+     'const fs = require("node:fs");',
+     'const source = process.argv.at(-1);',
+     'if (source.includes("future-map-rejects-implicit-adoption")) {',
+     '  fs.unlinkSync("future-map-preserves-nested-return.ores");',
+     '  fs.writeFileSync("future-map-preserves-nested-return.ores", "replaced");',
+     '  console.error("error[E_WRAPPER_LAYER]: synthetic rejection");',
+     '  process.exitCode = 1;',
+     '}'
+   ].join("\n"));
+   const receipt=await runSemanticAdmission({
+     backend:"llvm",suite:"future-map",sourceSha:"2".repeat(40),
+     argv:[process.execPath,script,"{file}"]
+   });
+   assert.equal(receipt.ok,false);
+   assert.equal(receipt.status,"NOT_VERIFIED");
+   assert.equal(receipt.sourceCases[0].status,"SOURCE_MUTATED");
+   assert.equal(receipt.sourceCases[1].status,"MATCHED_UNATTESTED");
+   assert.equal(receipt.fullInventoryMatched,false);
+   assert.equal(receipt.parityVerified,false);
+ }finally{
+   await rm(dir,{recursive:true,force:true});
+ }
+});
+
 test("without actual compiler execution no backend may be declared verified",async()=>{
  for (const backend of ["java","llvm","net","wasm","forge"]) {
    const r=await runSemanticAdmission({backend});
