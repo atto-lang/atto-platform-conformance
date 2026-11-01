@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "suite": "heap-containers-v1",
+  "evidence_status": "source-free-reference-only",
+  "source_language_support": "unverified",
+  "canonical_resizable_type": "Vector[T]",
+  "existing_resizable_family": [
+    "Array[T]",
+    "List[T]",
+    "Vector[T]"
+  ],
+  "candidate_alias": "Vec<T> (not admitted without parser/typechecker evidence)",
+  "backends": {
+    "java-graal": "unverified",
+    "llvm-native": "unverified",
+    "wasm": "unverified",
+    "forge": "unverified",
+    "net-native-aot": "unverified",
+    "cranelift": "unverified"
+  },
+  "cases": [
+    {
+      "id": "box-move-preserves-unique-owner",
+      "expected": "accept"
+    },
+    {
+      "id": "box-use-after-move",
+      "expected": "deny"
+    },
+    {
+      "id": "box-drop-while-borrowed",
+      "expected": "deny"
+    },
+    {
+      "id": "box-mut-borrow-conflict",
+      "expected": "deny"
+    },
+    {
+      "id": "box-two-shared-borrows",
+      "expected": "accept"
+    },
+    {
+      "id": "box-single-drop",
+      "expected": "accept"
+    },
+    {
+      "id": "vector-grow-and-preserve-elements",
+      "expected": "accept"
+    },
+    {
+      "id": "vector-reserve-under-read-loan",
+      "expected": "deny"
+    },
+    {
+      "id": "vector-grow-under-write-loan",
+      "expected": "deny"
+    },
+    {
+      "id": "vector-write-during-shared-loan",
+      "expected": "deny"
+    },
+    {
+      "id": "vector-bounds",
+      "expected": "deny"
+    },
+    {
+      "id": "vector-over-capacity",
+      "expected": "deny"
+    },
+    {
+      "id": "vector-element-exclusive-borrow",
+      "expected": "accept"
+    },
+    {
+      "id": "vector-pop-empty",
+      "expected": "accept"
+    },
+    {
+      "id": "arc-clone-count-preserves-payload",
+      "expected": "accept"
+    },
+    {
+      "id": "arc-upgrade-weak-before-drop",
+      "expected": "accept"
+    },
+    {
+      "id": "arc-weak-upgrade-after-final-drop",
+      "expected": "accept"
+    },
+    {
+      "id": "arc-use-after-drop",
+      "expected": "deny"
+    },
+    {
+      "id": "arc-mutability-requires-guard",
+      "expected": "deny"
+    },
+    {
+      "id": "arc-guarded-mutation",
+      "expected": "accept"
+    },
+    {
+      "id": "mutex-reentrant-write",
+      "expected": "deny"
+    },
+    {
+      "id": "mutex-releases-on-throw",
+      "expected": "accept"
+    },
+    {
+      "id": "mutex-suspending-guard",
+      "expected": "deny"
+    }
+  ],
+  "guest_fixtures_executed": 0,
+  "compiler_assertions_executed": 0,
+  "runtime_backends_verified": 0
+}
