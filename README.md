@@ -2,6 +2,18 @@
 
 Cross-platform, **evidence-first** language and runtime conformance suite. A harness that has not run a real compiler must never claim parity.
 
+## Resumable media streaming v1 — host reference
+
+The [media replay v1 contract](docs/MEDIA_REPLAY_V1.md) defines a bounded 2 MiB compressed-chunk sender replay window, receiver applied-checkpoint ledger, cumulative ACK semantics, actor generation fencing and codec-safe random-access resets. Run the 32 host-reference tests (including [six shared operation vectors](contracts/media-replay-v1-vectors.json)) with:
+
+```sh
+node --test tests/media-replay*.test.mjs
+```
+
+This is **not** native Oreslang codec execution or five-backend parity evidence. Java/Graal, LLVM, Wasm, Forge and .NET guest admission remains separate.
+
+
+
 ## Real compiler evidence adapter (proposed integration)
 
 A private compiler build can produce a narrow two-fixture JSON smoke report using the companion changes in [Java PR #953](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/953) and [LLVM PR #383](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/383). This repo adds a **non-promoting** consistency checker:
