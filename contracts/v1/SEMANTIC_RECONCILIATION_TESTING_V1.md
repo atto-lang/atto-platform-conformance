@@ -37,15 +37,43 @@ These targets follow the Java #2197 fail-closed design, but **none of the five
 backend compilers has executed these fixtures**. `E_PARTIAL_MOVE` is a
 proposed diagnostic identity requiring independent ratification, not a
 shipping error-code claim. A parser failure or unrelated diagnostic cannot
-satisfy the negative oracle. The inventory now contains **36 compiler
-targets (24 ownership) and 2 pending runtime traces**.
+satisfy the negative oracle. The inventory now contains **44 compiler
+targets (32 ownership) and 2 pending runtime traces**.
+
+
+## Heap-allocated arrays: four additional paired source-admission gates
+
+The 2026-11-01 target inventory adds **eight** `Array<int>` cases (four
+accept/reject pairs), motivated by Java [#2197](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2197):
+
+1. Multiple read loans into an indexed heap element are legal if ended before
+   `Array.add`; resizing with a projected loan still live is forbidden.
+2. An exclusive array loan can end before a read loan, but overlapping
+   mutable/read loans of the same root are forbidden.
+3. A copied scalar element can be returned by value; a borrowed element of a
+   local heap array cannot escape its owner's lifetime.
+4. `rt take` of a tracked entire array is legal; `rt take values[0]` is
+   denied until slot invalidation/partial-move tracking is proved.
+
+`E_BORROW_CONFLICT`, `E_BORROW_ESCAPE` and `E_PARTIAL_MOVE` are *proposed*
+semantic diagnostic identities, not verified shipping compiler codes.
+All five backend targets remain `PENDING_GUEST_PROOF`. The test validator
+only proves manifest well-formedness; a real compiler must independently
+compile each positive source and reject each negative source *for the correct
+reason*, then provide a pinned, executed-step receipt. It must not accept
+unknown-type, unsupported-`Array` or unrelated parser failures as a
+borrow-checking pass.
+
+This suite does not cover Cranelift's stage-0 scalar-only frontend as positive
+heap execution: that compiler must reject heap inputs explicitly until it
+implements and verifies the ownership-aware array subset.
 
 ## Bounded Future.map admission gate
 
 Use `--suite=future-map` to execute exactly the
 `future-map-preserves-nested-return` positive and
 `future-map-rejects-implicit-adoption` negative. Omit the flag to run all
-36 compiler vectors. Unknown suites fail closed.
+44 compiler vectors. Unknown suites fail closed.
 
 ```sh
 node bin/semantic-reconciliation-gate.mjs --backend=java --suite=future-map \
@@ -74,7 +102,7 @@ lifecycle, and no backend may be marked verified from source inspection.
 
 ### Inventory drift guard (October 28)
 
-The exact source-free manifest currently has 36 compiler vectors plus 2 pending
+The exact source-free manifest currently has 44 compiler vectors plus 2 pending
 runtime traces. The bounded-suite unit test checks both the manifest-wide
 length and equivalence between `--suite=all` and the validated manifest, so
 adding future vectors cannot leave a stale hard-coded subset count undetected.
