@@ -87,3 +87,15 @@ The source-free negative tests include missing/mismatched output hashes,
 tampered stdout and stderr, omitted stderr, oversized ASCII output, and
 oversized multibyte UTF-8. They are host-level structural checks and do not
 compile or execute a real Oreslang program.
+
+## Unicode and semantic-consistency negative controls
+
+Both output streams must contain well-formed Unicode before literal UTF-8
+hashing: an unpaired UTF-16 surrogate otherwise silently becomes UTF-8
+replacement bytes. Successful scalar results cannot also claim a stderr
+error or runtime trap. Native checked-overflow reports require a nonempty
+diagnostic besides a nonzero exit; Wasm still requires the typed runtime trap.
+Runner names and guest command labels must be bounded single-line strings
+without control bytes. Eight negative and one valid multibyte UTF-8 control
+exercise this source-free eligibility gate. None authenticates the receipt
+producer or proves any of the seven real backend guest profiles executed.

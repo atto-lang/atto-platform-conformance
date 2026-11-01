@@ -167,3 +167,27 @@ test('a fabricated but internally consistent full receipt is NOT authentication'
   assert.equal(admit(doc), true); // Deliberately illustrates limitation.
   assert.equal(doc.certified, false);
 });
+
+// Raw-byte integrity and contradictory execution claims: all host-only.
+denies('reject unpaired surrogate stdout despite internally matching digest',
+ d => {const c=d.executions[0].cases[0]; c.stdout='\uD800'; c.stdout_sha256=digest(c.stdout)}, /guest case/);
+denies('reject unpaired surrogate stderr despite internally matching digest',
+ d => {const c=d.executions[0].cases[6]; c.stderr='\uDC00'; c.stderr_sha256=digest(c.stderr)}, /guest case/);
+denies('reject successful scalar with an internally hashed error diagnostic',
+ d => {const c=d.executions[0].cases[0]; c.stderr='error: wrong mode'; c.stderr_sha256=digest(c.stderr)}, /successful guest must not/);
+denies('reject successful Wasm scalar falsely reporting a trap',
+ d => {d.executions.find(x=>x.backend==='wasm').cases[0].trap_category='webassembly-runtime-error'}, /successful guest must not/);
+denies('reject silent native overflow with matching empty stderr hash',
+ d => {const c=d.executions.find(x=>x.backend==='cranelift').cases[6]; c.stderr=''; c.stderr_sha256=digest('')}, /native overflow requires diagnostic/);
+denies('reject newline-injected guest command',
+ d => {d.executions[0].cases[0].guest_command='compiler --run\nFAKE PASS'}, /guest case/);
+denies('reject control-byte runner-name injection',
+ d => {d.executions[0].run.jobs[0].runner_name='runner\u0000spoof'}, /unexecuted/);
+denies('reject oversized guest-command provenance',
+ d => {d.executions[0].cases[0].guest_command='a'.repeat(4097)}, /guest case/);
+test('valid multibyte UTF-8 overflow diagnostic remains eligible structurally', () => {
+ const d=makeEligible(), c=d.executions.find(x=>x.backend==='net').cases[6];
+ c.stderr='dépassement contrôlé';
+ c.stderr_sha256=digest(c.stderr);
+ assert.equal(admit(d),true);
+});
