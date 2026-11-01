@@ -21,7 +21,7 @@ function sourceFiles(dir, list=[]) {
   return list;
 }
 function suspiciousWrites(src) {
-  return /\bgit\s+(?:-C\s+\S+\s+)?push\b/i.test(src) ||
+  return /\bgit\s+(?:(?:-C|-c|--git-dir|--work-tree)\s+\S+\s+)*push\b/i.test(src) ||
     /\b(?:execFileSync|execFile|spawnSync|spawn)\s*\(\s*["']git["']\s*,\s*\[\s*["']push["']/i.test(src) ||
     /\bgh\s+api\b/i.test(src) ||
     /\/git\/(?:blobs|trees|commits|refs)\b/i.test(src) ||
@@ -73,4 +73,16 @@ test("publisher guard cannot silently lose its shared authorization import",()=>
   assert.throws(()=>audit(approvedPublisher,
     'await publish(); const endpoint="/git/blobs";'),
     /require-private-mirror/);
+});
+
+test("static review flags git push reached through explicit Git global configuration",()=>{
+  for (const command of [
+    "git -c core.hooksPath=/tmp/hooks push origin HEAD",
+    "git -C /tmp/checkout -c protocol.version=2 push origin HEAD",
+    "git --git-dir /tmp/private/.git push upstream HEAD",
+    "git --work-tree /tmp/private -C /tmp/private push origin main"
+  ]) {
+    assert.throws(()=>audit("bin/alternate-private-publisher.sh",command),
+      /unreviewed direct GitHub/);
+  }
 });
