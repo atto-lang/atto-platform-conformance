@@ -12,8 +12,16 @@ export function assessInjectedStateReceipt(contract, backend, receipt) {
       !contract.optionalBackends.includes(backend)) {
     return { structurallyEligible: false, classification: "unverified", failures: ["unknown backend"] };
   }
-  if (!receipt || typeof receipt !== "object") {
-    return { structurallyEligible: false, classification: "unverified", failures: ["missing receipt"] };
+  if (!receipt || typeof receipt !== "object" || Array.isArray(receipt)) {
+    return { structurallyEligible: false, classification: "unverified", failures: ["missing or malformed receipt"] };
+  }
+  // A JSON receipt is only a shape check, never an authenticated CI attestation.
+  // Even at this layer reject ambiguous pending/skip claims and unsupported
+  // emission/capability fallbacks rather than interpreting missing fields as OK.
+  if (receipt.status !== "completed" || receipt.conclusion !== "success" ||
+      receipt.synthetic === true || receipt.parserOnly === true ||
+      receipt.sourceFree === true || receipt.unsupported === true) {
+    failures.push("completed successful compiler-backed execution is not asserted");
   }
   if (receipt.backend !== backend) failures.push("backend mismatch");
   if (!/^[0-9a-f]{40}$/.test(receipt.compilerCommit ?? "")) {
@@ -50,7 +58,9 @@ export function assessInjectedStateReceipt(contract, backend, receipt) {
       }
       if (expected.kind === "compile-and-run") {
         if (actual.compileExitCode !== 0 || actual.runExitCode !== expected.expected.exitCode ||
-            actual.stdout !== expected.expected.stdout || actual.unsupported === true) {
+            actual.stdout !== expected.expected.stdout || actual.guestExecuted !== true ||
+            actual.rejectionPhase != null || actual.unsupported === true ||
+            actual.synthetic === true || actual.sourceFree === true) {
           failures.push("positive guest was not executed successfully " + expected.id);
         }
       } else {
@@ -61,7 +71,8 @@ export function assessInjectedStateReceipt(contract, backend, receipt) {
             actual.unsupported === true ||
             actual.diagnosticClass !== expected.violation ||
             actual.rejectionPhase !== "semantic" ||
-            actual.emittedArtifacts !== 0 || actual.guestExecuted === true) {
+            actual.emittedArtifacts !== 0 || actual.guestExecuted !== false ||
+            actual.runExitCode != null || actual.stdout != null) {
           failures.push("negative compiler-owned denial not established " + expected.id);
         }
       }
