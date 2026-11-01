@@ -30,15 +30,15 @@ function receipt(platform="desktop",toolchain="llvm",caseId="scalar-42"){
       runnerId:123458,conclusion:"success",
       steps:negative?["verify-exact-head","compile-ores-source","assert-negative-diagnostic"]:
         ["verify-exact-head","compile-ores-source","run-ores-guest",
-          ...(toolchain==="cranelift"?["run-wasmtime-cranelift"]:[])]
+          ...(toolchain==="cranelift"?["run-cranelift-native-jit","inspect-cranelift-ir"]:[])]
     },
     result:negative?{kind:"reject",diagnosticCode:"UNKNOWN_IDENTIFIER",
       diagnostic:"error: unresolved identifier "+(caseId==="unknown-name"?
         "missing_platform_binding":"absent_platform_function")}:
       {kind:"pass",value:v.expectedValue},
     engine:toolchain==="cranelift"?
-      {name:"wasmtime-cranelift",sourceCommit:"f".repeat(40),
-        binarySha256:"1".repeat(64),wasmModuleSha256:"e".repeat(64)}:null
+      {name:"native-cranelift-jit",compilerCommit:"d".repeat(40),
+        compilerBinarySha256:HEX64,clifSha256:"e".repeat(64)}:null
   };
 }
 const fails=(r,rx)=>assert.throws(()=>validateObservation(r,contract),rx);
@@ -55,7 +55,8 @@ test("five toolchain lanes cover Java LLVM Wasm Cranelift and .NET",()=>{
   assert.deepEqual(TOOLCHAINS,["java","llvm","wasm","cranelift","net"]);
   assert.deepEqual(PLATFORMS,["mobile","desktop","embedded","iot","fpga","asic"]);
   assert.notEqual(contract.toolchains.cranelift.route,contract.toolchains.wasm.route);
-  assert.equal(contract.toolchains.cranelift.compilerRepo,contract.toolchains.wasm.compilerRepo);
+  assert.equal(contract.toolchains.cranelift.compilerRepo,
+    "ores-truffle-oreslang/oreslang-source.cranelift");
 });
 test("no backend or physical platform is certified from a checked-in manifest",()=>{
   const r=pendingMatrix(contract);
@@ -153,22 +154,22 @@ test("missing toolchain and changed source hashes are not silently accepted",()=
   const b=structuredClone(contract);
   b.cases[0].sha256=HEX64;assert.throws(()=>validateContract(b),/identity drift/);
 });
-test("Cranelift is not interchangeable with generic Wasm source checking",()=>{
+test("native Cranelift JIT is not interchangeable with Wasmtime Wasm checking",()=>{
   const r=receipt("mobile","cranelift");r.engine=null;fails(r,/plain exact fields/);
   const n=receipt("mobile","cranelift");
-  n.run.steps=n.run.steps.filter(x=>x!=="run-wasmtime-cranelift");
+  n.run.steps=n.run.steps.filter(x=>x!=="run-cranelift-native-jit");
   fails(n,/missing Cranelift engine execution/);
 });
-test("a Cranelift module must be the same artifact described by the receipt",()=>{
+test("Cranelift native JIT CLIF identity binds the reported artifact",()=>{
   const r=receipt("desktop","cranelift");
-  r.engine.wasmModuleSha256=HEX64;
-  fails(r,/produced Wasm module/);
+  r.engine.clifSha256=HEX64;
+  fails(r,/generated CLIF identity/);
 });
 test("ordinary JVM LLVM Wasm and NativeAOT lanes cannot borrow Cranelift evidence",()=>{
   for(const backend of ["java","llvm","wasm","net"]){
     const r=receipt("desktop",backend);
-    r.engine={name:"wasmtime-cranelift",sourceCommit:HEX40,
-      binarySha256:HEX64,wasmModuleSha256:HEX64};
+    r.engine={name:"native-cranelift-jit",compilerCommit:HEX40,
+      compilerBinarySha256:HEX64,clifSha256:HEX64};
     fails(r,/unexpected engine evidence/);
   }
 });
