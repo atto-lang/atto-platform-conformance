@@ -6,7 +6,7 @@ const registry = JSON.parse(readFileSync(
   new URL("../contracts/state_regions/critical-state-guest-fixtures-v1.json", import.meta.url),
   "utf8",
 ));
-const backends = ["java", "llvm", "wasm", "net", "forge"];
+const backends = ["java", "llvm", "wasm", "cranelift", "net", "forge"];
 const sha40 = /^[0-9a-f]{40}$/;
 const sourceRepo = "ores-truffle-oreslang/oreslang-source.java";
 
