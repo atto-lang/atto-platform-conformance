@@ -55,7 +55,9 @@
     "NO_PENDING_DISCONTINUITY",
     "INVALID_DISCONTINUITY",
     "DISCONTINUITY_MISMATCH",
-    "UNVERIFIED_RESTART"
+    "UNVERIFIED_RESTART",
+    "CODEC_CONFIG_TRANSITION",
+    "RESET_CODEC_MISMATCH"
   ],
   "required_scenarios": [
     "default_2mib",
@@ -92,7 +94,11 @@
     "network_loss_sender_receiver_replay",
     "codec_reset_discontinuity_ack",
     "forged_restart_refusal",
-    "duplicate_discontinuity_refusal"
+    "duplicate_discontinuity_refusal",
+    "replay_does_not_span_codec_transition",
+    "reset_requires_bound_codec_configuration",
+    "duplicate_pts_conflict",
+    "negative_or_fractional_pts_rejection"
   ],
   "target_backends": {
     "java": {
@@ -134,7 +140,7 @@
   "receiver_semantics": {
     "offer": "Validate identity, owned payload integrity, next sequence/offset and codec dependency without advancing applied checkpoint.",
     "commit": "Only after successful decoder/application transaction, advance applied checkpoint and attach explicit gap proof for any skipped sequences. Keep bounded digest ledger for duplicate conflict checks.",
-    "resetAt": "Does not alter lastAppliedSequence/EndOffset until first verified random-access chunk is committed; pending reset cannot be replaced.",
+    "resetAt": "Preserves last-applied watermark until verified first random-access unit is committed. Bind new codecConfigId at reset and reject a different config before mutation.",
     "acknowledgment": "Receiver's committed checkpoint, never the last network-received chunk, determines sender replay and ACK retention."
   },
   "vector_file": "contracts/media-replay-v1-vectors.json",
@@ -148,8 +154,9 @@
       "restartSequence points to a retained codec-verified random-access unit",
       "restartOffset and final acknowledged endOffset match actually emitted chunks"
     ],
-    "result": "frees explicitly abandoned bytes while retaining a separately visible lastDiscontinuity; never interprets skipped units as successfully decoded"
+    "result": "frees explicitly abandoned bytes while retaining a separately visible lastDiscontinuity; never interprets skipped units as successfully decoded",
+    "codec_transition": "A contiguous replay plan must fail closed with CODEC_CONFIG_TRANSITION when retained chunks include differing codec configurations. Caller must negotiate decoder reinit at verified boundary."
   },
-  "host_reference_test_count": 41,
-  "execution_evidence": "Local Node v22.16.0 host model: 41 tests passed; this does not prove any Oreslang guest source backend."
+  "host_reference_test_count": 45,
+  "execution_evidence": "45 local Node 22.16.0 host reference tests passed, eight additional source-free guest-receipt validator tests authored; no exact-head guest compiler/backend execution established."
 }
