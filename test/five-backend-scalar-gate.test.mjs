@@ -1,7 +1,7 @@
 // All tests are host-only structural negative controls. No native guest executes here.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {REQUIRED_PROFILES, REQUIRED_CASES, validateFiveBackendScalarEligibility as admit}
+import {REQUIRED_PROFILES, REQUIRED_CASES, FIXTURE_SHA256, validateFiveBackendScalarEligibility as admit}
   from '../verification/five-backend-scalar-gate.mjs';
 
 const h40 = 'a'.repeat(40), tree = 'b'.repeat(40);
@@ -16,7 +16,7 @@ const vectors = {
 };
 function makeEligible() {
   const fixtures = REQUIRED_CASES.map((id, i) => ({
-    id, source_sha256: i.toString(16).repeat(64)
+    id, source_sha256: FIXTURE_SHA256[id]
   }));
   const executions = Object.entries(REQUIRED_PROFILES).flatMap(
     ([backend, modes]) => modes.map(mode => ({backend, mode})));
@@ -80,6 +80,7 @@ for (const [name, change] of badHeaders)
 denies('reject incomplete fixture list', d => d.fixtures.pop(), /fixture coverage/);
 denies('reject duplicate fixture id', d => d.fixtures[1].id=d.fixtures[0].id, /fixture/);
 denies('reject malformed fixture SHA', d => d.fixtures[0].source_sha256='main', /fixture/);
+denies('reject well-formed but wrong pinned SHA', d => d.fixtures[0].source_sha256='f'.repeat(64), /fixture/);
 denies('reject unrecognized fixture id', d => d.fixtures[0].id='unlisted', /fixture/);
 denies('reject absent execution mode', d => d.executions.pop(), /seven/);
 denies('reject reused backend/mode credit', d => d.executions[1].mode=d.executions[0].mode, /duplicate backend/);
