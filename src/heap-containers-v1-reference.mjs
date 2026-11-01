@@ -214,6 +214,7 @@ export class GuardedCellReference {
 export class ArcReference {
   #control;
   #live = true;
+  #activeGuards = 0;
   constructor(value, control, authorization) {
     if (control !== undefined) {
       ensure(authorization === internal, "forged Arc");
@@ -233,7 +234,20 @@ export class ArcReference {
   }
   read() {
     this.#check();
-    return this.#control.value;
+    const referent = this.#control.value;
+    if (!(referent instanceof GuardedCellReference)) return referent;
+    // A saved view is checked on use and cannot keep an Arc alive secretly.
+    // Each synchronous callback pins the originating live Arc handle.
+    const invoke = (method, callback) => {
+      this.#check();
+      this.#activeGuards++;
+      try { return referent[method](callback); }
+      finally { this.#activeGuards--; }
+    };
+    return Object.freeze({
+      with_write: callback => invoke("with_write", callback),
+      with_read: callback => invoke("with_read", callback)
+    });
   }
   downgrade() {
     this.#check();
@@ -242,6 +256,7 @@ export class ArcReference {
   }
   drop() {
     this.#check();
+    ensure(this.#activeGuards === 0, "cannot drop Arc during active guard");
     this.#live = false;
     const c = this.#control;
     c.strong--;
