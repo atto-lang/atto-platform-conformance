@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {createHash} from "node:crypto";
+import {spawnSync} from "node:child_process";
 import {mkdtemp,readFile,writeFile,mkdir,rm,symlink} from "node:fs/promises";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
@@ -64,6 +65,22 @@ test("no backend or physical platform is certified from a checked-in manifest",(
   assert.equal(r.lanes.length,30);
   assert.ok(r.lanes.every(x=>x.status==="NOT_EXECUTED"));
   assert.equal(r.certifiedParity,false);
+});
+test("CLI keeps source-only checks separate from the required real guest gate",()=>{
+  const cli=join(root,"bin/platform-portability-v1.mjs");
+  const local=spawnSync(process.execPath,[cli],{encoding:"utf8"});
+  assert.equal(local.status,0,local.stderr);
+  const pending=JSON.parse(local.stdout);
+  assert.equal(pending.status,"UNEXECUTED");
+  assert.equal(pending.requiredCaseRuns,300);
+  assert.equal(pending.certifiedParity,false);
+  const required=spawnSync(process.execPath,[cli,"--require-executed"],{encoding:"utf8"});
+  assert.equal(required.status,3);
+  assert.match(required.stderr,/NOT_EXECUTED/);
+  assert.equal(JSON.parse(required.stdout).certifiedParity,false);
+  const invalid=spawnSync(process.execPath,[cli,"--claim-parity"],{encoding:"utf8"});
+  assert.equal(invalid.status,2);
+  assert.match(invalid.stderr,/ADMISSION_REJECTED/);
 });
 test("all six platform repositories have 30 unique pending lanes",()=>{
   const lanes=pendingMatrix(contract).lanes;
