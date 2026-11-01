@@ -73,7 +73,7 @@ export function classifyCompilerResult(c, result) {
   // the actual primary error is only a parser failure. Ignore literals before
   // applying this still-provisional text match; semantic ratification remains
   // a separate compiler-level evidence gate.
-  const semanticText = diagnostic.replace(/"[^"\\n]*"|'[^'\\n]*'|`[^`\\n]*`/g, "");
+  const semanticText = diagnostic.replace(/"[^"]*"|'[^']*'|`[^`]*`/g, "");
   return semanticText.includes(c.diagnostic.toLowerCase()) ? "SOURCE_REJECTED_AS_EXPECTED" : "DIAGNOSTIC_MISMATCH";
 }
 /** Candidate tests cannot certify a language rule even if a compiler happens to reject the source. */
