@@ -10,7 +10,7 @@ const H='a'.repeat(40), T='b'.repeat(40), D='d'.repeat(64), E='e'.repeat(64);
 const profile='java';
 function fixture(){
  return {schemaVersion:1,contract:c.contract,profile,compilerRepository:c.profiles[profile],
-  fixtureRepository:c.fixtureRepository,fixtureCommitSha:H,fixtureTreeSha:T,
+  fixtureRepository:c.fixtureRepository,fixtureCommitSha:c.fixtureCommitSha,fixtureTreeSha:T,
   compilerCommitSha:H,compilerTreeSha:T,compilerBinarySha256:D,guestArtifactSha256:E,
   run:{repository:c.profiles[profile],headSha:H,id:7,attempt:1,status:'completed',conclusion:'success',
    jobs:[{id:11,runnerId:17,runId:7,attempt:1,headSha:H,status:'completed',conclusion:'success',steps:[
@@ -25,6 +25,7 @@ test('six independent toolchain profiles including native Cranelift and Forge',(
  assert.deepEqual(Object.keys(c.profiles),['java','llvm','wasm','cranelift','net','forge']);
  assert.equal(c.profiles.cranelift,'ores-truffle-oreslang/oreslang-source.cranelift');
  assert.equal(c.fixtures.length,5);
+ assert.equal(c.fixtureCommitSha,'b7e92b77e86ffe2be29fa9163e61787285c2b245');
 });
 test('a complete report is a metadata candidate, not portable proof or source authorization',()=>{
  const x=verifyUserlandReceipt(fixture(),c);
@@ -38,7 +39,7 @@ test('each compiler can produce candidate only with its own exact repository ide
 });
 test('identity and artifact substitutions fail closed',()=>{
  for(const mutate of [x=>x.profile='unknown',x=>x.compilerRepository=c.profiles.llvm,
-  x=>x.fixtureRepository='foreign/source',x=>x.fixtureCommitSha='short',
+  x=>x.fixtureRepository='foreign/source',x=>x.fixtureCommitSha='short',x=>x.fixtureCommitSha=H,
   x=>x.fixtureTreeSha=null,x=>x.compilerCommitSha=null,x=>x.compilerTreeSha='A'.repeat(40),
   x=>x.compilerBinarySha256='bad',x=>x.guestArtifactSha256=null,
   x=>x.run.repository='evil/workflow',x=>x.run.headSha=T])reject(mutate);
