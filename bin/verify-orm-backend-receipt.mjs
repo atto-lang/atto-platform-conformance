@@ -10,6 +10,27 @@ const hex40 = /^[0-9a-f]{40}$/;
 const hex64 = /^[0-9a-f]{64}$/;
 const names = ['java','llvm','wasm','cranelift','forge','net'];
 const expectedCaseCount = 14;
+const canonicalOracle = Object.freeze({
+  catalog_valid_two_columns:'accept',
+  catalog_duplicate_table_stable_id:'reject',
+  catalog_duplicate_column_physical_name:'reject',
+  catalog_trailing_linebreak_id:'reject',
+  catalog_empty_no_drift:'accept',
+  catalog_rename_preserves_stable_id:'accept',
+  catalog_reordered_snapshot_no_phantom_drift:'accept',
+  catalog_observed_drift_blocks_plan:'reject',
+  review_duplicate_operation:'reject',
+  review_conflicting_create_drop:'reject',
+  review_forged_execution_approval:'reject',
+  pg17_stale_attnum_ledger:'reject',
+  pg17_rls_enabled:'reject',
+  pg17_default_or_generated_column:'reject'
+});
+const canonicalModes = Object.freeze({
+  java:['jit','native-aot'], llvm:['native-aot'], wasm:['wasm'],
+  cranelift:['cranelift-jit','cranelift-aot'],
+  forge:['forge-jit','forge-aot'], net:['native-aot']
+});
 
 export function verifyOrmReceipt(receipt, contract, contractBytes) {
   const errors = [];
@@ -18,12 +39,13 @@ export function verifyOrmReceipt(receipt, contract, contractBytes) {
       Object.keys(contract.backends || {}).sort().join(',') !== [...names].sort().join(',') ||
       !Array.isArray(contract.cases) || contract.cases.length !== expectedCaseCount ||
       new Set(contract.cases.map(c => c.id)).size !== expectedCaseCount ||
-      contract.cases.some(c => !['accept','reject'].includes(c.expect))) {
+      contract.cases.some(c => !c || !Object.hasOwn(canonicalOracle,c.id) ||
+        c.expect !== canonicalOracle[c.id])) {
     return {ok:false,errors:['invalid or incomplete canonical ORM parity contract']};
   }
   for (const name of names) {
     if (contract.backends[name]?.repository !== `ores-truffle-oreslang/oreslang-source.${name}` ||
-        !Array.isArray(contract.backends[name].modes) || !contract.backends[name].modes.length) {
+        JSON.stringify(contract.backends[name].modes) !== JSON.stringify(canonicalModes[name])) {
       return {ok:false,errors:['canonical backend registry mismatch: '+name]};
     }
   }
