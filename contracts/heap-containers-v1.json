@@ -162,6 +162,18 @@
     {
       "id": "arc-cloned-handle-retains-guarded-referent",
       "expected": "accept"
+    },
+    {
+      "id": "vector-invalid-element-preserves-allocation",
+      "expected": "accept"
+    },
+    {
+      "id": "vector-invalid-push-does-not-spend-final-quota",
+      "expected": "accept"
+    },
+    {
+      "id": "vector-overbudget-reserve-is-transactional",
+      "expected": "accept"
     }
   ],
   "guest_fixtures_executed": 0,
