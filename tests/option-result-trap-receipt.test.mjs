@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {verifyOptionResultTrapReceipt} from "../bin/verify-option-result-trap-receipt.mjs";
+import {verifyOptionResultTrapReceipt,readPinnedRegular} from "../bin/verify-option-result-trap-receipt.mjs";
+import {mkdtempSync,writeFileSync,linkSync,symlinkSync,rmSync,constants} from "node:fs";
+import {join} from "node:path";
+import {tmpdir} from "node:os";
 
 const digest="b".repeat(64), source="a".repeat(40), compiler="c".repeat(64);
 const manifest={
@@ -37,3 +40,63 @@ test("compile rejection that launched guest fails",()=>{const r=base();r.caseId=
 test("panic bypass shape accepted",()=>{const r=base();r.caseId="F";Object.assign(r.evidence,{guestExitCode:1,runtimeControl:"guest_panic",stderr:"Option::unwrap on None",stdout:""});assert.equal(accepts(r),true)});
 test("panic swallowed into normal success fails",()=>{const r=base();r.caseId="F";Object.assign(r.evidence,{guestExitCode:0,runtimeControl:"normal",stderr:"",stdout:"UNREACHABLE"});assert.equal(accepts(r),false)});
 test("unreported run-attempt fails",()=>{const r=base();r.evidence.runAttempt=0;assert.equal(accepts(r),false)});
+
+test("claimed guest step must be among executed steps",()=>{
+  const r=base(); r.evidence.guestStep="execute forged guest";
+  assert.equal(accepts(r),false);
+});
+test("guest output overflow fails before any parity claim",()=>{
+  const r=base(); r.evidence.stdout="1".repeat(131073);
+  assert.equal(accepts(r),false);
+});
+test("guest stderr overflow fails before any parity claim",()=>{
+  const r=base(); r.evidence.stderr="X".repeat(131073);
+  assert.equal(accepts(r),false);
+});
+test("panic guest step cannot be fabricated",()=>{
+  const r=base();r.caseId="F";
+  Object.assign(r.evidence,{guestExitCode:1,runtimeControl:"guest_panic",
+    stderr:"Option::unwrap on None",stdout:"",guestStep:"not executed"});
+  assert.equal(accepts(r),false);
+});
+test("compile rejection lacking typed diagnostic is not a pass",()=>{
+  const r=base();r.caseId="N";
+  Object.assign(r.evidence,{compilerExitCode:1,guestLaunched:false,
+    guestExitCode:null,guestStep:null,diagnosticCategory:"syntax",
+    stdout:"",stderr:"unsupported source"});
+  assert.equal(accepts(r),false);
+});
+test("interrupted or timed-out workflow is not admitted",()=>{
+  for(const conclusion of ["failure","cancelled","timed_out",null]) {
+    const r=base();r.evidence.workflowConclusion=conclusion;
+    assert.equal(accepts(r),false,String(conclusion));
+  }
+});
+test("wrong run source or stdlib revision is rejected",()=>{
+  for(const change of [
+    r=>r.evidence.sourceCommit="0".repeat(40),
+    r=>r.stdlibCommit="not-a-sha",
+    r=>r.compilerBinarySha256="not-a-hash"
+  ]) {
+    const r=base();change(r);assert.equal(accepts(r),false);
+  }
+});
+test("source file descriptor rejects leaf symlinks, hardlinks and empty inputs",
+  {skip:!Number.isInteger(constants.O_NOFOLLOW)},()=>{
+  const dir=mkdtempSync(join(tmpdir(),"ores-ort-input-"));
+  const plain=join(dir,"fixture.ores"),hard=join(dir,"hard.ores"),sym=join(dir,"sym.ores");
+  try {
+    writeFileSync(plain,Buffer.from("Some(7)\n"));
+    assert.equal(readPinnedRegular(plain).toString(),"Some(7)\n");
+    linkSync(plain,hard);
+    assert.throws(()=>readPinnedRegular(plain));
+    assert.throws(()=>readPinnedRegular(hard));
+    symlinkSync(plain,sym);
+    assert.throws(()=>readPinnedRegular(sym));
+    rmSync(hard);
+    writeFileSync(plain,"");
+    assert.throws(()=>readPinnedRegular(plain));
+    writeFileSync(plain,Buffer.alloc(131073,1));
+    assert.throws(()=>readPinnedRegular(plain));
+  }finally{rmSync(dir,{recursive:true,force:true})}
+});
