@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // This is a receipt SHAPE validator, not cryptographic GitHub Actions or guest attestation.
-import {readFileSync, lstatSync} from "node:fs";
+import {openSync, closeSync, readSync, lstatSync, fstatSync, constants} from "node:fs";
 import {createHash} from "node:crypto";
 import {dirname, resolve, sep} from "node:path";
 import {fileURLToPath, pathToFileURL} from "node:url";
@@ -45,6 +45,10 @@ export function verifyOptionResultTrapReceipt(receipt,manifest,fixtureDigest) {
   if(e.workflowConclusion!=="success") fail("workflow not successful");
   if(e.hostReferenceOnly!==false||e.compilerProduced!==true)
     fail("actual compiler-produced guest evidence required");
+  if(e.stdout!==undefined && (typeof e.stdout!=="string"||e.stdout.length>131072))
+    fail("invalid or oversized captured stdout");
+  if(e.stderr!==undefined && (typeof e.stderr!=="string"||e.stderr.length>131072))
+    fail("invalid or oversized captured stderr");
   if(!Number.isSafeInteger(e.compilerExitCode))
     fail("compiler exit code missing");
   if(c?.kind==="guest_stdout") {
@@ -52,7 +56,7 @@ export function verifyOptionResultTrapReceipt(receipt,manifest,fixtureDigest) {
       fail("successful guest compile and execution required");
     if(e.stdout!==c.expected_stdout)
       fail("guest stdout mismatch; source-only or partial receipts cannot pass");
-    if(!nonEmpty(e.guestStep)) fail("guest execution step missing");
+    if(!nonEmpty(e.guestStep)||!e.steps.includes(e.guestStep)) fail("guest execution step missing or not executed");
   } else if(c?.kind==="guest_panic") {
     if(e.compilerExitCode!==0||e.guestLaunched!==true||
        !Number.isSafeInteger(e.guestExitCode)||e.guestExitCode===0)
@@ -74,23 +78,104 @@ export function verifyOptionResultTrapReceipt(receipt,manifest,fixtureDigest) {
   return {ok:errors.length===0,errors};
 }
 
-function fixtureDigestFor(c) {
-  if(!isObject(c)||!/^fixtures\/option-result-trap\/v1\/[a-z_\/]+\.ores$/.test(c.path))
-    throw new Error("unsafe or unknown fixture path");
-  const filename=resolve(root,c.path);
-  if(!filename.startsWith(root+sep)) throw new Error("fixture escapes checkout");
-  const stat=lstatSync(filename);
-  if(!stat.isFile()||stat.isSymbolicLink()||stat.nlink!==1||stat.size>131072)
-    throw new Error("untrusted fixture entry or size");
-  return createHash("sha256").update(readFileSync(filename)).digest("hex");
+
+// Source files and the fixture lock are admitted through bounded, identity-checked
+// descriptors. This prevents ordinary pathname replacement between lstat/open/read;
+// it is NOT a security sandbox against a hostile same-UID actor with open write FDs.
+const equalStat=(a,b)=>a.dev===b.dev&&a.ino===b.ino&&a.mode===b.mode&&
+  a.nlink===b.nlink&&a.size===b.size&&a.mtimeMs===b.mtimeMs&&a.ctimeMs===b.ctimeMs;
+export function readPinnedRegular(filename,maxBytes=131072) {
+  const before=lstatSync(filename);
+  if(!before.isFile()||before.isSymbolicLink()||before.nlink!==1||
+     before.size<=0||before.size>maxBytes)
+    throw new Error("nonregular, linked, empty or oversized input");
+  // No silent fallback to a pathname race on hosts lacking O_NOFOLLOW.
+  if(!Number.isInteger(constants.O_NOFOLLOW))
+    throw new Error("atomic no-follow open unavailable on this platform");
+  const fd=openSync(filename,constants.O_RDONLY|constants.O_NOFOLLOW|
+    (constants.O_NONBLOCK??0));
+  try {
+    const opened=fstatSync(fd);
+    if(!opened.isFile()||!equalStat(before,opened))
+      throw new Error("file replaced before descriptor admission");
+    const bytes=Buffer.alloc(opened.size+1);
+    let total=0;
+    while(total<bytes.length) {
+      const n=readSync(fd,bytes,total,bytes.length-total,total);
+      if(n===0)break;
+      total+=n;
+    }
+    if(total!==opened.size||!equalStat(opened,fstatSync(fd))||
+       !equalStat(opened,lstatSync(filename)))
+      throw new Error("file mutated during descriptor read");
+    return bytes.subarray(0,total);
+  }finally{closeSync(fd)}
+}
+function pinnedPath(rel) {
+  if(typeof rel!=="string"||
+     !/^fixtures\/option-result-trap\/v1\/(?:negative\/)?[a-z_]+\.ores$/.test(rel))
+    throw new Error("untrusted fixture relative path");
+  const full=resolve(root,rel);
+  if(!full.startsWith(root+sep))throw new Error("fixture escapes checkout");
+  // Reject symlinked parent directories; O_NOFOLLOW alone checks only the leaf.
+  let parent=dirname(full);
+  while(parent!==root) {
+    const info=lstatSync(parent);
+    if(!info.isDirectory()||info.isSymbolicLink())
+      throw new Error("untrusted fixture directory");
+    const next=dirname(parent);
+    if(next===parent||!parent.startsWith(root+sep))
+      throw new Error("fixture parent escaped checkout");
+    parent=next;
+  }
+  return full;
+}
+const gitBlobSha=bytes=>createHash("sha1")
+  .update(Buffer.from("blob "+bytes.length+"\0")).update(bytes).digest("hex");
+function readPinnedCase() {
+  const manifestBytes=readPinnedRegular(manifestFile);
+  const manifest=JSON.parse(manifestBytes.toString("utf8"));
+  const lockPath=resolve(root,"fixtures/option-result-trap/v1/fixture-lock-v1.json");
+  const lock=JSON.parse(readPinnedRegular(lockPath).toString("utf8"));
+  if(!isObject(manifest)||manifest.schema!=="oreslang.option-result-trap.fixtures/v1"||
+     manifest.status!=="authored_not_executed"||
+     !Array.isArray(manifest.cases)||!isObject(lock)||
+     lock.schema!=="oreslang.option-result-trap.fixture-lock/v1"||
+     gitBlobSha(manifestBytes)!==lock.manifest_blob||
+     !Array.isArray(lock.cases)||lock.cases.length!==manifest.cases.length)
+    throw new Error("fixture manifest/lock not pinned");
+  const seenIds=new Set(),seenPaths=new Set();
+  for(const c of manifest.cases) {
+    if(!isObject(c)||!nonEmpty(c.id)||!nonEmpty(c.path)||
+       seenIds.has(c.id)||seenPaths.has(c.path))
+      throw new Error("fixture manifest duplicate/invalid entry");
+    seenIds.add(c.id);seenPaths.add(c.path);
+  }
+  const seenPins=new Set();
+  for(const pin of lock.cases) {
+    if(!isObject(pin)||!nonEmpty(pin.id)||seenPins.has(pin.id)||
+       !sha40.test(pin.git_blob||""))
+      throw new Error("duplicate/invalid fixture lock pin");
+    seenPins.add(pin.id);
+    const c=manifest.cases.find(x=>x.id===pin.id);
+    if(!c||pin.path!==c.path)throw new Error("fixture lock case mismatch");
+    pinnedPath(pin.path);
+  }
+  return {manifest,lock};
 }
 export function verifyReceiptFile(filename) {
-  const manifest=JSON.parse(readFileSync(manifestFile,"utf8"));
-  const receipt=JSON.parse(readFileSync(filename,"utf8"));
-  const c=manifest.cases?.find(x=>x.id===receipt?.caseId);
-  const digest=fixtureDigestFor(c);
+  const {manifest,lock}=readPinnedCase();
+  const receipt=JSON.parse(readPinnedRegular(filename,262144).toString("utf8"));
+  const c=manifest.cases.find(x=>x.id===receipt?.caseId);
+  if(!c)throw new Error("unknown case ID");
+  const bytes=readPinnedRegular(pinnedPath(c.path));
+  const pin=lock.cases.find(x=>x.id===c.id);
+  if(!pin||gitBlobSha(bytes)!==pin.git_blob)
+    throw new Error("fixture contents do not match reviewed blob lock");
+  const digest=createHash("sha256").update(bytes).digest("hex");
   return verifyOptionResultTrapReceipt(receipt,manifest,digest);
 }
+
 const invoked=process.argv[1]&&pathToFileURL(resolve(process.argv[1])).href===import.meta.url;
 if(invoked) {
   if(!process.argv[2]) {
