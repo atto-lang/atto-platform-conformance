@@ -55,7 +55,7 @@ may advance the status.
 
 | Backend | Current admission work | Next gate |
 | --- | --- | --- |
-| Java/GraalVM | [#2427](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2427) rejects unlowered annotations; [#2317](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2317) contains owned-borrow candidate tests | Typed annotation AST, owned-region HIR, actual guest compile/run |
+| Java/GraalVM | [#2427](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2427) rejects unlowered injection; stacked [#2444](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2444) stages validated #instance backing over an ordinary owned class | Execute exact-head JUnit + Graal guest, then build real @Inject provider and handle_state RW lowering |
 | LLVM | [#1192](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1192) has draft runtime state-region substrate | Compiler emission plus native real-guest execution, loan provenance and sanitizer evidence |
 | WASM | [#252](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/252) delegates state-injection denials to an SHA-pinned real LLVM compiler | Check exact compiler diagnostic, zero IR and no published Wasm artifact; positive state guest still unsupported |
 | Cranelift | [#62](https://github.com/ores-truffle-oreslang/oreslang-source.cranelift/pull/62) rejects unlowered state injection with a stable diagnostic | Real typed nominal/borrow lowering and compiled JIT guest run |
@@ -65,3 +65,16 @@ may advance the status.
 Do not merge any draft under the claim of feature parity until exact-head
 nonzero-step toolchain checks complete. Do not mirror private source to an
 unrelated organization without confirmed source-release/export authorization.
+
+## First restricted Java-only owned instance candidate
+
+[Java #2444](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2444)
+now stages a narrower, separately pinned example in
+`owned-instance-java-v1.json`. It stores a compiler-checked
+`@StateBacked(MutableStateContainer(scope = #instance))` annotation on a
+concrete class with ordinary private fields and lexical `rt borrow` calls.
+The annotation itself does **not** provide `state { }`, `@Inject`, shared
+read/write authority or actor state access. Its candidate stdout is
+`7|3|10|true|false|false|false`. No exact-head guest execution has been
+confirmed; this does **not** alter the full candidate's 2 positive/14 negative
+case requirements or advance any backend status.
