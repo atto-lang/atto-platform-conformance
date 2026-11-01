@@ -29,7 +29,7 @@ test("mutable-state Oreslang guest is pinned by immutable commit and blob", () =
   assert.equal(contract.expected.stdout, "mutable-state-container-ok");
   assert.ok(contract.expected.semantics.includes("write-loan-in-place-twice"));
   assert.deepEqual(Object.keys(contract.backendEvidence).sort(),
-    ["java", "llvm", "wasm", "forge", "net"].sort());
+    ["java", "llvm", "wasm", "cranelift", "forge", "net"].sort());
   for (const state of Object.values(contract.backendEvidence)) {
     assert.equal(state, "not-executed",
       "a source registry is never evidence that a compiler actually ran");
