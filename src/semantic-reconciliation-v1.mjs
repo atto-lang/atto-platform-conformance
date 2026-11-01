@@ -91,8 +91,10 @@ const SUITE_SPECS = Object.freeze({
 });
 export function selectSemanticCases(doc, suite = "all") {
   if (suite === "all") return doc.compilerCases;
+  // Object.hasOwn prevents inherited properties (e.g. constructor) from
+  // bypassing the strict suite-name allowlist.
+  if (!Object.hasOwn(SUITE_SPECS, suite)) throw Error("unsupported semantic suite: " + suite);
   const spec = SUITE_SPECS[suite];
-  if (!spec) throw Error("unsupported semantic suite: " + suite);
   const cases = spec.ids.map(id => doc.compilerCases.find(c => c.id === id));
   if (cases.some(c => !c) || cases.length !== spec.ids.length ||
       cases.some((c,i) => c.concern !== spec.concern ||
