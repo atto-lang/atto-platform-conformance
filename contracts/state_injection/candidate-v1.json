@@ -87,10 +87,10 @@
       ]
     },
     {
-      "id": "reject_annotation_erasure",
+      "id": "reject_unknown_provider",
       "kind": "compile-reject",
-      "source": "@StateBacked(MutableStateContainer(scope = #shared))\ndefine class MissingBackend as\n    state { let int x = 1; }\nend\n",
-      "violation": "unimplemented-annotation-must-not-be-inert"
+      "source": "@Inject(UndefinedStateContainer)\ndefine class MissingProvider as\nend\n",
+      "violation": "unresolved-injection-provider"
     },
     {
       "id": "reject_direct_state_access",
