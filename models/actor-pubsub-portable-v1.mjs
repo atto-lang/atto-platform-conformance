@@ -83,7 +83,8 @@ export class PubSubReference {
     if (!Number.isSafeInteger(capacity) || capacity<1) return failure("InvalidCapacity");
     if (kind==="actor" ? !this.isActor(target) : kind==="group" ? !this.isGroup(target) : true)
       return failure("StaleTarget");
-    if (this.subscriptions.size>=this.maxSubscriptions) return failure("ResourceExhausted");
+    if ([...this.subscriptions.values()].filter(s=>!s.closed).length>=this.maxSubscriptions)
+      return failure("ResourceExhausted");
     const sub={id:++this.nextSub,topic,kind,target,capacity,
       closed:false,queues:new Map(),inflight:new Map()};
     this.subscriptions.set(sub.id,sub);
