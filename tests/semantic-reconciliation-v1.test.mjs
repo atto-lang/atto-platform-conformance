@@ -91,6 +91,35 @@ test("heap borrowing targets are paired, indexed-rooted and fail closed on all f
  assert.equal(all.filter(c=>c.id.startsWith("heap-array-")).length,8);
 });
 
+test("heap ownership subset cannot promote full inventory and rejects incomplete pairs",async()=>{
+ const manifest=await loadSemanticManifest();
+ const suite=selectSemanticCases(manifest,"heap-ownership");
+ const ids=[
+   "heap-array-scoped-read-loans","heap-array-resize-live-loan",
+   "heap-array-scoped-exclusive","heap-array-exclusive-vs-read",
+   "heap-array-owned-element-copy","heap-array-borrowed-element-return",
+   "heap-array-whole-owner-take","heap-array-indexed-take"
+ ];
+ assert.deepEqual(suite.map(x=>x.id),ids);
+ assert.deepEqual(suite.map(x=>x.expect),[
+   "accept","reject","accept","reject","accept","reject","accept","reject"
+ ]);
+ assert.ok(suite.every(x=>x.concern==="ownership"));
+ const incomplete=structuredClone(manifest);
+ incomplete.compilerCases=incomplete.compilerCases.filter(x=>x.id!=="heap-array-indexed-take");
+ assert.throws(()=>selectSemanticCases(incomplete,"heap-ownership"),/incomplete semantic suite/);
+ const swapped=structuredClone(manifest);
+ swapped.compilerCases.find(x=>x.id==="heap-array-exclusive-vs-read").expect="accept";
+ assert.throws(()=>selectSemanticCases(swapped,"heap-ownership"),/invalid or incomplete semantic suite/);
+ const unconfigured=await runSemanticAdmission({backend:"java",suite:"heap-ownership"});
+ assert.equal(unconfigured.ok,false);
+ assert.equal(unconfigured.status,"UNCONFIGURED");
+ assert.equal(unconfigured.fullInventoryMatched,false);
+ assert.equal(unconfigured.selectedCaseIds.length,8);
+ assert.equal(unconfigured.guestRuntimeVerified,false);
+ assert.equal(unconfigured.parityVerified,false);
+});
+
 test("duplicate case ids, missing variants and fake backend promotion are rejected",async()=>{
  const base = await loadSemanticManifest();
  const clone = () => structuredClone(base);
