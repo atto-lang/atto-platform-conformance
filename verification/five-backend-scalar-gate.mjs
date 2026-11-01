@@ -96,7 +96,7 @@ export function validateFiveBackendScalarEligibility(doc) {
     if (!r || !positive(r.id) || !positive(r.attempt) ||
         r.status !== 'completed' || r.conclusion !== 'success' ||
         r.admission_failed !== false || !Array.isArray(r.jobs) ||
-        r.jobs.length === 0) reject('runner admission or run identity missing');
+        r.jobs.length === 0 || r.jobs.length > 32) reject('runner admission or run identity missing');
     const runKey = e.repository + '/' + r.id + '/' + r.attempt;
     if (runs.has(runKey)) reject('run reused across mode claims');
     runs.add(runKey);
@@ -106,7 +106,7 @@ export function validateFiveBackendScalarEligibility(doc) {
           j.head_sha !== e.source.commit_sha ||
           !positive(j.runner_id) || !safeEvidenceLine(j.runner_name) ||
           j.status !== 'completed' || j.conclusion !== 'success' ||
-          !Array.isArray(j.steps) || j.steps.length === 0) {
+          !Array.isArray(j.steps) || j.steps.length === 0 || j.steps.length > 256) {
         reject('unexecuted or mismatched job');
       }
       jobIds.add(e.repository + '/' + j.id);

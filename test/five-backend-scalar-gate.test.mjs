@@ -102,6 +102,28 @@ denies('reject source commit pinned to moving branch', d => d.executions[0].sour
 denies('reject missing compiler binary hash', d => d.executions[0].compiler.binary_sha256='', /source\/compiler/);
 denies('reject no GitHub runner assignment', d => d.executions[0].run.jobs[0].runner_id=0, /unexecuted/);
 denies('reject zero-step workflow', d => d.executions[0].run.jobs[0].steps=[], /unexecuted/);
+denies('reject zero-job workflow', d => d.executions[0].run.jobs=[], /runner admission/);
+denies('reject 33 jobs in one mode receipt', d => {
+  const run=d.executions[0].run, template=run.jobs[0];
+  run.jobs=Array.from({length:33}, (_,i) => ({...template, id:5000+i, runner_id:10000+i}));
+}, /runner admission/);
+denies('reject 257 steps in one job', d => {
+  d.executions[0].run.jobs[0].steps=Array.from({length:257}, (_,i) => ({
+    number:i+1, name:'synthetic step '+i, status:'completed', conclusion:'success'
+  }));
+}, /unexecuted/);
+test('exact 32-job receipt bound remains structurally eligible', () => {
+  const d=makeEligible(), run=d.executions[0].run, template=run.jobs[0];
+  run.jobs=Array.from({length:32}, (_,i) => ({...template, id:5000+i, runner_id:10000+i}));
+  assert.equal(admit(d),true);
+});
+test('exact 256-step job bound remains structurally eligible', () => {
+  const d=makeEligible();
+  d.executions[0].run.jobs[0].steps=Array.from({length:256}, (_,i) => ({
+    number:i+1, name:'synthetic step '+i, status:'completed', conclusion:'success'
+  }));
+  assert.equal(admit(d),true);
+});
 denies('reject stale source head in job', d => d.executions[0].run.jobs[0].head_sha=tree, /unexecuted/);
 denies('reject stale run attempt', d => d.executions[0].run.jobs[0].run_attempt=2, /unexecuted/);
 denies('reject missing run ID', d => d.executions[0].run.id=0, /runner admission/);

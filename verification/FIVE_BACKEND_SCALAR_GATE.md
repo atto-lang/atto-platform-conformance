@@ -137,3 +137,15 @@ Two negative mutation controls and one positive control test this.
 The gate is still source-free and cannot authenticate a forged stderr:
 independent exact-head native guest, runner, binary and compiler evidence
 remain mandatory.
+
+## Bounded run/job admission (source-free)
+
+Each of the seven required mode receipts now permits at most **32 reported jobs**
+and each reported job at most **256 completed steps**. A missing job, a
+33-job receipt, or a 257-step job is denied before traversing unbounded
+attacker-controlled evidence arrays. The exact 32-job and 256-step boundaries
+remain eligible, covered by independent positive controls. These limits are
+for the **structural evidence envelope**, not a limit on actual GitHub Actions
+workflows; a trusted external verifier may split/normalize large workflows
+into independently authenticated bounded evidence receipts. A synthetically
+populated receipt is still not authenticated or compiler-backed proof.
