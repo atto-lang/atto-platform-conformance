@@ -13,7 +13,7 @@ define trait Stateful<S> as
     requires state: MutableStateContainer<S>
 end
 
-define singleton Counter implements Stateful<Counter.State> as
+define singleton Counter with Stateful<Counter.State> as
     state {
         let count: int = 0
     }
@@ -30,13 +30,13 @@ end
 Alternate provider-backed implementation (choose one binding, never both):
 
 ```oreslang
-define singleton Counter implements Stateful<CounterState> as
+define singleton Counter with Stateful<CounterState> as
     @Inject
     state: MutableStateContainer<CounterState>
 end
 ```
 
-**Grammar review required:** `requires state`, `@Inject`, and `implements`
+**Grammar review required:** `requires state`, `@Inject`, and singleton `with`
 are proposals. Reconcile existing Java trait field ownership and `with`/`is`
 grammar (Java #104) before enabling source admission. Do not turn these
 samples into a claimed positive compiler fixture until a real compiler runs.
@@ -66,6 +66,24 @@ samples into a claimed positive compiler fixture until a real compiler runs.
 7. Writer fairness, cancellation races, poisoned arbiters, reentrancy,
    quiescence and teardown need actual runtime tests before shared mutation
    can be claimed. Heap vs stack placement does not weaken borrow checking.
+
+
+## Trait composition reconciliation blocker
+
+The Java draft #104 currently uses `with Trait<T>` for composition and
+`is Interface` for interface conformance, rather than canonical
+`implements Trait<T>`. This document therefore proposes `with` for
+required-state trait composition. It is not yet an accepted singleton grammar.
+
+More importantly, its `TraitComposer` describes initialized fields flattened
+into consuming classes, but `TraitClassInterfaceDelineationTest` requires
+`define trait Stateful as private let int count = 0; ... end` to be
+rejected as `storage-free`. These are mutually inconsistent without a
+distinct classification. The proposed `Stateful<S>` **requirement-only**
+contract must be a storage-free obligation; a future **state-owning trait**
+is a different compile-time composition feature with collision, constructor,
+visibility and lifetime rules. Do not change existing source semantics
+silently, and require positive + negative real compiler tests before merging.
 
 ## Evidence / merge gates
 
