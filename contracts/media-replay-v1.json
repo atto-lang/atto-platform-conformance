@@ -44,7 +44,11 @@
     "CHECKPOINT_AHEAD",
     "CHECKPOINT_OFFSET_MISMATCH",
     "KEYFRAME_REQUIRED",
-    "INVALID_GENERATION"
+    "INVALID_GENERATION",
+    "HASH_MISMATCH",
+    "OUT_OF_ORDER",
+    "INVALID_DUPLICATE",
+    "INVALID_RESET"
   ],
   "required_scenarios": [
     "default_2mib",
@@ -64,7 +68,15 @@
     "continue_exact_offset",
     "long_churn_quota",
     "retained_checkpoint_offset_rejection",
-    "full_2mib_ack_reclamation"
+    "full_2mib_ack_reclamation",
+    "receiver_offer_no_progress",
+    "receiver_duplicate_dedup",
+    "receiver_out_of_order",
+    "receiver_integrity_tamper",
+    "receiver_reset_requires_anchor",
+    "receiver_codec_transition",
+    "receiver_fenced_epoch",
+    "receiver_malformed_digest"
   ],
   "target_backends": {
     "java": {
@@ -102,5 +114,12 @@
     "Transport authentication, anti-replay, resource capability and integrity verification are mandatory at host ingress and not implemented by the host state-machine reference.",
     "The randomAccess flag must be derived from trusted codec parsing and a complete independently decodable restart point, never accepted from untrusted transport metadata.",
     "A per-stream payload limit does not bound object headers, crypto engine temporary allocations or whole-process RSS. Admission must include global and per-tenant memory limits."
-  ]
+  ],
+  "receiver_semantics": {
+    "offer": "Validate identity, owned payload integrity, next sequence/offset and codec dependency without advancing applied checkpoint.",
+    "commit": "Advance cumulative checkpoint only after downstream decode/application succeeded; duplicates return existing checkpoint with no side effects.",
+    "resetAt": "Only an authenticated explicit decoder restart may skip sequence/offset; first committed access unit must be codec-certified random access.",
+    "acknowledgment": "Receiver's committed checkpoint, never the last network-received chunk, determines sender replay and ACK retention."
+  },
+  "vector_file": "contracts/media-replay-v1-vectors.json"
 }
