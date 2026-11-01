@@ -28,10 +28,17 @@ const invariants = [
 ];
 const host = Object.freeze({java: true, llvm: true, wasm: false, cranelift: false, net: false});
 const compiled = Object.freeze({java: true, llvm: false, wasm: false, cranelift: false, net: false});
+// Each toolchain now has independently executed host-only receipt bookkeeping.
+// This is NOT a compiled guest supervisor or an integrated actor scheduler.
+const ledgers = Object.freeze({java: true, llvm: true, wasm: true, cranelift: true, net: true});
 const evidence = Object.freeze({
   javaControl: "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41358923195",
   javaCompiler: "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41359448732",
-  llvmControl: "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41359210787"
+  llvmControl: "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41359210787",
+  javaLedger: "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41359927149",
+  wasmLedger: "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41363000747",
+  craneliftLedger: "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41363000747",
+  netLedger: "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41362382131"
 });
 
 export function readSupervisorStopRuntimeGate() {
@@ -64,11 +71,12 @@ export function validateSupervisorStopRuntimeGate(input) {
     requireExact(input.backendGate[backend], {
       focusedHostStop: host[backend],
       sourceStopPlan: compiled[backend],
+      hostStopLedger: ledgers[backend],
       guestSourceParity: false
     }, backend + " has fabricated or stale guest runtime evidence");
   }
   requireExact(input.evidence, evidence, "provenance changed without a reviewed gate update");
-  return {backends: 5, focusedHostStop: 2, sourceStopPlan: 1, guestSourceParity: 0};
+  return {backends: 5, focusedHostStop: 2, hostStopLedger: 5, sourceStopPlan: 1, guestSourceParity: 0};
 }
 if (process.argv[1] && import.meta.url === new URL("file://" + process.argv[1]).href) {
   console.log(JSON.stringify(validateSupervisorStopRuntimeGate(readSupervisorStopRuntimeGate())));
