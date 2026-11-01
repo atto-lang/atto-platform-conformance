@@ -39,7 +39,7 @@
       "currentClaim": "candidate-source"
     },
     "llvm": {
-      "candidate": "oreslang-source.llvm#1272",
+      "candidate": "oreslang-source.llvm#1273",
       "minimumLayer": "guest-execution",
       "currentClaim": "runtime-substrate-only"
     },
