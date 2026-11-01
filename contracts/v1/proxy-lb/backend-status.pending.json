@@ -2,7 +2,7 @@
   "schema": "oreslang.proxy_lb_backend_status.v1",
   "contract_id": "proxy-lb-selection-v1",
   "source_contract": "ores-truffle-oreslang/oreslang-reverse-proxy-demo.ores",
-  "source_head_at_audit": "ee04f27ddfc1114b284ff1d55be5101ecd244de6",
+  "source_head_at_audit": "7020e4d30c88808ae0fc0e2ddfc4c710074e657d",
   "snapshot_date": "2026-11-01",
   "parity_certified": false,
   "release_ready": false,
