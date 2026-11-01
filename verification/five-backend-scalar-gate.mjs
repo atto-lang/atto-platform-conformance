@@ -11,16 +11,25 @@ const BASE = 'ores-truffle-oreslang/oreslang-source.';
 const SHA40 = /^[0-9a-f]{40}$/;
 const SHA256 = /^[0-9a-f]{64}$/;
 const ids = new Map([
-  ['scalar.literal-42', {kind: 'accept', stdout: '42\n'}],
-  ['scalar.precedence', {kind: 'accept', stdout: '28\n'}],
-  ['scalar.unary', {kind: 'accept', stdout: '-21\n'}],
-  ['scalar.i64-min', {kind: 'accept', stdout: '-9223372036854775808\n'}],
-  ['scalar.i64-max', {kind: 'accept', stdout: '9223372036854775807\n'}],
-  ['scalar.i64-max-minus-one', {kind: 'accept', stdout: '9223372036854775806\n'}],
+  ['scalar.literal-42', {kind: 'accept', value: '42'}],
+  ['scalar.precedence', {kind: 'accept', value: '28'}],
+  ['scalar.unary', {kind: 'accept', value: '-21'}],
+  ['scalar.i64-min', {kind: 'accept', value: '-9223372036854775808'}],
+  ['scalar.i64-max', {kind: 'accept', value: '9223372036854775807'}],
+  ['scalar.i64-max-minus-one', {kind: 'accept', value: '9223372036854775806'}],
   ['checked-overflow.add', {kind: 'overflow'}],
   ['checked-overflow.multiply', {kind: 'overflow'}],
 ]);
 export const REQUIRED_CASES = Object.freeze([...ids.keys()]);
+// Typed runtime observations differ from CLI stdout/exit-code transports.
+export const OBSERVATION_CHANNELS = Object.freeze({
+  java: 'graal-guest-i64',
+  llvm: 'native-wrapper-i64',
+  wasm: 'wasm-export-i64',
+  cranelift: 'jit-cli-stdout-i64',
+  net: 'native-aot-stdout-i64',
+});
+
 export const FIXTURE_SHA256 = Object.freeze({
   "scalar.literal-42": "a471a693741ed13b31ee1a38dc362c1a4140162a635ccd815f61dec318e990b4",
   "scalar.precedence": "aa294609eb38ba63571ebc09da5fa8a7a108ec9a8c4e7156c609e7101da0615b",
@@ -101,17 +110,35 @@ export function validateFiveBackendScalarEligibility(doc) {
       if (!c || !ids.has(c.id) || caseIds.has(c.id) ||
           c.source_sha256 !== fixtures.get(c.id) ||
           !SHA256.test(c.stdout_sha256) || !SHA256.test(c.stderr_sha256) ||
-          !Number.isSafeInteger(c.exit_code) || c.compiler_executed !== true ||
-          c.guest_executed !== true || !nonempty(c.guest_command) ||
-          typeof c.stdout !== 'string' || c.kind !== ids.get(c.id).kind)
+          (e.backend === 'wasm' ? c.exit_code !== null :
+            !Number.isSafeInteger(c.exit_code)) ||
+          c.observation_channel !== OBSERVATION_CHANNELS[e.backend] ||
+          c.compiler_executed !== true || c.guest_executed !== true ||
+          !nonempty(c.guest_command) || typeof c.stdout !== 'string' ||
+          c.kind !== ids.get(c.id).kind)
         reject('unverified guest case or mismatched fixture');
       caseIds.add(c.id);
       if (c.kind === 'accept') {
-        if (c.exit_code !== 0 || c.stdout !== ids.get(c.id).stdout)
+        // Output encoding is backend-specific; normalize a typed signed-i64
+        // witness, then independently verify it against real runtime bytes.
+        if (c.semantic_phase !== 'guest-return' ||
+            c.value_i64 !== ids.get(c.id).value ||
+            c.error_category !== null ||
+            (e.backend !== 'wasm' && c.exit_code !== 0))
           reject('wrong successful guest value');
-      } else if (c.exit_code === 0 || c.stdout !== '' ||
-                 c.error_category !== 'checked-i64-overflow')
-        reject('overflow must fail closed without stdout');
+        // For CLI/NativeAOT transports, stdout itself is the typed witness.
+        if ((e.backend === 'net' || e.backend === 'cranelift') &&
+            c.stdout !== c.value_i64 + '\\n')
+          reject('stdout transport does not match normalized result');
+        if (e.backend === 'wasm' && c.stdout !== '')
+          reject('Wasm export must not invent guest stdout');
+      } else {
+        if (c.semantic_phase !== 'guest-overflow' || c.value_i64 !== null ||
+            c.stdout !== '' || c.error_category !== 'checked-i64-overflow' ||
+            (e.backend !== 'wasm' && c.exit_code === 0) ||
+            (e.backend === 'wasm' && c.trap_category !== 'webassembly-runtime-error'))
+          reject('overflow must fail closed without stdout');
+      }
     }
   }
   const required = Object.entries(REQUIRED_PROFILES).flatMap(
