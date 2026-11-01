@@ -68,6 +68,32 @@ This suite does not cover Cranelift's stage-0 scalar-only frontend as positive
 heap execution: that compiler must reject heap inputs explicitly until it
 implements and verifies the ownership-aware array subset.
 
+## Bounded heap ownership admission gate
+
+Run the exact four paired positive/negative `Array<int>` ownership vectors
+(eight compiler sources) independently of unrelated language features:
+
+```sh
+node bin/semantic-reconciliation-gate.mjs --backend=java --suite=heap-ownership \
+  --argv='["/absolute/path/to/compiler","--check","{file}"]' \
+  --source-sha=0123456789abcdef0123456789abcdef01234567
+```
+
+Repeat only against authentic pinned binaries for LLVM, WASM, .NET and Forge
+once their compiler interfaces support the fixtures. Unsupported syntax or
+a generic parser failure is **not** the required `E_BORROW_CONFLICT`,
+`E_BORROW_ESCAPE` or `E_PARTIAL_MOVE` rejection proof. The reported status
+is `SELECTED_SOURCE_ADMISSION_MATCHED_UNATTESTED`, never full-inventory
+evidence or runtime/borrow soundness verification.
+
+Negative compiler admission now additionally requires no stdout, no partial
+LLVM IR on stderr, no new output artifact or temporary directory entry, and a
+single primary exact-code diagnostic on stderr. The source fixture and
+compiler executable are rechecked after execution; observed diagnostic codes
+come from stderr rather than being copied from expected manifest values.
+These are fail-closed integrity checks, not a security sandbox or build
+provenance attestation.
+
 ## Bounded Future.map admission gate
 
 Use `--suite=future-map` to execute exactly the
