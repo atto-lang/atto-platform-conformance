@@ -1,7 +1,7 @@
 /** Platform guest portability v1.
  * Source integrity and receipt-shape checking are NOT compiler/device attestation.
- * Cranelift is a separately executed Wasmtime engine lane for a Wasm-produced
- * module, not an invented fifth Oreslang frontend or a synonym for Wasm checks.
+ * Cranelift is a separate native Oreslang Rust/Cranelift scalar JIT backend,
+ * not the Wasmtime execution route for the independent Wasm source backend.
  */
 import {createHash} from "node:crypto";
 import {constants} from "node:fs";
@@ -18,7 +18,7 @@ const REPOS=Object.freeze({
   java:"ores-truffle-oreslang/oreslang-source.java",
   llvm:"ores-truffle-oreslang/oreslang-source.llvm",
   wasm:"ores-truffle-oreslang/oreslang-source.wasm",
-  cranelift:"ores-truffle-oreslang/oreslang-source.wasm",
+  cranelift:"ores-truffle-oreslang/oreslang-source.cranelift",
   net:"ores-truffle-oreslang/oreslang-source.net"
 });
 const SOURCES=Object.freeze({
@@ -57,12 +57,12 @@ export function validateContract(c){
   for(const p of PLATFORMS)
     good(c.platforms[p]==="ores-truffle-oreslang/oreslang-platform."+p,"platform registry drift");
   const expectedRoutes={java:"native-compiler",llvm:"native-compiler",
-    wasm:"wasm-compiler",cranelift:"wasm-via-wasmtime-cranelift",net:"nativeaot-compiler"};
+    wasm:"wasm-compiler",cranelift:"native-cranelift-jit",net:"nativeaot-compiler"};
   for(const b of TOOLCHAINS){
     const t=c.toolchains[b];
     exactKeys(t,["compilerRepo","route","engine"]);
     good(t.compilerRepo===REPOS[b]&&t.route===expectedRoutes[b]&&
-      t.engine===(b==="cranelift"?"wasmtime-cranelift":null),"backend route drift");
+      t.engine===(b==="cranelift"?"cranelift-jit":null),"backend route drift");
   }
   good(Array.isArray(c.caseOrder)&&c.caseOrder.length===10&&
     c.caseOrder.every((id,i)=>id===Object.keys(SOURCES)[i]),"case inventory drift");
@@ -82,7 +82,7 @@ export function validateContract(c){
   const req=Object.keys(c.requirements);
   const needed=["compileSource","runPositiveGuest","negativePrimaryDiagnostic","exactPlatformHead",
     "exactCompilerCommit","compilerBinarySha256","artifactSha256","executedJobSteps",
-    "craneliftEngineBinarySha256","craneliftWasmModuleSha256",
+    "craneliftNativeJitExecuted","craneliftCompilerRepoBound",
     "independentReviewRequired","privateSourceExportHold"];
   exactKeys(c.requirements,needed);
   good(req.every(x=>c.requirements[x]===true),"release gate weakened");
@@ -172,13 +172,16 @@ export function validateObservation(o,c){
         o.result.diagnostic),
       "negative source must have primary semantic diagnostic and the rejected identifier");
   if(o.toolchain==="cranelift"){
-    exactKeys(o.engine,["name","sourceCommit","binarySha256","wasmModuleSha256"]);
-    good(o.engine.name==="wasmtime-cranelift"&&sha40(o.engine.sourceCommit)&&
-      sha64(o.engine.binarySha256)&&sha64(o.engine.wasmModuleSha256)&&
-      o.engine.wasmModuleSha256===o.artifactSha256,
-      "Cranelift requires pinned Wasmtime engine and produced Wasm module");
+    exactKeys(o.engine,["name","compilerCommit","compilerBinarySha256","clifSha256"]);
+    good(o.engine.name==="native-cranelift-jit"&&
+      o.engine.compilerCommit===o.compilerCommit&&
+      o.engine.compilerBinarySha256===o.compilerBinarySha256&&
+      sha64(o.engine.clifSha256)&&o.engine.clifSha256===o.artifactSha256,
+      "Cranelift requires pinned native JIT compiler and generated CLIF identity");
     if(v.expect==="execute")
-      good(o.run.steps.includes("run-wasmtime-cranelift"),"missing Cranelift engine execution step");
+      good(o.run.steps.includes("run-cranelift-native-jit")&&
+        o.run.steps.includes("inspect-cranelift-ir"),
+        "missing native Cranelift JIT and IR execution steps");
   }else good(o.engine===null,"unexpected engine evidence on non-Cranelift toolchain");
   return {status:"STRUCTURAL_OBSERVATION_ONLY",independentlyAuthenticated:false,certifiedParity:false};
 }
