@@ -65,23 +65,42 @@ export async function loadSemanticManifestSnapshot() {
 export async function loadSemanticManifest() {
   return (await loadSemanticManifestSnapshot()).doc;
 }
-// A subset never certifies all compiler vectors or runtime parity.
-const SUITE_CASE_IDS = Object.freeze({
-  "future-map": Object.freeze([
-    "future-map-preserves-nested-return",
-    "future-map-rejects-implicit-adoption"
-  ])
+// A selected subset is an admission probe, never full compiler or runtime
+// parity. Each suite is an immutable, ordered positive/negative pair inventory.
+const SUITE_SPECS = Object.freeze({
+  "future-map": Object.freeze({
+    concern:"futures",
+    ids:Object.freeze([
+      "future-map-preserves-nested-return",
+      "future-map-rejects-implicit-adoption"
+    ])
+  }),
+  "heap-ownership": Object.freeze({
+    concern:"ownership",
+    ids:Object.freeze([
+      "heap-array-scoped-read-loans",
+      "heap-array-resize-live-loan",
+      "heap-array-scoped-exclusive",
+      "heap-array-exclusive-vs-read",
+      "heap-array-owned-element-copy",
+      "heap-array-borrowed-element-return",
+      "heap-array-whole-owner-take",
+      "heap-array-indexed-take"
+    ])
+  })
 });
 export function selectSemanticCases(doc, suite = "all") {
   if (suite === "all") return doc.compilerCases;
-  if (!Object.hasOwn(SUITE_CASE_IDS, suite)) throw Error("unsupported semantic suite: " + suite);
-  const cases = SUITE_CASE_IDS[suite].map(id => doc.compilerCases.find(c => c.id === id));
-  if (cases.some(c => !c) || cases.length !== 2 ||
-      cases[0].expect !== "accept" || cases[1].expect !== "reject" ||
-      cases.some(c => c.concern !== "futures"))
+  const spec = SUITE_SPECS[suite];
+  if (!spec) throw Error("unsupported semantic suite: " + suite);
+  const cases = spec.ids.map(id => doc.compilerCases.find(c => c.id === id));
+  if (cases.some(c => !c) || cases.length !== spec.ids.length ||
+      cases.some((c,i) => c.concern !== spec.concern ||
+        c.expect !== (i % 2 === 0 ? "accept" : "reject")))
     throw Error("invalid or incomplete semantic suite: " + suite);
   return cases;
 }
+
 // Do not confuse the manifest's expected diagnostic with one actually emitted
 // by the compiler. Observed codes must come from a unique primary stderr error.
 export function observedSemanticDiagnostic(output) {
