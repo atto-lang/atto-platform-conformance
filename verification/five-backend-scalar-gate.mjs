@@ -21,6 +21,17 @@ const ids = new Map([
   ['checked-overflow.multiply', {kind: 'overflow'}],
 ]);
 export const REQUIRED_CASES = Object.freeze([...ids.keys()]);
+export const FIXTURE_SHA256 = Object.freeze({
+  "scalar.literal-42": "a471a693741ed13b31ee1a38dc362c1a4140162a635ccd815f61dec318e990b4",
+  "scalar.precedence": "aa294609eb38ba63571ebc09da5fa8a7a108ec9a8c4e7156c609e7101da0615b",
+  "scalar.unary": "8ac156b0468e6f8e61b25d6bb59cd2d608b57cb2c4d077776f5a0483458b138a",
+  "scalar.i64-min": "8b5b69ec25fda12bd6a695c7a2ab986634bcbf37f8b129507582597e662c0b49",
+  "scalar.i64-max": "80e89020eae9f56c657043d6482bd71f3e2c9aa16730438c102e9ab5834995a4",
+  "scalar.i64-max-minus-one": "d27086270301951421718bcf3c82d5fe988b5dd076d43153f3aed3a6bebb7c99",
+  "checked-overflow.add": "f1707d7b751858fe61bac9c13e68deca63f6dfa12305a9e51ad44d214b78b74d",
+  "checked-overflow.multiply": "a391373cd6e003e6f3ca7db697fe11116c8561aba86c68e4803922a0b933eff0"
+});
+
 const positive = v => Number.isSafeInteger(v) && v > 0;
 const nonempty = v => typeof v === 'string' && v.trim().length > 0;
 const reject = why => {throw new Error(why);};
@@ -39,7 +50,8 @@ export function validateFiveBackendScalarEligibility(doc) {
   }
   const fixtures = new Map();
   for (const f of doc.fixtures) {
-    if (!f || !ids.has(f.id) || fixtures.has(f.id) || !SHA256.test(f.source_sha256)) {
+    if (!f || !ids.has(f.id) || fixtures.has(f.id) || !SHA256.test(f.source_sha256) ||
+        f.source_sha256 !== FIXTURE_SHA256[f.id]) {
       reject('missing, duplicate or unpinned scalar fixture');
     }
     fixtures.set(f.id, f.source_sha256);
