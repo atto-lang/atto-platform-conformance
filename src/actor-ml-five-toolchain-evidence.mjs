@@ -19,8 +19,10 @@ function fields(value, required, path) {
   if (JSON.stringify(keys) !== JSON.stringify([...required].sort()))
     fail(path + " has missing or unexpected fields");
 }
-const sha1 = s => typeof s === "string" && /^[a-f0-9]{40}$/.test(s);
-const sha256 = s => typeof s === "string" && /^[a-f0-9]{64}$/.test(s);
+const sha1 = s => typeof s === "string" && /^[a-f0-9]{40}$/.test(s) &&
+  !/^0+$/.test(s);
+const sha256 = s => typeof s === "string" && /^[a-f0-9]{64}$/.test(s) &&
+  !/^0+$/.test(s);
 const positive = n => Number.isSafeInteger(n) && n > 0;
 function checkBack(b) {
   fields(b,["backend","repository","profile","source_commit","source_tree",
