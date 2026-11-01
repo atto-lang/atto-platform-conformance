@@ -7,7 +7,7 @@ import {
 
 test("runtime gate reports host STOP only, never five-backend guest STOP parity", () => {
   assert.deepEqual(validateSupervisorStopRuntimeGate(readSupervisorStopRuntimeGate()), {
-    backends: 5, focusedHostStop: 2, sourceStopPlan: 1, guestSourceParity: 0
+    backends: 5, focusedHostStop: 2, hostStopLedger: 5, sourceStopPlan: 1, guestSourceParity: 0
   });
 });
 
@@ -24,6 +24,22 @@ test("unreviewed edits cannot promote a parser or host test to guest CONTROL par
   }
 });
 
+test("host STOP ledger test evidence cannot silently grant guest execution", () => {
+  const original = readSupervisorStopRuntimeGate();
+  for (const backend of original.backends) {
+    const altered = structuredClone(original);
+    altered.backendGate[backend].hostStopLedger = false;
+    assert.throws(() => validateSupervisorStopRuntimeGate(altered),
+      /fabricated or stale/, backend);
+  }
+  for (const backend of ["wasm","cranelift","net"]) {
+    const altered = structuredClone(original);
+    altered.backendGate[backend].focusedHostStop = true;
+    assert.throws(() => validateSupervisorStopRuntimeGate(altered),
+      /fabricated or stale/, backend);
+  }
+});
+
 test("STOP receipt ABI and identity-fence obligations cannot silently drift", () => {
   const mutations = [
     g => g.logicalFailureFields.splice(4, 1),
@@ -32,6 +48,12 @@ test("STOP receipt ABI and identity-fence obligations cannot silently drift", ()
     g => g.enforce.splice(6, 1),
     g => g.enforce.push("retry-ambiguous-host-stop"),
     g => g.backends.pop(),
+    g => g.backendGate.net.hostStopLedger = false,
+    g => g.backendGate.wasm.hostStopLedger = false,
+    g => g.backendGate.cranelift.hostStopLedger = false,
+    g => g.backendGate.java.hostStopLedger = false,
+    g => g.evidence.netLedger = g.evidence.llvmControl,
+    g => delete g.evidence.wasmLedger,
     g => g.backendGate.net.focusedHostStop = true,
     g => g.backendGate.java.focusedHostStop = false,
     g => g.backendGate.llvm.sourceStopPlan = true,
