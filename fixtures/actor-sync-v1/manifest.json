@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "contract": "oreslang-actor-sync-source-fixtures-v1",
+  "status": "candidate-unattested",
+  "notes": "Exactly identical .ores source pins for Java/LLVM/Wasm/Cranelift/.NET; no guest compiler evidence exists until real executed test receipts are attached.",
+  "backendTargets": [
+    "java",
+    "llvm",
+    "wasm",
+    "cranelift",
+    "net"
+  ],
+  "sourceModule": {
+    "path": "stdlib/actor_sync.ores",
+    "gitBlobSha1": "48c85c40b53d33a4a420cf4bb77e00fe3df3bb94",
+    "scope": "pure-owned-progress-metadata-only",
+    "notPersistenceAdapter": true
+  },
+  "fixtures": [
+    {
+      "id": "cursor-progression",
+      "path": "cursor-progression.ores",
+      "gitBlobSha1": "a454e7107ab62bbaa38cca44627c794b3bf0d4c2",
+      "expect": "accept-and-execute",
+      "stdout": "true\ntrue\nfalse\ntrue\ntrue\nfalse\ntrue\ntrue\n3\n5\n",
+      "requirements": [
+        "real-source-compilation",
+        "guest-execution",
+        "exact-stdout",
+        "compiler-hash",
+        "exact-head"
+      ],
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      }
+    }
+  ],
+  "runtimeVerifiedBackends": [],
+  "evidenceLevel": "source-fixtures-only",
+  "hostTestsCountAsNativeGuest": false,
+  "zeroStepCiCountsAsExecution": false
+}
