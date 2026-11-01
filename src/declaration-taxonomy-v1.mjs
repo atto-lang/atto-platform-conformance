@@ -4,8 +4,8 @@ export function decide(policy, declaration) {
   if (!rules) return "UNKNOWN_KIND";
   const d = declaration.options ?? {};
   const parents = d.parents ?? [];
-  if (parents.length > rules.max_parents) return "MULTIPLE_SUPERCLASSES";
   if (parents.some(p => !rules.parent_kinds.includes(p.kind))) return "PARENT_KIND";
+  if (parents.length > rules.max_parents) return "MULTIPLE_SUPERCLASSES";
   if (rules.isolation === "preserve" &&
       parents.some(p => p.isolation && p.isolation !== (d.isolation ?? "shared")))
     return "ISOLATION_CHANGE";
