@@ -6,7 +6,7 @@ import {dirname, resolve, sep} from "node:path";
 import {fileURLToPath, pathToFileURL} from "node:url";
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),"..");
-const manifestFile=resolve(root,"fixtures/option-result-trap/v1/manifest.json");
+
 const sha40=/^[a-f0-9]{40}$/;
 const sha64=/^[a-f0-9]{64}$/;
 const nonEmpty=x=>typeof x==="string" && x.trim().length>0;
@@ -15,7 +15,7 @@ const isObject=x=>x!==null && typeof x==="object" && !Array.isArray(x);
 export function verifyOptionResultTrapReceipt(receipt,manifest,fixtureDigest) {
   const errors=[];
   const fail=message=>errors.push(message);
-  if(!isObject(manifest) || manifest.schema!=="oreslang.option-result-trap.fixtures/v1")
+  if(!isObject(manifest) || !["oreslang.option-result-trap.fixtures/v1","oreslang.option-result-trap.modular/v2"].includes(manifest.schema))
     return {ok:false,errors:["unknown fixture manifest schema"]};
   if(!isObject(receipt)) return {ok:false,errors:["receipt must be an object"]};
   if(receipt.schema!=="oreslang.option-result-trap.receipt/v1") fail("unknown receipt schema");
@@ -66,12 +66,12 @@ export function verifyOptionResultTrapReceipt(receipt,manifest,fixtureDigest) {
       fail("guest panic identity/diagnostic not preserved");
     if(typeof e.stdout!=="string"||e.stdout.includes(c.forbidden_stdout))
       fail("forbidden post-panic output observed");
-    if(!nonEmpty(e.guestStep)) fail("guest panic execution step missing");
+    if(!nonEmpty(e.guestStep)||!e.steps.includes(e.guestStep)) fail("guest panic execution step missing or not executed");
   } else if(c?.kind==="compile_reject") {
     if(e.compilerExitCode!==1||e.guestLaunched!==false||
        e.guestExitCode!==null || e.guestStep!==null)
       fail("type rejection must happen before guest launch");
-    if(e.diagnosticCategory!=="type"||!nonEmpty(e.stderr))
+    if(e.diagnosticCategory!==(c.expected_diagnostic_category||"type")||!nonEmpty(e.stderr))
       fail("typed compiler rejection diagnostic required");
     if(e.stdout!=="") fail("compile rejection must not print guest stdout");
   } else fail("unknown fixture expectation");
@@ -113,7 +113,7 @@ export function readPinnedRegular(filename,maxBytes=131072) {
 }
 function pinnedPath(rel) {
   if(typeof rel!=="string"||
-     !/^fixtures\/option-result-trap\/v1\/(?:negative\/)?[a-z_]+\.ores$/.test(rel))
+     !/^fixtures\/option-result-trap\/v[12]\/(?:negative\/)?[a-z_]+\.ores$/.test(rel))
     throw new Error("untrusted fixture relative path");
   const full=resolve(root,rel);
   if(!full.startsWith(root+sep))throw new Error("fixture escapes checkout");
@@ -132,15 +132,24 @@ function pinnedPath(rel) {
 }
 const gitBlobSha=bytes=>createHash("sha1")
   .update(Buffer.from("blob "+bytes.length+"\0")).update(bytes).digest("hex");
-function readPinnedCase() {
-  const manifestBytes=readPinnedRegular(manifestFile);
+function readPinnedCase(caseId) {
+  const v2=typeof caseId==="string" && caseId.startsWith("ORT2-");
+  const folder=v2?"v2":"v1";
+  const base=resolve(root,"fixtures/option-result-trap",folder);
+  const manifestBytes=readPinnedRegular(resolve(base,"manifest.json"));
   const manifest=JSON.parse(manifestBytes.toString("utf8"));
-  const lockPath=resolve(root,"fixtures/option-result-trap/v1/fixture-lock-v1.json");
+  const lockPath=resolve(base,v2?"fixture-lock-v2.json":"fixture-lock-v1.json");
   const lock=JSON.parse(readPinnedRegular(lockPath).toString("utf8"));
-  if(!isObject(manifest)||manifest.schema!=="oreslang.option-result-trap.fixtures/v1"||
+  const expectedManifest=v2?"oreslang.option-result-trap.modular/v2":
+    "oreslang.option-result-trap.fixtures/v1";
+  const expectedLock=v2?"oreslang.option-result-trap.modular-lock/v2":
+    "oreslang.option-result-trap.fixture-lock/v1";
+  if(!isObject(manifest)||manifest.schema!==expectedManifest||
      manifest.status!=="authored_not_executed"||
+     !Array.isArray(manifest.backends)||
+     manifest.backends.join(",")!=="java,llvm,wasm,cranelift,net"||
      !Array.isArray(manifest.cases)||!isObject(lock)||
-     lock.schema!=="oreslang.option-result-trap.fixture-lock/v1"||
+     lock.schema!==expectedLock||
      gitBlobSha(manifestBytes)!==lock.manifest_blob||
      !Array.isArray(lock.cases)||lock.cases.length!==manifest.cases.length)
     throw new Error("fixture manifest/lock not pinned");
@@ -164,8 +173,8 @@ function readPinnedCase() {
   return {manifest,lock};
 }
 export function verifyReceiptFile(filename) {
-  const {manifest,lock}=readPinnedCase();
   const receipt=JSON.parse(readPinnedRegular(filename,262144).toString("utf8"));
+  const {manifest,lock}=readPinnedCase(receipt?.caseId);
   const c=manifest.cases.find(x=>x.id===receipt?.caseId);
   if(!c)throw new Error("unknown case ID");
   const bytes=readPinnedRegular(pinnedPath(c.path));
