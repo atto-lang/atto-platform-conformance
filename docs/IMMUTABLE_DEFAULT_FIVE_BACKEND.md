@@ -6,8 +6,8 @@
 `oreslang-source.java#2405`. LLVM scalar inference/cast compiler:
 `oreslang-source.llvm#1256`.
 
-The new `contracts/immutable-default-v1.json` pins **18 actual .ores
-source files** (6 intended successful guest programs, 11 intended
+The new `contracts/immutable-default-v1.json` pins **20 actual .ores
+source files** (6 intended successful guest programs, 13 intended
 compile-time rejections, and 1 eager checked-overflow trap). The Node
 contract test protects source-byte equality and checks 14 deliberate
 manifest mutations. It does **not** invoke a compiler. The independent
@@ -36,7 +36,7 @@ for its actual resolved binding permission.
    private build; do not export private source across organizations.
 2. Compile+execute IDB-01..06 as guest programs with typed return and
    exact value receipts (not only OS process exit truncation).
-3. Reject IDB-07..16 and IDB-18 with **compiler-owned semantic reason**,
+3. Reject IDB-07..16 and IDB-18..20 with **compiler-owned semantic reason**,
    meaningful source location, no emitted executable and no crash/timeout.
 4. Compile IDB-17, then execute and prove a checked arithmetic failure
    even though `unused` is not read (eager initializer semantics).
@@ -56,3 +56,13 @@ receiver, closure captures, pattern bindings, definite assignment,
 nested types, actor `handle_state`, message Sendability, pure effects
 and `rt mut borrow` lifetime crossing await/cancellation. These need
 backend capability support; they are not covered by the 18 scalar cases.
+
+### Compatibility correction
+
+Java `docs/LANGUAGE.md` defines standalone `const` as a compile-time
+constant and `val` as runtime single-assignment. IDB-19 and IDB-20
+explicitly reject runtime-dependent standalone `const` initialization;
+the new type-first `int x = e` is a readonly **runtime** binding.
+This distinction is essential when inspecting inference drafts in Java,
+LLVM and .NET. IDB-17 uses `int unused = ...` deliberately: an
+unused runtime initializer must still eagerly execute and trap on overflow.
