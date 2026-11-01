@@ -2,6 +2,23 @@
 
 This is a **semantic oracle only**, not a compiled Oreslang library, deployed Opto Sync SDK, or backend parity certificate. The 12-case contract in `contracts/opto-sync-scoped-v1.json` models a fixed record-ID scope, commit-ordered checkpoints, deletes, stale revisions, skipped unrelated commits, and a pending local mutation overlay. The pure Node test in `tests/opto-sync-scoped-contract.test.mjs` evaluates these rules.
 
+## Pure Oreslang guest candidate
+
+`fixtures/opto-sync-scoped-v1/scoped_sync_admission.ores` is the
+initial deterministic language-native admission core. The companion
+`scoped_sync_guest_contract.ores` checks positive/negative cases for
+checkpoint boundaries, event ordering, tombstone revisions and session
+generation. Four snake_case functions have no I/O, heap allocation,
+network capability or access to the existing JavaScript oracle.
+**These guest files are authored but have not been compiled and executed
+on any backend in this PR**.
+
+The guest fixture is intentionally stronger than stage-0 Cranelift
+and .NET frontends: typed booleans, multiple functions, conditional
+branches and imports must be implemented on those toolchains instead
+of silently replacing it with scalar arithmetic. A backend that does
+not compile the *same source* must report UNSUPPORTED, not PASS.
+
 ## Required real backend gates
 
 The same Oreslang source, with frozen source SHA and inputs/expected outputs, must be compiled and **executed**, not merely parsed, using independent source-commit-pinned toolchains. The target set is **Java/GraalVM, LLVM native, Wasm, Cranelift, .NET Native AOT**. Cranelift is distinct from Forge and may not be substituted. For each backend, require a recorded source commit/tree, compiler binary fingerprint, guest artifact fingerprint, executed CI job/steps, clean subprocess outcome, and per-vector guest result. Reject any skipped, pending, fake, zero-step, host-only, or stale fixture report. Validate a negative case on every toolchain.
