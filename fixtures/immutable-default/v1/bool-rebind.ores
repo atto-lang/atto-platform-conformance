@@ -1,1 +1,0 @@
-fnc main(): int { bool flag = true; flag = false; return 7; }
