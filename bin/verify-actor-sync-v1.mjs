@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import {fileURLToPath} from "node:url";
+import {resolve} from "node:path";
 
 export const BACKENDS = Object.freeze(["java","llvm","wasm","cranelift","net"]);
 const STATUSES = new Set(["NOT_EXECUTED","UNSUPPORTED","FAIL","PASS","EXPECTED_REJECT"]);
@@ -70,7 +71,7 @@ export function verifyActorSyncContract(contract) {
     verifiedGuestPasses:contract.scenarios.reduce((n,s)=>n+BACKENDS.filter(b=>s.backendStatus[b]==="PASS").length,0)};
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url)===process.argv[1]) {
+if (process.argv[1] && fileURLToPath(import.meta.url)===resolve(process.argv[1])) {
   const source = readFileSync(new URL("../contracts/actor-sync-v1.json",import.meta.url),"utf8");
   const result = verifyActorSyncContract(JSON.parse(source));
   process.stdout.write("ACTOR_SYNC_CONTRACT_INVENTORY_ONLY "+JSON.stringify(result)+"\n");
