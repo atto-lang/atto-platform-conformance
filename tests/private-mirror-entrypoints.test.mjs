@@ -86,3 +86,38 @@ test("static review flags git push reached through explicit Git global configura
       /unreviewed direct GitHub/);
   }
 });
+
+test("direct API mutation and runtime git child-process shims are rejected",()=>{
+ for(const code of [
+  "spawn('git',['push','origin','main'])",
+  "spawnSync('git',['push','upstream','HEAD'])",
+  "execFile('git',['push','origin','refs/heads/main'])",
+  "execFileSync('git',['push','origin','HEAD'])",
+  "gh api repos/x/y/git/refs --method PATCH",
+  'fetch("https://api.github.com/repos/x/y/git/trees",{method:"POST"})',
+  'const endpoint="/git/commits"; fetch(endpoint,{method:"POST"})'
+ ]){
+  assert.throws(()=>audit("tools/unreviewed-copy.mjs",code),
+   /unreviewed direct GitHub/);
+ }
+});
+
+test("publisher must authorize before the very first source commit lookup",()=>{
+ const code=[
+  'import {requirePrivateMirror} from "./require-private-mirror.mjs";',
+  'const authorize=()=>requirePrivateMirror({});',
+  'const srcCommit=await githubRequest("/git/commits");',
+  'await authorize();'
+ ].join("\n");
+ assert.throws(()=>audit(approvedPublisher,code),
+  /publisher must authorize BEFORE fetching/);
+});
+
+test("publisher cannot drop its authorization call while preserving the import",()=>{
+ const code=[
+  'import {requirePrivateMirror} from "./require-private-mirror.mjs";',
+  'const authorize=()=>requirePrivateMirror({});',
+  'const srcCommit=await githubRequest("/git/commits");'
+ ].join("\n");
+ assert.throws(()=>audit(approvedPublisher,code));
+});
