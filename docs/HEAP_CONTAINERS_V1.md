@@ -53,7 +53,7 @@ require separate reasoning beyond memory/data-race safety.
 ## What is implemented in this pull request
 
 The immutable contract in contracts/heap-containers-v1.json pins
-23 positive and negative reference cases, five immutable .ores
+36 positive and negative reference cases, five immutable .ores
 source fixtures (two positive, three negative), and six independently
 unverified backends. The five fixtures are exact Git-blob-SHA1 pinned; they
 have NOT been compiled or executed by any backend. src/heap-containers-v1-reference.mjs is a deliberately
@@ -101,6 +101,33 @@ If source CI jobs have zero execution steps, they are runner failures,
 not test passes. A funded private alternate-org runner may execute
 an exactly verified source tree via token-free mirroring; require
 per-blob SHA equality and never expose private code.
+
+## Current independent backend follow-up PRs
+
+The targeted five-backend work is tracked separately, each behind real execution:
+
+- Java/Graal: [#2431](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2431), source parser/typechecker/ownership and guest List JUnit cases.
+- LLVM: [#1285](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1285), four extra real compiler/native binary borrow-matrix cases.
+- Wasm: [#254](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/254), fail-closed source-bridge heap ABI preflight.
+- Cranelift: [#65](https://github.com/ores-truffle-oreslang/oreslang-source.cranelift/pull/65), scalar-JIT source rejection and scalar-positive CLI tests.
+- .NET: [#318](https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/318), parser-to-typed-IR heap rejection tests.
+
+Source-org exact-head workflows on these PRs had zero recorded steps in sampled
+runs on November 1, 2026, so they do **not** constitute test execution.
+Negative feature rejection is important safety, but not positive runtime parity.
+
+## Additional reference-model security findings
+
+- Callback-retained write guards previously allowed access after lock scope
+  ended. The model now revokes guards on success and exception.
+- Read callbacks now admit overlapping read-only access while denying writes;
+  write guards are exclusive.
+- A saved Arc view previously returned a raw mutable referent; it now provides
+  a handle-checked guard facade. A live guard blocks that handle from dropping,
+  and a saved facade refuses use after the originating Arc is dropped.
+- These are bounded JS **models**, not claims of OS-thread atomicity, deep
+  immutable payload admission, or native allocator correctness. An external JS
+  reference held before creating Arc is outside this oracle's ownership proof.
 
 ## Existing work to integrate rather than duplicate
 
