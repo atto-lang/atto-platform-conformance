@@ -96,3 +96,17 @@ test("AF20: coerced objects cannot masquerade as Git commit digests",()=>{
 test("AF20: forged scenario objects cannot count as canonical IDs",()=>{
   reject(r=>r.scenarioIds=[{toString:()=> "AF01"}],"SCENARIOS_INVALID");
 });
+
+test("AF20: bounded receipts reject oversized jobs and steps",()=>{
+  reject(r=>{r.jobs=Array.from({length:65},(_,id)=>({...r.jobs[0],id:id+1}));},
+    "JOB_OR_STEP_BUDGET_EXCEEDED");
+  reject(r=>{r.jobs[0].steps=Array.from({length:129},()=>({
+    name:"Test guest",status:"completed",conclusion:"success"}));},
+    "JOB_OR_STEP_BUDGET_EXCEEDED");
+  reject(r=>{r.jobs[0].requiredTestStep="x".repeat(129);},
+    "REQUIRED_TEST_STEP_NOT_EXECUTED");
+});
+test("AF20: scenario budget cannot be enlarged beyond canonical twenty",()=>{
+  reject(r=>{r.scenarioIds=Array.from({length:21},(_,i)=>"AF"+
+    String((i%20)+1).padStart(2,"0"));}, "SCENARIOS_INVALID");
+});
