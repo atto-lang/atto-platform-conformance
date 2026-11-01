@@ -7,7 +7,7 @@ const root = new URL("../fixtures/actor-execution/v1/", import.meta.url);
 const original = JSON.parse(readFileSync(new URL("manifest.json", root), "utf8"));
 const sourceBytes = readFileSync(new URL("spawn-send-receive-stop.ores", root));
 const blobSha = bytes => createHash("sha1")
-  .update("blob " + bytes.length + "\\0").update(bytes).digest("hex");
+  .update("blob " + bytes.length + "\0").update(bytes).digest("hex");
 const backends = [
   "java-graalvm", "llvm-native", "wasm", "forge",
   "net-native-aot", "cranelift-native"
@@ -35,22 +35,22 @@ function check(m, bytes) {
       name + " needs actual compiled guest logs, not a manifest");
     assert.equal(typeof m.backends[name].candidate, "string");
     assert.match(m.backends[name].pr,
-      /^https:\\/\\/github\\.com\\/ores-truffle-oreslang\\/oreslang-source\\./);
+      /^https:\/\/github\.com\/ores-truffle-oreslang\/oreslang-source\./);
   }
   assert.ok(m.notCovered.includes("sealed state schema and critical read/write loans"));
   assert.ok(m.notCovered.includes("trait or interface dispatch"));
   assert.match(m.evidenceRule, /nonzero test steps/);
   const source = bytes.toString("utf8");
-  assert.ok(source.endsWith("\\n"));
+  assert.ok(source.endsWith("\n"));
   assert.match(source, /define actor A1 as/);
-  assert.match(source, /receive\\(ActorMail<int> mail\\): void/);
-  assert.match(source, /self\\.send\\(mail\\.value \\+ 1\\)/);
-  assert.match(source, /self\\.end\\(\\)/);
-  assert.match(source, /val worker = spawn A1\\(\\)/);
-  assert.match(source, /await worker\\.get_ready\\(\\)/);
-  assert.match(source, /worker\\.send\\(41\\)/);
-  assert.match(source, /worker\\.outputs\\.next\\(\\)/);
-  assert.match(source, /await worker\\.get_done\\(\\)/);
+  assert.match(source, /receive\(ActorMail<int> mail\): void/);
+  assert.match(source, /self\.send\(mail\.value \+ 1\)/);
+  assert.match(source, /self\.end\(\)/);
+  assert.match(source, /val worker = spawn A1\(\)/);
+  assert.match(source, /await worker\.get_ready\(\)/);
+  assert.match(source, /worker\.send\(41\)/);
+  assert.match(source, /worker\.outputs\.next\(\)/);
+  assert.match(source, /await worker\.get_done\(\)/);
   return true;
 }
 
@@ -84,5 +84,5 @@ test("actor lifecycle fixture content is immutably pinned by its Git blob", () =
   mutated[mutated.length - 2] ^= 1;
   assert.throws(() => check(original, mutated));
   assert.throws(() => check(original,
-    Buffer.from(sourceBytes.toString("utf8").replaceAll("\\n", "\\r\\n"))));
+    Buffer.from(sourceBytes.toString("utf8").replaceAll("\n", "\r\n"))));
 });
