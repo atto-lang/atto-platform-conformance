@@ -228,3 +228,26 @@ The corresponding real private-actor integration JUnit is in Java #2305;
 its physical actor-lifetime integration execution remains unverified until
 stepful CI or an authorized local full-source build. The LLVM runtime pin
 test remains similarly source-org admission-blocked.
+
+## 2026-11-01 mutable-state guest / independent Cranelift accounting
+
+`mutable-state-container-guest-v1.json` pins a real private Oreslang guest
+source **by SHA and location only**, without exporting source bytes. It writes
+and reads actor-sealed state and must produce `mutable-state-container-ok`.
+The diagnostic runner and companion Node tests validate the source Git blob,
+expected output/exit, malformed fixture/CLI scenarios and six independently
+recorded backend slots. They **do not substitute** for actual compiler-backed
+execution or establish actor state storage semantics.
+
+The nine critical-state programs now require **54** separate evidence slots
+(9 fixtures × Java, LLVM, Wasm, Cranelift, .NET, Forge). All currently remain
+`not-executed`. Historical counts of 45/five above describe the previous
+five-target model, not verified parity. Cranelift's Rust/JIT scalar stage-0
+currently rejects actors and protected state operations by design. Forge is a
+different implementation; its host contract tests do not certify Cranelift.
+
+Before promotion, independently execute the immutable guest and all nine
+positive/negative compiler fixtures, record exact backend source/head SHA,
+stepful runner logs, authenticated provenance, in-place mutation allocation
+cost and physical Task/FFI drain evidence. Keep the security export hold until
+the source repository permits the exact source snapshot and destination.
