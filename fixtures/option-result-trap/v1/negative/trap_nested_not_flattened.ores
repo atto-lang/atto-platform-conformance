@@ -1,0 +1,5 @@
+trap fnc maybe(): Option<int> { return None; }
+fnc invalid(): Option<int> {
+  val Option<int> flattened = maybe();
+  return flattened;
+}
