@@ -10,11 +10,13 @@ const registry = JSON.parse(readFileSync(
 function syntheticReceipt() {
   return {
     backend: "java", compilerCommit: "a".repeat(40), runId: 1,
+    status: "completed", conclusion: "success",
     buildSteps: 1, compileSteps: 1, guestRunSteps: 1,
     cases: registry.cases.map(c => ({
       id: c.id, kind: c.kind, sourceSha256: sourceSha256(c.source),
       ...(c.kind === "compile-and-run" ? {
-        compileExitCode: 0, runExitCode: c.expected.exitCode, stdout: c.expected.stdout
+        compileExitCode: 0, runExitCode: c.expected.exitCode,
+        stdout: c.expected.stdout, guestExecuted: true
       } : {
         compileExitCode: 1, diagnosticClass: c.violation,
         rejectionPhase: "semantic", emittedArtifacts: 0, guestExecuted: false
@@ -118,6 +120,37 @@ test("wrong sources, fake zero-step execution, stale compiler heads and cross-ba
     assert.equal(decision.structurallyEligible, false, JSON.stringify(fake));
     assert.ok(decision.failures.length >= 1);
   }
+});
+
+test("receipt must explicitly prove a completed compiler-backed guest observation, never a pending/synthetic claim", () => {
+  const edits = [
+    r => { delete r.status; },
+    r => { r.status = "pending"; },
+    r => { r.status = "skipped"; },
+    r => { r.conclusion = "neutral"; },
+    r => { r.synthetic = true; },
+    r => { r.sourceFree = true; },
+    r => { r.parserOnly = true; },
+    r => { r.unsupported = true; },
+    r => { delete r.cases[0].guestExecuted; },
+    r => { r.cases[0].guestExecuted = false; },
+    r => { r.cases[0].rejectionPhase = "semantic"; },
+    r => { r.cases[0].synthetic = true; },
+    r => { r.cases[0].sourceFree = true; },
+    r => { delete r.cases.at(-1).guestExecuted; },
+    r => { r.cases.at(-1).guestExecuted = null; },
+    r => { r.cases.at(-1).runExitCode = 0; },
+    r => { r.cases.at(-1).stdout = ""; }
+  ];
+  for (const edit of edits) {
+    const fake = syntheticReceipt();
+    edit(fake);
+    const result = assessInjectedStateReceipt(registry, "java", fake);
+    assert.equal(result.structurallyEligible, false, JSON.stringify(fake));
+    assert.ok(result.failures.length > 0);
+    assert.equal(result.classification, "receipt-shape-only-not-verified-parity");
+  }
+  assert.equal(assessInjectedStateReceipt(registry, "java", []).structurallyEligible, false);
 });
 
 test("missing, duplicate and unexpected cases are rejected", () => {
