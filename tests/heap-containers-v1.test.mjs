@@ -108,6 +108,32 @@ const checked = {
     const v = new VectorReference(0);
     assert.deepEqual(v.pop(), {present: false});
   },
+  "vector-invalid-element-preserves-allocation": () => {
+    const v = new VectorReference(8);
+    v.push(10);
+    const before = {length: v.length, capacity: v.capacity, epoch: v.epoch};
+    assert.throws(() => v.push({untrusted: true}), /HEAP_CONTAINERS_DENIED/);
+    assert.deepEqual({length: v.length, capacity: v.capacity, epoch: v.epoch}, before);
+    assert.equal(v.get(0), 10);
+  },
+  "vector-invalid-push-does-not-spend-final-quota": () => {
+    const v = new VectorReference(2);
+    v.push(1);
+    assert.throws(() => v.push(Number.NaN), /HEAP_CONTAINERS_DENIED/);
+    assert.equal(v.capacity, 1);
+    v.push(2);
+    assert.deepEqual([v.get(0), v.get(1)], [1, 2]);
+  },
+  "vector-overbudget-reserve-is-transactional": () => {
+    const v = new VectorReference(3);
+    v.push(1);
+    const epoch = v.epoch;
+    const capacity = v.capacity;
+    assert.throws(() => v.reserve(4), /HEAP_CONTAINERS_DENIED/);
+    assert.equal(v.epoch, epoch);
+    assert.equal(v.capacity, capacity);
+    assert.equal(v.get(0), 1);
+  },
   "arc-clone-count-preserves-payload": () => {
     const original = new ArcReference(42);
     const cloned = original.clone();
