@@ -12,12 +12,12 @@ const bad = reason => result('UNVERIFIED',reason);
 
 export function verifyUserlandReceipt(r,c) {
   if (!obj(c) || c.schemaVersion!==1 || c.contract!=='oreslang.userland-portability/1' ||
-      c.fixtureRepository!=='ores-truffle-oreslang/oreslang-proof-of-concepts' ||
+      c.fixtureRepository!=='ores-truffle-oreslang/oreslang-proof-of-concepts' || !hex40(c.fixtureCommitSha) ||
       !obj(c.profiles) || !Array.isArray(c.fixtures) || c.fixtures.length===0)
     return bad('invalid contract');
   if (!obj(r) || r.schemaVersion!==1 || r.contract!==c.contract ||
       !Object.hasOwn(c.profiles,r.profile) || r.compilerRepository!==c.profiles[r.profile] ||
-      r.fixtureRepository!==c.fixtureRepository || !hex40(r.fixtureCommitSha) ||
+      r.fixtureRepository!==c.fixtureRepository || r.fixtureCommitSha!==c.fixtureCommitSha ||
       !hex40(r.fixtureTreeSha) || !hex40(r.compilerCommitSha) || !hex40(r.compilerTreeSha) ||
       !hex64(r.compilerBinarySha256) || !hex64(r.guestArtifactSha256))
     return bad('missing or substituted compiler, fixture or artifact identity');
