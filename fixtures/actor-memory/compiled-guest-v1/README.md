@@ -1,6 +1,6 @@
 # Canonical compiled actor-private heap acceptance v2
 
-This directory is the single five-backend compiled `.ores` actor ownership contract. It consolidates the stronger runtime trace from this PR with the exact execution-step and semantic-negative evidence rules previously explored in conformance #210. #210 is no longer a competing canonical fixture.
+This directory is the single six-backend compiled `.ores` actor ownership contract. It consolidates the stronger runtime trace from this PR with the exact execution-step and semantic-negative evidence rules previously explored in conformance #210. #210 is no longer a competing canonical fixture.
 
 ## Canonical guest source
 
@@ -60,8 +60,9 @@ node tools/verify-compiled-actor-heap.mjs \
 2. **Java/GraalVM**: route compiled actor fields through the actor-owned native arena and prove the same trace under JDK 25 and Native Image.
 3. **.NET NativeAOT**: implement nominal actor/state lowering before attempting the receipt.
 4. **WASM**: reconcile the pooled source-actor branch with current arena hardening, then implement source `spawn`/`send`/lifecycle lowering required by this fixture. JS-driven lifecycle exports alone do not count.
-5. **Forge**: implement compiled sealed actor-state and loan lowering and emit the same receipt.
+5. **Cranelift**: currently scalar-only. Reject actor/heap source without guest output until actor-owned heap implementation, compiler lowering, and an executed guest receipt exist. Cranelift is not Forge.
+6. **Forge**: implement compiled sealed actor-state and loan lowering and emit the same receipt.
 
-Only after synchronous ownership/reclamation passes on all five backends should phase 2 add suspension, cancellation, timer/FFI callbacks and receiver/state loans pinned until physical quiescence.
+Only after synchronous ownership/reclamation passes on all six backends should phase 2 add suspension, cancellation, timer/FFI callbacks and receiver/state loans pinned until physical quiescence.
 
 Zero-step Actions, source-free canaries, host-only storage tests, unverified mirror output and compiler-only checks remain non-evidence for this compiled guest contract. Cross-organization private-source publication requires separate independently reviewed authorization.
