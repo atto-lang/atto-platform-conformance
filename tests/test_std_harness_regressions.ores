@@ -7,9 +7,17 @@ fnc option_fallback_respects_present_value(): TestOutcome {
     && Option.unwrap_or(missing, -1) == -1,
     "Option fallback must distinguish Some from None");
 }
+fnc result_fallback_is_explicit(): TestOutcome {
+  val Result<int, String> valid = Ok(17);
+  val Result<int, String> invalid = Err("failed");
+  return expect_true(Result.unwrap_or(valid, 3) == 17 &&
+    Result.unwrap_or(invalid, 3) == 3,
+    "Result fallback must not transform a present Ok value");
+}
 pub routine main(): void {
   val TestSuite suite = new TestSuite("option-result-portability", arr[
-    new TestCase("option_fallback_respects_present_value", option_fallback_respects_present_value, false, "")
+    new TestCase("option_fallback_respects_present_value", option_fallback_respects_present_value, false, ""),
+    new TestCase("result_fallback_is_explicit", result_fallback_is_explicit, false, "")
   ]);
   val TestOptions options = new TestOptions("", false, true);
   val RunSummary summary = run_suite(rt borrow suite, rt borrow options);
