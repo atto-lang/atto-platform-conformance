@@ -132,9 +132,9 @@ denies('reject UTF-8 multibyte output crossing byte cap',
  d => d.executions[0].cases[0].stderr='é'.repeat(17000), /guest case/);
 denies('reject forged successful guest exit', d => d.executions[0].cases[0].exit_code=1, /successful guest/);
 denies('reject wrong output for precedence', d => d.executions[0].cases[1].value_i64='27', /successful guest/);
-denies('reject silent accept without newline', d => d.executions.find(x=>x.backend==='net').cases[0].stdout='42', /stdout transport/);
+denies('reject silent accept without newline', d => {const c=d.executions.find(x=>x.backend==='net').cases[0]; c.stdout='42'; c.stdout_sha256=digest(c.stdout)}, /stdout transport/);
 denies('reject overflow reported as success', d => d.executions[0].cases[6].exit_code=0, /overflow/);
-denies('reject overflow with stdout', d => d.executions[0].cases[6].stdout='0\n', /overflow/);
+denies('reject overflow with stdout', d => {const c=d.executions[0].cases[6]; c.stdout='0\n'; c.stdout_sha256=digest(c.stdout)}, /overflow/);
 denies('reject overflow with wrong category', d => d.executions[0].cases[6].error_category='panic', /overflow/);
 denies('reject wrong guest kind', d => d.executions[0].cases[6].kind='accept', /guest case/);
 denies('reject invalid guest exit number', d => d.executions[0].cases[6].exit_code=NaN, /guest case/);
@@ -148,9 +148,9 @@ denies('reject WASM export claiming OS process exit',
 denies('reject WASM trap without RuntimeError provenance',
  d => d.executions.find(x=>x.backend==='wasm').cases[6].trap_category='unknown', /overflow/);
 denies('reject NativeAOT printed value inconsistent with normalized i64',
- d => d.executions.find(x=>x.backend==='net').cases[0].stdout='43\\n', /stdout transport/);
+ d => {const c=d.executions.find(x=>x.backend==='net').cases[0]; c.stdout='43\n'; c.stdout_sha256=digest(c.stdout)}, /stdout transport/);
 denies('reject Cranelift JIT CLI printed value inconsistent with normalized i64',
- d => d.executions.find(x=>x.backend==='cranelift').cases[0].stdout='', /stdout transport/);
+ d => {const c=d.executions.find(x=>x.backend==='cranelift').cases[0]; c.stdout=''; c.stdout_sha256=digest(c.stdout)}, /stdout transport/);
 denies('reject host oracle masquerading as runtime phase',
  d => d.executions[0].cases[0].semantic_phase='host-reference', /successful guest/);
 denies('reject overflow falsely classified as compiler-stage error',
@@ -193,15 +193,15 @@ test('valid multibyte UTF-8 overflow diagnostic remains eligible structurally', 
 });
 
 denies('reject newline-injected completed step name',
- d => {d.executions[0].run.jobs[0].steps[0].name='checkout\\nFORGED PASS'}, /step/);
+ d => {d.executions[0].run.jobs[0].steps[0].name='checkout\nFORGED PASS'}, /step/);
 denies('reject bidirectional spoofing in runner identity',
- d => {d.executions[0].run.jobs[0].runner_name='trusted\\u202evil'}, /unexecuted/);
+ d => {d.executions[0].run.jobs[0].runner_name='trusted\u202evil'}, /unexecuted/);
 denies('reject bidi isolate in guest command',
- d => {d.executions[0].cases[0].guest_command='run\\u2066--fake'}, /guest case/);
+ d => {d.executions[0].cases[0].guest_command='run\u2066--fake'}, /guest case/);
 denies('reject oversized step identity',
  d => {d.executions[0].run.jobs[0].steps[0].name='x'.repeat(4097)}, /step/);
 denies('reject unpaired surrogate in step identity',
- d => {d.executions[0].run.jobs[0].steps[0].name='step\\uD800'}, /step/);
+ d => {d.executions[0].run.jobs[0].steps[0].name='step\uD800'}, /step/);
 test('bounded well-formed internationalized evidence labels are structurally eligible', () => {
  const doc=makeEligible();
  doc.executions[0].run.jobs[0].runner_name='Prüfung-Host';
