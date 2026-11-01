@@ -18,11 +18,29 @@ MAX_FILES = 2000
 MAX_FILE = 8 * 1024 * 1024
 MAX_TOTAL = 64 * 1024 * 1024
 
+# A caller must not redirect Git's index, object store, repository, worktree,
+# configuration or replace refs through inherited process environment.
+# GitHub checkout may set these two transport/object settings; neither is
+# forwarded unmodified to an integrity-critical Git subprocess.
+ALLOWED_GIT_ENV = frozenset({"GIT_NO_REPLACE_OBJECTS", "GIT_TERMINAL_PROMPT"})
+
+
+def validate_git_environment():
+    unexpected = sorted(name for name in os.environ
+                        if name.startswith("GIT_") and name not in ALLOWED_GIT_ENV)
+    if unexpected:
+        raise ValueError("inherited Git control environment is forbidden: " + unexpected[0])
+
 
 def git(*args):
+    # Never inherit Git control variables, even when the caller sets an
+    # apparently harmless override. Resolve objects without replacement.
+    env = {name: value for name, value in os.environ.items()
+           if not name.startswith("GIT_")}
+    env["GIT_NO_REPLACE_OBJECTS"] = "1"
     return subprocess.check_output(
         ["git", "-c", "core.fsmonitor=false", "--no-optional-locks", *args],
-        stderr=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL, env=env,
     )
 
 
@@ -137,6 +155,7 @@ def raw_contents(root_fd, path, mode):
 
 
 def verify(expected):
+    validate_git_environment()
     if not re.fullmatch(r"[0-9a-f]{40}", expected or ""):
         raise ValueError("missing or invalid full expected source SHA")
     if git("rev-parse", "--show-object-format").strip() != b"sha1":
