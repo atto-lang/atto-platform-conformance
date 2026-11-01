@@ -1,0 +1,107 @@
+// ORT-v1 candidate native guest fixture: this is NOT a recorded successful backend run.
+// Exact expected output: ORT1:11111111111111111111111111111:END
+define class Animal as
+end
+define class Dog extends Animal as
+end
+define class Cat extends Animal as
+end
+
+trap fnc success(): int { return 23; }
+trap fnc optional(bool present): Option<int> {
+  if present; then return Some(29); fi
+  return None;
+}
+trap fnc finished_ok(): void { return; }
+trap fnc error_as_data(): Result<int, String> { return Err("data"); }
+trap fnc cast_dog(Animal a): Dog { return a as Dog; }
+
+fnc emit(bool passes): void {
+  if passes; then
+    stdio.stdout.write("1");
+  else
+    stdio.stdout.write("0");
+  fi
+  return;
+}
+
+pub fnc main(): void {
+  val Option<int> some = Some(7);
+  val Option<int> absent = None;
+  val Option<bool> false_value = Some(false);
+  val Option<int> zero = Some(0);
+  val Option<Option<int>> outer_none = None;
+  val Option<Option<int>> inner_none = Some(None);
+  val Option<Option<int>> nested = Some(Some(19));
+  val Result<int, String> ok = Ok(31);
+  val Result<int, String> err = Err("data");
+  val Result<Result<int, String>, String> nested_result = Ok(Err("nested"));
+  val Option<int> safe = success();
+  val Option<Option<int>> trapped_absent = optional(false);
+  val Option<Option<int>> trapped_present = optional(true);
+  val Option<void> finished = finished_ok();
+  val Option<Result<int, String>> trapped_err = error_as_data();
+  val Option<Dog> cast_failure = cast_dog(new Cat());
+  val Option<Dog> cast_success = cast_dog(new Dog());
+  stdio.stdout.write("ORT1:");
+  // option_some_tag
+  emit(some.is_some());
+  // option_some_payload
+  emit(some.unwrap() == 7);
+  // option_none_tag
+  emit(absent.is_none());
+  // option_none_fallback
+  emit(absent.unwrap_or(17) == 17);
+  // option_some_false
+  emit(false_value.is_some());
+  // option_some_false_payload
+  emit(false_value.unwrap() == false);
+  // option_some_zero
+  emit(zero.is_some());
+  // option_some_zero_payload
+  emit(zero.unwrap() == 0);
+  // nested_outer_none
+  emit(outer_none.is_none());
+  // nested_some_none_outer
+  emit(inner_none.is_some());
+  // nested_some_none_inner
+  emit(inner_none.unwrap().is_none());
+  // nested_some_some_outer
+  emit(nested.is_some());
+  // nested_some_some_inner
+  emit(nested.unwrap().unwrap() == 19);
+  // result_ok_tag
+  emit(ok.is_ok());
+  // result_ok_payload
+  emit(ok.unwrap() == 31);
+  // result_err_tag
+  emit(err.is_err());
+  // result_err_fallback
+  emit(err.unwrap_or(88) == 88);
+  // result_nested_outer
+  emit(nested_result.is_ok());
+  // result_nested_inner
+  emit(nested_result.unwrap().is_err());
+  // trap_success_tag
+  emit(safe.is_some());
+  // trap_success_payload
+  emit(safe.unwrap() == 23);
+  // trap_option_absent_outer
+  emit(trapped_absent.is_some());
+  // trap_option_absent_inner
+  emit(trapped_absent.unwrap().is_none());
+  // trap_option_present
+  emit(trapped_present.unwrap().unwrap() == 29);
+  // trap_void_success
+  emit(finished.is_some());
+  // trap_result_err_is_some
+  emit(trapped_err.is_some());
+  // trap_result_err_remains_err
+  emit(trapped_err.unwrap().is_err());
+  // trap_cast_fail_is_none
+  emit(cast_failure.is_none());
+  // trap_cast_success_is_some
+  emit(cast_success.is_some());
+  stdio.stdout.write(":END");
+  return;
+}
