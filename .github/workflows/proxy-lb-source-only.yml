@@ -1,0 +1,41 @@
+# Hosted, token-minimal source-only parity reference check. Never compiles
+# private Oreslang guest code, starts a proxy or reserves self-hosted runners.
+name: Proxy LB source-only contract (NOT native parity)
+on:
+  pull_request:
+    paths:
+      - 'contracts/v1/proxy-lb/**'
+      - 'fixtures/proxy-lb-v1/**'
+      - 'src/proxy-lb-reference.mjs'
+      - 'tests/proxy-lb-*.test.mjs'
+      - '.github/workflows/proxy-lb-source-only.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reference-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          persist-credentials: false
+          submodules: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify immutable candidate head
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
+          printf 'SOURCE_ONLY_HEAD=%s\n' "$EXPECTED_SHA"
+          printf 'SOURCE_ONLY_TREE=%s\n' "$(git rev-parse HEAD^{tree})"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # pinned
+        with:
+          node-version: '22'
+      - name: Validate deterministic source-only reference and Git blobs
+        run: node --test tests/proxy-lb-reference.test.mjs tests/proxy-lb-fixtures.test.mjs
+      - name: Deliberately deny native parity verdict
+        run: echo 'SOURCE_ONLY_REFERENCE; ORESLANG_GUEST_EXECUTION=NOT_EXECUTED; FIVE_BACKEND_PARITY=NOT_CERTIFIED'
