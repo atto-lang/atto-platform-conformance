@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
+import {createHash} from "node:crypto";
 import {verifyActorSyncContract} from "./verify-actor-sync-v1.mjs";
 const source=JSON.parse(readFileSync(new URL("../contracts/actor-sync-v1.json",import.meta.url),"utf8"));
 const clone=()=>structuredClone(source);
@@ -59,4 +60,30 @@ test("fixture inventory validator permits structurally complete positive receipt
  s.scenarios[0].backendStatus.java="PASS";s.scenarios[0].evidence.java=receipt();
  assert.equal(verifyActorSyncContract(s).verifiedGuestPasses,1);
  // A syntactically complete receipt is NOT cryptographic provenance verification.
+});
+
+test("canonical .ores module and guest fixture are Git-blob pinned",()=>{
+ const manifest=JSON.parse(readFileSync(new URL("../fixtures/actor-sync-v1/manifest.json",import.meta.url),"utf8"));
+ assert.equal(manifest.schemaVersion,1);
+ assert.equal(manifest.contract,"oreslang-actor-sync-source-fixtures-v1");
+ assert.equal(manifest.evidenceLevel,"source-fixtures-only");
+ assert.equal(manifest.hostTestsCountAsNativeGuest,false);
+ assert.equal(manifest.zeroStepCiCountsAsExecution,false);
+ assert.deepEqual(manifest.backendTargets,["java","llvm","wasm","cranelift","net"]);
+ const gitBlob=relative=>{
+   const bytes=readFileSync(new URL("../fixtures/actor-sync-v1/"+relative,import.meta.url));
+   return createHash("sha1").update(Buffer.from("blob "+bytes.length+"\\0"))
+     .update(bytes).digest("hex");
+ };
+ assert.equal(gitBlob(manifest.sourceModule.path),manifest.sourceModule.gitBlobSha1);
+ assert.equal(manifest.sourceModule.notPersistenceAdapter,true);
+ assert.equal(manifest.fixtures.length,1);
+ const fixture=manifest.fixtures[0];
+ assert.equal(gitBlob(fixture.path),fixture.gitBlobSha1);
+ assert.equal(fixture.expect,"accept-and-execute");
+ assert.equal(fixture.stdout,"true\\ntrue\\nfalse\\ntrue\\ntrue\\nfalse\\ntrue\\ntrue\\n3\\n5\\n");
+ assert.deepEqual(Object.keys(fixture.backendStatus),manifest.backendTargets);
+ for(const b of manifest.backendTargets)
+   assert.equal(fixture.backendStatus[b],b==="cranelift"?"UNSUPPORTED":"NOT_EXECUTED");
+ assert.deepEqual(manifest.runtimeVerifiedBackends,[]);
 });
