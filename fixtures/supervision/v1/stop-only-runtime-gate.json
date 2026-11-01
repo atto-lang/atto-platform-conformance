@@ -49,32 +49,41 @@
     "java": {
       "focusedHostStop": true,
       "sourceStopPlan": true,
-      "guestSourceParity": false
+      "guestSourceParity": false,
+      "hostStopLedger": true
     },
     "llvm": {
       "focusedHostStop": true,
       "sourceStopPlan": false,
-      "guestSourceParity": false
+      "guestSourceParity": false,
+      "hostStopLedger": true
     },
     "wasm": {
       "focusedHostStop": false,
       "sourceStopPlan": false,
-      "guestSourceParity": false
+      "guestSourceParity": false,
+      "hostStopLedger": true
     },
     "cranelift": {
       "focusedHostStop": false,
       "sourceStopPlan": false,
-      "guestSourceParity": false
+      "guestSourceParity": false,
+      "hostStopLedger": true
     },
     "net": {
       "focusedHostStop": false,
       "sourceStopPlan": false,
-      "guestSourceParity": false
+      "guestSourceParity": false,
+      "hostStopLedger": true
     }
   },
   "evidence": {
     "javaControl": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41358923195",
     "javaCompiler": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41359448732",
-    "llvmControl": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41359210787"
+    "llvmControl": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41359210787",
+    "javaLedger": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41359927149",
+    "wasmLedger": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41363000747",
+    "craneliftLedger": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41363000747",
+    "netLedger": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41362382131"
   }
 }
