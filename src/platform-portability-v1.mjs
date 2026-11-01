@@ -167,7 +167,10 @@ export function validateObservation(o,c){
   else
     good(o.result.kind==="reject"&&o.result.diagnosticCode==="UNKNOWN_IDENTIFIER"&&
       typeof o.result.diagnostic==="string"&&
-      o.result.diagnostic.length<=2048&&/^error:/i.test(o.result.diagnostic)&&
+      o.result.diagnostic.length<=2048&&
+      (o.toolchain==="cranelift"?
+        /^orescranelift: unbound or unsupported identifier:/i.test(o.result.diagnostic):
+        /^error:/i.test(o.result.diagnostic))&&
       new RegExp("(?:^|[^A-Za-z0-9_])"+NEGATIVE_SYMBOLS[o.caseId]+"(?:$|[^A-Za-z0-9_])").test(
         o.result.diagnostic),
       "negative source must have primary semantic diagnostic and the rejected identifier");
