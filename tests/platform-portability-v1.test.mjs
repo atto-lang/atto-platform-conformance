@@ -30,7 +30,10 @@ function receipt(platform="desktop",toolchain="llvm",caseId="scalar-42"){
       runnerId:123458,conclusion:"success",
       steps:negative?["verify-exact-head","compile-ores-source","assert-negative-diagnostic"]:
         ["verify-exact-head","compile-ores-source","run-ores-guest",
-          ...(toolchain==="cranelift"?["run-cranelift-native-jit","inspect-cranelift-ir"]:[])]
+          ...(toolchain==="cranelift"?["run-cranelift-native-jit","inspect-cranelift-ir"]:[]),
+          ...(toolchain==="wasm"?["compile-wasm-module","execute-wasm-guest"]:[]),
+          ...(toolchain==="net"?["publish-native-aot","execute-native-aot-guest"]:[]),
+          ...(toolchain==="java"?["execute-graal-guest"]:[])]
     },
     result:negative?{kind:"reject",diagnosticCode:"UNKNOWN_IDENTIFIER",
       diagnostic:(toolchain==="cranelift"?
@@ -40,7 +43,19 @@ function receipt(platform="desktop",toolchain="llvm",caseId="scalar-42"){
       {kind:"pass",value:v.expectedValue},
     engine:toolchain==="cranelift"?
       {name:"native-cranelift-jit",compilerCommit:"d".repeat(40),
-        compilerBinarySha256:HEX64,clifSha256:"e".repeat(64)}:null
+        compilerBinarySha256:HEX64,clifSha256:"e".repeat(64)}:
+      toolchain==="wasm"?
+      {name:"llvm-to-wasm",upstreamCompilerRepo:"ores-truffle-oreslang/oreslang-source.llvm",
+        upstreamCompilerCommit:"f".repeat(40),
+        upstreamCompilerBinarySha256:"1".repeat(64),
+        wasmModuleSha256:"e".repeat(64),wasmHostBinarySha256:"2".repeat(64),
+        zeroImports:true}:
+      toolchain==="net"?
+      {name:"dotnet-nativeaot",nativeAotHostSha256:"e".repeat(64),
+        compilerBinarySha256:HEX64,managedJitFallback:false}:
+      toolchain==="java"?
+      {name:"graal-truffle",guestEngineSha256:"3".repeat(64),runtimeVersion:"24.2.0"}:
+      null
   };
 }
 const fails=(r,rx)=>assert.throws(()=>validateObservation(r,contract),rx);
@@ -173,12 +188,44 @@ test("Cranelift native JIT CLIF identity binds the reported artifact",()=>{
   r.engine.clifSha256=HEX64;
   fails(r,/generated CLIF identity/);
 });
-test("ordinary JVM LLVM Wasm and NativeAOT lanes cannot borrow Cranelift evidence",()=>{
+test("Java LLVM Wasm and NativeAOT lanes cannot borrow Cranelift evidence",()=>{
   for(const backend of ["java","llvm","wasm","net"]){
     const r=receipt("desktop",backend);
     r.engine={name:"native-cranelift-jit",compilerCommit:HEX40,
       compilerBinarySha256:HEX64,clifSha256:HEX64};
-    fails(r,/unexpected engine evidence/);
+    fails(r,backend==="llvm"?/unexpected engine evidence/:/plain exact fields/);
+  }
+});
+test("Wasm guest cannot claim LLVM lowering without authenticated upstream compiler",()=>{
+  const x=receipt("embedded","wasm");
+  assert.equal(validateObservation(x,contract).certifiedParity,false);
+  x.engine.upstreamCompilerRepo="ores-truffle-oreslang/oreslang-source.wasm";
+  fails(x,/pinned LLVM frontend/);
+  x.engine.upstreamCompilerRepo="ores-truffle-oreslang/oreslang-source.llvm";
+  x.engine.zeroImports=false;
+  fails(x,/zero-import module/);
+});
+test(".NET guest cannot use managed JIT as NativeAOT evidence",()=>{
+  const x=receipt("mobile","net");
+  x.engine.managedJitFallback=true;
+  fails(x,/no managed JIT fallback/);
+});
+test("Graal guest requires real runtime digest and guest execution step",()=>{
+  const x=receipt("desktop","java");
+  x.engine.guestEngineSha256="missing";
+  fails(x,/Truffle engine/);
+  x.engine.guestEngineSha256="3".repeat(64);
+  x.run.steps=x.run.steps.filter(s=>s!=="execute-graal-guest");
+  fails(x,/missing Graal guest execution/);
+});
+test("Wasm and NativeAOT guest steps cannot be replaced by generic run markers",()=>{
+  for(const [backend,removed,pattern] of [
+    ["wasm","execute-wasm-guest",/compiled Wasm module execution/],
+    ["net","execute-native-aot-guest",/NativeAOT build and guest execution/]
+  ]){
+    const x=receipt("iot",backend);
+    x.run.steps=x.run.steps.filter(s=>s!==removed);
+    fails(x,pattern);
   }
 });
 test("an unconfigured compiler cannot pass simply because the same host fixture exists",()=>{
