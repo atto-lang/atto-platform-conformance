@@ -40,3 +40,24 @@ bytes. Fixture integrity does not authenticate an Oreslang compiler or produce
 guest receipts. Keep this stacked PR in draft and do not promote parity or
 actor-wire claims until separately approved, stepful exact-head guest evidence
 exists for each backend.
+
+## Second ADT source-corpus expansion — November 1, 2026
+
+The canonical inventory now contains **36** native `.ores` fixtures:
+**8 authored positive** and **28 authored semantic negatives**, with
+all five backend confirmations still empty. The 12 new cases cover
+finite enum/bool payload partitions, legal noncontiguous tags, ordered
+guards followed by unguarded fallthrough, negative tags, empty declarations,
+direct unboxed recursion, case-pattern arity, unknown constructors,
+nonexhaustive `Option<int>` / `Result<bool,bool>` branches, ill-typed
+guards and a collectively dead Option<bool> arm.
+
+The registry and companion mutation suite also test forged execution
+claims, case/filename drift, symlinks, hardlinks and invalid UTF-8. These
+host-level checks do **not** demonstrate source compiler parsing, nominal
+typechecking, LLVM object emission, Graal guest behavior, Wasm execution or
+.NET Native AOT. The current LLVM source reservation in draft #1257,
+Wasm scalar fallback block in draft #217 and .NET scalar refusal in
+draft #281 are explicitly **unsupported**, not semantic-negative
+conformance proof. Independent authenticated exact-head compilations and
+stepful guest receipts are mandatory before any backend is certified.
