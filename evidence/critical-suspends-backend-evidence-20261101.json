@@ -19,7 +19,7 @@
       "backend": "llvm",
       "repository": "ores-truffle-oreslang/oreslang-source.llvm",
       "pr": 1289,
-      "commit": "ce79a732bba2d3d8a30130dafba9f1a0780637",
+      "commit": "ce79a732bba2d3d3d8a30130dafba9f1a0780637",
       "tree": "f7f8f77c5f1cb3c0704d606990c5bcdbb2eff91c",
       "run_id": 41357841943,
       "job_id": 125001642737,
