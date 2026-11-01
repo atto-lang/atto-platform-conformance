@@ -4,13 +4,15 @@ Cross-platform, **evidence-first** language and runtime conformance suite. A har
 
 ## Resumable media streaming v1 — host reference
 
-The [media replay v1 contract](docs/MEDIA_REPLAY_V1.md) defines a bounded 2 MiB compressed-chunk sender replay window, receiver applied-checkpoint ledger, cumulative ACK semantics, actor generation fencing and codec-safe random-access resets. Run the 32 host-reference tests (including [six shared operation vectors](contracts/media-replay-v1-vectors.json)) with:
+The [media replay v1 contract](docs/MEDIA_REPLAY_V1.md) defines a bounded 2 MiB compressed-chunk sender replay window, receiver applied-checkpoint ledger, cumulative ACK semantics, actor generation fencing and codec-safe random-access resets. Run the 41 locally executed host-reference tests (including [six shared operation vectors](contracts/media-replay-v1-vectors.json)) with:
 
 ```sh
 node --test tests/media-replay*.test.mjs
 ```
 
-This is **not** native Oreslang codec execution or five-backend parity evidence. Java/Graal, LLVM, Wasm, Forge and .NET guest admission remains separate.
+An additional eight source-free receipt validator tests are authored to reject fabricated compiler success, missing executed CI steps, wrong source SHA, missing receipts, incorrect output hashes and nonzero guest exits. The [five-backend source alignment inventory](contracts/media-replay-native-source-alignment-v1.json) pins the identical Oreslang implementation blob and the [73 expected guest receipts](contracts/media-replay-native-receipts-v1.json). Source identity is verified; real guest execution is not.
+
+This is **not** native Oreslang codec execution or five-backend runtime parity evidence. **Cranelift** is the independent `oreslang-source.cranelift` backend, not `oreslang-source.forge`; Java/Graal, LLVM, Wasm, Cranelift and .NET guest admission remains separate.
 
 
 
