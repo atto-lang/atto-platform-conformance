@@ -222,6 +222,26 @@ const checked = {
     const box = new BoxReference(2);
     box.drop();
     box.borrow();
+  },
+  "arc-saved-mutable-view-after-drop-reject": () => {
+    const a = new ArcReference(new GuardedCellReference(1));
+    const saved = a.read();
+    a.drop();
+    saved.with_write(guard => guard.write(2));
+  },
+  "arc-drop-during-active-guard-reject": () => {
+    const a = new ArcReference(new GuardedCellReference(1));
+    a.read().with_write(() => a.drop());
+  },
+  "arc-cloned-handle-retains-guarded-referent": () => {
+    const a = new ArcReference(new GuardedCellReference(1));
+    const b = a.clone();
+    const stale = a.read();
+    a.drop();
+    assert.throws(() => stale.with_read(value => value), /HEAP_CONTAINERS_DENIED/);
+    b.read().with_write(guard => guard.write(42));
+    assert.equal(b.read().with_read(value => value), 42);
+    b.drop();
   }
 };
 
