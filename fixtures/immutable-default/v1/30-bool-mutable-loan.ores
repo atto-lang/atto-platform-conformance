@@ -1,0 +1,1 @@
+fnc main(): int { bool x = true; rt mut borrow x; return 0; }
