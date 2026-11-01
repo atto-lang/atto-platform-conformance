@@ -146,3 +146,14 @@ test("zero and negative broker quotas are rejected",()=>{
   assert.throws(()=>new PubSubReference({maxTopics:0}),RangeError);
   assert.throws(()=>new PubSubReference({maxSubscriptions:-1}),RangeError);
 });
+
+test("frozen exotic collections and getters are not Sendable immutable payloads",()=>{
+  const bus=new PubSubReference();
+  const topic=bus.topic("secure.events","Event").topic;
+  const map=Object.freeze(new Map([["a",1]]));
+  assert.equal(bus.tryPublish(topic,map).error,"NotShared");
+  assert.throws(()=>share(new Set([1])),/non-Sendable/);
+  const accessor=Object.freeze({get value(){return 7}});
+  assert.equal(bus.tryPublish(topic,accessor).error,"NotShared");
+  assert.throws(()=>share({get value(){return 7}}),/non-Sendable/);
+});
