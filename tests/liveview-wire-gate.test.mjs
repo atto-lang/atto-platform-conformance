@@ -61,6 +61,9 @@ test('reject malformed vectors even without a trusted blob',()=>{
 
 function fakeSix() {
   const source=fake();
+  const profile={java:'jvm',llvm:'native',wasm:'browser',
+    forge:'forge-native',net:'net-native-aot'};
+  for(const b of source.backends) b.profile=profile[b.backend];
   source.schema='ores-liveview-wire-six-backend-receipt-v1';
   const cranelift=clone(source.backends[0]);
   cranelift.backend='cranelift';
@@ -89,6 +92,9 @@ for(const [label,mutate] of [
   ['forged-cranelift-repo',x=>x.backends[5].repository='ores-truffle-oreslang/oreslang-source.forge'],
   ['forged-cranelift-profile',x=>x.backends[5].profile='forge-native'],
   ['forge-claiming-cranelift',x=>x.backends[3].profile='cranelift-native'],
+  ['java-claiming-cranelift',x=>x.backends[0].profile='cranelift-native'],
+  ['wasm-claiming-jvm',x=>x.backends[2].profile='jvm'],
+  ['net-claiming-forge',x=>x.backends[4].profile='forge-native'],
   ['cranelift-no-runner',x=>x.backends[5].runner.step_count=0],
   ['cranelift-false-guest',x=>x.backends[5].guest.executed=false],
   ['cranelift-unknown-fixture',x=>x.backends[5].results[0].case_id='invented'],
