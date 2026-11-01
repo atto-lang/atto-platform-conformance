@@ -1,0 +1,6 @@
+// ORT2-NEG-NO_NESTED_OPTION_FLATTEN: must produce a semantic type error, never launch guest.
+fnc invalid(): void {
+  val Option<Option<int>> a = Some(None);
+  val Option<int> b = a;
+  return;
+}
