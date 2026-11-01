@@ -157,6 +157,8 @@ export class PubSubReference {
     for (const m of this.memberships.values())
       if (m.active && m.actor===actor) { m.active=false; m.group.members.delete(actor.key); }
     this.cancelTarget(actor.key,()=>true);
+    for (const sub of this.subscriptions.values())
+      if (sub.kind==="actor" && sub.target===actor) this.unsubscribe(sub);
     return success();
   }
 
