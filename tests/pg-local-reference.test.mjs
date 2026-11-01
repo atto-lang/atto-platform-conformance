@@ -109,3 +109,26 @@ test('group close reclaims revoked tokens through repeated create/close',()=>{
   assert.throws(()=>pg.join(permit,owner('worker')),/PG_REF_DENIED/);
  }
 });
+
+test('throwing and asynchronous mailbox adapters cannot manufacture acceptance',()=>{
+ const pg=registry(),cap=pg.createGroup('room',2);
+ pg.registerActor(owner('a'));pg.join(cap,owner('a'));
+ const thrown=pg.broadcast('room',2,()=>{throw new Error('down');});
+ assert.deepEqual(thrown,{status:'OK',accepted:0,rejected:1,stale:0,snapshotCount:1});
+ const async=pg.broadcast('room',2,()=>Promise.resolve(true));
+ assert.equal(async.accepted,0);
+ assert.equal(async.rejected,1);
+});
+
+test('multiple group snapshots cannot authenticate actors across isolate registries',()=>{
+ const first=registry(),other=registry();
+ const cap=first.createGroup('room',1);
+ const otherCap=other.createGroup('room',1);
+ first.registerActor(owner('a'));first.join(cap,owner('a'));
+ other.registerActor(owner('a'));other.join(otherCap,owner('a'));
+ // The source-free model lacks a cross-registry cryptographic snapshot ID:
+ // the host must treat foreign snapshots as untrusted and bind them to a
+ // registry capability before delivery. Never claim this is an isolate gate.
+ assert.equal(first.status().sourceGuestImplemented,false);
+ assert.equal(other.status().sourceGuestImplemented,false);
+});
