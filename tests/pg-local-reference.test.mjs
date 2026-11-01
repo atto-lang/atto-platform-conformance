@@ -120,15 +120,12 @@ test('throwing and asynchronous mailbox adapters cannot manufacture acceptance',
  assert.equal(async.rejected,1);
 });
 
-test('multiple group snapshots cannot authenticate actors across isolate registries',()=>{
+test('identical numeric group IDs in different registries do not share snapshot authority',()=>{
  const first=registry(),other=registry();
- const cap=first.createGroup('room',1);
- const otherCap=other.createGroup('room',1);
+ const cap=first.createGroup('room',1),otherCap=other.createGroup('room',1);
  first.registerActor(owner('a'));first.join(cap,owner('a'));
  other.registerActor(owner('a'));other.join(otherCap,owner('a'));
- // The source-free model lacks a cross-registry cryptographic snapshot ID:
- // the host must treat foreign snapshots as untrusted and bind them to a
- // registry capability before delivery. Never claim this is an isolate gate.
- assert.equal(first.status().sourceGuestImplemented,false);
- assert.equal(other.status().sourceGuestImplemented,false);
+ const snap=first.snapshot('room',1);
+ assert.equal(first.isLiveMember(snap,'a:1'),true);
+ assert.equal(other.isLiveMember(snap,'a:1'),false);
 });
