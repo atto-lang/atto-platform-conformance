@@ -106,9 +106,12 @@ export class VectorReference {
   }
   push(value) {
     this.#exclusive();
+    // Validate before touching capacity or relocation epoch. In particular,
+    // an invalid element must not grow storage then throw halfway through.
+    const accepted = scalar(value);
     ensure(this.length < this.#limit, "vector length quota");
     this.reserve(this.length + 1);
-    this.#values.push(scalar(value));
+    this.#values.push(accepted);
   }
   pop() {
     this.#exclusive();
