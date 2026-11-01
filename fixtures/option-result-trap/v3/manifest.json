@@ -1,0 +1,96 @@
+{
+  "schema": "oreslang.option-result-trap.scalar/v3",
+  "status": "authored_not_executed",
+  "normative_contract": "ores-truffle-oreslang/oreslang-source.java:docs/TRAP.md",
+  "backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "cranelift",
+    "net"
+  ],
+  "purpose": "No guest stdio required: inspect compiler-produced guest main() i64/int return after actual execution, not shell exit alone.",
+  "cases": [
+    {
+      "id": "ORT3-OPTION_PRESENT",
+      "path": "fixtures/option-result-trap/v3/option_present.ores",
+      "kind": "guest_i64",
+      "expected_return": "0",
+      "return_type": "int",
+      "stdout_policy": "ignored_if_runtime_runner_outputs_value",
+      "requires_guest_execution": true
+    },
+    {
+      "id": "ORT3-OPTION_ABSENT",
+      "path": "fixtures/option-result-trap/v3/option_absent.ores",
+      "kind": "guest_i64",
+      "expected_return": "0",
+      "return_type": "int",
+      "stdout_policy": "ignored_if_runtime_runner_outputs_value",
+      "requires_guest_execution": true
+    },
+    {
+      "id": "ORT3-OPTION_NESTED_ABSENT",
+      "path": "fixtures/option-result-trap/v3/option_nested_absent.ores",
+      "kind": "guest_i64",
+      "expected_return": "0",
+      "return_type": "int",
+      "stdout_policy": "ignored_if_runtime_runner_outputs_value",
+      "requires_guest_execution": true
+    },
+    {
+      "id": "ORT3-RESULT_SUCCESS",
+      "path": "fixtures/option-result-trap/v3/result_success.ores",
+      "kind": "guest_i64",
+      "expected_return": "0",
+      "return_type": "int",
+      "stdout_policy": "ignored_if_runtime_runner_outputs_value",
+      "requires_guest_execution": true
+    },
+    {
+      "id": "ORT3-RESULT_ERROR",
+      "path": "fixtures/option-result-trap/v3/result_error.ores",
+      "kind": "guest_i64",
+      "expected_return": "0",
+      "return_type": "int",
+      "stdout_policy": "ignored_if_runtime_runner_outputs_value",
+      "requires_guest_execution": true
+    },
+    {
+      "id": "ORT3-TRAP_SUCCESS",
+      "path": "fixtures/option-result-trap/v3/trap_success.ores",
+      "kind": "guest_i64",
+      "expected_return": "0",
+      "return_type": "int",
+      "stdout_policy": "ignored_if_runtime_runner_outputs_value",
+      "requires_guest_execution": true
+    },
+    {
+      "id": "ORT3-TRAP_NESTED",
+      "path": "fixtures/option-result-trap/v3/trap_nested.ores",
+      "kind": "guest_i64",
+      "expected_return": "0",
+      "return_type": "int",
+      "stdout_policy": "ignored_if_runtime_runner_outputs_value",
+      "requires_guest_execution": true
+    },
+    {
+      "id": "ORT3-TRAP_ERR_DATA",
+      "path": "fixtures/option-result-trap/v3/trap_err_data.ores",
+      "kind": "guest_i64",
+      "expected_return": "0",
+      "return_type": "int",
+      "stdout_policy": "ignored_if_runtime_runner_outputs_value",
+      "requires_guest_execution": true
+    },
+    {
+      "id": "ORT3-TRAP_CAST_FAILURE",
+      "path": "fixtures/option-result-trap/v3/trap_cast_failure.ores",
+      "kind": "guest_i64",
+      "expected_return": "0",
+      "return_type": "int",
+      "stdout_policy": "ignored_if_runtime_runner_outputs_value",
+      "requires_guest_execution": true
+    }
+  ]
+}
