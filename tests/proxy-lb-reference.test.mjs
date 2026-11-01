@@ -28,7 +28,9 @@ test('corrupt vector expectations and duplicate cases fail closed',()=>{
 
 test('deterministic seed sweep retains only eligible backends',()=>{
   let seed=0x41a571;
-  const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed;};
+  const random=()=>{seed^=seed<<13; seed^=seed>>>17;
+    seed^=seed<<5; return seed>>>0;};
+  let validChoices=0;
   for(let j=0;j<4096;j++){
     const n=1+(random()%16);
     const weights=Array.from({length:n},()=>1+(random()%16));
@@ -36,14 +38,18 @@ test('deterministic seed sweep retains only eligible backends',()=>{
     const capacity=1+(random()%1024);
     const active=Array.from({length:n},()=>random()%(capacity+1));
     const algorithm=['weighted_round_robin','least_conn'][random()%2];
-    const ordinal=random()%256;
+    const budget=algorithm==='least_conn' ? n :
+      weights.reduce((sum,weight,i)=>sum+(healthy[i]&&active[i]<capacity?weight:0),0);
+    const ordinal=random()%5===0 ? budget : random()%Math.max(1,budget);
     const index=choose({algorithm,weights,healthy,active,capacity,epoch:7,ordinal});
     if(index!==null){
+      validChoices++;
       assert.ok(index>=0&&index<n);
       assert.ok(healthy[index]);
       assert.ok(active[index]<capacity);
     }
   }
+  assert.ok(validChoices>1000,'seed sweep must actually exercise successful selections');
 });
 
 test('no malformed input yields a backend index',()=>{
