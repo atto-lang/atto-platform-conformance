@@ -1,0 +1,139 @@
+{
+  "schema": "oreslang.platform-toolchain-parity/1",
+  "version": 1,
+  "certifiedParity": false,
+  "status": "UNEXECUTED",
+  "toolchains": {
+    "java": {
+      "compilerRepo": "ores-truffle-oreslang/oreslang-source.java",
+      "route": "native-compiler",
+      "engine": null
+    },
+    "llvm": {
+      "compilerRepo": "ores-truffle-oreslang/oreslang-source.llvm",
+      "route": "native-compiler",
+      "engine": null
+    },
+    "wasm": {
+      "compilerRepo": "ores-truffle-oreslang/oreslang-source.wasm",
+      "route": "wasm-compiler",
+      "engine": null
+    },
+    "cranelift": {
+      "compilerRepo": "ores-truffle-oreslang/oreslang-source.wasm",
+      "route": "wasm-via-wasmtime-cranelift",
+      "engine": "wasmtime-cranelift"
+    },
+    "net": {
+      "compilerRepo": "ores-truffle-oreslang/oreslang-source.net",
+      "route": "nativeaot-compiler",
+      "engine": null
+    }
+  },
+  "platforms": {
+    "mobile": "ores-truffle-oreslang/oreslang-platform.mobile",
+    "desktop": "ores-truffle-oreslang/oreslang-platform.desktop",
+    "embedded": "ores-truffle-oreslang/oreslang-platform.embedded",
+    "iot": "ores-truffle-oreslang/oreslang-platform.iot",
+    "fpga": "ores-truffle-oreslang/oreslang-platform.fpga",
+    "asic": "ores-truffle-oreslang/oreslang-platform.asic"
+  },
+  "caseOrder": [
+    "scalar-42",
+    "precedence-40",
+    "negative-42",
+    "left-associative-10",
+    "nested-42",
+    "scalar-zero",
+    "add-42",
+    "multiply-42",
+    "unknown-name",
+    "unknown-name-two"
+  ],
+  "cases": [
+    {
+      "id": "scalar-42",
+      "file": "scalar-42.ores",
+      "sha256": "08a415734e9992f47702dc9b1ccf2c5dceb74df05245eaa5fbb00512d18afc8a",
+      "expect": "execute",
+      "expectedValue": 42
+    },
+    {
+      "id": "precedence-40",
+      "file": "precedence-40.ores",
+      "sha256": "f21f0aadfd6cd2866168b4d0a81c434b7b49ec0464ce767f8a3e10b38be710ab",
+      "expect": "execute",
+      "expectedValue": 40
+    },
+    {
+      "id": "negative-42",
+      "file": "negative-42.ores",
+      "sha256": "6c2c6d3a5140fec0f39e3c72b591d69951a89b9d161a7a07ec8741fd7c98d8ae",
+      "expect": "execute",
+      "expectedValue": -42
+    },
+    {
+      "id": "left-associative-10",
+      "file": "left-associative-10.ores",
+      "sha256": "0053fc118ee400570f21d2edb76f22da923c185808a4df284de49ab7b1cc48b5",
+      "expect": "execute",
+      "expectedValue": 10
+    },
+    {
+      "id": "nested-42",
+      "file": "nested-42.ores",
+      "sha256": "5279b8da34d8a3628f59ffe886fd88dd115d1472dbc43e5c129ded24c2c1f822",
+      "expect": "execute",
+      "expectedValue": 42
+    },
+    {
+      "id": "scalar-zero",
+      "file": "scalar-zero.ores",
+      "sha256": "c26a72daa25e2d8da6ce0f5b8e1373c444db82537b74da9f687f43307277d6cf",
+      "expect": "execute",
+      "expectedValue": 0
+    },
+    {
+      "id": "add-42",
+      "file": "add-42.ores",
+      "sha256": "e6f0b11d253a3d44957113f908a6e8f9a1bfdae37aabd651bb5a8d74d5a61eaa",
+      "expect": "execute",
+      "expectedValue": 42
+    },
+    {
+      "id": "multiply-42",
+      "file": "multiply-42.ores",
+      "sha256": "7220a49e0b8f5d4457974f2d688a5c302633591148dd75805c0a41a33efc0eb8",
+      "expect": "execute",
+      "expectedValue": 42
+    },
+    {
+      "id": "unknown-name",
+      "file": "unknown-name.ores",
+      "sha256": "2dbc644007943f3406b8b806ba048d9778ba2fd5afd705e750ce8aeae590501e",
+      "expect": "reject",
+      "diagnostic": "UNKNOWN_IDENTIFIER"
+    },
+    {
+      "id": "unknown-name-two",
+      "file": "unknown-name-two.ores",
+      "sha256": "649b00018ddba0fa207036d7ebadc0645904609c91394f5e50b5181fb7d3a343",
+      "expect": "reject",
+      "diagnostic": "UNKNOWN_IDENTIFIER"
+    }
+  ],
+  "requirements": {
+    "compileSource": true,
+    "runPositiveGuest": true,
+    "negativePrimaryDiagnostic": true,
+    "exactPlatformHead": true,
+    "exactCompilerCommit": true,
+    "compilerBinarySha256": true,
+    "artifactSha256": true,
+    "executedJobSteps": true,
+    "craneliftEngineBinarySha256": true,
+    "craneliftWasmModuleSha256": true,
+    "independentReviewRequired": true,
+    "privateSourceExportHold": true
+  }
+}
