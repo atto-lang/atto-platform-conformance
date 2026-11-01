@@ -2,7 +2,9 @@
 
 The canonical source/oracles live in the **private** `oreslang-proof-of-concepts`
 repository under `src/libraries`. This source-free conformance manifest pins
-five examples (`vec`, `hashmap`, `dop`, `iter`, `channels`) to their **Git blob
+five examples (`vec`, `hashmap`, `dop`, `iter`, `channels`) at immutable
+PoC source commit `b7e92b77e86ffe2be29fa9163e61787285c2b245` (all 10
+source/oracle blobs independently re-read and SHA matched) to their **Git blob
 SHA-1s** and expected stdout. No compiler or library source bytes are copied
 into this repo. A blob SHA is an identity hint, not proof of source provenance
 or permission for cross-repository private-source transfer.
