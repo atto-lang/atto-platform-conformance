@@ -1,0 +1,18 @@
+import class TestCase, TestSuite, TestOptions, TestOutcome, RunSummary from "std/testing";
+import fnc expect_true, expect_false, expect_equal_int, expect_equal_string, run_suite, require_success, fail from "std/testing";
+fnc option_fallback_respects_present_value(): TestOutcome {
+  val Option<int> present = Some(7);
+  val Option<int> missing = None;
+  return expect_true(Option.unwrap_or(present, -1) == 7
+    && Option.unwrap_or(missing, -1) == -1,
+    "Option fallback must distinguish Some from None");
+}
+pub routine main(): void {
+  val TestSuite suite = new TestSuite("option-result-portability", arr[
+    new TestCase("option_fallback_respects_present_value", option_fallback_respects_present_value, false, "")
+  ]);
+  val TestOptions options = new TestOptions("", false, true);
+  val RunSummary summary = run_suite(rt borrow suite, rt borrow options);
+  require_success(rt borrow summary);
+  return;
+}
