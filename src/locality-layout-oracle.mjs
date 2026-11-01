@@ -59,16 +59,27 @@ export function chooseCarrier(topology, request) {
 }
 
 /** CONTROL-first pick; bounded hot-turn preference cannot starve cold DATA. */
-export function chooseReady(control, data, familiarActor, hotTurns) {
+/**
+ * The caller must advance globalStart after dispatch and update the physical
+ * ready queues. Without cursor progression a repeated first-cold pick would
+ * starve other unfamiliar actors. This is only a dispatch decision oracle.
+ */
+export function chooseReady(control, data, familiarActor, hotTurns, globalStart = 0) {
   if (!Array.isArray(control) || !Array.isArray(data) ||
-      !int(hotTurns, 0, Number.MAX_SAFE_INTEGER)) throw Error('invalid ready queues');
+      !int(hotTurns, 0, Number.MAX_SAFE_INTEGER) ||
+      !int(globalStart, 0, Number.MAX_SAFE_INTEGER))
+    throw Error('invalid ready queues');
   if (control.length) return {kind:'control', actor:control[0]};
   if (!data.length) return null;
   const known = data.find(x => x === familiarActor);
-  const cold = data.find(x => x !== familiarActor);
+  let cold = null;
+  for (let n=0; n<data.length; n++) {
+    const candidate = data[(globalStart % data.length + n) % data.length];
+    if (candidate !== familiarActor) { cold = candidate; break; }
+  }
   if (known != null && (hotTurns < 8 || cold == null))
     return {kind:'data', actor:known};
-  return {kind:'data', actor:cold ?? data[0]};
+  return {kind:'data', actor:cold ?? data[globalStart % data.length]};
 }
 
 /** Checked mixed-width byte geometry; no arrays/arena memory are allocated. */
