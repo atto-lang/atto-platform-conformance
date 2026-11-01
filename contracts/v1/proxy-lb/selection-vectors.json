@@ -1,0 +1,501 @@
+{
+  "schema": "oreslang.proxy_lb_selection.v1",
+  "contract_id": "proxy-lb-selection-v1",
+  "status": "PURE_MODEL_VECTORS_NOT_GUEST_EXECUTION",
+  "algorithms": [
+    "round_robin",
+    "weighted_round_robin",
+    "least_conn"
+  ],
+  "constraints": {
+    "max_backends": 16,
+    "weight_min": 1,
+    "weight_max": 16,
+    "capacity_min": 1,
+    "capacity_max": 1024,
+    "epoch_required_positive": true
+  },
+  "tie_policy": "For least_conn, scan cyclic backend order starting at ordinal; retain first eligible backend with minimal active/weight.",
+  "round_robin_policy": "Ordinal covers the current eligible weight sum; a per-pool single-writer cursor provides cyclic ordinals.",
+  "scenarios": [
+    {
+      "id": "WRR_3_TO_1_FIRST",
+      "algorithm": "weighted_round_robin",
+      "weights": [
+        3,
+        1
+      ],
+      "healthy": [
+        true,
+        true
+      ],
+      "active": [
+        0,
+        0
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 0,
+      "expected_index": 0
+    },
+    {
+      "id": "WRR_3_TO_1_LAST_PRIMARY",
+      "algorithm": "weighted_round_robin",
+      "weights": [
+        3,
+        1
+      ],
+      "healthy": [
+        true,
+        true
+      ],
+      "active": [
+        0,
+        0
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 2,
+      "expected_index": 0
+    },
+    {
+      "id": "WRR_3_TO_1_SECONDARY",
+      "algorithm": "weighted_round_robin",
+      "weights": [
+        3,
+        1
+      ],
+      "healthy": [
+        true,
+        true
+      ],
+      "active": [
+        0,
+        0
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 3,
+      "expected_index": 1
+    },
+    {
+      "id": "WRR_UNHEALTHY_PRIMARY",
+      "algorithm": "weighted_round_robin",
+      "weights": [
+        3,
+        1
+      ],
+      "healthy": [
+        false,
+        true
+      ],
+      "active": [
+        0,
+        0
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 0,
+      "expected_index": 1
+    },
+    {
+      "id": "WRR_UNHEALTHY_SKIP_ORDINAL",
+      "algorithm": "weighted_round_robin",
+      "weights": [
+        3,
+        1
+      ],
+      "healthy": [
+        false,
+        true
+      ],
+      "active": [
+        0,
+        0
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 1,
+      "expected_index": null
+    },
+    {
+      "id": "WRR_FULL_PRIMARY",
+      "algorithm": "weighted_round_robin",
+      "weights": [
+        3,
+        1
+      ],
+      "healthy": [
+        true,
+        true
+      ],
+      "active": [
+        16,
+        0
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 0,
+      "expected_index": 1
+    },
+    {
+      "id": "WRR_ALL_FULL",
+      "algorithm": "weighted_round_robin",
+      "weights": [
+        3,
+        1
+      ],
+      "healthy": [
+        true,
+        true
+      ],
+      "active": [
+        16,
+        16
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 0,
+      "expected_index": null
+    },
+    {
+      "id": "WRR_ALL_DOWN",
+      "algorithm": "weighted_round_robin",
+      "weights": [
+        3,
+        1
+      ],
+      "healthy": [
+        false,
+        false
+      ],
+      "active": [
+        0,
+        0
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 0,
+      "expected_index": null
+    },
+    {
+      "id": "RR_FIRST",
+      "algorithm": "round_robin",
+      "weights": [
+        1,
+        1
+      ],
+      "healthy": [
+        true,
+        true
+      ],
+      "active": [
+        0,
+        0
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 0,
+      "expected_index": 0
+    },
+    {
+      "id": "RR_SECOND",
+      "algorithm": "round_robin",
+      "weights": [
+        1,
+        1
+      ],
+      "healthy": [
+        true,
+        true
+      ],
+      "active": [
+        0,
+        0
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 1,
+      "expected_index": 1
+    },
+    {
+      "id": "RR_REJECT_WEIGHTS",
+      "algorithm": "round_robin",
+      "weights": [
+        2,
+        1
+      ],
+      "healthy": [
+        true,
+        true
+      ],
+      "active": [
+        0,
+        0
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 0,
+      "expected_index": null
+    },
+    {
+      "id": "LEAST_NORMALIZED_PRIMARY",
+      "algorithm": "least_conn",
+      "weights": [
+        3,
+        1
+      ],
+      "healthy": [
+        true,
+        true
+      ],
+      "active": [
+        3,
+        2
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 0,
+      "expected_index": 0
+    },
+    {
+      "id": "LEAST_NORMALIZED_SECONDARY",
+      "algorithm": "least_conn",
+      "weights": [
+        3,
+        1
+      ],
+      "healthy": [
+        true,
+        true
+      ],
+      "active": [
+        9,
+        1
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 0,
+      "expected_index": 1
+    },
+    {
+      "id": "LEAST_TIE_PRIMARY",
+      "algorithm": "least_conn",
+      "weights": [
+        3,
+        1
+      ],
+      "healthy": [
+        true,
+        true
+      ],
+      "active": [
+        3,
+        1
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 0,
+      "expected_index": 0
+    },
+    {
+      "id": "LEAST_TIE_ROTATE",
+      "algorithm": "least_conn",
+      "weights": [
+        3,
+        1
+      ],
+      "healthy": [
+        true,
+        true
+      ],
+      "active": [
+        3,
+        1
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 1,
+      "expected_index": 1
+    },
+    {
+      "id": "LEAST_ALL_UNHEALTHY",
+      "algorithm": "least_conn",
+      "weights": [
+        3,
+        1
+      ],
+      "healthy": [
+        false,
+        false
+      ],
+      "active": [
+        0,
+        0
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 0,
+      "expected_index": null
+    },
+    {
+      "id": "LEAST_NO_CAPACITY",
+      "algorithm": "least_conn",
+      "weights": [
+        3,
+        1
+      ],
+      "healthy": [
+        true,
+        true
+      ],
+      "active": [
+        16,
+        16
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 0,
+      "expected_index": null
+    },
+    {
+      "id": "REJECT_NEGATIVE_COUNT",
+      "algorithm": "least_conn",
+      "weights": [
+        3,
+        1
+      ],
+      "healthy": [
+        true,
+        true
+      ],
+      "active": [
+        -1,
+        0
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 0,
+      "expected_index": null
+    },
+    {
+      "id": "REJECT_UNSUPPORTED_WEIGHT",
+      "algorithm": "weighted_round_robin",
+      "weights": [
+        17,
+        1
+      ],
+      "healthy": [
+        true,
+        true
+      ],
+      "active": [
+        0,
+        0
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 0,
+      "expected_index": null
+    },
+    {
+      "id": "REJECT_ZERO_WEIGHT",
+      "algorithm": "weighted_round_robin",
+      "weights": [
+        0,
+        1
+      ],
+      "healthy": [
+        true,
+        true
+      ],
+      "active": [
+        0,
+        0
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 0,
+      "expected_index": null
+    },
+    {
+      "id": "REJECT_MISMATCH",
+      "algorithm": "weighted_round_robin",
+      "weights": [
+        3,
+        1
+      ],
+      "healthy": [
+        true
+      ],
+      "active": [
+        0,
+        0
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 0,
+      "expected_index": null
+    },
+    {
+      "id": "REJECT_ORDINAL",
+      "algorithm": "least_conn",
+      "weights": [
+        3,
+        1
+      ],
+      "healthy": [
+        true,
+        true
+      ],
+      "active": [
+        0,
+        0
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 2,
+      "expected_index": null
+    },
+    {
+      "id": "REJECT_NEGATIVE_ORDINAL",
+      "algorithm": "least_conn",
+      "weights": [
+        3,
+        1
+      ],
+      "healthy": [
+        true,
+        true
+      ],
+      "active": [
+        0,
+        0
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": -1,
+      "expected_index": null
+    },
+    {
+      "id": "REJECT_EXCESS_LOAD",
+      "algorithm": "least_conn",
+      "weights": [
+        3,
+        1
+      ],
+      "healthy": [
+        true,
+        true
+      ],
+      "active": [
+        17,
+        0
+      ],
+      "capacity": 16,
+      "epoch": 7,
+      "ordinal": 0,
+      "expected_index": null
+    }
+  ]
+}
