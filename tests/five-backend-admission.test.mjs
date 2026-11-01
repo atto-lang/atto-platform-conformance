@@ -46,7 +46,7 @@ test("a crash quoting the expected symbol is not a negative compiler proof", asy
       backend: "java", argv: command, sourceSha,
       spawn: fakeCompiler(1, failure),
     });
-    assert.equal(result.results.at(-1).status, "MISMATCH", failure);
+    assert.equal(result.results.find(x=>x.id==="unresolved-identifier").status, "MISMATCH", failure);
   }
 });
 
