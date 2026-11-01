@@ -1,0 +1,106 @@
+{
+  "contract": "oreslang.media-replay/1",
+  "status": "host-reference-only; runtime and compiler parity not established",
+  "default_capacity_bytes": 2097152,
+  "default_max_chunks": 4096,
+  "chunk_semantics": "each chunk is one complete compressed access unit, or a bounded independently replayable encoded segment explicitly admitted by codec provider",
+  "counters": "u64 on native backends; JS reference admits nonnegative safe integers only; sequence initial 0, last-applied sentinel -1",
+  "acknowledgment": "cumulative highest contiguous fully applied sequence + matching end byte offset; never treat network receipt alone as applied",
+  "checkpoint_fields": [
+    "streamId",
+    "generation",
+    "lastAppliedSequence",
+    "lastAppliedEndOffset",
+    "codecConfigId"
+  ],
+  "chunk_fields": [
+    "sequence",
+    "offset",
+    "endOffset",
+    "codecConfigId",
+    "randomAccess",
+    "ptsUs",
+    "bytes",
+    "sha256"
+  ],
+  "resume_modes": {
+    "continue": "no missing chunks and byte offset matches",
+    "replay": "all missing retained chunks contiguous and decoder configuration matches",
+    "reset": "missing chunks or config mismatch; restart from retained verified random-access point after decoder reset",
+    "fail": "KEYFRAME_REQUIRED when no safe retained decoder anchor exists"
+  },
+  "fail_closed_codes": [
+    "INVALID_CHUNK",
+    "NONCONTIGUOUS_CHUNK",
+    "COUNTER_OVERFLOW",
+    "CHUNK_TOO_LARGE",
+    "BACKPRESSURE",
+    "CODEC_CONFIG_REQUIRES_RANDOM_ACCESS",
+    "STALE_STREAM_GENERATION",
+    "INVALID_ACK",
+    "ACK_OUT_OF_RANGE",
+    "ACK_OFFSET_MISMATCH",
+    "INVALID_CHECKPOINT",
+    "CHECKPOINT_AHEAD",
+    "CHECKPOINT_OFFSET_MISMATCH",
+    "KEYFRAME_REQUIRED",
+    "INVALID_GENERATION"
+  ],
+  "required_scenarios": [
+    "default_2mib",
+    "copy_owned_bytes",
+    "ack_and_disconnect_replay",
+    "duplicate_and_future_ack",
+    "buffer_full_backpressure",
+    "oversized_or_empty_packet",
+    "bounded_chunk_count",
+    "monotonic_sequence_offset",
+    "evicted_checkpoint_no_false_replay",
+    "random_access_decoder_reset",
+    "codec_config_mismatch_reset",
+    "codec_config_change_fence",
+    "actor_incarnation_fence",
+    "invalid_checkpoint_rejection",
+    "continue_exact_offset",
+    "long_churn_quota",
+    "retained_checkpoint_offset_rejection",
+    "full_2mib_ack_reclamation"
+  ],
+  "target_backends": {
+    "java": {
+      "host_reference_verified": false,
+      "guest_compiler_verified": false,
+      "video_codec_verified": false
+    },
+    "llvm": {
+      "host_reference_verified": false,
+      "guest_compiler_verified": false,
+      "video_codec_verified": false
+    },
+    "wasm": {
+      "host_reference_verified": false,
+      "guest_compiler_verified": false,
+      "video_codec_verified": false
+    },
+    "forge": {
+      "host_reference_verified": false,
+      "guest_compiler_verified": false,
+      "video_codec_verified": false
+    },
+    "net": {
+      "host_reference_verified": false,
+      "guest_compiler_verified": false,
+      "video_codec_verified": false
+    },
+    "js": {
+      "host_reference_verified": false,
+      "guest_compiler_verified": false,
+      "video_codec_verified": false
+    }
+  },
+  "security_notes": [
+    "Transport authentication, anti-replay, resource capability and integrity verification are mandatory at host ingress and not implemented by the host state-machine reference.",
+    "The randomAccess flag must be derived from trusted codec parsing and a complete independently decodable restart point, never accepted from untrusted transport metadata.",
+    "A per-stream payload limit does not bound object headers, crypto engine temporary allocations or whole-process RSS. Admission must include global and per-tenant memory limits."
+  ]
+}
