@@ -109,6 +109,15 @@ def verify(path):
     manifest = json.loads(path.read_text(encoding='utf8'))
     if manifest.get('schema') != 'ores-liveview-wire-v1':
         raise AssertionError('schema mismatch')
+    # Never permit the declared budgets to diverge from the actual decoder.
+    if manifest.get('limits') != {'max_message_bytes': MAX_BYTES, 'max_fragments': 64}:
+        raise AssertionError('wire budget mismatch')
+    origin = manifest.get('source', {})
+    if (origin.get('repo') != 'ores-truffle-oreslang/oreslang-phoenix-server.ores'
+            or origin.get('pr') != 11
+            or not re.fullmatch(r'[0-9a-f]{40}', origin.get('head', ''))
+            or not re.fullmatch(r'[0-9a-f]{40}', origin.get('blob', ''))):
+        raise AssertionError('unrecognized pinned fixture provenance')
     cases = manifest.get('cases')
     if not isinstance(cases, list) or len(cases) < 14:
         raise AssertionError('missing wire cases')

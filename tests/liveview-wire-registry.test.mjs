@@ -35,3 +35,14 @@ test('unknown extension of expected status cannot be disguised as success',()=>{
   const m=structuredClone(source);m.cases[0].error_code=1002;
   assert.notEqual(run(m).status,0);
 });
+
+test('misstated wire budgets cannot masquerade as native parity',()=>{
+  const m=structuredClone(source);m.limits.max_message_bytes=2**24;
+  assert.notEqual(run(m).status,0);
+  const n=structuredClone(source);n.limits.max_fragments=2048;
+  assert.notEqual(run(n).status,0);
+});
+test('missing source pin is a failed conformance fixture',()=>{
+  const m=structuredClone(source);m.source.blob='0'.repeat(39);
+  assert.notEqual(run(m).status,0);
+});
