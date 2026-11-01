@@ -34,6 +34,10 @@ const SOURCES=Object.freeze({
   "unknown-name-two":"649b00018ddba0fa207036d7ebadc0645904609c91394f5e50b5181fb7d3a343"
 });
 const EXPECTED_VALUES=Object.freeze([42,40,-42,10,42,0,42,42,null,null]);
+const NEGATIVE_SYMBOLS=Object.freeze({
+  "unknown-name":"missing_platform_binding",
+  "unknown-name-two":"absent_platform_function"
+});
 const good=(ok,message)=>{if(!ok)throw Error("platform parity: "+message)};
 const sha40=x=>typeof x==="string"&&SHA40.test(x);
 const sha64=x=>typeof x==="string"&&SHA64.test(x);
@@ -163,8 +167,10 @@ export function validateObservation(o,c){
   else
     good(o.result.kind==="reject"&&o.result.diagnosticCode==="UNKNOWN_IDENTIFIER"&&
       typeof o.result.diagnostic==="string"&&
-      o.result.diagnostic.length<=2048&&/^error:/i.test(o.result.diagnostic),
-      "negative source must have primary semantic diagnostic");
+      o.result.diagnostic.length<=2048&&/^error:/i.test(o.result.diagnostic)&&
+      new RegExp("(?:^|[^A-Za-z0-9_])"+NEGATIVE_SYMBOLS[o.caseId]+"(?:$|[^A-Za-z0-9_])").test(
+        o.result.diagnostic),
+      "negative source must have primary semantic diagnostic and the rejected identifier");
   if(o.toolchain==="cranelift"){
     exactKeys(o.engine,["name","sourceCommit","binarySha256","wasmModuleSha256"]);
     good(o.engine.name==="wasmtime-cranelift"&&sha40(o.engine.sourceCommit)&&
