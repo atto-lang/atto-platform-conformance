@@ -27,10 +27,10 @@ until a separately audited compiler-backed receipt system is available.
 | java | real `oreslang-source.java` executable and source SHA | GraalVM or supported Java guest runtime, not a mock |
 | llvm | real `oreslang-source.llvm` compiler | native executable or justified target ABI |
 | wasm | real `oreslang-source.wasm` compiler | Wasm compilation **alone** is not a Cranelift run |
-| cranelift | **same actual Wasm source-lowering frontend** | independent Wasmtime/Cranelift engine binary SHA, engine revision, emitted module SHA, executed engine job |
+| cranelift | actual **oreslang-source.cranelift** Rust frontend | native Cranelift JIT, compiler commit/binary SHA, generated CLIF IR digest and executed JIT guest |
 | net | real `oreslang-source.net` compiler | actual .NET NativeAOT executable, not C# host reference |
 
-A Cranelift lane is *not* a fabricated fifth Oreslang source frontend.
+The Cranelift lane is a real separate, experimental Oreslang Rust/Cranelift compiler; the repository is **oreslang-source.cranelift**. It currently implements only a narrow checked-i64 scalar JIT profile. It is **not** a Wasmtime/Cranelift alias, not the LLVM backend, and not proof of full Oreslang actor or platform support.
 A platform and toolchain being present in the matrix does **not** imply
 that backend supports the target CPU, WASI imports, guest/host ABI, heap,
 actor semantics, or native hardware. Unsupported capabilities must be
