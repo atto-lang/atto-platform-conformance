@@ -14,7 +14,14 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
+      - name: Verify exact source HEAD and raw checkout bytes
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          python3 scripts/verify_raw_checkout.py
       - name: Toolchain identity
         run: |
           rustc --version
