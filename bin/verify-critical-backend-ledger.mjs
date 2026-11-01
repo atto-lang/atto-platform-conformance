@@ -9,7 +9,7 @@ export function verifyLedger(ledger, contract) {
   for (const e of ledger.entries) {
     if (!expected.has(e.backend) || seen.has(e.backend)) throw Error("duplicate or unknown backend");
     seen.add(e.backend);
-    if (!/^ores-truffle-oreslang\\/oreslang-source\\./.test(e.repository))
+    if (!e.repository.startsWith("ores-truffle-oreslang/oreslang-source."))
       throw Error("repository identity");
     if (!/^[0-9a-f]{40}$/.test(e.commit) || !/^[0-9a-f]{40}$/.test(e.tree))
       throw Error("exact-head identity");
