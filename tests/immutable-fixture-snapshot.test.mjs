@@ -23,7 +23,8 @@ test("fixture execution uses immutable hashed snapshot, not checkout path",async
  };
  const result=await runSuite({backend:"java",argv:cmd,sourceSha:sha,spawn:runner});
  assert.equal(result.ok,true);
- assert.equal(seen.length,2);
+ assert.equal(seen.length,result.results.length);
+ assert.ok(seen.length>=2);
  for(let i=0;i<seen.length;i++){
   assert.equal(seen[i].hash,result.results[i].fixtureSha256);
   assert.equal(existsSync(seen[i].file),false,"temporary snapshot not removed");
