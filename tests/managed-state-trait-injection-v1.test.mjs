@@ -45,3 +45,26 @@ test("malformed and unknown fields reject rather than silently admit",()=>{
   delete x.access.new_privilege;x.bindings=[];
   assert.equal(decide(x),"REQUIRED_STATE_MISSING");
 });
+
+
+test("unknown binding metadata must not smuggle capability claims",()=>{
+  const x=clone(data.cases[3].input);
+  x.bindings[0].raw_pointer=true;
+  assert.equal(decide(x),"UNKNOWN_FIELD");
+  delete x.bindings[0].raw_pointer;
+  x.bindings[0].scope="application_domain";
+  assert.equal(decide(x),"OK");
+  const inline=clone(data.cases[0].input);
+  inline.bindings[0].issuer="compiler";
+  assert.equal(decide(inline),"UNKNOWN_FIELD");
+});
+test("mutability and guard flags cannot be stringified or undefined to bypass checking",()=>{
+  const x=clone(data.cases[3].input);
+  x.access.mutates="false";
+  assert.equal(decide(x),"INVALID_ACCESS");
+  x.access.mutates=true;
+  x.access.suspends="false";
+  assert.equal(decide(x),"INVALID_ACCESS");
+  x.access.suspends=false;
+  assert.equal(decide(x),"OK");
+});
