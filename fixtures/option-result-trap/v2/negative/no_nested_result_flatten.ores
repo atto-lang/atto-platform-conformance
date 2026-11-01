@@ -1,0 +1,6 @@
+// ORT2-NEG-NO_NESTED_RESULT_FLATTEN: must produce a semantic type error, never launch guest.
+fnc invalid(): void {
+  val Result<Result<int,String>,String> a = Ok(Err("e"));
+  val Result<int,String> b = a;
+  return;
+}
