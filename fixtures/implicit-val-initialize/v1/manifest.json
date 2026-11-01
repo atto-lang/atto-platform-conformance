@@ -16,8 +16,9 @@
       "pendingBackends": [
         "java",
         "llvm",
-        "net",
         "wasm",
+        "cranelift",
+        "net",
         "forge"
       ],
       "expectedI64": "42"
@@ -31,8 +32,9 @@
       "pendingBackends": [
         "java",
         "llvm",
-        "net",
         "wasm",
+        "cranelift",
+        "net",
         "forge"
       ],
       "expectedI64": "42"
@@ -46,8 +48,9 @@
       "pendingBackends": [
         "java",
         "llvm",
-        "net",
         "wasm",
+        "cranelift",
+        "net",
         "forge"
       ],
       "expectedI64": "42"
@@ -61,8 +64,9 @@
       "pendingBackends": [
         "java",
         "llvm",
-        "net",
         "wasm",
+        "cranelift",
+        "net",
         "forge"
       ],
       "expectedI64": "42"
@@ -76,8 +80,9 @@
       "pendingBackends": [
         "java",
         "llvm",
-        "net",
         "wasm",
+        "cranelift",
+        "net",
         "forge"
       ],
       "expectedI64": "42"
@@ -91,8 +96,9 @@
       "pendingBackends": [
         "java",
         "llvm",
-        "net",
         "wasm",
+        "cranelift",
+        "net",
         "forge"
       ],
       "expectedI64": "42"
@@ -106,8 +112,9 @@
       "pendingBackends": [
         "java",
         "llvm",
-        "net",
         "wasm",
+        "cranelift",
+        "net",
         "forge"
       ]
     },
@@ -120,8 +127,9 @@
       "pendingBackends": [
         "java",
         "llvm",
-        "net",
         "wasm",
+        "cranelift",
+        "net",
         "forge"
       ]
     },
@@ -134,8 +142,9 @@
       "pendingBackends": [
         "java",
         "llvm",
-        "net",
         "wasm",
+        "cranelift",
+        "net",
         "forge"
       ]
     },
@@ -148,8 +157,9 @@
       "pendingBackends": [
         "java",
         "llvm",
-        "net",
         "wasm",
+        "cranelift",
+        "net",
         "forge"
       ]
     },
@@ -162,8 +172,9 @@
       "pendingBackends": [
         "java",
         "llvm",
-        "net",
         "wasm",
+        "cranelift",
+        "net",
         "forge"
       ]
     },
@@ -176,8 +187,9 @@
       "pendingBackends": [
         "java",
         "llvm",
-        "net",
         "wasm",
+        "cranelift",
+        "net",
         "forge"
       ],
       "expectedI64": "5"
@@ -191,8 +203,9 @@
       "pendingBackends": [
         "java",
         "llvm",
-        "net",
         "wasm",
+        "cranelift",
+        "net",
         "forge"
       ],
       "expectedI64": "42"
@@ -206,8 +219,9 @@
       "pendingBackends": [
         "java",
         "llvm",
-        "net",
         "wasm",
+        "cranelift",
+        "net",
         "forge"
       ],
       "diagnosticClass": "uninitialized-mutable-field"
@@ -221,8 +235,9 @@
       "pendingBackends": [
         "java",
         "llvm",
-        "net",
         "wasm",
+        "cranelift",
+        "net",
         "forge"
       ],
       "diagnosticClass": "partial-object-escape"
@@ -240,6 +255,7 @@
     "Execute accepted fixtures and match expectedI64 where specified",
     "Reject negative fixtures during compile or type checking before runtime",
     "Verify formatter round trips and semantic AST equivalence for all four initializer body spellings",
-    "Keep private source transfer behind independently reviewed V3 authorization"
+    "Keep private source transfer behind independently reviewed V3 authorization",
+    "Cranelift is a separate experimental scalar-only backend, not Forge; require explicit fail-closed admission evidence and do not claim class-construction support."
   ]
 }
