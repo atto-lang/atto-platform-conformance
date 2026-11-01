@@ -24,13 +24,19 @@ until a separately audited compiler-backed receipt system is available.
 
 | Lane | Source lowering requirement | Runtime/engine distinction |
 |---|---|---|
-| java | real `oreslang-source.java` executable and source SHA | GraalVM or supported Java guest runtime, not a mock |
-| llvm | real `oreslang-source.llvm` compiler | native executable or justified target ABI |
-| wasm | real `oreslang-source.wasm` compiler | Wasm compilation **alone** is not a Cranelift run |
+| java | actual `oreslang-source.java` frontend, guest runtime binary digest | GraalVM/Truffle guest evaluation, not a Java host-only oracle |
+| llvm | real `oreslang-source.llvm` compiler | compiled and executed native guest artifact |
+| wasm | `oreslang-source.wasm` compiler bridge **plus** exact upstream `oreslang-source.llvm` compiler SHA and executable digest | LLVM IR → Clang/LLD `.wasm` → zero-import Wasm runtime with pinned host binary; compiled-only is not executed |
 | cranelift | actual **oreslang-source.cranelift** Rust frontend | native Cranelift JIT, compiler commit/binary SHA, generated CLIF IR digest and executed JIT guest |
-| net | real `oreslang-source.net` compiler | actual .NET NativeAOT executable, not C# host reference |
+| net | real `oreslang-source.net` compiler | published NativeAOT host executable with pinned bytes, no managed JIT substitution |
 
 The Cranelift lane is a real separate, experimental Oreslang Rust/Cranelift compiler; the repository is **oreslang-source.cranelift**. It currently implements only a narrow checked-i64 scalar JIT profile. It is **not** a Wasmtime/Cranelift alias, not the LLVM backend, and not proof of full Oreslang actor or platform support.
+A backend-specific evidence object is required for the Wasm LLVM-to-Wasm bridge,
+Java/Graal Truffle engine, .NET NativeAOT host and native Cranelift JIT.
+The Wasm bootstrap is not a standalone Oreslang frontend, while the dedicated
+Cranelift Rust compiler **is**. All provenance objects are only receipt-shape
+validation until checked against external native job/artifact evidence.
+
 A platform and toolchain being present in the matrix does **not** imply
 that backend supports the target CPU, WASI imports, guest/host ABI, heap,
 actor semantics, or native hardware. Unsupported capabilities must be
