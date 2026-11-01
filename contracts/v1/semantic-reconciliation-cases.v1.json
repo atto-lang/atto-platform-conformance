@@ -573,6 +573,130 @@
         "wasm": "PENDING_GUEST_PROOF",
         "forge": "PENDING_GUEST_PROOF"
       }
+    },
+    {
+      "id": "heap-array-scoped-read-loans",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  let mut Array<int> values = new Array<int>();\n  values.add(7);\n  if true; do\n    const first = rt borrow values[0];\n    const second = rt borrow values[0];\n  fi\n  values.add(8);\n  return 42;\n}\n",
+      "rationale": "Multiple immutable loans into the same resizable heap array can coexist in a lexical scope; resize after the loans end is legal.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2197",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "heap-array-resize-live-loan",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_BORROW_CONFLICT",
+      "source": "pub fnc main(): int {\n  let mut Array<int> values = new Array<int>();\n  values.add(7);\n  const element = rt borrow values[0];\n  values.add(8);\n  return 42;\n}\n",
+      "rationale": "A live projected loan protects the root allocation; an Array<T> grow may relocate storage, so mutation is forbidden.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2197",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "heap-array-scoped-exclusive",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  let mut Array<int> values = new Array<int>();\n  if true; do\n    const writer = rt mut borrow values;\n  fi\n  const reader = rt borrow values;\n  return 42;\n}\n",
+      "rationale": "Exclusive access can end before a subsequent immutable loan; allocation location does not change lexical exclusivity.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2197",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "heap-array-exclusive-vs-read",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_BORROW_CONFLICT",
+      "source": "pub fnc main(): int {\n  let mut Array<int> values = new Array<int>();\n  const writer = rt mut borrow values;\n  const reader = rt borrow values;\n  return 42;\n}\n",
+      "rationale": "An exclusive loan and an overlapping read loan of the same heap owner must conflict.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2197",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "heap-array-owned-element-copy",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  let mut Array<int> values = new Array<int>();\n  values.add(42);\n  return values[0];\n}\n",
+      "rationale": "Copyable scalar element retrieval is not a borrowed reference and cannot dangle after container retirement.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2197",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "heap-array-borrowed-element-return",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_BORROW_ESCAPE",
+      "source": "fnc bad(): borrow int {\n  let mut Array<int> values = new Array<int>();\n  values.add(42);\n  return rt borrow values[0];\n}\npub fnc main(): int { return 42; }\n",
+      "rationale": "Returning a borrowed element of a locally owned heap array would outlive the owner.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2197",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "heap-array-whole-owner-take",
+      "concern": "ownership",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  let Array<int> values = new Array<int>();\n  val Array<int> moved = rt take values;\n  return 42;\n}\n",
+      "rationale": "Moving a uniquely owned array via its tracked root binding transfers the entire allocation.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2197",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
+    },
+    {
+      "id": "heap-array-indexed-take",
+      "concern": "ownership",
+      "expect": "reject",
+      "diagnosticCode": "E_PARTIAL_MOVE",
+      "source": "pub fnc main(): int {\n  let mut Array<int> values = new Array<int>();\n  values.add(7);\n  val int moved = rt take values[0];\n  return moved;\n}\n",
+      "rationale": "Explicit take of an indexed heap slot is rejected until slot-level invalidation is tracked, including for Copy element types.",
+      "authority": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2197",
+      "backends": {
+        "java": "PENDING_GUEST_PROOF",
+        "llvm": "PENDING_GUEST_PROOF",
+        "net": "PENDING_GUEST_PROOF",
+        "wasm": "PENDING_GUEST_PROOF",
+        "forge": "PENDING_GUEST_PROOF"
+      }
     }
   ],
   "runtimeCases": [
