@@ -250,6 +250,9 @@ test("bounded Future.map suite is paired and cannot claim full-inventory parity"
  assert.equal(selectSemanticCases(doc,"all").length,doc.compilerCases.length);
  assert.equal(doc.compilerCases.length,44);
  assert.throws(()=>selectSemanticCases(doc,"unknown"),/unsupported semantic suite/);
+ for(const inherited of ["constructor","toString","__proto__"]) {
+   assert.throws(()=>selectSemanticCases(doc,inherited),/unsupported semantic suite/);
+ }
  const broken=structuredClone(doc);
  broken.compilerCases=broken.compilerCases.filter(c=>c.id!=="future-map-rejects-implicit-adoption");
  assert.throws(()=>selectSemanticCases(broken,"future-map"),/incomplete semantic suite/);
