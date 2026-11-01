@@ -15,7 +15,7 @@ EXPECTED = "${{ github.event.pull_request.head.sha || github.sha }}"
 
 
 def checked_out_workflows():
-    paths = sorted(WORKFLOW_DIR.glob("*.yml"))
+    paths = sorted((*WORKFLOW_DIR.glob("*.yml"), *WORKFLOW_DIR.glob("*.yaml")))
     assert paths, "no workflows found"
     result = [(path, path.read_text(encoding="utf-8")) for path in paths]
     assert any(CHECKOUT in source for _, source in result), "missing source workflows"
@@ -29,14 +29,19 @@ class WorkflowSourceAdmissionTests(unittest.TestCase):
             if "actions/checkout@" not in source:
                 continue  # e.g. source-free runner admission canary
             with self.subTest(workflow=path.name):
-                self.assertIn(CHECKOUT, source, "checkout action must stay SHA-pinned")
-                self.assertIn("persist-credentials: false", source)
+                # A second source checkout could bypass a single, valid
+                # preflight. Require one checked-out tree and one guard per job
+                # rather than satisfying these checks by unrelated text.
+                self.assertEqual(source.count("actions/checkout@"), 1)
+                self.assertEqual(source.count(CHECKOUT), 1, "checkout action must stay SHA-pinned")
+                self.assertEqual(source.count(GUARD), 1, "exactly one source guard required")
+                self.assertEqual(source.count("persist-credentials: false"), 1)
                 self.assertIn(EXPECTED, source, "must bind to the PR's exact head")
                 self.assertIn("EXPECTED_SHA:", source, "verifier needs exact expected commit")
                 self.assertIn(GUARD, source)
                 self.assertLess(source.index("actions/checkout@"), source.index(GUARD))
                 verified += 1
-        self.assertGreaterEqual(verified, 12)
+        self.assertGreaterEqual(verified, 13)
 
     def test_no_git_attribute_filter_executing_worktree_probes(self):
         for path, source in checked_out_workflows():
