@@ -1,0 +1,16 @@
+// ORT3-TRAP_NESTED: candidate native guest, not executed evidence.
+// A real compiler-generated guest must return signed int 0 (not a host mock).
+trap fnc checked(): Option<int> { return None; }
+pub fnc main(): int {
+  val Option<Option<int>> result = checked();
+  if result.is_some(); then
+    val Option<int> inside = result.unwrap();
+    if inside.is_none(); then
+      return 0;
+    else
+      return 2;
+    fi
+  else
+    return 1;
+  fi
+}
