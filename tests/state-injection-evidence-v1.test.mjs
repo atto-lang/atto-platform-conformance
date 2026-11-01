@@ -103,6 +103,8 @@ test("wrong sources, fake zero-step execution, stale compiler heads and cross-ba
     r => { r.cases[0].runExitCode = null; },
     r => { r.cases[1].unsupported = true; },
     r => { r.cases.at(-1).diagnosticClass = "generic parse error"; },
+    r => { r.cases.at(-1).unsupported = true; },
+    r => { r.cases.at(-1).compileExitCode = -1; },
     r => { r.cases.at(-1).rejectionPhase = "parse"; },
     r => { r.cases.at(-1).emittedArtifacts = 1; },
     r => { r.cases.at(-1).guestExecuted = true; }
