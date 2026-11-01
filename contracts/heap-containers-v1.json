@@ -150,6 +150,18 @@
     {
       "id": "box-double-use-after-drop",
       "expected": "deny"
+    },
+    {
+      "id": "arc-saved-mutable-view-after-drop-reject",
+      "expected": "deny"
+    },
+    {
+      "id": "arc-drop-during-active-guard-reject",
+      "expected": "deny"
+    },
+    {
+      "id": "arc-cloned-handle-retains-guarded-referent",
+      "expected": "accept"
     }
   ],
   "guest_fixtures_executed": 0,
