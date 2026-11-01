@@ -20,6 +20,31 @@ platform/toolchain lanes** and **300 not-yet-executed case runs**.
 `node bin/platform-portability-v1.mjs --require-executed` **must exit nonzero**
 until a separately audited compiler-backed receipt system is available.
 
+## Real native Cranelift guest runner (separate from host tests)
+
+The conformance branch now includes
+`bin/run-cranelift-native-v1.mjs`. Given an independently installed real
+`orescranelift` executable and its **actual** SHA-256 digest, it invokes
+`ir <source.ores>` and `run <source.ores>` separately for all ten fixtures,
+checks CLIF generation, exact integer stdout, and the compiler-owned
+unresolved-identifier diagnostics. It rehashes the executable after every
+case and rejects symlinked binaries, timeouts, unexpected stdout, wrong
+diagnostics and mutated guest-source files.
+
+```sh
+node bin/run-cranelift-native-v1.mjs \
+  --compiler=/absolute/path/to/orescranelift \
+  --compiler-sha256=YOUR_VERIFIED_64_HEX_DIGEST \
+  --compiler-commit=YOUR_VERIFIED_40_HEX_SOURCE_COMMIT
+```
+
+Missing or unverified binaries must exit nonzero. A valid local run is
+`LOCAL_NATIVE_OBSERVATION_NOT_INDEPENDENTLY_ATTESTED`, **never**
+platform or cross-backend certification. Independently authenticated
+exact-head Actions jobs with executed steps and real native compiler provenance
+are required for promotion. The local runner does not exercise physical
+IoT/embedded/FPGA/ASIC targets.
+
 ## Toolchain map
 
 | Lane | Source lowering requirement | Runtime/engine distinction |
