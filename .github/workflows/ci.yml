@@ -12,18 +12,17 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
-      - name: Verify source identity before oracle checks
+      - name: Verify filter-free exact checkout and raw Git blob identity
         env:
-          EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           set -euo pipefail
-          [[ "$EXPECTED_SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
-          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
-          git diff --quiet HEAD --
-          test -z "$(git ls-files --others --exclude-standard)"
-          test -z "$(git ls-files --others --ignored --exclude-standard)"
-          echo "Conformance source commit: $EXPECTED_SOURCE_SHA"
-          echo "Conformance source tree: $(git rev-parse 'HEAD^{tree}')"
+          python3 scripts/verify_raw_checkout.py
+      - name: Exercise raw-checkout preflight against malicious worktrees
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s tests -p 'test_verify_raw_checkout.py' -q
+          python3 -m unittest discover -s tests -p 'test_workflow_source_admission.py' -q
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
