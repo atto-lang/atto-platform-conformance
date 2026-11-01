@@ -1,0 +1,5 @@
+trap fnc safe(): int { return 7; }
+fnc invalid(): int {
+  val int unwrapped = safe();
+  return unwrapped;
+}
