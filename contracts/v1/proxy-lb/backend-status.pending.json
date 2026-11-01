@@ -1,0 +1,60 @@
+{
+  "schema": "oreslang.proxy_lb_backend_status.v1",
+  "contract_id": "proxy-lb-selection-v1",
+  "source_contract": "ores-truffle-oreslang/oreslang-reverse-proxy-demo.ores",
+  "source_head_at_audit": "ffb56ab91e298424a4e59edea470c15c71bbfc3e",
+  "snapshot_date": "2026-11-01",
+  "parity_certified": false,
+  "release_ready": false,
+  "statement": "Pure candidate conformance vectors and host model tests are not Oreslang guest execution, backend lowering or native proxy transport proofs.",
+  "backends": [
+    {
+      "backend": "oreslang-source.java",
+      "main_commit": "241bd67c39443cc2ef18df7e4ed456454af378c7",
+      "transport_status": "Host pinned HTTP transport and loopback proxy prototype; guest proxy wiring not established",
+      "lb_lowering": "NOT_VERIFIED",
+      "guest_execution": "NOT_EXECUTED"
+    },
+    {
+      "backend": "oreslang-source.llvm",
+      "main_commit": "31b2fff390adac994d270d6fcbf2f65beb980d2c",
+      "transport_status": "Native proxy request slabs/epoll substrate; guest proxy lowering not established",
+      "lb_lowering": "NOT_VERIFIED",
+      "guest_execution": "NOT_EXECUTED"
+    },
+    {
+      "backend": "oreslang-source.wasm",
+      "main_commit": "be268bee832956fb8ca399f9c6fbc495e3066b73",
+      "transport_status": "Zero-import core Wasm sandbox; no network I/O capability",
+      "lb_lowering": "UNSUPPORTED",
+      "guest_execution": "NOT_EXECUTED"
+    },
+    {
+      "backend": "oreslang-source.cranelift",
+      "main_commit": "bd70ea18873767a14eb7283c96e6bc11578eaacc",
+      "transport_status": "Stage-0 scalar JIT; no actors/network, untrusted isolation unavailable",
+      "lb_lowering": "UNSUPPORTED",
+      "guest_execution": "NOT_EXECUTED"
+    },
+    {
+      "backend": "oreslang-source.net",
+      "main_commit": "276c157fd3e760184b9782d90d1b014276d9c1ef",
+      "transport_status": "Native AOT Kestrel actor HTTP ingress provider; no outbound guest proxy wiring",
+      "lb_lowering": "NOT_VERIFIED",
+      "guest_execution": "NOT_EXECUTED"
+    }
+  ],
+  "separate_backend_not_substitution": {
+    "backend": "oreslang-source.forge",
+    "main_commit": "a98a5e0abec222862278a52e7aaadbb2c674ec97",
+    "status": "Separate independent C++ experimental backend; NOT Cranelift."
+  },
+  "promotion_gates": [
+    "source-only model/fixtures exact-tree verification",
+    "Oreslang compiler accepts shared native fixture on each backend or reports UNSUPPORTED",
+    "actual guest process semantics with five exact SHA results",
+    "actor-owned atomic reservation, cancellation/ABA, stale health epoch",
+    "physical DNS pinning, bounded I/O, TLS and HTTP framing",
+    "nonzero runner IDs and executed steps on isolated approved runners"
+  ]
+}
