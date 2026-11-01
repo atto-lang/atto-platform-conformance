@@ -186,3 +186,62 @@ test('every compile-negative case declares a stable unique target diagnostic cla
   for (const c of cases.filter(c => c.phase === 'compile-reject'))
     assert.match(c.expected_diagnostic, /^E_[A-Z0-9_]+$/);
 });
+
+
+test('bounded critical admission fails before creating extra pending tickets', async () => {
+  const gate = new CriticalGateModel(1, 2);
+  const active = gate.enter('active');
+  const first = gate.enter('first');
+  const second = gate.enter('second');
+  assert.throws(() => gate.enter('third'), /waiter limit/);
+  assert.equal(gate.waiters.length, 2);
+  assert.equal(first.cancel(), true);
+  await assert.rejects(first.completion, /cancelled/);
+  assert.equal(gate.waiters.length, 1);
+  const third = gate.enter('third');
+  gate.release(active.lease);
+  const secondLease = await second.completion;
+  assert.equal(secondLease.task, 'second');
+  gate.release(secondLease);
+  const thirdLease = await third.completion;
+  assert.equal(thirdLease.task, 'third');
+  gate.release(thirdLease);
+});
+
+test('same continuation cannot recursively acquire or queue twice', async () => {
+  const gate = new CriticalGateModel();
+  const owner = gate.enter('owner');
+  assert.throws(() => gate.tryEnter('owner'), /recursive/);
+  assert.throws(() => gate.enter('owner'), /recursive/);
+  const pending = gate.enter('waiting');
+  assert.throws(() => gate.enter('waiting'), /duplicate continuation/);
+  assert.equal(pending.cancel(), true);
+  await assert.rejects(pending.completion, /cancelled/);
+  gate.release(owner.lease);
+});
+
+test('invalid waiter budgets and generations fail closed', () => {
+  for (const capacity of [0, -1, 8193, Infinity, NaN, false, null, '2'])
+    assert.throws(() => new CriticalGateModel(1, capacity), /waiter capacity/);
+  for (const generation of [0, -1, Infinity, NaN, false, null, '1'])
+    assert.throws(() => new CriticalGateModel(generation), /generation/);
+});
+
+test('multiple cancelled waiters cannot leak capacity into retired incarnation', async () => {
+  const gate = new CriticalGateModel(91, 3);
+  const active = gate.enter('active', 91);
+  const a = gate.enter('a', 91);
+  const b = gate.enter('b', 91);
+  const c = gate.enter('c', 91);
+  assert.equal(b.cancel(), true);
+  await assert.rejects(b.completion, /cancelled/);
+  assert.equal(gate.retire(), true);
+  await Promise.all([
+    assert.rejects(a.completion, /retired/),
+    assert.rejects(c.completion, /retired/)
+  ]);
+  assert.equal(gate.waiters.length, 0);
+  assert.equal(gate.owner, active.lease);
+  gate.release(active.lease);
+  assert.equal(gate.owner, null);
+});
