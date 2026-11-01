@@ -26,7 +26,8 @@ class TenantReference {
     return e;
   }
   create(id, {untrusted = false, boundary = "trusted-inprocess"} = {}) {
-    if (typeof id !== "string" || !/^[A-Za-z0-9_.-]{1,128}$/.test(id)) throw Error("INVALID_ID");
+    if (typeof id !== "string" || id === "." || id === ".." ||
+        !/^[A-Za-z0-9_.-]{1,128}$/.test(id)) throw Error("INVALID_ID");
     if (typeof untrusted !== "boolean") throw Error("INVALID_TRUST_FLAG");
     if (typeof boundary !== "string") throw Error("INVALID_BOUNDARY");
     // Never downgrade an explicit request for a stronger security domain.
@@ -152,6 +153,16 @@ test("duplicate and aggregate admissions are bounded",()=>{
   fails(()=>vm.create("tenant"),"DUPLICATE_TENANT");
   fails(()=>vm.create("other"),"TENANT_QUOTA");
   fails(()=>vm.create("../bad"),"INVALID_ID");
+});
+test("dot path-components never become tenant IDs on any backend",()=>{
+  const vm = new TenantReference({maxTenants:1});
+  for (const id of [".","..","../outside","tenant/path","a b","é",""]) {
+    fails(()=>vm.create(id),"INVALID_ID");
+  }
+  const valid = vm.create("team.alpha-1_root");
+  vm.start(valid);
+  assert.equal(vm.snapshot(valid).phase,"running");
+  vm.shutdown(valid); vm.stop(valid); vm.destroy(valid);
 });
 test("untrusted execution never downgrades to logical or Worker isolation",()=>{
   const vm=new TenantReference();
