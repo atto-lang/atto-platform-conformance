@@ -22,3 +22,21 @@ All entry points (parser, forged AST, imported definitions, type checker, optimi
 `contracts/enum-semantics-v1.json` pins the Git blob SHA of each `fixtures/enum/v1/*.ores` file. `npm test` checks that inventory and **does not execute an Oreslang compiler**. Every production backend is initially unconfirmed. To promote, use an independently approved compiler exact source SHA/tree and executable hash, real guest execution of positive sources with byte-exact stdout, semantic negative diagnostics for all reject cases (not generic parse errors, compiler crashes or an unsupported-feature response), and nonempty independently reviewable CI steps. Publish full logs and exact fixture blob identities, and add boundary/decoder tests before wire claims.
 
 Relevant drafts: [Java nominal ADT #623](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/623), [Java focused enum integration #1647](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1647), and [LLVM enum AOT policy #575](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/575). Do not overwrite current-main compiler files with stale draft blobs. No cross-org private source copying without reviewed authorization.
+
+## Audit expansion — November 1, 2026 (source-only; not backend execution)
+
+The v1 inventory now contains 24 unique Git-blob-pinned cases (five positive and
+nineteen negative), adding: maximum valid Int32 tag; implicit-tag overflow;
+finite Option/Result partition completeness; guarded-only branch incompleteness;
+nullary/payload constructor arity; cross-owner return and nested owner
+substitution; partial Option<bool> matching; and unreachable arms after wildcard.
+These are **normative test targets**, not proof that any compiler implements them.
+An unsupported-feature diagnostic is never credited as semantic rejection.
+
+Host-only mutation assertions now fail closed on duplicate semantic rules,
+duplicate fixture blobs, invented backend confirmations, extra attestation
+fields, manifest/filename drift, untracked fixtures, and tampered committed
+bytes. Fixture integrity does not authenticate an Oreslang compiler or produce
+guest receipts. Keep this stacked PR in draft and do not promote parity or
+actor-wire claims until separately approved, stepful exact-head guest evidence
+exists for each backend.

@@ -233,6 +233,166 @@
         "forge"
       ],
       "confirmedBackends": []
+    },
+    {
+      "id": "max-tag",
+      "file": "max-tag.ores",
+      "rule": "signed-i32-max-valid",
+      "expect": "accept",
+      "expectedStdout": "7\n",
+      "sourceGitBlobSha1": "b0d58c31c25afd871f739ed8538f0e17196aaa3e",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "option-result-partitions",
+      "file": "option-result-partitions.ores",
+      "rule": "finite-option-result-partitions",
+      "expect": "accept",
+      "expectedStdout": "1\n0\n3\n6\n",
+      "sourceGitBlobSha1": "71815d126707ab13ed54b9dde4ba2645c7c8472b",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "implicit-tag-overflow",
+      "file": "implicit-tag-overflow.ores",
+      "rule": "implicit-tag-must-not-wrap",
+      "expect": "reject",
+      "diagnosticCategory": "INVALID_ENUM_TAG",
+      "sourceGitBlobSha1": "b9dac9768bbfc93f422bdc6b0765e1a9a01b9116",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "guarded-not-exhaustive",
+      "file": "guarded-not-exhaustive.ores",
+      "rule": "guards-do-not-prove-totality",
+      "expect": "reject",
+      "diagnosticCategory": "NONEXHAUSTIVE_ENUM_MATCH",
+      "sourceGitBlobSha1": "80795a49084538e1c4e3ba79197edcff92ddf2aa",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "nullary-extra-arg",
+      "file": "nullary-extra-arg.ores",
+      "rule": "nullary-constructor-arity",
+      "expect": "reject",
+      "diagnosticCategory": "ENUM_CONSTRUCTOR_ARITY",
+      "sourceGitBlobSha1": "29cd80fb91b8f57ebb95f61896597dc7792341bc",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "payload-missing-arg",
+      "file": "payload-missing-arg.ores",
+      "rule": "payload-constructor-arity",
+      "expect": "reject",
+      "diagnosticCategory": "ENUM_CONSTRUCTOR_ARITY",
+      "sourceGitBlobSha1": "d52e4ed67615eda8089d6a4b5af43a3b0f1d8607",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "foreign-owner-return",
+      "file": "foreign-owner-return.ores",
+      "rule": "foreign-result-owner",
+      "expect": "reject",
+      "diagnosticCategory": "FOREIGN_ENUM_OWNER",
+      "sourceGitBlobSha1": "2722c4df52b145ff4b6f7b4acfdcb78e351bc4b8",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "option-partial-bool",
+      "file": "option-partial-bool.ores",
+      "rule": "finite-option-bool-not-total",
+      "expect": "reject",
+      "diagnosticCategory": "NONEXHAUSTIVE_ADT_MATCH",
+      "sourceGitBlobSha1": "d27c78a4244d6a02f86358107a93ddc3d26ca86b",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "nested-foreign-payload",
+      "file": "nested-foreign-payload.ores",
+      "rule": "nested-foreign-enum-payload",
+      "expect": "reject",
+      "diagnosticCategory": "FOREIGN_ENUM_OWNER",
+      "sourceGitBlobSha1": "53755c22c73bd7e8d3ad1ecade60e8c6acabbeea",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
+    },
+    {
+      "id": "unreachable-after-wildcard",
+      "file": "unreachable-after-wildcard.ores",
+      "rule": "wildcard-excludes-later-arms",
+      "expect": "reject",
+      "diagnosticCategory": "UNREACHABLE_CASE_ARM",
+      "sourceGitBlobSha1": "6b0df5efe9c64847b73162569e111dfbb9d860c1",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "confirmedBackends": []
     }
   ]
 }
