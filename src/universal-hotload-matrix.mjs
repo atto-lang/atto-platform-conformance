@@ -25,11 +25,14 @@ export function pendingUhl1Report(){
       backend,scenario,status:'not_executed',evidence:null
     })))};
 }
-function evidenceBasics(e,backend){
+function evidenceBasics(e,backend,status){
   expectedKeys(e,['source_sha','source_tree','compiler_sha256','image_sha256',
     'runner','compiler_executed','guest_executed','negative_proof_sha256','checks'],'evidence');
   if(!SHA40.test(e.source_sha)||!SHA40.test(e.source_tree)
-      ||!SHA256.test(e.compiler_sha256)||!SHA256.test(e.image_sha256))
+      ||!SHA256.test(e.compiler_sha256)
+      ||(status==='unsupported_confirmed'
+        ? e.image_sha256!==null
+        : e.image_sha256!==null&&!SHA256.test(e.image_sha256)))
     reject('invalid exact source/compiler/image digests');
   expectedKeys(e.runner,['head_sha','run_id','job_id','run_attempt','steps_executed','backend'],'runner');
   if(e.runner.head_sha!==e.source_sha||e.runner.backend!==backend
@@ -61,7 +64,7 @@ export function evaluateUhl1Report(report){
     if(!['pass_executed','unsupported_confirmed','fail_executed'].includes(row.status))
       reject('unknown status');
     const e=row.evidence;
-    evidenceBasics(e,row.backend);
+    evidenceBasics(e,row.backend,row.status);
     if(row.status==='pass_executed'){
       if(e.guest_executed!==true||e.negative_proof_sha256===null)
         reject('missing positive guest or negative mutation receipt');
