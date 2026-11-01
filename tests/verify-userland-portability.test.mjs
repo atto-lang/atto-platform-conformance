@@ -12,8 +12,8 @@ function fixture(){
  return {schemaVersion:1,contract:c.contract,profile,compilerRepository:c.profiles[profile],
   fixtureRepository:c.fixtureRepository,fixtureCommitSha:c.fixtureCommitSha,fixtureTreeSha:T,
   compilerCommitSha:H,compilerTreeSha:T,compilerBinarySha256:D,guestArtifactSha256:E,
-  run:{repository:c.profiles[profile],headSha:H,id:7,attempt:1,status:'completed',conclusion:'success',
-   jobs:[{id:11,runnerId:17,runId:7,attempt:1,headSha:H,status:'completed',conclusion:'success',steps:[
+  run:{repository:c.fixtureRepository,headSha:c.fixtureCommitSha,id:7,attempt:1,status:'completed',conclusion:'success',
+   jobs:[{id:11,runnerId:17,runId:7,attempt:1,headSha:c.fixtureCommitSha,status:'completed',conclusion:'success',steps:[
     'Checkout exact Oreslang sources','Compile Oreslang guest','Execute Oreslang guest'
    ].map(name=>({name,status:'completed',conclusion:'success'}))}]},
   cases:c.fixtures.map(f=>({id:f.id,sourceBlobSha:f.sourceBlobSha,oracleBlobSha:f.oracleBlobSha,
@@ -35,7 +35,7 @@ test('a complete report is a metadata candidate, not portable proof or source au
  assert.equal(x.privateSourceExportAuthorized,false);
 });
 test('each compiler can produce candidate only with its own exact repository identity',()=>{
- for(const [p,repo] of Object.entries(c.profiles)){const x=fixture(); x.profile=p;x.compilerRepository=repo;x.run.repository=repo;assert.equal(grade(x),'RECEIPT_METADATA_CONSISTENT');}
+ for(const [p,repo] of Object.entries(c.profiles)){const x=fixture(); x.profile=p;x.compilerRepository=repo;assert.equal(grade(x),'RECEIPT_METADATA_CONSISTENT');}
 });
 test('identity and artifact substitutions fail closed',()=>{
  for(const mutate of [x=>x.profile='unknown',x=>x.compilerRepository=c.profiles.llvm,
