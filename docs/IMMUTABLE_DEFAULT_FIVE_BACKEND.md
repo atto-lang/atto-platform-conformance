@@ -6,8 +6,8 @@
 `oreslang-source.java#2405`. LLVM scalar inference/cast compiler:
 `oreslang-source.llvm#1256`.
 
-The new `contracts/immutable-default-v1.json` pins **30 actual .ores
-source files** (11 intended successful guest programs, 18 intended
+The new `contracts/immutable-default-v1.json` pins **32 actual .ores
+source files** (12 intended successful guest programs, 19 intended
 compile-time rejections, and 1 eager checked-overflow trap). The Node
 contract test protects source-byte equality and checks 14 deliberate
 manifest mutations. It does **not** invoke a compiler. The independent
@@ -76,3 +76,23 @@ const rebinding, definitely initialized locals, and mutable borrow rejection.
 These are **target conformance source files** and may be unsupported by
 individual frontends; only real compiled guest results and semantic diagnostic
 reasons on exact source trees may upgrade their statuses.
+
+## November 1 exact-byte readback and implementation PRs
+
+Read back all 32 Oreslang fixture files through the connected GitHub API on
+this draft branch and compared their UTF-8 contents byte-for-byte to
+`contracts/immutable-default-v1.json`: **32/32 identical**, with no duplicate
+case IDs or paths. This is a source-integrity check only. It does NOT prove
+Node suite execution, parser/type checking, native guest execution or CI.
+
+Actual additional compiler branches under review:
+Java #2414 (scalar type-first parser + type/borrow JUnit fixtures),
+LLVM #1266 (stacked native lowering + Rust/Clang real guest CTest),
+.NET #298 (stacked readonly structured CFG/CIL),
+Cranelift #21 (native JIT scalar slice), Wasm #227 (LLVM-to-Wasm real
+execution gates). Keep these separate from the parent inference/cast drafts
+Java #2405, LLVM #1256 and .NET #282 until reviewed reconciliation.
+
+Where a test duplicates an existing semantic scenario, do not double-credit.
+Orphan/overlapping source fixtures from concurrent changes were removed; the
+manifest's final 32 source entries are authoritative on this draft head.
