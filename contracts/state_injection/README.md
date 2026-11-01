@@ -57,7 +57,7 @@ may advance the status.
 | --- | --- | --- |
 | Java/GraalVM | [#2427](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2427) rejects unlowered annotations; [#2317](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2317) contains owned-borrow candidate tests | Typed annotation AST, owned-region HIR, actual guest compile/run |
 | LLVM | [#1192](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1192) has draft runtime state-region substrate | Compiler emission plus native real-guest execution, loan provenance and sanitizer evidence |
-| WASM | Uses an externally pinned LLVM compiler; no independent actor frontend | Reject or execute identical source using real LLVM frontend + wasm binary, never a fake compiler |
+| WASM | [#252](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/252) delegates state-injection denials to an SHA-pinned real LLVM compiler | Check exact compiler diagnostic, zero IR and no published Wasm artifact; positive state guest still unsupported |
 | Cranelift | [#62](https://github.com/ores-truffle-oreslang/oreslang-source.cranelift/pull/62) rejects unlowered state injection with a stable diagnostic | Real typed nominal/borrow lowering and compiled JIT guest run |
 | .NET | [#315](https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/315) rejects unlowered injection before CIL | NativeAOT typed container lifetime and guest execution |
 | Forge (optional for this requested five) | Independent C++ backend, not Cranelift | Explicit coverage instead of treating Cranelift as Forge |
