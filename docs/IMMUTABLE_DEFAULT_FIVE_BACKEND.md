@@ -6,8 +6,8 @@
 `oreslang-source.java#2405`. LLVM scalar inference/cast compiler:
 `oreslang-source.llvm#1256`.
 
-The new `contracts/immutable-default-v1.json` pins **20 actual .ores
-source files** (6 intended successful guest programs, 13 intended
+The new `contracts/immutable-default-v1.json` pins **30 actual .ores
+source files** (11 intended successful guest programs, 18 intended
 compile-time rejections, and 1 eager checked-overflow trap). The Node
 contract test protects source-byte equality and checks 14 deliberate
 manifest mutations. It does **not** invoke a compiler. The independent
@@ -34,9 +34,9 @@ for its actual resolved binding permission.
 1. Pin source repository, commit/tree, compiler binary SHA-256, runner/job
    identity, executed steps, and compiler version. Require policy-authorized
    private build; do not export private source across organizations.
-2. Compile+execute IDB-01..06 as guest programs with typed return and
+2. Compile+execute IDB-01..06 and IDB-21..25 as guest programs with typed return and
    exact value receipts (not only OS process exit truncation).
-3. Reject IDB-07..16 and IDB-18..20 with **compiler-owned semantic reason**,
+3. Reject IDB-07..16, IDB-18..20 and IDB-26..30 with **compiler-owned semantic reason**,
    meaningful source location, no emitted executable and no crash/timeout.
 4. Compile IDB-17, then execute and prove a checked arithmetic failure
    even though `unused` is not read (eager initializer semantics).
@@ -66,3 +66,13 @@ the new type-first `int x = e` is a readonly **runtime** binding.
 This distinction is essential when inspecting inference drafts in Java,
 LLVM and .NET. IDB-17 uses `int unused = ...` deliberately: an
 unused runtime initializer must still eagerly execute and trap on overflow.
+
+### Expanded functional / compatibility cases
+
+IDB-21..25 probe readonly boolean inference, multi-hop constexpr values,
+existing `val` single-assignment, explicit `let` rebinding, and nested
+lexical shadowing. IDB-26..30 add boolean rebind/type confusion, explicit
+const rebinding, definitely initialized locals, and mutable borrow rejection.
+These are **target conformance source files** and may be unsupported by
+individual frontends; only real compiled guest results and semantic diagnostic
+reasons on exact source trees may upgrade their statuses.
