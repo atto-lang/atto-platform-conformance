@@ -99,3 +99,20 @@ See `fixtures/supervision/v1/stop-only-runtime-gate.json` and its closed-world m
 
 
 **Supplemental Java STOP ledger proof:** the verified production `SupervisorChildRegistry` now also has an executable generation/receipt test in `SupervisorStopOnlyControlProof` (four total scenarios). It checks that STOP cannot start before asserted finalization, a STOPPING child cannot restart, invocation cannot be claimed twice, an uncertain host effect remains quarantined, a forged turn/nonce fails reconciliation, and only an exact reserved generation can reach an acknowledged STOPPED state. It uses the same explicit runtime-ID-only shim; **it does not itself prove the external physical finalization barrier**. Exact-source JDK 25 result: https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41359927149 — `JAVA_SUPERVISOR_CONTROL=PASS cases=4`, `JAVA_SUPERVISOR_SOURCE_COMPILER=PASS accepted=3 rejected=10`.
+
+
+## Five-backend host STOP receipt ledger convergence
+
+New baseline: **all five runtimes have independently executed isolated host STOP ledger tests**. The ledger must preserve physical actor identity, incarnation, authority scope, exact single-use STOP decision, and one of applied/acknowledged or uncertain/quarantined outcomes. This is a host safety foundation, **not the full guest ABI**.
+
+| Backend | Focused receipt-ledger proof | Remaining execution gap |
+| --- | --- | --- |
+| Java | Actual `SupervisorChildRegistry` + `SupervisorProcess`, JDK 25: https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41359927149 | Full ActorRuntime and guest physical-finalization integration |
+| LLVM | Native `SupervisorControlTurn` with host STOP receipt, GCC O2 and Clang ASan/UBSan: https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41359210787 | Source AST/IR lowering, actor scheduler integration, async receipt parity |
+| WASM | Isolated JS worker-host ledger with opaque non-transferable child/ticket identity and source rejection: https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41363000747 | Actual WASM guest actor and CONTROL worker ABI |
+| Cranelift | Isolated Rust `SupervisorStopLedger` plus full scalar JIT tests and rustfmt: https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41363000747 | Guest codegen/actor runtime and lifecycle integration |
+| .NET NativeAOT | Production `ActorMailbox`/internal `SupervisorStopLedger`, managed and NativeAOT tests: https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41362382131 | ActorRuntime binding and source-level CONTROL lowering |
+
+The machine-readable `hostStopLedger` indicator is true for these five **isolated host tests only**. `focusedHostStop` remains true only for Java and LLVM, which also executed specific host-control effect/receipt paths. `sourceStopPlan` is true only for Java's restricted STOP-only lowering. `guestSourceParity` remains **false for all five**; neither `define supervisor` compilation nor authenticated end-to-end guest child panic/STOP is proven on all backends.
+
+Follow-on requirements: bind each ledger to actual child death and finalized actor identity, define typed `Failure` envelopes and a single CONTROL ABI across runtimes, prove actor/supervisor generation fencing on real worker/isolates, and run identical guest-source fixtures on each target before promoting parity.
