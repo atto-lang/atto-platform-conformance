@@ -1,0 +1,56 @@
+{
+  "schema": "oreslang.option-result-trap.modular-lock/v2",
+  "manifest_blob": "676653a1284914a9881e98cfdac598385e74a5ea",
+  "cases": [
+    {
+      "id": "ORT2-OPTION_SCALAR",
+      "path": "fixtures/option-result-trap/v2/option_scalar.ores",
+      "git_blob": "aa12e77b5e76e65829b644df2ee4ecb514648956"
+    },
+    {
+      "id": "ORT2-RESULT_SCALAR",
+      "path": "fixtures/option-result-trap/v2/result_scalar.ores",
+      "git_blob": "d3f5b9ac8f635cef6048863dd48d6ddccd2d8bcb"
+    },
+    {
+      "id": "ORT2-TRAP_SCALAR",
+      "path": "fixtures/option-result-trap/v2/trap_scalar.ores",
+      "git_blob": "a8668670d3a714590ea7a476b1968f7f129e0ad1"
+    },
+    {
+      "id": "ORT2-TRAP_RESULT_DATA",
+      "path": "fixtures/option-result-trap/v2/trap_result_data.ores",
+      "git_blob": "1c4c7ccc6b717ae03d2c99af98c87c295e3caf71"
+    },
+    {
+      "id": "ORT2-TRAP_CAST",
+      "path": "fixtures/option-result-trap/v2/trap_cast.ores",
+      "git_blob": "2581760292bb8255d7b399806a21ad7a544b8703"
+    },
+    {
+      "id": "ORT2-NEG-NO_OPTION_TO_RESULT",
+      "path": "fixtures/option-result-trap/v2/negative/no_option_to_result.ores",
+      "git_blob": "6bb94d5272ca10791e07a4f62ace7908ababf45b"
+    },
+    {
+      "id": "ORT2-NEG-NO_RESULT_TO_OPTION",
+      "path": "fixtures/option-result-trap/v2/negative/no_result_to_option.ores",
+      "git_blob": "b77d80069dc04f989643b49bbc051a80c070b2c2"
+    },
+    {
+      "id": "ORT2-NEG-NO_NESTED_OPTION_FLATTEN",
+      "path": "fixtures/option-result-trap/v2/negative/no_nested_option_flatten.ores",
+      "git_blob": "428ef2757d67e36e1260ddd6d7ed563c5454c50b"
+    },
+    {
+      "id": "ORT2-NEG-NO_NESTED_RESULT_FLATTEN",
+      "path": "fixtures/option-result-trap/v2/negative/no_nested_result_flatten.ores",
+      "git_blob": "df007002176bd1d554168fb11d289eb7cec52b9d"
+    },
+    {
+      "id": "ORT2-NEG-NO_TRAP_RESULT_FLATTEN",
+      "path": "fixtures/option-result-trap/v2/negative/no_trap_result_flatten.ores",
+      "git_blob": "4338b54d52c616f4b4c94259b49ba6726e5edaff"
+    }
+  ]
+}
