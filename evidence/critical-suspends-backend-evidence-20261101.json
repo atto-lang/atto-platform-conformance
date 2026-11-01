@@ -1,0 +1,67 @@
+{
+  "schema": "oreslang.critical-suspends.backend-evidence/1",
+  "date": "2026-11-01",
+  "caveat": "Representative PR-head workflow jobs returned steps=[]; this is runner admission failure and not a compiler result",
+  "entries": [
+    {
+      "backend": "java-graal",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "pr": 2433,
+      "commit": "8f86a496a7b44501705579c1e587e3727559293c",
+      "tree": "ef69fac525af5baed3331e8409df8021dd10b64e",
+      "run_id": 41356352329,
+      "job_id": 124997116195,
+      "executed_steps": 0,
+      "execution": "NOT_EXECUTED",
+      "guest_parity_verified": false
+    },
+    {
+      "backend": "llvm",
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "pr": 1289,
+      "commit": "4cca681a1583bc0041b3a14503c3d4964ef841d1",
+      "tree": "fd79f999dbaa4fdfbb09644e7684a66d0bc2ac2a",
+      "run_id": 41356355413,
+      "job_id": 124997125667,
+      "executed_steps": 0,
+      "execution": "NOT_EXECUTED",
+      "guest_parity_verified": false
+    },
+    {
+      "backend": "dotnet-nativeaot",
+      "repository": "ores-truffle-oreslang/oreslang-source.net",
+      "pr": 320,
+      "commit": "b434b2114e1dd5cb244b9077151f11883a9ab45e",
+      "tree": "d9ff992ab333a622c19cd5011796bbbc385f946d",
+      "run_id": 41356359816,
+      "job_id": 124997138872,
+      "executed_steps": 0,
+      "execution": "NOT_EXECUTED",
+      "guest_parity_verified": false
+    },
+    {
+      "backend": "cranelift",
+      "repository": "ores-truffle-oreslang/oreslang-source.forge",
+      "pr": 168,
+      "commit": "45477cce66f7b054c19345326e35f6892fdc724b",
+      "tree": "1130be6f7ee08de6bb1e0d2be6e4064f77e6bd29",
+      "run_id": 41356362759,
+      "job_id": 124997147811,
+      "executed_steps": 0,
+      "execution": "NOT_EXECUTED",
+      "guest_parity_verified": false
+    },
+    {
+      "backend": "wasm",
+      "repository": "ores-truffle-oreslang/oreslang-source.wasm",
+      "pr": 258,
+      "commit": "53d0c52ec097b507a3839020b300ed42f7103a99",
+      "tree": "5de07a0a4a73f7b77f63187f4445cf4cc6e56242",
+      "run_id": 41356365766,
+      "job_id": 124997156709,
+      "executed_steps": 0,
+      "execution": "NOT_EXECUTED",
+      "guest_parity_verified": false
+    }
+  ]
+}
