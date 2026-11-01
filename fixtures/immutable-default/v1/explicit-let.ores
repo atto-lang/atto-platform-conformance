@@ -1,1 +1,0 @@
-fnc main(): int { let int x = 7; x = 8; return x; }
