@@ -85,6 +85,48 @@ class RawCheckoutPreflightTests(unittest.TestCase):
         (self.root / "extra").write_text("x")
         self.assertNotEqual(self.run_checker().returncode, 0)
 
+    def test_active_git_replace_ref_cannot_substitute_head_tree(self):
+        # A replacement object can make ls-tree HEAD describe a different
+        # tree even when rev-parse HEAD still returns the pinned SHA.
+        pinned = self.expected
+        (self.root / "tracked.txt").write_text("replacement contents\n")
+        git(self.root, "add", "tracked.txt")
+        git(self.root, "commit", "-qm", "replacement candidate")
+        substitute = git(self.root, "rev-parse", "HEAD")
+        git(self.root, "replace", pinned, substitute)
+        git(self.root, "update-ref", "HEAD", pinned)
+        self.assertEqual(git(self.root, "rev-parse", "HEAD"), pinned)
+        result = self.run_checker()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Git replace refs are forbidden", result.stderr)
+
+    def test_dormant_git_replace_ref_is_rejected(self):
+        pinned = self.expected
+        (self.root / "tracked.txt").write_text("replacement candidate\n")
+        git(self.root, "add", "tracked.txt")
+        git(self.root, "commit", "-qm", "future replacement")
+        substitute = git(self.root, "rev-parse", "HEAD")
+        git(self.root, "update-ref", "HEAD", pinned)
+        git(self.root, "reset", "--hard", pinned)
+        git(self.root, "replace", substitute, pinned)
+        result = self.run_checker()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Git replace refs are forbidden", result.stderr)
+
+    def test_packed_git_replace_ref_is_rejected(self):
+        pinned = self.expected
+        (self.root / "tracked.txt").write_text("packed replacement\n")
+        git(self.root, "add", "tracked.txt")
+        git(self.root, "commit", "-qm", "pack candidate")
+        substitute = git(self.root, "rev-parse", "HEAD")
+        git(self.root, "update-ref", "HEAD", pinned)
+        git(self.root, "reset", "--hard", pinned)
+        git(self.root, "replace", substitute, pinned)
+        git(self.root, "pack-refs", "--all", "--prune")
+        result = self.run_checker()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Git replace refs are forbidden", result.stderr)
+
     def test_staged_change(self):
         (self.root / "tracked.txt").write_text("changed\n")
         git(self.root, "add", "tracked.txt")
