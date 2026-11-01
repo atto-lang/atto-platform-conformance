@@ -227,6 +227,20 @@
       "expect": "reject",
       "oracle": "immutable-borrow",
       "source": "fnc main(): int { bool x = true; rt mut borrow x; return 0; }\n"
+    },
+    {
+      "id": "IDB-31",
+      "file": "fixtures/immutable-default/v1/type-first-expr.ores",
+      "expect": "accept",
+      "oracle": "7",
+      "source": "fnc main(): int { int x = 3 + 4; return x; }\n"
+    },
+    {
+      "id": "IDB-32",
+      "file": "fixtures/immutable-default/v1/const-mutable-borrow.ores",
+      "expect": "reject",
+      "oracle": "immutable-borrow",
+      "source": "fnc main(): int { const x = 7; rt mut borrow x; return x; }\n"
     }
   ]
 }
