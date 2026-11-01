@@ -1,0 +1,10 @@
+// ORT3-OPTION_ABSENT: candidate native guest, not executed evidence.
+// A real compiler-generated guest must return signed int 0 (not a host mock).
+pub fnc main(): int {
+  val Option<int> value = None;
+  if value.is_none(); then
+    return 0;
+  else
+    return 1;
+  fi
+}
