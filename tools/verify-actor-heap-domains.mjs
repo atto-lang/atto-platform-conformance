@@ -81,6 +81,6 @@ if(process.argv[1] && fileURLToPath(import.meta.url)===process.argv[1]){
   try {
     if(process.argv.length!==3) deny('usage: node tools/verify-actor-heap-domains.mjs <policy.json>');
     const result=verifyPhysicalActorHeapPolicy(JSON.parse(readFileSync(process.argv[2],'utf8')));
-    process.stdout.write(JSON.stringify(result)+'\\n');
-  }catch(e){process.stderr.write(String(e.message)+'\\n');process.exitCode=1;}
+    process.stdout.write(JSON.stringify(result)+'\n');
+  }catch(e){process.stderr.write(String(e.message)+'\n');process.exitCode=1;}
 }
