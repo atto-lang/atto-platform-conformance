@@ -103,6 +103,10 @@ export class PgLocalReference {
       this.#actors.get(actorId)?.groups.delete(id);
     }
     this.#groups.delete(id);
+    // Revoked permits must not accumulate through repeated room turnover.
+    for (const [cap, binding] of this.#permissions)
+      if (binding.id === id && binding.incarnation === g.incarnation)
+        this.#permissions.delete(cap);
     return true;
   }
   snapshot(id, limit) {
@@ -118,7 +122,8 @@ export class PgLocalReference {
     if (!snapshot || snapshot.status !== 'OK' || snapshot.runtime !== this.#runtime ||
         snapshot.isolate !== this.#isolate) return false;
     const g = this.#groups.get(snapshot.group);
-    return !!g && g.incarnation === snapshot.incarnation && g.members.has(member);
+    return !!g && g.incarnation === snapshot.incarnation &&
+      snapshot.members.includes(member) && g.members.has(member);
   }
   broadcast(id, limit, deliver) {
     ensure(typeof deliver === 'function', 'trusted mailbox adapter required');
@@ -136,5 +141,7 @@ export class PgLocalReference {
     }
     return Object.freeze({status:'OK',accepted,rejected,stale,snapshotCount:snap.members.length});
   }
+  inspectHost() {return Object.freeze({groups:this.#groups.size,actors:this.#actors.size,
+    outstandingPermits:this.#permissions.size});}
   status() {return Object.freeze({sourceGuestImplemented:false,clusterPgImplemented:false});}
 }
