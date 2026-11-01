@@ -55,3 +55,24 @@ Prefer authorized same-organization private runners.
    then promote individual AF scenario IDs only with authenticated receipts.
 
 All five requested backends and Forge remain **unverified** under this contract.
+
+## AF20 fail-closed local evidence shape gate (2026-11-01)
+
+`src/actor-finalization-evidence-v1.mjs` and
+`tests/actor-finalization-evidence-v1.test.mjs` reject zero-runner/zero-step
+runs, unmatched head/tree SHAs, absent named guest test steps, duplicated job
+IDs, forged SHA-256 digests, unbounded job/step/scenario arrays, coerced
+object IDs, unsupported-only results and host-model-only receipts. The
+module returns `parityCertified: false` for every self-reported receipt,
+and its offline `actorFinalizationReleaseGate()` always returns
+`ready: false`, even with a caller-provided `independentlyAuthenticated`
+flag. Only a separately provider-authenticated verifier may promote a
+specific executed AF scenario; JSON shape is never proof.
+
+These tests are source-free and do not require private source mirroring.
+The corresponding independent local oracle suite passed 26/26 Node 22 tests
+during the November 1 review, but that local result is NOT an exact
+GitHub-head test receipt. Source conformance CI runs
+[#41340364032](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/actions/runs/41340364032)
+and [#41340358112](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/actions/runs/41340358112)
+had `runner_id=0`, zero executed steps. No native/guest parity claim is made.
