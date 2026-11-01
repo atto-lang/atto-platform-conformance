@@ -56,7 +56,9 @@ export function assessInjectedStateReceipt(contract, backend, receipt) {
       } else {
         // A parser failure or a blanket "unsupported" is not a successful
         // semantic violation test after the positive language is admitted.
-        if (!Number.isInteger(actual.compileExitCode) || actual.compileExitCode === 0 ||
+        if (!Number.isSafeInteger(actual.compileExitCode) ||
+            actual.compileExitCode < 1 || actual.compileExitCode > 255 ||
+            actual.unsupported === true ||
             actual.diagnosticClass !== expected.violation ||
             actual.rejectionPhase !== "semantic" ||
             actual.emittedArtifacts !== 0 || actual.guestExecuted === true) {
