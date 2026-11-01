@@ -1,0 +1,77 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {spawnSync} from "node:child_process";
+import {mkdtemp,writeFile,chmod,symlink,rm} from "node:fs/promises";
+import {tmpdir} from "node:os";
+import {join} from "node:path";
+import {createHash} from "node:crypto";
+import {runNativeCranelift} from "../bin/run-cranelift-native-v1.mjs";
+
+const commit="a".repeat(40);
+const untrusted="b".repeat(64);
+test("native Cranelift admission requires an absolute installed real compiler",async()=>{
+  await assert.rejects(runNativeCranelift(),/unconfigured compiler/);
+  await assert.rejects(runNativeCranelift({compiler:"./fake",compilerSha256:untrusted,
+    compilerCommit:commit}),/unconfigured compiler/);
+});
+test("native Cranelift gate rejects incomplete source revision and compiler digest",async()=>{
+  await assert.rejects(runNativeCranelift({compiler:"/no/such/compiler",
+    compilerSha256:untrusted}),/source commit/);
+  await assert.rejects(runNativeCranelift({compiler:"/no/such/compiler",
+    compilerCommit:commit}),/SHA-256/);
+});
+test("native Cranelift gate refuses invalid time budgets before filesystem access",async()=>{
+  for(const ms of [0,99,30001,-1,NaN,Infinity,1.5]){
+    await assert.rejects(runNativeCranelift({compiler:"/no/such/compiler",
+      compilerSha256:untrusted,compilerCommit:commit,timeoutMs:ms}),/unsafe compiler timeout/);
+  }
+});
+test("native Cranelift gate does not accept a missing executable",async()=>{
+  await assert.rejects(runNativeCranelift({compiler:"/does/not/exist/orescranelift",
+    compilerSha256:untrusted,compilerCommit:commit}),/ENOENT/);
+});
+test("native gate refuses symlinked fake compiler",async()=>{
+  const root=await mkdtemp(join(tmpdir(),"orescranelift-symlink-"));
+  try{
+    const exe=join(root,"fake-compiler"),alias=join(root,"alias");
+    const bytes=Buffer.from("#!/bin/sh\nprintf '42\\n'\n");
+    await writeFile(exe,bytes);await chmod(exe,0o700);await symlink(exe,alias);
+    await assert.rejects(runNativeCranelift({compiler:alias,
+      compilerSha256:createHash("sha256").update(bytes).digest("hex"),
+      compilerCommit:commit}),/symlink is forbidden/);
+  }finally{await rm(root,{recursive:true,force:true})}
+});
+test("native gate refuses executable digest spoof before launching any guest",async()=>{
+  const root=await mkdtemp(join(tmpdir(),"orescranelift-digest-"));
+  try{
+    const exe=join(root,"fake-compiler");
+    await writeFile(exe,"#!/bin/sh\nexit 0\n");await chmod(exe,0o700);
+    await assert.rejects(runNativeCranelift({compiler:exe,
+      compilerSha256:untrusted,compilerCommit:commit}),/compiler digest mismatch/);
+  }finally{await rm(root,{recursive:true,force:true})}
+});
+test("native gate rejects an executable that fabricates stdout without CLIF",async()=>{
+  if(process.platform==="win32")return;
+  const root=await mkdtemp(join(tmpdir(),"orescranelift-fake-success-"));
+  try{
+    const exe=join(root,"fake-compiler");
+    const bytes=Buffer.from("#!/bin/sh\nprintf '42\\n'\n");
+    await writeFile(exe,bytes);await chmod(exe,0o700);
+    await assert.rejects(runNativeCranelift({compiler:exe,
+      compilerSha256:createHash("sha256").update(bytes).digest("hex"),
+      compilerCommit:commit}),/did not produce bounded CLIF IR/);
+  }finally{await rm(root,{recursive:true,force:true})}
+});
+test("native gate CLI rejects missing tool and cannot falsely claim a successful run",()=>{
+  const cli=new URL("../bin/run-cranelift-native-v1.mjs",import.meta.url).pathname;
+  const p=spawnSync(process.execPath,[cli],{encoding:"utf8",timeout:10000});
+  assert.equal(p.status,3);
+  assert.match(p.stderr,/NATIVE_CRANELIFT_GUEST_NOT_VERIFIED/);
+  assert.equal(p.stdout,"");
+});
+test("native gate CLI rejects unknown arguments before executing source",()=>{
+  const cli=new URL("../bin/run-cranelift-native-v1.mjs",import.meta.url).pathname;
+  const p=spawnSync(process.execPath,[cli,"--claim-parity=true"],{encoding:"utf8",timeout:10000});
+  assert.equal(p.status,3);
+  assert.match(p.stderr,/unknown\/duplicate compiler argument/);
+});
