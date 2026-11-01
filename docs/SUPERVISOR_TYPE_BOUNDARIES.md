@@ -77,3 +77,22 @@ The native LLVM parser also required correcting a preexisting misleadingly inden
 Private exact-blob six-job run: https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41357369470 — **PASS**. The updated Java parser's executable harness reported `JAVA_SUPERVISOR_PARSER=PASS accepts=4 rejects=26`; the allowed fourth case is the restricted `async on_panic(f: Failure)` with `await self.stop(f)`. Native LLVM compiler admission + ASan/UBSan, Cranelift Rust 1.99.1 JIT tests + rustfmt, WASM source/real-bridge denial, shared contract mutation checks, and .NET 10 managed/NativeAOT scalar tests all passed at this mirror commit. Every imported file's Git blob SHA was checked in CI. The Java full `SourceSupervisorLowering` and runtime/JUnit suite **were not executed** by this focused runner.
 
 The revised Java parser's separate **Oracle GraalVM JDK 25 native-image check passed**: https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41357369454 . The actual source-hash-verified parser fixture ran on GraalVM Java and again as a `--no-fallback` native binary, both reporting `JAVA_SUPERVISOR_PARSER=PASS accepts=4 rejects=26`. This proves AOT *parser* execution, not full guest supervisor CONTROL execution.
+
+
+## STOP-only executable host and compiler milestones (2026-11-01)
+
+See `fixtures/supervision/v1/stop-only-runtime-gate.json` and its closed-world mutation validator. The contract keeps **focused host CONTROL execution**, **restricted source STOP lowering**, and **full guest supervisor runtime parity** in separate explicit fields.
+
+| Backend | Actual focused host STOP proof | Restricted source STOP compilation | General guest supervisor |
+| --- | --- | --- | --- |
+| Java/GraalVM | **Yes**: production `SupervisorProcess` + `SupervisorFailureControl` + `SupervisorChildRegistry` + `SupervisorDispatchGuard` tested at https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41358923195 | **Yes**: real `Parser` + `Ast` + `SourceSupervisorLowering` compiled, 3 accepted / 10 denied at https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41359448732 | **No** |
+| LLVM | **Yes**: production native `SupervisorControlTurn` STOP receipt acknowledgment, uncertain-effect quarantine, exact incarnation reconciliation under Clang ASan/UBSan and GCC `-O2` at https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41359210787 | **No**: front-end intentionally rejects `define supervisor` | **No** |
+| WASM | No host STOP proof; compiler-bridge safety rejection only | No | No |
+| Cranelift | No host STOP proof; source/IR admission only | No | No |
+| .NET | No host STOP proof; scalar source rejection/NativeAOT only | No | No |
+
+**Limits of the focused Java execution:** The funded runner compiles production CONTROL classes and the production Java source-lowering/compiler classes, with exact Git blob identity checks. An **explicit test-only runtime-ID/ActorGroup shape shim** stands in for the full `ActorRuntime` dependency graph; the shim has no actor scheduling or lifecycle implementation. As a result this is **not** evidence of physical child finalization, full `SourceSupervisorAwaitStopTest`, a complete Maven test suite, or guest-to-actor integration.
+
+**Limits of the native LLVM STOP primitive:** Native `Decision::Stop` now has a synchronous host `StopReceipt::Acknowledged/Uncertain` boundary. A rejected/throwing effect holds the actor generation in-flight and blocks later turns until a trusted exact-key `confirm_stopped` call. That is a meaningful host safety primitive, but **not** the Java-style asynchronous host acknowledgment yet and **not** compiler-lowered guest source. Native callers must not expose `confirm_stopped` as an unauthenticated guest capability.
+
+**Next semantic gates:** Run Java's existing full actor-supervisor runtime/JUnit tests with physical finalization; integrate the native STOP decision with a generation-fenced actor group and a real compiled `on_panic(Failure)`; then implement equivalent STOP guest execution in WASM workers, Cranelift and .NET NativeAOT. Only advance the machine-readable `guestSourceParity` gates with real guest-execution logs from each backend.
