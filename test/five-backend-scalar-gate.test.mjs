@@ -1,7 +1,7 @@
 // All tests are host-only structural negative controls. No native guest executes here.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {REQUIRED_PROFILES, REQUIRED_CASES, FIXTURE_SHA256, validateFiveBackendScalarEligibility as admit}
+import {REQUIRED_PROFILES, REQUIRED_CASES, FIXTURE_SHA256, OBSERVATION_CHANNELS, validateFiveBackendScalarEligibility as admit}
   from '../verification/five-backend-scalar-gate.mjs';
 
 const h40 = 'a'.repeat(40), tree = 'b'.repeat(40);
@@ -46,10 +46,15 @@ function makeEligible() {
           id: f.id, kind: accept ? 'accept' : 'overflow',
           source_sha256: f.source_sha256,
           stdout_sha256: h64, stderr_sha256: h64,
-          exit_code: accept ? 0 : 1, stdout: accept ? vectors[f.id] : '',
+          exit_code: e.backend === 'wasm' ? null : (accept ? 0 : 1),
+          value_i64: accept ? vectors[f.id].trim() : null,
+          semantic_phase: accept ? 'guest-return' : 'guest-overflow',
+          observation_channel: OBSERVATION_CHANNELS[e.backend],
+          stdout: accept && ['cranelift','net'].includes(e.backend) ? vectors[f.id] : '',
           compiler_executed: true, guest_executed: true,
           guest_command: 'synthetic guest invocation',
-          ...(accept ? {} : {error_category: 'checked-i64-overflow'})
+          error_category: accept ? null : 'checked-i64-overflow',
+          ...(e.backend === 'wasm' && !accept ? {trap_category: 'webassembly-runtime-error'} : {})
         };
       })
     }))
@@ -107,14 +112,36 @@ denies('reject omitted guest case', d => d.executions[0].cases.pop(), /guest cas
 denies('reject duplicate guest case', d => d.executions[0].cases[1].id=d.executions[0].cases[0].id, /guest case/);
 denies('reject switched fixture hash', d => d.executions[0].cases[0].source_sha256=d.fixtures[1].source_sha256, /guest case/);
 denies('reject forged successful guest exit', d => d.executions[0].cases[0].exit_code=1, /successful guest/);
-denies('reject wrong output for precedence', d => d.executions[0].cases[1].stdout='27\n', /successful guest/);
-denies('reject silent accept without newline', d => d.executions[0].cases[0].stdout='42', /successful guest/);
+denies('reject wrong output for precedence', d => d.executions[0].cases[1].value_i64='27', /successful guest/);
+denies('reject silent accept without newline', d => d.executions.find(x=>x.backend==='net').cases[0].stdout='42', /successful guest/);
 denies('reject overflow reported as success', d => d.executions[0].cases[6].exit_code=0, /overflow/);
 denies('reject overflow with stdout', d => d.executions[0].cases[6].stdout='0\n', /overflow/);
 denies('reject overflow with wrong category', d => d.executions[0].cases[6].error_category='panic', /overflow/);
 denies('reject wrong guest kind', d => d.executions[0].cases[6].kind='accept', /guest case/);
 denies('reject invalid guest exit number', d => d.executions[0].cases[6].exit_code=NaN, /guest case/);
 denies('reject whitespace-only guest command', d => d.executions[0].cases[0].guest_command='  ', /guest case/);
+denies('reject wrong runtime observation channel',
+ d => d.executions[0].cases[0].observation_channel='host-oracle', /guest case/);
+denies('reject mismatched typed i64 value despite plausible stdout',
+ d => d.executions[0].cases[0].value_i64='0', /successful guest/);
+denies('reject WASM export claiming OS process exit',
+ d => d.executions.find(x=>x.backend==='wasm').cases[0].exit_code=0, /guest case/);
+denies('reject WASM trap without RuntimeError provenance',
+ d => d.executions.find(x=>x.backend==='wasm').cases[6].trap_category='unknown', /overflow/);
+denies('reject NativeAOT printed value inconsistent with normalized i64',
+ d => d.executions.find(x=>x.backend==='net').cases[0].stdout='43\\n', /stdout transport/);
+denies('reject Cranelift JIT CLI printed value inconsistent with normalized i64',
+ d => d.executions.find(x=>x.backend==='cranelift').cases[0].stdout='', /stdout transport/);
+denies('reject host oracle masquerading as runtime phase',
+ d => d.executions[0].cases[0].semantic_phase='host-reference', /successful guest/);
+denies('reject overflow falsely classified as compiler-stage error',
+ d => d.executions[0].cases[6].semantic_phase='compile-reject', /overflow/);
+test('Java and LLVM raw stdout need not carry typed result; adapter verification is independent', () => {
+ const doc=makeEligible();
+ doc.executions.find(x=>x.backend==='java').cases[0].stdout='';
+ doc.executions.find(x=>x.backend==='llvm').cases[0].stdout='';
+ assert.equal(admit(doc),true);
+});
 test('a fabricated but internally consistent full receipt is NOT authentication', () => {
   const doc = makeEligible();
   doc.executions[0].run.jobs[0].runner_name='invented-runner';
