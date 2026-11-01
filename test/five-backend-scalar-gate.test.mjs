@@ -209,3 +209,17 @@ test('bounded well-formed internationalized evidence labels are structurally eli
  doc.executions[0].cases[0].guest_command='exécuter un test';
  assert.equal(admit(doc),true);
 });
+
+denies('reject zero-width-space runner-name provenance spoofing',
+ d => {d.executions[0].run.jobs[0].runner_name='runner\u200btrusted'}, /unexecuted/);
+denies('reject soft-hyphen step-name provenance spoofing',
+ d => {d.executions[0].run.jobs[0].steps[0].name='pass\u00adfail'}, /step/);
+denies('reject word-joiner guest-command provenance spoofing',
+ d => {d.executions[0].cases[0].guest_command='run\u2060--fake'}, /guest case/);
+denies('reject variation-selector step-name provenance spoofing',
+ d => {d.executions[0].run.jobs[0].steps[0].name='step\uFE0F'}, /step/);
+test('visible combining-accent provenance remains eligible', () => {
+ const d=makeEligible();
+ d.executions[0].run.jobs[0].runner_name='e\u0301quipe-runner';
+ assert.equal(admit(d),true);
+});

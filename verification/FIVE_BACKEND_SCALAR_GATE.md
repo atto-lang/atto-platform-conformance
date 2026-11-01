@@ -112,3 +112,13 @@ bidi spoofing, and a valid internationalized-label positive case.
 This protects only report parsing; self-asserted labels and complete
 fabricated receipts remain untrusted until independently retrieved from
 GitHub's authoritative run/job/step APIs.
+
+## Default-ignorable Unicode provenance controls
+
+The source-free receipt gate additionally rejects Unicode
+`Default_Ignorable_Code_Point` characters in runner, step and guest-command
+labels. Zero-width spaces, soft hyphens, word joiners and variation selectors
+can alter visible identity without altering the raw string. Four adversarial
+negative controls and one valid combining-accent control exercise this rule.
+This is **not** proof that any job or guest executed: an independent verifier
+must still retrieve authoritative run, job, step and guest evidence.
