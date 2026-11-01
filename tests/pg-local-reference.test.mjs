@@ -89,3 +89,23 @@ test('actor and group quotas reject without partial admission',()=>{
 test('no guest pg or cross-node implementation is claimed',()=>{
  const pg=registry();assert.deepEqual(pg.status(),{sourceGuestImplemented:false,clusterPgImplemented:false});
 });
+
+test('snapshot cannot authorize an actor who joined after the snapshot',()=>{
+ const pg=registry(),cap=pg.createGroup('room',2);
+ pg.registerActor(owner('a'));pg.registerActor(owner('b'));pg.join(cap,owner('a'));
+ const old=pg.snapshot('room',2);pg.join(cap,owner('b'));
+ assert.equal(pg.isLiveMember(old,'b:1'),false);
+ assert.equal(pg.isLiveMember(pg.snapshot('room',2),'b:1'),true);
+});
+
+test('group close reclaims revoked tokens through repeated create/close',()=>{
+ const pg=registry();pg.registerActor(owner('worker'));
+ for(let round=0;round<1000;round++){
+  const permit=pg.createGroup('room',1);pg.join(permit,owner('worker'));
+  assert.equal(pg.inspectHost().outstandingPermits,1);
+  assert.equal(pg.closeGroup('room'),true);
+  assert.equal(pg.inspectHost().outstandingPermits,0);
+  assert.equal(pg.inspectHost().groups,0);
+  assert.throws(()=>pg.join(permit,owner('worker')),/PG_REF_DENIED/);
+ }
+});
