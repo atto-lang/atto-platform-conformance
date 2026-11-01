@@ -69,7 +69,12 @@ export function classifyCompilerResult(c, result) {
   if (c.expect === "accept") return result.status === 0 && !firstError && !echoedError ? "SOURCE_ACCEPTED" : "UNEXPECTED_COMPILER_RESULT";
   if (result.status !== 1 || !firstError) return "UNEXPECTED_COMPILER_RESULT";
   const diagnostic = firstError.replace(/^.*?\berror(?:\[[\w-]+\])?\s*:\s*/i, "").toLowerCase();
-  return diagnostic.includes(c.diagnostic.toLowerCase()) ? "SOURCE_REJECTED_AS_EXPECTED" : "DIAGNOSTIC_MISMATCH";
+  // Quoted source fragments can contain a forged expected message even when
+  // the actual primary error is only a parser failure. Ignore literals before
+  // applying this still-provisional text match; semantic ratification remains
+  // a separate compiler-level evidence gate.
+  const semanticText = diagnostic.replace(/"[^"\\n]*"|'[^'\\n]*'|`[^`\\n]*`/g, "");
+  return semanticText.includes(c.diagnostic.toLowerCase()) ? "SOURCE_REJECTED_AS_EXPECTED" : "DIAGNOSTIC_MISMATCH";
 }
 /** Candidate tests cannot certify a language rule even if a compiler happens to reject the source. */
 export function promoteCaseOutcome(testCase, observed) {
