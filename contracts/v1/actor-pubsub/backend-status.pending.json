@@ -1,0 +1,68 @@
+{
+  "schema": "oreslang.actor_pubsub.portable.evidence.v1",
+  "contract": "contracts/v1/actor-pubsub/portable-v1.json",
+  "parity_certified": false,
+  "release_ready": false,
+  "records": [
+    {
+      "backend": "java",
+      "source_compilation": "NOT_EXECUTED",
+      "runtime_substrate": "NOT_EXECUTED",
+      "guest_execution": "NOT_EXECUTED",
+      "source_sha": null,
+      "tree_sha": null,
+      "run_url": null,
+      "executed_steps": 0,
+      "guest_trace": null,
+      "notes": "No independently verified executable pub-sub guest evidence; an oracle/host test is not parity."
+    },
+    {
+      "backend": "llvm",
+      "source_compilation": "NOT_EXECUTED",
+      "runtime_substrate": "NOT_EXECUTED",
+      "guest_execution": "NOT_EXECUTED",
+      "source_sha": null,
+      "tree_sha": null,
+      "run_url": null,
+      "executed_steps": 0,
+      "guest_trace": null,
+      "notes": "No independently verified executable pub-sub guest evidence; an oracle/host test is not parity."
+    },
+    {
+      "backend": "wasm",
+      "source_compilation": "NOT_EXECUTED",
+      "runtime_substrate": "NOT_EXECUTED",
+      "guest_execution": "NOT_EXECUTED",
+      "source_sha": null,
+      "tree_sha": null,
+      "run_url": null,
+      "executed_steps": 0,
+      "guest_trace": null,
+      "notes": "No independently verified executable pub-sub guest evidence; an oracle/host test is not parity."
+    },
+    {
+      "backend": "cranelift",
+      "source_compilation": "NOT_EXECUTED",
+      "runtime_substrate": "NOT_EXECUTED",
+      "guest_execution": "NOT_EXECUTED",
+      "source_sha": null,
+      "tree_sha": null,
+      "run_url": null,
+      "executed_steps": 0,
+      "guest_trace": null,
+      "notes": "No independently verified executable pub-sub guest evidence; an oracle/host test is not parity."
+    },
+    {
+      "backend": "net",
+      "source_compilation": "NOT_EXECUTED",
+      "runtime_substrate": "NOT_EXECUTED",
+      "guest_execution": "NOT_EXECUTED",
+      "source_sha": null,
+      "tree_sha": null,
+      "run_url": null,
+      "executed_steps": 0,
+      "guest_trace": null,
+      "notes": "No independently verified executable pub-sub guest evidence; an oracle/host test is not parity."
+    }
+  ]
+}
