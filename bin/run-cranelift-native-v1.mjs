@@ -57,7 +57,7 @@ async function runNativeCranelift({compiler,compilerSha256,compilerCommit,timeou
   const records=[];
   for(const test of contract.cases){
     const file=join(ROOT,"fixtures/platform-portability-v1",test.file);
-    const expected=await open(file,constants.O_RDONLY|(constants.O_NOFOLLOW??0));
+    const expected=await open(file,constants.O_RDONLY|(constants.O_NOFOLLOW??0)|(constants.O_NONBLOCK??0));
     try{
       const stat=await expected.stat();
       requireCase(stat.isFile()&&stat.size>0&&stat.size<4096,"unsafe guest source fixture");
@@ -65,6 +65,25 @@ async function runNativeCranelift({compiler,compilerSha256,compilerCommit,timeou
       requireCase(createHash("sha256").update(actual).digest("hex")===test.sha256,
         "source drift before guest execution");
     }finally{await expected.close()}
+    // IR mode independently proves this binary is asked to lower the exact
+    // source, rather than relying on a stdout-only wrapper. The IR digest
+    // is necessary but not independently authenticated JIT provenance.
+    const ir=spawn(compiler,["ir",file],{
+      shell:false,encoding:"utf8",timeout:timeoutMs,maxBuffer:65536,
+      env:{PATH:"/usr/bin:/bin",LANG:"C",LC_ALL:"C",RUST_BACKTRACE:"0"}
+    });
+    requireCase(!ir.error&&!ir.signal&&
+      typeof ir.stdout==="string"&&typeof ir.stderr==="string",
+      "native Cranelift IR invocation crashed or timed out");
+    if(test.expect==="reject")
+      requireCase(ir.status===1&&ir.stdout===""&&
+        ir.stderr.trim()==="orescranelift: unbound or unsupported identifier: "+
+        (test.id==="unknown-name"?"missing_platform_binding":"absent_platform_function"),
+        "native Cranelift IR must reject unsupported identifier before codegen");
+    else
+      requireCase(ir.status===0&&ir.stderr===""&&
+        /\bfunction\b/.test(ir.stdout)&&ir.stdout.length<65536,
+        "native Cranelift did not produce bounded CLIF IR");
     const command=spawn(compiler,["run",file],{
       shell:false,encoding:"utf8",timeout:timeoutMs,maxBuffer:8192,
       env:{PATH:"/usr/bin:/bin",LANG:"C",LC_ALL:"C",RUST_BACKTRACE:"0"}
@@ -85,7 +104,9 @@ async function runNativeCranelift({compiler,compilerSha256,compilerCommit,timeou
     }
     await executableEvidence(compiler,compilerSha256);
     records.push({id:test.id,kind:negative?"COMPILER_REJECT":"NATIVE_JIT_EXECUTED",
-      fixtureSha256:test.sha256,observedValue:negative?null:test.expectedValue});
+      fixtureSha256:test.sha256,clifSha256:negative?null:
+        createHash("sha256").update(ir.stdout).digest("hex"),
+      observedValue:negative?null:test.expectedValue});
   }
   return {
     schema:"oreslang.cranelift-local-guest-evidence/1",
