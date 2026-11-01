@@ -25,8 +25,21 @@ Required independently executed profiles:
 A structurally eligible receipt must include the eight identical pinned fixture
 digests for **each** profile, an exact source commit/tree, compiler commit/tree
 and executable hash, exact run attempt, assigned runner, completed steps, explicit
-guest invocation and observed positive/negative outputs. The seven mode
+guest invocation and observed positive/negative outcomes. The seven mode
 executions must not recycle run IDs or jobs to double-credit coverage.
+
+**Return transport is not language semantics.** Java/Graal guest values, LLVM
+native-wrapper i64 witnesses, WASM exported i64 results, Cranelift JIT CLI
+stdout, and .NET NativeAOT stdout must normalize to the same canonical
+signed-i64 return value, while keeping their raw original bytes, source and
+compiler/runner identifiers. Java/LLVM return-as-process-exit wrappers cannot
+carry full signed i64 values (an OS exit code is often only 8 bits); do NOT
+treat exit 42 as evidence for i64::MIN or i64::MAX. A production LLVM adapter
+must preserve/observe the full typed value, not just OS exit status. WASM
+runtime traps have no process exit code and require separate authenticated
+trap evidence; a generic WebAssembly.RuntimeError alone does not identify a
+checked-i64 overflow. The structural gate cannot establish an adapter's
+correctness or source identity without external verification.
 
 **Important limitation:** an attacker can fabricate all of those fields. The
 pure validator does not call GitHub, authenticate signatures, verify the bytes
@@ -40,7 +53,7 @@ independent approvals. A trusted external verifier MUST independently:
    stderr, exit status and exception/overflow category (not just pass markers).
 4. Verify platform identity, provenance/attestations, independent review and
    security authorization. Never reinterpret approval booleans as evidence.
-5. Compare each result and document any unsupported mode as **UNVERIFIED**,
+5. Compare normalized signed-i64 values and checked overflow categories, then document any unsupported mode as **UNVERIFIED**,
    never quietly skip it or claim five-backend parity.
 
 Runner admission is currently blocked for private-repo Actions in the source
