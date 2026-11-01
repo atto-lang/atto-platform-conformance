@@ -85,7 +85,7 @@ function runCase(actions) {
 test("portable v1 manifest has unique and complete five-backend vectors",()=>{
   assert.equal(manifest.schema,"oreslang.actor_pubsub.portable.v1");
   assert.equal(manifest.status,"PROPOSED_NOT_EXECUTED");
-  assert.deepEqual(manifest.backends,["java","llvm","wasm","forge","net"]);
+  assert.deepEqual(manifest.backends,["java","llvm","wasm","cranelift","net"]);
   assert.equal(manifest.cases.length,20);
   assert.deepEqual(manifest.cases.map(v=>v.id),
     Array.from({length:20},(_,i)=>"PS"+String(i+1).padStart(3,"0")));
