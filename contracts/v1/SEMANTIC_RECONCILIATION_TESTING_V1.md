@@ -87,9 +87,12 @@ is `SELECTED_SOURCE_ADMISSION_MATCHED_UNATTESTED`, never full-inventory
 evidence or runtime/borrow soundness verification.
 
 Negative compiler admission now additionally requires no stdout, no partial
-LLVM IR on stderr, no new output artifact or temporary directory entry, and a
-single primary exact-code diagnostic on stderr. The source fixture and
-compiler executable are rechecked after execution; observed diagnostic codes
+LLVM IR on stderr, and a single primary exact-code diagnostic on stderr.
+Both positive and negative source-admission checks must leave no new entries
+in the suite working directory. Every prior source fixture is rechecked after
+all selected compiler invocations, so later mutation invalidates an earlier
+receipt. These checks do not observe files written outside the suite directory.
+The compiler executable is rehashed after execution; observed diagnostic codes
 come from stderr rather than being copied from expected manifest values.
 These are fail-closed integrity checks, not a security sandbox or build
 provenance attestation.
