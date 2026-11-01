@@ -5,7 +5,7 @@
     "java",
     "llvm",
     "wasm",
-    "forge",
+    "cranelift",
     "net"
   ],
   "protocol": "deterministic action vectors; oracle tests do not establish compiler execution",
