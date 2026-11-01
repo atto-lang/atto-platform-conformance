@@ -1,0 +1,10 @@
+// Must fail with a guest Option::unwrap panic; must NEVER print "UNREACHABLE".
+trap fnc panicking(): int {
+  val Option<int> missing = None;
+  return missing.unwrap();
+}
+pub fnc main(): void {
+  val Option<int> ignored = panicking();
+  stdio.stdout.write("UNREACHABLE");
+  return;
+}
