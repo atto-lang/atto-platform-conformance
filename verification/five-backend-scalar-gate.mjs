@@ -1,3 +1,4 @@
+import {createHash} from 'node:crypto';
 // Source-free structural evidence gate. No compiler sources or native guest artifacts.
 // Passing only makes a receipt eligible for independent API/attestation review.
 export const REQUIRED_PROFILES = Object.freeze({
@@ -10,6 +11,12 @@ export const REQUIRED_PROFILES = Object.freeze({
 const BASE = 'ores-truffle-oreslang/oreslang-source.';
 const SHA40 = /^[0-9a-f]{40}$/;
 const SHA256 = /^[0-9a-f]{64}$/;
+// Bind claimed process-output digests to exact UTF-8 bytes; a 64-hex string
+// alone is not evidence integrity. Bound bytes before hashing.
+const outputDigest = value => typeof value === 'string' &&
+  Buffer.byteLength(value, 'utf8') <= 32768
+  ? createHash('sha256').update(value, 'utf8').digest('hex')
+  : null;
 const ids = new Map([
   ['scalar.literal-42', {kind: 'accept', value: '42'}],
   ['scalar.precedence', {kind: 'accept', value: '28'}],
@@ -110,6 +117,8 @@ export function validateFiveBackendScalarEligibility(doc) {
       if (!c || !ids.has(c.id) || caseIds.has(c.id) ||
           c.source_sha256 !== fixtures.get(c.id) ||
           !SHA256.test(c.stdout_sha256) || !SHA256.test(c.stderr_sha256) ||
+          c.stdout_sha256 !== outputDigest(c.stdout) ||
+          c.stderr_sha256 !== outputDigest(c.stderr) ||
           (e.backend === 'wasm' ? c.exit_code !== null :
             !Number.isSafeInteger(c.exit_code)) ||
           c.observation_channel !== OBSERVATION_CHANNELS[e.backend] ||
