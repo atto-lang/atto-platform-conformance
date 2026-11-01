@@ -1,0 +1,57 @@
+{
+  "schema": "oreslang.proxy_lb_scalar_fixture.v1",
+  "contract_id": "proxy-lb-selection-v1",
+  "purpose": "Arithmetic comparator at common four-operation scalar intersection; NOT dynamic LB or backend guest parity proof",
+  "expected_return_type": "signed_i64",
+  "required_source_bytes": "UTF-8 LF, no BOM",
+  "profiles": [
+    "java",
+    "llvm",
+    "wasm-core",
+    "cranelift",
+    "net-native-aot"
+  ],
+  "cases": [
+    {
+      "id": "comparison-positive",
+      "path": "fixtures/proxy-lb-v1/comparison-positive.ores",
+      "expected": 6,
+      "git_blob_sha": "885b62c32ea5f25a7223afd166a78ba60642dde7",
+      "guest_execution": "NOT_EXECUTED"
+    },
+    {
+      "id": "comparison-negative",
+      "path": "fixtures/proxy-lb-v1/comparison-negative.ores",
+      "expected": -1,
+      "git_blob_sha": "9e9a6c048367dc52dda7948072920717d3e8d357",
+      "guest_execution": "NOT_EXECUTED"
+    },
+    {
+      "id": "comparison-tie",
+      "path": "fixtures/proxy-lb-v1/comparison-tie.ores",
+      "expected": 0,
+      "git_blob_sha": "b100715d0a8544e13ad8d88bf44a7fced72f24dd",
+      "guest_execution": "NOT_EXECUTED"
+    },
+    {
+      "id": "comparison-max-balanced",
+      "path": "fixtures/proxy-lb-v1/comparison-max-balanced.ores",
+      "expected": 0,
+      "git_blob_sha": "1195e932ce4e128b0d109bf3715afbc82d85b567",
+      "guest_execution": "NOT_EXECUTED"
+    },
+    {
+      "id": "comparison-max-positive",
+      "path": "fixtures/proxy-lb-v1/comparison-max-positive.ores",
+      "expected": 16384,
+      "git_blob_sha": "23a9c6371e252ff4e1ffbeed87f05238e9268296",
+      "guest_execution": "NOT_EXECUTED"
+    }
+  ],
+  "evidence_requirements": [
+    "compiler accepts identical Git blob source",
+    "actual compiled guest observes expected signed 64-bit return value",
+    "source SHA, compiler binary SHA, target flags, runner/job/steps recorded",
+    "run errors and unsupported status never promoted to PASS"
+  ]
+}
