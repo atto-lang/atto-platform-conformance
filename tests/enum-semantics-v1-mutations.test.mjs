@@ -79,7 +79,7 @@ test("enum fixture symlink cannot impersonate pinned regular file",()=>{
 test("enum fixture hardlink cannot impersonate unique owned fixture",()=>{
  withCompleteTempCorpus((dir,dest)=>{
   const p=resolve(dest,m.cases[0].file);
-  linkSync(p,resolve(dest,"duplicate-link.bin"));
+  linkSync(p,resolve(dir,"outside-fixture-hardlink.bin"));
   assert.throws(()=>validateEnumFiles(dir,m));
  });
 });
