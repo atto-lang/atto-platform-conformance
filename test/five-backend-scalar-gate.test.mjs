@@ -1,11 +1,13 @@
 // All tests are host-only structural negative controls. No native guest executes here.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 import {REQUIRED_PROFILES, REQUIRED_CASES, FIXTURE_SHA256, OBSERVATION_CHANNELS, validateFiveBackendScalarEligibility as admit}
   from '../verification/five-backend-scalar-gate.mjs';
 
 const h40 = 'a'.repeat(40), tree = 'b'.repeat(40);
 const h64 = 'c'.repeat(64);
+const digest = value => createHash('sha256').update(value, 'utf8').digest('hex');
 const vectors = {
   'scalar.literal-42': '42\n',
   'scalar.precedence': '28\n',
@@ -42,15 +44,17 @@ function makeEligible() {
       },
       cases: fixtures.map(f => {
         const accept = Object.hasOwn(vectors, f.id);
+        const stdout = accept && ['cranelift','net'].includes(e.backend) ? vectors[f.id] : '';
+        const stderr = accept ? '' : 'error: checked-i64-overflow';
         return {
           id: f.id, kind: accept ? 'accept' : 'overflow',
           source_sha256: f.source_sha256,
-          stdout_sha256: h64, stderr_sha256: h64,
+          stdout_sha256: digest(stdout), stderr_sha256: digest(stderr),
           exit_code: e.backend === 'wasm' ? null : (accept ? 0 : 1),
           value_i64: accept ? vectors[f.id].trim() : null,
           semantic_phase: accept ? 'guest-return' : 'guest-overflow',
           observation_channel: OBSERVATION_CHANNELS[e.backend],
-          stdout: accept && ['cranelift','net'].includes(e.backend) ? vectors[f.id] : '',
+          stdout, stderr,
           compiler_executed: true, guest_executed: true,
           guest_command: 'synthetic guest invocation',
           error_category: accept ? null : 'checked-i64-overflow',
@@ -111,6 +115,21 @@ denies('reject absent native guest execution', d => d.executions[0].cases[0].gue
 denies('reject omitted guest case', d => d.executions[0].cases.pop(), /guest case/);
 denies('reject duplicate guest case', d => d.executions[0].cases[1].id=d.executions[0].cases[0].id, /guest case/);
 denies('reject switched fixture hash', d => d.executions[0].cases[0].source_sha256=d.fixtures[1].source_sha256, /guest case/);
+
+denies('reject forged 64-hex stdout digest that does not hash the bytes',
+ d => d.executions[0].cases[0].stdout_sha256='f'.repeat(64), /guest case/);
+denies('reject forged 64-hex stderr digest that does not hash the bytes',
+ d => d.executions[0].cases[0].stderr_sha256='f'.repeat(64), /guest case/);
+denies('reject raw stdout mutation with unchanged reported SHA',
+ d => d.executions[0].cases[0].stdout='tampered', /guest case/);
+denies('reject raw stderr mutation with unchanged reported SHA',
+ d => d.executions[0].cases[6].stderr='tampered', /guest case/);
+denies('reject omitted raw stderr despite claimed digest',
+ d => {delete d.executions[0].cases[0].stderr}, /guest case/);
+denies('reject output beyond 32-KiB byte cap',
+ d => d.executions[0].cases[0].stderr='x'.repeat(32769), /guest case/);
+denies('reject UTF-8 multibyte output crossing byte cap',
+ d => d.executions[0].cases[0].stderr='é'.repeat(17000), /guest case/);
 denies('reject forged successful guest exit', d => d.executions[0].cases[0].exit_code=1, /successful guest/);
 denies('reject wrong output for precedence', d => d.executions[0].cases[1].value_i64='27', /successful guest/);
 denies('reject silent accept without newline', d => d.executions.find(x=>x.backend==='net').cases[0].stdout='42', /stdout transport/);
