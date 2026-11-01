@@ -2,6 +2,7 @@
   "schemaVersion": 1,
   "contract": "oreslang.userland-portability/1",
   "fixtureRepository": "ores-truffle-oreslang/oreslang-proof-of-concepts",
+  "fixtureCommitSha": "b7e92b77e86ffe2be29fa9163e61787285c2b245",
   "profiles": {
     "java": "ores-truffle-oreslang/oreslang-source.java",
     "llvm": "ores-truffle-oreslang/oreslang-source.llvm",
