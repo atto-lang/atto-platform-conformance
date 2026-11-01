@@ -19,7 +19,7 @@ const receipt = () => ({
   executed_steps: 9, runner_id: 42, runner_admission_only: false,
   compiler_invoked: true, cross_backend_parity: false,
   cases: Object.fromEntries(cases.map(c =>
-    [c.id, { phase: c.phase, status: 'pass', ...passCodes[c.phase] }]))
+    [c.id, { phase: c.phase, status: 'pass', ...passCodes[c.phase], ...(c.phase === 'compile-reject' ? {diagnostic_code:c.expected_diagnostic} : {}) }]))
 });
 
 test('contract has distinct portable compiler and guest gates', () => {
@@ -173,3 +173,16 @@ test('missing exact-tree and compiler identity fail closed', () => {
   }
 });
 
+
+test('compile-negative requires its exact planned diagnostic, not an unrelated syntax error', () => {
+  const negative = cases.find(c => c.phase === 'compile-reject');
+  const r = receipt();
+  r.cases[negative.id].diagnostic_code = 'E_UNDECLARED_SYMBOL';
+  assert.throws(() => verifyCriticalSuspensionReceipt(r, manifest), /EXACT expected diagnostic/);
+  assert.equal(typeof negative.expected_diagnostic, 'string');
+});
+
+test('every compile-negative case declares a stable unique target diagnostic class', () => {
+  for (const c of cases.filter(c => c.phase === 'compile-reject'))
+    assert.match(c.expected_diagnostic, /^E_[A-Z0-9_]+$/);
+});

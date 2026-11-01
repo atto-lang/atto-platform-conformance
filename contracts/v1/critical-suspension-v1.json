@@ -70,73 +70,85 @@
       "id": "critical-suspends-order-a",
       "phase": "compile-reject",
       "evidence_required": "compiler-invocation",
-      "proposed_source": "critical suspends fnc bad(): void { return; }"
+      "proposed_source": "critical suspends fnc bad(): void { return; }",
+      "expected_diagnostic": "E_CRITICAL_SUSPENDS_DECL"
     },
     {
       "id": "critical-suspends-order-b",
       "phase": "compile-reject",
       "evidence_required": "compiler-invocation",
-      "proposed_source": "suspends critical fnc bad(): void { return; }"
+      "proposed_source": "suspends critical fnc bad(): void { return; }",
+      "expected_diagnostic": "E_CRITICAL_SUSPENDS_DECL"
     },
     {
       "id": "async-fnc-rejected",
       "phase": "compile-reject",
       "evidence_required": "compiler-invocation",
-      "proposed_source": "async fnc bad(): int { return 7; }"
+      "proposed_source": "async fnc bad(): int { return 7; }",
+      "expected_diagnostic": "E_ASYNC_FUNCTION_REMOVED"
     },
     {
       "id": "async-routine-rejected",
       "phase": "compile-reject",
       "evidence_required": "compiler-invocation",
-      "proposed_source": "async routine bad(): void { return; }"
+      "proposed_source": "async routine bad(): void { return; }",
+      "expected_diagnostic": "E_ASYNC_FUNCTION_REMOVED"
     },
     {
       "id": "critical-block-sync-caller",
       "phase": "compile-reject",
       "evidence_required": "compiler-invocation",
-      "proposed_source": "fnc bad(): void { critical gate { do_increment(); } }"
+      "proposed_source": "fnc bad(): void { critical gate { do_increment(); } }",
+      "expected_diagnostic": "E_CRITICAL_REQUIRES_SUSPENDS"
     },
     {
       "id": "await-in-critical",
       "phase": "compile-reject",
       "evidence_required": "compiler-invocation",
-      "proposed_source": "suspends fnc bad(): void { critical gate { await fetch(); } }"
+      "proposed_source": "suspends fnc bad(): void { critical gate { await fetch(); } }",
+      "expected_diagnostic": "E_CRITICAL_SUSPENSION"
     },
     {
       "id": "indirect-suspends-in-critical",
       "phase": "compile-reject",
       "evidence_required": "compiler-invocation",
-      "proposed_source": "suspends fnc fetch(): void { return; } suspends fnc bad(): void { critical gate { fetch(); } }"
+      "proposed_source": "suspends fnc fetch(): void { return; } suspends fnc bad(): void { critical gate { fetch(); } }",
+      "expected_diagnostic": "E_CRITICAL_SUSPENSION"
     },
     {
       "id": "callback-suspends-in-critical",
       "phase": "compile-reject",
       "evidence_required": "compiler-invocation",
-      "proposed_source": "suspends fnc bad(cb: suspends fnc(): void): void { critical gate { cb(); } }"
+      "proposed_source": "suspends fnc bad(cb: suspends fnc(): void): void { critical gate { cb(); } }",
+      "expected_diagnostic": "E_CRITICAL_SUSPENSION"
     },
     {
       "id": "blocking-ffi-in-critical",
       "phase": "compile-reject",
       "evidence_required": "compiler-invocation",
-      "proposed_source": "suspends fnc bad(): void { critical gate { blocking_socket_read(); } }"
+      "proposed_source": "suspends fnc bad(): void { critical gate { blocking_socket_read(); } }",
+      "expected_diagnostic": "E_CRITICAL_BLOCKING_FFI"
     },
     {
       "id": "yield-in-critical",
       "phase": "compile-reject",
       "evidence_required": "compiler-invocation",
-      "proposed_source": "async gen* bad(): AsyncIterator<int> { critical gate { yield 1; } return; }"
+      "proposed_source": "async gen* bad(): AsyncIterator<int> { critical gate { yield 1; } return; }",
+      "expected_diagnostic": "E_CRITICAL_SUSPENSION"
     },
     {
       "id": "unguarded-state-escape",
       "phase": "compile-reject",
       "evidence_required": "compiler-invocation",
-      "proposed_source": "suspends fnc bad(): void { critical gate { return borrowed_state_view(); } }"
+      "proposed_source": "suspends fnc bad(): void { critical gate { return borrowed_state_view(); } }",
+      "expected_diagnostic": "E_CRITICAL_BORROW_ESCAPE"
     },
     {
       "id": "recursive-gate-reentry",
       "phase": "compile-reject",
       "evidence_required": "compiler-invocation",
-      "proposed_source": "suspends fnc bad(): void { critical gate { critical gate { do_increment(); } } }"
+      "proposed_source": "suspends fnc bad(): void { critical gate { critical gate { do_increment(); } } }",
+      "expected_diagnostic": "E_CRITICAL_REENTRANT"
     },
     {
       "id": "uncontended-no-admission-yield",

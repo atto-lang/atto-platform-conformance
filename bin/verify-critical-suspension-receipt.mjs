@@ -28,9 +28,8 @@ export function verifyCriticalSuspensionReceipt(receipt, contract) {
     if (c.phase === 'runtime' && result.native_guest_executed !== true)
       fail(id + ': native compiled guest execution required');
     if (c.phase === 'compile-reject' &&
-      (result.compiler_rejected !== true || typeof result.diagnostic_code !== 'string' ||
-       !/^E_[A-Z0-9_]+$/.test(result.diagnostic_code)))
-      fail(id + ': actual compiler rejection with diagnostic required');
+      (result.compiler_rejected !== true || result.diagnostic_code !== c.expected_diagnostic))
+      fail(id + ': actual compiler rejection with EXACT expected diagnostic required');
     if (c.phase === 'compile-pass' && result.compiler_accepted !== true)
       fail(id + ': actual compiler acceptance required');
   }
