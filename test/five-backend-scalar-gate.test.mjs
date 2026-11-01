@@ -113,7 +113,7 @@ denies('reject duplicate guest case', d => d.executions[0].cases[1].id=d.executi
 denies('reject switched fixture hash', d => d.executions[0].cases[0].source_sha256=d.fixtures[1].source_sha256, /guest case/);
 denies('reject forged successful guest exit', d => d.executions[0].cases[0].exit_code=1, /successful guest/);
 denies('reject wrong output for precedence', d => d.executions[0].cases[1].value_i64='27', /successful guest/);
-denies('reject silent accept without newline', d => d.executions.find(x=>x.backend==='net').cases[0].stdout='42', /successful guest/);
+denies('reject silent accept without newline', d => d.executions.find(x=>x.backend==='net').cases[0].stdout='42', /stdout transport/);
 denies('reject overflow reported as success', d => d.executions[0].cases[6].exit_code=0, /overflow/);
 denies('reject overflow with stdout', d => d.executions[0].cases[6].stdout='0\n', /overflow/);
 denies('reject overflow with wrong category', d => d.executions[0].cases[6].error_category='panic', /overflow/);
