@@ -51,7 +51,7 @@ The runner used a temporary private, token-free test tree and verified *Git blob
 
 | Backend | Actually built/executed | What remains unproven |
 | --- | --- | --- |
-| Java | JDK 25 compiler compiled production `Parser`, `Lexer`, `Token`, `Ast`; executed 3 positive + 16 negative supervisor declaration cases | Full `OresCompiler`/JUnit/Maven, general guest CONTROL, full host/runtime and native-image |
+| Java | JDK 25 compiler compiled production `Parser`, `Lexer`, `Token`, `Ast`; executed 3 positive + 16 negative supervisor declaration cases | Full `OresCompiler`/JUnit/Maven, general guest CONTROL, full runtime/native-image (only the parser AOT is verified) |
 | LLVM | Real C++ production parser, `MethodResolver`, `NativeScalarTypes`, `OwnershipChecker`, and focused parser test built against LLVM Support under `-Wall -Wextra -Wpedantic -Werror`; executable succeeded | LLVM IR supervisor lowering, actor runtime CONTROL execution and ASan/UBSan |
 | WASM | Exact JS source lexer/admission tests and source-fixture registry mutation checks through Node 22 | Actual Wasm supervisor guest ABI, CONTROL and compiled actor runtime |
 | Cranelift | Rust 1.99.1 `cargo test --locked` (12 passed), `cargo fmt --check`; actual JIT/scalar CLI and explicit supervisor rejection | Compiled guest actor/supervisor runtime, typed `Failure`, CONTROL |
@@ -61,4 +61,4 @@ Separate initial private source-policy test: https://github.com/gha-indie-worker
 
 No verdict of `guestSourceParity: true` is permitted by these focused tests. The general `define supervisor` declaration remains a fail-closed, source-level feature gate across backends until the authenticated, generation-fenced guest CONTROL lifecycle is implemented and exercised.
 
-The native LLVM parser also required correcting a preexisting misleadingly indented conditional under strict `-Werror` in the native source PR. The Cranelift CLI test was formatted to pass the full Rust formatting gate. A separate GraalVM parser native-image job is tracked independently; JDK 25 parser success must not be conflated with GraalVM AOT success.
+The native LLVM parser also required correcting a preexisting misleadingly indented conditional under strict `-Werror` in the native source PR. The Cranelift CLI test was formatted to pass the full Rust formatting gate. Independent GraalVM native-image proof: https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41355316086 — **PASS**. Oracle GraalVM JDK 25 compiled and executed the exact production Java parser fixture harness (3 accepted / 16 rejected), produced a `--no-fallback` native image, and executed that binary with identical results. This is verified Graal **parser AOT** execution, not guest supervisor CONTROL or full-runtime AOT parity.
