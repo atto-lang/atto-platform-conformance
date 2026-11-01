@@ -154,6 +154,8 @@ test('misleading later diagnostic and compiler crash never promote negative sour
   const cases = [
     {stderr:'error: unknown grammar\n'+good,expected:'DIAGNOSTIC_MISMATCH'},
     {stderr:'error: parser rejected quoted text "actor message sent after stop"',expected:'DIAGNOSTIC_MISMATCH'},
+    {stderr:"error: parser rejected quoted text 'actor message sent after stop'",expected:'DIAGNOSTIC_MISMATCH'},
+    {stderr:'error: parser rejected quoted text `actor message sent after stop`',expected:'DIAGNOSTIC_MISMATCH'},
     {stderr:good+'\nsegmentation fault',expected:'COMPILER_CRASH'},
     {stderr:good+'\nstacktrace',expected:'COMPILER_CRASH'},
     {stderr:good+'\nfatal error: heap corrupt',expected:'COMPILER_CRASH'},
