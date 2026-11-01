@@ -1,0 +1,51 @@
+{
+  "schema": "oreslang.option-result-trap.scalar-lock/v3",
+  "manifest_blob": "d925cc4dee568f87d14bbf5d8b7da60ed9d3502c",
+  "cases": [
+    {
+      "id": "ORT3-OPTION_PRESENT",
+      "path": "fixtures/option-result-trap/v3/option_present.ores",
+      "git_blob": "89661223e8c9f00d4eb26345e8483c1f639d2771"
+    },
+    {
+      "id": "ORT3-OPTION_ABSENT",
+      "path": "fixtures/option-result-trap/v3/option_absent.ores",
+      "git_blob": "2f7877dc243e0a1e4de45394d5b7e7b677d3eaee"
+    },
+    {
+      "id": "ORT3-OPTION_NESTED_ABSENT",
+      "path": "fixtures/option-result-trap/v3/option_nested_absent.ores",
+      "git_blob": "605eb04a091f99c28bae07542c62f56b5aafda05"
+    },
+    {
+      "id": "ORT3-RESULT_SUCCESS",
+      "path": "fixtures/option-result-trap/v3/result_success.ores",
+      "git_blob": "4b201dbe7fead01c8d3fb7c098fcc39c2b6d28f7"
+    },
+    {
+      "id": "ORT3-RESULT_ERROR",
+      "path": "fixtures/option-result-trap/v3/result_error.ores",
+      "git_blob": "d33775c37bf982b80970665be1bb8915970cf9bb"
+    },
+    {
+      "id": "ORT3-TRAP_SUCCESS",
+      "path": "fixtures/option-result-trap/v3/trap_success.ores",
+      "git_blob": "a2652b56aeb9bc54884a94c806c14abe60976892"
+    },
+    {
+      "id": "ORT3-TRAP_NESTED",
+      "path": "fixtures/option-result-trap/v3/trap_nested.ores",
+      "git_blob": "84ae45082c140f2f25f94b12c7b078f156f72e54"
+    },
+    {
+      "id": "ORT3-TRAP_ERR_DATA",
+      "path": "fixtures/option-result-trap/v3/trap_err_data.ores",
+      "git_blob": "36c2eadada0b30bd6e3e199b585dd07c337ea949"
+    },
+    {
+      "id": "ORT3-TRAP_CAST_FAILURE",
+      "path": "fixtures/option-result-trap/v3/trap_cast_failure.ores",
+      "git_blob": "7b56a5fb46f132c09f71f0e00a90baa94e54dbc3"
+    }
+  ]
+}
