@@ -10,6 +10,7 @@ const validGen = value => Number.isSafeInteger(value) && value > 0;
 export class PgLocalReference {
   #runtime;
   #isolate;
+  #registryId = Symbol('pg-registry-incarnation');
   #groups = new Map();
   #actors = new Map();
   #permissions = new Map();
@@ -116,11 +117,12 @@ export class PgLocalReference {
     if (limit === 0 || g.members.size > limit)
       return Object.freeze({status:'RECIPIENT_LIMIT',members:Object.freeze([])});
     return Object.freeze({status:'OK',runtime:this.#runtime,isolate:this.#isolate,
-      group:id,incarnation:g.incarnation,members:Object.freeze([...g.members])});
+      group:id,incarnation:g.incarnation,registry:this.#registryId,
+      members:Object.freeze([...g.members])});
   }
   isLiveMember(snapshot, member) {
     if (!snapshot || snapshot.status !== 'OK' || snapshot.runtime !== this.#runtime ||
-        snapshot.isolate !== this.#isolate) return false;
+        snapshot.isolate !== this.#isolate || snapshot.registry !== this.#registryId) return false;
     const g = this.#groups.get(snapshot.group);
     return !!g && g.incarnation === snapshot.incarnation &&
       snapshot.members.includes(member) && g.members.has(member);
