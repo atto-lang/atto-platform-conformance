@@ -51,7 +51,7 @@ function checkCase(item) {
     if (!failure || typeof failure.category !== 'string') throw failure;
     result = { kind: 'error', category: failure.category, phase: failure.phase };
   }
-  assert.deepEqual(item.expected, result, \`\${item.id}: fixture diverges from signed-i64 reference\`);
+  assert.deepEqual(item.expected, result, `${item.id}: fixture diverges from signed-i64 reference`);
 }
 
 test('checked-i64 contract remains candidate/unattested; fixture identities are unique', () => {
@@ -64,7 +64,7 @@ test('checked-i64 contract remains candidate/unattested; fixture identities are 
 });
 
 for (const fixture of manifest.cases) {
-  test(\`mathematical reference: \${fixture.id}\`, () => {
+  test(`mathematical reference: ${fixture.id}`, () => {
     checkCase(fixture);
     if (fixture.expr.op === 'div_trunc') {
       assert.equal(fixture.guestSource, undefined, 'stage-0 source mapping is unratified');
