@@ -156,23 +156,58 @@ export class VectorReference {
 
 export class GuardedCellReference {
   #value;
-  #locked = false;
+  #readers = 0;
+  #writer = false;
   constructor(value) { this.#value = scalar(value); }
   with_write(callback) {
-    ensure(!this.#locked && typeof callback === "function", "mutex contention or callback");
-    this.#locked = true;
+    ensure(!this.#writer && this.#readers === 0 &&
+      typeof callback === "function", "mutex contention or callback");
+    this.#writer = true;
+    let active = true;
+    const guard = Object.freeze({
+      read: () => {
+        ensure(active && this.#writer, "expired write guard");
+        return this.#value;
+      },
+      write: value => {
+        ensure(active && this.#writer, "expired write guard");
+        this.#value = scalar(value);
+      }
+    });
     try {
-      const result = callback(Object.freeze({
-        read: () => this.#value,
-        write: value => { this.#value = scalar(value); }
-      }));
+      const result = callback(guard);
       ensure(!(result && typeof result.then === "function"),
         "suspending while holding synchronous guard");
+      ensure(result !== guard, "cannot return write guard from callback");
       return result;
-    } finally { this.#locked = false; }
+    } finally {
+      // Revocation is essential: a closure can otherwise retain this guard
+      // and mutate after the lock is released, even in a single JS turn.
+      active = false;
+      this.#writer = false;
+    }
   }
   with_read(callback) {
-    return this.with_write(guard => callback(guard.read()));
+    ensure(!this.#writer && typeof callback === "function",
+      "read conflicts with writer");
+    this.#readers++;
+    let active = true;
+    const view = Object.freeze({
+      read: () => {
+        ensure(active && !this.#writer, "expired read guard");
+        return this.#value;
+      }
+    });
+    try {
+      const result = callback(view.read());
+      ensure(!(result && typeof result.then === "function"),
+        "suspending while holding synchronous read guard");
+      ensure(result !== view, "cannot return read guard");
+      return result;
+    } finally {
+      active = false;
+      this.#readers--;
+    }
   }
 }
 
