@@ -21,7 +21,7 @@ function validate(data, verifyFiles = true) {
     assert.match(state, /^(candidate-on-unverified-draft|llvm-frontend-delegated-guest-not-verified|native-i64-draft-unverified|shipping-parser-unsupported)$/);
   }
   assert.ok(Array.isArray(data.cases));
-  assert.equal(data.cases.length, 18);
+  assert.equal(data.cases.length, 20);
   const ids = new Set(), files = new Set();
   let accept = 0, reject = 0, trap = 0;
   for (const [index, entry] of data.cases.entries()) {
@@ -58,11 +58,11 @@ function validate(data, verifyFiles = true) {
     }
   }
   assert.equal(accept, 6);
-  assert.equal(reject, 11);
+  assert.equal(reject, 13);
   assert.equal(trap, 1);
 }
 
-test("immutable default corpus: five backend targets, 18 exact native Oreslang files", () => {
+test("immutable default corpus: five backend targets, 20 exact native Oreslang files", () => {
   validate(canonical);
 });
 
