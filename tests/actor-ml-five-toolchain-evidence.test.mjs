@@ -63,3 +63,8 @@ denial("no runner",r=>r.backends[3].ci.runner_id=0);
 denial("CI ran wrong commit",r=>r.backends[0].ci.head_sha="f".repeat(40));
 denial("undeclared parity flag",r=>r.five_toolchain_parity_certified=true);
 denial("extra backend evidence field",r=>r.backends[0].claim="verified");
+
+denial("all-zero source commit placeholder",r=>r.backends[0].source_commit="0".repeat(40));
+denial("all-zero source tree placeholder",r=>r.backends[2].source_tree="0".repeat(40));
+denial("all-zero compiler digest placeholder",r=>r.backends[3].compiler_sha256="0".repeat(64));
+denial("all-zero executable digest placeholder",r=>r.backends[4].guest_sha256="0".repeat(64));
