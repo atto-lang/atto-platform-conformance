@@ -151,6 +151,29 @@ test("corpus mutations reject a substituted .ores payload",async()=>{
     await assert.rejects(loadAndCheckCorpus(dir),/fixture SHA-256 mismatch/);
   }finally{await rm(dir,{recursive:true,force:true})}
 });
+test("corpus rejects extra or nonregular entries even when ten hashes match",async()=>{
+  const dir=await mkdtemp(join(tmpdir(),"platform-ores-inventory-"));
+  const corpus=join(dir,"fixtures/platform-portability-v1");
+  try{
+    await mkdir(join(dir,"contracts"),{recursive:true});
+    await mkdir(corpus,{recursive:true});
+    await writeFile(join(dir,"contracts/platform-portability-v1.json"),JSON.stringify(contract));
+    for(const v of contract.cases)
+      await writeFile(join(corpus,v.file),
+        await readFile(join(root,"fixtures/platform-portability-v1",v.file)));
+    const foreign=join(corpus,"unexpected.ores");
+    await writeFile(foreign,"pub fnc main(): int { return 0; }\\n");
+    await assert.rejects(loadAndCheckCorpus(dir),/unexpected, missing or nonregular source fixture entry/);
+    await rm(foreign);
+    await mkdir(foreign);
+    await assert.rejects(loadAndCheckCorpus(dir),/unexpected, missing or nonregular source fixture entry/);
+    await rm(foreign,{recursive:true});
+    const replaced=join(corpus,"scalar-42.ores");
+    await rm(replaced);
+    await mkdir(replaced);
+    await assert.rejects(loadAndCheckCorpus(dir),/unexpected, missing or nonregular source fixture entry/);
+  }finally{await rm(dir,{recursive:true,force:true})}
+});
 test("corpus rejects symbolic source substitution",async()=>{
   const dir=await mkdtemp(join(tmpdir(),"platform-ores-symlink-"));
   try{
