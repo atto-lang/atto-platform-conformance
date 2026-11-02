@@ -87,6 +87,31 @@ test('spawn demands statically named non-suspending entry, permit, and Send resu
   assert.throws(()=>new LocalStateThreadModel({capacity:0}),/INVALID_CAPACITY/);
 });
 
+test('only compiler-lowered owned Send captures enter static AOT thread ABI', () => {
+  const m = new LocalStateThreadModel({capacity:1});
+  const owned = {...entry(box(primitive)),entryKind:'owned-closure',
+    compilerLowered:true,captureOwned:true,captureStatic:true,captureType:box(primitive)};
+  const accepted = m.spawn(owned);
+  assert.throws(() => m.spawn(owned),/THREAD_CAPACITY_EXHAUSTED/);
+  m.complete(accepted,42);
+  assert.equal(m.join(accepted),42);
+  for (const tamper of [
+    {entryStatic:false}, {entrySuspends:true},
+    {compilerLowered:false}, {captureOwned:false},
+    {captureStatic:false}, {captureType:{kind:'borrow',of:primitive}},
+    {captureType:{kind:'actorState',of:primitive}},
+    {captureType:{kind:'arc',of:cell}},
+    {entryKind:'dynamic-function'},
+  ]) {
+    assert.throws(() => m.spawn({...owned,...tamper}),/THREAD_ENTRY_NOT_STATIC|THREAD_CAPTURE_NOT_SEND/);
+  }
+  assert.throws(() => m.spawn({...entry(primitive),captureType:box(primitive)}),
+    /THREAD_ENTRY_SHAPE_MISMATCH/);
+  const named = m.spawn(entry(primitive));
+  m.complete(named,3);
+  assert.equal(m.join(named),3);
+});
+
 test('thread quota bounded and exits require physical completion before join', () => {
   const m=new LocalStateThreadModel({capacity:2});
   const t1=m.spawn(entry(primitive)),t2=m.spawn(entry(primitive));
