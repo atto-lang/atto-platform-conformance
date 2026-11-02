@@ -4,7 +4,7 @@ Cross-platform, **evidence-first** language and runtime conformance suite. A har
 
 ## Resumable media streaming v1 — host reference
 
-The [media replay v1 contract](docs/MEDIA_REPLAY_V1.md) defines a bounded 2 MiB compressed-chunk sender replay window, receiver applied-checkpoint ledger, cumulative ACK semantics, actor generation fencing and codec-safe random-access resets. Run the 45 locally executed host-reference tests (including [six shared operation vectors](contracts/media-replay-v1-vectors.json)) with:
+The [media replay v1 contract](docs/MEDIA_REPLAY_V1.md) defines a bounded 2 MiB compressed-chunk sender replay window, receiver applied-checkpoint ledger, cumulative ACK semantics, actor generation fencing and codec-safe random-access resets. Run the 46 locally executed host-reference tests (including [six shared operation vectors](contracts/media-replay-v1-vectors.json)) with:
 
 ```sh
 node --test tests/media-replay*.test.mjs
@@ -176,3 +176,7 @@ probe; it does not prove six-backend parity, guest execution, runtime safety,
 trusted-code AOT, or CI provenance. Registering cases does not establish compiler or execution proof. See
 `tests/six-backend-admission.test.mjs` for regression coverage.
 
+
+### Optional real H.264 host-codec integration
+
+`tests/media-replay-ffmpeg-v1.test.mjs` generates 30 Annex-B H.264 frames using FFmpeg `libx264` with repeated SPS/PPS and IDR every 10 frames. It checks byte-identical replay after network interruption, decodes all 30 frames via `ffprobe`, and independently decodes 10 frames after a verified IDR restart. On hosts without FFmpeg/libx264/ffprobe it **reports an explicit skipped/unsupported case**, never a codec success. The local Node 22 test was actually executed against FFmpeg 7.1.5; this does not establish an Oreslang guest codec implementation.
