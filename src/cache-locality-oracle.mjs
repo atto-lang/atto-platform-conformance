@@ -120,10 +120,12 @@ export function mayShareCacheLine(a,b,lineBytes=64) {
     &&(x.baseRemainder==null || (id(x.baseRemainder)&&x.baseRemainder<lineBytes));
   if(!valid(a)||!valid(b)) fail('INVALID_BYTE_RANGE');
   if(a.length===0||b.length===0) return false;
-  // Distinct malloc allocations can still be packed into the SAME physical
-  // cache line. Only verified line-aligned, nonoverlapping allocations isolate.
-  if(a.allocation!==b.allocation)
-    return !(a.baseRemainder===0 && b.baseRemainder===0);
+  // A named allocation and its base modulo do not prove that two differently
+  // named buffers have disjoint physical cache lines. In particular, caller
+  // supplied labels can alias, and two aligned bases are not a non-overlap
+  // certificate. Fail closed across allocations until a trusted allocation
+  // provenance capability is defined; never infer safety from names.
+  if(a.allocation!==b.allocation) return true;
   if(a.baseRemainder!=null && b.baseRemainder!=null
       && a.baseRemainder!==b.baseRemainder) fail('INVALID_BYTE_RANGE');
   const base=a.baseRemainder??b.baseRemainder;
