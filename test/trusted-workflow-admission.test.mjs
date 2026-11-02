@@ -57,7 +57,9 @@ mutate('untrusted API reader missing',x=>x.readJobs=undefined);
 mutate('jobs payload with self-certified success but no execution',(_x,_r,_c,jobs)=>{jobs.jobs[0].status='completed';jobs.jobs[0].conclusion='success';jobs.jobs[0].steps=[]});
 test('256 validated steps at job cap remain admissible',async()=>{
  const x=options(),r=await x.readJobs();const steps=[];
- for(let i=0;i<256;i++)steps.push({number:i+1,name:`s${i+1}`,status:'completed',conclusion:'success',started_at:t0,completed_at:t1});
+ for(let i=0;i<256;i++)steps.push({number:i+1,name:`s${i+1}`,status:'completed',conclusion:'success',
+   started_at:`2026-11-01T12:00:00.${String(i).padStart(9,'0')}Z`,
+   completed_at:`2026-11-01T12:00:00.${String(i+1).padStart(9,'0')}Z`});
  r.jobs[0].steps=steps;x.readJobs=async()=>r;assert.equal((await verify(x)).checkedJobs[0].executedStepCount,256);
 });
 mutate('257 steps are rejected',(_x,_r,_c,jobs)=>{jobs.jobs[0].steps=Array.from({length:257},(_,i)=>({number:i+1,name:'run',status:'completed',conclusion:'success',started_at:t0,completed_at:t1}))});
@@ -182,6 +184,30 @@ test('valid nanosecond ordering across whole-second boundaries passes',async()=>
   j.steps[1].started_at='2026-11-01T12:00:01.000000001Z';
   j.steps[1].completed_at='2026-11-01T12:00:02.000000000Z';
   j.completed_at='2026-11-01T12:00:02.000000001Z';
+  x.readJobs=async()=>jobs;
+  assert.equal((await verify(x)).checkedJobs[0].executedStepCount,2);
+});
+
+// Sequential GitHub Actions steps must not overlap, even if each timestamp
+// independently fits inside the job's start/completion interval.
+mutate('reject second step starting one nanosecond before first step completes',(_x,_r,_c,jobs)=>{
+  jobs.jobs[0].steps[1].started_at='2026-11-01T12:00:00.999999999Z';
+});
+mutate('reject second step starting before first step starts',(_x,_r,_c,jobs)=>{
+  jobs.jobs[0].steps[0].started_at='2026-11-01T12:00:00.5Z';
+  jobs.jobs[0].steps[1].started_at='2026-11-01T12:00:00.1Z';
+});
+test('adjacent steps may meet at the exact same nanosecond',async()=>{
+  const x=options(),jobs=await x.readJobs();
+  jobs.jobs[0].steps[0].completed_at='2026-11-01T12:00:01.123456789Z';
+  jobs.jobs[0].steps[1].started_at='2026-11-01T12:00:01.123456789Z';
+  x.readJobs=async()=>jobs;
+  assert.equal((await verify(x)).checkedJobs[0].executedStepCount,2);
+});
+test('one-nanosecond gap between steps is admissible',async()=>{
+  const x=options(),jobs=await x.readJobs();
+  jobs.jobs[0].steps[0].completed_at='2026-11-01T12:00:01.123456789Z';
+  jobs.jobs[0].steps[1].started_at='2026-11-01T12:00:01.123456790Z';
   x.readJobs=async()=>jobs;
   assert.equal((await verify(x)).checkedJobs[0].executedStepCount,2);
 });

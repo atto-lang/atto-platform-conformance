@@ -82,12 +82,15 @@ export async function verifyTrustedWorkflowAdmission({backend, repository, runId
         !Array.isArray(job.steps) || job.steps.length < 1 || job.steps.length > 256)
       fail('required job unassigned, skipped or unexecuted');
     const [jobStart,jobEnd]=requireInterval(job.started_at,job.completed_at,'job');
+    let previousStepEnd=jobStart;
     for (let i=0;i<job.steps.length;i++) {
       const s=job.steps[i];
       if (!s || s.number !== i+1 || !validLine(s.name) || s.status !== 'completed' ||
           s.conclusion !== 'success') fail('required job step missing, failed or out of order');
       const [a,b]=requireInterval(s.started_at,s.completed_at,'step');
       if (a<jobStart || b>jobEnd) fail('step time outside assigned job');
+      if (a<previousStepEnd) fail('overlapping or out-of-order job steps');
+      previousStepEnd=b;
     }
     checked.push(Object.freeze({name, jobId:job.id, runnerId:job.runner_id,
       executedStepCount:job.steps.length}));
