@@ -43,8 +43,18 @@ async function executableEvidence(path,digest){
     return {dev:before.dev,ino:before.ino,size:before.size,mtimeMs:before.mtimeMs,ctimeMs:before.ctimeMs};
   }finally{await handle.close()}
 }
-async function runNativeCranelift({compiler,compilerSha256,compilerCommit,timeoutMs=5000,
-  spawn=spawnSync}={}){
+async function runNativeCranelift(options={}){
+  // This is an evidence-collecting entrypoint, not a mockable host-test API.
+  // A caller must not replace process execution or smuggle getters/options.
+  requireCase(options!==null&&typeof options==="object"&&!Array.isArray(options)&&
+    (Object.getPrototypeOf(options)===Object.prototype||
+      Object.getPrototypeOf(options)===null),"native runner options must be plain object");
+  const descriptors=Object.getOwnPropertyDescriptors(options);
+  const allowed=["compiler","compilerSha256","compilerCommit","timeoutMs"];
+  requireCase(Reflect.ownKeys(descriptors).every(key=>typeof key==="string"&&
+    allowed.includes(key)&&Object.hasOwn(descriptors[key],"value")),
+    "unknown or accessor native runner option");
+  const {compiler,compilerSha256,compilerCommit,timeoutMs=5000}=options;
   requireCase(typeof compiler==="string"&&isAbsolute(compiler),"unconfigured compiler");
   requireCase(sha64.test(compilerSha256||""),"missing SHA-256 of real native compiler");
   requireCase(sha40.test(compilerCommit||""),"missing full pinned compiler source commit");
@@ -68,7 +78,7 @@ async function runNativeCranelift({compiler,compilerSha256,compilerCommit,timeou
     // IR mode independently proves this binary is asked to lower the exact
     // source, rather than relying on a stdout-only wrapper. The IR digest
     // is necessary but not independently authenticated JIT provenance.
-    const ir=spawn(compiler,["ir",file],{
+    const ir=spawnSync(compiler,["ir",file],{
       shell:false,encoding:"utf8",timeout:timeoutMs,maxBuffer:65536,
       env:{PATH:"/usr/bin:/bin",LANG:"C",LC_ALL:"C",RUST_BACKTRACE:"0"}
     });
@@ -88,7 +98,7 @@ async function runNativeCranelift({compiler,compilerSha256,compilerCommit,timeou
       requireCase(ir.status===0&&ir.stderr===""&&
         /\bfunction\b/.test(ir.stdout)&&ir.stdout.length<65536,
         "native Cranelift did not produce bounded CLIF IR");
-    const command=spawn(compiler,["run",file],{
+    const command=spawnSync(compiler,["run",file],{
       shell:false,encoding:"utf8",timeout:timeoutMs,maxBuffer:8192,
       env:{PATH:"/usr/bin:/bin",LANG:"C",LC_ALL:"C",RUST_BACKTRACE:"0"}
     });
