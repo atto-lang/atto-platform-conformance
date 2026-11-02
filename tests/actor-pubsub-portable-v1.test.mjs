@@ -231,7 +231,7 @@ test("duplicate subscription preserves a single delivery and quota",()=>{
   const again=bus.subscribe(topic,"actor",a,2);
   assert.equal(again.subscription,first.subscription);
   assert.equal(again.alreadySubscribed,true);
-  assert.equal(bus.subscriptions.size,1);
+  assert.equal(bus.subscriptionCount,1);
   assert.equal(bus.subscribe(topic,"actor",a,3).error,"SubscriptionConflict");
   assert.equal(bus.tryPublish(topic,share({id:"once"})).receipt.recipients,1);
   assert.equal(bus.start(first.subscription,a).delivery.payload.id,"once");
@@ -290,13 +290,18 @@ test("forged membership views do not authorize scoped publication",()=>{
   assert.equal(bus.tryPublish(topic,share({id:"x"}),
     Object.freeze({id:1,group,actor})).error,"UnauthorizedPublisher");
   assert.equal(bus.subscribe(topic,"actor",actor,1).error,"UnauthorizedSubscriber");
-  assert.equal(bus.join(group,actor).ok,true);
-  const grant=[...bus.memberships.values()][0].capability;
+  assert.equal(group.members.has(actor.key),false,
+    "mutating an introspection snapshot cannot mutate membership");
+  const grant=bus.join(group,actor).membership;
+  assert.ok(grant);
   assert.equal(bus.tryPublish(topic,share({id:"allowed"}),grant).ok,true);
   assert.ok(Object.isFrozen(grant));
   assert.ok(Object.isFrozen(topic));
   assert.ok(Object.isFrozen(actor));
   assert.ok(Object.isFrozen(group));
+  const subscription=bus.subscribe(topic,"actor",actor,1).subscription;
+  assert.ok(Object.isFrozen(subscription));
+  assert.throws(()=>{subscription.closed=false;},TypeError);
   assert.throws(()=>{grant.group=bus.group("other").group;},TypeError);
   assert.throws(()=>{actor.alive=false;},TypeError);
   assert.throws(()=>{group.closed=true;},TypeError);
