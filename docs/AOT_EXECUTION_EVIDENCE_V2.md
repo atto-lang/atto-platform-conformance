@@ -6,7 +6,7 @@
 
 Distinguish program-specific guest AOT from a Graal Native Image / .NET NativeAOT that merely packages a guest interpreter, from a Cranelift/LLVM relocatable object that is not linked, from a Wasmtime host without a closed guest module, and from optional JIT-only or hybrid operation.
 
-`lib/aot-execution-evidence-v2.mjs` exports `classifyAotExecutionEvidence(receipt, trustedExpected)`. The caller supplies an independently read source commit/tree selector. A self-reported receipt cannot authenticate GitHub job steps, compiler provenance, toolchain identity, a real guest entrypoint, absence of JIT, independent approval, or release eligibility. **Every classification, including AOT_STRUCTURAL_REVIEW_REQUIRED, carries releaseQualified=false.**
+`lib/aot-execution-evidence-v2.mjs` exports `classifyAotExecutionEvidence(receipt, trustedExpected)`. The caller supplies an independently read source commit/tree selector. A self-reported receipt cannot authenticate GitHub job steps, compiler provenance, toolchain identity, a real guest entrypoint, absence of JIT, independent approval, or release eligibility. **Every classification, including AOT_STRUCTURAL_REVIEW_REQUIRED, carries ok=false and releaseQualified=false. structurallyValid=true is informational and must not be treated as promotion.**
 
 ## Admission semantics
 
@@ -40,4 +40,4 @@ Distinguish program-specific guest AOT from a Graal Native Image / .NET NativeAO
 
     node --test tests/aot-execution-evidence-v2.test.mjs
 
-The 30 authored Node cases test structural classification and adversarial substitution only. They do **not** execute any AttoLang compiler or guest program. Existing v1 validator remains backward-compatible and unmodified.
+The 31 authored Node cases test structural classification and adversarial substitution only. They do **not** execute any AttoLang compiler or guest program. Existing v1 validator remains backward-compatible and unmodified.
