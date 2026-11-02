@@ -22,7 +22,18 @@ test('bare LLC id rejected; identical numeric names on other nodes remain distin
  reject('INVALID_CARRIERS',()=>pick([cpu(0,0,0,0,'1')]));
  reject('INVALID_REQUEST',()=>pick([cpu(0,0)],req('task',{preferredLlc:'1'})));
 });
-test('effective allowed cpuset gates every candidate, including zero-depth lanes',()=>{
+test('reject malformed pseudo-qualified LLC identities before ranking',()=>{
+ for(const bad of ['/', '/llc0', 'node0/', 'node0//llc0',
+                   'node 0/llc0', 'node0/llc 0', 'node0/llc0/',
+                   'node0\\n/llc0', 'node0/llc0\\t']) {
+   reject('INVALID_REQUEST',()=>pick([cpu(0,0)],req('task',{preferredLlc:bad})));
+   reject('INVALID_CARRIERS',()=>pick([cpu(0,0,0,0,bad)]));
+ }
+ // A genuinely domain-qualified label remains an eligible soft preference.
+ assert.equal(pick([cpu(0,0,0,0,'pkg0/L3:5'),cpu(1,1,0,0,'pkg1/L3:5')],
+                   req('task',{preferredLlc:'pkg1/L3:5'}),[0,1]).lane,1);
+});
+\ntest('effective allowed cpuset gates every candidate, including zero-depth lanes',()=>{
  assert.equal(pick([cpu(0,0,999),cpu(1,1,10),cpu(2,2,0)],req(),[1]).lane,1);
  reject('NO_ALLOWED_CARRIER',()=>pick([cpu(0,2)],req(),[0]));
  reject('INVALID_CPU_MASK',()=>pick([cpu(0,0)],req(),[0,0]));
