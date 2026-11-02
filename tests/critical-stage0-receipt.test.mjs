@@ -89,7 +89,7 @@ test('Graal Polyglot is a guest receipt, never a Native Image executable receipt
   assert.throws(()=>verifyCriticalStage0Receipt(falseNative,plan),/native executable/);
   const misrepresented=java();
   misrepresented.cases['positive-try-critical-named-mutex.ores'].native_guest_executed=true;
-  assert.throws(()=>verifyCriticalStage0Receipt(misrepresented,plan),/Graal Polyglot/);
+  assert.throws(()=>verifyCriticalStage0Receipt(misrepresented,plan),/contradictory phase/);
   const wrongMode=java();
   wrongMode.guest_mode='NATIVE_IMAGE';
   assert.throws(()=>verifyCriticalStage0Receipt(wrongMode,plan),/native executable/);
