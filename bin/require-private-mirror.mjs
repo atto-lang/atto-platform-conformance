@@ -10,6 +10,13 @@
 import {pathToFileURL} from "node:url";
 
 const FULL_NAME = /^[A-Za-z0-9][A-Za-z0-9_.-]*\/[A-Za-z0-9][A-Za-z0-9_.-]*$/;
+// Known source-bearing carrier owners are not valid relays or destinations.
+// This is a quarantine layer, not a substitute for source provenance review.
+const QUARANTINED_CARRIER_OWNERS = new Set([
+  "zed-pkg-test", "scintilla-run-test", "ores-dummy-org-oreslang-stack",
+  "agent-pontifex-test", "led-dynamo", "claimgraph-test",
+  "honeypot-r-us-test", "ores-llm"
+]);
 
 function repoName(value) {
   if (typeof value !== "string" || !FULL_NAME.test(value) ||
@@ -73,7 +80,9 @@ export async function requirePrivateMirror({
   const sourceOwner = from.split("/")[0].toLowerCase();
   const targetOwner = to.split("/")[0].toLowerCase();
   if (sourceOwner !== targetOwner ||
-      sourceOwner === "ores-truffle-oreslang") {
+      sourceOwner === "ores-truffle-oreslang" ||
+      QUARANTINED_CARRIER_OWNERS.has(sourceOwner) ||
+      QUARANTINED_CARRIER_OWNERS.has(targetOwner)) {
     // All private Oreslang source publishing is suspended, including a
     // self-repository "mirror": it would create a new source-bearing Git
     // branch without the protected-head authorization and receipt gates.
