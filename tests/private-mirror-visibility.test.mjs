@@ -80,8 +80,21 @@ test("Oreslang source self-mirror is denied before metadata or object requests",
     await assert.rejects(check({
       source: repository, destination: repository,
       approvedDestinations: [repository]
-    }, {}, calls), /incident dispositions #22 and #77/);
+    }, {}, calls), /self-mirror is not an authorized CI destination/);
     assert.equal(calls.length, 0, "self-repository mirroring must never acquire source bytes");
+  }
+});
+
+test("self-mirror denial applies to ordinary private repositories and mixed-case aliases", async()=>{
+  for(const [from,to] of [
+    ["synthetic-private/source","synthetic-private/source"],
+    ["SYNTHETIC-PRIVATE/SOURCE","synthetic-private/source"],
+    ["synthetic-private/source","SYNTHETIC-PRIVATE/SOURCE"]
+  ]){
+    const calls=[];
+    await assert.rejects(check({source:from,destination:to,
+      approvedDestinations:[to]}, {}, calls),/self-mirror is not an authorized CI destination/);
+    assert.equal(calls.length,0,"self-copy must not make GitHub API requests");
   }
 });
 
