@@ -76,6 +76,22 @@ test('untrusted getter, cyclic descriptor and deep nesting fail closed', () => {
   assert.equal(inferTransferTraits(deep).send,false);
 });
 
+test('sparse record fields and hostile Proxy traps fail closed', () => {
+  const sparse = [];
+  sparse.length = 1; // map/every would skip this hole and vacuously accept it.
+  assert.deepEqual(inferTransferTraits({kind:'record',fields:sparse}),{send:false,sync:false});
+  const prototypeTrap = new Proxy({}, {
+    getPrototypeOf() { throw Error('hostile prototype trap'); },
+  });
+  assert.deepEqual(inferTransferTraits(prototypeTrap),{send:false,sync:false});
+  const revoked = Proxy.revocable({}, {});
+  revoked.revoke();
+  assert.deepEqual(inferTransferTraits(revoked.proxy),{send:false,sync:false});
+  const cyclic = {kind:'record',fields:[]};
+  cyclic.fields.push(cyclic);
+  assert.deepEqual(inferTransferTraits(cyclic),{send:false,sync:false});
+});
+
 test('spawn demands statically named non-suspending entry, permit, and Send result', () => {
   const m=new LocalStateThreadModel();
   assert.throws(()=>m.spawn(entry({kind:'closure'})),/THREAD_NOT_SEND/);
