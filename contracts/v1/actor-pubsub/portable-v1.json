@@ -11,19 +11,21 @@
   "protocol": "deterministic action vectors; oracle tests do not establish compiler execution",
   "scope": "runtime-local, typed, non-durable",
   "semantics": {
-    "topic_identity": "broker-instance + exact ASCII name + payload type",
+    "topic_identity": "legacy vectors: broker + name; scoped topics: broker + group identity + name + payload type",
     "join": "idempotent admission, with no second affine membership grant",
     "subscribe": "at most one live registration per topic/target edge; duplicate subscribe returns that registration without new quota; mismatched capacity is SubscriptionConflict",
     "payload": "transitively immutable shared, Sendable type",
     "fanout": "once per distinct subscription and eligible actor; overlap not deduplicated",
     "linearization": "atomic all-or-nothing fanout at topic admission; one monotonic u64 sequence per topic",
     "capacity": "per subscription-recipient outstanding = queued + in-flight",
-    "failure": "Full, Closed, Busy, ResourceExhausted, SequenceExhausted, NotShared, StaleTarget, SubscriptionConflict",
+    "failure": "Full, Closed, Busy, ResourceExhausted, SequenceExhausted, NotShared, StaleTarget, SubscriptionConflict, UnauthorizedPublisher, UnauthorizedSubscriber, StaleGroup, InvalidGroup, InvalidActorIdentity",
     "unsubscribe": "idempotent admission-and-start fence, cancel queued, finish in-flight before done",
     "actor_termination": "revoke memberships, close direct subscriptions, remove pending group deliveries",
     "shutdown": "cancel queued, finish in-flight, then quiescent; no persistence/replay",
     "transport": "redis and network only via adapter; not core guest language",
-    "receipt": "admission only, never consumer ack"
+    "receipt": "admission only, never consumer ack",
+    "publisher_authority": "group-scoped try_publish requires the exact active immutable GroupMembership capability; anonymous, wrong-group, cross-broker, departed, retired, and closed grants rejected",
+    "subscription_authority": "group-scoped topic subscription requires an active member actor or its own group; group leave closes direct scoped subscriptions; rejoin requires new grant"
   },
   "action_format": "array whose first element is operation; expected observes errors and delivery envelopes",
   "cases": [
@@ -1113,6 +1115,412 @@
         "begin:Empty",
         "publish:2:1",
         "begin:2:e2"
+      ]
+    },
+    {
+      "id": "PS021",
+      "name": "scoped publication requires explicit live publisher grant",
+      "actions": [
+        [
+          "actor",
+          "a",
+          1
+        ],
+        [
+          "group",
+          "g"
+        ],
+        [
+          "join",
+          "m",
+          "g",
+          "a"
+        ],
+        [
+          "topic_scoped",
+          "t",
+          "g",
+          "events",
+          "Event"
+        ],
+        [
+          "publish",
+          "t",
+          "denied"
+        ],
+        [
+          "publish_as",
+          "t",
+          "m",
+          "accepted"
+        ]
+      ],
+      "expected": [
+        "join:ok",
+        "publish:UnauthorizedPublisher",
+        "publish:1:0"
+      ]
+    },
+    {
+      "id": "PS022",
+      "name": "same name in different groups is isolated and wrong-group grant fails",
+      "actions": [
+        [
+          "actor",
+          "a",
+          1
+        ],
+        [
+          "group",
+          "g1"
+        ],
+        [
+          "group",
+          "g2"
+        ],
+        [
+          "join",
+          "m",
+          "g1",
+          "a"
+        ],
+        [
+          "topic_scoped",
+          "t1",
+          "g1",
+          "events",
+          "Event"
+        ],
+        [
+          "topic_scoped",
+          "t2",
+          "g2",
+          "events",
+          "Other"
+        ],
+        [
+          "publish_as",
+          "t1",
+          "m",
+          "one"
+        ],
+        [
+          "publish_as",
+          "t2",
+          "m",
+          "denied"
+        ]
+      ],
+      "expected": [
+        "join:ok",
+        "publish:1:0",
+        "publish:UnauthorizedPublisher"
+      ]
+    },
+    {
+      "id": "PS023",
+      "name": "leave and rejoin cannot reactivate a stale publisher grant",
+      "actions": [
+        [
+          "actor",
+          "a",
+          1
+        ],
+        [
+          "group",
+          "g"
+        ],
+        [
+          "join",
+          "m1",
+          "g",
+          "a"
+        ],
+        [
+          "topic_scoped",
+          "t",
+          "g",
+          "events",
+          "Event"
+        ],
+        [
+          "publish_as",
+          "t",
+          "m1",
+          "first"
+        ],
+        [
+          "leave",
+          "m1"
+        ],
+        [
+          "publish_as",
+          "t",
+          "m1",
+          "denied"
+        ],
+        [
+          "join",
+          "m2",
+          "g",
+          "a"
+        ],
+        [
+          "publish_as",
+          "t",
+          "m1",
+          "still-denied"
+        ],
+        [
+          "publish_as",
+          "t",
+          "m2",
+          "second"
+        ]
+      ],
+      "expected": [
+        "join:ok",
+        "publish:1:0",
+        "leave:ok",
+        "publish:UnauthorizedPublisher",
+        "join:ok",
+        "publish:UnauthorizedPublisher",
+        "publish:2:0"
+      ]
+    },
+    {
+      "id": "PS024",
+      "name": "scoped actor subscriptions require membership and are revoked by leave",
+      "actions": [
+        [
+          "actor",
+          "a",
+          1
+        ],
+        [
+          "group",
+          "g"
+        ],
+        [
+          "topic_scoped",
+          "t",
+          "g",
+          "events",
+          "Event"
+        ],
+        [
+          "subscribe",
+          "s",
+          "t",
+          "actor",
+          "a",
+          2
+        ],
+        [
+          "join",
+          "m1",
+          "g",
+          "a"
+        ],
+        [
+          "subscribe",
+          "s",
+          "t",
+          "actor",
+          "a",
+          2
+        ],
+        [
+          "publish_as",
+          "t",
+          "m1",
+          "first"
+        ],
+        [
+          "leave",
+          "m1"
+        ],
+        [
+          "begin",
+          "s",
+          "a"
+        ],
+        [
+          "join",
+          "m2",
+          "g",
+          "a"
+        ],
+        [
+          "subscribe",
+          "s2",
+          "t",
+          "actor",
+          "a",
+          2
+        ],
+        [
+          "publish_as",
+          "t",
+          "m2",
+          "second"
+        ],
+        [
+          "begin",
+          "s2",
+          "a"
+        ]
+      ],
+      "expected": [
+        "subscribe:UnauthorizedSubscriber",
+        "join:ok",
+        "subscribe:ok",
+        "publish:1:1",
+        "leave:ok",
+        "begin:Closed",
+        "join:ok",
+        "subscribe:ok",
+        "publish:2:1",
+        "begin:2:second"
+      ]
+    },
+    {
+      "id": "PS025",
+      "name": "scoped group subscription rejects a different group",
+      "actions": [
+        [
+          "actor",
+          "a",
+          1
+        ],
+        [
+          "group",
+          "g1"
+        ],
+        [
+          "group",
+          "g2"
+        ],
+        [
+          "join",
+          "m",
+          "g1",
+          "a"
+        ],
+        [
+          "topic_scoped",
+          "t",
+          "g1",
+          "events",
+          "Event"
+        ],
+        [
+          "subscribe",
+          "bad",
+          "t",
+          "group",
+          "g2",
+          2
+        ],
+        [
+          "subscribe",
+          "s",
+          "t",
+          "group",
+          "g1",
+          2
+        ],
+        [
+          "publish_as",
+          "t",
+          "m",
+          "allowed"
+        ],
+        [
+          "begin",
+          "s",
+          "a"
+        ]
+      ],
+      "expected": [
+        "join:ok",
+        "subscribe:UnauthorizedSubscriber",
+        "subscribe:ok",
+        "publish:1:1",
+        "begin:1:allowed"
+      ]
+    },
+    {
+      "id": "PS026",
+      "name": "group close fences publications subscriptions and future topic definitions",
+      "actions": [
+        [
+          "actor",
+          "a",
+          1
+        ],
+        [
+          "group",
+          "g"
+        ],
+        [
+          "join",
+          "m",
+          "g",
+          "a"
+        ],
+        [
+          "topic_scoped",
+          "t",
+          "g",
+          "events",
+          "Event"
+        ],
+        [
+          "subscribe",
+          "s",
+          "t",
+          "group",
+          "g",
+          2
+        ],
+        [
+          "publish_as",
+          "t",
+          "m",
+          "first"
+        ],
+        [
+          "close_group",
+          "g"
+        ],
+        [
+          "publish_as",
+          "t",
+          "m",
+          "denied"
+        ],
+        [
+          "begin",
+          "s",
+          "a"
+        ],
+        [
+          "topic_scoped",
+          "closed",
+          "g",
+          "new",
+          "Event"
+        ]
+      ],
+      "expected": [
+        "join:ok",
+        "subscribe:ok",
+        "publish:1:1",
+        "close_group:ok",
+        "publish:UnauthorizedPublisher",
+        "begin:Closed",
+        "topic:StaleGroup"
       ]
     }
   ]
