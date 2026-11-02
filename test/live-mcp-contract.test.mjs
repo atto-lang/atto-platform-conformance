@@ -7,8 +7,10 @@ const original = JSON.parse(readFileSync(
   new URL('../contracts/live-devtools-mcp-v1.json', import.meta.url), 'utf8'));
 const clone = () => structuredClone(original);
 
-test('requires every case to remain explicitly unexecuted initially', () => {
-  assert.deepEqual(verify(original), { total: 12, executed: 0 });
+test('requires evidence for each promoted host case while keeping runtime cases unexecuted', () => {
+  assert.deepEqual(verify(original), { total: 12, executed: 3 });
+  assert.ok(original.cases.filter(c => c.status !== 'NOT_EXECUTED')
+      .every(c => c.tier === 'host-protocol'));
 });
 
 test('rejects missing and duplicate case identifiers', () => {
