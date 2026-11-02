@@ -106,3 +106,13 @@ test('no executed evidence if runner, steps or binary output is absent',()=>{
     x=>{x.execution.guestOutputSha256=null},x=>{x.artifact.sha256=null}
   ]) {const x=good();mutate(x);assert.equal(classify(x).classification,'INVALID');}
 });
+
+test('structural review cannot be mistaken for successful release gating',()=>{
+  for(const x of [good('llvm','full-aot'),good('wasm','hybrid'),good('java','jit')]) {
+    if(x.mode==='jit') { x.artifact.kind='jit-only-guest'; }
+    const out=classify(x);
+    assert.equal(out.ok,false);
+    assert.equal(out.releaseQualified,false);
+    assert.equal(out.structurallyValid,true);
+  }
+});
