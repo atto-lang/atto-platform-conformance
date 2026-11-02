@@ -336,3 +336,48 @@ test("terminated actor grant cannot publish after next incarnation joins",()=>{
   assert.equal(bus.tryPublish(topic,share({id:"stale2"}),stale).error,
     "UnauthorizedPublisher");
 });
+
+
+test("bounded live memberships reclaim quota and never revive old grants",()=>{
+  const bus=new PubSubReference({maxMemberships:1});
+  const actor=bus.actor("a").actor;
+  const left=bus.group("left").group,right=bus.group("right").group;
+  const topic=bus.topicInGroup(left,"events","Event").topic;
+  const old=bus.join(left,actor).membership;
+  assert.equal(bus.membershipCount,1);
+  assert.equal(bus.join(left,actor).alreadyMember,true);
+  assert.equal(bus.join(right,actor).error,"ResourceExhausted");
+  assert.equal(bus.leave(old).ok,true);
+  assert.equal(bus.membershipCount,0);
+  assert.equal(bus.tryPublish(topic,share({id:"revoked"}),old).error,
+    "UnauthorizedPublisher");
+  const renewed=bus.join(left,actor).membership;
+  assert.equal(bus.membershipCount,1);
+  assert.notEqual(renewed,old);
+  assert.equal(bus.tryPublish(topic,share({id:"valid"}),renewed).ok,true);
+  assert.equal(bus.tryPublish(topic,share({id:"old"}),old).error,
+    "UnauthorizedPublisher");
+  assert.throws(()=>{bus.maxMemberships=100;},TypeError);
+  assert.throws(()=>{bus.closed=false;},TypeError);
+  assert.throws(()=>new PubSubReference({maxMemberships:0}),RangeError);
+});
+
+test("retired subscriptions release quota but retain exact quiescence state",()=>{
+  const bus=new PubSubReference({maxSubscriptions:1});
+  const actor=bus.actor("a").actor;
+  const topic=bus.topic("events","Event").topic;
+  const old=bus.subscribe(topic,"actor",actor,1).subscription;
+  assert.equal(bus.tryPublish(topic,share({id:"work"})).ok,true);
+  assert.equal(bus.start(old,actor).ok,true);
+  assert.equal(bus.unsubscribe(old).done,false);
+  assert.equal(bus.subscriptionCount,0);
+  assert.equal(bus.start(old,actor).error,"Closed");
+  const renewed=bus.subscribe(topic,"actor",actor,1).subscription;
+  assert.notEqual(renewed,old);
+  assert.equal(bus.subscriptionCount,1);
+  assert.equal(bus.finish(old,actor).ok,true);
+  assert.equal(bus.done(old),true);
+  assert.equal(bus.unsubscribe(old).done,true);
+  assert.equal(bus.subscriptionCount,1,
+    "old handle cannot revoke or reclaim the new registration");
+});
