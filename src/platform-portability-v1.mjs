@@ -144,7 +144,9 @@ export function validateObservation(o,c){
   good(!!v&&o.fixtureSha256===v.sha256,"unbound source fixture");
   good(o.compilerRepo===REPOS[o.toolchain]&&
     [o.sourceCommit,o.platformCommit,o.compilerCommit].every(sha40)&&
-    sha64(o.compilerBinarySha256)&&sha64(o.artifactSha256),"unbound compiler/source identity");
+    sha64(o.compilerBinarySha256)&&
+    (v.expect==="execute"?sha64(o.artifactSha256):o.artifactSha256===null),
+    "unbound compiler/source identity");
   exactKeys(o.run,["repository","headSha","runId","attempt","jobId","runnerId","conclusion","steps"]);
   good(o.run.repository===c.platforms[o.platform]&&o.run.headSha===o.platformCommit,
     "run repository/head does not bind platform source");
@@ -179,8 +181,10 @@ export function validateObservation(o,c){
     good(o.engine.name==="native-cranelift-jit"&&
       o.engine.compilerCommit===o.compilerCommit&&
       o.engine.compilerBinarySha256===o.compilerBinarySha256&&
-      sha64(o.engine.clifSha256)&&o.engine.clifSha256===o.artifactSha256,
-      "Cranelift requires pinned native JIT compiler and generated CLIF identity");
+      (v.expect==="execute"?
+        sha64(o.engine.clifSha256)&&o.engine.clifSha256===o.artifactSha256:
+        o.engine.clifSha256===null&&o.artifactSha256===null),
+      "Cranelift requires a real CLIF for execution and no fabricated CLIF for rejection");
     if(v.expect==="execute")
       good(o.run.steps.includes("run-cranelift-native-jit")&&
         o.run.steps.includes("inspect-cranelift-ir"),
@@ -193,9 +197,11 @@ export function validateObservation(o,c){
     good(o.engine.name==="llvm-to-wasm"&&
       o.engine.upstreamCompilerRepo==="ores-truffle-oreslang/oreslang-source.llvm"&&
       sha40(o.engine.upstreamCompilerCommit)&&sha64(o.engine.upstreamCompilerBinarySha256)&&
-      o.engine.wasmModuleSha256===o.artifactSha256&&
-      sha64(o.engine.wasmHostBinarySha256)&&o.engine.zeroImports===true,
-      "Wasm bridge requires pinned LLVM frontend, zero-import module and guest host");
+      sha64(o.engine.wasmHostBinarySha256)&&
+      (v.expect==="execute"?
+        o.engine.wasmModuleSha256===o.artifactSha256&&o.engine.zeroImports===true:
+        o.engine.wasmModuleSha256===null&&o.engine.zeroImports===null),
+      "Wasm bridge requires pinned LLVM frontend, valid host and no fabricated reject module");
     if(v.expect==="execute")
       good(o.run.steps.includes("compile-wasm-module")&&
         o.run.steps.includes("execute-wasm-guest"),"missing compiled Wasm module execution");
@@ -203,10 +209,11 @@ export function validateObservation(o,c){
     exactKeys(o.engine,["name","nativeAotHostSha256","compilerBinarySha256",
       "managedJitFallback"]);
     good(o.engine.name==="dotnet-nativeaot"&&
-      o.engine.nativeAotHostSha256===o.artifactSha256&&
+      sha64(o.engine.nativeAotHostSha256)&&
+      (v.expect==="reject"||o.engine.nativeAotHostSha256===o.artifactSha256)&&
       o.engine.compilerBinarySha256===o.compilerBinarySha256&&
       o.engine.managedJitFallback===false,
-      ".NET needs NativeAOT host artifact and no managed JIT fallback");
+      ".NET needs a pinned NativeAOT host and no managed JIT fallback");
     if(v.expect==="execute")
       good(o.run.steps.includes("publish-native-aot")&&
         o.run.steps.includes("execute-native-aot-guest"),
