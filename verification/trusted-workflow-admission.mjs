@@ -62,10 +62,14 @@ export async function verifyTrustedWorkflowAdmission({backend, repository, runId
       run.conclusion !== 'success') fail('run identity or completion mismatch');
   // GitHub's authenticated workflow run must identify the intended PR, not
   // merely any successful run for the same source commit and workflow path.
+  // Require one unambiguous PR association to this exact source head.
+  // A matching PR number alone can falsely credit a stale source commit.
+  const associated = Array.isArray(run.pull_requests)
+    ? run.pull_requests.filter(pr => pr && pr.number === pullRequestNumber) : [];
   if (!Array.isArray(run.pull_requests) || run.pull_requests.length < 1 ||
-      run.pull_requests.length > 32 || !run.pull_requests.some(pr =>
-        pr && pr.number === pullRequestNumber))
-    fail('run not associated with the verifier-owned pull request');
+      run.pull_requests.length > 32 || associated.length !== 1 ||
+      associated[0].head?.sha !== commitSha)
+    fail('run not associated with the exact-head verifier-owned pull request');
   if (!commit || commit.sha !== commitSha || commit.tree?.sha !== treeSha)
     fail('unverified exact source Git tree');
   if (!response || !Number.isSafeInteger(response.total_count) || response.total_count < 1 ||

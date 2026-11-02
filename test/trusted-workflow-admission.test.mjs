@@ -7,7 +7,7 @@ const options=()=>({backend:'java',repository:R,runId:1001,attempt:2,commitSha:S
   workflowPath:'.github/workflows/source-local.yml',workflowId:345,pullRequestNumber:42,
   requiredJobs:['compiler-guest'],
   readRun:async()=>({id:1001,run_attempt:2,head_sha:S,repository:{full_name:R},head_repository:{full_name:R},
-    path:'.github/workflows/source-local.yml',workflow_id:345,pull_requests:[{number:42}],
+    path:'.github/workflows/source-local.yml',workflow_id:345,pull_requests:[{number:42,head:{sha:S}}],
     event:'pull_request',status:'completed',conclusion:'success'}),
   readCommit:async()=>({sha:S,tree:{sha:TREE}}),
   readJobs:async()=>({total_count:1,jobs:[{id:2001,run_id:1001,run_attempt:2,head_sha:S,
@@ -244,12 +244,17 @@ mutate('missing verifier-owned workflow ID',x=>delete x.workflowId,/missing veri
 mutate('missing verifier-owned PR number',x=>delete x.pullRequestNumber,/missing verifier-owned/);
 mutate('wrong authoritative workflow ID',(_x,run)=>run.workflow_id=346,/run identity/);
 mutate('wrong authoritative PR number',(_x,run)=>run.pull_requests=[{number:41}],/run not associated/);
+mutate('matching PR association must include exact source head',(_x,run)=>delete run.pull_requests[0].head,/run not associated/);
+mutate('stale matching PR head cannot credit a newer source SHA',(_x,run)=>run.pull_requests[0].head.sha='c'.repeat(40),/run not associated/);
+mutate('malformed matching PR source SHA must fail closed',(_x,run)=>run.pull_requests[0].head.sha='not-a-sha',/run not associated/);
+mutate('duplicate matching PR associations are ambiguous',(_x,run)=>run.pull_requests.push({number:42,head:{sha:S}}),/run not associated/);
+
 mutate('missing PR association',(_x,run)=>run.pull_requests=[],/run not associated/);
 mutate('non-array PR association',(_x,run)=>run.pull_requests={number:42},/run not associated/);
 mutate('oversized PR association',(_x,run)=>run.pull_requests=Array.from({length:33},(_,i)=>({number:i+1})),/run not associated/);
 test('matching PR in bounded multi-PR association succeeds',async()=>{
   const x=options(),run=await x.readRun();
-  run.pull_requests=[{number:41},{number:42}];
+  run.pull_requests=[{number:41,head:{sha:'c'.repeat(40)}},{number:42,head:{sha:S}}];
   x.readRun=async()=>run;
   const got=await verify(x);
   assert.equal(got.workflowId,345);
