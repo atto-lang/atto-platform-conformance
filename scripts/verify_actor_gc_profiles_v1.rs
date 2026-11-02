@@ -177,7 +177,7 @@ fn main() {
         eprintln!("actor GC profiles: {err}");
         std::process::exit(1);
     }
-    println!(r#"{"backend_count":6,"required_proof_count":13,"conformance_case_count":18,"executed_guest_tests":0,"zero_gc_certified":false}"#);
+    println!(r#"{{"backend_count":6,"required_proof_count":{},"conformance_case_count":{},"executed_guest_tests":0,"zero_gc_certified":false}}"#, REQUIRED_PROOFS.len(), REQUIRED_CASES.len());
 }
 #[cfg(test)]
 mod tests {
@@ -221,8 +221,8 @@ mod tests {
     }
     #[test] fn managed_host_gc_cannot_be_erased() {
         for host in ["jvm-graal","node-webassembly","clr-nativeaot"] {
-            let prefix = format!(r#""host": "{host}",\n      "hostTracingGcPossible": true"#);
-            let after = format!(r#""host": "{host}",\n      "hostTracingGcPossible": false"#);
+            let prefix = format!("\"host\": \"{host}\",\n      \"hostTracingGcPossible\": true");
+            let after = format!("\"host\": \"{host}\",\n      \"hostTracingGcPossible\": false");
             assert!(APPROVED.contains(&prefix));
             reject(APPROVED.replacen(&prefix, &after, 1).into_bytes());
         }
