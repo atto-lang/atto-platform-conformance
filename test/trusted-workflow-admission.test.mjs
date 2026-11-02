@@ -146,3 +146,42 @@ test('runner label at exactly 4096 UTF-8 bytes remains admissible',async()=>{
   x.readJobs=async()=>jobs;
   assert.equal((await verify(x)).checkedJobs[0].runnerId,32);
 });
+
+// Nanosecond-precision ordering: Date.parse alone loses these differences.
+mutate('reject step beginning one nanosecond before job admission',(_x,_r,_c,jobs)=>{
+  jobs.jobs[0].started_at='2026-11-01T12:00:00.000000002Z';
+  jobs.jobs[0].steps[0].started_at='2026-11-01T12:00:00.000000001Z';
+});
+mutate('reject step finishing one nanosecond after job completion',(_x,_r,_c,jobs)=>{
+  jobs.jobs[0].completed_at='2026-11-01T12:00:02.000000001Z';
+  jobs.jobs[0].steps[1].completed_at='2026-11-01T12:00:02.000000002Z';
+});
+mutate('reject backwards step hidden within one millisecond',(_x,_r,_c,jobs)=>{
+  jobs.jobs[0].steps[0].started_at='2026-11-01T12:00:00.000000002Z';
+  jobs.jobs[0].steps[0].completed_at='2026-11-01T12:00:00.000000001Z';
+});
+mutate('reject ten fractional digits rather than silently truncate',(_x,_r,_c,jobs)=>{
+  jobs.jobs[0].steps[0].started_at='2026-11-01T12:00:00.0000000001Z';
+});
+test('valid mixed-precision nanosecond job and step boundaries pass',async()=>{
+  const x=options(),jobs=await x.readJobs(),j=jobs.jobs[0];
+  j.started_at='2026-11-01T12:00:00.1Z';
+  j.steps[0].started_at='2026-11-01T12:00:00.100000000Z';
+  j.steps[0].completed_at='2026-11-01T12:00:01.1Z';
+  j.steps[1].started_at='2026-11-01T12:00:01.100000001Z';
+  j.steps[1].completed_at='2026-11-01T12:00:02.2Z';
+  j.completed_at='2026-11-01T12:00:02.200000000Z';
+  x.readJobs=async()=>jobs;
+  assert.equal((await verify(x)).checkedJobs[0].executedStepCount,2);
+});
+test('valid nanosecond ordering across whole-second boundaries passes',async()=>{
+  const x=options(),jobs=await x.readJobs(),j=jobs.jobs[0];
+  j.started_at='2026-11-01T12:00:00.999999999Z';
+  j.steps[0].started_at='2026-11-01T12:00:00.999999999Z';
+  j.steps[0].completed_at='2026-11-01T12:00:01.000000000Z';
+  j.steps[1].started_at='2026-11-01T12:00:01.000000001Z';
+  j.steps[1].completed_at='2026-11-01T12:00:02.000000000Z';
+  j.completed_at='2026-11-01T12:00:02.000000001Z';
+  x.readJobs=async()=>jobs;
+  assert.equal((await verify(x)).checkedJobs[0].executedStepCount,2);
+});
