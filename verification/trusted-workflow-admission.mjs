@@ -25,7 +25,7 @@ const requireInterval = (start, end, label) => {
 };
 
 /**
- * Trust contract: readRun, readCommit and readJobs MUST be authenticated,
+ * Trust contract: readRun, readCommit, readJobs and readPullRequest MUST be authenticated,
  * independently retrieved GitHub REST API reads using an approved source-org
  * credential. Never provide fields copied from the untrusted claim/receipt.
  * Required jobs must be a verifier-owned allowlist, not selected by the claim.
@@ -33,7 +33,7 @@ const requireInterval = (start, end, label) => {
  * compiler, guest, review, sandbox or source-transfer certification.
  */
 export async function verifyTrustedWorkflowAdmission({backend, repository, runId, attempt,
-    commitSha, treeSha, workflowPath, workflowId, pullRequestNumber, requiredJobs, readRun, readCommit, readJobs}) {
+    commitSha, treeSha, workflowPath, workflowId, pullRequestNumber, requiredJobs, readRun, readCommit, readJobs, readPullRequest}) {
   if (!BACKENDS.has(backend) || repository !== `ores-truffle-oreslang/oreslang-source.${backend}` &&
       !(backend === 'java' && repository === 'ores-truffle-oreslang/oreslang-source.java'))
     fail('unapproved source repository identity');
@@ -46,13 +46,14 @@ export async function verifyTrustedWorkflowAdmission({backend, repository, runId
   if (!Array.isArray(requiredJobs) || !requiredJobs.length || requiredJobs.length > 16 ||
       new Set(requiredJobs).size !== requiredJobs.length || !requiredJobs.every(validLine))
     fail('invalid verifier-owned job allowlist');
-  if (![readRun, readCommit, readJobs].every(f => typeof f === 'function'))
+  if (![readRun, readCommit, readJobs, readPullRequest].every(f => typeof f === 'function'))
     fail('independent API readers required');
 
-  const [run, commit, response] = await Promise.all([
+  const [run, commit, response, currentPr] = await Promise.all([
     readRun({repository, runId}),
     readCommit({repository, commitSha}),
     readJobs({repository, runId, attempt}),
+    readPullRequest({repository, pullRequestNumber}),
   ]);
   if (!run || run.id !== runId || run.run_attempt !== attempt || run.head_sha !== commitSha ||
       run.workflow_id !== workflowId ||
@@ -70,6 +71,13 @@ export async function verifyTrustedWorkflowAdmission({backend, repository, runId
       run.pull_requests.length > 32 || associated.length !== 1 ||
       associated[0].head?.sha !== commitSha)
     fail('run not associated with the exact-head verifier-owned pull request');
+  // Run metadata identifies its historical PR head. A separate current PR
+  // read prevents a formerly successful run from being reused after a push.
+  if (!currentPr || currentPr.number !== pullRequestNumber ||
+      currentPr.state !== 'open' || currentPr.head?.sha !== commitSha ||
+      currentPr.head?.repo?.full_name !== repository ||
+      currentPr.base?.repo?.full_name !== repository)
+    fail('current pull request head or repository mismatch');
   if (!commit || commit.sha !== commitSha || commit.tree?.sha !== treeSha)
     fail('unverified exact source Git tree');
   if (!response || !Number.isSafeInteger(response.total_count) || response.total_count < 1 ||
@@ -123,7 +131,7 @@ export function createAuthenticatedGitHubReaders({token, fetchImpl=globalThis.fe
   async function get(repository, path) {
     if (!/^ores-truffle-oreslang\/oreslang-source\.(?:java|llvm|wasm|cranelift|net)$/.test(repository))
       fail('GitHub API source repository not approved');
-    if (!/^\/(?:actions\/runs\/|git\/commits\/)/.test(path)) fail('unapproved GitHub API path');
+    if (!/^\/(?:actions\/runs\/|git\/commits\/|pulls\/)/.test(path)) fail('unapproved GitHub API path');
     const url=`https://api.github.com/repos/${repository}${path}`;
     const response=await fetchImpl(url,{method:'GET',redirect:'error',signal:AbortSignal.timeout(10000),
       headers:{authorization:`Bearer ${token}`,accept:'application/vnd.github+json',
@@ -168,6 +176,9 @@ export function createAuthenticatedGitHubReaders({token, fetchImpl=globalThis.fe
       ? get(repository,`/git/commits/${commitSha}`) : Promise.reject(Error('invalid Git commit SHA')),
     readJobs:({repository,runId,attempt})=>POSITIVE_INT(runId) && POSITIVE_INT(attempt)
       ? get(repository,`/actions/runs/${runId}/attempts/${attempt}/jobs?per_page=100`)
-      : Promise.reject(Error('invalid GitHub run attempt')), 
+      : Promise.reject(Error('invalid GitHub run attempt')),
+    readPullRequest:({repository,pullRequestNumber})=>POSITIVE_INT(pullRequestNumber)
+      ? get(repository,`/pulls/${pullRequestNumber}`)
+      : Promise.reject(Error('invalid GitHub pull request number')), 
   });
 }

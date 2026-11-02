@@ -10,15 +10,17 @@ const options=()=>({backend:'java',repository:R,runId:1001,attempt:2,commitSha:S
     path:'.github/workflows/source-local.yml',workflow_id:345,pull_requests:[{number:42,head:{sha:S}}],
     event:'pull_request',status:'completed',conclusion:'success'}),
   readCommit:async()=>({sha:S,tree:{sha:TREE}}),
+  readPullRequest:async()=>({number:42,state:'open',head:{sha:S,repo:{full_name:R}},
+    base:{repo:{full_name:R}}}),
   readJobs:async()=>({total_count:1,jobs:[{id:2001,run_id:1001,run_attempt:2,head_sha:S,
     name:'compiler-guest',runner_id:32,runner_name:'verified-runner',status:'completed',
     conclusion:'success',started_at:t0,completed_at:t2,
     steps:[{number:1,name:'checkout',status:'completed',conclusion:'success',started_at:t0,completed_at:t1},
            {number:2,name:'guest',status:'completed',conclusion:'success',started_at:t1,completed_at:t2}]}]})});
 function mutate(name, edit, reason=/workflow admission:/) {
-  test(name, async()=>{const x=options();const run=await x.readRun(),commit=await x.readCommit(),jobs=await x.readJobs();
-    x.readRun=async()=>run;x.readCommit=async()=>commit;x.readJobs=async()=>jobs;
-    edit(x,run,commit,jobs);await assert.rejects(verify(x),reason);});
+  test(name, async()=>{const x=options();const run=await x.readRun(),commit=await x.readCommit(),jobs=await x.readJobs(),pr=await x.readPullRequest();
+    x.readRun=async()=>run;x.readCommit=async()=>commit;x.readJobs=async()=>jobs;x.readPullRequest=async()=>pr;
+    edit(x,run,commit,jobs,pr);await assert.rejects(verify(x),reason);});
 }
 test('genuine-looking API observations are only metadata, not guest attestation',async()=>{
   const got=await verify(options());assert.equal(got.classification,'executed_success_api_metadata_only');
@@ -26,6 +28,12 @@ test('genuine-looking API observations are only metadata, not guest attestation'
   assert.equal(got.nativeVerified,false);assert.equal(got.sourceTransferAuthorized,false);
   assert.equal(got.independentlyReviewed,false);
 });
+mutate('current PR advances after historical green run',(_x,_r,_c,_j,pr)=>pr.head.sha='c'.repeat(40),/current pull request head/);
+mutate('current PR API number mismatches expected PR',(_x,_r,_c,_j,pr)=>pr.number=43,/current pull request head/);
+mutate('current PR head belongs to foreign fork',(_x,_r,_c,_j,pr)=>pr.head.repo.full_name='foreign/fork',/current pull request head/);
+mutate('current PR base belongs to foreign repository',(_x,_r,_c,_j,pr)=>pr.base.repo.full_name='foreign/repo',/current pull request head/);
+mutate('closed current PR is not an eligible exact-head candidate',(_x,_r,_c,_j,pr)=>pr.state='closed',/current pull request head/);
+mutate('missing independent current PR reader fails closed',x=>x.readPullRequest=undefined,/independent API readers/);
 mutate('wrong exact source commit',x=>x.commitSha='c'.repeat(40));
 mutate('wrong exact Git tree',x=>x.treeSha='c'.repeat(40));
 mutate('invalid backend',x=>x.backend='untrusted');
@@ -67,18 +75,19 @@ test('256 validated steps at job cap remain admissible',async()=>{
 mutate('257 steps are rejected',(_x,_r,_c,jobs)=>{jobs.jobs[0].steps=Array.from({length:257},(_,i)=>({number:i+1,name:'run',status:'completed',conclusion:'success',started_at:t0,completed_at:t1}))});
 
 test('authenticated source-org GitHub REST metadata path uses bearer and no redirects',async()=>{
- const x=options(), run=await x.readRun(), commit=await x.readCommit(), jobs=await x.readJobs();
+ const x=options(), run=await x.readRun(), commit=await x.readCommit(), jobs=await x.readJobs(), pr=await x.readPullRequest();
  const observed=[];
  const api=createAuthenticatedGitHubReaders({token:'private-token-for-mock-only',fetchImpl:async (url,req)=>{
    observed.push({url,req});
-   const value=url.includes('/git/commits/')?commit:url.includes('/attempts/')?jobs:run;
+   const value=url.includes('/pulls/')?pr:url.includes('/git/commits/')?commit:url.includes('/attempts/')?jobs:run;
    return new Response(JSON.stringify(value),{status:200});
  }});
  const result=await verify({...x,...api});assert.equal(result.checkedJobs[0].executedStepCount,2);
- assert.equal(observed.length,3);
+ assert.equal(observed.length,4);
  assert.ok(observed.every(o=>o.url.startsWith(`https://api.github.com/repos/${R}/`)));
  assert.ok(observed.every(o=>o.req.redirect==='error'&&o.req.headers.authorization==='Bearer private-token-for-mock-only'));
  assert.ok(observed.some(o=>o.url.endsWith('/actions/runs/1001/attempts/2/jobs?per_page=100')));
+ assert.ok(observed.some(o=>o.url.endsWith('/pulls/42')));
 });
 test('GitHub API rejects missing bearer credential before any network request',()=>{
  assert.throws(()=>createAuthenticatedGitHubReaders({token:''}),/credential required/);
@@ -101,6 +110,7 @@ test('GitHub API rejects path traversal and nonnumeric run IDs before transport'
  await assert.rejects(api.readRun({repository:R,runId:'../../contents/README'}),/invalid GitHub run ID/);
  await assert.rejects(api.readJobs({repository:R,runId:1,attempt:'../../contents'}),/invalid GitHub run attempt/);
  await assert.rejects(api.readCommit({repository:R,commitSha:'../../contents'}),/invalid Git commit SHA/);
+ await assert.rejects(api.readPullRequest({repository:R,pullRequestNumber:'../../contents'}),/invalid GitHub pull request number/);
  assert.equal(sent,0);
 });
 
