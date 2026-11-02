@@ -87,7 +87,8 @@ export class PubSubReference {
   join(group,actor) {
     if (this.closed) return failure("Closed");
     if (!this.isGroup(group) || !this.isActor(actor)) return failure("StaleTarget");
-    if (group.members.has(actor.key)) return failure("AlreadyMember");
+    // Idempotent membership admission cannot issue a second affine grant.
+    if (group.members.has(actor.key)) return success({alreadyMember:true});
     group.members.add(actor.key);
     const membership={id:++this.nextMembership,group,actor,active:true};
     this.memberships.set(membership.id,membership);
@@ -109,6 +110,16 @@ export class PubSubReference {
     if (!Number.isSafeInteger(capacity) || capacity<1) return failure("InvalidCapacity");
     if (kind==="actor" ? !this.isActor(target) : kind==="group" ? !this.isGroup(target) : true)
       return failure("StaleTarget");
+    // A live (topic, target) edge is unique. Calling subscribe twice must
+    // not mint a second registration or consume another quota. Capacity
+    // changes require an explicit unsubscribe and fresh registration.
+    for (const existing of this.subscriptions.values()) {
+      if (!existing.closed && existing.topic===topic &&
+          existing.kind===kind && existing.target===target) {
+        if (existing.capacity!==capacity) return failure("SubscriptionConflict");
+        return success({subscription:existing,alreadySubscribed:true});
+      }
+    }
     if ([...this.subscriptions.values()].filter(s=>!s.closed).length>=this.maxSubscriptions)
       return failure("ResourceExhausted");
     const sub={id:++this.nextSub,topic,kind,target,capacity,
