@@ -58,6 +58,19 @@ test('zero-step or missing compile step is not a guest pass', () => {
   const b = fixture(); b.steps[1].conclusion = 'skipped';
   assert.equal(check(b).error, 'MISSING_EXECUTED_STEP');
 });
+test('duplicate, conflicting and skipped required CI steps fail closed', () => {
+  for (const stepId of ['checkout', 'compile_guest', 'execute_guest']) {
+    const duplicate = fixture();
+    duplicate.steps.push({ id: stepId, status: 'completed', conclusion: 'success' });
+    assert.equal(check(duplicate).error, 'MISSING_EXECUTED_STEP');
+    const conflicting = fixture();
+    conflicting.steps.push({ id: stepId, status: 'completed', conclusion: 'failure' });
+    assert.equal(check(conflicting).error, 'MISSING_EXECUTED_STEP');
+    const skipped = fixture();
+    skipped.steps.find((step) => step.id === stepId).status = 'queued';
+    assert.equal(check(skipped).error, 'MISSING_EXECUTED_STEP');
+  }
+});
 test('wrong compiler source SHA or fixture SHA fails', () => {
   const a = fixture(); a.sourceCommit = 'f'.repeat(40);
   assert.equal(check(a).error, 'UNPINNED_SOURCE');
