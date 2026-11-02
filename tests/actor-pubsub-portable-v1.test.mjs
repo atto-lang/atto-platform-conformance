@@ -34,6 +34,13 @@ function runCase(actions) {
         else topics.set(args[0],result.topic);
         break;
       }
+      case "topic_scoped": {
+        const [alias,groupAlias,name,type]=args;
+        const result=bus.topicInGroup(groups.get(groupAlias),name,type);
+        if (!result.ok) trace.push("topic:"+result.error);
+        else topics.set(alias,result.topic);
+        break;
+      }
       case "join": {
         const result=bus.join(groups.get(args[1]),actors.get(args[2]));
         ok("join",result);
@@ -50,10 +57,13 @@ function runCase(actions) {
         break;
       }
       case "publish":
-      case "publish_mutable": {
-        const [alias,payloadId]=args;
-        const payload=op==="publish" ? share({id:payloadId}) : {id:payloadId};
-        const result=bus.tryPublish(topics.get(alias),payload);
+      case "publish_mutable":
+      case "publish_as": {
+        const [alias,second,third]=args;
+        const payloadId=op==="publish_as" ? third : second;
+        const payload=op==="publish_mutable" ? {id:payloadId} : share({id:payloadId});
+        const result=bus.tryPublish(topics.get(alias),payload,
+          op==="publish_as" ? memberships.get(second) : null);
         trace.push(result.ok
           ? `publish:${result.receipt.sequence}:${result.receipt.recipients}`
           : "publish:"+result.error);
@@ -86,9 +96,9 @@ test("portable v1 manifest has unique and complete five-backend vectors",()=>{
   assert.equal(manifest.schema,"oreslang.actor_pubsub.portable.v1");
   assert.equal(manifest.status,"PROPOSED_NOT_EXECUTED");
   assert.deepEqual(manifest.backends,["java","llvm","wasm","cranelift","net"]);
-  assert.equal(manifest.cases.length,20);
+  assert.equal(manifest.cases.length,26);
   assert.deepEqual(manifest.cases.map(v=>v.id),
-    Array.from({length:20},(_,i)=>"PS"+String(i+1).padStart(3,"0")));
+    Array.from({length:26},(_,i)=>"PS"+String(i+1).padStart(3,"0")));
   for (const c of manifest.cases) {
     assert.ok(c.name && c.actions.length && Array.isArray(c.expected));
     assert.deepEqual(runCase(c.actions),c.expected,c.id+": "+c.name);
@@ -267,4 +277,57 @@ test("colliding-prefix actor incarnations cannot inherit group membership",()=>{
   assert.equal(bus.join(group,second).ok,true);
   assert.equal(bus.leave(membership.membership).error,"StaleMembership");
   assert.equal(group.members.has(second.key),true);
+});
+
+
+test("forged membership views do not authorize scoped publication",()=>{
+  const bus=new PubSubReference();
+  const group=bus.group("g").group;
+  const actor=bus.actor("a").actor;
+  const topic=bus.topicInGroup(group,"events","Event").topic;
+  // The exposed Set is an observability view, not a grant registry.
+  group.members.add(actor.key);
+  assert.equal(bus.tryPublish(topic,share({id:"x"}),
+    Object.freeze({id:1,group,actor})).error,"UnauthorizedPublisher");
+  assert.equal(bus.subscribe(topic,"actor",actor,1).error,"UnauthorizedSubscriber");
+  assert.equal(bus.join(group,actor).ok,true);
+  const grant=[...bus.memberships.values()][0].capability;
+  assert.equal(bus.tryPublish(topic,share({id:"allowed"}),grant).ok,true);
+  assert.ok(Object.isFrozen(grant));
+  assert.ok(Object.isFrozen(topic));
+  assert.ok(Object.isFrozen(actor));
+  assert.ok(Object.isFrozen(group));
+  assert.throws(()=>{grant.group=bus.group("other").group;},TypeError);
+  assert.throws(()=>{actor.alive=false;},TypeError);
+  assert.throws(()=>{group.closed=true;},TypeError);
+});
+
+test("cross-broker grants cannot authorize the same-named scoped topic",()=>{
+  const source=new PubSubReference(),destination=new PubSubReference();
+  const g1=source.group("g").group,g2=destination.group("g").group;
+  const a1=source.actor("a").actor,a2=destination.actor("a").actor;
+  const grant=source.join(g1,a1).membership;
+  const topic=destination.topicInGroup(g2,"events","Event").topic;
+  assert.equal(destination.tryPublish(topic,share({id:"x"}),grant).error,
+    "UnauthorizedPublisher");
+  const correct=destination.join(g2,a2).membership;
+  assert.equal(destination.tryPublish(topic,share({id:"ok"}),correct).ok,true);
+  assert.equal(source.tryPublish(topic,share({id:"no"}),grant).error,
+    "UnknownTopic");
+});
+
+test("terminated actor grant cannot publish after next incarnation joins",()=>{
+  const bus=new PubSubReference();
+  const group=bus.group("g").group;
+  const old=bus.actor("a",1).actor;
+  const topic=bus.topicInGroup(group,"events","Event").topic;
+  const stale=bus.join(group,old).membership;
+  assert.equal(bus.stopActor(old).ok,true);
+  assert.equal(bus.tryPublish(topic,share({id:"stale"}),stale).error,
+    "UnauthorizedPublisher");
+  const next=bus.actor("a",2).actor;
+  const current=bus.join(group,next).membership;
+  assert.equal(bus.tryPublish(topic,share({id:"new"}),current).ok,true);
+  assert.equal(bus.tryPublish(topic,share({id:"stale2"}),stale).error,
+    "UnauthorizedPublisher");
 });
