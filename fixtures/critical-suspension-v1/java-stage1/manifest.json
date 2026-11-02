@@ -1,0 +1,45 @@
+{
+  "contract": "critical-suspension-v1",
+  "stage": "java-named-immediate-mutex-only",
+  "authority": "authored guest fixture, not verified executable CI",
+  "source_repository": "ores-truffle-oreslang/oreslang-source.java",
+  "source_pr": 2433,
+  "source_commit": "4c3c7f84436d0999ba5dd9079a4453689c96acfb",
+  "target_verified": {
+    "java_graal": false,
+    "llvm": false,
+    "wasm": false,
+    "cranelift": false,
+    "dotnet_nativeaot": false
+  },
+  "fixtures": [
+    {
+      "name": "positive-try-critical-named-mutex.ores",
+      "git_blob_sha1": "9b355243874ce15d355dd40c5ce5312967e2ef1d",
+      "classification": "java-positive",
+      "expected": "31",
+      "verified_guest": false
+    },
+    {
+      "name": "negative-queued-critical-unlowered.ores",
+      "git_blob_sha1": "6bf4ffad26716a8a229c9ed152c9ce4fe424afd9",
+      "classification": "java-rejected",
+      "expected": "E_CRITICAL_UNLOWERED",
+      "verified_guest": false
+    },
+    {
+      "name": "negative-try-critical-call-effect.ores",
+      "git_blob_sha1": "3f1597bc3c726e4b32019b27b6f5edf7f465e25c",
+      "classification": "java-rejected",
+      "expected": "E_CRITICAL_BODY_EFFECT",
+      "verified_guest": false
+    },
+    {
+      "name": "negative-try-critical-shared-gate.ores",
+      "git_blob_sha1": "d1aac32fe31ac470206234f228b61056ec359525",
+      "classification": "java-rejected",
+      "expected": "E_CRITICAL_GATE_TYPE",
+      "verified_guest": false
+    }
+  ]
+}
