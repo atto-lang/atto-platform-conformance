@@ -4,7 +4,7 @@
   "authority": "authored guest fixture, not verified executable CI",
   "source_repository": "ores-truffle-oreslang/oreslang-source.java",
   "source_pr": 2433,
-  "source_commit": "c60348b24870a70eff455cd7dd2d1e7656bd2a4f",
+  "source_commit": "653bf9cf638663f3da49754a774fc12109f1782b",
   "target_verified": {
     "java_graal": false,
     "llvm": false,
