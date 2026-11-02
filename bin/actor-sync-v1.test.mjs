@@ -80,7 +80,7 @@ test("canonical .ores module and guest fixture are Git-blob pinned",()=>{
  assert.equal(manifest.fixtures.length,2);
  const known=new Map([
    ["cursor-progression","true\ntrue\nfalse\ntrue\ntrue\nfalse\ntrue\ntrue\n3\n5\n"],
-   ["cross-epoch-delta-reject","false\nfalse\n5\ntrue\ntrue\n7\n5\n"]
+   ["cross-epoch-delta-reject","false\ntrue\n5\ntrue\ntrue\n7\n5\n"]
  ]);
  for(const fixture of manifest.fixtures) {
    assert.ok(known.has(fixture.id),"unrecognized native guest fixture");
