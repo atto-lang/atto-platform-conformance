@@ -96,3 +96,26 @@ Java #2405, LLVM #1256 and .NET #282 until reviewed reconciliation.
 Where a test duplicates an existing semantic scenario, do not double-credit.
 Orphan/overlapping source fixtures from concurrent changes were removed; the
 manifest's final 32 source entries are authoritative on this draft head.
+
+### Reconciled current-parent implementation branches (Nov 1)
+
+The active newer compiler validation branches are **Java #2449**, **LLVM
+#1301**, and **.NET #333**, stacked on parent scalar-inference PRs #2405,
+#1256, and #282 respectively. Their initial conflicting children (#2414,
+#1266, #298) were closed *unmerged* when their parent code was found to
+already implement the type-first parser path. The new branches preserve parent
+parser changes rather than overwriting them.
+
+LLVM #1301 uses Rust for a real compiler→Clang→native guest test with
+20-second subprocess timeouts and 1-MiB output caps; assignment/duplicate
+negative tests require matching semantic diagnostics. Java #2449 executes
+GraalVM guest programs including a helper-produced runtime initializer.
+.NET #333 introduces distinct runtime-`Readonly` HIR metadata in its
+experimental structured compiler, retaining separate `Const`/ `Val`/`Let`.
+Wasm #227 and Cranelift #21 remain separate draft gates. None of these has
+an admitted *stepful, exact-head* execution result at this writing.
+
+**Important:** merging the parent or passing a source-only conformance manifest
+is not enough. Verify guest execution and the real mutable-`let` positive
+control on each backend, otherwise a parser that rejects all assignments can
+falsely appear to enforce immutable bindings.
