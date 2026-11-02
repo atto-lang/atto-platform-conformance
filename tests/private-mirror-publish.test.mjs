@@ -104,10 +104,22 @@ test("publisher refuses Oreslang source self-mirror before fetching or creating 
    destination:"ores-truffle-oreslang/oreslang-source.java",
    approvedDestinations:["ores-truffle-oreslang/oreslang-source.java"],
    fetchImpl:h.request
- }), /incident dispositions #22 and #77/);
+ }), /self-mirror is not an authorized CI destination/);
  assert.equal(h.events.length,0);
 });
 
+test("generic same-repository source export is rejected before any request",async()=>{
+  for(const [source,destination] of [
+    ["synthetic-private/source","synthetic-private/source"],
+    ["SYNTHETIC-PRIVATE/SOURCE","synthetic-private/source"]
+  ]){
+    const h=fixture();
+    await assert.rejects(publishPrivateMirror({...opts,source,destination,
+      approvedDestinations:[destination],fetchImpl:h.request
+    }),/self-mirror is not an authorized CI destination/);
+    assert.equal(h.events.length,0);
+  }
+});
 test("real destination Git-object publisher guards every write and only creates a new CI ref",async()=>{
  const {h,promise}=run();
  const receipt=await promise;
