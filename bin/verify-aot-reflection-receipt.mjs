@@ -44,6 +44,13 @@ export function verifyReceipt(manifest, receipt) {
     return { classification: 'INVALID', errors: [...errors, 'receipt missing'] };
   }
   if (receipt.contract !== manifest.contract) errors.push('receipt contract mismatch');
+  const scope = receipt.scope ?? 'complete';
+  if (!['complete', 'milestone'].includes(scope)) errors.push('unknown receipt scope');
+  if (scope === 'milestone' &&
+      (typeof receipt.milestoneId !== 'string' ||
+       !/^[a-z0-9][a-z0-9._-]{0,79}$/.test(receipt.milestoneId))) {
+    errors.push('milestone receipt requires a stable milestoneId');
+  }
   if (!Object.hasOwn(manifest.backends ?? {}, receipt.backend ?? '')) errors.push('unknown backend');
   if (receipt.status !== 'native-aot-claim') errors.push('receipt must mark itself as an unverified native-aot claim');
   for (const key of ['headSha', 'treeSha']) {
@@ -69,7 +76,10 @@ export function verifyReceipt(manifest, receipt) {
   if (typeof receipt.reviewUrl !== 'string' || !/^https:\/\//.test(receipt.reviewUrl)) errors.push('missing independent review reference');
   const submitted = receipt.results;
   const ids = new Set();
-  if (!Array.isArray(submitted) || submitted.length !== (manifest.cases ?? []).length) {
+  const allCases = manifest.cases ?? [];
+  if (!Array.isArray(submitted) || submitted.length === 0 ||
+      (scope === 'complete' && submitted.length !== allCases.length) ||
+      (scope === 'milestone' && submitted.length > allCases.length)) {
     errors.push('case count mismatch');
   }
   if (Array.isArray(submitted)) {
@@ -82,15 +92,33 @@ export function verifyReceipt(manifest, receipt) {
       if (entry.result !== 'PASS' || entry.stage !== expectedStage[oracle.kind]) errors.push('wrong result or stage: ' + entry.id);
       if (!sha256.test(entry.fixtureSha256 ?? '')) errors.push('missing fixture digest: ' + entry.id);
       if (!Array.isArray(entry.witnesses) || oracle.mustProve.some(w => !entry.witnesses.includes(w))) errors.push('missing oracle witnesses: ' + entry.id);
-      if (oracle.kind === 'compile-reject' && entry.noOutputArtifact !== true) errors.push('rejection generated output: ' + entry.id);
+      if (oracle.kind === 'compile-reject') {
+        if (entry.noOutputArtifact !== true) errors.push('rejection generated output: ' + entry.id);
+        if (entry.compilerExitCode !== 1 || typeof entry.diagnosticClass !== 'string' ||
+            !/^[a-z][a-z0-9_]{2,79}$/.test(entry.diagnosticClass))
+          errors.push('missing stable compiler rejection evidence: ' + entry.id);
+      }
       if (oracle.kind === 'runtime-deny' && entry.denialObserved !== true) errors.push('denial unproven: ' + entry.id);
-      if (oracle.kind === 'artifact-inspection' && !sha256.test(entry.inspectionSha256 ?? '')) errors.push('missing binary inspection: ' + entry.id);
+      if (oracle.kind === 'artifact-inspection' &&
+          (!sha256.test(entry.inspectionSha256 ?? '') ||
+           entry.inspectedArtifactSha256 !== receipt.artifactSha256))
+        errors.push('missing/binary-mismatched inspection: ' + entry.id);
       if (oracle.kind === 'build-metadata' && !sha256.test(entry.comparisonSha256 ?? '')) errors.push('missing deterministic build evidence: ' + entry.id);
     }
-    for (const c of manifest.cases ?? []) if (!ids.has(c.id)) errors.push('missing case: ' + c.id);
+    if (scope === 'complete') {
+      for (const c of allCases) if (!ids.has(c.id)) errors.push('missing case: ' + c.id);
+    } else if (scope === 'milestone' &&
+               !submitted.some(e => e?.stage === 'guest-aot')) {
+      errors.push('milestone requires at least one compiler-backed guest AOT oracle');
+    }
   }
   // This is not an attestation: fields can be invented or inconsistent with real GitHub jobs.
-  return { classification: errors.length ? 'INVALID' : 'SHAPE_VALID_UNATTESTED', errors };
+  return {
+    classification: errors.length ? 'INVALID' :
+      (scope === 'milestone' ? 'MILESTONE_SHAPE_VALID_UNATTESTED' :
+       'SHAPE_VALID_UNATTESTED'),
+    errors
+  };
 }
 
 const invokedAsMain = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
@@ -105,7 +133,12 @@ if (invokedAsMain) {
       const receipt = JSON.parse(readFileSync(receiptPath, 'utf8'));
       const response = verifyReceipt(manifest, receipt);
       console.log(JSON.stringify(response, null, 2));
-      if (response.errors.length) process.exitCode = 1;
+      // A successful structural parse is never native-AOT evidence.
+      // Fail closed by default, even when the receipt is structurally sound.
+      // Use --lint-only explicitly for a structural quality gate; this still
+      // cannot attest any GitHub job, compiler provenance or native binary.
+      const lintOnly = process.argv[3] === '--lint-only' && process.argv.length === 4;
+      process.exitCode = response.errors.length || !lintOnly ? 1 : 0;
     }
   } catch (error) {
     console.error('INVALID: ' + error.message);
