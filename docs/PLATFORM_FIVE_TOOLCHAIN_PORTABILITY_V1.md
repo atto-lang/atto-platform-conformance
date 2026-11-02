@@ -29,7 +29,10 @@ The conformance branch now includes
 checks CLIF generation, exact integer stdout, and the compiler-owned
 unresolved-identifier diagnostics. It rehashes the executable after every
 case and rejects symlinked binaries, timeouts, unexpected stdout, wrong
-diagnostics and mutated guest-source files.
+diagnostics and persistent guest-source mutations detected by post-invocation
+corpus revalidation. This is not a race-free, trusted source-to-executable
+attestation: a mutate-and-restore adversary or a forged compiler binary still
+requires an independently controlled execution environment.
 
 ```sh
 node bin/run-cranelift-native-v1.mjs \
@@ -79,10 +82,17 @@ FPGA/ASIC verification. Those need separate `.ores` guest fixtures
 and device-native tests.
 
 All release receipts must bind the exact source/target Git tree,
-compiler HEAD, compiler executable digest, generated artifact digest,
-runner/job IDs and actual nonzero executed steps. Positive programs must
-execute under the specified target and return a checked value; negative
-programs must produce a primary compiler diagnostic. Pure host unit
+compiler HEAD, compiler executable digest, and actual nonzero
+runner/job steps. **Positive** guest observations require an authenticated,
+generated artifact digest; **negative** source-rejection observations must set
+`artifactSha256: null`, because no guest artifact exists. A rejected
+Cranelift program must likewise report `clifSha256: null`, and a rejected
+Wasm source must report `wasmModuleSha256: null` and `zeroImports: null`
+rather than inventing module properties. Compiler and pre-existing
+NativeAOT/Wasm host binary digests remain required independently of source
+rejection. Positive programs must execute under the specified target and
+return a checked value; negative programs must produce a primary compiler
+diagnostic without claiming generated guest code. Pure host unit
 tests, synthetic/claimed receipts, or zero-step workflows do **not**
 establish compiler-backed parity. The validator intentionally returns
 `certifiedParity:false` even for 300 syntactically valid caller-supplied
