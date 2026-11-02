@@ -64,13 +64,15 @@ unbounded real-time fallback.
 
 The machine-readable
 `contracts/actor_gc_profiles_v1.json` carries **13 proof obligations** and
-**18 required conformance cases**. The source-only verifier rejects missing
+**18 required conformance cases**. The dependency-free Rust source-only verifier locks the reviewed JSON policy at token level, rejecting any changed value or inventory (including duplicate-key and unearned-certification attempts). A deliberate policy change requires a coordinated code review of the embedded baseline. The verifier rejects missing
 backends, suppressed cases, host/guest conflation, false full-zero claims or
 fabricated certification. Run:
 
 ```sh
-python3 -I scripts/verify_actor_gc_profiles_v1.py
-python3 -I scripts/verify_actor_gc_profiles_v1.py --test
+rustc --edition=2021 -D warnings scripts/verify_actor_gc_profiles_v1.rs -o /tmp/actor-gc-policy
+/tmp/actor-gc-policy
+rustc --edition=2021 -D warnings --test scripts/verify_actor_gc_profiles_v1.rs -o /tmp/actor-gc-policy-tests
+/tmp/actor-gc-policy-tests
 ```
 
 These tests prove the release *policy* has not been weakened. They do not run
