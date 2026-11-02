@@ -5,12 +5,14 @@
 export function inferTransferTraits(descriptor) {
   const active = new Set();
   function walk(d, depth) {
-    if (!d || typeof d !== 'object' || Array.isArray(d) ||
-        Object.getPrototypeOf(d) !== Object.prototype || depth > 32 ||
-        active.has(d)) return {send: false, sync: false};
-    active.add(d);
     let result = {send: false, sync: false};
+    // Proxy traps, revoked proxies, and hostile prototype access must fail
+    // closed just like throwing descriptor getters below.
     try {
+      if (!d || typeof d !== 'object' || Array.isArray(d) ||
+          Object.getPrototypeOf(d) !== Object.prototype || depth > 32 ||
+          active.has(d)) return result;
+      active.add(d);
       const kind = d.kind;
       switch (kind) {
         case 'primitive':
@@ -20,8 +22,18 @@ export function inferTransferTraits(descriptor) {
           break;
         case 'record': {
           if (!Array.isArray(d.fields) || d.fields.length > 256) break;
-          const traits = d.fields.map(f => walk(f, depth + 1));
-          result = {send: traits.every(x => x.send), sync: traits.every(x => x.sync)};
+          const traits = [];
+          // Array map/every skip sparse holes; a missing declared field must
+          // never become vacuously Send+Sync.
+          for (let i = 0; i < d.fields.length; i++) {
+            if (!Object.hasOwn(d.fields, i)) {
+              traits.length = 0;
+              break;
+            }
+            traits.push(walk(d.fields[i], depth + 1));
+          }
+          if (traits.length === d.fields.length)
+            result = {send: traits.every(x => x.send), sync: traits.every(x => x.sync)};
           break;
         }
         case 'box':
@@ -62,7 +74,7 @@ export function inferTransferTraits(descriptor) {
         default: break; // Unknown type is NOT implicitly Send.
       }
     } catch { result = {send: false, sync: false}; }
-    finally { active.delete(d); }
+    finally { if (d && typeof d === 'object') active.delete(d); }
     return result;
   }
   return walk(descriptor, 0);
