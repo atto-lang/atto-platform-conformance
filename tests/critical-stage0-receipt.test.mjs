@@ -14,7 +14,8 @@ const record=(backend, cases, compiler=true, guest=false) => {
     run_id:99,job_id:100,run_attempt:1,runner_id:1000,executed_steps:5,
     test_plan_sha256:'1'.repeat(64),
     compiler_invoked:compiler,compiler_sha256:compiler?'2'.repeat(64):null,
-    native_guest_executed:guest,self_attested_parity:false,cross_org_source_transfer:false,cases
+    guest_executed:guest,guest_mode:guest?'GRAAL_POLYGLOT':null,
+    native_guest_executed:false,self_attested_parity:false,cross_org_source_transfer:false,cases
   };
 };
 const rejection=code=>({phase:'compile-reject',status:'pass',
@@ -22,7 +23,8 @@ const rejection=code=>({phase:'compile-reject',status:'pass',
   stderr:code + ': expected negative',diagnostic_code:code,emitted_artifact:false});
 const java=()=>record('java-graal',{
   'positive-try-critical-named-mutex.ores':{phase:'guest',status:'pass',
-    compiler_accepted:true,native_guest_executed:true,stdout:'31',exit_code:0},
+    compiler_accepted:true,guest_executed:true,guest_mode:'GRAAL_POLYGLOT',
+    native_guest_executed:false,stdout:'31',exit_code:0},
   'negative-queued-critical-unlowered.ores':rejection('E_CRITICAL_UNLOWERED'),
   'negative-try-critical-call-effect.ores':rejection('E_CRITICAL_BODY_EFFECT'),
   'negative-try-critical-shared-gate.ores':rejection('E_CRITICAL_GATE_TYPE')
@@ -38,7 +40,7 @@ const wasm=()=>record('wasm',{
 test('synthetic complete Java stage is still explicitly UNATTESTED', () => {
   assert.deepEqual(verifyCriticalStage0Receipt(java(),plan),
     {classification:'UNATTESTED_STAGE0_RECORD',backend:'java-graal',
-     evidence_class:'GUEST',checked_cases:4});
+     evidence_class:'GRAAL_POLYGLOT_GUEST',checked_cases:4});
 });
 test('synthetic Wasm checks cannot be mistaken for source compiler or guest receipts', () => {
   assert.deepEqual(verifyCriticalStage0Receipt(wasm(),plan),
@@ -54,7 +56,7 @@ test('zero step, no runner and missing attempt fail closed', () => {
   }
 });
 test('compiler and guest fields cannot be omitted or relabelled', () => {
-  for (const [field,value] of [['native_guest_executed',false],
+  for (const [field,value] of [['guest_executed',false],
      ['compiler_invoked',false],['compiler_sha256',null]]) {
     const r=java();
     r[field]=value;
@@ -69,10 +71,10 @@ test('compiler and guest fields cannot be omitted or relabelled', () => {
 });
 test('Java guest output and diagnostic priority are exact, not substring accepts', () => {
   for (const [field,value] of [['stdout','hello31'],['exit_code',1],
-     ['native_guest_executed',false]]) {
+     ['guest_executed',false]]) {
     const r=java();
     r.cases['positive-try-critical-named-mutex.ores'][field]=value;
-    assert.throws(()=>verifyCriticalStage0Receipt(r,plan),/native guest/);
+    assert.throws(()=>verifyCriticalStage0Receipt(r,plan),/Graal Polyglot guest/);
   }
   const wrong=java();
   wrong.cases['negative-try-critical-call-effect.ores'].diagnostic_code='E_UNKNOWN';
@@ -81,6 +83,21 @@ test('Java guest output and diagnostic priority are exact, not substring accepts
   artifact.cases['negative-queued-critical-unlowered.ores'].emitted_artifact=true;
   assert.throws(()=>verifyCriticalStage0Receipt(artifact,plan),/artifact/);
 });
+test('Graal Polyglot is a guest receipt, never a Native Image executable receipt', () => {
+  const falseNative=java();
+  falseNative.native_guest_executed=true;
+  assert.throws(()=>verifyCriticalStage0Receipt(falseNative,plan),/native executable/);
+  const misrepresented=java();
+  misrepresented.cases['positive-try-critical-named-mutex.ores'].native_guest_executed=true;
+  assert.throws(()=>verifyCriticalStage0Receipt(misrepresented,plan),/Graal Polyglot/);
+  const wrongMode=java();
+  wrongMode.guest_mode='NATIVE_IMAGE';
+  assert.throws(()=>verifyCriticalStage0Receipt(wrongMode,plan),/native executable/);
+  const noGuest=java();
+  noGuest.guest_executed=false;
+  assert.throws(()=>verifyCriticalStage0Receipt(noGuest,plan),/native executable/);
+});
+
 test('compiler crashes, timeout and earlier misleading errors cannot count as rejects', () => {
   const badFirst=java();
   badFirst.cases['negative-queued-critical-unlowered.ores'].stderr =
