@@ -67,6 +67,13 @@ async function repoMetadata(name, token, fetchImpl) {
 export async function requirePrivateMirror({
   source, destination, approvedDestinations, token, fetchImpl = fetch
 }) {
+  // Incident containment LOCKDOWN. This generic metadata/slug/env-allowlist
+  // path has no authenticated source provenance or protected-main policy
+  // authority. No caller-controlled flag, token, carrier, name, or mock
+  // visibility result may activate it. A future source transfer requires a
+  // distinct independently reviewed entrypoint and destination-bound policy.
+  // Keep the halt BEFORE validation, network calls and source Git-object I/O.
+  throw Error("PRIVATE_SOURCE_PUBLISH_DISABLED_PENDING_PROTECTED_MAIN_APPROVAL");
   // In particular, no discovery endpoint and no source blob operation may
   // be attempted when approval, credentials or names are missing.
   const from = repoName(source);
