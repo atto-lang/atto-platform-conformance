@@ -122,3 +122,27 @@ test('cache-line proof needs physical base alignment, including between allocati
  reject('INVALID_BYTE_RANGE',()=>mayShareCacheLine(a,
    {...a,start:Number.MAX_SAFE_INTEGER,length:2}));
 });
+
+
+test('reject invalid CPU topology and integer overflow boundaries',()=>{
+ const base=[cpu(0,0)];
+ reject('INVALID_CPU_MASK',()=>pick(base,req(),[Number.MAX_SAFE_INTEGER+1]));
+ reject('INVALID_CPU_MASK',()=>pick(base,req(),[]));
+ reject('INVALID_CARRIERS',()=>pick([cpu(0,Number.MAX_SAFE_INTEGER+1)]));
+ reject('INVALID_CARRIERS',()=>pick([cpu(0,0,Number.MAX_SAFE_INTEGER+1)]));
+ reject('INVALID_CARRIERS',()=>pick([cpu(0,0,0,-1)]));
+ reject('INVALID_REQUEST',()=>pick(base,req('task',{preferredCpu:Infinity})));
+ reject('INVALID_REQUEST',()=>pick(base,req('task',{previousLane:1.5})));
+});
+test('reject GPU queue arithmetic overflow and invalid epoch before selection',()=>{
+ const args={tenant:'A',device:'gpu0',generation:2,bytes:1,
+   queues:[queue('a')],key:'job'};
+ reject('INVALID_GPU_REQUEST',()=>selectGpuQueue({...args,bytes:Number.MAX_SAFE_INTEGER+1}));
+ reject('INVALID_GPU_REQUEST',()=>selectGpuQueue({...args,generation:-1}));
+ reject('INVALID_GPU_QUEUE',()=>selectGpuQueue({...args,
+   queues:[{...queue('a'),capacityBytes:-1}]}));
+ reject('INVALID_GPU_QUEUE',()=>selectGpuQueue({...args,
+   queues:[{...queue('a'),inflight:Infinity}]}));
+ reject('INVALID_GPU_QUEUE',()=>selectGpuQueue({...args,
+   queues:[{...queue('a'),usedBytes:1025}]}));
+});
