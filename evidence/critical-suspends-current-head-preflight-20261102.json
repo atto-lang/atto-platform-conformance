@@ -9,7 +9,7 @@
     "case_count": 34
   },
   "fixture": {
-    "manifest_path": "fixtures/critical-suspension-v1/java-stage1/manifest.json",
+    "manifest_path": "evidence/critical-suspends-java-stage1-original-manifest-20261101.json",
     "manifest_blob_sha1": "396b376c5d0020a6bc09a011f28bca06190a3d6a",
     "origin_java_head": "c60348b24870a70eff455cd7dd2d1e7656bd2a4f",
     "verified_current_java_head": "ca1a344928157b5d4fcdbf61e310216c9f734f99",
@@ -97,5 +97,6 @@
       "guest_verified": false,
       "required_stage": "Node host zero-capability tests; LLVM->Wasm guest compiler receipt separately required"
     }
-  ]
+  ],
+  "snapshot_semantics": "IMMUTABLE_POINT_IN_TIME_PR_HEADS_NOT_LIVE_BRANCH_RESOLUTION"
 }
