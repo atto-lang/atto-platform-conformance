@@ -157,3 +157,39 @@ test("frozen exotic collections and getters are not Sendable immutable payloads"
   assert.equal(bus.tryPublish(topic,accessor).error,"NotShared");
   assert.throws(()=>share({get value(){return 7}}),/non-Sendable/);
 });
+
+test("acyclic shared aliases are immutable data, not false cycles",()=>{
+  const bus=new PubSubReference();
+  const topic=bus.topic("dag.events","Event").topic;
+  const leaf={id:"same"};
+  const packet=share({first:leaf,second:leaf,nested:[leaf]});
+  assert.equal(packet.first,packet.second,"snapshot must preserve aliases");
+  assert.equal(packet.first,packet.nested[0]);
+  assert.ok(Object.isFrozen(leaf));
+  assert.ok(Object.isFrozen(packet.nested));
+  assert.equal(bus.isShared(packet),true);
+  assert.equal(bus.tryPublish(topic,packet).ok,true);
+});
+
+test("already-frozen acyclic DAGs pass without invoking share",()=>{
+  const bus=new PubSubReference();
+  const topic=bus.topic("dag.events","Event").topic;
+  const child=Object.freeze({id:"shared"});
+  const packet=Object.freeze({a:child,b:child});
+  assert.equal(bus.tryPublish(topic,packet).ok,true);
+  const unfrozen={id:"mutable"};
+  assert.equal(bus.tryPublish(topic,Object.freeze({a:unfrozen,b:unfrozen})).error,
+    "NotShared");
+});
+
+test("share helper rejects nested functions and symbols before publication",()=>{
+  const callback=()=>42;
+  assert.throws(()=>share({nested:[{run:callback}]}),/non-Sendable/);
+  assert.throws(()=>share([Symbol("capability")]),/non-Sendable/);
+  const cycle={};cycle.self=cycle;
+  assert.throws(()=>share(cycle),/cyclic/);
+  Object.freeze(cycle);
+  const bus=new PubSubReference();
+  const topic=bus.topic("cycles.events","Event").topic;
+  assert.equal(bus.tryPublish(topic,cycle).error,"NotShared");
+});
