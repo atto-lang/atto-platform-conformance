@@ -8,6 +8,11 @@ test("portable thread v1 fixtures are complete and explicitly unexecuted", () =>
   assert.deepEqual(contract.backends, ["java", "llvm", "wasm", "forge", "net"]);
   assert.ok(contract.proofRequired.includes("real-compiler-and-runtime-logs"));
   assert.ok(contract.cases.length >= 20);
+  assert.equal(contract.threadEntryAbi, 'AOT_RESOLVED_NAMED_OR_COMPILER_SYNTHESIZED_NON_SUSPENDING_ENTRY');
+  assert.equal(contract.closureEntry, 'OWNED_SEND_STATIC_COMPILE_TIME_CAPTURE_LOWERING_ONLY');
+  assert.ok(contract.cases.some(x => x.id === 'thread.named_entry_aot' && x.expect === 'accept'));
+  assert.ok(contract.cases.some(x => x.id === 'thread.dynamic_entry_rejected' && x.expect === 'reject'));
+
   const ids = new Set();
   for (const item of contract.cases) {
     assert.ok(item.id && !ids.has(item.id), item.id);
