@@ -15,6 +15,9 @@ const expectedStage = {
 
 export function verifyManifest(manifest) {
   const errors = [];
+  if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
+    return ['manifest must be an object'];
+  }
   if (manifest?.contract !== 'attolang.aot-reflection/1') errors.push('contract');
   if (manifest?.schemaVersion !== 1) errors.push('schemaVersion');
   if (manifest?.status !== 'candidate-unattested') errors.push('candidate status must not assert execution');
@@ -25,6 +28,10 @@ export function verifyManifest(manifest) {
   if (Array.isArray(cases)) {
     const ids = new Set();
     for (const c of cases) {
+      if (!c || typeof c !== 'object' || Array.isArray(c)) {
+        errors.push('case must be a structured object');
+        continue;
+      }
       if (typeof c.id !== 'string' || !/^[a-z_]+\.[a-z_]+$/.test(c.id) || ids.has(c.id)) errors.push('case id duplicate/invalid');
       ids.add(c.id);
       if (!Object.hasOwn(expectedStage, c.kind)) errors.push('invalid oracle kind: ' + c.id);
@@ -40,6 +47,7 @@ export function verifyManifest(manifest) {
 
 export function verifyReceipt(manifest, receipt) {
   const errors = verifyManifest(manifest);
+  if (errors.length > 0) return { classification: 'INVALID', errors };
   if (!receipt || typeof receipt !== 'object' || Array.isArray(receipt)) {
     return { classification: 'INVALID', errors: [...errors, 'receipt missing'] };
   }
@@ -66,7 +74,8 @@ export function verifyReceipt(manifest, receipt) {
   if (!Number.isSafeInteger(job.runnerId) || job.runnerId <= 0) errors.push('runner was not admitted');
   if (!Number.isSafeInteger(job.runAttempt) || job.runAttempt <= 0) errors.push('missing run attempt');
   if (!Array.isArray(job.steps) || job.steps.length === 0 ||
-      job.steps.some(s => typeof s.name !== 'string' || !s.name || s.conclusion !== 'success')) errors.push('no completed stepful successful workflow');
+      job.steps.some(s => !s || typeof s !== 'object' || Array.isArray(s) ||
+        typeof s.name !== 'string' || !s.name || s.conclusion !== 'success')) errors.push('no completed stepful successful workflow');
   const build = receipt.build && typeof receipt.build === 'object' && !Array.isArray(receipt.build) ? receipt.build : {};
   for (const k of ['sourceTreeMatched', 'compilerProvenanceChecked', 'compilerGuestExecuted',
                    'aotArtifactExecuted', 'noJitFallback', 'retentionInspected']) {
