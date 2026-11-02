@@ -236,15 +236,18 @@ export function compareObservations(records,c){
   let missing=0,divergent=0;
   for(const platform of PLATFORMS)for(const v of c.cases){
     const group=TOOLCHAINS.map(b=>seen.get([platform,v.id,b].join(":")));
-    missing+=group.filter(x=>!x).length;
-    if(group.some(x=>!x))continue;
-    const projection=group.map(x=>v.expect==="execute"?
+    // A missing lane must never conceal a known wrong guest result.
+    // Compare every available observation to the pinned oracle immediately,
+    // while counting absent lanes separately. These are untrusted claims,
+    // not compiler attestations.
+    const observed=group.filter(x=>x!==undefined);
+    missing+=group.length-observed.length;
+    const expected=v.expect==="execute"?"pass:"+v.expectedValue:"reject:"+v.diagnostic;
+    const projection=observed.map(x=>v.expect==="execute"?
       "pass:"+x.result.value:"reject:"+x.result.diagnosticCode);
-    if(new Set(projection).size!==1||projection[0]!==(
-      v.expect==="execute"?"pass:"+v.expectedValue:"reject:"+v.diagnostic))
-      divergent++;
-    if(new Set(group.map(x=>x.sourceCommit)).size!==1)divergent++;
+    if(projection.some(x=>x!==expected))divergent++;
+    if(new Set(observed.map(x=>x.sourceCommit)).size>1)divergent++;
   }
-  return {status:missing?"INCOMPLETE":divergent?"DIVERGENT":"OBSERVED_MATCH_NOT_CERTIFIED",
+  return {status:divergent?"DIVERGENT":missing?"INCOMPLETE":"OBSERVED_MATCH_NOT_CERTIFIED",
     observed:seen.size,missing,divergent,independentlyAuthenticated:false,certifiedParity:false};
 }
