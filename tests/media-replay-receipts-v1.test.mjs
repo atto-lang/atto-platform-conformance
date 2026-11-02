@@ -22,9 +22,9 @@ function fixture(backend = 'java') {
     stdoutSha256: createHash('sha256').update(stdout).digest('hex') };
 }
 const check = (report) => inspectMediaReplayGuestReceipt(report, inventory, alignment);
-test('fixture has 73 distinct source-pinned guest receipts', () => {
-  assert.equal(inventory.ordered_labels.length, 73);
-  assert.equal(new Set(inventory.ordered_labels).size, 73);
+test('fixture has 80 distinct source-pinned guest receipts', () => {
+  assert.equal(inventory.ordered_labels.length, 80);
+  assert.equal(new Set(inventory.ordered_labels).size, 80);
   assert.equal(alignment.backends.length, 5);
 });
 test('synthetic receipt shape is recognized for each backend; never called CI evidence', () => {
