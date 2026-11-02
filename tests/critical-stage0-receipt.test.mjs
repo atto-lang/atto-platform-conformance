@@ -18,7 +18,8 @@ const record=(backend, cases, compiler=true, guest=false) => {
   };
 };
 const rejection=code=>({phase:'compile-reject',status:'pass',
-  compiler_rejected:true,exit_code:1,diagnostic_code:code,emitted_artifact:false});
+  compiler_rejected:true,exit_code:1,signal:null,timed_out:false,
+  stderr:code + ': expected negative',diagnostic_code:code,emitted_artifact:false});
 const java=()=>record('java-graal',{
   'positive-try-critical-named-mutex.ores':{phase:'guest',status:'pass',
     compiler_accepted:true,native_guest_executed:true,stdout:'31',exit_code:0},
@@ -75,11 +76,27 @@ test('Java guest output and diagnostic priority are exact, not substring accepts
   }
   const wrong=java();
   wrong.cases['negative-try-critical-call-effect.ores'].diagnostic_code='E_UNKNOWN';
-  assert.throws(()=>verifyCriticalStage0Receipt(wrong,plan),/exact compiler/);
+  assert.throws(()=>verifyCriticalStage0Receipt(wrong,plan),/exact first compiler/);
   const artifact=java();
   artifact.cases['negative-queued-critical-unlowered.ores'].emitted_artifact=true;
   assert.throws(()=>verifyCriticalStage0Receipt(artifact,plan),/artifact/);
 });
+test('compiler crashes, timeout and earlier misleading errors cannot count as rejects', () => {
+  const badFirst=java();
+  badFirst.cases['negative-queued-critical-unlowered.ores'].stderr =
+    'E_UNDECLARED: spurious first diagnostic; E_CRITICAL_UNLOWERED later';
+  assert.throws(()=>verifyCriticalStage0Receipt(badFirst,plan),/exact first/);
+  const crashed=java();
+  crashed.cases['negative-try-critical-call-effect.ores'].signal='SIGSEGV';
+  assert.throws(()=>verifyCriticalStage0Receipt(crashed,plan),/non-signal/);
+  const timeout=java();
+  timeout.cases['negative-try-critical-shared-gate.ores'].timed_out=true;
+  assert.throws(()=>verifyCriticalStage0Receipt(timeout,plan),/non-signal/);
+  const killed=java();
+  killed.cases['negative-try-critical-shared-gate.ores'].exit_code=-9;
+  assert.throws(()=>verifyCriticalStage0Receipt(killed,plan),/non-signal/);
+});
+
 test('partial stage cannot hide omitted, skipped or extra cases', () => {
   for (const change of ['deleted','skipped','extra']) {
     const r=java();
