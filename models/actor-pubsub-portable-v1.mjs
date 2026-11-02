@@ -44,16 +44,28 @@ export function share(value) {
 }
 
 export class PubSubReference {
+  #topics=new Map();
+  #groups=new Map();
+  #actors=new Map();
+  #subscriptions=new Map();
+  #memberships=new Map();
+  #topicSeq=new Map();
+  #actorStates=new WeakMap();
+  #groupStates=new WeakMap();
+  #subscriptionStates=new WeakMap();
+
+  // Introspection returns a detached copy, not an authority registry.
+  get subscriptionCount() {
+    return [...this.#subscriptions.values()].filter(s=>!s.closed).length;
+  }
+
   constructor({maxTopics=1024,maxSubscriptions=1024}={}) {
     if (!Number.isSafeInteger(maxTopics) || maxTopics<1 ||
         !Number.isSafeInteger(maxSubscriptions) || maxSubscriptions<1)
       throw new RangeError("positive finite quotas required");
     this.maxTopics=maxTopics;
     this.maxSubscriptions=maxSubscriptions;
-    this.topics=new Map(); this.groups=new Map(); this.actors=new Map();
-    this.subscriptions=new Map(); this.memberships=new Map();
-    this.actorStates=new WeakMap(); this.groupStates=new WeakMap();
-    this.topicSeq=new Map(); this.nextSub=0; this.nextMembership=0;
+    this.nextSub=0; this.nextMembership=0;
     this.closed=false;
   }
 
@@ -66,11 +78,11 @@ export class PubSubReference {
         !Number.isSafeInteger(generation) || generation<1)
       return failure("InvalidActorIdentity");
     const key=JSON.stringify([id,generation]);
-    if (this.actors.has(key)) return failure("AlreadyExists");
+    if (this.#actors.has(key)) return failure("AlreadyExists");
     const state={alive:true};
     const actor=Object.freeze({key,id,generation,get alive(){return state.alive;}});
-    this.actorStates.set(actor,state);
-    this.actors.set(key,actor);
+    this.#actorStates.set(actor,state);
+    this.#actors.set(key,actor);
     return success({actor});
   }
 
@@ -78,12 +90,15 @@ export class PubSubReference {
     if (this.closed) return failure("Closed");
     if (typeof id!=="string" || !id.length || id.length>256)
       return failure("InvalidGroup");
-    if (this.groups.has(id)) return failure("AlreadyExists");
-    const state={closed:false};
-    // Expose members for introspection only; it is never an authority source.
-    const group=Object.freeze({id,get closed(){return state.closed;},members:new Set()});
-    this.groupStates.set(group,state);
-    this.groups.set(id,group);
+    if (this.#groups.has(id)) return failure("AlreadyExists");
+    const state={closed:false,members:new Set()};
+    // A copied membership view never exposes the authoritative set.
+    const group=Object.freeze({
+      id,get closed(){return state.closed;},
+      get members(){return new Set(state.members);}
+    });
+    this.#groupStates.set(group,state);
+    this.#groups.set(id,group);
     return success({group});
   }
 
@@ -95,27 +110,27 @@ export class PubSubReference {
     // The original PS001-PS020 broker-global topics remain a legacy oracle.
     // Group-scoped topics cannot alias either those or another group.
     const key=group===null ? name : JSON.stringify(["group",group.id,name]);
-    const existing=this.topics.get(key);
+    const existing=this.#topics.get(key);
     if (existing && existing.type!==type) return failure("TopicTypeMismatch");
-    if (!existing && this.topics.size>=this.maxTopics) return failure("ResourceExhausted");
+    if (!existing && this.#topics.size>=this.maxTopics) return failure("ResourceExhausted");
     if (!existing) {
-      this.topics.set(key,Object.freeze({key,name,type,group}));
-      this.topicSeq.set(key,0n);
+      this.#topics.set(key,Object.freeze({key,name,type,group}));
+      this.#topicSeq.set(key,0n);
     }
-    return success({topic:this.topics.get(key)});
+    return success({topic:this.#topics.get(key)});
   }
 
   topicInGroup(group,name,type) { return this.topic(name,type,group); }
 
   activeMembership(group,actor) {
-    for (const entry of this.memberships.values())
+    for (const entry of this.#memberships.values())
       if (entry.active && entry.capability.group===group && entry.capability.actor===actor)
         return true;
     return false;
   }
 
   authorizedPublisher(topic,grant) {
-    const entry=this.memberships.get(grant?.id);
+    const entry=this.#memberships.get(grant?.id);
     return !!entry && entry.capability===grant && entry.active &&
       grant.group===topic.group && this.isGroup(grant.group) &&
       this.isActor(grant.actor);
@@ -126,21 +141,21 @@ export class PubSubReference {
     if (!this.isGroup(group) || !this.isActor(actor)) return failure("StaleTarget");
     // The immutable grant is a capability; public members Set is only a view.
     if (this.activeMembership(group,actor)) return success({alreadyMember:true});
-    group.members.add(actor.key);
+    this.#groupStates.get(group).members.add(actor.key);
     const membership=Object.freeze({id:++this.nextMembership,group,actor});
-    this.memberships.set(membership.id,{capability:membership,active:true});
+    this.#memberships.set(membership.id,{capability:membership,active:true});
     return success({membership});
   }
 
   leave(membership) {
-    const entry=this.memberships.get(membership?.id);
+    const entry=this.#memberships.get(membership?.id);
     if (!entry || entry.capability!==membership || !entry.active)
       return failure("StaleMembership");
     entry.active=false;
-    membership.group.members.delete(membership.actor.key);
+    this.#groupStates.get(membership.group).members.delete(membership.actor.key);
     this.cancelTarget(membership.actor.key,s=>s.kind==="group" && s.target===membership.group);
     // A group-bound direct subscription cannot survive a leave/rejoin.
-    for (const sub of this.subscriptions.values())
+    for (const sub of this.#subscriptions.values())
       if (!sub.closed && sub.topic.group===membership.group &&
           sub.kind==="actor" && sub.target===membership.actor)
         this.unsubscribe(sub);
@@ -149,7 +164,7 @@ export class PubSubReference {
 
   subscribe(topic,kind,target,capacity=32) {
     if (this.closed) return failure("Closed");
-    if (this.topics.get(topic?.key ?? topic?.name)!==topic) return failure("UnknownTopic");
+    if (this.#topics.get(topic?.key ?? topic?.name)!==topic) return failure("UnknownTopic");
     if (!Number.isSafeInteger(capacity) || capacity<1) return failure("InvalidCapacity");
     if (kind==="actor" ? !this.isActor(target) : kind==="group" ? !this.isGroup(target) : true)
       return failure("StaleTarget");
@@ -159,50 +174,54 @@ export class PubSubReference {
     // A live (topic, target) edge is unique. Calling subscribe twice must
     // not mint a second registration or consume another quota. Capacity
     // changes require an explicit unsubscribe and fresh registration.
-    for (const existing of this.subscriptions.values()) {
+    for (const existing of this.#subscriptions.values()) {
       if (!existing.closed && existing.topic===topic &&
           existing.kind===kind && existing.target===target) {
         if (existing.capacity!==capacity) return failure("SubscriptionConflict");
         return success({subscription:existing,alreadySubscribed:true});
       }
     }
-    if ([...this.subscriptions.values()].filter(s=>!s.closed).length>=this.maxSubscriptions)
+    if ([...this.#subscriptions.values()].filter(s=>!s.closed).length>=this.maxSubscriptions)
       return failure("ResourceExhausted");
-    const sub={id:++this.nextSub,topic,kind,target,capacity,
-      closed:false,queues:new Map(),inflight:new Map()};
-    this.subscriptions.set(sub.id,sub);
+    const state={closed:false,queues:new Map(),inflight:new Map()};
+    const sub=Object.freeze({
+      id:++this.nextSub,topic,kind,target,capacity,
+      get closed(){return state.closed;}
+    });
+    this.#subscriptionStates.set(sub,state);
+    this.#subscriptions.set(sub.id,sub);
     return success({subscription:sub});
   }
 
   tryPublish(topic,payload,publisherGrant=null) {
     if (this.closed) return failure("Closed");
-    if (this.topics.get(topic?.key ?? topic?.name)!==topic) return failure("UnknownTopic");
+    if (this.#topics.get(topic?.key ?? topic?.name)!==topic) return failure("UnknownTopic");
     if (topic.group!==null && !this.authorizedPublisher(topic,publisherGrant))
       return failure("UnauthorizedPublisher");
     if (!this.isShared(payload)) return failure("NotShared");
     const slots=[];
-    for (const sub of this.subscriptions.values()) {
+    for (const sub of this.#subscriptions.values()) {
       if (sub.closed || sub.topic!==topic) continue;
-      const keys=sub.kind==="actor" ? [sub.target.key] : [...this.memberships.values()]
+      const keys=sub.kind==="actor" ? [sub.target.key] : [...this.#memberships.values()]
         .filter(m=>m.active && m.capability.group===sub.target &&
           this.isActor(m.capability.actor))
         .map(m=>m.capability.actor.key).sort();
       for (const key of keys) {
-        const actor=this.actors.get(key);
+        const actor=this.#actors.get(key);
         if (!active(actor)) continue;
-        const queued=sub.queues.get(key)?.length ?? 0;
-        const running=sub.inflight.get(key) ?? 0;
+        const queued=this.#subscriptionStates.get(sub).queues.get(key)?.length ?? 0;
+        const running=this.#subscriptionStates.get(sub).inflight.get(key) ?? 0;
         if (queued+running >= sub.capacity) return failure("Full");
         slots.push({sub,key});
       }
     }
-    const old=this.topicSeq.get(topic.key ?? topic.name);
+    const old=this.#topicSeq.get(topic.key ?? topic.name);
     if (old===0xffffffffffffffffn) return failure("SequenceExhausted");
     const seq=old+1n;
-    this.topicSeq.set(topic.key ?? topic.name,seq);
+    this.#topicSeq.set(topic.key ?? topic.name,seq);
     for (const {sub,key} of slots) {
-      if (!sub.queues.has(key)) sub.queues.set(key,[]);
-      sub.queues.get(key).push({sequence:seq,topic:topic.name,
+      if (!this.#subscriptionStates.get(sub).queues.has(key)) this.#subscriptionStates.get(sub).queues.set(key,[]);
+      this.#subscriptionStates.get(sub).queues.get(key).push({sequence:seq,topic:topic.name,
         subscription_id:sub.id,payload});
     }
     return success({receipt:{sequence:seq.toString(),recipients:slots.length}});
@@ -214,57 +233,61 @@ export class PubSubReference {
     if (subscription.topic.group!==null &&
         !this.activeMembership(subscription.topic.group,actor))
       return failure("UnauthorizedSubscriber");
-    const queue=subscription.queues.get(actor.key);
+    const queue=this.#subscriptionStates.get(subscription).queues.get(actor.key);
     if (!queue?.length) return failure("Empty");
     const delivery=queue.shift();
-    subscription.inflight.set(actor.key,(subscription.inflight.get(actor.key)??0)+1);
+    this.#subscriptionStates.get(subscription).inflight.set(actor.key,(this.#subscriptionStates.get(subscription).inflight.get(actor.key)??0)+1);
     return success({delivery});
   }
 
   finish(subscription,actor) {
-    if (!this.isSub(subscription) || this.actors.get(actor?.key)!==actor)
+    if (!this.isSub(subscription) || this.#actors.get(actor?.key)!==actor)
       return failure("StaleTarget");
-    const count=subscription.inflight.get(actor.key)??0;
+    const count=this.#subscriptionStates.get(subscription).inflight.get(actor.key)??0;
     if (!count) return failure("NoInFlight");
-    if (count===1) subscription.inflight.delete(actor.key);
-    else subscription.inflight.set(actor.key,count-1);
+    if (count===1) this.#subscriptionStates.get(subscription).inflight.delete(actor.key);
+    else this.#subscriptionStates.get(subscription).inflight.set(actor.key,count-1);
     return success();
   }
 
   unsubscribe(subscription) {
     if (!this.isSub(subscription)) return failure("StaleSubscription");
-    if (!subscription.closed) { subscription.closed=true; subscription.queues.clear(); }
+    if (!subscription.closed) {
+      const state=this.#subscriptionStates.get(subscription);
+      state.closed=true;
+      state.queues.clear();
+    }
     return success({done:this.done(subscription)});
   }
 
   done(subscription) {
     if (!this.isSub(subscription)) return false;
-    return subscription.closed && [...subscription.inflight.values()].every(n=>n===0);
+    return subscription.closed && [...this.#subscriptionStates.get(subscription).inflight.values()].every(n=>n===0);
   }
 
   stopActor(actor) {
     if (!this.isActor(actor)) return failure("StaleActor");
-    this.actorStates.get(actor).alive=false;
-    for (const m of this.memberships.values())
+    this.#actorStates.get(actor).alive=false;
+    for (const m of this.#memberships.values())
       if (m.active && m.capability.actor===actor) {
         m.active=false;
-        m.capability.group.members.delete(actor.key);
+        this.#groupStates.get(m.capability.group).members.delete(actor.key);
       }
     this.cancelTarget(actor.key,()=>true);
-    for (const sub of this.subscriptions.values())
+    for (const sub of this.#subscriptions.values())
       if (sub.kind==="actor" && sub.target===actor) this.unsubscribe(sub);
     return success();
   }
 
   closeGroup(group) {
     if (!this.isGroup(group)) return failure("StaleGroup");
-    this.groupStates.get(group).closed=true;
-    for (const m of this.memberships.values())
+    this.#groupStates.get(group).closed=true;
+    for (const m of this.#memberships.values())
       if (m.active && m.capability.group===group) {
         m.active=false;
-        group.members.delete(m.capability.actor.key);
+        this.#groupStates.get(group).members.delete(m.capability.actor.key);
       }
-    for (const sub of this.subscriptions.values())
+    for (const sub of this.#subscriptions.values())
       if ((sub.kind==="group" && sub.target===group) || sub.topic.group===group)
         this.unsubscribe(sub);
     return success();
@@ -273,21 +296,21 @@ export class PubSubReference {
   close() {
     if (this.closed) return success();
     this.closed=true;
-    for (const sub of this.subscriptions.values()) this.unsubscribe(sub);
-    for (const group of this.groups.values()) this.groupStates.get(group).closed=true;
-    for (const membership of this.memberships.values()) membership.active=false;
-    for (const group of this.groups.values()) group.members.clear();
+    for (const sub of this.#subscriptions.values()) this.unsubscribe(sub);
+    for (const group of this.#groups.values()) this.#groupStates.get(group).closed=true;
+    for (const membership of this.#memberships.values()) membership.active=false;
+    for (const group of this.#groups.values()) this.#groupStates.get(group).members.clear();
     return success();
   }
 
   cancelTarget(key,predicate) {
-    for (const sub of this.subscriptions.values())
-      if (predicate(sub)) sub.queues.delete(key);
+    for (const sub of this.#subscriptions.values())
+      if (predicate(sub)) this.#subscriptionStates.get(sub).queues.delete(key);
   }
 
-  isActor(actor) { return !!actor && this.actors.get(actor.key)===actor && actor.alive; }
-  isGroup(group) { return !!group && this.groups.get(group.id)===group && !group.closed; }
-  isSub(sub) { return !!sub && this.subscriptions.get(sub.id)===sub; }
+  isActor(actor) { return !!actor && this.#actors.get(actor.key)===actor && actor.alive; }
+  isGroup(group) { return !!group && this.#groups.get(group.id)===group && !group.closed; }
+  isSub(sub) { return !!sub && this.#subscriptions.get(sub.id)===sub; }
   isShared(v) {
     // A frozen DAG is Sendable even when two fields reference the same child.
     // Reject back-edges to the current stack (true cycles).
