@@ -58,7 +58,13 @@ export class PubSubReference {
 
   actor(id, generation=1) {
     if (this.closed) return failure("Closed");
-    const key=`${id}#${generation}`;
+    // Encode identity components injectively: delimiter concatenation can
+    // alias (id="tenant#1", generation=2) with other malformed identities.
+    // A generation must be an actual positive integer, never a string.
+    if (typeof id!=="string" || id.length===0 || id.length>256 ||
+        !Number.isSafeInteger(generation) || generation<1)
+      return failure("InvalidActorIdentity");
+    const key=JSON.stringify([id,generation]);
     if (this.actors.has(key)) return failure("AlreadyExists");
     const actor={key,id,generation,alive:true};
     this.actors.set(key,actor);
