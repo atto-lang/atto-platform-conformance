@@ -21,8 +21,22 @@
       "id": "mcp.auth_required",
       "tier": "host-protocol",
       "expected": "missing/invalid bearer fails before tool disclosure",
-      "status": "NOT_EXECUTED",
-      "evidence": []
+      "status": "HOST_PROTOCOL_TESTED",
+      "evidence": [
+        {
+          "commit_sha": "667ed007d9f12bd3c6514f8852aa3756eedfba0c",
+          "command": "javac --release 21; java dev.oreslang.runtime.devtools.Smoke; java dev.oreslang.runtime.devtools.DiscoverySmoke; node sdk-client.mjs",
+          "run_url": "https://github.com/voxletra/voxletra-e2e/actions/runs/41394418670",
+          "steps_executed": true,
+          "result": "PASS",
+          "execution_target": "synthetic-java-mcp-transport",
+          "source_blob_shas": [
+            "a9abedd06e971e59d43d0de2e38f4743871c0912",
+            "14341e69ff6588c02abfac2eca14cf896e462df4",
+            "f8076bd8c0455884e1975676e4a434eb1c3ee571"
+          ]
+        }
+      ]
     },
     {
       "id": "mcp.origin_host_rebinding",
@@ -35,8 +49,22 @@
       "id": "mcp.version_headers",
       "tier": "host-protocol",
       "expected": "2026-07-28 stateless headers and body agree",
-      "status": "NOT_EXECUTED",
-      "evidence": []
+      "status": "HOST_PROTOCOL_TESTED",
+      "evidence": [
+        {
+          "commit_sha": "667ed007d9f12bd3c6514f8852aa3756eedfba0c",
+          "command": "javac --release 21; java dev.oreslang.runtime.devtools.Smoke; java dev.oreslang.runtime.devtools.DiscoverySmoke; node sdk-client.mjs",
+          "run_url": "https://github.com/voxletra/voxletra-e2e/actions/runs/41394418670",
+          "steps_executed": true,
+          "result": "PASS",
+          "execution_target": "synthetic-java-mcp-transport",
+          "source_blob_shas": [
+            "a9abedd06e971e59d43d0de2e38f4743871c0912",
+            "14341e69ff6588c02abfac2eca14cf896e462df4",
+            "f8076bd8c0455884e1975676e4a434eb1c3ee571"
+          ]
+        }
+      ]
     },
     {
       "id": "mcp.bad_json_bounded",
@@ -49,8 +77,22 @@
       "id": "mcp.discover_tools_read_only",
       "tier": "host-protocol",
       "expected": "discovery and tool list omit mutations and redact secrets",
-      "status": "NOT_EXECUTED",
-      "evidence": []
+      "status": "HOST_PROTOCOL_TESTED",
+      "evidence": [
+        {
+          "commit_sha": "667ed007d9f12bd3c6514f8852aa3756eedfba0c",
+          "command": "javac --release 21; java dev.oreslang.runtime.devtools.Smoke; java dev.oreslang.runtime.devtools.DiscoverySmoke; node sdk-client.mjs",
+          "run_url": "https://github.com/voxletra/voxletra-e2e/actions/runs/41394418670",
+          "steps_executed": true,
+          "result": "PASS",
+          "execution_target": "synthetic-java-mcp-transport",
+          "source_blob_shas": [
+            "a9abedd06e971e59d43d0de2e38f4743871c0912",
+            "14341e69ff6588c02abfac2eca14cf896e462df4",
+            "f8076bd8c0455884e1975676e4a434eb1c3ee571"
+          ]
+        }
+      ]
     },
     {
       "id": "runtime.real_actor_count",
