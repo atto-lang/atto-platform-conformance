@@ -28,5 +28,5 @@ jobs:
           node-version: '22'
       - name: Verify source-free receipt and pinned fixture host tests (NOT native Oreslang)
         run: |
-          node --test test/five-backend-scalar-gate.test.mjs test/five-backend-scalar-fixtures.test.mjs
+          node --test test/five-backend-scalar-gate.test.mjs test/five-backend-scalar-fixtures.test.mjs test/trusted-workflow-admission.test.mjs
           echo 'HOST-ONLY. No compiler or native guest executed, no backend parity certified.'
