@@ -50,7 +50,7 @@ export function verifyCurrentHeadPreflight(plan, contract, fixtureManifest, hist
       if (Object.hasOwn(entry, field)) error(entry.backend + ' unexpected evidence field: ' + field);
   }
   const java = plan.entries.find(x => x.backend === 'java-graal');
-  exactly(plan.fixture?.manifest_path, 'fixtures/critical-suspension-v1/java-stage1/manifest.json', 'fixture path');
+  exactly(plan.fixture?.manifest_path, 'evidence/critical-suspends-java-stage1-original-manifest-20261101.json', 'fixture path');
   if (!SHA40.test(plan.fixture.manifest_blob_sha1)) error('fixture manifest blob not pinned');
   if (plan.fixture.verified_current_java_head !== java.commit)
     error('current Java fixture head does not match pinned Java head');
