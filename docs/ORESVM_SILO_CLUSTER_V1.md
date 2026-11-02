@@ -76,6 +76,28 @@ canonical ActorId from the earlier persistence-sidecar reference:
 `route_actor`, `validate_delivery`, `drain_node`, `fail_node`, and
 `passivate_actor`. Methods are underscore/snake_case consistently.
 
+The reference also exposes `resolve_or_activate_actor(context, id, placement)`
+and `resolve_or_activate_ref(context, actor_ref_token, placement)` as
+**host-only, synchronous, lazy directory resolution**. Calling twice for the
+same canonical tenant-scoped ID returns the same route and epoch while active;
+passivation or node failure permits a new route with a higher in-memory epoch.
+A serialized `oa1_` reference is identity data, **not a credential**. Both
+entrypoints require the opaque trusted tenant context, canonical ID validation
+and hard placement checks even when the actor is already active. Incompatible
+placement is rejected instead of silently creating a second activation.
+Explicit `activate_actor` still refuses duplicate activations. These APIs
+do **not** dispatch an AttoLang (`*.atto`) actor method, provide a guest
+`ActorRef<T>` compiler binding, or implement transport, persistence or
+automatic crash recovery in any production backend.
+
+A node advertising `tenant-protected` does **not** prove a tenant-native
+sandbox. The host-only model now refuses such activation, including lazy
+activation, until an independent verified broker is present. Only trusted
+`actor-local` placement is admitted. A real product must additionally
+validate authority, code/schema version and provider-side durable fencing
+before publishing a replacement activation. Source guests and
+multi-process split-brain execution remain NOT_EXECUTED.
+
 The reference rejects duplicate tenant isolates and shared isolate IDs across
 tenants, wrong-tenant contexts, stale routes, unsafe mode claims, inconsistent
 backend/region/capability placement, node incarnation reuse, actor/global quotas,
