@@ -28,9 +28,9 @@ Each actor receives `PubSubDelivery<T>` via the ordinary `receive(Message)` acto
 - `PubSub.local()` creates an explicitly owned broker within one runtime/isolate domain; the broker is not an ambient singleton. The application/service creates and passes a capability to authorized actors. Cross-tenant publication and subscription require explicit, independently checked authority; a topic name is not authorization.
 - Topic identity is **(broker instance, exact name)**. Once associated with a `T`, the name cannot be associated with a different `T` until that broker closes. Names are case-sensitive ASCII, 1–128 bytes, match `^[A-Za-z][A-Za-z0-9._/-]{0,127}$`. Oreslang symbols (`#ready`) are not string topic names, and identical names in two brokers do not alias.
 - `T` must be `Sendable`; `rt share` enforces transitively immutable, lifetime-safe publication. No mutable pointer/borrow, borrowed actor arena, non-sendable host object or untracked interior mutation crosses the boundary. On failed admission the caller retains the exact original payload/share capability for retry.
-- `Subscription<T>` is an **affine revocable control handle**, minted per registration and bound to its owning broker and target generation. Copying or forging a handle does not create an additional registration. An actor may hold multiple subscriptions.
-- `GroupMembership` is a distinct affine capability for (group, actor incarnation). Actors can join multiple groups. A second join into the same group while live returns `AlreadyMember`; leaving closes only that membership. A group never owns the actor's lifecycle merely through membership.
-- Joining a group is not subscribing to any topics. `subscribe(topic, group, capacity)` dynamically routes to current group members. In contrast `subscribe(topic, actor, capacity)` targets that actor directly. Each distinct subscription is independent; **no overlap deduplication** (two groups with one shared actor => two deliveries).
+- `Subscription<T>` is an **affine revocable control handle**, minted per distinct topic/target registration and bound to its owning broker and target generation. Repeated subscribe returns the same live registration without creating a new registration or an independent revocation capability. An actor may hold multiple subscriptions to different topics.
+- `GroupMembership` is a distinct affine capability for (group, actor incarnation). Actors can join multiple groups. A second join into the same group while live is an idempotent no-op; it does **not** mint a second affine membership capability. Leaving revokes the one membership. A group never owns the actor's lifecycle merely through membership.
+- Joining a group is not subscribing to any topics. `subscribe(topic, group, capacity)` dynamically routes to current group members. In contrast `subscribe(topic, actor, capacity)` targets that actor directly. Each distinct target/topic edge is independent; duplicate subscribe to the same live edge returns its existing registration without another quota charge, and incompatible capacity returns `SubscriptionConflict`. **No overlap deduplication** occurs across distinct group-target subscriptions (two groups with one shared actor => two deliveries).
 - Broker, actor, group and subscription IDs must be generation/identity fenced; restarted actors do not regain subscriptions or memberships from an older incarnation. An actor's termination revokes memberships and direct subscriptions; closing a group closes subscriptions targeting it.
 
 ## Atomic publication and bounded capacity
@@ -57,7 +57,7 @@ Membership leave similarly fences future group deliveries and cancels queued del
 
 ## Errors and failure isolation
 
-Ordinary operations use `Result<_, PubSubError>`: `InvalidName`, `TopicTypeMismatch`, `AlreadyMember`, `InvalidCapacity`, `Full`, `Busy`, `ResourceExhausted`, `Closed`, `SequenceExhausted`, `StaleActor`, `StaleTarget`, `NotShared` as appropriate. In the final Oreslang API, a failed `try_publish` must return ownership of the original payload/capability, consistent with the core bounded-queue rejected-push ownership rule.
+Ordinary operations use `Result<_, PubSubError>`: `InvalidName`, `TopicTypeMismatch`, `SubscriptionConflict`, `InvalidCapacity`, `Full`, `Busy`, `ResourceExhausted`, `Closed`, `SequenceExhausted`, `StaleActor`, `StaleTarget`, `NotShared` as appropriate. In the final Oreslang API, a failed `try_publish` must return ownership of the original payload/capability, consistent with the core bounded-queue rejected-push ownership rule.
 
 An actor's `throw` or `raise` follows the existing recover/catch contract. An unrecovered failure that becomes `panic` routes to the supervisor CONTROL path; the broker must not catch and retry it or publish it as a normal event. Closing one group or terminating one subscriber cannot shut down unrelated groups, actors, brokers, or topics.
 
@@ -78,3 +78,17 @@ The open draft [oreslang-source.net PR #327](https://github.com/ores-truffle-ore
 For **each backend**: run the same fixture from an exact checked-out source SHA, separately report source parsing/type checking, runtime substrate behavior, and an actual compiled guest execution trace; reject unsupported guest syntax before artifact creation. Run stress tests for concurrent atomic admission and lifetime refcounts with sanitizers where appropriate. Must not promote `NOT_EXECUTED` to passed on the basis of an oracle run, host-only test, zero-step CI, a fake compiler, or a guessed source-binary relationship.
 
 The required source backend matrix is Java/Truffle, LLVM/native, Wasm, **independent Rust/Cranelift**, and .NET NativeAOT. Forge is a separate optional sixth backend, not the Cranelift implementation. The five-backend ledger lives in `contracts/v1/actor-pubsub/backend-status.pending.json`. The portable contract cannot be called implemented until all five have produced independently executed, exact-head, nonzero-step guest evidence.
+
+## Convergence note (2026-11-02)
+
+PS006 and PS019 now follow idempotent group join and live subscription edge
+behavior consistent with the Java/.NET host substrates. This changes **only**
+the proposed portable reference oracle: group-target subscriptions and global
+broker topic identity still differ from the group-scoped Java `Topic<T>` source
+surface, and the portable core's atomic nonblocking all-or-nothing admission
+still differs from Java's bounded asynchronous RELIABLE/LATEST/LOSSY policies.
+The differences are **versioned integration blockers**, not passing backend
+conformance evidence. In particular, `PubSubReference.tryPublish()` has no
+publisher-identity argument and does not prove membership or tenant authority.
+Do not merge until those remaining semantic decisions and source guest fixtures
+are reconciled.
