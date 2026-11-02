@@ -211,3 +211,29 @@ test('one-nanosecond gap between steps is admissible',async()=>{
   x.readJobs=async()=>jobs;
   assert.equal((await verify(x)).checkedJobs[0].executedStepCount,2);
 });
+
+
+// U+2028/U+2029 are Unicode line/paragraph separators, not C0/C1 controls
+// or Default_Ignorable_Code_Point; reject them in provenance-bearing labels.
+mutate('reject runner label with Unicode line separator',(_x,_r,_c,jobs)=>{
+  jobs.jobs[0].runner_name='runner\u2028FAKE';
+});
+mutate('reject step label with Unicode paragraph separator',(_x,_r,_c,jobs)=>{
+  jobs.jobs[0].steps[1].name='guest\u2029SUCCESS';
+});
+mutate('reject job label with Unicode line separator',(x,_r,_c,jobs)=>{
+  x.requiredJobs=['compiler\u2028guest'];
+  jobs.jobs[0].name='compiler\u2028guest';
+});
+mutate('reject verifier-owned job allowlist with paragraph separator',x=>{
+  x.requiredJobs=['compiler\u2029guest'];
+});
+test('valid internationalized provenance labels remain admissible',async()=>{
+  const x=options(),jobs=await x.readJobs();
+  x.requiredJobs=['compilación 🧪'];
+  jobs.jobs[0].name='compilación 🧪';
+  jobs.jobs[0].runner_name='verified-runner 🧪';
+  jobs.jobs[0].steps[1].name='ejecución';
+  x.readJobs=async()=>jobs;
+  assert.equal((await verify(x)).checkedJobs[0].executedStepCount,2);
+});

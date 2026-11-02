@@ -5,7 +5,7 @@ const BACKENDS = new Set(['java', 'llvm', 'wasm', 'cranelift', 'net']);
 const POSITIVE_INT = x => Number.isSafeInteger(x) && x > 0;
 const fail = reason => { throw new Error(`workflow admission: ${reason}`); };
 const validLine = s => typeof s === 'string' && s.length > 0 &&
-  Buffer.byteLength(s, 'utf8') <= 4096 && s.isWellFormed() && !/[\u0000-\u001f\u007f-\u009f\p{Default_Ignorable_Code_Point}]/u.test(s);
+  Buffer.byteLength(s, 'utf8') <= 4096 && s.isWellFormed() && !/[\u0000-\u001f\u007f-\u009f\p{Default_Ignorable_Code_Point}\p{Zl}\p{Zp}]/u.test(s);
 // Date.parse normalizes impossible Gregorian dates and truncates fractional
 // seconds to milliseconds. Validate the canonical calendar/clock prefix, then
 // compare exact UTC nanoseconds so sub-millisecond ordering cannot be forged.
