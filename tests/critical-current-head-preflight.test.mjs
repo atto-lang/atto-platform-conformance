@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import {verifyCurrentHeadPreflight} from '../bin/verify-critical-current-head-preflight.mjs';
 
 const read = path => JSON.parse(fs.readFileSync(new URL(path, import.meta.url), 'utf8'));
@@ -9,6 +10,18 @@ const fixture = read('../fixtures/critical-suspension-v1/java-stage1/manifest.js
 const historical = read('../evidence/critical-suspends-backend-evidence-20261101.json');
 const current = read('../evidence/critical-suspends-current-head-preflight-20261102.json');
 const clone = () => structuredClone(current);
+
+test('manifest object hash and fixture bytes are pinned independently of guest claims', () => {
+  const base = new URL('../fixtures/critical-suspension-v1/java-stage1/',import.meta.url);
+  const gitBlob = bytes => crypto.createHash('sha1')
+    .update(Buffer.from('blob ' + bytes.length + '\\0')).update(bytes).digest('hex');
+  const manifestBytes = fs.readFileSync(new URL('manifest.json',base));
+  assert.equal(gitBlob(manifestBytes), current.fixture.manifest_blob_sha1);
+  for (const f of fixture.fixtures) {
+    assert.equal(gitBlob(fs.readFileSync(new URL(f.name,base))), f.git_blob_sha1);
+    assert.equal(f.verified_guest, false);
+  }
+});
 
 test('current five-backend HEAD identity is a pending snapshot, not native evidence', () => {
   assert.deepEqual(verifyCurrentHeadPreflight(current, contract, fixture, historical),
