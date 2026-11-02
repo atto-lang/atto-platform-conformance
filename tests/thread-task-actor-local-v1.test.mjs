@@ -18,7 +18,7 @@ test('contract and all phase+diagnostic ids are unique target-only', () => {
   assert.deepEqual(c.backends,['java','llvm','net','forge','wasm']);
   assert.equal(c.receipt.zeroStepMeans,'NOT_EXECUTED');
   assert.equal(c.receipt.referenceModelIsGuestEvidence,false);
-  assert.equal(c.requireActualOsThread,true);
+  assert.equal(c.requiresActualOsThread,true);
   assert.equal(c.forbidTaskOrVirtualThreadFallback,true);
   assert.equal(c.cases.length,37);
   assert.equal(new Set(c.cases.map(x=>x.id)).size,c.cases.length);
