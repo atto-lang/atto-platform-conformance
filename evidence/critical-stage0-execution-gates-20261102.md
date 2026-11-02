@@ -21,6 +21,8 @@
 
 The `positive-try-critical-named-mutex.ores` Java input checks both an uncontended admission and busy fallback, producing **exact** stdout `31`. For negative Java fixtures use the *first* actual compiler diagnostic code, never just the `E_CRITICAL_` prefix.
 
+**Stage-0 evidence granularity (hardened):** Java's JUnit test runs `.ores` source using GraalVM `Context.eval`, so an independently verified pass is `GRAAL_POLYGLOT_GUEST` evidence; it is **not** a Graal Native Image executable and must set `native_guest_executed: false`. The stage-0 verifier requires `guest_executed: true`, `guest_mode: GRAAL_POLYGLOT`, and exact output `31` for its positive case; a native-executable claim is rejected. LLVM, .NET, and Forge stage-0 tests are compiler/source admission only; Wasm stage-0 checks are host capability admission only. Native executable guest certification is a separate acceptance gate.
+
 ## Evidence capture after real execution
 
 1. Before execution re-fetch PR and compare exact 40-hex **head commit** and complete root **tree**, not just branch name or blob equivalence. Abort on movement.
