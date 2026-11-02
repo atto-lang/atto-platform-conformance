@@ -71,6 +71,28 @@ test('duplicate, conflicting and skipped required CI steps fail closed', () => {
     assert.equal(check(skipped).error, 'MISSING_EXECUTED_STEP');
   }
 });
+test('checkout must precede compilation and actual guest execution', () => {
+  const reversed = fixture();
+  reversed.steps.reverse();
+  assert.equal(check(reversed).error, 'MISSING_EXECUTED_STEP');
+  const swapped = fixture();
+  [swapped.steps[1], swapped.steps[2]] = [swapped.steps[2], swapped.steps[1]];
+  assert.equal(check(swapped).error, 'MISSING_EXECUTED_STEP');
+});
+test('check-only flag must be explicitly false', () => {
+  for (const flag of [undefined, null, 'false', 0, 'true']) {
+    const report = fixture();
+    report.checkOnly = flag;
+    assert.equal(check(report).error, 'NO_SUCCESSFUL_GUEST_EXECUTION');
+  }
+});
+test('inventory source head and test fixture must match the Java alignment', () => {
+  for (const key of ['source_repo', 'source_head', 'fixture_blob_sha']) {
+    const bad = structuredClone(inventory);
+    bad[key] = 'f'.repeat(40);
+    assert.equal(inspectMediaReplayGuestReceipt(fixture(), bad, alignment).error, 'INVALID_INVENTORY');
+  }
+});
 test('wrong compiler source SHA or fixture SHA fails', () => {
   const a = fixture(); a.sourceCommit = 'f'.repeat(40);
   assert.equal(check(a).error, 'UNPINNED_SOURCE');
