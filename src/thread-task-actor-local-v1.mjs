@@ -2,8 +2,6 @@
 // Metadata supplied to this model represents trusted compiler/runtime decisions;
 // this JavaScript implementation must never be used as an authorization provider.
 
-const own = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
-
 export function inferTransferTraits(descriptor) {
   const active = new Set();
   function walk(d, depth) {
@@ -120,7 +118,9 @@ export class LocalStateThreadModel {
       if (!this.#threads.has(n)) { slot = n; break; }
     }
     if (!slot) fail('THREAD_CAPACITY_EXHAUSTED');
-    const generation = (this.#slotGeneration.get(slot) || 0) + 1;
+    const priorGeneration = this.#slotGeneration.get(slot) || 0;
+    if (priorGeneration >= Number.MAX_SAFE_INTEGER) fail('THREAD_GENERATION_EXHAUSTED');
+    const generation = priorGeneration + 1;
     this.#slotGeneration.set(slot, generation);
     const handle = Object.freeze({slot,generation,tenant});
     this.#threads.set(slot, {handle, status:'RUNNING', stopRequested:false,
@@ -149,6 +149,7 @@ export class LocalStateThreadModel {
   }
   createTask(tenant = 'default') {
     if (!validTenant(tenant)) fail('INVALID_TENANT');
+    if (this.#nextId >= Number.MAX_SAFE_INTEGER) fail('LOCAL_ID_EXHAUSTED');
     const handle = Object.freeze({id:++this.#nextId,generation:1,tenant});
     this.#tasks.set(handle.id,{handle,locals:new Map(),active:false});
     return handle;
@@ -160,6 +161,7 @@ export class LocalStateThreadModel {
   }
   createActor(tenant = 'default') {
     if (!validTenant(tenant)) fail('INVALID_TENANT');
+    if (this.#nextId >= Number.MAX_SAFE_INTEGER) fail('LOCAL_ID_EXHAUSTED');
     const handle=Object.freeze({id:++this.#nextId,generation:1,tenant});
     this.#actors.set(handle.id,{handle,locals:new Map(),active:false});
     return handle;
@@ -167,6 +169,7 @@ export class LocalStateThreadModel {
   restartActor(h) {
     const a=this.#actor(h);
     if (a.active) fail('ACTOR_STILL_BOUND');
+    if (h.generation >= Number.MAX_SAFE_INTEGER) fail('ACTOR_GENERATION_EXHAUSTED');
     a.locals.clear();
     a.handle=Object.freeze({id:h.id,generation:h.generation+1,tenant:h.tenant});
     return a.handle;
@@ -190,7 +193,11 @@ export class LocalStateThreadModel {
     if (taskRec) taskRec.active=true;
     if (actorRec) actorRec.active=true;
     this.#current={thread:threadHandle,task,actor};
-    try { return fn(); }
+    try {
+      const result = fn();
+      if (result && typeof result.then === 'function') fail('ASYNC_MODEL_CALLBACK_FORBIDDEN');
+      return result;
+    }
     finally {
       this.#current=previous;
       if (taskRec) taskRec.active=false;
@@ -205,12 +212,14 @@ export class LocalStateThreadModel {
   setLocal(scope,key,value) {
     if (!['thread','task','actor'].includes(scope) || !validKey(key))
       fail('INVALID_LOCAL_KEY');
-    this.#store(scope).set(key,value);
+    const s=this.#store(scope);
+    if (!s.has(key) && s.size >= 128) fail('LOCAL_KEY_CAPACITY_EXHAUSTED');
+    s.set(key,value);
   }
   getLocal(scope,key) {
     if (!['thread','task','actor'].includes(scope) || !validKey(key))
       fail('INVALID_LOCAL_KEY');
     const s=this.#store(scope);
-    return own(Object.fromEntries(s),key) ? s.get(key) : undefined;
+    return s.has(key) ? s.get(key) : undefined;
   }
 }
