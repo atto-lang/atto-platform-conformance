@@ -21,9 +21,10 @@ AttoLang guest programs, launch GPU kernels, or prove lower L1/L2 miss rates.
   The physical allocation base modulo the line size (`baseRemainder`) must
   be known for a negative sharing result. Unaligned physical bases can make
   logically adjacent 64-byte buckets share the same real line; unknown bases
-  conservatively return possible sharing. Distinct allocations are not
-  assumed cache-line isolated unless both have verified line-aligned,
-  nonoverlapping bases.
+  conservatively return possible sharing. Distinct allocation labels ALWAYS
+  return possible sharing: even matching zero base remainders do not certify
+  physical disjointness or prevent aliases. A future allocator-authorized
+  provenance and non-overlap proof would be needed to safely refine this.
 - LLC labels require nonempty, whitespace-free topology-domain and cache
   components (for example `pkg1/L3:5`). Bare numbers, `/`, empty components
   and malformed separators fail closed. Syntactic qualification does **not**
