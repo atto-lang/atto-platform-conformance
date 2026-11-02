@@ -271,6 +271,35 @@ test("299 structural receipts are incomplete even when all their results match",
   assert.equal(result.missing,1);
   assert.equal(result.certifiedParity,false);
 });
+test("an observed wrong guest result is divergent even with 299 missing receipts",()=>{
+  const r=receipt("desktop","llvm","scalar-42");
+  r.result.value=43;
+  const comparison=compareObservations([r],contract);
+  assert.equal(comparison.status,"DIVERGENT");
+  assert.equal(comparison.observed,1);
+  assert.equal(comparison.missing,299);
+  assert.equal(comparison.divergent,1);
+  assert.equal(comparison.independentlyAuthenticated,false);
+  assert.equal(comparison.certifiedParity,false);
+});
+test("partial observations with mismatched source revisions are not merely incomplete",()=>{
+  const java=receipt("iot","java","scalar-42");
+  const llvm=receipt("iot","llvm","scalar-42");
+  llvm.sourceCommit="9".repeat(40);
+  const comparison=compareObservations([java,llvm],contract);
+  assert.equal(comparison.status,"DIVERGENT");
+  assert.equal(comparison.observed,2);
+  assert.equal(comparison.missing,298);
+  assert.equal(comparison.divergent,1);
+  assert.equal(comparison.certifiedParity,false);
+});
+test("partial matching observations still report incomplete, never certified",()=>{
+  const comparison=compareObservations([receipt("iot","llvm","scalar-42")],contract);
+  assert.equal(comparison.status,"INCOMPLETE");
+  assert.equal(comparison.missing,299);
+  assert.equal(comparison.divergent,0);
+  assert.equal(comparison.certifiedParity,false);
+});
 test("300 caller-created matching observations cannot independently certify parity",()=>{
   const result=compareObservations(full(),contract);
   assert.equal(result.status,"OBSERVED_MATCH_NOT_CERTIFIED");
