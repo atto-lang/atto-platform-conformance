@@ -46,6 +46,10 @@ export async function publishPrivateMirror({
   source,destination,sourceCommit,destinationBaseCommit,prefix,newBranch,
   approvedDestinations,token,fetchImpl=fetch
 }) {
+  // Defense in depth: do not even contact GitHub or inspect source commits.
+  // The existing lower-level publishing machinery is quarantined, not a
+  // transfer-capable interface. Restoring it needs separate authorization.
+  throw Error("PRIVATE_SOURCE_PUBLISH_DISABLED_PENDING_PROTECTED_MAIN_APPROVAL");
   sha(sourceCommit);sha(destinationBaseCommit);
   if(!validPath(prefix)||!BRANCH.test(newBranch)||newBranch.includes("..")||newBranch.endsWith(".lock"))
     throw Error("invalid destination prefix or isolated CI branch");
