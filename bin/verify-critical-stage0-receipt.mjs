@@ -63,9 +63,13 @@ export function verifyCriticalStage0Receipt(receipt, plan) {
       fail('missing or failed stage0 case: '+id);
     if (phase==='guest') {
       hasGuest=true;
-      if (value.native_guest_executed!==true || value.compiler_accepted!==true ||
+      // Stage-0 Java uses Graal Polyglot Context.eval. This is real .ores
+      // guest execution, but NOT a compiled Native Image executable.
+      if (receipt.backend!=='java-graal' ||
+          value.guest_executed!==true || value.guest_mode!=='GRAAL_POLYGLOT' ||
+          value.native_guest_executed!==false || value.compiler_accepted!==true ||
           value.stdout!==want || value.exit_code!==0)
-        fail('native guest output/exit mismatch: '+id);
+        fail('Graal Polyglot guest output/mode/exit mismatch: '+id);
     } else if (phase==='compile-pass') {
       hasCompiler=true;
       if (value.compiler_accepted!==true || value.exit_code!==0)
@@ -93,11 +97,14 @@ export function verifyCriticalStage0Receipt(receipt, plan) {
       fail('compiler invocation and digest required');
   } else if (receipt.compiler_invoked!==false || receipt.compiler_sha256!==null)
     fail('host-only stage must not claim compiler invocation');
-  if (receipt.native_guest_executed!==hasGuest)
-    fail('host, compiler and native guest evidence must remain separate');
+  if (receipt.guest_executed!==hasGuest ||
+      receipt.native_guest_executed!==false ||
+      receipt.guest_mode!==(hasGuest?'GRAAL_POLYGLOT':null))
+    fail('host, compiler, Graal guest and native executable evidence must remain separate');
   if (hasHost && (hasGuest || hasCompiler))
     fail('host-only claims cannot be mixed with compiler or guest claims');
   return Object.freeze({classification:'UNATTESTED_STAGE0_RECORD',
-    backend:receipt.backend,evidence_class:hasGuest?'GUEST':hasCompiler?'COMPILER_ADMISSION':'HOST_ONLY',
+    backend:receipt.backend,
+    evidence_class:hasGuest?'GRAAL_POLYGLOT_GUEST':hasCompiler?'COMPILER_ADMISSION':'HOST_ONLY',
     checked_cases:Object.keys(spec).length});
 }
