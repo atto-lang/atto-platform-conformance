@@ -5,7 +5,7 @@
  */
 import {createHash} from "node:crypto";
 import {constants} from "node:fs";
-import {lstat,open,realpath} from "node:fs/promises";
+import {lstat,open,realpath,readdir} from "node:fs/promises";
 import {dirname,join,resolve} from "node:path";
 import {fileURLToPath} from "node:url";
 
@@ -91,8 +91,16 @@ export function validateContract(c){
 export async function loadAndCheckCorpus(root=ROOT){
   const contractPath=join(root,"contracts/platform-portability-v1.json");
   const c=validateContract(JSON.parse((await readStable(contractPath,16384)).toString("utf8")));
+  // The fixture directory itself must be an exact inventory, not just a
+  // collection containing the ten recognized files plus unknown payloads.
+  const fixtureDirectory=join(root,"fixtures/platform-portability-v1");
+  const present=await readdir(fixtureDirectory,{withFileTypes:true});
+  const expected=new Set(c.cases.map(v=>v.file));
+  good(present.length===expected.size&&present.every(entry=>
+    entry.isFile()&&expected.has(entry.name)),
+    "unexpected, missing or nonregular source fixture entry");
   for(const v of c.cases){
-    const source=await readStable(join(root,"fixtures/platform-portability-v1",v.file),4096);
+    const source=await readStable(join(fixtureDirectory,v.file),4096);
     good(createHash("sha256").update(source).digest("hex")===v.sha256,
       "fixture SHA-256 mismatch: "+v.id);
   }
