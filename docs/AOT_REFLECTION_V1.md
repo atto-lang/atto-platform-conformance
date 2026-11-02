@@ -1,0 +1,174 @@
+# AttoLang full-AOT reflection — descriptor ABI v1 (candidate)
+
+Status: **DESIGN ONLY / NOT_EXECUTED**. This is a cross-backend semantic and
+evidence contract; no backend compiler or native guest has been validated by
+this document or by the contract's host-only JSON tests. The shared design
+request is [AOT Reflection Design](https://chatgpt.com/share/6ae8ab63-a31c-83e9-a8ac-7bb1f158d410).
+Legacy GitHub repositories and .ores files retain their names until migrated.
+
+## Objective and strict boundary
+
+AttoLang offers `type_of<T>()`, `fields_of<T>()`, `methods_of<T>()`
+and `implements<T,I>()` as **closed-world queries** backed by immutable,
+compiler-emitted data. The API spellings are proposals, not evidence of parser
+admission. A compiler may support other surface forms with the same typed IR.
+No reflection feature may silently fall back to a JIT, runtime AST,
+Reflection.Emit, classpath scan, dynamic proxy, runtime generic specialization
+or reflection-dependent serializer. A backend that cannot lower a query must
+reject with a stable diagnostic and no executable output.
+
+Metadata inspection is not dynamic method invocation; a method descriptor is
+not a callable pointer. Reflection must not mint ownership rights, mutate
+actor state, grant a capability, or expose a layout offset or native pointer.
+A capability to inspect *live* state is distinct from compile-time/public
+type metadata.
+
+## Minimal lowering, in compiler order
+
+1. Resolve package identity, imports/aliases, nominal type symbols,
+   visibility, interface/typeclass witnesses, and finite generic instances.
+2. Typecheck reflective intrinsics as **pure metadata queries**; maintain
+   ordinary borrow, ownership, effect, actor-isolation and capability rules.
+3. Compute a bounded reflection reachability set. Default: public descriptors
+   only for explicitly reachable/retained types. Explicit retention may
+   enlarge metadata, **never** security authority.
+4. Generate a canonical portable descriptor table plus optional target ABI
+   section. Each entry has an unambiguous versioned, collision-checked type
+   identity; resolved generic arguments; public fields in source order; and
+   static method signature and witness references. Use checked indices,
+   lengths and total table size. No native address, object pointer or
+   mutable alias in the public table.
+5. Re-run ownership/effect/visibility checks on generated accessors and
+   serializers. Emit static accessor/witness IDs and finite dispatch tables.
+6. Lower `type_of` to a constant table reference or bounded index.
+   Lower `fields_of`/`methods_of` to immutable table slices;
+   `implements` to a compile-time boolean or a closed witness lookup.
+   There is no generic runtime type construction.
+7. Link and dead-strip unretained tables. Require binary section/symbol
+   inspection proving both presence of rooted metadata and physical
+   absence of unrooted metadata, rather than trusting a source manifest.
+8. Execute the exact guest source in the compiled AOT artifact and compare
+   values, visibility redaction, rejection diagnostics and resource bounds.
+
+Portable identity must not assume Java object layout == LLVM layout ==
+CIL layout == Wasm linear memory layout. Type symbol identity and
+versioned contract semantics can be shared; physical storage, alignment,
+endianness, object lifetime and table linking remain target-specific.
+
+## Suggested versioned descriptor envelope
+
+An immutable compiler-emitted section, conceptually:
+
+```text
+Header {
+  magic, schema_major=1, schema_minor, section_byte_length,
+  record_count, offsets_width, canonical_encoding, integrity_digest
+}
+TypeDescriptor {
+  stable_type_id, package_identity, resolved_symbol_id, generic_args,
+  visibility, kind, public_fields_slice, public_methods_slice,
+  witness_slice, target_abi_reference
+}
+FieldDescriptor { name_id, resolved_type_id, ordinal, visibility }
+MethodDescriptor { name_id, arity, parameter_type_ids, return_type_id,
+                   effect_flags, visibility, dispatch_witness_id }
+```
+
+All scalar widths, encoding normalization, length limits and digest domains
+must be locked before any ABI-stable release. This is **not yet** a frozen
+wire format and has no guest-controlled address fields. Descriptor references
+are opaque bounds-checked handles; the runtime rejects invalid tables before
+using them. A hash is for deterministic identity/integrity and is not an
+authorization token or a substitute for signing/review.
+
+## Security: actor and state-container inspection
+
+Public type shape and private **live instance state** are different domains.
+An isolated actor's state must remain invisible through type descriptors.
+For live debugging, the runtime, not guest metadata, issues an authorization
+ticket bound to tenant, isolate, actor identity, activation generation,
+specific allowed fields/operations, and expiration/cancellation epoch.
+
+Inspection is performed in the actor's owning execution context under the
+existing `handle_state` / `critical` discipline and produces a deliberately
+bounded immutable snapshot (or a lexical guarded loan that cannot escape).
+No guest thread may read actor-owned heap pointers from a foreign isolate.
+A stale activation, foreign tenant, forged role or revoked ticket rejects
+without producing partial data. The ticket cannot be serialized as reusable
+cross-tenant authority. Untrusted MCP/devtools clients have no bypass.
+
+## Retention, stripping, and precompiled hot loading
+
+Retention roots are separate from actor permissions. A rooted descriptor
+does not automatically root the full method implementation, generic graph,
+interpreter, compiler or Java reflection engine. Compiler/reachability
+diagnostics must explain every retained entry. Opt-out and opt-in AOT binary
+size / symbol tables are measured using exact build artifacts.
+
+Hot loading accepts only **precompiled** images with verified package/module
+identity, metadata-schema version, target ABI, declared capability envelope,
+and generation. Registration is transactional; incompatible images are
+rejected before publication. Old generations are kept until outstanding
+borrowed snapshots/handles quiesce, then retired. NativeOS loader APIs,
+Wasm module instantiation and GraalVM closed-world constraints differ; no
+universal promise of arbitrary runtime native-image class loading is made.
+
+## Backend-specific first execution gates
+
+| Backend | Smallest compiler change | Required actual execution | Current evidence in this change |
+| --- | --- | --- | --- |
+| Java/GraalVM | Typed intrinsic + generated immutable table + Native Image retention rules | JDK25 guest compile, GraalVM Native Image binary with no runtime class scan | NOT_EXECUTED |
+| LLVM | Resolve intrinsics in typed HIR, emit rodata and checked section lookup | Native executable; ASan/UBSan negative bounds and ownership checks | NOT_EXECUTED |
+| .NET NativeAOT | Static CIL table + trim-safe roots, no Reflection.Emit | Published NativeAOT executable on Linux and Windows | NOT_EXECUTED |
+| Wasm | Immutable/readonly metadata data segment + capability-gated guest export | Wasm compiled/instantiated AOT module; isolated host and bounds checks | NOT_EXECUTED |
+| Independent Forge/Cranelift | Closed typed metadata lowering with static constants | Independently emitted and executed AOT artifact (not LLVM output) | NOT_EXECUTED |
+
+Do **not** call a Truffle-on-Native-Image interpreter a proof that a guest
+program was separately AOT-compiled; report the distinction. A source-free
+canary, parser-only acceptance, JUnit host primitive, JSON selftest or CI
+runner-admission failure cannot be promoted to compiler-backed guest proof.
+
+## Test/evidence protocol
+
+The machine-readable [32 candidate oracles](../contracts/aot-reflection-v1.json)
+cover positive reads, rejections, security checks, binary metadata stripping,
+hot load, AOT escape hatches, and deterministic builds. Cases are not .ores
+fixture syntax yet: each backend must bind the same oracle ID to an exact
+`.ores` file, source SHA-256, exact compiler invocation and expected output
+or diagnostic before claiming coverage. Unsupported language forms must
+remain fail-closed; don't invent passing tests.
+
+A promoting test record needs exact source commit **and tree** SHA, compiler
+binary digest and build provenance, complete stepful job records, fixture
+digests, produced binary hash, target triple, concrete native execution
+command and stdout/diagnostics, symbol/section retention inspection,
+independent review, and evidence of no runtime-JIT fallback.
+A run with `steps=[]`, `steps=null`, or runner_id=0 is **NOT_EXECUTED**.
+
+Private-source mirroring is subject to the existing pre-copy privacy,
+approved-carrier and independent-authorization hold; content integrity
+alone does not authorize export.
+
+## Compatibility with adjacent projects
+
+- Static serializer/Zorde metadata may *consume* this descriptor contract,
+  but does not gain dynamic field access or mutable actor state.
+- State-container / virtual-actor substrate contracts remain separate;
+  inspection is a privileged bridge rather than direct heap reflection.
+- AOT macro/generic closure occurs **before** descriptor finalization.
+- `oreslang.reachability/1` receipts can bind retention roots, but binary
+  inspection is still necessary to prove the linker removed dead sections.
+
+## Priority implementation slices
+
+1. Java/Graal typed `type_of<T>()` for public nominal types + one generated
+   read-only table; native binary test; explicit unsupported-feature errors.
+2. Public field descriptors, then `implements` static witnesses and
+   method signatures with zero dynamic invocation.
+3. Retention-root + linker audit and generated serialization integration.
+4. LLVM, .NET, Wasm, independent Forge identical oracle fixture IDs.
+5. Generation-fenced, runtime-authorized actor snapshot capability and
+   precompiled hot-load integration, both with cross-tenant negative tests.
+
+No promotion/merge of a guest claim without nonzero-step, exact-head,
+compiler-backed AOT execution and independent review.
