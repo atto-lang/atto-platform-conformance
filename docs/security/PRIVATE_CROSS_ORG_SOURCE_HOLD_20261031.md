@@ -7,60 +7,62 @@ existing source blob in that carrier, a matching Git SHA, an allowlisted
 destination, or an Actions runner with budget **does not** grant permission
 to copy private Oreslang source across organization boundaries.
 
-## Enforcement
+## Enforcement (current PR branch)
 
-The proposed `bin/require-private-mirror.mjs` preflight denies **every
-cross-organization** private Git-tree copy, including a relay via a
-previously populated private carrier. It also denies **all** `ores-truffle-oreslang/*` source publication,
-including copies to a different repo in the same organization or to a
-new branch of the **source repository itself**: no source-bearing handoff
-namespace has been approved.
-GitHub owner/repository comparisons are case-insensitive. The refusal happens
-**before an HTTP request occurs**. `bin/private-mirror-publish.mjs` already calls
-this preflight before fetching source commit/tree/blob data or creating
-destination blobs, trees, commits, or branch refs; repeated per-write
-authorization must remain in place. An environment allowlist alone cannot
-override this hold. Do not add a user-controllable `skip` or `force` option.
+**No private-source publishing is permitted by these generic entrypoints.**
+Both `bin/require-private-mirror.mjs` and `bin/private-mirror-publish.mjs`
+begin their exported functions with the same unconditional
+`PRIVATE_SOURCE_PUBLISH_DISABLED_PENDING_PROTECTED_MAIN_APPROVAL` denial.
+The halt is before parsing caller-provided repository names, reading any Git
+source objects, making GitHub API requests, or creating a destination blob,
+tree, commit, ref, artifact, or transfer.
 
-This is a stopgap enforcement layer rather than a complete cross-organization
-resumption mechanism. Changing this gate requires an **independently reviewed**
-security change after incident #22 and #77 disposition, and separate
-authorization that binds source repository and immutable commit/tree,
-destination repository numeric ID, visibility, audience, and one-use branch
-namespace. The remaining private-CI incidents and protected-main provenance
-controls must also be reviewed. Never treat a deleted branch as proof that
-historically copied Git blobs and Actions caches are gone.
+This replaces the former finite quarantine and caller-supplied environment
+allowlist as an admission mechanism. Those checks and legacy copy helpers
+remain in the source for forensic review only; they are unreachable through
+the exported publisher functions. A mixed-case known carrier, unknown
+same-owner historical relay, source-to-self branch, or ostensibly private
+approved destination **cannot bypass the unconditional stop**. Removing
+the stop, or adding a user-controlled `force` or testing override, is not an
+acceptable fix to runner allocation.
 
-## Executable negative evidence
+Resumption requires a **separately designed and independently reviewed**
+provenance-bound transfer protocol, after incident dispositions. The required
+authority must bind protected source-main policy, exact source commit/tree,
+source ownership, destination numeric ID, private visibility, permissions,
+retention, provenance and single-use namespace. No review, source-free
+canary, matching Git hash, or successful old carrier build suffices by itself.
+Branch rollbacks and private visibility do not purge historical Git objects
+or downstream caches, clones or artifacts.
+
+## Regression tests and verification boundary
 
 `tests/private-mirror-visibility.test.mjs` and
-`tests/private-mirror-publish.test.mjs` contain cross-org negative cases,
-including mixed-case source owner spelling, cross-organization relay sources,
-same-organization alternate Oreslang repositories and self-repository
-branch creation. They prove **zero source fetch
-and zero destination writes** even when a private destination appears on an
-environment allowlist. Existing positive tests now operate only on synthetic,
-same-organization private repository identities, without real source bytes.
+`tests/private-mirror-publish.test.mjs` now contain **denial-only** tests
+for ordinary repositories, Oreslang sources, historical carrier owners,
+unknown same-owner and cross-owner relays, casefold aliases, caller-supplied
+allowlists and tokens, malformed arguments, mock success responses and CLI
+entrypoints. Each requires zero GitHub API calls or object operations.
+The executable-surface scanner
+`tests/private-mirror-entrypoints.test.mjs` still checks for unguarded
+source-copy entrypoints. All these tests are source-local and do not export
+source when executed.
 
-`.github/workflows/private-mirror-incident-hold.yml` runs the actual
-checked-in Node suites on the exact source PR SHA within this organization.
-A synthetic canary succeeding in another organization proves only runner
-availability—not source transfer approval or conformance.
+At PR head `27c6c6966fe58cb2581b894fc1414fbb340c5474`,
+read-only inspection confirms that the **first executable statement** in
+both exported source publisher functions is the unconditional denial.
+The exact-head source-org hosted workflows
+[`41393537066`](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/actions/runs/41393537066)
+and [`41393537048`](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/actions/runs/41393537048)
+finished in failure before runner assignment, with zero observed job steps.
+Consequently the **new tests are not hosted-executed**, and this change
+must not be reported as passed compiler, runtime, or security CI.
 
-## Current test boundary (2026-10-31)
-
-The current policy/publisher code and both checked-in test modules
-passed **34/34 test cases and 303 assertions** in an isolated V8 execution
-harness with mocked GitHub responses. The separate three-case
-`private-mirror-entrypoints.test.mjs` scanner also passed under a synthetic
-filesystem harness, and its detection function was individually applied
-to all **40** executable `bin/`, `tools/` and workflow files in this
-repository: only the guarded publisher matched its direct-writer patterns.
-The policy scanner is defense-in-depth and does not inspect every potential
-external program, dynamic command, or other GitHub organization.
-These results are **not** hosted Node `--test` execution.
-Source-org hosted jobs have failed before runner assignment; do not call the
-new workflow passing until it executes. No private source was transferred.
+Prior synthetic acceptance/transfer-model test counts in earlier revisions
+are superseded by the unconditional lockdown. Reinstating any publish path
+would require new, independently reviewed tests and actual exact-head CI
+execution. Keep this PR draft and the transfer hold until the applicable
+review and protected-main gates are independently verified.
 
 ## Runner-admission evidence
 
