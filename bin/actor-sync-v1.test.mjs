@@ -77,13 +77,22 @@ test("canonical .ores module and guest fixture are Git-blob pinned",()=>{
  };
  assert.equal(gitBlob(manifest.sourceModule.path),manifest.sourceModule.gitBlobSha1);
  assert.equal(manifest.sourceModule.notPersistenceAdapter,true);
- assert.equal(manifest.fixtures.length,1);
- const fixture=manifest.fixtures[0];
- assert.equal(gitBlob(fixture.path),fixture.gitBlobSha1);
- assert.equal(fixture.expect,"accept-and-execute");
- assert.equal(fixture.stdout,"true\ntrue\nfalse\ntrue\ntrue\nfalse\ntrue\ntrue\n3\n5\n");
- assert.deepEqual(Object.keys(fixture.backendStatus),manifest.backendTargets);
- for(const b of manifest.backendTargets)
-   assert.equal(fixture.backendStatus[b],b==="cranelift"?"UNSUPPORTED":"NOT_EXECUTED");
+ assert.equal(manifest.fixtures.length,2);
+ const known=new Map([
+   ["cursor-progression","true\ntrue\nfalse\ntrue\ntrue\nfalse\ntrue\ntrue\n3\n5\n"],
+   ["cross-epoch-delta-reject","false\nfalse\n5\ntrue\ntrue\n7\n5\n"]
+ ]);
+ for(const fixture of manifest.fixtures) {
+   assert.ok(known.has(fixture.id),"unrecognized native guest fixture");
+   assert.equal(gitBlob(fixture.path),fixture.gitBlobSha1);
+   assert.equal(fixture.expect,"accept-and-execute");
+   assert.equal(fixture.stdout,known.get(fixture.id));
+   assert.deepEqual(Object.keys(fixture.backendStatus),manifest.backendTargets);
+   for(const backend of manifest.backendTargets)
+     assert.equal(fixture.backendStatus[backend],
+       backend==="cranelift"?"UNSUPPORTED":"NOT_EXECUTED");
+   known.delete(fixture.id);
+ }
+ assert.equal(known.size,0,"missing canonical guest fixture");
  assert.deepEqual(manifest.runtimeVerifiedBackends,[]);
 });
