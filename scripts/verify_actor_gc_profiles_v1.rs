@@ -183,6 +183,24 @@ fn main() {
 mod tests {
     use super::*;
     fn reject(raw: Vec<u8>) { assert!(validate(&raw).is_err()); }
+    // The compiled test binary must also exercise the on-disk checked-in
+    // contract. Otherwise an edited contract could pass `rustc --test` by
+    // validating only the embedded baseline while the standalone binary fails.
+    #[test] fn checked_in_policy_matches_reviewed_baseline() {
+        let on_disk = include_bytes!("../contracts/actor_gc_profiles_v1.json");
+        validate(on_disk).expect("checked-in JSON must match reviewed policy");
+        assert_eq!(scan(on_disk).unwrap(), scan(APPROVED.as_bytes()).unwrap());
+    }
+    #[test] fn trailing_data_and_truncation_denied() {
+        let mut truncated = APPROVED.as_bytes().to_vec();
+        truncated.pop();
+        reject(truncated);
+        let mut added = APPROVED.as_bytes().to_vec();
+        added.extend_from_slice(b" true");
+        reject(added);
+        let too_large = vec![b' '; 65_537];
+        reject(too_large);
+    }
     #[test] fn canonical_admitted() {
         validate(APPROVED.as_bytes()).unwrap();
         assert_eq!(REQUIRED_PROOFS.len(), 13);
