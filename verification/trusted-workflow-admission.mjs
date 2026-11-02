@@ -89,6 +89,16 @@ export async function verifyTrustedWorkflowAdmission({backend, repository, runId
       historicalBase.ref !== currentPr.base.ref ||
       historicalBase.sha !== currentPr.base.sha)
     fail('run and current pull request base mismatch');
+  // Bind authenticated historical and current PR repository identities by
+  // numeric GitHub repository ID. Matching refs/SHAs alone do not prove that
+  // the run's PR association belongs to this source repository.
+  const sourceRepoId=run.repository?.id;
+  if (!POSITIVE_INT(sourceRepoId) || run.head_repository?.id !== sourceRepoId ||
+      associated[0].head?.repo?.id !== sourceRepoId ||
+      historicalBase.repo?.id !== sourceRepoId ||
+      currentPr.head?.repo?.id !== sourceRepoId ||
+      currentPr.base?.repo?.id !== sourceRepoId)
+    fail('run and pull request repository ID mismatch');
   // A matching SHA can be present on multiple refs. Bind run, run's PR
   // association, and current PR to the same live source branch.
   if (!validLine(currentPr.head?.ref) ||
