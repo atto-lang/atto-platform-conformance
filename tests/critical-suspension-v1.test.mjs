@@ -214,7 +214,12 @@ test('same continuation cannot recursively acquire or queue twice', async () => 
   assert.throws(() => gate.tryEnter('owner'), /recursive/);
   assert.throws(() => gate.enter('owner'), /recursive/);
   const pending = gate.enter('waiting');
+  // The nonqueueing path must also reject a second ticket for the same
+  // pending continuation; it cannot treat identity aliasing as mere "busy".
+  assert.throws(() => gate.tryEnter('waiting'), /duplicate continuation/);
   assert.throws(() => gate.enter('waiting'), /duplicate continuation/);
+  assert.equal(gate.tryEnter('other'), null);
+  assert.equal(gate.waiters.length, 1);
   assert.equal(pending.cancel(), true);
   await assert.rejects(pending.completion, /cancelled/);
   gate.release(owner.lease);
