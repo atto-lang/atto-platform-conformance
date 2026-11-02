@@ -111,11 +111,25 @@ export function mayShareCacheLine(a,b,lineBytes=64) {
   if(!id(lineBytes)||lineBytes<16||lineBytes>4096
     ||(lineBytes&(lineBytes-1))!==0) fail('INVALID_CACHE_LINE');
   const valid=x=>x&&text(x.allocation)&&id(x.start)&&id(x.length)
-    &&Number.isSafeInteger(x.start+x.length);
+    &&Number.isSafeInteger(x.start+x.length)
+    &&(x.baseRemainder==null || (id(x.baseRemainder)&&x.baseRemainder<lineBytes));
   if(!valid(a)||!valid(b)) fail('INVALID_BYTE_RANGE');
-  if(a.allocation!==b.allocation||a.length===0||b.length===0) return false;
-  const a0=Math.floor(a.start/lineBytes),a1=Math.floor((a.start+a.length-1)/lineBytes);
-  const b0=Math.floor(b.start/lineBytes),b1=Math.floor((b.start+b.length-1)/lineBytes);
+  if(a.length===0||b.length===0) return false;
+  // Distinct malloc allocations can still be packed into the SAME physical
+  // cache line. Only verified line-aligned, nonoverlapping allocations isolate.
+  if(a.allocation!==b.allocation)
+    return !(a.baseRemainder===0 && b.baseRemainder===0);
+  if(a.baseRemainder!=null && b.baseRemainder!=null
+      && a.baseRemainder!==b.baseRemainder) fail('INVALID_BYTE_RANGE');
+  const base=a.baseRemainder??b.baseRemainder;
+  // Unknown base address modulo line size: no negative sharing claims.
+  if(base==null) return true;
+  if(!Number.isSafeInteger(a.start+a.length+base)
+      ||!Number.isSafeInteger(b.start+b.length+base)) fail('INVALID_BYTE_RANGE');
+  const a0=Math.floor((a.start+base)/lineBytes);
+  const a1=Math.floor((a.start+a.length+base-1)/lineBytes);
+  const b0=Math.floor((b.start+base)/lineBytes);
+  const b1=Math.floor((b.start+b.length+base-1)/lineBytes);
   return a0<=b1&&b0<=a1;
 }
 
