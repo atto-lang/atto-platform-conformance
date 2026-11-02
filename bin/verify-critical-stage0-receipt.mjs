@@ -72,10 +72,16 @@ export function verifyCriticalStage0Receipt(receipt, plan) {
         fail('real compiler acceptance required: '+id);
     } else if (phase==='compile-reject') {
       hasCompiler=true;
-      if (value.compiler_rejected!==true || value.exit_code===0 ||
-          !Number.isInteger(value.exit_code) ||
-          value.diagnostic_code!==want || value.emitted_artifact!==false)
-        fail('exact compiler negative without artifact required: '+id);
+      // A nonzero exit alone is not rejection: signal crashes, timeout and
+      // diagnostics preceded by an unrelated type/syntax error are failures.
+      const firstCode=typeof value.stderr==='string'
+        ? value.stderr.match(/\\bE_[A-Z0-9_]+\\b/)?.[0] : null;
+      if (value.compiler_rejected!==true ||
+          !Number.isInteger(value.exit_code) || value.exit_code<1 ||
+          value.exit_code>255 || value.timed_out!==false || value.signal!==null ||
+          value.diagnostic_code!==want || firstCode!==want ||
+          value.emitted_artifact!==false)
+        fail('exact first compiler diagnostic, non-signal exit, no artifacts required: '+id);
     } else {
       hasHost=true;
       if (value.host_test_executed!==true || value.diagnostic_code!==want)
