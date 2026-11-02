@@ -52,6 +52,10 @@ test("unsafe heap aliases and virtual activation races have explicit oracles", (
     "virtual_actor.stale_incarnation",
     "virtual_actor.supervisor_control",
     "virtual_actor.grain_not_alias",
+    "state_container.quiescent_release",
+    "virtual_actor.two_phase_activation",
+    "virtual_actor.foreign_capability_denied",
+    "virtual_actor.invalid_key_rejected",
   ]) assert.ok(cases.has(name), "missing contract fixture: " + name);
   assert.equal(cases.get("virtual_actor.grain_not_alias").expected.compilation, "reject");
   assert.ok(cases.get("virtual_actor.activation").requires.includes("at-most-one-active-incarnation"));
