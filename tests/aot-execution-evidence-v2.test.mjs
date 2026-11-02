@@ -67,13 +67,19 @@ test('trust and actor isolation are independent dimensions',()=>{
 });
 test('zero-step action failures are NOT_EXECUTED, not compiler test failures',()=>{
   const x=good();x.status='NOT_EXECUTED';x.artifact={kind:'none',sha256:null};
-  x.execution.completedSteps=0;x.execution.guestEntrypointRan=false;
+  x.execution.completedSteps=0;x.execution.jobId=null;x.execution.runnerName=null;
+  x.execution.guestEntrypointRan=false;x.execution.guestOutputSha256=null;
+  x.execution.aotBaselineRanWithoutJit=false;
+  x.sourceProgramSha256=null;x.compilerSha256=null;
   assert.equal(classify(x).classification,'NOT_EXECUTED');
   x.status='FAILED';assert.equal(classify(x).classification,'INVALID');
 });
 test('unsupported does not imply verified parity',()=>{
   const x=good();x.status='UNSUPPORTED';x.artifact={kind:'none',sha256:null};
-  x.execution.completedSteps=0;x.execution.guestEntrypointRan=false;
+  x.execution.completedSteps=0;x.execution.jobId=null;x.execution.runnerName=null;
+  x.execution.guestEntrypointRan=false;x.execution.guestOutputSha256=null;
+  x.execution.aotBaselineRanWithoutJit=false;
+  x.sourceProgramSha256=null;x.compilerSha256=null;
   assert.equal(classify(x).classification,'UNSUPPORTED');
   assert.equal(classify(x).releaseQualified,false);
 });
@@ -114,5 +120,35 @@ test('structural review cannot be mistaken for successful release gating',()=>{
     assert.equal(out.ok,false);
     assert.equal(out.releaseQualified,false);
     assert.equal(out.structurallyValid,true);
+  }
+});
+
+test('unexecuted receipt rejects forged job and output witnesses',()=>{
+  const base=good();base.status='NOT_EXECUTED';
+  base.sourceProgramSha256=null;base.compilerSha256=null;
+  base.artifact={kind:'none',sha256:null};
+  base.execution={jobId:null,runnerName:null,completedSteps:0,
+    guestEntrypointRan:false,guestOutputSha256:null,
+    guestInterpreterUsed:false,runtimeGuestCompilerUsed:false,
+    runtimeGuestJitUsed:false,aotBaselineRanWithoutJit:false};
+  assert.equal(classify(base).classification,'NOT_EXECUTED');
+  for(const mutation of [
+    x=>{x.execution.jobId=99},x=>{x.execution.runnerName='runner'},
+    x=>{x.execution.guestOutputSha256=digest},
+    x=>{x.execution.aotBaselineRanWithoutJit=true},
+    x=>{x.compilerSha256=digest},x=>{x.sourceProgramSha256=digest},
+    x=>{x.execution.guestInterpreterUsed=true}
+  ]) {
+    const x=structuredClone(base);mutation(x);
+    assert.equal(classify(x).classification,'INVALID');
+  }
+});
+test('failed compiler requires admitted job and nonzero executed steps',()=>{
+  const x=good();x.status='FAILED';
+  assert.equal(classify(x).classification,'EXECUTED_FAILED_NO_AOT_CREDIT');
+  for(const mutate of [y=>{y.execution.jobId=null},y=>{y.execution.runnerName=null},
+    y=>{y.execution.completedSteps=0}]) {
+    const y=structuredClone(x);mutate(y);
+    assert.equal(classify(y).classification,'INVALID');
   }
 });
