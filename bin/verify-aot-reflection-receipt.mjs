@@ -44,7 +44,9 @@ export function verifyReceipt(manifest, receipt) {
     return { classification: 'INVALID', errors: [...errors, 'receipt missing'] };
   }
   if (receipt.contract !== manifest.contract) errors.push('receipt contract mismatch');
-  const scope = receipt.scope ?? 'complete';
+  // Scope must be explicit: omission must not silently claim all-case parity.
+  const scope = receipt.scope;
+
   if (!['complete', 'milestone'].includes(scope)) errors.push('unknown receipt scope');
   if (scope === 'milestone' &&
       (typeof receipt.milestoneId !== 'string' ||
@@ -52,6 +54,7 @@ export function verifyReceipt(manifest, receipt) {
     errors.push('milestone receipt requires a stable milestoneId');
   }
   if (!Object.hasOwn(manifest.backends ?? {}, receipt.backend ?? '')) errors.push('unknown backend');
+  if (receipt.manifestSha256 !== undefined && !sha256.test(receipt.manifestSha256)) errors.push('invalid manifest digest');
   if (receipt.status !== 'native-aot-claim') errors.push('receipt must mark itself as an unverified native-aot claim');
   for (const key of ['headSha', 'treeSha']) {
     if (!sha40.test(receipt[key] ?? '')) errors.push('invalid ' + key);
@@ -59,12 +62,12 @@ export function verifyReceipt(manifest, receipt) {
   for (const key of ['compilerBinarySha256', 'artifactSha256', 'fixtureManifestSha256', 'metadataSectionSha256']) {
     if (!sha256.test(receipt[key] ?? '')) errors.push('invalid ' + key);
   }
-  const job = receipt.job ?? {};
+  const job = receipt.job && typeof receipt.job === 'object' && !Array.isArray(receipt.job) ? receipt.job : {};
   if (!Number.isSafeInteger(job.runnerId) || job.runnerId <= 0) errors.push('runner was not admitted');
   if (!Number.isSafeInteger(job.runAttempt) || job.runAttempt <= 0) errors.push('missing run attempt');
   if (!Array.isArray(job.steps) || job.steps.length === 0 ||
       job.steps.some(s => typeof s.name !== 'string' || !s.name || s.conclusion !== 'success')) errors.push('no completed stepful successful workflow');
-  const build = receipt.build ?? {};
+  const build = receipt.build && typeof receipt.build === 'object' && !Array.isArray(receipt.build) ? receipt.build : {};
   for (const k of ['sourceTreeMatched', 'compilerProvenanceChecked', 'compilerGuestExecuted',
                    'aotArtifactExecuted', 'noJitFallback', 'retentionInspected']) {
     if (build[k] !== true) errors.push('missing declared proof: ' + k);
@@ -85,10 +88,11 @@ export function verifyReceipt(manifest, receipt) {
   if (Array.isArray(submitted)) {
     const lookup = new Map((manifest.cases ?? []).map(c => [c.id, c]));
     for (const entry of submitted) {
-      if (typeof entry?.id !== 'string' || ids.has(entry.id)) { errors.push('duplicate or invalid case id'); continue; }
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry) || typeof entry.id !== 'string' || ids.has(entry.id)) { errors.push('duplicate or invalid case id'); continue; }
       ids.add(entry.id);
       const oracle = lookup.get(entry.id);
       if (!oracle) { errors.push('unrecognized case: ' + entry.id); continue; }
+      if (entry.backend !== undefined && entry.backend !== receipt.backend) errors.push('case backend mismatch: ' + entry.id);
       if (entry.result !== 'PASS' || entry.stage !== expectedStage[oracle.kind]) errors.push('wrong result or stage: ' + entry.id);
       if (!sha256.test(entry.fixtureSha256 ?? '')) errors.push('missing fixture digest: ' + entry.id);
       if (!Array.isArray(entry.witnesses) || oracle.mustProve.some(w => !entry.witnesses.includes(w))) errors.push('missing oracle witnesses: ' + entry.id);
