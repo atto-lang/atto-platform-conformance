@@ -55,14 +55,14 @@ export class InMemorySiloDirectory {
       }
       if (by_tenant.has(iso.tenant_id)) deny('DUPLICATE_TENANT_ISOLATE');
       if (seen_isolates.has(iso.isolate_id)) deny('ISOLATE_REUSED_ACROSS_TENANTS');
-      if (!Array.isArray(iso.capabilities) || iso.capabilities.length > 32 ||
-          iso.capabilities.some(c => !machine_name(c)) || new Set(iso.capabilities).size !== iso.capabilities.length) {
-        deny('INVALID_CAPABILITIES');
-      }
+      if (!Array.isArray(iso.capabilities)) deny('INVALID_CAPABILITIES');
+      const advertised_caps = [...iso.capabilities];
+      if (advertised_caps.length > 32 || advertised_caps.some(c => !machine_name(c)) ||
+          new Set(advertised_caps).size !== advertised_caps.length) deny('INVALID_CAPABILITIES');
       seen_isolates.add(iso.isolate_id);
       by_tenant.set(iso.tenant_id, {
         tenant_id: iso.tenant_id, isolate_id: iso.isolate_id, max_actors: iso.max_actors,
-        isolation_mode: iso.isolation_mode, capabilities: new Set(iso.capabilities), active: 0
+        isolation_mode: iso.isolation_mode, capabilities: new Set(advertised_caps), active: 0
       });
     }
     this.#nodes.set(node_id, { node_id, backend, region, status: 'READY', by_tenant });
@@ -101,16 +101,21 @@ export class InMemorySiloDirectory {
   // This reference only models the trusted actor-local profile.
   #placement(options) {
     if (!options || typeof options !== 'object' || Array.isArray(options)) deny('INVALID_PLACEMENT');
+    // Unknown mandatory constraints (e.g. schema/ABI/version) are not silently
+    // ignored; the real broker must implement them before admission.
+    const known = new Set(['backend', 'region', 'isolation_mode', 'capabilities', 'hard_realtime']);
+    if (Object.keys(options).some(k => !known.has(k))) deny('UNSUPPORTED_PLACEMENT_CONSTRAINT');
     const { backend = null, region = null, isolation_mode = 'actor-local',
       capabilities = [], hard_realtime = false } = options;
+    if (!Array.isArray(capabilities)) deny('INVALID_PLACEMENT');
+    const required_caps = [...capabilities];
     if ((backend !== null && !BACKENDS.has(backend)) || (region !== null && !machine_name(region)) ||
-        !Array.isArray(capabilities) || capabilities.length > 32 ||
-        capabilities.some(c => !machine_name(c)) ||
-        new Set(capabilities).size !== capabilities.length ||
+        required_caps.length > 32 || required_caps.some(c => !machine_name(c)) ||
+        new Set(required_caps).size !== required_caps.length ||
         typeof hard_realtime !== 'boolean') deny('INVALID_PLACEMENT');
     if (hard_realtime) deny('DYNAMIC_ACTIVATION_FORBIDDEN_IN_HARD_RT');
     if (isolation_mode !== 'actor-local') deny('ISOLATION_NOT_VERIFIED');
-    return { backend, region, isolation_mode, capabilities: [...capabilities] };
+    return { backend, region, isolation_mode, capabilities: required_caps };
   }
 
   #activate_identity(identity, placement) {
