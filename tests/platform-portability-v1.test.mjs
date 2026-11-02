@@ -23,7 +23,7 @@ function receipt(platform="desktop",toolchain="llvm",caseId="scalar-42"){
     compilerRepo:contract.toolchains[toolchain].compilerRepo,
     compilerCommit:"d".repeat(40),
     compilerBinarySha256:HEX64,
-    fixtureSha256:v.sha256,artifactSha256:"e".repeat(64),
+    fixtureSha256:v.sha256,artifactSha256:negative?null:"e".repeat(64),
     run:{
       repository:contract.platforms[platform],
       headSha:"c".repeat(40),runId:123456,attempt:1,jobId:123457,
@@ -43,13 +43,14 @@ function receipt(platform="desktop",toolchain="llvm",caseId="scalar-42"){
       {kind:"pass",value:v.expectedValue},
     engine:toolchain==="cranelift"?
       {name:"native-cranelift-jit",compilerCommit:"d".repeat(40),
-        compilerBinarySha256:HEX64,clifSha256:"e".repeat(64)}:
+        compilerBinarySha256:HEX64,clifSha256:negative?null:"e".repeat(64)}:
       toolchain==="wasm"?
       {name:"llvm-to-wasm",upstreamCompilerRepo:"ores-truffle-oreslang/oreslang-source.llvm",
         upstreamCompilerCommit:"f".repeat(40),
         upstreamCompilerBinarySha256:"1".repeat(64),
-        wasmModuleSha256:"e".repeat(64),wasmHostBinarySha256:"2".repeat(64),
-        zeroImports:true}:
+        wasmModuleSha256:negative?null:"e".repeat(64),
+        wasmHostBinarySha256:"2".repeat(64),
+        zeroImports:negative?null:true}:
       toolchain==="net"?
       {name:"dotnet-nativeaot",nativeAotHostSha256:"e".repeat(64),
         compilerBinarySha256:HEX64,managedJitFallback:false}:
@@ -176,6 +177,35 @@ test("native Cranelift JIT is not interchangeable with the separate Wasm backend
   const n=receipt("mobile","cranelift");
   n.run.steps=n.run.steps.filter(x=>x!=="run-cranelift-native-jit");
   fails(n,/missing native Cranelift JIT and IR execution/);
+});
+test("all backends accept artifact-free negative diagnostics only as structural claims",()=>{
+  for(const toolchain of TOOLCHAINS)for(const id of ["unknown-name","unknown-name-two"]){
+    const r=receipt("desktop",toolchain,id);
+    assert.equal(r.artifactSha256,null);
+    const observation=validateObservation(r,contract);
+    assert.equal(observation.status,"STRUCTURAL_OBSERVATION_ONLY");
+    assert.equal(observation.certifiedParity,false);
+    r.artifactSha256="e".repeat(64);
+    fails(r,/unbound compiler\/source identity/);
+  }
+});
+test("negative Cranelift and Wasm evidence cannot invent generated code artifacts",()=>{
+  const cranelift=receipt("desktop","cranelift","unknown-name");
+  cranelift.engine.clifSha256="e".repeat(64);
+  fails(cranelift,/no fabricated CLIF for rejection/);
+  const wasm=receipt("desktop","wasm","unknown-name");
+  wasm.engine.wasmModuleSha256="e".repeat(64);
+  fails(wasm,/no fabricated reject module/);
+  const bogusImports=receipt("desktop","wasm","unknown-name");
+  bogusImports.engine.zeroImports=true;
+  fails(bogusImports,/no fabricated reject module/);
+});
+test("positive guest results still require real artifact-shaped digests",()=>{
+  for(const toolchain of TOOLCHAINS){
+    const x=receipt("desktop",toolchain,"scalar-42");
+    x.artifactSha256=null;
+    fails(x,/unbound compiler\/source identity/);
+  }
 });
 test("Cranelift negative diagnostics require its actual compiler prefix",()=>{
   const x=receipt("iot","cranelift","unknown-name");
