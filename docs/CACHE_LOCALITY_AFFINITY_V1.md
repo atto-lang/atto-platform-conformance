@@ -18,7 +18,12 @@ AttoLang guest programs, launch GPU kernels, or prove lower L1/L2 miss rates.
 - Distinct mutable fields may reside in the same cache line. The oracle's
   `mayShareCacheLine` checks contiguous byte intervals within one allocation.
   For strided views, the caller must provide a **conservative bounding interval**.
-  Unknown physical base address/alignment is not proof of disjoint cache lines.
+  The physical allocation base modulo the line size (`baseRemainder`) must
+  be known for a negative sharing result. Unaligned physical bases can make
+  logically adjacent 64-byte buckets share the same real line; unknown bases
+  conservatively return possible sharing. Distinct allocations are not
+  assumed cache-line isolated unless both have verified line-aligned,
+  nonoverlapping bases.
 - CPU choice starts with the effective allowed process CPU mask and uses,
   in order, exact preferred CPU, **qualified** shared LLC identity, known NUMA,
   then any allowed CPU. Among equal ranks it prefers low queue depth and a
