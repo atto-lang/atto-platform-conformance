@@ -145,6 +145,34 @@ command and stdout/diagnostics, symbol/section retention inspection,
 independent review, and evidence of no runtime-JIT fallback.
 A run with `steps=[]`, `steps=null`, or runner_id=0 is **NOT_EXECUTED**.
 
+### Staged, strictly nonpromoting receipt lint
+
+A receipt must specify `scope: "complete"` (all 32 oracle IDs) or
+`scope: "milestone"` (a named `milestoneId`, an explicit subset,
+and at least one `guest-aot` oracle). A milestone is **not** full backend
+parity, and its `MILESTONE_SHAPE_VALID_UNATTESTED` classification must never
+be promoted to an executed guest proof. Every reported negative compiler
+case requires exit code 1, a stable diagnostic class and no output artifact.
+Binary-inspection cases must name the exact artifact digest being inspected.
+
+```sh
+# This intentionally exits nonzero EVEN WHEN receipt JSON has valid shape.
+node bin/verify-aot-reflection-receipt.mjs receipt.json
+
+# Exit success means ONLY that receipt fields are structurally consistent.
+# It does not verify a GitHub job, prove native execution or grant merge authority.
+node bin/verify-aot-reflection-receipt.mjs receipt.json --lint-only
+```
+
+A self-declared SHA, `runnerId`, `steps`, `compilerGuestExecuted`,
+`reviewUrl` or `noJitFallback` boolean can be forged. An independent
+promotion adapter must fetch GitHub job/run-attempt steps, pin the exact
+source Git tree, rebuild or verify the compiler binary, verify all artifact
+and fixture digests, execute the guest, inspect machine code/linker symbols
+and validate independent review through trusted systems. This JSON tool is
+*never* that independent promotion adapter.
+
+
 Private-source mirroring is subject to the existing pre-copy privacy,
 approved-carrier and independent-authorization hold; content integrity
 alone does not authorize export.
