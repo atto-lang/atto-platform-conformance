@@ -231,3 +231,40 @@ test("duplicate subscription preserves a single delivery and quota",()=>{
   assert.equal(renewed.ok,true);
   assert.notEqual(renewed.subscription,first.subscription);
 });
+
+test("actor incarnation keys cannot alias through delimiters or type coercion",()=>{
+  const bus=new PubSubReference();
+  const first=bus.actor("tenant#1",2);
+  const second=bus.actor("tenant",1);
+  const third=bus.actor("tenant#1",1);
+  assert.equal(first.ok,true);
+  assert.equal(second.ok,true);
+  assert.equal(third.ok,true);
+  assert.notEqual(first.actor.key,second.actor.key);
+  assert.notEqual(first.actor.key,third.actor.key);
+  assert.equal(bus.actor("tenant#1",2).error,"AlreadyExists");
+  assert.equal(bus.actor("tenant", "1").error,"InvalidActorIdentity");
+  assert.equal(bus.actor("tenant",0).error,"InvalidActorIdentity");
+  assert.equal(bus.actor("tenant",-1).error,"InvalidActorIdentity");
+  assert.equal(bus.actor("tenant",Number.MAX_SAFE_INTEGER+1).error,
+    "InvalidActorIdentity");
+  assert.equal(bus.actor("",1).error,"InvalidActorIdentity");
+  assert.equal(bus.actor({},1).error,"InvalidActorIdentity");
+  assert.equal(bus.actor("x".repeat(257),1).error,"InvalidActorIdentity");
+});
+
+test("colliding-prefix actor incarnations cannot inherit group membership",()=>{
+  const bus=new PubSubReference();
+  const first=bus.actor("a#1",2).actor;
+  const second=bus.actor("a",12).actor;
+  const group=bus.group("room").group;
+  const membership=bus.join(group,first);
+  assert.equal(membership.ok,true);
+  assert.equal(group.members.has(first.key),true);
+  assert.equal(group.members.has(second.key),false);
+  assert.equal(bus.stopActor(first).ok,true);
+  assert.equal(group.members.has(first.key),false);
+  assert.equal(bus.join(group,second).ok,true);
+  assert.equal(bus.leave(membership.membership).error,"StaleMembership");
+  assert.equal(group.members.has(second.key),true);
+});
