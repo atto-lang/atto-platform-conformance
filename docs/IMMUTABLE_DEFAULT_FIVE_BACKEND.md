@@ -119,3 +119,39 @@ an admitted *stepful, exact-head* execution result at this writing.
 is not enough. Verify guest execution and the real mutable-`let` positive
 control on each backend, otherwise a parser that rejects all assignments can
 falsely appear to enforce immutable bindings.
+
+### Private exact-tree carrier readiness audit — November 2, 2026
+
+Security review requested at
+[`canonical-cloud-test/readiness-edge-e2e#39`](https://github.com/canonical-cloud-test/readiness-edge-e2e/issues/39).
+A recent stepful job in this **private** carrier repository confirms that some
+hosted Actions jobs have run there, but not that the present Actions budget is
+available for a new compiler job. Source CI sampled on LLVM #1301 has **zero
+executed steps**; it cannot be counted as a compiler pass.
+
+Exact source heads and Git root trees inspected using the GitHub API:
+- Java #2449: head `45bea9a3672f322fd1658373006d157fa6e2f84f`,
+  tree `3bd262cc02dfa182f7d7a84f5f0e343ac6e39df6`,
+  **1,195 regular files**, 11,273,804 bytes, untruncated.
+- LLVM #1301: head `da676e954b9b134a0af0e2d336fda5e1422fae38`,
+  tree `be1325e23b6d9fad78b8a6a1be35382a9bd6ad96`,
+  **1,322 regular files**, 6,901,404 bytes, untruncated.
+
+The reviewed carrier's existing max of **1,024 source files** rejects both,
+even though both fit its **40 MiB total** and **10 MiB per-file** caps.
+A source-free proposal raises the count cap to 1,536 only, adds strict
+1,536/1,537 boundary regression coverage, and offers SHA-pinned test plans for
+the *current* Java and LLVM PR heads. These are **proposed**, not merged.
+
+The carrier verifier, reviewed test-plan files and associated sandbox controls
+are CODEOWNERS-protected. Independent approval is necessary before changing
+the trusted carrier, and no private source transfer may bypass review,
+authorization, or platform safety restrictions. No cross-org checkout token
+or secret may be passed into the test org. An exact-tree Git mirror must
+preserve tree/blob IDs, use a private destination, create an expiring
+single-use receipt, run only preapproved commands, and delete temporary refs.
+Until then, **no source mirror was created and no compiler guest pass exists**.
+
+The local source-free synthetic boundary audit passed 1,536 regular files,
+rejected 1,537, and rejected a symlink. This is not an Actions, compiler,
+NativeAOT or Wasm guest test. Retain draft/non-verified release classification.
