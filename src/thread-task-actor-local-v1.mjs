@@ -106,10 +106,24 @@ export class LocalStateThreadModel {
     if (!this.#current?.[type]) fail('NO_ACTIVE_' + type.toUpperCase());
     return this.#current[type];
   }
-  spawn({entryStatic = false, entrySuspends = false, argType, resultType,
-    permit = false, tenant = 'default'} = {}) {
+  spawn({entryStatic = false, entrySuspends = false, entryKind = 'named',
+    compilerLowered = false, captureOwned = false, captureStatic = false,
+    captureType = null, argType, resultType, permit = false, tenant = 'default'} = {}) {
     if (!validTenant(tenant) || !permit) fail('THREAD_ADMISSION_DENIED');
     if (!entryStatic || entrySuspends) fail('THREAD_ENTRY_NOT_STATIC');
+    // This is only a source-free model of compiler-trusted metadata.
+    // Caller-provided flags MUST NOT become a real guest authorization API.
+    if (entryKind === 'named') {
+      if (compilerLowered || captureType !== null || captureOwned || captureStatic)
+        fail('THREAD_ENTRY_SHAPE_MISMATCH');
+    } else if (entryKind === 'owned-closure') {
+      if (compilerLowered !== true || captureOwned !== true || captureStatic !== true)
+        fail('THREAD_ENTRY_NOT_STATIC');
+      if (!captureType || !inferTransferTraits(captureType).send)
+        fail('THREAD_CAPTURE_NOT_SEND');
+    } else {
+      fail('THREAD_ENTRY_NOT_STATIC');
+    }
     if (!inferTransferTraits(argType).send ||
         !inferTransferTraits(resultType).send)
       fail('THREAD_NOT_SEND');
