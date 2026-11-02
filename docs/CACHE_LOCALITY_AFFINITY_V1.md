@@ -24,6 +24,10 @@ AttoLang guest programs, launch GPU kernels, or prove lower L1/L2 miss rates.
   conservatively return possible sharing. Distinct allocations are not
   assumed cache-line isolated unless both have verified line-aligned,
   nonoverlapping bases.
+- LLC labels require nonempty, whitespace-free topology-domain and cache
+  components (for example `pkg1/L3:5`). Bare numbers, `/`, empty components
+  and malformed separators fail closed. Syntactic qualification does **not**
+  verify hardware cache sharing; the trusted host must provide that evidence.
 - CPU choice starts with the effective allowed process CPU mask and uses,
   in order, exact preferred CPU, **qualified** shared LLC identity, known NUMA,
   then any allowed CPU. Among equal ranks it prefers low queue depth and a
