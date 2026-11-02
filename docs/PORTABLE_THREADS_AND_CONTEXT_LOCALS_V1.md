@@ -19,7 +19,7 @@ Tasks and actors **may migrate across OS worker threads**; their local values an
 
 \`\`\`oreslang
 // Thread is a dedicated OS thread, NOT a coroutine, and requires thread capability.
-// The closure owns all moved captures and must be Send + 'static.
+// The closure is permitted only when the compiler statically lowers it to a named, non-suspending AOT entry with an owned `Send + 'static` capture-record argument. No executable closure is transported at runtime. All captures must be compiler-inspected; borrowed actor state, unsized/unknown/dynamic lexical environments and foreign callbacks fail closed.
 let Box<dyn Worker + Send> worker = make_worker();
 let JoinHandle<int> handle = Thread.spawn(
     ThreadOptions { name: "decode-0", cpu_affinity: Option.none() },
@@ -73,3 +73,7 @@ Native LLVM/Forge may use pthreads on POSIX, Windows native threads on Windows; 
 \`ThreadOptions.cpu_affinity\` and thread-owned state are intended to support locality, but OS TLS does **not** imply CPU pinning or NUMA memory locality. Actors/Tasks should use scheduler placement hints separately; over-pinning hurts work-stealing and throughput. GPU work stays in \`gpu task\` and device-fence lifetimes: a CPU thread does not directly grant device buffer ownership.
 
 **Conformance evidence:** \`contracts/portable-thread-context-v1.json\` contains proposed guest-code tests with \`NOT_EXECUTED\` labels. Native tests prove only pthread reference-substrate behavior, not guest language acceptance, AOT, or five-backend parity.
+
+## Single portable thread entry ABI (reconciled with draft #311)
+
+`thread.spawn(named_entry, rt take arg, options)` is the fundamental ABI form. `Thread.spawn(options, rt take || -> R { ... })` is **strictly compiler-verified sugar**: it generates a non-suspending, statically reachable entry symbol taking one fully owned `Send + 'static` environment record. The resulting code/vtable/cleanup must be retained in AOT images, with atomic transfer on success and rollback to the caller on failed admission. A dynamic function or closure cannot be accepted as an entry unless its complete target and capture layout are known at compile time; `Task`, actor channels and `Topic<T>` must not carry the closure as data. `join_async` and suspending `join()` are equivalent non-parking observation surfaces; `join_blocking` requires explicit dedicated native-thread proof and cannot park actor carriers. No backend is entitled to mark these candidate APIs implemented until real guest source compiles and executes at an exact head.
