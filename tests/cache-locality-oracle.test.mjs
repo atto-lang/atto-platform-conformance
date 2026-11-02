@@ -25,7 +25,7 @@ test('bare LLC id rejected; identical numeric names on other nodes remain distin
 test('reject malformed pseudo-qualified LLC identities before ranking',()=>{
  for(const bad of ['/', '/llc0', 'node0/', 'node0//llc0',
                    'node 0/llc0', 'node0/llc 0', 'node0/llc0/',
-                   'node0\\n/llc0', 'node0/llc0\\t']) {
+                   'node0\n/llc0', 'node0/llc0\t']) {
    reject('INVALID_REQUEST',()=>pick([cpu(0,0)],req('task',{preferredLlc:bad})));
    reject('INVALID_CARRIERS',()=>pick([cpu(0,0,0,0,bad)]));
  }
