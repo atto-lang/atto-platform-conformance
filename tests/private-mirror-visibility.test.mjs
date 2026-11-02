@@ -251,7 +251,32 @@ test("rate limits, redirects and server errors cannot produce private-destinatio
  }
 });
 
-// The existing synthetic-positive same-owner path also admits a historical
-// source-bearing relay inside an alternate organization. That requires a
-// provenance-aware fail-closed production fix, not a test-only bypass.
-test.todo("deny historical Oreslang private-source relay between two repositories of the same alternate owner");
+test("known private Oreslang carrier owners cannot relay within the same organization", async()=>{
+  const quarantined=[
+    "zed-pkg-test", "scintilla-run-test", "ores-dummy-org-oreslang-stack",
+    "agent-pontifex-test", "led-dynamo", "claimgraph-test",
+    "honeypot-r-us-test", "ores-llm"
+  ];
+  for(const owner of quarantined) for(const variant of [owner,owner.toUpperCase()]){
+    const calls=[];
+    const source=variant+"/previous-source-copy";
+    const destination=variant+"/another-source-copy";
+    await assert.rejects(check({source,destination,
+      approvedDestinations:[destination]}, {}, calls),
+      /incident dispositions #22 and #77/);
+    assert.equal(calls.length,0,"incident quarantine must precede any API or source access");
+  }
+});
+test("known incident carrier owners cannot receive same-owner private relays",async()=>{
+  for(const owner of ["Ores-LLM","ZED-PKG-TEST","HONEYPOT-R-US-TEST"]){
+    const calls=[];
+    const source=owner+"/carrier";
+    const destination=owner+"/carrier-next";
+    await assert.rejects(check({source,destination,
+      approvedDestinations:[destination]}, {}, calls),
+      /incident dispositions #22 and #77/);
+    assert.equal(calls.length,0);
+  }
+});
+// Positive visibility fixtures in this suite are synthetic guard unit tests.
+// They do not authorize real source transfer or resolve any incident.
