@@ -71,6 +71,13 @@ export async function requirePrivateMirror({
   // be attempted when approval, credentials or names are missing.
   const from = repoName(source);
   const to = repoName(destination);
+  // A "mirror" back into the same repository only creates new
+  // source-bearing refs. It is not an independent executable-CI target,
+  // even when the owner or repository slug is written in mixed case.
+  // Deny prior to any authenticated HTTP or Git object operation.
+  if (from.toLowerCase() === to.toLowerCase()) {
+    throw Error("private source self-mirror is not an authorized CI destination");
+  }
   // P0 containment: deny EVERY cross-organization copy through this
   // publisher, regardless of the apparent source owner. Oreslang source
   // already copied to an intermediate private repository must not be able
