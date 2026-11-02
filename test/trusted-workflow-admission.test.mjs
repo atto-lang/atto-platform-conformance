@@ -1,18 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {verifyTrustedWorkflowAdmission as verify, createAuthenticatedGitHubReaders} from '../verification/trusted-workflow-admission.mjs';
-const R='ores-truffle-oreslang/oreslang-source.java', S='a'.repeat(40), TREE='b'.repeat(40);
+const R='ores-truffle-oreslang/oreslang-source.java', S='a'.repeat(40), TREE='b'.repeat(40), BASE='d'.repeat(40);
 const t0='2026-11-01T12:00:00Z',t1='2026-11-01T12:00:01Z',t2='2026-11-01T12:00:02Z';
 const options=()=>({backend:'java',repository:R,runId:1001,attempt:2,commitSha:S,treeSha:TREE,
   workflowPath:'.github/workflows/source-local.yml',workflowId:345,pullRequestNumber:42,
   requiredJobs:['compiler-guest'],
   readRun:async()=>({id:1001,run_attempt:2,head_sha:S,repository:{full_name:R},head_repository:{full_name:R},
     path:'.github/workflows/source-local.yml',workflow_id:345,head_branch:'feature/scalar-1',
-    pull_requests:[{number:42,head:{sha:S,ref:'feature/scalar-1'}}],
+    pull_requests:[{number:42,head:{sha:S,ref:'feature/scalar-1'},base:{sha:BASE,ref:'main'}}],
     event:'pull_request',status:'completed',conclusion:'success'}),
   readCommit:async()=>({sha:S,tree:{sha:TREE}}),
   readPullRequest:async()=>({number:42,state:'open',head:{sha:S,ref:'feature/scalar-1',repo:{full_name:R}},
-    base:{repo:{full_name:R}}}),
+    base:{sha:BASE,ref:'main',repo:{full_name:R}}}),
   readJobs:async()=>({total_count:1,jobs:[{id:2001,run_id:1001,run_attempt:2,head_sha:S,
     name:'compiler-guest',runner_id:32,runner_name:'verified-runner',status:'completed',
     conclusion:'success',started_at:t0,completed_at:t2,
@@ -41,6 +41,19 @@ test('matching internationalized nested branch in run and current PR succeeds',a
  pr.head.ref='feature/équipe-test';
  x.readRun=async()=>run;x.readPullRequest=async()=>pr;
  assert.equal((await verify(x)).checkedJobs[0].executedStepCount,2);
+});
+mutate('current target base advances after a successful historical run',(_x,_r,_c,_j,pr)=>pr.base.sha='e'.repeat(40),/base mismatch/);
+mutate('run associated with stale target base',(_x,run)=>run.pull_requests[0].base.sha='e'.repeat(40),/base mismatch/);
+mutate('run associated with different target branch',(_x,run)=>run.pull_requests[0].base.ref='release/old',/base mismatch/);
+mutate('current PR retargeted to another base branch',(_x,_r,_c,_j,pr)=>pr.base.ref='release/new',/base mismatch/);
+mutate('run PR association missing base identity',(_x,run)=>delete run.pull_requests[0].base,/base mismatch/);
+mutate('current PR missing base commit identity',(_x,_r,_c,_j,pr)=>delete pr.base.sha,/base mismatch/);
+test('matching non-main integration base and exact SHA are eligible',async()=>{
+  const x=options(),run=await x.readRun(),pr=await x.readPullRequest();
+  run.pull_requests[0].base={ref:'release/2026',sha:'e'.repeat(40)};
+  pr.base.ref='release/2026';pr.base.sha='e'.repeat(40);
+  x.readRun=async()=>run;x.readPullRequest=async()=>pr;
+  assert.equal((await verify(x)).checkedJobs[0].executedStepCount,2);
 });
 mutate('current PR advances after historical green run',(_x,_r,_c,_j,pr)=>pr.head.sha='c'.repeat(40),/current pull request head/);
 mutate('current PR API number mismatches expected PR',(_x,_r,_c,_j,pr)=>pr.number=43,/current pull request head/);
@@ -278,7 +291,7 @@ mutate('non-array PR association',(_x,run)=>run.pull_requests={number:42},/run n
 mutate('oversized PR association',(_x,run)=>run.pull_requests=Array.from({length:33},(_,i)=>({number:i+1})),/run not associated/);
 test('matching PR in bounded multi-PR association succeeds',async()=>{
   const x=options(),run=await x.readRun();
-  run.pull_requests=[{number:41,head:{sha:'c'.repeat(40)}},{number:42,head:{sha:S,ref:'feature/scalar-1'}}];
+  run.pull_requests=[{number:41,head:{sha:'c'.repeat(40)}},{number:42,head:{sha:S,ref:'feature/scalar-1'},base:{sha:BASE,ref:'main'}}];
   x.readRun=async()=>run;
   const got=await verify(x);
   assert.equal(got.workflowId,345);

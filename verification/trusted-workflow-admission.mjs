@@ -78,6 +78,17 @@ export async function verifyTrustedWorkflowAdmission({backend, repository, runId
       currentPr.head?.repo?.full_name !== repository ||
       currentPr.base?.repo?.full_name !== repository)
     fail('current pull request head or repository mismatch');
+  // Exact-head PR CI can become stale even when the source branch does not
+  // move: a changed target branch/base commit changes the integration tree.
+  // Require the authenticated run's historical PR base to match the current
+  // target ref AND commit, not merely the current source head SHA.
+  const historicalBase=associated[0].base;
+  if (!historicalBase || !SHA40.test(historicalBase.sha) ||
+      !SHA40.test(currentPr.base?.sha) ||
+      !validLine(historicalBase.ref) || !validLine(currentPr.base?.ref) ||
+      historicalBase.ref !== currentPr.base.ref ||
+      historicalBase.sha !== currentPr.base.sha)
+    fail('run and current pull request base mismatch');
   // A matching SHA can be present on multiple refs. Bind run, run's PR
   // association, and current PR to the same live source branch.
   if (!validLine(currentPr.head?.ref) ||
