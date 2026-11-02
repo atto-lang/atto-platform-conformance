@@ -354,6 +354,90 @@
         "net"
       ],
       "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state_container.quiescent_release",
+      "kind": "runtime",
+      "source": "define state container Counter as\n  state { let int count: 0; }\nend\n",
+      "expected": {
+        "compilation": "accept"
+      },
+      "requires": [
+        "shutdown-revokes-lease",
+        "no-arena-reclamation-before-loan-quiescence"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "virtual_actor.two_phase_activation",
+      "kind": "runtime",
+      "source": "define virtual actor ShoppingCart as\n  state { let int quantity: 0; }\nend\n",
+      "expected": {
+        "compilation": "accept"
+      },
+      "requires": [
+        "single-initializer",
+        "no-send-before-publish",
+        "failure-atomic-activation",
+        "retry-new-incarnation"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "virtual_actor.foreign_capability_denied",
+      "kind": "runtime",
+      "source": "define virtual actor ShoppingCart as\n  state { let int quantity: 0; }\nend\n",
+      "expected": {
+        "compilation": "accept"
+      },
+      "requires": [
+        "cross-registry-identity-not-authority",
+        "foreign-incarnation-rejected",
+        "no-message-admission"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "virtual_actor.invalid_key_rejected",
+      "kind": "runtime",
+      "source": "define virtual actor ShoppingCart as\n  state { let int quantity: 0; }\nend\n",
+      "expected": {
+        "compilation": "accept"
+      },
+      "requires": [
+        "nfc-canonical-identity",
+        "malformed-utf16-rejected",
+        "key-bytes-bounded"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
     }
   ]
 }
