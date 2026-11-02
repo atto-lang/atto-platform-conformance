@@ -115,10 +115,11 @@ test('generation mismatch cannot acquire or release another gate', () => {
   old.release(lease);
 });
 
-test('recursion does not grant second lease', () => {
+test('recursion fails closed instead of being misreported as ordinary contention', () => {
   const gate = new CriticalGateModel();
   const lease = gate.tryEnter('owner');
-  assert.equal(gate.tryEnter('owner'), null);
+  assert.throws(() => gate.tryEnter('owner'), /recursive/);
+  assert.throws(() => gate.enter('owner'), /recursive/);
   gate.release(lease);
 });
 
