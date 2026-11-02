@@ -201,3 +201,19 @@ test('spawn failures leave model capacity free and stop cannot impersonate join'
   assert.throws(()=>m.join(h),/THREAD_NOT_PHYSICALLY_EXITED/);
   m.complete(h,3);assert.equal(m.join(h),3);
 });
+
+test('each owner has a bounded typed local key table', () => {
+  const m=new LocalStateThreadModel(),a=m.spawn(entry(primitive));
+  m.withExecution(a,{},()=>{
+    for(let i=0;i<128;i++)m.setLocal('thread','key_'+i,i);
+    assert.throws(()=>m.setLocal('thread','key_128',128),/LOCAL_KEY_CAPACITY_EXHAUSTED/);
+    m.setLocal('thread','key_0','overwrite');
+    assert.equal(m.getLocal('thread','key_0'),'overwrite');
+  });
+});
+
+test('async callbacks cannot turn a synchronous reference into scheduler evidence', () => {
+  const m=new LocalStateThreadModel(),a=m.spawn(entry(primitive));
+  assert.throws(()=>m.withExecution(a,{},()=>Promise.resolve(1)),/ASYNC_MODEL_CALLBACK_FORBIDDEN/);
+  assert.throws(()=>m.getLocal('thread','any'),/NO_ACTIVE_THREAD/);
+});
