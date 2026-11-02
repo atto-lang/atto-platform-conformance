@@ -4,9 +4,9 @@
 
 ## Source identities / historical evidence
 
-- The immutable current PR heads, root Git trees and representative zero-step job IDs are in `evidence/critical-suspends-current-head-preflight-20261102.json`.
-- The original zero-step evidence file `evidence/critical-suspends-backend-evidence-20261101.json` remains unchanged. Do **not** change old job SHA associations to the latest branches.
-- The stage-1 manifest retains the historical Java commit on which its four fixture blobs were authored. At the newly pinned Java head, these four `.ores` blobs were independently read back as identical. The **test implementation** changed; that does not make the historical Actions jobs newly executed.
+- The **point-in-time** PR heads, root Git trees and representative zero-step job IDs captured during this audit are in `evidence/critical-suspends-current-head-preflight-20261102.json`. Later branch advances require a new attested snapshot; never assume the captured heads are live.
+- A byte-exact immutable archive of the original zero-step ledger is `evidence/critical-suspends-zero-step-original-20261101.json` (Git blob `cf71c6e3f538f61cd52a3e179eb6b219af3bdf5c`). Other agents may update the rolling `critical-suspends-backend-evidence-20261101.json`; those later jobs are separate observations, not retroactive evidence for old heads.
+- A byte-exact immutable archive of the original Java stage-1 fixture manifest is `evidence/critical-suspends-java-stage1-original-manifest-20261101.json` (Git blob `396b376c5d0020a6bc09a011f28bca06190a3d6a`). The rolling manifest may be repinned separately, but the four `.ores` fixture blobs were checked unchanged at the frozen Java source snapshot. Updating tests or manifest metadata cannot make historical CI jobs newly executed.
 - `bin/verify-critical-current-head-preflight.mjs` and `bin/verify-critical-stage0-receipt.mjs` are offline data-consistency checks only. Both reject purported CI attestations from unexecuted jobs. Even a matching nonzero-step partial receipt returns **UNATTESTED** until independently checked against GitHub job attempt, logs, exact tree and compiler artifact.
 
 ## Minimal stage-0 matrix (run in each source repository unless an independently authorized private carrier exists)
