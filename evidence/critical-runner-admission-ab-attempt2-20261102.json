@@ -1,0 +1,74 @@
+{
+  "schema": "atto.critical-runner-admission-two-attempt-comparison/1",
+  "captured_date": "2026-11-02",
+  "description": "Source-free, no-checkout, no secrets or AttoLang source: identical job blocks in two private organizations",
+  "underlying_ab_snapshot": "evidence/critical-runner-admission-ab-20261102.json",
+  "head_immutable": true,
+  "source": {
+    "repository": "ores-truffle-oreslang/oreslang-platform-conformance",
+    "head": "3d5bdf454c65d87a915c5d23c2349522c80a958f",
+    "tree": "20e4e66740aa03560ce5360f26ad8814a4de4688",
+    "run_id": 41395829396,
+    "attempts": [
+      {
+        "attempt": 1,
+        "job_id": 125116825246,
+        "conclusion": "failure",
+        "executed_steps": 0,
+        "diagnostic": "RUNNER_NOT_ADMITTED",
+        "verified_logs": false
+      },
+      {
+        "attempt": 2,
+        "job_id": 125119194631,
+        "conclusion": "failure",
+        "executed_steps": 0,
+        "diagnostic": "RUNNER_NOT_ADMITTED",
+        "verified_logs": false
+      }
+    ]
+  },
+  "alternate": {
+    "repository": "gha-indie-worker/gha-indie-worker-docs",
+    "head": "63b98a78298a83123b53f867a6536828b413f742",
+    "tree": "3549f7d5728706abe06b6a5851e5fe6bb9d3e929",
+    "run_id": 41395768031,
+    "attempts": [
+      {
+        "attempt": 1,
+        "job_id": 125116643102,
+        "conclusion": "success",
+        "executed_steps": 4,
+        "diagnostic": "SOURCE_FREE_RUNNER_ADMITTED",
+        "verified_logs": true
+      },
+      {
+        "attempt": 2,
+        "job_id": 125119186846,
+        "conclusion": "success",
+        "executed_steps": 4,
+        "diagnostic": "SOURCE_FREE_RUNNER_ADMITTED",
+        "verified_logs": true
+      }
+    ]
+  },
+  "canary_scope": "source-free-host-runner-only",
+  "private_source_transferred": false,
+  "source_git_tree_mirrored": false,
+  "authorization_status": "NOT_AUTHORIZED",
+  "budget_remaining_verified": false,
+  "root_cause_verified": false,
+  "incident_gate": {
+    "required": [
+      22,
+      77,
+      127
+    ],
+    "all_closed_completed": false
+  },
+  "source_main_protected": false,
+  "source_org_actions_execution": "NOT_EXECUTED",
+  "alternate_org_actions_execution": "SOURCE_FREE_STEPS_EXECUTED",
+  "native_compiler_execution_verified": false,
+  "guest_runtime_execution_verified": false
+}
