@@ -10,7 +10,10 @@ desktop/mobile app, FPGA, or ASIC ran these programs.
 8 positive scalar/precedence probes with explicit integer `main` values,
 and 2 negative unresolved-identifier probes. The exact 10 SHA-256 digests,
 expected values, diagnostics and case IDs are pinned redundantly in
-`contracts/platform-portability-v1.json` and the implementation. No Python,
+`contracts/platform-portability-v1.json` and the implementation.
+The fixture directory is an exact **ten-file** inventory: additional
+regular files, hidden entries, symlinks, missing files and directory
+masquerades are rejected before any guest program is launched. No Python,
 JavaScript, C, Rust or .NET guest language substitutes for the `.ores` code.
 
 `node --test tests/platform-portability-v1.test.mjs` checks the corpus,
@@ -30,9 +33,13 @@ checks CLIF generation, exact integer stdout, and the compiler-owned
 unresolved-identifier diagnostics. It rehashes the executable after every
 case and rejects symlinked binaries, timeouts, unexpected stdout, wrong
 diagnostics and persistent guest-source mutations detected by post-invocation
-corpus revalidation. This is not a race-free, trusted source-to-executable
-attestation: a mutate-and-restore adversary or a forged compiler binary still
-requires an independently controlled execution environment.
+corpus revalidation. The exported runner rejects unexpected or accessor
+options, inherited option objects and caller-supplied `spawn` hooks:
+source-verification evidence must be produced by its real process-launch
+entrypoint, not by an injected mock callback. This is not a race-free,
+trusted source-to-executable attestation: a mutate-and-restore adversary
+or a forged compiler binary still requires an independently controlled
+execution environment.
 
 ```sh
 node bin/run-cranelift-native-v1.mjs \
