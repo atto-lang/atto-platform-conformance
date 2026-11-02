@@ -37,6 +37,27 @@
         "cranelift": "UNSUPPORTED",
         "net": "NOT_EXECUTED"
       }
+    },
+    {
+      "id": "cross-epoch-delta-reject",
+      "path": "cross-epoch-delta-reject.ores",
+      "gitBlobSha1": "e39f18be8835d3adc23aae6fd2b8f9dac5a6a59e",
+      "expect": "accept-and-execute",
+      "stdout": "false\nfalse\n5\ntrue\ntrue\n7\n5\n",
+      "requirements": [
+        "real-source-compilation",
+        "guest-execution",
+        "exact-stdout",
+        "compiler-hash",
+        "exact-head"
+      ],
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      }
     }
   ],
   "runtimeVerifiedBackends": [],
