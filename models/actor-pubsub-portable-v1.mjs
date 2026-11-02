@@ -53,20 +53,27 @@ export class PubSubReference {
   #actorStates=new WeakMap();
   #groupStates=new WeakMap();
   #subscriptionStates=new WeakMap();
+  #nextSub=0;
+  #nextMembership=0;
+  #closed=false;
+
+  get closed() {return this.#closed;}
+  get membershipCount() {return this.#memberships.size;}
 
   // Introspection returns a detached copy, not an authority registry.
   get subscriptionCount() {
     return [...this.#subscriptions.values()].filter(s=>!s.closed).length;
   }
 
-  constructor({maxTopics=1024,maxSubscriptions=1024}={}) {
+  constructor({maxTopics=1024,maxSubscriptions=1024,maxMemberships=4096}={}) {
     if (!Number.isSafeInteger(maxTopics) || maxTopics<1 ||
-        !Number.isSafeInteger(maxSubscriptions) || maxSubscriptions<1)
+        !Number.isSafeInteger(maxSubscriptions) || maxSubscriptions<1 ||
+        !Number.isSafeInteger(maxMemberships) || maxMemberships<1)
       throw new RangeError("positive finite quotas required");
     this.maxTopics=maxTopics;
     this.maxSubscriptions=maxSubscriptions;
-    this.nextSub=0; this.nextMembership=0;
-    this.closed=false;
+    this.maxMemberships=maxMemberships;
+    Object.freeze(this);
   }
 
   actor(id, generation=1) {
@@ -141,8 +148,11 @@ export class PubSubReference {
     if (!this.isGroup(group) || !this.isActor(actor)) return failure("StaleTarget");
     // The immutable grant is a capability; public members Set is only a view.
     if (this.activeMembership(group,actor)) return success({alreadyMember:true});
+    if (this.#memberships.size>=this.maxMemberships ||
+        this.#nextMembership>=Number.MAX_SAFE_INTEGER)
+      return failure("ResourceExhausted");
     this.#groupStates.get(group).members.add(actor.key);
-    const membership=Object.freeze({id:++this.nextMembership,group,actor});
+    const membership=Object.freeze({id:++this.#nextMembership,group,actor});
     this.#memberships.set(membership.id,{capability:membership,active:true});
     return success({membership});
   }
@@ -152,6 +162,7 @@ export class PubSubReference {
     if (!entry || entry.capability!==membership || !entry.active)
       return failure("StaleMembership");
     entry.active=false;
+    this.#memberships.delete(membership.id);
     this.#groupStates.get(membership.group).members.delete(membership.actor.key);
     this.cancelTarget(membership.actor.key,s=>s.kind==="group" && s.target===membership.group);
     // A group-bound direct subscription cannot survive a leave/rejoin.
@@ -181,11 +192,12 @@ export class PubSubReference {
         return success({subscription:existing,alreadySubscribed:true});
       }
     }
-    if ([...this.#subscriptions.values()].filter(s=>!s.closed).length>=this.maxSubscriptions)
+    if (this.#subscriptions.size>=this.maxSubscriptions ||
+        this.#nextSub>=Number.MAX_SAFE_INTEGER)
       return failure("ResourceExhausted");
     const state={closed:false,queues:new Map(),inflight:new Map()};
     const sub=Object.freeze({
-      id:++this.nextSub,topic,kind,target,capacity,
+      id:++this.#nextSub,topic,kind,target,capacity,
       get closed(){return state.closed;}
     });
     this.#subscriptionStates.set(sub,state);
@@ -256,6 +268,9 @@ export class PubSubReference {
       const state=this.#subscriptionStates.get(subscription);
       state.closed=true;
       state.queues.clear();
+      // Weak-held retired handles continue to support finish()/done() and
+      // reject start(), without growing the active-subscription registry.
+      this.#subscriptions.delete(subscription.id);
     }
     return success({done:this.done(subscription)});
   }
@@ -268,9 +283,10 @@ export class PubSubReference {
   stopActor(actor) {
     if (!this.isActor(actor)) return failure("StaleActor");
     this.#actorStates.get(actor).alive=false;
-    for (const m of this.#memberships.values())
+    for (const [id,m] of this.#memberships)
       if (m.active && m.capability.actor===actor) {
         m.active=false;
+        this.#memberships.delete(id);
         this.#groupStates.get(m.capability.group).members.delete(actor.key);
       }
     this.cancelTarget(actor.key,()=>true);
@@ -282,9 +298,10 @@ export class PubSubReference {
   closeGroup(group) {
     if (!this.isGroup(group)) return failure("StaleGroup");
     this.#groupStates.get(group).closed=true;
-    for (const m of this.#memberships.values())
+    for (const [id,m] of this.#memberships)
       if (m.active && m.capability.group===group) {
         m.active=false;
+        this.#memberships.delete(id);
         this.#groupStates.get(group).members.delete(m.capability.actor.key);
       }
     for (const sub of this.#subscriptions.values())
@@ -295,10 +312,10 @@ export class PubSubReference {
 
   close() {
     if (this.closed) return success();
-    this.closed=true;
+    this.#closed=true;
     for (const sub of this.#subscriptions.values()) this.unsubscribe(sub);
     for (const group of this.#groups.values()) this.#groupStates.get(group).closed=true;
-    for (const membership of this.#memberships.values()) membership.active=false;
+    this.#memberships.clear();
     for (const group of this.#groups.values()) this.#groupStates.get(group).members.clear();
     return success();
   }
@@ -310,7 +327,7 @@ export class PubSubReference {
 
   isActor(actor) { return !!actor && this.#actors.get(actor.key)===actor && actor.alive; }
   isGroup(group) { return !!group && this.#groups.get(group.id)===group && !group.closed; }
-  isSub(sub) { return !!sub && this.#subscriptions.get(sub.id)===sub; }
+  isSub(sub) { return !!sub && this.#subscriptionStates.has(sub); }
   isShared(v) {
     // A frozen DAG is Sendable even when two fields reference the same child.
     // Reject back-edges to the current stack (true cycles).
