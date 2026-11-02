@@ -1,0 +1,80 @@
+{
+  "contract": "oreslang.video-replay-guest-smoke/1",
+  "version": 1,
+  "status": "SOURCE_ONLY_NOT_EXECUTED",
+  "summary": "Smallest cross-toolchain executable candidate: 2 opaque encoded-byte chunks, sender write admission, receiver-applied ACK, reconnect from offset, generation fence.",
+  "non_goals": [
+    "real video codec",
+    "actual TCP/UDP/WebSocket transport",
+    "actor scheduler execution",
+    "five-backend native parity",
+    "whole-process memory bound"
+  ],
+  "outputs": {
+    "passPrefix": "VIDEO-REPLAY-PASS|",
+    "orderedLabels": [
+      "capacity",
+      "first-chunk",
+      "second-chunk",
+      "sent",
+      "receiver-committed",
+      "resume-missing",
+      "stale-generation-denied"
+    ],
+    "terminal": "VIDEO-REPLAY-SMOKE-DONE",
+    "expectedExitCode": 0
+  },
+  "expectedGuestChecks": 7,
+  "backends": [
+    {
+      "name": "java",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "pr": 2445,
+      "head": "89ada2b5a87daeae76f18af8f7eb2a4798b25ab3",
+      "guestPath": "examples/replay-video-disconnect-smoke.ores",
+      "guestBlobSha": "f2a33155ca7bf8ac54982d2d1e87cfc21bd04b05",
+      "execution": "UNVERIFIED"
+    },
+    {
+      "name": "llvm",
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "pr": 1298,
+      "head": "b55c758e08174c85778d59f9665344e7adf7fd3b",
+      "guestPath": "contracts/replay_stream_v1/replay-video-disconnect-smoke.ores",
+      "guestBlobSha": "b7e96e319a2b6aabbd55dbc07deaaf7af0bdb0bc",
+      "execution": "UNVERIFIED"
+    },
+    {
+      "name": "wasm",
+      "repository": "ores-truffle-oreslang/oreslang-source.wasm",
+      "pr": 266,
+      "head": "c87232539ca65d7462652d1ae307a3c8b28959c5",
+      "guestPath": "contracts/replay_stream_v1/replay-video-disconnect-smoke.ores",
+      "guestBlobSha": "b7e96e319a2b6aabbd55dbc07deaaf7af0bdb0bc",
+      "execution": "UNVERIFIED"
+    },
+    {
+      "name": "cranelift",
+      "repository": "ores-truffle-oreslang/oreslang-source.cranelift",
+      "pr": 79,
+      "head": "e5135d3791842868f7b117e427d2fc4384c71b54",
+      "guestPath": "contracts/replay_stream_v1/replay-video-disconnect-smoke.ores",
+      "guestBlobSha": "b7e96e319a2b6aabbd55dbc07deaaf7af0bdb0bc",
+      "execution": "UNVERIFIED"
+    },
+    {
+      "name": "net",
+      "repository": "ores-truffle-oreslang/oreslang-source.net",
+      "pr": 330,
+      "head": "ba57f8cfc6e17b9308311ad597e6b437a0e16c8f",
+      "guestPath": "contracts/replay_stream_v1/replay-video-disconnect-smoke.ores",
+      "guestBlobSha": "b7e96e319a2b6aabbd55dbc07deaaf7af0bdb0bc",
+      "execution": "UNVERIFIED"
+    }
+  ],
+  "javaGuestRunner": "scripts/run-replay-video-smoke.sh",
+  "javaGuestCommand": "mvn -B -ntp -q -DskipTests exec:java -Dexec.args=examples/replay-video-disconnect-smoke.ores",
+  "admission": "Run the actual compiler + Oreslang guest at the pinned exact head, require 7 exact ordered receipts and terminal, exit zero, concrete executed CI job steps and independent provenance. Any missing executable, unsupported parser feature, no CI runner, or mock-only execution is NOT VERIFIED.",
+  "sourceIdentity": "Git blob SHA in each backend is pinned; import paths differ; no binary parity established.",
+  "security": "No cross-org private source mirror without independent incident disposition and approved protected private-carrier gate."
+}
