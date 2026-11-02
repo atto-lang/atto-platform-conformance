@@ -12,7 +12,7 @@
   ],
   "sourceModule": {
     "path": "stdlib/actor_sync.ores",
-    "gitBlobSha1": "48c85c40b53d33a4a420cf4bb77e00fe3df3bb94",
+    "gitBlobSha1": "7f5f8bf970a73fa055e353082692a200aad4cdcd",
     "scope": "pure-owned-progress-metadata-only",
     "notPersistenceAdapter": true
   },
