@@ -20,9 +20,14 @@ test('contract and all phase+diagnostic ids are unique target-only', () => {
   assert.equal(c.receipt.referenceModelIsGuestEvidence,false);
   assert.equal(c.requiresActualOsThread,true);
   assert.equal(c.forbidTaskOrVirtualThreadFallback,true);
-  assert.equal(c.cases.length,37);
+  assert.equal(c.threadEntry,'AOT_RESOLVED_NAMED_OR_COMPILER_SYNTHESIZED_NON_SUSPENDING_ENTRY');
+  assert.match(c.ownedClosureSugar,/STATIC_COMPILER_LOWERING_ONLY/);
+  assert.ok(c.cases.some(x=>x.id==='owned-closure-aot-lowering' && x.phase==='compile-pass'));
+  assert.ok(c.cases.some(x=>x.id==='unlowerable-captured-closure-entry' && x.phase==='compile-reject'));
+
+  assert.equal(c.cases.length,38);
   assert.equal(new Set(c.cases.map(x=>x.id)).size,c.cases.length);
-  assert.equal(c.cases.filter(x=>x.phase==='compile-pass').length,8);
+  assert.equal(c.cases.filter(x=>x.phase==='compile-pass').length,9);
   assert.equal(c.cases.filter(x=>x.phase==='compile-reject').length,15);
   assert.equal(c.cases.filter(x=>x.phase==='runtime').length,14);
   for (const x of c.cases) {
