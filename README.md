@@ -10,7 +10,7 @@ The [media replay v1 contract](docs/MEDIA_REPLAY_V1.md) defines a bounded 2 MiB 
 node --test tests/media-replay*.test.mjs
 ```
 
-An additional eight source-free receipt validator tests are authored to reject fabricated compiler success, missing executed CI steps, wrong source SHA, missing receipts, incorrect output hashes and nonzero guest exits. The [five-backend source alignment inventory](contracts/media-replay-native-source-alignment-v1.json) pins the identical Oreslang implementation blob and the [73 expected guest receipts](contracts/media-replay-native-receipts-v1.json). Source identity is verified; real guest execution is not.
+An additional eight source-free receipt validator tests are authored to reject fabricated compiler success, missing executed CI steps, wrong source SHA, missing receipts, incorrect output hashes and nonzero guest exits. The [five-backend source alignment inventory](contracts/media-replay-native-source-alignment-v1.json) pins the identical Oreslang implementation blob and the [80 expected guest receipts](contracts/media-replay-native-receipts-v1.json). Source identity is verified; real guest execution is not.
 
 This is **not** native Oreslang codec execution or five-backend runtime parity evidence. **Cranelift** is the independent `oreslang-source.cranelift` backend, not `oreslang-source.forge`; Java/Graal, LLVM, Wasm, Cranelift and .NET guest admission remains separate.
 
