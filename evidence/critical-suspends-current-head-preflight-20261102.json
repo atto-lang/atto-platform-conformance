@@ -1,0 +1,101 @@
+{
+  "schema": "oreslang.critical-suspends.current-head-preflight/1",
+  "captured_date": "2026-11-02",
+  "classification": "PREPARED_NOT_EXECUTED",
+  "contract": {
+    "repository": "ores-truffle-oreslang/oreslang-platform-conformance",
+    "pr": 292,
+    "head_at_capture": "535962350fcb357a6952372b3f75101643b82683",
+    "case_count": 34
+  },
+  "fixture": {
+    "manifest_path": "fixtures/critical-suspension-v1/java-stage1/manifest.json",
+    "manifest_blob_sha1": "396b376c5d0020a6bc09a011f28bca06190a3d6a",
+    "origin_java_head": "c60348b24870a70eff455cd7dd2d1e7656bd2a4f",
+    "verified_current_java_head": "8affb74e1fb10ea006374b55e0bdef14ce97cb12",
+    "verified_blob_count": 4,
+    "verification_kind": "GIT_BLOB_IDENTITY_ONLY_NOT_GUEST_EXECUTION"
+  },
+  "security": {
+    "private_source_mirroring": "BLOCKED_PENDING_INDEPENDENT_APPROVAL",
+    "source_main_protected": false,
+    "required_open_incidents": [
+      22,
+      77,
+      127
+    ],
+    "source_free_capacity_canary_is_authorization": false
+  },
+  "entries": [
+    {
+      "backend": "java-graal",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "pr": 2433,
+      "commit": "8affb74e1fb10ea006374b55e0bdef14ce97cb12",
+      "tree": "c059cae3888d6215bd971f95c64d28ca0110aefd",
+      "run_id": 41392081129,
+      "job_id": 125105461626,
+      "executed_steps": 0,
+      "phase": "NOT_EXECUTED",
+      "compiler_invoked": false,
+      "guest_verified": false,
+      "required_stage": "4 pinned Java .ores guest fixtures: exact stdout 31; three exact first diagnostics"
+    },
+    {
+      "backend": "llvm",
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "pr": 1289,
+      "commit": "c094da9269c9d810483663d9c65c324f83329e32",
+      "tree": "9ac95c1a89be2c70388ad80b6d33b4330e07e523",
+      "run_id": 41368262039,
+      "job_id": 125032980377,
+      "executed_steps": 0,
+      "phase": "NOT_EXECUTED",
+      "compiler_invoked": false,
+      "guest_verified": false,
+      "required_stage": "native compiler positive control + both forbidden modifier diagnostics; runtime CTest separate"
+    },
+    {
+      "backend": "dotnet-nativeaot",
+      "repository": "ores-truffle-oreslang/oreslang-source.net",
+      "pr": 320,
+      "commit": "d7fe73f05146012c919dffc5874f178f6aca44a4",
+      "tree": "80275c7e4c3b211389e7b21ea0d9ded52ac51419",
+      "run_id": 41391284992,
+      "job_id": 125103025491,
+      "executed_steps": 0,
+      "phase": "NOT_EXECUTED",
+      "compiler_invoked": false,
+      "guest_verified": false,
+      "required_stage": "real .NET bootstrap compiler admission, exact diagnostic controls (not NativeAOT guest parity)"
+    },
+    {
+      "backend": "cranelift",
+      "repository": "ores-truffle-oreslang/oreslang-source.forge",
+      "pr": 168,
+      "commit": "b4d3183f470b7503bcea86e717d7b410b08be9e8",
+      "tree": "27bdc3e09468c4aff36ba5d8dc4cc00b209e21bd",
+      "run_id": 41391347729,
+      "job_id": 125103224082,
+      "executed_steps": 0,
+      "phase": "NOT_EXECUTED",
+      "compiler_invoked": false,
+      "guest_verified": false,
+      "required_stage": "compile and execute Forge CTest bootstrap parser; not Cranelift critical guest parity"
+    },
+    {
+      "backend": "wasm",
+      "repository": "ores-truffle-oreslang/oreslang-source.wasm",
+      "pr": 258,
+      "commit": "53d0c52ec097b507a3839020b300ed42f7103a99",
+      "tree": "5de07a0a4a73f7b77f63187f4445cf4cc6e56242",
+      "run_id": 41356365766,
+      "job_id": 124997156709,
+      "executed_steps": 0,
+      "phase": "NOT_EXECUTED",
+      "compiler_invoked": false,
+      "guest_verified": false,
+      "required_stage": "Node host zero-capability tests; LLVM->Wasm guest compiler receipt separately required"
+    }
+  ]
+}
