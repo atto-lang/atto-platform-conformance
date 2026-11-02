@@ -112,3 +112,37 @@ test('declared short Content-Length cannot omit trailing bytes',async()=>{
  const api=createAuthenticatedGitHubReaders({token:'t',fetchImpl:async()=>new Response('{}',{status:200,headers:{'content-length':'1'}})});
  await assert.rejects(api.readRun({repository:R,runId:1}),/truncated/);
 });
+
+// Source-free adversarial calendar and UTF-8 provenance boundary controls.
+mutate('normalized Feb 30 is not a real job start',(_x,_r,_c,jobs)=>{
+  jobs.jobs[0].started_at='2026-02-30T12:00:00Z';
+});
+mutate('non-leap Feb 29 is not a real step time',(_x,_r,_c,jobs)=>{
+  jobs.jobs[0].steps[0].started_at='2026-02-29T12:00:00Z';
+});
+mutate('April 31 cannot be a completed job timestamp',(_x,_r,_c,jobs)=>{
+  jobs.jobs[0].completed_at='2026-04-31T12:00:00Z';
+});
+mutate('24:00 normalized to the following day is rejected',(_x,_r,_c,jobs)=>{
+  jobs.jobs[0].started_at='2026-11-01T24:00:00Z';
+});
+mutate('runner label over 4096 UTF-8 bytes is rejected',(_x,_r,_c,jobs)=>{
+  jobs.jobs[0].runner_name='🧪'.repeat(1025);
+});
+test('valid leap-day UTC timestamps remain admissible',async()=>{
+  const x=options(),jobs=await x.readJobs();
+  jobs.jobs[0].started_at='2024-02-29T12:00:00Z';
+  jobs.jobs[0].steps[0].started_at='2024-02-29T12:00:00Z';
+  jobs.jobs[0].steps[0].completed_at='2024-02-29T12:00:01Z';
+  jobs.jobs[0].steps[1].started_at='2024-02-29T12:00:01Z';
+  jobs.jobs[0].steps[1].completed_at='2024-02-29T12:00:02Z';
+  jobs.jobs[0].completed_at='2024-02-29T12:00:02Z';
+  x.readJobs=async()=>jobs;
+  assert.equal((await verify(x)).checkedJobs[0].executedStepCount,2);
+});
+test('runner label at exactly 4096 UTF-8 bytes remains admissible',async()=>{
+  const x=options(),jobs=await x.readJobs();
+  jobs.jobs[0].runner_name='🧪'.repeat(1024);
+  x.readJobs=async()=>jobs;
+  assert.equal((await verify(x)).checkedJobs[0].runnerId,32);
+});

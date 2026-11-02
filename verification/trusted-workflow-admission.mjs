@@ -4,10 +4,19 @@ const SHA40 = /^[0-9a-f]{40}$/;
 const BACKENDS = new Set(['java', 'llvm', 'wasm', 'cranelift', 'net']);
 const POSITIVE_INT = x => Number.isSafeInteger(x) && x > 0;
 const fail = reason => { throw new Error(`workflow admission: ${reason}`); };
-const validLine = s => typeof s === 'string' && s.length > 0 && s.length <= 4096 &&
-  s.isWellFormed() && !/[\u0000-\u001f\u007f-\u009f\p{Default_Ignorable_Code_Point}]/u.test(s);
-const instant = s => typeof s === 'string' && /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?Z$/.test(s)
-  ? Date.parse(s) : NaN;
+const validLine = s => typeof s === 'string' && s.length > 0 &&
+  Buffer.byteLength(s, 'utf8') <= 4096 && s.isWellFormed() && !/[\u0000-\u001f\u007f-\u009f\p{Default_Ignorable_Code_Point}]/u.test(s);
+// Date.parse silently normalizes impossible Gregorian dates (e.g. Feb 30).
+// Compare its canonical UTC calendar/clock prefix to the original, retaining
+// GitHub's optional fractional seconds without trusting normalized dates.
+const instant = s => {
+  if (typeof s !== 'string' ||
+      !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{1,9})?Z$/.test(s)) return NaN;
+  const ms=Date.parse(s);
+  if (!Number.isFinite(ms) || new Date(ms).toISOString().slice(0,19) !== s.slice(0,19))
+    return NaN;
+  return ms;
+};
 const requireInterval = (start, end, label) => {
   const a=instant(start), b=instant(end);
   if (!Number.isFinite(a) || !Number.isFinite(b) || b < a) fail(`invalid ${label} interval`);
