@@ -155,3 +155,30 @@ Until then, **no source mirror was created and no compiler guest pass exists**.
 The local source-free synthetic boundary audit passed 1,536 regular files,
 rejected 1,537, and rejected a symlink. This is not an Actions, compiler,
 NativeAOT or Wasm guest test. Retain draft/non-verified release classification.
+
+### Exact-tree private CI plan hardening — November 2, 2026
+
+LLVM [#1301](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1301)
+advanced to `e107ef81a1335c65f4b63a9b89a3f5efc3ee3cbc`,
+source root tree `6d07b5cfd052bb3baa0f2c03dfcdc6a72834cd34`.
+The native Rust guest harness now monitors compiler/linker/guest stdout and
+stderr size **during** the 20-second child lifetime, terminating oversized
+writers early and rejecting monitoring errors. Its 1-MiB cap is sampled, not
+a kernel-enforced disk quota; retain carrier sandbox resource budgets.
+
+An additional source-free audit of the private carrier identified that its
+reviewed test plans constrain repository and PR number, but the current
+verifier does not independently bind the **approved source head and root tree**
+to a trusted test-plan entry. Proposed review-only patches add
+`required_source_head_sha` and `required_source_tree_sha` to the Java
+#2449 and LLVM #1301 plans and check these at source verification,
+dependency preparation and sandbox execution. Local adversarial tests reject
+forged/missing head or tree pins and stale blob pins. These checks alone do
+**not** authenticate the source organization or authorize transfer.
+
+Security review [carrier #39](https://github.com/canonical-cloud-test/readiness-edge-e2e/issues/39)
+remains open. Carrier and compiler `main` branches lack enforced protection;
+an independent source-transfer approval has not been recorded. The latest
+sampled LLVM head Actions jobs still report no executed steps. No private
+source tree was exported, no compiler-backed guest execution was observed,
+and all compiler parity claims remain **unverified**.
