@@ -87,15 +87,23 @@ test('GPU resource overflow and duplicate queue identities reject',()=>{
  reject('INVALID_GPU_QUEUE',()=>selectGpuQueue({...args,queues:[{...q,usedBytes:Number.MAX_SAFE_INTEGER+1}]}));
  reject('INVALID_GPU_REQUEST',()=>selectGpuQueue({...args,bytes:-1}));
 });
-test('disjoint mutable words can share a cache line; separate allocations cannot',()=>{
- const a={allocation:'actorA',start:0,length:8};
- assert.equal(mayShareCacheLine(a,{allocation:'actorA',start:56,length:8}),true);
- assert.equal(mayShareCacheLine(a,{allocation:'actorA',start:64,length:8}),false);
- assert.equal(mayShareCacheLine(a,{allocation:'actorB',start:1,length:8}),false);
- assert.equal(mayShareCacheLine(a,{allocation:'actorA',start:0,length:0}),false);
- assert.equal(mayShareCacheLine({allocation:'actorA',start:63,length:2},
-   {allocation:'actorA',start:64,length:1}),true);
+test('cache-line proof needs physical base alignment, including between allocations',()=>{
+ const a={allocation:'actorA',start:0,length:8,baseRemainder:0};
+ assert.equal(mayShareCacheLine(a,{...a,start:56,length:8}),true);
+ assert.equal(mayShareCacheLine(a,{...a,start:64,length:8}),false);
+ assert.equal(mayShareCacheLine(a,{allocation:'actorB',start:1,length:8}),true);
+ assert.equal(mayShareCacheLine(a,{allocation:'actorB',start:1,length:8,baseRemainder:0}),false);
+ assert.equal(mayShareCacheLine(a,{...a,length:0}),false);
+ assert.equal(mayShareCacheLine({...a,start:63,length:2},
+   {...a,start:64,length:1}),true);
+ // Without a base proof, an apparent logical line boundary can be false.
+ assert.equal(mayShareCacheLine({allocation:'actorA',start:56,length:8},
+   {allocation:'actorA',start:64,length:8}),true);
+ assert.equal(mayShareCacheLine({...a,start:56,length:8,baseRemainder:16},
+   {...a,start:64,length:8,baseRemainder:16}),true);
  reject('INVALID_CACHE_LINE',()=>mayShareCacheLine(a,a,63));
+ reject('INVALID_BYTE_RANGE',()=>mayShareCacheLine(a,{...a,baseRemainder:64}));
+ reject('INVALID_BYTE_RANGE',()=>mayShareCacheLine(a,{...a,baseRemainder:16}));
  reject('INVALID_BYTE_RANGE',()=>mayShareCacheLine(a,
-   {allocation:'actorA',start:Number.MAX_SAFE_INTEGER,length:2}));
+   {...a,start:Number.MAX_SAFE_INTEGER,length:2}));
 });
