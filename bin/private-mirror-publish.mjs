@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 /**
- * The ONLY supported private cross-repository source-copy entrypoint.
- * Do not use a generic push/copy workflow to bypass this gate.
- * This creates immutable source blobs and a NEW ci/private-* branch; it
- * never overwrites an existing ref or writes to the destination main branch.
+ * DISABLED private-source publisher, retained only for security review.
+ * The exported publisher rejects every request before source Git I/O or
+ * destination writes. Do not use alternate Git pushes, refs, carrier orgs,
+ * environment flags or credentials to work around this incident hold.
+ * Historical copy mechanics below are unreachable while the hold is active.
  */
 import {pathToFileURL} from "node:url";
 import {requirePrivateMirror} from "./require-private-mirror.mjs";
