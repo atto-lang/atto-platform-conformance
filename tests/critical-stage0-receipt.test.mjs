@@ -98,6 +98,25 @@ test('Graal Polyglot is a guest receipt, never a Native Image executable receipt
   assert.throws(()=>verifyCriticalStage0Receipt(noGuest,plan),/native executable/);
 });
 
+test('host, compiler and Polyglot cases cannot smuggle cross-phase positive claims', () => {
+  for (const [name,field] of [
+    ['critical-gate-host-denied','native_guest_executed'],
+    ['critical-gate-host-denied','compiler_accepted'],
+    ['generator-frame-host-denied','compiler_invoked'],
+    ['suspending-critical-body-host-denied','guest_executed']
+  ]) {
+    const r=wasm();
+    r.cases[name][field]=true;
+    assert.throws(()=>verifyCriticalStage0Receipt(r,plan),/contradictory phase/);
+  }
+  const fakeCompile=java();
+  fakeCompile.cases['negative-queued-critical-unlowered.ores'].guest_executed=true;
+  assert.throws(()=>verifyCriticalStage0Receipt(fakeCompile,plan),/contradictory phase/);
+  const falseNative=java();
+  falseNative.cases['positive-try-critical-named-mutex.ores'].native_guest_executed=true;
+  assert.throws(()=>verifyCriticalStage0Receipt(falseNative,plan),/contradictory phase/);
+});
+
 test('compiler crashes, timeout and earlier misleading errors cannot count as rejects', () => {
   const badFirst=java();
   badFirst.cases['negative-queued-critical-unlowered.ores'].stderr =
