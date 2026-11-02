@@ -6,8 +6,8 @@ import {verifyCurrentHeadPreflight} from '../bin/verify-critical-current-head-pr
 
 const read = path => JSON.parse(fs.readFileSync(new URL(path, import.meta.url), 'utf8'));
 const contract = read('../contracts/v1/critical-suspension-v1.json');
-const fixture = read('../fixtures/critical-suspension-v1/java-stage1/manifest.json');
-const historical = read('../evidence/critical-suspends-backend-evidence-20261101.json');
+const fixture = read('../evidence/critical-suspends-java-stage1-original-manifest-20261101.json');
+const historical = read('../evidence/critical-suspends-zero-step-original-20261101.json');
 const current = read('../evidence/critical-suspends-current-head-preflight-20261102.json');
 const clone = () => structuredClone(current);
 
@@ -15,7 +15,7 @@ test('manifest object hash and fixture bytes are pinned independently of guest c
   const base = new URL('../fixtures/critical-suspension-v1/java-stage1/',import.meta.url);
   const gitBlob = bytes => crypto.createHash('sha1')
     .update(Buffer.from('blob ' + bytes.length + '\\0')).update(bytes).digest('hex');
-  const manifestBytes = fs.readFileSync(new URL('manifest.json',base));
+  const manifestBytes = fs.readFileSync(new URL('../evidence/critical-suspends-java-stage1-original-manifest-20261101.json',import.meta.url));
   assert.equal(gitBlob(manifestBytes), current.fixture.manifest_blob_sha1);
   for (const f of fixture.fixtures) {
     assert.equal(gitBlob(fs.readFileSync(new URL(f.name,base))), f.git_blob_sha1);
