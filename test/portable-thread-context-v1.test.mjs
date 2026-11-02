@@ -30,3 +30,19 @@ test("thread, Task and actor local domains cannot be conflated by contract", () 
   ];
   for (const id of required) assert.ok(contract.cases.some(x => x.id === id), id);
 });
+
+test("candidate .atto fixtures exist and none has promotable execution evidence", () => {
+  const root = new URL("../fixtures/portable-thread-context/v1/", import.meta.url);
+  const manifest = JSON.parse(readFileSync(new URL("manifest.json", root), "utf8"));
+  assert.equal(manifest.contract, "portable-thread-context-v1");
+  assert.equal(manifest.status, "candidate-guest-not-executed");
+  assert.deepEqual(manifest.backends, contract.backends);
+  assert.equal(manifest.files.length, 4);
+  for (const file of manifest.files) {
+    assert.match(file.path, /^[a-z0-9-]+\.atto$/);
+    assert.equal(file.evidence, "NOT_EXECUTED");
+    const source = readFileSync(new URL(file.path, root), "utf8");
+    assert.match(source, /NOT_EXECUTED/);
+    assert.ok(source.length > 80);
+  }
+});
