@@ -9,7 +9,9 @@ const A="a".repeat(40),B="b".repeat(40),C="c".repeat(40),
 const opts={source,destination,sourceCommit:A,destinationBaseCommit:B,
   prefix:"snapshots/checked",newBranch:"ci/private-test-proof",
   approvedDestinations:[destination],token:"opaque-test-token"};
-const good=name=>({full_name:name,private:true,visibility:"private",
+const good=name=>({id:name===source?111001:222002,
+  full_name:name,private:true,visibility:"private",
+  fork:false,disabled:false,default_branch:"main",
   archived:false,permissions:{push:true}});
 
 function fixture({sourceTree,destinationTree,materializedTree,sourceBlob,blobSha=C,refSha=E,meta,errors}={}){
@@ -128,6 +130,17 @@ test("public destinations fail BEFORE fetching private source or writing anythin
  await assert.rejects(promise,/writable verified PRIVATE/);
  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
  assert.equal(h.events.some(e=>e.path.includes("/git/")),false);
+});
+test("forked or disabled source/destination cannot reach any source blob or GitHub write",async()=>{
+ for(const value of [{fork:true},{disabled:true},{default_branch:"unreviewed"},
+  {id:0},{id:"222002"}]){
+  for(const chosen of [source,destination]){
+   const {h,promise}=run({meta:(name)=>name===chosen?{...good(name),...value}:good(name)});
+   await assert.rejects(promise,/invalid or mismatched repository metadata/);
+   assert.equal(h.events.some(e=>e.path.includes("/git/")),false);
+   assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+  }
+ }
 });
 test("missing approvals and unsafe ref/path reject without contacting GitHub",async()=>{
  for(const override of [
