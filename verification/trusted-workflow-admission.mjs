@@ -78,6 +78,12 @@ export async function verifyTrustedWorkflowAdmission({backend, repository, runId
       currentPr.head?.repo?.full_name !== repository ||
       currentPr.base?.repo?.full_name !== repository)
     fail('current pull request head or repository mismatch');
+  // A matching SHA can be present on multiple refs. Bind run, run's PR
+  // association, and current PR to the same live source branch.
+  if (!validLine(currentPr.head?.ref) ||
+      run.head_branch !== currentPr.head.ref ||
+      associated[0].head?.ref !== currentPr.head.ref)
+    fail('run and current pull request branch mismatch');
   if (!commit || commit.sha !== commitSha || commit.tree?.sha !== treeSha)
     fail('unverified exact source Git tree');
   if (!response || !Number.isSafeInteger(response.total_count) || response.total_count < 1 ||

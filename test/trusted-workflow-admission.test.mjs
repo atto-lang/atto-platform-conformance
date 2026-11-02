@@ -7,10 +7,11 @@ const options=()=>({backend:'java',repository:R,runId:1001,attempt:2,commitSha:S
   workflowPath:'.github/workflows/source-local.yml',workflowId:345,pullRequestNumber:42,
   requiredJobs:['compiler-guest'],
   readRun:async()=>({id:1001,run_attempt:2,head_sha:S,repository:{full_name:R},head_repository:{full_name:R},
-    path:'.github/workflows/source-local.yml',workflow_id:345,pull_requests:[{number:42,head:{sha:S}}],
+    path:'.github/workflows/source-local.yml',workflow_id:345,head_branch:'feature/scalar-1',
+    pull_requests:[{number:42,head:{sha:S,ref:'feature/scalar-1'}}],
     event:'pull_request',status:'completed',conclusion:'success'}),
   readCommit:async()=>({sha:S,tree:{sha:TREE}}),
-  readPullRequest:async()=>({number:42,state:'open',head:{sha:S,repo:{full_name:R}},
+  readPullRequest:async()=>({number:42,state:'open',head:{sha:S,ref:'feature/scalar-1',repo:{full_name:R}},
     base:{repo:{full_name:R}}}),
   readJobs:async()=>({total_count:1,jobs:[{id:2001,run_id:1001,run_attempt:2,head_sha:S,
     name:'compiler-guest',runner_id:32,runner_name:'verified-runner',status:'completed',
@@ -27,6 +28,19 @@ test('genuine-looking API observations are only metadata, not guest attestation'
   assert.equal(got.checkedJobs[0].executedStepCount,2);
   assert.equal(got.nativeVerified,false);assert.equal(got.sourceTransferAuthorized,false);
   assert.equal(got.independentlyReviewed,false);
+});
+mutate('run from unrelated branch with identical head SHA must not qualify',(_x,run)=>run.head_branch='feature/unrelated',/branch mismatch/);
+mutate('missing authoritative run head branch fails closed',(_x,run)=>delete run.head_branch,/branch mismatch/);
+mutate('run PR association for different branch must not qualify',(_x,run)=>run.pull_requests[0].head.ref='feature/other',/branch mismatch/);
+mutate('current PR branch renamed after historical run must not qualify',(_x,_r,_c,_j,pr)=>pr.head.ref='feature/renamed',/branch mismatch/);
+mutate('current PR head branch cannot contain hidden Unicode',(_x,_r,_c,_j,pr)=>pr.head.ref='feature/\u200bspoof',/branch mismatch/);
+test('matching internationalized nested branch in run and current PR succeeds',async()=>{
+ const x=options(),run=await x.readRun(),pr=await x.readPullRequest();
+ run.head_branch='feature/équipe-test';
+ run.pull_requests[0].head.ref='feature/équipe-test';
+ pr.head.ref='feature/équipe-test';
+ x.readRun=async()=>run;x.readPullRequest=async()=>pr;
+ assert.equal((await verify(x)).checkedJobs[0].executedStepCount,2);
 });
 mutate('current PR advances after historical green run',(_x,_r,_c,_j,pr)=>pr.head.sha='c'.repeat(40),/current pull request head/);
 mutate('current PR API number mismatches expected PR',(_x,_r,_c,_j,pr)=>pr.number=43,/current pull request head/);
@@ -264,7 +278,7 @@ mutate('non-array PR association',(_x,run)=>run.pull_requests={number:42},/run n
 mutate('oversized PR association',(_x,run)=>run.pull_requests=Array.from({length:33},(_,i)=>({number:i+1})),/run not associated/);
 test('matching PR in bounded multi-PR association succeeds',async()=>{
   const x=options(),run=await x.readRun();
-  run.pull_requests=[{number:41,head:{sha:'c'.repeat(40)}},{number:42,head:{sha:S}}];
+  run.pull_requests=[{number:41,head:{sha:'c'.repeat(40)}},{number:42,head:{sha:S,ref:'feature/scalar-1'}}];
   x.readRun=async()=>run;
   const got=await verify(x);
   assert.equal(got.workflowId,345);
