@@ -12,7 +12,7 @@
   "requiresActualOsThread": true,
   "forbidTaskOrVirtualThreadFallback": true,
   "functionValuesInChannelsPubsub": "REJECT",
-  "threadEntry": "AOT_RESOLVED_NAMED_NON_SUSPENDING_FUNCTION_SYMBOL",
+  "threadEntry": "AOT_RESOLVED_NAMED_OR_COMPILER_SYNTHESIZED_NON_SUSPENDING_ENTRY",
   "threadArg": "Send+Owned+static",
   "threadResult": "Send+Owned+static",
   "threadJoin": "SUSPENDS_NONPARKING_SINGLE_CONSUMER",
@@ -93,10 +93,15 @@
       "description": "ThreadLocal accessed in synchronous OS-thread-owned function"
     },
     {
-      "id": "captured-closure-entry",
+      "id": "owned-closure-aot-lowering",
+      "phase": "compile-pass",
+      "description": "Statically known rt take closure with fully moved Send + static captures lowers to generated non-suspending named ABI entry; compiler retains code and cleanup"
+    },
+    {
+      "id": "unlowerable-captured-closure-entry",
       "phase": "compile-reject",
       "expected_diagnostic": "E_THREAD_ENTRY_NOT_STATIC",
-      "description": "Cannot spawn with captured lexical environment"
+      "description": "Dynamic/unresolvable function value or captured closure without compiler-emitted AOT entry is rejected"
     },
     {
       "id": "borrowed-thread-argument",
@@ -252,5 +257,6 @@
       "phase": "runtime",
       "description": "Compiler rejects negative fixtures with expected diagnostic code"
     }
-  ]
+  ],
+  "ownedClosureSugar": "STATIC_COMPILER_LOWERING_ONLY_WITH_OWNED_SEND_STATIC_CAPTURES_AND_NO_CHANNEL_TRANSFER"
 }
