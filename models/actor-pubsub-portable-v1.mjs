@@ -14,15 +14,31 @@ const safeKeys = (value) => {
 };
 
 export function share(value) {
-  const seen = new Set();
+  // Repeated immutable references are valid DAG edges, not cycles.
+  // Track the active recursion path separately from completed objects.
+  const visiting=new Set(), checked=new Set();
   function freeze(v) {
-    if (v === null || typeof v !== "object") return v;
-    if (seen.has(v)) throw new TypeError("cyclic shared payload");
+    if (v === null) return v;
+    if (typeof v !== "object") {
+      // Helpers must never bless an executable/symbol payload, even when
+      // publication independently performs a second MessageData check.
+      if (typeof v === "function" || typeof v === "symbol")
+        throw new TypeError("non-Sendable shared payload");
+      return v;
+    }
+    if (visiting.has(v)) throw new TypeError("cyclic shared payload");
+    if (checked.has(v)) return v;
     const keys=safeKeys(v);
     if (!keys) throw new TypeError("non-Sendable shared payload");
-    seen.add(v);
-    for (const key of keys) freeze(Object.getOwnPropertyDescriptor(v,key).value);
-    return Object.freeze(v);
+    visiting.add(v);
+    try {
+      for (const key of keys) freeze(Object.getOwnPropertyDescriptor(v,key).value);
+      Object.freeze(v);
+      checked.add(v);
+      return v;
+    } finally {
+      visiting.delete(v);
+    }
   }
   return freeze(value);
 }
@@ -201,14 +217,24 @@ export class PubSubReference {
   isGroup(group) { return !!group && this.groups.get(group.id)===group && !group.closed; }
   isSub(sub) { return !!sub && this.subscriptions.get(sub.id)===sub; }
   isShared(v) {
-    const seen=new Set();
+    // A frozen DAG is Sendable even when two fields reference the same child.
+    // Reject back-edges to the current stack (true cycles).
+    const visiting=new Set(), checked=new Set();
     function check(x) {
       if (x===null || typeof x!=="object") return typeof x!=="function" && typeof x!=="symbol";
-      if (seen.has(x) || !Object.isFrozen(x)) return false;
+      if (visiting.has(x)) return false;
+      if (checked.has(x)) return true;
+      if (!Object.isFrozen(x)) return false;
       const keys=safeKeys(x);
       if (!keys) return false;
-      seen.add(x);
-      return keys.every(k=>check(Object.getOwnPropertyDescriptor(x,k).value));
+      visiting.add(x);
+      try {
+        if (!keys.every(k=>check(Object.getOwnPropertyDescriptor(x,k).value))) return false;
+        checked.add(x);
+        return true;
+      } finally {
+        visiting.delete(x);
+      }
     }
     return check(v);
   }
