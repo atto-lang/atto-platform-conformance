@@ -72,6 +72,10 @@ async function runNativeCranelift({compiler,compilerSha256,compilerCommit,timeou
       shell:false,encoding:"utf8",timeout:timeoutMs,maxBuffer:65536,
       env:{PATH:"/usr/bin:/bin",LANG:"C",LC_ALL:"C",RUST_BACKTRACE:"0"}
     });
+    // Reject persistent guest-source changes made during IR lowering before
+    // attempting JIT execution. This is a consistency check, not a sandbox
+    // or proof against a concurrent mutate-and-restore adversary.
+    await loadAndCheckCorpus();
     requireCase(!ir.error&&!ir.signal&&
       typeof ir.stdout==="string"&&typeof ir.stderr==="string",
       "native Cranelift IR invocation crashed or timed out");
@@ -88,6 +92,9 @@ async function runNativeCranelift({compiler,compilerSha256,compilerCommit,timeou
       shell:false,encoding:"utf8",timeout:timeoutMs,maxBuffer:8192,
       env:{PATH:"/usr/bin:/bin",LANG:"C",LC_ALL:"C",RUST_BACKTRACE:"0"}
     });
+    // The JIT invocation must not leave even another corpus fixture changed.
+    // Revalidate all pinned inputs before collecting an observation.
+    await loadAndCheckCorpus();
     requireCase(!command.error&&!command.signal,"native compiler launcher crashed or timed out");
     requireCase(typeof command.stdout==="string"&&typeof command.stderr==="string",
       "missing bounded native output");
