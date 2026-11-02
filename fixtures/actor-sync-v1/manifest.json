@@ -12,7 +12,7 @@
   ],
   "sourceModule": {
     "path": "stdlib/actor_sync.ores",
-    "gitBlobSha1": "7f5f8bf970a73fa055e353082692a200aad4cdcd",
+    "gitBlobSha1": "246c10b8b27d49a271308d00f23e8bcad4b5c6c2",
     "scope": "pure-owned-progress-metadata-only",
     "notPersistenceAdapter": true
   },
@@ -41,9 +41,9 @@
     {
       "id": "cross-epoch-delta-reject",
       "path": "cross-epoch-delta-reject.ores",
-      "gitBlobSha1": "e39f18be8835d3adc23aae6fd2b8f9dac5a6a59e",
+      "gitBlobSha1": "0f93036cf7ed0581273444159a6a619b75505020",
       "expect": "accept-and-execute",
-      "stdout": "false\nfalse\n5\ntrue\ntrue\n7\n5\n",
+      "stdout": "false\ntrue\n5\ntrue\ntrue\n7\n5\n",
       "requirements": [
         "real-source-compilation",
         "guest-execution",
