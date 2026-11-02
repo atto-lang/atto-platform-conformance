@@ -236,3 +236,45 @@ test('failure invalidates old incarnation; stable ref lazily selects alternate n
   assert.equal(next.epoch,old.epoch+1);
   rejects(()=>d.validate_delivery(a,key,old),'STALE_OR_FORGED_ROUTE');
 });
+
+test('unimplemented ABI/schema/affinity placement requirements fail closed, not ignored', () => {
+  const d=cluster(), a=d.make_trusted_tenant_context('tenant-a'), key=id('tenant-a','abi');
+  for (const bad of [{code_schema:'v2'}, {abi:'native'}, {affinity:'n1'}]) {
+    rejects(()=>d.resolve_or_activate_actor(a,key,bad),'UNSUPPORTED_PLACEMENT_CONSTRAINT');
+  }
+  assert.equal(d.snapshot().active_actors,0);
+});
+
+test('mutable capability array is snapshotted once before placement decision', () => {
+  const d=new InMemorySiloDirectory(), a=d.make_trusted_tenant_context('tenant-a');
+  d.register_node(node('n1','java','us-east',[
+    iso('tenant-a','ta',2,{capabilities:['read']})
+  ]));
+  let accesses=0;
+  const caps=['read'];
+  Object.defineProperty(caps,0,{enumerable:true,configurable:true,get(){
+    accesses++;
+    return accesses===1?'gpu':'read';
+  }});
+  rejects(()=>d.resolve_or_activate_actor(a,id('tenant-a','restricted'),{capabilities:caps}),
+    'NO_COMPATIBLE_TENANT_ISOLATE');
+  assert.equal(accesses,1);
+  assert.equal(d.snapshot().active_actors,0);
+});
+
+test('node capability descriptor is snapshotted once before admission', () => {
+  const d=new InMemorySiloDirectory(), a=d.make_trusted_tenant_context('tenant-a');
+  let accesses=0;
+  const caps=['gpu'];
+  Object.defineProperty(caps,0,{enumerable:true,configurable:true,get(){
+    accesses++;
+    return accesses===1?'gpu':'read';
+  }});
+  d.register_node(node('n1','java','us-east',[
+    iso('tenant-a','ta',2,{capabilities:caps})
+  ]));
+  assert.equal(accesses,1);
+  assert.equal(d.resolve_or_activate_actor(a,id('tenant-a','allowed'),{capabilities:['gpu']}).node_id,'n1');
+  rejects(()=>d.resolve_or_activate_actor(a,id('tenant-a','denied'),{capabilities:['read']}),
+    'NO_COMPATIBLE_TENANT_ISOLATE');
+});
