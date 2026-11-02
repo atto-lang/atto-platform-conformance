@@ -54,6 +54,9 @@ async function repoMetadata(name, token, fetchImpl) {
     throw Error("GitHub repository metadata could not be decoded (" + name + ")");
   }
   if (!result || result.full_name !== name ||
+      !Number.isSafeInteger(result.id) || result.id <= 0 ||
+      result.fork !== false || result.disabled !== false ||
+      result.default_branch !== "main" ||
       typeof result.private !== "boolean" ||
       !["public", "internal", "private"].includes(result.visibility)) {
     throw Error("GitHub returned invalid or mismatched repository metadata (" + name + ")");
