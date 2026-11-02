@@ -5,7 +5,9 @@ import {requirePrivateMirror} from "../bin/require-private-mirror.mjs";
 const source = "synthetic-private/source";
 const destination = "synthetic-private/carrier";
 const good = name => ({
+  id: name === source ? 111001 : 222002,
   full_name: name, private: true, visibility: "private",
+  fork: false, disabled: false, default_branch: "main",
   archived: false, permissions: {push: true}
 });
 function fixture(records = {}, calls = []) {
@@ -118,6 +120,23 @@ test("rejects wrong or public source metadata even when destination is private",
   }
 });
 
+test("forked, disabled, changed-default-branch and invalid immutable IDs are denied",async()=>{
+  const unsafe=[
+    {fork:true},{disabled:true},{default_branch:"other"},
+    {fork:undefined},{disabled:undefined},{default_branch:undefined},
+    {id:0},{id:-1},{id:"222002"},{id:null},{id:1.25},
+    {id:Number.MAX_SAFE_INTEGER+1}
+  ];
+  for(const patch of unsafe){
+    for(const name of [source,destination]){
+      const calls=[];
+      const value={...good(name),...patch};
+      await assert.rejects(check({}, {[name]:value}, calls),
+        /invalid or mismatched repository metadata/);
+      assert.equal(calls.length,name===source?1:2);
+    }
+  }
+});
 test("unknown, unauthorized and missing metadata fail closed", async () => {
   for (const metadata of [
     {status: 403}, {status: 404}, {status: 401},
