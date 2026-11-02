@@ -159,11 +159,12 @@
     "result": "frees explicitly abandoned bytes while retaining a separately visible lastDiscontinuity; never interprets skipped units as successfully decoded",
     "codec_transition": "A contiguous replay plan must fail closed with CODEC_CONFIG_TRANSITION when retained chunks include differing codec configurations. Caller must negotiate decoder reinit at verified boundary."
   },
-  "host_reference_test_count": 46,
-  "execution_evidence": "46 local Node v22.16.0 tests passed, including FFmpeg libx264/ffprobe H264 encoded access units, replay, reconnect and IDR restart. Eight additional source-free guest receipt validator tests authored but native compiler execution remains unverified.",
+  "host_reference_test_count": 47,
+  "execution_evidence": "47/47 local Node v22.16.0 host reference tests passed, including one FFmpeg/libx264 H264 reconnect/IDR codec test and seven shared operation vectors. Eight additional source-free guest receipt verifier tests authored, not independent GitHub CI proof.",
   "external_codec_admission": {
     "probe": "FFmpeg executable, libx264 encoder and ffprobe",
     "execution": "single opt-in feature test; explicit skip when required host executables are absent; never promotes backend parity",
     "claim": "Host-side 30-frame H264 actual encode/decode, 30-frame reconnect replay, 10-frame IDR restart"
-  }
+  },
+  "portable_operation_vector_count": 7
 }
