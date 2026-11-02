@@ -12,13 +12,13 @@
   "scope": "runtime-local, typed, non-durable",
   "semantics": {
     "topic_identity": "broker-instance + exact ASCII name + payload type",
-    "join": "distinct affine membership capability; duplicate join is AlreadyMember",
-    "subscribe": "actor or ActorGroup; group membership alone does not subscribe",
+    "join": "idempotent admission, with no second affine membership grant",
+    "subscribe": "at most one live registration per topic/target edge; duplicate subscribe returns that registration without new quota; mismatched capacity is SubscriptionConflict",
     "payload": "transitively immutable shared, Sendable type",
     "fanout": "once per distinct subscription and eligible actor; overlap not deduplicated",
     "linearization": "atomic all-or-nothing fanout at topic admission; one monotonic u64 sequence per topic",
     "capacity": "per subscription-recipient outstanding = queued + in-flight",
-    "failure": "Full, Closed, Busy, ResourceExhausted, SequenceExhausted, NotShared, StaleTarget",
+    "failure": "Full, Closed, Busy, ResourceExhausted, SequenceExhausted, NotShared, StaleTarget, SubscriptionConflict",
     "unsubscribe": "idempotent admission-and-start fence, cancel queued, finish in-flight before done",
     "actor_termination": "revoke memberships, close direct subscriptions, remove pending group deliveries",
     "shutdown": "cancel queued, finish in-flight, then quiescent; no persistence/replay",
@@ -271,7 +271,7 @@
     },
     {
       "id": "PS006",
-      "name": "duplicate membership explicitly rejected",
+      "name": "duplicate membership admission is idempotent without a second grant",
       "actions": [
         [
           "actor",
@@ -297,7 +297,7 @@
       ],
       "expected": [
         "join:ok",
-        "join:AlreadyMember"
+        "join:ok"
       ]
     },
     {
@@ -999,7 +999,7 @@
     },
     {
       "id": "PS019",
-      "name": "two subscriptions for same actor are independent",
+      "name": "duplicate topic-actor subscribe reuses one registration",
       "actions": [
         [
           "actor",
@@ -1047,9 +1047,9 @@
       "expected": [
         "subscribe:ok",
         "subscribe:ok",
-        "publish:1:2",
+        "publish:1:1",
         "begin:1:e1",
-        "begin:1:e1"
+        "begin:Empty"
       ]
     },
     {
