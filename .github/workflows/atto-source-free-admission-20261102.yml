@@ -1,0 +1,31 @@
+name: Atto source-free runner admission diagnostic
+on:
+  push:
+    branches:
+      - ci/atto-source-free-admission-20261102
+permissions: {}
+jobs:
+  source-free-admission:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Confirm runner admission without checkout or source access
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${GITHUB_RUN_ID:-}"
+          test -n "${GITHUB_SHA:-}"
+          test "${GITHUB_REPOSITORY}" = "ores-truffle-oreslang/oreslang-platform-conformance"
+          printf 'ATTO_SOURCE_ORG_RUNNER_ADMITTED=1\n'
+      - name: Execute synthetic Node assertions only
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e 'const assert=require("node:assert/strict"); assert.equal(40+2,42); assert.deepEqual(["java","llvm","wasm","cranelift","net"].length,5); console.log("ATTO_SOURCE_FREE_ASSERTIONS_PASS=1")'
+      - name: Confirm there is no private source checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e .git
+          test ! -e contracts/platform-portability-v1.json
+          printf 'ATTO_PRIVATE_SOURCE_NOT_CHECKED_OUT=1\n'
