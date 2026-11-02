@@ -5,6 +5,11 @@
 const MAX_CARRIERS = 4096, MAX_PROBES = 64, MAX_QUEUES = 4096, MAX_QUEUE_SKEW = 4;
 const text = v => typeof v === 'string' && v.length > 0 && v.length <= 256;
 const id = v => Number.isSafeInteger(v) && v >= 0;
+// Names must identify a nonempty host topology domain AND a cache within it.
+// Bare numbers, empty components, whitespace and slash-only strings provide
+// no shared-LLC identity; this syntax check is NOT hardware verification.
+const qualifiedLlc = v => text(v)
+  && /^[A-Za-z0-9_.:-]+(?:\/[A-Za-z0-9_.:-]+)+$/.test(v);
 const fail = code => { const e = new Error(code); e.code = code; throw e; };
 
 function hash(s) {
@@ -19,7 +24,7 @@ function validateRequest(r) {
       || !text(r.key) || !['soft','hard'].includes(r.mode)) fail('INVALID_REQUEST');
   for (const k of ['preferredCpu','preferredNuma','previousLane'])
     if (r[k] != null && !id(r[k])) fail('INVALID_REQUEST');
-  if (r.preferredLlc != null && (!text(r.preferredLlc) || !r.preferredLlc.includes('/')))
+  if (r.preferredLlc != null && !qualifiedLlc(r.preferredLlc))
     fail('INVALID_REQUEST');
   if (r.mode === 'hard' && !id(r.preferredCpu)) fail('CPU_BINDING_UNAVAILABLE');
 }
@@ -40,7 +45,7 @@ export function selectCpuLane({allowedCpus,carriers,request}) {
   for(const c of carriers) {
     if(!c || !id(c.lane) || !id(c.cpu) || !id(c.queued)
       || typeof c.bound !== 'boolean' || (c.numa != null && !id(c.numa))
-      || (c.llc != null && (!text(c.llc) || !c.llc.includes('/')))
+      || (c.llc != null && !qualifiedLlc(c.llc))
       || lanes.has(c.lane)) fail('INVALID_CARRIERS');
     lanes.add(c.lane);
   }
