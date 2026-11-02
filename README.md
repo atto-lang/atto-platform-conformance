@@ -4,7 +4,7 @@ Cross-platform, **evidence-first** language and runtime conformance suite. A har
 
 ## Resumable media streaming v1 — host reference
 
-The [media replay v1 contract](docs/MEDIA_REPLAY_V1.md) defines a bounded 2 MiB compressed-chunk sender replay window, receiver applied-checkpoint ledger, cumulative ACK semantics, actor generation fencing and codec-safe random-access resets. Run the 46 locally executed host-reference tests (including [six shared operation vectors](contracts/media-replay-v1-vectors.json)) with:
+The [media replay v1 contract](docs/MEDIA_REPLAY_V1.md) defines a bounded 2 MiB compressed-chunk sender replay window, receiver applied-checkpoint ledger, cumulative ACK semantics, actor generation fencing and codec-safe random-access resets. Run the 47 locally executed host-reference tests (including [seven shared operation vectors](contracts/media-replay-v1-vectors.json)) with:
 
 ```sh
 node --test tests/media-replay*.test.mjs
