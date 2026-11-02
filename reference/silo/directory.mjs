@@ -1,6 +1,6 @@
 // Trusted-host, single-process deterministic reference. NOT an OresVM actor runtime,
 // network service, distributed lease authority, or sandbox implementation.
-import { encode_actor_id, decode_actor_id, actor_storage_key_from_bytes } from '../persistence-sidecar/identity.mjs';
+import { encode_actor_id, decode_actor_id, actor_storage_key_from_bytes, parse_actor_ref_token } from '../persistence-sidecar/identity.mjs';
 
 export class SiloReferenceError extends Error {
   constructor(code) { super(code); this.code = code; }
@@ -97,23 +97,26 @@ export class InMemorySiloDirectory {
     return candidates[0];
   }
 
-  // This model's epoch authority exists ONLY in process memory; it is NOT a durable
-  // storage/provider fence, so no externally visible effects may rely on this method.
-  activate_actor(context, id, options = {}) {
-    const identity = this.#trusted_identity(context, id);
-    if (this.#active.has(identity.key)) deny('ALREADY_ACTIVE');
-    if (this.#active.size >= this.#max_actors) deny('ACTOR_QUOTA');
+  // Never interpret a descriptor as proof of native/OS tenant isolation.
+  // This reference only models the trusted actor-local profile.
+  #placement(options) {
     if (!options || typeof options !== 'object' || Array.isArray(options)) deny('INVALID_PLACEMENT');
     const { backend = null, region = null, isolation_mode = 'actor-local',
       capabilities = [], hard_realtime = false } = options;
     if ((backend !== null && !BACKENDS.has(backend)) || (region !== null && !machine_name(region)) ||
         !Array.isArray(capabilities) || capabilities.length > 32 ||
-        capabilities.some(c => !machine_name(c)) || new Set(capabilities).size !== capabilities.length ||
+        capabilities.some(c => !machine_name(c)) ||
+        new Set(capabilities).size !== capabilities.length ||
         typeof hard_realtime !== 'boolean') deny('INVALID_PLACEMENT');
     if (hard_realtime) deny('DYNAMIC_ACTIVATION_FORBIDDEN_IN_HARD_RT');
-    // Protected/untrusted modes must not be treated as secured by this metadata model.
-    if (!MODES.has(isolation_mode)) deny('ISOLATION_NOT_VERIFIED');
-    const candidate = this.#choose(identity.tenant_id, { backend, region, isolation_mode, capabilities });
+    if (isolation_mode !== 'actor-local') deny('ISOLATION_NOT_VERIFIED');
+    return { backend, region, isolation_mode, capabilities: [...capabilities] };
+  }
+
+  #activate_identity(identity, placement) {
+    if (this.#active.has(identity.key)) deny('ALREADY_ACTIVE');
+    if (this.#active.size >= this.#max_actors) deny('ACTOR_QUOTA');
+    const candidate = this.#choose(identity.tenant_id, placement);
     if (!candidate) deny('NO_COMPATIBLE_TENANT_ISOLATE');
     const old_epoch = this.#epochs.get(identity.key) || 0;
     if (old_epoch >= MAX_EPOCH) deny('EPOCH_EXHAUSTED');
@@ -126,6 +129,44 @@ export class InMemorySiloDirectory {
     this.#active.set(identity.key, rec);
     iso.active++;
     return copy_route(rec);
+  }
+
+  // TRUSTED HOST ONLY. The in-memory epoch cannot fence remote state writes;
+  // no callback, guest method, persistence or network RPC is executed here.
+  activate_actor(context, id, options = {}) {
+    const identity = this.#trusted_identity(context, id);
+    return this.#activate_identity(identity, this.#placement(options));
+  }
+
+  // Orleans-style lazy *directory* resolution. Identity is snapshotted once
+  // (including hostile getters) and all hard placement constraints are checked
+  // on an already-active route. Never create a second activation to satisfy an
+  // incompatible call, or use a logical ref as a bearer credential.
+  resolve_or_activate_actor(context, id, options = {}) {
+    const identity = this.#trusted_identity(context, id);
+    const placement = this.#placement(options);
+    const current = this.#active.get(identity.key);
+    if (!current) return this.#activate_identity(identity, placement);
+    const node = this.#nodes.get(current.node_id);
+    const iso = node?.by_tenant.get(identity.tenant_id);
+    if (!node || (node.status !== 'READY' && node.status !== 'DRAINING') ||
+        !iso || iso.isolate_id !== current.isolate_id ||
+        iso.isolation_mode !== placement.isolation_mode ||
+        (placement.backend !== null && node.backend !== placement.backend) ||
+        (placement.region !== null && node.region !== placement.region) ||
+        !placement.capabilities.every(c => iso.capabilities.has(c))) {
+      deny('INCOMPATIBLE_ACTIVE_PLACEMENT');
+    }
+    return copy_route(current);
+  }
+
+  // Serialized ActorRef tokens carry IDENTITY, never authentication. The
+  // opaque trusted context still binds the caller to the decoded tenant.
+  resolve_or_activate_ref(context, actor_ref, options = {}) {
+    let id;
+    try { id = parse_actor_ref_token(actor_ref); }
+    catch { deny('INVALID_ACTOR_REF'); }
+    return this.resolve_or_activate_actor(context, id, options);
   }
 
   route_actor(context, id) {
