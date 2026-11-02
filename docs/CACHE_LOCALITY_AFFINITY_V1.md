@@ -1,0 +1,72 @@
+# AttoLang/Oreslang CPU/GPU cache-locality contract v1
+
+**Status: portable host policy oracle, not compiler/runtime backend parity.**
+`src/cache-locality-oracle.mjs` is a bounded, source-free reference for
+placement decisions. It does **not** pin pthreads, place NUMA pages, execute
+AttoLang guest programs, launch GPU kernels, or prove lower L1/L2 miss rates.
+
+## Audit findings
+
+- Actor state belongs to the actor, **not a carrier thread**. Only one actor
+  turn may execute at a time; state loans retain `critical-read` /
+  `critical-write` guards even when a Task resumes on another thread.
+  GPU kernels receive checked owned/borrowed buffers, never actor state pointers.
+- SoA is appropriate for hot single-column sweeps; AoS for small whole-record
+  hot loops, AoSoA for vectorized tiles with measured benefit. Keep cold
+  supervisor/metadata fields separate from hot mutable counters. Avoid keeping
+  three copies of every layout; every conversion or scratch buffer is budgeted.
+- Distinct mutable fields may reside in the same cache line. The oracle's
+  `mayShareCacheLine` checks contiguous byte intervals within one allocation.
+  For strided views, the caller must provide a **conservative bounding interval**.
+  Unknown physical base address/alignment is not proof of disjoint cache lines.
+- CPU choice starts with the effective allowed process CPU mask and uses,
+  in order, exact preferred CPU, **qualified** shared LLC identity, known NUMA,
+  then any allowed CPU. Among equal ranks it prefers low queue depth and a
+  previously used lane. Severe (>4 queued turns) skew permits *soft* spill.
+  Hard pinning cannot spill and requires separately verified OS binding.
+- The reference scans at most 64 eligible carriers per choice, rotates the
+  window by a stable actor/task/thread key, and fails closed on invalid
+  snapshots. The up-front eligibility filter is O(n); production implementations
+  must cache a validated epoch-fenced topology snapshot, not scan thousands
+  of carriers on each hot-path task.
+- GPU queue preference must match tenant, device identity, generation, active
+  status and remaining byte quota. **No CPU fallback.** The provider must
+  re-authenticate queue/device/tenant/generation/capacity immediately before
+  submission, and hold resource leases until an authenticated physical
+  completion fence even through cancellation or device reset.
+
+## Migration targets and required verification
+
+| Backend | Implementation gap | Promotion gate |
+| --- | --- | --- |
+| Java/GraalVM | Wire placement to actor/Task scheduler, snapshot cpuset and topology epochs | JUnit, actual guest execution, Graal Native Image, CPU binding checks |
+| LLVM | Indexed actor-ready queue, bounded NUMA steal, cache-isolated carrier metadata | GCC/Clang sanitizer runs, pthread affinity, real L1D/L2/LLC counters |
+| .NET Native AOT | OS-aware CPU binding rather than fictitious ThreadPool pinning | Linux/Windows native AOT, actor serial-entry and cancellation |
+| Wasm | Worker-level placement; reject unsupported hard CPU affinity | Real browser/Node Worker and negative admission evidence |
+| Forge/Cranelift | Preserve checked admission until native execution proves locality | Exact-head JIT/AOT and scheduler/lease lifecycle tests |
+
+Per-backend *source language* conformance is **not** established by this
+reference test. Compile and execute equivalent guest fixtures with real
+source SHA, toolchain version, target architecture and stepful CI evidence;
+report UNSUPPORTED for platforms that genuinely lack hard CPU pinning or
+device providers, rather than simulating a success.
+
+## Measurement gate
+
+Compare equal workloads and warmed-up layouts with real p50/p95/p99,
+throughput, cache footprint, migration count, cache-to-cache transfers,
+L1D MPKI, **architecture-specific** L2 MPKI, LLC MPKI and NUMA local/remote
+page events. A logical lane label and process-wide counters are insufficient
+to prove actor-local cache residency. Use LLVM's existing
+`scripts/profile_cache_locality.py` for isolated layout/process counters,
+but never substitute LLC for L2. GPU evidence requires actual hardware
+queue/fence, transfer, device reset and cross-tenant isolation execution.
+
+Run the pure oracle tests with:
+
+```sh
+node --test tests/cache-locality-oracle.test.mjs
+```
+
+A pass certifies only these JS oracle assertions, not runtime affinity,
+performance, Java/LLVM/.NET/Wasm/Forge parity or guest compilation.
