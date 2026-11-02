@@ -27,6 +27,24 @@ test('fixture has 80 distinct source-pinned guest receipts', () => {
   assert.equal(new Set(inventory.ordered_labels).size, 80);
   assert.equal(alignment.backends.length, 5);
 });
+test('malformed, duplicate, and tampered 80-receipt inventories fail closed', () => {
+  const valid = fixture();
+  const duplicate = structuredClone(inventory);
+  duplicate.ordered_labels[79] = duplicate.ordered_labels[0];
+  assert.equal(inspectMediaReplayGuestReceipt(valid, duplicate, alignment).error, 'INVALID_INVENTORY');
+  const short = structuredClone(inventory);
+  short.ordered_labels.pop();
+  assert.equal(inspectMediaReplayGuestReceipt(valid, short, alignment).error, 'INVALID_INVENTORY');
+  const malformed = structuredClone(inventory);
+  malformed.ordered_labels[1] = '';
+  assert.equal(inspectMediaReplayGuestReceipt(valid, malformed, alignment).error, 'INVALID_INVENTORY');
+  const wrongPrefix = structuredClone(inventory);
+  wrongPrefix.receipt_prefix = 'HOST-PASS|';
+  assert.equal(inspectMediaReplayGuestReceipt(valid, wrongPrefix, alignment).error, 'INVALID_INVENTORY');
+  const wrongTerminal = structuredClone(inventory);
+  wrongTerminal.terminal = 'HOST-DONE';
+  assert.equal(inspectMediaReplayGuestReceipt(valid, wrongTerminal, alignment).error, 'INVALID_INVENTORY');
+});
 test('synthetic receipt shape is recognized for each backend; never called CI evidence', () => {
   for (const backend of alignment.backends) {
     const result = check(fixture(backend.name));
