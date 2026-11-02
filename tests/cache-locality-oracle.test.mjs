@@ -33,7 +33,8 @@ test('reject malformed pseudo-qualified LLC identities before ranking',()=>{
  assert.equal(pick([cpu(0,0,0,0,'pkg0/L3:5'),cpu(1,1,0,0,'pkg1/L3:5')],
                    req('task',{preferredLlc:'pkg1/L3:5'}),[0,1]).lane,1);
 });
-\ntest('effective allowed cpuset gates every candidate, including zero-depth lanes',()=>{
+
+test('effective allowed cpuset gates every candidate, including zero-depth lanes',()=>{
  assert.equal(pick([cpu(0,0,999),cpu(1,1,10),cpu(2,2,0)],req(),[1]).lane,1);
  reject('NO_ALLOWED_CARRIER',()=>pick([cpu(0,2)],req(),[0]));
  reject('INVALID_CPU_MASK',()=>pick([cpu(0,0)],req(),[0,0]));
