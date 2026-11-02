@@ -75,7 +75,7 @@ export function verifyCriticalStage0Receipt(receipt, plan) {
       // A nonzero exit alone is not rejection: signal crashes, timeout and
       // diagnostics preceded by an unrelated type/syntax error are failures.
       const firstCode=typeof value.stderr==='string'
-        ? value.stderr.match(/\\bE_[A-Z0-9_]+\\b/)?.[0] : null;
+        ? value.stderr.match(/\bE_[A-Z0-9_]+\b/)?.[0] : null;
       if (value.compiler_rejected!==true ||
           !Number.isInteger(value.exit_code) || value.exit_code<1 ||
           value.exit_code>255 || value.timed_out!==false || value.signal!==null ||
