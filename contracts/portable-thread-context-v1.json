@@ -342,6 +342,37 @@
         "forge",
         "net"
       ]
+    },
+    {
+      "id": "thread.named_entry_aot",
+      "kind": "compile",
+      "expect": "accept",
+      "source": "// Candidate API: a statically reachable, non-suspending function with one owned Send argument.\nfnc calculate(Box<int> value): int { return value.value; }\nlet h = thread.spawn(calculate, rt take Box.new(42), ThreadOptions.default())?;",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "thread.dynamic_entry_rejected",
+      "kind": "compile",
+      "expect": "reject",
+      "diagnosticClass": "thread_entry_not_static",
+      "source": "// Dynamic callable with unknown target and captured runtime environment is not a static AOT entry.\nlet Fnc<int> callback = resolve_runtime_callable();\nlet handle = Thread.spawn(ThreadOptions.default(), callback);",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
     }
-  ]
+  ],
+  "threadEntryAbi": "AOT_RESOLVED_NAMED_OR_COMPILER_SYNTHESIZED_NON_SUSPENDING_ENTRY",
+  "closureEntry": "OWNED_SEND_STATIC_COMPILE_TIME_CAPTURE_LOWERING_ONLY"
 }
