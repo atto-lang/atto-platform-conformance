@@ -6,6 +6,7 @@ export function inferTransferTraits(descriptor) {
   const active = new Set();
   function walk(d, depth) {
     let result = {send: false, sync: false};
+    let entered = false;
     // Proxy traps, revoked proxies, and hostile prototype access must fail
     // closed just like throwing descriptor getters below.
     try {
@@ -13,6 +14,7 @@ export function inferTransferTraits(descriptor) {
           Object.getPrototypeOf(d) !== Object.prototype || depth > 32 ||
           active.has(d)) return result;
       active.add(d);
+      entered = true;
       const kind = d.kind;
       switch (kind) {
         case 'primitive':
@@ -74,7 +76,7 @@ export function inferTransferTraits(descriptor) {
         default: break; // Unknown type is NOT implicitly Send.
       }
     } catch { result = {send: false, sync: false}; }
-    finally { if (d && typeof d === 'object') active.delete(d); }
+    finally { if (entered) active.delete(d); }
     return result;
   }
   return walk(descriptor, 0);
