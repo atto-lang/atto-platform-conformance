@@ -68,7 +68,7 @@ test('authenticated source-org GitHub REST metadata path uses bearer and no redi
  const api=createAuthenticatedGitHubReaders({token:'private-token-for-mock-only',fetchImpl:async (url,req)=>{
    observed.push({url,req});
    const value=url.includes('/git/commits/')?commit:url.includes('/attempts/')?jobs:run;
-   return {status:200,headers:{get:()=>null},arrayBuffer:async()=>new TextEncoder().encode(JSON.stringify(value)).buffer};
+   return new Response(JSON.stringify(value),{status:200});
  }});
  const result=await verify({...x,...api});assert.equal(result.checkedJobs[0].executedStepCount,2);
  assert.equal(observed.length,3);
@@ -86,11 +86,9 @@ test('GitHub API fails closed on unauthorized source repository and redirect',as
  await assert.rejects(api.readRun({repository:R,runId:1}),/request rejected/);
 });
 test('GitHub API refuses malformed or oversized response before parsing',async()=>{
- const api=createAuthenticatedGitHubReaders({token:'t',fetchImpl:async()=>({status:200,
-   headers:{get:()=>null},arrayBuffer:async()=>new Uint8Array([0xff]).buffer})});
+ const api=createAuthenticatedGitHubReaders({token:'t',fetchImpl:async()=>new Response(new Uint8Array([255]),{status:200})});
  await assert.rejects(api.readRun({repository:R,runId:1}),/invalid authoritative/);
- const large=createAuthenticatedGitHubReaders({token:'t',fetchImpl:async()=>({status:200,
-   headers:{get:()=>String(300000)},arrayBuffer:async()=>{throw Error('body must not be read')}})});
+ const large=createAuthenticatedGitHubReaders({token:'t',fetchImpl:async()=>new Response('x',{status:200,headers:{'content-length':'300000'}})});
  await assert.rejects(large.readRun({repository:R,runId:1}),/too large/);
 });
 
@@ -100,4 +98,17 @@ test('GitHub API rejects path traversal and nonnumeric run IDs before transport'
  await assert.rejects(api.readJobs({repository:R,runId:1,attempt:'../../contents'}),/invalid GitHub run attempt/);
  await assert.rejects(api.readCommit({repository:R,commitSha:'../../contents'}),/invalid Git commit SHA/);
  assert.equal(sent,0);
+});
+
+test('missing Content-Length cannot cause unbounded JSON buffering',async()=>{
+ const api=createAuthenticatedGitHubReaders({token:'t',fetchImpl:async()=>new Response('x'.repeat(300000),{status:200})});
+ await assert.rejects(api.readRun({repository:R,runId:1}),/oversized/);
+});
+test('missing streaming response body fails closed',async()=>{
+ const api=createAuthenticatedGitHubReaders({token:'t',fetchImpl:async()=>({status:200,body:null})});
+ await assert.rejects(api.readRun({repository:R,runId:1}),/request rejected/);
+});
+test('declared short Content-Length cannot omit trailing bytes',async()=>{
+ const api=createAuthenticatedGitHubReaders({token:'t',fetchImpl:async()=>new Response('{}',{status:200,headers:{'content-length':'1'}})});
+ await assert.rejects(api.readRun({repository:R,runId:1}),/truncated/);
 });

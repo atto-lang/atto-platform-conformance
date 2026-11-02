@@ -98,17 +98,37 @@ export function createAuthenticatedGitHubReaders({token, fetchImpl=globalThis.fe
       fail('GitHub API source repository not approved');
     if (!/^\/(?:actions\/runs\/|git\/commits\/)/.test(path)) fail('unapproved GitHub API path');
     const url=`https://api.github.com/repos/${repository}${path}`;
-    const response=await fetchImpl(url,{method:'GET',redirect:'error',
+    const response=await fetchImpl(url,{method:'GET',redirect:'error',signal:AbortSignal.timeout(10000),
       headers:{authorization:`Bearer ${token}`,accept:'application/vnd.github+json',
         'x-github-api-version':'2022-11-28'}});
-    if (!response || response.status !== 200 || typeof response.arrayBuffer !== 'function')
+    if (!response || response.status !== 200 || typeof response.body?.getReader !== 'function')
       fail(`authoritative GitHub API request rejected (HTTP ${response?.status ?? 'unknown'})`);
-    const declared=Number(response.headers?.get?.('content-length'));
-    if (Number.isFinite(declared) && declared > 256*1024)
-      fail('GitHub API response too large');
-    const bytes=new Uint8Array(await response.arrayBuffer());
-    if (bytes.length===0 || bytes.length>256*1024)
-      fail('missing or oversized GitHub API JSON');
+    const lengthHeader=response.headers?.get?.('content-length');
+    const declared=lengthHeader===null || lengthHeader===undefined ? null : Number(lengthHeader);
+    if (declared!==null && (!Number.isSafeInteger(declared) || declared < 0 || declared > 256*1024))
+      fail('GitHub API response too large or invalid content length');
+    // Do not use Response.arrayBuffer(): a missing Content-Length could make
+    // an untrusted HTTP response allocate arbitrarily many bytes.
+    const reader=response.body.getReader(), parts=[];
+    let size=0, complete=false;
+    try {
+      for (let i=0;i<1024;i++) {
+        const {done,value}=await reader.read();
+        if (done) {complete=true;break;}
+        if (!(value instanceof Uint8Array)) fail('malformed GitHub API body chunk');
+        size+=value.byteLength;
+        if (size>256*1024) fail('missing or oversized GitHub API JSON');
+        parts.push(value);
+      }
+      if (!complete || size===0 || (declared!==null && declared!==size))
+        fail('missing, truncated or overly fragmented GitHub API JSON');
+    } catch (error) {
+      try {await reader.cancel();} catch { /* cancellation is best effort */ }
+      throw error;
+    }
+    const bytes=new Uint8Array(size);
+    let offset=0;
+    for (const part of parts) {bytes.set(part,offset); offset+=part.byteLength;}
     let json;
     try {json=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));}
     catch {fail('invalid authoritative GitHub API JSON');}
