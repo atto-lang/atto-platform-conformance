@@ -52,6 +52,7 @@ export class PubSubReference {
     this.maxSubscriptions=maxSubscriptions;
     this.topics=new Map(); this.groups=new Map(); this.actors=new Map();
     this.subscriptions=new Map(); this.memberships=new Map();
+    this.actorStates=new WeakMap(); this.groupStates=new WeakMap();
     this.topicSeq=new Map(); this.nextSub=0; this.nextMembership=0;
     this.closed=false;
   }
@@ -66,56 +67,95 @@ export class PubSubReference {
       return failure("InvalidActorIdentity");
     const key=JSON.stringify([id,generation]);
     if (this.actors.has(key)) return failure("AlreadyExists");
-    const actor={key,id,generation,alive:true};
+    const state={alive:true};
+    const actor=Object.freeze({key,id,generation,get alive(){return state.alive;}});
+    this.actorStates.set(actor,state);
     this.actors.set(key,actor);
     return success({actor});
   }
 
   group(id) {
     if (this.closed) return failure("Closed");
+    if (typeof id!=="string" || !id.length || id.length>256)
+      return failure("InvalidGroup");
     if (this.groups.has(id)) return failure("AlreadyExists");
-    const group={id,closed:false,members:new Set()};
+    const state={closed:false};
+    // Expose members for introspection only; it is never an authority source.
+    const group=Object.freeze({id,get closed(){return state.closed;},members:new Set()});
+    this.groupStates.set(group,state);
     this.groups.set(id,group);
     return success({group});
   }
 
-  topic(name,type) {
+  topic(name,type,group=null) {
     if (this.closed) return failure("Closed");
     if (!topicName(name)) return failure("InvalidName");
     if (typeof type!=="string" || !type) return failure("InvalidType");
-    const existing=this.topics.get(name);
+    if (group!==null && !this.isGroup(group)) return failure("StaleGroup");
+    // The original PS001-PS020 broker-global topics remain a legacy oracle.
+    // Group-scoped topics cannot alias either those or another group.
+    const key=group===null ? name : JSON.stringify(["group",group.id,name]);
+    const existing=this.topics.get(key);
     if (existing && existing.type!==type) return failure("TopicTypeMismatch");
     if (!existing && this.topics.size>=this.maxTopics) return failure("ResourceExhausted");
-    if (!existing) { this.topics.set(name,{name,type}); this.topicSeq.set(name,0n); }
-    return success({topic:this.topics.get(name)});
+    if (!existing) {
+      this.topics.set(key,Object.freeze({key,name,type,group}));
+      this.topicSeq.set(key,0n);
+    }
+    return success({topic:this.topics.get(key)});
+  }
+
+  topicInGroup(group,name,type) { return this.topic(name,type,group); }
+
+  activeMembership(group,actor) {
+    for (const entry of this.memberships.values())
+      if (entry.active && entry.capability.group===group && entry.capability.actor===actor)
+        return true;
+    return false;
+  }
+
+  authorizedPublisher(topic,grant) {
+    const entry=this.memberships.get(grant?.id);
+    return !!entry && entry.capability===grant && entry.active &&
+      grant.group===topic.group && this.isGroup(grant.group) &&
+      this.isActor(grant.actor);
   }
 
   join(group,actor) {
     if (this.closed) return failure("Closed");
     if (!this.isGroup(group) || !this.isActor(actor)) return failure("StaleTarget");
-    // Idempotent membership admission cannot issue a second affine grant.
-    if (group.members.has(actor.key)) return success({alreadyMember:true});
+    // The immutable grant is a capability; public members Set is only a view.
+    if (this.activeMembership(group,actor)) return success({alreadyMember:true});
     group.members.add(actor.key);
-    const membership={id:++this.nextMembership,group,actor,active:true};
-    this.memberships.set(membership.id,membership);
+    const membership=Object.freeze({id:++this.nextMembership,group,actor});
+    this.memberships.set(membership.id,{capability:membership,active:true});
     return success({membership});
   }
 
   leave(membership) {
-    if (!membership || this.memberships.get(membership.id)!==membership ||
-        !membership.active) return failure("StaleMembership");
-    membership.active=false;
+    const entry=this.memberships.get(membership?.id);
+    if (!entry || entry.capability!==membership || !entry.active)
+      return failure("StaleMembership");
+    entry.active=false;
     membership.group.members.delete(membership.actor.key);
     this.cancelTarget(membership.actor.key,s=>s.kind==="group" && s.target===membership.group);
+    // A group-bound direct subscription cannot survive a leave/rejoin.
+    for (const sub of this.subscriptions.values())
+      if (!sub.closed && sub.topic.group===membership.group &&
+          sub.kind==="actor" && sub.target===membership.actor)
+        this.unsubscribe(sub);
     return success();
   }
 
   subscribe(topic,kind,target,capacity=32) {
     if (this.closed) return failure("Closed");
-    if (this.topics.get(topic?.name)!==topic) return failure("UnknownTopic");
+    if (this.topics.get(topic?.key ?? topic?.name)!==topic) return failure("UnknownTopic");
     if (!Number.isSafeInteger(capacity) || capacity<1) return failure("InvalidCapacity");
     if (kind==="actor" ? !this.isActor(target) : kind==="group" ? !this.isGroup(target) : true)
       return failure("StaleTarget");
+    if (topic.group!==null && (kind==="actor"
+      ? !this.activeMembership(topic.group,target)
+      : target!==topic.group)) return failure("UnauthorizedSubscriber");
     // A live (topic, target) edge is unique. Calling subscribe twice must
     // not mint a second registration or consume another quota. Capacity
     // changes require an explicit unsubscribe and fresh registration.
@@ -134,14 +174,19 @@ export class PubSubReference {
     return success({subscription:sub});
   }
 
-  tryPublish(topic,payload) {
+  tryPublish(topic,payload,publisherGrant=null) {
     if (this.closed) return failure("Closed");
-    if (this.topics.get(topic?.name)!==topic) return failure("UnknownTopic");
+    if (this.topics.get(topic?.key ?? topic?.name)!==topic) return failure("UnknownTopic");
+    if (topic.group!==null && !this.authorizedPublisher(topic,publisherGrant))
+      return failure("UnauthorizedPublisher");
     if (!this.isShared(payload)) return failure("NotShared");
     const slots=[];
     for (const sub of this.subscriptions.values()) {
       if (sub.closed || sub.topic!==topic) continue;
-      const keys=sub.kind==="actor" ? [sub.target.key] : [...sub.target.members].sort();
+      const keys=sub.kind==="actor" ? [sub.target.key] : [...this.memberships.values()]
+        .filter(m=>m.active && m.capability.group===sub.target &&
+          this.isActor(m.capability.actor))
+        .map(m=>m.capability.actor.key).sort();
       for (const key of keys) {
         const actor=this.actors.get(key);
         if (!active(actor)) continue;
@@ -151,10 +196,10 @@ export class PubSubReference {
         slots.push({sub,key});
       }
     }
-    const old=this.topicSeq.get(topic.name);
+    const old=this.topicSeq.get(topic.key ?? topic.name);
     if (old===0xffffffffffffffffn) return failure("SequenceExhausted");
     const seq=old+1n;
-    this.topicSeq.set(topic.name,seq);
+    this.topicSeq.set(topic.key ?? topic.name,seq);
     for (const {sub,key} of slots) {
       if (!sub.queues.has(key)) sub.queues.set(key,[]);
       sub.queues.get(key).push({sequence:seq,topic:topic.name,
@@ -166,6 +211,9 @@ export class PubSubReference {
   start(subscription,actor) {
     if (!this.isSub(subscription) || subscription.closed) return failure("Closed");
     if (!this.isActor(actor)) return failure("StaleActor");
+    if (subscription.topic.group!==null &&
+        !this.activeMembership(subscription.topic.group,actor))
+      return failure("UnauthorizedSubscriber");
     const queue=subscription.queues.get(actor.key);
     if (!queue?.length) return failure("Empty");
     const delivery=queue.shift();
@@ -196,9 +244,12 @@ export class PubSubReference {
 
   stopActor(actor) {
     if (!this.isActor(actor)) return failure("StaleActor");
-    actor.alive=false;
+    this.actorStates.get(actor).alive=false;
     for (const m of this.memberships.values())
-      if (m.active && m.actor===actor) { m.active=false; m.group.members.delete(actor.key); }
+      if (m.active && m.capability.actor===actor) {
+        m.active=false;
+        m.capability.group.members.delete(actor.key);
+      }
     this.cancelTarget(actor.key,()=>true);
     for (const sub of this.subscriptions.values())
       if (sub.kind==="actor" && sub.target===actor) this.unsubscribe(sub);
@@ -207,11 +258,15 @@ export class PubSubReference {
 
   closeGroup(group) {
     if (!this.isGroup(group)) return failure("StaleGroup");
-    group.closed=true;
+    this.groupStates.get(group).closed=true;
     for (const m of this.memberships.values())
-      if (m.active && m.group===group) { m.active=false; group.members.delete(m.actor.key); }
+      if (m.active && m.capability.group===group) {
+        m.active=false;
+        group.members.delete(m.capability.actor.key);
+      }
     for (const sub of this.subscriptions.values())
-      if (sub.kind==="group" && sub.target===group) this.unsubscribe(sub);
+      if ((sub.kind==="group" && sub.target===group) || sub.topic.group===group)
+        this.unsubscribe(sub);
     return success();
   }
 
@@ -219,7 +274,7 @@ export class PubSubReference {
     if (this.closed) return success();
     this.closed=true;
     for (const sub of this.subscriptions.values()) this.unsubscribe(sub);
-    for (const group of this.groups.values()) group.closed=true;
+    for (const group of this.groups.values()) this.groupStates.get(group).closed=true;
     for (const membership of this.memberships.values()) membership.active=false;
     for (const group of this.groups.values()) group.members.clear();
     return success();
