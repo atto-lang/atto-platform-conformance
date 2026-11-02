@@ -248,3 +248,25 @@ test('optional manifest digest when supplied must be SHA256-shaped', () => {
   claim.manifestSha256 = 'unverified';
   assert.equal(verifyReceipt(manifest, claim).classification, 'INVALID');
 });
+
+test('invalid and null manifests return INVALID instead of throwing', () => {
+  for (const invalid of [null, [], 'malformed']) {
+    assert.equal(verifyReceipt(invalid, candidateClaim()).classification, 'INVALID');
+  }
+});
+
+test('invalid oracle entries fail validation without a crash', () => {
+  for (const invalid of [null, 10, 'forged', []]) {
+    const candidate = structuredClone(manifest);
+    candidate.cases[0] = invalid;
+    assert.equal(verifyReceipt(candidate, candidateClaim()).classification, 'INVALID');
+  }
+});
+
+test('null and primitive workflow steps are rejected without throwing', () => {
+  for (const invalid of [null, 7, 'forged', []]) {
+    const candidate = candidateClaim();
+    candidate.job.steps.push(invalid);
+    assert.equal(verifyReceipt(manifest, candidate).classification, 'INVALID');
+  }
+});
