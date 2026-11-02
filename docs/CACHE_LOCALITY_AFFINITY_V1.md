@@ -70,3 +70,24 @@ node --test tests/cache-locality-oracle.test.mjs
 
 A pass certifies only these JS oracle assertions, not runtime affinity,
 performance, Java/LLVM/.NET/Wasm/Forge parity or guest compilation.
+
+## Verified mainline hotspots (November 1, 2026 source inspection)
+
+- Java `ActorAffinityDispatcher.selectLane` scans **all lanes** on a soft
+  spill attempt and reads per-lane atomic queue counters. For large carrier
+  pools this adds O(lanes) metadata traffic per spill. The correct optimization
+  requires measured queue/latency tradeoffs and a cap or topology-local
+  candidate selection; the portable 64-slot oracle is not yet wired to Java.
+- LLVM `NativeActorScheduler.c` currently scans up to **actor_count**
+  under its scheduler mutex in `find_ready` to choose CONTROL/DATA work.
+  The scan may be an L1D/L2 working-set and contention bottleneck at high
+  actor counts, but no physical miss rate was measured in this audit.
+  LLVM ready-bitmap PR #677 was merged; that does **not** prove this
+  specific source path stopped scanning, so integrate/index the active
+  implementation rather than relying on PR title alone.
+- Java topology primitives PR #1773 and local-stealing PR #1486 are still
+  **draft**; neither establishes production scheduler wiring or cache wins.
+  Native GPU queue-preflight PR #761 was merged, but its checked host
+  metadata admission is not a physical GPU launch/affinity guarantee.
+
+No mainline runtime behavior is altered by this conformance PR.
