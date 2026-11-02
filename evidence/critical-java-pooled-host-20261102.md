@@ -10,7 +10,7 @@
 
 ## Executed local evidence
 
-The committed host gate plus original standalone Java test passed **25,151 assertions on three consecutive fresh compiles/runs**. A separate executor stress test passed **10,000 queued critical turns** across two batches of 5,000 with a real four-thread Java `ExecutorService`, preserving exact FIFO order, producing exactly 10,000 state increments, and recording `maxSimultaneous=1`. It passed **three independent local runs**, and the exact committed script passed again after validating its Git blob identity.
+The committed host gate plus original standalone Java test passed **25,151 assertions on three consecutive executions after a fresh compilation**. A separate executor stress test passed **10,000 queued critical turns** across two batches of 5,000 with a real four-thread Java `ExecutorService`, preserving exact FIFO order, producing exactly 10,000 state increments, and recording `maxSimultaneous=1`. It passed **three independent local runs**, and the exact committed script passed again after validating its Git blob identity.
 
 These are **real Java 21 host runtime executions**, not Graal guest source lowering. The queued guest `critical {}` form is still unlowered; this only validates logical scheduler primitive behavior.
 
