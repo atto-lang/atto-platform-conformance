@@ -211,3 +211,40 @@ test('CLI never returns successful native-proof exit code without explicit lint-
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+
+test('receipt scope must be explicit rather than implicitly full parity', () => {
+  const claim = candidateClaim();
+  delete claim.scope;
+  assert.equal(verifyReceipt(manifest, claim).classification, 'INVALID');
+});
+
+test('null and primitive case results cannot crash the verifier', () => {
+  for (const malformed of [null, 17, 'forged', []]) {
+    const claim = candidateClaim();
+    claim.results[0] = malformed;
+    const actual = verifyReceipt(manifest, claim);
+    assert.equal(actual.classification, 'INVALID');
+  }
+});
+
+test('case-level backend substitution fails closed', () => {
+  const claim = candidateClaim();
+  claim.results[0].backend = 'llvm';
+  assert.equal(verifyReceipt(manifest, claim).classification, 'INVALID');
+});
+
+test('malformed job and build envelopes fail without throwing', () => {
+  for (const malformed of [null, [], 'forged']) {
+    const claim = candidateClaim();
+    claim.job = malformed;
+    claim.build = malformed;
+    assert.equal(verifyReceipt(manifest, claim).classification, 'INVALID');
+  }
+});
+
+test('optional manifest digest when supplied must be SHA256-shaped', () => {
+  const claim = candidateClaim();
+  claim.manifestSha256 = 'unverified';
+  assert.equal(verifyReceipt(manifest, claim).classification, 'INVALID');
+});
