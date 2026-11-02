@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { verifyManifest, verifyReceipt } from '../bin/verify-aot-reflection-receipt.mjs';
 
 const manifest = JSON.parse(readFileSync(new URL('../contracts/aot-reflection-v1.json', import.meta.url), 'utf8'));
@@ -12,6 +15,7 @@ function candidateClaim() {
     contract: manifest.contract,
     backend: 'java',
     status: 'native-aot-claim',
+    scope: 'complete',
     headSha: gitSha,
     treeSha: gitSha,
     compilerBinarySha256: digest,
@@ -44,9 +48,11 @@ function candidateClaim() {
       }[c.kind],
       fixtureSha256: digest,
       witnesses: [...c.mustProve],
-      ...(c.kind === 'compile-reject' ? { noOutputArtifact: true } : {}),
+      ...(c.kind === 'compile-reject' ?
+        { noOutputArtifact: true, compilerExitCode: 1, diagnosticClass: 'unsupported_aot_reflection' } : {}),
       ...(c.kind === 'runtime-deny' ? { denialObserved: true } : {}),
-      ...(c.kind === 'artifact-inspection' ? { inspectionSha256: digest } : {}),
+      ...(c.kind === 'artifact-inspection' ?
+        { inspectionSha256: digest, inspectedArtifactSha256: digest } : {}),
       ...(c.kind === 'build-metadata' ? { comparisonSha256: digest } : {})
     }))
   };
@@ -144,4 +150,64 @@ test('missing compiler invocation or independent review fails closed', () => {
   claim.build.compilerInvocation = '';
   claim.reviewUrl = '';
   assert.equal(verifyReceipt(manifest, claim).classification, 'INVALID');
+});
+
+test('milestone can prove a strict subset without laundering full parity', () => {
+  const claim = candidateClaim();
+  claim.scope = 'milestone';
+  claim.milestoneId = 'type-of-bootstrap';
+  claim.results = claim.results.filter(x => ['type_of.closed_nominal', 'aot.native_execution'].includes(x.id));
+  assert.deepEqual(verifyReceipt(manifest, claim), {
+    classification: 'MILESTONE_SHAPE_VALID_UNATTESTED', errors: []
+  });
+});
+
+test('milestone without a real guest oracle cannot pass even structural validation', () => {
+  const claim = candidateClaim();
+  claim.scope = 'milestone';
+  claim.milestoneId = 'negative-only';
+  claim.results = claim.results.filter(x => x.id === 'runtime_eval.forbidden');
+  assert.equal(verifyReceipt(manifest, claim).classification, 'INVALID');
+});
+
+test('unknown milestone and omitted milestone identity fail closed', () => {
+  const claim = candidateClaim();
+  claim.scope = 'external';
+  assert.equal(verifyReceipt(manifest, claim).classification, 'INVALID');
+  claim.scope = 'milestone';
+  claim.results = claim.results.slice(0, 1);
+  assert.equal(verifyReceipt(manifest, claim).classification, 'INVALID');
+});
+
+test('compiler rejection requires exit 1 and stable diagnostic', () => {
+  const claim = candidateClaim();
+  const entry = claim.results.find(x => x.id === 'runtime_eval.forbidden');
+  entry.compilerExitCode = 127;
+  entry.diagnosticClass = '';
+  const r = verifyReceipt(manifest, claim);
+  assert.equal(r.classification, 'INVALID');
+  assert.ok(r.errors.some(x => x.includes('stable compiler rejection')));
+});
+
+test('artifact inspection must bind to the artifact actually claimed', () => {
+  const claim = candidateClaim();
+  claim.results.find(x => x.id === 'retention.unused_stripped').inspectedArtifactSha256 = 'c'.repeat(64);
+  assert.equal(verifyReceipt(manifest, claim).classification, 'INVALID');
+});
+
+test('CLI never returns successful native-proof exit code without explicit lint-only mode', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'atto-reflection-receipt-'));
+  try {
+    const path = join(dir, 'receipt.json');
+    writeFileSync(path, JSON.stringify(candidateClaim()));
+    const cmd = new URL('../bin/verify-aot-reflection-receipt.mjs', import.meta.url);
+    const checked = spawnSync(process.execPath, [cmd.pathname, path], { encoding: 'utf8' });
+    assert.equal(checked.status, 1, checked.stderr);
+    assert.match(checked.stdout, /SHAPE_VALID_UNATTESTED/);
+    const lint = spawnSync(process.execPath, [cmd.pathname, path, '--lint-only'], { encoding: 'utf8' });
+    assert.equal(lint.status, 0, lint.stderr + lint.stdout);
+    assert.match(lint.stdout, /SHAPE_VALID_UNATTESTED/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
