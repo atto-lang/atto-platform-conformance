@@ -1,0 +1,103 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {verifyTrustedWorkflowAdmission as verify, createAuthenticatedGitHubReaders} from '../verification/trusted-workflow-admission.mjs';
+const R='ores-truffle-oreslang/oreslang-source.java', S='a'.repeat(40), TREE='b'.repeat(40);
+const t0='2026-11-01T12:00:00Z',t1='2026-11-01T12:00:01Z',t2='2026-11-01T12:00:02Z';
+const options=()=>({backend:'java',repository:R,runId:1001,attempt:2,commitSha:S,treeSha:TREE,
+  workflowPath:'.github/workflows/source-local.yml',requiredJobs:['compiler-guest'],
+  readRun:async()=>({id:1001,run_attempt:2,head_sha:S,repository:{full_name:R},head_repository:{full_name:R},
+    path:'.github/workflows/source-local.yml',event:'pull_request',status:'completed',conclusion:'success'}),
+  readCommit:async()=>({sha:S,tree:{sha:TREE}}),
+  readJobs:async()=>({total_count:1,jobs:[{id:2001,run_id:1001,run_attempt:2,head_sha:S,
+    name:'compiler-guest',runner_id:32,runner_name:'verified-runner',status:'completed',
+    conclusion:'success',started_at:t0,completed_at:t2,
+    steps:[{number:1,name:'checkout',status:'completed',conclusion:'success',started_at:t0,completed_at:t1},
+           {number:2,name:'guest',status:'completed',conclusion:'success',started_at:t1,completed_at:t2}]}]})});
+function mutate(name, edit, reason=/workflow admission:/) {
+  test(name, async()=>{const x=options();const run=await x.readRun(),commit=await x.readCommit(),jobs=await x.readJobs();
+    x.readRun=async()=>run;x.readCommit=async()=>commit;x.readJobs=async()=>jobs;
+    edit(x,run,commit,jobs);await assert.rejects(verify(x),reason);});
+}
+test('genuine-looking API observations are only metadata, not guest attestation',async()=>{
+  const got=await verify(options());assert.equal(got.classification,'executed_success_api_metadata_only');
+  assert.equal(got.checkedJobs[0].executedStepCount,2);
+  assert.equal(got.nativeVerified,false);assert.equal(got.sourceTransferAuthorized,false);
+  assert.equal(got.independentlyReviewed,false);
+});
+mutate('wrong exact source commit',x=>x.commitSha='c'.repeat(40));
+mutate('wrong exact Git tree',x=>x.treeSha='c'.repeat(40));
+mutate('invalid backend',x=>x.backend='untrusted');
+mutate('source repo cannot be another organization',x=>x.repository='scintilla-run/scintilla-e2e');
+mutate('run ID mismatch',(_x,run)=>run.id=1111);
+mutate('run attempt mismatch',(_x,run)=>run.run_attempt=1);
+mutate('run head mismatch',(_x,run)=>run.head_sha='c'.repeat(40));
+mutate('wrong head repository',(_x,run)=>run.head_repository.full_name='foreign/repo');
+mutate('workflow path mismatch',(_x,run)=>run.path='.github/workflows/other.yml');
+mutate('workflow event mismatch',(_x,run)=>run.event='workflow_dispatch');
+mutate('failed run',(_x,run)=>run.conclusion='failure');
+mutate('missing job page',(_x,_r,_c,jobs)=>jobs.jobs=[]);
+mutate('job page truncated',(_x,_r,_c,jobs)=>jobs.total_count=2);
+mutate('job count exceeds cap',(_x,_r,_c,jobs)=>jobs.total_count=33);
+mutate('job with wrong head',(_x,_r,_c,jobs)=>jobs.jobs[0].head_sha='c'.repeat(40));
+mutate('job with wrong run attempt',(_x,_r,_c,jobs)=>jobs.jobs[0].run_attempt=1);
+mutate('job with zero runner',(_x,_r,_c,jobs)=>jobs.jobs[0].runner_id=0);
+mutate('job with no steps',(_x,_r,_c,jobs)=>jobs.jobs[0].steps=[]);
+mutate('skipped step',(_x,_r,_c,jobs)=>jobs.jobs[0].steps[1].conclusion='skipped');
+mutate('duplicate step ordinal',(_x,_r,_c,jobs)=>jobs.jobs[0].steps[1].number=1);
+mutate('step outside job interval',(_x,_r,_c,jobs)=>jobs.jobs[0].steps[1].completed_at='2026-11-01T13:00:00Z');
+mutate('step with backwards timestamps',(_x,_r,_c,jobs)=>jobs.jobs[0].steps[1].started_at=t2+'z');
+mutate('bad job times',(_x,_r,_c,jobs)=>jobs.jobs[0].started_at='invalid');
+mutate('runner newline spoofing',(_x,_r,_c,jobs)=>jobs.jobs[0].runner_name='runner\nFAKE');
+mutate('step bidi spoofing',(_x,_r,_c,jobs)=>jobs.jobs[0].steps[0].name='step\u202ePASS');
+mutate('duplicate job name',(_x,_r,_c,jobs)=>{jobs.total_count=2;jobs.jobs.push({...jobs.jobs[0],id:2002})});
+mutate('recycled job id',(_x,_r,_c,jobs)=>{jobs.total_count=2;jobs.jobs.push({...jobs.jobs[0]})});
+mutate('required job allowlist absent',x=>x.requiredJobs=['nonexistent']);
+mutate('required job allowlist duplicate',x=>x.requiredJobs=['compiler-guest','compiler-guest']);
+mutate('untrusted API reader missing',x=>x.readJobs=undefined);
+mutate('jobs payload with self-certified success but no execution',(_x,_r,_c,jobs)=>{jobs.jobs[0].status='completed';jobs.jobs[0].conclusion='success';jobs.jobs[0].steps=[]});
+test('256 validated steps at job cap remain admissible',async()=>{
+ const x=options(),r=await x.readJobs();const steps=[];
+ for(let i=0;i<256;i++)steps.push({number:i+1,name:`s${i+1}`,status:'completed',conclusion:'success',started_at:t0,completed_at:t1});
+ r.jobs[0].steps=steps;x.readJobs=async()=>r;assert.equal((await verify(x)).checkedJobs[0].executedStepCount,256);
+});
+mutate('257 steps are rejected',(_x,_r,_c,jobs)=>{jobs.jobs[0].steps=Array.from({length:257},(_,i)=>({number:i+1,name:'run',status:'completed',conclusion:'success',started_at:t0,completed_at:t1}))});
+
+test('authenticated source-org GitHub REST metadata path uses bearer and no redirects',async()=>{
+ const x=options(), run=await x.readRun(), commit=await x.readCommit(), jobs=await x.readJobs();
+ const observed=[];
+ const api=createAuthenticatedGitHubReaders({token:'private-token-for-mock-only',fetchImpl:async (url,req)=>{
+   observed.push({url,req});
+   const value=url.includes('/git/commits/')?commit:url.includes('/attempts/')?jobs:run;
+   return {status:200,headers:{get:()=>null},arrayBuffer:async()=>new TextEncoder().encode(JSON.stringify(value)).buffer};
+ }});
+ const result=await verify({...x,...api});assert.equal(result.checkedJobs[0].executedStepCount,2);
+ assert.equal(observed.length,3);
+ assert.ok(observed.every(o=>o.url.startsWith(`https://api.github.com/repos/${R}/`)));
+ assert.ok(observed.every(o=>o.req.redirect==='error'&&o.req.headers.authorization==='Bearer private-token-for-mock-only'));
+ assert.ok(observed.some(o=>o.url.endsWith('/actions/runs/1001/attempts/2/jobs?per_page=100')));
+});
+test('GitHub API rejects missing bearer credential before any network request',()=>{
+ assert.throws(()=>createAuthenticatedGitHubReaders({token:''}),/credential required/);
+ assert.throws(()=>createAuthenticatedGitHubReaders({token:'bad\nvalue'}),/credential required/);
+});
+test('GitHub API fails closed on unauthorized source repository and redirect',async()=>{
+ const api=createAuthenticatedGitHubReaders({token:'t',fetchImpl:async()=>({status:302})});
+ await assert.rejects(api.readRun({repository:'foreign/repo',runId:1}),/not approved/);
+ await assert.rejects(api.readRun({repository:R,runId:1}),/request rejected/);
+});
+test('GitHub API refuses malformed or oversized response before parsing',async()=>{
+ const api=createAuthenticatedGitHubReaders({token:'t',fetchImpl:async()=>({status:200,
+   headers:{get:()=>null},arrayBuffer:async()=>new Uint8Array([0xff]).buffer})});
+ await assert.rejects(api.readRun({repository:R,runId:1}),/invalid authoritative/);
+ const large=createAuthenticatedGitHubReaders({token:'t',fetchImpl:async()=>({status:200,
+   headers:{get:()=>String(300000)},arrayBuffer:async()=>{throw Error('body must not be read')}})});
+ await assert.rejects(large.readRun({repository:R,runId:1}),/too large/);
+});
+
+test('GitHub API rejects path traversal and nonnumeric run IDs before transport',async()=>{
+ let sent=0;const api=createAuthenticatedGitHubReaders({token:'t',fetchImpl:async()=>{sent++;throw Error('network should not execute')}});
+ await assert.rejects(api.readRun({repository:R,runId:'../../contents/README'}),/invalid GitHub run ID/);
+ await assert.rejects(api.readJobs({repository:R,runId:1,attempt:'../../contents'}),/invalid GitHub run attempt/);
+ await assert.rejects(api.readCommit({repository:R,commitSha:'../../contents'}),/invalid Git commit SHA/);
+ assert.equal(sent,0);
+});

@@ -1,0 +1,126 @@
+// Source-free GitHub API job/run provenance gate. Not a native guest attestation,
+// security approval, source export permit, or release certification.
+const SHA40 = /^[0-9a-f]{40}$/;
+const BACKENDS = new Set(['java', 'llvm', 'wasm', 'cranelift', 'net']);
+const POSITIVE_INT = x => Number.isSafeInteger(x) && x > 0;
+const fail = reason => { throw new Error(`workflow admission: ${reason}`); };
+const validLine = s => typeof s === 'string' && s.length > 0 && s.length <= 4096 &&
+  s.isWellFormed() && !/[\u0000-\u001f\u007f-\u009f\p{Default_Ignorable_Code_Point}]/u.test(s);
+const instant = s => typeof s === 'string' && /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?Z$/.test(s)
+  ? Date.parse(s) : NaN;
+const requireInterval = (start, end, label) => {
+  const a=instant(start), b=instant(end);
+  if (!Number.isFinite(a) || !Number.isFinite(b) || b < a) fail(`invalid ${label} interval`);
+  return [a,b];
+};
+
+/**
+ * Trust contract: readRun, readCommit and readJobs MUST be authenticated,
+ * independently retrieved GitHub REST API reads using an approved source-org
+ * credential. Never provide fields copied from the untrusted claim/receipt.
+ * Required jobs must be a verifier-owned allowlist, not selected by the claim.
+ * The returned record is only a job/step provenance observation, never a
+ * compiler, guest, review, sandbox or source-transfer certification.
+ */
+export async function verifyTrustedWorkflowAdmission({backend, repository, runId, attempt,
+    commitSha, treeSha, workflowPath, requiredJobs, readRun, readCommit, readJobs}) {
+  if (!BACKENDS.has(backend) || repository !== `ores-truffle-oreslang/oreslang-source.${backend}` &&
+      !(backend === 'java' && repository === 'ores-truffle-oreslang/oreslang-source.java'))
+    fail('unapproved source repository identity');
+  if (!POSITIVE_INT(runId) || !POSITIVE_INT(attempt) || !SHA40.test(commitSha) || !SHA40.test(treeSha))
+    fail('missing immutable source/run identity');
+  if (typeof workflowPath !== 'string' || !/^\.github\/workflows\/[A-Za-z0-9_.-]+\.ya?ml$/.test(workflowPath))
+    fail('invalid workflow path');
+  if (!Array.isArray(requiredJobs) || !requiredJobs.length || requiredJobs.length > 16 ||
+      new Set(requiredJobs).size !== requiredJobs.length || !requiredJobs.every(validLine))
+    fail('invalid verifier-owned job allowlist');
+  if (![readRun, readCommit, readJobs].every(f => typeof f === 'function'))
+    fail('independent API readers required');
+
+  const [run, commit, response] = await Promise.all([
+    readRun({repository, runId}),
+    readCommit({repository, commitSha}),
+    readJobs({repository, runId, attempt}),
+  ]);
+  if (!run || run.id !== runId || run.run_attempt !== attempt || run.head_sha !== commitSha ||
+      run.repository?.full_name !== repository || run.head_repository?.full_name !== repository ||
+      !(run.path === workflowPath || run.path?.startsWith(workflowPath + '@')) ||
+      run.event !== 'pull_request' || run.status !== 'completed' ||
+      run.conclusion !== 'success') fail('run identity or completion mismatch');
+  if (!commit || commit.sha !== commitSha || commit.tree?.sha !== treeSha)
+    fail('unverified exact source Git tree');
+  if (!response || !Number.isSafeInteger(response.total_count) || response.total_count < 1 ||
+      response.total_count > 32 || !Array.isArray(response.jobs) ||
+      response.jobs.length !== response.total_count)
+    fail('missing, oversized or truncated jobs API page');
+
+  const byName=new Map(), ids=new Set();
+  for (const job of response.jobs) {
+    if (!job || !POSITIVE_INT(job.id) || ids.has(job.id) || !validLine(job.name))
+      fail('duplicate or malformed job identity');
+    ids.add(job.id);
+    if (job.run_id !== runId || job.run_attempt !== attempt || job.head_sha !== commitSha)
+      fail('job run attempt/head mismatch');
+    if (byName.has(job.name)) fail('duplicate job name');
+    byName.set(job.name, job);
+  }
+  const checked=[];
+  for (const name of requiredJobs) {
+    const job=byName.get(name);
+    if (!job || !POSITIVE_INT(job.runner_id) || !validLine(job.runner_name) ||
+        job.status !== 'completed' || job.conclusion !== 'success' ||
+        !Array.isArray(job.steps) || job.steps.length < 1 || job.steps.length > 256)
+      fail('required job unassigned, skipped or unexecuted');
+    const [jobStart,jobEnd]=requireInterval(job.started_at,job.completed_at,'job');
+    for (let i=0;i<job.steps.length;i++) {
+      const s=job.steps[i];
+      if (!s || s.number !== i+1 || !validLine(s.name) || s.status !== 'completed' ||
+          s.conclusion !== 'success') fail('required job step missing, failed or out of order');
+      const [a,b]=requireInterval(s.started_at,s.completed_at,'step');
+      if (a<jobStart || b>jobEnd) fail('step time outside assigned job');
+    }
+    checked.push(Object.freeze({name, jobId:job.id, runnerId:job.runner_id,
+      executedStepCount:job.steps.length}));
+  }
+  return Object.freeze({classification:'executed_success_api_metadata_only', repository,
+    backend, runId, attempt, commitSha, treeSha, checkedJobs:Object.freeze(checked),
+    nativeVerified:false, sourceTransferAuthorized:false, independentlyReviewed:false});
+}
+
+
+/** GitHub REST reader factory. The credential stays on the caller's source-org
+ * runner; the API returns metadata only. No compiler/source bytes transferred. */
+export function createAuthenticatedGitHubReaders({token, fetchImpl=globalThis.fetch}) {
+  if (typeof token !== 'string' || token.trim() === '' || /[\r\n]/.test(token) ||
+      typeof fetchImpl !== 'function') fail('authenticated GitHub API credential required');
+  async function get(repository, path) {
+    if (!/^ores-truffle-oreslang\/oreslang-source\.(?:java|llvm|wasm|cranelift|net)$/.test(repository))
+      fail('GitHub API source repository not approved');
+    if (!/^\/(?:actions\/runs\/|git\/commits\/)/.test(path)) fail('unapproved GitHub API path');
+    const url=`https://api.github.com/repos/${repository}${path}`;
+    const response=await fetchImpl(url,{method:'GET',redirect:'error',
+      headers:{authorization:`Bearer ${token}`,accept:'application/vnd.github+json',
+        'x-github-api-version':'2022-11-28'}});
+    if (!response || response.status !== 200 || typeof response.arrayBuffer !== 'function')
+      fail(`authoritative GitHub API request rejected (HTTP ${response?.status ?? 'unknown'})`);
+    const declared=Number(response.headers?.get?.('content-length'));
+    if (Number.isFinite(declared) && declared > 256*1024)
+      fail('GitHub API response too large');
+    const bytes=new Uint8Array(await response.arrayBuffer());
+    if (bytes.length===0 || bytes.length>256*1024)
+      fail('missing or oversized GitHub API JSON');
+    let json;
+    try {json=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));}
+    catch {fail('invalid authoritative GitHub API JSON');}
+    return json;
+  }
+  return Object.freeze({
+    readRun:({repository,runId})=>POSITIVE_INT(runId)
+      ? get(repository,`/actions/runs/${runId}`) : Promise.reject(Error('invalid GitHub run ID')),
+    readCommit:({repository,commitSha})=>SHA40.test(commitSha)
+      ? get(repository,`/git/commits/${commitSha}`) : Promise.reject(Error('invalid Git commit SHA')),
+    readJobs:({repository,runId,attempt})=>POSITIVE_INT(runId) && POSITIVE_INT(attempt)
+      ? get(repository,`/actions/runs/${runId}/attempts/${attempt}/jobs?per_page=100`)
+      : Promise.reject(Error('invalid GitHub run attempt')), 
+  });
+}
