@@ -104,7 +104,10 @@ test('cache-line proof needs physical base alignment, including between allocati
  assert.equal(mayShareCacheLine(a,{...a,start:56,length:8}),true);
  assert.equal(mayShareCacheLine(a,{...a,start:64,length:8}),false);
  assert.equal(mayShareCacheLine(a,{allocation:'actorB',start:1,length:8}),true);
- assert.equal(mayShareCacheLine(a,{allocation:'actorB',start:1,length:8,baseRemainder:0}),false);
+ // Independently aligned bases cannot establish physical non-overlap;
+ // different labels could describe the same allocation.
+ assert.equal(mayShareCacheLine(a,{allocation:'actorB',start:1,length:8,baseRemainder:0}),true);
+ assert.equal(mayShareCacheLine(a,{allocation:'actorB',start:128,length:8,baseRemainder:0}),true);
  assert.equal(mayShareCacheLine(a,{...a,length:0}),false);
  assert.equal(mayShareCacheLine({...a,start:63,length:2},
    {...a,start:64,length:1}),true);
