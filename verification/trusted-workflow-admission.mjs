@@ -33,7 +33,7 @@ const requireInterval = (start, end, label) => {
  * compiler, guest, review, sandbox or source-transfer certification.
  */
 export async function verifyTrustedWorkflowAdmission({backend, repository, runId, attempt,
-    commitSha, treeSha, workflowPath, requiredJobs, readRun, readCommit, readJobs}) {
+    commitSha, treeSha, workflowPath, workflowId, pullRequestNumber, requiredJobs, readRun, readCommit, readJobs}) {
   if (!BACKENDS.has(backend) || repository !== `ores-truffle-oreslang/oreslang-source.${backend}` &&
       !(backend === 'java' && repository === 'ores-truffle-oreslang/oreslang-source.java'))
     fail('unapproved source repository identity');
@@ -41,6 +41,8 @@ export async function verifyTrustedWorkflowAdmission({backend, repository, runId
     fail('missing immutable source/run identity');
   if (typeof workflowPath !== 'string' || !/^\.github\/workflows\/[A-Za-z0-9_.-]+\.ya?ml$/.test(workflowPath))
     fail('invalid workflow path');
+  if (!POSITIVE_INT(workflowId) || !POSITIVE_INT(pullRequestNumber))
+    fail('missing verifier-owned workflow or pull request identity');
   if (!Array.isArray(requiredJobs) || !requiredJobs.length || requiredJobs.length > 16 ||
       new Set(requiredJobs).size !== requiredJobs.length || !requiredJobs.every(validLine))
     fail('invalid verifier-owned job allowlist');
@@ -53,10 +55,17 @@ export async function verifyTrustedWorkflowAdmission({backend, repository, runId
     readJobs({repository, runId, attempt}),
   ]);
   if (!run || run.id !== runId || run.run_attempt !== attempt || run.head_sha !== commitSha ||
+      run.workflow_id !== workflowId ||
       run.repository?.full_name !== repository || run.head_repository?.full_name !== repository ||
       !(run.path === workflowPath || run.path?.startsWith(workflowPath + '@')) ||
       run.event !== 'pull_request' || run.status !== 'completed' ||
       run.conclusion !== 'success') fail('run identity or completion mismatch');
+  // GitHub's authenticated workflow run must identify the intended PR, not
+  // merely any successful run for the same source commit and workflow path.
+  if (!Array.isArray(run.pull_requests) || run.pull_requests.length < 1 ||
+      run.pull_requests.length > 32 || !run.pull_requests.some(pr =>
+        pr && pr.number === pullRequestNumber))
+    fail('run not associated with the verifier-owned pull request');
   if (!commit || commit.sha !== commitSha || commit.tree?.sha !== treeSha)
     fail('unverified exact source Git tree');
   if (!response || !Number.isSafeInteger(response.total_count) || response.total_count < 1 ||
@@ -96,7 +105,8 @@ export async function verifyTrustedWorkflowAdmission({backend, repository, runId
       executedStepCount:job.steps.length}));
   }
   return Object.freeze({classification:'executed_success_api_metadata_only', repository,
-    backend, runId, attempt, commitSha, treeSha, checkedJobs:Object.freeze(checked),
+    backend, runId, attempt, commitSha, treeSha, workflowId, pullRequestNumber,
+    checkedJobs:Object.freeze(checked),
     nativeVerified:false, sourceTransferAuthorized:false, independentlyReviewed:false});
 }
 

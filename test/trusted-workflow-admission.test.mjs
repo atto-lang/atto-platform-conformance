@@ -4,9 +4,11 @@ import {verifyTrustedWorkflowAdmission as verify, createAuthenticatedGitHubReade
 const R='ores-truffle-oreslang/oreslang-source.java', S='a'.repeat(40), TREE='b'.repeat(40);
 const t0='2026-11-01T12:00:00Z',t1='2026-11-01T12:00:01Z',t2='2026-11-01T12:00:02Z';
 const options=()=>({backend:'java',repository:R,runId:1001,attempt:2,commitSha:S,treeSha:TREE,
-  workflowPath:'.github/workflows/source-local.yml',requiredJobs:['compiler-guest'],
+  workflowPath:'.github/workflows/source-local.yml',workflowId:345,pullRequestNumber:42,
+  requiredJobs:['compiler-guest'],
   readRun:async()=>({id:1001,run_attempt:2,head_sha:S,repository:{full_name:R},head_repository:{full_name:R},
-    path:'.github/workflows/source-local.yml',event:'pull_request',status:'completed',conclusion:'success'}),
+    path:'.github/workflows/source-local.yml',workflow_id:345,pull_requests:[{number:42}],
+    event:'pull_request',status:'completed',conclusion:'success'}),
   readCommit:async()=>({sha:S,tree:{sha:TREE}}),
   readJobs:async()=>({total_count:1,jobs:[{id:2001,run_id:1001,run_attempt:2,head_sha:S,
     name:'compiler-guest',runner_id:32,runner_name:'verified-runner',status:'completed',
@@ -236,4 +238,21 @@ test('valid internationalized provenance labels remain admissible',async()=>{
   jobs.jobs[0].steps[1].name='ejecución';
   x.readJobs=async()=>jobs;
   assert.equal((await verify(x)).checkedJobs[0].executedStepCount,2);
+});
+
+mutate('missing verifier-owned workflow ID',x=>delete x.workflowId,/missing verifier-owned/);
+mutate('missing verifier-owned PR number',x=>delete x.pullRequestNumber,/missing verifier-owned/);
+mutate('wrong authoritative workflow ID',(_x,run)=>run.workflow_id=346,/run identity/);
+mutate('wrong authoritative PR number',(_x,run)=>run.pull_requests=[{number:41}],/run not associated/);
+mutate('missing PR association',(_x,run)=>run.pull_requests=[],/run not associated/);
+mutate('non-array PR association',(_x,run)=>run.pull_requests={number:42},/run not associated/);
+mutate('oversized PR association',(_x,run)=>run.pull_requests=Array.from({length:33},(_,i)=>({number:i+1})),/run not associated/);
+test('matching PR in bounded multi-PR association succeeds',async()=>{
+  const x=options(),run=await x.readRun();
+  run.pull_requests=[{number:41},{number:42}];
+  x.readRun=async()=>run;
+  const got=await verify(x);
+  assert.equal(got.workflowId,345);
+  assert.equal(got.pullRequestNumber,42);
+  assert.equal(got.checkedJobs.length,1);
 });
