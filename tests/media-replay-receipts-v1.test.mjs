@@ -103,3 +103,26 @@ test('wrong branch backend and nonzero exit are refused', () => {
   const b = fixture(); b.runtimeExitCode = 1;
   assert.equal(check(b).error, 'NO_SUCCESSFUL_GUEST_EXECUTION');
 });
+
+test('malformed alignment is a fail-closed result, never a thrown exception', () => {
+  const valid = fixture();
+  const notArray = structuredClone(alignment);
+  notArray.backends = { java: true };
+  assert.equal(inspectMediaReplayGuestReceipt(valid, inventory, notArray).error, 'INVALID_ALIGNMENT');
+  const duplicate = structuredClone(alignment);
+  duplicate.backends[4].name = 'java';
+  assert.equal(inspectMediaReplayGuestReceipt(valid, inventory, duplicate).error, 'INVALID_ALIGNMENT');
+  const badHash = structuredClone(alignment);
+  badHash.backends[0].test_blob_sha = 'invalid';
+  assert.equal(inspectMediaReplayGuestReceipt(valid, inventory, badHash).error, 'INVALID_ALIGNMENT');
+  const missing = structuredClone(alignment);
+  delete missing.source_code_blob_sha;
+  assert.equal(inspectMediaReplayGuestReceipt(valid, inventory, missing).error, 'INVALID_ALIGNMENT');
+});
+
+test('unbounded output payload is refused before full receipt parsing', () => {
+  const report = fixture();
+  report.stdout += 'X'.repeat(33000);
+  report.stdoutSha256 = createHash('sha256').update(report.stdout).digest('hex');
+  assert.equal(check(report).error, 'UNBOUND_OUTPUT');
+});
