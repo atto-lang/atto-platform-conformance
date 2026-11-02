@@ -61,6 +61,18 @@ export function verifyCriticalStage0Receipt(receipt, plan) {
     const value=receipt.cases[id];
     if (!value || value.phase!==phase || value.status!=='pass')
       fail('missing or failed stage0 case: '+id);
+    // Contradictory positive flags are forbidden even inside an otherwise
+    // correctly labeled case: do not let host-only/parser-only cases smuggle
+    // guest execution or native-image claims into a partial receipt.
+    if (value.native_guest_executed===true ||
+        (phase!=='guest' && value.guest_executed===true) ||
+        (phase!=='host-reject' && value.host_test_executed===true) ||
+        (phase==='host-reject' && (value.compiler_accepted===true ||
+                                  value.compiler_rejected===true ||
+                                  value.compiler_invoked===true)) ||
+        (phase==='compile-reject' && value.compiler_accepted===true) ||
+        (phase==='compile-pass' && value.compiler_rejected===true))
+      fail('contradictory phase or native executable evidence flag: '+id);
     if (phase==='guest') {
       hasGuest=true;
       // Stage-0 Java uses Graal Polyglot Context.eval. This is real .ores
