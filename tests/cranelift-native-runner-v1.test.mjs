@@ -20,6 +20,29 @@ test("native Cranelift gate rejects incomplete source revision and compiler dige
   await assert.rejects(runNativeCranelift({compiler:"/no/such/compiler",
     compilerCommit:commit}),/SHA-256/);
 });
+test("native runner forbids injected process launchers before any source or compiler I/O",async()=>{
+  let attempted=false;
+  const fake=()=>{attempted=true;return {status:0,stdout:"42\\n",stderr:""};};
+  await assert.rejects(runNativeCranelift({compiler:"/no/such/compiler",
+    compilerSha256:untrusted,compilerCommit:commit,spawn:fake}),
+    /unknown or accessor native runner option/);
+  assert.equal(attempted,false);
+});
+test("native runner denies accessors, symbols and inherited option objects",async()=>{
+  let accessed=false;
+  const getter={compiler:"/no/such/compiler",compilerSha256:untrusted,compilerCommit:commit};
+  Object.defineProperty(getter,"timeoutMs",{enumerable:true,get(){
+    accessed=true;throw Error("GETTER_EXECUTED");
+  }});
+  await assert.rejects(runNativeCranelift(getter),/unknown or accessor native runner option/);
+  assert.equal(accessed,false);
+  const symbol=Symbol("injected-execution");
+  await assert.rejects(runNativeCranelift({[symbol]:true}),
+    /unknown or accessor native runner option/);
+  await assert.rejects(runNativeCranelift(Object.create({compiler:"/no/such/compiler"})),
+    /native runner options must be plain object/);
+  await assert.rejects(runNativeCranelift(null),/native runner options must be plain object/);
+});
 test("native Cranelift gate refuses invalid time budgets before filesystem access",async()=>{
   for(const ms of [0,99,30001,-1,NaN,Infinity,1.5]){
     await assert.rejects(runNativeCranelift({compiler:"/no/such/compiler",
