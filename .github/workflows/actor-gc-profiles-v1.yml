@@ -1,0 +1,63 @@
+name: Actor GC profiles v1 source-only release guard
+on:
+  pull_request:
+    paths:
+      - 'contracts/actor_gc_profiles_v1.json'
+      - 'scripts/verify_actor_gc_profiles_v1.py'
+      - 'docs/ACTOR_GC_PROFILES_V1.md'
+      - '.github/workflows/actor-gc-profiles-v1.yml'
+  push:
+    paths:
+      - 'contracts/actor_gc_profiles_v1.json'
+      - 'scripts/verify_actor_gc_profiles_v1.py'
+      - 'docs/ACTOR_GC_PROFILES_V1.md'
+      - '.github/workflows/actor-gc-profiles-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  deny-unearned-gc-claims:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Assert exact source HEAD and clean checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test -n "$(git rev-parse 'HEAD^{tree}')"
+          test -z "$(git status --porcelain --untracked-files=all)"
+      - name: Test immutable six-backend admission and adversarial mutants
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -m py_compile scripts/verify_actor_gc_profiles_v1.py
+          python3 -I scripts/verify_actor_gc_profiles_v1.py
+          python3 -I scripts/verify_actor_gc_profiles_v1.py --test
+      - name: Emit read-only policy receipt, never runtime certification
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, subprocess
+          def git(*args):
+              return subprocess.check_output(("git", *args), text=True).strip()
+          print(json.dumps({
+              "schema": "oreslang.actor_gc_profiles_sourceonly_v1",
+              "head_sha": git("rev-parse", "HEAD"),
+              "tree_sha": git("rev-parse", "HEAD^{tree}"),
+              "blobs": {p: git("hash-object", p) for p in [
+                  "contracts/actor_gc_profiles_v1.json",
+                  "scripts/verify_actor_gc_profiles_v1.py",
+                  "docs/ACTOR_GC_PROFILES_V1.md"]},
+              "guest_runtime_executed": False,
+              "general_guest_zero_gc_certified": False,
+              "hard_realtime_certified": False,
+          }, sort_keys=True))
+          PY
