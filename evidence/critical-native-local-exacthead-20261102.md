@@ -2,15 +2,15 @@
 
 ## Java/Graal source PR #2433 (host runtime only)
 
-- PR head: `1d9e94a8aee687017eec4088e95988ca0664b0ae`; Git tree `58c948b56bb70a1a10ecc28a8d7eb6e9690ac167`.
+- PR head: `2f6e46b47e6189c1a997ca1b9d2abc5ce9c1bf0f`; Git tree `788e175c8dc3b6cdfda03bcf7728d259d7283eb9`.
 - Byte-exact `src/main/java/dev/oreslang/runtime/CriticalSectionGate.java` Git blob: `e3e2a63dd6d4f5a0a407ee46acc400b2b58f2a9f`.
-- Byte-exact checked-in `src/test/java/dev/oreslang/CriticalSectionGateStandaloneTest.java` Git blob: `e7136f75a94441578ec812479c574ce8bd2dd7ed`.
+- Byte-exact checked-in `src/test/java/dev/oreslang/CriticalSectionGateStandaloneTest.java` Git blob: `e90dea68b9e718a24076a19c556843e179c9c5d6`.
 - Both blob hashes verified locally with `git hash-object`, matching the GitHub connector's file SHA.
 - OpenJDK 21 host-only compilation: `javac -Xlint:all -Werror -d classes CriticalSectionGate.java CriticalSectionGateStandaloneTest.java`.
-- **PASS 23,651** assertions from the actual committed standalone test, including 300 rounds of the new `whenReadyOn` exactly-one scheduler registration regression.
+- **PASS 25,151** assertions from the actual committed standalone test, including 300 sequential duplicate-registration checks and 300 two-carrier concurrent registration races. The exact checked-in test passed four successive local runs, 25,151 assertions each.
 - A separate non-committed host audit (`GateAudit`) executed **PASS 19,205** checks, covering 10,000 logical protected increments, retirement, deferred delivery, and 8,192 scheduler-rejected waiters. The audit is supplemental, not the checked-in standalone suite.
 - A duplicate registration was reproduced before the Java fix (`whenReadyOn` enqueued 2 tasks); after the fix only 1 registration was permitted, and all host tests passed.
-- GitHub `fast-ci` run [41396105445](https://github.com/ores-truffle-oreslang/oreslang-source.java/actions/runs/41396105445) job `125117658315` had **0 executed steps**, so hosted Java guest/JUnit/Graal checks remain **NOT_EXECUTED**.
+- GitHub `fast-ci` run [41396583179](https://github.com/ores-truffle-oreslang/oreslang-source.java/actions/runs/41396583179) job `125119102368` had **0 executed steps**, so hosted Java guest/JUnit/Graal checks remain **NOT_EXECUTED**.
 
 ## LLVM native host gate (exact current source)
 
