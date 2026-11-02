@@ -37,7 +37,7 @@ function runCase(actions) {
       case "join": {
         const result=bus.join(groups.get(args[1]),actors.get(args[2]));
         ok("join",result);
-        if (result.ok) memberships.set(args[0],result.membership);
+        if (result.ok && result.membership) memberships.set(args[0],result.membership);
         break;
       }
       case "leave": ok("leave",bus.leave(memberships.get(args[0])));break;
@@ -124,7 +124,10 @@ test("closed subscriptions reclaim active quota but remain fenced",()=>{
   const bus=new PubSubReference({maxSubscriptions:1});
   const actor=bus.actor("a").actor,topic=bus.topic("events","Event").topic;
   const first=bus.subscribe(topic,"actor",actor,1).subscription;
-  assert.equal(bus.subscribe(topic,"actor",actor,1).error,"ResourceExhausted");
+  const other=bus.actor("other").actor;
+  assert.equal(bus.subscribe(topic,"actor",actor,1).subscription,first,
+    "repeat subscribe reuses the same live edge");
+  assert.equal(bus.subscribe(topic,"actor",other,1).error,"ResourceExhausted");
   bus.unsubscribe(first);
   assert.equal(bus.subscribe(topic,"actor",actor,1).ok,true);
   assert.equal(bus.start(first,actor).error,"Closed");
@@ -192,4 +195,39 @@ test("share helper rejects nested functions and symbols before publication",()=>
   const bus=new PubSubReference();
   const topic=bus.topic("cycles.events","Event").topic;
   assert.equal(bus.tryPublish(topic,cycle).error,"NotShared");
+});
+
+test("duplicate join is idempotent and cannot mint an additional leave grant",()=>{
+  const bus=new PubSubReference();
+  const actor=bus.actor("a").actor,group=bus.group("g").group;
+  const first=bus.join(group,actor);
+  assert.equal(first.ok,true);
+  assert.equal(bus.join(group,actor).ok,true);
+  const again=bus.join(group,actor);
+  assert.equal(again.alreadyMember,true);
+  assert.equal(again.membership,undefined);
+  assert.equal(group.members.size,1);
+  assert.equal(bus.leave(first.membership).ok,true);
+  assert.equal(bus.leave(first.membership).error,"StaleMembership");
+  assert.equal(group.members.size,0);
+  assert.equal(bus.join(group,actor).ok,true,"new grant only after explicit rejoin");
+});
+
+test("duplicate subscription preserves a single delivery and quota",()=>{
+  const bus=new PubSubReference({maxSubscriptions:1});
+  const a=bus.actor("a").actor,topic=bus.topic("events","E").topic;
+  const first=bus.subscribe(topic,"actor",a,2);
+  assert.equal(first.ok,true);
+  const again=bus.subscribe(topic,"actor",a,2);
+  assert.equal(again.subscription,first.subscription);
+  assert.equal(again.alreadySubscribed,true);
+  assert.equal(bus.subscriptions.size,1);
+  assert.equal(bus.subscribe(topic,"actor",a,3).error,"SubscriptionConflict");
+  assert.equal(bus.tryPublish(topic,share({id:"once"})).receipt.recipients,1);
+  assert.equal(bus.start(first.subscription,a).delivery.payload.id,"once");
+  assert.equal(bus.start(again.subscription,a).error,"Empty");
+  assert.equal(bus.unsubscribe(first.subscription).ok,true);
+  const renewed=bus.subscribe(topic,"actor",a,3);
+  assert.equal(renewed.ok,true);
+  assert.notEqual(renewed.subscription,first.subscription);
 });
