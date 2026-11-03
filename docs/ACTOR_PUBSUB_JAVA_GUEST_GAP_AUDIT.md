@@ -30,3 +30,9 @@ C. Add negative `.atto` fixtures for wrong-group grant, stale leave/rejoin grant
 D. Execute `SourceActorPubSubExecutionTest` plus new fixture assertions on the exact PR head and capture stepful logs, test counts, fixture hashes, and the native-image build/run receipt separately.
 
 Do not label Java as portable-v1 complete until these gates pass. Do not replace the Java guest execution test with a host-only Java unit test.
+
+## 2026-11-03 source facade topic identity audit
+
+Java draft #2440 now validates topic names as exact, untrimmed 1-128 byte ASCII identifiers in both definition and lookup paths (Java commits d8f25438 and 05c00cf8). An isolated Java 21 method-level check accepted/rejected 19/19 sampled inputs. The committed JUnit test, compiled guest, and Native Image have not executed in stepful CI, so this is not guest certification.
+
+.NET #327/#344 still validates names using its 256-byte UTF-8 host namespace. Do not silently claim Java/.NET topic identity parity: the public portable core names and extension namespaces must be versioned or normalized by an explicit adapter. Existing Java guest fixtures still use asynchronous publish without portable sequence receipts or authenticated group-membership capabilities.
