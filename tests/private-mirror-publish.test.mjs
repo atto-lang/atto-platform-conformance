@@ -73,7 +73,7 @@ test("attempted API mock bypass never makes a single private-source GET or POST"
 test("publisher's own first executable statement denies before parsing or authorizing",()=>{
   const src=readFileSync(new URL("../bin/private-mirror-publish.mjs",import.meta.url),"utf8");
   const fn=src.slice(src.indexOf("export async function publishPrivateMirror("));
-  assert.match(fn,/\}\) \{\s*\/\/ Defense in depth/);
+  assert.match(fn,/\(_untrustedOptions\) \{[\s\S]*?\/\/ Defense in depth/);
   const lockdown=fn.indexOf('throw Error("PRIVATE_SOURCE_PUBLISH_DISABLED_PENDING_PROTECTED_MAIN_APPROVAL")');
   assert.ok(lockdown>=0,"lockdown must not be removed");
   for(const action of [
@@ -90,4 +90,23 @@ test("publisher's own first executable statement denies before parsing or author
 test("the lower-level authorization function is also locked down",()=>{
   const body=readFileSync(new URL("../bin/require-private-mirror.mjs",import.meta.url),"utf8");
   assert.match(body,/PRIVATE_SOURCE_PUBLISH_DISABLED_PENDING_PROTECTED_MAIN_APPROVAL/);
+});
+
+test("publisher denial happens before malicious option getters and Proxy traps",async()=>{
+  let effects=0;
+  const hostile=new Proxy({},{
+    get(){effects++;throw Error("OPTIONS_GET_TRAP_EXECUTED");},
+    ownKeys(){effects++;throw Error("OPTIONS_OWNKEYS_TRAP_EXECUTED");},
+    getOwnPropertyDescriptor(){effects++;throw Error("OPTIONS_DESCRIPTOR_TRAP_EXECUTED");},
+    getPrototypeOf(){effects++;throw Error("OPTIONS_PROTOTYPE_TRAP_EXECUTED");}
+  });
+  const getters=Object.defineProperties({},{
+    source:{enumerable:true,get(){effects++;throw Error("SOURCE_GETTER_EXECUTED");}},
+    fetchImpl:{enumerable:true,get(){effects++;throw Error("FETCH_GETTER_EXECUTED");}},
+    token:{enumerable:true,get(){effects++;throw Error("TOKEN_GETTER_EXECUTED");}}
+  });
+  for(const options of [undefined,null,hostile,getters,42,"malformed"]) {
+    await assert.rejects(publishPrivateMirror(options),DENIED);
+  }
+  assert.equal(effects,0,"zero caller-controlled option reads before lockdown");
 });
