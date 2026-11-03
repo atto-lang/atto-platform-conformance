@@ -9,3 +9,7 @@ Host/runtime supplementary checks include graph cycles, depth >128, nodes >65536
 Use `node --test contracts/v1/message-data-310/verify-evidence.test.mjs` to run **synthetic** gate tests. Once authenticated exact-head native guest receipts exist, use `node contracts/v1/message-data-310/verify-evidence.mjs contracts/v1/message-data-310/manifest.json receipts.json` to deny missing or misclassified results. This checks the supplied receipt structure and fixture digests, **not** cryptographic signing, GHA provenance or whether supplied digests represent actual artifacts; separately inspect CI run/job/step and binaries.
 
 **Do not cross-org export private compiler source:** incident #22, Java #1501 and #962 still require an independently reviewed source policy, numeric destination ID, verified private visibility and an approved protected allowlist.
+
+## Trusted manifest / fixture path hardening
+
+The CLI **fails closed** unless the caller sets `ATTO_MESSAGE_DATA_MANIFEST_SHA256` to the digest independently pinned from the approved protected main policy. Setting the value from the untrusted PR checkout is not an approval. The CLI also rejects symlink/nonregular fixture paths before hashing. The compiled guest and CI receipts still require independent verification beyond JSON structure.
