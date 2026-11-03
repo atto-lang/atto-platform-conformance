@@ -10,10 +10,9 @@
  */
 import {pathToFileURL} from "node:url";
 
-export async function publishPrivateMirror({
-  source, destination, sourceCommit, destinationBaseCommit, prefix, newBranch,
-  approvedDestinations, token, fetchImpl = fetch
-}) {
+export async function publishPrivateMirror(_untrustedOptions) {
+  // Do not destructure untrusted options: accessors may run before the first
+  // statement and could trigger an unauthorized side effect or source read.
   // Defense in depth: unconditionally deny even a direct module import.
   throw Error("PRIVATE_SOURCE_PUBLISH_DISABLED_PENDING_PROTECTED_MAIN_APPROVAL");
 }
