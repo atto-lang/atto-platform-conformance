@@ -39,7 +39,7 @@ function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E
       else if(suffix==="/git/trees/"+D+"?recursive=1")
         data=materializedTree||{truncated:false,tree:[
           {path:"snapshots",type:"tree"},
-          {path:"snapshots/checked",type:"tree"},
+          {path:"snapshots/checked",type:"tree",sha:D},
           {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C}
         ]};
       else if(suffix==="/git/blobs"&&method==="POST")
@@ -246,7 +246,7 @@ test("a Java-sized exact private snapshot stays bounded and retains every blob",
  }));
  const {h,promise}=run({
   sourceTree:{truncated:false,tree:sourceFiles},
-  materializedTree:{truncated:false,tree:destinationFiles}
+  materializedTree:{truncated:false,tree:[{path:"snapshots/checked",type:"tree",sha:D},...destinationFiles]}
  });
  const result=await promise;
  assert.equal(result.blobs,count);
@@ -270,4 +270,14 @@ test("oversized private trees fail before source blobs or destination writes",as
   assert.equal(h.events.filter(e=>e.method==="POST").length,0);
   assert.equal(h.events.some(e=>e.path===source+"/git/blobs/"+C),false);
  }
+});
+
+test("mirrored root Git tree SHA must match pinned source even with matching leaf blobs",async()=>{
+ const {h,promise}=run({materializedTree:{truncated:false,tree:[
+   {path:"snapshots/checked",type:"tree",sha:E},
+   {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C}
+ ]}});
+ await assert.rejects(promise,/materialized snapshot root Git tree SHA/);
+ assert.equal(h.events.some(e=>e.path===destination+"/git/commits"&&e.method==="POST"),false);
+ assert.equal(h.events.some(e=>e.path===destination+"/git/refs"&&e.method==="POST"),false);
 });
