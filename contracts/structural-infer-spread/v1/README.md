@@ -40,3 +40,20 @@ Every one of **Java/GraalVM, LLVM native, .NET NativeAOT, and Wasm** must compil
 LLVM/native must additionally run ownership, sanitizer and linked binary checks. Wasm must execute an actual wasm32 guest rather than treating an LLVM host result as Wasm evidence. .NET must build actual CIL/NativeAOT and run the produced binary. Java must check parser, types, ownership, formatter and synchronous/suspendable Graal paths.
 
 The existing shared spec permits extra ownership-safe forms beyond the conservative current Java and LLVM draft subsets. Do not broaden backend admission just to satisfy a manifest when cleanup, borrow, or actor-domain proofs are missing.
+
+
+## Versioned .atto guest-source matrix
+
+The source-committed corpus lives at `fixtures/structural-infer-spread/v1/`:
+
+- Eight positive source programs with **distinct** expected guest integer results 42 through 49. These exercise inline inferred structs/records, extension, rightmost-wins type replacement, preservation of the original record, multiple spreads, explicit cross-kind construction, and readonly structural projection.
+- Eight negative programs which must receive a compiler-owned rejection **before** any releasable IR, native binary, Wasm module, or CIL artifact is published. They cover duplicate static keys, unknown spread operands, scalar spread, invalid `infer` targets, `infer structural` misuse, mutable borrow capture, extra fields in explicit exact-struct construction, and structural-view mutation.
+- `fixtures/structural-infer-spread/v1/manifest.json` records the exact Git blob SHA-1 for each .atto source. The `tests/structural-infer-spread-fixtures.test.mjs` source-free gate checks all fixture bytes and rejects unverified success flags, duplicate identities, changed expectations and same-constant result oracles.
+
+Run source-free checks using:
+
+```sh
+node --test tests/structural-infer-spread-contract.test.mjs tests/structural-infer-spread-fixtures.test.mjs
+```
+
+**Important:** These Node checks are fixture integrity and semantic-oracle tests, not native guest execution. The backend evidence remains false pending real Java/GraalVM, LLVM native (both `-O0` and `-O2`), .NET NativeAOT and wasm32 programs at exact head. Ordinary CI failures before job-step creation do not count as execution. Any future private cross-org source mirror requires protected-source review, explicit allowlisting, destination privacy/ID and workflow pins, resolved security incidents where applicable, and complete Git-tree SHA verification; a successful source-free carrier canary is only runner-availability evidence.
