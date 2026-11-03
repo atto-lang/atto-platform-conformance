@@ -19,7 +19,7 @@ test("collection safety matrix is a candidate, not claimed backend evidence", ()
 
 test("all scenarios are unique, explicit and unattested", () => {
   const cases = contract.scenarios;
-  assert.equal(cases.length, 16);
+  assert.equal(cases.length, 18);
   assert.equal(new Set(cases.map(x => x.id)).size, cases.length);
   for (const c of cases) {
     assert.match(c.id, /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/);
@@ -52,7 +52,7 @@ test("candidate rejection fixtures are valid .atto files and cannot claim parser
     "mutex-use-after-consume",
     "guard-suspend-await"
   ];
-  const present = contract.scenarios.filter(c => c.fixture);
+  const present = contract.scenarios.filter(c => c.fixture && c.expectation === "reject");
   assert.deepEqual(present.map(c => c.id), expected);
   for (const c of present) {
     assert.equal(c.kind, "compiler", c.id);
@@ -65,6 +65,27 @@ test("candidate rejection fixtures are valid .atto files and cannot claim parser
   }
   assert.equal(contract.promotion.semanticRejectionRequired, true);
   assert.equal(contract.promotion.unsupportedSyntaxDoesNotPass, true);
+});
+
+test("positive collection fixtures prohibit reject-everything false parity", () => {
+  const expected = [
+    "ordinary-owned-local-mutation",
+    "owned-mutex-guard-mutation"
+  ];
+  const positive = contract.scenarios.filter(
+    c => c.fixture && c.expectation === "accept");
+  assert.deepEqual(positive.map(c => c.id), expected);
+  for (const c of positive) {
+    assert.equal(c.kind, "compiler-runtime");
+    assert.equal(c.attestation, "unattested");
+    assert.equal(c.fixture, `fixtures/collection-ownership-sync-v1/${c.id}.atto`);
+    const source = readFileSync(new URL(`../${c.fixture}`, import.meta.url), "utf8");
+    assert.match(source, /pub fnc main\(\): void/);
+    assert.match(source, /\.set\(0,/);
+    assert.ok(source.includes("return;"), c.id);
+  }
+  const positiveWithMutex = positive.find(c => c.id === "owned-mutex-guard-mutation");
+  assert.ok(positiveWithMutex);
 });
 
 test("promotion does not accept source-free or runner-free substitutes", () => {
