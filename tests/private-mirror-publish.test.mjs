@@ -227,6 +227,7 @@ test("case-insensitive colliding source paths and .GIT segments are rejected",as
 });
 test("duplicate entries in materialized tree cannot disguise omitted source blobs",async()=>{
  const tree={truncated:false,tree:[
+  {path:"snapshots/checked",type:"tree",sha:D},
   {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C},
   {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C}
  ]};
