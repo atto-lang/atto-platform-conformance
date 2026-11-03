@@ -213,8 +213,10 @@ export function verifyReceipt(manifest, receipt) {
     if (scope === 'complete') {
       for (const c of allCases) if (!ids.has(c.id)) errors.push('missing case: ' + c.id);
     } else if (scope === 'milestone' &&
-               !submitted.some(e => e?.stage === 'guest-aot')) {
-      errors.push('milestone requires at least one compiler-backed guest AOT oracle');
+               (!ids.has('aot.native_execution') ||
+                !submitted.some(e => e && e.id !== 'aot.native_execution' &&
+                    lookup.get(e.id)?.kind === 'compile-and-run'))) {
+      errors.push('milestone requires native execution and a positive compiled feature oracle');
     }
   }
   // This is not an attestation: fields can be invented or inconsistent with real GitHub jobs.
