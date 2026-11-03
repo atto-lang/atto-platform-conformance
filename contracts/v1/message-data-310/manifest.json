@@ -1,0 +1,126 @@
+{
+  "schema": "attolang.message-data.310.v1",
+  "issue": "https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/310",
+  "state": "DRAFT_UNEXECUTED",
+  "required_backends": [
+    "java-graalvm",
+    "llvm",
+    "wasm",
+    "cranelift",
+    "net-nativeaot"
+  ],
+  "limits": {
+    "depth": 128,
+    "nodes": 65536,
+    "select_cases": 256
+  },
+  "cases": [
+    {
+      "id": "P01",
+      "kind": "guest-positive",
+      "stdout": "42",
+      "fixture": "contracts/v1/message-data-310/fixtures/P01-channel-int.atto"
+    },
+    {
+      "id": "P02",
+      "kind": "guest-positive",
+      "stdout": "true",
+      "fixture": "contracts/v1/message-data-310/fixtures/P02-channel-option-list.atto"
+    },
+    {
+      "id": "P03",
+      "kind": "guest-positive",
+      "stdout": "subscribed|p-1",
+      "fixture": "contracts/v1/message-data-310/fixtures/P03-topic-string.atto"
+    },
+    {
+      "id": "P04",
+      "kind": "guest-positive",
+      "stdout": "42",
+      "fixture": "contracts/v1/message-data-310/fixtures/P04-local-function-result.atto"
+    },
+    {
+      "id": "N01",
+      "kind": "type-negative",
+      "diagnostic_category": "CALLABLE_TRANSPORT",
+      "fixture": "contracts/v1/message-data-310/fixtures/N01-channel-function.atto"
+    },
+    {
+      "id": "N02",
+      "kind": "type-negative",
+      "diagnostic_category": "CALLABLE_TRANSPORT",
+      "fixture": "contracts/v1/message-data-310/fixtures/N02-channel-nested-function.atto"
+    },
+    {
+      "id": "N03",
+      "kind": "type-negative",
+      "diagnostic_category": "CALLABLE_TRANSPORT",
+      "fixture": "contracts/v1/message-data-310/fixtures/N03-class-callable-field.atto"
+    },
+    {
+      "id": "N04",
+      "kind": "type-negative",
+      "diagnostic_category": "CALLABLE_TRANSPORT",
+      "fixture": "contracts/v1/message-data-310/fixtures/N04-select-callable.atto"
+    },
+    {
+      "id": "N05",
+      "kind": "type-negative",
+      "diagnostic_category": "CALLABLE_TRANSPORT",
+      "fixture": "contracts/v1/message-data-310/fixtures/N05-topic-callable.atto"
+    },
+    {
+      "id": "N06",
+      "kind": "type-negative",
+      "diagnostic_category": "CALLABLE_TRANSPORT",
+      "fixture": "contracts/v1/message-data-310/fixtures/N06-topic-nested-callable.atto"
+    },
+    {
+      "id": "N07",
+      "kind": "runtime-negative",
+      "diagnostic_category": "CALLABLE_TRANSPORT",
+      "injection": "host-bound-method-value"
+    },
+    {
+      "id": "N08",
+      "kind": "runtime-negative",
+      "diagnostic_category": "CALLABLE_TRANSPORT",
+      "injection": "host-closure-in-list-map"
+    },
+    {
+      "id": "N09",
+      "kind": "type-negative",
+      "diagnostic_category": "BORROWED_PAYLOAD",
+      "fixture": "contracts/v1/message-data-310/fixtures/N09-channel-borrow.atto"
+    },
+    {
+      "id": "N10",
+      "kind": "type-negative",
+      "diagnostic_category": "MESSAGE_DATA_REQUIRED",
+      "fixture": "contracts/v1/message-data-310/fixtures/N10-topic-shared-mutex.atto"
+    },
+    {
+      "id": "S01",
+      "kind": "type-negative",
+      "diagnostic_category": "MESSAGE_DATA_REQUIRED",
+      "fixture": "contracts/v1/message-data-310/fixtures/S01-channel-nominal.atto"
+    },
+    {
+      "id": "S02",
+      "kind": "type-negative",
+      "diagnostic_category": "MESSAGE_DATA_REQUIRED",
+      "fixture": "contracts/v1/message-data-310/fixtures/S02-topic-nominal.atto"
+    }
+  ],
+  "security_runtime_assertions": [
+    "reject-cyclic-graph",
+    "reject-depth-over-128",
+    "reject-nodes-over-65536",
+    "reject-foreign-collection-callback-before-enumeration",
+    "reject-dynamic-select-over-256",
+    "detach-before-enqueue-or-select-arming",
+    "reject-nominal-owner-injection",
+    "reject-topic-actorref",
+    "preserve-fair-select-cursor"
+  ]
+}

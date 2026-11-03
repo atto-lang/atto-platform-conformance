@@ -1,0 +1,1 @@
+pub routine main(): void { val Channel<Option<List<int>>> ch = Channel.new<Option<List<int>>>(1); val Option<List<int>> msg = Some([1, 2, 3]); writech ch, msg; val Option<List<int>> result = readch ch; stdio.stdout.write(result.is_some()); return; }
