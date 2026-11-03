@@ -258,6 +258,8 @@ export function compareObservations(records,c){
   const platformHeads=new Map(PLATFORMS.map(p=>[p,new Set()]));
   const compilerHeads=new Map(TOOLCHAINS.map(b=>[b,new Set()]));
   const laneCompilerDigests=new Map();
+  const laneEngineIdentities=new Map();
+  const wasmUpstreamHeads=new Set();
   for(const record of seen.values()){
     sourceHeads.add(record.sourceCommit);
     platformHeads.get(record.platform).add(record.platformCommit);
@@ -265,11 +267,36 @@ export function compareObservations(records,c){
     const lane=record.platform+":"+record.toolchain;
     if(!laneCompilerDigests.has(lane))laneCompilerDigests.set(lane,new Set());
     laneCompilerDigests.get(lane).add(record.compilerBinarySha256);
+    // Source provenance must cover indirect execution engines as well as
+    // the outer compiler. Do not fingerprint generated per-fixture artifacts:
+    // Wasm modules and .NET published NativeAOT guest hosts legitimately
+    // have different digests for different test programs.
+    let engineIdentity=null;
+    if(record.toolchain==="wasm"){
+      wasmUpstreamHeads.add(record.engine.upstreamCompilerCommit);
+      engineIdentity=[record.engine.upstreamCompilerBinarySha256,
+        record.engine.wasmHostBinarySha256].join(":");
+    }else if(record.toolchain==="java"){
+      engineIdentity=[record.engine.guestEngineSha256,
+        record.engine.runtimeVersion].join(":");
+    }
+    if(engineIdentity!==null){
+      if(!laneEngineIdentities.has(lane))laneEngineIdentities.set(lane,new Set());
+      laneEngineIdentities.get(lane).add(engineIdentity);
+    }
   }
   if(sourceHeads.size>1)divergent++;
   for(const values of platformHeads.values())if(values.size>1)divergent++;
   for(const values of compilerHeads.values())if(values.size>1)divergent++;
   for(const values of laneCompilerDigests.values())if(values.size>1)divergent++;
+  for(const values of laneEngineIdentities.values())if(values.size>1)divergent++;
+  if(wasmUpstreamHeads.size>1)divergent++;
+  // LLVM-to-Wasm is not an independent language frontend. When both
+  // compiler routes are represented, they must not silently refer to
+  // two different revisions of oreslang-source.llvm.
+  const directLlvmHeads=compilerHeads.get("llvm");
+  if(directLlvmHeads.size&&wasmUpstreamHeads.size&&
+    ![...wasmUpstreamHeads].every(sha=>directLlvmHeads.has(sha)))divergent++;
   for(const platform of PLATFORMS)for(const v of c.cases){
     const group=TOOLCHAINS.map(b=>seen.get([platform,v.id,b].join(":")));
     // A missing lane must never conceal a known wrong guest result.
