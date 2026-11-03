@@ -18,3 +18,16 @@ for(const [name,mutate] of [
  ["missing native artifact",r=>r[0].native_artifact_sha256=""],
  ["missing security assertion",r=>r[0].security_runtime_assertions["reject-cyclic-graph"]=false]
 ])test("deny "+name,()=>{const r=make();mutate(r);assert.ok(validateEvidence(manifest,r,hashes).length>0)});
+
+for(const [name,mutate] of [
+ ["backend omitted",m=>m.required_backends.pop()],
+ ["all cases removed",m=>m.cases=[]],
+ ["missing required diagnostic",m=>m.cases.find(c=>c.id==="N01").diagnostic_category="UNSPECIFIED"],
+ ["runtime injection removed",m=>m.cases.find(c=>c.id==="N08").injection=null],
+ ["supplementary assertions removed",m=>m.security_runtime_assertions=[]],
+ ["positive output changed",m=>m.cases.find(c=>c.id==="P02").stdout="false"],
+ ["missing guest file",m=>m.cases.find(c=>c.id==="P03").fixture="../unsafe.atto"]
+])test("deny altered canonical contract: "+name,()=>{
+ const m=JSON.parse(JSON.stringify(manifest));mutate(m);
+ assert.ok(validateEvidence(m,make(),hashes).length>0);
+});
