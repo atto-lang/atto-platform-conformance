@@ -46,7 +46,7 @@ function receipt(platform="desktop",toolchain="llvm",caseId="scalar-42"){
         compilerBinarySha256:HEX64,clifSha256:negative?null:"e".repeat(64)}:
       toolchain==="wasm"?
       {name:"llvm-to-wasm",upstreamCompilerRepo:"ores-truffle-oreslang/oreslang-source.llvm",
-        upstreamCompilerCommit:"f".repeat(40),
+        upstreamCompilerCommit:"d".repeat(40),
         upstreamCompilerBinarySha256:"1".repeat(64),
         wasmModuleSha256:negative?null:"e".repeat(64),
         wasmHostBinarySha256:"2".repeat(64),
@@ -390,6 +390,78 @@ test("per-target compiler binary builds can differ without being misclassified",
   assert.equal(r.status,"INCOMPLETE");
   assert.equal(r.divergent,0);
   assert.equal(r.missing,298);
+  assert.equal(r.certifiedParity,false);
+});
+test("Wasm upstream LLVM revision drift across platforms is divergent",()=>{
+  const first=receipt("desktop","wasm","scalar-42");
+  const second=receipt("iot","wasm","precedence-40");
+  second.engine.upstreamCompilerCommit="9".repeat(40);
+  const r=compareObservations([first,second],contract);
+  assert.equal(r.status,"DIVERGENT");
+  assert.equal(r.divergent,1);
+  assert.equal(r.certifiedParity,false);
+});
+test("Wasm bridge upstream LLVM revision must agree with directly tested LLVM route",()=>{
+  const llvm=receipt("desktop","llvm","scalar-42");
+  const wasm=receipt("desktop","wasm","precedence-40");
+  wasm.engine.upstreamCompilerCommit="9".repeat(40);
+  const r=compareObservations([llvm,wasm],contract);
+  assert.equal(r.status,"DIVERGENT");
+  assert.equal(r.divergent,1);
+});
+test("Wasm LLVM frontend executable drift across cases is divergent",()=>{
+  const first=receipt("desktop","wasm","scalar-42");
+  const second=receipt("desktop","wasm","precedence-40");
+  second.engine.upstreamCompilerBinarySha256="9".repeat(64);
+  const r=compareObservations([first,second],contract);
+  assert.equal(r.status,"DIVERGENT");
+  assert.equal(r.divergent,1);
+});
+test("Wasm runtime host digest drift within a lane is divergent",()=>{
+  const first=receipt("desktop","wasm","scalar-42");
+  const second=receipt("desktop","wasm","precedence-40");
+  second.engine.wasmHostBinarySha256="9".repeat(64);
+  const r=compareObservations([first,second],contract);
+  assert.equal(r.status,"DIVERGENT");
+  assert.equal(r.divergent,1);
+});
+test("Java Graal guest-engine digest drift within a lane is divergent",()=>{
+  const first=receipt("desktop","java","scalar-42");
+  const second=receipt("desktop","java","precedence-40");
+  second.engine.guestEngineSha256="9".repeat(64);
+  const r=compareObservations([first,second],contract);
+  assert.equal(r.status,"DIVERGENT");
+  assert.equal(r.divergent,1);
+});
+test("Java runtime version drift within a lane is divergent",()=>{
+  const first=receipt("desktop","java","scalar-42");
+  const second=receipt("desktop","java","precedence-40");
+  second.engine.runtimeVersion="25.0.0";
+  const r=compareObservations([first,second],contract);
+  assert.equal(r.status,"DIVERGENT");
+  assert.equal(r.divergent,1);
+});
+test("per-platform native runtime hosts may differ without losing coherence",()=>{
+  const first=receipt("desktop","wasm","scalar-42");
+  const second=receipt("iot","wasm","precedence-40");
+  second.engine.wasmHostBinarySha256="9".repeat(64);
+  second.engine.upstreamCompilerBinarySha256="8".repeat(64);
+  const r=compareObservations([first,second],contract);
+  assert.equal(r.status,"INCOMPLETE");
+  assert.equal(r.divergent,0);
+});
+test("different generated Wasm modules and .NET AOT guest artifacts are not stable engine identities",()=>{
+  const wasmOne=receipt("desktop","wasm","scalar-42");
+  const wasmTwo=receipt("desktop","wasm","precedence-40");
+  wasmTwo.artifactSha256="9".repeat(64);
+  wasmTwo.engine.wasmModuleSha256=wasmTwo.artifactSha256;
+  const netOne=receipt("desktop","net","scalar-42");
+  const netTwo=receipt("desktop","net","precedence-40");
+  netTwo.artifactSha256="8".repeat(64);
+  netTwo.engine.nativeAotHostSha256=netTwo.artifactSha256;
+  const r=compareObservations([wasmOne,wasmTwo,netOne,netTwo],contract);
+  assert.equal(r.status,"INCOMPLETE");
+  assert.equal(r.divergent,0);
   assert.equal(r.certifiedParity,false);
 });
 test("partial matching observations still report incomplete, never certified",()=>{
