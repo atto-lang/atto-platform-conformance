@@ -196,7 +196,7 @@ test("missing toolchain and changed source hashes are not silently accepted",()=
   b.cases[0].sha256=HEX64;assert.throws(()=>validateContract(b),/identity drift/);
 });
 test("native Cranelift JIT is not interchangeable with the separate Wasm backend",()=>{
-  const r=receipt("mobile","cranelift");r.engine=null;fails(r,/plain exact fields/);
+  const r=receipt("mobile","cranelift");r.engine=null;fails(r,/object required/);
   const n=receipt("mobile","cranelift");
   n.run.steps=n.run.steps.filter(x=>x!=="run-cranelift-native-jit");
   fails(n,/missing native Cranelift JIT and IR execution/);
@@ -444,7 +444,7 @@ for(const [name,change,pattern] of [
   ["unknown backend",x=>x.toolchain="not-a-toolchain",/unknown platform or toolchain/],
   ["unknown platform",x=>x.platform="foreign",/unknown platform or toolchain/],
   ["unknown case",x=>x.caseId="synthetic",/unbound source fixture/],
-  ["missing guest execution",x=>x.run.steps=x.run.steps.filter(s=>s!=="run-ores-guest"),/guest execution step/],
+  ["missing guest execution",x=>{x.run.steps=x.run.steps.filter(s=>s!=="run-ores-guest");x.run.steps.push("host-only-step");},/guest execution step/],
   ["fake guest result",x=>x.result={kind:"reject",diagnosticCode:"UNKNOWN_IDENTIFIER",diagnostic:"error: dummy"},/plain exact fields/],
   ["duplicate step",x=>x.run.steps.push("compile-ores-source"),/executed compiler steps/],
   ["getter field",x=>Object.defineProperty(x,"platform",{enumerable:true,get(){throw Error("GETTER EXECUTED")}}),/plain exact fields/],
