@@ -4,7 +4,7 @@ import {readFileSync} from "node:fs";
 import {validateEvidence} from "./verify-evidence.mjs";
 const manifest=JSON.parse(readFileSync(new URL("./manifest.json",import.meta.url),"utf8")),digest="a".repeat(64);
 const hashes=Object.fromEntries(manifest.cases.filter(c=>c.fixture).map(c=>[c.fixture,digest]));
-const make=()=>manifest.required_backends.map(backend=>({backend,head_sha:"b".repeat(40),tree_sha:"c".repeat(40),native_artifact_sha256:"d".repeat(64),execution_mode:"compiled-native-guest",native_guest_executed:true,ci:{run_id:1,job_id:2,steps:[{kind:"native-guest",conclusion:"success"}]},cases:manifest.cases.map(c=>({id:c.id,fixture_sha256:c.fixture?digest:undefined,injection:c.injection,phase:c.kind==="guest-positive"?"native-guest":c.kind==="type-negative"?"semantic-typecheck":"native-runtime-admission",result:c.kind==="guest-positive"?"pass":"reject",exit_code:c.kind==="guest-positive"?0:1,stdout:c.stdout,stderr:"",diagnostic_category:c.diagnostic_category,parser_accepted:true,parse_failure:false,diagnostic_code:c.diagnostic_category,diagnostic_text:c.diagnostic_category==="MESSAGE_DATA_REQUIRED"?"requires MessageData":c.diagnostic_category==="BORROWED_PAYLOAD"?"borrowed payload requires owned Sendable data":"cannot transport functions or callable payload",source_location:c.fixture?{file:c.fixture,line:1,column:1}:null,rejected_before_enqueue:true,receiver_observed_payload:false,harness_exit_code:0,harness_executed:true})),security_runtime_assertions:Object.fromEntries(manifest.security_runtime_assertions.map(k=>[k,true]))}));
+const make=()=>manifest.required_backends.map(backend=>({backend,head_sha:"b".repeat(40),tree_sha:"c".repeat(40),native_artifact_sha256:"d".repeat(64),execution_mode:"compiled-native-guest",native_guest_executed:true,ci:{run_id:1,job_id:2,steps:[{kind:"native-guest",conclusion:"success"}]},cases:manifest.cases.map(c=>({id:c.id,fixture_sha256:c.fixture?digest:undefined,fixture_git_blob_sha1:c.fixture?c.fixture_git_blob_sha1:undefined,injection:c.injection,phase:c.kind==="guest-positive"?"native-guest":c.kind==="type-negative"?"semantic-typecheck":"native-runtime-admission",result:c.kind==="guest-positive"?"pass":"reject",exit_code:c.kind==="guest-positive"?0:1,stdout:c.stdout,stderr:"",diagnostic_category:c.diagnostic_category,parser_accepted:true,parse_failure:false,diagnostic_code:c.diagnostic_category,diagnostic_text:c.diagnostic_category==="MESSAGE_DATA_REQUIRED"?"requires MessageData":c.diagnostic_category==="BORROWED_PAYLOAD"?"borrowed payload requires owned Sendable data":"cannot transport functions or callable payload",source_location:c.fixture?{file:c.fixture,line:1,column:1}:null,rejected_before_enqueue:true,receiver_observed_payload:false,harness_exit_code:0,harness_executed:true})),security_runtime_assertions:Object.fromEntries(manifest.security_runtime_assertions.map(k=>[k,true]))}));
 test("synthetic control accepted (NOT a native receipt)",()=>assert.deepEqual(validateEvidence(manifest,make(),hashes),[]));
 for(const [name,mutate] of [
  ["no steps",r=>r[0].ci.steps=[]],
@@ -47,4 +47,13 @@ for(const [name,mutate] of [
 ])test("deny unproven diagnostic or admission: "+name,()=>{
  const r=make();mutate(r);
  assert.ok(validateEvidence(manifest,r,hashes).length>0);
+});
+
+test("deny wrong fixture Git blob",()=>{
+ const r=make();r[0].cases.find(c=>c.id==="P01").fixture_git_blob_sha1="0".repeat(40);
+ assert.ok(validateEvidence(manifest,r,hashes).length>0);
+});
+test("deny missing canonical fixture pin",()=>{
+ const m=JSON.parse(JSON.stringify(manifest));delete m.cases.find(c=>c.id==="N05").fixture_git_blob_sha1;
+ assert.ok(validateEvidence(m,make(),hashes).length>0);
 });

@@ -22,7 +22,7 @@ export function validateEvidence(m,receipts,hashes){
   if(kind==="runtime-negative"){
    if(c.fixture||c.injection!==(id==="N07"?"host-bound-method-value":"host-closure-in-list-map"))return ["invalid runtime injection "+id];
   }else{
-   if(typeof c.fixture!=="string"||!c.fixture.startsWith("contracts/v1/message-data-310/fixtures/"+id+"-")||!c.fixture.endsWith(".atto"))return ["missing or invalid canonical fixture "+id];
+   if(typeof c.fixture!=="string"||!c.fixture.startsWith("contracts/v1/message-data-310/fixtures/"+id+"-")||!c.fixture.endsWith(".atto")||!h40.test(c.fixture_git_blob_sha1||""))return ["missing, invalid, or unpinned canonical fixture "+id];
   }
  }
 
@@ -39,7 +39,7 @@ export function validateEvidence(m,receipts,hashes){
   for(const t of m.cases){
    const row=rows.find(x=>x?.id===t.id);
    if(!row){errors.push(`${b}/${t.id}: missing`);continue}
-   if(t.fixture){if(!h64.test(hashes[t.fixture]||"")||row.fixture_sha256!==hashes[t.fixture])errors.push(`${b}/${t.id}: wrong fixture digest`)}
+   if(t.fixture){if(!h64.test(hashes[t.fixture]||"")||row.fixture_sha256!==hashes[t.fixture]||row.fixture_git_blob_sha1!==t.fixture_git_blob_sha1)errors.push(`${b}/${t.id}: wrong fixture SHA256 or Git blob identity`)}
    else if(row.injection!==t.injection)errors.push(`${b}/${t.id}: wrong host injection`);
    if(t.kind==="guest-positive"){
     if(row.phase!=="native-guest"||row.result!=="pass"||row.exit_code!==0||row.stdout!==t.stdout||row.stderr!=="")errors.push(`${b}/${t.id}: missing exact native output / clean exit proof`);
@@ -84,7 +84,10 @@ if(process.argv[1] && import.meta.url===(await import("node:url")).pathToFileURL
   const p=resolve(root,t.fixture);
   if(!p.startsWith(root+sep))throw new Error("fixture path escapes repository");
   if(!lstatSync(p).isFile()||realpathSync(p)!==p)throw new Error("fixture is not a regular non-symlink file");
-  hashes[t.fixture]=createHash("sha256").update(readFileSync(p)).digest("hex");
+  const bytes=readFileSync(p);
+  const blobId=createHash("sha1").update(Buffer.from("blob "+bytes.length+"\0")).update(bytes).digest("hex");
+  if(blobId!==t.fixture_git_blob_sha1)throw new Error("fixture Git blob identity differs from trusted manifest: "+t.fixture);
+  hashes[t.fixture]=createHash("sha256").update(bytes).digest("hex");
  }
  const errors=validateEvidence(m,receipts,hashes);
  if(errors.length){for(const e of errors)console.error("FAIL",e);process.exit(1)}
