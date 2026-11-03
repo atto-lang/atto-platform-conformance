@@ -76,9 +76,9 @@ export class M0AdmissionLedger {
     const context = { credential, request, frameBytes, wallNowMs };
     const deny = reason => this.#deny(reason, context);
     if (!this.#enabled) return deny('DISABLED');
-    if (!peerAuthenticated || !object(credential) || !ID.test(credential.principal_id ?? '') ||
-        !ID.test(credential.boot_id ?? '') || !ID.test(credential.runtime_id ?? '') ||
-        !ID.test(credential.tenant_id ?? '') || !safeInteger(credential.generation) ||
+    if (!peerAuthenticated || !object(credential) || !(typeof credential.principal_id === 'string' && ID.test(credential.principal_id)) ||
+        !(typeof credential.boot_id === 'string' && ID.test(credential.boot_id)) || !(typeof credential.runtime_id === 'string' && ID.test(credential.runtime_id)) ||
+        !(typeof credential.tenant_id === 'string' && ID.test(credential.tenant_id)) || !safeInteger(credential.generation) ||
         credential.generation < 1 || !safeInteger(credential.expires_at_ms) ||
         !Array.isArray(credential.scopes) || credential.scopes.length > 4 ||
         credential.scopes.some(s => !SCOPES.has(s)) ||
@@ -131,7 +131,18 @@ export class M0AdmissionLedger {
 
     const key = [credential.boot_id,credential.principal_id,credential.runtime_id,credential.tenant_id].join('\0');
     let state = this.#states.get(key);
-    if (!state && this.#states.size >= LIMITS.principals) return deny('QUOTA');
+    if (!state && this.#states.size >= LIMITS.principals) {
+      // Reclaim only fully idle, expired states. Never evict active tickets,
+      // live nonces or rate-window evidence to make room for a new principal.
+      for (const [staleKey, old] of this.#states) {
+        if (old.ids.size === 0 &&
+            old.minute.every(t => monotonicNowMs - t >= 60000) &&
+            [...old.nonces.values()].every(exp => exp <= monotonicNowMs)) {
+          this.#states.delete(staleKey);
+        }
+      }
+      if (this.#states.size >= LIMITS.principals) return deny('QUOTA');
+    }
     if (state && monotonicNowMs < state.lastMonotonicMs) return deny('MALFORMED');
     const second = state ? state.second.filter(t => monotonicNowMs-t < 1000) : [];
     const minute = state ? state.minute.filter(t => monotonicNowMs-t < 60000) : [];
@@ -155,7 +166,7 @@ export class M0AdmissionLedger {
     const ticket = Object.freeze(Object.create(null));
     state.ids.set(request.id, ticket);
     this.#states.set(key,state);
-    this.#tickets.set(ticket,{key,id:request.id,deadline:monotonicNowMs+LIMITS.deadlineMs,generation:credential.generation});
+    this.#tickets.set(ticket,{key,id:request.id,deadline:monotonicNowMs+LIMITS.deadlineMs,generation:credential.generation,expiresAtWall:credential.expires_at_ms});
     this.#globalInflight++;
     return { ok:true,reason:'OK',ticket };
   }
@@ -173,10 +184,11 @@ export class M0AdmissionLedger {
     return true;
   }
 
-  live(ticket, monotonicNowMs, hostRuntimeGeneration) {
+  live(ticket, monotonicNowMs, hostRuntimeGeneration, wallNowMs) {
     const ref=this.#tickets.get(ticket);
     return !!ref && safeInteger(monotonicNowMs) && monotonicNowMs<=ref.deadline &&
-           safeInteger(hostRuntimeGeneration) && hostRuntimeGeneration===ref.generation;
+           safeInteger(hostRuntimeGeneration) && hostRuntimeGeneration===ref.generation &&
+           safeInteger(wallNowMs) && wallNowMs < ref.expiresAtWall;
   }
 
   // Test-only counters, never a management resource.
