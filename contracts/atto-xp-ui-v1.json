@@ -4,11 +4,31 @@
   "status": "PROPOSED_NOT_IMPLEMENTED",
   "languageSourceExtension": ".atto",
   "initialTargets": {
-    "ios-arm64": {"compiler": "llvm", "host": "swift", "adapter": "uikit"},
-    "android-arm64": {"compiler": "llvm", "host": "kotlin", "adapter": "android-view"}
+    "ios-arm64": {
+      "compiler": "llvm",
+      "host": "swift",
+      "adapter": "uikit"
+    },
+    "android-arm64": {
+      "compiler": "llvm",
+      "host": "kotlin",
+      "adapter": "android-view"
+    }
   },
-  "stages": ["reference-model", "abi-link", "atto-guest", "simulator", "physical-device"],
-  "resultStatuses": ["PASS", "FAIL", "UNSUPPORTED", "NOT_EXECUTED", "INFRA_FAILED"],
+  "stages": [
+    "reference-model",
+    "abi-link",
+    "atto-guest",
+    "simulator",
+    "physical-device"
+  ],
+  "resultStatuses": [
+    "PASS",
+    "FAIL",
+    "UNSUPPORTED",
+    "NOT_EXECUTED",
+    "INFRA_FAILED"
+  ],
   "abiInvariants": {
     "versionNegotiation": "major-must-match-minor-negotiated",
     "handles": "opaque-64-bit-generation-and-scene-fenced",
@@ -22,12 +42,42 @@
     "mobileRelease": "bundled-aot-code-no-downloaded-feature-code"
   },
   "negativeTests": [
-    "stale-generation-handle", "cross-scene-handle", "cross-actor-raw-pointer",
-    "wrong-thread-mutation", "reentrant-native-callback", "partial-transaction",
-    "event-queue-overflow", "batch-length-overflow", "integer-overflow",
-    "callback-after-dispose", "foreground-background-race", "permission-revocation",
-    "ios-untrusted-code-loading", "android-jni-lifetime", "utf8-malformed",
-    "duplicate-ui-node-id", "out-of-order-state-revision", "unsafe-host-function-payload"
+    "stale-generation-handle",
+    "cross-scene-handle",
+    "cross-actor-raw-pointer",
+    "wrong-thread-mutation",
+    "reentrant-native-callback",
+    "partial-transaction",
+    "event-queue-overflow",
+    "batch-length-overflow",
+    "integer-overflow",
+    "callback-after-dispose",
+    "foreground-background-race",
+    "permission-revocation",
+    "ios-untrusted-code-loading",
+    "android-jni-lifetime",
+    "utf8-malformed",
+    "duplicate-ui-node-id",
+    "out-of-order-state-revision",
+    "unsafe-host-function-payload"
   ],
-  "nonEvidence": ["zero-step-run", "host-reference-for-guest", "mocked-native-adapter", "unsigned-provenance", "simulator-for-physical-device"]
+  "nonEvidence": [
+    "zero-step-run",
+    "host-reference-for-guest",
+    "mocked-native-adapter",
+    "unsigned-provenance",
+    "simulator-for-physical-device"
+  ],
+  "nativeAbi": {
+    "header": "include/attoxp_ui_abi_v1.h",
+    "major": 1,
+    "minor": 0,
+    "handleBytes": 24,
+    "handleIdentityBits": 128,
+    "generationBits": 64,
+    "maxBatchBytes": 65536,
+    "maxBatchOps": 256,
+    "implementationStatus": "NOT_EXECUTED"
+  },
+  "negativeMatrix": "contracts/atto-xp-m0-negative-matrix-v1.json"
 }
