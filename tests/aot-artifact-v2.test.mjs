@@ -148,3 +148,17 @@ test('host trust anchors are Ed25519 public keys only',()=>{
   const m=good();
   rejected(()=>run(m,signEnvelope(m),binary,{'test-root':rsa.export({type:'spki',format:'pem'})}));
 });
+
+
+test('mathematically integral exponent manifest authenticates against the same JCS signature',()=>{
+  const m=good(),sig=signEnvelope(m);
+  const rendered=JSON.stringify(m).replace('"size_bytes":64','"size_bytes":6.4e1');
+  const result=verifyAotArtifactV2({manifestBytes:Buffer.from(rendered),signatureBytes:raw(sig),artifactBytes:binary,trustAnchors:{'test-root':publicKey.export({type:'spki',format:'pem'})}});
+  assert.equal(result.classification,'AUTHENTICATED_NOT_EXECUTED');
+  const rounded=JSON.stringify(m).replace('"size_bytes":64','"size_bytes":64.00000000000001');
+  rejected(()=>verifyAotArtifactV2({manifestBytes:Buffer.from(rounded),signatureBytes:raw(sig),artifactBytes:binary,trustAnchors:{'test-root':publicKey.export({type:'spki',format:'pem'})}}));
+});
+test('JCS keys sort by unsigned UTF-16 code units and reject unpaired surrogate keys',()=>{
+  assert.equal(canonicalizeJcs({'\uE000':2,'😀':1}),'{"😀":1,"":2}');
+  rejected(()=>canonicalizeJcs({'\uD800':42}));
+});
