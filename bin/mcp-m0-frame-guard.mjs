@@ -1,0 +1,114 @@
+// Source-free M0 test/reference framing guard. This is NOT a network MCP server.
+// It performs bounded, strict UTF-8 and JSON validation BEFORE JSON.parse is trusted.
+const DEFAULT_MAX_BYTES = 32 * 1024;
+const DEFAULT_MAX_DEPTH = 12;
+const utf8 = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true });
+
+export class M0FrameError extends Error {
+  constructor(reason) {
+    super(reason);
+    this.name = 'M0FrameError';
+    this.reason = reason;
+  }
+}
+
+export function parseM0Frame(frame, { maxBytes = DEFAULT_MAX_BYTES, maxDepth = DEFAULT_MAX_DEPTH } = {}) {
+  if (!(frame instanceof Uint8Array) || !Number.isSafeInteger(maxBytes) || maxBytes <= 0 ||
+      !Number.isSafeInteger(maxDepth) || maxDepth <= 0) {
+    throw new M0FrameError('MALFORMED');
+  }
+  if (frame.byteLength > maxBytes) throw new M0FrameError('OVERFLOW');
+  if (frame.byteLength === 0) throw new M0FrameError('MALFORMED');
+  let source;
+  try { source = utf8.decode(frame); } catch { throw new M0FrameError('MALFORMED'); }
+  // Reject a leading BOM. The JSON-RPC frame must have one canonical interpretation.
+  if (source.charCodeAt(0) === 0xfeff) throw new M0FrameError('MALFORMED');
+  let i = 0;
+  const ws = () => { while (i < source.length && /[ \t\n\r]/.test(source[i])) i++; };
+  const fail = (reason = 'MALFORMED') => { throw new M0FrameError(reason); };
+  const take = (char) => { if (source[i] !== char) fail(); i++; };
+  function string() {
+    const begin = i;
+    take('"');
+    while (i < source.length) {
+      const c = source[i++];
+      if (c === '"') {
+        try {
+          const decoded = JSON.parse(source.slice(begin, i));
+          if (typeof decoded !== 'string') fail();
+          return decoded;
+        } catch { fail(); }
+      }
+      if (c === '\\') {
+        const esc = source[i++];
+        if (!esc || !'"\\/bfnrtu'.includes(esc)) fail();
+        if (esc === 'u') {
+          if (!/^[0-9a-fA-F]{4}$/.test(source.slice(i, i + 4))) fail();
+          i += 4;
+        }
+      } else if (c.charCodeAt(0) < 0x20) fail();
+    }
+    fail();
+  }
+  // Sticky matching avoids quadratic repeated source.slice() on long arrays.
+  const numberToken = /-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?/y;
+  function atom() {
+    if (source.startsWith('true', i)) { i += 4; return; }
+    if (source.startsWith('false', i)) { i += 5; return; }
+    if (source.startsWith('null', i)) { i += 4; return; }
+    numberToken.lastIndex = i;
+    const number = numberToken.exec(source);
+    if (!number) fail();
+    if (!Number.isFinite(Number(number[0]))) fail();
+    i += number[0].length;
+  }
+  function value(depth) {
+    ws();
+    const c = source[i];
+    if (c === '{') {
+      if (depth + 1 > maxDepth) fail('OVERFLOW');
+      i++;
+      ws();
+      if (source[i] === '}') { i++; return; }
+      const keys = new Set();
+      while (true) {
+        ws();
+        if (source[i] !== '"') fail();
+        const key = string();
+        // Decoded key comparison closes JSON escape-key ambiguity.
+        if (keys.has(key)) fail();
+        keys.add(key);
+        ws(); take(':');
+        value(depth + 1);
+        ws();
+        if (source[i] === '}') { i++; return; }
+        take(',');
+      }
+    }
+    if (c === '[') {
+      if (depth + 1 > maxDepth) fail('OVERFLOW');
+      i++;
+      ws();
+      if (source[i] === ']') { i++; return; }
+      while (true) {
+        value(depth + 1);
+        ws();
+        if (source[i] === ']') { i++; return; }
+        take(',');
+      }
+    }
+    if (c === '"') { string(); return; }
+    atom();
+  }
+  ws();
+  // JSON-RPC request envelopes must be objects, never primitive or array roots.
+  if (source[i] !== '{') fail();
+  value(0);
+  ws();
+  if (i !== source.length) fail();
+  try {
+    const message = JSON.parse(source);
+    if (message === null || Array.isArray(message) || typeof message !== 'object') fail();
+    return message;
+  } catch { fail(); }
+}
