@@ -64,7 +64,9 @@
     "clockSkewMs": 30000,
     "replayWindowMs": 60000,
     "maxReplayNonces": 128,
-    "maxAuditBytes": 2048
+    "maxAuditBytes": 2048,
+    "maxPrincipalStates": 64,
+    "maxGlobalInflight": 128
   },
   "authority": {
     "source": "trusted-host-only",
@@ -108,7 +110,20 @@
       "real-deadlines-and-disconnect",
       "durable-audit",
       "guest-execution",
-      "AOT"
+      "AOT",
+      "cross-process-replay-atomicity",
+      "host-clock-trust",
+      "credential-issuance",
+      "audit-fsync-durability"
     ]
+  },
+  "referenceLedger": {
+    "module": "bin/mcp-m0-admission-ledger.mjs",
+    "tests": "tests/mcp-m0-admission-ledger.test.mjs",
+    "classification": "SOURCE_FREE_SAME_EVENT_LOOP_MODEL_ONLY",
+    "hostAuthentication": "M2_NOT_IMPLEMENTED",
+    "hostGenerationFence": "required",
+    "expiryFence": "required",
+    "audit": "synchronous-host-sink-required-not_durable_receipt"
   }
 }
