@@ -1,13 +1,15 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
-import {readdirSync, readFileSync} from "node:fs";
+import {existsSync, readdirSync, readFileSync} from "node:fs";
 import {resolve, join, relative} from "node:path";
 import {fileURLToPath} from "node:url";
 
 // Source-local, source-free static security audit. It does not authorize
 // private transfers or replace exact-head executed CI and independent review.
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
-const extensions = /\.(?:js|mjs|cjs|sh|yml|yaml)$/i;
+const extensions = /\.(?:js|mjs|cjs|ts|tsx|py|sh|bash|zsh|ps1|yml|yaml)$/i;
+const requiredScanRoots = ["bin","tools","scripts","lib","src",".github/workflows"];
+const optionalScanRoots = [".github/actions"];
 const DISABLED = "PRIVATE_SOURCE_PUBLISH_DISABLED_PENDING_PROTECTED_MAIN_APPROVAL";
 const disabledEntrypoints = new Map([
   ["bin/require-private-mirror.mjs", "requirePrivateMirror"],
@@ -53,16 +55,30 @@ function audit(path,src) {
 
 test("all executable surfaces have zero direct Git object publishers",()=>{
   let visited=0,disabled=0;
-  for(const subdir of ["bin","tools",".github/workflows"]) {
-    for(const file of sourceFiles(join(root,subdir))) {
+  const scanned=new Set();
+  for(const subdir of [...requiredScanRoots,...optionalScanRoots]) {
+    const dir=join(root,subdir);
+    if (!existsSync(dir)) {
+      assert.ok(optionalScanRoots.includes(subdir),
+        "required executable source directory missing: "+subdir);
+      continue;
+    }
+    for(const file of sourceFiles(dir)) {
       const path=relative(root,file).replaceAll("\\","/");
       audit(path,readFileSync(file,"utf8"));
+      scanned.add(path);
       if(disabledEntrypoints.has(path)) disabled++;
       visited++;
     }
   }
+  for(const path of [
+    "scripts/verify-actor-hop-exact-tree.sh",
+    "scripts/validate-recovered-work-items.py",
+    "lib/guest-aot-evidence-v1.mjs",
+    "src/carrier-tree-triage.mjs"
+  ]) assert.ok(scanned.has(path),"executable audit silently omitted "+path);
   assert.equal(disabled,2,"both legacy publisher surfaces must be scanned");
-  assert.ok(visited>=30,"executable surface enumeration unexpectedly shrunk");
+  assert.ok(visited>=65,"executable surface enumeration unexpectedly shrunk");
 });
 
 test("any direct Git push or Git-object API write fails, regardless of filename",()=>{
@@ -116,4 +132,27 @@ test("an empty or moved denial no longer satisfies the control",()=>{
       'const shouldNeverRun = true;\n  throw Error("'+DISABLED+'");'
     ),name),/FIRST executable statement/);
   }
+});
+
+test("deny-only publisher imports stay built-in-only",()=>{
+  for(const path of disabledEntrypoints.keys()) {
+    const source=readFileSync(join(root,path),"utf8");
+    const imports=source.match(/^import[^\n]*$/gm) ?? [];
+    assert.deepEqual(imports,['import {pathToFileURL} from "node:url";'],
+      "new imports can run before the lockdown");
+    assert.doesNotMatch(source,/\b(?:require\s*\(|import\s*\(|import\s*["']|export\s+[^\n]*\sfrom\s*["'])/,
+      "dynamic/side-effect imports are prohibited");
+  }
+});
+
+test("the incident hold covers every PR and hard-fails external source before checkout",()=>{
+  const workflow=readFileSync(join(root,".github/workflows/private-mirror-incident-hold.yml"),"utf8");
+  assert.match(workflow,/on:\n(?:[^\n]*\n)*?  pull_request:\n  workflow_dispatch:/);
+  assert.doesNotMatch(workflow,/^\s+paths:\s*$/m,"path-filtered security gates can be bypassed");
+  assert.doesNotMatch(workflow,/^\s+if:\s+github\.event_name/m,
+    "cross-repository PRs must fail instead of being skipped");
+  const gate=workflow.indexOf("- name: Reject cross-repository PR heads before checkout");
+  const checkout=workflow.indexOf("uses: actions/checkout@");
+  assert.ok(gate>=0 && checkout>gate,"deny before checkout");
+  assert.match(workflow,/CROSS_REPOSITORY_SOURCE_CHECKOUT_FORBIDDEN/);
 });
