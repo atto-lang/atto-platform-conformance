@@ -29,7 +29,10 @@ function checkManifest(m) {
   assert.ok(c.source.length<8192);
   if(c.expect==="accept"){
    assert.deepEqual(Object.keys(c).sort(),["expect","expectedRow","id","source","stage","writes"]);
-   assert.equal(c.stage,"compile-and-execute");
+   assert.equal(c.stage,"source-contract-only");
+   // These callable-local type-inference examples have no executable main.
+   // Compiled guest acceptance lives in the separately pinned .atto corpus.
+   assert.doesNotMatch(c.source,/\b(?:pub\s+)?fnc\s+main\s*\(/);
    assert.deepEqual(rowOf(c.writes),rowOf(Object.entries(c.expectedRow).map(([key,type])=>({key,type}))),"wrong inferred row: "+c.id);
    positive.add(c.id);
   } else {
