@@ -219,6 +219,37 @@ This is intentionally narrower than language semantics:
 This bootstrap is *not* a passing instance of the
 `type_of.closed_nominal` or `aot.native_execution` guest conformance oracle.
 
+### M1b: compiler-owned typed MIR for a single guest return
+
+The Java draft [#2473](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2473)
+now contains `AotReflectionTypedMirV1`, an **opt-in, narrow compiler MIR** for
+a parsed `.atto` source file containing exactly one public, pure
+`main(): TypeDescriptor` with the single return
+`type_of<ClosedPublicNominal>()`. The production parser handles all source.
+The ordinary TypeChecker and OwnershipChecker still admit every other
+declaration; the special entry is validated by a separate conservative
+closed-shape gate, not silently marked as a fully typechecked generic guest
+expression.
+
+The MIR declares its own compiler-only `TypeDescriptorType` and supports two
+typed operations, `LoadTypeDescriptor(tableIndex=0, typeIdHex)` followed by
+`ReturnDescriptor(registerIndex=0)`. Its plan constructor verifies the
+immutable table bytes, payload digest, canonical type identity and exact
+instruction sequence, exposing defensive byte copies. No runtime invocation,
+Java reflection, raw pointer, interior alias, dynamic specialization, actor
+authority or foreign tenant type discovery is admitted.
+
+**This is not a general `Types.Type` or normal guest `TypeDescriptor`
+runtime value.** It cannot run the entry, emit native code, or prove any
+GraalVM/LLVM/.NET/Wasm/Forge AOT guest result. The ordinary compiler intentionally
+continues to reject source-level `type_of<T>()` until a real typed effect/
+ownership/HIR integration and backend constant emission exist.
+
+The committed `typed_main_type_of_nominal.atto` fixture and companion JUnit
+positive/negative tests are candidate tests, **NOT_EXECUTED** until actual
+exact-head Maven/JUnit evidence exists. The 32 backend guest conformance
+oracles are unchanged and remain NOT_EXECUTED.
+
 ## Priority implementation slices
 
 1. Java/Graal typed `type_of<T>()` for public nominal types + one generated
