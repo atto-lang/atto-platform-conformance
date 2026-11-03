@@ -26,35 +26,7 @@ Each actor receives `PubSubDelivery<T>` via the ordinary `receive(Message)` acto
 ## Scope, names, ownership, and authority
 
 - `PubSub.local()` creates an explicitly owned broker within one runtime/isolate domain; the broker is not an ambient singleton. The application/service creates and passes a capability to authorized actors. Cross-tenant publication and subscription require explicit, independently checked authority; a topic name is not authorization.
-- **Authenticated group-scoped topic identity** is (broker instance, group identity, exact name, payload type). A group may define its own `events` topic without aliasing another group's `events` or the legacy broker-global topic. Re-defining the same group topic with a different payload type is a `TopicTypeMismatch`. Names are case-sensitive ASCII, 1–128 bytes, match `^[A-Za-z][A-Za-z0-9._/-]{0,127}# Actor/ActorGroup portable in-memory pub-sub v1 (proposed)
-
-**Status:** normative target + executable *JavaScript reference oracle*, **NOT** an implemented or guest-executed five-backend feature. Versioned machine-readable cases: [portable-v1.json](../contracts/v1/actor-pubsub/portable-v1.json). Run `node --test tests/actor-pubsub-portable-v1.test.mjs`. The model has no threads, compiler or actor scheduler: passing it proves only that the model agrees with the vectors, not real linearizability, runtime safety, or compiler parity.
-
-## Zero language keywords
-
-Do not create `define publisher` or `define subscriber`. This is a typed standard library and runtime protocol. Minimal public types: `PubSub`, `Topic<T>`, affine `Subscription<T>`, `PubSubDelivery<T>`, `PublishReceipt`, and existing `ActorGroup` / affine `GroupMembership`.
-
-Illustrative Oreslang source **only; not parser-verified**:
-
-~~~ores
-let bus = PubSub.local()
-let events = bus.topic<Event>("orders.created")?
-let group = ActorGroup.new()
-let member_a = group.join(worker_a)?
-let member_b = group.join(worker_b)?
-let group_sub = bus.subscribe(events, group, capacity: 32)?
-let audit_sub = bus.subscribe(events, audit_actor, capacity: 32)?
-let receipt = bus.try_publish(events, rt share Event(id: 42))?
-group_sub.unsubscribe()
-await group_sub.get_done()
-~~~
-
-Each actor receives `PubSubDelivery<T>` via the ordinary `receive(Message)` actor path. No synchronous guest handler invocation from `try_publish`, no separate actor lifecycle, and no implicit parking or host-thread blocking. Synchronous `try_publish` is a nonblocking admission attempt; async behavior can be added later by explicit composition with existing scheduling and channel primitives.
-
-## Scope, names, ownership, and authority
-
-- `PubSub.local()` creates an explicitly owned broker within one runtime/isolate domain; the broker is not an ambient singleton. The application/service creates and passes a capability to authorized actors. Cross-tenant publication and subscription require explicit, independently checked authority; a topic name is not authorization.
-. AttoLang symbols (`#ready`) are not string topic names. The original PS001–PS020 broker-global topic surface is retained **only as a legacy reference mode**, not a guest authorization path.
+- **Authenticated group-scoped topic identity** is (broker instance, group identity, exact name, payload type). A group may define its own `events` topic without aliasing another group's `events` or the legacy broker-global topic. Re-defining the same group topic with a different payload type is a `TopicTypeMismatch`. Names are case-sensitive ASCII, 1–128 bytes, and match `^[A-Za-z][A-Za-z0-9._/-]{0,127}$`. AttoLang symbols (`#ready`) are not string topic names. The original PS001–PS020 broker-global topic surface is retained **only as a legacy reference mode**, not a guest authorization path.
 - `T` must be `Sendable`; `rt share` enforces transitively immutable, lifetime-safe publication. No mutable pointer/borrow, borrowed actor arena, non-sendable host object or untracked interior mutation crosses the boundary. On failed admission the caller retains the exact original payload/share capability for retry.
 - `Subscription<T>` is an **affine revocable control handle**, minted per distinct topic/target registration and bound to its owning broker and target generation. Repeated subscribe returns the same live registration without creating a new registration or an independent revocation capability. An actor may hold multiple subscriptions to different topics.
 - `GroupMembership` is a distinct affine capability for (group, actor incarnation). Actors can join multiple groups. A second join into the same group while live is an idempotent no-op; it does **not** mint a second affine membership capability. Leaving revokes the one membership. A group never owns the actor's lifecycle merely through membership.
