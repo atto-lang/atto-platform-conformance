@@ -40,7 +40,7 @@ test("rejects guest PASS without source compiler and runtime gates",()=>{
   assert.throws(()=>validatePubSubEvidence(forged),/guest PASS requires source/);
 });
 
-test("one fully grounded backend is not full five-backend parity",()=>{
+test("one syntactically plausible but unattested backend is not verified",()=>{
   const partiallyVerified=copy(),r=partiallyVerified.records[0];
   r.source_compilation="PASS";
   r.runtime_substrate="PASS";
@@ -48,6 +48,31 @@ test("one fully grounded backend is not full five-backend parity",()=>{
   r.source_sha="a".repeat(40);r.tree_sha="b".repeat(40);
   r.run_url="https://github.com/org/repo/actions/runs/1234";
   r.executed_steps=4;r.guest_trace="evidence/pubsub-java.json";
-  assert.equal(validatePubSubEvidence(partiallyVerified).verified,1);
-  assert.equal(validatePubSubEvidence(partiallyVerified).parity_certified,false);
+  const report=validatePubSubEvidence(partiallyVerified);
+  assert.equal(report.verified,0);
+  assert.equal(report.candidate_records,1);
+  assert.equal(report.parity_certified,false);
+});
+
+test("five fabricated source/run/trace records never become release-ready",()=>{
+  const forged=copy();
+  for(const r of forged.records) {
+    r.source_compilation="PASS";
+    r.runtime_substrate="PASS";
+    r.guest_execution="PASS";
+    r.source_sha="a".repeat(40);
+    r.tree_sha="b".repeat(40);
+    r.run_url="https://github.com/org/repo/actions/runs/1234";
+    r.executed_steps=4;
+    r.guest_trace=`evidence/pubsub-${r.backend}.json`;
+  }
+  const report=validatePubSubEvidence(forged);
+  assert.equal(report.candidate_records,5);
+  assert.equal(report.verified,0);
+  assert.equal(report.parity_certified,false);
+  assert.equal(report.release_ready,false);
+  forged.parity_certified=true;
+  forged.release_ready=true;
+  assert.throws(()=>validatePubSubEvidence(forged),
+    /unattested records cannot certify/);
 });
