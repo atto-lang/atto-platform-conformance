@@ -30,7 +30,7 @@
       "name": "java",
       "repository": "ores-truffle-oreslang/oreslang-source.java",
       "pr": 2445,
-      "head": "0cdce30b8360b72d0ca7bdaf40090d6f3063e195",
+      "head": "4f27b4f5bc1f625f9daaee6403c7257e64def439",
       "guestPath": "examples/replay-video-disconnect-smoke.atto",
       "guestBlobSha": "d334800e067a4f6f4bcd95fa2adf104c52c39f49",
       "execution": "UNVERIFIED"
@@ -91,5 +91,11 @@
     "localVerification": "Locally reconstructed GitHub exact-byte source blobs, independently confirmed git hash-object matching both GitHub content blob SHA values, executed Bash syntax check and 11 controlled Maven-stub canaries; no real Maven/Graal guest compiler was available."
   },
   "displayLanguage": "AttoLang",
-  "sourceExtension": ".atto"
+  "sourceExtension": ".atto",
+  "javaAotPackagingGate": {
+    "status": "ADDED_NOT_EXECUTED",
+    "pomChange": "stdlib resources include both **/*.atto and **/*.ores",
+    "unitTest": "src/test/java/dev/oreslang/config/PackagedAttoStdlibTest.java",
+    "assertion": "dev/oreslang/std/replay_stream.atto must be present on JVM classpath; this is necessary but not sufficient to prove Native Image runtime loading"
+  }
 }
