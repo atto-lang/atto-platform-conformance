@@ -35,7 +35,7 @@ function suspiciousWrites(src) {
 
 function lockedExport(src,name) {
   const sig=new RegExp("export\\s+async\\s+function\\s+"+name+
-    "\\s*\\(\\{[\\s\\S]*?\\}\\)\\s*\\{");
+    "\\s*\\(\\s*_untrustedOptions\\s*\\)\\s*\\{");
   const match=sig.exec(src);
   assert.ok(match,"required exported deny-only function absent: "+name);
   const body=src.slice(match.index+match[0].length);
