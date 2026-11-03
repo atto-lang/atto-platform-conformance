@@ -22,7 +22,7 @@ Create `tests/guest/actor_pubsub_basic.atto` **only after** the compiler accepts
 
 ## Shared oracle and expansion
 
-Preserve all PS001–PS020 expected results exactly; first gate PS002, PS003, PS005, PS008, PS009, PS011 and the scoped authority cases. Preserve each vector ID, input hash, expected receipt/delivery/diagnostic, and actual trace. Run the full corpus after the vertical slice.
+Preserve all PS001–PS026 expected results exactly. PS001–PS020 are legacy broker-global reference vectors; PS021–PS026 cover authenticated group-scoped authority and lifecycle. First gate PS002, PS003, PS005, PS008, PS009, PS011, PS021 and PS023. Preserve each vector ID, input hash, expected receipt/delivery/diagnostic, and actual trace. Run the full corpus after the vertical slice.
 
 ## Backend acceptance (all mandatory)
 
