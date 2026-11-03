@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {spawnSync} from "node:child_process";
-import {mkdtemp,writeFile,chmod,symlink,rm,stat} from "node:fs/promises";
+import {mkdtemp,writeFile,readFile,chmod,symlink,rm,stat} from "node:fs/promises";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
 import {createHash} from "node:crypto";
@@ -112,5 +112,37 @@ test("native gate refuses a CLIF-spoofing interpreted wrapper before any invocat
       compilerSha256:createHash("sha256").update(bytes).digest("hex"),
       compilerCommit:commit}),/host-native executable image/);
     await assert.rejects(stat(marker),/ENOENT/);
+  }finally{await rm(root,{recursive:true,force:true})}
+});
+
+test("native gate rejects malformed ELF compiler candidates and admits a real image only for behavioral checks",async()=>{
+  if(process.platform!=="linux")return;
+  const root=await mkdtemp(join(tmpdir(),"orescranelift-elf-validation-"));
+  try{
+    const native=await readFile("/usr/bin/true");
+    const magicOnly=Buffer.alloc(128);
+    magicOnly.set(Buffer.from("7f454c46","hex"),0);
+    const wrongMachine=Buffer.from(native);
+    wrongMachine.writeUInt16LE(process.arch==="x64"?183:62,18);
+    const unboundedProgramHeaders=Buffer.from(native);
+    unboundedProgramHeaders.writeBigUInt64LE(BigInt(native.length-1),32);
+    const zeroProgramHeaders=Buffer.from(native);
+    zeroProgramHeaders.writeUInt16LE(0,56);
+    for(const [name,bytes] of [
+      ["magic-only",magicOnly],["wrong-machine",wrongMachine],
+      ["invalid-program-table",unboundedProgramHeaders],
+      ["zero-program-headers",zeroProgramHeaders]
+    ]){
+      const exe=join(root,name);
+      await writeFile(exe,bytes);await chmod(exe,0o700);
+      await assert.rejects(runNativeCranelift({compiler:exe,
+        compilerSha256:createHash("sha256").update(bytes).digest("hex"),
+        compilerCommit:commit}),/host-native executable image/,name);
+    }
+    const exe=join(root,"native-but-not-a-compiler");
+    await writeFile(exe,native);await chmod(exe,0o700);
+    await assert.rejects(runNativeCranelift({compiler:exe,
+      compilerSha256:createHash("sha256").update(native).digest("hex"),
+      compilerCommit:commit}),/did not produce bounded CLIF IR/);
   }finally{await rm(root,{recursive:true,force:true})}
 });
