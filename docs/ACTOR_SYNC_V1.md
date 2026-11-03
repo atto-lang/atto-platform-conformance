@@ -68,3 +68,9 @@ The canonical copy is `fixtures/actor-sync-v1/stdlib/actor_sync.ores` (Git blob 
 Keep AS01–AS24 marked NOT_EXECUTED/UNSUPPORTED because the fixture proves, at most once executable, portable *cursor semantics*, not real durable actor activation, authenticated persistence or network synchronization. A complete guest ABI additionally needs the full asynchronous storage, supervision and tenancy semantics in the preceding sections.
 
 The Java userland module deliberately uses signed 32-bit `int` revisions, capped at 2147483646; the native SQLite reference stores 64-bit revisions. Cross-toolchain ABI numeric widths and overflow behavior **must** be reconciled before native persistence can be marked interoperable.
+
+## AS25 — durable observed-epoch fencing, and .atto target
+
+AS25 requires every backend to persist the **maximum observed actor generation** when a newer-epoch event is encountered, prevent any further stale/current delta or projection read, survive reopening and process crashes, and require an independently authenticated complete snapshot with epoch at least that maximum before lifting the fence. No backend currently has an executed AS25 guest receipt. The C++ SQLite reference adds a staged legacy-schema migration and fail-closed handling for old poisoned projections without a recorded required generation, but it is not guest parity evidence.
+
+`fixtures/actor-sync-v1` contains three canonical transitional `.ores` programs and byte-identical `.atto` versions (including the stdlib source). Each `.atto` file has the same Git blob as its `.ores` counterpart; `manifest.json` pins both and marks AttoLang extension execution **NOT_EXECUTED**. The public source extension target is `.atto`, and no backend receives a `.atto` PASS from compiling old `.ores` files. The source-free contract checker now requires 25 semantic cases across five toolchains.
