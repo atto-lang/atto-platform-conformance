@@ -28,7 +28,7 @@ export function verifyActorSyncContract(contract) {
   assert.equal(contract.acceptance?.compilerBinarySha256,true);
   assert.equal(contract.acceptance?.observedJobSteps,true);
   assert.equal(contract.acceptance?.sourceTreesExactHead,true);
-  assert.ok(Array.isArray(contract.scenarios) && contract.scenarios.length>=24,"scenario floor");
+  assert.ok(Array.isArray(contract.scenarios) && contract.scenarios.length>=25,"scenario floor");
   assert.deepEqual(Object.keys(contract.implementationStatus||{}), BACKENDS, "implementation status backends");
   const ids = new Set();
   for (const s of contract.scenarios) {
@@ -64,7 +64,7 @@ export function verifyActorSyncContract(contract) {
         "positive execution case cannot pass merely by rejecting syntax");
     }
   }
-  for(let i=1;i<=24;i++) assert.ok(ids.has("AS"+String(i).padStart(2,"0")),"missing AS case "+i);
+  for(let i=1;i<=25;i++) assert.ok(ids.has("AS"+String(i).padStart(2,"0")),"missing AS case "+i);
   assert.equal(contract.implementationStatus.cranelift.actorGuest,"UNSUPPORTED",
     "Cranelift scalar-only source stage must not claim guest actors");
   return {contract:contract.contract,scenarioCount:ids.size,backendCount:BACKENDS.length,
