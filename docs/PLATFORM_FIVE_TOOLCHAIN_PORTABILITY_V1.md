@@ -131,6 +131,16 @@ lanes. A generated Wasm module and a published .NET NativeAOT guest artifact
 are **per-fixture outputs**, not stable per-lane engine identities: their
 digests may differ between test programs. Any coherence failure is
 `DIVERGENT` even if every scalar result matches the oracle.
+**GitHub run and job ID consistency:** a run ID must identify the same
+repository and exact source head across all observations. A job ID may not be
+reused with a different run ID, attempt, runner, conclusion or executed-step
+inventory. Multiple jobs within one run are allowed, as are separately
+identified jobs from later run attempts. An identical claimed job may report
+multiple positive/negative fixture outcomes, but its GitHub step inventory
+must stay identical across those claims. The validator only detects
+contradictions: it does **not** contact GitHub or independently attest that
+any claimed run, job, runner or successful step exists.
+
 These are consistency checks on *untrusted claims*, not verification of
 GitHub runner identities, source provenance, executable builds or device
 attestations.
