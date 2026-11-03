@@ -89,6 +89,35 @@ export class M0AdmissionLedger {
     if (credential.expires_at_ms <= wallNowMs) return deny('UNAUTHENTICATED');
     if (hostBootId !== credential.boot_id || !safeInteger(hostRuntimeGeneration) ||
         hostRuntimeGeneration !== credential.generation) return deny('GENERATION');
+    const key = [credential.boot_id,credential.principal_id,credential.runtime_id,credential.tenant_id].join('\0');
+    let state = this.#states.get(key);
+    if (!state && this.#states.size >= LIMITS.principals) {
+      // Reclaim only fully idle, expired states. Never evict active tickets,
+      // live nonces or rate-window evidence to make room for a new principal.
+      for (const [staleKey, old] of this.#states) {
+        if (old.ids.size === 0 &&
+            old.minute.every(t => monotonicNowMs - t >= 60000) &&
+            [...old.nonces.values()].every(exp => exp <= monotonicNowMs)) {
+          this.#states.delete(staleKey);
+        }
+      }
+      if (this.#states.size >= LIMITS.principals) return deny('QUOTA');
+    }
+    if (state && monotonicNowMs < state.lastMonotonicMs) return deny('MALFORMED');
+    const second = state ? state.second.filter(t => monotonicNowMs-t < 1000) : [];
+    const minute = state ? state.minute.filter(t => monotonicNowMs-t < 60000) : [];
+    // The rate budget charges *every* authenticated request attempt, including
+    // malformed, unsupported and denied requests; otherwise a client could
+    // bypass quotas by sending bad methods that still consume audit resources.
+    if (second.length >= LIMITS.perSecond || minute.length >= LIMITS.perMinute)
+      return deny('QUOTA');
+    if (!state) state = { ids:new Map(),nonces:new Map(),second:[],minute:[],lastMonotonicMs:monotonicNowMs };
+    state.second = second;
+    state.minute = minute;
+    state.lastMonotonicMs = monotonicNowMs;
+    state.second.push(monotonicNowMs);
+    state.minute.push(monotonicNowMs);
+    this.#states.set(key,state);
     if (!object(request) || !validKeys(request, ['jsonrpc','id','method','params']) ||
         request.jsonrpc !== '2.0' ||
         !(typeof request.id === 'string' && request.id.length > 0 && request.id.length <= 64) &&
@@ -129,40 +158,16 @@ export class M0AdmissionLedger {
     } else if (request.params.uri !== undefined) return deny('MALFORMED');
     if (!credential.scopes.includes(scope)) return deny('SCOPE');
 
-    const key = [credential.boot_id,credential.principal_id,credential.runtime_id,credential.tenant_id].join('\0');
-    let state = this.#states.get(key);
-    if (!state && this.#states.size >= LIMITS.principals) {
-      // Reclaim only fully idle, expired states. Never evict active tickets,
-      // live nonces or rate-window evidence to make room for a new principal.
-      for (const [staleKey, old] of this.#states) {
-        if (old.ids.size === 0 &&
-            old.minute.every(t => monotonicNowMs - t >= 60000) &&
-            [...old.nonces.values()].every(exp => exp <= monotonicNowMs)) {
-          this.#states.delete(staleKey);
-        }
-      }
-      if (this.#states.size >= LIMITS.principals) return deny('QUOTA');
-    }
-    if (state && monotonicNowMs < state.lastMonotonicMs) return deny('MALFORMED');
-    const second = state ? state.second.filter(t => monotonicNowMs-t < 1000) : [];
-    const minute = state ? state.minute.filter(t => monotonicNowMs-t < 60000) : [];
-    const nonces = state ? new Map([...state.nonces].filter(([,expiry]) => expiry > monotonicNowMs)) : new Map();
+    const nonces = new Map([...state.nonces].filter(([,expiry]) => expiry > monotonicNowMs));
     if (nonces.has(security.nonce)) return deny('REPLAY');
     if (state?.ids.has(request.id)) return deny('DUPLICATE_ID');
     if ((state?.ids.size || 0) >= LIMITS.inflight || this.#globalInflight >= LIMITS.globalInflight ||
-        second.length >= LIMITS.perSecond || minute.length >= LIMITS.perMinute ||
         nonces.size >= LIMITS.replayNonces) return deny('QUOTA');
 
     if (!this.#emit('allow','OK',context)) return { ok:false, reason:'AUDIT_FAILURE' };
-    if (!state) state = { ids:new Map(),nonces:new Map(),second:[],minute:[],lastMonotonicMs:monotonicNowMs };
     state.ids = new Map(state.ids);
     state.nonces = nonces;
-    state.second = second;
-    state.minute = minute;
-    state.lastMonotonicMs = monotonicNowMs;
     state.nonces.set(security.nonce, monotonicNowMs + LIMITS.replayWindowMs);
-    state.second.push(monotonicNowMs);
-    state.minute.push(monotonicNowMs);
     const ticket = Object.freeze(Object.create(null));
     state.ids.set(request.id, ticket);
     this.#states.set(key,state);
