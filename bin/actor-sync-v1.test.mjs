@@ -17,13 +17,21 @@ function passesMutation(description,mutate,expression) {
 }
 test("canonical inventory validates and reports zero verified guest executions",()=>{
  const result=verifyActorSyncContract(clone());
- assert.equal(result.scenarioCount,24);
+ assert.equal(result.scenarioCount,25);
  assert.equal(result.backendCount,5);
  assert.equal(result.verifiedGuestPasses,0);
 });
 passesMutation("missing backend",s=>delete s.scenarios[0].backendStatus.net,/status mapping/);
 passesMutation("duplicated scenario",s=>{s.scenarios[1].id=s.scenarios[0].id},/duplicate scenario/);
 passesMutation("missing scenario",s=>s.scenarios.pop(),/scenario floor/);
+passesMutation("cannot delete the persisted generation-fence oracle",s=>{
+ s.scenarios=s.scenarios.filter(x=>x.id!=="AS25");
+},/scenario floor/);
+passesMutation("cannot forge a passing generation-fence receipt with zero steps",s=>{
+ const item=s.scenarios.find(x=>x.id==="AS25");
+ item.backendStatus.java="PASS";
+ item.evidence.java={...receipt(),executedSteps:0};
+},/zero-step/);
 passesMutation("unrecognized execution status",s=>s.scenarios[0].backendStatus.java="HOST_ONLY",/unknown/);
 passesMutation("unexecuted cannot forge a receipt",s=>s.scenarios[0].evidence.llvm=receipt(),/forged execution/);
 passesMutation("unsupported cannot forge pass receipt",s=>s.scenarios[0].evidence.cranelift=receipt(),/forged execution/);
