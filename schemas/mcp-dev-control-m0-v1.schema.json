@@ -111,7 +111,7 @@
         "uri": {
           "type": "string",
           "maxLength": 512,
-          "pattern": "^atto-dev://runtime/[A-Za-z0-9_.-]{1,128}/tenant/[A-Za-z0-9_.-]{1,128}/(process/summary|actors/counters|tasks/counters|scheduler/counters|upgrade/status)$"
+          "pattern": "^atto-dev://runtime/(?!\\.{1,2}/)[A-Za-z0-9_.-]{1,128}/tenant/(?!\\.{1,2}/)[A-Za-z0-9_.-]{1,128}/(process/summary|actors/counters|tasks/counters|scheduler/counters|upgrade/status)$"
         }
       }
     }
