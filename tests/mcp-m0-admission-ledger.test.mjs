@@ -201,3 +201,20 @@ test('long or malformed JSON-RPC ID never admitted',()=>{
  const f=fixture();for(const id of [null,{},'x'.repeat(65),-1,1.25])
    assert.equal(f.admit(msg(id)).reason,'MALFORMED');
 });
+
+// Rate admission applies to failed authenticated calls too, not just successes.
+test('invalid authenticated method flood consumes per-second quota',()=>{
+ const f=fixture();
+ for(let i=0;i<8;i++)
+   assert.equal(f.admit(msg(String(i),i.toString(16).padStart(32,'0'),'guest/invoke')).reason,'UNSUPPORTED');
+ assert.equal(f.admit(msg('last','f'.repeat(32))).reason,'QUOTA');
+ assert.equal(f.ledger.stats().active,0);
+ assert.equal(f.admit(msg('later','f'.repeat(32)),{monotonicNowMs:2000}).ok,true);
+});
+test('cross-tenant denied requests still consume rate budget',()=>{
+ const f=fixture();
+ for(let i=0;i<8;i++)
+   assert.equal(f.admit(msg(String(i),i.toString(16).padStart(32,'0'),'resources/read',
+     'atto-dev://runtime/r1/tenant/foreign/process/summary')).reason,'TENANT');
+ assert.equal(f.admit(msg('last','f'.repeat(32))).reason,'QUOTA');
+});
