@@ -270,3 +270,44 @@ test('null and primitive workflow steps are rejected without throwing', () => {
     assert.equal(verifyReceipt(manifest, candidate).classification, 'INVALID');
   }
 });
+
+
+test('unexpected manifest backend cannot mint a new parity lane', () => {
+  const candidate = structuredClone(manifest);
+  candidate.backends.unreviewed = 'unreviewed backend';
+  assert.ok(verifyManifest(candidate).some(x => x.includes('exact backend')));
+  const claim = candidateClaim();
+  claim.backend = 'unreviewed';
+  assert.equal(verifyReceipt(candidate, claim).classification, 'INVALID');
+});
+
+test('replacing a required security oracle with another ID is forbidden', () => {
+  const candidate = structuredClone(manifest);
+  candidate.cases.find(c => c.id === 'tenant.foreign_denied').id = 'tenant.synthetic_pass';
+  const errors = verifyManifest(candidate);
+  assert.ok(errors.some(x => x.includes('unknown or remapped canonical oracle')));
+  assert.ok(errors.some(x => x.includes('missing canonical oracle')));
+  assert.equal(verifyReceipt(candidate, candidateClaim()).classification, 'INVALID');
+});
+
+test('an existing oracle ID cannot silently change its required kind', () => {
+  const candidate = structuredClone(manifest);
+  candidate.cases.find(c => c.id === 'runtime_eval.forbidden').kind = 'compile-and-run';
+  assert.ok(verifyManifest(candidate).some(x => x.includes('remapped canonical oracle')));
+});
+
+test('witness schema disallows non-string and malformed proof names', () => {
+  for (const malformed of [null, 42, {}, 'x', 'not a stable witness name']) {
+    const candidate = structuredClone(manifest);
+    candidate.cases[0].mustProve = [malformed];
+    assert.ok(verifyManifest(candidate).some(x => x.includes('invalid witness set')));
+  }
+});
+
+test('backend set must be an exact map with nonblank descriptions', () => {
+  for (const invalid of [null, [], { ...manifest.backends, wasm: ' ' }]) {
+    const candidate = structuredClone(manifest);
+    candidate.backends = invalid;
+    assert.ok(verifyManifest(candidate).some(x => x.includes('backend')));
+  }
+});
