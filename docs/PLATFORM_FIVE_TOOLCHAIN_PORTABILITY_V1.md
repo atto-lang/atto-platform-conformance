@@ -120,9 +120,17 @@ all recorded cases must share one source Git commit; each platform must
 use one target Git commit across cases and backends; each backend must
 use one compiler source commit across all platforms; and each individual
 platform/backend lane must use one compiler binary digest across its
-cases. Different target architectures may legitimately produce different
-compiler binary digests across different platform lanes. Any coherence
-failure is `DIVERGENT` even if every scalar result matches the oracle.
+cases. Wasm observations must also agree on the upstream LLVM
+compiler source revision, including with direct LLVM observations when
+both routes are present; each Wasm platform/backend lane must use one
+upstream LLVM compiler executable digest and one Wasm runtime-host digest.
+Likewise, each Java/Graal lane must use one guest-engine binary digest
+and one runtime version. Different target architectures may legitimately
+produce different compiler and runtime-host binary digests across platform
+lanes. A generated Wasm module and a published .NET NativeAOT guest artifact
+are **per-fixture outputs**, not stable per-lane engine identities: their
+digests may differ between test programs. Any coherence failure is
+`DIVERGENT` even if every scalar result matches the oracle.
 These are consistency checks on *untrusted claims*, not verification of
 GitHub runner identities, source provenance, executable builds or device
 attestations.
