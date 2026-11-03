@@ -1,4 +1,6 @@
 import test from "node:test";
+import {spawnSync} from "node:child_process";
+import {fileURLToPath} from "node:url";
 import assert from "node:assert/strict";
 import {readFile} from "node:fs/promises";
 import {validatePubSubEvidence} from "../src/actor-pubsub-evidence-v1.mjs";
@@ -75,4 +77,16 @@ test("five fabricated source/run/trace records never become release-ready",()=>{
   forged.release_ready=true;
   assert.throws(()=>validatePubSubEvidence(forged),
     /unattested records cannot certify/);
+});
+
+test("portable vector suite passes Node ESM syntax check",()=>{
+  // This test runs even when only the evidence test file is selected in CI:
+  // corrupted vector files must fail before a release receipt is considered.
+  const target=fileURLToPath(new URL("./actor-pubsub-portable-v1.test.mjs",import.meta.url));
+  const result=spawnSync(process.execPath,["--check",target],{
+    shell:false,encoding:"utf8",timeout:5000,maxBuffer:65536
+  });
+  assert.equal(result.error,undefined,String(result.error??""));
+  assert.equal(result.signal,null,"syntax check timed out or was killed");
+  assert.equal(result.status,0,result.stderr||result.stdout);
 });
