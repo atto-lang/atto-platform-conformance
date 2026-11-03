@@ -77,11 +77,11 @@ test("every .atto fixture is a byte-for-byte pinned Git blob and a regular sourc
     assert.ok(metadata.size>0&&metadata.size<8192);
     const bytes=await readFile(path);
     assert.equal(bytes.length,metadata.size);
-    const sha=createHash("sha1").update("blob "+bytes.length+"\\0").update(bytes).digest("hex");
+    const sha=createHash("sha1").update("blob "+bytes.length+"\0").update(bytes).digest("hex");
     assert.equal(sha,c.sourceGitBlobSha1,c.id+" source bytes changed");
     const source=bytes.toString("utf8");
-    assert.match(source,/pub fnc main\\(\\): int \\{/);
-    assert.ok(source.endsWith("\\n"));
+    assert.match(source,/pub fnc main\(\): int \{/);
+    assert.ok(source.endsWith("\n"));
   }
 });
 
