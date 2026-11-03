@@ -11,7 +11,7 @@
       "name": "java",
       "repo": "ores-truffle-oreslang/oreslang-source.java",
       "pr": 2445,
-      "head": "3330e742fcc42f0f4082ec88d9e2bb2cd016bf5d",
+      "head": "b0fa554e3da9885f2e2fa8adf4870b2a41bc5d81",
       "source_path": "stdlib/replay_stream.ores",
       "test_path": "examples/native-replay-stream-contract.ores",
       "test_blob_sha": "f4edeea8f0d962e19470cfac5c085e74e68dc5cd",
