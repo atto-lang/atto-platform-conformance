@@ -25,7 +25,7 @@
     },
     "signature_base64": {
       "type": "string",
-      "pattern": "^[A-Za-z0-9+/]{86}==$"
+      "pattern": "^[A-Za-z0-9+/]{85}[AQgw]==$"
     }
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
