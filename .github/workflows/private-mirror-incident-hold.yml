@@ -1,26 +1,26 @@
 name: Private mirror incident-hold source-local tests
 on:
+  # No path filters: all PRs must pass the private-source negative gate.
   pull_request:
-    paths:
-      # Any new CLI/workflow mirror entrypoint must re-run this negative gate.
-      - 'bin/**'
-      - 'tools/**'
-      - '.github/workflows/**'
-      - 'tests/private-mirror-visibility.test.mjs'
-      - 'tests/private-mirror-publish.test.mjs'
-      - 'tests/private-mirror-entrypoints.test.mjs'
-      - 'tests/diagnose-actions.test.mjs'
-      - 'bin/diagnose-actions.mjs'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   fail-closed-export-admission:
-    # Never check out PR source from an unrelated organization or carrier.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    # External heads must FAIL, not be skipped and mistaken for passing.
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
+      - name: Reject cross-repository PR heads before checkout
+        env:
+          PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+        run: |
+          set -euo pipefail
+          if [[ "$PR_HEAD_REPO" != "$GITHUB_REPOSITORY" ]]; then
+            echo "CROSS_REPOSITORY_SOURCE_CHECKOUT_FORBIDDEN" >&2
+            exit 78
+          fi
+          echo "SOURCE_REPOSITORY_CHECKOUT_ALLOWED=true"
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
