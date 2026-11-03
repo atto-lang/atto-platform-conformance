@@ -85,10 +85,11 @@ test("canonical .ores module and guest fixture are Git-blob pinned",()=>{
  };
  assert.equal(gitBlob(manifest.sourceModule.path),manifest.sourceModule.gitBlobSha1);
  assert.equal(manifest.sourceModule.notPersistenceAdapter,true);
- assert.equal(manifest.fixtures.length,2);
+ assert.equal(manifest.fixtures.length,3);
  const known=new Map([
    ["cursor-progression","true\ntrue\nfalse\ntrue\ntrue\nfalse\ntrue\ntrue\n3\n5\n"],
-   ["cross-epoch-delta-reject","false\ntrue\n5\ntrue\ntrue\n7\n5\n"]
+   ["cross-epoch-delta-reject","false\ntrue\n5\ntrue\ntrue\n7\n5\n"],
+   ["highest-epoch-fence","false\nfalse\nfalse\ntrue\ntrue\nfalse\ntrue\n8\nfalse\ntrue\ntrue\n"]
  ]);
  for(const fixture of manifest.fixtures) {
    assert.ok(known.has(fixture.id),"unrecognized native guest fixture");
@@ -102,5 +103,19 @@ test("canonical .ores module and guest fixture are Git-blob pinned",()=>{
    known.delete(fixture.id);
  }
  assert.equal(known.size,0,"missing canonical guest fixture");
+ assert.equal(manifest.attoExtensionTarget.guestExecution,"NOT_EXECUTED");
+ assert.equal(manifest.attoExtensionTarget.sourceGitBlobSha1,manifest.sourceModule.gitBlobSha1);
+ assert.equal(gitBlob(manifest.attoExtensionTarget.sourcePath),manifest.sourceModule.gitBlobSha1);
+ assert.equal(manifest.attoExtensionTarget.fixtures.length,manifest.fixtures.length);
+ for (let i=0;i<manifest.fixtures.length;i++) {
+   const a=manifest.attoExtensionTarget.fixtures[i];
+   const legacy=manifest.fixtures[i];
+   assert.equal(a.id,legacy.id);
+   assert.equal(a.path,legacy.path.replace(/\.ores$/,".atto"));
+   assert.equal(a.gitBlobSha1,legacy.gitBlobSha1);
+   assert.equal(gitBlob(a.path),legacy.gitBlobSha1);
+   assert.equal(a.expectedStdout,legacy.stdout);
+   assert.deepEqual(a.backendStatus,legacy.backendStatus);
+ }
  assert.deepEqual(manifest.runtimeVerifiedBackends,[]);
 });
