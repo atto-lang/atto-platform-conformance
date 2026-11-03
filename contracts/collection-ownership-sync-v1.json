@@ -31,6 +31,14 @@
       "attestation": "unattested"
     },
     {
+      "id": "ordinary-owned-local-mutation",
+      "kind": "compiler-runtime",
+      "expectation": "accept",
+      "requirement": "Locally owned mutable list may mutate without cross-thread synchronization",
+      "attestation": "unattested",
+      "fixture": "fixtures/collection-ownership-sync-v1/ordinary-owned-local-mutation.atto"
+    },
+    {
       "id": "owned-transfer-rt-take",
       "kind": "compiler-runtime",
       "expectation": "accept",
@@ -88,6 +96,14 @@
       "attestation": "unattested",
       "fixture": "fixtures/collection-ownership-sync-v1/mutex-use-after-consume.atto",
       "rejectionEvidenceRequired": "semantic-ownership-diagnostic"
+    },
+    {
+      "id": "owned-mutex-guard-mutation",
+      "kind": "compiler-runtime",
+      "expectation": "accept",
+      "requirement": "Owned SharedMutex payload allows locally guarded collection mutation",
+      "attestation": "unattested",
+      "fixture": "fixtures/collection-ownership-sync-v1/owned-mutex-guard-mutation.atto"
     },
     {
       "id": "guard-suspend-await",
@@ -182,6 +198,7 @@
     "Concurrent table API spelling remains undecided; do not infer guest language support.",
     "Keep unsupported runtime syntax fail-closed and report unsupported separately from a verified semantic rejection.",
     "The Java readonly-view admission fix is staged on draft PR #2295 but has no exact-head JDK21+ CI proof.",
-    "Six negative .atto source fixtures are candidate compiler admission cases, not executed test receipts. They must reject for an ownership/guard semantic reason, not an unsupported syntax error."
+    "Six negative .atto source fixtures are candidate compiler admission cases, not executed test receipts. They must reject for an ownership/guard semantic reason, not an unsupported syntax error.",
+    "Two positive .atto source fixtures ensure an over-restrictive compiler cannot appear safe simply by rejecting all collection operations; positive guest execution remains unattested."
   ]
 }
