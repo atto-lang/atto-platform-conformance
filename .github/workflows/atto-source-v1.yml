@@ -1,4 +1,4 @@
-name: AttoLang four-backend source identity (source-only)
+name: AttoLang five-backend source identity (source-only)
 on:
   pull_request:
     paths:
@@ -8,7 +8,7 @@ on:
       - '.github/workflows/atto-source-v1.yml'
   push:
     branches:
-      - 'test/atto-source-four-backend-gate-20261103'
+      - 'test/atto-source-five-backend-forge-20261103'
   workflow_dispatch:
 permissions:
   contents: read
@@ -41,6 +41,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo 'ATTO_FOUR_BACKEND_GUEST_EXECUTION=NOT_EXECUTED'
-          echo 'ATTO_FOUR_BACKEND_NATIVE_AOT=NOT_EXECUTED'
+          echo 'ATTO_FIVE_BACKEND_GUEST_EXECUTION=NOT_EXECUTED'
+          echo 'ATTO_FIVE_BACKEND_NATIVE_AOT=NOT_EXECUTED'
           echo 'ATTO_SOURCE_ONLY_IDENTITY=TESTED'
