@@ -41,6 +41,15 @@ trusted source-to-executable attestation: a mutate-and-restore adversary
 or a forged compiler binary still requires an independently controlled
 execution environment.
 
+On Linux, the native-image preflight additionally checks for an ELF64
+little-endian executable/PIE, the expected x86-64 or AArch64 machine, and
+a nonempty, bounded program-header table. It rejects script wrappers,
+ELF-magic-only files and wrong-architecture headers before execution.
+Format checks on macOS and Windows are less comprehensive. None of these
+checks proves that the executable was built from the declared compiler Git
+commit or that the binary is nonmalicious; that requires independently
+controlled build provenance and signed/verified artifacts.
+
 ```sh
 node bin/run-cranelift-native-v1.mjs \
   --compiler=/absolute/path/to/orescranelift \
@@ -105,6 +114,18 @@ establish compiler-backed parity. The validator intentionally returns
 `certifiedParity:false` even for 300 syntactically valid caller-supplied
 observations; independently authenticated backend runs and reviews are
 still required.
+
+**Snapshot coherence:** `compareObservations` also rejects revision mixing:
+all recorded cases must share one source Git commit; each platform must
+use one target Git commit across cases and backends; each backend must
+use one compiler source commit across all platforms; and each individual
+platform/backend lane must use one compiler binary digest across its
+cases. Different target architectures may legitimately produce different
+compiler binary digests across different platform lanes. Any coherence
+failure is `DIVERGENT` even if every scalar result matches the oracle.
+These are consistency checks on *untrusted claims*, not verification of
+GitHub runner identities, source provenance, executable builds or device
+attestations.
 
 **Security:** no private-source cross-organization mirror without the
 independent per-snapshot approval and transfer-incident disposition in
