@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {spawnSync} from "node:child_process";
-import {mkdtemp,writeFile,chmod,symlink,rm} from "node:fs/promises";
+import {mkdtemp,writeFile,chmod,symlink,rm,stat} from "node:fs/promises";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
 import {createHash} from "node:crypto";
@@ -82,7 +82,7 @@ test("native gate rejects an executable that fabricates stdout without CLIF",asy
     await writeFile(exe,bytes);await chmod(exe,0o700);
     await assert.rejects(runNativeCranelift({compiler:exe,
       compilerSha256:createHash("sha256").update(bytes).digest("hex"),
-      compilerCommit:commit}),/did not produce bounded CLIF IR/);
+      compilerCommit:commit}),/host-native executable image/);
   }finally{await rm(root,{recursive:true,force:true})}
 });
 test("native gate CLI rejects missing tool and cannot falsely claim a successful run",()=>{
@@ -97,4 +97,20 @@ test("native gate CLI rejects unknown arguments before executing source",()=>{
   const p=spawnSync(process.execPath,[cli,"--claim-parity=true"],{encoding:"utf8",timeout:10000});
   assert.equal(p.status,3);
   assert.match(p.stderr,/unknown\/duplicate compiler argument/);
+});
+
+test("native gate refuses a CLIF-spoofing interpreted wrapper before any invocation",async()=>{
+  if(process.platform==="win32")return;
+  const root=await mkdtemp(join(tmpdir(),"orescranelift-fake-clif-"));
+  try{
+    const exe=join(root,"fake-compiler"),marker=join(root,"launched");
+    const bytes=Buffer.from("#!/bin/sh\\nprintf 'launched' > '"+marker+"''\\n"+
+      "if [ \\"$1\\" = ir ]; then printf 'function u0:0() -> i64 {}\\n'; "+
+      "else printf '42\\n'; fi\\n");
+    await writeFile(exe,bytes);await chmod(exe,0o700);
+    await assert.rejects(runNativeCranelift({compiler:exe,
+      compilerSha256:createHash("sha256").update(bytes).digest("hex"),
+      compilerCommit:commit}),/host-native executable image/);
+    await assert.rejects(stat(marker),/ENOENT/);
+  }finally{await rm(root,{recursive:true,force:true})}
 });
