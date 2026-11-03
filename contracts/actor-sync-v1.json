@@ -43,7 +43,10 @@
         "moduleGitBlobSha1": "3aae079ffe3be8bc2eb2b77bacbd6bddf7e1ce65",
         "fixtureGitBlobSha1": "a454e7107ab62bbaa38cca44627c794b3bf0d4c2",
         "classification": "SOURCE_AUTHORED_NOT_EXECUTED",
-        "note": "Portable .ores cursor and commit-window state logic only; no durable storage I/O or activation."
+        "note": "Java/Graal branch packages a single canonical .atto standard module and authors .atto entry/isoactor guest tests. Runtime and durable sync execution remain NOT_EXECUTED; no scheduler-safe persistent adapter or recovery proof.",
+        "canonicalSourcePath": "stdlib/actor_sync.atto",
+        "compatibilitySourcePath": "stdlib/actor_sync.ores",
+        "sourceExtensionAdmission": "SOURCE_AUTHORED_NOT_EXECUTED"
       }
     },
     "llvm": {
