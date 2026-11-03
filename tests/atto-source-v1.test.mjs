@@ -21,11 +21,11 @@ function temporaryCorpus(t) {
   return {dir, dest, source:join(dest, "add.atto"), manifest:join(dest, "contract.json")};
 }
 
-test("canonical shared AttoLang source and four required backend slots pass identity", t => {
+test("canonical shared AttoLang source and five required backend slots pass identity", t => {
   const {dir} = temporaryCorpus(t);
   assert.deepEqual(verifyAttoSourceV1(dir), {
     blob:"015f8b0f79aafa796a148d2adeff1574e8d6c491",
-    backendCount:4, sourceOnly:true
+    backendCount:5, sourceOnly:true
   });
 });
 
@@ -66,12 +66,12 @@ test("duplicate manifest keys cannot override reviewed schema or source identity
   assert.throws(() => verifyAttoSourceV1(f.dir), /noncanonical or duplicate-key/);
 });
 
-test("removing the .NET backend cannot be disguised as four-backend parity", t => {
+test("removing the Forge backend cannot be disguised as five-backend parity", t => {
   const f = temporaryCorpus(t);
   const manifest = JSON.parse(readFileSync(f.manifest,"utf8"));
   manifest.backends.pop();
   writeFileSync(f.manifest, JSON.stringify(manifest,null,2)+"\n");
-  assert.throws(() => verifyAttoSourceV1(f.dir), /four backend entries/);
+  assert.throws(() => verifyAttoSourceV1(f.dir), /five backend entries/);
 });
 
 test("backend source-path substitution cannot silently select legacy .ores", t => {
@@ -101,4 +101,44 @@ test("manifest symlinks and foreign source extensions are rejected", t => {
   manifest.source.path = "contracts/atto-source-v1/add.ores";
   writeFileSync(f.manifest, JSON.stringify(manifest,null,2)+"\n");
   assert.throws(() => verifyAttoSourceV1(f.dir), /canonical .atto fixture identity/);
+});
+
+test("Forge is a separate compiler route, not Cranelift or Wasmtime", t => {
+  const f = temporaryCorpus(t);
+  const manifest = JSON.parse(readFileSync(f.manifest,"utf8"));
+  manifest.backends[4].repository = "ores-truffle-oreslang/oreslang-source.cranelift";
+  writeFileSync(f.manifest, JSON.stringify(manifest,null,2)+"\n");
+  assert.throws(() => verifyAttoSourceV1(f.dir), /noncanonical backend identity/);
+});
+
+test("Forge cannot borrow another backend's path, identity or PR", t => {
+  const f = temporaryCorpus(t);
+  const original = JSON.parse(readFileSync(f.manifest,"utf8"));
+  for (const changed of [
+    {id:"llvm"},
+    {fixture_path:"contracts/atto-parity-v1/add.ores"},
+    {pr:171},
+    {repository:"ores-truffle-oreslang/oreslang-source.wasm"}
+  ]) {
+    const manifest = structuredClone(original);
+    Object.assign(manifest.backends[4], changed);
+    writeFileSync(f.manifest, JSON.stringify(manifest,null,2)+"\n");
+    assert.throws(() => verifyAttoSourceV1(f.dir), /noncanonical backend identity/);
+  }
+});
+
+test("PR substitutions in older backend slots are rejected", t => {
+  const f = temporaryCorpus(t);
+  const manifest = JSON.parse(readFileSync(f.manifest,"utf8"));
+  manifest.backends[0].pr = 2459;
+  writeFileSync(f.manifest, JSON.stringify(manifest,null,2)+"\n");
+  assert.throws(() => verifyAttoSourceV1(f.dir), /noncanonical backend identity/);
+});
+
+test("Forge cannot be omitted while retaining the earlier four backends", t => {
+  const f = temporaryCorpus(t);
+  const manifest = JSON.parse(readFileSync(f.manifest,"utf8"));
+  manifest.backends.pop();
+  writeFileSync(f.manifest, JSON.stringify(manifest,null,2)+"\n");
+  assert.throws(() => verifyAttoSourceV1(f.dir), /five backend entries/);
 });
