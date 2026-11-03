@@ -88,7 +88,7 @@
     "requiredCiStep": "Adversarial receipt-gate selftest (source-free, not a guest pass)",
     "runnerBlobSha": "1e5928c2b5b88ff3e124d0b6ffcfa557aeb38544",
     "selftestBlobSha": "1b320609e92cbc8f1477f48ba9c0cdb804974f51",
-    "localVerification": "Exact GitHub script blobs independently reconstructed and Git blob SHA verified; Bash syntax checks and 14/14 source-free Maven-stub canaries locally passed; no Maven/GraalVM guest execution.",
+    "localVerification": "AttoLang .atto runner and selftest exact Git blobs verified with git hash-object, Bash syntax checked, and 14/14 local mock Maven adversarial canaries executed; Java/Graal compiler-backed guest still NOT_EXECUTED.",
     "guestCheckCommand": "mvn -B -ntp -q -DskipTests exec:java -Dexec.args=\"--check examples/replay-video-disconnect-smoke.atto\"",
     "guestRuntimeExecuted": false
   },
