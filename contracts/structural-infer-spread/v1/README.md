@@ -2,6 +2,8 @@
 
 Status: **proposed conformance contract; NOT four-backend executable parity**.
 
+**Evidence-class separation:** The 13 `contracts/structural-infer-spread/v1/manifest.json` positive cases are callable-local examples with no `pub fnc main`; they are **source-only type/ownership obligations**. Their stage is `source-contract-only`, never `compile-and-execute`. The independent `fixtures/structural-infer-spread/v1/` corpus contains 8 runnable `.atto` positive guests with distinct expected integer results and 8 compiler-rejection guests. Its SHA-pinned fixture-integrity Node test does not execute these guests or certify a backend. Promotion requires exact compiler/source/tree/artifact evidence and an actual executable runner with non-skipped steps.
+
 This contract is a targeted companion to the already-merged `oreslang-common-source/contracts/v1/IMMUTABLE_AGGREGATE_SPREAD_V1.md` and structural shape rules. Existing Oreslang repository names and source suffix `.ores` remain valid during AttoLang rebranding.
 
 ## The three distinct operations
