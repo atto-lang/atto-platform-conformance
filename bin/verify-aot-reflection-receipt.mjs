@@ -50,6 +50,43 @@ const canonicalOracleKinds = Object.freeze({
   "isolate.no_mixed_authority": "runtime-deny"
 });
 
+// Required witness identities are part of the reviewed contract; a manifest
+// cannot silently weaken an oracle while preserving its ID and stage.
+const canonicalOracleWitnesses = Object.freeze({
+  "type_of.closed_nominal": Object.freeze(["compile-time-symbol-resolution","no-runtime-class-discovery"]),
+  "fields_of.public_order": Object.freeze(["read-only-metadata","deterministic-field-order"]),
+  "methods_of.static_signatures": Object.freeze(["closed-dispatch-set","no-callable-pointer-exposure"]),
+  "implements.static_witness": Object.freeze(["no-mutable-runtime-implementation-registry"]),
+  "generics.closed_specialization": Object.freeze(["finite-generic-closure"]),
+  "private_field.redacted": Object.freeze(["no-information-leak"]),
+  "actor_state.unauthorized": Object.freeze(["actor-isolation","capability-denied"]),
+  "actor_state.authorized_snapshot": Object.freeze(["runtime-issued-capability","copy-or-borrow-under-guard"]),
+  "tenant.foreign_denied": Object.freeze(["tenant-isolation"]),
+  "actor_generation.stale_denied": Object.freeze(["generation-fenced-tickets"]),
+  "field_reference.no_escape": Object.freeze(["compile-time-borrow-check"]),
+  "descriptor.no_raw_pointer": Object.freeze(["opaque-descriptor-handles"]),
+  "descriptor.no_implicit_invoke": Object.freeze(["explicit-invocation-capability-required"]),
+  "runtime_generic.no_specialize": Object.freeze(["no-runtime-codegen"]),
+  "runtime_eval.forbidden": Object.freeze(["no-eval"]),
+  "runtime_proxy.forbidden": Object.freeze(["no-dynamic-assembly"]),
+  "classpath_scan.forbidden": Object.freeze(["no-classpath-scan"]),
+  "serializer.compiler_generated": Object.freeze(["no-reflection-serializer-fallback"]),
+  "metadata.deterministic": Object.freeze(["stable-sort-and-encoding"]),
+  "metadata.layout_target_specific": Object.freeze(["abi-separation"]),
+  "type_id.collision_denied": Object.freeze(["collision-check"]),
+  "metadata.malformed_denied": Object.freeze(["bounded-reads"]),
+  "metadata.bounded": Object.freeze(["bounded-resource-use"]),
+  "retention.unused_stripped": Object.freeze(["tree-shaking-evidence"]),
+  "retention.explicit_root": Object.freeze(["opt-in-retention"]),
+  "retention.unauthorized_root": Object.freeze(["no-authority-from-retention"]),
+  "hot_load.verified_module": Object.freeze(["precompiled-only","generation-pinned"]),
+  "hot_load.abi_mismatch": Object.freeze(["fail-closed-version-negotiation"]),
+  "hot_load.generation_fence": Object.freeze(["quiescent-retirement"]),
+  "jit_escape.forbidden": Object.freeze(["native-code-provenance"]),
+  "aot.native_execution": Object.freeze(["exact-head-and-tree","stepful-guest-execution"]),
+  "isolate.no_mixed_authority": Object.freeze(["isolate-generation-fence"])
+});
+
 export function verifyManifest(manifest) {
   const errors = [];
   if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
@@ -84,6 +121,11 @@ export function verifyManifest(manifest) {
           c.mustProve.some(w => typeof w !== 'string' || !/^[a-z][a-z0-9-]{1,99}$/.test(w)) ||
           new Set(c.mustProve).size !== c.mustProve.length)
         errors.push('invalid witness set: ' + c.id);
+      if (typeof c.id === 'string' && Object.hasOwn(canonicalOracleWitnesses, c.id) &&
+          (!Array.isArray(c.mustProve) ||
+           c.mustProve.length !== canonicalOracleWitnesses[c.id].length ||
+           canonicalOracleWitnesses[c.id].some(w => !c.mustProve.includes(w))))
+        errors.push('canonical oracle witnesses changed: ' + c.id);
       if (c.evidence !== 'NOT_EXECUTED') errors.push('fabricated contract evidence: ' + c.id);
       if (!Array.isArray(c.backends) || c.backends.length !== expectedBackends.length ||
           expectedBackends.some(b => !c.backends.includes(b))) errors.push('incomplete backends: ' + c.id);
