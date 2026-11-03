@@ -187,6 +187,38 @@ alone does not authorize export.
 - `oreslang.reachability/1` receipts can bind retention roots, but binary
   inspection is still necessary to prove the linker removed dead sections.
 
+## Java compiler-only static query bootstrap (NOT guest AOT)
+
+[Java draft PR #2473](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2473)
+introduces a limited `Parser.parseStaticTypeOfQueryV1("type_of<Person>()")`
+entry point that uses the production lexer/expression parser. The opt-in
+`OresCompiler.compileStaticTypeOfQueryV1(declarations, packageIdentityClaim, query)`
+parses and type/ownership-checks **declarations** and binds the parsed query
+to an explicitly rooted public, import-free, namespace-free nominal class.
+It emits an immutable compiler-side table and stable type ID using the existing
+bounded encoder and strict readback validator.
+
+This is intentionally narrower than language semantics:
+
+- `type_of<T>()` **inside guest source functions still fails closed** in
+  `TypeChecker` until real typed HIR, guest value representation and AOT
+  lowering are implemented. The `.atto` test fixture
+  `type_of_unlowered_reject.atto` must reject with that explicit diagnostic.
+- Query syntax accepts one concrete nominal parameter, no runtime arguments,
+  no method receiver, no open generic instances or contextual symbol aliases.
+  Private, inherited, actor or unbounded/unresolved field types reject.
+- The `packageIdentityClaim` parameter is self-declared input and **does not
+  attest** package provenance, source Git identity, a compiler binary or
+  artifact output.
+- JUnit source fixture and rejection tests are authored in the Java draft.
+  Unless the exact-head job has executed steps and passing tests, these remain
+  `NOT_EXECUTED` as CI evidence. A static metadata table does not establish
+  native guest compilation, machine code, runtime no-JIT behavior or linker
+  retention.
+
+This bootstrap is *not* a passing instance of the
+`type_of.closed_nominal` or `aot.native_execution` guest conformance oracle.
+
 ## Priority implementation slices
 
 1. Java/Graal typed `type_of<T>()` for public nominal types + one generated
