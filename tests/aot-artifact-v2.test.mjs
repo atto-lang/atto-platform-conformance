@@ -112,3 +112,35 @@ test('prototype-shaped extra JSON fields never disappear during decoding',()=>{
   const signature=raw(signEnvelope(good()));
   rejected(()=>verifyAotArtifactV2({manifestBytes:injected,signatureBytes:signature,artifactBytes:binary,trustAnchors:{'test-root':publicKey.export({type:'spki',format:'pem'})}}));
 });
+
+
+test('integer shape cannot be rounded into an accepted signed size',()=>{
+  // All values below would round to a valid integer through plain JSON.parse.
+  for(const value of ['1.0000000000000001', '64.00000000000001', '1e0', '64.0']){
+    const manifest=JSON.stringify(good()).replace('"size_bytes":64','"size_bytes":'+value);
+    rejected(()=>parseStrictJson(Buffer.from(manifest)));
+  }
+  rejected(()=>parseStrictJson(Buffer.from('{"n":9007199254740993}')));
+  assert.equal(parseStrictJson(Buffer.from('{"n":9007199254740991}')).n,9007199254740991);
+});
+test('field-list validation rejects NUL-joined key substitutions',()=>{
+  // The pre-hardening exact() used keys.join("\\0"), so an embedded NUL
+  // could disguise a missing field and cause the wrong error or policy path.
+  const m=good();delete m.source;
+  m['schema_version\u0000source']='injected';
+  rejected(()=>run(m,signEnvelope(m)));
+  const m2=good();delete m2.source.sha256;
+  m2.source['expanded_sha256\u0000sha256']='forged';
+  rejected(()=>run(m2,signEnvelope(m2)));
+});
+test('canonicalizer follows RFC8785 negative zero and number semantics',()=>{
+  assert.equal(canonicalizeJcs(-0),'0');
+  assert.equal(canonicalizeJcs({z:1e30,a:0.0000001}),'{"a":1e-7,"z":1e+30}');
+  // Signed manifest parser is stricter: -0 is not an admitted size lexeme.
+  rejected(()=>parseStrictJson(Buffer.from('{"size_bytes":-0}')));
+});
+test('host trust anchors are Ed25519 public keys only',()=>{
+  const {publicKey:rsa}=generateKeyPairSync('rsa',{modulusLength:2048});
+  const m=good();
+  rejected(()=>run(m,signEnvelope(m),binary,{'test-root':rsa.export({type:'spki',format:'pem'})}));
+});
