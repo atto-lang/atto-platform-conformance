@@ -30,55 +30,55 @@
       "name": "java",
       "repository": "ores-truffle-oreslang/oreslang-source.java",
       "pr": 2445,
-      "head": "b0fa554e3da9885f2e2fa8adf4870b2a41bc5d81",
-      "guestPath": "examples/replay-video-disconnect-smoke.ores",
-      "guestBlobSha": "f2a33155ca7bf8ac54982d2d1e87cfc21bd04b05",
+      "head": "0cdce30b8360b72d0ca7bdaf40090d6f3063e195",
+      "guestPath": "examples/replay-video-disconnect-smoke.atto",
+      "guestBlobSha": "d334800e067a4f6f4bcd95fa2adf104c52c39f49",
       "execution": "UNVERIFIED"
     },
     {
       "name": "llvm",
       "repository": "ores-truffle-oreslang/oreslang-source.llvm",
       "pr": 1298,
-      "head": "b55c758e08174c85778d59f9665344e7adf7fd3b",
-      "guestPath": "contracts/replay_stream_v1/replay-video-disconnect-smoke.ores",
-      "guestBlobSha": "b7e96e319a2b6aabbd55dbc07deaaf7af0bdb0bc",
+      "head": "32fa373d61ccd713655c5a6042a68b5a6073bfd3",
+      "guestPath": "contracts/replay_stream_v1/replay-video-disconnect-smoke.atto",
+      "guestBlobSha": "663976aeeb2cd258d854269490c46e522f879777",
       "execution": "UNVERIFIED"
     },
     {
       "name": "wasm",
       "repository": "ores-truffle-oreslang/oreslang-source.wasm",
       "pr": 266,
-      "head": "c87232539ca65d7462652d1ae307a3c8b28959c5",
-      "guestPath": "contracts/replay_stream_v1/replay-video-disconnect-smoke.ores",
-      "guestBlobSha": "b7e96e319a2b6aabbd55dbc07deaaf7af0bdb0bc",
+      "head": "a23706e05d4f32e1facc76d986750eec80710f31",
+      "guestPath": "contracts/replay_stream_v1/replay-video-disconnect-smoke.atto",
+      "guestBlobSha": "663976aeeb2cd258d854269490c46e522f879777",
       "execution": "UNVERIFIED"
     },
     {
       "name": "cranelift",
       "repository": "ores-truffle-oreslang/oreslang-source.cranelift",
       "pr": 79,
-      "head": "e5135d3791842868f7b117e427d2fc4384c71b54",
-      "guestPath": "contracts/replay_stream_v1/replay-video-disconnect-smoke.ores",
-      "guestBlobSha": "b7e96e319a2b6aabbd55dbc07deaaf7af0bdb0bc",
+      "head": "d57f87c66f8c720b927444df7e38976461ac30e5",
+      "guestPath": "contracts/replay_stream_v1/replay-video-disconnect-smoke.atto",
+      "guestBlobSha": "663976aeeb2cd258d854269490c46e522f879777",
       "execution": "UNVERIFIED"
     },
     {
       "name": "net",
       "repository": "ores-truffle-oreslang/oreslang-source.net",
       "pr": 330,
-      "head": "ba57f8cfc6e17b9308311ad597e6b437a0e16c8f",
-      "guestPath": "contracts/replay_stream_v1/replay-video-disconnect-smoke.ores",
-      "guestBlobSha": "b7e96e319a2b6aabbd55dbc07deaaf7af0bdb0bc",
+      "head": "11e12e9865e4e80f182d57758286d863371f44e9",
+      "guestPath": "contracts/replay_stream_v1/replay-video-disconnect-smoke.atto",
+      "guestBlobSha": "663976aeeb2cd258d854269490c46e522f879777",
       "execution": "UNVERIFIED"
     }
   ],
   "javaGuestRunner": "scripts/run-replay-video-smoke.sh",
-  "javaGuestCommand": "mvn -B -ntp -q -DskipTests exec:java -Dexec.args=examples/replay-video-disconnect-smoke.ores",
-  "admission": "Run the actual compiler + Oreslang guest at the pinned exact head, require 7 exact ordered receipts and terminal, exit zero, concrete executed CI job steps and independent provenance. Any missing executable, unsupported parser feature, no CI runner, or mock-only execution is NOT VERIFIED.",
+  "javaGuestCommand": "mvn -B -ntp -q -DskipTests exec:java -Dexec.args=examples/replay-video-disconnect-smoke.atto",
+  "admission": "Run the actual compiler + AttoLang guest at the pinned exact head, require 7 exact ordered receipts and terminal, exit zero, concrete executed CI job steps and independent provenance. Any missing executable, unsupported parser feature, no CI runner, or mock-only execution is NOT VERIFIED.",
   "sourceIdentity": "Git blob SHA in each backend is pinned; import paths differ; no binary parity established.",
   "security": "No cross-org private source mirror without independent incident disposition and approved protected private-carrier gate.",
   "javaCiWorkflow": ".github/workflows/ci.yml",
-  "javaCiAddedStep": "Execute 7-receipt replay guest (actual Java/Graal Oreslang compiler)",
+  "javaCiAddedStep": "Execute 7-receipt replay guest (actual Java/Graal AttoLang compiler)",
   "javaReceiptValidator": {
     "source": "scripts/run-replay-video-smoke.sh",
     "adversarialTests": "scripts/test-replay-video-smoke-runner.sh",
@@ -86,8 +86,10 @@
     "localExecutionScope": "Maven CLI stub tests receipt gate only; not Oreslang compiler or guest runtime",
     "executedNativeGuest": false,
     "requiredCiStep": "Adversarial receipt-gate selftest (source-free, not a guest pass)",
-    "runnerBlobSha": "50731b39935a43b3e9a50d38e3529655b3f15f93",
-    "selftestBlobSha": "026d06b4f227cb26a874251a2c3e549920a32238",
+    "runnerBlobSha": "4f4d8892baf935e1b0af5e451883e2cc2c6989a3",
+    "selftestBlobSha": "e9a5ca9cf808494d42efc91e328a7502deee5b11",
     "localVerification": "Locally reconstructed GitHub exact-byte source blobs, independently confirmed git hash-object matching both GitHub content blob SHA values, executed Bash syntax check and 11 controlled Maven-stub canaries; no real Maven/Graal guest compiler was available."
-  }
+  },
+  "displayLanguage": "AttoLang",
+  "sourceExtension": ".atto"
 }

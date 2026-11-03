@@ -1,6 +1,6 @@
 # Resumable media streaming v1 — bounded replay, checkpointing and codec recovery
 
-**Status: host reference and conformance contract only. No Oreslang video encoder/decoder, actor-lowered guest source, or five-backend execution is established by this change.** The runnable Node 22 reference lives in `lib/media-replay-v1.mjs`; the explicit test suite is `tests/media-replay-v1.test.mjs`. The machine-readable contract is `contracts/media-replay-v1.json`.
+**Status: host reference and conformance contract only. No AttoLang video encoder/decoder, actor-lowered guest source, or five-backend execution is established by this change.** The runnable Node 22 reference lives in `lib/media-replay-v1.mjs`; the explicit test suite is `tests/media-replay-v1.test.mjs`. The machine-readable contract is `contracts/media-replay-v1.json`.
 
 ## Scope
 
@@ -64,3 +64,7 @@ Each Java/Graal, LLVM, Wasm, Cranelift/Forge and .NET backend must independently
 ### Optional real H.264 host-codec integration
 
 `tests/media-replay-ffmpeg-v1.test.mjs` generates 30 Annex-B H.264 frames using FFmpeg `libx264` with repeated SPS/PPS and IDR every 10 frames. It checks byte-identical replay after network interruption, decodes all 30 frames via `ffprobe`, and independently decodes 10 frames after a verified IDR restart. On hosts without FFmpeg/libx264/ffprobe it **reports an explicit skipped/unsupported case**, never a codec success. The local Node 22 test was actually executed against FFmpeg 7.1.5; this does not establish an Oreslang guest codec implementation.
+
+## AttoLang .atto source migration (2026-11-03)
+
+The five-backend replay candidate now uses `.atto` source and fixture paths in the versioned manifest. All five source blobs match exactly, and all four non-Java fixture blobs match; the Java relative imports differ. This is **source-only** alignment: no native guest/compiler, actor transport, or codec parity was executed. Original `oreslang.*` protocol identifiers remain stable compatibility IDs, not the public language name. Private-source cross-org Git mirroring remains under independent security hold.

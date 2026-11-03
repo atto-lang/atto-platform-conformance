@@ -1,8 +1,10 @@
-# Oreslang platform conformance
+# AttoLang platform conformance
 
 Cross-platform, **evidence-first** language and runtime conformance suite. A harness that has not run a real compiler must never claim parity.
 
 ## Resumable media streaming v1 — host reference
+
+Replay fixtures are now canonical **`.atto`** files on all five backend PRs. Legacy `oreslang.*` contract identifiers and repository names are kept as versioned compatibility identifiers; source alignment is not guest execution.
 
 The [media replay v1 contract](docs/MEDIA_REPLAY_V1.md) defines a bounded 2 MiB compressed-chunk sender replay window, receiver applied-checkpoint ledger, cumulative ACK semantics, actor generation fencing and codec-safe random-access resets. Run the 47 locally executed host-reference tests (including [seven shared operation vectors](contracts/media-replay-v1-vectors.json)) with:
 
@@ -10,9 +12,9 @@ The [media replay v1 contract](docs/MEDIA_REPLAY_V1.md) defines a bounded 2 MiB 
 node --test tests/media-replay*.test.mjs
 ```
 
-An additional eight source-free receipt validator tests are authored to reject fabricated compiler success, missing executed CI steps, wrong source SHA, missing receipts, incorrect output hashes and nonzero guest exits. The [five-backend source alignment inventory](contracts/media-replay-native-source-alignment-v1.json) pins the identical Oreslang implementation blob and the [80 expected guest receipts](contracts/media-replay-native-receipts-v1.json). Source identity is verified; real guest execution is not.
+An additional eight source-free receipt validator tests are authored to reject fabricated compiler success, missing executed CI steps, wrong source SHA, missing receipts, incorrect output hashes and nonzero guest exits. The [five-backend source alignment inventory](contracts/media-replay-native-source-alignment-v1.json) pins the identical AttoLang .atto implementation blob and the [80 expected guest receipts](contracts/media-replay-native-receipts-v1.json). Source identity is verified; real guest execution is not.
 
-This is **not** native Oreslang codec execution or five-backend runtime parity evidence. **Cranelift** is the independent `oreslang-source.cranelift` backend, not `oreslang-source.forge`; Java/Graal, LLVM, Wasm, Cranelift and .NET guest admission remains separate.
+This is **not** native AttoLang codec execution or five-backend runtime parity evidence. **Cranelift** is the independent `oreslang-source.cranelift` backend, not `oreslang-source.forge`; Java/Graal, LLVM, Wasm, Cranelift and .NET guest admission remains separate.
 
 
 
