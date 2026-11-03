@@ -85,6 +85,9 @@
     "localExecutedCanaries": 11,
     "localExecutionScope": "Maven CLI stub tests receipt gate only; not Oreslang compiler or guest runtime",
     "executedNativeGuest": false,
-    "requiredCiStep": "Adversarial receipt-gate selftest (source-free, not a guest pass)"
+    "requiredCiStep": "Adversarial receipt-gate selftest (source-free, not a guest pass)",
+    "runnerBlobSha": "50731b39935a43b3e9a50d38e3529655b3f15f93",
+    "selftestBlobSha": "026d06b4f227cb26a874251a2c3e549920a32238",
+    "localVerification": "Locally reconstructed GitHub exact-byte source blobs, independently confirmed git hash-object matching both GitHub content blob SHA values, executed Bash syntax check and 11 controlled Maven-stub canaries; no real Maven/Graal guest compiler was available."
   }
 }
