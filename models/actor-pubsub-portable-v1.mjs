@@ -19,33 +19,35 @@ const safeKeys = (value) => {
 };
 
 export function share(value) {
-  // Repeated immutable references are valid DAG edges, not cycles.
-  // Track the active recursion path separately from completed objects.
-  const visiting=new Set(), checked=new Set();
-  function freeze(v) {
-    if (v === null) return v;
+  // Reject an unsafe graph *before* freezing any of its objects. Otherwise
+  // a later callback, Proxy, symbol or cycle leaves earlier siblings frozen
+  // even though ownership/share admission failed.
+  const visiting=new Set(), checked=new Set(), freezeOrder=[];
+  function validate(v) {
+    if (v === null) return;
     if (typeof v !== "object") {
-      // Helpers must never bless an executable/symbol payload, even when
-      // publication independently performs a second MessageData check.
       if (typeof v === "function" || typeof v === "symbol")
         throw new TypeError("non-Sendable shared payload");
-      return v;
+      return;
     }
     if (visiting.has(v)) throw new TypeError("cyclic shared payload");
-    if (checked.has(v)) return v;
+    if (checked.has(v)) return;
     const keys=safeKeys(v);
     if (!keys) throw new TypeError("non-Sendable shared payload");
     visiting.add(v);
     try {
-      for (const key of keys) freeze(Object.getOwnPropertyDescriptor(v,key).value);
-      Object.freeze(v);
+      for (const key of keys) validate(Object.getOwnPropertyDescriptor(v,key).value);
       checked.add(v);
-      return v;
+      freezeOrder.push(v); // child-first; preserves shared DAG aliases
     } finally {
       visiting.delete(v);
     }
   }
-  return freeze(value);
+  validate(value);
+  // All accepted nodes are ordinary objects/arrays with data properties;
+  // no user-supplied getters or Proxy traps execute in this commit phase.
+  for (const v of freezeOrder) Object.freeze(v);
+  return value;
 }
 
 export class PubSubReference {
