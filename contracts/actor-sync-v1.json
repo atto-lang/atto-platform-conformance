@@ -509,7 +509,26 @@
     {
       "id": "AS24",
       "kind": "runtime",
-      "oracle": "same native .ores test fixture executed across five backend compilers",
+      "oracle": "identical AttoLang .atto guest source executes across five backends; transitional .ores tests alone do not establish .atto parity",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidence": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "cranelift": null,
+        "net": null
+      }
+    },
+    {
+      "id": "AS25",
+      "kind": "fault",
+      "oracle": "new actor epoch poisons durable replica cursor across process restart; reads and old/new deltas reject until authenticated full snapshot resync",
       "backendStatus": {
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
