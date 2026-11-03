@@ -55,10 +55,10 @@ export function validateEvidence(m,receipts,hashes){
  for(const r of receipts)if(r&&!m.required_backends.includes(r.backend))errors.push(`unexpected backend ${r.backend}`);
  return errors;
 }
-if(process.argv[1] && import.meta.url===new URL("file://"+process.argv[1]).href){
+if(process.argv[1] && import.meta.url===(await import("node:url")).pathToFileURL(process.argv[1]).href){
  const {readFileSync,lstatSync,realpathSync}=await import("node:fs");
  const {createHash}=await import("node:crypto");
- const {dirname,resolve}=await import("node:path");
+ const {dirname,resolve,sep}=await import("node:path");
  const [manifestPath,receiptsPath]=process.argv.slice(2);
  if(!manifestPath||!receiptsPath){console.error("usage: node verify-evidence.mjs manifest.json receipts.json");process.exit(2)}
  const manifestBytes=readFileSync(manifestPath);
@@ -69,7 +69,7 @@ if(process.argv[1] && import.meta.url===new URL("file://"+process.argv[1]).href)
  const root=resolve(dirname(resolve(manifestPath)),"../../.."), hashes={};
  for(const t of m.cases)if(t.fixture){
   const p=resolve(root,t.fixture);
-  if(!p.startsWith(root+"/"))throw new Error("fixture path escapes repository");
+  if(!p.startsWith(root+sep))throw new Error("fixture path escapes repository");
   if(!lstatSync(p).isFile()||realpathSync(p)!==p)throw new Error("fixture is not a regular non-symlink file");
   hashes[t.fixture]=createHash("sha256").update(readFileSync(p)).digest("hex");
  }
