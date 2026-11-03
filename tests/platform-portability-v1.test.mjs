@@ -346,6 +346,52 @@ test("partial observations with mismatched source revisions are not merely incom
   assert.equal(comparison.divergent,1);
   assert.equal(comparison.certifiedParity,false);
 });
+test("snapshot source commit drift across different platforms is divergent",()=>{
+  const java=receipt("desktop","java","scalar-42");
+  const llvm=receipt("iot","llvm","precedence-40");
+  llvm.sourceCommit="9".repeat(40);
+  const r=compareObservations([java,llvm],contract);
+  assert.equal(r.status,"DIVERGENT");
+  assert.equal(r.divergent,1);
+  assert.equal(r.missing,298);
+  assert.equal(r.certifiedParity,false);
+});
+test("mixed target heads within a platform are divergent even across case IDs",()=>{
+  const java=receipt("desktop","java","scalar-42");
+  const llvm=receipt("desktop","llvm","precedence-40");
+  llvm.platformCommit="8".repeat(40);
+  llvm.run.headSha=llvm.platformCommit;
+  const r=compareObservations([java,llvm],contract);
+  assert.equal(r.status,"DIVERGENT");
+  assert.equal(r.divergent,1);
+  assert.equal(r.certifiedParity,false);
+});
+test("compiler source commit drift across platforms is divergent within a backend",()=>{
+  const first=receipt("desktop","llvm","scalar-42");
+  const second=receipt("iot","llvm","precedence-40");
+  second.compilerCommit="e".repeat(40);
+  const r=compareObservations([first,second],contract);
+  assert.equal(r.status,"DIVERGENT");
+  assert.equal(r.divergent,1);
+});
+test("compiler binary drift across cases within one platform lane is divergent",()=>{
+  const first=receipt("desktop","llvm","scalar-42");
+  const second=receipt("desktop","llvm","precedence-40");
+  second.compilerBinarySha256="9".repeat(64);
+  const r=compareObservations([first,second],contract);
+  assert.equal(r.status,"DIVERGENT");
+  assert.equal(r.divergent,1);
+});
+test("per-target compiler binary builds can differ without being misclassified",()=>{
+  const first=receipt("desktop","llvm","scalar-42");
+  const second=receipt("iot","llvm","precedence-40");
+  second.compilerBinarySha256="9".repeat(64);
+  const r=compareObservations([first,second],contract);
+  assert.equal(r.status,"INCOMPLETE");
+  assert.equal(r.divergent,0);
+  assert.equal(r.missing,298);
+  assert.equal(r.certifiedParity,false);
+});
 test("partial matching observations still report incomplete, never certified",()=>{
   const comparison=compareObservations([receipt("iot","llvm","scalar-42")],contract);
   assert.equal(comparison.status,"INCOMPLETE");
