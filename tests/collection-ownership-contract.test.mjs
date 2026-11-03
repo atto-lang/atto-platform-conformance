@@ -43,6 +43,30 @@ test("all scenarios are unique, explicit and unattested", () => {
   assert.equal(byId.get("scalar-tuple-scoped-task-read")?.expectation, "accept");
 });
 
+test("candidate rejection fixtures are valid .atto files and cannot claim parser-only parity", () => {
+  const expected = [
+    "sender-use-after-take",
+    "readonly-view-writable-backing-share",
+    "mutable-borrow-task-escape",
+    "borrowed-mutex-initializer",
+    "mutex-use-after-consume",
+    "guard-suspend-await"
+  ];
+  const present = contract.scenarios.filter(c => c.fixture);
+  assert.deepEqual(present.map(c => c.id), expected);
+  for (const c of present) {
+    assert.equal(c.kind, "compiler", c.id);
+    assert.equal(c.expectation, "reject", c.id);
+    assert.equal(c.rejectionEvidenceRequired, "semantic-ownership-diagnostic", c.id);
+    assert.equal(c.fixture, `fixtures/collection-ownership-sync-v1/${c.id}.atto`);
+    const source = readFileSync(new URL(`../${c.fixture}`, import.meta.url), "utf8");
+    assert.match(source, /pub (async )?fnc main\(\)/);
+    assert.ok(source.length >= 80, c.id);
+  }
+  assert.equal(contract.promotion.semanticRejectionRequired, true);
+  assert.equal(contract.promotion.unsupportedSyntaxDoesNotPass, true);
+});
+
 test("promotion does not accept source-free or runner-free substitutes", () => {
   const p = contract.promotion;
   for (const key of [
