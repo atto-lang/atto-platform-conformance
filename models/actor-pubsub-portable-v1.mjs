@@ -1,3 +1,5 @@
+import {types as nodeTypes} from "node:util";
+
 // Deterministic, single-threaded reference oracle for actor-pubsub.portable.v1.
 // This is NOT an Oreslang runtime or proof of concurrent linearizability.
 const failure = (error) => ({ok:false,error});
@@ -5,6 +7,9 @@ const success = (value={}) => ({ok:true,...value});
 const topicName = (s) => typeof s === "string" && /^[A-Za-z][A-Za-z0-9._/-]{0,127}$/.test(s);
 const active = (a) => a && a.alive;
 const safeKeys = (value) => {
+  // A Proxy can execute arbitrary user callbacks during getPrototypeOf,
+  // ownKeys, descriptor inspection, or freeze. Never inspect its traps.
+  if (nodeTypes.isProxy(value)) return null;
   if (!Array.isArray(value) && Object.getPrototypeOf(value)!==Object.prototype &&
       Object.getPrototypeOf(value)!==null) return null;
   const keys=Reflect.ownKeys(value);
@@ -336,7 +341,7 @@ export class PubSubReference {
       if (x===null || typeof x!=="object") return typeof x!=="function" && typeof x!=="symbol";
       if (visiting.has(x)) return false;
       if (checked.has(x)) return true;
-      if (!Object.isFrozen(x)) return false;
+      if (nodeTypes.isProxy(x) || !Object.isFrozen(x)) return false;
       const keys=safeKeys(x);
       if (!keys) return false;
       visiting.add(x);
