@@ -30,7 +30,7 @@
       "name": "java",
       "repository": "ores-truffle-oreslang/oreslang-source.java",
       "pr": 2445,
-      "head": "6c5bd2f5b094b00861ff9c3288245360a5445583",
+      "head": "4626325b7a1757ab1a6d5814e3685cef68163051",
       "guestPath": "examples/replay-video-disconnect-smoke.atto",
       "guestBlobSha": "d334800e067a4f6f4bcd95fa2adf104c52c39f49",
       "execution": "UNVERIFIED"
@@ -82,13 +82,13 @@
   "javaReceiptValidator": {
     "source": "scripts/run-replay-video-smoke.sh",
     "adversarialTests": "scripts/test-replay-video-smoke-runner.sh",
-    "localExecutedCanaries": 14,
+    "localExecutedCanaries": 16,
     "localExecutionScope": "Maven CLI stub tests receipt gate only; not Oreslang compiler or guest runtime",
     "executedNativeGuest": false,
     "requiredCiStep": "Adversarial receipt-gate selftest (source-free, not a guest pass)",
-    "runnerBlobSha": "1e5928c2b5b88ff3e124d0b6ffcfa557aeb38544",
-    "selftestBlobSha": "1b320609e92cbc8f1477f48ba9c0cdb804974f51",
-    "localVerification": "AttoLang .atto runner and selftest exact Git blobs verified with git hash-object, Bash syntax checked, and 14/14 local mock Maven adversarial canaries executed; Java/Graal compiler-backed guest still NOT_EXECUTED.",
+    "runnerBlobSha": "0e56ae324841a8595b2e8f4a3e3dad94f841a4de",
+    "selftestBlobSha": "2e6bc6892e8d8b02e84670890474fd6be86c45cf",
+    "localVerification": "Exact GitHub blobs matched local git hash-object; 16/16 local Bash Maven-stub selftests passed including compile-only stdout/stderr guest-output injection; no real AttoLang compiler execution.",
     "guestCheckCommand": "mvn -B -ntp -q -DskipTests exec:java -Dexec.args=\"--check examples/replay-video-disconnect-smoke.atto\"",
     "guestRuntimeExecuted": false
   },
@@ -109,12 +109,12 @@
   "javaAotGuestGate": {
     "status": "CI_STEPS_AUTHORED_NO_EXECUTION",
     "script": "scripts/run-replay-video-aot-smoke.sh",
-    "scriptBlobSha": "ee95cc0ef46fdf4998e44efc96f7b4c7da9afcb4",
+    "scriptBlobSha": "d5e6df428e22adcecd15cdb9128040146f05ad6a",
     "sourceFreeCanaries": "scripts/test-replay-video-aot-runner.sh",
-    "canariesBlobSha": "496089e839ce2b4f886878af8da62c28a64e4690",
-    "canariesPassedLocally": 13,
-    "execution": "Native Image --check and actual guest execution must each succeed; exact ordered 7 receipts; stdout/stderr tampering fails; both compressed32 and native64 AOT CI jobs wired",
-    "notVerified": "No stepful exact-head Java JVM or GraalVM Native Image guest results",
+    "canariesBlobSha": "9375c51158e0c971110009d5ab6034f5cc2401bd",
+    "canariesPassedLocally": 15,
+    "execution": "Native Image --check must not emit guest receipts; real guest then must emit exact seven ordered receipts. Both stdout/stderr checked; compressed32 and native64 AOT jobs wired.",
+    "notVerified": "Source-org CI at exact Java head 4626325b7a1757ab1a6d5814e3685cef68163051 failed before executing job steps; source-free 15/15 AOT mock checks passed locally, no native compile/run evidence.",
     "sourceExport": "FORBIDDEN pending eight P0 transfer dispositions and explicit approved private carrier"
   }
 }
