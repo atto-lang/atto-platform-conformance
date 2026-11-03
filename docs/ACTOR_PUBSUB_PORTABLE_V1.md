@@ -99,7 +99,10 @@ broker topic identity still differ from the group-scoped Java `Topic<T>` source
 surface, and the portable core's atomic nonblocking all-or-nothing admission
 still differs from Java's bounded asynchronous RELIABLE/LATEST/LOSSY policies.
 The differences are **versioned integration blockers**, not passing backend
-conformance evidence. In particular, `PubSubReference.tryPublish()` has no
-publisher-identity argument and does not prove membership or tenant authority.
+conformance evidence. In particular, legacy broker-global `PubSubReference.tryPublish(topic,payload)`
+is unauthenticated reference mode only. Scoped topics require the exact live
+`GroupMembership` capability via `tryPublish(topic,payload,membershipGrant)`.
+That host-model gate still does not prove that an AttoLang guest actor-turn
+identity is unforgeable or that worker/tenant isolation is implemented.
 Do not merge until those remaining semantic decisions and source guest fixtures
 are reconciled.
