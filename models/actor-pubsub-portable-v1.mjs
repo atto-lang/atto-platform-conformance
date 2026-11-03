@@ -177,7 +177,7 @@ export class PubSubReference {
     entry.active=false;
     this.#memberships.delete(entry.capability.id);
     this.#groupStates.get(membership.group).members.delete(membership.actor.key);
-    this.cancelTarget(membership.actor.key,s=>s.kind==="group" && s.target===membership.group);
+    this.#cancelTarget(membership.actor.key,s=>s.kind==="group" && s.target===membership.group);
     // A group-bound direct subscription cannot survive a leave/rejoin.
     for (const sub of this.#subscriptions.values())
       if (!sub.closed && sub.topic.group===membership.group &&
@@ -302,7 +302,7 @@ export class PubSubReference {
         this.#memberships.delete(id);
         this.#groupStates.get(m.capability.group).members.delete(actor.key);
       }
-    this.cancelTarget(actor.key,()=>true);
+    this.#cancelTarget(actor.key,()=>true);
     for (const sub of this.#subscriptions.values())
       if (sub.kind==="actor" && sub.target===actor) this.unsubscribe(sub);
     return success();
@@ -333,7 +333,7 @@ export class PubSubReference {
     return success();
   }
 
-  cancelTarget(key,predicate) {
+  #cancelTarget(key,predicate) {
     for (const sub of this.#subscriptions.values())
       if (predicate(sub)) this.#subscriptionStates.get(sub).queues.delete(key);
   }
