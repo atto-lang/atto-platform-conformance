@@ -574,6 +574,198 @@
           }
         }
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "arch": {
+                "const": "x86_64"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "target_triple": {
+                "pattern": "^x86_64-"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "arch": {
+                "const": "aarch64"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "target_triple": {
+                "pattern": "^aarch64-"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "arch": {
+                "const": "wasm32"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "target_triple": {
+                "pattern": "^wasm32-"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "abi": {
+                "const": "gnu"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "target_triple": {
+                "pattern": "-linux-gnu$"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "abi": {
+                "const": "musl"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "target_triple": {
+                "pattern": "-linux-musl$"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "abi": {
+                "const": "msvc"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "target_triple": {
+                "pattern": "-windows-msvc$"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "abi": {
+                "const": "darwin"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "target_triple": {
+                "pattern": "-darwin$"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "abi": {
+                "const": "wasi"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "target_triple": {
+                "pattern": "-wasi$"
+              }
+            }
+          }
+        }
+      }
     }
   ]
 }
