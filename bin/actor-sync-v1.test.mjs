@@ -32,6 +32,12 @@ passesMutation("cannot forge a passing generation-fence receipt with zero steps"
  item.backendStatus.java="PASS";
  item.evidence.java={...receipt(),executedSteps:0};
 },/zero-step/);
+passesMutation("AS25 cannot be weakened to a restart-free oracle",s=>{
+ s.scenarios.find(x=>x.id==="AS25").oracle="old source test passes without a restart or fencing";
+},/AS25 maximum epoch/);
+passesMutation("AS24 cannot be weakened to legacy extension-only parity",s=>{
+ s.scenarios.find(x=>x.id==="AS24").oracle="the older .ores file was parsed";
+},/AS24 AttoLang extension/);
 passesMutation("unrecognized execution status",s=>s.scenarios[0].backendStatus.java="HOST_ONLY",/unknown/);
 passesMutation("unexecuted cannot forge a receipt",s=>s.scenarios[0].evidence.llvm=receipt(),/forged execution/);
 passesMutation("unsupported cannot forge pass receipt",s=>s.scenarios[0].evidence.cranelift=receipt(),/forged execution/);
