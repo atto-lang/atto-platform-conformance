@@ -9,6 +9,10 @@ import {pathToFileURL} from "node:url";
 import {requirePrivateMirror} from "./require-private-mirror.mjs";
 
 const OID=/^[a-f0-9]{40}$/;
+// Pinned bound for the current Java guest tree (~1,208 blobs); retain the
+// 40 MiB, per-file, object-type, path, and exact-blob integrity gates below.
+// This limit controls only capacity, never authorization to copy private code.
+const MAX_PRIVATE_SOURCE_BLOBS=1600;
 const PATH=/^[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*$/;
 const BRANCH=/^ci\/private-[A-Za-z0-9][A-Za-z0-9._-]{0,75}$/;
 
@@ -60,7 +64,7 @@ export async function publishPrivateMirror({
   const srcTree=await githubRequest(source,"/git/trees/"+srcCommit.tree.sha+"?recursive=1",token,{fetchImpl});
   if(srcTree.truncated!==false||!Array.isArray(srcTree.tree))throw Error("source tree incomplete");
   const files=srcTree.tree.filter(x=>x.type==="blob");
-  if(files.length===0||files.length>750||srcTree.tree.length>3000)
+  if(files.length===0||files.length>MAX_PRIVATE_SOURCE_BLOBS||srcTree.tree.length>3000)
     throw Error("unsupported source tree size");
   let totalBytes=0;
   const paths=new Set();
