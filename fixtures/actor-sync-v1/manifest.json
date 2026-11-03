@@ -12,7 +12,7 @@
   ],
   "sourceModule": {
     "path": "stdlib/actor_sync.ores",
-    "gitBlobSha1": "246c10b8b27d49a271308d00f23e8bcad4b5c6c2",
+    "gitBlobSha1": "3aae079ffe3be8bc2eb2b77bacbd6bddf7e1ce65",
     "scope": "pure-owned-progress-metadata-only",
     "notPersistenceAdapter": true
   },
@@ -44,6 +44,27 @@
       "gitBlobSha1": "0f93036cf7ed0581273444159a6a619b75505020",
       "expect": "accept-and-execute",
       "stdout": "false\ntrue\n5\ntrue\ntrue\n7\n5\n",
+      "requirements": [
+        "real-source-compilation",
+        "guest-execution",
+        "exact-stdout",
+        "compiler-hash",
+        "exact-head"
+      ],
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "cranelift": "UNSUPPORTED",
+        "net": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "highest-epoch-fence",
+      "path": "highest-epoch-fence.ores",
+      "gitBlobSha1": "ae9063472b39f554fa195d79283bd9952e57483d",
+      "expect": "accept-and-execute",
+      "stdout": "false\nfalse\nfalse\ntrue\ntrue\nfalse\ntrue\n8\nfalse\ntrue\ntrue\n",
       "requirements": [
         "real-source-compilation",
         "guest-execution",
