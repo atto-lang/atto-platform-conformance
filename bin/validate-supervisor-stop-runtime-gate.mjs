@@ -47,7 +47,7 @@ const currentHeadGate = Object.freeze({
   privateMirrorAuthorized: false,
   unresolvedSecurityIncidents: [22, 77, 127, 171, 172],
   sourceHeads: {
-    java: "c46ed5e5457805f7e2ca31a9a29e3fa569db2543",
+    java: "31305fdd92eaf1c72306f2b57658aebf215710f3",
     llvm: "4a3a1d62f017b3a0e147f4ba3aae4ab2f52df734",
     wasm: "492ac62946781a78d9e815a24643e9c47da20d1c",
     cranelift: "dbafc1a2ba6206b90208afe573a1f0cfcb5e3275",
