@@ -38,3 +38,11 @@ The JS module `lib/aot-artifact-v2.mjs` is a bounded source-only reference verif
 - Enforce independently approved branch/release governance. Cross-org private source copying requires a verified private, writable, explicitly allowlisted destination *before fetching source bytes*, in accordance with `bin/require-private-mirror.mjs`. User request alone does not populate a repository's allowlist.
 
 Never merge or promote solely because this source reference verifier passes.
+
+## Golden detached-signature interoperability vector
+
+`detached-golden-vector.json` pins a deterministic **test-only** Ed25519 signature over RFC 8785 canonical JSON, the externally supplied PEM public key, a 128-byte synthetic ELF-like artifact, and the exact manifest/artifact SHA-256 values. The artifact is **synthetic and not executable**. Its source hashes are fixture placeholders, so the vector must never be admitted as a release artifact.
+
+`tests/aot-v2-golden-vector.test.mjs` independently checks the canonical digest, Ed25519 signature, artifact byte length/hash, tampering rejection, and the `AUTHENTICATED_NOT_EXECUTED` evidence tier. The staged Java sibling [oreslang-source.java PR #2478](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2478) uses the same canonical bytes/key/signature in a JDK Ed25519 test, plus a package-private structural V2 policy; neither is wired to public runtime ingress. The Java policy consumes an already strictly parsed object tree with exact `BigDecimal` size values and **must not** be invoked on arbitrary maps from a guest.
+
+The source-organization Actions jobs remain pre-step blocked. A successful, **source-free** alternate-organization runner canary is not permission to copy private source, a known minutes balance, or compiler/guest execution evidence. Any source transfer must first pass the independent private destination-ID, source/tree and security approval gates described by issues #22, #77 and #127.
