@@ -130,6 +130,12 @@ export async function publishPrivateMirror({
     "/git/trees/"+targetTree.sha+"?recursive=1",token,{fetchImpl});
   if(materialized?.truncated!==false||!Array.isArray(materialized.tree))
     throw Error("materialized destination snapshot cannot be verified");
+  // A byte-for-byte file inventory must also retain the *Git tree root*
+  // identity. This detects unexpected tree-entry modes or a non-identical
+  // subtree even when every expected leaf blob appears present.
+  const rootEntry=materialized.tree.find(item=>item.path===prefix);
+  if(rootEntry?.type!=="tree"||rootEntry.sha!==srcCommit.tree.sha)
+    throw Error("materialized snapshot root Git tree SHA differs from source");
   const expected=new Map(entries.map(e=>[e.path,e]));
   let verified=0;
   const seenMaterialized=new Set();
