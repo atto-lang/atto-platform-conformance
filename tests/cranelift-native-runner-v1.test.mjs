@@ -73,7 +73,7 @@ test("native gate refuses executable digest spoof before launching any guest",as
       compilerSha256:untrusted,compilerCommit:commit}),/compiler digest mismatch/);
   }finally{await rm(root,{recursive:true,force:true})}
 });
-test("native gate rejects an executable that fabricates stdout without CLIF",async()=>{
+test("native gate rejects interpreted shell wrapper that fabricates stdout",async()=>{
   if(process.platform==="win32")return;
   const root=await mkdtemp(join(tmpdir(),"orescranelift-fake-success-"));
   try{
