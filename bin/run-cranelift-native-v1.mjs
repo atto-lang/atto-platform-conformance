@@ -40,6 +40,20 @@ async function executableEvidence(path,digest){
         st.size===before.size&&st.mtimeMs===before.mtimeMs&&
         st.ctimeMs===before.ctimeMs,"compiler binary changed during evidence capture");
     requireCase(h.digest("hex")===digest,"native compiler digest mismatch");
+    // An arbitrary shell/Python wrapper can synthesize CLIF-looking stdout and
+    // expected guest results. Require a host-native executable image before
+    // invoking any purported compiler. This is NOT build provenance, a code
+    // signature, or proof that the binary actually contains Cranelift.
+    const magic=Buffer.alloc(4);
+    requireCase((await handle.read(magic,0,magic.length,0)).bytesRead===4,
+      "short native compiler image header");
+    const sig=magic.toString("hex");
+    const nativeImage=process.platform==="linux"?sig==="7f454c46":
+      process.platform==="darwin"?[
+        "feedface","feedfacf","cefaedfe","cffaedfe","cafebabe","bebafeca"
+      ].includes(sig):
+      process.platform==="win32"?magic[0]===0x4d&&magic[1]===0x5a:false;
+    requireCase(nativeImage,"compiler must be a host-native executable image");
     return {dev:before.dev,ino:before.ino,size:before.size,mtimeMs:before.mtimeMs,ctimeMs:before.ctimeMs};
   }finally{await handle.close()}
 }
