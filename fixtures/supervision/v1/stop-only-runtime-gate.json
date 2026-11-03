@@ -85,5 +85,32 @@
     "wasmLedger": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41363000747",
     "craneliftLedger": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41363000747",
     "netLedger": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41363153493"
+  },
+  "currentHeadGate": {
+    "snapshotDate": "2026-11-03",
+    "status": "HOLD",
+    "privateMirrorAuthorized": false,
+    "unresolvedSecurityIncidents": [
+      22,
+      77,
+      127,
+      171,
+      172
+    ],
+    "sourceHeads": {
+      "java": "0742edd690252ca20282c512c5cdfa382a21daf3",
+      "llvm": "5dcbb1d167cd8f7448060700717c1023e763ec08",
+      "wasm": "492ac62946781a78d9e815a24643e9c47da20d1c",
+      "cranelift": "dbafc1a2ba6206b90208afe573a1f0cfcb5e3275",
+      "net": "11975d97ee94a222d68c66b795460702550cca33"
+    },
+    "executedSourceOrgCurrentHeadCI": {
+      "java": false,
+      "llvm": false,
+      "wasm": false,
+      "cranelift": false,
+      "net": false
+    },
+    "notes": "Snapshot only. Last known source-org CI jobs failed before step execution. Historical host-ledger proofs do not certify current branch heads."
   }
 }
