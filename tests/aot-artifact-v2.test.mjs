@@ -114,12 +114,15 @@ test('prototype-shaped extra JSON fields never disappear during decoding',()=>{
 });
 
 
-test('integer shape cannot be rounded into an accepted signed size',()=>{
+test('exact integer semantics reject binary64 rounding but accept integral decimal/exponent notation',()=>{
   // All values below would round to a valid integer through plain JSON.parse.
-  for(const value of ['1.0000000000000001', '64.00000000000001', '1e0', '64.0']){
+  for(const value of ['1.0000000000000001', '64.00000000000001', '64.000000000000001', '9007199254740991.0001']){
     const manifest=JSON.stringify(good()).replace('"size_bytes":64','"size_bytes":'+value);
     rejected(()=>parseStrictJson(Buffer.from(manifest)));
   }
+  assert.equal(parseStrictJson(Buffer.from('{"n":1e0}')).n,1);
+  assert.equal(parseStrictJson(Buffer.from('{"n":64.0}')).n,64);
+  assert.equal(parseStrictJson(Buffer.from('{"n":6.4e1}')).n,64);
   rejected(()=>parseStrictJson(Buffer.from('{"n":9007199254740993}')));
   assert.equal(parseStrictJson(Buffer.from('{"n":9007199254740991}')).n,9007199254740991);
 });
@@ -136,8 +139,9 @@ test('field-list validation rejects NUL-joined key substitutions',()=>{
 test('canonicalizer follows RFC8785 negative zero and number semantics',()=>{
   assert.equal(canonicalizeJcs(-0),'0');
   assert.equal(canonicalizeJcs({z:1e30,a:0.0000001}),'{"a":1e-7,"z":1e+30}');
-  // Signed manifest parser is stricter: -0 is not an admitted size lexeme.
-  rejected(()=>parseStrictJson(Buffer.from('{"size_bytes":-0}')));
+  // JCS normalizes -0 to 0; V2 typed admission rejects zero size.
+  assert.equal(parseStrictJson(Buffer.from('{"size_bytes":-0}')).size_bytes,0);
+  const m=good();m.artifact.size_bytes=0;rejected(()=>run(m,signEnvelope(m)));
 });
 test('host trust anchors are Ed25519 public keys only',()=>{
   const {publicKey:rsa}=generateKeyPairSync('rsa',{modulusLength:2048});
