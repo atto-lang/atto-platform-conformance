@@ -192,8 +192,13 @@ mod tests {
         assert_eq!(scan(on_disk).unwrap(), scan(APPROVED.as_bytes()).unwrap());
     }
     #[test] fn trailing_data_and_truncation_denied() {
+        // Removing the final newline is NOT truncation: the scanner
+        // intentionally normalizes whitespace. Remove the closing brace to
+        // make the JSON token stream genuinely incomplete instead.
         let mut truncated = APPROVED.as_bytes().to_vec();
-        truncated.pop();
+        let closing_brace = truncated.iter().rposition(|byte| *byte == b'}')
+            .expect("approved policy must have a closing object");
+        truncated.truncate(closing_brace);
         reject(truncated);
         let mut added = APPROVED.as_bytes().to_vec();
         added.extend_from_slice(b" true");
