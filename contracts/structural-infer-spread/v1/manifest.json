@@ -44,7 +44,7 @@
       "id": "infer-record-inline",
       "expect": "accept",
       "source": "fnc test() -> void { const x = infer record{a: 5, b: true}; return; }",
-      "stage": "compile-and-execute",
+      "stage": "source-contract-only",
       "writes": [
         {
           "key": "a",
@@ -64,7 +64,7 @@
       "id": "infer-struct-inline",
       "expect": "accept",
       "source": "fnc test() -> void { const x = infer struct{a: 5, b: true}; return; }",
-      "stage": "compile-and-execute",
+      "stage": "source-contract-only",
       "writes": [
         {
           "key": "a",
@@ -84,7 +84,7 @@
       "id": "extend-struct",
       "expect": "accept",
       "source": "fnc test() -> void { const b = infer struct{a: 5}; const n = infer struct{...b, added: true}; return; }",
-      "stage": "compile-and-execute",
+      "stage": "source-contract-only",
       "writes": [
         {
           "key": "a",
@@ -104,7 +104,7 @@
       "id": "extend-record",
       "expect": "accept",
       "source": "fnc test() -> void { const b = infer record{a: 5}; const n = infer record{...b, added: true}; return; }",
-      "stage": "compile-and-execute",
+      "stage": "source-contract-only",
       "writes": [
         {
           "key": "a",
@@ -124,7 +124,7 @@
       "id": "struct-to-record",
       "expect": "accept",
       "source": "fnc test() -> void { const b = infer struct{a: 5}; const n = infer record{...b, label: \"x\"}; return; }",
-      "stage": "compile-and-execute",
+      "stage": "source-contract-only",
       "writes": [
         {
           "key": "a",
@@ -144,7 +144,7 @@
       "id": "record-to-struct",
       "expect": "accept",
       "source": "fnc test() -> void { const b = infer record{a: 5}; const n = infer struct{...b, label: \"x\"}; return; }",
-      "stage": "compile-and-execute",
+      "stage": "source-contract-only",
       "writes": [
         {
           "key": "a",
@@ -164,7 +164,7 @@
       "id": "spread-retains-source",
       "expect": "accept",
       "source": "fnc test() -> int { const b = infer record{a: 40}; const n = infer record{...b, a: 42}; return b.a + n.a - 40; }",
-      "stage": "compile-and-execute",
+      "stage": "source-contract-only",
       "writes": [
         {
           "key": "a",
@@ -183,7 +183,7 @@
       "id": "spread-retypes-field",
       "expect": "accept",
       "source": "fnc test() -> void { const b = infer record{a: 5}; const n = infer record{...b, a: \"now text\"}; return; }",
-      "stage": "compile-and-execute",
+      "stage": "source-contract-only",
       "writes": [
         {
           "key": "a",
@@ -202,7 +202,7 @@
       "id": "rightmost-multiple-spreads",
       "expect": "accept",
       "source": "fnc test() -> void { const b = infer record{x: 1, y: 2}; const c = infer record{y: true, z: 4}; const n = infer record{...b, ...c, x: \"last\"}; return; }",
-      "stage": "compile-and-execute",
+      "stage": "source-contract-only",
       "writes": [
         {
           "key": "x",
@@ -235,7 +235,7 @@
       "id": "empty-spread",
       "expect": "accept",
       "source": "fnc test() -> void { const b = infer record{}; const n = infer record{...b, x: 42}; return; }",
-      "stage": "compile-and-execute",
+      "stage": "source-contract-only",
       "writes": [
         {
           "key": "x",
@@ -250,7 +250,7 @@
       "id": "structural-record-width",
       "expect": "accept",
       "source": "fnc get_x(structural {x: int} v) -> int { return v.x; } fnc test() -> int { const b = infer record{x: 42, y: true}; return get_x(b); }",
-      "stage": "compile-and-execute",
+      "stage": "source-contract-only",
       "writes": [
         {
           "key": "x",
@@ -270,7 +270,7 @@
       "id": "structural-struct-width",
       "expect": "accept",
       "source": "fnc get_x(structural {x: int} v) -> int { return v.x; } fnc test() -> int { const b = infer struct{x: 42, y: true}; return get_x(b); }",
-      "stage": "compile-and-execute",
+      "stage": "source-contract-only",
       "writes": [
         {
           "key": "x",
@@ -290,7 +290,7 @@
       "id": "explicit-exact-struct",
       "expect": "accept",
       "source": "fnc test() -> void { const b = infer record{x: 5}; const n = struct{x: int, y: bool}{...b, y: true}; return; }",
-      "stage": "compile-and-execute",
+      "stage": "source-contract-only",
       "writes": [
         {
           "key": "x",
