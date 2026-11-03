@@ -27,6 +27,10 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
+      - name: M0 source-free security oracles (NOT MCP server/backend parity)
+        run: |
+          set -euo pipefail
+          node --test tests/mcp-m0-admission-ledger.test.mjs tests/mcp-m0-frame-guard.test.mjs tests/mcp-dev-control-m0-v1.test.mjs
       - run: npm test
       - name: Reject unproven external integration claims and issue inventory drift
         run: node bin/check-external-ores-audit.mjs
