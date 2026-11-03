@@ -18,11 +18,13 @@ source objects, making GitHub API requests, or creating a destination blob,
 tree, commit, ref, artifact, or transfer.
 
 This replaces the former finite quarantine and caller-supplied environment
-allowlist as an admission mechanism. Those checks and legacy copy helpers
-remain in the source for forensic review only; they are unreachable through
-the exported publisher functions. A mixed-case known carrier, unknown
-same-owner historical relay, source-to-self branch, or ostensibly private
-approved destination **cannot bypass the unconditional stop**. Removing
+allowlist as an admission mechanism. The dormant metadata authorization,
+GitHub source blob copying, tree/commit creation and ref-writing helpers
+have been **deleted** from the publisher modules, not merely hidden behind
+a preliminary throw. The entrypoint scanner no longer exempts any publisher
+filename from the direct Git-write detection gate. A mixed-case known carrier,
+unknown same-owner historical relay, source-to-self branch, or ostensibly
+private approved destination **cannot bypass the unconditional stop**. Removing
 the stop, or adding a user-controlled `force` or testing override, is not an
 acceptable fix to runner allocation.
 
@@ -48,15 +50,14 @@ The executable-surface scanner
 source-copy entrypoints. All these tests are source-local and do not export
 source when executed.
 
-At PR head `27c6c6966fe58cb2581b894fc1414fbb340c5474`,
+At exact branch head `b8f3c6722d9ad5646ed4fadd0f399a38bc190cb8`,
 read-only inspection confirms that the **first executable statement** in
-both exported source publisher functions is the unconditional denial.
-The exact-head source-org hosted workflows
-[`41393537066`](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/actions/runs/41393537066)
-and [`41393537048`](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/actions/runs/41393537048)
-finished in failure before runner assignment, with zero observed job steps.
-Consequently the **new tests are not hosted-executed**, and this change
-must not be reported as passed compiler, runtime, or security CI.
+both exported source publisher functions remains unconditional denial,
+and neither module contains GitHub API object-copy machinery.
+The original source organization's hosted security jobs continue to fail
+before runner assignment; the **new Node tests are not yet executed**.
+Record the newest exact-head run/job/steps receipt separately before any
+claim of executed compiler, runtime or security CI acceptance.
 
 Prior synthetic acceptance/transfer-model test counts in earlier revisions
 are superseded by the unconditional lockdown. Reinstating any publish path
