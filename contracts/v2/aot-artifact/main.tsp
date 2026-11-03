@@ -25,7 +25,7 @@ model ArtifactIdentityV2 {
   os: "linux" | "windows" | "macos" | "wasi";
   arch: "x86_64" | "aarch64" | "wasm32";
   abi: "gnu" | "musl" | "msvc" | "darwin" | "wasi";
-  target_triple: string;
+  target_triple: "x86_64-unknown-linux-gnu" | "aarch64-unknown-linux-gnu" | "x86_64-unknown-linux-musl" | "aarch64-unknown-linux-musl" | "x86_64-pc-windows-msvc" | "aarch64-pc-windows-msvc" | "x86_64-apple-darwin" | "aarch64-apple-darwin" | "wasm32-wasi";
 }
 model RuntimePolicyV2 {
   guest_jit: false;
