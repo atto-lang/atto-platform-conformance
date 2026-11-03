@@ -34,6 +34,12 @@ Preserve all PS001–PS020 expected results exactly; first gate PS002, PS003, PS
 
 Each evidence record: backend, source commit SHA, compiler commit SHA, exact fixture SHA-256, contract JSON SHA-256, target triple, compiler invocation, native artifact SHA-256 (where applicable), job/run ID, nonzero executed step count, exit code, assertion totals, diagnostics, runtime event trace and log links. Zero-step Actions and host-only tests remain NOT_EXECUTED.
 
+## Evidence parser trust boundary
+
+`src/actor-pubsub-evidence-v1.mjs` validates the structure of self-reported backend entries, **not** GitHub Actions authenticity or that a guest artifact actually ran. A 40-character SHA string, plausible GitHub Actions URL, and nonzero integer step count can all be fabricated. Consequently `verified` remains zero and `parity_certified` / `release_ready` remain false even when all five records claim `PASS`; `candidate_records` counts only syntactically complete candidate entries. The synthetic five-PASS regression enforces this fail-closed behavior.
+
+A separate independent verifier must first corroborate run ID/attempt/job steps through the provider, head/tree and fixture content hashes, actual compiler invocation, guest trace and native artifact hash, negative diagnostics and target ABI, then add an authenticated promotion protocol **before changing** this non-certifying contract. No manual JSON flag change is sufficient.
+
 ## Merge gate
 
 Do not merge a backend as portable-v1 complete while guest lowering, authenticated actor authority, cancellation semantics, or exact-head stepful receipts are absent. Run read-only runner admission checks before retrying compiler jobs; alternate private runners require approved cross-org transfer and verified exact source-tree hashes.
