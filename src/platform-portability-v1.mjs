@@ -260,7 +260,22 @@ export function compareObservations(records,c){
   const laneCompilerDigests=new Map();
   const laneEngineIdentities=new Map();
   const wasmUpstreamHeads=new Set();
+  // GitHub run IDs and job IDs identify concrete immutable observations.
+  // A single ID cannot describe two repositories, source heads, attempts,
+  // runners, or step sets. Reject contradictory caller-provided metadata
+  // even when the scalar guest results all match. This does not attest
+  // that any submitted ID genuinely exists on GitHub.
+  const runIdentities=new Map();
+  const jobIdentities=new Map();
   for(const record of seen.values()){
+    const run=record.run;
+    const runIdentity=JSON.stringify([run.repository,run.headSha]);
+    if(!runIdentities.has(run.runId))runIdentities.set(run.runId,new Set());
+    runIdentities.get(run.runId).add(runIdentity);
+    const jobIdentity=JSON.stringify([run.repository,run.headSha,run.runId,
+      run.attempt,run.runnerId,run.conclusion,run.steps]);
+    if(!jobIdentities.has(run.jobId))jobIdentities.set(run.jobId,new Set());
+    jobIdentities.get(run.jobId).add(jobIdentity);
     sourceHeads.add(record.sourceCommit);
     platformHeads.get(record.platform).add(record.platformCommit);
     compilerHeads.get(record.toolchain).add(record.compilerCommit);
@@ -290,6 +305,8 @@ export function compareObservations(records,c){
   for(const values of compilerHeads.values())if(values.size>1)divergent++;
   for(const values of laneCompilerDigests.values())if(values.size>1)divergent++;
   for(const values of laneEngineIdentities.values())if(values.size>1)divergent++;
+  for(const values of runIdentities.values())if(values.size>1)divergent++;
+  for(const values of jobIdentities.values())if(values.size>1)divergent++;
   if(wasmUpstreamHeads.size>1)divergent++;
   // LLVM-to-Wasm is not an independent language frontend. When both
   // compiler routes are represented, they must not silently refer to
