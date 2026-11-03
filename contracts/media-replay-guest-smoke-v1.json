@@ -30,7 +30,7 @@
       "name": "java",
       "repository": "ores-truffle-oreslang/oreslang-source.java",
       "pr": 2445,
-      "head": "3330e742fcc42f0f4082ec88d9e2bb2cd016bf5d",
+      "head": "b0fa554e3da9885f2e2fa8adf4870b2a41bc5d81",
       "guestPath": "examples/replay-video-disconnect-smoke.ores",
       "guestBlobSha": "f2a33155ca7bf8ac54982d2d1e87cfc21bd04b05",
       "execution": "UNVERIFIED"
@@ -78,5 +78,13 @@
   "sourceIdentity": "Git blob SHA in each backend is pinned; import paths differ; no binary parity established.",
   "security": "No cross-org private source mirror without independent incident disposition and approved protected private-carrier gate.",
   "javaCiWorkflow": ".github/workflows/ci.yml",
-  "javaCiAddedStep": "Execute 7-receipt replay guest (actual Java/Graal Oreslang compiler)"
+  "javaCiAddedStep": "Execute 7-receipt replay guest (actual Java/Graal Oreslang compiler)",
+  "javaReceiptValidator": {
+    "source": "scripts/run-replay-video-smoke.sh",
+    "adversarialTests": "scripts/test-replay-video-smoke-runner.sh",
+    "localExecutedCanaries": 11,
+    "localExecutionScope": "Maven CLI stub tests receipt gate only; not Oreslang compiler or guest runtime",
+    "executedNativeGuest": false,
+    "requiredCiStep": "Adversarial receipt-gate selftest (source-free, not a guest pass)"
+  }
 }
