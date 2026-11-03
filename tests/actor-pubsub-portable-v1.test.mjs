@@ -412,3 +412,45 @@ test("portable contract document preserves scoped topic rules without duplicatio
   assert.ok(doc.includes("legacy reference mode"),
     "unauthenticated legacy oracle must not be mistaken for the guest API");
 });
+
+test("opaque topic actor group and grant handles reject hostile getters and Proxies",()=>{
+  const bus=new PubSubReference();
+  const group=bus.group("g").group;
+  const actor=bus.actor("a").actor;
+  const topic=bus.topicInGroup(group,"events","Event").topic;
+  const grant=bus.join(group,actor).membership;
+  const subscription=bus.subscribe(topic,"actor",actor,1).subscription;
+  let traps=0,getters=0;
+  const forged=new Proxy({},{
+    get(){traps++;throw new Error("untrusted handle get");},
+    getOwnPropertyDescriptor(){traps++;throw new Error("untrusted handle descriptor");},
+    getPrototypeOf(){traps++;throw new Error("untrusted handle prototype");},
+    ownKeys(){traps++;throw new Error("untrusted handle keys");}
+  });
+  const accessor=Object.freeze({
+    get id(){getters++;throw new Error("untrusted id getter");},
+    get key(){getters++;throw new Error("untrusted key getter");},
+    get alive(){getters++;throw new Error("untrusted alive getter");}
+  });
+  const payload=share({id:42});
+  assert.equal(bus.tryPublish(topic,payload,forged).error,"UnauthorizedPublisher");
+  assert.equal(bus.tryPublish(topic,payload,accessor).error,"UnauthorizedPublisher");
+  assert.equal(bus.tryPublish(forged,payload,grant).error,"UnknownTopic");
+  assert.equal(bus.subscribe(forged,"actor",actor,1).error,"UnknownTopic");
+  assert.equal(bus.subscribe(topic,"actor",forged,1).error,"StaleTarget");
+  assert.equal(bus.join(forged,actor).error,"StaleTarget");
+  assert.equal(bus.join(group,forged).error,"StaleTarget");
+  assert.equal(bus.leave(forged).error,"StaleMembership");
+  assert.equal(bus.leave(accessor).error,"StaleMembership");
+  assert.equal(bus.unsubscribe(forged).error,"StaleSubscription");
+  assert.equal(bus.done(forged),false);
+  assert.equal(bus.finish(forged,actor).error,"StaleTarget");
+  assert.equal(bus.finish(subscription,forged).error,"StaleTarget");
+  assert.equal(bus.stopActor(forged).error,"StaleActor");
+  assert.equal(bus.closeGroup(forged).error,"StaleGroup");
+  assert.equal(traps,0,"no untrusted Proxy handler runs in authority admission");
+  assert.equal(getters,0,"no forged getter runs in authority admission");
+  assert.deepEqual(bus.tryPublish(topic,payload,grant).receipt,
+    {sequence:"1",recipients:1},
+    "rejected attempts cannot consume a sequence or block a legitimate publisher");
+});
