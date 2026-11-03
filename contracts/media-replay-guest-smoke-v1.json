@@ -30,7 +30,7 @@
       "name": "java",
       "repository": "ores-truffle-oreslang/oreslang-source.java",
       "pr": 2445,
-      "head": "4f27b4f5bc1f625f9daaee6403c7257e64def439",
+      "head": "99fc383b36d575a89faf1782ac78fb5fac736ed9",
       "guestPath": "examples/replay-video-disconnect-smoke.atto",
       "guestBlobSha": "d334800e067a4f6f4bcd95fa2adf104c52c39f49",
       "execution": "UNVERIFIED"
@@ -82,20 +82,28 @@
   "javaReceiptValidator": {
     "source": "scripts/run-replay-video-smoke.sh",
     "adversarialTests": "scripts/test-replay-video-smoke-runner.sh",
-    "localExecutedCanaries": 11,
+    "localExecutedCanaries": 14,
     "localExecutionScope": "Maven CLI stub tests receipt gate only; not Oreslang compiler or guest runtime",
     "executedNativeGuest": false,
     "requiredCiStep": "Adversarial receipt-gate selftest (source-free, not a guest pass)",
-    "runnerBlobSha": "4f4d8892baf935e1b0af5e451883e2cc2c6989a3",
-    "selftestBlobSha": "e9a5ca9cf808494d42efc91e328a7502deee5b11",
-    "localVerification": "Locally reconstructed GitHub exact-byte source blobs, independently confirmed git hash-object matching both GitHub content blob SHA values, executed Bash syntax check and 11 controlled Maven-stub canaries; no real Maven/Graal guest compiler was available."
+    "runnerBlobSha": "1e5928c2b5b88ff3e124d0b6ffcfa557aeb38544",
+    "selftestBlobSha": "1b320609e92cbc8f1477f48ba9c0cdb804974f51",
+    "localVerification": "Exact GitHub script blobs independently reconstructed and Git blob SHA verified; Bash syntax checks and 14/14 source-free Maven-stub canaries locally passed; no Maven/GraalVM guest execution.",
+    "guestCheckCommand": "mvn -B -ntp -q -DskipTests exec:java -Dexec.args=\"--check examples/replay-video-disconnect-smoke.atto\"",
+    "guestRuntimeExecuted": false
   },
   "displayLanguage": "AttoLang",
   "sourceExtension": ".atto",
   "javaAotPackagingGate": {
-    "status": "ADDED_NOT_EXECUTED",
+    "status": "CODE_AND_REGRESSION_TEST_ADDED_NOT_EXECUTED",
     "pomChange": "stdlib resources include both **/*.atto and **/*.ores",
     "unitTest": "src/test/java/dev/oreslang/config/PackagedAttoStdlibTest.java",
-    "assertion": "dev/oreslang/std/replay_stream.atto must be present on JVM classpath; this is necessary but not sufficient to prove Native Image runtime loading"
+    "assertion": "dev/oreslang/std/replay_stream.atto must be present on JVM classpath; this is necessary but not sufficient to prove Native Image runtime loading",
+    "pomInclude": [
+      "**/*.atto",
+      "**/*.ores"
+    ],
+    "junitTest": "src/test/java/dev/oreslang/config/PackagedAttoStdlibTest.java",
+    "notes": "Resource inclusion and classpath test authored; Maven/JUnit and Native Image not executed."
   }
 }
