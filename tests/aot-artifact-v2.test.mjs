@@ -1,0 +1,74 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {generateKeyPairSync,createHash,sign} from 'node:crypto';
+import {parseStrictJson,canonicalizeJcs,verifyAotArtifactV2} from '../lib/aot-artifact-v2.mjs';
+
+const {privateKey,publicKey}=generateKeyPairSync('ed25519');
+const sha=x=>createHash('sha256').update(x).digest('hex');
+const raw=x=>Buffer.from(JSON.stringify(x),'utf8');
+const binary=Buffer.alloc(64);binary.set([127,69,76,70,2,1],0);binary.writeUInt16LE(62,18);
+const good=()=>({
+  schema_version:'atto.aot-artifact.v2',
+  compiler:{backend:'llvm',version:'1.0.0',git_commit:'a'.repeat(40),mode:'per-guest-aot'},
+  source:{sha256:'a'.repeat(64),expanded_sha256:'b'.repeat(64),ast_sha256:'c'.repeat(64)},
+  artifact:{sha256:sha(binary),size_bytes:binary.length,kind:'native-executable',format:'elf',os:'linux',arch:'x86_64',abi:'gnu',target_triple:'x86_64-unknown-linux-gnu'},
+  runtime:{guest_jit:false,interpreter_fallback:false,runtime_guest_compilation:false},
+  provenance:{builder_id:'trusted-builder'}
+});
+const signEnvelope=m=>{
+  const canonical=Buffer.from(canonicalizeJcs(m));
+  return {schema_version:'atto.aot-artifact-signature.v2',manifest_sha256:sha(canonical),algorithm:'ed25519',key_id:'test-root',signature_base64:sign(null,canonical,privateKey).toString('base64')};
+};
+const run=(m=good(),s=signEnvelope(m),buf=binary,keys={'test-root':publicKey.export({type:'spki',format:'pem'})})=>
+  verifyAotArtifactV2({manifestBytes:raw(m),signatureBytes:raw(s),artifactBytes:buf,trustAnchors:keys});
+const rejected=fn=>assert.throws(fn,/AOT_V2_REJECTED/);
+
+test('real detached Ed25519 trust anchor verifies bytes, never claims guest execution',()=>{
+  const r=run();assert.equal(r.classification,'AUTHENTICATED_NOT_EXECUTED');
+  assert.equal(r.guest_executed,false);assert.equal(r.release_ready,false);
+});
+test('canonical property order is stable and signature is detached',()=>{
+  assert.equal(canonicalizeJcs({b:1,a:2}),'{"a":2,"b":1}');
+  assert.deepEqual(parseStrictJson(raw({b:1,a:2})),{b:1,a:2});
+});
+test('unknown fields and all altered signed metadata fail closed',()=>{
+  for(const mutate of [
+    m=>m.extra='x',m=>m.compiler.backend='dotnet-nativeaot',m=>m.artifact.abi='msvc',
+    m=>m.artifact.target_triple='aarch64-unknown-linux-gnu',m=>m.runtime.guest_jit=true,
+    m=>m.artifact.format='pe',m=>m.artifact.size_bytes=0,
+    m=>m.artifact.kind='native-wasm-host',m=>m.compiler.mode='portable-wasm',
+    m=>m.provenance.signature='fake',m=>m.artifact.os='windows',
+  ]) {const m=good();const sig=signEnvelope(m);mutate(m);rejected(()=>run(m,sig));}
+});
+test('correctly resigned but invalid backend, target and AOT combinations reject',()=>{
+  for(const mutate of [
+    m=>m.compiler.backend='unknown',m=>m.artifact.format='wasm',
+    m=>m.runtime.interpreter_fallback=true,m=>m.runtime.runtime_guest_compilation=true,
+    m=>m.compiler.mode='wasmtime-precompiled',m=>m.artifact.arch='aarch64',
+    m=>m.artifact.size_bytes=2**53,
+  ]) {const m=good();mutate(m);rejected(()=>run(m,signEnvelope(m)));}
+});
+test('tampered artifact and wrong native architecture reject',()=>{
+  const bad=Buffer.from(binary);bad[40]=1;rejected(()=>run(good(),signEnvelope(good()),bad));
+  const badArch=Buffer.from(binary);badArch.writeUInt16LE(183,18);
+  const m=good();m.artifact.sha256=sha(badArch);rejected(()=>run(m,signEnvelope(m),badArch));
+});
+test('signature substitution, unknown trust anchors and signature mutation reject',()=>{
+  const m=good(),sig=signEnvelope(m);rejected(()=>run(m,sig,binary,{}));
+  rejected(()=>run(m,{...sig,key_id:'other'}));
+  rejected(()=>run(m,{...sig,signature_base64:Buffer.alloc(64).toString('base64')}));
+  rejected(()=>run(m,{...sig,manifest_sha256:'f'.repeat(64)}));
+});
+test('rejects duplicate decoded keys, lexical garbage, invalid UTF-8, unsafe Unicode and depth',()=>{
+  for(const str of ['{"a":1,"\\u0061":2}','{"a":1,"a":2}','{"x":NaN}','{"x":01}','{"x":1e9999}','{"x":"\\uD800"}','{"x":1,}', '[1,]','{} trailing'])
+    rejected(()=>parseStrictJson(Buffer.from(str)));
+  rejected(()=>parseStrictJson(Buffer.from([0xc3,0x28])));
+  rejected(()=>parseStrictJson(Buffer.from('['.repeat(65)+'0'+']'.repeat(65))));
+  rejected(()=>parseStrictJson(Buffer.alloc(65537,65)));
+});
+test('does not promote Wasm packaging from authenticated bytes to guest-native proof',()=>{
+  const m=good(); const wasm=Buffer.from('0061736d01000000','hex');
+  m.compiler={backend:'wasm-wasmtime',version:'1.0.0',git_commit:'a'.repeat(40),mode:'portable-wasm'};
+  m.artifact={sha256:sha(wasm),size_bytes:wasm.length,kind:'portable-wasm',format:'wasm',os:'wasi',arch:'wasm32',abi:'wasi',target_triple:'wasm32-wasi'};
+  const r=run(m,signEnvelope(m),wasm);assert.equal(r.guest_executed,false);assert.equal(r.release_ready,false);
+});
