@@ -26,14 +26,16 @@ export function validateEvidence(m,receipts,hashes){
   }
  }
 
+ if(!m.limits||m.limits.depth!==128||m.limits.nodes!==65536||m.limits.select_cases!==256)return ["weakened or missing canonical MessageData limits"];
  if(!Array.isArray(receipts))return ["receipts not array"];
+ if(receipts.some(r=>!r||typeof r!=="object"||Array.isArray(r)))return ["null or invalid backend receipt"];
  for(const b of m.required_backends){
   const rs=receipts.filter(r=>r?.backend===b);
   if(rs.length!==1){errors.push(`${b}: missing or duplicate receipt`);continue}
   const r=rs[0],ci=r.ci||{};
   if(!h40.test(r.head_sha||"")||!h40.test(r.tree_sha||"")||!h64.test(r.native_artifact_sha256||""))errors.push(`${b}: missing exact SHA/tree/artifact proof`);
   if(r.execution_mode!=="compiled-native-guest"||r.native_guest_executed!==true)errors.push(`${b}: no compiled native guest`);
-  if(!Number.isInteger(ci.run_id)||ci.run_id<1||!Number.isInteger(ci.job_id)||ci.job_id<1||!Array.isArray(ci.steps)||!ci.steps.length||!ci.steps.some(x=>x?.kind==="native-guest"&&x.conclusion==="success")||ci.steps.some(x=>x?.conclusion==="failure"))errors.push(`${b}: no nonempty native guest steps`);
+  if(!Number.isInteger(ci.run_id)||ci.run_id<1||!Number.isInteger(ci.job_id)||ci.job_id<1||!Array.isArray(ci.steps)||!ci.steps.length||!ci.steps.some(x=>x?.kind==="native-guest"&&x.conclusion==="success")||ci.steps.some(x=>!x||x.conclusion!=="success"))errors.push(`${b}: missing or non-successful native guest steps`);
   const rows=Array.isArray(r.cases)?r.cases:[];
   if(rows.length!==m.cases.length||new Set(rows.map(x=>x?.id)).size!==m.cases.length)errors.push(`${b}: missing or repeated cases`);
   for(const t of m.cases){

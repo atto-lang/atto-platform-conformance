@@ -57,3 +57,23 @@ test("deny missing canonical fixture pin",()=>{
  const m=JSON.parse(JSON.stringify(manifest));delete m.cases.find(c=>c.id==="N05").fixture_git_blob_sha1;
  assert.ok(validateEvidence(m,make(),hashes).length>0);
 });
+
+for(const [name,modify] of [
+ ["depth limit increased",m=>m.limits.depth=999999],
+ ["node budget missing",m=>delete m.limits.nodes],
+ ["select cap missing",m=>delete m.limits.select_cases],
+ ["limits removed entirely",m=>delete m.limits]
+])test("deny weakened contract limit: "+name,()=>{
+ const m=JSON.parse(JSON.stringify(manifest));modify(m);
+ assert.ok(validateEvidence(m,make(),hashes).length>0);
+});
+for(const [name,mutate] of [
+ ["null receipt",r=>r.push(null)],
+ ["cancelled setup step",r=>r[0].ci.steps.push({kind:"setup",conclusion:"cancelled"})],
+ ["skipped test step",r=>r[0].ci.steps.push({kind:"test",conclusion:"skipped"})],
+ ["unknown CI step",r=>r[0].ci.steps.push({kind:"other"})],
+ ["null CI step",r=>r[0].ci.steps.push(null)]
+])test("deny malformed or incomplete CI evidence: "+name,()=>{
+ const r=make();mutate(r);
+ assert.ok(validateEvidence(manifest,r,hashes).length>0);
+});
