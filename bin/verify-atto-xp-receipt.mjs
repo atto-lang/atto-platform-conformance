@@ -26,12 +26,12 @@ export function parseStrictJSON(raw) {
   need(typeof raw === 'string' && Buffer.byteLength(raw, 'utf8') <= 131072, 'receipt exceeds 128 KiB');
   const data = JSON.parse(raw);
   let i = 0;
-  const ws = () => { while (/\\s/.test(raw[i] ?? '') && i < raw.length) i++; };
+  const ws = () => { while (/\s/.test(raw[i] ?? '') && i < raw.length) i++; };
   const quoted = () => {
     need(raw[i] === '"', 'expected JSON key/string');
     const start = i++;
     while (i < raw.length) {
-      if (raw[i] === '\\\\') { i += 2; continue; }
+      if (raw[i] === '\\') { i += 2; continue; }
       if (raw[i++] === '"') return JSON.parse(raw.slice(start, i));
     }
     throw Error('unterminated string');
@@ -59,7 +59,7 @@ export function parseStrictJSON(raw) {
       }
     }
     if (raw[i] === '"') { quoted(); return; }
-    while (i < raw.length && !/[\\s,}\\]]/.test(raw[i])) i++;
+    while (i < raw.length && !/[\s,}\]]/.test(raw[i])) i++;
   };
   scan(0); ws(); need(i === raw.length, 'unexpected trailing data');
   return data;
