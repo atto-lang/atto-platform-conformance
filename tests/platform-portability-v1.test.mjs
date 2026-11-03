@@ -371,7 +371,8 @@ test("mixed target heads within a platform are divergent even across case IDs",(
   llvm.run.headSha=llvm.platformCommit;
   const r=compareObservations([java,llvm],contract);
   assert.equal(r.status,"DIVERGENT");
-  assert.equal(r.divergent,1);
+  // Both the platform revision and reused GitHub run ID conflict.
+  assert.equal(r.divergent,2);
   assert.equal(r.certifiedParity,false);
 });
 test("compiler source commit drift across platforms is divergent within a backend",()=>{
