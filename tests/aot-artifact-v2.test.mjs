@@ -6,7 +6,9 @@ import {parseStrictJson,canonicalizeJcs,verifyAotArtifactV2} from '../lib/aot-ar
 const {privateKey,publicKey}=generateKeyPairSync('ed25519');
 const sha=x=>createHash('sha256').update(x).digest('hex');
 const raw=x=>Buffer.from(JSON.stringify(x),'utf8');
-const binary=Buffer.alloc(64);binary.set([127,69,76,70,2,1],0);binary.writeUInt16LE(62,18);
+const binary=Buffer.alloc(128);binary.set([127,69,76,70,2,1,1],0);
+binary.writeUInt16LE(2,16);binary.writeUInt16LE(62,18);binary.writeUInt32LE(1,20);
+binary.writeBigUInt64LE(64n,32);binary.writeUInt16LE(64,52);binary.writeUInt16LE(56,54);binary.writeUInt16LE(1,56);binary.writeUInt32LE(1,64);
 const good=()=>({
   schema_version:'atto.aot-artifact.v2',
   compiler:{backend:'llvm',version:'1.0.0',git_commit:'a'.repeat(40),mode:'per-guest-aot'},
@@ -81,8 +83,10 @@ test('three native backends authenticate synthetic ELF headers without claiming 
   }
 });
 test('signed PE and Mach-O headers are arch/OS checked, not executable proof',()=>{
-  const pe=Buffer.alloc(128);pe.write('MZ');pe.writeUInt32LE(64,0x3c);pe.write('PE\0\0',64,'binary');pe.writeUInt16LE(0x8664,68);
+  const pe=Buffer.alloc(512);pe.write('MZ');pe.writeUInt32LE(64,0x3c);pe.write('PE\0\0',64,'binary');pe.writeUInt16LE(0x8664,68);
+  pe.writeUInt16LE(1,70);pe.writeUInt16LE(240,84);pe.writeUInt16LE(2,86);pe.writeUInt16LE(0x20b,88);
   const mac=Buffer.alloc(64);mac.writeUInt32LE(0xfeedfacf,0);mac.writeUInt32LE(0x0100000c,4);
+  mac.writeUInt32LE(2,12);mac.writeUInt32LE(1,16);mac.writeUInt32LE(8,20);mac.writeUInt32LE(0x19,32);mac.writeUInt32LE(8,36);
   for(const [buf,os,arch,abi,triple,format] of [
     [pe,'windows','x86_64','msvc','x86_64-pc-windows-msvc','pe'],
     [mac,'macos','aarch64','darwin','aarch64-apple-darwin','macho']
@@ -117,7 +121,7 @@ test('prototype-shaped extra JSON fields never disappear during decoding',()=>{
 test('exact integer semantics reject binary64 rounding but accept integral decimal/exponent notation',()=>{
   // All values below would round to a valid integer through plain JSON.parse.
   for(const value of ['1.0000000000000001', '64.00000000000001', '64.000000000000001', '9007199254740991.0001']){
-    const manifest=JSON.stringify(good()).replace('"size_bytes":64','"size_bytes":'+value);
+    const manifest=JSON.stringify(good()).replace('"size_bytes":'+binary.length,'"size_bytes":'+value);
     rejected(()=>parseStrictJson(Buffer.from(manifest)));
   }
   assert.equal(parseStrictJson(Buffer.from('{"n":1e0}')).n,1);
@@ -152,10 +156,10 @@ test('host trust anchors are Ed25519 public keys only',()=>{
 
 test('mathematically integral exponent manifest authenticates against the same JCS signature',()=>{
   const m=good(),sig=signEnvelope(m);
-  const rendered=JSON.stringify(m).replace('"size_bytes":64','"size_bytes":6.4e1');
+  const rendered=JSON.stringify(m).replace('"size_bytes":'+binary.length,'"size_bytes":1.28e2');
   const result=verifyAotArtifactV2({manifestBytes:Buffer.from(rendered),signatureBytes:raw(sig),artifactBytes:binary,trustAnchors:{'test-root':publicKey.export({type:'spki',format:'pem'})}});
   assert.equal(result.classification,'AUTHENTICATED_NOT_EXECUTED');
-  const rounded=JSON.stringify(m).replace('"size_bytes":64','"size_bytes":64.00000000000001');
+  const rounded=JSON.stringify(m).replace('"size_bytes":'+binary.length,'"size_bytes":128.00000000000001');
   rejected(()=>verifyAotArtifactV2({manifestBytes:Buffer.from(rounded),signatureBytes:raw(sig),artifactBytes:binary,trustAnchors:{'test-root':publicKey.export({type:'spki',format:'pem'})}}));
 });
 test('JCS keys sort by unsigned UTF-16 code units and reject unpaired surrogate keys',()=>{
