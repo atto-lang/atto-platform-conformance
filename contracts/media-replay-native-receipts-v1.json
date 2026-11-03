@@ -1,7 +1,7 @@
 {
   "contract": "oreslang.media-replay-guest-receipts/1",
   "source_repo": "ores-truffle-oreslang/oreslang-source.java",
-  "source_head": "6c5bd2f5b094b00861ff9c3288245360a5445583",
+  "source_head": "4626325b7a1757ab1a6d5814e3685cef68163051",
   "fixture_blob_sha": "d157e9c9ad311adafa0607f3bf287f502e6b6fe2",
   "count": 80,
   "terminal": "REPLAY-CONTRACT-DONE",
