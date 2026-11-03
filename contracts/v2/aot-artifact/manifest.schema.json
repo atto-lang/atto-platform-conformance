@@ -1,0 +1,579 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "compiler",
+    "source",
+    "artifact",
+    "runtime",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "atto.aot-artifact.v2"
+    },
+    "compiler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "backend",
+        "version",
+        "git_commit",
+        "mode"
+      ],
+      "properties": {
+        "backend": {
+          "type": "string",
+          "enum": [
+            "java-graalvm",
+            "llvm",
+            "wasm-wasmtime",
+            "dotnet-nativeaot"
+          ]
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.+-]{1,100}$"
+        },
+        "git_commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}([0-9a-f]{24})?$"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "per-guest-aot",
+            "portable-wasm",
+            "wasmtime-precompiled"
+          ]
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sha256",
+        "expanded_sha256",
+        "ast_sha256"
+      ],
+      "properties": {
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "expanded_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "ast_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sha256",
+        "size_bytes",
+        "kind",
+        "format",
+        "os",
+        "arch",
+        "abi",
+        "target_triple"
+      ],
+      "properties": {
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "native-executable",
+            "portable-wasm",
+            "precompiled-wasmtime",
+            "native-wasm-host"
+          ]
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "elf",
+            "pe",
+            "macho",
+            "wasm",
+            "wasmtime-serialized"
+          ]
+        },
+        "os": {
+          "type": "string",
+          "enum": [
+            "linux",
+            "windows",
+            "macos",
+            "wasi"
+          ]
+        },
+        "arch": {
+          "type": "string",
+          "enum": [
+            "x86_64",
+            "aarch64",
+            "wasm32"
+          ]
+        },
+        "abi": {
+          "type": "string",
+          "enum": [
+            "gnu",
+            "musl",
+            "msvc",
+            "darwin",
+            "wasi"
+          ]
+        },
+        "target_triple": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._+-]{3,120}$"
+        }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "guest_jit",
+        "interpreter_fallback",
+        "runtime_guest_compilation"
+      ],
+      "properties": {
+        "guest_jit": {
+          "const": false
+        },
+        "interpreter_fallback": {
+          "const": false
+        },
+        "runtime_guest_compilation": {
+          "const": false
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "builder_id"
+      ],
+      "properties": {
+        "builder_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+        }
+      }
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:atto:aot-artifact:v2",
+  "title": "AttoLang AOT V2 canonical signed payload (detached signature)",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "kind": {
+                "const": "native-executable"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "compiler": {
+            "properties": {
+              "backend": {
+                "enum": [
+                  "java-graalvm",
+                  "llvm",
+                  "dotnet-nativeaot"
+                ]
+              },
+              "mode": {
+                "const": "per-guest-aot"
+              }
+            }
+          },
+          "artifact": {
+            "properties": {
+              "os": {
+                "enum": [
+                  "linux",
+                  "windows",
+                  "macos"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "kind": {
+                "const": "native-wasm-host"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "compiler": {
+            "properties": {
+              "backend": {
+                "const": "wasm-wasmtime"
+              },
+              "mode": {
+                "const": "per-guest-aot"
+              }
+            }
+          },
+          "artifact": {
+            "properties": {
+              "os": {
+                "enum": [
+                  "linux",
+                  "windows",
+                  "macos"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "kind": {
+                "const": "portable-wasm"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "compiler": {
+            "properties": {
+              "backend": {
+                "const": "wasm-wasmtime"
+              },
+              "mode": {
+                "const": "portable-wasm"
+              }
+            }
+          },
+          "artifact": {
+            "properties": {
+              "format": {
+                "const": "wasm"
+              },
+              "os": {
+                "const": "wasi"
+              },
+              "arch": {
+                "const": "wasm32"
+              },
+              "abi": {
+                "const": "wasi"
+              },
+              "target_triple": {
+                "pattern": "^wasm32-.*wasi$"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "kind": {
+                "const": "precompiled-wasmtime"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "compiler": {
+            "properties": {
+              "backend": {
+                "const": "wasm-wasmtime"
+              },
+              "mode": {
+                "const": "wasmtime-precompiled"
+              }
+            }
+          },
+          "artifact": {
+            "properties": {
+              "format": {
+                "const": "wasmtime-serialized"
+              },
+              "os": {
+                "enum": [
+                  "linux",
+                  "windows",
+                  "macos"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "os": {
+                "const": "linux"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "arch": {
+                "enum": [
+                  "x86_64",
+                  "aarch64"
+                ]
+              },
+              "abi": {
+                "enum": [
+                  "gnu",
+                  "musl"
+                ]
+              },
+              "target_triple": {
+                "pattern": "linux-(gnu|musl)$"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "os": {
+                "const": "windows"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "arch": {
+                "enum": [
+                  "x86_64",
+                  "aarch64"
+                ]
+              },
+              "abi": {
+                "const": "msvc"
+              },
+              "target_triple": {
+                "pattern": "windows-msvc$"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "os": {
+                "const": "macos"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "arch": {
+                "enum": [
+                  "x86_64",
+                  "aarch64"
+                ]
+              },
+              "abi": {
+                "const": "darwin"
+              },
+              "target_triple": {
+                "pattern": "darwin$"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "format": {
+                "const": "elf"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "os": {
+                "const": "linux"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "format": {
+                "const": "pe"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "os": {
+                "const": "windows"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "format": {
+                "const": "macho"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "os": {
+                "const": "macos"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "format": {
+                "const": "wasm"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "kind": {
+                "const": "portable-wasm"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "format": {
+                "const": "wasmtime-serialized"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "kind": {
+                "const": "precompiled-wasmtime"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}
