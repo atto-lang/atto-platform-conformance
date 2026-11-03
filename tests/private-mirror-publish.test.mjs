@@ -234,3 +234,40 @@ test("duplicate entries in materialized tree cannot disguise omitted source blob
  await assert.rejects(promise,/materialized snapshot contains duplicate paths/);
  assert.equal(h.events.some(e=>e.path===destination+"/git/refs"),false);
 });
+
+test("a Java-sized exact private snapshot stays bounded and retains every blob",async()=>{
+ const count=1208;
+ const sourceFiles=Array.from({length:count},(_,i)=>({
+  type:"blob",path:"src/actor-"+String(i).padStart(4,"0")+".atto",
+  sha:C,size:4,mode:"100644"
+ }));
+ const destinationFiles=sourceFiles.map(file=>({
+  type:"blob",path:"snapshots/checked/"+file.path,sha:file.sha,mode:file.mode
+ }));
+ const {h,promise}=run({
+  sourceTree:{truncated:false,tree:sourceFiles},
+  materializedTree:{truncated:false,tree:destinationFiles}
+ });
+ const result=await promise;
+ assert.equal(result.blobs,count);
+ const writes=h.events.filter(e=>e.method==="POST");
+ assert.equal(writes.filter(e=>e.path===destination+"/git/blobs").length,count);
+ assert.equal(writes.find(e=>e.path===destination+"/git/trees").body.tree.length,count);
+ assert.deepEqual(writes.slice(-3).map(e=>e.path),[
+  destination+"/git/trees",destination+"/git/commits",destination+"/git/refs"]);
+ assert.ok(h.seen.source>=count+1 && h.seen.destination>=count+1,
+   "recheck private visibility at every blob write");
+});
+
+test("oversized private trees fail before source blobs or destination writes",async()=>{
+ const make=(count,size)=>({truncated:false,tree:Array.from({length:count},(_,i)=>({
+  type:"blob",path:"src/actor-"+String(i).padStart(4,"0")+".atto",
+  sha:C,size,mode:"100644"
+ }))});
+ for(const tree of [make(1601,4),make(41,1048576)]){
+  const {h,promise}=run({sourceTree:tree});
+  await assert.rejects(promise,/unsupported source tree size|private mirror exceeds 40MiB limit/);
+  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
+  assert.equal(h.events.some(e=>e.path===source+"/git/blobs/"+C),false);
+ }
+});
