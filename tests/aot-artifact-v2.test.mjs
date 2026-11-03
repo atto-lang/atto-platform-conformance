@@ -166,3 +166,36 @@ test('JCS keys sort by unsigned UTF-16 code units and reject unpaired surrogate 
   assert.equal(canonicalizeJcs({'\uE000':2,'😀':1}),'{"😀":1,"":2}');
   rejected(()=>canonicalizeJcs({'\uD800':42}));
 });
+
+
+test('resigned malformed ELF binaries fail even with matching hashes and trust keys',()=>{
+  for(const mutate of [
+    buf=>buf.writeUInt16LE(1,16),    // ET_REL is not an executable
+    buf=>buf.writeBigUInt64LE(99999n,32), // out-of-range phoff
+    buf=>buf.writeUInt32LE(0,64),    // no PT_LOAD
+    buf=>buf.writeUInt16LE(0,56),   // no program headers
+    buf=>buf.writeUInt16LE(0,52)    // wrong e_ehsize
+  ]) {
+    const forged=Buffer.from(binary);mutate(forged);
+    const m=good();m.artifact.sha256=sha(forged);
+    rejected(()=>run(m,signEnvelope(m),forged));
+  }
+});
+test('resigned malformed PE and Mach-O headers fail structural executable checks',()=>{
+  const pe=Buffer.alloc(512);pe.write('MZ');pe.writeUInt32LE(64,0x3c);
+  pe.write('PE\0\0',64,'binary');pe.writeUInt16LE(0x8664,68);
+  pe.writeUInt16LE(1,70);pe.writeUInt16LE(240,84);pe.writeUInt16LE(2,86);pe.writeUInt16LE(0x20b,88);
+  const mac=Buffer.alloc(64);mac.writeUInt32LE(0xfeedfacf,0);mac.writeUInt32LE(0x0100000c,4);
+  mac.writeUInt32LE(2,12);mac.writeUInt32LE(1,16);mac.writeUInt32LE(8,20);mac.writeUInt32LE(0x19,32);mac.writeUInt32LE(8,36);
+  for(const [original, mutate, target] of [
+    [pe,buf=>buf.writeUInt16LE(0x2002,86),['windows','x86_64','msvc','x86_64-pc-windows-msvc','pe']],
+    [pe,buf=>buf.writeUInt16LE(0,70),['windows','x86_64','msvc','x86_64-pc-windows-msvc','pe']],
+    [mac,buf=>buf.writeUInt32LE(6,12),['macos','aarch64','darwin','aarch64-apple-darwin','macho']],
+    [mac,buf=>buf.writeUInt32LE(9,36),['macos','aarch64','darwin','aarch64-apple-darwin','macho']]
+  ]){
+    const changed=Buffer.from(original);mutate(changed);
+    const [os,arch,abi,triple,format]=target;
+    const m=good();Object.assign(m.artifact,{sha256:sha(changed),size_bytes:changed.length,os,arch,abi,target_triple:triple,format});
+    rejected(()=>run(m,signEnvelope(m),changed));
+  }
+});
