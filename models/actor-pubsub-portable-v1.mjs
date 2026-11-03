@@ -55,6 +55,8 @@ export class PubSubReference {
   #subscriptions=new Map();
   #memberships=new Map();
   #topicSeq=new Map();
+  #topicHandles=new WeakSet();
+  #grantStates=new WeakMap();
   #actorStates=new WeakMap();
   #groupStates=new WeakMap();
   #subscriptionStates=new WeakMap();
@@ -126,7 +128,9 @@ export class PubSubReference {
     if (existing && existing.type!==type) return failure("TopicTypeMismatch");
     if (!existing && this.#topics.size>=this.maxTopics) return failure("ResourceExhausted");
     if (!existing) {
-      this.#topics.set(key,Object.freeze({key,name,type,group}));
+      const topic=Object.freeze({key,name,type,group});
+      this.#topics.set(key,topic);
+      this.#topicHandles.add(topic);
       this.#topicSeq.set(key,0n);
     }
     return success({topic:this.#topics.get(key)});
@@ -142,7 +146,8 @@ export class PubSubReference {
   }
 
   authorizedPublisher(topic,grant) {
-    const entry=this.#memberships.get(grant?.id);
+    // WeakMap lookup never invokes a forged grant's id getter/Proxy trap.
+    const entry=this.#grantStates.get(grant);
     return !!entry && entry.capability===grant && entry.active &&
       grant.group===topic.group && this.isGroup(grant.group) &&
       this.isActor(grant.actor);
@@ -158,16 +163,19 @@ export class PubSubReference {
       return failure("ResourceExhausted");
     this.#groupStates.get(group).members.add(actor.key);
     const membership=Object.freeze({id:++this.#nextMembership,group,actor});
-    this.#memberships.set(membership.id,{capability:membership,active:true});
+    const entry={capability:membership,active:true};
+    this.#memberships.set(membership.id,entry);
+    this.#grantStates.set(membership,entry);
     return success({membership});
   }
 
   leave(membership) {
-    const entry=this.#memberships.get(membership?.id);
+    // Only a genuine grant object can be found; never read untrusted id.
+    const entry=this.#grantStates.get(membership);
     if (!entry || entry.capability!==membership || !entry.active)
       return failure("StaleMembership");
     entry.active=false;
-    this.#memberships.delete(membership.id);
+    this.#memberships.delete(entry.capability.id);
     this.#groupStates.get(membership.group).members.delete(membership.actor.key);
     this.cancelTarget(membership.actor.key,s=>s.kind==="group" && s.target===membership.group);
     // A group-bound direct subscription cannot survive a leave/rejoin.
@@ -180,7 +188,7 @@ export class PubSubReference {
 
   subscribe(topic,kind,target,capacity=32) {
     if (this.closed) return failure("Closed");
-    if (this.#topics.get(topic?.key ?? topic?.name)!==topic) return failure("UnknownTopic");
+    if (!this.#topicHandles.has(topic)) return failure("UnknownTopic");
     if (!Number.isSafeInteger(capacity) || capacity<1) return failure("InvalidCapacity");
     if (kind==="actor" ? !this.isActor(target) : kind==="group" ? !this.isGroup(target) : true)
       return failure("StaleTarget");
@@ -212,7 +220,7 @@ export class PubSubReference {
 
   tryPublish(topic,payload,publisherGrant=null) {
     if (this.closed) return failure("Closed");
-    if (this.#topics.get(topic?.key ?? topic?.name)!==topic) return failure("UnknownTopic");
+    if (!this.#topicHandles.has(topic)) return failure("UnknownTopic");
     if (topic.group!==null && !this.authorizedPublisher(topic,publisherGrant))
       return failure("UnauthorizedPublisher");
     if (!this.isShared(payload)) return failure("NotShared");
@@ -258,7 +266,7 @@ export class PubSubReference {
   }
 
   finish(subscription,actor) {
-    if (!this.isSub(subscription) || this.#actors.get(actor?.key)!==actor)
+    if (!this.isSub(subscription) || !this.#actorStates.has(actor))
       return failure("StaleTarget");
     const count=this.#subscriptionStates.get(subscription).inflight.get(actor.key)??0;
     if (!count) return failure("NoInFlight");
@@ -330,8 +338,14 @@ export class PubSubReference {
       if (predicate(sub)) this.#subscriptionStates.get(sub).queues.delete(key);
   }
 
-  isActor(actor) { return !!actor && this.#actors.get(actor.key)===actor && actor.alive; }
-  isGroup(group) { return !!group && this.#groups.get(group.id)===group && !group.closed; }
+  isActor(actor) {
+    const state=this.#actorStates.get(actor);
+    return !!state && state.alive;
+  }
+  isGroup(group) {
+    const state=this.#groupStates.get(group);
+    return !!state && !state.closed;
+  }
   isSub(sub) { return !!sub && this.#subscriptionStates.has(sub); }
   isShared(v) {
     // A frozen DAG is Sendable even when two fields reference the same child.
