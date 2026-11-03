@@ -38,10 +38,12 @@ export function validatePubSubEvidence(ledger) {
       fail(record.backend+" guest PASS requires source and runtime gates");
     if (succeeded) passed++;
   }
-  const certified=passed===BACKENDS.length;
-  if (ledger.parity_certified!==certified ||
-      ledger.release_ready!==certified)
-    fail("certification flag does not match five completed gates");
-  return {ok:true,backends:BACKENDS.length,verified:passed,
-    parity_certified:certified,release_ready:certified};
+  // This parser checks record shape only: SHA-shaped strings, run URLs and a
+  // nonzero step count are self-reported, not authenticated execution proof.
+  // Until an external, exact-head artifact/CI verifier is wired in, even five
+  // syntactically complete records must remain non-certifying.
+  if (ledger.parity_certified!==false || ledger.release_ready!==false)
+    fail("unattested records cannot certify guest parity or release readiness");
+  return {ok:true,backends:BACKENDS.length,verified:0,
+    candidate_records:passed,parity_certified:false,release_ready:false};
 }
