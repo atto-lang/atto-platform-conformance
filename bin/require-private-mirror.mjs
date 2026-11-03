@@ -11,9 +11,9 @@
  */
 import {pathToFileURL} from "node:url";
 
-export async function requirePrivateMirror({
-  source, destination, approvedDestinations, token, fetchImpl = fetch
-}) {
+export async function requirePrivateMirror(_untrustedOptions) {
+  // Deny before reading any option. Destructuring or default expressions can
+  // invoke caller-controlled Proxy/getter code before this function body runs.
   // Incident containment LOCKDOWN. No API lookup or source Git object access.
   throw Error("PRIVATE_SOURCE_PUBLISH_DISABLED_PENDING_PROTECTED_MAIN_APPROVAL");
 }
