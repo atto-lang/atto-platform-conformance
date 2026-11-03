@@ -72,3 +72,35 @@ test('does not promote Wasm packaging from authenticated bytes to guest-native p
   m.artifact={sha256:sha(wasm),size_bytes:wasm.length,kind:'portable-wasm',format:'wasm',os:'wasi',arch:'wasm32',abi:'wasi',target_triple:'wasm32-wasi'};
   const r=run(m,signEnvelope(m),wasm);assert.equal(r.guest_executed,false);assert.equal(r.release_ready,false);
 });
+
+test('three native backends authenticate synthetic ELF headers without claiming guest execution',()=>{
+  for(const backend of ['java-graalvm','llvm','dotnet-nativeaot']){
+    const m=good();m.compiler.backend=backend;
+    const result=run(m,signEnvelope(m));
+    assert.equal(result.backend,backend);assert.equal(result.loader_verified,false);
+  }
+});
+test('signed PE and Mach-O headers are arch/OS checked, not executable proof',()=>{
+  const pe=Buffer.alloc(128);pe.write('MZ');pe.writeUInt32LE(64,0x3c);pe.write('PE\0\0',64,'binary');pe.writeUInt16LE(0x8664,68);
+  const mac=Buffer.alloc(64);mac.writeUInt32LE(0xfeedfacf,0);mac.writeUInt32LE(0x0100000c,4);
+  for(const [buf,os,arch,abi,triple,format] of [
+    [pe,'windows','x86_64','msvc','x86_64-pc-windows-msvc','pe'],
+    [mac,'macos','aarch64','darwin','aarch64-apple-darwin','macho']
+  ]){
+    const m=good();Object.assign(m.artifact,{sha256:sha(buf),size_bytes:buf.length,os,arch,abi,target_triple:triple,format});
+    assert.equal(run(m,signEnvelope(m),buf).guest_executed,false);
+    const forged=Buffer.from(buf);forged[4]=255;
+    rejected(()=>run(m,signEnvelope(m),forged));
+  }
+});
+test('raw parser denies BOM and malformed Unicode without normalization',()=>{
+  rejected(()=>parseStrictJson(Buffer.from([0xef,0xbb,0xbf,0x7b,0x7d])));
+  rejected(()=>parseStrictJson(Buffer.from('{"x":"\\uDC00"}')));
+  rejected(()=>parseStrictJson(Buffer.from('{"x":"\\uD800\\uD800"}')));
+  assert.equal(parseStrictJson(Buffer.from('{"x":"\\uD83D\\uDE00"}')).x,'😀');
+});
+test('resigned adversarial target triple cannot smuggle another CPU or ABI',()=>{
+  for(const triple of ['aarch64-x86_64-unknown-linux-gnu','x86_64-unknown-linux-musl-gnu','x86_64-unknown-windows-msvc-linux-gnu']){
+    const m=good();m.artifact.target_triple=triple;rejected(()=>run(m,signEnvelope(m)));
+  }
+});
