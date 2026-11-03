@@ -41,6 +41,24 @@ const evidence = Object.freeze({
   netLedger: "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41363153493"
 });
 
+const currentHeadGate = Object.freeze({
+  snapshotDate: "2026-11-03",
+  status: "HOLD",
+  privateMirrorAuthorized: false,
+  unresolvedSecurityIncidents: [22, 77, 127, 171, 172],
+  sourceHeads: {
+    java: "0742edd690252ca20282c512c5cdfa382a21daf3",
+    llvm: "5dcbb1d167cd8f7448060700717c1023e763ec08",
+    wasm: "492ac62946781a78d9e815a24643e9c47da20d1c",
+    cranelift: "dbafc1a2ba6206b90208afe573a1f0cfcb5e3275",
+    net: "11975d97ee94a222d68c66b795460702550cca33"
+  },
+  executedSourceOrgCurrentHeadCI: {
+    java: false, llvm: false, wasm: false, cranelift: false, net: false
+  },
+  notes: "Snapshot only. Last known source-org CI jobs failed before step execution. Historical host-ledger proofs do not certify current branch heads."
+});
+
 export function readSupervisorStopRuntimeGate() {
   return JSON.parse(readFileSync(path, "utf8"));
 }
@@ -51,7 +69,7 @@ export function validateSupervisorStopRuntimeGate(input) {
   if (!input || typeof input !== "object" || Array.isArray(input))
     throw Error("STOP runtime gate: invalid root");
   requireExact(Object.keys(input).sort(), [
-    "backends", "backendGate", "enforce", "evidence", "evidenceClass",
+    "backends", "backendGate", "currentHeadGate", "enforce", "evidence", "evidenceClass",
     "lifecycleOrder", "logicalFailureFields", "schemaVersion",
     "scope", "stopTurnFields"
   ].sort(), "unexpected contract keys");
@@ -76,7 +94,13 @@ export function validateSupervisorStopRuntimeGate(input) {
     }, backend + " has fabricated or stale guest runtime evidence");
   }
   requireExact(input.evidence, evidence, "provenance changed without a reviewed gate update");
-  return {backends: 5, focusedHostStop: 2, hostStopLedger: 5, sourceStopPlan: 1, guestSourceParity: 0};
+  // A historical exact-blob host-ledger run cannot certify a changed source
+  // head. This is a read-only status snapshot, not an Actions scheduler or
+  // transfer authorization. Any promotion requires independently reviewed
+  // incident closure and fresh executable exact-head evidence.
+  requireExact(input.currentHeadGate, currentHeadGate,
+    "unverified current-head certification or unauthorized mirror promotion");
+  return {backends: 5, focusedHostStop: 2, hostStopLedger: 5, sourceStopPlan: 1, guestSourceParity: 0, currentHeadCertified: 0, releaseStatus: "HOLD"};
 }
 if (process.argv[1] && import.meta.url === new URL("file://" + process.argv[1]).href) {
   console.log(JSON.stringify(validateSupervisorStopRuntimeGate(readSupervisorStopRuntimeGate())));
