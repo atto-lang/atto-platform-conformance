@@ -104,9 +104,9 @@ test("native gate refuses a CLIF-spoofing interpreted wrapper before any invocat
   const root=await mkdtemp(join(tmpdir(),"orescranelift-fake-clif-"));
   try{
     const exe=join(root,"fake-compiler"),marker=join(root,"launched");
-    const bytes=Buffer.from("#!/bin/sh\\nprintf 'launched' > '"+marker+"''\\n"+
-      "if [ \\"$1\\" = ir ]; then printf 'function u0:0() -> i64 {}\\n'; "+
-      "else printf '42\\n'; fi\\n");
+    const bytes=Buffer.from("#!/bin/sh\n"+
+      "echo launched > '"+marker+"'\n"+
+      "echo 'function u0:0() -> i64 {}'\n");
     await writeFile(exe,bytes);await chmod(exe,0o700);
     await assert.rejects(runNativeCranelift({compiler:exe,
       compilerSha256:createHash("sha256").update(bytes).digest("hex"),
