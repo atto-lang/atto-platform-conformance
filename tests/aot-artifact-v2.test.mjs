@@ -104,3 +104,11 @@ test('resigned adversarial target triple cannot smuggle another CPU or ABI',()=>
     const m=good();m.artifact.target_triple=triple;rejected(()=>run(m,signEnvelope(m)));
   }
 });
+
+test('prototype-shaped extra JSON fields never disappear during decoding',()=>{
+  const base=JSON.stringify(good());
+  const injected=Buffer.from('{"__proto__":"hidden",'+base.slice(1));
+  assert.equal(Object.hasOwn(parseStrictJson(injected),'__proto__'),true);
+  const signature=raw(signEnvelope(good()));
+  rejected(()=>verifyAotArtifactV2({manifestBytes:injected,signatureBytes:signature,artifactBytes:binary,trustAnchors:{'test-root':publicKey.export({type:'spki',format:'pem'})}}));
+});
