@@ -30,7 +30,7 @@
       "name": "java",
       "repository": "ores-truffle-oreslang/oreslang-source.java",
       "pr": 2445,
-      "head": "99fc383b36d575a89faf1782ac78fb5fac736ed9",
+      "head": "6c5bd2f5b094b00861ff9c3288245360a5445583",
       "guestPath": "examples/replay-video-disconnect-smoke.atto",
       "guestBlobSha": "d334800e067a4f6f4bcd95fa2adf104c52c39f49",
       "execution": "UNVERIFIED"
@@ -105,5 +105,16 @@
     ],
     "junitTest": "src/test/java/dev/oreslang/config/PackagedAttoStdlibTest.java",
     "notes": "Resource inclusion and classpath test authored; Maven/JUnit and Native Image not executed."
+  },
+  "javaAotGuestGate": {
+    "status": "CI_STEPS_AUTHORED_NO_EXECUTION",
+    "script": "scripts/run-replay-video-aot-smoke.sh",
+    "scriptBlobSha": "ee95cc0ef46fdf4998e44efc96f7b4c7da9afcb4",
+    "sourceFreeCanaries": "scripts/test-replay-video-aot-runner.sh",
+    "canariesBlobSha": "496089e839ce2b4f886878af8da62c28a64e4690",
+    "canariesPassedLocally": 13,
+    "execution": "Native Image --check and actual guest execution must each succeed; exact ordered 7 receipts; stdout/stderr tampering fails; both compressed32 and native64 AOT CI jobs wired",
+    "notVerified": "No stepful exact-head Java JVM or GraalVM Native Image guest results",
+    "sourceExport": "FORBIDDEN pending eight P0 transfer dispositions and explicit approved private carrier"
   }
 }
