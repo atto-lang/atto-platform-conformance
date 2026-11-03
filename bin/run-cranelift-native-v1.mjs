@@ -44,15 +44,33 @@ async function executableEvidence(path,digest){
     // expected guest results. Require a host-native executable image before
     // invoking any purported compiler. This is NOT build provenance, a code
     // signature, or proof that the binary actually contains Cranelift.
-    const magic=Buffer.alloc(4);
-    requireCase((await handle.read(magic,0,magic.length,0)).bytesRead===4,
+    const header=Buffer.alloc(process.platform==="linux"?64:4);
+    requireCase((await handle.read(header,0,header.length,0)).bytesRead===header.length,
       "short native compiler image header");
-    const sig=magic.toString("hex");
-    const nativeImage=process.platform==="linux"?sig==="7f454c46":
-      process.platform==="darwin"?[
-        "feedface","feedfacf","cefaedfe","cffaedfe","cafebabe","bebafeca"
-      ].includes(sig):
-      process.platform==="win32"?magic[0]===0x4d&&magic[1]===0x5a:false;
+    const sig=header.subarray(0,4).toString("hex");
+    let nativeImage=false;
+    if(process.platform==="linux"){
+      // A four-byte ELF magic alone is trivially forgeable. Validate the
+      // Linux ELF64 little-endian executable/PIE header, native CPU type,
+      // and bounded program-header table before attempting process launch.
+      // This still does not attest compiler provenance or code signatures.
+      const machine={x64:62,arm64:183}[process.arch];
+      if(machine&&sig==="7f454c46"&&header[4]===2&&header[5]===1&&
+        header[6]===1&&[2,3].includes(header.readUInt16LE(16))&&
+        header.readUInt16LE(18)===machine&&header.readUInt32LE(20)===1&&
+        header.readUInt16LE(52)===64&&header.readUInt16LE(54)===56&&
+        header.readUInt16LE(56)>0){
+        const offset=header.readBigUInt64LE(32);
+        const end=offset+BigInt(header.readUInt16LE(54))*
+          BigInt(header.readUInt16LE(56));
+        nativeImage=offset>=64n&&end<=BigInt(before.size);
+      }
+    }else if(process.platform==="darwin"){
+      nativeImage=["feedface","feedfacf","cefaedfe","cffaedfe",
+        "cafebabe","bebafeca"].includes(sig);
+    }else if(process.platform==="win32"){
+      nativeImage=header[0]===0x4d&&header[1]===0x5a;
+    }
     requireCase(nativeImage,"compiler must be a host-native executable image");
     return {dev:before.dev,ino:before.ino,size:before.size,mtimeMs:before.mtimeMs,ctimeMs:before.ctimeMs};
   }finally{await handle.close()}
