@@ -26,3 +26,8 @@ Disabled endpoint; unauthenticated/expired peer; cross-tenant/runtime URI or met
 
 ## Promotion
 M0: schema and source-free policy model only. M1: compiler-owned deterministic AOT descriptors, no reflection/JIT. M2: actual authenticated local server round trip, bounded transport parser, durable audit. M3: generation-consistent guest-backed redacted snapshots. M4: independently approved signed upgrade/rollback. Java, LLVM, Wasm, .NET NativeAOT and Forge parity independently proven. Require exact commit/tree, schema/tool versions, nonzero executed CI steps, real invocation receipts and independent security review. Zero-step = NOT_EXECUTED.
+## 2026-07-28 MCP interoperability correction (M0 hardening)
+
+MCP `clientInfo` is optional, self-reported and must never grant authority. `clientCapabilities` is required and may be nonempty; it is bounded and explicitly ignored for authorization. Optional `logLevel` is accepted without triggering logs unless an authorized implementation later opts in. The host boot ID is not caller-writable: policy admission compares a trusted host boot identifier against the credential's boot binding. M0 source-only tests for a duplicate live JSON-RPC ID and cancellation cleanup are **reference-ledger simulations**, not proofs of atomic network dispatch or durable audit. The additional `resourceSummary` schema is a strict output whitelist to prevent pointer, credential and unredacted state fields. Do not use it as evidence of live snapshots.
+
+Protocol source: https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2026-07-28/basic/index.mdx and https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/schema/2026-07-28/schema.ts

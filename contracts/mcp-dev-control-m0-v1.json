@@ -93,5 +93,22 @@
     "jit-fallback",
     "runtime-mutation",
     "upgrade-operations"
-  ]
+  ],
+  "clientMetadata": {
+    "clientInfo": "optional-self-reported-nonauthoritative",
+    "clientCapabilities": "required-bounded-nonauthoritative",
+    "logLevel": "optional-no-log-emission-without-explicit-opt-in"
+  },
+  "evidence": {
+    "classification": "SOURCE_FREE_POLICY_MODEL_ONLY",
+    "notProven": [
+      "real-peer-authentication",
+      "wire-duplicate-json-key-rejection",
+      "thread-safe-nonce-reservation",
+      "real-deadlines-and-disconnect",
+      "durable-audit",
+      "guest-execution",
+      "AOT"
+    ]
+  }
 }

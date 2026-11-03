@@ -35,6 +35,7 @@ jobs:
           python3 -m venv "$RUNNER_TEMP/ores-evidence-schema-venv"
           "$RUNNER_TEMP/ores-evidence-schema-venv/bin/python" -m pip install --disable-pip-version-check --no-input "jsonschema==4.26.0"
           "$RUNNER_TEMP/ores-evidence-schema-venv/bin/python" -m unittest discover -s tests -p test_performance_schema.py -v
+          "$RUNNER_TEMP/ores-evidence-schema-venv/bin/python" -m unittest discover -s tests -p test_mcp_dev_control_m0_schema.py -v
       - name: Confirm mandatory real compiler gate cannot pass unconfigured
         run: |
           for backend in java llvm net wasm forge; do
