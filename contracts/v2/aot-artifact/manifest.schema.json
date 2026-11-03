@@ -144,7 +144,17 @@
         },
         "target_triple": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9._+-]{3,120}$"
+          "enum": [
+            "x86_64-unknown-linux-gnu",
+            "aarch64-unknown-linux-gnu",
+            "x86_64-unknown-linux-musl",
+            "aarch64-unknown-linux-musl",
+            "x86_64-pc-windows-msvc",
+            "aarch64-pc-windows-msvc",
+            "x86_64-apple-darwin",
+            "aarch64-apple-darwin",
+            "wasm32-wasi"
+          ]
         }
       }
     },
@@ -761,6 +771,276 @@
             "properties": {
               "target_triple": {
                 "pattern": "-wasi$"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "target_triple": {
+                "const": "x86_64-unknown-linux-gnu"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "os": {
+                "const": "linux"
+              },
+              "arch": {
+                "const": "x86_64"
+              },
+              "abi": {
+                "const": "gnu"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "target_triple": {
+                "const": "aarch64-unknown-linux-gnu"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "os": {
+                "const": "linux"
+              },
+              "arch": {
+                "const": "aarch64"
+              },
+              "abi": {
+                "const": "gnu"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "target_triple": {
+                "const": "x86_64-unknown-linux-musl"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "os": {
+                "const": "linux"
+              },
+              "arch": {
+                "const": "x86_64"
+              },
+              "abi": {
+                "const": "musl"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "target_triple": {
+                "const": "aarch64-unknown-linux-musl"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "os": {
+                "const": "linux"
+              },
+              "arch": {
+                "const": "aarch64"
+              },
+              "abi": {
+                "const": "musl"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "target_triple": {
+                "const": "x86_64-pc-windows-msvc"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "os": {
+                "const": "windows"
+              },
+              "arch": {
+                "const": "x86_64"
+              },
+              "abi": {
+                "const": "msvc"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "target_triple": {
+                "const": "aarch64-pc-windows-msvc"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "os": {
+                "const": "windows"
+              },
+              "arch": {
+                "const": "aarch64"
+              },
+              "abi": {
+                "const": "msvc"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "target_triple": {
+                "const": "x86_64-apple-darwin"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "os": {
+                "const": "macos"
+              },
+              "arch": {
+                "const": "x86_64"
+              },
+              "abi": {
+                "const": "darwin"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "target_triple": {
+                "const": "aarch64-apple-darwin"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "os": {
+                "const": "macos"
+              },
+              "arch": {
+                "const": "aarch64"
+              },
+              "abi": {
+                "const": "darwin"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "target_triple": {
+                "const": "wasm32-wasi"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "artifact": {
+            "properties": {
+              "os": {
+                "const": "wasi"
+              },
+              "arch": {
+                "const": "wasm32"
+              },
+              "abi": {
+                "const": "wasi"
               }
             }
           }
