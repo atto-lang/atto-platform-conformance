@@ -15,6 +15,14 @@ export function verifyCriticalSuspensionReceipt(receipt, contract) {
     fail('at least one executed CI step is required');
   if (!Number.isSafeInteger(receipt.runner_id) || receipt.runner_id < 1)
     fail('real runner ID required, not zero-step admission');
+  // Require resolvable GitHub Actions identities and a pinned test plan.
+  // Format consistency is NOT remote attestation.
+  for (const key of ['run_id', 'job_id', 'run_attempt']) {
+    if (!Number.isSafeInteger(receipt[key]) || receipt[key] < 1)
+      fail(key + ': positive GitHub Actions identity required');
+  }
+  if (!digest.test(receipt.test_plan_sha256))
+    fail('test_plan_sha256 required for reproducible compiler/guest plan');
   if (receipt.runner_admission_only !== false) fail('runner-admission-only not evidence');
   if (receipt.compiler_invoked !== true) fail('real compiler invocation required');
   if (receipt.cross_backend_parity !== false) fail('single receipt cannot claim cross-backend parity');
@@ -25,13 +33,38 @@ export function verifyCriticalSuspensionReceipt(receipt, contract) {
     const result = receipt.cases[id];
     if (!result || result.phase !== c.phase || result.status !== 'pass')
       fail(id + ': missing, mismatched, or failed case');
-    if (c.phase === 'runtime' && result.native_guest_executed !== true)
-      fail(id + ': native compiled guest execution required');
-    if (c.phase === 'compile-reject' &&
-      (result.compiler_rejected !== true || result.diagnostic_code !== c.expected_diagnostic))
-      fail(id + ': actual compiler rejection with EXACT expected diagnostic required');
-    if (c.phase === 'compile-pass' && result.compiler_accepted !== true)
-      fail(id + ': actual compiler acceptance required');
+    // No host or compiler-only case may impersonate a native executable.
+    if ((c.phase !== 'runtime' &&
+         (result.native_guest_executed === true || result.guest_executed === true)) ||
+        (c.phase === 'runtime' && result.host_test_executed === true) ||
+        (c.phase === 'compile-reject' && result.compiler_accepted === true) ||
+        (c.phase === 'compile-pass' && result.compiler_rejected === true))
+      fail(id + ': contradictory evidence phase');
+    if (c.phase === 'runtime' &&
+        (result.native_guest_executed !== true ||
+         result.guest_mode !== 'COMPILED_NATIVE_EXECUTABLE' ||
+         !digest.test(result.guest_executable_sha256) ||
+         result.compiler_accepted !== true ||
+         result.exit_code !== 0 || result.timed_out !== false ||
+         result.signal !== null))
+      fail(id + ': native compiled guest execution and executable identity required');
+    if (c.phase === 'compile-reject') {
+      // Crashes, timeouts, emitted IR, and earlier unrelated diagnostics
+      // are not valid target compiler rejections.
+      const firstDiagnostic=typeof result.stderr === 'string'
+        ? result.stderr.match(/\bE_[A-Z0-9_]+\b/)?.[0] : null;
+      if (result.compiler_rejected !== true ||
+          result.diagnostic_code !== c.expected_diagnostic ||
+          firstDiagnostic !== c.expected_diagnostic ||
+          !Number.isInteger(result.exit_code) || result.exit_code < 1 ||
+          result.exit_code > 255 || result.timed_out !== false ||
+          result.signal !== null || result.emitted_artifact !== false)
+        fail(id + ': actual compiler rejection with EXACT expected diagnostic required');
+    }
+    if (c.phase === 'compile-pass' &&
+        (result.compiler_accepted !== true || result.exit_code !== 0 ||
+         result.timed_out !== false || result.signal !== null))
+      fail(id + ': actual compiler acceptance with clean exit required');
   }
   return Object.freeze({ classification: 'ONE_BACKEND_RECORD_CONSISTENT_UNATTESTED',
     backend: receipt.backend, cases: expected.size });
