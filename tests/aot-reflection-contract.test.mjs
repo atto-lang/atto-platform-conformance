@@ -311,3 +311,41 @@ test('backend set must be an exact map with nonblank descriptions', () => {
     assert.ok(verifyManifest(candidate).some(x => x.includes('backend')));
   }
 });
+
+test('canonical witness substitution cannot weaken tenant or ownership negatives', () => {
+  for (const id of ['tenant.foreign_denied', 'actor_state.unauthorized', 'field_reference.no_escape']) {
+    const candidate = structuredClone(manifest);
+    const item = candidate.cases.find(c => c.id === id);
+    item.mustProve = ['synthetic-noop'];
+    assert.ok(verifyManifest(candidate).some(x => x.includes('canonical oracle witnesses changed')));
+    assert.equal(verifyReceipt(candidate, candidateClaim()).classification, 'INVALID');
+  }
+});
+
+test('milestone cannot be satisfied by runtime denials without native execution', () => {
+  const claim = candidateClaim();
+  claim.scope = 'milestone';
+  claim.milestoneId = 'denial-only';
+  claim.results = claim.results.filter(x => x.id === 'tenant.foreign_denied');
+  const verified = verifyReceipt(manifest, claim);
+  assert.equal(verified.classification, 'INVALID');
+  assert.ok(verified.errors.some(x => x.includes('native execution')));
+});
+
+test('milestone cannot claim only the native-execution oracle without a feature', () => {
+  const claim = candidateClaim();
+  claim.scope = 'milestone';
+  claim.milestoneId = 'execution-no-feature';
+  claim.results = claim.results.filter(x => x.id === 'aot.native_execution');
+  const verified = verifyReceipt(manifest, claim);
+  assert.equal(verified.classification, 'INVALID');
+  assert.ok(verified.errors.some(x => x.includes('positive compiled feature')));
+});
+
+test('positive feature without native execution cannot claim a milestone', () => {
+  const claim = candidateClaim();
+  claim.scope = 'milestone';
+  claim.milestoneId = 'feature-without-native';
+  claim.results = claim.results.filter(x => x.id === 'type_of.closed_nominal');
+  assert.equal(verifyReceipt(manifest, claim).classification, 'INVALID');
+});
