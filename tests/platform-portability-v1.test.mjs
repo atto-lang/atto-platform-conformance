@@ -26,14 +26,22 @@ function receipt(platform="desktop",toolchain="llvm",caseId="scalar-42"){
     fixtureSha256:v.sha256,artifactSha256:negative?null:"e".repeat(64),
     run:{
       repository:contract.platforms[platform],
-      headSha:"c".repeat(40),runId:123456,attempt:1,jobId:123457,
-      runnerId:123458,conclusion:"success",
-      steps:negative?["verify-exact-head","compile-ores-source","assert-negative-diagnostic"]:
-        ["verify-exact-head","compile-ores-source","run-ores-guest",
-          ...(toolchain==="cranelift"?["run-cranelift-native-jit","inspect-cranelift-ir"]:[]),
-          ...(toolchain==="wasm"?["compile-wasm-module","execute-wasm-guest"]:[]),
-          ...(toolchain==="net"?["publish-native-aot","execute-native-aot-guest"]:[]),
-          ...(toolchain==="java"?["execute-graal-guest"]:[])]
+      headSha:"c".repeat(40),
+      runId:123456+PLATFORMS.indexOf(platform),
+      attempt:1,
+      jobId:223457+PLATFORMS.indexOf(platform)*TOOLCHAINS.length+
+        TOOLCHAINS.indexOf(toolchain),
+      runnerId:323458+PLATFORMS.indexOf(platform)*TOOLCHAINS.length+
+        TOOLCHAINS.indexOf(toolchain),
+      conclusion:"success",
+      // One test job executes both positive and negative cases. Its GitHub
+      // step inventory is stable across all case observations from that job.
+      steps:["verify-exact-head","compile-ores-source","run-ores-guest",
+        "assert-negative-diagnostic",
+        ...(toolchain==="cranelift"?["run-cranelift-native-jit","inspect-cranelift-ir"]:[]),
+        ...(toolchain==="wasm"?["compile-wasm-module","execute-wasm-guest"]:[]),
+        ...(toolchain==="net"?["publish-native-aot","execute-native-aot-guest"]:[]),
+        ...(toolchain==="java"?["execute-graal-guest"]:[])]
     },
     result:negative?{kind:"reject",diagnosticCode:"UNKNOWN_IDENTIFIER",
       diagnostic:(toolchain==="cranelift"?
@@ -460,6 +468,58 @@ test("different generated Wasm modules and .NET AOT guest artifacts are not stab
   netTwo.artifactSha256="8".repeat(64);
   netTwo.engine.nativeAotHostSha256=netTwo.artifactSha256;
   const r=compareObservations([wasmOne,wasmTwo,netOne,netTwo],contract);
+  assert.equal(r.status,"INCOMPLETE");
+  assert.equal(r.divergent,0);
+  assert.equal(r.certifiedParity,false);
+});
+test("a GitHub run ID cannot be reused for two platform repositories",()=>{
+  const first=receipt("desktop","llvm","scalar-42");
+  const second=receipt("iot","llvm","precedence-40");
+  second.run.runId=first.run.runId;
+  const r=compareObservations([first,second],contract);
+  assert.equal(r.status,"DIVERGENT");
+  assert.equal(r.divergent,1);
+});
+test("a GitHub job ID cannot be reused across different workflow runs",()=>{
+  const first=receipt("desktop","llvm","scalar-42");
+  const second=receipt("iot","llvm","precedence-40");
+  second.run.jobId=first.run.jobId;
+  const r=compareObservations([first,second],contract);
+  assert.equal(r.status,"DIVERGENT");
+  assert.equal(r.divergent,1);
+});
+test("a GitHub job ID cannot switch runner or run attempt between cases",()=>{
+  for(const field of ["runnerId","attempt"]){
+    const first=receipt("desktop","llvm","scalar-42");
+    const second=receipt("desktop","llvm","precedence-40");
+    second.run[field]++;
+    const r=compareObservations([first,second],contract);
+    assert.equal(r.status,"DIVERGENT",field);
+    assert.equal(r.divergent,1,field);
+  }
+});
+test("a GitHub job ID cannot report contradictory executed step lists",()=>{
+  const first=receipt("desktop","llvm","scalar-42");
+  const second=receipt("desktop","llvm","precedence-40");
+  second.run.steps.push("source-free-marker");
+  const r=compareObservations([first,second],contract);
+  assert.equal(r.status,"DIVERGENT");
+  assert.equal(r.divergent,1);
+});
+test("one run with multiple independently identified jobs is coherent",()=>{
+  const first=receipt("desktop","llvm","scalar-42");
+  const second=receipt("desktop","java","precedence-40");
+  const r=compareObservations([first,second],contract);
+  assert.equal(r.status,"INCOMPLETE");
+  assert.equal(r.divergent,0);
+});
+test("different job IDs on a rerun attempt are permitted as structural claims",()=>{
+  const first=receipt("desktop","llvm","scalar-42");
+  const second=receipt("desktop","llvm","precedence-40");
+  second.run.jobId+=5000;
+  second.run.runnerId+=5000;
+  second.run.attempt=2;
+  const r=compareObservations([first,second],contract);
   assert.equal(r.status,"INCOMPLETE");
   assert.equal(r.divergent,0);
   assert.equal(r.certifiedParity,false);
