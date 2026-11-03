@@ -192,7 +192,7 @@ export function validateObservation(o,c){
       (v.expect==="execute"?
         sha64(o.engine.clifSha256)&&o.engine.clifSha256===o.artifactSha256:
         o.engine.clifSha256===null&&o.artifactSha256===null),
-      "Cranelift requires a real CLIF for execution and no fabricated CLIF for rejection");
+      "Cranelift requires generated CLIF identity for execution and no fabricated CLIF for rejection");
     if(v.expect==="execute")
       good(o.run.steps.includes("run-cranelift-native-jit")&&
         o.run.steps.includes("inspect-cranelift-ir"),
@@ -209,7 +209,7 @@ export function validateObservation(o,c){
       (v.expect==="execute"?
         o.engine.wasmModuleSha256===o.artifactSha256&&o.engine.zeroImports===true:
         o.engine.wasmModuleSha256===null&&o.engine.zeroImports===null),
-      "Wasm bridge requires pinned LLVM frontend, valid host and no fabricated reject module");
+      "Wasm bridge requires pinned LLVM frontend, zero-import module, valid host and no fabricated reject module");
     if(v.expect==="execute")
       good(o.run.steps.includes("compile-wasm-module")&&
         o.run.steps.includes("execute-wasm-guest"),"missing compiled Wasm module execution");
