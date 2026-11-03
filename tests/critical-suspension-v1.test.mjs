@@ -285,6 +285,29 @@ test('same continuation cannot recursively acquire or queue twice', async () => 
   gate.release(owner.lease);
 });
 
+test('missing continuation identity cannot acquire or consume FIFO capacity', async () => {
+  const gate = new CriticalGateModel(9, 2);
+  for (const identity of [null, undefined]) {
+    assert.throws(() => gate.tryEnter(identity, 9), /identity required/);
+    assert.throws(() => gate.enter(identity, 9), /identity required/);
+  }
+  assert.equal(gate.owner, null);
+  assert.equal(gate.waiters.length, 0);
+  const active = gate.enter('active', 9);
+  const waiting = gate.enter('waiting', 9);
+  assert.equal(gate.waiters.length, 1);
+  for (const identity of [null, undefined]) {
+    assert.throws(() => gate.tryEnter(identity, 9), /identity required/);
+    assert.throws(() => gate.enter(identity, 9), /identity required/);
+  }
+  assert.equal(gate.waiters.length, 1);
+  gate.release(active.lease);
+  const lease = await waiting.completion;
+  assert.equal(lease.task, 'waiting');
+  gate.release(lease);
+  gate.retire();
+});
+
 test('invalid waiter budgets and generations fail closed', () => {
   for (const capacity of [0, -1, 8193, Infinity, NaN, false, null, '2'])
     assert.throws(() => new CriticalGateModel(1, capacity), /waiter capacity/);
