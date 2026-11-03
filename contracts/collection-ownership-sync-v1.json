@@ -42,14 +42,18 @@
       "kind": "compiler",
       "expectation": "reject",
       "requirement": "Sender uses transferred collection after rt take",
-      "attestation": "unattested"
+      "attestation": "unattested",
+      "fixture": "fixtures/collection-ownership-sync-v1/sender-use-after-take.atto",
+      "rejectionEvidenceRequired": "semantic-ownership-diagnostic"
     },
     {
       "id": "readonly-view-writable-backing-share",
       "kind": "compiler",
       "expectation": "reject",
       "requirement": "Readonly view alone cannot mint Sync or Share if writable aliases remain",
-      "attestation": "unattested"
+      "attestation": "unattested",
+      "fixture": "fixtures/collection-ownership-sync-v1/readonly-view-writable-backing-share.atto",
+      "rejectionEvidenceRequired": "semantic-ownership-diagnostic"
     },
     {
       "id": "readonly-view-wrapper-laundering",
@@ -63,28 +67,36 @@
       "kind": "compiler",
       "expectation": "reject",
       "requirement": "Borrowed collection cannot escape into independent Task",
-      "attestation": "unattested"
+      "attestation": "unattested",
+      "fixture": "fixtures/collection-ownership-sync-v1/mutable-borrow-task-escape.atto",
+      "rejectionEvidenceRequired": "semantic-ownership-diagnostic"
     },
     {
       "id": "borrowed-mutex-initializer",
       "kind": "compiler",
       "expectation": "reject",
       "requirement": "SharedMutex must consume owned payload rather than a borrow",
-      "attestation": "unattested"
+      "attestation": "unattested",
+      "fixture": "fixtures/collection-ownership-sync-v1/borrowed-mutex-initializer.atto",
+      "rejectionEvidenceRequired": "semantic-ownership-diagnostic"
     },
     {
       "id": "mutex-use-after-consume",
       "kind": "compiler",
       "expectation": "reject",
       "requirement": "Original collection cannot be used after SharedMutex takes ownership",
-      "attestation": "unattested"
+      "attestation": "unattested",
+      "fixture": "fixtures/collection-ownership-sync-v1/mutex-use-after-consume.atto",
+      "rejectionEvidenceRequired": "semantic-ownership-diagnostic"
     },
     {
       "id": "guard-suspend-await",
       "kind": "compiler",
       "expectation": "reject",
       "requirement": "Protected guard cannot remain live across await or scheduler suspension",
-      "attestation": "unattested"
+      "attestation": "unattested",
+      "fixture": "fixtures/collection-ownership-sync-v1/guard-suspend-await.atto",
+      "rejectionEvidenceRequired": "semantic-ownership-diagnostic"
     },
     {
       "id": "guard-view-iterator-escape",
@@ -154,7 +166,9 @@
       "net"
     ],
     "wasmWorkerExecutionRequired": true,
-    "privateSourceTransferRequiresSecurityApproval": true
+    "privateSourceTransferRequiresSecurityApproval": true,
+    "semanticRejectionRequired": true,
+    "unsupportedSyntaxDoesNotPass": true
   },
   "evidence": {
     "java": "unattested",
@@ -167,6 +181,7 @@
     "Metadata scenarios are candidate requirements, not executable guest fixtures or implementation claims.",
     "Concurrent table API spelling remains undecided; do not infer guest language support.",
     "Keep unsupported runtime syntax fail-closed and report unsupported separately from a verified semantic rejection.",
-    "The Java readonly-view admission fix is staged on draft PR #2295 but has no exact-head JDK21+ CI proof."
+    "The Java readonly-view admission fix is staged on draft PR #2295 but has no exact-head JDK21+ CI proof.",
+    "Six negative .atto source fixtures are candidate compiler admission cases, not executed test receipts. They must reject for an ownership/guard semantic reason, not an unsupported syntax error."
   ]
 }
