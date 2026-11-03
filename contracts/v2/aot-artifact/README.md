@@ -23,6 +23,10 @@ Native host packaging is *not* inherently strict per-guest AOT. `portable-wasm` 
 4. Compare exact artifact length and SHA-256 and inspect format/architecture. Require subsequent platform-specific loader validation including full ABI/dependencies/runtime policy and environment checks.
 5. Retain an independent exact-head executed-guest receipt (run ID/attempt, source head/tree, fixture blob + SHA256, compiler identity/mode, target/ABI, artifact hash/size/dependencies, step counts, guest exit/stdout/stderr, negative cases, review). Authenticated bytes are **not** guest execution evidence.
 
+**Exact signed numbers.** The only numeric V2 field is `artifact.size_bytes`. Parse its mathematical JSON value before binary64 coercion: `128`, `128.0` and `1.28e2` mean the same exact integer, but a nonintegral lexeme that would round into an integer must be rejected. Values outside the safe JSON integer range fail closed. This is a lexical check **in addition to** JSON Schema's parsed-value constraints, so schema validation alone is insufficient for signed ingress. RFC 8785 normalizes numeric `-0` to `0`; zero-size artifacts are rejected by typed admission.
+
+**Executable structure is not a loader.** ELF64 checks include executable file type, architecture, program-header bounds and a load segment; PE checks include PE32+, executable flags, sections and architecture; Mach-O checks include MH_EXECUTE, architecture and bounded load commands. These checks do not resolve dependent libraries, certify ABI compatibility, prevent a guest JIT, or prove that a binary was executed. A platform-specific loader and independent run receipts remain mandatory.
+
 The JS module `lib/aot-artifact-v2.mjs` is a bounded source-only reference verifier for step 1–4. Even a successful return is explicitly `AUTHENTICATED_NOT_EXECUTED`, `loader_verified=false`, `guest_executed=false`, `release_ready=false`. It is *not* a production host loader, nor a replacement for the Java typed ingress or Rust policy implementation. Cross-language differential fixtures and the Rust-only tooling migration remain open.
 
 ## P0 pending
