@@ -97,11 +97,30 @@ test("CLI remains disabled even when caller supplies a destination allowlist and
 test("disabled admission guard is the first executable operation",()=>{
   const body=readFileSync(new URL("../bin/require-private-mirror.mjs",import.meta.url),"utf8");
   const fn=body.slice(body.indexOf("export async function requirePrivateMirror("));
-  assert.match(fn,/\}\) \{\s*\/\/ Incident containment LOCKDOWN/);
+  assert.match(fn,/\(_untrustedOptions\) \{[\s\S]*?\/\/ Incident containment LOCKDOWN/);
   const denial=fn.indexOf('throw Error("PRIVATE_SOURCE_PUBLISH_DISABLED_PENDING_PROTECTED_MAIN_APPROVAL")');
   assert.ok(denial>=0);
   for(const action of ["repoName(source)","repoMetadata(from","fetchImpl(","await repoMetadata("]){
     const i=fn.indexOf(action);
     if(i>=0) assert.ok(denial<i,"lockdown must precede "+action);
   }
+});
+
+test("denial happens before malicious option getters and Proxy traps",async()=>{
+  let effects=0;
+  const hostile=new Proxy({},{
+    get(){effects++;throw Error("OPTIONS_GET_TRAP_EXECUTED");},
+    ownKeys(){effects++;throw Error("OPTIONS_OWNKEYS_TRAP_EXECUTED");},
+    getOwnPropertyDescriptor(){effects++;throw Error("OPTIONS_DESCRIPTOR_TRAP_EXECUTED");},
+    getPrototypeOf(){effects++;throw Error("OPTIONS_PROTOTYPE_TRAP_EXECUTED");}
+  });
+  const getters=Object.defineProperties({},{
+    source:{enumerable:true,get(){effects++;throw Error("SOURCE_GETTER_EXECUTED");}},
+    fetchImpl:{enumerable:true,get(){effects++;throw Error("FETCH_GETTER_EXECUTED");}},
+    token:{enumerable:true,get(){effects++;throw Error("TOKEN_GETTER_EXECUTED");}}
+  });
+  for(const options of [undefined,null,hostile,getters,42,"malformed"]) {
+    await assert.rejects(requirePrivateMirror(options),DENIED);
+  }
+  assert.equal(effects,0,"zero caller-controlled option reads before lockdown");
 });
