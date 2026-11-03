@@ -65,6 +65,16 @@ export function verifyActorSyncContract(contract) {
     }
   }
   for(let i=1;i<=25;i++) assert.ok(ids.has("AS"+String(i).padStart(2,"0")),"missing AS case "+i);
+  const as24=contract.scenarios.find(s=>s.id==="AS24");
+  const as25=contract.scenarios.find(s=>s.id==="AS25");
+  assert.equal(as24.kind,"runtime","AS24 must execute source");
+  assert.equal(as24.oracle,
+    "identical AttoLang .atto guest source executes across five backends; transitional .ores tests alone do not establish .atto parity",
+    "AS24 AttoLang extension parity contract changed");
+  assert.equal(as25.kind,"fault","AS25 is a durable restart/fence scenario");
+  assert.equal(as25.oracle,
+    "new actor epoch poisons durable replica cursor across process restart; reads and old/new deltas reject until authenticated full snapshot resync",
+    "AS25 maximum epoch and recovery security contract changed");
   assert.equal(contract.implementationStatus.cranelift.actorGuest,"UNSUPPORTED",
     "Cranelift scalar-only source stage must not claim guest actors");
   return {contract:contract.contract,scenarioCount:ids.size,backendCount:BACKENDS.length,
