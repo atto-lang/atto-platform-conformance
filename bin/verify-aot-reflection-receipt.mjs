@@ -13,6 +13,43 @@ const expectedStage = {
   'build-metadata': 'build-audit'
 };
 
+// Pinned by independently reviewed v1 source contract: dropping a rejection or
+// substituting a weaker oracle must not silently become a valid manifest.
+const canonicalOracleKinds = Object.freeze({
+  "type_of.closed_nominal": "compile-and-run",
+  "fields_of.public_order": "compile-and-run",
+  "methods_of.static_signatures": "compile-and-run",
+  "implements.static_witness": "compile-and-run",
+  "generics.closed_specialization": "compile-and-run",
+  "private_field.redacted": "runtime-deny",
+  "actor_state.unauthorized": "runtime-deny",
+  "actor_state.authorized_snapshot": "compile-and-run",
+  "tenant.foreign_denied": "runtime-deny",
+  "actor_generation.stale_denied": "runtime-deny",
+  "field_reference.no_escape": "compile-reject",
+  "descriptor.no_raw_pointer": "compile-reject",
+  "descriptor.no_implicit_invoke": "compile-reject",
+  "runtime_generic.no_specialize": "compile-reject",
+  "runtime_eval.forbidden": "compile-reject",
+  "runtime_proxy.forbidden": "compile-reject",
+  "classpath_scan.forbidden": "artifact-inspection",
+  "serializer.compiler_generated": "compile-and-run",
+  "metadata.deterministic": "build-metadata",
+  "metadata.layout_target_specific": "build-metadata",
+  "type_id.collision_denied": "runtime-deny",
+  "metadata.malformed_denied": "runtime-deny",
+  "metadata.bounded": "artifact-inspection",
+  "retention.unused_stripped": "artifact-inspection",
+  "retention.explicit_root": "artifact-inspection",
+  "retention.unauthorized_root": "compile-reject",
+  "hot_load.verified_module": "compile-and-run",
+  "hot_load.abi_mismatch": "runtime-deny",
+  "hot_load.generation_fence": "compile-and-run",
+  "jit_escape.forbidden": "artifact-inspection",
+  "aot.native_execution": "compile-and-run",
+  "isolate.no_mixed_authority": "runtime-deny"
+});
+
 export function verifyManifest(manifest) {
   const errors = [];
   if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
@@ -22,7 +59,12 @@ export function verifyManifest(manifest) {
   if (manifest?.schemaVersion !== 1) errors.push('schemaVersion');
   if (manifest?.status !== 'candidate-unattested') errors.push('candidate status must not assert execution');
   const expectedBackends = ['java', 'llvm', 'wasm', 'forge', 'net'];
-  if (!manifest?.backends || expectedBackends.some(b => !Object.hasOwn(manifest.backends, b))) errors.push('backends');
+  if (!manifest?.backends || typeof manifest.backends !== 'object' ||
+      Array.isArray(manifest.backends) ||
+      Object.keys(manifest.backends).length !== expectedBackends.length ||
+      expectedBackends.some(b => !Object.hasOwn(manifest.backends, b) ||
+          typeof manifest.backends[b] !== 'string' || !manifest.backends[b].trim()))
+    errors.push('exact backend set required');
   const cases = manifest?.cases;
   if (!Array.isArray(cases) || cases.length !== 32) errors.push('32 oracle cases required');
   if (Array.isArray(cases)) {
@@ -34,12 +76,20 @@ export function verifyManifest(manifest) {
       }
       if (typeof c.id !== 'string' || !/^[a-z_]+\.[a-z_]+$/.test(c.id) || ids.has(c.id)) errors.push('case id duplicate/invalid');
       ids.add(c.id);
+      if (!Object.hasOwn(canonicalOracleKinds, c.id) || canonicalOracleKinds[c.id] !== c.kind)
+        errors.push('unknown or remapped canonical oracle: ' + c.id);
       if (!Object.hasOwn(expectedStage, c.kind)) errors.push('invalid oracle kind: ' + c.id);
       if (typeof c.oracle !== 'string' || !c.oracle.trim()) errors.push('missing oracle: ' + c.id);
-      if (!Array.isArray(c.mustProve) || !c.mustProve.length || new Set(c.mustProve).size !== c.mustProve.length) errors.push('invalid witness set: ' + c.id);
+      if (!Array.isArray(c.mustProve) || !c.mustProve.length ||
+          c.mustProve.some(w => typeof w !== 'string' || !/^[a-z][a-z0-9-]{1,99}$/.test(w)) ||
+          new Set(c.mustProve).size !== c.mustProve.length)
+        errors.push('invalid witness set: ' + c.id);
       if (c.evidence !== 'NOT_EXECUTED') errors.push('fabricated contract evidence: ' + c.id);
       if (!Array.isArray(c.backends) || c.backends.length !== expectedBackends.length ||
           expectedBackends.some(b => !c.backends.includes(b))) errors.push('incomplete backends: ' + c.id);
+    }
+    for (const expected of Object.keys(canonicalOracleKinds)) {
+      if (!ids.has(expected)) errors.push('missing canonical oracle: ' + expected);
     }
   }
   return errors;
