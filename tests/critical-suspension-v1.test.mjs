@@ -7,19 +7,25 @@ import { verifyCriticalSuspensionReceipt } from '../bin/verify-critical-suspensi
 const manifest = JSON.parse(await readFile(new URL('../contracts/v1/critical-suspension-v1.json', import.meta.url), 'utf8'));
 const cases = manifest.cases;
 const passCodes = Object.freeze({
-  'compile-pass': { compiler_accepted: true },
-  'compile-reject': { compiler_rejected: true, diagnostic_code: 'E_EXPECTED_REJECTION' },
-  runtime: { native_guest_executed: true }
+  'compile-pass': { compiler_accepted: true, exit_code: 0, timed_out: false, signal: null },
+  'compile-reject': { compiler_rejected: true, exit_code: 1, timed_out: false,
+    signal: null, emitted_artifact: false },
+  runtime: { native_guest_executed: true, guest_mode: 'COMPILED_NATIVE_EXECUTABLE',
+    guest_executable_sha256: 'e'.repeat(64), compiler_accepted: true,
+    exit_code: 0, timed_out: false, signal: null }
 });
 const receipt = () => ({
   schema: 'oreslang.critical-suspension.receipt/1',
   backend: 'java-graal', source_commit_sha: 'a'.repeat(40),
   source_tree_sha: 'b'.repeat(40), fixture_tree_sha: 'c'.repeat(40),
   compiler_sha256: 'd'.repeat(64), exact_tree_verified: true,
-  executed_steps: 9, runner_id: 42, runner_admission_only: false,
+  executed_steps: 9, runner_id: 42, run_id: 101, job_id: 102,
+  run_attempt: 1, test_plan_sha256: 'f'.repeat(64), runner_admission_only: false,
   compiler_invoked: true, cross_backend_parity: false,
   cases: Object.fromEntries(cases.map(c =>
-    [c.id, { phase: c.phase, status: 'pass', ...passCodes[c.phase], ...(c.phase === 'compile-reject' ? {diagnostic_code:c.expected_diagnostic} : {}) }]))
+    [c.id, { phase: c.phase, status: 'pass', ...passCodes[c.phase], ...(c.phase === 'compile-reject'
+      ? {diagnostic_code:c.expected_diagnostic, stderr:c.expected_diagnostic + ': expected'}
+      : {}) }]))
 });
 
 test('contract has distinct portable compiler and guest gates', () => {
@@ -159,6 +165,59 @@ test('runtime guest execution and compile-negative diagnostics are mandatory', (
   const r = receipt();
   delete r.cases[negative].diagnostic_code;
   assert.throws(() => verifyCriticalSuspensionReceipt(r, manifest));
+});
+
+test('full matrix cannot omit run, job, attempt, or test-plan identity', () => {
+  for (const [field,value] of [['run_id',null],['run_id',0],
+      ['job_id',null],['job_id',0],['run_attempt',0],
+      ['test_plan_sha256','not-a-digest']]) {
+    const r=receipt();
+    r[field]=value;
+    assert.throws(()=>verifyCriticalSuspensionReceipt(r,manifest), /identity required|test_plan_sha256/);
+  }
+});
+
+test('compile negatives reject unrelated first diagnostics, crashes, timeouts and emitted objects', () => {
+  const negative=cases.find(c=>c.phase==='compile-reject');
+  for (const [field,value] of [
+    ['stderr', 'E_UNKNOWN: earlier failure; ' + negative.expected_diagnostic + ': later'],
+    ['exit_code',-11],['exit_code',0],['signal','SIGSEGV'],
+    ['timed_out',true],['emitted_artifact',true],
+    ['compiler_accepted',true]
+  ]) {
+    const r=receipt();r.cases[negative.id][field]=value;
+    assert.throws(()=>verifyCriticalSuspensionReceipt(r,manifest));
+  }
+});
+
+test('full native runtime cannot be relabeled Graal Polyglot or host-only', () => {
+  const runtime=cases.find(c=>c.phase==='runtime');
+  for (const [field,value] of [
+    ['guest_mode','GRAAL_POLYGLOT'],
+    ['guest_executable_sha256',null],
+    ['guest_executable_sha256','not-a-digest'],
+    ['compiler_accepted',false],
+    ['exit_code',1],['timed_out',true],['signal','SIGILL'],
+    ['host_test_executed',true]
+  ]) {
+    const r=receipt();r.cases[runtime.id][field]=value;
+    assert.throws(()=>verifyCriticalSuspensionReceipt(r,manifest));
+  }
+});
+
+test('host and compiler phase flags cannot spoof native execution', () => {
+  const negative=cases.find(c=>c.phase==='compile-reject');
+  const positive=cases.find(c=>c.phase==='compile-pass');
+  for (const [caseId,field] of [
+    [negative.id,'native_guest_executed'],[negative.id,'guest_executed'],
+    [positive.id,'native_guest_executed'],[positive.id,'compiler_rejected']
+  ]) {
+    const r=receipt();r.cases[caseId][field]=true;
+    assert.throws(()=>verifyCriticalSuspensionReceipt(r,manifest),/contradictory/);
+  }
+  const badExit=receipt();
+  badExit.cases[positive.id].exit_code=124;
+  assert.throws(()=>verifyCriticalSuspensionReceipt(badExit,manifest),/clean exit/);
 });
 
 test('a lone backend cannot claim cross-backend parity', () => {
