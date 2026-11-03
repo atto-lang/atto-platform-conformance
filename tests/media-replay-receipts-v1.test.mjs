@@ -142,6 +142,24 @@ test('malformed alignment is a fail-closed result, never a thrown exception', ()
   assert.equal(inspectMediaReplayGuestReceipt(valid, inventory, missing).error, 'INVALID_ALIGNMENT');
 });
 
+test('AttoLang manifests reject legacy extension and stale path aliases', () => {
+  const report = fixture();
+  const legacyInventory = structuredClone(inventory);
+  legacyInventory.sourceExtension = '.ores';
+  assert.equal(inspectMediaReplayGuestReceipt(report, legacyInventory, alignment).error, 'INVALID_INVENTORY');
+  const noExtension = structuredClone(inventory);
+  delete noExtension.sourceExtension;
+  assert.equal(inspectMediaReplayGuestReceipt(report, noExtension, alignment).error, 'INVALID_INVENTORY');
+  const legacyAlignment = structuredClone(alignment);
+  legacyAlignment.sourceExtension = '.ores';
+  assert.equal(inspectMediaReplayGuestReceipt(report, inventory, legacyAlignment).error, 'INVALID_ALIGNMENT');
+  const legacySource = structuredClone(alignment);
+  legacySource.backends[0].source_path = 'stdlib/replay_stream.ores';
+  assert.equal(inspectMediaReplayGuestReceipt(report, inventory, legacySource).error, 'INVALID_ALIGNMENT');
+  const legacyFixture = structuredClone(alignment);
+  legacyFixture.backends[0].test_path = 'examples/native-replay-stream-contract.ores';
+  assert.equal(inspectMediaReplayGuestReceipt(report, inventory, legacyFixture).error, 'INVALID_ALIGNMENT');
+});
 test('unbounded output payload is refused before full receipt parsing', () => {
   const report = fixture();
   report.stdout += 'X'.repeat(33000);
