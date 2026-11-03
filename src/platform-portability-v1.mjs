@@ -249,6 +249,27 @@ export function compareObservations(records,c){
     seen.set(key,record);
   }
   let missing=0,divergent=0;
+  // A parity snapshot must refer to one common source revision, one target
+  // revision per platform, one compiler source revision per backend, and one
+  // compiler executable per platform/backend lane. A row-by-row oracle check
+  // alone can hide incompatible revisions behind matching scalar outputs.
+  // These are coherence checks only: none of the SHAs are authenticated here.
+  const sourceHeads=new Set();
+  const platformHeads=new Map(PLATFORMS.map(p=>[p,new Set()]));
+  const compilerHeads=new Map(TOOLCHAINS.map(b=>[b,new Set()]));
+  const laneCompilerDigests=new Map();
+  for(const record of seen.values()){
+    sourceHeads.add(record.sourceCommit);
+    platformHeads.get(record.platform).add(record.platformCommit);
+    compilerHeads.get(record.toolchain).add(record.compilerCommit);
+    const lane=record.platform+":"+record.toolchain;
+    if(!laneCompilerDigests.has(lane))laneCompilerDigests.set(lane,new Set());
+    laneCompilerDigests.get(lane).add(record.compilerBinarySha256);
+  }
+  if(sourceHeads.size>1)divergent++;
+  for(const values of platformHeads.values())if(values.size>1)divergent++;
+  for(const values of compilerHeads.values())if(values.size>1)divergent++;
+  for(const values of laneCompilerDigests.values())if(values.size>1)divergent++;
   for(const platform of PLATFORMS)for(const v of c.cases){
     const group=TOOLCHAINS.map(b=>seen.get([platform,v.id,b].join(":")));
     // A missing lane must never conceal a known wrong guest result.
@@ -261,7 +282,6 @@ export function compareObservations(records,c){
     const projection=observed.map(x=>v.expect==="execute"?
       "pass:"+x.result.value:"reject:"+x.result.diagnosticCode);
     if(projection.some(x=>x!==expected))divergent++;
-    if(new Set(observed.map(x=>x.sourceCommit)).size>1)divergent++;
   }
   return {status:divergent?"DIVERGENT":missing?"INCOMPLETE":"OBSERVED_MATCH_NOT_CERTIFIED",
     observed:seen.size,missing,divergent,independentlyAuthenticated:false,certifiedParity:false};
