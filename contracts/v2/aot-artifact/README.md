@@ -1,0 +1,36 @@
+# AttoLang AOT artifact V2 — draft portable admission contract
+
+Status: **reference contract / source-only tests**. Issue [#321](../../../../issues/321) is the release gate. Nothing under this directory is evidence that a guest was compiled, a native loader was invoked, or any of the 16 target lanes passed.
+
+## V1 compatibility and V2 products
+
+V1 Java manifests remain unchanged. V2 uses an explicit `schema_version=atto.aot-artifact.v2` and a separately stored `atto.aot-artifact-signature.v2` envelope. A V1 admission parser MUST reject V2 until deliberately upgraded; never widen the V1 enum without synchronizing the typed admission parser.
+
+| Compiler backend | Product kind | Allowed format | Mode |
+|---|---|---|---|
+| java-graalvm, llvm, dotnet-nativeaot | native-executable | ELF (Linux), PE (Windows), Mach-O (macOS) | per-guest-aot |
+| wasm-wasmtime | native-wasm-host | ELF/PE/Mach-O bound to host | per-guest-aot |
+| wasm-wasmtime | portable-wasm | wasm, WASI/wasm32 | portable-wasm |
+| wasm-wasmtime | precompiled-wasmtime | wasmtime-serialized, host target | wasmtime-precompiled |
+
+Native host packaging is *not* inherently strict per-guest AOT. `portable-wasm` is not a native executable. Precompiled Wasmtime serialization is engine/version/platform-specific and MUST be checked by a compatible loader (the reference verifier intentionally cannot certify it).
+
+## Authentication (distinct from execution)
+
+1. Decode manifest and envelope from at most 64 KiB strict UTF-8 JSON, rejecting duplicate decoded keys (including escaped aliases), malformed literals, lone surrogates, trailing bytes, deep nesting, unsafe/unknown fields and impossible backend–format combinations.
+2. Canonicalize the complete V2 payload according to RFC 8785 (JCS). The detached signature itself is NOT part of the signed payload. Compute SHA-256 of the canonical payload and compare to the envelope `manifest_sha256`.
+3. Verify the detached Ed25519 signature over those **canonical bytes** using an externally provisioned and pinned trust-anchor map keyed by `key_id`. A manifest-provided public key or dummy fixture signature is NEVER a trust anchor.
+4. Compare exact artifact length and SHA-256 and inspect format/architecture. Require subsequent platform-specific loader validation including full ABI/dependencies/runtime policy and environment checks.
+5. Retain an independent exact-head executed-guest receipt (run ID/attempt, source head/tree, fixture blob + SHA256, compiler identity/mode, target/ABI, artifact hash/size/dependencies, step counts, guest exit/stdout/stderr, negative cases, review). Authenticated bytes are **not** guest execution evidence.
+
+The JS module `lib/aot-artifact-v2.mjs` is a bounded source-only reference verifier for step 1–4. Even a successful return is explicitly `AUTHENTICATED_NOT_EXECUTED`, `loader_verified=false`, `guest_executed=false`, `release_ready=false`. It is *not* a production host loader, nor a replacement for the Java typed ingress or Rust policy implementation. Cross-language differential fixtures and the Rust-only tooling migration remain open.
+
+## P0 pending
+
+- Align TypeSpec + JSON Schema + Java typed V2 parser, and implement equivalent admission in LLVM, Wasm, and .NET.
+- Add independent JSON Schema Draft 2020-12 differential tests, RFC 8785 conformance vectors, and native loader inspections; only the bounded reference verifier tests are currently present.
+- Bring up source-local stepful runner admission. Existing `steps=null` Actions failures are infrastructure evidence, not compiler failures.
+- Run the checked-i64 `42`, separate `14` source isolation, overflow rejection, and unsupported-source failure with no output, at each exact commit/tree; ultimately cover the 16 release lanes or explicit scoped exceptions.
+- Enforce independently approved branch/release governance. Cross-org private source copying requires a verified private, writable, explicitly allowlisted destination *before fetching source bytes*, in accordance with `bin/require-private-mirror.mjs`. User request alone does not populate a repository's allowlist.
+
+Never merge or promote solely because this source reference verifier passes.
