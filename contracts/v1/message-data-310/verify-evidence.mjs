@@ -42,11 +42,24 @@ export function validateEvidence(m,receipts,hashes){
    if(t.fixture){if(!h64.test(hashes[t.fixture]||"")||row.fixture_sha256!==hashes[t.fixture])errors.push(`${b}/${t.id}: wrong fixture digest`)}
    else if(row.injection!==t.injection)errors.push(`${b}/${t.id}: wrong host injection`);
    if(t.kind==="guest-positive"){
-    if(row.phase!=="native-guest"||row.result!=="pass"||row.exit_code!==0||row.stdout!==t.stdout)errors.push(`${b}/${t.id}: no native output proof`);
+    if(row.phase!=="native-guest"||row.result!=="pass"||row.exit_code!==0||row.stdout!==t.stdout||row.stderr!=="")errors.push(`${b}/${t.id}: missing exact native output / clean exit proof`);
    }else if(t.kind==="type-negative"){
-    if(row.phase!=="semantic-typecheck"||row.result!=="reject"||row.diagnostic_category!==t.diagnostic_category||row.exit_code===0||!Number.isInteger(row.exit_code)||row.parse_failure===true)errors.push(`${b}/${t.id}: missing semantic rejection`);
+    const loc=row.source_location;
+    const pattern=t.diagnostic_category==="MESSAGE_DATA_REQUIRED"?/MessageData/i:t.diagnostic_category==="BORROWED_PAYLOAD"?/borrow|Sendable|owned/i:/function|callable|closure|bound method|Topic payload/i;
+    if(row.phase!=="semantic-typecheck"||row.result!=="reject"||row.diagnostic_category!==t.diagnostic_category
+      ||!Number.isInteger(row.exit_code)||row.exit_code===0
+      ||row.parser_accepted!==true||row.parse_failure!==false
+      ||typeof row.diagnostic_code!=="string"||row.diagnostic_code.length<3
+      ||typeof row.diagnostic_text!=="string"||!pattern.test(row.diagnostic_text)
+      ||!loc||loc.file!==t.fixture||!Number.isInteger(loc.line)||loc.line<1
+      ||!Number.isInteger(loc.column)||loc.column<1)errors.push(`${b}/${t.id}: missing parse-accepted semantic rejection / category / diagnostic / source position`);
    }else if(t.kind==="runtime-negative"){
-    if(row.phase!=="native-runtime-admission"||row.result!=="reject"||row.diagnostic_category!==t.diagnostic_category||row.rejected_before_enqueue!==true)errors.push(`${b}/${t.id}: missing runtime rejection`);
+    if(row.phase!=="native-runtime-admission"||row.result!=="reject"
+      ||row.diagnostic_category!==t.diagnostic_category
+      ||row.rejected_before_enqueue!==true||row.receiver_observed_payload!==false
+      ||row.harness_exit_code!==0||row.harness_executed!==true
+      ||typeof row.diagnostic_text!=="string"||!/function|callable|closure|bound method/i.test(row.diagnostic_text)
+      )errors.push(`${b}/${t.id}: missing executed and fail-closed native runtime rejection`);
    }else errors.push(`${b}/${t.id}: unknown case kind`);
    if(row.skipped===true||row.host_only===true||row.pending===true)errors.push(`${b}/${t.id}: unqualified result`);
   }
