@@ -172,6 +172,31 @@ test("frozen exotic collections and getters are not Sendable immutable payloads"
 });
 
 
+test("rejected share never partially freezes caller-owned payloads",()=>{
+  const safe={id:"unchanged"};
+  const nested={good:safe,bad:{callback:()=>42}};
+  assert.throws(()=>share(nested),/non-Sendable/);
+  assert.equal(Object.isFrozen(nested),false);
+  assert.equal(Object.isFrozen(safe),false,
+    "earlier safe sibling remains caller-owned after later rejection");
+  assert.equal(Object.isFrozen(nested.bad),false);
+  safe.id="still-mutable";
+  assert.equal(safe.id,"still-mutable");
+
+  const acyclic={id:"uncaptured"},cyclic={};
+  cyclic.self=cyclic;
+  const withCycle={good:acyclic,bad:cyclic};
+  assert.throws(()=>share(withCycle),/cyclic/);
+  assert.equal(Object.isFrozen(acyclic),false);
+  assert.equal(Object.isFrozen(withCycle),false);
+
+  const aliases={first:safe,second:safe};
+  assert.equal(share(aliases),aliases);
+  assert.ok(Object.isFrozen(safe));
+  assert.ok(Object.isFrozen(aliases));
+  assert.equal(aliases.first,aliases.second);
+});
+
 test("acyclic shared aliases are immutable data, not false cycles",()=>{
   const bus=new PubSubReference();
   const topic=bus.topic("dag.events","Event").topic;
