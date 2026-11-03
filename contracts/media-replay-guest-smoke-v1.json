@@ -30,7 +30,7 @@
       "name": "java",
       "repository": "ores-truffle-oreslang/oreslang-source.java",
       "pr": 2445,
-      "head": "4626325b7a1757ab1a6d5814e3685cef68163051",
+      "head": "bdeb6a9e95678f32aa025e9b1e567fa4c3ea508d",
       "guestPath": "examples/replay-video-disconnect-smoke.atto",
       "guestBlobSha": "d334800e067a4f6f4bcd95fa2adf104c52c39f49",
       "execution": "UNVERIFIED"
@@ -109,12 +109,20 @@
   "javaAotGuestGate": {
     "status": "CI_STEPS_AUTHORED_NO_EXECUTION",
     "script": "scripts/run-replay-video-aot-smoke.sh",
-    "scriptBlobSha": "d5e6df428e22adcecd15cdb9128040146f05ad6a",
+    "scriptBlobSha": "c6451f8782415dc282e92583ea798efd6164104a",
     "sourceFreeCanaries": "scripts/test-replay-video-aot-runner.sh",
-    "canariesBlobSha": "9375c51158e0c971110009d5ab6034f5cc2401bd",
-    "canariesPassedLocally": 15,
-    "execution": "Native Image --check must not emit guest receipts; real guest then must emit exact seven ordered receipts. Both stdout/stderr checked; compressed32 and native64 AOT jobs wired.",
-    "notVerified": "Source-org CI at exact Java head 4626325b7a1757ab1a6d5814e3685cef68163051 failed before executing job steps; source-free 15/15 AOT mock checks passed locally, no native compile/run evidence.",
-    "sourceExport": "FORBIDDEN pending eight P0 transfer dispositions and explicit approved private carrier"
+    "canariesBlobSha": "76414b45cd704afa126e8c7d6e24c23c71fcdf42",
+    "canariesPassedLocally": 18,
+    "execution": "Native Image --check cannot emit any guest receipt on stdout/stderr; actual guest stdout must match the eight-line expected file byte-for-byte (seven receipts plus terminal), runtime stderr must be empty, and exit status zero. Both compressed32 and native64 AOT jobs wired.",
+    "notVerified": "Exact-head Java/Graal CI has not run any steps. Source-free 18/18 Native AOT fake-executable cases passed locally, with matching exact Git blobs; no Native Image guest compilation/execution evidence.",
+    "sourceExport": "FORBIDDEN pending eight P0 transfer dispositions and explicit approved private carrier",
+    "alternateRunner": {
+      "status": "SOURCE_FREE_ONLY",
+      "repository": "gha-indie-worker/gha-indie-worker-docs",
+      "run_id": 41395768031,
+      "verified_latest_attempt": "SUCCESS_4_EXECUTED_STEPS",
+      "source_transferred": false,
+      "actions_minutes_balance": "UNKNOWN"
+    }
   }
 }
