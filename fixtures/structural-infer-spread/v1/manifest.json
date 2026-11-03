@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "scope": "attolang-infer-spread-structural-real-guest-v1",
+  "description": "Exact .atto source evidence targets, not successful executable backend parity",
+  "referenceContract": "contracts/structural-infer-spread/v1/README.md",
+  "sourceRoot": "fixtures/structural-infer-spread/v1/",
+  "backends": {
+    "java": {
+      "compilerExecuted": false,
+      "guestExecuted": false,
+      "negativeDiagnosticsVerified": false,
+      "exactCompilerSha": null,
+      "exactArtifactSha256": null
+    },
+    "llvm": {
+      "compilerExecuted": false,
+      "guestExecuted": false,
+      "negativeDiagnosticsVerified": false,
+      "exactCompilerSha": null,
+      "exactArtifactSha256": null
+    },
+    "net": {
+      "compilerExecuted": false,
+      "guestExecuted": false,
+      "negativeDiagnosticsVerified": false,
+      "exactCompilerSha": null,
+      "exactArtifactSha256": null
+    },
+    "wasm": {
+      "compilerExecuted": false,
+      "guestExecuted": false,
+      "negativeDiagnosticsVerified": false,
+      "exactCompilerSha": null,
+      "exactArtifactSha256": null
+    }
+  },
+  "cases": [
+    {
+      "id": "negative-duplicate-named",
+      "file": "negative-duplicate-named.atto",
+      "sourceGitBlobSha1": "9eec97d2f4e7835a35e4a16f4f0f4714416315e6",
+      "expect": "reject",
+      "diagnosticClass": "duplicate-explicit-field",
+      "publishArtifacts": false
+    },
+    {
+      "id": "negative-exact-struct-extra",
+      "file": "negative-exact-struct-extra.atto",
+      "sourceGitBlobSha1": "1d2938040666822df6cf730a20a9df66e2fe306b",
+      "expect": "reject",
+      "diagnosticClass": "explicit-struct-extra-field",
+      "publishArtifacts": false
+    },
+    {
+      "id": "negative-infer-scalar",
+      "file": "negative-infer-scalar.atto",
+      "sourceGitBlobSha1": "99b85977a244740b305e0293e77a23c3a174b9ea",
+      "expect": "reject",
+      "diagnosticClass": "invalid-infer-target",
+      "publishArtifacts": false
+    },
+    {
+      "id": "negative-infer-structural",
+      "file": "negative-infer-structural.atto",
+      "sourceGitBlobSha1": "8b147d80bd070e32151bac3294ae3562ce8edcc2",
+      "expect": "reject",
+      "diagnosticClass": "invalid-constructor",
+      "publishArtifacts": false
+    },
+    {
+      "id": "negative-mutable-borrow",
+      "file": "negative-mutable-borrow.atto",
+      "sourceGitBlobSha1": "00af267541e81d748de1a4f1563d0e08183eff6b",
+      "expect": "reject",
+      "diagnosticClass": "borrowed-mutable-capability",
+      "publishArtifacts": false
+    },
+    {
+      "id": "negative-scalar-spread",
+      "file": "negative-scalar-spread.atto",
+      "sourceGitBlobSha1": "3d35b8987098b9557c544e014277344ea50969d3",
+      "expect": "reject",
+      "diagnosticClass": "nonaggregate-spread",
+      "publishArtifacts": false
+    },
+    {
+      "id": "negative-structural-write",
+      "file": "negative-structural-write.atto",
+      "sourceGitBlobSha1": "bb19701ae77fcfbdfb74dfaa1bba20c3d60a4cbb",
+      "expect": "reject",
+      "diagnosticClass": "readonly-structural-loan",
+      "publishArtifacts": false
+    },
+    {
+      "id": "negative-unresolved-spread",
+      "file": "negative-unresolved-spread.atto",
+      "sourceGitBlobSha1": "f893d2733b85eafa38162546228a0fdef472b346",
+      "expect": "reject",
+      "diagnosticClass": "unresolved-spread-source",
+      "publishArtifacts": false
+    },
+    {
+      "id": "positive-cross-kind-infer",
+      "file": "positive-cross-kind-infer.atto",
+      "sourceGitBlobSha1": "ca9b7c7b56a73756963789db98914085f4342b5a",
+      "expect": "accept",
+      "expectedGuestI64": 48,
+      "expectedStdout": ""
+    },
+    {
+      "id": "positive-infer-record-spread",
+      "file": "positive-infer-record-spread.atto",
+      "sourceGitBlobSha1": "86ed3ad8fffbfb17b7535e683403a4b16b54efa8",
+      "expect": "accept",
+      "expectedGuestI64": 44,
+      "expectedStdout": ""
+    },
+    {
+      "id": "positive-infer-struct-spread",
+      "file": "positive-infer-struct-spread.atto",
+      "sourceGitBlobSha1": "ea0f38f8d0d6534c1bb6f01db6d5c9da83187f88",
+      "expect": "accept",
+      "expectedGuestI64": 43,
+      "expectedStdout": ""
+    },
+    {
+      "id": "positive-infer-struct",
+      "file": "positive-infer-struct.atto",
+      "sourceGitBlobSha1": "c524c3520ccbdaf26aab9e1f4b96c15af872ecb2",
+      "expect": "accept",
+      "expectedGuestI64": 42,
+      "expectedStdout": ""
+    },
+    {
+      "id": "positive-infer-type-override",
+      "file": "positive-infer-type-override.atto",
+      "sourceGitBlobSha1": "afea33c55cd02b0e5560c8e072e9c1a944042bae",
+      "expect": "accept",
+      "expectedGuestI64": 45,
+      "expectedStdout": ""
+    },
+    {
+      "id": "positive-multiple-spreads",
+      "file": "positive-multiple-spreads.atto",
+      "sourceGitBlobSha1": "bf76f71de0fcfc2cee8f038925f1efb09396d510",
+      "expect": "accept",
+      "expectedGuestI64": 47,
+      "expectedStdout": ""
+    },
+    {
+      "id": "positive-original-unchanged",
+      "file": "positive-original-unchanged.atto",
+      "sourceGitBlobSha1": "937e5dd47b4652238528bc92cfba03a6b07b48cb",
+      "expect": "accept",
+      "expectedGuestI64": 46,
+      "expectedStdout": ""
+    },
+    {
+      "id": "positive-structural-view",
+      "file": "positive-structural-view.atto",
+      "sourceGitBlobSha1": "760ae3195a7c93a74b49c0c9109df65bfd92d3a3",
+      "expect": "accept",
+      "expectedGuestI64": 49,
+      "expectedStdout": ""
+    }
+  ]
+}
