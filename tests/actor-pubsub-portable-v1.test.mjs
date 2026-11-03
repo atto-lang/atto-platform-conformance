@@ -454,3 +454,19 @@ test("opaque topic actor group and grant handles reject hostile getters and Prox
     {sequence:"1",recipients:1},
     "rejected attempts cannot consume a sequence or block a legitimate publisher");
 });
+
+test("external callers cannot silently discard queued deliveries",()=>{
+  const bus=new PubSubReference();
+  const actor=bus.actor("survivor").actor;
+  const topic=bus.topic("deliveries","Event").topic;
+  const sub=bus.subscribe(topic,"actor",actor,2).subscription;
+  assert.equal(bus.tryPublish(topic,share({id:42})).ok,true);
+  assert.equal(typeof bus.cancelTarget,"undefined",
+    "cancellation is private to actor lifecycle/leave controls");
+  assert.equal(Object.getOwnPropertyNames(Object.getPrototypeOf(bus)).includes("cancelTarget"),false);
+  const delivery=bus.start(sub,actor);
+  assert.equal(delivery.ok,true);
+  assert.equal(delivery.delivery.payload.id,42);
+  assert.equal(delivery.delivery.sequence,1n);
+  assert.equal(bus.finish(sub,actor).ok,true);
+});
