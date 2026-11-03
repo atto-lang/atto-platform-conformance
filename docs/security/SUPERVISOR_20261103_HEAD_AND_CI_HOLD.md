@@ -11,8 +11,8 @@ cannot prove a compiler/test failure or a successful source build.
 
 | Backend | Source PR | Branch head checked | Current-head source-org CI |
 | --- | --- | --- | --- |
-| Java | [#2423](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2423) | `0742edd690252ca20282c512c5cdfa382a21daf3` | No executed job |
-| LLVM | [#1279](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1279) | `5dcbb1d167cd8f7448060700717c1023e763ec08` | No executed job |
+| Java | [#2423](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2423) | `c46ed5e5457805f7e2ca31a9a29e3fa569db2543` | No executed job |
+| LLVM | [#1279](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1279) | `4a3a1d62f017b3a0e147f4ba3aae4ab2f52df734` | No executed job |
 | WASM | [#248](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/248) | `492ac62946781a78d9e815a24643e9c47da20d1c` | No executed job |
 | Cranelift | [#60](https://github.com/ores-truffle-oreslang/oreslang-source.cranelift/pull/60) | `dbafc1a2ba6206b90208afe573a1f0cfcb5e3275` | No executed job |
 | .NET | [#311](https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/311) | `11975d97ee94a222d68c66b795460702550cca33` | No executed job |
