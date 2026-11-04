@@ -10,6 +10,43 @@ test('v1 cannot satisfy scalar-core validation',()=>assert.throws(()=>validateSc
 test('generic v2 represents typed result plus compile and runtime negatives',()=>assert.equal(validateParityReceipt(v2()).case_count,3));
 test('generic v2 is insufficient for the 19-case scalar profile',()=>assert.throws(()=>validateScalarParityReceipt(v2()),/complete canonical case set/));
 
+const scalarCase = (id,source,kind,extra) => ({
+  id, source_sha256:source, kind, compile_exit: kind==='positive' ? 0 : 1,
+  ...(kind==='positive'
+    ? {artifact_sha256:a,executed:true,result_channel:'native-return',...extra}
+    : {executed:false,failure_stage:'compile',diagnostic:'expected rejection',...extra})
+});
+const scalar = () => ({schema:'attolang.parity-receipt/2',backend:'llvm',head_sha:h,tree_sha:h,
+  compiler:'oreslang-llvmc',compiler_sha256:d,run_id:7,run_attempt:1,executed_steps:5,
+  job_conclusion:'success',cases:[
+    scalarCase('canonical-add','08a415734e9992f47702dc9b1ccf2c5dceb74df05245eaa5fbb00512d18afc8a','positive',{result_i64:'42',expected_i64:'42'}),
+    scalarCase('precedence','0dedccfdeff013995e1e5d784bf1767acf61b0c0485fa50aba6aa9dd473331f2','positive',{result_i64:'14',expected_i64:'14'}),
+    scalarCase('parentheses','730d7fe277125aa17abadaea1222d867fcc9e97fbd7f5b0af1f95da862857ade','positive',{result_i64:'20',expected_i64:'20'}),
+    scalarCase('signed-minimum','8b5b69ec25fda12bd6a695c7a2ab986634bcbf37f8b129507582597e662c0b49','positive',{result_i64:'-9223372036854775808',expected_i64:'-9223372036854775808'}),
+    scalarCase('signed-max-minus-one','d27086270301951421718bcf3c82d5fe988b5dd076d43153f3aed3a6bebb7c99','positive',{result_i64:'9223372036854775806',expected_i64:'9223372036854775806'}),
+    scalarCase('type-first-readonly','723e8163a685eaf1bb5c1a958430719dadc72ce23624960e88c50c0538045ee7','positive',{result_i64:'42',expected_i64:'42'}),
+    scalarCase('typed-const-readonly','d97b7e9d1b39f3dbe38b09fecf1336a1902bdb8dc1526d6718df5740248a0e99','positive',{result_i64:'42',expected_i64:'42'}),
+    scalarCase('inferred-const-readonly','0fd0d878d29431433ab57c65f7234b8b7cf0125d2e0cd587bb9de1bf827c56cd','positive',{result_i64:'42',expected_i64:'42'}),
+    scalarCase('pure-call','05fd54126d6c2a630a430d0d4a38c01ae589d04b745da00597f02a2a63ee9d1e','positive',{result_i64:'42',expected_i64:'42'}),
+    scalarCase('type-first-parameter','2b06a5d5f53a6b551d7f7bf1ff03c8515dbadb2bc76aba9198e77c8a1bb0ae3e','positive',{result_i64:'42',expected_i64:'42'}),
+    scalarCase('checked-add-overflow','f1707d7b751858fe61bac9c13e68deca63f6dfa12305a9e51ad44d214b78b74d','negative',{}),
+    scalarCase('checked-sub-overflow','cc8c26829b910c376d8b242da5cc3831f594a5ac883805e0e5a13f1b6dcd78f1','negative',{}),
+    scalarCase('checked-mul-overflow','65e6807353a4a6f8c1a37a5e56ed3ac5b5da5fc20c36b1ca38db51c8c36e0e58','negative',{}),
+    scalarCase('type-first-reassignment','dc5950e366fbf7189fc95693f6cb05abd4f1998ca5646f57edfd786110e4b293','negative',{}),
+    scalarCase('typed-const-reassignment','3fc7f33d994509c2cda3ec8a98a91516ef9b8ac9d8eb660008ae79b96ef04c50','negative',{}),
+    scalarCase('eager-unused-overflow','0fd9c69e25455c9cd716c692b676a97fedc5e25093bbd1bc8386eb7de792f70a','negative',{}),
+    scalarCase('removed-modulo','aeecb295613d331f6decbb83707b62813f11b1d91f226a1ee81177e5a26ba838','negative',{}),
+    scalarCase('removed-caret','0d2b65e35fe88d01c0f5881bc0b8bb3f20a145ae7d5a09719fb79f959089ce2b','negative',{}),
+    scalarCase('removed-double-caret','0032984d2f6463a82d85e4fd3025741dfbdb52ce2fdb96c727e82ccb262cfa09','negative',{})
+  ]});
+
+test('complete canonical scalar v2 receipt validates but remains non-promoting',()=>{
+  const result=validateScalarParityReceipt(scalar());
+  assert.equal(result.case_count,19);
+  assert.equal(result.scalar_core_eligible,true);
+  assert.equal(result.publicly_promotable,false);
+});
+
 for(const [name,mutate] of [
  ['missing positive artifact',r=>delete r.cases[0].artifact_sha256],
  ['bad positive artifact digest',r=>r.cases[0].artifact_sha256='bad'],
