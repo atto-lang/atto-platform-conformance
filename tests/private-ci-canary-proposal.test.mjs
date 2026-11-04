@@ -50,6 +50,7 @@ test("canary CLI fails without printing credentials or source data",()=>{
 
 test("proposer has no direct Git API endpoint or network import",()=>{
   const src=readFileSync(new URL("../bin/propose-private-ci-canary.mjs",import.meta.url),"utf8");
-  assert.doesNotMatch(src,/api\\.github\\.com|\\/git\\/(?:commits|blobs|trees|refs)/);
-  assert.match(src,/export async function proposeCanary\\(_untrustedOptions\\)/);
+  assert.doesNotMatch(src,/api\.github\.com/);
+  assert.doesNotMatch(src,/\/git\/(?:commits|blobs|trees|refs)/);
+  assert.match(src,/export async function proposeCanary\(_untrustedOptions\)/);
 });
