@@ -155,6 +155,14 @@ test("experimental i64 guest status cannot be represented as verified backend pa
   assert.equal(snapshot.native_guest_script_blob_sha,
     "89ef857cd1f5c57abd98fc86437f72d6e9e45980");
   assert.equal(snapshot.detached_snapshot_value_guest_lowering, "NOT_IMPLEMENTED");
+  // A compiler's fail-closed safeguard cannot weaken the required guest
+  // value semantics in the shared v1 contract.
+  const cases = JSON.parse(readFileSync(
+    new URL("../contracts/v1/inverted-layout/cases.json", import.meta.url), "utf8"));
+  const detached = cases.cases.find(c => c.id === "ownership/row-snapshot-detached");
+  assert.ok(detached);
+  assert.equal(detached.expected, "accept");
+  assert.equal(detached.requires, "guest");
   for (const key of ["exact_head_cpp17_compiler_test", "exact_head_native_guest_test",
                      "exact_head_sanitizer_test", "source_contract_snapshot_positive"])
     assert.equal(snapshot[key], "NOT_EXECUTED");
