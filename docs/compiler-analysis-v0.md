@@ -44,3 +44,16 @@ fail-closed: a source rejection is acceptable evidence of rejection, not
 evidence of successful typed effect analysis. Subsequent promotion must
 require corresponding actual `status=inconclusive` receipts and typed
 Java/GraalVM diagnostics for each supported construct.
+
+### Java/GraalVM candidate
+
+[Java PR #2518](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2518)
+implements a corresponding conservative parser/typechecker-backed
+`--analyze` mode. Supply a trusted, pinned
+`ATTO_ANALYZE_JAVA_COMPILER` executable alongside
+`ATTO_ANALYZE_LLVM_COMPILER` to run byte-identical output comparisons
+for the small declared admitted scalar subset. Missing executables
+**skip the differential test**, not pass it. Source-error classification
+and recursive-call rejection are tracked separately: two compilers can
+reject the same source at different stages without proving semantic
+equivalence.
