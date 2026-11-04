@@ -52,6 +52,24 @@
       "expected_exit": "nonzero",
       "expected_record": "must-not-report-known",
       "scope": "unproven-recursive-call-graph"
+    },
+    {
+      "file": "analysis-bool.atto",
+      "expected_exit": 0,
+      "expected_record": "status=known",
+      "scope": "closed-boolean-literal"
+    },
+    {
+      "file": "analysis-parameter.atto",
+      "expected_exit": 0,
+      "expected_record": "status=known",
+      "scope": "closed-direct-call-scalar-parameter"
+    },
+    {
+      "file": "analysis-transitive-unknown.atto",
+      "expected_exit": 2,
+      "expected_record": "status=inconclusive",
+      "scope": "checked-arithmetic-in-callee-propagates-to-caller"
     }
   ],
   "provenance": {
