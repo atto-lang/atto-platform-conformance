@@ -24,7 +24,8 @@ export function share(value) {
   // even though ownership/share admission failed.
   const visiting=new Set(), checked=new Set(), freezeOrder=[];
   function validate(v) {
-    if (v === null) return;
+    if (v === null || v === undefined)
+      throw new TypeError("pubsub payload uses Option<T>, not null/undefined");
     if (typeof v !== "object") {
       if (typeof v === "function" || typeof v === "symbol")
         throw new TypeError("non-Sendable shared payload");
@@ -354,7 +355,8 @@ export class PubSubReference {
     // Reject back-edges to the current stack (true cycles).
     const visiting=new Set(), checked=new Set();
     function check(x) {
-      if (x===null || typeof x!=="object") return typeof x!=="function" && typeof x!=="symbol";
+      if (x===null || x===undefined) return false;
+      if (typeof x!=="object") return typeof x!=="function" && typeof x!=="symbol";
       if (visiting.has(x)) return false;
       if (checked.has(x)) return true;
       if (nodeTypes.isProxy(x) || !Object.isFrozen(x)) return false;
