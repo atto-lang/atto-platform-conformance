@@ -49,3 +49,14 @@ test('rejects excessive depth',()=>assert.throws(()=>parseStrictJSON('['.repeat(
 test('rejects invalid JSON syntax',()=>assert.throws(()=>parseStrictJSON('{"a":}'),SyntaxError));
 test('rejects nonpass claiming device evidence',()=>assert.throws(()=>checkReceipt({contract:m.contract,target:'ios-arm64',stage:'simulator',status:'FAIL',adapter:'uikit',device:{kind:'simulator'}}),/nonpass/));
 test('rejects Android receipt with iOS adapter',()=>assert.throws(()=>checkReceipt({...base(),target:'android-arm64'}),/adapter/));
+
+test('host evidence cannot claim a native ABI link', () =>
+  assert.throws(() => checkReceipt(modify(r => r.results.abiLinked = true)), /host model must not claim native ABI/));
+test('ABI-linked stage requires ABI link proof', () =>
+  assert.throws(() => checkReceipt(modify(r => r.stage = 'abi-link')), /ABI link proof/));
+test('host model cannot claim compiler output digest', () =>
+  assert.throws(() => checkReceipt(modify(r => r.results.outputSha256 = H64)), /host-only/));
+test('malformed UTF-8 input fails before receipt parsing', () =>
+  assert.throws(() => parseStrictJSON(Buffer.from([0x7b, 0x22, 0xc3, 0x28, 0x22, 0x7d])), /encoded|UTF-8/i));
+test('valid UTF-8 input decodes without replacement', () =>
+  assert.deepEqual(parseStrictJSON(Buffer.from('{"ok":true}')), {ok:true}));
