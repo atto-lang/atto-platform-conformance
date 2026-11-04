@@ -92,6 +92,11 @@ function validateV2(report) {
       check(typeof c.result_channel === 'string' &&
         ['process-exit', 'stdout', 'wasm-export', 'native-return', 'host-call'].includes(c.result_channel),
         'result channel');
+      if (c.result_channel === 'process-exit') {
+        const value = BigInt(c.result_i64);
+        check(value >= 0n && value <= 255n,
+          'process-exit cannot carry the full typed i64 result');
+      }
     } else {
       check(c.failure_stage === 'compile' || c.failure_stage === 'runtime', 'negative failure stage');
       check(typeof c.diagnostic === 'string' && c.diagnostic.length > 0 && c.diagnostic.length <= 4096, 'negative diagnostic');
@@ -110,7 +115,6 @@ function validateV2(report) {
     consistent: true,
     authenticity_attested: false,
     publicly_promotable: false,
-    scalar_core_eligible: true,
     schema: report.schema,
     backend: report.backend,
     case_count: ids.size
@@ -141,5 +145,5 @@ export function validateScalarParityReceipt(report) {
       check(expected.stages.includes(c.failure_stage), 'invalid failure stage for ' + id);
     }
   }
-  return result;
+  return {...result, scalar_core_eligible: true};
 }
