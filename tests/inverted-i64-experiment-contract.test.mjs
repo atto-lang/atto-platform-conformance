@@ -127,9 +127,9 @@ test("experimental i64 guest status cannot be represented as verified backend pa
   // Keep its exact blobs pinned without converting source-free smoke results
   // into a checked-in CTest or backend guest execution claim.
   const loan = spec.current_native_handle_loan;
-  assert.equal(loan.llvm_head_commit_sha,
+  assert.equal(loan.loan_hardening_commit_sha,
     "6206c678b29831aef57471e8d9700c9ac39f23c8");
-  assert.equal(loan.llvm_head_tree_sha,
+  assert.equal(loan.loan_hardening_tree_sha,
     "ec2036b463ed000efa1a3ee4d25a6bf7cd8a746a");
   assert.equal(loan.native_header_blob_sha,
     "6c61ac557c0d7be0d2c894486833fbb28918d521");
