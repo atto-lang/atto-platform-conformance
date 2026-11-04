@@ -1,0 +1,2 @@
+fnc helper(): int { return 7; }
+pub fnc main(): int { return helper(); }

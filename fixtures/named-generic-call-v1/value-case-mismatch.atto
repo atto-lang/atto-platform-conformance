@@ -1,0 +1,6 @@
+fnc join(int first, int second) -> int ::
+  return first * 10 + second
+end
+fnc main() -> int ::
+  return join(First: 1, second: 2)
+end

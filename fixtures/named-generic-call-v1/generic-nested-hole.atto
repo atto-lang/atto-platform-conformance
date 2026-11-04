@@ -1,0 +1,6 @@
+fnc identity<T>(T value) -> int ::
+  return 42
+end
+fnc main() -> int ::
+  return identity<T=Array<_>>(7)
+end
