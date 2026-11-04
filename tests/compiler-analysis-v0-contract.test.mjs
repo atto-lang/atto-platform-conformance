@@ -103,3 +103,44 @@ test('optional real LLVM-to-formatter analyzer exit and report parity', {
     }
   }
 });
+
+const javaCompiler = process.env.ATTO_ANALYZE_JAVA_COMPILER;
+test('optional real Java/GraalVM to LLVM source-admitted scalar diagnostics parity', {
+  skip: !compiler || !javaCompiler
+    ? 'both pinned real Java and LLVM compiler binaries required'
+    : false
+}, () => {
+  assert.ok(isAbsolute(javaCompiler), 'Java compiler executable path must be absolute');
+  assert.ok(isAbsolute(compiler), 'LLVM compiler executable path must be absolute');
+  for (const fixture of manifest.fixtures) {
+    // Only stable, admitted v0 scalar semantics can be compared byte-for-byte.
+    // Recursive programs and malformed sources may be rejected at different
+    // frontend stages; that is fail-closed, not yet semantic parity.
+    if (typeof fixture.expected_exit !== 'number') continue;
+    const temp = mkdtempSync(join(tmpdir(), 'atto-llvm-java-analyze-'));
+    try {
+      const sourcePath = join(temp, fixture.file);
+      const source = readFileSync(join(fixtureRoot, fixture.file));
+      writeFileSync(sourcePath, source);
+      const options = {
+        cwd: temp, input: '', encoding: 'utf8', timeout: 20000,
+        maxBuffer: 1024 * 1024,
+        env: { PATH: process.env.PATH ?? '', HOME: temp }
+      };
+      const llvm = spawnSync(compiler, ['--analyze', sourcePath], options);
+      const java = spawnSync(javaCompiler, ['--analyze', sourcePath], options);
+      assert.equal(llvm.error, undefined, String(llvm.error));
+      assert.equal(java.error, undefined, String(java.error));
+      assert.equal(llvm.status, fixture.expected_exit,
+        fixture.file + ': LLVM did not meet contract');
+      assert.equal(java.status, fixture.expected_exit,
+        fixture.file + ': Java did not meet contract');
+      assert.equal(java.stdout, llvm.stdout,
+        fixture.file + ': real compiler analysis result differs');
+      assert.deepEqual(readFileSync(sourcePath), source, 'source mutated');
+      assert.deepEqual(readdirSync(temp), [fixture.file], 'compiler wrote artifacts');
+    } finally {
+      rmSync(temp, { recursive: true, force: true });
+    }
+  }
+});
