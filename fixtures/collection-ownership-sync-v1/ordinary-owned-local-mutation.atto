@@ -1,0 +1,5 @@
+pub fnc main(): void {
+  val values = [1, 2];
+  values.set(0, 3);
+  return;
+}

@@ -1,0 +1,8 @@
+pub fnc main(): int {
+  val float positiveInfinity = 1.0 / Math.abs(-0.0);
+  val float negativeInfinity = 1.0 / Math.neg(0.0);
+  if positiveInfinity > 0.0 && negativeInfinity < 0.0 then
+    return 42;
+  fi
+  return 1;
+}

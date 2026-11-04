@@ -1,0 +1,4 @@
+define class Connection as
+  let int request_count;
+  initialize() -> void {}
+end

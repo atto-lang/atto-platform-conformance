@@ -1,0 +1,256 @@
+{
+  "contract": "oreslang.inverted-i64-experimental-guest",
+  "version": 0,
+  "scope": "LLVM_EXPLICIT_OPT_IN_SOURCE_TO_IR_NOT_PRODUCTION_OR_PARITY",
+  "toolchain": "oreslang-llvmc --experimental-inverted-i64 -> textual LLVM IR -> clang -> native executable",
+  "claimed_backend_guest_results": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  },
+  "limits": {
+    "type": "inverted struct only",
+    "member": "int (signed i64) only",
+    "max_fields": 8,
+    "capacity_min": 1,
+    "capacity_max": 256,
+    "total_cells_max": 1024,
+    "operations": [
+      "push positional i64 constants",
+      "set checked index on let fields",
+      "get checked index",
+      "return get expression"
+    ],
+    "unsupported": [
+      "inverted class",
+      "nested packed structs",
+      "dynamic indices",
+      "row deletion",
+      "row handles",
+      "borrows",
+      "actors",
+      "async/await",
+      "source methods",
+      "general module graph",
+      "Wasm32/Native AOT parity"
+    ]
+  },
+  "vectors": [
+    {
+      "id": "positive-column-get",
+      "fixture": "positive-column-get.ores",
+      "expected_compile": "accept",
+      "expected_native_exit_code": 42
+    },
+    {
+      "id": "positive-column-bounded",
+      "fixture": "positive-column-bounded.ores",
+      "expected_compile": "accept",
+      "expected_native_exit_code": 42
+    },
+    {
+      "id": "negative-out-of-bounds",
+      "fixture": "negative-out-of-bounds.ores",
+      "expected_compile": "accept",
+      "expected_runtime": "trap"
+    }
+  ],
+  "source_blob_shas": {
+    "positive-column-get.ores": "a17849d07ac3974923e8dd575348d3452f9a51b0",
+    "positive-column-bounded.ores": "b30cd7ee3a72d8c7dcf7d8a862684a36c5f2ee0b",
+    "negative-out-of-bounds.ores": "4adbae1b55a02756d1f0a2eb2fc24f21aa19f12f"
+  },
+  "evidence": "LOCAL_EXACT_HEADER_AND_GUEST_FIXTURES_EXECUTED_FULL_COMPILER_NOT_EXECUTED",
+  "implementation_pr": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1213",
+  "local_source_adapter": {
+    "compiled_header_blob_sha": "43fb26ec69974d8148b9d4142d738f17bbbefa14",
+    "tested_header_compilers": [
+      "GCC 14.2.0 C++20",
+      "Clang++ 17.0.0 C++20"
+    ],
+    "tested_guest_clang": "Clang 17.0.0 x86-64 Linux",
+    "positive_native_exit_codes": [
+      42,
+      42
+    ],
+    "out_of_bounds_native_exit": 132,
+    "source_negative_expected_diagnostic_cases_passed": 18,
+    "gcc_asan_ubsan_positive_source_compiles_passed": 2,
+    "full_oreslang_llvmc_executed": false,
+    "scope": "local minimal driver invoking exact header, not main.cpp or CMake workflow",
+    "clang_asan_ubsan_native_ir_guests_passed": 2
+  },
+  "current_branch_adapter": {
+    "blob_sha": "e6d5138595e764392f48c7e064fadeb84739370a",
+    "typed_hir_blob_sha": "e04b19c37460a5b859d7ad2497583d296cb395b2",
+    "production_parser_blob_sha": "c0252d54142522de2cc259afa0e08ec9fce01990",
+    "code_scope": "experimental two-i64 .ores path now passes through production-shaped HIR, independently verified MIR and MIR-owned LLVM IR; one/3..8-field path retains older experimental adapter; ordinary compiler fail-closed",
+    "exact_current_head_compilation": "NOT_EXECUTED",
+    "exact_current_head_native_guest": "NOT_EXECUTED",
+    "full_compiler_ctest": "NOT_EXECUTED"
+  },
+  "current_branch_typed_mir": {
+    "mir_blob_sha": "a62b423273910dd79165b5c90e0e2d245a35319b",
+    "native_adapter_blob_sha": "f96e30877caba43b98e24d238a6a9a1766170e92",
+    "native_test_blob_sha": "a92c2e1a260ea603f0dea004371c9298ecedafc1",
+    "compiler_cpp17_test_blob_sha": "529a188e306c6d62062763e1313c9b30c5892bfe",
+    "scope": "compiler-compatible C++17 verified HIR->MIR; separate C++20 two-i64 native owner executor; experimental guest compiler revalidates MIR and guard count, production remains fail closed",
+    "native_runtime_execution": "NOT_EXECUTED",
+    "compiler_cpp17_execution": "NOT_EXECUTED",
+    "asan_ubsan_execution": "NOT_EXECUTED",
+    "guest_source_to_verified_mir": "CODE_STAGED_NOT_EXECUTED",
+    "full_oreslang_llvmc_execution": "NOT_EXECUTED",
+    "runner_evidence": "GCC/Clang matrix exact-head jobs failed before any steps"
+  },
+  "local_mir_llvm_i64_codegen": {
+    "source_emitter_blob_sha": "1a4cc742a6d3bdc31c7e48eb8712d74ee8fa8196",
+    "test_driver_blob_sha": "eb5cc1edd0f8986b86b6b4fcb56a58602e9b07a9",
+    "clang_script_blob_sha": "6e54a1b07c181c1ec4250e30277d6e95e1886b0f",
+    "source_scope": "exact committed C++17 codegen header+driver; isolated local stand-in Parser/HIR/runtime dependencies; NOT full repo native compiler",
+    "local_compiler_headers": [
+      "GCC 14.2 C++17 -Wall -Wextra -Wpedantic -Werror",
+      "Clang 17 C++17 -Wall -Wextra -Wpedantic -Werror"
+    ],
+    "local_native_guest_clang": "Clang 17 x86-64 Linux",
+    "exit_42_runs": 2,
+    "runtime_bounds_trap_exit": 132,
+    "compile_time_negative_cases": [
+      "immutable field write",
+      "missing push operands"
+    ],
+    "ir_checks": [
+      "icmp ult i64 bounds",
+      "icmp ne i64 live generation",
+      "load i1 owner alive",
+      "llvm.trap"
+    ],
+    "real_repo_full_ctest": "NOT_EXECUTED",
+    "production_oreslang_llvmc_codegen": "NOT_IMPLEMENTED",
+    "full_exact_source_tree_runtime_proof": "NOT_EXECUTED",
+    "asan_ubsan": "NOT_EXECUTED"
+  },
+  "current_branch_mir_llvm_codegen": {
+    "emitter_blob_sha": "27c6ec16303b33749be973e9bdacbc1c0d874e5d",
+    "source_adapter_blob_sha": "e6d5138595e764392f48c7e064fadeb84739370a",
+    "guest_test_blob_sha": "9cc616cede6453f5f3a9f375df19f588562fbfc7",
+    "native_test_driver_blob_sha": "102460fbd0675f7cc7d2737dd9c4f6045bd57aee",
+    "native_test_script_blob_sha": "a510587ebb5915489af91a189b2181e1dc5bde1e",
+    "negative_two_column_bounds_blob_sha": "8bac2b6554f231b16da75be038d636537656c9e0",
+    "scope": "two-field opt-in real .ores source-to-verified-MIR and physical LLVM IR, plus bounded volatile scrub on close; no escaping handles; default production gate rejects",
+    "source_to_mir_guest": "CODE_STAGED_NOT_EXECUTED",
+    "exact_head_standalone_ctest": "NOT_EXECUTED",
+    "full_compiler_ctest": "NOT_EXECUTED",
+    "current_emitter_native_execution": "NOT_EXECUTED",
+    "current_emitter_asan_ubsan": "NOT_EXECUTED",
+    "production_inverted_lowering": "NOT_IMPLEMENTED"
+  },
+  "current_production_schema_mir_preflight": {
+    "header_blob_sha": "0dd7b78bec0863adf0ef35538ca16d1d8b056cad",
+    "production_parser_blob_sha": "0ab878ccf4286c04babf56192148b156de1b472d",
+    "standalone_cpp17_test_blob_sha": "65f40eb8b37f614eb65dcbd61b7f9d8a0bc76a09",
+    "production_parser_ast_test_blob_sha": "d66ed5915bec93dc41ceca46473d422a5b896588",
+    "scope": "production nominal inverted Program AST -> bounded schema-only HIR -> independently verified MIR Allocate/Close probe, with fail-closed real source lowering",
+    "exact_head_compiler_cpp17_execution": "NOT_EXECUTED",
+    "exact_head_parser_ast_execution": "NOT_EXECUTED",
+    "exact_head_gcc_clang_sanitizers": "NOT_EXECUTED",
+    "source_operations_to_production_mir": "NOT_IMPLEMENTED",
+    "runtime_generation_handles": "NOT_IMPLEMENTED",
+    "production_guest_codegen": "NOT_IMPLEMENTED"
+  },
+  "current_production_source_mir": {
+    "scope": "normal oreslang-llvmc parses precisely one local two-i64 inverted struct + main; verifies source AST to typed MIR; stack-local guest with no escaping handles, no async actors, no hard RT",
+    "production_source_mir_blob_sha": "3e13b44cd7127fdc5802128bbcdf4ac5276f5fa5",
+    "production_source_mir_ast_negative_test_blob_sha": "8715497b5bc519d2d450a12b27da272ff8ab39c7",
+    "native_parser_blob_sha": "d5f27ca6d1e6b60be9a7620525848f19f1237c1b",
+    "native_main_blob_sha": "82f22ce2e899d2d27a7ec21ff365efc6b241b640",
+    "native_guest_test_blob_sha": "560b7a1aae0225a61de1656a3780650bc6af518d",
+    "llvm_emitter_blob_sha": "27c6ec16303b33749be973e9bdacbc1c0d874e5d",
+    "current_head_cpp17_source_test": "NOT_EXECUTED",
+    "current_head_full_compiler": "NOT_EXECUTED",
+    "current_head_native_guest": "NOT_EXECUTED",
+    "current_head_sanitizers": "NOT_EXECUTED",
+    "runner_admission": "LLVM old exact-head run #41218437771: four zero-step failures. Scintilla source-free canary #41217749367 attempt 3 job #124606166962: failure, steps=null. Source transfer NOT_PERFORMED.",
+    "declaration_rejection": [
+      "sum type AST",
+      "conforms AST",
+      "type constraint descriptors AST"
+    ],
+    "limits": "literal-only local two i64 fields, bounded capacity <=256, main only; no escaped row handles",
+    "production_parser_ast_negative_test_blob_sha": "981972662a4664df81d03fc4a8318128dc87fddc",
+    "hardening": "production AST verifier and real parser-resolver reject sum types, conforms declarations and type-constraint descriptors that lack MIR lowering; tests committed, not executed",
+    "runtime_bounds_trap_gate": "Bash guest suites now use Python subprocess negative returncode -SIGILL/-SIGTRAP, rejecting ordinary 132/133 exits; native guest tests remain NOT_EXECUTED",
+    "llvm_source_commit_sha": "14254c6dec1cfc8f2574daab1e00623150b4b96c",
+    "source_tree_sha": "835ba119b7cabee610805295711e0a91b5fe3b5a",
+    "workflow_blob_sha": "3de6ea1b94f43f83e5b05b43e868af61c5002e50",
+    "full_oreslang_llvmc_gcc_clang_ctest": "CODE_STAGED_NOT_EXECUTED"
+  },
+  "current_native_handle_loan": {
+    "implementation_pr": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1213",
+    "loan_hardening_commit_sha": "6206c678b29831aef57471e8d9700c9ac39f23c8",
+    "loan_hardening_tree_sha": "ec2036b463ed000efa1a3ee4d25a6bf7cd8a746a",
+    "native_header_blob_sha": "6c61ac557c0d7be0d2c894486833fbb28918d521",
+    "native_test_blob_sha": "31d0149b7b09cc1211af35f4cb42c30a36bae4c5",
+    "scope": "host-only generation/issuer/owner-checked loan access and adversarial tests; raw physical index remains host-trusted, guest codegen and nonescape unproved",
+    "local_source_free_api_shape_smoke": "GCC/Clang C++20 normal and ASan/UBSan checked a separate synthetic model; NOT the checked-in runtime source",
+    "exact_head_native_cpp20_ctest": "NOT_EXECUTED",
+    "exact_head_native_asan_ubsan": "NOT_EXECUTED",
+    "exact_head_production_compiler_guest": "NOT_EXECUTED",
+    "five_backend_guest_parity": "NOT_EXECUTED"
+  },
+  "current_guest_snapshot_lowering": {
+    "scope": "restricted two-i64 local native LLVM emitter, not general inverted struct/class guest parity",
+    "hardening_commit_sha": "415130d3748af471975f0172db36f54573605571",
+    "llvm_emitter_blob_sha": "74c0201fc3861327ce131b992af08e73e2daec1f",
+    "compiler17_test_blob_sha": "3ea406cdac5a9334235ef5709fe9802b3ef16b4d",
+    "guest_mode_blob_sha": "e13781155981bf195a84c92b493398b366479dd7",
+    "native_guest_script_blob_sha": "89ef857cd1f5c57abd98fc86437f72d6e9e45980",
+    "verified_source_behavior": "CODE_COMMITTED_FAIL_CLOSED_SNAPSHOT_NOT_LOWERED",
+    "detached_snapshot_value_guest_lowering": "NOT_IMPLEMENTED",
+    "exact_head_cpp17_compiler_test": "NOT_EXECUTED",
+    "exact_head_native_guest_test": "NOT_EXECUTED",
+    "exact_head_sanitizer_test": "NOT_EXECUTED",
+    "source_contract_snapshot_positive": "NOT_EXECUTED"
+  },
+  "current_guest_snapshot_positive_staged": {
+    "implementation_pr": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1405",
+    "source_head_sha": "f2723ddd702130afb92ad34cbdb5d605d5c8c21c",
+    "stacked_on_sha": "039e6be4086e43271123cca84969fadbaf1f43a8",
+    "scope": "stacked restricted production two-i64 owner snapshot source AST -> HIR -> independently verified MIR -> copied LLVM SSA; not full inverted semantics or cross-backend parity",
+    "source_blobs": {
+      "src/main/cpp/oreslang/frontend/Parser.hpp": "369899c7ae33e436f3bdb53a7abebfadf0d5a0f0",
+      "src/main/cpp/oreslang/frontend/Parser.cpp": "73b04c7262c9548c12d55dd9f273feb4c5eb1cf4",
+      "src/main/cpp/oreslang/types/InvertedTypedPlan.hpp": "87e6c49adb6a8087ba28720014a73e4539088eff",
+      "src/main/cpp/oreslang/types/InvertedTypedMir.hpp": "453ab664568ee096479c9da3228d5950e0d46caa",
+      "src/main/cpp/oreslang/types/InvertedMirLlvmI64.hpp": "0645d94a613dc1e53fd18520fb1ff80d099df99f",
+      "src/main/cpp/oreslang/types/InvertedProductionSourceMir.hpp": "6d171c1b6636152ab2a9c8876ab0148dbb8505bc",
+      "src/main/cpp/oreslang/types/InvertedNativeMirI64.hpp": "db4586f904044d647db1cf591830e7e68768ebc3"
+    },
+    "fixture_blobs": {
+      "positive-production-snapshot.atto": "43b0d05043c4323beaa40b5ec7a31602a56a7f41",
+      "positive-production-snapshot-id.atto": "20e78d9a0e9fc830b5927872196f37ddca8e5a59",
+      "positive-production-snapshot-ordinal.atto": "085bc6c1611635380df848c0def848600cf547d1",
+      "negative-production-snapshot-bounds.atto": "a8b974eae439bdd29e31456191eec3e7341da33a"
+    },
+    "regression_blobs": {
+      "tests/native_inverted_mir_compiler17_test.cpp": "913e8d6e78473a80641eac430fe1045fa9270086",
+      "tests/native_inverted_mir_llvm_guest.cpp": "e5f8c18a915f2599ed0b7bf999b5c7ec012ae88c",
+      "tests/native_inverted_production_guest.sh": "a6ffa06ebcff2d6c95ed9a61aa05aa920806db2d",
+      "tests/native_inverted_mir_ir_guest.sh": "2ee43086bbf8189020326a905d20a4da133bd6fc",
+      "tests/native_inverted_production_mir_test.cpp": "ad995b8eacba9fdbf4fb94f5108c031807370683",
+      "tests/native_inverted_struct_ast_test.cpp": "e80b8fd23087dca86cad572e04b9d9947c700b95",
+      "tests/native_inverted_typed_mir_test.cpp": "31c8e25999a0f7762984f75c3338da63827b37a1",
+      "tests/native_inverted_typed_plan_test.cpp": "a1d4989a2ee4b9704290721bc0c7929f7cfefd95"
+    },
+    "code_status": "CODE_STAGED_NOT_EXECUTED",
+    "source_free_static_blob_verification": "DONE",
+    "exact_head_cpp17_cpp20_ctest": "NOT_EXECUTED",
+    "exact_head_default_compiler_native_guest": "NOT_EXECUTED",
+    "exact_head_o0_o2_guest": "NOT_EXECUTED",
+    "exact_head_sanitizers": "NOT_EXECUTED",
+    "full_cross_backend_snapshot_contract": "NOT_EXECUTED",
+    "source_org_runner_admission": "FAILED_BEFORE_STEPS",
+    "private_source_mirror": "NOT_PERFORMED"
+  }
+}

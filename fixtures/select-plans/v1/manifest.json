@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "scope": "select-plans-guest-source-v1",
+  "kind": "normative-target-corpus-not-execution-evidence",
+  "sourceRepo": "ores-truffle-oreslang/oreslang-source.java",
+  "sourcePullRequest": 2369,
+  "compilerEvidence": "not-executed",
+  "backendStatus": {
+    "java-graalvm": "unverified-draft",
+    "llvm": "fail-closed-no-source-plan-lowering",
+    "net": "unverified",
+    "wasm": "unverified",
+    "forge": "unverified"
+  },
+  "contract": {
+    "sourceFactories": [
+      "SelectPlan.from_list",
+      "SelectPlan.from_map",
+      "DynamicSelectPlan.from_list",
+      "DynamicSelectPlan.from_map"
+    ],
+    "selectionModes": [
+      "select",
+      "nb select",
+      "try select"
+    ],
+    "immutability": "factory owns a bounded ordered descriptor snapshot",
+    "fairness": "cursor remains associated with plan across repeated invocations",
+    "dynamicKeys": "list keys are zero-based int slots; map keys are ordered record field strings",
+    "guestResultLimitation": "current Java draft returns ordinal SelectResult; keyed PlannedResult source promotion remains pending"
+  },
+  "cases": [
+    {
+      "id": "list-fair-reuse",
+      "file": "list-fair-reuse.ores",
+      "outcome": "accept_when_lowered",
+      "expectedStdout": "0:10:1:20",
+      "verified": false,
+      "sourceGitBlobSha1": "019f8b36143843ef4432132b5428f6c2f89bc70e"
+    },
+    {
+      "id": "map-dynamic-nb",
+      "file": "map-dynamic-nb.ores",
+      "outcome": "accept_when_lowered",
+      "expectedStdout": "true:0:33:4",
+      "verified": false,
+      "sourceGitBlobSha1": "81b128adc6dabbece6c901787b31f3e26caa91ad"
+    },
+    {
+      "id": "list-dynamic-key-reuse",
+      "file": "list-dynamic-key-reuse.ores",
+      "outcome": "accept_when_lowered",
+      "expectedStdout": "true:0:22:2",
+      "verified": false,
+      "sourceGitBlobSha1": "0701e1261da5a93fc12905a86c876a0899b38180"
+    },
+    {
+      "id": "reject-list-noncase",
+      "file": "reject-list-noncase.ores",
+      "outcome": "reject_always",
+      "diagnostic": "from_list requires List<SelectCase>",
+      "verified": false,
+      "sourceGitBlobSha1": "2352f7f53ca715d37e5aa2323391ee06740f5f2d"
+    },
+    {
+      "id": "reject-map-noncase",
+      "file": "reject-map-noncase.ores",
+      "outcome": "reject_always",
+      "diagnostic": "from_map entry must be SelectCase",
+      "verified": false,
+      "sourceGitBlobSha1": "9b281babd7533d9fb191d924cd2ade3d2957e74f"
+    },
+    {
+      "id": "reject-map-list-confusion",
+      "file": "reject-map-list-confusion.ores",
+      "outcome": "reject_always",
+      "diagnostic": "from_map requires ordered string-keyed record/map",
+      "verified": false,
+      "sourceGitBlobSha1": "4e6a678c888a37a8147f64e890d8fc4ba16566d8"
+    }
+  ],
+  "promotion": "Only exact-head compiler-owned parse/type/execute evidence with executed runner steps may change a backend status to confirmed.",
+  "fixtureShaMethod": "git-blob-sha1-from-GitHub-contents"
+}
