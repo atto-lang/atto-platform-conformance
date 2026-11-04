@@ -227,3 +227,23 @@ test('checked-i64 nested intermediate failure cannot be canceled later',()=>{
   assert.throws(()=>evaluateCheckedI64(L('-0')),/noncanonical signed decimal literal/);
   assert.equal(evaluateCheckedI64(B('rem',L('-9223372036854775808'),L(-1))),0n);
 });
+
+test('checked-i64 foreign JSON byte caps reject UTF8 excess before parsing',()=>{
+  const oversized=[
+    '{"op":"literal","value":"'+ 'é'.repeat(9000) +'"}',
+    '{"op":"literal","value":"'+ '😀'.repeat(4200) +'"}'
+  ];
+  const original=JSON.parse;
+  let parsed=0;
+  try {
+    JSON.parse=function(text,...args){parsed++;return original(text,...args);};
+    for(const source of oversized){
+      assert.ok(Buffer.byteLength(source,'utf8')>16384);
+      assert.throws(()=>evaluateCheckedI64Json(source),
+        /missing or oversized canonical JSON expression/);
+    }
+    assert.equal(parsed,0,'foreign oversize bytes must not enter JSON.parse');
+    assert.equal(evaluateCheckedI64Json('{"op":"literal","value":"42"}'),42n);
+    assert.equal(parsed,1);
+  } finally {JSON.parse=original;}
+});
