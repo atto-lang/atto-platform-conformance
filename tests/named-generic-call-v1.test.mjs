@@ -148,3 +148,85 @@ test('invalid bindings cannot evaluate expressions', () => {
   assert.deepEqual(evaluate_named_call(plan, [() => ++invoked]), [1]);
   assert.equal(invoked, 1);
 });
+
+test('reference generic keys are nominally scoped and unscoped keys are not global cache keys', () => {
+  const f = [{name:'T'},{name:'U',default:{ref:'T'}}];
+  const items = [typ('int','T')];
+  const x = bind_generic_args(f, items, {declarationId:'package@1::Pair'});
+  const y = bind_generic_args(f, items, {declarationId:'package@2::Pair'});
+  assert.deepEqual(x.ordered, ['int','int']);
+  assert.notEqual(x.specializationKey, y.specializationKey);
+  assert.equal(x.cacheableGlobally, true);
+  assert.equal(bind_generic_args(f, items).cacheableGlobally, false);
+});
+
+test('descriptor budget and malformed content cannot loosen checked generic binding', () => {
+  const f = [{name:'T'}];
+  const cases = [
+    [() => bind_generic_args(f, [{type:'int',name:'T',omit:true}]), 'invalid-generic-argument'],
+    [() => bind_generic_args(f, [{type:17,name:'T'}]), 'invalid-generic-argument'],
+    [() => bind_generic_args([{name:'T',hidden:true}], [{type:'int'}]), 'invalid-generic-declaration'],
+    [() => bind_generic_args([{name:'T',default:{type:'int',ref:'T'}}], []), 'invalid-generic-default'],
+    [() => bind_generic_args(f, [], {inferred:[]}), 'invalid-generic-declaration'],
+    [() => bind_generic_args(f, [], {declarationId:''}), 'invalid-generic-declaration'],
+    [() => bind_generic_args(f, [], {metadataKeys:['T']}), 'generic-metadata-collision'],
+    [() => bind_generic_args(f, Array.from({length:65},()=>typ('int'))), 'generic-budget']
+  ];
+  for (const [run, code] of cases) assert.throws(run,{code});
+});
+
+test('untrusted or fabricated execution plans fail before receiver/argument side effects', () => {
+  const checked = plan_named_call([formal('a'),formal('b')],[value('b'),value('a')]);
+  const forged = {slotToSource:[1,0],sourceToFormal:[1,0]};
+  let effects=0;
+  for (const plan of [forged, {...checked}, new Proxy(checked,{})]) {
+    assert.throws(() => evaluate_named_call(plan,[()=>++effects,()=>++effects],
+      ()=>++effects),{code:'invalid-execution-plan'});
+  }
+  assert.equal(effects,0);
+});
+
+test('malformed call-item flags, omissions and invalid formal flags fail closed', () => {
+  const f=[formal('x')];
+  const cases=[
+    [() => plan_named_call(f,[{name:'x',kind:'omit'}]),'unsupported-call-item'],
+    [() => plan_named_call(f,[{name:'x',kind:'underscore'}]),'unsupported-call-item'],
+    [() => plan_named_call(f,[{name:'x',spread:'false'}]),'unsupported-call-item'],
+    [() => plan_named_call(f,[{name:'x',unexpected:1}]),'unsupported-call-item'],
+    [() => plan_named_call([{name:'x',optional:'yes'}],[]),'invalid-callable-formals'],
+    [() => plan_named_call([null],[value()]),'invalid-callable-formals'],
+    [() => plan_named_call(f,[value('X')]),'unknown-value-label']
+  ];
+  for(const [run,code] of cases) assert.throws(run,{code});
+});
+
+test('all named permutations preserve source evaluation exactly once', () => {
+  const formals=[formal('a'),formal('b'),formal('c')];
+  const permutations=[[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];
+  for(const order of permutations){
+    const items=order.map(i=>value(formals[i].name));
+    const plan=plan_named_call(formals,items);
+    const events=[];
+    const slots=evaluate_named_call(plan,order.map(i=>(()=>{events.push(i);return i;})),
+      ()=>events.push('receiver'));
+    assert.deepEqual(slots,[0,1,2]);
+    assert.deepEqual(events,['receiver',...order]);
+  }
+});
+
+test('exceptions short-circuit lexical named-argument evaluation', () => {
+  const p=plan_named_call([formal('a'),formal('b'),formal('c')],
+    [value('c'),value('a'),value('b')]);
+  const events=[];
+  assert.throws(()=>evaluate_named_call(p,[
+    ()=>{events.push('c');return 3;},
+    ()=>{events.push('a');throw new Error('stop');},
+    ()=>{events.push('b');return 2;}
+  ],()=>events.push('receiver')), /stop/);
+  assert.deepEqual(events,['receiver','c','a']);
+});
+
+test('syntactic omission sentinel cannot masquerade as a supplied value', () => {
+  const p=plan_named_call([formal('x')],[value('x')]);
+  assert.throws(()=>evaluate_named_call(p,[()=>OMITTED]),{code:'invalid-supplied-omission'});
+});
