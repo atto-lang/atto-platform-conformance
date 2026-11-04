@@ -107,3 +107,21 @@ test("parent-symlink existing and missing targets must deny before path resoluti
     })).ok, false);
   }
 });
+
+test("each FS case preserves the bound kind, case, expected outcome and field shape", async () => {
+  const x = await read();
+  for (const v of x.vectors) {
+    for (const [key, replacement] of [
+      ["case", "changed-case"],
+      ["kind", v.kind === "read" ? "write" : "read"],
+      ["expected", v.expected === "deny" ? "accept" : "deny"]
+    ]) {
+      const changed = modify(x, m => { m.vectors.find(t => t.id === v.id)[key] = replacement; });
+      assert.equal(auditFsByteBoundsContract(changed).ok, false,
+        `${v.id} accepted a modified ${key}`);
+    }
+    assert.equal(auditFsByteBoundsContract(modify(x, m => {
+      m.vectors.find(t => t.id === v.id).certified = true;
+    })).ok, false, `${v.id} accepted an unreviewed field`);
+  }
+});
