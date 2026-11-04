@@ -40,7 +40,14 @@ const REQUIRED_INCIDENTS = Object.freeze([
   Object.freeze({
     number:212,
     title:"P0 review: LLVM private source exact tree executed in unapproved honeypot carrier"
-  })
+  }),
+  // Incident closure is necessary but not sufficient authorization.
+  // Check ALL entries from the current central disposition registry.
+  Object.freeze({number:171,title:"P0 SECURITY: classify Oreslang recovery/runtime source-bearing private CI carrier in agent-pontifex"}),
+  Object.freeze({number:172,title:"P0 SECURITY: investigate LLVM exact-tree source placement in led-dynamo carrier"}),
+  Object.freeze({number:198,title:"P0 SECURITY: assess exact private Java CI-script blobs in ClaimGraph carrier #20"}),
+  Object.freeze({number:200,title:"P0 SECURITY: classify private Java governance blobs retained in ClaimGraph carrier"}),
+  Object.freeze({number:252,title:"P0 SECURITY: classify private Oreslang source placement in hnpt-e2e carrier"})
 ]);
 const CARRIER_CHECK = Object.freeze({context:"carrier-policy",appId:15368});
 const PINNED_SOURCE_POLICY_WORKFLOW_BLOBS = Object.freeze({
