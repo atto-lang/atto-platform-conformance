@@ -1,6 +1,6 @@
-# THREAD_TASK_ACTOR_LOCAL_V1 — AttoLang/Oreslang native threads and scoped state
+# THREAD_TASK_ACTOR_LOCAL_V1 — AttoLang native threads and scoped state
 
-Status: **DRAFT target contract (2026-11-01)**. This file is a language/runtime acceptance target, not implemented compiler intrinsics, pthread support, or guest-parity evidence. Public branding may use AttoLang; repository and ABI names remain Oreslang until migration.
+Status: **DRAFT target contract (2026-11-01)**. This file is a language/runtime acceptance target, not implemented compiler intrinsics, pthread support, or guest-parity evidence. AttoLang is the canonical language name and `.atto` is its canonical source suffix. Oreslang repository, ABI and schema names remain compatibility identifiers during migration.
 
 ## Decision
 
@@ -8,7 +8,7 @@ Expose an OS-thread abstraction in **AttoLang source**, independent of Java or p
 
 For POSIX platforms, the LLVM/Cranelift native adapter can use pthread_create/join plus platform TLS, with pthread-specific types kept private. Windows uses its supported platform-thread bootstrap, GraalVM/JVM a real platform thread, and .NET NativeAOT a real runtime-attached OS thread. Wasm may offer threads only when the **embedder actually supports creation, shared memory, and atomics**. Otherwise return Unsupported **before** allocating any virtual thread or worker. A thread created for a tenant must be registered with its IsolateVM lifecycle before executing user code; it never grants actor execution authority.
 
-## Target source API (illustrative syntax; compiler lowering NOT YET VERIFIED)
+## Target AttoLang `.atto` source API (illustrative; compiler lowering NOT YET VERIFIED)
 
     define module example as
       pub fnc calculate(Box<Job> job): int {
@@ -17,16 +17,16 @@ For POSIX platforms, the LLVM/Cranelift native adapter can use pthread_create/jo
 
       pub suspends fnc run(Box<Job> job): Result<int, ThreadError> {
         // calculate is an AOT-resolved *entry symbol*, not a transported closure.
-        val Result<JoinHandle<int>, ThreadError> created =
-          thread.spawn(example.calculate, move job, ThreadOptions.default());
-        val JoinHandle<int> handle = created.expect("thread admission failed");
+        const Result<JoinHandle<int>, ThreadError> created =
+          thread.spawn(example.calculate, rt take job, ThreadOptions.default());
+        const JoinHandle<int> handle = created.expect("thread admission failed");
         return await handle.join();
       }
     end
 
 Normative surface:
 
-- `thread.spawn(entry: StaticThreadEntry<Arg,R>, move arg: Arg, options: ThreadOptions) -> Result<JoinHandle<R>,ThreadError>` requires Arg: Send + Owned + 'static and R: Send + Owned + 'static. The entry lowers to an **AOT-resolved non-suspending function symbol** with exactly one owned argument: either an explicitly named function or a **compiler-synthesized static function** for a statically known `rt take` closure. An owned closure is only surface syntax: the compiler moves its explicitly audited capture environment as the ABI argument and retains the generated entry's machine code, type layout, cleanup, and checked ABI. Dynamic function values, runtime code loading, borrowed captures, actor state, and unverified Send/Sync witnesses are rejected. This does **not** make closures legal in channels or pub-sub.
+- `thread.spawn(entry: StaticThreadEntry<Arg,R>, rt take arg: Arg, options: ThreadOptions) -> Result<JoinHandle<R>,ThreadError>` requires Arg: Send + Owned + 'static and R: Send + Owned + 'static. The entry lowers to an **AOT-resolved non-suspending function symbol** with exactly one owned argument: either an explicitly named function or a **compiler-synthesized static function** for a statically known `rt take` closure. An owned closure is only surface syntax: the compiler moves its explicitly audited capture environment as the ABI argument and retains the generated entry's machine code, type layout, cleanup, and checked ABI. Dynamic function values, runtime code loading, borrowed captures, actor state, and unverified Send/Sync witnesses are rejected. This does **not** make closures legal in channels or pub-sub.
 - `JoinHandle<R>.join_async() -> Future<Result<R,ThreadError>>` (with `join()` as a suspending source alias): never parks an actor carrier/critical body; returns one terminal result or panic/exit error; a concurrent second join is rejected. Cancelling an awaiter does not consume the join right. `join_blocking()` is available only in compiler-proven dedicated/foreign blocking-thread context, never an actor/task carrier. A join handle is affine, not serializable or Sendable actor-message data.
 - `ThreadGroup` / `thread.scope` owns all handles and mandatory physical join/drain before resource deallocation. There is no unsafe forced thread kill or fire-and-forget detach in v1. Cancellation is a request via a generation-fenced `StopToken`; physical thread exit and destructors are separately witnessed.
 - `thread.current_id() -> ThreadId` is observational, opaque and incarnation-fenced; it never grants ownership or access. `ThreadOptions` has bounded stack/name/priority hints and an explicit tenant admission budget. No realtime guarantee or CPU-core pinning inferred from hints.
