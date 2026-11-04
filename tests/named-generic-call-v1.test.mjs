@@ -9,7 +9,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const backends = ['java', 'llvm', 'net', 'wasm', 'forge'];
 const formal = (name, optional = false) => ({ name, optional, ...(optional ? { checkedDefault: true } : {}) });
 const typ = (type, name = null) => ({ type, name });
-const value = (name = null) => ({ name });
+const value = (name = null) => ({ kind: 'value', name });
 
 test('registry is bounded, unique, source-only, .atto and not a parity claim', async () => {
   const manifest = JSON.parse(await readFile(resolve(root, 'contracts/named-generic-call-v1.json')));
