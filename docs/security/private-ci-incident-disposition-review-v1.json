@@ -4,8 +4,9 @@
   "incident_repository": "ores-truffle-oreslang/oreslang-platform-conformance",
   "incident_repository_id": 1413795502,
   "independent_reviewer": {
-    "login": "ORESoftware",
-    "user_id": 11139560
+    "status": "UNASSIGNED_PENDING_EXTERNAL_SECURITY_REVIEW",
+    "login": null,
+    "user_id": null
   },
   "resolution_marker_template": "PRIVATE_CI_INCIDENT_DISPOSITION_RESOLVED issue=#{issue}",
   "source_transfer_authorized": false,
@@ -82,6 +83,21 @@
     "closed_by_login": "ORESoftware",
     "closed_by_user_id": 11139560,
     "pinned_exact_resolution_comment_required": true,
-    "registry_must_be_updated_on_protected_source_main": true
+    "registry_must_be_updated_on_protected_source_main": true,
+    "disposition_contact_not_authorization_approver": true
+  },
+  "disposition_contact": {
+    "login": "ORESoftware",
+    "user_id": 11139560,
+    "qualifies_as_independent_authorization_reviewer": false
+  },
+  "independent_review_policy": {
+    "excluded_operator_user_ids": [
+      2148448,
+      11139560
+    ],
+    "protected_source_main_required": true,
+    "exact_authorization_head_approval_required": true,
+    "disposition_issue_closure_alone_never_authorizes_export": true
   }
 }
