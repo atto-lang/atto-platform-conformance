@@ -210,3 +210,19 @@ test('v1/v2 reject C1 and Unicode diagnostic line-spoofing while preserving LF',
     assert.equal(validateParityReceipt(r).publicly_promotable,false);
   }
 });
+
+test('compile infrastructure status cannot impersonate a compiler rejection',()=>{
+  for(const make of [v1,v2]){
+    for(const code of [0,124,125,126,127,128,134,137,139,255]){
+      const receipt=make();
+      receipt.cases.find(c=>c.kind==='negative').compile_exit=code;
+      assert.throws(()=>validateParityReceipt(receipt),
+        /negative compile rejection/,'exit='+code);
+    }
+    for(const code of [1,2,42,123]){
+      const receipt=make();
+      receipt.cases.find(c=>c.kind==='negative').compile_exit=code;
+      assert.equal(validateParityReceipt(receipt).publicly_promotable,false);
+    }
+  }
+});
