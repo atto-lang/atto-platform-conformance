@@ -150,3 +150,13 @@ test('v2 rejects noncanonical signed negative zero in observed or expected i64',
   r.cases[0].expected_i64='0';
   assert.equal(validateParityReceipt(r).case_count,3);
 });
+
+test('compiler receipt metadata forbids log-control characters',()=>{
+  for(const compiler of ['compiler\\npassed', 'compiler\\rpassed',
+    'compiler\\0hidden', 'compiler\\tflag', 'compiler'+String.fromCharCode(127)]){
+    const r=v2();r.compiler=compiler;
+    assert.throws(()=>validateParityReceipt(r),/parity receipt rejected: compiler/);
+  }
+  const r=v2();r.compiler='C:\\\\Program Files\\\\AttoLang\\\\llvmc.exe';
+  assert.equal(validateParityReceipt(r).publicly_promotable,false);
+});
