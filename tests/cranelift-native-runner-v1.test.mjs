@@ -146,3 +146,20 @@ test("native gate rejects malformed ELF compiler candidates and admits a real im
       compilerCommit:commit}),/did not produce bounded CLIF IR/);
   }finally{await rm(root,{recursive:true,force:true})}
 });
+
+test("native compiler identity is checked before IR, between IR/JIT, and after JIT",async()=>{
+  // Static callsite coverage protects the no-injected-launcher design until
+  // an independently installed compiler is available for real execution.
+  const code=await readFile(new URL("../bin/run-cranelift-native-v1.mjs",import.meta.url),"utf8");
+  const guards=[...code.matchAll(/await requireStableCompilerImage\(compiler,compilerSha256,evidence\);/g)]
+    .map(match=>match.index);
+  assert.equal(guards.length,3,"all three compiler identity checks must remain");
+  const ir=code.indexOf('const ir=spawnSync(compiler,["ir",file]');
+  const jit=code.indexOf('const command=spawnSync(compiler,["run",file]');
+  const result=code.indexOf("records.push({id:test.id");
+  assert.ok(guards[0]<ir&&ir<guards[1]&&guards[1]<jit&&jit<guards[2]&&guards[2]<result,
+    "identity evidence must surround both compiler launches");
+  assert.match(code,/observed\.ino===initial\.ino/);
+  assert.match(code,/observed\.ctimeMs===initial\.ctimeMs/);
+  assert.match(code,/await executableEvidence\(path,digest\)/);
+});
