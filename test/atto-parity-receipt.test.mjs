@@ -170,3 +170,17 @@ test('compiler labels reject Unicode line and bidi controls without rejecting or
   r.compiler='Compilador Å/测试/atto';
   assert.equal(validateParityReceipt(r).publicly_promotable,false);
 });
+
+test('v1 and v2 diagnostics reject terminal and bidi spoofing but allow multiline',()=>{
+  for(const sample of [v1,v2]){
+    for(const point of [0,0x1b,0x7f,0x9b,0x202e,0x2067]){
+      const r=sample();
+      const negative=r.cases.find(c=>c.kind==='negative');
+      negative.diagnostic='genuine error'+String.fromCodePoint(point)+'fake success';
+      assert.throws(()=>validateParityReceipt(r),/parity receipt rejected: negative diagnostic/);
+    }
+    const r=sample();
+    r.cases.find(c=>c.kind==='negative').diagnostic='line one\nline two: checked failure';
+    assert.equal(validateParityReceipt(r).publicly_promotable,false);
+  }
+});
