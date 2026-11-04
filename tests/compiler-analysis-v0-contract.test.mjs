@@ -18,7 +18,7 @@ test('analysis v0 declares unknown separately from positive compiler proof', () 
   assert.equal(manifest.semantics.effect_unknown_not_pure, true);
   assert.equal(manifest.semantics.exception_grammar_proven, false);
   assert.deepEqual(Object.keys(manifest.semantics.outcome_codes).sort(), ['0', '1', '2']);
-  assert.equal(manifest.fixtures.length, 3);
+  assert.equal(manifest.fixtures.length, 5);
   assert.deepEqual(Object.keys(manifest.backend_status).sort(), ['forge', 'java', 'llvm', 'net', 'wasm']);
   for (const fixture of manifest.fixtures) {
     assert.match(fixture.file, /^analysis-[a-z-]+\.atto$/);
@@ -59,6 +59,45 @@ test('optional real LLVM --analyze guest-source and no-codegen matrix', {
       assert.deepEqual(readFileSync(sourcePath), original, fixture.file);
       assert.deepEqual(readdirSync(temp), [fixture.file], 'analysis must not write codegen files');
       assert.doesNotMatch(result.stdout, /target triple|define i64/);
+    } finally {
+      rmSync(temp, { recursive: true, force: true });
+    }
+  }
+});
+
+const formatter = process.env.ATTO_ANALYZE_FORMATTER_BIN;
+test('optional real LLVM-to-formatter analyzer exit and report parity', {
+  skip: !compiler || !formatter
+    ? 'both pinned LLVM compiler and formatter binaries required: no integration proof'
+    : false
+}, () => {
+  assert.ok(isAbsolute(compiler), 'compiler executable path must be absolute');
+  assert.ok(isAbsolute(formatter), 'formatter executable path must be absolute');
+  for (const fixture of manifest.fixtures) {
+    const temp = mkdtempSync(join(tmpdir(), 'atto-analysis-interop-'));
+    try {
+      const sourcePath = join(temp, fixture.file);
+      const original = readFileSync(join(fixtureRoot, fixture.file));
+      writeFileSync(sourcePath, original);
+      const options = {
+        cwd: temp, input: '', encoding: 'utf8',
+        timeout: 20000, maxBuffer: 1024 * 1024,
+        env: { PATH: process.env.PATH ?? '', HOME: temp }
+      };
+      const direct = spawnSync(compiler, ['--analyze', sourcePath], options);
+      const delegated = spawnSync(formatter, ['--analyze', sourcePath], {
+        ...options,
+        env: { ...options.env, ORESLANG_BIN: compiler }
+      });
+      assert.equal(direct.error, undefined, String(direct.error));
+      assert.equal(delegated.error, undefined, String(delegated.error));
+      assert.equal(delegated.status, direct.status,
+        fixture.file + ': formatter must preserve compiler status');
+      assert.equal(delegated.stdout, direct.stdout,
+        fixture.file + ': formatter must preserve diagnostic report');
+      assert.deepEqual(readFileSync(sourcePath), original, fixture.file);
+      assert.deepEqual(readdirSync(temp), [fixture.file],
+        'compiler and formatter must not generate files');
     } finally {
       rmSync(temp, { recursive: true, force: true });
     }
