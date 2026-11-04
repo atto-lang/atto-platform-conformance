@@ -1,3 +1,4 @@
+import {createHash} from 'node:crypto';
 // Source-free structural evidence gate. No compiler sources or native guest artifacts.
 // Passing only makes a receipt eligible for independent API/attestation review.
 export const REQUIRED_PROFILES = Object.freeze({
@@ -10,6 +11,12 @@ export const REQUIRED_PROFILES = Object.freeze({
 const BASE = 'ores-truffle-oreslang/oreslang-source.';
 const SHA40 = /^[0-9a-f]{40}$/;
 const SHA256 = /^[0-9a-f]{64}$/;
+// Bind claimed process-output digests to exact UTF-8 bytes; a 64-hex string
+// alone is not evidence integrity. Bound bytes before hashing.
+const outputDigest = value => typeof value === 'string' &&
+  value.isWellFormed() && Buffer.byteLength(value, 'utf8') <= 32768
+  ? createHash('sha256').update(value, 'utf8').digest('hex')
+  : null;
 const ids = new Map([
   ['scalar.literal-42', {kind: 'accept', value: '42'}],
   ['scalar.precedence', {kind: 'accept', value: '28'}],
@@ -43,6 +50,12 @@ export const FIXTURE_SHA256 = Object.freeze({
 
 const positive = v => Number.isSafeInteger(v) && v > 0;
 const nonempty = v => typeof v === 'string' && v.trim().length > 0;
+// Evidence labels are bounded single-line, well-formed UTF-8, never terminal controls.
+const safeEvidenceLine = v => nonempty(v) && v.isWellFormed() &&
+  Buffer.byteLength(v, 'utf8') <= 4096 &&
+  !/[\u0000-\u001f\u007f-\u009f\u200e\u200f\u2028-\u202e\u2066-\u2069]/u.test(v) &&
+  // Zero-width/soft-hyphen/variation selectors can visually forge provenance.
+  !/\p{Default_Ignorable_Code_Point}/u.test(v);
 const reject = why => {throw new Error(why);};
 
 // IMPORTANT: A signed, complete, internally consistent forged receipt can pass.
@@ -83,7 +96,7 @@ export function validateFiveBackendScalarEligibility(doc) {
     if (!r || !positive(r.id) || !positive(r.attempt) ||
         r.status !== 'completed' || r.conclusion !== 'success' ||
         r.admission_failed !== false || !Array.isArray(r.jobs) ||
-        r.jobs.length === 0) reject('runner admission or run identity missing');
+        r.jobs.length === 0 || r.jobs.length > 32) reject('runner admission or run identity missing');
     const runKey = e.repository + '/' + r.id + '/' + r.attempt;
     if (runs.has(runKey)) reject('run reused across mode claims');
     runs.add(runKey);
@@ -91,14 +104,14 @@ export function validateFiveBackendScalarEligibility(doc) {
       if (!j || !positive(j.id) || jobIds.has(e.repository + '/' + j.id) ||
           j.run_id !== r.id || j.run_attempt !== r.attempt ||
           j.head_sha !== e.source.commit_sha ||
-          !positive(j.runner_id) || !nonempty(j.runner_name) ||
+          !positive(j.runner_id) || !safeEvidenceLine(j.runner_name) ||
           j.status !== 'completed' || j.conclusion !== 'success' ||
-          !Array.isArray(j.steps) || j.steps.length === 0) {
+          !Array.isArray(j.steps) || j.steps.length === 0 || j.steps.length > 256) {
         reject('unexecuted or mismatched job');
       }
       jobIds.add(e.repository + '/' + j.id);
       for (const [index, s] of j.steps.entries()) {
-        if (!s || s.number !== index + 1 || !nonempty(s.name) ||
+        if (!s || s.number !== index + 1 || !safeEvidenceLine(s.name) ||
             s.status !== 'completed' || s.conclusion !== 'success')
           reject('unexecuted, skipped or out-of-order step');
       }
@@ -110,15 +123,21 @@ export function validateFiveBackendScalarEligibility(doc) {
       if (!c || !ids.has(c.id) || caseIds.has(c.id) ||
           c.source_sha256 !== fixtures.get(c.id) ||
           !SHA256.test(c.stdout_sha256) || !SHA256.test(c.stderr_sha256) ||
+          c.stdout_sha256 !== outputDigest(c.stdout) ||
+          c.stderr_sha256 !== outputDigest(c.stderr) ||
           (e.backend === 'wasm' ? c.exit_code !== null :
             !Number.isSafeInteger(c.exit_code)) ||
           c.observation_channel !== OBSERVATION_CHANNELS[e.backend] ||
           c.compiler_executed !== true || c.guest_executed !== true ||
-          !nonempty(c.guest_command) || typeof c.stdout !== 'string' ||
+          !safeEvidenceLine(c.guest_command) || typeof c.stdout !== 'string' ||
           c.kind !== ids.get(c.id).kind)
         reject('unverified guest case or mismatched fixture');
       caseIds.add(c.id);
       if (c.kind === 'accept') {
+        // A successful scalar may not also claim a diagnostic or trap.
+        if (c.stderr !== '' ||
+            (c.trap_category !== undefined && c.trap_category !== null))
+          reject('successful guest must not report diagnostic or trap');
         // Output encoding is backend-specific; normalize a typed signed-i64
         // witness, then independently verify it against real runtime bytes.
         if (c.semantic_phase !== 'guest-return' ||
@@ -133,6 +152,15 @@ export function validateFiveBackendScalarEligibility(doc) {
         if (e.backend === 'wasm' && c.stdout !== '')
           reject('Wasm export must not invent guest stdout');
       } else {
+        // An exit failure without diagnostic could be a CLI or loader error.
+        if (e.backend !== 'wasm' && !nonempty(c.stderr))
+          reject('native overflow requires diagnostic');
+        // Cranelift's backend emits this exact text ONLY after native JIT
+        // returns its checked-overflow status. A parser/loader failure with
+        // an unrelated stderr must never qualify for this runtime profile.
+        if (e.backend === 'cranelift' &&
+            c.stderr !== 'orescranelift: i64 arithmetic overflow\n')
+          reject('Cranelift overflow requires JIT-owned diagnostic');
         if (c.semantic_phase !== 'guest-overflow' || c.value_i64 !== null ||
             c.stdout !== '' || c.error_category !== 'checked-i64-overflow' ||
             (e.backend !== 'wasm' && c.exit_code === 0) ||

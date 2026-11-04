@@ -1,11 +1,13 @@
 // All tests are host-only structural negative controls. No native guest executes here.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 import {REQUIRED_PROFILES, REQUIRED_CASES, FIXTURE_SHA256, OBSERVATION_CHANNELS, validateFiveBackendScalarEligibility as admit}
   from '../verification/five-backend-scalar-gate.mjs';
 
 const h40 = 'a'.repeat(40), tree = 'b'.repeat(40);
 const h64 = 'c'.repeat(64);
+const digest = value => createHash('sha256').update(value, 'utf8').digest('hex');
 const vectors = {
   'scalar.literal-42': '42\n',
   'scalar.precedence': '28\n',
@@ -42,15 +44,19 @@ function makeEligible() {
       },
       cases: fixtures.map(f => {
         const accept = Object.hasOwn(vectors, f.id);
+        const stdout = accept && ['cranelift','net'].includes(e.backend) ? vectors[f.id] : '';
+        const stderr = accept ? '' : (e.backend === 'cranelift'
+          ? 'orescranelift: i64 arithmetic overflow\n'
+          : 'error: checked-i64-overflow');
         return {
           id: f.id, kind: accept ? 'accept' : 'overflow',
           source_sha256: f.source_sha256,
-          stdout_sha256: h64, stderr_sha256: h64,
+          stdout_sha256: digest(stdout), stderr_sha256: digest(stderr),
           exit_code: e.backend === 'wasm' ? null : (accept ? 0 : 1),
           value_i64: accept ? vectors[f.id].trim() : null,
           semantic_phase: accept ? 'guest-return' : 'guest-overflow',
           observation_channel: OBSERVATION_CHANNELS[e.backend],
-          stdout: accept && ['cranelift','net'].includes(e.backend) ? vectors[f.id] : '',
+          stdout, stderr,
           compiler_executed: true, guest_executed: true,
           guest_command: 'synthetic guest invocation',
           error_category: accept ? null : 'checked-i64-overflow',
@@ -96,6 +102,28 @@ denies('reject source commit pinned to moving branch', d => d.executions[0].sour
 denies('reject missing compiler binary hash', d => d.executions[0].compiler.binary_sha256='', /source\/compiler/);
 denies('reject no GitHub runner assignment', d => d.executions[0].run.jobs[0].runner_id=0, /unexecuted/);
 denies('reject zero-step workflow', d => d.executions[0].run.jobs[0].steps=[], /unexecuted/);
+denies('reject zero-job workflow', d => d.executions[0].run.jobs=[], /runner admission/);
+denies('reject 33 jobs in one mode receipt', d => {
+  const run=d.executions[0].run, template=run.jobs[0];
+  run.jobs=Array.from({length:33}, (_,i) => ({...template, id:5000+i, runner_id:10000+i}));
+}, /runner admission/);
+denies('reject 257 steps in one job', d => {
+  d.executions[0].run.jobs[0].steps=Array.from({length:257}, (_,i) => ({
+    number:i+1, name:'synthetic step '+i, status:'completed', conclusion:'success'
+  }));
+}, /unexecuted/);
+test('exact 32-job receipt bound remains structurally eligible', () => {
+  const d=makeEligible(), run=d.executions[0].run, template=run.jobs[0];
+  run.jobs=Array.from({length:32}, (_,i) => ({...template, id:5000+i, runner_id:10000+i}));
+  assert.equal(admit(d),true);
+});
+test('exact 256-step job bound remains structurally eligible', () => {
+  const d=makeEligible();
+  d.executions[0].run.jobs[0].steps=Array.from({length:256}, (_,i) => ({
+    number:i+1, name:'synthetic step '+i, status:'completed', conclusion:'success'
+  }));
+  assert.equal(admit(d),true);
+});
 denies('reject stale source head in job', d => d.executions[0].run.jobs[0].head_sha=tree, /unexecuted/);
 denies('reject stale run attempt', d => d.executions[0].run.jobs[0].run_attempt=2, /unexecuted/);
 denies('reject missing run ID', d => d.executions[0].run.id=0, /runner admission/);
@@ -111,11 +139,26 @@ denies('reject absent native guest execution', d => d.executions[0].cases[0].gue
 denies('reject omitted guest case', d => d.executions[0].cases.pop(), /guest case/);
 denies('reject duplicate guest case', d => d.executions[0].cases[1].id=d.executions[0].cases[0].id, /guest case/);
 denies('reject switched fixture hash', d => d.executions[0].cases[0].source_sha256=d.fixtures[1].source_sha256, /guest case/);
+
+denies('reject forged 64-hex stdout digest that does not hash the bytes',
+ d => d.executions[0].cases[0].stdout_sha256='f'.repeat(64), /guest case/);
+denies('reject forged 64-hex stderr digest that does not hash the bytes',
+ d => d.executions[0].cases[0].stderr_sha256='f'.repeat(64), /guest case/);
+denies('reject raw stdout mutation with unchanged reported SHA',
+ d => d.executions[0].cases[0].stdout='tampered', /guest case/);
+denies('reject raw stderr mutation with unchanged reported SHA',
+ d => d.executions[0].cases[6].stderr='tampered', /guest case/);
+denies('reject omitted raw stderr despite claimed digest',
+ d => {delete d.executions[0].cases[0].stderr}, /guest case/);
+denies('reject output beyond 32-KiB byte cap',
+ d => d.executions[0].cases[0].stderr='x'.repeat(32769), /guest case/);
+denies('reject UTF-8 multibyte output crossing byte cap',
+ d => d.executions[0].cases[0].stderr='é'.repeat(17000), /guest case/);
 denies('reject forged successful guest exit', d => d.executions[0].cases[0].exit_code=1, /successful guest/);
 denies('reject wrong output for precedence', d => d.executions[0].cases[1].value_i64='27', /successful guest/);
-denies('reject silent accept without newline', d => d.executions.find(x=>x.backend==='net').cases[0].stdout='42', /stdout transport/);
+denies('reject silent accept without newline', d => {const c=d.executions.find(x=>x.backend==='net').cases[0]; c.stdout='42'; c.stdout_sha256=digest(c.stdout)}, /stdout transport/);
 denies('reject overflow reported as success', d => d.executions[0].cases[6].exit_code=0, /overflow/);
-denies('reject overflow with stdout', d => d.executions[0].cases[6].stdout='0\n', /overflow/);
+denies('reject overflow with stdout', d => {const c=d.executions[0].cases[6]; c.stdout='0\n'; c.stdout_sha256=digest(c.stdout)}, /overflow/);
 denies('reject overflow with wrong category', d => d.executions[0].cases[6].error_category='panic', /overflow/);
 denies('reject wrong guest kind', d => d.executions[0].cases[6].kind='accept', /guest case/);
 denies('reject invalid guest exit number', d => d.executions[0].cases[6].exit_code=NaN, /guest case/);
@@ -129,9 +172,9 @@ denies('reject WASM export claiming OS process exit',
 denies('reject WASM trap without RuntimeError provenance',
  d => d.executions.find(x=>x.backend==='wasm').cases[6].trap_category='unknown', /overflow/);
 denies('reject NativeAOT printed value inconsistent with normalized i64',
- d => d.executions.find(x=>x.backend==='net').cases[0].stdout='43\\n', /stdout transport/);
+ d => {const c=d.executions.find(x=>x.backend==='net').cases[0]; c.stdout='43\n'; c.stdout_sha256=digest(c.stdout)}, /stdout transport/);
 denies('reject Cranelift JIT CLI printed value inconsistent with normalized i64',
- d => d.executions.find(x=>x.backend==='cranelift').cases[0].stdout='', /stdout transport/);
+ d => {const c=d.executions.find(x=>x.backend==='cranelift').cases[0]; c.stdout=''; c.stdout_sha256=digest(c.stdout)}, /stdout transport/);
 denies('reject host oracle masquerading as runtime phase',
  d => d.executions[0].cases[0].semantic_phase='host-reference', /successful guest/);
 denies('reject overflow falsely classified as compiler-stage error',
@@ -147,4 +190,75 @@ test('a fabricated but internally consistent full receipt is NOT authentication'
   doc.executions[0].run.jobs[0].runner_name='invented-runner';
   assert.equal(admit(doc), true); // Deliberately illustrates limitation.
   assert.equal(doc.certified, false);
+});
+
+// Raw-byte integrity and contradictory execution claims: all host-only.
+denies('reject unpaired surrogate stdout despite internally matching digest',
+ d => {const c=d.executions[0].cases[0]; c.stdout='\uD800'; c.stdout_sha256=digest(c.stdout)}, /guest case/);
+denies('reject unpaired surrogate stderr despite internally matching digest',
+ d => {const c=d.executions[0].cases[6]; c.stderr='\uDC00'; c.stderr_sha256=digest(c.stderr)}, /guest case/);
+denies('reject successful scalar with an internally hashed error diagnostic',
+ d => {const c=d.executions[0].cases[0]; c.stderr='error: wrong mode'; c.stderr_sha256=digest(c.stderr)}, /successful guest must not/);
+denies('reject successful Wasm scalar falsely reporting a trap',
+ d => {d.executions.find(x=>x.backend==='wasm').cases[0].trap_category='webassembly-runtime-error'}, /successful guest must not/);
+denies('reject silent native overflow with matching empty stderr hash',
+ d => {const c=d.executions.find(x=>x.backend==='cranelift').cases[6]; c.stderr=''; c.stderr_sha256=digest('')}, /native overflow requires diagnostic/);
+denies('reject newline-injected guest command',
+ d => {d.executions[0].cases[0].guest_command='compiler --run\nFAKE PASS'}, /guest case/);
+denies('reject control-byte runner-name injection',
+ d => {d.executions[0].run.jobs[0].runner_name='runner\u0000spoof'}, /unexecuted/);
+denies('reject oversized guest-command provenance',
+ d => {d.executions[0].cases[0].guest_command='a'.repeat(4097)}, /guest case/);
+test('valid multibyte UTF-8 overflow diagnostic remains eligible structurally', () => {
+ const d=makeEligible(), c=d.executions.find(x=>x.backend==='net').cases[6];
+ c.stderr='dépassement contrôlé';
+ c.stderr_sha256=digest(c.stderr);
+ assert.equal(admit(d),true);
+});
+
+denies('reject newline-injected completed step name',
+ d => {d.executions[0].run.jobs[0].steps[0].name='checkout\nFORGED PASS'}, /step/);
+denies('reject bidirectional spoofing in runner identity',
+ d => {d.executions[0].run.jobs[0].runner_name='trusted\u202evil'}, /unexecuted/);
+denies('reject bidi isolate in guest command',
+ d => {d.executions[0].cases[0].guest_command='run\u2066--fake'}, /guest case/);
+denies('reject oversized step identity',
+ d => {d.executions[0].run.jobs[0].steps[0].name='x'.repeat(4097)}, /step/);
+denies('reject unpaired surrogate in step identity',
+ d => {d.executions[0].run.jobs[0].steps[0].name='step\uD800'}, /step/);
+test('bounded well-formed internationalized evidence labels are structurally eligible', () => {
+ const doc=makeEligible();
+ doc.executions[0].run.jobs[0].runner_name='Prüfung-Host';
+ doc.executions[0].run.jobs[0].steps[0].name='préparer le compilateur';
+ doc.executions[0].cases[0].guest_command='exécuter un test';
+ assert.equal(admit(doc),true);
+});
+
+denies('reject zero-width-space runner-name provenance spoofing',
+ d => {d.executions[0].run.jobs[0].runner_name='runner\u200btrusted'}, /unexecuted/);
+denies('reject soft-hyphen step-name provenance spoofing',
+ d => {d.executions[0].run.jobs[0].steps[0].name='pass\u00adfail'}, /step/);
+denies('reject word-joiner guest-command provenance spoofing',
+ d => {d.executions[0].cases[0].guest_command='run\u2060--fake'}, /guest case/);
+denies('reject variation-selector step-name provenance spoofing',
+ d => {d.executions[0].run.jobs[0].steps[0].name='step\uFE0F'}, /step/);
+test('visible combining-accent provenance remains eligible', () => {
+ const d=makeEligible();
+ d.executions[0].run.jobs[0].runner_name='e\u0301quipe-runner';
+ assert.equal(admit(d),true);
+});
+
+denies('reject Cranelift parser failure masquerading as checked JIT overflow',
+ d => {const c=d.executions.find(x=>x.backend==='cranelift').cases[6];
+       c.stderr='orescranelift: i64 literal out of range\n';
+       c.stderr_sha256=digest(c.stderr);}, /Cranelift overflow requires JIT-owned diagnostic/);
+denies('reject Cranelift loader failure masquerading as checked JIT overflow',
+ d => {const c=d.executions.find(x=>x.backend==='cranelift').cases[7];
+       c.stderr='orescranelift: missing source file\n';
+       c.stderr_sha256=digest(c.stderr);}, /Cranelift overflow requires JIT-owned diagnostic/);
+test('Cranelift exact JIT diagnostic remains structurally eligible', () => {
+ const d=makeEligible();
+ const c=d.executions.find(x=>x.backend==='cranelift').cases[6];
+ assert.equal(c.stderr,'orescranelift: i64 arithmetic overflow\n');
+ assert.equal(admit(d),true);
 });

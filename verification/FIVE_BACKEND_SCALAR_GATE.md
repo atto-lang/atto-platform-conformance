@@ -65,3 +65,87 @@ compiler/runtime source to a different organization** to obtain runner minutes.
 
 The focused workflow only executes Node host tests. CI success, if achieved,
 proves the source-free fixture/receipt guards, NOT compiled Oreslang correctness.
+
+## Raw output digest integrity (draft hardening)
+
+Each of the eight cases in every mode now requires bounded, literal UTF-8
+`stdout` **and** `stderr` fields. The reported `stdout_sha256` and
+`stderr_sha256` must equal SHA-256 over the exact UTF-8 bytes of those
+fields. Both streams are capped at **32,768 bytes each**; a receipt carrying
+an omitted stream, fabricated syntactically valid SHA, altered output, or
+multibyte UTF-8 data exceeding the cap is denied.
+
+Older reports that only supplied opaque hash strings without captured stderr
+are intentionally **not** eligible; they need a fresh, approved exact-head
+producer run with both raw streams and digests. This checks internal receipt
+consistency only. An attacker can still forge an internally consistent
+receipt, so require independent GitHub Actions job/step/API readback,
+actual compiled guest evidence, exact compiler/source hashes, and authorized
+runner provenance before making any five-backend parity claim.
+
+The source-free negative tests include missing/mismatched output hashes,
+tampered stdout and stderr, omitted stderr, oversized ASCII output, and
+oversized multibyte UTF-8. They are host-level structural checks and do not
+compile or execute a real Oreslang program.
+
+## Unicode and semantic-consistency negative controls
+
+Both output streams must contain well-formed Unicode before literal UTF-8
+hashing: an unpaired UTF-16 surrogate otherwise silently becomes UTF-8
+replacement bytes. Successful scalar results cannot also claim a stderr
+error or runtime trap. Native checked-overflow reports require a nonempty
+diagnostic besides a nonzero exit; Wasm still requires the typed runtime trap.
+Runner names and guest command labels must be bounded single-line strings
+without control bytes. Eight negative and one valid multibyte UTF-8 control
+exercise this source-free eligibility gate. None authenticates the receipt
+producer or proves any of the seven real backend guest profiles executed.
+
+
+## Provenance label spoofing controls
+
+Runner names, guest command labels **and each reported step name** are
+bounded to 4,096 UTF-8 bytes, must be well-formed Unicode, and cannot
+contain newlines, terminal controls, Unicode bidirectional formatting
+overrides/isolates, or line separators. Six new source-free controls cover
+step-name newline/oversize/unpaired-surrogate injection, runner/command
+bidi spoofing, and a valid internationalized-label positive case.
+This protects only report parsing; self-asserted labels and complete
+fabricated receipts remain untrusted until independently retrieved from
+GitHub's authoritative run/job/step APIs.
+
+## Default-ignorable Unicode provenance controls
+
+The source-free receipt gate additionally rejects Unicode
+`Default_Ignorable_Code_Point` characters in runner, step and guest-command
+labels. Zero-width spaces, soft hyphens, word joiners and variation selectors
+can alter visible identity without altering the raw string. Four adversarial
+negative controls and one valid combining-accent control exercise this rule.
+This is **not** proof that any job or guest executed: an independent verifier
+must still retrieve authoritative run, job, step and guest evidence.
+
+
+## Cranelift native JIT overflow diagnostic binding
+
+Cranelift's checked-i64 backend returns an explicit status from the
+compiled JIT function and `src/main.rs` renders the exact stderr line
+`orescranelift: i64 arithmetic overflow` followed by LF. A completely
+different parser or loader failure must not be accepted as a runtime
+overflow because its receipt self-asserts `checked-i64-overflow`.
+Cranelift structural receipts now demand the **exact JIT diagnostic**
+in addition to exit status, empty stdout and matching raw stderr digest.
+Two negative mutation controls and one positive control test this.
+The gate is still source-free and cannot authenticate a forged stderr:
+independent exact-head native guest, runner, binary and compiler evidence
+remain mandatory.
+
+## Bounded run/job admission (source-free)
+
+Each of the seven required mode receipts now permits at most **32 reported jobs**
+and each reported job at most **256 completed steps**. A missing job, a
+33-job receipt, or a 257-step job is denied before traversing unbounded
+attacker-controlled evidence arrays. The exact 32-job and 256-step boundaries
+remain eligible, covered by independent positive controls. These limits are
+for the **structural evidence envelope**, not a limit on actual GitHub Actions
+workflows; a trusted external verifier may split/normalize large workflows
+into independently authenticated bounded evidence receipts. A synthetically
+populated receipt is still not authenticated or compiler-backed proof.
