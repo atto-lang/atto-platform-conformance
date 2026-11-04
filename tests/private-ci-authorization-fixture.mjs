@@ -34,6 +34,11 @@ const incidentPath22="ores-truffle-oreslang/oreslang-platform-conformance/issues
 const incidentPath77="ores-truffle-oreslang/oreslang-platform-conformance/issues/77";
 const incidentPath127="ores-truffle-oreslang/oreslang-platform-conformance/issues/127";
 const incidentPath212="ores-truffle-oreslang/oreslang-platform-conformance/issues/212";
+const incidentPath171="ores-truffle-oreslang/oreslang-platform-conformance/issues/171";
+const incidentPath172="ores-truffle-oreslang/oreslang-platform-conformance/issues/172";
+const incidentPath198="ores-truffle-oreslang/oreslang-platform-conformance/issues/198";
+const incidentPath200="ores-truffle-oreslang/oreslang-platform-conformance/issues/200";
+const incidentPath252="ores-truffle-oreslang/oreslang-platform-conformance/issues/252";
 const incident22={
   number:22,state:"closed",state_reason:"completed",
   title:"P0 SECURITY: private Oreslang source mirrored into public GitHub Actions carrier",
@@ -61,6 +66,42 @@ const incident212={
   html_url:"https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/212",
   repository_url:"https://api.github.com/repos/ores-truffle-oreslang/oreslang-platform-conformance",
   closed_at:"2026-10-29T04:25:00Z"
+};
+// Synthetic completed issue records; real incidents are OPEN.
+const incident171={
+  number:171,state:"closed",state_reason:"completed",
+  title:"P0 SECURITY: classify Oreslang recovery/runtime source-bearing private CI carrier in agent-pontifex",
+  html_url:"https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/171",
+  repository_url:"https://api.github.com/repos/ores-truffle-oreslang/oreslang-platform-conformance",
+  closed_at:"2026-10-29T04:26:00Z"
+};
+const incident172={
+  number:172,state:"closed",state_reason:"completed",
+  title:"P0 SECURITY: investigate LLVM exact-tree source placement in led-dynamo carrier",
+  html_url:"https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/172",
+  repository_url:"https://api.github.com/repos/ores-truffle-oreslang/oreslang-platform-conformance",
+  closed_at:"2026-10-29T04:26:00Z"
+};
+const incident198={
+  number:198,state:"closed",state_reason:"completed",
+  title:"P0 SECURITY: assess exact private Java CI-script blobs in ClaimGraph carrier #20",
+  html_url:"https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/198",
+  repository_url:"https://api.github.com/repos/ores-truffle-oreslang/oreslang-platform-conformance",
+  closed_at:"2026-10-29T04:26:00Z"
+};
+const incident200={
+  number:200,state:"closed",state_reason:"completed",
+  title:"P0 SECURITY: classify private Java governance blobs retained in ClaimGraph carrier",
+  html_url:"https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/200",
+  repository_url:"https://api.github.com/repos/ores-truffle-oreslang/oreslang-platform-conformance",
+  closed_at:"2026-10-29T04:26:00Z"
+};
+const incident252={
+  number:252,state:"closed",state_reason:"completed",
+  title:"P0 SECURITY: classify private Oreslang source placement in hnpt-e2e carrier",
+  html_url:"https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/252",
+  repository_url:"https://api.github.com/repos/ores-truffle-oreslang/oreslang-platform-conformance",
+  closed_at:"2026-10-29T04:26:00Z"
 };
 const carrierCodeowners=[
   "/.github/private-ci-independent-reviewer.json @ORESoftware",
@@ -97,6 +138,11 @@ function fixture(records = {}, calls = []) {
       [incidentPath77]:incident77,
       [incidentPath127]:incident127,
       [incidentPath212]:incident212,
+      [incidentPath171]:incident171,
+      [incidentPath172]:incident172,
+      [incidentPath198]:incident198,
+      [incidentPath200]:incident200,
+      [incidentPath252]:incident252,
       [destination+"/branches/main"]:{name:"main",protected:true,commit:{sha:C}},
       [destination+"/branches/main/protection"]:carrierRules(),
       [destination+"/contents/.github/CODEOWNERS?ref="+C]:encoded(carrierCodeowners),
@@ -158,4 +204,6 @@ function fixture(records = {}, calls = []) {
   };
 }
 
-export { source, destination, A, T, M, C, destinationId, encoded, securityOwners, reviewer, reviewerPolicy, codeowners, requiredChecks, sourcePolicyWorkflow, rules, incidentPath22, incidentPath77, incidentPath127, incidentPath212, incident22, incident77, incident127, incident212, carrierCodeowners, carrierPolicy, carrierPolicyWorkflow, sourceAuthorizationCommit, carrierAuthorizationCommit, sourcePrHead, carrierPrHead, carrierRules, good, fixture };
+export { source, destination, A, T, M, C, destinationId, encoded, securityOwners, reviewer, reviewerPolicy, codeowners, requiredChecks, sourcePolicyWorkflow, rules, incidentPath22, incidentPath77, incidentPath127, incidentPath212, incident22, incident77, incident127, incident212,
+  incidentPath171, incidentPath172, incidentPath198, incidentPath200, incidentPath252,
+  incident171, incident172, incident198, incident200, incident252, carrierCodeowners, carrierPolicy, carrierPolicyWorkflow, sourceAuthorizationCommit, carrierAuthorizationCommit, sourcePrHead, carrierPrHead, carrierRules, good, fixture };
