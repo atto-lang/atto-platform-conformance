@@ -22,7 +22,15 @@ function requireEvidence(ok, what) {
   if (!ok) throw Error('parity evidence rejected: ' + what);
 }
 function validTime(t) {
-  return typeof t === 'string' && /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d/.test(t) && Number.isFinite(Date.parse(t));
+  // GitHub Actions timestamps are UTC RFC 3339 values. Do not admit
+  // timezone-less, truncated, normalized-invalid or suffix-bearing dates.
+  if (typeof t !== 'string') return false;
+  const match=/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d{1,3}))?Z$/.exec(t);
+  if (!match) return false;
+  const millis=Date.parse(t);
+  if (!Number.isFinite(millis)) return false;
+  return new Date(millis).toISOString() ===
+    match[1]+'.'+(match[2]??'').padEnd(3,'0')+'Z';
 }
 
 export function crossCheckParityReceiptEvidence(receipt, evidence) {
