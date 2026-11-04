@@ -113,3 +113,14 @@ test('scalar canonical ID with substituted bytes is rejected',()=>{
   r.cases.find(x=>x.id==='canonical-add').source_sha256=d;
   assert.throws(()=>validateScalarParityReceipt(r),/canonical source mismatch for canonical-add/);
 });
+
+test('process-exit value must be bound to the observed exit status',()=>{
+  const r=v2();
+  r.cases[0].result_channel='process-exit';
+  // A receipt may not claim exit=42 solely from its self-reported result.
+  assert.throws(()=>validateParityReceipt(r),/observed exit status/);
+  r.cases[0].run_exit=41;
+  assert.throws(()=>validateParityReceipt(r),/observed exit status/);
+  r.cases[0].run_exit=42;
+  assert.equal(validateParityReceipt(r).case_count,3);
+});
