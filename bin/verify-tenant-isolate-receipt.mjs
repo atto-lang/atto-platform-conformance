@@ -54,9 +54,12 @@ export function verifyTenantIsolateReceipt(r,c) {
   else {
     if(!positive(e.executedSteps)) fail("zero-step/unexecuted CI is not evidence");
     if(e.workflowConclusion!=="success") fail("successful stepful run required");
-    if(typeof e.workflowRunUrl!=="string" ||
-       !/^https:\/\/github\.com\/ores-truffle-oreslang\/[a-zA-Z0-9._-]+\/actions\/runs\/[0-9]+$/.test(e.workflowRunUrl))
-      fail("unbound workflow run URL");
+    // A job from Java, another backend, or another organization is not this source runner.
+    const sourceUrl = backend ? `https://github.com/${backend[0]}/actions/runs/` : "";
+    if (typeof e.workflowRunUrl !== "string" || !backend ||
+        !e.workflowRunUrl.startsWith(sourceUrl) ||
+        !/^[1-9][0-9]*$/.test(e.workflowRunUrl.slice(sourceUrl.length)))
+      fail("workflow run URL must identify the exact source backend");
     if(level>=1) {
       if(e.realOresGuest!==true || e.compilerGenerated!==true ||
          e.targetExecuted!==true || e.hostReferenceOnly!==false)
