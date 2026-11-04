@@ -39,10 +39,11 @@ function checkCommon(report) {
   check(BACKENDS.includes(report.backend), 'backend');
   check(SHA.test(report.head_sha ?? ''), 'head SHA');
   check(SHA.test(report.tree_sha ?? ''), 'tree SHA');
-  // Compiler names are untrusted receipt labels, not log lines. A NUL/CR/LF
-  // can corrupt a human-readable evidence trail without altering job metadata.
+  // Compiler names are untrusted receipt labels, not log lines. Reject ASCII/C1
+  // controls, Unicode separators and bidi overrides that can forge or reorder
+  // a human-readable trail without changing authenticated job metadata.
   check(typeof report.compiler === 'string' && report.compiler.length > 0 &&
-    report.compiler.length <= 256 && !/[\u0000-\u001f\u007f]/.test(report.compiler), 'compiler');
+    report.compiler.length <= 256 && !/[\u0000-\u001f\u007f-\u009f\u2028-\u202e\u2066-\u2069]/.test(report.compiler), 'compiler');
   check(DIGEST.test(report.compiler_sha256 ?? ''), 'compiler digest');
   check(Number.isSafeInteger(report.run_id) && report.run_id > 0, 'run ID');
   check(Number.isSafeInteger(report.run_attempt) && report.run_attempt > 0, 'run attempt');
