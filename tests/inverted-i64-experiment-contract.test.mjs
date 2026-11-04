@@ -140,6 +140,24 @@ test("experimental i64 guest status cannot be represented as verified backend pa
   for (const key of ["exact_head_native_cpp20_ctest", "exact_head_native_asan_ubsan",
                      "exact_head_production_compiler_guest", "five_backend_guest_parity"])
     assert.equal(loan[key], "NOT_EXECUTED");
+  // A host detached-row snapshot is a value. Restricted LLVM MIR previously
+  // discarded this value; the emitter now fails closed instead of pretending
+  // that snapshots have working guest lowering. Keep the positive contract.
+  const snapshot = spec.current_guest_snapshot_lowering;
+  assert.equal(snapshot.hardening_commit_sha,
+    "415130d3748af471975f0172db36f54573605571");
+  assert.equal(snapshot.llvm_emitter_blob_sha,
+    "74c0201fc3861327ce131b992af08e73e2daec1f");
+  assert.equal(snapshot.compiler17_test_blob_sha,
+    "3ea406cdac5a9334235ef5709fe9802b3ef16b4d");
+  assert.equal(snapshot.guest_mode_blob_sha,
+    "e13781155981bf195a84c92b493398b366479dd7");
+  assert.equal(snapshot.native_guest_script_blob_sha,
+    "89ef857cd1f5c57abd98fc86437f72d6e9e45980");
+  assert.equal(snapshot.detached_snapshot_value_guest_lowering, "NOT_IMPLEMENTED");
+  for (const key of ["exact_head_cpp17_compiler_test", "exact_head_native_guest_test",
+                     "exact_head_sanitizer_test", "source_contract_snapshot_positive"])
+    assert.equal(snapshot[key], "NOT_EXECUTED");
   assert.equal(spec.implementation_pr,
     "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1213");
   assert.deepEqual(spec.limits.operations, [
