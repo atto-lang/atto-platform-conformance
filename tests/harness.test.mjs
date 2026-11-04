@@ -8,10 +8,23 @@ import {join} from "node:path";
 import {runSuite,validateCommand,validateManifestSchema,loadManifest,COMPILER_BACKENDS} from "../src/harness.mjs";
 const sha="012345678901234567890123456789abcdefabcd";
 const cmd=[process.execPath,new URL("./fake-checker.mjs",import.meta.url).pathname,"{file}"];
-const fixtureCount=5;
-const executableFixtureCount=2;
+// Pin the authored corpus, not just its length. The LiveView source fixture
+// added in #287 targets the five native backends, deliberately excluding JS.
+const EXPECTED_CASE_IDS=[
+ "int-arithmetic","unresolved-identifier",
+ "generator-sync","generator-async","generator-suspend",
+ "liveview-revision-order"
+];
+const fixtureCount=EXPECTED_CASE_IDS.length;
 const unsupportedFixtureCount=3;
-test("manifest parses exact fixtures",async()=>{const m=await loadManifest();assert.equal(m.cases.length,fixtureCount)});
+const executableFixtureCount=fixtureCount-unsupportedFixtureCount;
+const jsFixtureCount=fixtureCount-1;
+const jsExecutableFixtureCount=jsFixtureCount-unsupportedFixtureCount;
+test("manifest parses exact fixtures",async()=>{
+ const m=await loadManifest();
+ assert.deepEqual(m.cases.map(c=>c.id),EXPECTED_CASE_IDS);
+ assert.equal(m.cases.length,fixtureCount);
+});
 test("unsupported capability ledger is constrained to positive listed backends",()=>{
  const base={
   schemaVersion:1,
@@ -140,13 +153,19 @@ test("duplicate CLI selectors cannot silently replace compiler invocation or pro
 test("all six source compiler backends have target fixtures but none are verified without a real runner",async()=>{
  const manifest=await loadManifest();
  assert.deepEqual([...COMPILER_BACKENDS].sort(),["forge","java","js","llvm","net","wasm"].sort());
- for(const c of manifest.cases) assert.deepEqual([...c.backends].sort(),[...COMPILER_BACKENDS].sort());
+ for(const c of manifest.cases){
+  // Do not widen the native-only LiveView fixture to the JS compiler.
+  const required=c.id==="liveview-revision-order"
+    ?COMPILER_BACKENDS.filter(backend=>backend!=="js")
+    :COMPILER_BACKENDS;
+  assert.deepEqual([...c.backends].sort(),[...required].sort(),c.id);
+ }
  for(const backend of COMPILER_BACKENDS){
   const r=await runSuite({backend,requireConfigured:true});
   assert.equal(r.ok,false,backend);
   assert.equal(r.configured,false,backend);
   assert.equal(r.verified,0,backend);
-  assert.equal(r.skipped,manifest.cases.length,backend);
+  assert.equal(r.skipped,backend==="js"?jsFixtureCount:fixtureCount,backend);
   assert.ok(r.results.every(x=>x.status==="UNCONFIGURED"),backend);
  }
 });
@@ -154,8 +173,11 @@ test("missing real tools cannot yield verification for newly admitted backends",
  for(const backend of ["net","wasm","forge","js"]){
   const r=await runSuite({backend,argv:["/no/such/oreslang-compiler","{file}"],sourceSha:sha});
   assert.equal(r.ok,false,backend);
-  assert.equal(r.failed,fixtureCount,backend);
-  assert.equal(r.results.filter(x=>x.status==="SPAWN_ERROR").length,executableFixtureCount,backend);
+  // JS is deliberately excluded from the native-only LiveView row.
+  const isJs=backend==="js";
+  assert.equal(r.failed,isJs?jsFixtureCount:fixtureCount,backend);
+  assert.equal(r.results.filter(x=>x.status==="SPAWN_ERROR").length,
+    isJs?jsExecutableFixtureCount:executableFixtureCount,backend);
   assert.equal(r.results.filter(x=>x.status==="UNSUPPORTED").length,unsupportedFixtureCount,backend);
  }
  await assert.rejects(runSuite({backend:"not-a-compiler"}),/unknown backend/);
