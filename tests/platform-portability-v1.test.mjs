@@ -77,6 +77,14 @@ test("ten pinned native .ores fixtures are regular non-symlink files with matchi
     assert.equal(createHash("sha256").update(bytes).digest("hex"),c.sha256,c.id);
   }
 });
+test("frozen v1 legacy .ores corpus cannot be silently renamed to .atto",()=>{
+  // AttoLang defaults to .atto for new source. The already pinned v1 .ores
+  // fixtures require a separately versioned contract and source SHA update.
+  const changed=structuredClone(contract);
+  changed.cases[0].file="scalar-42.atto";
+  assert.throws(()=>validateContract(changed),/fixture identity drift/);
+  assert.equal(contract.cases[0].file,"scalar-42.ores");
+});
 test("five toolchain lanes cover Java LLVM Wasm Cranelift and .NET",()=>{
   assert.deepEqual(TOOLCHAINS,["java","llvm","wasm","cranelift","net"]);
   assert.deepEqual(PLATFORMS,["mobile","desktop","embedded","iot","fpga","asic"]);
