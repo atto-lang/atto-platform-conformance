@@ -21,7 +21,7 @@ const mk = () => {
     runId:100,
     jobId:200,
     attempt:1,
-    runnerJobUrl:'https://github.com/example-org/example-repo/actions/runs/100/job/200',
+    runnerJobUrl:'https://github.com/ores-truffle-oreslang/oreslang-source.llvm/actions/runs/100/job/200',
     steps:[
       {name:'compiler_build',number:1,executed:true,conclusion:'success'},
       {name:'guest_compile',number:2,executed:true,conclusion:'success'},
@@ -65,6 +65,7 @@ test('valid receipt remains candidate-only across all backends', () => {
   for (const backend of ['java','llvm','net','wasm','cranelift','forge']) {
     const receipt = mk();
     receipt.backend = backend;
+    receipt.runnerJobUrl = `https://github.com/ores-truffle-oreslang/oreslang-source.${backend}/actions/runs/100/job/200`;
     const result = verifyCompiledActorHeap(receipt, source);
     assert.equal(result.classification, 'CANDIDATE_TRACE_ONLY');
     assert.equal(result.independentlyAttested, false);
@@ -104,3 +105,10 @@ denied('deny missing compiled artifact SHA', r => {r.artifactSha256='0'.repeat(6
 denied('deny stale fixture pin', r => {r.sourceGitBlobSha1='e'.repeat(40);});
 denied('deny changed fixture bytes', (_,bytes) => {bytes[5] = bytes[5] === 88 ? 89 : 88;});
 denied('deny invented backend', r => {r.backend='js';});
+
+denied('deny job URL borrowed from another source backend', r => {
+  r.runnerJobUrl='https://github.com/ores-truffle-oreslang/oreslang-source.java/actions/runs/100/job/200';
+}, /exact backend source repository/);
+denied('deny job URL from another organization', r => {
+  r.runnerJobUrl='https://github.com/outside-org/oreslang-source.llvm/actions/runs/100/job/200';
+}, /exact backend source repository/);
