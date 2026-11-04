@@ -217,3 +217,13 @@ test('checked-i64 operand slots fail closed without invoking accessors',()=>{
   extra[Symbol('hidden')]=L(99);
   assert.throws(()=>evaluateCheckedI64({op:'add',args:extra}),/invalid expression argument array/);
 });
+
+test('checked-i64 nested intermediate failure cannot be canceled later',()=>{
+  const intermediateAdd=B('sub',B('add',L('9223372036854775807'),L(1)),L(1));
+  const intermediateNeg=B('add',{op:'neg',args:[L('-9223372036854775808')]},L(1));
+  for(const expr of [intermediateAdd,intermediateNeg])
+    assert.throws(()=>evaluateCheckedI64(expr),/integer_overflow/);
+  assert.throws(()=>evaluateCheckedI64(B('div_trunc',L(1),L(0))),/division_by_zero/);
+  assert.throws(()=>evaluateCheckedI64(L('-0')),/noncanonical signed decimal literal/);
+  assert.equal(evaluateCheckedI64(B('rem',L('-9223372036854775808'),L(-1))),0n);
+});
