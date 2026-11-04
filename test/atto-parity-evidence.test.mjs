@@ -85,3 +85,15 @@ test('GitHub evidence timestamps must be canonical UTC and calendar-valid',()=>{
   assert.equal(crossCheckParityReceiptEvidence(v.receipt,v.evidence).publicly_promotable,false);
  }
 });
+
+test('reject a successful job with an additional pending or running step',()=>{
+ for(const status of ['pending','queued','in_progress']){
+  const v=good();
+  v.evidence.job.steps.push({number:3,name:'Run unexecuted guest',status,conclusion:null});
+  assert.throws(()=>crossCheckParityReceiptEvidence(v.receipt,v.evidence),
+    /unfinished step in completed job/,status);
+ }
+ const v=good();
+ v.evidence.job.steps.push({number:3,name:'Optional cleanup',status:'completed',conclusion:'skipped'});
+ assert.equal(crossCheckParityReceiptEvidence(v.receipt,v.evidence).publicly_promotable,false);
+});

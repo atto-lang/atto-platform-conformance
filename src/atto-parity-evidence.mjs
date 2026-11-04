@@ -70,7 +70,9 @@ export function crossCheckParityReceiptEvidence(receipt, evidence) {
       typeof s.name === 'string' && s.name.length > 0 && s.name.length <= 512,
       'step identity');
     uniqueNumbers.add(s.number);
-    requireEvidence(['completed','queued','in_progress','pending'].includes(s.status), 'step status');
+    // A completed GitHub Actions job cannot certify a still-pending step.
+    // A forged extra pending step previously passed when one user step succeeded.
+    requireEvidence(s.status === 'completed', 'unfinished step in completed job');
     requireEvidence(s.conclusion === 'success' || s.conclusion === 'skipped' || s.conclusion === 'neutral' ||
       s.conclusion === null, 'step conclusion');
     if (s.status === 'completed' && s.conclusion === 'success') {
