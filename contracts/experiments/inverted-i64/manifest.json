@@ -185,5 +185,18 @@
     "source_tree_sha": "835ba119b7cabee610805295711e0a91b5fe3b5a",
     "workflow_blob_sha": "3de6ea1b94f43f83e5b05b43e868af61c5002e50",
     "full_oreslang_llvmc_gcc_clang_ctest": "CODE_STAGED_NOT_EXECUTED"
+  },
+  "current_native_handle_loan": {
+    "implementation_pr": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1213",
+    "llvm_head_commit_sha": "6206c678b29831aef57471e8d9700c9ac39f23c8",
+    "llvm_head_tree_sha": "ec2036b463ed000efa1a3ee4d25a6bf7cd8a746a",
+    "native_header_blob_sha": "6c61ac557c0d7be0d2c894486833fbb28918d521",
+    "native_test_blob_sha": "31d0149b7b09cc1211af35f4cb42c30a36bae4c5",
+    "scope": "host-only generation/issuer/owner-checked loan access and adversarial tests; raw physical index remains host-trusted, guest codegen and nonescape unproved",
+    "local_source_free_api_shape_smoke": "GCC/Clang C++20 normal and ASan/UBSan checked a separate synthetic model; NOT the checked-in runtime source",
+    "exact_head_native_cpp20_ctest": "NOT_EXECUTED",
+    "exact_head_native_asan_ubsan": "NOT_EXECUTED",
+    "exact_head_production_compiler_guest": "NOT_EXECUTED",
+    "five_backend_guest_parity": "NOT_EXECUTED"
   }
 }
