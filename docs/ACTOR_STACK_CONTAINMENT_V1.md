@@ -35,9 +35,15 @@ process survival under arbitrary native recursion.
    uncommitted message replay.
 6. Execute low-stack builds in actual native deployments: JVM/GraalVM, LLVM,
    .NET NativeAOT, Wasm engine, and Cranelift. Keep compiler-generated frames
-   and host/native interop paths under budgets. Untrusted native/JIT guest
-   code whose execution is not bounded must be inside a killable worker
-   process or equivalent OS-level fault containment.
+   and host/native interop paths under budgets. **For Wasmtime**, setting
+   `max_wasm_stack` bounds Wasm frames but does not prove that the embedding
+   carrier thread has that much native stack available. Host callbacks can
+   still exhaust the carrier, causing a process abort. Reserve for host frames,
+   check `max_wasm_stack` against actual carrier/async stack capacity, and
+   run low-stack hostcall/reentrant-Wasm failure tests. See
+   https://docs.wasmtime.dev/api/wasmtime/struct.Config.html .
+   Untrusted native/JIT guest code whose execution is not bounded must be
+   inside a killable worker process or equivalent OS-level fault containment.
 
 **Never** resume a shared carrier by catching Java `StackOverflowError`,
 CLR `StackOverflowException`, SIGSEGV/SIGBUS or arbitrary native faults.
