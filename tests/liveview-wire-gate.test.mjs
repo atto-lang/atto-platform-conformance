@@ -109,3 +109,7 @@ for(const [label,mutate] of [
     assert.throws(()=>validateSixBackendReceipt(sample,fixture),/LIVEVIEW_WIRE_GATE/);
   });
 }
+
+test('Git blob header is canonical: blob SPACE length NUL bytes',()=>{
+  assert.equal(gitBlob(''), 'e69de29bb2d1d6434b8b29ae775ad8c2e48c5391');
+});

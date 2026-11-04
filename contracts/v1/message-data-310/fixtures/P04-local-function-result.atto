@@ -1,0 +1,8 @@
+fnc apply(Fnc<int, int> fn, int value): int { return fn(value); }
+pub routine main(): void {
+  val Fnc<int, int> twice = |x| -> { return x * 2; };
+  val Channel<int> ch = Channel.new<int>(1);
+  writech ch, apply(twice, 21);
+  stdio.stdout.write(readch ch);
+  return;
+}

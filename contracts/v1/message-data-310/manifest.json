@@ -1,0 +1,140 @@
+{
+  "schema": "attolang.message-data.310.v1",
+  "issue": "https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/310",
+  "state": "DRAFT_UNEXECUTED",
+  "required_backends": [
+    "java-graalvm",
+    "llvm",
+    "wasm",
+    "cranelift",
+    "net-nativeaot"
+  ],
+  "limits": {
+    "depth": 128,
+    "nodes": 65536,
+    "select_cases": 256
+  },
+  "cases": [
+    {
+      "id": "P01",
+      "kind": "guest-positive",
+      "stdout": "42",
+      "fixture": "contracts/v1/message-data-310/fixtures/P01-channel-int.atto",
+      "fixture_git_blob_sha1": "01757f0679c7685fd0cb4b1542fb14ef156612bc"
+    },
+    {
+      "id": "P02",
+      "kind": "guest-positive",
+      "stdout": "true",
+      "fixture": "contracts/v1/message-data-310/fixtures/P02-channel-option-list.atto",
+      "fixture_git_blob_sha1": "a647ba11e63fe8719bd606bfa4f8b687322486cd"
+    },
+    {
+      "id": "P03",
+      "kind": "guest-positive",
+      "stdout": "subscribed|p-1",
+      "fixture": "contracts/v1/message-data-310/fixtures/P03-topic-string.atto",
+      "fixture_git_blob_sha1": "9d86b61739dae925995068fa8fb368094aa6aed5"
+    },
+    {
+      "id": "P04",
+      "kind": "guest-positive",
+      "stdout": "42",
+      "fixture": "contracts/v1/message-data-310/fixtures/P04-local-function-result.atto",
+      "fixture_git_blob_sha1": "a8746ce0a1c12b72b4786b8be1f160b217e4d155"
+    },
+    {
+      "id": "N01",
+      "kind": "type-negative",
+      "diagnostic_category": "CALLABLE_TRANSPORT",
+      "fixture": "contracts/v1/message-data-310/fixtures/N01-channel-function.atto",
+      "fixture_git_blob_sha1": "e20c5e9e7d2ffa7e521823e7b3f2d1e9a23f38c5"
+    },
+    {
+      "id": "N02",
+      "kind": "type-negative",
+      "diagnostic_category": "CALLABLE_TRANSPORT",
+      "fixture": "contracts/v1/message-data-310/fixtures/N02-channel-nested-function.atto",
+      "fixture_git_blob_sha1": "d9814c91bd822e76978431709873b6ee0ebf7650"
+    },
+    {
+      "id": "N03",
+      "kind": "type-negative",
+      "diagnostic_category": "CALLABLE_TRANSPORT",
+      "fixture": "contracts/v1/message-data-310/fixtures/N03-class-callable-field.atto",
+      "fixture_git_blob_sha1": "90761467188d2cb1cbfa391940f889a26f31b508"
+    },
+    {
+      "id": "N04",
+      "kind": "type-negative",
+      "diagnostic_category": "CALLABLE_TRANSPORT",
+      "fixture": "contracts/v1/message-data-310/fixtures/N04-select-callable.atto",
+      "fixture_git_blob_sha1": "fc760e66de13068ed3a0b35a241ab5d224550aeb"
+    },
+    {
+      "id": "N05",
+      "kind": "type-negative",
+      "diagnostic_category": "CALLABLE_TRANSPORT",
+      "fixture": "contracts/v1/message-data-310/fixtures/N05-topic-callable.atto",
+      "fixture_git_blob_sha1": "d6dfe17a9ab5f76c0ec0d7df00aefe08f2d655cb"
+    },
+    {
+      "id": "N06",
+      "kind": "type-negative",
+      "diagnostic_category": "CALLABLE_TRANSPORT",
+      "fixture": "contracts/v1/message-data-310/fixtures/N06-topic-nested-callable.atto",
+      "fixture_git_blob_sha1": "3bf2e34aef33af7c547f9024797dbbf61120a5a9"
+    },
+    {
+      "id": "N07",
+      "kind": "runtime-negative",
+      "diagnostic_category": "CALLABLE_TRANSPORT",
+      "injection": "host-bound-method-value"
+    },
+    {
+      "id": "N08",
+      "kind": "runtime-negative",
+      "diagnostic_category": "CALLABLE_TRANSPORT",
+      "injection": "host-closure-in-list-map"
+    },
+    {
+      "id": "N09",
+      "kind": "type-negative",
+      "diagnostic_category": "BORROWED_PAYLOAD",
+      "fixture": "contracts/v1/message-data-310/fixtures/N09-channel-borrow.atto",
+      "fixture_git_blob_sha1": "aff2ca599a2456b3016265fc5e2ba48f9cae8d85"
+    },
+    {
+      "id": "N10",
+      "kind": "type-negative",
+      "diagnostic_category": "MESSAGE_DATA_REQUIRED",
+      "fixture": "contracts/v1/message-data-310/fixtures/N10-topic-shared-mutex.atto",
+      "fixture_git_blob_sha1": "5da97ea31559f1a7e3788e48af0659d9b994a717"
+    },
+    {
+      "id": "S01",
+      "kind": "type-negative",
+      "diagnostic_category": "MESSAGE_DATA_REQUIRED",
+      "fixture": "contracts/v1/message-data-310/fixtures/S01-channel-nominal.atto",
+      "fixture_git_blob_sha1": "a9b37d0341625961fa5d7a2348fc718137b89f25"
+    },
+    {
+      "id": "S02",
+      "kind": "type-negative",
+      "diagnostic_category": "MESSAGE_DATA_REQUIRED",
+      "fixture": "contracts/v1/message-data-310/fixtures/S02-topic-nominal.atto",
+      "fixture_git_blob_sha1": "5d5e403d6be2d2f1ce02f4196a51408e3768b100"
+    }
+  ],
+  "security_runtime_assertions": [
+    "reject-cyclic-graph",
+    "reject-depth-over-128",
+    "reject-nodes-over-65536",
+    "reject-foreign-collection-callback-before-enumeration",
+    "reject-dynamic-select-over-256",
+    "detach-before-enqueue-or-select-arming",
+    "reject-nominal-owner-injection",
+    "reject-topic-actorref",
+    "preserve-fair-select-cursor"
+  ]
+}
