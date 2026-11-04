@@ -10,7 +10,11 @@ class ReferenceRuntime {
   #issued = new WeakSet();
   #keys = new WeakSet();
   key(scope,type) {
-    if (!kinds.includes(scope) || !type) throw new TypeError('invalid key');
+    // This reference model supports only immutable scalar snapshots.
+    // Accepting key.type='object' would preserve mutable JS aliases and
+    // incorrectly classify host pointers/capabilities as safe guest locals.
+    if (!kinds.includes(scope) || !['number','string','boolean'].includes(type))
+      throw new TypeError('unsupported scoped-local value type');
     const key=Object.freeze({scope,type}); this.#keys.add(key); return key;
   }
   admit(scope,identity,{slots=32,bytes=8192}={}) {
@@ -111,6 +115,18 @@ test('cross-scope keys, fabricated tickets, wrong types and retirement fail clos
   assert.equal(r.set(task,k,task.ticket,3),false);
   assert.ok(r.set(task,k,task.ticket,'ok'));
   r.close(task);assert.equal(r.set(task,k,task.ticket,'stale'),false);
+});
+
+test('mutable host objects and foreign aliases cannot become scoped-local snapshots',()=>{
+  const r=new ReferenceRuntime();
+  for(const scope of kinds) {
+    assert.throws(()=>r.key(scope,'object'),TypeError);
+    assert.throws(()=>r.key(scope,'function'),TypeError);
+    const scalar=r.key(scope,'string'),s=r.admit(scope,id(scope+'-owner'));
+    assert.equal(r.set(s,scalar,s.ticket,{capability:true}),false);
+    assert.equal(r.get(s,scalar,s.ticket),undefined);
+    assert.ok(r.set(s,scalar,s.ticket,'immutable snapshot'));
+  }
 });
 
 test('slot and UTF-8 byte exhaustion preserve previous values',()=>{
