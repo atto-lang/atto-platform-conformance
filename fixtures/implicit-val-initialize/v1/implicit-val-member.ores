@@ -1,0 +1,7 @@
+define class Connection as
+  pub int connection_id: 42;
+end
+pub fnc main(): int {
+  val Connection c = new Connection();
+  return c.connection_id;
+}
