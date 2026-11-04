@@ -18,13 +18,15 @@ test("LLVM local host evidence does not promote compiler-backed guest parity", (
  assert.deepEqual(v.nativeHost.sanitizers, ["ASan","UBSan"]);
  assert.equal(v.nativeHost.hostedExecutedSteps, 0);
  assert.equal(v.nativeHost.hostedStatus, "NOT_EXECUTED");
- assert.equal(v.m1Descriptor.status, "LOCAL_HOST_HELPER_ONLY");
- assert.equal(v.m1Descriptor.assertionsPerCompiler, 29);
+ assert.equal(v.m1Descriptor.status, "LOCAL_HOST_HELPER_AND_ELF_LINKER_ONLY");
+ assert.equal(v.m1Descriptor.assertionsPerCompiler, 31);
+ assert.equal(v.m1Descriptor.localElfLinkerCanary, "PASSED_SOURCE_FREE_LLVM_IR_ONLY");
+ assert.equal(v.m1Descriptor.embeddedDescriptorProof, "NOT_EXECUTED");
  assert.equal(v.m1Descriptor.hostedExecutedSteps, 0);
  assert.equal(v.m1Descriptor.compilerDriverExecution, "NOT_EXECUTED");
  assert.equal(v.m1Descriptor.guestNativeExecution, "NOT_EXECUTED");
  assert.equal(v.guestParity, "NOT_EXECUTED");
- assert.equal(v.aotDescriptorEmbedding, "NOT_IMPLEMENTED");
+ assert.equal(v.aotDescriptorEmbedding, "SOURCE_IMPLEMENTED_NOT_EXECUTED");
  assert.equal(v.liveMcpTransport, "NOT_IMPLEMENTED");
  assert.equal(v.mergeReady, false);
 });

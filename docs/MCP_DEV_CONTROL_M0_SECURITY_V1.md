@@ -44,3 +44,8 @@ The reference model does all allowlist, replay and request-ID checks synchronous
 ### M2-specific obligations still open
 
 Trustworthy OS-peer identification and boot-bound credential issuance; duplicate-key rejection on the actual transport; cross-process replay-cache atomicity where relevant; bounded global unauthenticated requests; real transport cancellation/disconnect and timeouts; response serialization budget; durable append-only audit; exact-head stepful CI; and independent security approval. Do not enable the server or upgrades on the strength of this M0 model.
+
+
+## LLVM M1 native ELF descriptor embedding implementation (not promoted)
+
+LLVM draft PR #1364 head `765830aef05fde697a999784601012525746d3de` (tree `a014ec76e4eb6fe9652d4a51dcf2036164acb54e`) now contains an opt-in `--mcp-embed-descriptors` compiler path and a fail-closed Python test that *requires* actual compilation, linking, native execution and ELF section extraction. Local GCC/Clang M1 descriptor helper tests: 31 checks in each optimized and ASan/UBSan build. An independent source-free LLVM `llvm.used` ELF linker canary passed. These are NOT evidence that the private LLVM compiler built or a `.atto` guest executed: hosted run `41765646913` reported `runner_id=0`, `steps=[]`. Until exact-head stepful CI confirms that compiler-backed fixture, label AOT embedding **SOURCE_IMPLEMENTED_NOT_EXECUTED**. Live MCP transport, credential/generation enforcement, and cross-backend guest parity remain unimplemented/unproven. LLVM PR #1364 is stacked on M0 PR #1361 and both remain draft.
