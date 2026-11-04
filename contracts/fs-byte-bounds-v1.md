@@ -16,8 +16,13 @@ this narrow contract silently overrides.
 ## Safety boundaries
 
 Authorization checks lexical scope BEFORE filesystem metadata or existence
-probes and separately checks the resolved path; symlinked leaf paths are
-denied. One opened NOFOLLOW descriptor must limit reads both initially and
+probes and separately checks the resolved path. Leaf symlinks and ANY symlinked
+ancestor of a scoped path must be denied **before** the restricted target is
+canonicalized: both an existing and a missing target must fail at the same
+symlink boundary, never disclose existence through different resolve errors.
+These rules extend the existing FS-07, FS-12 and FS-13 vectors without
+renumbering or falsely asserting backend implementation. One opened NOFOLLOW
+descriptor must limit reads both initially and
 while bytes are arriving, reject malformed UTF-8 without exposing partial
 text, and never exceed the caller's byte budget. The proposed Java API's
 maximum is 16 MiB, and REST uses a 1 MiB persisted-resource budget.

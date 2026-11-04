@@ -88,3 +88,22 @@ test("unsafe policy relaxation and invented five-backend certification fail", as
   assert.equal(auditFsByteBoundsContract(modify(x, m => m.authority.snapshotConsistencyClaimed = true)).ok, false);
   assert.equal(auditFsByteBoundsContract(modify(x, m => m.api.canonicalBlockingSuffix = "")).ok, false);
 });
+
+test("parent-symlink existing and missing targets must deny before path resolution", async () => {
+  const x = await read();
+  assert.equal(auditFsByteBoundsContract(x).ok, true);
+  assert.equal(auditFsByteBoundsContract(modify(x, m => {
+    m.authority.rejectAncestorSymlinkBeforeCanonicalResolution = false;
+  })).ok, false);
+  assert.equal(auditFsByteBoundsContract(modify(x, m => {
+    m.authority.parentSymlinkExistingMissingDenyEqually = false;
+  })).ok, false);
+  for (const id of ["FS-07", "FS-12", "FS-13"]) {
+    assert.equal(auditFsByteBoundsContract(modify(x, m => {
+      m.vectors.find(v => v.id === id).ancestorSymlinkCases = ["existing"];
+    })).ok, false);
+    assert.equal(auditFsByteBoundsContract(modify(x, m => {
+      m.vectors.find(v => v.id === id).denialPhase = "after-resolution";
+    })).ok, false);
+  }
+});
