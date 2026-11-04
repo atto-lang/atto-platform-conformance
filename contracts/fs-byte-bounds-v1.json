@@ -61,7 +61,9 @@
     "readSameOpenedDescriptor": true,
     "boundStreamingWhileFileGrows": true,
     "snapshotConsistencyClaimed": false,
-    "parentRenameRaceEliminated": false
+    "parentRenameRaceEliminated": false,
+    "rejectAncestorSymlinkBeforeCanonicalResolution": true,
+    "parentSymlinkExistingMissingDenyEqually": true
   },
   "vectors": [
     {
@@ -104,7 +106,12 @@
       "id": "FS-07",
       "kind": "read",
       "case": "parent-symlink-escape",
-      "expected": "deny"
+      "expected": "deny",
+      "ancestorSymlinkCases": [
+        "existing",
+        "missing"
+      ],
+      "denialPhase": "before-canonical-resolution"
     },
     {
       "id": "FS-08",
@@ -134,13 +141,23 @@
       "id": "FS-12",
       "kind": "write",
       "case": "parent-symlink-out-of-scope",
-      "expected": "deny"
+      "expected": "deny",
+      "ancestorSymlinkCases": [
+        "existing",
+        "missing"
+      ],
+      "denialPhase": "before-canonical-resolution"
     },
     {
       "id": "FS-13",
       "kind": "size",
       "case": "byte-count-and-permission-before-probe",
-      "expected": "accept-or-deny"
+      "expected": "accept-or-deny",
+      "ancestorSymlinkCases": [
+        "existing",
+        "missing"
+      ],
+      "denialPhase": "before-canonical-resolution"
     },
     {
       "id": "FS-14",
