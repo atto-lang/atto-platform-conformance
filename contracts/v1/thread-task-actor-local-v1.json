@@ -2,6 +2,9 @@
   "schema": "oreslang.thread-task-actor-local.contract/1",
   "status": "TARGET_NOT_IMPLEMENTED",
   "language": "AttoLang (Oreslang compatibility naming)",
+  "canonicalSourceExtension": ".atto",
+  "legacySourceExtension": ".ores",
+  "ownershipTransferKeyword": "rt take",
   "backends": [
     "java",
     "llvm",
