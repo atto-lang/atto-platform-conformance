@@ -124,3 +124,18 @@ test('process-exit value must be bound to the observed exit status',()=>{
   r.cases[0].run_exit=42;
   assert.equal(validateParityReceipt(r).case_count,3);
 });
+
+test('typed i64 receipt text has a finite 20-character admission budget',()=>{
+  for (const numeral of ['9'.repeat(100_000),'-'+'0'.repeat(100_000), '0'.repeat(100_000)]) {
+    const r=v2();
+    r.cases[0].result_i64=numeral;
+    assert.throws(()=>validateParityReceipt(r),/positive i64 result/);
+    r.cases[0].result_i64='42';
+    r.cases[0].expected_i64=numeral;
+    assert.throws(()=>validateParityReceipt(r),/expected i64 result/);
+  }
+  const r=v2();
+  r.cases[0].result_i64='-9223372036854775808';
+  r.cases[0].expected_i64='-9223372036854775808';
+  assert.equal(validateParityReceipt(r).case_count,3);
+});
