@@ -1,0 +1,576 @@
+{
+  "schemaVersion": 1,
+  "contract": "attolang.aot-reflection/1",
+  "status": "candidate-unattested",
+  "originalDesign": "https://chatgpt.com/share/6ae8ab63-a31c-83e9-a8ac-7bb1f158d410",
+  "backends": {
+    "java": "GraalVM Native Image",
+    "llvm": "LLVM native object and executable",
+    "wasm": "Wasm AOT or precompiled module in isolated runtime",
+    "forge": "independent Cranelift/Forge AOT",
+    "net": ".NET NativeAOT publish"
+  },
+  "api": {
+    "type_of": "type_of<T>()",
+    "fields_of": "fields_of<T>() or type_descriptor.fields()",
+    "methods_of": "methods_of<T>() or type_descriptor.methods()",
+    "implements": "implements<T,I>()",
+    "status": "proposed semantic names; syntax and parser acceptance not established"
+  },
+  "descriptor": {
+    "encoding": "canonical versioned immutable table",
+    "identity": [
+      "verified-package-identity",
+      "fully-resolved-type-symbol",
+      "closed-generic-arguments",
+      "schema-abi-version"
+    ],
+    "layout": "target-specific ABI section separated from portable metadata",
+    "handles": "opaque read-only bounded indices; never guest raw pointers",
+    "visibility": "public metadata by default; private and live state gated separately by runtime-issued authority",
+    "retention": "opt-in per reachable type and capability; unused tables subject to verified linker dead-code elimination",
+    "hotLoad": "precompiled signed or hash-pinned modules; ABI version and generation fences"
+  },
+  "nonGoals": [
+    "runtime Reflection.Emit",
+    "runtime bytecode generation",
+    "JIT-required semantics",
+    "runtime source evaluation",
+    "unguarded dynamic invocation",
+    "unbounded classpath scanning",
+    "descriptor access that bypasses borrow rules"
+  ],
+  "evidenceRequired": [
+    "exact-source-commit-and-tree-sha",
+    "compiler-binary-sha256-and-build-provenance",
+    "fixture-sha256",
+    "nonzero-executed-job-steps",
+    "actual-guest-compiler-invocation",
+    "compiled-native-or-aot-artifact-sha256",
+    "native-or-wasm-aot-guest-execution",
+    "asserted-reflection-output-and-denials",
+    "linker-retention-inspection",
+    "independent-review"
+  ],
+  "cases": [
+    {
+      "id": "type_of.closed_nominal",
+      "kind": "compile-and-run",
+      "oracle": "type_of<T>() returns a read-only descriptor for a reachable nominal T",
+      "mustProve": [
+        "compile-time-symbol-resolution",
+        "no-runtime-class-discovery"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "fields_of.public_order",
+      "kind": "compile-and-run",
+      "oracle": "public fields enumerate in source declaration order with stable names and types",
+      "mustProve": [
+        "read-only-metadata",
+        "deterministic-field-order"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "methods_of.static_signatures",
+      "kind": "compile-and-run",
+      "oracle": "methods enumerate resolved signatures and explicit visibility without code handles",
+      "mustProve": [
+        "closed-dispatch-set",
+        "no-callable-pointer-exposure"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "implements.static_witness",
+      "kind": "compile-and-run",
+      "oracle": "implements<T, I>() uses a statically proven trait/interface witness",
+      "mustProve": [
+        "no-mutable-runtime-implementation-registry"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "generics.closed_specialization",
+      "kind": "compile-and-run",
+      "oracle": "a reachable generic specialization has one resolved canonical descriptor",
+      "mustProve": [
+        "finite-generic-closure"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "private_field.redacted",
+      "kind": "runtime-deny",
+      "oracle": "an unprivileged descriptor never reveals private field identity or values",
+      "mustProve": [
+        "no-information-leak"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "actor_state.unauthorized",
+      "kind": "runtime-deny",
+      "oracle": "actor and state-container metadata never grants access to live state",
+      "mustProve": [
+        "actor-isolation",
+        "capability-denied"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "actor_state.authorized_snapshot",
+      "kind": "compile-and-run",
+      "oracle": "a runtime-authorized immutable state snapshot is generation-fenced and loan-safe",
+      "mustProve": [
+        "runtime-issued-capability",
+        "copy-or-borrow-under-guard"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "tenant.foreign_denied",
+      "kind": "runtime-deny",
+      "oracle": "one tenant cannot inspect a foreign tenant's private instance state",
+      "mustProve": [
+        "tenant-isolation"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "actor_generation.stale_denied",
+      "kind": "runtime-deny",
+      "oracle": "an old activation's inspection ticket cannot inspect its replacement",
+      "mustProve": [
+        "generation-fenced-tickets"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "field_reference.no_escape",
+      "kind": "compile-reject",
+      "oracle": "a borrowed reflective field view cannot escape its ownership lifetime",
+      "mustProve": [
+        "compile-time-borrow-check"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "descriptor.no_raw_pointer",
+      "kind": "compile-reject",
+      "oracle": "metadata APIs cannot reveal raw pointers, offsets, mutable field aliases, or method pointers",
+      "mustProve": [
+        "opaque-descriptor-handles"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "descriptor.no_implicit_invoke",
+      "kind": "compile-reject",
+      "oracle": "metadata lookup alone does not permit reflective method invocation",
+      "mustProve": [
+        "explicit-invocation-capability-required"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "runtime_generic.no_specialize",
+      "kind": "compile-reject",
+      "oracle": "runtime generic instantiation is not a substitute for AOT specialization",
+      "mustProve": [
+        "no-runtime-codegen"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "runtime_eval.forbidden",
+      "kind": "compile-reject",
+      "oracle": "runtime eval/AST-to-code fallback is rejected in full-AOT profile",
+      "mustProve": [
+        "no-eval"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "runtime_proxy.forbidden",
+      "kind": "compile-reject",
+      "oracle": "runtime bytecode, Reflection.Emit, or dynamic proxy generation is not required",
+      "mustProve": [
+        "no-dynamic-assembly"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "classpath_scan.forbidden",
+      "kind": "artifact-inspection",
+      "oracle": "a native executable performs no runtime classpath discovery for reflection",
+      "mustProve": [
+        "no-classpath-scan"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "serializer.compiler_generated",
+      "kind": "compile-and-run",
+      "oracle": "reachable serializers use finite compile-time generated accessors",
+      "mustProve": [
+        "no-reflection-serializer-fallback"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "metadata.deterministic",
+      "kind": "build-metadata",
+      "oracle": "same sources, declared inputs, toolchain and target reproduce identical canonical descriptor bytes",
+      "mustProve": [
+        "stable-sort-and-encoding"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "metadata.layout_target_specific",
+      "kind": "build-metadata",
+      "oracle": "portable type identity does not export platform-specific memory offsets or layouts",
+      "mustProve": [
+        "abi-separation"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "type_id.collision_denied",
+      "kind": "runtime-deny",
+      "oracle": "ambiguous type identities or descriptor hash collisions fail closed",
+      "mustProve": [
+        "collision-check"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "metadata.malformed_denied",
+      "kind": "runtime-deny",
+      "oracle": "malformed or out-of-bounds descriptor sections are refused before lookup",
+      "mustProve": [
+        "bounded-reads"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "metadata.bounded",
+      "kind": "artifact-inspection",
+      "oracle": "metadata counts, offsets and lengths use checked bounds and cannot overflow",
+      "mustProve": [
+        "bounded-resource-use"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "retention.unused_stripped",
+      "kind": "artifact-inspection",
+      "oracle": "unreachable, non-retained descriptors are physically absent from final binary",
+      "mustProve": [
+        "tree-shaking-evidence"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "retention.explicit_root",
+      "kind": "artifact-inspection",
+      "oracle": "explicitly rooted metadata is present without retaining unrelated application code",
+      "mustProve": [
+        "opt-in-retention"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "retention.unauthorized_root",
+      "kind": "compile-reject",
+      "oracle": "source metadata annotations cannot mint private/tenant/actor inspection authority",
+      "mustProve": [
+        "no-authority-from-retention"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "hot_load.verified_module",
+      "kind": "compile-and-run",
+      "oracle": "precompiled versioned module with matching ABI/schema/capabilities is admitted",
+      "mustProve": [
+        "precompiled-only",
+        "generation-pinned"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "hot_load.abi_mismatch",
+      "kind": "runtime-deny",
+      "oracle": "mismatched precompiled module schema or ABI is refused before publication",
+      "mustProve": [
+        "fail-closed-version-negotiation"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "hot_load.generation_fence",
+      "kind": "compile-and-run",
+      "oracle": "old descriptor handles are revoked or pinned safely during hot reload",
+      "mustProve": [
+        "quiescent-retirement"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "jit_escape.forbidden",
+      "kind": "artifact-inspection",
+      "oracle": "native image executes without required JIT, dynamic IL, interpreter or compilation service",
+      "mustProve": [
+        "native-code-provenance"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "aot.native_execution",
+      "kind": "compile-and-run",
+      "oracle": "compiler-produced guest program queries reflection from an AOT artifact",
+      "mustProve": [
+        "exact-head-and-tree",
+        "stepful-guest-execution"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "isolate.no_mixed_authority",
+      "kind": "runtime-deny",
+      "oracle": "descriptors from other isolates cannot be reused as authority-bearing tickets",
+      "mustProve": [
+        "isolate-generation-fence"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+define class Counter as
+  pub static fnc down(int n): int {
+    return n == 0 ? 0 : Counter.down(n - 1);
+  }
+end
+pub routine main(): void {
+  stdio.stdout.write(Counter.down(100000));
+  return;
+}

@@ -1,0 +1,443 @@
+{
+  "schemaVersion": 1,
+  "contract": "state-container-virtual-actor-v1",
+  "status": "candidate-unattested",
+  "backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "forge",
+    "net"
+  ],
+  "syntax": {
+    "stateContainer": "define state container",
+    "virtualActor": "define virtual actor",
+    "grainAlias": false,
+    "contextualIdentifiers": [
+      "state",
+      "virtual"
+    ]
+  },
+  "sourceStatus": "illustrative-candidate-not-compiler-verified",
+  "promotionRequired": [
+    "source-commit-and-tree-sha",
+    "fixture-sha256",
+    "actual-compiler-admission",
+    "stable-diagnostic-class",
+    "runtime-execution-when-applicable",
+    "no-output-artifact-on-rejection",
+    "independent-review"
+  ],
+  "cases": [
+    {
+      "id": "state_container.empty",
+      "kind": "compile",
+      "source": "define state container Counter as\n  state { let int count: 0; }\nend\n",
+      "expected": {
+        "compilation": "accept"
+      },
+      "requires": [
+        "distinct-declaration-kind",
+        "sealed-state-root"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state_container.read_write",
+      "kind": "compile",
+      "source": "define state container Counter as\n  state { let int count: 0; }\n  increment() -> void ::\n    handle_state(critical-write |s| -> { s.count = s.count + 1; });\n  end\n  get_count() -> int ::\n    return handle_state(critical-read |s| -> s.count);\n  end\nend\n",
+      "expected": {
+        "compilation": "accept"
+      },
+      "requires": [
+        "mutual-exclusion",
+        "returned-owned-scalar",
+        "read-write-no-lost-update"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state_container.external_field_rejected",
+      "kind": "compile",
+      "source": "define state container Counter as\n  state { let int count: 0; }\nend\nfnc leak(Counter c) -> int { return c.state.count; }\n",
+      "expected": {
+        "compilation": "reject",
+        "diagnosticClass": "sealed_state_direct_access"
+      },
+      "requires": [
+        "no-output-artifact"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state_container.escape_alias_rejected",
+      "kind": "compile",
+      "source": "define state container C as\n  state { let Vec<int> values; }\n  bad() -> Pointer<int> ::\n    return handle_state(critical-read |s| -> rt ref s.values[0]);\n  end\nend\n",
+      "expected": {
+        "compilation": "reject",
+        "diagnosticClass": "state_reference_escape"
+      },
+      "requires": [
+        "heap-alias-lifetime",
+        "no-output-artifact"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state_container.suspend_in_critical_rejected",
+      "kind": "compile",
+      "source": "define state container C as\n  state { let int count: 0; }\n  async bad() -> void ::\n    handle_state(critical-write |s| -> { await sleep_async(1); });\n  end\nend\n",
+      "expected": {
+        "compilation": "reject",
+        "diagnosticClass": "critical_suspension"
+      },
+      "requires": [
+        "no-output-artifact"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state_container.shared_unsynchronized_rejected",
+      "kind": "compile",
+      "source": "define state container C as\n  state { let int x: 0; }\nend\nfnc share_bad(C x) -> void { let y = rt share x; y.state.x = 4; }\n",
+      "expected": {
+        "compilation": "reject",
+        "diagnosticClass": "shared_mutation_without_guard"
+      },
+      "requires": [
+        "no-output-artifact"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state_container.use_after_take_rejected",
+      "kind": "compile",
+      "source": "define state container Counter as\n  state { let int count: 0; }\n  get_count() -> int ::\n    return handle_state(critical-read |s| -> s.count);\n  end\nend\nfnc move_bad(Counter c) -> int {\n  let moved = rt take c;\n  return c.get_count();\n}\n",
+      "expected": {
+        "compilation": "reject",
+        "diagnosticClass": "use_after_take"
+      },
+      "requires": [
+        "moved-capability-revoked",
+        "no-output-artifact"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state_container.concurrent_readers",
+      "kind": "runtime",
+      "source": "define state container C as\n  state { let int x: 7; }\n  get_count() -> int ::\n    return handle_state(critical-read |s| -> s.x);\n  end\nend\n",
+      "expected": {
+        "compilation": "accept"
+      },
+      "requires": [
+        "compatible-readers-overlap",
+        "writer-exclusion"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state_container.release_on_panic",
+      "kind": "runtime",
+      "source": "define state container C as\n  state { let int x: 0; }\n  fail() -> void ::\n    handle_state(critical-write |s| -> { s.x = 1; panic Error(\"bad\"); });\n  end\nend\n",
+      "expected": {
+        "compilation": "accept"
+      },
+      "requires": [
+        "guard-released-on-error",
+        "partial-write-not-automatically-rolled-back"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "virtual_actor.declaration",
+      "kind": "compile",
+      "source": "define virtual actor ShoppingCart as\n  state { let int quantity: 0; }\nend\n",
+      "expected": {
+        "compilation": "accept"
+      },
+      "requires": [
+        "distinct-declaration-kind",
+        "actor-supervision-preserved"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "virtual_actor.activation",
+      "kind": "runtime",
+      "source": "define virtual actor ShoppingCart as\n  state { let int quantity: 0; }\n  add(int n) -> void ::\n    handle_state(critical-write |s| -> { s.quantity = s.quantity + n; });\n  end\nend\n",
+      "expected": {
+        "compilation": "accept"
+      },
+      "requires": [
+        "stable-logical-key",
+        "at-most-one-active-incarnation",
+        "fenced-restart"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "virtual_actor.no_implicit_durability",
+      "kind": "runtime",
+      "source": "define virtual actor Ephemeral as\n  state { let int value: 11; }\nend\n",
+      "expected": {
+        "compilation": "accept"
+      },
+      "requires": [
+        "local-only-capability",
+        "ephemeral-deactivation-resets-state",
+        "no-silent-durable-claim"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "virtual_actor.supervisor_control",
+      "kind": "runtime",
+      "source": "define virtual actor Worker as\n  fail() -> void ::\n    panic Error(\"failure\");\n  end\nend\n",
+      "expected": {
+        "compilation": "accept"
+      },
+      "requires": [
+        "panic-supervisor-control-notice",
+        "no-local-panic-catch"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "virtual_actor.no_raw_actor_inheritance",
+      "kind": "compile",
+      "source": "define class Base as\n  let int x: 0;\nend\ndefine virtual actor V extends Base as\nend\n",
+      "expected": {
+        "compilation": "reject",
+        "diagnosticClass": "invalid_virtual_actor_inheritance"
+      },
+      "requires": [
+        "no-output-artifact"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "virtual_actor.stale_incarnation",
+      "kind": "runtime",
+      "source": "define virtual actor ShoppingCart as\n  state { let int quantity: 0; }\nend\n",
+      "expected": {
+        "compilation": "accept"
+      },
+      "requires": [
+        "old-incarnation-cannot-act-on-replacement",
+        "mailbox-admission-linearizable"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "virtual_actor.grain_not_alias",
+      "kind": "compile",
+      "source": "define grain ShoppingCart as\nend\n",
+      "expected": {
+        "compilation": "reject",
+        "diagnosticClass": "unknown_declaration_kind"
+      },
+      "requires": [
+        "grain-is-not-alias",
+        "no-output-artifact"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state_container.quiescent_release",
+      "kind": "runtime",
+      "source": "define state container Counter as\n  state { let int count: 0; }\nend\n",
+      "expected": {
+        "compilation": "accept"
+      },
+      "requires": [
+        "shutdown-revokes-lease",
+        "no-arena-reclamation-before-loan-quiescence"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "virtual_actor.two_phase_activation",
+      "kind": "runtime",
+      "source": "define virtual actor ShoppingCart as\n  state { let int quantity: 0; }\nend\n",
+      "expected": {
+        "compilation": "accept"
+      },
+      "requires": [
+        "single-initializer",
+        "no-send-before-publish",
+        "failure-atomic-activation",
+        "retry-new-incarnation"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "virtual_actor.foreign_capability_denied",
+      "kind": "runtime",
+      "source": "define virtual actor ShoppingCart as\n  state { let int quantity: 0; }\nend\n",
+      "expected": {
+        "compilation": "accept"
+      },
+      "requires": [
+        "cross-registry-identity-not-authority",
+        "foreign-incarnation-rejected",
+        "no-message-admission"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "virtual_actor.invalid_key_rejected",
+      "kind": "runtime",
+      "source": "define virtual actor ShoppingCart as\n  state { let int quantity: 0; }\nend\n",
+      "expected": {
+        "compilation": "accept"
+      },
+      "requires": [
+        "nfc-canonical-identity",
+        "malformed-utf16-rejected",
+        "key-bytes-bounded"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    }
+  ]
+}
