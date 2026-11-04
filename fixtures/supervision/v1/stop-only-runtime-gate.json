@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "scope": "supervisor-stop-only-runtime-gate-v1",
+  "evidenceClass": "focused-host-control-and-source-lowering-not-guest-parity",
+  "backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "cranelift",
+    "net"
+  ],
+  "logicalFailureFields": [
+    "supervisor_id",
+    "group_id",
+    "physical_actor_id",
+    "logical_child_id",
+    "incarnation",
+    "kind",
+    "origin_kind",
+    "diagnostic"
+  ],
+  "stopTurnFields": [
+    "supervisor_id",
+    "group_id",
+    "turn_generation",
+    "physical_actor_id",
+    "incarnation",
+    "host_effect_receipt"
+  ],
+  "lifecycleOrder": [
+    "physical-child-finalization",
+    "immutable-terminal-failure",
+    "reserved-control-turn",
+    "generation-fenced-stop-intent",
+    "host-effect",
+    "authoritative-ack-or-quarantine"
+  ],
+  "enforce": [
+    "terminal-throw-raise-promoted-to-panic-with-origin",
+    "no-actor-local-panic-interception",
+    "fail-closed-foreign-or-stale-identity",
+    "single-flight-control",
+    "bounded-control-capacity",
+    "stop-effect-at-most-once-per-generation",
+    "unknown-host-outcome-is-quarantined-not-retried",
+    "no-fake-guest-authority-or-serialized-supervisor-handle"
+  ],
+  "backendGate": {
+    "java": {
+      "focusedHostStop": true,
+      "sourceStopPlan": true,
+      "guestSourceParity": false,
+      "hostStopLedger": true
+    },
+    "llvm": {
+      "focusedHostStop": true,
+      "sourceStopPlan": false,
+      "guestSourceParity": false,
+      "hostStopLedger": true
+    },
+    "wasm": {
+      "focusedHostStop": false,
+      "sourceStopPlan": false,
+      "guestSourceParity": false,
+      "hostStopLedger": true
+    },
+    "cranelift": {
+      "focusedHostStop": false,
+      "sourceStopPlan": false,
+      "guestSourceParity": false,
+      "hostStopLedger": true
+    },
+    "net": {
+      "focusedHostStop": false,
+      "sourceStopPlan": false,
+      "guestSourceParity": false,
+      "hostStopLedger": true
+    }
+  },
+  "evidence": {
+    "javaControl": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41358923195",
+    "javaCompiler": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41359448732",
+    "llvmControl": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41359210787",
+    "javaLedger": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41359927149",
+    "wasmLedger": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41363000747",
+    "craneliftLedger": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41363000747",
+    "netLedger": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41363153493"
+  },
+  "currentHeadGate": {
+    "snapshotDate": "2026-11-03",
+    "status": "HOLD",
+    "privateMirrorAuthorized": false,
+    "unresolvedSecurityIncidents": [
+      22,
+      77,
+      127,
+      171,
+      172
+    ],
+    "sourceHeads": {
+      "java": "31305fdd92eaf1c72306f2b57658aebf215710f3",
+      "llvm": "4b605e8101b92bed9f2259cec00027244cbe7460",
+      "wasm": "492ac62946781a78d9e815a24643e9c47da20d1c",
+      "cranelift": "dbafc1a2ba6206b90208afe573a1f0cfcb5e3275",
+      "net": "11975d97ee94a222d68c66b795460702550cca33"
+    },
+    "executedSourceOrgCurrentHeadCI": {
+      "java": false,
+      "llvm": false,
+      "wasm": false,
+      "cranelift": false,
+      "net": false
+    },
+    "notes": "Snapshot only. Last known source-org CI jobs failed before step execution. Historical host-ledger proofs do not certify current branch heads."
+  }
+}

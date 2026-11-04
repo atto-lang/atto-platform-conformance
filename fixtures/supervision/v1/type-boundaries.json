@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "scope": "supervisor-type-boundaries-v1",
+  "profile": "compiler-source-admission",
+  "guestSupervisorExecution": "unimplemented",
+  "backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "cranelift",
+    "net"
+  ],
+  "requiredEvidence": [
+    "exact-source-commit",
+    "compiler-binary-hash",
+    "nonzero-step-run",
+    "compiler-exit-diagnostic",
+    "actual-guest-control-turn",
+    "generation-fenced-lifecycle-effect"
+  ],
+  "backendGate": {
+    "java": {
+      "normalCompiler": "reject-unlowered-control",
+      "restrictedHostSTOP": "separate-opt-in-not-general-guest-execution",
+      "guestSourceParity": false
+    },
+    "llvm": {
+      "normalCompiler": "reject-unlowered-control",
+      "guestSourceParity": false
+    },
+    "wasm": {
+      "normalCompiler": "reject-before-wasm-artifact",
+      "guestSourceParity": false
+    },
+    "cranelift": {
+      "normalCompiler": "reject-before-clif",
+      "guestSourceParity": false
+    },
+    "net": {
+      "normalCompiler": "reject-before-nativeaot-cil",
+      "guestSourceParity": false
+    }
+  },
+  "cases": [
+    {
+      "id": "plain",
+      "kind": "valid-declaration-nonexecutable",
+      "javaParser": "accept",
+      "source": "define supervisor S1 as on_panic(f: Failure): void { return; } end"
+    },
+    {
+      "id": "pub",
+      "kind": "valid-declaration-nonexecutable",
+      "javaParser": "accept",
+      "source": "define pub supervisor S1 as on_panic(f: Failure): void { return; } end"
+    },
+    {
+      "id": "brace",
+      "kind": "valid-declaration-nonexecutable",
+      "javaParser": "accept",
+      "source": "define supervisor S1 { on_panic(f: Failure): void { return; } }"
+    },
+    {
+      "id": "extends-actor",
+      "kind": "invalid-inheritance",
+      "javaParser": "reject",
+      "source": "define supervisor S1 extends Actor as on_panic(f: Failure): void { return; } end"
+    },
+    {
+      "id": "extends-class",
+      "kind": "invalid-inheritance",
+      "javaParser": "reject",
+      "source": "define supervisor S1 extends BaseClass as on_panic(f: Failure): void { return; } end"
+    },
+    {
+      "id": "extends-supervisor",
+      "kind": "invalid-inheritance",
+      "javaParser": "reject",
+      "source": "define supervisor S1 extends Supervisor as on_panic(f: Failure): void { return; } end"
+    },
+    {
+      "id": "implements-interface",
+      "kind": "invalid-interface-composition",
+      "javaParser": "reject",
+      "source": "define supervisor S1 implements Observer as on_panic(f: Failure): void { return; } end"
+    },
+    {
+      "id": "impl-interface",
+      "kind": "invalid-interface-composition",
+      "javaParser": "reject",
+      "source": "define supervisor S1 impl Observer as on_panic(f: Failure): void { return; } end"
+    },
+    {
+      "id": "conforms-contract",
+      "kind": "invalid-interface-composition",
+      "javaParser": "reject",
+      "source": "define supervisor S1 conforms Policy as on_panic(f: Failure): void { return; } end"
+    },
+    {
+      "id": "with-trait",
+      "kind": "invalid-trait-composition",
+      "javaParser": "reject",
+      "source": "define supervisor S1 with RestartPolicy as on_panic(f: Failure): void { return; } end"
+    },
+    {
+      "id": "trait-direct",
+      "kind": "invalid-trait-composition",
+      "javaParser": "reject",
+      "source": "define supervisor S1 trait RestartPolicy as on_panic(f: Failure): void { return; } end"
+    },
+    {
+      "id": "actor-hook-throw",
+      "kind": "invalid-actor-hook",
+      "javaParser": "reject",
+      "source": "define supervisor S1 as on_panic(f: Failure): void { return; } on_throw(f: Failure): void { return; } end"
+    },
+    {
+      "id": "actor-hook-raise",
+      "kind": "invalid-actor-hook",
+      "javaParser": "reject",
+      "source": "define supervisor S1 as on_panic(f: Failure): void { return; } on_raise(f: Failure): void { return; } end"
+    },
+    {
+      "id": "mutable-failure",
+      "kind": "invalid-failure-binder",
+      "javaParser": "reject",
+      "source": "define supervisor S1 as on_panic(f: Failure mut): void { return; } end"
+    },
+    {
+      "id": "structural-failure",
+      "kind": "invalid-failure-binder",
+      "javaParser": "reject",
+      "source": "define supervisor S1 as on_panic(structural Failure f): void { return; } end"
+    },
+    {
+      "id": "forged-annotation",
+      "kind": "invalid-hook-annotation",
+      "javaParser": "reject",
+      "source": "define supervisor S1 as @GrantControl on_panic(f: Failure): void { return; } end"
+    }
+  ],
+  "evidencePRs": {
+    "java": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2423",
+    "llvm": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1279",
+    "wasm": "https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/248",
+    "cranelift": "https://github.com/ores-truffle-oreslang/oreslang-source.cranelift/pull/60",
+    "net": "https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/311"
+  }
+}
