@@ -5,7 +5,7 @@ This ledger is a **candidate plan and independently inspected source-byte invent
 | Source/compiler | Proposed guest lane | PR | State |
 |---|---|---|---|
 | Java/GraalVM | 10 compiler admissions + 5 negative compiler admissions, typed guest pending | [#2501](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2501) | NOT_EXECUTED |
-| LLVM | 7 native executable assertions + 3 removed-operator compiler denials, full i64 witness pending | [#1348](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1348) | NOT_EXECUTED |
+| LLVM | 10 full signed-i64 native executable assertions + 9 negative compiler/trap cases and source-unit compatibility; execution pending | [#1348](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1348) | NOT_EXECUTED |
 | Wasm | 10 full typed i64 isolated wasm32 guest assertions + 3 compiler denials | [#278](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/278) | NOT_EXECUTED |
 | .NET NativeAOT | 2 Linux native published executable assertions + 3 CIL-denial compiler cases | [#350](https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/350) | NOT_EXECUTED |
 | Forge | 10 stage-0 linked native guests + 9 negatives in all 3 source modes | [#178](https://github.com/ores-truffle-oreslang/oreslang-source.forge/pull/178) | NOT_EXECUTED |
