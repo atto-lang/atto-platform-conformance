@@ -13,20 +13,14 @@ const failsWith = (run, code) => assert.throws(run, { code });
 test('generic declarations reject malformed records and unsupported keys', () => {
   const good = [{ name: 'T' }];
   for (const bad of [
-    [null], [false], [[]], ['T'], [{ name: 'T', extra: 'shadow' }],
+    [null], [false], [[]], ['T'], [{ name: 'T', extra: 'shadow' }]
+  ]) failsWith(() => bind_generic_args(bad, []), 'invalid-generic-declaration');
+  for (const bad of [
     [{ name: 'T', default: { type: 'int', ref: 'T' } }],
     [{ name: 'T', default: [] }],
     [{ name: 'T', default: { type: 42 } }],
     [{ name: 'T', default: { ref: 'T' } }]
-  ]) failsWith(() => bind_generic_args(bad, []), 'invalid-generic-declaration' in {} ? '' : (
-    bad.length === 1 && bad[0] && typeof bad[0] === 'object' &&
-    !Array.isArray(bad[0]) && Object.keys(bad[0]).length === 2 &&
-    Object.hasOwn(bad[0], 'default') ? 'invalid-generic-default' :
-    bad.length === 1 && bad[0] && typeof bad[0] === 'object' &&
-    !Array.isArray(bad[0]) && Object.keys(bad[0]).length === 1 &&
-    Object.hasOwn(bad[0], 'default') ? 'invalid-generic-default' :
-    'invalid-generic-declaration'
-  ));
+  ]) failsWith(() => bind_generic_args(bad, []), 'invalid-generic-default');
   for (const item of [null, 4, [], {}, { type: 'int', value: 'side-effect' },
     { type: 'int', name: 'T', label: 'T' }])
     failsWith(() => bind_generic_args(good, [item]), 'invalid-generic-argument');
