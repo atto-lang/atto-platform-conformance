@@ -83,4 +83,13 @@ jobs:
         run: |
           node parity/integration/src/run.mjs \
             "--checkouts=$PWD/checkouts" \
-            "--inventory=$PWD/parity/integration/inventory.json"
+            "--inventory=$PWD/parity/integration/inventory.json" \
+            "--output=$RUNNER_TEMP/ores-parity-host-report.json"
+      - name: Upload host conformance evidence (not compiler parity)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pinned-six-wave-host-report
+          path: ${{ runner.temp }}/ores-parity-host-report.json
+          if-no-files-found: warn
+          retention-days: 7

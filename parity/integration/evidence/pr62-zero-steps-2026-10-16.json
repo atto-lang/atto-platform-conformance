@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "observedOn": "2026-10-16",
+  "type": "read-only-github-api-metadata-snapshot",
+  "repo": "ores-truffle-oreslang/oreslang-platform-conformance",
+  "exactHead": "92de646a31161763a8ee5475d64f55bd3454171f",
+  "pullRequest": 62,
+  "runs": [
+    {
+      "id": 38994392059,
+      "name": "Pinned six-wave host conformance (not compiler parity)",
+      "status": "completed",
+      "conclusion": "failure",
+      "attempt": 1,
+      "jobId": 117283591225,
+      "jobConclusion": "failure",
+      "recordedSteps": 0,
+      "artifactCount": 0,
+      "jobLogStatus": "BlobNotFound (404)",
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/actions/runs/38994392059"
+    },
+    {
+      "id": 38994391942,
+      "name": "Conformance harness unit checks (not compiler parity)",
+      "status": "completed",
+      "conclusion": "failure",
+      "attempt": 1,
+      "jobId": 117283590376,
+      "jobConclusion": "failure",
+      "recordedSteps": 0,
+      "artifactCount": 0,
+      "jobLogStatus": "BlobNotFound (404)",
+      "url": "https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/actions/runs/38994391942"
+    }
+  ],
+  "conclusion": "NO_EXECUTED_TEST_EVIDENCE",
+  "rootCause": "UNKNOWN_FROM_RUN_JOB_ARTIFACT_METADATA",
+  "notProven": [
+    "Actions minutes exhausted",
+    "runner permission/policy issue",
+    "production compiler failing",
+    "Node suite failing",
+    "all tests passing"
+  ],
+  "compilerExecuted": false,
+  "guestExecuted": false,
+  "backendParityCertified": false,
+  "releaseCertified": false,
+  "limitations": "Point-in-time observed public/connected GitHub API metadata. This snapshot is not a signed GitHub attestation and must be rechecked against the live run before acting."
+}

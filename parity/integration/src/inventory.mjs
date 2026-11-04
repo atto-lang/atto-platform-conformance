@@ -55,6 +55,12 @@ export function mergeReadiness(report){
   ids.add(r.wave);
   if(r.head!==HEADS[r.wave-1])bad.push({wave:r.wave,reason:'source-head-mismatch'});
   if(r.status!=='PASSED')bad.push({wave:r.wave,reason:'host-suite-not-passed'});
+  else {
+   const c=r.testCounts,fixture=r.sourceValidation;
+   if(r.hostSuiteRan!==true||r.guestCompilerRan!==false||!c||!Number.isSafeInteger(c.tests)||c.tests<1||c.pass!==c.tests||c.fail!==0||c.skipped!==0||c.cancelled!==0||c.todo!==0||
+      !fixture||fixture.status!=='SOURCE_FIXTURES_VALIDATED_HOST_ONLY'||fixture.wave!==r.wave||fixture.compilerExecuted!==false||fixture.parityVerified!==false)
+     bad.push({wave:r.wave,reason:'no-executed-test-and-source-validator-evidence'});
+  }
  }
  for(let i=1;i<=6;i++)if(!ids.has(i))missing.push(i);
  return Object.freeze({
