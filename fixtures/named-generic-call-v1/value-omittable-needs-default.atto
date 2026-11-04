@@ -1,0 +1,6 @@
+fnc takes(int attempts?) -> int ::
+  return attempts
+end
+fnc main() -> int ::
+  return takes()
+end

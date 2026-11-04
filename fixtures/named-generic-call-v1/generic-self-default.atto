@@ -1,0 +1,6 @@
+define class Box<T=T> as
+  T value
+end
+fnc main() -> void ::
+  return
+end

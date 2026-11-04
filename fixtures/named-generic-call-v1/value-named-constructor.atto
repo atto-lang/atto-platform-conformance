@@ -1,0 +1,11 @@
+define class Point as
+  int x
+  int y
+  initialize(int x, int y) -> void ::
+    self.x = x
+    self.y = y
+  end
+end
+fnc main() -> void ::
+  val p = Point(y: 2, x: 1)
+end

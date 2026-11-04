@@ -1,0 +1,6 @@
+fnc takes(string? name) -> int ::
+  return 1
+end
+fnc main() -> int ::
+  return takes()
+end

@@ -1,0 +1,8 @@
+define class Triple<A=int, B=A, C=B> as
+  A first
+  B second
+  C third
+end
+fnc main() -> void ::
+  val triple: Triple<B=string, C=bool>
+end

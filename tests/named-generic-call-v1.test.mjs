@@ -230,3 +230,11 @@ test('syntactic omission sentinel cannot masquerade as a supplied value', () => 
   const p=plan_named_call([formal('x')],[value('x')]);
   assert.throws(()=>evaluate_named_call(p,[()=>OMITTED]),{code:'invalid-supplied-omission'});
 });
+
+test('hardened source fixtures cover distinct name, type, arity and omission failures', async () => {
+  const manifest=JSON.parse(await readFile(resolve(root,'contracts/named-generic-call-v1.json'),'utf8'));
+  const expected=["generic-nested-names","generic-previous-default-chain","generic-case-sensitive","generic-positional-collision","generic-excess","generic-non-type","generic-self-default","value-case-sensitive","value-duplicate-formal","value-static-method","value-option-is-required","value-omittable-needs-default","value-named-constructor","value-label-overload-ambiguity","value-required-underscore"];
+  const got=new Set(manifest.cases.map(c=>c.id));
+  for(const id of expected) assert.ok(got.has(id),'missing audit edge fixture '+id);
+  assert.equal(manifest.cases.length,37);
+});

@@ -1,0 +1,6 @@
+fnc bad(int x, int x) -> int ::
+  return x
+end
+fnc main() -> int ::
+  return bad(x: 1)
+end

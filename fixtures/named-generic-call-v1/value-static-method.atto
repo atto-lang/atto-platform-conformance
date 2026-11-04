@@ -1,0 +1,8 @@
+define class MathUtil as
+  static fnc combine(int first, int second) -> int ::
+    return first * 10 + second
+  end
+end
+fnc main() -> int ::
+  return MathUtil.combine(second: 2, first: 1)
+end

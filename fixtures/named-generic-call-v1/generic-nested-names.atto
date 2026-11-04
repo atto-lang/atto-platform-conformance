@@ -1,0 +1,10 @@
+define class Cell<T> as
+  T value
+end
+define class Pair<A, B> as
+  A first
+  B second
+end
+fnc main() -> void ::
+  val pair: Pair<B=Cell<T=string>, A=Cell<T=int>>
+end
