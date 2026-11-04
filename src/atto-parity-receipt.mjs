@@ -29,7 +29,9 @@ const SCALAR_CORE_V1 = Object.freeze({
 const isObject = x => x !== null && typeof x === 'object' && !Array.isArray(x);
 function check(ok, reason) { if (!ok) throw new Error('parity receipt rejected: ' + reason); }
 function checkI64Text(value, reason) {
-  check(typeof value === 'string' && I64_TEXT.test(value), reason);
+  // Signed i64 needs at most 20 ASCII characters. Reject oversized decimal
+  // text before regex scanning or BigInt allocation on untrusted receipts.
+  check(typeof value === 'string' && value.length <= 20 && I64_TEXT.test(value), reason);
   const parsed = BigInt(value);
   check(parsed >= I64_MIN && parsed <= I64_MAX, reason);
 }
