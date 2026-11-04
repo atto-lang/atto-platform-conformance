@@ -53,13 +53,24 @@ export class ReferenceCapabilityIoBroker {
 
   // Only the trusted runtime may call these host-side methods. Neither object
   // references nor actor labels are proof of identity without isolate mediation.
-  registerActor(parent = null, policy = null) {
+  registerActor(parent = null, policy = null, limits = null) {
     if (this.#closed) throw new Error('host I/O broker is shut down');
     if (parent !== null && !this.#liveActor(parent))
       throw new Error('parent actor authority unavailable');
+    // A child cannot widen the budget of its parent. This is an aggregate
+    // subtree ceiling (including descendants), not a per-child allowance.
+    if (limits !== null && (typeof limits !== 'object' || Array.isArray(limits) ||
+        Object.keys(limits).sort().join(',') !== 'maxSubtreeInFlight'))
+      throw new TypeError('exact maxSubtreeInFlight limit required');
+    const parentCeiling = parent === null
+      ? this.#maxInFlight : this.#actors.get(parent).maxSubtreeInFlight;
+    const maxSubtreeInFlight = limits === null ? parentCeiling
+      : boundedPositive(limits.maxSubtreeInFlight, 'maxSubtreeInFlight');
+    if (maxSubtreeInFlight > parentCeiling)
+      throw new TypeError('child actor cannot widen ancestor subtree I/O quota');
     const handle = Object.freeze(Object.create(null));
     const state = { live: true, parent, children: new Set(), tickets: new Set(),
-      policy: this.#layers.actor };
+      maxSubtreeInFlight, subtreeInFlight: 0, policy: this.#layers.actor };
     if (policy !== null) {
       const validated = validatePolicy(policy);
       for (const rule of Object.values(validated)) {
@@ -113,9 +124,11 @@ export class ReferenceCapabilityIoBroker {
     }
     // Every ancestor further restricts a child's effective authority. Merely
     // registering a more permissive child policy cannot mint capabilities.
+    const ancestors = [];
     for (let current = actor; current !== null; ) {
       const currentState = this.#actors.get(current);
       if (!currentState?.live) return { status: 'DENIED_ACTOR' };
+      ancestors.push(currentState);
       const constrained = {...this.#layers, actor: currentState.policy};
       if (!evaluatePermission(constrained, binding.permission,
                               binding.resource, this.#matches) ||
@@ -129,12 +142,18 @@ export class ReferenceCapabilityIoBroker {
     if (this.#closed) return { status: 'DENIED_SHUTDOWN' };
     if (!this.#liveActor(actor)) return { status: 'DENIED_ACTOR' };
     if (this.#used >= this.#maxInFlight) return { status: 'BACKPRESSURE' };
+    // Check every ancestor immediately before publication. Admission and
+    // retirement are serialized by the trusted broker; no quota is refunded
+    // on cancellation, logical completion, or revocation.
+    if (ancestors.some(state => state.subtreeInFlight >= state.maxSubtreeInFlight))
+      return { status: 'BACKPRESSURE_SUBTREE' };
     const ticket = Object.freeze(Object.create(null));
     this.#tickets.set(ticket, {
-      actor, target, state: 'ACTIVE', result: null, retired: false,
+      actor, target, ancestors, state: 'ACTIVE', result: null, retired: false,
     });
     this.#actors.get(actor).tickets.add(ticket);
     this.#activeTickets.add(ticket);
+    for (const state of ancestors) state.subtreeInFlight++;
     this.#used++;
     return { status: 'ADMITTED', ticket };
   }
@@ -190,6 +209,12 @@ export class ReferenceCapabilityIoBroker {
     record.retired = true;
     this.#actors.get(actor).tickets.delete(ticket);
     this.#activeTickets.delete(ticket);
+    // Charge the same ancestor identities that admitted this operation.
+    // Actor revocation never makes the pending physical loan disappear.
+    for (const ancestor of record.ancestors) {
+      ancestor.subtreeInFlight--;
+      if (ancestor.subtreeInFlight < 0) throw new Error('subtree budget underflow');
+    }
     this.#used--;
     return true;
   }
