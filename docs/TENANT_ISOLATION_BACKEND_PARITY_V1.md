@@ -1,5 +1,10 @@
 # Tenant IsolateVM parity v1 — backend-neutral contract
 
+> **Superseded by [tenant isolation v2](TENANT_ISOLATION_V2_SHARED_PROCESS.md)** (2026-11-03).
+> Tenants, including hostile ones, now share one OS process with one VM-isolate
+> each; a per-tenant process or OS sandbox is no longer required. The text below
+> is kept as history and its "process/OS sandbox" requirements no longer apply.
+
 **Status:** executable **source-free reference model** only. No conformance
 test here claims an actual `.ores` actor compiled or executed in Java,
 LLVM, Wasmtime, .NET, Forge or JavaScript.

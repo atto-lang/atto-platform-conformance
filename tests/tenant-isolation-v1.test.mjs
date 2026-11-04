@@ -1,4 +1,5 @@
-// Source-free host-policy reference model. This does NOT execute real .ores
+// SUPERSEDED by tenant-isolation-v2 (shared OS process, one VM-isolate per
+// tenant). Kept as history. Source-free host-policy reference model. This does NOT execute real .ores
 // actors or prove physical isolation on Java/LLVM/Wasm/.NET/Forge/JS.
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -92,7 +93,9 @@ const fails=(f,why)=>assert.throws(f,new RegExp(why));
 
 test("manifest enumerates actual backends and refuses promotional security claims",()=>{
   assert.equal(contract.schema,"oreslang.tenant-isolation.v1");
-  assert.equal(contract.status,"SOURCE_FREE_REFERENCE_NOT_BACKEND_EXECUTION");
+  // v1 is kept as history; tenant-isolation-v2 is the live contract.
+  assert.equal(contract.status,"SUPERSEDED_BY_V2");
+  assert.equal(contract.supersededBy,"oreslang.tenant-isolation.v2");
   assert.deepEqual(contract.design.identity,["tenantId","generation","opaqueHostAuthority"]);
   assert.match(contract.design.tenant_id_validation,/excluding reserved path components/);
   assert.match(contract.design.root_authority,/matching tenant ID and numeric generation/);

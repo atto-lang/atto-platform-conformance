@@ -2,7 +2,7 @@
 // trusted supervisor input, NOT a guest-supplied JSON certificate or OS proof.
 const BACKENDS = new Set(['java','llvm','wasm','net','forge']);
 const MODES = new Set(['aot','jit','interpreted']);
-const FORMATS = new Set(['wasm','cil','native']);
+const FORMATS = new Set(['wasm','truffle','cil','native']);
 const LIMITS = ['guestMemoryBytes','hostMemoryBytes','actorCount','mailboxBytes','wallTimeMs'];
 const HEX_SHA = /^[0-9a-f]{64}$/;
 
@@ -34,7 +34,7 @@ function ensure(yes,code) { if (!yes) throw new Error(code); }
 export function assessUntrustedExecution(request, host) {
   exactKeys(request,['backend','trust','mode','guestFormat','imageSha256','capabilities','quotas'],'REQUEST');
   exactKeys(host,['backend','hostKind','supportedModes','supportedFormats','verifiedImageSha256',
-    'trustedSupervisor','osProcessSandbox','isolatedWorker','workerTermination',
+    'trustedSupervisor','perTenantVmIsolate','isolateTermination','osProcessSandbox',
     'preemption','guestHeapQuota','hostHeapQuota','mailboxQuota','capabilityBroker',
     'allowedCapabilities','limits','jitWxEnforced','boundedJitCompilation','wasmJitEngine'],'HOST');
   ensure(BACKENDS.has(request.backend),'UNKNOWN_BACKEND');
@@ -50,33 +50,39 @@ export function assessUntrustedExecution(request, host) {
   stringSet(host.supportedFormats,'HOST_FORMATS');
   stringSet(host.allowedCapabilities,'HOST_CAPABILITIES');
   positiveLimits(host.limits,'HOST_LIMITS');
+  ensure(typeof host.osProcessSandbox === 'boolean','INVALID_HOST_OS_PROCESS_SANDBOX');
   ensure(host.trustedSupervisor === true,'AUTHENTICATED_SUPERVISOR_REQUIRED');
   ensure(host.verifiedImageSha256 === request.imageSha256,'UNVERIFIED_IMAGE');
+  // Tenants share one process (tenant-isolation v2). Only code from a trusted
+  // producer can be confined to a per-tenant isolate there.
+  if (request.guestFormat === 'native') throw new Error('UNTRUSTED_NATIVE_CODE_REFUSED');
+  if (request.guestFormat === 'cil') throw new Error('UNTRUSTED_CIL_REFUSED');
   ensure(host.supportedModes.includes(request.mode),'UNSUPPORTED_COMPILATION_MODE');
   ensure(host.supportedFormats.includes(request.guestFormat),'UNSUPPORTED_GUEST_FORMAT');
-  ensure(host.osProcessSandbox === true && host.isolatedWorker === true,'OS_SANDBOX_REQUIRED');
-  ensure(host.workerTermination === true,'WORKER_TERMINATION_REQUIRED');
-  ensure(['fuel','epoch','bounded-safepoints','worker-termination'].includes(host.preemption),'PREEMPTION_REQUIRED');
+  // A process sandbox is optional defense in depth; it neither replaces nor
+  // is required by the per-tenant isolate.
+  ensure(host.perTenantVmIsolate === true,'VM_ISOLATE_REQUIRED');
+  ensure(host.isolateTermination === true,'ISOLATE_TERMINATION_REQUIRED');
+  // Killing the whole process would end every tenant, so it is not a
+  // preemption mechanism for one tenant.
+  ensure(['fuel','epoch','bounded-safepoints','carrier-interrupt'].includes(host.preemption),'PREEMPTION_REQUIRED');
   ensure(host.guestHeapQuota === true && host.hostHeapQuota === true && host.mailboxQuota === true,
     'RESOURCE_ENFORCEMENT_REQUIRED');
   ensure(host.capabilityBroker === true,'CAPABILITY_BROKER_REQUIRED');
   for (const capability of request.capabilities)
     ensure(host.allowedCapabilities.includes(capability),'CAPABILITY_DENIED');
   for (const key of LIMITS) ensure(request.quotas[key] <= host.limits[key],'RESOURCE_QUOTA_EXCEEDED');
-  // CLR JIT and dynamic CIL loading cannot be introduced into a NativeAOT
-  // image. A NativeAOT process MAY embed a separately governed Wasm JIT.
-  if (request.mode === 'jit' && host.hostKind === 'native-aot' && request.guestFormat === 'cil')
-    throw new Error('NATIVEAOT_CIL_JIT_UNAVAILABLE');
+  // Truffle guests are confined by a Graal isolate and stopped at safepoints.
+  if (request.guestFormat === 'truffle') {
+    ensure(host.hostKind === 'graal','TRUFFLE_REQUIRES_GRAAL_ISOLATE');
+    ensure(host.preemption === 'bounded-safepoints','TRUFFLE_SAFEPOINTS_REQUIRED');
+  }
   if (request.mode === 'jit') {
     ensure(host.jitWxEnforced === true && host.boundedJitCompilation === true,'JIT_GOVERNANCE_REQUIRED');
+    // A NativeAOT process MAY embed a separately governed Wasm JIT.
     if (request.guestFormat === 'wasm' && host.hostKind === 'native-aot')
       ensure(host.wasmJitEngine === true,'WASM_JIT_ENGINE_REQUIRED');
   }
-  // Arbitrary CIL/native guest execution requires a process-kill mechanism;
-  // a cooperative safepoint alone cannot reliably terminate a spinning guest.
-  if (request.guestFormat !== 'wasm')
-    ensure(host.preemption === 'worker-termination' || host.preemption === 'bounded-safepoints',
-      'NATIVE_GUEST_INTERRUPTION_REQUIRED');
   return Object.freeze({status:'SOURCE_FREE_MODEL_ADMISSIBLE',admissibleInModel:true,
     productionCertified:false,backend:request.backend,mode:request.mode,trust:request.trust});
 }
