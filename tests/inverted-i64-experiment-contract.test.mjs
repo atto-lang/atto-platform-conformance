@@ -46,7 +46,7 @@ test("experimental i64 guest status cannot be represented as verified backend pa
   assert.equal(spec.current_branch_mir_llvm_codegen.native_test_driver_blob_sha,
     "102460fbd0675f7cc7d2737dd9c4f6045bd57aee");
   assert.equal(spec.current_branch_mir_llvm_codegen.native_test_script_blob_sha,
-    "e280b5694aab84909bb68cf47f36bad78a77aa7e");
+    "a510587ebb5915489af91a189b2181e1dc5bde1e");
   for (const key of ["exact_head_standalone_ctest", "full_compiler_ctest",
                      "current_emitter_native_execution", "current_emitter_asan_ubsan"])
     assert.equal(spec.current_branch_mir_llvm_codegen[key], "NOT_EXECUTED");
@@ -84,12 +84,12 @@ test("experimental i64 guest status cannot be represented as verified backend pa
   assert.equal(production.native_main_blob_sha,
     "82f22ce2e899d2d27a7ec21ff365efc6b241b640");
   assert.equal(production.native_guest_test_blob_sha,
-    "836e2d40074c63a33bf66c19df5e6e10d68ba89a");
+    "560b7a1aae0225a61de1656a3780650bc6af518d");
   assert.equal(production.llvm_emitter_blob_sha,
     "27c6ec16303b33749be973e9bdacbc1c0d874e5d");
   assert.match(production.runtime_bounds_trap_gate, /SIGILL\/SIGTRAP/);
-  assert.match(production.runner_admission, /zero steps/);
-  assert.match(production.runner_admission, /no private source transfer/);
+  assert.match(production.runner_admission, /zero-step/);
+  assert.match(production.runner_admission, /Source transfer NOT_PERFORMED/);
   assert.deepEqual(production.declaration_rejection, [
     "sum type AST", "conforms AST", "type constraint descriptors AST"
   ]);
@@ -166,6 +166,36 @@ test("experimental i64 guest status cannot be represented as verified backend pa
   for (const key of ["exact_head_cpp17_compiler_test", "exact_head_native_guest_test",
                      "exact_head_sanitizer_test", "source_contract_snapshot_positive"])
     assert.equal(snapshot[key], "NOT_EXECUTED");
+  // New implementation is stacked on the older fail-closed evidence, not
+  // a retroactive PASS for the detached-snapshot guest contract.
+  const staged = spec.current_guest_snapshot_positive_staged;
+  assert.equal(staged.implementation_pr,
+    "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1405");
+  assert.equal(staged.source_head_sha,
+    "f2723ddd702130afb92ad34cbdb5d605d5c8c21c");
+  assert.equal(staged.stacked_on_sha,
+    "039e6be4086e43271123cca84969fadbaf1f43a8");
+  assert.equal(staged.source_blobs["src/main/cpp/oreslang/types/InvertedMirLlvmI64.hpp"],
+    "0645d94a613dc1e53fd18520fb1ff80d099df99f");
+  assert.equal(staged.source_blobs["src/main/cpp/oreslang/types/InvertedProductionSourceMir.hpp"],
+    "6d171c1b6636152ab2a9c8876ab0148dbb8505bc");
+  assert.equal(staged.fixture_blobs["positive-production-snapshot.atto"],
+    "43b0d05043c4323beaa40b5ec7a31602a56a7f41");
+  assert.equal(staged.fixture_blobs["negative-production-snapshot-bounds.atto"],
+    "a8b974eae439bdd29e31456191eec3e7341da33a");
+  assert.equal(Object.keys(staged.source_blobs).length, 7);
+  assert.equal(Object.keys(staged.fixture_blobs).length, 4);
+  assert.equal(Object.keys(staged.regression_blobs).length, 8);
+  assert.equal(staged.code_status, "CODE_STAGED_NOT_EXECUTED");
+  assert.equal(staged.source_free_static_blob_verification, "DONE");
+  for (const key of ["exact_head_cpp17_cpp20_ctest",
+                     "exact_head_default_compiler_native_guest",
+                     "exact_head_o0_o2_guest", "exact_head_sanitizers",
+                     "full_cross_backend_snapshot_contract"])
+    assert.equal(staged[key], "NOT_EXECUTED");
+  assert.equal(staged.source_org_runner_admission, "FAILED_BEFORE_STEPS");
+  assert.equal(staged.private_source_mirror, "NOT_PERFORMED");
+  assert.equal(spec.claimed_backend_guest_results.llvm, "NOT_EXECUTED");
   assert.equal(spec.implementation_pr,
     "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1213");
   assert.deepEqual(spec.limits.operations, [
