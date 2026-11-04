@@ -21,6 +21,22 @@ function validateHold(record) {
   assert.equal(record.source_transfer_authorized, false);
   assert.equal(record.incident_repository, "ores-truffle-oreslang/oreslang-platform-conformance");
   assert.equal(record.incident_repository_id, 1413795502);
+  // ORESoftware may coordinate disposition but is explicitly excluded from
+  // independent authorization reviews, as is the source PR author.
+  assert.deepEqual(record.independent_review_policy.excluded_operator_user_ids,
+    [2148448,11139560]);
+  assert.equal(record.independent_reviewer.status,
+    "UNASSIGNED_PENDING_EXTERNAL_SECURITY_REVIEW");
+  assert.equal(record.independent_reviewer.login,null);
+  assert.equal(record.independent_reviewer.user_id,null);
+  assert.equal(record.disposition_contact.login,"ORESoftware");
+  assert.equal(record.disposition_contact.user_id,11139560);
+  assert.equal(record.disposition_contact.qualifies_as_independent_authorization_reviewer,false);
+  assert.equal(record.independent_review_policy.protected_source_main_required,true);
+  assert.equal(record.independent_review_policy.exact_authorization_head_approval_required,true);
+  assert.equal(record.independent_review_policy.disposition_issue_closure_alone_never_authorizes_export,true);
+  assert.equal(record.closure_contract.disposition_contact_not_authorization_approver,true);
+  assert.equal(record.closure_contract.closed_by_user_id,record.disposition_contact.user_id);
   assert.equal(record.incidents.length, REQUIRED.size, "no incident may be dropped");
   assert.equal(new Set(record.incidents.map(i => i.number)).size, REQUIRED.size,
     "duplicate incident cannot conceal a missing hold");
@@ -47,6 +63,15 @@ test("registry tampering cannot silently omit or resolve a security incident", (
   const mutate = [
     x => { x.status = "APPROVED"; },
     x => { x.source_transfer_authorized = true; },
+    x => { x.independent_reviewer.status = "APPROVED"; },
+    x => { x.independent_reviewer.user_id = 11139560; },
+    x => { x.independent_reviewer.login = "ORESoftware"; },
+    x => { x.disposition_contact.qualifies_as_independent_authorization_reviewer = true; },
+    x => { x.independent_review_policy.excluded_operator_user_ids = []; },
+    x => { x.independent_review_policy.exact_authorization_head_approval_required = false; },
+    x => { x.independent_review_policy.protected_source_main_required = false; },
+    x => { x.independent_review_policy.disposition_issue_closure_alone_never_authorizes_export = false; },
+    x => { x.closure_contract.disposition_contact_not_authorization_approver = false; },
     x => { x.incidents.pop(); },
     x => { x.incidents[0] = {...x.incidents[1]}; },
     x => { x.incidents[0].issue_id = 0; },
