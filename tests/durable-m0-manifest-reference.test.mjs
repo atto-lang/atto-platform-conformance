@@ -47,6 +47,12 @@ test('denies malformed or unbounded durable containers',()=>{
  reject(v=>v.workflows[0].members[0].generics.push('T'),'GENERICS_UNSUPPORTED');
  reject(v=>v.activities[0].operations.push(v.activities[0].operations[0]),'DUPLICATE_ACTIVITY_OPERATION');
  reject(v=>v.workflows[0].extra='unsafe','WORKFLOW_SHAPE');
+ reject(v=>v.activities.push(v.activities[0]),'DUPLICATE_ACTIVITY');
+ reject(v=>v.workflows.push(v.workflows[0]),'DUPLICATE_WORKFLOW');
+ reject(v=>v.workflows[0].commands[0].arguments.push({kind:'int',value:1}),'ACTIVITY_TARGET_UNKNOWN');
+ reject(v=>v.workflows[0].queries[0].returns='bool','QUERY_SIGNATURE_MISMATCH');
+ reject(v=>v.workflows[0].queries[0].parameters[0].type='bool','QUERY_SIGNATURE_MISMATCH');
+
 });
 test('source-free acceptance does not claim native or guest execution',()=>{
  const a=verifyDurableM0Reference(raw),b=verifyDurableM0Reference(Buffer.from(raw));
