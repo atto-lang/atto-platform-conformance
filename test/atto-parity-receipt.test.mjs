@@ -1,0 +1,9 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { validateParityReceipt } from '../src/atto-parity-receipt.mjs';
+const h = 'a'.repeat(40), d = 'b'.repeat(64);
+const good = () => ({schema:'attolang.parity-receipt/1',backend:'java',head_sha:h,tree_sha:h,compiler:'javac',compiler_sha256:d,run_id:1,run_attempt:1,executed_steps:4,job_conclusion:'success',cases:[{id:'returns_42',source_sha256:d,kind:'positive',compile_exit:0,executed:true,run_exit:0,stdout:'42\n',expected_stdout:'42\n'},{id:'unknown_symbol',source_sha256:d,kind:'negative',compile_exit:1,executed:false,diagnostic:'unknown symbol'}]});
+test('valid report remains non-promoting',()=>assert.deepEqual(validateParityReceipt(good()),{consistent:true,authenticity_attested:false,publicly_promotable:false,backend:'java',case_count:2}));
+for(const [name,mutate] of [
+ ['missing steps',r=>delete r.executed_steps],['zero steps',r=>r.executed_steps=0],['failed job',r=>r.job_conclusion='failure'],['missing tree',r=>delete r.tree_sha],['bad compiler digest',r=>r.compiler_sha256='bad'],['unsupported backend',r=>r.backend='other'],['duplicate case',r=>r.cases.push({...r.cases[0]})],['missing cases',r=>r.cases=[]],['fake stdout',r=>r.cases[0].stdout='41\n'],['not executed',r=>r.cases[0].executed=false],['compile failure positive',r=>r.cases[0].compile_exit=1],['negative accepted',r=>r.cases[1].compile_exit=0],['negative executed',r=>r.cases[1].executed=true],['negative missing diagnostic',r=>delete r.cases[1].diagnostic],['invalid source hash',r=>r.cases[0].source_sha256='bad'],['null case',r=>r.cases[0]=null],['missing compiler',r=>delete r.compiler],['invalid run attempt',r=>r.run_attempt=0]
+])test('reject '+name,()=>{const r=good();mutate(r);assert.throws(()=>validateParityReceipt(r),/parity receipt rejected/)});

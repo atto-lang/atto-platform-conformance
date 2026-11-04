@@ -1,0 +1,44 @@
+{
+  "schema": "attolang.untrusted-actor-execution.v1",
+  "version": 1,
+  "status": "CANDIDATE_SOURCE_FREE_NOT_BACKEND_EXECUTION",
+  "compilationModes": ["aot", "jit", "interpreted"],
+  "trustDomains": ["trusted", "untrusted"],
+  "independentDimensions": ["trust-domain", "compilation-mode", "guest-format", "isolation-boundary"],
+  "guestFormats": ["wasm", "cil", "native"],
+  "policy": {
+    "untrustedAotRequired": false,
+    "untrustedJitPermitted": true,
+    "trustedRuntimeDescriptorOnly": true,
+    "hostileRequiresOSProcessSandbox": true,
+    "heapOrVmContextAloneIsNotSandbox": true,
+    "mandatory": [
+      "verified-exact-guest-image", "authenticated-supervisor-admission", "process-os-sandbox",
+      "bounded-guest-and-host-memory", "bounded-actor-and-mailbox-admission",
+      "supervisor-worker-termination", "guest-preemption-or-bounded-execution",
+      "deny-by-default-capability-broker", "generation-fenced-lifecycle",
+      "no-cross-tenant-mutable-alias", "code-image-leases-until-last-turn-retires",
+      "no-source-private-export-without-independent-approval"
+    ],
+    "jitSpecific": ["explicit-engine-enable", "enforced-w-x-or-equivalent", "bounded-compiler-work", "no-writeable-executable-guest-pages"],
+    "forbiddenAssumptions": [
+      "native-aot-implies-untrusted-isolation", "wasm-store-implies-os-sandbox",
+      "java-or-clr-thread-abort-is-safe-guest-kill", "logical-arena-implies-memory-containment",
+      "source-free-policy-test-implies-guest-parity", "zero-step-actions-implies-test-executed"
+    ]
+  },
+  "backendTargets": {
+    "java": {"jitCandidate": "Graal pooled untrusted Engine; requires verified external security boundary", "status": "NOT_EXECUTED"},
+    "llvm": {"jitCandidate": "LLVM ORC in bounded process worker; not in-process arbitrary native code", "status": "NOT_EXECUTED"},
+    "wasm": {"jitCandidate": "Wasmtime or V8 Wasm JIT in separately sandboxed tenant worker", "status": "NOT_EXECUTED"},
+    "net": {"jitCandidate": "NativeAOT host plus independent Wasm JIT engine, or managed CLR JIT in isolated process", "status": "NOT_EXECUTED"},
+    "forge": {"jitCandidate": "Cranelift JIT in a verified bounded tenant worker", "status": "NOT_EXECUTED"}
+  },
+  "evidenceForPromotion": [
+    "full-source-head-and-git-tree-sha", "exact-image-sha256", "nonzero-executed-workflow-steps",
+    "real-guest-compiler-and-runtime-execution", "loop-preemption-and-worker-kill",
+    "memory-and-host-overhead-exhaustion", "import-and-capability-denials",
+    "tenant-crossing-and-handle-forgery-denials", "cancel-while-backpressured",
+    "old-generation-retirement-after-pins", "independent-security-review"
+  ]
+}

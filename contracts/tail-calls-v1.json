@@ -1,0 +1,164 @@
+{
+  "schemaVersion": 1,
+  "id": "tail-calls-v1",
+  "scope": "cross-backend executable Oreslang semantic conformance",
+  "note": "All backend results are pending; source-fixture checking is not native compiler/guest evidence.",
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "requirements": {
+    "tailPosition": "return of a direct/indirect call, including selected conditional arms, with no outstanding cleanup or handler continuation",
+    "recursiveRoutines": "reject direct and indirect reentry, including calls via fncs, methods or callbacks; dynamic edges need a runtime fence",
+    "backendsMayImplement": "ABI-safe native tail call, self-loop lowering, or an explicit trampoline",
+    "safepoint": "bounded polling on long tail-call chains; preserve cancellation/deadline/fuel",
+    "barriers": [
+      "defer/finally",
+      "catch/exception handler",
+      "pending ownership drops",
+      "critical region",
+      "suspension/await boundary",
+      "actor-turn or isolate boundary",
+      "generator suspension"
+    ],
+    "nonTail": "ordinary recursion retains ordinary stack semantics",
+    "proof": [
+      "exact source/guest fixture hash",
+      "exact compiler executable identity",
+      "checked and actually executed guest",
+      "observable output/diagnostic",
+      "bounded peak stack or stack-constant proof",
+      "job steps nonempty and bound to exact head"
+    ]
+  },
+  "cases": [
+    {
+      "id": "fnc-self",
+      "path": "fixtures/tail-calls-v1/fnc-self.ores",
+      "compile": "accept",
+      "stdout": "0",
+      "tailDepth": 100000,
+      "backends": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "fnc-mutual",
+      "path": "fixtures/tail-calls-v1/fnc-mutual.ores",
+      "compile": "accept",
+      "stdout": "true",
+      "tailDepth": 100000,
+      "backends": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "instance-method",
+      "path": "fixtures/tail-calls-v1/instance-method.ores",
+      "compile": "accept",
+      "stdout": "0",
+      "tailDepth": 100000,
+      "backends": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "static-method",
+      "path": "fixtures/tail-calls-v1/static-method.ores",
+      "compile": "accept",
+      "stdout": "0",
+      "tailDepth": 100000,
+      "backends": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "lambda-tail",
+      "path": "fixtures/tail-calls-v1/lambda-tail.ores",
+      "compile": "accept",
+      "stdout": "0",
+      "tailDepth": 100000,
+      "backends": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "routine-handoff",
+      "path": "fixtures/tail-calls-v1/routine-handoff.ores",
+      "compile": "accept",
+      "stdout": "0",
+      "tailDepth": 100000,
+      "backends": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "routine-self-reject",
+      "path": "fixtures/tail-calls-v1/routine-self-reject.ores",
+      "compile": "reject",
+      "diagnosticContains": "routine",
+      "diagnosticClass": "recursive-routine",
+      "backends": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "routine-mutual-reject",
+      "path": "fixtures/tail-calls-v1/routine-mutual-reject.ores",
+      "compile": "reject",
+      "diagnosticContains": "routine",
+      "diagnosticClass": "recursive-routine",
+      "backends": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "non-tail-factorial",
+      "path": "fixtures/tail-calls-v1/non-tail-factorial.ores",
+      "compile": "accept",
+      "stdout": "120",
+      "backends": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    }
+  ]
+}

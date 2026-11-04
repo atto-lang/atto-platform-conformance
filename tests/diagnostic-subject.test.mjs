@@ -50,5 +50,5 @@ test("an unrelated failed compiler does not produce a verified negative fixture"
  });
  assert.equal(results.results[1].status,"MISMATCH");
  assert.equal(results.ok,false);
- assert.equal(results.verified,results.results.length-1);
+ assert.equal(results.verified,1);
 });

@@ -44,7 +44,7 @@ test("nonzero process with an unrelated error and echoed source cannot verify ne
  };
  const result=await runSuite({backend:"java",argv,sourceSha:sha,spawn});
  assert.equal(result.ok,false);
- assert.equal(result.verified,result.results.length-1);
+ assert.equal(result.verified,1);
  assert.equal(result.failed,1);
  assert.equal(result.results[1].status,"MISMATCH");
 });
@@ -58,6 +58,6 @@ test("explicit unresolved-name diagnostic verifies negative but unrelated failur
  };
  const result=await runSuite({backend:"llvm",argv,sourceSha:sha,spawn});
  assert.equal(result.ok,true);
- assert.equal(result.verified,result.results.length);
+ assert.equal(result.verified,2);
  assert.equal(result.failed,0);
 });

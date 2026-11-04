@@ -10,8 +10,7 @@ test('missing/unhashable executable cannot be VERIFIED by fabricated successful 
  });
  assert.equal(r.ok,false);
  assert.equal(r.verified,0);
- assert.ok(r.results.length >= 2);
- assert.ok(r.results.every(x=>x.status==='UNHASHABLE_EXECUTABLE'));
+ assert.deepEqual(r.results.map(x=>x.status),['UNHASHABLE_EXECUTABLE','UNHASHABLE_EXECUTABLE']);
  assert.equal(r.executableSha256,null);
 });
 
@@ -35,7 +34,7 @@ test('a legitimate warning with successful exit does not invalidate positive fix
     : {status:0,signal:null,stdout:'',stderr:'warning: unused variable'}
  });
  assert.equal(r.ok,true);
- assert.equal(r.verified,r.results.length);
+ assert.equal(r.verified,2);
 });
 
 test('negative fixture cannot verify when executable is unhashable even with a matching diagnostic',async()=>{
