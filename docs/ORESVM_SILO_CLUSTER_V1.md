@@ -110,10 +110,21 @@ provider-side durable epoch fencing. A `route` value must never authorize a
 caller; the trusted tenant context remains a separate boundary.
 
 Placement must be a plain, own-property record (ordinary or null prototype).
-Inherited fields, symbols, unknown keys, including non-enumerable mandatory
-requirements, fail closed with `UNSUPPORTED_PLACEMENT_CONSTRAINT` rather
-than influencing or disappearing from the policy. This does not establish
-protection against arbitrary hostile JS Proxies in a production native broker.
+Inherited fields from custom prototypes, symbol keys and unknown keys, including
+non-enumerable mandatory requirements, fail closed with
+`UNSUPPORTED_PLACEMENT_CONSTRAINT`. Known placement fields are read only
+from **own** properties, preventing an `Object.prototype` pollution value
+from overriding a default. This does not establish protection against
+arbitrary hostile JS Proxies in a production native broker.
+
+Node-isolate descriptor fields (tenant, isolate, capacity, isolation mode,
+capabilities) are snapshotted once to avoid getter-driven tenant/capability
+TOCTOU. Node ID reuse and node quotas are rechecked immediately before
+publication because a reentrant descriptor getter could have admitted
+another node in the meantime. Deterministic candidate tie-breaking uses
+binary string order rather than host-locale collation. These protections
+remain **host-model only**; real broker admission needs an authenticated,
+validated, immutable descriptor protocol.
 
 The reference rejects duplicate tenant isolates and shared isolate IDs across
 tenants, wrong-tenant contexts, stale routes, unsafe mode claims, inconsistent
