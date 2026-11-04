@@ -104,3 +104,15 @@ test("LLVM RT requires proof digest, not jitter alone",()=>{
   const r=llvmRt();delete r.realTime.wcetProofSha256;
   assert.match(verify(r,contract).errors.join(" | "),/WCET proof digest/);
 });
+
+test("cross-backend workflow substitution fails closed",()=>rejects(r=>{
+  r.execution.workflowRunUrl="https://github.com/ores-truffle-oreslang/oreslang-source.java/actions/runs/12345";
+},/exact source backend/));
+test("external, zero, padded, or job-suffixed run URLs fail",()=>{
+  for (const url of [
+    "https://github.com/outside-org/oreslang-source.wasm/actions/runs/12345",
+    "https://github.com/ores-truffle-oreslang/oreslang-source.wasm/actions/runs/0",
+    "https://github.com/ores-truffle-oreslang/oreslang-source.wasm/actions/runs/012345",
+    "https://github.com/ores-truffle-oreslang/oreslang-source.wasm/actions/runs/12345/job/9"
+  ]) rejects(r=>{r.execution.workflowRunUrl=url},/exact source backend/);
+});
