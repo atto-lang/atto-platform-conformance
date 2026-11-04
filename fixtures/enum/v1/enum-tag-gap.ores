@@ -1,0 +1,15 @@
+define enum Stage as
+    First = 2
+    Last = 50
+end
+fnc classify(Stage x): int {
+    match x over
+        on Stage.First -> { return 2; }
+        on Stage.Last -> { return 50; }
+    end
+}
+pub fnc main(): void {
+    stdio.println(classify(Stage.First()));
+    stdio.println(classify(Stage.Last()));
+    return;
+}

@@ -183,7 +183,7 @@ smoke harness remains a separate, narrower test.
 
 [Enum semantics v1](docs/ENUM_SEMANTICS_V1.md) defines the closed, nominal case/tag,
 exhaustiveness, payload, zero-GC and actor-wire boundaries. Its
-[14 Git-blob-pinned positive/negative fixtures](contracts/enum-semantics-v1.json)
+[36 Git-blob-pinned positive/negative fixtures](contracts/enum-semantics-v1.json)
 cover Java, LLVM, Wasm, .NET and Forge as a **target** inventory.
 The Node fixture-integrity tests do not compile Oreslang, and no backend is
 marked confirmed until real exact-source compiler checks and guest execution
