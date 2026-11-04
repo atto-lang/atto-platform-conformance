@@ -25,6 +25,17 @@ test("LLVM local host evidence does not promote compiler-backed guest parity", (
  assert.equal(v.m1Descriptor.hostedExecutedSteps, 0);
  assert.ok(v.m1Descriptor.additionalGates.includes("LLVM verified-codegen before metadata publication"));
  assert.ok(v.m1Descriptor.additionalGates.includes("compiler-backed native guest output O0 and O2 for atto and ores"));
+ assert.match(v.nativeHost.currentHead, hex40);
+ assert.match(v.nativeHost.currentTree, hex40);
+ assert.equal(v.nativeHost.currentSourceSteps, 0);
+ assert.equal(v.nativeHost.sourceChangedSinceLocalProof, true);
+ assert.match(v.m1Descriptor.currentHead, hex40);
+ assert.match(v.m1Descriptor.currentTree, hex40);
+ assert.equal(v.m1Descriptor.currentSourceSteps, 0);
+ assert.equal(v.m1Descriptor.fullMergedSourceNotExecuted, true);
+ assert.notEqual(v.m1Descriptor.currentHead, v.m1Descriptor.head);
+ assert.match(v.m1Descriptor.checkedBlobs.emitter,hex40);
+ assert.match(v.m1Descriptor.checkedBlobs.nativeGuestTest,hex40);
  assert.equal(v.m1Descriptor.compilerDriverExecution, "NOT_EXECUTED");
  assert.equal(v.m1Descriptor.guestNativeExecution, "NOT_EXECUTED");
  assert.equal(v.guestParity, "NOT_EXECUTED");

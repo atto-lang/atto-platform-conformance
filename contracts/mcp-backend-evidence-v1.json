@@ -22,7 +22,12 @@
         ],
         "hostedWorkflowRun": 41754443159,
         "hostedExecutedSteps": 0,
-        "hostedStatus": "NOT_EXECUTED"
+        "hostedStatus": "NOT_EXECUTED",
+        "currentHead": "82ecedc982811663cf206d342f0b084a2ac371fc",
+        "currentTree": "a46a6e41f30b07e11bee1c28e5d8bf1306daadbb",
+        "currentSourceRun": 41768208175,
+        "currentSourceSteps": 0,
+        "sourceChangedSinceLocalProof": true
       },
       "m1Descriptor": {
         "status": "LOCAL_HOST_HELPER_AND_ELF_LINKER_ONLY",
@@ -58,7 +63,18 @@
           "reject actor/async/effect/borrowed public descriptor signatures",
           "compiler-backed native guest output O0 and O2 for atto and ores",
           "source-free O0/O2 retention and negative writable mutation"
-        ]
+        ],
+        "currentHead": "c5bd6326a0d53cbcb783f627a9520c812d6f050a",
+        "currentTree": "f4564d79afd407ef9e6ebb642d8094eb6f8ffa35",
+        "currentSourceRun": 41768252264,
+        "currentSourceSteps": 0,
+        "fullMergedSourceNotExecuted": true,
+        "checkedBlobs": {
+          "emitter": "efd37abbf6e711ba64239b230297fb9b7b091388",
+          "hostTest": "36486827b873f4cfbf132e42eda56ffec9104ca8",
+          "linkerTest": "2e58df063111f0dd5a1afa811e6e3d4ea5d4c317",
+          "nativeGuestTest": "55f27f394e3a8d399379e0acd581a205ec350606"
+        }
       },
       "guestParity": "NOT_EXECUTED",
       "liveMcpTransport": "NOT_IMPLEMENTED",
