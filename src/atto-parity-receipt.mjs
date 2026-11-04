@@ -72,7 +72,7 @@ function validateV1(report) {
     } else {
       check(c.compile_exit !== 0 && c.executed === false, 'negative compile rejection');
       check(typeof c.diagnostic === 'string' && c.diagnostic.length > 0 && c.diagnostic.length <= 4096 &&
-        !/[\u0000\u001b\u007f\u009b\u202a-\u202e\u2066-\u2069]/.test(c.diagnostic), 'negative diagnostic');
+        !/[\u0000\u001b\u007f-\u009f\u2028-\u202e\u2066-\u2069]/.test(c.diagnostic), 'negative diagnostic');
     }
   }
   return {
@@ -109,7 +109,7 @@ function validateV2(report) {
     } else {
       check(c.failure_stage === 'compile' || c.failure_stage === 'runtime', 'negative failure stage');
       check(typeof c.diagnostic === 'string' && c.diagnostic.length > 0 && c.diagnostic.length <= 4096 &&
-        !/[\u0000\u001b\u007f\u009b\u202a-\u202e\u2066-\u2069]/.test(c.diagnostic), 'negative diagnostic');
+        !/[\u0000\u001b\u007f-\u009f\u2028-\u202e\u2066-\u2069]/.test(c.diagnostic), 'negative diagnostic');
       if (c.failure_stage === 'compile') {
         check(c.compile_exit !== 0 && c.executed === false, 'negative compile rejection');
         check(c.artifact_sha256 === undefined, 'compile rejection artifact');

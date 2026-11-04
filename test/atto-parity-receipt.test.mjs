@@ -195,3 +195,18 @@ test('all ASCII controls and Unicode line separators are invalid compiler labels
   r.compiler='C:/Program Files/AttoLang/native compiler';
   assert.equal(validateParityReceipt(r).case_count,2);
 });
+
+test('v1/v2 reject C1 and Unicode diagnostic line-spoofing while preserving LF',()=>{
+  for(const make of [v1,v2]){
+    for(const codepoint of [0x80,0x85,0x9a,0x9f,0x2028,0x2029]){
+      const r=make();
+      r.cases.find(c=>c.kind==='negative').diagnostic=
+        'genuine failure'+String.fromCodePoint(codepoint)+'fake success';
+      assert.throws(()=>validateParityReceipt(r),/negative diagnostic/);
+    }
+    const r=make();
+    r.cases.find(c=>c.kind==='negative').diagnostic=
+      'first line\\nsecond line: genuine compiler failure';
+    assert.equal(validateParityReceipt(r).publicly_promotable,false);
+  }
+});
