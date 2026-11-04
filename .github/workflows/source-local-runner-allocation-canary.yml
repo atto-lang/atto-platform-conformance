@@ -9,6 +9,10 @@ on:
   pull_request:
     paths:
       - .github/workflows/source-local-runner-allocation-canary.yml
+      - verification/verify-singleton-shared-state-v1.mjs
+      - verification/SINGLETON_V1_EVIDENCE_RUNBOOK.md
+      - contracts/singleton-shared-state-v1.json
+      - evidence/singleton-shared-state-v1.json
   workflow_dispatch:
 permissions: {}
 jobs:
