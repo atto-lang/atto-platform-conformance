@@ -511,3 +511,25 @@ test("pubsub Option discipline rejects null and undefined at every depth", () =>
   const concrete=share({value:{tag:"none"}});
   assert.equal(bus.tryPublish(topic,concrete).ok,true);
 });
+
+test("runtime-issued pubsub capabilities are not Sendable DATA even when frozen", () => {
+  const bus=new PubSubReference();
+  const channel=bus.topic("data.events","Data").topic;
+  const capability=bus.topic("control.events","Event").topic;
+  const group=bus.group("g").group;
+  const actor=bus.actor("a").actor;
+  const membership=bus.join(group,actor).membership;
+  const scoped=bus.topicInGroup(group,"events","E").topic;
+  const sub=bus.subscribe(scoped,"actor",actor,1).subscription;
+
+  for (const handle of [capability,group,membership,sub,scoped]) {
+    assert.equal(bus.tryPublish(channel,handle).error,"NotShared");
+    assert.throws(()=>share(handle),/non-Sendable/);
+    const nested={safe:{id:"still-mutable"},handle};
+    assert.throws(()=>share(nested),/non-Sendable/);
+    assert.equal(Object.isFrozen(nested.safe),false,
+      "later capability rejection must not freeze an earlier data sibling");
+    assert.equal(bus.tryPublish(channel,Object.freeze(nested)).error,"NotShared");
+  }
+  assert.equal(bus.tryPublish(channel,share({value:{id:3}})).ok,true);
+});
