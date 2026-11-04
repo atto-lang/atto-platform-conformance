@@ -6,6 +6,21 @@ import { readFileSync } from 'node:fs';
 const contract = JSON.parse(readFileSync(new URL('../contracts/scoped-locals-v1.json', import.meta.url)));
 const kinds = ['actor','thread','request','task'];
 
+// Node's Buffer.byteLength() replaces unmatched UTF-16 surrogates while
+// measuring their UTF-8 size. That would silently certify a value which
+// the native and Java RequestLocal implementations must reject.
+function validUnicodeScalars(value) {
+  for (let i=0;i<value.length;i++) {
+    const unit=value.charCodeAt(i);
+    if(unit>=0xd800 && unit<=0xdbff) {
+      if(i+1>=value.length) return false;
+      const next=value.charCodeAt(++i);
+      if(next<0xdc00 || next>0xdfff) return false;
+    } else if(unit>=0xdc00 && unit<=0xdfff) return false;
+  }
+  return true;
+}
+
 class ReferenceRuntime {
   #issued = new WeakSet();
   #keys = new WeakSet();
@@ -32,7 +47,9 @@ class ReferenceRuntime {
   }
   set(store,key,caller,value) {
     if(!this.#valid(store,key,caller) || typeof value!==key.type) return false;
+    if(typeof value==='string' && !validUnicodeScalars(value)) return false;
     const size=typeof value==='string'?Buffer.byteLength(value,'utf8'):8;
+    if(caller.scope==='request' && size>1024) return false;
     const old=store.cells.get(key)?.size??0;
     if((!store.cells.has(key)&&store.cells.size===store.slots) ||
         size>store.bytes-(store.used-old)) return false;
@@ -58,6 +75,11 @@ test('candidate schema covers four scopes, all five backends and denies syntheti
   assert.equal(contract.promotion.hostUnitTestsAloneSufficient,false);
   assert.equal(contract.promotion.syntaxRejectionCountsAsParityPass,false);
   assert.equal(contract.promotion.guestSourceExecutionRequired,true);
+  assert.equal(contract.promotion.requestMalformedUnicodeMustFailWithoutMutation,true);
+  assert.equal(contract.promotion.requestTransferOriginalMailProofRequired,true);
+  assert.equal(contract.scopes.request.limits.maxSlots,32);
+  assert.equal(contract.scopes.request.limits.maxUtf8BytesPerValue,1024);
+  assert.equal(contract.scopes.request.limits.maxTotalPayloadBytes,8192);
 });
 
 test('actor state persists across turns, not incarnations or tenants',()=>{
@@ -138,6 +160,36 @@ test('slot and UTF-8 byte exhaustion preserve previous values',()=>{
   assert.equal(r.get(scope,a,scope.ticket),'12345');
   assert.ok(r.set(scope,a,scope.ticket,'ééé'));
   assert.equal(r.get(scope,a,scope.ticket),'ééé');
+});
+
+test('strict Unicode scalar validation rejects malformed strings atomically',()=>{
+  const r=new ReferenceRuntime(),key=r.key('request','string');
+  const ctx=r.admit('request',id('utf8-boundary'));
+  assert.ok(r.set(ctx,key,ctx.ticket,'prior'));
+  const invalid=['\uD800','\uDC00','a\uD800b','\uD800\uD800'];
+  for(const bad of invalid){
+    assert.equal(r.set(ctx,key,ctx.ticket,bad),false);
+    assert.equal(r.get(ctx,key,ctx.ticket),'prior');
+  }
+  const emoji=String.fromCodePoint(0x1f600);
+  assert.ok(r.set(ctx,key,ctx.ticket,emoji.repeat(256)));
+  assert.equal(r.set(ctx,key,ctx.ticket,emoji.repeat(257)),false);
+  assert.equal(r.get(ctx,key,ctx.ticket),emoji.repeat(256));
+});
+
+test('request-specific 1KiB values and 8KiB total budget reject overflow without mutation',()=>{
+  const r=new ReferenceRuntime(),ctx=r.admit('request',id('quota'));
+  const keys=Array.from({length:8},()=>r.key('request','string'));
+  for(const k of keys) assert.ok(r.set(ctx,k,ctx.ticket,'x'.repeat(1024)));
+  assert.equal(ctx.used,8192);
+  const more=r.key('request','string');
+  assert.equal(r.set(ctx,more,ctx.ticket,'x'),false);
+  assert.equal(r.set(ctx,keys[0],ctx.ticket,'y'.repeat(1025)),false);
+  assert.equal(r.get(ctx,keys[0],ctx.ticket),'x'.repeat(1024));
+  assert.ok(r.set(ctx,keys[0],ctx.ticket,'ok'));
+  assert.equal(ctx.used,8192-1024+2);
+  assert.ok(r.set(ctx,more,ctx.ticket,'new'));
+  assert.equal(ctx.used,8192-1024+2+3);
 });
 
 test('repeated interleaving never reveals another request value',()=>{
