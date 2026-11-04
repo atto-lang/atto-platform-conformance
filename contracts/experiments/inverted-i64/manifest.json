@@ -198,5 +198,19 @@
     "exact_head_native_asan_ubsan": "NOT_EXECUTED",
     "exact_head_production_compiler_guest": "NOT_EXECUTED",
     "five_backend_guest_parity": "NOT_EXECUTED"
+  },
+  "current_guest_snapshot_lowering": {
+    "scope": "restricted two-i64 local native LLVM emitter, not general inverted struct/class guest parity",
+    "hardening_commit_sha": "415130d3748af471975f0172db36f54573605571",
+    "llvm_emitter_blob_sha": "74c0201fc3861327ce131b992af08e73e2daec1f",
+    "compiler17_test_blob_sha": "3ea406cdac5a9334235ef5709fe9802b3ef16b4d",
+    "guest_mode_blob_sha": "e13781155981bf195a84c92b493398b366479dd7",
+    "native_guest_script_blob_sha": "89ef857cd1f5c57abd98fc86437f72d6e9e45980",
+    "verified_source_behavior": "CODE_COMMITTED_FAIL_CLOSED_SNAPSHOT_NOT_LOWERED",
+    "detached_snapshot_value_guest_lowering": "NOT_IMPLEMENTED",
+    "exact_head_cpp17_compiler_test": "NOT_EXECUTED",
+    "exact_head_native_guest_test": "NOT_EXECUTED",
+    "exact_head_sanitizer_test": "NOT_EXECUTED",
+    "source_contract_snapshot_positive": "NOT_EXECUTED"
   }
 }
