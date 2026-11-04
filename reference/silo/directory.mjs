@@ -49,22 +49,30 @@ export class InMemorySiloDirectory {
     if (!Array.isArray(isolates) || isolates.length < 1 || isolates.length > 1024) deny('INVALID_ISOLATES');
     const by_tenant = new Map(), seen_isolates = new Set();
     for (const iso of isolates) {
-      if (!iso || !name(iso.tenant_id) || Buffer.byteLength(iso.tenant_id, 'utf8') > 128 ||
-          !machine_name(iso.isolate_id) || !positive(iso.max_actors) || !MODES.has(iso.isolation_mode)) {
+      if (!iso || typeof iso !== 'object' || Array.isArray(iso)) deny('INVALID_ISOLATE');
+      // Read each caller-controlled descriptor field exactly once. A getter
+      // must not validate one tenant/capability and publish another.
+      const { tenant_id, isolate_id, max_actors, isolation_mode, capabilities } = iso;
+      if (!name(tenant_id) || Buffer.byteLength(tenant_id, 'utf8') > 128 ||
+          !machine_name(isolate_id) || !positive(max_actors) || !MODES.has(isolation_mode)) {
         deny('INVALID_ISOLATE');
       }
-      if (by_tenant.has(iso.tenant_id)) deny('DUPLICATE_TENANT_ISOLATE');
-      if (seen_isolates.has(iso.isolate_id)) deny('ISOLATE_REUSED_ACROSS_TENANTS');
-      if (!Array.isArray(iso.capabilities)) deny('INVALID_CAPABILITIES');
-      const advertised_caps = [...iso.capabilities];
+      if (by_tenant.has(tenant_id)) deny('DUPLICATE_TENANT_ISOLATE');
+      if (seen_isolates.has(isolate_id)) deny('ISOLATE_REUSED_ACROSS_TENANTS');
+      if (!Array.isArray(capabilities)) deny('INVALID_CAPABILITIES');
+      const advertised_caps = [...capabilities];
       if (advertised_caps.length > 32 || advertised_caps.some(c => !machine_name(c)) ||
           new Set(advertised_caps).size !== advertised_caps.length) deny('INVALID_CAPABILITIES');
-      seen_isolates.add(iso.isolate_id);
-      by_tenant.set(iso.tenant_id, {
-        tenant_id: iso.tenant_id, isolate_id: iso.isolate_id, max_actors: iso.max_actors,
-        isolation_mode: iso.isolation_mode, capabilities: new Set(advertised_caps), active: 0
+      seen_isolates.add(isolate_id);
+      by_tenant.set(tenant_id, {
+        tenant_id, isolate_id, max_actors, isolation_mode,
+        capabilities: new Set(advertised_caps), active: 0
       });
     }
+    // Descriptor getters can reenter trusted control-plane code. Re-check
+    // admission immediately before the atomic directory publication.
+    if (this.#nodes.has(node_id)) deny('NODE_ID_REUSE');
+    if (this.#nodes.size >= this.#max_nodes) deny('NODE_QUOTA');
     this.#nodes.set(node_id, { node_id, backend, region, status: 'READY', by_tenant });
   }
 
@@ -93,7 +101,9 @@ export class InMemorySiloDirectory {
           !capabilities.every(c => iso.capabilities.has(c))) continue;
       candidates.push({ node, iso });
     }
-    candidates.sort((a, b) => a.iso.active - b.iso.active || a.node.node_id.localeCompare(b.node.node_id));
+    // Locale-independent binary-order tie-break, stable across host locales.
+    candidates.sort((a, b) => a.iso.active - b.iso.active ||
+      (a.node.node_id < b.node.node_id ? -1 : a.node.node_id > b.node.node_id ? 1 : 0));
     return candidates[0];
   }
 
@@ -104,9 +114,19 @@ export class InMemorySiloDirectory {
     // Unknown mandatory constraints (e.g. schema/ABI/version) are not silently
     // ignored; the real broker must implement them before admission.
     const known = new Set(['backend', 'region', 'isolation_mode', 'capabilities', 'hard_realtime']);
-    if (Object.keys(options).some(k => !known.has(k))) deny('UNSUPPORTED_PLACEMENT_CONSTRAINT');
-    const { backend = null, region = null, isolation_mode = 'actor-local',
-      capabilities = [], hard_realtime = false } = options;
+    // Reject inherited, symbol and non-enumerable fields instead of silently
+    // admitting a layout that may conceal a mandatory hard placement rule.
+    // A null-prototype record is accepted; an inherited object is not.
+    const proto = Object.getPrototypeOf(options);
+    if (proto !== Object.prototype && proto !== null) deny('UNSUPPORTED_PLACEMENT_CONSTRAINT');
+    if (Reflect.ownKeys(options).some(k => typeof k !== 'string' || !known.has(k)))
+      deny('UNSUPPORTED_PLACEMENT_CONSTRAINT');
+    // Destructuring defaults read inherited Object.prototype fields. Only
+    // explicit own constraints may affect placement, even under pollution.
+    const own = (key, fallback) => Object.hasOwn(options, key) ? options[key] : fallback;
+    const backend = own('backend', null), region = own('region', null),
+      isolation_mode = own('isolation_mode', 'actor-local'),
+      capabilities = own('capabilities', []), hard_realtime = own('hard_realtime', false);
     if (!Array.isArray(capabilities)) deny('INVALID_PLACEMENT');
     const required_caps = [...capabilities];
     if ((backend !== null && !BACKENDS.has(backend)) || (region !== null && !machine_name(region)) ||
@@ -183,16 +203,20 @@ export class InMemorySiloDirectory {
     return copy_route(rec);
   }
 
+  #matches_route(rec, actor_ref, route) {
+    return !!rec && !!route && typeof route === 'object' &&
+      route.actor_ref === actor_ref && route.tenant_id === rec.tenant_id &&
+      route.node_id === rec.node_id && route.isolate_id === rec.isolate_id &&
+      route.backend === rec.backend && route.epoch === rec.epoch &&
+      this.#nodes.get(rec.node_id)?.status !== 'DOWN';
+  }
+
   // DIRECTORY-ONLY CHECK. Does not authenticate a network packet, reserve mailbox
   // credits, or validate the authoritative storage epoch at an effect sink.
   validate_delivery(context, id, route) {
     const { key, actor_ref } = this.#trusted_identity(context, id);
-    const rec = this.#active.get(key);
-    if (!rec || !route || typeof route !== 'object' ||
-        route.actor_ref !== actor_ref || route.tenant_id !== rec.tenant_id ||
-        route.node_id !== rec.node_id || route.isolate_id !== rec.isolate_id ||
-        route.backend !== rec.backend || route.epoch !== rec.epoch ||
-        this.#nodes.get(rec.node_id)?.status === 'DOWN') deny('STALE_OR_FORGED_ROUTE');
+    if (!this.#matches_route(this.#active.get(key), actor_ref, route))
+      deny('STALE_OR_FORGED_ROUTE');
     return true;
   }
 
@@ -218,10 +242,17 @@ export class InMemorySiloDirectory {
     node.status = 'DRAINING';
   }
 
-  passivate_actor(context, id) {
-    const { key } = this.#trusted_identity(context, id);
+  // A delayed/duplicated shutdown callback from an older activation must
+  // never retire a newer incarnation of the same stable ActorRef.
+  // expected_route is an activation identity check, NOT an authority token.
+  // The real runtime must additionally drain in-flight turns/loans and obtain
+  // provider-side state/effect fencing before releasing the activation.
+  passivate_actor(context, id, expected_route) {
+    const { key, actor_ref } = this.#trusted_identity(context, id);
     const rec = this.#active.get(key);
     if (!rec) deny('ACTOR_NOT_ACTIVE');
+    if (!this.#matches_route(rec, actor_ref, expected_route))
+      deny('STALE_OR_FORGED_PASSIVATION');
     this.#active.delete(key);
     this.#nodes.get(rec.node_id).by_tenant.get(rec.tenant_id).active--;
   }
