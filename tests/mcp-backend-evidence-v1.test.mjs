@@ -28,7 +28,7 @@ test("LLVM local host evidence does not promote compiler-backed guest parity", (
  assert.match(v.nativeHost.currentHead, hex40);
  assert.match(v.nativeHost.currentTree, hex40);
  assert.equal(v.nativeHost.currentSourceSteps, 0);
- assert.equal(v.nativeHost.sourceChangedSinceLocalProof, true);
+ assert.equal(v.nativeHost.sourceChangedSinceLocalProof, false);
  assert.match(v.m1Descriptor.currentHead, hex40);
  assert.match(v.m1Descriptor.currentTree, hex40);
  assert.equal(v.m1Descriptor.currentSourceSteps, 0);
@@ -43,6 +43,31 @@ test("LLVM local host evidence does not promote compiler-backed guest parity", (
  assert.equal(v.liveMcpTransport, "NOT_IMPLEMENTED");
  assert.equal(v.mergeReady, false);
 });
+test("current LLVM M0/M1 native host proof binds five exact blobs without guest promotion", () => {
+ const v=data.backends.llvm;
+ const p=v.localCurrentBlobHostProof;
+ assert.equal(p.scope,"EXACT_GIT_BLOBS_NATIVE_HOST_ONLY_NOT_COMPILER_NOT_GUEST");
+ assert.equal(p.matrixStatus,"LOCAL_EXECUTED_ALL_8_PASS");
+ assert.equal(p.m0AssertionsPerMode,315);
+ assert.equal(p.m1AssertionsPerMode,48);
+ assert.deepEqual(p.compilers,["gcc-14.2","clang-17"]);
+ assert.deepEqual(p.modes,["optimized","asan-ubsan"]);
+ assert.equal(p.verifiedAtHeads.m0,v.nativeHost.currentHead);
+ assert.equal(p.verifiedAtHeads.m1,v.m1Descriptor.currentHead);
+ assert.equal(p.verifiedAtTrees.m0,v.nativeHost.currentTree);
+ assert.equal(p.verifiedAtTrees.m1,v.m1Descriptor.currentTree);
+ assert.equal(Object.keys(p.blobs).length,5);
+ for(const sha of Object.values(p.blobs)) assert.match(sha,hex40);
+ assert.match(p.hostLogSha256,/^[0-9a-f]{64}$/);
+ assert.match(p.receiptSha256,/^[0-9a-f]{64}$/);
+ assert.equal(p.fullCompilerBuild,"NOT_EXECUTED");
+ assert.equal(p.guestExecution,"NOT_EXECUTED");
+ assert.equal(p.hostedCI,"NOT_EXECUTED");
+ assert.equal(p.independentSecurityReview,"NOT_OBTAINED");
+ assert.equal(v.guestParity,"NOT_EXECUTED");
+ assert.equal(v.m1Descriptor.compilerGuestReceipt.status,"NOT_EXECUTED");
+});
+
 test("cross-backend evidence never silently infers native guest execution", () => {
  assert.deepEqual(Object.keys(data.backends).sort(), ["forge","java","llvm","net","wasm"]);
  for (const [backend,status] of Object.entries(data.backends)) {
