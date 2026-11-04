@@ -21,7 +21,7 @@ test("source exact-blobs match five compiler repository fixtures, but prove no g
   assert.deepEqual(Object.keys(contract.backends).sort(), ["forge","java","llvm","net","wasm"]);
   assert.equal(contract.receipts.length, 0);
   for (const [name, x] of Object.entries(contract.backends)) {
-    assert.ok(["AUTHORED_UNVERIFIED","CONTRACT_ONLY"].includes(x.state), name);
+    assert.ok(["AUTHORED_UNVERIFIED","REJECTION_ONLY_UNVERIFIED","CONTRACT_ONLY"].includes(x.state), name);
   }
 });
 
