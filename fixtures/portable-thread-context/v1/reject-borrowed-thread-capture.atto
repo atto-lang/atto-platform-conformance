@@ -1,0 +1,9 @@
+// Candidate rejection. NOT_EXECUTED. Diagnostic: thread_capture_borrow.
+fnc main() -> int {
+    let int item = 42;
+    let borrowed = rt borrow item;
+    let job = Thread.spawn(ThreadOptions.default(), || -> int {
+        return borrowed;
+    });
+    return 0;
+}
