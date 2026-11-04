@@ -18,7 +18,7 @@ const workflow=()=>({
  repository:'ores-truffle-oreslang/oreslang-platform-conformance',
  runId:12345,attempt:1,head:HEADS[0],conclusion:'success',
  jobs:[{name:'six-wave-host-conformance',runId:12345,attempt:1,head:HEADS[0],conclusion:'success',
-  steps:['Check out integration driver','Check out 6 pinned wave commits','Run pinned six-wave host suites'].map(name=>({name,status:'completed',conclusion:'success',attempt:1}))}]
+  steps:['Check out integration driver','Set up Node 22','Confirm Clang for native format control cases',...Array.from({length:6},(_,i)=>'Checkout wave '+(i+1)+' exact draft head'),'Check out 6 pinned wave commits','Test integration runner and provenance denial guards','Run pinned six-wave host suites'].map(name=>({name,status:'completed',conclusion:'success',attempt:1}))}]
 });
 test('31 / all 92 changed files across six PRs are uniquely registered',async()=>{
  const x=validateInventory(await load());
@@ -43,7 +43,8 @@ test('31 / pinned manifests tests and cross-wave source must remain exact',async
 });
 test('31 / false parity promotion and missing backend inventory rejected',async()=>{
  for(const f of [m=>{m.certifiedParity=true},m=>{m.backends.pop()},m=>{m.tasks[4].name='release-now'}]){
-  assert.throws(()=>validateInventory(await mutate(f)),/integration-inventory/);
+  const changed=await mutate(f);
+  assert.throws(()=>validateInventory(changed),/integration-inventory/);
  }
 });
 test('32 / temp locally committed checkout proves exact Git head and source blobs',async()=>{
@@ -111,4 +112,48 @@ test('34 / missing compile/checkout/execute steps or fake success cannot pass',(
 test('35 / full host outcomes still mandate production compiler and independent CI reviews',()=>{
  const r=mergeReadiness({results:makeRuns()});assert.equal(r.securityReview,'REQUIRED');
  assert.ok(r.nextRequirements.some(x=>/production compiler/.test(x)));
+});
+
+test('37 / an untracked Node test cannot be injected into reviewed checkout',async()=>{
+ const workspace=await mkdtemp(join(tmpdir(),'ores-untracked-'));
+ try{
+  const root=join(workspace,'wave1'),dir=join(root,'parity','wave1','tests');
+  await mkdir(dir,{recursive:true});
+  const path='parity/wave1/tests/probe.test.mjs',source=Buffer.from("import test from 'node:test';test('ok',()=>{});\n");
+  await writeFile(join(dir,'probe.test.mjs'),source);
+  execFileSync('git',['init','-q',root]);execFileSync('git',['-C',root,'add','.']);
+  execFileSync('git',['-C',root,'-c','user.email=test@example.invalid','-c','user.name=Test','commit','-qm','baseline']);
+  const head=execFileSync('git',['-C',root,'rev-parse','HEAD'],{encoding:'utf8'}).trim();
+  await writeFile(join(dir,'injected.test.mjs'),"import test from 'node:test';test('injected',()=>{});\n");
+  await assert.rejects(verifyCheckout({wave:1,head,changedFiles:[path],pinnedFiles:[{path,gitBlob:hash(source)}]},workspace),/modified before tests/);
+ }finally{await rm(workspace,{recursive:true,force:true})}
+});
+test('38 / extra tracked but unreviewed test must not execute',async()=>{
+ const workspace=await mkdtemp(join(tmpdir(),'ores-unreviewed-'));
+ try{
+  const root=join(workspace,'wave1'),dir=join(root,'parity','wave1','tests');
+  await mkdir(dir,{recursive:true});
+  const path='parity/wave1/tests/probe.test.mjs',source=Buffer.from("import test from 'node:test';test('ok',()=>{});\n");
+  await writeFile(join(dir,'probe.test.mjs'),source);
+  await writeFile(join(dir,'unreviewed.test.mjs'),"import test from 'node:test';test('not admitted',()=>{});\n");
+  execFileSync('git',['init','-q',root]);execFileSync('git',['-C',root,'add','.']);
+  execFileSync('git',['-C',root,'-c','user.email=test@example.invalid','-c','user.name=Test','commit','-qm','baseline']);
+  const head=execFileSync('git',['-C',root,'rev-parse','HEAD'],{encoding:'utf8'}).trim();
+  await assert.rejects(verifyCheckout({wave:1,head,changedFiles:[path],pinnedFiles:[{path,gitBlob:hash(source)}]},workspace),/unreviewed\/missing test/);
+ }finally{await rm(workspace,{recursive:true,force:true})}
+});
+test('39 / all CI stages must appear in authored workflow order',()=>{
+ const r=workflow();
+ const first=r.jobs[0].steps[1];r.jobs[0].steps[1]=r.jobs[0].steps[2];r.jobs[0].steps[2]=first;
+ assert.throws(()=>assessWorkflow(r,{expectedHead:HEADS[0]}),/step order/);
+});
+test('40 / missing checkouts give six blocked results, never imaginary test failures',async()=>{
+ const workspace=await mkdtemp(join(tmpdir(),'ores-missing-six-'));
+ try{
+  const r=await runIntegration({inventoryPath:resolve(fileURLToPath(manifestPath)),checkoutRoot:workspace});
+  assert.equal(r.results.length,6);
+  assert.equal(r.status,'HOST_SUITES_FAILED');
+  assert.ok(r.results.every(x=>x.status==='BLOCKED_BEFORE_TEST'&&x.hostSuiteRan===false&&x.testCounts===null));
+  assert.equal(r.releaseCertified,false);
+ }finally{await rm(workspace,{recursive:true,force:true})}
 });
