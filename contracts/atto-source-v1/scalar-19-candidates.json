@@ -26,9 +26,9 @@
       "id": "llvm",
       "repository": "ores-truffle-oreslang/oreslang-source.llvm",
       "pr": 1348,
-      "head_sha": "c4f725cde2f62470285d2269af002e4a064d84d5",
-      "tree_sha": "c03f2bd48ae86bcd7a234e3cf0e2a740227be05e",
-      "planned_scope": "native-execution-7-positive-3-negative",
+      "head_sha": "28b356cc648fcd7f4e065aef7c807e3d301cbae7",
+      "tree_sha": "fc3df49ac7ac5a750d71e6593f3aba4eb7c64b5c",
+      "planned_scope": "native-typed-i64-10-positive-9-negative-plus-source-unit-compatibility",
       "status": "NOT_EXECUTED"
     },
     {
