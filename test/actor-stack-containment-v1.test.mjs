@@ -68,7 +68,7 @@ test('fake pass, duplicate backend, deleted proof and false promotion are reject
   const mutate = fn => { const changed = structuredClone(original); fn(changed); return changed; };
   assert.throws(() => validatePending(mutate(m => {m.promotion.certified = true;})));
   assert.throws(() => validatePending(mutate(m => {m.backends[0].compilerGuest = 'PASS';})));
-  assert.throws(() => validatePending(mutate(m => {m.backends[0].id = 'java';})));
+  assert.throws(() => validatePending(mutate(m => {m.backends[0].id = m.backends[1].id;})));
   assert.throws(() => validatePending(mutate(m => {delete m.backends[0].nativeLowStack;})));
   assert.throws(() => validatePending(mutate(m => {m.promotion.zeroStepCountsAsExecuted = true;})));
   assert.throws(() => validatePending(mutate(m => {m.scenarios[0].source = 'fixtures/legacy.ores';})));

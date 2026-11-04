@@ -20,6 +20,9 @@ function runGate(overrides) {
     ATTO_ANALYZE_FORMATTER_SHA256: '',
     ...overrides
   };
+  // An inherited runner context makes the nested `node --test` exit 0 even when
+  // its test fails, which would hide the exit status this file exists to check.
+  delete env.NODE_TEST_CONTEXT;
   return spawnSync(process.execPath, [
     '--test', '--test-name-pattern=strict parity gate requires', target
   ], {
