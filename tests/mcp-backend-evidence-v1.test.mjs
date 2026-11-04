@@ -13,7 +13,7 @@ test("MCP LLVM native evidence references the same versioned source contract", (
 test("LLVM local host evidence does not promote compiler-backed guest parity", () => {
  const v = data.backends.llvm;
  assert.equal(v.nativeHost.status, "LOCAL_EXECUTED");
- assert.equal(v.nativeHost.assertionsPerCompiler, 310);
+ assert.equal(v.nativeHost.assertionsPerCompiler, 315);
  assert.deepEqual(v.nativeHost.compilers, ["gcc-14.2","clang-17"]);
  assert.deepEqual(v.nativeHost.sanitizers, ["ASan","UBSan"]);
  assert.equal(v.nativeHost.hostedExecutedSteps, 0);
@@ -59,4 +59,11 @@ test("exact heads, trees and independent security gate remain mandatory", () => 
  }
  assert.ok(data.blockingGates.some(x=>x.includes("independent security review")));
  assert.ok(data.blockingGates.some(x=>x.includes("nonzero exact-head hosted steps")));
+});
+
+test("LLVM and JS M0 live ticket authority fences stay aligned",()=>{
+ assert.equal(data.backends.llvm.nativeHost.regression,"ticket invalidated on boot rotation and peer verification revocation");
+ assert.equal(data.jsReference.admissionAndFrameTests,62);
+ assert.deepEqual(data.jsReference.liveTicketRequires,["boot_identity","authenticated_peer","runtime_generation","credential_expiry","monotonic_deadline"]);
+ assert.equal(data.backends.llvm.m1Descriptor.m0HeadMerged,data.backends.llvm.nativeHost.head);
 });
