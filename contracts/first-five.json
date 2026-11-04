@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "batch": 1,
+  "scope": "source-parity-admission",
+  "backends": ["java", "llvm", "net", "wasm", "forge"],
+  "tasks": [
+    {
+      "number": 1,
+      "id": "grammar",
+      "reference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1087",
+      "checks": ["canonical-member-syntax", "inline-self-normalization", "capture-allowlist-denylist", "rejection-of-unsupported-executable-syntax"],
+      "requires": ["real-parser", "typed-admission", "negative-diagnostic"],
+      "statuses": {"java":"pending", "llvm":"pending", "net":"unsupported", "wasm":"unsupported", "forge":"unsupported"}
+    },
+    {
+      "number": 2,
+      "id": "types",
+      "reference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/819",
+      "checks": ["nominal-generic-specialization", "structural-readonly", "writable-invariance", "sound-overload-rejection"],
+      "requires": ["real-typechecker", "positive-admission", "negative-diagnostic"],
+      "statuses": {"java":"pending", "llvm":"pending", "net":"unsupported", "wasm":"unsupported", "forge":"unsupported"}
+    },
+    {
+      "number": 3,
+      "id": "imports",
+      "reference": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/466",
+      "checks": ["plus-root-imports", "declared-package-confinement", "symlink-foreign-source-denial", "stable-module-identity"],
+      "requires": ["real-frontend", "filesystem-policy", "negative-diagnostic", "multi-file-linking"],
+      "statuses": {"java":"pending", "llvm":"pending", "net":"unsupported", "wasm":"unsupported", "forge":"unsupported"}
+    },
+    {
+      "number": 4,
+      "id": "ownership",
+      "reference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/740",
+      "checks": ["move-after-use-rejection", "exclusive-vs-shared-loans", "no-borrow-across-suspension", "cleanup-on-all-exits"],
+      "requires": ["real-ownership-checker", "positive-admission", "negative-diagnostic", "runtime-when-supported"],
+      "statuses": {"java":"pending", "llvm":"pending", "net":"unsupported", "wasm":"unsupported", "forge":"unsupported"}
+    },
+    {
+      "number": 5,
+      "id": "shared-hir-mir",
+      "reference": "https://github.com/ores-truffle-oreslang/oreslang-common-source/pull/28",
+      "checks": ["versioned-envelope", "bounded-deterministic-serialization", "hir-mir-semantic-verification", "actual-compiler-adapter-execution"],
+      "requires": ["schema-validation", "semantic-verifier", "exact-source-provenance", "real-java-llvm-adapters"],
+      "statuses": {"java":"pending", "llvm":"pending", "net":"unsupported", "wasm":"unsupported", "forge":"unsupported"}
+    }
+  ]
+}
