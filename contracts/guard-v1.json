@@ -20,12 +20,12 @@
     "net": {
       "repo": "ores-truffle-oreslang/oreslang-source.net",
       "pr": 353,
-      "state": "CONTRACT_ONLY"
+      "state": "REJECTION_ONLY_UNVERIFIED"
     },
     "forge": {
       "repo": "ores-truffle-oreslang/oreslang-source.forge",
       "pr": 181,
-      "state": "CONTRACT_ONLY"
+      "state": "REJECTION_ONLY_UNVERIFIED"
     }
   },
   "fixtures": [
