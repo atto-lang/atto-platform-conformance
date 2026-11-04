@@ -1,0 +1,6 @@
+fnc choose(Option<int> required, int value) -> int ::
+  return value
+end
+fnc main() -> int ::
+  return choose(value: 42)
+end
