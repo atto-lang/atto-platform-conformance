@@ -20,36 +20,43 @@ remain isolated and cannot escape across tenant boundaries. Non-reentrant turns,
 bounded mailbox/CPU/memory/host overhead, supervisor-owned cancellation and
 generation-fenced upgrades are mandatory regardless of machine-code origin.
 
-Hostile execution requires a proven guest engine **and** OS/process controls,
-not merely a CLR AssemblyLoadContext, Graal Context, Wasm Store, Node worker,
-or actor-owned arena. JIT compilation itself consumes bounded host resources;
-its compiler pages obey executable-memory protection (W^X or equivalent),
-and guest code cannot request writable executable pages. All capabilities are
-explicitly brokered. The supervisor must be able to terminate the entire
-worker, not depend on forcibly aborting CLR/Java threads. Interruptible fuel,
-epoch or bounded safepoint mechanisms reduce latency; they are not a substitute
-for a robust worker-kill/retirement path.
+Tenants share one OS process ([tenant isolation v2](TENANT_ISOLATION_V2_SHARED_PROCESS.md)).
+Untrusted execution requires a **per-tenant VM-isolate**: a private heap with an
+enforced cap, termination of that one tenant without ending the process, and
+its own failure domain. A CLR AssemblyLoadContext, a shared Graal Context, a
+Wasm Store without per-tenant kill and memory limits, or an actor-owned arena
+is not an isolate. A process or OS sandbox is optional defense in depth; it is
+never required and never a substitute for the isolate. Killing the whole
+process would end every tenant, so it is not a preemption mechanism.
+
+Only code from a trusted producer is admitted for untrusted tenants: validated
+Wasm (lowered or engine-compiled) or Truffle inside a Graal isolate.
+Tenant-supplied native code and CIL are refused. JIT compilation itself
+consumes bounded host resources; its compiler pages obey executable-memory
+protection (W^X or equivalent), and guest code cannot request writable
+executable pages. All capabilities are explicitly brokered. Fuel, epoch,
+carrier-interrupt or bounded-safepoint mechanisms stop a running guest; no
+design may depend on aborting CLR/Java threads.
 
 ### .NET cases
 
-- **AttoLang → CIL → CLR JIT** may run in an independently sandboxed,
-  disposable managed worker process (future target); no arbitrary in-process
-  CLR thread termination is claimed.
-- **AttoLang → Wasm → Wasmtime JIT** may execute under a separately governed
-  Wasm engine in a worker process hosted by a NativeAOT application.
-- **AttoLang → CIL → NativeAOT** remains a trusted build-time/static path.
-  NativeAOT cannot dynamically load and JIT arbitrary CIL assemblies.
+- **AttoLang → Wasm → shared native TenantVm core or embedded Wasm JIT** is
+  the untrusted path, hosted by a NativeAOT or CoreCLR application in the
+  shared process.
+- **AttoLang → CIL → CLR JIT or NativeAOT** remains a first-class backend for
+  trusted tenants only. Untrusted CIL is refused: CoreCLR has one process-wide
+  GC heap, no runtime IL verification, and cannot kill a spinning thread.
 - Optional interpreted Wasm and precompiled images remain valid on hosts with
   no JIT entitlement (for example, restricted mobile deployment profiles).
 
 ### Backend integration targets
 
-Java/GraalVM: pooled/untrusted guest Engine with supervisor lifecycle and OS
-worker security. LLVM: ORC JIT with process boundary rather than arbitrary
-native JIT in a shared hostile host process. Wasm: Wasmtime/V8 JIT with
-interruptible execution, OS sandboxing, process-wide quotas and genuine actor
-lowering. .NET: native-host plus Wasm JIT, or CLR JIT in an OS worker. Forge:
-Cranelift JIT in a governed worker. None are marked implemented by this draft.
+Java/GraalVM: Truffle with Graal JIT inside one Graal isolate per tenant.
+LLVM: validated Wasm lowered by wasm2c into a per-tenant cage; tenants never
+supply native or ORC-JIT code. Wasm: Wasmtime JIT, one Store per tenant with a
+per-Store kill flag and resource limiter. .NET: the shared native core or an
+embedded Wasm engine. Forge: no untrusted path until its output routes through
+validated Wasm. None are marked implemented by this draft.
 
 ### Evidence, not assumptions
 
@@ -60,7 +67,7 @@ real actor code. Its only success label is `SOURCE_FREE_MODEL_ADMISSIBLE`,
 with `productionCertified: false`. Treat guest-provided host descriptors as
 untrusted data. A production implementation must establish controls outside
 this model, then run negative tests against real artifacts and processes:
-spinning loops, stack overflows, memory exhaustion, JIT budget exhaustion,
+spinning loops with a neighbor tenant still making progress, stack overflows, memory exhaustion, JIT budget exhaustion,
 forged capabilities, cross-tenant alias attempts, suspend/cancel/retire races,
 mailbox backpressure, generation fencing and exact-image mismatches.
 
