@@ -56,6 +56,7 @@ test("fixture bytes are pinned to immutable Git blob checksums, not names alone"
 const baseline = {
   backend:"llvm",
   repository:"ores-truffle-oreslang/oreslang-source.llvm",
+  execution_repository:"ores-truffle-oreslang/oreslang-source.llvm",
   source_org:"ores-truffle-oreslang",
   head_sha:"a".repeat(40),
   tree_sha:"b".repeat(40),
@@ -85,6 +86,8 @@ test("no runner, absent steps, canceled jobs, or fake success can establish a pr
     {positive_result:0},
     {compiled_executable_sha:null},
     {head_sha:"unknown"},
+    {execution_repository:null},
+    {execution_repository:"other-test-org/hnpt-e2e"},
     {tree_sha:"unknown"},
     {input_blobs:{"scalar-success":pins["scalar-success"]}},
     {input_blobs:{...pins,"no-else":"d".repeat(40)}},
@@ -95,11 +98,15 @@ test("no runner, absent steps, canceled jobs, or fake success can establish a pr
 });
 
 test("cross-org source export is denied unless independently approved against exact tree", () => {
-  const cross={...clone(baseline),source_org:"other-test-org"};
+  const cross={...clone(baseline),
+    // Deliberately spoof the source_org field: it must not authorize export.
+    source_org:"ores-truffle-oreslang",
+    execution_repository:"other-test-org/hnpt-e2e"};
   assert.deepEqual(assessGuardReceipt(contract,cross).reason,
     "PRIVATE_CROSS_ORG_EXPORT_NOT_AUTHORIZED");
   cross.private_carrier_approval={
     authorized:true,
+    destination_repository:"other-test-org/hnpt-e2e",
     destination_repository_id:1,
     approved_source_tree:"d".repeat(40),
     independent_reviewer:"other-reviewer"
@@ -107,6 +114,9 @@ test("cross-org source export is denied unless independently approved against ex
   assert.equal(assessGuardReceipt(contract,cross).state,"NOT_VERIFIED");
   cross.private_carrier_approval.approved_source_tree=cross.tree_sha;
   assert.match(assessGuardReceipt(contract,cross).state,/CANDIDATE_REQUIRES/);
+  const sameOrg={...clone(baseline),execution_repository:"ores-truffle-oreslang/unlisted-private-carrier"};
+  assert.equal(assessGuardReceipt(contract,sameOrg).reason,
+    "PRIVATE_CROSS_ORG_EXPORT_NOT_AUTHORIZED");
 });
 
 test("even a perfectly shaped receipt remains a candidate, never verified by this source-free oracle", () => {
