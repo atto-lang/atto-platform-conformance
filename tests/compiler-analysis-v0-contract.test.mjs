@@ -19,7 +19,7 @@ test('analysis v0 declares unknown separately from positive compiler proof', () 
   assert.equal(manifest.semantics.effect_unknown_not_pure, true);
   assert.equal(manifest.semantics.exception_grammar_proven, false);
   assert.deepEqual(Object.keys(manifest.semantics.outcome_codes).sort(), ['0', '1', '2']);
-  assert.equal(manifest.fixtures.length, 5);
+  assert.equal(manifest.fixtures.length, 8);
   assert.deepEqual(Object.keys(manifest.backend_status).sort(), ['forge', 'java', 'llvm', 'net', 'wasm']);
   for (const fixture of manifest.fixtures) {
     assert.match(fixture.file, /^analysis-[a-z-]+\.atto$/);
