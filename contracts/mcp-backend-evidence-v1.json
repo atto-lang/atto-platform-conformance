@@ -65,9 +65,9 @@
           "compiler-backed native guest output O0 and O2 for atto and ores",
           "source-free O0/O2 retention and negative writable mutation"
         ],
-        "currentHead": "82b18efba685e441efd3e98d7f45c82bfce1f1ae",
-        "currentTree": "6b41e5fc0d6b46db5f645634b1325f761fda95ef",
-        "currentSourceRun": 41774426187,
+        "currentHead": "70deef2a40f90ed4397cf455ae0badedc1c55070",
+        "currentTree": "4faa79106d3929988b2756222a7d9f979e5ba1a5",
+        "currentSourceRun": 41774656383,
         "currentSourceSteps": 0,
         "fullMergedSourceNotExecuted": true,
         "checkedBlobs": {
@@ -101,8 +101,8 @@
         },
         "receiptVerifier": {
           "classification": "LOCAL_SOURCE_FREE_RECEIPT_FORMAT_TEST_ONLY",
-          "expectedHead": "82b18efba685e441efd3e98d7f45c82bfce1f1ae",
-          "expectedTree": "6b41e5fc0d6b46db5f645634b1325f761fda95ef",
+          "expectedHead": "70deef2a40f90ed4397cf455ae0badedc1c55070",
+          "expectedTree": "4faa79106d3929988b2756222a7d9f979e5ba1a5",
           "assertions": 29,
           "standalonePassed": true,
           "fileBlob": "0dace5b96f1af5c2c7ef2e765d5ca09f0c1ba8e4",
