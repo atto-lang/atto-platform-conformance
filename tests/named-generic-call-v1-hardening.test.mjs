@@ -137,3 +137,47 @@ test('value labels are case-sensitive and cannot rescue missing or duplicate slo
   const plan = plan_named_call(f, [arg('second'), arg('First')]);
   assert.deepEqual(plan.slotToSource, [1, 0]);
 });
+
+test('accessor-backed, hidden, symbol and sparse descriptors fail before getter effects', () => {
+  let getterCalls = 0;
+  const accessor = (key, fields = {}) => {
+    const object = { ...fields };
+    Object.defineProperty(object, key, {
+      enumerable: true,
+      get() { getterCalls++; return key === 'type' ? 'int' : 'T'; }
+    });
+    return object;
+  };
+  failsWith(() => bind_generic_args([accessor('name')], []),
+    'invalid-generic-declaration');
+  failsWith(() => bind_generic_args([{ name: 'T' }], [
+    accessor('type', { name: 'T' })
+  ]), 'invalid-generic-argument');
+  failsWith(() => bind_generic_args([{ name: 'T' }], [], {
+    inferred: accessor('T')
+  }), 'invalid-inferred-generic');
+  failsWith(() => plan_named_call([accessor('name')], []),
+    'invalid-callable-formals');
+  failsWith(() => plan_named_call([required('T')], [
+    accessor('name', { kind: 'value' })
+  ]), 'unsupported-call-item');
+  assert.equal(getterCalls, 0);
+
+  const nonEnumerable = { type: 'int' };
+  Object.defineProperty(nonEnumerable, 'hidden', { value: 1 });
+  failsWith(() => bind_generic_args([{ name: 'T' }], [nonEnumerable]),
+    'invalid-generic-argument');
+
+  const symbolKeyed = { kind: 'value', name: 'T' };
+  symbolKeyed[Symbol('hidden')] = true;
+  failsWith(() => plan_named_call([required('T')], [symbolKeyed]),
+    'unsupported-call-item');
+
+  failsWith(() => bind_generic_args(new Array(1), []),
+    'invalid-generic-declaration');
+  failsWith(() => plan_named_call(new Array(1), []),
+    'invalid-callable-formals');
+  failsWith(() => bind_generic_args([{ name: 'T' }], [type('int')], {
+    metadataKeys: new Array(1)
+  }), 'invalid-metadata-schema');
+});
