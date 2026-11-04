@@ -77,6 +77,29 @@ identity when data cross trust boundaries.
    required for `Option`, nullability, defaults, field aliases, nested values,
    floats, unions, streaming or hot-upgrade schema generations.
 
+## Expanded test and portable fixture matrix
+
+- **Java host source:** `AotScalarWireV1Test` (28 authored JUnit methods)
+  and `AotScalarWireV1MatrixTest` (21 additional authored methods).
+  The native-image smoke script now invokes both classes. The exact
+  committed scalar decoder has passed 12,143 original + 5,376 matrix
+  isolated JDK21 checks with stand-in source/descriptor dependencies.
+  Production JUnit and native guest tests remain unexecuted.
+- **Conformance:** `tests/aot-wire-contract.test.mjs` now has 22 checks
+  including canonical oracle ID/kind binding and immutable unsupported
+  feature/shape policy; `tests/aot-wire-fixtures.test.mjs` has 8 portable
+  fixture integrity checks. All 30 passed in an isolated V8 harness,
+  **not** a hosted Node `node --test` run.
+- **Cross-backend fixtures:** `contracts/fixtures/aot-wire-scalar-v1-vectors.json`
+  pins 8 positive JSON + MessagePack equivalent vectors and 15 negative
+  wire vectors, including signed-i64 extremes, UTF-8, size transitions,
+  duplicate/unknown fields, nil, float, uint64, truncation and trailing
+  bytes. The vectors themselves carry `NOT_EXECUTED` and cannot certify
+  Java, LLVM, Wasm, Forge or .NET guest parity.
+- **Decoder hardening:** constructing scalar slots from a null value
+  now fails with `IllegalArgumentException` rather than a raw Java
+  `NullPointerException`.
+
 The candidate contract's 32 wire/AOT oracles are **NOT_EXECUTED**. Its 10
 structural contract tests can pass under a V8 harness without proving any
 compiler or native-code result. The Java JUnit cases must not be described as
