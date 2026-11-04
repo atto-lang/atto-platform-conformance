@@ -3,15 +3,17 @@ import assert from 'node:assert/strict';
 import { validateParityReceipt, validateScalarParityReceipt } from '../src/atto-parity-receipt.mjs';
 const h = 'a'.repeat(40), d = 'b'.repeat(64), a = 'c'.repeat(64);
 const v1 = () => ({schema:'attolang.parity-receipt/1',backend:'java',head_sha:h,tree_sha:h,compiler:'javac',compiler_sha256:d,run_id:1,run_attempt:1,executed_steps:4,job_conclusion:'success',cases:[{id:'returns_42',source_sha256:d,kind:'positive',compile_exit:0,executed:true,run_exit:0,stdout:'42\n',expected_stdout:'42\n'},{id:'unknown_symbol',source_sha256:d,kind:'negative',compile_exit:1,executed:false,diagnostic:'unknown symbol'}]});
-const v2 = () => ({schema:'attolang.parity-receipt/2',backend:'llvm',head_sha:h,tree_sha:h,compiler:'oreslang-llvmc',compiler_sha256:d,artifact_sha256:a,run_id:2,run_attempt:1,executed_steps:6,job_conclusion:'success',cases:[{id:'returns_42',source_sha256:d,kind:'positive',compile_exit:0,executed:true,result_i64:'42',expected_i64:'42',result_channel:'native-return'},{id:'checked_overflow',source_sha256:d,kind:'negative',compile_exit:0,executed:true,failure_stage:'runtime',runtime_outcome:'trap',diagnostic:'checked overflow'},{id:'unknown_symbol',source_sha256:d,kind:'negative',compile_exit:1,executed:false,failure_stage:'compile',diagnostic:'unknown symbol'}]});
+const v2 = () => ({schema:'attolang.parity-receipt/2',backend:'llvm',head_sha:h,tree_sha:h,compiler:'oreslang-llvmc',compiler_sha256:d,run_id:2,run_attempt:1,executed_steps:6,job_conclusion:'success',cases:[{id:'returns_42',source_sha256:d,kind:'positive',compile_exit:0,artifact_sha256:a,executed:true,result_i64:'42',expected_i64:'42',result_channel:'native-return'},{id:'checked_overflow',source_sha256:d,kind:'negative',compile_exit:0,artifact_sha256:a,executed:true,failure_stage:'runtime',runtime_outcome:'trap',diagnostic:'checked overflow'},{id:'unknown_symbol',source_sha256:d,kind:'negative',compile_exit:1,executed:false,failure_stage:'compile',diagnostic:'unknown symbol'}]});
 
 test('v1 remains readable but is not scalar-core eligible',()=>assert.deepEqual(validateParityReceipt(v1()),{consistent:true,authenticity_attested:false,publicly_promotable:false,scalar_core_eligible:false,schema:'attolang.parity-receipt/1',backend:'java',case_count:2}));
 test('v1 cannot satisfy scalar-core validation',()=>assert.throws(()=>validateScalarParityReceipt(v1()),/scalar core requires receipt v2/));
 test('v2 represents typed result plus compile and runtime negatives',()=>assert.deepEqual(validateScalarParityReceipt(v2()),{consistent:true,authenticity_attested:false,publicly_promotable:false,scalar_core_eligible:true,schema:'attolang.parity-receipt/2',backend:'llvm',case_count:3}));
 
 for(const [name,mutate] of [
- ['missing artifact',r=>delete r.artifact_sha256],
- ['bad artifact digest',r=>r.artifact_sha256='bad'],
+ ['missing positive artifact',r=>delete r.cases[0].artifact_sha256],
+ ['bad positive artifact digest',r=>r.cases[0].artifact_sha256='bad'],
+ ['missing runtime-negative artifact',r=>delete r.cases[1].artifact_sha256],
+ ['compile-negative claims artifact',r=>r.cases[2].artifact_sha256=a],
  ['typed mismatch',r=>r.cases[0].result_i64='41'],
  ['noncanonical i64',r=>r.cases[0].result_i64='+42'],
  ['i64 overflow',r=>r.cases[0].result_i64='9223372036854775808'],
