@@ -34,6 +34,7 @@ test('hybrid needs a real JIT-off baseline even if optimization JIT ran',()=>{
 test('JIT-only cannot masquerade as full AOT',()=>{
   const x=good();x.mode='jit';x.artifact.kind='jit-only-guest';
   x.execution.aotBaselineRanWithoutJit=false;
+  x.execution.runtimeGuestJitUsed=true;
   x.closure.macrosEliminated=false;
   assert.equal(classify(x).classification,'JIT_ONLY_STRUCTURAL_REVIEW_REQUIRED');
   assert.equal(classify(x).releaseQualified,false);
@@ -115,7 +116,11 @@ test('no executed evidence if runner, steps or binary output is absent',()=>{
 
 test('structural review cannot be mistaken for successful release gating',()=>{
   for(const x of [good('llvm','full-aot'),good('wasm','hybrid'),good('java','jit')]) {
-    if(x.mode==='jit') { x.artifact.kind='jit-only-guest'; }
+    if(x.mode==='jit') {
+      x.artifact.kind='jit-only-guest';
+      x.execution.runtimeGuestJitUsed=true;
+      x.execution.aotBaselineRanWithoutJit=false;
+    }
     const out=classify(x);
     assert.equal(out.ok,false);
     assert.equal(out.releaseQualified,false);
@@ -151,4 +156,22 @@ test('failed compiler requires admitted job and nonzero executed steps',()=>{
     const y=structuredClone(x);mutate(y);
     assert.equal(classify(y).classification,'INVALID');
   }
+});
+
+test('JIT-only artifact with no executed guest JIT cannot claim JIT validation',()=>{
+  const x=good();x.mode='jit';x.artifact.kind='jit-only-guest';
+  x.execution.aotBaselineRanWithoutJit=false;
+  const out=classify(x);
+  assert.equal(out.classification,'INVALID');
+  assert.equal(out.ok,false);
+  assert.match(out.errors.join(' '),/actual guest JIT path/);
+});
+
+test('JIT-only guest execution cannot forge a JIT-disabled AOT baseline',()=>{
+  const x=good();x.mode='jit';x.artifact.kind='jit-only-guest';
+  x.execution.runtimeGuestJitUsed=true;
+  assert.equal(classify(x).classification,'INVALID');
+  x.execution.aotBaselineRanWithoutJit=false;
+  assert.equal(classify(x).classification,'JIT_ONLY_STRUCTURAL_REVIEW_REQUIRED');
+  assert.equal(classify(x).releaseQualified,false);
 });

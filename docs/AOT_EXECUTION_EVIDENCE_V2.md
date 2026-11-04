@@ -40,4 +40,40 @@ Distinguish program-specific guest AOT from a Graal Native Image / .NET NativeAO
 
     node --test tests/aot-execution-evidence-v2.test.mjs
 
-The 31 authored Node cases test structural classification and adversarial substitution only. They do **not** execute any AttoLang compiler or guest program. Existing v1 validator remains backward-compatible and unmodified.
+The 35 authored Node cases test structural classification and adversarial substitution only. They do **not** execute any AttoLang compiler or guest program. Existing v1 validator remains backward-compatible and unmodified.
+
+
+## JIT/AOT claim separation hardening (2026-11-02)
+
+A `mode=jit` receipt with a `jit-only-guest` artifact must declare that the
+guest runtime JIT actually executed (`runtimeGuestJitUsed=true`) and cannot
+claim a JIT-disabled AOT baseline (`aotBaselineRanWithoutJit=false`). These
+are necessary **self-reported structural** constraints, not independently
+authenticated proof. An absence of JIT does not become evidence of AOT.
+
+Restricted program-specific full AOT is not complete language support: a
+Cranelift scalar executable can prove native guest execution for that
+restricted source without proving actor/async/generic/heap/hygienic-macro
+closure for the entire AttoLang language. The `full-aot` mode refers to the
+compiled admitted **program**, not a global backend feature certificate.
+
+### Related executed native evidence, independently classified
+
+- [Cranelift PR #83](https://github.com/ores-truffle-oreslang/oreslang-source.cranelift/pull/83)
+  reports standalone scalar guest executables and two restricted typed
+  compile-time macro forms at source head
+  `4d762d64480275403099590beb4467b4b7c519c6`.
+- [Private carrier run 41396633030](https://github.com/scintilla-run/scintilla-e2e/actions/runs/41396633030)
+  at destination commit `5be4eca8bb422730ae9a601e70d441be2b9f2cb4`
+  has a completed successful `source-native-aot` job with actual executed
+  checkout, Git-tree validation, Rust toolchain, native guest tests,
+  formatting/Clippy and Node-source-free steps. The PR reports 7/7 Rust
+  units, 14/14 native integration and 73/73 separate Node source-free tests.
+  This carrier is **not** a pass for this conformance PR's exact head or for
+  Java/LLVM/.NET/Wasm macro parity.
+- Java source's `.github/private-ci-approved-repositories.txt` currently
+  has no approved private destination. Separate successful carrier CI does
+  not override independent review, source-repository policy or branch
+  protection. Do not mirror this private source tree solely based on GitHub
+  minutes or self-reported evidence.
+
