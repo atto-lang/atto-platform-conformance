@@ -52,7 +52,7 @@ export class LayoutOracle {
       const group=live.slice(start,start+this.tileWidth);
       tiles.push(this.layout === "aosoa"
         ? Object.fromEntries(this.fields.map((k,i)=>[k,group.map(r=>r.values[i])]))
-        : group.map(r=>Object.fromEntries(this.fields.map((k,i)=>[k,r.values[i])])));
+        : group.map(r=>Object.fromEntries(this.fields.map((k,i)=>[k,r.values[i]]))));
     }
     return tiles;
   }
