@@ -1,10 +1,20 @@
-# Portable Oreslang platform source and native execution gate v1
+# AttoLang platform source and native execution gate (frozen Oreslang v1 corpus)
 
 **Status: UNEXECUTED / NOT CERTIFIED.** This is an independent draft contract,
 not proof that any Oreslang compiler, Wasmtime Cranelift engine, target MCU,
 desktop/mobile app, FPGA, or ASIC ran these programs.
 
 ## Shared guest source
+
+**Versioned filename boundary:** AttoLang is the current language name and
+new source normally uses `.atto`. This **frozen v1** contract deliberately
+retains ten legacy `.ores` fixtures because their exact filenames, source
+bytes, SHA-256 digests and diagnostic expectations are part of the pinned
+evidence protocol. Never rename them in place or treat a file extension edit
+as guest parity. A future `.atto` corpus must use a separately reviewed,
+versioned contract and new exact-byte fixtures, with independently executed
+compiler-backed receipts. The v1 validator explicitly rejects a silent
+`.ores` to `.atto` substitution.
 
 `fixtures/platform-portability-v1/*.ores` contains **10 native Oreslang programs**:
 8 positive scalar/precedence probes with explicit integer `main` values,
