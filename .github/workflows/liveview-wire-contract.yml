@@ -1,0 +1,36 @@
+name: Ores LiveView RFC6455 source contract (not native parity)
+on:
+  pull_request:
+    paths:
+      - 'contracts/v1/ores-liveview-wire-v1.json'
+      - 'src/liveview-wire-receipts.mjs'
+      - 'bin/check-liveview-wire-v1.mjs'
+      - 'tests/liveview-wire-gate.test.mjs'
+      - '.github/workflows/liveview-wire-contract.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reference-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Require exact clean candidate head
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - run: node --test tests/liveview-wire-gate.test.mjs
+      - run: node bin/check-liveview-wire-v1.mjs --structural-only
+      - run: echo 'SOURCE_ONLY - no Oreslang guest, runner provenance, or backend parity proof'
