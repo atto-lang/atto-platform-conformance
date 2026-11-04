@@ -87,3 +87,29 @@ test('process exit cannot pretend to carry a full-width i64',()=>{
   r.cases[0].expected_i64='9223372036854775806';
   assert.throws(()=>validateParityReceipt(r),/process-exit cannot carry/);
 });
+
+test('scalar checked overflow may be proven by an executed runtime trap',()=>{
+  const r=scalar();
+  const c=r.cases.find(x=>x.id==='checked-add-overflow');
+  c.compile_exit=0;
+  c.artifact_sha256=a;
+  c.executed=true;
+  c.failure_stage='runtime';
+  c.runtime_outcome='trap';
+  assert.equal(validateScalarParityReceipt(r).case_count,19);
+});
+test('scalar removed operator cannot be reclassified as a runtime negative',()=>{
+  const r=scalar();
+  const c=r.cases.find(x=>x.id==='removed-modulo');
+  c.compile_exit=0;
+  c.artifact_sha256=a;
+  c.executed=true;
+  c.failure_stage='runtime';
+  c.runtime_outcome='trap';
+  assert.throws(()=>validateScalarParityReceipt(r),/invalid failure stage for removed-modulo/);
+});
+test('scalar canonical ID with substituted bytes is rejected',()=>{
+  const r=scalar();
+  r.cases.find(x=>x.id==='canonical-add').source_sha256=d;
+  assert.throws(()=>validateScalarParityReceipt(r),/canonical source mismatch for canonical-add/);
+});
