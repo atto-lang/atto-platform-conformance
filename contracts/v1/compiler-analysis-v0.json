@@ -16,7 +16,7 @@
     "exception_grammar_proven": false
   },
   "backend_status": {
-    "java": "unverified",
+    "java": "candidate-unexecuted",
     "llvm": "candidate-unexecuted",
     "wasm": "unverified",
     "forge": "unverified",
@@ -62,7 +62,8 @@
       "nonempty build and test steps",
       "actual stdout/stderr and exit codes",
       "real parser/typechecker admission",
-      "no source or artifacts changed"
+      "no source or artifacts changed",
+      "java and llvm direct positive-fixture byte-for-byte output comparison"
     ]
   }
 }
