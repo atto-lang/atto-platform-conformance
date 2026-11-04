@@ -8,7 +8,15 @@ import { fileURLToPath } from 'node:url';
 const FIXTURE_BLOB = '430565092d8a4ff114f601a54b771ef3d42eae58';
 const FOREIGN_SHA256 = '3071307899db9c4f4f3acc44465d60dd77d2ee2d2c0930d4bcc23e7fd9a8e94c';
 const READ_LOAN_SHA256 = '9af717d6cea42dbb6e1192981c227222ad837a8e54785ce205c676d1d33be3b5';
-const BACKENDS = new Set(['java', 'llvm', 'net', 'wasm', 'cranelift', 'forge']);
+const BACKEND_REPOS = Object.freeze({
+  java:'ores-truffle-oreslang/oreslang-source.java',
+  llvm:'ores-truffle-oreslang/oreslang-source.llvm',
+  net:'ores-truffle-oreslang/oreslang-source.net',
+  wasm:'ores-truffle-oreslang/oreslang-source.wasm',
+  cranelift:'ores-truffle-oreslang/oreslang-source.cranelift',
+  forge:'ores-truffle-oreslang/oreslang-source.forge'
+});
+const BACKENDS = new Set(Object.keys(BACKEND_REPOS));
 const REQUIRED_STEPS = ['compiler_build', 'guest_compile', 'guest_execute',
   'reject_foreign_access', 'reject_read_loan_write'];
 const fail = message => { throw new Error(`compiled actor guest: ${message}`); };
@@ -43,10 +51,10 @@ function verifyExecutionEvidence(candidate) {
       !Number.isSafeInteger(candidate.attempt) || candidate.attempt <= 0) {
     fail('invalid run/job/attempt');
   }
-  const url = new RegExp('^https://github\\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/actions/runs/' +
-    candidate.runId + '/job/' + candidate.jobId + '$');
-  if (typeof candidate.runnerJobUrl !== 'string' || !url.test(candidate.runnerJobUrl))
-    fail('runner job link does not match run/job identity');
+  const repo = BACKEND_REPOS[candidate.backend];
+  const url = `https://github.com/${repo}/actions/runs/${candidate.runId}/job/${candidate.jobId}`;
+  if (candidate.runnerJobUrl !== url)
+    fail('runner job URL must match the exact backend source repository');
   if (!Array.isArray(candidate.steps)) fail('missing executed CI steps');
   const numbers = new Set();
   for (const step of candidate.steps) {
