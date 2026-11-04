@@ -46,7 +46,7 @@ test("fixture bytes are pinned to immutable Git blob checksums, not names alone"
     const positive = contract.fixtures[0];
     const raw = readFileSync(join(temporary, positive.path));
     assert.equal(gitBlob(raw), positive.git_blob);
-    writeFileSync(join(temporary, positive.path), Buffer.concat([raw, Buffer.from(" ")]));
+    writeFileSync(join(temporary, positive.path), Buffer.concat([raw, Buffer.from([10])]));
     assert.throws(() => validateGuardContract(contract, temporary), /blob drift/);
     writeFileSync(join(temporary, positive.path), Buffer.concat([raw, Buffer.from([0])]));
     assert.throws(() => validateGuardContract(contract, temporary), /malformed UTF-8/);
