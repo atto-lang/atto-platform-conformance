@@ -6,7 +6,7 @@ record, not runtime parity or permission to export confidential code.**
 | Backend | PR and exact source head | Git root tree | Hosted stepful evidence |
 | --- | --- | --- | --- |
 | Java/Graal | [source.java #2422](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2422) `892c3220dbc22ae7138d3141e13ea46404430db4` | `01644d97450817417569cdc359826f9cc04b09ee` | [run 41755226023](https://github.com/ores-truffle-oreslang/oreslang-source.java/actions/runs/41755226023): zero steps, `NOT_EXECUTED` |
-| LLVM | [source.llvm #1277](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1277) `e2bee2fc2d0a0ed9fb94c546deb14a8ab2c0b2af` | `353587df051611af16d707da62d876a6935cb7db` | [run 41754620114](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/actions/runs/41754620114): zero steps, `NOT_EXECUTED` |
+| LLVM | [source.llvm #1277](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1277) `a94d61807e6eb7800cfa1e9ca2a7f25c4cce8004` | `70bae8a10c89b66090c2f0bd89407fb437fda69c` | [run 41754620114](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/actions/runs/41754620114): zero steps, `NOT_EXECUTED` |
 
 ## Source changes currently authored, not executed in hosted CI
 
@@ -66,3 +66,51 @@ existing security record is [Java issue #962](https://github.com/ores-truffle-or
 LLVM `critical` compiler admission: source-only fail-closed tests authored.
 LLVM guest critical execution: **NOT_IMPLEMENTED**. Both hosted exact-head
 workflows: **NOT_EXECUTED**. No complete Java⇄LLVM guest parity claim.
+
+
+## Additional LLVM reconciliation — current exact-head status
+
+This LLVM head now integrates **selected** compatible changes from draft
+`#1289` and `#1290`, but leaves both companion drafts open pending
+independent conflict review:
+
+- Critical callbacks: reject inferred Suspend, Io, Block and unaudited FFI
+  effects even if a trusted actor generation or continuation fence exists.
+  The host-only contract tests cover individual and mixed effect rows.
+- LogicalMutex: guard callback entry with active ticket identity, block early
+  release after STOP, disallow unverified borrowed/aggregate callback returns,
+  and expose atomic quiescent retirement with the same lock order.
+- CriticalGate: retirement preserves the physical owner until release while
+  refusing any new guest admission. FIFO waiting-ticket cancellation receipts,
+  scope overflow fencing, 256 release-vs-retire and 256 request-vs-empty-
+  retirement races are authored in the native host tests.
+- LLVM compiler: code-labeled `E_CALLABLE_MODIFIERS` and
+  `E_CRITICAL_UNSUPPORTED` fail-closed diagnostics for both modifier orders,
+  actor methods and standalone critical declarations. CMake registers the
+  compiler negative/positive suites and a seven-case host scalar copy-out
+  compile-negative suite.
+- `source-actor-send.atto` now participates in the real LLVM compiler →
+  Clang native runtime → actor scheduler/STOP e2e driver, alongside
+  `source-actor-send.ores`. This **ordinary actor** fixture is an authored
+  native guest baseline; it does **not** include or validate a critical block.
+
+**29/29 source-structure assertions** matched the intended current branch
+changes. These are not CTest or guest-execution receipts. Exact-head source
+organization [LLVM run #41766092048]
+(https://github.com/ores-truffle-oreslang/oreslang-source.llvm/actions/runs/41766092048)
+still failed without allocating a runner (`steps=null`, `NOT_EXECUTED`).
+
+A distinct **source-free** C++17 proof did execute in the alternate
+organization: [carrier PR #45]
+(https://github.com/gha-indie-worker/gha-indie-worker-docs/pull/45),
+[run #41765967238]
+(https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41765967238)
+**seven successful job steps** with GCC 15.2.0, Clang 21.1.8 and ASan/UBSan
+on both compiled standalone generic canaries. It performed no checkout
+and transferred **zero private source**. It is a toolchain/budget availability
+receipt, never the LLVM source build receipt or permission for private mirroring.
+
+**Promotion stays denied:** source org protections, independent review and
+numerically approved carrier allowlist absent; no genuine LLVM critical guest
+lowering/execution, JUnit, native codegen, sanitizers against the source
+head, or `42`/`returned` native critical guest parity can be claimed.
