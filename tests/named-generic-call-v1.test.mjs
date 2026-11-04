@@ -124,6 +124,21 @@ test('value-call negative matrix rejects collision, unknown, omission and unsupp
   for (const [run, code] of invalid) assert.throws(run, { code });
 });
 
+test('forged or inconsistent call plans fail before any observable effects', () => {
+  const trace = [];
+  const bad = [
+    { sourceToFormal: [0], slotToSource: [0, 0] },
+    { sourceToFormal: [0, 0], slotToSource: [1] },
+    { sourceToFormal: [2], slotToSource: [0] },
+    { sourceToFormal: [0], slotToSource: [-1] }
+  ];
+  for (const plan of bad) {
+    assert.throws(() => evaluate_named_call(plan, [() => trace.push('actual')],
+      () => trace.push('receiver')), { code: 'invalid-execution-plan' });
+    assert.deepEqual(trace, []);
+  }
+});
+
 test('invalid bindings cannot evaluate expressions', () => {
   let invoked = 0;
   assert.throws(() => plan_named_call([formal('a')], [value('missing')]),
