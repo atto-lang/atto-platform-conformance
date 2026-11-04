@@ -96,6 +96,8 @@ function validateV2(report) {
         const value = BigInt(c.result_i64);
         check(value >= 0n && value <= 255n,
           'process-exit cannot carry the full typed i64 result');
+        check(Number.isSafeInteger(c.run_exit) && c.run_exit === Number(value),
+          'process-exit result must match observed exit status');
       }
     } else {
       check(c.failure_stage === 'compile' || c.failure_stage === 'runtime', 'negative failure stage');
