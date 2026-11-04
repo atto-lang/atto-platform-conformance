@@ -8,7 +8,7 @@ and a [five-backend evidence ledger](contracts/v1/actor-pubsub/backend-status.pe
 The source-only Node model and bounded-registry tests run with:
 
 ```sh
-node --test tests/actor-pubsub-portable-v1.test.mjs tests/actor-pubsub-evidence-v1.test.mjs tests/actor-pubsub-registry-quota.test.mjs
+node --test tests/actor-pubsub-portable-v1.test.mjs tests/actor-pubsub-evidence-v1.test.mjs tests/actor-pubsub-registry-quota.test.mjs tests/actor-pubsub-payload-graph-limits.test.mjs
 ```
 
 These are reference-model tests, **not** proof of AttoLang guest compilation,
