@@ -338,3 +338,61 @@ test('placement rejects inherited, symbol, and hidden mandatory requirements', (
   plain.backend='java';
   assert.equal(d.resolve_or_activate_actor(a,key,plain).backend,'java');
 });
+
+
+test('isolate descriptor tenant and capabilities are each snapshotted once', () => {
+  const d=new InMemorySiloDirectory();
+  let tenantReads=0, capabilityReads=0;
+  const descriptor={
+    get tenant_id(){tenantReads++;return tenantReads===1?'tenant-a':'tenant-b';},
+    isolate_id:'isolate-1',max_actors:2,isolation_mode:'actor-local',
+    get capabilities(){capabilityReads++;return capabilityReads===1?['read']:['gpu'];}
+  };
+  d.register_node(node('n1','java','us-east',[descriptor]));
+  assert.equal(tenantReads,1);
+  assert.equal(capabilityReads,1);
+  const a=d.make_trusted_tenant_context('tenant-a'), b=d.make_trusted_tenant_context('tenant-b');
+  assert.equal(d.activate_actor(a,id('tenant-a','allowed'),{capabilities:['read']}).node_id,'n1');
+  rejects(()=>d.activate_actor(a,id('tenant-a','denied'),{capabilities:['gpu']}),
+    'NO_COMPATIBLE_TENANT_ISOLATE');
+  rejects(()=>d.activate_actor(b,id('tenant-b','denied')),'NO_COMPATIBLE_TENANT_ISOLATE');
+});
+
+test('reentrant descriptor getter cannot evade node quota or reuse the same node ID', () => {
+  for (const sameName of [false,true]) {
+    const d=new InMemorySiloDirectory({max_nodes:sameName?2:1});
+    const descriptor=iso('tenant-a','outer');
+    Object.defineProperty(descriptor,'tenant_id',{configurable:true,get(){
+      d.register_node(node(sameName?'outer-node':'inner-node','llvm','us-west',[
+        iso('tenant-b','inner')
+      ]));
+      return 'tenant-a';
+    }});
+    rejects(()=>d.register_node(node('outer-node','java','us-east',[descriptor])),
+      sameName?'NODE_ID_REUSE':'NODE_QUOTA');
+    assert.equal(d.snapshot().nodes,1);
+    assert.equal(d.snapshot().active_actors,0);
+  }
+});
+
+test('node load tie-break does not depend on process locale or collation', () => {
+  const d=new InMemorySiloDirectory(), a=d.make_trusted_tenant_context('tenant-a');
+  d.register_node(node('node-a','llvm','us-east',[iso('tenant-a','ia')]));
+  d.register_node(node('node-A','llvm','us-east',[iso('tenant-a','ib')]));
+  assert.equal(d.activate_actor(a,id('tenant-a','first')).node_id,'node-A');
+});
+
+test('Object.prototype pollution cannot silently override default placement', () => {
+  const d=cluster(), a=d.make_trusted_tenant_context('tenant-a');
+  const old=Object.getOwnPropertyDescriptor(Object.prototype,'backend');
+  try {
+    Object.defineProperty(Object.prototype,'backend',{
+      configurable:true,value:'llvm'
+    });
+    const route=d.resolve_or_activate_actor(a,id('tenant-a','own-only'),{});
+    assert.equal(route.backend,'java');
+  } finally {
+    if (old) Object.defineProperty(Object.prototype,'backend',old);
+    else delete Object.prototype.backend;
+  }
+});
