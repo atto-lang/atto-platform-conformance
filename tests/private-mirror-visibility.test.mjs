@@ -1,6 +1,7 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
 import {createHash} from "node:crypto";
+import {readFileSync} from "node:fs";
 import {requirePrivateMirror} from "../bin/require-private-mirror.mjs";
 
 // TEST-ONLY incident fixtures; they do not represent real issue closure.
@@ -12,6 +13,26 @@ const base = {
 };
 const check = (overrides = {}, records = {}, calls = []) =>
   requirePrivateMirror({...base, fetchImpl: fixture(records, calls), ...overrides});
+
+test("incident disposition registry cannot diverge from publisher admission",()=>{
+  const registry=JSON.parse(readFileSync(
+    new URL("../docs/security/private-ci-incident-disposition-review-v1.json",import.meta.url),"utf8"));
+  const sourceCode=readFileSync(new URL("../bin/require-private-mirror.mjs",import.meta.url),"utf8");
+  assert.equal(registry.status,"NON_AUTHORIZING_REVIEW_ONLY");
+  assert.equal(registry.source_transfer_authorized,false);
+  assert.equal(registry.incident_repository,"ores-truffle-oreslang/oreslang-platform-conformance");
+  const central=registry.incidents.map(x=>x.number);
+  assert.equal(new Set(central).size,central.length,"duplicate central incident");
+  assert.ok(registry.incidents.every(x=>x.status==="hold"),
+    "incident review status changes require independent policy reapproval");
+  const match=sourceCode.match(/const REQUIRED_INCIDENTS = Object\\.freeze\\(\\[([\\s\\S]*?)\\]\\);/);
+  assert.ok(match,"private publisher incident preflight missing");
+  const required=[...match[1].matchAll(/\\bnumber:(\\d+)/g)].map(m=>Number(m[1]));
+  assert.equal(new Set(required).size,required.length,"duplicate publisher incident");
+  assert.deepEqual(required.toSorted((a,b)=>a-b),
+    [...central,212].toSorted((a,b)=>a-b),
+    "all central P0 incidents plus #212 must block private-source copy");
+});
 
 test("trusted synthetic source and carrier policy fixtures match reviewed immutable Git blob IDs", () => {
   const gitBlobSha=text=>createHash("sha1")
