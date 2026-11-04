@@ -57,3 +57,22 @@ for the small declared admitted scalar subset. Missing executables
 and recursive-call rejection are tracked separately: two compilers can
 reject the same source at different stages without proving semantic
 equivalence.
+
+### Required exact-head CI gate
+
+Source-only `node --test` may report passing contract checks while the
+three optional binary tests skip. Such an outcome is **not** compiler
+parity. To require executable evidence, set
+`ATTO_ANALYZE_REQUIRE_EXECUTABLE=1` together with absolute compiler and
+formatter paths and their pinned SHA-256 hashes:
+
+- `ATTO_ANALYZE_LLVM_COMPILER` and `ATTO_ANALYZE_LLVM_SHA256`
+- `ATTO_ANALYZE_JAVA_COMPILER` and `ATTO_ANALYZE_JAVA_SHA256`
+- `ATTO_ANALYZE_FORMATTER_BIN` and `ATTO_ANALYZE_FORMATTER_SHA256`
+
+Strict mode fails if **any** required binary is absent, unpinned, or its
+SHA-256 does not match the provided digest. The differential tests must
+also execute and pass; no step-free GitHub Actions receipt can satisfy
+this requirement. The hashes bind executable bytes, not source
+provenance by themselves: separately record the commit SHA and
+build steps for each binary.
