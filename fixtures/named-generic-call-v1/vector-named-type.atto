@@ -1,0 +1,4 @@
+// Requires the imported Vector declaration to export formal T.
+fnc main() -> void ::
+  val xs: Vector<T=int> = Vector<T=int>()
+end
