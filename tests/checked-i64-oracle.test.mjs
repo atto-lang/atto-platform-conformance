@@ -203,3 +203,17 @@ test('checked-i64 operand arrays use own length descriptors, not Proxy get traps
   });
   assert.equal(evaluateCheckedI64({op:'add',args:spoofed}),42n);
 });
+
+test('checked-i64 operand slots fail closed without invoking accessors',()=>{
+  let reads=0;
+  const active=[L(20),L(22)];
+  Object.defineProperty(active,'0',{get(){reads++;throw Error('active operand getter');},enumerable:true});
+  assert.throws(()=>evaluateCheckedI64({op:'add',args:active}),/non-inert expression argument/);
+  assert.equal(reads,0);
+  const nonenumerable=[L(20),L(22)];
+  Object.defineProperty(nonenumerable,'1',{value:L(22),enumerable:false});
+  assert.throws(()=>evaluateCheckedI64({op:'add',args:nonenumerable}),/non-inert expression argument/);
+  const extra=[L(20),L(22)];
+  extra[Symbol('hidden')]=L(99);
+  assert.throws(()=>evaluateCheckedI64({op:'add',args:extra}),/invalid expression argument array/);
+});
