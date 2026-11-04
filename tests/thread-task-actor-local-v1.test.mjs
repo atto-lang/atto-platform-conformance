@@ -15,6 +15,9 @@ test('contract and all phase+diagnostic ids are unique target-only', () => {
   const c=JSON.parse(readFileSync(new URL('../contracts/v1/thread-task-actor-local-v1.json',import.meta.url)));
   assert.equal(c.schema,'oreslang.thread-task-actor-local.contract/1');
   assert.equal(c.status,'TARGET_NOT_IMPLEMENTED');
+  assert.equal(c.canonicalSourceExtension,'.atto');
+  assert.equal(c.legacySourceExtension,'.ores');
+  assert.equal(c.ownershipTransferKeyword,'rt take');
   assert.deepEqual(c.backends,['java','llvm','net','forge','wasm']);
   assert.equal(c.receipt.zeroStepMeans,'NOT_EXECUTED');
   assert.equal(c.receipt.referenceModelIsGuestEvidence,false);
