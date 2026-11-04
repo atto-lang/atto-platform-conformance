@@ -104,7 +104,13 @@ export class InMemorySiloDirectory {
     // Unknown mandatory constraints (e.g. schema/ABI/version) are not silently
     // ignored; the real broker must implement them before admission.
     const known = new Set(['backend', 'region', 'isolation_mode', 'capabilities', 'hard_realtime']);
-    if (Object.keys(options).some(k => !known.has(k))) deny('UNSUPPORTED_PLACEMENT_CONSTRAINT');
+    // Reject inherited, symbol and non-enumerable fields instead of silently
+    // admitting a layout that may conceal a mandatory hard placement rule.
+    // A null-prototype record is accepted; an inherited object is not.
+    if (Object.getPrototypeOf(options) !== Object.prototype &&
+        Object.getPrototypeOf(options) !== null) deny('UNSUPPORTED_PLACEMENT_CONSTRAINT');
+    if (Reflect.ownKeys(options).some(k => typeof k !== 'string' || !known.has(k)))
+      deny('UNSUPPORTED_PLACEMENT_CONSTRAINT');
     const { backend = null, region = null, isolation_mode = 'actor-local',
       capabilities = [], hard_realtime = false } = options;
     if (!Array.isArray(capabilities)) deny('INVALID_PLACEMENT');
@@ -183,16 +189,20 @@ export class InMemorySiloDirectory {
     return copy_route(rec);
   }
 
+  #matches_route(rec, actor_ref, route) {
+    return !!rec && !!route && typeof route === 'object' &&
+      route.actor_ref === actor_ref && route.tenant_id === rec.tenant_id &&
+      route.node_id === rec.node_id && route.isolate_id === rec.isolate_id &&
+      route.backend === rec.backend && route.epoch === rec.epoch &&
+      this.#nodes.get(rec.node_id)?.status !== 'DOWN';
+  }
+
   // DIRECTORY-ONLY CHECK. Does not authenticate a network packet, reserve mailbox
   // credits, or validate the authoritative storage epoch at an effect sink.
   validate_delivery(context, id, route) {
     const { key, actor_ref } = this.#trusted_identity(context, id);
-    const rec = this.#active.get(key);
-    if (!rec || !route || typeof route !== 'object' ||
-        route.actor_ref !== actor_ref || route.tenant_id !== rec.tenant_id ||
-        route.node_id !== rec.node_id || route.isolate_id !== rec.isolate_id ||
-        route.backend !== rec.backend || route.epoch !== rec.epoch ||
-        this.#nodes.get(rec.node_id)?.status === 'DOWN') deny('STALE_OR_FORGED_ROUTE');
+    if (!this.#matches_route(this.#active.get(key), actor_ref, route))
+      deny('STALE_OR_FORGED_ROUTE');
     return true;
   }
 
@@ -218,10 +228,17 @@ export class InMemorySiloDirectory {
     node.status = 'DRAINING';
   }
 
-  passivate_actor(context, id) {
-    const { key } = this.#trusted_identity(context, id);
+  // A delayed/duplicated shutdown callback from an older activation must
+  // never retire a newer incarnation of the same stable ActorRef.
+  // expected_route is an activation identity check, NOT an authority token.
+  // The real runtime must additionally drain in-flight turns/loans and obtain
+  // provider-side state/effect fencing before releasing the activation.
+  passivate_actor(context, id, expected_route) {
+    const { key, actor_ref } = this.#trusted_identity(context, id);
     const rec = this.#active.get(key);
     if (!rec) deny('ACTOR_NOT_ACTIVE');
+    if (!this.#matches_route(rec, actor_ref, expected_route))
+      deny('STALE_OR_FORGED_PASSIVATION');
     this.#active.delete(key);
     this.#nodes.get(rec.node_id).by_tenant.get(rec.tenant_id).active--;
   }
