@@ -2,6 +2,7 @@ import {types as nodeTypes} from "node:util";
 
 // Deterministic, single-threaded reference oracle for actor-pubsub.portable.v1.
 // This is NOT an Oreslang runtime or proof of concurrent linearizability.
+const NON_DATA_CAPABILITIES = new WeakSet();
 const failure = (error) => ({ok:false,error});
 const success = (value={}) => ({ok:true,...value});
 const topicName = (s) => typeof s === "string" && /^[A-Za-z][A-Za-z0-9._/-]{0,127}$/.test(s);
@@ -31,6 +32,8 @@ export function share(value) {
         throw new TypeError("non-Sendable shared payload");
       return;
     }
+    if (NON_DATA_CAPABILITIES.has(v))
+      throw new TypeError("non-Sendable pubsub/actor-group capability");
     if (visiting.has(v)) throw new TypeError("cyclic shared payload");
     if (checked.has(v)) return;
     const keys=safeKeys(v);
@@ -114,6 +117,7 @@ export class PubSubReference {
       id,get closed(){return state.closed;},
       get members(){return new Set(state.members);}
     });
+    NON_DATA_CAPABILITIES.add(group);
     this.#groupStates.set(group,state);
     this.#groups.set(id,group);
     return success({group});
@@ -132,6 +136,7 @@ export class PubSubReference {
     if (!existing && this.#topics.size>=this.maxTopics) return failure("ResourceExhausted");
     if (!existing) {
       const topic=Object.freeze({key,name,type,group});
+      NON_DATA_CAPABILITIES.add(topic);
       this.#topics.set(key,topic);
       this.#topicHandles.add(topic);
       this.#topicSeq.set(key,0n);
@@ -167,6 +172,7 @@ export class PubSubReference {
     this.#groupStates.get(group).members.add(actor.key);
     const membership=Object.freeze({id:++this.#nextMembership,group,actor});
     const entry={capability:membership,active:true};
+    NON_DATA_CAPABILITIES.add(membership);
     this.#memberships.set(membership.id,entry);
     this.#grantStates.set(membership,entry);
     return success({membership});
@@ -216,6 +222,7 @@ export class PubSubReference {
       id:++this.#nextSub,topic,kind,target,capacity,
       get closed(){return state.closed;}
     });
+    NON_DATA_CAPABILITIES.add(sub);
     this.#subscriptionStates.set(sub,state);
     this.#subscriptions.set(sub.id,sub);
     return success({subscription:sub});
@@ -356,6 +363,7 @@ export class PubSubReference {
     const visiting=new Set(), checked=new Set();
     function check(x) {
       if (x===null || x===undefined) return false;
+      if (typeof x==="object" && NON_DATA_CAPABILITIES.has(x)) return false;
       if (typeof x!=="object") return typeof x!=="function" && typeof x!=="symbol";
       if (visiting.has(x)) return false;
       if (checked.has(x)) return true;
