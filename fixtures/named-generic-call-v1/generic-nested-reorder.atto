@@ -1,0 +1,10 @@
+define class Pair<First, Second> as
+  First first
+  Second second
+end
+define class Box<T> as
+  T value
+end
+fnc main() -> void ::
+  val item: Box<Pair<Second=string, First=int>>
+end
