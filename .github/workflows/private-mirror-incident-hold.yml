@@ -13,11 +13,24 @@ jobs:
     steps:
       - name: Reject cross-repository PR heads before checkout
         env:
-          PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          PR_HEAD_REPO_ID: ${{ github.event.pull_request.head.repo.id }}
+          BASE_REPO_ID: ${{ github.event.repository.id }}
         run: |
           set -euo pipefail
-          if [[ "$PR_HEAD_REPO" != "$GITHUB_REPOSITORY" ]]; then
-            echo "CROSS_REPOSITORY_SOURCE_CHECKOUT_FORBIDDEN" >&2
+          # In a PR, absent/deleted fork metadata must DENY, not fall back to
+          # the destination repo. Do not execute untrusted external PR heads.
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            if [[ -z "$PR_HEAD_REPO" ||
+                  "$PR_HEAD_REPO" != "$GITHUB_REPOSITORY" ||
+                  ! "$PR_HEAD_REPO_ID" =~ ^[1-9][0-9]*$ ||
+                  ! "$BASE_REPO_ID" =~ ^[1-9][0-9]*$ ||
+                  "$PR_HEAD_REPO_ID" != "$BASE_REPO_ID" ]]; then
+              echo "CROSS_REPOSITORY_SOURCE_CHECKOUT_FORBIDDEN" >&2
+              exit 78
+            fi
+          elif [[ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]]; then
+            echo "UNSUPPORTED_SOURCE_EVENT_FORBIDDEN" >&2
             exit 78
           fi
           echo "SOURCE_REPOSITORY_CHECKOUT_ALLOWED=true"

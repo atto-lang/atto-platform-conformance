@@ -155,4 +155,11 @@ test("the incident hold covers every PR and hard-fails external source before ch
   const checkout=workflow.indexOf("uses: actions/checkout@");
   assert.ok(gate>=0 && checkout>gate,"deny before checkout");
   assert.match(workflow,/CROSS_REPOSITORY_SOURCE_CHECKOUT_FORBIDDEN/);
+  assert.match(workflow,/PR_HEAD_REPO_ID:/);
+  assert.match(workflow,/BASE_REPO_ID:/);
+  assert.match(workflow,/GITHUB_EVENT_NAME.*pull_request/);
+  assert.doesNotMatch(workflow,/PR_HEAD_REPO:.*\|\| github\.repository/,
+    "missing fork metadata must never default to a trusted owner");
+  assert.match(workflow,/PR_HEAD_REPO_ID.*!=.*BASE_REPO_ID/,
+    "numeric repository identity must be checked before checkout");
 });
