@@ -3,6 +3,11 @@ import {types as nodeTypes} from "node:util";
 // Deterministic, single-threaded reference oracle for actor-pubsub.portable.v1.
 // This is NOT an Oreslang runtime or proof of concurrent linearizability.
 const NON_DATA_CAPABILITIES = new WeakSet();
+// Deterministic reference-oracle resource limits; production runtimes must
+// enforce equivalent bounded admission with their own configured quotas.
+const SHARED_GRAPH_MAX_DEPTH = 128;
+const SHARED_GRAPH_MAX_NODES = 4096;
+const SHARED_GRAPH_MAX_EDGES = 16384;
 const failure = (error) => ({ok:false,error});
 const success = (value={}) => ({ok:true,...value});
 const topicName = (s) => typeof s === "string" && /^[A-Za-z][A-Za-z0-9._/-]{0,127}$/.test(s);
@@ -24,7 +29,10 @@ export function share(value) {
   // a later callback, Proxy, symbol or cycle leaves earlier siblings frozen
   // even though ownership/share admission failed.
   const visiting=new Set(), checked=new Set(), freezeOrder=[];
-  function validate(v) {
+  let nodes=0, edges=0;
+  function validate(v,depth=0) {
+    if (depth>SHARED_GRAPH_MAX_DEPTH)
+      throw new RangeError("shared payload depth quota exceeded");
     if (v === null || v === undefined)
       throw new TypeError("pubsub payload uses Option<T>, not null/undefined");
     if (typeof v !== "object") {
@@ -38,9 +46,13 @@ export function share(value) {
     if (checked.has(v)) return;
     const keys=safeKeys(v);
     if (!keys) throw new TypeError("non-Sendable shared payload");
+    if (++nodes>SHARED_GRAPH_MAX_NODES ||
+        keys.length>SHARED_GRAPH_MAX_EDGES-edges)
+      throw new RangeError("shared payload graph quota exceeded");
+    edges+=keys.length;
     visiting.add(v);
     try {
-      for (const key of keys) validate(Object.getOwnPropertyDescriptor(v,key).value);
+      for (const key of keys) validate(Object.getOwnPropertyDescriptor(v,key).value,depth+1);
       checked.add(v);
       freezeOrder.push(v); // child-first; preserves shared DAG aliases
     } finally {
@@ -370,7 +382,9 @@ export class PubSubReference {
     // A frozen DAG is Sendable even when two fields reference the same child.
     // Reject back-edges to the current stack (true cycles).
     const visiting=new Set(), checked=new Set();
-    function check(x) {
+    let nodes=0, edges=0;
+    function check(x,depth=0) {
+      if (depth>SHARED_GRAPH_MAX_DEPTH) return false;
       if (x===null || x===undefined) return false;
       if (typeof x==="object" && NON_DATA_CAPABILITIES.has(x)) return false;
       if (typeof x!=="object") return typeof x!=="function" && typeof x!=="symbol";
@@ -378,10 +392,12 @@ export class PubSubReference {
       if (checked.has(x)) return true;
       if (nodeTypes.isProxy(x) || !Object.isFrozen(x)) return false;
       const keys=safeKeys(x);
-      if (!keys) return false;
+      if (!keys || ++nodes>SHARED_GRAPH_MAX_NODES ||
+          keys.length>SHARED_GRAPH_MAX_EDGES-edges) return false;
+      edges+=keys.length;
       visiting.add(x);
       try {
-        if (!keys.every(k=>check(Object.getOwnPropertyDescriptor(x,k).value))) return false;
+        if (!keys.every(k=>check(Object.getOwnPropertyDescriptor(x,k).value,depth+1))) return false;
         checked.add(x);
         return true;
       } finally {
