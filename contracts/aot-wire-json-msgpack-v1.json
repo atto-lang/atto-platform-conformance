@@ -1,0 +1,431 @@
+{
+  "contract": "attolang.aot-wire-json-msgpack/1",
+  "schemaVersion": 1,
+  "status": "candidate-unattested",
+  "codecs": [
+    "json",
+    "messagepack"
+  ],
+  "backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "forge",
+    "net"
+  ],
+  "supportedScalarTypes": [
+    "int",
+    "i64",
+    "bool",
+    "string"
+  ],
+  "limits": {
+    "inputBytes": 65536,
+    "stringBytes": 4096,
+    "fields": 256,
+    "maxDepth": 1
+  },
+  "serializationShape": "closed-nominal-required-fields-only",
+  "schemaIdentity": "domain-separated-sha256-of-canonical-ATTOREF1-table",
+  "runtimeReflectionAllowed": false,
+  "unsupported": [
+    "null",
+    "Option",
+    "nested arrays",
+    "nested maps",
+    "union",
+    "arbitrary objects",
+    "polymorphism",
+    "field aliases",
+    "custom setters",
+    "floating point",
+    "uint64",
+    "streaming frames"
+  ],
+  "cases": [
+    {
+      "id": "json.field_order",
+      "kind": "codec",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "json.i64_bounds",
+      "kind": "codec",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "json.boolean",
+      "kind": "codec",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "json.escapes",
+      "kind": "codec",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "json.duplicate_key",
+      "kind": "negative",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "json.unknown_key",
+      "kind": "negative",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "json.missing_key",
+      "kind": "negative",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "json.malformed_utf8",
+      "kind": "negative",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "json.nested_denied",
+      "kind": "negative",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "json.alias_version_gate",
+      "kind": "negative",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "json.schema_fingerprint",
+      "kind": "codec",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "json.input_budget",
+      "kind": "negative",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "msgpack.field_order",
+      "kind": "codec",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "msgpack.signed_i64",
+      "kind": "codec",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "msgpack.boolean",
+      "kind": "codec",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "msgpack.strict_utf8",
+      "kind": "codec",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "msgpack.duplicate_key",
+      "kind": "negative",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "msgpack.unknown_key",
+      "kind": "negative",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "msgpack.missing_key",
+      "kind": "negative",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "msgpack.nil_denied",
+      "kind": "negative",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "msgpack.float_denied",
+      "kind": "negative",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "msgpack.unsigned64_denied",
+      "kind": "negative",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "msgpack.schema_fingerprint",
+      "kind": "codec",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "msgpack.input_budget",
+      "kind": "negative",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "aot.no_host_reflection",
+      "kind": "artifact-or-guest",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "aot.static_decode_table",
+      "kind": "artifact-or-guest",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "aot.native_guest_execution",
+      "kind": "artifact-or-guest",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "aot.no_runtime_jit",
+      "kind": "artifact-or-guest",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "aot.linker_metadata_retention",
+      "kind": "artifact-or-guest",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "aot.guest_constructor_ownership",
+      "kind": "artifact-or-guest",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "aot.tenant_generation_fence",
+      "kind": "artifact-or-guest",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "aot.cross_backend_differential",
+      "kind": "artifact-or-guest",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    }
+  ]
+}
