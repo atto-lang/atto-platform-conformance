@@ -75,15 +75,20 @@ function checkCommand(c,idx,activities,workflows){
  list(c.arguments,16,'DURABLE_M0_COMMAND_ARGS_BUDGET');
  c.arguments.forEach(e=>checkExpr(e));
  if(c.kind==='activity_step'||c.kind==='compensation'){
-   requireValue(activities.has(c.target),'DURABLE_M0_ACTIVITY_TARGET_UNKNOWN');
+   requireValue(activities.has(c.target+'#'+c.arguments.length),
+     'DURABLE_M0_ACTIVITY_TARGET_UNKNOWN');
  }else if(c.kind==='child_workflow'){
-   requireValue(workflows.has(c.target),'DURABLE_M0_CHILD_TARGET_UNKNOWN');
+   requireValue(workflows.has(c.target)&&c.arguments.length===1,
+     'DURABLE_M0_CHILD_TARGET_UNKNOWN');
  }else if(c.kind==='timer'){
    requireValue(c.target===''&&c.arguments.length===1,
      'DURABLE_M0_TIMER_SHAPE');
  }else if(c.kind==='wait_event'){
    requireValue(isName(c.target)&&c.arguments.length===0,
      'DURABLE_M0_WAIT_EVENT_SHAPE');
+ }else if(c.kind==='continue_as_new'){
+   requireValue(c.target===''&&c.arguments.length===1,
+     'DURABLE_M0_CONTINUE_AS_NEW_SHAPE');
  }
 }
 export function verifyDurableM0Reference(bytes,{expectedSha256=null}={}){
@@ -108,7 +113,7 @@ export function verifyDurableM0Reference(bytes,{expectedSha256=null}={}){
    list(a.operations,64,'DURABLE_M0_ACTIVITY_METHOD_BUDGET');
    a.operations.forEach(checkMethod);
    noDup(a.operations,m=>m.name+'#'+m.arity,'DURABLE_M0_DUPLICATE_ACTIVITY_OPERATION');
-   for(const m of a.operations)activities.add(a.id+'.'+m.name);
+   for(const m of a.operations)activities.add(a.id+'.'+m.name+'#'+m.arity);
  }
  for(const w of root.workflows){
    fields(w,['id','visibility','version','state','members','commands','queries'],
@@ -123,6 +128,8 @@ export function verifyDurableM0Reference(bytes,{expectedSha256=null}={}){
      'DURABLE_M0_WORKFLOW_ENTRYPOINT');
    workflows.add(w.id);
  }
+ noDup(root.activities,a=>a.id,'DURABLE_M0_DUPLICATE_ACTIVITY');
+ noDup(root.workflows,w=>w.id,'DURABLE_M0_DUPLICATE_WORKFLOW');
  for(const w of root.workflows){
    list(w.commands,1024,'DURABLE_M0_HISTORY_BUDGET');
    w.commands.forEach((c,i)=>checkCommand(c,i,activities,workflows));
@@ -133,9 +140,12 @@ export function verifyDurableM0Reference(bytes,{expectedSha256=null}={}){
      requireValue(isName(q.endpoint)&&isName(q.returns),'DURABLE_M0_QUERY_SHAPE');
      list(q.parameters,16,'DURABLE_M0_QUERY_PARAM_BUDGET');
      q.parameters.forEach(checkParam);
-     requireValue(w.members.some(m=>m.name===q.endpoint&&
-       m.parameters.length===q.parameters.length),
-       'DURABLE_M0_QUERY_ENDPOINT_UNKNOWN');
+     const member=w.members.find(m=>m.name===q.endpoint&&
+       m.parameters.length===q.parameters.length);
+     requireValue(member,'DURABLE_M0_QUERY_ENDPOINT_UNKNOWN');
+     requireValue(member.returns===q.returns&&member.parameters.every((p,i)=>
+       p.type===q.parameters[i].type),
+       'DURABLE_M0_QUERY_SIGNATURE_MISMATCH');
    }
    noDup(w.queries,q=>q.endpoint+'#'+q.parameters.length,
      'DURABLE_M0_DUPLICATE_QUERY');
