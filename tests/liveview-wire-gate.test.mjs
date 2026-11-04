@@ -58,3 +58,7 @@ test('reject malformed vectors even without a trusted blob',()=>{
   const v=clone(fixture);v.cases[0].frames_hex='thisisnothex';
   assert.throws(()=>validateVectors(v,JSON.stringify(v)),/LIVEVIEW_WIRE_GATE/);
 });
+
+test("Git blob hashing uses canonical NUL header without trailing space",()=>{
+  assert.equal(gitBlob(""),"e69de29bb2d1d6434b8b29ae775ad8c2e48c5391");
+});

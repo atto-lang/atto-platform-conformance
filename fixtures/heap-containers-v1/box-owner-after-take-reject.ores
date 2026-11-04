@@ -1,0 +1,9 @@
+// Negative: moving a class owner must prevent later heap referent access.
+define class Cell as
+  pub let int value = 42;
+end
+pub fnc main(): int {
+  let mut Cell owner = new Cell();
+  let moved = rt take owner;
+  return owner.value;
+}

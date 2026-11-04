@@ -1,0 +1,4 @@
+fnc make(): struct { foo: int } {
+    const value = struct { foo: int } { foo: 5 };
+    return value;
+}

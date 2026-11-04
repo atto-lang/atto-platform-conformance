@@ -1,6 +1,7 @@
 // Data-only cross-backend LiveView DOM patch/snapshot contract gate.
 // Structural consistency is NOT authenticated guest execution evidence.
 import {createHash} from 'node:crypto';
+export const ATOMIC_BLOB='1afd6d4c73b7bb0ee4424eadb265c47eb40e7652';
 export const BACKENDS=Object.freeze(['java','llvm','wasm','forge','net']);
 const fail=m=>{throw new Error('LIVEVIEW_ATOMIC_PATCH_GATE: '+m)};
 const check=(v,m)=>{if(!v)fail(m)};
@@ -12,6 +13,8 @@ export function gitBlob(text) {
   return createHash('sha1').update(Buffer.from('blob '+buf.length+'\0')).update(buf).digest('hex');
 }
 export function validateAtomicFixture(fixture,raw) {
+  check(typeof raw==='string' && gitBlob(raw)===ATOMIC_BLOB,'immutable atomic fixture blob mismatch');
+  check(JSON.stringify(fixture,null,2)+'\n'===raw,'fixture object does not match pinned bytes');
   check(fixture && !Array.isArray(fixture) && fixture.schema==='ores-liveview-atomic-patch-v1','unknown schema');
   check(Object.keys(fixture).sort().join(',')==='cases,purpose,schema','fixture field contract');
   check(Array.isArray(fixture.cases) && fixture.cases.length===10,'exact 10 deterministic cases required');

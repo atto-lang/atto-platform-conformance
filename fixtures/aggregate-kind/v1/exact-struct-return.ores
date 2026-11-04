@@ -1,0 +1,3 @@
+pub fnc make(): struct { foo: int } {
+    return struct { foo: int } { foo: 5 };
+}

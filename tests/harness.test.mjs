@@ -5,16 +5,45 @@ import {mkdtemp,writeFile,rm,symlink} from "node:fs/promises";
 import {writeFileSync,unlinkSync,symlinkSync} from "node:fs";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
-import {runSuite,validateCommand,loadManifest,COMPILER_BACKENDS} from "../src/harness.mjs";
+import {runSuite,validateCommand,validateManifestSchema,loadManifest,COMPILER_BACKENDS} from "../src/harness.mjs";
 const sha="012345678901234567890123456789abcdefabcd";
 const cmd=[process.execPath,new URL("./fake-checker.mjs",import.meta.url).pathname,"{file}"];
 const fixtureCount=5;
+const executableFixtureCount=2;
+const unsupportedFixtureCount=3;
 test("manifest parses exact fixtures",async()=>{const m=await loadManifest();assert.equal(m.cases.length,fixtureCount)});
+test("unsupported capability ledger is constrained to positive listed backends",()=>{
+ const base={
+  schemaVersion:1,
+  cases:[
+   {id:"ok",file:"ok.ores",expect:"accept",backends:[...COMPILER_BACKENDS]},
+   {id:"bad",file:"bad.ores",expect:"reject",diagnostic:"missing",backends:[...COMPILER_BACKENDS]}
+  ]
+ };
+ assert.doesNotThrow(()=>validateManifestSchema(structuredClone(base)));
+ const noExecutablePositive=structuredClone(base);
+ noExecutablePositive.cases[0].unsupportedBackends=["java"];
+ assert.throws(
+   ()=>validateManifestSchema(noExecutablePositive),
+   /missing positive\/negative fixture coverage for java/
+ );
+ for(const mutate of [
+  manifest=>{manifest.cases[0].unsupportedBackends=["not-a-backend"]},
+  manifest=>{manifest.cases[0].unsupportedBackends=["java","java"]},
+  manifest=>{manifest.cases[1].unsupportedBackends=["java"]},
+  manifest=>{manifest.cases[0].unsupportedBackends=["browser"]}
+ ]){
+  const candidate=structuredClone(base);mutate(candidate);
+  assert.throws(()=>validateManifestSchema(candidate),/unsupported backend capability ledger/);
+ }
+});
+
 test("unconfigured is explicit and never counted as verified",async()=>{
  const r=await runSuite({backend:"java"});
  assert.equal(r.configured,false);
  assert.equal(r.verified,0);
  assert.equal(r.skipped,fixtureCount);
+ assert.equal(r.unsupported,0);
  assert.ok(r.results.every(x=>x.status==="UNCONFIGURED"));
 });
 test("required unconfigured suite exits with non-success state",async()=>{
@@ -24,21 +53,30 @@ test("required unconfigured suite exits with non-success state",async()=>{
  assert.notEqual(p.status,0);
  assert.match(p.stdout,/UNCONFIGURED/);
 });
-test("fake checker only exercises harness accept and reject handling",async()=>{
+test("declared unsupported generator targets never become fake verification",async()=>{
  const r=await runSuite({backend:"java",argv:cmd,sourceSha:sha});
  assert.equal(r.configured,true);
- assert.equal(r.verified,fixtureCount);
- assert.equal(r.failed,0);
- assert.ok(r.results.every(x=>x.status==="VERIFIED"));
+ assert.equal(r.verified,executableFixtureCount);
+ assert.equal(r.failed,unsupportedFixtureCount);
+ assert.equal(r.unsupported,unsupportedFixtureCount);
+ assert.equal(r.ok,false);
+ assert.equal(r.results.filter(x=>x.status==="VERIFIED").length,executableFixtureCount);
+ assert.equal(r.results.filter(x=>x.status==="UNSUPPORTED").length,unsupportedFixtureCount);
+ assert.ok(r.results.filter(x=>x.status==="UNSUPPORTED")
+   .every(x=>x.exitCode===null&&x.capabilityNote?.includes("declared unsupported")));
 });
-test("same fixtures can be selected for LLVM, without claiming LLVM executed",async()=>{
+test("LLVM capability ledger is explicit rather than inferred from parser rejection",async()=>{
  const r=await runSuite({backend:"llvm",argv:cmd,sourceSha:sha});
- assert.equal(r.verified,fixtureCount);
+ assert.equal(r.verified,executableFixtureCount);
+ assert.equal(r.results.filter(x=>x.status==="UNSUPPORTED").length,unsupportedFixtureCount);
+ assert.equal(r.unsupported,unsupportedFixtureCount);
+ assert.equal(r.ok,false);
 });
 test("missing executable is not mistaken for valid reject",async()=>{
  const r=await runSuite({backend:"llvm",argv:["/no/such/executable/oreslang","{file}"],sourceSha:sha});
  assert.equal(r.failed,fixtureCount);
- assert.ok(r.results.every(x=>x.status==="SPAWN_ERROR"));
+ assert.equal(r.results.filter(x=>x.status==="SPAWN_ERROR").length,executableFixtureCount);
+ assert.equal(r.results.filter(x=>x.status==="UNSUPPORTED").length,unsupportedFixtureCount);
 });
 test("no compiler revision or unsafe argument template fails closed",async()=>{
  await assert.rejects(runSuite({backend:"java",argv:cmd}),/SHA/);
@@ -51,7 +89,8 @@ test("nonzero exit without expected error is never accepted",async()=>{
 test("timeout and signal are never green",async()=>{
  const r=await runSuite({backend:"llvm",argv:cmd,sourceSha:sha,spawn:()=>({status:null,signal:null,error:{code:"ETIMEDOUT"}})});
  assert.equal(r.failed,fixtureCount);
- assert.ok(r.results.every(x=>x.status==="TIMEOUT"));
+ assert.equal(r.results.filter(x=>x.status==="TIMEOUT").length,executableFixtureCount);
+ assert.equal(r.results.filter(x=>x.status==="UNSUPPORTED").length,unsupportedFixtureCount);
 });
 
 test("verified harness results retain executable and fixture SHA-256 evidence",async()=>{
@@ -63,6 +102,11 @@ test("verified harness results retain executable and fixture SHA-256 evidence",a
  assert.equal(r.runtimeVerified,false);
  for(const item of r.results){
   assert.match(item.fixtureSha256,/^[0-9a-f]{64}$/);
+  if(item.status==="UNSUPPORTED"){
+   assert.equal(item.executableSha256Before,null);
+   assert.equal(item.executableSha256After,null);
+   continue;
+  }
   assert.equal(item.executableSha256Before,r.executableSha256);
   assert.equal(item.executableSha256After,r.executableSha256);
   assert.equal(item.executableResolvedPathBefore,item.executableResolvedPathAfter);
@@ -111,7 +155,8 @@ test("missing real tools cannot yield verification for newly admitted backends",
   const r=await runSuite({backend,argv:["/no/such/oreslang-compiler","{file}"],sourceSha:sha});
   assert.equal(r.ok,false,backend);
   assert.equal(r.failed,fixtureCount,backend);
-  assert.ok(r.results.every(x=>x.status==="SPAWN_ERROR"),backend);
+  assert.equal(r.results.filter(x=>x.status==="SPAWN_ERROR").length,executableFixtureCount,backend);
+  assert.equal(r.results.filter(x=>x.status==="UNSUPPORTED").length,unsupportedFixtureCount,backend);
  }
  await assert.rejects(runSuite({backend:"not-a-compiler"}),/unknown backend/);
 });
@@ -181,7 +226,7 @@ test("late compiler replacement revokes previous successful fixture evidence",as
    if(++calls===2)writeFileSync(executable,"version-B");
    return {status:0,signal:null,stdout:"",stderr:""};
   }});
-  assert.equal(calls,fixtureCount);
+  assert.equal(calls,executableFixtureCount);
   assert.equal(r.ok,false);
   assert.equal(r.verified,0);
   assert.equal(r.failed,fixtureCount);

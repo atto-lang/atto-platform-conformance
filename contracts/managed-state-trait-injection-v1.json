@@ -1,0 +1,714 @@
+{
+  "contract": "managed-state-trait-injection-v1",
+  "version": "1.0.0-design",
+  "status": "SOURCE_FREE_NOT_COMPILER_PARITY",
+  "required_backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "cranelift",
+    "net"
+  ],
+  "extra_backend": "forge",
+  "execution": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED"
+  },
+  "semantics": {
+    "trait_requires_state_slot": true,
+    "trait_storage_ownership": false,
+    "trait_capability_minting": false,
+    "class_scope": "instance",
+    "singleton_scope": "application_domain",
+    "singleton_initialization": "once-per-domain-sticky-failure",
+    "state_sources": [
+      "state_block",
+      "injected"
+    ],
+    "actor_supervisor_generic_injection": "rejected-until-separately-verified",
+    "guard_modes": [
+      "critical-read",
+      "critical-write"
+    ]
+  },
+  "promotion": {
+    "identical_guest_source_required": true,
+    "real_compiler_and_guest_execution_required": true,
+    "nonzero_ci_steps_required": true,
+    "rejection_counts_as_execution": false,
+    "host_reference_counts_as_parity": false
+  },
+  "cases": [
+    {
+      "id": "T01_CLASS_INLINE",
+      "input": {
+        "kind": "class",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "state_block",
+            "type": "CounterState",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "write",
+          "guard": "critical-write",
+          "mutates": true
+        }
+      },
+      "expected": "OK"
+    },
+    {
+      "id": "T02_SINGLETON_INLINE",
+      "input": {
+        "kind": "singleton",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "state_block",
+            "type": "CounterState",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "read",
+          "guard": "critical-read"
+        }
+      },
+      "expected": "OK"
+    },
+    {
+      "id": "T03_CLASS_INJECTED",
+      "input": {
+        "kind": "class",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "injected",
+            "type": "CounterState",
+            "issuer": "compiler",
+            "scope": "instance",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "read",
+          "guard": "critical-read"
+        }
+      },
+      "expected": "OK"
+    },
+    {
+      "id": "T04_SINGLETON_INJECTED",
+      "input": {
+        "kind": "singleton",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "injected",
+            "type": "CounterState",
+            "issuer": "compiler",
+            "scope": "application_domain",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "write",
+          "guard": "critical-write",
+          "mutates": true
+        }
+      },
+      "expected": "OK"
+    },
+    {
+      "id": "T05_MISSING",
+      "input": {
+        "kind": "singleton",
+        "required_type": "CounterState",
+        "bindings": [],
+        "access": {
+          "mode": "read",
+          "guard": "critical-read"
+        }
+      },
+      "expected": "REQUIRED_STATE_MISSING"
+    },
+    {
+      "id": "T06_DOUBLE",
+      "input": {
+        "kind": "singleton",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "state_block",
+            "type": "CounterState",
+            "initialized": true
+          },
+          {
+            "origin": "state_block",
+            "type": "CounterState",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "read",
+          "guard": "critical-read"
+        }
+      },
+      "expected": "DUPLICATE_STATE_BINDING"
+    },
+    {
+      "id": "T07_RAW",
+      "input": {
+        "kind": "class",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "raw_field",
+            "type": "CounterState",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "write",
+          "guard": "critical-write",
+          "mutates": true
+        }
+      },
+      "expected": "RAW_STORAGE_FORBIDDEN"
+    },
+    {
+      "id": "T08_WRONG_TYPE",
+      "input": {
+        "kind": "class",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "state_block",
+            "type": "ForeignState",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "write",
+          "guard": "critical-write",
+          "mutates": true
+        }
+      },
+      "expected": "STATE_TYPE_MISMATCH"
+    },
+    {
+      "id": "T09_UNINIT",
+      "input": {
+        "kind": "class",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "state_block",
+            "type": "CounterState",
+            "initialized": false
+          }
+        ],
+        "access": {
+          "mode": "write",
+          "guard": "critical-write",
+          "mutates": true
+        }
+      },
+      "expected": "UNINITIALIZED_STATE"
+    },
+    {
+      "id": "T10_GUEST_PROVIDER",
+      "input": {
+        "kind": "singleton",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "injected",
+            "type": "CounterState",
+            "issuer": "guest",
+            "scope": "application_domain",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "write",
+          "guard": "critical-write",
+          "mutates": true
+        }
+      },
+      "expected": "UNTRUSTED_INJECTION"
+    },
+    {
+      "id": "T11_GLOBAL",
+      "input": {
+        "kind": "singleton",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "injected",
+            "type": "CounterState",
+            "issuer": "compiler",
+            "scope": "process",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "write",
+          "guard": "critical-write",
+          "mutates": true
+        }
+      },
+      "expected": "INJECTION_SCOPE"
+    },
+    {
+      "id": "T12_UNRESOLVED",
+      "input": {
+        "kind": "class",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "injected",
+            "type": "CounterState",
+            "issuer": "compiler",
+            "scope": "instance",
+            "initialized": false
+          }
+        ],
+        "access": {
+          "mode": "read",
+          "guard": "critical-read"
+        }
+      },
+      "expected": "UNRESOLVED_PROVIDER"
+    },
+    {
+      "id": "T13_ACTOR",
+      "input": {
+        "kind": "actor",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "injected",
+            "type": "CounterState",
+            "issuer": "compiler",
+            "scope": "application_domain",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "write",
+          "guard": "critical-write",
+          "mutates": true
+        }
+      },
+      "expected": "UNSUPPORTED_OWNER_KIND"
+    },
+    {
+      "id": "T14_SUPERVISOR",
+      "input": {
+        "kind": "supervisor",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "injected",
+            "type": "CounterState",
+            "issuer": "compiler",
+            "scope": "application_domain",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "write",
+          "guard": "critical-write",
+          "mutates": true
+        }
+      },
+      "expected": "UNSUPPORTED_OWNER_KIND"
+    },
+    {
+      "id": "T15_MODEL",
+      "input": {
+        "kind": "model",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "injected",
+            "type": "CounterState",
+            "issuer": "compiler",
+            "scope": "application_domain",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "write",
+          "guard": "critical-write",
+          "mutates": true
+        }
+      },
+      "expected": "UNSUPPORTED_OWNER_KIND"
+    },
+    {
+      "id": "T16_READ_MUTATION",
+      "input": {
+        "kind": "singleton",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "state_block",
+            "type": "CounterState",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "read",
+          "guard": "critical-read",
+          "mutates": true
+        }
+      },
+      "expected": "READ_ONLY_MUTATION"
+    },
+    {
+      "id": "T17_WRITE_NO_GUARD",
+      "input": {
+        "kind": "class",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "state_block",
+            "type": "CounterState",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "write",
+          "guard": "none",
+          "mutates": true
+        }
+      },
+      "expected": "GUARD_REQUIRED"
+    },
+    {
+      "id": "T18_ESCAPED_BORROW",
+      "input": {
+        "kind": "singleton",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "state_block",
+            "type": "CounterState",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "read",
+          "guard": "critical-read",
+          "escapes": true
+        }
+      },
+      "expected": "STATE_LOAN_ESCAPE"
+    },
+    {
+      "id": "T19_HEAP_ESCAPE",
+      "input": {
+        "kind": "singleton",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "state_block",
+            "type": "CounterState",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "read",
+          "guard": "critical-read",
+          "heap_escape": true
+        }
+      },
+      "expected": "STATE_LOAN_ESCAPE"
+    },
+    {
+      "id": "T20_SUSPEND",
+      "input": {
+        "kind": "class",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "state_block",
+            "type": "CounterState",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "write",
+          "guard": "critical-write",
+          "mutates": true,
+          "suspends": true
+        }
+      },
+      "expected": "STATE_LOAN_SUSPEND"
+    },
+    {
+      "id": "T21_CROSS_DOMAIN",
+      "input": {
+        "kind": "class",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "state_block",
+            "type": "CounterState",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "write",
+          "guard": "critical-write",
+          "mutates": true,
+          "cross_domain": true
+        }
+      },
+      "expected": "CROSS_DOMAIN_RAW_TRANSFER"
+    },
+    {
+      "id": "T22_STALE",
+      "input": {
+        "kind": "singleton",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "injected",
+            "type": "CounterState",
+            "issuer": "compiler",
+            "scope": "application_domain",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "write",
+          "guard": "critical-write",
+          "mutates": true,
+          "stale_generation": true
+        }
+      },
+      "expected": "STALE_GENERATION"
+    },
+    {
+      "id": "T23_REENTRANT",
+      "input": {
+        "kind": "class",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "state_block",
+            "type": "CounterState",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "write",
+          "guard": "critical-write",
+          "mutates": true,
+          "reentrant": true
+        }
+      },
+      "expected": "REENTRANT_GUARD"
+    },
+    {
+      "id": "T24_CONTROL",
+      "input": {
+        "kind": "singleton",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "injected",
+            "type": "CounterState",
+            "issuer": "compiler",
+            "scope": "application_domain",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "write",
+          "guard": "critical-write",
+          "mutates": true,
+          "forged_control": true
+        }
+      },
+      "expected": "CONTROL_FORGERY"
+    },
+    {
+      "id": "T25_DIRECT",
+      "input": {
+        "kind": "class",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "state_block",
+            "type": "CounterState",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "write",
+          "guard": "critical-write",
+          "mutates": true,
+          "direct_access": true
+        }
+      },
+      "expected": "DIRECT_STATE_ACCESS"
+    },
+    {
+      "id": "T26_WRONG_GUARD",
+      "input": {
+        "kind": "singleton",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "state_block",
+            "type": "CounterState",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "read",
+          "guard": "critical-write"
+        }
+      },
+      "expected": "GUARD_REQUIRED"
+    },
+    {
+      "id": "T27_WRONG_MODE",
+      "input": {
+        "kind": "class",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "state_block",
+            "type": "CounterState",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "unchecked",
+          "guard": "critical-write",
+          "mutates": true
+        }
+      },
+      "expected": "INVALID_LOAN_MODE"
+    },
+    {
+      "id": "T28_UNKNOWN_OPTION",
+      "input": {
+        "kind": "singleton",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "injected",
+            "type": "CounterState",
+            "issuer": "compiler",
+            "scope": "application_domain",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "write",
+          "guard": "critical-write",
+          "mutates": true,
+          "unsafe": true
+        }
+      },
+      "expected": "UNKNOWN_FIELD"
+    },
+    {
+      "id": "T29_BAD_BINDING",
+      "input": {
+        "kind": "singleton",
+        "required_type": "CounterState",
+        "bindings": [
+          null
+        ],
+        "access": {
+          "mode": "read",
+          "guard": "critical-read"
+        }
+      },
+      "expected": "INVALID_BINDING"
+    },
+    {
+      "id": "T30_NO_REQUIREMENT",
+      "input": {
+        "kind": "class",
+        "required_type": "",
+        "bindings": [
+          {
+            "origin": "state_block",
+            "type": "CounterState",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "write",
+          "guard": "critical-write",
+          "mutates": true
+        }
+      },
+      "expected": "MISSING_CONTRACT"
+    },
+    {
+      "id": "T31_DUPLICATE_PROVIDER",
+      "input": {
+        "kind": "singleton",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "injected",
+            "type": "CounterState",
+            "issuer": "compiler",
+            "scope": "application_domain",
+            "initialized": true
+          },
+          {
+            "origin": "injected",
+            "type": "CounterState",
+            "issuer": "compiler",
+            "scope": "application_domain",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "write",
+          "guard": "critical-write",
+          "mutates": true
+        }
+      },
+      "expected": "DUPLICATE_STATE_BINDING"
+    },
+    {
+      "id": "T32_TRAIT_ITSELF",
+      "input": {
+        "kind": "trait",
+        "required_type": "CounterState",
+        "bindings": [
+          {
+            "origin": "injected",
+            "type": "CounterState",
+            "issuer": "compiler",
+            "scope": "application_domain",
+            "initialized": true
+          }
+        ],
+        "access": {
+          "mode": "write",
+          "guard": "critical-write",
+          "mutates": true
+        }
+      },
+      "expected": "UNSUPPORTED_OWNER_KIND"
+    }
+  ]
+}

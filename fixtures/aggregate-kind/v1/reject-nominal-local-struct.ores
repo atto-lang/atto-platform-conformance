@@ -1,0 +1,4 @@
+fnc invalid(): int {
+    struct T { int foo };
+    return 1;
+}

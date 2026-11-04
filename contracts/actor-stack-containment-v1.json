@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "id": "actor-stack-containment-v1",
+  "language": "AttoLang",
+  "canonicalExtension": ".atto",
+  "scope": "actor call-depth, guest frame budgeting, carrier survival and supervisor recovery",
+  "javaReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2505",
+  "note": "All five backend execution states are NOT_EXECUTED. The Java PR is an early defensive guard and does not establish native process fault isolation.",
+  "requirements": {
+    "separateHeapsAreNotStacks": true,
+    "guestBudgetBeforeNativeOverflow": true,
+    "guestCannotCatchBudgetFailure": true,
+    "tailCallBoundedFrames": true,
+    "cleanupAndActorGenerationFencing": true,
+    "sourceAndInteropPathsCovered": true,
+    "untrustedJitPermitted": true,
+    "untrustedArbitraryNativeCodeRequiresKillableWorker": true,
+    "nativeStackOverflowRecoverableOnSharedCarrier": false
+  },
+  "backends": [
+    {
+      "id": "java",
+      "admission": "NOT_EXECUTED",
+      "compilerGuest": "NOT_EXECUTED",
+      "actorSurvival": "NOT_EXECUTED",
+      "nativeLowStack": "NOT_EXECUTED",
+      "supervisorRecovery": "NOT_EXECUTED",
+      "exactHeadReceipt": null
+    },
+    {
+      "id": "llvm",
+      "admission": "NOT_EXECUTED",
+      "compilerGuest": "NOT_EXECUTED",
+      "actorSurvival": "NOT_EXECUTED",
+      "nativeLowStack": "NOT_EXECUTED",
+      "supervisorRecovery": "NOT_EXECUTED",
+      "exactHeadReceipt": null
+    },
+    {
+      "id": "net",
+      "admission": "NOT_EXECUTED",
+      "compilerGuest": "NOT_EXECUTED",
+      "actorSurvival": "NOT_EXECUTED",
+      "nativeLowStack": "NOT_EXECUTED",
+      "supervisorRecovery": "NOT_EXECUTED",
+      "exactHeadReceipt": null
+    },
+    {
+      "id": "wasm",
+      "admission": "NOT_EXECUTED",
+      "compilerGuest": "NOT_EXECUTED",
+      "actorSurvival": "NOT_EXECUTED",
+      "nativeLowStack": "NOT_EXECUTED",
+      "supervisorRecovery": "NOT_EXECUTED",
+      "exactHeadReceipt": null
+    },
+    {
+      "id": "forge",
+      "admission": "NOT_EXECUTED",
+      "compilerGuest": "NOT_EXECUTED",
+      "actorSurvival": "NOT_EXECUTED",
+      "nativeLowStack": "NOT_EXECUTED",
+      "supervisorRecovery": "NOT_EXECUTED",
+      "exactHeadReceipt": null
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "shallow-call",
+      "source": "fixtures/actor-stack-containment-v1/shallow-call.atto",
+      "kind": "positive",
+      "expectedStdout": "42",
+      "requiredEvidence": [
+        "compilerGuest"
+      ]
+    },
+    {
+      "id": "deep-tail-call",
+      "source": "fixtures/actor-stack-containment-v1/deep-tail-call.atto",
+      "kind": "positive",
+      "expectedStdout": "42",
+      "requiredEvidence": [
+        "compilerGuest",
+        "nativeLowStack"
+      ]
+    },
+    {
+      "id": "deep-non-tail-call",
+      "source": "fixtures/actor-stack-containment-v1/deep-non-tail-call.atto",
+      "kind": "bounded-failure",
+      "expectedFailureClass": "guest-stack-budget-exhausted",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival",
+        "nativeLowStack"
+      ]
+    },
+    {
+      "id": "mutual-non-tail-call",
+      "source": "fixtures/actor-stack-containment-v1/mutual-non-tail-call.atto",
+      "kind": "bounded-failure",
+      "expectedFailureClass": "guest-stack-budget-exhausted",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "sibling-actor-survival",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "guest-stack-budget-exhausted",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival",
+        "supervisorRecovery"
+      ]
+    },
+    {
+      "id": "defer-lock-teardown",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "guest-stack-budget-exhausted",
+      "requiredEvidence": [
+        "compilerGuest",
+        "supervisorRecovery"
+      ]
+    },
+    {
+      "id": "host-ffi-stack-hazard",
+      "source": null,
+      "kind": "pending-isolation",
+      "expectedFailureClass": "killable-worker-required",
+      "requiredEvidence": [
+        "nativeLowStack",
+        "actorSurvival"
+      ]
+    }
+  ],
+  "promotion": {
+    "certified": false,
+    "hostOnlyPassInsufficient": true,
+    "sourceFixtureAloneInsufficient": true,
+    "requiresExactSourceTree": true,
+    "requiresNonemptyRunnerSteps": true,
+    "requiresActualCompilerGuest": true,
+    "requiresProcessSurvivalEvidence": true,
+    "requiresSupervisorGenerationEvidence": true,
+    "zeroStepCountsAsExecuted": false,
+    "sourceFreeCanaryCountsAsGuest": false
+  }
+}

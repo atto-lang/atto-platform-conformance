@@ -81,3 +81,68 @@ test('unknown and malformed fingerprint inventories do not become approvals',()=
   assert.equal(triageCarrierTree(base,null,['not-a-sha']).classification,'UNVERIFIABLE_FINGERPRINTS');
   assert.equal(triageCarrierTree(base,null,[]).classification,'SOURCE_FREE_UNPROVEN');
 });
+
+test('source-like scripting and extension-language blobs remain suspicious even with a matching pin',()=>{
+  for (const path of [
+    'payload/index.js', 'payload/runtime.mjs', 'payload/launch.cjs',
+    'scripts/runner.ts', 'scripts/frontend.tsx', 'scripts/widget.jsx',
+    'deps/worker.py', 'deps/compiler.pyw', 'audit/patch.rb',
+    'tools/inspect.sh', 'tools/boot.bash', 'tools/restart.zsh',
+    'scripts/admin.ps1', 'plugins/init.lua', 'service/router.php',
+  ]) {
+    const payload={...base,tree:[entry(path)]};
+    const result=triageCarrierTree(payload,payload);
+    assert.equal(result.classification,'POTENTIAL_SOURCE_BEARING',path);
+    assert.equal(result.authorizes_source_transfer,false,path);
+  }
+  const benign={...base,tree:[entry('fixtures/expected.json')]};
+  assert.equal(triageCarrierTree(benign,benign).classification,'MATCHES_SUPPLIED_PIN');
+});
+
+test('extensionless executables are conservatively source-bearing even with a matching pin',()=>{
+  for (const path of ['bin/runner','tools/bootstrap','hooks/pre-commit','payload/worker']) {
+    const executable={...base,tree:[{...entry(path),mode:'100755'}]};
+    const result=triageCarrierTree(executable,executable);
+    assert.equal(result.classification,'POTENTIAL_SOURCE_BEARING',path);
+    assert.equal(result.authorizes_source_transfer,false,path);
+    assert.equal(result.certifies_source_free,false,path);
+  }
+  const nonExecutable={...base,tree:[entry('fixtures/extensionless-data')]};
+  assert.equal(triageCarrierTree(nonExecutable,nonExecutable).classification,'MATCHES_SUPPLIED_PIN');
+});
+
+test('additional compiled VM and schema source families remain suspicious',()=>{
+  for (const path of [
+    'native/bridge.mm','vm/boot.wat','vm/text.wast','js/module.mts','js/module.cts',
+    'jvm/plugin.scala','jvm/build.gradle','mobile/client.dart','beam/app.ex',
+    'beam/worker.erl','dotnet/module.fs','analysis/model.jl','fp/core.hs',
+    'fp/core.ml','native/kernel.nim','hdl/top.sv','native/startup.S',
+    'schema/messages.proto','schema/api.thrift','schema/model.capnp',
+  ]) {
+    const payload={...base,tree:[entry(path)]};
+    assert.equal(triageCarrierTree(payload,payload).classification,'POTENTIAL_SOURCE_BEARING',path);
+  }
+});
+
+test('executable build and workflow configuration is conservatively source-bearing',()=>{
+  for (const path of [
+    '.github/workflows/ci.yml','.github/workflows/release.yaml','Dockerfile','build/Dockerfile',
+    'Makefile','native/CMakeLists.txt','pom.xml','web/package.json','Cargo.toml','go.mod',
+    'android/build.gradle','android/settings.gradle','BUILD','pkg/WORKSPACE','rules/defs.bzl',
+    'rules/toolchain.bazel','scripts/config.json','tools/manifest.txt',
+  ]) {
+    const payload={...base,tree:[entry(path)]};
+    const result=triageCarrierTree(payload,payload);
+    assert.equal(result.classification,'POTENTIAL_SOURCE_BEARING',path);
+    assert.equal(result.authorizes_source_transfer,false,path);
+  }
+});
+
+test('platform path aliases that can collapse or target devices are unverifiable',()=>{
+  for (const path of [
+    '.git./config','foo./bar.txt','CON','con.txt','NUL.json','aux.cfg','COM1.log','lpt9.dat',
+    'dir/PRN.md','dir/CLOCK$.txt',
+  ]) {
+    assert.equal(triage({tree:[entry(path)]}).classification,'UNVERIFIABLE_TREE',path);
+  }
+});

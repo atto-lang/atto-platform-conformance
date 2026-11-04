@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {validateAtomicFixture,validateAtomicReceipt,BACKENDS} from '../src/liveview-atomic-patch-gate.mjs';
+import {validateAtomicFixture,validateAtomicReceipt,BACKENDS,gitBlob} from '../src/liveview-atomic-patch-gate.mjs';
 const raw=readFileSync(new URL('../contracts/v1/ores-liveview-atomic-patch-v1.json',import.meta.url),'utf8');
 const f=JSON.parse(raw);
 const clone=x=>structuredClone(x);
@@ -40,4 +40,12 @@ test('non-canonical fixture and identity corruption are rejected',()=>{
 test('wrong fixture blob and unknown backend rejected',()=>{
   const r=receipt();r.fixture_blob='0'.repeat(40);assert.throws(()=>validateAtomicReceipt(r,f,raw));
   const r2=receipt();r2.backends[2].backend='cranelift';assert.throws(()=>validateAtomicReceipt(r2,f,raw));
+});
+
+test('changed canonical oracle cannot be laundered by matching receipt',()=>{
+  const altered=clone(f);altered.cases[0].expected='snapshot';
+  const bytes=JSON.stringify(altered,null,2)+'\n', r=receipt();
+  r.fixture_blob=gitBlob(bytes);
+  for(const b of r.backends)b.results[0].observed='snapshot';
+  assert.throws(()=>validateAtomicReceipt(r,altered,bytes),/immutable atomic fixture/);
 });

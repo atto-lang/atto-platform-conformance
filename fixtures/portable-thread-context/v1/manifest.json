@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "contract": "portable-thread-context-v1",
+  "status": "candidate-guest-not-executed",
+  "files": [
+    {
+      "path": "thread-box-join.atto",
+      "expected": "accept-and-return-42",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "path": "reject-borrowed-thread-capture.atto",
+      "expected": "reject",
+      "diagnosticClass": "thread_capture_borrow",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "path": "reject-actor-state-thread-capture.atto",
+      "expected": "reject",
+      "diagnosticClass": "thread_capture_actor_state",
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "path": "task-local-carrier-migration.atto",
+      "expected": "accept-and-return-42-on-migration",
+      "evidence": "NOT_EXECUTED"
+    }
+  ],
+  "backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "forge",
+    "net"
+  ]
+}

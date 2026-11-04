@@ -1,0 +1,5 @@
+pub fnc main(): int {
+  const first = infer struct{x: true, y: 43};
+  const extended = infer struct{...first, x: 2};
+  return extended.x + extended.y;
+}
