@@ -33,6 +33,16 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
           echo "SOURCE_LOCAL_SECURITY_TEST_HEAD=$EXPECTED_HEAD"
+      - name: Select pinned Node 22 toolchain
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          check-latest: false
+      - name: Confirm required Node runtime
+        run: |
+          set -euo pipefail
+          node -e 'if (Number(process.versions.node.split(".")[0]) !== 22) process.exit(1)'
+          echo "PRIVATE_CI_NODE_22_READY=true"
       - name: Execute complete private mirror policy and publisher unit tests
         run: |
           set -euo pipefail
