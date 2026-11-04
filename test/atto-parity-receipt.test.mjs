@@ -159,3 +159,14 @@ test('compiler receipt metadata forbids log-control characters',()=>{
   const r=v2();r.compiler='C:/Program Files/AttoLang/llvmc.exe';
   assert.equal(validateParityReceipt(r).publicly_promotable,false);
 });
+
+test('compiler labels reject Unicode line and bidirectional control characters',()=>{
+  for(const codepoint of [0x85,0x9f,0x2028,0x2029,0x202a,0x202e,0x2066,0x2069]){
+    const r=v2();
+    r.compiler='llvmc'+String.fromCodePoint(codepoint)+'forged';
+    assert.throws(()=>validateParityReceipt(r),/parity receipt rejected: compiler/);
+  }
+  const valid=v2();
+  valid.compiler='C:/Program Files/AttoLang/llvmc.exe';
+  assert.equal(validateParityReceipt(valid).publicly_promotable,false);
+});
