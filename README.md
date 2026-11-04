@@ -178,3 +178,14 @@ no real compiler is run and neither command attests backend support.
 Use actual, pinned real compiler execution and independently verified CI
 provenance before changing backend support declarations. The source fixture
 smoke harness remains a separate, narrower test.
+
+## Nominal enum hardening inventory (five backend target)
+
+[Enum semantics v1](docs/ENUM_SEMANTICS_V1.md) defines the closed, nominal case/tag,
+exhaustiveness, payload, zero-GC and actor-wire boundaries. Its
+[14 Git-blob-pinned positive/negative fixtures](contracts/enum-semantics-v1.json)
+cover Java, LLVM, Wasm, .NET and Forge as a **target** inventory.
+The Node fixture-integrity tests do not compile Oreslang, and no backend is
+marked confirmed until real exact-source compiler checks and guest execution
+produce independently reviewable evidence. Enum methods and full portable
+wire codecs remain separate implementation/verification gates.

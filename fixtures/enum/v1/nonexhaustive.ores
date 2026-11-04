@@ -1,0 +1,9 @@
+define enum Stage as
+    Ready
+    Done
+end
+fnc invalid(Stage x): int {
+    match x over
+        on Stage.Ready -> { return 1; }
+    end
+}
