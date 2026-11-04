@@ -31,8 +31,6 @@ export function share(value) {
   const visiting=new Set(), checked=new Set(), freezeOrder=[];
   let nodes=0, edges=0;
   function validate(v,depth=0) {
-    if (depth>SHARED_GRAPH_MAX_DEPTH)
-      throw new RangeError("shared payload depth quota exceeded");
     if (v === null || v === undefined)
       throw new TypeError("pubsub payload uses Option<T>, not null/undefined");
     if (typeof v !== "object") {
@@ -40,6 +38,8 @@ export function share(value) {
         throw new TypeError("non-Sendable shared payload");
       return;
     }
+    if (depth>SHARED_GRAPH_MAX_DEPTH)
+      throw new RangeError("shared payload depth quota exceeded");
     if (NON_DATA_CAPABILITIES.has(v))
       throw new TypeError("non-Sendable pubsub/actor-group capability");
     if (visiting.has(v)) throw new TypeError("cyclic shared payload");
@@ -384,10 +384,10 @@ export class PubSubReference {
     const visiting=new Set(), checked=new Set();
     let nodes=0, edges=0;
     function check(x,depth=0) {
-      if (depth>SHARED_GRAPH_MAX_DEPTH) return false;
       if (x===null || x===undefined) return false;
       if (typeof x==="object" && NON_DATA_CAPABILITIES.has(x)) return false;
       if (typeof x!=="object") return typeof x!=="function" && typeof x!=="symbol";
+      if (depth>SHARED_GRAPH_MAX_DEPTH) return false;
       if (visiting.has(x)) return false;
       if (checked.has(x)) return true;
       if (nodeTypes.isProxy(x) || !Object.isFrozen(x)) return false;
