@@ -67,3 +67,16 @@ test("LLVM and JS M0 live ticket authority fences stay aligned",()=>{
  assert.deepEqual(data.jsReference.liveTicketRequires,["boot_identity","authenticated_peer","runtime_generation","credential_expiry","monotonic_deadline"]);
  assert.equal(data.backends.llvm.m1Descriptor.m0HeadMerged,data.backends.llvm.nativeHost.head);
 });
+
+test("compiler-backed AOT receipt is not promoted without runner-backed guest execution",()=>{
+ const v=data.backends.llvm.m1Descriptor;
+ const receipt=v.compilerGuestReceipt;
+ assert.equal(receipt.status,"NOT_EXECUTED");
+ assert.equal(receipt.schema,"atto.mcp.llvm-aot-guest-evidence.v1");
+ assert.deepEqual(receipt.requiredCases,["atto:O0","atto:O2","ores:O0","ores:O2"]);
+ assert.equal(receipt.descriptorMustMatchCompilerMetadataBytes,true);
+ assert.equal(receipt.onlyUploadAfterSuccessfulNativeExecution,true);
+ assert.equal(v.currentSourceSteps,0);
+ assert.equal(v.guestNativeExecution,"NOT_EXECUTED");
+ assert.equal(data.backends.llvm.guestParity,"NOT_EXECUTED");
+});

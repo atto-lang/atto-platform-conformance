@@ -65,18 +65,40 @@
           "compiler-backed native guest output O0 and O2 for atto and ores",
           "source-free O0/O2 retention and negative writable mutation"
         ],
-        "currentHead": "c5bd6326a0d53cbcb783f627a9520c812d6f050a",
-        "currentTree": "f4564d79afd407ef9e6ebb642d8094eb6f8ffa35",
-        "currentSourceRun": 41768252264,
+        "currentHead": "dccc61bc882e5bc7131c6707c8c473e33d1b8a82",
+        "currentTree": "4b9e4b3af1b4cdaeddcb0e9e3885c8ce6ae9b8c8",
+        "currentSourceRun": 41773605140,
         "currentSourceSteps": 0,
         "fullMergedSourceNotExecuted": true,
         "checkedBlobs": {
           "emitter": "efd37abbf6e711ba64239b230297fb9b7b091388",
           "hostTest": "36486827b873f4cfbf132e42eda56ffec9104ca8",
           "linkerTest": "2e58df063111f0dd5a1afa811e6e3d4ea5d4c317",
-          "nativeGuestTest": "55f27f394e3a8d399379e0acd581a205ec350606"
+          "nativeGuestTest": "6cc57a0fee6f4abfce875b1a89fcda9f2ff96569",
+          "compilerWorkflow": "b63018962a2373c51b9c077d3018d0f31a57a9ec"
         },
-        "m0HeadMerged": "82ecedc982811663cf206d342f0b084a2ac371fc"
+        "m0HeadMerged": "82ecedc982811663cf206d342f0b084a2ac371fc",
+        "compilerGuestReceipt": {
+          "status": "NOT_EXECUTED",
+          "schema": "atto.mcp.llvm-aot-guest-evidence.v1",
+          "requiredCases": [
+            "atto:O0",
+            "atto:O2",
+            "ores:O0",
+            "ores:O2"
+          ],
+          "requiredSourceIdentity": "exact HEAD and root tree",
+          "requiredBoundEvidence": [
+            "compilerSha256",
+            "nativeSha256",
+            "descriptorSha256",
+            "compilerMetadataSha256",
+            "defaultOff",
+            "negativeAdmissions"
+          ],
+          "descriptorMustMatchCompilerMetadataBytes": true,
+          "onlyUploadAfterSuccessfulNativeExecution": true
+        }
       },
       "guestParity": "NOT_EXECUTED",
       "liveMcpTransport": "NOT_IMPLEMENTED",
