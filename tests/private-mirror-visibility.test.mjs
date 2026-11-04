@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import {createHash} from "node:crypto";
 import {requirePrivateMirror} from "../bin/require-private-mirror.mjs";
 
-// Shared test-only fixture: pinned issuer bytes and four synthetic incident closures.
-import { source, destination, A, T, M, C, destinationId, encoded, securityOwners, reviewer, reviewerPolicy, codeowners, requiredChecks, sourcePolicyWorkflow, rules, incidentPath22, incidentPath77, incidentPath127, incidentPath212, incident22, incident77, incident127, incident212, carrierCodeowners, carrierPolicy, carrierPolicyWorkflow, sourceAuthorizationCommit, carrierAuthorizationCommit, sourcePrHead, carrierPrHead, carrierRules, good, fixture } from "./private-ci-authorization-fixture.mjs";
+// TEST-ONLY incident fixtures; they do not represent real issue closure.
+import { source, destination, A, T, M, C, destinationId, encoded, securityOwners, reviewer, reviewerPolicy, codeowners, requiredChecks, sourcePolicyWorkflow, rules, incidentPath22, incidentPath77, incidentPath127, incidentPath212, incidentPath171, incidentPath172, incidentPath198, incidentPath200, incidentPath252, incident22, incident77, incident127, incident212, incident171, incident172, incident198, incident200, incident252, carrierCodeowners, carrierPolicy, carrierPolicyWorkflow, sourceAuthorizationCommit, carrierAuthorizationCommit, sourcePrHead, carrierPrHead, carrierRules, good, fixture } from "./private-ci-authorization-fixture.mjs";
 
 const base = {
   source,destination,sourceCommit:A,sourceTree:T,approvedDestinations:[destination],
@@ -30,11 +30,11 @@ test("accepts only explicitly approved and GitHub-verified writable private dest
     sourceCommit:A,sourceTree:T,destinationId
   });
   assert.ok(calls.length >= 30);
-  // Four independent exposure incidents are checked before source metadata.
-  for(const [index,number] of [22,77,127,212].entries())
+  // All nine P0 incidents are checked before source metadata.
+  for(const [index,number] of [22,77,127,212,171,172,198,200,252].entries())
     assert.equal(calls[index].url.endsWith("/issues/"+number),true);
-  assert.equal(calls[4].url.endsWith("/" + source), true);
-  assert.equal(calls[5].url.endsWith("/" + destination), true);
+  assert.equal(calls[9].url.endsWith("/" + source), true);
+  assert.equal(calls[10].url.endsWith("/" + destination), true);
 });
 
 test("rejects public, internal, contradictory, archived and unwritable destinations", async () => {
@@ -58,7 +58,7 @@ test("rejects wrong or public source metadata even when destination is private",
   ]) {
     const calls = [];
     await assert.rejects(check({}, {[source]: metadata}, calls), /private source metadata/);
-    assert.equal(calls.length, 5, "cannot inspect target after all four incidents + source rejection");
+    assert.equal(calls.length, 10, "cannot inspect target after all nine incidents + source rejection");
   }
 });
 
@@ -281,12 +281,17 @@ test("noncanonical base64 and invalid policy UTF8 must deny",async()=>{
 });
 
 
-test("all four P0 incidents must be exactly completed before source metadata is inspected",async()=>{
+test("all nine P0 incidents must be exactly completed before source metadata is inspected",async()=>{
   for(const [path,incident,prior] of [
     [incidentPath22,incident22,0],
     [incidentPath77,incident77,1],
     [incidentPath127,incident127,2],
-    [incidentPath212,incident212,3]
+    [incidentPath212,incident212,3],
+    [incidentPath171,incident171,4],
+    [incidentPath172,incident172,5],
+    [incidentPath198,incident198,6],
+    [incidentPath200,incident200,7],
+    [incidentPath252,incident252,8]
   ]){
     for(const bad of [
       {...incident,state:"open",state_reason:null,closed_at:null},
