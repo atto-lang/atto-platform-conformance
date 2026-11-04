@@ -184,3 +184,14 @@ test('v1 and v2 diagnostics reject terminal and bidi spoofing but allow multilin
     assert.equal(validateParityReceipt(r).publicly_promotable,false);
   }
 });
+
+test('all ASCII controls and Unicode line separators are invalid compiler labels',()=>{
+  for(const codepoint of [...Array(32).keys(),127,133,8232,8233]){
+    const r=v2();
+    r.compiler='llvm'+String.fromCodePoint(codepoint)+'forged';
+    assert.throws(()=>validateParityReceipt(r),/parity receipt rejected: compiler/,String(codepoint));
+  }
+  const r=v1();
+  r.compiler='C:/Program Files/AttoLang/native compiler';
+  assert.equal(validateParityReceipt(r).case_count,2);
+});
