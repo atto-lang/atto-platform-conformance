@@ -1,10 +1,11 @@
+import {spawnSync} from "node:child_process";
 import {test} from "node:test";
 import {strict as assert} from "node:assert";
 import {cp, mkdtemp, readFile, writeFile, symlink, rm} from "node:fs/promises";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
 import {fileURLToPath} from "node:url";
-import {verifyImplicitValInitializeFixtureManifest} from "../src/implicit-val-initialize-manifest.mjs";
+import {verifyImplicitValInitializeFixtureManifest, readLimitedBytes} from "../src/implicit-val-initialize-manifest.mjs";
 
 const fixtures = fileURLToPath(
   new URL("../fixtures/implicit-val-initialize/v1/", import.meta.url)
@@ -122,4 +123,31 @@ test("Cranelift is a distinct required backend, never an alias of Forge", async 
       /must not invent backend confirmations/
     );
   });
+});
+
+
+test("FIFO input rejects promptly without waiting for a writer", {skip: process.platform === "win32"}, async () => {
+  await withFixtureCopy(async dir => {
+    await rm(join(dir, "manifest.json"));
+    const fifo = spawnSync("mkfifo", [join(dir, "manifest.json")], {timeout: 2000});
+    assert.equal(fifo.status, 0);
+    const child = spawnSync(process.execPath, [fileURLToPath(new URL("../bin/verify-implicit-val-initialize.mjs", import.meta.url)), dir], {timeout: 2000, encoding: "utf8"});
+    assert.equal(child.error, undefined, "reader must reject before timeout");
+    assert.equal(child.status, 1);
+    assert.match(child.stderr, /must be a regular file/);
+  });
+});
+
+test("a growing descriptor is capped at limit plus one, including short reads", async () => {
+  let total = 0, calls = 0;
+  const growing = {async read(buffer, offset, length) {
+    calls++;
+    const count = Math.min(3, length);
+    buffer.fill(65, offset, offset + count);
+    total += count;
+    return {bytesRead: count};
+  }};
+  await assert.rejects(readLimitedBytes(growing, 8, "fixture"), /exceeded the size limit/);
+  assert.equal(total, 9);
+  assert.equal(calls, 3);
 });
