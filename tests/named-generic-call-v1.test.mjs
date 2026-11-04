@@ -7,7 +7,7 @@ import { bind_generic_args, plan_named_call, evaluate_named_call, OMITTED } from
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const backends = ['java', 'llvm', 'net', 'wasm', 'forge'];
-const formal = (name, optional = false) => ({ name, optional });
+const formal = (name, optional = false) => ({ name, optional, ...(optional ? { checkedDefault: true } : {}) });
 const typ = (type, name = null) => ({ type, name });
 const value = (name = null) => ({ name });
 
