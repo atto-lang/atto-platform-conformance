@@ -103,7 +103,7 @@ test("cross-org source export is denied unless independently approved against ex
     source_org:"ores-truffle-oreslang",
     execution_repository:"other-test-org/hnpt-e2e"};
   assert.deepEqual(assessGuardReceipt(contract,cross).reason,
-    "PRIVATE_CROSS_ORG_EXPORT_NOT_AUTHORIZED");
+    "PRIVATE_CROSS_REPOSITORY_EXPORT_NOT_AUTHORIZED");
   cross.private_carrier_approval={
     authorized:true,
     destination_repository:"other-test-org/hnpt-e2e",
@@ -116,7 +116,7 @@ test("cross-org source export is denied unless independently approved against ex
   assert.match(assessGuardReceipt(contract,cross).state,/CANDIDATE_REQUIRES/);
   const sameOrg={...clone(baseline),execution_repository:"ores-truffle-oreslang/unlisted-private-carrier"};
   assert.equal(assessGuardReceipt(contract,sameOrg).reason,
-    "PRIVATE_CROSS_ORG_EXPORT_NOT_AUTHORIZED");
+    "PRIVATE_CROSS_REPOSITORY_EXPORT_NOT_AUTHORIZED");
 });
 
 test("even a perfectly shaped receipt remains a candidate, never verified by this source-free oracle", () => {
