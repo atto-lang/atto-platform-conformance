@@ -21,9 +21,7 @@ Receipt v2 adds the minimum cross-backend fields needed by
 - The validator still requires a successful job with a positive executed-step
   count and exact source head/tree/compiler identifiers.
 
-`validateScalarParityReceipt()` requires v2. The generic
-`validateParityReceipt()` still accepts v1 but returns
-`scalar_core_eligible:false`.
+`validateScalarParityReceipt()` requires v2 **and the complete canonical 19-case scalar-core set**. It pins every case ID, source SHA-256, kind, positive expected i64 value, and the allowed compile/runtime stage for each negative. The generic `validateParityReceipt()` remains schema-only and preserves the legacy v1 return shape.
 
 This validator checks internal consistency only. It does not authenticate
 GitHub metadata, runner identity, compiler provenance, artifact bytes, or
