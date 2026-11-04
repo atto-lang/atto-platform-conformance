@@ -1,0 +1,77 @@
+{
+  "schema": "atto.mcp.backend-evidence.v1",
+  "contract": "atto.mcp.dev-control.m0.v1",
+  "protocolVersion": "2026-07-28",
+  "scope": "EXACT_HEAD_SEPARATE_HOST_FROM_GUEST",
+  "sourcePR": "ores-truffle-oreslang/oreslang-platform-conformance#326",
+  "backends": {
+    "llvm": {
+      "nativeHost": {
+        "status": "LOCAL_EXECUTED",
+        "pr": 1361,
+        "head": "c9529782524c77c9e46df3cbe691eaab3dac811d",
+        "tree": "abe0790e1f4d09263aa140bbf82a760db2891824",
+        "compilers": [
+          "gcc-14.2",
+          "clang-17"
+        ],
+        "assertionsPerCompiler": 310,
+        "sanitizers": [
+          "ASan",
+          "UBSan"
+        ],
+        "hostedWorkflowRun": 41754443159,
+        "hostedExecutedSteps": 0,
+        "hostedStatus": "NOT_EXECUTED"
+      },
+      "m1Descriptor": {
+        "status": "LOCAL_HOST_HELPER_ONLY",
+        "pr": 1364,
+        "head": "eb1948a2333876d46b93dbc053815f31bbd94b8e",
+        "tree": "56615a91af9d18283c9ad43500c6d4cbf138a146",
+        "assertionsPerCompiler": 29,
+        "compilers": [
+          "gcc-14.2",
+          "clang-17"
+        ],
+        "hostedWorkflowRun": 41755154252,
+        "hostedExecutedSteps": 0,
+        "compilerDriverExecution": "NOT_EXECUTED",
+        "guestNativeExecution": "NOT_EXECUTED"
+      },
+      "guestParity": "NOT_EXECUTED",
+      "liveMcpTransport": "NOT_IMPLEMENTED",
+      "aotDescriptorEmbedding": "NOT_IMPLEMENTED",
+      "mergeReady": false
+    },
+    "java": {
+      "guestParity": "NOT_EXECUTED",
+      "liveMcpTransport": "NOT_IMPLEMENTED",
+      "mergeReady": false
+    },
+    "net": {
+      "guestParity": "NOT_EXECUTED",
+      "liveMcpTransport": "NOT_IMPLEMENTED",
+      "mergeReady": false
+    },
+    "wasm": {
+      "guestParity": "NOT_EXECUTED",
+      "liveMcpTransport": "NOT_IMPLEMENTED",
+      "mergeReady": false
+    },
+    "forge": {
+      "guestParity": "NOT_EXECUTED",
+      "liveMcpTransport": "NOT_IMPLEMENTED",
+      "mergeReady": false
+    }
+  },
+  "blockingGates": [
+    "nonzero exact-head hosted steps",
+    "independent security review",
+    "native compile from AttoLang .atto guest",
+    "M1 descriptor embedding in AOT binary",
+    "authenticated local MCP transport",
+    "five-backend guest conformance"
+  ],
+  "sourceExportPermitted": false
+}
