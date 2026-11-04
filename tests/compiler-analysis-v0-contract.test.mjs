@@ -4,6 +4,7 @@ import { readFileSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'n
 import { resolve, join, isAbsolute } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 
 const root = resolve(import.meta.dirname, '..');
 const manifest = JSON.parse(readFileSync(join(root, 'contracts/v1/compiler-analysis-v0.json')));
@@ -27,6 +28,25 @@ test('analysis v0 declares unknown separately from positive compiler proof', () 
   }
   assert.ok(manifest.provenance.required.includes('compiler commit SHA'));
   assert.notEqual(manifest.backend_status.llvm, 'verified');
+});
+
+
+const strictEvidence = process.env.ATTO_ANALYZE_REQUIRE_EXECUTABLE === '1';
+test('strict parity gate requires exact pinned real compiler and formatter binaries', () => {
+  if (!strictEvidence) return;
+  for (const [role, pathEnv, digestEnv] of [
+    ['LLVM', 'ATTO_ANALYZE_LLVM_COMPILER', 'ATTO_ANALYZE_LLVM_SHA256'],
+    ['Java/GraalVM', 'ATTO_ANALYZE_JAVA_COMPILER', 'ATTO_ANALYZE_JAVA_SHA256'],
+    ['formatter', 'ATTO_ANALYZE_FORMATTER_BIN', 'ATTO_ANALYZE_FORMATTER_SHA256']
+  ]) {
+    const executable = process.env[pathEnv];
+    const expectedSha256 = process.env[digestEnv];
+    assert.ok(executable && isAbsolute(executable), role + ' requires an absolute binary path');
+    assert.match(expectedSha256 ?? '', /^[a-fA-F0-9]{64}$/,
+      role + ' requires a pinned sha256');
+    const actual = createHash('sha256').update(readFileSync(executable)).digest('hex');
+    assert.equal(actual, expectedSha256.toLowerCase(), role + ' binary digest mismatch');
+  }
 });
 
 const compiler = process.env.ATTO_ANALYZE_LLVM_COMPILER;
