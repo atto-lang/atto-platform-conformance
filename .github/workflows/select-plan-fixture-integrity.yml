@@ -23,7 +23,31 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse --verify HEAD)" = "$EXPECTED_SHA"
-          test -z "$(git status --porcelain --untracked-files=all)"
+          # Verify raw bytes from the immutable Git tree; do not invoke clean filters.
+          python3 - <<'PY'
+          import os
+          import stat
+          import subprocess
+          from pathlib import Path
+          paths = [".github/workflows/select-plan-fixture-integrity.yml", "fixtures/select-plans/v1"]
+          tree = subprocess.check_output(["git", "ls-tree", "-r", "-z", "HEAD", "--", *paths])
+          entries = [x for x in tree.split(b"\0") if x]
+          assert entries, "no tracked verification inputs"
+          for entry in entries:
+              metadata, relpath = entry.split(b"\t", 1)
+              mode, kind, blob = metadata.split()
+              assert kind == b"blob", "not a Git blob"
+              expected = subprocess.check_output(["git", "cat-file", "blob", blob.decode("ascii")])
+              path = os.fsdecode(relpath)
+              info = os.lstat(path)
+              if mode == b"120000":
+                  assert stat.S_ISLNK(info.st_mode) and os.fsencode(os.readlink(path)) == expected
+              elif mode in (b"100644", b"100755"):
+                  assert stat.S_ISREG(info.st_mode) and Path(path).read_bytes() == expected
+              else:
+                  raise AssertionError("unexpected file mode")
+          assert not subprocess.check_output(["git", "ls-files", "--others", "-z", "--", *paths]), "untracked inputs"
+          PY
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
