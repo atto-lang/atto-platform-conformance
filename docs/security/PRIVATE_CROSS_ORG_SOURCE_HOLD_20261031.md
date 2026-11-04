@@ -37,6 +37,23 @@ canary, matching Git hash, or successful old carrier build suffices by itself.
 Branch rollbacks and private visibility do not purge historical Git objects
 or downstream caches, clones or artifacts.
 
+## Disposition contact is not an independent export approver
+
+The nine-incident review registry names `ORESoftware` (GitHub account ID
+`11139560`) as the disposition contact, **not** an independently qualified
+private-source transfer reviewer. The historic metadata verifier explicitly
+excluded account IDs `11139560` and `2148448` from the independent
+authorization reviewer role. The registry's independent-reviewer slot is
+therefore deliberately **UNASSIGNED**, not silently populated by a
+CODEOWNERS alias, PR reviewer request or issue-closure contact.
+
+Issue closure and non-authorizing disposition records cannot re-enable the
+disabled publisher. A distinct, authorized reviewer must be nominated,
+verified against current GitHub identity and permissions, approve the exact
+protected-main authorization policy, and be independently attested before a
+separately reviewed transfer protocol can even be proposed. No existing
+operator-owned review request satisfies this requirement.
+
 ## Regression tests and verification boundary
 
 `tests/private-mirror-visibility.test.mjs` and
