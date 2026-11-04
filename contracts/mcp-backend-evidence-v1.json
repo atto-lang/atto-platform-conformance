@@ -27,14 +27,14 @@
       "m1Descriptor": {
         "status": "LOCAL_HOST_HELPER_AND_ELF_LINKER_ONLY",
         "pr": 1364,
-        "head": "9ce1d78fa9c829d603862e02d608fa7799fe9e36",
-        "tree": "0119642c9510f8c64d790b2ac73e49aab699ee34",
-        "assertionsPerCompiler": 35,
+        "head": "ef63aac006f9303af7059ea810b298fd48715e31",
+        "tree": "d150fa1280a818f033b93028c06b76676f762385",
+        "assertionsPerCompiler": 48,
         "compilers": [
           "gcc-14.2",
           "clang-17"
         ],
-        "hostedWorkflowRun": 41766939627,
+        "hostedWorkflowRun": 41768157742,
         "hostedExecutedSteps": 0,
         "compilerDriverExecution": "NOT_EXECUTED",
         "guestNativeExecution": "NOT_EXECUTED",
@@ -44,7 +44,7 @@
           "clang-optimized",
           "clang-asan-ubsan"
         ],
-        "localElfLinkerCanary": "PASSED_READ_ONLY_PLUS_WRITABLE_MUTATION_SOURCE_FREE",
+        "localElfLinkerCanary": "PASSED_READ_ONLY_WRITABLE_MUTATION_O0_O2_SOURCE_FREE",
         "elfRetention": "llvm.used + read-only allocated .atto.mcp.v1 under --gc-sections",
         "embeddedDescriptorProof": "NOT_EXECUTED",
         "evidenceLimitations": [
@@ -52,6 +52,12 @@
           "no compiled oreslang-llvmc binary",
           "no .atto/.ores guest binary runtime execution",
           "source Actions runner_id=0 steps=[]"
+        ],
+        "additionalGates": [
+          "LLVM verified-codegen before metadata publication",
+          "reject actor/async/effect/borrowed public descriptor signatures",
+          "compiler-backed native guest output O0 and O2 for atto and ores",
+          "source-free O0/O2 retention and negative writable mutation"
         ]
       },
       "guestParity": "NOT_EXECUTED",
