@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0.0",
+  "fixture_id": "sync_resolve_registration",
+  "fixture_git_blob": "83f7db76fd6437d7d4994210e78034b93a5bff26",
+  "statuses": {
+    "PASS": {
+      "compiled_guest": true,
+      "required": [
+        "backend",
+        "source_head",
+        "compiler_identity",
+        "expected_exit",
+        "observed_exit",
+        "expected_stdout",
+        "observed_stdout",
+        "guest_inline",
+        "fresh_resume_dispatch",
+        "logical_execution_preserved",
+        "producer_active_execution",
+        "callback_boundary"
+      ]
+    },
+    "EXPECTED_REJECT": {
+      "compiled_guest": false,
+      "required": [
+        "backend",
+        "source_head",
+        "compiler_identity",
+        "diagnostic",
+        "emitted_artifact"
+      ]
+    },
+    "NOT_EXECUTED": {
+      "compiled_guest": false,
+      "required": [
+        "backend",
+        "source_head",
+        "reason"
+      ]
+    }
+  }
+}

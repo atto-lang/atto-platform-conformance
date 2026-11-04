@@ -24,3 +24,11 @@ java -cp /path/to/tla2tools.jar tlc2.TLC -deadlock -config OwnedWorkerRequests.c
 java -cp /path/to/tla2tools.jar tlc2.TLC -deadlock -config OwnedWorkerRequestsUnsafe.cfg OwnedWorkerRequests.tla
 # Second invocation MUST exit nonzero and identify the pre-publication invariant.
 ```
+
+## Supervisor CONTROL priority and generation fencing
+
+See [ActorControlPriority.md](ActorControlPriority.md) for the bounded explicit-state supervisor model, required negative mutations, and the separate runtime refinement gate.
+
+## Full-AOT hot-swap, real-time and phase-typed actor verification
+
+See [ThreeGuarantees.md](ThreeGuarantees.md) for the new bounded TLA+ specification, negative-model configs, SMT response-time admission formula, executable state-space reference and the separate LLVM/Graal guest-code refinement requirements. Models remain source-free until exact-head backend execution is linked and verified.

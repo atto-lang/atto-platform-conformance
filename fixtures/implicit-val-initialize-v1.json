@@ -1,0 +1,385 @@
+{
+  "schemaVersion": 1,
+  "contract": "implicit-val-initialize-v1",
+  "status": "candidate-unattested",
+  "description": "Twelve source fixture groups; expectations are proposed oracles, not evidence of compiler/parser/runtime parity. Separate native guest execution and independently verified CI receipts are mandatory.",
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "formatters": [
+    "oreslang-format"
+  ],
+  "fixtureMode": "inline-source-materialize-per-backend",
+  "promotionRequired": [
+    "exact-source-tree-sha",
+    "fixture-sha256",
+    "toolchain-provenance",
+    "compiler-native-admission",
+    "runtime-execution-where-applicable",
+    "zero-step-not-executed",
+    "independent-review"
+  ],
+  "groups": [
+    {
+      "id": "class-default-val",
+      "cases": [
+        {
+          "id": "bare-type-slot",
+          "source": "define class Target as\n  pub String method;\n  initialize() -> void { self.method = \"GET\"; }\nend\n",
+          "expected": {
+            "outcome": "accept",
+            "phase": "check"
+          },
+          "evidence": "NOT_EXECUTED"
+        },
+        {
+          "id": "explicit-val-slot",
+          "source": "define class Target as\n  pub val String method;\n  initialize() -> void { self.method = \"GET\"; }\nend\n",
+          "expected": {
+            "outcome": "accept",
+            "phase": "check"
+          },
+          "evidence": "NOT_EXECUTED"
+        }
+      ],
+      "oracle": "AST_EQUIVALENT"
+    },
+    {
+      "id": "initialized-val-slots",
+      "cases": [
+        {
+          "id": "bare-init",
+          "source": "define class Connection as\n  int id: 9;\n  \nend\n",
+          "expected": {
+            "outcome": "accept",
+            "phase": "check"
+          },
+          "evidence": "NOT_EXECUTED"
+        },
+        {
+          "id": "explicit-val-init",
+          "source": "define class Connection as\n  val int id: 9;\n  \nend\n",
+          "expected": {
+            "outcome": "accept",
+            "phase": "check"
+          },
+          "evidence": "NOT_EXECUTED"
+        }
+      ],
+      "oracle": "AST_EQUIVALENT"
+    },
+    {
+      "id": "let-migration",
+      "cases": [
+        {
+          "id": "explicit-mutable",
+          "source": "define class Connection as\n  let int id: 5;\n  set_id(mut self) -> void { self.id = 7; }\nend\n",
+          "expected": {
+            "outcome": "accept",
+            "phase": "check"
+          },
+          "evidence": "NOT_EXECUTED"
+        },
+        {
+          "id": "implicit-reassignment-rejected",
+          "source": "define class Connection as\n  int id: 5;\n  set_id(mut self) -> void { self.id = 7; }\nend\n",
+          "expected": {
+            "outcome": "reject",
+            "phase": "check",
+            "diagnosticClass": "fixed_slot_reassignment"
+          },
+          "evidence": "NOT_EXECUTED"
+        }
+      ],
+      "oracle": "MUTABILITY"
+    },
+    {
+      "id": "final-const-distinction",
+      "cases": [
+        {
+          "id": "final-once",
+          "source": "define class Connection as\n  final int id;\n  initialize(int id) -> void ::\n    self.id = id;\n  end\nend\n",
+          "expected": {
+            "outcome": "accept",
+            "phase": "check"
+          },
+          "evidence": "NOT_EXECUTED"
+        },
+        {
+          "id": "const-declaration",
+          "source": "define class Connection as\n  const int id: 42;\n  \nend\n",
+          "expected": {
+            "outcome": "accept",
+            "phase": "check"
+          },
+          "evidence": "NOT_EXECUTED"
+        },
+        {
+          "id": "const-reassignment-reject",
+          "source": "define class Connection as\n  const int id: 42;\n  set_id(mut self) -> void { self.id = 4; }\nend\n",
+          "expected": {
+            "outcome": "reject",
+            "phase": "check",
+            "diagnosticClass": "const_reassignment"
+          },
+          "evidence": "NOT_EXECUTED"
+        }
+      ],
+      "oracle": "BINDING"
+    },
+    {
+      "id": "initialize-four-bodies",
+      "cases": [
+        {
+          "id": "arrow-double-colon",
+          "source": "define class Connection as\n  final int id;\n  initialize(int id) -> void ::\n    self.id = id;\n  end\nend\n",
+          "expected": {
+            "outcome": "accept",
+            "phase": "check"
+          },
+          "evidence": "NOT_EXECUTED"
+        },
+        {
+          "id": "arrow-newline",
+          "source": "define class Connection as\n  final int id;\n  initialize(int id) -> void\n    self.id = id;\n  end\nend\n",
+          "expected": {
+            "outcome": "accept",
+            "phase": "check"
+          },
+          "evidence": "NOT_EXECUTED"
+        },
+        {
+          "id": "colon-newline",
+          "source": "define class Connection as\n  final int id;\n  initialize(int id): void\n    self.id = id;\n  end\nend\n",
+          "expected": {
+            "outcome": "accept",
+            "phase": "check"
+          },
+          "evidence": "NOT_EXECUTED"
+        },
+        {
+          "id": "colon-braces",
+          "source": "define class Connection as\n  final int id;\n  initialize(int id): void { self.id = id; }\nend\n",
+          "expected": {
+            "outcome": "accept",
+            "phase": "check"
+          },
+          "evidence": "NOT_EXECUTED"
+        }
+      ],
+      "oracle": "SAME_CONSTRUCTOR_AST"
+    },
+    {
+      "id": "initialize-malformed",
+      "cases": [
+        {
+          "id": "missing-return",
+          "source": "define class Connection as\n  final int id;\n  initialize(int id) { self.id = id; }\nend\n",
+          "expected": {
+            "outcome": "reject",
+            "phase": "parse",
+            "diagnosticClass": "initialize_requires_void"
+          },
+          "evidence": "NOT_EXECUTED"
+        },
+        {
+          "id": "nonvoid-return",
+          "source": "define class Connection as\n  final int id;\n  initialize(int id) -> int { self.id = id; }\nend\n",
+          "expected": {
+            "outcome": "reject",
+            "phase": "parse",
+            "diagnosticClass": "initialize_requires_void"
+          },
+          "evidence": "NOT_EXECUTED"
+        },
+        {
+          "id": "callable-as",
+          "source": "define class Connection as\n  final int id;\n  initialize(int id) -> void as\n    self.id = id;\n  end\nend\n",
+          "expected": {
+            "outcome": "reject",
+            "phase": "parse",
+            "diagnosticClass": "callable_as_forbidden"
+          },
+          "evidence": "NOT_EXECUTED"
+        }
+      ],
+      "oracle": "PARSER"
+    },
+    {
+      "id": "initializer-uniqueness",
+      "cases": [
+        {
+          "id": "duplicate-initialize",
+          "source": "define class Connection as\n  final int id;\n  initialize(int id) -> void {}\n  initialize(int id) -> void {}\nend\n",
+          "expected": {
+            "outcome": "reject",
+            "phase": "parse",
+            "diagnosticClass": "duplicate_initializer"
+          },
+          "evidence": "NOT_EXECUTED"
+        },
+        {
+          "id": "legacy-and-initialize",
+          "source": "define class Connection as\n  final int id;\n  constructor(int id) {}\n  initialize(int id) -> void {}\nend\n",
+          "expected": {
+            "outcome": "reject",
+            "phase": "parse",
+            "diagnosticClass": "duplicate_initializer"
+          },
+          "evidence": "NOT_EXECUTED"
+        }
+      ],
+      "oracle": "PARSER"
+    },
+    {
+      "id": "branch-definite-assignment",
+      "cases": [
+        {
+          "id": "both-branches",
+          "source": "define class Connection as\n  final int id;\n  initialize(int id) -> void ::\n    if id eq 0 then\n      self.id = 1;\n    else\n      self.id = id;\n    fi\n  end\nend\n",
+          "expected": {
+            "outcome": "accept",
+            "phase": "check"
+          },
+          "evidence": "NOT_EXECUTED"
+        },
+        {
+          "id": "missing-else",
+          "source": "define class Connection as\n  final int id;\n  initialize(int id) -> void ::\n    if id eq 0 then\n      self.id = 1;\n    fi\n  end\nend\n",
+          "expected": {
+            "outcome": "reject",
+            "phase": "check",
+            "diagnosticClass": "fixed_field_missing"
+          },
+          "evidence": "NOT_EXECUTED"
+        }
+      ],
+      "oracle": "PATH_SENSITIVE"
+    },
+    {
+      "id": "fixed-slot-exactly-once",
+      "cases": [
+        {
+          "id": "double-write",
+          "source": "define class Connection as\n  final int id;\n  initialize(int id) -> void ::\n    self.id = id;\n    self.id = 2;\n  end\nend\n",
+          "expected": {
+            "outcome": "reject",
+            "phase": "check",
+            "diagnosticClass": "fixed_field_double_write"
+          },
+          "evidence": "NOT_EXECUTED"
+        },
+        {
+          "id": "early-return",
+          "source": "define class Connection as\n  final int id;\n  initialize(int id) -> void ::\n    if id eq 0 then\n      return;\n    fi\n    self.id = id;\n  end\nend\n",
+          "expected": {
+            "outcome": "reject",
+            "phase": "check",
+            "diagnosticClass": "fixed_field_missing"
+          },
+          "evidence": "NOT_EXECUTED"
+        }
+      ],
+      "oracle": "PATH_SENSITIVE"
+    },
+    {
+      "id": "self-escape",
+      "cases": [
+        {
+          "id": "local-alias",
+          "source": "define class Connection as\n  final int id;\n  initialize(int id) -> void ::\n    let Connection leaked = self;\n    self.id = id;\n  end\nend\n",
+          "expected": {
+            "outcome": "reject",
+            "phase": "check",
+            "diagnosticClass": "premature_self_escape"
+          },
+          "evidence": "NOT_EXECUTED"
+        },
+        {
+          "id": "callback",
+          "source": "define class Connection as\n  final int id;\n  initialize(int id) -> void ::\n    publish(self);\n    self.id = id;\n  end\nend\n",
+          "expected": {
+            "outcome": "reject",
+            "phase": "check",
+            "diagnosticClass": "premature_self_escape"
+          },
+          "evidence": "NOT_EXECUTED"
+        },
+        {
+          "id": "implicit-callback",
+          "source": "define class Connection as\n  final int id;\n  initialize(int id) -> void ::\n    publish();\n    self.id = id;\n  end\nend\n",
+          "expected": {
+            "outcome": "reject",
+            "phase": "check",
+            "diagnosticClass": "unproven_indirect_callback"
+          },
+          "evidence": "NOT_EXECUTED"
+        }
+      ],
+      "oracle": "NO_SELF_ESCAPE"
+    },
+    {
+      "id": "loops-and-exceptions",
+      "cases": [
+        {
+          "id": "loop-before-init",
+          "source": "define class Connection as\n  final int id;\n  initialize(int id) -> void ::\n    loop {\n      self.id = id;\n    }\n  end\nend\n",
+          "expected": {
+            "outcome": "reject",
+            "phase": "check",
+            "diagnosticClass": "unproven_loop"
+          },
+          "evidence": "NOT_EXECUTED"
+        },
+        {
+          "id": "normal-after-init",
+          "source": "define class Connection as\n  final int id;\n  initialize(int id) -> void ::\n    self.id = id;\n  end\nend\n",
+          "expected": {
+            "outcome": "accept",
+            "phase": "check"
+          },
+          "evidence": "NOT_EXECUTED"
+        }
+      ],
+      "oracle": "CONSERVATIVE_CFG"
+    },
+    {
+      "id": "actor-ownership-and-format",
+      "cases": [
+        {
+          "id": "actor-sealed-state",
+          "source": "define actor Worker as\n  let int value: 0;\n  receive(int amount) -> void {\n    self.value = amount;\n  }\nend\n",
+          "expected": {
+            "outcome": "reject",
+            "phase": "check",
+            "diagnosticClass": "sealed_actor_state"
+          },
+          "evidence": "NOT_EXECUTED"
+        },
+        {
+          "id": "format-keep-let",
+          "source": "define class Connection as\n  let int id: 5;\n  \nend\n",
+          "expected": {
+            "outcome": "accept",
+            "phase": "check"
+          },
+          "evidence": "NOT_EXECUTED"
+        },
+        {
+          "id": "format-val-drop",
+          "source": "define class Connection as\n  val int id: 5;\n  \nend\n",
+          "expected": {
+            "outcome": "accept",
+            "phase": "check"
+          },
+          "evidence": "NOT_EXECUTED"
+        }
+      ],
+      "oracle": "FORMAT_AST_AND_OWNERSHIP"
+    }
+  ]
+}

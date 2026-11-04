@@ -1,0 +1,75 @@
+{
+  "schema": "oreslang.bounded_queue_backend_status.v1",
+  "contract_id": "bounded-queue-v1",
+  "source_contract": {
+    "repository": "ores-truffle-oreslang/rx-oreslang-channels",
+    "pull_request": 26,
+    "head_commit": "d332649244b6142790f45d4a29c1d3f385dd6b31",
+    "execution_status": "NOT_EXECUTED"
+  },
+  "records": [
+    {
+      "backend": "oreslang-source.java",
+      "source_lowering": "implemented-unexecuted",
+      "runtime_substrate": "implementation-added-unexecuted",
+      "guest_execution": "NOT_EXECUTED",
+      "reference": {
+        "source_contract_pull_request": 2310,
+        "source_contract_head_commit": "d5aac011ca6dfc6b00cc05e0b01e08a6b59be59f",
+        "runtime_pull_request": 2311,
+        "runtime_head_commit": "beaa61c33fa6436fa85891c7fbbb0e1e5ce3cffa",
+        "source_builtin_pull_request": 2312,
+        "source_builtin_head_commit": "3524a7cc8cb1a2a9214e6fdfe0927a735e7f5a05"
+      },
+      "reason": "Java now has runtime and first-class source builtin implementations, including ownership-preserving QueuePush<T> recovery, but no exact-head JDK/Maven job has executed."
+    },
+    {
+      "backend": "oreslang-source.llvm",
+      "source_lowering": "unsupported",
+      "runtime_substrate": "contract-tests-added-unexecuted",
+      "guest_execution": "NOT_EXECUTED",
+      "reference": {
+        "pull_request": 1198,
+        "head_commit": "98650dd4fea5b4ebaef7eca800be1edffab03e79",
+        "blocking_issue": 325
+      },
+      "reason": "Native selectable channel has ticket-like waiter removal, but source static select/write lowering remains fail-closed and exact-head jobs have zero steps."
+    },
+    {
+      "backend": "oreslang-source.net",
+      "source_lowering": "unsupported",
+      "runtime_substrate": "contract-tests-added-unexecuted",
+      "guest_execution": "NOT_EXECUTED",
+      "reference": {
+        "pull_request": 262,
+        "head_commit": "a3072975a480838f3128768aec1a58d70d2b7152",
+        "blocking_issue": 216
+      },
+      "reason": "Native AOT selectable channel tests exist, while StaticSelectAdmission intentionally rejects source static select; exact-head jobs have zero steps."
+    },
+    {
+      "backend": "oreslang-source.wasm",
+      "source_lowering": "unsupported",
+      "runtime_substrate": "unsupported",
+      "guest_execution": "NOT_EXECUTED",
+      "reference": {
+        "issue": 189,
+        "main_commit": "be268bee832956fb8ca399f9c6fbc495e3066b73"
+      },
+      "reason": "No general cancellable pending-write Channel/select substrate found in the audited main tree."
+    },
+    {
+      "backend": "oreslang-source.forge",
+      "source_lowering": "unsupported",
+      "runtime_substrate": "unsupported",
+      "guest_execution": "NOT_EXECUTED",
+      "reference": {
+        "issue": 149,
+        "main_commit": "a98a5e0abec222862278a52e7aaadbb2c674ec97"
+      },
+      "reason": "Actor mailbox tests exist, but no general selectable bounded-channel pending-write substrate was found in the audited main tree."
+    }
+  ],
+  "parity_certified": false,
+  "release_ready": false
+}

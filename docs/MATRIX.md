@@ -5,6 +5,7 @@ The test manifest is a target fixture inventory. Source files are not proof of c
 | Pair | Currently executed by CI | Status |
 | --- | --- | --- |
 | Java/Graal source checking | No | Requires pinned compiler and real integration run |
+| JavaScript source checking | No | JS `--program-v2 --check` must be executed by a pinned Node 22+ binary against both real fixtures; this is **not** runtime execution or Java parity |
 | LLVM source checking | No | Requires pinned native compiler and real integration run |
 | .NET source checking | No | Native AOT bootstrap; requires pinned real .NET compiler |
 | Forge source checking | No | C++20 bootstrap; requires pinned real Forge compiler |
@@ -24,7 +25,7 @@ Two companion PRs add proposed compiler-executed smoke jobs. The report-consiste
 
 ## Five-compiler source fixture scope
 
-The `fixtures/manifest.json` basic arithmetic and unresolved-name cases are **targets** for `java`, `llvm`, `net`, `wasm`, and `forge`. Listing a backend in the manifest neither claims that it implements the fixture nor confirms that its runtime is feature-complete. `browser` remains an independent adapter target and must not be counted as a sixth compiler.
+The `fixtures/manifest.json` basic arithmetic and unresolved-name cases are **targets** for `java`, `llvm`, `net`, `wasm`, `forge`, and `js`. Listing a backend in the manifest neither claims that it implements the fixture nor confirms that its runtime is feature-complete. `browser` remains an independent adapter target and must not be counted as a sixth compiler.
 
 For each backend, a passing claim requires an actual independently pinned compiler executable, the exact source commit, authenticated build provenance, and the runner's accept/reject evidence. A fake checker or schema-only check tests the harness, not the compiler. An absent compiler is `UNCONFIGURED` (or `SPAWN_ERROR` when an invalid command is supplied), never verified; a required suite exits nonzero. Wasm must demonstrate actual Oreslang guest compilation and execution rather than treating LLVM host success as Wasm execution.
 
@@ -53,3 +54,35 @@ or guarantee that the on-disk executable cannot change between fixture
 invocations. Git blob equality of a test snapshot is not a complete native
 compiler provenance attestation. Do not promote backend support without
 independently reviewed build and runtime evidence.
+
+## JavaScript backend admission
+
+The `js` entries in `fixtures/manifest.json` are **inventory targets** only. The same two source fixtures can be checked by the isolated, experimental Oreslang JS program-v2 frontend with Node 22+ and `oreslang-jsc --program-v2 --check {file}`, using an absolute Node executable and an exact JS-source commit. The shared `runSuite` result carries `verificationScope: "compiler-source-check-only"` and `runtimeVerified: false`, even when both checks pass. A passing check cannot prove that generated ESM executes or returns integer 42, cannot attest the declared source SHA, and cannot establish Java or LLVM parity. Independent pinned GitHub runner evidence for compilation **and actual ESM execution**, diagnostic rejection, and build provenance is required before promoting any JS behavior to the supported-feature matrix.
+
+
+## Generator and async-iterator parity target
+
+The manifest now carries three positive source-admission targets for every compiler backend:
+
+- `gen* values(): Iterator<int>`
+- `async gen* values(): AsyncIterator<int>`
+- `suspend gen* values(): AsyncIterator<int>`
+
+These are **parity targets, not support claims**. The manifest carries an
+`unsupportedBackends` capability ledger for positive targets that have not landed
+in a backend's merged main. A configured run reports those rows as `UNSUPPORTED`
+without invoking the compiler for that fixture; `UNSUPPORTED` is a parity gap and
+counts non-green. It is never promoted to `VERIFIED`, and an incidental parser
+failure is never treated as proof of an intentional capability boundary.
+
+At this revision all six merged backend mains are explicitly unsupported for the
+three generator target rows. Candidate implementation PRs (for example Java #2130,
+LLVM #1075 and JS #85) do not change the shared ledger until their implementation
+actually lands. When a backend gains a target on main, remove only that backend from
+the corresponding `unsupportedBackends` row; the exact same fixture then becomes
+an executable acceptance gate.
+
+Accepting syntax without lowering lazy pulls, typed `yield`/`yield*`,
+close/cancellation cleanup, and async continuation semantics does not establish
+runtime parity. Java's public host async-generator proof remains separately blocked
+by Java #721/#883/#677.

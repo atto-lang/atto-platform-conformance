@@ -1,0 +1,5 @@
+pub fnc main(): int {
+  const b = infer record{x: 1};
+  const n = infer record{x: 2, ...b, x: 3};
+  return n.x;
+}

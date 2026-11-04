@@ -1,0 +1,53 @@
+{
+  "schema": "attolang.untrusted-actor-execution.v1",
+  "version": 1,
+  "status": "CANDIDATE_SOURCE_FREE_NOT_BACKEND_EXECUTION",
+  "tenantIsolationContract": "oreslang.tenant-isolation.v2",
+  "compilationModes": ["aot", "jit", "interpreted"],
+  "trustDomains": ["trusted", "untrusted"],
+  "independentDimensions": ["trust-domain", "compilation-mode", "guest-format", "isolation-boundary"],
+  "guestFormats": ["wasm", "truffle", "cil", "native"],
+  "untrustedGuestFormats": ["wasm", "truffle"],
+  "policy": {
+    "untrustedAotRequired": false,
+    "untrustedJitPermitted": true,
+    "trustedRuntimeDescriptorOnly": true,
+    "hostileTenantsShareProcess": true,
+    "hostileRequiresPerTenantVmIsolate": true,
+    "osProcessSandboxRequired": false,
+    "logicalArenaOrSharedContextIsNotIsolate": true,
+    "mandatory": [
+      "verified-exact-guest-image", "authenticated-supervisor-admission", "per-tenant-vm-isolate",
+      "bounded-guest-and-host-memory", "bounded-actor-and-mailbox-admission",
+      "per-tenant-isolate-termination", "guest-preemption-or-bounded-execution",
+      "deny-by-default-capability-broker", "generation-fenced-lifecycle",
+      "no-cross-tenant-mutable-alias", "code-image-leases-until-last-turn-retires",
+      "no-source-private-export-without-independent-approval"
+    ],
+    "jitSpecific": ["explicit-engine-enable", "enforced-w-x-or-equivalent", "bounded-compiler-work", "no-writeable-executable-guest-pages"],
+    "forbiddenAssumptions": [
+      "native-aot-implies-untrusted-isolation",
+      "wasm-store-without-per-tenant-kill-and-memory-cap-is-an-isolate",
+      "tenant-supplied-native-code-can-be-isolated-in-process",
+      "clr-assembly-load-context-is-a-tenant-isolate",
+      "process-kill-is-a-tenant-kill-in-a-shared-process",
+      "java-or-clr-thread-abort-is-safe-guest-kill", "logical-arena-implies-memory-containment",
+      "source-free-policy-test-implies-guest-parity", "zero-step-actions-implies-test-executed"
+    ]
+  },
+  "backendTargets": {
+    "java": {"jitCandidate": "Truffle with Graal JIT inside one Graal polyglot isolate per tenant (Oracle GraalVM)", "status": "NOT_EXECUTED"},
+    "llvm": {"jitCandidate": "validated Wasm lowered by wasm2c into a per-tenant TenantVm cage; tenants never supply native or ORC-JIT code", "status": "NOT_EXECUTED"},
+    "wasm": {"jitCandidate": "Wasmtime JIT with one Store per tenant, per-Store kill flag and resource limiter, in the shared process", "status": "NOT_EXECUTED"},
+    "net": {"jitCandidate": "NativeAOT or CoreCLR host calling the shared native TenantVm core (validated Wasm) or an embedded Wasm engine; untrusted CIL refused", "status": "NOT_EXECUTED"},
+    "forge": {"jitCandidate": "none until Forge/Cranelift output routes through validated Wasm", "status": "NOT_EXECUTED"}
+  },
+  "evidenceForPromotion": [
+    "full-source-head-and-git-tree-sha", "exact-image-sha256", "nonzero-executed-workflow-steps",
+    "real-guest-compiler-and-runtime-execution", "loop-preemption-and-isolate-kill",
+    "neighbor-tenant-survives-kill-trap-and-limit-breach",
+    "memory-and-host-overhead-exhaustion", "import-and-capability-denials",
+    "tenant-crossing-and-handle-forgery-denials", "cancel-while-backpressured",
+    "old-generation-retirement-after-pins", "independent-security-review"
+  ]
+}

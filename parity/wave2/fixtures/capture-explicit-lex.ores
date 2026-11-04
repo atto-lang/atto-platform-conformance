@@ -1,0 +1,5 @@
+pub routine main(): void {
+  val int base = 4;
+  val Fnc<int, int> callback = lex[base] |int value| -> base + value;
+  stdio.stdout.write(callback(3));
+}

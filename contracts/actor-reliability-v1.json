@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "contract": "actor-reliability-v1",
+  "source": "oreslang-common-source#67",
+  "backends": {
+    "java": "foundation-in-progress",
+    "llvm": "not-certified"
+  },
+  "scenarios": [
+    {"id":"bounded-mailbox-saturation","requires":["typed-rejection","no-silent-drop"]},
+    {"id":"control-during-data-overload","requires":["reserved-control-capacity","bounded-control"]},
+    {"id":"reply-timeout-cancel-race","requires":["one-terminal-winner","no-correlation-leak"]},
+    {"id":"stale-incarnation-reply","requires":["incarnation-fence","original-call-remains-live"]},
+    {"id":"duplicate-reply","requires":["one-shot-reply"]},
+    {"id":"crash-loop","requires":["restart-window","quarantine","parent-escalation"]},
+    {"id":"scheduler-fairness","requires":["bounded-turn-throughput","no-hot-actor-monopoly"]},
+    {"id":"watchdog-overrun","requires":["bounded-notice-channel","dropped-notice-counter"]},
+    {"id":"bounded-observability","requires":["fixed-history","overwrite-counter","no-payload"]},
+    {"id":"shutdown-race","requires":["single-terminal-outcome","no-pending-leak"]},
+    {"id":"deterministic-fault-injection","requires":["seed-or-schedule-recorded","exact-source-revision"]},
+    {"id":"hundred-client-linearizability","requires":["serial-state","finite-completion","bounded-backpressure"]}
+  ],
+  "promotion": {
+    "hostUnitTestsAloneSufficient": false,
+    "guestSourceExecutionRequired": true,
+    "exactHeadRequired": true,
+    "zeroStepActionRunCountsAsEvidence": false,
+    "crossBackendParityRequiresBothExecuted": true
+  }
+}

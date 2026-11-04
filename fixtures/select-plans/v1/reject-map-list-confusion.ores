@@ -1,0 +1,5 @@
+pub fnc main(): void {
+  val Channel<int> c = Channel.new<int>(1);
+  val SelectPlan invalid = SelectPlan.from_map([SelectCase.read(c)]);
+  return;
+}

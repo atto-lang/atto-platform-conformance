@@ -1,0 +1,6 @@
+pub fnc main(): void {
+  let int x = 7;
+  let reference = rt borrow x;
+  let Task<int> job = task { return reference; };
+  return;
+}
