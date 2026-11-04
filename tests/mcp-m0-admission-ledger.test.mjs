@@ -31,8 +31,8 @@ test('default disabled and missing audit sink/key fail closed',()=>{
 });
 test('read-only request accepted with opaque one-time ticket',()=>{
  const f=fixture(),r=f.admit();assert.equal(r.ok,true);
- assert.equal(Object.isFrozen(r.ticket),true);assert.equal(f.ledger.live(r.ticket,1499,1,wall),true);
- assert.equal(f.ledger.live(r.ticket,1501,1,wall),false);assert.equal(f.ledger.finish(r.ticket),true);
+ assert.equal(Object.isFrozen(r.ticket),true);assert.equal(f.ledger.live(r.ticket,1499,1,wall,boot,true),true);
+ assert.equal(f.ledger.live(r.ticket,1501,1,wall,boot,true),false);assert.equal(f.ledger.finish(r.ticket),true);
  assert.equal(f.ledger.finish(r.ticket),false);assert.equal(f.ledger.stats().active,0);
 });
 test('replay retained after finish',()=>{
@@ -90,15 +90,15 @@ test('stale host boot and generation denied',()=>{
 });
 test('ticket becomes non-live immediately on runtime generation change',()=>{
  const f=fixture(),result=f.admit();assert.equal(result.ok,true);
- assert.equal(f.ledger.live(result.ticket,1050,1,wall),true);
- assert.equal(f.ledger.live(result.ticket,1050,2,wall),false);
+ assert.equal(f.ledger.live(result.ticket,1050,1,wall,boot,true),true);
+ assert.equal(f.ledger.live(result.ticket,1050,2,wall,boot,true),false);
  assert.equal(f.ledger.finish(result.ticket),true);
 });
 test('an accepted request is invalid as soon as its host credential expires',()=>{
  const f=fixture(), result=f.admit();
  assert.equal(result.ok,true);
- assert.equal(f.ledger.live(result.ticket,1050,1,wall+99999),true);
- assert.equal(f.ledger.live(result.ticket,1050,1,wall+100000),false);
+ assert.equal(f.ledger.live(result.ticket,1050,1,wall+99999,boot,true),true);
+ assert.equal(f.ledger.live(result.ticket,1050,1,wall+100000,boot,true),false);
  f.ledger.finish(result.ticket);
 });
 test('credential identifiers cannot be coerced from objects or arrays',()=>{
@@ -217,4 +217,18 @@ test('cross-tenant denied requests still consume rate budget',()=>{
    assert.equal(f.admit(msg(String(i),i.toString(16).padStart(32,'0'),'resources/read',
      'atto-dev://runtime/r1/tenant/foreign/process/summary')).reason,'TENANT');
  assert.equal(f.admit(msg('last','f'.repeat(32))).reason,'QUOTA');
+});
+
+test('LLVM/JS parity: live ticket requires original boot and verified peer',()=>{
+ const f=fixture(), accepted=f.admit();
+ assert.equal(accepted.ok,true);
+ const ticket=accepted.ticket;
+ assert.equal(f.ledger.live(ticket,1050,1,wall,boot,true),true);
+ assert.equal(f.ledger.live(ticket,1050,1,wall,'new-boot',true),false);
+ assert.equal(f.ledger.live(ticket,1050,1,wall,boot,false),false);
+ assert.equal(f.ledger.live(ticket,1050,1,wall,boot),false);
+ assert.equal(f.ledger.live(ticket,1050,1,wall),false);
+ assert.equal(f.ledger.live(ticket,1050,1,wall,boot,true),true);
+ f.ledger.finish(ticket);
+ assert.equal(f.ledger.live(ticket,1050,1,wall,boot,true),false);
 });

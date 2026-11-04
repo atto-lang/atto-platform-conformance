@@ -171,7 +171,7 @@ export class M0AdmissionLedger {
     const ticket = Object.freeze(Object.create(null));
     state.ids.set(request.id, ticket);
     this.#states.set(key,state);
-    this.#tickets.set(ticket,{key,id:request.id,deadline:monotonicNowMs+LIMITS.deadlineMs,generation:credential.generation,expiresAtWall:credential.expires_at_ms});
+    this.#tickets.set(ticket,{key,id:request.id,deadline:monotonicNowMs+LIMITS.deadlineMs,generation:credential.generation,boot:credential.boot_id,expiresAtWall:credential.expires_at_ms});
     this.#globalInflight++;
     return { ok:true,reason:'OK',ticket };
   }
@@ -189,9 +189,10 @@ export class M0AdmissionLedger {
     return true;
   }
 
-  live(ticket, monotonicNowMs, hostRuntimeGeneration, wallNowMs) {
+  live(ticket, monotonicNowMs, hostRuntimeGeneration, wallNowMs, hostBootId, peerAuthenticated) {
     const ref=this.#tickets.get(ticket);
-    return !!ref && safeInteger(monotonicNowMs) && monotonicNowMs<=ref.deadline &&
+    return !!ref && peerAuthenticated === true && hostBootId === ref.boot &&
+           safeInteger(monotonicNowMs) && monotonicNowMs<=ref.deadline &&
            safeInteger(hostRuntimeGeneration) && hostRuntimeGeneration===ref.generation &&
            safeInteger(wallNowMs) && wallNowMs < ref.expiresAtWall;
   }
