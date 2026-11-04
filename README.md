@@ -1,5 +1,21 @@
 # Oreslang platform conformance
 
+## Actor/ActorGroup portable PubSub v1 (proposed)
+
+The [portable in-memory PubSub contract](docs/ACTOR_PUBSUB_PORTABLE_V1.md) includes
+[26 deterministic reference vectors](contracts/v1/actor-pubsub/portable-v1.json)
+and a [five-backend evidence ledger](contracts/v1/actor-pubsub/backend-status.pending.json).
+The source-only Node model and bounded-registry tests run with:
+
+```sh
+node --test tests/actor-pubsub-portable-v1.test.mjs tests/actor-pubsub-evidence-v1.test.mjs tests/actor-pubsub-registry-quota.test.mjs
+```
+
+These are reference-model tests, **not** proof of AttoLang guest compilation,
+concurrent actor-runtime execution, or cross-backend parity. The security
+denial in PR #263 remains a prerequisite to promotion; private source export
+is not authorized.
+
 Cross-platform, **evidence-first** language and runtime conformance suite. A harness that has not run a real compiler must never claim parity.
 
 ## Real compiler evidence adapter (proposed integration)
