@@ -1,0 +1,131 @@
+{
+  "schema": "oreslang-receiver-arity-v1",
+  "status": "normative-target-not-execution-evidence",
+  "description": "Receiver markers are erased before method selector identity. Only caller-supplied values count toward arity; mutability is a borrow rule, not an overload.",
+  "requiredBackends": [
+    "java",
+    "llvm",
+    "wasm",
+    "net",
+    "forge"
+  ],
+  "currentExecutionStatus": {
+    "java": "unverified-current-head",
+    "llvm": "unverified-current-head",
+    "wasm": "unverified-current-head",
+    "net": "scalar-frontends-fail-closed",
+    "forge": "unverified"
+  },
+  "verificationRules": [
+    "Accept cases must execute as compiled guests and return expectedInt. Parsing alone is insufficient.",
+    "Reject cases must fail at compiler-owned duplicate-method-slot admission, not another parser or unsupported-target diagnostic.",
+    "Compiler crashes, zero-step CI, skipped tests or model-only checks cannot count as executable parity.",
+    "Actor implementations must additionally enforce sealed actor state and not grant mutability authority through self."
+  ],
+  "cases": [
+    {
+      "id": "class-inline-read-accept",
+      "path": "fixtures/class-inline-read-accept.ores",
+      "gitBlobSha": "9d9a3207781ac4c186995e59f246985b1933c999",
+      "expect": "accept",
+      "scope": "class",
+      "expectedInt": 42
+    },
+    {
+      "id": "class-inline-mut-accept",
+      "path": "fixtures/class-inline-mut-accept.ores",
+      "gitBlobSha": "08d07dbf2a3970daa6137571a98332981340d27c",
+      "expect": "accept",
+      "scope": "class",
+      "expectedInt": 42
+    },
+    {
+      "id": "class-split-mut-accept",
+      "path": "fixtures/class-split-mut-accept.ores",
+      "gitBlobSha": "c15a4a9f64e186897973eec49e9cca40442ebf2f",
+      "expect": "accept",
+      "scope": "class",
+      "expectedInt": 42
+    },
+    {
+      "id": "class-different-names-accept",
+      "path": "fixtures/class-different-names-accept.ores",
+      "gitBlobSha": "20df5e3014115ae6603f7d20f02df38b5a31729d",
+      "expect": "accept",
+      "scope": "class",
+      "expectedInt": 42
+    },
+    {
+      "id": "class-zero-implicit-then-mut-reject",
+      "path": "fixtures/class-zero-implicit-then-mut-reject.ores",
+      "gitBlobSha": "b34d60f02f852f043ff3279508f545ae0416b007",
+      "expect": "reject",
+      "scope": "class",
+      "diagnosticClass": "duplicate-method-slot",
+      "slot": "x/0"
+    },
+    {
+      "id": "class-zero-mut-then-implicit-reject",
+      "path": "fixtures/class-zero-mut-then-implicit-reject.ores",
+      "gitBlobSha": "7a69ce65e378338e43859b1788ede7b68bc9581a",
+      "expect": "reject",
+      "scope": "class",
+      "diagnosticClass": "duplicate-method-slot",
+      "slot": "x/0"
+    },
+    {
+      "id": "class-one-implicit-then-mut-reject",
+      "path": "fixtures/class-one-implicit-then-mut-reject.ores",
+      "gitBlobSha": "c364f1dc65ee1a2e0a95389d85ea7596ec41f377",
+      "expect": "reject",
+      "scope": "class",
+      "diagnosticClass": "duplicate-method-slot",
+      "slot": "x/1"
+    },
+    {
+      "id": "class-one-mut-then-implicit-reject",
+      "path": "fixtures/class-one-mut-then-implicit-reject.ores",
+      "gitBlobSha": "2a67e7fb60585435720510adf13cf64c104aaefa",
+      "expect": "reject",
+      "scope": "class",
+      "diagnosticClass": "duplicate-method-slot",
+      "slot": "x/1"
+    },
+    {
+      "id": "actor-zero-implicit-then-mut-reject",
+      "path": "fixtures/actor-zero-implicit-then-mut-reject.ores",
+      "gitBlobSha": "6cb4eeeb130e288486671e0edfb32b5fa8e3c9eb",
+      "expect": "reject",
+      "scope": "actor",
+      "diagnosticClass": "duplicate-method-slot",
+      "slot": "x/0"
+    },
+    {
+      "id": "actor-zero-mut-then-implicit-reject",
+      "path": "fixtures/actor-zero-mut-then-implicit-reject.ores",
+      "gitBlobSha": "1f32187368077d9033d09ec87fb0384b620d1bb6",
+      "expect": "reject",
+      "scope": "actor",
+      "diagnosticClass": "duplicate-method-slot",
+      "slot": "x/0"
+    },
+    {
+      "id": "actor-one-implicit-then-mut-reject",
+      "path": "fixtures/actor-one-implicit-then-mut-reject.ores",
+      "gitBlobSha": "9177e2492d5aabb4da8a5285a2a3a26ab1b34eb8",
+      "expect": "reject",
+      "scope": "actor",
+      "diagnosticClass": "duplicate-method-slot",
+      "slot": "x/1"
+    },
+    {
+      "id": "actor-one-mut-then-implicit-reject",
+      "path": "fixtures/actor-one-mut-then-implicit-reject.ores",
+      "gitBlobSha": "6ddaefbcf870a9acff522516a8bbdc595520d3ad",
+      "expect": "reject",
+      "scope": "actor",
+      "diagnosticClass": "duplicate-method-slot",
+      "slot": "x/1"
+    }
+  ]
+}

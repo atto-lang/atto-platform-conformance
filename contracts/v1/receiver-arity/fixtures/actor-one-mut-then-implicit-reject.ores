@@ -1,0 +1,5 @@
+define actor Foo as
+  x(mut self, int n):int{return n;}
+  x(int n):int{return n;}
+end
+pub fnc main():int{return 42;}
