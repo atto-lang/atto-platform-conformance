@@ -1,0 +1,174 @@
+{
+  "schemaVersion": 1,
+  "contract": "inverted-class-v1",
+  "description": "Source-intent plus host semantic vectors; not evidence of compiler acceptance.",
+  "evidenceLevel": "fixtures-only-source-unverified",
+  "backends": {
+    "java": {
+      "sourceCompilerVerified": false,
+      "guestExecutionVerified": false,
+      "exactHeadCiVerified": false
+    },
+    "llvm": {
+      "sourceCompilerVerified": false,
+      "guestExecutionVerified": false,
+      "exactHeadCiVerified": false
+    },
+    "wasm": {
+      "sourceCompilerVerified": false,
+      "guestExecutionVerified": false,
+      "exactHeadCiVerified": false
+    },
+    "js": {
+      "sourceCompilerVerified": false,
+      "guestExecutionVerified": false,
+      "exactHeadCiVerified": false
+    },
+    "net": {
+      "sourceCompilerVerified": false,
+      "guestExecutionVerified": false,
+      "exactHeadCiVerified": false
+    },
+    "forge": {
+      "sourceCompilerVerified": false,
+      "guestExecutionVerified": false,
+      "exactHeadCiVerified": false
+    }
+  },
+  "semantics": {
+    "positionalIndex": "zero-based current live dense row order, signed-wide checked before narrowing",
+    "rowHandle": "private nominal owner/slot/generation token, never reconstructed from numeric fields",
+    "storage": "one authoritative SoA column set, no hidden per-row AoS mirror",
+    "scalars": [
+      "i64",
+      "f64",
+      "bool"
+    ],
+    "boolEncoding": "one byte 0 or 1",
+    "i64Encoding": "signed 64-bit; JS BigInt; Wasm/CIL/native preserve exact semantics",
+    "schema": "exact resolved nominal declaration identity, not spelling or physical fingerprint",
+    "insert": "validate all fields and mint opaque handle before live-row publication; rollback on failure",
+    "swapDelete": "surviving row handles retain identity and moved column data; deleted handles stale",
+    "loans": "field read/read allowed; write excludes other loans to that field; any loan blocks structural change",
+    "compound": "only compiler-proven synchronous primitive transaction; no getAt/setAt interleaving",
+    "reclamation": "owner retire scrubs columns and revokes handles/loans; source borrowing cannot escape",
+    "actors": "actor optional; owner may be ordinary function, Task scope or actor heap",
+    "unsupported": "fail-closed; no implicit AoS projection, reflection, static fallbacks or unproved suspension"
+  },
+  "sourceCases": [
+    {
+      "id": "positional",
+      "file": "positive-positional-read.ores",
+      "sourceGitBlobSha1": "3e93d20f17120c7b85a59f646e3737e1142d002d",
+      "expect": "accept-execute",
+      "expectedI64": "42",
+      "verifiedBackends": []
+    },
+    {
+      "id": "swap",
+      "file": "positive-handle-swap.ores",
+      "sourceGitBlobSha1": "700eedd0b6422f2361a12d61a903537d33520ff3",
+      "expect": "accept-execute",
+      "expectedI64": "42",
+      "verifiedBackends": []
+    },
+    {
+      "id": "escape",
+      "file": "reject-row-view-escape.ores",
+      "sourceGitBlobSha1": "ebdef4b5bb9acc217cfe09b70de6de8df92d5d3e",
+      "expect": "reject-no-codegen",
+      "verifiedBackends": []
+    },
+    {
+      "id": "overlap",
+      "file": "reject-overlapping-column-loans.ores",
+      "sourceGitBlobSha1": "7a329597b9f471b6fc1fd4a183015c20ddd5b109",
+      "expect": "reject-no-codegen",
+      "verifiedBackends": []
+    },
+    {
+      "id": "await",
+      "file": "reject-loan-across-await.ores",
+      "sourceGitBlobSha1": "8816bb413013e104addb37459734e40d0a06df1a",
+      "expect": "reject-no-codegen",
+      "verifiedBackends": []
+    },
+    {
+      "id": "nominal",
+      "file": "reject-nominal-row-handle.ores",
+      "sourceGitBlobSha1": "b34ed3635f3a662201c9b575f387b0df863bb255",
+      "expect": "reject-no-codegen",
+      "verifiedBackends": []
+    }
+  ],
+  "hostVectors": [
+    {
+      "id": "H01",
+      "rule": "i64-boundary",
+      "expected": "-9223372036854775808 and 9223372036854775807 exact; reject overflow and JS Number conversion"
+    },
+    {
+      "id": "H02",
+      "rule": "bool-canonical",
+      "expected": "store 0 or 1; reject invalid stored byte"
+    },
+    {
+      "id": "H03",
+      "rule": "dense-vs-handle",
+      "expected": "erase_swap(first) moves tail to position 0; surviving tail handle resolves to 0"
+    },
+    {
+      "id": "H04",
+      "rule": "aba-fence",
+      "expected": "deleted/recycled slot increments generation; old handle remains stale"
+    },
+    {
+      "id": "H05",
+      "rule": "foreign-owner",
+      "expected": "another owning array rejects handle even if slots/generations match"
+    },
+    {
+      "id": "H06",
+      "rule": "nominal-binding",
+      "expected": "independent equal-geometry schemas cannot exchange field bindings"
+    },
+    {
+      "id": "H07",
+      "rule": "insert-rollback",
+      "expected": "failure before handle issuance, or invalid row, leaves logical size and live columns unchanged"
+    },
+    {
+      "id": "H08",
+      "rule": "index-overflow",
+      "expected": "negative, -0 if explicitly forbidden, fractional, overflowing, spare capacity and NaN indices reject"
+    },
+    {
+      "id": "H09",
+      "rule": "loan-exclusion",
+      "expected": "read/read coexist, write excludes same-field loan and any loan excludes structural mutation"
+    },
+    {
+      "id": "H10",
+      "rule": "atomic-f64-update",
+      "expected": "single non-suspending primitive transform; reject callback/racy split and unsupported integer semantics"
+    },
+    {
+      "id": "H11",
+      "rule": "close-revocation",
+      "expected": "close invalidates all handles and loans and clears physical payload"
+    },
+    {
+      "id": "H12",
+      "rule": "owner-isolation",
+      "expected": "no mutable buffer crosses actor ownership boundary; snapshots are copies"
+    }
+  ],
+  "promotionGates": [
+    "exact-head compiler source positive and compile-negative with no generated artifacts on negative",
+    "actual generated guest execute and observable result, not host-only runtime tests",
+    "typed ownership and suspension escape negatives plus native memory bounds/sanitizers",
+    "Windows/Linux Native AOT for net; LLVM O0/O2 ASan/UBSan; Node and real browser for js; wasm32 runtime",
+    "approved private-source test environment and immutable binary/source provenance",
+    "independent review and merged/released code; do not upgrade drafts or zero-step CI"
+  ]
+}

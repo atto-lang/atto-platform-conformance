@@ -1,0 +1,6 @@
+fnc pick<A,B>(A left, B right) -> A ::
+  return left
+end
+fnc main() -> int ::
+  return pick<int,A=string>(42, "x")
+end

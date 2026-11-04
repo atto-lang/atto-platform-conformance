@@ -1,0 +1,6 @@
+fnc combine(int a, int b) -> int ::
+  return a + b
+end
+fnc main() -> int ::
+  return combine(b: 2, 1)
+end

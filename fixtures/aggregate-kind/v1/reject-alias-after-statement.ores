@@ -1,0 +1,5 @@
+fnc invalid(): int {
+    const int first = 1;
+    type T = struct { foo: int };
+    return first;
+}

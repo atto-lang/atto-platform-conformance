@@ -1,0 +1,2 @@
+fnc arithmetic(): int { return 1 + 2; }
+pub fnc main(): int { return arithmetic(); }

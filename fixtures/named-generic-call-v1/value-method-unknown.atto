@@ -1,0 +1,9 @@
+define class Box as
+  get(int value) -> int ::
+    return value
+  end
+end
+fnc main() -> int ::
+  val box = new Box()
+  return box.get(typo: 42)
+end

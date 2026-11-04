@@ -1,8 +1,8 @@
-# Private-CI five-incident disposition review
+# Private-CI eight-incident disposition review
 
 **Status: NON-AUTHORIZING / REVIEW ONLY**
 
-This packet consolidates the independent closure prerequisites for platform-conformance incidents #22, #77, #127, #171 and #172. It contains metadata only. It does not close an incident, resolve retained copies, authorize a carrier, authorize private-source transfer, or request a source-bearing CI run.
+This packet consolidates the independent closure prerequisites for platform-conformance incidents #22, #77, #127, #171, #172, #198, #200 and #252. It contains metadata only. It does not close an incident, resolve retained copies, authorize a carrier, authorize private-source transfer, or request a source-bearing CI run.
 
 The machine-readable companion is `docs/security/private-ci-incident-disposition-review-v1.json`.
 
@@ -30,14 +30,14 @@ The disposition must explicitly cover:
 8. future private-source mirroring decision;
 9. explicit closure decision.
 
-Incident-specific evidence remains in the existing packets referenced by the JSON registry.
+Incident-specific evidence remains in the packets referenced by the JSON registry.
 
 ## Current status
 
-All five incidents remain `hold`. No source transfer is authorized.
+All eight incidents remain `hold`. No source transfer is authorized.
 
-A future source-publisher registry may change an incident from `hold` only after it pins the exact independent resolution comment by immutable reviewer identity, comment ID, timestamp and body digest, and revalidates that evidence from protected source `main`.
+A future source-publisher registry may change an incident from `hold` only after it pins the exact independent resolution comment by immutable reviewer identity, comment ID, timestamp and body digest, and revalidates that evidence from the selected source governance authority.
 
 ## Release boundary
 
-Even five completed incident dispositions do not by themselves authorize transfer. Source and carrier protected-main controls, exact-head independent review, immutable destination identity, clean one-use handoff namespaces, source-snapshot ancestry, and per-write governance revalidation remain separate mandatory gates.
+Even eight completed incident dispositions do not by themselves authorize transfer. Exact-head independent source review, exact-head independent carrier review, immutable destination identity, clean one-use handoff namespaces, source-snapshot ancestry, fresh GitHub-hosted capacity proof, and per-write governance revalidation remain separate mandatory gates.
