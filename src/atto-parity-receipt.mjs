@@ -71,7 +71,8 @@ function validateV1(report) {
       check(typeof c.expected_stdout === 'string' && c.stdout === c.expected_stdout, 'stdout mismatch');
     } else {
       check(c.compile_exit !== 0 && c.executed === false, 'negative compile rejection');
-      check(typeof c.diagnostic === 'string' && c.diagnostic.length > 0 && c.diagnostic.length <= 4096, 'negative diagnostic');
+      check(typeof c.diagnostic === 'string' && c.diagnostic.length > 0 && c.diagnostic.length <= 4096 &&
+        !/[\u0000\u001b\u007f\u009b\u202a-\u202e\u2066-\u2069]/.test(c.diagnostic), 'negative diagnostic');
     }
   }
   return {
@@ -107,7 +108,8 @@ function validateV2(report) {
       }
     } else {
       check(c.failure_stage === 'compile' || c.failure_stage === 'runtime', 'negative failure stage');
-      check(typeof c.diagnostic === 'string' && c.diagnostic.length > 0 && c.diagnostic.length <= 4096, 'negative diagnostic');
+      check(typeof c.diagnostic === 'string' && c.diagnostic.length > 0 && c.diagnostic.length <= 4096 &&
+        !/[\u0000\u001b\u007f\u009b\u202a-\u202e\u2066-\u2069]/.test(c.diagnostic), 'negative diagnostic');
       if (c.failure_stage === 'compile') {
         check(c.compile_exit !== 0 && c.executed === false, 'negative compile rejection');
         check(c.artifact_sha256 === undefined, 'compile rejection artifact');
