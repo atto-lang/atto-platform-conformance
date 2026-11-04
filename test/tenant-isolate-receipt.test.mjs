@@ -16,7 +16,7 @@ function fixture(backend="wasm") {
       compilerCommit:"c".repeat(40),runHead:"a".repeat(40),
       artifactSha256:"d".repeat(64),compilerSha256:"e".repeat(64),exactHead:true},
     execution:{executedSteps:8,workflowConclusion:"success",
-      workflowRunUrl:"https://github.com/ores-truffle-oreslang/oreslang-source.wasm/actions/runs/12345",
+      workflowRunUrl:`https://github.com/ores-truffle-oreslang/oreslang-source.${backend}/actions/runs/12345`,
       realOresGuest:true,compilerGenerated:true,targetExecuted:true,
       hostReferenceOnly:false,fullAot:true,jitOrInterpreterFallback:false,
       positiveCases:2,negativeCases:2},
