@@ -1,6 +1,6 @@
 // SUPERSEDED by tenant-isolation-v2 (shared OS process, one VM-isolate per
 // tenant). Kept as history. Source-free host-policy reference model. This does NOT execute real .ores
-// actors or prove physical isolation on Java/LLVM/Wasm/.NET/Forge/JS.
+// actors or prove physical isolation on Java/LLVM/Wasm/Cranelift/.NET/Forge/JS.
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
@@ -99,9 +99,17 @@ test("manifest enumerates actual backends and refuses promotional security claim
   assert.deepEqual(contract.design.identity,["tenantId","generation","opaqueHostAuthority"]);
   assert.match(contract.design.tenant_id_validation,/excluding reserved path components/);
   assert.match(contract.design.root_authority,/matching tenant ID and numeric generation/);
-  assert.deepEqual(Object.keys(contract.backendProfiles).sort(),["forge","java","js","llvm","net","wasm"]);
+  assert.deepEqual(Object.keys(contract.backendProfiles).sort(),["cranelift","forge","java","js","llvm","net","wasm"]);
   assert.ok(contract.requiredScenarios.includes("exact-pr-tree-nonzero-step-ci-evidence"));
   assert.ok(contract.requiredScenarios.includes("neighbor-survives-tenant-trap-and-reincarnation"));
+  assert.match(contract.backendProfiles.cranelift.draft,/scalar native JIT/);
+  assert.match(contract.backendProfiles.cranelift.currentGuarantee,/not an actor IsolateVM/);
+  for (const caseName of [
+    "cranelift-scalar-only-actor-admission-rejected",
+    "tenant-close-revokes-pinned-actor-memory",
+    "zeroized-actor-region-before-final-free",
+    "native-actor-control-and-data-stepful-integration"
+  ]) assert.ok(contract.requiredScenarios.includes(caseName));
   for(const b of Object.values(contract.backendProfiles)) {
     assert.match(b.currentGuarantee,/not |distinct |do not /);
     assert.match(b.hostileTenant,/PROCESS_SANDBOX/);
@@ -152,6 +160,16 @@ test("duplicate and aggregate admissions are bounded",()=>{
   fails(()=>vm.create("../bad"),"INVALID_ID");
   fails(()=>vm.create("."),"INVALID_ID");
   fails(()=>vm.create(".."),"INVALID_ID");
+});
+test("dot path-components never become tenant IDs on any backend",()=>{
+  const vm = new TenantReference({maxTenants:1});
+  for (const id of [".","..","../outside","tenant/path","a b","é",""]) {
+    fails(()=>vm.create(id),"INVALID_ID");
+  }
+  const valid = vm.create("team.alpha-1_root");
+  vm.start(valid);
+  assert.equal(vm.snapshot(valid).phase,"running");
+  vm.shutdown(valid); vm.stop(valid); vm.destroy(valid);
 });
 test("untrusted execution never downgrades to logical or Worker isolation",()=>{
   const vm=new TenantReference();
