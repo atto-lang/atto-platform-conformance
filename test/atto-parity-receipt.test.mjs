@@ -75,3 +75,15 @@ test('scalar profile rejects a substituted source even with valid receipt shape'
   r.cases=Array.from({length:19},(_,i)=>({...r.cases[0],id:'case_'+i}));
   assert.throws(()=>validateScalarParityReceipt(r),/canonical scalar case|case ID|complete canonical case set/);
 });
+
+test('generic v2 never self-promotes into scalar-core eligibility',()=>{
+  const result=validateParityReceipt(v2());
+  assert.equal(Object.hasOwn(result,'scalar_core_eligible'),false);
+});
+test('process exit cannot pretend to carry a full-width i64',()=>{
+  const r=v2();
+  r.cases[0].result_channel='process-exit';
+  r.cases[0].result_i64='9223372036854775806';
+  r.cases[0].expected_i64='9223372036854775806';
+  assert.throws(()=>validateParityReceipt(r),/process-exit cannot carry/);
+});
