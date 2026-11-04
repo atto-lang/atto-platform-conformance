@@ -212,5 +212,45 @@
     "exact_head_native_guest_test": "NOT_EXECUTED",
     "exact_head_sanitizer_test": "NOT_EXECUTED",
     "source_contract_snapshot_positive": "NOT_EXECUTED"
+  },
+  "current_guest_snapshot_positive_staged": {
+    "implementation_pr": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1405",
+    "source_head_sha": "f2723ddd702130afb92ad34cbdb5d605d5c8c21c",
+    "stacked_on_sha": "039e6be4086e43271123cca84969fadbaf1f43a8",
+    "scope": "stacked restricted production two-i64 owner snapshot source AST -> HIR -> independently verified MIR -> copied LLVM SSA; not full inverted semantics or cross-backend parity",
+    "source_blobs": {
+      "src/main/cpp/oreslang/frontend/Parser.hpp": "369899c7ae33e436f3bdb53a7abebfadf0d5a0f0",
+      "src/main/cpp/oreslang/frontend/Parser.cpp": "73b04c7262c9548c12d55dd9f273feb4c5eb1cf4",
+      "src/main/cpp/oreslang/types/InvertedTypedPlan.hpp": "87e6c49adb6a8087ba28720014a73e4539088eff",
+      "src/main/cpp/oreslang/types/InvertedTypedMir.hpp": "453ab664568ee096479c9da3228d5950e0d46caa",
+      "src/main/cpp/oreslang/types/InvertedMirLlvmI64.hpp": "0645d94a613dc1e53fd18520fb1ff80d099df99f",
+      "src/main/cpp/oreslang/types/InvertedProductionSourceMir.hpp": "6d171c1b6636152ab2a9c8876ab0148dbb8505bc",
+      "src/main/cpp/oreslang/types/InvertedNativeMirI64.hpp": "db4586f904044d647db1cf591830e7e68768ebc3"
+    },
+    "fixture_blobs": {
+      "positive-production-snapshot.atto": "43b0d05043c4323beaa40b5ec7a31602a56a7f41",
+      "positive-production-snapshot-id.atto": "20e78d9a0e9fc830b5927872196f37ddca8e5a59",
+      "positive-production-snapshot-ordinal.atto": "085bc6c1611635380df848c0def848600cf547d1",
+      "negative-production-snapshot-bounds.atto": "a8b974eae439bdd29e31456191eec3e7341da33a"
+    },
+    "regression_blobs": {
+      "tests/native_inverted_mir_compiler17_test.cpp": "913e8d6e78473a80641eac430fe1045fa9270086",
+      "tests/native_inverted_mir_llvm_guest.cpp": "e5f8c18a915f2599ed0b7bf999b5c7ec012ae88c",
+      "tests/native_inverted_production_guest.sh": "a6ffa06ebcff2d6c95ed9a61aa05aa920806db2d",
+      "tests/native_inverted_mir_ir_guest.sh": "2ee43086bbf8189020326a905d20a4da133bd6fc",
+      "tests/native_inverted_production_mir_test.cpp": "ad995b8eacba9fdbf4fb94f5108c031807370683",
+      "tests/native_inverted_struct_ast_test.cpp": "e80b8fd23087dca86cad572e04b9d9947c700b95",
+      "tests/native_inverted_typed_mir_test.cpp": "31c8e25999a0f7762984f75c3338da63827b37a1",
+      "tests/native_inverted_typed_plan_test.cpp": "a1d4989a2ee4b9704290721bc0c7929f7cfefd95"
+    },
+    "code_status": "CODE_STAGED_NOT_EXECUTED",
+    "source_free_static_blob_verification": "DONE",
+    "exact_head_cpp17_cpp20_ctest": "NOT_EXECUTED",
+    "exact_head_default_compiler_native_guest": "NOT_EXECUTED",
+    "exact_head_o0_o2_guest": "NOT_EXECUTED",
+    "exact_head_sanitizers": "NOT_EXECUTED",
+    "full_cross_backend_snapshot_contract": "NOT_EXECUTED",
+    "source_org_runner_admission": "FAILED_BEFORE_STEPS",
+    "private_source_mirror": "NOT_PERFORMED"
   }
 }
