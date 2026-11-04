@@ -149,6 +149,23 @@ export class BatchPersistenceSidecar {
     for (const {k,charge} of batch) { this.pending.delete(k); this.queuedBytes -= charge; }
     return results;
   }
+  // Hold the SQLite write reservation while validating the activation epoch and
+  // reading the corresponding operation or state rows. Competing SQLite writers
+  // cannot rotate the epoch or commit a new version between those reads.
+  // HOST REFERENCE ONLY: BEGIN IMMEDIATE is synchronous and MUST NOT run on
+  // an Oreslang actor scheduler carrier; native adapters use an async broker.
+  #withFencedRead(tenantId, actor, epoch, read) {
+    this.db.exec('BEGIN IMMEDIATE');
+    try {
+      if (this.getFence.get(tenantId,actor)?.epoch !== epoch) fail('STALE_EPOCH');
+      const value=read();
+      this.db.exec('COMMIT');
+      return value;
+    } catch (e) {
+      try { this.db.exec('ROLLBACK'); } catch {}
+      throw e;
+    }
+  }
   // Trusted host-only commit witness: never treat a caller-supplied ACK as storage proof.
   // An operation's persisted digest, epoch and version must match the original queued bytes.
   verifyCommit(e) {
@@ -157,20 +174,21 @@ export class BatchPersistenceSidecar {
     if (![actor,stateName,opId].every(ident) || !uint(epoch) || epoch < 1 ||
         !uint(expectedVersion) || !uint(schemaVersion) || schemaVersion < 1 ||
         !['snapshot','event'].includes(kind) || !Buffer.isBuffer(payload)) fail('INVALID_COMMIT_PROOF');
-    if (this.getFence.get(tenantId,actor)?.epoch !== epoch) fail('STALE_EPOCH');
-    const op=this.getOp.get(tenantId,actor,stateName,opId);
-    if (!op) return null;
-    if (op.digest !== digest(e) || op.kind !== kind || op.version !== expectedVersion + 1)
-      fail('COMMIT_MISMATCH');
-    return {opId,status:'committed',durable:true,version:op.version};
+    return this.#withFencedRead(tenantId, actor, epoch, () => {
+      const op=this.getOp.get(tenantId,actor,stateName,opId);
+      if (!op) return null;
+      if (op.digest !== digest(e) || op.kind !== kind || op.version !== expectedVersion + 1)
+        fail('COMMIT_MISMATCH');
+      return {opId,status:'committed',durable:true,version:op.version};
+    });
   }
   // Loading durable actor state is activation-scoped; old epochs must not restore it.
   loadFenced({tenantId,actor,stateName,epoch}) {
     if (tenantId !== this.tenantId) fail('WRONG_TENANT');
     if (!ident(actor) || !ident(stateName) || !uint(epoch) || epoch < 1)
       fail('INVALID_READ');
-    if (this.getFence.get(tenantId,actor)?.epoch !== epoch) fail('STALE_EPOCH');
-    return this.load({tenantId,actor,stateName});
+    return this.#withFencedRead(tenantId, actor, epoch,
+      () => this.load({tenantId,actor,stateName}));
   }
   load({tenantId,actor,stateName}) {
     if (tenantId !== this.tenantId) fail('WRONG_TENANT');

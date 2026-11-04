@@ -157,3 +157,18 @@ test('schema changes cannot silently reinterpret snapshots',()=>{
   const v2=new PolicyActorReference(args(io,'#snapshot',{schemaVersion:2}));
   assert.throws(()=>v2.restore(),/SCHEMA_MIGRATION_REQUIRED/);
 });
+
+test('symbol-keyed state is rejected instead of silently omitted from snapshots',()=>{
+  const io=new FakeSidecar();
+  const a=new PolicyActorReference(args(io,'#snapshot'));
+  assert.throws(()=>a.stage_snapshot('hidden-symbol',draft=>{
+    draft[Symbol('secret-capability')]='hidden';
+  }),/NOT_SERIALIZABLE/);
+  assert.throws(()=>a.stage_snapshot('nested-symbol',draft=>{
+    draft.nested={count:5};
+    Object.defineProperty(draft.nested,Symbol('nonenumerable'),{value:17});
+  }),/NOT_SERIALIZABLE/);
+  assert.equal(io.queue.length,0);
+  assert.equal(a.has_pending_write,false);
+  assert.equal(count(a),0);
+});
