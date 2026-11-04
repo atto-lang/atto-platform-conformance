@@ -187,3 +187,19 @@ test('Java experimental checked header is exact and identical for both backend i
   assert.throws(()=>renderCheckedI64GuestSource(expr,'legacy-wrap'),/unsupported checked-i64 source profile/);
   assert.throws(()=>renderCheckedI64GuestSource(expr,null),/unsupported checked-i64 source profile/);
 });
+
+test('checked-i64 operand arrays use own length descriptors, not Proxy get traps',()=>{
+  let reads=0;
+  const args=new Proxy([L(20),L(22)],{
+    get(target,key,receiver){
+      if(key==='length'){reads++;throw Error('untrusted operand count getter');}
+      return Reflect.get(target,key,receiver);
+    }
+  });
+  assert.equal(evaluateCheckedI64({op:'add',args}),42n);
+  assert.equal(reads,0);
+  const spoofed=new Proxy([L(20),L(22)],{
+    get(target,key,receiver){return key==='length'?0:Reflect.get(target,key,receiver);}
+  });
+  assert.equal(evaluateCheckedI64({op:'add',args:spoofed}),42n);
+});

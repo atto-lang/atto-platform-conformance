@@ -48,8 +48,12 @@ function inertRecord(value,fields) {
   return out;
 }
 function inertArgs(value,arity) {
-  if(!Array.isArray(value)||Object.getPrototypeOf(value)!==Array.prototype||
-     value.length!==arity||Reflect.ownKeys(value).length!==arity+1)
+  if(!Array.isArray(value)||Object.getPrototypeOf(value)!==Array.prototype)
+    throw TypeError('invalid expression argument array');
+  // A Proxy .length get trap must not steer expression-tree admission.
+  // Read one own native array length descriptor before checking slots.
+  const length=Object.getOwnPropertyDescriptor(value,'length')?.value;
+  if(length!==arity||Reflect.ownKeys(value).length!==arity+1)
     throw TypeError('invalid expression argument array');
   const out=[];
   for(let i=0;i<arity;i++){
