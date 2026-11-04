@@ -98,6 +98,23 @@ validate authority, code/schema version and provider-side durable fencing
 before publishing a replacement activation. Source guests and
 multi-process split-brain execution remain NOT_EXECUTED.
 
+Passivation is also **activation-generation checked**: the host must supply
+the exact route returned for the activation being retired,
+`passivate_actor(context, actor_id, expected_route)`. A bare logical ActorId
+cannot retire an activation, and a delayed old-incarnation callback fails
+closed with `STALE_OR_FORGED_PASSIVATION` without decrementing the new
+incarnation's quota. This is a directory compare-and-remove condition, not
+a distributed revocation or a credential. Real retirement additionally requires
+exclusive-turn quiescence, outstanding loan/continuation cancellation, and
+provider-side durable epoch fencing. A `route` value must never authorize a
+caller; the trusted tenant context remains a separate boundary.
+
+Placement must be a plain, own-property record (ordinary or null prototype).
+Inherited fields, symbols, unknown keys, including non-enumerable mandatory
+requirements, fail closed with `UNSUPPORTED_PLACEMENT_CONSTRAINT` rather
+than influencing or disappearing from the policy. This does not establish
+protection against arbitrary hostile JS Proxies in a production native broker.
+
 The reference rejects duplicate tenant isolates and shared isolate IDs across
 tenants, wrong-tenant contexts, stale routes, unsafe mode claims, inconsistent
 backend/region/capability placement, node incarnation reuse, actor/global quotas,
@@ -112,7 +129,7 @@ or externally fenced commits. No source actors, VM-isolate creation, IO,
 multinode transport, runtime permission checks or secure host authentication
 are implemented by this reference.
 
-Run with the existing reference code in the parent PR:
+Run the host-only reference tests (including adversarial passivation and placement):
 
 ```sh
 node --test reference/silo/directory.test.mjs
