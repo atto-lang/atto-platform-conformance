@@ -495,3 +495,19 @@ test("external callers cannot silently discard queued deliveries",()=>{
   assert.equal(delivery.delivery.sequence,1n);
   assert.equal(bus.finish(sub,actor).ok,true);
 });
+
+test("pubsub Option discipline rejects null and undefined at every depth", () => {
+  const bus=new PubSubReference();
+  const topic=bus.topic("option.events","Event").topic;
+  for (const value of [null, undefined]) {
+    assert.throws(() => share(value), /uses Option<T>/);
+    assert.equal(bus.tryPublish(topic,value).error,"NotShared");
+    const nested={value};
+    assert.throws(() => share(nested), /uses Option<T>/);
+    assert.equal(Object.isFrozen(nested),false,
+      "failed sharing must not freeze caller-owned nodes");
+    assert.equal(bus.tryPublish(topic,Object.freeze(nested)).error,"NotShared");
+  }
+  const concrete=share({value:{tag:"none"}});
+  assert.equal(bus.tryPublish(topic,concrete).ok,true);
+});
