@@ -54,6 +54,20 @@ test('denies malformed or unbounded durable containers',()=>{
  reject(v=>v.workflows[0].queries[0].parameters[0].type='bool','QUERY_SIGNATURE_MISMATCH');
 
 });
+test('declaration corpus is identical but recorded steps remain AST-only',()=>{
+ const corpus=readFileSync(new URL('../contracts/durable-m0/v1/checkout.atto',import.meta.url));
+ assert.equal(corpus.length,464);
+ const text=corpus.toString('utf8');
+ assert.match(text,/define module Billing as/);
+ assert.match(text,/define activity PaymentProvider as/);
+ assert.match(text,/define workflow Checkout as/);
+ assert.match(text,/run\(int order_id\) -> int/);
+ assert.doesNotMatch(text,/recorded\s+activity_step/);
+ // The reference manifest's history comes from a constructed Java AST, not
+ // from source-level durable command grammar or a guest scheduler.
+ const commands=decode().workflows[0].commands;
+ assert.deepEqual(commands.map(c=>c.kind),['activity_step','timer','wait_event']);
+});
 test('source-free acceptance does not claim native or guest execution',()=>{
  const a=verifyDurableM0Reference(raw),b=verifyDurableM0Reference(Buffer.from(raw));
  assert.deepEqual(a,b);
