@@ -7,14 +7,27 @@ const BACKENDS = ["java", "llvm", "wasm", "cranelift", "net", "forge"];
 const SHA1 = /^[a-f0-9]{40}$/;
 const NAME = /^[a-z][a-z0-9-]*\.ores$/;
 
+// Bounded descriptor reader: a file growing after fstat cannot allocate/read
+// more than limit + 1 bytes. Exported for deterministic adversarial I/O tests.
+export async function readLimitedBytes(handle, limit, subject) {
+  const bytes = Buffer.alloc(limit + 1);
+  let used = 0;
+  while (used <= limit) {
+    const {bytesRead} = await handle.read(bytes, used, bytes.length - used, null);
+    if (bytesRead === 0) return bytes.subarray(0, used);
+    used += bytesRead;
+  }
+  throw new Error(`${subject} exceeded the size limit during read`);
+}
+
 /** Open the checked file itself, never following a mutable symbolic link. */
 async function readBoundedRegularFile(path, limit, subject) {
-  if (!Number.isInteger(constants.O_NOFOLLOW)) {
+  if (!Number.isInteger(constants.O_NOFOLLOW) || !Number.isInteger(constants.O_NONBLOCK)) {
     throw new Error("safe no-follow file reads are unavailable on this platform");
   }
   let handle;
   try {
-    handle = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW);
+    handle = await open(path, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
   } catch (error) {
     throw new Error(`${subject} must be a regular file (no symlinks)`, {cause: error});
   }
@@ -23,11 +36,7 @@ async function readBoundedRegularFile(path, limit, subject) {
     if (!stat.isFile() || stat.size > limit) {
       throw new Error(`${subject} must be a regular file no larger than ${limit} bytes`);
     }
-    const bytes = await handle.readFile();
-    if (bytes.length > limit) {
-      throw new Error(`${subject} exceeded the size limit during read`);
-    }
-    return bytes;
+    return await readLimitedBytes(handle, limit, subject);
   } finally {
     await handle.close();
   }
