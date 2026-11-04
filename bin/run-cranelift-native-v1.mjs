@@ -75,6 +75,18 @@ async function executableEvidence(path,digest){
     return {dev:before.dev,ino:before.ino,size:before.size,mtimeMs:before.mtimeMs,ctimeMs:before.ctimeMs};
   }finally{await handle.close()}
 }
+async function requireStableCompilerImage(path,digest,initial){
+  // This supplements, but does not replace, an authorized isolated runner
+  // or executable build provenance. Detect persistent binary replacement
+  // between each IR and JIT launch, including equal-content inode swaps.
+  const observed=await executableEvidence(path,digest);
+  requireCase(
+    observed.dev===initial.dev&&observed.ino===initial.ino&&
+    observed.size===initial.size&&observed.mtimeMs===initial.mtimeMs&&
+    observed.ctimeMs===initial.ctimeMs,
+    "compiler executable identity changed during native case execution"
+  );
+}
 async function runNativeCranelift(options={}){
   // This is an evidence-collecting entrypoint, not a mockable host-test API.
   // A caller must not replace process execution or smuggle getters/options.
@@ -110,6 +122,7 @@ async function runNativeCranelift(options={}){
     // IR mode independently proves this binary is asked to lower the exact
     // source, rather than relying on a stdout-only wrapper. The IR digest
     // is necessary but not independently authenticated JIT provenance.
+    await requireStableCompilerImage(compiler,compilerSha256,evidence);
     const ir=spawnSync(compiler,["ir",file],{
       shell:false,encoding:"utf8",timeout:timeoutMs,maxBuffer:65536,
       env:{PATH:"/usr/bin:/bin",LANG:"C",LC_ALL:"C",RUST_BACKTRACE:"0"}
@@ -130,6 +143,8 @@ async function runNativeCranelift(options={}){
       requireCase(ir.status===0&&ir.stderr===""&&
         /\bfunction\b/.test(ir.stdout)&&ir.stdout.length<65536,
         "native Cranelift did not produce bounded CLIF IR");
+    // Rehash the exact compiler image after IR and before actual JIT.
+    await requireStableCompilerImage(compiler,compilerSha256,evidence);
     const command=spawnSync(compiler,["run",file],{
       shell:false,encoding:"utf8",timeout:timeoutMs,maxBuffer:8192,
       env:{PATH:"/usr/bin:/bin",LANG:"C",LC_ALL:"C",RUST_BACKTRACE:"0"}
@@ -151,7 +166,7 @@ async function runNativeCranelift(options={}){
         command.stdout===String(test.expectedValue)+"\n",
         "native JIT guest mismatch: "+test.id);
     }
-    await executableEvidence(compiler,compilerSha256);
+    await requireStableCompilerImage(compiler,compilerSha256,evidence);
     records.push({id:test.id,kind:negative?"COMPILER_REJECT":"NATIVE_JIT_EXECUTED",
       fixtureSha256:test.sha256,clifSha256:negative?null:
         createHash("sha256").update(ir.stdout).digest("hex"),
