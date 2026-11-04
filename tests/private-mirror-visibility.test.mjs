@@ -25,9 +25,9 @@ test("incident disposition registry cannot diverge from publisher admission",()=
   assert.equal(new Set(central).size,central.length,"duplicate central incident");
   assert.ok(registry.incidents.every(x=>x.status==="hold"),
     "incident review status changes require independent policy reapproval");
-  const match=sourceCode.match(/const REQUIRED_INCIDENTS = Object\\.freeze\\(\\[([\\s\\S]*?)\\]\\);/);
+  const match=sourceCode.match(/const REQUIRED_INCIDENTS = Object\.freeze\(\[([\s\S]*?)\]\);/);
   assert.ok(match,"private publisher incident preflight missing");
-  const required=[...match[1].matchAll(/\\bnumber:(\\d+)/g)].map(m=>Number(m[1]));
+  const required=[...match[1].matchAll(/\bnumber:(\d+)/g)].map(m=>Number(m[1]));
   assert.equal(new Set(required).size,required.length,"duplicate publisher incident");
   assert.deepEqual(required.toSorted((a,b)=>a-b),
     [...central,212].toSorted((a,b)=>a-b),
