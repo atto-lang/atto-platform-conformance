@@ -1,163 +1,55 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
+import {spawnSync} from "node:child_process";
+import {fileURLToPath} from "node:url";
 import {proposeCanary} from "../bin/propose-private-ci-canary.mjs";
 
-const source="ores-truffle-oreslang/oreslang-source.forge";
-const destination="example-private/carrier";
-const sourceCommit="a".repeat(40);
-const sourceTree="b".repeat(40);
-const sourceId=1419703674;
-const destinationId=424242;
+const DENIED=/PRIVATE_SOURCE_PUBLISH_DISABLED_PENDING_PROTECTED_MAIN_APPROVAL/;
 
-function fixture(overrides={},calls=[]){
-  return async (url,options)=>{
-    calls.push({url,options});
-    assert.equal(options.method,"GET");
-    assert.equal(options.redirect,"error");
-    assert.equal(options.headers.Authorization,"Bearer test-token");
-    const table={
-      ["https://api.github.com/repos/"+source]:{
-        full_name:source,private:true,visibility:"private",archived:false,disabled:false,id:sourceId
-      },
-      ["https://api.github.com/repos/"+destination]:{
-        full_name:destination,private:true,visibility:"private",archived:false,disabled:false,
-        id:destinationId,permissions:{push:true}
-      },
-      ["https://api.github.com/repos/"+source+"/git/commits/"+sourceCommit]:{
-        sha:sourceCommit,tree:{sha:sourceTree}
-      },
-      ["https://api.github.com/repos/"+source+"/compare/"+sourceCommit+"...main"]:{
-        status:"ahead"
-      }
-    };
-    const value=overrides[url]??table[url];
-    if(value?.statusCode) return {status:value.statusCode,json:async()=>value.body};
-    return {status:200,json:async()=>value};
-  };
-}
-const run=(overrides={},calls=[])=>proposeCanary({
-  source,destination,sourceCommit,token:"test-token",fetchImpl:fixture(overrides,calls)
-});
-
-test("produces exact proposal lines without writing anything",async()=>{
-  const calls=[];
-  const result=await run({},calls);
-  assert.deepEqual(result,{
-    status:"PRIVATE_CI_CANARY_PROPOSAL_ONLY",
-    source,sourceRepositoryId:sourceId,sourceCommit,sourceTree,
-    destination,destinationId,
-    policyLines:{
-      destination:destination+" "+destinationId,
-      snapshot:sourceCommit+" "+sourceTree+" "+destinationId,
-      carrierSnapshot:sourceCommit+" "+sourceTree+" "+destinationId
-    },
-    reviewProtocol:{
-      sourceReviewerPolicy:".github/private-ci-independent-reviewer.json",
-      carrierReviewerPolicy:".github/private-ci-independent-reviewer.json",
-      sourceAuthorizationPaths:[
-        ".github/private-ci-approved-repositories.txt",
-        ".github/private-ci-approved-source-snapshots.txt",
-        ".github/private-ci-independent-reviewer.json"
-      ],
-      carrierAuthorizationPaths:[
-        ".github/private-ci-approved-source-snapshots.txt",
-        ".github/private-ci-independent-reviewer.json"
-      ],
-      requirements:[
-        "activate the same non-operator reviewer identity on source and carrier",
-        "change each side's authorization paths together in one commit",
-        "obtain that reviewer's APPROVED review on the exact final PR head for both source and carrier",
-        "reviewer must retain configured write-or-better permission in both repositories",
-        "keep exactly one active canary and preserve pinned policy workflow blobs"
-      ]
-    },
-    warning:"Proposal only: after bootstrap passes, apply source and carrier lines in separate protected CODEOWNERS-reviewed PRs and obtain exact-head approval from the same configured independent reviewer."
-  });
-  assert.equal(calls.length,4);
-  assert.equal(calls.every(x=>x.options.method==="GET"),true);
-});
-
-test("rejects public, internal, archived, disabled or unwritable destination",async()=>{
-  const url="https://api.github.com/repos/"+destination;
-  const base={full_name:destination,private:true,visibility:"private",archived:false,disabled:false,id:destinationId,permissions:{push:true}};
-  for(const bad of [
-    {...base,private:false,visibility:"public"},
-    {...base,visibility:"internal"},
-    {...base,archived:true},
-    {...base,disabled:true},
-    {...base,permissions:{push:false}},
-    {...base,permissions:undefined}
-  ]){
-    await assert.rejects(run({[url]:bad}),/writable verified private/);
-  }
-});
-
-test("rejects malformed or mismatched source metadata",async()=>{
-  const url="https://api.github.com/repos/"+source;
-  const base={full_name:source,private:true,visibility:"private",archived:false,disabled:false,id:sourceId};
-  for(const bad of [
-    {...base,full_name:"someone/else"},
-    {...base,private:false,visibility:"public"},
-    {...base,visibility:"internal"},
-    {...base,archived:true},
-    {...base,disabled:true},
-    {...base,id:0}
-  ]){
-    await assert.rejects(run({[url]:bad}),/source repository identity\/privacy/);
-  }
-});
-
-test("requires exact source commit and verified root tree",async()=>{
-  const url="https://api.github.com/repos/"+source+"/git/commits/"+sourceCommit;
-  await assert.rejects(proposeCanary({
-    source,destination,sourceCommit:"bad",token:"test-token",fetchImpl:fixture()
-  }),/exact source commit/);
-  await assert.rejects(run({[url]:{sha:sourceCommit,tree:{sha:"bad"}}}),/commit\/root-tree/);
-  await assert.rejects(run({[url]:{sha:"c".repeat(40),tree:{sha:sourceTree}}}),/commit\/root-tree/);
-});
-
-test("detached or unrelated source commit cannot become a proposal",async()=>{
-  const url="https://api.github.com/repos/"+source+"/compare/"+sourceCommit+"...main";
-  for(const status of ["behind","diverged"]){
-    await assert.rejects(run({[url]:{status}}),/not an ancestor/);
-  }
-});
-
-test("identical source main is accepted as a proposal candidate",async()=>{
-  const url="https://api.github.com/repos/"+source+"/compare/"+sourceCommit+"...main";
-  const result=await run({[url]:{status:"identical"}});
-  assert.equal(result.sourceTree,sourceTree);
-});
-
-test("missing approval inputs fail before network access",async()=>{
-  for(const change of [
-    {source:"other/repo"},
-    {destination:"bad path"},
-    {sourceCommit:"x"},
-    {token:""}
-  ]){
-    let calls=0;
+test("private canary proposal denies before every metadata request",async()=>{
+  let calls=0;
+  for(const source of [
+    "ores-truffle-oreslang/oreslang-source.java",
+    "ores-truffle-oreslang/oreslang-source.llvm",
+    "unknown-private/source",
+    "unknown-private/carrier"
+  ]) {
     await assert.rejects(proposeCanary({
-      source,destination,sourceCommit,token:"test-token",
-      fetchImpl:async()=>{calls++;},
-      ...change
-    }),/PRIVATE_CI_CANARY_DENIED/);
-    assert.equal(calls,0);
+      source,destination:"example-private/carrier",sourceCommit:"a".repeat(40),
+      token:"synthetic-test-token",fetchImpl:async()=>{calls++;throw Error("NETWORK_REACHED");}
+    }),DENIED);
   }
+  assert.equal(calls,0,"private source commit/tree metadata must never be read");
 });
 
-test("transport failures redact token-bearing client messages",async()=>{
-  await assert.rejects(proposeCanary({
-    source,destination,sourceCommit,token:"test-token",
-    fetchImpl:async()=>{throw Error("Authorization: Bearer test-token");}
-  }),err=>{
-    assert.equal(err.message.includes("test-token"),false);
-    assert.match(err.message,/GitHub lookup failed/);
-    return true;
+test("canary proposer rejects before hostile option getters and proxy traps",async()=>{
+  let touched=0;
+  const hostile=new Proxy({}, {
+    get(){touched++;throw Error("GET_EXECUTED");},
+    ownKeys(){touched++;throw Error("OWNKEYS_EXECUTED");},
+    getOwnPropertyDescriptor(){touched++;throw Error("DESCRIPTOR_EXECUTED");}
   });
+  for(const input of [undefined,null,42,"x",hostile,Object.defineProperty({},"token",{
+    get(){touched++;throw Error("TOKEN_GETTER_EXECUTED");}
+  })]) await assert.rejects(proposeCanary(input),DENIED);
+  assert.equal(touched,0);
 });
 
-test("GitHub metadata failures fail closed",async()=>{
-  const url="https://api.github.com/repos/"+destination;
-  await assert.rejects(run({[url]:{statusCode:403,body:{message:"forbidden"}}}),/metadata unavailable/);
+test("canary CLI fails without printing credentials or source data",()=>{
+  const exe=fileURLToPath(new URL("../bin/propose-private-ci-canary.mjs",import.meta.url));
+  const result=spawnSync(process.execPath,[exe,"ores-truffle-oreslang/oreslang-source.java","example-private/carrier","a".repeat(40)],{
+    encoding:"utf8",timeout:3000,
+    env:{PATH:process.env.PATH,GH_TOKEN:"synthetic-test-token"}
+  });
+  assert.equal(result.status,1);
+  assert.equal(result.stdout,"");
+  assert.match(result.stderr,DENIED);
+  assert.doesNotMatch(result.stderr,/synthetic-test-token/);
+});
+
+test("proposer has no direct Git API endpoint or network import",()=>{
+  const src=readFileSync(new URL("../bin/propose-private-ci-canary.mjs",import.meta.url),"utf8");
+  assert.doesNotMatch(src,/api\\.github\\.com|\\/git\\/(?:commits|blobs|trees|refs)/);
+  assert.match(src,/export async function proposeCanary\\(_untrustedOptions\\)/);
 });

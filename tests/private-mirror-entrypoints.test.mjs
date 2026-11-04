@@ -13,7 +13,8 @@ const optionalScanRoots = [".github/actions"];
 const DISABLED = "PRIVATE_SOURCE_PUBLISH_DISABLED_PENDING_PROTECTED_MAIN_APPROVAL";
 const disabledEntrypoints = new Map([
   ["bin/require-private-mirror.mjs", "requirePrivateMirror"],
-  ["bin/private-mirror-publish.mjs", "publishPrivateMirror"]
+  ["bin/private-mirror-publish.mjs", "publishPrivateMirror"],
+  ["bin/propose-private-ci-canary.mjs", "proposeCanary"]
 ]);
 
 function sourceFiles(dir, result=[]) {
@@ -77,7 +78,7 @@ test("all executable surfaces have zero direct Git object publishers",()=>{
     "lib/guest-aot-evidence-v1.mjs",
     "src/carrier-tree-triage.mjs"
   ]) assert.ok(scanned.has(path),"executable audit silently omitted "+path);
-  assert.equal(disabled,2,"both legacy publisher surfaces must be scanned");
+  assert.equal(disabled,3,"all three private-source admission/proposal surfaces must be scanned");
   assert.ok(visited>=65,"executable surface enumeration unexpectedly shrunk");
 });
 
