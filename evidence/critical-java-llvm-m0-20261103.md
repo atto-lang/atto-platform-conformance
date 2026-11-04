@@ -5,7 +5,7 @@ record, not runtime parity or permission to export confidential code.**
 
 | Backend | PR and exact source head | Git root tree | Hosted stepful evidence |
 | --- | --- | --- | --- |
-| Java/Graal | [source.java #2422](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2422) `38b77a2d86490671c81ef3ca080c13a697d47702` | `49dbc5ff0d3613b65f0a13fc974c8479119de5cd` | [run 41754438780](https://github.com/ores-truffle-oreslang/oreslang-source.java/actions/runs/41754438780): zero steps, `NOT_EXECUTED` |
+| Java/Graal | [source.java #2422](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2422) `892c3220dbc22ae7138d3141e13ea46404430db4` | `01644d97450817417569cdc359826f9cc04b09ee` | [run 41755226023](https://github.com/ores-truffle-oreslang/oreslang-source.java/actions/runs/41755226023): zero steps, `NOT_EXECUTED` |
 | LLVM | [source.llvm #1277](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1277) `e2bee2fc2d0a0ed9fb94c546deb14a8ab2c0b2af` | `353587df051611af16d707da62d876a6935cb7db` | [run 41754620114](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/actions/runs/41754620114): zero steps, `NOT_EXECUTED` |
 
 ## Source changes currently authored, not executed in hosted CI
@@ -16,7 +16,12 @@ complete ownership analysis and mint a Program/epoch-bound private authority.
 Legacy host-only Task publisher rejects. A new weak Program-identity typing
 ledger invalidates stale Task captures after successful or failed retyping.
 Three new JUnit cases cover untyped Task denial and both recheck outcomes.
-Seven Surefire suites and named negative cases are required by focused CI.
+Two additional Java guest JUnit cases use committed canonical `.atto`
+counterparts of the legacy `.ores` actor fixtures, with separately checked
+outputs `42` and `returned`. The explicit MIME/source text path does not
+by itself prove a full `.atto` CLI/import migration.
+Seven Surefire suites and named negative and `.atto` guest cases are
+required by focused CI.
 The critical-only actor path remains admitted without requiring a nonempty
 Task capture ledger.
 
