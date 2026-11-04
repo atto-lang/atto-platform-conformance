@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "scope": "actor-heap-physical-domains-six-backend-v1",
+  "sourceFixture": "fixtures/actor-memory/compiled-guest-v1/two-same-kind-actors.ores",
+  "guestVerifications": [],
+  "trustedProcessIsSecurityBoundary": false,
+  "compilerOnlyOrHostOnlyIsGuestEvidence": false,
+  "requiredSemantics": [
+    "distinct-physical-owner-per-actor-incarnation",
+    "actor-relative-offset-zero-may-repeat-only-across-domains",
+    "deny-foreign-read-write-and-forged-capabilities",
+    "one-writer-per-actor-across-suspension",
+    "loan-and-continuation-pins-delay-retirement",
+    "fence-stale-actor-and-tenant-generations",
+    "precharge-bounded-heap-and-aggregate-tenant-quotas",
+    "no-partial-write-on-failed-mutation",
+    "surviving-actor-progress-after-neighbor-reclaim",
+    "no-reclaim-before-physical-carrier-io-and-task-drain",
+    "reclaim-at-most-once-and-refund-once",
+    "no-pointer-sharing-across-actor-domains"
+  ],
+  "backends": {
+    "java": {
+      "tenantBoundary": "trusted-jvm-process-not-graal-context-sandbox",
+      "actorHeap": "actor-owned-offheap-native-arena-and-custom-linear-heap",
+      "guestLowering": "NOT_VERIFIED",
+      "actorHeapRuntime": "HOST_SUBSTRATE_ONLY"
+    },
+    "llvm": {
+      "tenantBoundary": "isolatevm-tenant-native-regions-not-os-sandbox",
+      "actorHeap": "native-actor-owned-arena-per-incarnation",
+      "guestLowering": "NOT_VERIFIED",
+      "actorHeapRuntime": "HOST_SUBSTRATE_ONLY"
+    },
+    "wasm": {
+      "tenantBoundary": "wasmtime-store-instance-per-tenant-not-process-sandbox",
+      "actorHeap": "separate-actor-memory-or-instance-with-owner-checked-regions",
+      "guestLowering": "NOT_VERIFIED",
+      "actorHeapRuntime": "PARTIAL_HOST_SUBSTRATE"
+    },
+    "cranelift": {
+      "tenantBoundary": "unsupported-tenant-actor-admission",
+      "actorHeap": "deny-actor-source-until-native-private-heap-implemented",
+      "guestLowering": "UNSUPPORTED_FAIL_CLOSED",
+      "actorHeapRuntime": "UNIMPLEMENTED"
+    },
+    "net": {
+      "tenantBoundary": "nativeaot-logical-isolatevm-not-clr-heap-sandbox",
+      "actorHeap": "actor-owned-unmanaged-arenas-with-lifetime-pins",
+      "guestLowering": "NOT_VERIFIED",
+      "actorHeapRuntime": "PARTIAL_HOST_SUBSTRATE"
+    },
+    "forge": {
+      "tenantBoundary": "trusted-host-only-not-process-sandbox",
+      "actorHeap": "preallocated-actor-owned-native-scalar-heap",
+      "guestLowering": "NOT_VERIFIED",
+      "actorHeapRuntime": "PARTIAL_HOST_SUBSTRATE"
+    }
+  }
+}
