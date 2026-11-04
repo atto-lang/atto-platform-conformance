@@ -90,6 +90,18 @@
         "forge",
         "js"
       ]
+    },
+    {
+      "id": "liveview-revision-order",
+      "file": "liveview-revision.ores",
+      "expect": "accept",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ]
     }
   ]
 }
