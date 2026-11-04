@@ -99,7 +99,7 @@ test('draining node rejects new activation while continuing existing route',()=>
   d.drain_node('node-a-boot1');
   assert.equal(d.route_actor(a,id('tenant-a','on-a')).epoch,old.epoch);
   rejects(()=>d.activate_actor(a,id('tenant-a','new'),{backend:'java'}),'NO_COMPATIBLE_TENANT_ISOLATE');
-  d.passivate_actor(a,id('tenant-a','on-a'));
+  d.passivate_actor(a,id('tenant-a','on-a'),old);
   rejects(()=>d.validate_delivery(a,id('tenant-a','on-a'),old),'STALE_OR_FORGED_ROUTE');
 });
 
@@ -113,7 +113,7 @@ test('hard realtime and unverified untrusted/protected modes fail closed',()=>{
 test('reactivation after passivation increments epoch while keeping logical actor ref',()=>{
   const d=cluster(), a=d.make_trusted_tenant_context('tenant-a'), identity=id('tenant-a','same');
   const one=d.activate_actor(a,identity);
-  d.passivate_actor(a,identity);
+  d.passivate_actor(a,identity,one);
   const two=d.activate_actor(a,identity);
   assert.equal(one.actor_ref,two.actor_ref);
   assert.equal(two.epoch,one.epoch+1);
@@ -161,7 +161,7 @@ test('resolve_or_activate_actor: cold lookup is lazy, idempotent and capacity-sa
 test('portable logical ActorRef reactivates after passivation with a new fenced route', () => {
   const d=cluster(), a=d.make_trusted_tenant_context('tenant-a'), key=id('tenant-a','shopping-cart');
   const first=d.resolve_or_activate_actor(a,key,{backend:'java'});
-  d.passivate_actor(a,key);
+  d.passivate_actor(a,key,first);
   const second=d.resolve_or_activate_ref(a,first.actor_ref,{backend:'llvm'});
   assert.equal(second.actor_ref,first.actor_ref);
   assert.equal(second.epoch,first.epoch+1);
@@ -277,4 +277,64 @@ test('node capability descriptor is snapshotted once before admission', () => {
   assert.equal(d.resolve_or_activate_actor(a,id('tenant-a','allowed'),{capabilities:['gpu']}).node_id,'n1');
   rejects(()=>d.resolve_or_activate_actor(a,id('tenant-a','denied'),{capabilities:['read']}),
     'NO_COMPATIBLE_TENANT_ISOLATE');
+});
+
+
+test('passivation requires an exact active route, never a bare logical identity', () => {
+  const d=cluster(), a=d.make_trusted_tenant_context('tenant-a');
+  const key=id('tenant-a','fence-required'), route=d.activate_actor(a,key);
+  rejects(()=>d.passivate_actor(a,key),'STALE_OR_FORGED_PASSIVATION');
+  for(const forged of [
+    {...route,epoch:route.epoch+1},
+    {...route,actor_ref:'oa1_wrong'},
+    {...route,tenant_id:'tenant-b'},
+    {...route,isolate_id:'foreign'},
+    {...route,node_id:'foreign'},
+    {...route,backend:'net'}
+  ]) rejects(()=>d.passivate_actor(a,key,forged),'STALE_OR_FORGED_PASSIVATION');
+  assert.deepEqual(d.route_actor(a,key),route);
+  assert.equal(d.snapshot().active_actors,1);
+  d.passivate_actor(a,key,route);
+  assert.equal(d.snapshot().active_actors,0);
+});
+
+test('late shutdown from previous activation cannot passivate new incarnation', () => {
+  const d=cluster(), a=d.make_trusted_tenant_context('tenant-a');
+  const key=id('tenant-a','stale-finalizer');
+  const old=d.activate_actor(a,key,{backend:'java'});
+  d.passivate_actor(a,key,old);
+  const current=d.activate_actor(a,key,{backend:'llvm'});
+  assert.equal(current.epoch,old.epoch+1);
+  rejects(()=>d.passivate_actor(a,key,old),'STALE_OR_FORGED_PASSIVATION');
+  rejects(()=>d.passivate_actor(a,key,{...current,epoch:old.epoch}),
+    'STALE_OR_FORGED_PASSIVATION');
+  assert.deepEqual(d.route_actor(a,key),current);
+  assert.equal(d.snapshot().active_actors,1);
+  d.passivate_actor(a,key,current);
+  rejects(()=>d.passivate_actor(a,key,current),'ACTOR_NOT_ACTIVE');
+});
+
+test('a route from another identity and a foreign tenant cannot retire an activation', () => {
+  const d=cluster(), a=d.make_trusted_tenant_context('tenant-a'),
+    b=d.make_trusted_tenant_context('tenant-b');
+  const first=id('tenant-a','first'), second=id('tenant-a','second');
+  const ra=d.activate_actor(a,first), rb=d.activate_actor(a,second);
+  rejects(()=>d.passivate_actor(a,first,rb),'STALE_OR_FORGED_PASSIVATION');
+  rejects(()=>d.passivate_actor(b,first,ra),'WRONG_TENANT');
+  assert.deepEqual(d.route_actor(a,first),ra);
+  assert.deepEqual(d.route_actor(a,second),rb);
+});
+
+test('placement rejects inherited, symbol, and hidden mandatory requirements', () => {
+  const d=cluster(), a=d.make_trusted_tenant_context('tenant-a');
+  const key=id('tenant-a','hidden-policy');
+  const inherited=Object.create({code_schema:'v2'});
+  const hidden={};
+  Object.defineProperty(hidden,'code_schema',{value:'v2',enumerable:false});
+  for(const options of [inherited,hidden,{[Symbol('must-enforce')]:true}])
+    rejects(()=>d.resolve_or_activate_actor(a,key,options),'UNSUPPORTED_PLACEMENT_CONSTRAINT');
+  assert.equal(d.snapshot().active_actors,0);
+  const plain=Object.create(null);
+  plain.backend='java';
+  assert.equal(d.resolve_or_activate_actor(a,key,plain).backend,'java');
 });
