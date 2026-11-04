@@ -18,7 +18,7 @@ Backend source targets:
   real-time aspirations; no compiled WebSocket guest evidence.
 - `oreslang-source.wasm` — browser/Node isolates and workers; no native WebSocket
   guest conformance receipt.
-- `oreslang-source.forge` — independent Forge/Cranelift tier; no compiled
+- `oreslang-source.forge` — independent Forge native backend; no compiled
   WebSocket guest conformance receipt.
 - `oreslang-source.net` — full Native AOT; no compiled WebSocket guest conformance
   receipt.
@@ -49,3 +49,28 @@ Follow source/private carrier security incident #22. Token-free Git-object
 mirroring does not authorize private source transfer. Never use alternative
 organization runners absent independently approved protected source/carrier
 governance. Zero-step workflow runs are NOT_EXECUTED.
+
+## Optional sixth backend: independent Cranelift stage-0
+
+Cranelift is a **separate** `oreslang-source.cranelift` repository and must
+never inherit Forge receipts, host decoder results, or compiler success.
+Its current implemented source profile is a limited scalar native JIT:
+WebSocket actors, network adapters, async I/O, connection ownership and
+RFC6455 guest decoding are **unsupported**. It therefore cannot truthfully
+produce a compiled WebSocket guest execution receipt today.
+
+The original five-backend `ores-liveview-wire-backend-receipt-v1` schema
+and `validateReceipt()` remain unchanged for existing callers. A separate
+`ores-liveview-wire-six-backend-receipt-v1` contract is validated by
+`validateSixBackendReceipt()`. It requires six distinct repositories:
+Java, LLVM, WASM, Forge, .NET and Cranelift, all 41 exact vector
+observations, a `cranelift-native` profile for Cranelift, its own runner
+and native guest receipts. A Forge report cannot stand in for Cranelift.
+
+**This validator intentionally never authenticates any user-supplied receipt**,
+including syntactically complete six-backend examples. Every reported
+`runner_provenance_authenticated`, `guest_execution_authenticated`, and
+`backend_parity_certified` value is false. Only independently audited
+actual compiler execution can lift those conclusions in a future system.
+The explicit six-backend validator is a structural gate, NOT a claim that
+the Oreslang source runs across six toolchains.

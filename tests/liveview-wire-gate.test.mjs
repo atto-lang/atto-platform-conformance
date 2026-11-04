@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {validateVectors,validateReceipt,gitBlob,FIXTURE_BLOB,BACKENDS} from '../src/liveview-wire-receipts.mjs';
+import {validateVectors,validateReceipt,validateSixBackendReceipt,gitBlob,FIXTURE_BLOB,BACKENDS,SIX_BACKENDS} from '../src/liveview-wire-receipts.mjs';
 const raw=readFileSync(new URL('../contracts/v1/ores-liveview-wire-v1.json',import.meta.url),'utf8');
 const fixture=JSON.parse(raw);
 const clone=x=>structuredClone(x);
@@ -59,6 +59,57 @@ test('reject malformed vectors even without a trusted blob',()=>{
   assert.throws(()=>validateVectors(v,JSON.stringify(v)),/LIVEVIEW_WIRE_GATE/);
 });
 
-test("Git blob hashing uses canonical NUL header without trailing space",()=>{
-  assert.equal(gitBlob(""),"e69de29bb2d1d6434b8b29ae775ad8c2e48c5391");
+function fakeSix() {
+  const source=fake();
+  const profile={java:'jvm',llvm:'native',wasm:'browser',
+    forge:'forge-native',net:'net-native-aot'};
+  for(const b of source.backends) b.profile=profile[b.backend];
+  source.schema='ores-liveview-wire-six-backend-receipt-v1';
+  const cranelift=clone(source.backends[0]);
+  cranelift.backend='cranelift';
+  cranelift.repository='ores-truffle-oreslang/oreslang-source.cranelift';
+  cranelift.profile='cranelift-native';
+  source.backends.push(cranelift);
+  return source;
+}
+
+test('legacy five-backend report remains backward-compatible, six is isolated',()=>{
+  const old=fake();
+  assert.equal(validateReceipt(old,fixture).backend_count,5);
+  assert.throws(()=>validateSixBackendReceipt(old,fixture),/LIVEVIEW_WIRE_GATE/);
+  const six=fakeSix();
+  assert.equal(SIX_BACKENDS.length,6);
+  assert.equal(validateSixBackendReceipt(six,fixture).backend_count,6);
+  assert.equal(validateSixBackendReceipt(six,fixture).backend_parity_certified,false);
+  assert.equal(validateSixBackendReceipt(six,fixture).guest_execution_authenticated,false);
+  assert.equal(validateSixBackendReceipt(six,fixture).runner_provenance_authenticated,false);
+  assert.throws(()=>validateReceipt(six,fixture),/LIVEVIEW_WIRE_GATE/);
+});
+
+for(const [label,mutate] of [
+  ['missing-cranelift',x=>x.backends.pop()],
+  ['cranelift-falsely-aliased-to-forge',x=>x.backends[5].backend='forge'],
+  ['forged-cranelift-repo',x=>x.backends[5].repository='ores-truffle-oreslang/oreslang-source.forge'],
+  ['forged-cranelift-profile',x=>x.backends[5].profile='forge-native'],
+  ['forge-claiming-cranelift',x=>x.backends[3].profile='cranelift-native'],
+  ['java-claiming-cranelift',x=>x.backends[0].profile='cranelift-native'],
+  ['wasm-claiming-jvm',x=>x.backends[2].profile='jvm'],
+  ['net-claiming-forge',x=>x.backends[4].profile='forge-native'],
+  ['cranelift-no-runner',x=>x.backends[5].runner.step_count=0],
+  ['cranelift-false-guest',x=>x.backends[5].guest.executed=false],
+  ['cranelift-unknown-fixture',x=>x.backends[5].results[0].case_id='invented'],
+  ['cranelift-incorrect-observation',x=>x.backends[5].results[0].actual={close_code:1000}],
+  ['cranelift-stale-head',x=>x.backends[5].runner.head_sha='0'.repeat(40)],
+  ['cranelift-extra-field',x=>x.backends[5].foo='untrusted'],
+  ['legacy-schema-spoof',x=>x.schema='ores-liveview-wire-backend-receipt-v1'],
+]) {
+  test('six-backend receipt rejects '+label,()=>{
+    const sample=fakeSix();
+    mutate(sample);
+    assert.throws(()=>validateSixBackendReceipt(sample,fixture),/LIVEVIEW_WIRE_GATE/);
+  });
+}
+
+test('Git blob header is canonical: blob SPACE length NUL bytes',()=>{
+  assert.equal(gitBlob(''), 'e69de29bb2d1d6434b8b29ae775ad8c2e48c5391');
 });
