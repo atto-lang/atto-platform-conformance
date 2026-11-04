@@ -16,9 +16,17 @@ const safeKeys = (value) => {
   // A Proxy can execute arbitrary user callbacks during getPrototypeOf,
   // ownKeys, descriptor inspection, or freeze. Never inspect its traps.
   if (nodeTypes.isProxy(value)) return null;
-  if (!Array.isArray(value) && Object.getPrototypeOf(value)!==Object.prototype &&
-      Object.getPrototypeOf(value)!==null) return null;
+  const isArray=Array.isArray(value);
+  const prototype=Object.getPrototypeOf(value);
+  if (isArray ? prototype!==Array.prototype :
+      prototype!==Object.prototype && prototype!==null) return null;
+  // An enormous sparse array can have only one own key ("length"), and would
+  // otherwise bypass the graph edge budget while exposing undefined holes.
+  if (isArray && value.length>=SHARED_GRAPH_MAX_EDGES) return null;
   const keys=Reflect.ownKeys(value);
+  if (isArray && (keys.length!==value.length+1 ||
+      keys[value.length]!=="length" ||
+      keys.some((k,i)=>i<value.length && k!==String(i)))) return null;
   if (keys.some(k=>typeof k!=="string" ||
       !Object.hasOwn(Object.getOwnPropertyDescriptor(value,k),"value"))) return null;
   return keys;
