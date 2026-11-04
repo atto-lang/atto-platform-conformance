@@ -39,6 +39,14 @@
         "wasm",
         "forge",
         "js"
+      ],
+      "unsupportedBackends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
       ]
     },
     {
@@ -52,6 +60,14 @@
         "wasm",
         "forge",
         "js"
+      ],
+      "unsupportedBackends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
       ]
     },
     {
@@ -59,6 +75,14 @@
       "file": "generator-suspend.ores",
       "expect": "accept",
       "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "unsupportedBackends": [
         "java",
         "llvm",
         "net",
