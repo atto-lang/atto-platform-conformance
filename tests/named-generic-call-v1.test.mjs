@@ -3,10 +3,13 @@ import assert from 'node:assert/strict';
 import { readFile, realpath } from 'node:fs/promises';
 import { resolve, dirname, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { bind_generic_args, plan_named_call, evaluate_named_call, OMITTED } from '../lib/named-generic-call-v1.mjs';
+import { bind_generic_args as bind_generic_args_checked, plan_named_call, evaluate_named_call, OMITTED } from '../lib/named-generic-call-v1.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const backends = ['java', 'llvm', 'net', 'wasm', 'forge'];
+const DECL = 'pkg/v1:Box#public:g0';
+const bind_generic_args = (formals, actuals, options = {}) =>
+  bind_generic_args_checked(formals, actuals, { declarationIdentity: DECL, ...options });
 const formal = (name, optional = false) => ({ name, optional });
 const typ = (type, name = null) => ({ type, name });
 const value = (name = null) => ({ name });
@@ -147,4 +150,55 @@ test('invalid bindings cannot evaluate expressions', () => {
   const plan = plan_named_call([formal('a')], [value('a')]);
   assert.deepEqual(evaluate_named_call(plan, [() => ++invoked]), [1]);
   assert.equal(invoked, 1);
+});
+
+test('nominal identity and layout metadata fence AOT specialization cache keys', () => {
+  const f = [{ name: 'T' }];
+  const common = { metadataKeys: ['rank', 'storage'] };
+  const a = bind_generic_args(f, [typ('int')], {
+    ...common, declarationIdentity: 'pkg/v1:Box#public:g0',
+    layoutMetadata: { storage: 'heap', rank: 2 }
+  });
+  const reordered = bind_generic_args(f, [typ('int')], {
+    ...common, declarationIdentity: 'pkg/v1:Box#public:g0',
+    layoutMetadata: { rank: 2, storage: 'heap' }
+  });
+  const otherNominal = bind_generic_args(f, [typ('int')], {
+    ...common, declarationIdentity: 'pkg/v1:Vector#public:g0',
+    layoutMetadata: { rank: 2, storage: 'heap' }
+  });
+  const newGeneration = bind_generic_args(f, [typ('int')], {
+    ...common, declarationIdentity: 'pkg/v1:Box#public:g1',
+    layoutMetadata: { rank: 2, storage: 'heap' }
+  });
+  const newLayout = bind_generic_args(f, [typ('int')], {
+    ...common, declarationIdentity: 'pkg/v1:Box#public:g0',
+    layoutMetadata: { rank: 3, storage: 'heap' }
+  });
+  assert.equal(a.specializationKey, reordered.specializationKey);
+  for (const other of [otherNominal, newGeneration, newLayout])
+    assert.notEqual(a.specializationKey, other.specializationKey);
+  assert.throws(() => bind_generic_args_checked(f, [typ('int')]),
+    { code: 'invalid-generic-declaration-identity' });
+  assert.throws(() => bind_generic_args(f, [typ('int')], {
+    ...common, layoutMetadata: { unknown: true }
+  }), { code: 'unknown-layout-metadata' });
+  assert.throws(() => bind_generic_args(f, [typ('int')], {
+    ...common, layoutMetadata: { rank: NaN }
+  }), { code: 'invalid-layout-metadata' });
+  assert.throws(() => bind_generic_args(f, [typ('int')], {
+    ...common, inferred: []
+  }), { code: 'invalid-inferred-generic' });
+});
+
+test('shape-valid forged named plans cannot run user expressions', () => {
+  const checked = plan_named_call([formal('first'), formal('second')],
+    [value('second'), value('first')]);
+  const forged = { slotToSource: [1, 0], sourceToFormal: [1, 0] };
+  const trace = [];
+  assert.throws(() => evaluate_named_call(forged,
+    [() => trace.push('arg-1'), () => trace.push('arg-2')],
+    () => trace.push('receiver')), { code: 'invalid-execution-plan' });
+  assert.deepEqual(trace, []);
+  assert.deepEqual(evaluate_named_call(checked, [() => 2, () => 1]), [1, 2]);
 });
