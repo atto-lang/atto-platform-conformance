@@ -1,0 +1,8 @@
+// Negative: resizable backing storage cannot grow while an element/owner loan is live.
+pub fnc main(): int {
+  let mut Array<int> values = new Array<int>();
+  values.add(1);
+  let borrowed = rt borrow values;
+  values.add(2);
+  return borrowed.get(0);
+}

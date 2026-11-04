@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "contract": "scoped-locals-v1",
+  "status": "candidate-unattested",
+  "backendTargets": ["java", "llvm", "wasm", "forge", "net"],
+  "guestApi": {
+    "types": ["ActorLocal<T>", "ThreadLocal<T>", "RequestLocal<T>", "TaskLocal<T>"],
+    "naming": "snake_case operations, typed keys, compiler-minted declaration identity",
+    "candidateOperations": ["get_copy", "set", "remove", "with_value"],
+    "status": "proposed; no guest parser, lowering, or AOT implementation is asserted"
+  },
+  "scopes": {
+    "actor": {
+      "owner": "runtime+tenant+isolate+actor-id+incarnation-generation",
+      "lifetime": "admitted actor incarnation through completed physical teardown",
+      "migration": "persists across carrier migration, await, cooperate and actor turns",
+      "access": "actor-state critical-read/critical-write rules remain mandatory; storage does not bypass sealed state",
+      "inheritance": "never implicitly shared with other actors or restarted generations"
+    },
+    "thread": {
+      "owner": "physical OS thread or a specifically documented WASM worker",
+      "lifetime": "physical thread lifetime, not actor/task/request lifetime",
+      "migration": "not preserved across await or scheduler carrier migration",
+      "access": "host/FFI or explicitly thread-pinned effect only; forbidden as actor, request, task or tenant authority",
+      "inheritance": "no implicit propagation; carrier reuse can expose stale values unless host clears them"
+    },
+    "request": {
+      "owner": "trusted ingress+tenant+isolate+request-id+generation+authenticated actor-mail origin",
+      "lifetime": "request admission until logical revocation, with physical memory reclamation deferred until pinned children/borrows retire",
+      "migration": "persists across authenticated continuations and carrier migration",
+      "access": "bind to authenticated delivered mail and SourceTask origin, never actor-id/thread-local/callback provenance alone",
+      "inheritance": "no implicit inheritance to detached tasks or unrelated actor messages",
+      "limits": {"maxSlots": 32, "maxUtf8BytesPerValue": 1024, "maxTotalPayloadBytes": 8192},
+      "firstMailBinding": "one-shot transfer token binds to first admitted original actor-mail sequence from its supervisor; same bytes in later mail cannot reclaim it"
+    },
+    "task": {
+      "owner": "runtime+tenant+isolate+logical execution-id+generation",
+      "lifetime": "task admission through physical completion/get_done and owned continuation cleanup",
+      "migration": "persists across await, select, cooperate and carrier migration",
+      "access": "only current authenticated logical task generation",
+      "inheritance": "none by default; explicit child snapshots must be immutable Sendable copies with independent child ownership"
+    }
+  },
+  "crossCutting": {
+    "keyIdentity": "compiler-resolved declaration/module identity and instantiation type; neither guest integers nor foreign mutable aliases",
+    "readPolicy": "snapshot/copy or correctly scoped loan; no mutable reference crossing await/FFI/owner retirement",
+    "typePolicy": "compiler ownership and Sendable checks on any value crossing carriers/isolates; no untrusted host pointers or capabilities; strings must contain valid Unicode scalar values with no malformed surrogate/codepoint sequences",
+    "isolation": "tenant+isolate+runtime domains and generation checked before every operation",
+    "retirement": "revoke access before reclamation; do not run guest finalizers under storage locks or on arbitrary callbacks",
+    "capacity": "configurable bounded slots and bytes; exhaustion fails without partial mutation; hard-RT native profiles preallocate",
+    "security": "a storage handle, request id, ActorId, OS ThreadLocal, AsyncLocal, or callback payload is not authorization",
+    "aot": "compiler-generated static key/type descriptors; no runtime reflection or dynamic source compilation"
+  },
+  "scenarios": [
+    {"id": "actor-turn-and-carrier-migration", "scope": "actor", "kind": "guest-runtime"},
+    {"id": "actor-restart-generation-fence", "scope": "actor", "kind": "guest-runtime"},
+    {"id": "actor-multitenant-isolation", "scope": "actor", "kind": "guest-runtime"},
+    {"id": "actor-critical-read-write-gate", "scope": "actor", "kind": "compile-and-runtime"},
+    {"id": "thread-physical-thread-separation", "scope": "thread", "kind": "runtime"},
+    {"id": "thread-migration-not-promised", "scope": "thread", "kind": "guest-runtime"},
+    {"id": "thread-carrier-reuse-no-authority", "scope": "thread", "kind": "guest-runtime"},
+    {"id": "thread-unpinned-guest-rejected", "scope": "thread", "kind": "compile"},
+    {"id": "request-same-actor-two-overlapping-requests", "scope": "request", "kind": "guest-runtime"},
+    {"id": "request-before-after-await-authenticated", "scope": "request", "kind": "guest-runtime"},
+    {"id": "request-claim-token-bound-to-delivered-mail", "scope": "request", "kind": "guest-runtime"},
+    {"id": "request-first-admitted-mail-sequence-not-replay", "scope": "request", "kind": "guest-runtime"},
+    {"id": "request-generic-future-continuation-unbound", "scope": "request", "kind": "guest-runtime"},
+    {"id": "request-strict-utf8-per-value-total-bounds", "scope": "request", "kind": "compile-and-runtime"},
+    {"id": "request-detached-child-denied", "scope": "request", "kind": "guest-runtime"},
+    {"id": "request-cancel-vs-set-race", "scope": "request", "kind": "runtime"},
+    {"id": "request-physical-pin-reclamation", "scope": "request", "kind": "guest-runtime"},
+    {"id": "task-await-and-carrier-migration", "scope": "task", "kind": "guest-runtime"},
+    {"id": "task-child-default-noninheritance", "scope": "task", "kind": "guest-runtime"},
+    {"id": "task-explicit-inheritance-copy-isolated", "scope": "task", "kind": "guest-runtime"},
+    {"id": "task-cancel-get-done-lifetime", "scope": "task", "kind": "guest-runtime"},
+    {"id": "task-stale-continuation-generation", "scope": "task", "kind": "guest-runtime"},
+    {"id": "cross-scope-key-type-confusion-rejected", "scope": "all", "kind": "compile-and-runtime"},
+    {"id": "cross-scope-ownership-and-borrow-escape", "scope": "all", "kind": "compile"},
+    {"id": "cross-scope-quota-and-atomic-replacement", "scope": "all", "kind": "runtime"},
+    {"id": "cross-scope-tenant-isolate-revocation", "scope": "all", "kind": "guest-runtime"},
+    {"id": "cross-scope-no-host-privilege-escalation", "scope": "all", "kind": "guest-runtime"}
+  ],
+  "promotion": {
+    "hostUnitTestsAloneSufficient": false,
+    "guestSourceCheckingRequired": true,
+    "guestSourceExecutionRequired": true,
+    "aotArtifactExecutionRequired": true,
+    "sameScenarioIdsAcrossFiveBackends": true,
+    "exactHeadRequired": true,
+    "compilerExecutableSha256Required": true,
+    "runnerAssignmentAndExecutedJobStepsRequired": true,
+    "zeroStepWorkflowRunCountsAsEvidence": false,
+    "requestMalformedUnicodeMustFailWithoutMutation": true,
+    "requestTransferOriginalMailProofRequired": true,
+    "syntaxRejectionCountsAsParityPass": false,
+    "nativeSanitizerTargets": ["llvm", "forge"],
+    "browserWorkerTestRequired": true,
+    "noPrivateSourceMirroringWithoutIndependentAuthorization": true
+  }
+}

@@ -1,0 +1,6 @@
+pub fnc main(): void {
+  val owner = [10];
+  val lock = SharedMutex.new(owner);
+  owner.get(0);
+  return;
+}

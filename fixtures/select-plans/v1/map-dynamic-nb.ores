@@ -1,0 +1,20 @@
+pub fnc main(): void {
+  val Channel<int> data = Channel.new<int>(1);
+  val Channel<int> control = Channel.new<int>(1);
+  writech data, 33;
+  val DynamicSelectPlan<string> plan = DynamicSelectPlan.from_map(record{
+    control: SelectCase.read(control), data: SelectCase.read(data)
+  });
+  val bool removed = plan.remove("control");
+  plan.put("control", SelectCase.read(control));
+  val Future<Option<SelectResult>> pending = nb select first from plan;
+  val Option<SelectResult> winner = await pending;
+  stdio.stdout.write(removed);
+  stdio.stdout.write(":");
+  stdio.stdout.write(winner.unwrap().index);
+  stdio.stdout.write(":");
+  stdio.stdout.write(winner.unwrap().value);
+  stdio.stdout.write(":");
+  stdio.stdout.write(plan.version());
+  return;
+}

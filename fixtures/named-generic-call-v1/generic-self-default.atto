@@ -1,0 +1,6 @@
+fnc fixed<T=T>() -> int ::
+  return 42
+end
+fnc main() -> int ::
+  return fixed()
+end

@@ -35,6 +35,10 @@ host stubs mislabeled as compiler guests, repository/platform substitution, and
 target/physical claims without the required evidence. See
 [`docs/PLATFORM_CAPABILITY_PROMOTION.md`](docs/PLATFORM_CAPABILITY_PROMOTION.md).
 
+## Candidate state-container and virtual-actor declarations
+
+[`contracts/state-container-virtual-actor-v1.json`](contracts/state-container-virtual-actor-v1.json) records 20 proposed compile/runtime oracles for `define state container` and `define virtual actor`. All backend results are **NOT_EXECUTED**. The Node contract tests validate fixture completeness and evidence labels only; they do not compile or execute guest programs. The Java reference parser has a separate fail-closed admission branch pending actual ownership and virtual-activation lowering. `define grain` is not an accepted alias.
+
 ## Current deliverable
 
 - Versioned fixture manifest and minimal positive/negative .ores sources targeting **six compiler backends** (`java`, `llvm`, `net`, `wasm`, `forge`, `js`); this is a target inventory, not a parity claim.
@@ -162,6 +166,18 @@ probe; it does not prove six-backend parity, guest execution, runtime safety,
 trusted-code AOT, or CI provenance. Registering cases does not establish compiler or execution proof. See
 `tests/six-backend-admission.test.mjs` for regression coverage.
 
+## Parity batch 1: grammar, types, imports, ownership, HIR/MIR
+
+The [first-five parity inventory](docs/FIRST_FIVE_PARITY.md) tracks five
+source-compiler workstreams across Java, LLVM, .NET, Wasm and Forge. Run
+`npm run parity:first-five` to check the strict versioned manifest and print
+its SHA-256 fingerprint. `npm test` runs rejection controls for incomplete
+and falsely verified inventories. Both commands are **contract checks only**:
+no real compiler is run and neither command attests backend support.
+
+Use actual, pinned real compiler execution and independently verified CI
+provenance before changing backend support declarations. The source fixture
+smoke harness remains a separate, narrower test.
 
 ## Nominal enum hardening inventory (five backend target)
 
