@@ -8,8 +8,9 @@ the produced guest artifact digest.
 Receipt v2 adds the minimum cross-backend fields needed by
 `attolang.scalar-core.v1`:
 
-- `artifact_sha256` binds the produced guest artifact independently from the
-  compiler executable digest.
+- Every case that actually compiles carries its own `artifact_sha256`, binding
+  that case's produced guest artifact independently from the compiler digest.
+  A compile-rejected negative must not claim an artifact at all.
 - Positive cases record canonical signed-i64 `result_i64` and
   `expected_i64` plus an explicit result channel. The value contract is
   independent of whether the backend observes a native return, process exit,
