@@ -123,6 +123,23 @@ test("experimental i64 guest status cannot be represented as verified backend pa
     ["java", "llvm", "wasm", "net", "forge"].sort());
   for (const state of Object.values(spec.claimed_backend_guest_results))
     assert.equal(state, "NOT_EXECUTED");
+  // The LLVM integration draft now contains a newer host-only loan fix.
+  // Keep its exact blobs pinned without converting source-free smoke results
+  // into a checked-in CTest or backend guest execution claim.
+  const loan = spec.current_native_handle_loan;
+  assert.equal(loan.llvm_head_commit_sha,
+    "6206c678b29831aef57471e8d9700c9ac39f23c8");
+  assert.equal(loan.llvm_head_tree_sha,
+    "ec2036b463ed000efa1a3ee4d25a6bf7cd8a746a");
+  assert.equal(loan.native_header_blob_sha,
+    "6c61ac557c0d7be0d2c894486833fbb28918d521");
+  assert.equal(loan.native_test_blob_sha,
+    "31d0149b7b09cc1211af35f4cb42c30a36bae4c5");
+  assert.match(loan.scope, /host-only/);
+  assert.match(loan.local_source_free_api_shape_smoke, /NOT the checked-in/);
+  for (const key of ["exact_head_native_cpp20_ctest", "exact_head_native_asan_ubsan",
+                     "exact_head_production_compiler_guest", "five_backend_guest_parity"])
+    assert.equal(loan[key], "NOT_EXECUTED");
   assert.equal(spec.implementation_pr,
     "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1213");
   assert.deepEqual(spec.limits.operations, [
