@@ -105,6 +105,12 @@ function validateV2(report) {
           'process-exit cannot carry the full typed i64 result');
         check(Number.isSafeInteger(c.run_exit) && c.run_exit === Number(value),
           'process-exit result must match observed exit status');
+      } else if (c.run_exit !== undefined) {
+        // Native/stdout/export results are not process-exit values. A supplied
+        // nonzero process exit means the enclosing guest failed even when
+        // the receipt claims a matching typed i64 result.
+        check(Number.isSafeInteger(c.run_exit) && c.run_exit === 0,
+          'positive guest process exit');
       }
     } else {
       check(c.failure_stage === 'compile' || c.failure_stage === 'runtime', 'negative failure stage');
