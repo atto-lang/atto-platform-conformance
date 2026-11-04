@@ -23,6 +23,7 @@ function isText(v) { return typeof v === 'string' && v.length > 0 && v.length <=
 
 // JSON.parse accepts duplicate keys; reject them before policy inspection.
 export function parseStrictJSON(raw) {
+  if (Buffer.isBuffer(raw)) raw = new TextDecoder('utf-8', {fatal:true}).decode(raw);
   need(typeof raw === 'string' && Buffer.byteLength(raw, 'utf8') <= 131072, 'receipt exceeds 128 KiB');
   const data = JSON.parse(raw);
   let i = 0;
@@ -86,13 +87,14 @@ export function checkReceipt(r) {
   exactKeys(r.results, ['abiLinked','guestCompiled','guestExecuted','targetExecuted','hardwareExecuted','mainThreadSafe','negativeTestsPassed','outputSha256'], 'results');
   need(r.results.mainThreadSafe === true && r.results.negativeTestsPassed === true, 'native threading/security negatives must pass');
   need(typeof r.results.abiLinked === 'boolean' && typeof r.results.guestCompiled === 'boolean' && typeof r.results.guestExecuted === 'boolean' && typeof r.results.targetExecuted === 'boolean' && typeof r.results.hardwareExecuted === 'boolean', 'all capability booleans required');
-  if (r.stage !== 'reference-model') need(r.results.abiLinked === true, 'ABI link proof required');
+  if (r.stage === 'reference-model') need(r.results.abiLinked === false, 'host model must not claim native ABI link');
+  else need(r.results.abiLinked === true, 'ABI link proof required');
   if (stagesThatNeedGuest.has(r.stage)) {
     need(r.results.abiLinked && r.results.guestCompiled && r.results.guestExecuted && s256.test(r.results.outputSha256), 'real guest execution/output proof required');
     exactKeys(r.compiler, ['backend','sourceCommit','binarySha256'], 'compiler');
     need(r.compiler.backend === contract.initialTargets[r.target].compiler && s40.test(r.compiler.sourceCommit) && s256.test(r.compiler.binarySha256), 'compiler source and binary provenance required');
   } else {
-    need(r.results.guestCompiled === false && r.results.guestExecuted === false && r.compiler === undefined, 'host-only stages cannot claim compiler guest');
+    need(r.results.guestCompiled === false && r.results.guestExecuted === false && r.compiler === undefined && r.results.outputSha256 === undefined, 'host-only stages cannot claim compiler guest');
   }
   if (stagesThatNeedTarget.has(r.stage)) {
     need(r.results.targetExecuted === true, 'target runtime execution required');
@@ -107,7 +109,7 @@ export function checkReceipt(r) {
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   try {
     need(process.argv.length === 3, 'usage: node bin/verify-atto-xp-receipt.mjs <receipt.json>');
-    const obj = parseStrictJSON(readFileSync(process.argv[2], 'utf8'));
+    const obj = parseStrictJSON(readFileSync(process.argv[2]));
     const result = checkReceipt(obj);
     console.log(JSON.stringify(result));
   } catch (e) {
