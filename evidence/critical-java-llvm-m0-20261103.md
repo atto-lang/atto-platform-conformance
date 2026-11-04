@@ -96,8 +96,8 @@ independent conflict review:
 
 **29/29 source-structure assertions** matched the intended current branch
 changes. These are not CTest or guest-execution receipts. Exact-head source
-organization [LLVM run #41766092048]
-(https://github.com/ores-truffle-oreslang/oreslang-source.llvm/actions/runs/41766092048)
+organization [LLVM run #41766324465]
+(https://github.com/ores-truffle-oreslang/oreslang-source.llvm/actions/runs/41766324465)
 still failed without allocating a runner (`steps=null`, `NOT_EXECUTED`).
 
 A distinct **source-free** C++17 proof did execute in the alternate
@@ -114,3 +114,6 @@ receipt, never the LLVM source build receipt or permission for private mirroring
 numerically approved carrier allowlist absent; no genuine LLVM critical guest
 lowering/execution, JUnit, native codegen, sanitizers against the source
 head, or `42`/`returned` native critical guest parity can be claimed.
+
+
+The latest exact LLVM head `a94d61807e6eb7800cfa1e9ca2a7f25c4cce8004` has native/compiler workflow #41766324465 failing with zero steps and no runner. This is NOT_EXECUTED, while source-free alternate run #41765967238 has seven executed sanitizer toolchain steps.
