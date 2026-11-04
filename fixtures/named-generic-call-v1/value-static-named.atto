@@ -1,0 +1,8 @@
+define class MathBox as
+  static fnc join(int a, int b) -> int ::
+    return a + b
+  end
+end
+fnc main() -> int ::
+  return MathBox.join(b: 2, a: 40)
+end

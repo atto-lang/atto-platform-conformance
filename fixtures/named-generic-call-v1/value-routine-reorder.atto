@@ -2,5 +2,5 @@ routine encode(int first, int second) -> int ::
   return first * 10 + second
 end
 fnc main() -> int ::
-  return encode(second: 2, first: 1)
+  return encode(second: 2, first: 4)
 end
