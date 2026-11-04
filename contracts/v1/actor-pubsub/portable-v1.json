@@ -25,7 +25,8 @@
     "transport": "redis and network only via adapter; not core guest language",
     "receipt": "admission only, never consumer ack",
     "publisher_authority": "group-scoped try_publish requires the exact active immutable GroupMembership capability; anonymous, wrong-group, cross-broker, departed, retired, and closed grants rejected",
-    "subscription_authority": "group-scoped topic subscription requires an active member actor or its own group; group leave closes direct scoped subscriptions; rejoin requires new grant"
+    "subscription_authority": "group-scoped topic subscription requires an active member actor or its own group; group leave closes direct scoped subscriptions; rejoin requires new grant",
+    "actor_group_registry_quotas": "Reference broker explicitly bounds registered actor incarnation identities (maxActors default 4096) and group authority identities (maxGroups default 1024); stopped actors and closed groups retain tombstones and do not release identity quota, preventing stale-key authority reuse. This is a SOURCE_ONLY oracle contract, not proven backend admission or execution."
   },
   "action_format": "array whose first element is operation; expected observes errors and delivery envelopes",
   "cases": [
