@@ -29,7 +29,9 @@
       "lifetime": "request admission until logical revocation, with physical memory reclamation deferred until pinned children/borrows retire",
       "migration": "persists across authenticated continuations and carrier migration",
       "access": "bind to authenticated delivered mail and SourceTask origin, never actor-id/thread-local/callback provenance alone",
-      "inheritance": "no implicit inheritance to detached tasks or unrelated actor messages"
+      "inheritance": "no implicit inheritance to detached tasks or unrelated actor messages",
+      "limits": {"maxSlots": 32, "maxUtf8BytesPerValue": 1024, "maxTotalPayloadBytes": 8192},
+      "firstMailBinding": "one-shot transfer token binds to first admitted original actor-mail sequence from its supervisor; same bytes in later mail cannot reclaim it"
     },
     "task": {
       "owner": "runtime+tenant+isolate+logical execution-id+generation",
@@ -42,7 +44,7 @@
   "crossCutting": {
     "keyIdentity": "compiler-resolved declaration/module identity and instantiation type; neither guest integers nor foreign mutable aliases",
     "readPolicy": "snapshot/copy or correctly scoped loan; no mutable reference crossing await/FFI/owner retirement",
-    "typePolicy": "compiler ownership and Sendable checks on any value crossing carriers/isolates; no untrusted host pointers or capabilities",
+    "typePolicy": "compiler ownership and Sendable checks on any value crossing carriers/isolates; no untrusted host pointers or capabilities; strings must contain valid Unicode scalar values with no malformed surrogate/codepoint sequences",
     "isolation": "tenant+isolate+runtime domains and generation checked before every operation",
     "retirement": "revoke access before reclamation; do not run guest finalizers under storage locks or on arbitrary callbacks",
     "capacity": "configurable bounded slots and bytes; exhaustion fails without partial mutation; hard-RT native profiles preallocate",
@@ -61,6 +63,9 @@
     {"id": "request-same-actor-two-overlapping-requests", "scope": "request", "kind": "guest-runtime"},
     {"id": "request-before-after-await-authenticated", "scope": "request", "kind": "guest-runtime"},
     {"id": "request-claim-token-bound-to-delivered-mail", "scope": "request", "kind": "guest-runtime"},
+    {"id": "request-first-admitted-mail-sequence-not-replay", "scope": "request", "kind": "guest-runtime"},
+    {"id": "request-generic-future-continuation-unbound", "scope": "request", "kind": "guest-runtime"},
+    {"id": "request-strict-utf8-per-value-total-bounds", "scope": "request", "kind": "compile-and-runtime"},
     {"id": "request-detached-child-denied", "scope": "request", "kind": "guest-runtime"},
     {"id": "request-cancel-vs-set-race", "scope": "request", "kind": "runtime"},
     {"id": "request-physical-pin-reclamation", "scope": "request", "kind": "guest-runtime"},
@@ -85,6 +90,8 @@
     "compilerExecutableSha256Required": true,
     "runnerAssignmentAndExecutedJobStepsRequired": true,
     "zeroStepWorkflowRunCountsAsEvidence": false,
+    "requestMalformedUnicodeMustFailWithoutMutation": true,
+    "requestTransferOriginalMailProofRequired": true,
     "syntaxRejectionCountsAsParityPass": false,
     "nativeSanitizerTargets": ["llvm", "forge"],
     "browserWorkerTestRequired": true,
