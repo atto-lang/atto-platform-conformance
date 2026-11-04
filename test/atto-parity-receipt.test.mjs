@@ -210,3 +210,23 @@ test('v1/v2 reject C1 and Unicode diagnostic line-spoofing while preserving LF',
     assert.equal(validateParityReceipt(r).publicly_promotable,false);
   }
 });
+
+test('positive typed i64 cannot conceal failed guest process status',()=>{
+  for(const channel of ['stdout','wasm-export','native-return','host-call']){
+    for(const invalidExit of [-1,1,42,124,125,127,139,255,NaN,Infinity,1.5]){
+      const r=v2();
+      r.cases[0].result_channel=channel;
+      r.cases[0].run_exit=invalidExit;
+      assert.throws(()=>validateParityReceipt(r),/positive guest process exit/,
+        channel+' run_exit='+String(invalidExit));
+    }
+    const valid=v2();
+    valid.cases[0].result_channel=channel;
+    valid.cases[0].run_exit=0;
+    assert.equal(validateParityReceipt(valid).publicly_promotable,false);
+  }
+  const exitResult=v2();
+  exitResult.cases[0].result_channel='process-exit';
+  exitResult.cases[0].run_exit=42;
+  assert.equal(validateParityReceipt(exitResult).case_count,3);
+});
