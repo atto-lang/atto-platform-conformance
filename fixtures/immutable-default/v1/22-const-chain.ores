@@ -1,0 +1,1 @@
+fnc main(): int { const int a = 3; const b = a * 2; return b + 1; }
