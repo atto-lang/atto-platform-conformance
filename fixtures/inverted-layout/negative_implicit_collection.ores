@@ -1,0 +1,9 @@
+// EXPECT-COMPILE-ERROR: Array<InvertedStruct> is not an inverted owner.
+define inverted struct Row as
+    float x;
+end
+
+fnc main(): int {
+    let rows = Array<Row>();
+    return 0;
+}

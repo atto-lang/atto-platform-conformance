@@ -1,0 +1,249 @@
+{
+  "schemaVersion": 1,
+  "name": "mixed-width-ecs-physical-v1",
+  "status": "REFERENCE_ONLY_NOT_GUEST_CERTIFIED",
+  "fields": [
+    {
+      "name": "id",
+      "type": "u32"
+    },
+    {
+      "name": "x",
+      "type": "f64"
+    },
+    {
+      "name": "flag",
+      "type": "bool"
+    },
+    {
+      "name": "next",
+      "type": "ref32"
+    }
+  ],
+  "rows": [
+    {
+      "id": 4294967295,
+      "xBits": "8000000000000000",
+      "flag": true,
+      "next": 0
+    },
+    {
+      "id": 9,
+      "xBits": "3ff4000000000000",
+      "flag": false,
+      "next": 1
+    },
+    {
+      "id": 10,
+      "xBits": "4045400000000000",
+      "flag": true,
+      "next": 4294967295
+    }
+  ],
+  "layouts": [
+    {
+      "layout": "aos",
+      "capacity": 3,
+      "options": {},
+      "segmentBytes": [
+        72
+      ],
+      "segmentBases": [
+        0
+      ],
+      "allocationBytes": 72,
+      "probes": [
+        [
+          0,
+          "id",
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          "x",
+          0,
+          32,
+          32
+        ],
+        [
+          2,
+          "next",
+          0,
+          68,
+          68
+        ],
+        [
+          2,
+          "flag",
+          0,
+          64,
+          64
+        ]
+      ]
+    },
+    {
+      "layout": "soa",
+      "capacity": 3,
+      "options": {},
+      "segmentBytes": [
+        12,
+        24,
+        3,
+        12
+      ],
+      "segmentBases": [
+        0,
+        16,
+        40,
+        44
+      ],
+      "allocationBytes": 56,
+      "probes": [
+        [
+          0,
+          "id",
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          "x",
+          1,
+          8,
+          24
+        ],
+        [
+          2,
+          "next",
+          3,
+          8,
+          52
+        ],
+        [
+          2,
+          "flag",
+          2,
+          2,
+          42
+        ]
+      ]
+    },
+    {
+      "layout": "aosoa",
+      "capacity": 5,
+      "options": {
+        "tileWidth": 4
+      },
+      "segmentBytes": [
+        144
+      ],
+      "segmentBases": [
+        0
+      ],
+      "allocationBytes": 144,
+      "probes": [
+        [
+          0,
+          "id",
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          "x",
+          0,
+          24,
+          24
+        ],
+        [
+          2,
+          "next",
+          0,
+          60,
+          60
+        ],
+        [
+          4,
+          "flag",
+          0,
+          120,
+          120
+        ]
+      ]
+    },
+    {
+      "layout": "soaos",
+      "capacity": 3,
+      "options": {
+        "groups": [
+          [
+            "id",
+            "flag"
+          ],
+          [
+            "x",
+            "next"
+          ]
+        ]
+      },
+      "segmentBytes": [
+        24,
+        48
+      ],
+      "segmentBases": [
+        0,
+        24
+      ],
+      "allocationBytes": 72,
+      "probes": [
+        [
+          0,
+          "id",
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          "x",
+          1,
+          16,
+          40
+        ],
+        [
+          2,
+          "next",
+          1,
+          40,
+          64
+        ],
+        [
+          2,
+          "flag",
+          0,
+          20,
+          20
+        ]
+      ]
+    }
+  ],
+  "format": {
+    "endianness": "little",
+    "rowProbe": [
+      "row",
+      "field",
+      "segment",
+      "offsetWithinSegment",
+      "absoluteByteOffset"
+    ],
+    "fieldAlignment": "natural",
+    "segmentBaseAlignment": "max field alignment within segment",
+    "paddingBytesMustBeZeroOnCreate": true,
+    "ref32": "encoded unsigned word only; never a dereference capability",
+    "f64": "IEEE754 binary64 represented as 16 lowercase hex digits in xBits"
+  }
+}

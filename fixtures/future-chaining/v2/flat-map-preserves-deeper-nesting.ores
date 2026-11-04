@@ -1,0 +1,13 @@
+pub async fnc seed(): int { return 21; }
+pub async fnc double_it(int number): int { return number * 2; }
+
+pub suspends fnc main(): void {
+    val Future<Future<int>> nested = seed().flat_map(|int number| -> {
+        return double_it(number).map(|int doubled| -> {
+            return double_it(doubled);
+        });
+    });
+    val Future<int> inner = await nested;
+    stdio.stdout.write(await inner);
+    return;
+}

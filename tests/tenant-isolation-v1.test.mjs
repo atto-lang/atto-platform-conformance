@@ -1,4 +1,5 @@
-// Source-free host-policy reference model. This does NOT execute real .ores
+// SUPERSEDED by tenant-isolation-v2 (shared OS process, one VM-isolate per
+// tenant). Kept as history. Source-free host-policy reference model. This does NOT execute real .ores
 // actors or prove physical isolation on Java/LLVM/Wasm/Cranelift/.NET/Forge/JS.
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -26,8 +27,8 @@ class TenantReference {
     return e;
   }
   create(id, {untrusted = false, boundary = "trusted-inprocess"} = {}) {
-    if (typeof id !== "string" || id === "." || id === ".." ||
-        !/^[A-Za-z0-9_.-]{1,128}$/.test(id)) throw Error("INVALID_ID");
+    if (typeof id !== "string" || !/^[A-Za-z0-9_.-]{1,128}$/.test(id) ||
+        id === "." || id === "..") throw Error("INVALID_ID");
     if (typeof untrusted !== "boolean") throw Error("INVALID_TRUST_FLAG");
     if (typeof boundary !== "string") throw Error("INVALID_BOUNDARY");
     // Never downgrade an explicit request for a stronger security domain.
@@ -92,11 +93,15 @@ const fails=(f,why)=>assert.throws(f,new RegExp(why));
 
 test("manifest enumerates actual backends and refuses promotional security claims",()=>{
   assert.equal(contract.schema,"oreslang.tenant-isolation.v1");
-  assert.equal(contract.status,"SOURCE_FREE_REFERENCE_NOT_BACKEND_EXECUTION");
+  // v1 is kept as history; tenant-isolation-v2 is the live contract.
+  assert.equal(contract.status,"SUPERSEDED_BY_V2");
+  assert.equal(contract.supersededBy,"oreslang.tenant-isolation.v2");
   assert.deepEqual(contract.design.identity,["tenantId","generation","opaqueHostAuthority"]);
+  assert.match(contract.design.tenant_id_validation,/excluding reserved path components/);
   assert.match(contract.design.root_authority,/matching tenant ID and numeric generation/);
   assert.deepEqual(Object.keys(contract.backendProfiles).sort(),["cranelift","forge","java","js","llvm","net","wasm"]);
   assert.ok(contract.requiredScenarios.includes("exact-pr-tree-nonzero-step-ci-evidence"));
+  assert.ok(contract.requiredScenarios.includes("neighbor-survives-tenant-trap-and-reincarnation"));
   assert.match(contract.backendProfiles.cranelift.draft,/scalar native JIT/);
   assert.match(contract.backendProfiles.cranelift.currentGuarantee,/not an actor IsolateVM/);
   for (const caseName of [
@@ -153,6 +158,8 @@ test("duplicate and aggregate admissions are bounded",()=>{
   fails(()=>vm.create("tenant"),"DUPLICATE_TENANT");
   fails(()=>vm.create("other"),"TENANT_QUOTA");
   fails(()=>vm.create("../bad"),"INVALID_ID");
+  fails(()=>vm.create("."),"INVALID_ID");
+  fails(()=>vm.create(".."),"INVALID_ID");
 });
 test("dot path-components never become tenant IDs on any backend",()=>{
   const vm = new TenantReference({maxTenants:1});
@@ -204,6 +211,37 @@ test("execution failure quarantines tenant and restart restores fresh state",asy
   vm.stop(h);vm.destroy(h);
   const newH=vm.create("tenant");vm.start(newH);
   assert.equal(await vm.invoke(newH,()=>1),1);
+});
+
+test("failed tenant cannot poison healthy neighbor and reincarnation resets only failed state",async()=>{
+  const root=new TenantReference({maxTenants:2});
+  const healthy=root.create("healthy");
+  const failed=root.create("failing");
+  root.start(healthy);root.start(failed);
+  assert.equal(await root.invoke(healthy,()=>1),1);
+  assert.equal(await root.invoke(failed,()=>4),4);
+
+  await assert.rejects(root.invoke(failed,async()=>{
+    throw Error("GUEST_TRAP");
+  }),/GUEST_TRAP/);
+  assert.equal(root.snapshot(failed).phase,"quiescing");
+  await assert.rejects(root.invoke(failed,()=>1),/ADMISSION_CLOSED/);
+  assert.equal(root.snapshot(healthy).phase,"running");
+  assert.equal(await root.invoke(healthy,()=>1),2,
+    "failure of one incarnation may not interrupt another tenant's progress");
+
+  root.stop(failed);root.destroy(failed);
+  fails(()=>root.snapshot(failed),"STALE_TENANT_HANDLE");
+  const fresh=root.create("failing");
+  root.start(fresh);
+  assert.notEqual(fresh.epoch,failed.epoch);
+  assert.equal(await root.invoke(fresh,()=>1),1,
+    "reincarnated failed tenant must start with clean state");
+  assert.equal(await root.invoke(healthy,()=>1),3,
+    "healthy tenant must retain its state after neighbor's reincarnation");
+  await assert.rejects(root.invoke(failed,()=>99),/STALE_TENANT_HANDLE/);
+  root.shutdown(fresh);root.stop(fresh);root.destroy(fresh);
+  root.shutdown(healthy);root.stop(healthy);root.destroy(healthy);
 });
 
 test("resource leases are host-owned and foreign or replayed releases are refused",()=>{

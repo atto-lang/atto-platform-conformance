@@ -1,5 +1,9 @@
 # Tenant IsolateVM parity promotion audit — 2026-11-01
 
+**Historical snapshot:** superseded by tenant-isolation-v2 on 2026-11-03.
+The current contract uses one VM-isolate per tenant in a shared OS process;
+the per-tenant process requirements below are historical, not current policy.
+
 **Evidence classification: DRAFT / NOT EXECUTED in source-org Actions.** This
 snapshot is a tracking aid, not a certificate of backend conformance, hostile
 tenant sandboxing or hard-real-time scheduling. Do not infer success from

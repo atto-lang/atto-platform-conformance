@@ -1,0 +1,20 @@
+fnc left(int remaining): int {
+  if remaining == 0; do
+    return 0;
+  else
+    return 1 + right(remaining - 1);
+  fi
+}
+
+fnc right(int remaining): int {
+  if remaining == 0; do
+    return 0;
+  else
+    return 1 + left(remaining - 1);
+  fi
+}
+
+pub routine main(): void {
+  stdio.stdout.write(left(100000));
+  return;
+}

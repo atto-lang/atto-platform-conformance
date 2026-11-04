@@ -1,0 +1,2 @@
+fnc identity(int value): int { return value; }
+pub fnc main(): int { return identity(7); }

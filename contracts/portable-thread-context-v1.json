@@ -1,0 +1,378 @@
+{
+  "version": 1,
+  "name": "portable-thread-context-v1",
+  "status": "candidate-not-executed",
+  "backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "forge",
+    "net"
+  ],
+  "expectedEvidence": "NOT_EXECUTED",
+  "api": [
+    "Thread.spawn",
+    "JoinHandle.join_async",
+    "JoinHandle.join_blocking",
+    "ThreadLocal",
+    "TaskLocal",
+    "ActorLocal"
+  ],
+  "proofRequired": [
+    "exact-source-tree-sha",
+    "typed-capture-send-sync-check",
+    "physical-os-thread-start",
+    "physical-join-and-tls-drop",
+    "task-and-actor-migration",
+    "cancel-and-shutdown-races",
+    "no-guest-artifact-on-rejected-capture",
+    "real-compiler-and-runtime-logs"
+  ],
+  "cases": [
+    {
+      "id": "thread.spawn_join",
+      "kind": "runtime",
+      "expect": "accept",
+      "source": "let h = Thread.spawn(ThreadOptions.default(), rt take || -> int { return 42; })?;\nreturn await h.join_async()?;",
+      "oracle": "returns-42-on-physical-os-thread",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "thread.two_separate_tls",
+      "kind": "runtime",
+      "expect": "accept",
+      "source": "let key = ThreadLocal.key<int>();\n// In two independent threads set key to different values, join and compare.",
+      "oracle": "no-cross-thread-leak",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "thread.tls_exactly_once_drop",
+      "kind": "runtime",
+      "expect": "accept",
+      "source": "// ThreadLocal.set(Box<T>) in Thread; join and verify T drops once.",
+      "oracle": "exactly-once-drop-before-join",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "thread.join_waiter_cancel",
+      "kind": "runtime",
+      "expect": "accept",
+      "source": "// Cancel first join_async waiter while OS Thread runs; second await must join.",
+      "oracle": "cancel-waiter-does-not-consume-join",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "thread.unsupported_host",
+      "kind": "runtime",
+      "expect": "accept",
+      "source": "// Spawn on host with no genuine OS threads.",
+      "oracle": "UnsupportedCapability-no-task-fallback",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "thread.no_actor_state_capture",
+      "kind": "compile",
+      "expect": "reject",
+      "diagnosticClass": "thread_capture_actor_state",
+      "source": "// Within actor critical-read scope:\nThread.spawn(ThreadOptions.default(), || -> int { return s.count; });",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "thread.no_borrow_capture",
+      "kind": "compile",
+      "expect": "reject",
+      "diagnosticClass": "thread_capture_borrow",
+      "source": "let x = rt borrow local;\nThread.spawn(ThreadOptions.default(), || -> int { return x; });",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "thread.no_rc_capture",
+      "kind": "compile",
+      "expect": "reject",
+      "diagnosticClass": "thread_capture_non_send",
+      "source": "let Rc<int> x = Rc.new(4);\nThread.spawn(ThreadOptions.default(), rt take || -> int { return x.value; });",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "thread.box_send_move",
+      "kind": "runtime",
+      "expect": "accept",
+      "source": "let Box<int> x = Box.new(4);\nlet h = Thread.spawn(ThreadOptions.default(), rt take || -> int { return x.value; })?;",
+      "oracle": "unique-move-no-double-drop",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "thread.box_use_after_move",
+      "kind": "compile",
+      "expect": "reject",
+      "diagnosticClass": "use_after_take",
+      "source": "let Box<int> x = Box.new(3);\nlet h = Thread.spawn(ThreadOptions.default(), rt take || -> int { return x.value; })?;\nreturn x.value;",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "thread.arc_unsync_mut",
+      "kind": "compile",
+      "expect": "reject",
+      "diagnosticClass": "shared_mutation_without_guard",
+      "source": "// Arc<MutableState> without Mutex or RwLock must not grant write access.",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "thread.dyn_requires_send",
+      "kind": "compile",
+      "expect": "reject",
+      "diagnosticClass": "dyn_missing_send_bound",
+      "source": "let Box<dyn Handler> h = make_handler();\nThread.spawn(ThreadOptions.default(), rt take || -> void { h.run(); });",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "thread.dyn_send_accept",
+      "kind": "compile",
+      "expect": "accept",
+      "source": "let Box<dyn Handler + Send> h = make_handler();\nlet j = Thread.spawn(ThreadOptions.default(), rt take || -> void { h.run(); });",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "thread.threadlocal_in_migrating_task",
+      "kind": "compile",
+      "expect": "reject",
+      "diagnosticClass": "thread_local_in_migratable_task",
+      "source": "let f = task { ThreadLocal.get(key); };",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "task.local_survives_migration",
+      "kind": "runtime",
+      "expect": "accept",
+      "source": "// Bind TaskLocal key; await across carrier change; value remains unchanged.",
+      "oracle": "logical-task-stability",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "task.local_scoped_restore",
+      "kind": "runtime",
+      "expect": "accept",
+      "source": "// Bind outer then inner TaskLocal value, unwind on raise/defer, restore outer.",
+      "oracle": "lexical-scope-restoration",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "task.no_implicit_local_inheritance",
+      "kind": "runtime",
+      "expect": "accept",
+      "source": "// Task child starts with empty local map unless explicit snapshot was provided.",
+      "oracle": "no-unintended-inheritance",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "actor.local_survives_migration",
+      "kind": "runtime",
+      "expect": "accept",
+      "source": "// ActorLocal survives carrier change and remains isolated per actor id.",
+      "oracle": "logical-actor-stability",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "actor.no_independent_task_state",
+      "kind": "compile",
+      "expect": "reject",
+      "diagnosticClass": "actor_state_authority_escape",
+      "source": "// Independent task accessing ActorLocal of parent actor is rejected.",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "container.no_shared_local_alias",
+      "kind": "compile",
+      "expect": "reject",
+      "diagnosticClass": "owner_domain_escape",
+      "source": "// Thread-owned StateContainer<T> cannot be accessed by another thread without explicit synchronized share authority.",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "runtime.shutdown_join_and_quiesce",
+      "kind": "runtime",
+      "expect": "accept",
+      "source": "// Structured scope cancels, waits physical exit, runs TLS finalizers, joins, then releases actor/task arenas.",
+      "oracle": "no-detached-threads-or-use-after-free",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "thread.named_entry_aot",
+      "kind": "compile",
+      "expect": "accept",
+      "source": "// Candidate API: a statically reachable, non-suspending function with one owned Send argument.\nfnc calculate(Box<int> value): int { return value.value; }\nlet h = thread.spawn(calculate, rt take Box.new(42), ThreadOptions.default())?;",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    },
+    {
+      "id": "thread.dynamic_entry_rejected",
+      "kind": "compile",
+      "expect": "reject",
+      "diagnosticClass": "thread_entry_not_static",
+      "source": "// Dynamic callable with unknown target and captured runtime environment is not a static AOT entry.\nlet Fnc<int> callback = resolve_runtime_callable();\nlet handle = Thread.spawn(ThreadOptions.default(), callback);",
+      "evidence": "NOT_EXECUTED",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ]
+    }
+  ],
+  "threadEntryAbi": "AOT_RESOLVED_NAMED_OR_COMPILER_SYNTHESIZED_NON_SUSPENDING_ENTRY",
+  "closureEntry": "OWNED_SEND_STATIC_COMPILE_TIME_CAPTURE_LOWERING_ONLY"
+}
