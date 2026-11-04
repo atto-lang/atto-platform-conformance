@@ -27,14 +27,14 @@
       "m1Descriptor": {
         "status": "LOCAL_HOST_HELPER_AND_ELF_LINKER_ONLY",
         "pr": 1364,
-        "head": "765830aef05fde697a999784601012525746d3de",
-        "tree": "a014ec76e4eb6fe9652d4a51dcf2036164acb54e",
-        "assertionsPerCompiler": 31,
+        "head": "9ce1d78fa9c829d603862e02d608fa7799fe9e36",
+        "tree": "0119642c9510f8c64d790b2ac73e49aab699ee34",
+        "assertionsPerCompiler": 35,
         "compilers": [
           "gcc-14.2",
           "clang-17"
         ],
-        "hostedWorkflowRun": 41765646913,
+        "hostedWorkflowRun": 41766939627,
         "hostedExecutedSteps": 0,
         "compilerDriverExecution": "NOT_EXECUTED",
         "guestNativeExecution": "NOT_EXECUTED",
@@ -44,9 +44,15 @@
           "clang-optimized",
           "clang-asan-ubsan"
         ],
-        "localElfLinkerCanary": "PASSED_SOURCE_FREE_LLVM_IR_ONLY",
-        "elfRetention": "llvm.used + .atto.mcp.v1 under --gc-sections",
-        "embeddedDescriptorProof": "NOT_EXECUTED"
+        "localElfLinkerCanary": "PASSED_READ_ONLY_PLUS_WRITABLE_MUTATION_SOURCE_FREE",
+        "elfRetention": "llvm.used + read-only allocated .atto.mcp.v1 under --gc-sections",
+        "embeddedDescriptorProof": "NOT_EXECUTED",
+        "evidenceLimitations": [
+          "full LLVM source checkout unavailable to local container",
+          "no compiled oreslang-llvmc binary",
+          "no .atto/.ores guest binary runtime execution",
+          "source Actions runner_id=0 steps=[]"
+        ]
       },
       "guestParity": "NOT_EXECUTED",
       "liveMcpTransport": "NOT_IMPLEMENTED",
