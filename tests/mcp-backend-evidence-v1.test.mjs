@@ -80,3 +80,20 @@ test("compiler-backed AOT receipt is not promoted without runner-backed guest ex
  assert.equal(v.guestNativeExecution,"NOT_EXECUTED");
  assert.equal(data.backends.llvm.guestParity,"NOT_EXECUTED");
 });
+
+test("LLVM AOT receipt verifier cannot promote source-free tests to guest parity",()=>{
+ const m=data.backends.llvm.m1Descriptor;
+ const v=m.receiptVerifier;
+ assert.equal(v.classification,"LOCAL_SOURCE_FREE_RECEIPT_FORMAT_TEST_ONLY");
+ assert.equal(v.assertions,29);
+ assert.equal(v.standalonePassed,true);
+ assert.equal(v.syntaxAndShapeOnly,true);
+ assert.equal(v.hostedVerification,"NOT_EXECUTED");
+ assert.equal(m.currentSourceSteps,0);
+ assert.equal(m.compilerGuestReceipt.status,"NOT_EXECUTED");
+ assert.equal(m.guestNativeExecution,"NOT_EXECUTED");
+ assert.match(v.fileBlob,hex40);
+ assert.match(v.testBlob,hex40);
+ assert.equal(v.expectedHead,m.currentHead);
+ assert.equal(v.expectedTree,m.currentTree);
+});

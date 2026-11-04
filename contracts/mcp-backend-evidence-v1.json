@@ -65,9 +65,9 @@
           "compiler-backed native guest output O0 and O2 for atto and ores",
           "source-free O0/O2 retention and negative writable mutation"
         ],
-        "currentHead": "dccc61bc882e5bc7131c6707c8c473e33d1b8a82",
-        "currentTree": "4b9e4b3af1b4cdaeddcb0e9e3885c8ce6ae9b8c8",
-        "currentSourceRun": 41773605140,
+        "currentHead": "82b18efba685e441efd3e98d7f45c82bfce1f1ae",
+        "currentTree": "6b41e5fc0d6b46db5f645634b1325f761fda95ef",
+        "currentSourceRun": 41774426187,
         "currentSourceSteps": 0,
         "fullMergedSourceNotExecuted": true,
         "checkedBlobs": {
@@ -98,6 +98,18 @@
           ],
           "descriptorMustMatchCompilerMetadataBytes": true,
           "onlyUploadAfterSuccessfulNativeExecution": true
+        },
+        "receiptVerifier": {
+          "classification": "LOCAL_SOURCE_FREE_RECEIPT_FORMAT_TEST_ONLY",
+          "expectedHead": "82b18efba685e441efd3e98d7f45c82bfce1f1ae",
+          "expectedTree": "6b41e5fc0d6b46db5f645634b1325f761fda95ef",
+          "assertions": 29,
+          "standalonePassed": true,
+          "fileBlob": "0dace5b96f1af5c2c7ef2e765d5ca09f0c1ba8e4",
+          "testBlob": "7d98976fd4ae4fce30f80d9d4185aacb275e3e80",
+          "requiredAfterCompilerExecution": true,
+          "hostedVerification": "NOT_EXECUTED",
+          "syntaxAndShapeOnly": true
         }
       },
       "guestParity": "NOT_EXECUTED",
