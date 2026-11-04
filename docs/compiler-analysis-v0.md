@@ -18,8 +18,12 @@ be certified effect-free.
 
 LLVM candidate: [native --analyze PR #1375](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1375).
 Formatter discovery: [PR #109](https://github.com/ores-truffle-oreslang/oreslang-format/pull/109).
-Java still has `--check` and `--build-analysis`, which are not equivalent
-to `--analyze`. No actual cross-backend diagnostic equivalence is established.
+Java/GraalVM now has a draft `--analyze` implementation in
+[PR #2518](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2518);
+it is not yet compiled or differentially executed at the exact head.
+Neither Java's earlier `--check` nor `--build-analysis` by itself was
+equivalent to this analysis interface. No actual cross-backend diagnostic
+equivalence is established.
 
 ## Runnable evidence
 
@@ -39,7 +43,8 @@ on the same file, compares exact exit status and stdout, and confirms no
 source mutation or output artifacts. Absent either executable, the test
 skips and **establishes no LLVM-to-formatter parity**.
 
-The included recursive and unresolved-effect fixtures are deliberately
+The eight included fixtures cover scalar, bool, argument and transitive
+unknown cases. The recursive and unresolved-effect fixtures are deliberately
 fail-closed: a source rejection is acceptable evidence of rejection, not
 evidence of successful typed effect analysis. Subsequent promotion must
 require corresponding actual `status=inconclusive` receipts and typed
