@@ -5,6 +5,9 @@ on:
       - 'contracts/atto-source-v1/**'
       - 'scripts/verify-atto-source-v1.mjs'
       - 'tests/atto-source-v1.test.mjs'
+      - 'tests/atto-scalar19-candidates.test.mjs'
+      - 'scripts/verify-atto-scalar19-candidates.mjs'
+      - 'docs/ATTO_SCALAR_19_PARITY_CANDIDATES.md'
       - '.github/workflows/atto-source-v1.yml'
   push:
     branches:
@@ -35,8 +38,9 @@ jobs:
         run: |
           set -euo pipefail
           node --version
-          node --test tests/atto-source-v1.test.mjs
+          node --test tests/atto-source-v1.test.mjs tests/atto-scalar19-candidates.test.mjs
           node scripts/verify-atto-source-v1.mjs
+          node scripts/verify-atto-scalar19-candidates.mjs
       - name: Explicitly classify evidence
         shell: bash
         run: |
