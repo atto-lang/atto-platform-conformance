@@ -68,3 +68,20 @@ const failures=[
 for(const [name,mutate] of failures)test('reject '+name,()=>{
   const v=good(); mutate(v); assert.throws(()=>crossCheckParityReceiptEvidence(v.receipt,v.evidence),/rejected/);
 });
+
+test('GitHub evidence timestamps must be canonical UTC and calendar-valid',()=>{
+ for(const invalid of [
+  '2026-02-30T20:00:00Z','2026-11-03T20:00:00',
+  '2026-11-03T20:00:00+02:00','2026-11-03T20:00:00Z injected',
+  '2026-11-03T25:00:00Z','2026-11-03T20:00:00.0000Z'
+ ]){
+  const v=good();v.evidence.job.started_at=invalid;
+  assert.throws(()=>crossCheckParityReceiptEvidence(v.receipt,v.evidence),/job timing/,invalid);
+ }
+ for(const valid of ['2024-02-29T20:00:00Z','2026-11-03T20:00:00.123Z']){
+  const v=good();v.evidence.job.started_at=valid;
+  // The year-2024 fixture must end after its own start.
+  v.evidence.job.completed_at=valid;
+  assert.equal(crossCheckParityReceiptEvidence(v.receipt,v.evidence).publicly_promotable,false);
+ }
+});
