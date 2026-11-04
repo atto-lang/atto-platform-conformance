@@ -59,12 +59,12 @@ function validateV1(report) {
 }
 function validateV2(report) {
   checkCommon(report);
-  check(DIGEST.test(report.artifact_sha256 ?? ''), 'guest artifact digest');
   const ids = new Set();
   for (const c of report.cases) {
     checkCaseIdentity(c, ids);
     if (c.kind === 'positive') {
       check(c.compile_exit === 0, 'positive compilation');
+      check(DIGEST.test(c.artifact_sha256 ?? ''), 'positive guest artifact digest');
       check(c.executed === true, 'positive guest execution');
       check(c.failure_stage === undefined, 'positive failure stage');
       checkI64Text(c.result_i64, 'positive i64 result');
@@ -78,9 +78,11 @@ function validateV2(report) {
       check(typeof c.diagnostic === 'string' && c.diagnostic.length > 0 && c.diagnostic.length <= 4096, 'negative diagnostic');
       if (c.failure_stage === 'compile') {
         check(c.compile_exit !== 0 && c.executed === false, 'negative compile rejection');
+        check(c.artifact_sha256 === undefined, 'compile rejection artifact');
         check(c.runtime_outcome === undefined, 'compile rejection runtime outcome');
       } else {
         check(c.compile_exit === 0 && c.executed === true, 'negative runtime execution');
+        check(DIGEST.test(c.artifact_sha256 ?? ''), 'negative runtime artifact digest');
         check(c.runtime_outcome === 'trap' || c.runtime_outcome === 'error', 'negative runtime outcome');
       }
     }
