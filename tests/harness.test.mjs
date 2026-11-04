@@ -165,7 +165,7 @@ test("all six source compiler backends have target fixtures but none are verifie
   assert.equal(r.ok,false,backend);
   assert.equal(r.configured,false,backend);
   assert.equal(r.verified,0,backend);
-  assert.equal(r.skipped,manifest.cases.length,backend);
+  assert.equal(r.skipped,backend==="js"?jsFixtureCount:fixtureCount,backend);
   assert.ok(r.results.every(x=>x.status==="UNCONFIGURED"),backend);
  }
 });
