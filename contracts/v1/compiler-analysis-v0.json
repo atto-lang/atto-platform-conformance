@@ -40,6 +40,18 @@
       "expected_exit": "nonzero",
       "expected_record": "must-not-report-known",
       "scope": "syntax-rejection"
+    },
+    {
+      "file": "analysis-transitive.atto",
+      "expected_exit": 0,
+      "expected_record": "status=known",
+      "scope": "closed-static-direct-call"
+    },
+    {
+      "file": "analysis-recursive.atto",
+      "expected_exit": "nonzero",
+      "expected_record": "must-not-report-known",
+      "scope": "unproven-recursive-call-graph"
     }
   ],
   "provenance": {
