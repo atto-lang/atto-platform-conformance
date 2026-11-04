@@ -37,13 +37,13 @@ test('missing, duplicated or reordered native lanes are not silently accepted', 
 
 test('Wasm packaging must not masquerade as native guest lanes', async () => {
   const m = await load();
-  for (const change of [
-    x => { x.wasmProducts.pop(); },
-    x => { x.wasmProducts[0].id = 'native-exe'; },
-    x => { x.wasmProducts[1].status = 'PASS'; },
-    x => { x.wasmProducts[1].proof = ''; }
+  for (const [change, code] of [
+    [x => { x.wasmProducts.pop(); }, 'invalid-wasm-products'],
+    [x => { x.wasmProducts[0].id = 'native-exe'; }, 'invalid-wasm-product'],
+    [x => { x.wasmProducts[1].status = 'PASS'; }, 'invalid-wasm-product'],
+    [x => { x.wasmProducts[1].proof = ''; }, 'invalid-wasm-product']
   ]) { const input = clone(m); change(input); assert.throws(
-    () => inspect_strict_aot_inventory(input), { code:'invalid-wasm-product' }
+    () => inspect_strict_aot_inventory(input), { code }
   ); }
 });
 
