@@ -31,3 +31,16 @@ the compiler commit, binary hash, complete stepful logs, exact exit codes,
 source hash and absence of artifact writes. Do not advertise semantic parity
 until Java's real compiler and LLVM yield equivalent results on shared cases
 and exceptions/actors have guest-level execution tests.
+
+For formatter integration, provide **both** trusted, pinned absolute executable
+paths: `ATTO_ANALYZE_LLVM_COMPILER` and `ATTO_ANALYZE_FORMATTER_BIN`.
+The optional test invokes LLVM directly and through `oresfmt --analyze`
+on the same file, compares exact exit status and stdout, and confirms no
+source mutation or output artifacts. Absent either executable, the test
+skips and **establishes no LLVM-to-formatter parity**.
+
+The included recursive and unresolved-effect fixtures are deliberately
+fail-closed: a source rejection is acceptable evidence of rejection, not
+evidence of successful typed effect analysis. Subsequent promotion must
+require corresponding actual `status=inconclusive` receipts and typed
+Java/GraalVM diagnostics for each supported construct.
