@@ -78,3 +78,39 @@ test("bounded DAG aliases retain identity, are not mistaken for cycles, and publ
     {sequence:"1",recipients:0});
   assert.throws(()=>{sharedLeaf.id="mutable";},TypeError);
 });
+
+test("sparse arrays and extra-property arrays cannot bypass Option or graph quotas",()=>{
+  const bus=new PubSubReference();
+  const topic=bus.topic("payload.arrays","Payload").topic;
+  const safe={value:"caller-owned"};
+  const sparse=[1,,3];
+  const packet={safe,sparse};
+  assert.throws(()=>share(packet),/non-Sendable/);
+  assert.equal(Object.isFrozen(safe),false);
+  assert.equal(Object.isFrozen(packet),false);
+  Object.freeze(sparse);
+  assert.equal(bus.isShared(sparse),false);
+  assert.equal(bus.tryPublish(topic,sparse).error,"NotShared");
+
+  const extra=[1,2];
+  extra.metadata="not an array element";
+  assert.throws(()=>share(extra),/non-Sendable/);
+
+  const hugeSparse=new Array(20000);
+  assert.throws(()=>share(hugeSparse),/non-Sendable/);
+  Object.freeze(hugeSparse);
+  assert.equal(bus.isShared(hugeSparse),false);
+  assert.deepEqual(bus.tryPublish(topic,share([1,{id:"dense"},[false]])).receipt,
+    {sequence:"1",recipients:0});
+});
+
+test("exotic array prototypes cannot bypass pure-data admission",()=>{
+  class ExoticArray extends Array {}
+  const exotic=new ExoticArray(1,2,3);
+  assert.throws(()=>share(exotic),/non-Sendable/);
+  Object.freeze(exotic);
+  const bus=new PubSubReference();
+  const topic=bus.topic("payload.exotic","Payload").topic;
+  assert.equal(bus.isShared(exotic),false);
+  assert.equal(bus.tryPublish(topic,exotic).error,"NotShared");
+});
