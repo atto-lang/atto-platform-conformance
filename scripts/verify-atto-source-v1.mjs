@@ -67,9 +67,7 @@ export function verifyAttoSourceV1(directory = defaultRoot) {
     exactKeys(record, ["id","repository","pr","fixture_path"], "backend");
     const expectedId = IDS[i];
     if (record.id !== expectedId ||
-        record.repository !== "ores-truffle-oreslang/oreslang-source." +
-          (expectedId === "net" ? "net" : expectedId === "wasm" ? "wasm" :
-           expectedId === "llvm" ? "llvm" : "java") ||
+        record.repository !== "ores-truffle-oreslang/oreslang-source." + expectedId ||
         record.pr !== PRS[i] ||
         record.fixture_path !== "contracts/atto-parity-v1/add.atto")
       throw Error("noncanonical backend identity or fixture path");
