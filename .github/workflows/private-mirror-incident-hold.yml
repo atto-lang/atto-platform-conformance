@@ -9,7 +9,7 @@ jobs:
   fail-closed-export-admission:
     # External heads must FAIL, not be skipped and mistaken for passing.
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - name: Reject cross-repository PR heads before checkout
         env:
@@ -40,3 +40,9 @@ jobs:
           node --test tests/private-mirror-visibility.test.mjs tests/private-mirror-publish.test.mjs tests/private-mirror-entrypoints.test.mjs tests/private-mirror-deny-only-no-side-effects.test.mjs tests/private-ci-incident-registry.test.mjs tests/diagnose-actions.test.mjs
           echo "MIRROR_POLICY_TESTS_EXECUTED=true"
           echo "PRIVATE_SOURCE_CROSS_ORG_TRANSFER=NOT_AUTHORIZED"
+      - name: Execute full source-local Node conformance suite
+        run: |
+          set -euo pipefail
+          node --test
+          echo "CONFORMANCE_NODE_SUITE_EXECUTED=true"
+          echo "PRIVATE_SOURCE_MIRROR=NOT_PERFORMED"
