@@ -7,7 +7,7 @@ export const CANONICAL = {
   "macro_producer": "define pub macro identity(Syntax<Expr> value) -> Syntax<Expr> { return value; }",
   "macro_invocation": "lib.identity!(syntax expr 1)",
   "import_statement": "import * as lib from \"./producer.atto\";",
-  "budget_scope": "translation_unit",
+  "budget_scope": "single_consumer_source_unit",
   "max_expansions": 128,
   "cases": [
     {
