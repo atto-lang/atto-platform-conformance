@@ -139,3 +139,14 @@ test('typed i64 receipt text has a finite 20-character admission budget',()=>{
   r.cases[0].expected_i64='-9223372036854775808';
   assert.equal(validateParityReceipt(r).case_count,3);
 });
+
+test('v2 rejects noncanonical signed negative zero in observed or expected i64',()=>{
+  const r=v2();
+  r.cases[0].result_i64='-0';
+  r.cases[0].expected_i64='-0';
+  assert.throws(()=>validateParityReceipt(r),/positive i64 result/);
+  r.cases[0].result_i64='0';
+  assert.throws(()=>validateParityReceipt(r),/expected i64 result/);
+  r.cases[0].expected_i64='0';
+  assert.equal(validateParityReceipt(r).case_count,3);
+});
