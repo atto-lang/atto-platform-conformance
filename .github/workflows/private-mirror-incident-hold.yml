@@ -2,6 +2,9 @@ name: Private mirror incident-hold source-local tests
 on:
   # No path filters: all PRs must pass the private-source negative gate.
   pull_request:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 permissions:
   contents: read
