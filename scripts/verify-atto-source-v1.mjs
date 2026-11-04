@@ -7,7 +7,8 @@ import {fileURLToPath} from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const defaultRoot = resolve(here, "..");
-const IDS = ["java", "llvm", "wasm", "net"];
+const IDS = ["java", "llvm", "wasm", "net", "forge"];
+const PRS = [2460, 1312, 275, 345, 177];
 const SOURCE = "contracts/atto-source-v1/add.atto";
 const BLOB = "015f8b0f79aafa796a148d2adeff1574e8d6c491";
 
@@ -60,7 +61,7 @@ export function verifyAttoSourceV1(directory = defaultRoot) {
     throw Error("canonical Atto source bytes differ from reviewed Git blob");
 
   if (!Array.isArray(contract.backends) || contract.backends.length !== IDS.length)
-    throw Error("four backend entries are mandatory");
+    throw Error("five backend entries are mandatory");
   for (let i = 0; i < IDS.length; i++) {
     const record = contract.backends[i];
     exactKeys(record, ["id","repository","pr","fixture_path"], "backend");
@@ -69,7 +70,7 @@ export function verifyAttoSourceV1(directory = defaultRoot) {
         record.repository !== "ores-truffle-oreslang/oreslang-source." +
           (expectedId === "net" ? "net" : expectedId === "wasm" ? "wasm" :
            expectedId === "llvm" ? "llvm" : "java") ||
-        !Number.isSafeInteger(record.pr) || record.pr <= 0 ||
+        record.pr !== PRS[i] ||
         record.fixture_path !== "contracts/atto-parity-v1/add.atto")
       throw Error("noncanonical backend identity or fixture path");
   }

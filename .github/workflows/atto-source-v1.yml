@@ -1,14 +1,17 @@
-name: AttoLang four-backend source identity (source-only)
+name: AttoLang five-backend source identity (source-only)
 on:
   pull_request:
     paths:
       - 'contracts/atto-source-v1/**'
       - 'scripts/verify-atto-source-v1.mjs'
       - 'tests/atto-source-v1.test.mjs'
+      - 'tests/atto-scalar19-candidates.test.mjs'
+      - 'scripts/verify-atto-scalar19-candidates.mjs'
+      - 'docs/ATTO_SCALAR_19_PARITY_CANDIDATES.md'
       - '.github/workflows/atto-source-v1.yml'
   push:
     branches:
-      - 'test/atto-source-four-backend-gate-20261103'
+      - 'test/atto-source-five-backend-forge-20261103'
   workflow_dispatch:
 permissions:
   contents: read
@@ -35,12 +38,13 @@ jobs:
         run: |
           set -euo pipefail
           node --version
-          node --test tests/atto-source-v1.test.mjs
+          node --test tests/atto-source-v1.test.mjs tests/atto-scalar19-candidates.test.mjs
           node scripts/verify-atto-source-v1.mjs
+          node scripts/verify-atto-scalar19-candidates.mjs
       - name: Explicitly classify evidence
         shell: bash
         run: |
           set -euo pipefail
-          echo 'ATTO_FOUR_BACKEND_GUEST_EXECUTION=NOT_EXECUTED'
-          echo 'ATTO_FOUR_BACKEND_NATIVE_AOT=NOT_EXECUTED'
+          echo 'ATTO_FIVE_BACKEND_GUEST_EXECUTION=NOT_EXECUTED'
+          echo 'ATTO_FIVE_BACKEND_NATIVE_AOT=NOT_EXECUTED'
           echo 'ATTO_SOURCE_ONLY_IDENTITY=TESTED'
