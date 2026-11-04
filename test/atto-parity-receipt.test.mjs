@@ -5,9 +5,10 @@ const h = 'a'.repeat(40), d = 'b'.repeat(64), a = 'c'.repeat(64);
 const v1 = () => ({schema:'attolang.parity-receipt/1',backend:'java',head_sha:h,tree_sha:h,compiler:'javac',compiler_sha256:d,run_id:1,run_attempt:1,executed_steps:4,job_conclusion:'success',cases:[{id:'returns_42',source_sha256:d,kind:'positive',compile_exit:0,executed:true,run_exit:0,stdout:'42\n',expected_stdout:'42\n'},{id:'unknown_symbol',source_sha256:d,kind:'negative',compile_exit:1,executed:false,diagnostic:'unknown symbol'}]});
 const v2 = () => ({schema:'attolang.parity-receipt/2',backend:'llvm',head_sha:h,tree_sha:h,compiler:'oreslang-llvmc',compiler_sha256:d,run_id:2,run_attempt:1,executed_steps:6,job_conclusion:'success',cases:[{id:'returns_42',source_sha256:d,kind:'positive',compile_exit:0,artifact_sha256:a,executed:true,result_i64:'42',expected_i64:'42',result_channel:'native-return'},{id:'checked_overflow',source_sha256:d,kind:'negative',compile_exit:0,artifact_sha256:a,executed:true,failure_stage:'runtime',runtime_outcome:'trap',diagnostic:'checked overflow'},{id:'unknown_symbol',source_sha256:d,kind:'negative',compile_exit:1,executed:false,failure_stage:'compile',diagnostic:'unknown symbol'}]});
 
-test('v1 remains readable but is not scalar-core eligible',()=>assert.deepEqual(validateParityReceipt(v1()),{consistent:true,authenticity_attested:false,publicly_promotable:false,scalar_core_eligible:false,schema:'attolang.parity-receipt/1',backend:'java',case_count:2}));
+test('v1 preserves its legacy return shape',()=>assert.deepEqual(validateParityReceipt(v1()),{consistent:true,authenticity_attested:false,publicly_promotable:false,backend:'java',case_count:2}));
 test('v1 cannot satisfy scalar-core validation',()=>assert.throws(()=>validateScalarParityReceipt(v1()),/scalar core requires receipt v2/));
-test('v2 represents typed result plus compile and runtime negatives',()=>assert.deepEqual(validateScalarParityReceipt(v2()),{consistent:true,authenticity_attested:false,publicly_promotable:false,scalar_core_eligible:true,schema:'attolang.parity-receipt/2',backend:'llvm',case_count:3}));
+test('generic v2 represents typed result plus compile and runtime negatives',()=>assert.equal(validateParityReceipt(v2()).case_count,3));
+test('generic v2 is insufficient for the 19-case scalar profile',()=>assert.throws(()=>validateScalarParityReceipt(v2()),/complete canonical case set/));
 
 for(const [name,mutate] of [
  ['missing positive artifact',r=>delete r.cases[0].artifact_sha256],
@@ -31,3 +32,9 @@ for(const [name,mutate] of [
  ['failed job',r=>r.job_conclusion='failure'],
  ['duplicate case',r=>r.cases.push({...r.cases[0]})]
 ]) test('v2 rejects '+name,()=>{const r=v2();mutate(r);assert.throws(()=>validateScalarParityReceipt(r),/parity receipt rejected/)});
+
+test('scalar profile rejects a substituted source even with valid receipt shape',()=>{
+  const r=v2();
+  r.cases=Array.from({length:19},(_,i)=>({...r.cases[0],id:'case_'+i}));
+  assert.throws(()=>validateScalarParityReceipt(r),/canonical scalar case|case ID|complete canonical case set/);
+});
