@@ -52,3 +52,28 @@ Do not merge a backend as portable-v1 complete while guest lowering, authenticat
 - The JS reference oracle now checks the whole shared payload graph before freezing any object. Failed `share()` on a late unsafe sibling or cycle no longer freezes earlier caller-owned objects. All 26 reference vectors passed in a local V8 harness with the Node-specific Proxy detector stubbed; committed `node --test` and native code remain unexecuted in source-org Actions.
 - The private alternate organization's **source-free** run [41589530112](https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/41589530112) at commit `e37ffaf41c6c9ef9d13f8bc458602f09e42b192f` completed successfully (job `125762795007`, six steps). Independent logs confirmed `PUBSUB_SOURCEFREE_ADMISSION_OK`, `PUBSUB_SYNTHETIC_JAVA_OK`, `PUBSUB_SYNTHETIC_CPP_OK` and `PUBSUB_SYNTHETIC_PROXY_OK`. It did not check out or receive any private AttoLang source.
 - Java, LLVM and conformance source-org exact-head jobs continue to fail with **zero executed steps**. The remaining minutes/billing cause is not established, and the source-transfer hold tracked in conformance #22/#77/#127/#315 remains in force. No evidence ledger record can be promoted.
+
+## 2026-11-04 AttoLang Java/LLVM fixture identity and executed-evidence hold
+
+Backend source revisions (all still **DRAFT / NOT_EXECUTED**):
+
+- Java PubSub PR #2440 exact head `2fef54c599a4d876b9e0623cad92d8fa19b83a0e`: newly added `.atto` multigroup success and four rejection fixtures, with Java guest JUnit methods `attoMultiGroupGuestPreservesOtherGroupAfterLeave` and `attoPubSubTypeAndAuthorityNegativesStayFailClosed`. `scripts/verify-actor-pubsub-v1.sh` now requires these exact Surefire XML method names; it cannot silently accept an unrelated passing suite.
+- LLVM PubSub PR #1296 exact head `edcc81729e8b90a04ca6afc13d623e4661bee5e0`: seven `.atto` and legacy `.ores` pairs use the exact same Git blob bytes; the source checker now requires **14** explicit compiler rejections and the independent fixture-identity CTest. This proves no guest `ActorGroup` or `Topic` lowering yet. It is **not** a passing compiled PubSub guest.
+- LLVM UTF-8/receipt ABI stacked PR #1352 exact head `cd721192ac40a51ace41260cfbe11de7ea1d24dc` retains six native ABI/UTF-8 hardening files and is based on #1296's new test corpus. It does not implement guest PubSub.
+- Both backend drafts remain blocked by independently reviewed security and actual source-org CI admission. No release, parity or runner-status field in `backend-status.pending.json` has been promoted.
+
+The seven shared Java/LLVM legacy guest fixture blobs were read back and matched exactly by Git object ID:
+
+| Stem under `contracts/v1/fixtures/` | Exact legacy `.ores` = `.atto` blob |
+| --- | --- |
+| `actor-pubsub-v1` | `55c2fc913da18fd9082f98755b1dfbc7a97c0e9b` |
+| `actor-pubsub-multigroup-v1` | `29ca4658696e4ba9d2a6bc5d363951b708b6ef9f` |
+| `actor-pubsub-reject-actor-authority` | `28a1187b2739ff4e58247df4297bf393e6d70d3c` |
+| `actor-pubsub-reject-payload-type` | `0cbf8ddd1972c094480a987b400ba1e42c373c2b` |
+| `actor-pubsub-reject-private-subscribe` | `55f836551c56f90e5a2a4c2629cc1d30d7dfedb7` |
+| `actor-pubsub-reject-mailbox-capability` | `5cd0009c643481e3c7f8315b33b32658b1dede84` |
+| `actor-pubsub-reject-async-capability` | `108304f440b29ad402c72eb390db4ed4fe863ab4` |
+
+Compiler acceptance and stdout for the first two positive fixtures differ by backend today: Java authors guest-positive outputs `subscribed|p-1` and `ready-b|b-still-live`, whereas LLVM must reject until real guest lowering exists. Exact blob identity **does not** imply semantic parity or that a test ran.
+
+Next security-sensitive sequence: restore original-org runner admission without cross-org source export; require exact-head Java `.atto` guest execution and all negative test-method receipts; require 14 LLVM compiler rejection receipts and CTests as a preliminary fail-closed gate; implement LLVM authenticated guest ActorGroup/Topic lowering and rerun the same two success traces before considering LLVM guest parity.
