@@ -1,284 +1,112 @@
 import {test} from "node:test";
 import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
 import {publishPrivateMirror} from "../bin/private-mirror-publish.mjs";
 
-const source="ores-truffle-oreslang/oreslang-source.java";
-const destination="akrion-sim/akrion-sim-e2e";
-const A="a".repeat(40),B="b".repeat(40),C="c".repeat(40),
- D="d".repeat(40),E="e".repeat(40);
-const opts={source,destination,sourceCommit:A,destinationBaseCommit:B,
+// This is intentionally a denial-only contract. Legacy simulated Git object
+// writes were never proof of independent transfer approval or native CI.
+const DENIED=/PRIVATE_SOURCE_PUBLISH_DISABLED_PENDING_PROTECTED_MAIN_APPROVAL/;
+const source="synthetic-private/source";
+const destination="synthetic-private/carrier";
+const A="a".repeat(40),B="b".repeat(40);
+const base={source,destination,sourceCommit:A,destinationBaseCommit:B,
   prefix:"snapshots/checked",newBranch:"ci/private-test-proof",
-  approvedDestinations:[destination],token:"opaque-test-token"};
-const good=name=>({full_name:name,private:true,visibility:"private",
-  archived:false,permissions:{push:true}});
+  approvedDestinations:[destination],token:"synthetic-test-token"};
 
-function fixture({sourceTree,destinationTree,materializedTree,blobSha=C,refSha=E,meta,errors}={}){
-  const events=[],seen={source:0,destination:0};
-  const request=async(url,options)=>{
-    const method=options.method,path=url.replace(/^https:\/\/api.github.com\/repos\//,"");
-    events.push({path,method,body:options.body?JSON.parse(options.body):undefined});
-    const src=path===source||path.startsWith(source+"/"),name=src?source:destination;
-    if(path===name){
-      seen[src?"source":"destination"]++;
-      const custom=meta?.(name,seen[src?"source":"destination"]);
-      return{status:200,json:async()=>custom||good(name)};
-    }
-    const suffix=path.slice(name.length);
-    if(errors?.[suffix])return{status:403,json:async()=>({message:"Bearer opaque-test-token"})};
-    let data;
-    if(src){
-      if(suffix==="/git/commits/"+A)data={tree:{sha:D}};
-      else if(suffix==="/git/trees/"+D+"?recursive=1")
-        data=sourceTree||{truncated:false,tree:[{type:"blob",path:"main.ores",sha:C,size:4,mode:"100644"}]};
-      else if(suffix==="/git/blobs/"+C)
-        data={sha:C,encoding:"base64",content:"NDI7Cg==",size:4};
-    } else {
-      if(suffix==="/git/commits/"+B)data={tree:{sha:E}};
-      else if(suffix==="/git/trees/"+E+"?recursive=1")
-        data=destinationTree||{truncated:false,tree:[{path:"unrelated/readme.txt",type:"blob"}]};
-      else if(suffix==="/git/trees/"+D+"?recursive=1")
-        data=materializedTree||{truncated:false,tree:[
-          {path:"snapshots",type:"tree"},
-          {path:"snapshots/checked",type:"tree",sha:D},
-          {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C}
-        ]};
-      else if(suffix==="/git/blobs"&&method==="POST")
-        data={sha:blobSha};
-      else if(suffix==="/git/trees"&&method==="POST")
-        data={sha:D};
-      else if(suffix==="/git/commits"&&method==="POST")
-        data={sha:E};
-      else if(suffix==="/git/refs"&&method==="POST")
-        data={ref:options.body?JSON.parse(options.body).ref:undefined,object:{sha:refSha}};
-      else if(suffix==="/git/ref/heads/"+opts.newBranch&&method==="GET")
-        data={ref:"refs/heads/"+opts.newBranch,object:{sha:refSha}};
-    }
-    if(!data)throw Error("unexpected mock request "+path);
-    return{status:method==="POST"?201:200,json:async()=>data};
+async function deniedWithoutGitHub(modifications={}) {
+  const actions=[];
+  const fetchImpl=async(url,options)=>{
+    actions.push({url,method:options?.method});
+    throw Error("GITHUB_NETWORK_MUST_NOT_EXECUTE");
   };
-  return{request,events,seen};
+  await assert.rejects(publishPrivateMirror({...base,...modifications,fetchImpl}),DENIED);
+  assert.deepEqual(actions,[], "must not read private source or write Git objects");
 }
-const run=(t={},overrides={})=>{
- const h=fixture(t);
- return {h,promise:publishPrivateMirror({...opts,fetchImpl:h.request,...overrides})};
-};
-test("real destination Git-object publisher guards every write and only creates a new CI ref",async()=>{
- const {h,promise}=run();
- const receipt=await promise;
- assert.deepEqual(receipt,{status:"PRIVATE_MIRROR_PUBLISHED",destination,
-  newBranch:opts.newBranch,sourceCommit:A,commit:E,blobs:1});
- const writes=h.events.filter(x=>x.method==="POST");
- assert.deepEqual(writes.map(x=>x.path),[
-  destination+"/git/blobs",destination+"/git/trees",
-  destination+"/git/commits",destination+"/git/refs"]);
- const ref=writes.at(-1).body.ref;
- assert.equal(ref,"refs/heads/ci/private-test-proof");
- assert.deepEqual(writes[1].body.tree,[{
-  path:"snapshots/checked/main.ores",mode:"100644",type:"blob",sha:C}]);
- assert.ok(h.seen.source>=5&&h.seen.destination>=5,"reverify before every write");
- assert.ok(h.events.some(e=>e.path===destination+"/git/ref/heads/"+opts.newBranch),
-   "verify CI ref persisted with pinned SHA");
-});
-test("public destinations fail BEFORE fetching private source or writing anything",async()=>{
- const {h,promise}=run({meta:(name)=>name===destination?{...good(name),private:false,visibility:"public"}:good(name)});
- await assert.rejects(promise,/writable verified PRIVATE/);
- assert.equal(h.events.filter(e=>e.method==="POST").length,0);
- assert.equal(h.events.some(e=>e.path.includes("/git/")),false);
-});
-test("missing approvals and unsafe ref/path reject without contacting GitHub",async()=>{
- for(const override of [
-  {approvedDestinations:[]},{token:undefined},
-  {newBranch:"main"},{newBranch:"ci/my-public-copy"},
-  {prefix:"../src"},{prefix:"src/../../other"},
-  {sourceCommit:"not-a-sha"}
- ]){
-  const {h,promise}=run({},override);
-  await assert.rejects(promise);
-  assert.equal(h.events.length,0);
- }
-});
-test("untrusted source tree types and truncated trees never cause destination writes",async()=>{
- for(const tree of [
-  {truncated:true,tree:[]},
-  {truncated:false,tree:[{type:"blob",path:"../secret",sha:C,size:4,mode:"100644"}]},
-  {truncated:false,tree:[{type:"blob",path:"a",sha:C,size:4,mode:"120000"}]},
-  {truncated:false,tree:[{type:"blob",path:"a",sha:C,size:1048577,mode:"100644"}]},
-  {truncated:false,tree:[{type:"commit",path:"gitlink",sha:C,size:4,mode:"160000"}]},
-  {truncated:false,tree:[]}
- ]){
-  const {h,promise}=run({sourceTree:tree});
-  await assert.rejects(promise);
-  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
- }
-});
-test("source-to-destination blob mismatch halts without publishing tree/ref",async()=>{
- const {h,promise}=run({blobSha:D});
- await assert.rejects(promise,/destination blob SHA differs/);
- assert.deepEqual(h.events.filter(x=>x.method==="POST").map(x=>x.path),
-   [destination+"/git/blobs"]);
-});
-test("loss of private visibility after source fetch blocks the FIRST write",async()=>{
- const {h,promise}=run({meta:(name,n)=>{
-  if(name===destination&&n>=2)return{...good(name),private:false,visibility:"public"};
-  return good(name);
- }});
- await assert.rejects(promise,/writable verified PRIVATE/);
- assert.equal(h.events.filter(e=>e.method==="POST").length,0);
-});
-test("loss of private visibility before publishing branch prevents ref creation",async()=>{
- const {h,promise}=run({meta:(name,n)=>{
-  if(name===destination&&n>=5)return{...good(name),private:false,visibility:"public"};
-  return good(name);
- }});
- await assert.rejects(promise,/writable verified PRIVATE/);
- assert.equal(h.events.some(e=>e.path===destination+"/git/refs"),false);
-});
-test("GitHub API errors redact response body and bearer tokens",async()=>{
- const {h,promise}=run({errors:{"/git/blobs":true}});
- await assert.rejects(promise,error=>{
-  assert.equal(error.message.includes("opaque-test-token"),false);
-  return true;
- });
- assert.equal(h.events.some(e=>e.path===destination+"/git/refs"),false);
+
+test("publisher cannot create source blobs, trees, commits or refs for any owner",async()=>{
+  for(const [from,to] of [
+    [source,destination],
+    ["ores-truffle-oreslang/oreslang-source.java","voxletra/carrier"],
+    ["ORES-TRUFFLE-ORESLANG/oreslang-source.llvm","ORES-TRUFFLE-ORESLANG/private-ci"],
+    ["zed-pkg-test/java-app","zed-pkg-test/java-app"],
+    ["ores-llm/ores-llm-ml-conformance-tests","ores-llm/fresh-carrier"],
+    ["unknown-relay/old-source-copy","unknown-relay/new-source-copy"],
+    ["unknown-relay/old-source-copy","other-relay/new-source-copy"],
+    [source,source]
+  ]) await deniedWithoutGitHub({source:from,destination:to,approvedDestinations:[to]});
 });
 
-test("pre-existing destination files under snapshot prefix are rejected before any source blob publication",async()=>{
- for(const existing of [
-   {path:"snapshots/checked",type:"tree"},
-   {path:"snapshots/checked/old-source.ores",type:"blob"},
-   {path:"snapshots",type:"blob"}
- ]){
-   const {h,promise}=run({destinationTree:{truncated:false,tree:[existing]}});
-   await assert.rejects(promise,/destination snapshot prefix/);
-   assert.equal(h.events.some(e=>e.path===source+"/git/blobs/"+C),false);
-   assert.equal(h.events.filter(e=>e.method==="POST").length,0);
- }
-});
-test("incomplete destination base tree cannot be treated as empty",async()=>{
- for(const inventory of [
-  {truncated:true,tree:[]},
-  {truncated:false,tree:null},
-  {truncated:false,tree:[null]}
- ]){
-   const {h,promise}=run({destinationTree:inventory});
-   await assert.rejects(promise,/destination base tree inventory|invalid destination base tree/);
-   assert.equal(h.events.filter(e=>e.method==="POST").length,0);
- }
-});
-test("publication confirms GitHub-created ref SHA and separately reads it back",async()=>{
- const {h,promise}=run({refSha:D});
- await assert.rejects(promise,/new isolated CI ref confirmation mismatch/);
- assert.equal(h.events.some(e=>e.path===destination+"/git/refs"),true);
- assert.equal(h.events.some(e=>e.path===destination+"/git/ref/heads/"+opts.newBranch),false);
-});
-test("unsafe branch dot paths and lock-file suffixes are rejected before API access",async()=>{
- for(const newBranch of ["ci/private-foo..bar","ci/private-foo.lock"]){
-  const {h,promise}=run({}, {newBranch});
-  await assert.rejects(promise,/isolated CI branch/);
-  assert.equal(h.events.length,0);
- }
+test("caller-controlled approvals and credentials cannot enable private mirror",async()=>{
+  for(const modifications of [
+    {approvedDestinations:[]},
+    {approvedDestinations:[destination]},
+    {approvedDestinations:[destination.toUpperCase()]},
+    {approvedDestinations:Array(100).fill(destination)},
+    {approvedDestinations:null},
+    {token:undefined},
+    {token:""},
+    {token:"different-opaque-test-token"},
+    {sourceCommit:"bad"},
+    {destinationBaseCommit:"bad"},
+    {newBranch:"main"},
+    {newBranch:"ci/private-invalid"},
+    {prefix:"../secret"},
+    {prefix:"/tmp/absolute"},
+    {source:"../../escape",destination:"x/y"}
+  ]) await deniedWithoutGitHub(modifications);
 });
 
-test("materialized snapshot must contain exactly pinned blobs before a commit or ref",async()=>{
- for(const tree of [
-  {truncated:true,tree:[]},
-  {truncated:false,tree:[]},
-  {truncated:false,tree:[{path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:D}]},
-  {truncated:false,tree:[
-    {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C},
-    {path:"snapshots/checked/injected.ores",type:"blob",mode:"100644",sha:D}
-  ]},
-  {truncated:false,tree:[
-    {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C},
-    {path:"snapshots/checked/stale",type:"tree"}
-  ]},
-  {truncated:false,tree:[{path:"snapshots/checked/main.ores",type:"blob",mode:"100755",sha:C}]}
- ]){
-  const {h,promise}=run({materializedTree:tree});
-  await assert.rejects(promise,/materialized destination snapshot|materialized snapshot/);
-  assert.equal(h.events.some(x=>x.path===destination+"/git/commits"&&x.method==="POST"),false);
-  assert.equal(h.events.some(x=>x.path===destination+"/git/refs"&&x.method==="POST"),false);
- }
+test("attempted API mock bypass never makes a single private-source GET or POST",async()=>{
+  let calls=0;
+  const fakeSuccess=async()=>{
+    calls++;
+    return {status:200,json:async()=>({
+      id:90001,full_name:destination,private:true,visibility:"private",
+      fork:false,disabled:false,archived:false,default_branch:"main",
+      permissions:{push:true}
+    })};
+  };
+  await assert.rejects(publishPrivateMirror({...base,fetchImpl:fakeSuccess}),DENIED);
+  assert.equal(calls,0);
 });
 
-test("case-insensitive destination prefix collisions fail before source is copied",async()=>{
- for(const entry of [
-  {path:"SNAPSHOTS/CHECKED/old.ores",type:"blob"},
-  {path:"Snapshots/Checked",type:"tree"},
-  {path:"SNAPSHOTS",type:"blob"}
- ]){
-  const {h,promise}=run({destinationTree:{truncated:false,tree:[entry]}});
-  await assert.rejects(promise,/destination snapshot prefix/);
-  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
- }
-});
-test("case-insensitive colliding source paths and .GIT segments are rejected",async()=>{
- for(const tree of [
-  {truncated:false,tree:[
-    {type:"blob",path:"Main.ores",sha:C,size:4,mode:"100644"},
-    {type:"blob",path:"main.ores",sha:C,size:4,mode:"100644"}
-  ]},
-  {truncated:false,tree:[{type:"blob",path:"src/.GIT/config",sha:C,size:4,mode:"100644"}]}
- ]){
-  const {h,promise}=run({sourceTree:tree});
-  await assert.rejects(promise,/colliding source path|unsafe or oversized/);
-  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
- }
-});
-test("duplicate entries in materialized tree cannot disguise omitted source blobs",async()=>{
- const tree={truncated:false,tree:[
-  {path:"snapshots/checked",type:"tree",sha:D},
-  {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C},
-  {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C}
- ]};
- const {h,promise}=run({materializedTree:tree});
- await assert.rejects(promise,/materialized snapshot contains duplicate paths/);
- assert.equal(h.events.some(e=>e.path===destination+"/git/refs"),false);
+test("publisher's own first executable statement denies before parsing or authorizing",()=>{
+  const src=readFileSync(new URL("../bin/private-mirror-publish.mjs",import.meta.url),"utf8");
+  const fn=src.slice(src.indexOf("export async function publishPrivateMirror("));
+  assert.match(fn,/\(_untrustedOptions\) \{[\s\S]*?\/\/ Defense in depth/);
+  const lockdown=fn.indexOf('throw Error("PRIVATE_SOURCE_PUBLISH_DISABLED_PENDING_PROTECTED_MAIN_APPROVAL")');
+  assert.ok(lockdown>=0,"lockdown must not be removed");
+  for(const action of [
+    "sha(sourceCommit);sha(destinationBaseCommit);",
+    "await authorize();",
+    "const srcCommit=await githubRequest(",
+    'method:"POST"'
+  ]) {
+    const index=fn.indexOf(action);
+    assert.ok(index<0||lockdown<index,"publisher lockdown must precede "+action);
+  }
 });
 
-test("a Java-sized exact private snapshot stays bounded and retains every blob",async()=>{
- const count=1208;
- const sourceFiles=Array.from({length:count},(_,i)=>({
-  type:"blob",path:"src/actor-"+String(i).padStart(4,"0")+".atto",
-  sha:C,size:4,mode:"100644"
- }));
- const destinationFiles=sourceFiles.map(file=>({
-  type:"blob",path:"snapshots/checked/"+file.path,sha:file.sha,mode:file.mode
- }));
- const {h,promise}=run({
-  sourceTree:{truncated:false,tree:sourceFiles},
-  materializedTree:{truncated:false,tree:[{path:"snapshots/checked",type:"tree",sha:D},...destinationFiles]}
- });
- const result=await promise;
- assert.equal(result.blobs,count);
- const writes=h.events.filter(e=>e.method==="POST");
- assert.equal(writes.filter(e=>e.path===destination+"/git/blobs").length,count);
- assert.equal(writes.find(e=>e.path===destination+"/git/trees").body.tree.length,count);
- assert.deepEqual(writes.slice(-3).map(e=>e.path),[
-  destination+"/git/trees",destination+"/git/commits",destination+"/git/refs"]);
- assert.ok(h.seen.source>=count+1 && h.seen.destination>=count+1,
-   "recheck private visibility at every blob write");
+test("the lower-level authorization function is also locked down",()=>{
+  const body=readFileSync(new URL("../bin/require-private-mirror.mjs",import.meta.url),"utf8");
+  assert.match(body,/PRIVATE_SOURCE_PUBLISH_DISABLED_PENDING_PROTECTED_MAIN_APPROVAL/);
 });
 
-test("oversized private trees fail before source blobs or destination writes",async()=>{
- const make=(count,size)=>({truncated:false,tree:Array.from({length:count},(_,i)=>({
-  type:"blob",path:"src/actor-"+String(i).padStart(4,"0")+".atto",
-  sha:C,size,mode:"100644"
- }))});
- for(const tree of [make(1601,4),make(41,1048576)]){
-  const {h,promise}=run({sourceTree:tree});
-  await assert.rejects(promise,/unsupported source tree size|private mirror exceeds 40MiB limit/);
-  assert.equal(h.events.filter(e=>e.method==="POST").length,0);
-  assert.equal(h.events.some(e=>e.path===source+"/git/blobs/"+C),false);
- }
-});
-
-test("mirrored root Git tree SHA must match pinned source even with matching leaf blobs",async()=>{
- const {h,promise}=run({materializedTree:{truncated:false,tree:[
-   {path:"snapshots/checked",type:"tree",sha:E},
-   {path:"snapshots/checked/main.ores",type:"blob",mode:"100644",sha:C}
- ]}});
- await assert.rejects(promise,/materialized snapshot root Git tree SHA/);
- assert.equal(h.events.some(e=>e.path===destination+"/git/commits"&&e.method==="POST"),false);
- assert.equal(h.events.some(e=>e.path===destination+"/git/refs"&&e.method==="POST"),false);
+test("publisher denial happens before malicious option getters and Proxy traps",async()=>{
+  let effects=0;
+  const hostile=new Proxy({},{
+    get(){effects++;throw Error("OPTIONS_GET_TRAP_EXECUTED");},
+    ownKeys(){effects++;throw Error("OPTIONS_OWNKEYS_TRAP_EXECUTED");},
+    getOwnPropertyDescriptor(){effects++;throw Error("OPTIONS_DESCRIPTOR_TRAP_EXECUTED");},
+    getPrototypeOf(){effects++;throw Error("OPTIONS_PROTOTYPE_TRAP_EXECUTED");}
+  });
+  const getters=Object.defineProperties({},{
+    source:{enumerable:true,get(){effects++;throw Error("SOURCE_GETTER_EXECUTED");}},
+    fetchImpl:{enumerable:true,get(){effects++;throw Error("FETCH_GETTER_EXECUTED");}},
+    token:{enumerable:true,get(){effects++;throw Error("TOKEN_GETTER_EXECUTED");}}
+  });
+  for(const options of [undefined,null,hostile,getters,42,"malformed"]) {
+    await assert.rejects(publishPrivateMirror(options),DENIED);
+  }
+  assert.equal(effects,0,"zero caller-controlled option reads before lockdown");
 });

@@ -6,10 +6,12 @@ LLVM, Wasmtime, .NET, Forge or JavaScript.
 
 Source of truth: [tenant-isolation-v1.json](../contracts/tenant-isolation-v1.json).
 Test entry: `node --test tests/tenant-isolation-v1.test.mjs`.
-The ten source-free reference cases currently include separate tenant state,
-generation revocation, **independent-root authority rejection even where tenant
-ID and numeric generation collide**, bounded admission, hostile-mode denial,
-in-flight quiescence/drain, trap quarantine, foreign/replayed lease denial,
+The eleven source-free reference cases currently include separate tenant
+state, generation revocation, **independent-root authority rejection even where
+tenant ID and numeric generation collide**, bounded admission (including
+reserved `.` and `..` tenant-ID rejection), hostile-mode denial, in-flight
+quiescence/drain, trap quarantine and **healthy-neighbor progress through a
+different tenant's failure and reincarnation**, foreign/replayed lease denial,
 and nonreentrant scalar turns even if a tenant's inflight capacity is greater
 than one. Passing them alone does **not** prove actor lowering or backend heaps.
 

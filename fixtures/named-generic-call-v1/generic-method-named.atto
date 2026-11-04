@@ -1,0 +1,9 @@
+define class Box as
+  choose<T>(T value) -> T ::
+    return value
+  end
+end
+fnc main() -> int ::
+  val box = new Box()
+  return box.choose<T=int>(42)
+end

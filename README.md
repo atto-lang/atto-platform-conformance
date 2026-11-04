@@ -1,14 +1,5 @@
 # Oreslang platform conformance
 
-## Actor/ActorGroup portable pub-sub v1 (proposed)
-
-[Portable in-memory pub-sub specification](docs/ACTOR_PUBSUB_PORTABLE_V1.md),
-[20 shared deterministic vectors](contracts/v1/actor-pubsub/portable-v1.json), and
-[fail-closed five-backend evidence ledger](contracts/v1/actor-pubsub/backend-status.pending.json).
-Run `node --test tests/actor-pubsub-portable-v1.test.mjs tests/actor-pubsub-evidence-v1.test.mjs`.
-These are reference-model tests only, **not** source compiler, actor-runtime, or guest-execution parity evidence.
-
-
 Cross-platform, **evidence-first** language and runtime conformance suite. A harness that has not run a real compiler must never claim parity.
 
 ## Real compiler evidence adapter (proposed integration)
@@ -43,6 +34,10 @@ Use `bin/verify-platform-capability-receipt.mjs` to reject zero-step workflows,
 host stubs mislabeled as compiler guests, repository/platform substitution, and
 target/physical claims without the required evidence. See
 [`docs/PLATFORM_CAPABILITY_PROMOTION.md`](docs/PLATFORM_CAPABILITY_PROMOTION.md).
+
+## Candidate state-container and virtual-actor declarations
+
+[`contracts/state-container-virtual-actor-v1.json`](contracts/state-container-virtual-actor-v1.json) records 20 proposed compile/runtime oracles for `define state container` and `define virtual actor`. All backend results are **NOT_EXECUTED**. The Node contract tests validate fixture completeness and evidence labels only; they do not compile or execute guest programs. The Java reference parser has a separate fail-closed admission branch pending actual ownership and virtual-activation lowering. `define grain` is not an accepted alias.
 
 ## Current deliverable
 

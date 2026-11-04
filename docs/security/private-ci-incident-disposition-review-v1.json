@@ -39,6 +39,30 @@
       "issue_id": 6042602777,
       "status": "hold",
       "packet": "docs/security/P0_PRIVATE_CARRIER_CLASSIFICATION_171_172_2026-10-27.md"
+    },
+    {
+      "number": 198,
+      "issue_id": 6070465058,
+      "status": "hold",
+      "packet": "docs/security/P0_PRIVATE_CARRIER_CLASSIFICATION_198_200_212_252_2026-11-03.md"
+    },
+    {
+      "number": 200,
+      "issue_id": 6071264936,
+      "status": "hold",
+      "packet": "docs/security/P0_PRIVATE_CARRIER_CLASSIFICATION_198_200_212_252_2026-11-03.md"
+    },
+    {
+      "number": 212,
+      "issue_id": 6087989978,
+      "status": "hold",
+      "packet": "docs/security/P0_PRIVATE_CARRIER_CLASSIFICATION_198_200_212_252_2026-11-03.md"
+    },
+    {
+      "number": 252,
+      "issue_id": 6129229261,
+      "status": "hold",
+      "packet": "docs/security/P0_PRIVATE_CARRIER_CLASSIFICATION_198_200_212_252_2026-11-03.md"
     }
   ],
   "required_independent_disposition_fields": [
