@@ -78,11 +78,15 @@ export class PubSubReference {
     return [...this.#subscriptions.values()].filter(s=>!s.closed).length;
   }
 
-  constructor({maxTopics=1024,maxSubscriptions=1024,maxMemberships=4096}={}) {
-    if (!Number.isSafeInteger(maxTopics) || maxTopics<1 ||
+  constructor({maxActors=4096,maxGroups=1024,maxTopics=1024,maxSubscriptions=1024,maxMemberships=4096}={}) {
+    if (!Number.isSafeInteger(maxActors) || maxActors<1 ||
+        !Number.isSafeInteger(maxGroups) || maxGroups<1 ||
+        !Number.isSafeInteger(maxTopics) || maxTopics<1 ||
         !Number.isSafeInteger(maxSubscriptions) || maxSubscriptions<1 ||
         !Number.isSafeInteger(maxMemberships) || maxMemberships<1)
       throw new RangeError("positive finite quotas required");
+    this.maxActors=maxActors;
+    this.maxGroups=maxGroups;
     this.maxTopics=maxTopics;
     this.maxSubscriptions=maxSubscriptions;
     this.maxMemberships=maxMemberships;
@@ -99,6 +103,9 @@ export class PubSubReference {
       return failure("InvalidActorIdentity");
     const key=JSON.stringify([id,generation]);
     if (this.#actors.has(key)) return failure("AlreadyExists");
+    // Keep stopped actor identities fenced; a new incarnation must use a fresh
+    // generation and may not silently reuse an old queue/authority key.
+    if (this.#actors.size>=this.maxActors) return failure("ResourceExhausted");
     const state={alive:true};
     const actor=Object.freeze({key,id,generation,get alive(){return state.alive;}});
     this.#actorStates.set(actor,state);
@@ -111,6 +118,8 @@ export class PubSubReference {
     if (typeof id!=="string" || !id.length || id.length>256)
       return failure("InvalidGroup");
     if (this.#groups.has(id)) return failure("AlreadyExists");
+    // Closed group identities are tombstones: never recycle their authority.
+    if (this.#groups.size>=this.maxGroups) return failure("ResourceExhausted");
     const state={closed:false,members:new Set()};
     // A copied membership view never exposes the authoritative set.
     const group=Object.freeze({
