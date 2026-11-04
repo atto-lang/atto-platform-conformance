@@ -1,0 +1,674 @@
+{
+  "schema_version": "1.0.0-design",
+  "status": "SOURCE_FREE_POLICY_MODEL_NOT_COMPILER_PARITY",
+  "language_scope": "Oreslang proposed declaration kinds and nominal hierarchy admission",
+  "baseline_backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "cranelift",
+    "net",
+    "forge"
+  ],
+  "backend_execution": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  },
+  "rules": {
+    "class": {
+      "parent_kinds": [
+        "class"
+      ],
+      "max_parents": 1,
+      "interfaces": true,
+      "traits": true,
+      "guest_state_blocks": 0,
+      "ordinary_fields": true
+    },
+    "actor": {
+      "parent_kinds": [
+        "actor"
+      ],
+      "max_parents": 1,
+      "interfaces": true,
+      "traits": true,
+      "guest_state_blocks": 1,
+      "ordinary_fields": false,
+      "isolation": "preserve",
+      "role": "message"
+    },
+    "supervisor": {
+      "parent_kinds": [],
+      "max_parents": 0,
+      "interfaces": true,
+      "traits": false,
+      "guest_state_blocks": 1,
+      "ordinary_fields": false,
+      "role": "control",
+      "privileged": true
+    },
+    "grain": {
+      "parent_kinds": [],
+      "max_parents": 0,
+      "interfaces": true,
+      "traits": true,
+      "guest_state_blocks": 1,
+      "ordinary_fields": false,
+      "identity_key": true,
+      "role": "virtual-actor"
+    },
+    "state_container": {
+      "parent_kinds": [],
+      "max_parents": 0,
+      "interfaces": true,
+      "traits": true,
+      "guest_state_blocks": 1,
+      "ordinary_fields": false,
+      "role": "synchronous-owned"
+    },
+    "model": {
+      "parent_kinds": [],
+      "max_parents": 0,
+      "interfaces": true,
+      "traits": false,
+      "guest_state_blocks": 0,
+      "ordinary_fields": false,
+      "role": "immutable-graph"
+    },
+    "enum": {
+      "parent_kinds": [],
+      "max_parents": 0,
+      "interfaces": true,
+      "traits": true,
+      "guest_state_blocks": 0,
+      "ordinary_fields": false,
+      "role": "tagged-value"
+    },
+    "struct": {
+      "parent_kinds": [],
+      "max_parents": 0,
+      "interfaces": true,
+      "traits": true,
+      "guest_state_blocks": 0,
+      "ordinary_fields": true,
+      "role": "owned-value"
+    },
+    "record": {
+      "parent_kinds": [],
+      "max_parents": 0,
+      "interfaces": true,
+      "traits": true,
+      "guest_state_blocks": 0,
+      "ordinary_fields": true,
+      "role": "immutable-value"
+    },
+    "interface": {
+      "parent_kinds": [
+        "interface"
+      ],
+      "max_parents": 32,
+      "interfaces": false,
+      "traits": false,
+      "guest_state_blocks": 0,
+      "ordinary_fields": false,
+      "role": "type-only"
+    },
+    "trait": {
+      "parent_kinds": [
+        "trait"
+      ],
+      "max_parents": 32,
+      "interfaces": false,
+      "traits": false,
+      "guest_state_blocks": 0,
+      "ordinary_fields": false,
+      "role": "type-only"
+    },
+    "protocol": {
+      "parent_kinds": [],
+      "max_parents": 0,
+      "interfaces": false,
+      "traits": false,
+      "guest_state_blocks": 0,
+      "ordinary_fields": false,
+      "role": "wire-schema"
+    }
+  },
+  "semantics": {
+    "one_concrete_superclass": true,
+    "no_trait_owned_storage": true,
+    "interfaces_never_grant_capabilities": true,
+    "runtime_capabilities_compiler_owned": true,
+    "no_state_loan_escape": true,
+    "no_state_loan_across_suspend": true,
+    "prohibit_actor_direct_state_access": true,
+    "prohibit_forged_supervisor_control": true,
+    "sealed_intrinsic_hooks_nonoverridable": true,
+    "no_implicit_class_actor_grain_conversion": true,
+    "trait_and_interface_are_nominally_distinct": true,
+    "state_container_lifetime": "bound_to_owner_no_implicit_spawn_or_network",
+    "grain_lifetime": "keyed_actor_activation_epoch_fenced"
+  },
+  "test_cases": [
+    {
+      "id": "C01",
+      "kind": "class",
+      "options": {},
+      "expected": "OK"
+    },
+    {
+      "id": "C02",
+      "kind": "class",
+      "options": {
+        "parents": [
+          {
+            "kind": "class"
+          }
+        ]
+      },
+      "expected": "OK"
+    },
+    {
+      "id": "C03",
+      "kind": "class",
+      "options": {
+        "parents": [
+          {
+            "kind": "class"
+          },
+          {
+            "kind": "class"
+          }
+        ]
+      },
+      "expected": "MULTIPLE_SUPERCLASSES"
+    },
+    {
+      "id": "C04",
+      "kind": "actor",
+      "options": {},
+      "expected": "OK"
+    },
+    {
+      "id": "C05",
+      "kind": "actor",
+      "options": {
+        "parents": [
+          {
+            "kind": "actor",
+            "isolation": "shared"
+          }
+        ]
+      },
+      "expected": "OK"
+    },
+    {
+      "id": "C06",
+      "kind": "actor",
+      "options": {
+        "parents": [
+          {
+            "kind": "class"
+          }
+        ]
+      },
+      "expected": "PARENT_KIND"
+    },
+    {
+      "id": "C07",
+      "kind": "actor",
+      "options": {
+        "parents": [
+          {
+            "kind": "actor",
+            "isolation": "private"
+          }
+        ]
+      },
+      "expected": "ISOLATION_CHANGE"
+    },
+    {
+      "id": "C08",
+      "kind": "actor",
+      "options": {
+        "ordinary_fields": 1
+      },
+      "expected": "PERSISTENT_STATE_OUTSIDE_SCHEMA"
+    },
+    {
+      "id": "C09",
+      "kind": "actor",
+      "options": {
+        "state_blocks": 2
+      },
+      "expected": "STATE_SCHEMA_COUNT"
+    },
+    {
+      "id": "C10",
+      "kind": "actor",
+      "options": {
+        "direct_state_access": true
+      },
+      "expected": "DIRECT_STATE_ACCESS"
+    },
+    {
+      "id": "C11",
+      "kind": "actor",
+      "options": {
+        "loan_escape": true
+      },
+      "expected": "STATE_LOAN_ESCAPE"
+    },
+    {
+      "id": "C12",
+      "kind": "actor",
+      "options": {
+        "loan_across_await": true
+      },
+      "expected": "STATE_LOAN_SUSPEND"
+    },
+    {
+      "id": "C13",
+      "kind": "actor",
+      "options": {
+        "override_intrinsic": true
+      },
+      "expected": "SEALED_INTRINSIC"
+    },
+    {
+      "id": "C14",
+      "kind": "supervisor",
+      "options": {},
+      "expected": "OK"
+    },
+    {
+      "id": "C15",
+      "kind": "supervisor",
+      "options": {
+        "parents": [
+          {
+            "kind": "actor"
+          }
+        ]
+      },
+      "expected": "PARENT_KIND"
+    },
+    {
+      "id": "C16",
+      "kind": "supervisor",
+      "options": {
+        "claims_control": true
+      },
+      "expected": "CONTROL_FORGERY"
+    },
+    {
+      "id": "C17",
+      "kind": "supervisor",
+      "options": {
+        "traits": [
+          {
+            "stateful": true
+          }
+        ]
+      },
+      "expected": "TRAIT_NOT_ADMITTED"
+    },
+    {
+      "id": "C18",
+      "kind": "state_container",
+      "options": {
+        "state_blocks": 1
+      },
+      "expected": "OK"
+    },
+    {
+      "id": "C19",
+      "kind": "state_container",
+      "options": {
+        "ordinary_fields": 1
+      },
+      "expected": "PERSISTENT_STATE_OUTSIDE_SCHEMA"
+    },
+    {
+      "id": "C20",
+      "kind": "state_container",
+      "options": {
+        "loan_across_await": true
+      },
+      "expected": "STATE_LOAN_SUSPEND"
+    },
+    {
+      "id": "C21",
+      "kind": "state_container",
+      "options": {
+        "direct_state_access": true
+      },
+      "expected": "DIRECT_STATE_ACCESS"
+    },
+    {
+      "id": "C22",
+      "kind": "state_container",
+      "options": {
+        "parents": [
+          {
+            "kind": "class"
+          }
+        ]
+      },
+      "expected": "PARENT_KIND"
+    },
+    {
+      "id": "C23",
+      "kind": "state_container",
+      "options": {
+        "shared_mutation": true
+      },
+      "expected": "UNGUARDED_SHARED_MUTATION"
+    },
+    {
+      "id": "C24",
+      "kind": "grain",
+      "options": {
+        "identity_key": "account:1",
+        "state_blocks": 1
+      },
+      "expected": "OK"
+    },
+    {
+      "id": "C25",
+      "kind": "grain",
+      "options": {
+        "state_blocks": 1
+      },
+      "expected": "GRAIN_IDENTITY_REQUIRED"
+    },
+    {
+      "id": "C26",
+      "kind": "grain",
+      "options": {
+        "identity_key": "k",
+        "parents": [
+          {
+            "kind": "actor"
+          }
+        ]
+      },
+      "expected": "PARENT_KIND"
+    },
+    {
+      "id": "C27",
+      "kind": "grain",
+      "options": {
+        "identity_key": "k",
+        "override_intrinsic": true
+      },
+      "expected": "SEALED_INTRINSIC"
+    },
+    {
+      "id": "C28",
+      "kind": "model",
+      "options": {},
+      "expected": "OK"
+    },
+    {
+      "id": "C29",
+      "kind": "model",
+      "options": {
+        "parents": [
+          {
+            "kind": "class"
+          }
+        ]
+      },
+      "expected": "PARENT_KIND"
+    },
+    {
+      "id": "C30",
+      "kind": "enum",
+      "options": {},
+      "expected": "OK"
+    },
+    {
+      "id": "C31",
+      "kind": "enum",
+      "options": {
+        "parents": [
+          {
+            "kind": "enum"
+          }
+        ]
+      },
+      "expected": "PARENT_KIND"
+    },
+    {
+      "id": "C32",
+      "kind": "enum",
+      "options": {
+        "interfaces": [
+          {
+            "kind": "interface"
+          }
+        ]
+      },
+      "expected": "OK"
+    },
+    {
+      "id": "C33",
+      "kind": "enum",
+      "options": {
+        "interfaces": [
+          {
+            "kind": "trait"
+          }
+        ]
+      },
+      "expected": "INTERFACE_KIND"
+    },
+    {
+      "id": "C34",
+      "kind": "class",
+      "options": {
+        "traits": [
+          {
+            "stateful": true
+          }
+        ]
+      },
+      "expected": "TRAIT_STATE_FORBIDDEN"
+    },
+    {
+      "id": "C35",
+      "kind": "actor",
+      "options": {
+        "traits": [
+          {
+            "capabilities": [
+              "gpu"
+            ]
+          }
+        ]
+      },
+      "expected": "TRAIT_CAPABILITY_GRANT"
+    },
+    {
+      "id": "C36",
+      "kind": "actor",
+      "options": {
+        "interfaces": [
+          {
+            "kind": "interface",
+            "capabilities": [
+              "control"
+            ]
+          }
+        ]
+      },
+      "expected": "INTERFACE_CAPABILITY_GRANT"
+    },
+    {
+      "id": "C37",
+      "kind": "trait",
+      "options": {
+        "parents": [
+          {
+            "kind": "interface"
+          }
+        ]
+      },
+      "expected": "PARENT_KIND"
+    },
+    {
+      "id": "C38",
+      "kind": "interface",
+      "options": {
+        "parents": [
+          {
+            "kind": "trait"
+          }
+        ]
+      },
+      "expected": "PARENT_KIND"
+    },
+    {
+      "id": "C39",
+      "kind": "actor",
+      "options": {
+        "capabilities": [
+          "io"
+        ],
+        "granted_capabilities": [
+          "io",
+          "gpu"
+        ]
+      },
+      "expected": "CAPABILITY_WIDENING"
+    },
+    {
+      "id": "C40",
+      "kind": "actor",
+      "options": {
+        "capabilities": [
+          "io"
+        ],
+        "granted_capabilities": [
+          "io"
+        ]
+      },
+      "expected": "OK"
+    },
+    {
+      "id": "C41",
+      "kind": "struct",
+      "options": {
+        "parents": [
+          {
+            "kind": "class"
+          }
+        ]
+      },
+      "expected": "PARENT_KIND"
+    },
+    {
+      "id": "C42",
+      "kind": "protocol",
+      "options": {
+        "parents": [
+          {
+            "kind": "interface"
+          }
+        ]
+      },
+      "expected": "PARENT_KIND"
+    },
+    {
+      "id": "C43",
+      "kind": "record",
+      "options": {
+        "mutable_fields": 1
+      },
+      "expected": "IMMUTABLE_RECORD_MUTATION"
+    },
+    {
+      "id": "C44",
+      "kind": "model",
+      "options": {
+        "state_blocks": 1
+      },
+      "expected": "STATE_SCHEMA_COUNT"
+    },
+    {
+      "id": "C45",
+      "kind": "grain",
+      "options": {
+        "identity_key": "k",
+        "loan_escape": true
+      },
+      "expected": "STATE_LOAN_ESCAPE"
+    },
+    {
+      "id": "C46",
+      "kind": "supervisor",
+      "options": {
+        "direct_state_access": true
+      },
+      "expected": "DIRECT_STATE_ACCESS"
+    },
+    {
+      "id": "C47",
+      "kind": "class",
+      "options": {
+        "override_intrinsic": true
+      },
+      "expected": "SEALED_INTRINSIC"
+    },
+    {
+      "id": "C48",
+      "kind": "state_container",
+      "options": {
+        "traits": [
+          {}
+        ],
+        "interfaces": [
+          {
+            "kind": "interface"
+          }
+        ]
+      },
+      "expected": "OK"
+    },
+    {
+      "id": "C49",
+      "kind": "actor",
+      "options": {
+        "traits": [
+          {}
+        ],
+        "interfaces": [
+          {
+            "kind": "interface"
+          }
+        ]
+      },
+      "expected": "OK"
+    },
+    {
+      "id": "C50",
+      "kind": "interface",
+      "options": {
+        "parents": [
+          {
+            "kind": "interface"
+          },
+          {
+            "kind": "interface"
+          }
+        ]
+      },
+      "expected": "OK"
+    }
+  ]
+}

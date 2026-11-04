@@ -1,0 +1,31 @@
+name: Singleton guest ABI candidate schema only
+on:
+  pull_request:
+    paths:
+      - contracts/singleton-shared-state-guest-abi-candidate-v1.json
+      - contracts/singleton-shared-state-v1.json
+      - docs/SINGLETON_GUEST_ABI_CANDIDATE.md
+      - verification/verify-singleton-guest-abi-candidate-v1.mjs
+      - .github/workflows/singleton-guest-abi-candidate-v1.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  proposal-schema-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify exact SHA and clean checkout
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          git diff --quiet HEAD
+      - name: Validate guest API candidate without claiming compiler execution
+        run: node verification/verify-singleton-guest-abi-candidate-v1.mjs

@@ -1,0 +1,13 @@
+// Exclusive heap referent mutation should be checked, regardless of allocation.
+define class Cell as
+  pub let int value = 0;
+end
+fnc update(borrow mut Cell cell): void {
+  cell.value = 42;
+  return;
+}
+pub fnc main(): int {
+  let mut Cell owner = new Cell();
+  update(rt mut borrow owner);
+  return owner.value;
+}

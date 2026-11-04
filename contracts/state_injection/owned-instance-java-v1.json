@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "status": "candidate-unexecuted",
+  "kind": "java-first-owned-instance-source",
+  "source": {
+    "repository": "ores-truffle-oreslang/oreslang-source.java",
+    "branch": "feat/state-backed-owned-instance-v1-20261101",
+    "commit": "8a89f91fe9f87df9a17206e7f14c13227c3a7814",
+    "path": "examples/state-backed-instance-v1.ores",
+    "gitBlob": "10875eac550c6d755926420df4dd667ae01c2b88"
+  },
+  "expected": {
+    "kind": "compile-and-run",
+    "exitCode": 0,
+    "stdout": "7|3|10|true|false|false|false"
+  },
+  "scope": "@StateBacked(MutableStateContainer(scope = #instance)) checked into ordinary exclusively owned Java class fields with lexical borrow parameters; no @Inject provider or synchronized actor state",
+  "backendEvidence": {
+    "java": "not-executed",
+    "llvm": "not-executed",
+    "wasm": "not-executed",
+    "cranelift": "not-executed",
+    "net": "not-executed",
+    "forge": "not-executed"
+  },
+  "requirements": [
+    "Same exact source blob must be retrieved and compiled on each backend; no rewrites or stubs",
+    "Java JDK25/JUnit and Graal real guest run with exact output before Java status promotion",
+    "Five-backend execution remains unsupported until each backend implements typed backing and actual guest code",
+    "Zero-step CI, parser-only rejection, model tests and source-free canaries are not execution proof"
+  ]
+}

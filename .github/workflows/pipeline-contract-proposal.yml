@@ -1,0 +1,79 @@
+name: Typed pipeline proposal contract and TLC
+on:
+  push:
+    paths:
+      - 'src/pipeline-contract.mjs'
+      - 'src/pipeline-admission.mjs'
+      - 'src/pipeline-runtime-evidence.mjs'
+      - 'tests/pipeline-runtime-evidence.test.mjs'
+      - 'bin/verify-pipeline-evidence.mjs'
+      - 'bin/verify-native-pipeline-execution.mjs'
+      - 'tests/native-pipeline-transcript.test.mjs'
+      - 'contracts/pipeline/**'
+      - 'tests/pipeline-contract.test.mjs'
+      - 'formal/TypedPipelineDirections*'
+      - 'formal/TypedPipelineTickets*'
+      - '.github/workflows/pipeline-contract-proposal.yml'
+  pull_request:
+    paths:
+      - 'src/pipeline-contract.mjs'
+      - 'src/pipeline-admission.mjs'
+      - 'src/pipeline-runtime-evidence.mjs'
+      - 'tests/pipeline-runtime-evidence.test.mjs'
+      - 'bin/verify-pipeline-evidence.mjs'
+      - 'bin/verify-native-pipeline-execution.mjs'
+      - 'tests/native-pipeline-transcript.test.mjs'
+      - 'contracts/pipeline/**'
+      - 'tests/pipeline-contract.test.mjs'
+      - 'formal/TypedPipelineDirections*'
+      - 'formal/TypedPipelineTickets*'
+      - '.github/workflows/pipeline-contract-proposal.yml'
+permissions:
+  contents: read
+jobs:
+  pipeline-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22.23.1'
+      - name: Test typed contract, closed schemas and adversarial inputs
+        run: node --test tests/pipeline-contract.test.mjs tests/pipeline-runtime-evidence.test.mjs tests/native-pipeline-transcript.test.mjs
+      - name: Verify standalone bounded pipeline evidence CLI
+        run: node bin/verify-pipeline-evidence.mjs --trace contracts/pipeline/v1/trace-three-actor.json
+      - name: Compile TypeSpec and execute draft-2020-12 schema admission
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-save --no-package-lock @typespec/compiler@1.16.0 ajv-cli@5.0.0
+          ./node_modules/.bin/tsp compile contracts/pipeline/v1/actor-pipeline.tsp --no-emit --warn-as-error
+          ./node_modules/.bin/ajv test --spec=draft2020 -s contracts/pipeline/v1/pipeline-graph.schema.json -d contracts/pipeline/v1/three-actor.json --valid
+          ./node_modules/.bin/tsp compile contracts/pipeline/v1/runtime-trace.tsp --no-emit --warn-as-error
+          ./node_modules/.bin/ajv test --spec=draft2020 -s contracts/pipeline/v1/runtime-trace.schema.json -d contracts/pipeline/v1/trace-three-actor.json --valid
+      - name: Check bounded safe TLC model and required unsafe counterexample
+        shell: bash
+        working-directory: formal
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 --retry-delay 2 -o tla2tools.jar https://github.com/zactionsz/tla-tools/releases/download/tla2tools-2026.08.11.125311/tla2tools.jar
+          echo 'ab323b79802aedc3203b3f9af37c6aca3ed43f4e0225b36f2aa77b26de46c05f  tla2tools.jar' | sha256sum -c -
+          java -Xmx1g -cp tla2tools.jar tlc2.TLC -deadlock -workers 1 -config TypedPipelineDirections.cfg TypedPipelineDirections.tla
+          if java -Xmx1g -cp tla2tools.jar tlc2.TLC -deadlock -workers 1 -config TypedPipelineDirectionsUnsafe.cfg TypedPipelineDirections.tla > unsafe.log 2>&1; then
+            cat unsafe.log
+            echo 'ERROR: early backward mutation escaped invariants' >&2
+            exit 1
+          fi
+          grep -Fq 'Error: Invariant ReverseRequiresFullForwardPath is violated.' unsafe.log || { cat unsafe.log; exit 1; }
+          echo 'Expected unsafe early-backward counterexample observed'
+          java -Xmx1g -cp tla2tools.jar tlc2.TLC -deadlock -workers 1 -config TypedPipelineTickets.cfg TypedPipelineTickets.tla
+          if java -Xmx1g -cp tla2tools.jar tlc2.TLC -deadlock -workers 1 -config TypedPipelineTicketsUnsafe.cfg TypedPipelineTickets.tla > unsafe-ticket.log 2>&1; then
+            cat unsafe-ticket.log
+            echo 'ERROR: stale generation completion mutation escaped invariants' >&2
+            exit 1
+          fi
+          grep -Fq 'Error: Invariant CompletionBoundToCurrentEpoch is violated.' unsafe-ticket.log || { cat unsafe-ticket.log; exit 1; }
+          echo 'Expected stale ticket and incarnation counterexample observed'

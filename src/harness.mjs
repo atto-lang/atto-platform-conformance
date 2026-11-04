@@ -68,13 +68,21 @@ export function validateManifestSchema(manifest){
      item.backends.some(x=>!SUPPORTED_BACKENDS.has(x))||
      new Set(item.backends).size!==item.backends.length)
    throw Error("invalid fixture expectation/backends");
+  if(item.unsupportedBackends!==undefined){
+   if(item.expect!=="accept"||!Array.isArray(item.unsupportedBackends)||
+      new Set(item.unsupportedBackends).size!==item.unsupportedBackends.length||
+      item.unsupportedBackends.some(x=>!item.backends.includes(x)))
+    throw Error("invalid unsupported backend capability ledger");
+  }
   if(item.expect==="reject"&&!validDiagnosticSymbol(item.diagnostic))
    throw Error("negative fixture must require a literal identifier diagnostic");
   if(item.expect==="accept"&&item.diagnostic!==undefined)
    throw Error("accept fixture may not declare a rejection diagnostic");
   for(const backend of item.backends){
    if(!coverage.has(backend))coverage.set(backend,new Set());
-   coverage.get(backend).add(item.expect);
+   const unsupportedPositive =
+     item.expect==="accept" && item.unsupportedBackends?.includes(backend);
+   coverage.get(backend).add(unsupportedPositive ? "unsupported" : item.expect);
   }
  }
  // A passing compiler must be challenged with both valid and invalid source.
@@ -205,14 +213,14 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
  const manifest=await loadManifest();
  const relevant=manifest.cases.filter(x=>x.backends.includes(backend));
  if(!argv){
-  return {backend,sourceSha:sourceSha||null,verificationScope:"compiler-source-check-only",runtimeVerified:false,configured:false,verified:0,failed:0,
+  return {backend,sourceSha:sourceSha||null,verificationScope:"compiler-source-check-only",runtimeVerified:false,configured:false,verified:0,failed:0,unsupported:0,
    skipped:relevant.length,ok:false,coverage:relevant.length?"UNCONFIGURED":"NO_CASES",results:relevant.map(c=>({id:c.id,status:"UNCONFIGURED"}))};
  }
  validateCommand(argv);
  if(!validSha(sourceSha))throw Error("configured backend requires exact 40-character lowercase source commit SHA");
  if(!relevant.length)return {backend,declaredSourceSha:sourceSha,
   verificationScope:"compiler-source-check-only",runtimeVerified:false,
-  configured:true,coverage:"NO_CASES",verified:0,failed:0,skipped:0,ok:false,results:[]};
+  configured:true,coverage:"NO_CASES",verified:0,failed:0,unsupported:0,skipped:0,ok:false,results:[]};
  const initialExecutable=await snapshotExecutable(argv[0]);
  const executableSha256=initialExecutable?.sha256||null;
  const results=[];
@@ -230,6 +238,16 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
   }
   for(const {c,snapshotPath,fixtureSha256} of sealed){
   await assertSealedFixture(snapshotPath,fixtureSha256);
+  if(c.unsupportedBackends?.includes(backend)){
+   results.push({
+    id:c.id,status:"UNSUPPORTED",fixtureSha256,
+    executableSha256Before:null,executableSha256After:null,
+    executableResolvedPathBefore:null,executableResolvedPathAfter:null,
+    exitCode:null,signal:null,stdout:"",stderr:"",
+    capabilityNote:"declared unsupported by merged-backend capability ledger; fixture was not executed"
+   });
+   continue;
+  }
   const cmd=argv.map(x=>x==="{file}"?snapshotPath:x);
   const executableBefore=await snapshotExecutable(argv[0]);
   const output=spawn(cmd[0],cmd.slice(1),{encoding:"utf8",timeout:timeoutMs,cwd:root,maxBuffer:1024*1024,windowsHide:true});
@@ -277,8 +295,9 @@ export async function runSuite({backend,argv,sourceSha,timeoutMs=10000,requireCo
   }
  }
  const verified=results.filter(x=>x.status==="VERIFIED").length;
+ const unsupported=results.filter(x=>x.status==="UNSUPPORTED").length;
  const failed=results.filter(x=>x.status!=="VERIFIED").length;
- return {backend,declaredSourceSha:sourceSha,verificationScope:"compiler-source-check-only",runtimeVerified:false,executableSha256,provenanceNote:"Source revision was supplied by caller; this harness does not attest that it produced the binary.",configured:true,verified,failed,skipped:0,coverage:"CASE_RESULTS",ok:failed===0 && verified>0 &&
+ return {backend,declaredSourceSha:sourceSha,verificationScope:"compiler-source-check-only",runtimeVerified:false,executableSha256,provenanceNote:"Source revision was supplied by caller; this harness does not attest that it produced the binary.",configured:true,verified,failed,unsupported,skipped:0,coverage:"CASE_RESULTS",ok:failed===0 && verified>0 &&
   relevant.some(x=>x.expect==="accept") && relevant.some(x=>x.expect==="reject"),results};
 }
 
