@@ -46,6 +46,10 @@ test("critical nonowner release, duplicated waiter, and leaked guard reject",()=
   bad([C("enter","a"),C("exit","b")],/nonowner/);
   bad([C("enter","a"),C("queue","b"),C("queue","b")],/duplicate/);
   bad([C("enter","a")],/not drained/);
+  bad([C("queue","b")],/without contention/);
+  bad([C("enter","a","L1"),C("enter","a","L2")],/nested/);
+  bad([C("enter","a","L1"),
+    E("critical.try",{lock:"L2",task:"a",outcome:"granted"})],/nested/);
 });
 test("suspended actor preserves DATA turn while independent actor progresses",()=>{
   good([E("actor.open",{actor:"a",generation:1}),
