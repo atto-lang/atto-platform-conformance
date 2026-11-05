@@ -48,8 +48,12 @@ test("Rust and Cranelift members are independently governed, not Forge aliases",
     forged.evidence="verified";
     assert.throws(()=>validateMember(base,forged),/invalid member contract/);
   }
-  assert.notEqual(
-    base.repositories.find(x=>x.name==="oreslang-source.cranelift"),
-    base.repositories.find(x=>x.name==="oreslang-source.forge")
+  // Explicitly bound family membership catches accidental omission and
+  // unauthorized additions instead of merely comparing object identities.
+  assert.deepEqual(
+    base.repositories.filter(x=>x.name.startsWith("oreslang-source.")).map(x=>x.name).sort(),
+    ["oreslang-source.cranelift","oreslang-source.forge","oreslang-source.hdl",
+     "oreslang-source.java","oreslang-source.js","oreslang-source.llvm",
+     "oreslang-source.net","oreslang-source.rs","oreslang-source.wasm"]
   );
 });
