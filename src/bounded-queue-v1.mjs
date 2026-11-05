@@ -68,11 +68,10 @@ export function validateBoundedQueueContract(contract) {
   ],"contract");
   if(contract.schema!=="oreslang.bounded_queue_contract.v1") fail("wrong contract schema");
   if(contract.contract_id!=="bounded-queue-v1") fail("wrong contract id");
-  if(!Array.isArray(contract.required_invariants) || contract.required_invariants.length!==INVARIANTS.length)
-    fail("exactly 15 invariants required");
-  const ids=contract.required_invariants.map(x=>object(x,"invariant").id);
+  const invariants=exactRecordArray(contract.required_invariants,INVARIANTS.length,"invariants");
+  const ids=invariants.map(x=>object(x,"invariant").id);
   if(JSON.stringify(ids)!==JSON.stringify(INVARIANTS)) fail("invariant ids must be BQ01..BQ15 in order");
-  for(const invariant of contract.required_invariants){
+  for(const invariant of invariants){
     exactKeys(invariant,["id","name","rule"],"invariant");
     nonempty(invariant.name,"invariant name");
     nonempty(invariant.rule,"invariant rule");
