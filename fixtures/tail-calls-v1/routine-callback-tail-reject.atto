@@ -1,0 +1,16 @@
+// The source-level call graph is incomplete across this Fnc-valued edge.
+// Compilation may succeed, but synchronous execution MUST reject dynamic
+// reentry to the logically active routine; tail transfer cannot erase ancestry.
+fnc apply(Fnc<int, int> callback, int value): int {
+  return callback(value);
+}
+fnc bounce(int value): int {
+  return step(value);
+}
+routine step(int value): int {
+  return apply(bounce, value);
+}
+pub routine main(): void {
+  stdio.stdout.write(step(1));
+  return;
+}
