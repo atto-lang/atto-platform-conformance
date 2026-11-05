@@ -41,6 +41,11 @@ export function validateActorFinalizationReceipt(expectedHead, receipt) {
                  step.name === job.requiredTestStep &&
                  step.status === "completed" && step.conclusion === "success"))
         errors.push("REQUIRED_TEST_STEP_NOT_EXECUTED");
+      // A named successful test cannot launder additional failed, canceled,
+      // unknown, or still-running steps in an allegedly completed GitHub job.
+      else if (job.steps.some(step => !step || step.status !== "completed" ||
+               !["success", "skipped", "neutral"].includes(step.conclusion)))
+        errors.push("INCOMPLETE_OR_FAILED_JOB_STEP");
       if (job.conclusion !== "success") errors.push("JOB_NOT_SUCCESSFUL");
     }
   }
