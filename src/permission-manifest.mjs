@@ -25,23 +25,42 @@ function validUnicode(value) {
 function exactKeys(value, names, label) {
   if (value === null || typeof value !== 'object' || Array.isArray(value))
     throw new TypeError(label + ' must be an object');
-  const keys = Object.keys(value).sort();
+  const proto=Object.getPrototypeOf(value);
+  if(proto!==Object.prototype && proto!==null)
+    throw new TypeError(label + ' must be plain data');
+  const keys=Reflect.ownKeys(value).sort();
   if (keys.length !== names.length || names.some((name, i) => keys[i] !== name))
     throw new TypeError(label + ' has missing or unknown keys');
+  for(const key of keys){
+    const descriptor=Object.getOwnPropertyDescriptor(value,key);
+    if(!descriptor?.enumerable || !Object.hasOwn(descriptor,'value'))
+      throw new TypeError(label + ' requires own data fields');
+  }
+}
+function own(value,key) {
+  return Object.getOwnPropertyDescriptor(value,key).value;
 }
 function scopes(values, name) {
-  if (!Array.isArray(values) || values.length > 128)
+  if (!Array.isArray(values) || Object.getPrototypeOf(values)!==Array.prototype)
     throw new TypeError(name + ' must be a bounded array');
-  const seen = new Set();
-  for (const item of values) {
+  const len=Object.getOwnPropertyDescriptor(values,'length')?.value;
+  if(!Number.isSafeInteger(len) || len>128 ||
+     Reflect.ownKeys(values).length!==len+1)
+    throw new TypeError(name + ' requires bounded own data slots');
+  const seen = new Set(),copy=[];
+  for(let i=0;i<len;i++){
+    const descriptor=Object.getOwnPropertyDescriptor(values,String(i));
+    if(!descriptor?.enumerable || !Object.hasOwn(descriptor,'value'))
+      throw new TypeError(name + ' requires bounded own data slots');
+    const item=descriptor.value;
     if (typeof item !== 'string' || !item || item.trim() !== item ||
         Buffer.byteLength(item, 'utf8') > 4096 || CONTROL.test(item) ||
         item.includes('\uFFFD') || !validUnicode(item))
       throw new TypeError(name + ' has an invalid scope');
     if (seen.has(item)) throw new TypeError(name + ' has a duplicate scope');
-    seen.add(item);
+    seen.add(item); copy.push(item);
   }
-  return [...values].sort();
+  return copy.sort();
 }
 function immutablePolicy(input) {
   const policy = validatePolicy(input);
@@ -59,9 +78,10 @@ export function denyAllPolicy() {
 export function validatePolicy(input) {
   exactKeys(input, [...PERMISSIONS].sort(), 'policy');
   return Object.fromEntries(PERMISSIONS.map(p => {
-    exactKeys(input[p], ['allow', 'deny'], p);
-    return [p, {allow: scopes(input[p].allow, p + '.allow'),
-                deny: scopes(input[p].deny, p + '.deny')}];
+    const rule=own(input,p);
+    exactKeys(rule, ['allow', 'deny'], p);
+    return [p, {allow: scopes(own(rule,'allow'), p + '.allow'),
+                deny: scopes(own(rule,'deny'), p + '.deny')}];
   }));
 }
 /**
@@ -70,13 +90,13 @@ export function validatePolicy(input) {
  */
 export function serializeManifest(manifest) {
   exactKeys(manifest, ['artifact_sha256','format','policy','version'], 'manifest');
-  if (manifest.format !== FORMAT || manifest.version !== 1 ||
-      typeof manifest.artifact_sha256 !== 'string' ||
-      !SHA256.test(manifest.artifact_sha256))
+  if (own(manifest,'format') !== FORMAT || own(manifest,'version') !== 1 ||
+      typeof own(manifest,'artifact_sha256') !== 'string' ||
+      !SHA256.test(own(manifest,'artifact_sha256')))
     throw new TypeError('unknown manifest version or artifact digest');
   const raw = JSON.stringify({
-    format: FORMAT, version: 1, artifact_sha256: manifest.artifact_sha256,
-    policy: validatePolicy(manifest.policy),
+    format: FORMAT, version: 1, artifact_sha256: own(manifest,'artifact_sha256'),
+    policy: validatePolicy(own(manifest,'policy')),
   });
   if (Buffer.byteLength(raw, 'utf8') > MAX_BYTES)
     throw new RangeError('permission manifest exceeds 64 KiB');
@@ -137,7 +157,7 @@ export function evaluatePermission(layers, permission, resource, scopeMatches) {
   // change the effective authority mid-decision, nor hide malformed layers
   // behind an earlier deny or missing grant.
   const rules = ['host','artifact','runtime','actor','delegated']
-    .map(name => validatePolicy(layers[name])[permission]);
+    .map(name => validatePolicy(own(layers,name))[permission]);
   // Evaluate every explicit denial before granting through any layer. This
   // also fixes the matching order for overlapping deny/allow scopes.
   if (rules.some(rule => rule.deny.some(matches))) return false;
