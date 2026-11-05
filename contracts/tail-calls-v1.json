@@ -32,7 +32,8 @@
       "observable output/diagnostic",
       "bounded peak stack or stack-constant proof",
       "job steps nonempty and bound to exact head"
-    ]
+    ],
+    "dynamicRoutineReentry": "Calls through a Fnc-valued callback may lack a complete static graph: reject any attempted routine reentry at runtime even after tail transfer; do not classify this as a compiler rejection or ordinary trap."
   },
   "cases": [
     {
@@ -152,6 +153,34 @@
       "path": "fixtures/tail-calls-v1/non-tail-factorial.ores",
       "compile": "accept",
       "stdout": "120",
+      "backends": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "routine-callback-tail-reject",
+      "path": "fixtures/tail-calls-v1/routine-callback-tail-reject.atto",
+      "compile": "accept",
+      "runtime": "reject",
+      "diagnosticClass": "recursive-routine",
+      "backends": {
+        "java": "pending",
+        "llvm": "pending",
+        "net": "pending",
+        "wasm": "pending",
+        "forge": "pending"
+      }
+    },
+    {
+      "id": "routine-callback-nontail-reject",
+      "path": "fixtures/tail-calls-v1/routine-callback-nontail-reject.atto",
+      "compile": "accept",
+      "runtime": "reject",
+      "diagnosticClass": "recursive-routine",
       "backends": {
         "java": "pending",
         "llvm": "pending",
