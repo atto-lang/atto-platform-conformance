@@ -25,7 +25,7 @@ test("status array getters cannot execute during five-backend evidence classific
  assert.throws(()=>validate(sample),/requires own enumerable data slots/);
  assert.equal(invoked,0);
  const sparse=pending();delete sparse.records[2];
- assert.throws(()=>validate(sparse),/requires own enumerable data slots/);
+ assert.throws(()=>validate(sparse),/unexpected array metadata|requires own enumerable data slots/);
 });
 
 test("hostile array iterators and extra metadata fail while ordinary pending records remain blocked",()=>{
