@@ -1,0 +1,102 @@
+{
+  "schema": "attolang.stdlib-portable-policy.v1",
+  "source": {
+    "repository": "ores-truffle-oreslang/oreslang-source.java",
+    "pr": 2553,
+    "head_sha": "93180c85eec1accade4f5d459c962c8b3e44e8bc",
+    "tree_sha": "79c546c293e3b6b1c2d4f52685299236432f3779",
+    "parent_pr": 2544,
+    "parent_head_sha": "47ce96d3231e267e8989734dbb50606e9057fc54"
+  },
+  "policies": [
+    {
+      "id": "layout_policy",
+      "source_path": "stdlib/layout_policy.atto",
+      "source_blob_sha": "47624305881b1578c71f14748e847901ab7d9a0e",
+      "guest_fixture": "src/test/resources/stdlib-parity/portable-java-policy/layout_policy.atto",
+      "java_oracle": "DataOrientedLayout"
+    },
+    {
+      "id": "region_policy",
+      "source_path": "stdlib/region_policy.atto",
+      "source_blob_sha": "a4b14f14251634d7131e2abb0c4790be9171cda1",
+      "guest_fixture": "src/test/resources/stdlib-parity/portable-java-policy/region_policy.atto",
+      "java_oracle": "DopRegionSchedule"
+    },
+    {
+      "id": "dense_index",
+      "source_path": "stdlib/dense_index.atto",
+      "source_blob_sha": "f4833c2e8889632bf5e1e29927869cc2ba316327",
+      "guest_fixture": "src/test/resources/stdlib-parity/portable-java-policy/dense_index.atto",
+      "java_oracle": "ManagedReferencePolicy"
+    },
+    {
+      "id": "actor_result_policy",
+      "source_path": "stdlib/actor_result_policy.atto",
+      "source_blob_sha": "412c47f394e990d8b2cd88fbd4799353105f81e2",
+      "guest_fixture": "src/test/resources/stdlib-parity/portable-java-policy/actor_result_policy.atto",
+      "java_oracle": "ActorResults"
+    },
+    {
+      "id": "task_parallel_policy",
+      "source_path": "stdlib/task_parallel_policy.atto",
+      "source_blob_sha": "d4f02ad4ea7289cc245117585c973df63ac4c43c",
+      "guest_fixture": "src/test/resources/stdlib-parity/portable-java-policy/task_parallel_policy.atto",
+      "java_oracle": "TaskMapParallel"
+    }
+  ],
+  "backends": [
+    {
+      "id": "java",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "status": "RUNNER_ADMISSION_FAILED",
+      "runner_id": 0,
+      "executed_steps": 0,
+      "compiler_receipt": null,
+      "guest_receipt": null
+    },
+    {
+      "id": "llvm",
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "status": "NOT_EXECUTED",
+      "runner_id": null,
+      "executed_steps": 0,
+      "compiler_receipt": null,
+      "guest_receipt": null
+    },
+    {
+      "id": "net",
+      "repository": "ores-truffle-oreslang/oreslang-source.net",
+      "status": "NOT_EXECUTED",
+      "runner_id": null,
+      "executed_steps": 0,
+      "compiler_receipt": null,
+      "guest_receipt": null
+    },
+    {
+      "id": "wasm",
+      "repository": "ores-truffle-oreslang/oreslang-source.wasm",
+      "status": "NOT_EXECUTED",
+      "runner_id": null,
+      "executed_steps": 0,
+      "compiler_receipt": null,
+      "guest_receipt": null
+    },
+    {
+      "id": "forge",
+      "repository": "ores-truffle-oreslang/oreslang-source.forge",
+      "status": "NOT_EXECUTED",
+      "runner_id": null,
+      "executed_steps": 0,
+      "compiler_receipt": null,
+      "guest_receipt": null
+    }
+  ],
+  "gates": {
+    "source_only": true,
+    "guest_executed": false,
+    "cross_backend_verified": false,
+    "independent_review_approved": false,
+    "safe_to_merge": false
+  }
+}
