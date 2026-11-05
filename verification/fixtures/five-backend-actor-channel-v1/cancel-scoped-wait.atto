@@ -1,0 +1,15 @@
+// CANDIDATE cancellation fixture. Not source-validated by any backend yet.
+// Requires structured task cancellation to release the bounded channel wait.
+// The backend MUST execute this guest, not infer output from host scheduling.
+pub suspends fnc main(): void {
+  let Channel<int> inbox = Channel.new<int>(1);
+  let TaskScope scope = TaskScope.new();
+  let Task<void> waiter = scope.spawn(suspends || -> void {
+    let value = await inbox.read();
+    return;
+  });
+  scope.cancel();
+  await scope.join();
+  stdio.stdout.write("cancelled");
+  return;
+}

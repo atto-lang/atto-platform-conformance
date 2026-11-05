@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "contract": "five-backend-atto-actor-channel-guest-v1",
+  "state": "CANDIDATE_NOT_EXECUTED",
+  "evidenceKind": "compiled-source-guest-execution-required",
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "cranelift"
+  ],
+  "originalSourceHead": "must-capture-checked-out-Git-commit-per-execution",
+  "prohibitions": [
+    "host-oracle-is-not-guest-execution",
+    "zero-step-ci-is-not-execution",
+    "unreviewed-compiler-diagnostics-do-not-pass",
+    "missing-backend-is-not-green"
+  ],
+  "fixtures": [
+    {
+      "id": "actor-channel-roundtrip",
+      "file": "actor-channel-roundtrip.atto",
+      "gitBlobSha1": "bc5c42d269b3e7e6dc5f90aa648db4eab33e4870",
+      "kind": "accept",
+      "stdout": "42"
+    },
+    {
+      "id": "channel-select-roundtrip",
+      "file": "channel-select-roundtrip.atto",
+      "gitBlobSha1": "076a26cefbd816151c2a4f72ee22bce7b841561b",
+      "kind": "accept",
+      "stdout": "0:10"
+    },
+    {
+      "id": "cancel-scoped-wait",
+      "file": "cancel-scoped-wait.atto",
+      "gitBlobSha1": "5684868c9608d224545e92d39737d124af6b96d9",
+      "kind": "accept",
+      "stdout": "cancelled"
+    },
+    {
+      "id": "reject-critical-suspends",
+      "file": "reject-critical-suspends.atto",
+      "gitBlobSha1": "06bdab0ecfc2bc1c403f143d738ce58ea614b475",
+      "kind": "reject",
+      "diagnosticPattern": "critical.{0,100}suspends|suspends.{0,100}critical"
+    },
+    {
+      "id": "reject-borrowed-thread-capture",
+      "file": "reject-borrowed-thread-capture.atto",
+      "gitBlobSha1": "d9fc34719fbc7a7b3622a67a2a9c54ca637cafd9",
+      "kind": "reject",
+      "diagnosticPattern": "borrow|escape|owned|thread.{0,100}capture"
+    },
+    {
+      "id": "reject-function-message",
+      "file": "reject-function-message.atto",
+      "gitBlobSha1": "b322b46b3622f4d534cf65f9025398b8c2811396",
+      "kind": "reject",
+      "diagnosticPattern": "sendable|serializ|closure|function.{0,100}channel"
+    }
+  ],
+  "backendStatus": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED"
+  },
+  "nativeGuestReceipts": [],
+  "hostReferenceCountAsGuest": false
+}

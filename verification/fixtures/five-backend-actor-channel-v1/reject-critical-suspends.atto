@@ -1,0 +1,8 @@
+// MUST REJECT: a critical function may not suspend. No accepted guest output.
+critical suspends fnc wrong(): void {
+  return;
+}
+
+pub fnc main(): void {
+  return;
+}

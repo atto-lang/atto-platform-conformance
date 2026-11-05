@@ -1,0 +1,12 @@
+// MUST REJECT: actor-owned state borrow cannot escape to a foreign thread.
+// This is a candidate ownership negative; require a SPECIFIC diagnostic.
+define actor Counter as
+    state { let int count: 42; }
+    start() -> void ::
+        handle_state(critical-read |s| -> {
+            Thread.spawn(ThreadOptions.default(), || -> int {
+                return s.count;
+            });
+        });
+    end
+end
