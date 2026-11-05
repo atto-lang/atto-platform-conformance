@@ -41,6 +41,12 @@ export function validateActorFinalizationReceipt(expectedHead, receipt) {
                  step.name === job.requiredTestStep &&
                  step.status === "completed" && step.conclusion === "success"))
         errors.push("REQUIRED_TEST_STEP_NOT_EXECUTED");
+      // A required step must have one unambiguous, inert identity. A
+      // successful step plus a duplicate skipped/misleading label is not proof.
+      else if (job.steps.filter(step => step && step.name === job.requiredTestStep).length !== 1 ||
+               job.steps.some(step => !step || typeof step.name !== "string" ||
+                 /[\u0000-\u001f\u007f-\u009f\u2028\u2029\p{Cf}]/u.test(step.name)))
+        errors.push("UNSAFE_OR_DUPLICATE_TEST_STEP");
       // A named successful test cannot launder additional failed, canceled,
       // unknown, or still-running steps in an allegedly completed GitHub job.
       else if (job.steps.some(step => !step || step.status !== "completed" ||
