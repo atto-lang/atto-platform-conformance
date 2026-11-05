@@ -13,16 +13,17 @@ test('tail-call v1 fixture registry is closed, source-only and has no parity cla
   assert.equal(manifest.schemaVersion, 1);
   assert.equal(manifest.id, 'tail-calls-v1');
   assert.deepEqual(manifest.backends, backends);
-  assert.equal(manifest.cases.length, 9);
+  assert.equal(manifest.cases.length, 11);
   const names = new Set();
   let deepTailCases = 0;
   let rejectionCases = 0;
+  let runtimeReentryCases = 0;
   for (const entry of manifest.cases) {
     assert.match(entry.id, /^[a-z0-9-]+$/);
     assert.ok(!names.has(entry.id), 'duplicate test: ' + entry.id);
     names.add(entry.id);
     assert.ok(entry.path.startsWith('fixtures/tail-calls-v1/'));
-    assert.match(entry.path, /^fixtures\/tail-calls-v1\/[a-z0-9-]+\.ores$/);
+    assert.match(entry.path, /^fixtures\/tail-calls-v1\/[a-z0-9-]+\.(?:ores|atto)$/);
     const pathname = resolve(root, entry.path);
     assert.ok(pathname.startsWith(root + sep), 'fixture escaped repository root');
     const canonical = await realpath(pathname);
@@ -33,7 +34,19 @@ test('tail-call v1 fixture registry is closed, source-only and has no parity cla
     assert.deepEqual(entry.backends, Object.fromEntries(backends.map(b => [b, 'pending'])),
       'source-only tests must not assert backend passes');
     if (entry.compile === 'accept') {
-      assert.equal(typeof entry.stdout, 'string');
+      if (entry.runtime === 'reject') {
+        // Higher-order edges can elude whole-program static analysis.
+        // The dynamic routine-reentry trap is an execution outcome, not
+        // a rejected parser/typechecker result or successful stdout case.
+        assert.equal(entry.diagnosticClass, 'recursive-routine');
+        assert.equal(entry.stdout, undefined);
+        assert.equal(entry.tailDepth, undefined);
+        assert.match(entry.path, /\.atto$/);
+        assert.match(source, /\bFnc\s*</);
+        runtimeReentryCases++;
+      } else {
+        assert.equal(typeof entry.stdout, 'string');
+      }
       if (entry.tailDepth !== undefined) {
         assert.ok(Number.isSafeInteger(entry.tailDepth) && entry.tailDepth >= 50000);
         deepTailCases++;
@@ -46,4 +59,7 @@ test('tail-call v1 fixture registry is closed, source-only and has no parity cla
   }
   assert.equal(deepTailCases, 6);
   assert.equal(rejectionCases, 2);
+  assert.equal(runtimeReentryCases, 2);
+  assert.ok(names.has('routine-callback-tail-reject'));
+  assert.ok(names.has('routine-callback-nontail-reject'));
 });
