@@ -4,9 +4,9 @@ import {readFileSync} from "node:fs";
 import {validateRegistry,validateMember} from "../src/ecosystem-contract.mjs";
 const base=JSON.parse(readFileSync(new URL("../integration/repositories.json",import.meta.url),"utf8"));
 const clone=()=>structuredClone(base);
-test("all 52 owned repositories are inventoried with typed acyclic integration edges",()=>{
+test("all 54 owned repositories are inventoried with typed acyclic integration edges",()=>{
   const result=validateRegistry(base);
-  assert.equal(result.repositories,52);
+  assert.equal(result.repositories,54);
   assert.ok(result.links>35);
   for(const r of base.repositories) {
     const member={schemaVersion:1,protocol:"oreslang-ecosystem-integration",repository:`ores-truffle-oreslang/${r.name}`,role:r.role,upstreams:r.upstreams,evidence:"not-attested",note:"Declared integration touchpoints only; no CI or runtime parity is asserted."};
