@@ -31,6 +31,21 @@ function object(value,name) {
   }
   return value;
 }
+function exactRecordArray(value, length, name) {
+  if(!Array.isArray(value)) fail(name+" must be an array");
+  const size=Object.getOwnPropertyDescriptor(value,"length")?.value;
+  if(size!==length) fail(name+" must have exact length");
+  const keys=Reflect.ownKeys(value);
+  if(keys.length!==length+1) fail(name+" unexpected array metadata");
+  const result=[];
+  for(let i=0;i<length;i++) {
+    const slot=Object.getOwnPropertyDescriptor(value,String(i));
+    if(!slot?.enumerable || !Object.hasOwn(slot,"value"))
+      fail(name+" requires own enumerable data slots");
+    result.push(slot.value);
+  }
+  return result;
+}
 function exactKeys(value,keys,name) {
   for(const key of Object.keys(value)) if(!keys.includes(key)) fail(name+" unexpected key: "+key);
   for(const key of keys) if(!Object.hasOwn(value,key)) fail(name+" missing key: "+key);
@@ -120,10 +135,9 @@ export function validateBoundedQueueBackendStatus(status) {
   commit(status.source_contract.head_commit,"source contract head");
   if(status.source_contract.execution_status!=="NOT_EXECUTED")
     fail("pending manifest cannot claim source execution");
-  if(!Array.isArray(status.records)||status.records.length!==BACKENDS.length)
-    fail("exactly five backend records required");
+  const records=exactRecordArray(status.records,BACKENDS.length,"backend records");
   const seen=new Set();
-  for(const record of status.records){
+  for(const record of records){
     object(record,"backend record");
     exactKeys(record,[
       "backend","source_lowering","runtime_substrate","guest_execution","reference","reason"
@@ -152,6 +166,6 @@ export function validateBoundedQueueBackendStatus(status) {
     executedBackendCount:0,
     parityCertified:false,
     releaseReady:false,
-    blocked:status.records.map(x=>x.backend)
+    blocked:records.map(x=>x.backend)
   };
 }
