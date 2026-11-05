@@ -16,7 +16,19 @@ function fail(message) {
   throw new Error("INVALID_BOUNDED_QUEUE_V1: " + message);
 }
 function object(value,name) {
-  if(value===null || typeof value!=="object" || Array.isArray(value)) fail(name+" must be object");
+  if(value===null || typeof value!=="object" || Array.isArray(value))
+    fail(name+" must be object");
+  const proto=Object.getPrototypeOf(value);
+  if(proto!==Object.prototype && proto!==null)
+    fail(name+" must be plain data object");
+  // JSON evidence cannot contain symbols, accessors or inherited authority.
+  // Inspect own property descriptors rather than invoking caller getters.
+  for(const key of Reflect.ownKeys(value)) {
+    const descriptor=Object.getOwnPropertyDescriptor(value,key);
+    if(typeof key!=="string" || !descriptor?.enumerable ||
+       !Object.hasOwn(descriptor,"value"))
+      fail(name+" must contain only enumerable own data fields");
+  }
   return value;
 }
 function exactKeys(value,keys,name) {
