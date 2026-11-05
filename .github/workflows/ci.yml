@@ -29,6 +29,8 @@ jobs:
         with:
           node-version: '22'
       - run: npm test
+      - name: Reject cross-repository source/platform governance drift
+        run: npm run governance:source-platform
       - name: Reject unproven external integration claims and issue inventory drift
         run: node bin/check-external-ores-audit.mjs
       - name: Independent JSON Schema Draft 2020-12 contract checks
