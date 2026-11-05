@@ -51,6 +51,9 @@ function checkCommon(report) {
   check(report.job_conclusion === 'success', 'job conclusion');
   check(Array.isArray(report.cases) && report.cases.length > 0 && report.cases.length <= 100, 'cases');
 }
+// Negative compile exits must exclude standard timeout (124), launch failures
+// (125–127), and signal/crash-coded statuses (128+). This is a structural
+// filter, not proof that remaining codes represent intentional rejection.
 function checkCaseIdentity(c, ids) {
   check(isObject(c), 'case object');
   check(typeof c.id === 'string' && CASE_ID.test(c.id) && !ids.has(c.id), 'case ID');
@@ -70,7 +73,7 @@ function validateV1(report) {
       check(typeof c.stdout === 'string' && c.stdout.length <= 16384, 'bounded stdout');
       check(typeof c.expected_stdout === 'string' && c.stdout === c.expected_stdout, 'stdout mismatch');
     } else {
-      check(c.compile_exit !== 0 && c.executed === false, 'negative compile rejection');
+      check(c.compile_exit >= 1 && c.compile_exit <= 123 && c.executed === false, 'negative compile rejection');
       check(typeof c.diagnostic === 'string' && c.diagnostic.length > 0 && c.diagnostic.length <= 4096 &&
         !/[\u0000\u001b\u007f-\u009f\u2028-\u202e\u2066-\u2069]/.test(c.diagnostic), 'negative diagnostic');
     }
@@ -105,13 +108,18 @@ function validateV2(report) {
           'process-exit cannot carry the full typed i64 result');
         check(Number.isSafeInteger(c.run_exit) && c.run_exit === Number(value),
           'process-exit result must match observed exit status');
+      } else if (c.run_exit !== undefined) {
+        // Typed results never override explicitly reported guest process
+        // failure. This is supplementary structural evidence, not attestation.
+        check(Number.isSafeInteger(c.run_exit) && c.run_exit === 0,
+          'positive guest process exit');
       }
     } else {
       check(c.failure_stage === 'compile' || c.failure_stage === 'runtime', 'negative failure stage');
       check(typeof c.diagnostic === 'string' && c.diagnostic.length > 0 && c.diagnostic.length <= 4096 &&
         !/[\u0000\u001b\u007f-\u009f\u2028-\u202e\u2066-\u2069]/.test(c.diagnostic), 'negative diagnostic');
       if (c.failure_stage === 'compile') {
-        check(c.compile_exit !== 0 && c.executed === false, 'negative compile rejection');
+        check(c.compile_exit >= 1 && c.compile_exit <= 123 && c.executed === false, 'negative compile rejection');
         check(c.artifact_sha256 === undefined, 'compile rejection artifact');
         check(c.runtime_outcome === undefined, 'compile rejection runtime outcome');
       } else {
