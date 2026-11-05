@@ -63,14 +63,22 @@ export function crossCheckParityReceiptEvidence(receipt, evidence) {
   requireEvidence(Array.isArray(job.steps) && job.steps.length > 0 && job.steps.length <= 500,
     'step metadata required');
   const uniqueNumbers = new Set();
+  let expectedStep = 1;
   let completed = 0;
   let actualUserSteps = 0;
   for (const s of job.steps) {
     requireEvidence(isObject(s) && positiveInt(s.number) && !uniqueNumbers.has(s.number) &&
       typeof s.name === 'string' && s.name.length > 0 && s.name.length <= 512,
       'step identity');
+    // GitHub job step numbers must form an unbroken, ordered sequence.
+    // A missing step could otherwise hide a failed or skipped compiler action.
+    requireEvidence(s.number === expectedStep++, 'discontinuous job step sequence');
+    requireEvidence(!/[\u0000-\u001f\u007f-\u009f\u2028-\u202e\u2066-\u2069]/.test(s.name),
+      'unsafe job step name');
     uniqueNumbers.add(s.number);
-    requireEvidence(['completed','queued','in_progress','pending'].includes(s.status), 'step status');
+    // A completed GitHub Actions job cannot certify a still-pending step.
+    // A forged extra pending step previously passed when one user step succeeded.
+    requireEvidence(s.status === 'completed', 'unfinished step in completed job');
     requireEvidence(s.conclusion === 'success' || s.conclusion === 'skipped' || s.conclusion === 'neutral' ||
       s.conclusion === null, 'step conclusion');
     if (s.status === 'completed' && s.conclusion === 'success') {
