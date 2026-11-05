@@ -38,7 +38,9 @@ test('cache-line overlap decisions remain conservative without trusted physical 
  const a={allocation:'a',start:0,length:8,baseRemainder:0};
  assert.equal(mayShareCacheLine(a,{...a,start:64,length:8}),false);
  assert.equal(mayShareCacheLine(a,{...a,start:63,length:8}),true);
- assert.equal(mayShareCacheLine(a,{...a,start:64,length:8,baseRemainder:null}),true);
+ assert.equal(mayShareCacheLine(a,{...a,start:64,length:8,baseRemainder:null}),false);
+ const unknown={allocation:'a',start:0,length:8};
+ assert.equal(mayShareCacheLine(unknown,{...unknown,start:64,length:8}),true);
  assert.equal(mayShareCacheLine(a,{allocation:'different',start:1024,length:8,baseRemainder:0}),true);
  assert.throws(()=>mayShareCacheLine(a,a,48),e=>e.code==='INVALID_CACHE_LINE');
 });
