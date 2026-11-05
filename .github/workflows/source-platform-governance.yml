@@ -1,0 +1,38 @@
+name: Source/platform governance inventory (host-only)
+on:
+  pull_request:
+    paths:
+      - 'contracts/source-platform-governance-v1.json'
+      - 'contracts/platform-capabilities-v1.json'
+      - 'integration/repositories.json'
+      - 'bin/check-source-platform-governance.mjs'
+      - 'test/source-platform-governance.test.mjs'
+      - '.github/workflows/source-platform-governance.yml'
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  inventory-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact checked out Git commit
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED"
+          echo "Source tree: $(git rev-parse 'HEAD^{tree}')"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Registry and cross-reference consistency (not a guest test)
+        run: |
+          node bin/check-source-platform-governance.mjs
+          node --test test/source-platform-governance.test.mjs
