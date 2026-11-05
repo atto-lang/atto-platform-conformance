@@ -215,16 +215,24 @@ test('negative compiler infrastructure and crash exits do not impersonate reject
  for(const make of [v1,v2]){
   for(const code of [0,124,125,126,127,128,134,137,139,255]){
    const receipt=make();
-   receipt.cases.find(c=>c.kind==='negative').compile_exit=code;
+   receipt.cases.find(c=>c.kind==='negative' && (receipt.schema==='attolang.parity-receipt/1' || c.failure_stage==='compile')).compile_exit=code;
    assert.throws(()=>validateParityReceipt(receipt),/negative compile rejection/,
      'exit='+code);
   }
   for(const code of [1,2,42,123]){
    const receipt=make();
-   receipt.cases.find(c=>c.kind==='negative').compile_exit=code;
+   receipt.cases.find(c=>c.kind==='negative' && (receipt.schema==='attolang.parity-receipt/1' || c.failure_stage==='compile')).compile_exit=code;
    assert.equal(validateParityReceipt(receipt).publicly_promotable,false);
   }
  }
+});
+test('compile-rejection hardening keeps runtime negative semantics unchanged',()=>{
+ const receipt=v2();
+ const runtime=receipt.cases.find(c=>c.failure_stage==='runtime');
+ assert.equal(runtime.compile_exit,0);
+ assert.equal(validateParityReceipt(receipt).consistent,true);
+ runtime.compile_exit=1;
+ assert.throws(()=>validateParityReceipt(receipt),/negative runtime execution/);
 });
 test('positive typed value cannot hide explicit failed host process exit',()=>{
  for(const channel of ['stdout','wasm-export','native-return','host-call']){
