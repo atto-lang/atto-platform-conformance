@@ -10,6 +10,7 @@
     "inspect": "node bin/conformance.mjs",
     "audit:private-ci-bootstrap": "node bin/audit-private-ci-bootstrap.mjs",
     "propose:private-ci-canary": "node bin/propose-private-ci-canary.mjs",
-    "parity:first-five": "node bin/validate-first-five.mjs"
+    "parity:first-five": "node bin/validate-first-five.mjs",
+    "governance:source-platform": "node bin/audit-source-platform-governance.mjs"
   }
 }
