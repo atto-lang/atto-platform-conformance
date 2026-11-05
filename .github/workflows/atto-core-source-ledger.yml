@@ -1,0 +1,35 @@
+# Offline SOURCE_ONLY contract. Native/guest receipts need independently verified GitHub execution.
+name: AttoLang five-backend core source ledger (SOURCE ONLY)
+on:
+  pull_request:
+    paths:
+      - 'contracts/atto-core-source-ledger-v1/**'
+      - 'tests/verify_atto_core_source_ledger.py'
+      - 'tests/test_atto_core_source_ledger.py'
+      - '.github/workflows/atto-core-source-ledger.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-only:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout exact conformance PR head
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Pin exact source head
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git diff --quiet --exit-code
+          git diff --cached --quiet --exit-code
+      - name: Audit fail-closed ledger and negative mutations
+        run: |
+          set -euo pipefail
+          python3 -I tests/verify_atto_core_source_ledger.py
+          python3 -I -m unittest discover -s tests -p 'test_atto_core_source_ledger.py' -v
+          echo 'COMPILER_BACKED_GUEST_EXECUTION=NOT_EXECUTED'
