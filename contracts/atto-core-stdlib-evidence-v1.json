@@ -1,0 +1,60 @@
+{
+  "schema": "attolang.core-stdlib-evidence.v1",
+  "status": "SOURCE_ONLY_NOT_EXECUTED",
+  "origin": "ores-truffle-oreslang/oreslang-common-source#225",
+  "required_backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "forge",
+    "net"
+  ],
+  "modules": [
+    {
+      "name": "numeric",
+      "tier": "core",
+      "git_blob_sha": "5ced991f1d49b3c2a60fdd72b9003c0a4d18cd72"
+    },
+    {
+      "name": "core",
+      "tier": "std",
+      "git_blob_sha": "d2cd9b8e0cd3e3bb3ee6a5f9cebf9ab3312c44f4"
+    },
+    {
+      "name": "assert",
+      "tier": "std",
+      "git_blob_sha": "dd5e64e09e9a4b2606e4a685a60ad0bc00f45aea"
+    },
+    {
+      "name": "compute",
+      "tier": "std",
+      "git_blob_sha": "b8e11db5f8701fbceb1e2afd39cad06662d0e8be"
+    },
+    {
+      "name": "trace",
+      "tier": "std",
+      "git_blob_sha": "f4ff35b10683880e42e3151b34fc140d52704dba"
+    },
+    {
+      "name": "db_pool",
+      "tier": "std",
+      "git_blob_sha": "95396a3cee45a18d7d2707224ef2f23957ba8e46"
+    },
+    {
+      "name": "http_wire",
+      "tier": "std",
+      "git_blob_sha": "21169e5c262cd79997637c97d448e05a835e2e44"
+    },
+    {
+      "name": "actor_persistence",
+      "tier": "std",
+      "git_blob_sha": "fec71c8ae3e9c0e8828b712a1a9d78a26948e0ea"
+    }
+  ],
+  "policy": {
+    "source_only_never_proves_execution": true,
+    "negative_compiler_tests_required": true,
+    "exact_head_stepful_jobs_required": true,
+    "independent_review_required": true
+  }
+}
