@@ -1,0 +1,12 @@
+# MAILBOX_COMPLETION_V1 — candidate source-free projection
+
+**Status: CANDIDATE, MODEL ONLY.** This is an independent sequential lifecycle check, not a replacement for the concurrent MAILBOX_LINEARIZABILITY_V1 oracle, compiled AttoLang actor execution, or CI receipts.
+
+- `send` is proposed to produce `Result`: model `RESULT_OK` means *admitted*, not dispatched or processed. Full/closed produce `RESULT_ERR_FULL`/`RESULT_ERR_CLOSED` without admission. Existing Java source drafts returning `void` are **not compatible** with this proposed surface until reconciled.
+- `stop_graceful` seals ingress and drains already accepted queued DATA; `stop_abrupt` seals ingress and discards queued DATA. Neither discards already in-flight delivery or its physical liabilities. These separate mode names prevent silent conflation with the pre-existing model's abortive `close`.
+- `get_done` can produce `DONE` only after terminal state **and** all queued DATA, active deliveries, source Tasks and resource loans have physically retired. It is distinct from send acknowledgment, readiness, stopped ingress, and a mailbox-only drained probe. The model's counters are caller-reported, not proof that a runtime actually reclaimed resources.
+- `reclaim` is rejected until this same quiescence gate holds. Native byte zeroization, ownership release, generation invalidation, CONTROL lane, and failure/retry of fallible teardown require **separate** tests; this model does not validate their implementation.
+
+Run `node --test tests/mailbox-completion-v1.test.mjs`. The case input schema is `oreslang.mailbox_completion.v1`, capacity 1–4, and up to 1,000 sequential events containing `op`, expected result `expect`, and a `ticket` where needed. Extra keys and invalid identifiers fail closed. The checker always returns `compiledGuestExecuted:false` and `nativeParityCertified:false`.
+
+**Required backend refinement (Java/GraalVM, LLVM, Wasm, Forge, .NET):** execute an identical compiled `.atto` actor scenario, instrument real admission/close/dispatch/finish/Task/loan/DONE events, normalize real Result values to the model vocabulary with independently reviewed adapters, preserve per-actor incarnation/ticket and exact tree+compiler+fixture hashes, and attach nonzero-step run/job/step/log evidence. Report `PASS`, `FAIL`, `UNSUPPORTED`, or `NOT_EXECUTED`. A source-free state machine, host CTest or zero-step Actions run cannot be recorded as guest parity.
