@@ -19,13 +19,13 @@ results, continue-on-error and skipped CI steps, Unicode housekeeping spoofing,
 invalid input, noncanonical/duplicate-key JSON, and symlink/hardlink paths.
 GitHub Actions must independently execute the same tests at the final PR SHA.
 
-The example ledger intentionally returns exit **1**, `BLOCKED`, with
+A structurally eligible but **unattested offline** ledger returns exit **3** (`SNAPSHOT_READY_RECHECK_LIVE`), **never zero**; consumers must not mistake read-only snapshot readiness for a release decision. The example ledger intentionally returns exit **1**, `BLOCKED`, with
 **five real merged PRs**. Their landed tree hashes and GitHub
 `compare(merge_sha...main)` ancestry are pinned, but protected-main enforcement,
 post-merge independent review, authoritative fixture inventories, and exact
 landed-commit source-owned CI receipts are not established. They remain
 `NOT_VERIFIED` or `NOT_EXECUTED`; no facts were invented to qualify them.
-Exit **2** means malformed/untrusted JSON and is also a hard failure.
+Exit **2** means malformed/untrusted JSON and is also a hard failure. CLI exit **0 is reserved and never emitted**: release authorization requires live, separately authenticated review/protection/CI validation.
 
 ## Evidence contract
 
