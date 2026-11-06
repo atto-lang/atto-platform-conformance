@@ -125,3 +125,24 @@ test('a moved head fails exact-head post-collection validation',async()=>{
  const result=await inspectPR(client,REPO,9,async()=>({records:[],gaps:[]}));
  assert.equal(result.headVerified,false);assert.ok(result.gaps.some(x=>x.kind==='PR_HEAD_CHANGED_DURING_AUDIT'));
 });
+
+test('rate-limit reset is honored when Retry-After is absent',async()=>{
+ const waits=[];let hits=0;
+ const client=githubReadClient({token:'x',now:()=>1000000,sleep:async ms=>waits.push(ms),
+  fetcher:async()=>++hits===1?response({},403,{'x-ratelimit-remaining':'0','x-ratelimit-reset':'1002'}):response({ok:true})});
+ assert.deepEqual(await client.get('/limited'),{ok:true});
+ assert.deepEqual(waits,[2000]);
+ assert.equal(hits,2);
+});
+test('PR count hard limit never stores excess records from one page',async()=>{
+ const repo='example/atlang';
+ const responseFor=path=>path==='/installation/repositories'
+   ?{repositories:[{id:1,full_name:repo}],total_count:1}
+   :[{id:1,number:1,state:'open'},{id:2,number:2,state:'open'}];
+ const client={stats:{},get:async path=>responseFor(path)};
+ const r=await inventoryOrg({client,org:'example',start:'2026-11-05T00:00:00Z',
+  stop:'2026-11-06T00:00:00Z',maxPRs:1,crossCheckSearch:false});
+ assert.equal(r.prs.length,1);
+ assert.equal(r.complete,false);
+ assert.ok(r.gaps.some(g=>g.kind==='PR_BUDGET_REACHED'));
+});

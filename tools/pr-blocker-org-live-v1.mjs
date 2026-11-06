@@ -58,15 +58,17 @@ export function githubReadClient({token, fetcher = fetch, sleep = sleepDefault,
       }); } catch { throw new GithubReadError('NETWORK_UNOBSERVED', null); }
       if (response.ok) return boundedJson(response);
       const remaining = response.headers.get('x-ratelimit-remaining');
-      const retryAfter = Number(response.headers.get('retry-after'));
-      const reset = Number(response.headers.get('x-ratelimit-reset'));
+      const retryValue = response.headers.get('retry-after');
+      const resetValue = response.headers.get('x-ratelimit-reset');
+      const retryAfter = retryValue === null ? null : Number(retryValue);
+      const reset = resetValue === null ? null : Number(resetValue);
       const limited = response.status === 429 ||
-        (response.status === 403 && (remaining === '0' || Number.isFinite(retryAfter) && retryAfter > 0));
+        (response.status === 403 && (remaining === '0' || retryAfter !== null && Number.isFinite(retryAfter) && retryAfter > 0));
       if (limited) stats.rateLimits++;
       const retryable = limited || response.status === 502 || response.status === 503 || response.status === 504;
       if (retryable && attempt < 2) {
-        const wait = Number.isFinite(retryAfter) && retryAfter >= 0 ? retryAfter * 1000 :
-          limited && Number.isFinite(reset) && reset > 0 ? Math.max(0, reset * 1000 - now()) :
+        const wait = retryAfter !== null && Number.isFinite(retryAfter) && retryAfter >= 0 ? retryAfter * 1000 :
+          limited && reset !== null && Number.isFinite(reset) && reset > 0 ? Math.max(0, reset * 1000 - now()) :
           250 * (2 ** attempt);
         if (wait <= maxRetryDelayMs) { stats.retries++; await sleep(wait); continue; }
       }
@@ -176,7 +178,9 @@ export async function inventoryOrg({client, org, start='2008-01-01T00:00:00Z', s
     const canon = await paged(client, `/repos/${repo}/pulls`, {state:'open'});
     gaps.push(...canon.gaps.map(g=>({...g,repo})));
     const canonicalNumbers = new Set();
+    let prBudgetHit = false;
     for (const item of canon.items) {
+      if (prs.length >= maxPRs) {prBudgetHit = true; break;}
       if (!Number.isSafeInteger(item.number) || item.number < 1 || item.state !== 'open') {
         gaps.push(issue('CANONICAL_PR_INVALID', {repo})); continue;
       }
@@ -192,7 +196,7 @@ export async function inventoryOrg({client, org, start='2008-01-01T00:00:00Z', s
       for (const n of canonicalNumbers) if (!searched.has(n)) gaps.push(issue('SEARCH_MISSING_CANONICAL_PR',{repo,number:n}));
       for (const n of searched) if (!canonicalNumbers.has(n)) gaps.push(issue('SEARCH_STALE_OR_EXTRA_PR',{repo,number:n}));
     } else gaps.push(issue('SEARCH_DATE_CROSSCHECK_NOT_RUN',{repo}));
-    if (prs.length >= maxPRs) {gaps.push(issue('PR_BUDGET_EXCEEDED',{maxPRs})); break;}
+    if (prBudgetHit || prs.length >= maxPRs) {gaps.push(issue('PR_BUDGET_REACHED',{maxPRs})); break;}
   }
   return {org, repositories:repos, prs, partitions, gaps,
     complete:gaps.length === 0, stats:{...client.stats}};
