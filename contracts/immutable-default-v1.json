@@ -10,7 +10,9 @@
     "net",
     "forge"
   ],
-  "optionalBackends": ["cranelift"],
+  "optionalBackends": [
+    "cranelift"
+  ],
   "backendCapabilities": {
     "java": "candidate-on-unverified-draft",
     "llvm": "candidate-on-unverified-draft",
@@ -149,15 +151,18 @@
     {
       "id": "IDB-19",
       "file": "fixtures/immutable-default/v1/const-runtime-param.ores",
-      "expect": "reject",
-      "oracle": "nonconstant-const",
-      "source": "fnc main(int x): int { const y = x + 1; return y; }\n"
+      "expect": "accept",
+      "oracle": "8",
+      "source": "fnc main(int x): int { const y = x + 1; return y; }\n",
+      "args_i64": [
+        "7"
+      ]
     },
     {
       "id": "IDB-20",
       "file": "fixtures/immutable-default/v1/const-runtime-local.ores",
-      "expect": "reject",
-      "oracle": "nonconstant-const",
+      "expect": "accept",
+      "oracle": "8",
       "source": "fnc main(): int { int x = 7; const y = x + 1; return y; }\n"
     },
     {
