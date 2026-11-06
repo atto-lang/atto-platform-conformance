@@ -29,11 +29,21 @@ candidate Git blob for that backend:
 | Backend | Workflow | Pinned candidate Git blob |
 |---|---|---|
 | Java | `dop-scalar-java-guest.yml` | `1e7e45f5b1bb7151d375609fd1ae00d922509f96` |
-| LLVM | `dop-atto-soa-native.yml` | `a845d9f110940d8bf3da931c8bd52d021b7ffe6d` |
+| LLVM | `dop-atto-soa-native.yml` | `7f4f80705ecf7521dd4790bf3c60b05c371766f8` |
 
 Those blob IDs were read from the source branches at Java #2571
 `42f9a762fec48b39952b15043dc0da1314a844f2` and LLVM #1308
-`4c800329b90ed8ee3db7ff59e77c67ff8daa5fe2`.
+`beadf808fe3c6e1a0ced7d9a673cebe579503cf9`.
+LLVM's updated pinned workflow now includes an explicit
+`execute-poisoned-guest` step: the same real LLVM compiler and Clang must
+compile the canonical `.atto` program with exactly one checksum-guard constant
+changed from `537509888` to `537509889`. Native execution must exit **1**;
+compiler, auditor, Clang, source and guest binary hashes are checked. A
+positive LLVM `PASSED` receipt must report this executed and successful
+step after `execute-guest`, with independently matched GitHub step metadata.
+This is **not evidence of execution** until an actual runner executes it;
+zero-step runs remain `NOT_EXECUTED`.
+
 They are **observed review candidates, not independently security-approved
 releases**. A changed source workflow must fail closed until the reviewed
 policy is updated with the correct new blob and tests.
