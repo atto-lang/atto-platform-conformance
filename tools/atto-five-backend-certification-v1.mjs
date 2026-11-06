@@ -34,6 +34,11 @@ function receiptValid(r,b,binary,kind,contract){
    r.output.stdout_hex.length<=131072&&/^(?:[a-f0-9]{2})*$/.test(r.output.stdout_hex)&&
    r.output.crashed===false&&r.output.exit_code===contract.oracle.expected_exit_code&&
    r.output.stdout_hex===contract.oracle.expected_stdout_hex;
+ if(kind==='negative')return obj(contract)&&sha(contract.fixture_blob_sha)&&
+   r.fixture_blob_sha===contract.fixture_blob_sha&&obj(r.output)&&
+   Number.isSafeInteger(r.output.exit_code)&&r.output.exit_code>0&&r.output.exit_code<=255&&
+   r.output.diagnostic_category===contract.expected_diagnostic&&
+   r.output.phase===contract.expected_phase&&r.output.crashed===false;
  if(kind==='formal')return hash(r.model_sha256)&&pos(r.properties_checked)&&r.counterexamples===0;
  if(kind==='aot')return hash(r.executable_sha256)&&r.fully_aot===true&&r.jit_disabled===true;
  if(kind==='memory')return obj(r.metrics)&&pos(r.metrics.samples)&&
@@ -59,6 +64,11 @@ export function validateCandidate(s){
   typeof s.postmerge_ledger.path!=='string'||
   !/^evidence\/[a-z0-9.-]+\.json$/.test(s.postmerge_ledger.path)||
   !sha(s.postmerge_ledger.github_blob_sha)||
+  !obj(s.negative_oracle)||!CONTRACT.test(s.negative_oracle.id)||
+  !pos(s.negative_oracle.proposal_pr)||!sha(s.negative_oracle.proposal_head)||
+  !sha(s.negative_oracle.fixture_blob_sha)||
+  !/^[A-Z][A-Z0-9_]{5,127}$/.test(s.negative_oracle.expected_diagnostic)||
+  !['frontend','typechecker'].includes(s.negative_oracle.expected_phase)||
   !Array.isArray(s.backends)||s.backends.length!==5||
   !Array.isArray(s.contracts)||s.contracts.length===0||s.contracts.length>64)
   throw new TypeError('invalid release candidate envelope');
@@ -86,7 +96,7 @@ export function validateCandidate(s){
     !Array.isArray(b.guest)||b.guest.length!==cids.length||
     new Set(b.guest.map(g=>g?.contract_id)).size!==cids.length||
     cids.some(id=>!b.guest.some(g=>g?.contract_id===id))||
-    !obj(b.formal)||!obj(b.aot)||!obj(b.memory))
+    !obj(b.negative)||!obj(b.formal)||!obj(b.aot)||!obj(b.memory))
     throw new TypeError('invalid backend schema');
   if(b.compiler.binary_sha256===null&&b.compiler.build_receipt!==null)
     throw new TypeError('build receipt without binary');
@@ -94,6 +104,7 @@ export function validateCandidate(s){
     b.compiler.build_receipt,b,b.compiler.binary_sha256,'aot',null))
     throw new TypeError('unbound build receipt');
   for(const g of b.guest)status(g,'guest',b,b.compiler.binary_sha256,s.contracts.find(c=>c.id===g.contract_id));
+  status(b.negative,'negative',b,b.compiler.binary_sha256,s.negative_oracle);
   for(const kind of ['formal','aot','memory'])status(b[kind],kind,b,b.compiler.binary_sha256,null);
  }
  return true;
@@ -113,6 +124,8 @@ export function evaluateCandidate(s,landed){
    status(g,'guest',b,b.compiler.binary_sha256,s.contracts.find(c=>c.id===g.contract_id))]));
   if(Object.values(guest).some(x=>x==='NOT_EXECUTED'))blockers.push('GUEST_NOT_EXECUTED');
   if(Object.values(guest).some(x=>x==='FAILED'||x==='UNSUPPORTED'))blockers.push('GUEST_FAILED_OR_UNSUPPORTED');
+  const negative=status(b.negative,'negative',b,b.compiler.binary_sha256,s.negative_oracle);
+  if(negative!=='REPORTED_PASS_UNVERIFIED')blockers.push('NEGATIVE_DIAGNOSTIC_NOT_VERIFIED');
   const formal=status(b.formal,'formal',b,b.compiler.binary_sha256,null);
   const aot=status(b.aot,'aot',b,b.compiler.binary_sha256,null);
   const memory=status(b.memory,'memory',b,b.compiler.binary_sha256,null);
@@ -121,7 +134,7 @@ export function evaluateCandidate(s,landed){
   return{id:b.id,repo:b.repo,source_sha:b.source.commit_sha,tree_sha:b.source.tree_sha,
    main_protected:b.source.main_protected,compiler_binary_sha256:b.compiler.binary_sha256,
    aot_target:b.targets.aot_target,memory_target:b.targets.memory_target,
-   guest,formal,aot,memory,blockers};
+   guest,negative,formal,aot,memory,blockers};
  });
  if(rows.some(r=>r.blockers.length))holds.push('BACKEND_RELEASE_REQUIREMENTS_INCOMPLETE');
  return{schema_version:1,scope:'advisory_only_not_release_authority',
@@ -140,12 +153,12 @@ export function toMarkdown(r){
  '**Decision: '+r.status+'**. Advisory only; release_authorized=false.','',
  'Backends: '+r.backend_count+'; proposed contracts: '+r.contract_count+
  '; postmerge blocked: '+r.postmerge.blocked+'/'+r.postmerge.count+'.','',
- '| Backend | Source commit | Protected main | Compiler binary | Formal | Full AOT | Memory |',
- '|---|---|---|---|---|---|---|'];
+ '| Backend | Source commit | Protected main | Compiler binary | Negative | Formal | Full AOT | Memory |',
+ '|---|---|---|---|---|---|---|---|'];
  for(const b of r.backends)out.push('| '+b.id+' | '+b.source_sha.slice(0,12)+' | '+
   (b.main_protected?'reported yes':'NO')+' | '+
   (b.compiler_binary_sha256?'reported, unverified':'NOT VERIFIED')+' | '+
-  b.formal+' | '+b.aot+' | '+b.memory+' |');
+  b.negative+' | '+b.formal+' | '+b.aot+' | '+b.memory+' |');
  out.push('','## Guest matrix','',
   '| Proposed contract | '+r.backends.map(b=>b.id).join(' | ')+' |',
   '|---|'+r.backends.map(()=>'---|').join(''));
