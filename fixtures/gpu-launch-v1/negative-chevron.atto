@@ -1,0 +1,9 @@
+// Expected GPU-LAUNCH-009: CUDA triple-chevron syntax is NOT AttoLang syntax.
+pub gpu fnc fill(GpuArray<f32> mut out) => void {
+    const u64 i = gpu.global_id(0);
+    out[i] = 1.0;
+    return;
+}
+suspends fnc run(GpuArray<f32> mut out) => void {
+    fill<<<1, 64>>>(out);
+}
