@@ -42,7 +42,14 @@ export function inspectOwnershipReceipt(contract, receipt) {
       fail('no executed compiler steps: ' + report.id);
     if (report.suiteSkipped === true || report.status === 'NOT_EXECUTED')
       fail('unexecuted/skip cannot pass: ' + report.id);
+    // A compiler can fail at lexing/parsing or during unsupported-feature
+    // admission without ever checking borrow semantics. These fields are
+    // necessary structural evidence, never sufficient independent attestation.
+    if (report.parserAccepted !== true)
+      fail('source parser acceptance not proven: ' + report.id);
     if (c.expect === 'reject') {
+      if (report.ownershipCheckerRan !== true)
+        fail('ownership checker execution not proven: ' + report.id);
       if (report.stage !== 'semantic' || !Number.isInteger(report.exitCode) || report.exitCode === 0 || report.emittedArtifact !== false)
         fail('rejection is not semantic compiler denial: ' + report.id);
       if (!OWNERSHIP_DIAGNOSTIC.test(report.diagnosticCode ?? '') ||
