@@ -265,6 +265,34 @@ test('live endpoint calls only private-source GETs, refuses missing token',async
   assert.ok(methods.every(m=>m==='GET'));
   assert.ok(urls.every(u=>u.startsWith('https://api.github.com/repos/'+OWNER+'/oreslang-source.')));
 });
+test('live GitHub request refuses redirects, cookies and cache reuse',async()=>{
+  let options;
+  await assert.rejects(fetchLiveSnapshot('placeholder',async(url,opts)=>{
+    options=opts;return {ok:false,status:403};
+  }),/HTTP 403/);
+  assert.equal(options.method,'GET');
+  assert.equal(options.redirect,'error');
+  assert.equal(options.credentials,'omit');
+  assert.equal(options.cache,'no-store');
+  assert.equal(options.headers.Authorization,'Bearer placeholder');
+});
+test('redirected or substituted GitHub REST responses fail before parsing',async()=>{
+  await assert.rejects(fetchLiveSnapshot('token',async()=>({ok:true,redirected:true})),/redirected or substituted/);
+  await assert.rejects(fetchLiveSnapshot('token',async()=>({ok:true,url:'https://example.com/other'})),/redirected or substituted/);
+});
+test('oversized streamed response cancels reader before rejection',async()=>{
+  let canceled=0,released=0;
+  const fake=async()=>({ok:true,headers:{get:()=>null},
+    body:{getReader:()=>({
+      read:async()=>({done:false,value:new Uint8Array(2000001)}),
+      cancel:async()=>{canceled++;},
+      releaseLock:()=>{released++;}
+    })}});
+  await assert.rejects(fetchLiveSnapshot('token',fake),/2 MB/);
+  assert.equal(canceled,1);
+  assert.equal(released,1);
+});
+
 test('HTTP errors and oversized streams are refused',async()=>{
   await assert.rejects(fetchLiveSnapshot('token',async()=>({ok:false,status:403})),/HTTP 403/);
   await assert.rejects(fetchLiveSnapshot('token',async()=>({ok:true,headers:{get:()=>null},body:{getReader:()=>({read:async()=>({done:false,value:new Uint8Array(2000001)}),releaseLock:()=>{}})}})),/2 MB/);
