@@ -6,7 +6,7 @@ const repo=b=>OWNER+'/oreslang-source.'+b;
 function fixture(){
   const branches=Object.fromEntries(BACKENDS.map(b=>[b,{name:'main',commit:{sha:'a'.repeat(40)},protected:false,protection:{required_status_checks:{enforcement_level:'off'}}}]));
   const candidates=Object.fromEntries(CANDIDATES.map(c=>[c.backend,{
-    pr:{number:c.pr,state:'open',base:{ref:'main'},head:{sha:c.head,repo:{full_name:repo(c.backend)}}},
+    pr:{number:c.pr,state:'open',merged:false,base:{ref:'main'},head:{sha:c.head,repo:{full_name:repo(c.backend)}}},
     run:{id:c.run,head_sha:c.head,run_attempt:c.attempt,repository:{full_name:repo(c.backend)}},
     jobs:{jobs:[{id:c.job,run_id:c.run,run_attempt:c.attempt,head_sha:c.head,status:'completed',conclusion:'failure',runner_id:0,runner_name:'',steps:[]}]} }]));
   return {branches,candidates};
@@ -49,6 +49,53 @@ test('actual successful sample remains advisory only',()=>{
   const f=fixture(),c=CANDIDATES[0];f.candidates.java.jobs.jobs[0]=success(c);
   const p=buildPacket(f);assert.equal(p.counts.executedSuccessfulSampledJobs,1);assert.equal(p.authorizedToMerge,false);
 });
+test('merged historical PRs preserve exact-original-head runner diagnoses',()=>{
+  const f=fixture();
+  for(const backend of ['java','llvm','wasm','forge']){
+    const p=f.candidates[backend].pr;
+    p.state='closed';p.merged=true;p.merge_commit_sha='d'.repeat(40);
+    p.merged_at='2026-11-06T19:01:07Z';
+  }
+  const packet=buildPacket(f);
+  for(const backend of ['java','llvm','wasm','forge']){
+    assert.equal(packet.sampledJobs.find(x=>x.repository===repo(backend)).assessment,'RUNNER_NOT_ALLOCATED');
+  }
+  assert.equal(packet.counts.runnerNotAllocated,5);
+  assert.equal(packet.authorizedToMerge,false);
+});
+test('closed-unmerged historical PR cannot impersonate valid runner evidence',()=>{
+  const f=fixture(),p=f.candidates.java.pr;
+  p.state='closed';p.merged=false;p.merge_commit_sha='d'.repeat(40);p.merged_at=null;
+  assert.equal(buildPacket(f).sampledJobs[0].assessment,'PR_HEAD_DRIFT_OR_UNVERIFIED');
+});
+test('merged historical PR needs real merge SHA and timestamp evidence',()=>{
+  for(const mutation of [
+    p=>{p.merge_commit_sha=null;},
+    p=>{p.merge_commit_sha='not-a-sha';},
+    p=>{p.merged_at=null;},
+    p=>{p.merged_at='not-a-date';}
+  ]){
+    const f=fixture(),p=f.candidates.java.pr;
+    p.state='closed';p.merged=true;p.merge_commit_sha='d'.repeat(40);
+    p.merged_at='2026-11-06T19:01:07Z';
+    mutation(p);
+    assert.equal(buildPacket(f).sampledJobs[0].assessment,'PR_HEAD_DRIFT_OR_UNVERIFIED');
+  }
+});
+test('checkout/setup-only Actions cannot masquerade as executed tests',()=>{
+  const c=CANDIDATES[0],j=success(c);
+  j.steps=[
+    {name:'Set up job',status:'completed',conclusion:'success'},
+    {name:'Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262',status:'completed',conclusion:'success'},
+    {name:'Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020',status:'completed',conclusion:'success'},
+    {name:'Run dtolnay/rust-toolchain@686976e191b89faba57d3206551f0f330d8cb249',status:'completed',conclusion:'success'},
+    {name:'Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262',status:'completed',conclusion:'success'}
+  ];
+  assert.equal(assessJob(j,c),'NO_MEANINGFUL_TEST_STEP');
+  j.steps.push({name:'Execute source-owned negative regression tests',status:'completed',conclusion:'success'});
+  assert.equal(assessJob(j,c),'EXECUTED_JOB_SUCCESS');
+});
+
 test('missing snapshot is never green',()=>{
   const p=buildPacket({});assert.equal(p.counts.unverifiedMains,9);assert.equal(p.sampledJobs.every(x=>x.assessment==='PR_HEAD_DRIFT_OR_UNVERIFIED'),true);
 });
