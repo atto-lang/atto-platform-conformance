@@ -1,0 +1,13 @@
+// G1c canonical typed source-HIR proposal, not a physically executable kernel.
+pub gpu fnc saxpy(
+    int alpha,
+    GpuReadBuffer<f32> x,
+    GpuReadBuffer<f32> y,
+    GpuWriteBuffer<f32> out,
+    int n
+): void {
+    const int i = gpu.global_id(0);
+    if i < n {
+        out[i] = alpha * x[i] + y[i];
+    } fi
+}

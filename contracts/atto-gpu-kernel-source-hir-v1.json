@@ -1,0 +1,141 @@
+{
+  "schema": "attolang.gpu-kernel-source-hir/1",
+  "contract": "oreslang-common-source/docs/GPU_EXPLICIT_LAUNCH_V1.md",
+  "state": "SOURCE_TYPED_SUBSET_NOT_EXECUTABLE",
+  "compilerBranch": "oreslang-source.java#2582",
+  "source": {
+    "grammar": "pub gpu fnc",
+    "kernelAst": "Ast.GpuKernelDecl",
+    "typedSourceHir": "GpuKernelSourceHirV1",
+    "evidence": "TYPED_SOURCE_ONLY_NOT_EXECUTABLE",
+    "hostFunctionRegistration": false,
+    "kernelDispatch": false,
+    "runtimeFallback": false,
+    "scalarTypes": [
+      "int",
+      "i64",
+      "f32",
+      "bool"
+    ],
+    "deviceViews": [
+      "GpuReadBuffer<f32>",
+      "GpuWriteBuffer<f32>",
+      "GpuReadWriteBuffer<f32>"
+    ],
+    "supportedDeviceBuiltin": [
+      "gpu.global_id(0..2)"
+    ],
+    "permittedControlFlow": [
+      "immutable let",
+      "one-branch if",
+      "buffer store",
+      "return void"
+    ],
+    "typedDeviceIr": false,
+    "effectClosureProof": false,
+    "tailSafetyProof": false,
+    "deviceBufferOwnershipProof": false,
+    "providerGenerationFenceProof": false
+  },
+  "backendEvidence": {
+    "java": {
+      "nativeCompiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "llvm": {
+      "nativeCompiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "net": {
+      "nativeCompiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "wasm": {
+      "nativeCompiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "forge": {
+      "nativeCompiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "cranelift": {
+      "nativeCompiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "js": {
+      "nativeCompiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    }
+  },
+  "cases": [
+    {
+      "id": "saxpy-typed",
+      "expectation": "positive",
+      "path": "fixtures/gpu-kernel-v1/positive-saxpy-typed.atto",
+      "gitBlobSha": "426d49b2d95c6ef7c411e7e1ff569e0ec8bb801d",
+      "expectedDiagnostic": null,
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "host-call",
+      "expectation": "negative",
+      "path": "fixtures/gpu-kernel-v1/negative-host-call.atto",
+      "gitBlobSha": "04770c930096b1041c1812641a6ef0c662fbdb41",
+      "expectedDiagnostic": "GPU-KERNEL-006",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "readonly-store",
+      "expectation": "negative",
+      "path": "fixtures/gpu-kernel-v1/negative-readonly-store.atto",
+      "gitBlobSha": "799f5e49c4c73df1dc2475b1a60fd3d9bf4b1b99",
+      "expectedDiagnostic": "GPU-KERNEL-005",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "writeonly-load",
+      "expectation": "negative",
+      "path": "fixtures/gpu-kernel-v1/negative-writeonly-load.atto",
+      "gitBlobSha": "0a6b4f7c5df81e8819c2de5171243fe7c01bf415",
+      "expectedDiagnostic": "GPU-KERNEL-005",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "scalar-mismatch",
+      "expectation": "negative",
+      "path": "fixtures/gpu-kernel-v1/negative-scalar-mismatch.atto",
+      "gitBlobSha": "be99fe2d940b885787ffe2cf4e2da48c6c7b77f8",
+      "expectedDiagnostic": "GPU-KERNEL-002",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "invalid-global-axis",
+      "expectation": "negative",
+      "path": "fixtures/gpu-kernel-v1/negative-invalid-global-axis.atto",
+      "gitBlobSha": "dbc7edc7a37717e82185990e4ae18966fbe703f3",
+      "expectedDiagnostic": "GPU-KERNEL-006",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "await-in-kernel",
+      "expectation": "negative",
+      "path": "fixtures/gpu-kernel-v1/negative-await-in-kernel.atto",
+      "gitBlobSha": "10be4c80ddaade2768fa151891bb7696d008aeaf",
+      "expectedDiagnostic": "GPU-KERNEL-006",
+      "observedResult": "NOT_EXECUTED"
+    }
+  ],
+  "warnings": [
+    "A source-typed kernel plan is not a GPU binary or device authority.",
+    "No host-only or zero-step result establishes executable AttoLang GPU parity.",
+    "Each negative diagnostic is prospective until exact-head compiler execution.",
+    "Backend-specific device effect and ownership/fence lowering remain unimplemented."
+  ]
+}
