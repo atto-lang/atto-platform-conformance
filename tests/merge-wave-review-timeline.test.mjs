@@ -254,3 +254,22 @@ test('dismissal after exact-head approval removes effective approval',()=>{
  v.review_count=2;
  assert(qualifyReviewTimeline(v,{now:NOW}).blockers.includes('REVIEW_INDEPENDENT_APPROVAL_MISSING'));
 });
+
+test('out-of-order dismissal cannot hide an earlier change request',()=>{
+ const v=fixture();
+ v.reviews.push({id:14,reviewer_id:2000013,login:'second-reviewer',state:'DISMISSED',commit_sha:A,submitted_at:'2026-11-06T18:59:20Z'});
+ v.reviews.push({id:13,reviewer_id:2000013,login:'second-reviewer',state:'CHANGES_REQUESTED',commit_sha:A,submitted_at:'2026-11-06T18:59:05Z'});
+ v.review_count=3;
+ const r=qualifyReviewTimeline(v,{now:NOW});
+ assert(r.blockers.includes('REVIEW_DISMISSAL_AMBIGUOUS'),JSON.stringify(r));
+ assert(r.blockers.includes('REVIEW_CHANGES_REQUESTED'),JSON.stringify(r));
+});
+test('stale-head reapproval cannot release the outstanding change request',()=>{
+ const v=fixture();
+ v.reviews.push({id:13,reviewer_id:2000013,login:'second-reviewer',state:'CHANGES_REQUESTED',commit_sha:A,submitted_at:'2026-11-06T18:59:05Z'});
+ v.reviews.push({id:14,reviewer_id:2000013,login:'second-reviewer',state:'APPROVED',commit_sha:B,submitted_at:'2026-11-06T18:59:20Z'});
+ v.review_count=3;
+ const r=qualifyReviewTimeline(v,{now:NOW});
+ assert(r.blockers.includes('REVIEW_STALE_REAPPROVAL'),JSON.stringify(r));
+ assert(r.blockers.includes('REVIEW_CHANGES_REQUESTED'),JSON.stringify(r));
+});
