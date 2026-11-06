@@ -23,7 +23,10 @@
     "paddedTailProofRequired": true,
     "physicalGridAxesPositive": true,
     "emptyLogicalExtentNoPhysicalDispatch": true,
-    "dispatchedLaneCountSeparateFromLogicalCount": true
+    "dispatchedLaneCountSeparateFromLogicalCount": true,
+    "sourceHirStatus": "SOURCE_SHAPE_ONLY_NOT_EXECUTABLE",
+    "requiresBoundIntegerTypeProof": true,
+    "arbitraryHostCallsInGeometry": false
   },
   "backendEvidence": {
     "java": {
@@ -156,6 +159,22 @@
       "expectation": "negative",
       "path": "fixtures/gpu-launch-v1/negative-zero-physical-grid.atto",
       "gitBlobSha": "6a300e923a7c5f3c9bac81b79584e2a90936ba24",
+      "expectedDiagnostic": "GPU-LAUNCH-003",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "host-geometry-call",
+      "expectation": "negative",
+      "path": "fixtures/gpu-launch-v1/negative-host-geometry-call.atto",
+      "gitBlobSha": "d3a51edb6947007472cc733781cfaef5d4a75046",
+      "expectedDiagnostic": "GPU-LAUNCH-003",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "bool-geometry",
+      "expectation": "negative",
+      "path": "fixtures/gpu-launch-v1/negative-bool-geometry.atto",
+      "gitBlobSha": "029276db43ba189a48ef676ccce4b5a38b425e17",
       "expectedDiagnostic": "GPU-LAUNCH-003",
       "observedResult": "NOT_EXECUTED"
     }
