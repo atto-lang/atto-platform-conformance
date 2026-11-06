@@ -63,7 +63,8 @@
       "organization": "declarative-migrations",
       "request": "formal+atto",
       "target": "schema plan/apply atomicity",
-      "status": "not-audited"
+      "status": "source-model-draft",
+      "review_url": "https://github.com/declarative-migrations/declmig-lib-core/pull/26"
     },
     {
       "organization": "embedded-alerts",
