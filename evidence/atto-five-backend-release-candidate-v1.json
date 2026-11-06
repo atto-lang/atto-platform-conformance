@@ -1,0 +1,303 @@
+{
+  "schema_version": 1,
+  "scope": "untrusted_offline_snapshot",
+  "as_of": "2026-11-06T22:28:32Z",
+  "evidence_note": "Live GitHub branch and Git-commit GETs establish exact source heads/root tree identities and unprotected main only. Compiler binaries, actual guest output, formal proofs, runner executions, AOT and GC measurements were NOT independently observed. All are NOT_EXECUTED; no green evidence is fabricated.",
+  "postmerge_ledger": {
+    "path": "evidence/landed-main-20261106-platform-wave.json",
+    "github_blob_sha": "7d928497f24fcee60be35ea03511168084d2a4b2",
+    "scope": "untrusted_snapshot",
+    "reported_status": "BLOCKED"
+  },
+  "contracts": [
+    {
+      "id": "scalar-exit-42-v1",
+      "proposal": {
+        "pr": 394,
+        "sha": "945230b6d335b926273df61bc4624268716d36b1"
+      },
+      "description": "Proposed literal-42 .atto executable guest fixture"
+    },
+    {
+      "id": "actor-channel-v1",
+      "proposal": {
+        "pr": 457,
+        "sha": "7d1841d0ab85765ca779674e034cd61a0d70cb26"
+      },
+      "description": "Proposed actor/channel guest E2E and negative safety fixtures"
+    },
+    {
+      "id": "portable-task-v1",
+      "proposal": {
+        "pr": 465,
+        "sha": "908fd95d8ad4238f539b37a63fc2840a7c495624"
+      },
+      "description": "Proposed Task/HasFuture/nb guest and rejection fixtures"
+    },
+    {
+      "id": "dop-scalar-guest-v1",
+      "proposal": {
+        "pr": 466,
+        "sha": "d4faef9cad83d98c51f01408fb2fcd3368a60b87"
+      },
+      "description": "Proposed scalar SoA guest and byte-level output contract"
+    }
+  ],
+  "backends": [
+    {
+      "id": "java",
+      "repo": "ores-truffle-oreslang/oreslang-source.java",
+      "source": {
+        "commit_sha": "1a7d55e21fd647f1ba56f3877ebe6d16a0b4326b",
+        "tree_sha": "514573d34a6d224fd9f184faedde1d5dbc142d99",
+        "main_protected": false
+      },
+      "targets": {
+        "aot_target": "graalvm-native-image-full-aot",
+        "memory_target": "graalvm-zero-gc-target; jvm-min-gc-target"
+      },
+      "compiler": {
+        "binary_sha256": null,
+        "build_receipt": null
+      },
+      "guest": [
+        {
+          "contract_id": "scalar-exit-42-v1",
+          "state": "NOT_EXECUTED",
+          "receipt": null
+        },
+        {
+          "contract_id": "actor-channel-v1",
+          "state": "NOT_EXECUTED",
+          "receipt": null
+        },
+        {
+          "contract_id": "portable-task-v1",
+          "state": "NOT_EXECUTED",
+          "receipt": null
+        },
+        {
+          "contract_id": "dop-scalar-guest-v1",
+          "state": "NOT_EXECUTED",
+          "receipt": null
+        }
+      ],
+      "formal": {
+        "state": "NOT_EXECUTED",
+        "receipt": null
+      },
+      "aot": {
+        "state": "NOT_EXECUTED",
+        "receipt": null
+      },
+      "memory": {
+        "state": "NOT_EXECUTED",
+        "receipt": null
+      }
+    },
+    {
+      "id": "llvm",
+      "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+      "source": {
+        "commit_sha": "8c214409625be8a99865b79d8bb89e5aaad2c814",
+        "tree_sha": "28a41dc9b3b2c08dd4f71273ef2bc8cd3a06e3ea",
+        "main_protected": false
+      },
+      "targets": {
+        "aot_target": "llvm-native-full-aot",
+        "memory_target": "zero-gc-target"
+      },
+      "compiler": {
+        "binary_sha256": null,
+        "build_receipt": null
+      },
+      "guest": [
+        {
+          "contract_id": "scalar-exit-42-v1",
+          "state": "NOT_EXECUTED",
+          "receipt": null
+        },
+        {
+          "contract_id": "actor-channel-v1",
+          "state": "NOT_EXECUTED",
+          "receipt": null
+        },
+        {
+          "contract_id": "portable-task-v1",
+          "state": "NOT_EXECUTED",
+          "receipt": null
+        },
+        {
+          "contract_id": "dop-scalar-guest-v1",
+          "state": "NOT_EXECUTED",
+          "receipt": null
+        }
+      ],
+      "formal": {
+        "state": "NOT_EXECUTED",
+        "receipt": null
+      },
+      "aot": {
+        "state": "NOT_EXECUTED",
+        "receipt": null
+      },
+      "memory": {
+        "state": "NOT_EXECUTED",
+        "receipt": null
+      }
+    },
+    {
+      "id": "wasm",
+      "repo": "ores-truffle-oreslang/oreslang-source.wasm",
+      "source": {
+        "commit_sha": "e2570d8664cc4782d8147b638d4a1c359eeacc82",
+        "tree_sha": "a17d46c817dd8b4fb0ee1bdd7bd204758ea13749",
+        "main_protected": false
+      },
+      "targets": {
+        "aot_target": "wasm-target-profile",
+        "memory_target": "no-gc-guarantee-verified"
+      },
+      "compiler": {
+        "binary_sha256": null,
+        "build_receipt": null
+      },
+      "guest": [
+        {
+          "contract_id": "scalar-exit-42-v1",
+          "state": "NOT_EXECUTED",
+          "receipt": null
+        },
+        {
+          "contract_id": "actor-channel-v1",
+          "state": "NOT_EXECUTED",
+          "receipt": null
+        },
+        {
+          "contract_id": "portable-task-v1",
+          "state": "NOT_EXECUTED",
+          "receipt": null
+        },
+        {
+          "contract_id": "dop-scalar-guest-v1",
+          "state": "NOT_EXECUTED",
+          "receipt": null
+        }
+      ],
+      "formal": {
+        "state": "NOT_EXECUTED",
+        "receipt": null
+      },
+      "aot": {
+        "state": "NOT_EXECUTED",
+        "receipt": null
+      },
+      "memory": {
+        "state": "NOT_EXECUTED",
+        "receipt": null
+      }
+    },
+    {
+      "id": "forge",
+      "repo": "ores-truffle-oreslang/oreslang-source.forge",
+      "source": {
+        "commit_sha": "7902eb2e3610babe1004a3e752b12079737992e6",
+        "tree_sha": "8f4299bbbb1c05fe59bfb47b8918ce73630c252a",
+        "main_protected": false
+      },
+      "targets": {
+        "aot_target": "forge-aot-target",
+        "memory_target": "no-gc-guarantee-verified"
+      },
+      "compiler": {
+        "binary_sha256": null,
+        "build_receipt": null
+      },
+      "guest": [
+        {
+          "contract_id": "scalar-exit-42-v1",
+          "state": "NOT_EXECUTED",
+          "receipt": null
+        },
+        {
+          "contract_id": "actor-channel-v1",
+          "state": "NOT_EXECUTED",
+          "receipt": null
+        },
+        {
+          "contract_id": "portable-task-v1",
+          "state": "NOT_EXECUTED",
+          "receipt": null
+        },
+        {
+          "contract_id": "dop-scalar-guest-v1",
+          "state": "NOT_EXECUTED",
+          "receipt": null
+        }
+      ],
+      "formal": {
+        "state": "NOT_EXECUTED",
+        "receipt": null
+      },
+      "aot": {
+        "state": "NOT_EXECUTED",
+        "receipt": null
+      },
+      "memory": {
+        "state": "NOT_EXECUTED",
+        "receipt": null
+      }
+    },
+    {
+      "id": "net",
+      "repo": "ores-truffle-oreslang/oreslang-source.net",
+      "source": {
+        "commit_sha": "5d8246bca843309ee3f66538f1385fefb5690858",
+        "tree_sha": "13c7f33332879cd88c31a473bd2742f98d5074ae",
+        "main_protected": false
+      },
+      "targets": {
+        "aot_target": "dotnet-nativeaot-target",
+        "memory_target": "no-gc-guarantee-verified"
+      },
+      "compiler": {
+        "binary_sha256": null,
+        "build_receipt": null
+      },
+      "guest": [
+        {
+          "contract_id": "scalar-exit-42-v1",
+          "state": "NOT_EXECUTED",
+          "receipt": null
+        },
+        {
+          "contract_id": "actor-channel-v1",
+          "state": "NOT_EXECUTED",
+          "receipt": null
+        },
+        {
+          "contract_id": "portable-task-v1",
+          "state": "NOT_EXECUTED",
+          "receipt": null
+        },
+        {
+          "contract_id": "dop-scalar-guest-v1",
+          "state": "NOT_EXECUTED",
+          "receipt": null
+        }
+      ],
+      "formal": {
+        "state": "NOT_EXECUTED",
+        "receipt": null
+      },
+      "aot": {
+        "state": "NOT_EXECUTED",
+        "receipt": null
+      },
+      "memory": {
+        "state": "NOT_EXECUTED",
+        "receipt": null
+      }
+    }
+  ]
+}
