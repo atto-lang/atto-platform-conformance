@@ -38,3 +38,7 @@ The initial draft had 54 host-only Node 22 regression tests locally executed on 
 5. Independently review PRs and run exact-head CI; only a separately governed merge executor may later perform SHA-guarded merges.
 
 No cross-organization private source mirror is authorized by this module. CI job `steps=[]` / `null` means runner-admission evidence is missing; it cannot be counted as a compiler test.
+
+## Additional fail-closed input and ordering invariants
+
+All repository identifiers, PR-head SHAs, base SHAs and review-commit SHAs must be primitive strings. Caller-created objects and boxed strings cannot pass merely because JavaScript regular expressions would coerce them into syntactically valid strings; identity equality between the same object does not establish a real Git commit. Every valid reviewer event must also have a unique absolute timestamp for its immutable reviewer ID across the **entire** complete history. Earlier same-time events separated by later events are ambiguous too, regardless of the final latest approval. Both conditions block the advisory snapshot; neither authenticates caller-supplied policy data. Native Node/hosted CI and compiler-backed guest evidence remain separate requirements.

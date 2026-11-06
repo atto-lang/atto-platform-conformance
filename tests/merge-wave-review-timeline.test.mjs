@@ -164,3 +164,42 @@ test('a single reviewer cannot double-count by submitting twice',()=>{
  assert(qualifyReviewTimeline(v,{now:NOW}).blockers.includes('REVIEW_INDEPENDENT_APPROVAL_MISSING'));
 });
 }
+
+// Strict source-identity type checks and full-history timestamp consistency.
+
+test('reject object-valued PR head even when it coerces to exact matching SHA',()=>{
+  const v=fixture(), spoof={toString:()=>A};
+  v.head_sha=spoof; v.reviews[0].commit_sha=spoof;
+  assert(qualifyReviewTimeline(v,{now:NOW}).blockers.includes('REVIEW_IDENTITY_INVALID'));
+});
+test('reject object-valued base SHA shared by input and policy',()=>{
+  const v=fixture(), spoof={toString:()=>B};
+  v.base_sha=spoof; v.reviewer_policy.base_sha=spoof;
+  assert(qualifyReviewTimeline(v,{now:NOW}).blockers.includes('REVIEW_POLICY_INVALID'));
+});
+test('reject object-valued repository shared by input and policy',()=>{
+  const v=fixture(), spoof={toString:()=>v.repo};
+  v.reviewer_policy.repo=spoof; v.repo=spoof;
+  assert(qualifyReviewTimeline(v,{now:NOW}).blockers.includes('REVIEW_POLICY_INVALID'));
+});
+test('reject object-valued reviewer commit even when regex would coerce it',()=>{
+  const v=fixture(); v.reviews[0].commit_sha={toString:()=>A};
+  assert(qualifyReviewTimeline(v,{now:NOW}).blockers.includes('REVIEW_RECORD_INVALID'));
+});
+test('reject historical timestamp collision with intervening newer review',()=>{
+  const v=fixture();
+  v.reviews=[
+    {...v.reviews[0],id:31,state:'COMMENTED',submitted_at:'2026-11-06T18:58:00Z'},
+    {...v.reviews[0],id:32,state:'COMMENTED',submitted_at:'2026-11-06T18:58:30Z'},
+    {...v.reviews[0],id:33,state:'CHANGES_REQUESTED',submitted_at:'2026-11-06T18:58:00Z'},
+    {...v.reviews[0],id:34,submitted_at:'2026-11-06T18:59:00Z'}
+  ]; v.review_count=v.reviews.length;
+  assert(qualifyReviewTimeline(v,{now:NOW}).blockers.includes('REVIEW_ORDER_AMBIGUOUS'));
+});
+test('accept unordered review inventory with distinct timestamps',()=>{
+  const v=fixture();
+  v.reviews.push({...v.reviews[0],id:35,state:'COMMENTED',submitted_at:'2026-11-06T18:58:30Z'});
+  v.reviews.unshift({...v.reviews[0],id:36,state:'CHANGES_REQUESTED',submitted_at:'2026-11-06T18:58:00Z'});
+  v.review_count=v.reviews.length;
+  assert.equal(qualifyReviewTimeline(v,{now:NOW}).status,'REVIEW_SNAPSHOT_QUALIFIED_REQUIRES_LIVE_RECHECK');
+});

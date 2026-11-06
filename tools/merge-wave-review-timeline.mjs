@@ -11,6 +11,8 @@ const MAX_SNAPSHOT_AGE_MS = 5 * 60_000;
 const FUTURE_SKEW_MS = 30_000;
 
 const positiveId = id => Number.isSafeInteger(id) && id > 0;
+// Never allow RegExp.test to coerce a caller-controlled object into a repository or Git ID.
+const validSha = value => typeof value === 'string' && SHA.test(value);
 // Date.parse normalizes impossible calendar dates (e.g. Feb 30 -> Mar 2).
 // Validate actual calendar fields and timezone offsets before comparing timestamps.
 const ISO = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(Z|[+-](\d{2}):(\d{2}))$/;
@@ -43,7 +45,8 @@ export function snapshotFreshness(asOf, now = Date.now()) {
 function boundReviewerPolicy(input) {
   const p = input.reviewer_policy;
   if (!p || typeof p !== 'object' || Array.isArray(p) ||
-      !ATTO_REPO.test(input.repo || '') || !SHA.test(input.base_sha || '') ||
+      (typeof input.repo !== 'string' || !ATTO_REPO.test(input.repo)) ||
+      !validSha(input.base_sha) ||
       p.repo !== input.repo || p.base_sha !== input.base_sha ||
       p.base_ref !== 'main' || p.protection_readable !== true ||
       p.protected !== true || p.require_codeowners !== true ||
@@ -77,7 +80,7 @@ export function qualifyReviewTimeline(input, {now = Date.now()} = {}) {
   }
   const freshness = snapshotFreshness(input.as_of, now);
   if (!freshness.ok) fail(freshness.reason);
-  if (!SHA.test(input.head_sha || '') || typeof input.author !== 'string' ||
+  if (!validSha(input.head_sha) || typeof input.author !== 'string' ||
     !LOGIN.test(input.author) || !positiveId(input.author_id)) fail('REVIEW_IDENTITY_INVALID');
   if (input.reviews_complete !== true) fail('REVIEW_HISTORY_INCOMPLETE');
   const policy = boundReviewerPolicy(input);
@@ -93,11 +96,12 @@ export function qualifyReviewTimeline(input, {now = Date.now()} = {}) {
   const identities = new Map();
   const loginIds = new Map();
   const latest = new Map();
+  const seenReviewerTimes = new Set();
   for (const r of input.reviews) {
     const login = typeof r?.login === 'string' ? r.login.toLowerCase() : '';
     if (!positiveId(r?.id) || ids.has(r.id) || !positiveId(r.reviewer_id) ||
       !LOGIN.test(login) || !COMPLETED.has(r.state) ||
-      !SHA.test(r.commit_sha || '') || !iso(r.submitted_at)) {
+      !validSha(r.commit_sha) || !iso(r.submitted_at)) {
       fail('REVIEW_RECORD_INVALID'); continue;
     }
     ids.add(r.id);
@@ -111,10 +115,14 @@ export function qualifyReviewTimeline(input, {now = Date.now()} = {}) {
     }
     identities.set(r.reviewer_id, login);
     loginIds.set(login, r.reviewer_id);
-    const prior = latest.get(r.reviewer_id);
-    if (prior && prior.time === time) {
+    // Enforce unique timestamps across ALL reviews by one identity, not just
+    // adjacent records or the current latest event. Input order is untrusted.
+    const timestampKey = `${r.reviewer_id}:${time}`;
+    if (seenReviewerTimes.has(timestampKey)) {
       fail('REVIEW_ORDER_AMBIGUOUS'); continue;
     }
+    seenReviewerTimes.add(timestampKey);
+    const prior = latest.get(r.reviewer_id);
     if (!prior || time > prior.time) latest.set(r.reviewer_id, { ...r, login, time });
   }
   if ([...latest.values()].some(r => r.state === 'CHANGES_REQUESTED')) {
