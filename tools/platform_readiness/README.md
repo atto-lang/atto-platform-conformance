@@ -13,8 +13,11 @@ The snapshot must match the explicit v1 schema. It models a bounded PR merge
 train (up to 25 PRs) and exactly five backends: Java, LLVM, Wasm, Forge, .NET.
 A job only contributes structural step evidence when it records a source SHA,
 run and job IDs, a verified run attempt, completed/successful steps including
-something other than setup/cleanup, and expected HEAD identity. A reported
-"success" with zero steps is rejected.
+an explicit test/assertion/regression step, and expected HEAD identity. Checkout,
+setup, upload, packaging, and metadata-only steps never count as executed test
+evidence. A reported "success" with zero steps is rejected. This conservative
+name-based screen can reject real tests with unknown labels and can be spoofed
+by untrusted JSON; it is *not* independent attestation of actual test execution.
 
 Offline input is **untrusted**. Missing or contradicted evidence exits 1;
 invalid input exits 2; a structurally consistent all-green snapshot exits 3.
