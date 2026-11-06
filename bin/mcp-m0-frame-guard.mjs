@@ -3,6 +3,12 @@
 const DEFAULT_MAX_BYTES = 32 * 1024;
 const DEFAULT_MAX_DEPTH = 12;
 const utf8 = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true });
+/* Typed-array subclass getters may lie about byteLength or buffer: the
+ * decoder still sees the full backing bytes. Read intrinsic view geometry
+ * before enforcing the admission budget, not overridable JS properties. */
+const typedArrayPrototype = Object.getPrototypeOf(Uint8Array.prototype);
+const viewByteLength = Object.getOwnPropertyDescriptor(typedArrayPrototype, 'byteLength').get;
+const viewBuffer = Object.getOwnPropertyDescriptor(typedArrayPrototype, 'buffer').get;
 
 export class M0FrameError extends Error {
   constructor(reason) {
@@ -13,12 +19,25 @@ export class M0FrameError extends Error {
 }
 
 export function parseM0Frame(frame, { maxBytes = DEFAULT_MAX_BYTES, maxDepth = DEFAULT_MAX_DEPTH } = {}) {
-  if (!(frame instanceof Uint8Array) || !Number.isSafeInteger(maxBytes) || maxBytes <= 0 || maxBytes > DEFAULT_MAX_BYTES ||
+  if (!ArrayBuffer.isView(frame) || !(frame instanceof Uint8Array) ||
+      !Number.isSafeInteger(maxBytes) || maxBytes <= 0 || maxBytes > DEFAULT_MAX_BYTES ||
       !Number.isSafeInteger(maxDepth) || maxDepth <= 0 || maxDepth > DEFAULT_MAX_DEPTH) {
     throw new M0FrameError('MALFORMED');
   }
-  if (frame.byteLength > maxBytes) throw new M0FrameError('OVERFLOW');
-  if (frame.byteLength === 0) throw new M0FrameError('MALFORMED');
+  let actualBytes;
+  try {
+    actualBytes = viewByteLength.call(frame);
+    const backing = viewBuffer.call(frame);
+    // A concurrent worker could modify shared input between validation and
+    // decode; an immutable snapshot must come from an unshared view.
+    if (typeof SharedArrayBuffer !== 'undefined' && backing instanceof SharedArrayBuffer)
+      throw new M0FrameError('MALFORMED');
+  } catch {
+    // Rejected Proxy or detached buffer must never leak a TypeError.
+    throw new M0FrameError('MALFORMED');
+  }
+  if (actualBytes > maxBytes) throw new M0FrameError('OVERFLOW');
+  if (actualBytes === 0) throw new M0FrameError('MALFORMED');
   let source;
   try { source = utf8.decode(frame); } catch { throw new M0FrameError('MALFORMED'); }
   // Reject a leading BOM. The JSON-RPC frame must have one canonical interpretation.
