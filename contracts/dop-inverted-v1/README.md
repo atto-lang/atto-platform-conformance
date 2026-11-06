@@ -7,6 +7,7 @@ Java/GraalVM and LLVM implementation branches, not new compiler code.
 | --- | --- | --- |
 | `swap-reuse.atto` | `8f5599a9e0b11ded2929110b4936441fceb2ef21` | Actual compiled native process exits 42 |
 | `removed-index-trap.atto` | `c3c87cfd2515707932734e183bb5768436526a96` | Actual compiled native process terminates with SIGILL/SIGTRAP |
+| `positive-immutable-column-swap.atto` | `863b1f20137656a277fc7bc04415a6f001f76512` | Actual compiled native process exits 42, with immutable `id` following surviving row |
 
 `manifest.json` declares **NOT_EXECUTED** for Java, LLVM, .NET, Wasm,
 and Forge until verified exact-PR-head guest evidence is independently checked.
@@ -20,7 +21,7 @@ integrity check only; its success must never promote backend capability.
 - No implicit compiler fallback to `Array<Row>`, Java `Object[]`, AoS or
   tracing GC is authorized for a requested inverted layout.
 - No actor, suspension, field-loan, AoSoA, SoAoS, GPU, method, generic, or
-  public class identity behavior is certified by these two fixtures.
+  public class identity behavior is certified by these three fixtures.
 
 **Release prerequisites:** head/tree/blob correlation, trusted runner
 admission and nonzero executed steps, source-built compiler identity, native
