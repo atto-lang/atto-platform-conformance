@@ -5,7 +5,7 @@
 const OWNER = 'ores-truffle-oreslang';
 const sha = x => typeof x === 'string' && /^[0-9a-f]{40}$/.test(x);
 const id = x => Number.isSafeInteger(x) && x > 0;
-const entry = (repo, number, head, merge) => ({repo:\`\${OWNER}/\${repo}\`, number, head, merge});
+const entry = (repo, number, head, merge) => ({repo:`${OWNER}/${repo}`, number, head, merge});
 export const WAVES = Object.freeze([
   Object.freeze([
     entry('oreslang-source.net',374,'d570052ed6ec2a5f3ce54483733dcb7664a01181','5d8246bca843309ee3f66538f1385fefb5690858'),
@@ -23,12 +23,12 @@ export const WAVES = Object.freeze([
   ])
 ]);
 const paths = t => ({
-  pr:\`/repos/\${t.repo}/pulls/\${t.number}\`,
-  main:\`/repos/\${t.repo}/branches/main\`,
-  compare:\`/repos/\${t.repo}/compare/\${t.merge}...main\`,
-  review:\`/repos/\${t.repo}/pulls/\${t.number}/reviews?per_page=100&page=1\`,
-  runs:\`/repos/\${t.repo}/actions/runs?head_sha=\${t.head}&per_page=100&page=1\`,
-  protection:\`/repos/\${t.repo}/branches/main/protection\`,
+  pr:`/repos/${t.repo}/pulls/${t.number}`,
+  main:`/repos/${t.repo}/branches/main`,
+  compare:`/repos/${t.repo}/compare/${t.merge}...main`,
+  review:`/repos/${t.repo}/pulls/${t.number}/reviews?per_page=100&page=1`,
+  runs:`/repos/${t.repo}/actions/runs?head_sha=${t.head}&per_page=100&page=1`,
+  protection:`/repos/${t.repo}/branches/main/protection`,
 });
 export function validatePinnedWave(waves=WAVES) {
   if (!Array.isArray(waves) || waves.length!==2) throw Error('TWO_WAVES_REQUIRED');
@@ -39,7 +39,7 @@ export function validatePinnedWave(waves=WAVES) {
     for(const t of wave){
       if(!t || !/^ores-truffle-oreslang\/[a-z0-9.-]+$/.test(t.repo) || !id(t.number) || !sha(t.head) || !sha(t.merge))
         throw Error('INVALID_TARGET');
-      const key=\`\${t.repo}#\${t.number}\`;
+      const key=`${t.repo}#${t.number}`;
       if(seen.has(key))throw Error('DUPLICATE_PR');
       seen.add(key);repos.add(t.repo);
     }
@@ -106,7 +106,7 @@ export async function inspectOne(get,t) {
   } else {
     for(const run of runPage.workflow_runs){
       if(run.head_sha!==t.head || !id(run.id) || !id(run.run_attempt) || run.event!=='pull_request')continue;
-      const page=await safeRead(get,\`/repos/\${t.repo}/actions/runs/\${run.id}/attempts/\${run.run_attempt}/jobs?per_page=100&page=1\`,blocks,'JOBS_UNREADABLE');
+      const page=await safeRead(get,`/repos/${t.repo}/actions/runs/${run.id}/attempts/${run.run_attempt}/jobs?per_page=100&page=1`,blocks,'JOBS_UNREADABLE');
       if(!Array.isArray(page?.jobs) || page.jobs.length>=100 ||
         page.total_count!==undefined && page.total_count>page.jobs?.length){recordBlock(blocks,'JOB_COVERAGE_UNVERIFIED');continue;}
       for(const job of page.jobs){
