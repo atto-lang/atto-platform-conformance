@@ -21,6 +21,23 @@ checksum 537509888, first position 20, last position 32787, and final
 velocity 2. This workload is within LLVM's existing per-array limit
 of 65,536 elements, as documented in PR #1308.
 
+## Source-owned conformance CI (still non-promoting)
+
+The source-local
+[`five-backend-scalar-receipt-host-only.yml`](../.github/workflows/five-backend-scalar-receipt-host-only.yml)
+workflow now executes **all six DOP v1 Node test files** at the exact PR
+head: scalar fixture/oracle, GitHub run/job snapshot, authenticated REST client,
+bounded local evidence-file reader, JIT/AOT profile and integrated receipt
+tests. This closes the earlier coverage gap where the workflow executed only
+two older `test/five-backend-scalar-*.test.mjs` suites. It retains those older
+host tests and excludes fork-provided private-source checkouts. Each test
+failure makes the CI job fail; the job emits only an explicit **HOST-ONLY**
+marker, not a backend PASS receipt.
+
+A zero-step GitHub Actions failure means **NOT_EXECUTED**, even when this
+workflow was accepted by GitHub and locally executed Node tests passed. No
+source-free action here compiles or runs the Java or LLVM `.atto` guests.
+
 ## Exact-head backend gate (each backend independently)
 
 1. Pin the compiler repository's 40-character HEAD SHA, its Git tree SHA,
