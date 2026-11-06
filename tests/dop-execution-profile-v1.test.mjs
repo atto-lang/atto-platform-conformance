@@ -7,8 +7,8 @@ const names = ['identicalScalarSoaSourceCompilesAndReturnsZeroFromRealJitGuest',
   'incorrectGuestChecksumIsDetectedByActualCompiledExecution'];
 const valid = {
   backend: 'java', executionProfile: 'jit', executionStage: 'managed-guest',
-  guestArtifactSha256: null, executedTests: 2, discoveredTests: 2,
-  jitEvidence: {runtimeBinarySha256: hash, junitReportSha256: hash,
+  guestArtifactSha256: null, executedTests: 2, discoveredTests: 2, compilerSha256: hash,
+  jitEvidence: {compilerClassTreeSha256: hash, runtimeBinarySha256: hash, junitReportSha256: hash,
     reportClass: 'dev.oreslang.DopScalarGuestParityTest', guestCases: names}
 };
 const verify = mutation => validateDopPositiveExecutionProfile({...valid, ...mutation});
@@ -56,10 +56,39 @@ test('unknown or misleading execution profiles are rejected', () => {
   assert.ok(verify({executionProfile: 'host-model'}).includes('unknown-execution-profile'));
   assert.ok(verify({executionProfile: null}).includes('unknown-execution-profile'));
   assert.deepEqual(validateDopPositiveExecutionProfile({executionProfile:'aot',
-    guestArtifactSha256:hash}), []);
+    backend:'llvm', executionStage:'native-guest', guestArtifactSha256:hash}), []);
 });
 test('malformed evidence objects cannot crash the validator or pass', () => {
   for (const jitEvidence of [undefined, [], 42, 'self-certified', {}])
     assert.notDeepEqual(verify({jitEvidence}), []);
   assert.deepEqual(validateDopPositiveExecutionProfile(null), ['profile-receipt-object']);
+});
+
+test('JIT compiler fingerprint must bind to the class-tree hash in receipt', () => {
+  assert.deepEqual(verify(), []);
+  assert.ok(verify({compilerSha256: 'c'.repeat(64)}).includes('jit-compiler-fingerprint-match'));
+  assert.ok(verify({jitEvidence: {...valid.jitEvidence, compilerClassTreeSha256: null}})
+    .includes('jit-compiler-class-tree-sha256'));
+  assert.ok(verify({jitEvidence: {...valid.jitEvidence, compilerClassTreeSha256: 'c'.repeat(64)}})
+    .includes('jit-compiler-fingerprint-match'));
+});
+test('managed Java JIT cannot masquerade as legacy artifact-producing AOT', () => {
+  const fake = {...valid, executionProfile: undefined, jitEvidence: null,
+    guestArtifactSha256: hash};
+  assert.ok(validateDopPositiveExecutionProfile(fake).includes('artifact-backend-stage'));
+  assert.ok(validateDopPositiveExecutionProfile({...fake, executionProfile:'aot'})
+    .includes('artifact-backend-stage'));
+  const legitimateNative = {...fake, executionStage:'nativeaot-guest'};
+  assert.deepEqual(validateDopPositiveExecutionProfile(legitimateNative), []);
+});
+test('backend/stage confusion never passes artifact-backed profiles', () => {
+  for (const [backend, executionStage] of [
+    ['llvm','browser-guest'],['forge','managed-guest'],['wasm','native-guest'],
+    ['java','managed-guest'],['net','browser-guest'],['unknown','native-guest']
+  ]) {
+    const fake = {backend, executionStage, executionProfile:'aot',
+      guestArtifactSha256: hash};
+    assert.ok(validateDopPositiveExecutionProfile(fake).includes('artifact-backend-stage'),
+      backend + '/' + executionStage);
+  }
 });
