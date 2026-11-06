@@ -83,9 +83,12 @@ export function runNegativeGpuCompilerGate({
       const testSource = path.join(caseDir, 'case.atto');
       writeFileSync(testSource, bytes, {flag: 'wx', mode: 0o600});
       const result = invoke(compilerArgv, testSource, caseDir, timeoutMs);
-      if (result.status === 0) fail(`${c.id}: unsupported GPU source was compiled`);
+      if (!Number.isInteger(result.status) || result.status === 0)
+        fail(`${c.id}: unsupported GPU source was compiled`);
+      if (result.stdout !== '') fail(`${c.id}: rejected GPU source emitted stdout`);
       const combined = `${result.stdout ?? ''}\n${result.stderr ?? ''}`;
-      if (!combined.includes(c.expectedDiagnostic))
+      const diagnosticLine = new RegExp(`^(?:error:\\s*)?${c.expectedDiagnostic}:`, 'im');
+      if (!diagnosticLine.test(result.stderr))
         fail(`${c.id}: missing required diagnostic ${c.expectedDiagnostic}`);
       if (/CPU fallback|fallback to CPU|CPU execution/i.test(combined) &&
           !/no implicit CPU fallback/i.test(combined)) fail(`${c.id}: potential CPU fallback`);
