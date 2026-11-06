@@ -133,6 +133,26 @@ zero-step jobs, partial pages, wrong-run jobs, duplicate job identities, and
 mismatched step names or timestamps. Its receipt requires
 `ciJob.jobId` (positive safe integer) for that API correlation.
 
+The verifier also requires the **actual GitHub workflow and job identity**
+to match a reviewed allowlist in `verification/dop-workflow-identity-v1.mjs`:
+Java must use `.github/workflows/dop-scalar-java-guest.yml` and job
+`scalar-dop-java-jit`; LLVM must use `.github/workflows/dop-atto-soa-native.yml`
+and job `native-guest`. The independently retrieved run's workflow name,
+positive workflow ID, event (`pull_request` or `workflow_dispatch`), path,
+source repository, and the API job's name/workflow name must all match.
+This prevents an unrelated source-free workflow on the same commit from
+attesting a guest using similarly named steps. **Wasm, Forge and .NET are
+intentionally not registered yet**: their run/job snapshots must fail closed
+until their genuinely executed and independently reviewed guest workflows
+have been specified. Tests:
+`node --test tests/dop-workflow-identity-v1.test.mjs tests/dop-github-run-snapshot-v1.test.mjs`.
+
+Workflow path/name matching is necessary but **not sufficient** to establish
+the workflow implementation's trustworthiness. Review the immutable workflow
+source blob, checkout configuration, source tree and toolchain provenance
+before treating even a matched job as execution evidence. No job with a null
+runner, zero steps or failed required step can become a `PASSED` guest.
+
 Retrieve snapshots independently from the authenticated source-repository
 GitHub REST API, not from a PR-author-supplied JSON attachment:
 
