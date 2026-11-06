@@ -58,6 +58,19 @@ for (const layout of ['aos', 'soa', 'aosoa', 'soaos']) {
     assert.equal(loan.read(first, 'x'), 1);
     loan.release();
 
+    // A malicious array iterator must not be executed merely to snapshot
+    // field names. A bounded indexed read is sufficient for this API.
+    const iteratorTrap = ['x'];
+    let iteratorCalls = 0;
+    Object.defineProperty(iteratorTrap, Symbol.iterator, { value() {
+      iteratorCalls++;
+      throw new Error('untrusted iterator executed');
+    }});
+    const indexedLoan = store.borrow(iteratorTrap, 'read');
+    assert.equal(indexedLoan.read(first, 'x'), 1);
+    indexedLoan.release();
+    assert.equal(iteratorCalls, 0);
+
     store.convert('soaos', {get groups() {
       assert.throws(() => store.borrow(['x'], 'write'), /reentrant/);
       assert.throws(() => store.write(first, 'y', 100), /reentrant/);
