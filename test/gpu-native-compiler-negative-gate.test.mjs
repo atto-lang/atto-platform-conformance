@@ -31,7 +31,7 @@ const source=fs.readFileSync(file,'utf8');
 if (source.includes('pub fnc launch')) process.exit(mode==='bad-control'?1:0);
 if (mode==='success-on-negative') process.exit(0);
 if (mode==='artifact') fs.writeFileSync('bad.ll','fake artifact');
-console.error((mode==='wrong-code'?'GPU-LAUNCH-008':source.match(/GPU-LAUNCH-\\d{3}/)?.[0])+' no implicit CPU fallback');
+console.error((mode==='wrong-code'?'GPU-LAUNCH-008':source.match(/GPU-LAUNCH-\\d{3}/)?.[0])+': no implicit CPU fallback');
 process.exit(1);
 `,{mode:0o700});
   chmodSync(compiler,0o700);
