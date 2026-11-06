@@ -78,6 +78,41 @@ The GitHub-snapshot fixtures are *synthetic attacks and a positive shape
 control*, not proof that a remote compiler actually executed. Do not
 promote `NOT_EXECUTED` when a job has no runner or executed steps.
 
+## Read-only source-GitHub REST evidence collection
+
+`verification/dop-github-api-v1.mjs` now retrieves the exact workflow run
+and its first (up to 100 jobs) job page from GitHub's fixed HTTPS REST
+endpoints, using an explicitly authorized token with **Actions read**
+permission on the source repository. It makes exactly two GETs, disallows
+HTTP redirects, bounds each streamed JSON reply to 1 MiB and 15 seconds,
+rejects invalid UTF-8, and neither checks out source nor transfers binary
+artifacts or private Git objects.
+
+Call its CLI with a small receipt JSON file:
+
+```sh
+GH_TOKEN=... node bin/verify-dop-github-run-v1.mjs \
+  receipts/llvm-dop-v1.json \
+  ores-truffle-oreslang/oreslang-source.llvm \
+  RUN_ID
+```
+
+The script refuses a missing token or a receipt referring to a different
+run, then passes the **independently fetched run/jobs records** to
+`validateDopGithubSnapshot`. Its only positive classification is
+`CORRELATED_NOT_GUEST_ATTESTED`. It is **not a release gate by itself**:
+independent source-tree, compiler, executable and artifact-hash checks,
+a source-local stepful guest run, branch protection and independent review
+are still required. A private conformance-repository `GITHUB_TOKEN`
+normally cannot read another private source repo; obtain explicit
+read-only repository-scoped access or run this on the approved source
+side, not by mirroring private source.
+
+Run `node --test tests/dop-github-api-v1.test.mjs` for eight focused
+source-free API/size/error/credentials adversarial test groups. The
+positive controls use a mocked transport and do not imply GitHub runner
+admission, native code generation or executed guest evidence.
+
 ## Separate future gates
 
 - Add compiler-owned inverted AoS/SoA/AoSoA layout selection and generation/
