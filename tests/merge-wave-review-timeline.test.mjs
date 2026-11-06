@@ -40,6 +40,59 @@ blocked('reject malformed author login',v=>v.author='<script>','REVIEW_IDENTITY_
 blocked('reject stale snapshot',v=>v.as_of='2026-11-06T18:50:00Z','SNAPSHOT_STALE');
 blocked('reject future snapshot',v=>v.as_of='2026-11-06T19:02:00Z','SNAPSHOT_FROM_FUTURE');
 blocked('reject unsupported timestamp',v=>v.as_of='yesterday','SNAPSHOT_TIME_INVALID');
+
+test('strict calendar rejects impossible snapshots instead of Date.parse rollover',()=>{
+  const invalid=[
+    '2026-02-30T19:00:00Z',
+    '2024-02-30T19:00:00Z',
+    '2026-04-31T19:00:00Z',
+    '2026-11-31T19:00:00Z',
+    '2026-11-06T24:00:00Z',
+    '2026-11-06T19:60:00Z',
+    '2026-11-06T19:00:60Z',
+    '2026-11-06T19:00:00+24:00',
+    '2026-11-06T19:00:00+00:60',
+    '2026-13-06T19:00:00Z'
+  ];
+  for(const value of invalid){
+    const parsed=Date.parse(value);
+    const now=Number.isFinite(parsed)?parsed:NOW;
+    assert.equal(snapshotFreshness(value,now).reason,'SNAPSHOT_TIME_INVALID',value);
+  }
+});
+test('strict date validity permits legitimate leap day and fractional offset dates',()=>{
+  for(const value of [
+    '2024-02-29T19:00:00Z',
+    '2000-02-29T19:00:00Z',
+    '2026-11-06T19:00:00.123456+01:30',
+    '2026-11-06T19:00:00-05:00'
+  ]){
+    assert.equal(snapshotFreshness(value,Date.parse(value)).ok,true,value);
+  }
+});
+test('impossible calendar reviewer submission cannot supply an eligible approval',()=>{
+  for(const value of [
+    '2026-02-30T18:59:00Z',
+    '2026-04-31T18:59:00Z',
+    '2026-11-06T24:00:00Z',
+    '2026-11-06T18:59:00+24:00'
+  ]){
+    const v=fixture();
+    v.reviews[0].submitted_at=value;
+    const r=qualifyReviewTimeline(v,{now:NOW});
+    assert.equal(r.status,'BLOCKED',value);
+    assert(r.blockers.includes('REVIEW_RECORD_INVALID'),JSON.stringify(r));
+  }
+});
+test('simultaneously invalid snapshot and submission fail closed',()=>{
+  const v=fixture();
+  v.as_of='2026-02-30T19:00:00Z';
+  v.reviews[0].submitted_at='2026-02-30T18:59:00Z';
+  const r=qualifyReviewTimeline(v,{now:Date.parse('2026-03-02T19:00:00Z')});
+  assert(r.blockers.includes('SNAPSHOT_TIME_INVALID'));
+  assert(r.blockers.includes('REVIEW_RECORD_INVALID'));
+});
+
 test('accepts post-change-request reapproval at exact head',()=>{
  const v=fixture();v.reviews.unshift({...v.reviews[0],id:13,state:'CHANGES_REQUESTED',submitted_at:'2026-11-06T18:58:00Z'});v.review_count=2;
  assert.deepEqual(qualifyReviewTimeline(v,{now:NOW}).blockers,[]);
