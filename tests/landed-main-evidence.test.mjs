@@ -17,7 +17,7 @@ function good() {
   return {
     repo:REPO,pr:7,author:'contributor',merged:true,base_ref:'main',
     pr_head_sha:A,merge_sha:B,landed_tree_sha:C,requires_guest:true,
-    main_observation:{head_sha:B,compare_status:'identical',behind_by:0},
+    main_observation:{head_sha:B,compare_status:'identical',behind_by:0,merge_base_sha:B,ahead_by:0},
     protection:{protected:true,required_approvals:1,codeowners:true,dismiss_stale:true,
       strict_checks:true,enforce_admins:true,bypass_count:0,
       force_pushes_allowed:false,deletions_allowed:false},
@@ -205,4 +205,25 @@ test('CLI rejects oversized input before JSON parse',()=>{
 });
 test('CLI rejects noncanonical JSON whitespace and escaping',()=>{
   withInput(JSON.stringify(ledger(good())),path=>assert.equal(runCli(path).status,2));
+});
+
+denies('reject false merge-base identity',e=>e.main_observation.merge_base_sha=A,'ancestry');
+denies('reject invalid identical ahead count',e=>e.main_observation.ahead_by=2,'ancestry');
+denies('reject ahead classification without new commits',e=>{
+  e.main_observation.compare_status='ahead';e.main_observation.head_sha=C;e.main_observation.ahead_by=0;
+},'ancestry');
+denies('reject meaningful failure concealed by successful test',e=>e.source_owned_runs[0].steps=[
+  {name:'Execute passing test',conclusion:'success'},
+  {name:'Execute failing test',conclusion:'failure'}],'ci');
+denies('reject skipped meaningful test concealed by successful test',e=>e.source_owned_runs[0].steps=[
+  {name:'Execute passing test',conclusion:'success'},
+  {name:'Run required security test',conclusion:'skipped'}],'ci');
+denies('reject padded step label spoofing',e=>e.source_owned_runs[0].steps=[
+  {name:' Execute native fixture ',conclusion:'success'}],'ci');
+denies('reject non-ASCII step label spoofing',e=>e.source_owned_runs[0].steps=[
+  {name:'Execute\u00a0native fixture',conclusion:'success'}],'ci');
+test('valid GitHub ahead ancestry can qualify as an advisory snapshot',()=>{
+  const e=good();e.main_observation.compare_status='ahead';
+  e.main_observation.head_sha=D;e.main_observation.ahead_by=2;
+  assert.deepEqual(auditEntry(e),[]);
 });
