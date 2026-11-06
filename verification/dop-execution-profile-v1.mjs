@@ -1,6 +1,16 @@
 // This module validates receipt SHAPE only. It does not authenticate hashes,
 // JUnit reports, GitHub runner steps, a JIT's machine code, or a native binary.
 const sha256 = /^[0-9a-f]{64}$/;
+// Artifact-bearing stages are backend-specific. A JVM JIT run must not be
+// promoted to a legacy AOT result merely by supplying an arbitrary hash.
+const artifactStages = Object.freeze({
+  java: ['nativeaot-guest'],
+  llvm: ['native-guest'],
+  wasm: ['browser-guest'],
+  forge: ['native-guest'],
+  // CIL assembly and .NET NativeAOT are both distinct emitted artifacts.
+  net: ['managed-guest', 'nativeaot-guest']
+});
 const javaGuestCases = new Set([
   'identicalScalarSoaSourceCompilesAndReturnsZeroFromRealJitGuest',
   'incorrectGuestChecksumIsDetectedByActualCompiledExecution'
@@ -21,6 +31,10 @@ export function validateDopPositiveExecutionProfile(receipt) {
     need(receipt.jitEvidence !== null && typeof receipt.jitEvidence === 'object' &&
       !Array.isArray(receipt.jitEvidence), 'jit-evidence-object');
     const ev = receipt.jitEvidence;
+    need(sha256.test(ev?.compilerClassTreeSha256 ?? ''), 'jit-compiler-class-tree-sha256');
+    need(sha256.test(receipt.compilerSha256 ?? '') &&
+      receipt.compilerSha256 === ev?.compilerClassTreeSha256,
+      'jit-compiler-fingerprint-match');
     need(sha256.test(ev?.runtimeBinarySha256 ?? ''), 'jit-runtime-binary-sha256');
     need(sha256.test(ev?.junitReportSha256 ?? ''), 'jit-junit-report-sha256');
     need(ev?.reportClass === 'dev.oreslang.DopScalarGuestParityTest',
@@ -35,6 +49,9 @@ export function validateDopPositiveExecutionProfile(receipt) {
     need(receipt.executionProfile === 'aot' || receipt.executionProfile === undefined,
       'unknown-execution-profile');
     // Preserve existing AOT/native and managed module artifact evidence.
+    need(Object.hasOwn(artifactStages, receipt.backend) &&
+      artifactStages[receipt.backend].includes(receipt.executionStage),
+      'artifact-backend-stage');
     need(sha256.test(receipt.guestArtifactSha256 ?? ''), 'guest-artifact-sha256');
     need(receipt.jitEvidence == null, 'aot-no-jit-evidence');
   }
