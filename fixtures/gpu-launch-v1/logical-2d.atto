@@ -1,0 +1,14 @@
+// Proposed 2D logical launch; not executable on current backends.
+pub gpu fnc fill_2d(GpuArray<f32> mut out, u64 width, u64 height) => void {
+    const u64 x = gpu.global_id(0);
+    const u64 y = gpu.global_id(1);
+    if x >= width || y >= height { return; }
+    out[y * width + x] = 1.0;
+}
+suspends fnc run(GpuArray<f32> mut out, u64 width, u64 height,
+                 GpuDevice device, GpuQueue queue) => void {
+    const completion = launch fill_2d(out, width, height) on gpu(device) {
+        over: [width, height], group: [16, 16], queue: queue
+    };
+    await completion;
+}
