@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { FourLayoutOracle } from '../verification/dop-four-layout-reference.mjs';
+import { FourLayoutOracle, makeGeometry } from '../verification/dop-four-layout-reference.mjs';
 import { computeLayoutAbi } from '../verification/data-layout-abi-v1.mjs';
 
 // Source-free test of two independently reviewed reference layers.
@@ -33,7 +33,7 @@ test('f64 logical cell addresses refine exact physical layout geometry for four 
       store.retire();
     }
   }
-  assert.equal(checked,55*0 + (0+1+2+3+4+5+7+8+9+17+129)*5*4);
+  assert.equal(checked,3700,'expected all five physical layouts and eleven capacities');
 });
 
 test('guest-like row snapshot cannot mutate the store during admission or change ABI widths', () => {
@@ -61,4 +61,41 @@ test('guest-like row snapshot cannot mutate the store during admission or change
   store.eraseSwap(first);
   assert.equal(store.read(second,'x'),11);
   assert.throws(()=>store.read(first,'x'),/stale row handle/);
+});
+
+test('four-layout field and SoAoS group descriptors are snapshotted once', () => {
+  const fieldNames = ['x','y'];
+  let fieldReads = 0;
+  Object.defineProperty(fieldNames,0,{
+    enumerable:true,configurable:true,
+    get() { return fieldReads++ === 0 ? 'x' : 'y'; }
+  });
+  const store = new FourLayoutOracle({
+    owner:'snapshot-test',fields:fieldNames,capacity:2,layout:'soa'
+  });
+  assert.equal(fieldReads,1,'the admitted field identity must not be re-read');
+  const first = store.push({x:1,y:2});
+  fieldNames[1]='x';
+  assert.equal(store.read(first,'x'),1);
+  assert.equal(store.read(first,'y'),2);
+  assert.equal(store.address(1,'x').segment,0);
+  store.retire();
+
+  let groupReads = 0;
+  const firstGroup = ['x'];
+  Object.defineProperty(firstGroup,0,{
+    enumerable:true,configurable:true,
+    get() { return groupReads++ === 0 ? 'x' : 'y'; }
+  });
+  const grouped = makeGeometry(['x','y'],2,'soaos',{groups:[firstGroup,['y']]});
+  assert.equal(groupReads,1,'validated groups must not be re-read for offsets');
+  assert.equal(grouped.address(1,'x').segment,0);
+  assert.equal(grouped.address(1,'y').segment,1);
+
+  let widthReads = 0;
+  const tiled = makeGeometry(['x','y'],5,'aosoa',{
+    get tileWidth() { return widthReads++ === 0 ? 4 : 0; }
+  });
+  assert.equal(widthReads,1,'tile width and admission must use the same snapshot');
+  assert.equal(tiled.address(4,'x').element,8);
 });
