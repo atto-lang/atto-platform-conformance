@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {BACKENDS,CANDIDATES,OWNER,buildPacket,assessJob,fetchLiveSnapshot,parseUniqueJson} from '../scripts/runner_admission_support_packet_20261106.mjs';
+import {BACKENDS,CANDIDATES,OWNER,buildPacket,assessJob,fetchLiveSnapshot,parseUniqueJson,readSnapshot} from '../scripts/runner_admission_support_packet_20261106.mjs';
 
 const repo=b=>OWNER+'/oreslang-source.'+b;
 function fixture(){
@@ -244,6 +244,58 @@ test('a complete multi-job inventory still admits only the pinned job',()=>{
   const f=fixture(),jobs=f.candidates.java.jobs;
   jobs.jobs.push({...jobs.jobs[0],id:127020277347});jobs.total_count=2;
   assert.equal(buildPacket(f).sampledJobs[0].assessment,'RUNNER_NOT_ALLOCATED');
+});
+
+
+function fakeSnapshotFile(json,{links=1n,regular=true,changed=false,partial=false,size=null}={}){
+  const bytes=new TextEncoder().encode(json);
+  const stat={isFile:()=>regular,nlink:links,size:size===null?BigInt(bytes.length):size,
+    dev:1n,ino:2n,mode:33188n,mtimeNs:3n,ctimeNs:4n};
+  let statCalls=0,closed=0,opened=0;
+  return {
+    async opener(){
+      opened++;
+      return {
+        async stat(){statCalls++;return changed&&statCalls>1?{...stat,mtimeNs:4n}:stat;},
+        async read(buf,offset,length,pos){
+          const count=Math.max(0,Math.min(length,bytes.length-pos,partial?3:length));
+          buf.set(bytes.subarray(pos,pos+count),offset);
+          return {bytesRead:count};
+        },
+        async close(){closed++;}
+      };
+    },
+    get closed(){return closed;},
+    get opened(){return opened;}
+  };
+}
+test('offline snapshot reads only stable, bounded regular descriptor bytes',async()=>{
+  const obj={branches:{java:{name:'main'}},candidates:{},message:'valid"};
+  const src=fakeSnapshotFile(JSON.stringify(obj),{partial:true});
+  assert.deepEqual(await readSnapshot('synthetic.json',src.opener),obj);
+  assert.equal(src.closed,1);
+  assert.equal(src.opened,1);
+});
+test('offline snapshot rejects hardlinks, nonregular files, size and mutation',async()=>{
+  const input='{"repo":"source-only"}';
+  for(const opts of [
+    {links:2n},{regular:false},{size:2000001n},{size:0n},
+    {size:1n},{changed:true}
+  ]){
+    const src=fakeSnapshotFile(input,opts);
+    await assert.rejects(readSnapshot('synthetic.json',src.opener));
+    assert.equal(src.closed,1);
+  }
+});
+test('offline snapshot rejects duplicate authority keys and closes descriptor',async()=>{
+  const src=fakeSnapshotFile('{"id":1,"\\u0069d":2}');
+  await assert.rejects(readSnapshot('synthetic.json',src.opener),/duplicate JSON object key/);
+  assert.equal(src.closed,1);
+});
+test('offline snapshot does not accept missing or substituted read data',async()=>{
+  const src=fakeSnapshotFile('{"a":1}',{size:2n});
+  await assert.rejects(readSnapshot('synthetic.json',src.opener),/changed during read/);
+  assert.equal(src.closed,1);
 });
 
 test('missing snapshot is never green',()=>{
