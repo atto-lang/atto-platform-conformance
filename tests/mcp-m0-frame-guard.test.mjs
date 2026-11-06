@@ -41,3 +41,14 @@ test('no parser retention of raw sensitive input',()=>{
 });
 
 test('long bounded scalar array stays admissible',()=>assert.equal(parse('{"a":['+Array(5000).fill('1').join(',')+']}').a.length,5000));
+
+test('caller cannot raise the 32 KiB frame cap',()=>reject(enc.encode(ok),'MALFORMED',{maxBytes:32769}));
+test('caller cannot raise the 12-level nesting cap',()=>reject(enc.encode(ok),'MALFORMED',{maxDepth:13}));
+test('a smaller caller frame budget is enforced',()=>reject(enc.encode(ok),'OVERFLOW',{maxBytes:enc.encode(ok).length-1}));
+test('a smaller caller nesting budget is enforced',()=>reject('{"x":{"nested":true}}','OVERFLOW',{maxDepth:1}));
+test('escaped isolated high surrogate in a value rejected',()=>reject('{"x":"\\ud800"}'));
+test('escaped isolated low surrogate in a value rejected',()=>reject('{"x":"\\udc00"}'));
+test('escaped isolated high surrogate in a key rejected',()=>reject('{"\\uD800":"v"}'));
+test('escaped high surrogate followed by ordinary character rejected',()=>reject('{"x":"\\uD83Chello"}'));
+test('escaped valid surrogate pair accepted',()=>assert.equal(parse('{"x":"\\uD83C\\uDF0D"}').x,'🌍'));
+test('escaped valid surrogate pair in a key accepted',()=>assert.equal(parse('{"\\uD83C\\uDF0D":1}')['🌍'],1));
