@@ -16,6 +16,7 @@ function verify() {
   for(const [act,n] of moves) {
    ok(valid(n),act);
    if(act==="deliver")ok(!s.control&&s.alive,"data ahead of CONTROL");
+   if(act==="send")ok(s.alive && s.accepted<2,"closed mailbox admitted data");
    if(act==="panic")ok(n.control===1&&!n.intercepted,"actor panic interception");
    hits[act]=(hits[act]||0)+1;
    const k=JSON.stringify(n);if(!seen.has(k)){seen.add(k);q.push(n);}
