@@ -2,6 +2,7 @@
 // Caller MUST retrieve data independently from authenticated GitHub API; this
 // pure validator does not authenticate self-supplied JSON or binary artifacts.
 import { validateDopGuestReceipt } from './dop-scalar-guest-v1.mjs';
+import { validateDopWorkflowIdentity } from './dop-workflow-identity-v1.mjs';
 
 const positiveInt = value => Number.isSafeInteger(value) && value > 0;
 
@@ -36,6 +37,7 @@ export function validateDopGithubSnapshot(receipt, contract, run, jobPage, expec
   need(matches.length === 1, 'unique-job-id-match');
   if (matches.length !== 1) return errors;
   const job = matches[0];
+  errors.push(...validateDopWorkflowIdentity(receipt, run, job, expectedRepo));
   need(job.run_id === run.id, 'job-run-id-match');
   need(job.head_sha === receipt.sourceHeadSha, 'job-exact-head');
   need(positiveInt(job.run_attempt) && job.run_attempt === run.run_attempt, 'job-attempt-match');
