@@ -90,3 +90,45 @@ test('reject dishonest missing property descriptors with a controlled error',()=
   });
   assert.throws(()=>check(proxy),/INVALID_MAILBOX_COMPLETION_TRACE/);
 });
+
+test('reject root Proxy before invoking any attacker getPrototypeOf trap',()=>{
+  let traps=0;
+  const root={schema:'oreslang.mailbox_completion.v1',capacity:1,
+    events:[x('stop_abrupt','STOPPED')]};
+  const hostile=new Proxy(root,{getPrototypeOf(target) {
+    traps++;
+    return Reflect.getPrototypeOf(target);
+  }});
+  assert.throws(()=>check(hostile),/INVALID_MAILBOX_COMPLETION_TRACE/);
+  assert.equal(traps,0);
+});
+test('reject proxied and revoked event arrays before reading their elements',()=>{
+  let traps=0;
+  const events=new Proxy([x('stop_abrupt','STOPPED')],{
+    getPrototypeOf(target){traps++;return Reflect.getPrototypeOf(target);}
+  });
+  assert.throws(()=>check({schema:'oreslang.mailbox_completion.v1',
+    capacity:1,events}),/INVALID_MAILBOX_COMPLETION_TRACE/);
+  assert.equal(traps,0);
+  const revocable=Proxy.revocable([x('stop_abrupt','STOPPED')],{});
+  revocable.revoke();
+  assert.throws(()=>check({schema:'oreslang.mailbox_completion.v1',
+    capacity:1,events:revocable.proxy}),/INVALID_MAILBOX_COMPLETION_TRACE/);
+});
+test('reject proxied or revoked event records before their traps execute',()=>{
+  let traps=0;
+  const record=new Proxy(x('stop_abrupt','STOPPED'),{
+    getPrototypeOf(target){traps++;return Reflect.getPrototypeOf(target);}
+  });
+  reject([record]);
+  assert.equal(traps,0);
+  const revoked=Proxy.revocable(x('stop_abrupt','STOPPED'),{});
+  revoked.revoke();
+  reject([revoked.proxy]);
+});
+test('reject a revoked root proxy with a controlled invalid-trace error',()=>{
+  const revoked=Proxy.revocable({schema:'oreslang.mailbox_completion.v1',
+    capacity:1,events:[x('stop_abrupt','STOPPED')]},{});
+  revoked.revoke();
+  assert.throws(()=>check(revoked.proxy),/INVALID_MAILBOX_COMPLETION_TRACE/);
+});
