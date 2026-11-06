@@ -6,7 +6,7 @@ import {spawnSync} from 'node:child_process';
 import {tmpdir} from 'node:os';
 import {isAbsolute,join,resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {loadSuite,classifyReceipt,summarize} from '../lib/portable-task-v1.mjs';
+import {loadSuite,selectCases,classifyReceipt,summarize} from '../lib/portable-task-v1.mjs';
 
 const here=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const sha40=x=>typeof x==='string'&&/^[0-9a-f]{40}$/.test(x);
@@ -54,11 +54,7 @@ async function run(cfg){
  const compilerSha256=await digest(cfg.compilerIdentity);
  const suite=await loadSuite();
  const allIds=suite.cases.map(c=>c.id);
- const requested=cfg.caseIds===undefined?allIds:cfg.caseIds;
- required(Array.isArray(requested)&&requested.length>0&&requested.length<=allIds.length&&
-   requested.every(id=>typeof id==='string'&&allIds.includes(id))&&
-   new Set(requested).size===requested.length,'caseIds must be distinct known portable fixture IDs');
- const cases=suite.cases.filter(c=>requested.includes(c.id));
+ const cases=selectCases(suite.cases,cfg.caseIds===undefined?allIds:cfg.caseIds);
  const receipts={[cfg.backend]:{}},trace=[];
  const scratch=await mkdtemp(join(tmpdir(),'atto-task-parity-'));
  try{
@@ -72,14 +68,18 @@ async function run(cfg){
    const vars={'{file}':file,'{out}':out};
    const compileArgv=command(cfg.compileArgv,vars),compiled=invoke(compileArgv,cfg.compilerRoot);
    const compilerOutput=(compiled.stdout+'\n'+compiled.stderr).slice(0,131072);
+   // Negative admissions must not leave a linked guest artifact. An unexpected
+   // compiler output file is a failure even when the diagnostic looks correct.
+   let unexpectedArtifact=false;
+   try{await stat(out);unexpectedArtifact=true;}catch(e){if(e.code!=='ENOENT')throw e;}
    let status='failed',guestExecuted=false,guestArgv=[],guestExit=null,guestOutput='',artifactSha256=null;
    const stepNames=['compile'];
    const safeCompile=compiled.error===null&&compiled.signal===null&&Number.isSafeInteger(compiled.exit);
-   if(safeCompile&&compiled.exit!==0){
+   if(safeCompile&&compiled.exit!==0&&!unexpectedArtifact){
     if(/(?:^|\n)\s*error:.*\b(?:unsupported|unimplemented)\b/i.test(compilerOutput))status='unsupported';
     // Negative semantic rejection is distinct from an unsupported negative fixture.
     else if(c.expect==='negative')status='passed';
-   }else if(safeCompile&&compiled.exit===0&&c.expect==='positive'){
+   }else if(safeCompile&&compiled.exit===0&&c.expect==='positive'&&!unexpectedArtifact){
     guestArgv=command(cfg.guestArgv,vars);
     const guest=invoke(guestArgv,cfg.compilerRoot);
     stepNames.push('guest');
@@ -96,12 +96,12 @@ async function run(cfg){
     :null;
    const receipt={status,backend:cfg.backend,caseId:c.id,compilerCommit:cfg.compilerCommit,fixtureCommit:cfg.fixtureCommit,
      fixtureBlobSha:c.fixtureBlobSha,fixtureSha256:c.fixtureSha256,compilerSha256,compileArgv,completedSteps:stepNames.length,
-     stepNames,runnerJobUrl:baseUrl,compilerExit:compiled.exit,compilerOutput,
+     stepNames,runnerJobUrl:baseUrl,compilerExit:compiled.exit,compilerOutput,compilerEmittedArtifact:unexpectedArtifact,
      guestExecuted,guestArgv,guestExit,guestOutput,artifactSha256};
    receipts[cfg.backend][c.id]=receipt;
    trace.push({id:c.id,...classifyReceipt(c,cfg.backend,receipt),compilerCommit:cfg.compilerCommit,
      fixtureCommit:cfg.fixtureCommit,compilerExit:compiled.exit,compilerOutput,compileArgv,
-     guestExit,guestExecuted,guestOutput,guestArgv,artifactSha256,runnerJobUrl:baseUrl,
+     guestExit,guestExecuted,guestOutput,guestArgv,artifactSha256,compilerEmittedArtifact:unexpectedArtifact,runnerJobUrl:baseUrl,
      stepNames,fixtureBlobSha:c.fixtureBlobSha,fixtureSha256:c.fixtureSha256,compilerSha256,
      artifactKind:cfg.backend==='java'?'jvm-launcher-identity':cfg.backend==='llvm'?'native-guest-executable':'backend-declared'});
   }
