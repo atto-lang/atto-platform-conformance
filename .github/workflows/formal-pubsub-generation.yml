@@ -3,11 +3,15 @@ on:
   pull_request:
     paths:
       - 'formal/pubsub_generation.bounded.mjs'
+      - 'formal/check_pubsub_generation_manifest.mjs'
+      - 'fixtures/actor-pubsub-generation-v1/manifest.json'
       - '.github/workflows/formal-pubsub-generation.yml'
   push:
     branches: [main]
     paths:
       - 'formal/pubsub_generation.bounded.mjs'
+      - 'formal/check_pubsub_generation_manifest.mjs'
+      - 'fixtures/actor-pubsub-generation-v1/manifest.json'
       - '.github/workflows/formal-pubsub-generation.yml'
   workflow_dispatch:
 permissions:
@@ -22,4 +26,6 @@ jobs:
         with:
           node-version: '22'
       - name: Exhaustive bounded model and negative controls
-        run: node formal/pubsub_generation.bounded.mjs
+        run: |
+          node formal/pubsub_generation.bounded.mjs
+          node formal/check_pubsub_generation_manifest.mjs
