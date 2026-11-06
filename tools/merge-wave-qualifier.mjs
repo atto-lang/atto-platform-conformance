@@ -106,7 +106,7 @@ export function qualifyWave(snapshot, {size = 5, minRepos = 3} = {}) {
   if (!Number.isSafeInteger(size) || size < 1 || !Number.isSafeInteger(minRepos) || minRepos < 1 || minRepos > size) throw new RangeError('invalid wave size');
   if (!snapshot || snapshot.schema_version !== 1 || !Array.isArray(snapshot.candidates) ||
     snapshot.candidates.length > 1000 || typeof snapshot.as_of !== 'string' ||
-    !/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$/.test(snapshot.as_of) ||
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(snapshot.as_of) ||
     !Number.isFinite(Date.parse(snapshot.as_of)) ||
     Date.parse(snapshot.as_of) > Date.now() + 5 * 60_000)
     throw new TypeError('invalid, future-dated or unbounded snapshot');
