@@ -1,0 +1,74 @@
+// Read-only GitHub REST client for conformance evidence. No source or artifact transfer.
+// This module is intentionally independent of credential storage or GitHub Actions SDKs.
+const repoSyntax = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
+const runSyntax = /^[1-9][0-9]{0,15}$/;
+const maxBytes = 1024 * 1024;
+const maxMs = 15000;
+
+export function validateGithubIdentity(repository, runId) {
+  if (typeof repository !== 'string' || !repoSyntax.test(repository) ||
+      repository.split('/').some(part => part === '.' || part === '..' || part.endsWith('.git')))
+    throw new TypeError('invalid-repository');
+  const id = String(runId);
+  if (!runSyntax.test(id) || !Number.isSafeInteger(Number(id)))
+    throw new TypeError('invalid-run-id');
+  return {repository, id};
+}
+
+export async function readGithubJson(response, limit = maxBytes) {
+  if (response.status !== 200 || !response.ok) throw new Error('github-http-not-200');
+  if (!response.headers?.get('content-type')?.toLowerCase().includes('application/json'))
+    throw new Error('github-not-json');
+  const length = response.headers.get('content-length');
+  if (length != null && (!/^[0-9]+$/.test(length) || Number(length) > limit))
+    throw new Error('github-invalid-length');
+  if (!response.body?.getReader) throw new Error('github-missing-stream');
+  const reader = response.body.getReader();
+  const chunks = [];
+  let received = 0;
+  try {
+    for (;;) {
+      const {done, value} = await reader.read();
+      if (done) break;
+      if (!(value instanceof Uint8Array)) throw new Error('github-invalid-chunk');
+      received += value.byteLength;
+      if (received > limit) throw new Error('github-oversize-response');
+      chunks.push(value);
+    }
+  } finally {
+    await reader.cancel().catch(() => {});
+  }
+  if (length != null && Number(length) !== received) throw new Error('github-length-mismatch');
+  const bytes = new Uint8Array(received);
+  let offset = 0;
+  for (const part of chunks) { bytes.set(part, offset); offset += part.byteLength; }
+  let data;
+  try { data = JSON.parse(new TextDecoder('utf-8', {fatal: true}).decode(bytes)); }
+  catch { throw new Error('github-malformed-json'); }
+  if (data === null || typeof data !== 'object' || Array.isArray(data))
+    throw new Error('github-not-object');
+  return data;
+}
+
+export async function fetchDopGithubRun({repository, runId, token, fetchFn = fetch,
+  signal = AbortSignal.timeout(maxMs)}) {
+  const parsed = validateGithubIdentity(repository, runId);
+  if (typeof token !== 'string' || token.length === 0 || /[\r\n]/.test(token))
+    throw new TypeError('missing-github-token');
+  const base = 'https://api.github.com/repos/' + parsed.repository + '/actions/runs/' + parsed.id;
+  const headers = {
+    authorization: 'Bearer ' + token,
+    accept: 'application/vnd.github+json',
+    'x-github-api-version': '2022-11-28'
+  };
+  const request = async url => {
+    const response = await fetchFn(url, {
+      method: 'GET', redirect: 'manual', cache: 'no-store', signal, headers
+    });
+    return readGithubJson(response);
+  };
+  const run = await request(base);
+  const jobs = await request(base + '/jobs?per_page=100');
+  // Complete-page requirement is enforced by validateDopGithubSnapshot.
+  return {run, jobs};
+}
