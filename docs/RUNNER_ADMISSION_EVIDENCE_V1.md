@@ -10,7 +10,7 @@ The existing workflow at .github/workflows/source-local-runner-allocation-canary
 
 ## Evidence contract
 
-The pure Node module tools/runner-admission-evidence-v1.mjs exports classifyRunnerAdmission({run,jobs,expected}) and runnerAdmissionExitCode(record). expected must be independently pinned with a repository owner/name, 40-character lower-case Git commit SHA, positive run ID and attempt number. Fetch run metadata and *all* jobs and steps through authenticated GitHub REST GET. Bind all job and step evidence to the same exact attempt and repository. The input snapshot is untrusted until independently authenticated by a live collector; the classifier alone does not prove it was fetched from GitHub.
+The pure Node module tools/runner-admission-evidence-v1.mjs exports classifyRunnerAdmission({run,jobs,expected}) and runnerAdmissionExitCode(record). expected must be independently pinned with a repository owner/name, 40-character lower-case Git commit SHA, positive run ID and attempt number. Fetch run metadata and *all* jobs and steps through authenticated GitHub REST GET. Fetch an attempt-specific jobs URL, record its independently authenticated attempt as jobs.run_attempt, and bind all job and step evidence to the same exact attempt and repository. GitHub may omit run_attempt on individual job objects; if present it must agree with the inventory and run. An unbound aggregate jobs listing is insufficient. The input snapshot is untrusted until independently authenticated by a live collector; the classifier alone does not prove it was fetched from GitHub.
 
 Classification meanings:
 
@@ -37,4 +37,4 @@ runnerAdmissionExitCode returns 3 for RUNNER_EXECUTION_OBSERVED, 2 for INVALID_I
 
 Run: node --test tests/runner-admission-evidence-v1.test.mjs
 
-These 13 synthetic Node regression tests exercise the classifier only, not actual remote execution, private runner admission, native compiler guests or GitHub policy state.
+These 14 synthetic Node regression tests exercise the classifier only, not actual remote execution, private runner admission, native compiler guests or GitHub policy state.
