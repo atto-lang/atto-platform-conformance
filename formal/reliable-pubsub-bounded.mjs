@@ -55,6 +55,7 @@ function leave(s, mutant) {
   const n = copy(s);
   n.active = false;
   if (mutant !== "retain-old-queue") n.queue = [];
+  for (const m of n.pending.filter(Boolean)) n.cancelled.push(m.id);
   n.pending = [null, null];
   return n;
 }
@@ -74,7 +75,10 @@ function invariant(s) {
   requireSafe(accepted.size === s.accepted.length, "duplicate queue admission", s);
   requireSafe(s.acked.every(id => accepted.has(id)), "ack without successful admission", s);
   requireSafe(s.accepted.every(m => ackSet.has(m.id)), "admission not acknowledged", s);
+  const cancelledSet = new Set(s.cancelled);
+  requireSafe(cancelledSet.size === s.cancelled.length, "duplicate pending cancellation", s);
   requireSafe(s.cancelled.every(id => !ackSet.has(id)), "cancelled backpressure acknowledged", s);
+  requireSafe(s.pending.filter(Boolean).every(m => !cancelledSet.has(m.id)), "cancelled item remains pending", s);
   const previously = new Map();
   for (const m of s.delivered) {
     requireSafe(m.activeAtDelivery && m.gen === m.currentGenerationAtDelivery,
@@ -131,12 +135,23 @@ function explore(mutant = null) {
 function verify() {
   const ok = explore();
   requireSafe(ok.states > 50 && ok.edges > ok.states, "insufficient model coverage", ok);
-  for (const mutant of ["early-ack", "retain-old-queue"]) {
+  const expected = {
+    "early-ack": ["ack without successful admission", "backpressure acknowledged early"],
+    "retain-old-queue": ["stale subscription generation delivered"]
+  };
+  for (const [mutant, violations] of Object.entries(expected)) {
     let found = false;
     try { explore(mutant); } catch (e) {
-      found = String(e.message).includes("trace=");
+      const message = String(e.message);
+      const trace = message.split("\\ntrace=")[1];
+      const steps = trace?.split(" -> ") || [];
+      const relevantTrace = mutant === "early-ack"
+        ? steps.filter(step => step.startsWith("publish-")).length >= 2
+        : steps.includes("leave") && steps.includes("rejoin") && steps.includes("deliver");
+      found = violations.some(violation => message.startsWith(violation + "\\nstate="))
+        && relevantTrace;
     }
-    requireSafe(found, "bad mutation escaped: " + mutant, ok);
+    requireSafe(found, "mutation lacked its intended invariant counterexample: " + mutant, ok);
   }
   return { ...ok, negativeControls: 2, classification: "SOURCE_FREE_BOUNDED_MODEL" };
 }
