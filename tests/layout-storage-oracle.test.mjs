@@ -317,3 +317,26 @@ test('constructor validates the same single-read schema snapshot it stores', () 
   emptySnapshot[Symbol.iterator] = function* () {};
   assert.throws(() => new LayoutStore(emptySnapshot), /nonempty schema/);
 });
+
+test('four-layout row admission rejects hidden and Symbol payload keys before invoking getters', () => {
+  for (const settings of layouts) {
+    const store = new LayoutStore(schema, { ...settings, capacity: 1 });
+    const original = store.push(row(0));
+    let getterCalls = 0;
+    for (const hidden of ['hidden', Symbol('hidden-payload')]) {
+      const input = row(1);
+      Object.defineProperty(input, 'x', {
+        enumerable: true, configurable: true,
+        get() { getterCalls++; return 1.5; }
+      });
+      Object.defineProperty(input, hidden, { value: 123, enumerable: false });
+      assert.throws(() => store.push(input), /row field set differs from schema/);
+      assert.equal(store.length, 1, settings.layout);
+      assert.deepEqual(store.get(original), row(0));
+    }
+    assert.equal(getterCalls, 0, settings.layout);
+    const exact = store.push(row(2));
+    assert.deepEqual(store.get(exact), row(2));
+    store.dispose();
+  }
+});
