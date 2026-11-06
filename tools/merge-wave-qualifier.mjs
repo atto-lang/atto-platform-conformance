@@ -1,6 +1,6 @@
 // Offline, fail-closed merge-wave planning. A caller-supplied snapshot is NOT a GitHub attestation.
 const SHA = /^[a-f0-9]{40}$/;
-const REPO = /^ores-truffle-oreslang\/(?:oreslang-source\.[a-z0-9-]+|oreslang-platform\.(?:mobile|iot|embedded|desktop|asic|fpga)|oreslang-platform-conformance)$/;
+const REPO = /^ores-truffle-oreslang\/(?:oreslang-source\.(?:java|llvm|wasm|forge|net)|oreslang-platform\.(?:mobile|iot|embedded|desktop|asic|fpga)|oreslang-platform-conformance)$/;
 const REJECTED_REVIEWERS = new Set(['the1mills', 'oresoftware']);
 const CORE = ['metadata', 'protection', 'review', 'checks', 'test', 'lease'];
 const meaningful = step => {
@@ -10,12 +10,29 @@ const meaningful = step => {
 };
 function validCheck(check, candidate) {
   if (!check || typeof check !== 'object') return false;
-  if (!check.context || !Number.isInteger(check.app_id) || check.app_id <= 0) return false;
+  if (typeof check.context !== 'string' || !check.context.trim() ||
+      !Number.isSafeInteger(check.app_id) || check.app_id <= 0) return false;
   if (check.head_sha !== candidate.head_sha || check.tree_sha !== candidate.head_tree_sha) return false;
-  if (check.conclusion !== 'success' || !Number.isInteger(check.run_id) || check.run_id <= 0 || !Number.isInteger(check.run_attempt) || check.run_attempt <= 0) return false;
-  if (!Array.isArray(check.jobs) || check.jobs.length === 0) return false;
-  return check.jobs.some(job => Number.isInteger(job.runner_id) && job.runner_id > 0 &&
-    job.conclusion === 'success' && Array.isArray(job.steps) && job.steps.some(meaningful));
+  if (check.conclusion !== 'success' ||
+      !Number.isSafeInteger(check.run_id) || check.run_id <= 0 ||
+      !Number.isSafeInteger(check.run_attempt) || check.run_attempt <= 0) return false;
+  if (!Array.isArray(check.jobs) || check.jobs.length === 0 || check.jobs.length > 128) return false;
+  const seen = new Set();
+  let executed = false;
+  for (const job of check.jobs) {
+    // Each claimed job must belong to the *same* exact-head run and attempt.
+    if (!job || !Number.isSafeInteger(job.id) || job.id <= 0 || seen.has(job.id) ||
+        job.run_id !== check.run_id || job.run_attempt !== check.run_attempt ||
+        job.head_sha !== candidate.head_sha ||
+        !['success','skipped'].includes(job.conclusion)) return false;
+    seen.add(job.id);
+    if (job.conclusion === 'skipped') continue;
+    if (!Number.isSafeInteger(job.runner_id) || job.runner_id <= 0 ||
+        !Array.isArray(job.steps) || !job.steps.length || job.steps.length > 128 ||
+        !job.steps.some(meaningful)) return false;
+    executed = true;
+  }
+  return executed;
 }
 export function qualifyCandidate(candidate, asOf) {
   const blockers = [];
@@ -51,8 +68,11 @@ export function qualifyCandidate(candidate, asOf) {
   if (!kinds || !Array.isArray(receipts) || kinds.some(kind => !receipts.some(r =>
     r?.kind === kind && r.head_sha === candidate.head_sha && r.tree_sha === candidate.head_tree_sha &&
     r.conclusion === 'success' && Number.isSafeInteger(r.assertions) && r.assertions > 0 &&
-    Number.isInteger(r.run_id) && r.run_id > 0 &&
-    checks?.some(c => c.run_id === r.run_id && validCheck(c, candidate))))) {
+    Number.isSafeInteger(r.run_id) && r.run_id > 0 &&
+    Number.isSafeInteger(r.run_attempt) && r.run_attempt > 0 &&
+    Number.isSafeInteger(r.job_id) && r.job_id > 0 &&
+    checks?.some(c => c.run_id === r.run_id && c.run_attempt === r.run_attempt &&
+      c.jobs?.some(j => j.id === r.job_id && j.conclusion === 'success') && validCheck(c, candidate))))) {
     bad('test', 'scope_specific_positive_and_negative_receipts_missing');
   }
   if (candidate.lease !== null) {
