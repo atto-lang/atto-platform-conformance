@@ -49,7 +49,7 @@ function makeGeometry(fields, capacity, layout, options = {}) {
 }
 
 class FourLayoutOracle {
-  #g; #owner; #denseSlots = []; #slots = []; #free = []; #issued = new WeakMap(); #loans = new Set(); #dead = false;
+  #g; #owner; #denseSlots = []; #slots = []; #free = []; #issued = new WeakMap(); #loans = new Set(); #dead = false; #admittingRow = false;
   constructor({owner, fields, capacity, layout, tileWidth, groups}) {
     if (typeof owner !== "string" || owner.length === 0) throw new TypeError("owner required");
     this.#owner = owner;
@@ -59,6 +59,9 @@ class FourLayoutOracle {
   get layout() { return this.#g.layout; }
   address(row, field) { return this.#g.address(row, field); }
   #ensureLive() { if (this.#dead) throw new Error("retired store"); }
+  #rejectReentrantMutation() {
+    if (this.#admittingRow) throw new Error("reentrant row admission mutation");
+  }
   #row(handle) {
     this.#ensureLive();
     if (!handle || typeof handle !== "object" || this.#issued.get(handle) !== true)
@@ -93,8 +96,13 @@ class FourLayoutOracle {
     }
   }
   push(record) {
+    this.#rejectReentrantMutation();
     this.#ensureLive(); this.#noMutationLeases();
     if (this.count >= this.#g.capacity) throw new RangeError("store capacity exhausted");
+    // Object.keys/hasOwn and getters can execute user code (including Proxy traps).
+    // Fence every observable mutation until the row is fully published.
+    this.#admittingRow = true;
+    try {
     if (!record || Object.keys(record).length !== this.#g.fields.length ||
         this.#g.fields.some(f => !Object.hasOwn(record, f)))
       throw new TypeError("record schema mismatch");
@@ -111,14 +119,19 @@ class FourLayoutOracle {
     const h = Object.freeze({owner: this.#owner, slot, generation: s.generation});
     this.#issued.set(h, true);
     return h;
+    } finally {
+      this.#admittingRow = false;
+    }
   }
   read(handle, field, loan) {
     const row = this.#row(handle); this.#authorize(field, loan, false); return this.#read(row, field);
   }
   write(handle, field, value, loan) {
+    this.#rejectReentrantMutation();
     const row = this.#row(handle); this.#authorize(field, loan, true); this.#write(row, field, value);
   }
   borrow(fields, mode = "read") {
+    this.#rejectReentrantMutation();
     this.#ensureLive();
     if (!Array.isArray(fields) || !fields.length || new Set(fields).size !== fields.length ||
         fields.some(f => !this.#g.fields.includes(f)) || !["read", "write"].includes(mode))
@@ -132,10 +145,11 @@ class FourLayoutOracle {
     return Object.freeze({
       read: (handle, field) => this.read(handle, field, info),
       write: (handle, field, value) => this.write(handle, field, value, info),
-      release: () => {this.#loans.delete(info);}
+      release: () => {this.#rejectReentrantMutation(); this.#loans.delete(info);}
     });
   }
   eraseSwap(handle) {
+    this.#rejectReentrantMutation();
     const row = this.#row(handle); this.#noMutationLeases();
     const last = this.count - 1;
     if (row !== last) {
@@ -151,6 +165,7 @@ class FourLayoutOracle {
     if (s.generation !== 0) this.#free.push(handle.slot);
   }
   convert(layout, options = {}) {
+    this.#rejectReentrantMutation();
     this.#ensureLive(); this.#noMutationLeases();
     const next = makeGeometry(this.#g.fields, this.#g.capacity, layout, options);
     for (let r = 0; r < this.count; ++r) for (const field of this.#g.fields) {
@@ -161,6 +176,7 @@ class FourLayoutOracle {
     this.#g = next;
   }
   retire() {
+    this.#rejectReentrantMutation();
     this.#ensureLive(); this.#noMutationLeases();
     for (const segment of this.#g.segments) segment.fill(0);
     this.#dead = true;
