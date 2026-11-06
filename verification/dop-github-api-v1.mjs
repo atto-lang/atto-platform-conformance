@@ -15,6 +15,47 @@ export function validateGithubIdentity(repository, runId) {
   return {repository, id};
 }
 
+// Reject duplicate decoded object keys before native JSON.parse. JSON.parse alone
+// silently keeps the last value, which is unsafe for runner/job authority data.
+export function parseStrictGithubJson(input) {
+  const stack = [];
+  let seenKeys = 0;
+  for (let i = 0; i < input.length;) {
+    const c = input[i];
+    if (c === '"') {
+      const start = i++;
+      let terminated = false;
+      while (i < input.length) {
+        if (input[i] === '\\') { i += 2; continue; }
+        if (input[i++] === '"') { terminated = true; break; }
+      }
+      if (!terminated) throw new Error('github-malformed-json');
+      const top = stack.at(-1);
+      if (top?.kind === 'object' && top.expectKey) {
+        let key;
+        try { key = JSON.parse(input.slice(start, i)); }
+        catch { throw new Error('github-malformed-json'); }
+        if (top.keys.has(key)) throw new Error('github-duplicate-json-key');
+        top.keys.add(key);
+        if (++seenKeys > 15000) throw new Error('github-too-many-json-keys');
+        top.expectKey = false;
+      }
+      continue;
+    }
+    if (c === '{' || c === '[') {
+      if (stack.length >= 80) throw new Error('github-over-nested-json');
+      stack.push(c === '{' ? {kind:'object', keys:new Set(), expectKey:true} : {kind:'array'});
+    } else if (c === '}' || c === ']') {
+      stack.pop();
+    } else if (c === ',' && stack.at(-1)?.kind === 'object') {
+      stack.at(-1).expectKey = true;
+    }
+    i++;
+  }
+  try { return JSON.parse(input); }
+  catch { throw new Error('github-malformed-json'); }
+}
+
 export async function readGithubJson(response, limit = maxBytes) {
   if (response.status !== 200 || !response.ok) throw new Error('github-http-not-200');
   if (!response.headers?.get('content-type')?.toLowerCase().includes('application/json'))
@@ -43,8 +84,11 @@ export async function readGithubJson(response, limit = maxBytes) {
   let offset = 0;
   for (const part of chunks) { bytes.set(part, offset); offset += part.byteLength; }
   let data;
-  try { data = JSON.parse(new TextDecoder('utf-8', {fatal: true}).decode(bytes)); }
-  catch { throw new Error('github-malformed-json'); }
+  try { data = parseStrictGithubJson(new TextDecoder('utf-8', {fatal: true}).decode(bytes)); }
+  catch (error) {
+    if (String(error?.message || '').startsWith('github-')) throw error;
+    throw new Error('github-malformed-json');
+  }
   if (data === null || typeof data !== 'object' || Array.isArray(data))
     throw new Error('github-not-object');
   return data;
