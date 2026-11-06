@@ -57,6 +57,8 @@ test('all five backend and four draft contracts produce 20 NOT_EXECUTED guest ce
   assert.equal(Object.keys(b.guest).length,4);
   assert(Object.values(b.guest).every(x=>x==='NOT_EXECUTED'));
   assert.deepEqual([b.formal,b.aot,b.memory],['NOT_EXECUTED','NOT_EXECUTED','NOT_EXECUTED']);
+  assert.equal(b.negative,'NOT_EXECUTED');
+  assert(b.blockers.includes('NEGATIVE_DIAGNOSTIC_NOT_VERIFIED'));
   assert(b.blockers.includes('MAIN_UNPROTECTED'));
   assert(b.blockers.includes('COMPILER_BINARY_NOT_VERIFIED'));
  }
@@ -187,4 +189,50 @@ test('real CLI rejects oversize, malformed UTF8 and noncanonical JSON',()=>{
  withTemp(Buffer.alloc(262145,32),path=>assert.equal(cliRun(path).status,2));
  withTemp(Buffer.from([0xc3,0x28]),path=>assert.equal(cliRun(path).status,2));
  withTemp(JSON.stringify(load()),path=>assert.equal(cliRun(path).status,2));
+});
+
+test('negative oracle pins a real .atto fixture and exact diagnostic category',()=>{
+ const c=load().negative_oracle;
+ assert.equal(c.id,'reject-duck-hasfuture');
+ assert.equal(c.fixture_blob_sha,'0072db5d74cd72430b3116eef51cb7237faae901');
+ assert.equal(c.expected_diagnostic,'ATTO_TASK_E_HASFUTURE_WITNESS');
+ assert.equal(c.expected_phase,'typechecker');
+});
+denied('reject fake negative PASS without a compiler binary',s=>s.backends[0].negative.state='REPORTED_PASS');
+denied('reject malformed negative diagnostic code',s=>s.negative_oracle.expected_diagnostic='42');
+function withReportedNegative(s){
+ const b=s.backends[0],c=s.negative_oracle;
+ b.compiler.binary_sha256='a'.repeat(64);
+ b.compiler.build_receipt=receipt(b,'aot');
+ b.negative={state:'REPORTED_PASS',receipt:{...receipt(b,'formal'),
+  kind:'negative',contract_id:c.id,fixture_blob_sha:c.fixture_blob_sha,
+  output:{exit_code:1,diagnostic_category:c.expected_diagnostic,
+    phase:c.expected_phase,crashed:false}}};
+ return b;
+}
+test('structurally reported negative remains UNVERIFIED and cannot release',()=>{
+ const s=load();withReportedNegative(s);
+ const r=evaluateCandidate(s,loadedLedger());
+ assert.equal(r.backends[0].negative,'REPORTED_PASS_UNVERIFIED');
+ assert.equal(r.release_authorized,false);
+ assert.equal(r.status,'BLOCKED');
+});
+test('wrong negative diagnostic code, phase or fixture fails closed',()=>{
+ for(const mutation of [
+   b=>b.negative.receipt.output.diagnostic_category='PARSE_ERROR',
+   b=>b.negative.receipt.output.phase='runtime',
+   b=>b.negative.receipt.fixture_blob_sha='f'.repeat(40)
+ ]){
+   const s=load(),b=withReportedNegative(s);mutation(b);
+   assert.throws(()=>validateCandidate(s),/unbound negative receipt/);
+ }
+});
+test('exit zero or crashed guest cannot prove a compiler rejection',()=>{
+ for(const mutation of [
+   b=>b.negative.receipt.output.exit_code=0,
+   b=>b.negative.receipt.output.crashed=true
+ ]){
+  const s=load(),b=withReportedNegative(s);mutation(b);
+  assert.throws(()=>validateCandidate(s),/unbound negative receipt/);
+ }
 });
