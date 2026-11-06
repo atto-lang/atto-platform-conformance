@@ -23,8 +23,10 @@ const receipt = {
   ciJob: {runId: 1422, jobId: 4411, runnerId: 55, conclusion: 'success', steps}
 };
 const run = {id: 1422, run_attempt: 1, head_sha: head, status: 'completed',
-  conclusion: 'success', repository: {full_name: repo}};
-const job = {id: 4411, run_id: 1422, runner_id: 55, status: 'completed',
+  conclusion: 'success', repository: {full_name: repo},
+  head_repository: {full_name: repo}};
+const job = {id: 4411, run_id: 1422, run_attempt: 1, head_sha: head,
+  runner_id: 55, status: 'completed',
   conclusion: 'success', steps: steps.map(step => ({
     number: step.number, name: step.id, conclusion: step.conclusion,
     started_at: step.startedAt, completed_at: step.completedAt
@@ -85,4 +87,26 @@ test('duplicate GitHub API step names and numbers fail closed', () => {
   both[3].name = 'extra'; both[3].number = 3;
   assert.ok(verify(receipt, run, {total_count: 1, jobs: [{...job, steps: both}]})
     .includes('duplicate-api-step-number'));
+});
+
+test('a workflow run from a different head repository is not accepted', () => {
+  assert.ok(verify(receipt, {...run, head_repository: {full_name: 'untrusted/fork'}})
+    .includes('run-head-repository'));
+  assert.ok(verify(receipt, {...run, head_repository: null})
+    .includes('run-head-repository'));
+});
+
+test('job SHA cannot diverge from the pinned source head', () => {
+  const alien = {...job, head_sha: 'f'.repeat(40)};
+  assert.ok(verify(receipt, run, {total_count: 1, jobs: [alien]})
+    .includes('job-exact-head'));
+  assert.ok(verify(receipt, run, {total_count: 1, jobs: [{...job, head_sha: null}]})
+    .includes('job-exact-head'));
+});
+
+test('previous or future job attempt cannot masquerade as the current GitHub run attempt', () => {
+  assert.ok(verify(receipt, run, {total_count: 1, jobs: [{...job, run_attempt: 2}]})
+    .includes('job-attempt-match'));
+  assert.ok(verify(receipt, run, {total_count: 1, jobs: [{...job, run_attempt: null}]})
+    .includes('job-attempt-match'));
 });
