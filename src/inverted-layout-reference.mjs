@@ -143,6 +143,7 @@ export class InvertedReferenceStore {
   #loans = new Map();
   #closed = false;
   #evaluatingInput = false;
+  #reentryRejected = false;
   #capacity;
   constructor(layout, capacity = 1024) {
     if (!layout || typeof layout !== "object" || !COMPILED_LAYOUTS.has(layout) ||
@@ -158,31 +159,47 @@ export class InvertedReferenceStore {
     }
   }
   #notEvaluating() {
-    if (this.#evaluatingInput) throw new Error("reentrant inverted owner input");
+    if (this.#evaluatingInput) {
+      // A proxy can catch this error. Record the attempted reentrancy so
+      // the outer transaction still fails instead of silently committing.
+      this.#reentryRejected = true;
+      throw new Error("reentrant inverted owner input");
+    }
   }
   #open() {
     this.#notEvaluating();
     if (this.#closed) throw new Error("inverted owner closed");
   }
-  // User-controlled descriptor and proxy traps cannot mutate the store while
-  // values are being validated. Failed validation never publishes a partial row.
-  #detached(spec, value) {
+  // Evaluate untrusted row/record descriptors without allowing any public
+  // owner or loan operation to mutate the store. Even *caught* reentrancy
+  // attempts taint the transaction. Reset on all throws so the next clean
+  // operation can proceed independently.
+  #captureInput(capture) {
     this.#open();
+    this.#reentryRejected = false;
     this.#evaluatingInput = true;
-    try { return copyValue(spec, value); }
-    finally { this.#evaluatingInput = false; }
+    let result, tainted = false;
+    try { result = capture(); }
+    finally {
+      tainted = this.#reentryRejected;
+      this.#evaluatingInput = false;
+      this.#reentryRejected = false;
+    }
+    if (tainted) throw new Error("reentrant inverted owner input tainted transaction");
+    return result;
+  }
+  #detached(spec, value) {
+    return this.#captureInput(() => copyValue(spec, value));
   }
   #rowValues(row) {
-    this.#open();
-    this.#evaluatingInput = true;
-    try {
+    return this.#captureInput(() => {
       if (!exactObject(row) || Reflect.ownKeys(row).length !== this.#columns.size)
         fail("inexact row shape");
       return this.#layout.columns.map(f => {
         if (!own(row, f.name)) fail("missing row member");
         return copyValue(f.descriptor, data(row, f.name));
       });
-    } finally { this.#evaluatingInput = false; }
+    });
   }
   get length() { this.#open(); return this.#rows.length; }
   get column_names() { this.#open(); return [...this.#columns.keys()]; }
