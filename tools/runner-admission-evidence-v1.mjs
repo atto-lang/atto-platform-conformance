@@ -43,6 +43,9 @@ export function classifyRunnerAdmission({ run, jobs, expected } = {}) {
   if (run.status !== 'completed' && run.conclusion != null) {
     return result('BLOCKED', ['INCOMPLETE_RUN_WITH_CONCLUSION']);
   }
+  if (!isId(jobs.run_attempt) || jobs.run_attempt !== run.run_attempt) {
+    return result('BLOCKED', ['JOB_INVENTORY_ATTEMPT_MISMATCH']);
+  }
   if (!Number.isSafeInteger(jobs.total_count) || jobs.total_count < 0 ||
       jobs.total_count > MAX_JOBS || !Array.isArray(jobs.jobs) ||
       jobs.jobs.length !== jobs.total_count) {
@@ -58,7 +61,7 @@ export function classifyRunnerAdmission({ run, jobs, expected } = {}) {
   for (const job of jobs.jobs) {
     if (!job || typeof job !== 'object' || Array.isArray(job) ||
         !isId(job.id) || ids.has(job.id) || job.run_id !== run.id ||
-        job.run_attempt !== run.run_attempt ||
+        (job.run_attempt != null && job.run_attempt !== run.run_attempt) ||
         !nonempty(job.name, 300) || !Array.isArray(job.steps) ||
         job.steps.length > MAX_STEPS) {
       return result('BLOCKED', ['MALFORMED_OR_WRONG_ATTEMPT_JOB']);
