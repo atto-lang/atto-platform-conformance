@@ -29,14 +29,39 @@ for(const [key,value] of [['completedSteps',0],['stepNames',[]],['fixtureBlobSha
  test('denies forged/incomplete passed receipt: '+key,()=>assert.equal(classifyReceipt(positive,'java',{...receipt(),[key]:value}).status,'failed'));
 }
 test('negative compiler rejection never claims guest execution',()=>{
- const c=cases.find(x=>x.expect==='negative');let x={...receipt(c),compilerExit:1,compilerOutput:'error: ATTO_TASK_E_HASFUTURE_WITNESS missing nominal HasFuture witness',guestExecuted:false,artifactSha256:null,guestArgv:[],guestExit:null,guestOutput:''};
+ const c=cases.find(x=>x.expect==='negative');let x={...receipt(c),compilerExit:1,compilerOutput:'error: ATTO_TASK_E_HASFUTURE_WITNESS missing nominal HasFuture witness',guestExecuted:false,artifactSha256:null,guestArgv:[],guestExit:null,guestOutput:'',completedSteps:1,stepNames:['compile']};
  assert.equal(classifyReceipt(c,'java',x).status,'passed');
  assert.equal(classifyReceipt(c,'java',{...x,guestExecuted:true}).status,'failed');
 });
 test('unsupported requires executed explicit compiler rejection',()=>{
- const x={...receipt(),status:'unsupported',compilerExit:1,compilerOutput:'error: unsupported Task lowering',guestExecuted:false,artifactSha256:null,guestArgv:[],guestExit:null};
+ const x={...receipt(),status:'unsupported',compilerExit:1,compilerOutput:'error: unsupported Task lowering',guestExecuted:false,artifactSha256:null,guestArgv:[],guestExit:null,completedSteps:1,stepNames:['compile']};
  assert.equal(classifyReceipt(positive,'java',x).status,'unsupported');
  assert.equal(classifyReceipt(positive,'java',{...x,compilerOutput:'error: unexpected failure'}).status,'failed');
+});
+test('candidate receipt refuses spoofed or out-of-order compiler and guest steps',()=>{
+ for(const names of [['metadata','guest'],['guest','compile'],['compile','upload'],['compile','guest','metadata']]){
+  const x={...receipt(),stepNames:names,completedSteps:names.length};
+  assert.equal(classifyReceipt(positive,'java',x).status,'failed',names.join(','));
+ }
+ assert.equal(classifyReceipt(positive,'java',receipt()).status,'passed');
+});
+test('negative compiler rejection requires compile-only observed steps',()=>{
+ const c=cases.find(x=>x.expect==='negative');
+ const valid={...receipt(c),status:'passed',compilerExit:1,
+  compilerOutput:'error: '+c.expectedDiagnosticCode+' verified semantic rejection',
+  guestExecuted:false,artifactSha256:null,guestArgv:[],guestExit:null,guestOutput:'',
+  stepNames:['compile'],completedSteps:1};
+ assert.equal(classifyReceipt(c,'java',valid).status,'passed');
+ for(const names of [['metadata'],['compile','guest'],['guest','compile']]){
+  assert.equal(classifyReceipt(c,'java',{...valid,stepNames:names,completedSteps:names.length}).status,'failed',names.join(','));
+ }
+});
+test('unsupported compiler result cannot pretend to execute guest steps',()=>{
+ const base={...receipt(),status:'unsupported',compilerExit:1,
+  compilerOutput:'error: unsupported Task lowering',guestExecuted:false,
+  artifactSha256:null,guestArgv:[],guestExit:null,stepNames:['compile'],completedSteps:1};
+ assert.equal(classifyReceipt(positive,'java',base).status,'unsupported');
+ assert.equal(classifyReceipt(positive,'java',{...base,stepNames:['compile','guest'],completedSteps:2}).status,'failed');
 });
 test('positive guest trace must contain every actual assertion',()=>{
  const c=cases.find(x=>x.mustObserve.length>0);const x=receipt(c);
