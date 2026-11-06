@@ -8,6 +8,10 @@ on:
       - 'evidence/landed-main-20261106-wave.json'
       - 'evidence/landed-main-20261106-platform-wave.json'
       - 'tests/landed-main-20261106-platform-wave.test.mjs'
+      - 'tools/atto-five-backend-certification-v1.mjs'
+      - 'bin/atto-five-backend-certification-v1.mjs'
+      - 'tests/atto-five-backend-certification-v1.test.mjs'
+      - 'evidence/atto-five-backend-release-candidate-v1.json'
       - 'docs/landed-main-evidence.md'
       - '.github/workflows/landed-main-evidence.yml'
   push:
@@ -18,6 +22,10 @@ on:
       - 'evidence/landed-main-20261106-wave.json'
       - 'evidence/landed-main-20261106-platform-wave.json'
       - 'tests/landed-main-20261106-platform-wave.test.mjs'
+      - 'tools/atto-five-backend-certification-v1.mjs'
+      - 'bin/atto-five-backend-certification-v1.mjs'
+      - 'tests/atto-five-backend-certification-v1.test.mjs'
+      - 'evidence/atto-five-backend-release-candidate-v1.json'
       - 'docs/landed-main-evidence.md'
       - '.github/workflows/landed-main-evidence.yml'
 permissions:
@@ -47,7 +55,11 @@ jobs:
         with:
           node-version: '22'
       - name: Execute postmerge evidence regressions
-        run: node --test tests/landed-main-evidence.test.mjs tests/landed-main-20261106-platform-wave.test.mjs
+        run: |
+          set -euo pipefail
+          node --check tools/atto-five-backend-certification-v1.mjs
+          node --check bin/atto-five-backend-certification-v1.mjs
+          node --test tests/landed-main-evidence.test.mjs tests/landed-main-20261106-platform-wave.test.mjs tests/atto-five-backend-certification-v1.test.mjs
       - name: Verify real sample ledger fails closed
         shell: bash
         run: |
@@ -62,3 +74,13 @@ jobs:
           status=0
           node bin/landed-main-evidence.mjs evidence/landed-main-20261106-platform-wave.json || status=$?
           test "$status" -eq 1
+      - name: Assert cross-backend release candidate remains BLOCKED without executed guest evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=0
+          node bin/atto-five-backend-certification-v1.mjs evidence/atto-five-backend-release-candidate-v1.json || status=$?
+          test "$status" -eq 1
+          md_status=0
+          node bin/atto-five-backend-certification-v1.mjs evidence/atto-five-backend-release-candidate-v1.json --markdown || md_status=$?
+          test "$md_status" -eq 1
