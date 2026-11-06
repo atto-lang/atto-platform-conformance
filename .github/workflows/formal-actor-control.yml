@@ -15,3 +15,5 @@ jobs:
         with:
           node-version: '22'
       - run: node formal/check_actor_control.mjs
+      - name: Reject adversarial safety-model mutations
+        run: node --test formal/adversarial_contract.test.mjs
