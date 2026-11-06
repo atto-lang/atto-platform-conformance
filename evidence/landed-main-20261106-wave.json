@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "scope": "snapshot_only",
+  "captured_at": "2026-11-06T19:23:06Z",
+  "capture_note": "PR merged state and original/landed commit SHAs were read from GitHub; compare(merge_sha...main) verified ahead/identical with behind=0. Read-only policy and review evidence remains incomplete; absent attestations are NOT_EXECUTED/NOT_VERIFIED, never fabricated.",
+  "entries": [
+    {
+      "repo": "ores-truffle-oreslang/oreslang-source.java",
+      "pr": 2558,
+      "author": "the1mills",
+      "pr_head_sha": "5f36cb5b2bc96c1c3cfaff6226f4c922698e9c9b",
+      "merge_sha": "ffb24dc6febff1b56d8b96f688e4769933897698",
+      "main_observation": {
+        "head_sha": "01f806d517879ee04b9154d2e8748dfc83e835fd",
+        "compare_status": "ahead",
+        "behind_by": 0
+      },
+      "protection": {
+        "protected": false
+      },
+      "approvals": [],
+      "required_checks": [],
+      "requires_guest": false,
+      "source_owned_runs": []
+    },
+    {
+      "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+      "pr": 1431,
+      "author": "the1mills",
+      "pr_head_sha": "f556b867f143b223df114bd711ce083020cff673",
+      "merge_sha": "164d11afc03483bcaf959ab4de5545e45b86cd28",
+      "main_observation": {
+        "head_sha": "8c214409625be8a99865b79d8bb89e5aaad2c814",
+        "compare_status": "ahead",
+        "behind_by": 0
+      },
+      "protection": {
+        "protected": false
+      },
+      "approvals": [],
+      "required_checks": [],
+      "requires_guest": false,
+      "source_owned_runs": []
+    },
+    {
+      "repo": "ores-truffle-oreslang/sublime-text-plugins",
+      "pr": 96,
+      "author": "the1mills",
+      "pr_head_sha": "7d60d6c04c07d8e9353b16a927e95b9867bab41d",
+      "merge_sha": "cf1739619683859aacc5a8da476be665f57d5074",
+      "main_observation": {
+        "head_sha": "84c77c18fe3252000f474cd0fd784f25f0aa794b",
+        "compare_status": "ahead",
+        "behind_by": 0
+      },
+      "protection": {
+        "protected": false
+      },
+      "approvals": [],
+      "required_checks": [],
+      "requires_guest": false,
+      "source_owned_runs": []
+    },
+    {
+      "repo": "ores-truffle-oreslang/sublime-text-plugins",
+      "pr": 93,
+      "author": "the1mills",
+      "pr_head_sha": "9520b39bed01273ad74c66c17b45ccb9e361d401",
+      "merge_sha": "c2b3c44c60d946d65dacfd9060be81cd3af5de0d",
+      "main_observation": {
+        "head_sha": "84c77c18fe3252000f474cd0fd784f25f0aa794b",
+        "compare_status": "ahead",
+        "behind_by": 0
+      },
+      "protection": {
+        "protected": false
+      },
+      "approvals": [],
+      "required_checks": [],
+      "requires_guest": false,
+      "source_owned_runs": []
+    },
+    {
+      "repo": "ores-truffle-oreslang/sublime-text-plugins",
+      "pr": 94,
+      "author": "the1mills",
+      "pr_head_sha": "1d631fa74f1429b3bb8a79618583bedd2c8a6faf",
+      "merge_sha": "84c77c18fe3252000f474cd0fd784f25f0aa794b",
+      "main_observation": {
+        "head_sha": "84c77c18fe3252000f474cd0fd784f25f0aa794b",
+        "compare_status": "identical",
+        "behind_by": 0
+      },
+      "protection": {
+        "protected": false
+      },
+      "approvals": [],
+      "required_checks": [],
+      "requires_guest": false,
+      "source_owned_runs": []
+    }
+  ]
+}
