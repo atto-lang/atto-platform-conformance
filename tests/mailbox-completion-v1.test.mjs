@@ -79,3 +79,14 @@ test('reject inherited, sparse and extra event authority',()=>{
   const symbolic=[x('stop_abrupt','STOPPED')];symbolic[Symbol('extra')]=1;
   assert.throws(()=>invoke(symbolic),/INVALID_MAILBOX_COMPLETION_TRACE/);
 });
+
+test('reject dishonest missing property descriptors with a controlled error',()=>{
+  const valid={schema:'oreslang.mailbox_completion.v1',capacity:1,
+    events:[x('stop_abrupt','STOPPED')]};
+  const proxy=new Proxy(valid,{
+    getOwnPropertyDescriptor(target,key) {
+      return key==='schema' ? undefined : Reflect.getOwnPropertyDescriptor(target,key);
+    }
+  });
+  assert.throws(()=>check(proxy),/INVALID_MAILBOX_COMPLETION_TRACE/);
+});
