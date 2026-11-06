@@ -65,9 +65,10 @@ export function compile_inverted_layout(types, typeName) {
   }
   const cache = new Map();
   function descriptor(type, path = []) {
-    if (SCALARS.has(type)) return Object.freeze({
-      type, kind: "scalar", width: type === "bool" ? 1 : 8
-    });
+    if (SCALARS.has(type)) {
+      const width = type === "bool" ? 1 : 8;
+      return Object.freeze({type, kind: "scalar", width, align: width});
+    }
     if (typeof type !== "string" || !validName(type) || !own(types, type)) fail("unknown field type");
     if (path.includes(type) || path.length >= 16) fail("recursive or overdeep value");
     if (cache.has(type)) return cache.get(type);
@@ -75,16 +76,25 @@ export function compile_inverted_layout(types, typeName) {
     if (decl.kind !== "struct") fail("nested type requires ordinary fixed struct");
     const nested = fieldsOf(decl.fields);
     if (!nested.length || nested.length > MAX_FIELDS) fail("invalid nested struct size");
-    let width = 0;
+    // Ordinary nested structs are packed *within* one inverted column, but
+    // still obey the natural alignment of each directly nested fixed member.
+    let cursor = 0, alignment = 1;
     const members = nested.map(([name, child]) => {
       const d = descriptor(child, [...path, type]);
-      width += d.width;
-      if (!Number.isSafeInteger(width) || width > MAX_PACKED_BYTES)
+      cursor = Math.ceil(cursor / d.align) * d.align;
+      const offset = cursor;
+      cursor += d.width;
+      alignment = Math.max(alignment, d.align);
+      if (!Number.isSafeInteger(cursor) || cursor > MAX_PACKED_BYTES)
         fail("packed value exceeds byte budget");
-      return Object.freeze({name, descriptor: d});
+      return Object.freeze({name, offset, descriptor: d});
     });
+    const width = Math.ceil(cursor / alignment) * alignment;
+    if (!Number.isSafeInteger(width) || width > MAX_PACKED_BYTES)
+      fail("packed value exceeds byte budget");
     const spec = Object.freeze({
-      type, kind: "packed-struct", width, fields: Object.freeze(members)
+      type, kind: "packed-struct", width, align: alignment,
+      fields: Object.freeze(members)
     });
     cache.set(type, spec);
     return spec;
