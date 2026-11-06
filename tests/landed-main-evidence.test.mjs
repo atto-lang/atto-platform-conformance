@@ -193,11 +193,20 @@ function runCli(path) {
   assert.equal(r.error,undefined);
   return r;
 }
-test('CLI returns snapshot-ready only as advisory',()=>{
+test('CLI snapshot-ready is advisory and deliberately exits nonzero',()=>{
   withInput(JSON.stringify(ledger(good()),null,2)+'\n',path=>{
-    const r=runCli(path);assert.equal(r.status,0,r.stderr);
+    const r=runCli(path);assert.equal(r.status,3,r.stderr);
     assert.equal(JSON.parse(r.stdout).scope,'advisory_not_release_authority');
     assert.match(r.stdout,/SNAPSHOT_READY_RECHECK_LIVE/);
+  });
+});
+test('CLI never signals release success from caller-controlled green input',()=>{
+  const e=good();
+  withInput(JSON.stringify(ledger(e),null,2)+'\\n',path=>{
+    const r=runCli(path);
+    assert.notEqual(r.status,0,'advisory report must not be a successful release gate');
+    assert.equal(r.status,3,r.stderr);
+    assert.equal(JSON.parse(r.stdout).status,'SNAPSHOT_READY_RECHECK_LIVE');
   });
 });
 test('CLI blocked sample exits one, not zero',()=>{
