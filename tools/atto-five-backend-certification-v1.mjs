@@ -23,14 +23,17 @@ function meaningful(steps){
 function receiptValid(r,b,binary,kind,contract){
  if(!obj(r)||r.repo!==b.repo||r.source_commit_sha!==b.source.commit_sha||
     r.source_tree_sha!==b.source.tree_sha||r.compiler_binary_sha256!==binary||
-    r.kind!==kind||(contract&&r.contract_id!==contract)||
+    r.kind!==kind||(contract&&r.contract_id!==contract.id)||
     !pos(r.run_id)||!pos(r.run_attempt)||!pos(r.job_id)||!pos(r.runner_id)||
     r.status!=='completed'||r.conclusion!=='success'||!meaningful(r.steps)||
     !hash(r.artifact_sha256))return false;
- if(kind==='guest')return obj(r.output)&&Number.isSafeInteger(r.output.exit_code)&&
+ if(kind==='guest')return obj(contract)&&contract.oracle?.type==='single_guest'&&
+   r.fixture_blob_sha===contract.oracle.fixture_blob_sha&&
+   obj(r.output)&&Number.isSafeInteger(r.output.exit_code)&&
    r.output.exit_code>=0&&r.output.exit_code<=255&&typeof r.output.stdout_hex==='string'&&
    r.output.stdout_hex.length<=131072&&/^(?:[a-f0-9]{2})*$/.test(r.output.stdout_hex)&&
-   r.output.crashed===false;
+   r.output.crashed===false&&r.output.exit_code===contract.oracle.expected_exit_code&&
+   r.output.stdout_hex===contract.oracle.expected_stdout_hex;
  if(kind==='formal')return hash(r.model_sha256)&&pos(r.properties_checked)&&r.counterexamples===0;
  if(kind==='aot')return hash(r.executable_sha256)&&r.fully_aot===true&&r.jit_disabled===true;
  if(kind==='memory')return obj(r.metrics)&&pos(r.metrics.samples)&&
@@ -62,7 +65,14 @@ export function validateCandidate(s){
  const cids=s.contracts.map(c=>c?.id);
  if(new Set(cids).size!==cids.length||s.contracts.some(c=>
   !obj(c)||!CONTRACT.test(c.id)||!obj(c.proposal)||!pos(c.proposal.pr)||
-  !sha(c.proposal.sha)||typeof c.description!=='string'||
+  !sha(c.proposal.sha)||!obj(c.oracle)||
+  !((c.oracle.type==='single_guest'&&sha(c.oracle.fixture_blob_sha)&&
+      Number.isSafeInteger(c.oracle.expected_exit_code)&&c.oracle.expected_exit_code>=0&&
+      c.oracle.expected_exit_code<=255&&typeof c.oracle.expected_stdout_hex==='string'&&
+      /^(?:[a-f0-9]{2})*$/.test(c.oracle.expected_stdout_hex))||
+    (c.oracle.type==='suite_pending'&&sha(c.oracle.manifest_blob_sha)&&
+      typeof c.oracle.reason==='string'&&c.oracle.reason.length>=8))||
+  typeof c.description!=='string'||
   c.description.length<8||c.description.length>400))
   throw new TypeError('invalid contract manifest');
  if(new Set(s.backends.map(b=>b?.id)).size!==5||IDS.some(id=>!s.backends.some(b=>b?.id===id)))
@@ -83,7 +93,7 @@ export function validateCandidate(s){
   if(b.compiler.binary_sha256!==null&&!receiptValid(
     b.compiler.build_receipt,b,b.compiler.binary_sha256,'aot',null))
     throw new TypeError('unbound build receipt');
-  for(const g of b.guest)status(g,'guest',b,b.compiler.binary_sha256,g.contract_id);
+  for(const g of b.guest)status(g,'guest',b,b.compiler.binary_sha256,s.contracts.find(c=>c.id===g.contract_id));
   for(const kind of ['formal','aot','memory'])status(b[kind],kind,b,b.compiler.binary_sha256,null);
  }
  return true;
@@ -93,12 +103,14 @@ export function evaluateCandidate(s,landed){
  const ledger=auditLedger(landed);
  const holds=[];
  if(ledger.status!=='SNAPSHOT_READY_RECHECK_LIVE')holds.push('POSTMERGE_LEDGER_BLOCKED');
+ if(s.contracts.some(c=>c.oracle.type==='suite_pending'))holds.push('CONTRACT_SUITE_ORACLES_NOT_NORMALIZED');
  if(Date.now()-Date.parse(s.as_of)>7*86400000)holds.push('STALE_SOURCE_HEAD_SNAPSHOT');
  const rows=s.backends.map(b=>{
   const blockers=[];
   if(!b.source.main_protected)blockers.push('MAIN_UNPROTECTED');
   if(!b.compiler.binary_sha256)blockers.push('COMPILER_BINARY_NOT_VERIFIED');
-  const guest=Object.fromEntries(b.guest.map(g=>[g.contract_id,status(g,'guest',b,b.compiler.binary_sha256,g.contract_id)]));
+  const guest=Object.fromEntries(b.guest.map(g=>[g.contract_id,
+   status(g,'guest',b,b.compiler.binary_sha256,s.contracts.find(c=>c.id===g.contract_id))]));
   if(Object.values(guest).some(x=>x==='NOT_EXECUTED'))blockers.push('GUEST_NOT_EXECUTED');
   if(Object.values(guest).some(x=>x==='FAILED'||x==='UNSUPPORTED'))blockers.push('GUEST_FAILED_OR_UNSUPPORTED');
   const formal=status(b.formal,'formal',b,b.compiler.binary_sha256,null);
@@ -116,7 +128,7 @@ export function evaluateCandidate(s,landed){
   status:holds.length?'BLOCKED':'SNAPSHOT_REPORTED_REQUIRES_LIVE_RECHECK',
   release_authorized:false,backend_count:rows.length,contract_count:s.contracts.length,
   contracts:s.contracts.map(c=>({id:c.id,proposal_pr:c.proposal.pr,proposal_head:c.proposal.sha,
-   maturity:'PROPOSED_NOT_MERGED'})),
+   maturity:'PROPOSED_NOT_MERGED',oracle_type:c.oracle.type})),
   postmerge:{status:ledger.status,blocked:ledger.blocked,count:ledger.count},
   holds,backends:rows,
   note:'Offline snapshots NEVER authorize releases. Independently verify exact GitHub commits/trees, compiler binary, fixture bytes, executed guest output, trusted reviewer, protected main, AOT/GC and formal model.'};
