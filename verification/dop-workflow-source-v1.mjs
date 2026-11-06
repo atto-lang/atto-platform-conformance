@@ -9,7 +9,7 @@ const policies = Object.freeze({
     blobSha:'1e7e45f5b1bb7151d375609fd1ae00d922509f96'}),
   llvm: Object.freeze({repository:'ores-truffle-oreslang/oreslang-source.llvm',
     path:'.github/workflows/dop-atto-soa-native.yml',
-    blobSha:'a845d9f110940d8bf3da931c8bd52d021b7ffe6d'})
+    blobSha:'7f4f80705ecf7521dd4790bf3c60b05c371766f8'})
 });
 const MAX_WORKFLOW_BYTES = 65536;
 
