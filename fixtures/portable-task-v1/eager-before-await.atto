@@ -1,5 +1,5 @@
 pub async fnc main(): int {
-  let Future<int> work = task { probe_trace("child_started"); return 42; };
+  let Task<int> work = task { probe_trace("child_started"); return 42; };
   probe_wait_for("child_started"); // bounded by harness, before await
   return await work;
 }

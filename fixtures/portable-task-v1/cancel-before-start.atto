@@ -1,6 +1,6 @@
 pub async fnc main(): int {
   probe_pause_worker_start(); // bounded scheduler admission barrier, before submission
-  let Future<int> task_handle = task {
+  let Task<int> task_handle = task {
     probe_trace("should_not_start");
     return 1;
   };
@@ -8,5 +8,6 @@ pub async fnc main(): int {
   probe_release_worker_start(); // cancellation must win before guest entry
   await task_handle.get_done();
   probe_assert_absent("should_not_start");
+  probe_trace("physical_done=true");
   return 42;
 }
