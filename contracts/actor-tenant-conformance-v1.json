@@ -1,0 +1,117 @@
+{
+  "schema": "atto.actor-tenant-conformance.v1",
+  "version": 1,
+  "status": "CONTRACT_ONLY_NO_GUEST_EXECUTION",
+  "contract": "atto-lang/atto-common-source/contracts/actor-tenant-isolation-v1.json",
+  "legacyInputs": [
+    "ores-truffle-oreslang/oreslang-platform-conformance/contracts/tenant-isolation-v2.json",
+    "ores-truffle-oreslang/oreslang-platform-conformance/contracts/actor-buffer-transfer-v1.json",
+    "ores-truffle-oreslang/oreslang-common-source/contracts/shared-actor-arenas.v1.json"
+  ],
+  "backends": {
+    "java": {
+      "repository": "atto-lang/atto-source.java",
+      "status": "NOT_EXECUTED"
+    },
+    "llvm": {
+      "repository": "atto-lang/atto-source.llvm",
+      "status": "NOT_EXECUTED"
+    },
+    "wasm": {
+      "repository": "atto-lang/atto-source.wasm",
+      "status": "NOT_EXECUTED"
+    },
+    "forge": {
+      "repository": "atto-lang/atto-source.forge",
+      "status": "NOT_EXECUTED"
+    },
+    "net": {
+      "repository": "atto-lang/atto-source.net",
+      "status": "NOT_EXECUTED"
+    }
+  },
+  "cases": [
+    {
+      "id": "same-tenant-take-invalidates-alias",
+      "kind": "compile-negative",
+      "expect": "use-after-transfer-rejected"
+    },
+    {
+      "id": "borrow-blocks-move",
+      "kind": "compile-negative",
+      "expect": "borrow-outlives-transfer-rejected"
+    },
+    {
+      "id": "frozen-graph-read",
+      "kind": "runtime-positive",
+      "expect": "readable-same-tenant-without-mutable-alias"
+    },
+    {
+      "id": "mailbox-admission-failure-retains-ownership",
+      "kind": "runtime-positive",
+      "expect": "failed-send-preserves-source-buffer"
+    },
+    {
+      "id": "cross-tenant-raw-handle-rejected",
+      "kind": "security-negative",
+      "expect": "direct-reference-and-pointer-access-denied"
+    },
+    {
+      "id": "cross-tenant-authorized-copy-not-alias",
+      "kind": "security-positive",
+      "expect": "broker-copy-is-independent"
+    },
+    {
+      "id": "revoked-capability-denied",
+      "kind": "security-negative",
+      "expect": "revoked-authority-cannot-be-reused"
+    },
+    {
+      "id": "tenant-heap-limit",
+      "kind": "security-negative",
+      "expect": "quota-violation-contained"
+    },
+    {
+      "id": "stale-tenant-generation",
+      "kind": "security-negative",
+      "expect": "old-generation-handle-denied"
+    },
+    {
+      "id": "noncooperative-tenant-stop-neighbor-survives",
+      "kind": "security-positive",
+      "expect": "neighbor-tenant-unaffected"
+    },
+    {
+      "id": "untrusted-tenant-missing-sandbox",
+      "kind": "security-negative",
+      "expect": "fail-closed-no-execution"
+    },
+    {
+      "id": "actor-heap-reclaimed-after-loans-drain",
+      "kind": "runtime-positive",
+      "expect": "no-cross-actor-use-after-free"
+    }
+  ],
+  "resultPolicy": {
+    "states": [
+      "passed",
+      "failed",
+      "unsupported",
+      "not_executed"
+    ],
+    "requiredForPassed": [
+      "backend",
+      "case_id",
+      "head_sha",
+      "artifact_sha256",
+      "workflow_url",
+      "command",
+      "guest_executed",
+      "evidence_kind",
+      "observed",
+      "exit_code"
+    ],
+    "note": "Receipt schema is STRUCTURAL only. Even a well-formed receipt does not authenticate its source, prove exact-head provenance, or confirm hardware sandboxing. CI validation and observed real guest execution must be reviewed independently.",
+    "security": "Security cases demand executed guest evidence, enforced memory-domain boundary identification and concrete negative/positive outcome."
+  }
+}
