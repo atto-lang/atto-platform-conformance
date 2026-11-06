@@ -1,0 +1,332 @@
+{
+  "schemaVersion": 1,
+  "contract": "attolang.dop.physical-layout/1",
+  "classification": "HOST_TYPED_LAYOUT_PLAN_NOT_ATTO_SOURCE_COMPILATION",
+  "semanticVersion": "v1-heterogeneous-pod",
+  "description": "Single actor-owned allocation with potentially multiple aligned segments; no runtime pointers or FFI addresses.",
+  "limits": {
+    "fieldsMax": 64,
+    "alignmentMax": 4096,
+    "lanesMax": 1024,
+    "physicalBytesMax": "9223372036854775807",
+    "negativeIndicesForbidden": true
+  },
+  "fields": [
+    {
+      "name": "position",
+      "bytes": 4,
+      "alignment": 4
+    },
+    {
+      "name": "velocity",
+      "bytes": 8,
+      "alignment": 8
+    },
+    {
+      "name": "flags",
+      "bytes": 2,
+      "alignment": 2
+    }
+  ],
+  "rows": "5",
+  "sampleRows": [
+    0,
+    3,
+    4
+  ],
+  "plans": [
+    {
+      "kind": "aos",
+      "lanes": 1,
+      "groups": [],
+      "expectedPhysicalBytes": "120",
+      "expectedSegments": [
+        {
+          "alignment": 8,
+          "bytes": "120",
+          "stride": "24",
+          "base": "0"
+        }
+      ],
+      "sampledAbsoluteOffsets": [
+        {
+          "row": 0,
+          "field": 0,
+          "absolute": "0"
+        },
+        {
+          "row": 0,
+          "field": 1,
+          "absolute": "8"
+        },
+        {
+          "row": 0,
+          "field": 2,
+          "absolute": "16"
+        },
+        {
+          "row": 3,
+          "field": 0,
+          "absolute": "72"
+        },
+        {
+          "row": 3,
+          "field": 1,
+          "absolute": "80"
+        },
+        {
+          "row": 3,
+          "field": 2,
+          "absolute": "88"
+        },
+        {
+          "row": 4,
+          "field": 0,
+          "absolute": "96"
+        },
+        {
+          "row": 4,
+          "field": 1,
+          "absolute": "104"
+        },
+        {
+          "row": 4,
+          "field": 2,
+          "absolute": "112"
+        }
+      ]
+    },
+    {
+      "kind": "soa",
+      "lanes": 1,
+      "groups": [],
+      "expectedPhysicalBytes": "74",
+      "expectedSegments": [
+        {
+          "alignment": 4,
+          "bytes": "20",
+          "stride": "4",
+          "base": "0"
+        },
+        {
+          "alignment": 8,
+          "bytes": "40",
+          "stride": "8",
+          "base": "24"
+        },
+        {
+          "alignment": 2,
+          "bytes": "10",
+          "stride": "2",
+          "base": "64"
+        }
+      ],
+      "sampledAbsoluteOffsets": [
+        {
+          "row": 0,
+          "field": 0,
+          "absolute": "0"
+        },
+        {
+          "row": 0,
+          "field": 1,
+          "absolute": "24"
+        },
+        {
+          "row": 0,
+          "field": 2,
+          "absolute": "64"
+        },
+        {
+          "row": 3,
+          "field": 0,
+          "absolute": "12"
+        },
+        {
+          "row": 3,
+          "field": 1,
+          "absolute": "48"
+        },
+        {
+          "row": 3,
+          "field": 2,
+          "absolute": "70"
+        },
+        {
+          "row": 4,
+          "field": 0,
+          "absolute": "16"
+        },
+        {
+          "row": 4,
+          "field": 1,
+          "absolute": "56"
+        },
+        {
+          "row": 4,
+          "field": 2,
+          "absolute": "72"
+        }
+      ]
+    },
+    {
+      "kind": "aosoa",
+      "lanes": 4,
+      "groups": [],
+      "expectedPhysicalBytes": "112",
+      "expectedSegments": [
+        {
+          "alignment": 8,
+          "bytes": "112",
+          "stride": "56",
+          "base": "0"
+        }
+      ],
+      "sampledAbsoluteOffsets": [
+        {
+          "row": 0,
+          "field": 0,
+          "absolute": "0"
+        },
+        {
+          "row": 0,
+          "field": 1,
+          "absolute": "16"
+        },
+        {
+          "row": 0,
+          "field": 2,
+          "absolute": "48"
+        },
+        {
+          "row": 3,
+          "field": 0,
+          "absolute": "12"
+        },
+        {
+          "row": 3,
+          "field": 1,
+          "absolute": "40"
+        },
+        {
+          "row": 3,
+          "field": 2,
+          "absolute": "54"
+        },
+        {
+          "row": 4,
+          "field": 0,
+          "absolute": "56"
+        },
+        {
+          "row": 4,
+          "field": 1,
+          "absolute": "72"
+        },
+        {
+          "row": 4,
+          "field": 2,
+          "absolute": "104"
+        }
+      ]
+    },
+    {
+      "kind": "soaos",
+      "lanes": 1,
+      "groups": [
+        [
+          0,
+          2
+        ],
+        [
+          1
+        ]
+      ],
+      "expectedPhysicalBytes": "80",
+      "expectedSegments": [
+        {
+          "alignment": 4,
+          "bytes": "40",
+          "stride": "8",
+          "base": "0"
+        },
+        {
+          "alignment": 8,
+          "bytes": "40",
+          "stride": "8",
+          "base": "40"
+        }
+      ],
+      "sampledAbsoluteOffsets": [
+        {
+          "row": 0,
+          "field": 0,
+          "absolute": "0"
+        },
+        {
+          "row": 0,
+          "field": 1,
+          "absolute": "40"
+        },
+        {
+          "row": 0,
+          "field": 2,
+          "absolute": "4"
+        },
+        {
+          "row": 3,
+          "field": 0,
+          "absolute": "24"
+        },
+        {
+          "row": 3,
+          "field": 1,
+          "absolute": "64"
+        },
+        {
+          "row": 3,
+          "field": 2,
+          "absolute": "28"
+        },
+        {
+          "row": 4,
+          "field": 0,
+          "absolute": "32"
+        },
+        {
+          "row": 4,
+          "field": 1,
+          "absolute": "72"
+        },
+        {
+          "row": 4,
+          "field": 2,
+          "absolute": "36"
+        }
+      ]
+    }
+  ],
+  "semantics": {
+    "aos": "One record per row, C-like field-aligned record stride, final tail padding.",
+    "soa": "One aligned segment per field, field scalar stride aligned to its own alignment.",
+    "aosoa": "Single segment of fixed-lane tiles, one contiguous lane array per field in each tile; padded final tile.",
+    "soaos": "Explicit nonempty partition of fields into independent record-array segments, each group an aligned AoS record, not AoSoA.",
+    "address": "Each row/field maps to exactly one segment and byte offset. Absolute offset = segment.base + relative byte offset. Every cell range is within its segment.",
+    "ownership": "Layout descriptor is not a capability to access memory. Actor ownership/borrow exclusivity must be established separately.",
+    "future": "Guest parser, HIR/MIR integration and native/JVM codegen are NOT_EXECUTED. Host planners do not prove physical guest lowering."
+  },
+  "negativeInputs": [
+    "zero-fields",
+    "invalid-scalar-width",
+    "field-align-less-than-width",
+    "non-power-of-two-align",
+    "lanes-not-power-of-two",
+    "soaos-duplicate-field",
+    "soaos-missing-field",
+    "soaos-empty-group",
+    "groups-on-non-soaos",
+    "cross-segment-alias",
+    "overflow-physical-bytes",
+    "out-of-bounds-row-or-field"
+  ]
+}
