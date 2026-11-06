@@ -123,6 +123,16 @@ export function qualifyReviewTimeline(input, {now = Date.now()} = {}) {
     }
     seenReviewerTimes.add(timestampKey);
     const prior = latest.get(r.reviewer_id);
+    // COMMENTED is feedback, never a new approval or change-request decision.
+    // It cannot revoke an APPROVED review or clear CHANGES_REQUESTED.
+    if (r.state === 'COMMENTED') continue;
+    // A distinct synthetic DISMISSED record does not prove that the earlier
+    // requested-changes review itself was dismissed by an authorized actor.
+    // Actual GitHub dismissals update the original review state in readback.
+    if (prior?.state === 'CHANGES_REQUESTED' && r.state === 'DISMISSED') {
+      fail('REVIEW_DISMISSAL_AMBIGUOUS');
+      continue;
+    }
     if (!prior || time > prior.time) latest.set(r.reviewer_id, { ...r, login, time });
   }
   if ([...latest.values()].some(r => r.state === 'CHANGES_REQUESTED')) {
