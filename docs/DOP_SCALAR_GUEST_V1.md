@@ -48,6 +48,36 @@ preview and not interchangeable with the two-array guest fixture; Java
 counted as positive guest execution. Wasm, Forge and .NET require their own
 real compiler and runtime execution receipts, not host storage tests.
 
+## Independent GitHub run/job snapshot correlation
+
+`verification/dop-github-run-snapshot-v1.mjs` adds a second, fail-closed
+verification layer. Given a receipt, the contract, an independently fetched
+GitHub Actions workflow-run record, its **complete first page** of job records,
+and a pinned expected repository name, `validateDopGithubSnapshot` checks
+that the claimed HEAD, repository, run ID, job ID, admitted runner ID,
+conclusion, and named timestamped steps match the GitHub records. It rejects
+zero-step jobs, partial pages, wrong-run jobs, duplicate job identities, and
+mismatched step names or timestamps. Its receipt requires
+`ciJob.jobId` (positive safe integer) for that API correlation.
+
+Retrieve snapshots independently from the authenticated source-repository
+GitHub REST API, not from a PR-author-supplied JSON attachment:
+
+- `GET /repos/OWNER/REPO/actions/runs/RUN_ID`
+- `GET /repos/OWNER/REPO/actions/runs/RUN_ID/jobs?per_page=100`
+
+If pagination is required, the verifier deliberately rejects the incomplete
+response instead of silently sampling a page. This module **does not fetch
+remote data by itself**; callers must authenticate the source and confirm
+the exact API origin. Even an externally retrieved run/job snapshot cannot
+attest compiled guest bytes, CLI executable provenance, or artifact hashes;
+those require separate independent job/artifact and source-tree checks.
+
+Run: `node --test tests/dop-scalar-guest-v1.test.mjs tests/dop-github-run-snapshot-v1.test.mjs`.
+The GitHub-snapshot fixtures are *synthetic attacks and a positive shape
+control*, not proof that a remote compiler actually executed. Do not
+promote `NOT_EXECUTED` when a job has no runner or executed steps.
+
 ## Separate future gates
 
 - Add compiler-owned inverted AoS/SoA/AoSoA layout selection and generation/
