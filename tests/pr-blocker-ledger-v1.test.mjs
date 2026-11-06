@@ -50,11 +50,52 @@ test("repository/day search is paginated and deduplicated",async()=>{
   const result=await discoverOpenPRs({start:"2026-11-05",end:"2026-11-05",perPage:2,
     listRepositories:async()=>({items:["example/compiler"],complete:true}),
     searchPage:async p=>{calls.push(p);return p.page===1?
-      {items:[{number:2},{number:3}],totalCount:3}:{items:[{number:3}],totalCount:3};},
+      {items:[{number:2},{number:3}],totalCount:3}:{items:[{number:1}],totalCount:3};},
     readHead:async()=>({head_sha:H,state:"open"})
   });
-  assert.equal(calls.length,2);assert.equal(result.prs.length,2);
+  assert.equal(calls.length,2);assert.equal(result.prs.length,3);
   assert.equal(result.complete,true);assert.equal(result.prs[0].headVerified,true);
+});
+test("overlapping GitHub search pages never certify missing PRs",async()=>{
+  const r=await discoverOpenPRs({start:"2026-11-05",end:"2026-11-05",perPage:2,maxPages:2,
+    listRepositories:async()=>({items:["example/compiler"],complete:true}),
+    searchPage:async p=>p.page===1
+      ?{items:[{number:2},{number:3}],totalCount:3}
+      :{items:[{number:3}],totalCount:3},
+    readHead:async()=>({head_sha:H,state:"open"})});
+  assert.equal(r.prs.length,2);
+  assert.equal(r.partitions[0].seen,2);
+  assert.equal(r.complete,false);
+  assert.ok(r.gaps.some(x=>x.kind==="DUPLICATE_PR_PAGE"&&x.number===3));
+  assert.ok(r.gaps.some(x=>x.kind==="PARTITION_INCOMPLETE"));
+});
+test("changing pagination totals are disclosed even if enough PRs were seen",async()=>{
+  const r=await discoverOpenPRs({start:"2026-11-05",end:"2026-11-05",perPage:2,maxPages:2,
+    listRepositories:async()=>({items:["example/compiler"],complete:true}),
+    searchPage:async p=>p.page===1
+      ?{items:[{number:1},{number:2}],totalCount:3}
+      :{items:[{number:3}],totalCount:4},
+    readHead:async()=>({head_sha:H,state:"open"})});
+  assert.equal(r.complete,false);
+  assert.ok(r.gaps.some(x=>x.kind==="TOTAL_COUNT_CHANGED"&&x.previous===3&&x.current===4));
+});
+test("null, unsafe, duplicate and oversized search records fail closed without crashing",async()=>{
+  const r=await discoverOpenPRs({start:"2026-11-05",end:"2026-11-05",perPage:2,maxPages:1,
+    listRepositories:async()=>({items:["example/compiler"],complete:true}),
+    searchPage:async()=>({items:[null,{number:2},{number:2},{number:9007199254740992}],totalCount:2}),
+    readHead:async()=>({head_sha:H,state:"open"})});
+  assert.equal(r.complete,false);
+  assert.equal(r.prs.length,1);
+  for(const kind of ["PAGE_OVERSIZED","UNTRUSTED_ITEM","DUPLICATE_PR_PAGE"])
+    assert.ok(r.gaps.some(x=>x.kind===kind),kind);
+});
+test("a genuinely empty daily inventory is complete, not an error",async()=>{
+  const r=await discoverOpenPRs({start:"2026-11-05",end:"2026-11-05",perPage:100,
+    listRepositories:async()=>({items:["example/compiler"],complete:true}),
+    searchPage:async()=>({items:[],totalCount:0})});
+  assert.equal(r.prs.length,0);
+  assert.equal(r.complete,true);
+  assert.equal(r.partitions[0].seen,0);
 });
 test("1000-result cap, incomplete repo listing, and unverified heads are disclosed",async()=>{
   const r=await discoverOpenPRs({start:"2026-11-05",end:"2026-11-05",perPage:100,maxPages:1,
