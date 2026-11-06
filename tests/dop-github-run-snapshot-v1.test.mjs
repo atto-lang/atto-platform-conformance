@@ -8,7 +8,7 @@ const manifest = JSON.parse(readFileSync(new URL(
 const repo = 'ores-truffle-oreslang/oreslang-source.llvm';
 const head = 'a'.repeat(40);
 const digest = 'b'.repeat(64);
-const steps = ['checkout-head', 'compile-guest', 'execute-guest'].map((id, i) => ({
+const steps = ['checkout-head', 'compile-guest', 'execute-guest', 'execute-poisoned-guest'].map((id, i) => ({
   id, number: i + 1, conclusion: 'success',
   startedAt: `2026-11-06T10:00:0${i}Z`,
   completedAt: `2026-11-06T10:00:0${i + 1}Z`
@@ -121,4 +121,13 @@ test('workflow path and job identity cannot be replaced by unrelated host-only c
     .includes('workflow-name'));
   assert.ok(verify(receipt, run, {total_count:1,jobs:[{...job,name:'host-only'}]})
     .includes('workflow-job-name'));
+});
+
+test('LLVM native guest snapshot must correlate its real poisoned-checksum execution step', () => {
+  const without = {...receipt, ciJob: {...receipt.ciJob, steps: receipt.ciJob.steps.slice(0, 3)}};
+  assert.ok(verify(without).includes('llvm-poisoned-guest-step'));
+  const wrong = job.steps.map(s => ({...s}));
+  wrong[3].name = 'host-only negative oracle';
+  assert.ok(verify(receipt, run, {...page, jobs:[{...job, steps:wrong}]})
+    .includes('observed-step-name-match'));
 });
