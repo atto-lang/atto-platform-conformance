@@ -1,0 +1,54 @@
+name: Two-wave postmerge source-free audit
+on:
+  pull_request:
+    paths:
+      - 'tools/wave-two-postmerge-intake-20261106.mjs'
+      - 'bin/wave-two-postmerge-intake-20261106.mjs'
+      - 'tests/wave-two-postmerge-intake-20261106.test.mjs'
+      - 'docs/TWO_WAVE_POSTMERGE_INTAKE_20261106.md'
+      - '.github/workflows/wave-two-postmerge-intake-20261106.yml'
+  push:
+    paths:
+      - 'tools/wave-two-postmerge-intake-20261106.mjs'
+      - 'bin/wave-two-postmerge-intake-20261106.mjs'
+      - 'tests/wave-two-postmerge-intake-20261106.test.mjs'
+      - 'docs/TWO_WAVE_POSTMERGE_INTAKE_20261106.md'
+      - '.github/workflows/wave-two-postmerge-intake-20261106.yml'
+permissions:
+  contents: read
+jobs:
+  source-free-postmerge:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout original source HEAD
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify pinned original HEAD
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_SHA" =~ ^[a-f0-9]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          test -z "$(git ls-files --others --exclude-standard)"
+          test -z "$(git ls-files --others --ignored --exclude-standard)"
+          git diff-index --cached --quiet HEAD --
+          echo "EXACT_SOURCE_HEAD=$EXPECTED_SHA"
+          echo "EXACT_SOURCE_TREE=$(git rev-parse 'HEAD^{tree}')"
+      - name: Set up Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Execute source-free postmerge adversarial tests
+        run: node --test tests/wave-two-postmerge-intake-20261106.test.mjs
+      - name: Confirm CLI never signals release success without token
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=0
+          env -u GH_TOKEN -u GITHUB_TOKEN node bin/wave-two-postmerge-intake-20261106.mjs >/dev/null 2>&1 || status=$?
+          test "$status" -eq 2
