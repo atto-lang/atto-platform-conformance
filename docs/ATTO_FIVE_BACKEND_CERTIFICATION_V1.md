@@ -15,6 +15,8 @@ Four **proposed, unmerged** guest contracts are linked to their exact PR heads: 
 
 The DOP fixture exits 0 only if its internal checksum/boundary checks succeed. This is **not** a physical SoA/AoSoA, SIMD or GPU proof. Actor/channel and Task fixtures are **multi-case suites including negatives**; their manifests are pinned, but a normalized case-by-case oracle is not yet integrated. The actor/channel draft currently includes Cranelift in its roster instead of Forge. Neither suite may claim `REPORTED_PASS` from one standalone guest receipt.
 
+An additional **targeted compiler-negative** oracle is pinned to `portable-task-v1/reject-duck-hasfuture.atto` Git blob `0072db5d74cd72430b3116eef51cb7237faae901`. A valid rejection must exit nonzero without a crash, with exact diagnostic `ATTO_TASK_E_HASFUTURE_WITNESS` from the `typechecker` phase. A generic parse error or a positive guest exit cannot replace it. This is still only a proposed fixture; all five negative evidence cells are `NOT_EXECUTED`.
+
 All 20 backend/contract guest cells, all five backend formal checks, all AOT checks and all memory/GC measurements are `NOT_EXECUTED`. No compiler binary identity is available. LLVM zero-GC, GraalVM Native Image full AOT and zero-GC target, and JVM reduced-GC are **design targets, not verified behaviors**.
 
 ## Usage
@@ -31,7 +33,7 @@ node bin/atto-five-backend-certification-v1.mjs \
   evidence/atto-five-backend-release-candidate-v1.json --markdown
 ```
 
-The CLI caps each input to 256 KiB, rejects symlinks/hardlinks/noncanonical JSON/duplicate JSON keys, checks the exact Git blob SHA of the landed-wave ledger, and validates bounded source/target/contract receipt structures. Unbound or missing receipt fields, incorrect fixture or stdout bytes, and unsupported/missing case suites cannot be mistaken for verified guest execution.
+The CLI caps each input to 256 KiB, rejects symlinks/hardlinks/noncanonical JSON/duplicate JSON keys, checks the exact Git blob SHA of the landed-wave ledger, and validates bounded source/target/contract receipt structures. Unbound or missing receipt fields, incorrect fixture or stdout bytes, failed/skipped/in-progress substantive CI steps, wrong diagnostic phases or successful exits on negative fixtures, and unsupported/missing case suites cannot be mistaken for verified guest execution.
 
 **Exit statuses: 1 BLOCKED, 2 malformed/untrusted data, 3 structurally reported complete but REQUIRES LIVE RECHECK. The CLI never returns 0.** Even caller-supplied `REPORTED_PASS` with plausible run IDs is labeled `REPORTED_PASS_UNVERIFIED`; a caller-controlled receipt is not authenticated by its syntax.
 
