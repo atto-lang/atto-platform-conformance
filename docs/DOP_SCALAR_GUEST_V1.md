@@ -82,8 +82,11 @@ trusted collector must independently hash the source-side files, validate the
 JUnit report contents, verify the exact workflow steps and fetch the matching
 GitHub job/run. The current source-local Java draft
 [PR #2571](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2571)
-has authored the runtime/JUnit hash measurements; it has **NOT_EXECUTED**
-on a runner. LLVM native [PR #1308](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1308)
+has authored the runtime/JUnit hash measurements plus a sorted digest of
+its compiled Java class-tree manifest (as a source-local compiler fingerprint).
+The verifier must still independently bind that manifest to the exact
+compiler source/tree and executable JDK; a self-reported class-tree digest is
+not proof of guest code generation. Java has **NOT_EXECUTED** on a runner. LLVM native [PR #1308](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1308)
 retains its real AOT output hash checks, also **NOT_EXECUTED**.
 
 Run `node --test tests/dop-execution-profile-v1.test.mjs` for eight
