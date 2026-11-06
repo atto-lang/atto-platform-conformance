@@ -1,0 +1,201 @@
+{
+  "schemaVersion": 1,
+  "contract": "atto.library-profiles/1",
+  "language": "AttoLang",
+  "sourceSuffix": ".atto",
+  "status": "SPECIFICATION_ONLY_NOT_EXECUTED",
+  "tiers": {
+    "core": {
+      "namespace": "atto.core",
+      "dependencies": [
+        "core"
+      ],
+      "permittedCapabilities": []
+    },
+    "alloc": {
+      "namespace": "atto.alloc",
+      "dependencies": [
+        "core",
+        "alloc"
+      ],
+      "permittedCapabilities": [
+        "allocator"
+      ]
+    },
+    "std": {
+      "namespace": "atto.std",
+      "dependencies": [
+        "core",
+        "alloc",
+        "std"
+      ],
+      "permittedCapabilities": [
+        "allocator",
+        "executor",
+        "os_io"
+      ]
+    }
+  },
+  "optionalActor": {
+    "namespace": "atto.runtime.actor",
+    "independentOfLibraryTier": true,
+    "staticCapabilities": [
+      "static_actor"
+    ],
+    "hostedCapabilities": [
+      "executor",
+      "mailbox",
+      "supervision"
+    ],
+    "staticModeRequiresCallerOwnedBoundedStorage": true
+  },
+  "profiles": [
+    {
+      "id": "core",
+      "tiers": [
+        "core"
+      ],
+      "capabilities": []
+    },
+    {
+      "id": "core+static-actor",
+      "tiers": [
+        "core",
+        "actor"
+      ],
+      "capabilities": [
+        "static_actor"
+      ]
+    },
+    {
+      "id": "alloc",
+      "tiers": [
+        "core",
+        "alloc"
+      ],
+      "capabilities": [
+        "allocator"
+      ]
+    },
+    {
+      "id": "alloc+actor",
+      "tiers": [
+        "core",
+        "alloc",
+        "actor"
+      ],
+      "capabilities": [
+        "allocator",
+        "executor",
+        "mailbox",
+        "supervision"
+      ]
+    },
+    {
+      "id": "std",
+      "tiers": [
+        "core",
+        "alloc",
+        "std"
+      ],
+      "capabilities": [
+        "allocator",
+        "executor",
+        "os_io"
+      ]
+    },
+    {
+      "id": "std+actor",
+      "tiers": [
+        "core",
+        "alloc",
+        "std",
+        "actor"
+      ],
+      "capabilities": [
+        "allocator",
+        "executor",
+        "os_io",
+        "mailbox",
+        "supervision"
+      ]
+    },
+    {
+      "id": "full",
+      "tiers": [
+        "core",
+        "alloc",
+        "std",
+        "actor"
+      ],
+      "capabilities": [
+        "allocator",
+        "executor",
+        "os_io",
+        "mailbox",
+        "supervision"
+      ]
+    }
+  ],
+  "evidence": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  },
+  "freestanding": {
+    "target": "thumbv7m-none-eabi",
+    "existingLegacyGate": "tools/core-baremetal-gate",
+    "canonicalAttoFixture": "fixtures/atto-library-profiles/v1/core-numeric.atto",
+    "requiredEvidence": [
+      "exact_source_head",
+      "compiler_generated_ir",
+      "compiled_guest_object",
+      "undefined_symbol_audit",
+      "static_link_no_libc",
+      "linked_elf_segment_audit",
+      "executed_qemu_guest",
+      "negative_import_rejection",
+      "negative_helper_injection"
+    ],
+    "permittedExternalHelperNames": [
+      "memcpy",
+      "memmove",
+      "memset",
+      "memcmp",
+      "__mulodi4"
+    ],
+    "permittedExternalHelperPrefix": "__aeabi_",
+    "forbiddenArtifactFeatures": [
+      "libc",
+      "heap_allocator",
+      "tracing_gc",
+      "os_services",
+      "actor_startup",
+      "dynamic_loader",
+      "tls",
+      "constructors"
+    ]
+  },
+  "fixtures": [
+    {
+      "id": "core-numeric",
+      "file": "fixtures/atto-library-profiles/v1/core-numeric.atto",
+      "expected": "CANDIDATE_COMPILE_AND_EXECUTE",
+      "profile": "core"
+    },
+    {
+      "id": "core-to-std",
+      "file": "fixtures/atto-library-profiles/v1/reject-core-to-std.atto",
+      "expected": "REJECT_BEFORE_IR",
+      "profile": "core"
+    },
+    {
+      "id": "core-to-alloc",
+      "file": "fixtures/atto-library-profiles/v1/reject-core-to-alloc.atto",
+      "expected": "REJECT_BEFORE_IR",
+      "profile": "core"
+    }
+  ]
+}
