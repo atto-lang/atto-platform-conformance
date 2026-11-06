@@ -76,3 +76,63 @@ test('deterministic cross-repo ordering',()=>{
  snap.candidates.reverse();const b=qualifyWave(snap).selected.map(v=>v.repo);
  assert.deepEqual(a,b);
 });
+
+const PLATFORM_REPOS = ['mobile', 'iot', 'embedded', 'desktop', 'asic', 'fpga']
+  .map(name => `ores-truffle-oreslang/oreslang-platform.${name}`)
+  .concat('ores-truffle-oreslang/oreslang-platform-conformance');
+
+test('all seven platform repositories are admissible in the offline five-PR wave', () => {
+  const snap = {
+    schema_version: 1, as_of,
+    candidates: PLATFORM_REPOS.map((repo, i) => ({...candidate('java', i + 1), repo}))
+  };
+  const result = qualifyWave(snap);
+  assert.equal(result.status, 'SNAPSHOT_QUALIFIED_REQUIRES_LIVE_RECHECK');
+  assert.equal(result.eligible_count, 7);
+  assert.equal(result.distinct_repo_count, 5);
+  assert.equal(result.selected.length, 5);
+  assert.deepEqual(result.blockers, []);
+});
+
+test('five platform PRs spanning only three repositories meet the diversity threshold', () => {
+  const repos = PLATFORM_REPOS.slice(0, 3);
+  const snap = {
+    schema_version: 1, as_of,
+    candidates: [0, 1, 2, 3, 4].map((i) => ({
+      ...candidate('java', i + 1), repo: repos[i % repos.length]
+    }))
+  };
+  const result = qualifyWave(snap);
+  assert.equal(result.status, 'SNAPSHOT_QUALIFIED_REQUIRES_LIVE_RECHECK');
+  assert.equal(result.selected.length, 5);
+  assert.equal(result.distinct_repo_count, 3);
+});
+
+test('reject platform namespace lookalikes and non-platform repositories', () => {
+  for (const repo of [
+    'evil-org/oreslang-platform.iot',
+    'ores-truffle-oreslang/oreslang-platform.iot-fork',
+    'ores-truffle-oreslang/oreslang-platform.conformance',
+    'ores-truffle-oreslang/oreslang-platform.mobile-extra',
+    'ores-truffle-oreslang/oreslang-platform-conformance-copy',
+    'ores-truffle-oreslang/oreslang-platform.mobile/',
+    'ores-truffle-oreslang/oreslang-platform.unknown'
+  ]) {
+    const c = {...candidate(), repo};
+    assert(qualifyCandidate(c, Date.parse(as_of)).some(b => b.kind === 'metadata'), repo);
+  }
+});
+
+test('platform source-free wave still fails closed on unexecuted checks', () => {
+  const snap = {
+    schema_version: 1, as_of,
+    candidates: PLATFORM_REPOS.slice(0, 5).map((repo, i) => ({
+      ...candidate('java', i + 1), repo
+    }))
+  };
+  snap.candidates[0].checks[0].jobs[0].steps = [];
+  const result = qualifyWave(snap);
+  assert.equal(result.status, 'BLOCKED');
+  assert.equal(result.eligible_count, 4);
+  assert(result.blockers[0].blockers.some(b => b.kind === 'checks'));
+});
