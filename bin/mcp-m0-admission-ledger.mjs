@@ -20,6 +20,68 @@ const object = x => x !== null && typeof x === 'object' && !Array.isArray(x);
 const validKeys = (obj, keys) => Object.keys(obj).every(k => keys.includes(k));
 const reasonCodes = new Set(['OK','DISABLED','UNAUTHENTICATED','SCOPE','TENANT','RUNTIME','GENERATION','VERSION','REPLAY','QUOTA','MALFORMED','UNSUPPORTED','TIMEOUT','AUDIT_FAILURE','OVERFLOW','DUPLICATE_ID']);
 
+// Source-free reference admission snapshots all caller-owned values BEFORE
+// validation, audit and reservation. Accessors, cycles, exotic objects and
+// oversized input are denied before any positive audit record can be emitted.
+// The caller must separately authenticate its transport and true frame bytes.
+function snapshotAdmissionInput(input) {
+  if (input === undefined) return {};
+  const seen = new WeakSet();
+  let nodes = 0;
+  let textUnits = 0;
+  function copy(value, depth) {
+    if (++nodes > 2048 || depth > 16) throw Error('input budget');
+    if (typeof value === 'string') {
+      textUnits += value.length;
+      if (textUnits > 65536) throw Error('text budget');
+      return value;
+    }
+    if (value === null || typeof value === 'number' ||
+        typeof value === 'boolean' || value === undefined) return value;
+    // Functions confer no authority. Keep an invalid scalar sentinel so
+    // malformed credential IDs still receive UNAUTHENTICATED, not a throw.
+    if (typeof value === 'function') return undefined;
+    if (typeof value !== 'object' || seen.has(value)) throw Error('non-JSON input');
+    seen.add(value);
+    const proto = Object.getPrototypeOf(value);
+    const array = Array.isArray(value);
+    if (array ? proto !== Array.prototype :
+        proto !== Object.prototype && proto !== null) throw Error('exotic object');
+    const descriptors = Object.getOwnPropertyDescriptors(value);
+    const names = Reflect.ownKeys(descriptors);
+    if (array) {
+      const length = descriptors.length?.value;
+      if (!Number.isSafeInteger(length) || length > 2048 ||
+          names.length !== length + 1) throw Error('invalid array');
+      const result = [];
+      for (let i = 0; i < length; i++) {
+        const descriptor = descriptors[i];
+        if (!descriptor || !Object.hasOwn(descriptor, 'value'))
+          throw Error('accessor or sparse array');
+        result.push(copy(descriptor.value, depth + 1));
+      }
+      return result;
+    }
+    const result = Object.create(null);
+    for (const name of names) {
+      if (typeof name !== 'string') throw Error('symbol key');
+      textUnits += name.length;
+      if (textUnits > 65536) throw Error('key budget');
+      const descriptor = descriptors[name];
+      if (!Object.hasOwn(descriptor, 'value')) throw Error('accessor property');
+      Object.defineProperty(result, name, {
+        value: copy(descriptor.value, depth + 1),
+        enumerable: true, writable: true, configurable: true
+      });
+    }
+    return result;
+  }
+  const options = copy(input, 0);
+  if (options === null || typeof options !== 'object' || Array.isArray(options))
+    throw Error('invalid admission options');
+  return options;
+}
+
 export class M0AdmissionLedger {
   #states = new Map();
   #tickets = new Map();
@@ -43,14 +105,19 @@ export class M0AdmissionLedger {
     if (!this.#audit || !this.#auditKey || !reasonCodes.has(reason)) return false;
     try {
       const identity = credential || {};
+      // Never coerce a caller-owned object or invoke untrusted toString while
+      // recording a denial. Invalid scalar identities hash as "unknown".
+      const safeIdentity = v => typeof v === 'string' && ID.test(v) ? v : 'unknown';
+      const safeRequest = v => (typeof v === 'string' && v.length > 0 && v.length <= 64) ||
+                                   safeInteger(v) ? v : 'unknown';
       const method = request && METHODS.has(request.method) ? request.method : '<unsupported>';
       const record = {
         schema: 'atto.mcp.audit.v1',
         timestamp: new Date(safeInteger(wallNowMs) && wallNowMs <= 8640000000000000 ? wallNowMs : 0).toISOString(),
-        principal_hash: this.#hash(identity.principal_id ?? 'unknown'),
-        tenant_hash: this.#hash(identity.tenant_id ?? 'unknown'),
-        runtime_hash: this.#hash(identity.runtime_id ?? 'unknown'),
-        request_id_hash: this.#hash(request?.id ?? 'unknown'),
+        principal_hash: this.#hash(safeIdentity(identity.principal_id)),
+        tenant_hash: this.#hash(safeIdentity(identity.tenant_id)),
+        runtime_hash: this.#hash(safeIdentity(identity.runtime_id)),
+        request_id_hash: this.#hash(safeRequest(request?.id)),
         method, decision, reason,
         request_bytes: safeInteger(frameBytes) ? Math.min(frameBytes, LIMITS.frameBytes) : 0,
         response_bytes: safeInteger(responseBytes) ? Math.min(responseBytes, LIMITS.responseBytes) : 0,
@@ -70,7 +137,15 @@ export class M0AdmissionLedger {
 
   // All lookup, check, audit and reservation work is synchronous: there is no
   // await between observing a nonce / request ID and reserving it.
-  begin({ peerAuthenticated = false, credential = null, request = null,
+  begin(options = {}) {
+    let snapshot;
+    try { snapshot = snapshotAdmissionInput(options); }
+    catch { return this.#deny('MALFORMED', {}); }
+    try { return this.#beginChecked(snapshot); }
+    catch { return this.#deny('MALFORMED', {}); }
+  }
+
+  #beginChecked({ peerAuthenticated = false, credential = null, request = null,
           hostBootId = null, hostRuntimeGeneration = NaN, wallNowMs = NaN, monotonicNowMs = NaN,
           frameBytes = NaN, jsonDepth = NaN } = {}) {
     const context = { credential, request, frameBytes, wallNowMs };
