@@ -18,7 +18,20 @@ export class M0FrameError extends Error {
   }
 }
 
-export function parseM0Frame(frame, { maxBytes = DEFAULT_MAX_BYTES, maxDepth = DEFAULT_MAX_DEPTH } = {}) {
+export function parseM0Frame(frame, options = {}) {
+  let maxBytes, maxDepth;
+  try {
+    // Option properties may be attacker-controlled getters or revoked Proxies.
+    // Read each requested bound at most once and normalize all failures.
+    if (options === null || typeof options !== 'object' || Array.isArray(options))
+      throw new M0FrameError('MALFORMED');
+    const requestedBytes = options.maxBytes;
+    const requestedDepth = options.maxDepth;
+    maxBytes = requestedBytes === undefined ? DEFAULT_MAX_BYTES : requestedBytes;
+    maxDepth = requestedDepth === undefined ? DEFAULT_MAX_DEPTH : requestedDepth;
+  } catch {
+    throw new M0FrameError('MALFORMED');
+  }
   if (!ArrayBuffer.isView(frame) || !(frame instanceof Uint8Array) ||
       !Number.isSafeInteger(maxBytes) || maxBytes <= 0 || maxBytes > DEFAULT_MAX_BYTES ||
       !Number.isSafeInteger(maxDepth) || maxDepth <= 0 || maxDepth > DEFAULT_MAX_DEPTH) {
