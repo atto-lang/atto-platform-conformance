@@ -55,6 +55,7 @@ export class LayoutOracle {
   #fields; #layout; #tileWidth; #groups;
   #rows = []; #generations = []; #free = []; #issued = new WeakSet();
   #evaluatingInput = false;
+  #reentryRejected = false;
   constructor(fields, layout, tileWidth = 4, groups = undefined) {
     this.#fields = checkedFields(fields);
     if (!Number.isSafeInteger(tileWidth) || tileWidth < 1 || tileWidth > 1024)
@@ -67,14 +68,27 @@ export class LayoutOracle {
   get layout() { return this.#layout; }
   get tileWidth() { return this.#tileWidth; }
   get groups() { return this.#groups?.map(group => [...group]); }
-  #noReentry() { if (this.#evaluatingInput) throw Error('reentrant layout oracle input'); }
+  #noReentry() {
+    if (this.#evaluatingInput) {
+      // A proxy may swallow the rejection; taint the outer transaction.
+      this.#reentryRejected = true;
+      throw Error('reentrant layout oracle input');
+    }
+  }
   insert(value) {
     this.#noReentry();
-    // Snapshot completely before consuming a free-list entry or publishing a row.
+    // Snapshot before touching the free list. Even if a proxy catches a
+    // nested-operation error, refuse to publish the tainted outer row.
+    this.#reentryRejected = false;
     this.#evaluatingInput = true;
-    let row;
+    let row, tainted = false;
     try { row = snapshotRow(value, this.#fields); }
-    finally { this.#evaluatingInput = false; }
+    finally {
+      tainted = this.#reentryRejected;
+      this.#evaluatingInput = false;
+      this.#reentryRejected = false;
+    }
+    if (tainted) throw Error('reentrant layout oracle input tainted transaction');
     const slot = this.#free.length ? this.#free.pop() : this.#rows.length;
     if (slot === this.#rows.length) {
       this.#rows.push(null);
