@@ -1,0 +1,64 @@
+name: Merge-wave advisory qualifier (source-owned)
+on:
+  push:
+    branches:
+      - main
+      - feat/merge-wave-offline-qualification-20261106
+      - audit/merge-wave-provenance-hardening-20261106
+    paths:
+      - .github/workflows/merge-wave-advisory-qualifier.yml
+      - bin/merge-wave-qualifier.mjs
+      - tools/merge-wave-qualifier.mjs
+      - tests/merge-wave-qualifier.test.mjs
+      - tests/merge-wave-qualifier-cli.test.mjs
+      - tests/merge-wave-qualifier-e2e.test.mjs
+  pull_request:
+    paths:
+      - .github/workflows/merge-wave-advisory-qualifier.yml
+      - bin/merge-wave-qualifier.mjs
+      - tools/merge-wave-qualifier.mjs
+      - tests/merge-wave-qualifier.test.mjs
+      - tests/merge-wave-qualifier-cli.test.mjs
+      - tests/merge-wave-qualifier-e2e.test.mjs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: advisory-merge-wave-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-free-qualifier-regressions:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Check out exact event source head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify checkout identity
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse --verify HEAD)" = "$EXPECTED_SHA"
+      - name: Set up pinned Node 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Execute all source-free qualifier tests (not guest parity)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --version
+          node --check tools/merge-wave-qualifier.mjs
+          node --check bin/merge-wave-qualifier.mjs
+          node --test \
+            tests/merge-wave-qualifier.test.mjs \
+            tests/merge-wave-qualifier-cli.test.mjs \
+            tests/merge-wave-qualifier-e2e.test.mjs
