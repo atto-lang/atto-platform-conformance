@@ -43,7 +43,10 @@ test('integrated JIT rejects wrong source blob and negative control not run', ()
 });
 test('existing native AOT receipt retains artifact requirement with explicit profile', () => {
   const aot={...base,backend:'llvm',executionProfile:'aot', executionStage:'native-guest',
-    guestArtifactSha256:hash,jitEvidence:null,discoveredTests:1,executedTests:1};
+    guestArtifactSha256:hash,jitEvidence:null,discoveredTests:1,executedTests:1,
+    ciJob:{...base.ciJob, steps:[...base.ciJob.steps,
+      {id:'execute-poisoned-guest', number:4, conclusion:'success',
+        startedAt:'2026-11-06T10:00:03Z',completedAt:'2026-11-06T10:00:04Z'}]}};
   assert.deepEqual(validateDopGuestReceipt(aot,contract),[]);
   assert.ok(validateDopGuestReceipt({...aot,guestArtifactSha256:null},contract)
     .includes('guest-artifact-sha256'));
@@ -57,4 +60,12 @@ test('integrated Java JIT cannot use a fake legacy AOT profile and hash', () => 
 test('integrated JIT report must bind the compilerClassTreeSha256 to compilerSha256', () => {
   const bypass = {...base, compilerSha256: 'c'.repeat(64)};
   assert.ok(validateDopGuestReceipt(bypass, contract).includes('jit-compiler-fingerprint-match'));
+});
+
+test('full receipt schema refuses a positive LLVM AOT result without executed negative guest', () => {
+  const falsePositive = {...base, backend:'llvm', executionProfile:'aot',
+    executionStage:'native-guest', guestArtifactSha256:hash, jitEvidence:null,
+    discoveredTests:1, executedTests:1};
+  assert.ok(validateDopGuestReceipt(falsePositive,contract)
+    .includes('llvm-poisoned-guest-step'));
 });
