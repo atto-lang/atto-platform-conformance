@@ -37,7 +37,7 @@ test('strict base64, correct declared size and actual content digest are require
 test('canonical Java/LLVM source paths and reviewed candidate blob SHAs are pinned', () => {
   for (const [backend,repo,expectedSha] of [
     ['java','ores-truffle-oreslang/oreslang-source.java','1e7e45f5b1bb7151d375609fd1ae00d922509f96'],
-    ['llvm','ores-truffle-oreslang/oreslang-source.llvm','a845d9f110940d8bf3da931c8bd52d021b7ffe6d']]) {
+    ['llvm','ores-truffle-oreslang/oreslang-source.llvm','7f4f80705ecf7521dd4790bf3c60b05c371766f8']]) {
     const p=requirePinnedDopWorkflow(backend,repo,'a'.repeat(40));
     assert.equal(p.blobSha,expectedSha);
     assert.ok(p.path.startsWith('.github/workflows/'));
