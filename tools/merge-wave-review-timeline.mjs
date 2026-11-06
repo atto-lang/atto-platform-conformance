@@ -11,9 +11,22 @@ const MAX_SNAPSHOT_AGE_MS = 5 * 60_000;
 const FUTURE_SKEW_MS = 30_000;
 
 const positiveId = id => Number.isSafeInteger(id) && id > 0;
-const iso = value => typeof value === 'string' &&
-  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(value) &&
-  Number.isFinite(Date.parse(value));
+// Date.parse normalizes impossible calendar dates (e.g. Feb 30 -> Mar 2).
+// Validate actual calendar fields and timezone offsets before comparing timestamps.
+const ISO = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?(Z|[+-](\d{2}):(\d{2}))$/;
+const iso = value => {
+  if (typeof value !== 'string') return false;
+  const m = ISO.exec(value);
+  if (!m) return false;
+  const year=Number(m[1]), month=Number(m[2]), day=Number(m[3]);
+  const hour=Number(m[4]), minute=Number(m[5]), second=Number(m[6]);
+  const leap=(year%4===0 && (year%100!==0 || year%400===0));
+  const days=[31,leap?29:28,31,30,31,30,31,31,30,31,30,31];
+  if (month<1 || month>12 || day<1 || day>days[month-1] ||
+      hour>23 || minute>59 || second>59) return false;
+  if (m[8]!=='Z' && (Number(m[9])>23 || Number(m[10])>59)) return false;
+  return Number.isFinite(Date.parse(value));
+};
 
 export function snapshotFreshness(asOf, now = Date.now()) {
   if (!iso(asOf) || !Number.isSafeInteger(now) || now < 0) {
