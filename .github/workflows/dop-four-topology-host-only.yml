@@ -1,0 +1,34 @@
+name: DOP four-topology host oracle (not guest)
+on:
+  pull_request:
+    paths:
+      - 'src/dop-layout-topology-v1.mjs'
+      - 'tests/dop-layout-topology-v1.test.mjs'
+      - 'docs/DOP_LAYOUT_TOPOLOGY_HARDENING_V1.md'
+      - '.github/workflows/dop-four-topology-host-only.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  host-reference-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify exact source head
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git rev-parse HEAD
+          git rev-parse HEAD^{tree}
+      - name: Run source-independent host byte-layout model
+        run: node --test tests/dop-layout-topology-v1.test.mjs
