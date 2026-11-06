@@ -215,3 +215,62 @@ test('throwing audit sink rollback allows retry and no leaked ticket',()=>{
   assert.equal(ledger.finish(allowed.ticket),true);
   assert.equal(ledger.stats().active,0);
 });
+
+
+test('recursive denial audit is capped at eight callbacks, not stack exhaustion',()=>{
+  let calls=0;
+  let ledger;
+  ledger=new M0AdmissionLedger({
+    enabled:true,
+    auditKey:Buffer.alloc(32,7),
+    audit(record) {
+      calls++;
+      assert.equal(Object.isFrozen(record),true);
+      if (calls<1000) ledger.begin(null);
+      return true;
+    }
+  });
+  assert.equal(ledger.begin(null).reason,'MALFORMED');
+  assert.equal(calls,8);
+  assert.equal(ledger.stats().active,0);
+});
+test('audit nesting budget resets after a recursive denial settles',()=>{
+  let calls=0;
+  let ledger;
+  ledger=new M0AdmissionLedger({
+    enabled:true,
+    auditKey:Buffer.alloc(32,7),
+    audit() { calls++; if(calls%8!==0)ledger.begin(null);return true; }
+  });
+  assert.equal(ledger.begin(null).reason,'MALFORMED');
+  assert.equal(ledger.begin(null).reason,'MALFORMED');
+  assert.equal(calls,16);
+  assert.equal(ledger.stats().active,0);
+});
+test('audit callback cannot rewrite the denial reason or decision',()=>{
+  let observed;
+  const ledger=new M0AdmissionLedger({
+    enabled:true,
+    auditKey:Buffer.alloc(32,7),
+    audit(record) {
+      assert.equal(Object.isFrozen(record),true);
+      try { record.reason='OK';record.decision='allow'; } catch {}
+      observed=record;
+      return true;
+    }
+  });
+  assert.equal(ledger.begin(null).reason,'MALFORMED');
+  assert.equal(observed.reason,'MALFORMED');
+  assert.equal(observed.decision,'deny');
+  assert.equal(ledger.stats().active,0);
+});
+test('non-finite nested JSON-like numbers are rejected before authorization',()=>{
+  const ledger=new M0AdmissionLedger({
+    enabled:true,auditKey:Buffer.alloc(32,7),audit:()=>true
+  });
+  for(const value of [NaN,Infinity,-Infinity]){
+    assert.equal(ledger.begin({frameBytes:value}).reason,'MALFORMED');
+    assert.equal(ledger.begin({credential:{nested:{value}}}).reason,'MALFORMED');
+  }
+  assert.equal(ledger.stats().active,0);
+});
