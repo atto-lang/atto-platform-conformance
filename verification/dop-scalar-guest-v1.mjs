@@ -1,3 +1,4 @@
+import { validateDopPositiveExecutionProfile } from './dop-execution-profile-v1.mjs';
 // This checks the STRUCTURE of an evidence receipt, not its authenticity.
 // A release gate must independently fetch the GitHub job and artifact records.
 const sha1 = /^[0-9a-f]{40}$/;
@@ -71,7 +72,7 @@ export function validateDopGuestReceipt(receipt, contract) {
     need(stages.has(receipt.executionStage), 'real-guest-stage');
     need(receipt.guestExecuted === true, 'guest-process-executed');
     need(receipt.guestExitCode === 0, 'guest-exit-zero');
-    need(sha256.test(receipt.guestArtifactSha256 ?? ''), 'guest-artifact-sha256');
+    errors.push(...validateDopPositiveExecutionProfile(receipt));
     need(observed.has('execute-guest'), 'execute-guest-step');
     need(stepOrder.get('checkout-head') < stepOrder.get('compile-guest') &&
          stepOrder.get('compile-guest') < stepOrder.get('execute-guest'), 'guest-step-order');
