@@ -23,18 +23,26 @@ const fixture = () => {
   for (const [i, [backend,name,id,pr,base,blob]] of entries.entries()) {
     const r = receipt.candidates[i];
     const prefix=`/repos/ores-truffle-oreslang/${name}`;
-    records.set(`${prefix}/pulls/${pr}`,{state:'open',head:{sha:r.head_sha,repo:{id}},base:{ref:base,repo:{id}}});
+    records.set(`${prefix}/pulls/${pr}`,{state:'open',head:{sha:r.head_sha,ref:`review/${name}`,repo:{id}},base:{ref:base,repo:{id}}});
     records.set(`${prefix}/commits/${r.head_sha}`,{sha:r.head_sha,commit:{tree:{sha:r.tree_sha}}});
     records.set(`${prefix}/contents/.github/workflows/integration-declarations.yml?ref=${r.head_sha}`,{sha:blob,type:'file'});
-    records.set(`${prefix}/actions/runs/${r.run_id}`,{id:r.run_id,repository:{id},head_sha:r.head_sha,
+    records.set(`${prefix}/actions/workflows/integration-declarations.yml`,{id:9000+i,
+      path:'.github/workflows/integration-declarations.yml',name:'Integration declaration integrity'});
+    records.set(`${prefix}/actions/runs/${r.run_id}`,{id:r.run_id,repository:{id},head_repository:{id},
+      head_sha:r.head_sha,head_branch:`review/${name}`,workflow_id:9000+i,
+      name:'Integration declaration integrity',run_attempt:1,
+      pull_requests:[{number:pr,head:{sha:r.head_sha}}],
       path:'.github/workflows/integration-declarations.yml',event:'pull_request',status:'completed',conclusion:'success'});
+    records.set(`${prefix}/actions/runs/${r.run_id}/attempts/1/jobs?per_page=100`,
+      {total_count:1,jobs:[{id:r.job_id}]});
     const steps = [step('Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683'),
       step('Assert exact originating-source checkout')];
     if (backend!=='forge') steps.push(step('Test Rust repository policy tooling'));
     steps.push(step('Verify declaration-only manifest (not a runtime parity claim)'));
     if (backend==='forge') steps.push(step('Run fail-closed manifest gate adversarial regression suite'));
-    records.set(`${prefix}/actions/jobs/${r.job_id}`,{id:r.job_id,run_id:r.run_id,status:'completed',
-      conclusion:'success',runner_id:8000+i,steps});
+    records.set(`${prefix}/actions/jobs/${r.job_id}`,{id:r.job_id,run_id:r.run_id,
+      head_sha:r.head_sha,name:'declaration-integrity',workflow_name:'Integration declaration integrity',
+      labels:['ubuntu-24.04'],status:'completed',conclusion:'success',runner_id:8000+i,steps});
   }
   const api = async path => { if (!records.has(path)) throw new Error(`not found: ${path}`);return records.get(path); };
   const patch = (backend,kind,change) => {
@@ -42,6 +50,8 @@ const fixture = () => {
     const r = receipt.candidates[i];
     const kindPath = kind==='pr'?`pulls/${r.pr}`:kind==='commit'?`commits/${r.head_sha}`:
       kind==='workflow'?`contents/.github/workflows/integration-declarations.yml?ref=${r.head_sha}`:
+      kind==='registeredWorkflow'?'actions/workflows/integration-declarations.yml':
+      kind==='attempt'?`actions/runs/${r.run_id}/attempts/1/jobs?per_page=100`:
       kind==='run'?`actions/runs/${r.run_id}`:`actions/jobs/${r.job_id}`;
     const path=`/repos/${r.repository}/${kindPath}`;
     change(records.get(path));
@@ -76,13 +86,13 @@ test('wrong commit tree denied',async()=>{const f=fixture();f.patch('wasm','comm
 test('unreviewed workflow replacement denied',async()=>{const f=fixture();f.patch('net','workflow',d=>d.sha=o('c'));await expectDeny(f,/workflow blob mismatch/);});
 test('workflow not a file denied',async()=>{const f=fixture();f.patch('forge','workflow',d=>d.type='dir');await expectDeny(f,/workflow blob mismatch/);});
 test('zero-step job denied even if run and job say success',async()=>{const f=fixture();f.patch('java','job',d=>d.steps=[]);await expectDeny(f,/NOT_EXECUTED/);});
-test('no runner assigned denied',async()=>{const f=fixture();f.patch('llvm','job',d=>d.runner_id=0);await expectDeny(f,/assigned runner/);});
+test('no runner assigned denied',async()=>{const f=fixture();f.patch('llvm','job',d=>d.runner_id=0);await expectDeny(f,/security job/);});
 test('completed failing run is not passing',async()=>{const f=fixture();f.patch('net','run',d=>d.conclusion='failure');await expectDeny(f,/not a successful/);});
-test('queued job is not evidence',async()=>{const f=fixture();f.patch('forge','job',d=>d.status='queued');await expectDeny(f,/assigned runner/);});
+test('queued job is not evidence',async()=>{const f=fixture();f.patch('forge','job',d=>d.status='queued');await expectDeny(f,/security job/);});
 test('run head mismatch denied',async()=>{const f=fixture();f.patch('java','run',d=>d.head_sha=o('c'));await expectDeny(f,/exact-head/);});
 test('foreign repository run denied',async()=>{const f=fixture();f.patch('wasm','run',d=>d.repository.id=1);await expectDeny(f,/source-owned/);});
 test('unrecognized workflow path denied',async()=>{const f=fixture();f.patch('net','run',d=>d.path='.github/workflows/fake.yml');await expectDeny(f,/source-owned/);});
-test('workflow job id swapped denied',async()=>{const f=fixture();f.patch('net','job',d=>d.run_id=99);await expectDeny(f,/assigned runner/);});
+test('workflow job id swapped denied',async()=>{const f=fixture();f.patch('net','job',d=>d.run_id=99);await expectDeny(f,/security job/);});
 test('required Rust cargo test step missing denied',async()=>{const f=fixture();f.patch('java','job',d=>d.steps.splice(2,1));await expectDeny(f,/Test Rust/);});
 test('required Forge adversarial step missing denied',async()=>{const f=fixture();f.patch('forge','job',d=>d.steps.pop());await expectDeny(f,/adversarial regression/);});
 test('duplicate successful steps cannot confuse verifier',async()=>{const f=fixture();f.patch('wasm','job',d=>d.steps.push(step('Test Rust repository policy tooling')));await expectDeny(f,/duplicate/);});
@@ -95,4 +105,62 @@ test('HTTP failures deny qualification without returning secret',async()=>{const
 test('oversized GitHub response denied',async()=>{
   const api=githubReader('PRIVATE_TOKEN',async()=>({ok:true,body:new ReadableStream({start(controller){controller.enqueue(new Uint8Array(512*1024+1));controller.close();}})}));
   await assert.rejects(api('/repos/ores-truffle-oreslang/x'),/exceeds/);
+});
+
+// Adversarial tests for live identity, attempt, and non-partial promotion semantics.
+test('workflow identity cannot be substituted behind same job name',async()=>{
+  const f=fixture();f.patch('net','registeredWorkflow',d=>d.name='Other workflow');await expectDeny(f,/registered workflow identity/);
+});
+test('run.workflow_id must be registered immutable workflow identity',async()=>{
+  const f=fixture();f.patch('wasm','run',d=>d.workflow_id=2);await expectDeny(f,/source-owned/);
+});
+test('run must carry exact PR association',async()=>{
+  const f=fixture();f.patch('java','run',d=>d.pull_requests=[]);await expectDeny(f,/associated with the exact PR head/);
+});
+test('run cannot refer to previous PR head',async()=>{
+  const f=fixture();f.patch('llvm','run',d=>d.pull_requests[0].head.sha=o('d'));await expectDeny(f,/associated/);
+});
+test('run_attempt missing is a hard failure',async()=>{
+  const f=fixture();f.patch('forge','run',d=>delete d.run_attempt);await expectDeny(f,/run_attempt/);
+});
+test('successful job from different attempt cannot attest current run',async()=>{
+  const f=fixture();f.patch('forge','attempt',d=>d.jobs[0].id=999);await expectDeny(f,/latest completed run attempt/);
+});
+test('job attempt count over a page fails rather than hiding unknown jobs',async()=>{
+  const f=fixture();f.patch('net','attempt',d=>d.total_count=101);await expectDeny(f,/latest completed run attempt/);
+});
+test('job name substitution denied',async()=>{
+  const f=fixture();f.patch('java','job',d=>d.name='attacker-job');await expectDeny(f,/security job/);
+});
+test('runner label substitution denied',async()=>{
+  const f=fixture();f.patch('llvm','job',d=>d.labels=['self-hosted']);await expectDeny(f,/security job/);
+});
+test('job SHA differs from verified exact head denied',async()=>{
+  const f=fixture();f.patch('forge','job',d=>d.head_sha=o('e'));await expectDeny(f,/security job/);
+});
+test('duplicate checkout step denied',async()=>{
+  const f=fixture();f.patch('java','job',d=>d.steps.push(step('Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683')));
+  await expectDeny(f,/unique pinned checkout/);
+});
+test('partial backend successes are not emitted as verified qualifications',async()=>{
+  const f=fixture();f.patch('forge','job',d=>d.steps=[]);
+  const result=await qualifyManifestSecurityCI(f.receipt,f.api);
+  assert.equal(result.ok,false);assert.deepEqual(result.qualifications,[]);
+});
+test('PR head moving during final recheck is denied',async()=>{
+  const f=fixture();const key='/repos/ores-truffle-oreslang/oreslang-source.wasm/pulls/398';let visits=0;
+  const api=async path=>{const val=await f.api(path);if(path===key && ++visits===2) return {...val,head:{...val.head,sha:o('e')}};return val;};
+  const result=await qualifyManifestSecurityCI(f.receipt,api);
+  assert.equal(result.ok,false);assert.deepEqual(result.qualifications,[]);
+  assert.match(result.errors.join('\n'),/changed during evidence verification/);
+});
+test('run associated with unexpected branch is denied',async()=>{
+  const f=fixture();f.patch('wasm','run',d=>d.head_branch='attacker');await expectDeny(f,/source-owned/);
+});
+test('run from different source head repo denied',async()=>{
+  const f=fixture();f.patch('net','run',d=>d.head_repository.id=22);await expectDeny(f,/source-owned/);
+});
+test('null-byte field concatenation cannot bypass exactKeys',async()=>{
+  const f=fixture();f.receipt.candidates[0]['run_id\0job_id']=1;
+  await assert.rejects(qualifyManifestSecurityCI(f.receipt,f.api),/unexpected or missing keys/);
 });
