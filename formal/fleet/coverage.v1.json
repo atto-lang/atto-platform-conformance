@@ -1,0 +1,326 @@
+{
+  "schema_version": 1,
+  "scope": "requested 2026-11-05 formal methods / AttoLang multi-org wave",
+  "evidence_policy": {
+    "zero_step_is_not_execution": true,
+    "guest_requires_compiler_and_executed_steps": true,
+    "source_model_is_not_implementation_refinement": true
+  },
+  "organizations": [
+    {
+      "organization": "3fa-app",
+      "request": "formal+atto",
+      "target": "device, recovery and phishing-resistant authentication",
+      "status": "not-audited"
+    },
+    {
+      "organization": "akrion-sim",
+      "request": "formal-only",
+      "target": "schema privilege and RLS",
+      "status": "source-model-draft",
+      "review_url": "https://github.com/akrion-sim/akrion-lib-core/pull/7"
+    },
+    {
+      "organization": "atto-mq",
+      "request": "formal+atto",
+      "target": "FIFO, backpressure and cancellation",
+      "status": "access-unconfirmed",
+      "note": "GitHub repository search did not confirm accessible repositories at audit time"
+    },
+    {
+      "organization": "atto-xp",
+      "request": "formal+atto",
+      "target": "UI handle generation and thread confinement",
+      "status": "existing-work-under-review",
+      "review_url": "https://github.com/atto-xp/atto-xp-conformance/pull/5"
+    },
+    {
+      "organization": "beamgraph",
+      "request": "formal+atto",
+      "target": "incremental graph convergence",
+      "status": "access-unconfirmed",
+      "note": "GitHub repository search did not confirm accessible repositories at audit time"
+    },
+    {
+      "organization": "chapter-publishing",
+      "request": "formal+atto",
+      "target": "content entitlement and publishing state",
+      "status": "not-audited"
+    },
+    {
+      "organization": "claimgraph",
+      "request": "formal+atto",
+      "target": "provenance DAG and tenant authority",
+      "status": "not-audited"
+    },
+    {
+      "organization": "claritas-viz",
+      "request": "formal+atto",
+      "target": "query/view state determinism",
+      "status": "not-audited"
+    },
+    {
+      "organization": "declarative-migrations",
+      "request": "formal+atto",
+      "target": "schema plan/apply atomicity",
+      "status": "not-audited"
+    },
+    {
+      "organization": "embedded-alerts",
+      "request": "formal+atto",
+      "target": "alert dedup and acknowledgement",
+      "status": "not-audited"
+    },
+    {
+      "organization": "fanwaave",
+      "request": "formal+atto",
+      "target": "streaming replay and actor isolation",
+      "status": "not-audited"
+    },
+    {
+      "organization": "fiducia-cloud",
+      "request": "formal-only",
+      "target": "service identity and credential isolation",
+      "status": "not-audited"
+    },
+    {
+      "organization": "file-tunnel",
+      "request": "formal+atto",
+      "target": "chunk resume and integrity",
+      "status": "not-audited"
+    },
+    {
+      "organization": "flags-2-env",
+      "request": "formal+atto",
+      "target": "deterministic parse and config precedence",
+      "status": "not-audited"
+    },
+    {
+      "organization": "gha-indie-worker",
+      "request": "formal+atto",
+      "target": "source-free CI receipt and quota",
+      "status": "not-audited"
+    },
+    {
+      "organization": "graal-show",
+      "request": "formal+atto",
+      "target": "AOT/JIT host-guest separation",
+      "status": "not-audited"
+    },
+    {
+      "organization": "hacker-house-medellin",
+      "request": "formal+atto",
+      "target": "booking and authorization isolation",
+      "status": "not-audited"
+    },
+    {
+      "organization": "hhaus-org",
+      "request": "formal+atto",
+      "target": "tenant and admin access isolation",
+      "status": "not-audited"
+    },
+    {
+      "organization": "honeypot-r-us",
+      "request": "formal+atto",
+      "target": "untrusted event containment",
+      "status": "not-audited"
+    },
+    {
+      "organization": "hypesiege",
+      "request": "formal+atto",
+      "target": "match and action state consistency",
+      "status": "not-audited"
+    },
+    {
+      "organization": "iso-lattes",
+      "request": "formal+atto",
+      "target": "order/payment state atomicity",
+      "status": "not-audited"
+    },
+    {
+      "organization": "messaging-intel",
+      "request": "formal+atto",
+      "target": "message delivery ordering",
+      "status": "not-audited"
+    },
+    {
+      "organization": "numerics-atto",
+      "request": "formal+atto",
+      "target": "finite numerical and risk contracts",
+      "status": "source-model-draft",
+      "review_url": "https://github.com/numerics-atto/finance.atto/pull/2"
+    },
+    {
+      "organization": "okla-platform",
+      "request": "formal+atto",
+      "target": "policy/config state transitions",
+      "status": "not-audited"
+    },
+    {
+      "organization": "opto-sync",
+      "request": "formal+atto",
+      "target": "tenant-scoped mutation dedup and checkpoints",
+      "status": "source-model-draft",
+      "review_url": "https://github.com/opto-sync/opto-sync-e2e/pull/68"
+    },
+    {
+      "organization": "ores-chat",
+      "request": "formal+atto",
+      "target": "actor chat message ordering",
+      "status": "not-audited"
+    },
+    {
+      "organization": "ores-convo",
+      "request": "formal+atto",
+      "target": "conversation generation fencing",
+      "status": "not-audited"
+    },
+    {
+      "organization": "ores-crm",
+      "request": "formal+atto",
+      "target": "sales tenant and entity identity",
+      "status": "access-unconfirmed",
+      "note": "GitHub repository search did not confirm accessible repositories at audit time"
+    },
+    {
+      "organization": "ores-data-platform",
+      "request": "formal+atto",
+      "target": "ingestion dedup and lineage",
+      "status": "not-audited"
+    },
+    {
+      "organization": "ores-devex",
+      "request": "formal+atto",
+      "target": "tool invocation permissions",
+      "status": "not-audited"
+    },
+    {
+      "organization": "ores-dnd",
+      "request": "formal+atto",
+      "target": "turn/state determinism",
+      "status": "not-audited"
+    },
+    {
+      "organization": "ores-forms",
+      "request": "formal+atto",
+      "target": "form validation and idempotent submit",
+      "status": "not-audited"
+    },
+    {
+      "organization": "ores-legal",
+      "request": "formal+atto",
+      "target": "legal-document approval state",
+      "status": "not-audited"
+    },
+    {
+      "organization": "ores-llm",
+      "request": "formal-only",
+      "target": "optimizer and checkpoint replay",
+      "status": "existing-work-under-review",
+      "review_url": "https://github.com/ores-llm/ores-llm-ml-conformance-tests/pull/45"
+    },
+    {
+      "organization": "ores-otel",
+      "request": "formal+atto",
+      "target": "exporter redaction and retry",
+      "status": "source-model-draft",
+      "review_url": "https://github.com/ores-otel/ores-lib-core/pull/38"
+    },
+    {
+      "organization": "ores-redis-lru-cache",
+      "request": "formal+atto",
+      "target": "authority-aware cache reconciliation",
+      "status": "source-model-draft",
+      "review_url": "https://github.com/ores-redis-lru-cache/ores-lru-redis-lib-core/pull/12"
+    },
+    {
+      "organization": "ores-stack",
+      "request": "formal-only",
+      "target": "deploy rollback and secret authority",
+      "status": "not-audited"
+    },
+    {
+      "organization": "ores-time-series",
+      "request": "formal+atto",
+      "target": "watermark and out-of-order ingestion",
+      "status": "not-audited"
+    },
+    {
+      "organization": "ores-truffle-oreslang",
+      "request": "formal-only",
+      "target": "five-backend actor/runtime parity",
+      "status": "existing-work-under-review",
+      "review_url": "https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/pull/461"
+    },
+    {
+      "organization": "ores-wasm-loaders",
+      "request": "formal+atto",
+      "target": "Wasm loader integrity and capability policy",
+      "status": "not-audited"
+    },
+    {
+      "organization": "orestra",
+      "request": "formal-only",
+      "target": "orchestration resume and compaction",
+      "status": "existing-work-under-review",
+      "review_url": "https://github.com/orestra/orestra-conformance/pull/40"
+    },
+    {
+      "organization": "praxonne",
+      "request": "formal+atto",
+      "target": "VPN/session isolation",
+      "status": "not-audited"
+    },
+    {
+      "organization": "quaestor-ledger",
+      "request": "formal-only",
+      "target": "ledger double-entry and RLS",
+      "status": "not-audited"
+    },
+    {
+      "organization": "shared-auth",
+      "request": "formal+atto",
+      "target": "token generation fencing and nonce replay",
+      "status": "source-model-draft",
+      "review_url": "https://github.com/shared-auth/shared-auth-lib-core/pull/35"
+    },
+    {
+      "organization": "sonus-auris",
+      "request": "formal-only",
+      "target": "audio stream session isolation",
+      "status": "existing-work-under-review",
+      "review_url": "https://github.com/sonus-auris/sonus-auris-e2e/pull/46"
+    },
+    {
+      "organization": "takoda-automation",
+      "request": "formal+atto",
+      "target": "device automation cancellation",
+      "status": "not-audited"
+    },
+    {
+      "organization": "usa-acc",
+      "request": "formal+atto",
+      "target": "private CI source-admission proof",
+      "status": "not-audited"
+    },
+    {
+      "organization": "voxletra",
+      "request": "formal+atto",
+      "target": "voice-session isolation",
+      "status": "not-audited"
+    },
+    {
+      "organization": "wasm-xprs",
+      "request": "formal+atto",
+      "target": "Wasm fuel and tenant isolation",
+      "status": "not-audited"
+    },
+    {
+      "organization": "zed-pkg",
+      "request": "formal+atto",
+      "target": "AttoLang package provenance and frozen reproducibility",
+      "status": "source-model-draft",
+      "review_url": "https://github.com/zed-pkg/zed-cli/pull/544"
+    }
+  ]
+}
