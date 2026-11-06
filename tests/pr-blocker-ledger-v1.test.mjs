@@ -8,7 +8,7 @@ import {tmpdir} from "node:os";
 import {join} from "node:path";
 const H="a".repeat(40);
 const run={head_sha:H,status:"completed",conclusion:"failure",id:42,run_attempt:2};
-const job={id:8,status:"completed",conclusion:"failure",runner_id:10};
+const job={id:8,run_id:42,run_attempt:2,head_sha:H,status:"completed",conclusion:"failure",runner_id:10};
 
 test("UTC day partitions include leap days and fail on bad bounds",()=>{
   assert.deepEqual(utcDays("2024-02-28","2024-03-01"),["2024-02-28","2024-02-29","2024-03-01"]);
@@ -234,4 +234,44 @@ test("opt-in local persistence writes a schema versioned JSON snapshot",async()=
     const saved=JSON.parse(await readFile(file,"utf8"));
     assert.equal(saved.schema,1);assert.equal(saved.prs.length,1);
   }finally{await rm(dir,{recursive:true,force:true});}
+});
+
+test("job evidence is bound to exact run ID, attempt and head before any execution claim",()=>{
+  const passingRun={...run,conclusion:"success"};
+  const passingJob={...job,conclusion:"success"};
+  const steps=[{name:"Run compiler",status:"completed",conclusion:"success"}];
+  assert.equal(classifyJobEvidence({expectedHead:H,run:passingRun,job:passingJob,
+    steps,trustedStepNames:["Run compiler"]}).state,STATES.EXECUTED_PASS);
+  for(const badJob of [
+    {...passingJob,run_id:43},
+    {...passingJob,run_attempt:3},
+    {...passingJob,head_sha:"b".repeat(40)},
+    {...passingJob,head_sha:null},
+    {...passingJob,run_id:null},
+    {...passingJob,run_attempt:null}
+  ]){
+    assert.equal(classifyJobEvidence({expectedHead:H,run:passingRun,job:badJob,
+      steps,trustedStepNames:["Run compiler"]}).state,STATES.UNOBSERVED);
+  }
+});
+test("collector rejects mismatched job identity before reading steps",async()=>{
+  const passingRun={...run,conclusion:"success"};
+  const tests=[
+    {...job,run_id:777},
+    {...job,run_attempt:7},
+    {...job,head_sha:"b".repeat(40)},
+    {...job,head_sha:undefined}
+  ];
+  for(const badJob of tests){
+    let queried=0;
+    const receipt=await collectExactHeadEvidence({repo:"example/compiler",head:H,
+      listRuns:async()=>({items:[passingRun],complete:true}),
+      listJobs:async()=>({items:[badJob],complete:true}),
+      listSteps:async()=>{queried++;return{steps:[{name:"Run compiler",status:"completed",conclusion:"success"}]};},
+      trustedStepNames:["Run compiler"]});
+    assert.equal(queried,0,"unbound job must never query or count its steps");
+    assert.equal(receipt.complete,false);
+    assert.equal(receipt.records.length,0);
+    assert.ok(receipt.gaps.some(g=>g.kind==="JOB_RUN_BINDING_MISMATCH"));
+  }
 });
