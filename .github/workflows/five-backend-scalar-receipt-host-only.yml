@@ -6,6 +6,8 @@ permissions:
   contents: read
 jobs:
   structural-receipts:
+    # Never check out an arbitrary fork head in this private-source workflow.
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
