@@ -1,6 +1,6 @@
 // Offline, fail-closed merge-wave planning. A caller-supplied snapshot is NOT a GitHub attestation.
 const SHA = /^[a-f0-9]{40}$/;
-const REPO = /^ores-truffle-oreslang\/oreslang-source\.[a-z0-9-]+$/;
+const REPO = /^ores-truffle-oreslang\/(?:oreslang-source\.[a-z0-9-]+|oreslang-platform\.(?:mobile|iot|embedded|desktop|asic|fpga)|oreslang-platform-conformance)$/;
 const REJECTED_REVIEWERS = new Set(['the1mills', 'oresoftware']);
 const CORE = ['metadata', 'protection', 'review', 'checks', 'test', 'lease'];
 const meaningful = step => {
