@@ -1,0 +1,560 @@
+{
+  "$schema_version": "attolang.annotations-targets/v2",
+  "status": "CANDIDATE_SPEC_NOT_EXECUTED",
+  "language_name": "AttoLang",
+  "source_extensions": [
+    ".atto",
+    ".ores"
+  ],
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "phase_names": [
+    "SOURCE_METADATA",
+    "COMPILE_FILTER",
+    "TYPE_EFFECT",
+    "AOT_DERIVE",
+    "ABI",
+    "OPT_HINT",
+    "TEST_ONLY"
+  ],
+  "targets": [
+    {
+      "id": "package",
+      "java_state": "reject",
+      "other_backends": "reject_unimplemented",
+      "reason": "package-level annotations belong to a resolved module manifest, not magic import metadata"
+    },
+    {
+      "id": "module",
+      "java_state": "partial",
+      "other_backends": "reject_unimplemented",
+      "reason": "Java retains opaque @BuildMetadata; semantic directives remain fail-closed"
+    },
+    {
+      "id": "class",
+      "java_state": "reject",
+      "other_backends": "reject_unimplemented",
+      "reason": "Java AST cannot yet retain declaration annotations"
+    },
+    {
+      "id": "struct",
+      "java_state": "unavailable",
+      "other_backends": "reject_unimplemented",
+      "reason": "nominal struct AST and layout are not on current reviewed compiler head"
+    },
+    {
+      "id": "enum",
+      "java_state": "unavailable",
+      "other_backends": "reject_unimplemented",
+      "reason": "nominal enum AST is in separate draft stacks"
+    },
+    {
+      "id": "enum_variant",
+      "java_state": "unavailable",
+      "other_backends": "reject_unimplemented",
+      "reason": "must preserve nominal tag, variant payload and exhaustive matches"
+    },
+    {
+      "id": "actor",
+      "java_state": "reject",
+      "other_backends": "reject_unimplemented",
+      "reason": "Java AST currently rejects annotations that it would discard"
+    },
+    {
+      "id": "isoactor",
+      "java_state": "reject",
+      "other_backends": "reject_unimplemented",
+      "reason": "isolation promises require borrow and heap proofs"
+    },
+    {
+      "id": "interface",
+      "java_state": "reject",
+      "other_backends": "reject_unimplemented",
+      "reason": "declaration AST cannot yet retain annotations"
+    },
+    {
+      "id": "trait",
+      "java_state": "reject",
+      "other_backends": "reject_unimplemented",
+      "reason": "declaration AST cannot yet retain annotations"
+    },
+    {
+      "id": "contract",
+      "java_state": "reject",
+      "other_backends": "reject_unimplemented",
+      "reason": "declaration AST cannot yet retain annotations"
+    },
+    {
+      "id": "type_alias",
+      "java_state": "reject",
+      "other_backends": "reject_unimplemented",
+      "reason": "declaration AST cannot yet retain annotations"
+    },
+    {
+      "id": "fnc",
+      "java_state": "partial",
+      "other_backends": "reject_unimplemented",
+      "reason": "Java retains selected return and callable annotations"
+    },
+    {
+      "id": "routine",
+      "java_state": "partial",
+      "other_backends": "reject_unimplemented",
+      "reason": "Java retains callable annotations, but no general effect registry"
+    },
+    {
+      "id": "method",
+      "java_state": "partial",
+      "other_backends": "reject_unimplemented",
+      "reason": "Java retains method annotation lists"
+    },
+    {
+      "id": "static_method",
+      "java_state": "partial",
+      "other_backends": "reject_unimplemented",
+      "reason": "Java retains method annotation lists; target-specific checks pending"
+    },
+    {
+      "id": "constructor",
+      "java_state": "partial",
+      "other_backends": "reject_unimplemented",
+      "reason": "Java retains constructor annotations"
+    },
+    {
+      "id": "field",
+      "java_state": "partial",
+      "other_backends": "reject_unimplemented",
+      "reason": "Java retains selected field annotations such as @FromJson"
+    },
+    {
+      "id": "actor_state_field",
+      "java_state": "partial",
+      "other_backends": "reject_unimplemented",
+      "reason": "Java retains field annotations; sealed actor isolation consumers pending"
+    },
+    {
+      "id": "interface_member",
+      "java_state": "reject",
+      "other_backends": "reject_unimplemented",
+      "reason": "Java interface member AST currently discards annotations"
+    },
+    {
+      "id": "parameter",
+      "java_state": "reject",
+      "other_backends": "reject_unimplemented",
+      "reason": "Java Param AST has no annotation storage"
+    },
+    {
+      "id": "return_type",
+      "java_state": "partial",
+      "other_backends": "reject_unimplemented",
+      "reason": "Java @Ret is parsed on callable, not arbitrary type-use"
+    },
+    {
+      "id": "generic_parameter",
+      "java_state": "reject",
+      "other_backends": "reject_unimplemented",
+      "reason": "generic metadata not retained on source declarations"
+    },
+    {
+      "id": "local_binding",
+      "java_state": "reject",
+      "other_backends": "reject_unimplemented",
+      "reason": "no general registered local-annotation retention and lowering"
+    },
+    {
+      "id": "type_use",
+      "java_state": "reject",
+      "other_backends": "reject_unimplemented",
+      "reason": "type-use annotation storage and ownership proof not implemented"
+    },
+    {
+      "id": "lambda",
+      "java_state": "reject",
+      "other_backends": "reject_unimplemented",
+      "reason": "untyped lexical capture cannot accept capability-changing annotations"
+    },
+    {
+      "id": "macro",
+      "java_state": "reject",
+      "other_backends": "reject_unimplemented",
+      "reason": "AOT-only hygienic macro registration still pending"
+    },
+    {
+      "id": "import",
+      "java_state": "reject",
+      "other_backends": "reject_unimplemented",
+      "reason": "imports must not gain implicit effect/authority through annotations"
+    }
+  ],
+  "annotation_families": [
+    {
+      "name": "BuildMetadata",
+      "phase": "SOURCE_METADATA",
+      "allowed_targets": [
+        "module"
+      ],
+      "status": "partial",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "Ret",
+      "phase": "TYPE_EFFECT",
+      "allowed_targets": [
+        "fnc",
+        "routine",
+        "method",
+        "static_method"
+      ],
+      "status": "partial",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "FromJson",
+      "phase": "AOT_DERIVE",
+      "allowed_targets": [
+        "field"
+      ],
+      "status": "partial",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "deprecated",
+      "phase": "SOURCE_METADATA",
+      "allowed_targets": [
+        "class",
+        "struct",
+        "enum",
+        "actor",
+        "fnc",
+        "routine",
+        "method",
+        "field",
+        "type_alias"
+      ],
+      "status": "proposed",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "since",
+      "phase": "SOURCE_METADATA",
+      "allowed_targets": [
+        "module",
+        "class",
+        "struct",
+        "enum",
+        "actor",
+        "fnc",
+        "routine",
+        "method"
+      ],
+      "status": "proposed",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "doc",
+      "phase": "SOURCE_METADATA",
+      "allowed_targets": [
+        "module",
+        "class",
+        "struct",
+        "enum",
+        "enum_variant",
+        "actor",
+        "fnc",
+        "routine",
+        "method",
+        "field"
+      ],
+      "status": "proposed",
+      "repeatable": true,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "derive",
+      "phase": "AOT_DERIVE",
+      "allowed_targets": [
+        "class",
+        "struct",
+        "enum"
+      ],
+      "status": "proposed",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "serde",
+      "phase": "AOT_DERIVE",
+      "allowed_targets": [
+        "struct",
+        "enum",
+        "enum_variant",
+        "field"
+      ],
+      "status": "proposed",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "repr",
+      "phase": "ABI",
+      "allowed_targets": [
+        "struct",
+        "enum",
+        "class"
+      ],
+      "status": "proposed",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "align",
+      "phase": "ABI",
+      "allowed_targets": [
+        "struct",
+        "field"
+      ],
+      "status": "proposed",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "layout",
+      "phase": "ABI",
+      "allowed_targets": [
+        "struct",
+        "class"
+      ],
+      "status": "proposed",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "inline",
+      "phase": "OPT_HINT",
+      "allowed_targets": [
+        "fnc",
+        "routine",
+        "method",
+        "static_method"
+      ],
+      "status": "proposed",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "cold",
+      "phase": "OPT_HINT",
+      "allowed_targets": [
+        "fnc",
+        "routine",
+        "method",
+        "static_method"
+      ],
+      "status": "proposed",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "must_use",
+      "phase": "TYPE_EFFECT",
+      "allowed_targets": [
+        "fnc",
+        "routine",
+        "method",
+        "enum",
+        "struct"
+      ],
+      "status": "proposed",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "pure",
+      "phase": "TYPE_EFFECT",
+      "allowed_targets": [
+        "fnc",
+        "routine",
+        "method"
+      ],
+      "status": "proposed",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "requires",
+      "phase": "TYPE_EFFECT",
+      "allowed_targets": [
+        "fnc",
+        "routine",
+        "method",
+        "actor"
+      ],
+      "status": "proposed",
+      "repeatable": true,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "sendable",
+      "phase": "TYPE_EFFECT",
+      "allowed_targets": [
+        "struct",
+        "enum",
+        "class"
+      ],
+      "status": "proposed",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "borrow",
+      "phase": "TYPE_EFFECT",
+      "allowed_targets": [
+        "parameter",
+        "return_type",
+        "field"
+      ],
+      "status": "proposed",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "refine",
+      "phase": "TYPE_EFFECT",
+      "allowed_targets": [
+        "type_use",
+        "parameter",
+        "return_type",
+        "field"
+      ],
+      "status": "proposed",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "actor_policy",
+      "phase": "TYPE_EFFECT",
+      "allowed_targets": [
+        "actor",
+        "isoactor"
+      ],
+      "status": "proposed",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "supervision",
+      "phase": "TYPE_EFFECT",
+      "allowed_targets": [
+        "actor",
+        "isoactor"
+      ],
+      "status": "proposed",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "data_layout",
+      "phase": "ABI",
+      "allowed_targets": [
+        "struct",
+        "class",
+        "field"
+      ],
+      "status": "proposed",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "gpu",
+      "phase": "TYPE_EFFECT",
+      "allowed_targets": [
+        "fnc",
+        "method",
+        "parameter"
+      ],
+      "status": "proposed",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "test",
+      "phase": "TEST_ONLY",
+      "allowed_targets": [
+        "fnc",
+        "method"
+      ],
+      "status": "proposed",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "property",
+      "phase": "TEST_ONLY",
+      "allowed_targets": [
+        "fnc",
+        "method"
+      ],
+      "status": "proposed",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "cfg",
+      "phase": "COMPILE_FILTER",
+      "allowed_targets": [
+        "module",
+        "class",
+        "struct",
+        "enum",
+        "actor",
+        "fnc",
+        "method"
+      ],
+      "status": "proposed",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    },
+    {
+      "name": "derive_macro",
+      "phase": "AOT_DERIVE",
+      "allowed_targets": [
+        "macro"
+      ],
+      "status": "proposed",
+      "repeatable": false,
+      "argument_schema": "requires_explicit_typed_schema_before_activation"
+    }
+  ],
+  "source_syntax_status": "proposed: @QualifiedName(positional, named: value); current parser syntax varies",
+  "rules": {
+    "unknown_semantic_annotations": "reject",
+    "duplicate_without_registered_repeatability": "reject",
+    "arguments": "closed typed constant expressions; no I/O, clocks, randomness, mutable state or executing guest code",
+    "macro_phase": "hygienic AOT expansion before type/ownership/effect checks, then full recheck",
+    "authorization": "annotations can require capabilities but never grant them",
+    "effects": "keywords critical and suspends remain authoritative; annotations must not override effects",
+    "runtime_retention": "none by default; explicit, versioned, nonreflective metadata sections only after backend proof",
+    "backend_policy": "unsupported annotations must reject before IR or artifact publication",
+    "incremental_hot_reload": "bind fingerprint, declaration version, expanded IR, ownership/effect proof dependencies",
+    "transport": "function, method, closure, capability objects never become Sendable via annotations",
+    "evidence": "exact source/compiler head and trees, nonzero job steps, compiler-backed negative and positive tests, independent review"
+  },
+  "evidence": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  }
+}
