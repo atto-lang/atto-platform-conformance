@@ -236,3 +236,27 @@ test('exit zero or crashed guest cannot prove a compiler rejection',()=>{
   assert.throws(()=>validateCandidate(s),/unbound negative receipt/);
  }
 });
+
+test('successful setup cannot conceal failed or skipped substantive guest work',()=>{
+ for(const outcome of ['failure','skipped']){
+  const s=load(),{b}=withReportedScalar(s);
+  b.guest[0].receipt.steps.push({name:'Run mandatory compiler negative',status:'completed',conclusion:outcome});
+  assert.throws(()=>validateCandidate(s),/unbound guest receipt/);
+ }
+});
+test('queued, in-progress or padded substantive steps cannot certify execution',()=>{
+ for(const mutateStep of [
+   step=>step.status='in_progress',
+   step=>step.name=' Executed guest ',
+   step=>step.name='Execute\u00a0guest'
+ ]){
+  const s=load(),{b}=withReportedScalar(s);
+  mutateStep(b.guest[0].receipt.steps[0]);
+  assert.throws(()=>validateCandidate(s),/unbound guest receipt/);
+ }
+});
+test('housekeeping-only CI is insufficient to substantiate a guest run',()=>{
+ const s=load(),{b}=withReportedScalar(s);
+ b.guest[0].receipt.steps=[{name:'Set up job',status:'completed',conclusion:'success'}];
+ assert.throws(()=>validateCandidate(s),/unbound guest receipt/);
+});
