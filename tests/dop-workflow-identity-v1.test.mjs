@@ -4,15 +4,15 @@ import {validateDopWorkflowIdentity} from '../verification/dop-workflow-identity
 
 const policies = [
   {backend:'java', repository:'ores-truffle-oreslang/oreslang-source.java',
-    path:'.github/workflows/dop-scalar-java-guest.yml',
+    workflowId:409763119, path:'.github/workflows/dop-scalar-java-guest.yml',
     name:'AttoLang DOP Java scalar JIT guest exact-head', job:'scalar-dop-java-jit'},
   {backend:'llvm', repository:'ores-truffle-oreslang/oreslang-source.llvm',
-    path:'.github/workflows/dop-atto-soa-native.yml',
+    workflowId:404132837, path:'.github/workflows/dop-atto-soa-native.yml',
     name:'Native AttoLang DOP SoA guest AOT smoke', job:'native-guest'}
 ];
 const verify = (p, runPatch = {}, jobPatch = {}, expectedRepo = p.repository) =>
   validateDopWorkflowIdentity({backend:p.backend},
-    {path:p.path,name:p.name,workflow_id:42,event:'pull_request',...runPatch},
+    {path:p.path,name:p.name,workflow_id:p.workflowId,event:'pull_request',...runPatch},
     {name:p.job,workflow_name:p.name,...jobPatch},expectedRepo);
 
 test('exact Java/LLVM source-local workflow identities match synthetic controls only', () => {
@@ -28,6 +28,7 @@ test('a different workflow on the exact same commit cannot claim actual guest ex
     assert.ok(verify(p,{path:'.github/workflows/source-free-host-checks.yml'}).includes('workflow-path'));
     assert.ok(verify(p,{name:'synthetic source-free audit'}).includes('workflow-name'));
     assert.ok(verify(p,{workflow_id:null}).includes('workflow-id'));
+    assert.ok(verify(p,{workflow_id:123}).includes('workflow-id'));
   }
 });
 test('a different GitHub job cannot substitute its own matching step names', () => {
