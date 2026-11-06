@@ -20,7 +20,8 @@ try {
     throw Error('noncanonical or duplicate-key ledger JSON');
   const report=auditLedger(parsed);
   process.stdout.write(JSON.stringify(report,null,2) + '\n');
-  if (report.status === 'BLOCKED') process.exitCode=1;
+  // Advisory snapshots must never exit zero: shell/CI callers must recheck live authority.
+  process.exitCode = report.status === 'BLOCKED' ? 1 : 3;
 } catch (e) {
   console.error('FAIL_CLOSED: '+e.message);
   process.exitCode=2;
