@@ -138,8 +138,9 @@ to match a reviewed allowlist in `verification/dop-workflow-identity-v1.mjs`:
 Java must use `.github/workflows/dop-scalar-java-guest.yml` and job
 `scalar-dop-java-jit`; LLVM must use `.github/workflows/dop-atto-soa-native.yml`
 and job `native-guest`. The independently retrieved run's workflow name,
-positive workflow ID, event (`pull_request` or `workflow_dispatch`), path,
-source repository, and the API job's name/workflow name must all match.
+pinned GitHub workflow ID (Java `409763119`, LLVM `404132837`), event
+(`pull_request` or `workflow_dispatch`), path, source repository, and the
+API job's name/workflow name must all match.
 This prevents an unrelated source-free workflow on the same commit from
 attesting a guest using similarly named steps. **Wasm, Forge and .NET are
 intentionally not registered yet**: their run/job snapshots must fail closed
