@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {BACKENDS,CANDIDATES,OWNER,buildPacket,assessJob,fetchLiveSnapshot} from '../scripts/runner_admission_support_packet_20261106.mjs';
+import {BACKENDS,CANDIDATES,OWNER,buildPacket,assessJob,fetchLiveSnapshot,parseUniqueJson} from '../scripts/runner_admission_support_packet_20261106.mjs';
 
 const repo=b=>OWNER+'/oreslang-source.'+b;
 function fixture(){
@@ -138,6 +138,44 @@ test('Forge historical sample matches the real attempt-2 job identity',()=>{
   assert.equal(p.sampledJobs.find(x=>x.repository===repo('forge')).assessment,'RUNNER_NOT_ALLOCATED');
   f.candidates.forge.jobs.jobs[0].run_attempt=1;
   assert.equal(buildPacket(f).sampledJobs.find(x=>x.repository===repo('forge')).assessment,'IDENTITY_MISMATCH');
+});
+
+test('duplicate decoded JSON authority keys are rejected',()=>{
+  for(const raw of ['{"id":1,"id":2}','{"id":1,"\u0069d":2}',
+    '{"nested":{"run_attempt":1,"run_attempt":2}}',
+    '{"jobs":[{"head_sha":"a","head_sha":"b"}]}']){
+    assert.throws(()=>parseUniqueJson(raw),/duplicate JSON object key/);
+  }
+});
+test('normal repeated keys in separate nested objects are accepted',()=>{
+  assert.deepEqual(parseUniqueJson('{"a":{"id":1},"b":{"id":2},"steps":[]}'),
+    {a:{id:1},b:{id:2},steps:[]});
+});
+test('JSON scanner handles quoted delimiters and escaped quotes',()=>{
+  const value={message:'a,b}c: "hello"',nested:{ok:true}};
+  assert.deepEqual(parseUniqueJson(JSON.stringify(value)),value);
+});
+test('reject nonfinite, unsafe integer, BOM and unpaired Unicode authority',()=>{
+  for(const raw of ['{"id":1e999}','{"id":9007199254740993}',
+    '\uFEFF{"id":1}','{"id":"\uD800"}']){
+    assert.throws(()=>parseUniqueJson(raw));
+  }
+});
+test('reject oversized, malformed and overly nested JSON without accepting authority',()=>{
+  assert.throws(()=>parseUniqueJson(' '.repeat(2000001)),/oversized/);
+  assert.throws(()=>parseUniqueJson('{"a":1,}'));
+  const deep='['.repeat(65)+'1'+']'.repeat(65);
+  assert.throws(()=>parseUniqueJson(deep));
+});
+test('reject duplicate keys through all API response paths',async()=>{
+  let calls=0;
+  const duplicate=async()=>{
+    calls++;
+    const bytes=new TextEncoder().encode('{"name":"main","name":"evil"}');
+    return {ok:true,headers:{get:()=>null},arrayBuffer:async()=>bytes.buffer};
+  };
+  await assert.rejects(fetchLiveSnapshot('placeholder',duplicate),/duplicate JSON object key/);
+  assert.equal(calls,1);
 });
 
 test('missing snapshot is never green',()=>{
