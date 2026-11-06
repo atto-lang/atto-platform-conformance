@@ -15,10 +15,13 @@ const pos=x=>Number.isSafeInteger(x)&&x>0;
 const sha=x=>typeof x==='string'&&SHA.test(x);
 const hash=x=>typeof x==='string'&&HASH.test(x);
 function meaningful(steps){
- return Array.isArray(steps)&&steps.length>0&&steps.length<=128&&
-  steps.some(s=>obj(s)&&s.status==='completed'&&s.conclusion==='success'&&
-  typeof s.name==='string'&&/^[\x20-\x7e]{1,160}$/.test(s.name)&&
-  !/^(set up job|complete job|post |run actions\/(checkout|setup-|cache|upload-artifact))/i.test(s.name));
+ if(!Array.isArray(steps)||steps.length===0||steps.length>128||
+   !steps.every(s=>obj(s)&&s.status==='completed'&&
+    ['success','skipped'].includes(s.conclusion)&&
+    typeof s.name==='string'&&/^[\x20-\x7e]{1,160}$/.test(s.name)&&
+    s.name===s.name.trim()))return false;
+ const actual=steps.filter(s=>!/^(set up job|complete job|post |run actions\/(checkout|setup-|cache|upload-artifact))/i.test(s.name));
+ return actual.length>0&&actual.every(s=>s.conclusion==='success');
 }
 function receiptValid(r,b,binary,kind,contract){
  if(!obj(r)||r.repo!==b.repo||r.source_commit_sha!==b.source.commit_sha||
