@@ -77,6 +77,41 @@ class ReadinessTests(unittest.TestCase):
           {"name":"Complete job","status":"completed","conclusion":"success"}]
         self.blocked(s,"NO_TEST_STEP_EVIDENCE")
 
+    def test_checkout_setup_upload_only_is_not_execution(self):
+        s=self.data()
+        s["pull_requests"][0]["ci_job"]["steps"]=[
+            {"name":"Run actions/checkout@1111111111111111111111111111111111111111","status":"completed","conclusion":"success"},
+            {"name":"Run actions/setup-python@2222222222222222222222222222222222222222","status":"completed","conclusion":"success"},
+            {"name":"Upload test results artifact","status":"completed","conclusion":"success"},
+            {"name":"Post Run actions/checkout@1111111111111111111111111111111111111111","status":"completed","conclusion":"success"}]
+        self.blocked(s,"NO_TEST_STEP_EVIDENCE")
+
+    def test_build_and_metadata_only_are_not_guest_execution(self):
+        s=self.data()
+        s["pull_requests"][0]["ci_job"]["steps"]=[
+            {"name":"Confirm exact checked-out commit","status":"completed","conclusion":"success"},
+            {"name":"Build native compiler","status":"completed","conclusion":"success"},
+            {"name":"Verify source SHA","status":"completed","conclusion":"success"}]
+        self.blocked(s,"NO_TEST_STEP_EVIDENCE")
+
+    def test_sourcefree_regression_steps_are_only_advisory(self):
+        s=self.data()
+        s["pull_requests"][0]["ci_job"]["steps"]=[
+            {"name":"Execute source-free offline gate regression tests","status":"completed","conclusion":"success"}]
+        self.assertEqual(evaluate(s)["merge_state"],"REQUIRES_LIVE_ATTESTATION")
+
+    def test_real_native_assertions_candidate_remains_advisory(self):
+        s=self.data()
+        s["pull_requests"][0]["ci_job"]["steps"]=[
+            {"name":"Execute native syntax assertions with real engine","status":"completed","conclusion":"success"}]
+        self.assertEqual(evaluate(s)["merge_state"],"REQUIRES_LIVE_ATTESTATION")
+
+    def test_action_name_with_test_token_cannot_spoof_execution(self):
+        s=self.data()
+        s["pull_requests"][0]["ci_job"]["steps"]=[
+            {"name":"Run actions/setup-tests@3333333333333333333333333333333333333333","status":"completed","conclusion":"success"}]
+        self.blocked(s,"NO_TEST_STEP_EVIDENCE")
+
     def test_wrong_head(self):
         s=self.data();s["pull_requests"][0]["ci_job"]["head_sha"]="c"*40
         self.blocked(s,"HEAD_MISMATCH")
