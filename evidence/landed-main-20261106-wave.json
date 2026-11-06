@@ -2,7 +2,7 @@
   "schema_version": 1,
   "scope": "snapshot_only",
   "captured_at": "2026-11-06T19:23:06Z",
-  "capture_note": "Observed exact PR merged SHA, landed Git tree SHA and compare-to-main ancestry (behind_by=0). Missing independent attestation, enforceable protection, expected fixture inventory and stepful landed CI remain NOT_VERIFIED. Snapshot is untrusted and never a release authorization.",
+  "capture_note": "Read-only exact GitHub PR merge, landed tree SHA and compare(merge_sha...main) observations: each merge-base equals landed SHA, behind_by=0, ahead_by recorded. Missing independent postmerge attestation, main protection, canonical test inventory and source-owned landed-CI evidence remain NOT_VERIFIED. Advisory snapshot is not release authority.",
   "entries": [
     {
       "repo": "ores-truffle-oreslang/oreslang-source.java",
@@ -13,7 +13,9 @@
       "main_observation": {
         "head_sha": "01f806d517879ee04b9154d2e8748dfc83e835fd",
         "compare_status": "ahead",
-        "behind_by": 0
+        "behind_by": 0,
+        "merge_base_sha": "ffb24dc6febff1b56d8b96f688e4769933897698",
+        "ahead_by": 4
       },
       "protection": {
         "protected": false
@@ -36,7 +38,9 @@
       "main_observation": {
         "head_sha": "8c214409625be8a99865b79d8bb89e5aaad2c814",
         "compare_status": "ahead",
-        "behind_by": 0
+        "behind_by": 0,
+        "merge_base_sha": "164d11afc03483bcaf959ab4de5545e45b86cd28",
+        "ahead_by": 2
       },
       "protection": {
         "protected": false
@@ -59,7 +63,9 @@
       "main_observation": {
         "head_sha": "84c77c18fe3252000f474cd0fd784f25f0aa794b",
         "compare_status": "ahead",
-        "behind_by": 0
+        "behind_by": 0,
+        "merge_base_sha": "cf1739619683859aacc5a8da476be665f57d5074",
+        "ahead_by": 2
       },
       "protection": {
         "protected": false
@@ -82,7 +88,9 @@
       "main_observation": {
         "head_sha": "84c77c18fe3252000f474cd0fd784f25f0aa794b",
         "compare_status": "ahead",
-        "behind_by": 0
+        "behind_by": 0,
+        "merge_base_sha": "c2b3c44c60d946d65dacfd9060be81cd3af5de0d",
+        "ahead_by": 1
       },
       "protection": {
         "protected": false
@@ -105,7 +113,9 @@
       "main_observation": {
         "head_sha": "84c77c18fe3252000f474cd0fd784f25f0aa794b",
         "compare_status": "identical",
-        "behind_by": 0
+        "behind_by": 0,
+        "merge_base_sha": "84c77c18fe3252000f474cd0fd784f25f0aa794b",
+        "ahead_by": 0
       },
       "protection": {
         "protected": false
