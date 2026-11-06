@@ -1,0 +1,75 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {BACKENDS,CANDIDATES,OWNER,buildPacket,assessJob,fetchLiveSnapshot} from '../scripts/runner_admission_support_packet_20261106.mjs';
+
+const repo=b=>OWNER+'/oreslang-source.'+b;
+function fixture(){
+  const branches=Object.fromEntries(BACKENDS.map(b=>[b,{name:'main',commit:{sha:'a'.repeat(40)},protected:false,protection:{required_status_checks:{enforcement_level:'off'}}}]));
+  const candidates=Object.fromEntries(CANDIDATES.map(c=>[c.backend,{
+    pr:{number:c.pr,state:'open',base:{ref:'main'},head:{sha:c.head,repo:{full_name:repo(c.backend)}}},
+    run:{id:c.run,head_sha:c.head,run_attempt:c.attempt,repository:{full_name:repo(c.backend)}},
+    jobs:{jobs:[{id:c.job,run_id:c.run,run_attempt:c.attempt,head_sha:c.head,status:'completed',conclusion:'failure',runner_id:0,runner_name:'',steps:[]}]} }]));
+  return {branches,candidates};
+}
+function success(c){return {id:c.job,run_id:c.run,run_attempt:c.attempt,head_sha:c.head,status:'completed',conclusion:'success',runner_id:123,runner_name:'hosted',steps:[{name:'Set up job',status:'completed',conclusion:'success'},{name:'Run actual tests',status:'completed',conclusion:'success'}]};}
+test('nine source branches and five jobs are classified without merge authority',()=>{
+  const r=buildPacket(fixture());
+  assert.equal(r.sourceRepositories.length,9);assert.equal(r.sampledJobs.length,5);
+  assert.equal(r.counts.unprotectedMains,9);assert.equal(r.counts.runnerNotAllocated,5);
+  assert.equal(r.counts.executedSuccessfulSampledJobs,0);
+  assert.deepEqual([r.authorizedToMerge,r.authorizedToExportPrivateSource,r.certifiedAttoGuestExecution],[false,false,false]);
+});
+for(const c of CANDIDATES){
+  test('reject changed original PR head '+c.backend,()=>{
+    const f=fixture();f.candidates[c.backend].pr.head.sha='f'.repeat(40);
+    assert.equal(buildPacket(f).sampledJobs.find(x=>x.repository===repo(c.backend)).assessment,'PR_HEAD_DRIFT_OR_UNVERIFIED');
+  });
+  test('reject run repository substitution '+c.backend,()=>{
+    const f=fixture();f.candidates[c.backend].run.repository.full_name='other/repo';
+    assert.equal(buildPacket(f).sampledJobs.find(x=>x.repository===repo(c.backend)).assessment,'RUN_IDENTITY_MISMATCH');
+  });
+  test('fake success with runner_id=0 still fails '+c.backend,()=>{
+    const f=fixture();f.candidates[c.backend].jobs.jobs[0].conclusion='success';
+    assert.equal(buildPacket(f).sampledJobs.find(x=>x.repository===repo(c.backend)).assessment,'RUNNER_NOT_ALLOCATED');
+  });
+}
+test('missing and duplicated target job IDs fail closed',()=>{
+  const f=fixture();f.candidates.java.jobs.jobs=[];assert.equal(buildPacket(f).sampledJobs[0].assessment,'JOB_MISSING_OR_DUPLICATE');
+  const g=fixture();g.candidates.java.jobs.jobs.push(g.candidates.java.jobs.jobs[0]);assert.equal(buildPacket(g).sampledJobs[0].assessment,'JOB_MISSING_OR_DUPLICATE');
+});
+test('unknown main protection is not a verified protected branch',()=>{
+  const f=fixture();delete f.branches.forge.protected;f.branches.js.commit.sha='bad';
+  assert.equal(buildPacket(f).counts.unverifiedMains,2);
+});
+test('housekeeping-only runner does not prove test execution',()=>{
+  const c=CANDIDATES[0],j=success(c);j.steps.pop();
+  assert.equal(assessJob(j,c),'NO_MEANINGFUL_TEST_STEP');
+});
+test('actual successful sample remains advisory only',()=>{
+  const f=fixture(),c=CANDIDATES[0];f.candidates.java.jobs.jobs[0]=success(c);
+  const p=buildPacket(f);assert.equal(p.counts.executedSuccessfulSampledJobs,1);assert.equal(p.authorizedToMerge,false);
+});
+test('missing snapshot is never green',()=>{
+  const p=buildPacket({});assert.equal(p.counts.unverifiedMains,9);assert.equal(p.sampledJobs.every(x=>x.assessment==='PR_HEAD_DRIFT_OR_UNVERIFIED'),true);
+});
+test('live endpoint calls only private-source GETs, refuses missing token',async()=>{
+  await assert.rejects(fetchLiveSnapshot(''),/GITHUB_TOKEN/);
+  const f=fixture(),methods=[],urls=[];
+  const fake=async(url,options)=>{
+    methods.push(options.method);urls.push(url);
+    const b=/oreslang-source\.([^/]+)/.exec(url)?.[1];
+    let obj=url.endsWith('/branches/main')?f.branches[b]:url.includes('/pulls/')?f.candidates[b].pr:url.includes('/attempts/')?f.candidates[b].jobs:f.candidates[b].run;
+    const bytes=new TextEncoder().encode(JSON.stringify(obj));
+    return {ok:true,arrayBuffer:async()=>bytes.buffer};
+  };
+  const p=buildPacket(await fetchLiveSnapshot('placeholder',fake));
+  assert.equal(p.counts.runnerNotAllocated,5);
+  assert.equal(methods.length,24);
+  assert.ok(methods.every(m=>m==='GET'));
+  assert.ok(urls.every(u=>u.startsWith('https://api.github.com/repos/'+OWNER+'/oreslang-source.')));
+});
+test('HTTP errors and oversized streams are refused',async()=>{
+  await assert.rejects(fetchLiveSnapshot('token',async()=>({ok:false,status:403})),/HTTP 403/);
+  await assert.rejects(fetchLiveSnapshot('token',async()=>({ok:true,headers:{get:()=>null},body:{getReader:()=>({read:async()=>({done:false,value:new Uint8Array(2000001)}),releaseLock:()=>{}})}})),/2 MB/);
+});
+test('snapshot must have object type',()=>assert.throws(()=>buildPacket(null),/snapshot/));
