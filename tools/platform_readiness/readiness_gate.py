@@ -14,6 +14,9 @@ OID = re.compile(r"[0-9a-f]{40}\Z")
 DIGEST = re.compile(r"[0-9a-f]{64}\Z")
 HOUSEKEEPING = {"Set up job", "Complete job"}
 MAX_BYTES = 1048576
+MAX_DEPTH = 64
+MAX_NODES = 20000
+MAX_SAFE_INT = (1 << 53) - 1
 
 class InvalidEvidence(ValueError):
     pass
@@ -37,16 +40,30 @@ def finite_number(value):
     need(math.isfinite(parsed), "nonfinite JSON number")
     return parsed
 
+def finite_integer(value):
+    parsed = int(value)
+    # GitHub IDs and cross-runtime receipts cannot be exact past this boundary.
+    need(abs(parsed) <= MAX_SAFE_INT, "unsafe JSON integer")
+    return parsed
+
 def no_surrogates(value):
-    if isinstance(value, str):
-        need(not any(0xd800 <= ord(ch) <= 0xdfff for ch in value), "invalid Unicode scalar")
-    elif type(value) is list:
-        for member in value:
-            no_surrogates(member)
-    elif type(value) is dict:
-        for key, member in value.items():
-            no_surrogates(key)
-            no_surrogates(member)
+    # A stack avoids recursive Python walks on hostile JSON; cap total work.
+    pending = [(value, 0)]
+    visited = 0
+    while pending:
+        item, depth = pending.pop()
+        visited += 1
+        need(visited <= MAX_NODES, "evidence node budget exceeded")
+        need(depth <= MAX_DEPTH, "evidence nesting budget exceeded")
+        if type(item) is str:
+            need(not any(0xd800 <= ord(ch) <= 0xdfff for ch in item),
+                 "invalid Unicode scalar")
+        elif type(item) is list:
+            pending.extend((member, depth + 1) for member in item)
+        elif type(item) is dict:
+            for key, member in item.items():
+                pending.append((key, depth + 1))
+                pending.append((member, depth + 1))
 
 def read_snapshot(path):
     with open(path, "rb") as handle:
@@ -56,10 +73,11 @@ def read_snapshot(path):
         payload = json.loads(data.decode("utf-8", "strict"),
                              object_pairs_hook=object_pairs,
                              parse_constant=bad_constant,
-                             parse_float=finite_number)
-    except (ValueError, UnicodeError, OverflowError) as err:
+                             parse_float=finite_number,
+                             parse_int=finite_integer)
+        no_surrogates(payload)
+    except (ValueError, UnicodeError, OverflowError, RecursionError) as err:
         raise InvalidEvidence("invalid JSON evidence") from err
-    no_surrogates(payload)
     return payload, hashlib.sha256(data).hexdigest()
 
 def obj(value, keys):
@@ -69,7 +87,7 @@ def oid(value):
     return type(value) is str and OID.fullmatch(value) is not None
 
 def positive_int(value):
-    return type(value) is int and value > 0
+    return type(value) is int and 0 < value <= MAX_SAFE_INT
 
 def job_findings(job, head):
     obj(job, {"head_sha","run_id","run_attempt","job_id","status","conclusion","steps"})
