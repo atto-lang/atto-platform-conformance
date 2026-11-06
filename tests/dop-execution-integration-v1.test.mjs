@@ -17,7 +17,7 @@ const base = {contract: contract.contract, backend:'java', executionProfile:'jit
   compilerSha256:hash, fixtureSha256:hash, guestArtifactSha256:null,
   toolchain:'JDK 25 / GraalVM JIT', command:'mvn -Dtest=DopScalarGuestParityTest test',
   discoveredTests:2,executedTests:2,guestExecuted:true,executionStage:'managed-guest', guestExitCode:0,
-  jitEvidence:{runtimeBinarySha256:hash,junitReportSha256:hash,
+  jitEvidence:{compilerClassTreeSha256:hash,runtimeBinarySha256:hash,junitReportSha256:hash,
     reportClass:'dev.oreslang.DopScalarGuestParityTest',guestCases:[
       'identicalScalarSoaSourceCompilesAndReturnsZeroFromRealJitGuest',
       'incorrectGuestChecksumIsDetectedByActualCompiledExecution'
@@ -47,4 +47,14 @@ test('existing native AOT receipt retains artifact requirement with explicit pro
   assert.deepEqual(validateDopGuestReceipt(aot,contract),[]);
   assert.ok(validateDopGuestReceipt({...aot,guestArtifactSha256:null},contract)
     .includes('guest-artifact-sha256'));
+});
+
+test('integrated Java JIT cannot use a fake legacy AOT profile and hash', () => {
+  const bypass = {...base, executionProfile: undefined, guestArtifactSha256: hash,
+    jitEvidence: null};
+  assert.ok(validateDopGuestReceipt(bypass, contract).includes('artifact-backend-stage'));
+});
+test('integrated JIT report must bind the compilerClassTreeSha256 to compilerSha256', () => {
+  const bypass = {...base, compilerSha256: 'c'.repeat(64)};
+  assert.ok(validateDopGuestReceipt(bypass, contract).includes('jit-compiler-fingerprint-match'));
 });
