@@ -29,9 +29,10 @@ of 65,536 elements, as documented in PR #1308.
 2. Compile that same .atto fixture through the **real backend toolchain**;
    run the resulting guest executable/module with a positive control and
    confirm exit 0. A parser-only pass is not a guest pass.
-3. Record the compiler and fixture SHA-256, generated guest artifact SHA-256,
-   actual command/toolchain, discovered/executed test count, GitHub run and
-   admitted runner IDs, and nonempty timestamped **executed** step records.
+3. Record the compiler and fixture SHA-256, the evidence for the **explicit**
+   execution profile described below, actual command/toolchain, discovered and
+   executed test counts, GitHub run/job IDs, and admitted runner IDs, plus
+   nonempty timestamped **executed** step records.
 4. Read the run/jobs/artifact details back from the GitHub API and compare to
    the receipt. validateDopGuestReceipt only validates a receipt's shape;
    its synthetic positive control is **not a cryptographic attestation**.
@@ -47,6 +48,46 @@ preview and not interchangeable with the two-array guest fixture; Java
 #2550/#2554 host storage and unsupported inverted declarations must not be
 counted as positive guest execution. Wasm, Forge and .NET require their own
 real compiler and runtime execution receipts, not host storage tests.
+
+## Execution-profile split: Java JIT versus native AOT
+
+The v1 positive-receipt schema now has an **explicit Java JIT path** instead
+of demanding a fictitious JIT executable. For a `PASSED` JIT receipt,
+`executionProfile: "jit"` requires:
+
+- `backend: "java"`, `executionStage: "managed-guest"`, a real zero guest
+  exit status and `guestArtifactSha256: null` (explicitly no native guest file).
+- `jitEvidence.runtimeBinarySha256`: SHA-256 of the resolved JDK `java`
+  executable actually selected by the source-local workflow.
+- `jitEvidence.junitReportSha256`: SHA-256 of the validated two-case Surefire
+  XML report, `jitEvidence.reportClass: "dev.oreslang.DopScalarGuestParityTest"`,
+  and the exact guest case names
+  `identicalScalarSoaSourceCompilesAndReturnsZeroFromRealJitGuest` and
+  `incorrectGuestChecksumIsDetectedByActualCompiledExecution`.
+- `executedTests: 2` and `discoveredTests: 2`, plus the usual exact-head,
+  `checkout-head`, `compile-guest`, `execute-guest`, runner, timestamp and
+  independent GitHub API job correlation requirements.
+
+For `executionProfile: "aot"` (or older receipts with no profile), the
+existing `guestArtifactSha256` remains compulsory and `jitEvidence` must
+be absent. An unknown or host-only execution profile is not a valid positive
+receipt. The positive JIT profile is **only supported for Java** in this v1
+contract; it does not assert portable machine-code/JIT compilation detail
+without an independent code generation witness.
+
+These are **structure validations**, not actual attestations. Even a synthetic
+fully populated receipt with two valid-looking digests does **not** establish
+source, compiler, runtime binary or Surefire report provenance: a separate
+trusted collector must independently hash the source-side files, validate the
+JUnit report contents, verify the exact workflow steps and fetch the matching
+GitHub job/run. The current source-local Java draft
+[PR #2571](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2571)
+has authored the runtime/JUnit hash measurements; it has **NOT_EXECUTED**
+on a runner. LLVM native [PR #1308](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1308)
+retains its real AOT output hash checks, also **NOT_EXECUTED**.
+
+Run `node --test tests/dop-execution-profile-v1.test.mjs` for eight
+additional source-free JIT/AOT adversarial/profile tests.
 
 ## Independent GitHub run/job snapshot correlation
 
