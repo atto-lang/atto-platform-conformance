@@ -1,6 +1,6 @@
 {
   "schema": "attolang.gpu-cuda-parity-map/1",
-  "scope": "coverage plan for the NEW explicit-launch syntax only",
+  "scope": "GPU programming ecosystem benchmark: low-level kernels, ergonomic logical launches and proposed high-level/tile features",
   "assertsProductionCudaParity": false,
   "evidencePolicy": {
     "compilerGuestAndDeviceHardwareRequired": true,
@@ -381,6 +381,60 @@
       "attoSurface": "device memory/race checks",
       "cudaConcept": "compute-sanitizer/debug",
       "portability": "provider-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "dispatch.logical_extent",
+      "phase": "P0",
+      "attoSurface": "over: [n], group: [256]",
+      "cudaConcept": "logical workload to checked physical grid",
+      "portability": "portable",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "compute.each",
+      "phase": "P2",
+      "attoSurface": "gpu each with explicit device placement",
+      "cudaConcept": "data-parallel map/fused operators",
+      "portability": "portable",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "compute.reduce",
+      "phase": "P2",
+      "attoSurface": "gpu reduce with declared ordering",
+      "cudaConcept": "parallel reduction scheduling",
+      "portability": "portable",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "compute.tile",
+      "phase": "P2",
+      "attoSurface": "gpu tile (future typed AST)",
+      "cudaConcept": "tile programming and tensor math",
+      "portability": "provider-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "systems.specialization_autotune",
+      "phase": "P2",
+      "attoSurface": "opt-in specialization and autotune",
+      "cudaConcept": "launch occupancy and kernel-variant tuning",
+      "portability": "provider-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "systems.device_capability_gates",
+      "phase": "P1",
+      "attoSurface": "typed requires on GPU provider",
+      "cudaConcept": "target capability negotiation",
+      "portability": "portable",
       "sourceSupport": "NOT_EXECUTED",
       "physicalGpu": "NOT_EXECUTED"
     }
