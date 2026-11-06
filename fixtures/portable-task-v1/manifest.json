@@ -226,7 +226,8 @@
         "wasm": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
-      }
+      },
+      "expectedDiagnosticCode": "ATTO_TASK_E_HASFUTURE_WITNESS"
     },
     {
       "id": "reject-actor-self-capture",
@@ -243,7 +244,8 @@
         "wasm": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
-      }
+      },
+      "expectedDiagnosticCode": "ATTO_TASK_E_ACTOR_SELF_CAPTURE"
     },
     {
       "id": "reject-mut-borrow-capture",
@@ -260,7 +262,8 @@
         "wasm": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
-      }
+      },
+      "expectedDiagnosticCode": "ATTO_TASK_E_MUT_BORROW_CAPTURE"
     },
     {
       "id": "reject-await-in-critical",
@@ -277,7 +280,8 @@
         "wasm": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
-      }
+      },
+      "expectedDiagnosticCode": "ATTO_TASK_E_CRITICAL_SUSPEND"
     }
   ]
 }
