@@ -144,8 +144,20 @@ export class LayoutOracle {
   }
   convert(layout, groups = undefined) {
     this.#noReentry();
+    // The supplied SoAoS groups may be proxies with getters or iterators.
+    // Fence every validation trap before mutating layout metadata, including
+    // traps that catch and swallow a rejected nested store operation.
+    this.#reentryRejected = false;
+    this.#evaluatingInput = true;
+    let accepted, tainted = false;
+    try { accepted = validLayout(layout, this.#fields, groups); }
+    finally {
+      tainted = this.#reentryRejected;
+      this.#evaluatingInput = false;
+      this.#reentryRejected = false;
+    }
+    if (tainted) throw Error('reentrant layout oracle conversion tainted transaction');
     // Invalid conversions leave both the layout and its group partition unchanged.
-    const accepted = validLayout(layout, this.#fields, groups);
     this.#groups = accepted;
     this.#layout = layout;
   }
