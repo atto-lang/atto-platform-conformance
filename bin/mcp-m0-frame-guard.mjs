@@ -13,8 +13,8 @@ export class M0FrameError extends Error {
 }
 
 export function parseM0Frame(frame, { maxBytes = DEFAULT_MAX_BYTES, maxDepth = DEFAULT_MAX_DEPTH } = {}) {
-  if (!(frame instanceof Uint8Array) || !Number.isSafeInteger(maxBytes) || maxBytes <= 0 ||
-      !Number.isSafeInteger(maxDepth) || maxDepth <= 0) {
+  if (!(frame instanceof Uint8Array) || !Number.isSafeInteger(maxBytes) || maxBytes <= 0 || maxBytes > DEFAULT_MAX_BYTES ||
+      !Number.isSafeInteger(maxDepth) || maxDepth <= 0 || maxDepth > DEFAULT_MAX_DEPTH) {
     throw new M0FrameError('MALFORMED');
   }
   if (frame.byteLength > maxBytes) throw new M0FrameError('OVERFLOW');
@@ -36,6 +36,16 @@ export function parseM0Frame(frame, { maxBytes = DEFAULT_MAX_BYTES, maxDepth = D
         try {
           const decoded = JSON.parse(source.slice(begin, i));
           if (typeof decoded !== 'string') fail();
+          // JSON.parse accepts isolated \\uD800/\\uDC00 escapes, but those are
+          // not Unicode scalar values. Cross-language MCP peers must not
+          // receive ambiguous or ill-formed escaped UTF-16 strings or keys.
+          for (let k = 0; k < decoded.length; k++) {
+            const unit = decoded.charCodeAt(k);
+            if (unit >= 0xd800 && unit <= 0xdbff) {
+              const next = decoded.charCodeAt(++k);
+              if (!(next >= 0xdc00 && next <= 0xdfff)) fail();
+            } else if (unit >= 0xdc00 && unit <= 0xdfff) fail();
+          }
           return decoded;
         } catch { fail(); }
       }
