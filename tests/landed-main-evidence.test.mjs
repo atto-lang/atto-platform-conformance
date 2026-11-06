@@ -26,6 +26,8 @@ denies('reject author self approval',e=>e.approvals[0].login='contributor','revi
 denies('reject zero-runner job',e=>e.source_owned_runs[0].runner_id=0,'ci');
 denies('reject zero-step job',e=>e.source_owned_runs[0].steps=[],'ci');
 denies('reject housekeeping-only steps',e=>e.source_owned_runs[0].steps=[{name:'Set  up job',conclusion:'success'}],'ci');
+denies('reject checkout-only step',e=>e.source_owned_runs[0].steps=[{name:'Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683',conclusion:'success'}],'ci');
+denies('reject source-head-verification-only step',e=>e.source_owned_runs[0].steps=[{name:'Verify exact PR head and clean source tree',conclusion:'success'}],'ci');
 denies('reject stale PR-head test for landed-main',e=>e.source_owned_runs[0].commit_sha=A,'ci');
 denies('reject wrong check issuer',e=>e.source_owned_runs[0].app_id=44,'ci');
 denies('reject missing required job',e=>e.required_checks.push({context:'security',app_id:15368}),'ci');
