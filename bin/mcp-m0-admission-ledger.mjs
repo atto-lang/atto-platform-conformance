@@ -1,6 +1,7 @@
 // M0 SOURCE-FREE REFERENCE POLICY ONLY. Not a network listener, credential issuer,
 // concurrency primitive across processes, runtime admission gate or guest proof.
 import { createHmac } from 'node:crypto';
+import { types as nodeTypes } from 'node:util';
 
 const LIMITS = Object.freeze({
   frameBytes: 32768, jsonDepth: 12, responseBytes: 65536, deadlineMs: 500,
@@ -31,6 +32,9 @@ function snapshotAdmissionInput(input) {
   let textUnits = 0;
   function copy(value, depth) {
     if (++nodes > 2048 || depth > 16) throw Error('input budget');
+    // Descriptor inspection on a Proxy invokes attacker-defined traps.
+    // Deny transparent and revoked proxies before ANY property observation.
+    if (nodeTypes.isProxy(value)) throw Error('proxy admission denied');
     if (typeof value === 'string') {
       textUnits += value.length;
       if (textUnits > 65536) throw Error('text budget');
