@@ -36,7 +36,7 @@ export function auditEntry(entry) {
     (o.compare_status === 'ahead' && o.head_sha === entry.merge_sha))
     add('ancestry','landed_commit_not_observed_on_main');
   const p=entry?.protection;
-  if (p?.protected !== true || p?.required_approvals < 1 ||
+  if (p?.protected !== true || !positive(p?.required_approvals) ||
     p?.codeowners !== true || p?.dismiss_stale !== true ||
     p?.strict_checks !== true || p?.enforce_admins !== true || p?.bypass_count !== 0)
     add('protection','protected_main_policy_not_verified');
