@@ -142,6 +142,7 @@ export class InvertedReferenceStore {
   #issued = new WeakSet();
   #loans = new Map();
   #closed = false;
+  #evaluatingInput = false;
   #capacity;
   constructor(layout, capacity = 1024) {
     if (!layout || typeof layout !== "object" || !COMPILED_LAYOUTS.has(layout) ||
@@ -156,7 +157,33 @@ export class InvertedReferenceStore {
       this.#loans.set(c.name, {readers: 0, writer: false});
     }
   }
-  #open() { if (this.#closed) throw new Error("inverted owner closed"); }
+  #notEvaluating() {
+    if (this.#evaluatingInput) throw new Error("reentrant inverted owner input");
+  }
+  #open() {
+    this.#notEvaluating();
+    if (this.#closed) throw new Error("inverted owner closed");
+  }
+  // User-controlled descriptor and proxy traps cannot mutate the store while
+  // values are being validated. Failed validation never publishes a partial row.
+  #detached(spec, value) {
+    this.#open();
+    this.#evaluatingInput = true;
+    try { return copyValue(spec, value); }
+    finally { this.#evaluatingInput = false; }
+  }
+  #rowValues(row) {
+    this.#open();
+    this.#evaluatingInput = true;
+    try {
+      if (!exactObject(row) || Reflect.ownKeys(row).length !== this.#columns.size)
+        fail("inexact row shape");
+      return this.#layout.columns.map(f => {
+        if (!own(row, f.name)) fail("missing row member");
+        return copyValue(f.descriptor, data(row, f.name));
+      });
+    } finally { this.#evaluatingInput = false; }
+  }
   get length() { this.#open(); return this.#rows.length; }
   get column_names() { this.#open(); return [...this.#columns.keys()]; }
   #column(name) {
@@ -198,14 +225,10 @@ export class InvertedReferenceStore {
   push(row) {
     this.#open();
     this.#noLoans();
-    if (!exactObject(row) || Reflect.ownKeys(row).length !== this.#columns.size)
-      fail("inexact row shape");
     if (this.#rows.length === this.#capacity) throw new RangeError("inverted store full");
-    // Validate and detach ALL members before touching the store.
-    const values = this.#layout.columns.map(f => {
-      if (!own(row, f.name)) fail("missing row member");
-      return copyValue(f.descriptor, data(row, f.name));
-    });
+    // Transactional user-input snapshot: no nested store operation can change
+    // capacity, dense indices, generations, loans or owner liveness here.
+    const values = this.#rowValues(row);
     const slot = this.#free.length ? this.#free[this.#free.length - 1] : this.#slots.length;
     const s = this.#slots[slot] || {row: 0, generation: 1, live: false};
     if (!Number.isSafeInteger(s.generation) || s.generation === Number.MAX_SAFE_INTEGER)
@@ -244,7 +267,7 @@ export class InvertedReferenceStore {
     if (!this.#layout.columns.find(c => c.name === name).mutable)
       throw new Error("immutable field cannot be written");
     if (loan.writer || loan.readers) throw new Error("field loan conflict");
-    const detached = copyValue(this.#spec(name), value);
+    const detached = this.#detached(this.#spec(name), value);
     this.#column(name)[row] = detached;
   }
   snapshot(handle) {
@@ -285,6 +308,7 @@ export class InvertedReferenceStore {
     if (write) loan.writer = true; else loan.readers++;
     let live = true;
     const spec = this.#spec(name);
+    const owner = this;
     const requireLive = () => {
       this.#open();
       if (!live) throw new Error("closed field loan");
@@ -302,9 +326,10 @@ export class InvertedReferenceStore {
         if (!write) throw new Error("readonly field loan");
         if (!Number.isSafeInteger(index) || index < 0 || index >= col.length)
           throw new RangeError("column index out of bounds");
-        col[index] = copyValue(spec, value);
+        col[index] = owner.#detached(spec, value);
       },
       close() {
+        owner.#notEvaluating();
         if (!live) return;
         live = false;
         if (write) loan.writer = false; else loan.readers--;
@@ -312,6 +337,7 @@ export class InvertedReferenceStore {
     });
   }
   close() {
+    this.#notEvaluating();
     if (this.#closed) return;
     this.#noLoans();
     this.#closed = true;
