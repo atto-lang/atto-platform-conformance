@@ -5,20 +5,35 @@ const allowed = new Set(['send', 'receive', 'settle', 'stop_abrupt', 'stop_grace
   'task_begin', 'task_end', 'loan_begin', 'loan_end', 'get_done', 'reclaim']);
 const id = x => typeof x === 'string' && /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$/.test(x);
 const invalid = why => { throw new Error('INVALID_MAILBOX_COMPLETION_TRACE: ' + why); };
+// Validate ordinary own data fields before reading any input-owned values.
+const dataRecord = (value, allowedKeys, requiredKeys) =>
+  value !== null && typeof value === 'object' && !Array.isArray(value) &&
+  Object.getPrototypeOf(value) === Object.prototype &&
+  Reflect.ownKeys(value).every(key =>
+    typeof key === 'string' && allowedKeys.includes(key) &&
+    Object.hasOwn(Object.getOwnPropertyDescriptor(value, key), 'value')) &&
+  requiredKeys.every(key => Object.hasOwn(value, key));
 
 export function checkMailboxCompletionV1(input) {
-  if (input === null || typeof input !== 'object' || Array.isArray(input) ||
-      Object.getPrototypeOf(input) !== Object.prototype ||
-      Reflect.ownKeys(input).some(k => !['schema', 'capacity', 'events'].includes(k))) invalid('input fields');
+  if (!dataRecord(input, ['schema', 'capacity', 'events'],
+      ['schema', 'capacity', 'events'])) invalid('input fields');
   if (input.schema !== 'oreslang.mailbox_completion.v1' ||
       !Number.isInteger(input.capacity) || input.capacity < 1 || input.capacity > 4 ||
-      !Array.isArray(input.events) || !input.events.length || input.events.length > 1000) invalid('bounds');
+      !Array.isArray(input.events) || !input.events.length || input.events.length > 1000)
+    invalid('bounds');
+  // Arrays must have exactly the indexed own data entries and length.
+  // An accessor slot must not execute code while validation reads events.
+  const events = input.events;
+  if (Object.getPrototypeOf(events) !== Array.prototype ||
+      Reflect.ownKeys(events).length !== events.length + 1) invalid('event array');
+  for (let index = 0; index < events.length; index++) {
+    const entry = Object.getOwnPropertyDescriptor(events, String(index));
+    if (!entry || !Object.hasOwn(entry, 'value')) invalid('event array');
+  }
   const s = {mode:'OPEN', queue:[], inflight:new Set(), accepted:new Set(),
     tasks:new Set(), loans:new Set(), reclaimed:false, results:[]};
   for (const e of input.events) {
-    if (e === null || typeof e !== 'object' || Array.isArray(e) ||
-        Object.getPrototypeOf(e) !== Object.prototype ||
-        Reflect.ownKeys(e).some(k => !['op', 'ticket', 'expect'].includes(k)) ||
+    if (!dataRecord(e, ['op', 'ticket', 'expect'], ['op', 'expect']) ||
         !allowed.has(e.op) || typeof e.expect !== 'string') invalid('event fields');
     const withId = ['send','settle','task_begin','task_end','loan_begin','loan_end'].includes(e.op);
     if (withId !== Object.hasOwn(e,'ticket') || (withId && !id(e.ticket))) invalid('ticket');
