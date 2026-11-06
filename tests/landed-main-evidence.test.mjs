@@ -103,7 +103,7 @@ denies('reject padded runner identity',e=>{
   e.source_owned_runs[0].runner_name=' runner-22 ';
 },'ci');
 denies('reject control characters in runner identity',e=>{
-  e.source_owned_runs[0].runner_name='runner-22\\nInjected';
+  e.source_owned_runs[0].runner_name='runner-22\nInjected';
 },'ci');
 
 denies('reject zero-runner job',e=>e.source_owned_runs[0].runner_id=0,'ci');
