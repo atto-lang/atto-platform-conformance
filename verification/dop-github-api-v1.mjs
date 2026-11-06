@@ -4,6 +4,20 @@ const repoSyntax = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
 const runSyntax = /^[1-9][0-9]{0,15}$/;
 const maxBytes = 1024 * 1024;
 const maxMs = 15000;
+const sourceRepos = Object.freeze({
+  java: 'ores-truffle-oreslang/oreslang-source.java',
+  llvm: 'ores-truffle-oreslang/oreslang-source.llvm',
+  wasm: 'ores-truffle-oreslang/oreslang-source.wasm',
+  forge: 'ores-truffle-oreslang/oreslang-source.forge',
+  net: 'ores-truffle-oreslang/oreslang-source.net'
+});
+
+export function requireCanonicalDopSourceRepo(backend, repository) {
+  if (!Object.hasOwn(sourceRepos, backend) || sourceRepos[backend] !== repository)
+    throw new TypeError('backend-repository-mismatch');
+  return repository;
+}
+
 
 export function validateGithubIdentity(repository, runId) {
   if (typeof repository !== 'string' || !repoSyntax.test(repository) ||
