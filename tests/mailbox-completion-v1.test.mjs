@@ -51,3 +51,31 @@ test('reject forged completion and unexpected fields',()=>{
   assert.throws(()=>check({schema:'oreslang.mailbox_completion.v1',capacity:0,
     events:[x('get_done','DONE')]}),/INVALID_MAILBOX_COMPLETION_TRACE/);
 });
+
+test('reject caller-owned getters without executing them',()=>{
+  let input_reads=0,event_reads=0,slot_reads=0;
+  const input={schema:'oreslang.mailbox_completion.v1',capacity:1,
+    get events(){input_reads++;return [x('stop_abrupt','STOPPED')];}};
+  assert.throws(()=>check(input),/INVALID_MAILBOX_COMPLETION_TRACE/);
+  assert.equal(input_reads,0);
+  const event={op:'stop_abrupt',get expect(){event_reads++;return 'STOPPED';}};
+  reject([event]);
+  assert.equal(event_reads,0);
+  const events=[x('stop_abrupt','STOPPED')];
+  Object.defineProperty(events,'0',{get(){slot_reads++;return x('stop_abrupt','STOPPED');}});
+  assert.throws(()=>check({schema:'oreslang.mailbox_completion.v1',capacity:1,events}),
+    /INVALID_MAILBOX_COMPLETION_TRACE/);
+  assert.equal(slot_reads,0);
+});
+test('reject inherited, sparse and extra event authority',()=>{
+  reject([Object.create({op:'stop_abrupt',expect:'STOPPED'})]);
+  const event=x('stop_abrupt','STOPPED');
+  event[Symbol('extra')]=true;
+  reject([event]);
+  const invoke=events=>check({schema:'oreslang.mailbox_completion.v1',capacity:1,events});
+  assert.throws(()=>invoke(new Array(1)),/INVALID_MAILBOX_COMPLETION_TRACE/);
+  const extra=[x('stop_abrupt','STOPPED')];extra.shadow=1;
+  assert.throws(()=>invoke(extra),/INVALID_MAILBOX_COMPLETION_TRACE/);
+  const symbolic=[x('stop_abrupt','STOPPED')];symbolic[Symbol('extra')]=1;
+  assert.throws(()=>invoke(symbolic),/INVALID_MAILBOX_COMPLETION_TRACE/);
+});
