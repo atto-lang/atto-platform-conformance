@@ -270,7 +270,7 @@ function fakeSnapshotFile(json,{links=1n,regular=true,changed=false,partial=fals
   };
 }
 test('offline snapshot reads only stable, bounded regular descriptor bytes',async()=>{
-  const obj={branches:{java:{name:'main'}},candidates:{},message:'valid"};
+  const obj={branches:{java:{name:'main'}},candidates:{},message:'valid'};
   const src=fakeSnapshotFile(JSON.stringify(obj),{partial:true});
   assert.deepEqual(await readSnapshot('synthetic.json',src.opener),obj);
   assert.equal(src.closed,1);
