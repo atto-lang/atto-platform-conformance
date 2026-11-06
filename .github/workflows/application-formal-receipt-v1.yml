@@ -1,0 +1,33 @@
+name: AttoLang application formal receipt shape (source-free)
+on:
+  pull_request:
+    paths:
+      - 'bin/verify-application-formal-receipt-v1.mjs'
+      - 'tests/application-formal-receipt-v1.test.mjs'
+      - 'docs/APPLICATION_FORMAL_RECEIPT_V1.md'
+      - '.github/workflows/application-formal-receipt-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  receipt-shape-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out the exact source head
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Run receipt shape and hostile mutation tests
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          node --version
+          node --test tests/application-formal-receipt-v1.test.mjs
+          echo "RECEIPT_SHAPE_ONLY_HEAD=$EXPECTED_HEAD"
+          echo 'ATTO_COMPILER_GUEST=NOT_EXECUTED'
+          echo 'PRODUCT_REFINEMENT=NOT_EXECUTED'
