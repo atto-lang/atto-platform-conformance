@@ -17,7 +17,8 @@ export const CANDIDATES=[
 ].map(([backend,pr,head,run,attempt,job])=>({backend,pr,head,run,attempt,job}));
 const repo=b=>OWNER+'/oreslang-source.'+b;
 const validSha=s=>typeof s==='string' && /^[0-9a-f]{40}$/.test(s);
-const housekeeping=/^(set up job|complete job|post .*|initialize .*|checkout|actions\/checkout|setup .*|download .*|upload .*|cleanup.*)$/i;
+// GitHub action setup/checkout/cleanup can complete without executing a test.
+const housekeeping=/^(?:set up job|complete job|post(?: run)? .+|initialize .+|checkout|actions\/checkout(?:@.+)?|setup .+|download .+|upload .+|cleanup.*|(?:run|post run)\s+(?:actions|dtolnay|docker|ruby|pnpm|gradle)\/[^\s]+|verify exact (?:pr )?head.*)$/i;
 
 export function assessJob(j,c){
   if(!j || typeof j!=='object' || Array.isArray(j)) return 'MISSING_JOB';
@@ -42,7 +43,12 @@ export function buildPacket(s){
   const sampledJobs=CANDIDATES.map(c=>{
     const v=s.candidates?.[c.backend];
     const pr=v?.pr,run=v?.run,jobs=v?.jobs;
-    const validPR=pr?.number===c.pr&&pr?.head?.sha===c.head&&pr?.head?.repo?.full_name===repo(c.backend)&&pr?.base?.ref==='main'&&pr?.state==='open';
+    // Historical exact-head CI is still interpretable after a PR is merged.
+    // Reject closed-unmerged PRs and closed/merged claims without a merge commit.
+    const stateValid=(pr?.state==='open'&&pr?.merged===false)||
+      (pr?.state==='closed'&&pr?.merged===true&&validSha(pr?.merge_commit_sha)&&
+       typeof pr?.merged_at==='string'&&!Number.isNaN(Date.parse(pr.merged_at)));
+    const validPR=pr?.number===c.pr&&pr?.head?.sha===c.head&&pr?.head?.repo?.full_name===repo(c.backend)&&pr?.base?.ref==='main'&&stateValid;
     const validRun=run?.id===c.run&&run?.head_sha===c.head&&run?.run_attempt===c.attempt&&run?.repository?.full_name===repo(c.backend);
     const hits=Array.isArray(jobs?.jobs)?jobs.jobs.filter(j=>j?.id===c.job):[];
     return {repository:repo(c.backend),pullRequest:'https://github.com/'+repo(c.backend)+'/pull/'+c.pr,
