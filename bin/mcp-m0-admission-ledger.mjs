@@ -36,6 +36,8 @@ function snapshotAdmissionInput(input) {
       if (textUnits > 65536) throw Error('text budget');
       return value;
     }
+    if (typeof value === 'number' && !Number.isFinite(value))
+      throw Error('non-finite JSON number');
     if (value === null || typeof value === 'number' ||
         typeof value === 'boolean' || value === undefined) return value;
     // Functions confer no authority. Keep an invalid scalar sentinel so
@@ -89,6 +91,7 @@ export class M0AdmissionLedger {
   #audit;
   #auditKey;
   #globalInflight = 0;
+  #auditDepth = 0;
 
   constructor({ enabled = false, audit = null, auditKey = null } = {}) {
     // A missing or invalid synchronous audit sink or key fails closed.
@@ -103,6 +106,10 @@ export class M0AdmissionLedger {
 
   #emit(decision, reason, { credential, request, frameBytes = 0, responseBytes = 0, elapsedMs = 0, wallNowMs = null } = {}) {
     if (!this.#audit || !this.#auditKey || !reasonCodes.has(reason)) return false;
+    // Denials also generate audit records: a reentrant sink must not recurse
+    // until the JS call stack is exhausted. A bounded nested request is valid.
+    if (this.#auditDepth >= 8) return false;
+    this.#auditDepth++;
     try {
       const identity = credential || {};
       // Never coerce a caller-owned object or invoke untrusted toString while
@@ -126,9 +133,12 @@ export class M0AdmissionLedger {
       };
       if (Buffer.byteLength(JSON.stringify(record)) > LIMITS.auditBytes) return false;
       // An asynchronous Promise would mean authorization before durable audit; deny.
-      if (this.#audit(record) !== true) return false;
+      // Audit fields are scalar; freeze the record before external callbacks
+      // so the sink cannot rewrite the decision, reason or hashed identities.
+      if (this.#audit(Object.freeze(record)) !== true) return false;
       return true;
     } catch { return false; }
+    finally { this.#auditDepth--; }
   }
 
   #deny(reason, context) {
