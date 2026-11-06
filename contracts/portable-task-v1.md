@@ -1,0 +1,24 @@
+# Portable AttoLang Task / HasFuture<T> contract v1 (candidate)
+
+**Scope:** same `.atto` source across Java/GraalVM, LLVM, Wasm, Forge and .NET. This is a proposed normative semantic contract, **not** proof that existing backends implement it. Source names and probe hooks are provisional until the actual frontend accepts them. Review by compiler/runtime owners is required before declaring it frozen. All suite entries begin **not_executed**.
+
+## Portable semantics
+
+1. Submission of `task { ... }` is eager. The child is admitted or rejected **before** `await`; awaiting is observation, not submission. Admission transfers owned captures once, and must prove Send/capability safety transitively.
+2. An expression-valued Task has one owned handle and result `Task<T>` implementing nominal `HasFuture<T>`. An existing `Future<T>` is also awaitable. `await` projects exactly once, preserving `T` including `String`, nested generic arguments, and errors. Duck-typed `get_future` is not a witness. Bounded generic constraints require real monomorphization/validation; unsupported generic forms reject before execution.
+3. Fire-and-continue `do nb { ... }` returns no handle to the caller, but **does not abandon ownership**. Work belongs to an explicit lexical/root Task scope, whose drain or cancellation is observable before that scope is physically retired; detached work must not outlive its owning capability domain. Parent execution continues without waiting at submission.
+4. `await ActorRef<T>` returns **the same `ActorRef<T>`**, representing readiness, not its message result; neither `void` nor a different actor reference is portable. LLVM's current void readiness and Java's ActorRef-valued await are an unresolved backend mismatch; LLVM must change, or this contract must be versioned before promotion. `await Task<T>` and `await Future<T>` return `T`.
+5. `cancel()` requires ownership of the task cancellation capability. A borrowed observer of `HasFuture<T>` may revoke observation only, not its producer. Cancellation request is not immediate physical retirement. First accepted reason wins; a cancellation-versus-completion race has one linearized terminal result. Child-only cancellation does not cancel siblings; owning scope cancellation propagates to owned descendants.
+6. `get_done()` becomes observable **only after** defer/finally, guest turn unwinding, actor continuation deregistration, native loans and carrier retirement. Cleanup executes once; post-cancel user code does not resume. An untrusted/foreign/stale continuation cannot advance a retired actor generation.
+7. A Task must not capture actor `self`, sealed state, a live mutable/escaping borrow, or active critical read/write/MutexGuard loan across a suspension. Reject at compile time before launch; do not defer this to runtime.
+8. Disallowed behavior must fail closed: no implicit backend host Promise/Task emulation, silent no-op cancellation, premature done, interpreted fallback, or success from unsupported syntax.
+
+## Deterministic probe requirements
+
+`probe_*` names in proposed fixtures stand for capability-bounded test hooks, not a production API. The test harness must replace them with actual guest-callable hooks or rewrite the fixture in a reviewed ABI-compatible way **identically for all backends**. No source-specific host simulator may report guest success. Trace events must be emitted by the real guest; wait barriers are bounded synchronization, never sleep-based scheduling assertions. Every positive program must return process exit 42 and satisfy all listed observations. Every negative program must receive a real compiler diagnostic and produce no guest artifact or execution. Until hooks, parsing and lowering exist: `unsupported` (after a real compiler rejection) or `not_executed` (no executed compiler) only.
+
+## Evidence gate
+
+For each backend/case require immutable compiler **commit** and executable SHA-256, fixture source commit and Git blob plus SHA-256, actual compiler command, complete compile steps, compiler exit/diagnostic, guest artifact SHA-256 (when applicable), guest launch command and exit, bounded stdout/stderr trace, named Actions job/runner with positive completed-step count, and a public-to-reviewers source-local receipt URL. A host-only test, zero-step job or self-authored status field never upgrades a case to passed. The verifier rejects missing identities and mismatches. Report each case as **passed**, **failed**, **unsupported**, or **not_executed**, with source-only tests called out separately. Branches, merges, SHA pins and executed receipts must be reviewed independently before release-gate promotion.
+
+Existing older draft examples: `fixtures/task-blocks/v0`, `fixtures/task-blocks/v1`, `fixtures/async-task-borrow-safety-v1`. The new suite does not supersede them without review.

@@ -1,0 +1,12 @@
+pub async fnc main(): int {
+  let Future<int> work = task {
+    defer { probe_trace("cleanup_once"); }
+    await probe_pending();
+    return 1;
+  };
+  probe_wait_for("suspended");
+  work.cancel();
+  await work.get_done();
+  probe_assert_trace_count("cleanup_once", 1);
+  return 42;
+}

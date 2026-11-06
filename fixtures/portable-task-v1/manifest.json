@@ -1,0 +1,283 @@
+{
+  "schema": "atto.portable-task.v1",
+  "contractVersion": 1,
+  "scope": "proposed-guest-compiler-and-runtime",
+  "executionVerified": false,
+  "backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "forge",
+    "net"
+  ],
+  "statuses": [
+    "passed",
+    "failed",
+    "unsupported",
+    "not_executed"
+  ],
+  "cases": [
+    {
+      "id": "eager-before-await",
+      "file": "eager-before-await.atto",
+      "expect": "positive",
+      "category": "submission",
+      "proposedSyntax": true,
+      "expectedGuestExit": 42,
+      "mustObserve": [
+        "child_started"
+      ],
+      "mustNotObserve": [],
+      "baseline": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "fire-and-continue",
+      "file": "fire-and-continue.atto",
+      "expect": "positive",
+      "category": "detached-scope",
+      "proposedSyntax": true,
+      "expectedGuestExit": 42,
+      "mustObserve": [
+        "parent_continued",
+        "child_entered"
+      ],
+      "mustNotObserve": [],
+      "baseline": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "typed-int",
+      "file": "typed-int.atto",
+      "expect": "positive",
+      "category": "typing",
+      "proposedSyntax": true,
+      "expectedGuestExit": 42,
+      "mustObserve": [],
+      "mustNotObserve": [],
+      "baseline": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "typed-string",
+      "file": "typed-string.atto",
+      "expect": "positive",
+      "category": "typing",
+      "proposedSyntax": true,
+      "expectedGuestExit": 42,
+      "mustObserve": [],
+      "mustNotObserve": [],
+      "baseline": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "generic-hasfuture-once",
+      "file": "generic-hasfuture-once.atto",
+      "expect": "positive",
+      "category": "generic-projection",
+      "proposedSyntax": true,
+      "expectedGuestExit": 42,
+      "mustObserve": [
+        "projection_count=1"
+      ],
+      "mustNotObserve": [],
+      "baseline": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "actorref-readiness",
+      "file": "actorref-readiness.atto",
+      "expect": "positive",
+      "category": "actor-readiness",
+      "proposedSyntax": true,
+      "expectedGuestExit": 42,
+      "mustObserve": [
+        "actor_ref_same=true"
+      ],
+      "mustNotObserve": [],
+      "baseline": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "cancel-before-start",
+      "file": "cancel-before-start.atto",
+      "expect": "positive",
+      "category": "cancel",
+      "proposedSyntax": true,
+      "expectedGuestExit": 42,
+      "mustObserve": [
+        "physical_done=true"
+      ],
+      "mustNotObserve": [
+        "should_not_start"
+      ],
+      "baseline": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "cancel-while-suspended",
+      "file": "cancel-while-suspended.atto",
+      "expect": "positive",
+      "category": "cancel",
+      "proposedSyntax": true,
+      "expectedGuestExit": 42,
+      "mustObserve": [
+        "entered",
+        "physical_done=true"
+      ],
+      "mustNotObserve": [
+        "post_cancel_forbidden"
+      ],
+      "baseline": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "cancel-owned-descendants",
+      "file": "cancel-owned-descendants.atto",
+      "expect": "positive",
+      "category": "cancel",
+      "proposedSyntax": true,
+      "expectedGuestExit": 42,
+      "mustObserve": [
+        "descendants_retired=true",
+        "sibling_survived=true"
+      ],
+      "mustNotObserve": [],
+      "baseline": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "physical-cleanup-before-done",
+      "file": "physical-cleanup-before-done.atto",
+      "expect": "positive",
+      "category": "retirement",
+      "proposedSyntax": true,
+      "expectedGuestExit": 42,
+      "mustObserve": [
+        "cleanup_once",
+        "physical_done=true"
+      ],
+      "mustNotObserve": [],
+      "baseline": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "reject-duck-hasfuture",
+      "file": "reject-duck-hasfuture.atto",
+      "expect": "negative",
+      "category": "typing",
+      "proposedSyntax": true,
+      "expectedGuestExit": null,
+      "mustObserve": [],
+      "mustNotObserve": [],
+      "baseline": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "reject-actor-self-capture",
+      "file": "reject-actor-self-capture.atto",
+      "expect": "negative",
+      "category": "isolation",
+      "proposedSyntax": true,
+      "expectedGuestExit": null,
+      "mustObserve": [],
+      "mustNotObserve": [],
+      "baseline": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "reject-mut-borrow-capture",
+      "file": "reject-mut-borrow-capture.atto",
+      "expect": "negative",
+      "category": "isolation",
+      "proposedSyntax": true,
+      "expectedGuestExit": null,
+      "mustObserve": [],
+      "mustNotObserve": [],
+      "baseline": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "reject-await-in-critical",
+      "file": "reject-await-in-critical.atto",
+      "expect": "negative",
+      "category": "isolation",
+      "proposedSyntax": true,
+      "expectedGuestExit": null,
+      "mustObserve": [],
+      "mustNotObserve": [],
+      "baseline": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    }
+  ]
+}

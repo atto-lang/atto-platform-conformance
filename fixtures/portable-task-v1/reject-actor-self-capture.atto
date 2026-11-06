@@ -1,0 +1,6 @@
+define actor Worker as
+  receive(ActorMail<int> mail): void {
+    let Future<void> work = task { self.end(); return; };
+    return;
+  }
+end
