@@ -187,8 +187,12 @@ export class LayoutStore {
   }
   #checkRow(row) {
     if (!row || typeof row !== 'object' || Array.isArray(row)) throw new TypeError('row must be a record');
-    const keys = Object.keys(row);
-    if (keys.length !== this.#schema.length) throw new TypeError('row field set differs from schema');
+    // Include non-enumerable and Symbol keys: Object.keys silently discards
+    // hidden payload fields and wrongly admits a non-exact row schema.
+    const keys = Reflect.ownKeys(row);
+    if (keys.length !== this.#schema.length ||
+        keys.some(key => typeof key !== 'string' || !this.#types.has(key)))
+      throw new TypeError('row field set differs from schema');
     const snapshot = Object.create(null);
     for (const f of this.#schema) {
       if (!Object.hasOwn(row, f.name)) throw new TypeError('missing row field');
