@@ -88,3 +88,21 @@ test('invalid signed indices, wrong fields and unsafe numeric row counts fail cl
   assert.throws(()=>physicalLayoutV1({...base,kind:'aos',rows:2**53}),/rows/);
   assert.throws(()=>physicalLayoutV1({...base,kind:'aos',rows:'-1'}),/rows/);
 });
+
+test('duplicate, empty and NUL scalar field names are rejected before allocation',()=>{
+  for(const fields of [
+    [{name:'position',bytes:4,alignment:4},{name:'position',bytes:8,alignment:8}],
+    [{name:'',bytes:4,alignment:4}],
+    [{name:'a'+String.fromCharCode(0)+'b',bytes:4,alignment:4}],
+    [{name:'a'.repeat(1025),bytes:4,alignment:4}]
+  ]) assert.throws(()=>physicalLayoutV1({kind:'aos',rows:'2',fields}),/field/);
+});
+test('validated segment plans cannot be mutated by a receipt consumer',()=>{
+  for(const entry of registry.plans) {
+    const p=plan(entry);
+    assert.equal(Object.isFrozen(p),true);
+    assert.equal(Object.isFrozen(p.segments),true);
+    for(const s of p.segments) assert.equal(Object.isFrozen(s),true);
+    assert.equal(p.physicalBytes.toString(),entry.expectedPhysicalBytes);
+  }
+});
