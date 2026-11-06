@@ -2,7 +2,7 @@
   "schema": "atto.private-graal-epsilon-aot-mirror.v1",
   "origin": {
     "repository": "ores-truffle-oreslang/oreslang-source.java",
-    "commit": "570821c9abbb135d98ca45a7f2779b9fae472ce3",
+    "commit": "634edad15f90c4db3e94cba27390308d15ef01dd",
     "pull_request": 2590
   },
   "scope": "Four exact source blobs; only source-free mock and Maven XML structural tests, never a real GraalVM native image/guest",
