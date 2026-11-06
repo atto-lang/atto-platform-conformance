@@ -136,6 +136,7 @@ test('fail closed on zero-step CI, incorrect head, host-only, skipped tests, mis
 test('unsupported requires executed rejection, compiler diagnostic and zero executable artifacts', () => {
   const unsupported = {...shapeOnlyPositiveControl, status: 'UNSUPPORTED',
     guestExecuted: false, guestArtifactSha256: null,
+    guestExitCode: null, executionStage: null,
     compilerDiagnostic: 'DOP_UNSUPPORTED',
     ciJob: {...validJob, steps: [...validJob.steps.slice(0, 2),
       {...validJob.steps[2], id: 'assert-rejection'}]}};
@@ -161,4 +162,50 @@ test('FAILED records require observed CI and can describe a genuinely failed com
   assert.deepEqual(validateDopGuestReceipt(failed, manifest), []);
   assert.ok(validateDopGuestReceipt({...failed, failureReason: ''}, manifest).length);
   assert.ok(validateDopGuestReceipt({...failed, ciJob: {...failed.ciJob, steps: null}}, manifest).length);
+});
+
+
+test('status cannot hide an observed exit code or claim an execution stage without running', () => {
+  const absent = {contract: manifest.contract, backend: 'net',
+    caseId: 'primitive-columns-atto-guest', status: 'NOT_EXECUTED'};
+  assert.deepEqual(validateDopGuestReceipt(absent, manifest), []);
+  assert.ok(validateDopGuestReceipt({...absent, guestExitCode: 0}, manifest)
+    .includes('not-executed-cannot-claim-exit'));
+  assert.ok(validateDopGuestReceipt({...absent, executionStage: 'nativeaot-guest'}, manifest)
+    .includes('not-executed-cannot-claim-stage'));
+  const unsupported = {...shapeOnlyPositiveControl, status: 'UNSUPPORTED',
+    guestExecuted: false, guestArtifactSha256: null, guestExitCode: null,
+    executionStage: null, compilerDiagnostic: 'DOP_UNSUPPORTED',
+    ciJob: {...validJob, steps: [...validJob.steps.slice(0, 2),
+      {...validJob.steps[2], id: 'assert-rejection'}]}};
+  assert.deepEqual(validateDopGuestReceipt(unsupported, manifest), []);
+  assert.ok(validateDopGuestReceipt({...unsupported, guestExitCode: 0}, manifest)
+    .includes('unsupported-must-not-claim-exit'));
+  assert.ok(validateDopGuestReceipt({...unsupported, executionStage: 'native-guest'}, manifest)
+    .includes('unsupported-must-not-claim-stage'));
+  assert.ok(validateDopGuestReceipt({...unsupported, guestExecuted: undefined}, manifest)
+    .includes('unsupported-executed-guest'));
+});
+
+test('step order cannot be fabricated by shuffling names or repeating steps', () => {
+  const reordered = {...shapeOnlyPositiveControl, ciJob: {...validJob, steps: [
+    {...validJob.steps[0], number: 3}, validJob.steps[1],
+    {...validJob.steps[2], number: 1}]}};
+  assert.ok(validateDopGuestReceipt(reordered, manifest).includes('guest-step-order'));
+  const unsupported = {...shapeOnlyPositiveControl, status: 'UNSUPPORTED',
+    guestExecuted: false, guestArtifactSha256: null, guestExitCode: null,
+    executionStage: null, compilerDiagnostic: 'unsupported',
+    ciJob: {...validJob, steps: [
+      {...validJob.steps[0], number: 3}, validJob.steps[1],
+      {...validJob.steps[2], id: 'assert-rejection', number: 1}]}};
+  assert.ok(validateDopGuestReceipt(unsupported, manifest).includes('rejection-step-order'));
+});
+
+test('FAILED status requires an observed failed step, not merely a failure description', () => {
+  const fake = {...shapeOnlyPositiveControl, status: 'FAILED',
+    failureReason: 'claim', guestExecuted: false, guestArtifactSha256: null};
+  assert.ok(validateDopGuestReceipt(fake, manifest).includes('failed-job-conclusion'));
+  assert.ok(validateDopGuestReceipt(fake, manifest).includes('observed-failed-step'));
+  const forged = {...shapeOnlyPositiveControl, ciJob: {...validJob, runId: Number.MAX_SAFE_INTEGER + 1}};
+  assert.ok(validateDopGuestReceipt(forged, manifest).includes('ci-run-id'));
 });
