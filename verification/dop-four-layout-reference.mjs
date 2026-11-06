@@ -135,7 +135,10 @@ class FourLayoutOracle {
     const selected = this.#snapshotInput(() => {
       if (!Array.isArray(fields) || fields.length > this.#g.fields.length)
         throw new TypeError("invalid field loan");
-      const snapshot = Array.from(fields);
+      // Indexed, bounded field reads avoid invoking a caller-controlled
+      // Symbol.iterator (which could be unbounded or effectful).
+      const snapshot = [];
+      for (let i = 0; i < fields.length; i++) snapshot.push(fields[i]);
       if (!snapshot.length || new Set(snapshot).size !== snapshot.length ||
           snapshot.some(f => !this.#g.fields.includes(f)) || !["read", "write"].includes(mode))
         throw new TypeError("invalid field loan");
