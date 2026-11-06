@@ -6,6 +6,8 @@ on:
       - 'tests/landed-main-evidence.test.mjs'
       - 'bin/landed-main-evidence.mjs'
       - 'evidence/landed-main-20261106-wave.json'
+      - 'evidence/landed-main-20261106-platform-wave.json'
+      - 'tests/landed-main-20261106-platform-wave.test.mjs'
       - 'docs/landed-main-evidence.md'
       - '.github/workflows/landed-main-evidence.yml'
   push:
@@ -14,6 +16,8 @@ on:
       - 'tests/landed-main-evidence.test.mjs'
       - 'bin/landed-main-evidence.mjs'
       - 'evidence/landed-main-20261106-wave.json'
+      - 'evidence/landed-main-20261106-platform-wave.json'
+      - 'tests/landed-main-20261106-platform-wave.test.mjs'
       - 'docs/landed-main-evidence.md'
       - '.github/workflows/landed-main-evidence.yml'
 permissions:
@@ -43,11 +47,18 @@ jobs:
         with:
           node-version: '22'
       - name: Execute postmerge evidence regressions
-        run: node --test tests/landed-main-evidence.test.mjs
+        run: node --test tests/landed-main-evidence.test.mjs tests/landed-main-20261106-platform-wave.test.mjs
       - name: Verify real sample ledger fails closed
         shell: bash
         run: |
           set -euo pipefail
           status=0
           node bin/landed-main-evidence.mjs evidence/landed-main-20261106-wave.json || status=$?
+          test "$status" -eq 1
+      - name: Ensure five latest landed PRs remain BLOCKED without independent evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=0
+          node bin/landed-main-evidence.mjs evidence/landed-main-20261106-platform-wave.json || status=$?
           test "$status" -eq 1
