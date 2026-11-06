@@ -1,4 +1,4 @@
-name: formal(actor): bound pub-sub generation, unsubscribe and group-close races
+name: "AttoLang bounded pubsub-generation formal model"
 on:
   pull_request:
     paths:
