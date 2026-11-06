@@ -77,9 +77,10 @@ export function qualifyReviewTimeline(input, {now = Date.now()} = {}) {
   if ([...latest.values()].some(r => r.state === 'CHANGES_REQUESTED')) {
     fail('REVIEW_CHANGES_REQUESTED');
   }
+  const authorLogin = typeof input.author === 'string' ? input.author.toLowerCase() : '';
   const approved = [...latest.values()].some(r => r.state === 'APPROVED' &&
     r.commit_sha === input.head_sha &&
-    r.reviewer_id !== input.author_id && r.login !== input.author?.toLowerCase() &&
+    r.reviewer_id !== input.author_id && r.login !== authorLogin &&
     !OPERATORS.has(r.login) && !OPERATOR_IDS.has(r.reviewer_id));
   if (!approved) fail('REVIEW_INDEPENDENT_APPROVAL_MISSING');
   return result();
