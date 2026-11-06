@@ -14,6 +14,25 @@ runtime, OS sandbox, authenticated build, real negative execution or release pro
 - **Confirmed upstream advisories:** Wasmtime [SSA index overflow CVE-2026-115889](https://github.com/bytecodealliance/wasmtime/security/advisories/GHSA-897f-g5gm-fmxm) (fixed 43+ or 36.0.19); [AArch64 large br_table CVE-2026-115893](https://github.com/bytecodealliance/wasmtime/security/advisories/GHSA-mghf-wjfp-p5xm) (fixed 49.0.4 / 48.0.7 / 36.0.19); [WASI host exhaustion GHSA-852m-cvvp-9p4w](https://github.com/bytecodealliance/wasmtime/security/advisories/GHSA-852m-cvvp-9p4w); and [borrowed resource memory leak GHSA-6fr9-xmw9-5352](https://github.com/bytecodealliance/wasmtime/security/advisories/GHSA-6fr9-xmw9-5352) (fixed 49.0.5).
 - **Upstream engineering caveats:** [fuel vs epoch](https://docs.wasmtime.dev/examples-interrupting-wasm.html), [epoch checks at bulk data operations](https://docs.wasmtime.dev/api/wasmtime/struct.Config.html), and [ResourceLimiter not covering all host allocations](https://docs.wasmtime.dev/api/wasmtime/trait.ResourceLimiter.html).
 
+## GraalVM implementation report (Oracle primary source)
+
+[Oracle GraalVM 25 sandboxing guide](https://docs.oracle.com/en/graalvm/jdk/25i/docs/security-guide/sandboxing/)
+documents `SandboxPolicy.UNTRUSTED` with dedicated guest isolate and
+additional hard/soft heap, CPU time, AST depth, stack frames, thread count,
+statement-count, output/error byte, and host-access restrictions.
+`sandbox.MaxCPUTime` checks are periodic and can overrun around GC; statement
+counts do not imply bounded work inside a single builtin or native hostcall.
+`Context.resetLimits()` can reset selected CPU, statements and stream budgets,
+so the Atto supervisor must not accidentally expose reset authority across a
+yield/resume or tenant generation. Test `UJI-07`, `UJI-10`, `UJI-12`,
+`UJI-15` with actual Graal `UNTRUSTED` policy and malicious host-call
+scenarios, not merely default `TRUSTED` contexts.
+
+The same guide documents optional experimental `engine.IsolateMode=external`
+for process-separated isolates and cautions about shared engines, side channels
+and host entry points. These are **documented platform capabilities**, not
+proof that AttoLang currently wires or tests them.
+
 ## Implementation order
 
 1. **P0 dependency and code isolation:** Keep [Wasm #213](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/issues/213) and [PR #210](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/210) as the security update work; target Wasmtime **49.0.5**, not a duplicate 49.0.4 patch. Confirm both Cargo locks via actual Rust/Cargo and independent review. Execute UJI-01..05 on actual target architectures. A bare Cranelift JIT is not hostile-code isolation.
