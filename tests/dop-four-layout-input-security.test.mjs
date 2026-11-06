@@ -80,5 +80,9 @@ for (const layout of ['aos', 'soa', 'aosoa', 'soaos']) {
     assert.equal(store.read(second, 'y'), 6);
     store.retire();
     assert.throws(() => store.read(first, 'x'), /retired/);
+    assert.throws(() => store.address(0, 'x'), /retired/);
+    assert.throws(() => store.address(0, {toString() {
+      throw new Error('untrusted field coercion');
+    }}), /retired/);
   });
 }
