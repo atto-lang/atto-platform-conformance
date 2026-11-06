@@ -53,8 +53,14 @@ No Git tree, source file, or artifact is transferred to a carrier organization.
 - Changed PR head/base, foreign head repo, or wrong source Git tree SHA.
 - Workflow Git blob differs from the reviewed/pinned definition.
 - Run is not a completed successful PR run bound to the exact source head.
-- Job has no allocated runner, zero executed steps, stale run linkage,
-  mismatched checkout action, or missing/failed/duplicate required test steps.
+- Workflow registry ID or source hash changed, or the run's PR association,
+  originating head repository, branch or workflow identity is inconsistent.
+- A successful old-attempt job is presented as a current-attempt result.
+  Jobs must appear uniquely in the current attempt's complete job listing.
+- Job has no allocated Ubuntu 24.04 runner, zero executed steps, wrong job
+  identity, mismatched checkout action, or missing/failed/duplicate test steps.
+- Any PR head changes during the final read-back; the checker never emits
+  partially verified qualifications if even one backend fails.
 - GitHub API is inaccessible, private-repo permission is absent, or metadata
   cannot be corroborated. `failure`, `queued`, and `NOT_EXECUTED` never pass.
 
@@ -66,11 +72,19 @@ step's name alone cannot attest the exact compiler source or binary.
 
 ## Explicit limits of CI_VERIFIED
 
-`CI_VERIFIED` means GitHub metadata corroborates the named workflow checks;
-it is **not** proof of test content, Windows/macOS qualification, artifact
+`CI_VERIFIED` means GitHub metadata corroborates all five named workflow checks
+in a single all-or-nothing result. It is **not** proof of test content,
+Windows/macOS qualification, artifact
 reproducibility, independent reviewer trust, protected `main`, or release
 eligibility. A malicious workflow that preserved a pinned job name cannot be
 trusted without inspecting the pinned workflow bytes and reviewing policy.
+A second PR-head read-back limits stale evidence but cannot make GitHub API
+reads atomic. A protected merge must separately verify the expected final head.
+The current attempt-membership endpoint fails closed if there are more than 100
+jobs or if GitHub omits required identity fields; a documented, reviewed,
+paginated implementation is required before expanding that limit.
+The verifier's local tests use controlled GitHub API fixtures, not source-runner
+execution or a live end-to-end GitHub API acceptance test.
 
 The five current compiler repositories still have zero-step source Actions
 failures. Before attempting release, restore runner admission, verify actual
