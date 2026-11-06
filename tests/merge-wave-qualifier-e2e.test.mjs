@@ -51,7 +51,7 @@ test('active agent lease cannot pass CLI',()=>{
 test('duplicate root JSON authority is rejected (including unicode aliases)',()=>{
   for (const raw of [
     '{"schema_version":1,"schema_version":1,"as_of":"2026-11-06T18:00:00Z","candidates":[]}',
-    '{"schema_version":1,"\u0073chema_version":1,"as_of":"2026-11-06T18:00:00Z","candidates":[]}'
+    '{"schema_version":1,"\\u0073chema_version":1,"as_of":"2026-11-06T18:00:00Z","candidates":[]}'
   ]) {
     const r=run(raw); assert.equal(r.status,2,r.stderr);assert.match(r.stderr,/duplicate JSON authority/);
   }
