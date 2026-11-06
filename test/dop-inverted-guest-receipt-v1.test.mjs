@@ -56,6 +56,18 @@ test('Java negative must be a checked language trap, not an arbitrary host excep
  assert.ok(validate({...neg,guestResult:{kind:'host-exception',trap:'NullPointerException'}},manifest)
    .includes('real-checked-bounds-failure'));
 });
+test('immutable-column swap is a separate positive source-bound guest case',()=>{
+ const manifestWithThird={...manifest,vectors:[...manifest.vectors,
+  {id:'immutable-column-swap',blobSha1:'863b1f20137656a277fc7bc04415a6f001f76512'}]};
+ const positive={...base,caseId:'immutable-column-swap',
+  fixtureGitBlobSha:'863b1f20137656a277fc7bc04415a6f001f76512'};
+ assert.deepEqual(validate(positive,manifestWithThird),[]);
+ assert.ok(validate({...positive,fixtureGitBlobSha:base.fixtureGitBlobSha},manifestWithThird)
+  .includes('canonical-fixture-blob'));
+ assert.ok(validate({...positive,guestResult:{kind:'return',value:17}},manifestWithThird)
+  .includes('positive-exit-42'));
+});
+
 test('other backend positive claims rejected, not-executed stays not-executed',()=>{
  assert.ok(check({backend:'wasm'}).includes('unimplemented-backend-positive'));
  const not={contract:manifest.contract,backend:'net',caseId:'swap-reuse',status:'NOT_EXECUTED',guestExecuted:false};
