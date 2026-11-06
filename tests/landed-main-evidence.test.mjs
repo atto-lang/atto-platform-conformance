@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {auditEntry, auditLedger} from '../tools/landed-main-evidence.mjs';
+import {spawnSync} from 'node:child_process';
+import {mkdtempSync,writeFileSync,linkSync,symlinkSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {fileURLToPath} from 'node:url';
 const A='a'.repeat(40), B='b'.repeat(40), C='c'.repeat(40), D='d'.repeat(40);
 const E='e'.repeat(40), F='f'.repeat(40), H='f'.repeat(64), ATTEST='a'.repeat(64);
 const REPO='ores-truffle-oreslang/oreslang-source.java';
@@ -136,4 +141,68 @@ test('real merged code with missing external evidence stays BLOCKED',()=>{
   assert.equal(result.status,'BLOCKED');
   assert(result.entries[0].blockers.some(b=>b.kind==='ci'));
   assert(result.entries[0].blockers.some(b=>b.kind==='review'));
+});
+
+denies('reject malformed author without crashing',e=>e.author=42,'identity');
+denies('reject non-ASCII status check impersonation',e=>{
+  e.required_checks[0].context='CI\u00a0/ tests';
+  e.source_owned_runs[0].context='CI\u00a0/ tests';
+},'ci');
+test('authentic spaced GitHub required-check contexts are permitted',()=>{
+  const e=good();e.required_checks[0].context='CI / Native Guest';
+  e.source_owned_runs[0].context='CI / Native Guest';
+  assert.deepEqual(auditEntry(e),[]);
+});
+const cli = fileURLToPath(new URL('../bin/landed-main-evidence.mjs',import.meta.url));
+function withInput(raw, fn) {
+  const dir=mkdtempSync(join(tmpdir(),'landed-audit-'));
+  try {
+    const path=join(dir,'ledger.json');
+    writeFileSync(path,raw);
+    return fn(path,dir);
+  } finally {rmSync(dir,{recursive:true,force:true});}
+}
+function runCli(path) {
+  const r=spawnSync(process.execPath,[cli,path],{encoding:'utf8',timeout:5000});
+  assert.equal(r.error,undefined);
+  return r;
+}
+test('CLI returns snapshot-ready only as advisory',()=>{
+  withInput(JSON.stringify(ledger(good()),null,2)+'\n',path=>{
+    const r=runCli(path);assert.equal(r.status,0,r.stderr);
+    assert.equal(JSON.parse(r.stdout).scope,'advisory_not_release_authority');
+    assert.match(r.stdout,/SNAPSHOT_READY_RECHECK_LIVE/);
+  });
+});
+test('CLI blocked sample exits one, not zero',()=>{
+  const e=good();e.approvals=[];e.protection.protected=false;
+  withInput(JSON.stringify(ledger(e),null,2)+'\n',path=>{
+    const r=runCli(path);assert.equal(r.status,1,r.stderr);
+    assert.equal(JSON.parse(r.stdout).status,'BLOCKED');
+  });
+});
+test('CLI rejects duplicate JSON authority keys',()=>{
+  const raw=JSON.stringify(ledger(good()),null,2).replace(
+    '"scope": "snapshot_only",','"scope": "other",\n  "scope": "snapshot_only",')+'\n';
+  withInput(raw,path=>{const r=runCli(path);
+    assert.equal(r.status,2,r.stderr);assert.match(r.stderr,/noncanonical/);
+  });
+});
+test('CLI rejects symlinked ledger without following it',()=>{
+  withInput(JSON.stringify(ledger(good()),null,2)+'\n',(path,dir)=>{
+    const link=join(dir,'alias.json');symlinkSync(path,link);
+    assert.equal(runCli(link).status,2);
+  });
+});
+test('CLI rejects hardlinked ledger',()=>{
+  withInput(JSON.stringify(ledger(good()),null,2)+'\n',(path,dir)=>{
+    const link=join(dir,'extra.json');linkSync(path,link);
+    assert.equal(runCli(path).status,2);
+  });
+});
+test('CLI rejects oversized input before JSON parse',()=>{
+  withInput(' '.repeat(262145),path=>assert.equal(runCli(path).status,2));
+});
+test('CLI rejects noncanonical JSON whitespace and escaping',()=>{
+  withInput(JSON.stringify(ledger(good())),path=>assert.equal(runCli(path).status,2));
 });
