@@ -3,9 +3,8 @@
 const sha1 = /^[0-9a-f]{40}$/;
 const sha256 = /^[0-9a-f]{64}$/;
 const backends = new Set(['java', 'llvm', 'net', 'wasm', 'forge']);
-const ids = new Set(['swap-reuse', 'removed-index-trap']);
+const ids = new Set(['swap-reuse', 'removed-index-trap', 'immutable-column-swap']);
 const statuses = new Set(['NOT_EXECUTED', 'PASSED', 'FAILED', 'UNSUPPORTED']);
-const positiveId = 'swap-reuse';
 const negativeId = 'removed-index-trap';
 const stepsRequired = ['checkout-head', 'verify-fixture', 'compile-guest', 'execute-guest'];
 
@@ -75,7 +74,7 @@ export function validateInvertedGuestReceipt(receipt, manifest) {
       need(sha256.test(receipt.guestArtifactSha256 ?? ''), 'llvm-native-artifact');
       need(receipt.runtimeClassTreeSha256 == null, 'llvm-no-java-classes');
     }
-    if (receipt.caseId === positiveId) {
+    if (receipt.caseId !== negativeId) {
       need(receipt.guestResult?.kind === 'return' && receipt.guestResult?.value === 42,
         'positive-exit-42');
       need(receipt.guestResult?.signal == null && receipt.guestResult?.trap == null, 'positive-no-trap');
