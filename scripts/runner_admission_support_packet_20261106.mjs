@@ -2,7 +2,8 @@
  * Source-only GitHub Actions runner admission packet.
  * GET-only, no checkout, export, token disclosure, or merge decision.
  */
-import { readFile } from 'node:fs/promises';
+import { open } from 'node:fs/promises';
+import { constants } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 
@@ -161,10 +162,36 @@ export async function fetchLiveSnapshot(token,fetchImpl=fetch){
   return {branches,candidates};
 }
 
+/** Bounded, single-link, regular-file, stable-FD read of an offline support snapshot. */
+export async function readSnapshot(path, opener=open){
+  const fd=await opener(path,constants.O_RDONLY|constants.O_NOFOLLOW);
+  try{
+    const before=await fd.stat({bigint:true});
+    const cap=2000000n;
+    if(!before.isFile()||before.nlink!==1n||before.size<=0n||before.size>cap)
+      throw new Error('snapshot must be a regular single-link file of at most 2 MB');
+    const buf=Buffer.alloc(Number(before.size)+1);
+    let used=0;
+    while(used<buf.length){
+      const r=await fd.read(buf,used,buf.length-used,used);
+      if(!Number.isSafeInteger(r?.bytesRead)||r.bytesRead<0||r.bytesRead>buf.length-used)
+        throw new Error('invalid snapshot descriptor read');
+      if(r.bytesRead===0)break;
+      used+=r.bytesRead;
+    }
+    const after=await fd.stat({bigint:true});
+    const same=['dev','ino','mode','size','nlink','mtimeNs','ctimeNs']
+      .every(k=>before[k]!==undefined&&before[k]===after[k]);
+    if(!after.isFile()||!same||used!==Number(before.size))
+      throw new Error('snapshot descriptor changed during read');
+    return parseUniqueJson(new TextDecoder('utf-8',{fatal:true}).decode(buf.subarray(0,used)));
+  }finally{await fd.close();}
+}
+
 async function main(){
   const args=process.argv.slice(2);let snapshot;
   if(args.length===1&&args[0]==='--live')snapshot=await fetchLiveSnapshot(process.env.GITHUB_TOKEN);
-  else if(args.length===2&&args[0]==='--snapshot')snapshot=parseUniqueJson(await readFile(args[1],'utf8'));
+  else if(args.length===2&&args[0]==='--snapshot')snapshot=await readSnapshot(args[1]);
   else throw new Error('Usage: node scripts/runner_admission_support_packet_20261106.mjs --live | --snapshot snapshot.json');
   process.stdout.write(JSON.stringify(buildPacket(snapshot),null,2)+'\n');
 }
