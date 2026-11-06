@@ -33,6 +33,18 @@ for process-separated isolates and cautions about shared engines, side channels
 and host entry points. These are **documented platform capabilities**, not
 proof that AttoLang currently wires or tests them.
 
+**Version applicability correction:** UJI-01 (CVE-2026-34971,
+[AArch64 memory64 lowering](https://github.com/bytecodealliance/wasmtime/security/advisories/GHSA-jhxm-h53p-jm7w))
+and UJI-02 (CVE-2026-115889, pre-v43 SSA bit-packing) are
+**regression/differential tests for historical code-generation defects**;
+they are NOT known vulnerabilities in the repository's current Wasmtime
+49.0.3 dependency. In contrast, UJI-03 (CVE-2026-115893, AArch64
+large `br_table`) and component borrowed-resource memory exhaustion
+(GHSA-6fr9-xmw9-5352) **do affect** 49.0.3. The runtime/precompiler
+security upgrade target on the existing PRs is 49.0.5, with both lockfiles
+and actual native tests required. An AArch64 regression runner must be
+separate from an x86_64 run.
+
 ## Implementation order
 
 1. **P0 dependency and code isolation:** Keep [Wasm #213](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/issues/213) and [PR #210](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/210) as the security update work; target Wasmtime **49.0.5**, not a duplicate 49.0.4 patch. Confirm both Cargo locks via actual Rust/Cargo and independent review. Execute UJI-01..05 on actual target architectures. A bare Cranelift JIT is not hostile-code isolation.
