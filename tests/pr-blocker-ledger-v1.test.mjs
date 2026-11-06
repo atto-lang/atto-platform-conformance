@@ -84,6 +84,51 @@ test("first-page-only run or job results are not exhaustive",async()=>{
   assert.ok(r.gaps.some(x=>x.kind==="RUN_PAGINATION_UNVERIFIED"));
   assert.ok(r.gaps.some(x=>x.kind==="JOB_PAGINATION_UNVERIFIED"));
 });
+test("empty or missing run and job inventories fail closed even if adapter claims complete",async()=>{
+  for(const items of [[],null,undefined]){
+    const r=await collectExactHeadEvidence({repo:"example/compiler",head:H,
+      listRuns:async()=>({items,complete:true}),
+      listJobs:async()=>({items:[job],complete:true}),
+      listSteps:async()=>({steps:[]})});
+    assert.equal(r.complete,false);
+    assert.equal(r.records.length,0);
+    assert.ok(r.gaps.some(x=>x.kind===(Array.isArray(items)?"NO_RUNS_FOUND":"RUN_LIST_UNOBSERVED")));
+  }
+  for(const items of [[],null,undefined]){
+    const r=await collectExactHeadEvidence({repo:"example/compiler",head:H,
+      listRuns:async()=>({items:[run],complete:true}),
+      listJobs:async()=>({items,complete:true}),
+      listSteps:async()=>({steps:[]})});
+    assert.equal(r.complete,false);
+    assert.equal(r.records.length,0);
+    assert.ok(r.gaps.some(x=>x.kind===(Array.isArray(items)?"NO_JOBS_FOUND":"JOB_LIST_UNOBSERVED")));
+  }
+});
+test("missing steps, invalid identities and duplicates cannot satisfy evidence completeness",async()=>{
+  const gather=async(runs,jobs,steps)=>collectExactHeadEvidence({repo:"example/compiler",head:H,
+    listRuns:async()=>({items:runs,complete:true}),
+    listJobs:async()=>({items:jobs,complete:true}),
+    listSteps:async()=>({steps})});
+  const missing=await gather([run],[job],null);
+  assert.equal(missing.complete,false);
+  assert.equal(missing.records[0].state,STATES.UNOBSERVED);
+  assert.ok(missing.gaps.some(x=>x.kind==="STEPS_UNOBSERVED"));
+  const observed=await gather([run],[job],[]);
+  assert.equal(observed.complete,true); // Complete inventory, but NOT successful execution.
+  assert.equal(observed.records[0].state,STATES.OBSERVED_NO_STEP_FAILURE);
+  for(const [runs,jobs,expectedKind] of [
+    [[{...run,id:0}],[job],"RUN_IDENTITY_UNVERIFIED"],
+    [[{...run,run_attempt:0}],[job],"RUN_IDENTITY_UNVERIFIED"],
+    [[{...run,run_attempt:9007199254740992}],[job],"RUN_IDENTITY_UNVERIFIED"],
+    [[run,run],[job],"DUPLICATE_RUN_ATTEMPT"],
+    [[run],[{...job,id:0}],"JOB_IDENTITY_UNVERIFIED"],
+    [[run],[job,job],"DUPLICATE_JOB"]]){
+    const result=await gather(runs,jobs,[]);
+    assert.equal(result.complete,false,expectedKind);
+    assert.ok(result.gaps.some(x=>x.kind===expectedKind),expectedKind);
+  }
+});
+
 test("alert fingerprint ignores SHA changes but detects consequence changes",()=>{
   const old={repository:"x/y",number:1,cause:"runner",scope:"CI",impact:"no tests",
     status:"open",severity:"P1",head:H,actionable:true};
