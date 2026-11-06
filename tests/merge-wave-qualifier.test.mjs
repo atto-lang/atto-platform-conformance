@@ -11,10 +11,10 @@ function candidate(s='java',n=1) {
     reviews:[{login:'reviewer-independent',state:'APPROVED',commit_sha:SHA}],
     required_checks:[{context:'ci',app_id:15368}],
     checks:[{context:'ci',app_id:15368,head_sha:SHA,tree_sha:TREE,conclusion:'success',run_id:123,run_attempt:1,
-      jobs:[{runner_id:8,conclusion:'success',steps:[{name:'Set up job',conclusion:'success'},{name:'run negative tests',conclusion:'success'}]}]}],
+      jobs:[{id:456,run_id:123,run_attempt:1,head_sha:SHA,runner_id:8,conclusion:'success',steps:[{name:'Set up job',conclusion:'success'},{name:'run negative tests',conclusion:'success'}]}]}],
     scope:'source_free',test_receipts:[
-      {kind:'source_free',head_sha:SHA,tree_sha:TREE,conclusion:'success',assertions:10,run_id:123},
-      {kind:'negative',head_sha:SHA,tree_sha:TREE,conclusion:'success',assertions:3,run_id:123}
+      {kind:'source_free',head_sha:SHA,tree_sha:TREE,conclusion:'success',assertions:10,run_id:123,run_attempt:1,job_id:456},
+      {kind:'negative',head_sha:SHA,tree_sha:TREE,conclusion:'success',assertions:3,run_id:123,run_attempt:1,job_id:456}
     ],lease:null
   };
 }
@@ -136,3 +136,23 @@ test('platform source-free wave still fails closed on unexecuted checks', () => 
   assert.equal(result.eligible_count, 4);
   assert(result.blockers[0].blockers.some(b => b.kind === 'checks'));
 });
+
+test('allow exactly the five source backends, not source namespace lookalikes', () => {
+  for (const backend of ['java','llvm','wasm','forge','net']) {
+    assert.deepEqual(qualifyCandidate(candidate(backend), Date.parse(as_of)), []);
+  }
+  for (const backend of ['fake', 'java-extra', 'dotnet', 'cranelift']) {
+    assert(qualifyCandidate(candidate(backend), Date.parse(as_of))
+      .some(b => b.kind === 'metadata'), backend);
+  }
+});
+rejects('reject job from another run', c => c.checks[0].jobs[0].run_id=999, 'checks');
+rejects('reject job from another attempt', c => c.checks[0].jobs[0].run_attempt=2, 'checks');
+rejects('reject job from another PR head', c => c.checks[0].jobs[0].head_sha=BASE, 'checks');
+rejects('reject missing job ID', c => delete c.checks[0].jobs[0].id, 'checks');
+rejects('reject duplicate job IDs', c => c.checks[0].jobs.push({...c.checks[0].jobs[0]}), 'checks');
+rejects('reject mixed successful and failed jobs', c => c.checks[0].jobs.push({...c.checks[0].jobs[0],id:457,conclusion:'failure'}), 'checks');
+rejects('reject skipped-only run', c => c.checks[0].jobs[0].conclusion='skipped', 'checks');
+rejects('reject forged receipt run attempt', c => c.test_receipts[0].run_attempt=2, 'test');
+rejects('reject forged receipt job ID', c => c.test_receipts[0].job_id=789, 'test');
+rejects('reject unbounded job list', c => c.checks[0].jobs=Array.from({length:129}, (_,i)=>({...c.checks[0].jobs[0],id:456+i})), 'checks');
