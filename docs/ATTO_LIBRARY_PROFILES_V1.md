@@ -30,3 +30,15 @@ Use `node --test tests/atto-library-profiles-v1.test.mjs` to run the **policy-mo
 - LLVM [#1390](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1390) already proposes `atto.core` import aliases; integrate there, not as a conflicting duplicate patch.
 - LLVM [#1425](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1425) and [#1427](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1427) own separate canonical numeric/hosted source work.
 - The legacy bare-metal gate must be *extended* to consume the canonical AttoLang fixture after these dependencies settle, retaining its existing no-libc audit and negative-mutation checks.
+
+## Exact-head GitHub run classification
+
+`lib/atto-library-run-evidence-v1.mjs` classifies fetched GitHub run and job
+objects. Null/empty steps imply `RUNNER_ADMISSION_FAILURE`, not failed guest
+tests or a successful compile. Duplicate job names/step identities, mismatched
+PR heads and missing runner identity fail closed. Even all-green steps yield
+`EXECUTED_STEPS_UNVERIFIED`: a reviewer must independently verify exact Git
+tree read-back, run attempt, output artifacts, compiler invocation, actual
+guest execution and negative mutation before recording compiler-backed proof.
+The source-contract workflow runs both Node suites but **never** promotes backend
+evidence itself.
