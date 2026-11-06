@@ -41,7 +41,8 @@ function qualifiesForPhysicalGpuClaim(e) {
   return typeof e?.headSha === 'string' && /^[a-f0-9]{40}$/.test(e.headSha) &&
     typeof e?.treeSha === 'string' && /^[a-f0-9]{40}$/.test(e.treeSha) &&
     typeof e?.compilerDigest === 'string' && /^[a-f0-9]{64}$/.test(e.compilerDigest) &&
-    e?.executedSteps > 0 && e?.compilerGuestExecuted === true &&
+    Number.isSafeInteger(e?.executedSteps) && e.executedSteps > 0 &&
+    e?.compilerGuestExecuted === true &&
     e?.targetKind === 'physical-gpu' &&
     typeof e?.deviceId === 'string' && e.deviceId.length > 0 &&
     e?.deviceFenceAcknowledged === true && e?.oracleMatched === true;
@@ -101,6 +102,19 @@ test('invalid grid, block, workgroup, quotas and overflow fail closed', () => {
     {...normal, grid:[1n,2n]},
     {...normal, grid:[1,2,1]}
   ];
+  const oversizedCaps = {
+    grid:[MAX_I64,MAX_I64,MAX_I64],
+    block:[MAX_I64,MAX_I64,MAX_I64],
+    maxBlockThreads:MAX_I64, maxLaunchThreads:MAX_I64, maxSharedBytes:MAX_I64
+  };
+  assert.throws(
+    () => admitLaunch({grid:[MAX_I64,2n,1n],block:[1n,1n,1n],sharedBytes:0n}, oversizedCaps),
+    /overflow/
+  );
+  assert.throws(
+    () => admitLaunch({grid:[1n,1n,1n],block:[MAX_I64,2n,1n],sharedBytes:0n}, oversizedCaps),
+    /overflow/
+  );
   for (const candidate of rejects)
     assert.throws(() => admitLaunch(candidate, caps), undefined,
       'must reject ' + JSON.stringify(candidate, (_key, val) => typeof val === 'bigint' ? val.toString() : val));
@@ -114,7 +128,8 @@ test('host-only, zero-step, stale or missing physical-fence receipts never promo
   };
   assert.equal(qualifiesForPhysicalGpuClaim(valid), true);
   for (const changed of [
-    {executedSteps:0}, {executedSteps:null}, {compilerGuestExecuted:false},
+    {executedSteps:0}, {executedSteps:null}, {executedSteps:'8'},
+    {executedSteps:NaN}, {compilerGuestExecuted:false},
     {targetKind:'cpu'}, {targetKind:'mock-gpu'}, {deviceFenceAcknowledged:false},
     {deviceId:''}, {oracleMatched:false},{headSha:'HEAD'}, {treeSha:''},
     {compilerDigest:'not-a-digest'}
