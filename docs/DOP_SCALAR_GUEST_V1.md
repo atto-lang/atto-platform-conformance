@@ -97,6 +97,14 @@ GH_TOKEN=... node bin/verify-dop-github-run-v1.mjs \
   RUN_ID
 ```
 
+Before network access the CLI opens the local receipt and versioned manifest
+as bounded regular files with a no-follow descriptor, rejects FIFOs and leaf
+symlinks, checks stable file metadata, and uses the same duplicate-key-rejecting
+JSON reader as authenticated REST responses. On hosts lacking a secure
+no-follow/nonblocking file-open primitive the CLI refuses to run rather than
+silently relaxing input safety. This guards leaf paths; callers must still
+control and review ancestor directories and local filesystem permissions.
+
 The script refuses a missing token, a backend/repository mismatch against the
 five pinned source organizations/repositories, or a receipt referring to a different
 run, then passes the **independently fetched run/jobs records** to
@@ -109,8 +117,7 @@ normally cannot read another private source repo; obtain explicit
 read-only repository-scoped access or run this on the approved source
 side, not by mirroring private source.
 
-Run `node --test tests/dop-github-api-v1.test.mjs` for thirteen focused
-source-free API/size/error/credentials adversarial test groups. The
+Run `node --test tests/dop-github-api-v1.test.mjs tests/dop-evidence-file-v1.test.mjs tests/dop-github-run-snapshot-v1.test.mjs` for 34 focused source-free JSON/file/run provenance adversarial and control groups, including head-repository, job source SHA and rerun-attempt checks. The
 positive controls use a mocked transport and do not imply GitHub runner
 admission, native code generation or executed guest evidence.
 
