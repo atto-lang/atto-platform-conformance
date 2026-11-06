@@ -103,7 +103,9 @@ export function qualifyCandidate(candidate, asOf) {
   return blockers;
 }
 export function qualifyWave(snapshot, {size = 5, minRepos = 3} = {}) {
-  if (!Number.isSafeInteger(size) || size < 1 || !Number.isSafeInteger(minRepos) || minRepos < 1 || minRepos > size) throw new RangeError('invalid wave size');
+  // This entry point is a fixed 5-PR / >=3-repo intake contract, never a configurable quorum.
+  // A relaxed override must not turn a partial batch into a favorable advisory snapshot.
+  if (size !== 5 || minRepos !== 3) throw new RangeError('fixed merge wave requires size=5 and minRepos=3');
   if (!snapshot || snapshot.schema_version !== 1 || !Array.isArray(snapshot.candidates) ||
     snapshot.candidates.length > 1000 || typeof snapshot.as_of !== 'string' ||
     !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(snapshot.as_of) ||
