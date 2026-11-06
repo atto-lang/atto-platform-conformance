@@ -239,15 +239,30 @@ export class M0AdmissionLedger {
     if ((state?.ids.size || 0) >= LIMITS.inflight || this.#globalInflight >= LIMITS.globalInflight ||
         nonces.size >= LIMITS.replayNonces) return deny('QUOTA');
 
-    if (!this.#emit('allow','OK',context)) return { ok:false, reason:'AUDIT_FAILURE' };
+    // Reserve BEFORE calling an external audit sink: a synchronous sink can
+    // re-enter begin(). Reserving after audit admits the same nonce/ID twice,
+    // orphaning a ticket and leaking inflight quota.
     state.ids = new Map(state.ids);
     state.nonces = nonces;
-    state.nonces.set(security.nonce, monotonicNowMs + LIMITS.replayWindowMs);
+    const nonceExpiry = monotonicNowMs + LIMITS.replayWindowMs;
+    state.nonces.set(security.nonce, nonceExpiry);
     const ticket = Object.freeze(Object.create(null));
     state.ids.set(request.id, ticket);
     this.#states.set(key,state);
     this.#tickets.set(ticket,{key,id:request.id,deadline:monotonicNowMs+LIMITS.deadlineMs,generation:credential.generation,boot:credential.boot_id,expiresAtWall:credential.expires_at_ms});
     this.#globalInflight++;
+    // This provisional ticket is never returned if durable audit fails.
+    // Unlink only OUR reservation: a reentrant audit may have admitted other
+    // requests and must retain their tickets, nonces and quota.
+    if (!this.#emit('allow','OK',context)) {
+      const current = this.#states.get(key);
+      if (current?.ids.get(request.id) === ticket) current.ids.delete(request.id);
+      if (current?.nonces.get(security.nonce) === nonceExpiry)
+        current.nonces.delete(security.nonce);
+      this.#tickets.delete(ticket);
+      this.#globalInflight--;
+      return { ok:false, reason:'AUDIT_FAILURE' };
+    }
     return { ok:true,reason:'OK',ticket };
   }
 
