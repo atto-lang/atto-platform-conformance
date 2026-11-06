@@ -1,0 +1,186 @@
+{
+  "contract": "atto-gpu-kernels-v1",
+  "status": "PROPOSED_NOT_IMPLEMENTED",
+  "canonicalTaskContract": "docs/CPU_GPU_TASK_V2.md",
+  "backends": {
+    "java-graalvm": {
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "llvm": {
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "dotnet-nativeaot": {
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "wasm": {
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "forge-cranelift": {
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    }
+  },
+  "features": [
+    {
+      "id": "gpu-kernel-declaration",
+      "priority": "P0",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "gpu-launch-geometry",
+      "priority": "P0",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "global-and-local-index",
+      "priority": "P0",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "typed-device-buffers",
+      "priority": "P0",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "explicit-transfers",
+      "priority": "P0",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "device-effect-checking",
+      "priority": "P0",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "checked-bounds",
+      "priority": "P0",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "fence-and-cancellation",
+      "priority": "P0",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "capability-and-tenant-isolation",
+      "priority": "P0",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "block-shared-memory",
+      "priority": "P1",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "block-barriers",
+      "priority": "P1",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "atomics-and-scopes",
+      "priority": "P1",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "subgroup-operations",
+      "priority": "P1",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "streams-and-events",
+      "priority": "P1",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "reductions-and-scans",
+      "priority": "P1",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "graph-capture-replay",
+      "priority": "P1",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "fp16-bf16-fp64",
+      "priority": "P1",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "multi-gpu-peer-transfer",
+      "priority": "P2",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "tensor-matrix-acceleration",
+      "priority": "P2",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "async-device-copies",
+      "priority": "P2",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "device-dynamic-parallelism",
+      "priority": "P2",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "cuda-interop",
+      "priority": "P2",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "profiling-and-occupancy",
+      "priority": "P2",
+      "compilerGuest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    }
+  ],
+  "negativeCases": [
+    "zero-grid-axis",
+    "zero-block-axis",
+    "negative-dimension",
+    "overlarge-grid-axis",
+    "overlarge-block-axis",
+    "block-thread-quota",
+    "total-launch-quota",
+    "shared-memory-quota",
+    "i64-launch-overflow",
+    "host-pointer-capture",
+    "missing-gpu-capability",
+    "implicit-cpu-fallback",
+    "mutable-loan-crossing-await",
+    "divergent-block-barrier",
+    "stale-buffer-generation",
+    "cancel-before-device-quiescence",
+    "unverified-device-provider"
+  ]
+}
