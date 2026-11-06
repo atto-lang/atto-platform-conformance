@@ -27,7 +27,7 @@ export function physicalLayoutV1({kind, rows, fields, lanes = 1, groups = [],
   const names = new Set();
   const specs = fields.map((f,i) => {
     req(f && typeof f === 'object' && typeof f.name === 'string' &&
-      f.name.length > 0 && f.name.length <= 1024 && !f.name.includes('\\0') &&
+      f.name.length > 0 && f.name.length <= 1024 && !f.name.includes(String.fromCharCode(0)) &&
       !names.has(f.name) && power2(f.bytes) && power2(f.alignment) &&
       f.bytes <= f.alignment && f.alignment <= 4096,
       'physical-layout-field-' + i);
