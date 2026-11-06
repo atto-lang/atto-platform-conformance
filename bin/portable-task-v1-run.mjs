@@ -69,9 +69,9 @@ async function run(cfg){
    const stepNames=['compile'];
    const safeCompile=compiled.error===null&&compiled.signal===null&&Number.isSafeInteger(compiled.exit);
    if(safeCompile&&compiled.exit!==0){
-    if(/(?:^|\n)\s*error:.*\b(?:unsupported|unimplemented)\b/i.test(compilerOutput)&&c.expect==='positive')status='unsupported';
-    // Negative semantic rejection must match its precise diagnostic code in classifier.
-    if(c.expect==='negative')status='passed';
+    if(/(?:^|\n)\s*error:.*\b(?:unsupported|unimplemented)\b/i.test(compilerOutput))status='unsupported';
+    // Negative semantic rejection is distinct from an unsupported negative fixture.
+    else if(c.expect==='negative')status='passed';
    }else if(safeCompile&&compiled.exit===0&&c.expect==='positive'){
     guestArgv=command(cfg.guestArgv,vars);
     const guest=invoke(guestArgv,cfg.compilerRoot);

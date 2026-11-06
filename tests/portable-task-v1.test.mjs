@@ -41,7 +41,7 @@ test('unsupported requires executed explicit compiler rejection',()=>{
 test('positive guest trace must contain every actual assertion',()=>{
  const c=cases.find(x=>x.mustObserve.length>0);const x=receipt(c);
  assert.equal(classifyReceipt(c,'java',x).status,'failed');
- assert.equal(classifyReceipt(c,'java',{...x,guestOutput:c.mustObserve.join('\\n')}).status,'passed');
+ assert.equal(classifyReceipt(c,'java',{...x,guestOutput:c.mustObserve.join('\n')}).status,'passed');
 });
 
 test('negative compiler syntax errors are not semantic isolation proof',()=>{
@@ -51,4 +51,12 @@ test('negative compiler syntax errors are not semantic isolation proof',()=>{
 test('exact single-line projection trace prevents 11 matching 1',()=>{
  const c=cases.find(x=>x.id==='generic-hasfuture-once'),x=receipt(c);
  assert.equal(classifyReceipt(c,'java',{...x,guestOutput:'projection_count=11'}).status,'failed');
+});
+
+test('multi-token guest observations require independent lines and ordering',()=>{
+ const c=cases.find(x=>x.id==='cancel-owned-descendants'),x=receipt(c);
+ const [a,b]=c.mustObserve;
+ assert.equal(classifyReceipt(c,'java',{...x,guestOutput:a+'\n'+b}).status,'passed');
+ assert.equal(classifyReceipt(c,'java',{...x,guestOutput:b+'\n'+a}).status,'failed');
+ assert.equal(classifyReceipt(c,'java',{...x,guestOutput:a+'\n'+a+'\n'+b}).status,'failed');
 });
