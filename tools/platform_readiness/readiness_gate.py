@@ -13,6 +13,17 @@ BACKENDS = {"java", "llvm", "wasm", "forge", "net"}
 OID = re.compile(r"[0-9a-f]{40}\Z")
 DIGEST = re.compile(r"[0-9a-f]{64}\Z")
 HOUSEKEEPING = {"Set up job", "Complete job"}
+# Conservative *structural* signal only: checkout, setup, packaging, and
+# metadata steps do not prove tests executed, regardless of job conclusion.
+# Live authenticated run logs are still required; names are untrusted hints.
+TEST_STEP_MARKER = re.compile(
+    r"(?i)(?:^|[^a-z0-9])(?:tests?|testing|assertions?|regressions?|ctest|pytest|unittest)(?:$|[^a-z0-9])"
+)
+INFRA_STEP_PREFIX = re.compile(
+    r"(?i)^(?:run actions/|post run actions/|set up\b|complete job\b|"
+    r"check(?:\s+)?out\b|upload\b|download\b|restore\b|cache\b|"
+    r"configure\b|install dependencies\b)"
+)
 MAX_BYTES = 1048576
 MAX_DEPTH = 64
 MAX_NODES = 20000
@@ -89,6 +100,12 @@ def oid(value):
 def positive_int(value):
     return type(value) is int and 0 < value <= MAX_SAFE_INT
 
+def is_candidate_test_step(name):
+    """Offline name heuristic only, never proof of guest execution."""
+    return (name not in HOUSEKEEPING
+            and INFRA_STEP_PREFIX.search(name) is None
+            and TEST_STEP_MARKER.search(name) is not None)
+
 def job_findings(job, head):
     obj(job, {"head_sha","run_id","run_attempt","job_id","status","conclusion","steps"})
     need(oid(job["head_sha"]), "invalid job source SHA")
@@ -110,7 +127,7 @@ def job_findings(job, head):
         need(type(step["name"]) is str and 1 <= len(step["name"]) <= 256, "invalid step name")
         if step["status"] != "completed" or step["conclusion"] != "success":
             findings.append("STEP_NOT_SUCCESSFUL")
-        if step["name"] not in HOUSEKEEPING:
+        if is_candidate_test_step(step["name"]):
             executed_test = True
     if job["steps"] and not executed_test:
         findings.append("NO_TEST_STEP_EVIDENCE")
