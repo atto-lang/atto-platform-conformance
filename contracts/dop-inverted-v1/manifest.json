@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "contract": "atto-dop-inverted-two-i64-guest-v1",
+  "scope": "CANDIDATE_SOURCE_CONTRACT_ONLY",
+  "language": "AttoLang",
+  "sourceExtension": ".atto",
+  "explicitLayout": "one-level-inverted-struct",
+  "dataSemantics": "dense-index-not-generational-row-handle",
+  "fields": [
+    {
+      "name": "value",
+      "type": "int",
+      "mutable": true
+    },
+    {
+      "name": "token",
+      "type": "int",
+      "mutable": false
+    }
+  ],
+  "sourcePaths": [
+    "contracts/dop-inverted-v1/swap-reuse.atto",
+    "contracts/dop-inverted-v1/removed-index-trap.atto"
+  ],
+  "vectors": [
+    {
+      "id": "swap-reuse",
+      "file": "swap-reuse.atto",
+      "blobSha1": "8f5599a9e0b11ded2929110b4936441fceb2ef21",
+      "expected": {
+        "kind": "native-exit",
+        "code": 42
+      },
+      "requires": [
+        "production-compiler",
+        "verified-MIR",
+        "screened-IR",
+        "actual-native-executable"
+      ]
+    },
+    {
+      "id": "removed-index-trap",
+      "file": "removed-index-trap.atto",
+      "blobSha1": "c3c87cfd2515707932734e183bb5768436526a96",
+      "expected": {
+        "kind": "native-signal",
+        "allowed": [
+          "SIGILL",
+          "SIGTRAP"
+        ]
+      },
+      "requires": [
+        "production-compiler",
+        "logical-length-check",
+        "actual-native-executable"
+      ]
+    }
+  ],
+  "backendEvidence": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  },
+  "notes": [
+    "Java parser rejection and Java host SoA storage are not Java guest execution",
+    "LLVM native script must run with exact source, native executable, real signal and exact-head receipt",
+    "AoSoA, SoAoS, actors, class identity, loans and stable handles are out of scope"
+  ]
+}
