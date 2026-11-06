@@ -18,7 +18,7 @@ test('normal bounded receipt and manifest parse precisely', () => withFixture(di
 test('duplicate run ID, result state and escaped duplicate keys are denied', () => withFixture(dir => {
   const path = join(dir,'receipt.json');
   for (const json of ['{"status":"PASSED","status":"NOT_EXECUTED"}',
-    '{"ciJob":{"runId":1,"runId":2}}', '{"jobId":1,"\u006aobId":2}']) {
+    '{"ciJob":{"runId":1,"runId":2}}', '{"jobId":1,"\\u006aobId":2}']) {
     writeFileSync(path,json);
     assert.throws(() => readDopEvidenceJsonFile(path), /github-duplicate-json-key/);
   }
