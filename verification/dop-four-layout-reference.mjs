@@ -49,7 +49,7 @@ function makeGeometry(fields, capacity, layout, options = {}) {
 }
 
 class FourLayoutOracle {
-  #g; #owner; #denseSlots = []; #slots = []; #free = []; #issued = new WeakMap(); #loans = new Set(); #dead = false;
+  #g; #owner; #denseSlots = []; #slots = []; #free = []; #issued = new WeakMap(); #loans = new Set(); #dead = false; #validatingInput = false;
   constructor({owner, fields, capacity, layout, tileWidth, groups}) {
     if (typeof owner !== "string" || owner.length === 0) throw new TypeError("owner required");
     this.#owner = owner;
@@ -58,7 +58,16 @@ class FourLayoutOracle {
   get count() { return this.#denseSlots.length; }
   get layout() { return this.#g.layout; }
   address(row, field) { return this.#g.address(row, field); }
-  #ensureLive() { if (this.#dead) throw new Error("retired store"); }
+  #ensureLive() {
+    if (this.#validatingInput) throw new Error("reentrant four-layout store access");
+    if (this.#dead) throw new Error("retired store");
+  }
+  #snapshotInput(fn) {
+    if (this.#validatingInput) throw new Error("reentrant four-layout input");
+    this.#validatingInput = true;
+    try { return fn(); }
+    finally { this.#validatingInput = false; }
+  }
   #row(handle) {
     this.#ensureLive();
     if (!handle || typeof handle !== "object" || this.#issued.get(handle) !== true)
@@ -95,12 +104,15 @@ class FourLayoutOracle {
   push(record) {
     this.#ensureLive(); this.#noMutationLeases();
     if (this.count >= this.#g.capacity) throw new RangeError("store capacity exhausted");
-    if (!record || Object.keys(record).length !== this.#g.fields.length ||
-        this.#g.fields.some(f => !Object.hasOwn(record, f)))
-      throw new TypeError("record schema mismatch");
-    // Snapshot potentially effectful getters before reserving an ID or mutating bytes.
-    // Failed field evaluation must not consume a slot or partially publish a row.
-    const values = this.#g.fields.map(f => record[f]);
+    // Preflight all own keys and snapshot getters without letting input code
+    // mutate/retire/borrow the authoritative store during row admission.
+    const values = this.#snapshotInput(() => {
+      if (!record || typeof record !== "object" || Array.isArray(record) ||
+          Reflect.ownKeys(record).length !== this.#g.fields.length ||
+          this.#g.fields.some(f => !Object.hasOwn(record, f)))
+        throw new TypeError("record schema mismatch");
+      return this.#g.fields.map(f => record[f]);
+    });
     if (values.some(v => typeof v !== "number")) throw new TypeError("record schema mismatch");
     const slot = this.#free.length ? this.#free.pop() : this.#slots.length;
     const s = this.#slots[slot] ?? {generation: 1, live: false, row: -1};
@@ -120,19 +132,25 @@ class FourLayoutOracle {
   }
   borrow(fields, mode = "read") {
     this.#ensureLive();
-    if (!Array.isArray(fields) || !fields.length || new Set(fields).size !== fields.length ||
-        fields.some(f => !this.#g.fields.includes(f)) || !["read", "write"].includes(mode))
-      throw new TypeError("invalid field loan");
-    const info = {fields: new Set(fields), mode};
+    const selected = this.#snapshotInput(() => {
+      if (!Array.isArray(fields) || fields.length > this.#g.fields.length)
+        throw new TypeError("invalid field loan");
+      const snapshot = Array.from(fields);
+      if (!snapshot.length || new Set(snapshot).size !== snapshot.length ||
+          snapshot.some(f => !this.#g.fields.includes(f)) || !["read", "write"].includes(mode))
+        throw new TypeError("invalid field loan");
+      return snapshot;
+    });
+    const info = {fields: new Set(selected), mode};
     for (const current of this.#loans) {
-      if (fields.some(f => current.fields.has(f)) && (mode === "write" || current.mode === "write"))
+      if (selected.some(f => current.fields.has(f)) && (mode === "write" || current.mode === "write"))
         throw new Error("loan collision");
     }
     this.#loans.add(info);
     return Object.freeze({
       read: (handle, field) => this.read(handle, field, info),
       write: (handle, field, value) => this.write(handle, field, value, info),
-      release: () => {this.#loans.delete(info);}
+      release: () => {this.#ensureLive(); this.#loans.delete(info);}
     });
   }
   eraseSwap(handle) {
@@ -152,7 +170,7 @@ class FourLayoutOracle {
   }
   convert(layout, options = {}) {
     this.#ensureLive(); this.#noMutationLeases();
-    const next = makeGeometry(this.#g.fields, this.#g.capacity, layout, options);
+    const next = this.#snapshotInput(() => makeGeometry(this.#g.fields, this.#g.capacity, layout, options));
     for (let r = 0; r < this.count; ++r) for (const field of this.#g.fields) {
       const p = next.address(r, field);
       next.segments[p.segment][p.element] = this.#read(r, field);
