@@ -1,0 +1,60 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {snapshotFreshness, qualifyReviewTimeline} from '../tools/merge-wave-review-timeline.mjs';
+const A='a'.repeat(40), B='b'.repeat(40);
+const NOW=Date.parse('2026-11-06T19:00:00Z');
+function fixture() {
+  return {head_sha:A,author:'the1mills',author_id:2148448,as_of:'2026-11-06T19:00:00Z',reviews_complete:true,
+    reviews:[{id:12,reviewer_id:2000012,login:'outside-reviewer',state:'APPROVED',commit_sha:A,submitted_at:'2026-11-06T18:59:00Z'}]};
+}
+function blocked(name,mutate,code) {test(name,()=>{const v=fixture();mutate(v);assert(qualifyReviewTimeline(v,{now:NOW}).blockers.includes(code));});}
+test('single current-head independent approval qualifies only as snapshot',()=>{
+ const v=qualifyReviewTimeline(fixture(),{now:NOW});
+ assert.equal(v.status,'REVIEW_SNAPSHOT_QUALIFIED_REQUIRES_LIVE_RECHECK');
+ assert.deepEqual(v.blockers,[]);
+ assert.match(v.note,/refresh github/i);
+});
+blocked('reject missing history completeness',v=>v.reviews_complete=false,'REVIEW_HISTORY_INCOMPLETE');
+blocked('reject missing review',v=>v.reviews=[],'REVIEW_HISTORY_INVALID');
+blocked('reject oversized review list',v=>v.reviews=Array(1001).fill(v.reviews[0]),'REVIEW_HISTORY_INVALID');
+blocked('reject self approval by ID with changed login',v=>v.reviews[0].reviewer_id=v.author_id,'REVIEW_INDEPENDENT_APPROVAL_MISSING');
+blocked('reject author self approval by login',v=>v.reviews[0].login='the1mills','REVIEW_INDEPENDENT_APPROVAL_MISSING');
+blocked('reject disallowed ORESoftware ID with alias',v=>v.reviews[0].reviewer_id=11139560,'REVIEW_INDEPENDENT_APPROVAL_MISSING');
+blocked('reject disallowed ORESoftware login',v=>v.reviews[0].login='ORESoftware','REVIEW_INDEPENDENT_APPROVAL_MISSING');
+blocked('reject review from stale head',v=>v.reviews[0].commit_sha=B,'REVIEW_INDEPENDENT_APPROVAL_MISSING');
+blocked('reject changed reviewer state on later review',v=>v.reviews.push({...v.reviews[0],id:13,state:'CHANGES_REQUESTED',submitted_at:'2026-11-06T18:59:30Z'}),'REVIEW_CHANGES_REQUESTED');
+blocked('reject outstanding change request by another reviewer',v=>v.reviews.push({...v.reviews[0],id:13,reviewer_id:2000013,login:'another',state:'CHANGES_REQUESTED',submitted_at:'2026-11-06T18:59:30Z'}),'REVIEW_CHANGES_REQUESTED');
+blocked('reject dismissed prior approval',v=>v.reviews.push({...v.reviews[0],id:13,state:'DISMISSED',submitted_at:'2026-11-06T18:59:30Z'}),'REVIEW_INDEPENDENT_APPROVAL_MISSING');
+blocked('reject commented latest review',v=>v.reviews.push({...v.reviews[0],id:13,state:'COMMENTED',submitted_at:'2026-11-06T18:59:30Z'}),'REVIEW_INDEPENDENT_APPROVAL_MISSING');
+blocked('reject duplicate review ID',v=>v.reviews.push({...v.reviews[0]}),'REVIEW_RECORD_INVALID');
+blocked('reject identity alias conflicting for same ID',v=>v.reviews.push({...v.reviews[0],id:13,login:'different-reviewer',submitted_at:'2026-11-06T18:59:30Z'}),'REVIEW_IDENTITY_CONFLICT');
+blocked('reject same-millisecond ambiguous ordering',v=>v.reviews.push({...v.reviews[0],id:13,state:'CHANGES_REQUESTED'}),'REVIEW_ORDER_AMBIGUOUS');
+blocked('reject review after snapshot',v=>v.reviews[0].submitted_at='2026-11-06T19:01:00Z','REVIEW_AFTER_SNAPSHOT');
+blocked('reject missing reviewer ID',v=>delete v.reviews[0].reviewer_id,'REVIEW_RECORD_INVALID');
+blocked('reject missing review ID',v=>delete v.reviews[0].id,'REVIEW_RECORD_INVALID');
+blocked('reject missing reviewer timestamp',v=>delete v.reviews[0].submitted_at,'REVIEW_RECORD_INVALID');
+blocked('reject fake reviewer state',v=>v.reviews[0].state='GREEN','REVIEW_RECORD_INVALID');
+blocked('reject missing author numeric identity',v=>delete v.author_id,'REVIEW_IDENTITY_INVALID');
+blocked('reject malformed author login',v=>v.author='<script>','REVIEW_IDENTITY_INVALID');
+blocked('reject stale snapshot',v=>v.as_of='2026-11-06T18:50:00Z','SNAPSHOT_STALE');
+blocked('reject future snapshot',v=>v.as_of='2026-11-06T19:02:00Z','SNAPSHOT_FROM_FUTURE');
+blocked('reject unsupported timestamp',v=>v.as_of='yesterday','SNAPSHOT_TIME_INVALID');
+test('accepts post-change-request reapproval at exact head',()=>{
+ const v=fixture();v.reviews.unshift({...v.reviews[0],id:13,state:'CHANGES_REQUESTED',submitted_at:'2026-11-06T18:58:00Z'});
+ assert.deepEqual(qualifyReviewTimeline(v,{now:NOW}).blockers,[]);
+});
+test('accepts non-chronological review inventory with correct latest state',()=>{
+ const v=fixture();v.reviews.push({...v.reviews[0],id:13,state:'CHANGES_REQUESTED',submitted_at:'2026-11-06T18:58:00Z'});
+ assert.deepEqual(qualifyReviewTimeline(v,{now:NOW}).blockers,[]);
+});
+test('rejects malformed input without throwing',()=>{
+ assert.equal(qualifyReviewTimeline(null,{now:NOW}).status,'BLOCKED');
+ assert.equal(qualifyReviewTimeline([],{now:NOW}).status,'BLOCKED');
+});
+test('freshness boundaries',()=>{
+ assert.equal(snapshotFreshness('2026-11-06T18:55:00Z',NOW).ok,true);
+ assert.equal(snapshotFreshness('2026-11-06T18:54:59Z',NOW).ok,false);
+ assert.equal(snapshotFreshness('2026-11-06T19:00:30Z',NOW).ok,true);
+ assert.equal(snapshotFreshness('2026-11-06T19:00:31Z',NOW).ok,false);
+});
+blocked('reject same login reused by different IDs',v=>v.reviews.push({...v.reviews[0],id:14,reviewer_id:2000014,submitted_at:'2026-11-06T18:59:30Z'}),'REVIEW_IDENTITY_CONFLICT');
