@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validateGithubIdentity, readGithubJson, fetchDopGithubRun, parseStrictGithubJson} from '../verification/dop-github-api-v1.mjs';
+import {validateGithubIdentity, readGithubJson, fetchDopGithubRun, parseStrictGithubJson, requireCanonicalDopSourceRepo} from '../verification/dop-github-api-v1.mjs';
 
 function reply(obj, {status=200, type='application/json', length, chunks}={}) {
   const bytes = new TextEncoder().encode(JSON.stringify(obj));
@@ -95,4 +95,20 @@ test('duplicate keys are rejected through the actual streamed reader', async () 
   const encoded = new TextEncoder().encode('{"runner_id":10,"runner_id":0}');
   await expectFailure(() => readGithubJson(reply({},
     {length:String(encoded.length),chunks:[encoded]})), 'github-duplicate-json-key');
+});
+
+test('DOP source run identity is bound to the five canonical backend repositories', () => {
+  for (const [backend, repository] of Object.entries({
+    java:'ores-truffle-oreslang/oreslang-source.java',
+    llvm:'ores-truffle-oreslang/oreslang-source.llvm',
+    wasm:'ores-truffle-oreslang/oreslang-source.wasm',
+    forge:'ores-truffle-oreslang/oreslang-source.forge',
+    net:'ores-truffle-oreslang/oreslang-source.net'
+  })) assert.equal(requireCanonicalDopSourceRepo(backend, repository), repository);
+  for (const [backend, repository] of [['llvm', 'unrelated/llvm'],
+    ['java', 'ores-truffle-oreslang/oreslang-source.llvm'],
+    ['unknown', 'ores-truffle-oreslang/oreslang-source.java']]) {
+    assert.throws(() => requireCanonicalDopSourceRepo(backend, repository),
+      /backend-repository-mismatch/);
+  }
 });
