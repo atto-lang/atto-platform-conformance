@@ -29,9 +29,9 @@ function good() {
     source_owned_runs:[{
       scope:'landed-main',repo:REPO,commit_sha:B,tree_sha:C,workflow_sha:D,
       context:'native-ci',app_id:15368,run_id:10,run_attempt:1,job_id:11,
-      runner_id:22,status:'completed',conclusion:'success',artifact_sha256:H,
-      steps:[{name:'Set up job',conclusion:'success'},
-        {name:'Compile and execute native guest',conclusion:'success'}],
+      runner_id:22,runner_name:'runner-22',status:'completed',conclusion:'success',artifact_sha256:H,
+      steps:[{name:'Set up job',status:'completed',conclusion:'success'},
+        {name:'Compile and execute native guest',status:'completed',conclusion:'success'}],
       tests:[
         {id:runtime.id,kind:runtime.kind,fixture_sha:E,status:'PASS',
           observed:{exit_code:42,stdout_hex:'',crashed:false}},
@@ -80,16 +80,42 @@ denies('reject unbound review attestation',e=>delete e.approvals[0].attestation_
 denies('reject ordinary PR approval misrepresented as landed attestation',e=>delete e.approvals[0].kind,'review');
 denies('reject author self review',e=>e.approvals[0].login='contributor','review');
 denies('reject operator-controlled review',e=>e.approvals[0].login='ORESoftware','review');
+
+denies('reject completed conclusion on in-progress test step',e=>{
+  e.source_owned_runs[0].steps[1].status='in_progress';
+},'ci');
+denies('reject queued test step with success conclusion',e=>{
+  e.source_owned_runs[0].steps[1].status='queued';
+},'ci');
+denies('reject missing test step status',e=>{
+  delete e.source_owned_runs[0].steps[1].status;
+},'ci');
+denies('reject contradictory in-progress setup step',e=>{
+  e.source_owned_runs[0].steps[0].status='in_progress';
+},'ci');
+denies('reject missing runner name despite positive runner ID',e=>{
+  delete e.source_owned_runs[0].runner_name;
+},'ci');
+denies('reject empty runner name',e=>{
+  e.source_owned_runs[0].runner_name='';
+},'ci');
+denies('reject padded runner identity',e=>{
+  e.source_owned_runs[0].runner_name=' runner-22 ';
+},'ci');
+denies('reject control characters in runner identity',e=>{
+  e.source_owned_runs[0].runner_name='runner-22\\nInjected';
+},'ci');
+
 denies('reject zero-runner job',e=>e.source_owned_runs[0].runner_id=0,'ci');
 denies('reject zero-step job',e=>e.source_owned_runs[0].steps=[],'ci');
 denies('reject setup-only job',e=>e.source_owned_runs[0].steps=[
-  {name:'Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683',conclusion:'success'}],'ci');
+  {name:'Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683',status:'completed',conclusion:'success'}],'ci');
 denies('reject source-head-verification-only job',e=>e.source_owned_runs[0].steps=[
-  {name:'Verify exact PR head and clean source tree',conclusion:'success'}],'ci');
+  {name:'Verify exact PR head and clean source tree',status:'completed',conclusion:'success'}],'ci');
 denies('reject housekeeping-only with repeated spaces',e=>e.source_owned_runs[0].steps=[
-  {name:'Set  up job',conclusion:'success'}],'ci');
+  {name:'Set  up job',status:'completed',conclusion:'success'}],'ci');
 denies('reject failed meaningful step',e=>e.source_owned_runs[0].steps=[
-  {name:'Execute native fixture',conclusion:'failure'}],'ci');
+  {name:'Execute native fixture',status:'completed',conclusion:'failure'}],'ci');
 denies('reject foreign source repo receipt',e=>e.source_owned_runs[0].repo='attacker/repo','ci');
 denies('reject stale PR-head run',e=>e.source_owned_runs[0].commit_sha=A,'ci');
 denies('reject foreign but valid-looking tree',e=>e.source_owned_runs[0].tree_sha=D,'ci');
@@ -213,15 +239,15 @@ denies('reject ahead classification without new commits',e=>{
   e.main_observation.compare_status='ahead';e.main_observation.head_sha=C;e.main_observation.ahead_by=0;
 },'ancestry');
 denies('reject meaningful failure concealed by successful test',e=>e.source_owned_runs[0].steps=[
-  {name:'Execute passing test',conclusion:'success'},
-  {name:'Execute failing test',conclusion:'failure'}],'ci');
+  {name:'Execute passing test',status:'completed',conclusion:'success'},
+  {name:'Execute failing test',status:'completed',conclusion:'failure'}],'ci');
 denies('reject skipped meaningful test concealed by successful test',e=>e.source_owned_runs[0].steps=[
-  {name:'Execute passing test',conclusion:'success'},
-  {name:'Run required security test',conclusion:'skipped'}],'ci');
+  {name:'Execute passing test',status:'completed',conclusion:'success'},
+  {name:'Run required security test',status:'completed',conclusion:'skipped'}],'ci');
 denies('reject padded step label spoofing',e=>e.source_owned_runs[0].steps=[
-  {name:' Execute native fixture ',conclusion:'success'}],'ci');
+  {name:' Execute native fixture ',status:'completed',conclusion:'success'}],'ci');
 denies('reject non-ASCII step label spoofing',e=>e.source_owned_runs[0].steps=[
-  {name:'Execute\u00a0native fixture',conclusion:'success'}],'ci');
+  {name:'Execute\u00a0native fixture',status:'completed',conclusion:'success'}],'ci');
 test('valid GitHub ahead ancestry can qualify as an advisory snapshot',()=>{
   const e=good();e.main_observation.compare_status='ahead';
   e.main_observation.head_sha=D;e.main_observation.ahead_by=2;
