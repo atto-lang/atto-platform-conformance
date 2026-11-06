@@ -190,7 +190,7 @@
       ],
       "arch": "any",
       "sourceKind": "ATTO_SOURCE",
-      "attack": "Fuel, CPU, wall accounting survives repeated task/carrier handoffs",
+      "attack": "Fuel/CPU/wall budget survives await, context.resetLimits misuse and repeated carrier handoffs",
       "oracle": "Attacker denied, bounded or safely terminated; host and neighbor remain intact; exact behavior must be recorded.",
       "neighborMustSurvive": true,
       "status": "NOT_EXECUTED"
@@ -274,6 +274,7 @@
     "https://github.com/bytecodealliance/wasmtime/security/advisories/GHSA-852m-cvvp-9p4w",
     "https://github.com/bytecodealliance/wasmtime/security/advisories/GHSA-6fr9-xmw9-5352",
     "https://docs.wasmtime.dev/examples-interrupting-wasm.html",
-    "https://v8.dev/blog/sandbox"
+    "https://v8.dev/blog/sandbox",
+    "https://docs.oracle.com/en/graalvm/jdk/25i/docs/security-guide/sandboxing/"
   ]
 }
