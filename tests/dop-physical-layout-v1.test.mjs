@@ -106,3 +106,36 @@ test('validated segment plans cannot be mutated by a receipt consumer',()=>{
     assert.equal(p.physicalBytes.toString(),entry.expectedPhysicalBytes);
   }
 });
+
+test('SoAoS ignores an iterator that changes its group indices after validation',()=>{
+  const group=[0,2];
+  let iterations=0;
+  group[Symbol.iterator]=function*() {
+    iterations++;
+    yield* (iterations===1?[0,2]:[1,2]);
+  };
+  const p=physicalLayoutV1({...base,kind:'soaos',groups:[group,[1]]});
+  assert.equal(iterations,0);
+  assert.equal(p.physicalBytes,80n);
+  assert.deepEqual([0,1,2].map(field=>p.address(0,field).absolute),[0n,40n,4n]);
+  assert.deepEqual([0,1,2].map(field=>p.address(4,field).absolute),[32n,72n,36n]);
+});
+test('field-width getters never influence physical ABI validation',()=>{
+  let reads=0;
+  const field={name:'unstable',alignment:4,
+    get bytes() { reads++; return reads===1?4:16; }
+  };
+  assert.throws(()=>physicalLayoutV1({kind:'aos',rows:'2',fields:[field]}),
+    /physical-layout-field/);
+  assert.equal(reads,0);
+});
+test('SoAoS accessor group indices cannot change across validation and layout',()=>{
+  const group=[0,2];
+  let reads=0;
+  Object.defineProperty(group,'0',{configurable:true,enumerable:true,
+    get() { reads++; return reads===1?0:1; }
+  });
+  assert.throws(()=>physicalLayoutV1({...base,kind:'soaos',groups:[group,[1]]}),
+    /physical-layout-group-partition/);
+  assert.equal(reads,0);
+});
