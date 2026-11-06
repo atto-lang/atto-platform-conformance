@@ -178,5 +178,48 @@ class ReadinessTests(unittest.TestCase):
             f=Path(d)/"evidence.json";f.write_text(raw)
             with self.assertRaises(InvalidEvidence):read_snapshot(f)
 
+    def test_safe_json_integer_boundary_is_admitted(self):
+        with tempfile.TemporaryDirectory() as d:
+            f = Path(d) / "safe.json"
+            f.write_text('{"id":9007199254740991}', encoding="utf-8")
+            value, _ = read_snapshot(f)
+            self.assertEqual(value["id"], 9007199254740991)
+
+    def test_unsafe_positive_json_integer_denied(self):
+        self.assert_bad_json('{"id":9007199254740992}')
+
+    def test_unsafe_negative_json_integer_denied(self):
+        self.assert_bad_json('{"id":-9007199254740992}')
+
+    def test_unsafe_direct_pr_number_denied(self):
+        s = self.data()
+        s["pull_requests"][0]["number"] = 9007199254740992
+        self.invalid(s)
+
+    def test_unsafe_direct_job_id_denied(self):
+        s = self.data()
+        s["pull_requests"][0]["ci_job"]["job_id"] = 9007199254740992
+        self.invalid(s)
+
+    def test_exact_64_level_array_budget_admitted(self):
+        with tempfile.TemporaryDirectory() as d:
+            f = Path(d) / "bounded.json"
+            f.write_text("[" * 64 + "0" + "]" * 64, encoding="utf-8")
+            value, _ = read_snapshot(f)
+            self.assertIsInstance(value, list)
+
+    def test_65_level_array_budget_denied(self):
+        self.assert_bad_json("[" * 65 + "0" + "]" * 65)
+
+    def test_pathological_deep_json_denied_without_uncaught_recursion(self):
+        self.assert_bad_json("[" * 1500 + "0" + "]" * 1500)
+
+    def test_more_than_20000_json_nodes_denied(self):
+        self.assert_bad_json("[" + ",".join(["0"] * 20001) + "]")
+
+    def test_nested_escaped_surrogate_remains_denied(self):
+        self.assert_bad_json('{"sub":{"value":"\\ud800"}}')
+
+
 if __name__ == "__main__":
     unittest.main()
