@@ -1,0 +1,47 @@
+name: Landed-main release evidence (source-free only)
+on:
+  pull_request:
+    paths:
+      - 'tools/landed-main-evidence.mjs'
+      - 'tests/landed-main-evidence.test.mjs'
+      - 'bin/landed-main-evidence.mjs'
+      - 'evidence/landed-main-20261106-wave.json'
+      - '.github/workflows/landed-main-evidence.yml'
+  push:
+    paths:
+      - 'tools/landed-main-evidence.mjs'
+      - 'tests/landed-main-evidence.test.mjs'
+      - 'bin/landed-main-evidence.mjs'
+      - 'evidence/landed-main-20261106-wave.json'
+      - '.github/workflows/landed-main-evidence.yml'
+permissions:
+  contents: read
+jobs:
+  source-free-postmerge-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact source commit
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Execute postmerge evidence regressions
+        run: node --test tests/landed-main-evidence.test.mjs
+      - name: Verify real sample ledger fails closed
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=0
+          node bin/landed-main-evidence.mjs evidence/landed-main-20261106-wave.json || status=$?
+          test "$status" -eq 1
