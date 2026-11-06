@@ -5,13 +5,24 @@ export class ActorLockModel {
     this.actors = new Map();
     this.locks = new Map();
     this.serial = 0;
+    // Track retired generations as well as active ones: merely checking the
+    // current actor table would permit older stale owners to resurrect.
+    this.latestIncarnation = new Map();
   }
   key(id, incarnation) { return JSON.stringify([id, incarnation]); }
   spawn(id, incarnation) {
+    if (typeof id !== "string" || !id || id.includes("\0")) throw Error("invalid actor identity");
     if (!Number.isSafeInteger(incarnation) || incarnation < 1) throw Error("invalid incarnation");
+    const previous = this.latestIncarnation.get(id);
+    if (previous !== undefined) {
+      if (incarnation <= previous) throw Error("stale or replayed actor incarnation");
+      if (this.actor(this.key(id, previous)).phase !== "retired")
+        throw Error("previous incarnation has not physically retired");
+    }
     const key = this.key(id, incarnation);
     if (this.actors.has(key)) throw Error("duplicate incarnation");
     this.actors.set(key, {phase:"live", tasks:new Map(), permits:new Set()});
+    this.latestIncarnation.set(id, incarnation);
     return key;
   }
   task(actor, name) {
@@ -52,7 +63,10 @@ export class ActorLockModel {
     // Never deliver a permit to a fenced actor, cancelled Task or stale incarnation.
     const a=this.actor(p.actor);
     if (a.phase!=="live" || a.tasks.get(p.task)!=="running") {
+      // Fencing can beat a queued-to-held handoff. Settle the losing ticket
+      // in BOTH the queue and reverse owner index, exactly once.
       p.status="cancelled";
+      a.permits.delete(p);
       return;
     }
     p.status="held";
@@ -133,6 +147,24 @@ export class ActorLockModel {
     this.drain(l);
   }
   assertConsistent() {
+    // The per-owner reverse index must contain only physically outstanding
+    // grants/requests, never settled tickets or a retired actor's permits.
+    for (const [owner, a] of this.actors) {
+      if (a.phase==="retired" && a.permits.size!==0)
+        throw Error("retired actor retains permits");
+      for (const p of a.permits) {
+        if (p.actor!==owner) throw Error("wrong reverse-index owner");
+        const l=this.locks.get(p.name);
+        if (!l) throw Error("reverse-index lock missing");
+        if (p.status==="held") {
+          if (!l.holders.includes(p)) throw Error("orphan held permit");
+        } else if (p.status==="queued") {
+          if (!l.queue.includes(p)) throw Error("orphan queued permit");
+          if (a.phase!=="live" || a.tasks.get(p.task)!=="running")
+            throw Error("fenced task retains queued permit");
+        } else throw Error("settled permit retained in reverse index");
+      }
+    }
     for (const l of this.locks.values()) {
       if (l.holders.length>1 && l.holders.some(p=>p.mode!=="read"))
         throw Error("overlapping writer");
