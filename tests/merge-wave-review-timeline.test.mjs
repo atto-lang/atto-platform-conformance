@@ -4,7 +4,8 @@ import {snapshotFreshness, qualifyReviewTimeline} from '../tools/merge-wave-revi
 const A='a'.repeat(40), B='b'.repeat(40);
 const NOW=Date.parse('2026-11-06T19:00:00Z');
 function fixture() {
-  return {head_sha:A,author:'the1mills',author_id:2148448,as_of:'2026-11-06T19:00:00Z',reviews_complete:true,
+  return {repo:'ores-truffle-oreslang/oreslang-source.java',base_sha:B,head_sha:A,author:'the1mills',author_id:2148448,as_of:'2026-11-06T19:00:00Z',reviews_complete:true,review_count:1,
+    reviewer_policy:{repo:'ores-truffle-oreslang/oreslang-source.java',base_sha:B,base_ref:'main',protection_readable:true,protected:true,require_codeowners:true,dismiss_stale_reviews:true,bypass_count:0,required_approvals:1,eligible_reviewer_ids:[2000012,2000013]},
     reviews:[{id:12,reviewer_id:2000012,login:'outside-reviewer',state:'APPROVED',commit_sha:A,submitted_at:'2026-11-06T18:59:00Z'}]};
 }
 function blocked(name,mutate,code) {test(name,()=>{const v=fixture();mutate(v);assert(qualifyReviewTimeline(v,{now:NOW}).blockers.includes(code));});}
@@ -40,11 +41,11 @@ blocked('reject stale snapshot',v=>v.as_of='2026-11-06T18:50:00Z','SNAPSHOT_STAL
 blocked('reject future snapshot',v=>v.as_of='2026-11-06T19:02:00Z','SNAPSHOT_FROM_FUTURE');
 blocked('reject unsupported timestamp',v=>v.as_of='yesterday','SNAPSHOT_TIME_INVALID');
 test('accepts post-change-request reapproval at exact head',()=>{
- const v=fixture();v.reviews.unshift({...v.reviews[0],id:13,state:'CHANGES_REQUESTED',submitted_at:'2026-11-06T18:58:00Z'});
+ const v=fixture();v.reviews.unshift({...v.reviews[0],id:13,state:'CHANGES_REQUESTED',submitted_at:'2026-11-06T18:58:00Z'});v.review_count=2;
  assert.deepEqual(qualifyReviewTimeline(v,{now:NOW}).blockers,[]);
 });
 test('accepts non-chronological review inventory with correct latest state',()=>{
- const v=fixture();v.reviews.push({...v.reviews[0],id:13,state:'CHANGES_REQUESTED',submitted_at:'2026-11-06T18:58:00Z'});
+ const v=fixture();v.reviews.push({...v.reviews[0],id:13,state:'CHANGES_REQUESTED',submitted_at:'2026-11-06T18:58:00Z'});v.review_count=2;
  assert.deepEqual(qualifyReviewTimeline(v,{now:NOW}).blockers,[]);
 });
 test('rejects malformed input without throwing',()=>{
@@ -59,3 +60,54 @@ test('freshness boundaries',()=>{
 });
 blocked('reject same login reused by different IDs',v=>v.reviews.push({...v.reviews[0],id:14,reviewer_id:2000014,submitted_at:'2026-11-06T18:59:30Z'}),'REVIEW_IDENTITY_CONFLICT');
 blocked('malformed author type blocks rather than throwing',v=>v.author=42,'REVIEW_IDENTITY_INVALID');
+
+// Adversarial reviewer-policy and complete-history binding cases.
+{
+const A='a'.repeat(40), B='b'.repeat(40), NOW=Date.parse('2026-11-06T19:00:00Z');
+function fixture() {
+  return {
+    repo:'ores-truffle-oreslang/oreslang-source.java',base_sha:B,head_sha:A,author:'the1mills',author_id:2148448,
+    as_of:'2026-11-06T19:00:00Z',reviews_complete:true,review_count:1,
+    reviewer_policy:{repo:'ores-truffle-oreslang/oreslang-source.java',base_sha:B,base_ref:'main',
+      protection_readable:true,protected:true,require_codeowners:true,dismiss_stale_reviews:true,
+      bypass_count:0,required_approvals:1,eligible_reviewer_ids:[2000012,2000013]},
+    reviews:[{id:12,reviewer_id:2000012,login:'outside-reviewer',state:'APPROVED',commit_sha:A,submitted_at:'2026-11-06T18:59:00Z'}]
+  }
+}
+function blocked(name,change,kind){
+ test(name,()=>{const x=fixture();change(x);const r=qualifyReviewTimeline(x,{now:NOW});assert(r.blockers.includes(kind),JSON.stringify(r))});
+}
+test('valid bound reviewer policy qualifies only advisory',()=>{
+ const v=qualifyReviewTimeline(fixture(),{now:NOW});
+ assert.equal(v.status,'REVIEW_SNAPSHOT_QUALIFIED_REQUIRES_LIVE_RECHECK');
+});
+blocked('absent policy',v=>delete v.reviewer_policy,'REVIEW_POLICY_INVALID');
+blocked('unprotected branch',v=>v.reviewer_policy.protected=false,'REVIEW_POLICY_INVALID');
+blocked('unreadable policy',v=>v.reviewer_policy.protection_readable=false,'REVIEW_POLICY_INVALID');
+blocked('missing CODEOWNERS',v=>v.reviewer_policy.require_codeowners=false,'REVIEW_POLICY_INVALID');
+blocked('stale approvals not dismissed',v=>v.reviewer_policy.dismiss_stale_reviews=false,'REVIEW_POLICY_INVALID');
+blocked('bypass enabled',v=>v.reviewer_policy.bypass_count=1,'REVIEW_POLICY_INVALID');
+blocked('policy for other repo',v=>v.reviewer_policy.repo='other/hello','REVIEW_POLICY_INVALID');
+blocked('policy for another base sha',v=>v.reviewer_policy.base_sha=A,'REVIEW_POLICY_INVALID');
+blocked('repo and base unknown',v=>{delete v.repo; delete v.base_sha},'REVIEW_POLICY_INVALID');
+blocked('no eligible reviewer IDs',v=>v.reviewer_policy.eligible_reviewer_ids=[],'REVIEW_POLICY_INVALID');
+blocked('duplicate eligible reviewer IDs',v=>v.reviewer_policy.eligible_reviewer_ids=[2000012,2000012],'REVIEW_POLICY_INVALID');
+blocked('self allowed in policy',v=>v.reviewer_policy.eligible_reviewer_ids=[2148448],'REVIEW_POLICY_INVALID');
+blocked('operator allowed in policy',v=>v.reviewer_policy.eligible_reviewer_ids=[11139560],'REVIEW_POLICY_INVALID');
+blocked('reviewer outside allowed roster',v=>{v.reviewer_policy.eligible_reviewer_ids=[2000013]},'REVIEW_INDEPENDENT_APPROVAL_MISSING');
+blocked('two approvals needed but only one',v=>v.reviewer_policy.required_approvals=2,'REVIEW_INDEPENDENT_APPROVAL_MISSING');
+blocked('zero approvals requested',v=>v.reviewer_policy.required_approvals=0,'REVIEW_POLICY_INVALID');
+blocked('unbounded approval count',v=>v.reviewer_policy.required_approvals=200,'REVIEW_POLICY_INVALID');
+blocked('missing review total',v=>delete v.review_count,'REVIEW_HISTORY_INCOMPLETE');
+blocked('truncated review inventory',v=>v.review_count=2,'REVIEW_HISTORY_INCOMPLETE');
+test('two distinct approved eligible reviewers meet 2 approvals',()=>{
+ const v=fixture();v.reviewer_policy.required_approvals=2;
+ v.reviews.push({id:13,reviewer_id:2000013,login:'different-reviewer',state:'APPROVED',commit_sha:A,submitted_at:'2026-11-06T18:59:05Z'});v.review_count=2;
+ assert.equal(qualifyReviewTimeline(v,{now:NOW}).status,'REVIEW_SNAPSHOT_QUALIFIED_REQUIRES_LIVE_RECHECK');
+});
+test('a single reviewer cannot double-count by submitting twice',()=>{
+ const v=fixture();v.reviewer_policy.required_approvals=2;
+ v.reviews.push({...v.reviews[0],id:13,submitted_at:'2026-11-06T18:59:05Z'});v.review_count=2;
+ assert(qualifyReviewTimeline(v,{now:NOW}).blockers.includes('REVIEW_INDEPENDENT_APPROVAL_MISSING'));
+});
+}
