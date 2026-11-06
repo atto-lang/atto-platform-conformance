@@ -9,14 +9,16 @@ import {fileURLToPath} from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const manifestPath = path.join(root, "contracts/immutable-default-v1.json");
 const canonical = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
-const five = ["java", "llvm", "wasm", "cranelift", "net"];
+const five = ["java", "llvm", "wasm", "net", "forge"];
+const optional = ["cranelift"];
 
 function validate(data, verifyFiles = true) {
   assert.equal(data.schemaVersion, 1);
   assert.equal(data.contract, "ores.immutable-default/v1");
   assert.equal(data.status, "authored-fixtures-only-NOT-executed");
   assert.deepEqual(data.backends, five);
-  assert.deepEqual(Object.keys(data.backendCapabilities).sort(), [...five].sort());
+  assert.deepEqual(data.optionalBackends, optional);
+  assert.deepEqual(Object.keys(data.backendCapabilities).sort(), [...five, ...optional].sort());
   for (const state of Object.values(data.backendCapabilities)) {
     assert.match(state, /^(candidate-on-unverified-draft|llvm-frontend-delegated-guest-not-verified|native-i64-draft-unverified|shipping-parser-unsupported)$/);
   }
@@ -73,7 +75,10 @@ test("immutable default corpus: mutation controls are rejected", () => {
     assert.throws(() => validate(data, false), name);
   }
   mutation("claimed executable evidence", d => { d.status = "verified"; });
-  mutation("backend substituted", d => { d.backends[0] = "forge"; });
+  mutation("backend substituted", d => { d.backends[0] = "cranelift"; });
+  mutation("Forge missing", d => { d.backends.pop(); });
+  mutation("Cranelift falsely promoted", d => { d.optionalBackends = []; });
+  mutation("Forge falsely certified", d => { d.backendCapabilities.forge = "passed"; });
   mutation("unknown backend capacity", d => { d.backendCapabilities.llvm = "passed"; });
   mutation("deleted case", d => { d.cases.pop(); });
   mutation("duplicate case", d => { d.cases[1].id = d.cases[0].id; });
