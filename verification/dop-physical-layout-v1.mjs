@@ -24,10 +24,14 @@ export function physicalLayoutV1({kind, rows, fields, lanes = 1, groups = [],
   req(power2(lanes) && lanes <= 1024 && (kind === 'aosoa' || lanes === 1),
     'physical-layout-lanes');
   req(Array.isArray(groups), 'physical-layout-groups');
+  const names = new Set();
   const specs = fields.map((f,i) => {
-    req(f && typeof f === 'object' && power2(f.bytes) &&
-      power2(f.alignment) && f.bytes <= f.alignment && f.alignment <= 4096,
+    req(f && typeof f === 'object' && typeof f.name === 'string' &&
+      f.name.length > 0 && f.name.length <= 1024 && !f.name.includes('\\0') &&
+      !names.has(f.name) && power2(f.bytes) && power2(f.alignment) &&
+      f.bytes <= f.alignment && f.alignment <= 4096,
       'physical-layout-field-' + i);
+    names.add(f.name);
     return {bytes: BigInt(f.bytes), alignment: BigInt(f.alignment)};
   });
   const locations = Array.from({length:specs.length});
@@ -109,6 +113,9 @@ export function physicalLayoutV1({kind, rows, fields, lanes = 1, groups = [],
     req(add(relative,specs[field].bytes)<=s.bytes,'physical-layout-segment-overrun');
     return {segment:loc.segment,offset:relative,absolute:add(s.base,relative)};
   }
-  return {rows:count,fields:specs.length,lanes,kind,physicalBytes:size,segments,
-    address};
+  // Do not hand out mutable addressing metadata to receipt/oracle callers.
+  for (const segment of segments) Object.freeze(segment);
+  Object.freeze(segments);
+  return Object.freeze({rows:count,fields:specs.length,lanes,kind,physicalBytes:size,
+    segments,address});
 }
