@@ -1,27 +1,15 @@
 #!/usr/bin/env node
 // Source-free REST correlation only. This is NOT compiler guest attestation.
-import { lstatSync, readFileSync } from 'node:fs';
+import { readDopEvidenceJsonFile } from '../verification/dop-evidence-file-v1.mjs';
 import { validateDopGithubSnapshot } from '../verification/dop-github-run-snapshot-v1.mjs';
 import { fetchDopGithubRun, validateGithubIdentity, requireCanonicalDopSourceRepo } from '../verification/dop-github-api-v1.mjs';
-
-function jsonFile(path, limit) {
-  const stat = lstatSync(path);
-  if (!stat.isFile() || stat.isSymbolicLink() || stat.size > limit)
-    throw new Error('invalid-json-file');
-  const bytes = readFileSync(path);
-  if (bytes.length > limit) throw new Error('json-file-too-large');
-  const value = JSON.parse(new TextDecoder('utf-8', {fatal: true}).decode(bytes));
-  if (value === null || typeof value !== 'object' || Array.isArray(value))
-    throw new Error('json-file-not-object');
-  return value;
-}
 
 async function main() {
   if (process.argv.length !== 5) throw new Error('usage: verify-dop-github-run-v1.mjs RECEIPT.json OWNER/REPO RUN_ID');
   const [receiptPath, repository, rawRunId] = process.argv.slice(2);
   const {id} = validateGithubIdentity(repository, rawRunId);
-  const receipt = jsonFile(receiptPath, 65536);
-  const contract = jsonFile(new URL('../contracts/dop-scalar-guest-v1/manifest.json', import.meta.url), 65536);
+  const receipt = readDopEvidenceJsonFile(receiptPath);
+  const contract = readDopEvidenceJsonFile(new URL('../contracts/dop-scalar-guest-v1/manifest.json', import.meta.url));
   requireCanonicalDopSourceRepo(receipt.backend, repository);
   if (receipt.ciJob?.runId !== Number(id)) throw new Error('receipt-run-id-mismatch');
   const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
@@ -36,7 +24,7 @@ async function main() {
 main().catch(error => {
   // Never print request objects, credentials, API bodies or raw error stacks.
   const reason = String(error?.message || 'unknown');
-  const safe = /^(invalid-|backend-|github-|missing-github-token|json-|receipt-run-id-mismatch|usage:)/.test(reason)
+  const safe = /^(invalid-|evidence-|backend-|github-|missing-github-token|json-|receipt-run-id-mismatch|usage:)/.test(reason)
     ? reason : 'github-read-failed';
   console.error('DOP_GITHUB_RECEIPT_REJECTED: ' + safe);
   process.exitCode = 1;
