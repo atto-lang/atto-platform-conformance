@@ -1,0 +1,279 @@
+{
+  "schema": "attolang.untrusted-jit-adversarial.v1",
+  "revisionDate": "2026-11-06",
+  "status": "CANDIDATE_NOT_EXECUTED",
+  "backendStatus": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "UJI-01",
+      "category": "isolation",
+      "backends": [
+        "wasm"
+      ],
+      "arch": "aarch64",
+      "sourceKind": "WASM_BINARY",
+      "attack": "Memory64 AArch64 checked-vs-loaded address divergence, CVE-2026-34971",
+      "oracle": "Attacker denied, bounded or safely terminated; host and neighbor remain intact; exact behavior must be recorded.",
+      "neighborMustSurvive": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "UJI-02",
+      "category": "isolation",
+      "backends": [
+        "wasm"
+      ],
+      "arch": "any",
+      "sourceKind": "WASM_BINARY",
+      "attack": "Large SSA value-count compiler lowering, CVE-2026-115889",
+      "oracle": "Attacker denied, bounded or safely terminated; host and neighbor remain intact; exact behavior must be recorded.",
+      "neighborMustSurvive": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "UJI-03",
+      "category": "isolation",
+      "backends": [
+        "wasm"
+      ],
+      "arch": "aarch64",
+      "sourceKind": "WASM_BINARY",
+      "attack": "Over 256k br_table targets in AArch64 lowering, CVE-2026-115893",
+      "oracle": "Attacker denied, bounded or safely terminated; host and neighbor remain intact; exact behavior must be recorded.",
+      "neighborMustSurvive": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "UJI-04",
+      "category": "isolation",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "arch": "any",
+      "sourceKind": "ATTO_SOURCE",
+      "attack": "Cross-tenant mutable handle forge and private state tamper attempt",
+      "oracle": "Attacker denied, bounded or safely terminated; host and neighbor remain intact; exact behavior must be recorded.",
+      "neighborMustSurvive": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "UJI-05",
+      "category": "isolation",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "arch": "any",
+      "sourceKind": "ATTO_SOURCE",
+      "attack": "Stale executable code image after hot-generation replacement",
+      "oracle": "Attacker denied, bounded or safely terminated; host and neighbor remain intact; exact behavior must be recorded.",
+      "neighborMustSurvive": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "UJI-06",
+      "category": "quota",
+      "backends": [
+        "wasm",
+        "llvm",
+        "net"
+      ],
+      "arch": "any",
+      "sourceKind": "ATTO_SOURCE",
+      "attack": "Memory grow / table grow / GC cap exceed while other tenant progresses",
+      "oracle": "Attacker denied, bounded or safely terminated; host and neighbor remain intact; exact behavior must be recorded.",
+      "neighborMustSurvive": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "UJI-07",
+      "category": "quota",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "arch": "any",
+      "sourceKind": "ATTO_SOURCE",
+      "attack": "JIT compile CPU, RSS and deeply recursive stack exhaustion",
+      "oracle": "Attacker denied, bounded or safely terminated; host and neighbor remain intact; exact behavior must be recorded.",
+      "neighborMustSurvive": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "UJI-08",
+      "category": "quota",
+      "backends": [
+        "wasm",
+        "net"
+      ],
+      "arch": "any",
+      "sourceKind": "WASM_BINARY",
+      "attack": "WASI/WIT huge list, string, random, HTTP fields, resource table and borrow leak",
+      "oracle": "Attacker denied, bounded or safely terminated; host and neighbor remain intact; exact behavior must be recorded.",
+      "neighborMustSurvive": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "UJI-09",
+      "category": "quota",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "arch": "any",
+      "sourceKind": "ATTO_SOURCE",
+      "attack": "Bounded mailbox and stream full, waiting publisher backpressure",
+      "oracle": "Attacker denied, bounded or safely terminated; host and neighbor remain intact; exact behavior must be recorded.",
+      "neighborMustSurvive": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "UJI-10",
+      "category": "interruption",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "arch": "any",
+      "sourceKind": "ATTO_SOURCE",
+      "attack": "No-await infinite CPU loop; observer continues, offender interrupted",
+      "oracle": "Attacker denied, bounded or safely terminated; host and neighbor remain intact; exact behavior must be recorded.",
+      "neighborMustSurvive": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "UJI-11",
+      "category": "interruption",
+      "backends": [
+        "wasm",
+        "llvm",
+        "net"
+      ],
+      "arch": "any",
+      "sourceKind": "WASM_BINARY",
+      "attack": "Large memory.copy must not defeat practical epoch deadline bound",
+      "oracle": "Attacker denied, bounded or safely terminated; host and neighbor remain intact; exact behavior must be recorded.",
+      "neighborMustSurvive": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "UJI-12",
+      "category": "interruption",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "arch": "any",
+      "sourceKind": "ATTO_SOURCE",
+      "attack": "Fuel, CPU, wall accounting survives repeated task/carrier handoffs",
+      "oracle": "Attacker denied, bounded or safely terminated; host and neighbor remain intact; exact behavior must be recorded.",
+      "neighborMustSurvive": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "UJI-13",
+      "category": "cancellation",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "arch": "any",
+      "sourceKind": "ATTO_SOURCE",
+      "attack": "Cancellation racing with backpressure and queue wakeup",
+      "oracle": "Attacker denied, bounded or safely terminated; host and neighbor remain intact; exact behavior must be recorded.",
+      "neighborMustSurvive": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "UJI-14",
+      "category": "cancellation",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "arch": "any",
+      "sourceKind": "ATTO_SOURCE",
+      "attack": "Cancellation racing with JIT compilation, code lease and retirement",
+      "oracle": "Attacker denied, bounded or safely terminated; host and neighbor remain intact; exact behavior must be recorded.",
+      "neighborMustSurvive": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "UJI-15",
+      "category": "cancellation",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "arch": "any",
+      "sourceKind": "ATTO_SOURCE",
+      "attack": "Stuck native hostcall and non-cooperating guest out-of-band termination",
+      "oracle": "Attacker denied, bounded or safely terminated; host and neighbor remain intact; exact behavior must be recorded.",
+      "neighborMustSurvive": true,
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "UJI-16",
+      "category": "evidence",
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "net",
+        "forge"
+      ],
+      "arch": "any",
+      "sourceKind": "ATTO_SOURCE",
+      "attack": "Zero-step CI, false head or fake source-free backend certification",
+      "oracle": "Attacker denied, bounded or safely terminated; host and neighbor remain intact; exact behavior must be recorded.",
+      "neighborMustSurvive": false,
+      "status": "NOT_EXECUTED"
+    }
+  ],
+  "sources": [
+    "https://www.usenix.org/conference/usenixsecurity25/presentation/yu-zhaofeng",
+    "https://www.usenix.org/conference/osdi25/presentation/yedidia",
+    "https://www.usenix.org/conference/nsdi26/presentation/baqershahi",
+    "https://www.sciencedirect.com/science/article/pii/S0141933126000426",
+    "https://github.com/bytecodealliance/wasmtime/security/advisories/GHSA-897f-g5gm-fmxm",
+    "https://github.com/bytecodealliance/wasmtime/security/advisories/GHSA-mghf-wjfp-p5xm",
+    "https://github.com/bytecodealliance/wasmtime/security/advisories/GHSA-852m-cvvp-9p4w",
+    "https://github.com/bytecodealliance/wasmtime/security/advisories/GHSA-6fr9-xmw9-5352",
+    "https://docs.wasmtime.dev/examples-interrupting-wasm.html",
+    "https://v8.dev/blog/sandbox"
+  ]
+}
