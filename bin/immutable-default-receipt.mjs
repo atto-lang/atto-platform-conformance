@@ -11,6 +11,8 @@ const requiredCases = new Map([
   ["IDB-07", "semantic-reject"], // type-first rebinding, not parse failure
   ["IDB-08", "semantic-reject"], // const rebinding, not parse failure
   ["IDB-17", "checked-trap"],    // eager unused initializer
+  ["IDB-19", "guest"],   // runtime const from parameter, input 7 -> 8
+  ["IDB-20", "guest"],   // runtime const from readonly local -> 8
   ["IDB-24", "guest"],   // explicit let rebinding positive control
 ]);
 
@@ -90,8 +92,10 @@ export function assessImmutableReceipt(receipt, pin) {
     }
   }
   if (["IDB-01","IDB-02","IDB-03"].some(id => cases.get(id).observedI64 !== "7") ||
-      cases.get("IDB-24").observedI64 !== "8") {
-    return result("INCORRECT_GUEST_RESULT", "literal-equivalence or explicit-let oracle mismatch");
+      ["IDB-19","IDB-20","IDB-24"].some(id => cases.get(id).observedI64 !== "8") ||
+      JSON.stringify(cases.get("IDB-19").args_i64) !== JSON.stringify(["7"])) {
+    return result("INCORRECT_GUEST_RESULT",
+      "literal-equivalence, runtime const input, or explicit-let oracle mismatch");
   }
   return result("REVIEW_REQUIRED", "structurally adequate, but independent log/source/toolchain attestation and approval remain mandatory");
 }
