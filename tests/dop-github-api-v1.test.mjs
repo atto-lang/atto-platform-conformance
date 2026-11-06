@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validateGithubIdentity, readGithubJson, fetchDopGithubRun} from '../verification/dop-github-api-v1.mjs';
+import {validateGithubIdentity, readGithubJson, fetchDopGithubRun, parseStrictGithubJson} from '../verification/dop-github-api-v1.mjs';
 
 function reply(obj, {status=200, type='application/json', length, chunks}={}) {
   const bytes = new TextEncoder().encode(JSON.stringify(obj));
@@ -73,4 +73,26 @@ test('valid split JSON payload is reassembled into a parsed object', async () =>
   const json = new TextEncoder().encode('{"jobs":[]}');
   const result = await readGithubJson(reply({}, {length:String(json.length),chunks:[json.slice(0,4),json.slice(4)]}));
   assert.deepEqual(result,{jobs:[]});
+});
+
+test('duplicate REST authority keys and escaped key aliases fail closed', () => {
+  for (const input of ['{"id":1,"id":2}', '{"runner_id":1,"\\u0072unner_id":2}',
+    '{"jobs":[{"name":"x","name":"y"}]}']) {
+    assert.throws(() => parseStrictGithubJson(input), /github-duplicate-json-key/);
+  }
+});
+test('nested distinct objects may reuse ordinary field names', () => {
+  assert.deepEqual(parseStrictGithubJson('{"jobs":[{"id":1},{"id":2}]}'),
+    {jobs:[{id:1},{id:2}]});
+  assert.deepEqual(parseStrictGithubJson(JSON.stringify({msg:'curly { " braces',id:1})),
+    {msg:'curly { " braces',id:1});
+});
+test('over-nested API objects are refused before native parse', () => {
+  const evil = '['.repeat(81) + '0' + ']'.repeat(81);
+  assert.throws(() => parseStrictGithubJson(evil), /github-over-nested-json/);
+});
+test('duplicate keys are rejected through the actual streamed reader', async () => {
+  const encoded = new TextEncoder().encode('{"runner_id":10,"runner_id":0}');
+  await expectFailure(() => readGithubJson(reply({},
+    {length:String(encoded.length),chunks:[encoded]})), 'github-duplicate-json-key');
 });
