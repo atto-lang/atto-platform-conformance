@@ -2,7 +2,7 @@
   "schema_version": 1,
   "scope": "snapshot_only",
   "captured_at": "2026-11-06T19:23:06Z",
-  "capture_note": "PR merged state and original/landed commit SHAs were read from GitHub; compare(merge_sha...main) verified ahead/identical with behind=0. Read-only policy and review evidence remains incomplete; absent attestations are NOT_EXECUTED/NOT_VERIFIED, never fabricated.",
+  "capture_note": "Observed exact PR merged SHA, landed Git tree SHA and compare-to-main ancestry (behind_by=0). Missing independent attestation, enforceable protection, expected fixture inventory and stepful landed CI remain NOT_VERIFIED. Snapshot is untrusted and never a release authorization.",
   "entries": [
     {
       "repo": "ores-truffle-oreslang/oreslang-source.java",
@@ -21,7 +21,11 @@
       "approvals": [],
       "required_checks": [],
       "requires_guest": false,
-      "source_owned_runs": []
+      "source_owned_runs": [],
+      "merged": true,
+      "base_ref": "main",
+      "landed_tree_sha": "adc431293e7c60997278c05e5e58129760062c88",
+      "required_tests": []
     },
     {
       "repo": "ores-truffle-oreslang/oreslang-source.llvm",
@@ -40,7 +44,11 @@
       "approvals": [],
       "required_checks": [],
       "requires_guest": false,
-      "source_owned_runs": []
+      "source_owned_runs": [],
+      "merged": true,
+      "base_ref": "main",
+      "landed_tree_sha": "e2ac25f7214bd6bfe44aeff1260563836b116b6d",
+      "required_tests": []
     },
     {
       "repo": "ores-truffle-oreslang/sublime-text-plugins",
@@ -59,7 +67,11 @@
       "approvals": [],
       "required_checks": [],
       "requires_guest": false,
-      "source_owned_runs": []
+      "source_owned_runs": [],
+      "merged": true,
+      "base_ref": "main",
+      "landed_tree_sha": "a25864f676aa594aad11ac94b89580892ef263e7",
+      "required_tests": []
     },
     {
       "repo": "ores-truffle-oreslang/sublime-text-plugins",
@@ -78,7 +90,11 @@
       "approvals": [],
       "required_checks": [],
       "requires_guest": false,
-      "source_owned_runs": []
+      "source_owned_runs": [],
+      "merged": true,
+      "base_ref": "main",
+      "landed_tree_sha": "f45c788a73b6cb888da6915284a959f814206e8c",
+      "required_tests": []
     },
     {
       "repo": "ores-truffle-oreslang/sublime-text-plugins",
@@ -97,7 +113,11 @@
       "approvals": [],
       "required_checks": [],
       "requires_guest": false,
-      "source_owned_runs": []
+      "source_owned_runs": [],
+      "merged": true,
+      "base_ref": "main",
+      "landed_tree_sha": "3001a0c8fd94e5197949ad2f9a14c07ef1b89e03",
+      "required_tests": []
     }
   ]
 }
