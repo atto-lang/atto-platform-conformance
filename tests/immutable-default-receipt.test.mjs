@@ -9,10 +9,12 @@ const cases = [
   ["IDB-01", "guest", "7"], ["IDB-02", "guest", "7"],
   ["IDB-03", "guest", "7"], ["IDB-07", "semantic-reject"],
   ["IDB-08", "semantic-reject"], ["IDB-17", "checked-trap"],
+  ["IDB-19", "guest", "8"], ["IDB-20", "guest", "8"],
   ["IDB-24", "guest", "8"]
 ].map(([id, kind, observedI64]) => ({
   id, kind, backend:"java", headSha:HEAD, fixtureBlobSha1:"c".repeat(40),
   ...(kind === "guest" ? {stage:"guest", observedI64} : {}),
+  ...(id === "IDB-19" ? {args_i64:["7"]} : {}),
   ...(kind === "semantic-reject" ? {stage:"typecheck", diagnosticFamily:"immutable-binding", artifactPublished:false} : {}),
   ...(kind === "checked-trap" ? {stage:"runtime", diagnosticFamily:"checked-i64-overflow"} : {})
 }));
@@ -61,4 +63,7 @@ test("negative mutation controls deny false guest/CI credit", () => {
   check(r => {r.cases[6].observedI64 = "7";}, "INCORRECT_GUEST_RESULT");
   check(r => {r.cases.pop();}, "INCOMPLETE_GUEST_PROOF");
   check(r => {r.cases[0].fixtureBlobSha1 = "unknown";}, "INCOMPLETE_GUEST_PROOF");
+  check(r => {r.cases.find(c => c.id === "IDB-19").observedI64 = "9";}, "INCORRECT_GUEST_RESULT");
+  check(r => {r.cases.find(c => c.id === "IDB-19").args_i64 = ["8"];}, "INCORRECT_GUEST_RESULT");
+  check(r => {r.cases.find(c => c.id === "IDB-20").observedI64 = "7";}, "INCORRECT_GUEST_RESULT");
 });
