@@ -1,0 +1,178 @@
+{
+  "schema_version": 1,
+  "scope": "snapshot_only",
+  "captured_at": "2026-11-06T22:28:32Z",
+  "capture_note": "GitHub-observed five merged PRs across four private source-organization platform/conformance repositories, with exact original PR heads, merge commits, landed Git trees and merge_sha...main ancestry. GitHub branches/main reported protected:false; no independent reviews, landed-commit source-owned CI or authoritative test inventories established. Observed PR-head zero-step failures are diagnostic only and NEVER count as landed-commit runs. Do not release or export private source.",
+  "entries": [
+    {
+      "repo": "ores-truffle-oreslang/oreslang-platform.asic",
+      "pr": 14,
+      "author": "the1mills",
+      "merged": true,
+      "base_ref": "main",
+      "pr_head_sha": "45ff5c95408e878be5450d8136ec8d77cdbce88d",
+      "merge_sha": "04eac14cf4c456d0b23a903a208febb8f13c4648",
+      "landed_tree_sha": "6fe30448423ab3b8c13590f3643669ad4bd60a67",
+      "requires_guest": false,
+      "main_observation": {
+        "head_sha": "04eac14cf4c456d0b23a903a208febb8f13c4648",
+        "compare_status": "identical",
+        "behind_by": 0,
+        "merge_base_sha": "04eac14cf4c456d0b23a903a208febb8f13c4648",
+        "ahead_by": 0
+      },
+      "protection": {
+        "protected": false
+      },
+      "approvals": [],
+      "required_checks": [],
+      "required_tests": [],
+      "source_owned_runs": [],
+      "pr_head_ci_observation": {
+        "scope": "historical_pr_head_only_not_landed",
+        "run_id": 42164377070,
+        "job_id": 127717279363,
+        "result": "RUNNER_NOT_ALLOCATED",
+        "runner_id": null,
+        "executed_steps": 0,
+        "conclusion": "failure"
+      }
+    },
+    {
+      "repo": "ores-truffle-oreslang/oreslang-platform.mobile",
+      "pr": 20,
+      "author": "the1mills",
+      "merged": true,
+      "base_ref": "main",
+      "pr_head_sha": "1139bb36055d4719fde0d25f378b406b0e14869b",
+      "merge_sha": "81ee60ab4aba9dc6b58c5b46709340848ca1a226",
+      "landed_tree_sha": "66c645b19201b4fc4a6d3aee52c23ebc1ec9a200",
+      "requires_guest": false,
+      "main_observation": {
+        "head_sha": "81ee60ab4aba9dc6b58c5b46709340848ca1a226",
+        "compare_status": "identical",
+        "behind_by": 0,
+        "merge_base_sha": "81ee60ab4aba9dc6b58c5b46709340848ca1a226",
+        "ahead_by": 0
+      },
+      "protection": {
+        "protected": false
+      },
+      "approvals": [],
+      "required_checks": [],
+      "required_tests": [],
+      "source_owned_runs": [],
+      "pr_head_ci_observation": {
+        "scope": "historical_pr_head_only_not_landed",
+        "run_id": 42291992718,
+        "job_id": 128147477603,
+        "result": "RUNNER_NOT_ALLOCATED",
+        "runner_id": null,
+        "executed_steps": 0,
+        "conclusion": "failure"
+      }
+    },
+    {
+      "repo": "ores-truffle-oreslang/oreslang-platform.desktop",
+      "pr": 32,
+      "author": "the1mills",
+      "merged": true,
+      "base_ref": "main",
+      "pr_head_sha": "28d36d6316a9f1b9ec721fd07fde317c72403224",
+      "merge_sha": "cc12e421166700d65d4e3162fc1ea6095a7fa597",
+      "landed_tree_sha": "a310bdfed894bcc46f49d8287d70e52ca41708e9",
+      "requires_guest": false,
+      "main_observation": {
+        "head_sha": "cc12e421166700d65d4e3162fc1ea6095a7fa597",
+        "compare_status": "identical",
+        "behind_by": 0,
+        "merge_base_sha": "cc12e421166700d65d4e3162fc1ea6095a7fa597",
+        "ahead_by": 0
+      },
+      "protection": {
+        "protected": false
+      },
+      "approvals": [],
+      "required_checks": [],
+      "required_tests": [],
+      "source_owned_runs": [],
+      "pr_head_ci_observation": {
+        "scope": "historical_pr_head_only_not_landed",
+        "run_id": 42295205050,
+        "job_id": 128158521881,
+        "result": "RUNNER_NOT_ALLOCATED",
+        "runner_id": null,
+        "executed_steps": 0,
+        "conclusion": "failure"
+      }
+    },
+    {
+      "repo": "ores-truffle-oreslang/oreslang-platform-conformance",
+      "pr": 468,
+      "author": "the1mills",
+      "merged": true,
+      "base_ref": "main",
+      "pr_head_sha": "2432ce4fc3d2c24bbe0d0247ea01f2f92ce0e064",
+      "merge_sha": "bb62cdc864463446925202afa9ea9b40b74d16b7",
+      "landed_tree_sha": "1e8e424fe305c8893dd19d69d3477284fa263422",
+      "requires_guest": false,
+      "main_observation": {
+        "head_sha": "1235a720f63cce20038727880052fdf83139eb3f",
+        "compare_status": "ahead",
+        "behind_by": 0,
+        "merge_base_sha": "bb62cdc864463446925202afa9ea9b40b74d16b7",
+        "ahead_by": 1
+      },
+      "protection": {
+        "protected": false
+      },
+      "approvals": [],
+      "required_checks": [],
+      "required_tests": [],
+      "source_owned_runs": [],
+      "pr_head_ci_observation": {
+        "scope": "historical_pr_head_only_not_landed",
+        "run_id": 42278815126,
+        "job_id": 128134155630,
+        "result": "RUNNER_NOT_ALLOCATED",
+        "runner_id": null,
+        "executed_steps": 0,
+        "conclusion": "failure"
+      }
+    },
+    {
+      "repo": "ores-truffle-oreslang/oreslang-platform-conformance",
+      "pr": 482,
+      "author": "the1mills",
+      "merged": true,
+      "base_ref": "main",
+      "pr_head_sha": "d10cfba86d14080bb484c453d6c38234c7d0badd",
+      "merge_sha": "1235a720f63cce20038727880052fdf83139eb3f",
+      "landed_tree_sha": "229d1b7a0805c6d4d1332bbe0cbc92db4e172ca7",
+      "requires_guest": false,
+      "main_observation": {
+        "head_sha": "1235a720f63cce20038727880052fdf83139eb3f",
+        "compare_status": "identical",
+        "behind_by": 0,
+        "merge_base_sha": "1235a720f63cce20038727880052fdf83139eb3f",
+        "ahead_by": 0
+      },
+      "protection": {
+        "protected": false
+      },
+      "approvals": [],
+      "required_checks": [],
+      "required_tests": [],
+      "source_owned_runs": [],
+      "pr_head_ci_observation": {
+        "scope": "historical_pr_head_only_not_landed",
+        "run_id": 42289392239,
+        "job_id": 128138528314,
+        "result": "RUNNER_NOT_ALLOCATED",
+        "runner_id": null,
+        "executed_steps": 0,
+        "conclusion": "failure"
+      }
+    }
+  ]
+}
