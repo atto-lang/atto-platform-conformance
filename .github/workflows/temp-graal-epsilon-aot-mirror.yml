@@ -1,0 +1,41 @@
+name: TEMP GraalVM epsilon strict AOT exact-blob gate
+on:
+  push:
+    branches: [ci/graal-epsilon-aot-mirror-20261106]
+permissions:
+  contents: read
+jobs:
+  graal-epsilon-source-free:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact private carrier SHA
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Verify exact source blob hashes against original Java PR
+        shell: bash
+        env:
+          EXPECTED: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED"
+          git diff --quiet HEAD --
+          python3 - <<'PY'
+          import json, subprocess
+          m=json.load(open('ci/graal-epsilon/mirror-manifest.json'))
+          for name, sha in m['source_blobs'].items():
+              got=subprocess.check_output(['git','hash-object',name],text=True).strip()
+              assert got==sha, f'{name}: {sha}!={got}'
+          print('SOURCE_BLOBS_VERIFIED=' + str(len(m['source_blobs'])))
+          print('SOURCE_HEAD=' + m['origin']['commit'])
+          PY
+      - name: Validate Maven AOT Epsilon and anti-mutation contract
+        run: python3 -m unittest discover -s tests -p test-native-epsilon-pom.py -v
+      - name: Execute full source-free Native Image mock gate
+        run: sh tests/test-build-and-verify-native-image.sh
+      - name: Mark evidence scope
+        run: |
+          echo 'PASS_SCOPE=MOCKED_NATIVE_GATE_AND_MAVEN_XML_ONLY'
+          echo 'REAL_GRAAL_IMAGE_NOT_BUILT; GUEST_NOT_EXECUTED; ZERO_GC_NOT_ESTABLISHED'
