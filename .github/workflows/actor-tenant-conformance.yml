@@ -1,0 +1,30 @@
+name: Actor tenant conformance structural gate
+on:
+  push:
+    paths:
+      - 'contracts/actor-tenant-conformance-v1.json'
+      - 'bin/verify_actor_tenant_receipt.py'
+      - 'tests/test_actor_tenant_receipts.py'
+      - '.github/workflows/actor-tenant-conformance.yml'
+  pull_request:
+    paths:
+      - 'contracts/actor-tenant-conformance-v1.json'
+      - 'bin/verify_actor_tenant_receipt.py'
+      - 'tests/test_actor_tenant_receipts.py'
+      - '.github/workflows/actor-tenant-conformance.yml'
+permissions:
+  contents: read
+jobs:
+  structural-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify baseline manifest
+        run: python3 bin/verify_actor_tenant_receipt.py
+      - name: Test evidence rejection paths
+        run: python3 -m unittest discover -s tests -p 'test_actor_tenant_receipts.py' -v
+      - name: Evidence scope
+        run: echo 'STRUCTURAL_ONLY - does not compile guest programs or test a real sandbox'
