@@ -9,12 +9,12 @@ import { resolve } from 'node:path';
 export const OWNER='ores-truffle-oreslang';
 export const BACKENDS=['java','llvm','net','wasm','forge','js','rs','hdl','cranelift'];
 export const CANDIDATES=[
-  ['java',2552,'c44e0dbd2ce23bb26c46996843e532c310e248af',41958899763,1,127020277346],
-  ['llvm',1443,'4d8df03d523ba1f9f77be6e658f9f633c0a903df',42250847984,1,128005195655],
-  ['net',315,'0cc21189793d08c8b460a3e7b61abe9c9f109165',41584808596,1,125747685746],
-  ['wasm',395,'0fbf29dd1fd8e30ae81b22521c50ae900e565c52',42247407010,2,128021238142],
-  ['forge',189,'26db37477b863621404fdc614efd791e123a8cd5',42075608060,2,127717546451],
-].map(([backend,pr,head,run,attempt,job])=>({backend,pr,head,run,attempt,job}));
+  ['java',2552,'c44e0dbd2ce23bb26c46996843e532c310e248af',41958899763,1,127020277346,'chatgpt/private-mirror-strict-metadata-20261105','.github/workflows/fast-ci.yml'],
+  ['llvm',1443,'4d8df03d523ba1f9f77be6e658f9f633c0a903df',42250847984,1,128005195655,'feat/llvm-parity-then-write-import-fnc-20261103','.github/workflows/ci.yml'],
+  ['net',315,'0cc21189793d08c8b460a3e7b61abe9c9f109165',41584808596,1,125747685746,'fix/state-injection-admission-20261101','.github/workflows/source-modules-native-aot.yml'],
+  ['wasm',395,'0fbf29dd1fd8e30ae81b22521c50ae900e565c52',42247407010,2,128021238142,'fix/preaborted-future-observer-20261106','.github/workflows/ci.yml'],
+  ['forge',189,'26db37477b863621404fdc614efd791e123a8cd5',42075608060,2,127717546451,'fix/forge-legacy-operator-diagnostics-20261105','.github/workflows/ci.yml'],
+].map(([backend,pr,head,run,attempt,job,branch,workflowPath])=>({backend,pr,head,run,attempt,job,branch,workflowPath}));
 const repo=b=>OWNER+'/oreslang-source.'+b;
 const validSha=s=>typeof s==='string' && /^[0-9a-f]{40}$/.test(s);
 // GitHub action setup/checkout/cleanup can complete without executing a test.
@@ -22,7 +22,8 @@ const housekeeping=/^(?:set up job|complete job|post(?: run)? .+|initialize .+|c
 
 export function assessJob(j,c){
   if(!j || typeof j!=='object' || Array.isArray(j)) return 'MISSING_JOB';
-  if(j.id!==c.job || j.run_id!==c.run || j.run_attempt!==c.attempt || j.head_sha!==c.head) return 'IDENTITY_MISMATCH';
+  if(j.id!==c.job || j.run_id!==c.run || j.run_attempt!==c.attempt || j.head_sha!==c.head ||
+     j.head_branch!==c.branch || j.run_url!=='https://api.github.com/repos/'+repo(c.backend)+'/actions/runs/'+c.run) return 'IDENTITY_MISMATCH';
   if(j.status!=='completed') return 'NOT_COMPLETED';
   if(!Number.isSafeInteger(j.runner_id)||j.runner_id<=0||!j.runner_name?.trim?.()) return 'RUNNER_NOT_ALLOCATED';
   if(!Array.isArray(j.steps)||j.steps.length===0) return 'NO_EXECUTED_STEPS';
@@ -48,12 +49,25 @@ export function buildPacket(s){
     const stateValid=(pr?.state==='open'&&pr?.merged===false)||
       (pr?.state==='closed'&&pr?.merged===true&&validSha(pr?.merge_commit_sha)&&
        typeof pr?.merged_at==='string'&&!Number.isNaN(Date.parse(pr.merged_at)));
-    const validPR=pr?.number===c.pr&&pr?.head?.sha===c.head&&pr?.head?.repo?.full_name===repo(c.backend)&&pr?.base?.ref==='main'&&stateValid;
-    const validRun=run?.id===c.run&&run?.head_sha===c.head&&Number.isSafeInteger(run?.run_attempt)&&run.run_attempt>=c.attempt&&run?.repository?.full_name===repo(c.backend);
-    const hits=Array.isArray(jobs?.jobs)?jobs.jobs.filter(j=>j?.id===c.job):[];
+    const apiRoot='https://api.github.com/repos/'+repo(c.backend);
+    const validPR=pr?.number===c.pr&&pr?.url===apiRoot+'/pulls/'+c.pr&&pr?.head?.sha===c.head&&
+      pr?.head?.ref===c.branch&&pr?.head?.repo?.full_name===repo(c.backend)&&
+      pr?.base?.ref==='main'&&pr?.base?.repo?.full_name===repo(c.backend)&&stateValid;
+    // GitHub may return an empty pull_requests array after a historical PR is merged.
+    // Bind independently to the original branch, workflow, source repository and PR-head SHA.
+    const validRun=run?.id===c.run&&run?.url===apiRoot+'/actions/runs/'+c.run&&
+      run?.head_sha===c.head&&run?.head_branch===c.branch&&run?.event==='pull_request'&&
+      run?.path===c.workflowPath&&run?.status==='completed'&&
+      run?.head_repository?.full_name===repo(c.backend)&&
+      Number.isSafeInteger(run?.run_attempt)&&run.run_attempt>=c.attempt&&
+      run?.repository?.full_name===repo(c.backend);
+    // A paginated or truncated job collection cannot prove unique job identity.
+    const completeJobs=Array.isArray(jobs?.jobs)&&Number.isSafeInteger(jobs?.total_count)&&
+      jobs.total_count>0&&jobs.total_count===jobs.jobs.length;
+    const hits=completeJobs?jobs.jobs.filter(j=>j?.id===c.job):[];
     return {repository:repo(c.backend),pullRequest:'https://github.com/'+repo(c.backend)+'/pull/'+c.pr,
       originalHead:c.head,workflow:'https://github.com/'+repo(c.backend)+'/actions/runs/'+c.run,attempt:c.attempt,latestRunAttempt:validRun?run.run_attempt:null,sampledHistoricalAttempt:validRun&&run.run_attempt>c.attempt,jobId:c.job,
-      assessment:!validPR?'PR_HEAD_DRIFT_OR_UNVERIFIED':!validRun?'RUN_IDENTITY_MISMATCH':hits.length!==1?'JOB_MISSING_OR_DUPLICATE':assessJob(hits[0],c)};
+      assessment:!validPR?'PR_HEAD_DRIFT_OR_UNVERIFIED':!validRun?'RUN_IDENTITY_MISMATCH':!completeJobs?'JOB_LIST_INCOMPLETE_OR_UNVERIFIED':hits.length!==1?'JOB_MISSING_OR_DUPLICATE':assessJob(hits[0],c)};
   });
   return {schema:'atto-source-runner-admission-support/v1',sourceOrganization:OWNER,sourceRepositories,sampledJobs,
     counts:{unprotectedMains:sourceRepositories.filter(x=>x.protection==='UNPROTECTED').length,unverifiedMains:sourceRepositories.filter(x=>x.protection==='UNVERIFIED').length,runnerNotAllocated:sampledJobs.filter(x=>x.assessment==='RUNNER_NOT_ALLOCATED').length,executedSuccessfulSampledJobs:sampledJobs.filter(x=>x.assessment==='EXECUTED_JOB_SUCCESS').length},
