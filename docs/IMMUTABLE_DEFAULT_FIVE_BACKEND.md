@@ -15,7 +15,7 @@ carries `optionalBackends` to prevent that substitution.
 | Wasm #227 (merged test only) | `b858b4bfc0bc76223a090399b99f1edf2b87ecdd` | scalar run `41333771691`, job `steps=null` | NOT_EXECUTED |
 | .NET #333 (merged **into draft parent #282**, not shipping) | `65f8bf31956745566748f8f9bf8e4241af7d2716` | no PR-triggered run returned for superseded #298 head; no independently verified NativeAOT receipt | UNSUPPORTED_SHIPPING / NOT_EXECUTED |
 | Forge #171 (draft, mergeable=false at inspection) | `98f2dee45bec71056310785deb1db1e58cb42129` | no PR-triggered workflow run returned for this inspected head | NOT_EXECUTED |
-| Cranelift #21 (optional draft; #34 has incompatible runtime-const proposal) | `7cd6949339f46219a234c1291553c006eb9ef906` | no PR-triggered workflow run returned for inspected head | NOT_EXECUTED |
+| Cranelift #21 (optional draft; #34 adopts runtime-const target) | `7cd6949339f46219a234c1291553c006eb9ef906` | no PR-triggered workflow run returned for inspected head | NOT_EXECUTED |
 
 These are **sampled exact-head run lookups**, not exhaustive checks of every
 workflow dispatch or merge-queue SHA. Missing runs must not be misreported as
@@ -34,13 +34,18 @@ subject to the referent's ownership and borrow permissions. The current
 referent ownership. Those cases remain an unsupported/incomplete
 cross-backend conformance lane, not `PASS`.
 
-**Compatibility:** standalone Java `const` is compile-time constrained,
-while type-first `int x = runtime_expr` is readonly at runtime; the three
-literal declarations are equivalent, but arbitrarily runtime-dependent
-`const` initializers are not thereby admitted. Cranelift #34 documents a
-different runtime-`const` policy that requires reconciliation before any
-common parity claim. .NET structured CFG/CIL tests do not establish
-shipping NativeAOT behavior.
+**Compatibility correction (verified against current merged common-source
+contract #203):** local `const` is a readonly *binding*, not a requirement
+for a compile-time initializer. Both `int x = runtime_expr` and
+`const x = runtime_expr` may execute that expression eagerly, with no
+rebinding or implicit mutable referent authority. `const x=7` may be
+constant-folded only when independently proven, but `const x=helper()`
+remains legal as a runtime expression where the backend supports calls.
+Earlier Java docs / conformance IDB-19/20 incorrectly imposed constexpr
+semantics and are being reconciled here. `.NET` test-only draft #377
+adds runtime-`const` structured CFG/CIL positive controls, **not** real
+shipping NativeAOT proof. Cranelift #21/#34 disagree about this target
+and require source-level reconciliation before merging.
 
 **New fail-closed receipt-shape gate:** `node --test
 tests/immutable-default-receipt.test.mjs` covers stale head/tree, missing
@@ -59,9 +64,11 @@ No source mirror or external transfer was authorized or performed here.
 `oreslang-source.llvm#1256`.
 
 The new `contracts/immutable-default-v1.json` pins **32 actual .ores
-source files** (12 intended successful guest programs, 19 intended
-compile-time rejections, and 1 eager checked-overflow trap). The Node
-contract test protects source-byte equality and checks 14 deliberate
+source files** (14 intended successful guest programs, 17 intended
+compile-time rejections, and 1 eager checked-overflow trap). IDB-19
+runs a parameterized runtime `const` initializer at signed-i64 input 7
+and expects 8; IDB-20 uses a type-first readonly dependency and expects 8.
+The Node contract test protects source-byte equality and checks 17 deliberate
 manifest mutations. It does **not** invoke a compiler. The independent
 Java and LLVM paths do not automatically enable the new type-first
 `int x = 7` spelling.
@@ -87,14 +94,17 @@ for its actual resolved binding permission.
 1. Pin source repository, commit/tree, compiler binary SHA-256, runner/job
    identity, executed steps, and compiler version. Require policy-authorized
    private build; do not export private source across organizations.
-2. Compile+execute IDB-01..06 and IDB-21..25 as guest programs with typed return and
-   exact value receipts (not only OS process exit truncation).
-3. Reject IDB-07..16, IDB-18..20 and IDB-26..30 with **compiler-owned semantic reason**,
-   meaningful source location, no emitted executable and no crash/timeout.
+2. Compile+execute IDB-01..06, IDB-19..25 and IDB-31 as guest programs,
+   including IDB-19 with pinned caller argument `7` and exact result `8`.
+   Record full typed values, not truncated OS exit status.
+3. Reject IDB-07..16, IDB-18, IDB-26..30 and IDB-32 with
+   **compiler-owned semantic reason**, meaningful source location,
+   no emitted executable and no crash/timeout.
 4. Compile IDB-17, then execute and prove a checked arithmetic failure
    even though `unused` is not read (eager initializer semantics).
-5. Compare emitted semantics between Java, LLVM, Wasm, Cranelift and
-   .NET at the *common supported feature slice*. Mark unsupported
+5. Compare emitted semantics between Java, LLVM, Wasm, .NET and
+   independent Forge at the *common supported feature slice*. Run Cranelift
+   as an optional separate sixth lane, never in place of Forge. Mark unsupported
    targets explicitly; never substitute fake or interpreter receipts
    for a native guest run.
 6. Re-run on the final exact reviewed tree, with independent approval
@@ -108,17 +118,21 @@ Additional deeper test targets: field/index writes, mutating method
 receiver, closure captures, pattern bindings, definite assignment,
 nested types, actor `handle_state`, message Sendability, pure effects
 and `rt mut borrow` lifetime crossing await/cancellation. These need
-backend capability support; they are not covered by the 18 scalar cases.
+backend capability support; they are not covered by the 32 scalar cases.
 
-### Compatibility correction
+### Runtime-local const contract reconciliation (2026-11-06)
 
-Java `docs/LANGUAGE.md` defines standalone `const` as a compile-time
-constant and `val` as runtime single-assignment. IDB-19 and IDB-20
-explicitly reject runtime-dependent standalone `const` initialization;
-the new type-first `int x = e` is a readonly **runtime** binding.
-This distinction is essential when inspecting inference drafts in Java,
-LLVM and .NET. IDB-17 uses `int unused = ...` deliberately: an
-unused runtime initializer must still eagerly execute and trap on overflow.
+The **merged** common-source #203 contract explicitly says local `const`
+has binding-level immutability and permits a runtime-dependent initializer.
+The older Java `docs/LANGUAGE.md` wording and the pre-correction manifest's
+IDB-19/20 compile-reject oracles conflict with that contract. The proposed
+oracles here are now **accept**: IDB-19 with caller argument `7` returns
+`8`; IDB-20 with runtime-readonly local dependency returns `8`.
+That change is a **target/source-only correction**, not an observed backend
+pass; compiler/parser support and independent language-spec review remain
+necessary. IDB-17 still demands an eager checked overflow even if the
+initializer's binding is unused. `const` cannot rebind or give a mutable
+loan merely because its initializer is runtime-dependent.
 
 ### Expanded functional / compatibility cases
 
