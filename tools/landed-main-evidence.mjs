@@ -3,6 +3,7 @@ const SHA = /^[0-9a-f]{40}$/;
 const HASH = /^[0-9a-f]{64}$/;
 const REPO = /^ores-truffle-oreslang\/[a-z0-9][a-z0-9._-]*$/;
 const ID = /^[a-z0-9][a-z0-9._-]{0,127}$/;
+const CONTEXT = /^[A-Za-z0-9][A-Za-z0-9 _./:-]{0,127}$/;
 const DIAGNOSTIC = /^[A-Z][A-Z0-9_]{1,127}$/;
 const HEX = /^(?:[0-9a-f]{2})*$/;
 const RESERVED_REVIEWERS = new Set(['the1mills', 'oresoftware']);
@@ -71,7 +72,7 @@ function independentReview(a, entry) {
     validHash(a.attestation_sha256) && a.repo === entry.repo &&
     a.reviewed_commit_sha === entry.merge_sha && a.reviewed_tree_sha === entry.landed_tree_sha &&
     typeof a.login === 'string' && a.login.trim() === a.login && a.login.length > 0 &&
-    !RESERVED_REVIEWERS.has(a.login.toLowerCase()) && a.login.toLowerCase() !== entry.author.toLowerCase();
+    !RESERVED_REVIEWERS.has(a.login.toLowerCase()) && typeof entry.author === 'string' && a.login.toLowerCase() !== entry.author.toLowerCase();
 }
 export function auditEntry(entry) {
   const blockers = [];
@@ -110,7 +111,8 @@ export function auditEntry(entry) {
   const checks = entry.required_checks;
   const runs = entry.source_owned_runs;
   const validChecks = Array.isArray(checks) && checks.length > 0 && checks.length <= 32 &&
-    checks.every(c => isRecord(c) && typeof c.context === 'string' && ID.test(c.context) &&
+    checks.every(c => isRecord(c) && typeof c.context === 'string' && CONTEXT.test(c.context) &&
+      c.context.trim() === c.context &&
       positive(c.app_id) && validSha(c.workflow_sha)) &&
     uniq(checks.map(c => c.context));
   const validRuns = validSpecs && validChecks && Array.isArray(runs) && runs.length > 0 && runs.length <= 128 &&
