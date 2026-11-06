@@ -3,14 +3,23 @@
 // Builtin Float64Array physical geometry and issuance-fenced row IDs only.
 
 function makeGeometry(fields, capacity, layout, options = {}) {
+  // Caller arrays and accessor-backed options are untrusted descriptors.
+  // Capture each item once before checking identity, shape or offsets.
+  // Later mutation of caller arrays must not retarget physical columns.
+  if (!Array.isArray(fields)) throw new TypeError("invalid distinct fields");
+  fields = Array.from(fields);
+  const requestedWidth = options.tileWidth;
+  const requestedGroups = options.groups;
   if (!Array.isArray(fields) || fields.length === 0 || new Set(fields).size !== fields.length ||
       !fields.every(x => typeof x === "string" && /^[A-Za-z_]\w*$/.test(x))) throw new TypeError("invalid distinct fields");
   if (!Number.isSafeInteger(capacity) || capacity < 0 || capacity > 1000000) throw new RangeError("invalid capacity");
   if (!["aos", "soa", "aosoa", "soaos"].includes(layout)) throw new RangeError("unknown layout");
-  const width = options.tileWidth ?? 1;
+  const width = requestedWidth ?? 1;
   if (layout === "aosoa" && (!Number.isSafeInteger(width) || width < 1 || width > 1024)) throw new RangeError("invalid tile width");
-  if (layout !== "aosoa" && options.tileWidth !== undefined) throw new RangeError("tile width only allowed for AoSoA");
-  const groups = options.groups;
+  if (layout !== "aosoa" && requestedWidth !== undefined) throw new RangeError("tile width only allowed for AoSoA");
+  const groups = layout === "soaos" && Array.isArray(requestedGroups)
+    ? Array.from(requestedGroups, group => Array.isArray(group) ? Array.from(group) : group)
+    : requestedGroups;
   if (layout === "soaos") {
     if (!Array.isArray(groups) || groups.length < 1 || groups.some(g => !Array.isArray(g) || !g.length) ||
         groups.flat().length !== fields.length || new Set(groups.flat()).size !== fields.length ||
