@@ -94,7 +94,8 @@
       "organization": "flags-2-env",
       "request": "formal+atto",
       "target": "deterministic parse and config precedence",
-      "status": "not-audited"
+      "status": "source-model-draft",
+      "review_url": "https://github.com/flags-2-env/flags-2-env-cli/pull/14"
     },
     {
       "organization": "gha-indie-worker",
