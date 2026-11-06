@@ -85,7 +85,7 @@ and its first (up to 100 jobs) job page from GitHub's fixed HTTPS REST
 endpoints, using an explicitly authorized token with **Actions read**
 permission on the source repository. It makes exactly two GETs, disallows
 HTTP redirects, bounds each streamed JSON reply to 1 MiB and 15 seconds,
-rejects invalid UTF-8, duplicate decoded JSON keys and excessive nesting, and neither checks out source nor transfers binary
+requires canonical uncompressed JSON, rejects invalid UTF-8, duplicate decoded JSON keys and excessive nesting, and neither checks out source nor transfers binary
 artifacts or private Git objects.
 
 Call its CLI with a small receipt JSON file:
@@ -117,7 +117,7 @@ normally cannot read another private source repo; obtain explicit
 read-only repository-scoped access or run this on the approved source
 side, not by mirroring private source.
 
-Run `node --test tests/dop-github-api-v1.test.mjs tests/dop-evidence-file-v1.test.mjs tests/dop-github-run-snapshot-v1.test.mjs` for 34 focused source-free JSON/file/run provenance adversarial and control groups, including head-repository, job source SHA and rerun-attempt checks. The
+Run `node --test tests/dop-github-api-v1.test.mjs tests/dop-evidence-file-v1.test.mjs tests/dop-github-run-snapshot-v1.test.mjs` for 35 focused source-free JSON/file/run provenance adversarial and control groups, including head-repository, job source SHA and rerun-attempt checks. The HTTP tests exercise no-Content-Length streaming as well as refusal of compressed and forged media types. The
 positive controls use a mocked transport and do not imply GitHub runner
 admission, native code generation or executed guest evidence.
 
