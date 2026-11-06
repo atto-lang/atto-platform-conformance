@@ -96,7 +96,8 @@ const digest = 'b'.repeat(64);
 const validJob = {runId: 11223, runnerId: 11, conclusion: 'success', steps: [
   {id: 'checkout-head', number: 1, conclusion: 'success', startedAt: '2026-11-06T10:00:00Z', completedAt: '2026-11-06T10:00:01Z'},
   {id: 'compile-guest', number: 2, conclusion: 'success', startedAt: '2026-11-06T10:00:01Z', completedAt: '2026-11-06T10:00:02Z'},
-  {id: 'execute-guest', number: 3, conclusion: 'success', startedAt: '2026-11-06T10:00:02Z', completedAt: '2026-11-06T10:00:03Z'}
+  {id: 'execute-guest', number: 3, conclusion: 'success', startedAt: '2026-11-06T10:00:02Z', completedAt: '2026-11-06T10:00:03Z'},
+  {id: 'execute-poisoned-guest', number: 4, conclusion: 'success', startedAt: '2026-11-06T10:00:03Z', completedAt: '2026-11-06T10:00:04Z'}
 ]};
 const shapeOnlyPositiveControl = {
   contract: manifest.contract, backend: 'llvm', caseId: 'primitive-columns-atto-guest',
@@ -208,4 +209,21 @@ test('FAILED status requires an observed failed step, not merely a failure descr
   assert.ok(validateDopGuestReceipt(fake, manifest).includes('observed-failed-step'));
   const forged = {...shapeOnlyPositiveControl, ciJob: {...validJob, runId: Number.MAX_SAFE_INTEGER + 1}};
   assert.ok(validateDopGuestReceipt(forged, manifest).includes('ci-run-id'));
+});
+
+test('LLVM PASSED receipt must include native checksum-poisoned guest after positive execution', () => {
+  const missing = {...shapeOnlyPositiveControl, ciJob: {...validJob,
+    steps: validJob.steps.slice(0, 3)}};
+  assert.ok(validateDopGuestReceipt(missing, manifest).includes('llvm-poisoned-guest-step'));
+  const reversed = {...shapeOnlyPositiveControl, ciJob: {...validJob, steps: [
+    ...validJob.steps.slice(0, 2),
+    {...validJob.steps[2], number: 4},
+    {...validJob.steps[3], number: 3}
+  ]}};
+  assert.ok(validateDopGuestReceipt(reversed, manifest).includes('llvm-poisoned-guest-order'));
+  const skipped = {...shapeOnlyPositiveControl, ciJob: {...validJob, steps: [
+    ...validJob.steps.slice(0,3),
+    {...validJob.steps[3], conclusion: 'skipped'}
+  ]}};
+  assert.ok(validateDopGuestReceipt(skipped, manifest).includes('step-conclusion'));
 });
