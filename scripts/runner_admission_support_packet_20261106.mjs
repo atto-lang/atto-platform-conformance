@@ -49,10 +49,10 @@ export function buildPacket(s){
       (pr?.state==='closed'&&pr?.merged===true&&validSha(pr?.merge_commit_sha)&&
        typeof pr?.merged_at==='string'&&!Number.isNaN(Date.parse(pr.merged_at)));
     const validPR=pr?.number===c.pr&&pr?.head?.sha===c.head&&pr?.head?.repo?.full_name===repo(c.backend)&&pr?.base?.ref==='main'&&stateValid;
-    const validRun=run?.id===c.run&&run?.head_sha===c.head&&run?.run_attempt===c.attempt&&run?.repository?.full_name===repo(c.backend);
+    const validRun=run?.id===c.run&&run?.head_sha===c.head&&Number.isSafeInteger(run?.run_attempt)&&run.run_attempt>=c.attempt&&run?.repository?.full_name===repo(c.backend);
     const hits=Array.isArray(jobs?.jobs)?jobs.jobs.filter(j=>j?.id===c.job):[];
     return {repository:repo(c.backend),pullRequest:'https://github.com/'+repo(c.backend)+'/pull/'+c.pr,
-      originalHead:c.head,workflow:'https://github.com/'+repo(c.backend)+'/actions/runs/'+c.run,attempt:c.attempt,jobId:c.job,
+      originalHead:c.head,workflow:'https://github.com/'+repo(c.backend)+'/actions/runs/'+c.run,attempt:c.attempt,latestRunAttempt:validRun?run.run_attempt:null,sampledHistoricalAttempt:validRun&&run.run_attempt>c.attempt,jobId:c.job,
       assessment:!validPR?'PR_HEAD_DRIFT_OR_UNVERIFIED':!validRun?'RUN_IDENTITY_MISMATCH':hits.length!==1?'JOB_MISSING_OR_DUPLICATE':assessJob(hits[0],c)};
   });
   return {schema:'atto-source-runner-admission-support/v1',sourceOrganization:OWNER,sourceRepositories,sampledJobs,
