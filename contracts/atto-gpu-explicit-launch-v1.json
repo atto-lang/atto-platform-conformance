@@ -20,7 +20,10 @@
       "over/group"
     ],
     "logicalExtentRetainedInIR": true,
-    "paddedTailProofRequired": true
+    "paddedTailProofRequired": true,
+    "physicalGridAxesPositive": true,
+    "emptyLogicalExtentNoPhysicalDispatch": true,
+    "dispatchedLaneCountSeparateFromLogicalCount": true
   },
   "backendEvidence": {
     "java": {
@@ -146,6 +149,14 @@
       "path": "fixtures/gpu-launch-v1/negative-divergent-barrier-tail.atto",
       "gitBlobSha": "7cf1746e43d4ccb16478ac598fe131b78696d7bf",
       "expectedDiagnostic": "GPU-LAUNCH-010",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "zero-physical-grid",
+      "expectation": "negative",
+      "path": "fixtures/gpu-launch-v1/negative-zero-physical-grid.atto",
+      "gitBlobSha": "6a300e923a7c5f3c9bac81b79584e2a90936ba24",
+      "expectedDiagnostic": "GPU-LAUNCH-003",
       "observedResult": "NOT_EXECUTED"
     }
   ],

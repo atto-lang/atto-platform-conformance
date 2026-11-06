@@ -36,6 +36,9 @@ test('GPU launch corpus has a pinned proposal-only schema', () => {
   assert.equal(manifest.execution.implicitCpuFallback, false);
   assert.equal(manifest.execution.legacyCudaTripleChevron, false);
   assert.equal(manifest.execution.groupDimensionCount, 3);
+  assert.equal(manifest.execution.physicalGridAxesPositive, true);
+  assert.equal(manifest.execution.emptyLogicalExtentNoPhysicalDispatch, true);
+  assert.equal(manifest.execution.dispatchedLaneCountSeparateFromLogicalCount, true);
   assert.equal(manifest.execution.deviceEvidenceRequired, true);
 });
 
@@ -50,13 +53,13 @@ test('all seven backends remain explicitly not executed, not falsely passed', ()
 });
 
 test('source cases have distinct IDs, exact git blobs and no false execution claims', () => {
-  assert.equal(manifest.cases.length, 11);
+  assert.equal(manifest.cases.length, 12);
   assert.equal(new Set(manifest.cases.map(c => c.id)).size, manifest.cases.length);
   assert.equal(new Set(manifest.cases.map(c => c.path)).size, manifest.cases.length);
   const positives = manifest.cases.filter(c => c.expectation === 'positive');
   const negatives = manifest.cases.filter(c => c.expectation === 'negative');
   assert.equal(positives.length, 3);
-  assert.equal(negatives.length, 8);
+  assert.equal(negatives.length, 9);
   for (const c of manifest.cases) {
     assert.equal(c.observedResult, 'NOT_EXECUTED');
     assert.equal(c.expectation === 'negative', c.expectedDiagnostic !== null);
@@ -81,6 +84,7 @@ test('negative fixtures independently exercise strict launch admission', () => {
   const expected = {
     'host-buffer': ['GPU-LAUNCH-002', /HostBuffer<f32>/],
     'zero-block': ['GPU-LAUNCH-003', /block: \[0, 1, 1\]/],
+    'zero-physical-grid': ['GPU-LAUNCH-003', /grid: \[0, 1, 1\]/],
     'await-in-kernel': ['GPU-LAUNCH-006', /await sleep\(1\)/],
     'aliased-write': ['GPU-LAUNCH-005', /write_twice\(data, data\)/],
     'chevron': ['GPU-LAUNCH-009', /fill<<<1, 64>>>/],
