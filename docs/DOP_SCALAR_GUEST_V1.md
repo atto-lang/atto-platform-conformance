@@ -58,6 +58,26 @@ source-free action here compiles or runs the Java or LLVM `.atto` guests.
    without an output binary before calling it UNSUPPORTED; otherwise use
    NOT_EXECUTED. Zero-step runner failures are NOT_EXECUTED.
 
+### LLVM native negative control is mandatory
+
+The LLVM source-owned [draft #1308](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1308)
+now includes an ordered `execute-poisoned-guest` step following the positive
+`execute-guest` step. The canonical `.atto` file is not edited: a temporary
+copy changes **exactly one** `checksum == 537509888` guard to
+`checksum == 537509889`, with byte-length equality. The **real** LLVM
+compiler/no-GC auditor and Clang must compile that temporary guest, and the
+resulting native executable must return **exit 1** (not a timeout). Its output
+binary and all compiler/linker/auditor/canonical-source hashes are rechecked
+before this step succeeds. The workflow is Git-blob pinned in
+`verification/dop-workflow-source-v1.mjs`.
+
+A `PASSED` LLVM receipt is invalid unless its independently matched GitHub
+job has a successful `execute-poisoned-guest` step after `execute-guest`.
+A missing, skipped or reordered negative test is rejected. These checks
+are **host-side evidence validation** until the Actions job actually runs on
+an admitted source repository runner; no current backend is thereby proven
+to execute the guest.
+
 LLVM draft #1308 supplies scripts/verify-dop-atto-aot.sh for real LLVM IR
 and Clang guest execution, but the execution gate still needs a stepful,
 verified exact-head receipt. Java draft #2272 is only a closed scalar cpu {}
