@@ -2,7 +2,7 @@
 // Source-free REST correlation only. This is NOT compiler guest attestation.
 import { lstatSync, readFileSync } from 'node:fs';
 import { validateDopGithubSnapshot } from '../verification/dop-github-run-snapshot-v1.mjs';
-import { fetchDopGithubRun, validateGithubIdentity } from '../verification/dop-github-api-v1.mjs';
+import { fetchDopGithubRun, validateGithubIdentity, requireCanonicalDopSourceRepo } from '../verification/dop-github-api-v1.mjs';
 
 function jsonFile(path, limit) {
   const stat = lstatSync(path);
@@ -22,6 +22,7 @@ async function main() {
   const {id} = validateGithubIdentity(repository, rawRunId);
   const receipt = jsonFile(receiptPath, 65536);
   const contract = jsonFile(new URL('../contracts/dop-scalar-guest-v1/manifest.json', import.meta.url), 65536);
+  requireCanonicalDopSourceRepo(receipt.backend, repository);
   if (receipt.ciJob?.runId !== Number(id)) throw new Error('receipt-run-id-mismatch');
   const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
   const {run, jobs} = await fetchDopGithubRun({repository, runId:id, token});
@@ -35,7 +36,7 @@ async function main() {
 main().catch(error => {
   // Never print request objects, credentials, API bodies or raw error stacks.
   const reason = String(error?.message || 'unknown');
-  const safe = /^(invalid-|github-|missing-github-token|json-|receipt-run-id-mismatch|usage:)/.test(reason)
+  const safe = /^(invalid-|backend-|github-|missing-github-token|json-|receipt-run-id-mismatch|usage:)/.test(reason)
     ? reason : 'github-read-failed';
   console.error('DOP_GITHUB_RECEIPT_REJECTED: ' + safe);
   process.exitCode = 1;
