@@ -1,0 +1,112 @@
+{
+  "schema": "attolang.gpu-explicit-launch-corpus/1",
+  "contract": "oreslang-common-source/docs/GPU_EXPLICIT_LAUNCH_V1.md",
+  "state": "SOURCE_PROPOSAL_ONLY",
+  "compatibility": [
+    "gpu fnc",
+    "GpuArray<T>",
+    "gpu.global_id(axis)",
+    "cpu-gpu-task-v2"
+  ],
+  "execution": {
+    "launchResult": "Future<void>",
+    "implicitHostTransfer": false,
+    "implicitCpuFallback": false,
+    "legacyCudaTripleChevron": false,
+    "groupDimensionCount": 3,
+    "deviceEvidenceRequired": true
+  },
+  "backendEvidence": {
+    "java": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "llvm": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "net": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "wasm": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "forge": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "cranelift": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "js": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    }
+  },
+  "cases": [
+    {
+      "id": "saxpy",
+      "expectation": "positive",
+      "path": "fixtures/gpu-launch-v1/saxpy.atto",
+      "gitBlobSha": "ad57137111c14d5eb5d0ebbf6ec836ccd8bc9baa",
+      "expectedDiagnostic": null,
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "host-buffer",
+      "expectation": "negative",
+      "path": "fixtures/gpu-launch-v1/negative-host-buffer.atto",
+      "gitBlobSha": "9c030cf41ae9cea7cd15f726e2cbb83534006835",
+      "expectedDiagnostic": "GPU-LAUNCH-002",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "zero-block",
+      "expectation": "negative",
+      "path": "fixtures/gpu-launch-v1/negative-zero-block.atto",
+      "gitBlobSha": "b8043b779db6400c7a22b30818eb96659141a0ef",
+      "expectedDiagnostic": "GPU-LAUNCH-003",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "await-in-kernel",
+      "expectation": "negative",
+      "path": "fixtures/gpu-launch-v1/negative-await-in-kernel.atto",
+      "gitBlobSha": "7fca27ac4cd90bda534115411af051990bb41db1",
+      "expectedDiagnostic": "GPU-LAUNCH-006",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "aliased-write",
+      "expectation": "negative",
+      "path": "fixtures/gpu-launch-v1/negative-aliased-write.atto",
+      "gitBlobSha": "e7296512197de2c60d3f062f7eb08ee0287a509e",
+      "expectedDiagnostic": "GPU-LAUNCH-005",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "chevron",
+      "expectation": "negative",
+      "path": "fixtures/gpu-launch-v1/negative-chevron.atto",
+      "gitBlobSha": "9448cad73b25e6b7fff81a7711a8856fe70bd54d",
+      "expectedDiagnostic": "GPU-LAUNCH-009",
+      "observedResult": "NOT_EXECUTED"
+    }
+  ],
+  "warnings": [
+    "A matching Git blob proves fixture integrity, not compiler execution.",
+    "All cases are NOT_EXECUTED until exact-head compiled .atto guest evidence exists.",
+    "Zero-step hosted CI is runner-admission evidence only.",
+    "Physical GPU support requires real device execution; a CPU model is never hardware proof."
+  ]
+}
