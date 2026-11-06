@@ -5,7 +5,7 @@ import {loadSuite,selectCases,validateManifest,classifyReceipt,summarize} from '
 const {manifest,cases}=await loadSuite();
 const hex40='a'.repeat(40),hex64='b'.repeat(64);
 const positive=cases.find(c=>c.expect==='positive'&&c.mustObserve.length===0);
-function receipt(c=positive){return {status:'passed',caseId:c.id,backend:'java',compilerCommit:hex40,fixtureCommit:hex40,fixtureBlobSha:c.fixtureBlobSha,fixtureSha256:c.fixtureSha256,compilerSha256:hex64,compileArgv:['/absolute/compiler','--check',c.file],completedSteps:7,stepNames:['compile','guest'],runnerJobUrl:'https://github.com/ores-truffle-oreslang/oreslang-source.java/actions/runs/123',compilerExit:0,compilerOutput:'',compilerEmittedArtifact:false,guestExecuted:true,artifactSha256:hex64,guestArgv:['/absolute/guest'],guestExit:42,guestOutput:''};}
+function receipt(c=positive){return {status:'passed',caseId:c.id,backend:'java',compilerCommit:hex40,fixtureCommit:hex40,fixtureBlobSha:c.fixtureBlobSha,fixtureSha256:c.fixtureSha256,compilerSha256:hex64,compileArgv:['/absolute/compiler','--check',c.file],completedSteps:7,stepNames:['compile','guest'],runnerJobUrl:'https://github.com/ores-truffle-oreslang/oreslang-source.java/actions/runs/123',compilerExit:0,compilerOutput:'',rejectedEmittedArtifact:false,guestExecuted:true,artifactSha256:hex64,guestArgv:['/absolute/guest'],guestExit:42,guestOutput:''};}
 test('14 distinct immutable .atto source cases cover all five backends',()=>{
  assert.equal(cases.length,14);assert.equal(new Set(cases.map(c=>c.fixtureBlobSha)).size,14);
  assert.equal(manifest.executionVerified,false);
@@ -84,9 +84,9 @@ test('targeted first-two fixture selection is strict, ordered and deduplicated',
   assert.throws(()=>selectCases(cases,bad));
  }
 });
-test('a compiler-emitted guest artifact cannot be concealed in negative evidence',()=>{
+test('a rejected compiler artifact cannot be concealed in negative evidence',()=>{
  const c=cases.find(x=>x.expect==='negative');
  const x={...receipt(c),compilerExit:1,compilerOutput:'error: '+c.expectedDiagnosticCode+' invalid capture',
-   compilerEmittedArtifact:true,guestExecuted:false,artifactSha256:null};
+   rejectedEmittedArtifact:true,guestExecuted:false,artifactSha256:null};
  assert.equal(classifyReceipt(c,'java',x).status,'failed');
 });

@@ -70,16 +70,16 @@ async function run(cfg){
    const compilerOutput=(compiled.stdout+'\n'+compiled.stderr).slice(0,131072);
    // Negative admissions must not leave a linked guest artifact. An unexpected
    // compiler output file is a failure even when the diagnostic looks correct.
-   let unexpectedArtifact=false;
-   try{await stat(out);unexpectedArtifact=true;}catch(e){if(e.code!=='ENOENT')throw e;}
+   let artifactFileExists=false;
+   try{await stat(out);artifactFileExists=true;}catch(e){if(e.code!=='ENOENT')throw e;}
    let status='failed',guestExecuted=false,guestArgv=[],guestExit=null,guestOutput='',artifactSha256=null;
    const stepNames=['compile'];
    const safeCompile=compiled.error===null&&compiled.signal===null&&Number.isSafeInteger(compiled.exit);
-   if(safeCompile&&compiled.exit!==0&&!unexpectedArtifact){
+   if(safeCompile&&compiled.exit!==0&&!artifactFileExists){
     if(/(?:^|\n)\s*error:.*\b(?:unsupported|unimplemented)\b/i.test(compilerOutput))status='unsupported';
     // Negative semantic rejection is distinct from an unsupported negative fixture.
     else if(c.expect==='negative')status='passed';
-   }else if(safeCompile&&compiled.exit===0&&c.expect==='positive'&&!unexpectedArtifact){
+   }else if(safeCompile&&compiled.exit===0&&c.expect==='positive'){
     guestArgv=command(cfg.guestArgv,vars);
     const guest=invoke(guestArgv,cfg.compilerRoot);
     stepNames.push('guest');
@@ -96,12 +96,12 @@ async function run(cfg){
     :null;
    const receipt={status,backend:cfg.backend,caseId:c.id,compilerCommit:cfg.compilerCommit,fixtureCommit:cfg.fixtureCommit,
      fixtureBlobSha:c.fixtureBlobSha,fixtureSha256:c.fixtureSha256,compilerSha256,compileArgv,completedSteps:stepNames.length,
-     stepNames,runnerJobUrl:baseUrl,compilerExit:compiled.exit,compilerOutput,compilerEmittedArtifact:unexpectedArtifact,
+     stepNames,runnerJobUrl:baseUrl,compilerExit:compiled.exit,compilerOutput,rejectedEmittedArtifact:(compiled.exit!==0&&artifactFileExists),
      guestExecuted,guestArgv,guestExit,guestOutput,artifactSha256};
    receipts[cfg.backend][c.id]=receipt;
    trace.push({id:c.id,...classifyReceipt(c,cfg.backend,receipt),compilerCommit:cfg.compilerCommit,
      fixtureCommit:cfg.fixtureCommit,compilerExit:compiled.exit,compilerOutput,compileArgv,
-     guestExit,guestExecuted,guestOutput,guestArgv,artifactSha256,compilerEmittedArtifact:unexpectedArtifact,runnerJobUrl:baseUrl,
+     guestExit,guestExecuted,guestOutput,guestArgv,artifactSha256,rejectedEmittedArtifact:(compiled.exit!==0&&artifactFileExists),runnerJobUrl:baseUrl,
      stepNames,fixtureBlobSha:c.fixtureBlobSha,fixtureSha256:c.fixtureSha256,compilerSha256,
      artifactKind:cfg.backend==='java'?'jvm-launcher-identity':cfg.backend==='llvm'?'native-guest-executable':'backend-declared'});
   }
