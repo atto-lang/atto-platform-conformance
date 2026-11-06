@@ -39,13 +39,18 @@ jobs:
         run: |
           set -euo pipefail
           test "$(git rev-parse --verify HEAD)" = "$EXPECTED_HEAD"
+          # New DOP test files must receive a reviewed workflow update: never
+          # silently omit an added identity/provenance test from CI.
+          suite_count="$(find tests -maxdepth 1 -type f -name 'dop-*.test.mjs' | wc -l)"
+          test "$suite_count" -eq 7
           timeout 240s node --test \
             tests/dop-scalar-guest-v1.test.mjs \
             tests/dop-github-run-snapshot-v1.test.mjs \
             tests/dop-github-api-v1.test.mjs \
             tests/dop-evidence-file-v1.test.mjs \
             tests/dop-execution-profile-v1.test.mjs \
-            tests/dop-execution-integration-v1.test.mjs
+            tests/dop-execution-integration-v1.test.mjs \
+            tests/dop-workflow-identity-v1.test.mjs
           test "$(git rev-parse --verify HEAD)" = "$EXPECTED_HEAD"
           test -z "$(git status --porcelain=v1 --untracked-files=all)"
           echo 'DOP_HOST_RECEIPT_SECURITY_TESTS_PASSED_NON_PROMOTING=true'
