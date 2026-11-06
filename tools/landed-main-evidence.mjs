@@ -7,7 +7,9 @@ const positive = n => Number.isSafeInteger(n) && n > 0;
 const stepful = steps => Array.isArray(steps) && steps.some(s => {
   if (s?.conclusion !== 'success' || typeof s.name !== 'string') return false;
   const name = s.name.trim().replace(/\s+/gu,' ').toLowerCase();
-  return name && !ignored.has(name) && !name.startsWith('post ');
+  return name && !ignored.has(name) && !name.startsWith('post ') &&
+    !/^(run )?actions\/(checkout|setup-|cache|upload-artifact|download-artifact)@/.test(name) &&
+    !/^verify exact (pr|source|checkout|head)/.test(name);
 });
 function runValid(run, entry, check) {
   return run?.scope === 'landed-main' && run?.commit_sha === entry.merge_sha &&
