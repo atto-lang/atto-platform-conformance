@@ -11,9 +11,9 @@ jobs:
     steps:
       - name: Reject foreign or unrecognized workflow sources before checkout
         env:
-          GH_${{ github.event_path }}: EVENT_PATH
-          GH_${{ github.event_name }}: EVENT_NAME
-          GH_${{ github.repository }}: REPOSITORY
+          GH_EVENT_PATH: ${{ github.event_path }}
+          GH_EVENT_NAME: ${{ github.event_name }}
+          GH_REPOSITORY: ${{ github.repository }}
         run: |
           python3 - <<'PY'
           import json, os, sys
@@ -24,9 +24,12 @@ jobs:
           base = payload.get("repository") or {}
           if base.get("full_name") != repository or repository != "ores-truffle-oreslang/oreslang-platform-conformance":
               sys.exit("UNTRUSTED_WORKFLOW_BASE")
+          if type(base.get("id")) is not int or base.get("id") != 1413795502:
+              sys.exit("UNTRUSTED_IMMUTABLE_REPOSITORY_ID")
           if name == "pull_request":
               head = ((payload.get("pull_request") or {}).get("head") or {}).get("repo") or {}
-              if head.get("full_name") != repository or head.get("id") != base.get("id"):
+              if (head.get("full_name") != repository or
+                      type(head.get("id")) is not int or head.get("id") != 1413795502):
                   sys.exit("FOREIGN_PULL_REQUEST_HEAD_DENIED")
           elif name != "workflow_dispatch":
               sys.exit("UNSUPPORTED_WORKFLOW_EVENT")
@@ -36,6 +39,11 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Confirm exact checked-out commit without running Git filters
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
       - name: Execute source-free offline gate regression tests
         run: python3 -m unittest discover -v -s tools/platform_readiness -p test_readiness_gate.py
       - name: Clarify evidence boundary
