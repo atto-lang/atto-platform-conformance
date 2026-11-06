@@ -2,12 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {validateGithubIdentity, readGithubJson, fetchDopGithubRun, parseStrictGithubJson, requireCanonicalDopSourceRepo} from '../verification/dop-github-api-v1.mjs';
 
-function reply(obj, {status=200, type='application/json', length, chunks}={}) {
+function reply(obj, {status=200, type='application/json', length, chunks, encoding=null}={}) {
   const bytes = new TextEncoder().encode(JSON.stringify(obj));
-  const size = length ?? String(bytes.length);
+  const size = length === null ? null : length ?? String(bytes.length);
   return {
     ok: status === 200, status,
-    headers: {get(k) {return ({'content-type':type,'content-length':size})[k];}},
+    headers: {get(k) {return ({'content-type':type,'content-length':size,'content-encoding':encoding})[k];}},
     body: new ReadableStream({start(c) {
       for (const chunk of (chunks || [bytes])) c.enqueue(chunk);
       c.close();
@@ -111,4 +111,11 @@ test('DOP source run identity is bound to the five canonical backend repositorie
     assert.throws(() => requireCanonicalDopSourceRepo(backend, repository),
       /backend-repository-mismatch/);
   }
+});
+
+test('strict media type and unsupported compression are rejected before parsing', async () => {
+  await expectFailure(() => readGithubJson(reply({}, {type:'text/plain; application/json'})), 'github-not-json');
+  await expectFailure(() => readGithubJson(reply({}, {type:'application/json, text/plain'})), 'github-not-json');
+  await expectFailure(() => readGithubJson(reply({}, {encoding:'gzip'})), 'github-encoded-response');
+  assert.deepEqual(await readGithubJson(reply({ok:true}, {type:'application/json; charset=utf-8'})), {ok:true});
 });
