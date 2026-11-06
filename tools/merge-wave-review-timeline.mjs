@@ -5,6 +5,8 @@ const COMPLETED = new Set(['APPROVED', 'CHANGES_REQUESTED', 'COMMENTED', 'DISMIS
 const OPERATORS = new Set(['the1mills', 'oresoftware']);
 const OPERATOR_IDS = new Set([2148448, 11139560]);
 const MAX_REVIEWS = 1000;
+const MAX_ELIGIBLE_REVIEWERS = 64;
+const ATTO_REPO = /^ores-truffle-oreslang\/(?:oreslang-source\.(?:java|llvm|wasm|net|forge)|oreslang-platform\.(?:mobile|iot|embedded|desktop|fpga|asic)|oreslang-platform-conformance)$/;
 const MAX_SNAPSHOT_AGE_MS = 5 * 60_000;
 const FUTURE_SKEW_MS = 30_000;
 
@@ -21,6 +23,28 @@ export function snapshotFreshness(asOf, now = Date.now()) {
   if (age > MAX_SNAPSHOT_AGE_MS) return {ok: false, reason: 'SNAPSHOT_STALE'};
   if (age < -FUTURE_SKEW_MS) return {ok: false, reason: 'SNAPSHOT_FROM_FUTURE'};
   return {ok: true, reason: 'SNAPSHOT_RECENT'};
+}
+
+// Structural policy readback binding only. It cannot authenticate caller-supplied data.
+// Require a live, independently verified branch-protection/CODEOWNERS readback upstream.
+function boundReviewerPolicy(input) {
+  const p = input.reviewer_policy;
+  if (!p || typeof p !== 'object' || Array.isArray(p) ||
+      !ATTO_REPO.test(input.repo || '') || !SHA.test(input.base_sha || '') ||
+      p.repo !== input.repo || p.base_sha !== input.base_sha ||
+      p.base_ref !== 'main' || p.protection_readable !== true ||
+      p.protected !== true || p.require_codeowners !== true ||
+      p.dismiss_stale_reviews !== true || p.bypass_count !== 0 ||
+      !Number.isSafeInteger(p.required_approvals) ||
+      p.required_approvals < 1 || p.required_approvals > 6 ||
+      !Array.isArray(p.eligible_reviewer_ids) ||
+      p.eligible_reviewer_ids.length < p.required_approvals ||
+      p.eligible_reviewer_ids.length > MAX_ELIGIBLE_REVIEWERS) return null;
+  const eligible = new Set(p.eligible_reviewer_ids);
+  if (eligible.size !== p.eligible_reviewer_ids.length ||
+      p.eligible_reviewer_ids.some(id => !positiveId(id) ||
+        id === input.author_id || OPERATOR_IDS.has(id))) return null;
+  return {required_approvals:p.required_approvals,eligible};
 }
 
 // Input is deliberately identity-based, never only a username:
@@ -43,6 +67,12 @@ export function qualifyReviewTimeline(input, {now = Date.now()} = {}) {
   if (!SHA.test(input.head_sha || '') || typeof input.author !== 'string' ||
     !LOGIN.test(input.author) || !positiveId(input.author_id)) fail('REVIEW_IDENTITY_INVALID');
   if (input.reviews_complete !== true) fail('REVIEW_HISTORY_INCOMPLETE');
+  const policy = boundReviewerPolicy(input);
+  if (!policy) fail('REVIEW_POLICY_INVALID');
+  if (!Number.isSafeInteger(input.review_count) || input.review_count <= 0 ||
+      !Array.isArray(input.reviews) || input.review_count !== input.reviews.length) {
+    fail('REVIEW_HISTORY_INCOMPLETE');
+  }
   if (!Array.isArray(input.reviews) || input.reviews.length > MAX_REVIEWS || input.reviews.length === 0) {
     fail('REVIEW_HISTORY_INVALID'); return result();
   }
@@ -78,10 +108,13 @@ export function qualifyReviewTimeline(input, {now = Date.now()} = {}) {
     fail('REVIEW_CHANGES_REQUESTED');
   }
   const authorLogin = typeof input.author === 'string' ? input.author.toLowerCase() : '';
-  const approved = [...latest.values()].some(r => r.state === 'APPROVED' &&
-    r.commit_sha === input.head_sha &&
-    r.reviewer_id !== input.author_id && r.login !== authorLogin &&
-    !OPERATORS.has(r.login) && !OPERATOR_IDS.has(r.reviewer_id));
-  if (!approved) fail('REVIEW_INDEPENDENT_APPROVAL_MISSING');
+  const approved = new Set([...latest.values()].filter(r => r.state === 'APPROVED' &&
+    r.commit_sha === input.head_sha && r.reviewer_id !== input.author_id &&
+    r.login !== authorLogin && !OPERATORS.has(r.login) &&
+    !OPERATOR_IDS.has(r.reviewer_id) && policy?.eligible.has(r.reviewer_id))
+    .map(r => r.reviewer_id));
+  if (!policy || approved.size < policy.required_approvals) {
+    fail('REVIEW_INDEPENDENT_APPROVAL_MISSING');
+  }
   return result();
 }
