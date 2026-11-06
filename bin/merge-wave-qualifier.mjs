@@ -37,7 +37,11 @@ function require_recent_snapshot(snapshot) {
   }
   const seen_at = Date.parse(snapshot.as_of);
   const now = Date.now();
-  if (!Number.isFinite(seen_at) || now - seen_at > MAX_ADVISORY_AGE_MS) {
+  if (!Number.isFinite(seen_at)) throw Error('invalid snapshot timestamp');
+  if (seen_at - now > MAX_ADVISORY_AGE_MS) {
+    throw Error('future snapshot: outside five-minute admission window');
+  }
+  if (now - seen_at > MAX_ADVISORY_AGE_MS) {
     throw Error('stale snapshot: source-free evidence older than five minutes');
   }
   return snapshot;
