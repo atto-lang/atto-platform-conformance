@@ -1,12 +1,18 @@
 pub async fnc main(): int {
   let Future<int> parent = task {
-    let Future<int> child = task { await probe_pending(); return 1; };
+    let Future<int> child = task {
+      await probe_pending("descendant_suspended");
+      return 1;
+    };
     await child;
     return 1;
   };
   let Future<int> sibling = task { return 42; };
+  probe_wait_for("descendant_suspended"); // require actual live descendant before cancellation
   parent.cancel();
   await parent.get_done();
   probe_assert_descendants_retired(parent);
-  return await sibling;
+  let int answer = await sibling;
+  probe_assert_sibling_survived();
+  return answer;
 }
