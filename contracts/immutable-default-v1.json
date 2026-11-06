@@ -7,14 +7,16 @@
     "java",
     "llvm",
     "wasm",
-    "cranelift",
-    "net"
+    "net",
+    "forge"
   ],
+  "optionalBackends": ["cranelift"],
   "backendCapabilities": {
     "java": "candidate-on-unverified-draft",
     "llvm": "candidate-on-unverified-draft",
     "wasm": "llvm-frontend-delegated-guest-not-verified",
     "cranelift": "native-i64-draft-unverified",
+    "forge": "native-i64-draft-unverified",
     "net": "shipping-parser-unsupported"
   },
   "cases": [
