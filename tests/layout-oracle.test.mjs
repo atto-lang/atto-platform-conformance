@@ -163,3 +163,67 @@ test('deterministic 900-step AoS/SoA/AoSoA/SoAoS differential trace',()=>{
   }
   check();
 });
+
+test('SoAoS proxy groups cannot insert a row while conversion validates metadata',()=>{
+  const store=new LayoutOracle(['x','y'],'soa');
+  const first=store.insert({x:1,y:2});
+  let intercepted=false;
+  const groups=new Proxy([['x'],['y']],{
+    get(target,key) {
+      if(key==='length'&&!intercepted) {
+        intercepted=true;
+        assert.throws(()=>store.insert({x:99,y:88}),/reentrant/);
+      }
+      return Reflect.get(target,key);
+    }
+  });
+  assert.throws(()=>store.convert('soaos',groups),/tainted/);
+  assert.equal(intercepted,true);
+  assert.equal(store.layout,'soa');
+  assert.deepEqual(store.snapshot(),{x:[1],y:[2]});
+  assert.deepEqual(store.read(first),{x:1,y:2});
+  store.convert('soaos',[['x'],['y']]);
+  assert.deepEqual(store.snapshot(),[[{x:1}],[{y:2}]]);
+});
+
+test('SoAoS validation cannot swallow a nested layout conversion',()=>{
+  const store=new LayoutOracle(['x','y'],'aos');
+  const h=store.insert({x:10,y:20});
+  let seen=false;
+  const groups=new Proxy([['x'],['y']],{
+    get(target,key) {
+      if(key===Symbol.iterator&&!seen) {
+        seen=true;
+        assert.throws(()=>store.convert('soa'),/reentrant/);
+      }
+      return Reflect.get(target,key);
+    }
+  });
+  assert.throws(()=>store.convert('soaos',groups),/tainted/);
+  assert.equal(seen,true);
+  assert.equal(store.layout,'aos');
+  assert.deepEqual(store.read(h),{x:10,y:20});
+  assert.deepEqual(store.snapshot(),[{x:10,y:20}]);
+  store.convert('soa');
+  assert.deepEqual(store.snapshot(),{x:[10],y:[20]});
+});
+
+test('nested SoAoS group iteration cannot delete a row and silently commit',()=>{
+  const store=new LayoutOracle(['x','y'],'soa');
+  const h=store.insert({x:7,y:9});
+  let intercepted=false;
+  const group=new Proxy(['x'],{
+    get(target,key) {
+      if(key===Symbol.iterator&&!intercepted) {
+        intercepted=true;
+        assert.throws(()=>store.remove(h),/reentrant/);
+      }
+      return Reflect.get(target,key);
+    }
+  });
+  assert.throws(()=>store.convert('soaos',[group,['y']]),/tainted/);
+  assert.equal(intercepted,true);
+  assert.equal(store.layout,'soa');
+  assert.deepEqual(store.read(h),{x:7,y:9});
+  assert.deepEqual(store.snapshot(),{x:[7],y:[9]});
+});
