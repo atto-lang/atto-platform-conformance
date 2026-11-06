@@ -67,7 +67,7 @@ test('AoSoA requires a valid power-of-two lane count and proper padded tail',()=
 });
 test('SoAoS requires an explicit, complete, nonoverlapping field partition',()=>{
   for(const groups of [[],[[0,2]],[[0,2],[2,1]],[[],[0,1,2]],[[0,3],[1,2]]])
-    assert.throws(()=>physicalLayoutV1({...base,kind:'soaos',groups}),/groups|partition/);
+    assert.throws(()=>physicalLayoutV1({...base,kind:'soaos',groups}),/groups|partition|empty-group/);
   assert.throws(()=>physicalLayoutV1({...base,kind:'aos',groups:[[0,1,2]]}),/groups/);
 });
 test('width/alignment, field-count and size quotas fail closed',()=>{
