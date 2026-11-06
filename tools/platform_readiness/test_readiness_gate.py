@@ -113,7 +113,7 @@ class ReadinessTests(unittest.TestCase):
 
     def test_unpinned_artifact(self):
         s=self.data();s["backends"]["llvm"]["artifact_sha256"]=None
-        self.assertIn("SOURCE_OR_ARTIFACT_NOT_PINN",evaluate(s)["backend_findings"]["llvm"])
+        self.assertIn("SOURCE_OR_ARTIFACT_NOT_PINNED",evaluate(s)["backend_findings"]["llvm"])
 
     def test_guest_not_executed(self):
         s=self.data();s["backends"]["net"]["guest_execution"]="NOT_EXECUTED"
