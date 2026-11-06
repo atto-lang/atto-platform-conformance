@@ -13,7 +13,7 @@ export const CANDIDATES=[
   ['llvm',1443,'4d8df03d523ba1f9f77be6e658f9f633c0a903df',42250847984,1,128005195655],
   ['net',315,'0cc21189793d08c8b460a3e7b61abe9c9f109165',41584808596,1,125747685746],
   ['wasm',395,'0fbf29dd1fd8e30ae81b22521c50ae900e565c52',42247407010,2,128021238142],
-  ['forge',189,'26db37477b863621404fdc614efd791e123a8cd5',42075608060,1,127717546451],
+  ['forge',189,'26db37477b863621404fdc614efd791e123a8cd5',42075608060,2,127717546451],
 ].map(([backend,pr,head,run,attempt,job])=>({backend,pr,head,run,attempt,job}));
 const repo=b=>OWNER+'/oreslang-source.'+b;
 const validSha=s=>typeof s==='string' && /^[0-9a-f]{40}$/.test(s);
