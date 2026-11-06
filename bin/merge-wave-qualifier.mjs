@@ -25,12 +25,30 @@ function read_snapshot(path) {
   }
 }
 
+
+const MAX_ADVISORY_AGE_MS = 5 * 60_000;
+function require_recent_snapshot(snapshot) {
+  // A CLI read from disk is only a *claim* about GitHub state. Never let an
+  // old favorable claim be replayed as a fresh intake diagnostic.
+  if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot) ||
+      typeof snapshot.as_of !== 'string' ||
+      !/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$/.test(snapshot.as_of)) {
+    throw Error('invalid snapshot timestamp');
+  }
+  const seen_at = Date.parse(snapshot.as_of);
+  const now = Date.now();
+  if (!Number.isFinite(seen_at) || now - seen_at > MAX_ADVISORY_AGE_MS) {
+    throw Error('stale snapshot: source-free evidence older than five minutes');
+  }
+  return snapshot;
+}
+
 if (process.argv.length !== 3) {
   console.error('Usage: node bin/merge-wave-qualifier.mjs snapshot.json');
   process.exitCode = 2;
 } else {
   try {
-    const output = qualifyWave(JSON.parse(read_snapshot(process.argv[2])));
+    const output = qualifyWave(require_recent_snapshot(JSON.parse(read_snapshot(process.argv[2]))));
     // Caller-supplied offline receipts must never yield a shell/CI success.
     const code = output.status === 'BLOCKED' ? 1 :
       output.status === 'SNAPSHOT_QUALIFIED_REQUIRES_LIVE_RECHECK' ? 3 : 2;
