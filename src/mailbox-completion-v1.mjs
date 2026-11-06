@@ -9,9 +9,11 @@ const invalid = why => { throw new Error('INVALID_MAILBOX_COMPLETION_TRACE: ' + 
 const dataRecord = (value, allowedKeys, requiredKeys) =>
   value !== null && typeof value === 'object' && !Array.isArray(value) &&
   Object.getPrototypeOf(value) === Object.prototype &&
-  Reflect.ownKeys(value).every(key =>
-    typeof key === 'string' && allowedKeys.includes(key) &&
-    Object.hasOwn(Object.getOwnPropertyDescriptor(value, key), 'value')) &&
+  Reflect.ownKeys(value).every(key => {
+    if (typeof key !== 'string' || !allowedKeys.includes(key)) return false;
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    return descriptor !== undefined && Object.hasOwn(descriptor, 'value');
+  }) &&
   requiredKeys.every(key => Object.hasOwn(value, key));
 
 export function checkMailboxCompletionV1(input) {
