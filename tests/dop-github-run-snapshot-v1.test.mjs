@@ -23,9 +23,12 @@ const receipt = {
   ciJob: {runId: 1422, jobId: 4411, runnerId: 55, conclusion: 'success', steps}
 };
 const run = {id: 1422, run_attempt: 1, head_sha: head, status: 'completed',
+  workflow_id: 404132837, path: '.github/workflows/dop-atto-soa-native.yml',
+  name: 'Native AttoLang DOP SoA guest AOT smoke', event: 'pull_request',
   conclusion: 'success', repository: {full_name: repo},
   head_repository: {full_name: repo}};
 const job = {id: 4411, run_id: 1422, run_attempt: 1, head_sha: head,
+  workflow_name: 'Native AttoLang DOP SoA guest AOT smoke', name: 'native-guest',
   runner_id: 55, status: 'completed',
   conclusion: 'success', steps: steps.map(step => ({
     number: step.number, name: step.id, conclusion: step.conclusion,
@@ -109,4 +112,13 @@ test('previous or future job attempt cannot masquerade as the current GitHub run
     .includes('job-attempt-match'));
   assert.ok(verify(receipt, run, {total_count: 1, jobs: [{...job, run_attempt: null}]})
     .includes('job-attempt-match'));
+});
+
+test('workflow path and job identity cannot be replaced by unrelated host-only checks', () => {
+  assert.ok(verify(receipt, {...run, path: '.github/workflows/host-only.yml'})
+    .includes('workflow-path'));
+  assert.ok(verify(receipt, {...run, name: 'host reference oracle'})
+    .includes('workflow-name'));
+  assert.ok(verify(receipt, run, {total_count:1,jobs:[{...job,name:'host-only'}]})
+    .includes('workflow-job-name'));
 });
