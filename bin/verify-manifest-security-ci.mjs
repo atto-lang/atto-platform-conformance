@@ -39,8 +39,9 @@ function object(value, name) {
   return value;
 }
 function exactKeys(value, keys, name) {
-  const actual = Object.keys(object(value, name)).sort();
-  if (actual.join('\0') !== [...keys].sort().join('\0')) fail(`${name}: unexpected or missing keys`);
+  const actual = Object.keys(object(value, name));
+  if (actual.length !== keys.length ||
+      actual.some(key => !keys.includes(key))) fail(`${name}: unexpected or missing keys`);
 }
 function positiveInt(value, name) {
   if (!Number.isSafeInteger(value) || value <= 0) fail(`${name}: expected positive integer`);
@@ -84,6 +85,8 @@ export async function qualifyManifestSecurityCI(receipt, api) {
         fail('PR not open or exact head/base differs');
       if (pull.head?.repo?.id !== target.id || pull.base?.repo?.id !== target.id)
         fail('PR head/base repository identity mismatch');
+      if (typeof pull.head?.ref !== 'string' || !pull.head.ref)
+        fail('PR head branch identity missing');
 
       const commit = object(await api(`${base}/commits/${head}`), `${backend} commit`);
       if (commit.sha !== head || commit.commit?.tree?.sha !== tree) fail('exact source tree does not match GitHub');
@@ -91,15 +94,38 @@ export async function qualifyManifestSecurityCI(receipt, api) {
       if (workflow.sha !== target.workflowSha || workflow.type !== 'file')
         fail('review-pinned workflow blob mismatch');
 
+      const installedWorkflow = object(await api(`${base}/actions/workflows/integration-declarations.yml`), `${backend} workflow identity`);
+      positiveInt(installedWorkflow.id, `${backend} workflow_id`);
+      if (installedWorkflow.path !== workflowPath || installedWorkflow.name !== 'Integration declaration integrity')
+        fail('registered workflow identity mismatch');
+
       const run = object(await api(`${base}/actions/runs/${runId}`), `${backend} run`);
-      if (run.id !== runId || run.repository?.id !== target.id || run.head_sha !== head ||
+      if (run.id !== runId || run.repository?.id !== target.id || run.head_repository?.id !== target.id ||
+          run.head_sha !== head || run.head_branch !== pull.head.ref ||
+          run.workflow_id !== installedWorkflow.id || run.name !== installedWorkflow.name ||
           run.path !== workflowPath || run.event !== 'pull_request' ||
           run.status !== 'completed' || run.conclusion !== 'success')
         fail('workflow run is not a successful, exact-head source-owned PR run');
+      if (!Array.isArray(run.pull_requests) ||
+          !run.pull_requests.some(entry => entry?.number === prNo && entry?.head?.sha === head))
+        fail('workflow run is not associated with the exact PR head');
+      positiveInt(run.run_attempt, `${backend}.run_attempt`);
+      // An older successful job can still be fetched by ID after a failed rerun.
+      // Bind the selected job to the *current attempt's* canonical membership.
+      const attempt = object(await api(`${base}/actions/runs/${runId}/attempts/${run.run_attempt}/jobs?per_page=100`), `${backend} attempt jobs`);
+      if (!Number.isSafeInteger(attempt.total_count) || attempt.total_count < 1 ||
+          attempt.total_count > 100 || !Array.isArray(attempt.jobs) ||
+          attempt.jobs.length !== attempt.total_count ||
+          attempt.jobs.filter(entry => entry?.id === jobId).length !== 1)
+        fail('selected job is not uniquely present in the latest completed run attempt');
       const job = object(await api(`${base}/actions/jobs/${jobId}`), `${backend} job`);
-      if (job.id !== jobId || job.run_id !== runId || job.status !== 'completed' ||
-          job.conclusion !== 'success' || !Number.isSafeInteger(job.runner_id) || job.runner_id <= 0)
-        fail('job never executed on a verified assigned runner');
+      if (job.id !== jobId || job.run_id !== runId || job.head_sha !== run.head_sha ||
+          job.name !== 'declaration-integrity' ||
+          job.workflow_name !== 'Integration declaration integrity' ||
+          job.status !== 'completed' || job.conclusion !== 'success' ||
+          !Array.isArray(job.labels) || !job.labels.includes('ubuntu-24.04') ||
+          !Number.isSafeInteger(job.runner_id) || job.runner_id <= 0)
+        fail('job is not the expected completed Ubuntu runner-backed security job');
       if (!Array.isArray(job.steps) || job.steps.length === 0)
         fail('NOT_EXECUTED: zero-step job cannot attest tests');
       for (const expected of requiredSteps[backend === 'forge' ? 'forge' : 'rust']) {
@@ -107,17 +133,38 @@ export async function qualifyManifestSecurityCI(receipt, api) {
         if (matches.length !== 1 || matches[0].status !== 'completed' || matches[0].conclusion !== 'success')
           fail(`required step missing, duplicate or not successful: ${expected}`);
       }
-      if (!job.steps.some(s => /^Run actions\/checkout@11bd71901bbe5b1630ceea73d27597364c9af683$/.test(s?.name) && s.conclusion === 'success'))
-        fail('pinned checkout step missing or not successful');
+      const checkout = job.steps.filter(s =>
+        s?.name === 'Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683');
+      if (checkout.length !== 1 || checkout[0].status !== 'completed' || checkout[0].conclusion !== 'success')
+        fail('unique pinned checkout step missing or not successful');
       qualifications.push({ backend, head_sha: head, tree_sha: tree, run_id: runId, job_id: jobId,
         executed_steps: job.steps.filter(s => s.status === 'completed').length, status: 'CI_VERIFIED' });
     } catch (error) {
       errors.push(`${backend}: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
-  return { ok: errors.length === 0 && qualifications.length === 5,
-    status: errors.length === 0 && qualifications.length === 5 ? 'CI_VERIFIED' : 'NOT_VERIFIED',
-    qualifications, errors };
+  // A PR can move while the five backend API queries are in flight.
+  // Re-read all PR refs immediately before issuing any qualification, then
+  // require a separate expected-head lease at merge time: this isn't atomic.
+  if (errors.length === 0 && qualifications.length === 5) {
+    for (const candidate of candidates) {
+      try {
+        const refreshed = object(await api(`/repos/${candidate.repository}/pulls/${candidate.pr}`),
+          `${candidate.backend} final PR read`);
+        if (refreshed.state !== 'open' || refreshed.head?.sha !== candidate.head_sha ||
+            refreshed.head?.repo?.id !== registry[candidate.backend].id ||
+            refreshed.base?.ref !== targetBase(candidate.backend))
+          fail('PR changed during evidence verification');
+      } catch (error) {
+        errors.push(`${candidate.backend}: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+  }
+  const ok = errors.length === 0 && qualifications.length === 5;
+  return { ok, status: ok ? 'CI_VERIFIED' : 'NOT_VERIFIED',
+    // Never emit partial success markers that a downstream consumer might
+    // incorrectly interpret as per-backend release approval.
+    qualifications: ok ? qualifications : [], errors };
 }
 
 function targetBase(backend) {
