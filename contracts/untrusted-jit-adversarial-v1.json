@@ -18,7 +18,7 @@
       ],
       "arch": "aarch64",
       "sourceKind": "WASM_BINARY",
-      "attack": "Memory64 AArch64 checked-vs-loaded address divergence, CVE-2026-34971",
+      "attack": "Regression-only: AArch64 Wasm memory64 checked address vs load address divergence (CVE-2026-34971); patched in Wasmtime >=43.0.1",
       "oracle": "Attacker denied, bounded or safely terminated; host and neighbor remain intact; exact behavior must be recorded.",
       "neighborMustSurvive": true,
       "status": "NOT_EXECUTED"
@@ -31,7 +31,7 @@
       ],
       "arch": "any",
       "sourceKind": "WASM_BINARY",
-      "attack": "Large SSA value-count compiler lowering, CVE-2026-115889",
+      "attack": "Regression-only: huge SSA indices bit-packed incorrectly in older Wasmtime (<43), CVE-2026-115889; fixed by v43",
       "oracle": "Attacker denied, bounded or safely terminated; host and neighbor remain intact; exact behavior must be recorded.",
       "neighborMustSurvive": true,
       "status": "NOT_EXECUTED"
@@ -275,6 +275,7 @@
     "https://github.com/bytecodealliance/wasmtime/security/advisories/GHSA-6fr9-xmw9-5352",
     "https://docs.wasmtime.dev/examples-interrupting-wasm.html",
     "https://v8.dev/blog/sandbox",
-    "https://docs.oracle.com/en/graalvm/jdk/25i/docs/security-guide/sandboxing/"
+    "https://docs.oracle.com/en/graalvm/jdk/25i/docs/security-guide/sandboxing/",
+    "https://github.com/bytecodealliance/wasmtime/security/advisories/GHSA-jhxm-h53p-jm7w"
   ]
 }
