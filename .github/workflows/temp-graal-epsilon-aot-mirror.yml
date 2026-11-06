@@ -32,7 +32,7 @@ jobs:
           print('SOURCE_HEAD=' + m['origin']['commit'])
           PY
       - name: Validate Maven AOT Epsilon and anti-mutation contract
-        run: python3 -m unittest discover -s tests -p test-native-epsilon-pom.py -v
+        run: python3 tests/test-native-epsilon-pom.py -v
       - name: Execute full source-free Native Image mock gate
         run: sh tests/test-build-and-verify-native-image.sh
       - name: Mark evidence scope
