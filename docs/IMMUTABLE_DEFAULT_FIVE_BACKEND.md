@@ -1,5 +1,57 @@
 # Immutable-by-default bindings: five-backend admission and guest evidence
 
+## November 6, 2026: live exact-head audit and release blockers
+
+This repository's five **mandatory AttoLang backends** are Java/GraalVM,
+LLVM, Wasm, .NET NativeAOT, and **Forge**. Cranelift remains an
+**optional sixth, distinct compiler**. Earlier five-backend examples that
+replaced Forge with Cranelift were incorrectly scoped. The fixture manifest now
+carries `optionalBackends` to prevent that substitution.
+
+| Backend / PR | Inspected PR head | Independently checked Actions evidence | Gate |
+| --- | --- | --- | --- |
+| Java/Graal #2449 (draft, parent #2405 draft) | `45bea9a3672f322fd1658373006d157fa6e2f84f` | run `41368249659`, 5 jobs `steps=null`; fast-ci `41368249650`, 1 job `steps=null` | NOT_EXECUTED |
+| LLVM #1301 (draft, parent #1256 draft) | `e107ef81a1335c65f4b63a9b89a3f5efc3ee3cbc` | native run `41396216936`, job `steps=null` | NOT_EXECUTED |
+| Wasm #227 (merged test only) | `b858b4bfc0bc76223a090399b99f1edf2b87ecdd` | scalar run `41333771691`, job `steps=null` | NOT_EXECUTED |
+| .NET #333 (merged **into draft parent #282**, not shipping) | `65f8bf31956745566748f8f9bf8e4241af7d2716` | no PR-triggered run returned for superseded #298 head; no independently verified NativeAOT receipt | UNSUPPORTED_SHIPPING / NOT_EXECUTED |
+| Forge #171 (draft, mergeable=false at inspection) | `98f2dee45bec71056310785deb1db1e58cb42129` | no PR-triggered workflow run returned for this inspected head | NOT_EXECUTED |
+| Cranelift #21 (optional draft; #34 has incompatible runtime-const proposal) | `7cd6949339f46219a234c1291553c006eb9ef906` | no PR-triggered workflow run returned for inspected head | NOT_EXECUTED |
+
+These are **sampled exact-head run lookups**, not exhaustive checks of every
+workflow dispatch or merge-queue SHA. Missing runs must not be misreported as
+executed failures or successes. The immutable source corpus #271 is merged
+but its integrity-only workflow run `41396650101` had `steps=null`.
+No actual compiler-backed parity is established by these observations.
+
+**Semantic distinction:** `int x = 7`, `const x = 7`, and
+`const int x = 7` must all be immutable and evaluate to the same typed
+value. An explicit `let`/supported `mut` binding permits *rebinding* only
+as specified; it is not proof of mutable ownership of the referent.
+An immutable binding may hold a separately mutable referent **only**
+subject to the referent's ownership and borrow permissions. The current
+32 scalar fixtures cover rebinding and scalar mutable-borrow rejection,
+**not** field writes, aliases, receiver mutation, actor state, or mutable
+referent ownership. Those cases remain an unsupported/incomplete
+cross-backend conformance lane, not `PASS`.
+
+**Compatibility:** standalone Java `const` is compile-time constrained,
+while type-first `int x = runtime_expr` is readonly at runtime; the three
+literal declarations are equivalent, but arbitrarily runtime-dependent
+`const` initializers are not thereby admitted. Cranelift #34 documents a
+different runtime-`const` policy that requires reconciliation before any
+common parity claim. .NET structured CFG/CIL tests do not establish
+shipping NativeAOT behavior.
+
+**New fail-closed receipt-shape gate:** `node --test
+tests/immutable-default-receipt.test.mjs` covers stale head/tree, missing
+runner, `steps=null` / `steps=[]`, wrong run binding, failed/skipped
+steps, missing compiler/guest digest, parse-only negatives, absent eager
+overflow, and the positive mutable-`let` control. Even a structurally
+complete synthetic receipt returns `REVIEW_REQUIRED`, **never PASS**.
+Independent GitHub readback, real binary/toolchain identity, compiler-owned
+diagnostics, guest logs and independent approval are still necessary.
+No source mirror or external transfer was authorized or performed here.
+
 **Not a parity certificate.** Shared language proposal:
 `oreslang-common-source#203`. Candidate implementation:
 `oreslang-source.cranelift#21`. Java scalar inference tests:
@@ -19,8 +71,9 @@ Java and LLVM paths do not automatically enable the new type-first
 | Java / Graal | `const`/inference draft; new typed-default spelling not proven | parser + type/ownership errors + JUnit actual guest results |
 | LLVM | staged native scalar inference/casts; typed-default not verified | real source-to-LLVM IR, Clang-linked binaries, checked negatives |
 | Wasm | LLVM native compiler delegated; only narrow import-free guest ABI | pinned LLVM frontend, Wasm emission, validation and actual guest outputs |
-| Cranelift | draft int-only native SSA/JIT implementation | `cargo test --locked --all-targets`, exact CLIF and native results |
 | .NET | shipping scalar compiler has no local declarations; structured path experimental | verified structured CIL + exact-head Native AOT execution, no JIT fallback |
+| Forge | independent C++ stage-0 compiler; draft bounded i64 locals | compile+link native binary, execute guest with checked diagnostics, GCC/Clang CTest/sanitizers |
+| Cranelift (optional sixth lane) | separate native stage-0 JIT; **not** Forge | exact-head real JIT cases; never substitute for Forge |
 
 **Never promote** a backend based on parsing, host-only tests, a
 source-grep/source manifest, generic parser failure for a negative
