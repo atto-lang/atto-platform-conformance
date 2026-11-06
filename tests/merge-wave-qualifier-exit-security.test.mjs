@@ -43,7 +43,7 @@ function candidate(repo, number) {
 }
 function snapshot() {
   return {
-    schema_version: 1, as_of: '2026-11-06T19:00:00Z',
+    schema_version: 1, as_of: new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'),
     candidates: REPOS.map((repo, i) => candidate(repo, i + 1))
   };
 }
@@ -151,4 +151,45 @@ test('missing CLI argument exits 2 without a false success', () => {
   });
   verify_exit(result, 2);
   assert.match(result.stderr, /Usage:/);
+});
+
+test('reject six-minute-old otherwise qualified snapshots as stale', t => {
+  const snap = snapshot();
+  snap.as_of = new Date(Date.now() - 6 * 60_000).toISOString().replace(/\.\d{3}Z$/, 'Z');
+  const result = run(fixture(t, JSON.stringify(snap)).path);
+  verify_exit(result, 2);
+  assert.equal(result.stdout, '');
+  assert.match(result.stderr, /stale snapshot/);
+});
+
+test('accept a four-minute-old snapshot only as advisory, never shell success', t => {
+  const snap = snapshot();
+  snap.as_of = new Date(Date.now() - 4 * 60_000).toISOString().replace(/\.\d{3}Z$/, 'Z');
+  const result = run(fixture(t, JSON.stringify(snap)).path);
+  verify_exit(result, 3);
+  assert.equal(JSON.parse(result.stdout).status, 'SNAPSHOT_QUALIFIED_REQUIRES_LIVE_RECHECK');
+});
+
+test('reject stale empty snapshots before emitting even blocked results', t => {
+  const snap = {schema_version: 1, as_of: '2026-01-01T00:00:00Z', candidates: []};
+  const result = run(fixture(t, JSON.stringify(snap)).path);
+  verify_exit(result, 2);
+  assert.equal(result.stdout, '');
+  assert.match(result.stderr, /stale snapshot/);
+});
+
+test('reject noncanonical snapshot timestamps before checking substantive evidence', t => {
+  const snap = snapshot();
+  snap.as_of = new Date().toISOString();
+  const result = run(fixture(t, JSON.stringify(snap)).path);
+  verify_exit(result, 2);
+  assert.match(result.stderr, /invalid snapshot timestamp/);
+});
+
+test('reject snapshots too far in the future', t => {
+  const snap = snapshot();
+  snap.as_of = new Date(Date.now() + 6 * 60_000).toISOString().replace(/\.\d{3}Z$/, 'Z');
+  const result = run(fixture(t, JSON.stringify(snap)).path);
+  verify_exit(result, 2);
+  assert.equal(result.stdout, '');
 });
