@@ -84,3 +84,134 @@ test('non-string credential with own toString is denied without calling it',()=>
   denied(f,{peerAuthenticated:true,credential:{principal_id:bad}},'UNAUTHENTICATED');
   assert.equal(calls,0);
 });
+
+
+const reentry_wall = 1793664000000;
+const reentry_credential = {
+  principal_id:'p1',boot_id:'boot-1',runtime_id:'r1',tenant_id:'t1',
+  generation:1,expires_at_ms:reentry_wall+100000,
+  scopes:['inspect:catalog','inspect:summary','inspect:metrics','inspect:upgrade_status'],
+};
+function make_reentry_args(id='a',nonce='a'.repeat(32)) {
+  return {
+    peerAuthenticated:true,credential:reentry_credential,
+    hostBootId:'boot-1',hostRuntimeGeneration:1,wallNowMs:reentry_wall,
+    monotonicNowMs:1000,frameBytes:512,jsonDepth:5,
+    request:{
+      jsonrpc:'2.0',id,method:'resources/read',
+      params:{uri:'atto-dev://runtime/r1/tenant/t1/process/summary',
+        _meta:{
+          'io.modelcontextprotocol/protocolVersion':'2026-07-28',
+          'io.modelcontextprotocol/clientCapabilities':{sampling:{}},
+          'io.atto.dev/security':{
+            schema_version:'atto.mcp.dev-control.m0.v1',nonce,
+            issued_at_ms:reentry_wall,runtime_id:'r1',tenant_id:'t1',
+            expected_generation:1
+          }
+        }
+      }
+    }
+  };
+}
+function audit_reentry_case(inner_args, expected) {
+  let ledger, nested, once=false;
+  const observed=[];
+  const outer_args=make_reentry_args();
+  ledger=new M0AdmissionLedger({
+    enabled:true,auditKey:Buffer.alloc(32,7),
+    audit(record) {
+      if (record.decision==='allow') {
+        observed.push(ledger.stats().active);
+        if (!once) { once=true; nested=ledger.begin(inner_args); }
+      }
+      return true;
+    }
+  });
+  const outer=ledger.begin(outer_args);
+  assert.equal(outer.ok,true);
+  assert.equal(nested.reason,expected);
+  assert.equal(nested.ok,false);
+  assert.deepEqual(observed,[1]);
+  assert.equal(ledger.stats().active,1);
+  assert.equal(ledger.finish(outer.ticket),true);
+  assert.equal(ledger.stats().active,0);
+}
+test('audit reentry with same nonce and id cannot duplicate a ticket',()=>{
+  audit_reentry_case(make_reentry_args(),'REPLAY');
+});
+test('audit reentry with different nonce but same id is fenced',()=>{
+  audit_reentry_case(make_reentry_args('a','b'.repeat(32)),'DUPLICATE_ID');
+});
+test('audit reentry with same nonce but different id is fenced',()=>{
+  audit_reentry_case(make_reentry_args('b','a'.repeat(32)),'REPLAY');
+});
+test('audit reentry with independent nonce and id preserves both tickets',()=>{
+  let ledger, nested, once=false, observations=[];
+  ledger=new M0AdmissionLedger({
+    enabled:true,auditKey:Buffer.alloc(32,7),
+    audit(record) {
+      if (record.decision==='allow') {
+        observations.push(ledger.stats().active);
+        if(!once) {once=true;nested=ledger.begin(make_reentry_args('b','b'.repeat(32)));}
+      }
+      return true;
+    }
+  });
+  const outer=ledger.begin(make_reentry_args());
+  assert.equal(outer.ok,true);
+  assert.equal(nested.ok,true);
+  assert.deepEqual(observations,[1,2]);
+  assert.equal(ledger.stats().active,2);
+  assert.equal(ledger.finish(nested.ticket),true);
+  assert.equal(ledger.finish(outer.ticket),true);
+  assert.equal(ledger.stats().active,0);
+});
+test('audit failure rolls back outer reservation but preserves accepted child',()=>{
+  let ledger, nested, once=false;
+  ledger=new M0AdmissionLedger({
+    enabled:true,auditKey:Buffer.alloc(32,7),
+    audit(record) {
+      if(record.decision==='allow' && !once) {
+        once=true;
+        nested=ledger.begin(make_reentry_args('b','b'.repeat(32)));
+        return false;
+      }
+      return true;
+    }
+  });
+  const outer=ledger.begin(make_reentry_args());
+  assert.equal(outer.reason,'AUDIT_FAILURE');
+  assert.equal(nested.ok,true);
+  assert.equal(ledger.stats().active,1);
+  assert.equal(ledger.finish(nested.ticket),true);
+  assert.equal(ledger.stats().active,0);
+});
+test('rejected Promise audit rollback allows retrying same nonce',()=>{
+  let permitted=false;
+  const ledger=new M0AdmissionLedger({
+    enabled:true,auditKey:Buffer.alloc(32,7),
+    audit() { return permitted ? true : Promise.resolve(true); }
+  });
+  const first=ledger.begin(make_reentry_args());
+  assert.equal(first.reason,'AUDIT_FAILURE');
+  assert.equal(ledger.stats().active,0);
+  permitted=true;
+  const retry=ledger.begin(make_reentry_args());
+  assert.equal(retry.ok,true);
+  assert.equal(ledger.finish(retry.ticket),true);
+  assert.equal(ledger.stats().active,0);
+});
+test('throwing audit sink rollback allows retry and no leaked ticket',()=>{
+  let failing=true;
+  const ledger=new M0AdmissionLedger({
+    enabled:true,auditKey:Buffer.alloc(32,7),
+    audit() {if(failing)throw Error('disk failure');return true;}
+  });
+  assert.equal(ledger.begin(make_reentry_args()).reason,'AUDIT_FAILURE');
+  assert.equal(ledger.stats().active,0);
+  failing=false;
+  const allowed=ledger.begin(make_reentry_args());
+  assert.equal(allowed.ok,true);
+  assert.equal(ledger.finish(allowed.ticket),true);
+  assert.equal(ledger.stats().active,0);
+});
