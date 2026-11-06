@@ -136,7 +136,11 @@ export async function fetchLiveSnapshot(token,fetchImpl=fetch){
   if(typeof token!=='string'||!token.trim())throw new Error('GITHUB_TOKEN required for private --live reads');
   const api=async(b,suffix)=>{
     const url='https://api.github.com/repos/'+repo(b)+'/'+suffix;
-    const r=await fetchImpl(url,{method:'GET',headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+token,'X-GitHub-Api-Version':'2022-11-28'},signal:AbortSignal.timeout(12000)});
+    const r=await fetchImpl(url,{method:'GET',redirect:'error',credentials:'omit',cache:'no-store',
+      headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+token,'X-GitHub-Api-Version':'2022-11-28'},
+      signal:AbortSignal.timeout(12000)});
+    if(r.redirected===true||(typeof r.url==='string'&&r.url!==url))
+      throw new Error('redirected or substituted GitHub API response');
     if(!r.ok)throw new Error('Allowed GitHub GET failed HTTP '+r.status);
     const cap=2000000;
     if(Number(r.headers?.get?.('content-length')??0)>cap)throw new Error('response over 2 MB');
@@ -144,6 +148,7 @@ export async function fetchLiveSnapshot(token,fetchImpl=fetch){
     if(r.body?.getReader){
       const reader=r.body.getReader(),chunks=[];let size=0;
       try{while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>cap)throw new Error('response over 2 MB');chunks.push(value);}}
+      catch(error){try{await reader.cancel?.();}catch{}throw error;}
       finally{reader.releaseLock();}
       bytes=new Uint8Array(size);let pos=0;for(const x of chunks){bytes.set(x,pos);pos+=x.byteLength;}
     }else{const buffer=await r.arrayBuffer();if(buffer.byteLength>cap)throw new Error('response over 2 MB');bytes=new Uint8Array(buffer);}
