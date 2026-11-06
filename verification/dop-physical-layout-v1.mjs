@@ -3,6 +3,14 @@
 const MAX = (1n << 63n) - 1n;
 const power2 = n => Number.isSafeInteger(n) && n > 0 && (n & (n - 1)) === 0;
 const req = (ok, message) => { if (!ok) throw new RangeError(message); };
+// Snapshot each user-supplied array/field datum exactly once. A group may
+// provide a mutable iterator or accessor that changes between partition
+// validation and segment construction; never use such inputs twice.
+const ownData = (value, key, label) => {
+  const descriptor = Object.getOwnPropertyDescriptor(value, key);
+  req(descriptor && Object.hasOwn(descriptor, 'value'), label);
+  return descriptor.value;
+};
 const checked = n => { req(n >= 0n && n <= MAX, 'physical-layout-overflow'); return n; };
 const add = (a,b) => checked(a + b);
 const mul = (a,b) => checked(a * b);
@@ -25,15 +33,22 @@ export function physicalLayoutV1({kind, rows, fields, lanes = 1, groups = [],
     'physical-layout-lanes');
   req(Array.isArray(groups), 'physical-layout-groups');
   const names = new Set();
-  const specs = fields.map((f,i) => {
-    req(f && typeof f === 'object' && typeof f.name === 'string' &&
-      f.name.length > 0 && f.name.length <= 1024 && !f.name.includes(String.fromCharCode(0)) &&
-      !names.has(f.name) && power2(f.bytes) && power2(f.alignment) &&
-      f.bytes <= f.alignment && f.alignment <= 4096,
+  const specs = [];
+  for(let i=0;i<fields.length;i++) {
+    const f = ownData(fields,i,'physical-layout-field-' + i);
+    req(f && typeof f === 'object' && !Array.isArray(f),
       'physical-layout-field-' + i);
-    names.add(f.name);
-    return {bytes: BigInt(f.bytes), alignment: BigInt(f.alignment)};
-  });
+    const name = ownData(f,'name','physical-layout-field-' + i);
+    const bytes = ownData(f,'bytes','physical-layout-field-' + i);
+    const alignment = ownData(f,'alignment','physical-layout-field-' + i);
+    req(typeof name === 'string' &&
+      name.length > 0 && name.length <= 1024 && !name.includes(String.fromCharCode(0)) &&
+      !names.has(name) && power2(bytes) && power2(alignment) &&
+      bytes <= alignment && alignment <= 4096,
+      'physical-layout-field-' + i);
+    names.add(name);
+    specs.push({bytes: BigInt(bytes), alignment: BigInt(alignment)});
+  }
   const locations = Array.from({length:specs.length});
   const segments = [];
   function record(indices,seg) {
@@ -80,18 +95,32 @@ export function physicalLayoutV1({kind, rows, fields, lanes = 1, groups = [],
       break;
     }
     case 'soaos': {
-      req(groups.length>0,'physical-layout-missing-groups');
-      const seen = new Set();
-      for(const group of groups) {
-        req(Array.isArray(group) && group.length>0,'physical-layout-empty-group');
-        for(const idx of group) {
-          req(Number.isInteger(idx) && idx >=0 && idx < specs.length && !seen.has(idx),
+      // Capture and validate the complete partition *before* computing any
+      // segment. Never consume a caller-owned iterator for both validation
+      // and address lowering: its values might change on the second pass.
+      const groupCount = ownData(groups,'length','physical-layout-missing-groups');
+      req(Number.isInteger(groupCount) && groupCount>0 && groupCount<=specs.length,
+        'physical-layout-missing-groups');
+      const seen = new Set(), partition = [];
+      for(let g=0;g<groupCount;g++) {
+        const group=ownData(groups,g,'physical-layout-group-partition');
+        req(Array.isArray(group),'physical-layout-empty-group');
+        const count=ownData(group,'length','physical-layout-empty-group');
+        req(Number.isInteger(count) && count>0 && count<=specs.length,
+          'physical-layout-empty-group');
+        const fixed=[];
+        for(let j=0;j<count;j++) {
+          const idx=ownData(group,j,'physical-layout-group-partition');
+          req(Number.isInteger(idx) && idx>=0 && idx<specs.length && !seen.has(idx),
             'physical-layout-group-partition');
           seen.add(idx);
+          fixed.push(idx);
         }
-        segments.push(record(group,segments.length));
+        partition.push(fixed);
       }
-      req(seen.size === specs.length, 'physical-layout-group-partition');
+      req(seen.size === specs.length,'physical-layout-group-partition');
+      for(const group of partition) segments.push(record(group,segments.length));
+      break;
     }
   }
   let size=0n;
