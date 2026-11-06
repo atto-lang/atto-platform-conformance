@@ -106,6 +106,27 @@ test("host-only five-backend passes are NOT_CERTIFIED for release",()=>{
     approvalPolicyReadable:true,approvalsVerified:true});
   assert.equal(r.status,"NOT_CERTIFIED");assert.equal(r.reasons.length,5);
 });
+test("five-backend release identity cannot be omitted, truncated, duplicated or substituted",()=>{
+  const all=["java","llvm","wasm","net","forge"];
+  const evidence=Object.fromEntries(all.map(b=>[b,{state:STATES.EXECUTED_PASS,guestCertified:true}]));
+  const flags={evidence,securityIncidentsClear:true,approvalPolicyReadable:true,approvalsVerified:true};
+  for(const invalid of [[],["java"],["java","llvm","wasm","net"],
+    ["java","llvm","wasm","net","net"],["java","llvm","wasm","net","fake"],
+    null,"java",{}]){
+    const result=releaseReadiness({...flags,requiredBackends:invalid});
+    assert.equal(result.status,"NOT_CERTIFIED");
+    assert.ok(result.reasons.includes("BACKEND_SET_INVALID"),JSON.stringify(invalid));
+  }
+  assert.equal(releaseReadiness(flags).status,"CANDIDATE_ONLY");
+  assert.equal(releaseReadiness({...flags,requiredBackends:[...all].reverse()}).status,"CANDIDATE_ONLY");
+  for(const missing of all){
+    const altered={...evidence,[missing]:{state:STATES.EXECUTED_PASS,guestCertified:false}};
+    const result=releaseReadiness({...flags,evidence:altered});
+    assert.equal(result.status,"NOT_CERTIFIED");
+    assert.ok(result.reasons.includes("BACKEND_NOT_CERTIFIED:"+missing));
+  }
+});
+
 test("opt-in local persistence writes a schema versioned JSON snapshot",async()=>{
   const dir=await mkdtemp(join(tmpdir(),"atto-ledger-"));
   try{const file=join(dir,"ledger.json");
