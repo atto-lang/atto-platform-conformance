@@ -101,8 +101,17 @@ export function parseM0Frame(frame, options = {}) {
     numberToken.lastIndex = i;
     const number = numberToken.exec(source);
     if (!number) fail();
-    if (!Number.isFinite(Number(number[0]))) fail();
-    i += number[0].length;
+    const token = number[0];
+    const numeric = Number(token);
+    if (!Number.isFinite(numeric)) fail();
+    // Cross-language JSON-RPC peers must not silently disagree on integer IDs
+    // or other integral fields due to IEEE-754's non-exact integer range.
+    if (Number.isInteger(numeric) && !Number.isSafeInteger(numeric)) fail();
+    // A nonzero decimal literal must never become zero through exponent
+    // underflow, which could bypass quotas and numerical validations.
+    const mantissa = token.split(/[eE]/, 1)[0];
+    if (numeric === 0 && /[1-9]/.test(mantissa)) fail();
+    i += token.length;
   }
   function value(depth) {
     ws();
