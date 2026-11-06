@@ -5,13 +5,24 @@ export class ActorLockModel {
     this.actors = new Map();
     this.locks = new Map();
     this.serial = 0;
+    // Track retired generations as well as active ones: merely checking the
+    // current actor table would permit older stale owners to resurrect.
+    this.latestIncarnation = new Map();
   }
   key(id, incarnation) { return JSON.stringify([id, incarnation]); }
   spawn(id, incarnation) {
+    if (typeof id !== "string" || !id || id.includes("\0")) throw Error("invalid actor identity");
     if (!Number.isSafeInteger(incarnation) || incarnation < 1) throw Error("invalid incarnation");
+    const previous = this.latestIncarnation.get(id);
+    if (previous !== undefined) {
+      if (incarnation <= previous) throw Error("stale or replayed actor incarnation");
+      if (this.actor(this.key(id, previous)).phase !== "retired")
+        throw Error("previous incarnation has not physically retired");
+    }
     const key = this.key(id, incarnation);
     if (this.actors.has(key)) throw Error("duplicate incarnation");
     this.actors.set(key, {phase:"live", tasks:new Map(), permits:new Set()});
+    this.latestIncarnation.set(id, incarnation);
     return key;
   }
   task(actor, name) {
