@@ -86,3 +86,18 @@ approval as applicable. Never export private source to an unapproved carrier.
    actor ownership transfer and supervisor/arena shutdown.
 5. Benchmark real column scans, row gathers, cache misses, allocated bytes,
    tail utilization and throughput before selecting a layout automatically.
+
+## Nested ordinary-struct padding audit (same hardening wave)
+
+The one-level inverted reference previously calculated nested struct width as
+an unaligned sum of member sizes. That undercharged packed records containing
+mixed-width members. It now records natural member offsets, aggregate alignment
+and a padded aggregate stride while preserving the one-column nesting rule.
+For example, `{bool flag, i64 counter, bool tail}` has offsets `[0,8,16]`
+and width 24, not the unaligned width 10. A second outer fixed struct containing
+that value also receives its own alignment and final tail padding.
+
+`tests/inverted-packed-alignment-20261106.test.mjs` checks this for both
+`inverted class` and `inverted struct`, deep-detached value snapshots, schema
+immutability, and the padded collection quota. These are reference-model checks
+only: no field-to-native-pointer offsets or guest ISA instructions are certified.
