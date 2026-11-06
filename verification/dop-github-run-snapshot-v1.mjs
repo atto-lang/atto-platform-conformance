@@ -18,6 +18,7 @@ export function validateDopGithubSnapshot(receipt, contract, run, jobPage, expec
   need(positiveInt(run.id) && run.id === receipt.ciJob.runId, 'run-id-match');
   need(run.head_sha === receipt.sourceHeadSha, 'run-exact-head');
   need(run.repository?.full_name === expectedRepo, 'run-repository');
+  need(run.head_repository?.full_name === expectedRepo, 'run-head-repository');
   need(positiveInt(run.run_attempt), 'run-attempt');
   need(run.status === 'completed', 'run-completed');
   need(run.conclusion === (receipt.status === 'FAILED' ? 'failure' : 'success'),
@@ -36,6 +37,8 @@ export function validateDopGithubSnapshot(receipt, contract, run, jobPage, expec
   if (matches.length !== 1) return errors;
   const job = matches[0];
   need(job.run_id === run.id, 'job-run-id-match');
+  need(job.head_sha === receipt.sourceHeadSha, 'job-exact-head');
+  need(positiveInt(job.run_attempt) && job.run_attempt === run.run_attempt, 'job-attempt-match');
   need(job.runner_id === receipt.ciJob.runnerId && positiveInt(job.runner_id),
     'admitted-runner-match');
   need(job.status === 'completed', 'job-completed');
