@@ -58,3 +58,4 @@ test('freshness boundaries',()=>{
  assert.equal(snapshotFreshness('2026-11-06T19:00:31Z',NOW).ok,false);
 });
 blocked('reject same login reused by different IDs',v=>v.reviews.push({...v.reviews[0],id:14,reviewer_id:2000014,submitted_at:'2026-11-06T18:59:30Z'}),'REVIEW_IDENTITY_CONFLICT');
+blocked('malformed author type blocks rather than throwing',v=>v.author=42,'REVIEW_IDENTITY_INVALID');
