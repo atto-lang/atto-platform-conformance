@@ -8,7 +8,7 @@ function fixture() {
   return {
     expected:{...P},
     run: {id:1234,run_attempt:2,head_sha:SHA,repository:{full_name:P.repository},status:'completed',conclusion:'success'},
-    jobs:{total_count:1,jobs:[{id:77,run_id:1234,run_attempt:2,name:'source-local-canary',status:'completed',conclusion:'success',runner_id:61,runner_name:'GitHub Actions 61',steps:[
+    jobs:{run_attempt:2,total_count:1,jobs:[{id:77,run_id:1234,run_attempt:2,name:'source-local-canary',status:'completed',conclusion:'success',runner_id:61,runner_name:'GitHub Actions 61',steps:[
       {number:1,name:'Set up job',status:'completed',conclusion:'success'},
       {number:2,name:'Confirm a runner executed a shell step',status:'completed',conclusion:'success'},
       {number:3,name:'Complete job',status:'completed',conclusion:'success'}
@@ -86,6 +86,12 @@ test('duplicate step numbers, odd status, and bogus required pins fail',()=>{
   let x=fixture();x.jobs.jobs[0].steps[2].number=1;claimNeverGrantsRelease(x,'BLOCKED');
   x=fixture();x.jobs.jobs[0].steps[1].status='MYSTERY';claimNeverGrantsRelease(x,'BLOCKED');
   x=fixture();x.expected.head_sha='bad';claimNeverGrantsRelease(x,'INVALID_INPUT');
+});
+test('GitHub job records may omit run_attempt; inventory must still pin latest attempt',()=>{
+  const x=fixture();delete x.jobs.jobs[0].run_attempt;
+  claimNeverGrantsRelease(x,'RUNNER_EXECUTION_OBSERVED');
+  delete x.jobs.run_attempt;claimNeverGrantsRelease(x,'BLOCKED');
+  x.jobs.run_attempt=999;claimNeverGrantsRelease(x,'BLOCKED');
 });
 test('classifier never has a success exit code from host metadata',()=>{
   for(const result of ['RUNNER_EXECUTION_OBSERVED','NOT_EXECUTED','BLOCKED','IN_PROGRESS','EXECUTED_RUNNER_UNATTESTED','INVALID_INPUT']) {
