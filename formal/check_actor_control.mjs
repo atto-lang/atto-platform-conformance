@@ -8,7 +8,7 @@ function verify() {
  const q=[initial],seen=new Set([JSON.stringify(initial)]),hits={};
  for(let i=0;i<q.length;i++){
   const s=q[i];ok(valid(s),"actor invariant");const moves=[];
-  if(s.alive&&s.queued<2)moves.push(["send",{...s,queued:s.queued+1,accepted:s.accepted+1}]);
+  if(s.alive&&s.queued<2&&s.accepted<2)moves.push(["send",{...s,queued:s.queued+1,accepted:s.accepted+1}]);
   if(s.alive)moves.push(["panic",{...s,alive:0,panic:1,control:1}]);
   if(s.control)moves.push(["notice",{...s,control:0,notices:1}]);
   if(s.alive&&!s.control&&s.queued)moves.push(["deliver",{...s,queued:s.queued-1,delivered:s.delivered+1}]);
