@@ -1,0 +1,86 @@
+{
+  "contract": "attolang.dop.heterogeneous-soa-quota/1",
+  "evidence_class": "SOURCE_FREE_REFERENCE_ONLY",
+  "backend_guest_status": "NOT_EXECUTED",
+  "layout": "soa",
+  "max_total_bytes": "16777216",
+  "columns": [
+    {
+      "name": "flag",
+      "type": "bool",
+      "size": 1,
+      "alignment": 1
+    },
+    {
+      "name": "ticks",
+      "type": "i64",
+      "size": 8,
+      "alignment": 8
+    },
+    {
+      "name": "ready",
+      "type": "bool",
+      "size": 1,
+      "alignment": 1
+    }
+  ],
+  "scenarios": [
+    {
+      "capacity": 1,
+      "packed_row_bytes": 10,
+      "packed_total_bytes": "10",
+      "physical_bytes": "17",
+      "segment_bases": [
+        "0",
+        "8",
+        "16"
+      ],
+      "last_ready_global_offset": "16",
+      "quota_allowed": true
+    },
+    {
+      "capacity": 2,
+      "packed_row_bytes": 10,
+      "packed_total_bytes": "20",
+      "physical_bytes": "26",
+      "segment_bases": [
+        "0",
+        "8",
+        "24"
+      ],
+      "last_ready_global_offset": "25",
+      "quota_allowed": true
+    },
+    {
+      "capacity": 1677720,
+      "packed_row_bytes": 10,
+      "packed_total_bytes": "16777200",
+      "physical_bytes": "16777200",
+      "segment_bases": [
+        "0",
+        "1677720",
+        "15099480"
+      ],
+      "last_ready_global_offset": "16777199",
+      "quota_allowed": true
+    },
+    {
+      "capacity": 1677721,
+      "packed_row_bytes": 10,
+      "packed_total_bytes": "16777210",
+      "physical_bytes": "16777217",
+      "segment_bases": [
+        "0",
+        "1677728",
+        "15099496"
+      ],
+      "last_ready_global_offset": "16777216",
+      "quota_allowed": false
+    }
+  ],
+  "negative_expectations": [
+    "quota rejects aligned extent one byte above 16 MiB",
+    "never authorize storage from packed field width alone",
+    "no source-compiled guest or actor arena parity inferred"
+  ]
+}
