@@ -97,7 +97,69 @@ test('proxy introspection may not re-enter and publish a row during input evalua
       return Reflect.ownKeys(target);
     }
   });
-  const h=s.insert(input);
+  // Catching the rejection in the proxy must not authorize outer insertion.
+  assert.throws(()=>s.insert(input),/tainted/);
+  assert.deepEqual(s.snapshot(),{x:[]});
+  const h=s.insert({x:7});
   assert.deepEqual(s.read(h),{x:7});
   assert.deepEqual(s.snapshot(),{x:[7]});
+});
+
+
+test('deterministic 900-step AoS/SoA/AoSoA/SoAoS differential trace',()=>{
+  const layouts=['aos','soa','aosoa','soaos'];
+  const fields=['x','y','flag'];
+  const groups=[['x','flag'],['y']];
+  const stores=layouts.map(l=>new LayoutOracle(fields,l,3,l==='soaos'?groups:undefined));
+  let state=0x5a11c0de;
+  const random=()=>{ state=(Math.imul(state,1664525)+1013904223)>>>0; return state; };
+  const live=[];
+  function normalize(store) {
+    const snap=store.snapshot();
+    if(store.layout==='aos') return snap;
+    if(store.layout==='soa') return snap.x.map((x,i)=>({x,y:snap.y[i],flag:snap.flag[i]}));
+    if(store.layout==='aosoa') return snap.flatMap(tile=>tile.x.map((x,i)=>({
+      x,y:tile.y[i],flag:tile.flag[i]
+    })));
+    // Field-grouped arrays of row records, not AoSoA column tiles.
+    return snap[0].map((group,i)=>({x:group.x,y:snap[1][i].y,flag:group.flag}));
+  }
+  const check=()=>{
+    const expected=live.slice().sort((a,b)=>a.handles[0].slot-b.handles[0].slot)
+      .map(({row})=>({...row}));
+    for(let i=0;i<stores.length;i++) {
+      assert.deepEqual(normalize(stores[i]),expected);
+      for(const value of live) assert.deepEqual(stores[i].read(value.handles[i]),value.row);
+    }
+  };
+  for(let step=0;step<900;step++) {
+    const choice=random()%100;
+    if(!live.length || choice<43) {
+      const row={x:(random()%20000)-10000,y:(random()%9999),flag:(random()%2)===0};
+      const handles=stores.map(store=>store.insert(row));
+      for(const h of handles) {
+        assert.equal(h.slot,handles[0].slot);
+        assert.equal(h.generation,handles[0].generation);
+      }
+      live.push({row,handles});
+    } else if(choice<64) {
+      const selected=live[random()%live.length],field=fields[random()%fields.length];
+      const value=field==='flag' ? random()%2===0 : (random()%8000)-4000;
+      for(let i=0;i<stores.length;i++) stores[i].write(selected.handles[i],field,value);
+      selected.row[field]=value;
+    } else if(choice<80) {
+      const at=random()%live.length;
+      const [selected]=live.splice(at,1);
+      for(let i=0;i<stores.length;i++) {
+        stores[i].remove(selected.handles[i]);
+        assert.throws(()=>stores[i].read(selected.handles[i]),/stale/);
+      }
+    } else {
+      const next=layouts[random()%layouts.length];
+      for(const store of stores)
+        store.convert(next,next==='soaos'?groups:undefined);
+    }
+    if(step%19===0) check();
+  }
+  check();
 });
