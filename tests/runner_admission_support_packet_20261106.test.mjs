@@ -45,7 +45,7 @@ for(const c of CANDIDATES){
   });
 }
 test('missing and duplicated target job IDs fail closed',()=>{
-  const f=fixture();f.candidates.java.jobs.jobs=[];assert.equal(buildPacket(f).sampledJobs[0].assessment,'JOB_MISSING_OR_DUPLICATE');
+  const f=fixture();f.candidates.java.jobs.jobs=[];assert.equal(buildPacket(f).sampledJobs[0].assessment,'JOB_LIST_INCOMPLETE_OR_UNVERIFIED');
   const g=fixture();g.candidates.java.jobs.jobs.push(g.candidates.java.jobs.jobs[0]);g.candidates.java.jobs.total_count=2;
   assert.equal(buildPacket(g).sampledJobs[0].assessment,'JOB_MISSING_OR_DUPLICATE');
 });
