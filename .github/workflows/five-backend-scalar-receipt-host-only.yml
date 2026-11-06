@@ -30,3 +30,21 @@ jobs:
         run: |
           node --test test/five-backend-scalar-gate.test.mjs test/five-backend-scalar-fixtures.test.mjs
           echo 'HOST-ONLY. No compiler or native guest executed, no backend parity certified.'
+      - name: Run complete DOP v1 receipt security suites (SOURCE-FREE, NON-PROMOTING)
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --verify HEAD)" = "$EXPECTED_HEAD"
+          timeout 240s node --test \
+            tests/dop-scalar-guest-v1.test.mjs \
+            tests/dop-github-run-snapshot-v1.test.mjs \
+            tests/dop-github-api-v1.test.mjs \
+            tests/dop-evidence-file-v1.test.mjs \
+            tests/dop-execution-profile-v1.test.mjs \
+            tests/dop-execution-integration-v1.test.mjs
+          test "$(git rev-parse --verify HEAD)" = "$EXPECTED_HEAD"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          echo 'DOP_HOST_RECEIPT_SECURITY_TESTS_PASSED_NON_PROMOTING=true'
+          echo 'NOT_EXECUTED: no AttoLang compiler or guest program was run.'
