@@ -6,6 +6,7 @@ on:
       - 'tests/landed-main-evidence.test.mjs'
       - 'bin/landed-main-evidence.mjs'
       - 'evidence/landed-main-20261106-wave.json'
+      - 'docs/landed-main-evidence.md'
       - '.github/workflows/landed-main-evidence.yml'
   push:
     paths:
@@ -13,6 +14,7 @@ on:
       - 'tests/landed-main-evidence.test.mjs'
       - 'bin/landed-main-evidence.mjs'
       - 'evidence/landed-main-20261106-wave.json'
+      - 'docs/landed-main-evidence.md'
       - '.github/workflows/landed-main-evidence.yml'
 permissions:
   contents: read
@@ -33,6 +35,10 @@ jobs:
           set -euo pipefail
           [[ "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]
           test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          # No untracked, ignored or modified source shadows may qualify as exact-head tests.
+          test -z "$(git status --porcelain --untracked-files=all)"
+          test -z "$(git ls-files --others --ignored --exclude-standard)"
+          git rev-parse HEAD^{tree} >/dev/null
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
