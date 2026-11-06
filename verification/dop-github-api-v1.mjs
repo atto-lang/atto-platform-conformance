@@ -72,8 +72,12 @@ export function parseStrictGithubJson(input) {
 
 export async function readGithubJson(response, limit = maxBytes) {
   if (response.status !== 200 || !response.ok) throw new Error('github-http-not-200');
-  if (!response.headers?.get('content-type')?.toLowerCase().includes('application/json'))
+  const mediaType = response.headers?.get('content-type')?.split(';', 1)[0].trim().toLowerCase();
+  if (mediaType !== 'application/json' && mediaType !== 'application/vnd.github+json')
     throw new Error('github-not-json');
+  const encoding = response.headers.get('content-encoding');
+  if (encoding != null && encoding.toLowerCase() !== 'identity')
+    throw new Error('github-encoded-response');
   const length = response.headers.get('content-length');
   if (length != null && (!/^[0-9]+$/.test(length) || Number(length) > limit))
     throw new Error('github-invalid-length');
@@ -117,6 +121,7 @@ export async function fetchDopGithubRun({repository, runId, token, fetchFn = fet
   const headers = {
     authorization: 'Bearer ' + token,
     accept: 'application/vnd.github+json',
+    'accept-encoding': 'identity',
     'x-github-api-version': '2022-11-28'
   };
   const request = async url => {
