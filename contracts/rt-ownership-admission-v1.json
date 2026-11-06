@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "contract": "rt-ownership-admission-v1",
+  "status": "candidate-unattested",
+  "backendTargets": [
+    "java",
+    "llvm",
+    "wasm",
+    "forge",
+    "net"
+  ],
+  "sourceExtension": ".atto",
+  "rules": {
+    "copy": "rt copy requires a compiler-proved Copy value; it never implicitly clones move-only storage",
+    "take": "rt take consumes an owned source place, including otherwise Copy handles; projections without slot invalidation must reject",
+    "borrow": "rt borrow creates a scoped shared loan; moving or mutably borrowing its owner while live must reject",
+    "mutableBorrow": "rt mut borrow creates an exclusive scoped loan; aliases and suspension must be checked",
+    "share": "rt share requires separate compiler-derived Copy and Share proofs, including nested type arguments and allocation domain",
+    "mutableShare": "rt mut share may only expose an explicitly guarded synchronized handle where the backend proves it, never an unguarded mutable alias",
+    "boundaries": "No borrowed payloads may escape via independent task, actor message, return, generator or suspension without a verified scoped contract"
+  },
+  "cases": [
+    {
+      "id": "copy-scalar-keeps-owner",
+      "expect": "accept",
+      "expectedGuestExit": 42,
+      "source": "pub fnc main(): int { const int original = 41; val int duplicate = rt copy original; return original + duplicate - 40; }"
+    },
+    {
+      "id": "serial-shared-borrow",
+      "expect": "accept",
+      "expectedGuestExit": 42,
+      "source": "pub fnc observe(borrow int value): int { return value; } pub fnc main(): int { val int n = 42; return observe(rt borrow n); }"
+    },
+    {
+      "id": "whole-owner-take",
+      "expect": "accept",
+      "expectedGuestExit": 42,
+      "source": "define class Box as pub let int value = 42; end pub fnc main(): int { let Box owner = new Box(); val Box moved = rt take owner; return moved.value; }"
+    },
+    {
+      "id": "use-after-take",
+      "expect": "reject",
+      "reason": "OWNER_MOVED",
+      "source": "define class Box as pub let int value = 42; end pub fnc main(): int { let Box owner = new Box(); val Box moved = rt take owner; return owner.value; }"
+    },
+    {
+      "id": "double-take",
+      "expect": "reject",
+      "reason": "OWNER_MOVED",
+      "source": "define class Box as pub let int value = 42; end pub fnc main(): int { let Box owner = new Box(); val Box a = rt take owner; val Box b = rt take owner; return a.value + b.value; }"
+    },
+    {
+      "id": "copy-move-only",
+      "expect": "reject",
+      "reason": "NO_COPY_PROOF",
+      "source": "define class Box as pub let int value = 42; end pub fnc main(): int { let Box owner = new Box(); val Box copied = rt copy owner; return copied.value; }"
+    },
+    {
+      "id": "share-move-only",
+      "expect": "reject",
+      "reason": "NO_SHARE_PROOF",
+      "source": "define class Box as pub let int value = 42; end pub fnc main(): int { let Box owner = new Box(); val Box alias = rt share owner; return alias.value; }"
+    },
+    {
+      "id": "projected-take-copy-field",
+      "expect": "reject",
+      "reason": "UNTRACKED_PROJECTION",
+      "source": "define class Box as pub let int value = 42; end pub fnc main(): int { let Box owner = new Box(); val int moved = rt take owner.value; return moved + owner.value; }"
+    },
+    {
+      "id": "move-during-shared-loan",
+      "expect": "reject",
+      "reason": "LOAN_CONFLICT",
+      "source": "define class Box as pub let int value = 42; end pub fnc main(): int { let Box owner = new Box(); val loan = rt borrow owner; val Box moved = rt take owner; return loan.value + moved.value; }"
+    },
+    {
+      "id": "mutable-alias-conflict",
+      "expect": "reject",
+      "reason": "LOAN_CONFLICT",
+      "source": "define class Box as pub let int value = 42; end pub fnc main(): int { let Box owner = new Box(); val writer = rt mut borrow owner; val reader = rt borrow owner; return writer.value + reader.value; }"
+    },
+    {
+      "id": "borrow-across-await",
+      "expect": "reject",
+      "reason": "SUSPENSION_WITH_LOAN",
+      "source": "define class Box as pub let int value = 42; end pub async fnc main(): int { let Box owner = new Box(); val loan = rt borrow owner; let Future<int> f = task { return 1; }; await f; return loan.value; }"
+    },
+    {
+      "id": "share-borrow-no-upgrade",
+      "expect": "reject",
+      "reason": "BORROW_CANNOT_UPGRADE",
+      "source": "define class Box as pub let int value = 42; end pub fnc main(): int { let Box owner = new Box(); val loan = rt borrow owner; val promoted = rt share loan; return promoted.value; }"
+    },
+    {
+      "id": "mut-share-unguarded",
+      "expect": "reject",
+      "reason": "UNGUARDED_MUTABLE_SHARE",
+      "source": "define class Box as pub let int value = 42; end pub fnc main(): int { let Box owner = new Box(); val promoted = rt mut share owner; return promoted.value; }"
+    }
+  ],
+  "outstandingCasesWithoutValidatedSource": [
+    "copyable-but-not-shareable SelectSet and Channel<Rc<int>>",
+    "implicit by-value move out of move-only class field or index",
+    "nested Option<Result<borrow T, E>> escape",
+    "receiver loans through argument evaluation and re-entrant calls",
+    "borrow across implicit scheduler cooperation and critical-read/write boundaries",
+    "actor/tenant transfer requiring Send and separate allocation-domain authority"
+  ],
+  "promotion": {
+    "requireExactCommitAndTree": true,
+    "requireStepfulCompilation": true,
+    "requireSemanticOwnershipDiagnostic": true,
+    "rejectParserOnlyEvidence": true,
+    "requirePositiveGuestExecution": true,
+    "requireBackendSpecificArtifacts": true,
+    "requireIndependentProvenance": true,
+    "allowZeroStepAsPassing": false,
+    "allowSourceFreeHostModelAsPassing": false
+  }
+}
