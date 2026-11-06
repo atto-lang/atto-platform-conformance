@@ -1,0 +1,33 @@
+name: Untrusted JIT adversarial source-free checks
+on:
+  pull_request:
+    paths:
+      - 'contracts/untrusted-jit-adversarial-v1.json'
+      - 'src/untrusted-jit-evidence-v1.mjs'
+      - 'tests/untrusted-jit-evidence-v1.test.mjs'
+      - '.github/workflows/untrusted-jit-adversarial-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  shape-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify checkout head and tree
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test -z "$(git status --porcelain --untracked-files=all)"
+          git rev-parse HEAD^{tree}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Run source-free conformance receipt tests
+        run: node --test tests/untrusted-jit-evidence-v1.test.mjs
