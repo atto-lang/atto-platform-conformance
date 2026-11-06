@@ -20,6 +20,7 @@ test('even complete synthetic proof is advisory and requires LIVE recheck',()=>{
  assert.equal(out.entries[0].status,'SNAPSHOT_READY_RECHECK_LIVE');assert.match(out.note,/re-fetch live/);
 });
 denies('reject unprotected main',e=>e.protection.protected=false,'protection');
+denies('reject missing minimum review count',e=>delete e.protection.required_approvals,'protection');
 denies('reject stale review head',e=>e.approvals[0].reviewed_commit_sha=A,'review');
 denies('reject operator-controlled approval',e=>e.approvals[0].login='ORESoftware','review');
 denies('reject author self approval',e=>e.approvals[0].login='contributor','review');
