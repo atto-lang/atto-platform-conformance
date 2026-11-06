@@ -9,7 +9,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const manifest = JSON.parse(readFileSync(path.join(root, 'contracts/atto-gpu-explicit-launch-v1.json'), 'utf8'));
 const hex40 = /^[a-f0-9]{40}$/;
 const allowedBackends = ['java', 'llvm', 'net', 'wasm', 'forge', 'cranelift', 'js'];
-const diagnostics = new Set(['GPU-LAUNCH-002', 'GPU-LAUNCH-003', 'GPU-LAUNCH-005', 'GPU-LAUNCH-006', 'GPU-LAUNCH-009']);
+const diagnostics = new Set(['GPU-LAUNCH-002', 'GPU-LAUNCH-003', 'GPU-LAUNCH-005', 'GPU-LAUNCH-006', 'GPU-LAUNCH-009', 'GPU-LAUNCH-010']);
 function blobSha(bytes) {
   const header = Buffer.from('blob ' + bytes.length + '\0', 'utf8');
   return createHash('sha1').update(header).update(bytes).digest('hex');
@@ -50,13 +50,13 @@ test('all seven backends remain explicitly not executed, not falsely passed', ()
 });
 
 test('source cases have distinct IDs, exact git blobs and no false execution claims', () => {
-  assert.equal(manifest.cases.length, 6);
+  assert.equal(manifest.cases.length, 11);
   assert.equal(new Set(manifest.cases.map(c => c.id)).size, manifest.cases.length);
   assert.equal(new Set(manifest.cases.map(c => c.path)).size, manifest.cases.length);
   const positives = manifest.cases.filter(c => c.expectation === 'positive');
   const negatives = manifest.cases.filter(c => c.expectation === 'negative');
-  assert.equal(positives.length, 1);
-  assert.equal(negatives.length, 5);
+  assert.equal(positives.length, 3);
+  assert.equal(negatives.length, 8);
   for (const c of manifest.cases) {
     assert.equal(c.observedResult, 'NOT_EXECUTED');
     assert.equal(c.expectation === 'negative', c.expectedDiagnostic !== null);
@@ -76,19 +76,37 @@ test('positive fixture reuses existing AttoLang GPU vocabulary with explicit lau
   assert.doesNotMatch(source, /<<<|>>>/);
 });
 
-test('five negative fixtures independently exercise strict launch admission', () => {
+test('negative fixtures independently exercise strict launch admission', () => {
   const cases = new Map(manifest.cases.map(c => [c.id, c]));
   const expected = {
     'host-buffer': ['GPU-LAUNCH-002', /HostBuffer<f32>/],
     'zero-block': ['GPU-LAUNCH-003', /block: \[0, 1, 1\]/],
     'await-in-kernel': ['GPU-LAUNCH-006', /await sleep\(1\)/],
     'aliased-write': ['GPU-LAUNCH-005', /write_twice\(data, data\)/],
-    'chevron': ['GPU-LAUNCH-009', /fill<<<1, 64>>>/]
+    'chevron': ['GPU-LAUNCH-009', /fill<<<1, 64>>>/],
+    'mixed-geometry': ['GPU-LAUNCH-003', /over: \[100\], block:/],
+    'zero-group': ['GPU-LAUNCH-003', /group: \[0\]/],
+    'divergent-barrier-tail': ['GPU-LAUNCH-010', /gpu\.group_barrier\(\)/]
   };
   for (const [id, [diagnostic, pattern]] of Object.entries(expected)) {
     const c = cases.get(id);
     assert.equal(c.expectedDiagnostic, diagnostic);
     assert.match(fixture(c), pattern);
+  }
+});
+
+test('logical over/group is a distinct shape and cannot be silently promoted', () => {
+  assert.deepEqual(manifest.execution.geometryModes, ['grid/block', 'over/group']);
+  assert.equal(manifest.execution.logicalExtentRetainedInIR, true);
+  assert.equal(manifest.execution.paddedTailProofRequired, true);
+  const simple = fixture(manifest.cases.find(c => c.id === 'saxpy-logical'));
+  const matrix = fixture(manifest.cases.find(c => c.id === 'logical-2d'));
+  assert.match(simple, /over: \[n\], group: \[256\], queue: queue/);
+  assert.match(matrix, /over: \[width, height\], group: \[16, 16\]/);
+  for (const source of [simple, matrix]) {
+    assert.match(source, /launch [a-z0-9_]+\(/);
+    assert.match(source, /on gpu\(device\)/);
+    assert.doesNotMatch(source, /<<<|>>>/);
   }
 });
 
