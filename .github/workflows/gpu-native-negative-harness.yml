@@ -1,0 +1,29 @@
+name: GPU native-negative harness (unit only)
+on:
+  pull_request:
+    paths:
+      - 'src/gpu-native-compiler-negative-gate.mjs'
+      - 'scripts/run-gpu-native-negative-gate.mjs'
+      - 'test/gpu-native-compiler-negative-gate.test.mjs'
+      - '.github/workflows/gpu-native-negative-harness.yml'
+permissions:
+  contents: read
+jobs:
+  synthetic-harness-unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Exact-head simulated compiler negative harness
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git rev-parse 'HEAD^{tree}'
+          node --test test/gpu-native-compiler-negative-gate.test.mjs
