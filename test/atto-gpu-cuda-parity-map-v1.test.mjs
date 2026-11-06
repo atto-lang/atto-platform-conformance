@@ -19,8 +19,8 @@ test('CUDA-equivalent GPU capability plan stays evidence-fail-closed', () => {
   assert.equal(matrix.providers.length, 5);
 });
 
-test('40 independently named CUDA-like feature gaps have typed categories and zero false positives', () => {
-  assert.equal(matrix.features.length, 40);
+test('46 independently named GPU programming capability gaps have typed categories and zero false positives', () => {
+  assert.equal(matrix.features.length, 46);
   const ids = matrix.features.map(c => c.id);
   assert.equal(new Set(ids).size, ids.length);
   const phases = new Set(['P0', 'P1', 'P2', 'P3']);
@@ -46,6 +46,9 @@ test('core GPU safety/feature milestones cannot be accidentally omitted', () => 
     'memory.device_buffers', 'memory.explicit_copy', 'memory.shared_workgroup',
     'sync.group_barrier', 'sync.subgroup_ops', 'sync.scoped_atomics',
     'compute.fp32_fp64', 'compute.tensor_mma',
-    'systems.multi_gpu', 'systems.debug_sanitize'
+    'systems.multi_gpu', 'systems.debug_sanitize',
+    'dispatch.logical_extent', 'compute.each', 'compute.reduce',
+    'compute.tile', 'systems.specialization_autotune',
+    'systems.device_capability_gates'
   ]) assert.ok(ids.has(required), required);
 });
