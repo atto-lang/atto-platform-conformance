@@ -8,7 +8,7 @@ and test/guest artifacts before declaring `PASSED`.
 
 The underlying `contracts/dop-inverted-v1/manifest.json` remains
 `NOT_EXECUTED` for all five backends until real source evidence exists.
-The two `.atto` blobs and expected results are pinned there.
+The three `.atto` blobs and expected results are pinned there.
 
 ## Execution lanes are intentionally distinct
 
