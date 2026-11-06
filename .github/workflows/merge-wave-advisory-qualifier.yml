@@ -30,7 +30,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  private-runner-admission-canary:
+    # No checkout, dependency downloads, source access, secrets, or marketplace actions.
+    # A zero-step failure here means runner admission did not occur.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    permissions: {}
+    steps:
+      - name: Prove a private-repository runner executed a shell step
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "ores-truffle-oreslang/oreslang-platform-conformance"
+          printf 'ATTO_PRIVATE_SOURCE_FREE_RUNNER_ALLOCATED\\n'
+          printf 'ATTO_WORKFLOW_EVENT=%s\\n' "$GITHUB_EVENT_NAME"
   source-free-qualifier-regressions:
+    needs: private-runner-admission-canary
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
