@@ -14,7 +14,7 @@ test('machine-readable G2 manifest only claims restricted unmerged device-source
   assert.equal(manifest.status, 'RESTRICTED_COMPILER_PROTOTYPE_UNMERGED');
   assert.equal(manifest.localValidation.hostRegressionCount, 28);
   assert.equal(manifest.localValidation.observed, 'LOCAL_ONLY');
-  assert.equal(manifest.llvmTool.gitBlobSha, 'd699f3c30eb0ffab4ebd18f8e280f2addc12dcc7');
+  assert.equal(manifest.llvmTool.gitBlobSha, '364e06e8e20b6580e603cd89a1b81387ea2c89ae');
   assert.deepEqual(manifest.invariants, {
     noCpuFallback:true, noHostLaunchClaim:true, noProviderAuthorityFromSource:true,
     noPhysicalGpuClaimFromSpir64Ir:true, noArtifactOnRejectedKernel:true, f32ContractedFma:false,
