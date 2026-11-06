@@ -52,3 +52,49 @@ test('escaped isolated high surrogate in a key rejected',()=>reject('{"\\uD800":
 test('escaped high surrogate followed by ordinary character rejected',()=>reject('{"x":"\\uD83Chello"}'));
 test('escaped valid surrogate pair accepted',()=>assert.equal(parse('{"x":"\\uD83C\\uDF0D"}').x,'🌍'));
 test('escaped valid surrogate pair in a key accepted',()=>assert.equal(parse('{"\\uD83C\\uDF0D":1}')['🌍'],1));
+
+test('forged subclass byteLength cannot hide oversized input',()=>{
+ class Forged extends Uint8Array { get byteLength() { return 1; } }
+ const raw=enc.encode('{"x":"'+ 'A'.repeat(32768) +'"}');
+ const forged=new Forged(raw.length); forged.set(raw);
+ reject(forged,'OVERFLOW');
+});
+test('forged subclass byteLength cannot fabricate overflow on a valid frame',()=>{
+ class Forged extends Uint8Array { get byteLength() { return 999999; } }
+ const raw=enc.encode(ok), view=new Forged(raw.length); view.set(raw);
+ assert.equal(parseM0Frame(view).method,'resources/read');
+});
+test('zero byteLength override cannot hide an actual valid input',()=>{
+ class Forged extends Uint8Array { get byteLength() { return 0; } }
+ const raw=enc.encode(ok), view=new Forged(raw.length); view.set(raw);
+ assert.equal(parseM0Frame(view).id,'read-1');
+});
+test('forged backing buffer getter does not control admitted view bytes',()=>{
+ class Forged extends Uint8Array { get buffer() { return new ArrayBuffer(1); } }
+ const raw=enc.encode(ok), view=new Forged(raw.length); view.set(raw);
+ assert.equal(parseM0Frame(view).method,'resources/read');
+});
+test('proxied byte views fail as MALFORMED rather than throwing TypeError',()=>{
+ reject(new Proxy(enc.encode(ok),{}),'MALFORMED');
+});
+test('shared byte views are rejected to avoid concurrent mutation',()=>{
+ if (typeof SharedArrayBuffer === 'undefined') return;
+ const raw=enc.encode(ok), shared=new Uint8Array(new SharedArrayBuffer(raw.length));
+ shared.set(raw);
+ reject(shared,'MALFORMED');
+});
+test('valid offset subarray parses only admitted window',()=>{
+ const raw=enc.encode(ok), backing=new Uint8Array(raw.length+8);
+ backing.fill(0xff); backing.set(raw,4);
+ assert.equal(parseM0Frame(backing.subarray(4,4+raw.length)).id,'read-1');
+});
+test('oversized backing buffer does not disqualify a bounded subarray',()=>{
+ const raw=enc.encode(ok), backing=new Uint8Array(65536);
+ backing.set(raw,32769);
+ assert.equal(parseM0Frame(backing.subarray(32769,32769+raw.length)).id,'read-1');
+});
+test('detached byte view fails closed',()=>{
+ const view=enc.encode(ok);
+ structuredClone(view.buffer,{transfer:[view.buffer]});
+ reject(view,'MALFORMED');
+});
