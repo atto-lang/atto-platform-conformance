@@ -26,7 +26,9 @@ export function physicalLayoutV1({kind, rows, fields, lanes = 1, groups = [],
   maximumBytes = MAX}) {
   const count = toCount(rows, 'physical-layout-rows');
   const quota = toCount(maximumBytes,'physical-layout-quota');
-  req(Array.isArray(fields) && fields.length >= 1 && fields.length <= 64,
+  req(Array.isArray(fields), 'physical-layout-fields');
+  const fieldCount = ownData(fields,'length','physical-layout-fields');
+  req(Number.isInteger(fieldCount) && fieldCount>=1 && fieldCount<=64,
     'physical-layout-fields');
   req(['aos','soa','aosoa','soaos'].includes(kind), 'physical-layout-kind');
   req(power2(lanes) && lanes <= 1024 && (kind === 'aosoa' || lanes === 1),
@@ -34,7 +36,7 @@ export function physicalLayoutV1({kind, rows, fields, lanes = 1, groups = [],
   req(Array.isArray(groups), 'physical-layout-groups');
   const names = new Set();
   const specs = [];
-  for(let i=0;i<fields.length;i++) {
+  for(let i=0;i<fieldCount;i++) {
     const f = ownData(fields,i,'physical-layout-field-' + i);
     req(f && typeof f === 'object' && !Array.isArray(f),
       'physical-layout-field-' + i);
