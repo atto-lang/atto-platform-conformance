@@ -96,6 +96,39 @@ test('checkout/setup-only Actions cannot masquerade as executed tests',()=>{
   assert.equal(assessJob(j,c),'EXECUTED_JOB_SUCCESS');
 });
 
+test('historical job remains classified after newer workflow retry',()=>{
+  const f=fixture(),c=CANDIDATES.find(c=>c.backend==='llvm');
+  f.candidates.llvm.run.run_attempt=c.attempt+1;
+  const item=buildPacket(f).sampledJobs.find(x=>x.repository===repo('llvm'));
+  assert.equal(item.assessment,'RUNNER_NOT_ALLOCATED');
+  assert.equal(item.sampledHistoricalAttempt,true);
+  assert.equal(item.latestRunAttempt,c.attempt+1);
+  assert.equal(item.attempt,c.attempt);
+});
+test('future or impossible run attempt is rejected',()=>{
+  const c=CANDIDATES[0];
+  for(const attempt of [0,-1,NaN,c.attempt-1]){
+    const f=fixture();f.candidates.java.run.run_attempt=attempt;
+    assert.equal(buildPacket(f).sampledJobs[0].assessment,'RUN_IDENTITY_MISMATCH');
+  }
+});
+test('job attempt identity cannot be promoted by a newer run',()=>{
+  const f=fixture(),c=CANDIDATES[0];
+  f.candidates.java.run.run_attempt=c.attempt+2;
+  f.candidates.java.jobs.jobs[0].run_attempt=c.attempt+2;
+  assert.equal(buildPacket(f).sampledJobs[0].assessment,'IDENTITY_MISMATCH');
+});
+test('even a historical executed success never grants merge or private-source export',()=>{
+  const f=fixture(),c=CANDIDATES[0];
+  f.candidates.java.run.run_attempt=c.attempt+2;
+  f.candidates.java.jobs.jobs[0]=success(c);
+  const p=buildPacket(f),v=p.sampledJobs[0];
+  assert.equal(v.assessment,'EXECUTED_JOB_SUCCESS');
+  assert.equal(v.sampledHistoricalAttempt,true);
+  assert.equal(p.authorizedToMerge,false);
+  assert.equal(p.authorizedToExportPrivateSource,false);
+});
+
 test('missing snapshot is never green',()=>{
   const p=buildPacket({});assert.equal(p.counts.unverifiedMains,9);assert.equal(p.sampledJobs.every(x=>x.assessment==='PR_HEAD_DRIFT_OR_UNVERIFIED'),true);
 });
