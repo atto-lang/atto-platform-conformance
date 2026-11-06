@@ -1,13 +1,16 @@
 /** Candidate source-free actor mailbox admission + physical completion oracle.
  * A deterministic lifecycle projection, not a concurrent linearizability proof.
+ * This input validator is Node.js-specific, not a guest runtime primitive.
  */
+import {types as nodeTypes} from 'node:util';
 const allowed = new Set(['send', 'receive', 'settle', 'stop_abrupt', 'stop_graceful',
   'task_begin', 'task_end', 'loan_begin', 'loan_end', 'get_done', 'reclaim']);
 const id = x => typeof x === 'string' && /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$/.test(x);
 const invalid = why => { throw new Error('INVALID_MAILBOX_COMPLETION_TRACE: ' + why); };
 // Validate ordinary own data fields before reading any input-owned values.
 const dataRecord = (value, allowedKeys, requiredKeys) =>
-  value !== null && typeof value === 'object' && !Array.isArray(value) &&
+  value !== null && typeof value === 'object' &&
+  !nodeTypes.isProxy(value) && !Array.isArray(value) &&
   Object.getPrototypeOf(value) === Object.prototype &&
   Reflect.ownKeys(value).every(key => {
     if (typeof key !== 'string' || !allowedKeys.includes(key)) return false;
@@ -21,9 +24,11 @@ export function checkMailboxCompletionV1(input) {
       ['schema', 'capacity', 'events'])) invalid('input fields');
   if (input.schema !== 'oreslang.mailbox_completion.v1' ||
       !Number.isInteger(input.capacity) || input.capacity < 1 || input.capacity > 4 ||
-      !Array.isArray(input.events) || !input.events.length || input.events.length > 1000)
+      nodeTypes.isProxy(input.events) || !Array.isArray(input.events) ||
+      !input.events.length || input.events.length > 1000)
     invalid('bounds');
-  // Arrays must have exactly the indexed own data entries and length.
+  // Reject Proxy arrays before introspection, including already revoked
+  // proxies whose Array.isArray / getPrototypeOf operations would throw.
   // An accessor slot must not execute code while validation reads events.
   const events = input.events;
   if (Object.getPrototypeOf(events) !== Array.prototype ||
@@ -34,7 +39,7 @@ export function checkMailboxCompletionV1(input) {
   }
   const s = {mode:'OPEN', queue:[], inflight:new Set(), accepted:new Set(),
     tasks:new Set(), loans:new Set(), reclaimed:false, results:[]};
-  for (const e of input.events) {
+  for (const e of events) {
     if (!dataRecord(e, ['op', 'ticket', 'expect'], ['op', 'expect']) ||
         !allowed.has(e.op) || typeof e.expect !== 'string') invalid('event fields');
     const withId = ['send','settle','task_begin','task_end','loan_begin','loan_end'].includes(e.op);
