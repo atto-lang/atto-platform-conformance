@@ -6,12 +6,23 @@ const repo=b=>OWNER+'/oreslang-source.'+b;
 function fixture(){
   const branches=Object.fromEntries(BACKENDS.map(b=>[b,{name:'main',commit:{sha:'a'.repeat(40)},protected:false,protection:{required_status_checks:{enforcement_level:'off'}}}]));
   const candidates=Object.fromEntries(CANDIDATES.map(c=>[c.backend,{
-    pr:{number:c.pr,state:'open',merged:false,base:{ref:'main'},head:{sha:c.head,repo:{full_name:repo(c.backend)}}},
-    run:{id:c.run,head_sha:c.head,run_attempt:c.attempt,repository:{full_name:repo(c.backend)}},
-    jobs:{jobs:[{id:c.job,run_id:c.run,run_attempt:c.attempt,head_sha:c.head,status:'completed',conclusion:'failure',runner_id:0,runner_name:'',steps:[]}]} }]));
+    pr:{number:c.pr,url:'https://api.github.com/repos/'+repo(c.backend)+'/pulls/'+c.pr,
+      state:'open',merged:false,base:{ref:'main',repo:{full_name:repo(c.backend)}},
+      head:{sha:c.head,ref:c.branch,repo:{full_name:repo(c.backend)}}},
+    run:{id:c.run,url:'https://api.github.com/repos/'+repo(c.backend)+'/actions/runs/'+c.run,
+      head_sha:c.head,head_branch:c.branch,head_repository:{full_name:repo(c.backend)},
+      event:'pull_request',path:c.workflowPath,status:'completed',
+      run_attempt:c.attempt,repository:{full_name:repo(c.backend)}},
+    jobs:{total_count:1,jobs:[{id:c.job,run_id:c.run,
+      run_url:'https://api.github.com/repos/'+repo(c.backend)+'/actions/runs/'+c.run,
+      head_branch:c.branch,run_attempt:c.attempt,head_sha:c.head,status:'completed',
+      conclusion:'failure',runner_id:0,runner_name:'',steps:[]}]} }]));
   return {branches,candidates};
 }
-function success(c){return {id:c.job,run_id:c.run,run_attempt:c.attempt,head_sha:c.head,status:'completed',conclusion:'success',runner_id:123,runner_name:'hosted',steps:[{name:'Set up job',status:'completed',conclusion:'success'},{name:'Run actual tests',status:'completed',conclusion:'success'}]};}
+function success(c){return {id:c.job,run_id:c.run,run_attempt:c.attempt,head_sha:c.head,
+  head_branch:c.branch,run_url:'https://api.github.com/repos/'+repo(c.backend)+'/actions/runs/'+c.run,
+  status:'completed',conclusion:'success',runner_id:123,runner_name:'hosted',
+  steps:[{name:'Set up job',status:'completed',conclusion:'success'},{name:'Run actual tests',status:'completed',conclusion:'success'}]};}
 test('nine source branches and five jobs are classified without merge authority',()=>{
   const r=buildPacket(fixture());
   assert.equal(r.sourceRepositories.length,9);assert.equal(r.sampledJobs.length,5);
@@ -35,7 +46,8 @@ for(const c of CANDIDATES){
 }
 test('missing and duplicated target job IDs fail closed',()=>{
   const f=fixture();f.candidates.java.jobs.jobs=[];assert.equal(buildPacket(f).sampledJobs[0].assessment,'JOB_MISSING_OR_DUPLICATE');
-  const g=fixture();g.candidates.java.jobs.jobs.push(g.candidates.java.jobs.jobs[0]);assert.equal(buildPacket(g).sampledJobs[0].assessment,'JOB_MISSING_OR_DUPLICATE');
+  const g=fixture();g.candidates.java.jobs.jobs.push(g.candidates.java.jobs.jobs[0]);g.candidates.java.jobs.total_count=2;
+  assert.equal(buildPacket(g).sampledJobs[0].assessment,'JOB_MISSING_OR_DUPLICATE');
 });
 test('unknown main protection is not a verified protected branch',()=>{
   const f=fixture();delete f.branches.forge.protected;f.branches.js.commit.sha='bad';
@@ -176,6 +188,62 @@ test('reject duplicate keys through all API response paths',async()=>{
   };
   await assert.rejects(fetchLiveSnapshot('placeholder',duplicate),/duplicate JSON object key/);
   assert.equal(calls,1);
+});
+
+
+test('PR metadata is bound to the pinned original source branch and repository',()=>{
+  const variants=[
+    p=>{p.url='https://api.github.com/repos/other/repo/pulls/2552';},
+    p=>{p.head.ref='forged-branch';},
+    p=>{p.base.repo.full_name='other/repo';},
+    p=>{p.head.sha='f'.repeat(40);}
+  ];
+  for(const change of variants){const f=fixture();change(f.candidates.java.pr);
+    assert.equal(buildPacket(f).sampledJobs[0].assessment,'PR_HEAD_DRIFT_OR_UNVERIFIED');}
+});
+test('run metadata is bound to original GitHub PR event and source workflow',()=>{
+  const variants=[
+    r=>{r.event='workflow_dispatch';},
+    r=>{r.head_branch='forged-branch';},
+    r=>{r.head_repository.full_name='untrusted/fork';},
+    r=>{r.path='.github/workflows/other.yml';},
+    r=>{r.url='https://api.github.com/repos/other/repo/actions/runs/41958899763';},
+    r=>{r.status='in_progress';}
+  ];
+  for(const change of variants){const f=fixture();change(f.candidates.java.run);
+    assert.equal(buildPacket(f).sampledJobs[0].assessment,'RUN_IDENTITY_MISMATCH');}
+});
+test('historical GitHub runs with empty PR array remain valid',()=>{
+  const f=fixture();f.candidates.java.run.pull_requests=[];
+  assert.equal(buildPacket(f).sampledJobs[0].assessment,'RUNNER_NOT_ALLOCATED');
+});
+test('job metadata is bound to original run URL and branch',()=>{
+  for(const mutate of [
+    j=>{j.head_branch='forged-branch';},
+    j=>{j.run_url='https://api.github.com/repos/other/repo/actions/runs/41958899763';}
+  ]){const f=fixture();mutate(f.candidates.java.jobs.jobs[0]);
+    assert.equal(buildPacket(f).sampledJobs[0].assessment,'IDENTITY_MISMATCH');}
+});
+test('incomplete, malformed, or paginated job inventories are not accepted',()=>{
+  const variants=[
+    j=>{j.total_count=2;},
+    j=>{j.total_count=0;},
+    j=>{j.total_count=null;},
+    j=>{j.total_count=100;},
+    j=>{j.jobs=[];}
+  ];
+  for(const change of variants){const f=fixture();change(f.candidates.java.jobs);
+    assert.equal(buildPacket(f).sampledJobs[0].assessment,'JOB_LIST_INCOMPLETE_OR_UNVERIFIED');}
+});
+test('duplicate pinned job identities are denied even if listed count matches',()=>{
+  const f=fixture(),jobs=f.candidates.java.jobs;
+  jobs.jobs.push({...jobs.jobs[0]});jobs.total_count=2;
+  assert.equal(buildPacket(f).sampledJobs[0].assessment,'JOB_MISSING_OR_DUPLICATE');
+});
+test('a complete multi-job inventory still admits only the pinned job',()=>{
+  const f=fixture(),jobs=f.candidates.java.jobs;
+  jobs.jobs.push({...jobs.jobs[0],id:127020277347});jobs.total_count=2;
+  assert.equal(buildPacket(f).sampledJobs[0].assessment,'RUNNER_NOT_ALLOCATED');
 });
 
 test('missing snapshot is never green',()=>{
