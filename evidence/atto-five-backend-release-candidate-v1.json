@@ -115,6 +115,10 @@
       "memory": {
         "state": "NOT_EXECUTED",
         "receipt": null
+      },
+      "negative": {
+        "state": "NOT_EXECUTED",
+        "receipt": null
       }
     },
     {
@@ -164,6 +168,10 @@
         "receipt": null
       },
       "memory": {
+        "state": "NOT_EXECUTED",
+        "receipt": null
+      },
+      "negative": {
         "state": "NOT_EXECUTED",
         "receipt": null
       }
@@ -217,6 +225,10 @@
       "memory": {
         "state": "NOT_EXECUTED",
         "receipt": null
+      },
+      "negative": {
+        "state": "NOT_EXECUTED",
+        "receipt": null
       }
     },
     {
@@ -266,6 +278,10 @@
         "receipt": null
       },
       "memory": {
+        "state": "NOT_EXECUTED",
+        "receipt": null
+      },
+      "negative": {
         "state": "NOT_EXECUTED",
         "receipt": null
       }
@@ -319,7 +335,19 @@
       "memory": {
         "state": "NOT_EXECUTED",
         "receipt": null
+      },
+      "negative": {
+        "state": "NOT_EXECUTED",
+        "receipt": null
       }
     }
-  ]
+  ],
+  "negative_oracle": {
+    "id": "reject-duck-hasfuture",
+    "proposal_pr": 465,
+    "proposal_head": "908fd95d8ad4238f539b37a63fc2840a7c495624",
+    "fixture_blob_sha": "0072db5d74cd72430b3116eef51cb7237faae901",
+    "expected_diagnostic": "ATTO_TASK_E_HASFUTURE_WITNESS",
+    "expected_phase": "typechecker"
+  }
 }
