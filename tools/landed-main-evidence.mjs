@@ -19,16 +19,19 @@ const normalized = s => s.trim().replace(/\s+/gu, ' ').toLowerCase();
 
 function meaningful(steps) {
   if (!Array.isArray(steps) || steps.length === 0 || steps.length > 512) return false;
-  // No setup, checkout, metadata integrity or post-job housekeeping counts as execution.
-  return steps.some(step => {
-    if (!isRecord(step) || step.conclusion !== 'success' || typeof step.name !== 'string') return false;
-    const name = normalized(step.name);
-    if (!name || IGNORE.has(name) || name.startsWith('post ') ||
-      /^(run )?actions\/(checkout|setup-|cache|upload-artifact|download-artifact)@/.test(name) ||
-      /^verify exact (pr|source|checkout|head)/.test(name) ||
-      /^verify (source|git|checkout) (sha|commit|head|tree)/.test(name)) return false;
-    return true;
+  // Ambiguous Unicode/padded labels must not impersonate job lifecycle events.
+  if (!steps.every(s => isRecord(s) && typeof s.name === 'string' &&
+    /^[\x20-\x7e]+$/.test(s.name) && s.name.trim() === s.name &&
+    ['success','failure','skipped','cancelled','timed_out'].includes(s.conclusion))) return false;
+  const actual = steps.filter(step => {
+    const name=normalized(step.name);
+    return name && !IGNORE.has(name) && !name.startsWith('post ') &&
+      !/^(run )?actions\/(checkout|setup-|cache|upload-artifact|download-artifact)@/.test(name) &&
+      !/^verify exact (pr|source|checkout|head)/.test(name) &&
+      !/^verify (source|git|checkout) (sha|commit|head|tree)/.test(name);
   });
+  // A successful setup step cannot mask a skipped or continue-on-error test.
+  return actual.length > 0 && actual.every(step => step.conclusion === 'success');
 }
 function specValid(t) {
   if (!isRecord(t) || !ID.test(t.id ?? '') || !validSha(t.fixture_sha)) return false;
@@ -88,9 +91,10 @@ export function auditEntry(entry) {
   if (!isRecord(entry)) return blockers;
   const o = entry.main_observation;
   if (!isRecord(o) || !validSha(o.head_sha) ||
+    o.merge_base_sha !== entry.merge_sha || !Number.isSafeInteger(o.ahead_by) ||
     !['identical','ahead'].includes(o.compare_status) || o.behind_by !== 0 ||
-    (o.compare_status === 'identical' && o.head_sha !== entry.merge_sha) ||
-    (o.compare_status === 'ahead' && o.head_sha === entry.merge_sha))
+    (o.compare_status === 'identical' && (o.ahead_by !== 0 || o.head_sha !== entry.merge_sha)) ||
+    (o.compare_status === 'ahead' && (o.ahead_by < 1 || o.head_sha === entry.merge_sha)))
     add('ancestry','landed_commit_not_observed_on_main');
   const p = entry.protection;
   if (!isRecord(p) || p.protected !== true || !positive(p.required_approvals) ||
