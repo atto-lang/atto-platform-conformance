@@ -26,7 +26,10 @@ blocked('reject review from stale head',v=>v.reviews[0].commit_sha=B,'REVIEW_IND
 blocked('reject changed reviewer state on later review',v=>v.reviews.push({...v.reviews[0],id:13,state:'CHANGES_REQUESTED',submitted_at:'2026-11-06T18:59:30Z'}),'REVIEW_CHANGES_REQUESTED');
 blocked('reject outstanding change request by another reviewer',v=>v.reviews.push({...v.reviews[0],id:13,reviewer_id:2000013,login:'another',state:'CHANGES_REQUESTED',submitted_at:'2026-11-06T18:59:30Z'}),'REVIEW_CHANGES_REQUESTED');
 blocked('reject dismissed prior approval',v=>v.reviews.push({...v.reviews[0],id:13,state:'DISMISSED',submitted_at:'2026-11-06T18:59:30Z'}),'REVIEW_INDEPENDENT_APPROVAL_MISSING');
-blocked('reject commented latest review',v=>v.reviews.push({...v.reviews[0],id:13,state:'COMMENTED',submitted_at:'2026-11-06T18:59:30Z'}),'REVIEW_INDEPENDENT_APPROVAL_MISSING');
+test('later comment retains earlier exact-head approval',()=>{
+ const v=fixture();v.reviews.push({...v.reviews[0],id:13,state:'COMMENTED',submitted_at:'2026-11-06T18:59:30Z'});v.review_count=2;
+ assert.equal(qualifyReviewTimeline(v,{now:NOW}).status,'REVIEW_SNAPSHOT_QUALIFIED_REQUIRES_LIVE_RECHECK');
+});
 blocked('reject duplicate review ID',v=>v.reviews.push({...v.reviews[0]}),'REVIEW_RECORD_INVALID');
 blocked('reject identity alias conflicting for same ID',v=>v.reviews.push({...v.reviews[0],id:13,login:'different-reviewer',submitted_at:'2026-11-06T18:59:30Z'}),'REVIEW_IDENTITY_CONFLICT');
 blocked('reject same-millisecond ambiguous ordering',v=>v.reviews.push({...v.reviews[0],id:13,state:'CHANGES_REQUESTED'}),'REVIEW_ORDER_AMBIGUOUS');
@@ -202,4 +205,52 @@ test('accept unordered review inventory with distinct timestamps',()=>{
   v.reviews.unshift({...v.reviews[0],id:36,state:'CHANGES_REQUESTED',submitted_at:'2026-11-06T18:58:00Z'});
   v.review_count=v.reviews.length;
   assert.equal(qualifyReviewTimeline(v,{now:NOW}).status,'REVIEW_SNAPSHOT_QUALIFIED_REQUIRES_LIVE_RECHECK');
+});
+
+
+// A COMMENTED review is feedback, not a state transition that resolves a prior
+// CHANGES_REQUESTED review or revokes a current-head approval.
+test('change request followed by a comment stays blocking',()=>{
+ const v=fixture();
+ v.reviews.push({id:13,reviewer_id:2000013,login:'second-reviewer',state:'CHANGES_REQUESTED',commit_sha:A,submitted_at:'2026-11-06T18:59:10Z'});
+ v.reviews.push({id:14,reviewer_id:2000013,login:'second-reviewer',state:'COMMENTED',commit_sha:A,submitted_at:'2026-11-06T18:59:20Z'});
+ v.review_count=3;
+ const r=qualifyReviewTimeline(v,{now:NOW});
+ assert(r.blockers.includes('REVIEW_CHANGES_REQUESTED'),JSON.stringify(r));
+});
+test('comment from approved reviewer does not revoke approval',()=>{
+ const v=fixture();
+ v.reviews.push({...v.reviews[0],id:13,state:'COMMENTED',submitted_at:'2026-11-06T18:59:20Z'});
+ v.review_count=2;
+ assert.deepEqual(qualifyReviewTimeline(v,{now:NOW}).blockers,[]);
+});
+test('change request followed by an explicit approval clears the request',()=>{
+ const v=fixture();
+ v.reviews.push({id:13,reviewer_id:2000013,login:'second-reviewer',state:'CHANGES_REQUESTED',commit_sha:A,submitted_at:'2026-11-06T18:59:05Z'});
+ v.reviews.push({id:14,reviewer_id:2000013,login:'second-reviewer',state:'COMMENTED',commit_sha:A,submitted_at:'2026-11-06T18:59:10Z'});
+ v.reviews.push({id:15,reviewer_id:2000013,login:'second-reviewer',state:'APPROVED',commit_sha:A,submitted_at:'2026-11-06T18:59:20Z'});
+ v.review_count=4;
+ assert.deepEqual(qualifyReviewTimeline(v,{now:NOW}).blockers,[]);
+});
+test('distinct dismissal event cannot impersonate a dismissal of earlier request',()=>{
+ const v=fixture();
+ v.reviews.push({id:13,reviewer_id:2000013,login:'second-reviewer',state:'CHANGES_REQUESTED',commit_sha:A,submitted_at:'2026-11-06T18:59:05Z'});
+ v.reviews.push({id:14,reviewer_id:2000013,login:'second-reviewer',state:'DISMISSED',commit_sha:A,submitted_at:'2026-11-06T18:59:20Z'});
+ v.review_count=3;
+ const r=qualifyReviewTimeline(v,{now:NOW});
+ assert(r.blockers.includes('REVIEW_DISMISSAL_AMBIGUOUS'),JSON.stringify(r));
+ assert(r.blockers.includes('REVIEW_CHANGES_REQUESTED'),JSON.stringify(r));
+});
+test('non-chronological comment cannot hide an outstanding request',()=>{
+ const v=fixture();
+ v.reviews.push({id:13,reviewer_id:2000013,login:'second-reviewer',state:'COMMENTED',commit_sha:A,submitted_at:'2026-11-06T18:59:20Z'});
+ v.reviews.push({id:14,reviewer_id:2000013,login:'second-reviewer',state:'CHANGES_REQUESTED',commit_sha:A,submitted_at:'2026-11-06T18:59:05Z'});
+ v.review_count=3;
+ assert(qualifyReviewTimeline(v,{now:NOW}).blockers.includes('REVIEW_CHANGES_REQUESTED'));
+});
+test('dismissal after exact-head approval removes effective approval',()=>{
+ const v=fixture();
+ v.reviews.push({...v.reviews[0],id:13,state:'DISMISSED',submitted_at:'2026-11-06T18:59:20Z'});
+ v.review_count=2;
+ assert(qualifyReviewTimeline(v,{now:NOW}).blockers.includes('REVIEW_INDEPENDENT_APPROVAL_MISSING'));
 });
