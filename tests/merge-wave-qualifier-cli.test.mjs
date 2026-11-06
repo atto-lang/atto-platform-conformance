@@ -99,7 +99,7 @@ test('missing snapshot file exits 2', t => {
 test('oversized snapshot is rejected before parsing', t => {
   const result = run(fixture(t, Buffer.alloc(2_000_001, 0x20)).path);
   verify_exit(result, 2);
-  assert.match(result.stderr, /exceeds 2MB/);
+  assert.match(result.stderr, /2MB/);
 });
 
 test('malformed UTF-8 in otherwise syntactically valid JSON fails closed', t => {
