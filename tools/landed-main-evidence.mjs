@@ -22,6 +22,7 @@ function meaningful(steps) {
   // Ambiguous Unicode/padded labels must not impersonate job lifecycle events.
   if (!steps.every(s => isRecord(s) && typeof s.name === 'string' &&
     /^[\x20-\x7e]+$/.test(s.name) && s.name.trim() === s.name &&
+    s.status === 'completed' &&
     ['success','failure','skipped','cancelled','timed_out'].includes(s.conclusion))) return false;
   const actual = steps.filter(step => {
     const name=normalized(step.name);
@@ -61,7 +62,9 @@ function runValid(run, entry, check) {
     run.app_id !== check.app_id || run.status !== 'completed' ||
     run.conclusion !== 'success' || !validHash(run.artifact_sha256) ||
     !positive(run.run_id) || !positive(run.run_attempt) || !positive(run.job_id) ||
-    !positive(run.runner_id) || !meaningful(run.steps) ||
+    !positive(run.runner_id) || typeof run.runner_name !== 'string' ||
+    !/^[\x20-\x7e]{1,128}$/.test(run.runner_name) ||
+    run.runner_name.trim() !== run.runner_name || !meaningful(run.steps) ||
     !Array.isArray(run.tests) || run.tests.length === 0 || run.tests.length > 256 ||
     !uniq(run.tests.map(t => t?.id))) return false;
   const expected = entry.required_tests;
