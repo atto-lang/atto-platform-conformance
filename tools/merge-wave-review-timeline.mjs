@@ -96,6 +96,7 @@ export function qualifyReviewTimeline(input, {now = Date.now()} = {}) {
   const identities = new Map();
   const loginIds = new Map();
   const latest = new Map();
+  const reviewEvents = new Map();
   const seenReviewerTimes = new Set();
   for (const r of input.reviews) {
     const login = typeof r?.login === 'string' ? r.login.toLowerCase() : '';
@@ -122,18 +123,30 @@ export function qualifyReviewTimeline(input, {now = Date.now()} = {}) {
       fail('REVIEW_ORDER_AMBIGUOUS'); continue;
     }
     seenReviewerTimes.add(timestampKey);
-    const prior = latest.get(r.reviewer_id);
-    // COMMENTED is feedback, never a new approval or change-request decision.
-    // It cannot revoke an APPROVED review or clear CHANGES_REQUESTED.
-    if (r.state === 'COMMENTED') continue;
-    // A distinct synthetic DISMISSED record does not prove that the earlier
-    // requested-changes review itself was dismissed by an authorized actor.
-    // Actual GitHub dismissals update the original review state in readback.
-    if (prior?.state === 'CHANGES_REQUESTED' && r.state === 'DISMISSED') {
-      fail('REVIEW_DISMISSAL_AMBIGUOUS');
-      continue;
+    const events = reviewEvents.get(r.reviewer_id) || [];
+    events.push({ ...r, login, time });
+    reviewEvents.set(r.reviewer_id, events);
+  }
+  // Sort by verified submission time, never rely on caller-provided page order.
+  // COMMENTED does not change a review decision. An old-head approval cannot
+  // release a current-head request for changes, and a distinct dismissal row
+  // cannot authenticate a third-party dismissal of the original request.
+  for (const events of reviewEvents.values()) {
+    events.sort((a,b) => a.time - b.time);
+    for (const r of events) {
+      const prior = latest.get(r.reviewer_id);
+      if (r.state === 'COMMENTED') continue;
+      if (prior?.state === 'CHANGES_REQUESTED' && r.state === 'DISMISSED') {
+        fail('REVIEW_DISMISSAL_AMBIGUOUS');
+        continue;
+      }
+      if (prior?.state === 'CHANGES_REQUESTED' && r.state === 'APPROVED' &&
+          r.commit_sha !== input.head_sha) {
+        fail('REVIEW_STALE_REAPPROVAL');
+        continue;
+      }
+      latest.set(r.reviewer_id, r);
     }
-    if (!prior || time > prior.time) latest.set(r.reviewer_id, { ...r, login, time });
   }
   if ([...latest.values()].some(r => r.state === 'CHANGES_REQUESTED')) {
     fail('REVIEW_CHANGES_REQUESTED');
