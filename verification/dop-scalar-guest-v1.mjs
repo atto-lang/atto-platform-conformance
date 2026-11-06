@@ -76,6 +76,13 @@ export function validateDopGuestReceipt(receipt, contract) {
     need(observed.has('execute-guest'), 'execute-guest-step');
     need(stepOrder.get('checkout-head') < stepOrder.get('compile-guest') &&
          stepOrder.get('compile-guest') < stepOrder.get('execute-guest'), 'guest-step-order');
+    if (receipt.backend === 'llvm') {
+      // A successful native AOT run must actually execute the checksum-poisoned
+      // .atto guest. A host-only assertion or an unobserved negative is not parity.
+      need(observed.has('execute-poisoned-guest'), 'llvm-poisoned-guest-step');
+      need(stepOrder.get('execute-guest') < stepOrder.get('execute-poisoned-guest'),
+        'llvm-poisoned-guest-order');
+    }
   } else if (receipt.status === 'UNSUPPORTED') {
     need(observed.has('assert-rejection'), 'negative-diagnostic-step');
     need(stepOrder.get('checkout-head') < stepOrder.get('compile-guest') &&
