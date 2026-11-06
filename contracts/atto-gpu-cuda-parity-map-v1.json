@@ -1,0 +1,388 @@
+{
+  "schema": "attolang.gpu-cuda-parity-map/1",
+  "scope": "coverage plan for the NEW explicit-launch syntax only",
+  "assertsProductionCudaParity": false,
+  "evidencePolicy": {
+    "compilerGuestAndDeviceHardwareRequired": true,
+    "sourceBlobAndTreeIdentityRequired": true,
+    "nonzeroExecutedRunnerStepsRequired": true,
+    "hostOnlyResultsMayNotPromote": true,
+    "zeroStepEvidence": "RUNNER_ADMISSION_FAILURE",
+    "backendFallback": "FORBIDDEN"
+  },
+  "phases": {
+    "P0": "first compiler-backed launch with real device",
+    "P1": "core SIMT/memory/synchronization",
+    "P2": "advanced accelerator runtime and math",
+    "P3": "optional vendor-specific capabilities, explicit no-fallback"
+  },
+  "providers": [
+    "nvidia-cuda",
+    "amd-rocm",
+    "vulkan-spirv",
+    "apple-metal",
+    "webgpu"
+  ],
+  "features": [
+    {
+      "id": "dispatch.kernel_entry",
+      "phase": "P0",
+      "attoSurface": "gpu fnc",
+      "cudaConcept": "global kernel function",
+      "portability": "portable",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "dispatch.explicit_launch",
+      "phase": "P0",
+      "attoSurface": "launch ... on gpu",
+      "cudaConcept": "CUDA triple-chevron configuration",
+      "portability": "portable",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "dispatch.grid_1d",
+      "phase": "P0",
+      "attoSurface": "grid: [n,1,1]",
+      "cudaConcept": "grid launch",
+      "portability": "portable",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "dispatch.grid_2d_3d",
+      "phase": "P1",
+      "attoSurface": "grid: [x,y,z]",
+      "cudaConcept": "multidimensional grid",
+      "portability": "portable",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "dispatch.block_geometry",
+      "phase": "P0",
+      "attoSurface": "block: [x,y,z]",
+      "cudaConcept": "thread block dimensions",
+      "portability": "portable",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "dispatch.streams",
+      "phase": "P0",
+      "attoSurface": "queue: GpuQueue",
+      "cudaConcept": "CUDA streams",
+      "portability": "portable",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "dispatch.events",
+      "phase": "P1",
+      "attoSurface": "Future<void> and device event",
+      "cudaConcept": "CUDA events/fences",
+      "portability": "portable",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "dispatch.concurrent_kernels",
+      "phase": "P1",
+      "attoSurface": "independent launches with checked loans",
+      "cudaConcept": "concurrent kernels",
+      "portability": "portable",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "dispatch.graphs",
+      "phase": "P2",
+      "attoSurface": "bounded GPU execution graph",
+      "cudaConcept": "CUDA graphs capture/replay",
+      "portability": "provider-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "dispatch.cooperative_groups",
+      "phase": "P2",
+      "attoSurface": "gpu.group_sync with capabilities",
+      "cudaConcept": "cooperative groups/grid sync",
+      "portability": "provider-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "dispatch.block_clusters",
+      "phase": "P3",
+      "attoSurface": "cluster: [x,y,z]",
+      "cudaConcept": "thread block clusters",
+      "portability": "vendor-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "dispatch.dynamic_parallelism",
+      "phase": "P3",
+      "attoSurface": "capability-gated device child launches",
+      "cudaConcept": "CUDA dynamic parallelism",
+      "portability": "vendor-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "memory.device_buffers",
+      "phase": "P0",
+      "attoSurface": "GpuArray<T> / DeviceBuffer<T>",
+      "cudaConcept": "device global memory",
+      "portability": "portable",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "memory.explicit_copy",
+      "phase": "P0",
+      "attoSurface": "copy_to_device / copy_to_host",
+      "cudaConcept": "host-device memcpy",
+      "portability": "portable",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "memory.pinned_host",
+      "phase": "P1",
+      "attoSurface": "PinnedHostBuffer<T>",
+      "cudaConcept": "page-locked pinned allocations",
+      "portability": "provider-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "memory.unified",
+      "phase": "P2",
+      "attoSurface": "ManagedRegion<T>",
+      "cudaConcept": "unified managed memory",
+      "portability": "provider-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "memory.pools",
+      "phase": "P2",
+      "attoSurface": "GpuMemoryPool",
+      "cudaConcept": "stream-ordered memory allocator",
+      "portability": "provider-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "memory.peer_to_peer",
+      "phase": "P2",
+      "attoSurface": "explicit peer transfer",
+      "cudaConcept": "GPU peer DMA",
+      "portability": "provider-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "memory.shared_workgroup",
+      "phase": "P1",
+      "attoSurface": "group memory and shared_bytes",
+      "cudaConcept": "shared memory",
+      "portability": "portable",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "memory.texture_surface",
+      "phase": "P3",
+      "attoSurface": "typed Texture/Surface capability",
+      "cudaConcept": "texture and surface memory",
+      "portability": "provider-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "memory.coalesced_layout",
+      "phase": "P1",
+      "attoSurface": "SoA/AoSoA/SoAoS layout metadata",
+      "cudaConcept": "coalesced access",
+      "portability": "portable",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "sync.group_barrier",
+      "phase": "P1",
+      "attoSurface": "gpu.group_barrier()",
+      "cudaConcept": "__syncthreads",
+      "portability": "portable",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "sync.subgroup_ops",
+      "phase": "P1",
+      "attoSurface": "gpu.subgroup_* intrinsics",
+      "cudaConcept": "warp shuffle/ballot/reduce",
+      "portability": "portable",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "sync.scoped_atomics",
+      "phase": "P1",
+      "attoSurface": "typed gpu atomic scope/order",
+      "cudaConcept": "CUDA atomics",
+      "portability": "portable",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "sync.memory_fences",
+      "phase": "P1",
+      "attoSurface": "gpu.fence(scope, order)",
+      "cudaConcept": "memory consistency and fence",
+      "portability": "portable",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "sync.async_copy",
+      "phase": "P2",
+      "attoSurface": "gpu.copy_async()",
+      "cudaConcept": "asynchronous DMA copies",
+      "portability": "provider-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "sync.async_barrier",
+      "phase": "P2",
+      "attoSurface": "typed phase token/barrier",
+      "cudaConcept": "cuda::barrier/pipeline",
+      "portability": "provider-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "compute.fp16_bf16",
+      "phase": "P1",
+      "attoSurface": "f16/bf16 and explicit conversions",
+      "cudaConcept": "half and bfloat16",
+      "portability": "provider-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "compute.fp32_fp64",
+      "phase": "P0",
+      "attoSurface": "f32/f64 capability",
+      "cudaConcept": "single and double precision",
+      "portability": "provider-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "compute.tensor_mma",
+      "phase": "P2",
+      "attoSurface": "gpu.tensor_mma",
+      "cudaConcept": "tensor core MMA",
+      "portability": "provider-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "compute.tf32_fp8",
+      "phase": "P2",
+      "attoSurface": "declared precision mode",
+      "cudaConcept": "TF32 and FP8",
+      "portability": "vendor-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "compute.reductions",
+      "phase": "P1",
+      "attoSurface": "declared deterministic reduction",
+      "cudaConcept": "warp/block reductions",
+      "portability": "portable",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "compute.complex",
+      "phase": "P2",
+      "attoSurface": "complex numerical kernels",
+      "cudaConcept": "cuComplex",
+      "portability": "portable",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "compute.math_intrinsics",
+      "phase": "P1",
+      "attoSurface": "typed device math routines",
+      "cudaConcept": "libdevice math",
+      "portability": "provider-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "systems.multi_gpu",
+      "phase": "P2",
+      "attoSurface": "explicit multi-device placement",
+      "cudaConcept": "multi-GPU CUDA",
+      "portability": "provider-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "systems.collectives",
+      "phase": "P3",
+      "attoSurface": "collectives with explicit membership",
+      "cudaConcept": "NCCL-style collective compute",
+      "portability": "provider-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "systems.compilation",
+      "phase": "P0",
+      "attoSurface": "typed device IR -> device artifact",
+      "cudaConcept": "PTX/cubin/LLVM/SPIR-V/Metal",
+      "portability": "provider-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "systems.occupancy",
+      "phase": "P2",
+      "attoSurface": "device capabilities and occupancy",
+      "cudaConcept": "CUDA occupancy APIs",
+      "portability": "provider-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "systems.profiling",
+      "phase": "P2",
+      "attoSurface": "exact device event tracing",
+      "cudaConcept": "CUDA profiling tools",
+      "portability": "provider-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    {
+      "id": "systems.debug_sanitize",
+      "phase": "P2",
+      "attoSurface": "device memory/race checks",
+      "cudaConcept": "compute-sanitizer/debug",
+      "portability": "provider-conditional",
+      "sourceSupport": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    }
+  ]
+}
