@@ -51,10 +51,12 @@ test('even a caught reentrant attempt cannot change the owner quota',()=>{
       return Reflect.ownKeys(target);
     }
   });
-  const h=store.push(row);
+  assert.throws(()=>store.push(row),/tainted/);
   assert.equal(rejected,true);
+  assert.equal(store.length,0);
+  const h=store.push({x:8n});
   assert.equal(store.length,1);
-  assert.equal(store.get_field(h,'x'),7n);
+  assert.equal(store.get_field(h,'x'),8n);
 });
 
 test('nested packed-value getter cannot swap-delete while set_field validates',()=>{
@@ -102,4 +104,61 @@ test('proxy ownKeys cannot close owner during aborted row admission',()=>{
   assert.equal(store.length,0);
   const h=store.push({x:2n});
   assert.equal(store.get_field(h,'x'),2n);
+});
+
+
+test('caught nested erase taints packed field update and preserves row handles',()=>{
+  const {store,one,two}=filledStore();
+  let caught=false;
+  const payload=new Proxy({v:99n},{
+    getOwnPropertyDescriptor(target,key) {
+      try { store.erase_swap(two); }
+      catch(e) { caught=/reentrant/.test(String(e)); }
+      return Object.getOwnPropertyDescriptor(target,key);
+    }
+  });
+  assert.throws(()=>store.set_field(one,'payload',payload),/tainted/);
+  assert.equal(caught,true);
+  assert.equal(store.length,2);
+  assert.equal(store.get_field(one,'payload').v,1n);
+  assert.equal(store.get_field(two,'payload').v,2n);
+  store.set_field(one,'payload',{v:3n});
+  assert.equal(store.get_field(one,'payload').v,3n);
+});
+
+test('caught loan close taints borrowed update but does not release the loan',()=>{
+  const {store,one}=filledStore();
+  const loan=store.borrow_column('payload',true);
+  let caught=false;
+  const payload=new Proxy({v:9n},{
+    getOwnPropertyDescriptor(target,key) {
+      try { loan.close(); }
+      catch(e) { caught=/reentrant/.test(String(e)); }
+      return Object.getOwnPropertyDescriptor(target,key);
+    }
+  });
+  assert.throws(()=>loan.set(0,payload),/tainted/);
+  assert.equal(caught,true);
+  assert.equal(loan.get(0).v,1n);
+  assert.throws(()=>store.set_field(one,'payload',{v:9n}),/loan/);
+  loan.close();
+  store.set_field(one,'payload',{v:9n});
+  assert.equal(store.get_field(one,'payload').v,9n);
+});
+
+test('caught owner-close attempt taints insertion without permanently closing owner',()=>{
+  const store=new InvertedReferenceStore(single,1);
+  let caught=false;
+  const row=new Proxy({x:7n},{
+    ownKeys(target) {
+      try { store.close(); }
+      catch(e) { caught=/reentrant/.test(String(e)); }
+      return Reflect.ownKeys(target);
+    }
+  });
+  assert.throws(()=>store.push(row),/tainted/);
+  assert.equal(caught,true);
+  assert.equal(store.length,0);
+  const h=store.push({x:42n});
+  assert.equal(store.get_field(h,'x'),42n);
 });
