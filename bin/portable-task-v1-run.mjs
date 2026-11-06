@@ -52,10 +52,17 @@ async function run(cfg){
  required(head===cfg.compilerCommit,'compiler source HEAD differs from pinned commit');
  required(git(here,'rev-parse','HEAD')===cfg.fixtureCommit,'fixture source HEAD differs from pinned commit');
  const compilerSha256=await digest(cfg.compilerIdentity);
- const suite=await loadSuite(),receipts={[cfg.backend]:{}},trace=[];
+ const suite=await loadSuite();
+ const allIds=suite.cases.map(c=>c.id);
+ const requested=cfg.caseIds===undefined?allIds:cfg.caseIds;
+ required(Array.isArray(requested)&&requested.length>0&&requested.length<=allIds.length&&
+   requested.every(id=>typeof id==='string'&&allIds.includes(id))&&
+   new Set(requested).size===requested.length,'caseIds must be distinct known portable fixture IDs');
+ const cases=suite.cases.filter(c=>requested.includes(c.id));
+ const receipts={[cfg.backend]:{}},trace=[];
  const scratch=await mkdtemp(join(tmpdir(),'atto-task-parity-'));
  try{
-  for(const c of suite.cases){
+  for(const c of cases){
    required(git(here,'rev-parse',cfg.fixtureCommit+':fixtures/portable-task-v1/'+c.file)===c.fixtureBlobSha,
       'fixture blob is not at pinned tree: '+c.id);
    const file=join(scratch,c.file),out=join(scratch,c.id+'.guest');
@@ -98,12 +105,12 @@ async function run(cfg){
      stepNames,fixtureBlobSha:c.fixtureBlobSha,fixtureSha256:c.fixtureSha256,compilerSha256,
      artifactKind:cfg.backend==='java'?'jvm-launcher-identity':cfg.backend==='llvm'?'native-guest-executable':'backend-declared'});
   }
-  const summary=summarize(suite.cases,receipts);
+  const summary=summarize(cases,receipts);
   console.log(JSON.stringify({schema:'atto.portable-task-v1-run-candidate',compilerCommit:cfg.compilerCommit,
-   fixtureCommit:cfg.fixtureCommit,backend:cfg.backend,compilerSha256,trace,summary},null,2));
+   fixtureCommit:cfg.fixtureCommit,backend:cfg.backend,compilerSha256,selectedCaseIds:cases.map(c=>c.id),trace,summary},null,2));
   // No candidate status is release-qualified; source-local Actions + independent review still required.
   // Exit 3 distinguishes complete candidate execution from release-qualified proof.
-  return summary[cfg.backend].passed===suite.cases.length?3:1;
+  return summary[cfg.backend].passed===cases.length?3:1;
  }finally{await rm(scratch,{recursive:true,force:true});}
 }
 try{

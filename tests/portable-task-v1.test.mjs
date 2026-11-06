@@ -60,3 +60,19 @@ test('multi-token guest observations require independent lines and ordering',()=
  assert.equal(classifyReceipt(c,'java',{...x,guestOutput:b+'\n'+a}).status,'failed');
  assert.equal(classifyReceipt(c,'java',{...x,guestOutput:a+'\n'+a+'\n'+b}).status,'failed');
 });
+
+test('a local positive result is only a candidate; no forged hosted CI is required',()=>{
+ const x={...receipt(),runnerJobUrl:null};
+ const admitted=classifyReceipt(positive,'java',x);
+ assert.equal(admitted.status,'passed');
+ assert.equal(admitted.releaseQualified,false);
+ assert.match(admitted.reason,/local subprocess/);
+});
+test('a real-looking but invalid Actions path is rejected',()=>{
+ const x={...receipt(),runnerJobUrl:'https://github.com/org/repo/actions/runs/123/evil'};
+ assert.equal(classifyReceipt(positive,'java',x).status,'failed');
+});
+test('compiled positive evidence requires absolute compiler and guest paths',()=>{
+ assert.equal(classifyReceipt(positive,'java',{...receipt(),compileArgv:['compiler','--check',positive.file]}).status,'failed');
+ assert.equal(classifyReceipt(positive,'java',{...receipt(),guestArgv:['guest']}).status,'failed');
+});

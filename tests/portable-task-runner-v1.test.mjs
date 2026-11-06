@@ -19,3 +19,10 @@ test('structural-only matrix CLI fails release gate without actual verified gues
  assert.equal(report.backends.llvm.not_executed,14);
  assert.equal(report.backends.wasm.releaseQualified,false);
 });
+
+test('guest runner rejects an unknown fixture-only execution request',()=>{
+ const script=fileURLToPath(new URL('../bin/portable-task-v1-run.mjs',import.meta.url));
+ const x=spawnSync(process.execPath,[script,'--config=/definitely/missing-task-config.json'],{encoding:'utf8',timeout:5000});
+ assert.equal(x.status,2);
+ assert.match(x.stderr,/TASK_GUEST_RUNNER_DENIED/);
+});
