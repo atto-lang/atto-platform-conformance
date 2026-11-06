@@ -129,6 +129,17 @@ test('even a historical executed success never grants merge or private-source ex
   assert.equal(p.authorizedToExportPrivateSource,false);
 });
 
+test('Forge historical sample matches the real attempt-2 job identity',()=>{
+  const c=CANDIDATES.find(c=>c.backend==='forge');
+  assert.equal(c.run,42075608060);
+  assert.equal(c.attempt,2);
+  assert.equal(c.job,127717546451);
+  const f=fixture(),p=buildPacket(f);
+  assert.equal(p.sampledJobs.find(x=>x.repository===repo('forge')).assessment,'RUNNER_NOT_ALLOCATED');
+  f.candidates.forge.jobs.jobs[0].run_attempt=1;
+  assert.equal(buildPacket(f).sampledJobs.find(x=>x.repository===repo('forge')).assessment,'IDENTITY_MISMATCH');
+});
+
 test('missing snapshot is never green',()=>{
   const p=buildPacket({});assert.equal(p.counts.unverifiedMains,9);assert.equal(p.sampledJobs.every(x=>x.assessment==='PR_HEAD_DRIFT_OR_UNVERIFIED'),true);
 });
