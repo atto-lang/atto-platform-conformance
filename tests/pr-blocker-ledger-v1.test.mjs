@@ -213,6 +213,20 @@ test("five-backend release identity cannot be omitted, truncated, duplicated or 
   }
 });
 
+test("audit snapshot schema cannot be forged or supplied by malformed inputs",async()=>{
+  const dir=await mkdtemp(join(tmpdir(),"atto-ledger-deny-"));
+  try{
+    let n=0;
+    for(const invalid of [null,[],"oops",{schema:2},{schema:0},{schema:null},{schema:"1"}]){
+      const file=join(dir,"bad-"+n+++".json");
+      await assert.rejects(persistSnapshot(file,invalid),/invalid schema-versioned snapshot/);
+      await assert.rejects(readFile(file,"utf8"),{code:"ENOENT"});
+    }
+    const good=join(dir,"good.json");
+    await persistSnapshot(good,{schema:1,prs:[]});
+    assert.equal(JSON.parse(await readFile(good,"utf8")).schema,1);
+  }finally{await rm(dir,{recursive:true,force:true});}
+});
 test("opt-in local persistence writes a schema versioned JSON snapshot",async()=>{
   const dir=await mkdtemp(join(tmpdir(),"atto-ledger-"));
   try{const file=join(dir,"ledger.json");
