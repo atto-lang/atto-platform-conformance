@@ -16,7 +16,13 @@
         "pr": 394,
         "sha": "945230b6d335b926273df61bc4624268716d36b1"
       },
-      "description": "Proposed literal-42 .atto executable guest fixture"
+      "description": "Proposed literal-42 .atto executable guest fixture",
+      "oracle": {
+        "type": "single_guest",
+        "fixture_blob_sha": "4e2e7e853e37eb10e4d6ec45b3d18127a555900a",
+        "expected_exit_code": 42,
+        "expected_stdout_hex": ""
+      }
     },
     {
       "id": "actor-channel-v1",
@@ -24,7 +30,12 @@
         "pr": 457,
         "sha": "7d1841d0ab85765ca779674e034cd61a0d70cb26"
       },
-      "description": "Proposed actor/channel guest E2E and negative safety fixtures"
+      "description": "Proposed actor/channel guest E2E and negative safety fixtures",
+      "oracle": {
+        "type": "suite_pending",
+        "manifest_blob_sha": "68401237c65beb48b2e3d680e01830d0afe79f51",
+        "reason": "Six positives/negatives must be expanded and correlated; proposed draft includes cranelift instead of forge"
+      }
     },
     {
       "id": "portable-task-v1",
@@ -32,7 +43,12 @@
         "pr": 465,
         "sha": "908fd95d8ad4238f539b37a63fc2840a7c495624"
       },
-      "description": "Proposed Task/HasFuture/nb guest and rejection fixtures"
+      "description": "Proposed Task/HasFuture/nb guest and rejection fixtures",
+      "oracle": {
+        "type": "suite_pending",
+        "manifest_blob_sha": "5a53b01ad864805809d06c4747fb8a18430de77e",
+        "reason": "Fourteen case-level positive/negative results must be correlated; not a one-program PASS"
+      }
     },
     {
       "id": "dop-scalar-guest-v1",
@@ -40,7 +56,13 @@
         "pr": 466,
         "sha": "d4faef9cad83d98c51f01408fb2fcd3368a60b87"
       },
-      "description": "Proposed scalar SoA guest and byte-level output contract"
+      "description": "Proposed scalar SoA guest and byte-level output contract",
+      "oracle": {
+        "type": "single_guest",
+        "fixture_blob_sha": "aedc778e3e8dd2940600f047540c159b0129830a",
+        "expected_exit_code": 0,
+        "expected_stdout_hex": ""
+      }
     }
   ],
   "backends": [
