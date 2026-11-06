@@ -57,7 +57,12 @@ class FourLayoutOracle {
   }
   get count() { return this.#denseSlots.length; }
   get layout() { return this.#g.layout; }
-  address(row, field) { return this.#g.address(row, field); }
+  address(row, field) {
+    this.#ensureLive();
+    if (typeof field !== "string" || !this.#g.fields.includes(field))
+      throw new RangeError("invalid row or field");
+    return this.#g.address(row, field);
+  }
   #ensureLive() {
     if (this.#validatingInput) throw new Error("reentrant four-layout store access");
     if (this.#dead) throw new Error("retired store");
