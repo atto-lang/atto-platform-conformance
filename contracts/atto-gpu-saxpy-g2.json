@@ -6,7 +6,7 @@
   "scope": "kernel-only gpu fnc saxpy source to OpenCL C 1.2 and SPIR64-targeted LLVM IR",
   "llvmTool": {
     "path": "tools/atto_gpu_saxpy_kernelc.cpp",
-    "gitBlobSha": "d699f3c30eb0ffab4ebd18f8e280f2addc12dcc7"
+    "gitBlobSha": "364e06e8e20b6580e603cd89a1b81387ea2c89ae"
   },
   "fixture": {
     "path": "fixtures/gpu-saxpy-g2/saxpy.atto",
