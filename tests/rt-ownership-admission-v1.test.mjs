@@ -10,9 +10,10 @@ function specimen() {
     backend: 'java', sourceCommit: sha, sourceTree: 'b'.repeat(40), compilerCommit: 'c'.repeat(40),
     cases: contract.cases.map(c => ({
       id: c.id, sourceSha256: sourceDigest(c.source), compilerSteps: 2,
+      parserAccepted: true,
       suiteSkipped: false, status: 'EXECUTED',
       ...(c.expect === 'reject'
-        ? { stage: 'semantic', exitCode: 1, emittedArtifact: false, diagnosticCode: c.reason }
+        ? { stage: 'semantic', exitCode: 1, emittedArtifact: false, ownershipCheckerRan: true, diagnosticCode: c.reason }
         : { stage: 'guest', exitCode: 0, guestExitCode: 42, guestExecuted: true })
     }))
   };
@@ -23,19 +24,44 @@ test('candidate corpus covers five backends and canonical ownership operators', 
   assert.equal(contract.status, 'candidate-unattested');
   assert.equal(contract.sourceExtension, '.atto');
   assert.deepEqual(contract.backendTargets, ['java', 'llvm', 'wasm', 'forge', 'net']);
-  assert.equal(contract.cases.length, 13);
+  assert.equal(contract.cases.length, 14);
   assert.equal(new Set(contract.cases.map(c => c.id)).size, contract.cases.length);
   const whole = contract.cases.map(c => c.source).join('\n');
   for (const op of ['rt borrow', 'rt mut borrow', 'rt take', 'rt copy', 'rt share', 'rt mut share'])
     assert.ok(whole.includes(op), 'missing ' + op);
-  assert.doesNotMatch(whole, /rt borrow mut|\brt (?:ref|deref|unref)\b/);
+  assert.doesNotMatch(whole, /rt borrow mut|\brt (?:ref|deref|unref)\b|\basync\s+fnc\b/);
   for (const c of contract.cases) {
-    assert.match(c.source, /pub (?:async )?fnc main\(\)/);
+    assert.match(c.source, /pub (?:suspends )?fnc main\(\)/);
     assert.ok(c.source.length >= 80);
     if (c.expect === 'reject') assert.match(c.reason, /^[A-Z][A-Z0-9_]{3,63}$/);
     else assert.equal(c.expectedGuestExit, 42);
   }
   assert.ok(contract.outstandingCasesWithoutValidatedSource.length >= 5);
+});
+
+test('conditional transfer and suspension fixtures do not rely on parser-only rejection', () => {
+  const selected = contract.cases.find(c => c.id === 'conditional-take-untracked');
+  const suspension = contract.cases.find(c => c.id === 'borrow-across-await');
+  assert.equal(selected?.reason, 'UNTRACKED_SELECTION');
+  assert.match(selected.source, /rt take \(true \? left : right\)/);
+  assert.match(suspension.source, /pub suspends fnc main\(\)/);
+  assert.doesNotMatch(suspension.source, /pub async fnc/);
+});
+
+test('reject receipts that did not prove parsing and ownership checker admission', () => {
+  for (const mutate of [
+    r => { r.parserAccepted = false; },
+    r => { delete r.parserAccepted; },
+    r => { r.ownershipCheckerRan = false; },
+    r => { delete r.ownershipCheckerRan; }
+  ]) {
+    const receipt = specimen();
+    mutate(receipt.cases.find(c => c.id === 'use-after-take'));
+    assert.equal(evaluate(receipt).ok, false);
+  }
+  const positive = specimen();
+  positive.cases.find(c => c.id === 'copy-scalar-keeps-owner').parserAccepted = false;
+  assert.equal(evaluate(positive).ok, false);
 });
 
 test('synthetic matching shape is explicitly unverified rather than a passing parity receipt', () => {
