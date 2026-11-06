@@ -13,7 +13,7 @@ node --test tests/landed-main-evidence.test.mjs
 node bin/landed-main-evidence.mjs evidence/landed-main-20261106-wave.json
 ```
 
-The **80 local tests** include adversarial source/tree/workflow substitutions,
+The suite now has **88 authored cases**. At the current PR head, **81 pure source/test-body cases ran successfully in an isolated V8 harness** against exact GitHub blobs; the **seven real filesystem/CLI cases have not been rerun under Node 22** since the latest hardening. No hosted Actions or compiler guest execution is established. The cases cover adversarial source/tree/workflow substitutions,
 fake reviews, duplicated or missing positive/negative fixtures, misleading guest
 results, continue-on-error and skipped CI steps, Unicode housekeeping spoofing,
 invalid input, noncanonical/duplicate-key JSON, and symlink/hardlink paths.
@@ -51,8 +51,10 @@ Each ledger entry must explicitly identify:
   frontend/type-checker phase, not a generic parse error or crash.
 - Each required GitHub check's **exact context, trusted app ID, workflow blob
   SHA**, plus a source-owned run's repository, landed commit/tree, workflow
-  SHA, run/attempt/job/runner IDs, artifact SHA-256, completed status, meaningful
-  successful steps and complete matching case receipts. Runs with failures,
+  SHA, run/attempt/job/runner IDs **and nonblank runner name**, artifact SHA-256,
+  completed run and **completed per-step status**, meaningful successful steps,
+  and complete matching case receipts. A step with a fabricated `success` conclusion
+  while still queued/in progress is not execution evidence. Runs with failures,
   skipped meaningful work, zero steps, or housekeeping-only execution fail.
   All required cases must be covered; an unrelated successful test cannot
   stand in for a missing positive or negative.
