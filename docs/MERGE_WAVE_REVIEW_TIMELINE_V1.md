@@ -24,7 +24,7 @@ Run:
 node --test tests/merge-wave-review-timeline.test.mjs
 ```
 
-31 host-only Node 22 regression tests were executed locally on the exact two Git blobs in the draft proposal; **hosted Actions execution remains unverified**. Tests include approval dismissal, changes requested, reapproval, stale/future snapshot, duplicated review identity and operator-ID aliasing. They do not establish native compiler guest execution, cross-backend parity or GitHub rule enforcement.
+32 host-only Node 22 regression tests were executed locally on the exact two Git blobs in the draft proposal; **hosted Actions execution remains unverified**. Tests include approval dismissal, changes requested, reapproval, stale/future snapshot, duplicated review identity and operator-ID aliasing. They do not establish native compiler guest execution, cross-backend parity or GitHub rule enforcement.
 
 ## Integration plan
 
