@@ -68,7 +68,7 @@ source files** (14 intended successful guest programs, 17 intended
 compile-time rejections, and 1 eager checked-overflow trap). IDB-19
 runs a parameterized runtime `const` initializer at signed-i64 input 7
 and expects 8; IDB-20 uses a type-first readonly dependency and expects 8.
-The Node contract test protects source-byte equality and checks 17 deliberate
+The Node contract test protects source-byte equality and checks 20 deliberate
 manifest mutations. It does **not** invoke a compiler. The independent
 Java and LLVM paths do not automatically enable the new type-first
 `int x = 7` spelling.
