@@ -57,6 +57,10 @@ of demanding a fictitious JIT executable. For a `PASSED` JIT receipt,
 
 - `backend: "java"`, `executionStage: "managed-guest"`, a real zero guest
   exit status and `guestArtifactSha256: null` (explicitly no native guest file).
+- `jitEvidence.compilerClassTreeSha256`: SHA-256 of the sorted
+  compiled Java class-file hash manifest. It must be identical to the
+  top-level `compilerSha256` field. The source-local workflow now records
+  the digest before guest execution and requires the same digest after.
 - `jitEvidence.runtimeBinarySha256`: SHA-256 of the resolved JDK `java`
   executable actually selected by the source-local workflow.
 - `jitEvidence.junitReportSha256`: SHA-256 of the validated two-case Surefire
@@ -70,7 +74,14 @@ of demanding a fictitious JIT executable. For a `PASSED` JIT receipt,
 
 For `executionProfile: "aot"` (or older receipts with no profile), the
 existing `guestArtifactSha256` remains compulsory and `jitEvidence` must
-be absent. An unknown or host-only execution profile is not a valid positive
+be absent. Artifact-backed execution stages are now bound to the actual
+backend: Java Native Image uses `nativeaot-guest`; LLVM and Forge use
+`native-guest`; Wasm uses `browser-guest`; and .NET permits emitted managed
+CIL (`managed-guest`) or NativeAOT (`nativeaot-guest`). The historical
+`"aot"` label means an independently hashable emitted artifact for .NET CIL,
+**not** proof that the CIL was compiled to native machine code. A Java JIT
+run cannot claim `PASSED` by omitting `executionProfile` and fabricating a
+legacy AOT hash. An unknown or host-only execution profile is not a valid positive
 receipt. The positive JIT profile is **only supported for Java** in this v1
 contract; it does not assert portable machine-code/JIT compilation detail
 without an independent code generation witness.
@@ -89,8 +100,9 @@ compiler source/tree and executable JDK; a self-reported class-tree digest is
 not proof of guest code generation. Java has **NOT_EXECUTED** on a runner. LLVM native [PR #1308](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1308)
 retains its real AOT output hash checks, also **NOT_EXECUTED**.
 
-Run `node --test tests/dop-execution-profile-v1.test.mjs` for eight
-additional source-free JIT/AOT adversarial/profile tests.
+Run `node --test tests/dop-execution-profile-v1.test.mjs tests/dop-execution-integration-v1.test.mjs`
+for 18 source-free JIT/AOT profile and full-receipt tests, including negative
+backend/stage mismatches and the previously admitted legacy-JIT artifact spoof.
 
 ## Independent GitHub run/job snapshot correlation
 
