@@ -202,7 +202,7 @@ test('CLI snapshot-ready is advisory and deliberately exits nonzero',()=>{
 });
 test('CLI never signals release success from caller-controlled green input',()=>{
   const e=good();
-  withInput(JSON.stringify(ledger(e),null,2)+'\\n',path=>{
+  withInput(JSON.stringify(ledger(e),null,2)+'\n',path=>{
     const r=runCli(path);
     assert.notEqual(r.status,0,'advisory report must not be a successful release gate');
     assert.equal(r.status,3,r.stderr);
