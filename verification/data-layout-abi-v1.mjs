@@ -42,7 +42,7 @@ function normalizeFields(fields) {
     if (!field) throw new TypeError(`invalid field ${index}`);
     const name = field.name;
     const type = field.type;
-    if (typeof name !== 'string' || !/^[$A-Z_a-z][$\\w]*$/.test(name) ||
+    if (typeof name !== 'string' || !/^[$A-Z_a-z][$A-Z_a-z0-9]*$/.test(name) ||
         seen.has(name) || typeof type !== 'string' || !Object.hasOwn(TYPES, type)) {
       throw new TypeError(`invalid field ${index}`);
     }
