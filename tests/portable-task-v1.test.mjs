@@ -90,3 +90,18 @@ test('a rejected compiler artifact cannot be concealed in negative evidence',()=
    rejectedEmittedArtifact:true,guestExecuted:false,artifactSha256:null};
  assert.equal(classifyReceipt(c,'java',x).status,'failed');
 });
+
+test('malformed argv or incompatible step count fail closed instead of crashing',()=>{
+ for(const mutated of [
+  {compileArgv:[42,'--check','fixture.atto']},
+  {compileArgv:['/compiler',null,'fixture.atto']},
+  {guestArgv:[42]},
+  {guestArgv:['/guest',null]},
+  {completedSteps:1000},
+  {stepNames:['compile']}
+ ]){
+  const result=classifyReceipt(positive,'java',{...receipt(),...mutated});
+  assert.equal(result.status,'failed',JSON.stringify(mutated));
+  assert.equal(result.releaseQualified,false);
+ }
+});
