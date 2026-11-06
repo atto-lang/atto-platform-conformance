@@ -25,6 +25,61 @@ function read_snapshot(path) {
   }
 }
 
+// JSON.parse alone accepts duplicate object keys (including escaped aliases).
+// Parse the raw structure first and reject conflicting authority at any depth.
+function parse_snapshot_json(raw) {
+  const parsed = JSON.parse(raw); // validates all JSON syntax first
+  let i = 0;
+  const whitespace = () => { while (i < raw.length && /\s/.test(raw[i])) i++; };
+  const string = () => {
+    const start = i++;
+    while (i < raw.length) {
+      if (raw[i] === '\\') { i += 2; continue; }
+      if (raw[i++] === '"') return JSON.parse(raw.slice(start, i));
+    }
+    throw Error('unterminated JSON string');
+  };
+  const value = depth => {
+    if (depth > 64) throw Error('JSON nesting exceeds 64 levels');
+    whitespace();
+    if (raw[i] === '"') { string(); return; }
+    if (raw[i] === '{') {
+      i++; whitespace();
+      const seen = new Set();
+      if (raw[i] !== '}') while (true) {
+        whitespace();
+        if (raw[i] !== '"') throw Error('invalid JSON object key');
+        const key = string();
+        if (seen.has(key)) throw Error('duplicate JSON authority key');
+        seen.add(key);
+        whitespace(); i++; // colon, syntax verified by JSON.parse above
+        value(depth + 1);
+        whitespace();
+        if (raw[i] !== ',') break;
+        i++;
+      }
+      i++; // closing brace
+      return;
+    }
+    if (raw[i] === '[') {
+      i++; whitespace();
+      if (raw[i] !== ']') while (true) {
+        value(depth + 1);
+        whitespace();
+        if (raw[i] !== ',') break;
+        i++;
+      }
+      i++; // closing bracket
+      return;
+    }
+    // Validated primitive token (number / true / false / null).
+    while (i < raw.length && !/[\s,}\]]/.test(raw[i])) i++;
+  };
+  value(0);
+  whitespace();
+  if (i !== raw.length) throw Error('unparsed JSON trailing material');
+  return parsed;
+}
 
 const MAX_ADVISORY_AGE_MS = 5 * 60_000;
 function require_recent_snapshot(snapshot) {
@@ -47,13 +102,14 @@ function require_recent_snapshot(snapshot) {
   return snapshot;
 }
 
+
 if (process.argv.length !== 3) {
   console.error('Usage: node bin/merge-wave-qualifier.mjs snapshot.json');
   process.exitCode = 2;
 } else {
   try {
-    const output = qualifyWave(require_recent_snapshot(JSON.parse(read_snapshot(process.argv[2]))));
-    // Caller-supplied offline receipts must never yield a shell/CI success.
+    const output = qualifyWave(require_recent_snapshot(parse_snapshot_json(read_snapshot(process.argv[2]))));
+    // Caller-provided offline evidence can never result in process success.
     const code = output.status === 'BLOCKED' ? 1 :
       output.status === 'SNAPSHOT_QUALIFIED_REQUIRES_LIVE_RECHECK' ? 3 : 2;
     if (code === 2) throw Error('unexpected qualifier status');
