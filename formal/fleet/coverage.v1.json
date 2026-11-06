@@ -275,7 +275,8 @@
       "organization": "quaestor-ledger",
       "request": "formal-only",
       "target": "ledger double-entry and RLS",
-      "status": "not-audited"
+      "status": "source-model-draft",
+      "review_url": "https://github.com/quaestor-ledger/quaestor-e2e/pull/12"
     },
     {
       "organization": "shared-auth",
@@ -313,7 +314,8 @@
       "organization": "wasm-xprs",
       "request": "formal+atto",
       "target": "Wasm fuel and tenant isolation",
-      "status": "not-audited"
+      "status": "source-model-draft",
+      "review_url": "https://github.com/wasm-xprs/wasmx-lib-core/pull/1"
     },
     {
       "organization": "zed-pkg",
