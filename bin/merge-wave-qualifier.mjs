@@ -32,7 +32,7 @@ function require_recent_snapshot(snapshot) {
   // old favorable claim be replayed as a fresh intake diagnostic.
   if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot) ||
       typeof snapshot.as_of !== 'string' ||
-      !/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$/.test(snapshot.as_of)) {
+      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(snapshot.as_of)) {
     throw Error('invalid snapshot timestamp');
   }
   const seen_at = Date.parse(snapshot.as_of);
