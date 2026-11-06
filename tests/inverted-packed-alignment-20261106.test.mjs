@@ -9,8 +9,9 @@ const types = {
   Particle: {kind:'inverted-class',fields:{packed:'Envelope',tag:'i64'}},
   State: {kind:'inverted-struct',fields:{packed:'Envelope',tag:'i64'}}
 };
-const payload = {flag:true, payload:{flag:false,counter:5n,tail:true}, tail:false};
-const data = {packed:payload,tag:12n};
+const makeData = () => ({packed:{
+  flag:true, payload:{flag:false,counter:5n,tail:true}, tail:false
+}, tag:12n});
 
 for (const typeName of ['Particle','State']) {
   test(`${typeName}: nested bool/i64 padding is counted once, never flattened into columns`,()=>{
@@ -28,8 +29,9 @@ for (const typeName of ['Particle','State']) {
     assert.equal(layout.rowWidth,48);
     assert.equal(Object.isFrozen(envelope.fields[1]),true);
     const store=new InvertedReferenceStore(layout,2);
+    const data=makeData();
     const row=store.push(data);
-    payload.payload.counter=999n;
+    data.packed.payload.counter=999n;
     assert.equal(store.snapshot(row).packed.payload.counter,5n);
     const detached=store.snapshot(row);
     detached.packed.payload.counter=500n;
