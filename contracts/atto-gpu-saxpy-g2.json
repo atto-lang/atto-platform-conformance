@@ -1,0 +1,43 @@
+{
+  "schema": "attolang.gpu-saxpy-device-source-g2/1",
+  "status": "RESTRICTED_COMPILER_PROTOTYPE_UNMERGED",
+  "canonicalLaunchContract": "oreslang-common-source/docs/GPU_EXPLICIT_LAUNCH_V1.md",
+  "companionPullRequest": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1470",
+  "scope": "kernel-only gpu fnc saxpy source to OpenCL C 1.2 and SPIR64-targeted LLVM IR",
+  "llvmTool": {
+    "path": "tools/atto_gpu_saxpy_kernelc.cpp",
+    "gitBlobSha": "d699f3c30eb0ffab4ebd18f8e280f2addc12dcc7"
+  },
+  "fixture": {
+    "path": "fixtures/gpu-saxpy-g2/saxpy.atto",
+    "gitBlobSha": "48290eaac9f64358cfb0e1b792d8a63fa48ae150"
+  },
+  "openclGolden": {
+    "path": "fixtures/gpu-saxpy-g2/saxpy.cl",
+    "gitBlobSha": "eb0c1e757a95d13af2fa062986877d532cb61b3e",
+    "sha256": "b5076980355531632de445e05e35554d3fb54ceeebaf707457863571bdeb77a4"
+  },
+  "localValidation": {
+    "compiler": "clang++ 17",
+    "openclSyntax": "clang -x cl -cl-std=CL1.2 -fsyntax-only",
+    "spir64Target": "spir64-unknown-unknown",
+    "hostRegressionCount": 28,
+    "observed": "LOCAL_ONLY"
+  },
+  "evidence": {
+    "conformanceHostedSteps": "NOT_EXECUTED",
+    "productionLlvmCompiler": "NOT_EXECUTED",
+    "productionJavaCompiler": "NOT_EXECUTED",
+    "physicalGpuDispatch": "NOT_EXECUTED",
+    "numericOracleOnDevice": "NOT_EXECUTED",
+    "deviceEventFence": "NOT_EXECUTED"
+  },
+  "invariants": {
+    "noCpuFallback": true,
+    "noHostLaunchClaim": true,
+    "noProviderAuthorityFromSource": true,
+    "noPhysicalGpuClaimFromSpir64Ir": true,
+    "noArtifactOnRejectedKernel": true,
+    "f32ContractedFma": false
+  }
+}
