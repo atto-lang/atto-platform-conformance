@@ -31,7 +31,7 @@ deny('incorrect SHA head refused',r=>r.headSha='d'.repeat(40),'UNPINNED_SOURCE_H
 deny('incorrect tree refused',r=>r.treeSha='d'.repeat(40),'UNPINNED_SOURCE_HEAD_OR_TREE');
 deny('mutable/unknown image refused',r=>r.imageSha256='bad','UNPINNED_IMAGE');
 deny('missing engine version refused',r=>r.engineVersion='','MISSING_ENGINE_VERSION');
-deny('different backend refused',r=>r.backend='wasm','WRONG_BACKEND');
+deny('different backend refused',r=>{r.caseId='UJI-03';r.backend='java';},'WRONG_BACKEND');
 deny('source/binary conflation refused',r=>r.executionClass='BACKEND_ADVERSARIAL_BINARY_EXECUTED','SOURCE_BINARY_PROVENANCE_CONFLATED');
 deny('neighbor compromised refused',r=>r.neighborOutcome='FAILED','UNPROVEN_NEIGHBOR');
 deny('no asserted oracle refused',r=>r.outcome='UNKNOWN','UNPROVEN_TEST_ORACLE');
