@@ -6,6 +6,6 @@ Each row has one focused semantic target, either formal-only or formal+AttoLang,
 
 `check_coverage.cjs` validates the exact requested set, required citations for work under review, and fails on three negative mutations: dropped organization, forged guest status and missing review URL.
 
-The seven `source-model-draft` rows point to actual new PRs, all awaiting independent review and production/guest refinement. Other links point to pre-existing peer work under review; no CI passes are implied. `access-unconfirmed` identifies organizations not resolved by the connected GitHub search, not nonexistent organizations.
+The nine `source-model-draft` rows point to actual new PRs, all awaiting independent review and production/guest refinement. Other links point to pre-existing peer work under review; no CI passes are implied. `access-unconfirmed` identifies organizations not resolved by the connected GitHub search, not nonexistent organizations.
 
 Run: `node formal/fleet/check_coverage.cjs`.
