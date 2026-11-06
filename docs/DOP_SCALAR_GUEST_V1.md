@@ -97,7 +97,8 @@ GH_TOKEN=... node bin/verify-dop-github-run-v1.mjs \
   RUN_ID
 ```
 
-The script refuses a missing token or a receipt referring to a different
+The script refuses a missing token, a backend/repository mismatch against the
+five pinned source organizations/repositories, or a receipt referring to a different
 run, then passes the **independently fetched run/jobs records** to
 `validateDopGithubSnapshot`. Its only positive classification is
 `CORRELATED_NOT_GUEST_ATTESTED`. It is **not a release gate by itself**:
@@ -108,7 +109,7 @@ normally cannot read another private source repo; obtain explicit
 read-only repository-scoped access or run this on the approved source
 side, not by mirroring private source.
 
-Run `node --test tests/dop-github-api-v1.test.mjs` for twelve focused
+Run `node --test tests/dop-github-api-v1.test.mjs` for thirteen focused
 source-free API/size/error/credentials adversarial test groups. The
 positive controls use a mocked transport and do not imply GitHub runner
 admission, native code generation or executed guest evidence.
