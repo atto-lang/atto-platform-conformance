@@ -92,14 +92,18 @@ async function run(cfg){
      stepNames,runnerJobUrl:baseUrl,compilerExit:compiled.exit,compilerOutput,
      guestExecuted,guestArgv,guestExit,guestOutput,artifactSha256};
    receipts[cfg.backend][c.id]=receipt;
-   trace.push({id:c.id,...classifyReceipt(c,cfg.backend,receipt),compilerExit:compiled.exit,guestExit,
-     stepNames,fixtureBlobSha:c.fixtureBlobSha,fixtureSha256:c.fixtureSha256,compilerSha256});
+   trace.push({id:c.id,...classifyReceipt(c,cfg.backend,receipt),compilerCommit:cfg.compilerCommit,
+     fixtureCommit:cfg.fixtureCommit,compilerExit:compiled.exit,compilerOutput,compileArgv,
+     guestExit,guestExecuted,guestOutput,guestArgv,artifactSha256,runnerJobUrl:baseUrl,
+     stepNames,fixtureBlobSha:c.fixtureBlobSha,fixtureSha256:c.fixtureSha256,compilerSha256,
+     artifactKind:cfg.backend==='java'?'jvm-launcher-identity':cfg.backend==='llvm'?'native-guest-executable':'backend-declared'});
   }
   const summary=summarize(suite.cases,receipts);
   console.log(JSON.stringify({schema:'atto.portable-task-v1-run-candidate',compilerCommit:cfg.compilerCommit,
    fixtureCommit:cfg.fixtureCommit,backend:cfg.backend,compilerSha256,trace,summary},null,2));
   // No candidate status is release-qualified; source-local Actions + independent review still required.
-  return summary[cfg.backend].passed===suite.cases.length?0:1;
+  // Exit 3 distinguishes complete candidate execution from release-qualified proof.
+  return summary[cfg.backend].passed===suite.cases.length?3:1;
  }finally{await rm(scratch,{recursive:true,force:true});}
 }
 try{

@@ -8,6 +8,8 @@ else{
   const suite=await loadSuite();
   const receipts=argv.length?JSON.parse(await readFile(argv[0].slice('--receipts='.length),'utf8')):{};
   console.log(JSON.stringify({schema:'atto.portable-task-v1-summary',scope:'structural-candidate-only',cases:suite.cases.length,backends:summarize(suite.cases,receipts)},null,2));
-  if(!receipts||Object.values(summarize(suite.cases,receipts)).some(v=>v.not_executed||v.failed||v.unsupported))process.exitCode=1;
+  // A structurally plausible receipt is not independently verified.
+  // Deliberately fail this release-gate command until an external reviewer/promoter exists.
+  process.exitCode=Object.values(summarize(suite.cases,receipts)).every(v=>v.releaseQualified===true)?0:1;
  }catch(e){console.error(e.message);process.exitCode=2;}
 }

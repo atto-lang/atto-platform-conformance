@@ -9,3 +9,13 @@ test('guest runner refuses unconfigured invocation (cannot claim parity)',()=>{
  assert.match(x.stderr,/TASK_GUEST_RUNNER_DENIED/);
  assert.doesNotMatch(x.stdout,/"passed":14/);
 });
+
+test('structural-only matrix CLI fails release gate without actual verified guest evidence',()=>{
+ const script=fileURLToPath(new URL('../bin/portable-task-v1.mjs',import.meta.url));
+ const out=spawnSync(process.execPath,[script],{encoding:'utf8',timeout:8000});
+ assert.equal(out.status,1);
+ const report=JSON.parse(out.stdout);
+ assert.equal(report.backends.java.not_executed,14);
+ assert.equal(report.backends.llvm.not_executed,14);
+ assert.equal(report.backends.wasm.releaseQualified,false);
+});
