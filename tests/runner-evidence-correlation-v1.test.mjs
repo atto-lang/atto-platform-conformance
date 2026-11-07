@@ -2,6 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {correlateRunnerEvidence as correlate, CORRELATION_V1 as contract} from '../verification/runner-evidence-correlation-v1.mjs';
 const repo='ores-truffle-oreslang/oreslang-platform-conformance',head='a'.repeat(40);
+const route=(number,size)=>'/repos/'+repo+'/actions/runs/42/attempts/2/jobs?per_page='+size+'&page='+number;
+const page=(number,total,jobs,size)=>({number,requestMethod:'GET',
+  requestHost:'github.com',requestPath:route(number,size),
+  response:{total_count:total,jobs}});
 function setup(){
  const expected={repo,headSha:head,runId:42,attempt:2,jobId:11,
    jobName:'source-only-runner-receipt',event:'pull_request',perPage:100,
@@ -19,7 +23,7 @@ function setup(){
    hosted_api_independent_job_step_correlation:'NOT_PERFORMED',repo,head,
    run_id:'42',run_attempt:'2',job:expected.jobName,tree:'b'.repeat(40),
    tap_sha256:'c'.repeat(64)};
- return {run,pages:[{number:1,response:{total_count:1,jobs:[j]}}],
+ return {run,pages:[page(1,1,[j],100)],
    jobDetail:JSON.parse(JSON.stringify(j)),expected,perPage:100,receipt};
 }
 const fresh=()=>JSON.parse(JSON.stringify(setup()));
@@ -54,16 +58,15 @@ test('null runner with steps missing stays unverified',()=>{
 test('complete paged inventory correlated, still API-only',()=>{
  const v=fresh(),j=v.pages[0].response.jobs[0];
  v.expected.perPage=1;v.perPage=1;
- v.pages=[{number:1,response:{total_count:2,jobs:[j]}},
-   {number:2,response:{total_count:2,jobs:[{...j,id:12,name:'unrelated'}]}}];
+ v.pages=[page(1,2,[j],1),page(2,2,[{...j,id:12,name:'unrelated'}],1)];
  assert.equal(check(v).correlation,'COMPLETE_JOB_LIST_AND_DETAIL_API_ONLY');
 });
 reject('truncated pages',v=>{v.expected.perPage=1;v.perPage=1;
- v.pages[0].response.total_count=2;},'E_PAGE_INCOMPLETE');
+ v.pages[0].requestPath=route(1,1);v.pages[0].response.total_count=2;},'E_PAGE_INCOMPLETE');
 reject('wrong page index',v=>{v.pages[0].number=2;},'E_PAGE_ORDER');
 reject('unreviewed page size',v=>{v.perPage=1;},'E_PAGE_SIZE');
 reject('missing final job in page',v=>{v.pages[0].response.total_count=2;
- v.expected.perPage=2;v.perPage=2;},'E_PAGE_LENGTH');
+ v.expected.perPage=2;v.perPage=2;v.pages[0].requestPath=route(1,2);},'E_PAGE_LENGTH');
 reject('stale attempt run',v=>{v.run.run_attempt=1;},'E_RUN_IDENTITY');
 reject('stale attempt job',v=>{v.jobDetail.run_attempt=1;},'E_DETAIL');
 reject('stale attempt in list',v=>{v.pages[0].response.jobs[0].run_attempt=1;
@@ -80,12 +83,10 @@ reject('accessor in detail step',v=>{Object.defineProperty(v.jobDetail.steps[0],
  'conclusion',{get(){throw Error('getter')}});},'E_DETAIL');
 reject('duplicate across pages',v=>{v.expected.perPage=1;v.perPage=1;
  const j=v.pages[0].response.jobs[0];
- v.pages=[{number:1,response:{total_count:2,jobs:[j]}},
- {number:2,response:{total_count:2,jobs:[{...j}]}}];},'E_DUPLICATE_JOB');
+ v.pages=[page(1,2,[j],1),page(2,2,[{...j}],1)];},'E_DUPLICATE_JOB');
 reject('foreign head in second page',v=>{v.expected.perPage=1;v.perPage=1;
  const j=v.pages[0].response.jobs[0];
- v.pages=[{number:1,response:{total_count:2,jobs:[j]}},
- {number:2,response:{total_count:2,jobs:[{...j,id:12,name:'other',head_sha:'f'.repeat(40)}]}}];},'E_JOB_IDENTITY');
+ v.pages=[page(1,2,[j],1),page(2,2,[{...j,id:12,name:'other',head_sha:'f'.repeat(40)}],1)];},'E_JOB_IDENTITY');
 reject('missing selected job',v=>{v.expected.jobId=99;},'E_JOB_MISSING');
 reject('receipt wrong repo',v=>{v.receipt.repo='other/private';},'E_RECEIPT_IDENTITY');
 reject('receipt wrong head',v=>{v.receipt.head='f'.repeat(40);},'E_RECEIPT_IDENTITY');
@@ -102,3 +103,12 @@ test('matching optional job ID is still untrusted self report',()=>{
  const v=fresh();v.receipt.job_id='11';
  assert.equal(check(v).receiptBinding,'SELF_REPORTED_RECEIPT_MATCH_NOT_ATTESTED');
 });
+
+reject('non-GET attempt route',v=>{v.pages[0].requestMethod='POST';},'E_PAGE_ROUTE');
+reject('unexpected GitHub host',v=>{v.pages[0].requestHost='github.enterprise.test';},'E_PAGE_ROUTE');
+reject('redirected API host',v=>{v.pages[0].requestHost='evil.example';},'E_PAGE_ROUTE');
+reject('stale page attempt route',v=>{v.pages[0].requestPath=v.pages[0].requestPath.replace('/attempts/2/','/attempts/1/');},'E_PAGE_ROUTE');
+reject('different API page route',v=>{v.pages[0].requestPath=v.pages[0].requestPath.replace('&page=1','&page=2');},'E_PAGE_ROUTE');
+reject('unreviewed pagination route',v=>{v.pages[0].requestPath=v.pages[0].requestPath.replace('per_page=100','per_page=99');},'E_PAGE_ROUTE');
+reject('missing page request metadata',v=>{delete v.pages[0].requestPath;},'E_FIELD');
+reject('request route accessor execution',v=>{Object.defineProperty(v.pages[0],'requestPath',{get(){throw Error('should not execute')}});},'E_ACCESSOR');
