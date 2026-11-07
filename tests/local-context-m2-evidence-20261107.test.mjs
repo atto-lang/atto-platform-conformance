@@ -124,3 +124,7 @@ test('completed and unassigned with zero steps is a runner-admission failure',()
   const m=copy(base);m.job.status='completed';m.job.steps=[];m.job.runner_id=0;
   assert.equal(evaluateCandidate(m,PIN).classification,'RUNNER_ADMISSION_FAILURE');
 });
+
+mutate('newline in artifact path rejected',m=>m.receipt.artifact.path='out\nforged');
+mutate('carriage return in artifact path rejected',m=>m.receipt.artifact.path='out\rforged');
+mutate('NUL in artifact path rejected',m=>m.receipt.artifact.path='out\0forged');
