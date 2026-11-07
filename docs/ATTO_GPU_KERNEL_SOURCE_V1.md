@@ -39,3 +39,25 @@ future composition with `over: [n]` and is rejected with `GPU-KERNEL-010`.
 The two extra proposal-only fixtures are pinned in the source corpus.
 These source checks are not authenticated allocation proof, JUnit execution,
 physical GPU result, or cancellation/fence authority.
+
+
+### G1f forged typed-HIR source-validation boundary (not device execution)
+
+The Java GPU tail-guard verifier accepts public, constructible typed-source
+records, so its verification cannot rely on compiler-lowering provenance.
+At draft [Java GPU integration #2610](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2610),
+head `0d0ac00a9258d91c9f9a0edc09e9a84b12567485`,
+it rechecks typed expression opcode allowlists and arity, operand types,
+declared read/write buffer parameters, scalar-only local bindings, branch
+and return metadata, and void kernel results before source-tail claims.
+
+[The G1f mutation manifest](../contracts/atto-gpu-typed-hir-forgery-v1.json)
+pins 21 Java JUnit method names (20 expected rejections and one
+nonexecuting canonical SAXPY control), plus exact Java Git blob identities.
+The Node manifest test validates only declared metadata, not Java source
+execution. The Java CI run `42333323638` had `steps=null`.
+Do not treat these authored tests as observed `GPU-KERNEL-010` errors
+until an authorized exact-source Java runner executes with nonzero steps.
+No compiler-issued immutable ownership proof, device allocation loan,
+GPU binary, provider completion fence, hardware result or CPU fallback
+is established.
