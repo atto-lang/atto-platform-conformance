@@ -118,6 +118,16 @@ export function evaluateCandidate(s,landed,caseInventory=null){
  const ledger=auditLedger(landed);
  const holds=[];
  const caseReport=caseInventory===null?null:evaluateGuestCaseInventory(caseInventory);
+ if(caseReport!==null){
+  for(const suite of caseReport.suites){
+   const contract=s.contracts.find(c=>c.id===suite.id);
+   if(!contract||contract.proposal.pr!==suite.source_pr||
+      contract.proposal.sha!==suite.source_head||
+      contract.oracle.type!=='suite_pending'||
+      contract.oracle.manifest_blob_sha!==suite.manifest_blob_sha)
+    throw new TypeError('case-level oracle does not match certified proposal identity');
+  }
+ }
  if(caseReport===null)holds.push('CASE_LEVEL_ORACLE_INVENTORY_NOT_EVALUATED');
  else for(const h of caseReport.holds)holds.push('CASE_'+h);
  if(ledger.status!=='SNAPSHOT_READY_RECHECK_LIVE')holds.push('POSTMERGE_LEDGER_BLOCKED');
