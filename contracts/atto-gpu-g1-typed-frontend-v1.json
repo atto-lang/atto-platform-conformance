@@ -1,0 +1,97 @@
+{
+  "schema": "attolang.gpu-g1-typed-kernel-frontend/1",
+  "scope": "restricted_kernel_only_not_general_gpu_launch",
+  "description": "A bounded LLVM SAXPY-only source parser; source-shape fixtures do not prove compiler execution or physical GPU",
+  "compilerBranch": "ores-truffle-oreslang/oreslang-source.llvm/pull/1473",
+  "acceptedKernelEntry": "saxpy",
+  "requiresTypedParameterBindings": true,
+  "allowsAlphaRenaming": true,
+  "allowsHostLaunch": false,
+  "allowsHostCapture": false,
+  "allowsImplicitCpuFallback": false,
+  "requiresExactHeadTreeAndNonzeroExecutedSteps": true,
+  "sourceExecutionEvidence": "NOT_EXECUTED",
+  "hostedRunnerAdmission": "RUNNER_ADMISSION_FAILURE",
+  "mainCompilerEvidence": "NOT_EXECUTED",
+  "nvptxToolchainEvidence": "NOT_EXECUTED",
+  "physicalGpuEvidence": "NOT_EXECUTED",
+  "backendEvidence": {
+    "java": {
+      "sourceCompiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "llvm": {
+      "sourceCompiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "net": {
+      "sourceCompiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "wasm": {
+      "sourceCompiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "forge": {
+      "sourceCompiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "cranelift": {
+      "sourceCompiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "js": {
+      "sourceCompiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    }
+  },
+  "cases": [
+    {
+      "id": "alpha-rename",
+      "expectation": "positive",
+      "path": "fixtures/gpu-g1-typed-frontend/alpha-rename.atto",
+      "gitBlobSha": "20cf0dffd10ee25c902fd7c0bc2231dc6e5aa17d",
+      "expectedDiagnostic": null,
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "bounds-guard",
+      "expectation": "negative",
+      "path": "fixtures/gpu-g1-typed-frontend/negative-bounds.atto",
+      "gitBlobSha": "1514d5776a42da8cbed84222d547bbb882e93b6e",
+      "expectedDiagnostic": "GPU-G1-SOURCE-003",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "host-call",
+      "expectation": "negative",
+      "path": "fixtures/gpu-g1-typed-frontend/negative-host-call.atto",
+      "gitBlobSha": "6444d54c700b8626e1c2928fe497fdf43439b3c6",
+      "expectedDiagnostic": "GPU-G1-SOURCE-003",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "alias-output",
+      "expectation": "negative",
+      "path": "fixtures/gpu-g1-typed-frontend/negative-alias-output.atto",
+      "gitBlobSha": "16c59c320fa9df558ce7b5a8b5f2e80a7e7f32ef",
+      "expectedDiagnostic": "GPU-G1-SOURCE-004",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "host-launch",
+      "expectation": "negative",
+      "path": "fixtures/gpu-g1-typed-frontend/negative-host-launch.atto",
+      "gitBlobSha": "cbb4149d1a8af142668e3b288c54c0e446e936e4",
+      "expectedDiagnostic": "GPU-G1-SOURCE-002",
+      "observedResult": "NOT_EXECUTED"
+    }
+  ]
+}
