@@ -60,6 +60,8 @@ class Broker:
         return token
 
     def _use(self, token, kind):
+        if type(token) is not Token:
+            raise Denied("unminted or malformed authority")
         entry = self._grants.get(token)
         if entry is None or entry[0] != kind:
             raise Denied("unknown, forged, consumed or wrong-kind capability")
@@ -123,8 +125,11 @@ class Broker:
             raise Denied("graph must use exact i64 index/value slots")
         if any(v < -(1 << 63) or v >= (1 << 63) for v in nodes.values()):
             raise Denied("graph scalar slot must fit i64")
-        edges = {n: list(links) for n, links in (edges or {}).items()}  # retain opaque Token identity
-        if not isinstance(edges, dict) or not set(edges).issubset(nodes):
+        if edges is not None and not isinstance(edges, dict):
+            raise Denied("invalid graph adjacency")
+        edges = {n: list(links) if isinstance(links, list) else links
+                 for n, links in (edges or {}).items()}  # retain opaque Token identity
+        if not set(edges).issubset(nodes):
             raise Denied("invalid graph adjacency")
         for links in edges.values():
             if not isinstance(links, list) or len(links) > self.MAX_NODES:
@@ -151,6 +156,8 @@ class Broker:
         return self._mint("borrow", graph, graph.version)
 
     def release(self, loan):
+        if type(loan) is not Token:
+            raise Denied("unminted or malformed loan")
         entry = self._grants.get(loan)
         if entry is None or entry[0] not in ("borrow", "borrow_mut"):
             raise Denied("unknown or consumed graph loan")
@@ -166,6 +173,8 @@ class Broker:
         del self._grants[loan]
 
     def read(self, token, node=0):
+        if type(token) is not Token:
+            raise Denied("unminted or malformed read authority")
         entry = self._grants.get(token)
         if entry is None or entry[0] not in ("owner", "borrow", "borrow_mut", "val"):
             raise Denied("capability does not permit field reading")
@@ -177,6 +186,8 @@ class Broker:
         return graph.nodes[node]
 
     def write(self, token, node, value):
+        if type(token) is not Token:
+            raise Denied("unminted or malformed write authority")
         entry = self._grants.get(token)
         if entry is None or entry[0] not in ("owner", "borrow_mut"):
             raise Denied("write through frozen/read/opaque or invalid authority")
@@ -235,6 +246,8 @@ class Broker:
         return self._mint("val", graph, graph.version)
 
     def borrow_across_suspend(self, loan):
+        if type(loan) is not Token:
+            raise Denied("unminted or malformed suspend loan")
         entry = self._grants.get(loan)
         if entry and entry[0] in ("borrow", "borrow_mut"):
             self._use(loan, entry[0])
@@ -323,6 +336,8 @@ class Broker:
     def recover_captures(self, captures):
         """A stricter fail-closed model of recover, not emitted language syntax."""
         for token in captures:
+            if type(token) is not Token:
+                raise Denied("invalid recover capture authority")
             entry = self._grants.get(token)
             if not entry or entry[0] not in ("val", "actor_tag"):
                 raise Denied("recover may capture only immutable values or opaque tags")
