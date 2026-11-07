@@ -1,0 +1,51 @@
+name: Atto ownership receipt structural tests (NON-PROMOTING)
+on:
+  push:
+    branches:
+      - 'audit/atto-ownership-conformance-syntax-*'
+  pull_request:
+    paths:
+      - 'contracts/rt-ownership-admission-v1.json'
+      - 'src/rt-ownership-admission-v1.mjs'
+      - 'tests/rt-ownership-admission-v1.test.mjs'
+      - '.github/workflows/rt-ownership-v1-source-evidence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ownership-receipt-shape:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - name: Checkout immutable source commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Check exact source identity and contract hashes
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          echo "ATTO_OWNERSHIP_CONTRACT_HEAD=$(git rev-parse HEAD)"
+          echo "ATTO_OWNERSHIP_CONTRACT_TREE=$(git rev-parse 'HEAD^{tree}')"
+          sha256sum contracts/rt-ownership-admission-v1.json \
+            src/rt-ownership-admission-v1.mjs \
+            tests/rt-ownership-admission-v1.test.mjs
+      - name: Execute source-only receipt validation and adversarial tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --version
+          node --test --test-reporter=tap \
+            tests/rt-ownership-admission-v1.test.mjs | tee /tmp/atto-ownership-receipt-tests.tap
+          grep -Eq '^# tests 8$' /tmp/atto-ownership-receipt-tests.tap
+          grep -Eq '^# pass 8$' /tmp/atto-ownership-receipt-tests.tap
+          grep -Eq '^# fail 0$' /tmp/atto-ownership-receipt-tests.tap
+          echo "ATTO_OWNERSHIP_RECEIPT_SHAPE=SOURCE_FREE_ONLY"
+          echo "ATTO_OWNERSHIP_GUEST_PARITY=NOT_EXECUTED"
