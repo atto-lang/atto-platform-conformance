@@ -48,11 +48,19 @@ function validatePending(matrix) {
   }
   assert.equal(matrix.requirements.nativeStackOverflowRecoverableOnSharedCarrier, false);
   assert.equal(matrix.requirements.untrustedArbitraryNativeCodeRequiresKillableWorker, true);
-  assert.ok(matrix.scenarios.length >= 18);
+  assert.ok(matrix.scenarios.length >= 19);
   assert.match(matrix.javaFrameArenaReference, /\/pull\/2627$/);
   const bootstrap = matrix.frameStorageBootstrap;
   assert.equal(bootstrap.javaHostPrimitive, 'MANAGED_BYTES_ONLY');
   assert.equal(bootstrap.javaAuthoredHostTests, 20);
+  assert.match(bootstrap.javaInvocationDescriptorReference, /\/pull\/2628$/);
+  assert.equal(bootstrap.javaInvocationDescriptorStatus, 'AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaInvocationDescriptorBytes, 16);
+  assert.equal(bootstrap.javaSynchronousGuardByteCharge, 32);
+  assert.equal(bootstrap.javaGuardFrameNotDuplicated, true);
+  assert.equal(bootstrap.javaNewHostInvocationTestsAuthored, 5);
+  assert.equal(bootstrap.javaNewAttoActorFixturesAuthored, 3);
+  assert.equal(bootstrap.javaNewAttoActorExecution, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaAuthoredLegacyCompilerGuestTests, 1);
   assert.equal(bootstrap.javaLegacyCompilerGuestTestExecuted, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaGuardedInvocationByteFrames,
@@ -121,6 +129,10 @@ test('fake pass, duplicate backend, deleted proof and false promotion are reject
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaGuardedInvocationByteFrames = 'COMPILER_LOCALS_SWITCHED';})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaGuestCallGuardNativeStackStillUsed = false;})));
   assert.throws(() => validatePending(mutate(m => {m.requirements.guardedSynchronousInvocationChargedToActorFrameArena = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaInvocationDescriptorStatus = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaNewAttoActorExecution = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaGuardFrameNotDuplicated = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaInvocationDescriptorBytes = 32;})));
 });
 
 test('logical guard is not misrepresented as independent actor stack storage', async () => {
@@ -176,4 +188,18 @@ test('guard-linked managed bytes cannot certify compiler-lowered execution frame
   assert.equal(matrix.frameStorageBootstrap.compilerLoweredGuestFrames, 'NOT_EXECUTED');
   assert.equal(matrix.frameStorageBootstrap.suspendedSourceTaskFrames, 'NOT_EXECUTED');
   assert.equal(matrix.promotion.certified, false);
+});
+
+test('M2 invocation-frame wiring stays pending real actor source execution', async () => {
+  const manifest = validatePending(await load());
+  const scenario = manifest.scenarios.find(s => s.id === 'evaluator-descriptor-non-tail-and-tail');
+  assert.ok(scenario, 'actual source actor call-descriptor proof remains an open requirement');
+  assert.equal(scenario.source, null,
+    'conformance fixtures cannot pretend the separate Java compiler has executed');
+  assert.ok(scenario.requiredEvidence.includes('compilerGuest'));
+  assert.ok(scenario.requiredEvidence.includes('actorStackStorage'));
+  for (const backend of manifest.backends) {
+    assert.equal(backend.compilerGuest, 'NOT_EXECUTED');
+    assert.equal(backend.actorStackStorage, 'NOT_EXECUTED');
+  }
 });
