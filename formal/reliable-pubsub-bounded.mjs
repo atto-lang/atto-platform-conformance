@@ -143,12 +143,12 @@ function verify() {
     let found = false;
     try { explore(mutant); } catch (e) {
       const message = String(e.message);
-      const trace = message.split("\\ntrace=")[1];
+      const trace = message.split("\ntrace=")[1];
       const steps = trace?.split(" -> ") || [];
       const relevantTrace = mutant === "early-ack"
         ? steps.filter(step => step.startsWith("publish-")).length >= 2
         : steps.includes("leave") && steps.includes("rejoin") && steps.includes("deliver");
-      found = violations.some(violation => message.startsWith(violation + "\\nstate="))
+      found = violations.some(violation => message.startsWith(violation + "\nstate="))
         && relevantTrace;
     }
     requireSafe(found, "mutation lacked its intended invariant counterexample: " + mutant, ok);

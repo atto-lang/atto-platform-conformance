@@ -4,11 +4,13 @@ on:
     branches: [main]
     paths:
       - 'formal/reliable-pubsub-bounded.mjs'
+      - 'formal/reliable-pubsub-contract.test.mjs'
       - 'formal/ReliablePubSub.md'
       - '.github/workflows/reliable-pubsub-model.yml'
   pull_request:
     paths:
       - 'formal/reliable-pubsub-bounded.mjs'
+      - 'formal/reliable-pubsub-contract.test.mjs'
       - 'formal/ReliablePubSub.md'
       - '.github/workflows/reliable-pubsub-model.yml'
   workflow_dispatch:
@@ -27,3 +29,4 @@ jobs:
           node-version: '22'
       - run: node --check formal/reliable-pubsub-bounded.mjs
       - run: node formal/reliable-pubsub-bounded.mjs
+      - run: node --test formal/reliable-pubsub-contract.test.mjs
