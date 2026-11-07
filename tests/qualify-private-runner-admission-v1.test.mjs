@@ -16,20 +16,28 @@ const job = {
   id:144002, name:p.jobName, run_id:p.runId, run_attempt:14,
   head_sha:p.sourceHead, status:'completed', conclusion:'success',
   runner_id:999001, runner_name:'GitHub Actions 999001',
+  runner_group_id:0, runner_group_name:'GitHub Actions',
   labels:['ubuntu-24.04'],
   started_at:iso(0), completed_at:iso(4), steps
 };
 const run = {
   id:p.runId, workflow_id:p.workflowId, path:p.workflowPath,
   head_sha:p.sourceHead,head_branch:p.branch,
-  repository:{full_name:p.repository},head_repository:{full_name:p.repository},
-  event:'push',run_attempt:14,status:'completed',conclusion:'success'
+  repository:{full_name:p.repository,private:true},
+  head_repository:{full_name:p.repository,private:true},
+  event:'push',run_attempt:14,status:'completed',conclusion:'success',
+  created_at:'2026-11-02T05:45:07Z',updated_at:'2026-11-07T01:00:08Z'
 };
 const workflow={sha:p.workflowBlob,path:p.workflowPath,type:'file'};
 const page={total_count:1,jobs:[job]};
 const log = [
-  '2026-11-07T01:00:01Z SOURCE_FREE_RUNNER_ADMITTED=1',
-  '2026-11-07T01:00:02Z SOURCE_FREE_TWO_STEPS_EXECUTED=1'
+  '2026-11-07T01:00:00Z Current runner version: 2.338.2',
+  '2026-11-07T01:00:00Z Hosted Compute Agent',
+  '2026-11-07T01:00:00Z Image: ubuntu-24.04',
+  '2026-11-07T01:00:00Z Complete job name: runner-admission',
+  '2026-11-07T01:00:00.2500000Z ##[group]Run set -euo pipefail',
+  '2026-11-07T01:00:01.2500000Z SOURCE_FREE_RUNNER_ADMITTED=1',
+  '2026-11-07T01:00:02.2500000Z SOURCE_FREE_TWO_STEPS_EXECUTED=1'
 ].join('\n');
 const base = {run,page,job,workflow,log};
 const copy = () => JSON.parse(JSON.stringify(base));
@@ -124,11 +132,17 @@ test('impossible Gregorian dates and overlapping steps reject',()=>{
   assert.ok(errors(overlap).includes('nonoverlapping-step-times'));
 });
 
-test('valid leap-day timestamps are permitted',()=>{
-  const v=copy();v.job.steps.forEach((step,i)=>{
+test('valid leap-day timestamps are permitted when run, job and stdout agree',()=>{
+  const v=copy();
+  v.run.created_at='2024-02-28T23:59:50Z';
+  v.run.updated_at='2024-02-29T01:00:08Z';
+  v.job.started_at='2024-02-29T01:00:00Z';
+  v.job.completed_at='2024-02-29T01:00:04Z';
+  v.job.steps.forEach((step,i)=>{
     step.started_at='2024-02-29T01:00:0'+i+'Z';
     step.completed_at='2024-02-29T01:00:0'+(i+1)+'Z';
   });
+  v.log=v.log.replaceAll('2026-11-07','2024-02-29');
   assert.deepEqual(errors(v),[]);
 });
 
