@@ -51,9 +51,12 @@ try {
     } else {
       const job=json('/actions/jobs/'+page.jobs[0].id);
       const workflow=json('/contents/'+p.workflowPath+'?ref='+p.sourceHead);
+      const sourceCommit=json('/commits/'+p.sourceHead);
       let log='';
       try { log=api('/actions/jobs/'+job.id+'/logs'); } catch { /* fail closed */ }
-      const result=qualifySourceOrgPrivateRunner({run,page,job,workflow,log});
+      const result=qualifySourceOrgPrivateRunner({
+        run, page, job, workflow, sourceCommit, log
+      });
       if (!result.ok) {
         emit({evidenceClass:'PRIVATE_RUNNER_ADMISSION_UNVERIFIED',verified:false,
           runId:p.runId,attempt,
