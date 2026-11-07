@@ -150,3 +150,17 @@ failure, and an allocated failing control. Real GitHub Actions
 `steps=[]` remain runner-admission failures only under the explicit
 completed/failed/unallocated conditions. This does not prove exact
 guest source execution or artifact provenance.
+
+## Deterministic adversarial execution-evidence matrix
+
+An additional zero-dependency Node test performs **560** deterministic
+metadata mutations against otherwise stepful, head/attempt-bound job
+records. None may reach the `EXECUTED_STEPS_UNVERIFIED` state.
+It explicitly tests cross-run and cross-attempt substitution,
+zero/null runner IDs, skipped/neutral steps, incomplete step states,
+reordered or missing required steps and invalid numbering. The
+control also demonstrates that a fully green stepful job remains
+`EXECUTED_STEPS_UNVERIFIED`, never certified parity, until an independent
+receipt, compiler and source tree audit. A separate zero-step table
+covers cancelled, skipped, failed and contradictory outcomes.
+This suite is source-only security-policy validation.

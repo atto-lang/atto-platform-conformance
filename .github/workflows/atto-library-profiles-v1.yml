@@ -9,6 +9,7 @@ on:
       - 'tests/atto-library-run-evidence-v1.test.mjs'
       - 'tests/atto-library-runner-admission-v1.test.mjs'
       - 'tests/atto-library-workflow-admission-v1.test.mjs'
+      - 'tests/atto-library-evidence-invariants-v1.test.mjs'
       - 'evidence/atto-library-workflow-admission-20261107.json'
       - 'evidence/atto-library-source-only-runner-admission-20261107.json'
       - 'fixtures/atto-library-profiles/**'
@@ -43,7 +44,7 @@ jobs:
         run: |
           set -euo pipefail
           node --version
-          node --test tests/atto-library-profiles-v1.test.mjs tests/atto-library-run-evidence-v1.test.mjs tests/atto-library-runner-admission-v1.test.mjs tests/atto-library-workflow-admission-v1.test.mjs
+          node --test tests/atto-library-profiles-v1.test.mjs tests/atto-library-run-evidence-v1.test.mjs tests/atto-library-runner-admission-v1.test.mjs tests/atto-library-workflow-admission-v1.test.mjs tests/atto-library-evidence-invariants-v1.test.mjs
       - name: Preserve evidence boundary
         shell: bash
         run: |
