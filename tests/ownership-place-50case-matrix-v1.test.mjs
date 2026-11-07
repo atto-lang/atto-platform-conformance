@@ -14,7 +14,8 @@ const inner=place('alpha',field('left'),field('inner'));
 const arr0=place('alpha',field('items'),index(0));
 const arr1=place('alpha',field('items'),index(1));
 const wildcard=place('alpha',field('items'),index('*'));
-const layout={alpha:{owner:'alpha',
+const layout={independentOwnerPairs:[{kind:'independent-roots',owners:['alpha','beta']}],
+  alpha:{owner:'alpha',
   disjointFields:[{kind:'nominal-fields',owner:'alpha',parent:[],members:['left','right']}],
   disjointIndices:[{kind:'independent-elements',parent:[field('items')]}]
 }};
