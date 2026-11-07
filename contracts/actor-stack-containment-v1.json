@@ -371,6 +371,28 @@
         "suspendedFrameOwnership",
         "actorStackGeneration"
       ]
+    },
+    {
+      "id": "source-task-scalar-parameters-bound-from-actor-bytes",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "source-task-scalar-parameter-corruption-fail-stop",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-generation-poison",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorSurvival"
+      ]
     }
   ],
   "promotion": {
@@ -442,6 +464,20 @@
     "javaSourceTaskScalarCompiledAttoActorExecution": "NOT_EXECUTED",
     "javaSourceTaskScalarSourceMailboxNonReentrancy": "NOT_EXECUTED",
     "javaSourceTaskScalarNativeStackIsolation": "NOT_EXECUTED",
-    "javaSourceTaskScalarNote": "Java #2638 merges #2630 typed synchronous invocation frames and #2631 actor SourceTask frame leases; a manually saved primitive-only snapshot occupies the existing 64-byte task lease across await/cooperate, but there is no automatic compiler-local/return-PC lowering. Five new host/runtime JUnit methods are authored, not executed."
+    "javaSourceTaskScalarNote": "Java #2638 merges #2630 typed synchronous invocation frames and #2631 actor SourceTask frame leases; a manually saved primitive-only snapshot occupies the existing 64-byte task lease across await/cooperate, but there is no automatic compiler-local/return-PC lowering. Five new host/runtime JUnit methods are authored, not executed.",
+    "javaCompilerScalarParameterReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2642",
+    "javaCompilerScalarParameterStatus": "AUTHORED_NOT_EXECUTED",
+    "javaCompilerScalarParameterGuestExecution": "NOT_EXECUTED",
+    "javaCompilerScalarParameterHostTestsAuthored": 3,
+    "javaCompilerScalarParameterAttoTestsAuthored": 1,
+    "javaCompilerScalarParameterMaxValues": 6,
+    "javaCompilerScalarParameterFromActorBytes": true,
+    "javaCompilerScalarParameterResumeIntegrity": "AUTHORED_NOT_EXECUTED",
+    "javaCompilerScalarParameterFrameBytes": 64,
+    "javaCompilerMutableLocalsLowered": false,
+    "javaCompilerReturnPcLowered": false,
+    "javaCompilerStacklessEvaluator": false,
+    "javaCompilerSourceMailboxNonReentrancy": "NOT_EXECUTED",
+    "javaCompilerParameterBridgeNote": "Java #2642 authors automatic scalar formal-parameter binding from actor-owned SourceTask bytes and validation on resumed SourceTask dispatch. The actual .atto actor fixture, full lexical local/operand/return PC lowering, and low-native-stack proof remain NOT_EXECUTED."
   }
 }
