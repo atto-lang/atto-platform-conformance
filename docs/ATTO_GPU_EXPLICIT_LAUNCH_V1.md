@@ -43,3 +43,24 @@ Private cross-module kernels are rejected independently. A private kernel
 may be analyzed within its own module, but the source report cannot grant
 runtime dispatch. The source-link manifest records these explicit disabled
 capabilities; no fixture is promoted as executed compiler evidence.
+
+## G1d private Java integrated source tree (NOT_EXECUTED)
+
+Java/Graal draft [#2610](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2610)
+now combines source-kernel PR #2582 and host-footprint PR #2583 via a
+two-parent merge commit without changing either original agent-owned
+branch. The integration branch contains `GpuKernelSourceCapacityJoinV1`,
+which derives read/write access from source kernel types rather than
+caller-supplied expectedAccess flags. It checks the canonical `n`,
+positional view bindings, the checked source tail and the separate host
+capacity/overlap quotas. The result is strictly
+`SOURCE_JOINED_CAPACITY_SHAPE_ONLY_NOT_EXECUTABLE`.
+
+The [G1d integrated-source manifest](../contracts/atto-gpu-g1d-integrated-source-v1.json)
+pins Git head/tree/parent identities and the still-unexecuted Java compiler
+and host test evidence. The companion Node test checks manifest assertions
+only; it does not inspect the private Java source, run a compiler or
+authenticate device buffers. Source-org GitHub Actions still reports
+`steps=null`, and the Java repository is private: cross-org source
+mirroring is held pending independent authorization. A successful
+source/host join cannot authorize physical GPU enqueue or CPU fallback.
