@@ -123,7 +123,7 @@ class Broker:
             raise Denied("graph must use exact i64 index/value slots")
         if any(v < -(1 << 63) or v >= (1 << 63) for v in nodes.values()):
             raise Denied("graph scalar slot must fit i64")
-        edges = deepcopy(edges or {})
+        edges = {n: list(links) for n, links in (edges or {}).items()}  # retain opaque Token identity
         if not isinstance(edges, dict) or not set(edges).issubset(nodes):
             raise Denied("invalid graph adjacency")
         for links in edges.values():
@@ -254,8 +254,10 @@ class Broker:
         if len(receiver.queue) >= receiver.capacity:
             receiver.refused_full += 1
             return "MailboxFull"
-        old_owner = graph.actor
-        assert old_owner is not None
+        if graph.tenant != receiver.tenant and any(
+                kind in ("val", "tag") for links in graph.edges.values()
+                for kind, _ in links):
+            raise Denied("cross-tenant copy of embedded capabilities requires explicit serialization")
         if graph.tenant == receiver.tenant:
             graph.version += 1
             graph.actor = receiver
@@ -263,7 +265,7 @@ class Broker:
         else:
             # Distinct object graph, no shared mutable backing pointer.
             clone = Graph(receiver.tenant, receiver, 1, deepcopy(graph.nodes),
-                          deepcopy(graph.edges))
+                          {n: list(links) for n, links in graph.edges.items()})
             self.graphs.append(clone)
             incoming = self._mint("owner", clone, 1)
             graph.destroyed = True
@@ -278,6 +280,10 @@ class Broker:
         if graph.tenant != receiver.tenant and (
                 graph.tenant, receiver.tenant) not in self._cross_tenant_copy:
             raise Denied("cross-tenant immutable copy capability required")
+        if graph.tenant != receiver.tenant and any(
+                kind in ("val", "tag") for links in graph.edges.values()
+                for kind, _ in links):
+            raise Denied("cross-tenant copy of embedded capabilities requires explicit serialization")
         if len(receiver.queue) >= receiver.capacity:
             receiver.refused_full += 1
             return "MailboxFull"
@@ -285,7 +291,7 @@ class Broker:
             delivered = self._mint("val", graph, graph.version)
         else:
             delivered_graph = Graph(receiver.tenant, None, 1,
-                                    deepcopy(graph.nodes), deepcopy(graph.edges),
+                                    deepcopy(graph.nodes), {n: list(links) for n, links in graph.edges.items()},
                                     frozen=True)
             self.graphs.append(delivered_graph)
             delivered = self._mint("val", delivered_graph, 1)
