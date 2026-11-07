@@ -35,8 +35,12 @@
         "forge": "NOT_EXECUTED"
       },
       "source_git_blob_sha1": "1ff87aa95ed2537839347e80984c69ae46fdfa17",
-      "control_source": "fixtures/guard-v1/canonical-scalar.atto",
-      "control_git_blob_sha1": "c86ac476e55074031c0bcda02f5eaf3cb1399477"
+      "control_source": "fixtures/spec-audit-v1/guard-fallthrough-control.atto",
+      "control_git_blob_sha1": "6d702c5a71edb979bdf44cb23fe8a9bb29214e18",
+      "control_transform": {
+        "from": "guard true { }",
+        "to": "guard true { return 1; }"
+      }
     },
     {
       "id": "guard-else-negative",
@@ -53,8 +57,12 @@
         "forge": "NOT_EXECUTED"
       },
       "source_git_blob_sha1": "b2bbee98cd3b95ac19462b4efd95a2e98b469154",
-      "control_source": "fixtures/guard-v1/canonical-scalar.atto",
-      "control_git_blob_sha1": "c86ac476e55074031c0bcda02f5eaf3cb1399477"
+      "control_source": "fixtures/spec-audit-v1/guard-else-control.atto",
+      "control_git_blob_sha1": "e65a26fec9550fab90375da8aea1ada791b1e028",
+      "control_transform": {
+        "from": "guard true { return 1; } else { return 2; }",
+        "to": "guard true { return 1; }"
+      }
     },
     {
       "id": "named-value-reorder-positive",
@@ -88,8 +96,12 @@
         "forge": "NOT_EXECUTED"
       },
       "source_git_blob_sha1": "43c2c7db1246be09f2a55164c3d16acd8315b450",
-      "control_source": "fixtures/named-generic-call-v1/value-reorder.atto",
-      "control_git_blob_sha1": "da20b7b0dc8a58a9abb0ff9db2b7723dfdd47168"
+      "control_source": "fixtures/spec-audit-v1/named-value-duplicate-control.atto",
+      "control_git_blob_sha1": "995df715926d7a176716bc6789959a607509d6af",
+      "control_transform": {
+        "from": "combine(a: 1, a: 2)",
+        "to": "combine(a: 1, b: 2)"
+      }
     },
     {
       "id": "actorref-sync-method-negative",
@@ -107,7 +119,11 @@
       },
       "source_git_blob_sha1": "c4fb55d1b5f19bbc4f8b576121ee40b4432d59a9",
       "control_source": "fixtures/spec-audit-v1/actorref-direct-sync-control.atto",
-      "control_git_blob_sha1": "3269ff4e94467f3a103596db4dca51a3e00f8d51"
+      "control_git_blob_sha1": "3269ff4e94467f3a103596db4dca51a3e00f8d51",
+      "control_transform": {
+        "from": "return counter.read_count();",
+        "to": "return 42;"
+      }
     },
     {
       "id": "typed-local-typefirst",

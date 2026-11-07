@@ -1,0 +1,5 @@
+// Paired to guard-v1/reject-else.atto. Only the prohibited else arm is removed.
+pub fnc main(): int {
+  guard true { return 1; }
+  return 42;
+}

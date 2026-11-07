@@ -46,6 +46,20 @@ function validate(data, sourceOverrides = {}) {
       assert.match(c.control_git_blob_sha1, /^[a-f0-9]{40}$/);
       assert.equal(gitBlobSha1(control), c.control_git_blob_sha1, 'control source drift: ' + c.id);
       assert.notEqual(c.source, c.control_source, 'negative must have separate control');
+      // The control must be the negative with exactly one targeted source edit.
+      // This closes the loophole where a completely unrelated program compiles.
+      assert.ok(c.control_transform && typeof c.control_transform === 'object');
+      const {from, to} = c.control_transform;
+      assert.ok(typeof from === 'string' && from.length > 0 && from.length <= 180);
+      assert.ok(typeof to === 'string' && to.length > 0 && to.length <= 180);
+      const withoutComments = text => text.split('\n')
+        .filter(line => !line.trimStart().startsWith('//')).join('\n');
+      const negativeCode = withoutComments(source);
+      const controlCode = withoutComments(control);
+      assert.ok(negativeCode.includes(from) && negativeCode.indexOf(from) === negativeCode.lastIndexOf(from),
+        'control mutation must match exactly once: ' + c.id);
+      assert.equal(negativeCode.replace(from, to), controlCode,
+        'control is not a one-edit variant of negative: ' + c.id);
     } else {
       assert.equal(c.expected_diagnostic_class, null);
     }
@@ -114,4 +128,28 @@ test('mutation: unresolved placeholder cannot become compiler negative', () => {
   c.kind = 'negative';
   c.expected_diagnostic_class = c.target_diagnostic_class;
   assert.throws(() => validate(clone), /placeholder stage types/);
+});
+
+test('mutation: unrelated positive control is rejected even if its Git blob matches', () => {
+  const copy = structuredClone(manifest);
+  const c = copy.cases.find(c => c.id === 'guard-missing-exit-negative');
+  c.control_source = 'fixtures/named-generic-call-v1/value-reorder.atto';
+  const actual = manifest.cases.find(x => x.id === 'named-value-reorder-positive');
+  c.control_git_blob_sha1 = actual.source_git_blob_sha1;
+  assert.throws(() => validate(copy), /control is not a one-edit variant/);
+});
+test('mutation: non-occurring source edit is rejected', () => {
+  const copy = structuredClone(manifest);
+  copy.cases.find(c => c.id === 'guard-else-negative').control_transform.from = 'never appears';
+  assert.throws(() => validate(copy), /control mutation must match exactly once/);
+});
+test('mutation: wrong destination edit is rejected', () => {
+  const copy = structuredClone(manifest);
+  copy.cases.find(c => c.id === 'named-value-duplicate-negative').control_transform.to = 'combine(a: 1, c: 2)';
+  assert.throws(() => validate(copy), /control is not a one-edit variant/);
+});
+test('mutation: a missing paired edit is rejected', () => {
+  const copy = structuredClone(manifest);
+  delete copy.cases.find(c => c.id === 'actorref-sync-method-negative').control_transform;
+  assert.throws(() => validate(copy));
 });

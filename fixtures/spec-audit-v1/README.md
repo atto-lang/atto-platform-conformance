@@ -31,3 +31,15 @@ It remains a `decision-candidate` with the future target diagnostic
 `MOVED_BUILDER_REUSED`; it is **not** a valid negative compiler witness until
 concrete admitted actors and typed ports exist. No backend status has advanced
 beyond `NOT_EXECUTED`.
+
+## Same-feature differential controls
+
+Each negative case has a `control_transform` with exactly one occurrence of
+`from`, which becomes `to` in its control. Ignoring only full-line comments,
+the source-free inventory enforces byte-for-byte equality everywhere else.
+Guard fallthrough/else, duplicate named argument, and direct ActorRef method
+tests therefore have minimal paired controls. A compiler rejection **never**
+counts unless the corresponding same-head, same-toolchain control compiles and
+the negative fails with its **specified semantic diagnostic class**, not a
+generic parse error. This transformation check is only a structural source-free
+oracle and does not establish guest behavior.
