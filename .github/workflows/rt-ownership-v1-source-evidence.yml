@@ -9,6 +9,7 @@ on:
       - 'audit/ownership-root-disjoint-proof-*'
       - 'audit/ownership-mir-origin-bridge-*'
       - 'audit/ownership-origin-id-contract-*'
+      - 'audit/ownership-identity-cfg-30cases-*'
   pull_request:
     paths:
       - 'contracts/rt-ownership-admission-v1.json'
@@ -26,6 +27,8 @@ on:
       - 'tests/ownership-compiler-origin-bridge-v1.test.mjs'
       - 'src/ownership-typed-origin-ids-v1.mjs'
       - 'tests/ownership-typed-origin-ids-v1.test.mjs'
+      - 'src/ownership-identity-inventory-v1.mjs'
+      - 'tests/ownership-identity-inventory-v1.test.mjs'
       - '.github/workflows/rt-ownership-v1-source-evidence.yml'
   workflow_dispatch:
 
@@ -66,7 +69,9 @@ jobs:
             src/ownership-compiler-origin-bridge-v1.mjs \
             tests/ownership-compiler-origin-bridge-v1.test.mjs \
             src/ownership-typed-origin-ids-v1.mjs \
-            tests/ownership-typed-origin-ids-v1.test.mjs
+            tests/ownership-typed-origin-ids-v1.test.mjs \
+            src/ownership-identity-inventory-v1.mjs \
+            tests/ownership-identity-inventory-v1.test.mjs
       - name: Execute source-only receipt validation and adversarial tests
         shell: bash
         run: |
@@ -117,6 +122,12 @@ jobs:
           grep -Eq '^# tests 22$' /tmp/atto-typed-origin-ids-v1.tap
           grep -Eq '^# pass 22$' /tmp/atto-typed-origin-ids-v1.tap
           grep -Eq '^# fail 0$' /tmp/atto-typed-origin-ids-v1.tap
+          node --test --test-reporter=tap \
+            tests/ownership-identity-inventory-v1.test.mjs | tee /tmp/atto-id-inventory-v1.tap
+          grep -Eq '^# tests 15$' /tmp/atto-id-inventory-v1.tap
+          grep -Eq '^# pass 15$' /tmp/atto-id-inventory-v1.tap
+          grep -Eq '^# fail 0$' /tmp/atto-id-inventory-v1.tap
+          echo "ATTO_TYPED_ORIGIN_ID_INVENTORY=CANDIDATE_UNATTESTED"
           echo "ATTO_TYPED_ORIGIN_IDS=SHAPE_ONLY_UNATTESTED"
           echo "ATTO_OWNERSHIP_ORIGIN_MODEL=CANDIDATE_UNATTESTED"
           echo "ATTO_OWNERSHIP_ROOT_MODEL=CANDIDATE_UNATTESTED"
