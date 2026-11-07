@@ -2,7 +2,7 @@
 // Independent GitHub REST metadata read-back for scoped-local receipts.
 // Does not attest compiler binary, log bytes, checkout inside the runner,
 // guest execution, ownership correctness or cross-backend parity.
-import { evaluateReceipt, readBoundedJson } from './verify-scoped-local-evidence.mjs';
+import { evaluateReceipt, evaluateSliceReceipt, readBoundedJson } from './verify-scoped-local-evidence.mjs';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
 
@@ -13,8 +13,10 @@ const positiveInt = x => Number.isSafeInteger(x) && x > 0;
 export async function auditGitHubReceipt(receipt, contract, {
   fetchImpl = fetch,
   token = '',
+  allowPartial = false,
 } = {}) {
-  const shape = evaluateReceipt(receipt, contract);
+  const shape = allowPartial ? evaluateSliceReceipt(receipt, contract)
+    : evaluateReceipt(receipt, contract);
   const faults = [...shape.errors];
   const result = {
     backend: receipt?.backend ?? null,
@@ -117,7 +119,8 @@ export async function auditGitHubReceipt(receipt, contract, {
   if (faults.length) return result;
   return {
     ...result,
-    status: 'GITHUB_METADATA_MATCH_GUEST_UNATTESTED',
+    status: allowPartial ? 'GITHUB_METADATA_MATCH_PARTIAL_UNATTESTED'
+      : 'GITHUB_METADATA_MATCH_GUEST_UNATTESTED',
     evidenceTrust: 'GITHUB_API_METADATA_ONLY',
     githubMetadataVerified: true,
   };
@@ -125,11 +128,14 @@ export async function auditGitHubReceipt(receipt, contract, {
 
 if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {
   try {
-    if (process.argv.length !== 3) throw new Error('usage: node bin/verify-scoped-local-github.mjs RECEIPT.json');
+    if (process.argv.length !== 3 && !(process.argv.length===4 && process.argv[2]==='--slice'))
+      throw new Error('usage: node bin/verify-scoped-local-github.mjs [--slice] RECEIPT.json');
     const contract = readBoundedJson(new URL('../contracts/scoped-locals-v1.json', import.meta.url));
-    const receipt = readBoundedJson(process.argv[2]);
+    const partial = process.argv[2] === '--slice';
+    const receipt = readBoundedJson(partial ? process.argv[3] : process.argv[2]);
     const report = await auditGitHubReceipt(receipt, contract, {
       token: process.env.GITHUB_TOKEN || process.env.GH_TOKEN || '',
+      allowPartial: partial,
     });
     process.stdout.write(JSON.stringify(report, null, 2) + '\n');
     if (!report.githubMetadataVerified) process.exitCode = 1;
