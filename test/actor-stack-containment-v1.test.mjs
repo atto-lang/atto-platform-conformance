@@ -48,7 +48,7 @@ function validatePending(matrix) {
   }
   assert.equal(matrix.requirements.nativeStackOverflowRecoverableOnSharedCarrier, false);
   assert.equal(matrix.requirements.untrustedArbitraryNativeCodeRequiresKillableWorker, true);
-  assert.ok(matrix.scenarios.length >= 29);
+  assert.ok(matrix.scenarios.length >= 33);
   assert.match(matrix.javaFrameArenaReference, /\/pull\/2627$/);
   const bootstrap = matrix.frameStorageBootstrap;
   assert.equal(bootstrap.javaHostPrimitive, 'MANAGED_BYTES_ONLY');
@@ -111,6 +111,25 @@ function validatePending(matrix) {
   assert.equal(bootstrap.javaCompilerReturnPcLowered, false);
   assert.equal(bootstrap.javaCompilerStacklessEvaluator, false);
   assert.equal(bootstrap.javaCompilerSourceMailboxNonReentrancy, 'NOT_EXECUTED');
+  assert.match(bootstrap.javaCompilerLexicalFrameReference, /\/pull\/2643$/);
+  assert.equal(bootstrap.javaCompilerLexicalStatus, 'AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaCompilerLexicalFrameBytes, 64);
+  assert.equal(bootstrap.javaCompilerLexicalSharedScalarSlots, 6);
+  assert.equal(bootstrap.javaCompilerLexicalHostJUnitAuthored, 6);
+  assert.equal(bootstrap.javaCompilerLexicalAttoJUnitAuthored, 1);
+  assert.equal(bootstrap.javaCompilerLexicalGuestExecution, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaCompilerLexicalReadsFromActorBytes, true);
+  assert.equal(bootstrap.javaCompilerLexicalJvmShadowStillPresent, true);
+  assert.equal(bootstrap.javaCompilerLexicalReferenceRootsLowered, false);
+  assert.equal(bootstrap.javaCompilerLexicalFrameScopeReclaim, false);
+  assert.match(bootstrap.javaCompilerReturnRecordReference, /\/pull\/2643$/);
+  assert.equal(bootstrap.javaCompilerReturnRecordHostJUnitAuthored, 4);
+  assert.equal(bootstrap.javaCompilerReturnRecordBytes, 48);
+  assert.equal(bootstrap.javaCompilerReturnRecordAbiStatus, 'HOST_ABI_AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaCompilerReturnRecordUsedByGuestDispatcher, false);
+  assert.equal(bootstrap.javaCompilerReturnPcLowered, false);
+  assert.equal(bootstrap.javaCompilerStacklessEvaluator, false);
+  assert.equal(bootstrap.javaCompilerNativeActorStackFaultSurvival, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaAuthoredLegacyCompilerGuestTests, 1);
   assert.equal(bootstrap.javaLegacyCompilerGuestTestExecuted, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaGuardedInvocationByteFrames,
@@ -203,6 +222,16 @@ test('fake pass, duplicate backend, deleted proof and false promotion are reject
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerReturnPcLowered = true;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerStacklessEvaluator = true;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerSourceMailboxNonReentrancy = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerLexicalStatus = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerLexicalSharedScalarSlots = 999;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerLexicalJvmShadowStillPresent = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerLexicalReferenceRootsLowered = true;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerLexicalFrameScopeReclaim = true;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerReturnRecordAbiStatus = 'GUEST_PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerReturnRecordUsedByGuestDispatcher = true;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerNativeActorStackFaultSurvival = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaCompilerReturnRecordReference;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerLexicalGuestExecution = 'PASS';})));
   assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaCompilerScalarParameterReference;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaGuardFrameNotDuplicated = false;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaInvocationDescriptorBytes = 32;})));
@@ -367,5 +396,33 @@ test('M3.1 SourceTask compiler scalar formal arguments require actual .atto evid
   assert.equal(manifest.frameStorageBootstrap.javaCompilerScalarParameterStatus,
     'AUTHORED_NOT_EXECUTED');
   assert.equal(manifest.frameStorageBootstrap.javaCompilerStacklessEvaluator, false);
+  assert.equal(manifest.promotion.certified, false);
+});
+
+test('M3.2 scalar Env slots and call-return ABI are not stackless guest proof', async () => {
+  const manifest = validatePending(await load());
+  const required = [
+    'actor-source-mutable-lexical-scalar-across-two-cooperates',
+    'actor-source-lexical-shadowed-scope-isolation',
+    'actor-source-lexical-type-tag-corruption-fail-stop',
+    'actor-return-pc-record-not-yet-dispatch-lowered'
+  ];
+  for (const id of required) {
+    const scenario = manifest.scenarios.find(s => s.id === id);
+    assert.ok(scenario, 'missing M3.2 scenario: ' + id);
+    assert.equal(scenario.source, null, 'no fabricated guest source compiler receipt');
+    assert.ok(scenario.requiredEvidence.includes('compilerGuest'));
+    assert.ok(scenario.requiredEvidence.includes('actorStackStorage')
+      || scenario.requiredEvidence.includes('actorStackGeneration'));
+  }
+  const frame = manifest.frameStorageBootstrap;
+  assert.equal(frame.javaCompilerLexicalFrameBytes, 64);
+  assert.equal(frame.javaCompilerLexicalJvmShadowStillPresent, true);
+  assert.equal(frame.javaCompilerReturnRecordBytes, 48);
+  assert.equal(frame.javaCompilerReturnRecordUsedByGuestDispatcher, false);
+  for (const backend of manifest.backends) {
+    assert.equal(backend.compilerGuest, 'NOT_EXECUTED');
+    assert.equal(backend.actorStackStorage, 'NOT_EXECUTED');
+  }
   assert.equal(manifest.promotion.certified, false);
 });
