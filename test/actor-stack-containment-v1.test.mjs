@@ -48,11 +48,26 @@ function validatePending(matrix) {
   }
   assert.equal(matrix.requirements.nativeStackOverflowRecoverableOnSharedCarrier, false);
   assert.equal(matrix.requirements.untrustedArbitraryNativeCodeRequiresKillableWorker, true);
-  assert.ok(matrix.scenarios.length >= 30);
+  assert.ok(matrix.scenarios.length >= 36);
   assert.match(matrix.javaFrameArenaReference, /\/pull\/2627$/);
   const bootstrap = matrix.frameStorageBootstrap;
   assert.equal(bootstrap.javaHostPrimitive, 'MANAGED_BYTES_ONLY');
   assert.match(bootstrap.javaIntegratedInvocationSourceTaskReference, /\/pull\/2637$/);
+  assert.match(bootstrap.javaScalarTypedFrameReference, /\/pull\/2640$/);
+  assert.equal(bootstrap.javaScalarTypedFrameStatus, 'AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaScalarTypedFrameScope, 'PURE_SYNC_INTEGER_FNC_GRAPH_ONLY');
+  assert.equal(bootstrap.javaScalarTypedFramePcAndStackHeaderBytes, 16);
+  assert.equal(bootstrap.javaScalarTypedFrameTaggedSlotBytes, 16);
+  assert.equal(bootstrap.javaScalarTypedFrameHostCompilerTestsAuthored, 7);
+  assert.equal(bootstrap.javaScalarTypedFrameHostRuntimeTestsAuthored, 4);
+  assert.equal(bootstrap.javaScalarTypedFrameAttoSourceFixturesAuthored, 3);
+  assert.equal(bootstrap.javaScalarTypedFrameGuestCompilerReceipts, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaScalarTypedFrameNativeLowStackReceipts, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaScalarTypedFrameActorSupervisorRestartReceipts, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaScalarTypedFrameOtherBackends, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaScalarTypedFrameActualPrimitiveStorage, 'IMPLEMENTED_UNVERIFIED');
+  assert.equal(bootstrap.javaScalarTypedFrameSourceTaskLexicalContinuations, 'NOT_IMPLEMENTED');
+
   assert.equal(bootstrap.javaIntegratedSourceTaskInvocationStatus, 'AUTHORED_NOT_EXECUTED');
   assert.equal(bootstrap.javaIntegratedSourceTaskHostTestsAuthored, 3);
   assert.equal(bootstrap.javaIntegratedActorAttoFixturesCopied, 3);
@@ -114,7 +129,7 @@ test('five-backend stack containment contract stays explicitly unexecuted', asyn
 test('all authored AttoLang source fixtures exist and have distinct cases', async () => {
   const matrix = validatePending(await load());
   const sources = matrix.scenarios.filter(c => c.source);
-  assert.equal(sources.length, 7);
+  assert.equal(sources.length, 10);
   for (const scenario of sources) {
     const text = await readFile(new URL('../' + scenario.source, import.meta.url), 'utf8');
     assert.match(text, /pub (?:suspends )?routine main\(\): void/);
@@ -288,6 +303,50 @@ test('integrated actor invocation and SourceTask proof cannot be self-certified'
     assert.ok(scenario);
     assert.equal(scenario.source, null);
     assert.equal(scenario.kind, 'pending-actor-acceptance');
+  }
+  assert.equal(original.promotion.certified, false);
+});
+
+test('M3 typed scalar frame claims cannot be promoted without guest receipts', async () => {
+  const original = validatePending(await load());
+  const mutate = fn => { const edited = structuredClone(original); fn(edited); return edited; };
+  for (const field of [
+    'javaScalarTypedFrameGuestCompilerReceipts',
+    'javaScalarTypedFrameNativeLowStackReceipts',
+    'javaScalarTypedFrameActorSupervisorRestartReceipts',
+    'javaScalarTypedFrameOtherBackends'
+  ]) {
+    assert.throws(() => validatePending(mutate(
+      m => {m.frameStorageBootstrap[field] = 'PASS';})),
+      'invented ' + field + ' evidence must fail');
+  }
+  assert.throws(() => validatePending(mutate(
+    m => {m.frameStorageBootstrap.javaScalarTypedFrameActualPrimitiveStorage = 'VERIFIED';})));
+  assert.throws(() => validatePending(mutate(
+    m => {m.frameStorageBootstrap.javaScalarTypedFrameSourceTaskLexicalContinuations = 'PASS';})));
+  assert.throws(() => validatePending(mutate(
+    m => {m.frameStorageBootstrap.javaScalarTypedFrameTaggedSlotBytes = 0;})));
+  const sourceCases = new Map([
+    ['typed-scalar-nontail-1024', '1024'],
+    ['typed-scalar-mutual-tail-100000', '0'],
+    ['typed-scalar-immutable-locals', '9']
+  ]);
+  for (const [name, output] of sourceCases) {
+    const entry = original.scenarios.find(s => s.id === name);
+    assert.ok(entry);
+    assert.equal(entry.expectedStdout, output);
+    assert.match(entry.source, /\.atto$/);
+    assert.ok(entry.requiredEvidence.includes('compilerGuest'));
+  }
+  for (const name of [
+    'typed-scalar-actor-quota-failure-sibling-survives',
+    'typed-scalar-unsupported-fallback-and-negative-mutation',
+    'typed-scalar-execution-context-generation-negative'
+  ]) {
+    const entry = original.scenarios.find(s => s.id === name);
+    assert.ok(entry);
+    assert.equal(entry.source, null);
+    assert.ok(entry.kind.startsWith('pending-'));
   }
   assert.equal(original.promotion.certified, false);
 });
