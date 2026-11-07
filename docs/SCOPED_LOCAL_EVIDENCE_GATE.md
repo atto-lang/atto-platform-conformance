@@ -64,3 +64,8 @@ PR #2623 TaskContext before claiming generic TaskLocal parity.
 Do not transfer private source to an unapproved carrier. A source-free
 canary can diagnose runner admission but cannot substitute for the linked
 AttoLang guest or a source-authorized exact-tree receipt.
+
+Input safety: the CLI opens receipt files with no-follow/nonblocking flags where
+supported, requires regular files of at most 2 MiB, reads through a bounded
+file descriptor and rejects observed truncation or growth. This is not an
+attestation or a defense against adversarial concurrent same-UID mutation.
