@@ -305,6 +305,8 @@
     "note": "Java M1.6 guarded non-tail interpreter invocations reserve actor-owned managed byte frames and unwind LIFO; JVM guest locals and return continuations remain on carrier stack. SourceTask continuation and native process-stack containment are NOT_EXECUTED.",
     "javaGuardedInvocationByteFrames": "GUARD_WIRED_MANAGED_BYTES_NOT_GUEST_LOCALS",
     "javaSynchronousGuardByteCharge": 32,
-    "javaGuestCallGuardNativeStackStillUsed": true
+    "javaGuestCallGuardNativeStackStillUsed": true,
+    "javaAuthoredLegacyCompilerGuestTests": 1,
+    "javaLegacyCompilerGuestTestExecuted": "NOT_EXECUTED"
   }
 }
