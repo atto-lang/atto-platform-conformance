@@ -26,6 +26,13 @@ def samples():
         "ATTO_M4_LLVM_OBSERVATION_ACTOR_STOPS=2",
         "ATTO_M4_LLVM_HOST_OBSERVED_ACTOR_DIGEST=7021",
         "ATTO_M4_LLVM_MAIN_GUEST_DRAINED=1",
+        "ATTO_M4_LLVM_NATIVE_GUEST_SHA256=" + "1" * 64,
+        "ATTO_M4_LLVM_STALE_HANDLE_DENIED=1",
+        "ATTO_M4_LLVM_REINCARNATION_FRESH_STATE=1",
+        "ATTO_M4_LLVM_TENANT_NEIGHBOR_SURVIVED=1",
+        "ATTO_M4_LLVM_NEGATIVE_DIGEST_REJECTION=PASSED",
+        "ATTO_M4_LLVM_TAMPERED_GUEST_REJECTION=PASSED",
+        "ATTO_M4_LLVM_ASAN_UBSAN_NATIVE_HOST=PASSED",
     ])
     graal = "\n".join([
         "ATTO_M4_IDENTICAL_SOURCE_GIT_BLOB=" + blob,
@@ -36,6 +43,9 @@ def samples():
         "ATTO_GUEST_ACTOR_CLOSES=2",
         "ATTO_GUEST_ACTOR_STATE_DIGEST=7021",
         "ATTO_GUEST_GC_DELTA=0",
+        "ATTO_GRAAL_NATIVE_GUEST_SHA256=" + "2" * 64,
+        "ATTO_JVM_ATOMIC_SEND_ROLLBACK=PASS",
+        "ATTO_JVM_NATIVE_ARENA_CLOSED_FENCE=PASS",
     ])
     metadata = {
         "llvm": {"head_sha": "a" * 40, "conclusion": "success",
@@ -129,6 +139,54 @@ class DualNativeLogs(unittest.TestCase):
     def test_reject_missing_host_actor_reply_evidence(self):
         a, _, _ = samples()
         self.fail(llvm=a.replace("ATTO_M4_LLVM_ACTOR_CALLS_OBSERVED=3", ""))
+
+    def test_reject_llvm_artifact_digest_mismatch_even_when_well_formed(self):
+        self.fail(mutate=lambda m: m["llvm"].update(native_artifact_sha256="3"*64))
+
+    def test_reject_graal_artifact_digest_mismatch_even_when_well_formed(self):
+        self.fail(mutate=lambda m: m["graalvm-native"].update(native_artifact_sha256="4"*64))
+
+    def test_reject_missing_llvm_stale_handle_denial(self):
+        a, _, _ = samples()
+        self.fail(llvm=a.replace("ATTO_M4_LLVM_STALE_HANDLE_DENIED=1", ""))
+
+    def test_reject_failed_actor_reincarnation(self):
+        a, _, _ = samples()
+        self.fail(llvm=a.replace("ATTO_M4_LLVM_REINCARNATION_FRESH_STATE=1",
+                                 "ATTO_M4_LLVM_REINCARNATION_FRESH_STATE=0"))
+
+    def test_reject_missing_tenant_neighbor_survival(self):
+        a, _, _ = samples()
+        self.fail(llvm=a.replace("ATTO_M4_LLVM_TENANT_NEIGHBOR_SURVIVED=1", ""))
+
+    def test_reject_missing_wrong_digest_denial(self):
+        a, _, _ = samples()
+        self.fail(llvm=a.replace("ATTO_M4_LLVM_NEGATIVE_DIGEST_REJECTION=PASSED", ""))
+
+    def test_reject_missing_tampered_native_library_denial(self):
+        a, _, _ = samples()
+        self.fail(llvm=a.replace("ATTO_M4_LLVM_TAMPERED_GUEST_REJECTION=PASSED", ""))
+
+    def test_reject_missing_sanitized_host_execution(self):
+        a, _, _ = samples()
+        self.fail(llvm=a.replace("ATTO_M4_LLVM_ASAN_UBSAN_NATIVE_HOST=PASSED", ""))
+
+    def test_reject_missing_jvm_rollback_probe(self):
+        _, b, _ = samples()
+        self.fail(graal=b.replace("ATTO_JVM_ATOMIC_SEND_ROLLBACK=PASS", ""))
+
+    def test_reject_missing_jvm_native_arena_fence(self):
+        _, b, _ = samples()
+        self.fail(graal=b.replace("ATTO_JVM_NATIVE_ARENA_CLOSED_FENCE=PASS", ""))
+
+    def test_reject_fake_native_hash_in_log(self):
+        a, _, _ = samples()
+        self.fail(llvm=a.replace("ATTO_M4_LLVM_NATIVE_GUEST_SHA256=" + "1"*64,
+                                 "ATTO_M4_LLVM_NATIVE_GUEST_SHA256=" + "0"*64))
+
+    def test_reject_conflicting_duplicate_artifact_digest(self):
+        _, b, _ = samples()
+        self.fail(graal=b + "\nATTO_GRAAL_NATIVE_GUEST_SHA256=" + "f"*64)
 
     def test_reject_falsified_contract(self):
         fake = copy.deepcopy(CONTRACT)
