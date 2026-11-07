@@ -134,6 +134,26 @@ test("a green metadata-only run is not guest execution or certified parity", () 
   assert.equal(classify({...run(), conclusion:"failure"}, [{...failed, conclusion:"failure"}]).classification,
     "EXECUTION_FAILED");
 });
+test("forged completed failed steps without a runner never count as execution",()=>{
+ const j=job(); j.runner_id=0; j.conclusion="failure";
+ j.steps[1].conclusion="failure";
+ const out=classify({...run(),conclusion:"failure"},[j]);
+ assert.deepEqual(out,{classification:"UNTRUSTED_EVIDENCE",
+   reason:"NO_RUNNER_IDENTITY",executedSteps:0});
+});
+test("valid allocated failure is execution failure, not no-runner spoof",()=>{
+ const j=job(); j.runner_id=9; j.conclusion="failure";
+ j.steps[1].conclusion="failure";
+ const out=classify({...run(),conclusion:"failure"},[j]);
+ assert.equal(out.classification,"EXECUTION_FAILED");
+ assert.equal(out.executedSteps,2);
+});
+test("fabricated step success with runner_id=0 has zero verified execution",()=>{
+ const j=job(); j.runner_id=0;
+ const out=classify(run(),[j]);
+ assert.equal(out.classification,"UNTRUSTED_EVIDENCE");
+ assert.equal(out.executedSteps,0);
+});
 test("identity, attempt, duplicate-name and runner attacks are fail closed", () => {
   assert.throws(() => classify({...run(), head_sha: "b".repeat(40)}), /expected PR head/);
   assert.throws(() => classify({...run(), run_attempt: 0}), /identity/);

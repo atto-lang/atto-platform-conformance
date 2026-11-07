@@ -137,3 +137,16 @@ runs, skipped jobs, timed-out results, null job conclusions and contradictory
 run/job status combinations. This preserves the independent
 `WORKFLOW_JOB_CREATION_FAILURE` class for zero-job runs and continues to
 withhold compiler-parity status from all source-only tests.
+
+## Fail-closed runner identity before step execution classification
+
+The source-only classifier must never label a job with
+`runner_id=0` and purported completed steps as `EXECUTION_FAILED`.
+It now validates a positive allocated runner **before** using the
+step-level outcomes to classify actual execution. Any contradictory
+stepful zero-runner snapshot is `UNTRUSTED_EVIDENCE`, with
+`executedSteps=0`. New negative cases cover forged success, forged
+failure, and an allocated failing control. Real GitHub Actions
+`steps=[]` remain runner-admission failures only under the explicit
+completed/failed/unallocated conditions. This does not prove exact
+guest source execution or artifact provenance.
