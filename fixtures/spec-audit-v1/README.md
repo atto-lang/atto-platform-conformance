@@ -43,3 +43,28 @@ counts unless the corresponding same-head, same-toolchain control compiles and
 the negative fails with its **specified semantic diagnostic class**, not a
 generic parse error. This transformation check is only a structural source-free
 oracle and does not establish guest behavior.
+
+## Compiler-backed receipt contract (source-free validator only)
+
+`lib/spec-audit-guest-evidence.mjs` exports
+`validateSpecAuditGuestClaim(manifest, receipt, independentlyPinnedExpectations)`.
+`tests/spec-audit-guest-evidence.test.mjs` exercises 23 structural and
+adversarial cases locally, including missing runner steps, forged SHA/tree
+identities, incorrect typed return values, missing or failing negative
+controls, parser-only failures, incorrect diagnostic classes and attempts
+to promote unratified decision candidates.
+
+Required compiler details include a distinct Java/LLVM/etc source commit and
+Git tree, compiler artifact hash, conformance head and tree, run/attempt/job/
+runner identities, exact required successful non-housekeeping steps, and
+per-fixture source blob IDs. A negative must be **semantic**, matching its
+diagnostic category, with an admitted one-edit positive control in the same
+compiler run. A positive must actually compile and run with the prescribed
+typed integer value and a pinned guest artifact digest.
+
+**The validator returns `REVIEW_REQUIRED` for any internally consistent
+claim.** It is not an execution mechanism and cannot independently verify
+GitHub API job metadata, compiled guest artifact bytes, source-owner
+permissions or runner allocation. Do not use synthetic examples from tests
+as authenticity receipts; all five backend entries stay `NOT_EXECUTED`
+until independent compiler-backed evidence is available.

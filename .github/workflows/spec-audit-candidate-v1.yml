@@ -7,6 +7,8 @@ on:
       - 'fixtures/guard-v1/**'
       - 'fixtures/named-generic-call-v1/**'
       - 'tests/spec-audit-candidate-v1.test.mjs'
+      - 'tests/spec-audit-guest-evidence.test.mjs'
+      - 'lib/spec-audit-guest-evidence.mjs'
       - '.github/workflows/spec-audit-candidate-v1.yml'
   push:
     branches: [main]
@@ -15,6 +17,8 @@ on:
       - 'fixtures/guard-v1/**'
       - 'fixtures/named-generic-call-v1/**'
       - 'tests/spec-audit-candidate-v1.test.mjs'
+      - 'tests/spec-audit-guest-evidence.test.mjs'
+      - 'lib/spec-audit-guest-evidence.mjs'
       - '.github/workflows/spec-audit-candidate-v1.yml'
 permissions:
   contents: read
@@ -69,7 +73,7 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
-      - name: Verify candidate IDs, pinned Git blobs and mutations
-        run: node --test tests/spec-audit-candidate-v1.test.mjs
+      - name: Verify source-free fixtures, paired controls and receipt-denial mutations
+        run: node --test tests/spec-audit-candidate-v1.test.mjs tests/spec-audit-guest-evidence.test.mjs
       - name: Prevent evidence-tier confusion
         run: echo "SOURCE_FREE_CANDIDATE_INTEGRITY_ONLY=NOT_COMPILER_OR_GUEST_PARITY"
