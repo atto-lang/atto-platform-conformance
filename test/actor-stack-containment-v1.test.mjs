@@ -7,7 +7,8 @@ const expectedBackends = ['forge', 'java', 'llvm', 'net', 'wasm'];
 const evidenceKeys = [
   'admission', 'compilerGuest', 'actorSurvival',
   'nativeLowStack', 'supervisorRecovery',
-  'actorStackStorage', 'suspendedFrameOwnership', 'actorStackGeneration'
+  'actorStackStorage', 'suspendedFrameOwnership', 'actorStackGeneration',
+  'executionContextBinding', 'callbackResumptionSafety', 'taskRootRetirement'
 ];
 
 async function load() {
@@ -40,7 +41,12 @@ function validatePending(matrix) {
     'actorStackPoisonCannotBeGuestCaught',
     'carrierMigrationDoesNotMoveStackOwnership',
     'stackFailureBeforeNativeGuardPage',
-    'noNativeSignalOrStackOverflowRecovery'
+    'noNativeSignalOrStackOverflowRecovery',
+    'executionContextStableAcrossAwait',
+    'actorTaskRootGenerationAuthenticated',
+    'callbacksCannotExecuteGuestOnProducerThread',
+    'sourceTaskRootsRetiredOnlyAfterPhysicalQuiescence',
+    'outstandingTaskRootsPreventActorHeapRetirement'
   ]) {
     assert.equal(matrix.requirements[key], true,
       'mandatory physical actor-stack safety property: ' + key);
@@ -91,6 +97,10 @@ test('fake pass, duplicate backend, deleted proof and false promotion are reject
   assert.throws(() => validatePending(mutate(m => {delete m.backends[1].suspendedFrameOwnership;})));
   assert.throws(() => validatePending(mutate(m => {m.requirements.actorFrameStorageIndependentOfCarrier = false;})));
   assert.throws(() => validatePending(mutate(m => {m.requirements.actorStackGenerationFenced = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.backends[2].callbackResumptionSafety = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {delete m.backends[3].taskRootRetirement;})));
+  assert.throws(() => validatePending(mutate(m => {m.requirements.callbacksCannotExecuteGuestOnProducerThread = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.requirements.outstandingTaskRootsPreventActorHeapRetirement = false;})));
 });
 
 test('logical guard is not misrepresented as independent actor stack storage', async () => {
@@ -112,4 +122,25 @@ test('logical guard is not misrepresented as independent actor stack storage', a
       ['actorStackStorage', 'suspendedFrameOwnership', 'actorStackGeneration'].includes(key)));
   }
   assert.deepEqual([...required], [], 'all pending safety dimensions stay represented');
+});
+
+test('actor ExecutionContext, callback, and stack-root lifecycle gates cannot be lost', async () => {
+  const matrix = validatePending(await load());
+  assert.match(matrix.javaActorTaskBindingReference, /\/pull\/2626$/);
+  const required = new Map([
+    ['actor-await-sibling-then-resume', 'executionContextBinding'],
+    ['producer-callback-cannot-run-guest', 'callbackResumptionSafety'],
+    ['cancel-suspended-task-before-quiescence', 'taskRootRetirement'],
+    ['late-resume-after-supervisor-restart', 'actorStackGeneration'],
+    ['root-leak-must-block-actor-heap-reclaim', 'taskRootRetirement']
+  ]);
+  for (const scenario of matrix.scenarios) {
+    const evidence = required.get(scenario.id);
+    if (!evidence) continue;
+    assert.equal(scenario.source, null,
+      'compiler-backed .atto actor acceptance source is still pending');
+    assert.ok(scenario.requiredEvidence.includes(evidence));
+    required.delete(scenario.id);
+  }
+  assert.deepEqual([...required.keys()], []);
 });

@@ -93,3 +93,28 @@ migration, stale-incarnation fences, swallowed guest budget errors, and low
 native-stack interoperability. They intentionally have no invented `.atto`
 guest fixture or execution receipt yet. Each backend must provide a real
 source fixture when its compiler accepts the construct.
+
+## M1.5: stable ExecutionContext and actor-bound Task roots (2026-11-07)
+
+Java [draft #2626](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2626)
+now connects the live actor source-Task scheduling path to a bounded logical
+Task root in `ActorGuestStack`. The root is authenticated against the exact
+actor-stack object and incarnation on resume. Ordinary non-actor tasks retain
+their own allocation identity; producer callbacks only wake the actor scheduler.
+The source Task's `ExecutionContext` survives `Await` and `Cooperate`, while
+the root is charged until *physical quiescence*, not Future settlement.
+
+This is a **logical identity/accounting milestone**, not evidence of separately
+allocated actor-private frame storage. Its authored JUnit scenarios are
+unexecuted on hosted CI because the Java source workflows report zero-step
+runner-admission failures. The current Java test also does **not** prove
+migration to a distinct physical carrier thread. Five backend records remain
+`NOT_EXECUTED`; no field should be promoted from host-only tests.
+
+The additional pending conformance cases require executable `.atto` source
+for actor A await / B carrier reuse / A resume, producer callback rejection,
+cancellation with delayed physical retirement, stale supervisor-generation
+resumption, and leak/quarantine before heap reclaim. Receipts need exact source
+head/tree, executed steps, compiled guest output, and an independently verified
+actor-store ownership identity. These are mandatory for Java, LLVM, NativeAOT,
+Wasm, and Forge/Cranelift.

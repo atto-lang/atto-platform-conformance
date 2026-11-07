@@ -5,7 +5,7 @@
   "canonicalExtension": ".atto",
   "scope": "actor call-depth, guest frame budgeting, carrier survival and supervisor recovery",
   "javaReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2505",
-  "note": "Five backends remain NOT_EXECUTED. Java #2505 is a carrier guard; stacked Java #2624 adds actor-cell-owned logical quota, NOT independently allocated execution frames. Neither establishes process-safe native stack isolation.",
+  "note": "Five backends remain NOT_EXECUTED. Java #2505 is a carrier guard; stacked Java #2624 adds actor-cell-owned logical quota, NOT independently allocated execution frames. Neither establishes process-safe native stack isolation. Java #2626 now wires bounded logical Task roots to actor-authenticated scheduler ExecutionContext; physical actor-owned lexical frame storage, source execution, and hosted evidence remain NOT_EXECUTED.",
   "requirements": {
     "separateHeapsAreNotStacks": true,
     "guestBudgetBeforeNativeOverflow": true,
@@ -23,7 +23,12 @@
     "actorStackPoisonCannotBeGuestCaught": true,
     "carrierMigrationDoesNotMoveStackOwnership": true,
     "stackFailureBeforeNativeGuardPage": true,
-    "noNativeSignalOrStackOverflowRecovery": true
+    "noNativeSignalOrStackOverflowRecovery": true,
+    "executionContextStableAcrossAwait": true,
+    "actorTaskRootGenerationAuthenticated": true,
+    "callbacksCannotExecuteGuestOnProducerThread": true,
+    "sourceTaskRootsRetiredOnlyAfterPhysicalQuiescence": true,
+    "outstandingTaskRootsPreventActorHeapRetirement": true
   },
   "backends": [
     {
@@ -36,7 +41,10 @@
       "exactHeadReceipt": null,
       "actorStackStorage": "NOT_EXECUTED",
       "suspendedFrameOwnership": "NOT_EXECUTED",
-      "actorStackGeneration": "NOT_EXECUTED"
+      "actorStackGeneration": "NOT_EXECUTED",
+      "executionContextBinding": "NOT_EXECUTED",
+      "callbackResumptionSafety": "NOT_EXECUTED",
+      "taskRootRetirement": "NOT_EXECUTED"
     },
     {
       "id": "llvm",
@@ -48,7 +56,10 @@
       "exactHeadReceipt": null,
       "actorStackStorage": "NOT_EXECUTED",
       "suspendedFrameOwnership": "NOT_EXECUTED",
-      "actorStackGeneration": "NOT_EXECUTED"
+      "actorStackGeneration": "NOT_EXECUTED",
+      "executionContextBinding": "NOT_EXECUTED",
+      "callbackResumptionSafety": "NOT_EXECUTED",
+      "taskRootRetirement": "NOT_EXECUTED"
     },
     {
       "id": "net",
@@ -60,7 +71,10 @@
       "exactHeadReceipt": null,
       "actorStackStorage": "NOT_EXECUTED",
       "suspendedFrameOwnership": "NOT_EXECUTED",
-      "actorStackGeneration": "NOT_EXECUTED"
+      "actorStackGeneration": "NOT_EXECUTED",
+      "executionContextBinding": "NOT_EXECUTED",
+      "callbackResumptionSafety": "NOT_EXECUTED",
+      "taskRootRetirement": "NOT_EXECUTED"
     },
     {
       "id": "wasm",
@@ -72,7 +86,10 @@
       "exactHeadReceipt": null,
       "actorStackStorage": "NOT_EXECUTED",
       "suspendedFrameOwnership": "NOT_EXECUTED",
-      "actorStackGeneration": "NOT_EXECUTED"
+      "actorStackGeneration": "NOT_EXECUTED",
+      "executionContextBinding": "NOT_EXECUTED",
+      "callbackResumptionSafety": "NOT_EXECUTED",
+      "taskRootRetirement": "NOT_EXECUTED"
     },
     {
       "id": "forge",
@@ -84,7 +101,10 @@
       "exactHeadReceipt": null,
       "actorStackStorage": "NOT_EXECUTED",
       "suspendedFrameOwnership": "NOT_EXECUTED",
-      "actorStackGeneration": "NOT_EXECUTED"
+      "actorStackGeneration": "NOT_EXECUTED",
+      "executionContextBinding": "NOT_EXECUTED",
+      "callbackResumptionSafety": "NOT_EXECUTED",
+      "taskRootRetirement": "NOT_EXECUTED"
     }
   ],
   "scenarios": [
@@ -213,6 +233,63 @@
         "actorSurvival",
         "actorStackStorage"
       ]
+    },
+    {
+      "id": "actor-await-sibling-then-resume",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival",
+        "executionContextBinding",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "producer-callback-cannot-run-guest",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "wrong-execution-context",
+      "requiredEvidence": [
+        "compilerGuest",
+        "callbackResumptionSafety",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "cancel-suspended-task-before-quiescence",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "cancelled-task",
+      "requiredEvidence": [
+        "compilerGuest",
+        "taskRootRetirement",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "late-resume-after-supervisor-restart",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "stale-actor-generation",
+      "requiredEvidence": [
+        "compilerGuest",
+        "supervisorRecovery",
+        "callbackResumptionSafety",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "root-leak-must-block-actor-heap-reclaim",
+      "source": null,
+      "kind": "pending-isolation",
+      "expectedFailureClass": "quarantined-actor-incarnation",
+      "requiredEvidence": [
+        "taskRootRetirement",
+        "actorStackStorage",
+        "supervisorRecovery"
+      ]
     }
   ],
   "promotion": {
@@ -227,5 +304,6 @@
     "zeroStepCountsAsExecuted": false,
     "sourceFreeCanaryCountsAsGuest": false
   },
-  "javaLogicalStackReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2624"
+  "javaLogicalStackReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2624",
+  "javaActorTaskBindingReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2626"
 }
