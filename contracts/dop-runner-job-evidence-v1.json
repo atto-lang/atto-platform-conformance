@@ -10,7 +10,11 @@
     "attempt": 2,
     "jobName": "compiler-mixed-native",
     "event": "pull_request",
-    "requiredSteps": ["Admit only exact same-repository immutable PR head", "Execute real guest compiler, Clang O0/O2 and negative traps"]
+    "requiredSteps": [
+      "Admit only exact same-repository immutable PR head",
+      "Execute real guest compiler, Clang O0/O2 and negative traps"
+    ],
+    "jobId": 128281843456
   },
   "run": {
     "id": 42331819084,
@@ -19,25 +23,37 @@
     "event": "pull_request",
     "status": "completed",
     "conclusion": "failure",
-    "repository": {"full_name": "ores-truffle-oreslang/oreslang-source.llvm"},
-    "head_repository": {"full_name": "ores-truffle-oreslang/oreslang-source.llvm"}
+    "repository": {
+      "full_name": "ores-truffle-oreslang/oreslang-source.llvm"
+    },
+    "head_repository": {
+      "full_name": "ores-truffle-oreslang/oreslang-source.llvm"
+    }
   },
   "jobs": {
     "total_count": 1,
-    "jobs": [{
-      "id": 128281843456,
-      "name": "compiler-mixed-native",
-      "run_id": 42331819084,
-      "run_attempt": 2,
-      "head_sha": "6cc45825c0e601e8daaafca6bf7c0a7ca0bc5734",
-      "status": "completed",
-      "conclusion": "failure",
-      "runner_id": 0,
-      "runner_name": "",
-      "started_at": "2026-11-07T03:06:51Z",
-      "completed_at": "2026-11-07T03:06:53Z",
-      "steps": []
-    }]
+    "jobs": [
+      {
+        "id": 128281843456,
+        "name": "compiler-mixed-native",
+        "run_id": 42331819084,
+        "run_attempt": 2,
+        "head_sha": "6cc45825c0e601e8daaafca6bf7c0a7ca0bc5734",
+        "status": "completed",
+        "conclusion": "failure",
+        "runner_id": 0,
+        "runner_name": "",
+        "started_at": "2026-11-07T03:06:51Z",
+        "completed_at": "2026-11-07T03:06:53Z",
+        "steps": []
+      }
+    ]
   },
-  "not_evidence_of": ["guest compilation", "native execution", "source-org runner admission", "backend parity", "merge approval"]
+  "not_evidence_of": [
+    "guest compilation",
+    "native execution",
+    "source-org runner admission",
+    "backend parity",
+    "merge approval"
+  ]
 }
