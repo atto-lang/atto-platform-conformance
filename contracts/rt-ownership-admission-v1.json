@@ -75,6 +75,12 @@
       "source": "pub fnc main(): int { val int left = 41; val int right = 42; val int selected = rt take (true ? left : right); return selected + right - 41; }"
     },
     {
+      "id": "computed-take-untracked",
+      "expect": "reject",
+      "reason": "UNTRACKED_PLACE",
+      "source": "pub fnc main(): int {\n  // The computed arithmetic result has no tracked named owner slot.\n  // An explicit rt take must not claim one of these still-live owners was moved.\n  val int first = 41;\n  val int second = 1;\n  val int moved = rt take (first + second);\n  return moved;\n}"
+    },
+    {
       "id": "move-during-shared-loan",
       "expect": "reject",
       "reason": "LOAN_CONFLICT",
