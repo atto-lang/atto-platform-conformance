@@ -1,0 +1,14 @@
+{
+  "schema": "atto.private-llvm-source-gate-negative-v1",
+  "origin": {
+    "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+    "head_sha": "e4486d458f417d25145139d1c525f3055918856d",
+    "pr": 1490
+  },
+  "scope": "Three exact Git blobs, only five negative CMake/wrapper admission checks. No LLVM source compiler/guest executed.",
+  "source_blobs": {
+    "tests/tenant-vm/CMakeLists.txt": "d1fd6163f937b30ae2611bca871329653b9f204a",
+    "tests/tenant-vm/test_e2e_gate.py": "247eb6b35b9f36745dcd1fa0149050ad021ebcd1",
+    "tools/tenant-vm/verify-atto-e2e.sh": "7140478fe1d3f2bd96612f179329cbdd8d6d1f2f"
+  }
+}
