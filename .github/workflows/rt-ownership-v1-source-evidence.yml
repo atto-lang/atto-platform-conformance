@@ -14,6 +14,7 @@ on:
       - 'tests/ownership-place-cfg-v1.test.mjs'
       - 'src/ownership-runner-provenance-v1.mjs'
       - 'tests/ownership-runner-provenance-v1.test.mjs'
+      - 'bin/verify-ownership-runner-v1.mjs'
       - '.github/workflows/rt-ownership-v1-source-evidence.yml'
   workflow_dispatch:
 
@@ -46,12 +47,16 @@ jobs:
             src/ownership-place-cfg-v1.mjs \
             tests/ownership-place-cfg-v1.test.mjs \
             src/ownership-runner-provenance-v1.mjs \
-            tests/ownership-runner-provenance-v1.test.mjs
+            tests/ownership-runner-provenance-v1.test.mjs \
+            bin/verify-ownership-runner-v1.mjs
       - name: Execute source-only receipt validation and adversarial tests
         shell: bash
         run: |
           set -euo pipefail
           node --version
+          node --check src/ownership-place-cfg-v1.mjs
+          node --check src/ownership-runner-provenance-v1.mjs
+          node --check bin/verify-ownership-runner-v1.mjs
           node --test --test-reporter=tap \
             tests/rt-ownership-admission-v1.test.mjs | tee /tmp/atto-ownership-receipt-tests.tap
           grep -Eq '^# tests 10$' /tmp/atto-ownership-receipt-tests.tap
