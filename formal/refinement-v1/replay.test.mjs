@@ -14,9 +14,12 @@ const critical=()=>E('critical-generation',[
  {op:'stale_permit_denied',actor:'a',gen:2,permitGen:1,task:'one'}
 ]);
 const panic=()=>E('panic-control',[
- {op:'deliver_data',actor:'a',gen:1},
+ {op:'data_enqueue',actor:'a',gen:1,message:'before'},
+ {op:'deliver_data',actor:'a',gen:1,message:'before'},
+ {op:'data_enqueue',actor:'a',gen:1,message:'queued'},
  {op:'panic',actor:'a',gen:1},
- {op:'control_notice',actor:'a',gen:1}
+ {op:'control_notice',actor:'a',gen:1},
+ {op:'discard_data',actor:'a',gen:1,message:'queued'}
 ]);
 const pubsub=()=>E('reliable-pubsub',[
  {op:'join',sub:'s',gen:1},
@@ -61,7 +64,7 @@ const tests = [
  ['exclusive writer overlap',()=>{const x=critical();op(x,'critical_enter',1).mode='write';return x;}],
  ['suspend under held permit',()=>{const x=critical();op(x,'critical_exit',0).op='suspend';return x;}],
  ['skipped actor generation',()=>{const x=critical();op(x,'stale_permit_denied').permitGen=3;return x;}],
- ['data delivery after panic',()=>{const x=panic();x.events.push({op:'deliver_data',actor:'a',gen:1});return x;}],
+ ['data delivery after panic',()=>{const x=panic();x.events.push({op:'deliver_data',actor:'a',gen:1,message:'queued'});return x;}],
  ['missing supervisor notice',()=>{const x=panic();dropOp(x,'control_notice');return x;}],
  ['early acknowledgement under backpressure',()=>{const x=pubsub();op(x,'ack',0).publisher='p1';return x;}],
  ['delivery of cancelled pending publisher',()=>{const x=pubsub();op(x,'deliver',0).publisher='p1';return x;}],
@@ -158,4 +161,54 @@ test('rejects a second ACK after an explicitly discarded queued publication',()=
  x.events.splice(i,0,{op:'discard_queued',sub:'s',gen:1,publisher:'p0',sequence:1,reason:'leave'},
   {op:'ack',sub:'s',gen:1,publisher:'p0',sequence:1});
  denied(x,/discard must immediately precede/);
+});
+
+
+// CONTROL queue-accounting hardening. Delivery/discard must consume an
+// issued FIFO message; panic cannot erase queued work without a receipt.
+const controlQueueMutants = [
+ ['orphan DATA delivery with no enqueue',()=>{const x=panic();dropOp(x,'data_enqueue',0);return x;}],
+ ['fabricated DATA discard identity',()=>{const x=panic();op(x,'discard_data').message='forged';return x;}],
+ ['DATA discarded before supervisor CONTROL notice',()=>{const x=panic();const d=x.events.pop();x.events.splice(4,0,d);return x;}],
+ ['unaccounted queued DATA at trace end',()=>{const x=panic();dropOp(x,'discard_data');return x;}],
+ ['duplicate queue identity',()=>{const x=panic();op(x,'data_enqueue',1).message='before';return x;}],
+ ['enqueue after actor panic',()=>{const x=panic();x.events.splice(4,0,{op:'data_enqueue',actor:'a',gen:1,message:'late'});return x;}],
+ ['delivery out of FIFO queue order',()=>{const x=panic();op(x,'deliver_data').message='queued';return x;}],
+ ['too many queued DATA messages',()=>{const x=panic();const i=x.events.findIndex(e=>e.op==='panic');x.events.splice(i,0,
+  {op:'data_enqueue',actor:'a',gen:1,message:'more'},
+  {op:'data_enqueue',actor:'a',gen:1,message:'overflow'});return x;}],
+ ['duplicate CONTROL notice after panic',()=>{const x=panic();const i=x.events.findIndex(e=>e.op==='control_notice');x.events.splice(i+1,0,{...x.events[i]});return x;}],
+ ['DATA discard while actor is still alive',()=>{const x=panic();const i=x.events.findIndex(e=>e.op==='panic');x.events.splice(i,0,{op:'discard_data',actor:'a',gen:1,message:'queued'});return x;}],
+ ['DATA discard from unknown actor',()=>{const x=panic();op(x,'discard_data').actor='other';return x;}],
+ ['DATA event missing identity',()=>{const x=panic();delete op(x,'deliver_data').message;return x;}],
+ ['DATA event with invalid identity',()=>{const x=panic();op(x,'data_enqueue').message='';return x;}],
+ ['CONTROL notice with no panic',()=>{const x=panic();dropOp(x,'panic');return x;}],
+ ['panic CONTROL trace with no queued DATA witness',()=>E('panic-control',[
+  {op:'panic',actor:'a',gen:1},{op:'control_notice',actor:'a',gen:1}])]
+];
+for(const [name,build] of controlQueueMutants){
+ test('rejects CONTROL queue mutant: '+name,()=>denied(build()));
+}
+test('accepts two queued DATA messages discarded FIFO after notice',()=>{
+ const x=panic();
+ const i=x.events.findIndex(e=>e.op==='panic');
+ x.events.splice(i,0,{op:'data_enqueue',actor:'a',gen:1,message:'second'});
+ x.events.push({op:'discard_data',actor:'a',gen:1,message:'second'});
+ assert.equal(replayDesignTrace(x).traceShapeValid,true);
+});
+test('accepts queued DATA with a delivery before panic and later discard',()=>{
+ const x=panic();
+ const i=x.events.findIndex(e=>e.op==='panic');
+ x.events.splice(i,0,{op:'data_enqueue',actor:'a',gen:1,message:'second'},
+  {op:'deliver_data',actor:'a',gen:1,message:'queued'});
+ op(x,'discard_data').message='second';
+ assert.equal(replayDesignTrace(x).traceShapeValid,true);
+});
+test('CONTROL replay result cannot authenticate compiler or guest',()=>{
+ const result=replayDesignTrace(panic());
+ assert.equal(result.classification,'DESIGN_TRACE_SHAPE_ONLY');
+ assert.equal(result.compiledGuestAuthenticated,false);
+ assert.equal(result.runtimeAuthenticated,false);
+ assert.equal(result.fiveBackendParity,false);
+ assert.equal(result.mergerReady,false);
 });

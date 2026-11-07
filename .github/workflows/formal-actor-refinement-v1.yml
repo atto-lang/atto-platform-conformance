@@ -26,4 +26,4 @@ jobs:
       - name: Check candidate fixture evidence ledger
         run: node formal/refinement-v1/check-manifest.mjs
       - name: Bounded trace shape and negative mutations ONLY
-        run: node --test formal/refinement-v1/replay.test.mjs formal/refinement-v1/manifest.test.mjs
+        run: node --test formal/refinement-v1/replay.test.mjs formal/refinement-v1/manifest.test.mjs formal/refinement-v1/guest-trace-intake.test.mjs

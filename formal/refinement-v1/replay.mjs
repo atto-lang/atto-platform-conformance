@@ -10,9 +10,11 @@ const OP_FIELDS = Object.freeze({
   retire: ['actor','gen'],
   restart: ['actor','gen'],
   stale_permit_denied: ['actor','gen','permitGen','task'],
+  data_enqueue: ['actor','gen','message'],
   panic: ['actor','gen'],
   control_notice: ['actor','gen'],
-  deliver_data: ['actor','gen'],
+  deliver_data: ['actor','gen','message'],
+  discard_data: ['actor','gen','message'],
   join: ['sub','gen'],
   leave: ['sub','gen'],
   publish_request: ['sub','gen','publisher','sequence'],
@@ -39,7 +41,7 @@ function checkShape(e) {
   require(object(e), 'event must be plain object');
   require(typeof e.op === 'string' && Object.hasOwn(OP_FIELDS,e.op), 'unknown operation');
   exactDataProperties(e, ['op', ...OP_FIELDS[e.op]], 'missing, extra or accessor event fields');
-  for (const k of ['actor','task','sub','publisher']) {
+  for (const k of ['actor','task','sub','publisher','message']) {
     if (Object.hasOwn(e,k)) require(typeof e[k] === 'string' && IDENT.test(e[k]), 'invalid '+k);
   }
   for (const k of ['gen','permitGen','sequence']) {
@@ -55,7 +57,8 @@ export function replayDesignTrace(envelope) {
     Array.isArray(envelope.events) && envelope.events.length >= 2 && envelope.events.length <= 128,
     'invalid bounded trace envelope');
   const actor = {id:null,generation:1,alive:true,held:new Map(),suspended:new Set(),
-    tasks:new Set(),permitsIssued:new Map(),panic:false,notice:false};
+    tasks:new Set(),permitsIssued:new Map(),panic:false,notice:false,
+    dataQueue:[],dataIds:new Set(),dataDelivered:new Set(),dataDropped:new Set()};
   const sub = {id:null,generation:0,joined:false,closed:false,queue:[],requested:new Set(),
     pending:new Set(),cancelled:new Set(),acked:new Set(),delivered:new Map(),
     admittedSequence:new Map(),nextIssued:new Map(),publishers:new Set(),
@@ -138,13 +141,14 @@ export function replayDesignTrace(envelope) {
       }
     } else {
       require(['critical_enter','critical_exit','suspend','resume','retire','restart',
-        'stale_permit_denied','panic','control_notice','deliver_data'].includes(e.op),
+        'stale_permit_denied','data_enqueue','panic','control_notice','deliver_data','discard_data'].includes(e.op),
         'cross-scenario operation');
       require(actor.id === null || actor.id === e.actor, 'cross-actor event');
       actor.id = e.actor;
       require(e.gen === actor.generation, 'actor generation mismatch');
       if (envelope.scenario === 'critical-generation') {
-        require(!['panic','control_notice','deliver_data'].includes(e.op), 'CONTROL operation in critical trace');
+        require(!['data_enqueue','panic','control_notice','deliver_data','discard_data'].includes(e.op),
+          'CONTROL operation in critical trace');
         if (Object.hasOwn(e,'task')) {
           actor.tasks.add(e.task);
           require(actor.tasks.size <= 2, 'critical task bound exceeded');
@@ -180,15 +184,29 @@ export function replayDesignTrace(envelope) {
             'stale denial lacks an actually issued old-generation permit');
         }
       } else {
-        require(['panic','control_notice','deliver_data'].includes(e.op), 'unexpected critical event in CONTROL trace');
-        if (e.op === 'panic') {
+        require(['data_enqueue','panic','control_notice','deliver_data','discard_data'].includes(e.op),
+          'unexpected critical event in CONTROL trace');
+        if (e.op === 'data_enqueue') {
+          require(actor.alive && !actor.panic && actor.dataQueue.length < 2 &&
+            !actor.dataIds.has(e.message), 'DATA enqueue after panic, at capacity or duplicate ID');
+          actor.dataIds.add(e.message);
+          actor.dataQueue.push(e.message);
+        } else if (e.op === 'panic') {
           require(actor.alive && !actor.panic, 'duplicate or dead panic');
           actor.panic=true; actor.alive=false;
         } else if (e.op === 'control_notice') {
           require(actor.panic && !actor.notice, 'notice without panic or duplicate');
           actor.notice=true;
         } else if (e.op === 'deliver_data') {
-          require(actor.alive && !actor.panic, 'data delivery after panic/CONTROL');
+          require(actor.alive && !actor.panic && actor.dataQueue[0] === e.message,
+            'DATA delivery without queued FIFO item or after panic/CONTROL');
+          actor.dataQueue.shift();
+          actor.dataDelivered.add(e.message);
+        } else if (e.op === 'discard_data') {
+          require(actor.panic && actor.notice && actor.dataQueue[0] === e.message,
+            'DATA discard before CONTROL notice or without queued FIFO item');
+          actor.dataQueue.shift();
+          actor.dataDropped.add(e.message);
         }
       }
     }
@@ -196,13 +214,16 @@ export function replayDesignTrace(envelope) {
   }
   const coverage = envelope.scenario === 'critical-generation' ?
     ['critical_enter','critical_exit','suspend','resume','retire','restart','stale_permit_denied'] :
-    envelope.scenario === 'panic-control' ? ['panic','control_notice'] :
+    envelope.scenario === 'panic-control' ?
+      ['data_enqueue','deliver_data','panic','control_notice','discard_data'] :
     ['join','publish_request','publish_admit','ack','deliver','leave','close_group'];
   require(coverage.every(op=>witnessed.has(op)), 'vacuous scenario lacks required lifecycle witnesses');
   if (envelope.scenario === 'critical-generation')
     require(actor.held.size === 0 && actor.suspended.size === 0, 'unterminated actor tasks');
   if (envelope.scenario === 'panic-control')
-    require(actor.panic && actor.notice, 'missing supervisor CONTROL notice');
+    require(actor.panic && actor.notice && actor.dataQueue.length === 0 &&
+      actor.dataDelivered.size + actor.dataDropped.size === actor.dataIds.size,
+      'missing CONTROL notice or unresolved queued DATA accounting');
   if (envelope.scenario === 'reliable-pubsub')
     require(sub.closed && sub.requested.size === 0 && sub.pending.size === 0 &&
       sub.queue.length === 0, 'unterminated reliable publication or open group');
