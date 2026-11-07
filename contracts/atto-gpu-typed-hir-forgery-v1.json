@@ -49,9 +49,10 @@
     "workflowRunId": 42333323638,
     "integratedSourceCapacityCasesAuthored": 22,
     "integratedSourceCapacityForgeryCasesAdded": 4,
-    "latestHeadBuildStatus": "PENDING_RUNNER_ADMISSION",
+    "latestHeadBuildStatus": "FAILED_RUNNER_ADMISSION",
     "latestHeadExecutedSteps": null,
-    "latestHeadWorkflowRunId": 42333884103
+    "latestHeadWorkflowRunId": 42333884103,
+    "latestHeadWorkflowConclusion": "failure"
   },
   "cases": [
     {
