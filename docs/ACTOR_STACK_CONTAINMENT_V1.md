@@ -245,3 +245,35 @@ lower typed compiler locals/program counters in an iterative interpreter,
 then prove source actor handler non-reentrancy, A-fails/B-survives,
 supervisor restart generation fencing and native low-stack process survival
 before any stack parity claim.
+
+## Java M3.1 automatic scalar SourceTask formal argument binding
+
+Draft [Java #2642](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2642)
+is stacked on #2638 and changes the actual Java `SourceTask` evaluator
+parameter-binding path. For supported all-primitive formal arguments up to
+six slots, the actor source task writes a typed image into its *already
+charged* 64-byte task lease and decodes the **actual values from actor-owned
+bytes** before calling `bindCallableArguments`. On each ordinary task
+resume it validates that the original typed arguments match the arena image
+before continuing. The frame region is compiler-owned and cannot be
+overwritten by an unrelated host snapshot. A foreign producer cannot read or
+mutate it. Unsupported objects/captures or wider arities **do not** become
+guest-pointer serializations; those calls retain an explicit JVM fallback.
+
+This is a **restricted automatic formal-parameter bridge**, not a generic
+source Env/lexical local lowering, not compiler-owned return PCs, not an
+iterative stackless evaluator, and not a separately switched native stack.
+Canonical guest actor fixture
+`source-task-typed-args-cooperate.atto` is authored with an expected output
+`before|42|second`, testing a suspending two-integer function and mailbox
+nonreentrancy. Three additional Java host JUnit methods check actor-frame
+binding across await, unsupported argument fallback and fail-stop mismatch
+with sibling survival. **All four tests are AUTHORED_NOT_EXECUTED**, until
+real exact-head Java/GraalVM JUnit/guest execution actually completes.
+
+The M3.1 conformance child adds two pending cases, now **29** scenarios,
+and forbids promoting a parser acceptance or a host-only source mirror to
+canonical compiler-backed .atto proof. All five backend evidence statuses
+remain NOT_EXECUTED. Missing `steps` or no runner admission is not a
+compiler failure. See the source PR's M3.1 document and tracking issue #341
+for outstanding true stackless guest/frame/supervisor/low-stack gates.
