@@ -5,6 +5,7 @@ on:
       - 'audit/atto-ownership-conformance-syntax-*'
       - 'audit/atto-ownership-proof-vs-shape-*'
       - 'audit/ownership-mir-place-flow-v1-*'
+      - 'audit/ownership-place-50case-conformance-*'
   pull_request:
     paths:
       - 'contracts/rt-ownership-admission-v1.json'
@@ -16,6 +17,7 @@ on:
       - 'tests/ownership-runner-provenance-v1.test.mjs'
       - 'bin/verify-ownership-runner-v1.mjs'
       - 'tests/ownership-runner-cli-v1.test.mjs'
+      - 'tests/ownership-place-50case-matrix-v1.test.mjs'
       - '.github/workflows/rt-ownership-v1-source-evidence.yml'
   workflow_dispatch:
 
@@ -50,7 +52,8 @@ jobs:
             src/ownership-runner-provenance-v1.mjs \
             tests/ownership-runner-provenance-v1.test.mjs \
             bin/verify-ownership-runner-v1.mjs \
-            tests/ownership-runner-cli-v1.test.mjs
+            tests/ownership-runner-cli-v1.test.mjs \
+            tests/ownership-place-50case-matrix-v1.test.mjs
       - name: Execute source-only receipt validation and adversarial tests
         shell: bash
         run: |
@@ -81,6 +84,12 @@ jobs:
           grep -Eq '^# tests 1$' /tmp/atto-runner-cli-v1.tap
           grep -Eq '^# pass 1$' /tmp/atto-runner-cli-v1.tap
           grep -Eq '^# fail 0$' /tmp/atto-runner-cli-v1.tap
+          node --test --test-reporter=tap \
+            tests/ownership-place-50case-matrix-v1.test.mjs | tee /tmp/atto-ownership-place-matrix-v1.tap
+          grep -Eq '^# tests 25$' /tmp/atto-ownership-place-matrix-v1.tap
+          grep -Eq '^# pass 25$' /tmp/atto-ownership-place-matrix-v1.tap
+          grep -Eq '^# fail 0$' /tmp/atto-ownership-place-matrix-v1.tap
+          echo "ATTO_OWNERSHIP_PLACE_MATRIX=HOST_REFERENCE_ONLY"
           echo "ATTO_OWNERSHIP_GUEST_VERIFICATION=NOT_EXECUTED"
           echo "ATTO_OWNERSHIP_RECEIPT_SHAPE=SOURCE_FREE_ONLY"
           echo "ATTO_OWNERSHIP_GUEST_PARITY=NOT_EXECUTED"
