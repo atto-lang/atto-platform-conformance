@@ -224,7 +224,7 @@ structured cleanup and actual suspended lexical source-task state.
 Managed actor byte frames do not create independent JVM native stacks,
 process-level isolation or FFI safety.
 
-Java #2640 authors seven scalar compiler/VM host JUnit methods, four
+Java #2640 authors seven scalar compiler/VM host JUnit methods, five
 actor-owned frame runtime JUnit methods and three genuine parser-backed
 `.atto` JUnit methods. The new canonical sources are:
 
