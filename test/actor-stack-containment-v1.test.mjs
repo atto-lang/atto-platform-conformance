@@ -48,10 +48,18 @@ function validatePending(matrix) {
   }
   assert.equal(matrix.requirements.nativeStackOverflowRecoverableOnSharedCarrier, false);
   assert.equal(matrix.requirements.untrustedArbitraryNativeCodeRequiresKillableWorker, true);
-  assert.ok(matrix.scenarios.length >= 24);
+  assert.ok(matrix.scenarios.length >= 30);
   assert.match(matrix.javaFrameArenaReference, /\/pull\/2627$/);
   const bootstrap = matrix.frameStorageBootstrap;
   assert.equal(bootstrap.javaHostPrimitive, 'MANAGED_BYTES_ONLY');
+  assert.match(bootstrap.javaIntegratedInvocationSourceTaskReference, /\/pull\/2637$/);
+  assert.equal(bootstrap.javaIntegratedSourceTaskInvocationStatus, 'AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaIntegratedSourceTaskHostTestsAuthored, 3);
+  assert.equal(bootstrap.javaIntegratedActorAttoFixturesCopied, 3);
+  assert.equal(bootstrap.javaIntegratedActorAttoCompilerReceipts, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaIntegratedActorNativeStackIsolation, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaQuiescenceCallbackBeforeFrameRetirement, true);
+  assert.equal(bootstrap.javaInvocationReusesSourceTaskExecutionId, true);
   assert.match(bootstrap.javaActorSourceTaskReference, /\/pull\/2631$/);
   assert.equal(bootstrap.javaActorSourceTaskFrameBytes, 64);
   assert.equal(bootstrap.javaActorSourceTaskHostTestsAuthored, 8);
@@ -106,10 +114,10 @@ test('five-backend stack containment contract stays explicitly unexecuted', asyn
 test('all authored AttoLang source fixtures exist and have distinct cases', async () => {
   const matrix = validatePending(await load());
   const sources = matrix.scenarios.filter(c => c.source);
-  assert.equal(sources.length, 4);
+  assert.equal(sources.length, 7);
   for (const scenario of sources) {
     const text = await readFile(new URL('../' + scenario.source, import.meta.url), 'utf8');
-    assert.match(text, /pub routine main\(\): void/);
+    assert.match(text, /pub (?:suspends )?routine main\(\): void/);
     assert.ok(text.length > 40);
   }
 });
@@ -237,6 +245,49 @@ test('source task host-frame leases cannot claim compiler-lowered guest resumes'
     assert.equal(scenario.source, null, 'no invented compiled .atto actor test result');
     assert.ok(scenario.requiredEvidence.includes('compilerGuest'));
     assert.ok(scenario.requiredEvidence.includes('suspendedFrameOwnership'));
+  }
+  assert.equal(original.promotion.certified, false);
+});
+
+test('integrated actor invocation and SourceTask proof cannot be self-certified', async () => {
+  const original = validatePending(await load());
+  const mutate = fn => { const modified = structuredClone(original); fn(modified); return modified; };
+  assert.throws(() => validatePending(mutate(m => {
+    m.frameStorageBootstrap.javaIntegratedActorAttoCompilerReceipts = 'PASS';
+  })));
+  assert.throws(() => validatePending(mutate(m => {
+    m.frameStorageBootstrap.javaIntegratedActorNativeStackIsolation = 'PASS';
+  })));
+  assert.throws(() => validatePending(mutate(m => {
+    m.frameStorageBootstrap.javaInvocationReusesSourceTaskExecutionId = false;
+  })));
+  assert.throws(() => validatePending(mutate(m => {
+    m.frameStorageBootstrap.javaQuiescenceCallbackBeforeFrameRetirement = false;
+  })));
+  assert.throws(() => validatePending(mutate(m => {
+    m.frameStorageBootstrap.javaIntegratedActorAttoFixturesCopied = 0;
+  })));
+  const authored = [
+    ['source-actor-non-tail-frames', '8'],
+    ['source-actor-tail-frames', '100000'],
+    ['source-actor-sibling-after-budget', 'starting|alive']
+  ];
+  for (const [name, stdout] of authored) {
+    const scenario = original.scenarios.find(s => s.id === name);
+    assert.ok(scenario);
+    assert.equal(scenario.expectedStdout, stdout);
+    assert.match(scenario.source, /^fixtures\/actor-stack-containment-v1\/.*\.atto$/);
+    assert.ok(scenario.requiredEvidence.includes('compilerGuest'));
+  }
+  for (const name of [
+    'source-task-invocation-same-execution-id',
+    'source-task-quiescence-callback-retains-frames',
+    'source-task-invocation-overflow-sibling-survival'
+  ]) {
+    const scenario = original.scenarios.find(s => s.id === name);
+    assert.ok(scenario);
+    assert.equal(scenario.source, null);
+    assert.equal(scenario.kind, 'pending-actor-acceptance');
   }
   assert.equal(original.promotion.certified, false);
 });
