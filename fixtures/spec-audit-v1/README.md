@@ -68,3 +68,55 @@ GitHub API job metadata, compiled guest artifact bytes, source-owner
 permissions or runner allocation. Do not use synthetic examples from tests
 as authenticity receipts; all five backend entries stay `NOT_EXECUTED`
 until independent compiler-backed evidence is available.
+
+## Java/LLVM source-local compiler probe and authenticated API metadata check
+
+First-wave adapters are intentionally **fail-closed** and **non-promoting**.
+`lib/spec-audit-compiler-adapter.mjs` invokes independently configured absolute
+compiler executables without a shell. It snapshots, hashes and isolates each
+`.atto` source; requires a nonempty compiled artifact, verifies a typed
+`int` result (process exit or clean integer stdout), compiles one-edit
+positive controls before negative cases, and rejects parser-only or
+wrong-diagnostic failures. It supports Java/GraalVM and LLVM as different
+configuration values, not as observed guest-success claims.
+
+Run with a **reviewed configuration stored outside the checkout**:
+`node bin/run-spec-audit-compiler.mjs --config=/absolute/reviewed-probe.json`
+
+The config schema is `atto.compiler-probe/1` with fields `backend`,
+`compilerHead`, `compilerTree`, `conformanceHead`, `conformanceTree`,
+`timeoutMs` (100..30000), `caseIds`, `resultChannel`
+(`process-exit` or `stdout`), `compileArgv` with exact standalone
+`{source}` and `{artifact}` tokens, and `runArgv` referencing
+`{artifact}`. Both commands require absolute paths except the compiled
+artifact when it is the run executable. There are **no automatic compiler
+paths**, no external source checkout, and no source-free fallback on missing
+compilers. The CLI verifies its current Git head/tree and clean raw worktree,
+then emits `LOCAL_UNAUTHENTICATED_COMPILER_PROBE` on successful local
+observation. That record cannot certify runner allocation or native parity.
+
+`lib/spec-audit-github-evidence.mjs` independently queries authenticated
+GitHub REST for compiler run, **attempt-scoped** jobs, compiler Git commit/tree,
+conformance Git commit/tree and fixture blob identities. It compares those
+responses against a reviewed workflow path/job name and an independently pinned
+compiler/conformance SHA pair. Foreign head repositories, duplicate jobs,
+truncated trees, unknown or empty steps, zero runner IDs and mismatched fixture
+hashes fail closed. Read-only API calls use `GITHUB_TOKEN`; no arbitrary URLs
+or redirects are accepted.
+
+`node bin/verify-spec-audit-github.mjs --receipt=/absolute/guest-claim.json --expect=/absolute/reviewed-pins.json`
+
+The independently prepared `reviewed-pins.json` must contain exactly
+`{"expected": {...}, "ciPins": {"workflowPath": "...", "jobName": "..."}}`.
+`expected` contains `backend`, both compiler SHA/tree pins, both
+conformance SHA/tree pins, `requiredCaseIds`, and `requiredSteps`.
+The script **exits 3 even when metadata matches** because the actual compiler
+binary, guest artifact bytes, diagnostic transcripts and independent review
+remain unverified. Exit 2 is invalid/unavailable evidence. Neither 0 nor 3
+means guest parity, and a source-free mocked test is never a GitHub CI receipt.
+
+The dedicated source-free CI checks 30 GitHub metadata-denial tests and 15
+mock-command adapter tests (plus previous candidate and receipt tests).
+Host-only execution or a fabricated JSON receipt cannot promote any backend
+from `NOT_EXECUTED`. The exact-head hosted workflow itself is blocked by
+runner admission until nonempty executed steps are available.

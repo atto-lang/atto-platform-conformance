@@ -9,6 +9,12 @@ on:
       - 'tests/spec-audit-candidate-v1.test.mjs'
       - 'tests/spec-audit-guest-evidence.test.mjs'
       - 'lib/spec-audit-guest-evidence.mjs'
+      - 'lib/spec-audit-github-evidence.mjs'
+      - 'lib/spec-audit-compiler-adapter.mjs'
+      - 'tests/spec-audit-github-evidence.test.mjs'
+      - 'tests/spec-audit-compiler-adapter.test.mjs'
+      - 'bin/verify-spec-audit-github.mjs'
+      - 'bin/run-spec-audit-compiler.mjs'
       - '.github/workflows/spec-audit-candidate-v1.yml'
   push:
     branches: [main]
@@ -19,6 +25,12 @@ on:
       - 'tests/spec-audit-candidate-v1.test.mjs'
       - 'tests/spec-audit-guest-evidence.test.mjs'
       - 'lib/spec-audit-guest-evidence.mjs'
+      - 'lib/spec-audit-github-evidence.mjs'
+      - 'lib/spec-audit-compiler-adapter.mjs'
+      - 'tests/spec-audit-github-evidence.test.mjs'
+      - 'tests/spec-audit-compiler-adapter.test.mjs'
+      - 'bin/verify-spec-audit-github.mjs'
+      - 'bin/run-spec-audit-compiler.mjs'
       - '.github/workflows/spec-audit-candidate-v1.yml'
 permissions:
   contents: read
@@ -74,6 +86,6 @@ jobs:
         with:
           node-version: '22'
       - name: Verify source-free fixtures, paired controls and receipt-denial mutations
-        run: node --test tests/spec-audit-candidate-v1.test.mjs tests/spec-audit-guest-evidence.test.mjs
+        run: node --test tests/spec-audit-candidate-v1.test.mjs tests/spec-audit-guest-evidence.test.mjs tests/spec-audit-github-evidence.test.mjs tests/spec-audit-compiler-adapter.test.mjs
       - name: Prevent evidence-tier confusion
         run: echo "SOURCE_FREE_CANDIDATE_INTEGRITY_ONLY=NOT_COMPILER_OR_GUEST_PARITY"
