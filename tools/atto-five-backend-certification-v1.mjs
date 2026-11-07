@@ -12,6 +12,14 @@ const TARGETS={
 const SHA=/^[a-f0-9]{40}$/;const HASH=/^[a-f0-9]{64}$/;const CONTRACT=/^[a-z][a-z0-9-]{1,79}$/;
 const ST=new Set(['NOT_EXECUTED','UNSUPPORTED','FAILED','REPORTED_PASS']);
 const obj=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
+const exactKeys=(o,keys)=>obj(o)&&Object.keys(o).length===keys.length&&
+  Object.keys(o).every(key=>keys.includes(key));
+const canonicalUTC=x=>{
+ if(typeof x!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(x))return false;
+ const ms=Date.parse(x);
+ return Number.isFinite(ms)&&new Date(ms).toISOString().replace('.000Z','Z')===x&&
+   ms<=Date.now()+300000;
+};
 const pos=x=>Number.isSafeInteger(x)&&x>0;
 const sha=x=>typeof x==='string'&&SHA.test(x);
 const hash=x=>typeof x==='string'&&HASH.test(x);
@@ -61,14 +69,21 @@ function status(e,kind,b,binary,contract){
  return 'REPORTED_PASS_UNVERIFIED';
 }
 export function validateCandidate(s){
- if(!obj(s)||s.schema_version!==1||s.scope!=='untrusted_offline_snapshot'||
-  typeof s.as_of!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(s.as_of)||
-  !Number.isFinite(Date.parse(s.as_of))||Date.parse(s.as_of)>Date.now()+300000||
-  !obj(s.postmerge_ledger)||s.postmerge_ledger.scope!=='untrusted_snapshot'||
+ if(!exactKeys(s,['schema_version','scope','as_of','evidence_note','postmerge_ledger',
+    'contracts','backends','negative_oracle'])||
+  s.schema_version!==1||s.scope!=='untrusted_offline_snapshot'||
+  !canonicalUTC(s.as_of)||
+  typeof s.evidence_note!=='string'||s.evidence_note.length===0||
+  s.evidence_note.length>4096||
+  !exactKeys(s.postmerge_ledger,['path','github_blob_sha','scope','reported_status'])||
+  s.postmerge_ledger.scope!=='untrusted_snapshot'||
+  !['BLOCKED','SNAPSHOT_READY_RECHECK_LIVE'].includes(s.postmerge_ledger.reported_status)||
   typeof s.postmerge_ledger.path!=='string'||
   !/^evidence\/[a-z0-9.-]+\.json$/.test(s.postmerge_ledger.path)||
   !sha(s.postmerge_ledger.github_blob_sha)||
-  !obj(s.negative_oracle)||!CONTRACT.test(s.negative_oracle.id)||
+  !exactKeys(s.negative_oracle,['id','proposal_pr','proposal_head','fixture_blob_sha',
+    'expected_diagnostic','expected_phase'])||
+  !CONTRACT.test(s.negative_oracle.id)||
   !pos(s.negative_oracle.proposal_pr)||!sha(s.negative_oracle.proposal_head)||
   !sha(s.negative_oracle.fixture_blob_sha)||
   !/^[A-Z][A-Z0-9_]{5,127}$/.test(s.negative_oracle.expected_diagnostic)||
