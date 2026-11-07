@@ -124,3 +124,39 @@ image/log preamble, log timestamp spoofing, cross-step injection,
 run/job chronology, URL path traversal, \`GH_HOST\` / proxy redirection,
 and missing credentials. These require real native Node execution
 before qualification; isolated V8 test passes are preliminary only.
+
+## Cross-endpoint evidence reconciliation and pinned source tree
+
+The independent GitHub API verifier additionally binds the historical
+source-repository numeric ID \`1413795502\`, organization owner ID
+\`336720831\`, and original immutable source **Git tree**
+\`20e4e66740aa03560ce5360f26ad8814a4de4688\` to exact commit
+\`3d5bdf454c65d87a915c5d23c2349522c80a958f\`. The live reader
+fetches \`GET /repos/ores-truffle-oreslang/oreslang-platform-conformance/commits/<head>\`
+from the same pinned GitHub.com host, and refuses an absent or mismatched
+commit/tree. This is **repository Git-tree provenance only**, not a
+runner checkout, artifact tree or compiler execution.
+
+The exact-attempt job-list response and independent job-detail response
+must agree on job identity, run ID, attempt, source head, status,
+conclusion, runner ID/name/group, requested labels, start/finish times,
+canonical API and browser URLs, and *every* step's name, number, status,
+conclusion and timestamps. A list reporting zero steps cannot be paired
+with a synthetic four-step success detail. Both original and head
+repositories must match the pinned GitHub repository and owner IDs,
+preventing same-name repository re-creation from satisfying the proof.
+
+The \`run_started_at\` timestamp must fall within the run lifetime and
+the job must begin no earlier than that specific attempt (allowing
+one second for GitHub API timestamp rounding). Existing strict Gregorian
+date checks apply. A success receipt explicitly distinguishes
+\`sourceCommitTreeResolved=true\` from
+\`runnerCheckoutTreeVerified=false\`, while
+\`guestTestsExecuted=false\` and \`backendParity=NOT_EXECUTED\`
+are always retained.
+
+New adversarial tests mutate Git tree/SHA/commit URL, repository/owner
+numeric IDs, the attempt start, job-list versus job-detail status,
+runner and step fields, canonical job URLs, plus the additional
+immutable-commit read-only API route. These tests run source-only and
+cannot provide a real private GitHub-hosted runner admission result.
