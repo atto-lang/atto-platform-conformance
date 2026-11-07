@@ -208,3 +208,40 @@ contract to **20** scenarios and prohibits upgrading any backend's
 `actorStackStorage`, `compilerGuest` or process-survival evidence without
 the actual canonical `.atto` and low-native-stack receipts. This is
 not five-backend parity and must not be merged as a certification.
+
+## Java M3 SourceTask scalar snapshot integration (2026-11-07)
+
+New stacked draft [Java #2638](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2638)
+semantically merges typed invocation-frame draft #2630 with actor source task
+lease draft #2631. Both feed one per-incarnation actor-frame arena and ID
+allocator. Nested scalar invocation frames still reserve one charged
+`max(32,16 + 9 * argumentCount)` frame; the source task holds a separate
+64-byte lease across `Await` and `Cooperate`. These share the quota,
+rather than allocating a second invocation descriptor frame.
+
+The **new bridge** can explicitly save up to six pointer-free typed scalars
+in the precharged task lease, then restore them after authenticated resume.
+A four-byte length header plus 9-byte typed slots fit within that lease;
+overwrites clear stale bytes, unsupported references and larger state are
+rejected before storing, and cancellation/restart retain existing generation
+and physical-quiescence fences. Producer threads cannot use a waiting
+task's storage capability. This is trusted host/runtime ABI only and does
+not automatically lower source `.atto` local variables, objects,
+continuation return PCs or recursive evaluator frames.
+
+Five additional host/runtime JUnit methods are **authored, NOT_EXECUTED**:
+mixed synchronous/task quota and non-aliasing across await, independent
+suspended task charges, cancellation after scalar invocation, explicit
+scalar snapshot across await with foreign-caller denial, and incompatible
+reference/oversized state rejected before `cooperate`. No exact-head
+nonzero-step Maven/JUnit result, canonical guest actor receive
+non-reentrancy or native low-stack process survival receipt has been
+verified. The two pending M3 scenarios bring the contract to **27** cases.
+Every backend's `compilerGuest`, `suspendedFrameOwnership`,
+`actorStackStorage` and supervisor/native evidence stays `NOT_EXECUTED`.
+
+Next: actually run the integrated Java branch at its exact head and tree,
+lower typed compiler locals/program counters in an iterative interpreter,
+then prove source actor handler non-reentrancy, A-fails/B-survives,
+supervisor restart generation fencing and native low-stack process survival
+before any stack parity claim.
