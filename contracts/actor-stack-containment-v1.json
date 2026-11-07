@@ -393,6 +393,50 @@
         "actorStackGeneration",
         "actorSurvival"
       ]
+    },
+    {
+      "id": "actor-source-mutable-lexical-scalar-across-two-cooperates",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-source-lexical-shadowed-scope-isolation",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-source-lexical-type-tag-corruption-fail-stop",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-generation-poison",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-return-pc-record-not-yet-dispatch-lowered",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
     }
   ],
   "promotion": {
@@ -478,6 +522,24 @@
     "javaCompilerReturnPcLowered": false,
     "javaCompilerStacklessEvaluator": false,
     "javaCompilerSourceMailboxNonReentrancy": "NOT_EXECUTED",
-    "javaCompilerParameterBridgeNote": "Java #2642 authors automatic scalar formal-parameter binding from actor-owned SourceTask bytes and validation on resumed SourceTask dispatch. The actual .atto actor fixture, full lexical local/operand/return PC lowering, and low-native-stack proof remain NOT_EXECUTED."
+    "javaCompilerParameterBridgeNote": "Java #2642 authors automatic scalar formal-parameter binding from actor-owned SourceTask bytes and validation on resumed SourceTask dispatch. The actual .atto actor fixture, full lexical local/operand/return PC lowering, and low-native-stack proof remain NOT_EXECUTED.",
+    "javaCompilerLexicalFrameReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2643",
+    "javaCompilerLexicalStatus": "AUTHORED_NOT_EXECUTED",
+    "javaCompilerLexicalFrameBytes": 64,
+    "javaCompilerLexicalSharedScalarSlots": 6,
+    "javaCompilerLexicalHostJUnitAuthored": 6,
+    "javaCompilerLexicalAttoJUnitAuthored": 1,
+    "javaCompilerLexicalGuestExecution": "NOT_EXECUTED",
+    "javaCompilerLexicalReadsFromActorBytes": true,
+    "javaCompilerLexicalJvmShadowStillPresent": true,
+    "javaCompilerLexicalReferenceRootsLowered": false,
+    "javaCompilerLexicalFrameScopeReclaim": false,
+    "javaCompilerReturnRecordReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2643",
+    "javaCompilerReturnRecordHostJUnitAuthored": 4,
+    "javaCompilerReturnRecordBytes": 48,
+    "javaCompilerReturnRecordAbiStatus": "HOST_ABI_AUTHORED_NOT_EXECUTED",
+    "javaCompilerReturnRecordUsedByGuestDispatcher": false,
+    "javaCompilerNativeActorStackFaultSurvival": "NOT_EXECUTED",
+    "javaM32Note": "Java #2643 changes actual SourceTask Env scalar local load/store to actor-owned bytes, preserving JVM shadow and fallback after bounded six slots; 48-byte call/return record is ABI-only, NOT used by a guest iterative dispatcher. 10 host JUnit + one canonical .atto actor fixture/test AUTHORED_NOT_EXECUTED."
   }
 }
