@@ -349,6 +349,28 @@
         "actorStackStorage",
         "actorSurvival"
       ]
+    },
+    {
+      "id": "actor-source-task-typed-scalars-retained-across-await",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-source-task-typed-state-reference-or-oversize-denied",
+      "source": null,
+      "kind": "pending-isolation",
+      "expectedFailureClass": "unsupported-actor-task-state",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackGeneration"
+      ]
     }
   ],
   "promotion": {
@@ -406,6 +428,20 @@
     "javaTypedScalarReturnContinuationsLowered": false,
     "javaTypedScalarTaskContinuationLowered": false,
     "javaTypedScalarIndependentNativeStacks": false,
-    "javaTypedScalarNote": "Java #2630 binds recognized primitive wrapper guest call arguments from actor-owned managed bytes, but only for synchronous calls. All object roots, return PCs, expression recursion and SourceTask suspended state remain on the JVM. The 7 host and 1 legacy compiler tests are authored, NOT_EXECUTED."
+    "javaTypedScalarNote": "Java #2630 binds recognized primitive wrapper guest call arguments from actor-owned managed bytes, but only for synchronous calls. All object roots, return PCs, expression recursion and SourceTask suspended state remain on the JVM. The 7 host and 1 legacy compiler tests are authored, NOT_EXECUTED.",
+    "javaSourceTaskScalarIntegrationReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2638",
+    "javaSourceTaskScalarStatus": "HOST_RUNTIME_AUTHORED_NOT_EXECUTED",
+    "javaSourceTaskScalarMaxValues": 6,
+    "javaSourceTaskScalarTagBytes": 9,
+    "javaSourceTaskScalarFrameBytes": 64,
+    "javaSourceTaskScalarHeaderBytes": 4,
+    "javaSourceTaskScalarIntegrationJUnitMethodsAuthored": 5,
+    "javaSourceTaskScalarAutoCompilerLowering": false,
+    "javaSourceTaskScalarTaskIdentityIsGenerationFenced": true,
+    "javaSourceTaskScalarRetainedAcrossSuspend": "AUTHORED_HOST_MODEL_NOT_EXECUTED",
+    "javaSourceTaskScalarCompiledAttoActorExecution": "NOT_EXECUTED",
+    "javaSourceTaskScalarSourceMailboxNonReentrancy": "NOT_EXECUTED",
+    "javaSourceTaskScalarNativeStackIsolation": "NOT_EXECUTED",
+    "javaSourceTaskScalarNote": "Java #2638 merges #2630 typed synchronous invocation frames and #2631 actor SourceTask frame leases; a manually saved primitive-only snapshot occupies the existing 64-byte task lease across await/cooperate, but there is no automatic compiler-local/return-PC lowering. Five new host/runtime JUnit methods are authored, not executed."
   }
 }
