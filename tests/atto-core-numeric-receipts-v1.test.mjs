@@ -3,12 +3,12 @@ import assert from "node:assert/strict";
 import {createHash} from "node:crypto";
 import {verifyAttoNumericArtifactBundleV1,qualifyAttoNumericRunV1} from "../lib/atto-core-numeric-receipts-v1.mjs";
 const sha=b=>createHash("sha256").update(b).digest("hex");
-const blob=b=>createHash("sha1").update(Buffer.from("blob "+b.length+"\\0")).update(b).digest("hex");
-const graph=(path,entry,num)=>sha(Buffer.from(path+"\\0"+sha(entry)+"\\n@atto.core/numeric.atto\\0"+sha(num)+"\\n"));
+const blob=b=>createHash("sha1").update(Buffer.from("blob "+b.length+"\0")).update(b).digest("hex");
+const graph=(path,entry,num)=>sha(Buffer.from(path+"\0"+sha(entry)+"\n@atto.core/numeric.atto\0"+sha(num)+"\n"));
 function specimen(){
- const numeric=Buffer.from("define module numeric as pub fnc clamp_int(int x,int l,int u):int{return x;} end\\n");
- const base=Buffer.from("import module numeric from \\"atto.core/numeric\\"; pub fnc main():int{return numeric.clamp_int(50,0,42);}");
- const mutated=Buffer.from("import module numeric from \\"atto.core/numeric\\"; pub fnc main():int{return numeric.clamp_int(50,0,43);}");
+ const numeric=Buffer.from("define module numeric as pub fnc clamp_int(int x,int l,int u):int{return x;} end\n");
+ const base=Buffer.from("import module numeric from \"atto.core/numeric\"; pub fnc main():int{return numeric.clamp_int(50,0,42);}");
+ const mutated=Buffer.from("import module numeric from \"atto.core/numeric\"; pub fnc main():int{return numeric.clamp_int(50,0,43);}");
  const compiler=Buffer.from("synthetic-data-not-the-real-compiler");
  const expected={head:"a".repeat(40),tree:"b".repeat(40),rid:"linux-x64",
   runId:423999999,runAttempt:2,sourceBlobs:{numeric:blob(numeric),base:blob(base),mutated:blob(mutated)}};
