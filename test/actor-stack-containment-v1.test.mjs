@@ -48,7 +48,7 @@ function validatePending(matrix) {
   }
   assert.equal(matrix.requirements.nativeStackOverflowRecoverableOnSharedCarrier, false);
   assert.equal(matrix.requirements.untrustedArbitraryNativeCodeRequiresKillableWorker, true);
-  assert.ok(matrix.scenarios.length >= 27);
+  assert.ok(matrix.scenarios.length >= 29);
   assert.match(matrix.javaFrameArenaReference, /\/pull\/2627$/);
   const bootstrap = matrix.frameStorageBootstrap;
   assert.equal(bootstrap.javaHostPrimitive, 'MANAGED_BYTES_ONLY');
@@ -98,6 +98,19 @@ function validatePending(matrix) {
   assert.equal(bootstrap.javaSourceTaskScalarCompiledAttoActorExecution, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaSourceTaskScalarSourceMailboxNonReentrancy, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaSourceTaskScalarNativeStackIsolation, 'NOT_EXECUTED');
+  assert.match(bootstrap.javaCompilerScalarParameterReference, /\/pull\/2642$/);
+  assert.equal(bootstrap.javaCompilerScalarParameterStatus, 'AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaCompilerScalarParameterGuestExecution, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaCompilerScalarParameterHostTestsAuthored, 3);
+  assert.equal(bootstrap.javaCompilerScalarParameterAttoTestsAuthored, 1);
+  assert.equal(bootstrap.javaCompilerScalarParameterMaxValues, 6);
+  assert.equal(bootstrap.javaCompilerScalarParameterFromActorBytes, true);
+  assert.equal(bootstrap.javaCompilerScalarParameterResumeIntegrity, 'AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaCompilerScalarParameterFrameBytes, 64);
+  assert.equal(bootstrap.javaCompilerMutableLocalsLowered, false);
+  assert.equal(bootstrap.javaCompilerReturnPcLowered, false);
+  assert.equal(bootstrap.javaCompilerStacklessEvaluator, false);
+  assert.equal(bootstrap.javaCompilerSourceMailboxNonReentrancy, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaAuthoredLegacyCompilerGuestTests, 1);
   assert.equal(bootstrap.javaLegacyCompilerGuestTestExecuted, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaGuardedInvocationByteFrames,
@@ -183,6 +196,14 @@ test('fake pass, duplicate backend, deleted proof and false promotion are reject
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaSourceTaskScalarMaxValues = 999;})));
   assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaSourceTaskScalarIntegrationReference;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaSourceTaskScalarRetainedAcrossSuspend = 'VERIFIED';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerScalarParameterStatus = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerScalarParameterGuestExecution = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerScalarParameterMaxValues = 999;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerMutableLocalsLowered = true;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerReturnPcLowered = true;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerStacklessEvaluator = true;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerSourceMailboxNonReentrancy = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaCompilerScalarParameterReference;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaGuardFrameNotDuplicated = false;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaInvocationDescriptorBytes = 32;})));
 });
@@ -321,5 +342,30 @@ test('M3 merged SourceTask scalar snapshot remains pending real compiler and mai
     assert.equal(backend.suspendedFrameOwnership, 'NOT_EXECUTED');
     assert.equal(backend.actorStackStorage, 'NOT_EXECUTED');
   }
+  assert.equal(manifest.promotion.certified, false);
+});
+
+test('M3.1 SourceTask compiler scalar formal arguments require actual .atto evidence', async () => {
+  const manifest = validatePending(await load());
+  const names = [
+    'source-task-scalar-parameters-bound-from-actor-bytes',
+    'source-task-scalar-parameter-corruption-fail-stop'
+  ];
+  for (const name of names) {
+    const scenario = manifest.scenarios.find(item => item.id === name);
+    assert.ok(scenario, 'missing scalar argument conformance case: ' + name);
+    assert.equal(scenario.source, null,
+      'authored separate Java compiler fixture is not an executed source receipt');
+    assert.ok(scenario.requiredEvidence.includes('compilerGuest'));
+    assert.ok(scenario.requiredEvidence.includes('actorStackStorage')
+      || scenario.requiredEvidence.includes('actorStackGeneration'));
+  }
+  for (const backend of manifest.backends) {
+    assert.equal(backend.compilerGuest, 'NOT_EXECUTED');
+    assert.equal(backend.actorStackStorage, 'NOT_EXECUTED');
+  }
+  assert.equal(manifest.frameStorageBootstrap.javaCompilerScalarParameterStatus,
+    'AUTHORED_NOT_EXECUTED');
+  assert.equal(manifest.frameStorageBootstrap.javaCompilerStacklessEvaluator, false);
   assert.equal(manifest.promotion.certified, false);
 });
