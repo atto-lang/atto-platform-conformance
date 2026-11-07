@@ -64,3 +64,25 @@ authenticate device buffers. Source-org GitHub Actions still reports
 `steps=null`, and the Java repository is private: cross-org source
 mirroring is held pending independent authorization. A successful
 source/host join cannot authorize physical GPU enqueue or CPU fallback.
+
+## G1e host formal declaration source ABI (not compiled proof)
+
+Draft Java integration [#2610](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2610)
+now adds `GpuKernelTypedSourceArgsV1` and a declaration-only
+`GpuKernelSourceCapacityJoinV1.auditTypedSource` path. The source
+checker matches kernel parameter types against **explicitly declared
+host function parameter** types, rejects mismatches, unresolved
+lexical argument names, unsupported element types and reuse of
+writable source buffers. The implementation has 13 new authored JUnit
+cases, but source-organization GitHub runner jobs still report
+`steps=null`. The [eight-case G1e source corpus](../contracts/atto-gpu-typed-host-args-v1.json)
+records only proposed diagnostic fixtures and exact Git blob hashes.
+
+Host declarations are not compiler-issued typed symbol resolutions,
+even though the source checks compare their spellings. This stage
+does not validate local aliases, capturing closures, true ownership
+loans, tenant/device allocation identity, runtime values of n or
+queue generation. A successful source-only report cannot authorize
+a kernel, CPU fallback or physical GPU work. Require executed
+exact-head compiler/JUnit tests and independently verified provider
+receipts before promotion.

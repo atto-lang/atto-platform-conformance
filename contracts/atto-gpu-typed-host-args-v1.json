@@ -1,0 +1,138 @@
+{
+  "schema": "attolang.gpu-typed-host-args-source/1",
+  "contract": "oreslang-common-source/contracts/v1/gpu-explicit-launch-v1.json",
+  "javaIntegrationPr": 2610,
+  "javaSourceHead": "ccb85fe1bf9303d1d714a5b350500a9fda46af6d",
+  "javaSourceTree": "995214d81d884bb2c20666f65b8271eda67c808c",
+  "stage": "G1e_SOURCE_DECLARATION_ABI_SHAPE_ONLY",
+  "evidence": "DECLARED_HOST_ABI_SHAPE_ONLY_NOT_EXECUTABLE",
+  "sourceKernelTypeMatchesHostFormalType": true,
+  "acceptsOnlyExplicitHostFormals": true,
+  "mutableOrStructuralHostFormalsEnabled": false,
+  "unresolvedNamesEnabled": false,
+  "implicitNumericConversionsEnabled": false,
+  "writableLexicalBufferAliasingEnabled": false,
+  "compilerTypeCheckerSymbolsResolved": false,
+  "sourceMutableBorrowProof": false,
+  "physicalProviderViewsAuthenticated": false,
+  "gpuDispatchEnabled": false,
+  "implicitCpuFallback": false,
+  "ci": {
+    "javaJunit": "NOT_EXECUTED",
+    "head": "ccb85fe1bf9303d1d714a5b350500a9fda46af6d",
+    "runId": 42327750172,
+    "steps": null,
+    "reason": "RUNNER_ADMISSION_FAILURE"
+  },
+  "backends": {
+    "java": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "llvm": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "net": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "wasm": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "forge": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "cranelift": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "js": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    }
+  },
+  "cases": [
+    {
+      "id": "typed-host-saxpy",
+      "path": "fixtures/gpu-typed-host-args-v1/positive-typed-host-saxpy.atto",
+      "gitBlobSha": "6a98936b185233ef843e0c8b7f8118d4b790edb5",
+      "expectation": "positive",
+      "expectedDiagnostic": null,
+      "sourcePattern": "pub fnc submit(f32 alpha",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "wrong-source-read-capability",
+      "path": "fixtures/gpu-typed-host-args-v1/negative-wrong-source-read-capability.atto",
+      "gitBlobSha": "f19fc12e1c0072a3c18df131597d6ef1754751ea",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-LAUNCH-002",
+      "sourcePattern": "GpuWriteBuffer<f32> x",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "wrong-source-write-capability",
+      "path": "fixtures/gpu-typed-host-args-v1/negative-wrong-source-write-capability.atto",
+      "gitBlobSha": "6928b0e9875c39258300b4eaca23903c9356f2cc",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-LAUNCH-002",
+      "sourcePattern": "GpuReadBuffer<f32> out",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "wrong-buffer-element-type",
+      "path": "fixtures/gpu-typed-host-args-v1/negative-wrong-buffer-element-type.atto",
+      "gitBlobSha": "2d58dc728dbea3948af0bc1b50faa30385fdcf53",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-LAUNCH-002",
+      "sourcePattern": "GpuReadBuffer<i64> x",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "unsupported-host-scalar",
+      "path": "fixtures/gpu-typed-host-args-v1/negative-unsupported-host-scalar.atto",
+      "gitBlobSha": "bff9b4712a88d016a4856bb2090fe12c84101998",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-LAUNCH-002",
+      "sourcePattern": "f64 alpha",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "unresolved-host-name",
+      "path": "fixtures/gpu-typed-host-args-v1/negative-unresolved-host-name.atto",
+      "gitBlobSha": "a943ac7cf36d894c70da71b6158a9c07e76916da",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-LAUNCH-002",
+      "sourcePattern": "saxpy(alpha, unknown",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "mismatched-canonical-n-type",
+      "path": "fixtures/gpu-typed-host-args-v1/negative-mismatched-canonical-n-type.atto",
+      "gitBlobSha": "b3df18672f2fd029c1d134aacdfefe651ec63288",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-LAUNCH-002",
+      "sourcePattern": "bool n): void",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "writable-source-alias",
+      "path": "fixtures/gpu-typed-host-args-v1/negative-writable-source-alias.atto",
+      "gitBlobSha": "eb1a1cca39affa57af5fcd061d1438e2a38c26f1",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-LAUNCH-002",
+      "sourcePattern": "two(out, out, n)",
+      "observedResult": "NOT_EXECUTED"
+    }
+  ]
+}
