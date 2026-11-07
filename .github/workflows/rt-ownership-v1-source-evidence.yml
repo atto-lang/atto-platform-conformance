@@ -7,6 +7,7 @@ on:
       - 'audit/ownership-mir-place-flow-v1-*'
       - 'audit/ownership-place-50case-conformance-*'
       - 'audit/ownership-root-disjoint-proof-*'
+      - 'audit/ownership-mir-origin-bridge-*'
   pull_request:
     paths:
       - 'contracts/rt-ownership-admission-v1.json'
@@ -20,6 +21,8 @@ on:
       - 'tests/ownership-runner-cli-v1.test.mjs'
       - 'tests/ownership-place-50case-matrix-v1.test.mjs'
       - 'tests/ownership-root-provenance-v1.test.mjs'
+      - 'src/ownership-compiler-origin-bridge-v1.mjs'
+      - 'tests/ownership-compiler-origin-bridge-v1.test.mjs'
       - '.github/workflows/rt-ownership-v1-source-evidence.yml'
   workflow_dispatch:
 
@@ -56,7 +59,9 @@ jobs:
             bin/verify-ownership-runner-v1.mjs \
             tests/ownership-runner-cli-v1.test.mjs \
             tests/ownership-place-50case-matrix-v1.test.mjs \
-            tests/ownership-root-provenance-v1.test.mjs
+            tests/ownership-root-provenance-v1.test.mjs \
+            src/ownership-compiler-origin-bridge-v1.mjs \
+            tests/ownership-compiler-origin-bridge-v1.test.mjs
       - name: Execute source-only receipt validation and adversarial tests
         shell: bash
         run: |
@@ -97,6 +102,12 @@ jobs:
           grep -Eq '^# tests 23$' /tmp/atto-ownership-root-v1.tap
           grep -Eq '^# pass 23$' /tmp/atto-ownership-root-v1.tap
           grep -Eq '^# fail 0$' /tmp/atto-ownership-root-v1.tap
+          node --test --test-reporter=tap \
+            tests/ownership-compiler-origin-bridge-v1.test.mjs | tee /tmp/atto-ownership-origin-bridge-v1.tap
+          grep -Eq '^# tests 25$' /tmp/atto-ownership-origin-bridge-v1.tap
+          grep -Eq '^# pass 25$' /tmp/atto-ownership-origin-bridge-v1.tap
+          grep -Eq '^# fail 0$' /tmp/atto-ownership-origin-bridge-v1.tap
+          echo "ATTO_OWNERSHIP_ORIGIN_MODEL=CANDIDATE_UNATTESTED"
           echo "ATTO_OWNERSHIP_ROOT_MODEL=CANDIDATE_UNATTESTED"
           echo "ATTO_OWNERSHIP_PLACE_MATRIX=HOST_REFERENCE_ONLY"
           echo "ATTO_OWNERSHIP_GUEST_VERIFICATION=NOT_EXECUTED"
