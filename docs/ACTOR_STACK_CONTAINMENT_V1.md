@@ -60,3 +60,36 @@ Actions means `NOT_EXECUTED`, never `PASS`.
 The `test/actor-stack-containment-v1.test.mjs` tests only contract integrity and
 fixture presence. Its successful execution is not compiler-backed guest
 execution, physical stack safety, or five-backend parity.
+
+## M1 partial implementation and physical-isolation promotion gate (2026-11-07)
+
+Java [stacked M1 PR #2624](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2624)
+introduces an actor-incarnation-scoped logical frame budget and
+carrier-local native recursion admission. This is useful runtime hardening
+but **does not yet allocate execution frames in per-actor stacks**. It
+must not populate the `actorStackStorage` receipt as PASS.
+
+The five-backend manifest now separates these pending proof dimensions:
+
+* `actorStackStorage`: local variables, return continuations and guest
+  interpreter/compiler frames are held in actor-owned bounded frame storage,
+  or independently allocated, safely switchable segmented stacks. No
+  unchecked recursive path may consume shared-carrier stack space.
+* `suspendedFrameOwnership`: a suspended guest call retains its frame-byte
+  charge and exactly one actor-generation owner across scheduler migration;
+  cancellation, timeout and teardown release those charges once.
+* `actorStackGeneration`: restart, code reload and actor-slot reuse cannot
+  bind or resume a predecessor's frame stack. An exhausted incarnation cannot
+  regain guest call admission by trapping or swallowing the typed failure.
+
+A passing host-only quota test is insufficient for any of these three.
+Require compiler-backed guest A/B delivery with exact-head source and output,
+low native-stack process-survival checks, supervisor CONTROL receipts, and
+negative corruption/mutation tests before marking corresponding backend
+evidence anything but `NOT_EXECUTED`.
+
+New pending scenarios track independent actor quotas, suspension and carrier
+migration, stale-incarnation fences, swallowed guest budget errors, and low
+native-stack interoperability. They intentionally have no invented `.atto`
+guest fixture or execution receipt yet. Each backend must provide a real
+source fixture when its compiler accepts the construct.
