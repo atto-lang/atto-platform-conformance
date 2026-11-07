@@ -5,6 +5,8 @@ on:
     paths:
       - '.github/workflows/dop-runner-job-evidence-v1.yml'
       - 'verification/dop-runner-job-evidence-v1.mjs'
+      - 'verification/runner-evidence-correlation-v1.mjs'
+      - 'tests/runner-evidence-correlation-v1.test.mjs'
       - 'tests/dop-runner-job-evidence-v1.test.mjs'
       - 'contracts/dop-runner-job-evidence-v1.json'
   workflow_dispatch:
@@ -40,6 +42,8 @@ jobs:
           echo "ATTO_RUNNER_SOURCE_TREE=$(git rev-parse HEAD^{tree})"
           for p in verification/dop-runner-job-evidence-v1.mjs \
                    tests/dop-runner-job-evidence-v1.test.mjs \
+                   verification/runner-evidence-correlation-v1.mjs \
+                   tests/runner-evidence-correlation-v1.test.mjs \
                    contracts/dop-runner-job-evidence-v1.json \
                    .github/workflows/dop-runner-job-evidence-v1.yml; do
             test "$(git hash-object "$p")" = "$(git rev-parse "HEAD:$p")"
@@ -55,11 +59,17 @@ jobs:
           set -euo pipefail
           mkdir -p build-evidence
           node --test tests/dop-runner-job-evidence-v1.test.mjs | tee build-evidence/runner-job-test.tap
+          node --test tests/runner-evidence-correlation-v1.test.mjs | tee build-evidence/runner-evidence-correlation.tap
           grep -Fxq '# tests 86' build-evidence/runner-job-test.tap
           grep -Fxq '# pass 86' build-evidence/runner-job-test.tap
           grep -Fxq '# fail 0' build-evidence/runner-job-test.tap
           grep -Fxq '# skipped 0' build-evidence/runner-job-test.tap
           grep -Fxq '# cancelled 0' build-evidence/runner-job-test.tap
+          grep -Fxq '# tests 36' build-evidence/runner-evidence-correlation.tap
+          grep -Fxq '# pass 36' build-evidence/runner-evidence-correlation.tap
+          grep -Fxq '# fail 0' build-evidence/runner-evidence-correlation.tap
+          grep -Fxq '# skipped 0' build-evidence/runner-evidence-correlation.tap
+          grep -Fxq '# cancelled 0' build-evidence/runner-evidence-correlation.tap
           test -z "$(git status --porcelain=v1 --untracked-files=all -- . ':!build-evidence')"
           echo 'ATTO_RUNNER_SOURCE_ONLY_PASS=86, NEVER COMPILER_GUEST_PROOF'
       - name: Capture source-only receipt requiring separate GitHub API proof
@@ -82,6 +92,8 @@ jobs:
             'job':os.environ['GITHUB_JOB'],
             'tap_sha256':hashlib.sha256(path.read_bytes()).hexdigest(),
             'test_count':86,
+            'correlation_test_count':36,
+            'correlation_tap_sha256':hashlib.sha256(pathlib.Path('build-evidence/runner-evidence-correlation.tap').read_bytes()).hexdigest(),
             'not_proven':['native compilation','guest execution','backend parity','merge approval']
           }
           pathlib.Path('build-evidence/runner-job-receipt.json').write_text(
@@ -98,4 +110,5 @@ jobs:
           retention-days: 14
           path: |
             build-evidence/runner-job-test.tap
+            build-evidence/runner-evidence-correlation.tap
             build-evidence/runner-job-receipt.json
