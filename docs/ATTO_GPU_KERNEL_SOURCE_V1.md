@@ -1,6 +1,6 @@
 # AttoLang typed GPU kernel source-HIR v1
 
-These nine fixtures specify the narrow `pub gpu fnc` source-HIR subset.
+These eleven fixtures specify the narrow `pub gpu fnc` source-HIR subset.
 They are **not** evidence of physical kernel support. See
 [common-source GPU contract](https://github.com/ores-truffle-oreslang/oreslang-common-source/pull/245),
 [Java/Graal GPU PR](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2582),
@@ -21,10 +21,21 @@ There is no cross-backend compiler parity claim. Kernel ABI types here are
 `int`/`i64`, `f32`, `bool`, and explicit f32
 `GpuReadBuffer`/`GpuWriteBuffer`/`GpuReadWriteBuffer` views.
 
-The corpus has one proposed accepted source shape and eight expected negative
+The corpus has one proposed accepted source shape and ten expected negative
 cases, all marked `NOT_EXECUTED`. The Node test is only an exact-blob/schema
 test. Promote a backend only after its own executed compiler evidence,
 negative no-artifact receipts, source/tree/fixture/kernel binary SHA,
 provider/driver identity, physical dispatch, numerical oracle, buffer loans
 and independently verified device completion. Zero-step workflows do not
 count as execution.
+
+## G1c tail-bound source hardening
+
+A canonical 1D f32 memory access is now admitted only under the specific `n`
+integer kernel parameter that the proposed capacity preflight will check.
+The previous acceptance of `if i < m` (some other integer parameter) or
+`if i < 1024` (constant unrelated to the provider extent) was unsafe for
+future composition with `over: [n]` and is rejected with `GPU-KERNEL-010`.
+The two extra proposal-only fixtures are pinned in the source corpus.
+These source checks are not authenticated allocation proof, JUnit execution,
+physical GPU result, or cancellation/fence authority.

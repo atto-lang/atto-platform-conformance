@@ -1,0 +1,14 @@
+// Source-only positive proposal. Neither the kernel nor launch executes.
+pub gpu fnc saxpy(
+    f32 alpha,
+    GpuReadBuffer<f32> x,
+    GpuReadBuffer<f32> y,
+    GpuWriteBuffer<f32> out,
+    int n,
+    int m
+): void {
+    const int i = gpu.global_id(0);
+    if i < m {
+        out[i] = alpha * x[i] + y[i];
+    } fi
+}

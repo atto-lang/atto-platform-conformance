@@ -31,6 +31,9 @@ test('GPU kernel source manifest is non-promoting and fail closed', () => {
     assert.equal(manifest.state, 'SOURCE_PROPOSAL_ONLY');
     assert.equal(manifest.execution.sourceHir, 'TYPED_SOURCE_ONLY_NOT_EXECUTABLE');
     assert.equal(manifest.execution.tailGuardEvidence, 'SOURCE_TAIL_GUARD_ONLY_NOT_EXECUTABLE');
+    assert.equal(manifest.execution.tailGuardRequiresCanonicalN, true);
+    assert.equal(manifest.execution.unrelatedIntegerBoundProof, false);
+    assert.equal(manifest.execution.constantBoundProof, false);
     assert.equal(manifest.execution.physicalGpuEnabled, false);
     assert.equal(manifest.execution.deviceAllocationCapacityProof, false);
     assert.equal(manifest.execution.compilerBackendProof, false);
@@ -44,11 +47,11 @@ test('GPU kernel source manifest is non-promoting and fail closed', () => {
 });
 
 test('kernel corpus has distinct checked source blobs and truthful case statuses', () => {
-    assert.equal(manifest.cases.length, 9);
-    assert.equal(new Set(manifest.cases.map(x => x.id)).size, 9);
-    assert.equal(new Set(manifest.cases.map(x => x.path)).size, 9);
+    assert.equal(manifest.cases.length, 11);
+    assert.equal(new Set(manifest.cases.map(x => x.id)).size, 11);
+    assert.equal(new Set(manifest.cases.map(x => x.path)).size, 11);
     assert.equal(manifest.cases.filter(x => x.expectation === 'positive').length, 1);
-    assert.equal(manifest.cases.filter(x => x.expectation === 'negative').length, 8);
+    assert.equal(manifest.cases.filter(x => x.expectation === 'negative').length, 10);
     for (const entry of manifest.cases) {
         const source = fixture(entry);
         assert.equal(entry.observedResult, 'NOT_EXECUTED');
@@ -68,4 +71,6 @@ test('tail guard and host-effect mutation fixtures are present in exact blobs', 
     assert.match(fixture(byId['unbound-host-call']), /hostCall\(\)/);
     assert.match(fixture(byId['await-in-kernel']), /\bawait\b/);
     assert.match(fixture(byId['readonly-store']), /GpuReadBuffer<f32> out/);
+    assert.match(fixture(byId['unrelated-bound']), /if i < m/);
+    assert.match(fixture(byId['constant-bound']), /if i < 1024/);
 });

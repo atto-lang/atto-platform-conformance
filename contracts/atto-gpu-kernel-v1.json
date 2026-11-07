@@ -9,7 +9,10 @@
     "deviceAllocationCapacityProof": false,
     "compilerBackendProof": false,
     "implicitCpuFallback": false,
-    "untrustedHostCallsAllowed": false
+    "untrustedHostCallsAllowed": false,
+    "tailGuardRequiresCanonicalN": true,
+    "unrelatedIntegerBoundProof": false,
+    "constantBoundProof": false
   },
   "backends": {
     "java": {
@@ -119,6 +122,22 @@
       "gitBlobSha": "9a1ab5e5fe6f77363ea26d905957053e1a3cd596",
       "expectation": "negative",
       "expectedDiagnostic": "GPU-KERNEL-005",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "unrelated-bound",
+      "path": "fixtures/gpu-kernel-v1/unrelated-bound.atto",
+      "gitBlobSha": "0256706df029edd73c821b03d7632e1c68542497",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-KERNEL-010",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "constant-bound",
+      "path": "fixtures/gpu-kernel-v1/constant-bound.atto",
+      "gitBlobSha": "e06ceb841f28bc16ab1cc525d64a12c62ae2a69a",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-KERNEL-010",
       "observedResult": "NOT_EXECUTED"
     }
   ],
