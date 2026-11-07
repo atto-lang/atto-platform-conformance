@@ -48,7 +48,7 @@ function validatePending(matrix) {
   }
   assert.equal(matrix.requirements.nativeStackOverflowRecoverableOnSharedCarrier, false);
   assert.equal(matrix.requirements.untrustedArbitraryNativeCodeRequiresKillableWorker, true);
-  assert.ok(matrix.scenarios.length >= 19);
+  assert.ok(matrix.scenarios.length >= 20);
   assert.match(matrix.javaFrameArenaReference, /\/pull\/2627$/);
   const bootstrap = matrix.frameStorageBootstrap;
   assert.equal(bootstrap.javaHostPrimitive, 'MANAGED_BYTES_ONLY');
@@ -61,6 +61,19 @@ function validatePending(matrix) {
   assert.equal(bootstrap.javaNewHostInvocationTestsAuthored, 5);
   assert.equal(bootstrap.javaNewAttoActorFixturesAuthored, 3);
   assert.equal(bootstrap.javaNewAttoActorExecution, 'NOT_EXECUTED');
+  assert.match(bootstrap.javaTypedScalarFrameReference, /\/pull\/2630$/);
+  assert.equal(bootstrap.javaTypedScalarCallData, 'AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaTypedScalarCodecTypes, 8);
+  assert.equal(bootstrap.javaTypedScalarSlotBytes, 9);
+  assert.equal(bootstrap.javaScalarCallFrameBytePolicy,
+    'ONE_FRAME_MIN_32_PLUS_9_BYTES_PER_TYPED_ARGUMENT');
+  assert.equal(bootstrap.javaTypedScalarHostTestsAuthored, 7);
+  assert.equal(bootstrap.javaTypedScalarLegacyGuestTestsAuthored, 1);
+  assert.equal(bootstrap.javaTypedScalarLegacyGuestExecution, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaTypedScalarObjectRootsLowered, false);
+  assert.equal(bootstrap.javaTypedScalarReturnContinuationsLowered, false);
+  assert.equal(bootstrap.javaTypedScalarTaskContinuationLowered, false);
+  assert.equal(bootstrap.javaTypedScalarIndependentNativeStacks, false);
   assert.equal(bootstrap.javaAuthoredLegacyCompilerGuestTests, 1);
   assert.equal(bootstrap.javaLegacyCompilerGuestTestExecuted, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaGuardedInvocationByteFrames,
@@ -131,6 +144,13 @@ test('fake pass, duplicate backend, deleted proof and false promotion are reject
   assert.throws(() => validatePending(mutate(m => {m.requirements.guardedSynchronousInvocationChargedToActorFrameArena = false;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaInvocationDescriptorStatus = 'PASS';})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaNewAttoActorExecution = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaTypedScalarCallData = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaTypedScalarLegacyGuestExecution = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaTypedScalarFrameReference;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaTypedScalarObjectRootsLowered = true;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaTypedScalarReturnContinuationsLowered = true;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaTypedScalarTaskContinuationLowered = true;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaTypedScalarIndependentNativeStacks = true;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaGuardFrameNotDuplicated = false;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaInvocationDescriptorBytes = 32;})));
 });
@@ -202,4 +222,21 @@ test('M2 invocation-frame wiring stays pending real actor source execution', asy
     assert.equal(backend.compilerGuest, 'NOT_EXECUTED');
     assert.equal(backend.actorStackStorage, 'NOT_EXECUTED');
   }
+});
+
+test('M2.1 scalar call arguments stay distinct from complete guest stack proof', async () => {
+  const manifest = validatePending(await load());
+  const scenario = manifest.scenarios.find(s => s.id === 'typed-scalar-invocation-actor-owned-data');
+  assert.ok(scenario);
+  assert.equal(scenario.source, null,
+    'authored separate Java .ores test is not an executed canonical .atto receipt');
+  assert.equal(scenario.kind, 'pending-actor-acceptance');
+  for (const key of ['compilerGuest', 'actorStackStorage', 'actorSurvival']) {
+    assert.ok(scenario.requiredEvidence.includes(key));
+  }
+  for (const backend of manifest.backends) {
+    assert.equal(backend.compilerGuest, 'NOT_EXECUTED');
+    assert.equal(backend.actorStackStorage, 'NOT_EXECUTED');
+  }
+  assert.equal(manifest.promotion.certified, false);
 });
