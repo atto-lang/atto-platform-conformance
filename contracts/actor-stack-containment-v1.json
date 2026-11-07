@@ -5,7 +5,7 @@
   "canonicalExtension": ".atto",
   "scope": "actor call-depth, guest frame budgeting, carrier survival and supervisor recovery",
   "javaReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2505",
-  "note": "All five backend guest evidence lanes remain NOT_EXECUTED. Java #2505 provides carrier recursion guard, #2624 actor logical budget, #2627 actor byte frames, #2628 invocation metadata, and #2630 limited typed scalar argument reconstruction. None proves stackless compiler-lowered local/return execution or native process stack-fault isolation.",
+  "note": "All five backend guest evidence lanes remain NOT_EXECUTED. Java #2505 provides carrier recursion guard, #2624 actor logical budget, #2627 actor byte frames, #2628 invocation metadata, and #2630 limited typed scalar argument reconstruction. None proves compiler-lowered actor stacks or native process stack-fault isolation.",
   "requirements": {
     "separateHeapsAreNotStacks": true,
     "guestBudgetBeforeNativeOverflow": true,
