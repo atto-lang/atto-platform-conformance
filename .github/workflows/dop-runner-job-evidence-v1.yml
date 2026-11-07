@@ -1,0 +1,101 @@
+name: AttoLang DOP source-only runner/job evidence (NOT GUEST)
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/dop-runner-job-evidence-v1.yml'
+      - 'verification/dop-runner-job-evidence-v1.mjs'
+      - 'tests/dop-runner-job-evidence-v1.test.mjs'
+      - 'contracts/dop-runner-job-evidence-v1.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-only-runner-receipt:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+      SOURCE_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+    steps:
+      - name: Admit only same-repository immutable head
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$SOURCE_REPOSITORY" = "$GITHUB_REPOSITORY"
+          [[ "$EXPECTED_HEAD" =~ ^[0-9a-f]{40}$ ]]
+      - name: Checkout exact head without persistent token
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ env.EXPECTED_HEAD }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Pin exact source tree and committed blob identities
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          echo "ATTO_RUNNER_SOURCE_HEAD=$EXPECTED_HEAD"
+          echo "ATTO_RUNNER_SOURCE_TREE=$(git rev-parse HEAD^{tree})"
+          for p in verification/dop-runner-job-evidence-v1.mjs \
+                   tests/dop-runner-job-evidence-v1.test.mjs \
+                   contracts/dop-runner-job-evidence-v1.json \
+                   .github/workflows/dop-runner-job-evidence-v1.yml; do
+            test "$(git hash-object "$p")" = "$(git rev-parse "HEAD:$p")"
+            echo "ATTO_RUNNER_SOURCE_BLOB=$p:$(git rev-parse "HEAD:$p")"
+          done
+      - name: Set up pinned Node 22 for SOURCE-ONLY tests
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: Execute and assert all 47 source-only mutation tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build-evidence
+          node --test tests/dop-runner-job-evidence-v1.test.mjs | tee build-evidence/runner-job-test.tap
+          grep -Fxq '# tests 47' build-evidence/runner-job-test.tap
+          grep -Fxq '# pass 47' build-evidence/runner-job-test.tap
+          grep -Fxq '# fail 0' build-evidence/runner-job-test.tap
+          grep -Fxq '# skipped 0' build-evidence/runner-job-test.tap
+          grep -Fxq '# cancelled 0' build-evidence/runner-job-test.tap
+          test -z "$(git status --porcelain=v1 --untracked-files=all -- . ':!build-evidence')"
+          echo 'ATTO_RUNNER_SOURCE_ONLY_PASS=47, NEVER COMPILER_GUEST_PROOF'
+      - name: Capture source-only receipt requiring separate GitHub API proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, subprocess
+          path=pathlib.Path('build-evidence/runner-job-test.tap')
+          assert path.exists() and path.stat().st_size > 0
+          receipt={
+            'classification':'SOURCE_ONLY_NODE_TEST_EXECUTED_NOT_GUEST_PARITY',
+            'hosted_api_independent_job_step_correlation':'NOT_PERFORMED',
+            'repo':os.environ['GITHUB_REPOSITORY'],
+            'head':os.environ['EXPECTED_HEAD'],
+            'tree':subprocess.check_output(['git','rev-parse','HEAD^{tree}'],text=True).strip(),
+            'run_id':os.environ['GITHUB_RUN_ID'],
+            'run_attempt':os.environ['GITHUB_RUN_ATTEMPT'],
+            'job':os.environ['GITHUB_JOB'],
+            'tap_sha256':hashlib.sha256(path.read_bytes()).hexdigest(),
+            'test_count':47,
+            'not_proven':['native compilation','guest execution','backend parity','merge approval']
+          }
+          pathlib.Path('build-evidence/runner-job-receipt.json').write_text(
+            json.dumps(receipt,indent=2,sort_keys=True)+'\n')
+          print('ATTO_SOURCE_ONLY_RECEIPT_SHA256='+hashlib.sha256(
+            pathlib.Path('build-evidence/runner-job-receipt.json').read_bytes()).hexdigest())
+          PY
+      - name: Upload source-free evidence only
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: atto-runner-source-only-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            build-evidence/runner-job-test.tap
+            build-evidence/runner-job-receipt.json
