@@ -194,13 +194,20 @@ promote `NOT_EXECUTED` when a job has no runner or executed steps.
 
 ## Read-only source-GitHub REST evidence collection
 
-`verification/dop-github-api-v1.mjs` now retrieves the exact workflow run
+`verification/dop-github-api-v1.mjs` retrieves the exact workflow run
 and its first (up to 100 jobs) job page from GitHub's fixed HTTPS REST
-endpoints, using an explicitly authorized token with **Actions read**
-permission on the source repository. It makes exactly two GETs, disallows
-HTTP redirects, bounds each streamed JSON reply to 1 MiB and 15 seconds,
-requires canonical uncompressed JSON, rejects invalid UTF-8, duplicate decoded JSON keys and excessive nesting, and neither checks out source nor transfers binary
-artifacts or private Git objects.
+endpoints. The CLI then reads the **immutable Git commit metadata** for the
+run's exact source head and the reviewed workflow source Git blob. These four
+bounded, read-only GETs require source-repository access with **Actions read**
+and **Contents read** permissions. Redirects are disabled; streamed JSON
+is bounded to 1 MiB per response and 15 seconds, with strict media type,
+UTF-8 and duplicate-key checks. No private source tree, compiled binary or
+GitHub artifact is exported to another organization.
+
+The commit's `sha`, `tree.sha`, canonical commit API URL and canonical tree
+API URL must match the source head, source tree and repository declared by the
+receipt. Syntactically valid but invented `sourceTreeSha` values are rejected.
+This is commit/tree **correlation**, not proof that a compiler or guest ran.
 
 Call its CLI with a small receipt JSON file:
 
@@ -222,9 +229,10 @@ control and review ancestor directories and local filesystem permissions.
 The script refuses a missing token, a backend/repository mismatch against the
 five pinned source organizations/repositories, or a receipt referring to a different
 run, then passes the **independently fetched run/jobs records** to
-`validateDopGithubSnapshot`. Its only positive classification is
+`validateDopGithubSnapshot`. It separately checks the exact-head commit/tree
+identity before fetching the reviewed workflow blob. Its only positive classification is
 `CORRELATED_NOT_GUEST_ATTESTED`. It is **not a release gate by itself**:
-independent source-tree, compiler, executable and artifact-hash checks,
+independent compiler, executable and artifact-hash checks,
 a source-local stepful guest run, branch protection and independent review
 are still required. A private conformance-repository `GITHUB_TOKEN`
 normally cannot read another private source repo; obtain explicit
