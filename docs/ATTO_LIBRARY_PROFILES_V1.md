@@ -75,3 +75,16 @@ administration investigation**, not a compiler failure. Organization Actions,
 billing and runner-management settings are not accessible via the available
 GitHub connector; an administrator must inspect those settings. This
 classifier never converts step metadata alone into verified guest parity.
+
+## Real source-owned runner admission negative fixture (November 7 UTC)
+
+`evidence/atto-library-source-only-runner-admission-20261107.json` records
+GitHub run `42316175135` on exact prior PR head
+`c7ce8820096d273c5edd13d2e0b89e8d6a09f22e`. Initial job
+`128229200850` (attempt 1) and retried job `128244790877` (attempt 2)
+were both reported failed, `runner_id=0`, and `steps=[]` in the GitHub
+attempt-scoped job API. The source-only Node regression checks both real
+snapshots and deliberately substitutes a forged stepful job across attempts;
+both remain non-promoting. This is public run metadata, **not** source export,
+actual compiler testing or proof that a particular billing setting caused
+the admission failure. The administrator incident remains [#315](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/315).
