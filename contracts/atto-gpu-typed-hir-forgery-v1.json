@@ -4,8 +4,8 @@
   "description": "Attacker-constructible Java source HIR is revalidated at tail-guard audit. This manifest records intended JUnit cases and Git blob identity; not compiler test execution.",
   "javaRepository": "ores-truffle-oreslang/oreslang-source.java",
   "javaPullRequest": 2610,
-  "javaHeadSha": "0d0ac00a9258d91c9f9a0edc09e9a84b12567485",
-  "javaTreeSha": "ae27c44bd6e720ec2587b8f4377164b38bbbd394",
+  "javaHeadSha": "8a0d6e21c01b976a13d0503c73df202b52eb1e8d",
+  "javaTreeSha": "4019960af3ca0d358766a0a58b84b5741953c11f",
   "javaFiles": {
     "verifier": {
       "path": "src/main/java/dev/oreslang/compiler/GpuKernelTailGuardV1.java",
@@ -18,6 +18,10 @@
     "mutationTests": {
       "path": "src/test/java/dev/oreslang/GpuKernelTailGuardForgedHirV1Test.java",
       "blob": "c19c7e6ac735375ecbc857e62814a616d6dc5cd4"
+    },
+    "integrationTests": {
+      "path": "src/test/java/dev/oreslang/GpuKernelSourceCapacityJoinV1Test.java",
+      "blob": "741205f18226654662785dd9a4d199048d60d1c7"
     }
   },
   "safetyClaims": {
@@ -42,7 +46,11 @@
     "executedSteps": null,
     "status": "NOT_EXECUTED",
     "sourceTreeIndependentlyVerified": false,
-    "workflowRunId": 42333323638
+    "workflowRunId": 42333323638,
+    "integratedSourceCapacityCasesAuthored": 22,
+    "integratedSourceCapacityForgeryCasesAdded": 4,
+    "latestHeadBuildStatus": "NOT_EXECUTED",
+    "latestHeadExecutedSteps": null
   },
   "cases": [
     {

@@ -32,12 +32,16 @@ test('forged typed-HIR proof records remain source-only and non-executable', () 
 
 test('each expected mutation has a distinct ID and exact source Git identity', () => {
   const files = Object.values(evidence.javaFiles);
-  assert.equal(files.length, 3);
+  assert.equal(files.length, 4);
+  assert.equal(evidence.javaJUnit.integratedSourceCapacityCasesAuthored, 22);
+  assert.equal(evidence.javaJUnit.integratedSourceCapacityForgeryCasesAdded, 4);
+  assert.equal(evidence.javaJUnit.latestHeadBuildStatus, 'NOT_EXECUTED');
+  assert.equal(evidence.javaJUnit.latestHeadExecutedSteps, null);
   for (const f of files) {
     assert.match(f.blob, sha40);
     assert.match(f.path, /^src\/(?:main|test)\/java\/dev\/oreslang\//);
   }
-  assert.equal(new Set(files.map(f => f.blob)).size, 3);
+  assert.equal(new Set(files.map(f => f.blob)).size, 4);
   assert.equal(evidence.cases.length, 21);
   assert.equal(new Set(evidence.cases.map(c => c.method)).size, 21);
   assert.equal(evidence.cases[0].expectation, 'NON_EXECUTABLE_SOURCE_CONTROL');
