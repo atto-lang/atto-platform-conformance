@@ -98,3 +98,14 @@ positive runner ID, is now classified `UNTRUSTED_EVIDENCE` rather than
 incorrectly claiming runner-admission failure. Required compiler steps
 marked skipped remain `NO_REQUIRED_EXECUTION`. These are policy-model
 regressions, not compiler guest receipts.
+
+## Count only actually completed command steps
+
+The evidence classifier's `executedSteps` counter no longer counts
+`conclusion=skipped` or `neutral` as observed executed commands.
+A completed, failed, zero-step job is classified as runner admission failure
+**only** when its runner identity is explicitly `runner_id=0`; missing,
+unknown or positive runner IDs instead fail closed as `UNTRUSTED_EVIDENCE`.
+Four independent regression groups check skipped, neutral, missing/invalid
+runner identities and the observed GitHub zero-step incident. These tests
+are source-only checks and do not establish real compiler guest execution.

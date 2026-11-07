@@ -55,6 +55,37 @@ test("skipped required compiler step cannot be counted as executed",()=>{
   assert.equal(classify(run(),[x]).classification,"NO_REQUIRED_EXECUTION");
 });
 
+test("skipped setup and required steps do not inflate executed-step count", () => {
+  const j = job();
+  j.steps[0].conclusion = "skipped";
+  j.steps[1].conclusion = "skipped";
+  const out = classify(run(),[j]);
+  assert.equal(out.classification,"NO_REQUIRED_EXECUTION");
+  assert.equal(out.executedSteps,0);
+});
+test("neutral completed steps do not count as executed compiler commands", () => {
+  const j = job();
+  j.steps[0].conclusion = "neutral";
+  j.steps[1].conclusion = "neutral";
+  const out = classify(run(),[j]);
+  assert.equal(out.classification,"NO_REQUIRED_EXECUTION");
+  assert.equal(out.executedSteps,0);
+});
+test("unknown zero-step runner identity is untrusted, not verified admission failure", () => {
+  for (const runner_id of [undefined,null,-1,1]) {
+    const out = classify({...run(),conclusion:"failure"},
+      [{...job(),runner_id,steps:[],conclusion:"failure"}]);
+    assert.equal(out.classification,"UNTRUSTED_EVIDENCE");
+    assert.equal(out.executedSteps,0);
+  }
+});
+test("observed completed failed zero-step job with runner id zero remains admission failure", () => {
+  const out = classify({...run(),conclusion:"failure"},
+    [{...job(),runner_id:0,steps:[],conclusion:"failure"}]);
+  assert.equal(out.classification,"RUNNER_ADMISSION_FAILURE");
+  assert.equal(out.executedSteps,0);
+});
+
 test("a green metadata-only run is not guest execution or certified parity", () => {
   assert.equal(classify().classification, "EXECUTED_STEPS_UNVERIFIED");
   const j = job(); j.steps.pop();
