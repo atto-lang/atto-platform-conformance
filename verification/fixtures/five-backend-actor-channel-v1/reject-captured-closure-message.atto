@@ -1,0 +1,9 @@
+// MUST REJECT: a closure capturing lexical state cannot cross Channel<T>.
+// No call to this closure may occur as part of admission.
+pub fnc main(): void {
+  val int captured = 7;
+  val Fnc<int, int> callback = |value| -> { return value + captured; };
+  val Channel<Fnc<int, int>> values = Channel.new<Fnc<int, int>>(1);
+  writech values, callback;
+  return;
+}
