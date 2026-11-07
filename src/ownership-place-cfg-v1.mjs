@@ -159,7 +159,20 @@ function effects(operations, state, layouts, budget, path = '') {
       assert(event.payloadMode !== 'borrowed', 'BORROW_ESCAPES_TRANSPORT');
       assert(event.payloadMode === 'owned-copy' || event.payloadMode === 'owned-take',
         'UNKNOWN_TRANSPORT_PROVENANCE');
-      // No Send/tenant capability is inferred: those are independent gates.
+      const sent = normalizePlace(event.place);
+      assert(!movedOverlap(state, sent, layouts), 'SEND_OF_MOVED_PLACE');
+      if (event.payloadMode === 'owned-take') {
+        assert(!liveLoan(state, sent, layouts), 'SEND_TAKE_DURING_ACTIVE_LOAN');
+        // An actor transfer of an owned place is a consuming move, not
+        // an advisory tag. Future reads must see that owner as moved.
+        state.moved.push(sent);
+      } else {
+        assert(!liveLoan(state, sent, layouts, false),
+          'SEND_COPY_CONFLICTS_EXCLUSIVE_LOAN');
+      }
+      // The origin's true Copy/Send and tenant-generation capabilities must
+      // be independently proved by the backend; no such authority is
+      // established by this untrusted candidate event's payloadMode string.
       continue;
     }
     const place = normalizePlace(event.place);
