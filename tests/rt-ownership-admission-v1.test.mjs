@@ -45,7 +45,7 @@ test('conditional transfer and suspension fixtures do not rely on parser-only re
   assert.equal(selected?.reason, 'UNTRACKED_SELECTION');
   const computed = contract.cases.find(c => c.id === 'computed-take-untracked');
   assert.equal(computed?.reason, 'UNTRACKED_PLACE');
-  assert.match(computed.source, /rt take \\(first \\+ second\\)/);
+  assert.match(computed.source, /rt take \(first \+ second\)/);
   assert.match(selected.source, /rt take \(true \? left : right\)/);
   assert.match(suspension.source, /pub suspends fnc main\(\)/);
   assert.doesNotMatch(suspension.source, /pub async fnc/);
