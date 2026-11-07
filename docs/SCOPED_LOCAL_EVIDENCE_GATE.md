@@ -106,3 +106,22 @@ release or parity gate. Promotion still needs independently authenticated
 compiled .atto guest outputs, provenance, negative semantic controls,
 compiler hash and mutation checks. \`parityVerified\` and
 \`guestExecutionVerified\` always remain false.
+
+
+## Non-promoting partial guest slice
+
+The real LLVM \`TaskLocal<int>\` compiler smoke is a restricted subset. It
+cannot honestly provide completed receipts for all 27 canonical scenarios.
+For this reason, use \`--slice\` to validate **only** a nonempty subset of
+known canonical IDs without marking the rest as executed:
+
+```sh
+GITHUB_TOKEN=REDACTED node bin/verify-scoped-local-github.mjs --slice path/to/tasklocal-i64.json
+```
+
+The result is \`GITHUB_METADATA_MATCH_PARTIAL_UNATTESTED\` only when the
+reported PR/run/job metadata is independently consistent. Unknown, duplicate
+or empty scenario IDs fail closed. Without \`--slice\`, the default strict
+gate requires all canonical scenarios; the partial form cannot be substituted
+for five-backend parity. Neither mode verifies guest execution or compiler
+build provenance, and neither sets \`parityVerified=true\`.
