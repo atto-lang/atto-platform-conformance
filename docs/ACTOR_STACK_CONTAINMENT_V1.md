@@ -143,3 +143,10 @@ host/runtime partial implementation, not proof for
 `actorStackStorage`, `suspendedFrameOwnership`, or native low-stack safety.
 The new pending `synchronous-guest-guard-byte-reservations` scenario requires
 actual compiler-backed guest proof before any of those statuses can advance.
+
+The Java branch additionally authors one real compiler-backed *legacy* `.ores`
+GraalVM polyglot actor A recursion / actor B survival JUnit case. It has not
+run on the exact PR head, and it does not yet establish canonical `.atto`
+parity, independent guest-frame layout, or native low-stack safety. Host model
+tests (20) and this unexecuted compiler-backed test (1) are separately
+classified in the conformance manifest.
