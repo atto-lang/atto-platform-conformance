@@ -73,7 +73,22 @@ def check(spec):
     status = spec["backend_evidence"]
     assert set(status) == {"llvm", "graalvm-native", "wasm", "forge", "net"}
     assert all(v["status"] != "PASSED" for v in status.values())
-    assert status["llvm"]["status"] == "NOT_EXECUTED_FOR_THIS_EXACT_FIXTURE"
+    for backend in ("llvm", "graalvm-native"):
+        record = status[backend]
+        assert record["status"] == "OBSERVED_SOURCE_COMPILED_GUEST_NARROW_SCOPE"
+        assert record["evidence_record"] == "evidence/m4/dual-native-actor-observations-20261107.json"
+        evidence = json.loads((ROOT / record["evidence_record"]).read_text())
+        assert evidence["source"]["git_blob_sha"] == spec["source_git_blob_sha"]
+        assert evidence["llvm"]["observed"]["main_return"] == expect["return_i64"]
+        assert evidence["graalvm-native"]["observed"]["main_return"] == expect["return_i64"]
+        assert record["workflow_url"] == evidence[backend]["run_url"]
+        assert record["scope"] and "native" in record["scope"].lower()
+        gates = evidence["release_gate_status"]
+        assert gates["identical_source_compiled_guest_execution"] == "OBSERVED_TWO_BACKENDS"
+        assert gates["independent_actor_scheduler_equivalence"] == "NOT_EXECUTED"
+        assert gates["cross_tenant_adversarial_security"] == "NOT_EXECUTED"
+        assert gates["graalvm_zero_gc_long_lived_heap_soak"] == "NOT_EXECUTED"
+        assert gates["five_backend_parity"] == "NOT_EXECUTED"
     assert status["wasm"]["status"] == "UNSUPPORTED_ACTOR_ABI"
     return True
 
@@ -106,6 +121,21 @@ class M4ContractTest(unittest.TestCase):
 
     def test_reject_fake_tenant_claim(self):
         self.rejects(lambda s: s["backend_evidence"]["llvm"].update(status="PASSED"))
+
+    def test_reject_missing_run_reference(self):
+        self.rejects(lambda s: s["backend_evidence"]["llvm"].pop("workflow_url"))
+
+    def test_reject_crossed_backend_workflow_url(self):
+        self.rejects(lambda s: s["backend_evidence"]["llvm"].update(
+            workflow_url=s["backend_evidence"]["graalvm-native"]["workflow_url"]))
+
+    def test_reject_false_graal_release_certification(self):
+        self.rejects(lambda s: s["backend_evidence"]["graalvm-native"].update(
+            status="FULL_PRODUCTION_ZERO_GC_CERTIFIED"))
+
+    def test_reject_unbacked_evidence_path(self):
+        self.rejects(lambda s: s["backend_evidence"]["llvm"].update(
+            evidence_record="evidence/m4/nonexistent-claim.json"))
 
     def test_reject_false_wasm_actor_abi(self):
         self.rejects(lambda s: s["backend_evidence"]["wasm"].update(status="PASSED"))
