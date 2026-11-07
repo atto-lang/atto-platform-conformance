@@ -52,14 +52,15 @@ export function validateGpuExecutionEvidenceV1(receipt, expected) {
   if (!positive(run.run_id) || !positive(run.run_attempt) || !positive(run.job_id))
     fail('GPU-EVIDENCE-003','missing CI run / attempt / job identity');
   const steps = array(run.steps, 'steps');
-  if (!steps.some(raw => {
+  const checkedSteps = steps.map(raw => {
     const step = record(raw, ['name','status','conclusion'], 'step');
     ident(step.name, 'step name');
     if (!['completed','in_progress','queued'].includes(step.status) ||
         !['success','failure','cancelled',null].includes(step.conclusion))
       fail('GPU-EVIDENCE-003','invalid step status');
     return step.status === 'completed' && step.conclusion === 'success';
-  })) fail('GPU-EVIDENCE-003','no executed successful CI step');
+  });
+  if (!checkedSteps.some(Boolean)) fail('GPU-EVIDENCE-003','no executed successful CI step');
   const compiler = record(r.compiler, ['backend','compiled_guest','artifact_sha256','source_language'], 'compiler');
   if (compiler.backend !== ex.backend || compiler.compiled_guest !== true ||
       compiler.source_language !== 'atto' || typeof compiler.artifact_sha256 !== 'string' ||
