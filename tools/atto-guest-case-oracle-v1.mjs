@@ -14,6 +14,8 @@ const SOURCES={
      'reject-duck-hasfuture','reject-actor-self-capture',
      'reject-mut-borrow-capture','reject-await-in-critical']}
 };
+// Trusted constants transcribed from pinned draft source manifest and all 20 exact Git blobs.
+const PINNED={"actor-channel-v1":{"roster":["java","llvm","net","wasm","cranelift"],"cases":{"actor-channel-roundtrip":{"sha":"bc5c42d269b3e7e6dc5f90aa648db4eab33e4870","kind":"positive","value":"42"},"channel-select-roundtrip":{"sha":"076a26cefbd816151c2a4f72ee22bce7b841561b","kind":"positive","value":"0:10"},"cancel-scoped-wait":{"sha":"5684868c9608d224545e92d39737d124af6b96d9","kind":"positive","value":"cancelled"},"reject-critical-suspends":{"sha":"06bdab0ecfc2bc1c403f143d738ce58ea614b475","kind":"negative","value":"critical.{0,100}suspends|suspends.{0,100}critical"},"reject-borrowed-thread-capture":{"sha":"d9fc34719fbc7a7b3622a67a2a9c54ca637cafd9","kind":"negative","value":"borrow|escape|owned|thread.{0,100}capture"},"reject-function-message":{"sha":"b322b46b3622f4d534cf65f9025398b8c2811396","kind":"negative","value":"sendable|serializ|closure|function.{0,100}channel"}}},"portable-task-v1":{"roster":["java","llvm","wasm","forge","net"],"cases":{"eager-before-await":{"sha":"3e1411fad3c9932b4c616a7f0d2f9b378aa3a3ad","kind":"positive","value":{"exit":42,"observe":["child_started"],"forbid":[]}},"fire-and-continue":{"sha":"3c7526ccabb1cdec84ce58e78d003700137a920a","kind":"positive","value":{"exit":42,"observe":["parent_continued","child_entered"],"forbid":[]}},"typed-int":{"sha":"3443577caabbc1acdb137dcfa3477f6dbca38096","kind":"positive","value":{"exit":42,"observe":[],"forbid":[]}},"typed-string":{"sha":"6152fc129d3b3955a2dc380153f345ec552b148c","kind":"positive","value":{"exit":42,"observe":[],"forbid":[]}},"generic-hasfuture-once":{"sha":"aa03c587c6b279cf2db312df2e32f5dc22db1552","kind":"positive","value":{"exit":42,"observe":["projection_count=1"],"forbid":[]}},"actorref-readiness":{"sha":"9eb4f6906e832a9ce57883d59a04c38f5f5e358a","kind":"positive","value":{"exit":42,"observe":["actor_ref_same=true"],"forbid":[]}},"cancel-before-start":{"sha":"c66e1777977a120de0fafa16d6137e7222dbd815","kind":"positive","value":{"exit":42,"observe":["physical_done=true"],"forbid":["should_not_start"]}},"cancel-while-suspended":{"sha":"8f200e44fb98dcf6b06bcf0bb468c27c94b512b6","kind":"positive","value":{"exit":42,"observe":["entered","physical_done=true"],"forbid":["post_cancel_forbidden"]}},"cancel-owned-descendants":{"sha":"5edd5b33ac8bcba544f0bd2ce7c56b98c4056e93","kind":"positive","value":{"exit":42,"observe":["descendants_retired=true","sibling_survived=true"],"forbid":[]}},"physical-cleanup-before-done":{"sha":"1f4087ba81b1ac696425aff6fd93bd7dbac26b15","kind":"positive","value":{"exit":42,"observe":["cleanup_once","physical_done=true"],"forbid":[]}},"reject-duck-hasfuture":{"sha":"0072db5d74cd72430b3116eef51cb7237faae901","kind":"negative","value":"ATTO_TASK_E_HASFUTURE_WITNESS"},"reject-actor-self-capture":{"sha":"297f6a5e908a36a181cd85b469031e9ac45fdcac","kind":"negative","value":"ATTO_TASK_E_ACTOR_SELF_CAPTURE"},"reject-mut-borrow-capture":{"sha":"51b5fa322b24d10a84b408b9d11e983a0beb9667","kind":"negative","value":"ATTO_TASK_E_MUT_BORROW_CAPTURE"},"reject-await-in-critical":{"sha":"5b7c4958a9e93274ed84f563da8dd8829d72ac1f","kind":"negative","value":"ATTO_TASK_E_CRITICAL_SUSPEND"}}}};
 const SHA=/^[0-9a-f]{40}$/;
 const ID=/^[a-z][a-z0-9-]{1,79}$/;
 const CAT=/^[A-Z][A-Z0-9_]{4,127}$/;
@@ -79,9 +81,26 @@ export function validateGuestCaseInventory(s){
      !distinct(suite.source.original_backends)||
      suite.source.original_backends.length!==5||
      !suite.source.original_backends.every(x=>typeof x==='string'&&ID.test(x))||
+     JSON.stringify(suite.source.original_backends)!==JSON.stringify(PINNED[suite.id].roster)||
      !Array.isArray(suite.cases)||!names(suite.cases.map(c=>c?.id),expected.cases))
      fail('source suite identity/coverage mismatch');
-   for(const c of suite.cases)inspectCase(c,suite.id);
+   for(const c of suite.cases){
+     inspectCase(c,suite.id);
+     const pinned=PINNED[suite.id].cases[c.id];
+     if(!pinned||c.fixture_blob_sha!==pinned.sha||c.expect.kind!==pinned.kind)
+       fail('unpinned fixture blob or kind');
+     if(suite.id==='actor-channel-v1'){
+       if((pinned.kind==='positive'?c.expect.expected_stdout_text:
+           c.expect.expected_diagnostic_pattern)!==pinned.value)
+         fail('draft oracle changed without upstream semantic review');
+     }else if(pinned.kind==='positive'){
+       if(c.expect.expected_exit_code!==pinned.value.exit||
+          JSON.stringify(c.expect.required_observations)!==JSON.stringify(pinned.value.observe)||
+          JSON.stringify(c.expect.forbidden_observations)!==JSON.stringify(pinned.value.forbid))
+         fail('Task observations differ from pinned source');
+     }else if(c.expect.expected_diagnostic_category!==pinned.value)
+       fail('Task diagnostic differs from pinned source');
+   }
  }
  return true;
 }
