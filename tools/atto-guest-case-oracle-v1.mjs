@@ -32,11 +32,13 @@ function observations(a){
    /^[a-z][a-z0-9_=.-]*$/.test(x));
 }
 function inspectCase(c,suite){
+ // A fixture Git blob SHA is not a substitute for an exact repository path.
+ // Reject nested directories, dot segments and path aliases before orchestration.
+ const fixtureDir=suite==='actor-channel-v1'
+   ?'verification/fixtures/five-backend-actor-channel-v1/'
+   :'fixtures/portable-task-v1/';
  if(!R(c)||!ID.test(c.id)||typeof c.fixture_path!=='string'||
-   !c.fixture_path.endsWith('/'+c.id+'.atto')||
-   !(suite==='actor-channel-v1'?
-     c.fixture_path.startsWith('verification/fixtures/five-backend-actor-channel-v1/'):
-     c.fixture_path.startsWith('fixtures/portable-task-v1/'))||
+   c.fixture_path!==fixtureDir+c.id+'.atto'||
     !SHA.test(c.fixture_blob_sha||'')||!R(c.expect)||
    !exactKeys(c,['id','fixture_path','fixture_blob_sha','expect']))
    fail('invalid case fixture provenance');
