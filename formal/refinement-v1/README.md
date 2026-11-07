@@ -60,3 +60,26 @@ node --test formal/refinement-v1/replay.test.mjs formal/refinement-v1/manifest.t
   runtime APIs are still required for five-backend parity.
 
 **No merges or parity promotions based on these model/shape tests.**
+
+### Hardened trace protocol and non-proof boundary (2026-11-07)
+
+- `critical-generation`: a task must actually acquire a permit before
+  `stale_permit_denied` can witness old-generation revocation. Suspensions
+  require matching `resume` events; retirement with suspended tasks or
+  outstanding critical permits is rejected.
+- `reliable-pubsub`: every `publish_pending` or `publish_admit` must match
+  an earlier `publish_request` for that publisher, sequence and subscription
+  generation. Sequence numbers must be contiguous and the bounded model has
+  at most two publishers, two sequences per publisher/generation and capacity
+  one. ACK remains distinct from delivery.
+- On leave/close, admitted queued data must be delivered or accounted for
+  with a `discard_queued` event immediately followed by its declared
+  `leave` or `close_group` operation. Silent loss is rejected.
+- Each scenario requires a nonvacuous transition witness. The manifest pins
+  exact PR number/head associations, authenticated-evidence obligations,
+  backend non-execution statuses, and limitations against proof promotion.
+- These are deliberately **bounded design-trace witness profiles**. A trace
+  can be manufactured, and shape acceptance is not real scheduler execution,
+  independent provenance verification, physical actor isolation or parity.
+  Runtime adapters must emit these events from compiler-backed guest work,
+  not derive them from model predictions or expected stdout.
