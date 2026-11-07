@@ -3,7 +3,7 @@
  * AttoLang scoped-local evidence *shape* validator, not a trusted attestation.
  * No runner, compiler or guest is invoked by this script.
  */
-import { readFileSync } from 'node:fs';
+import { openSync, readSync, fstatSync, closeSync, constants } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 
@@ -125,9 +125,30 @@ export function evaluateReceipt(receipt, contract) {
 }
 
 function readBoundedJson(path) {
-  const b = readFileSync(path);
-  if (b.length > 2*1024*1024) throw new Error('oversized evidence document');
-  return JSON.parse(b.toString('utf8'));
+  // Reject symlinks, devices, pipes, and excess bytes before parsing.
+  // The extra one-byte read detects a regular file growing after fstat.
+  const max = 2*1024*1024;
+  const flags = constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0) |
+                (constants.O_NONBLOCK ?? 0);
+  const fd = openSync(path, flags);
+  try {
+    const stat = fstatSync(fd);
+    if (!stat.isFile() || stat.size <= 0 || stat.size > max)
+      throw new Error('invalid evidence file type or size');
+    const bytes = Buffer.alloc(stat.size);
+    let used = 0;
+    while (used < bytes.length) {
+      const n = readSync(fd, bytes, used, bytes.length-used, used);
+      if (n <= 0) throw new Error('evidence file truncated during read');
+      used += n;
+    }
+    const extra = Buffer.alloc(1);
+    if (readSync(fd, extra, 0, 1, used) !== 0)
+      throw new Error('evidence file grew during read');
+    return JSON.parse(bytes.toString('utf8'));
+  } finally {
+    closeSync(fd);
+  }
 }
 
 export function evaluateBatch(receipts, contract) {
