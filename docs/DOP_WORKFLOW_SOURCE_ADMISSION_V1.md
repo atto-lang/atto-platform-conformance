@@ -11,13 +11,19 @@ at the same registered `.github/workflows/` path and retain all those
 identities. A source-free echo check could then masquerade as a real backend
 guest job.
 
-The `verify-dop-github-run-v1.mjs` CLI now requires three authenticated,
+The `verify-dop-github-run-v1.mjs` CLI now requires **four** authenticated,
 repository-local GitHub reads before it reports even
 `CORRELATED_NOT_GUEST_ATTESTED`:
 
 1. Exact `GET /repos/OWNER/REPO/actions/runs/RUN_ID`.
 2. Exact `GET /repos/OWNER/REPO/actions/runs/RUN_ID/jobs?per_page=100`.
-3. Only when the run/job snapshot matches, `GET
+3. Only when the run/job snapshot matches, exact immutable
+   `GET /repos/OWNER/REPO/git/commits/RUN_HEAD_SHA`. The commit object's
+   `sha` and its `tree.sha` **must match** the receipt's `sourceHeadSha` and
+   `sourceTreeSha`; the canonical commit and tree GitHub REST URLs must also
+   match the same source repository. A syntactically plausible, invented
+   `sourceTreeSha` must fail closed.
+4. Only after commit/tree correlation, `GET
    /repos/OWNER/REPO/contents/.github/workflows/FILE.yml?ref=RUN_HEAD_SHA`.
 
 The source file must be a regular file with the canonical path and Base64
