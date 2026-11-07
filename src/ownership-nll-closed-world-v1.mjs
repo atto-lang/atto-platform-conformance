@@ -15,7 +15,7 @@ export function inspectCandidateClosedWorldLoanUses({operations,successors=[]}={
   if (!Array.isArray(operations) || operations.length > 4096 ||
       !Array.isArray(successors) || successors.length)
     return fail('NOT_A_STRAIGHT_LINE_COMPILER_STREAM');
-  const loans = new Map(), releases = new Set();
+  const loans = new Map(), releases = new Set(), movedPlaces = new Set();
   let observedBorrow = false;
   const pendingChecks = [];
   for(let i=0;i<operations.length;i++) {
@@ -28,6 +28,7 @@ export function inspectCandidateClosedWorldLoanUses({operations,successors=[]}={
       observedBorrow=true;
       if(!token(op.token) || loans.has(op.token))
         return fail('DUPLICATED_OR_UNMINTED_LOAN_TOKEN');
+      if (movedPlaces.has(op.place)) return fail('BORROW_OF_MOVED_OWNER');
       loans.set(op.token,{place:op.place,borrow:i,
         kind:op.kind,lastUse:-1});
     } else if (op.kind==='use-shared' || op.kind==='use-exclusive') {
@@ -49,14 +50,27 @@ export function inspectCandidateClosedWorldLoanUses({operations,successors=[]}={
       return fail('UNCLASSIFIED_SOURCE_EFFECT');
     } else if(op.kind==='move' || op.kind==='suspend') {
       if(op.token!==null) return fail('EFFECT_IMPERSONATES_LOAN_ID');
+      if (op.kind==='move') {
+        if (movedPlaces.has(op.place)) return fail('DOUBLE_MOVE_OF_OWNER');
+        movedPlaces.add(op.place);
+      }
       pendingChecks.push({kind:op.kind,index:i,place:op.place});
     } else {
       return fail('UNRECOGNIZED_SOURCE_OPERATION');
     }
   }
   if (releases.size) return fail('MIXED_EXPLICIT_AND_DERIVED_RELEASES');
+  if (!loans.size) return fail('NO_LOAN_USE_PROOF_TO_DERIVE');
   if (![...loans.values()].every(x=>x.lastUse>x.borrow))
     return fail('BORROW_WITHOUT_COMPLETE_USE');
+  const spans=[...loans.values()];
+  for(let i=0;i<spans.length;i++) for(let j=i+1;j<spans.length;j++) {
+    const a=spans[i], b=spans[j];
+    if (a.place===b.place &&
+        (a.kind==='borrow-exclusive' || b.kind==='borrow-exclusive') &&
+        a.borrow<=b.lastUse && b.borrow<=a.lastUse)
+      return fail('OVERLAPPING_EXCLUSIVE_LOANS');
+  }
   for(const effect of pendingChecks) {
     for(const loan of loans.values()) {
       // Task suspension is globally sensitive to outstanding loan use:
