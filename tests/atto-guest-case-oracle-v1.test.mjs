@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {evaluateGuestCaseInventory,validateGuestCaseInventory} from '../tools/atto-guest-case-oracle-v1.mjs';
+import {evaluateCandidate} from '../tools/atto-five-backend-certification-v1.mjs';
 const path=fileURLToPath(new URL('../contracts/atto-guest-case-oracle-v1.json',import.meta.url));
 const fresh=()=>JSON.parse(readFileSync(path,'utf8'));
 function denies(name,fn){
@@ -117,3 +118,31 @@ denies('malicious synthetic PASS evidence cannot be admitted',s=>{
 denies('malformed source timestamp is rejected',s=>s.as_of='yesterday');
 denies('future source timestamp is rejected',s=>s.as_of='2099-01-01T00:00:00Z');
 denies('wrong advisory scope is rejected',s=>s.scope='release_authority');
+
+const candidatePath=fileURLToPath(new URL('../evidence/atto-five-backend-release-candidate-v1.json',import.meta.url));
+const landedPath=fileURLToPath(new URL('../evidence/landed-main-20261106-platform-wave.json',import.meta.url));
+const candidate=()=>JSON.parse(readFileSync(candidatePath,'utf8'));
+const landed=()=>JSON.parse(readFileSync(landedPath,'utf8'));
+test('parent certification report carries exact 20-case inventory and 100 absent execution cells',()=>{
+ const r=evaluateCandidate(candidate(),landed(),fresh());
+ assert.equal(r.status,'BLOCKED');assert.equal(r.release_authorized,false);
+ assert.equal(r.case_oracle_inventory.case_count,20);
+ assert.equal(r.case_oracle_inventory.backend_case_cells,100);
+ assert.equal(r.case_oracle_inventory.executed_guest_cells,0);
+ assert(r.holds.includes('CASE_SOURCE_BACKEND_ROSTER_MISMATCH'));
+ assert(r.holds.includes('CASE_ALL_CASE_GUEST_RUNS_NOT_EXECUTED'));
+});
+test('certification rejects a mismatched normalized case-suite PR head',()=>{
+ const c=candidate();c.contracts.find(x=>x.id==='actor-channel-v1').proposal.sha='f'.repeat(40);
+ assert.throws(()=>evaluateCandidate(c,landed(),fresh()),/case-level oracle does not match/);
+});
+test('certification rejects a mismatched normalized source manifest blob',()=>{
+ const c=candidate();c.contracts.find(x=>x.id==='portable-task-v1').oracle.manifest_blob_sha='f'.repeat(40);
+ assert.throws(()=>evaluateCandidate(c,landed(),fresh()),/case-level oracle does not match/);
+});
+test('zero fabricated execution remains fail-closed with missing case inventory input',()=>{
+ const r=evaluateCandidate(candidate(),landed());
+ assert.equal(r.status,'BLOCKED');
+ assert(r.holds.includes('CASE_LEVEL_ORACLE_INVENTORY_NOT_EVALUATED'));
+ assert.equal(r.release_authorized,false);
+});
