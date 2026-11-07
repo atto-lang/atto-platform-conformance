@@ -35,17 +35,19 @@ function verifyTap(bytes, expected, label) {
 }
 
 export function verifySourceOnlyArtifactBytes({receiptBytes, baseTapBytes,
-  correlationTapBytes, expected}) {
+  correlationTapBytes, artifactTapBytes, expected}) {
   const receiptRaw = bounded(receiptBytes, 65536, 'receipt');
   const base = bounded(baseTapBytes, 1048576, 'base-tap');
   const correlation = bounded(correlationTapBytes, 1048576, 'correlation-tap');
+  const artifact = bounded(artifactTapBytes, 1048576, 'artifact-test-tap');
   let receipt;
   try {
     receipt = JSON.parse(new TextDecoder('utf-8', {fatal: true}).decode(receiptRaw));
   } catch { die('E_RECEIPT_JSON'); }
   const known = new Set(['classification', 'hosted_api_independent_job_step_correlation',
     'repo', 'head', 'tree', 'run_id', 'run_attempt', 'job', 'tap_sha256',
-    'test_count', 'correlation_test_count', 'correlation_tap_sha256', 'not_proven']);
+    'test_count', 'correlation_test_count', 'correlation_tap_sha256',
+    'artifact_bytes_test_count', 'artifact_bytes_tap_sha256', 'not_proven']);
   if (!receipt || typeof receipt !== 'object' || Array.isArray(receipt) ||
       Object.keys(receipt).some(key => !known.has(key))) die('E_RECEIPT_FIELDS');
   if (own(receipt, 'classification') !== 'SOURCE_ONLY_NODE_TEST_EXECUTED_NOT_GUEST_PARITY' ||
@@ -60,9 +62,13 @@ export function verifySourceOnlyArtifactBytes({receiptBytes, baseTapBytes,
       own(receipt, 'job') !== own(expected, 'jobName')) die('E_RECEIPT_IDENTITY');
   const baseCount = own(expected, 'baseCount');
   const correlationCount = own(expected, 'correlationCount');
+  const artifactCount = own(expected, 'artifactCount');
   if (!Number.isSafeInteger(baseCount) || baseCount < 1 || baseCount > 10000 ||
       !Number.isSafeInteger(correlationCount) || correlationCount < 1 ||
-      correlationCount > 10000 || own(receipt, 'test_count') !== baseCount ||
+      correlationCount > 10000 || !Number.isSafeInteger(artifactCount) ||
+      artifactCount < 1 || artifactCount > 10000 ||
+      own(receipt, 'artifact_bytes_test_count') !== artifactCount ||
+      own(receipt, 'test_count') !== baseCount ||
       own(receipt, 'correlation_test_count') !== correlationCount)
     die('E_TEST_INVENTORY');
   const excluded = own(receipt, 'not_proven');
@@ -71,16 +77,21 @@ export function verifySourceOnlyArtifactBytes({receiptBytes, baseTapBytes,
       !mandatory.every((name, i) => excluded[i] === name)) die('E_NON_PROMOTION');
   verifyTap(base, baseCount, 'base');
   verifyTap(correlation, correlationCount, 'correlation');
-  const baseHash = digest(base), correlationHash = digest(correlation);
+  verifyTap(artifact, artifactCount, 'artifact');
+  const baseHash = digest(base), correlationHash = digest(correlation),
+        artifactHash = digest(artifact);
   if (!equalHash(baseHash, own(receipt, 'tap_sha256')) ||
-      !equalHash(correlationHash, own(receipt, 'correlation_tap_sha256')))
+      !equalHash(correlationHash, own(receipt, 'correlation_tap_sha256')) ||
+      !equalHash(artifactHash, own(receipt, 'artifact_bytes_tap_sha256')))
     die('E_ARTIFACT_DIGEST');
   return Object.freeze({
     classification: 'SOURCE_ONLY_ARTIFACT_BYTES_CONSISTENT_NOT_ATTESTED',
     evidence: 'DOWNLOADED_BYTES_REQUIRE_INDEPENDENT_GITHUB_ORIGIN_PROOF',
     sourceHead: own(receipt, 'head'), sourceTree: own(receipt, 'tree'),
     baseTestCount: baseCount, correlationTestCount: correlationCount,
+    artifactTestCount: artifactCount,
     baseTapSha256: baseHash, correlationTapSha256: correlationHash,
+    artifactTapSha256: artifactHash,
     hostedRunnerVerified: false, guestExecutionProven: false, mergeAuthorized: false
   });
 }
