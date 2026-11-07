@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validateGithubIdentity, readGithubJson, fetchDopGithubRun, parseStrictGithubJson, requireCanonicalDopSourceRepo} from '../verification/dop-github-api-v1.mjs';
+import {validateGithubIdentity, readGithubJson, fetchDopGithubRun, fetchDopGithubCommit, parseStrictGithubJson, requireCanonicalDopSourceRepo} from '../verification/dop-github-api-v1.mjs';
 
 function reply(obj, {status=200, type='application/json', length, chunks, encoding=null}={}) {
   const bytes = new TextEncoder().encode(JSON.stringify(obj));
@@ -118,4 +118,47 @@ test('strict media type and unsupported compression are rejected before parsing'
   await expectFailure(() => readGithubJson(reply({}, {type:'application/json, text/plain'})), 'github-not-json');
   await expectFailure(() => readGithubJson(reply({}, {encoding:'gzip'})), 'github-encoded-response');
   assert.deepEqual(await readGithubJson(reply({ok:true}, {type:'application/json; charset=utf-8'})), {ok:true});
+});
+
+test('immutable exact Git commit is fetched from canonical source repository via one bounded GET', async () => {
+  const calls = [];
+  const backend = 'llvm';
+  const repository = 'ores-truffle-oreslang/oreslang-source.llvm';
+  const headSha = 'a'.repeat(40);
+  const treeSha = 'b'.repeat(40);
+  const fetchFn = async (url, options) => {
+    calls.push({url, options});
+    return reply({sha:headSha, tree:{sha:treeSha}});
+  };
+  const commit = await fetchDopGithubCommit({backend,repository,headSha,token:'read-only',fetchFn});
+  assert.equal(commit.tree.sha, treeSha);
+  assert.equal(calls.length,1);
+  assert.equal(calls[0].url,
+    'https://api.github.com/repos/' + repository + '/git/commits/' + headSha);
+  assert.equal(calls[0].options.method,'GET');
+  assert.equal(calls[0].options.redirect,'manual');
+  assert.equal(calls[0].options.cache,'no-store');
+  assert.equal(calls[0].options.headers.authorization,'Bearer read-only');
+  assert.equal(calls[0].options.headers['accept-encoding'],'identity');
+});
+test('commit metadata input is fail-closed before network access', async () => {
+  const failNetwork = () => { throw new Error('network-called'); };
+  const safe = {backend:'llvm',repository:'ores-truffle-oreslang/oreslang-source.llvm',
+    headSha:'a'.repeat(40),token:'read-only',fetchFn:failNetwork};
+  for (const bad of [
+    {backend:'net'}, {repository:'untrusted/fork'}, {headSha:'a'.repeat(8)},
+    {headSha:'a'.repeat(40) + '?ref=main'}, {headSha:'A'.repeat(40)},
+    {token:''}, {token:'bearer\nInjected: value'}
+  ]) {
+    await assert.rejects(()=>fetchDopGithubCommit({...safe,...bad}),
+      /backend-repository-mismatch|github-commit-head-invalid|missing-github-token/);
+  }
+});
+test('commit metadata fetch rejects errors, redirect, invalid media and oversized responses', async () => {
+  const args={backend:'llvm',repository:'ores-truffle-oreslang/oreslang-source.llvm',
+    headSha:'a'.repeat(40),token:'read-only'};
+  for (const response of [reply({}, {status:302}),reply({}, {status:404}),
+    reply({}, {type:'text/html'}),reply({}, {length:'999999999'})]) {
+    await assert.rejects(()=>fetchDopGithubCommit({...args,fetchFn:async()=>response}),/github-/);
+  }
 });
