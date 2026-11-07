@@ -17,7 +17,7 @@ function fields(x, names, label) {
   const d = Object.getOwnPropertyDescriptors(x);
   const ks = Reflect.ownKeys(x);
   if (ks.length !== names.length || !names.every(k =>
-      Object.hasOwn(d, k) && Object.hasOwn(d[k], 'value')))
+      Object.hasOwn(d, k) && Object.hasOwn(d[k], 'value') && d[k].enumerable === true))
     fail('INVALID_DESCRIPTOR', `${label} has missing, extra or accessor fields`);
   return Object.fromEntries(names.map(k => [k, d[k].value]));
 }
@@ -29,7 +29,7 @@ function items(x, label, max = 64) {
   if (keys.length !== x.length + 1) fail('INVALID_DESCRIPTOR', `${label} has extra keys or holes`);
   return Array.from({length: x.length}, (_, i) => {
     const d = Object.getOwnPropertyDescriptor(x, String(i));
-    if (!d || !Object.hasOwn(d, 'value'))
+    if (!d || !Object.hasOwn(d, 'value') || d.enumerable !== true)
       fail('INVALID_DESCRIPTOR', `${label} contains a hole or accessor`);
     return d.value;
   });

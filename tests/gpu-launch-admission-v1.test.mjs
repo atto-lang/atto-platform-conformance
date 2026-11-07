@@ -90,6 +90,10 @@ for(const [name,code,mutate] of [
   ['invalid tenant identifier','INVALID_ID',x=>x.tenant_id=''],
   ['sparse dimensions','INVALID_DESCRIPTOR',x=>{delete x.block[1]}],
   ['accessor injection','INVALID_DESCRIPTOR',x=>Object.defineProperty(x.buffers[0],'allocation_bytes',{get(){throw Error('NEVER CALLED')},enumerable:true})],
+  ['hidden GPU capability','INVALID_DESCRIPTOR',x=>Object.defineProperty(x.capability,'gpu',{value:true,enumerable:false})],
+  ['hidden tenant ID','INVALID_DESCRIPTOR',x=>Object.defineProperty(x,'tenant_id',{value:'tenantA',enumerable:false})],
+  ['hidden buffer generation','INVALID_DESCRIPTOR',x=>Object.defineProperty(x.buffers[0],'generation',{value:1,enumerable:false})],
+  ['hidden dimension element','INVALID_DESCRIPTOR',x=>Object.defineProperty(x.grid,'0',{value:16,enumerable:false})],
   ['extra symbol field','INVALID_DESCRIPTOR',x=>x.kernel[Symbol('extra')]='invisible'],
   ['array metadata','INVALID_DESCRIPTOR',x=>x.grid.evil=true],
 ]) test(`fail closed: ${name}`,()=>deny(code,mutate));
