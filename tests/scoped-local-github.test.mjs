@@ -117,3 +117,31 @@ test('duplicate API job IDs fail closed',async()=>{
   const {v}=await check(()=>{}, f=>{f.jobs.jobs.push({...f.jobs.jobs[0]});f.jobs.total_count=2;});
   assert.ok(v.errors.includes('DUPLICATE_PROVIDER_JOB'));
 });
+
+test('partial guest slice is explicitly narrow and never promoted',async()=>{
+  const r=receipt();r.scenarios=r.scenarios.slice(0,1);
+  const calls=[];
+  const v=await auditGitHubReceipt(r,contract,{
+    fetchImpl:fakeFetch(github(),calls),allowPartial:true,
+  });
+  assert.equal(v.status,'GITHUB_METADATA_MATCH_PARTIAL_UNATTESTED');
+  assert.equal(v.githubMetadataVerified,true);
+  assert.equal(v.parityVerified,false);
+  const strict=await auditGitHubReceipt(r,contract,{
+    fetchImpl:fakeFetch(github(),[]),
+  });
+  assert.equal(strict.githubMetadataVerified,false);
+  assert.ok(strict.errors.some(e=>e.startsWith('MISSING_SCENARIO')));
+});
+test('slice rejects unknown, duplicate, and empty scenario sets',async()=>{
+  for(const mutate of [
+    r=>r.scenarios=[],
+    r=>r.scenarios[0].id='noncanonical',
+    r=>r.scenarios=[r.scenarios[0],structuredClone(r.scenarios[0])],
+  ]) {
+    const r=receipt();mutate(r);
+    const v=await auditGitHubReceipt(r,contract,{allowPartial:true,fetchImpl:async()=>{throw Error('should not fetch');}});
+    assert.equal(v.githubMetadataVerified,false);
+    assert.ok(v.errors.length);
+  }
+});
