@@ -120,3 +120,24 @@ mock-command adapter tests (plus previous candidate and receipt tests).
 Host-only execution or a fabricated JSON receipt cannot promote any backend
 from `NOT_EXECUTED`. The exact-head hosted workflow itself is blocked by
 runner admission until nonempty executed steps are available.
+
+## 2026-11-07 evidence hardening
+
+The independent GitHub CI pins now require `workflowGitBlob` (the exact
+Git blob SHA-1 of the reviewed compiler-source workflow). The authenticated
+metadata checker fetches the compiler's *entire untruncated exact-head Git tree*
+and confirms that the named workflow file is a single matching blob. It also
+rejects failed non-required steps. A matching job without authentic compiler
+and guest artifact bytes still returns an **unverified** result.
+
+The source-local Java/LLVM adapter now SHA-256 hashes compiler executables,
+guest runners and compiled artifacts using bounded 64 KiB reads rather than
+allocating the full 512 MiB cap. It rejects symlinked fixture-parent paths and
+re-hashes the compiler/runner around invocations and guest artifacts after
+execution. It also fails closed if a compiler mutates an isolated source or
+prints error-severity diagnostics despite an exit status of zero.
+
+The source-free local regression suites include adversarial workflow-blob,
+compiler replacement, artifact mutation, source-tampering and symlink-path
+cases. Tests and code paths are authored but **hosted exact-head execution is
+still blocked until GitHub Actions jobs have nonempty executed steps**.

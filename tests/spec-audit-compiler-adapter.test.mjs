@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,rmSync,chmodSync} from 'node:fs';
+import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,rmSync,chmodSync,renameSync,symlinkSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,dirname} from 'node:path';
 import {createHash} from 'node:crypto';
@@ -54,3 +54,47 @@ checkFail('missing control mutation rejected',(_c,m)=>delete m.cases[1].control_
 checkFail('unrelated control rejected',(_c,m)=>m.cases[1].control_transform.to='not the real control',/one-edit variant/);
 checkFail('unsupported backend rejected',(c)=>c.backend='net',/invalid backend/);
 checkFail('source with forged path rejected',(_c,m)=>m.cases[0].source='../other.atto',/unsafe fixture path/);
+
+checkFail('compiler executable swap detected', (c,_m,s,dir)=>{
+  const binary=join(dir,'compiler');writeFileSync(binary,'compiler version one');
+  c.compileArgv[0]=binary;
+  const prior=stub();
+  s.spawn=(exe,args,...rest)=>{
+    const output=prior(exe,args,...rest);
+    writeFileSync(binary,'compiler version two');
+    return output;
+  };
+},/compiler executable changed during run/);
+checkFail('guest artifact changed while executing', (_c,_m,s)=>{
+  const prior=stub();
+  s.spawn=(exe,args,...rest)=>{
+    const output=prior(exe,args,...rest);
+    if(exe.endsWith('.compiled'))writeFileSync(exe,'guest artifact modified after launch');
+    return output;
+  };
+},/guest artifact changed during execution/);
+checkFail('compiler with zero exit and emitted error denied', (_c,_m,s)=>{
+  const prior=stub();
+  s.spawn=(exe,args,...rest)=>{
+    const output=prior(exe,args,...rest);
+    if(!exe.endsWith('.compiled'))output.stderr='error[MOCK_FAILURE]: did not actually compile';
+    return output;
+  };
+},/positive compiler reported an error/);
+checkFail('compiler tampering with its input snapshot denied', (_c,_m,s)=>{
+  const prior=stub();
+  s.spawn=(exe,args,...rest)=>{
+    const output=prior(exe,args,...rest);
+    if(!exe.endsWith('.compiled')){
+      chmodSync(args[0],0o600);
+      writeFileSync(args[0],'tampered fixture contents');
+    }
+    return output;
+  };
+},/compiler changed isolated positive source/);
+checkFail('symlinked fixture parent is denied',(_c,_m,_s,dir)=>{
+  const parent=join(dir,'fixtures','guard-v1');
+  const backup=join(dir,'guard-backup');
+  renameSync(parent,backup);
+  symlinkSync(backup,parent,'dir');
+},/symlinked fixture parent/);
