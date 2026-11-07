@@ -26,6 +26,13 @@ function verifyTap(bytes, expected, label) {
   const text = new TextDecoder('utf-8', {fatal: true}).decode(bytes);
   const lines = text.split(/\r?\n/);
   if (lines.some(line => /^not ok(?:\s|$)/.test(line))) die('E_TAP_FAILURE:' + label);
+  const plans = lines.filter(line => /^1\.\.[0-9]+$/.test(line));
+  if (plans.length !== 1 || plans[0] !== '1..' + expected)
+    die('E_TAP_PLAN:' + label);
+  const cases = lines.filter(line => /^ok(?:\s|$)/.test(line));
+  if (cases.length !== expected || !cases.every((line, index) =>
+      line.startsWith('ok ' + (index + 1) + ' - ')))
+    die('E_TAP_CASES:' + label);
   for (const [key, count] of Object.entries({tests: expected, pass: expected,
     fail: 0, skipped: 0, cancelled: 0, todo: 0})) {
     const matches = lines.filter(line => line.startsWith('# ' + key + ' '));
