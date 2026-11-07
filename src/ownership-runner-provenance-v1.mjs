@@ -15,7 +15,7 @@ function expect(condition, reason) {
 function fail(error) {
   return {
     ok:false, verified:false, runnerExecutionVerified:false,
-    sourceTreeVerified:false, guestExecutionVerified:false,
+    sourceCommitTreeResolved:false, checkoutVerified:false, guestExecutionVerified:false,
     status:'RUNNER_PROVENANCE_UNVERIFIED',errors:[error]
   };
 }
@@ -87,9 +87,11 @@ export async function inspectExactHeadRunner({repository, expectedHead, runId,
         Number.isFinite(Date.parse(step.started_at)),
         'MISSING_OR_UNEXECUTED_REQUIRED_STEP:'+name);
     }
+    // A resolved Git commit tree does NOT prove checkout content: command
+    // logs and artifact hashes must be independently checked later.
     return {
       ok:false, verified:false, runnerExecutionVerified:true,
-      sourceTreeVerified:true, guestExecutionVerified:false,
+      sourceCommitTreeResolved:true, checkoutVerified:false, guestExecutionVerified:false,
       status:'RUNNER_EXECUTION_VERIFIED_GUEST_UNVERIFIED',
       sourceCommit:expectedHead,sourceTree:commit.tree.sha,
       runId,attempt,jobId,executedSteps:job.steps.length,errors:[]
