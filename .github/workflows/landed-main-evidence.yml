@@ -27,18 +27,32 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
-      - name: Verify exact source commit
+      - name: Verify exact PR head and raw Git blobs without filters
         env:
           EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          # An untrusted repository may set core.ignorecase=true to hide
+          # physical untracked case aliases from git ls-files --others.
+          GIT_CONFIG_COUNT: '2'
+          GIT_CONFIG_KEY_0: core.ignorecase
+          GIT_CONFIG_VALUE_0: 'false'
+          GIT_CONFIG_KEY_1: core.untrackedCache
+          GIT_CONFIG_VALUE_1: 'false'
         shell: bash
         run: |
           set -euo pipefail
           [[ "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]
           test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
-          # No untracked, ignored or modified source shadows may qualify as exact-head tests.
-          test -z "$(git status --porcelain --untracked-files=all)"
-          test -z "$(git ls-files --others --ignored --exclude-standard)"
-          git rev-parse HEAD^{tree} >/dev/null
+          # Authenticate the script before invoking it. --no-filters hashes
+          # actual on-disk bytes; it never executes clean/smudge filters.
+          verifier_blob=24816874eac8df81670af7f80bccfd9f5055a53b
+          test "$(git rev-parse HEAD:scripts/verify-raw-worktree.py)" = "$verifier_blob"
+          test "$(git hash-object --no-filters scripts/verify-raw-worktree.py)" = "$verifier_blob"
+          # This source-free self-test checks filter nonexecution and six
+          # adversarial raw-worktree/index cases.
+          python3 -I scripts/verify-raw-worktree.py --self-test
+          # Check actual physical HEAD/index/tracked bytes, modes, symlinks,
+          # and all untracked files (including ignored paths).
+          python3 -I scripts/verify-raw-worktree.py "$GITHUB_WORKSPACE"
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
