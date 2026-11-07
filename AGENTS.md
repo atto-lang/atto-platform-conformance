@@ -1,0 +1,3 @@
+# Agent directives: AOT / zero-GC controlled dynamism
+
+Follow [the target checklist](docs/AOT_ZERO_GC_CONTROLLED_DYNAMISM_V1.md) and the canonical language-spec PR #18. In sealed full guest AOT reject runtime eval/code/class/method generation and unlimited reflection/unknown proxies; generate dispatch metadata, typed wrappers and closures/continuations statically. Preserve explicit ownership and region lifetimes, bounded allocation, actor suspension/cancellation and exactly-once cleanup. Distinguish host versus guest AOT, and guest versus process GC. Require positive and negative .atto fixtures and exact-head stepful executable guest results; zero-step jobs are NOT_EXECUTED. Respect Rust-only tooling, security reviews and private source governance.

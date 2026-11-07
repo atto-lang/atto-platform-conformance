@@ -189,3 +189,7 @@ The Node fixture-integrity tests do not compile Oreslang, and no backend is
 marked confirmed until real exact-source compiler checks and guest execution
 produce independently reviewable evidence. Enum methods and full portable
 wire codecs remain separate implementation/verification gates.
+
+## AOT / zero-GC controlled-dynamism contract
+
+See [Executable backend conformance review gate](docs/AOT_ZERO_GC_CONTROLLED_DYNAMISM_V1.md) for proposed closed-world AOT admission, statically generated proxies, ownership/reclamation, compile-before-IR rejection and immutable per-backend execution evidence. This is a target; it is not proof of compiler support.
