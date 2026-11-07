@@ -288,6 +288,56 @@
         "actorStackStorage",
         "actorSurvival"
       ]
+    },
+    {
+      "id": "actor-source-await-retains-charged-frame",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-source-cooperate-preserves-frame-across-dispatch",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-source-two-suspended-tasks-independent",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "actor-source-cancel-physical-quiescence-zeroizes",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-source-wrong-carrier-and-generation-rejected",
+      "kind": "pending-isolation",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "suspendedFrameOwnership"
+      ]
     }
   ],
   "promotion": {
@@ -313,7 +363,7 @@
     "realNativeStackIsolation": "NOT_EXECUTED",
     "nativeAotExecution": "NOT_EXECUTED",
     "promotionFromHostOnlyAllowed": false,
-    "note": "Java M1.6 guarded non-tail interpreter invocations reserve actor-owned managed byte frames and unwind LIFO; JVM guest locals and return continuations remain on carrier stack. SourceTask continuation and native process-stack containment are NOT_EXECUTED.",
+    "note": "Java M1.6 guarded non-tail interpreter invocations reserve actor-owned managed byte frames and unwind LIFO; JVM guest locals and return continuations remain on carrier stack. SourceTask continuation and native process-stack containment are NOT_EXECUTED. Java #2631 explicitly binds an actor source scheduler to per-task bootstrap frame leases and reserves bytes across await/cooperate; SourceTask locals and return continuations are not lowered into them.",
     "javaGuardedInvocationByteFrames": "GUARD_WIRED_MANAGED_BYTES_NOT_GUEST_LOCALS",
     "javaSynchronousGuardByteCharge": 32,
     "javaGuestCallGuardNativeStackStillUsed": true,
@@ -325,6 +375,13 @@
     "javaGuardFrameNotDuplicated": true,
     "javaNewHostInvocationTestsAuthored": 5,
     "javaNewAttoActorFixturesAuthored": 3,
-    "javaNewAttoActorExecution": "NOT_EXECUTED"
+    "javaNewAttoActorExecution": "NOT_EXECUTED",
+    "javaActorSourceTaskReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2631",
+    "javaActorSourceTaskFrameBytes": 64,
+    "javaActorSourceTaskHostTestsAuthored": 8,
+    "javaActorSourceTaskLease": "HOST_SCHEDULER_AWAIT_LEASE_AUTHORED_NOT_EXECUTED",
+    "javaActorSourceTaskCompilerFrames": "NOT_EXECUTED",
+    "javaActorSourceTaskNativeStackIsolation": "NOT_EXECUTED",
+    "javaActorSourceTaskPhysicalRetirement": "HOST_RUNTIME_AUTHORED_NOT_EXECUTED"
   }
 }
