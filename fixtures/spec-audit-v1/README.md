@@ -12,3 +12,22 @@ This set covers specification PR [#9](https://github.com/ores-truffle-oreslang/a
 - Source-free Node inventory validation is **not** an AttoLang compiler test.
 
 Existing Guard and named-argument fixtures are reused rather than copied, so one source carries the exact semantics into follow-up Java/LLVM, then .NET/Wasm/Forge verification.
+
+## Pinned fixture identities and paired negative controls
+
+Each source is pinned to a Git blob SHA-1. The source-free Node test recomputes
+the Git object digest from the actual fixture bytes to catch accidental
+substitution, truncation, or file drift. This is Git identity evidence, **not**
+signed compiler provenance or guest execution. Positive `expected_guest_i64`
+fields are target oracles, not observed values.
+
+Before counting a negative on any backend, first compile its paired control
+from the same pinned compiler build and require source admission. Then reject
+the negative with the expected **semantic diagnostic class** rather than an
+unrelated parser error, missing stage declaration, or generic nonzero exit.
+
+The `pipeline-double-start` case uses unresolved Reader/Writer placeholders.
+It remains a `decision-candidate` with the future target diagnostic
+`MOVED_BUILDER_REUSED`; it is **not** a valid negative compiler witness until
+concrete admitted actors and typed ports exist. No backend status has advanced
+beyond `NOT_EXECUTED`.

@@ -16,7 +16,9 @@
         "net": "NOT_EXECUTED",
         "wasm": "NOT_EXECUTED",
         "forge": "NOT_EXECUTED"
-      }
+      },
+      "source_git_blob_sha1": "c86ac476e55074031c0bcda02f5eaf3cb1399477",
+      "expected_guest_i64": "42"
     },
     {
       "id": "guard-missing-exit-negative",
@@ -31,7 +33,10 @@
         "net": "NOT_EXECUTED",
         "wasm": "NOT_EXECUTED",
         "forge": "NOT_EXECUTED"
-      }
+      },
+      "source_git_blob_sha1": "1ff87aa95ed2537839347e80984c69ae46fdfa17",
+      "control_source": "fixtures/guard-v1/canonical-scalar.atto",
+      "control_git_blob_sha1": "c86ac476e55074031c0bcda02f5eaf3cb1399477"
     },
     {
       "id": "guard-else-negative",
@@ -46,7 +51,10 @@
         "net": "NOT_EXECUTED",
         "wasm": "NOT_EXECUTED",
         "forge": "NOT_EXECUTED"
-      }
+      },
+      "source_git_blob_sha1": "b2bbee98cd3b95ac19462b4efd95a2e98b469154",
+      "control_source": "fixtures/guard-v1/canonical-scalar.atto",
+      "control_git_blob_sha1": "c86ac476e55074031c0bcda02f5eaf3cb1399477"
     },
     {
       "id": "named-value-reorder-positive",
@@ -61,7 +69,9 @@
         "net": "NOT_EXECUTED",
         "wasm": "NOT_EXECUTED",
         "forge": "NOT_EXECUTED"
-      }
+      },
+      "source_git_blob_sha1": "da20b7b0dc8a58a9abb0ff9db2b7723dfdd47168",
+      "expected_guest_i64": "12"
     },
     {
       "id": "named-value-duplicate-negative",
@@ -76,7 +86,10 @@
         "net": "NOT_EXECUTED",
         "wasm": "NOT_EXECUTED",
         "forge": "NOT_EXECUTED"
-      }
+      },
+      "source_git_blob_sha1": "43c2c7db1246be09f2a55164c3d16acd8315b450",
+      "control_source": "fixtures/named-generic-call-v1/value-reorder.atto",
+      "control_git_blob_sha1": "da20b7b0dc8a58a9abb0ff9db2b7723dfdd47168"
     },
     {
       "id": "actorref-sync-method-negative",
@@ -91,7 +104,10 @@
         "net": "NOT_EXECUTED",
         "wasm": "NOT_EXECUTED",
         "forge": "NOT_EXECUTED"
-      }
+      },
+      "source_git_blob_sha1": "c4fb55d1b5f19bbc4f8b576121ee40b4432d59a9",
+      "control_source": "fixtures/spec-audit-v1/actorref-direct-sync-control.atto",
+      "control_git_blob_sha1": "3269ff4e94467f3a103596db4dca51a3e00f8d51"
     },
     {
       "id": "typed-local-typefirst",
@@ -106,7 +122,8 @@
         "net": "NOT_EXECUTED",
         "wasm": "NOT_EXECUTED",
         "forge": "NOT_EXECUTED"
-      }
+      },
+      "source_git_blob_sha1": "815e2afdd68b2a8fadd933e9f640842cec864f07"
     },
     {
       "id": "typed-local-namecolon",
@@ -121,7 +138,8 @@
         "net": "NOT_EXECUTED",
         "wasm": "NOT_EXECUTED",
         "forge": "NOT_EXECUTED"
-      }
+      },
+      "source_git_blob_sha1": "d41141f7818070dc53282a48c7134d84b0fa9d42"
     },
     {
       "id": "statement-linebreak",
@@ -136,7 +154,8 @@
         "net": "NOT_EXECUTED",
         "wasm": "NOT_EXECUTED",
         "forge": "NOT_EXECUTED"
-      }
+      },
+      "source_git_blob_sha1": "b6c28ad72998ea063baf343c2fc7e3d0fe8da971"
     },
     {
       "id": "operator-eq",
@@ -151,7 +170,8 @@
         "net": "NOT_EXECUTED",
         "wasm": "NOT_EXECUTED",
         "forge": "NOT_EXECUTED"
-      }
+      },
+      "source_git_blob_sha1": "e21f527d98353bafb5a8b2363dad3bb0dda73d13"
     },
     {
       "id": "operator-double-equals",
@@ -166,7 +186,8 @@
         "net": "NOT_EXECUTED",
         "wasm": "NOT_EXECUTED",
         "forge": "NOT_EXECUTED"
-      }
+      },
+      "source_git_blob_sha1": "0cb6698de916c57acbdd9b6ed99f76598199b4b6"
     },
     {
       "id": "infix-pipeline",
@@ -181,7 +202,8 @@
         "net": "NOT_EXECUTED",
         "wasm": "NOT_EXECUTED",
         "forge": "NOT_EXECUTED"
-      }
+      },
+      "source_git_blob_sha1": "ff9f6d1893b5f56de3df49a9340b529590193336"
     },
     {
       "id": "nested-pipeline",
@@ -196,22 +218,25 @@
         "net": "NOT_EXECUTED",
         "wasm": "NOT_EXECUTED",
         "forge": "NOT_EXECUTED"
-      }
+      },
+      "source_git_blob_sha1": "e54aa0e468f5c8141165bf3781b7c6420c2d8622"
     },
     {
       "id": "pipeline-double-start",
       "source": "fixtures/spec-audit-v1/graph-double-start-reject.atto",
-      "kind": "negative",
+      "kind": "decision-candidate",
       "maturity": "TARGET",
       "decision": "S-21",
-      "expected_diagnostic_class": "MOVED_BUILDER_REUSED",
+      "expected_diagnostic_class": null,
       "backends": {
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
         "wasm": "NOT_EXECUTED",
         "forge": "NOT_EXECUTED"
-      }
+      },
+      "source_git_blob_sha1": "173c94b9aba31acddc8821df021bd41afacc743a",
+      "target_diagnostic_class": "MOVED_BUILDER_REUSED"
     },
     {
       "id": "graph-drop-lifetime",
@@ -226,7 +251,8 @@
         "net": "NOT_EXECUTED",
         "wasm": "NOT_EXECUTED",
         "forge": "NOT_EXECUTED"
-      }
+      },
+      "source_git_blob_sha1": "d312ebaa6c0a563648c0f5c6857d3140c63bbd3a"
     }
   ]
 }
