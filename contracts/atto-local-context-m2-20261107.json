@@ -499,6 +499,36 @@
         "wasm": "NOT_EXECUTED",
         "forge": "NOT_EXECUTED"
       }
+    },
+    {
+      "id": "LC-M2-33",
+      "scope": "actor",
+      "expectedKind": "negative",
+      "title": "STOP during pinned ActorLocal read revokes carrier access",
+      "acceptance": "While a live carrier is copying a pinned actor-local value, supervisor STOP must revoke any value returned by the privileged scheduler adapter and deny subsequent ActorLocal reads, writes and erases on that actor incarnation; a STOPPING carrier claim alone cannot authorize access",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-34",
+      "scope": "actor",
+      "expectedKind": "positive",
+      "title": "sibling actor survives another actor STOP during local read",
+      "acceptance": "After supervisor STOP revokes actor A during a pinned read, actor B must continue processing new messages with its independent ActorLocal values and close only after its own terminal fence",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
     }
   ]
 }
