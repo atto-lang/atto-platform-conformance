@@ -124,7 +124,7 @@ export function evaluateReceipt(receipt, contract) {
   };
 }
 
-function readBoundedJson(path) {
+export function readBoundedJson(path) {
   // Reject symlinks, devices, pipes, and excess bytes before parsing.
   // The extra one-byte read detects a regular file growing after fstat.
   const max = 2*1024*1024;
