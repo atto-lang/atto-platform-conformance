@@ -16,6 +16,15 @@ const validSha = s => typeof s === 'string' && SHA.test(s);
 const validHash = s => typeof s === 'string' && HASH.test(s);
 const validHex = s => typeof s === 'string' && s.length <= 131072 && HEX.test(s);
 const normalized = s => s.trim().replace(/\s+/gu, ' ').toLowerCase();
+const validUtcTimestamp = value => {
+  if (typeof value !== 'string' ||
+      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(value)) return false;
+  const millis = Date.parse(value);
+  // Date.parse normalizes impossible dates (e.g. February 31) and 24:00.
+  // Evidence timestamps must identify precisely the supplied UTC instant.
+  return Number.isFinite(millis) &&
+    new Date(millis).toISOString().replace('.000Z', 'Z') === value;
+};
 
 function meaningful(steps) {
   if (!Array.isArray(steps) || steps.length === 0 || steps.length > 512) return false;
@@ -140,9 +149,7 @@ export function auditEntry(entry) {
 }
 export function auditLedger(ledger) {
   if (!isRecord(ledger) || ledger.schema_version !== 1 || ledger.scope !== 'snapshot_only' ||
-    typeof ledger.captured_at !== 'string' ||
-    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(ledger.captured_at) ||
-    !Number.isFinite(Date.parse(ledger.captured_at)) ||
+    !validUtcTimestamp(ledger.captured_at) ||
     !Array.isArray(ledger.entries) || ledger.entries.length === 0 || ledger.entries.length > 100)
     throw new TypeError('invalid_or_unbounded_ledger');
   const identities = new Set(), commits = new Set();
