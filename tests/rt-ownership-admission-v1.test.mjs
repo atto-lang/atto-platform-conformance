@@ -24,7 +24,7 @@ test('candidate corpus covers five backends and canonical ownership operators', 
   assert.equal(contract.status, 'candidate-unattested');
   assert.equal(contract.sourceExtension, '.atto');
   assert.deepEqual(contract.backendTargets, ['java', 'llvm', 'wasm', 'forge', 'net']);
-  assert.equal(contract.cases.length, 14);
+  assert.equal(contract.cases.length, 15);
   assert.equal(new Set(contract.cases.map(c => c.id)).size, contract.cases.length);
   const whole = contract.cases.map(c => c.source).join('\n');
   for (const op of ['rt borrow', 'rt mut borrow', 'rt take', 'rt copy', 'rt share', 'rt mut share'])
@@ -43,6 +43,9 @@ test('conditional transfer and suspension fixtures do not rely on parser-only re
   const selected = contract.cases.find(c => c.id === 'conditional-take-untracked');
   const suspension = contract.cases.find(c => c.id === 'borrow-across-await');
   assert.equal(selected?.reason, 'UNTRACKED_SELECTION');
+  const computed = contract.cases.find(c => c.id === 'computed-take-untracked');
+  assert.equal(computed?.reason, 'UNTRACKED_PLACE');
+  assert.match(computed.source, /rt take \\(first \\+ second\\)/);
   assert.match(selected.source, /rt take \(true \? left : right\)/);
   assert.match(suspension.source, /pub suspends fnc main\(\)/);
   assert.doesNotMatch(suspension.source, /pub async fnc/);
