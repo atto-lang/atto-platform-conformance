@@ -156,6 +156,19 @@ test('duplicate PR entries fail closed',()=>{
   const e=good(), l=ledger(e);l.entries.push(structuredClone(e));
   assert.equal(auditLedger(l).blocked,1);
 });
+test('calendar-invalid and normalized UTC timestamps fail closed',()=>{
+  for (const stamp of [
+    '2026-02-29T12:00:00Z', '2026-02-31T12:00:00Z',
+    '2026-04-31T12:00:00Z', '2026-11-07T24:00:00Z',
+    '2026-11-07T12:60:00Z'
+  ]) {
+    assert.throws(()=>auditLedger({...ledger(good()),captured_at:stamp}),
+      /invalid_or_unbounded_ledger/, stamp);
+  }
+  assert.equal(auditLedger({...ledger(good()),
+    captured_at:'2024-02-29T12:00:00Z'}).schema_version, 1);
+});
+
 test('bad or oversized ledger fails closed',()=>{
   assert.throws(()=>auditLedger({}));
   assert.throws(()=>auditLedger({...ledger(good()),entries:Array(101).fill(good())}));
