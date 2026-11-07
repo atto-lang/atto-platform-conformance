@@ -129,3 +129,31 @@ test('CLI rejects symlinks, directories and oversized evidence files before pars
     rmSync(dir,{recursive:true,force:true});
   }
 });
+
+test('negative compiler crash diagnostics and nonempty signals never count as semantic errors',()=>{
+  const i=contract.scenarios.findIndex(s=>s.kind==='compile');
+  assert.notEqual(i,-1);
+  for(const diagnostic of [
+    'INTERNAL COMPILER ERROR while parsing','AddressSanitizer: heap-use-after-free',
+    'threadsanitizer: data race','segmentation fault','panicked at src/parser.rs',
+    'stack overflow during compilation','   ',
+  ]) {
+    const v=verdict(r=>{r.scenarios[i].checks[0].diagnostic=diagnostic;});
+    assert.ok(v.errors.some(e=>e.startsWith('INVALID_SEMANTIC_REJECTION')),
+      'accepted '+JSON.stringify(diagnostic));
+  }
+  const signaled=verdict(r=>{r.scenarios[i].checks[0].signal='SIGSEGV';});
+  assert.ok(signaled.errors.some(e=>e.startsWith('INVALID_SEMANTIC_REJECTION')));
+});
+
+test('positive-only compiler acceptance cannot satisfy expected rejection',()=>{
+  const i=contract.scenarios.findIndex(s=>s.kind==='compile');
+  assert.notEqual(i,-1);
+  const v=verdict(r=>{r.scenarios[i].checks=[{
+    phase:'compile-positive',executed:true,assertions:1,
+    logSha256:hash256,fixtureSha256:hash256,
+    exitCode:0,artifactSha256:hash256
+  }];});
+  assert.ok(v.errors.some(e=>e.startsWith('MISSING_NEGATIVE_COMPILER_CONTROL')));
+  assert.equal(v.parityVerified,false);
+});
