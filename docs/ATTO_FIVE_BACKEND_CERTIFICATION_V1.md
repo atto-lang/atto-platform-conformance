@@ -61,6 +61,25 @@ timestamp tests (27 new cases beyond the five fixture-path tests). They are
 Before release use, execute the entire pinned-head test suite on an admitted
 source-owned runner and obtain independent review.
 
+## Runner identity hardening (PR #552 follow-up)
+
+A claimed successful build, guest, compiler-negative, formal, AOT or memory
+receipt must now include both a positive `runner_id` **and** an unpadded,
+printable ASCII `runner_name` of 1–128 characters, alongside completed
+meaningful steps. Missing, whitespace-only, control-character, non-ASCII
+invisible, or overlong names fail closed. Four regression tests check
+guest, build and negative-compiler receipt behavior, including that a
+syntactically complete self-reported receipt remains
+`REPORTED_PASS_UNVERIFIED`. The test runner name is explicitly synthetic,
+not a live GitHub attestation.
+
+At the pinned revision of this follow-up, 46 targeted adversarial cases
+were exercised directly against the original GitHub tool module bytes in
+an isolated V8 harness; this is **not** the checked-in Node 22 test suite,
+CI execution, or compiled AttoLang guest execution. Runtime-admission
+checks require independently fetched live run/job/step records before
+authentication. An offline snapshot never provides release authority.
+
 ## Authority required to move beyond snapshots
 
 A **separate, authenticated source-owned live verifier** must independently recover and compare real GitHub main protections, exact branch/PR Git commits and trees, compiler binary hashes and build provenance, immutable .atto fixture hashes, execution profiles, job/run attempts and real steps/log artifacts, guest stdout/exit and targeted negative diagnostics, independent reviewer attestations, complete formal-model proof results, full native AOT output and measured memory behavior.
