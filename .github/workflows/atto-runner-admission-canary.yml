@@ -1,0 +1,29 @@
+name: Atto source-free runner admission canary (non-promoting)
+
+on:
+  push:
+    branches:
+      - 'audit/ownership-nll-gated-proof-v1-*'
+  pull_request:
+    paths:
+      - '.github/workflows/atto-runner-admission-canary.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-free-admission:
+    name: source-free ubuntu runner admission
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Prove job step admission without cloning private source
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${GITHUB_SHA}"
+          test -n "${GITHUB_RUN_ID}"
+          test "${RUNNER_OS}" = "Linux"
+          echo "ATTO_SOURCE_FREE_ADMISSION=STEP_EXECUTED"
+          printf 'sha=%s run=%s attempt=%s\n' "${GITHUB_SHA}" "${GITHUB_RUN_ID}" "${GITHUB_RUN_ATTEMPT}"
