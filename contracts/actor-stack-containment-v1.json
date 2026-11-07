@@ -284,7 +284,7 @@
   "javaFrameArenaReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2627",
   "frameStorageBootstrap": {
     "javaHostPrimitive": "MANAGED_BYTES_ONLY",
-    "javaAuthoredHostTests": 14,
+    "javaAuthoredHostTests": 16,
     "javaLocalIsolatedSmokeAssertions": 19,
     "compilerLoweredGuestFrames": "NOT_EXECUTED",
     "suspendedSourceTaskFrames": "NOT_EXECUTED",
