@@ -12,6 +12,8 @@ on:
       - 'tests/rt-ownership-admission-v1.test.mjs'
       - 'src/ownership-place-cfg-v1.mjs'
       - 'tests/ownership-place-cfg-v1.test.mjs'
+      - 'src/ownership-runner-provenance-v1.mjs'
+      - 'tests/ownership-runner-provenance-v1.test.mjs'
       - '.github/workflows/rt-ownership-v1-source-evidence.yml'
   workflow_dispatch:
 
@@ -42,7 +44,9 @@ jobs:
             src/rt-ownership-admission-v1.mjs \
             tests/rt-ownership-admission-v1.test.mjs \
             src/ownership-place-cfg-v1.mjs \
-            tests/ownership-place-cfg-v1.test.mjs
+            tests/ownership-place-cfg-v1.test.mjs \
+            src/ownership-runner-provenance-v1.mjs \
+            tests/ownership-runner-provenance-v1.test.mjs
       - name: Execute source-only receipt validation and adversarial tests
         shell: bash
         run: |
@@ -59,5 +63,11 @@ jobs:
           grep -Eq '^# pass 13$' /tmp/atto-ownership-place-cfg-tests.tap
           grep -Eq '^# fail 0$' /tmp/atto-ownership-place-cfg-tests.tap
           echo "ATTO_OWNERSHIP_PLACE_MODEL=CANDIDATE_UNATTESTED"
+          node --test --test-reporter=tap \
+            tests/ownership-runner-provenance-v1.test.mjs | tee /tmp/atto-runner-provenance-v1.tap
+          grep -Eq '^# tests 10$' /tmp/atto-runner-provenance-v1.tap
+          grep -Eq '^# pass 10$' /tmp/atto-runner-provenance-v1.tap
+          grep -Eq '^# fail 0$' /tmp/atto-runner-provenance-v1.tap
+          echo "ATTO_OWNERSHIP_RUNNER_MODEL=SOURCE_FREE_ONLY"
           echo "ATTO_OWNERSHIP_RECEIPT_SHAPE=SOURCE_FREE_ONLY"
           echo "ATTO_OWNERSHIP_GUEST_PARITY=NOT_EXECUTED"
