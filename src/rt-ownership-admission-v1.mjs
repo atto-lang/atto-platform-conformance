@@ -45,12 +45,12 @@ export function inspectOwnershipReceipt(contract, receipt) {
 
   const expected = new Map();
   for (const c of contract.cases) {
-    if (!c || typeof c !== 'object' || !CASE_ID.test(c.id ?? '') ||
+    if (!c || typeof c !== 'object' || typeof c.id !== 'string' || !CASE_ID.test(c.id) ||
         !['accept', 'reject'].includes(c.expect) ||
         typeof c.source !== 'string' || c.source.length < 80)
       return invalid('invalid contract case');
     if (expected.has(c.id)) return invalid('duplicate contract case: ' + c.id);
-    if (c.expect === 'reject' && !OWNERSHIP_DIAGNOSTIC.test(c.reason ?? ''))
+    if (c.expect === 'reject' && (typeof c.reason !== 'string' || !OWNERSHIP_DIAGNOSTIC.test(c.reason)))
       return invalid('missing normalized ownership diagnostic for: ' + c.id);
     if (c.expect === 'accept' && !Number.isSafeInteger(c.expectedGuestExit))
       return invalid('missing positive guest oracle for: ' + c.id);
