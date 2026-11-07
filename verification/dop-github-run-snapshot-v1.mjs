@@ -84,9 +84,11 @@ export function validateDopGithubCommit(receipt, commit, expectedRepo) {
     return ['commit-receipt-object'];
   if (!commit || typeof commit !== 'object' || Array.isArray(commit))
     return ['commit-github-object'];
-  need(typeof expectedRepo === 'string' &&
-    /^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(expectedRepo),
-    'commit-source-repository');
+  const sourceRepoValid = typeof expectedRepo === 'string' &&
+    /^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(expectedRepo) &&
+    expectedRepo.split('/').every(part => part !== '.' && part !== '..' &&
+      !/\.git$/i.test(part));
+  need(sourceRepoValid, 'commit-source-repository');
   need(receipt.status !== 'NOT_EXECUTED', 'not-executed-cannot-attest-commit');
   const head = receipt.sourceHeadSha;
   const tree = receipt.sourceTreeSha;
@@ -94,7 +96,7 @@ export function validateDopGithubCommit(receipt, commit, expectedRepo) {
   need(typeof tree === 'string' && /^[0-9a-f]{40}$/.test(tree), 'commit-receipt-tree');
   need(commit.sha === head, 'git-commit-exact-head');
   need(commit.tree?.sha === tree, 'git-commit-tree-match');
-  if (typeof expectedRepo === 'string' && /^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(expectedRepo) &&
+  if (sourceRepoValid &&
       typeof head === 'string' && /^[0-9a-f]{40}$/.test(head) &&
       typeof tree === 'string' && /^[0-9a-f]{40}$/.test(tree)) {
     need(commit.url === 'https://api.github.com/repos/' + expectedRepo +
