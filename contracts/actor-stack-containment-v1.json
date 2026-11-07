@@ -5,7 +5,7 @@
   "canonicalExtension": ".atto",
   "scope": "actor call-depth, guest frame budgeting, carrier survival and supervisor recovery",
   "javaReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2505",
-  "note": "All five backend guest evidence lanes remain NOT_EXECUTED. Java #2505 guards carrier recursion; #2624 owns logical budget; #2627 reserves 32-byte managed guard frames; #2628 authors 16-byte evaluator call descriptors within the existing frame. No duplicate charge or compiler-local/return-PC lowering is proven; full stack isolation and native process fault containment remain unimplemented. None proves compiler-lowered actor stacks, source-task continuation ownership, or native process-fault isolation.",
+  "note": "All five backend guest evidence lanes remain NOT_EXECUTED. Java #2505 guards carrier recursion; #2624 owns logical budget; #2627 reserves 32-byte managed guard frames; #2628 authors 16-byte evaluator call descriptors within the existing frame. No duplicate charge or compiler-local/return-PC lowering is proven; full stack isolation and native process fault containment remain unimplemented. None proves compiler-lowered actor stacks, source-task continuation ownership, or native process-fault isolation. Java #2633 implements an authored closed pure-integer fnc iterative call/return machine with actor-owned primitive parameter slots and bounded host-heap operand/PC objects. No generic stackless Java execution, SourceTask continuation lowering, process native-stack survival, or guest exact-head receipts have been verified.",
   "requirements": {
     "separateHeapsAreNotStacks": true,
     "guestBudgetBeforeNativeOverflow": true,
@@ -338,6 +338,56 @@
         "actorStackGeneration",
         "suspendedFrameOwnership"
       ]
+    },
+    {
+      "id": "scalar-non-tail-iterative-60",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "scalar-non-tail-budget-exhausted",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "guest-stack-budget-exhausted",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "scalar-proper-and-mutual-tail-100k",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "scalar-unsupported-graph-fallback",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest"
+      ]
+    },
+    {
+      "id": "scalar-owned-two-integer-parameters",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
     }
   ],
   "promotion": {
@@ -382,6 +432,19 @@
     "javaActorSourceTaskLease": "HOST_SCHEDULER_AWAIT_LEASE_AUTHORED_NOT_EXECUTED",
     "javaActorSourceTaskCompilerFrames": "NOT_EXECUTED",
     "javaActorSourceTaskNativeStackIsolation": "NOT_EXECUTED",
-    "javaActorSourceTaskPhysicalRetirement": "HOST_RUNTIME_AUTHORED_NOT_EXECUTED"
+    "javaActorSourceTaskPhysicalRetirement": "HOST_RUNTIME_AUTHORED_NOT_EXECUTED",
+    "javaStacklessScalarReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2633",
+    "javaStacklessSubset": "CLOSED_PURE_INTEGER_FNC_ONLY",
+    "javaStacklessAuthoredHostTests": 11,
+    "javaStacklessAdditionalActorFixtures": 3,
+    "javaStacklessActorPrimitiveSlots": 2,
+    "javaStacklessFrameByteCharge": 32,
+    "javaStacklessDescriptorBytes": 16,
+    "javaStacklessNoDuplicateCharge": true,
+    "javaStacklessInterpreterState": "HOST_HEAP_OPERANDS_AND_RETURN_PC_NOT_FULLY_ACTOR_OWNED",
+    "javaStacklessRuntimeGuestExecution": "NOT_EXECUTED",
+    "javaStacklessNativeStackSurvival": "NOT_EXECUTED",
+    "javaStacklessSourceTaskContinuation": "NOT_EXECUTED",
+    "javaStacklessOtherBackends": "NOT_EXECUTED"
   }
 }
