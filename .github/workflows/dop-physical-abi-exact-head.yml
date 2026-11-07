@@ -1,0 +1,70 @@
+name: DOP physical ABI v1 exact-head SOURCE-FREE reference
+on:
+  pull_request:
+    paths:
+      - 'verification/data-layout-abi-v1.mjs'
+      - 'verification/dop-layout-physical-certifier-v1.mjs'
+      - 'test/dop-layout-physical-*.test.mjs'
+      - 'test/dop-layout-canonical-geometry.test.mjs'
+      - '.github/workflows/dop-physical-abi-exact-head.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+
+jobs:
+  dop-physical-reference:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Deny foreign source before any checkout
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          SOURCE_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          EXPECTED_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          test "$EVENT_NAME" = pull_request -o "$EVENT_NAME" = workflow_dispatch
+          test "$EXPECTED_REPO" = ores-truffle-oreslang/oreslang-platform-conformance
+          test "$SOURCE_REPO" = "$EXPECTED_REPO"
+          echo DOP_SOURCE_ORG_ONLY=true
+      - name: Checkout immutable PR HEAD, not synthetic merge result
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+      - name: Verify immutable Git HEAD/tree and raw worktree without clean filters
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          GITHUB_RUN_ID_EXPECTED: ${{ github.run_id }}
+          GITHUB_RUN_ATTEMPT_EXPECTED: ${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_HEAD" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          python3 scripts/verify-raw-worktree.py --self-test
+          python3 scripts/verify-raw-worktree.py .
+          printf 'DOP_SOURCE_HEAD=%s\nDOP_SOURCE_TREE=%s\nDOP_RUN_ID=%s\nDOP_RUN_ATTEMPT=%s\n' \
+            "$EXPECTED_HEAD" "$(git rev-parse 'HEAD^{tree}')" \
+            "$GITHUB_RUN_ID_EXPECTED" "$GITHUB_RUN_ATTEMPT_EXPECTED"
+      - name: Install pinned Node 22 for source-free contract tests
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Execute all four DOP physical ABI test files
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --version
+          node --test \
+            test/dop-layout-physical-certifier-v1.test.mjs \
+            test/dop-layout-physical-certifier-snapshot.test.mjs \
+            test/dop-layout-physical-metamorphic.test.mjs \
+            test/dop-layout-canonical-geometry.test.mjs
+      - name: Mark exact-head source-free boundary only after test execution
+        run: |
+          echo DOP_ABI_SOURCE_FREE_REFERENCE_TESTED=true
+          echo DOP_JAVA_LLVM_COMPILER_GUEST_PARITY=NOT_TESTED
+          echo DOP_MERGE_OR_RELEASE_AUTHORIZATION=NOT_GRANTED
