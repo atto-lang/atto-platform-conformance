@@ -13,6 +13,8 @@ export const PRIVATE_RUNNER_CONTROL = Object.freeze({
   lastKnownFailedAttempt: 13,
   jobName: 'runner-admission',
   runnerLabel: 'ubuntu-24.04',
+  runnerGroupName: 'GitHub Actions',
+  requiredJobSteps: ['Set up job', 'Check allocated runner', 'Verify second executed step', 'Complete job'],
   stepNames: ['Check allocated runner', 'Verify second executed step'],
   markers: ['SOURCE_FREE_RUNNER_ADMITTED=1', 'SOURCE_FREE_TWO_STEPS_EXECUTED=1']
 });
@@ -42,11 +44,17 @@ export function qualifySourceOrgPrivateRunner({run, page, job, workflow, log}) {
   need(run.head_branch === p.branch, 'pinned-source-branch');
   need(run.repository?.full_name === p.repository, 'source-repository');
   need(run.head_repository?.full_name === p.repository, 'source-head-repository');
+  need(run.repository?.private === true && run.head_repository?.private === true,
+    'private-repository-evidence');
   need(run.event === 'push', 'source-free-trigger');
   need(Number.isSafeInteger(run.run_attempt) &&
        run.run_attempt > p.lastKnownFailedAttempt, 'post-repair-run-attempt');
   need(run.status === 'completed' && run.conclusion === 'success',
        'successful-workflow-run');
+  const runCreated = strictUtc(run.created_at);
+  const runUpdated = strictUtc(run.updated_at);
+  need(runCreated !== null && runUpdated !== null && runUpdated >= runCreated,
+    'valid-run-lifetime');
   need(obj(workflow) && workflow?.sha === p.workflowBlob &&
        workflow?.path === p.workflowPath && workflow?.type === 'file',
        'immutable-source-free-workflow-blob');
@@ -63,9 +71,21 @@ export function qualifySourceOrgPrivateRunner({run, page, job, workflow, log}) {
   need(Number.isSafeInteger(job.runner_id) && job.runner_id > 0, 'runner-admitted');
   need(typeof job.runner_name === 'string' && job.runner_name.length > 0,
        'runner-identity');
-  need(Array.isArray(job.labels) && job.labels.includes(p.runnerLabel),
-       'pinned-hosted-runner-label');
+  need(Array.isArray(job.labels) && job.labels.length === 1 &&
+       job.labels[0] === p.runnerLabel, 'pinned-hosted-runner-label');
+  // A requested runner label alone is never hosted-runner evidence: a
+  // self-hosted machine could register the same label. Require GitHub's
+  // canonical hosted runner-group metadata plus actual image header below.
+  need(job.runner_group_id === 0 && job.runner_group_name === p.runnerGroupName,
+    'github-hosted-runner-group');
+  need(typeof job.runner_name === 'string' &&
+       job.runner_name === 'GitHub Actions ' + job.runner_id,
+       'github-hosted-runner-name');
   const steps = Array.isArray(job.steps) ? job.steps : [];
+  need(steps.length === p.requiredJobSteps.length, 'exact-source-free-step-count');
+  need(steps.length === p.requiredJobSteps.length &&
+       steps.every((step,i) => step?.name === p.requiredJobSteps[i]),
+       'exact-source-free-step-inventory');
   need(steps.length >= p.stepNames.length && steps.length <= 20, 'bounded-nonzero-job-steps');
   const names = new Set(), numbers = new Set();
   let previousEnd = null, previousNumber = 0;
@@ -97,18 +117,55 @@ export function qualifySourceOrgPrivateRunner({run, page, job, workflow, log}) {
   }
   const jobStart = strictUtc(job.started_at), jobEnd = strictUtc(job.completed_at);
   need(jobStart !== null && jobEnd !== null && jobEnd >= jobStart, 'valid-job-times');
+  need(runCreated !== null && runUpdated !== null &&
+       jobStart !== null && jobEnd !== null &&
+       jobStart >= runCreated && jobEnd <= runUpdated + 1000,
+       'job-within-pinned-run-lifetime');
+  for (const step of steps) {
+    const start = strictUtc(step?.started_at), end = strictUtc(step?.completed_at);
+    need(start !== null && end !== null && jobStart !== null && jobEnd !== null &&
+         start >= jobStart - 1000 && end <= jobEnd + 1000,
+         'step-within-job-lifetime');
+  }
   need(typeof log === 'string' && log.length > 0 && log.length <= 262144,
        'bounded-job-log');
   if (typeof log === 'string' && log.length <= 262144) {
-    for (const marker of p.markers) {
-      // Workflow step script lines can contain the marker as source code.
-      // Only accept the observed command output line, optionally log-timestamped.
-      const outputLines = log.split(/\r?\n/).filter(line => {
-        const stripped = line.replace(/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.]+Z\s+/, '');
-        return stripped === marker;
-      });
-      need(outputLines.length === 1, 'observed-output-' + marker);
+    const lines = log.split(/\r?\n/).map(line => line.replace(/^\uFEFF/, ''));
+    const parseLogged = line => {
+      const m = /^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.]+Z) (.*)$/.exec(line);
+      const when = strictUtc(m?.[1]);
+      return when === null ? null : {when, message:m[2]};
+    };
+    const entries = lines.map(parseLogged);
+    const firstRunGroup = entries.findIndex(e => e?.message.startsWith('##[group]Run '));
+    const header = firstRunGroup > 0 ? entries.slice(0,firstRunGroup) : [];
+    const observedHeader = exact => header.some(entry => entry?.message === exact);
+    need(observedHeader('Hosted Compute Agent'), 'hosted-compute-agent-header');
+    need(observedHeader('Image: ' + p.runnerLabel), 'hosted-runner-image-header');
+    need(observedHeader('Complete job name: ' + p.jobName), 'pinned-job-log-header');
+    need(header.some(entry => entry?.message.startsWith('Current runner version: ')),
+         'runner-version-header');
+    const observedMarkers = [];
+    for (let i=0; i<p.markers.length; i++) {
+      const marker = p.markers[i], step = required[i];
+      // Accept only timestamps from observed stdout, not script source,
+      // ANSI-highlighted echo commands, unprefixed text or unrelated steps.
+      const matches = entries.filter(e => e?.message === marker);
+      need(matches.length === 1, 'observed-output-' + marker);
+      if (matches.length === 1) {
+        const value = matches[0];
+        observedMarkers.push(value.when);
+        const start = strictUtc(step?.started_at), end = strictUtc(step?.completed_at);
+        // GitHub's REST step times are rounded to seconds while log lines
+        // retain fractional timestamps. One-second tolerance only.
+        need(start !== null && end !== null &&
+             value.when >= start - 1000 && value.when <= end + 1000,
+             'marker-tied-to-executed-step-' + marker);
+      }
     }
+    need(observedMarkers.length === p.markers.length &&
+         observedMarkers.every((t,i) => i===0 || t >= observedMarkers[i-1]),
+         'marker-chronological-order');
   }
   if (errors.length) return {ok: false, errors};
   return {
@@ -124,6 +181,9 @@ export function qualifySourceOrgPrivateRunner({run, page, job, workflow, log}) {
       jobId: job.id,
       runnerId: job.runner_id,
       runnerName: job.runner_name,
+      runnerGroupName: job.runner_group_name,
+      hostedRunnerEvidence: 'GITHUB_HOSTED_GROUP_AND_RUNNER_IMAGE_LOG',
+      hostedRunnerAttestation: 'API_AND_RUNNER_LOG_ONLY_NOT_CRYPTOGRAPHIC',
       executedSteps: steps.length,
       markers: [...p.markers],
       sourceCheckout: false,
