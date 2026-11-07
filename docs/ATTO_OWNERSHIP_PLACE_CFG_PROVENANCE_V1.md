@@ -20,6 +20,7 @@ The executable *candidate* model `src/ownership-place-cfg-v1.mjs`:
 - Allows field-slot restoration only for the exact moved slot, and whole-owner restoration through explicit rebind.
 - At a join, conservatively unions moves from **either** predecessor, and rejects incompatible outstanding loan inventories. It does not silently turn a maybe-moved owner into live storage.
 - Rejects live loans across `suspend`, borrowed actor/task transport, unknown transport provenance, unbalanced releases and loans escaping the modeled lexical scope.
+- An `owned-take` actor send **consumes and invalidates** its canonical source place; later reads and repeat sends reject. An `owned-copy` send requires an unmoved place and rejects a conflicting exclusive loan. Neither `payloadMode` nor a layout claim independently proves Copy, Send, tenant authority, or a valid generation fence.
 - Enforces bounded input depth and operation count; unsupported path/event kinds fail closed.
 
 A successful model evaluation is `CANDIDATE_ACCEPTED_UNATTESTED`, with `ok=false`, `verified=false`. It does **not** prove sound nonlexical lifetimes, task cancellation, actor isolation, Send/Sync/Share rights, tenant generation fencing, or actual MIR lowering. Runtime and source-checker implementations must prove and exercise all such obligations separately.
