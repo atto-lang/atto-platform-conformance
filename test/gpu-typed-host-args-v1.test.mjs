@@ -28,6 +28,11 @@ test('G1e stage remains source declaration evidence only', () => {
   assert.equal(manifest.stage, 'G1e_SOURCE_DECLARATION_ABI_SHAPE_ONLY');
   assert.equal(manifest.evidence, 'DECLARED_HOST_ABI_SHAPE_ONLY_NOT_EXECUTABLE');
   assert.equal(manifest.javaIntegrationPr, 2610);
+  assert.equal(manifest.directHostCallSiteIdentityChecked, true);
+  assert.equal(manifest.rejectForgedSourceLinkArgumentNames, true);
+  assert.equal(manifest.noLaunchSourceSignatureCannotGrantBinding, true);
+  assert.equal(manifest.nestedOrUnprovenSourceCallSiteAdmitted, false);
+  assert.equal(manifest.authoredJunitCases, 16);
   assert.match(manifest.javaSourceHead, /^[a-f0-9]{40}$/);
   assert.match(manifest.javaSourceTree, /^[a-f0-9]{40}$/);
   for (const key of [

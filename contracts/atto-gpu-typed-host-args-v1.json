@@ -2,8 +2,8 @@
   "schema": "attolang.gpu-typed-host-args-source/1",
   "contract": "oreslang-common-source/contracts/v1/gpu-explicit-launch-v1.json",
   "javaIntegrationPr": 2610,
-  "javaSourceHead": "ccb85fe1bf9303d1d714a5b350500a9fda46af6d",
-  "javaSourceTree": "995214d81d884bb2c20666f65b8271eda67c808c",
+  "javaSourceHead": "c2070cb604aa70f4e399aff4605657740ea3922f",
+  "javaSourceTree": "e01abe6bb44b52b99eae11975eee8da2777b237e",
   "stage": "G1e_SOURCE_DECLARATION_ABI_SHAPE_ONLY",
   "evidence": "DECLARED_HOST_ABI_SHAPE_ONLY_NOT_EXECUTABLE",
   "sourceKernelTypeMatchesHostFormalType": true,
@@ -19,8 +19,8 @@
   "implicitCpuFallback": false,
   "ci": {
     "javaJunit": "NOT_EXECUTED",
-    "head": "ccb85fe1bf9303d1d714a5b350500a9fda46af6d",
-    "runId": 42327750172,
+    "head": "c2070cb604aa70f4e399aff4605657740ea3922f",
+    "runId": 42328223108,
     "steps": null,
     "reason": "RUNNER_ADMISSION_FAILURE"
   },
@@ -134,5 +134,10 @@
       "sourcePattern": "two(out, out, n)",
       "observedResult": "NOT_EXECUTED"
     }
-  ]
+  ],
+  "directHostCallSiteIdentityChecked": true,
+  "rejectForgedSourceLinkArgumentNames": true,
+  "noLaunchSourceSignatureCannotGrantBinding": true,
+  "nestedOrUnprovenSourceCallSiteAdmitted": false,
+  "authoredJunitCases": 16
 }
