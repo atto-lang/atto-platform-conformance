@@ -80,6 +80,41 @@ CI execution, or compiled AttoLang guest execution. Runtime-admission
 checks require independently fetched live run/job/step records before
 authentication. An offline snapshot never provides release authority.
 
+## Receipt schema and semantic evidence hardening
+
+The offline five-backend reporter now uses **exact permitted keys** for each
+receipt kind (guest, negative compiler, formal, full AOT and memory), as well
+as its CI step records, compiler output/diagnostic objects and GC metrics.
+Unknown authority-like claims such as `certified`, `approved`, `waived`,
+`verified_gc`, or `release_authorized` cause validation failure rather
+than silently passing through a nested evidence object. This is structural
+defense only: caller-supplied, correctly shaped receipts are still
+**untrusted**, with no independent GitHub runner, source hash or output
+attestation.
+
+A syntactically valid `REPORTED_PASS` now produces an explicit per-backend
+`*_RECEIPT_UNAUTHENTICATED` blocker and a top-level
+`UNAUTHENTICATED_RECEIPT_CLAIMS` hold, instead of clearing the local
+evidence-blocker category merely because the receipt has plausible fields.
+The post-merge ledger's *reported* status must also equal the independently
+computed local audit status; contradictory snapshots are rejected.
+
+LLVM's zero-GC target also has a necessary structural precondition:
+`gc_collections` must equal **0** in any claimed successful memory receipt.
+This alone does **not** establish zero GC, zero allocations, nonmoving memory,
+hard-real-time behavior or observed target parity. Such claims remain
+`REPORTED_PASS_UNVERIFIED`; Java's JVM min-GC and GraalVM zero-GC targets
+need target-profile-specific measurements and cannot be conflated.
+
+Eight focused Node regression cases were added for these issues, bringing
+this child PR to **44 authored new tests**. The checked-in test callbacks from
+the certification and guest-case test files were also exercised in a
+source-free isolated V8 harness using the exact GitHub module and fixture
+contents: **132 passed, 0 failed, 6 Node-specific filesystem/CLI callbacks
+skipped**. This is not `node --test`, source-owned GitHub CI or compiler
+guest execution. Those skipped tests still require a properly admitted
+source-owned runner; no release gate is satisfied by this local harness.
+
 ## Authority required to move beyond snapshots
 
 A **separate, authenticated source-owned live verifier** must independently recover and compare real GitHub main protections, exact branch/PR Git commits and trees, compiler binary hashes and build provenance, immutable .atto fixture hashes, execution profiles, job/run attempts and real steps/log artifacts, guest stdout/exit and targeted negative diagnostics, independent reviewer attestations, complete formal-model proof results, full native AOT output and measured memory behavior.
