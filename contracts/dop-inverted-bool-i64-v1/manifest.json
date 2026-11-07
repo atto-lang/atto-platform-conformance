@@ -1,0 +1,104 @@
+{
+  "contract": "attolang.dop.inverted-bool-i64-guest-v1",
+  "source_repository": "ores-truffle-oreslang/oreslang-source.llvm",
+  "source_pr": 1483,
+  "source_head_at_copy": "2bafaa6c5b54a9b3f5b2fee45f112f211c625f10",
+  "host_reference_evidence": "SOURCE_COPY_VERIFIED_ONLY",
+  "actual_guest_execution": "NOT_EXECUTED",
+  "scalar_shape": [
+    {
+      "name": "active",
+      "type": "bool",
+      "llvm_lane": "i1"
+    },
+    {
+      "name": "count",
+      "type": "i64",
+      "llvm_lane": "i64"
+    }
+  ],
+  "original_i64_i64_behavior": "UNCHANGED",
+  "capacity_min": 1,
+  "capacity_max": 256,
+  "optimization_levels": [
+    "-O0",
+    "-O2"
+  ],
+  "expected_native_exit_runs": 4,
+  "expected_native_signal_runs": 2,
+  "expected_compile_rejections": 5,
+  "forbidden_claims": [
+    "f64 source lowering",
+    "general inverted classes",
+    "actor ownership",
+    "SIMD",
+    "four-layout guest parity",
+    "five-backend guest parity",
+    "no-GC linked binary"
+  ],
+  "backend_status": {
+    "java-graalvm": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "dotnet-nativeaot": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge-cranelift": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "positive-bool-write",
+      "file": "fixtures/dop-inverted-bool-i64-v1/positive-bool-write.atto",
+      "kind": "native_exit",
+      "exit_code": 42,
+      "source_git_blob_sha1": "eaa213958b79c786c17b3b0a53ccbdd7bb0a342e"
+    },
+    {
+      "id": "positive-swap-tail",
+      "file": "fixtures/dop-inverted-bool-i64-v1/positive-swap-tail.atto",
+      "kind": "native_exit",
+      "exit_code": 42,
+      "source_git_blob_sha1": "a2d69807bdd32e5124f7118505a233c0ba41a351"
+    },
+    {
+      "id": "negative-bounds-trap",
+      "file": "fixtures/dop-inverted-bool-i64-v1/negative-bounds-trap.atto",
+      "kind": "native_signal",
+      "expectation": "SIGILL_OR_SIGTRAP",
+      "source_git_blob_sha1": "33f8c5adc99e3b31b06c934018b75e60d3d4f6d7"
+    },
+    {
+      "id": "negative-bool-as-int",
+      "file": "fixtures/dop-inverted-bool-i64-v1/negative-bool-as-int.atto",
+      "kind": "compiler_reject",
+      "expectation": "requires true or false literal",
+      "source_git_blob_sha1": "baafab8be5662bb892c15d7a0a4f0928c10ccfc9"
+    },
+    {
+      "id": "negative-bool-to-int-return",
+      "file": "fixtures/dop-inverted-bool-i64-v1/negative-bool-to-int-return.atto",
+      "kind": "compiler_reject",
+      "expectation": "cannot read bool field",
+      "source_git_blob_sha1": "713b154dea2f29e689d1eaee035e101cd49a48da"
+    },
+    {
+      "id": "negative-immutable-bool-set",
+      "file": "fixtures/dop-inverted-bool-i64-v1/negative-immutable-bool-set.atto",
+      "kind": "compiler_reject",
+      "expectation": "immutable inverted field",
+      "source_git_blob_sha1": "9b69da6b6b072033714806a219f3b1922419317e"
+    },
+    {
+      "id": "negative-bool-write-int",
+      "file": "fixtures/dop-inverted-bool-i64-v1/negative-bool-write-int.atto",
+      "kind": "compiler_reject",
+      "expectation": "requires true or false literal",
+      "source_git_blob_sha1": "1e700dc6f00539ffaaea6a4dce569d361ae17069"
+    },
+    {
+      "id": "negative-f64-unimplemented",
+      "file": "fixtures/dop-inverted-bool-i64-v1/negative-f64-unimplemented.atto",
+      "kind": "compiler_reject",
+      "expectation": "precisely two i64 fields or bool/i64 fields",
+      "source_git_blob_sha1": "06feb1d952ce28af4a1e2aa67a5444a578d45ffb"
+    }
+  ]
+}
