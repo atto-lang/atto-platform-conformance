@@ -114,7 +114,7 @@ test('fake pass, duplicate backend, deleted proof and false promotion are reject
 test('logical guard is not misrepresented as independent actor stack storage', async () => {
   const matrix = validatePending(await load());
   assert.match(matrix.javaLogicalStackReference, /\/pull\/2624$/);
-  assert.match(matrix.note, /NOT independently allocated execution frames/);
+  assert.match(matrix.note, /None proves compiler-lowered actor stacks/);
   const required = new Set([
     'independent-actor-stack-quotas',
     'suspend-resume-carrier-migration',
