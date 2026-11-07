@@ -125,3 +125,21 @@ supervisor observes a typed CONTROL failure after cleanup; B responds on the
 same carrier with the whole process still alive. A separate low-native-stack
 run must prove that stack guards, host callbacks and interop cannot consume
 unsafe carrier frames. This is still a missing test, not a passing claim.
+
+## M1.6 Java guarded byte reservations (2026-11-07)
+
+Java PR #2627 now also links `GuestCallDepthGuard.enter/leave` to
+`ActorFrameArena`: guarded synchronous guest calls reserve and release a
+32-byte placeholder in an actor-incarnation-owned managed frame store. The
+synchronous guard scope mints a fresh execution identity, and an exhausted
+or invalid guard poisons the actor arena even if a trusted host callback
+swallows the exception. Authored JUnit tests now total 20 in
+`ActorFrameArenaTest`; none have a passing hosted exact-head receipt.
+
+This adds an enforceable runtime accounting seam but **does not** save
+compiled guest locals, root references, return continuations or await state.
+The JVM interpreter still consumes its carrier native stack. It remains a
+host/runtime partial implementation, not proof for
+`actorStackStorage`, `suspendedFrameOwnership`, or native low-stack safety.
+The new pending `synchronous-guest-guard-byte-reservations` scenario requires
+actual compiler-backed guest proof before any of those statuses can advance.
