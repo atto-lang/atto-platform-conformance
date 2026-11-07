@@ -15,6 +15,7 @@ const good = (backend='java') => ({
     {number:2,name:'Execute compiled Oreslang guest',status:'completed',conclusion:'success'}
   ]}],
   review:{reviewer:'ORESoftware',author:'the1mills',head_sha:head,state:'APPROVED',review_id:778},
+  security_review:{reviewer:'independent-security-auditor',head_sha:head,state:'APPROVED',review_id:779},
   compiler:{commit:'c'.repeat(40)},artifact:{sha256:'sha256:'+'d'.repeat(64),source_sha:head},
   vectors:nioActorRequiredVectors.map(id => ({id,outcome:'pass',guest_executed:true,job_id:456}))
 });
@@ -56,6 +57,10 @@ const mutations = [
   ['self-approval',e=>{e.review.author='ORESoftware'},'UNVERIFIED'],
   ['stale approval',e=>{e.review.head_sha='e'.repeat(40)},'UNVERIFIED'],
   ['zero review ID',e=>{e.review.review_id=0},'UNVERIFIED'],
+  ['missing independent security approval',e=>{delete e.security_review},'UNVERIFIED'],
+  ['operator-controlled ORESoftware security approval',e=>{e.security_review.reviewer='ORESoftware'},'UNVERIFIED'],
+  ['operator-controlled the1mills security approval',e=>{e.security_review.reviewer='the1mills'},'UNVERIFIED'],
+  ['stale independent security approval',e=>{e.security_review.head_sha='e'.repeat(40)},'UNVERIFIED'],
   ['missing guest executable receipt',e=>{e.vectors.pop()},'UNVERIFIED'],
   ['unexecuted guest vector',e=>{e.vectors[0].guest_executed=false},'UNVERIFIED'],
   ['duplicate vector',e=>{e.vectors[1].id=e.vectors[0].id},'UNVERIFIED'],
