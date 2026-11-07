@@ -105,8 +105,14 @@ export function auditEntry(entry) {
     p.enforce_admins !== true || p.bypass_count !== 0 ||
     p.force_pushes_allowed !== false || p.deletions_allowed !== false)
     add('protection','protected_main_policy_not_verified');
-  if (!Array.isArray(entry.approvals) || !entry.approvals.some(a => independentReview(a, entry)))
-    add('review','independent_landed_sha_approval_missing');
+  // A required-review count is a quorum of DISTINCT independent accounts.
+  // Repeated attestations and case-variant logins count as one reviewer.
+  const independentReviewers = new Set(Array.isArray(entry.approvals)
+    ? entry.approvals.filter(a => independentReview(a, entry))
+      .map(a => a.login.toLowerCase()) : []);
+  if (!positive(p?.required_approvals) ||
+      independentReviewers.size < p.required_approvals)
+    add('review','independent_landed_sha_approval_quorum_missing');
 
   const expected = entry.required_tests;
   const validSpecs = Array.isArray(expected) && expected.length >= 2 && expected.length <= 128 &&
