@@ -33,9 +33,9 @@ test('actual observed attempt 2 runner=0 and steps=[] is NOT_ADMITTED',()=>{
   v.response.jobs[0].runner_id=0;v.response.jobs[0].runner_name='';v.response.jobs[0].steps=[];
   const r=check(v);assert.equal(r.classification,'RUNNER_NOT_ADMITTED');assert.equal(r.runAttempt,2);
 });
-test('null runner and steps are NOT_ADMITTED',()=>{
-  const v=normal();v.response.jobs[0].runner_id=null;v.response.jobs[0].steps=null;
-  assert.equal(check(v).classification,'RUNNER_NOT_ADMITTED');
+test('null runner and steps remain unverified even in otherwise successful job',()=>{
+  const v=normal();v.response.jobs[0].runner_id=null;v.response.jobs[0].runner_name=null;v.response.jobs[0].steps=null;
+  assert.equal(check(v).classification,'RUNNER_ADMISSION_UNVERIFIED');
 });
 test('runner without steps is incomplete, never a pass',()=>{
   const v=normal();v.response.jobs[0].steps=[];assert.equal(check(v).classification,'STEP_RECORDS_MISSING');
@@ -107,4 +107,63 @@ test('authoritative GitHub attempt-2 source-free fixture is NOT_ADMITTED',()=>{
   assert.equal(result.jobId,128281843456);
   assert.equal(result.executedStepCount,0);
   assert.equal(result.evidence,'API_METADATA_ONLY_NOT_GUEST_PARITY');
+});
+
+const noRunner=(runner=0,steps=[])=>{
+  const v=normal();v.run.conclusion='failure';
+  const j=v.response.jobs[0];j.conclusion='failure';j.runner_id=runner;
+  j.runner_name=runner===0?'':null;j.steps=steps;return v;
+};
+const ambiguousCases=[
+ ['successful run',v=>{v.run.conclusion='success'}],
+ ['successful job',v=>{v.response.jobs[0].conclusion='success'}],
+ ['cancelled run',v=>{v.run.conclusion='cancelled'}],
+ ['cancelled job',v=>{v.response.jobs[0].conclusion='cancelled'}],
+ ['queued run',v=>{v.run.status='queued'}],
+ ['queued job',v=>{v.response.jobs[0].status='queued'}],
+ ['missing step array',v=>{v.response.jobs[0].steps=null}],
+ ['missing job start',v=>{v.response.jobs[0].started_at=null}],
+ ['missing job completion',v=>{v.response.jobs[0].completed_at=null}],
+ ['null runner and empty steps',v=>{v.response.jobs[0].runner_id=null;v.response.jobs[0].runner_name=null}]
+];
+for(const [name,change] of ambiguousCases) test('runner admission unverified: '+name,()=>{
+  const v=noRunner();change(v);const r=check(v);
+  assert.equal(r.classification,'RUNNER_ADMISSION_UNVERIFIED');
+  assert.equal(r.executedStepCount,0);assert.equal(r.reportedStepCount,0);
+});
+const noRunnerRejects=[
+ ['fabricated runner name',v=>{v.response.jobs[0].runner_name='fabricated'},'E_CONTRADICTORY_RUNNER'],
+ ['fabricated executed steps',v=>{v.response.jobs[0].steps=normal().response.jobs[0].steps},'E_CONTRADICTORY_RUNNER'],
+ ['invalid timestamp',v=>{v.response.jobs[0].started_at='2026-02-30T03:06:50Z'},'E_TIME'],
+ ['reversed job times',v=>{v.response.jobs[0].completed_at='2026-11-07T03:06:40Z'},'E_JOB_TIME'],
+ ['invalid required steps',v=>{v.expected.requiredSteps=[]},'E_REQUIRED_STEPS']
+];
+for(const [name,change,error] of noRunnerRejects) test('runner admission rejects '+name,()=>{
+  const v=noRunner();change(v);assert.throws(()=>check(v),new RegExp(error));
+});
+test('reported skipped step does not count as execution',()=>{
+  const v=normal();v.response.jobs[0].steps[2].conclusion='skipped';
+  const r=check(v);assert.equal(r.executedStepCount,2);
+  assert.equal(r.reportedStepCount,3);assert.equal(r.classification,'STEPFUL_FAILED_OR_INCOMPLETE');
+});
+test('queued step without timestamps does not count as execution',()=>{
+  const v=normal();const s=v.response.jobs[0].steps[2];s.status='queued';
+  s.conclusion=null;s.started_at=null;s.completed_at=null;
+  const r=check(v);assert.equal(r.executedStepCount,2);
+  assert.equal(r.reportedStepCount,3);assert.equal(r.classification,'STEPFUL_FAILED_OR_INCOMPLETE');
+});
+test('one-sided step timestamps reject contradictory records',()=>{
+  const v=normal();v.response.jobs[0].steps[2].completed_at=null;
+  assert.throws(()=>check(v),/E_STEP_TIME/);
+});
+test('untimed reported success is not an executed required step',()=>{
+  const v=normal();const s=v.response.jobs[0].steps[2];
+  s.started_at=null;s.completed_at=null;
+  const r=check(v);assert.equal(r.executedStepCount,2);
+  assert.equal(r.classification,'STEPFUL_FAILED_OR_INCOMPLETE');
+});
+test('executed failure is counted but never accepted as success',()=>{
+  const v=normal();v.response.jobs[0].steps[2].conclusion='failure';
+  const r=check(v);assert.equal(r.executedStepCount,3);
+  assert.equal(r.classification,'STEPFUL_FAILED_OR_INCOMPLETE');
 });
