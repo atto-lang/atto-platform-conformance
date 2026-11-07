@@ -12,7 +12,7 @@ const hex40 = x => typeof x==='string' && x.length===40 && /^[0-9a-f]{40}$/.test
 const hex64 = x => typeof x==='string' && x.length===64 && /^[0-9a-f]{64}$/.test(x);
 const safeArtifactPath = x => typeof x==='string' && x.length>0 && x.length<=512 &&
     !x.startsWith('/') && !/^[A-Za-z]:/.test(x) && !x.includes('\\') &&
-    !x.includes('\0') && x.split('/').every(part => part && part!=='.' && part!=='..');
+    !/[\x00-\x1f\x7f]/.test(x) && x.split('/').every(part => part && part!=='.' && part!=='..');
 const safeInt = value => Number.isSafeInteger(value) && value > 0;
 const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const failure = (reason, classification='EVIDENCE_REJECTED') => ({classification,reason,canPromote:false});
