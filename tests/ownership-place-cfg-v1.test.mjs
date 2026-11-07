@@ -110,7 +110,22 @@ test('suspension, transport and scope must not export live loans',()=>{
   denied([{op:'borrow',place:p('alpha'),loan:'L',mutable:false}],
     'LOAN_ESCAPES_LEXICAL_SCOPE');
   accepted([{op:'borrow',place:p('alpha'),loan:'L',mutable:false},
-    {op:'release',loan:'L'},{op:'suspend'},{op:'send',payloadMode:'owned-copy'}]);
+    {op:'release',loan:'L'},{op:'suspend'},
+    {op:'send',place:p('alpha'),payloadMode:'owned-copy'}]);
+  accepted([{op:'send',place:p('alpha'),payloadMode:'owned-copy'},
+    {op:'read',place:p('alpha')}]);
+  denied([{op:'send',place:p('alpha'),payloadMode:'owned-take'},
+    {op:'read',place:p('alpha')}],'READ_OF_MOVED_PLACE');
+  denied([{op:'send',place:p('alpha'),payloadMode:'owned-take'},
+    {op:'send',place:p('alpha'),payloadMode:'owned-take'}],
+    'SEND_OF_MOVED_PLACE');
+  denied([{op:'borrow',place:p('alpha'),loan:'L',mutable:false},
+    {op:'send',place:p('alpha'),payloadMode:'owned-take'}],
+    'SEND_TAKE_DURING_ACTIVE_LOAN');
+  denied([{op:'borrow',place:p('alpha'),loan:'L',mutable:true},
+    {op:'send',place:p('alpha'),payloadMode:'owned-copy'}],
+    'SEND_COPY_CONFLICTS_EXCLUSIVE_LOAN');
+  denied([{op:'send',payloadMode:'owned-copy'}], 'INVALID_PLACE_OWNER');
 });
 test('candidate outcome is not verification and budgets fail closed',()=>{
   const r=inspectPlaceFlow({events:[]});
