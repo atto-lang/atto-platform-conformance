@@ -5,7 +5,7 @@
   "canonicalExtension": ".atto",
   "scope": "actor call-depth, guest frame budgeting, carrier survival and supervisor recovery",
   "javaReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2505",
-  "note": "Five backends remain NOT_EXECUTED. Java #2505 is a carrier guard; stacked Java #2624 adds actor-cell-owned logical quota, NOT independently allocated execution frames. Neither establishes process-safe native stack isolation.",
+  "note": "All five backend guest evidence lanes remain NOT_EXECUTED. Java #2505 provides carrier recursion guard, #2624 actor logical budget, and #2627 bounded managed frame bytes (host primitive only). None proves compiler-lowered actor stacks or native process stack-fault isolation.",
   "requirements": {
     "separateHeapsAreNotStacks": true,
     "guestBudgetBeforeNativeOverflow": true,
@@ -213,6 +213,59 @@
         "actorSurvival",
         "actorStackStorage"
       ]
+    },
+    {
+      "id": "bounded-actor-frame-bytes",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "guest-stack-budget-exhausted",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "foreign-frame-handle-rejected",
+      "source": null,
+      "kind": "pending-isolation",
+      "expectedFailureClass": "foreign-actor-frame",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "suspended-frame-byte-quotas-retained",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "cancelled-frame-zeroize-and-no-double-free",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "supervisorRecovery"
+      ]
+    },
+    {
+      "id": "stale-post-retirement-resume-reject",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "stale-actor-generation",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "supervisorRecovery"
+      ]
     }
   ],
   "promotion": {
@@ -227,5 +280,17 @@
     "zeroStepCountsAsExecuted": false,
     "sourceFreeCanaryCountsAsGuest": false
   },
-  "javaLogicalStackReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2624"
+  "javaLogicalStackReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2624",
+  "javaFrameArenaReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2627",
+  "frameStorageBootstrap": {
+    "javaHostPrimitive": "MANAGED_BYTES_ONLY",
+    "javaAuthoredHostTests": 14,
+    "javaLocalIsolatedSmokeAssertions": 19,
+    "compilerLoweredGuestFrames": "NOT_EXECUTED",
+    "suspendedSourceTaskFrames": "NOT_EXECUTED",
+    "realNativeStackIsolation": "NOT_EXECUTED",
+    "nativeAotExecution": "NOT_EXECUTED",
+    "promotionFromHostOnlyAllowed": false,
+    "note": "Java M1.5 frame arena stores bounded managed bytes; compiler-lowered guest locals, full ExecutionContext source task continuation, and safe process fault containment remain unimplemented."
+  }
 }
