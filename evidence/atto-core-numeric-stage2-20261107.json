@@ -26,7 +26,7 @@
       "backend": "forge-x86-64-native",
       "repo": "ores-truffle-oreslang/oreslang-source.forge",
       "pr": 202,
-      "head": "ca6f1b1faa487bd1ea68c8d577c639d502919355",
+      "head": "bc7d599284699b5ae9fc4ab67ba4fb805e9fbb43",
       "library_blob": "5ced991f1d49b3c2a60fdd72b9003c0a4d18cd72",
       "entry_blob": "2e669b93812c64b05e80c4ba75f5e6cd529b7340",
       "execution": "AUTHORED_UNEXECUTED"
