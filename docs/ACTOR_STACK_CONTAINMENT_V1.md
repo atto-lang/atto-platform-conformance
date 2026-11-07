@@ -93,3 +93,35 @@ migration, stale-incarnation fences, swallowed guest budget errors, and low
 native-stack interoperability. They intentionally have no invented `.atto`
 guest fixture or execution receipt yet. Each backend must provide a real
 source fixture when its compiler accepts the construct.
+
+## Java M1.5 bounded byte-frame arena — not compiler-lowered frames
+
+Draft [Java PR #2627](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2627)
+adds a host-only `ActorFrameArena` owned by each `ActorCell`, with managed
+byte-frame allocations, 64-frame / 64 KiB bootstrap quota, opaque frame leases,
+typed `ExecutionContext` allocation-domain identity, suspend/resume checks,
+per-task cancellation zeroization, and actor finalization after physical
+quiescence. Java host tests cover these paths.
+
+This is an *allocated frame-storage primitive*, not yet AttoLang execution
+frames. The source compiler has not lowered guest locals, return continuations,
+nested expressions, or suspended `SourceTask` frames into that storage. The
+suspension API itself does not create a scheduler-owned await ticket or prevent
+mailbox reentrancy: its future compiler/scheduler adapter must integrate with
+existing `sourceReceiveSuspended` and task continuation fences rather than
+calling the arena directly as a substitute for await.
+
+The contract's `frameStorageBootstrap` block explicitly records
+`MANAGED_BYTES_ONLY`; actual compiler-lowered frames, full suspended source
+tasks, NativeAOT execution, and native-stack process isolation are
+`NOT_EXECUTED`. Five additional pending cases require evidence of exact
+frame-byte quota behavior, foreign frame-token denial, retained suspension
+charges, cancellation zeroization, and stale post-retirement resume rejection
+on each backend. There are no fabricated `.atto` fixture receipts.
+
+The *next smallest real-guest acceptance* is a pair of compiled `.atto`
+actors: A recursively exhausts a compiler-managed frame-byte budget; its
+supervisor observes a typed CONTROL failure after cleanup; B responds on the
+same carrier with the whole process still alive. A separate low-native-stack
+run must prove that stack guards, host callbacks and interop cannot consume
+unsafe carrier frames. This is still a missing test, not a passing claim.
