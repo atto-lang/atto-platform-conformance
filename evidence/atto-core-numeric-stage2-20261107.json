@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "area": "portable-core",
+  "milestone": "stage2-canonical-numeric",
+  "claim": "source-byte-identity-only-not-compiler-parity",
+  "canonical_library": {
+    "path": "contracts/atto-core-v1/numeric.atto",
+    "git_blob_sha1": "5ced991f1d49b3c2a60fdd72b9003c0a4d18cd72"
+  },
+  "canonical_entry": {
+    "path": "atto-core-numeric-main.atto",
+    "git_blob_sha1": "2e669b93812c64b05e80c4ba75f5e6cd529b7340",
+    "expected_result": "42"
+  },
+  "backends": [
+    {
+      "backend": "net-nativeaot",
+      "repo": "ores-truffle-oreslang/oreslang-source.net",
+      "pr": 381,
+      "head": "7da7f8381ad60eb2134d1fee973e0e6a9b3eefa5",
+      "library_blob": "5ced991f1d49b3c2a60fdd72b9003c0a4d18cd72",
+      "entry_blob": "2e669b93812c64b05e80c4ba75f5e6cd529b7340",
+      "execution": "AUTHORED_UNEXECUTED"
+    },
+    {
+      "backend": "forge-x86-64-native",
+      "repo": "ores-truffle-oreslang/oreslang-source.forge",
+      "pr": 202,
+      "head": "5883db9c9a9d117b9b09a4229eda249348b7e255",
+      "library_blob": "5ced991f1d49b3c2a60fdd72b9003c0a4d18cd72",
+      "entry_blob": "2e669b93812c64b05e80c4ba75f5e6cd529b7340",
+      "execution": "AUTHORED_UNEXECUTED"
+    }
+  ],
+  "not_yet_qualified": [
+    "java-graalvm",
+    "llvm",
+    "wasm"
+  ],
+  "evidence_class": "SOURCE_ONLY",
+  "guest_status": "NOT_EXECUTED",
+  "forge_harness": "HOSTED_CXX_NOT_FREESTANDING",
+  "negative_mutations": "AUTHORED_UNEXECUTED",
+  "host_imports": "NOT_VERIFIED",
+  "independent_review": "NOT_OBSERVED"
+}

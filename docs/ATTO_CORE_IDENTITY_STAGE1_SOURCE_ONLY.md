@@ -25,3 +25,19 @@ The two checked-in positive guest entrypoints are also byte-identical:
 conformance fixture now pins that exact Git blob. This proves a
 common **authored** input source, not identical compiler execution or
 runtime behavior, which remain unverified until both native gates run.
+
+## Stage-2 canonical numeric source identity and 24-case branch model
+
+The shared canonical `numeric.atto` file has the same verified
+Git object identity `5ced991f1d49b3c2a60fdd72b9003c0a4d18cd72`
+in .NET, Forge and the conformance fixture. The new checked-in
+guest example `clamp_int(50,0,42)` is also byte-identical in the
+two compiler repositories (Git object
+`2e669b93812c64b05e80c4ba75f5e6cd529b7340`).
+The accompanying evidence ledger and Node regression suite pin
+these exact source and guest blob identities, cover 24 purely
+modeled numeric boundary scenarios, reject changed source-byte
+identities, and explicitly classify every compiler guest result as
+`AUTHORED_UNEXECUTED`. The Forge native test is a **hosted C++ ELF
+harness**, not freestanding/Cranelift parity. Zero host imports,
+five-backend parity and independent approval have not been shown.
