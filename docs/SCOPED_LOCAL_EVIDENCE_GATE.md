@@ -69,3 +69,40 @@ Input safety: the CLI opens receipt files with no-follow/nonblocking flags where
 supported, requires regular files of at most 2 MiB, reads through a bounded
 file descriptor and rejects observed truncation or growth. This is not an
 attestation or a defense against adversarial concurrent same-UID mutation.
+
+
+## Independent GitHub API metadata check (second stage)
+
+After a trusted producer has written the self-reported receipt, run:
+
+```sh
+GITHUB_TOKEN=REDACTED node bin/verify-scoped-local-github.mjs path/to/receipt.json
+```
+
+Do not commit the token, echo it or attach it to the receipt. The token needs
+read access to the source repository's PR/commit/Actions metadata; no write
+or cross-organization private-source transfer is necessary.
+
+The checker fetches the **current** PR head, Git commit/tree, workflow run,
+and **attempt-specific** job list from GitHub's API. The receipt must add:
+- \`prNumber\`, the current pull request number, matching the source repository
+- \`scenarios[].checks[].jobId\` for each compile, negative or guest check
+
+It rejects an unexpected repository, stale PR head, wrong tree, wrong run
+attempt, fabricated runner ID, absent job steps, contradictory job steps,
+job IDs absent from the verified run, and unbound scenario checks.
+
+A successful result is exactly
+\`GITHUB_METADATA_MATCH_GUEST_UNATTESTED\`.
+It means the source/run/job metadata was independently re-read, **not**
+that the PR checkout used that exact Git tree within the runner or that the
+compiler binary was built from it. GitHub pull-request workflows may use a
+synthetic merge commit for the workflow run itself: the checkout step must
+explicitly check out the immutable PR head and emit a separate signed/read-back
+checkout/tree/compiled-binary artifact receipt.
+
+The \`GITHUB_METADATA_MATCH_GUEST_UNATTESTED\` label is not an official
+release or parity gate. Promotion still needs independently authenticated
+compiled .atto guest outputs, provenance, negative semantic controls,
+compiler hash and mutation checks. \`parityVerified\` and
+\`guestExecutionVerified\` always remain false.
