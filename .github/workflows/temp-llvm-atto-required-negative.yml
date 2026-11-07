@@ -1,0 +1,38 @@
+name: TEMP LLVM full AttoLang source admission negative controls
+on:
+  push:
+    branches:
+      - ci/llvm-atto-required-negative-20261106
+permissions:
+  contents: read
+jobs:
+  fail-closed-source-required:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact private carrier SHA
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - name: Verify exact upstream source blob hashes
+        env:
+          EXPECTED: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED"
+          git diff --quiet HEAD --
+          python3 - <<'PY'
+          import json,subprocess
+          m=json.load(open("ci/llvm-guest-gate/mirror.json"))
+          for path,expected in m["source_blobs"].items():
+              actual=subprocess.check_output(["git","hash-object",path],text=True).strip()
+              if actual!=expected: raise SystemExit("SOURCE_GIT_BLOB_MISMATCH: "+path)
+          print("VERIFIED_LLVM_SOURCE_BLOBS="+str(len(m["source_blobs"])))
+          print("ORIGINAL_PR_HEAD="+m["origin"]["head_sha"])
+          PY
+      - name: Prove five negative source AOT gate paths
+        run: |
+          python3 -m unittest discover -s tests/tenant-vm -p 'test_e2e_gate.py' -v
+      - name: State evidence boundary
+        run: echo 'NEGATIVE_GATE_ONLY - LLVM_COMPILER_AND_ATTO_NATIVE_GUEST_NOT_EXECUTED'
