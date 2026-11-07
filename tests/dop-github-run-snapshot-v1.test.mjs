@@ -35,6 +35,17 @@ const job = {id: 4411, run_id: 1422, run_attempt: 1, head_sha: head,
     started_at: step.startedAt, completed_at: step.completedAt
   }))};
 const page = {total_count: 1, jobs: [job]};
+// Ensure test mutations cannot contaminate later snapshot controls.
+// Negative tests must make explicit copies of the records they mutate.
+for (const step of [...steps, ...job.steps]) Object.freeze(step);
+Object.freeze(steps);
+Object.freeze(job.steps);
+Object.freeze(receipt.ciJob);
+Object.freeze(receipt);
+Object.freeze(run);
+Object.freeze(job);
+Object.freeze(page.jobs);
+Object.freeze(page);
 const verify = (r = receipt, ru = run, jp = page, ex = repo) =>
   validateDopGithubSnapshot(r, manifest, ru, jp, ex);
 
@@ -166,4 +177,15 @@ test('malformed or unexecuted Git commit evidence cannot be correlated', () => {
     assert.ok(validateDopGithubCommit(receipt,commit,invalidRepo)
       .includes('commit-source-repository'), invalidRepo);
   }
+});
+
+test('synthetic API source fixtures are frozen to prevent cross-test contamination', () => {
+  assert.ok(Object.isFrozen(receipt));
+  assert.ok(Object.isFrozen(receipt.ciJob));
+  assert.ok(Object.isFrozen(receipt.ciJob.steps));
+  assert.ok(Object.isFrozen(job));
+  assert.ok(Object.isFrozen(job.steps));
+  assert.ok(job.steps.every(step => Object.isFrozen(step)));
+  assert.ok(Object.isFrozen(run));
+  assert.ok(Object.isFrozen(page.jobs));
 });
