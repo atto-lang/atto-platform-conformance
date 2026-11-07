@@ -86,3 +86,7 @@ queue generation. A successful source-only report cannot authorize
 a kernel, CPU fallback or physical GPU work. Require executed
 exact-head compiler/JUnit tests and independently verified provider
 receipts before promotion.
+
+## G1e.2 source-only geometry, control flow and canonical n
+
+Java integration #2610 at `dd742dc21aa6438775654e2597d2548e6287cccc` (tree `34dd5b4d9b8c6e96314ab2cd498869bd8fef838a`) now admits only a single direct source launch plus optional trailing return. Unproven host statements, shadowed host formals, early return and multiple GPU calls are rejected as source declarations. It requires a literal static 1D logical group and `over: [n]` where kernel n is exactly the host immutable integer formal n; literal or alternate-n substitutions are not a bounds proof. Both public TypeChecker entry points repeat GPU rejection after annotation expansion. Ten additional mutation fixtures expand this G1e proposal corpus to 18 source-only cases. All diagnostics are proposed, not observed: hosted compiler/JUnit runners continue to return `steps=null` and no physical GPU execution, provider allocation or loan/fence proof exists.

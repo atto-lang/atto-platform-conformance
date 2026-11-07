@@ -1,0 +1,13 @@
+// G1e proposed source ABI fixture. All backend statuses NOT_EXECUTED.
+pub gpu fnc saxpy(f32 alpha, GpuReadBuffer<f32> x,
+                 GpuReadBuffer<f32> y, GpuWriteBuffer<f32> out, int n): void {
+    const int i = gpu.global_id(0);
+    if i < n { out[i] = alpha * x[i] + y[i]; } fi
+}
+pub fnc submit(f32 alpha, GpuReadBuffer<f32> x,
+               GpuReadBuffer<f32> y, GpuWriteBuffer<f32> out, int n): void {
+    val pending = launch saxpy(alpha, x, y, out, n) on gpu(device) {
+        over: [n + 0], group: [256], queue: queue
+    };
+    return;
+}

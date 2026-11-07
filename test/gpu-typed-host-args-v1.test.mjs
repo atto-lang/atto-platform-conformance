@@ -32,7 +32,16 @@ test('G1e stage remains source declaration evidence only', () => {
   assert.equal(manifest.rejectForgedSourceLinkArgumentNames, true);
   assert.equal(manifest.noLaunchSourceSignatureCannotGrantBinding, true);
   assert.equal(manifest.nestedOrUnprovenSourceCallSiteAdmitted, false);
-  assert.equal(manifest.authoredJunitCases, 16);
+  assert.equal(manifest.authoredJunitCases, 19);
+  assert.equal(manifest.authoredJunitControlFlowCases, 24);
+  assert.equal(manifest.authoredJunitEntryPointCases, 6);
+  assert.equal(manifest.authoredJunitCapacityCases, 18);
+  assert.equal(manifest.sourceDirectLaunchOnly, true);
+  assert.equal(manifest.sourceUnprovenHostControlFlowAllowed, false);
+  assert.equal(manifest.sourcePostAnnotationGpuAdmissionRechecked, true);
+  assert.equal(manifest.sourceLogicalOverMustBeDeclaredKernelN, true);
+  assert.equal(manifest.sourceOneDimensionalStaticGroupRequired, true);
+  assert.equal(manifest.sourceLiteralKernelNAllowed, false);
   assert.match(manifest.javaSourceHead, /^[a-f0-9]{40}$/);
   assert.match(manifest.javaSourceTree, /^[a-f0-9]{40}$/);
   for (const key of [
@@ -50,11 +59,11 @@ test('G1e stage remains source declaration evidence only', () => {
 });
 
 test('all G1e proposed fixtures are pinned exact source blobs', () => {
-  assert.equal(manifest.cases.length, 8);
-  assert.equal(new Set(manifest.cases.map(c => c.id)).size, 8);
-  assert.equal(new Set(manifest.cases.map(c => c.path)).size, 8);
+  assert.equal(manifest.cases.length, 18);
+  assert.equal(new Set(manifest.cases.map(c => c.id)).size, 18);
+  assert.equal(new Set(manifest.cases.map(c => c.path)).size, 18);
   assert.equal(manifest.cases.filter(c => c.expectation === 'positive').length, 1);
-  assert.equal(manifest.cases.filter(c => c.expectation === 'negative').length, 7);
+  assert.equal(manifest.cases.filter(c => c.expectation === 'negative').length, 17);
   for (const c of manifest.cases) {
     assert.equal(c.observedResult, 'NOT_EXECUTED');
     assert.equal(c.expectedDiagnostic, c.expectation === 'positive'

@@ -2,8 +2,8 @@
   "schema": "attolang.gpu-typed-host-args-source/1",
   "contract": "oreslang-common-source/contracts/v1/gpu-explicit-launch-v1.json",
   "javaIntegrationPr": 2610,
-  "javaSourceHead": "c2070cb604aa70f4e399aff4605657740ea3922f",
-  "javaSourceTree": "e01abe6bb44b52b99eae11975eee8da2777b237e",
+  "javaSourceHead": "dd742dc21aa6438775654e2597d2548e6287cccc",
+  "javaSourceTree": "34dd5b4d9b8c6e96314ab2cd498869bd8fef838a",
   "stage": "G1e_SOURCE_DECLARATION_ABI_SHAPE_ONLY",
   "evidence": "DECLARED_HOST_ABI_SHAPE_ONLY_NOT_EXECUTABLE",
   "sourceKernelTypeMatchesHostFormalType": true,
@@ -19,8 +19,7 @@
   "implicitCpuFallback": false,
   "ci": {
     "javaJunit": "NOT_EXECUTED",
-    "head": "c2070cb604aa70f4e399aff4605657740ea3922f",
-    "runId": 42328223108,
+    "head": "dd742dc21aa6438775654e2597d2548e6287cccc",
     "steps": null,
     "reason": "RUNNER_ADMISSION_FAILURE"
   },
@@ -133,11 +132,110 @@
       "expectedDiagnostic": "GPU-LAUNCH-002",
       "sourcePattern": "two(out, out, n)",
       "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "wrong-over-name",
+      "path": "fixtures/gpu-typed-host-args-v1/negative-wrong-over-name.atto",
+      "gitBlobSha": "6379528ef863111e24d05fefc31d97b33f6cbe72",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-LAUNCH-002",
+      "sourcePattern": "over: [m]",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "arithmetic-over",
+      "path": "fixtures/gpu-typed-host-args-v1/negative-arithmetic-over.atto",
+      "gitBlobSha": "8724cc6de9cd9a26a29bf1f0bf13ad7c669034a8",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-LAUNCH-002",
+      "sourcePattern": "over: [n + 0]",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "literal-over",
+      "path": "fixtures/gpu-typed-host-args-v1/negative-literal-over.atto",
+      "gitBlobSha": "2c30bc904c2f64e0c5056be825eed66b4d985f7a",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-LAUNCH-002",
+      "sourcePattern": "over: [256]",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "dynamic-group",
+      "path": "fixtures/gpu-typed-host-args-v1/negative-dynamic-group.atto",
+      "gitBlobSha": "3f7a2b3f2ae1ff8d81fb95d9f3dc69a33dc19a89",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-LAUNCH-002",
+      "sourcePattern": "group: [threads]",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "second-over-axis",
+      "path": "fixtures/gpu-typed-host-args-v1/negative-second-over-axis.atto",
+      "gitBlobSha": "b258efeb71c9c252c836a0bd065bf9226b687591",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-LAUNCH-002",
+      "sourcePattern": "over: [n, 2]",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "physical-grid",
+      "path": "fixtures/gpu-typed-host-args-v1/negative-physical-grid.atto",
+      "gitBlobSha": "990de7651338bf5fcb8c2df68a6e2ab3592b3c49",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-LAUNCH-002",
+      "sourcePattern": "grid: [1], block: [256]",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "kernel-n-literal",
+      "path": "fixtures/gpu-typed-host-args-v1/negative-kernel-n-literal.atto",
+      "gitBlobSha": "92309d39378ad00edda2065c7b351fa5b7d4a697",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-LAUNCH-002",
+      "sourcePattern": "saxpy(alpha, x, y, out, 256)",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "host-n-shadow",
+      "path": "fixtures/gpu-typed-host-args-v1/negative-host-n-shadow.atto",
+      "gitBlobSha": "0e157468c5c539705c4a9a94b5684aa1c12349a7",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-LAUNCH-002",
+      "sourcePattern": "const int n = 3;",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "host-early-return",
+      "path": "fixtures/gpu-typed-host-args-v1/negative-host-early-return.atto",
+      "gitBlobSha": "323cd30b95b0bfbb44980f585ed13b001bdfebf6",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-LAUNCH-002",
+      "sourcePattern": "return;\n    val pending",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "two-host-launches",
+      "path": "fixtures/gpu-typed-host-args-v1/negative-two-host-launches.atto",
+      "gitBlobSha": "4e811359f063db115065032eaacfc9bbe2f10662",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-LAUNCH-002",
+      "sourcePattern": "val second = launch",
+      "observedResult": "NOT_EXECUTED"
     }
   ],
   "directHostCallSiteIdentityChecked": true,
   "rejectForgedSourceLinkArgumentNames": true,
   "noLaunchSourceSignatureCannotGrantBinding": true,
   "nestedOrUnprovenSourceCallSiteAdmitted": false,
-  "authoredJunitCases": 16
+  "authoredJunitCases": 19,
+  "sourceDirectLaunchOnly": true,
+  "sourceUnprovenHostControlFlowAllowed": false,
+  "sourcePostAnnotationGpuAdmissionRechecked": true,
+  "sourceLogicalOverMustBeDeclaredKernelN": true,
+  "sourceOneDimensionalStaticGroupRequired": true,
+  "sourceLiteralKernelNAllowed": false,
+  "authoredJunitControlFlowCases": 24,
+  "authoredJunitEntryPointCases": 6,
+  "authoredJunitCapacityCases": 18
 }
