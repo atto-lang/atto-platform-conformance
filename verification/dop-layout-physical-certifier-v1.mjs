@@ -133,6 +133,7 @@ export function certifyPhysicalLayout(plan, maxCells = 65536) {
     }
   }
   const occupied = segments.map(()=>[]);
+  let mismatchedAddress = false;
   for (let row=0n; row<capacity; row++) for (const field of fields) {
     const at = Reflect.apply(address,plan,[Number(row),field.name]);
     const index = ownData(at,'segment');
@@ -142,7 +143,7 @@ export function certifyPhysicalLayout(plan, maxCells = 65536) {
         offset<0n) throw new RangeError('invalid field address');
     const correct = canonical.address(Number(row),field.name);
     if (index !== correct.segment || offset !== correct.byteOffset) {
-      throw new RangeError('noncanonical physical field address');
+      mismatchedAddress = true;
     }
     const segment = segments[index];
     const end=offset+field.size;
@@ -159,6 +160,9 @@ export function certifyPhysicalLayout(plan, maxCells = 65536) {
         throw new RangeError('aliased physical cells');
       }
     }
+  }
+  if (mismatchedAddress) {
+    throw new RangeError('noncanonical physical field address');
   }
   const live=rowBytes*capacity;
   if (live>next) throw new RangeError('physical allocation below live payload');
