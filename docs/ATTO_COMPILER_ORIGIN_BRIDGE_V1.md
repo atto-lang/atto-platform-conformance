@@ -1,0 +1,13 @@
+# Portable candidate compiler-local ownership provenance contract
+
+**Not a certificate, compiler backend, or merge authorization. Every response has `ok=false`, `verified=false`.**
+
+The source-only `src/ownership-compiler-origin-bridge-v1.mjs` models the typed projection and lexical origin contract required by Java and LLVM. It traces at most eight named field projections through a supplied lexical binding inventory and records the claimed `bindingId`, `storageRoot`, and `owned/shared-loan/exclusive-loan` mode. It rejects inherited/prototype keys, malformed symbols, unsupported computed/index expressions, unknown bindings, overdeep paths, and invalid mode data.
+
+The portable pair helper reuses the conservative `placesOverlap` model: two bindings with the same canonical storageRoot MAY alias; *different* root labels MAY ALSO alias unless an explicit, exact independent-root claim exists. Even that claim is advisory; the model never produces `independentStorageVerified=true` or a compiler authorization. The real compiler must produce, authenticate and validate such identities, alias layouts, generations and ownership state in typed MIR.
+
+**Tests:** `tests/ownership-compiler-origin-bridge-v1.test.mjs` adds **25** candidate cases: origin modes/depths, forged local metadata, inherited/prototype roots, unknown/computed paths, alias equivalence, conditional field disjointness, and failure to prove independent storage from labels. Six malformed binding variants are tested inside one adversarial group. **25/25** new groups passed using the exact authored JS in isolated V8 with a test stub; four deliberately weakened guards were all detected. No real Node CI run or AttoLang guest execution is proven by that result.
+
+With existing suites, the exact-head source-owned workflow now expects **107** groups: 106 source tests runnable in isolated V8 and one CLI subprocess group that still requires actual Node execution. The portable `.atto` candidate corpus is **18** cases (4 positive guest oracles with expected exit 42, 14 negative proposed semantic reasons), adding an explicitly detached `rt copy borrowed.value` then `rt share detached` positive beside the borrowed-field direct-share negative.
+
+**Wave across three repositories:** 50 new native LLVM C++ cases, 25 new Java JUnit cases, 25 new conformance source-only cases = 100 newly authored test cases; these evidence classes are distinct. Code changes do not establish NLL, actor cancellation, tenant fencing, or five-backend parity. No merge/promotion until real exact-head execution and independently reviewed receipts. `steps=[]` or `null` remains RUNNER_ADMISSION/NOT_EXECUTED.
