@@ -156,6 +156,7 @@ test('valid leap-day timestamps are permitted when run, job and stdout agree',()
     step.completed_at='2024-02-29T01:00:0'+(i+1)+'Z';
   });
   v.log=v.log.replaceAll('2026-11-07','2024-02-29');
+  v.page.jobs[0]=JSON.parse(JSON.stringify(v.job));
   assert.deepEqual(errors(v),[]);
 });
 
