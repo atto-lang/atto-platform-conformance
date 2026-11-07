@@ -22,6 +22,14 @@ codes are pinned in both the source-free validator and manifest. A caller
 may not swap case IDs, weaken a diagnostic, drop an observation, change the
 original backend roster or insert apparent approval/PASS authority keys.
 
+**Fixture-path identity hardening:** a pinned blob alone does not authenticate the
+path from which an orchestrator would load the fixture. Each case must now use
+the **one exact canonical repository-relative filename** under its source suite
+directory, with no nested directories, `.` segments or `..` traversal. Five
+adversarial test cases reject aliases that previously satisfied the loose
+prefix/suffix check. This does not attest that the repository path was checked
+out or executed by a compiler.
+
 The **target** backend roster is Java, LLVM, Wasm, Forge and .NET. The source
 actor draft itself lists `java, llvm, net, wasm, cranelift`. This is an
 unresolved source compatibility mismatch: **Forge is absent** and **Cranelift
