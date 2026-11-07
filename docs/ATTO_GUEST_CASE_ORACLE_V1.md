@@ -59,6 +59,17 @@ deliberate source-only gaps:
   `ATTO_TASK_E_HASFUTURE_WITNESS`, but no source-confirmed diagnostic phase
   for all cases. Keep `PENDING_EXACT_DIAGNOSTIC_PHASE`.
 
+## Timestamp provenance hardening
+
+The source `as_of` field must now be a **round-trip canonical UTC timestamp**,
+not merely an ISO-shaped string accepted by JavaScript's permissive
+`Date.parse`. Invalid calendar days (February 30, April 31, non-leap February
+29) and `24:00:00Z` normalization are rejected, while a genuine leap day
+remains structurally valid. These checks prevent misleading source-timestamp
+claims; they do **not** authenticate the timestamp or permit promotion of
+an unexecuted guest result. Five new source-local Node regression cases cover
+these boundaries, pending actual source-owned CI execution.
+
 ## How the reporter uses this
 
 `tools/atto-guest-case-oracle-v1.mjs` validates the exact draft inventory
