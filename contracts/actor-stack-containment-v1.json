@@ -5,7 +5,7 @@
   "canonicalExtension": ".atto",
   "scope": "actor call-depth, guest frame budgeting, carrier survival and supervisor recovery",
   "javaReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2505",
-  "note": "All five backend guest evidence lanes remain NOT_EXECUTED. Java #2505 provides carrier recursion guard, #2624 actor logical budget, and #2627 bounded managed frame bytes (host primitive only). None proves compiler-lowered actor stacks or native process stack-fault isolation.",
+  "note": "All five backend guest evidence lanes remain NOT_EXECUTED. Java #2505 provides carrier recursion guard, #2624 actor logical budget, and #2627 guard-linked bounded managed frame reservations (not compiler-lowered local values). None proves independently switchable guest execution stacks or native process stack-fault isolation.",
   "requirements": {
     "separateHeapsAreNotStacks": true,
     "guestBudgetBeforeNativeOverflow": true,
@@ -23,7 +23,8 @@
     "actorStackPoisonCannotBeGuestCaught": true,
     "carrierMigrationDoesNotMoveStackOwnership": true,
     "stackFailureBeforeNativeGuardPage": true,
-    "noNativeSignalOrStackOverflowRecovery": true
+    "noNativeSignalOrStackOverflowRecovery": true,
+    "guardedSynchronousInvocationChargedToActorFrameArena": true
   },
   "backends": [
     {
@@ -266,6 +267,16 @@
         "actorStackGeneration",
         "supervisorRecovery"
       ]
+    },
+    {
+      "id": "synchronous-guest-guard-byte-reservations",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage"
+      ]
     }
   ],
   "promotion": {
@@ -284,13 +295,16 @@
   "javaFrameArenaReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2627",
   "frameStorageBootstrap": {
     "javaHostPrimitive": "MANAGED_BYTES_ONLY",
-    "javaAuthoredHostTests": 16,
+    "javaAuthoredHostTests": 20,
     "javaLocalIsolatedSmokeAssertions": 19,
     "compilerLoweredGuestFrames": "NOT_EXECUTED",
     "suspendedSourceTaskFrames": "NOT_EXECUTED",
     "realNativeStackIsolation": "NOT_EXECUTED",
     "nativeAotExecution": "NOT_EXECUTED",
     "promotionFromHostOnlyAllowed": false,
-    "note": "Java M1.5 frame arena stores bounded managed bytes; compiler-lowered guest locals, full ExecutionContext source task continuation, and safe process fault containment remain unimplemented."
+    "note": "Java M1.6 guarded non-tail interpreter invocations reserve actor-owned managed byte frames and unwind LIFO; JVM guest locals and return continuations remain on carrier stack. SourceTask continuation and native process-stack containment are NOT_EXECUTED.",
+    "javaGuardedInvocationByteFrames": "GUARD_WIRED_MANAGED_BYTES_NOT_GUEST_LOCALS",
+    "javaSynchronousGuardByteCharge": 32,
+    "javaGuestCallGuardNativeStackStillUsed": true
   }
 }
