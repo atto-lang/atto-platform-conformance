@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { validateDopGithubSnapshot } from '../verification/dop-github-run-snapshot-v1.mjs';
+import { validateDopGithubSnapshot, validateDopGithubCommit } from '../verification/dop-github-run-snapshot-v1.mjs';
 
 const manifest = JSON.parse(readFileSync(new URL(
   '../contracts/dop-scalar-guest-v1/manifest.json', import.meta.url), 'utf8'));
@@ -130,4 +130,36 @@ test('LLVM native guest snapshot must correlate its real poisoned-checksum execu
   wrong[3].name = 'host-only negative oracle';
   assert.ok(verify(receipt, run, {...page, jobs:[{...job, steps:wrong}]})
     .includes('observed-step-name-match'));
+});
+
+test('source Git commit and declared tree are independently correlated by immutable URLs', () => {
+  const commit = {
+    sha:head, tree:{sha:head,
+      url:'https://api.github.com/repos/' + repo + '/git/trees/' + head},
+    url:'https://api.github.com/repos/' + repo + '/git/commits/' + head
+  };
+  assert.deepEqual(validateDopGithubCommit(receipt,commit,repo),[]);
+  assert.ok(validateDopGithubCommit({...receipt,sourceTreeSha:'c'.repeat(40)},commit,repo)
+    .includes('git-commit-tree-match'));
+  assert.ok(validateDopGithubCommit({...receipt,sourceHeadSha:'c'.repeat(40)},commit,repo)
+    .includes('git-commit-exact-head'));
+  assert.ok(validateDopGithubCommit(receipt,{...commit,url:commit.url + '?ref=main'},repo)
+    .includes('git-commit-canonical-url'));
+  assert.ok(validateDopGithubCommit(receipt,{...commit,tree:{...commit.tree,
+    url:commit.tree.url.replace('/git/trees/', '/git/blobs/')}},repo)
+    .includes('git-tree-canonical-url'));
+  assert.ok(validateDopGithubCommit(receipt,commit,'other/repo')
+    .includes('git-commit-canonical-url'));
+});
+test('malformed or unexecuted Git commit evidence cannot be correlated', () => {
+  const commit={sha:head,tree:{sha:head,
+    url:'https://api.github.com/repos/' + repo + '/git/trees/' + head},
+    url:'https://api.github.com/repos/' + repo + '/git/commits/' + head};
+  for (const bad of [null,[],{sha:head},{...commit,tree:null}]) {
+    assert.notDeepEqual(validateDopGithubCommit(receipt,bad,repo),[]);
+  }
+  assert.ok(validateDopGithubCommit({...receipt,status:'NOT_EXECUTED'},commit,repo)
+    .includes('not-executed-cannot-attest-commit'));
+  assert.ok(validateDopGithubCommit(receipt,commit,'../other')
+    .includes('commit-source-repository'));
 });
