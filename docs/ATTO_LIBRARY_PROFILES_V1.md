@@ -45,7 +45,7 @@ evidence itself.
 
 ## Hardening: exact ARM freestanding ABI allowlist
 
-LLVM's `tools/core-baremetal-gate/src/audit.rs` has a closed 25-symbol
+LLVM's `tools/core-baremetal-gate/src/audit.rs` has a closed 27-symbol
 `SUPPORT_ABI` (memory helpers, exact ARM RTABI helper names, and
 `__mulodi4`). The original blanket `__aeabi_` prefix in this v1
 conformance manifest was broader than LLVM's implementation and could
