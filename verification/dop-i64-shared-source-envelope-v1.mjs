@@ -49,9 +49,6 @@ export function verifySharedI64Summary(summary) {
     const op=ops[i],kind=own(op,'kind');
     if(returned) reject('operation after terminal read');
     if(kind==='push') {
-      if(own(op,'first')!==null && typeof own(op,'first')!=='bigint') {
-        reject('push values must be signed i64');
-      }
       const first=own(op,'first'), second=own(op,'second');
       const min=-(1n<<63n), max=(1n<<63n)-1n;
       if(typeof first!=='bigint'||typeof second!=='bigint'||
