@@ -146,3 +146,10 @@ test('zero fabricated execution remains fail-closed with missing case inventory 
  assert(r.holds.includes('CASE_LEVEL_ORACLE_INVENTORY_NOT_EVALUATED'));
  assert.equal(r.release_authorized,false);
 });
+
+denies('top-level user-controlled release authority is rejected',s=>s.release_authorized=true);
+denies('nested suite certification flag is rejected',s=>s.suites[0].certified=true);
+denies('source owner authorization injected into source record is rejected',s=>s.suites[0].source.approval='self');
+denies('fixture result injected into case record is rejected',s=>s.suites[1].cases[0].status='PASS');
+denies('positive expectation cannot hide approved flag',s=>s.suites[1].cases[0].expect.verified=true);
+denies('negative expectation cannot hide waived flag',s=>s.suites[1].cases[10].expect.waived=true);
