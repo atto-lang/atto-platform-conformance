@@ -277,3 +277,38 @@ canonical compiler-backed .atto proof. All five backend evidence statuses
 remain NOT_EXECUTED. Missing `steps` or no runner admission is not a
 compiler failure. See the source PR's M3.1 document and tracking issue #341
 for outstanding true stackless guest/frame/supervisor/low-stack gates.
+
+## Java M3.2 bounded scalar lexical slots and return-record ABI
+
+The new draft [Java PR #2643](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2643)
+stacks on #2642 and changes the real `Evaluator.Env` lexical scalar
+definition, initialization, lookup and `let` reassignment path to use
+**actor-owned SourceTask frame bytes** for a bounded subset. The six 9-byte
+typed slots remain shared with automatically bound scalar formals inside
+the same 64-byte actor task lease. Shadowed names are distinguished by
+lexical scope epoch; managed scalar reads decode from the actor arena
+after await/cooperate. Foreign task/carrier access or a changed primitive
+tag fails closed. An unlowered JVM `Slot.value` compatibility shadow still
+exists and lexical scopes do not independently reclaim scalar slots.
+
+A separate 48-byte `ActorGuestReturnRecord` ABI models callee index,
+call-site/return program counters, operand depth, actor generation, owner
+and execution number with generation-fenced actor quota and zeroizing
+retirement. **The evaluator does not yet consume this descriptor.**
+Actual non-tail guest calls still use recursive JVM frames, so it is
+prohibited to claim stackless guest dispatch, return-PC lowering,
+low-native-stack safety, independent process-stack isolation or full
+five-backend parity from this ABI alone.
+
+Evidence added to the manifest: six newly authored Java host/runtime
+scalar lexical JUnit methods, four host/runtime call/return record JUnit
+methods, and one **canonical .atto actor source JUnit/fixture** expecting
+`before|42|second` from a mutable `let int` across two
+`rt cooperate` suspensions with a second user mail queued. These
+are **AUTHORED_NOT_EXECUTED** until actual admitted exact-head Java/Graal
+CI produces nonzero executed steps and JUnit artifacts. Four pending
+conformance cases bring the total to **33**. The contract's negative
+mutation tests explicitly reject fake JVM-shadow removal, arbitrary
+reference-root lowering, return-PC dispatch, full lexical scope reclaim,
+native stack survival or guest PASS. All backend proof lanes remain
+`NOT_EXECUTED`.
