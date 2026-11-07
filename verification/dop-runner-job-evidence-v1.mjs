@@ -50,46 +50,77 @@ export function classifyRunnerJobEvidence(run, response, expected) {
   if (!selected) throw Error('E_EXPECTED_JOB_MISSING');
   if (own(selected,'run_id') !== id || own(selected,'run_attempt') !== attempt ||
       own(selected,'head_sha') !== head) throw Error('E_JOB_IDENTITY');
-  const runner = own(selected,'runner_id');
-  const steps = own(selected,'steps');
+  // Validate requirements before handling a missing runner.
+  const required=own(expected,'requiredSteps');
+  if (!Array.isArray(required) || !required.length ||
+      new Set(required).size !== required.length ||
+      required.some(n=>typeof n!=='string'||!n)) throw Error('E_REQUIRED_STEPS');
+  const runner=own(selected,'runner_id'), runnerName=own(selected,'runner_name');
+  const steps=own(selected,'steps');
+  const runStatus=own(run,'status'), runConclusion=own(run,'conclusion');
+  const jobStatus=own(selected,'status'), jobConclusion=own(selected,'conclusion');
+  const beginRaw=own(selected,'started_at'), endRaw=own(selected,'completed_at');
   if (runner === 0 || runner === null) {
-    if (steps !== null && (!Array.isArray(steps) || steps.length !== 0)) throw Error('E_CONTRADICTORY_RUNNER');
-    return { classification:'RUNNER_NOT_ADMITTED', runId:id, runAttempt:attempt,
-             jobId:own(selected,'id'), headSha:head, executedStepCount:0,
-             evidence:'API_METADATA_ONLY_NOT_GUEST_PARITY' };
+    if (steps !== null && (!Array.isArray(steps) || steps.length !== 0) ||
+        (runnerName !== '' && runnerName !== null)) throw Error('E_CONTRADICTORY_RUNNER');
+    let validTimes=false;
+    if (beginRaw != null && endRaw != null) {
+      const begin=stamp(beginRaw,'jobStart'), end=stamp(endRaw,'jobEnd');
+      if (end < begin) throw Error('E_JOB_TIME');
+      validTimes=true;
+    }
+    // Only explicit zero-runner, empty-step, completed failure records establish
+    // a negative admission observation. Null and incomplete API data do not.
+    const confirmed=runner===0 && Array.isArray(steps) && validTimes &&
+      runStatus==='completed' && runConclusion==='failure' &&
+      jobStatus==='completed' && jobConclusion==='failure';
+    return {classification:confirmed?'RUNNER_NOT_ADMITTED':'RUNNER_ADMISSION_UNVERIFIED',
+      runId:id,runAttempt:attempt,jobId:own(selected,'id'),headSha:head,
+      executedStepCount:0,reportedStepCount:Array.isArray(steps)?steps.length:0,
+      evidence:'API_METADATA_ONLY_NOT_GUEST_PARITY'};
   }
   posint(runner,'runnerId');
-  if (typeof own(selected,'runner_name') !== 'string' || !own(selected,'runner_name').trim())
-    throw Error('E_RUNNER_NAME');
+  if (typeof runnerName !== 'string' || !runnerName.trim()) throw Error('E_RUNNER_NAME');
   if (!Array.isArray(steps) || steps.length === 0) return {
-    classification:'STEP_RECORDS_MISSING',runId:id,runAttempt:attempt,jobId:own(selected,'id'),
-    headSha:head,executedStepCount:0,evidence:'API_METADATA_ONLY_NOT_GUEST_PARITY'
+    classification:'STEP_RECORDS_MISSING',runId:id,runAttempt:attempt,
+    jobId:own(selected,'id'),headSha:head,executedStepCount:0,
+    reportedStepCount:Array.isArray(steps)?steps.length:0,
+    evidence:'API_METADATA_ONLY_NOT_GUEST_PARITY'
   };
-  const jobStart = stamp(own(selected,'started_at'),'jobStart');
-  const jobEnd = stamp(own(selected,'completed_at'),'jobEnd');
+  const jobStart=stamp(beginRaw,'jobStart'), jobEnd=stamp(endRaw,'jobEnd');
   if (jobEnd < jobStart) throw Error('E_JOB_TIME');
-  const byName = new Map();
-  let lastNumber = 0;
+  const byName=new Map();
+  let lastNumber=0, executed=0;
   for (const step of steps) {
-    const stepName=own(step,'name'), number=posint(own(step,'number'),'stepNumber');
-    if (typeof stepName !== 'string' || !stepName.trim() || byName.has(stepName) || number <= lastNumber)
+    const name=own(step,'name'), number=posint(own(step,'number'),'stepNumber');
+    if (typeof name!=='string'||!name.trim()||byName.has(name)||number<=lastNumber)
       throw Error('E_STEP_ORDER');
     lastNumber=number;
-    const start=stamp(own(step,'started_at'),'stepStart');
-    const end=stamp(own(step,'completed_at'),'stepEnd');
-    if (end < start || start < jobStart || end > jobEnd) throw Error('E_STEP_TIME');
-    byName.set(stepName,step);
+    const status=own(step,'status'), conclusion=own(step,'conclusion');
+    const rawStart=own(step,'started_at'), rawEnd=own(step,'completed_at');
+    if ((rawStart==null)!==(rawEnd==null)) throw Error('E_STEP_TIME');
+    let hasTimes=false;
+    if (rawStart!=null) {
+      const st=stamp(rawStart,'stepStart'),en=stamp(rawEnd,'stepEnd');
+      if (en<st||st<jobStart||en>jobEnd) throw Error('E_STEP_TIME');
+      hasTimes=true;
+    }
+    // Count timestamped completed work, not API step records or skipped steps.
+    const executedStep=hasTimes && status==='completed' &&
+      ['success','failure','cancelled','timed_out','action_required'].includes(conclusion);
+    if(executedStep)executed++;
+    byName.set(name,{step,executedStep});
   }
-  const required=own(expected,'requiredSteps');
-  if (!Array.isArray(required) || required.length === 0 ||
-      new Set(required).size !== required.length || required.some(n=>typeof n!=='string'||!n))
-    throw Error('E_REQUIRED_STEPS');
-  const all = required.every(n => byName.has(n) && own(byName.get(n),'status') === 'completed' &&
-                                   own(byName.get(n),'conclusion') === 'success');
-  const success = own(run,'status')==='completed' && own(run,'conclusion')==='success' &&
-                  own(selected,'status')==='completed' && own(selected,'conclusion')==='success' && all;
+  const all=required.every(n=>{
+    const entry=byName.get(n);
+    return entry?.executedStep && own(entry.step,'status')==='completed' &&
+      own(entry.step,'conclusion')==='success';
+  });
+  const success=runStatus==='completed'&&runConclusion==='success'&&
+    jobStatus==='completed'&&jobConclusion==='success'&&all;
   return {classification:success?'STEPFUL_RECORD_REQUIRES_INDEPENDENT_ATTESTATION':'STEPFUL_FAILED_OR_INCOMPLETE',
-          runId:id,runAttempt:attempt,jobId:own(selected,'id'),headSha:head,
-          executedStepCount:steps.length,evidence:'API_METADATA_ONLY_NOT_GUEST_PARITY'};
+    runId:id,runAttempt:attempt,jobId:own(selected,'id'),headSha:head,
+    executedStepCount:executed,reportedStepCount:steps.length,
+    evidence:'API_METADATA_ONLY_NOT_GUEST_PARITY'};
 }
 export const validateRunnerTimestamp = stamp;
