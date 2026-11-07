@@ -338,6 +338,66 @@
         "actorStackGeneration",
         "suspendedFrameOwnership"
       ]
+    },
+    {
+      "id": "source-actor-non-tail-frames",
+      "kind": "positive",
+      "source": "fixtures/actor-stack-containment-v1/non-tail-actor-frame.atto",
+      "expectedStdout": "8",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "source-actor-tail-frames",
+      "kind": "positive",
+      "source": "fixtures/actor-stack-containment-v1/proper-tail-actor-frame.atto",
+      "expectedStdout": "100000",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "nativeLowStack"
+      ]
+    },
+    {
+      "id": "source-actor-sibling-after-budget",
+      "kind": "positive",
+      "source": "fixtures/actor-stack-containment-v1/sibling-after-budget-failure.atto",
+      "expectedStdout": "starting|alive",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "source-task-invocation-same-execution-id",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "source-task-quiescence-callback-retains-frames",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "source-task-invocation-overflow-sibling-survival",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival",
+        "suspendedFrameOwnership"
+      ]
     }
   ],
   "promotion": {
@@ -363,7 +423,7 @@
     "realNativeStackIsolation": "NOT_EXECUTED",
     "nativeAotExecution": "NOT_EXECUTED",
     "promotionFromHostOnlyAllowed": false,
-    "note": "Java M1.6 guarded non-tail interpreter invocations reserve actor-owned managed byte frames and unwind LIFO; JVM guest locals and return continuations remain on carrier stack. SourceTask continuation and native process-stack containment are NOT_EXECUTED. Java #2631 explicitly binds an actor source scheduler to per-task bootstrap frame leases and reserves bytes across await/cooperate; SourceTask locals and return continuations are not lowered into them.",
+    "note": "Java M1.6 guarded non-tail interpreter invocations reserve actor-owned managed byte frames and unwind LIFO; JVM guest locals and return continuations remain on carrier stack. SourceTask continuation and native process-stack containment are NOT_EXECUTED. Java #2631 explicitly binds an actor source scheduler to per-task bootstrap frame leases and reserves bytes across await/cooperate; SourceTask locals and return continuations are not lowered into them. Java integration #2637 joins nested invocation descriptor frames to the active SourceTask ExecutionContext and defers byte-frame reclamation until successful physical quiescence callbacks; guest locals/return continuations still run on JVM stacks.",
     "javaGuardedInvocationByteFrames": "GUARD_WIRED_MANAGED_BYTES_NOT_GUEST_LOCALS",
     "javaSynchronousGuardByteCharge": 32,
     "javaGuestCallGuardNativeStackStillUsed": true,
@@ -382,6 +442,14 @@
     "javaActorSourceTaskLease": "HOST_SCHEDULER_AWAIT_LEASE_AUTHORED_NOT_EXECUTED",
     "javaActorSourceTaskCompilerFrames": "NOT_EXECUTED",
     "javaActorSourceTaskNativeStackIsolation": "NOT_EXECUTED",
-    "javaActorSourceTaskPhysicalRetirement": "HOST_RUNTIME_AUTHORED_NOT_EXECUTED"
+    "javaActorSourceTaskPhysicalRetirement": "HOST_RUNTIME_AUTHORED_NOT_EXECUTED",
+    "javaIntegratedInvocationSourceTaskReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2637",
+    "javaIntegratedSourceTaskInvocationStatus": "AUTHORED_NOT_EXECUTED",
+    "javaIntegratedSourceTaskHostTestsAuthored": 3,
+    "javaIntegratedActorAttoFixturesCopied": 3,
+    "javaIntegratedActorAttoCompilerReceipts": "NOT_EXECUTED",
+    "javaIntegratedActorNativeStackIsolation": "NOT_EXECUTED",
+    "javaQuiescenceCallbackBeforeFrameRetirement": true,
+    "javaInvocationReusesSourceTaskExecutionId": true
   }
 }
