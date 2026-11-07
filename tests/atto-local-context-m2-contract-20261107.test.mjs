@@ -5,7 +5,7 @@ const c=JSON.parse(readFileSync(new URL('../contracts/atto-local-context-m2-2026
 test('contract remains non-promoting and includes all five backend families',()=>{
   assert.equal(c.status,'candidate-unattested');
   assert.deepEqual(c.backendFamilies,['java','llvm','net','wasm','forge']);
-  assert.equal(c.scenarios.length,32);
+  assert.equal(c.scenarios.length,34);
 });
 test('all scenario ids are unique and finite',()=>{
   const ids=c.scenarios.map(x=>x.id);assert.equal(new Set(ids).size,ids.length);
@@ -39,4 +39,21 @@ test('read lifetime semantic boundary distinguishes revocation from replacement'
   assert.match(replaced.acceptance,/next read sees the replacement/);
   assert.equal(closed.status,'NOT_EXECUTED');
   assert.equal(replaced.status,'NOT_EXECUTED');
+});
+
+test('actor STOP during pinned read revokes access, sibling survival is distinct',()=>{
+  const stop=c.scenarios.find(s=>s.id==='LC-M2-33');
+  const sibling=c.scenarios.find(s=>s.id==='LC-M2-34');
+  assert.ok(stop && sibling);
+  assert.equal(stop.scope,'actor');
+  assert.equal(sibling.scope,'actor');
+  assert.equal(stop.expectedKind,'negative');
+  assert.equal(sibling.expectedKind,'positive');
+  assert.match(stop.acceptance,/STOPPING carrier/);
+  assert.match(stop.acceptance,/deny subsequent ActorLocal reads, writes and erases/);
+  assert.match(sibling.acceptance,/actor B must continue/);
+  for(const scenario of [stop,sibling]){
+    assert.equal(scenario.status,'NOT_EXECUTED');
+    assert.deepEqual(Object.values(scenario.backendEvidence),c.backendFamilies.map(()=> 'NOT_EXECUTED'));
+  }
 });
