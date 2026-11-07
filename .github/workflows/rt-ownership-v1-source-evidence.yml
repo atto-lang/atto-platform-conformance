@@ -4,11 +4,14 @@ on:
     branches:
       - 'audit/atto-ownership-conformance-syntax-*'
       - 'audit/atto-ownership-proof-vs-shape-*'
+      - 'audit/ownership-mir-place-flow-v1-*'
   pull_request:
     paths:
       - 'contracts/rt-ownership-admission-v1.json'
       - 'src/rt-ownership-admission-v1.mjs'
       - 'tests/rt-ownership-admission-v1.test.mjs'
+      - 'src/ownership-place-cfg-v1.mjs'
+      - 'tests/ownership-place-cfg-v1.test.mjs'
       - '.github/workflows/rt-ownership-v1-source-evidence.yml'
   workflow_dispatch:
 
@@ -37,7 +40,9 @@ jobs:
           echo "ATTO_OWNERSHIP_CONTRACT_TREE=$(git rev-parse 'HEAD^{tree}')"
           sha256sum contracts/rt-ownership-admission-v1.json \
             src/rt-ownership-admission-v1.mjs \
-            tests/rt-ownership-admission-v1.test.mjs
+            tests/rt-ownership-admission-v1.test.mjs \
+            src/ownership-place-cfg-v1.mjs \
+            tests/ownership-place-cfg-v1.test.mjs
       - name: Execute source-only receipt validation and adversarial tests
         shell: bash
         run: |
@@ -48,5 +53,11 @@ jobs:
           grep -Eq '^# tests 10$' /tmp/atto-ownership-receipt-tests.tap
           grep -Eq '^# pass 10$' /tmp/atto-ownership-receipt-tests.tap
           grep -Eq '^# fail 0$' /tmp/atto-ownership-receipt-tests.tap
+          node --test --test-reporter=tap \
+            tests/ownership-place-cfg-v1.test.mjs | tee /tmp/atto-ownership-place-cfg-tests.tap
+          grep -Eq '^# tests 13$' /tmp/atto-ownership-place-cfg-tests.tap
+          grep -Eq '^# pass 13$' /tmp/atto-ownership-place-cfg-tests.tap
+          grep -Eq '^# fail 0$' /tmp/atto-ownership-place-cfg-tests.tap
+          echo "ATTO_OWNERSHIP_PLACE_MODEL=CANDIDATE_UNATTESTED"
           echo "ATTO_OWNERSHIP_RECEIPT_SHAPE=SOURCE_FREE_ONLY"
           echo "ATTO_OWNERSHIP_GUEST_PARITY=NOT_EXECUTED"
