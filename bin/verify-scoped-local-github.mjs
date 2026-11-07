@@ -99,7 +99,8 @@ export async function auditGitHubReceipt(receipt, contract, {
       !Array.isArray(run?.pull_requests) ||
       !run.pull_requests.some(p => p.number === receipt.prNumber &&
         p.head?.sha === receipt.headSha &&
-        p.head?.repo?.full_name === repo))
+        (p.head?.repo?.full_name === repo ||
+         p.head?.repo?.url === apiBase)))
     faults.push('RUN_ASSOCIATION_MISMATCH');
   // A run associated with the same PR can be from an OLD revision. Do not
   // count a previous successful run merely because its PR number matches.
@@ -116,7 +117,7 @@ export async function auditGitHubReceipt(receipt, contract, {
   const declared = receipt.workflow.jobs;
   for (const claimed of declared) {
     const actual = jobs.find(j => j.id === claimed.id);
-    if (!actual || actual.run_id !== run.id || actual.run_attempt !== run.run_attempt ||
+    if (!actual || actual.run_id !== run?.id || actual.run_attempt !== run?.run_attempt ||
         actual.status !== 'completed' || actual.conclusion !== 'success' ||
         !positiveInt(actual.runner_id) || actual.runner_id !== claimed.runnerId ||
         !Array.isArray(actual.steps) || actual.steps.length === 0) {
