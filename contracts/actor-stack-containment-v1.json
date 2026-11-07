@@ -520,13 +520,14 @@
     "javaScalarTypedFramePcAndStackHeaderBytes": 16,
     "javaScalarTypedFrameTaggedSlotBytes": 16,
     "javaScalarTypedFrameHostCompilerTestsAuthored": 7,
-    "javaScalarTypedFrameHostRuntimeTestsAuthored": 4,
+    "javaScalarTypedFrameHostRuntimeTestsAuthored": 5,
     "javaScalarTypedFrameAttoSourceFixturesAuthored": 3,
     "javaScalarTypedFrameGuestCompilerReceipts": "NOT_EXECUTED",
     "javaScalarTypedFrameNativeLowStackReceipts": "NOT_EXECUTED",
     "javaScalarTypedFrameActorSupervisorRestartReceipts": "NOT_EXECUTED",
     "javaScalarTypedFrameOtherBackends": "NOT_EXECUTED",
     "javaScalarTypedFrameActualPrimitiveStorage": "IMPLEMENTED_UNVERIFIED",
-    "javaScalarTypedFrameSourceTaskLexicalContinuations": "NOT_IMPLEMENTED"
+    "javaScalarTypedFrameSourceTaskLexicalContinuations": "NOT_IMPLEMENTED",
+    "javaScalarTypedFrameStaleLeasePoisonStatus": "AUTHORED_NOT_EXECUTED"
   }
 }
