@@ -41,13 +41,13 @@ jobs:
             test "$(git hash-object "$path")" = "$(git rev-parse "HEAD:$path")"
             echo "ATTO_BOOL_I64_CONFORMANCE_BLOB=$path:$(git rev-parse "HEAD:$path")"
           done
-      - name: Execute four source-only corpus and identity test groups
+      - name: Execute six source-only corpus and adversarial identity test groups
         shell: bash
         run: |
           set -euo pipefail
           node --test tests/dop-inverted-bool-i64-v1.test.mjs | tee /tmp/atto-dop-bool-i64-node.txt
-          grep -Eq '^# tests 4$' /tmp/atto-dop-bool-i64-node.txt
-          grep -Eq '^# pass 4$' /tmp/atto-dop-bool-i64-node.txt
+          grep -Eq '^# tests 6$' /tmp/atto-dop-bool-i64-node.txt
+          grep -Eq '^# pass 6$' /tmp/atto-dop-bool-i64-node.txt
           grep -Eq '^# fail 0$' /tmp/atto-dop-bool-i64-node.txt
           test -z "$(git status --porcelain=v1 --untracked-files=all)"
           echo 'DOP_BOOL_I64_CORPUS_SOURCE_ONLY_PASS, ALL_BACKEND_GUESTS_NOT_EXECUTED'
