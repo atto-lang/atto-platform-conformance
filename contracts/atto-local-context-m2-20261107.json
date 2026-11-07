@@ -559,6 +559,36 @@
         "wasm": "NOT_EXECUTED",
         "forge": "NOT_EXECUTED"
       }
+    },
+    {
+      "id": "LC-M2-37",
+      "scope": "actor",
+      "expectedKind": "negative",
+      "title": "foreign physical thread cannot run bounded ActorLocal mutation callback",
+      "acceptance": "Even with a correctly minted live actor reference, a host thread lacking that actor's current physical scheduler claim must not invoke the bounded ActorLocal mutation callback or modify its scalar cell",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-38",
+      "scope": "actor",
+      "expectedKind": "positive",
+      "title": "STOP and bounded lock-free ActorLocal commit are linearly ordered",
+      "acceptance": "A bounded allocation-free scalar callback by the exact authenticated actor carrier commits before a later scheduler STOP; once STOP wins the shared lifecycle lock, further commits deny without mutating the cell, while independent live sibling actors remain functional",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
     }
   ]
 }
