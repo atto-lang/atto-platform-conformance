@@ -19,7 +19,7 @@ function denied(label,fn){
 function receipt(b,kind,c=null){
  const v={repo:b.repo,source_commit_sha:b.source.commit_sha,source_tree_sha:b.source.tree_sha,
    compiler_binary_sha256:b.compiler.binary_sha256,
-   kind,run_id:101,run_attempt:1,job_id:202,runner_id:303,
+   kind,run_id:101,run_attempt:1,job_id:202,runner_id:303,runner_name:'synthetic-test-runner',
    status:'completed',conclusion:'success',artifact_sha256:'d'.repeat(64),
    steps:[{name:'Execute real compiler guest',status:'completed',conclusion:'success'}]};
  if(kind==='aot')return {...v,executable_sha256:'e'.repeat(64),fully_aot:true,jit_disabled:true};
@@ -282,6 +282,43 @@ test('queued, in-progress or padded substantive steps cannot certify execution',
   mutateStep(b.guest[0].receipt.steps[0]);
   assert.throws(()=>validateCandidate(s),/unbound guest receipt/);
  }
+});
+test('missing, absent and malformed runner names reject a claimed guest execution',()=>{
+ for(const bad of [null,'',' ','  worker','worker  ','worker\nline','worker\u00a0name',
+                    'worker\u200bname','x'.repeat(129),0,{},[]]){
+  const s=load(),{b}=withReportedScalar(s);
+  b.guest[0].receipt.runner_name=bad;
+  assert.throws(()=>validateCandidate(s),/unbound guest receipt/);
+ }
+ const s=load(),{b}=withReportedScalar(s);
+ delete b.guest[0].receipt.runner_name;
+ assert.throws(()=>validateCandidate(s),/unbound guest receipt/);
+});
+test('missing or blank runner name rejects a claimed compiler binary build',()=>{
+ for(const mutateReceipt of [
+  r=>{delete r.runner_name;},
+  r=>{r.runner_name='   ';},
+  r=>{r.runner_name='\u0000';}
+ ]){
+  const s=load(),{b}=withReportedScalar(s);
+  mutateReceipt(b.compiler.build_receipt);
+  assert.throws(()=>validateCandidate(s),/unbound build receipt/);
+ }
+});
+test('missing runner name rejects negative compiler and formal claims',()=>{
+ const s=load(),b=withReportedNegative(s);
+ delete b.negative.receipt.runner_name;
+ assert.throws(()=>validateCandidate(s),/unbound negative receipt/);
+});
+test('nonzero runner ID plus printable name is still not trusted provenance',()=>{
+ const s=load();
+ const {b}=withReportedScalar(s);
+ assert.equal(b.guest[0].receipt.runner_id,303);
+ assert.equal(b.guest[0].receipt.runner_name,'synthetic-test-runner');
+ const report=evaluateCandidate(s,loadedLedger());
+ assert.equal(report.backends[0].guest['scalar-exit-42-v1'],'REPORTED_PASS_UNVERIFIED');
+ assert.equal(report.release_authorized,false);
+ assert.equal(report.status,'BLOCKED');
 });
 test('housekeeping-only CI is insufficient to substantiate a guest run',()=>{
  const s=load(),{b}=withReportedScalar(s);
