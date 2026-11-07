@@ -1,0 +1,130 @@
+{
+  "schema": "attolang.gpu-kernel-source-corpus/1",
+  "contract": "oreslang-common-source/docs/GPU_EXPLICIT_LAUNCH_V1.md",
+  "state": "SOURCE_PROPOSAL_ONLY",
+  "execution": {
+    "sourceHir": "TYPED_SOURCE_ONLY_NOT_EXECUTABLE",
+    "tailGuardEvidence": "SOURCE_TAIL_GUARD_ONLY_NOT_EXECUTABLE",
+    "physicalGpuEnabled": false,
+    "deviceAllocationCapacityProof": false,
+    "compilerBackendProof": false,
+    "implicitCpuFallback": false,
+    "untrustedHostCallsAllowed": false
+  },
+  "backends": {
+    "java": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "llvm": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "net": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "wasm": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "forge": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "cranelift": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "js": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    }
+  },
+  "cases": [
+    {
+      "id": "guarded-saxpy",
+      "path": "fixtures/gpu-kernel-v1/guarded-saxpy.atto",
+      "gitBlobSha": "538a984fd02b11881f5d0332167742c700666f35",
+      "expectation": "positive",
+      "expectedDiagnostic": null,
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "unguarded-store",
+      "path": "fixtures/gpu-kernel-v1/unguarded-store.atto",
+      "gitBlobSha": "bd6a4b03756d37631c1fcee9bc54fd83758b5e8e",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-KERNEL-010",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "wrong-lane",
+      "path": "fixtures/gpu-kernel-v1/wrong-lane.atto",
+      "gitBlobSha": "f1e07ac0742455e521dbdf8ed380070767bf7bfd",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-KERNEL-010",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "reversed-tail-guard",
+      "path": "fixtures/gpu-kernel-v1/reversed-tail-guard.atto",
+      "gitBlobSha": "c27dbbe147144a7cd3aadc1fbe9f47407d3b5e61",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-KERNEL-010",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "unbound-host-call",
+      "path": "fixtures/gpu-kernel-v1/unbound-host-call.atto",
+      "gitBlobSha": "920d05c2bf76ff34c350cf2c35a9798c601a2d29",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-KERNEL-006",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "invalid-buffer-abi",
+      "path": "fixtures/gpu-kernel-v1/invalid-buffer-abi.atto",
+      "gitBlobSha": "3ee19952c39fd96a3d4c8c8af91b866bbd75e836",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-KERNEL-002",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "await-in-kernel",
+      "path": "fixtures/gpu-kernel-v1/await-in-kernel.atto",
+      "gitBlobSha": "58ff3dbcc4ca67f01e56d2b9f3db659908323363",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-KERNEL-006",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "duplicate-parameter",
+      "path": "fixtures/gpu-kernel-v1/duplicate-parameter.atto",
+      "gitBlobSha": "d197f6fe652371319348d5e0460556f1c05a7e41",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-KERNEL-003",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "readonly-store",
+      "path": "fixtures/gpu-kernel-v1/readonly-store.atto",
+      "gitBlobSha": "9a1ab5e5fe6f77363ea26d905957053e1a3cd596",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-KERNEL-005",
+      "observedResult": "NOT_EXECUTED"
+    }
+  ],
+  "warnings": [
+    "Git blob readback proves only fixture identity; Node unit tests are not guest compiler runs.",
+    "A source tail guard cannot establish buffer size, physical SIMD divergence safety, device ownership, provider generation or completion fencing.",
+    "steps=[] and steps=null indicate runner admission failure, not executed compiler results."
+  ]
+}
