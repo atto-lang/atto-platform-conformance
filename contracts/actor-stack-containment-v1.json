@@ -398,6 +398,69 @@
         "actorSurvival",
         "suspendedFrameOwnership"
       ]
+    },
+    {
+      "id": "typed-scalar-nontail-1024",
+      "kind": "positive",
+      "source": "fixtures/actor-stack-containment-v1/deep-non-tail-scalar-frame.atto",
+      "expectedStdout": "1024",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "nativeLowStack"
+      ]
+    },
+    {
+      "id": "typed-scalar-mutual-tail-100000",
+      "kind": "positive",
+      "source": "fixtures/actor-stack-containment-v1/mutual-tail-scalar-frame.atto",
+      "expectedStdout": "0",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "nativeLowStack"
+      ]
+    },
+    {
+      "id": "typed-scalar-immutable-locals",
+      "kind": "positive",
+      "source": "fixtures/actor-stack-containment-v1/immutable-local-scalar-frame.atto",
+      "expectedStdout": "9",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "typed-scalar-actor-quota-failure-sibling-survives",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "guest-stack-budget-exhausted",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival",
+        "supervisorRecovery",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "typed-scalar-unsupported-fallback-and-negative-mutation",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "typed-scalar-execution-context-generation-negative",
+      "kind": "pending-isolation",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "suspendedFrameOwnership"
+      ]
     }
   ],
   "promotion": {
@@ -423,7 +486,7 @@
     "realNativeStackIsolation": "NOT_EXECUTED",
     "nativeAotExecution": "NOT_EXECUTED",
     "promotionFromHostOnlyAllowed": false,
-    "note": "Java M1.6 guarded non-tail interpreter invocations reserve actor-owned managed byte frames and unwind LIFO; JVM guest locals and return continuations remain on carrier stack. SourceTask continuation and native process-stack containment are NOT_EXECUTED. Java #2631 explicitly binds an actor source scheduler to per-task bootstrap frame leases and reserves bytes across await/cooperate; SourceTask locals and return continuations are not lowered into them. Java integration #2637 joins nested invocation descriptor frames to the active SourceTask ExecutionContext and defers byte-frame reclamation until successful physical quiescence callbacks; guest locals/return continuations still run on JVM stacks.",
+    "note": "Java M1.6 guarded non-tail interpreter invocations reserve actor-owned managed byte frames and unwind LIFO; JVM guest locals and return continuations remain on carrier stack. SourceTask continuation and native process-stack containment are NOT_EXECUTED. Java #2631 explicitly binds an actor source scheduler to per-task bootstrap frame leases and reserves bytes across await/cooperate; SourceTask locals and return continuations are not lowered into them. Java integration #2637 joins nested invocation descriptor frames to the active SourceTask ExecutionContext and defers byte-frame reclamation until successful physical quiescence callbacks; guest locals/return continuations still run on JVM stacks. Java M3 #2640 authors a fully preadmitted pure synchronous int-fnc compiler subset using an iterative typed frame VM with PC/operand height and primitive local/operand bytes in the actor-owned arena. No hosted compilation or guest execution receipt; async/method/closure/FFI/native stack parity remain unproven.",
     "javaGuardedInvocationByteFrames": "GUARD_WIRED_MANAGED_BYTES_NOT_GUEST_LOCALS",
     "javaSynchronousGuardByteCharge": 32,
     "javaGuestCallGuardNativeStackStillUsed": true,
@@ -450,6 +513,20 @@
     "javaIntegratedActorAttoCompilerReceipts": "NOT_EXECUTED",
     "javaIntegratedActorNativeStackIsolation": "NOT_EXECUTED",
     "javaQuiescenceCallbackBeforeFrameRetirement": true,
-    "javaInvocationReusesSourceTaskExecutionId": true
+    "javaInvocationReusesSourceTaskExecutionId": true,
+    "javaScalarTypedFrameReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2640",
+    "javaScalarTypedFrameStatus": "AUTHORED_NOT_EXECUTED",
+    "javaScalarTypedFrameScope": "PURE_SYNC_INTEGER_FNC_GRAPH_ONLY",
+    "javaScalarTypedFramePcAndStackHeaderBytes": 16,
+    "javaScalarTypedFrameTaggedSlotBytes": 16,
+    "javaScalarTypedFrameHostCompilerTestsAuthored": 7,
+    "javaScalarTypedFrameHostRuntimeTestsAuthored": 4,
+    "javaScalarTypedFrameAttoSourceFixturesAuthored": 3,
+    "javaScalarTypedFrameGuestCompilerReceipts": "NOT_EXECUTED",
+    "javaScalarTypedFrameNativeLowStackReceipts": "NOT_EXECUTED",
+    "javaScalarTypedFrameActorSupervisorRestartReceipts": "NOT_EXECUTED",
+    "javaScalarTypedFrameOtherBackends": "NOT_EXECUTED",
+    "javaScalarTypedFrameActualPrimitiveStorage": "IMPLEMENTED_UNVERIFIED",
+    "javaScalarTypedFrameSourceTaskLexicalContinuations": "NOT_IMPLEMENTED"
   }
 }
