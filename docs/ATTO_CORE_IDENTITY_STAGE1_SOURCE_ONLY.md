@@ -19,3 +19,9 @@ The Forge record is intentionally named `forge-stage1-native`,
 harness and does not certify freestanding or zero-import guest code.
 The Forge source head was refreshed after correcting those receipt
 labels; the canonical source Git blob remains unchanged.
+
+The two checked-in positive guest entrypoints are also byte-identical:
+`fd685d84f8a84b84710c257dfa6f5a7c8329dbf9`. A second
+conformance fixture now pins that exact Git blob. This proves a
+common **authored** input source, not identical compiler execution or
+runtime behavior, which remain unverified until both native gates run.

@@ -6,6 +6,7 @@ import {fileURLToPath} from "node:url";
 const path = u => fileURLToPath(new URL(u,import.meta.url));
 const evidence=JSON.parse(readFileSync(path("../evidence/atto-core-identity-stage1-20261107.json"),"utf8"));
 const bytes=readFileSync(path("../fixtures/atto-library-source/v1/identity.atto"));
+const entry=readFileSync(path("../fixtures/atto-library-source/v1/identity-entry.atto"));
 function blob(input){
  return createHash("sha1").update(Buffer.from("blob "+input.length+"\0"))
    .update(input).digest("hex");
@@ -27,6 +28,7 @@ test("two stage-1 compiler branches refer to one exact canonical source blob",()
  for(const backend of evidence.backends){
   assert.match(backend.head,/^[0-9a-f]{40}$/);
   assert.equal(backend.source_blob,blob(bytes));
+  assert.equal(backend.entry_blob,blob(entry));
   assert.equal(backend.compiler_implementation,"AUTHORED_UNEXECUTED");
  }
 });
@@ -48,4 +50,12 @@ test("different source syntax must not be mistaken for stage-1 execution",()=>{
  const fake=Buffer.from("pub fnc passthrough(int value): int { return value; }\n");
  assert.notEqual(blob(fake),evidence.git_blob_sha1);
  assert.equal(evidence.required_before_parity.length,4);
+});
+
+test("cross-backend stage-1 guest entry fixtures are byte identical",()=>{
+ assert.equal(blob(entry),evidence.entry_git_blob_sha1);
+ const source=entry.toString("utf8");
+ assert.match(source,/^import module identity from "atto\.core\/identity";/);
+ assert.match(source,/identity\.passthrough\(42\)/);
+ assert.doesNotMatch(source,/\batto\.alloc\b|\batto\.std\b|\batto\.runtime\.actor\b/);
 });

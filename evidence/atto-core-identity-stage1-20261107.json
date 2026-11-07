@@ -12,15 +12,17 @@
       "pr": 381,
       "head": "c366de8c4ed97b4c5fc8f037eedeea0b408b1281",
       "source_blob": "b8a0cf7a45f9c3070ad3bcd42d4a78c7cf83739b",
-      "compiler_implementation": "AUTHORED_UNEXECUTED"
+      "compiler_implementation": "AUTHORED_UNEXECUTED",
+      "entry_blob": "fd685d84f8a84b84710c257dfa6f5a7c8329dbf9"
     },
     {
       "backend": "forge-stage1-native",
       "repository": "ores-truffle-oreslang/oreslang-source.forge",
       "pr": 202,
-      "head": "3254354c1d5b2c0cc3030ae1deb026c6ad1a2994",
+      "head": "e787b94bf5ec0af71695a35f6be5c2371baba524",
       "source_blob": "b8a0cf7a45f9c3070ad3bcd42d4a78c7cf83739b",
-      "compiler_implementation": "AUTHORED_UNEXECUTED"
+      "compiler_implementation": "AUTHORED_UNEXECUTED",
+      "entry_blob": "fd685d84f8a84b84710c257dfa6f5a7c8329dbf9"
     }
   ],
   "not_yet_qualified": [
@@ -34,5 +36,6 @@
     "native artifact and compiler receipts",
     "independent review",
     "five-backend canonical semantic fixture"
-  ]
+  ],
+  "entry_git_blob_sha1": "fd685d84f8a84b84710c257dfa6f5a7c8329dbf9"
 }
