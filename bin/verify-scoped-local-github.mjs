@@ -46,7 +46,7 @@ export async function auditGitHubReceipt(receipt, contract, {
       headers: {
         'Accept': 'application/vnd.github+json',
         'X-GitHub-Api-Version': '2022-11-28',
-        ...(token ? {'Authorization': `Bearer ${token}` : {}),
+        ...(token ? {'Authorization': `Bearer ${token}`} : {}),
       },
     });
     if (!response.ok) throw new Error(`GITHUB_HTTP_${response.status}`);
