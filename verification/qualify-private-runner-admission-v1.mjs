@@ -151,7 +151,9 @@ export function qualifySourceOrgPrivateRunner({run, page, job, workflow, log}) {
       // Accept only timestamps from observed stdout, not script source,
       // ANSI-highlighted echo commands, unprefixed text or unrelated steps.
       const matches = entries.filter(e => e?.message === marker);
-      need(matches.length === 1, 'observed-output-' + marker);
+      const unprefixed = lines.some(line => line.trim() === marker);
+      need(!unprefixed, 'unattributed-output-' + marker);
+      need(matches.length === 1 && !unprefixed, 'observed-output-' + marker);
       if (matches.length === 1) {
         const value = matches[0];
         observedMarkers.push(value.when);
