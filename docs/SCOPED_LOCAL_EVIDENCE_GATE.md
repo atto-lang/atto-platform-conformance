@@ -125,3 +125,28 @@ or empty scenario IDs fail closed. Without \`--slice\`, the default strict
 gate requires all canonical scenarios; the partial form cannot be substituted
 for five-backend parity. Neither mode verifies guest execution or compiler
 build provenance, and neither sets \`parityVerified=true\`.
+
+## 2026-11-07 security audit: stale-run and job attribution checks
+
+The GitHub read-back verifier now requires the workflow's own
+`run.head_sha` to equal the **current exact PR head** and validates the
+recorded PR-head SHA and repository identity inside `run.pull_requests`.
+A successful old run for the same PR number is explicitly rejected.
+Synthetic merge-commit workflows also fail this narrow gate until a
+separate, independently verified merge-ancestry and exact-head checkout
+proof is implemented; mere PR association is insufficient.
+
+The receipt's `workflow.jobs[].steps[]` must include GitHub step
+`number`, `name`, and successful conclusion. Each individual scenario
+check additionally needs `stepNumber` and `stepName` alongside
+`jobId`; all three must match the independently fetched successful
+provider job/step records. Pagination checks reject nonpositive or
+inconsistent `total_count`, oversized pages, duplicates, and missing
+continuation pages instead of silently ignoring unverified jobs.
+
+These checks establish **metadata consistency only**, not that any
+particular guest ran inside that step. The canonical compiler artifact,
+logs and runtime receipts still require an independently trusted source
+and output witness. Tests include stale workflow heads, spoofed PR
+association, wrong step numbers, unbound check attribution, broken
+pagination, and missing runner identities.
