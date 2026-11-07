@@ -6,6 +6,8 @@
 
 The matrix is five backends × eight independently required scenarios: Java/Graal; LLVM native AOT/PIC/ORC; Wasm; .NET NativeAOT; Cranelift, each with code-only stable refs; supervisor subtree update; ETS code-only table retention; ETS owner-death heir acknowledgement; suspended await/FFI/ETS generation pins; typed state+table migration; untrusted placement; and delayed unload/quarantine.
 
+`host_only_executed` is a **report-only evidence classification**, never a UHL-1 feature-pass status. It requires a stepful exact-head runner, source/tree identity, a host reference-check receipt, explicit `compiler_executed=false`, `guest_executed=false`, and **no** compiler/guest image digests. Such rows appear only in `host_only`, not in `structurally_passing`. Their runner metadata is still unauthenticated until an external verifier checks the GitHub job/attempt and artifact. Zero-step jobs cannot even earn host-only status. This extends the four normative feature-status outcomes with a strictly non-promoting observation.
+
 A backend is **not conformant** because it cleanly rejects an unsupported feature. `unsupported_confirmed` is meaningful safety evidence but still blocks feature parity. For source backends without actors/ETS, first require native compiler rejection with no generated guest artifact, then implement and exercise the positive end-to-end feature later. A test built from Node, Python, Java host infrastructure, scalar `main()`, a fake compiler or a staged artifact pointer is not a hot-upgrade guest run.
 
 ## Contract and receipts
