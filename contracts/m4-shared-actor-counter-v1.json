@@ -69,12 +69,16 @@
   },
   "backend_evidence": {
     "llvm": {
-      "status": "NOT_EXECUTED_FOR_THIS_EXACT_FIXTURE",
-      "reason": "previous LLVM source-guest CI ran other .atto programs; identical M4 fixture not yet compiled"
+      "status": "OBSERVED_SOURCE_COMPILED_GUEST_NARROW_SCOPE",
+      "evidence_record": "evidence/m4/dual-native-actor-observations-20261107.json",
+      "workflow_url": "https://github.com/atto-lang/atto-source.llvm/actions/runs/42328161827",
+      "scope": "native compiled main return 43; message digest 7021 observed through separate host calls, not instrumented native main"
     },
     "graalvm-native": {
-      "status": "NOT_EXECUTED_FOR_THIS_EXACT_FIXTURE",
-      "reason": "previous GraalVM source-guest CI ran identical source bytes at source repo location, but M4 cross-backend workflow not yet independently checked"
+      "status": "OBSERVED_SOURCE_COMPILED_GUEST_NARROW_SCOPE",
+      "evidence_record": "evidence/m4/dual-native-actor-observations-20261107.json",
+      "workflow_url": "https://github.com/atto-lang/atto-source.java/actions/runs/42327847961",
+      "scope": "real Epsilon Native Image of restricted static actor syntax, synchronous guest messages and 0 GC collections in this short run"
     },
     "wasm": {
       "status": "UNSUPPORTED_ACTOR_ABI"
@@ -97,6 +101,8 @@
   "notes": [
     "Do not label a host C test, byte-identical source, scalar-only AOT, or LLVM linker build as cross-backend actor-executed parity.",
     "LLVM tenant VM must report return/result evidence independently of GraalVM's synchronous-only pilot; missing instrumentation remains NOT_OBSERVED.",
-    "Actions on PR merge refs or incomplete/check-skipped jobs are not accepted as exact source-head guest proof."
+    "Actions on PR merge refs or incomplete/check-skipped jobs are not accepted as exact source-head guest proof.",
+    "This contract records the restricted M4 baseline only; completed historical run details are in the referenced immutable evidence record. Later hardening PRs require their own exact-head execution and do not retroactively certify the old runs.",
+    "OBSERVED_SOURCE_COMPILED_GUEST_NARROW_SCOPE is not equivalent independent scheduling, full language parity, production hostile tenant isolation or sustained zero-GC heap boundedness."
   ]
 }
