@@ -1,0 +1,53 @@
+name: AttoLang DOP bool-i64 source corpus (NON-GUEST)
+on:
+  pull_request:
+    paths:
+      - 'contracts/dop-inverted-bool-i64-v1/**'
+      - 'fixtures/dop-inverted-bool-i64-v1/**'
+      - 'tests/dop-inverted-bool-i64-v1.test.mjs'
+      - '.github/workflows/dop-inverted-bool-i64-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-corpus:
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Check out exact original PR head
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+      - name: Set up pinned Node major
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Verify exact commit, tree and source-file blob identities
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --verify HEAD)" = "$EXPECTED_HEAD"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          echo "ATTO_BOOL_I64_CONFORMANCE_HEAD=$EXPECTED_HEAD"
+          echo "ATTO_BOOL_I64_CONFORMANCE_TREE=$(git rev-parse HEAD^{tree})"
+          for path in contracts/dop-inverted-bool-i64-v1/manifest.json \
+                      tests/dop-inverted-bool-i64-v1.test.mjs \
+                      fixtures/dop-inverted-bool-i64-v1/*.atto; do
+            test "$(git hash-object "$path")" = "$(git rev-parse "HEAD:$path")"
+            echo "ATTO_BOOL_I64_CONFORMANCE_BLOB=$path:$(git rev-parse "HEAD:$path")"
+          done
+      - name: Execute four source-only corpus and identity test groups
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/dop-inverted-bool-i64-v1.test.mjs | tee /tmp/atto-dop-bool-i64-node.txt
+          grep -Eq '^# tests 4$' /tmp/atto-dop-bool-i64-node.txt
+          grep -Eq '^# pass 4$' /tmp/atto-dop-bool-i64-node.txt
+          grep -Eq '^# fail 0$' /tmp/atto-dop-bool-i64-node.txt
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          echo 'DOP_BOOL_I64_CORPUS_SOURCE_ONLY_PASS, ALL_BACKEND_GUESTS_NOT_EXECUTED'
