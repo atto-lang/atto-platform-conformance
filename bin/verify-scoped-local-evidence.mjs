@@ -124,6 +124,33 @@ export function evaluateReceipt(receipt, contract) {
   };
 }
 
+// Explicitly non-promoting narrow slice. A one-fixture LLVM compiler smoke
+// can be checked without claiming the other canonical scenarios executed.
+export function evaluateSliceReceipt(receipt, contract) {
+  const bad = (code) => ({status:'INVALID_SLICE',errors:[code],
+    parityVerified:false,evidenceTrust:'SELF_REPORTED_UNATTESTED',
+    covered:0,canonicalTotal:Array.isArray(contract?.scenarios)?contract.scenarios.length:0});
+  if (!isObj(receipt) || !Array.isArray(receipt.scenarios) ||
+      receipt.scenarios.length===0) return bad('EMPTY_SLICE');
+  if (!isObj(contract) || contract.status!=='candidate-unattested' ||
+      !Array.isArray(contract.scenarios)) return bad('INVALID_CONTRACT');
+  const ids = new Set();
+  const canonical = new Set(contract.scenarios.map(s=>s.id));
+  for (const record of receipt.scenarios) {
+    if (!isObj(record) || !truthyString(record.id) ||
+        !canonical.has(record.id) || ids.has(record.id))
+      return bad('UNKNOWN_OR_DUPLICATE_SLICE_ID');
+    ids.add(record.id);
+  }
+  const subset = {...contract,
+    scenarios:contract.scenarios.filter(s=>ids.has(s.id))};
+  const evaluated=evaluateReceipt(receipt,subset);
+  return {...evaluated,
+    status:evaluated.errors.length?evaluated.status:'PARTIAL_SCENARIO_CANDIDATE_UNATTESTED',
+    canonicalTotal:contract.scenarios.length,
+    parityVerified:false};
+}
+
 export function readBoundedJson(path) {
   // Reject symlinks, devices, pipes, and excess bytes before parsing.
   // The extra one-byte read detects a regular file growing after fstat.
