@@ -83,8 +83,20 @@ function certifiedDisjoint(a, b, parent, policy) {
 // a matching non-overlap group. This helper does not authenticate that claim.
 export function placesOverlap(rawA, rawB, layoutClaims = {}) {
   const a = normalizePlace(rawA), b = normalizePlace(rawB);
-  if (a.owner !== b.owner) return false; // requires canonical owner IDs
   const policies = isObject(layoutClaims) ? layoutClaims : {};
+  if (a.owner !== b.owner) {
+    // Different strings are not a proof of independent underlying storage:
+    // two roots may be lexical aliases of the SAME heap owner. The frontend
+    // must supply an exact, compiler-derived canonical root-separation claim.
+    // This advisory reference model cannot authenticate that claim.
+    const pairs = Array.isArray(policies.independentOwnerPairs)
+      ? policies.independentOwnerPairs : [];
+    return !pairs.some(group => isObject(group) &&
+      Object.keys(group).length === 2 && group.kind === 'independent-roots' &&
+      Array.isArray(group.owners) && group.owners.length === 2 &&
+      group.owners.every(identifier) && group.owners[0] !== group.owners[1] &&
+      group.owners.includes(a.owner) && group.owners.includes(b.owner));
+  }
   const policy = policies[a.owner];
   // A claim under another root must not authorize disjointness here.
   const scopedPolicy = isObject(policy) && policy.owner === a.owner ? policy : null;
