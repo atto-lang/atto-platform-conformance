@@ -24,7 +24,7 @@ test('candidate corpus covers five backends and canonical ownership operators', 
   assert.equal(contract.status, 'candidate-unattested');
   assert.equal(contract.sourceExtension, '.atto');
   assert.deepEqual(contract.backendTargets, ['java', 'llvm', 'wasm', 'forge', 'net']);
-  assert.equal(contract.cases.length, 16);
+  assert.equal(contract.cases.length, 17);
   assert.equal(new Set(contract.cases.map(c => c.id)).size, contract.cases.length);
   const whole = contract.cases.map(c => c.source).join('\n');
   for (const op of ['rt borrow', 'rt mut borrow', 'rt take', 'rt copy', 'rt share', 'rt mut share'])
@@ -49,6 +49,11 @@ test('conditional transfer and suspension fixtures do not rely on parser-only re
   assert.equal(borrowed?.reason, 'BORROW_CANNOT_UPGRADE');
   assert.match(borrowed.source, /pub fnc wrongly_shared\(borrow int incoming\)/);
   assert.match(borrowed.source, /rt share incoming/);
+  const borrowedField = contract.cases.find(c => c.id === 'share-borrowed-class-field');
+  assert.equal(borrowedField?.expect, 'reject');
+  assert.equal(borrowedField?.reason, 'BORROW_CANNOT_UPGRADE');
+  assert.match(borrowedField.source, /fnc read\(borrow Box borrowed\)/);
+  assert.match(borrowedField.source, /rt share borrowed\.count/);
   assert.match(computed.source, /rt take \(first \+ second\)/);
   assert.match(selected.source, /rt take \(true \? left : right\)/);
   assert.match(suspension.source, /pub suspends fnc main\(\)/);
