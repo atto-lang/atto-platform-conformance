@@ -28,11 +28,12 @@ export function pendingUhl1Report(){
 function evidenceBasics(e,backend,status){
   expectedKeys(e,['source_sha','source_tree','compiler_sha256','image_sha256',
     'runner','compiler_executed','guest_executed','negative_proof_sha256','checks'],'evidence');
+  const hostOnly=status==='host_only_executed';
   if(!SHA40.test(e.source_sha)||!SHA40.test(e.source_tree)
-      ||!SHA256.test(e.compiler_sha256)
+      ||(hostOnly?e.compiler_sha256!==null:!SHA256.test(e.compiler_sha256))
       ||(status==='pass_executed'
         ? !SHA256.test(e.image_sha256)
-        : status==='unsupported_confirmed'
+        : (status==='unsupported_confirmed'||hostOnly)
           ? e.image_sha256!==null
           : e.image_sha256!==null&&!SHA256.test(e.image_sha256)))
     reject('invalid exact source/compiler/image digests');
@@ -41,8 +42,8 @@ function evidenceBasics(e,backend,status){
       ||!positive(e.runner.run_id)||!positive(e.runner.job_id)
       ||!positive(e.runner.run_attempt)||!positive(e.runner.steps_executed))
     reject('zero-step, mismatched or incomplete runner');
-  if(e.compiler_executed!==true||typeof e.guest_executed!=='boolean')
-    reject('not actual compiler or invalid guest flag');
+  if(e.compiler_executed!==!hostOnly||typeof e.guest_executed!=='boolean')
+    reject('compiler execution misclassified or invalid guest flag');
 }
 export function evaluateUhl1Report(report){
   expectedKeys(report,['schema','records'],'report');
@@ -50,7 +51,7 @@ export function evaluateUhl1Report(report){
     reject('wrong report version');
   const names=Object.keys(UHL1_CASES),required=UHL1_BACKENDS.length*names.length;
   if(report.records.length!==required)reject('incomplete five-backend matrix');
-  const seen=new Set(),pending=[],unsupported=[],failed=[];
+  const seen=new Set(),pending=[],unsupported=[],failed=[],hostOnly=[];
   let structurallyPassing=0;
   for(const row of report.records){
     expectedKeys(row,['backend','scenario','status','evidence'],'case');
@@ -63,7 +64,8 @@ export function evaluateUhl1Report(report){
       if(row.evidence!==null)reject('unexecuted record has evidence');
       pending.push(key);continue;
     }
-    if(!['pass_executed','unsupported_confirmed','fail_executed'].includes(row.status))
+    if(!['pass_executed','unsupported_confirmed','fail_executed',
+          'host_only_executed'].includes(row.status))
       reject('unknown status');
     const e=row.evidence;
     evidenceBasics(e,row.backend,row.status);
@@ -84,13 +86,22 @@ export function evaluateUhl1Report(report){
       if(e.checks.denied_before_publish!==true||e.checks.no_guest_image_emitted!==true)
         reject('unsupported feature did not fail closed');
       unsupported.push(key);
+    }else if(row.status==='host_only_executed'){
+      // Host model/ABI checks are useful safety work, but NEVER guest parity.
+      if(e.guest_executed!==false||!SHA256.test(e.negative_proof_sha256))
+        reject('host-only needs a negative receipt and zero guest execution');
+      expectedKeys(e.checks,['host_reference_passed','no_guest_image_emitted'],
+        'host-only checks');
+      if(e.checks.host_reference_passed!==true||e.checks.no_guest_image_emitted!==true)
+        reject('host-only safety check missing');
+      hostOnly.push(key);
     }else{
       failed.push(key); // Authored evidence can still fail honestly.
     }
   }
   return {
     total:required,structurally_passing:structurallyPassing,
-    pending,unsupported,failed,
+    pending,unsupported,failed,host_only:hostOnly,
     structurally_complete:structurallyPassing===required,
     // Self-reported JSON is NOT an attestation, even when entirely green.
     authenticated_execution:false,production_hot_load_certified:false
