@@ -48,10 +48,19 @@ function validatePending(matrix) {
   }
   assert.equal(matrix.requirements.nativeStackOverflowRecoverableOnSharedCarrier, false);
   assert.equal(matrix.requirements.untrustedArbitraryNativeCodeRequiresKillableWorker, true);
-  assert.ok(matrix.scenarios.length >= 19);
+  assert.ok(matrix.scenarios.length >= 24);
   assert.match(matrix.javaFrameArenaReference, /\/pull\/2627$/);
   const bootstrap = matrix.frameStorageBootstrap;
   assert.equal(bootstrap.javaHostPrimitive, 'MANAGED_BYTES_ONLY');
+  assert.match(bootstrap.javaActorSourceTaskReference, /\/pull\/2631$/);
+  assert.equal(bootstrap.javaActorSourceTaskFrameBytes, 64);
+  assert.equal(bootstrap.javaActorSourceTaskHostTestsAuthored, 8);
+  assert.equal(bootstrap.javaActorSourceTaskLease,
+    'HOST_SCHEDULER_AWAIT_LEASE_AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaActorSourceTaskCompilerFrames, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaActorSourceTaskNativeStackIsolation, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaActorSourceTaskPhysicalRetirement,
+    'HOST_RUNTIME_AUTHORED_NOT_EXECUTED');
   assert.equal(bootstrap.javaAuthoredHostTests, 20);
   assert.match(bootstrap.javaInvocationDescriptorReference, /\/pull\/2628$/);
   assert.equal(bootstrap.javaInvocationDescriptorStatus, 'AUTHORED_NOT_EXECUTED');
@@ -202,4 +211,32 @@ test('M2 invocation-frame wiring stays pending real actor source execution', asy
     assert.equal(backend.compilerGuest, 'NOT_EXECUTED');
     assert.equal(backend.actorStackStorage, 'NOT_EXECUTED');
   }
+});
+
+test('source task host-frame leases cannot claim compiler-lowered guest resumes', async () => {
+  const original = validatePending(await load());
+  const mutate = fn => { const changed = structuredClone(original); fn(changed); return changed; };
+  assert.throws(() => validatePending(mutate(
+    m => {m.frameStorageBootstrap.javaActorSourceTaskCompilerFrames = 'PASS';})));
+  assert.throws(() => validatePending(mutate(
+    m => {m.frameStorageBootstrap.javaActorSourceTaskNativeStackIsolation = 'PASS';})));
+  assert.throws(() => validatePending(mutate(
+    m => {m.frameStorageBootstrap.javaActorSourceTaskFrameBytes = 0;})));
+  assert.throws(() => validatePending(mutate(
+    m => {m.frameStorageBootstrap.javaActorSourceTaskHostTestsAuthored = 999;})));
+  const required = [
+    'actor-source-await-retains-charged-frame',
+    'actor-source-cooperate-preserves-frame-across-dispatch',
+    'actor-source-two-suspended-tasks-independent',
+    'actor-source-cancel-physical-quiescence-zeroizes',
+    'actor-source-wrong-carrier-and-generation-rejected'
+  ];
+  for (const id of required) {
+    const scenario = original.scenarios.find(s => s.id === id);
+    assert.ok(scenario, 'source task scenario must be inventoried: ' + id);
+    assert.equal(scenario.source, null, 'no invented compiled .atto actor test result');
+    assert.ok(scenario.requiredEvidence.includes('compilerGuest'));
+    assert.ok(scenario.requiredEvidence.includes('suspendedFrameOwnership'));
+  }
+  assert.equal(original.promotion.certified, false);
 });
