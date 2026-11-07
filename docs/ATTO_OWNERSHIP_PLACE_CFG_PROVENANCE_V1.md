@@ -72,4 +72,4 @@ An authorized organization administrator must inspect Actions annotations, priva
 4. .NET NativeAOT, Wasm and Forge: implement the same typed contract and real compiler/guest evidence, not a source-free host model.
 5. Merge only after exact-head nonzero-step test receipts and independent review. `steps=[]` and `steps=null` remain `RUNNER_ADMISSION / NOT_EXECUTED`.
 
-The exact-head source-only workflow now requires **33** Node test groups: 10 receipt-shape, 13 CFG model and 10 runner-provenance mocked-API. These are explicit **NON-PROMOTING** test classes.
+The exact-head source-only workflow now requires **34** Node test groups: 10 receipt-shape, 13 CFG model, 10 runner-provenance mocked-API and 1 CLI fail-closed/security group. These are explicit **NON-PROMOTING** test classes.
