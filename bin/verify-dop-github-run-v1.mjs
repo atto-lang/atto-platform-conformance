@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // Source-free REST correlation only. This is NOT compiler guest attestation.
 import { readDopEvidenceJsonFile } from '../verification/dop-evidence-file-v1.mjs';
-import { validateDopGithubSnapshot } from '../verification/dop-github-run-snapshot-v1.mjs';
-import { fetchDopGithubRun, validateGithubIdentity, requireCanonicalDopSourceRepo } from '../verification/dop-github-api-v1.mjs';
+import { validateDopGithubSnapshot, validateDopGithubCommit } from '../verification/dop-github-run-snapshot-v1.mjs';
+import { fetchDopGithubRun, fetchDopGithubCommit, validateGithubIdentity, requireCanonicalDopSourceRepo } from '../verification/dop-github-api-v1.mjs';
 import { fetchAndValidatePinnedWorkflow } from '../verification/dop-workflow-source-v1.mjs';
 
 async function main() {
@@ -19,6 +19,14 @@ async function main() {
   // Job IDs and steps alone do not attest the workflow source used on a PR.
   // Fetch only after the independent run/job snapshot matches; pin source bytes
   // to the exact recorded run commit, not a mutable branch/ref.
+  if (errors.length === 0) {
+    // The Actions API exposes the commit SHA but not its Git tree. Read the
+    // immutable source-local Git commit before checking workflow contents.
+    const commit = await fetchDopGithubCommit({
+      backend:receipt.backend, repository, headSha:run.head_sha, token
+    });
+    errors.push(...validateDopGithubCommit(receipt, commit, repository));
+  }
   if (errors.length === 0) {
     errors.push(...await fetchAndValidatePinnedWorkflow({
       backend:receipt.backend, repository, headSha:run.head_sha, token
