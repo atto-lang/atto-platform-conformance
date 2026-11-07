@@ -20,6 +20,11 @@ const failure = (reason, classification='EVIDENCE_REJECTED') => ({classification
 /** Never treat skipped/pending/unscheduled steps as executed proof. */
 export function classifyJob(job) {
   if(!isObject(job) || !safeInt(job.id) || typeof job.name !== 'string') return failure('malformed-job');
+  // A queued job with no steps is still waiting, not an admission failure.
+  // Only terminal zero-step jobs demonstrate failed runner admission.
+  if(['queued','waiting','requested','pending','in_progress'].includes(job.status))
+    return failure('job-awaiting-terminal-status','PENDING_NO_EVIDENCE');
+  if(job.status!=='completed') return failure('unknown-job-status');
   if(job.steps === null || Array.isArray(job.steps) && job.steps.length===0)
     return failure('zero-executed-steps','RUNNER_ADMISSION_FAILURE');
   if(!Array.isArray(job.steps)) return failure('missing-step-list');
