@@ -5,7 +5,7 @@ const c=JSON.parse(readFileSync(new URL('../contracts/atto-local-context-m2-2026
 test('contract remains non-promoting and includes all five backend families',()=>{
   assert.equal(c.status,'candidate-unattested');
   assert.deepEqual(c.backendFamilies,['java','llvm','net','wasm','forge']);
-  assert.equal(c.scenarios.length,36);
+  assert.equal(c.scenarios.length,38);
 });
 test('all scenario ids are unique and finite',()=>{
   const ids=c.scenarios.map(x=>x.id);assert.equal(new Set(ids).size,ids.length);
@@ -73,5 +73,23 @@ test('foreign carrier retirement denial and external CONTROL success remain unex
   for(const scenario of [deny,allow]){
     assert.equal(scenario.status,'NOT_EXECUTED');
     assert.deepEqual(Object.values(scenario.backendEvidence),c.backendFamilies.map(()=> 'NOT_EXECUTED'));
+  }
+});
+
+test('bounded commit carrier authentication and STOP linearization remain candidate-only',()=>{
+  const foreign=c.scenarios.find(x=>x.id==='LC-M2-37');
+  const ordered=c.scenarios.find(x=>x.id==='LC-M2-38');
+  assert.ok(foreign && ordered);
+  assert.equal(foreign.scope,'actor');
+  assert.equal(ordered.scope,'actor');
+  assert.equal(foreign.expectedKind,'negative');
+  assert.equal(ordered.expectedKind,'positive');
+  assert.match(foreign.acceptance,/lacking that actor.s current physical scheduler claim/);
+  assert.match(foreign.acceptance,/must not invoke/);
+  assert.match(ordered.acceptance,/commits before a later scheduler STOP/);
+  assert.match(ordered.acceptance,/STOP wins the shared lifecycle lock/);
+  for(const x of [foreign,ordered]){
+    assert.equal(x.status,'NOT_EXECUTED');
+    assert.deepEqual(Object.values(x.backendEvidence),c.backendFamilies.map(()=> 'NOT_EXECUTED'));
   }
 });
