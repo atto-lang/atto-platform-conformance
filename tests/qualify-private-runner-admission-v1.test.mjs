@@ -159,3 +159,89 @@ test('no job/partial jobs/null shape can throw or count as success',()=>{
     assert.equal(qualify(v).ok,false);
   }
 });
+
+
+test('source repository and head repository must actually be private',()=>{
+ const v=copy();v.run.repository.private=false;
+ assert.ok(errors(v).includes('private-repository-evidence'));
+ const f=copy();f.run.head_repository.private=null;
+ assert.ok(errors(f).includes('private-repository-evidence'));
+});
+test('self-hosted runner cannot impersonate a GitHub-hosted Ubuntu label',()=>{
+ const v=copy();v.job.runner_group_id=38;v.job.runner_group_name='Self Hosted';
+ assert.ok(errors(v).includes('github-hosted-runner-group'));
+ const n=copy();n.job.labels.push('self-hosted');
+ assert.ok(errors(n).includes('pinned-hosted-runner-label'));
+ const m=copy();m.job.runner_name='github-hosted-agent'; 
+ assert.ok(errors(m).includes('github-hosted-runner-name'));
+});
+test('runner group or runner name metadata tampering is denied',()=>{
+ for(const [key,val,reason] of [
+   ['runner_group_id',null,'github-hosted-runner-group'],
+   ['runner_group_name','GitHub Actions Test','github-hosted-runner-group'],
+   ['runner_name','GitHub Actions 999002','github-hosted-runner-name']
+ ]){
+   const v=copy();v.job[key]=val;
+   assert.ok(errors(v).includes(reason),key);
+ }
+});
+test('hosted compute and exact image need observed prefixed log headers',()=>{
+ for(const [fragment,expected] of [
+   ['Hosted Compute Agent','hosted-compute-agent-header'],
+   ['Image: ubuntu-24.04','hosted-runner-image-header'],
+   ['Complete job name: runner-admission','pinned-job-log-header'],
+   ['Current runner version: 2.338.2','runner-version-header']
+ ]){
+   const v=copy();v.log=v.log.split('\n').filter(x=>!x.includes(fragment)).join('\n');
+   assert.ok(errors(v).includes(expected),fragment);
+ }
+});
+test('fake hosted image header printed from user code does not count as runner preamble',()=>{
+ const v=copy();
+ v.log=v.log.replace('2026-11-07T01:00:00Z Hosted Compute Agent','');
+ v.log += '\n2026-11-07T01:00:03Z Hosted Compute Agent';
+ assert.ok(errors(v).includes('hosted-compute-agent-header'));
+});
+test('source-free job must contain precisely four expected steps, never checkout',()=>{
+ const v=copy();v.job.steps.splice(1,0,{...v.job.steps[1],name:'Checkout private source',number:2});
+ assert.ok(errors(v).includes('exact-source-free-step-count'));
+ assert.ok(errors(v).includes('exact-source-free-step-inventory'));
+ const n=copy();n.job.steps[0].name='Checkout private source';
+ assert.ok(errors(n).includes('exact-source-free-step-inventory'));
+});
+test('step completion cannot be outside the containing job lifetime',()=>{
+ const v=copy();v.job.steps[2].completed_at='2026-11-07T02:00:03Z';
+ assert.ok(errors(v).includes('step-within-job-lifetime'));
+ const n=copy();n.job.started_at='2026-11-07T02:00:00Z';
+ assert.ok(errors(n).includes('step-within-job-lifetime'));
+});
+test('job timeline must reside within trusted GitHub run creation and update',()=>{
+ const v=copy();v.run.created_at='2026-11-07T02:00:00Z';
+ assert.ok(errors(v).includes('job-within-pinned-run-lifetime'));
+ const n=copy();n.run.updated_at='2026-11-07T00:59:00Z';
+ assert.ok(errors(n).includes('job-within-pinned-run-lifetime'));
+});
+test('calendar-invalid GitHub run time cannot provide a valid execution proof',()=>{
+ const v=copy();v.run.created_at='2026-02-30T01:00:00Z';
+ assert.ok(errors(v).includes('valid-run-lifetime'));
+ const n=copy();n.run.updated_at='2026-11-31T01:00:00Z';
+ assert.ok(errors(n).includes('valid-run-lifetime'));
+});
+test('marker must be timestamped and within the corresponding executed step',()=>{
+ const v=copy();v.log=v.log.replace('2026-11-07T01:00:01.2500000Z SOURCE_FREE_RUNNER_ADMITTED=1',
+  '2026-11-07T01:00:08Z SOURCE_FREE_RUNNER_ADMITTED=1');
+ assert.ok(errors(v).includes('marker-tied-to-executed-step-SOURCE_FREE_RUNNER_ADMITTED=1'));
+ const n=copy();n.log=n.log.replace('2026-11-07T01:00:01.2500000Z SOURCE_FREE_RUNNER_ADMITTED=1',
+  'SOURCE_FREE_RUNNER_ADMITTED=1');
+ assert.ok(errors(n).includes('unattributed-output-SOURCE_FREE_RUNNER_ADMITTED=1'));
+});
+test('markers cannot appear in reversed timestamp order',()=>{
+ const v=copy();
+ v.log=v.log.replace('2026-11-07T01:00:01.2500000Z SOURCE_FREE_RUNNER_ADMITTED=1',
+  '2026-11-07T01:00:03.2500000Z SOURCE_FREE_RUNNER_ADMITTED=1');
+ assert.ok(errors(v).includes('marker-chronological-order'));
+});
+test('raw unprefixed duplicate markers are not ignored',()=>{
+ const v=copy();v.log += '\nSOURCE_FREE_TWO_STEPS_EXECUTED=1';
+ assert.ok(errors(v).includes('unattributed-output-SOURCE_FREE_TWO_STEPS_EXECUTED=1'));
+});
