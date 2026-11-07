@@ -59,14 +59,14 @@ export function inspectCandidateClosedWorldLoanUses({operations,successors=[]}={
     return fail('BORROW_WITHOUT_COMPLETE_USE');
   for(const effect of pendingChecks) {
     for(const loan of loans.values()) {
-      if(loan.place===effect.place && effect.index<=loan.lastUse &&
-         effect.index>loan.borrow)
-        return fail('EFFECT_BEFORE_FINAL_LOAN_USE');
-      // All live lexical loans must end before a task suspension, even if
-      // the operation references a different field or lexical name.
+      // Task suspension is globally sensitive to outstanding loan use:
+      // it cannot be treated as an ordinary same-place mutation.
       if(effect.kind==='suspend' &&
          effect.index>loan.borrow && effect.index<=loan.lastUse)
         return fail('SUSPENSION_WITH_UNFINISHED_LOAN_USE');
+      if(loan.place===effect.place && effect.index<=loan.lastUse &&
+         effect.index>loan.borrow)
+        return fail('EFFECT_BEFORE_FINAL_LOAN_USE');
     }
   }
   const lastUses=[...loans.entries()].map(([loanId,x])=>({
