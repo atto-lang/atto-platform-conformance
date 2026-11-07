@@ -111,6 +111,12 @@
       "source": "pub fnc wrongly_shared(borrow int incoming): int {\n  // A copied primitive value may be Share, but a named borrowed parameter\n  // itself is only a loan and cannot be upgraded by rt share.\n  return rt share incoming;\n}\npub fnc main(): int {\n  let int owned = 42;\n  return wrongly_shared(rt borrow owned);\n}"
     },
     {
+      "id": "share-borrowed-class-field",
+      "expect": "reject",
+      "reason": "BORROW_CANNOT_UPGRADE",
+      "source": "define class Box as\n  pub let int count = 42;\nend\npub fnc read(borrow Box borrowed): int {\n  // Copy-capable int is not proof that the borrowed root was shared.\n  // Direct rt share borrowed.count must fail until typed MIR proves detach.\n  return rt share borrowed.count;\n}\npub fnc main(): int {\n  let Box owner = new Box();\n  return read(rt borrow owner);\n}"
+    },
+    {
       "id": "mut-share-unguarded",
       "expect": "reject",
       "reason": "UNGUARDED_MUTABLE_SHARE",
