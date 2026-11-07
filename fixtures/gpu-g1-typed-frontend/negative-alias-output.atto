@@ -1,0 +1,7 @@
+// Expected GPU-G1-SOURCE-004: duplicate lexical buffer binding.
+pub gpu fnc saxpy(f32 scale, GpuArray<f32> x, GpuArray<f32> y,
+                  GpuArray<f32> mut x, u64 n) => void {
+    const u64 i = gpu.global_id(0);
+    if i >= n { return; }
+    x[i] = scale * x[i] + y[i];
+}
