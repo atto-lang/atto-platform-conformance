@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "contract": "atto.library-source-identity/1",
+  "canonicalSuffix": ".atto",
+  "coreNumeric": {
+    "module": "atto.core/numeric",
+    "gitBlob": "5ced991f1d49b3c2a60fdd72b9003c0a4d18cd72",
+    "snapshot": "fixtures/atto-library-source/v1/numeric.atto"
+  },
+  "allocCandidates": [
+    {
+      "module": "atto.alloc/int_buffer",
+      "gitBlob": "25b3d4bc06a0c859aacadaf0795414027a076bdc",
+      "owner": "llvm",
+      "status": "CANDIDATE_NOT_FIVE_BACKEND"
+    },
+    {
+      "module": "atto.alloc/int_buffer_bundle",
+      "gitBlob": "07c7083e099a18f1db7097f9639efc677070eb95",
+      "owner": "llvm",
+      "status": "CANDIDATE_NOT_FIVE_BACKEND"
+    }
+  ],
+  "backendBindings": [
+    {
+      "backend": "java",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "path": "src/main/resources/dev/atto/core/numeric.atto",
+      "stage": "PR_CANDIDATE"
+    },
+    {
+      "backend": "llvm",
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "path": "stdlib/numeric.atto",
+      "stage": "PR_CANDIDATE"
+    },
+    {
+      "backend": "wasm",
+      "repository": "ores-truffle-oreslang/oreslang-source.wasm",
+      "path": "contracts/atto-core-v1/numeric.atto",
+      "stage": "SNAPSHOT_ONLY"
+    },
+    {
+      "backend": "net",
+      "repository": "ores-truffle-oreslang/oreslang-source.net",
+      "path": "contracts/atto-core-v1/numeric.atto",
+      "stage": "SNAPSHOT_ONLY"
+    },
+    {
+      "backend": "forge",
+      "repository": "ores-truffle-oreslang/oreslang-source.forge",
+      "path": "contracts/atto-core-v1/numeric.atto",
+      "stage": "SNAPSHOT_ONLY"
+    }
+  ],
+  "evidence": {
+    "sourceSnapshot": "SOURCE_ONLY",
+    "guestExecution": "NOT_EXECUTED",
+    "compilerBinary": "NOT_EXECUTED",
+    "linkedFreestandingArtifact": "NOT_EXECUTED"
+  }
+}
