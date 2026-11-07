@@ -239,7 +239,7 @@ normally cannot read another private source repo; obtain explicit
 read-only repository-scoped access or run this on the approved source
 side, not by mirroring private source.
 
-Run `node --test tests/dop-github-api-v1.test.mjs tests/dop-evidence-file-v1.test.mjs tests/dop-github-run-snapshot-v1.test.mjs` for 35 focused source-free JSON/file/run provenance adversarial and control groups, including head-repository, job source SHA and rerun-attempt checks. The HTTP tests exercise no-Content-Length streaming as well as refusal of compressed and forged media types. The
+Run `node --test tests/dop-github-api-v1.test.mjs tests/dop-evidence-file-v1.test.mjs tests/dop-github-run-snapshot-v1.test.mjs` for focused source-free JSON/file/run/commit-tree provenance adversarial and control groups, including head-repository, job source SHA and rerun-attempt checks. The HTTP tests exercise no-Content-Length streaming as well as refusal of compressed and forged media types. The
 positive controls use a mocked transport and do not imply GitHub runner
 admission, native code generation or executed guest evidence.
 
