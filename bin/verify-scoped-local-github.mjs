@@ -9,6 +9,7 @@ import { resolve } from 'node:path';
 const sha40 = /^[a-f0-9]{40}$/;
 const isObject = x => x !== null && typeof x === 'object' && !Array.isArray(x);
 const positiveInt = x => Number.isSafeInteger(x) && x > 0;
+const truthyStepName = x => typeof x === 'string' && x.trim().length > 0 && x.length <= 512;
 
 export async function auditGitHubReceipt(receipt, contract, {
   fetchImpl = fetch,
@@ -64,13 +65,24 @@ export async function auditGitHubReceipt(receipt, contract, {
       request(`/actions/runs/${receipt.workflow.runId}`),
     ]);
     jobs = [];
+    let expectedTotal = 0;
     for (let page = 1; page <= 10; page++) {
       const part = await request(`/actions/runs/${receipt.workflow.runId}/attempts/${receipt.workflow.attempt}/jobs?per_page=100&page=${page}`);
       if (!Array.isArray(part.jobs) || !Number.isSafeInteger(part.total_count)) {
         faults.push('INVALID_GITHUB_JOBS_RESPONSE'); return result;
       }
+      if (part.total_count < 1 || part.total_count > 1000 ||
+          part.jobs.length > 100 ||
+          (page > 1 && part.total_count !== expectedTotal) ||
+          jobs.length + part.jobs.length > part.total_count) {
+        faults.push('INCONSISTENT_PROVIDER_PAGINATION');return result;
+      }
+      if (page === 1) expectedTotal = part.total_count;
+      if (part.jobs.length === 0) {
+        faults.push('TRUNCATED_PROVIDER_PAGINATION');return result;
+      }
       jobs.push(...part.jobs);
-      if (jobs.length >= part.total_count) break;
+      if (jobs.length === expectedTotal) break;
       if (page === 10) {faults.push('UNBOUNDED_JOBS_PAGINATION');return result;}
     }
   } catch (error) {
@@ -85,8 +97,17 @@ export async function auditGitHubReceipt(receipt, contract, {
       run?.repository?.full_name !== repo || run?.event !== 'pull_request' ||
       run?.status !== 'completed' || run?.conclusion !== 'success' ||
       !Array.isArray(run?.pull_requests) ||
-      !run.pull_requests.some(p => p.number === receipt.prNumber))
+      !run.pull_requests.some(p => p.number === receipt.prNumber &&
+        p.head?.sha === receipt.headSha &&
+        p.head?.repo?.full_name === repo))
     faults.push('RUN_ASSOCIATION_MISMATCH');
+  // A run associated with the same PR can be from an OLD revision. Do not
+  // count a previous successful run merely because its PR number matches.
+  // Synthetic merge-commit workflows need a separate independently checked
+  // ancestry + checkout proof; reject them here instead of guessing.
+  if (run?.head_sha !== receipt.headSha ||
+      run?.head_branch !== pr?.head?.ref)
+    faults.push('RUN_HEAD_NOT_EXACT_SOURCE');
   const fetchedIds = new Set();
   for (const j of jobs) {
     if (!positiveInt(j.id) || fetchedIds.has(j.id)) faults.push('DUPLICATE_PROVIDER_JOB');
@@ -104,17 +125,26 @@ export async function auditGitHubReceipt(receipt, contract, {
     }
     if (claimed.steps.length !== actual.steps.length ||
         actual.steps.some((step, i) =>
+          step.number !== i+1 || step.number !== claimed.steps[i]?.number ||
           step.name !== claimed.steps[i]?.name ||
           step.conclusion !== 'success' || claimed.steps[i]?.conclusion !== 'success')) {
       faults.push('JOB_STEPS_READBACK_MISMATCH:' + claimed.id);
     }
   }
   const declaredJobIds = new Set(declared.map(j => j.id));
-  // A positive/negative compile or guest run unconnected to an independently
-  // checked job is merely an assertion in an untrusted JSON file.
+  // A claimed scenario needs a specific successful provider step, not just
+  // any successful job in the workflow. This still cannot attest what the
+  // step's shell process actually compiled or executed.
   for (const scenario of receipt.scenarios) for (const check of scenario.checks) {
-    if (!positiveInt(check.jobId) || !declaredJobIds.has(check.jobId))
+    if (!positiveInt(check.jobId) || !declaredJobIds.has(check.jobId)) {
       faults.push('UNBOUND_SCENARIO_JOB:' + scenario.id);
+      continue;
+    }
+    const job = jobs.find(j => j.id === check.jobId);
+    const step = job?.steps?.find(s => s.number === check.stepNumber);
+    if (!positiveInt(check.stepNumber) || !truthyStepName(check.stepName) ||
+        !step || step.name !== check.stepName ||
+        step.conclusion !== 'success') faults.push('UNBOUND_SCENARIO_STEP:' + scenario.id);
   }
   if (faults.length) return result;
   return {
