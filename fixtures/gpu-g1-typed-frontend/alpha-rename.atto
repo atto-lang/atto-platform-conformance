@@ -1,0 +1,7 @@
+// Candidate kernel-only G1 source, NOT an executed host launch.
+pub gpu fnc saxpy(f32 alpha, GpuArray<f32> first, GpuArray<f32> second,
+                  GpuArray<f32> mut destination, u64 count) => void {
+    const u64 lane = gpu.global_id(0);
+    if lane >= count { return; }
+    destination[lane] = alpha * first[lane] + second[lane];
+}
