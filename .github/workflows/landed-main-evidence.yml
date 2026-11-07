@@ -4,6 +4,7 @@ on:
     paths:
       - 'tools/landed-main-evidence.mjs'
       - 'tests/landed-main-evidence.test.mjs'
+      - 'tests/landed-main-approval-quorum-20261106.test.mjs'
       - 'bin/landed-main-evidence.mjs'
       - 'evidence/landed-main-20261106-wave.json'
       - 'docs/landed-main-evidence.md'
@@ -12,6 +13,7 @@ on:
     paths:
       - 'tools/landed-main-evidence.mjs'
       - 'tests/landed-main-evidence.test.mjs'
+      - 'tests/landed-main-approval-quorum-20261106.test.mjs'
       - 'bin/landed-main-evidence.mjs'
       - 'evidence/landed-main-20261106-wave.json'
       - 'docs/landed-main-evidence.md'
@@ -43,7 +45,7 @@ jobs:
         with:
           node-version: '22'
       - name: Execute postmerge evidence regressions
-        run: node --test tests/landed-main-evidence.test.mjs
+        run: node --test tests/landed-main-evidence.test.mjs tests/landed-main-approval-quorum-20261106.test.mjs
       - name: Verify real sample ledger fails closed
         shell: bash
         run: |
