@@ -28,7 +28,7 @@ Java's inheritable task context(...) remains distinct from TaskLocal<T>. Host ca
 3. Run existing LLVM native_tasklocal_i64_compiled_guest: two native exits 42, corresponding carrier marker, and 14 compiler semantic rejects with exit 1, no emitted IR/files, no crash diagnostics.
 4. Independently read back source GitHub job/attempt and artifact hashes; compare pinned fixture bytes and compiled outputs. Refuse self-attested JSON as final proof.
 5. Review the #1389 / #1391 crosswalk: canonical store, typed keys, payload quota, nested container rejection, Unicode, RequestLocal original-mail binding, foreign actor/tenant access, teardown and scheduler-issued stamps. Forward-port *only* independently justified non-overlapping fixes.
-6. Implement the 30 candidate cases in contracts/atto-local-context-m2-20261107.json as compiled .atto guest tests, then port the exact fixture bytes across Java/GraalVM, LLVM, .NET NativeAOT, Wasm and Forge.
+6. Implement the 32 candidate cases in contracts/atto-local-context-m2-20261107.json as compiled .atto guest tests, then port the exact fixture bytes across Java/GraalVM, LLVM, .NET NativeAOT, Wasm and Forge.
 
 ## Evidence classification
 
@@ -39,4 +39,12 @@ Java's inheritable task context(...) remains distinct from TaskLocal<T>. Host ca
 - Source-free JS and host-only C++ tests cannot prove guest backend parity.
 - Five unverified backend receipts do not prove parity; retain PARITY_UNPROVEN.
 
-The new Node tests are source-free assurance gates. All 30 scenario entries are NOT_EXECUTED. Keep LLVM #1389 and #1391 draft until exact-head, stepful, compiler-backed runtime receipts and independent review are obtained.
+The new Node tests are source-free assurance gates. All 32 scenario entries are NOT_EXECUTED. Keep LLVM #1389 and #1391 draft until exact-head, stepful, compiler-backed runtime receipts and independent review are obtained.
+
+## M7 evidence-validator hardening
+
+The source-free candidate classifier now requires a terminal job with a positive runner ID and completed steps before even returning an `UNATTESTED` receipt candidate. A job that is still queued/in-progress is `PENDING_NO_EVIDENCE`, whereas a **completed** job with `steps=null` or `[]` is `RUNNER_ADMISSION_FAILURE`. Failed executed steps remain `EXECUTED_NONPASS`.
+
+SHA lengths are verified separately from regex anchors to exclude trailing newline ambiguity. Artifact paths reject absolute paths, traversal, drive paths, backslashes and control characters. These checks prevent unsafe metadata from being accepted; they **do not** independently prove that GitHub ran or produced an artifact. The local Node receipt suite now has 67 source-free cases, including the new hostile mutations; all 32 language scenarios remain unexecuted pending trusted compiler/backend runs.
+
+The authoritative source-org CI check remains blocked before any step, so all changes stay in DRAFT.
