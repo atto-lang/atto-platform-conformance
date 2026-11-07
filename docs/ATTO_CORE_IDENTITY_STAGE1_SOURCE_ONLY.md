@@ -52,3 +52,12 @@ and compares the frozen identities against both evidence ledgers.
 It reruns on changes to the numeric source fixture or checkout policy.
 This preserves source-byte equivalence but is not a compiler-backed
 guest conformance result.
+
+## Stage-1/Stage-2 exact-head agreement
+
+Both evidence snapshots must pin the same current immutable head
+for each implemented .NET and Forge compiler branch. A new test
+rejects any mismatch in the two backend inventories or commit heads,
+eliminating stale stage-1 source attestations being presented beside
+newer stage-2 implementation metadata. Matching heads are still not
+the same as executed compiler or native artifact receipts.

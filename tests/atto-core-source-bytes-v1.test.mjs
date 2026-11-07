@@ -47,3 +47,15 @@ test("canonical and entry source IDs agree with both versioned evidence ledgers"
   assert.equal(ledger.backends.length,2);
  }
 });
+
+test("stage-1 and stage-2 ledgers pin identical immutable backend heads",()=>{
+ const identity=JSON.parse(read("../evidence/atto-core-identity-stage1-20261107.json"));
+ const numeric=JSON.parse(read("../evidence/atto-core-numeric-stage2-20261107.json"));
+ const identities=new Map(identity.backends.map(b=>[b.repository,b.head]));
+ const numerics=new Map(numeric.backends.map(b=>[b.repo,b.head]));
+ assert.deepEqual([...identities.keys()].sort(),[...numerics.keys()].sort());
+ for(const [repo,head] of identities) {
+  assert.match(head,/^[0-9a-f]{40}$/);
+  assert.equal(head,numerics.get(repo),"stale exact-head ledger: "+repo);
+ }
+});

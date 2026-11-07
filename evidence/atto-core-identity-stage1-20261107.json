@@ -10,7 +10,7 @@
       "backend": "net-nativeaot",
       "repository": "ores-truffle-oreslang/oreslang-source.net",
       "pr": 381,
-      "head": "c366de8c4ed97b4c5fc8f037eedeea0b408b1281",
+      "head": "f72721b972bb81348fe46c374ede330e3ee94891",
       "source_blob": "b8a0cf7a45f9c3070ad3bcd42d4a78c7cf83739b",
       "compiler_implementation": "AUTHORED_UNEXECUTED",
       "entry_blob": "fd685d84f8a84b84710c257dfa6f5a7c8329dbf9"
@@ -19,7 +19,7 @@
       "backend": "forge-stage1-native",
       "repository": "ores-truffle-oreslang/oreslang-source.forge",
       "pr": 202,
-      "head": "e787b94bf5ec0af71695a35f6be5c2371baba524",
+      "head": "c9cde459d3875bf6ae05f4d1fab8bc59af9eaa94",
       "source_blob": "b8a0cf7a45f9c3070ad3bcd42d4a78c7cf83739b",
       "compiler_implementation": "AUTHORED_UNEXECUTED",
       "entry_blob": "fd685d84f8a84b84710c257dfa6f5a7c8329dbf9"
