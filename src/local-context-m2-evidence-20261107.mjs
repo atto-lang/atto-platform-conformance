@@ -7,8 +7,12 @@ export const REPO = 'ores-truffle-oreslang/oreslang-source.llvm';
 export const PR = 1389;
 export const POSITIVE_FIXTURE_PATH = 'tests/fixtures/tasklocal-i64-source.atto';
 export const POSITIVE_FIXTURE_BLOB = '7d3fe3b57154f0c780e26283a7467b31f3782561';
-const sha1 = /^[0-9a-f]{40}$/;
-const sha256 = /^[0-9a-f]{64}$/;
+// JS "$" can match before a trailing newline: check digest lengths too.
+const hex40 = x => typeof x==='string' && x.length===40 && /^[0-9a-f]{40}$/.test(x);
+const hex64 = x => typeof x==='string' && x.length===64 && /^[0-9a-f]{64}$/.test(x);
+const safeArtifactPath = x => typeof x==='string' && x.length>0 && x.length<=512 &&
+    !x.startsWith('/') && !/^[A-Za-z]:/.test(x) && !x.includes('\\') &&
+    !x.includes('\0') && x.split('/').every(part => part && part!=='.' && part!=='..');
 const safeInt = value => Number.isSafeInteger(value) && value > 0;
 const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const failure = (reason, classification='EVIDENCE_REJECTED') => ({classification,reason,canPromote:false});
@@ -19,11 +23,19 @@ export function classifyJob(job) {
   if(job.steps === null || Array.isArray(job.steps) && job.steps.length===0)
     return failure('zero-executed-steps','RUNNER_ADMISSION_FAILURE');
   if(!Array.isArray(job.steps)) return failure('missing-step-list');
+  const runnerId=job.runner_id ?? job.runnerId;
+  if(!safeInt(runnerId)) return failure('unassigned-runner','RUNNER_ADMISSION_FAILURE');
+  if(job.runner_id!==undefined && job.runnerId!==undefined && job.runner_id!==job.runnerId)
+    return failure('conflicting-runner-ids');
+  if(job.status!=='completed') return failure('job-not-terminal');
   const numbered=new Set();
   for(const step of job.steps){
     if(!isObject(step) || !safeInt(step.number) || typeof step.name!=='string' ||
-       numbered.has(step.number)) return failure('invalid-or-duplicate-step');
+       !step.name.trim() || numbered.has(step.number)) return failure('invalid-or-duplicate-step');
     numbered.add(step.number);
+    if(step.status!=='completed' ||
+       !['success','failure','cancelled','timed_out','skipped'].includes(step.conclusion))
+      return failure('unfinished-or-unknown-step');
   }
   const executed=job.steps.filter(s=>['success','failure','cancelled','timed_out'].includes(s.conclusion));
   if(!executed.length) return failure('no-concluded-execution','RUNNER_ADMISSION_FAILURE');
@@ -33,7 +45,7 @@ export function classifyJob(job) {
 }
 
 const validHead = pin => isObject(pin) && pin.repository===REPO && pin.pr===PR &&
-    sha1.test(pin.head) && sha1.test(pin.tree) && pin.fixturePath===POSITIVE_FIXTURE_PATH &&
+    hex40(pin.head) && hex40(pin.tree) && pin.fixturePath===POSITIVE_FIXTURE_PATH &&
     pin.fixtureBlob===POSITIVE_FIXTURE_BLOB;
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const exactRun = (run,job,pin) => isObject(run) && safeInt(run.id) && safeInt(run.runAttempt) &&
@@ -44,8 +56,8 @@ function validCommands(receipt) {
     ['compiler','linker','guest'].every(k=>typeof receipt.commands[k]==='string' && receipt.commands[k].trim().length>0);
 }
 function validArtifact(receipt) {
-  return isObject(receipt.artifact) && sha256.test(receipt.artifact.sha256) &&
-    typeof receipt.artifact.path==='string' && receipt.artifact.path.length>0;
+  return isObject(receipt.artifact) && hex64(receipt.artifact.sha256) &&
+    safeArtifactPath(receipt.artifact.path);
 }
 function positiveEvidence(receipt) {
   if(!validCommands(receipt)||!validArtifact(receipt)) return failure('missing-compiler-link-guest-artifact');
@@ -54,7 +66,7 @@ function positiveEvidence(receipt) {
   if(!isObject(receipt.guest)||receipt.guest.exitCode!==42 ||
       typeof receipt.guest.stderr!=='string' || !receipt.guest.stderr.includes('SOURCE_TASK_RUNTIME_PASS') ||
       !receipt.guest.stderr.includes('producer_on_carrier=1')) return failure('missing-real-guest-witness');
-  if(!sha256.test(receipt.guest.traceSha256) || hash(Buffer.from(receipt.guest.stderr,'utf8'))!==receipt.guest.traceSha256)
+  if(!hex64(receipt.guest.traceSha256) || hash(Buffer.from(receipt.guest.stderr,'utf8'))!==receipt.guest.traceSha256)
     return failure('guest-trace-digest-mismatch');
   return {classification:'UNATTESTED_GUEST_RECEIPT_CANDIDATE',canPromote:false,reason:'independent-artifact-and-run-readback-required'};
 }
