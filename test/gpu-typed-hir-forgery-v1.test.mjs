@@ -18,8 +18,8 @@ test('forged typed-HIR proof records remain source-only and non-executable', () 
   assert.equal(evidence.javaJUnit.status, 'NOT_EXECUTED');
   assert.equal(evidence.javaJUnit.executedSteps, null);
   assert.equal(evidence.javaJUnit.sourceTreeIndependentlyVerified, false);
-  assert.equal(evidence.javaJUnit.sourceTestsAuthored, 21);
-  assert.equal(evidence.javaJUnit.expectedDenied, 20);
+  assert.equal(evidence.javaJUnit.sourceTestsAuthored, 27);
+  assert.equal(evidence.javaJUnit.expectedDenied, 26);
   assert.equal(evidence.javaJUnit.expectedNonExecutableControl, 1);
   assert.match(evidence.mergePromotion, /^BLOCKED_/);
   for (const status of Object.values(evidence.backendStatus))
@@ -37,16 +37,17 @@ test('each expected mutation has a distinct ID and exact source Git identity', (
   assert.equal(evidence.javaJUnit.integratedSourceCapacityForgeryCasesAdded, 4);
   assert.equal(evidence.javaJUnit.latestHeadBuildStatus, 'NOT_EXECUTED');
   assert.equal(evidence.javaJUnit.latestHeadExecutedSteps, null);
+  assert.equal(evidence.javaJUnit.latestHeadBuildStatus, 'PENDING_RUNNER_ADMISSION');
   for (const f of files) {
     assert.match(f.blob, sha40);
     assert.match(f.path, /^src\/(?:main|test)\/java\/dev\/oreslang\//);
   }
   assert.equal(new Set(files.map(f => f.blob)).size, 4);
-  assert.equal(evidence.cases.length, 21);
-  assert.equal(new Set(evidence.cases.map(c => c.method)).size, 21);
+  assert.equal(evidence.cases.length, 27);
+  assert.equal(new Set(evidence.cases.map(c => c.method)).size, 27);
   assert.equal(evidence.cases[0].expectation, 'NON_EXECUTABLE_SOURCE_CONTROL');
   assert.equal(evidence.cases.filter(c =>
-    c.expectation === 'GPU-KERNEL-010_REJECTION').length, 20);
+    c.expectation === 'GPU-KERNEL-010_REJECTION').length, 26);
   for (const c of evidence.cases) {
     assert.match(c.method, /^[A-Za-z][A-Za-z0-9_]+$/);
     assert.equal(c.observed, 'NOT_EXECUTED');

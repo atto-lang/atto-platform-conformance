@@ -4,8 +4,8 @@
   "description": "Attacker-constructible Java source HIR is revalidated at tail-guard audit. This manifest records intended JUnit cases and Git blob identity; not compiler test execution.",
   "javaRepository": "ores-truffle-oreslang/oreslang-source.java",
   "javaPullRequest": 2610,
-  "javaHeadSha": "8a0d6e21c01b976a13d0503c73df202b52eb1e8d",
-  "javaTreeSha": "4019960af3ca0d358766a0a58b84b5741953c11f",
+  "javaHeadSha": "78f46f46830c8cefede2e2cb2d48a48a57a6254f",
+  "javaTreeSha": "8c0a52f06bc8027cd55e46db53ed8099935126ec",
   "javaFiles": {
     "verifier": {
       "path": "src/main/java/dev/oreslang/compiler/GpuKernelTailGuardV1.java",
@@ -17,7 +17,7 @@
     },
     "mutationTests": {
       "path": "src/test/java/dev/oreslang/GpuKernelTailGuardForgedHirV1Test.java",
-      "blob": "c19c7e6ac735375ecbc857e62814a616d6dc5cd4"
+      "blob": "8cb9fa2e13ef0bb0a06abcbe3a170090685bea61"
     },
     "integrationTests": {
       "path": "src/test/java/dev/oreslang/GpuKernelSourceCapacityJoinV1Test.java",
@@ -40,8 +40,8 @@
     "dispatchAuthorized": false
   },
   "javaJUnit": {
-    "sourceTestsAuthored": 21,
-    "expectedDenied": 20,
+    "sourceTestsAuthored": 27,
+    "expectedDenied": 26,
     "expectedNonExecutableControl": 1,
     "executedSteps": null,
     "status": "NOT_EXECUTED",
@@ -49,8 +49,9 @@
     "workflowRunId": 42333323638,
     "integratedSourceCapacityCasesAuthored": 22,
     "integratedSourceCapacityForgeryCasesAdded": 4,
-    "latestHeadBuildStatus": "NOT_EXECUTED",
-    "latestHeadExecutedSteps": null
+    "latestHeadBuildStatus": "PENDING_RUNNER_ADMISSION",
+    "latestHeadExecutedSteps": null,
+    "latestHeadWorkflowRunId": 42333884103
   },
   "cases": [
     {
@@ -155,6 +156,36 @@
     },
     {
       "method": "forgedScalarLetMustNotHaveAnEmptyTarget",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedGpuGlobalIdCannotHaveExtraOperands",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedComparisonCannotMixScalarTypes",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedBooleanLiteralCannotUseUnknownSpelling",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedBufferReadReceiverCannotInventStrongerCapabilityType",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedArithmeticOpcodeMustHaveExactlyTwoOperands",
+      "expectation": "GPU-KERNEL-010_REJECTION",
+      "observed": "NOT_EXECUTED"
+    },
+    {
+      "method": "forgedIntegerLiteralCannotHaveNonNumericSourceSpelling",
       "expectation": "GPU-KERNEL-010_REJECTION",
       "observed": "NOT_EXECUTED"
     }
