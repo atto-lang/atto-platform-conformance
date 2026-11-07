@@ -105,6 +105,12 @@
       "source": "define class Box as pub let int value = 42; end pub fnc main(): int { let Box owner = new Box(); val loan = rt borrow owner; val promoted = rt share loan; return promoted.value; }"
     },
     {
+      "id": "share-borrowed-parameter",
+      "expect": "reject",
+      "reason": "BORROW_CANNOT_UPGRADE",
+      "source": "pub fnc wrongly_shared(borrow int incoming): int {\n  // A copied primitive value may be Share, but a named borrowed parameter\n  // itself is only a loan and cannot be upgraded by rt share.\n  return rt share incoming;\n}\npub fnc main(): int {\n  let int owned = 42;\n  return wrongly_shared(rt borrow owned);\n}"
+    },
+    {
       "id": "mut-share-unguarded",
       "expect": "reject",
       "reason": "UNGUARDED_MUTABLE_SHARE",
