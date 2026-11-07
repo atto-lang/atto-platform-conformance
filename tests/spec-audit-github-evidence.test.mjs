@@ -6,7 +6,7 @@ const manifest={schema:'atto.spec-audit-candidates/1',cases:[
  {id:'guard-scalar-positive',kind:'positive',source:'fixtures/guard-v1/canonical-scalar.atto',source_git_blob_sha1:a,expected_guest_i64:'42'},
  {id:'guard-else-negative',kind:'negative',source:'fixtures/guard-v1/reject-else.atto',source_git_blob_sha1:b,control_source:'fixtures/spec-audit-v1/guard-else-control.atto',control_git_blob_sha1:c,expected_diagnostic_class:'GUARD_ELSE_FORBIDDEN'}]};
 const expected=()=>({backend:'llvm',compilerHead:a,compilerTree:b,conformanceHead:c,conformanceTree:d,requiredCaseIds:['guard-scalar-positive','guard-else-negative'],requiredSteps:['Compile AttoLang candidates','Execute compiled guest']});
-const pins=()=>({workflowPath:'.github/workflows/spec-audit-compiler-guest.yml',jobName:'compiler-guest'});
+const pins=()=>({workflowPath:'.github/workflows/spec-audit-compiler-guest.yml',workflowGitBlob:'f'.repeat(40),jobName:'compiler-guest'});
 const receipt=()=>({schema:'atto.spec-audit-guest-claim/1',backend:'llvm',compilerRepository:'ores-truffle-oreslang/oreslang-source.llvm',compilerHead:a,compilerTree:b,compilerSha256:z,conformanceHead:c,conformanceTree:d,runId:123,runAttempt:2,jobId:456,runnerId:77,jobConclusion:'success',steps:[
   {number:3,name:'Compile AttoLang candidates',status:'completed',conclusion:'success'},
   {number:4,name:'Execute compiled guest',status:'completed',conclusion:'success'}],cases:[
@@ -18,7 +18,7 @@ const response=()=>({
  {number:1,name:'Set up job',status:'completed',conclusion:'success'},
  {number:3,name:'Compile AttoLang candidates',status:'completed',conclusion:'success'},
  {number:4,name:'Execute compiled guest',status:'completed',conclusion:'success'}]}]},
- compilerCommit:{sha:a,tree:{sha:b}},conformanceCommit:{sha:c,tree:{sha:d}},
+ compilerCommit:{sha:a,tree:{sha:b}},compilerTree:{sha:b,truncated:false,tree:[{path:'.github/workflows/spec-audit-compiler-guest.yml',type:'blob',sha:'f'.repeat(40)}]},conformanceCommit:{sha:c,tree:{sha:d}},
  conformanceTree:{sha:d,truncated:false,tree:[
   {path:'fixtures/guard-v1/canonical-scalar.atto',type:'blob',sha:a},
   {path:'fixtures/guard-v1/reject-else.atto',type:'blob',sha:b},
@@ -46,9 +46,15 @@ mutate('unassigned runner',x=>x.jobs.jobs[0].runner_id=0,/job identity/);
 mutate('no steps',x=>x.jobs.jobs[0].steps=null,/steps=null/);
 mutate('empty steps',x=>x.jobs.jobs[0].steps=[],/steps=null/);
 mutate('duplicate step number',x=>x.jobs.jobs[0].steps[1].number=1,/duplicate/);
-mutate('fake step status',x=>x.jobs.jobs[0].steps[1].conclusion='failure',/required API step/);
+mutate('fake step status',x=>x.jobs.jobs[0].steps[1].conclusion='failure',/non-successful executed step/);
 mutate('wrong step label',x=>x.jobs.jobs[0].steps[1].name='Compile something else',/required API step/);
 mutate('wrong API compiler tree',x=>x.compilerCommit.tree.sha=c,/API Git commit/);
+mutate('truncated compiler tree',x=>x.compilerTree.truncated=true,/incomplete or mismatched compiler tree/);
+mutate('wrong compiler tree ID',x=>x.compilerTree.sha=c,/incomplete or mismatched compiler tree/);
+mutate('workflow blob substituted',x=>x.compilerTree.tree[0].sha=a,/workflow blob/);
+mutate('workflow file removed',x=>x.compilerTree.tree=[],/incomplete or mismatched compiler tree/);
+mutate('workflow duplicate path',x=>x.compilerTree.tree.push({...x.compilerTree.tree[0]}),/workflow blob/);
+mutate('nonrequired step failed',x=>x.jobs.jobs[0].steps[0].conclusion='failure',/non-successful executed step/);
 mutate('wrong API conformance tree',x=>x.conformanceCommit.tree.sha=a,/API Git commit/);
 mutate('truncated fixture tree',x=>x.conformanceTree.truncated=true,/incomplete/);
 mutate('missing fixture',x=>x.conformanceTree.tree.pop(),/control blob/);
@@ -56,6 +62,7 @@ mutate('forged fixture blob',x=>x.conformanceTree.tree[0].sha='f'.repeat(40),/so
 mutate('forged control blob',x=>x.conformanceTree.tree[2].sha='f'.repeat(40),/control blob/);
 mutate('wrong source type',x=>x.conformanceTree.tree[0].type='tree',/source fixture/);
 mutate('wrong job source head',x=>x.jobs.jobs[0].head_sha=b,/job identity/);
+test('missing workflow blob pin fails closed',()=>{const y=pins();delete y.workflowGitBlob;assert.throws(()=>assess(manifest,receipt(),expected(),y,response()),/independent CI pins required/);});
 test('missing independent workflow pin fails closed',()=>assert.throws(()=>assess(manifest,receipt(),expected(),{},response()),/pins required/));
 test('unknown backend fails closed',()=>{const r=receipt();r.backend='net';assert.throws(()=>assess(manifest,r,{...expected(),backend:'net'},pins(),response()),/only Java and LLVM|source identity/);});
 test('authenticated HTTP fetch path and bearer constraints are enforced',async()=>{
@@ -63,6 +70,7 @@ test('authenticated HTTP fetch path and bearer constraints are enforced',async()
   ['/repos/ores-truffle-oreslang/oreslang-source.llvm/actions/runs/123',values.run],
   ['/repos/ores-truffle-oreslang/oreslang-source.llvm/actions/runs/123/attempts/2/jobs?per_page=100',values.jobs],
   ['/repos/ores-truffle-oreslang/oreslang-source.llvm/git/commits/'+a,values.compilerCommit],
+  ['/repos/ores-truffle-oreslang/oreslang-source.llvm/git/trees/'+b+'?recursive=1',values.compilerTree],
   ['/repos/ores-truffle-oreslang/oreslang-platform-conformance/git/commits/'+c,values.conformanceCommit],
   ['/repos/ores-truffle-oreslang/oreslang-platform-conformance/git/trees/'+d+'?recursive=1',values.conformanceTree]
  ]);
@@ -75,7 +83,7 @@ test('authenticated HTTP fetch path and bearer constraints are enforced',async()
   return new Response(JSON.stringify(routes.get(u.pathname+u.search)),{status:200});
  };
  const v=await check(manifest,receipt(),expected(),pins(),{token:'test-token-123456789',transport});
- assert.equal(v.guestParityCertified,false);assert.equal(invoked,5);
+ assert.equal(v.guestParityCertified,false);assert.equal(invoked,6);
 });
 test('unauthenticated HTTP API is rejected',async()=>{
  await assert.rejects(()=>check(manifest,receipt(),expected(),pins(),{token:''}),/token required/);
