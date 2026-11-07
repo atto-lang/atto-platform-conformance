@@ -9,6 +9,7 @@ export function pinnedRunnerApiRequest(suffix, inputEnvironment) {
   }
   const allowed = [
     '/actions/runs/' + p.runId,
+    '/commits/' + p.sourceHead,
     '/contents/' + p.workflowPath + '?ref=' + p.sourceHead
   ];
   const jobs = new RegExp('^/actions/runs/' + p.runId +
