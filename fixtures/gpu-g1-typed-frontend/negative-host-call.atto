@@ -1,0 +1,8 @@
+// Expected GPU-G1-SOURCE-003: unapproved host call cannot enter GPU IR.
+pub gpu fnc saxpy(f32 scale, GpuArray<f32> x, GpuArray<f32> y,
+                  GpuArray<f32> mut out, u64 n) => void {
+    const u64 i = gpu.global_id(0);
+    if i >= n { return; }
+    host_log(i);
+    out[i] = scale * x[i] + y[i];
+}
