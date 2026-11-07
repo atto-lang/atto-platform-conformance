@@ -74,6 +74,13 @@ export function correlateRunnerEvidence({run,pages,jobDetail,expected,perPage=10
  for(let i=0;i<pages.length;i++){
   const p=pages[i];
   if(own(p,'number')!==i+1)reject('E_PAGE_ORDER');
+  // The caller must bind these route fields to the actual independent GET;
+  // their presence alone is NOT trustworthy GitHub response provenance.
+  const pinnedRoute='/repos/'+own(expected,'repo')+'/actions/runs/'+
+    own(expected,'runId')+'/attempts/'+own(expected,'attempt')+
+    '/jobs?per_page='+perPage+'&page='+(i+1);
+  if(own(p,'requestMethod')!=='GET'||own(p,'requestHost')!=='github.com'||
+     own(p,'requestPath')!==pinnedRoute)reject('E_PAGE_ROUTE');
   const response=own(p,'response'),count=own(response,'total_count'),items=own(response,'jobs');
   if(!Number.isSafeInteger(count)||count<1||count>100||!Array.isArray(items))
     reject('E_PAGE_COUNT');
