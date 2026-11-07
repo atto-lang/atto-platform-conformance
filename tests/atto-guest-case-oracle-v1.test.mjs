@@ -90,6 +90,21 @@ denies('repeated Task roster entry fails closed',s=>s.suites[1].source.original_
 denies('unknown actor fixture hash fails closed',s=>s.suites[0].cases[0].fixture_blob_sha='f'.repeat(40));
 denies('unknown Task fixture hash fails closed',s=>s.suites[1].cases[0].fixture_blob_sha='f'.repeat(40));
 denies('fixture path traversal fails closed',s=>s.suites[1].cases[0].fixture_path='../outside.atto');
+denies('Task nested-directory alias cannot reuse a pinned Git blob',s=>{
+ s.suites[1].cases[0].fixture_path='fixtures/portable-task-v1/nested/eager-before-await.atto';
+});
+denies('Task dot-segment alias cannot reuse a pinned Git blob',s=>{
+ s.suites[1].cases[0].fixture_path='fixtures/portable-task-v1/./eager-before-await.atto';
+});
+denies('Task parent-traversal alias cannot reuse a pinned Git blob',s=>{
+ s.suites[1].cases[0].fixture_path='fixtures/portable-task-v1/../portable-task-v1/eager-before-await.atto';
+});
+denies('actor nested-directory alias cannot reuse a pinned Git blob',s=>{
+ s.suites[0].cases[0].fixture_path='verification/fixtures/five-backend-actor-channel-v1/nested/actor-channel-roundtrip.atto';
+});
+denies('actor parent-traversal alias cannot reuse a pinned Git blob',s=>{
+ s.suites[0].cases[0].fixture_path='verification/fixtures/five-backend-actor-channel-v1/../five-backend-actor-channel-v1/actor-channel-roundtrip.atto';
+});
 denies('case-kind swap fails closed',s=>s.suites[0].cases[0].expect.kind='negative');
 denies('missing actor positive stdout fails closed',s=>s.suites[0].cases[0].expect.expected_stdout_text='');
 denies('actor stdout weakened to different value fails closed',s=>s.suites[0].cases[0].expect.expected_stdout_text='ok');
