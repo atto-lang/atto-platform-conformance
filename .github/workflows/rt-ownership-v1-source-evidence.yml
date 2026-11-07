@@ -142,10 +142,12 @@ jobs:
           grep -Eq '^# tests 20$' /tmp/atto-nll-lastuse-v1.tap
           grep -Eq '^# pass 20$' /tmp/atto-nll-lastuse-v1.tap
           grep -Eq '^# fail 0$' /tmp/atto-nll-lastuse-v1.tap
+          node --check src/ownership-nll-closed-world-v1.mjs
+          node --check tests/ownership-nll-closed-world-v1.test.mjs
           node --test --test-reporter=tap \
             tests/ownership-nll-closed-world-v1.test.mjs | tee /tmp/atto-nll-closed-world-v1.tap
-          grep -Eq '^# tests 20$' /tmp/atto-nll-closed-world-v1.tap
-          grep -Eq '^# pass 20$' /tmp/atto-nll-closed-world-v1.tap
+          grep -Eq '^# tests 30$' /tmp/atto-nll-closed-world-v1.tap
+          grep -Eq '^# pass 30$' /tmp/atto-nll-closed-world-v1.tap
           grep -Eq '^# fail 0$' /tmp/atto-nll-closed-world-v1.tap
           echo "ATTO_NLL_CLOSED_WORLD=SOURCE_ONLY_NOT_SSA_PROVEN"
           echo "ATTO_NLL_LAST_USE=MODEL_ONLY_NOT_PROMOTING"
