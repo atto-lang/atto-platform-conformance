@@ -177,3 +177,31 @@ wrong-carrier/generation resume. Their `source` fields remain `null` until
 canonical compiled `.atto` actor fixtures and reproducible executed receipts
 exist. The host bridge cannot promote any of the five backend matrices from
 `NOT_EXECUTED`.
+
+## Integrated Java invocation and suspended source-task frame gates
+
+The draft [Java PR #2637](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2637)
+integrates the Java PR #2628 invocation-descriptor branch into the Java
+PR #2631 source-task frame-lifetime branch. It shares a single actor-scoped
+ExecutionContext between nested evaluator invocation descriptors and the
+SourceTask persistent frame, preserves the root frame across await, and
+delays frame zeroization until all physical quiescence callbacks succeed.
+The 32-byte invocation descriptor frame stacks above the 64-byte SourceTask
+root, counted against one actor arena. These are host-managed storage
+reservations, **not** compiled guest locals, return PCs or physical stack
+switching.
+
+This conformance PR now contains **30 scenarios**. Seven have authored
+canonical .atto sources. Three of those sources were carried byte-identically
+from Java #2628: non-tail actor recursion, 100,000-hop tail actor recursion,
+and sibling progress after another actor starts deep recursion. The source
+fixture cases have explicit expected stdout but **no executed compiler or
+guest receipt**. Three additional pending cases require proof of the shared
+execution identity, pre-zeroization quiescence callback, and SourceTask
+frame-quota failure without sibling damage.
+
+The current isolated V8 source harness validated 9/9 contract callback suites
+against the exact fetched JSON/JS/fixture text. This is NOT a hosted Node
+test, actual .atto compiler execution, backend parity or native stack
+survival proof. All five backend evidence slots remain NOT_EXECUTED until
+runner admission and canonical guest acceptance on exact PR heads.
