@@ -111,3 +111,16 @@ test('a legitimate skipped step is tolerated only alongside completed work',()=>
   assert.equal(verdict.classification,'UNATTESTED_GUEST_RECEIPT_CANDIDATE');
   assert.equal(verdict.canPromote,false);
 });
+
+for(const status of ['queued','waiting','in_progress']){
+  test('nonterminal '+status+' is pending, not admission failure',()=>{
+    const m=copy(base);m.job.status=status;m.job.steps=null;m.job.runner_id=0;
+    const v=evaluateCandidate(m,PIN);
+    assert.equal(v.classification,'PENDING_NO_EVIDENCE');
+    assert.equal(v.canPromote,false);
+  });
+}
+test('completed and unassigned with zero steps is a runner-admission failure',()=>{
+  const m=copy(base);m.job.status='completed';m.job.steps=[];m.job.runner_id=0;
+  assert.equal(evaluateCandidate(m,PIN).classification,'RUNNER_ADMISSION_FAILURE');
+});
