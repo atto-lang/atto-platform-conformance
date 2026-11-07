@@ -48,7 +48,7 @@ function validatePending(matrix) {
   }
   assert.equal(matrix.requirements.nativeStackOverflowRecoverableOnSharedCarrier, false);
   assert.equal(matrix.requirements.untrustedArbitraryNativeCodeRequiresKillableWorker, true);
-  assert.ok(matrix.scenarios.length >= 24);
+  assert.ok(matrix.scenarios.length >= 29);
   assert.match(matrix.javaFrameArenaReference, /\/pull\/2627$/);
   const bootstrap = matrix.frameStorageBootstrap;
   assert.equal(bootstrap.javaHostPrimitive, 'MANAGED_BYTES_ONLY');
@@ -62,6 +62,23 @@ function validatePending(matrix) {
   assert.equal(bootstrap.javaActorSourceTaskPhysicalRetirement,
     'HOST_RUNTIME_AUTHORED_NOT_EXECUTED');
   assert.equal(bootstrap.javaAuthoredHostTests, 20);
+  assert.match(bootstrap.javaStacklessScalarReference, /\/pull\/2633$/);
+  assert.equal(bootstrap.javaStacklessSubset, 'CLOSED_PURE_INTEGER_FNC_ONLY');
+  assert.equal(bootstrap.javaStacklessAuthoredHostTests, 11);
+  assert.equal(bootstrap.javaStacklessAdditionalActorFixtures, 3);
+  assert.equal(bootstrap.javaStacklessActorPrimitiveSlots, 2);
+  assert.equal(bootstrap.javaStacklessFrameByteCharge, 32);
+  assert.equal(bootstrap.javaStacklessDescriptorBytes, 16);
+  assert.equal(bootstrap.javaStacklessNoDuplicateCharge, true);
+  assert.equal(bootstrap.javaStacklessInterpreterState,
+    'HOST_HEAP_OPERANDS_AND_RETURN_PC_NOT_FULLY_ACTOR_OWNED');
+  for (const key of [
+    'javaStacklessRuntimeGuestExecution', 'javaStacklessNativeStackSurvival',
+    'javaStacklessSourceTaskContinuation', 'javaStacklessOtherBackends'
+  ]) {
+    assert.equal(bootstrap[key], 'NOT_EXECUTED',
+      'M3 cannot use authored tests as guest/native continuation proof');
+  }
   assert.match(bootstrap.javaInvocationDescriptorReference, /\/pull\/2628$/);
   assert.equal(bootstrap.javaInvocationDescriptorStatus, 'AUTHORED_NOT_EXECUTED');
   assert.equal(bootstrap.javaInvocationDescriptorBytes, 16);
@@ -239,4 +256,43 @@ test('source task host-frame leases cannot claim compiler-lowered guest resumes'
     assert.ok(scenario.requiredEvidence.includes('suspendedFrameOwnership'));
   }
   assert.equal(original.promotion.certified, false);
+});
+
+test('M3 scalar stackless evidence is not general actor-owned stack certification', async () => {
+  const matrix = validatePending(await load());
+  const expected = new Map([
+    ['scalar-non-tail-iterative-60', 'actorStackStorage'],
+    ['scalar-non-tail-budget-exhausted', 'actorSurvival'],
+    ['scalar-proper-and-mutual-tail-100k', 'actorStackStorage'],
+    ['scalar-unsupported-graph-fallback', 'compilerGuest'],
+    ['scalar-owned-two-integer-parameters', 'actorStackGeneration']
+  ]);
+  for (const scenario of matrix.scenarios) {
+    if (!expected.has(scenario.id)) continue;
+    assert.equal(scenario.source, null,
+      'source fixtures in Java PR are authored, not compiler-backed conformance receipts');
+    assert.equal(scenario.kind, 'pending-actor-acceptance');
+    assert.ok(scenario.requiredEvidence.includes('compilerGuest'));
+    assert.ok(scenario.requiredEvidence.includes(expected.get(scenario.id)));
+    expected.delete(scenario.id);
+  }
+  assert.deepEqual([...expected.keys()], [], 'all M3 guest-stack proof cases inventoried');
+  assert.match(matrix.note, /No generic stackless Java execution/);
+  const mutate = fn => {
+    const changed = structuredClone(matrix);
+    fn(changed);
+    return changed;
+  };
+  assert.throws(() => validatePending(mutate(
+    m => {m.frameStorageBootstrap.javaStacklessRuntimeGuestExecution = 'PASS';})));
+  assert.throws(() => validatePending(mutate(
+    m => {m.frameStorageBootstrap.javaStacklessNativeStackSurvival = 'PASS';})));
+  assert.throws(() => validatePending(mutate(
+    m => {m.frameStorageBootstrap.javaStacklessSourceTaskContinuation = 'PASS';})));
+  assert.throws(() => validatePending(mutate(
+    m => {m.frameStorageBootstrap.javaStacklessNoDuplicateCharge = false;})));
+  assert.throws(() => validatePending(mutate(
+    m => {m.frameStorageBootstrap.javaStacklessInterpreterState = 'FULLY_ACTOR_OWNED';})));
+  assert.throws(() => validatePending(mutate(
+    m => {m.scenarios = m.scenarios.filter(s => s.id !== 'scalar-owned-two-integer-parameters');})));
 });
