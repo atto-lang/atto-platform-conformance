@@ -6,7 +6,7 @@ import {classifyRunnerJobEvidence, validateRunnerTimestamp} from '../verificatio
 const sha = '6cc45825c0e601e8daaafca6bf7c0a7ca0bc5734';
 const repo = 'ores-truffle-oreslang/oreslang-source.llvm';
 const expected = {repo, headSha:sha, runId:42331819084, attempt:2,
-  jobName:'compiler-mixed-native', event:'pull_request',
+  jobName:'compiler-mixed-native', jobId:128281843456, event:'pull_request',
   requiredSteps:['Admit only exact same-repository immutable PR head',
                  'Checkout exact PR head', 'Execute CTest']};
 function normal() {
@@ -165,5 +165,97 @@ test('untimed reported success is not an executed required step',()=>{
 test('executed failure is counted but never accepted as success',()=>{
   const v=normal();v.response.jobs[0].steps[2].conclusion='failure';
   const r=check(v);assert.equal(r.executedStepCount,3);
+  assert.equal(r.classification,'STEPFUL_FAILED_OR_INCOMPLETE');
+});
+
+
+// API-only hardening: the entire job inventory must share one immutable
+// attempt and head. This never attests GitHub-hosted provenance or guest runs.
+function appendJob(v, patch={}) {
+  v.response.jobs.push({...v.response.jobs[0],id:128281843457,
+    name:'extra-source-only-job',...patch});
+  v.response.total_count=2;
+}
+for (const [label, patch] of [
+  ['foreign run ID',{run_id:42331819085}],
+  ['foreign attempt',{run_attempt:3}],
+  ['foreign immutable head',{head_sha:'f'.repeat(40)}],
+  ['null immutable head',{head_sha:null}],
+]) test('rejects unrelated job with '+label,()=>{
+  const v=normal();appendJob(v,patch);
+  assert.throws(()=>check(v),/E_JOB_IDENTITY/);
+});
+test('legitimate additional same-run job keeps result API-only',()=>{
+  const v=normal();appendJob(v);
+  const r=check(v);assert.equal(r.classification,'STEPFUL_RECORD_REQUIRES_INDEPENDENT_ATTESTATION');
+  assert.equal(r.evidence,'API_METADATA_ONLY_NOT_GUEST_PARITY');
+});
+test('unrelated job accessor run ID is rejected rather than invoked',()=>{
+  const v=normal();appendJob(v);
+  Object.defineProperty(v.response.jobs[1],'run_id',{get(){throw Error('unsafe getter')}});
+  assert.throws(()=>check(v),/E_OWN_DATA/);
+});
+test('selected job ID must match independently pinned expected job ID',()=>{
+  const v=normal();v.response.jobs[0].id+=1;
+  assert.throws(()=>check(v),/E_JOB_IDENTITY/);
+});
+test('missing expected job ID fails closed',()=>{
+  const v=normal();delete v.expected.jobId;
+  assert.throws(()=>check(v),/E_OWN_DATA/);
+});
+test('zero expected job ID fails closed',()=>{
+  const v=normal();v.expected.jobId=0;
+  assert.throws(()=>check(v),/E_INTEGER/);
+});
+test('257 reported step records exceed bounded admission inventory',()=>{
+  const v=normal();
+  for(let n=4;n<=257;n++)v.response.jobs[0].steps.push({
+    name:'extra-'+n,number:n,status:'completed',conclusion:'skipped',
+    started_at:null,completed_at:null
+  });
+  assert.throws(()=>check(v),/E_STEP_INVENTORY/);
+});
+test('256 step records remain bounded and skipped extras never count as executed',()=>{
+  const v=normal();
+  for(let n=4;n<=256;n++)v.response.jobs[0].steps.push({
+    name:'extra-'+n,number:n,status:'completed',conclusion:'skipped',
+    started_at:null,completed_at:null
+  });
+  const r=check(v);assert.equal(r.reportedStepCount,256);
+  assert.equal(r.executedStepCount,3);
+  assert.equal(r.classification,'STEPFUL_RECORD_REQUIRES_INDEPENDENT_ATTESTATION');
+});
+test('more than 64 required steps is rejected',()=>{
+  const v=normal();v.expected.requiredSteps=Array.from({length:65},(_,i)=>'step-'+i);
+  assert.throws(()=>check(v),/E_REQUIRED_STEPS/);
+});
+test('blank required step is rejected',()=>{
+  const v=normal();v.expected.requiredSteps=['   '];
+  assert.throws(()=>check(v),/E_REQUIRED_STEPS/);
+});
+test('overlong required step is rejected',()=>{
+  const v=normal();v.expected.requiredSteps=['a'.repeat(257)];
+  assert.throws(()=>check(v),/E_REQUIRED_STEPS/);
+});
+test('overlong selected job name is rejected',()=>{
+  const v=normal();v.expected.jobName='a'.repeat(257);
+  assert.throws(()=>check(v),/E_NAME/);
+});
+test('overlong unrelated job name is rejected',()=>{
+  const v=normal();appendJob(v,{name:'b'.repeat(257)});
+  assert.throws(()=>check(v),/E_JOB_IDENTITY/);
+});
+test('overlong step name is rejected',()=>{
+  const v=normal();v.response.jobs[0].steps[2].name='a'.repeat(257);
+  assert.throws(()=>check(v),/E_STEP_ORDER/);
+});
+test('action-required step is not proof that the action executed',()=>{
+  const v=normal();v.response.jobs[0].steps[2].conclusion='action_required';
+  const r=check(v);assert.equal(r.executedStepCount,2);
+  assert.equal(r.classification,'STEPFUL_FAILED_OR_INCOMPLETE');
+});
+test('neutral step conclusion is not counted as execution',()=>{
+  const v=normal();v.response.jobs[0].steps[2].conclusion='neutral';
+  const r=check(v);assert.equal(r.executedStepCount,2);
   assert.equal(r.classification,'STEPFUL_FAILED_OR_INCOMPLETE');
 });
