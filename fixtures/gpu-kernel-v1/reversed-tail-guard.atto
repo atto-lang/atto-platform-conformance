@@ -1,13 +1,12 @@
-// Source-only positive proposal. Neither the kernel nor launch executes.
+// Source-only GPU proposal; no compiler-backed or physical GPU evidence.
 pub gpu fnc saxpy(
     f32 alpha,
-    GpuReadBuffer<f32> x,
-    GpuReadBuffer<f32> y,
-    GpuWriteBuffer<f32> out,
-    int n
-): void {
-    const int i = gpu.global_id(0);
-    if i > n {
-        out[i] = alpha * x[i] + y[i];
-    } fi
+    GpuArray<f32> x,
+    GpuArray<f32> y,
+    GpuArray<f32> mut out,
+    u64 n
+) -> void {
+    const u64 i = gpu.global_id(0);
+    if i <= n { return; }
+    out[i] = alpha * x[i] + y[i];
 }

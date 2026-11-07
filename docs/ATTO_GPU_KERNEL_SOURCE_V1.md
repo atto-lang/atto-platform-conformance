@@ -61,3 +61,10 @@ until an authorized exact-source Java runner executes with nonzero steps.
 No compiler-issued immutable ownership proof, device allocation loan,
 GPU binary, provider completion fence, hardware result or CPU fallback
 is established.
+
+
+## Canonical G1c.2: slim arrow, u64 lanes, GpuArray referent mutability
+
+The canonical kernel is `pub gpu fnc saxpy(..., GpuArray<f32> mut out, u64 n) -> void`. `->` is mandatory, while `=>` and `:` are explicitly rejected in GPU declarations. A non-`mut` `GpuArray<f32>` is a read-only device view; `mut` requests writable referent capability rather than parameter rebinding. `gpu.global_id(0)` yields an unsigned `u64` source value. The braced kernel guard `if i >= n { return; }` needs no `fi` inside `gpu fnc`; the ordinary parser's if grammar remains unchanged.
+
+The updated proposal-only corpus contains 18 immutable source fixtures (1 candidate positive source shape, 17 negative diagnostics). Neither source typing nor geometry proves buffer length/ownership, physical GPU dispatch, or completion fencing. Every backend still reports `NOT_EXECUTED`; zero-step hosted CI is runner-admission failure.

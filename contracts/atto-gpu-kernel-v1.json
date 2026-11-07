@@ -12,7 +12,13 @@
     "untrustedHostCallsAllowed": false,
     "tailGuardRequiresCanonicalN": true,
     "unrelatedIntegerBoundProof": false,
-    "constantBoundProof": false
+    "constantBoundProof": false,
+    "canonicalReturnArrow": "->",
+    "canonicalDeviceArray": "GpuArray<f32>",
+    "mutKeywordControlsReferentWrite": true,
+    "globalIdType": "u64",
+    "canonicalGuard": "if i >= n { return; }",
+    "bracedGpuIfNeedsFi": false
   },
   "backends": {
     "java": {
@@ -55,7 +61,7 @@
     {
       "id": "guarded-saxpy",
       "path": "fixtures/gpu-kernel-v1/guarded-saxpy.atto",
-      "gitBlobSha": "538a984fd02b11881f5d0332167742c700666f35",
+      "gitBlobSha": "e6f873e5162cf372e4ac17088c4b5688353484d7",
       "expectation": "positive",
       "expectedDiagnostic": null,
       "observedResult": "NOT_EXECUTED"
@@ -63,7 +69,7 @@
     {
       "id": "unguarded-store",
       "path": "fixtures/gpu-kernel-v1/unguarded-store.atto",
-      "gitBlobSha": "bd6a4b03756d37631c1fcee9bc54fd83758b5e8e",
+      "gitBlobSha": "63bd24432c55fa894157c2dbd6274ca1fd4a5ecf",
       "expectation": "negative",
       "expectedDiagnostic": "GPU-KERNEL-010",
       "observedResult": "NOT_EXECUTED"
@@ -71,7 +77,7 @@
     {
       "id": "wrong-lane",
       "path": "fixtures/gpu-kernel-v1/wrong-lane.atto",
-      "gitBlobSha": "f1e07ac0742455e521dbdf8ed380070767bf7bfd",
+      "gitBlobSha": "e689a196b369a46a765e37004036d55f788997e8",
       "expectation": "negative",
       "expectedDiagnostic": "GPU-KERNEL-010",
       "observedResult": "NOT_EXECUTED"
@@ -79,7 +85,7 @@
     {
       "id": "reversed-tail-guard",
       "path": "fixtures/gpu-kernel-v1/reversed-tail-guard.atto",
-      "gitBlobSha": "c27dbbe147144a7cd3aadc1fbe9f47407d3b5e61",
+      "gitBlobSha": "d25e1fec0fcc6aacd30e4ee8d9209e43981c29ac",
       "expectation": "negative",
       "expectedDiagnostic": "GPU-KERNEL-010",
       "observedResult": "NOT_EXECUTED"
@@ -87,7 +93,7 @@
     {
       "id": "unbound-host-call",
       "path": "fixtures/gpu-kernel-v1/unbound-host-call.atto",
-      "gitBlobSha": "920d05c2bf76ff34c350cf2c35a9798c601a2d29",
+      "gitBlobSha": "d434a7ed4451fe57d5a25663e50c3a18a5e3de12",
       "expectation": "negative",
       "expectedDiagnostic": "GPU-KERNEL-006",
       "observedResult": "NOT_EXECUTED"
@@ -95,7 +101,7 @@
     {
       "id": "invalid-buffer-abi",
       "path": "fixtures/gpu-kernel-v1/invalid-buffer-abi.atto",
-      "gitBlobSha": "3ee19952c39fd96a3d4c8c8af91b866bbd75e836",
+      "gitBlobSha": "644a5981b8fe453c5c4a59b3ba5999751382ea0e",
       "expectation": "negative",
       "expectedDiagnostic": "GPU-KERNEL-002",
       "observedResult": "NOT_EXECUTED"
@@ -103,7 +109,7 @@
     {
       "id": "await-in-kernel",
       "path": "fixtures/gpu-kernel-v1/await-in-kernel.atto",
-      "gitBlobSha": "58ff3dbcc4ca67f01e56d2b9f3db659908323363",
+      "gitBlobSha": "b8f48bf9f42c8c6c571f27fe4d473816bfd6ee5b",
       "expectation": "negative",
       "expectedDiagnostic": "GPU-KERNEL-006",
       "observedResult": "NOT_EXECUTED"
@@ -111,7 +117,7 @@
     {
       "id": "duplicate-parameter",
       "path": "fixtures/gpu-kernel-v1/duplicate-parameter.atto",
-      "gitBlobSha": "d197f6fe652371319348d5e0460556f1c05a7e41",
+      "gitBlobSha": "cbe0babbdc000393e6c64a1b4643b759ee554870",
       "expectation": "negative",
       "expectedDiagnostic": "GPU-KERNEL-003",
       "observedResult": "NOT_EXECUTED"
@@ -119,7 +125,7 @@
     {
       "id": "readonly-store",
       "path": "fixtures/gpu-kernel-v1/readonly-store.atto",
-      "gitBlobSha": "9a1ab5e5fe6f77363ea26d905957053e1a3cd596",
+      "gitBlobSha": "ed5a334d31ae904dc4f0d21fd6fe47cd8aa9a8e5",
       "expectation": "negative",
       "expectedDiagnostic": "GPU-KERNEL-005",
       "observedResult": "NOT_EXECUTED"
@@ -127,7 +133,7 @@
     {
       "id": "unrelated-bound",
       "path": "fixtures/gpu-kernel-v1/unrelated-bound.atto",
-      "gitBlobSha": "0256706df029edd73c821b03d7632e1c68542497",
+      "gitBlobSha": "9cbedd223d72dd6deaeaff1398de3de06b6ff966",
       "expectation": "negative",
       "expectedDiagnostic": "GPU-KERNEL-010",
       "observedResult": "NOT_EXECUTED"
@@ -135,15 +141,73 @@
     {
       "id": "constant-bound",
       "path": "fixtures/gpu-kernel-v1/constant-bound.atto",
-      "gitBlobSha": "e06ceb841f28bc16ab1cc525d64a12c62ae2a69a",
+      "gitBlobSha": "21f01072e6604cc92942bc099051ebdfde268aef",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-KERNEL-002",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "fat-arrow",
+      "path": "fixtures/gpu-kernel-v1/fat-arrow.atto",
+      "gitBlobSha": "99b87f5e820f58b6fc79b565241a9644cf16c917",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-KERNEL-001",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "colon-return",
+      "path": "fixtures/gpu-kernel-v1/colon-return.atto",
+      "gitBlobSha": "5f401570d6ef4fbdbac257cd899c5d52669bfce0",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-KERNEL-001",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "signed-bound",
+      "path": "fixtures/gpu-kernel-v1/signed-bound.atto",
+      "gitBlobSha": "4bf1ce4ac26909e842adb826394f5d9c0784b343",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-KERNEL-002",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "nonlane-index",
+      "path": "fixtures/gpu-kernel-v1/nonlane-index.atto",
+      "gitBlobSha": "77c526263195a3247e250a8bc9d6855516c31ba3",
       "expectation": "negative",
       "expectedDiagnostic": "GPU-KERNEL-010",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "mutable-scalar",
+      "path": "fixtures/gpu-kernel-v1/mutable-scalar.atto",
+      "gitBlobSha": "e8a5b785d693bbd3a022bcfc937934a581561930",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-KERNEL-005",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "wrong-array-element",
+      "path": "fixtures/gpu-kernel-v1/wrong-array-element.atto",
+      "gitBlobSha": "a8a75a74c0918901754ee362b8cfb90f2118ed32",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-KERNEL-002",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "literal-index",
+      "path": "fixtures/gpu-kernel-v1/literal-index.atto",
+      "gitBlobSha": "ff8044f7552f3e5d3aaafe86f8666cf62f159303",
+      "expectation": "negative",
+      "expectedDiagnostic": "GPU-KERNEL-002",
       "observedResult": "NOT_EXECUTED"
     }
   ],
   "warnings": [
     "Git blob readback proves only fixture identity; Node unit tests are not guest compiler runs.",
     "A source tail guard cannot establish buffer size, physical SIMD divergence safety, device ownership, provider generation or completion fencing.",
-    "steps=[] and steps=null indicate runner admission failure, not executed compiler results."
+    "steps=[] and steps=null indicate runner admission failure, not executed compiler results.",
+    "Canonical source requires slim arrow ->, not => or colon-return.",
+    "u64 source-index typing is not authenticated buffer-capacity or physical execution proof."
   ]
 }
