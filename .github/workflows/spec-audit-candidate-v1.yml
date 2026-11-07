@@ -1,0 +1,75 @@
+# Candidate integrity only: does not compile AttoLang or grant parity.
+name: AttoLang spec candidate fixture integrity (source-free)
+on:
+  pull_request:
+    paths:
+      - 'fixtures/spec-audit-v1/**'
+      - 'fixtures/guard-v1/**'
+      - 'fixtures/named-generic-call-v1/**'
+      - 'tests/spec-audit-candidate-v1.test.mjs'
+      - '.github/workflows/spec-audit-candidate-v1.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'fixtures/spec-audit-v1/**'
+      - 'fixtures/guard-v1/**'
+      - 'fixtures/named-generic-call-v1/**'
+      - 'tests/spec-audit-candidate-v1.test.mjs'
+      - '.github/workflows/spec-audit-candidate-v1.yml'
+permissions:
+  contents: read
+jobs:
+  spec-candidate-integrity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Admit only a same-repository source
+        env:
+          GH_EVENT_PATH: ${{ github.event_path }}
+          GH_EVENT_NAME: ${{ github.event_name }}
+          GH_REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, sys
+          name, repo = os.environ['GH_EVENT_NAME'], os.environ['GH_REPOSITORY']
+          with open(os.environ['GH_EVENT_PATH'], encoding='utf-8') as f:
+              event = json.load(f)
+          base = event.get('repository') or {}
+          if (repo != 'ores-truffle-oreslang/oreslang-platform-conformance' or
+                  base.get('full_name') != repo or base.get('id') != 1413795502):
+              sys.exit('UNTRUSTED_BASE_REPOSITORY')
+          if name == 'pull_request':
+              head = ((event.get('pull_request') or {}).get('head') or {}).get('repo') or {}
+              if head.get('full_name') != repo or head.get('id') != 1413795502:
+                  sys.exit('UNTRUSTED_PR_HEAD')
+          elif name != 'push':
+              sys.exit('UNSUPPORTED_EVENT')
+          print('SOURCE_OWNER_ONLY=true')
+          PY
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Pin exact source identity
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_HEAD" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          python3 scripts/verify-raw-worktree.py --self-test
+          python3 scripts/verify-raw-worktree.py .
+          echo "SPEC_AUDIT_SOURCE_HEAD=$EXPECTED_HEAD"
+          echo "SPEC_AUDIT_SOURCE_TREE=$(git rev-parse 'HEAD^{tree}')"
+          echo "SPEC_AUDIT_RUN_ID=$GITHUB_RUN_ID"
+          echo "SPEC_AUDIT_RUN_ATTEMPT=$GITHUB_RUN_ATTEMPT"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Verify candidate IDs, pinned Git blobs and mutations
+        run: node --test tests/spec-audit-candidate-v1.test.mjs
+      - name: Prevent evidence-tier confusion
+        run: echo "SOURCE_FREE_CANDIDATE_INTEGRITY_ONLY=NOT_COMPILER_OR_GUEST_PARITY"
