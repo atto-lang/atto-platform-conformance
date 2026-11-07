@@ -45,6 +45,12 @@ The new Node tests are source-free assurance gates. All 32 scenario entries are 
 
 The source-free candidate classifier now requires a terminal job with a positive runner ID and completed steps before even returning an `UNATTESTED` receipt candidate. A job that is still queued/in-progress is `PENDING_NO_EVIDENCE`, whereas a **completed** job with `steps=null` or `[]` is `RUNNER_ADMISSION_FAILURE`. Failed executed steps remain `EXECUTED_NONPASS`.
 
-SHA lengths are verified separately from regex anchors to exclude trailing newline ambiguity. Artifact paths reject absolute paths, traversal, drive paths, backslashes and control characters. These checks prevent unsafe metadata from being accepted; they **do not** independently prove that GitHub ran or produced an artifact. The local Node receipt suite now has 67 source-free cases, including the new hostile mutations; all 32 language scenarios remain unexecuted pending trusted compiler/backend runs.
+SHA lengths are verified separately from regex anchors to exclude trailing newline ambiguity. Artifact paths reject absolute paths, traversal, drive paths, backslashes and control characters. These checks prevent unsafe metadata from being accepted; they **do not** independently prove that GitHub ran or produced an artifact. The local Node receipt suite now has 67 source-free cases, including the new hostile mutations; all 36 language scenarios remain unexecuted pending trusted compiler/backend runs.
 
 The authoritative source-org CI check remains blocked before any step, so all changes stay in DRAFT.
+
+## M9 cross-scheduler ActorLocal retirement evidence
+
+The candidate manifest now has **36** scenarios, including LC-M2-35/36. A native actor callback executing on scheduler A must not synchronously perform an ActorLocal terminal-fenced close on scheduler B, even when the target's actor generation is correct and B has already completed STOP; this prevents carrier starvation and cross-scheduler blocking cycles. An external CONTROL thread with no native carrier may perform that exact-generation close after the real target terminal fence, and a denied foreign attempt must leave the scope/value unchanged.
+
+The LLVM companion draft [PR #1521](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1521) includes an authored C++ host regression and a third negative mutation that restores the former same-scheduler-only gate. These are **not** compiler-backed AttoLang cases, and all backend evidence entries remain `NOT_EXECUTED`. Native GCC/Clang, sanitizer, guest compiler, and independent review gates must run on exact source heads before promotion. Generic STOP-versus-set/erase linearization remains unproven.
