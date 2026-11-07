@@ -40,6 +40,19 @@ The GitHub commit's tree being resolved **does not** establish which tree a runn
 
 A future, separately reviewed verifier must independently examine exact checkout logs, source/test blobs, compiler identity/arguments, native guest artifacts and diagnostic stage before claiming backend conformance. The query reader must be authenticated to GitHub under **the source organization**, with read-only API access. No bearer token may be emitted in logs or uploaded in artifacts.
 
+A source-org owner can invoke the after-the-fact **runner-only** CLI from an authorized checkout (using a preexisting environment token rather than printing credentials):
+
+```sh
+node bin/verify-ownership-runner-v1.mjs \
+  --repo ores-truffle-oreslang/oreslang-source.java \
+  --head FULL_40_CHAR_IMMUTABLE_SHA \
+  --run GITHUB_RUN_ID --attempt GITHUB_RUN_ATTEMPT --job GITHUB_JOB_ID \
+  --required-step 'Checkout exact source commit' \
+  --required-step 'Execute real ownership and primitive-copy JUnit tests'
+```
+
+The CLI deliberately refuses repositories outside `ores-truffle-oreslang`. Exit code 0 means **only** that the API independently confirmed an assigned runner and matching successfully executed required steps. Its JSON still returns `ok:false`, `verified:false`, `checkoutVerified:false` and `guestExecutionVerified:false`. It cannot validate private repository billing, check annotations, or compiler/guest semantics. An exit code 1 or 2 is not evidence of guest-test failure.
+
 `tests/ownership-runner-provenance-v1.test.mjs`: 10 source-only mocked-API groups; these are not a live source-org runner execution result.
 
 ## CI admission finding and administrator action
