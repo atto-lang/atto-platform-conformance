@@ -49,19 +49,19 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
-      - name: Execute and assert all 67 source-only mutation tests
+      - name: Execute and assert all 86 source-only mutation tests
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p build-evidence
           node --test tests/dop-runner-job-evidence-v1.test.mjs | tee build-evidence/runner-job-test.tap
-          grep -Fxq '# tests 67' build-evidence/runner-job-test.tap
-          grep -Fxq '# pass 67' build-evidence/runner-job-test.tap
+          grep -Fxq '# tests 86' build-evidence/runner-job-test.tap
+          grep -Fxq '# pass 86' build-evidence/runner-job-test.tap
           grep -Fxq '# fail 0' build-evidence/runner-job-test.tap
           grep -Fxq '# skipped 0' build-evidence/runner-job-test.tap
           grep -Fxq '# cancelled 0' build-evidence/runner-job-test.tap
           test -z "$(git status --porcelain=v1 --untracked-files=all -- . ':!build-evidence')"
-          echo 'ATTO_RUNNER_SOURCE_ONLY_PASS=67, NEVER COMPILER_GUEST_PROOF'
+          echo 'ATTO_RUNNER_SOURCE_ONLY_PASS=86, NEVER COMPILER_GUEST_PROOF'
       - name: Capture source-only receipt requiring separate GitHub API proof
         shell: bash
         run: |
@@ -81,7 +81,7 @@ jobs:
             'run_attempt':os.environ['GITHUB_RUN_ATTEMPT'],
             'job':os.environ['GITHUB_JOB'],
             'tap_sha256':hashlib.sha256(path.read_bytes()).hexdigest(),
-            'test_count':67,
+            'test_count':86,
             'not_proven':['native compilation','guest execution','backend parity','merge approval']
           }
           pathlib.Path('build-evidence/runner-job-receipt.json').write_text(
