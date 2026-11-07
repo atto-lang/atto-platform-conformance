@@ -53,6 +53,8 @@ function validatePending(matrix) {
   const bootstrap = matrix.frameStorageBootstrap;
   assert.equal(bootstrap.javaHostPrimitive, 'MANAGED_BYTES_ONLY');
   assert.equal(bootstrap.javaAuthoredHostTests, 20);
+  assert.equal(bootstrap.javaAuthoredLegacyCompilerGuestTests, 1);
+  assert.equal(bootstrap.javaLegacyCompilerGuestTestExecuted, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaGuardedInvocationByteFrames,
     'GUARD_WIRED_MANAGED_BYTES_NOT_GUEST_LOCALS');
   assert.equal(bootstrap.javaSynchronousGuardByteCharge, 32);
@@ -114,6 +116,8 @@ test('fake pass, duplicate backend, deleted proof and false promotion are reject
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.promotionFromHostOnlyAllowed = true;})));
   assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.suspendedSourceTaskFrames;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaHostPrimitive = 'NATIVE_STACK_ISOLATED';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaLegacyCompilerGuestTestExecuted = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaAuthoredLegacyCompilerGuestTests;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaGuardedInvocationByteFrames = 'COMPILER_LOCALS_SWITCHED';})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaGuestCallGuardNativeStackStillUsed = false;})));
   assert.throws(() => validatePending(mutate(m => {m.requirements.guardedSynchronousInvocationChargedToActorFrameArena = false;})));
