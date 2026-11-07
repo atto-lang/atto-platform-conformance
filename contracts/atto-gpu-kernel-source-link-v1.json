@@ -96,5 +96,9 @@
     "Java source-link preflight never produces a runnable kernel or device allocation.",
     "A GPU-KERNEL-008 rejection remains required even after source link succeeds.",
     "steps=null and steps=[] prove runner admission failure only."
-  ]
+  ],
+  "lexicalKernelNamesModuleScoped": true,
+  "crossModuleKernelLinkEnabled": false,
+  "verifiedModuleImportProof": false,
+  "privateKernelExportEnabled": false
 }

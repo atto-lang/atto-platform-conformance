@@ -32,3 +32,14 @@ The [separate G1c source-only manifest](../contracts/atto-gpu-kernel-source-hir-
 Java/Graal PR [#2582](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2582) now contains `GpuKernelSourceLinkV1`, which links a same-unit `gpu fnc` source signature to a statically named `launch` and requires exact arity. Unbound lexical argument names remain **untyped** and are not proof of device allocations. Host-effect argument expressions, missing kernels and incompatible literal types fail closed before the existing execution denial. See [source-link manifest](../contracts/atto-gpu-kernel-source-link-v1.json) and [five fixtures](../fixtures/gpu-kernel-link-v1). All cases remain `NOT_EXECUTED`.
 
 Java footprint PR [#2583](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2583) independently checks f32 view capacities against `over: [n]` and the supplied scalar n, but caller-supplied snapshots are NOT provider-issued authenticated allocations. Source linker and footprint capacity checks exist on separate PR trees; their coexistence is **not** compiled or proven, and no device-buffer loans, fences or physical backend have executed.
+
+## Source kernel visibility audit
+
+G1d Java kernel linkage now resolves unqualified names **only within the
+caller's lexical module**. Qualified cross-module launches, including to a
+publicly declared kernel, remain fail-closed with `GPU-LAUNCH-001` because
+the stage has no verified module import, linker alias or capability proof.
+Private cross-module kernels are rejected independently. A private kernel
+may be analyzed within its own module, but the source report cannot grant
+runtime dispatch. The source-link manifest records these explicit disabled
+capabilities; no fixture is promoted as executed compiler evidence.

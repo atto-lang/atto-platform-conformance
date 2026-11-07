@@ -28,6 +28,10 @@ test('kernel source link cannot be promoted to GPU execution', () => {
   assert.equal(manifest.checkedKernelSignature, true);
   assert.equal(manifest.checkedLaunchArity, true);
   assert.equal(manifest.literalArgumentTypesOnly, true);
+  assert.equal(manifest.lexicalKernelNamesModuleScoped, true);
+  assert.equal(manifest.crossModuleKernelLinkEnabled, false);
+  assert.equal(manifest.verifiedModuleImportProof, false);
+  assert.equal(manifest.privateKernelExportEnabled, false);
   for (const key of ['lexicalBufferArgumentTypesResolved', 'physicalDeviceAllocationBound',
     'providerIssuedLoan', 'deviceFenceVerified', 'cpuFallback'])
     assert.equal(manifest[key], false);
