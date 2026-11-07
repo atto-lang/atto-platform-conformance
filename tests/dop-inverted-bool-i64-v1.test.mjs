@@ -36,6 +36,9 @@ test('eight canonical .atto source blobs are exact and uniquely identified', () 
     identities.add(entry.id);
     const bytes = readFileSync(new URL(entry.file,root));
     assert.equal(gitBlobSha(bytes),entry.source_git_blob_sha1);
+    assert.match(entry.source_sha256,/^[0-9a-f]{64}$/);
+    assert.equal(createHash('sha256').update(bytes).digest('hex'),
+                 entry.source_sha256);
     const source = bytes.toString('utf8');
     assert.match(source,/define inverted struct Counter as/);
     assert.match(source,/fnc main\(\): int/);
@@ -63,6 +66,28 @@ test('native positive, signal and negative matrices cannot be promoted from mani
                                    !('exit_code' in x)));
   assert.ok(manifest.forbidden_claims.includes('five-backend guest parity'));
   assert.equal(manifest.original_i64_i64_behavior,'UNCHANGED');
+});
+
+test('single-byte source tampering defeats both independent digests', () => {
+  const entry = manifest.cases.find(x => x.id === 'positive-bool-write');
+  const actual = readFileSync(new URL(entry.file,root));
+  const tampered = Buffer.from(actual);
+  const position = tampered.indexOf(Buffer.from('false'));
+  assert.notEqual(position,-1);
+  tampered[position] ^= 1;
+  assert.notEqual(gitBlobSha(tampered), entry.source_git_blob_sha1);
+  assert.notEqual(createHash('sha256').update(tampered).digest('hex'),
+                  entry.source_sha256);
+});
+
+test('unsupported status changes cannot be mistaken for executed guest receipts', () => {
+  assert.deepEqual(manifest.scalar_shape, [
+    {name:'active',type:'bool',llvm_lane:'i1'},
+    {name:'count',type:'i64',llvm_lane:'i64'}
+  ]);
+  assert.ok(Object.values(manifest.backend_status).every(
+    value => value === 'NOT_EXECUTED'));
+  assert.equal(manifest.host_reference_evidence,'SOURCE_COPY_VERIFIED_ONLY');
 });
 
 test('bool/int implicit conversions and unsupported f64 remain explicit negatives', () => {
