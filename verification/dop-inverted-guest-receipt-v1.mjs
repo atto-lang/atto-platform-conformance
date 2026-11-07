@@ -8,6 +8,18 @@ const statuses = new Set(['NOT_EXECUTED', 'PASSED', 'FAILED', 'UNSUPPORTED']);
 const negativeId = 'removed-index-trap';
 const stepsRequired = ['checkout-head', 'verify-fixture', 'compile-guest', 'execute-guest'];
 
+const javaGuestCases = new Set([
+  'productionLexerAndRestrictedMirRunCanonicalSwapReuse',
+  'immutableColumnRemainsAttachedToSurvivorAfterSwapDelete',
+  'canonicalFormerDenseIndexTrapsAfterSwapErase',
+  'checkedMutableFieldStoreAndImmutableColumnRejection',
+  'capacityAndLogicalLengthAreDistinctCheckedProperties',
+  'strictAdmissionRejectsEffectsAndHiddenUserCode',
+  'normalGuestCompilerMustRemainFailClosed'
+]);
+const javaTestClass = 'dev.oreslang.compiler.DopInvertedGuestI64V1Test';
+
+
 // Manifest input is untrusted: a caller may not redefine the three canonical
 // Git blob identities by submitting a self-consistent fake manifest+receipt.
 const canonicalBlobs = Object.freeze({
@@ -120,6 +132,21 @@ export function validateInvertedGuestReceipt(receipt, manifest) {
       need(receipt.executionStage === 'managed-guest', 'java-stage');
       need(receipt.guestArtifactSha256 == null, 'java-must-not-claim-native-image');
       need(sha256.test(receipt.runtimeClassTreeSha256 ?? ''), 'java-runtime-classes');
+      need(sha256.test(receipt.junitReportSha256 ?? ''), 'java-junit-report-sha256');
+      need(receipt.junitReportClass === javaTestClass, 'java-junit-report-class');
+      need(Number.isSafeInteger(receipt.executedTests) &&
+        receipt.executedTests >= javaGuestCases.size, 'java-seven-guest-tests');
+      need(Array.isArray(receipt.javaGuestCases) &&
+        receipt.javaGuestCases.length === javaGuestCases.size &&
+        new Set(receipt.javaGuestCases).size === javaGuestCases.size &&
+        receipt.javaGuestCases.every(testName => javaGuestCases.has(testName)),
+        'java-guest-case-inventory');
+      const postSource = steps.find(step => step?.name === 'verify-post-execution-source');
+      const execute = steps.find(step => step?.name === 'execute-guest');
+      need(Boolean(postSource) && postSource?.conclusion === 'success' &&
+        Number.isSafeInteger(postSource?.number) &&
+        Number.isSafeInteger(execute?.number) && postSource.number > execute.number,
+        'java-post-execution-source-verification');
     } else if (receipt.backend === 'llvm') {
       need(receipt.executionProfile === 'aot', 'llvm-profile');
       need(receipt.executionStage === 'native-guest', 'llvm-stage');
