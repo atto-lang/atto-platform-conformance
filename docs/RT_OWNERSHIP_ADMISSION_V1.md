@@ -25,7 +25,7 @@ The staged Java fixes for nested loan escape, canonical source parsing, and guar
 
 ## Candidate test matrix
 
-`contracts/rt-ownership-admission-v1.json` contains **15** self-contained `.atto` source strings: 3 positive guest oracles (exit code 42) and 12 negative ownership-semantic admission cases. Their `reason` values are **proposed normalized diagnostics**, not diagnostic codes already implemented by each compiler. The new `UNTRACKED_SELECTION` fixture is an outer `rt take` on a ternary; LLVM child #1455 diagnoses it as `E_TAKE_UNTRACKED_SELECT`, while the Java nested source-place contract uses its own error text. Do not assert diagnostic equivalence until independently mapped and observed.
+`contracts/rt-ownership-admission-v1.json` contains **16** self-contained `.atto` source strings: 3 positive guest oracles (exit code 42) and 13 negative ownership-semantic admission cases. Their `reason` values are **proposed normalized diagnostics**, not diagnostic codes already implemented by each compiler. The new `UNTRACKED_SELECTION` fixture is an outer `rt take` on a ternary; LLVM child #1455 diagnoses it as `E_TAKE_UNTRACKED_SELECT`, while the Java nested source-place contract uses its own error text. Do not assert diagnostic equivalence until independently mapped and observed.
 
 Additional uncovered risk cases are listed in `outstandingCasesWithoutValidatedSource`. A test rejected because a syntax form is unsupported does **not** prove the expected ownership invariant.
 
@@ -37,7 +37,7 @@ Additional uncovered risk cases are listed in `outstandingCasesWithoutValidatedS
 4. Prove explicit move invalidation and live-loan exclusivity under conditional/loop CFGs, projections, aliasing, actor message send, nested generics, task/await/select/implicit cooperation and sealed state critical sections. On tenant transfers, separately validate capability and allocation-domain rights.
 5. Obtain independent review of the exact source/test head; reconcile the open repair stacks before merging any compiler changes.
 
-`src/rt-ownership-admission-v1.mjs` is deliberately *not* a trust authority: it only detects contradictions, absent steps, mismatched source digests, duplicated cases, parser-only denials, and guest oracles. Even a structurally matched synthetic receipt reports `STRUCTURALLY_MATCHED_UNATTESTED`; a genuine pass additionally needs independently checked Git blobs, compiler logs and runtime provenance.
+`src/rt-ownership-admission-v1.mjs` is deliberately *not* a trust authority: it only detects contradictions, absent steps, mismatched source digests, duplicated cases, parser-only denials, and guest oracles. Even a structurally matched synthetic receipt reports `STRUCTURALLY_MATCHED_UNATTESTED` with `ok=false` and `shapeMatched=true`; a genuine pass additionally needs independently checked Git blobs, compiler logs and runtime provenance.
 
 Local source-free test command: `node --test tests/rt-ownership-admission-v1.test.mjs`. This does not compile AttoLang, does not change any backend compiler, and does not authorize exporting private repositories to CI carrier organizations.
 
@@ -46,7 +46,7 @@ Local source-free test command: `node --test tests/rt-ownership-admission-v1.tes
 - Replaced legacy `pub async fnc main` in the borrow-across-await candidate with `pub suspends fnc main` to avoid a known unrelated parser rejection. The candidate is **not yet parser-verified on each exact backend head**; a syntactic admission error must be classified UNSUPPORTED/BLOCKED rather than `SUSPENSION_WITH_LOAN`.
 - Added outer conditional `rt take (true ? left : right)` to distinguish source-place invalidation from merely evaluating a scalar conditional. This is a candidate negative, not a uniform five-backend diagnostic guarantee.
 - Receipt checks now require `parserAccepted === true` for every case and `ownershipCheckerRan === true` for every semantic negative, with adversarial mutation tests. These are **necessary claimed facts only**; the validator remains UNATTESTED even when all fields match. Compiler logs and original exact Git source identity remain mandatory.
-- The standalone validator test inventory is now 8 test groups; real Node execution, compiler-backed guest execution and native/AOT proof are pending until recorded execution evidence exists.
+- The standalone validator test inventory is now 10 test groups; real Node execution, compiler-backed guest execution and native/AOT proof are pending until recorded execution evidence exists.
 
 ## Computed `rt take` candidate and staged backend contract
 
@@ -63,3 +63,21 @@ unsafe rvalues; future typed-MIR temporary ownership may admit some cases.
 `UNTRACKED_PLACE` requires semantic ownership rejection (not a tokenizer,
 unsupported syntax or parser error); a shape-matched synthetic receipt is
 still `STRUCTURALLY_MATCHED_UNATTESTED` and cannot promote backend parity.
+
+## Evidence shape is never execution proof
+
+The shape validator deliberately **never** returns `ok=true`. It returns
+`shapeMatched=true` only for self-consistent, explicitly executed/non-skipped
+*claimed* records; the independent compiler/source/run proof is not available
+to this source-only module. It validates the contract schema/inventory, all
+five backend targets, normalized diagnostic identifiers, required promotion
+policies and safe receipt field types; missing or relaxed policies fail closed
+as `INVALID_CONTRACT`.
+
+A consumer **must not** convert `shapeMatched=true` to a passing verification
+status. Source-owned workflows are limited to exercising the ten Node unit
+test groups and do not certify AttoLang guest execution or GitHub runner
+provenance. Separately, the new `share-borrowed-parameter` candidate tests
+the direct named loan in `rt share incoming`: LLVM native checker child
+denies with `E_SHARE_BORROW`; the normalized portable reason remains
+`BORROW_CANNOT_UPGRADE` until actual per-backend diagnostics are observed.
