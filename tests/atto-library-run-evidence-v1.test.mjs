@@ -90,6 +90,35 @@ test("unknown zero-step runner identity is untrusted, not verified admission fai
     assert.equal(out.executedSteps,0);
   }
 });
+test("cancelled zero-step run is not a runner-admission failure",()=>{
+ for (const cancelled of [
+   {run:"cancelled", job:"cancelled"},
+   {run:"cancelled", job:"failure"},
+   {run:"failure",job:"cancelled"},
+ ]) {
+   const result=classify({...run(),conclusion:cancelled.run},
+      [{...job(),steps:[],runner_id:0,conclusion:cancelled.job}]);
+   assert.equal(result.classification,"NOT_EXECUTED");
+   assert.equal(result.reason,"CANCELLED_WITHOUT_JOB_STEPS");
+ }
+});
+test("skipped zero-step job cannot be confused with failed runner admission",()=>{
+ const out=classify({...run(),conclusion:"success"},
+   [{...job(),conclusion:"skipped",runner_id:0,steps:[]}]);
+ assert.equal(out.classification,"NOT_EXECUTED");
+ assert.equal(out.executedSteps,0);
+});
+test("ambiguous zero-step outcomes cannot be attributed to runner admission",()=>{
+ for(const [runConclusion,jobConclusion] of [
+   ["timed_out","timed_out"],["failure",null],["failure","neutral"],
+   ["success","failure"],["failure","success"]
+ ]) {
+   const out=classify({...run(),conclusion:runConclusion},
+     [{...job(),conclusion:jobConclusion,runner_id:0,steps:[]}]);
+   assert.equal(out.classification,"UNTRUSTED_EVIDENCE",
+      runConclusion+" / "+jobConclusion);
+ }
+});
 test("observed completed failed zero-step job with runner id zero remains admission failure", () => {
   const out = classify({...run(),conclusion:"failure"},
     [{...job(),runner_id:0,steps:[],conclusion:"failure"}]);

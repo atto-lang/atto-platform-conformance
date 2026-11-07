@@ -125,3 +125,15 @@ for a completed failed run with no jobs and reserves
 explicit zero runner identity. The frozen real API snapshots and four
 mutation/regression tests are source-only evidence. None represents
 native/guest execution.
+
+## Cancelled/skipped jobs are not runner-allocation failures
+
+A completed GitHub run with no job steps must not automatically be called
+a runner-admission failure. The classifier now requires **both** the run
+and target job to conclude `failure`, plus explicit `runner_id=0`.
+Cancellation and skips are `NOT_EXECUTED`; success/unknown/inconsistent
+outcomes are `UNTRUSTED_EVIDENCE`. New adversarial tests cover cancelled
+runs, skipped jobs, timed-out results, null job conclusions and contradictory
+run/job status combinations. This preserves the independent
+`WORKFLOW_JOB_CREATION_FAILURE` class for zero-job runs and continues to
+withhold compiler-parity status from all source-only tests.
