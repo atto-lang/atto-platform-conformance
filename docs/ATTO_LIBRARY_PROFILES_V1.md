@@ -57,3 +57,21 @@ unknown `__aeabi_` name or restoring a prefix fails policy validation.
 This aligns with LLVM #1481's *actual* compiler-output IR/object/linker
 negative helper-injection gate. It is still a source/policy model until
 native compilation and QEMU execute on the exact PR head.
+
+## Cross-run, cross-attempt and step-state evidence hardening
+
+The GitHub job snapshot must now match its enclosing run's exact numeric
+`run_id`, positive `run_attempt` and `head_sha`. When a workflow path is
+supplied, it must be the expected source-owned `.github/workflows/*.yml`.
+Step numbers must be monotonically 1-based in reported order and a completed
+job cannot contain queued, null-conclusion, or unknown-outcome steps. Tests
+mutate each field independently to prove that green metadata from another
+run or attempt never upgrades execution evidence.
+
+On 2026-11-07 UTC, a retry of conformance source-only GitHub run
+`42316175135` was accepted as attempt 2 but again failed at runner
+admission (no steps or allocated runner). This is a **runner service or
+administration investigation**, not a compiler failure. Organization Actions,
+billing and runner-management settings are not accessible via the available
+GitHub connector; an administrator must inspect those settings. This
+classifier never converts step metadata alone into verified guest parity.
