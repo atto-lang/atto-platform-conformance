@@ -1,6 +1,6 @@
 // Finite source-free layout checker; not proof of AttoLang guest codegen.
 // Only one canonical snapshot of caller-owned metadata may influence a check.
-import { TYPES, alignUp } from './data-layout-abi-v1.mjs';
+import { TYPES, alignUp, computeLayoutAbi } from './data-layout-abi-v1.mjs';
 
 // Accessor-backed or inherited properties cannot be used as ABI evidence.
 // Capture every user-controlled property once; never validate one value and
@@ -55,10 +55,18 @@ export function certifyPhysicalLayout(plan, maxCells = 65536) {
   // one per column. An oversized forged segment array must not evade the
   // finite cell budget by requesting capacity=0.
   const segments = snapshotArray(sourceSegments,'segment',fields.length,
-    segment => ({
-      align:ownData(segment,'align'), bytes:ownData(segment,'bytes'),
-      base:ownData(segment,'base')
-    }));
+    segment => {
+      const checked = {
+        align:ownData(segment,'align'), bytes:ownData(segment,'bytes'),
+        base:ownData(segment,'base'), stride:ownData(segment,'stride')
+      };
+      if (layout === 'aosoa') checked.tileWidth = ownData(segment,'tileWidth');
+      if (layout === 'soaos') {
+        checked.fields = snapshotArray(ownData(segment,'fields'),
+          'group field',fields.length,value => value);
+      }
+      return checked;
+    });
   const cells = capacity * BigInt(fields.length);
   if (cells > BigInt(maxCells)) throw new RangeError('finite verification budget exceeded');
 
@@ -88,6 +96,42 @@ export function certifyPhysicalLayout(plan, maxCells = 65536) {
   if (declaredPhysical !== next || declaredPayload !== payload) {
     throw new RangeError('incorrect charged physical allocation');
   }
+  // A non-overlapping allocation is not necessarily the requested physical
+  // *layout*. Bind address and descriptor geometry to independently rebuilt
+  // canonical ABI v1 metadata, not just to a set of disjoint byte intervals.
+  const options = {
+    layout, capacity:Number(capacity),
+    fields:fields.map(f=>({name:f.name,type:f.type}))
+  };
+  if (layout === 'aosoa') options.tileWidth = segments[0].tileWidth;
+  if (layout === 'soaos') options.groups = segments.map(s=>[...s.fields]);
+  const canonical = computeLayoutAbi(options);
+  if (segments.length !== canonical.segments.length ||
+      canonical.physicalBytes !== declaredPhysical ||
+      canonical.payloadBytes !== declaredPayload) {
+    throw new RangeError('noncanonical layout segment count or allocation');
+  }
+  for (let i = 0; i < segments.length; ++i) {
+    const actual = segments[i], expected = canonical.segments[i];
+    if (actual.align !== expected.align || actual.bytes !== expected.bytes ||
+        actual.base !== expected.base || actual.stride !== expected.stride ||
+        (layout === 'aosoa' && actual.tileWidth !== expected.tileWidth) ||
+        (layout === 'soaos' &&
+         (actual.fields.length !== expected.fields.length ||
+          actual.fields.some((name,j)=>name !== expected.fields[j])))) {
+      throw new RangeError('noncanonical physical segment geometry');
+    }
+  }
+  const locator = ownData(plan,'locator');
+  for (const field of fields) {
+    const actual = ownData(locator,field.name);
+    const expected = canonical.locator[field.name];
+    for (const name of Object.keys(expected)) {
+      if (ownData(actual,name) !== expected[name]) {
+        throw new RangeError('noncanonical physical locator geometry');
+      }
+    }
+  }
   const occupied = segments.map(()=>[]);
   for (let row=0n; row<capacity; row++) for (const field of fields) {
     const at = Reflect.apply(address,plan,[Number(row),field.name]);
@@ -96,6 +140,10 @@ export function certifyPhysicalLayout(plan, maxCells = 65536) {
     if (!Number.isSafeInteger(index) || index<0 ||
         index>=segments.length || typeof offset !== 'bigint' ||
         offset<0n) throw new RangeError('invalid field address');
+    const correct = canonical.address(Number(row),field.name);
+    if (index !== correct.segment || offset !== correct.byteOffset) {
+      throw new RangeError('noncanonical physical field address');
+    }
     const segment = segments[index];
     const end=offset+field.size;
     if (end>segment.bytes) throw new RangeError('physical field outside allocation');
