@@ -89,7 +89,12 @@ export function evaluateReceipt(receipt, contract) {
           !sha256.test(check.logSha256 ?? '') || !sha256.test(check.fixtureSha256 ?? ''))
         fail('NO_EXECUTION_RECEIPT',record.id);
       if (check.phase === 'compile-negative') {
-        if (check.exitCode !== 1 || !truthyString(check.diagnostic) ||
+        const diagnostic = check.diagnostic;
+        const crash = typeof diagnostic === 'string' &&
+          /internal compiler error|segmentation fault|panicked at|addresssanitizer|threadsanitizer|assertion failed|illegal instruction|fatal signal|stack overflow/i.test(diagnostic);
+        if (check.exitCode !== 1 || !truthyString(diagnostic) ||
+            !diagnostic.trim() || crash ||
+            (check.signal !== undefined && check.signal !== null) ||
             check.stdoutBytes !== 0 || !Array.isArray(check.artifacts) || check.artifacts.length !== 0)
           fail('INVALID_SEMANTIC_REJECTION',record.id);
       } else {
@@ -98,8 +103,9 @@ export function evaluateReceipt(receipt, contract) {
       }
     }
     if (kind === 'compile') {
-      if (!phases.has('compile-negative') && !phases.has('compile-positive'))
-        fail('MISSING_COMPILE',record.id);
+      // Current canonical compile-only cases are negative admission oracles.
+      if (!phases.has('compile-negative'))
+        fail('MISSING_NEGATIVE_COMPILER_CONTROL',record.id);
     } else {
       if (!phases.has('compile-positive') || !phases.has('guest-run'))
         fail('MISSING_COMPILED_GUEST',record.id);
