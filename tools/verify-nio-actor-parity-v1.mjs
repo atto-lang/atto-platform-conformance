@@ -60,6 +60,17 @@ export function assessNioActorEvidence(e, pin) {
       e.review.head_sha !== pin.head_sha || e.review.state !== 'APPROVED' ||
       !positive(e.review.review_id))
     return unverified('missing independent exact-head ORESoftware approval');
+  // Schema-2 security policy: @ORESoftware and @the1mills are both
+  // operator-controlled and cannot satisfy independent SECURITY approval.
+  if (!obj(e.security_review) || !positive(e.security_review.review_id) ||
+      e.security_review.head_sha !== pin.head_sha ||
+      e.security_review.state !== 'APPROVED' ||
+      typeof e.security_review.reviewer !== 'string' ||
+      !e.security_review.reviewer.trim() ||
+      ['ORESoftware','the1mills'].includes(e.security_review.reviewer) ||
+      e.security_review.reviewer === e.review.author ||
+      e.security_review.reviewer === e.review.reviewer)
+    return unverified('missing independently authenticated schema-2 security review');
   if (!obj(e.run) || e.run.status !== 'completed' || e.run.conclusion !== 'success')
     return unverified('workflow not successful');
   const ids = new Set();
