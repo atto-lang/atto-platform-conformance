@@ -529,6 +529,36 @@
         "wasm": "NOT_EXECUTED",
         "forge": "NOT_EXECUTED"
       }
+    },
+    {
+      "id": "LC-M2-35",
+      "scope": "actor",
+      "expectedKind": "negative",
+      "title": "foreign scheduler carrier may not perform actor-local terminal wait",
+      "acceptance": "While an authenticated callback from scheduler A owns its native carrier, an already terminal actor in scheduler B with a correctly matched scope and generation still MUST reject synchronous ActorLocal close_after_terminal; source scheduler identity is not an authorization to block a foreign scheduler",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-36",
+      "scope": "actor",
+      "expectedKind": "positive",
+      "title": "external CONTROL thread can reclaim after exact terminal fence",
+      "acceptance": "A noncarrier CONTROL thread may close the exact generation ActorLocal scope after scheduler B confirms its actor terminal barrier, while a rejected foreign-carrier attempt left the scope open and its prior value intact",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
     }
   ]
 }
