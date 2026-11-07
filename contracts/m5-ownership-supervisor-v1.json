@@ -1,0 +1,75 @@
+{
+  "schema": "atto.m5.actor-ownership-supervision-contract.v1",
+  "scope": "Reference semantic model and fail-closed test expectations; no backend compiler/runtime claims without stepful exact-head guest execution",
+  "inherit_from": "contracts/m4-shared-actor-counter-v1.json",
+  "rules": {
+    "ownership": [
+      "rt take consumes one linear owner; any later borrow/send/read through sender is rejected",
+      "rt borrow creates a read-only loan; take or write while borrowed is rejected",
+      "rt borrow mut is exclusive; no overlapping read or mutable loans",
+      "rt share freezes the shared view; no mutation until all shared views released",
+      "no loan, read or write can cross actor retirement or stale generation",
+      "loans across await/select are prohibited pending pinned continuation validation"
+    ],
+    "actor_state": [
+      "state is sealed; no direct external actor field read or write",
+      "only handle_state(critical-read ...) or handle_state(critical-write ...) with compatible loan semantics",
+      "single writer and concurrent readers, no writer/read overlap"
+    ],
+    "mailbox": [
+      "admission linearizable; no allocations or successful enqueues on capacity refusal",
+      "bounded per-actor message slots and per-tenant byte budget",
+      "accepted equals completed + failed_turns + abandoned + queued",
+      "stale capability and retired actor send are rejected",
+      "shutdown drains already-admitted messages unless a supervisor-recorded fault abandons them"
+    ],
+    "supervision": [
+      "panic from actor sends supervisor-priority CONTROL notification, never actor-visible catch",
+      "raise escaping actor handlers promotes to panic if no recover",
+      "throw uses nearest catch, unhandled throw promotes to raise then panic",
+      "panicking actor has one recorded failed turn; queued abandonment explicit",
+      "healthy tenant continues after neighboring actor failure"
+    ]
+  },
+  "proposed_release_targets": {
+    "actor_lifetimes": 100000,
+    "tenant_restarts": 100,
+    "strict_graalvm_epsilon_runtime_gc_collections": 0,
+    "abandoned_without_accounting": 0,
+    "post_retirement_native_arena_charge_bytes": 0
+  },
+  "source_compiler_backends": {
+    "llvm": {
+      "checked_actor_ir": "EXPERIMENTAL_PR_REQUIRES_EXECUTED_CI",
+      "async_runtime": "EXISTING_TENANT_VM_HOST_TESTED_SEPARATELY",
+      "owner_sealed_state_full": "NOT_EXECUTED"
+    },
+    "graalvm-native": {
+      "checked_actor_ir": "NOT_INTEGRATED",
+      "async_runtime": "EXPERIMENTAL_WORKER_HOST_NOT_COMPILED_ATTO_GUEST",
+      "owner_sealed_state_full": "NOT_EXECUTED"
+    },
+    "wasm": {
+      "checked_actor_ir": "NOT_EXECUTED",
+      "async_runtime": "ACTOR_ABI_UNSUPPORTED",
+      "owner_sealed_state_full": "NOT_EXECUTED"
+    },
+    "forge": {
+      "checked_actor_ir": "NOT_EXECUTED",
+      "async_runtime": "NOT_EXECUTED",
+      "owner_sealed_state_full": "NOT_EXECUTED"
+    },
+    "net": {
+      "checked_actor_ir": "NOT_EXECUTED",
+      "async_runtime": "NOT_EXECUTED",
+      "owner_sealed_state_full": "NOT_EXECUTED"
+    }
+  },
+  "evidence_limits": [
+    "Reference model operations are not AttoLang compiler diagnostics.",
+    "New GraalVM worker Native Image stress is a host-side Java implementation until emitted from canonical checked MIR.",
+    "Canonical LLVM IR exporter only proves a restricted actor subset once its exact-head executed CI succeeds.",
+    "Matching model output cannot certify independent scheduling, hostile tenant sandbox or complete ownership checking.",
+    "Epsilon prevents GC collections but does not reclaim managed allocations; measure long-run heap and RSS."
+  ]
+}
