@@ -37,6 +37,30 @@ The CLI caps each input to 256 KiB, rejects symlinks/hardlinks/noncanonical JSON
 
 **Exit statuses: 1 BLOCKED, 2 malformed/untrusted data, 3 structurally reported complete but REQUIRES LIVE RECHECK. The CLI never returns 0.** Even caller-supplied `REPORTED_PASS` with plausible run IDs is labeled `REPORTED_PASS_UNVERIFIED`; a caller-controlled receipt is not authenticated by its syntax.
 
+## Additional schema and timestamp hardening (draft PR #552)
+
+Candidate inputs now reject unknown *authority-like* keys at the top level
+and within the postmerge ledger, negative oracle, contracts/proposals,
+single-guest and suite-pending oracles, backend metadata, compiler identity,
+and guest/formal/AOT/memory state records. The source-free data is still
+untrusted: valid receipt syntax is **not** a signature, GitHub execution
+attestation, or release authorization. Extra fields such as
+`release_authorized`, `certified`, `waived`, `ruleset_enforced`,
+`binary_trusted` and `executed` fail closed instead of being silently
+ignored by one consumer and trusted by another.
+
+Both the release candidate and case-oracle validator also require canonical
+UTC dates. JavaScript `Date.parse` can normalize impossible dates; acceptance
+now requires the parsed timestamp to round-trip byte-for-byte to the declared
+second-resolution `YYYY-MM-DDTHH:mm:ssZ` form. A valid historical leap day
+may pass structural validation but is still subject to freshness holds.
+
+These changes add 22 candidate regression tests and five case-inventory
+timestamp tests (27 new cases beyond the five fixture-path tests). They are
+**authored tests**, not a claimed source-owned CI or full native Node test pass.
+Before release use, execute the entire pinned-head test suite on an admitted
+source-owned runner and obtain independent review.
+
 ## Authority required to move beyond snapshots
 
 A **separate, authenticated source-owned live verifier** must independently recover and compare real GitHub main protections, exact branch/PR Git commits and trees, compiler binary hashes and build provenance, immutable .atto fixture hashes, execution profiles, job/run attempts and real steps/log artifacts, guest stdout/exit and targeted negative diagnostics, independent reviewer attestations, complete formal-model proof results, full native AOT output and measured memory behavior.
