@@ -46,3 +46,23 @@ used as a shortcut around independent GitHub run/job/artifact verification.
    and verified content hashes. Keep claimed `PASSED` provisional until
    the independent verifier completes.
 4. Require independent approval and branch protection before merge.
+
+## Receipt audit hardening
+
+V1 fixes three source-free receipt forgery paths:
+
+- The exact three canonical source Git blob identities are independently
+  pinned by the validator; callers cannot substitute a self-consistent
+  manifest/receipt pair. Missing or duplicate source vectors fail closed.
+- RFC3339 job times must be actual Gregorian dates (including leap-year
+  checks), not dates silently normalized by `Date.parse`. Ordered job steps
+  cannot overlap.
+- A Java `PASSED` must include all seven exact restricted-guest test names,
+  the JUnit report class and SHA-256, and a successful **post-execution**
+  committed-source revalidation step after `execute-guest`.
+
+These are **receipt shape constraints**, not cryptographic authentication.
+Only an independent authenticated GitHub run/job/attempt and downloaded
+source/test artifacts can qualify `PASSED` for release. The adversarial JS
+tests passed 14/14 in isolated V8 at their committed blobs; full hosted Node
+and Java/LLVM native guest execution remain `NOT_EXECUTED`.
