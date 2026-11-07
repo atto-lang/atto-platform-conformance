@@ -5,7 +5,8 @@ import { validateInvertedGuestReceipt as validate } from '../verification/dop-in
 const sha1 = 'a'.repeat(40), sha256 = 'b'.repeat(64);
 const manifest = {contract:'atto-dop-inverted-two-i64-guest-v1', vectors:[
   {id:'swap-reuse',blobSha1:'8f5599a9e0b11ded2929110b4936441fceb2ef21'},
-  {id:'removed-index-trap',blobSha1:'c3c87cfd2515707932734e183bb5768436526a96'}
+  {id:'removed-index-trap',blobSha1:'c3c87cfd2515707932734e183bb5768436526a96'},
+  {id:'immutable-column-swap',blobSha1:'863b1f20137656a277fc7bc04415a6f001f76512'}
 ]};
 const steps=['checkout-head','verify-fixture','compile-guest','execute-guest'].map((name,i)=>({
   name,number:i+1,conclusion:'success',
@@ -57,8 +58,7 @@ test('Java negative must be a checked language trap, not an arbitrary host excep
    .includes('real-checked-bounds-failure'));
 });
 test('immutable-column swap is a separate positive source-bound guest case',()=>{
- const manifestWithThird={...manifest,vectors:[...manifest.vectors,
-  {id:'immutable-column-swap',blobSha1:'863b1f20137656a277fc7bc04415a6f001f76512'}]};
+ const manifestWithThird=manifest;
  const positive={...base,caseId:'immutable-column-swap',
   fixtureGitBlobSha:'863b1f20137656a277fc7bc04415a6f001f76512'};
  assert.deepEqual(validate(positive,manifestWithThird),[]);
@@ -73,4 +73,50 @@ test('other backend positive claims rejected, not-executed stays not-executed',(
  const not={contract:manifest.contract,backend:'net',caseId:'swap-reuse',status:'NOT_EXECUTED',guestExecuted:false};
  assert.deepEqual(validate(not,manifest),[]);
  assert.ok(validate({...not,guestResult:{kind:'return',value:42}},manifest).includes('not-executed-result'));
+});
+
+
+test('canonical source manifest cannot be forged by matching two attacker-controlled hashes',()=>{
+ const forged={...manifest,vectors:manifest.vectors.map(v=>v.id === 'swap-reuse'
+   ? {...v,blobSha1:'c'.repeat(40)} : v)};
+ assert.ok(validate({...base,fixtureGitBlobSha:'c'.repeat(40)},forged)
+   .includes('manifest-canonical-source-blob'));
+ assert.ok(validate(base,{...manifest,vectors:manifest.vectors.slice(0,2)})
+   .includes('manifest-vector-inventory'));
+ assert.ok(validate(base,{...manifest,vectors:[manifest.vectors[0],manifest.vectors[0],manifest.vectors[2]]})
+   .includes('manifest-vector-duplicate'));
+});
+test('malformed manifest vector shapes fail closed rather than throwing',()=>{
+ for(const vectors of [null,{},[],[null,0,false],{find:42}]) {
+   assert.ok(validate(base,{...manifest,vectors}).length > 0);
+ }
+});
+test('reject impossible calendar dates that JavaScript normalizes silently',()=>{
+ for(const timestamp of [
+   '2026-02-30T10:00:00Z','2026-02-29T10:00:00Z',
+   '2100-02-29T10:00:00Z','2026-04-31T10:00:00Z',
+   '2026-13-01T10:00:00Z','2026-11-06T24:00:00Z',
+   '2026-11-06T10:00:60Z','2026-11-06T10:00:00+25:00'
+ ]) {
+   const forged=[{...steps[0],startedAt:timestamp},...steps.slice(1)];
+   assert.ok(check({ciJob:{...base.ciJob,steps:forged}}).includes('step-started'),timestamp);
+ }
+});
+test('real leap days and timezone offsets remain admissible',()=>{
+ const shifted=steps.map((step,i)=>({
+   ...step,startedAt:'2024-02-29T10:00:0'+i+'+00:00',
+   completedAt:'2024-02-29T10:00:0'+(i+1)+'+00:00'
+ }));
+ assert.deepEqual(check({ciJob:{...base.ciJob,steps:shifted}}),[]);
+ const offset=steps.map((step,i)=>({
+   ...step,startedAt:'2024-02-29T15:00:0'+i+'+05:00',
+   completedAt:'2024-02-29T15:00:0'+(i+1)+'+05:00'
+ }));
+ assert.deepEqual(check({ciJob:{...base.ciJob,steps:offset}}),[]);
+});
+test('job steps may not overlap even if every numbered step is success',()=>{
+ const concurrent=steps.map((step,i)=>i===1
+   ? {...step,startedAt:'2026-11-06T10:00:00Z'} : step);
+ assert.ok(check({ciJob:{...base.ciJob,steps:concurrent}})
+   .includes('sequential-job-step-times'));
 });
