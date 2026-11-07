@@ -150,3 +150,34 @@ run on the exact PR head, and it does not yet establish canonical `.atto`
 parity, independent guest-frame layout, or native low-stack safety. Host model
 tests (20) and this unexecuted compiler-backed test (1) are separately
 classified in the conformance manifest.
+
+## Java M2.1 typed scalar actor frames (2026-11-07)
+
+Draft [Java PR #2630](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2630),
+stacked on M2 invocation-descriptor PR #2628, uses the same single
+generation-scoped actor-owned frame to record *actual*, exactly typed
+primitive-wrapper guest call arguments. Its evaluator decodes those bytes
+before the invocation binds its arguments. The frame now reserves
+`max(32, 16 + 9*arity)` managed bytes when all arguments are supported;
+zero extra frame allocations are made. Byte/Short/Integer/Long/Float/Double/
+Boolean/Character, including raw IEEE NaN payloads, are supported. Reference
+values, closures, collections and arbitrary Java object identity remain
+on the legacy JVM path and are **never persisted as pointers in frame bytes**.
+
+Tail calls rewrite in-place. If arity grows beyond the existing allocation,
+the call safely falls back to original JVM arguments rather than allocating
+another active frame or misrepresenting owned stack storage. The tests
+cover malformed tags, generation poison when invalid frame layout is
+swallowed, actor byte quota before native call limit, foreign-carrier access,
+and sibling survival.
+
+This introduces *limited typed call-data* lowering, not lowering for guest
+locals, reference roots, operands, return addresses, source `SourceTask`
+continuations, nested expression recursion, or physical native stacks.
+Its 7 Java host/runtime JUnit methods and 1 legacy `.ores` compiler/evaluator
+JUnit method are **authored, NOT_EXECUTED** until stepful exact-head CI passes.
+The new `typed-scalar-invocation-actor-owned-data` pending scenario raises the
+contract to **20** scenarios and prohibits upgrading any backend's
+`actorStackStorage`, `compilerGuest` or process-survival evidence without
+the actual canonical `.atto` and low-native-stack receipts. This is
+not five-backend parity and must not be merged as a certification.
