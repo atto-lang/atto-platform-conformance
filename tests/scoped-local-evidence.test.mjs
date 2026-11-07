@@ -1,7 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { evaluateReceipt, evaluateBatch } from '../bin/verify-scoped-local-evidence.mjs';
-import { readFileSync } from 'node:fs';
+import { readFileSync, mkdtempSync, writeFileSync, symlinkSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
 
 const contract = JSON.parse(readFileSync(new URL('../contracts/scoped-locals-v1.json',import.meta.url)));
 const hash40 = 'a'.repeat(40), hash256 = 'b'.repeat(64);
@@ -100,4 +104,28 @@ test('source-free contract names all expected domains and targets',()=>{
   assert.equal(contract.scopes.task.inheritance.includes('none by default'),true);
   assert.equal(contract.promotion.zeroStepWorkflowRunCountsAsEvidence,false);
   assert.equal(contract.promotion.aotArtifactExecutionRequired,true);
+});
+
+test('CLI rejects symlinks, directories and oversized evidence files before parsing',()=>{
+  const dir=mkdtempSync(join(tmpdir(),'atto-scoped-evidence-'));
+  try {
+    const bin=fileURLToPath(new URL('../bin/verify-scoped-local-evidence.mjs',import.meta.url));
+    const ordinary=join(dir,'ordinary.json');
+    const oversized=join(dir,'oversized.json');
+    const alias=join(dir,'alias.json');
+    writeFileSync(ordinary,'{"test":"fixture"}');
+    writeFileSync(oversized,'x'.repeat(2*1024*1024+1));
+    const paths=[dir,oversized];
+    if(process.platform!=='win32'){
+      symlinkSync(ordinary,alias);
+      paths.push(alias);
+    }
+    for(const path of paths){
+      const run=spawnSync(process.execPath,[bin,path],{encoding:'utf8'});
+      assert.equal(run.status,2,path+': malformed input was not rejected');
+      assert.match(run.stderr,/SCOPED_LOCAL_EVIDENCE_INVALID:/);
+    }
+  } finally {
+    rmSync(dir,{recursive:true,force:true});
+  }
 });
