@@ -1,0 +1,100 @@
+{
+  "schema": "attolang.gpu-kernel-source-link/1",
+  "contract": "oreslang-common-source/docs/GPU_EXPLICIT_LAUNCH_V1.md",
+  "state": "SOURCE_LINK_SHAPE_ONLY_NOT_EXECUTABLE",
+  "scope": "same-compilation-unit lexical GPU fnc to launch signature/arity, not authenticated device ABI",
+  "sourceEvidence": "SOURCE_SIGNATURE_ONLY_NOT_EXECUTABLE",
+  "checkedKernelSignature": true,
+  "checkedLaunchArity": true,
+  "literalArgumentTypesOnly": true,
+  "lexicalBufferArgumentTypesResolved": false,
+  "physicalDeviceAllocationBound": false,
+  "providerIssuedLoan": false,
+  "deviceFenceVerified": false,
+  "cpuFallback": false,
+  "backendEvidence": {
+    "java": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "llvm": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "net": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "wasm": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "forge": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "cranelift": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    },
+    "js": {
+      "compiler": "NOT_EXECUTED",
+      "guest": "NOT_EXECUTED",
+      "physicalGpu": "NOT_EXECUTED"
+    }
+  },
+  "cases": [
+    {
+      "id": "saxpy-linked",
+      "expectation": "positive",
+      "path": "fixtures/gpu-kernel-link-v1/positive-saxpy-linked.atto",
+      "gitBlobSha": "2af401e2816967466418b259dfd613ed575f0d13",
+      "expectedDiagnostic": null,
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "missing-argument",
+      "expectation": "negative",
+      "path": "fixtures/gpu-kernel-link-v1/negative-missing-argument.atto",
+      "gitBlobSha": "691386b88544a56dc981f0cbdc8747f5c482ccd3",
+      "expectedDiagnostic": "GPU-LAUNCH-002",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "host-argument",
+      "expectation": "negative",
+      "path": "fixtures/gpu-kernel-link-v1/negative-host-argument.atto",
+      "gitBlobSha": "cdf6dc6b639ba0c9eb082c523d34dc9cbb8a3d4d",
+      "expectedDiagnostic": "GPU-LAUNCH-006",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "implicit-i64-f32",
+      "expectation": "negative",
+      "path": "fixtures/gpu-kernel-link-v1/negative-implicit-i64-f32.atto",
+      "gitBlobSha": "e9e69375adc1adbef699eb1699d586bdde0b6b34",
+      "expectedDiagnostic": "GPU-LAUNCH-002",
+      "observedResult": "NOT_EXECUTED"
+    },
+    {
+      "id": "unknown-kernel",
+      "expectation": "negative",
+      "path": "fixtures/gpu-kernel-link-v1/negative-unknown-kernel.atto",
+      "gitBlobSha": "989ae3b92c6360802d97eda42ff04d011d4de5a9",
+      "expectedDiagnostic": "GPU-LAUNCH-001",
+      "observedResult": "NOT_EXECUTED"
+    }
+  ],
+  "warnings": [
+    "Git blob identity and source shape are not guest execution.",
+    "Java source-link preflight never produces a runnable kernel or device allocation.",
+    "A GPU-KERNEL-008 rejection remains required even after source link succeeds.",
+    "steps=null and steps=[] prove runner admission failure only."
+  ]
+}
