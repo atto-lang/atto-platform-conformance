@@ -2,17 +2,25 @@
 // Read-only source-org private GitHub runner attestation. No checkout, no
 // repository source export, no changes to org settings or billing.
 import { execFileSync } from 'node:child_process';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { pinnedRunnerApiRequest } from
+  '../verification/private-runner-locked-gh-request-v1.mjs';
 import { PRIVATE_RUNNER_CONTROL as p, qualifySourceOrgPrivateRunner } from
   '../verification/qualify-private-runner-admission-v1.mjs';
 
-const prefix = '/repos/' + p.repository;
+// Avoid user-controlled gh configuration and host redirects. A short-lived
+// empty config directory plus an explicit GH_TOKEN/GITHUB_TOKEN provides a
+// predictable, non-interactive, GitHub.com-only, read-only evidence reader.
+const isolatedGhConfig = mkdtempSync(join(tmpdir(), 'atto-gh-proof-'));
 const api = (suffix, maxBuffer=262144) => {
-  // Hard-coded CLI executable and argument vector, never an interpolated shell.
-  // GitHub-hosted Linux runners provide /usr/bin/gh; the caller must use
-  // their own authenticated gh session or an appropriately scoped GH_TOKEN.
-  return execFileSync('/usr/bin/gh',
-    ['api', '-X', 'GET', '-H', 'Accept: application/vnd.github+json', prefix + suffix],
-    {encoding:'utf8', timeout:30000, maxBuffer, stdio:['ignore','pipe','pipe']});
+  const request = pinnedRunnerApiRequest(suffix, process.env);
+  return execFileSync('/usr/bin/gh', request.argv, {
+    env: {...request.environment, GH_CONFIG_DIR: isolatedGhConfig},
+    encoding:'utf8', timeout:30000, maxBuffer,
+    stdio:['ignore','pipe','pipe']
+  });
 };
 const json = suffix => JSON.parse(api(suffix));
 const emit = (value, exit=1) => {
@@ -55,9 +63,11 @@ try {
       }
     }
   }
-} catch {
+ } catch {
   // GitHub token, HTTP error content, and account data must not be printed.
   emit({evidenceClass:'RUNNER_NOT_EXECUTED',verified:false,
     reason:'Authenticated read-only GitHub evidence unavailable',
     guestTestsExecuted:false,backendParity:'NOT_EXECUTED'});
+} finally {
+  rmSync(isolatedGhConfig, {recursive:true, force:true});
 }
