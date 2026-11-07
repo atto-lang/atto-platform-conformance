@@ -11,30 +11,31 @@ function receipt() {
     prNumber:1389,headSha:h40,rootTreeSha:t40,checkedOutSha:h40,
     compiler:{sourceHeadSha:h40,binarySha256:h256,toolchain:'pinned llvmc'},
     workflow:{runId:7,attempt:2,headSha:h40,jobs:[{
-      id:10,runnerId:20,conclusion:'success',steps:[{name:'compile guest',conclusion:'success'}],
+      id:10,runnerId:20,conclusion:'success',steps:[{number:1,name:'compile guest',conclusion:'success'}],
     }]},
     scenarios:contract.scenarios.map(s=>({id:s.id,kind:s.kind,checks:[
       ...(s.kind==='compile'||s.kind==='compile-and-runtime'?[{
         phase:'compile-negative',executed:true,assertions:1,logSha256:h256,
-        fixtureSha256:h256,jobId:10,exitCode:1,diagnostic:'error: invalid',stdoutBytes:0,artifacts:[],
+        fixtureSha256:h256,jobId:10,stepNumber:1,stepName:'compile guest',exitCode:1,diagnostic:'error: invalid',stdoutBytes:0,artifacts:[],
       }]:[]),
       ...(s.kind!=='compile' ? [
         {phase:'compile-positive',executed:true,assertions:1,logSha256:h256,
-          fixtureSha256:h256,jobId:10,exitCode:0,artifactSha256:h256},
+          fixtureSha256:h256,jobId:10,stepNumber:1,stepName:'compile guest',exitCode:0,artifactSha256:h256},
         {phase:'guest-run',executed:true,assertions:1,logSha256:h256,
-          fixtureSha256:h256,jobId:10,exitCode:0,artifactSha256:h256},
+          fixtureSha256:h256,jobId:10,stepNumber:1,stepName:'compile guest',exitCode:0,artifactSha256:h256},
       ]:[]),
     ]})),
   };
 }
 function github() {
   return {
-    pr:{number:1389,head:{sha:h40},base:{repo:{full_name:repo}}},
+    pr:{number:1389,head:{sha:h40,ref:'feat/scoped-local',repo:{full_name:repo}},base:{repo:{full_name:repo}}},
     commit:{sha:h40,tree:{sha:t40}},
     run:{id:7,run_attempt:2,repository:{full_name:repo},event:'pull_request',
-      status:'completed',conclusion:'success',pull_requests:[{number:1389}]},
+      head_sha:h40,head_branch:'feat/scoped-local',
+      status:'completed',conclusion:'success',pull_requests:[{number:1389,head:{sha:h40,repo:{full_name:repo}}}]},
     jobs:{total_count:1,jobs:[{id:10,run_id:7,run_attempt:2,runner_id:20,status:'completed',
-      conclusion:'success',steps:[{name:'compile guest',conclusion:'success'}]}]},
+      conclusion:'success',steps:[{number:1,name:'compile guest',conclusion:'success'}]}]},
   };
 }
 function fakeFetch(facts, calls) {
@@ -143,5 +144,50 @@ test('slice rejects unknown, duplicate, and empty scenario sets',async()=>{
     const v=await auditGitHubReceipt(r,contract,{allowPartial:true,fetchImpl:async()=>{throw Error('should not fetch');}});
     assert.equal(v.githubMetadataVerified,false);
     assert.ok(v.errors.length);
+  }
+});
+
+test('stale workflow from same PR is never accepted for current source head',async()=>{
+  for(const mutation of [
+    f=>f.run.head_sha='d'.repeat(40),
+    f=>f.run.head_branch='stale-branch',
+    f=>f.run.pull_requests[0].head.sha='e'.repeat(40),
+    f=>f.run.pull_requests[0].head.repo.full_name='other/repository',
+  ]) {
+    const {v}=await check(()=>{},mutation);
+    assert.equal(v.githubMetadataVerified,false);
+    assert.ok(v.errors.some(e=>e==='RUN_HEAD_NOT_EXACT_SOURCE'||e==='RUN_ASSOCIATION_MISMATCH'),JSON.stringify(v.errors));
+  }
+});
+test('synthetic merge head requires separate ancestry proof and fails closed here',async()=>{
+  const {v}=await check(()=>{}, f=>{f.run.head_sha='f'.repeat(40);});
+  assert.ok(v.errors.includes('RUN_HEAD_NOT_EXACT_SOURCE'));
+});
+test('scenario must bind to a matching, numbered successful job step',async()=>{
+  for (const mut of [
+    r=>r.scenarios[0].checks[0].stepNumber=99,
+    r=>r.scenarios[0].checks[0].stepName='unrelated',
+    r=>delete r.scenarios[0].checks[0].stepNumber,
+  ]) {
+    const {v}=await check(mut);
+    assert.equal(v.githubMetadataVerified,false);
+    assert.ok(v.errors.some(e=>e.startsWith('UNBOUND_SCENARIO_STEP')));
+  }
+});
+test('provider step number mismatch is a read-back mismatch',async()=>{
+  const {v}=await check(()=>{},f=>f.jobs.jobs[0].steps[0].number=999);
+  assert.ok(v.errors.some(e=>e.startsWith('JOB_STEPS_READBACK_MISMATCH')));
+});
+test('incomplete or dishonest pagination never substitutes for a completed job list',async()=>{
+  for (const mutation of [
+    f=>f.jobs.total_count=0,
+    f=>f.jobs.total_count=-1,
+    f=>f.jobs.total_count=1001,
+    f=>{f.jobs.jobs.push({...f.jobs.jobs[0],id:11});f.jobs.total_count=1;},
+    f=>{f.jobs.total_count=2;f.jobs.jobs=[];},
+  ]) {
+    const {v}=await check(()=>{},mutation);
+    assert.equal(v.githubMetadataVerified,false);
+    assert.ok(v.errors.some(e=>e.includes('PAGINATION')));
   }
 });
