@@ -83,9 +83,33 @@ def validate_log_pairs(llvm_log, graal_log, metadata, spec):
          "LLVM native main did not finish/drain")
     need(match_output(graal_log, "ATTO_GUEST_GC_DELTA") == "0",
          "observed Graal collector delta not zero")
+
+    # Make the recorded native artifact digest meaningful, rather than just
+    # syntactically a 64-hex string chosen by the caller.
+    need(match_output(llvm_log, "ATTO_M4_LLVM_NATIVE_GUEST_SHA256") ==
+         metadata["llvm"]["native_artifact_sha256"],
+         "LLVM native artifact digest differs from executed job output")
+    need(match_output(graal_log, "ATTO_GRAAL_NATIVE_GUEST_SHA256") ==
+         metadata["graalvm-native"]["native_artifact_sha256"],
+         "Graal native artifact digest differs from executed job output")
+    for name in ("ATTO_M4_LLVM_STALE_HANDLE_DENIED",
+                 "ATTO_M4_LLVM_REINCARNATION_FRESH_STATE",
+                 "ATTO_M4_LLVM_TENANT_NEIGHBOR_SURVIVED"):
+        need(match_output(llvm_log, name) == "1",
+             "missing LLVM lifecycle control: " + name)
+    for name in ("ATTO_M4_LLVM_NEGATIVE_DIGEST_REJECTION",
+                 "ATTO_M4_LLVM_TAMPERED_GUEST_REJECTION",
+                 "ATTO_M4_LLVM_ASAN_UBSAN_NATIVE_HOST"):
+        need(match_output(llvm_log, name) == "PASSED",
+             "missing LLVM negative/sanitizer gate: " + name)
+    for name in ("ATTO_JVM_ATOMIC_SEND_ROLLBACK",
+                 "ATTO_JVM_NATIVE_ARENA_CLOSED_FENCE"):
+        need(match_output(graal_log, name) == "PASS",
+             "missing generated-Java atomicity probe: " + name)
     return {
         "schema": "atto.m4.dual-native-output-structural-result.v1",
         "status": "STRUCTURALLY_CONSISTENT_UNAUTHENTICATED",
+        "extra_lifecycle_and_native_artifact_gates_observed": True,
         "source_git_blob_sha": spec["source_git_blob_sha"],
         "source_sha256": expected_src_sha256,
         "return": e["return_i64"],
@@ -99,6 +123,8 @@ def validate_log_pairs(llvm_log, graal_log, metadata, spec):
             "hostile tenant sandbox; owning arenas alone is not a security boundary",
             "complete AttoLang compiler/language semantic parity",
             "authentic workflows/artifacts; receipt metadata is externally untrusted",
+            "JVM overflow rollback probe is separate from native Epsilon runtime execution",
+            "ASan/UBSan instruments LLVM host code, not arbitrary untrusted native guest code",
             "sustained no-GC memory and bounded heap behavior",
         ],
     }
