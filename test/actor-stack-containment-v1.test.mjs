@@ -40,18 +40,23 @@ function validatePending(matrix) {
     'actorStackPoisonCannotBeGuestCaught',
     'carrierMigrationDoesNotMoveStackOwnership',
     'stackFailureBeforeNativeGuardPage',
-    'noNativeSignalOrStackOverflowRecovery'
+    'noNativeSignalOrStackOverflowRecovery',
+    'guardedSynchronousInvocationChargedToActorFrameArena'
   ]) {
     assert.equal(matrix.requirements[key], true,
       'mandatory physical actor-stack safety property: ' + key);
   }
   assert.equal(matrix.requirements.nativeStackOverflowRecoverableOnSharedCarrier, false);
   assert.equal(matrix.requirements.untrustedArbitraryNativeCodeRequiresKillableWorker, true);
-  assert.ok(matrix.scenarios.length >= 17);
+  assert.ok(matrix.scenarios.length >= 18);
   assert.match(matrix.javaFrameArenaReference, /\/pull\/2627$/);
   const bootstrap = matrix.frameStorageBootstrap;
   assert.equal(bootstrap.javaHostPrimitive, 'MANAGED_BYTES_ONLY');
-  assert.equal(bootstrap.javaAuthoredHostTests, 16);
+  assert.equal(bootstrap.javaAuthoredHostTests, 20);
+  assert.equal(bootstrap.javaGuardedInvocationByteFrames,
+    'GUARD_WIRED_MANAGED_BYTES_NOT_GUEST_LOCALS');
+  assert.equal(bootstrap.javaSynchronousGuardByteCharge, 32);
+  assert.equal(bootstrap.javaGuestCallGuardNativeStackStillUsed, true);
   assert.equal(bootstrap.javaLocalIsolatedSmokeAssertions, 19);
   assert.equal(bootstrap.promotionFromHostOnlyAllowed, false);
   for (const dimension of [
@@ -109,6 +114,9 @@ test('fake pass, duplicate backend, deleted proof and false promotion are reject
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.promotionFromHostOnlyAllowed = true;})));
   assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.suspendedSourceTaskFrames;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaHostPrimitive = 'NATIVE_STACK_ISOLATED';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaGuardedInvocationByteFrames = 'COMPILER_LOCALS_SWITCHED';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaGuestCallGuardNativeStackStillUsed = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.requirements.guardedSynchronousInvocationChargedToActorFrameArena = false;})));
 });
 
 test('logical guard is not misrepresented as independent actor stack storage', async () => {
@@ -149,4 +157,19 @@ test('frame byte quotas and generation tests cannot be claimed by authored host 
     required.delete(scenario.id);
   }
   assert.deepEqual([...required.keys()], [], 'all required physical frame cases are inventoried');
+});
+
+test('guard-linked managed bytes cannot certify compiler-lowered execution frames', async () => {
+  const matrix = validatePending(await load());
+  const caseName = 'synchronous-guest-guard-byte-reservations';
+  const scenario = matrix.scenarios.find(c => c.id === caseName);
+  assert.ok(scenario, 'explicit pending guard-to-frame compiler proof');
+  assert.equal(scenario.source, null, 'no invented actor .atto execution fixture');
+  assert.equal(scenario.kind, 'pending-actor-acceptance');
+  assert.ok(scenario.requiredEvidence.includes('compilerGuest'));
+  assert.ok(scenario.requiredEvidence.includes('actorStackStorage'));
+  assert.equal(matrix.backends.find(b => b.id === 'java').actorStackStorage, 'NOT_EXECUTED');
+  assert.equal(matrix.frameStorageBootstrap.compilerLoweredGuestFrames, 'NOT_EXECUTED');
+  assert.equal(matrix.frameStorageBootstrap.suspendedSourceTaskFrames, 'NOT_EXECUTED');
+  assert.equal(matrix.promotion.certified, false);
 });
