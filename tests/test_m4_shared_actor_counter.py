@@ -77,6 +77,7 @@ def check(spec):
         record = status[backend]
         assert record["status"] == "OBSERVED_SOURCE_COMPILED_GUEST_NARROW_SCOPE"
         assert record["evidence_record"] == "evidence/m4/dual-native-actor-observations-20261107.json"
+        assert (ROOT / record["evidence_record"]).is_file()
         evidence = json.loads((ROOT / record["evidence_record"]).read_text())
         assert evidence["source"]["git_blob_sha"] == spec["source_git_blob_sha"]
         assert evidence["llvm"]["observed"]["main_return"] == expect["return_i64"]
