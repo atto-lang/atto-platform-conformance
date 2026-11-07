@@ -131,7 +131,9 @@ export function evaluateCandidate(s,landed,caseInventory=null){
  if(caseReport===null)holds.push('CASE_LEVEL_ORACLE_INVENTORY_NOT_EVALUATED');
  else for(const h of caseReport.holds)holds.push('CASE_'+h);
  if(ledger.status!=='SNAPSHOT_READY_RECHECK_LIVE')holds.push('POSTMERGE_LEDGER_BLOCKED');
- if(s.contracts.some(c=>c.oracle.type==='suite_pending'))holds.push('CONTRACT_SUITE_ORACLES_NOT_NORMALIZED');
+ if(s.contracts.some(c=>c.oracle.type==='suite_pending'))
+  holds.push(caseReport===null?'CONTRACT_SUITE_ORACLES_NOT_NORMALIZED':
+    'CONTRACT_SUITE_EXACT_ORACLES_STILL_PENDING');
  if(Date.now()-Date.parse(s.as_of)>7*86400000)holds.push('STALE_SOURCE_HEAD_SNAPSHOT');
  const rows=s.backends.map(b=>{
   const blockers=[];
