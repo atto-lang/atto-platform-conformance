@@ -8,7 +8,7 @@ const manifest = {contract:'atto-dop-inverted-two-i64-guest-v1', vectors:[
   {id:'removed-index-trap',blobSha1:'c3c87cfd2515707932734e183bb5768436526a96'},
   {id:'immutable-column-swap',blobSha1:'863b1f20137656a277fc7bc04415a6f001f76512'}
 ]};
-const steps=['checkout-head','verify-fixture','compile-guest','execute-guest'].map((name,i)=>({
+const steps=['checkout-head','verify-fixture','compile-guest','execute-guest','verify-post-execution-source'].map((name,i)=>({
   name,number:i+1,conclusion:'success',
   startedAt:'2026-11-06T10:00:0'+i+'Z',
   completedAt:'2026-11-06T10:00:0'+(i+1)+'Z'
@@ -17,8 +17,18 @@ const base={contract:manifest.contract,backend:'java',caseId:'swap-reuse',status
   sourceHeadSha:sha1,checkoutHeadSha:sha1,sourceTreeSha:sha1,
   fixtureGitBlobSha:manifest.vectors[0].blobSha1,fixtureSha256:sha256,compilerSha256:sha256,
   toolchain:'JDK 21',command:'mvn -Dtest=DopInvertedGuestI64V1Test test',
-  discoveredTests:6,executedTests:6,guestExecuted:true,executionProfile:'restricted-interpreter',
+  discoveredTests:7,executedTests:7,guestExecuted:true,executionProfile:'restricted-interpreter',
   executionStage:'managed-guest',guestArtifactSha256:null,runtimeClassTreeSha256:sha256,
+  junitReportSha256:sha256,junitReportClass:'dev.oreslang.compiler.DopInvertedGuestI64V1Test',
+  javaGuestCases:[
+    'productionLexerAndRestrictedMirRunCanonicalSwapReuse',
+    'immutableColumnRemainsAttachedToSurvivorAfterSwapDelete',
+    'canonicalFormerDenseIndexTrapsAfterSwapErase',
+    'checkedMutableFieldStoreAndImmutableColumnRejection',
+    'capacityAndLogicalLengthAreDistinctCheckedProperties',
+    'strictAdmissionRejectsEffectsAndHiddenUserCode',
+    'normalGuestCompilerMustRemainFailClosed'
+  ],
   guestResult:{kind:'return',value:42},
   ciJob:{runId:1,jobId:2,attempt:1,runnerId:3,conclusion:'success',steps}
 };
@@ -119,4 +129,17 @@ test('job steps may not overlap even if every numbered step is success',()=>{
    ? {...step,startedAt:'2026-11-06T10:00:00Z'} : step);
  assert.ok(check({ciJob:{...base.ciJob,steps:concurrent}})
    .includes('sequential-job-step-times'));
+});
+
+
+test('Java requires exact seven-case JUnit inventory, nonzero report digest and final source recheck',()=>{
+ assert.ok(check({junitReportSha256:null}).includes('java-junit-report-sha256'));
+ assert.ok(check({junitReportClass:'dev.oreslang.HostTest'}).includes('java-junit-report-class'));
+ assert.ok(check({javaGuestCases:base.javaGuestCases.slice(1)}).includes('java-guest-case-inventory'));
+ assert.ok(check({executedTests:6,discoveredTests:6}).includes('java-seven-guest-tests'));
+ assert.ok(check({ciJob:{...base.ciJob,steps:steps.slice(0,-1)}})
+   .includes('java-post-execution-source-verification'));
+ const early=steps.map((step,i)=>i===4 ? {...step,number:3} : step);
+ assert.ok(check({ciJob:{...base.ciJob,steps:early}})
+   .includes('java-post-execution-source-verification'));
 });
