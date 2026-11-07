@@ -13,3 +13,9 @@ Wasm runtime support, and does not upgrade the pre-existing portable
 work is authored but unexecuted on source-owned GitHub Actions while
 runner admission is blocked. Native compiler/artifact identity and
 independent review remain mandatory before a stronger parity claim.
+
+The Forge record is intentionally named `forge-stage1-native`,
+**not** Cranelift. Its new execution script uses a hosted C++ ELF
+harness and does not certify freestanding or zero-import guest code.
+The Forge source head was refreshed after correcting those receipt
+labels; the canonical source Git blob remains unchanged.

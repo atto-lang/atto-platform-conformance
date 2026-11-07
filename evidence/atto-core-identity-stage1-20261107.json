@@ -15,10 +15,10 @@
       "compiler_implementation": "AUTHORED_UNEXECUTED"
     },
     {
-      "backend": "forge-cranelift",
+      "backend": "forge-stage1-native",
       "repository": "ores-truffle-oreslang/oreslang-source.forge",
       "pr": 202,
-      "head": "0fea3da6053317823f4b657cd8941d7e0f662e70",
+      "head": "3254354c1d5b2c0cc3030ae1deb026c6ad1a2994",
       "source_blob": "b8a0cf7a45f9c3070ad3bcd42d4a78c7cf83739b",
       "compiler_implementation": "AUTHORED_UNEXECUTED"
     }

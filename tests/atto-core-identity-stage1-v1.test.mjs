@@ -23,7 +23,7 @@ test("two stage-1 compiler branches refer to one exact canonical source blob",()
  assert.equal(evidence.backends.length,2);
  assert.equal(new Set(evidence.backends.map(x=>x.repository)).size,2);
  assert.deepEqual(new Set(evidence.backends.map(x=>x.backend)),
-    new Set(["net-nativeaot","forge-cranelift"]));
+    new Set(["net-nativeaot","forge-stage1-native"]));
  for(const backend of evidence.backends){
   assert.match(backend.head,/^[0-9a-f]{40}$/);
   assert.equal(backend.source_blob,blob(bytes));
