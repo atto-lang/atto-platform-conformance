@@ -5,7 +5,7 @@
   "canonicalExtension": ".atto",
   "scope": "actor call-depth, guest frame budgeting, carrier survival and supervisor recovery",
   "javaReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2505",
-  "note": "All five backend guest evidence lanes remain NOT_EXECUTED. Java #2505 provides carrier recursion guard, #2624 actor logical budget, #2627 actor byte frames, #2628 invocation metadata, and #2630 limited typed scalar argument reconstruction. None proves compiler-lowered actor stacks or native process stack-fault isolation.",
+  "note": "All five backend guest evidence lanes remain NOT_EXECUTED. Java #2505 guards carrier recursion; #2624 owns logical budget; #2627 reserves 32-byte managed guard frames; #2628 authors 16-byte evaluator call descriptors within the existing frame. No duplicate charge or compiler-local/return-PC lowering is proven; full stack isolation and native process fault containment remain unimplemented. Java #2630 adds limited typed scalar call-data, also unexecuted. None proves compiler-lowered actor stacks, source-task continuation ownership, or native process-fault isolation.",
   "requirements": {
     "separateHeapsAreNotStacks": true,
     "guestBudgetBeforeNativeOverflow": true,
@@ -290,6 +290,56 @@
       ]
     },
     {
+      "id": "actor-source-await-retains-charged-frame",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-source-cooperate-preserves-frame-across-dispatch",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-source-two-suspended-tasks-independent",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "actor-source-cancel-physical-quiescence-zeroizes",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-source-wrong-carrier-and-generation-rejected",
+      "kind": "pending-isolation",
+      "source": null,
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
       "id": "typed-scalar-invocation-actor-owned-data",
       "source": null,
       "kind": "pending-actor-acceptance",
@@ -324,7 +374,7 @@
     "realNativeStackIsolation": "NOT_EXECUTED",
     "nativeAotExecution": "NOT_EXECUTED",
     "promotionFromHostOnlyAllowed": false,
-    "note": "Java M1.6 guarded non-tail interpreter invocations reserve actor-owned managed byte frames and unwind LIFO; JVM guest locals and return continuations remain on carrier stack. SourceTask continuation and native process-stack containment are NOT_EXECUTED.",
+    "note": "Java M1.6 guarded non-tail interpreter invocations reserve actor-owned managed byte frames and unwind LIFO; JVM guest locals and return continuations remain on carrier stack. SourceTask continuation and native process-stack containment are NOT_EXECUTED. Java #2631 explicitly binds an actor source scheduler to per-task bootstrap frame leases and reserves bytes across await/cooperate; SourceTask locals and return continuations are not lowered into them.",
     "javaGuardedInvocationByteFrames": "GUARD_WIRED_MANAGED_BYTES_NOT_GUEST_LOCALS",
     "javaSynchronousGuardByteCharge": 32,
     "javaGuestCallGuardNativeStackStillUsed": true,
@@ -337,6 +387,13 @@
     "javaNewHostInvocationTestsAuthored": 5,
     "javaNewAttoActorFixturesAuthored": 3,
     "javaNewAttoActorExecution": "NOT_EXECUTED",
+    "javaActorSourceTaskReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2631",
+    "javaActorSourceTaskFrameBytes": 64,
+    "javaActorSourceTaskHostTestsAuthored": 8,
+    "javaActorSourceTaskLease": "HOST_SCHEDULER_AWAIT_LEASE_AUTHORED_NOT_EXECUTED",
+    "javaActorSourceTaskCompilerFrames": "NOT_EXECUTED",
+    "javaActorSourceTaskNativeStackIsolation": "NOT_EXECUTED",
+    "javaActorSourceTaskPhysicalRetirement": "HOST_RUNTIME_AUTHORED_NOT_EXECUTED",
     "javaTypedScalarFrameReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2630",
     "javaTypedScalarCallData": "AUTHORED_NOT_EXECUTED",
     "javaTypedScalarCodecTypes": 8,

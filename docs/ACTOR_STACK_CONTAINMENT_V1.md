@@ -151,6 +151,33 @@ parity, independent guest-frame layout, or native low-stack safety. Host model
 tests (20) and this unexecuted compiler-backed test (1) are separately
 classified in the conformance manifest.
 
+## Java source-task scheduler frame integration (M1.7)
+
+Draft [Java #2631](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2631),
+stacked on #2627, explicitly binds each source actor's
+`OresScheduler.runtimeOwned` to that actor incarnation's frame arena. A
+source task receives an actor-domain `ExecutionContext` that survives
+`await` and `cooperate`. A **64-byte bootstrap managed frame lease** is
+charged when the task first enters its owning actor carrier, remains
+allocated during suspension, and is released only after physically quiescent
+scheduler retirement. Actor-owned scheduler parallelism must remain one;
+foreign carrier/actor execution and generation mismatches are rejected.
+
+**Not proven:** these bytes are NOT actual compiler-lowered `.atto` locals,
+return addresses, operand roots, lexical unwind state, or a native stack.
+`SourceTask` lowering remains independent of these bootstrap bytes, and
+actor mailbox non-reentrancy still needs a compiler-backed integrated receipt.
+The scheduler host tests have been authored but not run on an admitted
+exact-head GitHub Actions worker.
+
+The matrix now includes five additional explicitly pending cases for:
+await frame retention, cooperate without frame reassignment, concurrent
+suspended tasks, physically quiescent cancel/zeroization, and rejection of
+wrong-carrier/generation resume. Their `source` fields remain `null` until
+canonical compiled `.atto` actor fixtures and reproducible executed receipts
+exist. The host bridge cannot promote any of the five backend matrices from
+`NOT_EXECUTED`.
+
 ## Java M2.1 typed scalar actor frames (2026-11-07)
 
 Draft [Java PR #2630](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2630),
