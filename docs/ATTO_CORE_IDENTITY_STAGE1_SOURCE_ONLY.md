@@ -41,3 +41,14 @@ identities, and explicitly classify every compiler guest result as
 `AUTHORED_UNEXECUTED`. The Forge native test is a **hosted C++ ELF
 harness**, not freestanding/Cranelift parity. Zero host imports,
 five-backend parity and independent approval have not been shown.
+
+## LF byte-integrity checks for stage-1 and stage-2 fixtures
+
+The conformance repository now also forces `*.atto` and `*.ores`
+checkout to LF across platforms. The source-only workflow checks all
+four checked-in Core/guest fixtures for CR, NUL, BOM, and final LF,
+asserts that CRLF substitution changes their Git blob identities,
+and compares the frozen identities against both evidence ledgers.
+It reruns on changes to the numeric source fixture or checkout policy.
+This preserves source-byte equivalence but is not a compiler-backed
+guest conformance result.
