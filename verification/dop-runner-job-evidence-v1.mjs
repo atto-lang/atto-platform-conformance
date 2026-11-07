@@ -28,10 +28,12 @@ export function classifyRunnerJobEvidence(run, response, expected) {
   const id = posint(own(expected,'runId'),'runId');
   const attempt = posint(own(expected,'attempt'),'attempt');
   const name = own(expected,'jobName');
+  const targetJobId = posint(own(expected,'jobId'),'expectedJobId');
   const event = own(expected,'event');
   if (typeof repo !== 'string' || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repo)) throw Error('E_REPO');
   if (typeof head !== 'string' || !/^[0-9a-f]{40}$/.test(head)) throw Error('E_SHA');
-  if (typeof name !== 'string' || !name.trim()) throw Error('E_NAME');
+  if (typeof name !== 'string' || !name.trim() || name.length > 256)
+    throw Error('E_NAME');
   if (!['pull_request','workflow_dispatch'].includes(event)) throw Error('E_EVENT');
   if (own(run,'id') !== id || own(run,'run_attempt') !== attempt || own(run,'head_sha') !== head ||
       own(run,'event') !== event || own(own(run,'repository'),'full_name') !== repo ||
@@ -44,17 +46,24 @@ export function classifyRunnerJobEvidence(run, response, expected) {
   for (const item of jobs) {
     const n = own(item,'name'), j = posint(own(item,'id'),'jobId');
     if (typeof n !== 'string' || !n.trim() || names.has(n) || ids.has(j)) throw Error('E_DUPLICATE_JOB');
+    // Every job record in this attempt's full inventory must refer to the
+    // identical run, immutable PR head, and attempt. Otherwise even a valid
+    // selected job can be laundered through a contradictory API response.
+    if (typeof n !== 'string' || n.length > 256 ||
+        own(item,'run_id') !== id ||
+        own(item,'run_attempt') !== attempt ||
+        own(item,'head_sha') !== head) throw Error('E_JOB_IDENTITY');
     names.add(n); ids.add(j);
     if (n === name) selected = item;
   }
   if (!selected) throw Error('E_EXPECTED_JOB_MISSING');
-  if (own(selected,'run_id') !== id || own(selected,'run_attempt') !== attempt ||
-      own(selected,'head_sha') !== head) throw Error('E_JOB_IDENTITY');
+  if (own(selected,'id') !== targetJobId) throw Error('E_JOB_IDENTITY');
   // Validate requirements before handling a missing runner.
   const required=own(expected,'requiredSteps');
-  if (!Array.isArray(required) || !required.length ||
+  if (!Array.isArray(required) || !required.length || required.length > 64 ||
       new Set(required).size !== required.length ||
-      required.some(n=>typeof n!=='string'||!n)) throw Error('E_REQUIRED_STEPS');
+      required.some(n=>typeof n!=='string'||!n.trim()||n.length>256))
+    throw Error('E_REQUIRED_STEPS');
   const runner=own(selected,'runner_id'), runnerName=own(selected,'runner_name');
   const steps=own(selected,'steps');
   const runStatus=own(run,'status'), runConclusion=own(run,'conclusion');
@@ -81,6 +90,7 @@ export function classifyRunnerJobEvidence(run, response, expected) {
   }
   posint(runner,'runnerId');
   if (typeof runnerName !== 'string' || !runnerName.trim()) throw Error('E_RUNNER_NAME');
+  if (Array.isArray(steps) && steps.length > 256) throw Error('E_STEP_INVENTORY');
   if (!Array.isArray(steps) || steps.length === 0) return {
     classification:'STEP_RECORDS_MISSING',runId:id,runAttempt:attempt,
     jobId:own(selected,'id'),headSha:head,executedStepCount:0,
@@ -93,7 +103,8 @@ export function classifyRunnerJobEvidence(run, response, expected) {
   let lastNumber=0, executed=0;
   for (const step of steps) {
     const name=own(step,'name'), number=posint(own(step,'number'),'stepNumber');
-    if (typeof name!=='string'||!name.trim()||byName.has(name)||number<=lastNumber)
+    if (typeof name!=='string'||!name.trim()||name.length>256||
+        byName.has(name)||number<=lastNumber)
       throw Error('E_STEP_ORDER');
     lastNumber=number;
     const status=own(step,'status'), conclusion=own(step,'conclusion');
@@ -107,7 +118,7 @@ export function classifyRunnerJobEvidence(run, response, expected) {
     }
     // Count timestamped completed work, not API step records or skipped steps.
     const executedStep=hasTimes && status==='completed' &&
-      ['success','failure','cancelled','timed_out','action_required'].includes(conclusion);
+      ['success','failure','cancelled','timed_out'].includes(conclusion);
     if(executedStep)executed++;
     byName.set(name,{step,executedStep});
   }
