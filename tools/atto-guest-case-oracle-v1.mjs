@@ -21,6 +21,8 @@ const ID=/^[a-z][a-z0-9-]{1,79}$/;
 const CAT=/^[A-Z][A-Z0-9_]{4,127}$/;
 const R=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const distinct=x=>Array.isArray(x)&&new Set(x).size===x.length;
+const exactKeys=(o,keys)=>R(o)&&Object.keys(o).length===keys.length&&
+  Object.keys(o).every(x=>keys.includes(x));
 function fail(m){throw new TypeError(m)}
 function names(a,allowed){return distinct(a)&&a.length===allowed.length&&
   allowed.every(s=>a.includes(s))}
@@ -35,8 +37,18 @@ function inspectCase(c,suite){
    !(suite==='actor-channel-v1'?
      c.fixture_path.startsWith('verification/fixtures/five-backend-actor-channel-v1/'):
      c.fixture_path.startsWith('fixtures/portable-task-v1/'))||
-   !SHA.test(c.fixture_blob_sha||'')||!R(c.expect))fail('invalid case fixture provenance');
+    !SHA.test(c.fixture_blob_sha||'')||!R(c.expect)||
+   !exactKeys(c,['id','fixture_path','fixture_blob_sha','expect']))
+   fail('invalid case fixture provenance');
  const e=c.expect;
+ const required=e.kind==='positive'
+  ?(suite==='actor-channel-v1'
+    ?['kind','expected_stdout_text','expected_stdout_hex','expected_exit_code','oracle_state']
+    :['kind','expected_exit_code','required_observations','forbidden_observations','expected_stdout_hex','oracle_state'])
+  :(suite==='actor-channel-v1'
+    ?['kind','expected_diagnostic_pattern','expected_diagnostic_category','expected_phase','oracle_state']
+    :['kind','expected_diagnostic_category','expected_phase','oracle_state']);
+ if(!exactKeys(e,required))fail('unknown or missing oracle authority keys');
  if(e.kind==='positive'){
    if(e.expected_stdout_hex!==null)fail('positive byte oracle cannot be promoted from draft');
    if(suite==='actor-channel-v1'){
@@ -70,11 +82,15 @@ export function validateGuestCaseInventory(s){
    !Number.isFinite(Date.parse(s.as_of))||Date.parse(s.as_of)>Date.now()+300000||
    !names(s.required_backends,B)||!Array.isArray(s.suites)||s.suites.length!==2||
    !names(s.suites.map(q=>q?.id),Object.keys(SOURCES))||
-   !Array.isArray(s.evidence)||s.evidence.length!==0)
+    !Array.isArray(s.evidence)||s.evidence.length!==0||
+   !exactKeys(s,['schema_version','scope','as_of','required_backends','suites','evidence','note'])||
+   typeof s.note!=='string'||s.note.length===0||s.note.length>2048)
    fail('invalid draft-only guest inventory');
  for(const suite of s.suites){
    const expected=SOURCES[suite.id];
-   if(!R(suite.source)||suite.source.pr!==expected.pr||
+   if(!exactKeys(suite,['id','source','cases'])||
+     !exactKeys(suite.source,['pr','pr_head','manifest_blob_sha','original_backends'])||
+     suite.source.pr!==expected.pr||
      suite.source.pr_head!==expected.head||
      suite.source.manifest_blob_sha!==expected.manifest||
      !Array.isArray(suite.source.original_backends)||
