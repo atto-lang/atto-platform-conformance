@@ -205,3 +205,42 @@ against the exact fetched JSON/JS/fixture text. This is NOT a hosted Node
 test, actual .atto compiler execution, backend parity or native stack
 survival proof. All five backend evidence slots remain NOT_EXECUTED until
 runner admission and canonical guest acceptance on exact PR heads.
+
+## Java M3 typed scalar execution frames — authored, not executed
+
+[Java draft PR #2640](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2640)
+is stacked on integrated #2637 and introduces the first restricted
+compiler-owned scalar PC, local and operand bytecode executing inside a
+nonrecursive JVM dispatch loop. Its actor `ScalarFrameStorage` delegates
+typed 16-byte scalar slots and authoritative PC/operand-height header to
+the existing 64-frame/64-KiB incarnation-fenced `ActorFrameArena`, with
+the current source-task identity reused when present. Non-actor calls
+use a separately bounded 2,048-frame byte store.
+
+**Important:** only entire pure, non-suspending integer `fnc` graphs
+that pass strict AST pre-admission are compiled. The original evaluator
+still owns unsupported source, methods, actor receive bodies, closures,
+structured cleanup and actual suspended lexical source-task state.
+Managed actor byte frames do not create independent JVM native stacks,
+process-level isolation or FFI safety.
+
+Java #2640 authors seven scalar compiler/VM host JUnit methods, four
+actor-owned frame runtime JUnit methods and three genuine parser-backed
+`.atto` JUnit methods. The new canonical sources are:
+
+- `deep-non-tail-scalar-frame.atto` — expected stdout `1024`
+- `mutual-tail-scalar-frame.atto` — expected stdout `0`
+- `immutable-local-scalar-frame.atto` — expected stdout `9`
+
+Three further cases remain pending for actor A exhaustion/B survival,
+unsupported construct fallbacks with negative mutations, and stale
+actor generation/frame fencing. This conformance manifest now tracks
+**36 scenarios, 10 with source fixtures**. Those authored fixture blobs
+are not guest execution receipts, and all five backend `compilerGuest`
+and native-stack evidence fields remain `NOT_EXECUTED`.
+
+For exact-head Java execution: use the full reviewed head/tree values
+with `scripts/verify-scalar-frame-m3.sh` on PR #2640, require nonzero
+job steps, Maven/JUnit XML, guest output and process exit, and capture
+isolated negative-mutation receipts. Do not promote #2640 or certify
+five-backend stack parity without that evidence and independent review.
