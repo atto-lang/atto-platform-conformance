@@ -8,13 +8,13 @@ const tap = n => bytes('TAP version 13\n' + Array.from({length:n},(_,i)=>'ok ' +
 function data() {
   const expected = {repo:'ores-truffle-oreslang/oreslang-platform-conformance',
     headSha:'a'.repeat(40),treeSha:'b'.repeat(40),runId:4422,attempt:2,
-    jobName:'source-only-runner-receipt',baseCount:86,correlationCount:36,artifactCount:37};
-  const baseTapBytes=tap(86),correlationTapBytes=tap(36),artifactTapBytes=tap(37);
+    jobName:'source-only-runner-receipt',baseCount:86,correlationCount:44,artifactCount:37};
+  const baseTapBytes=tap(86),correlationTapBytes=tap(44),artifactTapBytes=tap(37);
   const receipt={classification:'SOURCE_ONLY_NODE_TEST_EXECUTED_NOT_GUEST_PARITY',
     hosted_api_independent_job_step_correlation:'NOT_PERFORMED',
     repo:expected.repo,head:expected.headSha,tree:expected.treeSha,
     run_id:'4422',run_attempt:'2',job:expected.jobName,
-    test_count:86,correlation_test_count:36,artifact_bytes_test_count:37,
+    test_count:86,correlation_test_count:44,artifact_bytes_test_count:37,
     tap_sha256:hash(baseTapBytes),correlation_tap_sha256:hash(correlationTapBytes),
     artifact_bytes_tap_sha256:hash(artifactTapBytes),
     not_proven:['native compilation','guest execution','backend parity','merge approval']};
@@ -28,7 +28,7 @@ const reject=(name,change,code)=>test(name,()=>{
 });
 test('downloaded synthetic bytes match but cannot attest runner or guest',()=>{
   const o=check(data());
-  assert.equal(o.baseTestCount,86);assert.equal(o.correlationTestCount,36);
+  assert.equal(o.baseTestCount,86);assert.equal(o.correlationTestCount,44);
   assert.equal(o.artifactTestCount,37);
   assert.equal(o.hostedRunnerVerified,false);assert.equal(o.guestExecutionProven,false);
   assert.equal(o.mergeAuthorized,false);
@@ -41,7 +41,7 @@ reject('receipt wrong job',v=>v.receipt.job='another','E_RECEIPT_IDENTITY');
 reject('receipt foreign repo',v=>v.receipt.repo='other/private','E_RECEIPT_IDENTITY');
 reject('receipt base test count substituted',v=>v.receipt.test_count=85,'E_TEST_INVENTORY');
 reject('receipt artifact test count substituted',v=>v.receipt.artifact_bytes_test_count=36,'E_TEST_INVENTORY');
-reject('receipt correlation test count substituted',v=>v.receipt.correlation_test_count=35,'E_TEST_INVENTORY');
+reject('receipt correlation test count substituted',v=>v.receipt.correlation_test_count=43,'E_TEST_INVENTORY');
 reject('forged guest claim',v=>v.receipt.guestTestsExecuted=true,'E_RECEIPT_FIELDS');
 reject('forged approval claim',v=>v.receipt.mergeAuthorized=true,'E_RECEIPT_FIELDS');
 reject('claimed attested origin',v=>v.receipt.hosted_api_independent_job_step_correlation='PASS','E_RECEIPT_CLASS');
@@ -62,7 +62,7 @@ reject('skipped synthetic test',v=>v.baseTapBytes=bytes(tap(86).toString().repla
 reject('failed synthetic test',v=>v.baseTapBytes=Buffer.concat([v.baseTapBytes,bytes('not ok 1 - fake\n')]),'E_TAP_FAILURE');
 reject('base TAP missing todo count',v=>v.baseTapBytes=bytes(tap(86).toString().replace('# todo 0\n','')),'E_TAP_SUMMARY');
 reject('artifact TAP missing todo count',v=>v.artifactTapBytes=bytes(tap(37).toString().replace('# todo 0\n','')),'E_TAP_SUMMARY');
-reject('correlation TAP missing todo count',v=>v.correlationTapBytes=bytes(tap(36).toString().replace('# todo 0\n','')),'E_TAP_SUMMARY');
+reject('correlation TAP missing todo count',v=>v.correlationTapBytes=bytes(tap(44).toString().replace('# todo 0\n','')),'E_TAP_SUMMARY');
 reject('invalid pinned expected count',v=>v.expected.baseCount=0,'E_TEST_INVENTORY');
 reject('invalid pinned expected head',v=>v.expected.headSha='invalid','E_RECEIPT_IDENTITY');
 test('reject empty artifact bytes',()=>{
