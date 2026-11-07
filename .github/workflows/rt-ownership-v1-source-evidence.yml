@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - 'audit/atto-ownership-conformance-syntax-*'
+      - 'audit/atto-ownership-proof-vs-shape-*'
   pull_request:
     paths:
       - 'contracts/rt-ownership-admission-v1.json'
@@ -44,8 +45,8 @@ jobs:
           node --version
           node --test --test-reporter=tap \
             tests/rt-ownership-admission-v1.test.mjs | tee /tmp/atto-ownership-receipt-tests.tap
-          grep -Eq '^# tests 8$' /tmp/atto-ownership-receipt-tests.tap
-          grep -Eq '^# pass 8$' /tmp/atto-ownership-receipt-tests.tap
+          grep -Eq '^# tests 10$' /tmp/atto-ownership-receipt-tests.tap
+          grep -Eq '^# pass 10$' /tmp/atto-ownership-receipt-tests.tap
           grep -Eq '^# fail 0$' /tmp/atto-ownership-receipt-tests.tap
           echo "ATTO_OWNERSHIP_RECEIPT_SHAPE=SOURCE_FREE_ONLY"
           echo "ATTO_OWNERSHIP_GUEST_PARITY=NOT_EXECUTED"
