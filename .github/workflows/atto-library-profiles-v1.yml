@@ -13,6 +13,8 @@ on:
       - 'tests/atto-core-identity-stage1-v1.test.mjs'
       - 'tests/atto-core-numeric-stage2-v1.test.mjs'
       - 'tests/atto-core-source-bytes-v1.test.mjs'
+      - 'tests/atto-core-numeric-receipts-v1.test.mjs'
+      - 'lib/atto-core-numeric-receipts-v1.mjs'
       - 'fixtures/atto-library-source/v1/numeric.atto'
       - '.gitattributes'
       - 'fixtures/atto-library-source/v1/numeric-entry.atto'
@@ -54,7 +56,7 @@ jobs:
         run: |
           set -euo pipefail
           node --version
-          node --test tests/atto-library-profiles-v1.test.mjs tests/atto-library-run-evidence-v1.test.mjs tests/atto-library-runner-admission-v1.test.mjs tests/atto-library-workflow-admission-v1.test.mjs tests/atto-library-evidence-invariants-v1.test.mjs tests/atto-core-identity-stage1-v1.test.mjs tests/atto-core-numeric-stage2-v1.test.mjs tests/atto-core-source-bytes-v1.test.mjs
+          node --test tests/atto-library-profiles-v1.test.mjs tests/atto-library-run-evidence-v1.test.mjs tests/atto-library-runner-admission-v1.test.mjs tests/atto-library-workflow-admission-v1.test.mjs tests/atto-library-evidence-invariants-v1.test.mjs tests/atto-core-identity-stage1-v1.test.mjs tests/atto-core-numeric-stage2-v1.test.mjs tests/atto-core-source-bytes-v1.test.mjs tests/atto-core-numeric-receipts-v1.test.mjs
       - name: Preserve evidence boundary
         shell: bash
         run: |

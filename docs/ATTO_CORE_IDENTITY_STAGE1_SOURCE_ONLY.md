@@ -61,3 +61,24 @@ rejects any mismatch in the two backend inventories or commit heads,
 eliminating stale stage-1 source attestations being presented beside
 newer stage-2 implementation metadata. Matching heads are still not
 the same as executed compiler or native artifact receipts.
+
+## Independent offline numeric receipt byte verifier (source-only tests)
+
+The new `lib/atto-core-numeric-receipts-v1.mjs` verifies **actual
+binary bytes**, not just JSON digest strings: trusted Git source blob
+identities, immutable HEAD/tree/run/attempt, native compiler bytes,
+independently reconstructed graph SHA-256, both generated CIL
+assemblies, and both NativeAOT executables. Baseline and mutation
+must produce different graph/CIL/native digests and recorded
+outputs 42 and 43. `qualifyAttoNumericRunV1` independently applies
+the existing GitHub run/job/step classifier, requiring the concrete
+numeric guest step and source-module regressions before any receipt
+qualification. Even its strongest result is intentionally named
+`RECEIPTS_VERIFIED_PENDING_INDEPENDENT_REVIEW` and is **not**
+a claim of completed guest parity. The synthetic adversarial
+tests cover 396 deterministic tampering mutations plus zero-step,
+runner-identity, attempt and required-step failures. Source-owned
+.NET jobs may use this verifier locally against actual retained
+compiler and native artifact bytes; no transfer of private compiler
+source/binaries across repositories is authorized. These tests do not
+establish a passing .NET or Forge hosted compiler run.
