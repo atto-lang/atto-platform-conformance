@@ -93,13 +93,18 @@ export function validateCandidate(s){
   throw new TypeError('invalid release candidate envelope');
  const cids=s.contracts.map(c=>c?.id);
  if(new Set(cids).size!==cids.length||s.contracts.some(c=>
-  !obj(c)||!CONTRACT.test(c.id)||!obj(c.proposal)||!pos(c.proposal.pr)||
+  !exactKeys(c,['id','proposal','description','oracle'])||!CONTRACT.test(c.id)||
+  !exactKeys(c.proposal,['pr','sha'])||!pos(c.proposal.pr)||
   !sha(c.proposal.sha)||!obj(c.oracle)||
-  !((c.oracle.type==='single_guest'&&sha(c.oracle.fixture_blob_sha)&&
+  !((c.oracle.type==='single_guest'&&
+      exactKeys(c.oracle,['type','fixture_blob_sha','expected_exit_code','expected_stdout_hex'])&&
+      sha(c.oracle.fixture_blob_sha)&&
       Number.isSafeInteger(c.oracle.expected_exit_code)&&c.oracle.expected_exit_code>=0&&
       c.oracle.expected_exit_code<=255&&typeof c.oracle.expected_stdout_hex==='string'&&
       /^(?:[a-f0-9]{2})*$/.test(c.oracle.expected_stdout_hex))||
-    (c.oracle.type==='suite_pending'&&sha(c.oracle.manifest_blob_sha)&&
+    (c.oracle.type==='suite_pending'&&
+      exactKeys(c.oracle,['type','manifest_blob_sha','reason'])&&
+      sha(c.oracle.manifest_blob_sha)&&
       typeof c.oracle.reason==='string'&&c.oracle.reason.length>=8))||
   typeof c.description!=='string'||
   c.description.length<8||c.description.length>400))
@@ -107,15 +112,21 @@ export function validateCandidate(s){
  if(new Set(s.backends.map(b=>b?.id)).size!==5||IDS.some(id=>!s.backends.some(b=>b?.id===id)))
   throw new TypeError('missing or duplicate backend');
  for(const b of s.backends){
-  if(!obj(b)||b.repo!=='ores-truffle-oreslang/oreslang-source.'+b.id||
-    !obj(b.source)||!sha(b.source.commit_sha)||!sha(b.source.tree_sha)||
-    typeof b.source.main_protected!=='boolean'||!obj(b.targets)||
+  if(!exactKeys(b,['id','repo','source','targets','compiler','guest','formal','aot',
+    'memory','negative'])||b.repo!=='ores-truffle-oreslang/oreslang-source.'+b.id||
+    !exactKeys(b.source,['commit_sha','tree_sha','main_protected'])||
+    !sha(b.source.commit_sha)||!sha(b.source.tree_sha)||
+    typeof b.source.main_protected!=='boolean'||
+    !exactKeys(b.targets,['aot_target','memory_target'])||
     b.targets.aot_target!==TARGETS[b.id][0]||b.targets.memory_target!==TARGETS[b.id][1]||
-    !obj(b.compiler)||!(b.compiler.binary_sha256===null||hash(b.compiler.binary_sha256))||
+    !exactKeys(b.compiler,['binary_sha256','build_receipt'])||
+    !(b.compiler.binary_sha256===null||hash(b.compiler.binary_sha256))||
     !Array.isArray(b.guest)||b.guest.length!==cids.length||
+    !b.guest.every(g=>exactKeys(g,['contract_id','state','receipt']))||
     new Set(b.guest.map(g=>g?.contract_id)).size!==cids.length||
     cids.some(id=>!b.guest.some(g=>g?.contract_id===id))||
-    !obj(b.negative)||!obj(b.formal)||!obj(b.aot)||!obj(b.memory))
+    !['negative','formal','aot','memory'].every(kind=>
+      exactKeys(b[kind],['state','receipt'])))
     throw new TypeError('invalid backend schema');
   if(b.compiler.binary_sha256===null&&b.compiler.build_receipt!==null)
     throw new TypeError('build receipt without binary');
