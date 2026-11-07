@@ -6,7 +6,8 @@ const contractUrl = new URL('../contracts/actor-stack-containment-v1.json', impo
 const expectedBackends = ['forge', 'java', 'llvm', 'net', 'wasm'];
 const evidenceKeys = [
   'admission', 'compilerGuest', 'actorSurvival',
-  'nativeLowStack', 'supervisorRecovery'
+  'nativeLowStack', 'supervisorRecovery',
+  'actorStackStorage', 'suspendedFrameOwnership', 'actorStackGeneration'
 ];
 
 async function load() {
@@ -31,9 +32,22 @@ function validatePending(matrix) {
         'cannot claim ' + backend.id + '.' + key + ' without receipt');
     }
   }
+  for (const key of [
+    'perActorFrameAndByteQuotas',
+    'actorFrameStorageIndependentOfCarrier',
+    'suspendedContinuationFramesChargedToActor',
+    'actorStackGenerationFenced',
+    'actorStackPoisonCannotBeGuestCaught',
+    'carrierMigrationDoesNotMoveStackOwnership',
+    'stackFailureBeforeNativeGuardPage',
+    'noNativeSignalOrStackOverflowRecovery'
+  ]) {
+    assert.equal(matrix.requirements[key], true,
+      'mandatory physical actor-stack safety property: ' + key);
+  }
   assert.equal(matrix.requirements.nativeStackOverflowRecoverableOnSharedCarrier, false);
   assert.equal(matrix.requirements.untrustedArbitraryNativeCodeRequiresKillableWorker, true);
-  assert.ok(matrix.scenarios.length >= 7);
+  assert.ok(matrix.scenarios.length >= 12);
   const ids = matrix.scenarios.map(c => c.id);
   assert.equal(new Set(ids).size, ids.length);
   for (const scenario of matrix.scenarios) {
@@ -73,4 +87,29 @@ test('fake pass, duplicate backend, deleted proof and false promotion are reject
   assert.throws(() => validatePending(mutate(m => {m.promotion.zeroStepCountsAsExecuted = true;})));
   assert.throws(() => validatePending(mutate(m => {m.scenarios[0].source = 'fixtures/legacy.ores';})));
   assert.throws(() => validatePending(mutate(m => {m.scenarios[4].kind = 'positive';})));
+  assert.throws(() => validatePending(mutate(m => {m.backends[0].actorStackStorage = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {delete m.backends[1].suspendedFrameOwnership;})));
+  assert.throws(() => validatePending(mutate(m => {m.requirements.actorFrameStorageIndependentOfCarrier = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.requirements.actorStackGenerationFenced = false;})));
+});
+
+test('logical guard is not misrepresented as independent actor stack storage', async () => {
+  const matrix = validatePending(await load());
+  assert.match(matrix.javaLogicalStackReference, /\/pull\/2624$/);
+  assert.match(matrix.note, /NOT independently allocated execution frames/);
+  const required = new Set([
+    'independent-actor-stack-quotas',
+    'suspend-resume-carrier-migration',
+    'stale-actor-incarnation-stack-fence',
+    'host-swallowed-budget-exhaustion',
+    'native-low-stack-interoperability'
+  ]);
+  for (const scenario of matrix.scenarios) {
+    if (!required.has(scenario.id)) continue;
+    required.delete(scenario.id);
+    assert.equal(scenario.source, null, 'not yet an executable .atto actor fixture');
+    assert.ok(scenario.requiredEvidence.some(key =>
+      ['actorStackStorage', 'suspendedFrameOwnership', 'actorStackGeneration'].includes(key)));
+  }
+  assert.deepEqual([...required], [], 'all pending safety dimensions stay represented');
 });
