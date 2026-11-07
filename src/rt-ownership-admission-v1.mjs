@@ -79,8 +79,8 @@ export function inspectOwnershipReceipt(contract, receipt) {
       fail('source digest mismatch: ' + report.id);
     if (!Number.isSafeInteger(report.compilerSteps) || report.compilerSteps <= 0)
       fail('no executed compiler steps: ' + report.id);
-    if (report.suiteSkipped === true || report.status === 'NOT_EXECUTED')
-      fail('unexecuted/skip cannot pass: ' + report.id);
+    if (report.suiteSkipped !== false || report.status !== 'EXECUTED')
+      fail('explicit executed and non-skipped status required: ' + report.id);
 
     // These are self-reported necessary facts, NEVER independent proof.
     // A parser error or unsupported feature is not an ownership rejection.
