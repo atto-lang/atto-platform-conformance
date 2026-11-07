@@ -86,10 +86,12 @@ export function placesOverlap(rawA, rawB, layoutClaims = {}) {
   if (a.owner !== b.owner) return false; // requires canonical owner IDs
   const policies = isObject(layoutClaims) ? layoutClaims : {};
   const policy = policies[a.owner];
+  // A claim under another root must not authorize disjointness here.
+  const scopedPolicy = isObject(policy) && policy.owner === a.owner ? policy : null;
   for (let i = 0; i < Math.min(a.path.length, b.path.length); i++) {
     const x = a.path[i], y = b.path[i];
     if (stepsEqual(x, y)) continue;
-    if (certifiedDisjoint(x, y, a.path.slice(0, i), policy)) return false;
+    if (certifiedDisjoint(x, y, a.path.slice(0, i), scopedPolicy)) return false;
     return true;
   }
   return true; // identical places or an owner/ancestor and its projection
