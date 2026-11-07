@@ -211,11 +211,12 @@ export class LocalStateThreadModel {
     if (typeof fn !== 'function') fail('INVALID_HOST_TEST_CALLBACK');
     const t=this.#thread(threadHandle);
     if (t.status !== 'RUNNING') fail('THREAD_NOT_RUNNING');
-    // Never admit a second live execution frame for the same physical carrier.
-    if (t.active) fail('THREAD_STILL_BOUND');
     const taskRec=task ? this.#task(task) : null;
     const actorRec=actor ? this.#actor(actor) : null;
+    // Preserve the stronger logical scope error for an already active Task/Actor.
     if (taskRec?.active || actorRec?.active) fail('LOCAL_CONTEXT_REENTRANCY');
+    // A physical carrier may not have two simultaneously admitted frames.
+    if (t.active) fail('THREAD_STILL_BOUND');
     if (taskRec && task.tenant !== threadHandle.tenant ||
         actorRec && actor.tenant !== threadHandle.tenant)
       fail('TENANT_MISMATCH');
