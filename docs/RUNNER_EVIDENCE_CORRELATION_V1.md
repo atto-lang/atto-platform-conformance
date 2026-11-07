@@ -59,7 +59,7 @@ The post-admin-repair reader must independently:
    output markers tied to executed step windows, and the job/step API records using #553.
 4. Bind any receipt and transcript digests to independently downloaded exact bytes and
    job/attempt identity. A supplied hash alone is not sufficient.
-5. Only after original-organization canary admission works, execute the 86 + 36 source-only
+5. Only after original-organization canary admission works, execute the 86 + 44 + 37 source-only
    tests under hosted Node 22 and independently check results. Compiler-backed `.atto`
    execution requires its own separate exact-head workflow and receipts.
 
@@ -67,3 +67,44 @@ The post-admin-repair reader must independently:
 reviewed integration; current draft branches cannot import each other's unmerged changes.
 No cross-organization private-source transfer, workflow permission broadening, main write,
 review bypass, draft promotion or merge is authorized by this document.
+
+## Further source-only evidence hardening — 2026-11-07
+
+PR #556 now also includes `verification/runner-evidence-artifact-bytes-v1.mjs` and
+`tests/runner-evidence-artifact-bytes-v1.test.mjs`. This separate *raw-bytes*
+checker uses Node 22's built-in `crypto` SHA-256 and bounded binary inputs.
+It validates all three TAP transcripts and their receipt digest fields against
+the supplied bytes: **86 API classification tests, 44 API correlation/page-route
+tests, and 37 raw-artifact mutation tests (167 total)**. Each TAP must show a
+complete `1..N` plan, sequential numbered `ok N - ...` records, no
+`not ok` records, and exactly matching zero-failure, skipped, cancelled
+and todo summaries. The receipt must match externally pinned immutable
+repo/head/tree/run/attempt/job identity, include the three test counts,
+and prohibit authority/guest/merge claims.
+
+The API correlation bridge additionally now requires each page wrapper to
+carry exact `requestMethod='GET'`, `requestHost='github.com'` and
+`requestPath='/repos/<repo>/actions/runs/<runId>/attempts/<attempt>/jobs?per_page=<perPage>&page=<page>'`
+values, matching the reviewed `expected` fields. These fields are assertions
+from the *caller*, not trustworthy evidence of an actual network request.
+An independently authorized reader (such as the future #553 integration)
+must itself enforce the GitHub host, no redirected API hosts, and exact
+request route and pagination before constructing these wrappers. Arbitrary
+caller-supplied route strings can be forged and do not establish provenance.
+
+The raw-byte checker likewise validates bytes **supplied by its caller**;
+it cannot establish whether a downloaded ZIP, TAP or receipt actually came
+from the correct GitHub workflow run and attempt. An independent reader must
+authenticate the exact artifact IDs, bytes, hashes and run/job identity.
+A passing result always says `SOURCE_ONLY_ARTIFACT_BYTES_CONSISTENT_NOT_ATTESTED`
+and sets `hostedRunnerVerified=false`, `guestExecutionProven=false`,
+`mergeAuthorized=false`.
+
+**Evidence classes remain separate:**
+- The **37 raw-artifact tests were executed locally on Node 22**, and their
+  exact source and test Git blob IDs must be checked after commit.
+- The **44 updated correlation tests ran in isolated V8** with a synthetic
+  harness, not original-org Node 22.
+- The earlier **86 base tests ran in isolated V8**. The 167-case hosted source-org
+  workflow remains **NOT_EXECUTED** while runner admission fails.
+- The LLVM `.atto` guest compiler tests remain unexecuted/uncertified.
