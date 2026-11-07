@@ -65,12 +65,12 @@ class Owner:
 
     def write(self):
         self.ensure()
-        if self.readers or self.shares or self.writer:
+        if self.readers or self.writer:
             raise Rejected("write conflicts with outstanding loan")
 
     def across_suspend(self):
         self.ensure()
-        if self.readers or self.writer or self.shares:
+        if self.readers or self.writer:
             raise Rejected("unpinned ownership loan across await/select")
 
 class Tenant:
