@@ -5,7 +5,7 @@
   "canonicalExtension": ".atto",
   "scope": "actor call-depth, guest frame budgeting, carrier survival and supervisor recovery",
   "javaReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2505",
-  "note": "All five backend guest evidence lanes remain NOT_EXECUTED. Java #2505 guards carrier recursion; #2624 owns logical budget; #2627 reserves 32-byte managed guard frames; #2628 authors 16-byte evaluator call descriptors within the existing frame. No duplicate charge or compiler-local/return-PC lowering is proven; full stack isolation and native process fault containment remain unimplemented. None proves compiler-lowered actor stacks, source-task continuation ownership, or native process-fault isolation.",
+  "note": "All five backend guest evidence lanes remain NOT_EXECUTED. Java #2505 provides carrier recursion guard, #2624 actor logical budget, #2627 actor byte frames, #2628 invocation metadata, and #2630 limited typed scalar argument reconstruction. None proves stackless compiler-lowered local/return execution or native process stack-fault isolation.",
   "requirements": {
     "separateHeapsAreNotStacks": true,
     "guestBudgetBeforeNativeOverflow": true,
@@ -288,6 +288,17 @@
         "actorStackStorage",
         "actorSurvival"
       ]
+    },
+    {
+      "id": "typed-scalar-invocation-actor-owned-data",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
     }
   ],
   "promotion": {
@@ -325,6 +336,19 @@
     "javaGuardFrameNotDuplicated": true,
     "javaNewHostInvocationTestsAuthored": 5,
     "javaNewAttoActorFixturesAuthored": 3,
-    "javaNewAttoActorExecution": "NOT_EXECUTED"
+    "javaNewAttoActorExecution": "NOT_EXECUTED",
+    "javaTypedScalarFrameReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2630",
+    "javaTypedScalarCallData": "AUTHORED_NOT_EXECUTED",
+    "javaTypedScalarCodecTypes": 8,
+    "javaTypedScalarSlotBytes": 9,
+    "javaScalarCallFrameBytePolicy": "ONE_FRAME_MIN_32_PLUS_9_BYTES_PER_TYPED_ARGUMENT",
+    "javaTypedScalarHostTestsAuthored": 7,
+    "javaTypedScalarLegacyGuestTestsAuthored": 1,
+    "javaTypedScalarLegacyGuestExecution": "NOT_EXECUTED",
+    "javaTypedScalarObjectRootsLowered": false,
+    "javaTypedScalarReturnContinuationsLowered": false,
+    "javaTypedScalarTaskContinuationLowered": false,
+    "javaTypedScalarIndependentNativeStacks": false,
+    "javaTypedScalarNote": "Java #2630 binds recognized primitive wrapper guest call arguments from actor-owned managed bytes, but only for synchronous calls. All object roots, return PCs, expression recursion and SourceTask suspended state remain on the JVM. The 7 host and 1 legacy compiler tests are authored, NOT_EXECUTED."
   }
 }
