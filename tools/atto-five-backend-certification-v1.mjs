@@ -20,12 +20,23 @@ const canonicalUTC=x=>{
  return Number.isFinite(ms)&&new Date(ms).toISOString().replace('.000Z','Z')===x&&
    ms<=Date.now()+300000;
 };
+// Normalized receipts are untrusted, so unknown authority-like fields are forbidden.
+const RECEIPT_BASE=['repo','source_commit_sha','source_tree_sha',
+ 'compiler_binary_sha256','kind','run_id','run_attempt','job_id',
+ 'runner_id','runner_name','status','conclusion','artifact_sha256','steps'];
+const RECEIPT_EXTRA={
+ guest:['contract_id','fixture_blob_sha','output'],
+ negative:['contract_id','fixture_blob_sha','output'],
+ formal:['model_sha256','properties_checked','counterexamples'],
+ aot:['executable_sha256','fully_aot','jit_disabled'],
+ memory:['metrics']
+};
 const pos=x=>Number.isSafeInteger(x)&&x>0;
 const sha=x=>typeof x==='string'&&SHA.test(x);
 const hash=x=>typeof x==='string'&&HASH.test(x);
 function meaningful(steps){
  if(!Array.isArray(steps)||steps.length===0||steps.length>128||
-   !steps.every(s=>obj(s)&&s.status==='completed'&&
+   !steps.every(s=>exactKeys(s,['name','status','conclusion'])&&s.status==='completed'&&
     ['success','skipped'].includes(s.conclusion)&&
     typeof s.name==='string'&&/^[\x20-\x7e]{1,160}$/.test(s.name)&&
     s.name===s.name.trim()))return false;
@@ -33,7 +44,9 @@ function meaningful(steps){
  return actual.length>0&&actual.every(s=>s.conclusion==='success');
 }
 function receiptValid(r,b,binary,kind,contract){
- if(!obj(r)||r.repo!==b.repo||r.source_commit_sha!==b.source.commit_sha||
+ if(!RECEIPT_EXTRA[kind]||
+    !exactKeys(r,[...RECEIPT_BASE,...RECEIPT_EXTRA[kind]]))return false;
+ if(r.repo!==b.repo||r.source_commit_sha!==b.source.commit_sha||
     r.source_tree_sha!==b.source.tree_sha||r.compiler_binary_sha256!==binary||
     r.kind!==kind||(contract&&r.contract_id!==contract.id)||
     !pos(r.run_id)||!pos(r.run_attempt)||!pos(r.job_id)||!pos(r.runner_id)||
@@ -43,20 +56,23 @@ function receiptValid(r,b,binary,kind,contract){
     !hash(r.artifact_sha256))return false;
  if(kind==='guest')return obj(contract)&&contract.oracle?.type==='single_guest'&&
    r.fixture_blob_sha===contract.oracle.fixture_blob_sha&&
-   obj(r.output)&&Number.isSafeInteger(r.output.exit_code)&&
+   exactKeys(r.output,['exit_code','stdout_hex','crashed'])&&Number.isSafeInteger(r.output.exit_code)&&
    r.output.exit_code>=0&&r.output.exit_code<=255&&typeof r.output.stdout_hex==='string'&&
    r.output.stdout_hex.length<=131072&&/^(?:[a-f0-9]{2})*$/.test(r.output.stdout_hex)&&
    r.output.crashed===false&&r.output.exit_code===contract.oracle.expected_exit_code&&
    r.output.stdout_hex===contract.oracle.expected_stdout_hex;
  if(kind==='negative')return obj(contract)&&sha(contract.fixture_blob_sha)&&
-   r.fixture_blob_sha===contract.fixture_blob_sha&&obj(r.output)&&
+   r.fixture_blob_sha===contract.fixture_blob_sha&&
+   exactKeys(r.output,['exit_code','diagnostic_category','phase','crashed'])&&
    Number.isSafeInteger(r.output.exit_code)&&r.output.exit_code>0&&r.output.exit_code<=255&&
    r.output.diagnostic_category===contract.expected_diagnostic&&
    r.output.phase===contract.expected_phase&&r.output.crashed===false;
  if(kind==='formal')return hash(r.model_sha256)&&pos(r.properties_checked)&&r.counterexamples===0;
  if(kind==='aot')return hash(r.executable_sha256)&&r.fully_aot===true&&r.jit_disabled===true;
- if(kind==='memory')return obj(r.metrics)&&pos(r.metrics.samples)&&
-   Number.isSafeInteger(r.metrics.gc_collections)&&r.metrics.gc_collections>=0;
+ if(kind==='memory')return exactKeys(r.metrics,['samples','gc_collections'])&&pos(r.metrics.samples)&&
+   Number.isSafeInteger(r.metrics.gc_collections)&&r.metrics.gc_collections>=0&&
+   // LLVM zero-GC requires zero observed collections even to make an unverified claim.
+   (b.id!=='llvm'||r.metrics.gc_collections===0);
  return false;
 }
 function status(e,kind,b,binary,contract){
@@ -144,6 +160,8 @@ export function validateCandidate(s){
 export function evaluateCandidate(s,landed,caseInventory=null){
  validateCandidate(s);
  const ledger=auditLedger(landed);
+ if(s.postmerge_ledger.reported_status!==ledger.status)
+  throw new TypeError('snapshot ledger status does not match audited evidence');
  const holds=[];
  const caseReport=caseInventory===null?null:evaluateGuestCaseInventory(caseInventory);
  if(caseReport!==null){
@@ -171,18 +189,25 @@ export function evaluateCandidate(s,landed,caseInventory=null){
    status(g,'guest',b,b.compiler.binary_sha256,s.contracts.find(c=>c.id===g.contract_id))]));
   if(Object.values(guest).some(x=>x==='NOT_EXECUTED'))blockers.push('GUEST_NOT_EXECUTED');
   if(Object.values(guest).some(x=>x==='FAILED'||x==='UNSUPPORTED'))blockers.push('GUEST_FAILED_OR_UNSUPPORTED');
+  if(Object.values(guest).some(x=>x==='REPORTED_PASS_UNVERIFIED'))
+   blockers.push('GUEST_RECEIPT_UNAUTHENTICATED');
   const negative=status(b.negative,'negative',b,b.compiler.binary_sha256,s.negative_oracle);
   if(negative!=='REPORTED_PASS_UNVERIFIED')blockers.push('NEGATIVE_DIAGNOSTIC_NOT_VERIFIED');
+  else blockers.push('NEGATIVE_RECEIPT_UNAUTHENTICATED');
   const formal=status(b.formal,'formal',b,b.compiler.binary_sha256,null);
   const aot=status(b.aot,'aot',b,b.compiler.binary_sha256,null);
   const memory=status(b.memory,'memory',b,b.compiler.binary_sha256,null);
   for(const [kind,s] of [['FORMAL',formal],['AOT',aot],['MEMORY',memory]])
    if(s!=='REPORTED_PASS_UNVERIFIED')blockers.push(kind+'_NOT_VERIFIED');
+   else blockers.push(kind+'_RECEIPT_UNAUTHENTICATED');
   return{id:b.id,repo:b.repo,source_sha:b.source.commit_sha,tree_sha:b.source.tree_sha,
    main_protected:b.source.main_protected,compiler_binary_sha256:b.compiler.binary_sha256,
    aot_target:b.targets.aot_target,memory_target:b.targets.memory_target,
    guest,negative,formal,aot,memory,blockers};
  });
+ if(rows.some(r=>Object.values(r.guest).some(x=>x==='REPORTED_PASS_UNVERIFIED')||
+   [r.negative,r.formal,r.aot,r.memory].some(x=>x==='REPORTED_PASS_UNVERIFIED')))
+  holds.push('UNAUTHENTICATED_RECEIPT_CLAIMS');
  if(rows.some(r=>r.blockers.length))holds.push('BACKEND_RELEASE_REQUIREMENTS_INCOMPLETE');
  return{schema_version:1,scope:'advisory_only_not_release_authority',
   status:holds.length?'BLOCKED':'SNAPSHOT_REPORTED_REQUIRES_LIVE_RECHECK',
