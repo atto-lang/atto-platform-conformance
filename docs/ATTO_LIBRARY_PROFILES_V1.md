@@ -88,3 +88,13 @@ snapshots and deliberately substitutes a forged stepful job across attempts;
 both remain non-promoting. This is public run metadata, **not** source export,
 actual compiler testing or proof that a particular billing setting caused
 the admission failure. The administrator incident remains [#315](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/315).
+
+## Fail-closed unfinished and contradictory zero-step classifications
+
+New negative tests distinguish an in-progress job with not-yet-populated
+steps from a **completed, failed, unallocated** runner-admission failure.
+A zero-step job marked successful, or a completed zero-step job with a
+positive runner ID, is now classified `UNTRUSTED_EVIDENCE` rather than
+incorrectly claiming runner-admission failure. Required compiler steps
+marked skipped remain `NO_REQUIRED_EXECUTION`. These are policy-model
+regressions, not compiler guest receipts.

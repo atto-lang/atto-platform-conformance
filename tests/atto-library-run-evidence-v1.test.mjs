@@ -30,6 +30,31 @@ test("zero or null GitHub steps are runner admission failure, never compiler pas
       reason: "ZERO_REPORTED_JOB_STEPS", executedSteps: 0});
   }
 });
+test("zero-step classification distinguishes queued jobs from failed runner admission",()=>{
+  const waiting = {...run(), status:"queued", conclusion:null};
+  const queued = {...job(), status:"queued", conclusion:null, steps:[], runner_id:0};
+  assert.equal(classify(waiting,[queued]).classification,"IN_PROGRESS");
+  const inProgress = {...job(), status:"in_progress", conclusion:null, steps:null, runner_id:0};
+  assert.equal(classify({...run(),status:"in_progress",conclusion:null},[inProgress]).classification,"IN_PROGRESS");
+});
+test("completed zero-step green metadata is not an admission failure",()=>{
+  assert.equal(classify(run(),[{...job(),steps:[],runner_id:0}]).classification,"UNTRUSTED_EVIDENCE");
+});
+test("completed zero-step job allocated to a runner has missing evidence",()=>{
+  assert.equal(classify({...run(),conclusion:"failure"},
+    [{...job(),steps:null,runner_id:99,conclusion:"failure"}]).classification,
+    "UNTRUSTED_EVIDENCE");
+});
+test("genuine zero-step failed runner admission remains classified",()=>{
+  assert.equal(classify({...run(),conclusion:"failure"},
+    [{...job(),steps:[],runner_id:0,conclusion:"failure"}]).classification,
+    "RUNNER_ADMISSION_FAILURE");
+});
+test("skipped required compiler step cannot be counted as executed",()=>{
+  const x=job(); x.steps[1].conclusion="skipped";
+  assert.equal(classify(run(),[x]).classification,"NO_REQUIRED_EXECUTION");
+});
+
 test("a green metadata-only run is not guest execution or certified parity", () => {
   assert.equal(classify().classification, "EXECUTED_STEPS_UNVERIFIED");
   const j = job(); j.steps.pop();
