@@ -135,3 +135,28 @@ export async function fetchDopGithubRun({repository, runId, token, fetchFn = fet
   // Complete-page requirement is enforced by validateDopGithubSnapshot.
   return {run, jobs};
 }
+
+/**
+ * Fetch immutable Git-commit metadata for the exact Actions source HEAD.
+ * Separate from the Actions run/job API because those records do not expose
+ * the Git tree SHA. Never accept a branch name or abbreviated SHA here.
+ * This is source-free metadata only, not a guest execution attestation.
+ */
+export async function fetchDopGithubCommit({backend, repository, headSha, token,
+  fetchFn = fetch, signal = AbortSignal.timeout(maxMs)}) {
+  requireCanonicalDopSourceRepo(backend, repository);
+  if (typeof headSha !== 'string' || !/^[0-9a-f]{40}$/.test(headSha))
+    throw new TypeError('github-commit-head-invalid');
+  if (typeof token !== 'string' || !token || /[\r\n]/.test(token))
+    throw new TypeError('missing-github-token');
+  const url = 'https://api.github.com/repos/' + repository + '/git/commits/' + headSha;
+  const response = await fetchFn(url, {
+    method: 'GET', redirect: 'manual', cache: 'no-store', signal, headers: {
+      authorization: 'Bearer ' + token,
+      accept: 'application/vnd.github+json',
+      'accept-encoding': 'identity',
+      'x-github-api-version': '2022-11-28'
+    }
+  });
+  return readGithubJson(response);
+}
