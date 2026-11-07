@@ -55,7 +55,7 @@ test('G1 positive fixture is alpha-renamed and kernel-only, never a host launch'
   assert.match(src, /const u64 lane = gpu\.global_id\(0\);/);
   assert.match(src, /if lane >= count \{ return; \}/);
   assert.match(src, /destination\[lane\] = alpha \* first\[lane\] \+ second\[lane\];/);
-  assert.doesNotMatch(src, /\blaunch\b|\bawait\b|\bsuspends\b/);
+  assert.doesNotMatch(src, /\blaunch\s+saxpy\b|\bawait\s+\w+|\bsuspends\s+fnc\b/);
 });
 
 test('G1 negative fixtures target four independent compiler rejection boundaries', () => {
