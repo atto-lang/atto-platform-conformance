@@ -48,7 +48,7 @@ function validatePending(matrix) {
   }
   assert.equal(matrix.requirements.nativeStackOverflowRecoverableOnSharedCarrier, false);
   assert.equal(matrix.requirements.untrustedArbitraryNativeCodeRequiresKillableWorker, true);
-  assert.ok(matrix.scenarios.length >= 25);
+  assert.ok(matrix.scenarios.length >= 27);
   assert.match(matrix.javaFrameArenaReference, /\/pull\/2627$/);
   const bootstrap = matrix.frameStorageBootstrap;
   assert.equal(bootstrap.javaHostPrimitive, 'MANAGED_BYTES_ONLY');
@@ -83,6 +83,21 @@ function validatePending(matrix) {
   assert.equal(bootstrap.javaTypedScalarReturnContinuationsLowered, false);
   assert.equal(bootstrap.javaTypedScalarTaskContinuationLowered, false);
   assert.equal(bootstrap.javaTypedScalarIndependentNativeStacks, false);
+  assert.match(bootstrap.javaSourceTaskScalarIntegrationReference, /\/pull\/2638$/);
+  assert.equal(bootstrap.javaSourceTaskScalarStatus,
+    'HOST_RUNTIME_AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaSourceTaskScalarMaxValues, 6);
+  assert.equal(bootstrap.javaSourceTaskScalarTagBytes, 9);
+  assert.equal(bootstrap.javaSourceTaskScalarFrameBytes, 64);
+  assert.equal(bootstrap.javaSourceTaskScalarHeaderBytes, 4);
+  assert.equal(bootstrap.javaSourceTaskScalarIntegrationJUnitMethodsAuthored, 5);
+  assert.equal(bootstrap.javaSourceTaskScalarAutoCompilerLowering, false);
+  assert.equal(bootstrap.javaSourceTaskScalarTaskIdentityIsGenerationFenced, true);
+  assert.equal(bootstrap.javaSourceTaskScalarRetainedAcrossSuspend,
+    'AUTHORED_HOST_MODEL_NOT_EXECUTED');
+  assert.equal(bootstrap.javaSourceTaskScalarCompiledAttoActorExecution, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaSourceTaskScalarSourceMailboxNonReentrancy, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaSourceTaskScalarNativeStackIsolation, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaAuthoredLegacyCompilerGuestTests, 1);
   assert.equal(bootstrap.javaLegacyCompilerGuestTestExecuted, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaGuardedInvocationByteFrames,
@@ -160,6 +175,14 @@ test('fake pass, duplicate backend, deleted proof and false promotion are reject
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaTypedScalarReturnContinuationsLowered = true;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaTypedScalarTaskContinuationLowered = true;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaTypedScalarIndependentNativeStacks = true;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaSourceTaskScalarStatus = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaSourceTaskScalarCompiledAttoActorExecution = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaSourceTaskScalarSourceMailboxNonReentrancy = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaSourceTaskScalarNativeStackIsolation = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaSourceTaskScalarAutoCompilerLowering = true;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaSourceTaskScalarMaxValues = 999;})));
+  assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaSourceTaskScalarIntegrationReference;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaSourceTaskScalarRetainedAcrossSuspend = 'VERIFIED';})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaGuardFrameNotDuplicated = false;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaInvocationDescriptorBytes = 32;})));
 });
@@ -273,6 +296,29 @@ test('M2.1 scalar call arguments stay distinct from complete guest stack proof',
   }
   for (const backend of manifest.backends) {
     assert.equal(backend.compilerGuest, 'NOT_EXECUTED');
+    assert.equal(backend.actorStackStorage, 'NOT_EXECUTED');
+  }
+  assert.equal(manifest.promotion.certified, false);
+});
+
+test('M3 merged SourceTask scalar snapshot remains pending real compiler and mailbox proof', async () => {
+  const manifest = validatePending(await load());
+  const scenarios = new Map(manifest.scenarios.map(s => [s.id, s]));
+  for (const name of [
+    'actor-source-task-typed-scalars-retained-across-await',
+    'actor-source-task-typed-state-reference-or-oversize-denied'
+  ]) {
+    const pending = scenarios.get(name);
+    assert.ok(pending, 'M3 scenario must be inventoried: ' + name);
+    assert.equal(pending.source, null, 'no fabricated compiled .atto fixture');
+    assert.ok(pending.requiredEvidence.includes('compilerGuest'));
+    assert.ok(pending.requiredEvidence.includes('suspendedFrameOwnership'));
+  }
+  assert.equal(manifest.frameStorageBootstrap.javaSourceTaskScalarMaxValues, 6);
+  assert.equal(manifest.frameStorageBootstrap.javaSourceTaskScalarAutoCompilerLowering, false);
+  for (const backend of manifest.backends) {
+    assert.equal(backend.compilerGuest, 'NOT_EXECUTED');
+    assert.equal(backend.suspendedFrameOwnership, 'NOT_EXECUTED');
     assert.equal(backend.actorStackStorage, 'NOT_EXECUTED');
   }
   assert.equal(manifest.promotion.certified, false);
