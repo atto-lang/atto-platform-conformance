@@ -37,6 +37,8 @@ function receiptValid(r,b,binary,kind,contract){
     r.source_tree_sha!==b.source.tree_sha||r.compiler_binary_sha256!==binary||
     r.kind!==kind||(contract&&r.contract_id!==contract.id)||
     !pos(r.run_id)||!pos(r.run_attempt)||!pos(r.job_id)||!pos(r.runner_id)||
+    typeof r.runner_name!=='string'||!/^[\x20-\x7e]{1,128}$/.test(r.runner_name)||
+    r.runner_name!==r.runner_name.trim()||
     r.status!=='completed'||r.conclusion!=='success'||!meaningful(r.steps)||
     !hash(r.artifact_sha256))return false;
  if(kind==='guest')return obj(contract)&&contract.oracle?.type==='single_guest'&&
