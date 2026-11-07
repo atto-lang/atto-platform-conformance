@@ -17,7 +17,7 @@ const utc=x=>{
  return y>0&&mo>=1&&mo<=12&&d>=1&&d<=days[mo-1]&&
   Number(m[4])<=23&&Number(m[5])<=59&&Number(m[6])<=59&&Number.isFinite(Date.parse(x));
 };
-const codes=x=>Array.isArray(x)&&x.length<=512&&x.every(v=>typeof v==='string'&&/^[A-Z0-9_:\-]{1,160}$/.test(v));
+const codes=x=>Array.isArray(x)&&x.length<=512&&x.every(v=>typeof v==='string'&&/^[A-Za-z0-9][A-Za-z0-9_:\-]{0,159}$/.test(v));
 const shell=()=>({repo:null,number:null,head_sha:null,base_sha:null,tree_sha:null,observed_at:null});
 const output=(bad,target,reviewComplete,ciClass,jobs,gaps)=>({
  schema_version:1,kind:'ATTO_CANONICAL_MERGE_EVIDENCE_V1',

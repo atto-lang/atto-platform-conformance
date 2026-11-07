@@ -1,0 +1,67 @@
+name: merge-wave real five-gate evidence (advisory)
+on:
+  pull_request:
+    paths:
+      - 'tools/merge-wave-canonical-evidence-v1.mjs'
+      - 'tools/merge-wave-pinned-gate-loader-v1.mjs'
+      - 'tests/merge-wave-real-five-gates-v1.test.mjs'
+      - 'docs/MERGE_WAVE_REAL_FIVE_GATES_V1.md'
+      - '.github/workflows/merge-wave-real-five-gates-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exact-head-real-five-gates:
+    name: exact-head-real-five-gates
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out immutable original PR head
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+          persist-credentials: true
+      - name: Verify original source head and clean checkout
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          test -z "$(git status --porcelain --untracked-files=all)"
+          echo "ATTO_REAL_FIVE_GATE_EXACT_HEAD=$EXPECTED_HEAD"
+          git rev-parse HEAD^{tree}
+      - name: Fetch immutable same-repository gate commits
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Same private repository, read-only GITHUB_TOKEN. No external mirror.
+          for pin in \
+            e4bc75bb4ca6db5eca03b944fef1658637a7635f \
+            ebffa81813ed61c82c2a4cd8f6861afac641931e \
+            a377ea19440e6a69d87e4bfea73625ba247a3fee \
+            978211a03187e9364154a58412b8a4ec888fea85 \
+            f9d79551cc77412f26800cb2ed3449cb144f9b1a
+          do
+            git -c protocol.version=2 fetch --no-tags --depth=1 origin "$pin"
+            test "$(git cat-file -t "$pin")" = commit
+          done
+          test "$(git rev-parse HEAD)" = ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Use pinned Node.js 22
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Execute pinned real-gate adversarial matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --version
+          node --test tests/merge-wave-real-five-gates-v1.test.mjs | tee five-gate-test.log
+          grep -Eq '^# tests 140$' five-gate-test.log
+          grep -Eq '^# pass 140$' five-gate-test.log
+          grep -Eq '^# fail 0$' five-gate-test.log
+          rm -f five-gate-test.log
+          test -z "$(git status --porcelain --untracked-files=all)"
