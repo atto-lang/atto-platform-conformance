@@ -80,9 +80,14 @@ test('origin 10: prototype-key spoofing is invalid',()=>{
   unresolved(name('__proto__'),'UNTRACKED_COMPUTED_ORIGIN');
 });
 test('origin 11: malformed binding provenance fails closed',()=>{
-  unresolved(name('owned'),'UNVERIFIED_BINDING_ORIGIN',{
-    owned:{bindingId:{toString:()=> 'slotOwned'},storageRoot:'storageA',mode:'owned'}
-  });
+  for(const broken of [
+    {bindingId:{toString:()=> 'slotOwned'},storageRoot:'storageA',mode:'owned'},
+    {bindingId:'slotOwned',storageRoot:'constructor',mode:'owned'},
+    {bindingId:'slotOwned',storageRoot:'__proto__',mode:'owned'},
+    {bindingId:'slotOwned',storageRoot:17,mode:'owned'},
+    {bindingId:'__proto__',storageRoot:'storageA',mode:'owned'},
+    {bindingId:'slotOwned',storageRoot:'storageA',mode:'unknown'}
+  ]) unresolved(name('owned'),'UNVERIFIED_BINDING_ORIGIN',{owned:broken});
 });
 test('origin 12: inherited object property is not compiler-local evidence',()=>{
   const forged=Object.create({owned:defaultLocals.owned});
