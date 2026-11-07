@@ -50,3 +50,16 @@ test('reject direct caller-controlled expected source mismatch',()=>{
   const e=expected();e.backend='cuda';
   assert.throws(()=>verify(receipt(),e),x=>x.code==='GPU-EVIDENCE-001');
 });
+
+test('reject malformed trailing CI step even after successful first step', () => {
+  const r = receipt();
+  r.run.steps.push({name:'forged',status:'completed',conclusion:'success',bypass:true});
+  assert.throws(()=>verify(r,expected()),x=>x.code==='GPU-EVIDENCE-001');
+});
+test('reject CI step throwing accessor even after successful first step', () => {
+  const r = receipt();
+  const forged = {name:'forged',status:'completed',conclusion:'success'};
+  Object.defineProperty(forged,'name',{get(){throw Error('malicious getter')}});
+  r.run.steps.push(forged);
+  assert.throws(()=>verify(r,expected()),x=>x.code==='GPU-EVIDENCE-001');
+});
