@@ -90,3 +90,39 @@ test('20 output refuses externally supplied verified status',()=>{
   assert.equal(r.verified,false);
   assert.equal(r.status,'TOKEN_STREAM_CANDIDATE_NOT_SSA_PROVEN');
 });
+
+test('21 borrowing an already moved owner is never a candidate',()=>{
+  denied([effect('move'),borrow(),use()],'BORROW_OF_MOVED_OWNER');
+});
+test('22 a move of an independent owner does not poison a different loan',()=>{
+  admitted([effect('move','y'),borrow(),use()],1);
+});
+test('23 moving one owner twice is rejected',()=>{
+  denied([borrow(),use(),effect('move'),effect('move')],'DOUBLE_MOVE_OF_OWNER');
+});
+test('24 shared loan overlapping an exclusive loan is rejected',()=>{
+  denied([borrow(),borrow(22,'x','borrow-exclusive'),use(),
+    use(22,'x','use-exclusive')],'OVERLAPPING_EXCLUSIVE_LOANS');
+});
+test('25 exclusive loan overlapping a shared loan is rejected',()=>{
+  denied([borrow(11,'x','borrow-exclusive'),borrow(22),use(11,'x','use-exclusive'),
+    use(22)],'OVERLAPPING_EXCLUSIVE_LOANS');
+});
+test('26 two overlapping exclusive loans are rejected',()=>{
+  denied([borrow(11,'x','borrow-exclusive'),borrow(22,'x','borrow-exclusive'),
+    use(11,'x','use-exclusive'),use(22,'x','use-exclusive')],
+    'OVERLAPPING_EXCLUSIVE_LOANS');
+});
+test('27 sequential shared then exclusive loan stays advisory',()=>{
+  admitted([borrow(),use(),borrow(22,'x','borrow-exclusive'),
+    use(22,'x','use-exclusive')],2);
+});
+test('28 overlapping shared loans are permitted as unverified candidates',()=>{
+  admitted([borrow(),borrow(22),use(),use(22)],2);
+});
+test('29 empty token stream cannot manufacture a last-use proof',()=>{
+  denied([],'NO_LOAN_USE_PROOF_TO_DERIVE');
+});
+test('30 an independent move after a loan does not consume its owner',()=>{
+  admitted([borrow(),effect('move','y'),use(),effect('move','x')],1);
+});
