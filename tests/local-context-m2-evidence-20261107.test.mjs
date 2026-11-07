@@ -89,7 +89,7 @@ test('invalid canonical pin itself fails closed',()=>{
 mutate('unassigned runner denied even with success metadata',m=>m.job.runner_id=0,'RUNNER_ADMISSION_FAILURE');
 mutate('null runner denied even with success metadata',m=>m.job.runner_id=null,'RUNNER_ADMISSION_FAILURE');
 mutate('conflicting runner identities are not trusted',m=>m.job.runnerId=999);
-mutate('job still running cannot be a success candidate',m=>m.job.status='in_progress');
+mutate('job still running cannot be a success candidate',m=>m.job.status='in_progress','PENDING_NO_EVIDENCE');
 mutate('step still running cannot be a success candidate',m=>m.job.steps[1].status='in_progress');
 mutate('unknown step conclusion cannot be a success candidate',m=>m.job.steps[1].conclusion=null);
 mutate('blank step names are rejected',m=>m.job.steps[1].name=' ');
