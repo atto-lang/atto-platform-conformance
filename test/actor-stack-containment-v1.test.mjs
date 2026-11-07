@@ -59,7 +59,8 @@ function validatePending(matrix) {
   assert.equal(bootstrap.javaScalarTypedFramePcAndStackHeaderBytes, 16);
   assert.equal(bootstrap.javaScalarTypedFrameTaggedSlotBytes, 16);
   assert.equal(bootstrap.javaScalarTypedFrameHostCompilerTestsAuthored, 7);
-  assert.equal(bootstrap.javaScalarTypedFrameHostRuntimeTestsAuthored, 4);
+  assert.equal(bootstrap.javaScalarTypedFrameHostRuntimeTestsAuthored, 5);
+  assert.equal(bootstrap.javaScalarTypedFrameStaleLeasePoisonStatus, 'AUTHORED_NOT_EXECUTED');
   assert.equal(bootstrap.javaScalarTypedFrameAttoSourceFixturesAuthored, 3);
   assert.equal(bootstrap.javaScalarTypedFrameGuestCompilerReceipts, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaScalarTypedFrameNativeLowStackReceipts, 'NOT_EXECUTED');
