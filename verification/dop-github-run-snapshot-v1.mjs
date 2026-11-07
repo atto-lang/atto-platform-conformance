@@ -71,3 +71,36 @@ export function validateDopGithubSnapshot(receipt, contract, run, jobPage, expec
   }
   return errors;
 }
+
+/**
+ * Correlate the receipt's declared source Git tree to GitHub's immutable
+ * git/commits/<40-hex> response, separately fetched at the canonical repo.
+ * Shape/correlation only: does not prove native executable or JIT provenance.
+ */
+export function validateDopGithubCommit(receipt, commit, expectedRepo) {
+  const errors = [];
+  const need = (value, reason) => { if (!value) errors.push(reason); };
+  if (!receipt || typeof receipt !== 'object' || Array.isArray(receipt))
+    return ['commit-receipt-object'];
+  if (!commit || typeof commit !== 'object' || Array.isArray(commit))
+    return ['commit-github-object'];
+  need(typeof expectedRepo === 'string' &&
+    /^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(expectedRepo),
+    'commit-source-repository');
+  need(receipt.status !== 'NOT_EXECUTED', 'not-executed-cannot-attest-commit');
+  const head = receipt.sourceHeadSha;
+  const tree = receipt.sourceTreeSha;
+  need(typeof head === 'string' && /^[0-9a-f]{40}$/.test(head), 'commit-receipt-head');
+  need(typeof tree === 'string' && /^[0-9a-f]{40}$/.test(tree), 'commit-receipt-tree');
+  need(commit.sha === head, 'git-commit-exact-head');
+  need(commit.tree?.sha === tree, 'git-commit-tree-match');
+  if (typeof expectedRepo === 'string' && /^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(expectedRepo) &&
+      typeof head === 'string' && /^[0-9a-f]{40}$/.test(head) &&
+      typeof tree === 'string' && /^[0-9a-f]{40}$/.test(tree)) {
+    need(commit.url === 'https://api.github.com/repos/' + expectedRepo +
+      '/git/commits/' + head, 'git-commit-canonical-url');
+    need(commit.tree?.url === 'https://api.github.com/repos/' + expectedRepo +
+      '/git/trees/' + tree, 'git-tree-canonical-url');
+  }
+  return errors;
+}
