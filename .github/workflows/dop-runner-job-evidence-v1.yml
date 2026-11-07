@@ -7,6 +7,8 @@ on:
       - 'verification/dop-runner-job-evidence-v1.mjs'
       - 'verification/runner-evidence-correlation-v1.mjs'
       - 'tests/runner-evidence-correlation-v1.test.mjs'
+      - 'verification/runner-evidence-artifact-bytes-v1.mjs'
+      - 'tests/runner-evidence-artifact-bytes-v1.test.mjs'
       - 'docs/RUNNER_EVIDENCE_CORRELATION_V1.md'
       - 'tests/dop-runner-job-evidence-v1.test.mjs'
       - 'contracts/dop-runner-job-evidence-v1.json'
@@ -45,6 +47,8 @@ jobs:
                    tests/dop-runner-job-evidence-v1.test.mjs \
                    verification/runner-evidence-correlation-v1.mjs \
                    tests/runner-evidence-correlation-v1.test.mjs \
+                   verification/runner-evidence-artifact-bytes-v1.mjs \
+                   tests/runner-evidence-artifact-bytes-v1.test.mjs \
                    docs/RUNNER_EVIDENCE_CORRELATION_V1.md \
                    contracts/dop-runner-job-evidence-v1.json \
                    .github/workflows/dop-runner-job-evidence-v1.yml; do
@@ -55,13 +59,14 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
-      - name: Execute and assert all 86 source-only mutation tests
+      - name: Execute and assert all 155 source-only mutation tests
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p build-evidence
           node --test tests/dop-runner-job-evidence-v1.test.mjs | tee build-evidence/runner-job-test.tap
           node --test tests/runner-evidence-correlation-v1.test.mjs | tee build-evidence/runner-evidence-correlation.tap
+          node --test tests/runner-evidence-artifact-bytes-v1.test.mjs | tee build-evidence/runner-evidence-artifact-bytes.tap
           grep -Fxq '# tests 86' build-evidence/runner-job-test.tap
           grep -Fxq '# pass 86' build-evidence/runner-job-test.tap
           grep -Fxq '# fail 0' build-evidence/runner-job-test.tap
@@ -72,8 +77,13 @@ jobs:
           grep -Fxq '# fail 0' build-evidence/runner-evidence-correlation.tap
           grep -Fxq '# skipped 0' build-evidence/runner-evidence-correlation.tap
           grep -Fxq '# cancelled 0' build-evidence/runner-evidence-correlation.tap
+          grep -Fxq '# tests 33' build-evidence/runner-evidence-artifact-bytes.tap
+          grep -Fxq '# pass 33' build-evidence/runner-evidence-artifact-bytes.tap
+          grep -Fxq '# fail 0' build-evidence/runner-evidence-artifact-bytes.tap
+          grep -Fxq '# skipped 0' build-evidence/runner-evidence-artifact-bytes.tap
+          grep -Fxq '# cancelled 0' build-evidence/runner-evidence-artifact-bytes.tap
           test -z "$(git status --porcelain=v1 --untracked-files=all -- . ':!build-evidence')"
-          echo 'ATTO_RUNNER_SOURCE_ONLY_PASS=86, NEVER COMPILER_GUEST_PROOF'
+          echo 'ATTO_RUNNER_SOURCE_ONLY_PASS=155, NEVER COMPILER_GUEST_PROOF'
       - name: Capture source-only receipt requiring separate GitHub API proof
         shell: bash
         run: |
@@ -95,6 +105,8 @@ jobs:
             'tap_sha256':hashlib.sha256(path.read_bytes()).hexdigest(),
             'test_count':86,
             'correlation_test_count':36,
+            'artifact_bytes_test_count':33,
+            'artifact_bytes_tap_sha256':hashlib.sha256(pathlib.Path('build-evidence/runner-evidence-artifact-bytes.tap').read_bytes()).hexdigest(),
             'correlation_tap_sha256':hashlib.sha256(pathlib.Path('build-evidence/runner-evidence-correlation.tap').read_bytes()).hexdigest(),
             'not_proven':['native compilation','guest execution','backend parity','merge approval']
           }
@@ -113,4 +125,5 @@ jobs:
           path: |
             build-evidence/runner-job-test.tap
             build-evidence/runner-evidence-correlation.tap
+            build-evidence/runner-evidence-artifact-bytes.tap
             build-evidence/runner-job-receipt.json
