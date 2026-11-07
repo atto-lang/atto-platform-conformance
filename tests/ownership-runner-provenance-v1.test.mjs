@@ -46,7 +46,8 @@ test('fresh GitHub attempt and Git commit establish runner only, never guest',as
   const r=await evaluate();
   assert.equal(r.ok,false);assert.equal(r.verified,false);
   assert.equal(r.runnerExecutionVerified,true);
-  assert.equal(r.sourceTreeVerified,true);
+  assert.equal(r.sourceCommitTreeResolved,true);
+  assert.equal(r.checkoutVerified,false, 'green step names do not prove checkout tree identity');
   assert.equal(r.guestExecutionVerified,false);
   assert.equal(r.status,'RUNNER_EXECUTION_VERIFIED_GUEST_UNVERIFIED');
   assert.equal(r.sourceCommit,sha);assert.equal(r.sourceTree,tree);
