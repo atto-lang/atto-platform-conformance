@@ -1,6 +1,8 @@
 // SOURCE-FREE reference only: no pthreads, compiler, guest entry, TLS or Task runtime.
 // Metadata supplied to this model represents trusted compiler/runtime decisions;
 // this JavaScript implementation must never be used as an authorization provider.
+// Handle object identity here models an unforgeable runtime-minted capability;
+// matching public slot, owner, generation or tenant fields is never sufficient.
 
 export function inferTransferTraits(descriptor) {
   const active = new Set();
@@ -84,7 +86,6 @@ export function inferTransferTraits(descriptor) {
 
 const validKey = k => typeof k === 'string' && /^[a-zA-Z_][a-zA-Z0-9_.]{0,63}$/.test(k);
 const validTenant = t => typeof t === 'string' && t.length > 0 && t.length <= 64;
-const same = (a,b) => a?.slot === b?.slot && a?.generation === b?.generation;
 const fail = code => { throw new Error(code); };
 
 // Synchronous reference for ownership invariants; no real concurrent execution.
@@ -101,18 +102,18 @@ export class LocalStateThreadModel {
 
   #thread(h) {
     const t = this.#threads.get(h?.slot);
-    if (!t || !same(t.handle,h)) fail('STALE_THREAD_GENERATION');
+    if (!t || t.handle !== h) fail('STALE_THREAD_GENERATION');
     return t;
   }
   #task(h) {
     const t = this.#tasks.get(h?.id);
-    if (!t || t.handle.generation !== h?.generation)
+    if (!t || t.handle !== h)
       fail('STALE_TASK_GENERATION');
     return t;
   }
   #actor(h) {
     const a = this.#actors.get(h?.id);
-    if (!a || a.handle.generation !== h?.generation)
+    if (!a || a.handle !== h)
       fail('STALE_ACTOR_GENERATION');
     return a;
   }
@@ -152,7 +153,7 @@ export class LocalStateThreadModel {
     this.#slotGeneration.set(slot, generation);
     const handle = Object.freeze({slot,generation,tenant});
     this.#threads.set(slot, {handle, status:'RUNNING', stopRequested:false,
-      locals:new Map(), result:undefined});
+      locals:new Map(), active:false, result:undefined});
     return handle;
   }
   requestStop(h) {
@@ -164,8 +165,7 @@ export class LocalStateThreadModel {
   complete(h, result) {
     const t = this.#thread(h);
     if (t.status !== 'RUNNING') fail('THREAD_ALREADY_EXITED');
-    if (this.#current?.thread && same(this.#current.thread,h))
-      fail('THREAD_STILL_BOUND');
+    if (t.active) fail('THREAD_STILL_BOUND');
     t.locals.clear(); // TLS destructors modeled as retirement, not executed here.
     t.result = result; t.status = 'EXITED';
   }
@@ -211,6 +211,8 @@ export class LocalStateThreadModel {
     if (typeof fn !== 'function') fail('INVALID_HOST_TEST_CALLBACK');
     const t=this.#thread(threadHandle);
     if (t.status !== 'RUNNING') fail('THREAD_NOT_RUNNING');
+    // Never admit a second live execution frame for the same physical carrier.
+    if (t.active) fail('THREAD_STILL_BOUND');
     const taskRec=task ? this.#task(task) : null;
     const actorRec=actor ? this.#actor(actor) : null;
     if (taskRec?.active || actorRec?.active) fail('LOCAL_CONTEXT_REENTRANCY');
@@ -218,6 +220,7 @@ export class LocalStateThreadModel {
         actorRec && actor.tenant !== threadHandle.tenant)
       fail('TENANT_MISMATCH');
     const previous=this.#current;
+    t.active=true;
     if (taskRec) taskRec.active=true;
     if (actorRec) actorRec.active=true;
     this.#current={thread:threadHandle,task,actor};
@@ -228,6 +231,7 @@ export class LocalStateThreadModel {
     }
     finally {
       this.#current=previous;
+      t.active=false;
       if (taskRec) taskRec.active=false;
       if (actorRec) actorRec.active=false;
     }
