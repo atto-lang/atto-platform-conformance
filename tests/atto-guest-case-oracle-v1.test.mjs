@@ -132,6 +132,17 @@ denies('malicious synthetic PASS evidence cannot be admitted',s=>{
 });
 denies('malformed source timestamp is rejected',s=>s.as_of='yesterday');
 denies('future source timestamp is rejected',s=>s.as_of='2099-01-01T00:00:00Z');
+denies('calendar-invalid case provenance rejects February 30',s=>s.as_of='2026-02-30T02:00:00Z');
+denies('calendar-invalid case provenance rejects April 31',s=>s.as_of='2026-04-31T03:00:00Z');
+denies('non-leap February 29 case provenance is rejected',s=>s.as_of='2026-02-29T12:34:56Z');
+denies('24-hour rollover case provenance is rejected',s=>s.as_of='2026-11-06T24:00:00Z');
+test('valid leap-day case provenance remains advisory and never executed',()=>{
+ const s=fresh();s.as_of='2024-02-29T12:34:56Z';
+ assert.equal(validateGuestCaseInventory(s),true);
+ const report=evaluateGuestCaseInventory(s);
+ assert.equal(report.status,'BLOCKED');
+ assert.equal(report.executed_guest_cells,0);
+});
 denies('wrong advisory scope is rejected',s=>s.scope='release_authority');
 
 const candidatePath=fileURLToPath(new URL('../evidence/atto-five-backend-release-candidate-v1.json',import.meta.url));
