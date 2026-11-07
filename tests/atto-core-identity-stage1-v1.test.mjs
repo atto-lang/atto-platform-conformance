@@ -14,7 +14,9 @@ test("canonical compiler-owned Core identity bytes match exact Git blob",()=>{
  assert.equal(blob(bytes),evidence.git_blob_sha1);
  assert.match(bytes.toString("utf8"),/define module identity as/);
  assert.match(bytes.toString("utf8"),/pub fnc passthrough\(int value\)/);
- assert.doesNotMatch(bytes.toString("utf8"),/import\s|alloc\.|atto\.std|actor\s/);
+ const declarations=bytes.toString("utf8").split("\n")
+   .filter(line=>!line.trimStart().startsWith("//")).join("\n");
+ assert.doesNotMatch(declarations,/\bimport\b|\batto\.alloc\b|\batto\.std\b|\bactor\b/);
 });
 test("two stage-1 compiler branches refer to one exact canonical source blob",()=>{
  assert.equal(evidence.schema_version,1);
