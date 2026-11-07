@@ -109,3 +109,19 @@ unknown or positive runner IDs instead fail closed as `UNTRUSTED_EVIDENCE`.
 Four independent regression groups check skipped, neutral, missing/invalid
 runner identities and the observed GitHub zero-step incident. These tests
 are source-only checks and do not establish real compiler guest execution.
+
+## GitHub workflow YAML failure is distinct from job runner admission
+
+Two actual source-owned workflow runs had **no jobs created**:
+.NET `42331491997` at head `eee2710e...` and Forge
+`42331638359` at head `829a0294...`. Both corresponded to
+malformed, duplicated YAML introduced by literal-unsafe source editing.
+After reconstruction from pinned intact Git blobs, .NET run
+`42332192855` and Forge run `42332274617` created their expected
+jobs, but those jobs still failed with `runner_id=0`, `steps=[]`.
+The conformance classifier now reports `WORKFLOW_JOB_CREATION_FAILURE`
+for a completed failed run with no jobs and reserves
+`RUNNER_ADMISSION_FAILURE` for completed failed, zero-step jobs with
+explicit zero runner identity. The frozen real API snapshots and four
+mutation/regression tests are source-only evidence. None represents
+native/guest execution.

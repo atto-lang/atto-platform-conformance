@@ -30,6 +30,17 @@ test("zero or null GitHub steps are runner admission failure, never compiler pas
       reason: "ZERO_REPORTED_JOB_STEPS", executedSteps: 0});
   }
 });
+test("failed completed workflow with no created jobs is not a runner failure",()=>{
+  const out = classify({...run(),conclusion:"failure"},[]);
+  assert.equal(out.classification,"WORKFLOW_JOB_CREATION_FAILURE");
+  assert.equal(out.reason,"COMPLETED_FAILED_RUN_WITH_ZERO_JOBS");
+  assert.equal(out.executedSteps,0);
+});
+test("missing jobs before workflow completion means in-progress, not a pass",()=>{
+  const out = classify({...run(),status:"queued",conclusion:null},[]);
+  assert.equal(out.classification,"IN_PROGRESS");
+  assert.equal(out.executedSteps,0);
+});
 test("zero-step classification distinguishes queued jobs from failed runner admission",()=>{
   const waiting = {...run(), status:"queued", conclusion:null};
   const queued = {...job(), status:"queued", conclusion:null, steps:[], runner_id:0};
