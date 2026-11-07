@@ -84,6 +84,10 @@ test('fail closed for missing, duplicate, unknown, swapped, or mutated cases', (
     r => { r.cases[0].compilerSteps = 0; },
     r => { r.cases[0].suiteSkipped = true; },
     r => { r.cases[0].status = 'NOT_EXECUTED'; },
+    r => { r.cases[0].status = 'UNSUPPORTED'; },
+    r => { delete r.cases[0].status; },
+    r => { delete r.cases[0].suiteSkipped; },
+    r => { r.cases[0].suiteSkipped = null; },
     r => { r.backend = 'js'; },
     r => { r.compilerCommit = 'unpinned'; },
     r => { r.sourceTree = null; }
