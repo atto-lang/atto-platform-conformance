@@ -87,8 +87,14 @@ export function canonicalizeMergeEvidence(input){
       evidence_class:missing?'NOT_EXECUTED':success?'REPORTED_SUCCESS_UNATTESTED':'INCOMPLETE'});
    }
    jobs.sort((a,b)=>a.run_id-b.run_id||a.attempt-b.attempt||a.job_id-b.job_id);
-   ciClass=!jobs.length?'UNOBSERVED':absent===jobs.length?'NOT_EXECUTED':
-    reported>0?'REPORTED_EXECUTION_UNATTESTED':'MIXED_OR_INCOMPLETE';
+   // A single successful job cannot mask an unexecuted, failed, malformed, or
+   // duplicate required job. Preserve mixed/unknown status before any summary.
+   const suspect=[...failures].some(k=>k==='JOB_ENTRY_INVALID'||
+     k==='JOB_IDENTITY_DUPLICATE'||k==='JOB_EVIDENCE_CONTRADICTORY');
+   ciClass=!jobs.length?'UNOBSERVED':
+     suspect?'MIXED_OR_INCOMPLETE':
+     absent===jobs.length?'NOT_EXECUTED':
+     reported===jobs.length?'REPORTED_EXECUTION_UNATTESTED':'MIXED_OR_INCOMPLETE';
   }
  }catch{fail('SNAPSHOT_EVALUATION_FAILED');}
  return output([...failures].sort(),target,reviewComplete,ciClass,jobs,gaps);
