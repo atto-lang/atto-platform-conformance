@@ -14,9 +14,10 @@ test('real canary run route is fixed to github.com using read-only GET',()=>{
  assert.equal(x.argv.at(-1),'/repos/'+p.repository+'/actions/runs/'+p.runId);
  assert.equal(x.environment.GH_HOST,'github.com');
 });
-test('all five expected evidence REST endpoint forms remain available',()=>{
+test('all six expected evidence REST endpoint forms remain available',()=>{
  for(const suffix of [
    '/actions/runs/'+p.runId,
+   '/commits/'+p.sourceHead,
    '/actions/runs/'+p.runId+'/attempts/14/jobs?per_page=100',
    '/actions/jobs/128180053317',
    '/actions/jobs/128180053317/logs',
@@ -97,4 +98,38 @@ test('host and HTTP method cannot be supplied by caller',()=>{
  assert.ok(x.argv.includes('GET'));
  assert.ok(x.argv.includes('github.com'));
  assert.equal(x.argv.includes('POST'),false);
+});
+
+
+test('immutable commit GET is pinned to exact source SHA',()=>{
+ const suffix='/commits/'+p.sourceHead;
+ const request=build(suffix);
+ assert.equal(request.argv.at(-1),'/repos/'+p.repository+suffix);
+ for(const other of ['/commits/main','/commits/'+'0'.repeat(40),
+   '/commits/'+p.sourceHead+'?foo=bar','/commits/'+p.sourceHead+'/status']) {
+   assert.throws(()=>build(other),other);
+ }
+});
+test('commit endpoint cannot be swapped for a source tree or branch API',()=>{
+ for(const route of [
+   '/git/trees/'+p.sourceTree,
+   '/git/refs/heads/main',
+   '/compare/main...'+p.sourceHead,
+   '/commits/'+p.sourceTree
+ ]) assert.throws(()=>build(route),route);
+});
+test('path canonicalization and encoded dot segments do not bypass whitelist',()=>{
+ for(const route of [
+   '/commits/'+p.sourceHead+'/../other',
+   '/commits/'+p.sourceHead+'%2F..%2Fmain',
+   '/commits/'+p.sourceHead+'#fragment',
+   '//api.github.com/repos/attacker/other/commits/'+p.sourceHead
+ ]) assert.throws(()=>build(route),route);
+});
+test('read-only commit query never includes token in argv',()=>{
+ const token='SYNTHETIC_SUPER_SECRET';
+ const v=build('/commits/'+p.sourceHead,{GH_TOKEN:token});
+ assert.equal(v.argv.join(' ').includes(token),false);
+ assert.equal(v.environment.GH_HOST,'github.com');
+ assert.equal(v.environment.GH_TOKEN,token);
 });
