@@ -52,7 +52,8 @@ new self-hosted runner, change to secrets or workflow tokens, or relaxing branch
    actual step output:
    - `SOURCE_FREE_RUNNER_ADMITTED=1`
    - `SOURCE_FREE_TWO_STEPS_EXECUTED=1`
-7. On a trusted Linux host with `/usr/bin/gh` authenticated for read-only
+7. On a trusted Linux host with `/usr/bin/gh` and an explicitly exported
+   `GH_TOKEN` (or `GITHUB_TOKEN`) scoped for read-only
    Actions/repository API access, run:
    `node bin/verify-private-runner-postrepair-live-v1.mjs`
    The script fetches the original workflow run, its **exact attempt** jobs,
@@ -86,3 +87,40 @@ administration settings or check-run annotations**. No authenticated GitHub
 browser profile is connected. Therefore this PR implements the independent
 verification procedure but **does not claim that the private runner problem
 has been fixed**.
+
+## Extra receipt and live-reader hardening (stacked follow-up)
+
+The verifier additionally requires **exactly four** source-free job steps
+(\`Set up job\`, the two named shell checks, \`Complete job\`), with no
+unapproved checkout/extra command. An allocated runner must report the
+GitHub-hosted group (\`runner_group_id=0\`, \`runner_group_name="GitHub Actions"\`),
+runner name matching its allocated ID, only \`ubuntu-24.04\` in requested
+labels, and an observed pre-command **Hosted Compute Agent** and
+**Image: ubuntu-24.04** log header. It correlates the individual marker lines
+to the successful step timestamps, ordered job interval and the run's creation
+and update interval. These safeguards still rely on GitHub API and runner
+logs as evidence, not a cryptographic hardware attestation of the host.
+
+The command-line reader now explicitly calls **github.com** with a
+temporary isolated GitHub CLI configuration, an allowlisted set of
+read-only REST paths, no inherited proxy/enterprise-host configuration,
+and an explicitly supplied read-only \`GH_TOKEN\` / \`GITHUB_TOKEN\`.
+Stored interactive \`gh auth\` sessions are deliberately **not reused**;
+an operator must provide the narrowly scoped token securely in the local
+process environment. Do not paste tokens into issue comments, ChatGPT,
+CI logs or commands. The token is never passed in command-line arguments.
+
+If GitHub API access, the log download, run/job identity, or runner
+classification cannot be independently verified, output is
+\`PRIVATE_RUNNER_ADMISSION_UNVERIFIED\` — **not** a categorical assertion
+that no step executed. Known \`steps=[]\`/null from independent GitHub
+job data remain confirmed zero-step runner-admission failures. A
+success receipt is still \`SOURCE_FREE_PRIVATE_RUNNER_ADMISSION_ONLY\`,
+not permission to merge or certify a compiler.
+
+The extra source-only test cases cover private-repo identity,
+self-hosted-label impersonation, exact four-step inventory, hosted
+image/log preamble, log timestamp spoofing, cross-step injection,
+run/job chronology, URL path traversal, \`GH_HOST\` / proxy redirection,
+and missing credentials. These require real native Node execution
+before qualification; isolated V8 test passes are preliminary only.
