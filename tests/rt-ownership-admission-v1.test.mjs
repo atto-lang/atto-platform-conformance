@@ -152,6 +152,8 @@ test('invalid, reduced or relaxed contract cannot attest even the receipt shape'
     c => { c.cases[0] = null; },
     c => { c.cases[0].source = null; },
     c => { c.cases[0].id = '__proto__'; },
+    c => { c.cases[0].id = { toString: () => 'copy-scalar-keeps-owner' }; },
+    c => { c.cases.find(x => x.expect === 'reject').reason = { toString: () => 'OWNER_MOVED' }; },
     c => { c.cases.find(x => x.expect === 'reject').reason = null; },
     c => { c.cases.find(x => x.expect === 'accept').expectedGuestExit = NaN; },
     c => { c.backendTargets.pop(); },
