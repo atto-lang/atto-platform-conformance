@@ -8,6 +8,29 @@ const statuses = new Set(['NOT_EXECUTED', 'PASSED', 'FAILED', 'UNSUPPORTED']);
 const negativeId = 'removed-index-trap';
 const stepsRequired = ['checkout-head', 'verify-fixture', 'compile-guest', 'execute-guest'];
 
+// Manifest input is untrusted: a caller may not redefine the three canonical
+// Git blob identities by submitting a self-consistent fake manifest+receipt.
+const canonicalBlobs = Object.freeze({
+  'swap-reuse': '8f5599a9e0b11ded2929110b4936441fceb2ef21',
+  'removed-index-trap': 'c3c87cfd2515707932734e183bb5768436526a96',
+  'immutable-column-swap': '863b1f20137656a277fc7bc04415a6f001f76512'
+});
+
+// Date.parse silently normalizes 2026-02-30 to March 2. Check RFC3339
+// calendar validity, leap days, and timezone offsets before timestamp order.
+function strictTimestamp(value) {
+  if (typeof value !== 'string') return null;
+  const m = /^([1-9][0-9]{3})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])(?:\.([0-9]{1,9}))?(Z|[+-](?:0[0-9]|1[0-9]|2[0-3]):[0-5][0-9])$/.exec(value);
+  if (!m) return null;
+  const year = Number(m[1]), month = Number(m[2]), day = Number(m[3]);
+  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  if (day > days[month - 1]) return null;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
+
 export function validateInvertedGuestReceipt(receipt, manifest) {
   const errors = [];
   const need = (ok, reason) => { if (!ok) errors.push(reason); };
@@ -17,7 +40,23 @@ export function validateInvertedGuestReceipt(receipt, manifest) {
   need(backends.has(receipt.backend), 'backend');
   need(ids.has(receipt.caseId), 'case-id');
   need(statuses.has(receipt.status), 'status');
-  const vector = manifest?.vectors?.find(x => x.id === receipt.caseId);
+  // Exactly three canonical vectors, each once, are part of contract v1.
+  // Avoid .find() on arbitrary manifest.vectors: malformed JSON must reject,
+  // not throw or silently substitute a different blob.
+  const vectors = Array.isArray(manifest?.vectors) ? manifest.vectors : [];
+  const seenVectors = new Set();
+  need(vectors.length === ids.size, 'manifest-vector-inventory');
+  for (const entry of vectors) {
+    need(entry !== null && typeof entry === 'object' && !Array.isArray(entry),
+      'manifest-vector-object');
+    const id = entry?.id;
+    need(typeof id === 'string' && Object.hasOwn(canonicalBlobs, id),
+      'manifest-vector-id');
+    need(!seenVectors.has(id), 'manifest-vector-duplicate');
+    seenVectors.add(id);
+    need(entry?.blobSha1 === canonicalBlobs[id], 'manifest-canonical-source-blob');
+  }
+  const vector = vectors.find(x => x?.id === receipt.caseId);
   need(Boolean(vector), 'manifest-vector');
   if (receipt.status === 'NOT_EXECUTED') {
     need(receipt.guestExecuted !== true, 'not-executed-guest');
@@ -51,9 +90,22 @@ export function validateInvertedGuestReceipt(receipt, manifest) {
     need(Number.isSafeInteger(step?.number) && step.number > 0 && !nums.has(step.number), 'unique-step-number');
     nums.add(step?.number);
     need(['success', 'failure'].includes(step?.conclusion), 'step-conclusion');
-    need(typeof step?.startedAt === 'string' && !Number.isNaN(Date.parse(step.startedAt)), 'step-started');
-    need(typeof step?.completedAt === 'string' && !Number.isNaN(Date.parse(step.completedAt)), 'step-completed');
-    need(Date.parse(step?.completedAt) >= Date.parse(step?.startedAt), 'step-time-order');
+    const started = strictTimestamp(step?.startedAt);
+    const completed = strictTimestamp(step?.completedAt);
+    need(started !== null, 'step-started');
+    need(completed !== null, 'step-completed');
+    need(started !== null && completed !== null && completed >= started,
+      'step-time-order');
+  }
+  // A job cannot execute overlapping numbered steps in the same runner.
+  // Reordering a forged receipt array or claiming concurrent checkout/compile
+  // steps is not permitted even if the step names are all present.
+  const orderedSteps = [...steps].sort((a, b) => (a?.number ?? 0) - (b?.number ?? 0));
+  for (let i = 1; i < orderedSteps.length; i++) {
+    const preceding = strictTimestamp(orderedSteps[i - 1]?.completedAt);
+    const following = strictTimestamp(orderedSteps[i]?.startedAt);
+    need(preceding !== null && following !== null && following >= preceding,
+      'sequential-job-step-times');
   }
   if (receipt.status === 'PASSED') {
     need(job?.conclusion === 'success', 'successful-job');
