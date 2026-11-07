@@ -48,7 +48,7 @@ function validatePending(matrix) {
   assert.equal(matrix.requirements.nativeStackOverflowRecoverableOnSharedCarrier, false);
   assert.equal(matrix.requirements.untrustedArbitraryNativeCodeRequiresKillableWorker, true);
   assert.ok(matrix.scenarios.length >= 17);
-  assert.match(matrix.javaFrameArenaReference, /\\/pull\\/2627$/);
+  assert.match(matrix.javaFrameArenaReference, /\/pull\/2627$/);
   const bootstrap = matrix.frameStorageBootstrap;
   assert.equal(bootstrap.javaHostPrimitive, 'MANAGED_BYTES_ONLY');
   assert.equal(bootstrap.javaAuthoredHostTests, 14);
