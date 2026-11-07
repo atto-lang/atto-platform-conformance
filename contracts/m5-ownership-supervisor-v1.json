@@ -7,9 +7,10 @@
       "rt take consumes one linear owner; any later borrow/send/read through sender is rejected",
       "rt borrow creates a read-only loan; take or write while borrowed is rejected",
       "rt borrow mut is exclusive; no overlapping read or mutable loans",
-      "rt share freezes the shared view; no mutation until all shared views released",
+      "rt share publishes a PERMANENTLY deeply frozen reachable graph only after transitive alias checking, consuming the mutable owner; it is not a temporary read loan and cannot be unshared or thawed",
       "no loan, read or write can cross actor retirement or stale generation",
-      "loans across await/select are prohibited pending pinned continuation validation"
+      "loans across await/select are prohibited pending pinned continuation validation",
+      "rt borrow is the temporary read-only loan; releasing it may permit the original live owner to write again, unlike permanent rt share"
     ],
     "actor_state": [
       "state is sealed; no direct external actor field read or write",
@@ -70,6 +71,7 @@
     "New GraalVM worker Native Image stress is a host-side Java implementation until emitted from canonical checked MIR.",
     "Canonical LLVM IR exporter only proves a restricted actor subset once its exact-head executed CI succeeds.",
     "Matching model output cannot certify independent scheduling, hostile tenant sandbox or complete ownership checking.",
-    "Epsilon prevents GC collections but does not reclaim managed allocations; measure long-run heap and RSS."
+    "Epsilon prevents GC collections but does not reclaim managed allocations; measure long-run heap and RSS.",
+    "Pony-inspired reference-capability contracts and deep-graph finite model are not a compiled AttoLang ownership checker or guest proof."
   ]
 }

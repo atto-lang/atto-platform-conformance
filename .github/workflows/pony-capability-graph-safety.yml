@@ -1,0 +1,41 @@
+name: Pony-inspired AttoLang capability and graph soundness audit
+on:
+  pull_request:
+    paths:
+      - 'contracts/pony-reference-capabilities-atto-v1.json'
+      - 'contracts/m5-ownership-supervisor-v1.json'
+      - 'tests/test_m5_actor_owner_supervisor_model.py'
+      - 'tests/pony_graph_safety.py'
+      - 'tests/test_pony_refcaps_hardening.py'
+      - '.github/workflows/pony-capability-graph-safety.yml'
+  push:
+    branches: [audit/pony-capability-graph-ownership-20261107]
+permissions:
+  contents: read
+jobs:
+  finite-graph-model-and-negative-controls:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact checked-out source and clean tree
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED"
+          git diff --exit-code HEAD --
+      - name: Execute graph model capability matrix, adversarial and seeded tests
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s tests -p test_pony_refcaps_hardening.py -v
+          python3 -m unittest discover -s tests -p test_m5_actor_owner_supervisor_model.py -v
+          echo 'PONY_INSPIRED_ATTO_REFERENCE_GRAPH_SAFETY_TESTS=PASSED'
+          echo 'M5_IRREVERSIBLE_RT_SHARE_REFERENCE_MODEL=PASSED'
+      - name: Explicit non-execution disclaimer
+        run: |
+          echo 'EVIDENCE_SCOPE=SOURCE_FREE_REFERENCE_MODEL_ONLY_NOT_COMPILED_ATTO_GUEST'
+          echo 'Pony keywords are not AttoLang syntax; runtime zero-GC and tenant security remain unproven'

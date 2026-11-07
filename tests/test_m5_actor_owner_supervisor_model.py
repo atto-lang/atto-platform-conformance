@@ -16,7 +16,7 @@ class Owner:
         self.live = True
         self.readers = 0
         self.writer = False
-        self.shares = 0
+        self.frozen = False  # permanent value conversion, not a revocable read loan
 
     def ensure(self):
         if not self.live:
@@ -24,7 +24,7 @@ class Owner:
 
     def borrow(self, mutable=False):
         self.ensure()
-        if self.writer or (mutable and (self.readers or self.shares)):
+        if self.writer or (mutable and self.readers):
             raise Rejected("conflicting exclusive loan")
         if mutable:
             self.writer = True
@@ -44,31 +44,33 @@ class Owner:
 
     def take(self):
         self.ensure()
-        if self.readers or self.writer or self.shares:
+        if self.readers or self.writer:
             raise Rejected("cannot move a borrowed/shared owner")
         self.live = False
         return Owner()
 
     def share(self):
+        # Pony-inspired `val`: immutable sharing is a *permanent conversion*.
+        # The graph-level reference model performs transitive alias validation;
+        # this scalar owner test only checks permanent sender invalidation.
         self.ensure()
-        if self.writer:
-            raise Rejected("cannot freeze a mutable loan")
-        self.shares += 1
+        if self.writer or self.readers:
+            raise Rejected("cannot deep-freeze while loans are outstanding")
+        self.frozen = True
+        self.live = False
+        return "val"
 
     def unshare(self):
-        self.ensure()
-        if not self.shares:
-            raise Rejected("not shared")
-        self.shares -= 1
+        raise Rejected("deep frozen val cannot thaw or recover mutable ownership")
 
     def write(self):
         self.ensure()
-        if self.readers or self.shares or self.writer:
+        if self.readers or self.writer:
             raise Rejected("write conflicts with outstanding loan")
 
     def across_suspend(self):
         self.ensure()
-        if self.readers or self.writer or self.shares:
+        if self.readers or self.writer:
             raise Rejected("unpinned ownership loan across await/select")
 
 class Tenant:
@@ -206,8 +208,22 @@ class M5OwnershipAndSupervisionTests(unittest.TestCase):
         o.share()
         with self.assertRaises(Rejected): o.write()
         with self.assertRaises(Rejected): o.take()
-        o.unshare()
-        o.write()
+        with self.assertRaises(Rejected): o.unshare()
+        with self.assertRaises(Rejected): o.write()
+        with self.assertRaises(Rejected): o.borrow()
+
+    def test_read_borrow_blocks_permanent_deep_share(self):
+        o = Owner()
+        o.borrow()
+        with self.assertRaises(Rejected): o.share()
+        o.release()
+        self.assertEqual(o.share(), "val")
+        with self.assertRaises(Rejected): o.take()
+
+    def test_double_freeze_denied(self):
+        o = Owner()
+        self.assertEqual(o.share(), "val")
+        with self.assertRaises(Rejected): o.share()
 
     def test_mut_loan_blocks_share(self):
         o = Owner()
@@ -219,7 +235,7 @@ class M5OwnershipAndSupervisionTests(unittest.TestCase):
             o = Owner()
             if mode == "read": o.borrow()
             elif mode == "mut": o.borrow(mutable=True)
-            else: o.share()
+            else: o.share()  # frozen owner cannot be used as a loan
             with self.subTest(mode=mode), self.assertRaises(Rejected):
                 o.across_suspend()
 
