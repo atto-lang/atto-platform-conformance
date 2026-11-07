@@ -62,6 +62,14 @@ test('all G1e proposed fixtures are pinned exact source blobs', () => {
   assert.equal(manifest.cases.length, 18);
   assert.equal(new Set(manifest.cases.map(c => c.id)).size, 18);
   assert.equal(new Set(manifest.cases.map(c => c.path)).size, 18);
+  assert.equal(new Set(manifest.cases.map(c => c.gitBlobSha)).size, 18,
+    'every mutation fixture must be a distinct Git blob');
+  const canonical = manifest.cases.find(c => c.expectation === 'positive');
+  assert.ok(canonical && canonical.id === 'typed-host-saxpy');
+  for (const candidate of manifest.cases.filter(c => c.expectation === 'negative')) {
+    assert.notEqual(candidate.gitBlobSha, canonical.gitBlobSha,
+      'a negative fixture must not alias the unchanged canonical source');
+  }
   assert.equal(manifest.cases.filter(c => c.expectation === 'positive').length, 1);
   assert.equal(manifest.cases.filter(c => c.expectation === 'negative').length, 17);
   for (const c of manifest.cases) {
