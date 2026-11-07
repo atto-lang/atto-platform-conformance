@@ -144,36 +144,9 @@ jobs:
           grep -Eq '^# fail 0$' /tmp/atto-nll-lastuse-v1.tap
           node --test --test-reporter=tap \
             tests/ownership-nll-closed-world-v1.test.mjs | tee /tmp/atto-nll-closed-world-v1.tap
-          grep -Eq '^# tests 20
-          echo "ATTO_TYPED_ORIGIN_ID_INVENTORY=CANDIDATE_UNATTESTED"
-          echo "ATTO_TYPED_ORIGIN_IDS=SHAPE_ONLY_UNATTESTED"
-          echo "ATTO_OWNERSHIP_ORIGIN_MODEL=CANDIDATE_UNATTESTED"
-          echo "ATTO_OWNERSHIP_ROOT_MODEL=CANDIDATE_UNATTESTED"
-          echo "ATTO_OWNERSHIP_PLACE_MATRIX=HOST_REFERENCE_ONLY"
-          echo "ATTO_OWNERSHIP_GUEST_VERIFICATION=NOT_EXECUTED"
-          echo "ATTO_OWNERSHIP_RECEIPT_SHAPE=SOURCE_FREE_ONLY"
-          echo "ATTO_OWNERSHIP_GUEST_PARITY=NOT_EXECUTED"
- /tmp/atto-nll-closed-world-v1.tap
-          grep -Eq '^# pass 20
-          echo "ATTO_TYPED_ORIGIN_ID_INVENTORY=CANDIDATE_UNATTESTED"
-          echo "ATTO_TYPED_ORIGIN_IDS=SHAPE_ONLY_UNATTESTED"
-          echo "ATTO_OWNERSHIP_ORIGIN_MODEL=CANDIDATE_UNATTESTED"
-          echo "ATTO_OWNERSHIP_ROOT_MODEL=CANDIDATE_UNATTESTED"
-          echo "ATTO_OWNERSHIP_PLACE_MATRIX=HOST_REFERENCE_ONLY"
-          echo "ATTO_OWNERSHIP_GUEST_VERIFICATION=NOT_EXECUTED"
-          echo "ATTO_OWNERSHIP_RECEIPT_SHAPE=SOURCE_FREE_ONLY"
-          echo "ATTO_OWNERSHIP_GUEST_PARITY=NOT_EXECUTED"
- /tmp/atto-nll-closed-world-v1.tap
-          grep -Eq '^# fail 0
-          echo "ATTO_TYPED_ORIGIN_ID_INVENTORY=CANDIDATE_UNATTESTED"
-          echo "ATTO_TYPED_ORIGIN_IDS=SHAPE_ONLY_UNATTESTED"
-          echo "ATTO_OWNERSHIP_ORIGIN_MODEL=CANDIDATE_UNATTESTED"
-          echo "ATTO_OWNERSHIP_ROOT_MODEL=CANDIDATE_UNATTESTED"
-          echo "ATTO_OWNERSHIP_PLACE_MATRIX=HOST_REFERENCE_ONLY"
-          echo "ATTO_OWNERSHIP_GUEST_VERIFICATION=NOT_EXECUTED"
-          echo "ATTO_OWNERSHIP_RECEIPT_SHAPE=SOURCE_FREE_ONLY"
-          echo "ATTO_OWNERSHIP_GUEST_PARITY=NOT_EXECUTED"
- /tmp/atto-nll-closed-world-v1.tap
+          grep -Eq '^# tests 20$' /tmp/atto-nll-closed-world-v1.tap
+          grep -Eq '^# pass 20$' /tmp/atto-nll-closed-world-v1.tap
+          grep -Eq '^# fail 0$' /tmp/atto-nll-closed-world-v1.tap
           echo "ATTO_NLL_CLOSED_WORLD=SOURCE_ONLY_NOT_SSA_PROVEN"
           echo "ATTO_NLL_LAST_USE=MODEL_ONLY_NOT_PROMOTING"
           echo "ATTO_TYPED_ORIGIN_ID_INVENTORY=CANDIDATE_UNATTESTED"
