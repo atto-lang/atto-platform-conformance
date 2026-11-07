@@ -4,10 +4,13 @@
 // copy private source to another organization.
 export const PRIVATE_RUNNER_CONTROL = Object.freeze({
   repository: 'ores-truffle-oreslang/oreslang-platform-conformance',
+  repositoryId: 1413795502,
+  repositoryOwnerId: 336720831,
   workflowPath: '.github/workflows/critical-sourcefree-runner-admission-20261102.yml',
   workflowId: 404169919,
   workflowBlob: '9fdf367e37c56c7c013b8a21222b0bbc4ad3c499',
   sourceHead: '3d5bdf454c65d87a915c5d23c2349522c80a958f',
+  sourceTree: '20e4e66740aa03560ce5360f26ad8814a4de4688',
   branch: 'feat/critical-suspends-unified-contract-20261101',
   runId: 41395829396,
   lastKnownFailedAttempt: 13,
@@ -31,7 +34,7 @@ function strictUtc(value) {
   return Number.isFinite(result) ? result : null;
 }
 
-export function qualifySourceOrgPrivateRunner({run, page, job, workflow, log}) {
+export function qualifySourceOrgPrivateRunner({run, page, job, workflow, sourceCommit, log}) {
   const errors = [];
   const need = (ok, why) => { if (!ok) errors.push(why); };
   const p = PRIVATE_RUNNER_CONTROL;
@@ -44,6 +47,14 @@ export function qualifySourceOrgPrivateRunner({run, page, job, workflow, log}) {
   need(run.head_branch === p.branch, 'pinned-source-branch');
   need(run.repository?.full_name === p.repository, 'source-repository');
   need(run.head_repository?.full_name === p.repository, 'source-head-repository');
+  // A renamed/recreated repository can have the same spelling but a
+  // different immutable GitHub repo ID. Check BOTH source and head IDs.
+  need(run.repository?.id === p.repositoryId &&
+       run.head_repository?.id === p.repositoryId,
+       'pinned-repository-identity');
+  need(run.repository?.owner?.id === p.repositoryOwnerId &&
+       run.head_repository?.owner?.id === p.repositoryOwnerId,
+       'pinned-organization-identity');
   need(run.repository?.private === true && run.head_repository?.private === true,
     'private-repository-evidence');
   need(run.event === 'push', 'source-free-trigger');
@@ -55,14 +66,68 @@ export function qualifySourceOrgPrivateRunner({run, page, job, workflow, log}) {
   const runUpdated = strictUtc(run.updated_at);
   need(runCreated !== null && runUpdated !== null && runUpdated >= runCreated,
     'valid-run-lifetime');
+  const runStart = strictUtc(run.run_started_at);
+  need(runStart !== null && runCreated !== null && runUpdated !== null &&
+       runStart >= runCreated && runStart <= runUpdated,
+       'valid-attempt-start');
   need(obj(workflow) && workflow?.sha === p.workflowBlob &&
        workflow?.path === p.workflowPath && workflow?.type === 'file',
        'immutable-source-free-workflow-blob');
+  // Independently read the original Git commit at the pinned HEAD. This
+  // proves its tree identity, NOT the runner worktree or guest execution.
+  need(obj(sourceCommit) &&
+       sourceCommit?.sha === p.sourceHead &&
+       sourceCommit?.commit?.tree?.sha === p.sourceTree,
+       'immutable-source-git-tree');
+  need(sourceCommit?.url ===
+       'https://api.github.com/repos/' + p.repository + '/commits/' + p.sourceHead,
+       'source-commit-api-origin');
   need(obj(page) && page?.total_count === 1 &&
        Array.isArray(page?.jobs) && page.jobs.length === 1, 'complete-single-job-page');
   need(obj(job), 'job-object');
   if (!obj(job)) return {ok: false, errors};
   need(page?.jobs?.[0]?.id === job.id, 'job-page-detail-identity');
+  // GitHub exposes both an exact-attempt job list and a separate job detail.
+  // Checking ID alone allows a mismatched zero-step/failed list to be
+  // paired with a fabricated or stale successful detail. Require agreement
+  // across the identity, result and runner attributes of BOTH responses.
+  const listed = page?.jobs?.[0];
+  const correlated = [
+    'id', 'run_id', 'run_attempt', 'head_sha', 'name', 'status',
+    'conclusion', 'runner_id', 'runner_name', 'runner_group_id',
+    'runner_group_name', 'started_at', 'completed_at',
+    'run_url', 'url', 'html_url'
+  ];
+  for (const field of correlated) {
+    need(obj(listed) && Object.prototype.hasOwnProperty.call(listed,field) &&
+         Object.prototype.hasOwnProperty.call(job,field) &&
+         listed[field] === job[field],
+         'job-page-detail-' + field);
+  }
+  need(Array.isArray(listed?.labels) && Array.isArray(job.labels) &&
+       listed.labels.length === job.labels.length &&
+       listed.labels.every((label,i) => label === job.labels[i]),
+       'job-page-detail-labels');
+  const matchingSteps = Array.isArray(listed?.steps) && Array.isArray(job.steps) &&
+       listed.steps.length === job.steps.length &&
+       listed.steps.every((a,i) => {
+         const b = job.steps[i];
+         return obj(a) && obj(b) &&
+           ['name','number','status','conclusion','started_at','completed_at']
+             .every(field => Object.prototype.hasOwnProperty.call(a,field) &&
+                             Object.prototype.hasOwnProperty.call(b,field) &&
+                             a[field] === b[field]);
+       });
+  need(matchingSteps, 'job-page-detail-steps');
+  const expectedRunUrl = 'https://api.github.com/repos/' + p.repository +
+    '/actions/runs/' + p.runId;
+  const expectedJobUrl = 'https://api.github.com/repos/' + p.repository +
+    '/actions/jobs/' + job.id;
+  need(job.run_url === expectedRunUrl &&
+       job.url === expectedJobUrl &&
+       job.html_url === 'https://github.com/' + p.repository +
+         '/actions/runs/' + p.runId + '/job/' + job.id,
+       'canonical-job-api-urls');
   need(job.name === p.jobName, 'source-free-job-name');
   need(job.run_id === p.runId, 'job-run-id');
   need(job.run_attempt === run.run_attempt, 'job-run-attempt');
@@ -121,6 +186,8 @@ export function qualifySourceOrgPrivateRunner({run, page, job, workflow, log}) {
        jobStart !== null && jobEnd !== null &&
        jobStart >= runCreated && jobEnd <= runUpdated + 1000,
        'job-within-pinned-run-lifetime');
+  need(runStart !== null && jobStart !== null &&
+       jobStart >= runStart - 1000, 'job-after-current-attempt-start');
   for (const step of steps) {
     const start = strictUtc(step?.started_at), end = strictUtc(step?.completed_at);
     need(start !== null && end !== null && jobStart !== null && jobEnd !== null &&
@@ -176,6 +243,10 @@ export function qualifySourceOrgPrivateRunner({run, page, job, workflow, log}) {
       evidenceClass: 'SOURCE_FREE_PRIVATE_RUNNER_ADMISSION_ONLY',
       sourceRepository: p.repository,
       sourceHeadSha: p.sourceHead,
+      sourceTreeSha: p.sourceTree,
+      repositoryId: p.repositoryId,
+      sourceCommitTreeResolved: true,
+      runnerCheckoutTreeVerified: false,
       workflowBlobSha: p.workflowBlob,
       workflowId: p.workflowId,
       runId: p.runId,
