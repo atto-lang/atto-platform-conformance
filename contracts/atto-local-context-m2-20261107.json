@@ -469,6 +469,36 @@
         "wasm": "NOT_EXECUTED",
         "forge": "NOT_EXECUTED"
       }
+    },
+    {
+      "id": "LC-M2-31",
+      "scope": "task",
+      "expectedKind": "negative",
+      "title": "scope close during copy suppresses stale read",
+      "acceptance": "when the scope is closed during a pinned host value copy, no value is returned; no deadlock or use-after-free; the retired source remains pinned until copy completion",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "LC-M2-32",
+      "scope": "task",
+      "expectedKind": "positive",
+      "title": "in-flight copy retains previous cell during replacement",
+      "acceptance": "if a slot is erased and replaced after the read pinned the old cell but the scope stays open, the in-flight read may return the old snapshot; the next read sees the replacement; neither read observes freed memory",
+      "status": "NOT_EXECUTED",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
     }
   ]
 }
