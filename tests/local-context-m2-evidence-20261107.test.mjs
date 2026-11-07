@@ -7,7 +7,7 @@ const T='cfa881bf11bc2badd12d8dd3ee3f7bfcb1c9c04e';
 const PIN={repository:REPO,pr:PR,head:H,tree:T,fixturePath:POSITIVE_FIXTURE_PATH,fixtureBlob:POSITIVE_FIXTURE_BLOB};
 const TRACE='SOURCE_TASK_RUNTIME_PASS producer_on_carrier=1';
 const digest=s=>createHash('sha256').update(s).digest('hex');
-const make=()=>({pin:{...PIN},run:{id:42392407658,runAttempt:2,head:H,status:'completed',conclusion:'success'},job:{id:128464697806,name:'compiled-guest',runId:42392407658,attempt:2,conclusion:'success',steps:[{number:1,name:'checkout',conclusion:'success'},{number:2,name:'compile/link/run',conclusion:'success'}]},receipt:{runId:42392407658,attempt:2,jobId:128464697806,tree:T,fixtureBlob:POSITIVE_FIXTURE_BLOB,kind:'positive',commands:{compiler:'atto-compiler fixture.atto',linker:'clang guest.ll -o guest',guest:'./guest'},artifact:{path:'guest',sha256:'a'.repeat(64)},compile:{exitCode:0,emittedIR:true},link:{exitCode:0},guest:{exitCode:42,stderr:TRACE,traceSha256:digest(TRACE)}}});
+const make=()=>({pin:{...PIN},run:{id:42392407658,runAttempt:2,head:H,status:'completed',conclusion:'success'},job:{id:128464697806,name:'compiled-guest',runId:42392407658,attempt:2,runner_id:77,status:'completed',conclusion:'success',steps:[{number:1,name:'checkout',status:'completed',conclusion:'success'},{number:2,name:'compile/link/run',status:'completed',conclusion:'success'}]},receipt:{runId:42392407658,attempt:2,jobId:128464697806,tree:T,fixtureBlob:POSITIVE_FIXTURE_BLOB,kind:'positive',commands:{compiler:'atto-compiler fixture.atto',linker:'clang guest.ll -o guest',guest:'./guest'},artifact:{path:'guest',sha256:'a'.repeat(64)},compile:{exitCode:0,emittedIR:true},link:{exitCode:0},guest:{exitCode:42,stderr:TRACE,traceSha256:digest(TRACE)}}});
 const copy=o=>structuredClone(o);
 const base=make();
 const mutate=(name,fn,expected='EVIDENCE_REJECTED')=>test(name,()=>{const m=copy(base);fn(m);assert.equal(evaluateCandidate(m,PIN).classification,expected);});
@@ -18,8 +18,14 @@ test('stepful synthetic metadata is a candidate, NEVER independent verification'
 for(const steps of [null,[]])test('missing steps '+String(steps)+' is runner admission failure',()=>{
   const x=copy(base);x.job.steps=steps;assert.equal(evaluateCandidate(x,PIN).classification,'RUNNER_ADMISSION_FAILURE');
 });
-for(const steps of [[{number:1,name:'skipped',conclusion:'skipped'}],[{number:1,name:'queued',conclusion:null}]] )
-  test('skipped or pending steps are not execution',()=>{const x=copy(base);x.job.steps=steps;assert.equal(evaluateCandidate(x,PIN).classification,'RUNNER_ADMISSION_FAILURE');});
+test('all skipped steps are not execution',()=>{
+  const x=copy(base);x.job.steps=[{number:1,name:'skipped',status:'completed',conclusion:'skipped'}];
+  assert.equal(evaluateCandidate(x,PIN).classification,'RUNNER_ADMISSION_FAILURE');
+});
+test('pending steps cannot be treated as concluded execution',()=>{
+  const x=copy(base);x.job.steps=[{number:1,name:'pending',status:'in_progress',conclusion:null}];
+  assert.equal(evaluateCandidate(x,PIN).classification,'EVIDENCE_REJECTED');
+});
 mutate('missing Git head',m=>m.pin.head=null,'STALE_HEAD');
 mutate('other repo is refused',m=>m.pin.repository='attacker/repo','STALE_HEAD');
 mutate('stale tree is refused',m=>m.pin.tree='f'.repeat(40),'STALE_HEAD');
@@ -78,4 +84,30 @@ test('even malformed and absent receipt sets remain unproven',()=>{
 test('invalid canonical pin itself fails closed',()=>{
   for(const pin of [{...PIN,head:'invalid'},{...PIN,tree:'invalid'},{...PIN,pr:23},{...PIN,fixtureBlob:'x'}])
     assert.equal(evaluateCandidate(base,pin).classification,'EVIDENCE_REJECTED');
+});
+
+mutate('unassigned runner denied even with success metadata',m=>m.job.runner_id=0,'RUNNER_ADMISSION_FAILURE');
+mutate('null runner denied even with success metadata',m=>m.job.runner_id=null,'RUNNER_ADMISSION_FAILURE');
+mutate('conflicting runner identities are not trusted',m=>m.job.runnerId=999);
+mutate('job still running cannot be a success candidate',m=>m.job.status='in_progress');
+mutate('step still running cannot be a success candidate',m=>m.job.steps[1].status='in_progress');
+mutate('unknown step conclusion cannot be a success candidate',m=>m.job.steps[1].conclusion=null);
+mutate('blank step names are rejected',m=>m.job.steps[1].name=' ');
+mutate('trailing newline in artifact SHA256 rejected',m=>m.receipt.artifact.sha256+='\n');
+mutate('traversal artifact path rejected',m=>m.receipt.artifact.path='../guest');
+mutate('absolute artifact path rejected',m=>m.receipt.artifact.path='/tmp/guest');
+mutate('Windows artifact path rejected',m=>m.receipt.artifact.path='C:\\temp\\guest');
+mutate('empty artifact path segment rejected',m=>m.receipt.artifact.path='out//guest');
+test('newline-suffixed pin SHA and tree fail closed',()=>{
+  for(const change of [p=>{p.head+='\n';},p=>{p.tree+='\n';}]){
+    const pin={...PIN};change(pin);
+    assert.equal(evaluateCandidate(base,pin).classification,'EVIDENCE_REJECTED');
+  }
+});
+test('a legitimate skipped step is tolerated only alongside completed work',()=>{
+  const m=copy(base);
+  m.job.steps.push({number:3,name:'optional',status:'completed',conclusion:'skipped'});
+  const verdict=evaluateCandidate(m,PIN);
+  assert.equal(verdict.classification,'UNATTESTED_GUEST_RECEIPT_CANDIDATE');
+  assert.equal(verdict.canPromote,false);
 });
