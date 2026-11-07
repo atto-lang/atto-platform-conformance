@@ -259,3 +259,127 @@ test('raw unprefixed duplicate markers are not ignored',()=>{
  const v=copy();v.log += '\nSOURCE_FREE_TWO_STEPS_EXECUTED=1';
  assert.ok(errors(v).includes('unattributed-output-SOURCE_FREE_TWO_STEPS_EXECUTED=1'));
 });
+
+
+test('pinned numeric repository ID rejects same-name repo replacement',()=>{
+  for(const part of ['repository','head_repository']){
+    const v=copy();v.run[part].id=p.repositoryId+1;
+    assert.ok(errors(v).includes('pinned-repository-identity'),part);
+  }
+});
+test('pinned owner ID rejects repository moved to another organization',()=>{
+  for(const part of ['repository','head_repository']){
+    const v=copy();v.run[part].owner.id=p.repositoryOwnerId+1;
+    assert.ok(errors(v).includes('pinned-organization-identity'),part);
+  }
+});
+test('Git commit source tree is independent, immutable and required',()=>{
+  const v=copy();v.sourceCommit.commit.tree.sha='f'.repeat(40);
+  assert.ok(errors(v).includes('immutable-source-git-tree'));
+  const n=copy();n.sourceCommit.sha='f'.repeat(40);
+  assert.ok(errors(n).includes('immutable-source-git-tree'));
+  const missing=copy();delete missing.sourceCommit;
+  assert.ok(errors(missing).includes('immutable-source-git-tree'));
+});
+test('Git commit API origin must be bound to the same source repository',()=>{
+  const v=copy();
+  v.sourceCommit.url='https://api.github.com/repos/attacker/fake/commits/'+p.sourceHead;
+  assert.ok(errors(v).includes('source-commit-api-origin'));
+});
+test('missing source commit tree object fails closed without exceptions',()=>{
+  for(const replacement of [null,{},[],{sha:p.sourceHead},{commit:null}]){
+    const v=copy();v.sourceCommit=replacement;
+    assert.equal(qualify(v).ok,false);
+  }
+});
+test('independent job list cannot claim failure if job detail claims success',()=>{
+  const v=copy();v.page.jobs[0].conclusion='failure';
+  assert.ok(errors(v).includes('job-page-detail-conclusion'));
+  const n=copy();n.page.jobs[0].status='queued';
+  assert.ok(errors(n).includes('job-page-detail-status'));
+});
+test('job list cannot claim assigned hosted runner when job detail disagrees',()=>{
+  for(const [field,value] of [
+    ['runner_id',0],
+    ['runner_name',''],
+    ['runner_group_id',44],
+    ['runner_group_name','self-hosted'],
+  ]){
+    const v=copy();v.page.jobs[0][field]=value;
+    assert.ok(errors(v).includes('job-page-detail-'+field),field);
+  }
+});
+test('independent job-list and detail SHA or attempt mismatch is denied',()=>{
+  for(const [field,value] of [
+    ['run_attempt',15],
+    ['run_id',p.runId+1],
+    ['head_sha','a'.repeat(40)],
+    ['name','other-job']
+  ]){
+    const v=copy();v.page.jobs[0][field]=value;
+    assert.ok(errors(v).includes('job-page-detail-'+field),field);
+  }
+});
+test('a zero-step list cannot be paired with a four-step detail',()=>{
+  const v=copy();v.page.jobs[0].steps=[];
+  assert.ok(errors(v).includes('job-page-detail-steps'));
+  const n=copy();delete n.page.jobs[0].steps;
+  assert.ok(errors(n).includes('job-page-detail-steps'));
+});
+test('job-list step summary cannot hide failure or skipped work',()=>{
+  for(const [field,value] of [
+    ['conclusion','failure'],['status','in_progress'],
+    ['number',12],['name','Skip gate'],
+    ['started_at','2026-02-30T01:00:00Z'],
+    ['completed_at',null]
+  ]){
+    const v=copy();v.page.jobs[0].steps[2][field]=value;
+    assert.ok(errors(v).includes('job-page-detail-steps'),field);
+  }
+});
+test('job-list timestamps must agree with job-detail timestamps',()=>{
+  for(const field of ['started_at','completed_at']){
+    const v=copy();v.page.jobs[0][field]='2026-11-07T02:00:00Z';
+    assert.ok(errors(v).includes('job-page-detail-'+field),field);
+  }
+});
+test('job-list requested runner labels must match job detail in order',()=>{
+  const v=copy();v.page.jobs[0].labels=['ubuntu-22.04'];
+  assert.ok(errors(v).includes('job-page-detail-labels'));
+  const n=copy();n.page.jobs[0].labels.push('self-hosted');
+  assert.ok(errors(n).includes('job-page-detail-labels'));
+});
+test('job detail URLs must target original source org, run and job',()=>{
+  for(const field of ['run_url','url','html_url']){
+    const v=copy();
+    v.job[field]=v.job[field].replace('ores-truffle-oreslang','attacker-org');
+    v.page.jobs[0][field]=v.job[field];
+    assert.ok(errors(v).includes('canonical-job-api-urls'),field);
+  }
+});
+test('missing job API origin fields cannot be silently ignored',()=>{
+  for(const field of ['run_url','url','html_url']){
+    const v=copy();delete v.job[field];delete v.page.jobs[0][field];
+    assert.ok(errors(v).includes('job-page-detail-'+field));
+    assert.ok(errors(v).includes('canonical-job-api-urls'));
+  }
+});
+test('run-attempt start must be Gregorian-valid and within the run interval',()=>{
+  for(const value of ['2026-02-30T01:00:00Z','2026-11-07T02:00:00Z',null]){
+    const v=copy();v.run.run_started_at=value;
+    assert.ok(errors(v).includes('valid-attempt-start'));
+  }
+});
+test('an older job cannot be reused as proof for a newer successful attempt',()=>{
+  const v=copy();v.run.run_started_at='2026-11-07T01:00:05Z';
+  assert.ok(errors(v).includes('job-after-current-attempt-start'));
+});
+test('source tree evidence is not guest checkout or host attestation',()=>{
+  const receipt=qualify(copy());
+  assert.equal(receipt.ok,true);
+  assert.equal(receipt.receipt.sourceTreeSha,p.sourceTree);
+  assert.equal(receipt.receipt.sourceCommitTreeResolved,true);
+  assert.equal(receipt.receipt.runnerCheckoutTreeVerified,false);
+  assert.equal(receipt.receipt.guestTestsExecuted,false);
+  assert.equal(receipt.receipt.backendParity,'NOT_EXECUTED');
+});
