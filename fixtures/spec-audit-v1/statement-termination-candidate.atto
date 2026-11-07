@@ -1,0 +1,6 @@
+// UNRESOLVED S-42: newline before '+' may or may not continue the expression.
+// This is a grammar decision sample, NOT a positive compiler fixture.
+pub fnc main() -> int {
+  return 40
+    + 2
+}

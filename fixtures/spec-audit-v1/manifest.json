@@ -1,0 +1,232 @@
+{
+  "schema": "atto.spec-audit-candidates/1",
+  "spec_pr": "https://github.com/ores-truffle-oreslang/attolang-language-spec.md/pull/9",
+  "scope": "source-free metadata only",
+  "cases": [
+    {
+      "id": "guard-scalar-positive",
+      "source": "fixtures/guard-v1/canonical-scalar.atto",
+      "kind": "positive",
+      "maturity": "TARGET",
+      "decision": "guard-v1",
+      "expected_diagnostic_class": null,
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "guard-missing-exit-negative",
+      "source": "fixtures/guard-v1/reject-fallthrough.atto",
+      "kind": "negative",
+      "maturity": "TARGET",
+      "decision": "guard-v1",
+      "expected_diagnostic_class": "GUARD_FAILURE_MAY_FALL_THROUGH",
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "guard-else-negative",
+      "source": "fixtures/guard-v1/reject-else.atto",
+      "kind": "negative",
+      "maturity": "TARGET",
+      "decision": "guard-v1",
+      "expected_diagnostic_class": "GUARD_ELSE_FORBIDDEN",
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "named-value-reorder-positive",
+      "source": "fixtures/named-generic-call-v1/value-reorder.atto",
+      "kind": "positive",
+      "maturity": "TARGET",
+      "decision": "named-arguments",
+      "expected_diagnostic_class": null,
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "named-value-duplicate-negative",
+      "source": "fixtures/named-generic-call-v1/value-duplicate.atto",
+      "kind": "negative",
+      "maturity": "TARGET",
+      "decision": "named-arguments",
+      "expected_diagnostic_class": "DUPLICATE_NAMED_ARGUMENT",
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "actorref-sync-method-negative",
+      "source": "fixtures/spec-audit-v1/actorref-direct-sync-reject.atto",
+      "kind": "negative",
+      "maturity": "TARGET",
+      "decision": "S-57",
+      "expected_diagnostic_class": "ACTORREF_SYNCHRONOUS_CALL_FORBIDDEN",
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "typed-local-typefirst",
+      "source": "fixtures/spec-audit-v1/typed-local-typefirst-candidate.atto",
+      "kind": "decision-candidate",
+      "maturity": "UNRESOLVED",
+      "decision": "S-46",
+      "expected_diagnostic_class": null,
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "typed-local-namecolon",
+      "source": "fixtures/spec-audit-v1/typed-local-namecolon-candidate.atto",
+      "kind": "decision-candidate",
+      "maturity": "UNRESOLVED",
+      "decision": "S-46",
+      "expected_diagnostic_class": null,
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "statement-linebreak",
+      "source": "fixtures/spec-audit-v1/statement-termination-candidate.atto",
+      "kind": "decision-candidate",
+      "maturity": "UNRESOLVED",
+      "decision": "S-42",
+      "expected_diagnostic_class": null,
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "operator-eq",
+      "source": "fixtures/spec-audit-v1/operator-eq-candidate.atto",
+      "kind": "decision-candidate",
+      "maturity": "UNRESOLVED",
+      "decision": "S-56",
+      "expected_diagnostic_class": null,
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "operator-double-equals",
+      "source": "fixtures/spec-audit-v1/operator-double-equals-candidate.atto",
+      "kind": "decision-candidate",
+      "maturity": "UNRESOLVED",
+      "decision": "S-56",
+      "expected_diagnostic_class": null,
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infix-pipeline",
+      "source": "fixtures/spec-audit-v1/infix-pipe-candidate.atto",
+      "kind": "decision-candidate",
+      "maturity": "UNRESOLVED",
+      "decision": "S-54",
+      "expected_diagnostic_class": null,
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "nested-pipeline",
+      "source": "fixtures/spec-audit-v1/nested-builder-candidate.atto",
+      "kind": "decision-candidate",
+      "maturity": "PROPOSED",
+      "decision": "S-54",
+      "expected_diagnostic_class": null,
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "pipeline-double-start",
+      "source": "fixtures/spec-audit-v1/graph-double-start-reject.atto",
+      "kind": "negative",
+      "maturity": "TARGET",
+      "decision": "S-21",
+      "expected_diagnostic_class": "MOVED_BUILDER_REUSED",
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "graph-drop-lifetime",
+      "source": "fixtures/spec-audit-v1/graph-drop-lifetime-candidate.atto",
+      "kind": "decision-candidate",
+      "maturity": "PROPOSED",
+      "decision": "S-55",
+      "expected_diagnostic_class": null,
+      "backends": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+// UNRESOLVED S-56: chapter 16 records eq as canonical.
+// Neither source admission nor value behavior is independently verified.
+pub fnc main() -> int {
+  if 1 eq 1 then
+    return 42;
+  else
+    return 0;
+  fi
+}

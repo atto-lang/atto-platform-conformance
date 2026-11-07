@@ -1,0 +1,13 @@
+// TARGET S-57. A spawned ActorRef must not expose synchronous actor methods.
+// A genuine compiler diagnostic must reject counter.read_count(), not simply
+// fail to parse the actor declaration.
+define actor Counter as
+  read_count() -> int ::
+    return 42;
+  end
+end
+
+pub fnc main() -> int {
+  val counter = spawn Counter();
+  return counter.read_count();
+}

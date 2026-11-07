@@ -1,0 +1,4 @@
+// PROPOSED S-55: decide whether an admitted graph drop requests graceful stop.
+// This is NOT a required runtime oracle until graph lifecycle signatures settle.
+val graph_result = Actor.pipe(Reader(), Writer()).start()
+// Intentionally omit explicit stop: ownership/cleanup outcome under review.
