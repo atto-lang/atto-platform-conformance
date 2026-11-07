@@ -18,18 +18,27 @@ const job = {
   runner_id:999001, runner_name:'GitHub Actions 999001',
   runner_group_id:0, runner_group_name:'GitHub Actions',
   labels:['ubuntu-24.04'],
+  run_url:'https://api.github.com/repos/'+p.repository+'/actions/runs/'+p.runId,
+  url:'https://api.github.com/repos/'+p.repository+'/actions/jobs/144002',
+  html_url:'https://github.com/'+p.repository+'/actions/runs/'+p.runId+'/job/144002',
   started_at:iso(0), completed_at:iso(4), steps
 };
 const run = {
   id:p.runId, workflow_id:p.workflowId, path:p.workflowPath,
   head_sha:p.sourceHead,head_branch:p.branch,
-  repository:{full_name:p.repository,private:true},
-  head_repository:{full_name:p.repository,private:true},
+  repository:{id:p.repositoryId,full_name:p.repository,private:true,owner:{id:p.repositoryOwnerId}},
+  head_repository:{id:p.repositoryId,full_name:p.repository,private:true,owner:{id:p.repositoryOwnerId}},
   event:'push',run_attempt:14,status:'completed',conclusion:'success',
-  created_at:'2026-11-02T05:45:07Z',updated_at:'2026-11-07T01:00:08Z'
+  created_at:'2026-11-02T05:45:07Z',updated_at:'2026-11-07T01:00:08Z',
+  run_started_at:'2026-11-07T01:00:00Z'
 };
 const workflow={sha:p.workflowBlob,path:p.workflowPath,type:'file'};
 const page={total_count:1,jobs:[job]};
+const sourceCommit={
+  sha:p.sourceHead,
+  url:'https://api.github.com/repos/'+p.repository+'/commits/'+p.sourceHead,
+  commit:{tree:{sha:p.sourceTree}}
+};
 const log = [
   '2026-11-07T01:00:00Z Current runner version: 2.338.2',
   '2026-11-07T01:00:00Z Hosted Compute Agent',
@@ -39,7 +48,7 @@ const log = [
   '2026-11-07T01:00:01.2500000Z SOURCE_FREE_RUNNER_ADMITTED=1',
   '2026-11-07T01:00:02.2500000Z SOURCE_FREE_TWO_STEPS_EXECUTED=1'
 ].join('\n');
-const base = {run,page,job,workflow,log};
+const base = {run,page,job,workflow,sourceCommit,log};
 const copy = () => JSON.parse(JSON.stringify(base));
 const errors = data => qualify(data).errors;
 
@@ -52,6 +61,9 @@ test('fully correlated source-free canary qualifies admission only, not guest ex
   assert.equal(actual.receipt.guestTestsExecuted,false);
   assert.equal(actual.receipt.backendParity,'NOT_EXECUTED');
   assert.equal(actual.receipt.sourceCheckout,false);
+  assert.equal(actual.receipt.sourceTreeSha,p.sourceTree);
+  assert.equal(actual.receipt.repositoryId,p.repositoryId);
+  assert.equal(actual.receipt.runnerCheckoutTreeVerified,false);
 });
 
 test('historical failed attempt 13 with zero runner and steps never qualifies',()=>{
@@ -136,6 +148,7 @@ test('valid leap-day timestamps are permitted when run, job and stdout agree',()
   const v=copy();
   v.run.created_at='2024-02-28T23:59:50Z';
   v.run.updated_at='2024-02-29T01:00:08Z';
+  v.run.run_started_at='2024-02-29T01:00:00Z';
   v.job.started_at='2024-02-29T01:00:00Z';
   v.job.completed_at='2024-02-29T01:00:04Z';
   v.job.steps.forEach((step,i)=>{
