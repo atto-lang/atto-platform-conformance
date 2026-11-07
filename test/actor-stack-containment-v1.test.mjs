@@ -51,7 +51,7 @@ function validatePending(matrix) {
   assert.match(matrix.javaFrameArenaReference, /\/pull\/2627$/);
   const bootstrap = matrix.frameStorageBootstrap;
   assert.equal(bootstrap.javaHostPrimitive, 'MANAGED_BYTES_ONLY');
-  assert.equal(bootstrap.javaAuthoredHostTests, 14);
+  assert.equal(bootstrap.javaAuthoredHostTests, 16);
   assert.equal(bootstrap.javaLocalIsolatedSmokeAssertions, 19);
   assert.equal(bootstrap.promotionFromHostOnlyAllowed, false);
   for (const dimension of [
