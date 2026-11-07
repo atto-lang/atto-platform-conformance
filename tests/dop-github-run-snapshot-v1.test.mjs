@@ -87,7 +87,8 @@ test('duplicate GitHub API step names and numbers fail closed', () => {
   const both = [...job.steps, {...job.steps[1], number: 4}];
   assert.ok(verify(receipt, run, {total_count: 1, jobs: [{...job, steps: both}]})
     .includes('duplicate-api-step-name'));
-  both[3].name = 'extra'; both[3].number = 3;
+  // Mutate the newly appended synthetic record, not shared job.steps[3].
+  both[4].name = 'extra'; both[4].number = 3;
   assert.ok(verify(receipt, run, {total_count: 1, jobs: [{...job, steps: both}]})
     .includes('duplicate-api-step-number'));
 });
@@ -160,6 +161,9 @@ test('malformed or unexecuted Git commit evidence cannot be correlated', () => {
   }
   assert.ok(validateDopGithubCommit({...receipt,status:'NOT_EXECUTED'},commit,repo)
     .includes('not-executed-cannot-attest-commit'));
-  assert.ok(validateDopGithubCommit(receipt,commit,'../other')
-    .includes('commit-source-repository'));
+  for (const invalidRepo of ['../other', 'owner/.', 'owner/..', 'owner/name.git',
+    'owner/name.GIT', 'owner/repo?ref=main', 'owner%2ffork/repo']) {
+    assert.ok(validateDopGithubCommit(receipt,commit,invalidRepo)
+      .includes('commit-source-repository'), invalidRepo);
+  }
 });
