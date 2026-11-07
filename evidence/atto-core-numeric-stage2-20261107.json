@@ -17,7 +17,7 @@
       "backend": "net-nativeaot",
       "repo": "ores-truffle-oreslang/oreslang-source.net",
       "pr": 381,
-      "head": "9153b9d0f4c67af8e11d057b78defd1c64cd0580",
+      "head": "39876519087115a7effca8dc8f0290f2527c25b6",
       "library_blob": "5ced991f1d49b3c2a60fdd72b9003c0a4d18cd72",
       "entry_blob": "2e669b93812c64b05e80c4ba75f5e6cd529b7340",
       "execution": "AUTHORED_UNEXECUTED"
