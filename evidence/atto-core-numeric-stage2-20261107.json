@@ -17,7 +17,7 @@
       "backend": "net-nativeaot",
       "repo": "ores-truffle-oreslang/oreslang-source.net",
       "pr": 381,
-      "head": "3e115e732da4722d81b1918fc44cb12027d4671d",
+      "head": "9153b9d0f4c67af8e11d057b78defd1c64cd0580",
       "library_blob": "5ced991f1d49b3c2a60fdd72b9003c0a4d18cd72",
       "entry_blob": "2e669b93812c64b05e80c4ba75f5e6cd529b7340",
       "execution": "AUTHORED_UNEXECUTED"
@@ -26,7 +26,7 @@
       "backend": "forge-x86-64-native",
       "repo": "ores-truffle-oreslang/oreslang-source.forge",
       "pr": 202,
-      "head": "5b0b30e2671cc7ed11f79a900cda1ed978634fa3",
+      "head": "ca6f1b1faa487bd1ea68c8d577c639d502919355",
       "library_blob": "5ced991f1d49b3c2a60fdd72b9003c0a4d18cd72",
       "entry_blob": "2e669b93812c64b05e80c4ba75f5e6cd529b7340",
       "execution": "AUTHORED_UNEXECUTED"
@@ -72,5 +72,23 @@
     "cil_and_native_guest_bytes_uploaded_in_source_owned_repo": true,
     "compiler_binary_bytes": "SOURCE_OWNED_ONLY_NO_CROSS_REPO_TRANSFER",
     "status": "AUTHORED_UNEXECUTED"
+  },
+  "differential_protocol": {
+    "count_per_operation": 10000,
+    "operations": [
+      "min_int",
+      "max_int",
+      "clamp_int"
+    ],
+    "edge_count": 9,
+    "edge_cartesian_cases": 729,
+    "rng": "SplitMix64 modulus 2^64 seed 0x6a09e667f3bcc909",
+    "checksum": "FNV1a-64 on signed i64 result bit-pattern",
+    "expected": {
+      "min_int": "a52c659779088c2b",
+      "max_int": "bb3870b3c10fd615",
+      "clamp_int": "e71b3e7766936548"
+    },
+    "verification": "REFERENCE_ONLY_DOES_NOT_PROVE_BACKEND_EXECUTION"
   }
 }

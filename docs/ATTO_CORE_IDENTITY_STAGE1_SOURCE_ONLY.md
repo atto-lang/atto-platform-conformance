@@ -82,3 +82,16 @@ runner-identity, attempt and required-step failures. Source-owned
 compiler and native artifact bytes; no transfer of private compiler
 source/binaries across repositories is authorized. These tests do not
 establish a passing .NET or Forge hosted compiler run.
+
+## Cross-backend 30k-case deterministic differential protocol
+
+The conformance source-contract workflow now recomputes the three
+expected 64-bit checksums using a separate Node BigInt model of
+SplitMix64 and FNV-1a on signed i64 bit patterns. It covers 729
+Cartesian edge-value triples and 9,271 fixed-seed random triples
+per operation (10,000 for min/max/clamp). The three checksums
+match those pinned in both authored Forge x86-64 native and .NET
+compiler-emitted CIL test harnesses. This validates **reference
+agreement only**; until the source-owned compiler lanes have
+nonzero executed steps and independently checked artifacts,
+their statuses remain AUTHORED_UNEXECUTED.
