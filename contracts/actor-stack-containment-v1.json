@@ -5,7 +5,7 @@
   "canonicalExtension": ".atto",
   "scope": "actor call-depth, guest frame budgeting, carrier survival and supervisor recovery",
   "javaReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2505",
-  "note": "All five backend guest evidence lanes remain NOT_EXECUTED. Java #2505 provides carrier recursion guard, #2624 actor logical budget, and #2627 guard-linked bounded managed frame reservations (not compiled local values). None proves compiler-lowered actor stacks or native process stack-fault isolation.",
+  "note": "All five backend guest evidence lanes remain NOT_EXECUTED. Java #2505 guards carrier recursion; #2624 owns logical budget; #2627 reserves 32-byte managed guard frames; #2628 authors 16-byte evaluator call descriptors within the existing frame. No duplicate charge or compiler-local/return-PC lowering is proven; full stack isolation and native process fault containment remain unimplemented.",
   "requirements": {
     "separateHeapsAreNotStacks": true,
     "guestBudgetBeforeNativeOverflow": true,
@@ -277,6 +277,17 @@
         "compilerGuest",
         "actorStackStorage"
       ]
+    },
+    {
+      "id": "evaluator-descriptor-non-tail-and-tail",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
     }
   ],
   "promotion": {
@@ -307,6 +318,13 @@
     "javaSynchronousGuardByteCharge": 32,
     "javaGuestCallGuardNativeStackStillUsed": true,
     "javaAuthoredLegacyCompilerGuestTests": 1,
-    "javaLegacyCompilerGuestTestExecuted": "NOT_EXECUTED"
+    "javaLegacyCompilerGuestTestExecuted": "NOT_EXECUTED",
+    "javaInvocationDescriptorReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2628",
+    "javaInvocationDescriptorStatus": "AUTHORED_NOT_EXECUTED",
+    "javaInvocationDescriptorBytes": 16,
+    "javaGuardFrameNotDuplicated": true,
+    "javaNewHostInvocationTestsAuthored": 5,
+    "javaNewAttoActorFixturesAuthored": 3,
+    "javaNewAttoActorExecution": "NOT_EXECUTED"
   }
 }
