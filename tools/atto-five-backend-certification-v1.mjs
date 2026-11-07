@@ -1,5 +1,6 @@
 // Offline AttoLang certification reporter. This is NEVER release authorization.
 import {auditLedger} from './landed-main-evidence.mjs';
+import {evaluateGuestCaseInventory} from './atto-guest-case-oracle-v1.mjs';
 const IDS=['java','llvm','wasm','forge','net'];
 const TARGETS={
  java:['graalvm-native-image-full-aot','graalvm-zero-gc-target; jvm-min-gc-target'],
@@ -112,10 +113,13 @@ export function validateCandidate(s){
  }
  return true;
 }
-export function evaluateCandidate(s,landed){
+export function evaluateCandidate(s,landed,caseInventory=null){
  validateCandidate(s);
  const ledger=auditLedger(landed);
  const holds=[];
+ const caseReport=caseInventory===null?null:evaluateGuestCaseInventory(caseInventory);
+ if(caseReport===null)holds.push('CASE_LEVEL_ORACLE_INVENTORY_NOT_EVALUATED');
+ else for(const h of caseReport.holds)holds.push('CASE_'+h);
  if(ledger.status!=='SNAPSHOT_READY_RECHECK_LIVE')holds.push('POSTMERGE_LEDGER_BLOCKED');
  if(s.contracts.some(c=>c.oracle.type==='suite_pending'))holds.push('CONTRACT_SUITE_ORACLES_NOT_NORMALIZED');
  if(Date.now()-Date.parse(s.as_of)>7*86400000)holds.push('STALE_SOURCE_HEAD_SNAPSHOT');
@@ -146,7 +150,7 @@ export function evaluateCandidate(s,landed){
   contracts:s.contracts.map(c=>({id:c.id,proposal_pr:c.proposal.pr,proposal_head:c.proposal.sha,
    maturity:'PROPOSED_NOT_MERGED',oracle_type:c.oracle.type})),
   postmerge:{status:ledger.status,blocked:ledger.blocked,count:ledger.count},
-  holds,backends:rows,
+  holds,backends:rows,case_oracle_inventory:caseReport,
   note:'Offline snapshots NEVER authorize releases. Independently verify exact GitHub commits/trees, compiler binary, fixture bytes, executed guest output, trusted reviewer, protected main, AOT/GC and formal model.'};
 }
 export function toMarkdown(r){
@@ -167,6 +171,15 @@ export function toMarkdown(r){
   '|---|'+r.backends.map(()=>'---|').join(''));
  for(const c of r.contracts)out.push('| '+c.id+' (draft #'+c.proposal_pr+') | '+
    r.backends.map(b=>b.guest[c.id]).join(' | ')+' |');
+ if(r.case_oracle_inventory){
+  const o=r.case_oracle_inventory;
+  out.push('','## Proposed actor/Task case-level conformance (advisory only)','',
+    'Exact draft fixtures: '+o.case_count+'; backend-case cells: '+o.backend_case_cells+
+    '; executed guest cells: '+o.executed_guest_cells+'.');
+  for(const suite of o.suites)out.push('- '+suite.id+': '+suite.case_count+' cases, '+
+    suite.positive_count+' positive / '+suite.negative_count+' negative, roster gaps: '+
+    (suite.missing_required_backends.join(', ')||'none')+'.');
+ }
  out.push('','## Release holds','');
  for(const h of r.holds)out.push('- '+h);
  for(const b of r.backends)if(b.blockers.length)
