@@ -42,3 +42,18 @@ tree read-back, run attempt, output artifacts, compiler invocation, actual
 guest execution and negative mutation before recording compiler-backed proof.
 The source-contract workflow runs both Node suites but **never** promotes backend
 evidence itself.
+
+## Hardening: exact ARM freestanding ABI allowlist
+
+LLVM's `tools/core-baremetal-gate/src/audit.rs` has a closed 25-symbol
+`SUPPORT_ABI` (memory helpers, exact ARM RTABI helper names, and
+`__mulodi4`). The original blanket `__aeabi_` prefix in this v1
+conformance manifest was broader than LLVM's implementation and could
+misclassify unknown generated helpers as allowed. The v1 source contract
+now pins the **complete exact list** and sets
+`permittedExternalHelperPrefix: null`. Mutation tests prove adding an
+unknown `__aeabi_` name or restoring a prefix fails policy validation.
+
+This aligns with LLVM #1481's *actual* compiler-output IR/object/linker
+negative helper-injection gate. It is still a source/policy model until
+native compilation and QEMU execute on the exact PR head.
