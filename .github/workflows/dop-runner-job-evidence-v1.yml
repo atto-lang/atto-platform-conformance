@@ -7,6 +7,7 @@ on:
       - 'verification/dop-runner-job-evidence-v1.mjs'
       - 'verification/runner-evidence-correlation-v1.mjs'
       - 'tests/runner-evidence-correlation-v1.test.mjs'
+      - 'docs/RUNNER_EVIDENCE_CORRELATION_V1.md'
       - 'tests/dop-runner-job-evidence-v1.test.mjs'
       - 'contracts/dop-runner-job-evidence-v1.json'
   workflow_dispatch:
@@ -44,6 +45,7 @@ jobs:
                    tests/dop-runner-job-evidence-v1.test.mjs \
                    verification/runner-evidence-correlation-v1.mjs \
                    tests/runner-evidence-correlation-v1.test.mjs \
+                   docs/RUNNER_EVIDENCE_CORRELATION_V1.md \
                    contracts/dop-runner-job-evidence-v1.json \
                    .github/workflows/dop-runner-job-evidence-v1.yml; do
             test "$(git hash-object "$p")" = "$(git rev-parse "HEAD:$p")"
