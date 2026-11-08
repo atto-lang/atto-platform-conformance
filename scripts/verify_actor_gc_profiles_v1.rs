@@ -1,6 +1,9 @@
 //! Immutable six-toolchain actor GC release policy. This tests POLICY ONLY.
  //! No interpreter/compiler guest is run by this validator.
-use std::{fs, str};
+use std::{fs, io::Read, str};
+
+const MAX_POLICY_BYTES: usize = 65_536;
+
 
 /// Immutable reviewed policy, independent of the external file under test.
 /// A policy edit requires reviewing the same change in this source guard.
@@ -116,10 +119,52 @@ const APPROVED: &str = r###"{
 const REQUIRED_PROOFS: &[&str] = &["compiled-source-allocation-site-closure","native-layout-and-drop-glue-for-every-noncopy-value","drop-on-return-throw-raise-panic-cancellation-and-hot-reload","checked-partial-init-and-move-drop-flags","no-implicit-strong-cross-actor-cycles","closed-ffi-import-and-callback-allocation-set","actor-turn-borrow-async-and-ffi-quiescence","generation-fenced-actor-and-incarnation-handles","persistent-survives-turn-scratch-does-not","scrub-and-physical-reclaim-after-last-external-lease","bounded-quotas-no-unaccounted-overflow-or-double-refund","backend-generated-ir-binary-and-runtime-allocation-evidence","exact-source-head-target-artifact-hash-and-stepful-runner-provenance"];
 const REQUIRED_CASES: &[&str] = &["persistent-two-actor-turn-isolation","scratch-after-yield-rejected","take-move-then-read-rejected","borrow-across-suspend-admission","cross-actor-pointer-smuggling-rejected","foreign-handle-and-restart-generation-rejected","actor-stop-while-async-ffi-io-pin-outstanding","late-callback-cannot-reopen-retired-actor","double-release-and-partial-constructor-failure","nested-drop-return-break-continue-early-exit","throw-raise-panic-supervision-drop-paths","hot-reload-and-supervisor-restart-quiescence","arena-cyclic-graph-nonowning-handles","shared-immutable-graph-no-unbounded-rc-cycle","allocator-quota-failure-no-counter-mutation","wasm-gc-reference-types-and-host-imports-rejected-in-strict-profile","llvm-statepoint-and-unexpected-gc-runtime-call-rejected","host-collector-versus-guest-collector-claims-distinguished"];
 
+// Bound reads *before* allocating a full untrusted policy file. The scanner
+// remains an independent second limit and rejects any noncanonical content.
+fn read_bounded<R: Read>(input: R) -> Result<Vec<u8>, String> {
+    let mut limited = input.take((MAX_POLICY_BYTES + 1) as u64);
+    let mut bytes = Vec::new();
+    limited.read_to_end(&mut bytes).map_err(|e| format!("policy read failed: {e}"))?;
+    if bytes.len() > MAX_POLICY_BYTES {
+        return Err("noncanonical encoding or oversized policy".into());
+    }
+    Ok(bytes)
+}
+
+// Only regular files in the checked-out repository are eligible. Refuse
+// symlinks and special files *before* attempting the potentially blocking open.
+// On Unix, compare opened dev/inode with the pre-open metadata to detect swaps;
+// exact immutable token comparison remains the final authority.
+fn read_policy_file(path: &std::path::Path) -> Result<Vec<u8>, String> {
+    let before = fs::symlink_metadata(path).map_err(|e| format!("policy stat failed: {e}"))?;
+    if !before.file_type().is_file() {
+        return Err("policy must be a regular non-symlink file".into());
+    }
+    if before.len() > MAX_POLICY_BYTES as u64 {
+        return Err("noncanonical encoding or oversized policy".into());
+    }
+    let file = fs::File::open(path).map_err(|e| format!("policy open failed: {e}"))?;
+    let opened = file.metadata().map_err(|e| format!("policy fstat failed: {e}"))?;
+    if !opened.is_file() {
+        return Err("policy opened as non-regular file".into());
+    }
+    if opened.len() > MAX_POLICY_BYTES as u64 {
+        return Err("noncanonical encoding or oversized policy".into());
+    }
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt;
+        if before.dev() != opened.dev() || before.ino() != opened.ino() {
+            return Err("policy identity changed during open".into());
+        }
+    }
+    read_bounded(file)
+}
+
 #[derive(Debug, PartialEq, Eq)]
 struct Token<'a> { kind: u8, raw: &'a str }
 fn scan(bytes: &[u8]) -> Result<Vec<Token<'_>>, String> {
-    if bytes.len() > 65_536 || bytes.starts_with(&[0xef, 0xbb, 0xbf])
+    if bytes.len() > MAX_POLICY_BYTES || bytes.starts_with(&[0xef, 0xbb, 0xbf])
         || bytes.contains(&b'\r') || bytes.contains(&0) {
         return Err("noncanonical encoding or oversized policy".into());
     }
@@ -171,7 +216,7 @@ fn main() {
         eprintln!("usage: verify_actor_gc_profiles_v1 (no arguments)");
         std::process::exit(1);
     }
-    let result = fs::read("contracts/actor_gc_profiles_v1.json")
+    let result = read_policy_file(std::path::Path::new("contracts/actor_gc_profiles_v1.json"))
         .map_err(|e| e.to_string()).and_then(|raw| validate(&raw));
     if let Err(err) = result {
         eprintln!("actor GC profiles: {err}");
@@ -447,6 +492,83 @@ mod tests {
             1,
         );
         validate(spaced.as_bytes()).expect("insignificant JSON whitespace is allowed");
+    }
+
+
+    #[test]
+    fn bounded_reader_accepts_exact_limit_and_rejects_one_more_byte() {
+        let within = read_bounded(std::io::Cursor::new(vec![b' '; MAX_POLICY_BYTES]))
+            .expect("reader must permit exactly the budget");
+        assert_eq!(within.len(), MAX_POLICY_BYTES);
+        let err = read_bounded(std::io::Cursor::new(vec![b' '; MAX_POLICY_BYTES + 1]))
+            .expect_err("reader must reject the first oversized byte");
+        assert_eq!(err, "noncanonical encoding or oversized policy");
+    }
+
+    #[test]
+    fn bounded_reader_denies_infinite_stream_without_unbounded_allocation() {
+        // A never-ending input must terminate at exactly the first excess byte,
+        // rather than waiting for EOF or trying to materialize the whole stream.
+        let error = read_bounded(std::io::repeat(b'x'))
+            .expect_err("infinite stream must fail at the budget");
+        assert_eq!(error, "noncanonical encoding or oversized policy");
+    }
+
+    #[test]
+    fn bounded_reader_surfaces_io_errors_instead_of_accepting_partial_data() {
+        struct FailMidStream { count: usize }
+        impl Read for FailMidStream {
+            fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+                if self.count >= 3 {
+                    return Err(std::io::Error::other("forced read failure"));
+                }
+                let n = (3 - self.count).min(buf.len());
+                buf[..n].fill(b'{');
+                self.count += n;
+                Ok(n)
+            }
+        }
+        let err = read_bounded(FailMidStream { count: 0 })
+            .expect_err("partial read followed by error is not a complete policy");
+        assert!(err.contains("forced read failure"), "{err}");
+    }
+
+    #[test]
+    fn on_disk_policy_reader_denies_symlinks_directories_and_oversized_files() {
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let nonce = SystemTime::now().duration_since(UNIX_EPOCH)
+            .expect("system clock").as_nanos();
+        let dir = std::env::temp_dir()
+            .join(format!("atto-gc-policy-test-{}-{nonce}", std::process::id()));
+        fs::create_dir(&dir).expect("private test directory");
+        let regular = dir.join("policy.json");
+        fs::write(&regular, APPROVED.as_bytes()).expect("write baseline fixture");
+        let readback = read_policy_file(&regular).expect("regular baseline policy");
+        validate(&readback).expect("readback must be precisely the reviewed policy");
+        assert!(read_policy_file(&dir).is_err(), "directory is not policy input");
+
+        let oversized = dir.join("oversized.json");
+        fs::write(&oversized, vec![b' '; MAX_POLICY_BYTES + 1])
+            .expect("write oversized fixture");
+        assert!(read_policy_file(&oversized).is_err(), "oversized regular file denied");
+
+        #[cfg(unix)]
+        {
+            let link = dir.join("policy.link");
+            std::os::unix::fs::symlink(&regular, &link).expect("create symlink fixture");
+            assert_eq!(
+                read_policy_file(&link).expect_err("symlink must be denied"),
+                "policy must be a regular non-symlink file",
+            );
+        }
+        fs::remove_dir_all(&dir).expect("remove owned test directory");
+    }
+
+    #[test]
+    fn normal_policy_bytes_remain_valid_under_bounded_reader() {
+        let raw = read_bounded(std::io::Cursor::new(APPROVED.as_bytes()))
+            .expect("read immutable policy");
+        validate(&raw).expect("bounded read must preserve exact policy tokens");
     }
 
 }
