@@ -37,6 +37,14 @@ function validatePending(matrix) {
   const ids = matrix.scenarios.map(c => c.id);
   assert.equal(new Set(ids).size, ids.length);
   for (const scenario of matrix.scenarios) {
+    // Authoring a sibling-actor fixture never promotes the pending scenario.
+    if (scenario.id === 'sibling-actor-survival') {
+      assert.equal(scenario.kind, 'pending-actor-acceptance');
+      assert.equal(scenario.guestVerified, false);
+      assert.equal(scenario.expectedSiblingStdout, '42');
+      assert.equal(scenario.source,
+        'fixtures/actor-stack-containment-v1/sibling-actor-survival.atto');
+    }
     assert.ok(scenario.requiredEvidence.length > 0);
     for (const key of scenario.requiredEvidence) assert.ok(evidenceKeys.includes(key));
     if (scenario.source !== null) {
