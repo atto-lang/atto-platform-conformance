@@ -437,6 +437,61 @@
         "actorStackStorage",
         "actorSurvival"
       ]
+    },
+    {
+      "id": "actor-return-record-same-carrier-new-turn-denied",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "stale-physical-turn",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-return-record-cross-task-handle-denied",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "foreign-task-execution",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-lexical-detached-task-copy-move-denied",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "forbidden-task-capture",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-frame-scalar-tag-payload-corruption-fail-stop",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-generation-poison",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-NaN-raw-bits-survive-cooperate",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackStorage"
+      ]
     }
   ],
   "promotion": {
@@ -540,6 +595,20 @@
     "javaCompilerReturnRecordAbiStatus": "HOST_ABI_AUTHORED_NOT_EXECUTED",
     "javaCompilerReturnRecordUsedByGuestDispatcher": false,
     "javaCompilerNativeActorStackFaultSurvival": "NOT_EXECUTED",
-    "javaM32Note": "Java #2643 changes actual SourceTask Env scalar local load/store to actor-owned bytes, preserving JVM shadow and fallback after bounded six slots; 48-byte call/return record is ABI-only, NOT used by a guest iterative dispatcher. 10 host JUnit + one canonical .atto actor fixture/test AUTHORED_NOT_EXECUTED."
+    "javaM32Note": "Java #2643 changes actual SourceTask Env scalar local load/store to actor-owned bytes, preserving JVM shadow and fallback after bounded six slots; 48-byte call/return record is ABI-only, NOT used by a guest iterative dispatcher. 10 host JUnit + one canonical .atto actor fixture/test AUTHORED_NOT_EXECUTED.",
+    "javaM32HardeningSourceReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2643",
+    "javaM32HardeningStatus": "AUTHORED_NOT_EXECUTED",
+    "javaM32HardeningFollowupReference": "PENDING_PR_CREATION",
+    "javaM32PhysicalTurnIdentityFenced": true,
+    "javaM32SchedulerTaskIdentityFenced": true,
+    "javaM32JvmScalarShadowTaskCaptureAllowed": false,
+    "javaM32ShadowSnapshotEscapeGuard": "COPY_AND_MOVE_DENIED",
+    "javaM32CorruptScalarPayloadHostTestExecuted": "NOT_EXECUTED",
+    "javaM32CorruptReturnDescriptorHostTestExecuted": "NOT_EXECUTED",
+    "javaM32NewHostJUnitMethodsAuthored": 11,
+    "javaM32NewHostJUnitMethodsExecuted": 0,
+    "javaM32HardenedGuestCompilerExecution": "NOT_EXECUTED",
+    "javaM32HardenedNativeStackIsolation": "NOT_EXECUTED",
+    "javaM32HardenedNote": "Hardening child branches on Java #2643 and conformance #581. Exact physical turn and SourceTask identity now gate host return record read/close, COPY/MOVE of an arena-backed scalar JVM shadow is denied, and 11 adversarial JUnit methods are authored. No Java host or .atto execution has passed."
   }
 }
