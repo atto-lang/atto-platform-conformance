@@ -29,6 +29,78 @@ jobs:
         with:
           node-version: '22'
       - run: npm test
+      - name: Merge-wave exact-head Node 22 regression receipt (SOURCE-FREE, NON-AUTHORIZING)
+        env:
+          EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(node --version)" = "v22."* || {
+            echo "REJECT_NON_NODE22" >&2
+            exit 1
+          }
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+          for name in \
+            tests/merge-wave-readiness-v1.test.mjs \
+            tests/merge-wave-adversarial-v1.test.mjs \
+            tests/merge-wave-provider-v1.test.mjs \
+            tests/merge-wave-governance-v1.test.mjs \
+            tests/merge-wave-protected-v1.test.mjs; do
+            test -f "$name"
+            git ls-files --error-unmatch -- "$name" >/dev/null
+          done
+          node --test --test-reporter=tap tests/merge-wave-*.test.mjs | tee "$RUNNER_TEMP/merge-wave-exact-head.tap"
+          node - "$RUNNER_TEMP/merge-wave-exact-head.tap" "$EXPECTED_SOURCE_SHA" <<'NODE'
+          import {readFileSync} from 'node:fs';
+          const [tapPath, expectedHead] = process.argv.slice(2);
+          const tap = readFileSync(tapPath, 'utf8');
+          const summary = (key) => {
+            const values = [...tap.matchAll(new RegExp('^# ' + key + ' (\\d+)      - name: Reject unproven external integration claims and issue inventory drift
+        run: node bin/check-external-ores-audit.mjs
+      - name: Independent JSON Schema Draft 2020-12 contract checks
+        run: |
+          python3 -m venv "$RUNNER_TEMP/ores-evidence-schema-venv"
+          "$RUNNER_TEMP/ores-evidence-schema-venv/bin/python" -m pip install --disable-pip-version-check --no-input "jsonschema==4.26.0"
+          "$RUNNER_TEMP/ores-evidence-schema-venv/bin/python" -m unittest discover -s tests -p test_performance_schema.py -v
+      - name: Confirm mandatory real compiler gate cannot pass unconfigured
+        run: |
+          for backend in java llvm net wasm forge; do
+            if node bin/conformance.mjs "--backend=$backend" --require; then
+              echo "ERROR: unconfigured $backend compiler unexpectedly counted as passing" >&2
+              exit 1
+            fi
+          done
+, 'gm'))];
+            if (values.length !== 1) throw new Error('AMBIGUOUS_TAP_SUMMARY_' + key);
+            return Number(values[0][1]);
+          };
+          const tests = summary('tests');
+          const pass = summary('pass');
+          const fail = summary('fail');
+          const skipped = summary('skipped');
+          const cancelled = summary('cancelled');
+          const todo = summary('todo');
+          if (tests < 287 || pass !== tests || fail !== 0 || skipped !== 0 ||
+              cancelled !== 0 || todo !== 0) {
+            throw new Error('MERGE_WAVE_EXACT_HEAD_TEST_EVIDENCE_INCOMPLETE');
+          }
+          const receipt = {
+            kind: 'source-owned-merge-wave-node22-regression',
+            exact_head_sha: expectedHead,
+            suite: 'tests/merge-wave-*.test.mjs',
+            executed_tests: tests,
+            passed: pass,
+            failed: fail,
+            skipped,
+            cancelled,
+            todo,
+            guest_compiler_parity: false,
+            independent_approval: false,
+            merge_authorized: false
+          };
+          process.stdout.write('MERGE_WAVE_EXECUTION_RECEIPT=' + JSON.stringify(receipt) + '\\n');
+          NODE
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE_SHA"
+          python3 scripts/verify-raw-worktree.py .
       - name: Reject unproven external integration claims and issue inventory drift
         run: node bin/check-external-ores-audit.mjs
       - name: Independent JSON Schema Draft 2020-12 contract checks
