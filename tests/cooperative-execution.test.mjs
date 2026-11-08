@@ -62,7 +62,7 @@ test('fuel denies at exact boundary and saturates',()=>{
   denied(()=>a.backedge(1n,0n),'FUEL_EXHAUSTED');assert.equal(a.fuel,0n);
 });
 test('no refueling after thousands of failed checks',()=>{
-  const a=meter({fuel:1n});denied(()=>a.chargeBlock(1n),'FUEL_EXHAUSTED');
+  const a=meter({fuel:1n});denied(()=>a.chargeBlock(1n,0n),'FUEL_EXHAUSTED');
   for(let i=0;i<4096;i++)denied(()=>a.chargeBlock(1n),'ACTOR_CLOSED');
   assert.equal(a.fuel,0n);
 });
@@ -74,7 +74,7 @@ test('negative, zero, and overflowing weights cannot meter',()=>{
   assert.equal(a.fuel,100000n);
 });
 test('long straight-line charged block denies before effects',()=>{
-  const a=meter({fuel:100n});denied(()=>a.chargeBlock(1000n),'FUEL_EXHAUSTED');
+  const a=meter({fuel:100n});denied(()=>a.chargeBlock(1000n,0n),'FUEL_EXHAUSTED');
   assert.equal(a.slowPolls,0n);
 });
 test('nested inner and outer backedges both charged',()=>{
@@ -92,7 +92,7 @@ test('cancel enforced immediately on resume',()=>{
 test('await and dispatch cannot refill logical budget',()=>{
   const a=meter({fuel:300n});
   for(let i=0;i<128;i++)a.backedge(1n,0n);
-  a.enterOrResume(1n);assert.equal(a.fuel,172n);assert.equal(a.counter,0n);
+  a.enterOrResume(1n);assert.equal(a.fuel,172n);assert.equal(a.counter,128n);
   for(let i=0;i<128;i++)a.backedge(1n,1n);
   denied(()=>a.backedge(44n,1n),'FUEL_EXHAUSTED');
 });
