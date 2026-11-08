@@ -4,11 +4,16 @@ const named = x => typeof x === 'string' && x.trim().length > 0;
 const supported = new Set(['pull_request','required_status_checks','non_fast_forward','deletion','creation','update']);
 const unique = x => [...new Set(x)];
 
-export function assessGovernance({repository,head,pr,reviews,protection,rules,checkRuns,
+export function assessGovernance({repository,head,pr,branch, reviews,protection,rules,checkRuns,
   trustedReviewers=['ORESoftware','the1mills']}={}) {
   const blockers=[], fail=x=>{if(!blockers.includes(x))blockers.push(x)};
   if (!named(repository)||!validSHA(head)||pr?.head?.sha!==head||pr?.base?.ref!=='main')
     fail('POLICY_PR_IDENTITY_MISMATCH');
+  if (!branch||typeof branch!=='object'||Array.isArray(branch)||branch?.name!=='main')
+    fail('MAIN_BRANCH_METADATA_UNVERIFIED');
+  if (branch?.protected!==true)fail('MAIN_NOT_PROTECTED');
+  if (branch?.commit?.sha!==pr?.base?.sha || !validSHA(branch?.commit?.sha))
+    fail('MAIN_BASE_SHA_CHANGED');
   if (!protection||typeof protection!=='object'||Array.isArray(protection))
     fail('BRANCH_PROTECTION_UNVERIFIED');
   if (!Array.isArray(rules))fail('EFFECTIVE_RULES_UNVERIFIED');
