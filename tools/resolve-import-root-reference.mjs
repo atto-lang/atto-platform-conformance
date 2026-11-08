@@ -1,6 +1,6 @@
 // Reference-only root-import path gate for cross-backend conformance.
 // This is NOT a language parser, a module linker, or private source access authority.
-import { realpathSync, statSync, existsSync } from 'node:fs';
+import { realpathSync, statSync, lstatSync, existsSync } from 'node:fs';
 import { resolve, relative, sep, isAbsolute, join } from 'node:path';
 
 export const MANIFEST_NAME = '.ores.pkg.toml';
@@ -23,7 +23,8 @@ export function resolveRootedSource(projectRoot, specifier) {
   }
   const root = realpathSync(projectRoot);
   if (!statSync(root).isDirectory() || !existsSync(join(root, MANIFEST_NAME)) ||
-      !statSync(join(root, MANIFEST_NAME)).isFile()) {
+      !lstatSync(join(root, MANIFEST_NAME)).isFile() ||
+      lstatSync(join(root, MANIFEST_NAME)).isSymbolicLink()) {
     throw new Error('ROOT_IMPORT_MANIFEST_MISSING');
   }
   const absolute = resolve(root, suffix);
