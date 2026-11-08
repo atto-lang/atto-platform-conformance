@@ -11,19 +11,20 @@ function uint(value, label) {
 }
 export class ActorMeter {
   #fuel; #initial; #counter; #elapsed=0n; #wall; #cpu=0n; #cpuBudget;
-  #mode; #critical=0; #cancelled=false; #closed=false; #admitted=false;
+  #mode; #interval; #critical=0; #cancelled=false; #closed=false; #admitted=false;
   #slow=0n; #handoffs=0n; #deferred=false;
   constructor({fuel,wallBudget,cpuBudget,interval=128,counter=0n,mode='untrusted'}) {
     if (!INTERVALS.includes(interval)) throw new MeterFailure('INVALID_INTERVAL');
     if (mode !== 'trusted' && mode !== 'untrusted') throw new MeterFailure('INVALID_MODE');
     this.#fuel=uint(fuel,'FUEL'); this.#initial=this.#fuel;
     this.#counter=uint(counter,'COUNTER'); this.#wall=uint(wallBudget,'WALL_BUDGET');
-    this.#cpuBudget=uint(cpuBudget,'CPU_BUDGET'); this.#mode=mode; this.interval=interval;
+    this.#cpuBudget=uint(cpuBudget,'CPU_BUDGET'); this.#mode=mode; this.#interval=interval;
   }
   get fuel(){return this.#fuel;} get initialFuel(){return this.#initial;}
   get counter(){return this.#counter;} get slowPolls(){return this.#slow;}
   get handoffs(){return this.#handoffs;} get deferred(){return this.#deferred;}
   get cpu(){return this.#cpu;} get closed(){return this.#closed;}
+  get interval(){return this.#interval;}
   #deny(code){this.#closed=true;throw new MeterFailure(code);}
   #active(){if(this.#closed) throw new MeterFailure('ACTOR_CLOSED');if(!this.#admitted)throw new MeterFailure('METER_NOT_ADMITTED');}
   #check(elapsed){
@@ -36,10 +37,10 @@ export class ActorMeter {
     if(this.#fuel===0n)this.#deny('FUEL_EXHAUSTED');
   }
   enterOrResume(elapsed) {
-    const wasAdmitted=this.#admitted;
     this.#check(elapsed);
     if(this.#cancelled)this.#deny('CANCELLED');
-    if(wasAdmitted)this.#counter=0n; // physical resume resets cadence, never quota
+    // A logical task carries its sampling cadence across all physical resumes.
+    // Resetting here lets frequent 127-step resumes evade the slow path.
     this.#admitted=true;
   }
   chargeCpu(delta){
@@ -47,26 +48,17 @@ export class ActorMeter {
     if(n>=this.#cpuBudget-this.#cpu){this.#cpu=this.#cpuBudget;this.#deny('CPU_EXHAUSTED');}
     this.#cpu+=n;
   }
-  chargeBlock(cost){
-    this.#active();const n=uint(cost,'BLOCK_COST');
+  chargeBlock(cost,elapsed){
+    this.#active();
+    const n=uint(cost,'BLOCK_COST');
     if(n===0n)throw new MeterFailure('ZERO_COST');
+    // Every instrumented basic block (not only backedges) contributes to polling.
+    // elapsed is host-supplied monotonic time; the actual wall check is slow-path only.
+    uint(elapsed,'ELAPSED');
     if(n>=this.#fuel){this.#fuel=0n;this.#deny('FUEL_EXHAUSTED');}
     this.#fuel-=n;
-  }
-  requestCancellation(){this.#cancelled=true;}
-  enterCritical(){this.#active();this.#critical++;}
-  exitCritical(){
-    this.#active();if(this.#critical===0)throw new MeterFailure('CRITICAL_UNDERFLOW');
-    this.#critical--;
-    if(!this.#critical && this.#deferred){
-      this.#deferred=false;
-      if(this.#mode==='trusted')this.#handoffs++;
-    }
-  }
-  backedge(cost,elapsed){
-    this.chargeBlock(cost);
     this.#counter=(this.#counter+1n)&MAX_U64;
-    if((this.#counter&BigInt(this.interval-1))!==0n)return false;
+    if((this.#counter&BigInt(this.#interval-1))!==0n)return false;
     this.#slow++;this.#check(elapsed);
     if(this.#cancelled)this.#deny('CANCELLED');
     if(this.#mode==='trusted'){
@@ -74,6 +66,24 @@ export class ActorMeter {
       else this.#handoffs++;
     }
     return true;
+  }
+  requestCancellation(){this.#cancelled=true;}
+  enterCritical(){
+    this.#active();
+    if(this.#critical>=4096)this.#deny('CRITICAL_DEPTH_EXHAUSTED');
+    this.#critical++;
+  }
+  exitCritical(){
+    this.#active();if(this.#critical===0)throw new MeterFailure('CRITICAL_UNDERFLOW');
+    this.#critical--;
+    if(this.#cancelled)this.#deny('CANCELLED');
+    if(!this.#critical && this.#deferred){
+      this.#deferred=false;
+      if(this.#mode==='trusted')this.#handoffs++;
+    }
+  }
+  backedge(cost,elapsed){
+    return this.chargeBlock(cost,elapsed);
   }
   explicitCooperate(elapsed){
     this.#active();
@@ -84,67 +94,76 @@ export class ActorMeter {
     this.#handoffs++;
   }
 }
-/** Conservative HIR/MIR cycle oracle: delete charged vertices, then detect cycles. */
+/** Iterative O(V + E) verifier; stack use is bounded by a worklist on the heap. */
+function noUnmeteredCycles(map, starts, successors) {
+  const state=new Map();
+  for(const start of starts){
+    if(map.get(start).charged||state.get(start)===2)continue;
+    state.set(start,1);
+    const stack=[{key:start,nextIndex:0}];
+    while(stack.length){
+      const frame=stack[stack.length-1];
+      const edges=successors(map.get(frame.key));
+      if(frame.nextIndex===edges.length){
+        state.set(frame.key,2);stack.pop();continue;
+      }
+      const child=edges[frame.nextIndex++];
+      if(map.get(child).charged)continue;
+      if(state.get(child)===1)return false;
+      if(state.get(child)===2)continue;
+      state.set(child,1);stack.push({key:child,nextIndex:0});
+    }
+  }
+  return true;
+}
+/** Rejects cycles lacking a positive guaranteed charge; not a post-codegen proof. */
 export function verifyMeteredCycles(blocks,entry){
-  if(!Array.isArray(blocks)||blocks.length===0||blocks.length>4096||!Number.isSafeInteger(entry))
-    throw new MeterFailure('INVALID_CFG');
+  if(!Array.isArray(blocks)||blocks.length===0||blocks.length>4096||
+     !Number.isSafeInteger(entry)||entry<0)throw new MeterFailure('INVALID_CFG');
   const map=new Map();
+  let edgeCount=0;
   for(const b of blocks){
-    if(!Number.isSafeInteger(b.id)||map.has(b.id)||typeof b.charged!=='boolean'||
-       !Array.isArray(b.next)||b.next.length>4096||
-       b.next.some(n=>!Number.isSafeInteger(n))||
+    if(!b||!Number.isSafeInteger(b.id)||b.id<0||map.has(b.id)||
+       typeof b.charged!=='boolean'||!Array.isArray(b.next)||
+       b.next.length>4096||b.next.some(n=>!Number.isSafeInteger(n)||n<0)||
        (b.charged&&(!Number.isSafeInteger(b.weight)||b.weight<=0)))
       throw new MeterFailure('INVALID_CFG');
+    edgeCount+=b.next.length;
+    if(edgeCount>65536)throw new MeterFailure('CFG_EDGE_LIMIT');
     map.set(b.id,b);
   }
   if(!map.has(entry)||blocks.some(b=>b.next.some(n=>!map.has(n))))
     throw new MeterFailure('INVALID_CFG');
-  const reachable=new Set();
-  function reach(id){
-    if(reachable.has(id))return;
-    reachable.add(id);
-    for(const n of map.get(id).next)reach(n);
+  const reachable=new Set([entry]),queue=[entry];
+  for(let i=0;i<queue.length;i++){
+    for(const dest of map.get(queue[i]).next)
+      if(!reachable.has(dest)){reachable.add(dest);queue.push(dest);}
   }
-  reach(entry);
-  const state=new Map();
-  function unmeteredCycle(id){
-    if(map.get(id).charged)return false;
-    if(state.get(id)===1)return true;
-    if(state.get(id)===2)return false;
-    state.set(id,1);
-    for(const n of map.get(id).next)
-      if(reachable.has(n)&&unmeteredCycle(n))return true;
-    state.set(id,2);
-    return false;
-  }
-  for(const id of reachable)if(unmeteredCycle(id))return false;
-  return true;
+  return noUnmeteredCycles(map,reachable,b=>b.next);
 }
-/** Recursion SCC check, additionally requires actual runtime stack-depth quota. */
+/** Every recursive SCC must hit a charge; separate stack-depth enforcement still required. */
 export function verifyMeteredCalls(functions){
   if(!Array.isArray(functions)||!functions.length||functions.length>4096)
     throw new MeterFailure('INVALID_CALL_GRAPH');
-  const m=new Map();
+  const map=new Map();
+  let edgeCount=0;
   for(const f of functions){
-    if(typeof f.name!=='string'||!f.name||m.has(f.name)||
-       typeof f.charged!=='boolean'||!Array.isArray(f.calls)||f.calls.length>4096||
-       f.calls.some(c=>typeof c!=='string')||
+    if(!f||typeof f.name!=='string'||!f.name||map.has(f.name)||
+       typeof f.charged!=='boolean'||!Array.isArray(f.calls)||
+       f.calls.length>4096||f.calls.some(c=>typeof c!=='string'||!c)||
        (f.charged&&(!Number.isSafeInteger(f.weight)||f.weight<=0)))
       throw new MeterFailure('INVALID_CALL_GRAPH');
-    m.set(f.name,f);
+    edgeCount+=f.calls.length;
+    if(edgeCount>65536)throw new MeterFailure('CALL_EDGE_LIMIT');
+    map.set(f.name,f);
   }
-  if(functions.some(f=>f.calls.some(c=>!m.has(c))))
+  if(functions.some(f=>f.calls.some(c=>!map.has(c))))
     throw new MeterFailure('INVALID_CALL_GRAPH');
-  const checked=new Set();
-  function bad(name,path){
-    if(m.get(name).charged)return false;
-    if(path.has(name))return true;
-    if(checked.has(name))return false;
-    path.add(name);
-    for(const c of m.get(name).calls)if(bad(c,path))return true;
-    path.delete(name);checked.add(name);return false;
-  }
-  return !functions.some(f=>bad(f.name,new Set()));
+  return noUnmeteredCycles(map,map.keys(),f=>f.calls);
+}
+/** Optimized control flow is independently rechecked; no claim of semantic IR equality. */
+export function verifyPostOptimization(before,after,entry){
+  return verifyMeteredCycles(before,entry)&&verifyMeteredCycles(after,entry);
 }
 /** Even an interruptible FFI wrapper can hang. Every hostile foreign call needs a kill boundary. */
 export function admitUntrustedForeignCall({interruptible,isolation,deadlineEnforced}){
