@@ -104,3 +104,23 @@ The advisory now preserves **which** source is inaccessible: `GOVERNANCE_PROTECT
 Actionable owner handoff: request an appropriately scoped, **read-only** policy-verification credential or explicit administrator-attested policy export; ensure the client supports effective branch rules. Do not relax CODEOWNERS, required reviews, budgets, protected branch settings, private-repository visibility or security holds merely to produce a green report. The Actions billing/admission issue **#315 is separate** and must also be resolved before hosted exact-head execution.
 
 New seven-case denial regression matrix plus the prior 265 cases completed **272/272** in an isolated JavaScript harness with Node-compatible URL/fetch behavior. This is **not** an authenticated GitHub Actions or native Node 22 run; the new head must execute in an actual runner before merge eligibility can be established.
+
+
+## Live main branch protected-state preflight (2026-11-07)
+
+A regular, read-only GitHub `GET /repos/{owner}/{repo}/branches/main` does not require the privileged `/branches/main/protection` endpoint. On the pinned API probes, `main.protected=false` for all four repositories checked:
+
+| Repository | Actual `main` SHA | Branch `protected` |
+|---|---|---|
+| `oreslang-platform-conformance` | `1235a720f63cce20038727880052fdf83139eb3f` | `false` |
+| `ores-truffle-oreslang.github.io` | `779b3616c8551ea224baf00e224a348aef159245` | `false` |
+| `sublime-text-plugins` | `2f6530a587f69ac5efb68ddfa1321e521bac2422` | `false` |
+| `oreslang-cli` | `7eaa52e4f52d95df670d516d34d4907872be1730` | `false` |
+
+The governance evaluator now independently requires `name=main`, `protected=true` and the live branch `commit.sha` to equal the pinned PR base SHA. Explicit `false` is `MAIN_NOT_PROTECTED`; an absent protected attribute is `MAIN_PROTECTION_UNVERIFIED`; a changed base is `MAIN_BASE_SHA_CHANGED`. The branch read is included in **all three** policy snapshots, so mid-wave edits cannot silently qualify. These are advisory blockers, not requests to relax settings.
+
+**Partial evidence is retained** when privileged branch-protection or effective-rules requests fail with 403/unsupported endpoint. If the ordinary branch response proves `protected=false`, the report includes `MAIN_NOT_PROTECTED` *and* the restricted-source blocker. It does not leak provider exception messages or infer `false` when ordinary branch metadata is unavailable. Ten-plus new negative and integration cases cover these distinctions.
+
+**Administrator action:** Independently configure protected `main` with required independent review, CODEOWNERS, stale-review dismissal, administrator enforcement, strict executed status checks and no bypass, as tracked by [#170](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/170). Obtain supported read-only policy verification and resolve GitHub Actions admission separately under [#315](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/315). Do not export private sources or make private repositories public to work around unsupported rulesets.
+
+**Latest test evidence:** 287/287 test bodies passed in the **isolated V8 harness**, including the earlier 272 and 15 new branch-state, base-move and partial-provider-proof controls. This is **not** a native Node or hosted exact-head run. Verify with `npm test` under Node 22 on a trusted runner after admission is restored. Even a passing advisory never authorizes merging.
