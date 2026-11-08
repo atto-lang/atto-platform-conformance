@@ -25,7 +25,11 @@
       "gitBlob": "79d8d5880feffacb0a4f960de79f9155d28de469",
       "expectation": "reject",
       "expectedDiagnostic": "moved",
-      "requiredProof": "semantic-ownership-diagnostic-before-IR"
+      "requiredProof": "semantic-ownership-diagnostic-before-IR",
+      "expectedDiagnostics": {
+        "java": "Oreslang ownership error: use of moved value 'owner'",
+        "llvm": "use of explicitly moved int 'owner'"
+      }
     }
   ],
   "evidence": {
@@ -47,6 +51,7 @@
   "notes": [
     "These two files have identical Git blob IDs on Java #2687, LLVM #1598 and conformance #617.",
     "JUnit guest-source and LLVM compiler-native tests were authored but have no exact-head executed backend receipts.",
-    "Source-free contract tests are not compiled Oreslang guest evidence. Java and LLVM unexecuted remain NOT_EXECUTED."
+    "Source-free contract tests are not compiled Oreslang guest evidence. Java and LLVM unexecuted remain NOT_EXECUTED.",
+    "Backend-specific rejection diagnostics are exact semantic-owner read errors; a generic parsing failure or unrelated 'moved' message cannot satisfy either compiler gate."
   ]
 }
