@@ -268,3 +268,8 @@ test('two distinct required workflows each need their own matching source run an
  const r=assessPullRequest(x);
  assert.equal(r.readyForIndependentMergeDecision,true,JSON.stringify(r.blockers));
 });
+
+test('foreign-head PR repository cannot be admitted even with identical head SHA',()=>{
+ const x=sample();x.pr.head.repo={full_name:'untrusted/mirror'};
+ assert.ok(assessPullRequest(x).blockers.includes('HEAD_REPOSITORY_MISMATCH'));
+});
