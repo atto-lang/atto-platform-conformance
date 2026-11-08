@@ -64,7 +64,7 @@
     {
       "id": "readonly-record-task-reject",
       "repository": "ores-truffle-oreslang/oreslang-source.java",
-      "sourceCommit": "02c42e98ab99545eecb20d4b3cb1452e89ee3ca2",
+      "sourceCommit": "00a23d7ef8b9d95876643b98acf842cf5cbc72bc",
       "path": "tests/fixtures/task-record-capture-v1/readonly-record-task-reject.atto",
       "gitBlob": "d90fea1c7b2db607ebb3b559ec1303ed027910e4",
       "expectation": "compile-reject",
@@ -81,7 +81,7 @@
     {
       "id": "owned-struct-task-accept",
       "repository": "ores-truffle-oreslang/oreslang-source.java",
-      "sourceCommit": "02c42e98ab99545eecb20d4b3cb1452e89ee3ca2",
+      "sourceCommit": "00a23d7ef8b9d95876643b98acf842cf5cbc72bc",
       "path": "tests/fixtures/task-record-capture-v1/owned-struct-task-accept.atto",
       "gitBlob": "81217c06fe332064081ebcce0159231b758e165d",
       "expectation": "compile-accept",
@@ -96,7 +96,7 @@
     {
       "id": "scalar-copy-task-guest",
       "repository": "ores-truffle-oreslang/oreslang-source.java",
-      "sourceCommit": "02c42e98ab99545eecb20d4b3cb1452e89ee3ca2",
+      "sourceCommit": "00a23d7ef8b9d95876643b98acf842cf5cbc72bc",
       "path": "tests/fixtures/task-record-capture-v1/scalar-copy-task-guest.atto",
       "gitBlob": "56513a00517980a322d59eacf56abc5334a304ef",
       "expectation": "compile-run",
