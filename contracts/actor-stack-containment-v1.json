@@ -624,6 +624,72 @@
         "actorStackStorage",
         "actorStackGeneration"
       ]
+    },
+    {
+      "id": "actor-scalar-int-bool-type-admission-must-precede-execution",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "unsupported-compiler-subset",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-val-const-parameter-rebind-rejected",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "immutable-binding-reassignment",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-synthetic-integer-literal-no-implicit-widening",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "implicit-conversion",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-forged-operand-sp-fail-stop",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-generation-poison",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-mixed-primitive-tags-fail-stop",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-generation-poison",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-exact-boolean-equality-condition",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
     }
   ],
   "promotion": {
@@ -780,6 +846,22 @@
     "javaM33aNETGuest": "NOT_EXECUTED",
     "javaM33aWasmGuest": "NOT_EXECUTED",
     "javaM33aForgeGuest": "NOT_EXECUTED",
-    "javaM33aNote": "Java PR #2667 authors a restrictive pure int fnc source call graph compiler and iterative actor-owned frame dispatcher with real scalar CALL/RET and tail replacement; 54 new JUnit methods authored. The 48-byte general return record remains unused; real compiled .atto actor execution and all non-Java backends remain NOT_EXECUTED."
+    "javaM33aNote": "Java PR #2667 authors a restrictive pure int fnc source call graph compiler and iterative actor-owned frame dispatcher with real scalar CALL/RET and tail replacement; 54 new JUnit methods authored. The 48-byte general return record remains unused; real compiled .atto actor execution and all non-Java backends remain NOT_EXECUTED.",
+    "javaM33bSourceReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2668",
+    "javaM33bTypedAdmissionStatus": "AUTHORED_NOT_EXECUTED",
+    "javaM33bExactPrimitiveKindsGuarded": true,
+    "javaM33bRebindOnlyExplicitLet": true,
+    "javaM33bImplicitJvmIntegerWideningAllowed": false,
+    "javaM33bMixedPrimitiveEqualityAllowed": false,
+    "javaM33bForgedOperandStackPointerFailsClosed": true,
+    "javaM33bActorRuntimeHostTestsAuthored": 38,
+    "javaM33bParserNegativeTestsAuthored": 32,
+    "javaM33bAttoGuestTestsAuthored": 5,
+    "javaM33bTotalJUnitTestsAuthored": 75,
+    "javaM33bJUnitTestsExecuted": 0,
+    "javaM33bTypedAttoGuestEvidence": "NOT_EXECUTED",
+    "javaM33bNativeStackFailureContainment": "NOT_EXECUTED",
+    "javaM33bFiveBackendParity": "NOT_EXECUTED",
+    "javaM33bNote": "Java #2668 hardens M3.3a scalar fnc expression typing and binding kind, rejecting implicit primitive conversions before actor execution, and validates runtime SP and scalar opcode tags. +21 JUnit methods authored, none executed."
   }
 }
