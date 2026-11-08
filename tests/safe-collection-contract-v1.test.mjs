@@ -47,9 +47,11 @@ test("all cases have candidate source, distinct IDs and prescribed failure proof
       assert.ok(!src.includes("expect-error:"));
     }
   }
-  assert.equal(positives, 5);
-  assert.equal(negatives, 8);
-  for (const id of ["borrowed-get-option", "read-then-write-after-last-use", "miss-under-live-write"]) {
+  assert.equal(positives, 7);
+  assert.equal(negatives, 10);
+  for (const id of ["borrowed-get-option", "read-then-write-after-last-use", "miss-under-live-write",
+    "nested-some-none-option", "high-bit-checked-get-copy",
+    "use-after-take-collection", "iterator-growth-conflict"]) {
     assert.ok(ids.has(id), "missing safety fixture: " + id);
   }
 });
