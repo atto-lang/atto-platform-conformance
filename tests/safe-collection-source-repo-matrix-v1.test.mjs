@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import path from "node:path";
+import {createHash} from "node:crypto";
 import {fileURLToPath} from "node:url";
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),"..");
@@ -31,4 +32,27 @@ test("all nine oreslang-source.* backends are represented without false parity",
     "host_copy_api_is_not_guest_option","host_model_is_not_guest_borrow_checker",
     "require_all_nine_repo_heads","hdl_static_hardware_model_not_dynamic_collection_runtime"])
     assert.equal(matrix.promotion_rules[rule],true,rule);
+});
+
+test("shared compiler-backed candidate has immutable exact blob and never fakes .NET support", () => {
+  const candidate=matrix.guest_compiled_first_slice;
+  assert.equal(candidate.id,"copy-option-v1");
+  assert.equal(candidate.status,"PROPOSED_UNATTESTED");
+  assert.equal(candidate.expected_stdout,"7:42:true:true:true:true:9");
+  assert.equal(candidate.expected_exit_code,0);
+  const fixture=readFileSync(path.join(root,candidate.shared_fixture_path));
+  const sha=createHash("sha1").update(
+    Buffer.from("blob "+fixture.byteLength+"\\0", "utf8"))
+      .update(fixture).digest("hex");
+  assert.equal(sha,candidate.pinned_git_blob_sha1,
+    "source changed without updating all three backend fixture blob hashes");
+  assert.match(fixture.toString("utf8"),/get_copy\(9223372036854775807\)/);
+  assert.match(fixture.toString("utf8"),/\.get_copy\(-1\)/);
+  assert.equal(candidate.backend_admission.net,
+    "NOT_IMPLEMENTED_PENDING_NATIVEAOT");
+  assert.equal(candidate.backend_admission.java,
+    "SOURCE_IMPLEMENTED_CI_NOT_EXECUTED");
+  assert.equal(candidate.backend_admission.llvm,
+    "SOURCE_IMPLEMENTED_CI_NOT_EXECUTED");
+  assert.equal(matrix.source_fixture_execution,"NOT_EXECUTED");
 });
