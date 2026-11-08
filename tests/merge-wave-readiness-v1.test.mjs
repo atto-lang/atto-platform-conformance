@@ -4,12 +4,12 @@ import {assessPullRequest, assessWave} from '../src/merge-wave-readiness-v1.mjs'
 const head = 'a'.repeat(40);
 const base = 'c'.repeat(40);
 const github = () => ({
- repository:'ores-truffle-oreslang/merge-probe',number:8,expectedHead:head,expectedBaseSha:base,requiredStepNames:['run tests'],
+ repository:'ores-truffle-oreslang/merge-probe',number:8,expectedHead:head,expectedBaseSha:base,requiredStepNames:['run tests'],requiredWorkflows:[{workflowId:7,workflowName:'CI',jobName:'source-free',testStepName:'run tests'}],
  pr:{state:'open',merged:false,draft:false,mergeable:true,head:{sha:head},
    base:{ref:'main',sha:base},user:{login:'the1mills'}},
  reviews:[{user:{login:'ORESoftware'},state:'APPROVED',commit_id:head,submitted_at:'2026-11-07T22:00:00Z'}],
- runs:[{id:9,head_sha:head,event:'pull_request',status:'completed',conclusion:'success',run_attempt:1}],
- jobsByRun:{9:[{name:'source-free',runner_id:12,conclusion:'success',run_attempt:1,
+ runs:[{id:9,head_sha:head,event:'pull_request',status:'completed',conclusion:'success',run_attempt:1,workflow_id:7,name:'CI'}],
+ jobsByRun:{9:[{name:'source-free',run_id:9,runner_id:12,conclusion:'success',run_attempt:1,
    steps:[{name:'run tests',status:'completed',conclusion:'success'}]}]}
 });
 const evalCase = mutate => {const input=github();mutate(input);return assessPullRequest(input);};
