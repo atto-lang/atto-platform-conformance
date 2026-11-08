@@ -36,6 +36,6 @@ jobs:
             -o "$RUNNER_TEMP/strict-guest-aot-gc-model-tests"
           model_list="$("$RUNNER_TEMP/strict-guest-aot-gc-model-tests" --list)"
           printf "%s\n" "$model_list"
-          printf "%s\n" "$model_list" | grep -Eq "^51 tests, 0 benchmarks$"
+          printf "%s\n" "$model_list" | grep -Eq "^59 tests, 0 benchmarks$"
           "$RUNNER_TEMP/strict-guest-aot-gc-model-tests" --test-threads=1 --nocapture
-          printf "%s\n" "MODEL_ONLY_51_TESTS_PASSED; not a guest or release receipt"
+          printf "%s\n" "MODEL_ONLY_59_TESTS_PASSED; not a guest or release receipt"

@@ -550,4 +550,52 @@ mod tests {
             c.job_id==r.job_id && c.run_attempt==r.run_attempt));
         assert_eq!(check(&r),Ok(()));
     }
+    #[test] fn every_negative_fixture_rejects_all_zero_hash() {
+        for i in 0..NEGATIVE_FEATURES.len() {
+            let mut r=synthetic();r.negatives[i].fixture_sha="0".repeat(64);
+            assert!(check(&r).is_err(),"negative case {i}");
+        }
+    }
+    #[test] fn every_negative_fixture_rejects_uppercase_hash() {
+        for i in 0..NEGATIVE_FEATURES.len() {
+            let mut r=synthetic();r.negatives[i].fixture_sha="A".repeat(64);
+            assert!(check(&r).is_err(),"negative case {i}");
+        }
+    }
+    #[test] fn every_negative_fixture_rejects_truncated_hash() {
+        for i in 0..NEGATIVE_FEATURES.len() {
+            let mut r=synthetic();r.negatives[i].fixture_sha="a".repeat(63);
+            assert!(check(&r).is_err(),"negative case {i}");
+        }
+    }
+    #[test] fn every_positive_fixture_rejects_all_zero_hash() {
+        for i in 0..POSITIVE_FEATURES.len() {
+            let mut r=synthetic();r.positives[i].fixture_sha="0".repeat(64);
+            assert!(check(&r).is_err(),"positive case {i}");
+        }
+    }
+    #[test] fn every_positive_fixture_rejects_uppercase_hash() {
+        for i in 0..POSITIVE_FEATURES.len() {
+            let mut r=synthetic();r.positives[i].fixture_sha="A".repeat(64);
+            assert!(check(&r).is_err(),"positive case {i}");
+        }
+    }
+    #[test] fn every_positive_fixture_rejects_truncated_hash() {
+        for i in 0..POSITIVE_FEATURES.len() {
+            let mut r=synthetic();r.positives[i].fixture_sha="a".repeat(63);
+            assert!(check(&r).is_err(),"positive case {i}");
+        }
+    }
+    #[test] fn every_positive_artifact_rejects_all_zero_hash() {
+        for i in 0..POSITIVE_FEATURES.len() {
+            let mut r=synthetic();r.positives[i].artifact_sha="0".repeat(64);
+            assert!(check(&r).is_err(),"positive artifact {i}");
+        }
+    }
+    #[test] fn every_positive_artifact_rejects_uppercase_hash() {
+        for i in 0..POSITIVE_FEATURES.len() {
+            let mut r=synthetic();r.positives[i].artifact_sha="A".repeat(64);
+            assert!(check(&r).is_err(),"positive artifact {i}");
+        }
+    }
 }

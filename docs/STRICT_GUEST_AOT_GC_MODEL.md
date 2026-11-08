@@ -113,7 +113,7 @@ therefore new Rust test execution remains NOT_EXECUTED pending stepful CI.
 
 ## 2026-11-07 fixture and execution provenance hardening
 
-The 51-test synthetic suite adds per-fixture compiler SHA-256 identity, CI job
+The 59-test synthetic suite adds per-fixture compiler SHA-256 identity, CI job
 identity and retry-attempt binding for all 16 negative and eight positive cases.
 These checks reject otherwise valid-looking evidence spliced from different
 compiler builds, jobs or attempts. The numbered workflow steps must advance
@@ -130,5 +130,13 @@ This remains a **source-free model, not authenticated provenance**. A run still
 needs independently established GitHub identity, protected source policy,
 trustworthy logs and real native/wasm guest execution before any release
 promotion. Because the original-source private Actions runner cannot start,
-the new 51 tests remain **NOT_EXECUTED** until a stepful exact-head receipt
+the new 59 tests remain **NOT_EXECUTED** until a stepful exact-head receipt
 is available.
+
+## Digest-shape adversarial expansion
+
+Eight new Rust model tests mutate every negative and positive fixture SHA-256
+through all-zero, uppercase or truncated forms, and mutate positive artifact
+digests through all-zero or uppercase forms. There are now **59 named tests**.
+These checks only inspect synthetic fields, not compiler hashes or guest
+execution. The runner admission remains blocked; status is NOT_EXECUTED.
