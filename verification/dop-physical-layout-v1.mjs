@@ -15,6 +15,28 @@ const checked = n => { req(n >= 0n && n <= MAX, 'physical-layout-overflow'); ret
 const add = (a,b) => checked(a + b);
 const mul = (a,b) => checked(a * b);
 const align = (n,a) => n ? mul(add((n - 1n) / a,1n),a) : 0n;
+// Canonical opaque field names: exact Unicode scalar sequence, not an
+// identifier regex. Forbid NUL, unpaired UTF-16 and >1024 UTF-8 bytes.
+// Do not normalize; canonically distinct spellings must stay distinct.
+const validFieldName = name => {
+  if (typeof name !== 'string' || name.length === 0 || name.length > 1024)
+    return false;
+  let bytes = 0;
+  for (let i = 0; i < name.length; i++) {
+    const c = name.charCodeAt(i);
+    if (c === 0 || (c >= 0xDC00 && c <= 0xDFFF)) return false;
+    if (c >= 0xD800 && c <= 0xDBFF) {
+      if (++i >= name.length) return false;
+      const low = name.charCodeAt(i);
+      if (low < 0xDC00 || low > 0xDFFF) return false;
+      bytes += 4;
+    } else {
+      bytes += c < 0x80 ? 1 : c < 0x800 ? 2 : 3;
+    }
+    if (bytes > 1024) return false;
+  }
+  return true;
+};
 const toCount = (n,label) => {
   if (typeof n === 'number') { req(Number.isSafeInteger(n), label); n = BigInt(n); }
   else if (typeof n === 'string') { req(/^(0|[1-9][0-9]*)$/.test(n),label); n = BigInt(n); }
@@ -43,9 +65,8 @@ export function physicalLayoutV1({kind, rows, fields, lanes = 1, groups = [],
     const name = ownData(f,'name','physical-layout-field-' + i);
     const bytes = ownData(f,'bytes','physical-layout-field-' + i);
     const alignment = ownData(f,'alignment','physical-layout-field-' + i);
-    req(typeof name === 'string' &&
-      name.length > 0 && name.length <= 1024 && !name.includes(String.fromCharCode(0)) &&
-      !names.has(name) && power2(bytes) && power2(alignment) &&
+    req(validFieldName(name) && !names.has(name) &&
+      power2(bytes) && power2(alignment) &&
       bytes <= alignment && alignment <= 4096,
       'physical-layout-field-' + i);
     names.add(name);
