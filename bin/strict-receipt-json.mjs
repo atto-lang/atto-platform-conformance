@@ -47,6 +47,7 @@ export function parseStrictJson(text, label = 'input') {
     ws();
   };
   const object = (depth) => {
+    if (depth > MAX_DEPTH) throw Error(label + ' JSON nesting limit exceeded');
     i++; ws();
     const keys = new Set();
     if (text[i] === '}') { i++; return; }
@@ -63,6 +64,7 @@ export function parseStrictJson(text, label = 'input') {
     }
   };
   const array = (depth) => {
+    if (depth > MAX_DEPTH) throw Error(label + ' JSON nesting limit exceeded');
     i++; ws();
     if (text[i] === ']') { i++; return; }
     for (;;) {
