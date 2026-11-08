@@ -4,7 +4,7 @@
 
 ## Canonical vectors and provenance
 
-The exact 26-vector JSON at contracts/strict-named-i64-v1.json is byte-identical to the signed-i64 contract from [Java implementation PR #2641](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2641), head 6804d0d5045b2945770c3e0edc8082dbaef16215, Git blob 3f65f557f06e8cd0d34a738a0d357d6c2e477665. The verifier pins this Git blob, validates every expected result using an independent Node BigInt reference oracle, and checks manifest and candidate guest-source SHA-256 digests.
+The exact 26-vector JSON at contracts/strict-named-i64-v1.json is byte-identical to the signed-i64 contract from [Java implementation PR #2641](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2641), head 6804d0d5045b2945770c3e0edc8082dbaef16215, Git blob 3f65f557f06e8cd0d34a738a0d357d6c2e477665, plus SHA-256 dacca2eaf503f854fd7f60ba135ff31b6c210d90aff8d117d4dedb5b88bedec5. The verifier pins both digests, validates every expected result using an independent Node BigInt reference oracle, and checks manifest and candidate guest-source SHA-256 digests.
 
 Operations: Integer.rem(a,b) (truncating remainder); Integer.mod(a,b) (nonnegative Euclidean modulus including signed MIN); Integer.pow(a,b) (checked i64 exponentiation with nonnegative exponent); Integer.bitXor(a,b) (signed 64-bit XOR). Error categories: DIVISOR_ZERO, OVERFLOW, NEGATIVE_EXPONENT.
 
@@ -19,7 +19,7 @@ node bin/verify-strict-named-i64.mjs
 
 Without a receipt the second command must exit 2 and report NOT_EXECUTED, not PASS.
 
-Once a source-owned compiler has been independently authenticated, the backend may supply its receipt containing: canonical backend and repository, source/compile commit SHAs, compiler binary and guest artifact SHA-256, manifest Git blob and SHA-256, execution mode, real GitHub Actions run URL, positive run/job/runner IDs, runner name, exact attempt and successful nonzero step list, log SHA-256, guest execution status, and exactly 26 ordered full-value/error observations bound to deterministic guest-source hashes.
+Once a source-owned compiler has been independently authenticated, the backend may supply its receipt containing: canonical backend and repository, source/compile commit SHAs, compiler binary and guest artifact SHA-256, manifest Git blob and SHA-256, execution mode, real GitHub Actions run URL, positive run/job/runner IDs, runner name, explicit exactHead=true and workflowHeadSha equal to the declared sourceCommit, exact attempt and successful nonzero step list, log SHA-256, guest execution status, and exactly 26 ordered full-value/error observations bound to deterministic guest-source hashes.
 
 ~~~sh
 node bin/verify-strict-named-i64.mjs /path/to/one-backend-receipt.json
