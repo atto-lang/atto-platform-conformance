@@ -179,7 +179,7 @@ if(invoked) {
       for(const error of result.errors) console.error(`platform receipt: ${error}`);
       process.exit(1);
     }
-    console.log("platform capability receipt: PASS");
+    console.log("platform capability receipt: PASS (SCHEMA_ONLY; NOT_AUTHENTICATED; independent CI/artifact review required)");
   } catch(error) {
     console.error(`platform receipt: ${error instanceof Error ? error.message : String(error)}`);
     process.exit(1);
