@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {makeGitHubReadOnlyClient, validateManifest, collectWave} from '../src/merge-wave-provider-v1.mjs';
 const A='a'.repeat(40), B='b'.repeat(40), C='c'.repeat(40);
-const p=(repo='org/repo',number=1,extra={})=>({repo,number,expectedHead:A,expectedBaseSha:B,requiredStepNames:['Test'],...extra});
+const p=(repo='org/repo',number=1,extra={})=>({repo,number,expectedHead:A,expectedBaseSha:B,requiredStepNames:['Test'],requiredWorkflows:[{workflowId:7,workflowName:'CI',jobName:'tests',testStepName:'Test'}],...extra});
 const manifest=(...specs)=>({prs:specs.length?specs:[p()]});
 const ok=(body,status=200)=>({ok:status>=200 && status<300,status,json:async()=>body});
 function clientForMock(handler,{maxPages=10,pageSize=100}={}){
@@ -143,7 +143,7 @@ function mockFive({approval=true,ci=true,parentMerged=true,stacked=false}={}){
     return approval?[{user:{login:'ORESoftware'},state:'APPROVED',commit_id:A,submitted_at:'2026-11-07T23:00:00Z'}]:[];
   if(sub.startsWith('actions/runs?'))
     return ci?[{id:1000+value.prs.find(x=>x.repo===repo)?.number,event:'pull_request',
-      head_sha:A,status:'completed',conclusion:'success',run_attempt:1}]:[];
+      head_sha:A,status:'completed',conclusion:'success',run_attempt:1,workflow_id:7,name:'CI'}]:[];
   const run=/^actions\/runs\/(\d+)\/jobs\?filter=latest$/.exec(sub);
   if(run) return [{name:'tests',run_id:Number(run[1]),runner_id:3,run_attempt:1,
     conclusion:'success',steps:[{name:'Test',status:'completed',conclusion:'success'}]}];
@@ -202,4 +202,27 @@ test('provider rejects malformed input before outgoing GET after spec validation
  const {value,client,calls}=mockFive();value.prs[4].requiredStepNames.push('Test');
  await assert.rejects(collectWave(value,client),/Invalid pinned PR identity/);
  assert.equal(calls.length,0);
+});
+
+test('manifest cannot remove pinned workflow policy',()=>{
+ const x=manifest(p());delete x.prs[0].requiredWorkflows;
+ assert.throws(()=>validateManifest(x),/Invalid pinned PR identity/);
+});
+test('manifest rejects duplicate, malformed, and unpinned workflow contracts',()=>{
+ const x=manifest(p());x.prs[0].requiredWorkflows.push({...x.prs[0].requiredWorkflows[0]});
+ assert.throws(()=>validateManifest(x),/Invalid pinned PR identity/);
+ const y=manifest(p());y.prs[0].requiredWorkflows[0].workflowId=0;
+ assert.throws(()=>validateManifest(y),/Invalid pinned PR identity/);
+ const z=manifest(p());z.prs[0].requiredWorkflows[0].testStepName=' ';
+ assert.throws(()=>validateManifest(z),/Invalid pinned PR identity/);
+});
+test('read-only provider reports missing required workflow on otherwise green run',async()=>{
+ const {value,client}=mockFive();const original=client.get;
+ client.get=async (path,kind)=>{
+   const response=await original(path,kind);
+   return kind==='runs'?response.map(x=>({...x,workflow_id:1234})):response;
+ };
+ const result=await collectWave(value,client);
+ assert.equal(result.readyForHumanFinalReview,false);
+ assert.ok(result.prs.every(x=>x.blockers.includes('MISSING_REQUIRED_WORKFLOW')));
 });
