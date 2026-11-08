@@ -51,3 +51,14 @@ The production manifest now **requires** `requiredWorkflows` for every PR. Each 
 The pinned public wave uses the provider-returned workflow identities: website `378985166`; Sublime `373587523`; CLI main CI `373591906`, signed-release assurance `409917534`, and root-signed trust policy `409926325`. This source-free gate remains advisory and does not imply release authorization, independent review, or deployment.
 
 Expanded local suite after this fix: **174/174 Node 22 test cases pass**, including 16 additional workflow-spoof and manifest mutation cases over the previous 158. Hosted test evidence is still **NOT_EXECUTED** while org runner admission is blocked in issue #315. Do not count a workflow rerun request itself as execution.
+
+
+## Wave-wide snapshot race hardening (2026-11-07)
+
+Initial PR/review/run/job/parent evidence collection and the final advisory verdict are now separated by a **full second readback of all PRs**. Each second pass rereads live GitHub PR identity, independent reviews, exact-head workflow run status/attempts, executed job steps and stacked parent metadata. The `evidenceFingerprint` is order-independent for lists, includes security-relevant identity and execution fields and excludes incidental display text. Any change during this window yields `PROVIDER_SNAPSHOT_CHANGED`, marks that PR unready and prevents the overall five-PR/three-repo advisory qualification.
+
+New tests simulate head pushes, review dismissal, workflow attempt replay, vanished test steps, base-SHA drift, parent merge-state drift and benign reordering of provider evidence. Invalid/missing run/review collections fail closed.
+
+**Important boundary:** This is a *stability preflight*, not a transaction/lock/lease and not automatic merge authority. A final decision must still refresh GitHub branch protection, CODEOWNERS, security holds, active agent ownership and source-level semantics, then merge with GitHub's `expected_head_sha` precondition. Changes after the last readback remain possible. Never assert that this tool makes the GitHub APIs atomic.
+
+Local Node 22 focused suite: **182/182 passing** (174 original + 8 new snapshot-race tests); hosted CI remains unavailable on the private source organization's runner-admission issue #315.
