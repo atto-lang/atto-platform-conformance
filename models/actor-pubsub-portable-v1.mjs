@@ -367,6 +367,10 @@ export class PubSubReference {
     this.#closed=true;
     for (const sub of this.#subscriptions.values()) this.unsubscribe(sub);
     for (const group of this.#groups.values()) this.#groupStates.get(group).closed=true;
+    // Closing the broker revokes the exact affine grant objects, not merely
+    // the searchable membership index. Weak-held stale grants must never
+    // report a successful leave or become active after shutdown.
+    for (const entry of this.#memberships.values()) entry.active=false;
     this.#memberships.clear();
     for (const group of this.#groups.values()) this.#groupStates.get(group).members.clear();
     return success();
