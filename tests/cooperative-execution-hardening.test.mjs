@@ -507,3 +507,34 @@ for(const interval of [32,64,128,256,512]){
     }
   });
 }
+
+
+test('manifest cannot silently disable untrusted metering policy',()=>{
+  const m=changed();m.polling.untrusted='No mandatory metering';
+  invalid(m,'poll-policy-downgrade');
+});
+test('manifest cannot remove clock and cancellation from the slow-path policy',()=>{
+  const m=changed();m.polling.slow_path='No checkpoints required';
+  invalid(m,'poll-policy-downgrade');
+});
+test('manifest cannot add a stealth default bypass flag',()=>{
+  const m=changed();m.polling.disable_for_untrusted=true;
+  invalid(m,'poll-policy-downgrade');
+});
+test('manifest cannot change documented sampling semantics without a v2 contract',()=>{
+  const m=changed();m.polling.counter_wrap='signed overflow wraps to negative';
+  invalid(m,'poll-policy-downgrade');
+});
+test('manifest cannot overwrite a core safety invariant with arbitrary prose',()=>{
+  const m=changed();m.invariants[4]='Always skip critical sections';
+  invalid(m,'invariant-policy-downgrade');
+});
+test('manifest cannot drop a safety invariant while retaining its count',()=>{
+  const m=changed();m.invariants=m.invariants.slice(1).concat(['anything']);
+  invalid(m,'invariant-policy-downgrade');
+});
+test('manifest accepts exact order-independent polling object field ordering',()=>{
+  const m=changed();
+  m.polling=Object.fromEntries(Object.entries(m.polling).reverse());
+  assert.equal(validateManifest(m).size,17);
+});
