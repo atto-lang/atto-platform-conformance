@@ -11,7 +11,8 @@ export function assessGovernance({repository,head,pr,branch, reviews,protection,
     fail('POLICY_PR_IDENTITY_MISMATCH');
   if (!branch||typeof branch!=='object'||Array.isArray(branch)||branch?.name!=='main')
     fail('MAIN_BRANCH_METADATA_UNVERIFIED');
-  if (branch?.protected!==true)fail('MAIN_NOT_PROTECTED');
+  if (branch?.protected===false)fail('MAIN_NOT_PROTECTED');
+  else if (branch?.protected!==true)fail('MAIN_PROTECTION_UNVERIFIED');
   if (branch?.commit?.sha!==pr?.base?.sha || !validSHA(branch?.commit?.sha))
     fail('MAIN_BASE_SHA_CHANGED');
   if (!protection||typeof protection!=='object'||Array.isArray(protection))
