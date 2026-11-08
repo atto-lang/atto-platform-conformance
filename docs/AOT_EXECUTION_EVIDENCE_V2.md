@@ -8,6 +8,8 @@ Distinguish program-specific guest AOT from a Graal Native Image / .NET NativeAO
 
 `lib/aot-execution-evidence-v2.mjs` exports the backward-compatible `classifyAotExecutionEvidence(receipt, trustedExpected)` and the **strict backend-bound** `classifyAotExecutionEvidenceForBackend(receipt, trustedExpected)`. For new backend-specific evidence checks, the caller MUST supply an independently retrieved exact `{sourceCommit, sourceTree, backend}` selector and call the strict entrypoint. Source-only two-field selectors remain accepted by the legacy helper for compatibility; they do **not** establish backend identity. Forge and Cranelift are two distinct lanes, never aliases. A self-reported receipt cannot authenticate GitHub job steps, compiler provenance, toolchain identity, a real guest entrypoint, absence of JIT, independent approval, or release eligibility. **Every classification, including AOT_STRUCTURAL_REVIEW_REQUIRED, carries ok=false and releaseQualified=false. structurallyValid=true is informational and must not be treated as promotion.**
 
+Canonical receipt and selector records must have exactly their declared **own, enumerable string-keyed data fields**. Hidden symbol keys, non-enumerable properties, getters, inherited fields and throwing Proxy traps are denied. A matching synthetic receipt or forged claimed step count remains **structural only**; this validator never authenticates GitHub Actions or releases a backend.
+
 ## Admission semantics
 
 - full-aot: linked program-specific native guest executable (or closed guest Wasm module), compiled guest entrypoint and output, full verified-language closure as declared, interpreter/JIT/runtime guest compiler absent, executed JIT-disabled baseline.
