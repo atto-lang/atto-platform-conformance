@@ -129,6 +129,8 @@ export class CollectionLoanModel {
   getCopy(actor, index) {
     this.#check(actor);
     if (!this.copyable) fail("E_COPY_REQUIRED");
+    if ([...this.#loans.values()].some(loan => loan.kind === "WRITE"))
+      fail("E_LOAN_CONFLICT");
     const slot = this.#slot(index);
     return slot === null ? None : Some({ ownedCopyOfIndex: slot });
   }
@@ -136,6 +138,9 @@ export class CollectionLoanModel {
   // Indexing is bounds checked; a miss is a contained actor trap, never UB.
   checkedIndex(actor, index) {
     this.#check(actor);
+    // Ordinary indexing is an ephemeral read; it must not bypass WRITE loans.
+    if ([...this.#loans.values()].some(loan => loan.kind === "WRITE"))
+      fail("E_LOAN_CONFLICT");
     const slot = this.#slot(index);
     if (slot === null) fail("E_INDEX_BOUNDS");
     return slot;
