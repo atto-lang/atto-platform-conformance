@@ -43,6 +43,13 @@ test('reject oversize documents and deep-nesting denial inputs', () => {
   assert.throws(() => parseStrictJson('['.repeat(81)+'null'+']'.repeat(81)), /nesting limit/);
 });
 
+test('enforce byte limits on multibyte UTF-8 input, not just UTF-16 length', () => {
+  const huge = '"' + '€'.repeat(400000) + '"';
+  assert.ok(huge.length < 1048576);
+  assert.ok(Buffer.byteLength(huge, 'utf8') > 1048576);
+  assert.throws(() => parseStrictJson(huge), /size limit/);
+});
+
 test('reject malformed escapes, incomplete syntax, trailing payload and trailing commas', () => {
   for (const bad of ['{"a":"\\x"}', '{"a":0,}', '{"a":0} true', '{"a":', '{"a":"x\ny"}', '{"a": 01}', '{"a":NaN}', '{}{}']) {
     assert.throws(() => parseStrictJson(bad), /ambiguous or invalid/);
@@ -139,4 +146,16 @@ test('CLI rejects oversized JSON before evaluating schema claims', () => {
   const result = runCli(JSON.stringify(receipt) + ' '.repeat(1048577));
   assert.equal(result.status, 1);
   assert.match(result.stderr, /JSON exceeds size limit/);
+});
+
+test('CLI rejects malformed UTF-8 receipt bytes and never reports PASS', () => {
+  const bytes = Buffer.concat([
+    Buffer.from(JSON.stringify(receipt).slice(0, -1)),
+    Buffer.from([0xff]),
+    Buffer.from('}'),
+  ]);
+  const result = runCli(bytes);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /platform receipt:/);
+  assert.doesNotMatch(result.stdout, /PASS/);
 });
