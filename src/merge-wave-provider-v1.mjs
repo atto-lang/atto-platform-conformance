@@ -42,8 +42,8 @@ export function makeGitHubReadOnlyClient({token, fetchImpl = globalThis.fetch, m
         !/^[A-Za-z0-9_./-]+$/.test(suffix || '') ||
         suffix.split('/').some(part => !part || part === '.' || part === '..'))
       throw new Error('Invalid GitHub repository resource');
-    const field = ({array:null,runs:'workflow_runs',jobs:'jobs',object:null})[shape];
-    if (!['array','runs','jobs','object'].includes(shape)) throw new Error('Unknown provider response kind');
+    const field = ({array:null,runs:'workflow_runs',jobs:'jobs',checks:'check_runs',object:null})[shape];
+    if (!['array','runs','jobs','checks','object'].includes(shape)) throw new Error('Unknown provider response kind');
     const found = [];
     for (let page = 1; page <= maxPages; page++) {
       const url = new URL('https://api.github.com'+path);
