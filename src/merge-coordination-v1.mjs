@@ -1,3 +1,4 @@
+import {types as nodeTypes} from 'node:util';
 /**
  * Advisory, offline AttoLang PR wave coordinator. No GitHub writes, CI bypasses,
  * private-source export or merge authority. All inputs are untrusted until
@@ -11,6 +12,50 @@ const ID = /^[a-zA-Z0-9_.:-]{8,96}$/;
 const LEASE_PREFIX = 'ATTO_PR_LEASE_V1 ';
 
 const isObject = v => !!v && typeof v === 'object' && !Array.isArray(v);
+const leaseFields=['claimId','expiresAt','head','issuedAt','number','owner',
+  'paths','repo','scope','status'];
+// Never invoke untrusted Proxy traps, accessors, prototypes or iterable hooks
+// while deciding a file/merge ownership claim.
+function ownDataRecord(value,fields) {
+  if(!isObject(value) || nodeTypes.isProxy(value) ||
+      ![Object.prototype,null].includes(Object.getPrototypeOf(value)))return false;
+  const keys=Reflect.ownKeys(value);
+  return keys.length===fields.length&&keys.every(key=>{
+    const d=Object.getOwnPropertyDescriptor(value,key);
+    return typeof key==='string'&&fields.includes(key)&&!!d&&
+      d.enumerable&&Object.hasOwn(d,'value');
+  });
+}
+function snapshotLease(value) {
+  if(!ownDataRecord(value,leaseFields))throw err('INVALID_LEASE_SHAPE');
+  const data=Object.fromEntries(leaseFields.map(key=>[
+    key,Object.getOwnPropertyDescriptor(value,key).value
+  ]));
+  const paths=data.paths;
+  if(!Array.isArray(paths)||nodeTypes.isProxy(paths)||
+      Object.getPrototypeOf(paths)!==Array.prototype||
+      paths.length>30)throw err('INVALID_LEASE_SCOPE');
+  const pathKeys=Reflect.ownKeys(paths);
+  if(pathKeys.length!==paths.length+1 || pathKeys[paths.length]!=='length')
+    throw err('INVALID_LEASE_SCOPE');
+  const copied=[];
+  for(let i=0;i<paths.length;i++){
+    if(pathKeys[i]!==String(i))throw err('INVALID_LEASE_SCOPE');
+    const d=Object.getOwnPropertyDescriptor(paths,String(i));
+    if(!d||!d.enumerable||!Object.hasOwn(d,'value'))
+      throw err('INVALID_LEASE_SCOPE');
+    copied.push(d.value);
+  }
+  return Object.freeze({...data,paths:Object.freeze(copied)});
+}
+function ownCommentField(comment,key){
+  if(!isObject(comment)||nodeTypes.isProxy(comment)||
+      ![Object.prototype,null].includes(Object.getPrototypeOf(comment)))
+    throw err('INVALID_LEASE_COMMENT');
+  const d=Object.getOwnPropertyDescriptor(comment,key);
+  if(!d||!Object.hasOwn(d,'value'))throw err('INVALID_LEASE_COMMENT');
+  return d.value;
+}
 const validDate = s => typeof s === 'string' && ISO.test(s) &&
   Number.isFinite(Date.parse(s)) && new Date(s).toISOString() === s;
 const validPath = p => typeof p === 'string' && p.length > 0 && p.length <= 200 &&
@@ -20,10 +65,8 @@ const key = p => p.repo + '#' + p.number;
 const err = (code, detail = '') => Object.assign(new Error(code + (detail ? ': ' + detail : '')), {code});
 const uniq = a => [...new Set(a)];
 
-export function validateLease(lease, {now, trusted = ['the1mills','ORESoftware']} = {}) {
-  if (!isObject(lease) || Object.keys(lease).sort().join(',') !==
-      'claimId,expiresAt,head,issuedAt,number,owner,paths,repo,scope,status')
-    throw err('INVALID_LEASE_SHAPE');
+export function validateLease(input, {now, trusted = ['the1mills','ORESoftware']} = {}) {
+  const lease=snapshotLease(input);
   if (!REPO.test(lease.repo) || !Number.isSafeInteger(lease.number) || lease.number < 1 ||
       !SHA.test(lease.head) || !LOGIN.test(lease.owner) || !ID.test(lease.claimId) ||
       !Array.isArray(trusted) || !trusted.some(x => typeof x === 'string' && x.toLowerCase() === lease.owner.toLowerCase()))
@@ -43,13 +86,15 @@ export function validateLease(lease, {now, trusted = ['the1mills','ORESoftware']
 }
 
 /** Exact one-line canonical encoding prevents duplicate-key/last-wins ambiguity. */
-export function serializeLease(lease) {
-  validateLease(lease);
+export function serializeLease(input) {
+  const lease=validateLease(input);
   const canonical = Object.fromEntries(Object.keys(lease).sort().map(k => [k,lease[k]]));
   return LEASE_PREFIX + JSON.stringify(canonical);
 }
 export function parseLeaseComment(comment, opts = {}) {
-  const {body, author, createdAt} = comment || {};
+  const body=ownCommentField(comment,'body');
+  const author=ownCommentField(comment,'author');
+  const createdAt=ownCommentField(comment,'createdAt');
   if (typeof body !== 'string' || body.length > 4096 || !body.startsWith(LEASE_PREFIX) || body.includes('\n'))
     throw err('INVALID_LEASE_COMMENT');
   const raw = body.slice(LEASE_PREFIX.length);
@@ -57,13 +102,13 @@ export function parseLeaseComment(comment, opts = {}) {
   try { lease = JSON.parse(raw); } catch { throw err('INVALID_LEASE_JSON'); }
   if (JSON.stringify(Object.fromEntries(Object.keys(lease).sort().map(k => [k,lease[k]]))) !== raw)
     throw err('NONCANONICAL_LEASE_JSON');
-  validateLease(lease, opts);
-  if (typeof author !== 'string' || author.toLowerCase() !== lease.owner.toLowerCase())
+  const snapshot=validateLease(lease, opts);
+  if (typeof author !== 'string' || author.toLowerCase() !== snapshot.owner.toLowerCase())
     throw err('LEASE_AUTHOR_MISMATCH');
   if (!validDate(createdAt) || Date.parse(createdAt) < Date.parse(lease.issuedAt) - 30_000 ||
       Date.parse(createdAt) > Date.parse(lease.issuedAt) + 30_000)
     throw err('LEASE_COMMENT_TIME_MISMATCH');
-  return lease;
+  return snapshot;
 }
 function pathsOverlap(a,b) {
   return a.some(x => b.some(y => x === y || x.startsWith(y + '/') || y.startsWith(x + '/')));
