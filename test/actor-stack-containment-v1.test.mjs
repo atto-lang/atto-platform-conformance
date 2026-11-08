@@ -8,7 +8,7 @@ const evidenceKeys = [
   'admission', 'compilerGuest', 'actorSurvival',
   'nativeLowStack', 'supervisorRecovery',
   'actorStackStorage', 'suspendedFrameOwnership', 'actorStackGeneration',
-  'executionContextBinding', 'callbackResumptionSafety', 'taskRootRetirement'
+  'executionContextBinding', 'callbackResumptionSafety', 'taskRootRetirement',\n  'suspendedCallFrameState'
 ];
 
 async function load() {
@@ -46,7 +46,7 @@ function validatePending(matrix) {
     'actorTaskRootGenerationAuthenticated',
     'callbacksCannotExecuteGuestOnProducerThread',
     'sourceTaskRootsRetiredOnlyAfterPhysicalQuiescence',
-    'outstandingTaskRootsPreventActorHeapRetirement'
+    'outstandingTaskRootsPreventActorHeapRetirement',\n    'suspendedCallFramesPreservePcOperandsAndLocals'
   ]) {
     assert.equal(matrix.requirements[key], true,
       'mandatory physical actor-stack safety property: ' + key);
@@ -143,4 +143,28 @@ test('actor ExecutionContext, callback, and stack-root lifecycle gates cannot be
     required.delete(scenario.id);
   }
   assert.deepEqual([...required.keys()], []);
+});
+
+
+test('suspended scalar call-frame state is a mandatory pending five-backend gate', async () => {
+  const matrix = validatePending(await load());
+  const required = new Map([
+    ['await-inside-nontail-call-preserves-parent-frame', 'suspendedCallFrameState'],
+    ['cancel-inside-nontail-call-runs-cleanup-before-retire', 'suspendedCallFrameState'],
+    ['duplicate-resume-cannot-reenter-suspended-call-frame', 'suspendedCallFrameState'],
+    ['stale-parent-return-pc-rejected-after-generation-change', 'suspendedCallFrameState']
+  ]);
+  for (const scenario of matrix.scenarios) {
+    const evidence = required.get(scenario.id);
+    if (!evidence) continue;
+    assert.equal(scenario.source, null,
+      'the compiler-backed .atto suspension fixtures are still pending');
+    assert.ok(scenario.requiredEvidence.includes(evidence));
+    required.delete(scenario.id);
+  }
+  assert.deepEqual([...required.keys()], []);
+  for (const backend of matrix.backends) {
+    assert.equal(backend.suspendedCallFrameState, 'NOT_EXECUTED',
+      'no backend may claim suspension inside CALL/RET frames without receipts');
+  }
 });
