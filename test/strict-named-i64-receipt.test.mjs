@@ -22,6 +22,7 @@ function synthetic(backend='java'){
     evidence:{
       runId:12,jobId:14,runAttempt:1,
       runUrl:'https://github.com/'+repository+'/actions/runs/12',
+      exactHead:true,workflowHeadSha:SHA40,
       runnerId:33,runnerName:'SYNTHETIC TEST ONLY',
       workflowConclusion:'success',executedSteps:2,
       steps:[{name:'synthetic compile',conclusion:'success'},
@@ -40,6 +41,7 @@ function fail(receipt,expected){
 }
 test('26 canonical vectors match exact parent Java #2641 Git blob',()=>{
   assert.equal(contract.gitBlob,'3f65f557f06e8cd0d34a738a0d357d6c2e477665');
+  assert.equal(contract.sha256,'dacca2eaf503f854fd7f60ba135ff31b6c210d90aff8d117d4dedb5b88bedec5');
   assert.equal(contract.data.cases.length,26);
   assert.equal(new Set(contract.data.cases.map(v=>v.id)).size,26);
   assert.deepEqual([...new Set(contract.data.cases.map(v=>v.operation))],
@@ -119,6 +121,28 @@ test('run identity must match URL and compiler must come from exact backend head
   fail(differentRun,/runUrl repository\/runId mismatch/);
   const differentCompiler=synthetic();differentCompiler.compilerCommit='c'.repeat(40);
   fail(differentCompiler,/compiler source commit does not match exact backend head/);
+});
+test('source-owned workflow HEAD must be exact and explicitly asserted',()=>{
+  for(const value of [undefined,null,false,'true',0]){
+    const r=synthetic();r.evidence.exactHead=value;
+    fail(r,/exactHead must be true/);
+  }
+  for(const value of [undefined,null,0,'A'.repeat(40),'c'.repeat(40)]){
+    const r=synthetic();r.evidence.workflowHeadSha=value;
+    fail(r,/workflowHeadSha must bind the exact sourceCommit/);
+  }
+  const r=synthetic();r.evidence.exactHead=true;r.evidence.workflowHeadSha=SHA40;
+  const outcome=verifyReceipt(r,contract);
+  assert.equal(outcome.ok,true,outcome.errors.join('; '));
+  assert.equal(outcome.status,'SHAPE_ONLY_NOT_ATTESTED');
+});
+test('canonical checksum and JSON mutation are independently rejected',()=>{
+  const modified=Buffer.from(raw);
+  modified[modified.length-1]^=1;
+  const rejected=validateContractBytes(modified);
+  assert.equal(rejected.ok,false);
+  assert.match(rejected.errors.join('; '),/canonical contract Git blob mismatch/);
+  assert.match(rejected.errors.join('; '),/canonical contract SHA-256 mismatch/);
 });
 test('unassigned runners and empty/mismatched or failed steps cannot pass',()=>{
   for(const value of [0,-1,1.5,null,undefined,Number.MAX_SAFE_INTEGER+1]){
