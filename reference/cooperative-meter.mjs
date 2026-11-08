@@ -11,7 +11,7 @@ function uint(value, label) {
 }
 export class ActorMeter {
   #fuel; #initial; #counter; #elapsed=0n; #wall; #cpu=0n; #cpuBudget;
-  #mode; #interval; #critical=0; #cancelled=false; #closed=false; #admitted=false;
+  #mode; #interval; #critical=0; #cancelled=false; #closed=false; #admitted=false; #readingClock=false;
   #slow=0n; #handoffs=0n; #deferred=false;
   constructor({fuel,wallBudget,cpuBudget,interval=128,counter=0n,mode='untrusted'}) {
     if (!INTERVALS.includes(interval)) throw new MeterFailure('INVALID_INTERVAL');
@@ -29,7 +29,12 @@ export class ActorMeter {
   #active(){if(this.#closed) throw new MeterFailure('ACTOR_CLOSED');if(!this.#admitted)throw new MeterFailure('METER_NOT_ADMITTED');}
   #check(elapsed){
     if(this.#closed)throw new MeterFailure('ACTOR_CLOSED');
-    const t=uint(elapsed,'ELAPSED');
+    let t;
+    try{t=uint(elapsed,'ELAPSED');}
+    catch(error){
+      if(error instanceof MeterFailure)this.#deny(error.code);
+      throw error;
+    }
     if(t<this.#elapsed)this.#deny('CLOCK_ROLLBACK');
     this.#elapsed=t;
     if(t>=this.#wall)this.#deny('WALL_EXHAUSTED');
@@ -50,16 +55,27 @@ export class ActorMeter {
   }
   chargeBlock(cost,elapsed){
     this.#active();
+    if(this.#readingClock)this.#deny('CLOCK_REENTRANCY');
     const n=uint(cost,'BLOCK_COST');
     if(n===0n)throw new MeterFailure('ZERO_COST');
-    // Every instrumented basic block (not only backedges) contributes to polling.
-    // elapsed is host-supplied monotonic time; the actual wall check is slow-path only.
-    uint(elapsed,'ELAPSED');
+    // A host-owned lazy clock is invoked only on the slow path; no monotonic
+    // clock access is necessary for the other 127 charged blocks.
+    if(typeof elapsed!=='function')uint(elapsed,'ELAPSED');
     if(n>=this.#fuel){this.#fuel=0n;this.#deny('FUEL_EXHAUSTED');}
     this.#fuel-=n;
     this.#counter=(this.#counter+1n)&MAX_U64;
     if((this.#counter&BigInt(this.#interval-1))!==0n)return false;
-    this.#slow++;this.#check(elapsed);
+    this.#slow++;
+    let sampled=elapsed;
+    if(typeof elapsed==='function'){
+      this.#readingClock=true;
+      try{sampled=elapsed();}
+      catch(error){
+        if(error instanceof MeterFailure)throw error;
+        this.#deny('CLOCK_SOURCE_FAILURE');
+      }finally{this.#readingClock=false;}
+    }
+    this.#check(sampled);
     if(this.#cancelled)this.#deny('CANCELLED');
     if(this.#mode==='trusted'){
       if(this.#critical)this.#deferred=true;
