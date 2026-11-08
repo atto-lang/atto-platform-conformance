@@ -1,0 +1,496 @@
+{
+  "schemaVersion": 1,
+  "contract": "atto.virtual-actor-directory-inspection/1",
+  "status": "candidate-unattested",
+  "sourceOfSemantics": "https://github.com/ores-truffle-oreslang/attolang-language-spec.md/pull/25",
+  "implementationReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2701",
+  "scope": "host-runtime-contract-target; does-not-certify-guest-language-or-distributed-actor-parity",
+  "targetBackends": [
+    "java",
+    "llvm",
+    "wasm",
+    "forge",
+    "net"
+  ],
+  "addressEncoding": {
+    "version": 1,
+    "prefix": "atto-va1",
+    "encoding": "base64url-no-padding",
+    "componentOrder": [
+      "domain",
+      "namespaceQualifiedDeclaration",
+      "canonicalKey"
+    ],
+    "canonicalVector": {
+      "identity": {
+        "domain": "tenant-a",
+        "namespaceQualifiedDeclaration": "7:defaultCart",
+        "key": "42"
+      },
+      "address": "atto-va1.dGVuYW50LWE.NzpkZWZhdWx0Q2FydA.NDI"
+    }
+  },
+  "semantics": {
+    "identity": [
+      "authenticated-tenant-or-domain",
+      "namespace",
+      "actor-type",
+      "object-id"
+    ],
+    "supervisorOwnership": "separate-single-owner-edge; supervisor-id-is-not-part-of-logical-identity",
+    "references": {
+      "ordinaryActorRef": "incarnation/instance addressed; does-not-retarget-after-terminal-shutdown",
+      "virtualActorRef": "stable-logical-identity-resolves-current-activation",
+      "activationRef": "bound-to-one-activation-generation"
+    },
+    "resolve": "side-effect-free-with-respect-to-activation",
+    "inspect": "read-only; must not create identity or activate actor",
+    "list": "bounded-pagination; immutable snapshots; exact-directory-revision cursor",
+    "activation": "single-initializer; publish-after-initialization; abort-burns-generation",
+    "terminal": "physical-done-barrier; passivated/cancelled/failed distinct; diagnostics payload-free",
+    "proxy": "ordinary-actor-identity-and-supervision; proxy and virtual target lifecycles remain independent",
+    "durability": "stable-logical-storage-key; durable-provider-epoch-is-separate-from-runtime-local-logical-generation",
+    "distributed": "not-specified-by-this-local-host-contract"
+  },
+  "promotionRequired": [
+    "exact-source-commit-and-tree",
+    "fixture-sha256",
+    "actual-compiler-or-runtime-execution",
+    "nonzero-executed-steps",
+    "raw-logs-and-receipts",
+    "negative-mutation-evidence",
+    "independent-review"
+  ],
+  "backendStatus": {
+    "java": {
+      "status": "NOT_EXECUTED",
+      "evidence": null
+    },
+    "llvm": {
+      "status": "NOT_EXECUTED",
+      "evidence": null
+    },
+    "wasm": {
+      "status": "NOT_EXECUTED",
+      "evidence": null
+    },
+    "forge": {
+      "status": "NOT_EXECUTED",
+      "evidence": null
+    },
+    "net": {
+      "status": "NOT_EXECUTED",
+      "evidence": null
+    }
+  },
+  "cases": [
+    {
+      "id": "directory.address_v1_canonical_vector",
+      "kind": "abi",
+      "oracle": "Canonical identity components encode to the exact address vector and decode byte-for-byte.",
+      "fixture": "identity:(tenant-a,7:defaultCart,42);expected:atto-va1.dGVuYW50LWE.NzpkZWZhdWx0Q2FydA.NDI",
+      "expected": "accept-and-match-oracle",
+      "requires": [
+        "canonical-base64url-no-padding",
+        "nfc-components",
+        "same-vector-on-all-backends"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidenceRefs": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "forge": null,
+        "net": null
+      }
+    },
+    {
+      "id": "directory.inspect_unknown_no_allocate",
+      "kind": "runtime",
+      "oracle": "Inspect by logical ID/address does not create a directory entry or activate an actor.",
+      "fixture": "lookup identity not previously resolved; inspect returns NOT_FOUND; subsequent resolve succeeds at maxIdentities=1.",
+      "expected": "accept-and-match-oracle",
+      "requires": [
+        "no-activation",
+        "no-allocation-on-lookup",
+        "stable-not-found"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidenceRefs": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "forge": null,
+        "net": null
+      }
+    },
+    {
+      "id": "directory.resolve_no_activate",
+      "kind": "runtime",
+      "oracle": "Resolving a logical reference does not activate the actor.",
+      "fixture": "resolve key; assert activation count=0; first explicit invocation/activation is the only activator.",
+      "expected": "accept-and-match-oracle",
+      "requires": [
+        "logical-reference-before-activation",
+        "side-effect-free-resolve"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidenceRefs": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "forge": null,
+        "net": null
+      }
+    },
+    {
+      "id": "directory.supervisor_exact_owner",
+      "kind": "security",
+      "oracle": "One logical identity has exactly one owning supervisor; cooperative ActorGroup membership is not lifecycle ownership.",
+      "fixture": "Two supervisors claim same (tenant,namespace,type,key); second claim denied. Actor managed by another supervisor cannot bind.",
+      "expected": "accept-and-match-oracle",
+      "requires": [
+        "single-owner-edge",
+        "exact-managed-worker",
+        "no-group-membership-authority"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidenceRefs": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "forge": null,
+        "net": null
+      }
+    },
+    {
+      "id": "directory.inspect_control_scoped",
+      "kind": "security",
+      "oracle": "Supervisor inspection uses bounded CONTROL dispatch and host session/tenant/supervisor scope.",
+      "fixture": "Inspect by ID/address/ref succeeds only with same opaque grant/session; reject foreign session/tenant/supervisor and unavailable CONTROL.",
+      "expected": "accept-and-match-oracle",
+      "requires": [
+        "control-dispatch-only",
+        "no-inline-fallback",
+        "opaque-host-grant",
+        "bounded-concurrency"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidenceRefs": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "forge": null,
+        "net": null
+      }
+    },
+    {
+      "id": "directory.timeout_race",
+      "kind": "runtime",
+      "oracle": "Queued timeout and CONTROL start have one atomic winner; cancelled queued work never captures.",
+      "fixture": "Timeout before queued callback start; callback later drains as no-op; no second capture; global credit released only after drain or proved rejection.",
+      "expected": "accept-and-match-oracle",
+      "requires": [
+        "queued-running-phase-fence",
+        "no-double-capture",
+        "global-credit-retention"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidenceRefs": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "forge": null,
+        "net": null
+      }
+    },
+    {
+      "id": "directory.list_page_revision",
+      "kind": "runtime",
+      "oracle": "Supervisor listing is bounded, ordered and revision-fenced.",
+      "fixture": "Page size in [1,128]; deterministic declaration/key order; add/activate/admit/passivate between pages makes old cursor stale.",
+      "expected": "accept-and-match-oracle",
+      "requires": [
+        "bounded-pagination",
+        "stable-order",
+        "revision-fence"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidenceRefs": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "forge": null,
+        "net": null
+      }
+    },
+    {
+      "id": "directory.activation_generation",
+      "kind": "runtime",
+      "oracle": "Activation generations are monotonically increasing and stale activation credentials cannot publish/commit against replacements.",
+      "fixture": "Abort generation N; generation N+1 issued; stale N publication and state commit denied; generation never resets within runtime lifetime.",
+      "expected": "accept-and-match-oracle",
+      "requires": [
+        "monotonic-generation",
+        "abort-burns-generation",
+        "stale-generation-denial"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidenceRefs": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "forge": null,
+        "net": null
+      }
+    },
+    {
+      "id": "directory.terminal_outcome_sanitized",
+      "kind": "security",
+      "oracle": "After physical completion, expose normal passivation/cancellation/failure separately without retaining Throwable or guest payload.",
+      "fixture": "Abnormal completion gives FAILED + bounded exception class only; normal stop PASSIVATED; cancellation CANCELLED.",
+      "expected": "accept-and-match-oracle",
+      "requires": [
+        "physical-done-barrier",
+        "bounded-failure-class",
+        "no-throwable-or-message-retention"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidenceRefs": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "forge": null,
+        "net": null
+      }
+    },
+    {
+      "id": "proxy.virtual_identity_separation",
+      "kind": "runtime",
+      "oracle": "A proxy actor has its own ActorId, mailbox, lifecycle and supervisor; forwarding does not merge its identity with a virtual target.",
+      "fixture": "Restart proxy; target logical identity/generation unchanged. Restart target; proxy ActorId and ownership unchanged.",
+      "expected": "accept-and-match-oracle",
+      "requires": [
+        "proxy-independent-identity",
+        "proxy-independent-supervision",
+        "forwarding-does-not-transfer-owner"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidenceRefs": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "forge": null,
+        "net": null
+      }
+    },
+    {
+      "id": "directory.persistence_key_stability",
+      "kind": "runtime",
+      "oracle": "Logical persistence key is stable across activation and supervisor facade recreation; it excludes supervisor and generation.",
+      "fixture": "Same tenant/namespace/type/key -> same actor key; new activation -> same key; durable provider epoch remains separately issued.",
+      "expected": "accept-and-match-oracle",
+      "requires": [
+        "stable-logical-key",
+        "no-supervisor-in-key",
+        "provider-epoch-separate"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidenceRefs": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "forge": null,
+        "net": null
+      }
+    },
+    {
+      "id": "directory.cross_tenant_denial",
+      "kind": "security",
+      "oracle": "Addresses/IDs cannot inspect or enumerate another tenant; malformed, oversized, noncanonical or invalid Unicode input is rejected.",
+      "fixture": "Probe foreign domain, malformed UTF-8, control, unpaired surrogate, oversized component and unknown address version.",
+      "expected": "accept-and-match-oracle",
+      "requires": [
+        "tenant-scope",
+        "strict-address-validation",
+        "no-existence-leak"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED",
+      "backendStatus": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED"
+      },
+      "evidenceRefs": {
+        "java": null,
+        "llvm": null,
+        "wasm": null,
+        "forge": null,
+        "net": null
+      }
+    }
+  ]
+}
