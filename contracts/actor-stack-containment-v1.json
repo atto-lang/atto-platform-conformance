@@ -28,7 +28,8 @@
     "actorTaskRootGenerationAuthenticated": true,
     "callbacksCannotExecuteGuestOnProducerThread": true,
     "sourceTaskRootsRetiredOnlyAfterPhysicalQuiescence": true,
-    "outstandingTaskRootsPreventActorHeapRetirement": true
+    "outstandingTaskRootsPreventActorHeapRetirement": true,
+    "suspendedCallFramesPreservePcOperandsAndLocals": true
   },
   "backends": [
     {
@@ -44,7 +45,8 @@
       "actorStackGeneration": "NOT_EXECUTED",
       "executionContextBinding": "NOT_EXECUTED",
       "callbackResumptionSafety": "NOT_EXECUTED",
-      "taskRootRetirement": "NOT_EXECUTED"
+      "taskRootRetirement": "NOT_EXECUTED",
+      "suspendedCallFrameState": "NOT_EXECUTED"
     },
     {
       "id": "llvm",
@@ -59,7 +61,8 @@
       "actorStackGeneration": "NOT_EXECUTED",
       "executionContextBinding": "NOT_EXECUTED",
       "callbackResumptionSafety": "NOT_EXECUTED",
-      "taskRootRetirement": "NOT_EXECUTED"
+      "taskRootRetirement": "NOT_EXECUTED",
+      "suspendedCallFrameState": "NOT_EXECUTED"
     },
     {
       "id": "net",
@@ -74,7 +77,8 @@
       "actorStackGeneration": "NOT_EXECUTED",
       "executionContextBinding": "NOT_EXECUTED",
       "callbackResumptionSafety": "NOT_EXECUTED",
-      "taskRootRetirement": "NOT_EXECUTED"
+      "taskRootRetirement": "NOT_EXECUTED",
+      "suspendedCallFrameState": "NOT_EXECUTED"
     },
     {
       "id": "wasm",
@@ -89,7 +93,8 @@
       "actorStackGeneration": "NOT_EXECUTED",
       "executionContextBinding": "NOT_EXECUTED",
       "callbackResumptionSafety": "NOT_EXECUTED",
-      "taskRootRetirement": "NOT_EXECUTED"
+      "taskRootRetirement": "NOT_EXECUTED",
+      "suspendedCallFrameState": "NOT_EXECUTED"
     },
     {
       "id": "forge",
@@ -104,7 +109,8 @@
       "actorStackGeneration": "NOT_EXECUTED",
       "executionContextBinding": "NOT_EXECUTED",
       "callbackResumptionSafety": "NOT_EXECUTED",
-      "taskRootRetirement": "NOT_EXECUTED"
+      "taskRootRetirement": "NOT_EXECUTED",
+      "suspendedCallFrameState": "NOT_EXECUTED"
     }
   ],
   "scenarios": [
@@ -289,6 +295,51 @@
         "taskRootRetirement",
         "actorStackStorage",
         "supervisorRecovery"
+      ]
+    },
+    {
+      "id": "await-inside-nontail-call-preserves-parent-frame",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "executionContextBinding",
+        "suspendedFrameOwnership",
+        "suspendedCallFrameState"
+      ]
+    },
+    {
+      "id": "cancel-inside-nontail-call-runs-cleanup-before-retire",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "cancelled-task",
+      "requiredEvidence": [
+        "compilerGuest",
+        "taskRootRetirement",
+        "suspendedCallFrameState"
+      ]
+    },
+    {
+      "id": "duplicate-resume-cannot-reenter-suspended-call-frame",
+      "source": null,
+      "kind": "pending-actor-acceptance",
+      "expectedFailureClass": "duplicate-continuation-resume",
+      "requiredEvidence": [
+        "compilerGuest",
+        "callbackResumptionSafety",
+        "suspendedCallFrameState"
+      ]
+    },
+    {
+      "id": "stale-parent-return-pc-rejected-after-generation-change",
+      "source": null,
+      "kind": "pending-isolation",
+      "expectedFailureClass": "stale-actor-generation",
+      "requiredEvidence": [
+        "supervisorRecovery",
+        "actorStackGeneration",
+        "suspendedCallFrameState"
       ]
     }
   ],
