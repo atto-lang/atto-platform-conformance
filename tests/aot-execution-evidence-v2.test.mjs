@@ -152,3 +152,58 @@ test('failed compiler requires admitted job and nonzero executed steps',()=>{
     assert.equal(classify(y).classification,'INVALID');
   }
 });
+
+test('receipt rejects hidden and symbol-keyed metadata at every record boundary', () => {
+  for (const mutate of [
+    x => Object.defineProperty(x, 'releaseQualified', {value:true}),
+    x => {x[Symbol('hidden-proof')] = 'PASS';},
+    x => Object.defineProperty(x.artifact, 'alternateDigest', {value:digest}),
+    x => {x.artifact[Symbol.for('alternate-artifact')] = digest;},
+    x => Object.defineProperty(x.closure, 'runtimeCodegenApproved', {value:true}),
+    x => {x.closure[Symbol('codegen')] = true;},
+    x => Object.defineProperty(x.execution, 'runnerVerified', {value:true}),
+    x => {x.execution[Symbol('runner')] = 'fake';}
+  ]) {
+    const claim=good();
+    mutate(claim);
+    const result=classify(claim);
+    assert.equal(result.classification, 'INVALID');
+    assert.equal(result.releaseQualified, false);
+  }
+});
+
+test('required receipt fields must be enumerable own data, never hidden getters', () => {
+  for (const [section,key] of [
+    [null,'sourceCommit'],['artifact','kind'],['closure','dispatchClosed'],
+    ['execution','jobId']
+  ]) {
+    const claim=good();
+    const target=section===null?claim:claim[section];
+    const descriptor=Object.getOwnPropertyDescriptor(target,key);
+    Object.defineProperty(target,key,{...descriptor,enumerable:false});
+    assert.equal(classify(claim).classification,'INVALID',key);
+  }
+  const claim=good();
+  Object.defineProperty(claim.closure,'ownershipChecked',{
+    enumerable:true,get(){throw Error('untrusted accessor');}
+  });
+  assert.equal(classify(claim).classification,'INVALID');
+});
+
+test('runner label must not be a blank, control-character or multiline provenance claim', () => {
+  for(const label of ['', ' ', ' runner', 'runner ', '\\u0000', 'job\\nother', 'runner\\rverified', 'runner\\u007f']) {
+    const claim=good();
+    claim.execution.runnerName=label;
+    assert.equal(classify(claim).classification,'INVALID',JSON.stringify(label));
+  }
+});
+
+test('frozen JSON-shaped receipt remains structurally reviewable', () => {
+  const claim=good();
+  Object.freeze(claim.artifact);
+  Object.freeze(claim.closure);
+  Object.freeze(claim.execution);
+  Object.freeze(claim);
+  assert.equal(classify(claim).classification,'AOT_STRUCTURAL_REVIEW_REQUIRED');
+  assert.equal(classify(claim).releaseQualified,false);
+});
