@@ -165,6 +165,8 @@ test("canonical v1 contract seals every promotion rule and non-evidence item", (
       [original[0], original[0], ...original.slice(1)],
       null,
     ]) {
+      // Reversing a one-element v1 list is a no-op, not a genuine mutation.
+      if (JSON.stringify(variant) === JSON.stringify(original)) continue;
       const altered = structuredClone(contract);
       altered.promotionRules[stage] = variant;
       const result = check(validReceipt("desktop", "compiler-guest"), altered);
