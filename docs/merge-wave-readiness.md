@@ -26,3 +26,20 @@ The manifest is deliberately pinned to the original 2026-11-07 wave. Base SHAs w
 
 - Independent ORESoftware approvals are not yet present on the five original public PRs, despite successful executed CI.
 - [Conformance issue #315](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/315) documents private-org Actions runner admission failing because of a payment/budget condition. This needs authorized billing administration, not runner-source mirroring or CI evidence fabrication.
+
+## Expanded adversarial coverage (2026-11-07)
+
+Run all three test files with Node 22+:
+
+    node --test tests/merge-wave-readiness-v1.test.mjs tests/merge-wave-adversarial-v1.test.mjs tests/merge-wave-provider-v1.test.mjs
+
+Latest **local** result: **158/158 passing test cases**, including 139 additional tests and a deterministic 256-iteration mutation matrix. The additional tests cover:
+
+- Dismissed, stale, self, untrusted, pending, superseded and same-timestamp contradictory reviews, including malformed submission times
+- Source, base, repository, run, job, attempt and PR-association identity mismatches
+- Missing, duplicate, failed, skipped or zero-step jobs; missing named test steps despite successful setup
+- Unsafe manifest paths, duplicate PR identities, bounds and strict read-only GET behavior
+- API failure/permission denial, missing or malformed JSON envelopes, 10-page pagination cap and HTTP redirect refusal
+- Dependency and target-main ordering, with confirmation that a passing report **never** authorizes a merge
+
+GitHub API account privileges, approval applicability under CODEOWNERS, dynamic branch rulesets, active agent leases and source-level semantic compatibility **remain external checks**. The real REST provider requires a token with read access; the unit tests use deterministic mocks and cannot establish hosted runner admission. Update the frozen base SHA after every successful mainline merge; do not disable stale-base validation.
