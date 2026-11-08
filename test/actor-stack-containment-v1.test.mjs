@@ -48,7 +48,7 @@ function validatePending(matrix) {
   }
   assert.equal(matrix.requirements.nativeStackOverflowRecoverableOnSharedCarrier, false);
   assert.equal(matrix.requirements.untrustedArbitraryNativeCodeRequiresKillableWorker, true);
-  assert.ok(matrix.scenarios.length >= 42);
+  assert.ok(matrix.scenarios.length >= 50);
   assert.match(matrix.javaFrameArenaReference, /\/pull\/2627$/);
   const bootstrap = matrix.frameStorageBootstrap;
   assert.equal(bootstrap.javaHostPrimitive, 'MANAGED_BYTES_ONLY');
@@ -157,6 +157,29 @@ function validatePending(matrix) {
   assert.equal(bootstrap.javaM33EnvSnapshotActualCallbackParity, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaM33EnvSnapshotIterativeDispatcher, false);
   assert.equal(bootstrap.javaM33EnvSnapshotNativeStackProof, 'NOT_EXECUTED');
+  assert.match(bootstrap.javaM33aIterativeSourceReference, /\/pull\/2667$/);
+  assert.equal(bootstrap.javaM33aIterativeStatus, 'AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33aWholeGraphFailClosed, true);
+  assert.equal(bootstrap.javaM33aScalarFnEnabled, true);
+  assert.equal(bootstrap.javaM33aActualNonTailGuestDispatcher, 'AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33aScalarFrameHeaderBytes, 16);
+  assert.equal(bootstrap.javaM33aTypedScalarSlotBytes, 9);
+  assert.equal(bootstrap.javaM33aInstructionsPerSafepoint, 128);
+  assert.equal(bootstrap.javaM33aHostJUnitAuthored, 33);
+  assert.equal(bootstrap.javaM33aParserJUnitAuthored, 16);
+  assert.equal(bootstrap.javaM33aAttoJUnitAuthored, 5);
+  assert.equal(bootstrap.javaM33aJUnitExecuted, 0);
+  assert.equal(bootstrap.javaM33aCompiledAttoGuestEvidence, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33aNonScalarJvmFallbackStillRecursive, true);
+  assert.equal(bootstrap.javaM33aActorMethodsLowered, false);
+  assert.equal(bootstrap.javaM33aClosuresLowered, false);
+  assert.equal(bootstrap.javaM33aSuspendedGuestReturnPCsLowered, false);
+  assert.equal(bootstrap.javaM33aGeneralReturnRecordAbiConnected, false);
+  assert.equal(bootstrap.javaM33aNativeActorStackFaultProof, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33aLLVMGuest, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33aNETGuest, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33aWasmGuest, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33aForgeGuest, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaAuthoredLegacyCompilerGuestTests, 1);
   assert.equal(bootstrap.javaLegacyCompilerGuestTestExecuted, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaGuardedInvocationByteFrames,
@@ -278,6 +301,22 @@ test('fake pass, duplicate backend, deleted proof and false promotion are reject
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33EnvSnapshotIterativeDispatcher = true;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33EnvSnapshotNativeStackProof = 'PASS';})));
   assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaM33EnvSnapshotReference;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33aIterativeStatus = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33aJUnitExecuted = 54;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33aWholeGraphFailClosed = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33aScalarFrameHeaderBytes = 0;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33aInstructionsPerSafepoint = 1;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33aNonScalarJvmFallbackStillRecursive = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33aActualNonTailGuestDispatcher = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33aCompiledAttoGuestEvidence = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33aActorMethodsLowered = true;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33aClosuresLowered = true;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33aSuspendedGuestReturnPCsLowered = true;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33aGeneralReturnRecordAbiConnected = true;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33aNativeActorStackFaultProof = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33aLLVMGuest = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33aForgeGuest = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaM33aIterativeSourceReference;})));
   assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaCompilerReturnRecordReference;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerLexicalGuestExecution = 'PASS';})));
   assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaCompilerScalarParameterReference;})));
@@ -525,6 +564,40 @@ test('M3.3 Env snapshot is task-identity fenced but has no guest callback parity
   assert.equal(b.javaM33EnvSnapshotJUnitMethodsExecuted, 0);
   assert.equal(b.javaM33EnvSnapshotActualCallbackParity, 'NOT_EXECUTED');
   assert.equal(b.javaM33EnvSnapshotIterativeDispatcher, false);
+  for (const backend of matrix.backends) {
+    assert.equal(backend.compilerGuest, 'NOT_EXECUTED');
+    assert.equal(backend.actorStackStorage, 'NOT_EXECUTED');
+  }
+  assert.equal(matrix.promotion.certified, false);
+});
+
+test('M3.3a iterative scalar call/return is authored, not five-backend guest stack parity', async () => {
+  const matrix = validatePending(await load());
+  const cases = [
+    'actor-scalar-iterative-non-tail-call-return-pcs',
+    'actor-scalar-iterative-proper-tail-100k-constant-frames',
+    'actor-scalar-iterative-mutual-tail-no-jvm-recursion',
+    'actor-scalar-iterative-non-tail-budget-denial',
+    'actor-scalar-iterative-overflow-sibling-survives',
+    'actor-scalar-iterative-caller-operand-preservation',
+    'actor-scalar-iterative-pc-callee-id-corruption-fail-stop',
+    'actor-scalar-iterative-unsupported-reference-effect-fallback'
+  ];
+  for (const name of cases) {
+    const scenario = matrix.scenarios.find(s => s.id === name);
+    assert.ok(scenario, 'missing M3.3a guest proof: ' + name);
+    assert.equal(scenario.source, null, 'authored .atto files are not executed receipts');
+    assert.ok(scenario.requiredEvidence.includes('compilerGuest'));
+  }
+  const b = matrix.frameStorageBootstrap;
+  assert.equal(b.javaM33aHostJUnitAuthored, 33);
+  assert.equal(b.javaM33aParserJUnitAuthored, 16);
+  assert.equal(b.javaM33aAttoJUnitAuthored, 5);
+  assert.equal(b.javaM33aJUnitExecuted, 0);
+  assert.equal(b.javaM33aInstructionsPerSafepoint, 128);
+  assert.equal(b.javaM33aNonScalarJvmFallbackStillRecursive, true);
+  assert.equal(b.javaM33aGeneralReturnRecordAbiConnected, false);
+  assert.equal(b.javaM33aCompiledAttoGuestEvidence, 'NOT_EXECUTED');
   for (const backend of matrix.backends) {
     assert.equal(backend.compilerGuest, 'NOT_EXECUTED');
     assert.equal(backend.actorStackStorage, 'NOT_EXECUTED');
