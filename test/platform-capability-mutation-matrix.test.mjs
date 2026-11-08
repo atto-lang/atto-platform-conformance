@@ -135,11 +135,47 @@ test("platform substitution and weakened policy registry cannot be silently acce
     (c) => { c.stageOrder.reverse(); },
     (c) => { c.contract = "oreslang.platform-capability/0"; },
     (c) => { c.schemaVersion = 0; },
+    (c) => { c.platforms.desktop.targetClass = "public-web"; },
+    (c) => { delete c.platforms.embedded.targetClass; },
+    (c) => { c.promotionRules.all = []; },
+    (c) => { c.promotionRules.all = ["exact-head", "target-artifact-digest", "executed-steps"]; },
+    (c) => { delete c.promotionRules["compiler-guest"]; },
+    (c) => { c.promotionRules["compiler-guest"] = ["compiler-produced"]; },
+    (c) => { c.promotionRules["physical-hardware"] = []; },
+    (c) => { c.promotionRules["unreviewed-guest"] = ["executed-steps"]; },
+    (c) => { c.promotionRules = null; },
+    (c) => { c.nonEvidence = []; },
+    (c) => { c.nonEvidence[0] = "zero-step-is-verified"; },
+    (c) => { delete c.nonEvidence; },
   ]) {
     const altered = structuredClone(contract);
     mutate(altered);
     const result = check(validReceipt("desktop", "compiler-guest"), altered);
     assert.equal(result.ok, false, "weakened registry admitted: " + mutate.toString());
+  }
+});
+
+test("canonical v1 contract seals every promotion rule and non-evidence item", () => {
+  for (const [stage, original] of Object.entries(contract.promotionRules)) {
+    for (const variant of [
+      [],
+      original.slice(1),
+      [...original, "skip-review"],
+      [...original].reverse(),
+      [original[0], original[0], ...original.slice(1)],
+      null,
+    ]) {
+      const altered = structuredClone(contract);
+      altered.promotionRules[stage] = variant;
+      const result = check(validReceipt("desktop", "compiler-guest"), altered);
+      assert.equal(result.ok, false, stage + " accepted changed requirements " + String(variant));
+    }
+  }
+  for (const index of contract.nonEvidence.keys()) {
+    const altered = structuredClone(contract);
+    altered.nonEvidence.splice(index, 1);
+    assert.equal(check(validReceipt("desktop", "compiler-guest"), altered).ok, false,
+      "nonEvidence item " + index + " dropped without policy failure");
   }
 });
 
