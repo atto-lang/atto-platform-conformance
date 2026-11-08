@@ -68,7 +68,7 @@ test("immutable Sync sharing permits reads, never writable aliases", () => {
   o.share("fixed", "a", "b", "read");
   assert.equal(o.use("b", "fixed", "read"), "LOCK_FREE");
   denied(() => o.use("b", "fixed", "write"));
-  denied(() => o.use("a", "fixed", "write"), "write conflicts");
+  denied(() => o.use("a", "fixed", "write"), "immutable backing");
 });
 
 test("shared mutable region has a logical per-resource RW guard", () => {
