@@ -11,7 +11,7 @@ function uint(value, label) {
 }
 export class ActorMeter {
   #fuel; #initial; #counter; #elapsed=0n; #wall; #cpu=0n; #cpuBudget;
-  #mode; #critical=0; #cancelled=false; #closed=false;
+  #mode; #critical=0; #cancelled=false; #closed=false; #admitted=false;
   #slow=0n; #handoffs=0n; #deferred=false;
   constructor({fuel,wallBudget,cpuBudget,interval=128,counter=0n,mode='untrusted'}) {
     if (!INTERVALS.includes(interval)) throw new MeterFailure('INVALID_INTERVAL');
@@ -25,9 +25,10 @@ export class ActorMeter {
   get handoffs(){return this.#handoffs;} get deferred(){return this.#deferred;}
   get cpu(){return this.#cpu;} get closed(){return this.#closed;}
   #deny(code){this.#closed=true;throw new MeterFailure(code);}
-  #active(){if(this.#closed) throw new MeterFailure('ACTOR_CLOSED');}
+  #active(){if(this.#closed) throw new MeterFailure('ACTOR_CLOSED');if(!this.#admitted)throw new MeterFailure('METER_NOT_ADMITTED');}
   #check(elapsed){
-    this.#active(); const t=uint(elapsed,'ELAPSED');
+    if(this.#closed)throw new MeterFailure('ACTOR_CLOSED');
+    const t=uint(elapsed,'ELAPSED');
     if(t<this.#elapsed)this.#deny('CLOCK_ROLLBACK');
     this.#elapsed=t;
     if(t>=this.#wall)this.#deny('WALL_EXHAUSTED');
@@ -35,9 +36,11 @@ export class ActorMeter {
     if(this.#fuel===0n)this.#deny('FUEL_EXHAUSTED');
   }
   enterOrResume(elapsed) {
+    const wasAdmitted=this.#admitted;
     this.#check(elapsed);
-    this.#counter=0n; // physical turn may reset cadence, NOT logical fuel/CPU/deadline
     if(this.#cancelled)this.#deny('CANCELLED');
+    if(wasAdmitted)this.#counter=0n; // physical resume resets cadence, never quota
+    this.#admitted=true;
   }
   chargeCpu(delta){
     this.#active(); const n=uint(delta,'CPU_DELTA');
@@ -73,6 +76,7 @@ export class ActorMeter {
     return true;
   }
   explicitCooperate(elapsed){
+    this.#active();
     this.#check(elapsed);
     if(this.#cancelled)this.#deny('CANCELLED');
     if(this.#mode!=='trusted')throw new MeterFailure('UNTRUSTED_COOPERATE_DISABLED');
