@@ -6,7 +6,7 @@
 
 Distinguish program-specific guest AOT from a Graal Native Image / .NET NativeAOT that merely packages a guest interpreter, from a Cranelift/LLVM relocatable object that is not linked, from a Wasmtime host without a closed guest module, and from optional JIT-only or hybrid operation.
 
-`lib/aot-execution-evidence-v2.mjs` exports `classifyAotExecutionEvidence(receipt, trustedExpected)`. The caller supplies an independently read source commit/tree selector. A self-reported receipt cannot authenticate GitHub job steps, compiler provenance, toolchain identity, a real guest entrypoint, absence of JIT, independent approval, or release eligibility. **Every classification, including AOT_STRUCTURAL_REVIEW_REQUIRED, carries ok=false and releaseQualified=false. structurallyValid=true is informational and must not be treated as promotion.**
+`lib/aot-execution-evidence-v2.mjs` exports the backward-compatible `classifyAotExecutionEvidence(receipt, trustedExpected)` and the **strict backend-bound** `classifyAotExecutionEvidenceForBackend(receipt, trustedExpected)`. For new backend-specific evidence checks, the caller MUST supply an independently retrieved exact `{sourceCommit, sourceTree, backend}` selector and call the strict entrypoint. Source-only two-field selectors remain accepted by the legacy helper for compatibility; they do **not** establish backend identity. Forge and Cranelift are two distinct lanes, never aliases. A self-reported receipt cannot authenticate GitHub job steps, compiler provenance, toolchain identity, a real guest entrypoint, absence of JIT, independent approval, or release eligibility. **Every classification, including AOT_STRUCTURAL_REVIEW_REQUIRED, carries ok=false and releaseQualified=false. structurallyValid=true is informational and must not be treated as promotion.**
 
 ## Admission semantics
 
@@ -25,6 +25,7 @@ Distinguish program-specific guest AOT from a Graal Native Image / .NET NativeAO
 | LLVM | typed guest MIR -> linked native guest executable, exact guest entrypoint | LLVM object, OresVM host-only execution, ORC fallback | retirement fencing, arena lifecycle, sanitizers |
 | .NET NativeAOT | linked program-specific guest native methods and actor code | NativeAOT host that interprets guest source | managed vs native allocations and deterministic drop |
 | Wasm | closed compiled guest module instantiated and executed | Wasmtime host alone | linear-memory lifetime and isolate fencing |
+| Forge | standalone linked compiled guest executable for the Forge target | inferred parity from Cranelift/LLVM output or an unlinked host model | native ownership, actor heaps and frame retirement |
 | Cranelift | linked standalone guest executable | scalar JIT or unlinked object | native ownership and actor heap safety |
 
 ## Required promotion sequence
@@ -38,6 +39,6 @@ Distinguish program-specific guest AOT from a Graal Native Image / .NET NativeAO
 
 ## Local source-free test
 
-    node --test tests/aot-execution-evidence-v2.test.mjs
+    node --test tests/aot-execution-evidence-v2.test.mjs tests/aot-stage-evidence-negative-matrix.test.mjs tests/aot-backend-lane-identity-v2.test.mjs
 
-The 31 authored Node cases test structural classification and adversarial substitution only. They do **not** execute any AttoLang compiler or guest program. Existing v1 validator remains backward-compatible and unmodified.
+These Node suites test structural classification, independent backend-lane binding, and adversarial substitution only. They do **not** execute any AttoLang compiler or guest program. Existing v1 validator remains backward-compatible and unmodified.
