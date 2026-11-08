@@ -778,6 +778,83 @@
         "actorStackStorage",
         "actorStackGeneration"
       ]
+    },
+    {
+      "id": "actor-stack-quota-overflow-fail-stop-only-owner",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-stack-budget",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-stack-swallowed-quota-no-further-mail",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-stack-budget",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-jvm-stackoverflow-recovery-at-admitted-turn",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "native-carrier-stack-overflow",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-native-small-xss-process-a-fails-b-survives",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "native-carrier-stack-overflow",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-overflow-arena-zeroization-generation-fence",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-stack-budget",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-overflow-supervisor-structured-child-and-sibling-policy",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-stack-budget",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-stack-overflow-nonadmitted-vm-fatal-still-propagates",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "runtime-fatal-not-actor-guest",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorSurvival"
+      ]
     }
   ],
   "promotion": {
@@ -974,6 +1051,26 @@
     "javaM33cNETGuest": "NOT_EXECUTED",
     "javaM33cWasmGuest": "NOT_EXECUTED",
     "javaM33cForgeGuest": "NOT_EXECUTED",
-    "javaM33cNote": "Java #2669 adds a control-flow-aware scalar bytecode verifier (exact typed operand stack, definite locals at joins/loops, call/return arity and noncanonical image fields). 39 new JUnit methods are authored, not executed; a separate JDK 21 standalone stub-harness compiled the exact verifier blob and passed 40/40 smoke assertions, not Maven/Graal/AttoLang guest."
+    "javaM33cNote": "Java #2669 adds a control-flow-aware scalar bytecode verifier (exact typed operand stack, definite locals at joins/loops, call/return arity and noncanonical image fields). 39 new JUnit methods are authored, not executed; a separate JDK 21 standalone stub-harness compiled the exact verifier blob and passed 40/40 smoke assertions, not Maven/Graal/AttoLang guest.",
+    "javaM33dStackOverflowSourceReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2673",
+    "javaM33dStackOverflowStatus": "AUTHORED_NOT_EXECUTED",
+    "javaM33dPerActorGuestStackAndArena": true,
+    "javaM33dManagedFrameQuotaFailStop": true,
+    "javaM33dSwallowedManagedQuotaMustStopBeforeNextMail": true,
+    "javaM33dJVMStackOverflowOnlyAtAdmittedActorTurn": true,
+    "javaM33dPoisonActorArenaBeforeStop": true,
+    "javaM33dStacklessActorTerminalException": true,
+    "javaM33dOtherVirtualMachineErrorsRethrown": true,
+    "javaM33dSharedCarrierSiblingIsolation": "AUTHORED_NOT_EXECUTED",
+    "javaM33dLowStackSubprocessArgument": "-Xss256k",
+    "javaM33dLowStackSubprocessOutput": "ACTOR_NATIVE_STACK_OVERFLOW=A_FAILS_B_SURVIVES",
+    "javaM33dHostJUnitAuthored": 7,
+    "javaM33dHostJUnitExecuted": 0,
+    "javaM33dLowStackSubprocessExecuted": 0,
+    "javaM33dNativeJniFaultContainment": "NOT_EXECUTED",
+    "javaM33dSupervisorRestartGeneration": "NOT_EXECUTED",
+    "javaM33dCompiledAttoStackOverflow": "NOT_EXECUTED",
+    "javaM33dFiveBackendStackParity": "NOT_EXECUTED",
+    "javaM33dNote": "Java #2673 adds best-effort StackOverflowError recovery at a fully admitted physical actor turn only; poisons owner guest stack/actor arena and stops actor without rethrowing recovered SOE to a shared carrier. Structured descendants follow existing stop policy; independent siblings have separate budgets. Seven host JUnit methods and a shallow-native-stack JVM process probe are authored, not executed. Arbitrary native/JNI fatal process faults still require isolated workers."
   }
 }
