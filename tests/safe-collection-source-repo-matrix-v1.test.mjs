@@ -13,7 +13,7 @@ test("all nine oreslang-source.* backends are represented without false parity",
   assert.equal(matrix.status,"UNATTESTED_PER_BACKEND");
   const contract=JSON.parse(readFileSync(path.join(root,matrix.source_contract),"utf8"));
   assert.equal(matrix.source_fixture_cases,contract.cases.length);
-  assert.equal(contract.cases.length,18);
+  assert.equal(contract.cases.length,19);
   assert.ok(contract.cases.every(x=>x.attestation==="NOT_EXECUTED"));
   assert.equal(matrix.source_fixture_execution,"NOT_EXECUTED");
   assert.equal(matrix.repos.length,expected.length);
