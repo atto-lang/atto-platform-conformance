@@ -71,7 +71,7 @@ export class ActorMeter {
       this.#readingClock=true;
       try{sampled=elapsed();}
       catch(error){
-        if(error instanceof MeterFailure)throw error;
+        if(this.#closed&&error instanceof MeterFailure)throw error;
         this.#deny('CLOCK_SOURCE_FAILURE');
       }finally{this.#readingClock=false;}
     }
