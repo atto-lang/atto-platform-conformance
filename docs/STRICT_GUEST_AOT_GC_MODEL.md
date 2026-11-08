@@ -15,7 +15,7 @@ rustc --edition=2021 -D warnings --test tools/strict_guest_aot_gc_model.rs -o /t
 /tmp/strict-guest-aot-gc-model-tests
 ```
 
-This model suite has 38 individually named Rust `#[test]` functions, including
+This model suite has 51 individually named Rust `#[test]` functions, including
 mutation loops across required negative and positive classes. The accompanying
 workflow pins the submitted PR head for checkout. **The source organization
 currently fails Actions before runner step execution:** a created workflow
@@ -110,3 +110,25 @@ and 8 positive classes. The model includes regression tests for each rejection.
 GitHub, prove compiler execution, certify guest code or authorize release.
 The source-org Actions workflow is still blocked before runner allocation;
 therefore new Rust test execution remains NOT_EXECUTED pending stepful CI.
+
+## 2026-11-07 fixture and execution provenance hardening
+
+The 51-test synthetic suite adds per-fixture compiler SHA-256 identity, CI job
+identity and retry-attempt binding for all 16 negative and eight positive cases.
+These checks reject otherwise valid-looking evidence spliced from different
+compiler builds, jobs or attempts. The numbered workflow steps must advance
+monotonically and preserve checkout -> compile -> execute -> allocator probe
+ordering. The top-level emitted artifact SHA-256 must be represented in at
+least one of the positive-case artifact records.
+
+The Rust-only workflow now fails if its compiled test binary lists anything
+other than **51 tests, zero benchmarks**, and runs the complete suite without
+a name filter before printing an explicitly non-certifying model marker.
+Neither the marker nor a green PR-head check is a backend certification.
+
+This remains a **source-free model, not authenticated provenance**. A run still
+needs independently established GitHub identity, protected source policy,
+trustworthy logs and real native/wasm guest execution before any release
+promotion. Because the original-source private Actions runner cannot start,
+the new 51 tests remain **NOT_EXECUTED** until a stepful exact-head receipt
+is available.
