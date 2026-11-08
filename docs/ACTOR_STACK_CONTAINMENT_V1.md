@@ -348,3 +348,41 @@ fake executed-test counts are rejected in negative mutation tests.
 Real exact-head runner steps, host JUnit XML, independent review and
 compiler-backed supervisor/sibling actor tests remain mandatory before
 any merge or parity upgrade.
+
+
+## Java M3.3-prep SourceTask identity and Env.snapshot lifecycle fence
+
+[Java #2665](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2665)
+is stacked on #2662. It records the exact `ExecutionContext` owner for every
+managed scalar lexical `Env.Slot` and requires **reference identity with
+the currently admitted SourceTask** for lookup, assignment and slot
+initialization. `Env.snapshot()` also checks each managed local before
+copying JVM Slot aliases; nested scopes check their parent snapshots
+recursively. This closes an unsafe cross-SourceTask alias path that would
+otherwise reach the current actor arena with another task's lexical
+slot identity or potentially use stale JVM compatibility values.
+A rejected stale host/callback/other-task access leaves the healthy
+shared actor arena unpoisoned. Legitimate same-task snapshot reads and
+updates across `await` remain supported in the authored host model.
+
+The earlier [Java #2662](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2662)
+test `ActorLexicalTaskCaptureFenceTest` also used a nonexistent
+three-argument `Env.define` reflective signature; #2665 corrects it to
+the actual four-argument method. This correction matters because
+otherwise the three existing Task-copy/move regression tests would fail
+at setup without testing the capture guard at all.
+
+Three additional host/runtime JUnit methods are authored, **0 executed**:
+same-SourceTask snapshot across `await` with unauthorized host and
+retired-frame denial; distinct SourceTask in one actor denied without
+poisoning the shared arena; corrupt/null owner token rejected with owner
+recovery. These are not canonical compiled `.atto` async callback,
+closure or native stack isolation proofs.
+
+Four new pending scenarios bring this contract to **42**. Conformance
+negative mutations reject fake JUnit execution, false same-actor
+cross-task access, fabricated callback parity, weakened owner fences,
+and premature stackless-dispatch claims. All backend guest evidence is
+still `NOT_EXECUTED`, pending exact-head nonzero-step Maven/Node
+execution, compiled guest ownership tests, supervisor restart, low
+native-stack process survival and independent code review.
