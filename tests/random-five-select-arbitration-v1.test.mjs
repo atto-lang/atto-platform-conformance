@@ -71,3 +71,11 @@ test('reference arbitration is not actual carrier scheduling proof',()=>{
  const s=new Select(['a','b']);assert.equal(s.snapshot().state,'OPEN');
  assert.equal('guestExecution' in s.snapshot(),false);
 });
+
+
+test('very large values do not bypass bounded arbitration memory',()=>{
+ const s=new Select(['a','b']);
+ assert.equal(s.offer('a','token','x'.repeat(2049)).diagnostic,'INVALID_OR_DUPLICATE_RESERVATION');
+ assert.equal(s.snapshot().reserved,0);
+ assert.equal(s.offer('a','token','x'.repeat(2048)).status,'RESERVED');
+});
