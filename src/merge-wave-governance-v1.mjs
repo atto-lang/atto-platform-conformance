@@ -62,9 +62,14 @@ export function assessGovernance({repository,head,pr,reviews,protection,rules,ch
   for(const r of Array.isArray(reviews)?reviews:[]){
     if(r?.state==='PENDING'&&r.submitted_at==null)continue;
     const who=typeof r?.user?.login==='string'?r.user.login.toLowerCase():'';
-    const timestamp=typeof r?.submitted_at==='string'&&r.submitted_at.endsWith('Z')?
-      Date.parse(r.submitted_at):NaN;
-    if(!who||!Number.isFinite(timestamp)){fail('INVALID_REVIEW_TIMELINE');continue;}
+    const rawTime=r?.submitted_at;
+    const timestamp=typeof rawTime==='string'&&
+      /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/.test(rawTime)
+      ? Date.parse(rawTime) : NaN;
+    const canonical=Number.isFinite(timestamp)?new Date(timestamp).toISOString():'';
+    if(!who||!Number.isFinite(timestamp)||canonical.slice(0,19)!==rawTime?.slice(0,19)){
+      fail('INVALID_REVIEW_TIMELINE');continue;
+    }
     const previous=latest.get(who);
     if(!previous||timestamp>previous.time)latest.set(who,{time:timestamp,reviews:[r]});
     else if(timestamp===previous.time)previous.reviews.push(r);
