@@ -159,7 +159,7 @@
       "untrusted": true
     },
     {
-      "id": "untrusted-quota-continuous-but-cooperation-uncertified",
+      "id": "untrusted-proven",
       "kind": "auto-backedge",
       "hasHeapContinuation": true,
       "expect": "DEFER",
