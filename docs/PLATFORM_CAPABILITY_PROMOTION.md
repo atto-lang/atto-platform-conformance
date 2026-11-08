@@ -66,6 +66,14 @@ the verifier does not independently prove that a workflow log, binary, source
 revision, emulator, or physical device is trustworthy; reviewers still inspect
 the underlying evidence.
 
+The CLI prints `PASS (SCHEMA_ONLY; NOT_AUTHENTICATED; independent CI/artifact
+review required)` on a well-formed receipt. Its exit code 0 is strictly a
+syntactic/policy-shape result; it must **never** be promoted to guest compiler
+execution, physical target verification or independent artifact attestation.
+The CLI subprocess regression suite covers a positive shape and fail-closed
+zero-step, policy substitution, malformed JSON, absent file and missing-argument
+cases.
+
 ## Platform registry
 
 v1 registers `mobile`, `desktop`, `embedded`, `iot`, `fpga`, and
