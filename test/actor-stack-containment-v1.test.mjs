@@ -48,7 +48,7 @@ function validatePending(matrix) {
   }
   assert.equal(matrix.requirements.nativeStackOverflowRecoverableOnSharedCarrier, false);
   assert.equal(matrix.requirements.untrustedArbitraryNativeCodeRequiresKillableWorker, true);
-  assert.ok(matrix.scenarios.length >= 50);
+  assert.ok(matrix.scenarios.length >= 56);
   assert.match(matrix.javaFrameArenaReference, /\/pull\/2627$/);
   const bootstrap = matrix.frameStorageBootstrap;
   assert.equal(bootstrap.javaHostPrimitive, 'MANAGED_BYTES_ONLY');
@@ -180,6 +180,21 @@ function validatePending(matrix) {
   assert.equal(bootstrap.javaM33aNETGuest, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaM33aWasmGuest, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaM33aForgeGuest, 'NOT_EXECUTED');
+  assert.match(bootstrap.javaM33bSourceReference, /\/pull\/2668$/);
+  assert.equal(bootstrap.javaM33bTypedAdmissionStatus, 'AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33bExactPrimitiveKindsGuarded, true);
+  assert.equal(bootstrap.javaM33bRebindOnlyExplicitLet, true);
+  assert.equal(bootstrap.javaM33bImplicitJvmIntegerWideningAllowed, false);
+  assert.equal(bootstrap.javaM33bMixedPrimitiveEqualityAllowed, false);
+  assert.equal(bootstrap.javaM33bForgedOperandStackPointerFailsClosed, true);
+  assert.equal(bootstrap.javaM33bActorRuntimeHostTestsAuthored, 38);
+  assert.equal(bootstrap.javaM33bParserNegativeTestsAuthored, 32);
+  assert.equal(bootstrap.javaM33bAttoGuestTestsAuthored, 5);
+  assert.equal(bootstrap.javaM33bTotalJUnitTestsAuthored, 75);
+  assert.equal(bootstrap.javaM33bJUnitTestsExecuted, 0);
+  assert.equal(bootstrap.javaM33bTypedAttoGuestEvidence, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33bNativeStackFailureContainment, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33bFiveBackendParity, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaAuthoredLegacyCompilerGuestTests, 1);
   assert.equal(bootstrap.javaLegacyCompilerGuestTestExecuted, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaGuardedInvocationByteFrames,
@@ -317,6 +332,17 @@ test('fake pass, duplicate backend, deleted proof and false promotion are reject
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33aLLVMGuest = 'PASS';})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33aForgeGuest = 'PASS';})));
   assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaM33aIterativeSourceReference;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33bTypedAdmissionStatus = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33bExactPrimitiveKindsGuarded = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33bRebindOnlyExplicitLet = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33bImplicitJvmIntegerWideningAllowed = true;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33bMixedPrimitiveEqualityAllowed = true;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33bForgedOperandStackPointerFailsClosed = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33bJUnitTestsExecuted = 75;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33bTypedAttoGuestEvidence = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33bNativeStackFailureContainment = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33bFiveBackendParity = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaM33bSourceReference;})));
   assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaCompilerReturnRecordReference;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerLexicalGuestExecution = 'PASS';})));
   assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaCompilerScalarParameterReference;})));
@@ -602,5 +628,33 @@ test('M3.3a iterative scalar call/return is authored, not five-backend guest sta
     assert.equal(backend.compilerGuest, 'NOT_EXECUTED');
     assert.equal(backend.actorStackStorage, 'NOT_EXECUTED');
   }
+  assert.equal(matrix.promotion.certified, false);
+});
+
+test('M3.3b typed scalar admission remains distinct from executed .atto proof', async () => {
+  const matrix = validatePending(await load());
+  const cases = [
+    'actor-scalar-int-bool-type-admission-must-precede-execution',
+    'actor-scalar-val-const-parameter-rebind-rejected',
+    'actor-scalar-synthetic-integer-literal-no-implicit-widening',
+    'actor-scalar-forged-operand-sp-fail-stop',
+    'actor-scalar-mixed-primitive-tags-fail-stop',
+    'actor-scalar-exact-boolean-equality-condition'
+  ];
+  for (const name of cases) {
+    const scenario = matrix.scenarios.find(s => s.id === name);
+    assert.ok(scenario, 'missing M3.3b proof gate: ' + name);
+    assert.equal(scenario.source, null, 'authored tests are not compiler-backed receipts');
+    assert.ok(scenario.requiredEvidence.includes('compilerGuest'));
+  }
+  const data = matrix.frameStorageBootstrap;
+  assert.equal(data.javaM33bRebindOnlyExplicitLet, true);
+  assert.equal(data.javaM33bImplicitJvmIntegerWideningAllowed, false);
+  assert.equal(data.javaM33bMixedPrimitiveEqualityAllowed, false);
+  assert.equal(data.javaM33bActorRuntimeHostTestsAuthored, 38);
+  assert.equal(data.javaM33bParserNegativeTestsAuthored, 32);
+  assert.equal(data.javaM33bAttoGuestTestsAuthored, 5);
+  assert.equal(data.javaM33bJUnitTestsExecuted, 0);
+  assert.equal(data.javaM33bFiveBackendParity, 'NOT_EXECUTED');
   assert.equal(matrix.promotion.certified, false);
 });
