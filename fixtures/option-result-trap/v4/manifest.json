@@ -77,7 +77,8 @@
       "kind": "guest_panic",
       "expected_diagnostic_contains": "Result",
       "forbidden_stdout": "UNREACHABLE-ORT4",
-      "requires_guest_execution": true
+      "requires_guest_execution": true,
+      "expected_panic_code": "RESULT_UNWRAP_ERR"
     },
     {
       "id": "ORT4-NEGATIVE_CALL_NO_IMPLICIT_RESULT",

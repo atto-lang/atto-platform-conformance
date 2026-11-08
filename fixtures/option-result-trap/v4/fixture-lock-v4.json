@@ -1,6 +1,6 @@
 {
   "schema": "oreslang.option-result-trap.scalar-lock/v4",
-  "manifest_blob": "0127757777a33c5be6bf2a4d4c25da19da9f44ea",
+  "manifest_blob": "c24c23d50d20fd8991448d569efdeeb9266cc3e3",
   "cases": [
     {
       "id": "ORT4-TRAP_OK",

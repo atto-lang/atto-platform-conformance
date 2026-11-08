@@ -33,6 +33,42 @@ export function verifyOptionResultTrapReceipt(receipt,manifest,fixtureDigest) {
   if(!nonEmpty(receipt.runtimeVersion)) fail("runtime version missing");
   const e=receipt.evidence;
   if(!isObject(e)) return {ok:false,errors:[...errors,"evidence must be object"]};
+  // V4 receipts have mutually exclusive outcomes; a panic or compile reject
+  // must never carry a successful scalar guest return. These are SHAPE checks,
+  // not authentication of a GitHub run, compiler output, or diagnostic origin.
+  const v4=manifest.schema==="oreslang.option-result-trap.scalar/v4";
+  if(v4){
+    if(!Number.isSafeInteger(e.workflowRunId)||e.workflowRunId<=0||
+       !Number.isSafeInteger(e.jobId)||e.jobId<=0||
+       !sha40.test(e.sourceTreeSha||""))
+      fail("v4 independent run/job/source-tree lookup coordinates missing");
+    if(!nonEmpty(e.compilerStep)||!Array.isArray(e.steps)||
+       !e.steps.includes(e.compilerStep))
+      fail("v4 actual compiler step reference missing");
+    if(e.parserOnly===true||e.unsupportedFeature===true)
+      fail("v4 parser-only or unsupported backend cannot claim semantic parity");
+    if(c?.kind!=="guest_i64" &&
+       ["guestReturnType","guestReturnValue","guestResultSource"].some(k=>Object.hasOwn(e,k)))
+      fail("v4 panic/rejection claims a successful scalar guest return");
+    if(c?.kind==="guest_i64"){
+      if(e.runtimeControl!=="normal"||e.stderr!==""||
+         Object.hasOwn(e,"guestPanicCode")||Object.hasOwn(e,"diagnosticCategory"))
+        fail("v4 scalar success carries a conflicting failure/control channel");
+      if(e.guestStep===e.compilerStep)
+        fail("v4 scalar compiler step cannot masquerade as guest execution");
+    }else if(c?.kind==="guest_panic"){
+      if(e.guestPanicCode!==c.expected_panic_code||
+         !/unwrap/i.test(e.stderr||"") ||
+         e.guestStep===e.compilerStep)
+        fail("v4 panic must identify a Result unwrap and independent guest execution");
+    }else if(c?.kind==="compile_reject"){
+      if(e.runtimeControl!=="not_launched"||
+         e.diagnosticOrigin!=="typechecker"||
+         !nonEmpty(e.diagnosticCode)||
+         Object.hasOwn(e,"guestPanicCode"))
+        fail("v4 rejection must identify compiler type-checker diagnostics before guest launch");
+    }
+  }
   if(e.exactHead!==true || e.sourceCommit!==receipt.sourceCommit)
     fail("exact source-head identity missing or mismatched");
   if(!Number.isSafeInteger(e.runnerId)||e.runnerId<=0)
