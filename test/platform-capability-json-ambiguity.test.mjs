@@ -43,6 +43,18 @@ test('reject oversize documents and deep-nesting denial inputs', () => {
   assert.throws(() => parseStrictJson('['.repeat(81)+'null'+']'.repeat(81)), /nesting limit/);
 });
 
+test('enforce depth budget on empty terminal containers, not only leaf values', () => {
+  const arraysAtLimit = '['.repeat(80) + ']'.repeat(80);
+  assert.doesNotThrow(() => parseStrictJson(arraysAtLimit));
+  assert.throws(() => parseStrictJson('['.repeat(81) + ']'.repeat(81)), /nesting limit/);
+  const objectsAtLimit = '{"k":'.repeat(80) + '0' + '}'.repeat(80);
+  assert.doesNotThrow(() => parseStrictJson(objectsAtLimit));
+  assert.throws(() => parseStrictJson('{"k":'.repeat(81) + '0' + '}'.repeat(81)), /nesting limit/);
+  // Empty object/array terminals were accepted before the container-entry gate.
+  assert.throws(() => parseStrictJson('['.repeat(80) + '{}' + ']'.repeat(80)), /nesting limit/);
+  assert.throws(() => parseStrictJson('['.repeat(80) + '[]' + ']'.repeat(80)), /nesting limit/);
+});
+
 test('enforce byte limits on multibyte UTF-8 input, not just UTF-16 length', () => {
   const huge = '"' + '€'.repeat(400000) + '"';
   assert.ok(huge.length < 1048576);
