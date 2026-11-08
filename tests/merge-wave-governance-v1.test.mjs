@@ -113,3 +113,17 @@ test('fingerprint changes when required review count or check conclusion changes
 test('fingerprint rejects missing policy material',()=>{
  assert.throws(()=>governanceFingerprint({rules:[],checkRuns:[]}),/Incomplete/);
 });
+
+
+test('invalid calendar date in approval is rejected without implicit rollover',()=>{
+ const f=fixture();f.reviews[0].submitted_at='2026-02-30T23:00:00Z';
+ const r=assessGovernance(f);
+ assert.ok(r.blockers.includes('INVALID_REVIEW_TIMELINE'));
+ assert.equal(r.readyForHumanGovernanceReview,false);
+});
+test('timezone-free and timezone-shifted review dates are not canonical UTC evidence',()=>{
+ for(const time of ['2026-11-07T23:00:00','2026-11-07T23:00:00+00:00']){
+   const f=fixture();f.reviews[0].submitted_at=time;
+   assert.ok(assessGovernance(f).blockers.includes('INVALID_REVIEW_TIMELINE'));
+ }
+});
