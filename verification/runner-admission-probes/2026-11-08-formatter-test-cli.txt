@@ -1,0 +1,7 @@
+SOURCE-FREE RUNNER ADMISSION PROBE
+Date: 2026-11-08 UTC
+Purpose: Verify whether GitHub Actions starts named steps on the existing source-local metadata-only canary workflow.
+Related issue: ores-truffle-oreslang/oreslang-platform-conformance#315
+Affected PRs: oreslang-format#127; oreslang-test.cli#28
+Contents: diagnostic metadata only. No source checkout, credentials, secrets, artifacts of private source, or cross-organization transfer.
+Outcome: Determine from GitHub job steps and logs; this file is not execution evidence.
