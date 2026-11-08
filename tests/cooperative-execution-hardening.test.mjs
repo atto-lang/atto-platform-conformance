@@ -430,3 +430,80 @@ test('fail-stop survives 1024 malicious quota re-entry attempts',()=>{
   }
   assert.equal(a.fuel,12n);assert.equal(a.cpu,0n);
 });
+
+
+test('optimizer cannot strip straight-line fuel charge from acyclic program',()=>{
+  const before=[
+    {id:0,charged:true,weight:7,next:[1]},
+    {id:1,charged:false,next:[]}
+  ];
+  const after=[
+    {id:0,charged:false,next:[1]},
+    {id:1,charged:false,next:[]}
+  ];
+  assert.equal(verifyMeteredCycles(before,0),true);
+  assert.equal(verifyMeteredCycles(after,0),true);
+  assert.equal(verifyPostOptimization(before,after,0),false);
+});
+test('optimizer cannot silently lower a metered basic-block cost',()=>{
+  const before=[{id:0,charged:true,weight:9,next:[]}];
+  const after=[{id:0,charged:true,weight:8,next:[]}];
+  assert.equal(verifyPostOptimization(before,after,0),false);
+  assert.equal(verifyPostOptimization(before,[{...after[0],weight:9}],0),true);
+  assert.equal(verifyPostOptimization(before,[{...after[0],weight:10}],0),true);
+});
+test('optimizer cannot remove originally charged reachable block',()=>{
+  const before=[
+    {id:0,charged:false,next:[1]},
+    {id:1,charged:true,weight:3,next:[]}
+  ];
+  const after=[{id:0,charged:false,next:[]}];
+  assert.equal(verifyPostOptimization(before,after,0),false);
+});
+test('optimizer cannot rename charge without a validated remapping certificate',()=>{
+  const before=[
+    {id:0,charged:false,next:[1]},
+    {id:1,charged:true,weight:3,next:[]}
+  ];
+  const after=[
+    {id:0,charged:false,next:[2]},
+    {id:2,charged:true,weight:3,next:[]}
+  ];
+  assert.equal(verifyPostOptimization(before,after,0),false);
+});
+test('optimizer cannot replace an old high-cost charge with a new lower-cost charge',()=>{
+  const before=[{id:0,charged:true,weight:25,next:[]}];
+  const after=[{id:0,charged:true,weight:1,next:[]},{id:1,charged:true,weight:24,next:[]}];
+  assert.equal(verifyPostOptimization(before,after,0),false);
+});
+for(const interval of [32,64,128,256,512]){
+  test('independent fuel/counter/clock oracle for sampled resume traces '+interval,()=>{
+    for(let seed=1;seed<=16;seed++){
+      let random=seed>>>0;
+      const next=()=>{random=(Math.imul(random,1664525)+1013904223)>>>0;return random;};
+      const a=make({interval,fuel:50000n,cpuBudget:50000n,wallBudget:50000n});
+      let remaining=50000n,counter=0n,slow=0n,cpu=0n,clockReads=0;
+      const clock=()=>{clockReads++;return 0n;};
+      for(let step=0;step<640;step++){
+        if(next()%11===0){
+          a.enterOrResume(0n);
+        }
+        if(next()%7===0){
+          const delta=BigInt(next()%4);
+          a.chargeCpu(delta);cpu+=delta;
+        }
+        const cost=BigInt(1+(next()%7));
+        const actual=a.chargeBlock(cost,clock);
+        remaining-=cost;counter=(counter+1n)&MAX_U64;
+        if((counter&BigInt(interval-1))===0n)slow++;
+        assert.equal(actual,(counter&BigInt(interval-1))===0n);
+        assert.equal(a.fuel,remaining);
+        assert.equal(a.counter,counter);
+        assert.equal(a.slowPolls,slow);
+        assert.equal(a.cpu,cpu);
+      }
+      assert.equal(clockReads,Number(slow));
+      assert.equal(a.closed,false);
+    }
+  });
+}
