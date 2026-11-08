@@ -62,3 +62,12 @@ New tests simulate head pushes, review dismissal, workflow attempt replay, vanis
 **Important boundary:** This is a *stability preflight*, not a transaction/lock/lease and not automatic merge authority. A final decision must still refresh GitHub branch protection, CODEOWNERS, security holds, active agent ownership and source-level semantics, then merge with GitHub's `expected_head_sha` precondition. Changes after the last readback remain possible. Never assert that this tool makes the GitHub APIs atomic.
 
 Local Node 22 focused suite: **182/182 passing** (174 original + 8 new snapshot-race tests); hosted CI remains unavailable on the private source organization's runner-admission issue #315.
+
+
+## Repository association and squash-parent source pinning (2026-11-07)
+
+The second GitHub evidence readback must capture **all provider fields consulted by first-pass admission**. Earlier snapshots included run ID and linked PR numbers, but omitted the run's repository, source repository and linked PR base/source repository identities. This could permit an association change without invalidating the snapshot. The fingerprint now includes those repository fields and the PR's source repository, while retaining order-insensitive list comparisons.
+
+Stacked child PRs also require a pinned `expectedParentHead` in the manifest. A parent counts as merged only when its provider PR number, exact original head, owning repository, target `main`, merged status and merge timestamp agree. This pin is **independent** of `expectedBaseSha`: a squash merge produces a different mainline commit SHA, so a retargeted child cannot equate the original parent head with the new `main` base. Existing CLI #154 pins the original CLI #153 source head `c3f242c508e5acd4593853bd0304c311137abf70`.
+
+New negative tests reject foreign source-head repositories, parent substitution, missing/wrong parent pins and cross-repository run/PR association drift. The local Node 22 focused suite now passes **189/189 tests** (182 previously + 7 new focused cases), with zero skips and failures. **This is not authenticated hosted exact-head CI.** The check remains advisory and never authorizes merges without branch rules, independent review and real hosted evidence.
