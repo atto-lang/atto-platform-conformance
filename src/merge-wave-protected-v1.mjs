@@ -15,10 +15,18 @@ function policySnapshot(x) {
 }
 
 const knownSources = ['PR','REVIEWS','BRANCH','PROTECTION','RULES','CHECKS'];
-function inaccessibleEvidence(error) {
+function inaccessibleEvidence(error,spec) {
   const sources=Array.isArray(error?.unavailableSources) ? error.unavailableSources : [];
+  // Retain independently verified, read-only branch state even if an admin-only
+  // protection/rules endpoint fails. Do not infer protection from HTTP 403.
+  const branch=error?.mainBranchSnapshot;
+  const branchBlockers=branch===undefined ? [] : [
+    ...(branch.name==='main' ? [] : ['MAIN_BRANCH_METADATA_UNVERIFIED']),
+    ...(branch.protected===true ? [] : ['MAIN_NOT_PROTECTED']),
+    ...(branch.sha===spec?.expectedBaseSha ? [] : ['MAIN_BASE_SHA_CHANGED'])
+  ];
   return {blockers:[...new Set(['GOVERNANCE_PROVIDER_UNAVAILABLE',
-    ...sources.map(x=>'GOVERNANCE_'+x.source+'_UNAVAILABLE')])],
+    ...sources.map(x=>'GOVERNANCE_'+x.source+'_UNAVAILABLE'),...branchBlockers])],
     unavailableSources:sources.map(x=>({source:x.source,
       ...(Number.isInteger(x.status) ? {httpStatus:x.status} : {})}))};
 }
@@ -39,6 +47,10 @@ async function fetchPolicy(client,spec) {
   if (unavailableSources.length) {
     const e=new Error('Governance evidence unavailable');
     e.unavailableSources=unavailableSources;
+    if (results[2]?.status==='fulfilled') {
+      const branch=results[2].value;
+      e.mainBranchSnapshot={name:branch?.name,protected:branch?.protected,sha:branch?.commit?.sha};
+    }
     throw e;
   }
   const [pr,reviews,branch,protection,rules,checkRuns]=results.map(x=>x.value);
@@ -63,7 +75,7 @@ export async function collectProtectedWave(manifest,client) {
     } catch (error) {
       snapshots.push(null);
       governance.push({repository:spec.repo,readyForHumanGovernanceReview:false,
-        advisoryOnly:true,mergeAuthorized:false,...inaccessibleEvidence(error)});
+        advisoryOnly:true,mergeAuthorized:false,...inaccessibleEvidence(error,spec)});
     }
   }
   // Third read across all repositories catches a policy that changes while a
@@ -78,7 +90,7 @@ export async function collectProtectedWave(manifest,client) {
       }
     } catch (error) {
       governance[i].readyForHumanGovernanceReview=false;
-      const failure=inaccessibleEvidence(error);
+      const failure=inaccessibleEvidence(error,manifest.prs[i]);
       governance[i].blockers=[...new Set([...governance[i].blockers,...failure.blockers])];
       governance[i].unavailableSources=[...(governance[i].unavailableSources||[]),...failure.unavailableSources];
     }
