@@ -50,6 +50,7 @@ export function assessPullRequest({ repository, number, expectedHead, expectedBa
   if (!pr || pr.base?.ref !== expectedBase || expectedBase !== 'main') fail('NOT_MAIN_BASED');
   if (pr?.number !== undefined && pr.number !== number) fail('PR_NUMBER_MISMATCH');
   if (pr?.base?.repo?.full_name !== undefined && pr.base.repo.full_name !== repository) fail('BASE_REPOSITORY_MISMATCH');
+  if (pr?.head?.repo?.full_name !== undefined && pr.head.repo.full_name !== repository) fail('HEAD_REPOSITORY_MISMATCH');
   if (!expectedParentMerged) fail('PARENT_NOT_MERGED');
 
   const author = typeof pr?.user?.login === 'string' ? pr.user.login.toLowerCase() : null;
