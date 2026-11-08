@@ -26,7 +26,11 @@ export class ActorMeter {
   get cpu(){return this.#cpu;} get closed(){return this.#closed;}
   get interval(){return this.#interval;}
   #deny(code){this.#closed=true;throw new MeterFailure(code);}
-  #active(){if(this.#closed) throw new MeterFailure('ACTOR_CLOSED');if(!this.#admitted)throw new MeterFailure('METER_NOT_ADMITTED');}
+  #active(){
+    if(this.#closed)throw new MeterFailure('ACTOR_CLOSED');
+    if(this.#readingClock)this.#deny('CLOCK_REENTRANCY');
+    if(!this.#admitted)throw new MeterFailure('METER_NOT_ADMITTED');
+  }
   #check(elapsed){
     if(this.#closed)throw new MeterFailure('ACTOR_CLOSED');
     let t;
@@ -42,6 +46,7 @@ export class ActorMeter {
     if(this.#fuel===0n)this.#deny('FUEL_EXHAUSTED');
   }
   enterOrResume(elapsed) {
+    if(this.#readingClock)this.#deny('CLOCK_REENTRANCY');
     this.#check(elapsed);
     if(this.#cancelled)this.#deny('CANCELLED');
     // A logical task carries its sampling cadence across all physical resumes.
@@ -49,23 +54,31 @@ export class ActorMeter {
     this.#admitted=true;
   }
   chargeCpu(delta){
-    this.#active(); const n=uint(delta,'CPU_DELTA');
+    this.#active();
+    let n;
+    try{n=uint(delta,'CPU_DELTA');}
+    catch(error){if(error instanceof MeterFailure)this.#deny(error.code);throw error;}
     if(n>=this.#cpuBudget-this.#cpu){this.#cpu=this.#cpuBudget;this.#deny('CPU_EXHAUSTED');}
     this.#cpu+=n;
   }
   chargeBlock(cost,elapsed){
     this.#active();
     if(this.#readingClock)this.#deny('CLOCK_REENTRANCY');
-    const n=uint(cost,'BLOCK_COST');
-    if(n===0n)throw new MeterFailure('ZERO_COST');
+    let n;
+    try{n=uint(cost,'BLOCK_COST');}
+    catch(error){if(error instanceof MeterFailure)this.#deny(error.code);throw error;}
+    if(n===0n)this.#deny('ZERO_COST');
     // A host-owned lazy clock is invoked only on the slow path; no monotonic
     // clock access is necessary for the other 127 charged blocks.
-    if(typeof elapsed!=='function')uint(elapsed,'ELAPSED');
+    if(typeof elapsed!=='function'){
+      try{uint(elapsed,'ELAPSED');}
+      catch(error){if(error instanceof MeterFailure)this.#deny(error.code);throw error;}
+    }
     if(n>=this.#fuel){this.#fuel=0n;this.#deny('FUEL_EXHAUSTED');}
     this.#fuel-=n;
     this.#counter=(this.#counter+1n)&MAX_U64;
     if((this.#counter&BigInt(this.#interval-1))!==0n)return false;
-    this.#slow++;
+    if(this.#slow<MAX_U64)this.#slow++;
     let sampled=elapsed;
     if(typeof elapsed==='function'){
       this.#readingClock=true;
@@ -79,7 +92,7 @@ export class ActorMeter {
     if(this.#cancelled)this.#deny('CANCELLED');
     if(this.#mode==='trusted'){
       if(this.#critical)this.#deferred=true;
-      else this.#handoffs++;
+      else if(this.#handoffs<MAX_U64)this.#handoffs++;
     }
     return true;
   }
@@ -90,12 +103,12 @@ export class ActorMeter {
     this.#critical++;
   }
   exitCritical(){
-    this.#active();if(this.#critical===0)throw new MeterFailure('CRITICAL_UNDERFLOW');
+    this.#active();if(this.#critical===0)this.#deny('CRITICAL_UNDERFLOW');
     this.#critical--;
     if(this.#cancelled)this.#deny('CANCELLED');
     if(!this.#critical && this.#deferred){
       this.#deferred=false;
-      if(this.#mode==='trusted')this.#handoffs++;
+      if(this.#mode==='trusted'&&this.#handoffs<MAX_U64)this.#handoffs++;
     }
   }
   backedge(cost,elapsed){
@@ -105,9 +118,9 @@ export class ActorMeter {
     this.#active();
     this.#check(elapsed);
     if(this.#cancelled)this.#deny('CANCELLED');
-    if(this.#mode!=='trusted')throw new MeterFailure('UNTRUSTED_COOPERATE_DISABLED');
+    if(this.#mode!=='trusted')this.#deny('UNTRUSTED_COOPERATE_DISABLED');
     if(this.#critical)throw new MeterFailure('CRITICAL_SUSPENSION_DENIED');
-    this.#handoffs++;
+    if(this.#handoffs<MAX_U64)this.#handoffs++;
   }
 }
 /** Iterative O(V + E) verifier; stack use is bounded by a worklist on the heap. */
