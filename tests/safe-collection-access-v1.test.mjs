@@ -150,3 +150,12 @@ test("retiring an actor with live loans is denied", () => {
   denied(() => m.get(A,0),"E_OWNER_RETIRED");
   denied(() => m.pop(A),"E_OWNER_RETIRED");
 });
+test("exclusive WRITE loan blocks ordinary checked indexing and owned copies", () => {
+  const m=c({copyable:true});
+  const w=takeSome(m.getMut(A,0));
+  denied(() => m.checkedIndex(A,1),"E_LOAN_CONFLICT");
+  denied(() => m.getCopy(A,1),"E_LOAN_CONFLICT");
+  m.release(A,w);
+  assert.equal(m.checkedIndex(A,1),1);
+  assert.deepEqual(takeSome(m.getCopy(A,1)),{ownedCopyOfIndex:1});
+});
