@@ -91,3 +91,31 @@ critical effect constraints. These **Node tests do not prove actual
 parallelism or compiler execution**. Add real two-carrier, two-writer
 stress, native race/TSan where available, exact-head AOT execution and
 negative compiler tests across all five backends before a PASS claim.
+
+## AttoLang source corpus and native host implementations (2026-11-08)
+
+The seven staged `.atto` files in
+`fixtures/immutable-containers-critical-v1/` are real source bytes,
+not the inline examples above. The manifest records the required
+compile/diagnostic oracle and marks **all five backend guest runs
+NOT_EXECUTED**. The positive record-spread case uses the existing
+canonical `infer record{...before, extra:8}` shape and preserves
+the old `before` snapshot; it is not a persistent HAMT implementation.
+All `.atto` negative cases still require an actual compiler rejection.
+
+- `.NET` runtime draft #416 now contains **checked four-byte**
+  actor-local managed reference fields, an out-of-line original-generation
+  proof sidecar, and demand-backed arena tests. It is host code, not
+  generated `.atto` class/array field lowering; NativeAOT tests unexecuted.
+- `LLVM` native draft #1596 contains a bounded nonblocking
+  versioned immutable root with pinned snapshots. Its exact-source
+  C++ host tests were executed with Clang/GCC and ASan/UBSan, including
+  six contending writers (4,200 committed revisions). It is **not**
+  a guest `critical` lowering, persistent map/set/list implementation,
+  thread sanitizer proof, or language-source parity.
+
+The actual acceptance path is to lower the source `critical` effect,
+`SharedSnapshotRoot`, immutable `.atto` data structures, and the
+canonical checked Ref32 fields through each compiler and then run
+the identical guest source fixtures against the exact heads. No
+`steps=null` or source-free-only test may promote a backend to PASS.
