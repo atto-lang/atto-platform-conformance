@@ -26,7 +26,7 @@ function fixture(s=spec()){
      parents:[{sha:A}]},
    mainCommit:{sha:s.expectedMergeCommit,commit:{tree:{sha:s.expectedMergeTree}}},
    comparison:{base_commit:{sha:s.expectedMergeCommit},
-     head_commit:{sha:s.expectedMergeCommit},status:'identical',ahead_by:0,behind_by:0},
+     merge_base_commit:{sha:s.expectedMergeCommit},status:'identical',ahead_by:0,behind_by:0},
    runs:[run],jobsByRun:{'7':[job]}};
 }
 test('passing postmerge proof reports source, integrated tree, actual merge and no authority',()=>{
@@ -39,7 +39,7 @@ test('main may advance while preserving merge as ancestor, with a new tree',()=>
  const f=fixture();f.mainBefore.commit.sha=D;f.mainAfter.commit.sha=D;
  f.mainBefore.commit.commit.tree.sha=E;f.mainAfter.commit.commit.tree.sha=E;
  f.mainCommit={sha:D,commit:{tree:{sha:E}}};
- f.comparison={base_commit:{sha:B},head_commit:{sha:D},
+ f.comparison={base_commit:{sha:B},merge_base_commit:{sha:B},
    status:'ahead',ahead_by:1,behind_by:0};
  f.runs[0].head_sha=D;
  assert.equal(assessPostMerge(f).verified,true);
@@ -63,6 +63,7 @@ const failures=[
  ['main tree mismatch',x=>x.mainCommit.commit.tree.sha=D,'MAIN_TREE_UNVERIFIED'],
  ['compare diverged',x=>x.comparison.status='diverged','MERGE_NOT_ANCESTOR_OF_MAIN'],
  ['compare reversed',x=>x.comparison.base_commit.sha=D,'MERGE_NOT_ANCESTOR_OF_MAIN'],
+ ['compare merge base forged',x=>x.comparison.merge_base_commit.sha=D,'MERGE_NOT_ANCESTOR_OF_MAIN'],
  ['compare behind',x=>x.comparison.behind_by=1,'MERGE_NOT_ANCESTOR_OF_MAIN'],
  ['compare false ahead',x=>x.comparison.status='ahead','MERGE_NOT_ANCESTOR_OF_MAIN'],
  ['PR updated mid readback',x=>x.prAfter.merge_commit_sha=D,'PR_CHANGED_DURING_POSTMERGE_READBACK'],
@@ -119,7 +120,7 @@ function wave(){
    f.mainBefore.commit.sha=head;f.mainAfter.commit.sha=head;
    f.mainCommit.sha=head;f.runs[0].head_sha=head;
    f.comparison={base_commit:{sha:s.expectedMergeCommit},
-     head_commit:{sha:head},status:head===s.expectedMergeCommit?'identical':'ahead',
+     merge_base_commit:{sha:s.expectedMergeCommit},status:head===s.expectedMergeCommit?'identical':'ahead',
      ahead_by:head===s.expectedMergeCommit?0:1,behind_by:0};
    return f;
  });
@@ -190,4 +191,9 @@ test('failed CLI parent invalidates already assessed stacked child',async()=>{
  const r=await collectPostMergeWave(f.manifest,f.client);
  assert.equal(r.verifiedCount,3,JSON.stringify(r.prs));
  assert.ok(r.prs[4].blockers.includes('PARENT_NOT_VERIFIED_BEFORE_CHILD'));
+});
+
+test('real GitHub compare payload does not require nonexistent head_commit',()=>{
+ const f=fixture();delete f.comparison.head_commit;
+ assert.equal(assessPostMerge(f).verified,true,JSON.stringify(assessPostMerge(f).blockers));
 });
