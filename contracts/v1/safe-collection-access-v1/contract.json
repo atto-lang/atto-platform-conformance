@@ -171,6 +171,13 @@
       "path": "fixtures/iterator-growth-conflict.atto",
       "diagnostic": "E_LOAN_CONFLICT",
       "attestation": "NOT_EXECUTED"
+    },
+    {
+      "id": "checked-copy-owned-option-int",
+      "expect": "compile_and_execute",
+      "path": "fixtures/checked-copy-owned-option-int.atto",
+      "result": "42",
+      "attestation": "NOT_EXECUTED"
     }
   ],
   "promotion": {
