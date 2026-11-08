@@ -190,9 +190,20 @@ export function verifyMeteredCalls(functions){
     throw new MeterFailure('INVALID_CALL_GRAPH');
   return noUnmeteredCycles(map,map.keys(),f=>f.calls);
 }
-/** Optimized control flow is independently rechecked; no claim of semantic IR equality. */
+/** Conservative optimizer guard.
+ * The stable block-ID requirement intentionally rejects otherwise-valid block folding
+ * until the compiler supplies a separately verified provenance/cost remapping.
+ * Cycle checking alone cannot detect a removed straight-line fuel charge.
+ */
 export function verifyPostOptimization(before,after,entry){
-  return verifyMeteredCycles(before,entry)&&verifyMeteredCycles(after,entry);
+  if(!verifyMeteredCycles(before,entry)||!verifyMeteredCycles(after,entry))return false;
+  const now=new Map(after.map(block=>[block.id,block]));
+  for(const original of before){
+    if(!original.charged)continue;
+    const optimized=now.get(original.id);
+    if(!optimized||!optimized.charged||optimized.weight<original.weight)return false;
+  }
+  return true;
 }
 /** Even an interruptible FFI wrapper can hang. Every hostile foreign call needs a kill boundary. */
 export function admitUntrustedForeignCall(descriptor){
