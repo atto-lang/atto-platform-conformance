@@ -250,7 +250,7 @@ test('HTTP client preserves safe status metadata without echoing credential',asy
 
 test('live branch response with protected=false blocks the entire wave',async()=>{
  const {client}=mock();const original=client.get;
- client.get=async(path,kind)=>path.endsWith('/branches/main')
+ client.get=async(path,kind)=>/^\/repos\/[^/]+\/[^/]+\/branches\/main$/.test(path)
    ? {name:'main',protected:false,commit:{sha:B}} : original(path,kind);
  const report=await collectProtectedWave(manifest(),client);
  assert.equal(report.readyForHumanFinalReview,false);
@@ -259,7 +259,7 @@ test('live branch response with protected=false blocks the entire wave',async()=
 });
 test('branch commit diverging from PR base is rejected even if protected=true',async()=>{
  const {client}=mock();const original=client.get;
- client.get=async(path,kind)=>path.endsWith('/branches/main')
+ client.get=async(path,kind)=>/^\/repos\/[^/]+\/[^/]+\/branches\/main$/.test(path)
    ? {name:'main',protected:true,commit:{sha:H}} : original(path,kind);
  const report=await collectProtectedWave(manifest(),client);
  assert.ok(report.governance.every(x=>x.blockers.includes('MAIN_BASE_SHA_CHANGED')));
@@ -267,7 +267,7 @@ test('branch commit diverging from PR base is rejected even if protected=true',a
 test('main branch metadata unreadable reports branch-specific provider denial',async()=>{
  const {client}=mock();const original=client.get;
  client.get=async(path,kind)=>{
-   if(path.endsWith('/branches/main')){const e=new Error('restricted');e.status=403;throw e;}
+   if(/^\/repos\/[^/]+\/[^/]+\/branches\/main$/.test(path)){const e=new Error('restricted');e.status=403;throw e;}
    return original(path,kind);
  };
  const report=await collectProtectedWave(manifest(),client);
