@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {makeGitHubReadOnlyClient, validateManifest, collectWave} from '../src/merge-wave-provider-v1.mjs';
+import {makeGitHubReadOnlyClient, validateManifest, collectWave, evidenceFingerprint} from '../src/merge-wave-provider-v1.mjs';
 const A='a'.repeat(40), B='b'.repeat(40), C='c'.repeat(40);
 const p=(repo='org/repo',number=1,extra={})=>({repo,number,expectedHead:A,expectedBaseSha:B,requiredStepNames:['Test'],requiredWorkflows:[{workflowId:7,workflowName:'CI',jobName:'tests',testStepName:'Test'}],...extra});
 const manifest=(...specs)=>({prs:specs.length?specs:[p()]});
@@ -225,4 +225,96 @@ test('read-only provider reports missing required workflow on otherwise green ru
  const result=await collectWave(value,client);
  assert.equal(result.readyForHumanFinalReview,false);
  assert.ok(result.prs.every(x=>x.blockers.includes('MISSING_REQUIRED_WORKFLOW')));
+});
+
+
+// Multi-pass time-of-check/time-of-use regression suite. These transitions happen
+// only between the initial assessment and the final wave-wide provider reread.
+test('snapshot drift: source PR head push during wave invalidates prior passing approval/CI',async()=>{
+ const {value,client}=mockFive({parentMerged:false});delete value.prs[4].dependsOn;
+ const previous=client.get;let seen=0;
+ client.get=async(path,kind)=>{
+   const result=await previous(path,kind);
+   if(path==='/repos/org/site/pulls/1'&&++seen===2) return {...result,head:{sha:C}};
+   return result;
+ };
+ const wave=await collectWave(value,client);
+ assert.equal(wave.readyForHumanFinalReview,false);
+ assert.ok(wave.prs[0].blockers.includes('PROVIDER_SNAPSHOT_CHANGED'));
+ assert.equal(wave.prs[0].readyForIndependentMergeDecision,false);
+});
+test('snapshot drift: independent review dismissal during wave is rejected',async()=>{
+ const {value,client}=mockFive({parentMerged:false});delete value.prs[4].dependsOn;
+ const previous=client.get;let seen=0;
+ client.get=async(path,kind)=>{
+   const result=await previous(path,kind);
+   if(path==='/repos/org/site/pulls/1/reviews'&&++seen===2)
+     return [...result,{user:{login:'ORESoftware'},state:'DISMISSED',commit_id:A,
+       submitted_at:'2026-11-07T23:01:00Z'}];
+   return result;
+ };
+ const wave=await collectWave(value,client);
+ assert.ok(wave.prs[0].blockers.includes('PROVIDER_SNAPSHOT_CHANGED'));
+});
+test('snapshot drift: CI rerun attempt after evidence inspection fails closed',async()=>{
+ const {value,client}=mockFive({parentMerged:false});delete value.prs[4].dependsOn;
+ const previous=client.get;let seen=0;
+ client.get=async(path,kind)=>{
+   const result=await previous(path,kind);
+   if(path.startsWith('/repos/org/site/actions/runs?')&&++seen===3) return result.map(r=>({...r,run_attempt:2}));
+   return result;
+ };
+ const wave=await collectWave(value,client);
+ assert.equal(wave.readyForHumanFinalReview,false);
+ assert.ok(wave.prs.some(x=>x.blockers.includes('PROVIDER_SNAPSHOT_CHANGED')));
+});
+test('snapshot drift: executed test step removed from reread jobs is denied',async()=>{
+ const {value,client}=mockFive({parentMerged:false});delete value.prs[4].dependsOn;
+ const previous=client.get;let seen=0;
+ client.get=async(path,kind)=>{
+   const result=await previous(path,kind);
+   if(kind==='jobs'&&++seen===6) return result.map(j=>({...j,steps:[]}));
+   return result;
+ };
+ const wave=await collectWave(value,client);
+ assert.ok(wave.prs.some(x=>x.blockers.includes('PROVIDER_SNAPSHOT_CHANGED')));
+});
+test('snapshot drift: base commit moves without head moving',async()=>{
+ const {value,client}=mockFive({parentMerged:false});delete value.prs[4].dependsOn;
+ const previous=client.get;let seen=0;
+ client.get=async(path,kind)=>{
+   const result=await previous(path,kind);
+   if(path==='/repos/org/editor/pulls/3'&&++seen===2) return {...result,base:{...result.base,sha:C}};
+   return result;
+ };
+ const wave=await collectWave(value,client);
+ assert.ok(wave.prs[2].blockers.includes('PROVIDER_SNAPSHOT_CHANGED'));
+});
+test('snapshot drift: parent merged state changes mid-wave',async()=>{
+ const {value,client}=mockFive({parentMerged:true,stacked:true});
+ const previous=client.get;let seen=0;
+ client.get=async(path,kind)=>{
+   const result=await previous(path,kind);
+   if(path==='/repos/org/cli/pulls/4'&&++seen>=3) return {...result,merged:false,merged_at:null};
+   return result;
+ };
+ const wave=await collectWave(value,client);
+ assert.equal(wave.readyForHumanFinalReview,false);
+ assert.ok(wave.prs[4].blockers.includes('PROVIDER_SNAPSHOT_CHANGED'));
+});
+test('snapshots ignore irrelevant provider ordering of reviews and workflows',async()=>{
+ const {value,client}=mockFive({parentMerged:false});delete value.prs[4].dependsOn;
+ const previous=client.get;
+ client.get=async(path,kind)=>{
+   const result=await previous(path,kind);
+   if(kind==='array'&&path.endsWith('/reviews')) return [result[0],{...result[0],id:99,
+     user:{login:'other'},state:'COMMENTED'}].reverse();
+   return result;
+ };
+ const wave=await collectWave(value,client);
+ assert.equal(wave.readyForHumanFinalReview,true,JSON.stringify(wave.prs.map(x=>x.blockers)));
+});
+test('snapshot fingerprint fails on unavailable review or run collections',()=>{
+ assert.throws(()=>evidenceFingerprint({pr:{},reviews:null,runs:[]}),/Incomplete evidence snapshot/);
+ assert.throws(()=>evidenceFingerprint({pr:{},reviews:[],runs:null}),/Incomplete evidence snapshot/);
 });
