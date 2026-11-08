@@ -62,7 +62,7 @@ export function assessPostMerge({spec,pr,mergeCommit,mainBefore,mainCommit,compa
      mainBefore.commit.commit.tree.sha!==mainCommit.commit.tree.sha))
    fail('MAIN_TREE_UNVERIFIED');
  if(!isSha(current)||comparison?.base_commit?.sha!==spec?.expectedMergeCommit||
-   comparison?.head_commit?.sha!==current||
+   comparison?.merge_base_commit?.sha!==spec?.expectedMergeCommit||
    !['ahead','identical'].includes(comparison?.status)||
    !Number.isSafeInteger(comparison?.ahead_by)||comparison.ahead_by<0||
    comparison?.behind_by!==0||
