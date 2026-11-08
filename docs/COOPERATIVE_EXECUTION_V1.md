@@ -49,3 +49,14 @@ Neither command executes an AttoLang compiler. Keep this work separate from priv
 The reference model now protects its sampling interval in a private field, carries its 64-bit sampling counter across logical resumes, polls charged straight-line blocks as well as backedges, and fails closed on critical depth exhaustion, malformed FFI descriptors, clock-source errors and reentrancy. Both CFG and recursive-call admission proofs use bounded iterative graph traversals with a 65,536-edge input cap; this prevents the verifier itself from exhausting its JS call stack on deep hostile graphs. The manifest validator pins all 17 obligation identities and outcomes, mandatory receipt fields, and independently enforced hard-kill cases against accidental downgrades.
 
 The host model supports a host-supplied **lazy monotonic clock thunk** invoked only at the slow poll. Synthetic numeric timestamps are allowed for test determinism; in a real backend, the monotonic clock must be runtime-owned and not derived from untrusted guest data. No true wall-time guarantee follows from cooperative metering alone; independently killable boundaries remain required for hostile calls.
+
+
+## Additional audit — strict failures and optimizer cost preservation
+
+- Invalid/zero-cost block charges, invalid CPU deltas, forbidden untrusted explicit cooperation, and critical-depth underflow now **fail-stop the logical actor**. Catching an exception must not allow a new dispatch or refuel. Real runtimes must issue supervisor CONTROL and clean up locks/arenas on teardown; the host oracle does not implement that cleanup.
+- Host-owned clock callbacks cannot reenter any metering, scheduling or admission method. Cancellation injection is still checked at the slow poll. Fast-path clock reads remain amortized.
+- The verifyPostOptimization host reference rejects deletion, renaming or reduction of originally charged **stable-ID** basic blocks, including acyclic ones. This intentionally rejects legitimate optimizer block splitting/folding unless a separate source-to-optimized cost remapping certificate is verified. Stable-ID checks do **not** prove instruction-level metering equivalence.
+- Contract v1 pins polling semantics, all safety invariants, 17 case IDs/outcomes, mandatory receipt fields and hard-kill requirements; revisions require explicitly reviewed contract evolution, not a silent v1 downgrade.
+- Differential tests include **80 deterministic actor-meter traces of 640 metered operations** across all five sampling intervals, plus independent CFG closure comparisons. They are source-free host tests, not compiled AttoLang guest differential runs.
+
+**Next implementation gate:** add stable ChargeFuel and Checkpoint operations in each backend's IR, verify optimized CFG costs and guest execution, bind quotas across resumes, and test independent tenant termination and neighbor survival. No cross-backend guest enforcement is certified here.
