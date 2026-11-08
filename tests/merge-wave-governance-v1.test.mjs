@@ -40,7 +40,7 @@ test('ruleset required check must also pass on exact head',()=>{
 const negatives=[
  ['missing main branch metadata',f=>f.branch=null,'MAIN_BRANCH_METADATA_UNVERIFIED'],
  ['main branch unprotected',f=>f.branch.protected=false,'MAIN_NOT_PROTECTED'],
- ['main branch protection unknown',f=>delete f.branch.protected,'MAIN_NOT_PROTECTED'],
+ ['main branch protection unknown',f=>delete f.branch.protected,'MAIN_PROTECTION_UNVERIFIED'],
  ['main head moved after PR base pin',f=>f.branch.commit.sha=H,'MAIN_BASE_SHA_CHANGED'],
  ['PR base SHA moved without head change',f=>f.pr.base.sha=H,'MAIN_BASE_SHA_CHANGED'],
  ['malformed branch commit',f=>f.branch.commit.sha='not-a-commit','MAIN_BASE_SHA_CHANGED'],
