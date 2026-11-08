@@ -114,7 +114,8 @@
           "jobName": "root-signed-policy-negative-tests",
           "testStepName": "Execute synthetic trust policy, revocation and nonauthorization tests"
         }
-      ]
+      ],
+      "expectedParentHead": "c3f242c508e5acd4593853bd0304c311137abf70"
     }
   ]
 }
