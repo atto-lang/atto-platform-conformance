@@ -107,3 +107,15 @@ executed failing guest test. Do not erase either distinction by counting a
 synthetic positive fixture or by simply rerunning a zero-step job without
 fixing the runner admission failure. Preserve raw evidence and independent
 review before publication.
+
+## Unambiguous JSON admission
+
+The receipt verifier also rejects duplicate JSON object keys at **every nesting
+level**, including differently escaped spellings of the same key such as
+`executedSteps` and `ex\u0065cutedSteps`. Ordinary `JSON.parse` silently
+keeps the last value and could otherwise accept a receipt visibly containing
+both `executedSteps: 0` and a later positive step count. The same restriction
+applies to alternate v1 contract files, including nested promotion rules.
+Malformed JSON, inputs over 1 MiB, and nesting beyond the fixed parser budget
+also fail closed. This is an **input-integrity rule**, not authentication of
+a GitHub runner or cryptographic attestation of the claimed evidence.
