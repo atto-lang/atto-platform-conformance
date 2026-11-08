@@ -178,6 +178,13 @@
       "path": "fixtures/checked-copy-owned-option-int.atto",
       "result": "42",
       "attestation": "NOT_EXECUTED"
+    },
+    {
+      "id": "checked-copy-zero-vs-none",
+      "expect": "compile_and_execute",
+      "path": "fixtures/checked-copy-zero-vs-none.atto",
+      "result": "42",
+      "attestation": "NOT_EXECUTED"
     }
   ],
   "promotion": {
