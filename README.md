@@ -39,6 +39,14 @@ target/physical claims without the required evidence. See
 
 [`contracts/state-container-virtual-actor-v1.json`](contracts/state-container-virtual-actor-v1.json) records 20 proposed compile/runtime oracles for `define state container` and `define virtual actor`. All backend results are **NOT_EXECUTED**. The Node contract tests validate fixture completeness and evidence labels only; they do not compile or execute guest programs. The Java reference parser has a separate fail-closed admission branch pending actual ownership and virtual-activation lowering. `define grain` is not an accepted alias.
 
+## Virtual actor directory and supervisor inspection
+
+[`contracts/virtual-actor-directory-inspection-v1.json`](contracts/virtual-actor-directory-inspection-v1.json) adds 12 additive host/runtime target oracles for canonical logical addresses, side-effect-free ID/address lookup, exact supervisor ownership, CONTROL inspection, timeout linearization, revision-fenced pagination, activation generations, sanitized terminal state, proxy separation and persistence-key stability.
+
+The manifest pins the canonical `atto-va1` address vector:
+`atto-va1.dGVuYW50LWE.NzpkZWZhdWx0Q2FydA.NDI`.
+All five backend results are **NOT_EXECUTED**. Its Node test validates contract structure and evidence labels only; it does not execute a compiler, actor runtime, supervisor CONTROL dispatcher or durable provider. It is intentionally separate from the existing 20-case `state-container-virtual-actor-v1` inventory and does not promote or replace any VA01–VA20 evidence.
+
 ## Current deliverable
 
 - Versioned fixture manifest and minimal positive/negative .ores sources targeting **six compiler backends** (`java`, `llvm`, `net`, `wasm`, `forge`, `js`); this is a target inventory, not a parity claim.
