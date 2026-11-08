@@ -8,9 +8,9 @@ const approved=(who='ORESoftware',state='APPROVED',sha=H,time='2026-11-07T23:08:
 const step=(name='Test',more={})=>({name,status:'completed',conclusion:'success',number:1,...more});
 function sample(){return {
   repository:'ores-truffle-oreslang/attolang-tests', number:15,expectedHead:H,expectedBaseSha:B,
-  requiredStepNames:['Test'], pr:{number:15,state:'open',merged:false,merged_at:null,draft:false,mergeable:true,
+  requiredStepNames:['Test'],requiredWorkflows:[{workflowId:7,workflowName:'CI',jobName:'native tests',testStepName:'Test'}], pr:{number:15,state:'open',merged:false,merged_at:null,draft:false,mergeable:true,
     user:{login:'the1mills'},head:{sha:H},base:{sha:B,ref:'main',repo:{full_name:'ores-truffle-oreslang/attolang-tests'}}},
-  reviews:[approved()],runs:[{id:11,event:'pull_request',head_sha:H,status:'completed',conclusion:'success',run_attempt:1,
+  reviews:[approved()],runs:[{id:11,event:'pull_request',head_sha:H,status:'completed',conclusion:'success',run_attempt:1,workflow_id:7,name:'CI',
     repository:{full_name:'ores-truffle-oreslang/attolang-tests'},head_repository:{full_name:'ores-truffle-oreslang/attolang-tests'},
     pull_requests:[{number:15,base:{repo:{full_name:'ores-truffle-oreslang/attolang-tests'}}}]}],
   jobsByRun:{11:[{id:101,run_id:11,name:'native tests',runner_id:202,run_attempt:1,conclusion:'success',steps:[step()]}]}
@@ -205,4 +205,66 @@ test('deterministic mutation matrix: no single critical gate removal is accepted
    const r=assessPullRequest(x);
    assert.equal(r.readyForIndependentMergeDecision,false,'mutation admitted ('+i+'): '+name);
  }
+});
+
+test('unrelated passing workflow with matching step names cannot replace required workflow',()=>{
+ const x=sample();x.runs[0].workflow_id=999;x.runs[0].name='Imposter';
+ const r=assessPullRequest(x);assert.ok(r.blockers.includes('MISSING_REQUIRED_WORKFLOW'));assert.equal(r.readyForIndependentMergeDecision,false);
+});
+test('same workflow id renamed fails identity fence',()=>{
+ const x=sample();x.runs[0].name='untrusted CI';
+ assert.ok(assessPullRequest(x).blockers.includes('WORKFLOW_IDENTITY_MISMATCH'));
+});
+test('same run has required step but a renamed job cannot satisfy the workflow',()=>{
+ const x=sample();x.jobsByRun[11][0].name='shadow-tests';
+ assert.ok(assessPullRequest(x).blockers.includes('MISSING_REQUIRED_WORKFLOW_JOB'));
+});
+test('same workflow and job but required test step missing is denied',()=>{
+ const x=sample();x.requiredWorkflows[0].testStepName='Independent Trust Matrix';
+ assert.ok(assessPullRequest(x).blockers.includes('MISSING_REQUIRED_WORKFLOW_STEP'));
+});
+test('required test step in unrelated job is not evidence of required workflow job',()=>{
+ const x=sample();x.jobsByRun[11][0].name='unrelated';
+ x.jobsByRun[11].push({...x.jobsByRun[11][0],id:102,name:'other',steps:[step('Test')]});
+ assert.ok(assessPullRequest(x).blockers.includes('MISSING_REQUIRED_WORKFLOW_JOB'));
+});
+test('required workflow job success from another run ID is not evidence',()=>{
+ const x=sample();x.jobsByRun[11][0].run_id=22;
+ assert.ok(assessPullRequest(x).blockers.includes('MISSING_REQUIRED_WORKFLOW_JOB'));
+});
+test('required workflow job stale run attempt is not evidence',()=>{
+ const x=sample();x.jobsByRun[11][0].run_attempt=99;
+ assert.ok(assessPullRequest(x).blockers.includes('MISSING_REQUIRED_WORKFLOW_JOB'));
+});
+test('required workflow cannot rely on skipped job',()=>{
+ const x=sample();x.jobsByRun[11][0].conclusion='skipped';
+ assert.ok(assessPullRequest(x).blockers.includes('MISSING_REQUIRED_WORKFLOW_JOB'));
+});
+test('required workflow cannot rely on runnerless job',()=>{
+ const x=sample();x.jobsByRun[11][0].runner_id=null;
+ assert.ok(assessPullRequest(x).blockers.includes('MISSING_REQUIRED_WORKFLOW_JOB'));
+});
+test('empty or missing required workflow policy is rejected',()=>{
+ for(const policy of [[],null,undefined]){
+  const x=sample();x.requiredWorkflows=policy;
+  assert.ok(assessPullRequest(x).blockers.includes('MISSING_REQUIRED_WORKFLOW_POLICY'));
+ }
+});
+test('duplicate workflow proof requirement is rejected',()=>{
+ const x=sample();x.requiredWorkflows.push({...x.requiredWorkflows[0]});
+ assert.ok(assessPullRequest(x).blockers.includes('MISSING_REQUIRED_WORKFLOW_POLICY'));
+});
+test('invalid workflow id and blank job name are rejected',()=>{
+ const x=sample();x.requiredWorkflows[0].workflowId=0;
+ assert.ok(assessPullRequest(x).blockers.includes('MISSING_REQUIRED_WORKFLOW_POLICY'));
+ const y=sample();y.requiredWorkflows[0].jobName=' ';
+ assert.ok(assessPullRequest(y).blockers.includes('MISSING_REQUIRED_WORKFLOW_POLICY'));
+});
+test('two distinct required workflows each need their own matching source run and job',()=>{
+ const x=sample();x.requiredWorkflows.push({workflowId:8,workflowName:'Trust assurance',jobName:'trust',testStepName:'Security checks'});
+ assert.ok(assessPullRequest(x).blockers.includes('MISSING_REQUIRED_WORKFLOW'));
+ x.runs.push({...x.runs[0],id:12,workflow_id:8,name:'Trust assurance'});
+ x.jobsByRun[12]=[{...x.jobsByRun[11][0],id:102,run_id:12,name:'trust',steps:[step('Security checks')]}];
+ const r=assessPullRequest(x);
+ assert.equal(r.readyForIndependentMergeDecision,true,JSON.stringify(r.blockers));
 });
