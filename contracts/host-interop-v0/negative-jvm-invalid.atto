@@ -1,0 +1,4 @@
+import jvm "java/lang/Runtime" as Runtime;
+pub fnc main(): int {
+  return 42;
+}
