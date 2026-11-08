@@ -6,7 +6,7 @@ const isoTimestamp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?Z$/;
 const validRunConclusions = new Set(['success']);
 const validJobConclusions = new Set(['success', 'skipped']);
 
-function requiredString(value) { return typeof value === 'string' && value.length > 0; }
+function requiredString(value) { return typeof value === 'string' && value.trim().length > 0; }
 function isSha(value) { return requiredString(value) && shaPattern.test(value); }
 function stableUnique(items) { return [...new Set(items)]; }
 export function validRepoName(value) {
