@@ -350,3 +350,83 @@ test('initial admission invalid clock fails closed',()=>{
   deny(()=>a.enterOrResume(undefined),'INVALID_ELAPSED');
   assert.equal(a.closed,true);
 });
+
+
+test('invalid CPU delta is a terminal quota violation, not a recoverable exception',()=>{
+  for(const bad of [-1n,MAX_U64+1n,1,undefined,null,NaN,'0']){
+    const a=make({cpuBudget:100n});
+    deny(()=>a.chargeCpu(bad),'INVALID_CPU_DELTA');
+    assert.equal(a.cpu,0n);
+    assert.equal(a.closed,true);
+    deny(()=>a.enterOrResume(0n),'ACTOR_CLOSED');
+  }
+});
+test('zero CPU delta does not mint a new segment budget',()=>{
+  const a=make({cpuBudget:3n});
+  a.chargeCpu(0n);
+  a.chargeCpu(2n);
+  a.enterOrResume(0n);
+  deny(()=>a.chargeCpu(1n),'CPU_EXHAUSTED');
+  assert.equal(a.cpu,3n);
+});
+test('attempt to invoke explicitly disabled untrusted cooperation is terminal',()=>{
+  const a=make({fuel:100n});
+  deny(()=>a.explicitCooperate(0n),'UNTRUSTED_COOPERATE_DISABLED');
+  assert.equal(a.closed,true);
+  deny(()=>a.backedge(1n,0n),'ACTOR_CLOSED');
+});
+test('unbalanced critical exit fails closed without releasing unknown locks',()=>{
+  const a=make({mode:'trusted'});
+  deny(()=>a.exitCritical(),'CRITICAL_UNDERFLOW');
+  assert.equal(a.closed,true);
+  deny(()=>a.enterCritical(),'ACTOR_CLOSED');
+});
+for(const [method,fn] of [
+  ['enterOrResume',a=>a.enterOrResume(0n)],
+  ['chargeCpu',a=>a.chargeCpu(0n)],
+  ['enterCritical',a=>a.enterCritical()],
+  ['exitCritical',a=>a.exitCritical()],
+  ['explicitCooperate',a=>a.explicitCooperate(0n)],
+  ['backedge',a=>a.backedge(1n,0n)],
+  ['chargeBlock',a=>a.chargeBlock(1n,0n)]
+]){
+  test('reentrant clock cannot invoke actor scheduling entry point '+method,()=>{
+    const a=make({mode:'trusted'});
+    for(let i=0;i<127;i++)a.chargeBlock(1n,()=>0n);
+    deny(()=>a.chargeBlock(1n,()=>fn(a)),'CLOCK_REENTRANCY');
+    assert.equal(a.closed,true);
+    assert.equal(a.handoffs,0n);
+    assert.equal(a.fuel,99872n);
+  });
+}
+test('cancellation inside clock callback cannot escape an impending slow poll',()=>{
+  const a=make();
+  for(let i=0;i<127;i++)a.chargeBlock(1n,()=>0n);
+  deny(()=>a.chargeBlock(1n,()=>{a.requestCancellation();return 0n;}),'CANCELLED');
+  assert.equal(a.closed,true);
+});
+test('valid explicit trusted handoff is counted once, never twice',()=>{
+  const a=make({mode:'trusted'});
+  a.explicitCooperate(0n);
+  assert.equal(a.handoffs,1n);
+  for(let i=0;i<128;i++)a.chargeBlock(1n,()=>0n);
+  assert.equal(a.handoffs,2n);
+});
+test('sample time rollback cannot be caught and ignored by a hostile actor',()=>{
+  const a=make();
+  for(let i=0;i<128;i++)a.chargeBlock(1n,()=>10n);
+  for(let i=0;i<127;i++)a.chargeBlock(1n,()=>9n);
+  deny(()=>a.chargeBlock(1n,()=>9n),'CLOCK_ROLLBACK');
+  assert.equal(a.closed,true);
+  deny(()=>a.chargeBlock(1n,()=>10n),'ACTOR_CLOSED');
+});
+test('fail-stop survives 1024 malicious quota re-entry attempts',()=>{
+  const a=make({fuel:12n});
+  deny(()=>a.chargeBlock(0n,0n),'ZERO_COST');
+  for(let i=0;i<1024;i++){
+    deny(()=>a.enterOrResume(0n),'ACTOR_CLOSED');
+    deny(()=>a.chargeCpu(0n),'ACTOR_CLOSED');
+    deny(()=>a.chargeBlock(1n,0n),'ACTOR_CLOSED');
+  }
+  assert.equal(a.fuel,12n);assert.equal(a.cpu,0n);
+});
