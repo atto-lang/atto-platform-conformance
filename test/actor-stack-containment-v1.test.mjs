@@ -48,7 +48,7 @@ function validatePending(matrix) {
   }
   assert.equal(matrix.requirements.nativeStackOverflowRecoverableOnSharedCarrier, false);
   assert.equal(matrix.requirements.untrustedArbitraryNativeCodeRequiresKillableWorker, true);
-  assert.ok(matrix.scenarios.length >= 33);
+  assert.ok(matrix.scenarios.length >= 38);
   assert.match(matrix.javaFrameArenaReference, /\/pull\/2627$/);
   const bootstrap = matrix.frameStorageBootstrap;
   assert.equal(bootstrap.javaHostPrimitive, 'MANAGED_BYTES_ONLY');
@@ -130,6 +130,19 @@ function validatePending(matrix) {
   assert.equal(bootstrap.javaCompilerReturnPcLowered, false);
   assert.equal(bootstrap.javaCompilerStacklessEvaluator, false);
   assert.equal(bootstrap.javaCompilerNativeActorStackFaultSurvival, 'NOT_EXECUTED');
+  assert.match(bootstrap.javaM32HardeningSourceReference, /\/pull\/2643$/);
+  assert.match(bootstrap.javaM32HardeningFollowupReference, /\/pull\/2662$/);
+  assert.equal(bootstrap.javaM32HardeningStatus, 'AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaM32PhysicalTurnIdentityFenced, true);
+  assert.equal(bootstrap.javaM32SchedulerTaskIdentityFenced, true);
+  assert.equal(bootstrap.javaM32JvmScalarShadowTaskCaptureAllowed, false);
+  assert.equal(bootstrap.javaM32ShadowSnapshotEscapeGuard, 'COPY_AND_MOVE_DENIED');
+  assert.equal(bootstrap.javaM32CorruptScalarPayloadHostTestExecuted, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaM32CorruptReturnDescriptorHostTestExecuted, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaM32NewHostJUnitMethodsAuthored, 11);
+  assert.equal(bootstrap.javaM32NewHostJUnitMethodsExecuted, 0);
+  assert.equal(bootstrap.javaM32HardenedGuestCompilerExecution, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaM32HardenedNativeStackIsolation, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaAuthoredLegacyCompilerGuestTests, 1);
   assert.equal(bootstrap.javaLegacyCompilerGuestTestExecuted, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaGuardedInvocationByteFrames,
@@ -230,6 +243,16 @@ test('fake pass, duplicate backend, deleted proof and false promotion are reject
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerReturnRecordAbiStatus = 'GUEST_PASS';})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerReturnRecordUsedByGuestDispatcher = true;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerNativeActorStackFaultSurvival = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM32HardeningStatus = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM32JvmScalarShadowTaskCaptureAllowed = true;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM32PhysicalTurnIdentityFenced = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM32SchedulerTaskIdentityFenced = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM32NewHostJUnitMethodsExecuted = 11;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM32CorruptScalarPayloadHostTestExecuted = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM32CorruptReturnDescriptorHostTestExecuted = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM32HardenedGuestCompilerExecution = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM32HardenedNativeStackIsolation = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaM32HardeningFollowupReference;})));
   assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaCompilerReturnRecordReference;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerLexicalGuestExecution = 'PASS';})));
   assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaCompilerScalarParameterReference;})));
@@ -420,6 +443,35 @@ test('M3.2 scalar Env slots and call-return ABI are not stackless guest proof', 
   assert.equal(frame.javaCompilerLexicalJvmShadowStillPresent, true);
   assert.equal(frame.javaCompilerReturnRecordBytes, 48);
   assert.equal(frame.javaCompilerReturnRecordUsedByGuestDispatcher, false);
+  for (const backend of manifest.backends) {
+    assert.equal(backend.compilerGuest, 'NOT_EXECUTED');
+    assert.equal(backend.actorStackStorage, 'NOT_EXECUTED');
+  }
+  assert.equal(manifest.promotion.certified, false);
+});
+
+test('M3.2 hardening denies same-carrier return reuse and stale scalar Task capture', async () => {
+  const manifest = validatePending(await load());
+  const scenarios = new Map(manifest.scenarios.map(s => [s.id, s]));
+  const ids = [
+    'actor-return-record-same-carrier-new-turn-denied',
+    'actor-return-record-cross-task-handle-denied',
+    'actor-scalar-lexical-detached-task-copy-move-denied',
+    'actor-frame-scalar-tag-payload-corruption-fail-stop',
+    'actor-scalar-NaN-raw-bits-survive-cooperate'
+  ];
+  for (const id of ids) {
+    const pending = scenarios.get(id);
+    assert.ok(pending, 'missing hardening scenario ' + id);
+    assert.equal(pending.source, null, 'do not fabricate compiled guest fixture');
+    assert.ok(pending.requiredEvidence.includes('compilerGuest'));
+  }
+  const bridge = manifest.frameStorageBootstrap;
+  assert.equal(bridge.javaM32JvmScalarShadowTaskCaptureAllowed, false);
+  assert.equal(bridge.javaM32PhysicalTurnIdentityFenced, true);
+  assert.equal(bridge.javaM32SchedulerTaskIdentityFenced, true);
+  assert.equal(bridge.javaM32NewHostJUnitMethodsAuthored, 11);
+  assert.equal(bridge.javaM32NewHostJUnitMethodsExecuted, 0);
   for (const backend of manifest.backends) {
     assert.equal(backend.compilerGuest, 'NOT_EXECUTED');
     assert.equal(backend.actorStackStorage, 'NOT_EXECUTED');
