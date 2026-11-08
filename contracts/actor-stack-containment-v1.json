@@ -536,6 +536,94 @@
         "actorStackGeneration",
         "actorStackStorage"
       ]
+    },
+    {
+      "id": "actor-scalar-iterative-non-tail-call-return-pcs",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-proper-tail-100k-constant-frames",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-mutual-tail-no-jvm-recursion",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-non-tail-budget-denial",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-stack-budget",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-overflow-sibling-survives",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-stack-budget",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorSurvival",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-caller-operand-preservation",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "suspendedFrameOwnership"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-pc-callee-id-corruption-fail-stop",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "actor-generation-poison",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-iterative-unsupported-reference-effect-fallback",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "unsupported-compiler-subset",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
     }
   ],
   "promotion": {
@@ -668,6 +756,30 @@
     "javaM33EnvSnapshotActualCallbackParity": "NOT_EXECUTED",
     "javaM33EnvSnapshotIterativeDispatcher": false,
     "javaM33EnvSnapshotNativeStackProof": "NOT_EXECUTED",
-    "javaM33Note": "Java #2665 introduces exact SourceTask ExecutionContext identity checks in actor-bound lexical Env Slot read/write/snapshot; corrects reflective Env.define signature; adds three host JUnit methods. No compiler-backed .atto closure/callback execution, stackless guest dispatch or native stack isolation has been verified."
+    "javaM33Note": "Java #2665 introduces exact SourceTask ExecutionContext identity checks in actor-bound lexical Env Slot read/write/snapshot; corrects reflective Env.define signature; adds three host JUnit methods. No compiler-backed .atto closure/callback execution, stackless guest dispatch or native stack isolation has been verified.",
+    "javaM33aIterativeSourceReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2667",
+    "javaM33aIterativeStatus": "AUTHORED_NOT_EXECUTED",
+    "javaM33aWholeGraphFailClosed": true,
+    "javaM33aScalarFnEnabled": true,
+    "javaM33aActualNonTailGuestDispatcher": "AUTHORED_NOT_EXECUTED",
+    "javaM33aScalarFrameHeaderBytes": 16,
+    "javaM33aTypedScalarSlotBytes": 9,
+    "javaM33aInstructionsPerSafepoint": 128,
+    "javaM33aHostJUnitAuthored": 33,
+    "javaM33aParserJUnitAuthored": 16,
+    "javaM33aAttoJUnitAuthored": 5,
+    "javaM33aJUnitExecuted": 0,
+    "javaM33aCompiledAttoGuestEvidence": "NOT_EXECUTED",
+    "javaM33aNonScalarJvmFallbackStillRecursive": true,
+    "javaM33aActorMethodsLowered": false,
+    "javaM33aClosuresLowered": false,
+    "javaM33aSuspendedGuestReturnPCsLowered": false,
+    "javaM33aGeneralReturnRecordAbiConnected": false,
+    "javaM33aNativeActorStackFaultProof": "NOT_EXECUTED",
+    "javaM33aLLVMGuest": "NOT_EXECUTED",
+    "javaM33aNETGuest": "NOT_EXECUTED",
+    "javaM33aWasmGuest": "NOT_EXECUTED",
+    "javaM33aForgeGuest": "NOT_EXECUTED",
+    "javaM33aNote": "Java PR #2667 authors a restrictive pure int fnc source call graph compiler and iterative actor-owned frame dispatcher with real scalar CALL/RET and tail replacement; 54 new JUnit methods authored. The 48-byte general return record remains unused; real compiled .atto actor execution and all non-Java backends remain NOT_EXECUTED."
   }
 }
