@@ -174,7 +174,10 @@ export function verifyPlatformCapabilityReceipt(receipt, contract) {
 }
 
 function readJson(filename) {
-  return parseStrictJson(fs.readFileSync(filename,"utf8"),filename);
+  const bytes=fs.readFileSync(filename);
+  if(bytes.length>1048576) throw Error(filename+" JSON exceeds size limit");
+  const decoded=new TextDecoder("utf-8",{fatal:true,ignoreBOM:true}).decode(bytes);
+  return parseStrictJson(decoded,filename);
 }
 
 export function verifyFile(filename, contractFilename=defaultContract) {
