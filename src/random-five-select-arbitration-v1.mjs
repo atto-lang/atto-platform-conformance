@@ -14,7 +14,7 @@ export class ReferenceSelectArbiter{
     if(this.state!=='OPEN')return reject('SELECT_ALREADY_TERMINAL');
     if(!this.branches.has(branch)||!valid(token)||this.tokens.has(token)||
        [...this.tokens.values()].some(x=>x.branch===branch)||
-       !(typeof value==='string'||Number.isSafeInteger(value)))
+       !(typeof value==='string'&&value.length<=2048||Number.isSafeInteger(value)))
       return reject('INVALID_OR_DUPLICATE_RESERVATION');
     this.tokens.set(token,{branch,token,value,order:++this.sequence});
     return Object.freeze({status:'RESERVED',branch,token});
