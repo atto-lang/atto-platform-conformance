@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import {ActorMeter,MeterFailure,MAX_U64,verifyMeteredCycles,verifyMeteredCalls,admitUntrustedForeignCall} from '../reference/cooperative-meter.mjs';
 import {validateManifest,validateReceipt,EvidenceError} from '../bin/verify_cooperative_execution.mjs';
 const m=JSON.parse(fs.readFileSync(new URL('../contracts/cooperative-execution-v1.json',import.meta.url)));
-const meter=(opts={})=>new ActorMeter({fuel:100000n,wallBudget:100000n,cpuBudget:100000n,...opts});
+const meter=(opts={})=>{const a=new ActorMeter({fuel:100000n,wallBudget:100000n,cpuBudget:100000n,...opts});a.enterOrResume(0n);return a;};
 const denied=(fn,code)=>assert.throws(fn,e=>e instanceof MeterFailure&&e.code===code);
 const rejected=(r,code)=>assert.throws(()=>validateReceipt(r,m),e=>e instanceof EvidenceError&&e.message===code);
 const receipt=(caseId='hot-path-127-no-slow-poll',backend='llvm')=>({
@@ -16,6 +16,23 @@ const receipt=(caseId='hot-path-127-no-slow-poll',backend='llvm')=>({
   observed:m.cases.find(x=>x.id===caseId).expect,exit_code:0
 });
 test('17 cases, six unexecuted backend baselines',()=>assert.equal(validateManifest(m).size,17));
+test('no fuel, CPU, or backedge may execute before first actor admission',()=>{
+  const a=new ActorMeter({fuel:20n,wallBudget:100n,cpuBudget:100n});
+  denied(()=>a.chargeBlock(1n),'METER_NOT_ADMITTED');
+  denied(()=>a.chargeCpu(1n),'METER_NOT_ADMITTED');
+  denied(()=>a.backedge(1n,0n),'METER_NOT_ADMITTED');
+  denied(()=>a.enterCritical(),'METER_NOT_ADMITTED');
+  assert.equal(a.fuel,20n);
+  a.enterOrResume(0n);a.backedge(1n,0n);assert.equal(a.fuel,19n);
+});
+test('zero wall quota cannot run even one backedge on first admission',()=>{
+  const a=new ActorMeter({fuel:20n,wallBudget:0n,cpuBudget:100n});
+  denied(()=>a.enterOrResume(0n),'WALL_EXHAUSTED');assert.equal(a.closed,true);
+});
+test('zero CPU quota cannot run even one backedge on first admission',()=>{
+  const a=new ActorMeter({fuel:20n,wallBudget:100n,cpuBudget:0n});
+  denied(()=>a.enterOrResume(0n),'CPU_EXHAUSTED');assert.equal(a.closed,true);
+});
 test('127 fast-path backedges do not call the scheduler',()=>{
   const a=meter();for(let i=0;i<127;i++)assert.equal(a.backedge(1n,0n),false);
   assert.equal(a.slowPolls,0n);assert.equal(a.backedge(1n,0n),true);
