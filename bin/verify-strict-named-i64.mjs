@@ -9,6 +9,7 @@ import {fileURLToPath,pathToFileURL} from 'node:url';
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const CONTRACT=resolve(ROOT,'contracts/strict-named-i64-v1.json');
 export const CONTRACT_GIT_BLOB='3f65f557f06e8cd0d34a738a0d357d6c2e477665';
+export const CONTRACT_SHA256='dacca2eaf503f854fd7f60ba135ff31b6c210d90aff8d117d4dedb5b88bedec5';
 export const REPOS=Object.freeze({
   java:'ores-truffle-oreslang/oreslang-source.java',
   llvm:'ores-truffle-oreslang/oreslang-source.llvm',
@@ -57,6 +58,7 @@ export function validateContractBytes(raw){
     return {ok:false,errors:['contract bytes must be a bounded Buffer']};
   const blob=createHash('sha1').update('blob '+raw.length+'\0').update(raw).digest('hex');
   if(blob!==CONTRACT_GIT_BLOB)errors.push('canonical contract Git blob mismatch');
+  if(hash(raw)!==CONTRACT_SHA256)errors.push('canonical contract SHA-256 mismatch');
   let data;
   try{data=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(raw));}
   catch{return {ok:false,errors:[...errors,'invalid contract UTF-8/JSON']};}
@@ -108,13 +110,16 @@ export function verifyReceipt(receipt,contract){
     fail('unsupported guest execution mode');
   const e=receipt.evidence;
   if(!allowed(e,['runId','jobId','runAttempt','runUrl','runnerId','runnerName',
-    'executedSteps','steps','workflowConclusion','guestExecuted','hostStub',
+    'executedSteps','steps','workflowConclusion','exactHead','workflowHeadSha','guestExecuted','hostStub',
     'compilerProduced','logsSha256']))fail('missing/unknown evidence fields');
   if(object(e)){
     for(const k of ['runId','jobId','runAttempt','runnerId','executedSteps'])
       if(!Number.isSafeInteger(e[k])||e[k]<=0)fail(k+' must be a positive safe integer');
     if(typeof e.runnerName!=='string'||!e.runnerName.trim())fail('runnerName missing');
     if(e.workflowConclusion!=='success')fail('workflow not successful');
+    if(e.exactHead!==true)fail('exactHead must be true');
+    if(!sha40.test(e.workflowHeadSha)||e.workflowHeadSha!==receipt.sourceCommit)
+      fail('workflowHeadSha must bind the exact sourceCommit');
     if(e.guestExecuted!==true||e.compilerProduced!==true||e.hostStub!==false)
       fail('host stub or unexecuted guest cannot qualify');
     if(!sha64.test(e.logsSha256))fail('logsSha256 missing');
