@@ -94,3 +94,28 @@ test('counter and sampling inputs must be precise nonnegative integers and boole
     }),TypeError,JSON.stringify(invalid));
   }
 });
+
+test('untrusted quotas never authorize a source-level handoff by themselves',()=>{
+  for (const kind of ['auto-backedge','cooperate']) {
+    const decision = budgetDecision({
+      ...continuable,kind,untrusted:true,quotaContinuous:true,
+      reductions:512,elapsedNs:0,probeDue:false,
+    });
+    assert.deepEqual(decision,{
+      decision:kind==='auto-backedge'?'DEFER':'REJECT',
+      reason:'untrusted-cooperation-not-certified',
+    });
+  }
+  assert.deepEqual(budgetDecision({
+    ...continuable,kind:'auto-backedge',untrusted:true,quotaContinuous:false,
+    reductions:512,elapsedNs:0,probeDue:false,
+  }),{decision:'DEFER',reason:'logical-quota-not-continuous'});
+  // The model can show what a future certified engine would allow,
+  // but its boolean is NOT a guest capability or a certification receipt.
+  assert.deepEqual(budgetDecision({
+    ...continuable,kind:'auto-backedge',untrusted:true,quotaContinuous:true,
+    untrustedCooperationCertified:true,
+    reductions:512,elapsedNs:0,probeDue:false,
+  }),{decision:'HANDOFF',reason:'reduction-budget'});
+});
+
