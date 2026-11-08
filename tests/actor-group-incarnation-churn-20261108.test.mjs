@@ -4,7 +4,7 @@ import {PubSubReference,share} from '../models/actor-pubsub-portable-v1.mjs';
 
 // Offline reference model, not compiler-backed actor execution or concurrency proof.
 function expect(result,label) {
-  assert.equal(result.ok,true,label+': '+JSON.stringify(result));
+  assert.equal(result.ok,true,label+': '+(result.error||'unexpected rejection'));
   return result;
 }
 test('one actor joins two groups without leaking authority across them',()=>{
