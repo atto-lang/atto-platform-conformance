@@ -1,0 +1,43 @@
+name: Cooperative execution source-free gate
+on:
+  push:
+    paths:
+      - 'contracts/cooperative-execution-v1.json'
+      - 'reference/cooperative-meter.mjs'
+      - 'bin/verify_cooperative_execution.mjs'
+      - 'tests/cooperative-execution.test.mjs'
+      - 'docs/COOPERATIVE_EXECUTION_V1.md'
+      - '.github/workflows/cooperative-execution.yml'
+  pull_request:
+    paths:
+      - 'contracts/cooperative-execution-v1.json'
+      - 'reference/cooperative-meter.mjs'
+      - 'bin/verify_cooperative_execution.mjs'
+      - 'tests/cooperative-execution.test.mjs'
+      - 'docs/COOPERATIVE_EXECUTION_V1.md'
+      - '.github/workflows/cooperative-execution.yml'
+permissions:
+  contents: read
+jobs:
+  source-free-reference-only:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact checkout
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          git diff --quiet HEAD --
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Validate contract
+        run: node bin/verify_cooperative_execution.mjs
+      - name: Execute adversarial host-oracle tests
+        run: node --test tests/cooperative-execution.test.mjs
+      - name: Scope of evidence
+        run: echo 'HOST_REFERENCE_ONLY - NOT_EXECUTED backend compiler or guest; no security sandbox certified'
