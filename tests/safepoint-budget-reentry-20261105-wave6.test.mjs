@@ -3,8 +3,17 @@ import assert from 'node:assert/strict';
 import {admitSafePoint, budgetDecision, mayEnterActorWhileParked} from '../src/safepoint-policy.mjs';
 
 test('the budget poll does not preempt on wall time alone before probe', () => {
-  assert.deepEqual(budgetDecision({reductions:100000,elapsedNs:10000000,probeDue:false}),
+  assert.deepEqual(budgetDecision({reductions:511,elapsedNs:10000000,probeDue:false}),
     {decision:'CONTINUE',reason:'probe-not-due'});
+  assert.deepEqual(budgetDecision({
+    reductions:100000,elapsedNs:10000000,probeDue:false,hasHeapContinuation:true
+  }), {decision:'HANDOFF',reason:'reduction-budget'});
+  assert.deepEqual(budgetDecision({
+    reductions:100000,elapsedNs:10000000,probeDue:false,hasHeapContinuation:true,liveBorrow:true
+  }), {decision:'DEFER',reason:'loan-across-suspension'});
+  assert.deepEqual(budgetDecision({
+    reductions:512,elapsedNs:0,probeDue:false,hasHeapContinuation:false
+  }), {decision:'DEFER',reason:'continuation-not-lowered'});
   assert.deepEqual(budgetDecision({reductions:512,elapsedNs:0,hasHeapContinuation:true,peerRunnable:false}),
     {decision:'CONTINUE',reason:'no-runnable-peer'});
 });
