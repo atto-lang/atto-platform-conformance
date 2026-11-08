@@ -541,7 +541,7 @@ structured children are cancelled per supervision ownership policy;
 unrelated sibling actors must keep running and must not share its
 poisoned arena.
 
-Nine new Java host-runtime JUnit cases are **AUTHORED_NOT_EXECUTED**.
+Ten new Java host-runtime JUnit cases are **AUTHORED_NOT_EXECUTED**.
 They model a synthetic StackOverflowError, genuine JVM recursive
 StackOverflowError, swallowed/uncaught managed frame-budget failure,
 the independently healthy sibling reusing a one-worker SHARED
@@ -549,6 +549,13 @@ carrier, zeroized retired actor frames, ordinary error preservation
 and a separate forked `-Xss256k` JVM test process with receipt
 `ACTOR_NATIVE_STACK_OVERFLOW=A_FAILS_B_SURVIVES` only if A fails
 and B completes on the same surviving shared carrier.
+
+The actor mailbox also checks the absence of an unfinished call
+scope **after each message/continuation**, before admitting another
+message in the same physical batch. A deterministic host test queues
+the second mail while the first is executing, then proves A's leaked
+scope terminates A before the second mail can run. This per-envelope
+fence is backed by the physical-turn finalization fence.
 
 The actor physical-turn cleanup additionally revokes a leaked
 `GuestCallDepthGuard` thread-local Scope, poisons only the scope's
@@ -561,7 +568,7 @@ with a deliberately unfinished Scope. The ThreadLocal is removed
 *before* any potentially failing release to prevent cross-actor
 carrier lease reuse.
 
-Nine pending scenarios bring this actor-stack matrix to **73**.
+Ten pending scenarios bring this actor-stack matrix to **74**.
 The contract test explicitly forbids manufactured JUnit execution,
 fake low-stack process PASS, native/JNI fault containment claims,
 premature supervisor restart/generation coverage or cross-backend
