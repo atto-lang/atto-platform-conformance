@@ -4,9 +4,9 @@
  * The scanner only validates shape/uniqueness; JSON.parse remains the decoder.
  */
 export function parseStrictJson(text, label = 'input') {
-  const MAX_TEXT = 1_048_576;
+  const MAX_BYTES = 1_048_576;
   const MAX_DEPTH = 80;
-  if (typeof text !== 'string' || text.length > MAX_TEXT)
+  if (typeof text !== 'string' || Buffer.byteLength(text, 'utf8') > MAX_BYTES)
     throw Error(label + ' JSON exceeds size limit or is not text');
   let i = 0;
   const invalid = () => { throw Error(label + ' JSON is ambiguous or invalid'); };
