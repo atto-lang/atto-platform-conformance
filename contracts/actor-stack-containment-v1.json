@@ -690,6 +690,94 @@
         "actorStackStorage",
         "actorSurvival"
       ]
+    },
+    {
+      "id": "actor-scalar-cfg-join-operand-depth-mismatch-pre-admission",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "unsupported-compiler-subset",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-join-primitive-kinds-mismatch-pre-admission",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "unsupported-compiler-subset",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-local-definite-assignment-at-branch-joins",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "uninitialized-scalar-local",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-loop-backedge-local-definite-assignment",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "uninitialized-scalar-local",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-callee-arity-and-tail-live-operands",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "invalid-scalar-call",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-ret-conditional-and-stack-overflow-typed",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "invalid-typed-stack",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-reachable-fallthrough-invalid",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "missing-return",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-scalar-cfg-noncanonical-unreachable-opcode-fields",
+      "kind": "pending-compiler-negative",
+      "source": null,
+      "expectedFailureClass": "invalid-bytecode-image",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorStackGeneration"
+      ]
     }
   ],
   "promotion": {
@@ -862,6 +950,30 @@
     "javaM33bTypedAttoGuestEvidence": "NOT_EXECUTED",
     "javaM33bNativeStackFailureContainment": "NOT_EXECUTED",
     "javaM33bFiveBackendParity": "NOT_EXECUTED",
-    "javaM33bNote": "Java #2668 hardens M3.3a scalar fnc expression typing and binding kind, rejecting implicit primitive conversions before actor execution, and validates runtime SP and scalar opcode tags. +21 JUnit methods authored, none executed."
+    "javaM33bNote": "Java #2668 hardens M3.3a scalar fnc expression typing and binding kind, rejecting implicit primitive conversions before actor execution, and validates runtime SP and scalar opcode tags. +21 JUnit methods authored, none executed.",
+    "javaM33cVerifierSourceReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2669",
+    "javaM33cVerifierStatus": "AUTHORED_NOT_EXECUTED",
+    "javaM33cVerifierRunsBeforeActorFrameAdmission": true,
+    "javaM33cRequiresExactOperandJoinTypes": true,
+    "javaM33cDefiniteAssignmentIntersection": true,
+    "javaM33cLoopBackedgeFixedPoint": true,
+    "javaM33cCallArityAndTailOperandsChecked": true,
+    "javaM33cCanonicalUnreachableBytecodeFields": true,
+    "javaM33cFullGraphFallbackOnVerificationFailure": true,
+    "javaM33cNewVerifierJUnitAuthored": 39,
+    "javaM33cTotalStackedJUnitAuthored": 114,
+    "javaM33cHostedJUnitExecuted": 0,
+    "javaM33cLocalJavaVersion": "21",
+    "javaM33cLocalSmokeAssertionsPassed": 40,
+    "javaM33cLocalSmokeAssertionsTotal": 40,
+    "javaM33cLocalExactVerifierBlob": "0cd147ac955aaa08eb4346a2d342025123102331",
+    "javaM33cLocalSmokeClassification": "STUBBED_STANDALONE_JAVA_NOT_PROJECT",
+    "javaM33cCompiledAttoGuestEvidence": "NOT_EXECUTED",
+    "javaM33cNativeActorStackProof": "NOT_EXECUTED",
+    "javaM33cLLVMGuest": "NOT_EXECUTED",
+    "javaM33cNETGuest": "NOT_EXECUTED",
+    "javaM33cWasmGuest": "NOT_EXECUTED",
+    "javaM33cForgeGuest": "NOT_EXECUTED",
+    "javaM33cNote": "Java #2669 adds a control-flow-aware scalar bytecode verifier (exact typed operand stack, definite locals at joins/loops, call/return arity and noncanonical image fields). 39 new JUnit methods are authored, not executed; a separate JDK 21 standalone stub-harness compiled the exact verifier blob and passed 40/40 smoke assertions, not Maven/Graal/AttoLang guest."
   }
 }
