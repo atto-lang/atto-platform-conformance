@@ -386,3 +386,51 @@ and premature stackless-dispatch claims. All backend guest evidence is
 still `NOT_EXECUTED`, pending exact-head nonzero-step Maven/Node
 execution, compiled guest ownership tests, supervisor restart, low
 native-stack process survival and independent code review.
+
+## Java M3.3a scalar CALL/RET iterative bytecode bridge
+
+Draft [Java #2667](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2667)
+is stacked on #2665 and authors the first **actual** restricted
+non-tail guest-call machine using actor-owned, bounded, generation-fenced
+activation bytes instead of recursive JVM evaluator calls. Its
+`ActorScalarSourceLowering` compiles the complete reachable direct-call
+graph of statically supported effect-free synchronous `fnc` functions
+with signed `int` arguments/returns, scalar locals, integer arithmetic,
+simple comparisons, explicit `if/else`/return and pure direct/mutual
+recursion. If any callee, operation, type, return path or feature lies
+outside that subset, the **entire** graph continues on the legacy
+JVM evaluator path; no partial compiler-lowered guest execution is
+ever promoted as native-stack-safe.
+
+The new `ActorScalarCallMachine` uses a single Java instruction loop.
+Every live non-tail activation has a separately quota-charged arena
+frame containing a 16-byte magic/PC/SP/callee-ID header and 9-byte
+typed scalar locals and operand cells; child CALL records its
+parent return PC in arena bytes; RET zeroizes and pops the child.
+TAIL_CALL replaces rather than grows the current activation. The
+actor-global 64-frame/64-KiB quota and generation fences remain active;
+safepoints are invoked on **every 128th dispatched instruction**, not
+every iteration. The older separate 48-byte `ActorGuestReturnRecord`
+is still **ABI groundwork**: this new restricted machine uses its own
+activation header, not that general record.
+
+The Java PR adds **33** host/runtime JUnit methods for deep tail and
+non-tail recursion, quota failure and sibling survival, non-tail
+multi-callee returns, PC/callee-ID corruption mutations, and
+amortized safepoints; **16** parser-derived `fnc` lowering/negative
+admission methods; and **5** canonical compiled `.atto` actor
+JUnit methods (three existing stack fixtures plus two new ones).
+**54 authored, zero executed** at contract creation: neither a
+Maven/JUnit test nor a compiled .atto guest run exists without an
+actual stepful exact-head CI receipt.
+
+Eight additional pending source/negative cases bring this actor
+stack matrix to **50 scenarios**. Contract mutation tests prohibit
+promoting the restricted scalar subset to complete actor stack
+isolation, fabricated JUnit execution, arbitrary method/closure
+lowering, continuation suspension return PCs, unsafe operator
+support, fake complete backend parity, source-free canary promotion
+or native low-stack fault-containment claims. All actual Java,
+LLVM, .NET NativeAOT, Wasm and Forge/Cranelift compiler-backed guest
+evidence stays `NOT_EXECUTED` until real exact-head admitted runner
+steps, test reports, runtime receipts, and independent review.
