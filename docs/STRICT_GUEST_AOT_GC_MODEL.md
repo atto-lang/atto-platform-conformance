@@ -15,7 +15,7 @@ rustc --edition=2021 -D warnings --test tools/strict_guest_aot_gc_model.rs -o /t
 /tmp/strict-guest-aot-gc-model-tests
 ```
 
-This model suite has 25 individually named Rust `#[test]` functions, including
+This model suite has 38 individually named Rust `#[test]` functions, including
 mutation loops across required negative and positive classes. The accompanying
 workflow pins the submitted PR head for checkout. **The source organization
 currently fails Actions before runner step execution:** a created workflow
