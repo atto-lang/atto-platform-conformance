@@ -98,3 +98,68 @@ test('Wasm module does not masquerade as independent native backend artifact', (
   const w = receipt('wasm'); w.artifact.kind = 'linked-native-guest-executable';
   assert.equal(classify(w, expectedFor('wasm')).classification, 'INVALID');
 });
+
+for (const [name, pick] of [
+  ['receipt root', x => x],
+  ['artifact record', x => x.artifact],
+  ['closure record', x => x.closure],
+  ['execution record', x => x.execution],
+]) {
+  test(name + ': hidden symbol metadata is rejected', () => {
+    const x = receipt('forge');
+    Object.defineProperty(pick(x), Symbol('fake-release'), {value: true});
+    assert.equal(classify(x, expectedFor('forge')).classification, 'INVALID');
+  });
+  test(name + ': non-enumerable metadata is rejected', () => {
+    const x = receipt('forge');
+    Object.defineProperty(pick(x), 'hiddenRelease', {value: true});
+    assert.equal(classify(x, expectedFor('forge')).classification, 'INVALID');
+  });
+}
+
+for (const [name, pick, key] of [
+  ['receipt root', x => x, 'backend'],
+  ['artifact record', x => x.artifact, 'sha256'],
+  ['closure record', x => x.closure, 'ownershipChecked'],
+  ['execution record', x => x.execution, 'completedSteps'],
+]) {
+  test(name + ': required non-enumerable data field is rejected', () => {
+    const x = receipt('forge');
+    const target = pick(x);
+    Object.defineProperty(target, key, {
+      value: target[key], enumerable: false, writable: true, configurable: true
+    });
+    assert.equal(classify(x, expectedFor('forge')).classification, 'INVALID');
+  });
+}
+
+test('trusted selector cannot contain hidden or symbol properties', () => {
+  for (const name of ['hidden', 'symbol']) {
+    const selector = expectedFor('forge');
+    Object.defineProperty(selector, name === 'symbol' ? Symbol('fake') : 'hidden', {value: 1});
+    assert.equal(classify(receipt('forge'), selector).classification, 'INVALID');
+  }
+});
+
+test('malicious ownKeys proxy traps never escape classification', () => {
+  const evilReceipt = new Proxy(receipt('forge'), {
+    ownKeys() {throw new Error('ownKeys trap');}
+  });
+  const evilSelector = new Proxy(expectedFor('forge'), {
+    ownKeys() {throw new Error('ownKeys trap');}
+  });
+  assert.equal(classify(evilReceipt, expectedFor('forge')).classification, 'INVALID');
+  assert.equal(classify(receipt('forge'), evilSelector).classification, 'INVALID');
+});
+
+test('ordinary frozen canonical JSON data retains structural compatibility', () => {
+  const x = receipt('forge');
+  Object.freeze(x.artifact);
+  Object.freeze(x.closure);
+  Object.freeze(x.execution);
+  Object.freeze(x);
+  const selector = Object.freeze(expectedFor('forge'));
+  const result = classify(x, selector);
+  assert.equal(result.classification, 'AOT_STRUCTURAL_REVIEW_REQUIRED');
+  assert.equal(result.releaseQualified, false);
+});
