@@ -598,7 +598,7 @@
     "javaM32Note": "Java #2643 changes actual SourceTask Env scalar local load/store to actor-owned bytes, preserving JVM shadow and fallback after bounded six slots; 48-byte call/return record is ABI-only, NOT used by a guest iterative dispatcher. 10 host JUnit + one canonical .atto actor fixture/test AUTHORED_NOT_EXECUTED.",
     "javaM32HardeningSourceReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2643",
     "javaM32HardeningStatus": "AUTHORED_NOT_EXECUTED",
-    "javaM32HardeningFollowupReference": "PENDING_PR_CREATION",
+    "javaM32HardeningFollowupReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2662",
     "javaM32PhysicalTurnIdentityFenced": true,
     "javaM32SchedulerTaskIdentityFenced": true,
     "javaM32JvmScalarShadowTaskCaptureAllowed": false,
