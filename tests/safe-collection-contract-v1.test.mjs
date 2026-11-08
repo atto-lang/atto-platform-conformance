@@ -47,8 +47,11 @@ test("all cases have candidate source, distinct IDs and prescribed failure proof
       assert.ok(!src.includes("expect-error:"));
     }
   }
-  assert.ok(positives >= 3);
-  assert.ok(negatives >= 7);
+  assert.equal(positives, 5);
+  assert.equal(negatives, 8);
+  for (const id of ["borrowed-get-option", "read-then-write-after-last-use", "miss-under-live-write"]) {
+    assert.ok(ids.has(id), "missing safety fixture: " + id);
+  }
 });
 
 test("collection contract preserves ownership + no-implicit-flattening constraints", () => {
@@ -58,6 +61,8 @@ test("collection contract preserves ownership + no-implicit-flattening constrain
   }
   assert.ok(manifest.rules.option.includes("Option<Option<T>>"));
   assert.ok(manifest.rules.layout.includes("epoch"));
+  assert.ok(manifest.rules.read.includes("precede bounds misses"));
+  assert.ok(manifest.rules.write.includes("miss cannot bypass"));
   assert.ok(manifest.scopes.includes("Map"));
   assert.ok(manifest.scopes.includes("Set"));
 });
