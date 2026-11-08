@@ -42,7 +42,7 @@ function unexecuted() {
 }
 
 test('every backend and supported profile remains structurally reviewed, never release-qualified', () => {
-  for (const backend of ['java', 'llvm', 'net', 'wasm', 'cranelift']) {
+  for (const backend of ['java', 'llvm', 'net', 'wasm', 'forge', 'cranelift']) {
     for (const mode of ['full-aot', 'hybrid', 'jit']) {
       const x = receipt(backend, mode);
       if (mode === 'jit') {
@@ -106,7 +106,7 @@ for (const [field, value] of [
   ['sourceTree', 'd'.repeat(40)],
   ['sourceProgramSha256', '0'.repeat(64)],
   ['compilerSha256', 'C'.repeat(64)],
-  ['backend', 'forge'],
+  ['backend', 'forge-as-cranelift'],
   ['mode', 'nativeaot-host-only'],
   ['status', 'PASS'],
 ]) {
