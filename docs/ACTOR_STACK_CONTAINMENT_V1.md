@@ -118,3 +118,38 @@ resumption, and leak/quarantine before heap reclaim. Receipts need exact source
 head/tree, executed steps, compiled guest output, and an independently verified
 actor-store ownership identity. These are mandatory for Java, LLVM, NativeAOT,
 Wasm, and Forge/Cranelift.
+
+
+## M2 / M3.3b: preserve nested guest call frames across suspension (2026-11-08)
+
+Java's M3.3a scalar dispatcher [#2667](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2667)
+now has bounded actor-owned scalar CALL/RET frames for a restricted synchronous
+`fnc` subset. It deliberately excludes async/suspension. Java SourceTask roots
+and a 64-byte bootstrap lease surviving `await` do **not** prove that nested
+guest calls survive suspension: the caller return PC, operands, callee locals,
+ownership roots, and lexical cleanup state must all be represented in the
+same authenticated continuation.
+
+The following new receipt dimension, `suspendedCallFrameState`, stays
+`NOT_EXECUTED` on all five backends until the implementation proves:
+
+* a call to a suspending callee can await while retaining the exact parent
+  return PC, typed operand stack, callee PC/locals, and actor/task
+  `ExecutionContext` identity;
+* the suspended frame chain is owned by one actor/task generation, charged
+  against bounded quotas, and resumed only after a fresh scheduler admission;
+* producer callbacks only enqueue readiness; duplicate, out-of-order, foreign,
+  stale-generation, or late-after-retirement resumes fail closed;
+* cancellation and failure unwind `defer`/cleanup exactly once before frame
+  reclamation; incomplete cleanup quarantines frames and blocks actor heap
+  retirement;
+* an actor B turn can execute while actor A is suspended, then A resumes on a
+  different carrier with unchanged return values and no frame/operand aliasing.
+
+Four pending scenarios cover nested await, cancellation cleanup, duplicate
+resume, and stale parent return-PC generation fencing. They intentionally have
+`source: null` until the source compiler and runtime actually admit the syntax.
+Host state-machine tests, a bootstrap task lease, and source-free canaries do
+not satisfy this guest evidence. Exact source heads, nonzero steps, compiled
+`.atto` stdout/exit receipts, memory/quota accounting, and independent
+review are required per backend.
