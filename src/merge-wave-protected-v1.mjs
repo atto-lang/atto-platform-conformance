@@ -9,11 +9,12 @@ function policySnapshot(x) {
     reviews:x.reviews?.map(r=>({id:r?.id,state:r?.state,who:r?.user?.login,
       commit:r?.commit_id,date:r?.submitted_at,dismissed:r?.dismissed_at}))
       .map(v=>JSON.stringify(v)).sort(),
+    branch:{name:x.branch?.name,protected:x.branch?.protected,commit:x.branch?.commit?.sha},
     policy:governanceFingerprint(x)
   });
 }
 
-const knownSources = ['PR','REVIEWS','PROTECTION','RULES','CHECKS'];
+const knownSources = ['PR','REVIEWS','BRANCH','PROTECTION','RULES','CHECKS'];
 function inaccessibleEvidence(error) {
   const sources=Array.isArray(error?.unavailableSources) ? error.unavailableSources : [];
   return {blockers:[...new Set(['GOVERNANCE_PROVIDER_UNAVAILABLE',
@@ -26,6 +27,7 @@ async function fetchPolicy(client,spec) {
   const requests=[
     [root+'/pulls/'+spec.number,'object'],
     [root+'/pulls/'+spec.number+'/reviews','array'],
+    [root+'/branches/main','object'],
     [root+'/branches/main/protection','object'],
     [root+'/rules/branches/main','array'],
     [root+'/commits/'+spec.expectedHead+'/check-runs?filter=latest','checks']
@@ -39,8 +41,8 @@ async function fetchPolicy(client,spec) {
     e.unavailableSources=unavailableSources;
     throw e;
   }
-  const [pr,reviews,protection,rules,checkRuns]=results.map(x=>x.value);
-  return {pr,reviews,protection,rules,checkRuns};
+  const [pr,reviews,branch,protection,rules,checkRuns]=results.map(x=>x.value);
+  return {pr,reviews,branch,protection,rules,checkRuns};
 }
 
 export async function collectProtectedWave(manifest,client) {
