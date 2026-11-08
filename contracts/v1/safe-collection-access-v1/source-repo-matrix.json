@@ -21,13 +21,13 @@
     {
       "repo": "ores-truffle-oreslang/oreslang-source.java",
       "pr_url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2676",
-      "head_sha": "b6ea1b57160bf2a4c6755aec45dbce42e14cf710",
+      "head_sha": "9afa525c4f304f8d24047dc496fcee3eb1a5861d",
       "code_path": "src/main/java/dev/oreslang/types/DataOrientedBorrowChecker.java",
       "surface": "DataOrientedBorrowChecker.Place",
       "scope": "logical DOP loan hierarchy; no source Option get",
       "status": "HOST_ALIAS_CHECKER_UNATTESTED",
       "provenance": {
-        "run_url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/actions/runs/42501198061",
+        "run_url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/actions/runs/42510455113",
         "runner_admission": "RUNNER_NOT_ADMITTED",
         "executed_job_steps": 0
       },
@@ -38,13 +38,13 @@
     {
       "repo": "ores-truffle-oreslang/oreslang-source.llvm",
       "pr_url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1591",
-      "head_sha": "019810fe691f23f9e17af43b0e277d1cb1ef0d81",
+      "head_sha": "c1a1e9e7b13c50b815329d1abb8aa9be8eb5cdf9",
       "code_path": "src/main/cpp/oreslang/runtime/NativeIntArrayRegion.c",
       "surface": "oreslang_int_array_try_get_copy",
       "scope": "native Array<int> Some/None copy ABI; source Option not lowered",
       "status": "HOST_NATIVE_COPY_UNATTESTED",
       "provenance": {
-        "run_url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/actions/runs/42501200680",
+        "run_url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/actions/runs/42510540289",
         "runner_admission": "RUNNER_NOT_ADMITTED",
         "executed_job_steps": 0
       },
@@ -55,13 +55,13 @@
     {
       "repo": "ores-truffle-oreslang/oreslang-source.net",
       "pr_url": "https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/421",
-      "head_sha": "9f740630b996e0a6a46a0723c2bbbc70f0799c2f",
+      "head_sha": "9c95dfcde8b8dea0acc0b2173e7dbd6bc33752ee",
       "code_path": "runtime/Ores.Net.Runtime/ActorShardColumns.cs",
       "surface": "ActorShardColumns.TryRead",
       "scope": "host scalar Some/None across AoS/SoA/AoSoA, separate from parser PR #418",
       "status": "HOST_RUNTIME_COPY_UNATTESTED",
       "provenance": {
-        "run_url": "https://github.com/ores-truffle-oreslang/oreslang-source.net/actions/runs/42501204127",
+        "run_url": "https://github.com/ores-truffle-oreslang/oreslang-source.net/actions/runs/42510690470",
         "runner_admission": "RUNNER_NOT_ADMITTED",
         "executed_job_steps": 0
       },
@@ -189,5 +189,38 @@
     "Do not downgrade scalar-only or hardware-only backends to fake guest support. All source-level Array/Option/borrow lanes remain unverified.",
     "Some checked host APIs are copy primitives, not unforgeable compiler ReadLoan<T> capabilities.",
     "Existing Java/LLVM collection PRs may add source implementation independently; reconcile before merge."
-  ]
+  ],
+  "guest_compiled_first_slice": {
+    "id": "copy-option-v1",
+    "status": "PROPOSED_UNATTESTED",
+    "shared_fixture_path": "contracts/v1/safe-collection-access-v1/fixtures/copy-option-v1.atto",
+    "pinned_git_blob_sha1": "c559c92ac83d60811073b8de38afa0cc09428222",
+    "expected_stdout": "7:42:true:true:true:true:9",
+    "expected_exit_code": 0,
+    "tests": [
+      "Some(7) detached from later mutation",
+      "Some(42) at last live index",
+      "None on empty",
+      "None on negative",
+      "None on length",
+      "None on i64 max",
+      "no implicit unwrap or scalar sentinel"
+    ],
+    "candidate_backend_paths": {
+      "java": "src/test/resources/safe-collections/copy-option-v1.atto",
+      "llvm": "tests/fixtures/native-class-string/copy-option-v1.atto",
+      "net": "contracts/collections/v1/copy-option-v1.atto"
+    },
+    "backend_admission": {
+      "java": "SOURCE_IMPLEMENTED_CI_NOT_EXECUTED",
+      "llvm": "SOURCE_IMPLEMENTED_CI_NOT_EXECUTED",
+      "net": "NOT_IMPLEMENTED_PENDING_NATIVEAOT"
+    },
+    "disclaimers": [
+      "No exact-head stepful compiler or guest receipt is available",
+      "Candidate compiler implementations may still have bugs until native guest execution",
+      "The .NET file is fixture-only: no positive compiler/NativeAOT support",
+      "Does not prove ReadLoan<T>, WriteLoan<T>, non-lexical lifetimes or full Option generic parity"
+    ]
+  }
 }
