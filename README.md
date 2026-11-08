@@ -39,6 +39,15 @@ target/physical claims without the required evidence. See
 
 [`contracts/state-container-virtual-actor-v1.json`](contracts/state-container-virtual-actor-v1.json) records 20 proposed compile/runtime oracles for `define state container` and `define virtual actor`. All backend results are **NOT_EXECUTED**. The Node contract tests validate fixture completeness and evidence labels only; they do not compile or execute guest programs. The Java reference parser has a separate fail-closed admission branch pending actual ownership and virtual-activation lowering. `define grain` is not an accepted alias.
 
+## AttoLang JVM/.NET host import contract (source-only)
+
+The [host-interop-v0 contract](contracts/host-interop-v0/README.md) pins six
+canonical `.atto` fixture blobs and ten positive/negative, backend-qualified
+import oracles. Both compiler backends currently report **NOT_EXECUTED**
+until exact-head real JVM/.NET Native AOT guest execution and negative
+capability admission receipts exist. `npm test` validates only the versioned
+manifest and fixture identity.
+
 ## Current deliverable
 
 - Versioned fixture manifest and minimal positive/negative .ores sources targeting **six compiler backends** (`java`, `llvm`, `net`, `wasm`, `forge`, `js`); this is a target inventory, not a parity claim.
