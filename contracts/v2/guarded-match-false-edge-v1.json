@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "contract": "guarded-match-ownership-false-edge-v1",
+  "status": "CANDIDATE_NOT_ATTESTED",
+  "trackedIssue": "ores-truffle-oreslang/oreslang-platform-conformance#615",
+  "referenceImplementation": "ores-truffle-oreslang/oreslang-source.java#2691",
+  "sourceRepository": "ores-truffle-oreslang/oreslang-source.java",
+  "exactSourceCommit": "56a5ca3a67b13388e4b7e441f10743005e8340b2",
+  "language": ".atto",
+  "backendTargets": [
+    "java",
+    "llvm",
+    "wasm",
+    "forge",
+    "net"
+  ],
+  "requirements": {
+    "orderedArms": "The next match arm begins from all reachable failed-pattern and failed-guard ownership states, not the pre-match snapshot.",
+    "guardFalseEffect": "A matching pattern whose guard evaluates false has nevertheless evaluated the guard; any affine MOVE/take during that evaluation persists.",
+    "patternSkip": "A refutable pattern can fail before its guard is evaluated; join skipped and evaluated guard false states conservatively for MOVE authority.",
+    "branchBodyIsolation": "Moves in an arm body that returns cannot poison a disjoint later arm that did not execute that body.",
+    "valueMatch": "Statement match and value-producing match must share the false-edge ownership contract.",
+    "borrowedPositive": "Non-consuming borrow-only guard preserves the caller's owned resource for a later arm.",
+    "semanticNegative": "A negative must parse, then be rejected by the actual ownership/type analysis for a moved value, not by unsupported syntax or runner admission.",
+    "guestPositive": "The accepted borrowed-guard source must compile and actually print 7 in guest execution.",
+    "futureProof": "Future full CFG must preserve exact source/checked IR identity through optimizations; guard effects cannot be erased by branch reordering or common subexpression elimination."
+  },
+  "fixtureProvenance": [
+    {
+      "id": "reject-statement-guard-move",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "commit": "56a5ca3a67b13388e4b7e441f10743005e8340b2",
+      "path": "tests/fixtures/ownership-match-guard-v1/reject-statement-guard-move.atto",
+      "gitBlobSha1": "13b6a8cca706241c3bd56b456f0828ab0253d61b",
+      "expected": "semantic-reject",
+      "parseMustSucceed": true,
+      "semanticDiagnostic": "moved",
+      "negativeEmitsNoExecutableIR": true,
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "reject-value-guard-move",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "commit": "56a5ca3a67b13388e4b7e441f10743005e8340b2",
+      "path": "tests/fixtures/ownership-match-guard-v1/reject-value-guard-move.atto",
+      "gitBlobSha1": "693e0bcf6d9fd4d54d9f9c92175e1bf09716d648",
+      "expected": "semantic-reject",
+      "parseMustSucceed": true,
+      "semanticDiagnostic": "moved",
+      "negativeEmitsNoExecutableIR": true,
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "accept-borrowed-match-guard",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "commit": "56a5ca3a67b13388e4b7e441f10743005e8340b2",
+      "path": "tests/fixtures/ownership-match-guard-v1/accept-borrowed-match-guard.atto",
+      "gitBlobSha1": "55524f255e1adbf8f3435986f3446ae896ab7013",
+      "expected": "compile-and-run",
+      "expectedStdout": "7",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED"
+      }
+    }
+  ],
+  "promotion": {
+    "exactHeadAndBlobShaRequired": true,
+    "executedCompilerAndGuestStepsRequired": true,
+    "semanticRejectAfterParseRequired": true,
+    "positiveGuestControlRequired": true,
+    "zeroStepCountsAsEvidence": false,
+    "hostOnlyCountsAsGuest": false,
+    "metadataOnlyCountsAsProof": false,
+    "independentReviewRequired": true,
+    "noPrivateSourceReplication": true,
+    "nativeAotAdditionalGateFor": [
+      "java",
+      "net"
+    ],
+    "nativeSanitizersAdditionalGateFor": [
+      "llvm",
+      "forge"
+    ],
+    "wasmWorkerAdditionalGate": true
+  },
+  "caveats": [
+    "These are private Java source locations, not embedded source bytes and not evidence of executed compilation.",
+    "Only Java compiler code is proposed by PR #2691; all backend guest evidence remains NOT_EXECUTED.",
+    "This contract addresses conservative MOVE effect joining, not complete non-lexical lifetime, loan-region or actor-state proof.",
+    "Do not confuse missing runner allocation with semantic or runtime test failure."
+  ]
+}
