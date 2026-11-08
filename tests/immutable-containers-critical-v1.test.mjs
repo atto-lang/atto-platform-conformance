@@ -243,3 +243,60 @@ test('critical entry may wait but callback cannot suspend or block in critical',
   assert.equal(r.noFfiOrBlockingIoInsideCritical, true);
   assert.equal(r.noRetryLoopUnderCritical, true);
 });
+
+test('seven byte-backed .atto guest fixtures remain unexecuted on every backend', () => {
+  assert.equal(contract.guestFixtureExecution, 'NOT_EXECUTED_ALL_BACKENDS');
+  assert.equal(contract.guestFixtures.length, 7);
+  assert.equal(new Set(contract.guestFixtures.map(x => x.id)).size, 7);
+  assert.equal(new Set(contract.guestFixtures.map(x => x.file)).size, 7);
+  for (const fixture of contract.guestFixtures) {
+    assert.match(fixture.id, /^ICC-G0[1-7]$/);
+    assert.match(fixture.file, /^[a-z][a-z0-9-]+\.atto$/);
+    const path = new URL('../' + contract.guestFixturePath + '/' + fixture.file,
+      import.meta.url);
+    const source = readFileSync(path, 'utf8');
+    assert.ok(source.length > 20 && source.length < 8192,
+      'guest source must be bounded and nonempty');
+    assert.ok(source.endsWith('\n'));
+    assert.ok(source.includes('fnc '),
+      'guest fixture must contain a real callable, not only prose');
+    assert.ok(['accept', 'reject'].includes(fixture.expect));
+    if (fixture.expect === 'reject') {
+      assert.match(fixture.diagnostic, /^E_[A-Z0-9_]+$/);
+    }
+  }
+});
+
+test('real .atto immutable record fixture preserves old version by path copy', () => {
+  const source = readFileSync(new URL(
+    '../fixtures/immutable-containers-critical-v1/positive-immutable-record-snapshot.atto',
+    import.meta.url), 'utf8');
+  assert.match(source, /const before\s*=\s*infer record\{/);
+  assert.match(source, /const after\s*=\s*infer record\{\.\.\.before,/);
+  assert.match(source, /before\.value\s*\+\s*after\.(?:value|extra)/);
+  assert.equal(contract.guestFixtures[0].oracle, '15');
+});
+
+test('real .atto critical fixtures stage effect successes and three forbidden forms', () => {
+  const read = name => readFileSync(new URL(
+    '../fixtures/immutable-containers-critical-v1/' + name, import.meta.url), 'utf8');
+  const admitted = read('positive-critical-versioned-commit.atto');
+  assert.match(admitted, /suspends fnc/);
+  assert.match(admitted, /critical\s*\{/);
+  assert.doesNotMatch(admitted, /await\s/);
+  assert.match(read('negative-await-inside-critical.atto'), /critical\s*\{[\s\S]*await\s/);
+  assert.match(read('negative-critical-suspends-declaration.atto'), /critical suspends fnc/);
+  assert.match(read('negative-suspends-critical-declaration.atto'), /suspends critical fnc/);
+});
+
+test('real .atto guest rejects const rebind and actor-local reference escape', () => {
+  const read = name => readFileSync(new URL(
+    '../fixtures/immutable-containers-critical-v1/' + name, import.meta.url), 'utf8');
+  const rebind = read('negative-immutable-root-rebind.atto');
+  assert.match(rebind, /const snapshot/);
+  assert.match(rebind, /snapshot\s*=\s*infer record/);
+  const escape = read('negative-shared-actor-ref32-escape.atto');
+  assert.match(escape, /ActorManagedRef<int>/);
+  assert.match(escape, /SharedSnapshot<int>/);
+  assert.match(escape, /share\(local\)/);
+});
