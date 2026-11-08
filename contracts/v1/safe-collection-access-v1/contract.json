@@ -143,6 +143,34 @@
       "path": "fixtures/read-only-view-share.atto",
       "diagnostic": "E_SHARE_NOT_FROZEN",
       "attestation": "NOT_EXECUTED"
+    },
+    {
+      "id": "nested-some-none-option",
+      "expect": "compile_and_execute",
+      "path": "fixtures/nested-some-none-option.atto",
+      "result": "42",
+      "attestation": "NOT_EXECUTED"
+    },
+    {
+      "id": "high-bit-checked-get-copy",
+      "expect": "compile_and_execute",
+      "path": "fixtures/high-bit-checked-get-copy.atto",
+      "result": "42",
+      "attestation": "NOT_EXECUTED"
+    },
+    {
+      "id": "use-after-take-collection",
+      "expect": "compile_reject",
+      "path": "fixtures/use-after-take-collection.atto",
+      "diagnostic": "E_USE_AFTER_MOVE",
+      "attestation": "NOT_EXECUTED"
+    },
+    {
+      "id": "iterator-growth-conflict",
+      "expect": "compile_reject",
+      "path": "fixtures/iterator-growth-conflict.atto",
+      "diagnostic": "E_LOAN_CONFLICT",
+      "attestation": "NOT_EXECUTED"
     }
   ],
   "promotion": {
