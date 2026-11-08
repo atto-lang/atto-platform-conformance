@@ -82,7 +82,7 @@
     },
     {
       "id": "nul",
-      "specifier": "+/lib/telemetry\\u0000.atto",
+      "specifier": "+/lib/telemetry\u0000.atto",
       "setup": "within_root",
       "expected": "REJECT"
     },
@@ -106,7 +106,7 @@
     },
     {
       "id": "outward-directory-symlink",
-      "specifier": "+/mounted/leak.atto",
+      "specifier": "+/mounted/outside-dir/leak.atto",
       "setup": "outward_directory_symlink",
       "expected": "REJECT"
     },
