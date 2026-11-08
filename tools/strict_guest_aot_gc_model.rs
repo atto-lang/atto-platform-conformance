@@ -37,6 +37,16 @@ const POSITIVE_FEATURES: [PositiveFeature; 8] = [
     PositiveFeature::QuotaOom, PositiveFeature::SendableMove,
 ];
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum ReviewDecision { Approved, ChangesRequested, Dismissed, Pending }
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum RunEvent { PullRequest, ManualDispatch }
+#[derive(Clone, Debug)]
+struct StepEvidence {
+    number: u32, name: &'static str, status: &'static str,
+    conclusion: &'static str, job_id: u64, attempt: u64,
+    log_recorded: bool,
+}
 #[derive(Clone, Debug)]
 struct NegativeCase {
     feature: NegativeFeature,
@@ -72,12 +82,26 @@ struct SyntheticReceipt {
     branch_protected: bool,
     workflow_trusted: bool,
     independently_approved: bool,
+    review_decision: ReviewDecision,
+    reviewed_head: String,
     artifact_bound_to_head: bool,
     runner_id: u64,
     run_attempt: u64,
+    run_id: u64,
+    job_id: u64,
+    job_run_id: u64,
+    job_attempt: u64,
+    run_head: String,
+    job_head: String,
+    run_event: RunEvent,
+    checkout_head: String,
+    checkout_tree: String,
+    checkout_job_id: u64,
+    checkout_step_number: u32,
     run_completed_successfully: bool,
     job_completed_successfully: bool,
     executed_steps: Vec<&'static str>,
+    step_records: Vec<StepEvidence>,
     compiled_guest: bool,
     executed_guest_artifact: bool,
     host_interpreter_or_jit_fallback: bool,
@@ -106,6 +130,8 @@ fn check(r: &SyntheticReceipt) -> Result<(), &'static str> {
     if r.author_id == 0 || r.reviewer_id == 0 || r.author_id == r.reviewer_id
         || !r.branch_protected || !r.workflow_trusted || !r.independently_approved
     { return Err("independent review or trusted protected workflow missing"); }
+    if r.review_decision != ReviewDecision::Approved || r.reviewed_head != r.expected_head
+    { return Err("stale, unapproved or revoked exact-head review"); }
     if !r.artifact_bound_to_head { return Err("artifact is not bound to source head"); }
     if r.profile != Profile::SealedGuestAot { return Err("not sealed full guest AOT"); }
     if r.backend == Backend::Js { return Err("transpiled JavaScript is not sealed native guest AOT"); }
@@ -118,20 +144,44 @@ fn check(r: &SyntheticReceipt) -> Result<(), &'static str> {
     if r.runner_id == 0 || r.run_attempt == 0 || !r.run_completed_successfully
         || !r.job_completed_successfully
     { return Err("no successful executed workflow attempt"); }
+    if r.run_id == 0 || r.job_id == 0 || r.job_run_id != r.run_id
+        || r.job_attempt != r.run_attempt || !valid_sha(&r.run_head, 40)
+        || r.job_head != r.run_head || r.checkout_head != r.expected_head
+        || r.checkout_tree != r.expected_tree || r.checkout_job_id != r.job_id
+        || (r.run_event == RunEvent::PullRequest && r.run_head != r.expected_head)
+    { return Err("run, job, event, checkout or attempt not bound to exact head"); }
     if r.executed_steps.len() < 4 { return Err("required named steps absent"); }
     for required in ["checkout-exact-head", "compile-guest", "execute-guest", "allocator-probe"] {
         if r.executed_steps.iter().filter(|s| **s == required).count() != 1 {
             return Err("missing or duplicated required step");
         }
     }
+    if r.step_records.len() != r.executed_steps.len() {
+        return Err("step metadata does not match named steps");
+    }
+    let mut step_numbers = std::collections::BTreeSet::new();
+    for (i, step) in r.step_records.iter().enumerate() {
+        if step.name != r.executed_steps[i] || step.number == 0
+            || !step_numbers.insert(step.number) || step.job_id != r.job_id
+            || step.attempt != r.run_attempt || step.status != "completed"
+            || step.conclusion != "success" || !step.log_recorded {
+            return Err("replayed, failed, ambiguous or unlogged step");
+        }
+    }
+    if !r.step_records.iter().any(|step| step.name == "checkout-exact-head"
+        && step.number == r.checkout_step_number) {
+        return Err("checkout proof missing from executed job");
+    }
     if !r.compiled_guest || !r.executed_guest_artifact || r.host_interpreter_or_jit_fallback
         || !r.allocator_instrumented
     { return Err("guest AOT execution or allocator proof absent"); }
     if r.negatives.len() != NEGATIVE_FEATURES.len() { return Err("negative matrix incomplete"); }
     let mut seen_negative = std::collections::BTreeSet::new();
+    let mut seen_fixtures = std::collections::BTreeSet::new();
     for case in &r.negatives {
         if !NEGATIVE_FEATURES.contains(&case.feature) || !seen_negative.insert(case.feature)
-            || !valid_sha(&case.fixture_sha, 64) || !case.compiler_executed
+            || !valid_sha(&case.fixture_sha, 64)
+            || !seen_fixtures.insert(case.fixture_sha.as_str()) || !case.compiler_executed
             || !case.rejected || !case.rejection_before_ir || !case.stable_diagnostic
         { return Err("negative fixture missing, repeated, or not rejected before IR"); }
     }
@@ -139,7 +189,9 @@ fn check(r: &SyntheticReceipt) -> Result<(), &'static str> {
     let mut seen_positive = std::collections::BTreeSet::new();
     for case in &r.positives {
         if !POSITIVE_FEATURES.contains(&case.feature) || !seen_positive.insert(case.feature)
-            || !valid_sha(&case.fixture_sha, 64) || !valid_sha(&case.artifact_sha, 64)
+            || !valid_sha(&case.fixture_sha, 64)
+            || !seen_fixtures.insert(case.fixture_sha.as_str())
+            || !valid_sha(&case.artifact_sha, 64)
             || !case.guest_compiled || !case.guest_executed
         { return Err("positive guest fixture missing, repeated, or not executed"); }
     }
@@ -158,25 +210,38 @@ mod tests {
             backend: Backend::Llvm,
             profile: Profile::SealedGuestAot,
             gc_claim: GcClaim::GuestZeroTracing,
-            expected_head: a.clone(), observed_head: a,
-            expected_tree: b.clone(), observed_tree: b,
+            expected_head: a.clone(), observed_head: a.clone(),
+            expected_tree: b.clone(), observed_tree: b.clone(),
             compiler_sha: c.clone(), artifact_sha: d.clone(),
             source_repository_id: 17, runner_repository_id: 17,
             author_id: 9, reviewer_id: 10,
             branch_protected: true, workflow_trusted: true,
-            independently_approved: true, artifact_bound_to_head: true,
+            independently_approved: true,
+            review_decision: ReviewDecision::Approved, reviewed_head: a.clone(),
+            artifact_bound_to_head: true,
             runner_id: 74, run_attempt: 2,
+            run_id: 501, job_id: 502, job_run_id: 501, job_attempt: 2,
+            run_head: a.clone(), job_head: a.clone(),
+            run_event: RunEvent::PullRequest,
+            checkout_head: a.clone(), checkout_tree: b.clone(),
+            checkout_job_id: 502, checkout_step_number: 1,
             run_completed_successfully: true, job_completed_successfully: true,
             executed_steps: vec!["checkout-exact-head", "compile-guest", "execute-guest", "allocator-probe"],
+            step_records: ["checkout-exact-head", "compile-guest", "execute-guest", "allocator-probe"]
+                .iter().enumerate().map(|(i, &name)| StepEvidence {
+                    number: (i + 1) as u32, name, status: "completed",
+                    conclusion: "success", job_id: 502, attempt: 2,
+                    log_recorded: true,
+                }).collect(),
             compiled_guest: true, executed_guest_artifact: true,
             host_interpreter_or_jit_fallback: false,
             allocator_instrumented: true, process_gc_instrumented: false,
-            negatives: NEGATIVE_FEATURES.iter().map(|&feature| NegativeCase {
-                feature, fixture_sha: c.clone(), compiler_executed: true,
+            negatives: NEGATIVE_FEATURES.iter().enumerate().map(|(i, &feature)| NegativeCase {
+                feature, fixture_sha: format!("{:064x}", i + 1), compiler_executed: true,
                 rejected: true, rejection_before_ir: true, stable_diagnostic: true,
             }).collect(),
-            positives: POSITIVE_FEATURES.iter().map(|&feature| PositiveCase {
-                feature, fixture_sha: c.clone(), artifact_sha: d.clone(),
+            positives: POSITIVE_FEATURES.iter().enumerate().map(|(i, &feature)| PositiveCase {
+                feature, fixture_sha: format!("{:064x}", i + 101), artifact_sha: d.clone(),
                 guest_compiled: true, guest_executed: true,
             }).collect(),
         }
@@ -305,5 +370,77 @@ mod tests {
         // API data, signed artifacts, compiler output or allocator traces.
         const RELEASE_CERTIFIED: bool = false;
         assert!(!RELEASE_CERTIFIED);
+    }
+    #[test] fn exact_head_review_does_not_replay_across_commits() {
+        let mut r=synthetic();r.reviewed_head="e".repeat(40);assert!(check(&r).is_err());
+    }
+    #[test] fn dismissed_changes_requested_and_pending_review_not_approved() {
+        for decision in [ReviewDecision::Dismissed, ReviewDecision::ChangesRequested, ReviewDecision::Pending] {
+            let mut r=synthetic();r.review_decision=decision;assert!(check(&r).is_err());
+        }
+    }
+    #[test] fn run_job_identity_and_attempt_fencing() {
+        let mut r=synthetic();r.run_id=0;assert!(check(&r).is_err());
+        r=synthetic();r.job_id=0;assert!(check(&r).is_err());
+        r=synthetic();r.job_run_id+=1;assert!(check(&r).is_err());
+        r=synthetic();r.job_attempt=1;assert!(check(&r).is_err());
+    }
+    #[test] fn stale_job_head_and_pull_request_run_head_denied() {
+        let mut r=synthetic();r.job_head="e".repeat(40);assert!(check(&r).is_err());
+        r=synthetic();r.run_head="e".repeat(40);assert!(check(&r).is_err());
+    }
+    #[test] fn manual_dispatch_uses_independent_exact_checkout_receipt() {
+        let mut r=synthetic();r.run_event=RunEvent::ManualDispatch;r.run_head="e".repeat(40);
+        r.job_head=r.run_head.clone();assert_eq!(check(&r),Ok(()));
+        r.checkout_head="e".repeat(40);assert!(check(&r).is_err());
+        r=synthetic();r.run_event=RunEvent::ManualDispatch;
+        r.checkout_tree="e".repeat(40);assert!(check(&r).is_err());
+    }
+    #[test] fn checkout_job_and_step_bound_to_executed_job() {
+        let mut r=synthetic();r.checkout_job_id=3;assert!(check(&r).is_err());
+        r=synthetic();r.checkout_step_number=99;assert!(check(&r).is_err());
+    }
+    #[test] fn missing_partial_and_replayed_step_records_denied() {
+        let mut r=synthetic();r.step_records.clear();assert!(check(&r).is_err());
+        r=synthetic();r.step_records.pop();assert!(check(&r).is_err());
+        r=synthetic();r.step_records[0].attempt=1;assert!(check(&r).is_err());
+        r=synthetic();r.step_records[1].job_id=999;assert!(check(&r).is_err());
+    }
+    #[test] fn failed_cancelled_skipped_and_nonterminal_steps_denied() {
+        for conclusion in ["failure","cancelled","skipped","neutral","timed_out"] {
+            let mut r=synthetic();r.step_records[2].conclusion=conclusion;assert!(check(&r).is_err());
+        }
+        let mut r=synthetic();r.step_records[1].status="in_progress";assert!(check(&r).is_err());
+    }
+    #[test] fn duplicate_unnumbered_misordered_or_spliced_steps_denied() {
+        let mut r=synthetic();r.step_records[0].number=0;assert!(check(&r).is_err());
+        r=synthetic();r.step_records[2].number=2;assert!(check(&r).is_err());
+        r=synthetic();r.step_records.swap(1,2);assert!(check(&r).is_err());
+        r=synthetic();r.step_records[1].name="execute-guest";assert!(check(&r).is_err());
+    }
+    #[test] fn missing_step_logs_cannot_prove_guest_execution() {
+        for i in 0..4 {
+            let mut r=synthetic();r.step_records[i].log_recorded=false;
+            assert!(check(&r).is_err(),"step {i}");
+        }
+    }
+    #[test] fn duplicated_fixture_sha_cannot_fake_case_coverage() {
+        let mut r=synthetic();r.negatives[1].fixture_sha=r.negatives[0].fixture_sha.clone();
+        assert!(check(&r).is_err());
+        r=synthetic();r.positives[1].fixture_sha=r.positives[0].fixture_sha.clone();
+        assert!(check(&r).is_err());
+        r=synthetic();r.positives[0].fixture_sha=r.negatives[0].fixture_sha.clone();
+        assert!(check(&r).is_err());
+    }
+    #[test] fn fixture_permutations_remain_valid_with_unique_identity() {
+        let mut r=synthetic();r.negatives.reverse();r.positives.reverse();
+        assert_eq!(check(&r),Ok(()));
+    }
+    #[test] fn padding_step_names_without_real_step_records_denied() {
+        let mut r=synthetic();r.executed_steps.push("unrelated");assert!(check(&r).is_err());
+        r=synthetic();r.step_records.push(StepEvidence {
+            number:5,name:"unrelated",status:"completed",conclusion:"success",
+            job_id:502,attempt:2,log_recorded:true,
+        });assert!(check(&r).is_err());
     }
 }

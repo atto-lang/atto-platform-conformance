@@ -32,6 +32,6 @@ jobs:
         run: |
           set -euo pipefail
           command -v rustc
-          rustc --edition=2021 -D warnings --test tools/strict_guest_aot_gc_model.rs \
+          rustc --edition=2021 -D warnings -C overflow-checks=on --test tools/strict_guest_aot_gc_model.rs \
             -o "$RUNNER_TEMP/strict-guest-aot-gc-model-tests"
           "$RUNNER_TEMP/strict-guest-aot-gc-model-tests" --nocapture

@@ -92,3 +92,21 @@ policy; exact-head runner with named nonempty executed steps; real backend
 compiler-negative test suite and compiled positive guest artifacts under
 sanitizer/allocator instrumentation. None is supplied by this source-free
 model. No cross-organization private source transfer is authorized here.
+
+## Audit hardening — synthetic replay and completeness boundaries
+
+Adversarial review identified three previously untested false-positive patterns:
+individual failed/skipped steps hidden by job-level success, stale approval or
+runner-attempt metadata attached to a different exact head, and repeated fixture
+digests standing in for the entire 24-case matrix.
+
+The hardened model requires **exact-head approval state**, aligned source/job/run
+SHA and attempt, a manual-dispatch exact checkout proof, each step's unique
+nonzero index and matching job/attempt, successful terminal step metadata and
+recorded logs, and **distinct SHA-256 fixture digests** for all 16 negative
+and 8 positive classes. The model includes regression tests for each rejection.
+
+**All fields remain synthetic and caller supplied.** This cannot authenticate
+GitHub, prove compiler execution, certify guest code or authorize release.
+The source-org Actions workflow is still blocked before runner allocation;
+therefore new Rust test execution remains NOT_EXECUTED pending stepful CI.
