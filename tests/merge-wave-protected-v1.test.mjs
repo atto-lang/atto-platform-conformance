@@ -32,6 +32,7 @@ function mock({approval=true,admin=true,check=true,policy=true,rule=[]}={}) {
     return [{id:runId+5000,name:'tests',run_id:runId,run_attempt:1,runner_id:99,
       conclusion:'success',steps:[{name:'Test',status:'completed',conclusion:'success',number:1}]}];
   }
+  if(resource==='branches/main')return {name:'main',protected:true,commit:{sha:B}};
   if(resource==='branches/main/protection'){
     if(!policy)throw Error('GitHub 403 policy unreadable');
     return {enforce_admins:{enabled:admin},
@@ -244,4 +245,53 @@ test('HTTP client preserves safe status metadata without echoing credential',asy
      throw e;
    }
  },/GitHub provider error 403/);
+});
+
+
+test('live branch response with protected=false blocks the entire wave',async()=>{
+ const {client}=mock();const original=client.get;
+ client.get=async(path,kind)=>path.endsWith('/branches/main')
+   ? {name:'main',protected:false,commit:{sha:B}} : original(path,kind);
+ const report=await collectProtectedWave(manifest(),client);
+ assert.equal(report.readyForHumanFinalReview,false);
+ assert.ok(report.governance.every(x=>x.blockers.includes('MAIN_NOT_PROTECTED')));
+ assert.equal(report.mergeAuthorized,false);
+});
+test('branch commit diverging from PR base is rejected even if protected=true',async()=>{
+ const {client}=mock();const original=client.get;
+ client.get=async(path,kind)=>path.endsWith('/branches/main')
+   ? {name:'main',protected:true,commit:{sha:H}} : original(path,kind);
+ const report=await collectProtectedWave(manifest(),client);
+ assert.ok(report.governance.every(x=>x.blockers.includes('MAIN_BASE_SHA_CHANGED')));
+});
+test('main branch metadata unreadable reports branch-specific provider denial',async()=>{
+ const {client}=mock();const original=client.get;
+ client.get=async(path,kind)=>{
+   if(path.endsWith('/branches/main')){const e=new Error('restricted');e.status=403;throw e;}
+   return original(path,kind);
+ };
+ const report=await collectProtectedWave(manifest(),client);
+ assert.equal(report.readyForHumanFinalReview,false);
+ assert.ok(report.governance.every(x=>x.blockers.includes('GOVERNANCE_BRANCH_UNAVAILABLE')));
+ assert.ok(report.governance.every(x=>x.unavailableSources.some(y=>y.source==='BRANCH'&&y.httpStatus===403)));
+});
+test('main protection change between policy reads is detected',async()=>{
+ const {client}=mock();const original=client.get;let seen=0;
+ client.get=async(path,kind)=>{
+   if(path==='/repos/org/editor/branches/main'&&++seen===2)
+     return {name:'main',protected:false,commit:{sha:B}};
+   return original(path,kind);
+ };
+ const report=await collectProtectedWave(manifest(),client);
+ assert.ok(report.governance[2].blockers.includes('GOVERNANCE_EVIDENCE_CHANGED'));
+});
+test('main head movement after per-PR reads is detected wave-wide',async()=>{
+ const {client}=mock();const original=client.get;let seen=0;
+ client.get=async(path,kind)=>{
+   if(path==='/repos/org/editor/branches/main'&&++seen===3)
+     return {name:'main',protected:true,commit:{sha:H}};
+   return original(path,kind);
+ };
+ const report=await collectProtectedWave(manifest(),client);
+ assert.ok(report.governance[2].blockers.includes('GOVERNANCE_CHANGED_DURING_WAVE'));
 });
