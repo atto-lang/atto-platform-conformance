@@ -739,4 +739,99 @@ mod tests {
         fs::remove_dir_all(&root).expect("remove test root");
     }
 
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn parent_symlink_swap_to_identical_inode_is_denied_by_openat2() {
+        use std::os::unix::fs::{symlink, MetadataExt};
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let nonce = SystemTime::now().duration_since(UNIX_EPOCH)
+            .expect("clock").as_nanos();
+        let root = std::env::temp_dir().canonicalize().expect("canonical temp")
+            .join(format!("atto-gc-parent-swap-{}-{nonce}", std::process::id()));
+        fs::create_dir(&root).expect("test root");
+        let parent = root.join("live");
+        fs::create_dir(&parent).expect("original parent");
+        let policy = parent.join("policy.json");
+        fs::write(&policy, APPROVED).expect("write policy");
+        let before = fs::symlink_metadata(&policy).expect("pre-swap stat");
+        let retired = root.join("retired");
+        fs::rename(&parent, &retired).expect("move real directory");
+        symlink(&retired, &parent).expect("swap parent to symlink");
+        let after = fs::metadata(&policy).expect("same policy inode still reachable");
+        assert_eq!(before.ino(), after.ino());
+        assert_eq!(before.dev(), after.dev());
+        // Previously O_NOFOLLOW checked only the final component; the file
+        // was identical, so the inode check was insufficient.
+        let err = read_policy_after_stat(&policy, &before)
+            .expect_err("entire symlinked path must be refused");
+        assert!(err.starts_with("policy openat2 denied"), "{err}");
+        fs::remove_dir_all(&root).expect("cleanup own root");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn fifo_replacement_after_stat_is_denied_without_blocking_open() {
+        use std::ffi::CString;
+        use std::os::raw::c_char;
+        use std::os::unix::ffi::OsStrExt;
+        use std::time::{SystemTime, UNIX_EPOCH};
+        unsafe extern "C" {
+            fn mkfifo(path: *const c_char, mode: u32) -> i32;
+        }
+        let nonce = SystemTime::now().duration_since(UNIX_EPOCH)
+            .expect("clock").as_nanos();
+        let root = std::env::temp_dir().canonicalize().expect("canonical temp")
+            .join(format!("atto-gc-fifo-replace-{}-{nonce}", std::process::id()));
+        fs::create_dir(&root).expect("test root");
+        let policy = root.join("policy.json");
+        fs::write(&policy, APPROVED).expect("write regular file");
+        let before = fs::symlink_metadata(&policy).expect("pre-swap stat");
+        fs::remove_file(&policy).expect("remove regular file");
+        let c_path = CString::new(policy.as_os_str().as_bytes()).expect("no NUL");
+        // SAFETY: NUL-terminated path; creating a private test FIFO.
+        assert_eq!(unsafe { mkfifo(c_path.as_ptr(), 0o600) }, 0);
+        let err = read_policy_after_stat(&policy, &before)
+            .expect_err("FIFO must never be accepted");
+        assert!(
+            err == "policy opened as non-regular file"
+                || err.starts_with("policy openat2 denied"),
+            "{err}"
+        );
+        fs::remove_dir_all(&root).expect("cleanup own root");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn openat2_accepts_relative_and_absolute_canonical_policy() {
+        let relative = std::path::Path::new("contracts/actor_gc_profiles_v1.json");
+        let bytes = read_policy_file(relative).expect("relative policy permitted");
+        validate(&bytes).expect("relative immutable contract");
+        let absolute = std::env::current_dir().expect("cwd").join(relative);
+        let bytes = read_policy_file(&absolute).expect("absolute policy permitted");
+        validate(&bytes).expect("absolute immutable contract");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn openat2_rejects_nul_path_and_final_symlink() {
+        let error = open_policy_checked(std::path::Path::new("contracts/policy\0evil"))
+            .expect_err("interior NUL refused");
+        assert_eq!(error, "policy path contains NUL");
+        use std::os::unix::fs::symlink;
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let nonce = SystemTime::now().duration_since(UNIX_EPOCH)
+            .expect("clock").as_nanos();
+        let root = std::env::temp_dir().canonicalize().expect("canonical temp")
+            .join(format!("atto-gc-link-final-{}-{nonce}", std::process::id()));
+        fs::create_dir(&root).expect("test root");
+        let target = root.join("target.json");
+        fs::write(&target, APPROVED).expect("create target");
+        let link = root.join("policy.link");
+        symlink(&target, &link).expect("create final symlink");
+        let error = open_policy_checked(&link).expect_err("no-follow is mandatory");
+        assert!(error.starts_with("policy openat2 denied"), "{error}");
+        fs::remove_dir_all(&root).expect("cleanup own root");
+    }
+
 }
