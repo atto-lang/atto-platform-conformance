@@ -7,7 +7,8 @@ const approval=(user='ORESoftware',sha=H,time='2026-11-07T23:00:00Z',state='APPR
 });
 const fixture=()=>({
  repository:'org/repo',head:H,
- pr:{head:{sha:H},base:{ref:'main'},user:{login:'the1mills'}},
+ pr:{head:{sha:H},base:{ref:'main',sha:B},user:{login:'the1mills'}},
+ branch:{name:'main',protected:true,commit:{sha:B}},
  reviews:[approval()],
  protection:{required_pull_request_reviews:{required_approving_review_count:1},
    required_status_checks:{checks:[{context:'CI',app_id:15368}]},
@@ -37,6 +38,13 @@ test('ruleset required check must also pass on exact head',()=>{
  assert.equal(assessGovernance(f).readyForHumanGovernanceReview,true);
 });
 const negatives=[
+ ['missing main branch metadata',f=>f.branch=null,'MAIN_BRANCH_METADATA_UNVERIFIED'],
+ ['main branch unprotected',f=>f.branch.protected=false,'MAIN_NOT_PROTECTED'],
+ ['main branch protection unknown',f=>delete f.branch.protected,'MAIN_NOT_PROTECTED'],
+ ['main head moved after PR base pin',f=>f.branch.commit.sha=H,'MAIN_BASE_SHA_CHANGED'],
+ ['PR base SHA moved without head change',f=>f.pr.base.sha=H,'MAIN_BASE_SHA_CHANGED'],
+ ['malformed branch commit',f=>f.branch.commit.sha='not-a-commit','MAIN_BASE_SHA_CHANGED'],
+
  ['missing branch protection',f=>f.protection=null,'BRANCH_PROTECTION_UNVERIFIED'],
  ['missing rules provider',f=>f.rules=null,'EFFECTIVE_RULES_UNVERIFIED'],
  ['missing checks provider',f=>f.checkRuns=null,'CHECK_RUNS_UNVERIFIED'],
