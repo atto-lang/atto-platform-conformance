@@ -12,7 +12,7 @@ test("three exact Java .atto blob locators remain candidate-only", () => {
   assert.ok(source.length > 3000 && source.length < 16000);
   assert.deepEqual(validateTaskCaptureRegionRegistry(registry), {
     contract: "task-capture-region-proof-v1",
-    sourceCommit: "e9e9fcfc85ae99b37c211d0d4d84cdf174605cc7",
+    sourceCommit: "02c42e98ab99545eecb20d4b3cb1452e89ee3ca2",
     caseCount: 3,
     executedBackends: 0
   });
