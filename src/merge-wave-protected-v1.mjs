@@ -22,7 +22,7 @@ function inaccessibleEvidence(error,spec) {
   const branch=error?.mainBranchSnapshot;
   const branchBlockers=branch===undefined ? [] : [
     ...(branch.name==='main' ? [] : ['MAIN_BRANCH_METADATA_UNVERIFIED']),
-    ...(branch.protected===true ? [] : ['MAIN_NOT_PROTECTED']),
+    ...(branch.protected===false ? ['MAIN_NOT_PROTECTED'] : branch.protected===true ? [] : ['MAIN_PROTECTION_UNVERIFIED']),
     ...(branch.sha===spec?.expectedBaseSha ? [] : ['MAIN_BASE_SHA_CHANGED'])
   ];
   return {blockers:[...new Set(['GOVERNANCE_PROVIDER_UNAVAILABLE',
