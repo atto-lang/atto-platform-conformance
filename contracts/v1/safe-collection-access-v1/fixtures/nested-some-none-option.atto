@@ -1,0 +1,6 @@
+// CANDIDATE API: positive, NOT_EXECUTED.
+// An outer Some wrapping a present inner None must not flatten to None.
+pub fnc main() -> int {
+  val nested: Option<Option<int>> = Some(None);
+  return nested.is_some() ? (nested.unwrap().is_none() ? 42 : 0) : 0;
+}
