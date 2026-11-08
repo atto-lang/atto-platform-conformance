@@ -114,6 +114,12 @@ test('source, compiler, artifact and manifest identities are mandatory',()=>{
     fail(r,/digest mismatch|invalid SHA/);
   }
 });
+test('run identity must match URL and compiler must come from exact backend head',()=>{
+  const differentRun=synthetic();differentRun.evidence.runId=100;
+  fail(differentRun,/runUrl repository\/runId mismatch/);
+  const differentCompiler=synthetic();differentCompiler.compilerCommit='c'.repeat(40);
+  fail(differentCompiler,/compiler source commit does not match exact backend head/);
+});
 test('unassigned runners and empty/mismatched or failed steps cannot pass',()=>{
   for(const value of [0,-1,1.5,null,undefined,Number.MAX_SAFE_INTEGER+1]){
     const r=synthetic();r.evidence.runnerId=value;fail(r,/runnerId/);
