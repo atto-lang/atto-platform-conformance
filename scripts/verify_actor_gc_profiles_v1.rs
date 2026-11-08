@@ -269,4 +269,184 @@ mod tests {
             reject(APPROVED.replacen(old, "forged-change", 1).into_bytes());
         }
     }
+
+    // All backend-wise claim mutations are independent: checking only the first
+    // occurrence of a key leaves later backend entries vulnerable to drift.
+    fn mutate_backend_field(backend: &str, field: &str, from: &str, to: &str) -> Vec<u8> {
+        let anchor = format!("\"{backend}\": {{");
+        let start = APPROVED.find(&anchor).expect("reviewed backend exists");
+        let end = start + APPROVED[start..].find("\n    }").expect("backend block closes");
+        let needle = format!("\"{field}\": {from}");
+        let relative = APPROVED[start..end].find(&needle).expect("reviewed field exists");
+        let begin = start + relative;
+        let mut changed = APPROVED.to_string();
+        changed.replace_range(begin..begin + needle.len(), &format!("\"{field}\": {to}"));
+        changed.into_bytes()
+    }
+
+    #[test]
+    fn all_six_backend_certification_bools_are_individually_fenced() {
+        let fields = [
+            "sourceActorHeapLoweringCertified",
+            "guestZeroTracingCertified",
+            "fullProcessZeroGcCertified",
+        ];
+        for backend in ["java", "llvm", "wasm", "cranelift", "net", "forge"] {
+            for field in fields {
+                reject(mutate_backend_field(backend, field, "false", "true"));
+                reject(mutate_backend_field(backend, field, "false", "null"));
+                reject(mutate_backend_field(backend, field, "false", r#""passed""#));
+            }
+        }
+    }
+
+    #[test]
+    fn all_six_host_collector_claims_are_individually_fenced() {
+        for (backend, expected) in [
+            ("java", "true"), ("llvm", "false"), ("wasm", "true"),
+            ("cranelift", "false"), ("net", "true"), ("forge", "false"),
+        ] {
+            let changed = if expected == "true" { "false" } else { "true" };
+            reject(mutate_backend_field(backend, "hostTracingGcPossible", expected, changed));
+            reject(mutate_backend_field(backend, "hostTracingGcPossible", expected, "null"));
+        }
+    }
+
+    #[test]
+    fn all_actor_heap_stages_require_explicit_review_before_promotion() {
+        for (backend, stage) in [
+            ("java", "host-arena-substrate"),
+            ("llvm", "native-arena-substrate"),
+            ("wasm", "host-linear-memory-substrate"),
+            ("cranelift", "unsupported-scalar-only"),
+            ("net", "unmanaged-arena-substrate"),
+            ("forge", "native-arena-substrate"),
+        ] {
+            reject(mutate_backend_field(
+                backend, "actorHeapStage",
+                &format!("\"{stage}\""), r#""certified-actor-heap""#,
+            ));
+        }
+    }
+
+    #[test]
+    fn every_backend_identity_is_immutable_not_just_backend_count() {
+        for backend in ["java", "llvm", "wasm", "cranelift", "net", "forge"] {
+            let from = format!("\"{backend}\": {{");
+            let to = if backend == "java" { r#""llvm": {"# } else { r#""java": {"# };
+            assert!(APPROVED.contains(&from));
+            reject(APPROVED.replacen(&from, to, 1).into_bytes());
+        }
+    }
+
+    #[test]
+    fn duplicate_certification_field_in_each_backend_fails_closed() {
+        for backend in ["java", "llvm", "wasm", "cranelift", "net", "forge"] {
+            let from = format!("\"{backend}\": {{\n      \"host\":");
+            let to = format!(
+                "\"{backend}\": {{\n      \"guestZeroTracingCertified\": false,\n      \"host\":"
+            );
+            assert!(APPROVED.contains(&from));
+            reject(APPROVED.replacen(&from, &to, 1).into_bytes());
+        }
+    }
+
+    #[test]
+    fn backend_section_reordering_cannot_hide_semantic_drift() {
+        let first = "\"java\": {";
+        let second = "\"llvm\": {";
+        let changed = APPROVED.replacen(first, "BACKEND-SWAP-PLACEHOLDER", 1)
+            .replacen(second, first, 1)
+            .replacen("BACKEND-SWAP-PLACEHOLDER", second, 1);
+        reject(changed.into_bytes());
+    }
+
+    #[test]
+    fn invented_execution_and_approval_evidence_is_rejected() {
+        for inserted in [
+            "\"compiledGuestTestsPassed\": true,\n  ",
+            "\"independentReviewApproved\": true,\n  ",
+            "\"runtimeArtifactSha256\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n  ",
+            "\"releaseCertified\": true,\n  ",
+        ] {
+            let altered = APPROVED.replacen("\"releaseRule\":", &format!("{inserted}\"releaseRule\":"), 1);
+            reject(altered.into_bytes());
+        }
+    }
+
+    #[test]
+    fn evidence_scope_and_release_boundary_are_immutable() {
+        for (from, to) in [
+            ("source-only-policy", "compiler-backed-guest-pass"),
+            ("A declaration-only fixture", "A complete guest proof"),
+            ("hard-real-time latency.", "hard-real-time certified."),
+        ] {
+            assert!(APPROVED.contains(from));
+            reject(APPROVED.replacen(from, to, 1).into_bytes());
+        }
+    }
+
+    #[test]
+    fn proof_inventory_reordering_and_duplication_are_denied() {
+        let first = REQUIRED_PROOFS[0];
+        let second = REQUIRED_PROOFS[1];
+        let swapped = APPROVED.replacen(first, "PROOF-SWAP-PLACEHOLDER", 1)
+            .replacen(second, first, 1)
+            .replacen("PROOF-SWAP-PLACEHOLDER", second, 1);
+        reject(swapped.into_bytes());
+        let duplicated = APPROVED.replacen(second, first, 1);
+        reject(duplicated.into_bytes());
+    }
+
+    #[test]
+    fn adversarial_case_inventory_reordering_and_duplication_are_denied() {
+        let first = REQUIRED_CASES[0];
+        let second = REQUIRED_CASES[1];
+        let swapped = APPROVED.replacen(first, "CASE-SWAP-PLACEHOLDER", 1)
+            .replacen(second, first, 1)
+            .replacen("CASE-SWAP-PLACEHOLDER", second, 1);
+        reject(swapped.into_bytes());
+        let duplicated = APPROVED.replacen(second, first, 1);
+        reject(duplicated.into_bytes());
+    }
+
+    #[test]
+    fn scanner_enforces_token_budget_independently_of_byte_budget() {
+        // 4097 short punctuation tokens fit comfortably below the 64 KiB cap.
+        let many_tokens = vec![b'['; 4097];
+        assert_eq!(
+            scan(&many_tokens).expect_err("token explosion must fail"),
+            "policy token budget exceeded"
+        );
+        let too_many_bytes = vec![b' '; 65_537];
+        assert_eq!(
+            scan(&too_many_bytes).expect_err("oversize must fail"),
+            "noncanonical encoding or oversized policy"
+        );
+    }
+
+    #[test]
+    fn malformed_unicode_control_and_embedded_nul_fail_closed() {
+        let mut mid_invalid_utf8 = APPROVED.as_bytes().to_vec();
+        let idx = APPROVED.find("source-only-policy").unwrap();
+        mid_invalid_utf8[idx] = 0xff;
+        reject(mid_invalid_utf8);
+        for byte in [0u8, 0x01, 0x1f, 0x7f] {
+            let mut changed = APPROVED.as_bytes().to_vec();
+            changed[idx] = byte;
+            reject(changed);
+        }
+        reject(APPROVED.replacen("source-only-policy", r#"source-\u006fnly-policy"#, 1).into_bytes());
+    }
+
+    #[test]
+    fn harmless_outside_string_whitespace_does_not_change_meaning() {
+        let spaced = APPROVED.replacen(
+            "\"schemaVersion\": 1,",
+            "\"schemaVersion\" :  1 ,",
+            1,
+        );
+        validate(spaced.as_bytes()).expect("insignificant JSON whitespace is allowed");
+    }
+
 }
