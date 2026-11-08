@@ -44,7 +44,8 @@ jobs:
             tests/merge-wave-adversarial-v1.test.mjs \
             tests/merge-wave-provider-v1.test.mjs \
             tests/merge-wave-governance-v1.test.mjs \
-            tests/merge-wave-protected-v1.test.mjs; do
+            tests/merge-wave-protected-v1.test.mjs \
+            tests/merge-wave-postmerge-v1.test.mjs; do
             test -f "$name"
             git ls-files --error-unmatch -- "$name" >/dev/null
           done
@@ -62,7 +63,7 @@ jobs:
           };
           const tests = summary('tests'), pass = summary('pass'), fail = summary('fail');
           const skipped = summary('skipped'), cancelled = summary('cancelled'), todo = summary('todo');
-          if (tests < 287 || pass !== tests || fail !== 0 || skipped !== 0 ||
+          if (tests < 337 || pass !== tests || fail !== 0 || skipped !== 0 ||
               cancelled !== 0 || todo !== 0)
             throw new Error('MERGE_WAVE_EXACT_HEAD_TEST_EVIDENCE_INCOMPLETE');
           const receipt = {
