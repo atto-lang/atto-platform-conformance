@@ -8,7 +8,8 @@ const evidenceKeys = [
   'admission', 'compilerGuest', 'actorSurvival',
   'nativeLowStack', 'supervisorRecovery',
   'actorStackStorage', 'suspendedFrameOwnership', 'actorStackGeneration',
-  'executionContextBinding', 'callbackResumptionSafety', 'taskRootRetirement',\n  'suspendedCallFrameState'
+  'executionContextBinding', 'callbackResumptionSafety', 'taskRootRetirement',
+  'suspendedCallFrameState'
 ];
 
 async function load() {
@@ -46,7 +47,8 @@ function validatePending(matrix) {
     'actorTaskRootGenerationAuthenticated',
     'callbacksCannotExecuteGuestOnProducerThread',
     'sourceTaskRootsRetiredOnlyAfterPhysicalQuiescence',
-    'outstandingTaskRootsPreventActorHeapRetirement',\n    'suspendedCallFramesPreservePcOperandsAndLocals'
+    'outstandingTaskRootsPreventActorHeapRetirement',
+    'suspendedCallFramesPreservePcOperandsAndLocals'
   ]) {
     assert.equal(matrix.requirements[key], true,
       'mandatory physical actor-stack safety property: ' + key);
