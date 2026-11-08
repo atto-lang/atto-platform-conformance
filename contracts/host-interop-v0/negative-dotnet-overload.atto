@@ -1,0 +1,4 @@
+import dotnet "System.Math" as Math;
+pub fnc main() -> int {
+  return Math.Max(1, 2, 3);
+}
