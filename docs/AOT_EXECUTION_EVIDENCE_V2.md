@@ -14,8 +14,8 @@ Canonical receipt and selector records must have exactly their declared **own, e
 
 - full-aot: linked program-specific native guest executable (or closed guest Wasm module), compiled guest entrypoint and output, full verified-language closure as declared, interpreter/JIT/runtime guest compiler absent, executed JIT-disabled baseline.
 - hybrid: same AOT requirements and a JIT-disabled baseline first. Optional optimization JIT may run in a separate mode. Requiring JIT for correctness fails.
-- jit: JIT-only guest claims remain JIT_ONLY_STRUCTURAL_REVIEW_REQUIRED and never count as AOT.
-- NOT_EXECUTED and UNSUPPORTED are non-promoting. FAILED with zero steps is malformed; zero-step runner admission must be NOT_EXECUTED rather than a compiler failure.
+- jit: JIT-only guest claims must identify a JIT-only artifact and report actual runtime guest JIT use, **without claiming an AOT JIT-disabled baseline**. These remain JIT_ONLY_STRUCTURAL_REVIEW_REQUIRED and never count as AOT.
+- NOT_EXECUTED and UNSUPPORTED are non-promoting. They require **all nine AOT closure flags to be false**, no compiler or guest artifact hashes, no runner assignment and zero executed steps. FALSE is an absence-of-proof state, not evidence that the compiler lacks these features. FAILED with zero steps is malformed; zero-step runner admission must be NOT_EXECUTED rather than a compiler failure.
 - The closure flags are macro elimination, resolved imports, finite generics, closed actor handlers, emitted async continuations, static dispatch, effect checks, ownership checks, and absence of a runtime guest compiler.
 - Trusted/untrusted source and actor isolation (none/shared/isolated/untrusted) are independent axes. Untrusted code may use explicitly governed JIT; trusted shared and isolated actor programs must be AOT-capable.
 
@@ -30,6 +30,8 @@ Canonical receipt and selector records must have exactly their declared **own, e
 | Forge | standalone linked compiled guest executable for the Forge target | inferred parity from Cranelift/LLVM output or an unlinked host model | native ownership, actor heaps and frame retirement |
 | Cranelift | linked standalone guest executable | scalar JIT or unlinked object | native ownership and actor heap safety |
 
+Source commit and tree identifiers reject all-zero SHA-1 placeholders; assigned runner names must be bounded, nonblank, canonical and control-character-free. These are basic structural defenses only: receipt assertions still require independent GitHub job/step/readback verification.
+
 ## Required promotion sequence
 
 1. Independently retrieve exact source commit and full Git-tree identity, canonical guest fixture bytes and compiler/toolchain digest.
@@ -41,6 +43,6 @@ Canonical receipt and selector records must have exactly their declared **own, e
 
 ## Local source-free test
 
-    node --test tests/aot-execution-evidence-v2.test.mjs tests/aot-stage-evidence-negative-matrix.test.mjs tests/aot-backend-lane-identity-v2.test.mjs
+    node --test tests/aot-execution-evidence-v2.test.mjs tests/aot-stage-evidence-negative-matrix.test.mjs tests/aot-backend-lane-identity-v2.test.mjs tests/aot-stage-execution-boundaries-v2.test.mjs
 
 These Node suites test structural classification, independent backend-lane binding, and adversarial substitution only. They do **not** execute any AttoLang compiler or guest program. Existing v1 validator remains backward-compatible and unmodified.
