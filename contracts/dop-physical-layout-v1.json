@@ -313,7 +313,8 @@
     "soaos": "Explicit nonempty partition of fields into independent record-array segments, each group an aligned AoS record, not AoSoA.",
     "address": "Each row/field maps to exactly one segment and byte offset. Absolute offset = segment.base + relative byte offset. Every cell range is within its segment.",
     "ownership": "Layout descriptor is not a capability to access memory. Actor ownership/borrow exclusivity must be established separately.",
-    "future": "Guest parser, HIR/MIR integration and native/JVM codegen are NOT_EXECUTED. Host planners do not prove physical guest lowering."
+    "future": "Guest parser, HIR/MIR integration and native/JVM codegen are NOT_EXECUTED. Host planners do not prove physical guest lowering.",
+    "fieldNames": "Opaque, nonempty well-formed Unicode scalar strings; no NUL; maximum 1024 UTF-8 bytes; exact-codepoint duplicate detection, without Unicode normalization. Source-level identifier admission is separate."
   },
   "negativeInputs": [
     "zero-fields",
@@ -327,6 +328,12 @@
     "groups-on-non-soaos",
     "cross-segment-alias",
     "overflow-physical-bytes",
-    "out-of-bounds-row-or-field"
+    "out-of-bounds-row-or-field",
+    "empty-field-name",
+    "nul-in-field-name",
+    "unpaired-utf16-surrogate",
+    "malformed-utf8-field-name",
+    "utf8-field-name-over-1024-bytes",
+    "duplicate-field-name"
   ]
 }
