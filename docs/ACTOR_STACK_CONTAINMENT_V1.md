@@ -434,3 +434,36 @@ or native low-stack fault-containment claims. All actual Java,
 LLVM, .NET NativeAOT, Wasm and Forge/Cranelift compiler-backed guest
 evidence stays `NOT_EXECUTED` until real exact-head admitted runner
 steps, test reports, runtime receipts, and independent review.
+
+## Java M3.3b typed scalar admission and fail-closed frame corruption
+
+[Java draft #2668](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2668),
+stacked on #2667, hardens the real M3.3a scalar function source
+lowering. Admission of the restricted machine must **precede actor
+execution** and prove exact type tags, `int` function returns, Boolean
+conditions, same-kind equality, `int` argument types and mutable
+`let` reassignment. `val`/`const` and immutable parameters cannot
+be rebound. Synthetic JVM `Integer` AST literals cannot be widened
+implicitly to signed 64-bit AttoLang `int`.
+
+At runtime the active operand stack pointer is range-checked
+against the compiled maximum before executing the next instruction.
+Malformed Boolean operands in integer arithmetic, mixed Long/Boolean
+equality and Boolean arguments to signed-`int` callee slots cause
+**actor-generation fail-stop**, never JVM implicit conversion or a
+false equality result. Valid Boolean/Boolean equality remains
+supported in verified conditions.
+
+The Java child adds **16** parser/AST admission tests and **5** host
+runtime corruption tests, bringing the stacked M3.3a+b totals to
+**38 host runtime, 32 compiler parser, 5 canonical `.atto` JUnit
+methods**, all **AUTHORED_NOT_EXECUTED** pending real Maven/Graal
+runner admission. No new source fixture is falsely claimed executed.
+
+Six pending contract scenarios bring the matrix to **56**.
+Negative mutations reject fabricated CI PASS, weakened immutable
+binding gates, implicit conversions, mixed primitive kinds, disabled
+frame SP poisoning and premature full native actor stack parity.
+The legacy source fallback for unsupported objects/closures/effects,
+and all LLVM/.NET NativeAOT/Wasm/Forge guest evidence remain
+`NOT_EXECUTED` until exact-head nonzero-step compiler receipts.
