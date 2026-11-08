@@ -5,6 +5,8 @@ on:
       - 'lib/aot-execution-evidence-v2.mjs'
       - 'tests/aot-stage-evidence-negative-matrix.test.mjs'
       - 'tests/aot-backend-lane-identity-v2.test.mjs'
+      - 'tests/aot-stage-execution-boundaries-v2.test.mjs'
+      - 'tests/aot-execution-evidence-v2.test.mjs'
       - 'docs/AOT_EXECUTION_EVIDENCE_V2.md'
       - '.github/workflows/aot-backend-identity-source-only.yml'
   workflow_dispatch:
@@ -29,7 +31,7 @@ jobs:
           test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
           echo "AOT_SOURCE_HEAD=$EXPECTED_HEAD"
           echo "AOT_SOURCE_TREE=$(git rev-parse 'HEAD^{tree}')"
-          for file in lib/aot-execution-evidence-v2.mjs tests/aot-stage-evidence-negative-matrix.test.mjs tests/aot-backend-lane-identity-v2.test.mjs; do
+          for file in lib/aot-execution-evidence-v2.mjs tests/aot-execution-evidence-v2.test.mjs tests/aot-stage-evidence-negative-matrix.test.mjs tests/aot-backend-lane-identity-v2.test.mjs tests/aot-stage-execution-boundaries-v2.test.mjs; do
             expected="$(git rev-parse "HEAD:$file")"
             actual="$(git hash-object --no-filters "$file")"
             test "$expected" = "$actual"
@@ -43,5 +45,5 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node --test tests/aot-stage-evidence-negative-matrix.test.mjs tests/aot-backend-lane-identity-v2.test.mjs
+          node --test tests/aot-execution-evidence-v2.test.mjs tests/aot-stage-evidence-negative-matrix.test.mjs tests/aot-backend-lane-identity-v2.test.mjs tests/aot-stage-execution-boundaries-v2.test.mjs
           echo 'AOT_STRUCTURAL_TEST_ONLY=PASS; GUEST_EXECUTION=NOT_EXECUTED; RELEASE_QUALIFIED=false'
