@@ -40,6 +40,29 @@ access is invalid. The format uses decimal strings for lengths/offsets to
 avoid JSON's unsafe numeric precision above 2^53. Current v1 maximum field
 count is 64; alignment <=4096 bytes; AoSoA lanes are a power of two <=1024.
 
+## Canonical field-name and physical address admission
+
+Field names in the phase-one **typed host plan** are opaque metadata, not
+yet source-level AttoLang identifiers. Every backend must admit the *same*
+nonempty sequence of valid Unicode scalar values, without a NUL code point
+and with a hard **1,024-byte UTF-8 limit** (not 1,024 characters or UTF-16
+code units). No normalization takes place: precomposed `é` and `é`
+are distinct field names, while identical sequences are duplicates.
+Whitespace-only names are allowed at this host-ABI layer; a future
+source-language parser may impose stricter identifier syntax separately.
+Java rejects unpaired UTF-16 surrogates; the JavaScript host oracle
+rejects them before encoding; native LLVM/C++ rejects malformed UTF-8,
+including overlong encodings, encoded surrogates, truncated sequences,
+and code points above U+10FFFF.
+
+The extended conformance matrix examines 13 row counts (0, 1, 2, 3, 4,
+5, 7, 8, 9, 17, 31, 32 and 33) for each of the four layouts: **52**
+geometry combinations, with field widths 1/2/4/8 and varied alignments
+1/4/8/16. It checks every live cell for byte-range containment, scalar
+alignment and no overlap, including AoSoA partial-tile tails. These remain
+**host descriptor tests**, not source lowering or memory-safety proofs
+for arbitrary guest pointers.
+
 ## Initial backend implementations
 
 - Java: `dev.oreslang.compiler.dop.PhysicalLayoutV1` is an immutable, typed
