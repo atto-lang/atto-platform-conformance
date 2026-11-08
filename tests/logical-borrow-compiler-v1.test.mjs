@@ -35,6 +35,10 @@ test("the positive and negative fixtures differ only in authorized post-move acc
     assert.equal(positive.requiredProof, "real-source-compiler-and-guest-execution");
     assert.equal(negative.expectation, "reject");
     assert.equal(negative.expectedDiagnostic, "moved");
+    assert.deepEqual(negative.expectedDiagnostics, {
+        java: "Oreslang ownership error: use of moved value 'owner'",
+        llvm: "use of explicitly moved int 'owner'",
+    });
     assert.equal(negative.requiredProof, "semantic-ownership-diagnostic-before-IR");
     const file = name => readFileSync(new URL(
         "../fixtures/logical-borrow-compiler-v1/" + name, import.meta.url), "utf8");
