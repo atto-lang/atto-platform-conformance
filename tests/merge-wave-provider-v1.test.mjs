@@ -375,3 +375,66 @@ test('merged parent original SHA remains separate from squash result on main',()
  assert.equal(verifyStackedParent({...spec,expectedParentHead:C},parent),false);
  assert.equal(verifyStackedParent(spec,{...parent,merged_at:null}),false);
 });
+
+
+test('wave-wide reread catches run head repository swapped after originally valid snapshot',async()=>{
+ const {value,client}=mockFive({parentMerged:false});delete value.prs[4].dependsOn;
+ const original=client.get;let seen=0;
+ client.get=async(path,kind)=>{
+  const result=await original(path,kind);
+  if(path.startsWith('/repos/org/site/actions/runs?')){
+   seen++;
+   return result.map(run=>({...run,head_repository:{full_name:seen===3?'untrusted/repo':'org/site'}}));
+  }
+  return result;
+ };
+ const wave=await collectWave(value,client);
+ assert.ok(wave.prs[0].blockers.includes('PROVIDER_SNAPSHOT_CHANGED'));
+});
+test('wave-wide reread catches same-number linked PR base repository substitution',async()=>{
+ const {value,client}=mockFive({parentMerged:false});delete value.prs[4].dependsOn;
+ const original=client.get;let seen=0;
+ client.get=async(path,kind)=>{
+  const result=await original(path,kind);
+  if(path.startsWith('/repos/org/site/actions/runs?')){
+   seen++;
+   return result.map(run=>({...run,pull_requests:[{number:1,base:{repo:{full_name:seen===3?'untrusted/repo':'org/site'}}}]}));
+  }
+  return result;
+ };
+ const wave=await collectWave(value,client);
+ assert.ok(wave.prs[0].blockers.includes('PROVIDER_SNAPSHOT_CHANGED'));
+});
+test('wave-wide reread catches same-commit PR head repository relocation',async()=>{
+ const {value,client}=mockFive({parentMerged:false});delete value.prs[4].dependsOn;
+ const original=client.get;let seen=0;
+ client.get=async(path,kind)=>{
+  const result=await original(path,kind);
+  if(path==='/repos/org/site/pulls/1')
+   return {...result,head:{...result.head,repo:{full_name:++seen===2?'untrusted/fork':'org/site'}}};
+  return result;
+ };
+ const wave=await collectWave(value,client);
+ assert.ok(wave.prs[0].blockers.includes('PROVIDER_SNAPSHOT_CHANGED'));
+});
+test('run association fingerprint remains stable under benign linked PR ordering',()=>{
+ const x={pr:{},reviews:[],jobsByRun:{1:[]},runs:[{id:1,pull_requests:[{number:3,base:{repo:{full_name:'org/a'}}},{number:4,base:{repo:{full_name:'org/a'}}}]}]};
+ const y=structuredClone(x);y.runs[0].pull_requests.reverse();
+ assert.equal(evidenceFingerprint(x),evidenceFingerprint(y));
+});
+test('same SHA run association pointed at unrelated PR is denied on initial admission',async()=>{
+ const {value,client}=mockFive({parentMerged:false});delete value.prs[4].dependsOn;
+ const original=client.get;
+ client.get=async(path,kind)=>{
+  const result=await original(path,kind);
+  return path.startsWith('/repos/org/site/actions/runs?')
+   ? result.map(run=>({...run,pull_requests:[{number:999,base:{repo:{full_name:'org/site'}}}]})):result;
+ };
+ const wave=await collectWave(value,client);
+ assert.ok(wave.prs[0].blockers.includes('RUN_NOT_ASSOCIATED_WITH_PR'));
+});
+test('valid-format but stale parent SHA is rejected by parent verification',()=>{
+ const spec=p('org/repo',5,{dependsOn:4,expectedParentHead:C});
+ assert.equal(validateManifest(manifest(spec)).prs[0],spec);
+ assert.equal(verifyStackedParent(spec,{number:4,head:{sha:A},merged:true,merged_at:'2026-11-07T23:00:00Z',base:{ref:'main',repo:{full_name:'org/repo'}}}),false);
+});
