@@ -179,5 +179,53 @@
     "net-nativeaot": "NOT_EXECUTED",
     "wasm": "NOT_EXECUTED",
     "forge-cranelift": "NOT_EXECUTED"
-  }
+  },
+  "guestFixtures": [
+    {
+      "id": "ICC-G01",
+      "file": "positive-immutable-record-snapshot.atto",
+      "expect": "accept",
+      "oracle": "15",
+      "proof": "old record snapshot preserved while new record shares fields"
+    },
+    {
+      "id": "ICC-G02",
+      "file": "positive-critical-versioned-commit.atto",
+      "expect": "accept",
+      "oracle": "compiler-effect-only",
+      "proof": "suspends function permits non-suspending critical body"
+    },
+    {
+      "id": "ICC-G03",
+      "file": "negative-await-inside-critical.atto",
+      "expect": "reject",
+      "diagnostic": "E_CRITICAL_SUSPEND"
+    },
+    {
+      "id": "ICC-G04",
+      "file": "negative-critical-suspends-declaration.atto",
+      "expect": "reject",
+      "diagnostic": "E_CRITICAL_SUSPENDS_DECL"
+    },
+    {
+      "id": "ICC-G05",
+      "file": "negative-suspends-critical-declaration.atto",
+      "expect": "reject",
+      "diagnostic": "E_CRITICAL_SUSPENDS_DECL"
+    },
+    {
+      "id": "ICC-G06",
+      "file": "negative-immutable-root-rebind.atto",
+      "expect": "reject",
+      "diagnostic": "E_IMMUTABLE_BINDING"
+    },
+    {
+      "id": "ICC-G07",
+      "file": "negative-shared-actor-ref32-escape.atto",
+      "expect": "reject",
+      "diagnostic": "E_ACTOR_REF32_ESCAPE"
+    }
+  ],
+  "guestFixturePath": "fixtures/immutable-containers-critical-v1",
+  "guestFixtureExecution": "NOT_EXECUTED_ALL_BACKENDS"
 }
