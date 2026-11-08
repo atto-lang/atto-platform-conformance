@@ -166,7 +166,9 @@ export function verifyPostOptimization(before,after,entry){
   return verifyMeteredCycles(before,entry)&&verifyMeteredCycles(after,entry);
 }
 /** Even an interruptible FFI wrapper can hang. Every hostile foreign call needs a kill boundary. */
-export function admitUntrustedForeignCall({interruptible,isolation,deadlineEnforced}){
+export function admitUntrustedForeignCall(descriptor){
+  if(!descriptor||typeof descriptor!=='object'||Array.isArray(descriptor))return false;
+  const {interruptible,isolation,deadlineEnforced}=descriptor;
   if(typeof interruptible!=='boolean'||typeof deadlineEnforced!=='boolean')return false;
   return ['os-process','validated-wasm-isolate','hardware-compartment'].includes(isolation)&&deadlineEnforced;
 }
