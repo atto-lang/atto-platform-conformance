@@ -55,3 +55,14 @@ test('successful source-only oracle cannot certify compile-time borrow checker',
  const r=check([d(),{op:'retire',name:'v'}]);
  assert.equal(r.ok,true);assert.equal(r.verifiedGuest,false);
 });
+
+
+test('a released borrow token cannot be reused (ABA guard)',()=>{
+ bad([d(),{op:'borrow',name:'v',mode:'read',token:'r'},
+  {op:'release',token:'r'},{op:'borrow',name:'v',mode:'read',token:'r'}],
+  'INVALID_BORROW_TOKEN');
+});
+test('another actor cannot forge release of a private borrow token',()=>{
+ bad([d(),{op:'borrow',name:'v',mode:'read',token:'r'},
+  {op:'release',token:'r',actor:'actorB'}],'FOREIGN_ACTOR_LOAN_RELEASE');
+});
