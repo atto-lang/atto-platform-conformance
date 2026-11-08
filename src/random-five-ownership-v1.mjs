@@ -5,7 +5,7 @@ const NAME=/^[A-Za-z][A-Za-z0-9_-]{0,63}$/;
 const reject=(code,index)=>Object.freeze({ok:false,diagnostic:code,index,evidence:'LINEAR_OWNERSHIP_ORACLE'});
 export function verifyOwnershipTrace(events){
   if(!Array.isArray(events)||events.length>256)return reject('TRACE_LIMIT',-1);
-  const values=new Map(),loans=new Map();
+  const values=new Map(),loans=new Map(),usedTokens=new Set();
   for(let index=0;index<events.length;index++){
     const e=events[index];
     if(!e||typeof e!=='object'||Array.isArray(e)||!OPS.has(e.op))
@@ -28,6 +28,8 @@ export function verifyOwnershipTrace(events){
     if(e.op==='release'){
       const loan=loans.get(e.token);
       if(!loan)return reject('UNKNOWN_OR_RELEASED_LOAN',index);
+      if(e.actor!==undefined&&e.actor!==values.get(loan.name)?.owner)
+        return reject('FOREIGN_ACTOR_LOAN_RELEASE',index);
       const owner=values.get(loan.name);
       if(loan.mode==='read')owner.readers--;
       else owner.writer=false;
@@ -37,12 +39,13 @@ export function verifyOwnershipTrace(events){
     if(e.actor!==undefined&&e.actor!==v.owner)
       return reject('CROSS_ACTOR_PRIVATE_ACCESS',index);
     if(e.op==='borrow'){
-      if(!MODES.has(e.mode)||!NAME.test(e.token||'')||loans.has(e.token))
+      if(!MODES.has(e.mode)||!NAME.test(e.token||'')||usedTokens.has(e.token))
         return reject('INVALID_BORROW_TOKEN',index);
       if(e.mode==='write'&&(!v.mutable||v.writer||v.readers>0))
         return reject('WRITE_BORROW_CONFLICT',index);
       if(e.mode==='read'&&v.writer)return reject('READ_BORROW_CONFLICT',index);
       if(e.mode==='write')v.writer=true;else v.readers++;
+      usedTokens.add(e.token);
       loans.set(e.token,{name:e.name,mode:e.mode});
     }else if(e.op==='take'||e.op==='send'||e.op==='retire'){
       if(v.writer||v.readers>0)return reject('OWNED_VALUE_HAS_LIVE_LOANS',index);
