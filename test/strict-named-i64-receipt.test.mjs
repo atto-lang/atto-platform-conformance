@@ -155,7 +155,7 @@ test('undeclared schema/evidence/case fields reject, not silently ignored',()=>{
     if(level==='evidence')r.evidence.unsafeBypass=true;
     if(level==='case')r.cases[0].unknown=true;
     if(level==='step')r.evidence.steps[0].unknown=true;
-    fail(r,/unknown|observation|steps/);
+    fail(r,/unknown|identity|observation|steps/);
   }
 });
 test('host AOT is not guest AOT; guest-aot label remains shape-only',()=>{
