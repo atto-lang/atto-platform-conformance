@@ -51,6 +51,9 @@ struct StepEvidence {
 struct NegativeCase {
     feature: NegativeFeature,
     fixture_sha: String,
+    compiler_sha: String,
+    job_id: u64,
+    run_attempt: u64,
     compiler_executed: bool,
     rejected: bool,
     rejection_before_ir: bool,
@@ -60,6 +63,9 @@ struct NegativeCase {
 struct PositiveCase {
     feature: PositiveFeature,
     fixture_sha: String,
+    compiler_sha: String,
+    job_id: u64,
+    run_attempt: u64,
     guest_compiled: bool,
     guest_executed: bool,
     artifact_sha: String,
@@ -160,13 +166,24 @@ fn check(r: &SyntheticReceipt) -> Result<(), &'static str> {
         return Err("step metadata does not match named steps");
     }
     let mut step_numbers = std::collections::BTreeSet::new();
+    let mut previous_step_number = 0;
     for (i, step) in r.step_records.iter().enumerate() {
-        if step.name != r.executed_steps[i] || step.number == 0
+        if step.name != r.executed_steps[i] || step.number <= previous_step_number
             || !step_numbers.insert(step.number) || step.job_id != r.job_id
             || step.attempt != r.run_attempt || step.status != "completed"
             || step.conclusion != "success" || !step.log_recorded {
             return Err("replayed, failed, ambiguous or unlogged step");
         }
+        previous_step_number = step.number;
+    }
+    let mut last_required_step_number = 0;
+    for name in ["checkout-exact-head", "compile-guest", "execute-guest", "allocator-probe"] {
+        let step = r.step_records.iter().find(|step| step.name == name)
+            .ok_or("required step has no executed record")?;
+        if step.number <= last_required_step_number {
+            return Err("required checkout/compile/execute/probe order violated");
+        }
+        last_required_step_number = step.number;
     }
     if !r.step_records.iter().any(|step| step.name == "checkout-exact-head"
         && step.number == r.checkout_step_number) {
@@ -181,19 +198,27 @@ fn check(r: &SyntheticReceipt) -> Result<(), &'static str> {
     for case in &r.negatives {
         if !NEGATIVE_FEATURES.contains(&case.feature) || !seen_negative.insert(case.feature)
             || !valid_sha(&case.fixture_sha, 64)
-            || !seen_fixtures.insert(case.fixture_sha.as_str()) || !case.compiler_executed
+            || !seen_fixtures.insert(case.fixture_sha.as_str())
+            || case.compiler_sha != r.compiler_sha || case.job_id != r.job_id
+            || case.run_attempt != r.run_attempt || !case.compiler_executed
             || !case.rejected || !case.rejection_before_ir || !case.stable_diagnostic
         { return Err("negative fixture missing, repeated, or not rejected before IR"); }
     }
     if r.positives.len() != POSITIVE_FEATURES.len() { return Err("positive matrix incomplete"); }
     let mut seen_positive = std::collections::BTreeSet::new();
+    let mut main_artifact_referenced = false;
     for case in &r.positives {
         if !POSITIVE_FEATURES.contains(&case.feature) || !seen_positive.insert(case.feature)
             || !valid_sha(&case.fixture_sha, 64)
             || !seen_fixtures.insert(case.fixture_sha.as_str())
             || !valid_sha(&case.artifact_sha, 64)
-            || !case.guest_compiled || !case.guest_executed
+            || case.compiler_sha != r.compiler_sha || case.job_id != r.job_id
+            || case.run_attempt != r.run_attempt || !case.guest_compiled || !case.guest_executed
         { return Err("positive guest fixture missing, repeated, or not executed"); }
+        main_artifact_referenced |= case.artifact_sha == r.artifact_sha;
+    }
+    if !main_artifact_referenced {
+        return Err("top-level artifact absent from positive-case manifest");
     }
     Ok(())
 }
@@ -237,11 +262,15 @@ mod tests {
             host_interpreter_or_jit_fallback: false,
             allocator_instrumented: true, process_gc_instrumented: false,
             negatives: NEGATIVE_FEATURES.iter().enumerate().map(|(i, &feature)| NegativeCase {
-                feature, fixture_sha: format!("{:064x}", i + 1), compiler_executed: true,
+                feature, fixture_sha: format!("{:064x}", i + 1),
+                compiler_sha: c.clone(), job_id: 502, run_attempt: 2,
+                compiler_executed: true,
                 rejected: true, rejection_before_ir: true, stable_diagnostic: true,
             }).collect(),
             positives: POSITIVE_FEATURES.iter().enumerate().map(|(i, &feature)| PositiveCase {
-                feature, fixture_sha: format!("{:064x}", i + 101), artifact_sha: d.clone(),
+                feature, fixture_sha: format!("{:064x}", i + 101),
+                compiler_sha: c.clone(), job_id: 502, run_attempt: 2,
+                artifact_sha: d.clone(),
                 guest_compiled: true, guest_executed: true,
             }).collect(),
         }
@@ -442,5 +471,83 @@ mod tests {
             number:5,name:"unrelated",status:"completed",conclusion:"success",
             job_id:502,attempt:2,log_recorded:true,
         });assert!(check(&r).is_err());
+    }
+    #[test] fn rejects_negative_fixture_compiler_splicing() {
+        for i in 0..NEGATIVE_FEATURES.len() {
+            let mut r=synthetic();r.negatives[i].compiler_sha="e".repeat(64);
+            assert_eq!(check(&r),Err("negative fixture missing, repeated, or not rejected before IR"));
+        }
+    }
+    #[test] fn rejects_positive_fixture_compiler_splicing() {
+        for i in 0..POSITIVE_FEATURES.len() {
+            let mut r=synthetic();r.positives[i].compiler_sha="e".repeat(64);
+            assert_eq!(check(&r),Err("positive guest fixture missing, repeated, or not executed"));
+        }
+    }
+    #[test] fn rejects_negative_cases_with_foreign_job_id() {
+        for i in 0..NEGATIVE_FEATURES.len() {
+            let mut r=synthetic();r.negatives[i].job_id=999;
+            assert!(check(&r).is_err(),"negative case {i}");
+        }
+    }
+    #[test] fn rejects_positive_cases_with_foreign_job_id() {
+        for i in 0..POSITIVE_FEATURES.len() {
+            let mut r=synthetic();r.positives[i].job_id=999;
+            assert!(check(&r).is_err(),"positive case {i}");
+        }
+    }
+    #[test] fn rejects_negative_case_replay_from_older_attempt() {
+        for i in 0..NEGATIVE_FEATURES.len() {
+            let mut r=synthetic();r.negatives[i].run_attempt=1;
+            assert!(check(&r).is_err(),"negative case {i}");
+        }
+    }
+    #[test] fn rejects_positive_case_replay_from_older_attempt() {
+        for i in 0..POSITIVE_FEATURES.len() {
+            let mut r=synthetic();r.positives[i].run_attempt=1;
+            assert!(check(&r).is_err(),"positive case {i}");
+        }
+    }
+    #[test] fn rejects_backwards_step_numbers_with_matching_names() {
+        let mut r=synthetic();r.step_records[1].number=4;
+        r.step_records[2].number=2;r.step_records[3].number=3;
+        assert!(check(&r).is_err());
+    }
+    #[test] fn rejects_wrong_execution_order_despite_increasing_numbers() {
+        let mut r=synthetic();r.executed_steps.swap(1,2);r.step_records.swap(1,2);
+        r.step_records[1].number=2;r.step_records[2].number=3;
+        assert_eq!(check(&r),Err("required checkout/compile/execute/probe order violated"));
+    }
+    #[test] fn accepts_nonconsecutive_monotonic_step_numbers() {
+        let mut r=synthetic();
+        for (step, number) in r.step_records.iter_mut().zip([3,5,9,11]) {
+            step.number=number;
+        }
+        r.checkout_step_number=3;
+        assert_eq!(check(&r),Ok(()));
+    }
+    #[test] fn rejects_unreferenced_main_artifact() {
+        let mut r=synthetic();r.artifact_sha="e".repeat(64);
+        assert_eq!(check(&r),Err("top-level artifact absent from positive-case manifest"));
+    }
+    #[test] fn accepts_distinct_positive_artifacts_when_main_is_present() {
+        let mut r=synthetic();r.positives[0].artifact_sha="e".repeat(64);
+        assert_eq!(check(&r),Ok(()));
+        for case in r.positives.iter_mut().skip(1) {
+            case.artifact_sha="f".repeat(64);
+        }
+        assert_eq!(check(&r),Err("top-level artifact absent from positive-case manifest"));
+    }
+    #[test] fn rejects_parent_compiler_changed_without_case_recompilation() {
+        let mut r=synthetic();r.compiler_sha="e".repeat(64);
+        assert_eq!(check(&r),Err("negative fixture missing, repeated, or not rejected before IR"));
+    }
+    #[test] fn accepts_same_compiler_and_attempt_across_all_distinct_fixtures() {
+        let r=synthetic();
+        assert!(r.negatives.iter().all(|c| c.compiler_sha==r.compiler_sha &&
+            c.job_id==r.job_id && c.run_attempt==r.run_attempt));
+        assert!(r.positives.iter().all(|c| c.compiler_sha==r.compiler_sha &&
+            c.job_id==r.job_id && c.run_attempt==r.run_attempt));
+        assert_eq!(check(&r),Ok(()));
     }
 }
