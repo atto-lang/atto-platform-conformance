@@ -18,7 +18,11 @@ test('time OR reductions trigger only at a proven poll with runnable peer',()=>{
  assert.equal(budgetDecision({...s,reductions:511,elapsedNs:1_999_999}).decision,'CONTINUE');
  assert.equal(budgetDecision({...s,reductions:512,elapsedNs:1}).decision,'HANDOFF');
  assert.equal(budgetDecision({...s,reductions:1,elapsedNs:2_000_000}).decision,'HANDOFF');
- assert.equal(budgetDecision({...s,reductions:999,elapsedNs:9_000_000,probeDue:false}).decision,'CONTINUE');
+ // Time sampling may wait until the next probe, but a 512-reduction
+ // dispatch is already overdue and must be observed at this backedge.
+ assert.equal(budgetDecision({...s,reductions:511,elapsedNs:9_000_000,probeDue:false}).decision,'CONTINUE');
+ assert.equal(budgetDecision({...s,reductions:512,elapsedNs:1,probeDue:false}).decision,'HANDOFF');
+ assert.equal(budgetDecision({...s,reductions:999,elapsedNs:9_000_000,probeDue:false}).decision,'HANDOFF');
  assert.equal(budgetDecision({...s,reductions:999,elapsedNs:9_000_000,peerRunnable:false}).decision,'CONTINUE');
  assert.equal(budgetDecision({...s,reductions:999,elapsedNs:9_000_000,liveBorrow:true}).decision,'DEFER');
 });
