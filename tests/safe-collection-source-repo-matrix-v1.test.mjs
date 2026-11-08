@@ -11,7 +11,10 @@ const expected=["java","llvm","net","wasm","forge","rs","js","cranelift","hdl"];
 test("all nine oreslang-source.* backends are represented without false parity",()=>{
   assert.equal(matrix.schema_version,1);
   assert.equal(matrix.status,"UNATTESTED_PER_BACKEND");
-  assert.equal(matrix.source_fixture_cases,10);
+  const contract=JSON.parse(readFileSync(path.join(root,matrix.source_contract),"utf8"));
+  assert.equal(matrix.source_fixture_cases,contract.cases.length);
+  assert.equal(contract.cases.length,13);
+  assert.ok(contract.cases.every(x=>x.attestation==="NOT_EXECUTED"));
   assert.equal(matrix.source_fixture_execution,"NOT_EXECUTED");
   assert.equal(matrix.repos.length,expected.length);
   assert.deepEqual(matrix.repos.map(x=>x.repo.split(".").at(-1)).sort(),expected.sort());
