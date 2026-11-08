@@ -19,7 +19,11 @@ export function admitSafePoint(input) {
 /** Wall time is a poll-triggered scheduling request, never a timer interrupt. */
 export function budgetDecision({reductions,limit=512,elapsedNs,timeLimitNs=2_000_000,
  probeDue=true,peerRunnable=true,kind='auto-backedge',...safety}) {
- if(![reductions,limit,elapsedNs,timeLimitNs].every(x=>Number.isFinite(x)&&x>=0))
+ // JS models must reject fractional, lossy or nonpositive limits:
+ // the real backedge and deadline counters are discrete bounded integers.
+ if(![reductions,limit,elapsedNs,timeLimitNs].every(Number.isSafeInteger)
+    ||reductions<0||elapsedNs<0||limit<=0||timeLimitNs<=0
+    ||typeof probeDue!=='boolean'||typeof peerRunnable!=='boolean')
    throw new TypeError('invalid budget');
  // The fast batching flag can defer a *time* probe, but it must not
  // suppress the mandatory check after the reduction cap. Java and LLVM
