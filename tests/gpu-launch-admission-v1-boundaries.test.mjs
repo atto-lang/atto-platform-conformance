@@ -166,3 +166,88 @@ reject('features cannot be inherited or forged','INVALID_DESCRIPTOR',x=>{
 reject('declared barrier without compiler uniformity proof denied','DIVERGENT_BARRIER',x=>{
   x.kernel.effects.push('device.barrier');x.kernel.uniform_barrier=false;
 });
+
+test('exact Number.MAX_SAFE_INTEGER logical thread bound uses BigInt accounting',()=>{
+  const x=fixture();
+  x.device.max_grid=[Number.MAX_SAFE_INTEGER,1,1];
+  x.grid=[Number.MAX_SAFE_INTEGER,1,1];x.block=[1,1,1];
+  x.capability.max_threads_per_launch=Number.MAX_SAFE_INTEGER;
+  const result=admit(x);
+  assert.equal(result.logical_threads,BigInt(Number.MAX_SAFE_INTEGER).toString());
+  assert.equal(result.physical_gpu_verified,false);
+});
+
+reject('BigInt thread product rejects overflow past safe numeric quota',
+  'LAUNCH_QUOTA',x=>{
+  x.device.max_grid=[Number.MAX_SAFE_INTEGER,1,1];
+  x.grid=[Number.MAX_SAFE_INTEGER,1,1];x.block=[2,1,1];
+  x.capability.max_threads_per_launch=Number.MAX_SAFE_INTEGER;
+});
+reject('unsafe above MAX_SAFE_INTEGER grid coordinate denied',
+  'INVALID_INTEGER',x=>{
+  x.grid=[Number.MAX_SAFE_INTEGER+1,1,1];
+});
+reject('symbol-keyed kernel effect array denied','INVALID_DESCRIPTOR',x=>{
+  x.kernel.effects[Symbol('malicious-effect')]='device.atomic';
+});
+reject('getter-backed device capability limit denied without calling getter',
+  'INVALID_DESCRIPTOR',x=>{
+  Object.defineProperty(x.device,'max_threads_per_block',
+    {get(){throw Error('DO NOT EVALUATE')},enumerable:true});
+});
+reject('infinity device limit denied','INVALID_INTEGER',x=>{
+  x.device.max_threads_per_block=Infinity;
+});
+reject('device feature not negotiated for atomic cluster scope',
+  'UNSUPPORTED_FEATURE',x=>{
+  x.device.atomic_scopes.push('cluster');
+  x.kernel.effects.push('device.atomic');
+  x.kernel.atomic_scopes=['cluster'];
+  x.kernel.features.push('cluster');
+});
+reject('duplicate device atomic scope denied','INVALID_FEATURE',x=>{
+  x.device.atomic_scopes.push('device');
+});
+reject('duplicate kernel atomic scope denied','INVALID_FEATURE',x=>{
+  x.kernel.effects.push('device.atomic');
+  x.kernel.atomic_scopes=['block','block'];
+});
+reject('kernel effect accessor is rejected','INVALID_DESCRIPTOR',x=>{
+  Object.defineProperty(x.kernel,'effects',
+    {get(){throw Error('DO NOT EVALUATE')},enumerable:true});
+});
+test('device-level atomic scope admission remains a schema-only statement',()=>{
+  const x=fixture();
+  x.kernel.effects.push('device.atomic');
+  x.kernel.atomic_scopes=['device'];
+  const result=admit(x);
+  assert.equal(result.admission,'STATIC_SCHEMA_ONLY');
+  assert.equal(result.physical_gpu_verified,false);
+});
+test('cluster scope requires both kernel and device feature negotiation',()=>{
+  const x=fixture();
+  x.device.features.push('cluster');
+  x.device.atomic_scopes.push('cluster');
+  x.kernel.features=['cluster'];
+  x.kernel.effects.push('device.atomic');
+  x.kernel.atomic_scopes=['cluster'];
+  const result=admit(x);
+  assert.equal(result.physical_gpu_verified,false);
+});
+test('512 deterministic 3D grid/block values preserve BigInt exactness and quota denial',()=>{
+  let seed=0x7b1206a5;
+  const next=()=>{seed=(Math.imul(seed,22695477)+1)>>>0;return seed;};
+  for(let i=0;i<512;i++){
+    const grid=[2+next()%15,1+next()%16,1+next()%16];
+    const block=[1+next()%8,1+next()%8,1+next()%8];
+    const count=grid.reduce((n,v)=>n*BigInt(v),1n)*
+      block.reduce((n,v)=>n*BigInt(v),1n);
+    const x=fixture();
+    x.grid=grid;x.block=block;
+    x.capability.max_threads_per_launch=Number(count);
+    const result=admit(x);
+    assert.equal(result.logical_threads,count.toString(),'3D positive '+i);
+    x.capability.max_threads_per_launch=Number(count-1n);
+    assert.throws(()=>admit(x),e=>e?.code==='LAUNCH_QUOTA','3D negative '+i);
+  }
+});
