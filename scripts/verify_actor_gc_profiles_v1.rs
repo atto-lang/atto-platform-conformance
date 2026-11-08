@@ -149,19 +149,80 @@ fn check_policy_ancestors(path: &std::path::Path) -> Result<(), String> {
     Ok(())
 }
 
-// Linux uses O_NOFOLLOW on the final component and O_NONBLOCK to prevent a
-// regular-file-to-FIFO swap from hanging open(). Other targets retain the
-// pre-open and opened-descriptor checks but cannot claim this Linux safeguard.
+// Linux: openat2 resolves the entire path under a directory descriptor.
+// O_NOFOLLOW alone guards only the final component, and a swapped parent
+// symlink to the SAME inode bypasses the earlier dev/inode equality check.
+// Do not silently downgrade to open() when openat2 is unavailable.
+#[cfg(all(target_os = "linux", any(target_arch = "x86_64", target_arch = "aarch64", target_arch = "riscv64")))]
 fn open_policy_checked(path: &std::path::Path) -> Result<fs::File, String> {
-    let mut options = fs::OpenOptions::new();
-    options.read(true);
-    #[cfg(target_os = "linux")]
-    {
-        use std::os::unix::fs::OpenOptionsExt;
-        // Linux fcntl.h: O_NOFOLLOW = 0400000; O_NONBLOCK = 04000.
-        options.custom_flags(0o400000 | 0o4000);
+    use std::ffi::CString;
+    use std::os::fd::{AsRawFd, FromRawFd};
+    use std::os::raw::c_long;
+    use std::os::unix::ffi::OsStrExt;
+    #[repr(C)]
+    struct OpenHow {
+        flags: u64,
+        mode: u64,
+        resolve: u64,
     }
-    options.open(path).map_err(|e| format!("policy open failed: {e}"))
+    unsafe extern "C" {
+        fn syscall(number: c_long, ...) -> c_long;
+    }
+    // Linux syscall table (x86_64, aarch64, riscv64).
+    const SYS_OPENAT2: c_long = 437;
+    // Linux fcntl.h: O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC.
+    const OPEN_FLAGS: u64 = 0o400000 | 0o4000 | 0o2000000;
+    // linux/openat2.h: NO_MAGICLINKS | NO_SYMLINKS | BENEATH.
+    const RESOLVE_FLAGS: u64 = 0x02 | 0x04 | 0x08;
+
+    // Absolute paths are expressed relative to the opened root directory;
+    // relative paths use a descriptor for the current working directory.
+    let anchor = fs::File::open(if path.is_absolute() { "/" } else { "." })
+        .map_err(|e| format!("policy anchor open failed: {e}"))?;
+    let relative = if path.is_absolute() {
+        path.strip_prefix("/")
+            .map_err(|e| format!("policy absolute path failed: {e}"))?
+    } else {
+        path
+    };
+    let c_path = CString::new(relative.as_os_str().as_bytes())
+        .map_err(|_| "policy path contains NUL".to_string())?;
+    let how = OpenHow {
+        flags: OPEN_FLAGS,
+        mode: 0,
+        resolve: RESOLVE_FLAGS,
+    };
+    // SAFETY: valid NUL-terminated path; valid OpenHow pointer and size.
+    let fd = unsafe {
+        syscall(
+            SYS_OPENAT2,
+            anchor.as_raw_fd(),
+            c_path.as_ptr(),
+            &how as *const OpenHow,
+            std::mem::size_of::<OpenHow>(),
+        )
+    };
+    if fd < 0 {
+        return Err(format!(
+            "policy openat2 denied or unavailable: {}",
+            std::io::Error::last_os_error()
+        ));
+    }
+    // SAFETY: successful openat2 returns a fresh, owned fd.
+    Ok(unsafe { fs::File::from_raw_fd(fd as i32) })
+}
+
+// The kernel ABI above is intentionally limited to reviewed architectures.
+#[cfg(all(target_os = "linux", not(any(target_arch = "x86_64", target_arch = "aarch64", target_arch = "riscv64"))))]
+fn open_policy_checked(_path: &std::path::Path) -> Result<fs::File, String> {
+    Err("policy secure openat2 unsupported on this Linux architecture".into())
+}
+
+// Non-Linux fallback: bounded and FD-verified, but NOT race-free for ancestor
+// replacement; do not claim Linux-strength pathname containment here.
+#[cfg(not(target_os = "linux"))]
+fn open_policy_checked(path: &std::path::Path) -> Result<fs::File, String> {
+    fs::File::open(path).map_err(|e| format!("policy open failed: {e}"))
 }
 
 // Kept separate so tests can deterministically simulate changes *after*
