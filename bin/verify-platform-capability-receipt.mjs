@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import fs from "node:fs";
+import { parseStrictJson } from "./strict-receipt-json.mjs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -173,7 +174,7 @@ export function verifyPlatformCapabilityReceipt(receipt, contract) {
 }
 
 function readJson(filename) {
-  return JSON.parse(fs.readFileSync(filename,"utf8"));
+  return parseStrictJson(fs.readFileSync(filename,"utf8"),filename);
 }
 
 export function verifyFile(filename, contractFilename=defaultContract) {
