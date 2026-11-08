@@ -295,3 +295,55 @@ test('main head movement after per-PR reads is detected wave-wide',async()=>{
  const report=await collectProtectedWave(manifest(),client);
  assert.ok(report.governance[2].blockers.includes('GOVERNANCE_CHANGED_DURING_WAVE'));
 });
+
+
+test('unprotected main is retained when privileged protection policy returns HTTP 403',async()=>{
+ const {client}=mock();const original=client.get;
+ client.get=async(path,kind)=>{
+   if(/^\/repos\/[^/]+\/[^/]+\/branches\/main$/.test(path))
+     return {name:'main',protected:false,commit:{sha:B}};
+   if(path.endsWith('/branches/main/protection')){
+     const e=new Error('secret billing/auth token must not leak');e.status=403;throw e;
+   }
+   return original(path,kind);
+ };
+ const r=await collectProtectedWave(manifest(),client);
+ assert.equal(r.readyForHumanFinalReview,false);
+ assert.ok(r.governance.every(x=>x.blockers.includes('GOVERNANCE_PROTECTION_UNAVAILABLE')));
+ assert.ok(r.governance.every(x=>x.blockers.includes('MAIN_NOT_PROTECTED')));
+ assert.doesNotMatch(JSON.stringify(r),/secret billing\/auth token/i);
+});
+test('moved main base is retained when effective rules endpoint is unsupported',async()=>{
+ const {client}=mock();const original=client.get;
+ client.get=async(path,kind)=>{
+   if(/^\/repos\/[^/]+\/[^/]+\/branches\/main$/.test(path))
+     return {name:'main',protected:true,commit:{sha:H}};
+   if(path.endsWith('/rules/branches/main')){
+     const e=new Error('unsupported API route');e.status=400;throw e;
+   }
+   return original(path,kind);
+ };
+ const r=await collectProtectedWave(manifest(),client);
+ assert.ok(r.governance.every(x=>x.blockers.includes('MAIN_BASE_SHA_CHANGED')));
+ assert.ok(r.governance.every(x=>x.blockers.includes('GOVERNANCE_RULES_UNAVAILABLE')));
+});
+test('unreadable branch metadata is not misrepresented as explicit unprotected main',async()=>{
+ const {client}=mock();const original=client.get;
+ client.get=async(path,kind)=>{
+   if(/^\/repos\/[^/]+\/[^/]+\/branches\/main$/.test(path)){
+     const e=new Error('no permission');e.status=403;throw e;
+   }
+   return original(path,kind);
+ };
+ const r=await collectProtectedWave(manifest(),client);
+ assert.ok(r.governance.every(x=>x.blockers.includes('GOVERNANCE_BRANCH_UNAVAILABLE')));
+ assert.ok(r.governance.every(x=>!x.blockers.includes('MAIN_NOT_PROTECTED')));
+});
+test('missing branch protected attribute is unverified, not asserted false',async()=>{
+ const {client}=mock();const original=client.get;
+ client.get=async(path,kind)=>/^\/repos\/[^/]+\/[^/]+\/branches\/main$/.test(path)
+   ? {name:'main',commit:{sha:B}} : original(path,kind);
+ const r=await collectProtectedWave(manifest(),client);
+ assert.ok(r.governance.every(x=>x.blockers.includes('MAIN_PROTECTION_UNVERIFIED')));
+ assert.ok(r.governance.every(x=>!x.blockers.includes('MAIN_NOT_PROTECTED')));
+});
