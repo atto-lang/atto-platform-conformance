@@ -11,6 +11,14 @@
         "Verify exact PR head checkout",
         "Check and build static HTML",
         "Validate machine-readable language draft publication"
+      ],
+      "requiredWorkflows": [
+        {
+          "workflowId": 378985166,
+          "workflowName": "Validate marketing site",
+          "jobName": "AttoLang Site Validation",
+          "testStepName": "Check and build static HTML"
+        }
       ]
     },
     {
@@ -22,6 +30,14 @@
         "Verify exact PR head checkout",
         "Check and build static HTML",
         "Validate machine-readable language draft publication"
+      ],
+      "requiredWorkflows": [
+        {
+          "workflowId": 378985166,
+          "workflowName": "Validate marketing site",
+          "jobName": "AttoLang Site Validation",
+          "testStepName": "Check and build static HTML"
+        }
       ]
     },
     {
@@ -33,6 +49,20 @@
         "Verify exact source HEAD before executing tests or publishing artifacts",
         "Test package contracts",
         "Build and verify installable Sublime package"
+      ],
+      "requiredWorkflows": [
+        {
+          "workflowId": 373587523,
+          "workflowName": "CI",
+          "jobName": "package",
+          "testStepName": "Test package contracts"
+        },
+        {
+          "workflowId": 373587523,
+          "workflowName": "CI",
+          "jobName": "release-package",
+          "testStepName": "Build two identical Sublime package archives and smoke-test contents"
+        }
       ]
     },
     {
@@ -44,6 +74,20 @@
         "Verify exact PR head and clean source tree",
         "Test",
         "Execute local DSSE and negative mutation checks (not release authorization)"
+      ],
+      "requiredWorkflows": [
+        {
+          "workflowId": 373591906,
+          "workflowName": "CI",
+          "jobName": "rust",
+          "testStepName": "Test"
+        },
+        {
+          "workflowId": 409917534,
+          "workflowName": "Source-free release assurance signature checks (NON-AUTHORIZING)",
+          "jobName": "local-signature-and-artifact-negative-matrix",
+          "testStepName": "Execute local DSSE and negative mutation checks (not release authorization)"
+        }
       ]
     },
     {
@@ -56,6 +100,20 @@
         "Verify exact PR head and clean source tree",
         "Test",
         "Execute synthetic trust policy, revocation and nonauthorization tests"
+      ],
+      "requiredWorkflows": [
+        {
+          "workflowId": 373591906,
+          "workflowName": "CI",
+          "jobName": "rust",
+          "testStepName": "Test"
+        },
+        {
+          "workflowId": 409926325,
+          "workflowName": "Public root-signed release trust policy (NON-AUTHORIZING)",
+          "jobName": "root-signed-policy-negative-tests",
+          "testStepName": "Execute synthetic trust policy, revocation and nonauthorization tests"
+        }
       ]
     }
   ]
