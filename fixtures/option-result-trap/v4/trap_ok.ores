@@ -1,0 +1,9 @@
+// ORT4-TRAP_OK: Some(Ok(42)); never bare Ok.
+trap fnc checked(): Result<int, String> { return Ok(42); }
+pub fnc main(): int {
+  val Option<Result<int, String>> outer = checked();
+  if outer.is_none(); then return 1; fi
+  val Result<int, String> inner = outer.unwrap();
+  if inner.is_err(); then return 2; fi
+  return inner.unwrap() - 42;
+}

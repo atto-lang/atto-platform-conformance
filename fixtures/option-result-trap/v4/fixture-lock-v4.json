@@ -1,0 +1,61 @@
+{
+  "schema": "oreslang.option-result-trap.scalar-lock/v4",
+  "manifest_blob": "0127757777a33c5be6bf2a4d4c25da19da9f44ea",
+  "cases": [
+    {
+      "id": "ORT4-TRAP_OK",
+      "path": "fixtures/option-result-trap/v4/trap_ok.ores",
+      "git_blob": "16d3697bb9f903484262965f7c3168c4c936c9d4"
+    },
+    {
+      "id": "ORT4-TRAP_ERR",
+      "path": "fixtures/option-result-trap/v4/trap_err.ores",
+      "git_blob": "29c172f646208f6dfb87de2c19f45dd26e37035c"
+    },
+    {
+      "id": "ORT4-TRAP_THROW_NONE",
+      "path": "fixtures/option-result-trap/v4/trap_throw_none.ores",
+      "git_blob": "2a93277645f357a1c2636531564f3ed79808820e"
+    },
+    {
+      "id": "ORT4-TRAP_NESTED_NONE",
+      "path": "fixtures/option-result-trap/v4/trap_nested_none.ores",
+      "git_blob": "bd4dd1d17e6f3ab068c1c23cb625a5792421a985"
+    },
+    {
+      "id": "ORT4-TRAP_OK_NONE",
+      "path": "fixtures/option-result-trap/v4/trap_ok_none.ores",
+      "git_blob": "dcb7167be885513695b6d11b177159d9331b58a5"
+    },
+    {
+      "id": "ORT4-TRAP_EXPR_ERR",
+      "path": "fixtures/option-result-trap/v4/trap_expr_err.ores",
+      "git_blob": "c5462dd21875792300d30230b2a95d4c7ce2c49e"
+    },
+    {
+      "id": "ORT4-TRAP_EXPR_NESTED",
+      "path": "fixtures/option-result-trap/v4/trap_expr_nested.ores",
+      "git_blob": "dedcc207b9700f8cfbe0110b85113eb4819370c5"
+    },
+    {
+      "id": "ORT4-TRAP_PANIC_BYPASS",
+      "path": "fixtures/option-result-trap/v4/trap_panic_bypass.ores",
+      "git_blob": "f774118505d0e1e167f0738d340691919c1ba143"
+    },
+    {
+      "id": "ORT4-NEGATIVE_CALL_NO_IMPLICIT_RESULT",
+      "path": "fixtures/option-result-trap/v4/negative/call_no_implicit_result.ores",
+      "git_blob": "5affaec5f1aed06c5489ed0cc3e527b398b9ba6e"
+    },
+    {
+      "id": "ORT4-NEGATIVE_EXPR_NO_IMPLICIT_RESULT",
+      "path": "fixtures/option-result-trap/v4/negative/expr_no_implicit_result.ores",
+      "git_blob": "4cb359d5619ce68d1e81701b030c6365aeb60228"
+    },
+    {
+      "id": "ORT4-NEGATIVE_NESTED_NO_FLATTEN",
+      "path": "fixtures/option-result-trap/v4/negative/nested_no_flatten.ores",
+      "git_blob": "dd1ee14a6f9f6f26d399cb64207b33c88b997c69"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+// ORT4-TRAP_PANIC_BYPASS: Result.unwrap(Err) is panic, not trapped None.
+trap fnc checked(): Result<int, String> {
+  val Result<int, String> failure = Err("typed-error");
+  val int value = failure.unwrap();
+  return Ok(value);
+}
+pub fnc main(): void {
+  val Option<Result<int, String>> ignored = checked();
+  stdio.stdout.write("UNREACHABLE-ORT4");
+  return;
+}

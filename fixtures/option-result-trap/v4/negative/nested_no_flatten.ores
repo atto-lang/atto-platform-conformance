@@ -1,0 +1,6 @@
+// ORT4-NEGATIVE_NESTED_NO_FLATTEN: no automatic nested Option flattening.
+trap fnc checked(): Result<int, String> { return Err("e"); }
+fnc invalid(): void {
+  val Option<Result<int, String>> wrong = trap checked();
+  return;
+}

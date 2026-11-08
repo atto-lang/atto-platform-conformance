@@ -1,0 +1,9 @@
+// ORT4-TRAP_NESTED_NONE: Some(None) must not flatten.
+trap fnc checked(): Option<Result<int, String>> { return None; }
+pub fnc main(): int {
+  val Option<Option<Result<int, String>>> outer = checked();
+  if outer.is_none(); then return 1; fi
+  val Option<Result<int, String>> inner = outer.unwrap();
+  if inner.is_none(); then return 0; fi
+  return 2;
+}

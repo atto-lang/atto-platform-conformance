@@ -1,0 +1,11 @@
+// ORT4-TRAP_OK_NONE: Some(Ok(None)) is distinct from None.
+trap fnc checked(): Result<Option<int>, String> { return Ok(None); }
+pub fnc main(): int {
+  val Option<Result<Option<int>, String>> outer = checked();
+  if outer.is_none(); then return 1; fi
+  val Result<Option<int>, String> inner = outer.unwrap();
+  if inner.is_err(); then return 2; fi
+  val Option<int> value = inner.unwrap();
+  if value.is_none(); then return 0; fi
+  return 3;
+}

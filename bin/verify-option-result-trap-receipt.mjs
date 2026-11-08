@@ -15,7 +15,7 @@ const isObject=x=>x!==null && typeof x==="object" && !Array.isArray(x);
 export function verifyOptionResultTrapReceipt(receipt,manifest,fixtureDigest) {
   const errors=[];
   const fail=message=>errors.push(message);
-  if(!isObject(manifest) || !["oreslang.option-result-trap.fixtures/v1","oreslang.option-result-trap.modular/v2","oreslang.option-result-trap.scalar/v3"].includes(manifest.schema))
+  if(!isObject(manifest) || !["oreslang.option-result-trap.fixtures/v1","oreslang.option-result-trap.modular/v2","oreslang.option-result-trap.scalar/v3","oreslang.option-result-trap.scalar/v4"].includes(manifest.schema))
     return {ok:false,errors:["unknown fixture manifest schema"]};
   if(!isObject(receipt)) return {ok:false,errors:["receipt must be an object"]};
   if(receipt.schema!=="oreslang.option-result-trap.receipt/v1") fail("unknown receipt schema");
@@ -126,7 +126,7 @@ export function readPinnedRegular(filename,maxBytes=131072) {
 }
 function pinnedPath(rel) {
   if(typeof rel!=="string"||
-     !/^fixtures\/option-result-trap\/v[123]\/(?:negative\/)?[a-z_]+\.ores$/.test(rel))
+     !/^fixtures\/option-result-trap\/v[1234]\/(?:negative\/)?[a-z_]+\.ores$/.test(rel))
     throw new Error("untrusted fixture relative path");
   const full=resolve(root,rel);
   if(!full.startsWith(root+sep))throw new Error("fixture escapes checkout");
@@ -148,20 +148,21 @@ const gitBlobSha=bytes=>createHash("sha1")
 function readPinnedCase(caseId) {
   const v2=typeof caseId==="string" && caseId.startsWith("ORT2-");
   const v3=typeof caseId==="string" && caseId.startsWith("ORT3-");
-  const folder=v3?"v3":v2?"v2":"v1";
+  const v4=typeof caseId==="string" && caseId.startsWith("ORT4-");
+  const folder=v4?"v4":v3?"v3":v2?"v2":"v1";
   const base=resolve(root,"fixtures/option-result-trap",folder);
   const manifestBytes=readPinnedRegular(resolve(base,"manifest.json"));
   const manifest=JSON.parse(manifestBytes.toString("utf8"));
-  const lockPath=resolve(base,v3?"fixture-lock-v3.json":v2?"fixture-lock-v2.json":"fixture-lock-v1.json");
+  const lockPath=resolve(base,v4?"fixture-lock-v4.json":v3?"fixture-lock-v3.json":v2?"fixture-lock-v2.json":"fixture-lock-v1.json");
   const lock=JSON.parse(readPinnedRegular(lockPath).toString("utf8"));
-  const expectedManifest=v3?"oreslang.option-result-trap.scalar/v3":v2?"oreslang.option-result-trap.modular/v2":
+  const expectedManifest=v4?"oreslang.option-result-trap.scalar/v4":v3?"oreslang.option-result-trap.scalar/v3":v2?"oreslang.option-result-trap.modular/v2":
     "oreslang.option-result-trap.fixtures/v1";
-  const expectedLock=v3?"oreslang.option-result-trap.scalar-lock/v3":v2?"oreslang.option-result-trap.modular-lock/v2":
+  const expectedLock=v4?"oreslang.option-result-trap.scalar-lock/v4":v3?"oreslang.option-result-trap.scalar-lock/v3":v2?"oreslang.option-result-trap.modular-lock/v2":
     "oreslang.option-result-trap.fixture-lock/v1";
   if(!isObject(manifest)||manifest.schema!==expectedManifest||
      manifest.status!=="authored_not_executed"||
      !Array.isArray(manifest.backends)||
-     manifest.backends.join(",")!=="java,llvm,wasm,cranelift,net"||
+     manifest.backends.join(",")!==(v4?"java,llvm,wasm,cranelift,net,forge,js,rust,hdl":"java,llvm,wasm,cranelift,net")||
      !Array.isArray(manifest.cases)||!isObject(lock)||
      lock.schema!==expectedLock||
      gitBlobSha(manifestBytes)!==lock.manifest_blob||
