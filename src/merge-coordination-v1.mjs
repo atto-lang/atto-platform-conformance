@@ -125,7 +125,10 @@ export function evaluateLeaseLedger(comments,{now,repo,number,head,trusted}={}) 
     throw err('INVALID_LEASE_LEDGER_INPUT');
   const blockers = [],claims = new Map();
   for (const comment of comments) {
-    if (!comment || typeof comment.body !== 'string' || !comment.body.startsWith(LEASE_PREFIX)) continue;
+    let body;
+    try { body=ownCommentField(comment,'body'); }
+    catch { blockers.push('INVALID_LEASE_RECORD'); continue; }
+    if (typeof body !== 'string' || !body.startsWith(LEASE_PREFIX)) continue;
     let lease;
     try { lease = parseLeaseComment(comment,{now,trusted}); }
     catch { blockers.push('INVALID_LEASE_RECORD'); continue; }
