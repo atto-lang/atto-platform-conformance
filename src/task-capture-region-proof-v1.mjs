@@ -33,7 +33,7 @@ export function validateTaskCaptureRegionRegistry(doc) {
     if(!object(f)||seen.has(f.id)||f.id!==id) fail("fixture id collision/order");
     seen.add(id);
     if(f.repository!=="ores-truffle-oreslang/oreslang-source.java"||
-        f.sourceCommit!=="02c42e98ab99545eecb20d4b3cb1452e89ee3ca2"||
+        f.sourceCommit!=="00a23d7ef8b9d95876643b98acf842cf5cbc72bc"||
         f.path!=="tests/fixtures/task-record-capture-v1/"+id+".atto"||
         f.gitBlob!==blob||f.expectation!==expectation) fail("fixture provenance: "+id);
     if(!object(f.backendEvidence)||!equal(Object.keys(f.backendEvidence).sort(),[...backendTargets].sort())) fail("backend evidence shape: "+id);
