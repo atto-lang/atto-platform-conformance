@@ -277,3 +277,75 @@ test('synthetic passing receipt still never grants verified guest status',()=>{
   };
   assert.equal(validateReceipt(receipt,manifest),'STRUCTURE_ONLY_NOT_CERTIFIED');
 });
+
+for(const interval of [32,64,128,256,512]){
+  test('host monotonic clock invoked only once every '+interval+' charged blocks',()=>{
+    const a=make({interval});
+    let calls=0;
+    const clock=()=>{calls++;return 0n;};
+    for(let i=0;i<interval*4;i++)a.chargeBlock(1n,clock);
+    assert.equal(calls,4);
+    assert.equal(a.slowPolls,4n);
+    assert.equal(a.fuel,100000n-BigInt(interval*4));
+  });
+}
+test('per-backedge clock reads are amortized even with mixed charge sites',()=>{
+  const a=make();let calls=0;
+  const clock=()=>{calls++;return 0n;};
+  for(let i=0;i<64;i++)a.backedge(1n,clock);
+  for(let i=0;i<64;i++)a.chargeBlock(1n,clock);
+  assert.equal(calls,1);
+});
+test('clock provider failure closes the actor at its first due poll',()=>{
+  const a=make();let reads=0;
+  const clock=()=>{reads++;throw Error('clock down');};
+  for(let i=0;i<127;i++)a.chargeBlock(1n,clock);
+  assert.equal(reads,0);
+  deny(()=>a.chargeBlock(1n,clock),'CLOCK_SOURCE_FAILURE');
+  assert.equal(reads,1);assert.equal(a.closed,true);
+  deny(()=>a.chargeBlock(1n,0n),'ACTOR_CLOSED');
+});
+test('clock provider cannot throw forged MeterFailure to leave actor alive',()=>{
+  const a=make();const clock=()=>{throw new MeterFailure('BENIGN');};
+  for(let i=0;i<127;i++)a.backedge(1n,clock);
+  deny(()=>a.backedge(1n,clock),'CLOCK_SOURCE_FAILURE');
+  assert.equal(a.closed,true);
+});
+test('reentrant clock provider fails closed without refueling',()=>{
+  const a=make();const clock=()=>a.chargeBlock(1n,0n);
+  for(let i=0;i<127;i++)a.chargeBlock(1n,clock);
+  deny(()=>a.chargeBlock(1n,clock),'CLOCK_REENTRANCY');
+  assert.equal(a.fuel,99872n);
+  assert.equal(a.closed,true);
+});
+test('invalid clock result fails closed at 128th charge',()=>{
+  const a=make();const clock=()=>undefined;
+  for(let i=0;i<127;i++)a.chargeBlock(1n,clock);
+  deny(()=>a.chargeBlock(1n,clock),'INVALID_ELAPSED');
+  assert.equal(a.closed,true);
+});
+test('async clock result cannot be treated as monotonic number',()=>{
+  const a=make();const clock=async()=>0n;
+  for(let i=0;i<127;i++)a.chargeBlock(1n,clock);
+  deny(()=>a.chargeBlock(1n,clock),'INVALID_ELAPSED');
+  assert.equal(a.closed,true);
+});
+test('clock rollback on second slow poll is denied',()=>{
+  const a=make();let clockTime=10n;
+  const clock=()=>clockTime;
+  for(let i=0;i<128;i++)a.chargeBlock(1n,clock);
+  clockTime=9n;
+  for(let i=0;i<127;i++)a.chargeBlock(1n,clock);
+  deny(()=>a.chargeBlock(1n,clock),'CLOCK_ROLLBACK');
+  assert.equal(a.closed,true);
+});
+test('fuel exhaustion takes precedence and does not invoke expensive clock',()=>{
+  const a=make({fuel:1n});let reads=0;
+  deny(()=>a.chargeBlock(1n,()=>{reads++;return 0n;}),'FUEL_EXHAUSTED');
+  assert.equal(reads,0);
+});
+test('initial admission invalid clock fails closed',()=>{
+  const a=new ActorMeter({fuel:10n,wallBudget:20n,cpuBudget:20n});
+  deny(()=>a.enterOrResume(undefined),'INVALID_ELAPSED');
+  assert.equal(a.closed,true);
+});
