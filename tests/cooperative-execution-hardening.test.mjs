@@ -67,19 +67,20 @@ test('wall expiration in long straight-line block checked at periodic poll',()=>
   for(let i=0;i<127;i++)a.chargeBlock(1n,7n);
   deny(()=>a.chargeBlock(1n,7n),'WALL_EXHAUSTED');
 });
-test('invalid sample time does not change fuel or poll counter',()=>{
-  const a=make();const fuel=a.fuel, count=a.counter;
+test('invalid sample time fail-stops without changing fuel or counter',()=>{
   for(const elapsed of [undefined,-1n,MAX_U64+1n,0,1.2,'0',null]){
+    const a=make();const fuel=a.fuel, count=a.counter;
     deny(()=>a.chargeBlock(1n,elapsed),'INVALID_ELAPSED');
+    assert.equal(a.fuel,fuel);assert.equal(a.counter,count);
+    assert.equal(a.closed,true);
   }
-  assert.equal(a.fuel,fuel);assert.equal(a.counter,count);
 });
-test('cannot spend fuel by passing a non-64-bit BigInt cost',()=>{
-  const a=make();
+test('bad block costs fail-stop without spending or replenishing fuel',()=>{
   for(const cost of [1,0n,-1n,MAX_U64+1n,NaN]){
+    const a=make();
     deny(()=>a.chargeBlock(cost,0n),cost===0n?'ZERO_COST':'INVALID_BLOCK_COST');
+    assert.equal(a.fuel,100000n);assert.equal(a.counter,0n);assert.equal(a.closed,true);
   }
-  assert.equal(a.fuel,100000n);assert.equal(a.counter,0n);
 });
 test('fuel exhaustion fails before increment or effect publication',()=>{
   const a=make({fuel:2n});
