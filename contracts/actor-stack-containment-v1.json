@@ -855,6 +855,28 @@
         "actorStackGeneration",
         "actorSurvival"
       ]
+    },
+    {
+      "id": "actor-stack-unbalanced-guard-threadlocal-revoked-at-turn-exit",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "stale-carrier-guest-scope",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-stack-overflow-leaked-guard-does-not-poison-sibling",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "stale-carrier-guest-scope",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
     }
   ],
   "promotion": {
@@ -1064,13 +1086,17 @@
     "javaM33dSharedCarrierSiblingIsolation": "AUTHORED_NOT_EXECUTED",
     "javaM33dLowStackSubprocessArgument": "-Xss256k",
     "javaM33dLowStackSubprocessOutput": "ACTOR_NATIVE_STACK_OVERFLOW=A_FAILS_B_SURVIVES",
-    "javaM33dHostJUnitAuthored": 7,
+    "javaM33dHostJUnitAuthored": 9,
     "javaM33dHostJUnitExecuted": 0,
     "javaM33dLowStackSubprocessExecuted": 0,
     "javaM33dNativeJniFaultContainment": "NOT_EXECUTED",
     "javaM33dSupervisorRestartGeneration": "NOT_EXECUTED",
     "javaM33dCompiledAttoStackOverflow": "NOT_EXECUTED",
     "javaM33dFiveBackendStackParity": "NOT_EXECUTED",
-    "javaM33dNote": "Java #2673 adds best-effort StackOverflowError recovery at a fully admitted physical actor turn only; poisons owner guest stack/actor arena and stops actor without rethrowing recovered SOE to a shared carrier. Structured descendants follow existing stop policy; independent siblings have separate budgets. Seven host JUnit methods and a shallow-native-stack JVM process probe are authored, not executed. Arbitrary native/JNI fatal process faults still require isolated workers."
+    "javaM33dNote": "Java #2673 additionally quarantines leaked GuardCallDepthGuard carrier ThreadLocal scopes before actor turn exit; revokes original actor logical depth and zeroes original actor's frame bytes. Two new JUnit tests cover leaked scope and SOE+leaked scope with surviving sibling, total 9 authored host JUnit methods. No hosted execution.",
+    "javaM33dThreadLocalGuardTurnExitQuarantine": true,
+    "javaM33dUnwoundLogicalDepthReclaimed": true,
+    "javaM33dLeakedFramesCancelledByOriginalExecutionId": true,
+    "javaM33dStaleGuardMayPoisonSibling": false
   }
 }
