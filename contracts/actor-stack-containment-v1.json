@@ -492,6 +492,50 @@
         "suspendedFrameOwnership",
         "actorStackStorage"
       ]
+    },
+    {
+      "id": "actor-env-snapshot-same-source-task-across-await",
+      "kind": "pending-actor-acceptance",
+      "source": null,
+      "expectedFailureClass": "none",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackStorage"
+      ]
+    },
+    {
+      "id": "actor-env-snapshot-other-source-task-same-actor-denied",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "foreign-task-execution",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorSurvival"
+      ]
+    },
+    {
+      "id": "actor-env-snapshot-after-owner-retirement-denied",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "stale-task-execution",
+      "requiredEvidence": [
+        "compilerGuest",
+        "suspendedFrameOwnership",
+        "actorStackGeneration"
+      ]
+    },
+    {
+      "id": "actor-env-snapshot-corrupt-execution-owner-denied",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "stale-task-execution",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackGeneration",
+        "actorStackStorage"
+      ]
     }
   ],
   "promotion": {
@@ -609,6 +653,21 @@
     "javaM32NewHostJUnitMethodsExecuted": 0,
     "javaM32HardenedGuestCompilerExecution": "NOT_EXECUTED",
     "javaM32HardenedNativeStackIsolation": "NOT_EXECUTED",
-    "javaM32HardenedNote": "Hardening child branches on Java #2643 and conformance #581. Exact physical turn and SourceTask identity now gate host return record read/close, COPY/MOVE of an arena-backed scalar JVM shadow is denied, and 11 adversarial JUnit methods are authored. No Java host or .atto execution has passed."
+    "javaM32HardenedNote": "Hardening child branches on Java #2643 and conformance #581. Exact physical turn and SourceTask identity now gate host return record read/close, COPY/MOVE of an arena-backed scalar JVM shadow is denied, and 11 adversarial JUnit methods are authored. No Java host or .atto execution has passed.",
+    "javaM33EnvSnapshotReference": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2665",
+    "javaM33EnvSnapshotStatus": "AUTHORED_NOT_EXECUTED",
+    "javaM33EnvSnapshotJUnitMethodsAuthored": 3,
+    "javaM33EnvSnapshotJUnitMethodsExecuted": 0,
+    "javaM33EnvSnapshotRetiredReadDenied": true,
+    "javaM33EnvSnapshotSameTaskAwaitAllowed": "AUTHORED_NOT_EXECUTED",
+    "javaM33EnvSnapshotCrossTaskReadDenied": true,
+    "javaM33EnvSnapshotCrossTaskArenaPoisonAllowed": false,
+    "javaM33EnvSnapshotExactExecutionIdentityFenced": true,
+    "javaM33EnvReflectionFixtureSignatureRepaired": true,
+    "javaM33EnvSnapshotCompiledAttoEvidence": "NOT_EXECUTED",
+    "javaM33EnvSnapshotActualCallbackParity": "NOT_EXECUTED",
+    "javaM33EnvSnapshotIterativeDispatcher": false,
+    "javaM33EnvSnapshotNativeStackProof": "NOT_EXECUTED",
+    "javaM33Note": "Java #2665 introduces exact SourceTask ExecutionContext identity checks in actor-bound lexical Env Slot read/write/snapshot; corrects reflective Env.define signature; adds three host JUnit methods. No compiler-backed .atto closure/callback execution, stackless guest dispatch or native stack isolation has been verified."
   }
 }
