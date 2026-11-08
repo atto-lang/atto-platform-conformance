@@ -66,12 +66,16 @@ test('no refueling after thousands of failed checks',()=>{
   for(let i=0;i<4096;i++)denied(()=>a.chargeBlock(1n),'ACTOR_CLOSED');
   assert.equal(a.fuel,0n);
 });
-test('negative, zero, and overflowing weights cannot meter',()=>{
-  const a=meter();
-  denied(()=>a.chargeBlock(-1n),'INVALID_BLOCK_COST');
-  denied(()=>a.chargeBlock(0n),'ZERO_COST');
-  denied(()=>a.chargeBlock(MAX_U64+1n),'INVALID_BLOCK_COST');
-  assert.equal(a.fuel,100000n);
+test('negative, zero, and overflowing weights fail-stop without charging fuel',()=>{
+  for(const [cost,code] of [
+    [-1n,'INVALID_BLOCK_COST'],[0n,'ZERO_COST'],[MAX_U64+1n,'INVALID_BLOCK_COST']
+  ]){
+    const a=meter();
+    denied(()=>a.chargeBlock(cost,0n),code);
+    assert.equal(a.fuel,100000n);
+    assert.equal(a.closed,true);
+    denied(()=>a.chargeBlock(1n,0n),'ACTOR_CLOSED');
+  }
 });
 test('long straight-line charged block denies before effects',()=>{
   const a=meter({fuel:100n});denied(()=>a.chargeBlock(1000n,0n),'FUEL_EXHAUSTED');
