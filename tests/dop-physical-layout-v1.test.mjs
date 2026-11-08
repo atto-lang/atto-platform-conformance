@@ -139,3 +139,60 @@ test('SoAoS accessor group indices cannot change across validation and layout',(
     /physical-layout-group-partition/);
   assert.equal(reads,0);
 });
+
+
+test('physical field names require valid Unicode scalars and <=1024 UTF-8 bytes', () => {
+  for (const name of [' ', 'β', 'é', 'e\u0301', '💾',
+    'a'.repeat(1024), '💾'.repeat(256)]) {
+    const p=physicalLayoutV1({kind:'soa',rows:1,
+      fields:[{name,bytes:4,alignment:4}]});
+    assert.equal(p.address(0,0).absolute,0n);
+  }
+  for (const name of ['', '\0', '\uD800', '\uDC00', 'x\uD800y',
+    '\uD800\uD800', 'a'.repeat(1025), '💾'.repeat(257),
+    '€'.repeat(342)]) {
+    assert.throws(()=>physicalLayoutV1({kind:'aos',rows:1,
+      fields:[{name,bytes:4,alignment:4}]}),/field-0/);
+  }
+});
+
+test('physical field name identity is exact; do not silently normalize Unicode', () => {
+  const two=physicalLayoutV1({kind:'aos',rows:2,fields:[
+    {name:'é',bytes:2,alignment:2},{name:'e\u0301',bytes:4,alignment:4}
+  ]});
+  assert.equal(two.fields,2);
+  assert.notEqual(two.address(0,0).absolute,two.address(0,1).absolute);
+  assert.throws(()=>physicalLayoutV1({kind:'aos',rows:1,fields:[
+    {name:'💾',bytes:4,alignment:4},{name:'💾',bytes:4,alignment:4}
+  ]}),/field-1/);
+});
+
+test('exhaustive small geometry across rows, widths, padding and group layouts', () => {
+  const fields=[{name:'u8',bytes:1,alignment:1},
+    {name:'u16',bytes:2,alignment:4},
+    {name:'u32',bytes:4,alignment:8},
+    {name:'u64',bytes:8,alignment:16}];
+  for(const rows of [0,1,2,3,4,5,7,8,9,17,31,32,33]) {
+    for(const kind of ['aos','soa','aosoa','soaos']) {
+      const p=physicalLayoutV1({kind,rows,fields,
+        lanes:kind==='aosoa'?4:1,
+        groups:kind==='soaos'?[[0,2],[3,1]]:[]});
+      const used=new Set();
+      for(let row=0;row<rows;row++)for(let field=0;field<fields.length;field++){
+        const cell=p.address(row,field);
+        const width=fields[field].bytes;
+        assert.equal(cell.absolute%BigInt(fields[field].alignment),0n,
+          kind+' alignment row='+row+' field='+field);
+        assert.ok(cell.offset+BigInt(width)<=p.segments[cell.segment].bytes);
+        assert.ok(cell.absolute+BigInt(width)<=p.physicalBytes);
+        for(let j=0;j<width;j++){
+          const byte=(cell.absolute+BigInt(j)).toString();
+          assert.ok(!used.has(byte),kind+' overlapping live cell '+byte);
+          used.add(byte);
+        }
+      }
+      if(rows===0) assert.equal(p.physicalBytes,0n);
+      else assert.ok(p.physicalBytes>=BigInt(rows*15));
+    }
+  }
+});
