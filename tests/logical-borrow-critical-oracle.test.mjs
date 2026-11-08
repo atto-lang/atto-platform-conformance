@@ -121,14 +121,18 @@ test("scoped read loan stays live after cancellation until physical retirement",
   const o = new BorrowOracle();
   o.principal("parent"); o.principal("child");
   o.region("root", "parent", {sync:true});
+  denied(() => o.scopedRead("root", "parent", "child", "missing"), "TaskScope");
+  o.openScope("parent", "compiler-scope");
   o.scopedRead("root", "parent", "child", "compiler-scope");
   assert.equal(o.use("child", "root", "read"), "SCOPED_READ");
   denied(() => o.use("parent", "root", "write"), "live read loan");
   denied(() => o.use("child", "root", "write"));
   o.cancel("child");
+  assert.equal(o.sealScope("parent", "compiler-scope"), false);
   denied(() => o.use("child", "root", "read"), "canceled");
   denied(() => o.use("parent", "root", "write"), "live read loan");
   o.retire("child");
+  assert.equal(o.scopeQuiescent("compiler-scope"), true);
   assert.equal(o.use("parent", "root", "write"), "LOCK_FREE");
 });
 
@@ -137,6 +141,7 @@ test("scoped reads cannot smuggle actor state, non-Sync, or guarded data", () =>
   o.principal("actor", "actor"); o.principal("child"); o.principal("peer");
   o.region("state", "actor", {actorState:true,sync:true});
   o.turnStart("actor", "turn", "thread");
+  o.openScope("actor", "scope");
   denied(() => o.scopedRead("state", "actor", "child", "scope"), "Sync referent");
   o.region("unsafe", "actor");
   denied(() => o.scopedRead("unsafe", "actor", "child", "scope"), "Sync referent");
@@ -144,4 +149,24 @@ test("scoped reads cannot smuggle actor state, non-Sync, or guarded data", () =>
   o.share("protected", "actor", "peer", "guarded");
   denied(() => o.scopedRead("protected", "actor", "child", "scope"), "guarded region");
   o.turnEnd("actor", "turn");
+});
+
+test("immutable publication cannot be mixed with a writer guard in either order", () => {
+  const o = new BorrowOracle();
+  o.principal("a"); o.principal("b"); o.principal("c");
+  o.region("fixed", "a", {immutable:true,send:true,sync:true});
+  o.share("fixed", "a", "b", "read");
+  denied(() => o.share("fixed", "a", "c", "guarded"), "cannot mix");
+  denied(() => o.use("a", "fixed", "write"), "immutable backing");
+  o.region("mutable", "a", {send:true,sync:true});
+  o.share("mutable", "a", "b", "guarded");
+  denied(() => o.share("mutable", "a", "c", "read"), "immutable Sync");
+});
+
+test("sealing a TaskScope prevents new scoped loans", () => {
+  const o = new BorrowOracle();
+  o.principal("a"); o.principal("b"); o.region("r", "a", {sync:true});
+  o.openScope("a", "exact-scope");
+  assert.equal(o.sealScope("a", "exact-scope"), true);
+  denied(() => o.scopedRead("r", "a", "b", "exact-scope"), "live lexical TaskScope");
 });
