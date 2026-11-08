@@ -312,3 +312,39 @@ mutation tests explicitly reject fake JVM-shadow removal, arbitrary
 reference-root lowering, return-PC dispatch, full lexical scope reclaim,
 native stack survival or guest PASS. All backend proof lanes remain
 `NOT_EXECUTED`.
+
+
+## Java M3.2 physical-turn and Task-shadow hardening
+
+[Java draft #2662](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2662),
+stacked on #2643, closes two concrete host-ABI authority gaps:
+
+- A generation-fenced return record also captures **the exact physical actor
+  dispatch object** and, where applicable, the **exact scheduler SourceTask
+  ExecutionContext**. The same actor's later mailbox turn or another
+  SourceTask can reuse a carrier thread and the actor arena but MUST NOT
+  read or close the earlier record. Foreign access fails without poisoning
+  the legitimate actor; orphaned records are reclaimed on actor quiescence.
+- A frame-backed scalar `Env.Slot` retains a JVM compatibility shadow.
+  `preflightTaskCaptures` and `detachedTaskSnapshotUnchecked` now deny
+  COPY/MOVE of that shadow into independent Task captures, including
+  unchecked transfer bypass. Ordinary unmanaged scalar captures remain
+  valid.
+
+Eleven **additional host JUnit methods** are authored in total (four
+scalar lexical frame tests, four return descriptor tests, three reflection
+mutation tests for the private Task capture guard). The byte-corruption
+tests cover a swapped but otherwise valid type tag, noncanonical Boolean,
+tampered ABI magic and execution identity, plus raw Float NaN preservation
+across `cooperate`, same-carrier reuse and distinct SourceTask denial.
+This is authored **NOT_EXECUTED**, neither hosted Maven/JUnit nor compiler
+guest execution. Tests do not prove that the JVM evaluator is stackless.
+
+Five new pending scenarios bring the matrix to **38**. The contract
+explicitly records zero newly executed JUnit methods, no executed canonical
+`.atto` guest, and no native low-stack containment. False PASS,
+unsupported Task capture promotion, removed physical-turn fences and
+fake executed-test counts are rejected in negative mutation tests.
+Real exact-head runner steps, host JUnit XML, independent review and
+compiler-backed supervisor/sibling actor tests remain mandatory before
+any merge or parity upgrade.
