@@ -101,6 +101,7 @@ export function verifyReceipt(receipt,contract){
     fail('contract digest mismatch');
   for(const k of ['sourceCommit','compilerCommit'])
     if(!sha40.test(receipt[k]))fail(k+' invalid SHA');
+  if(receipt.sourceCommit!==receipt.compilerCommit)fail('compiler source commit does not match exact backend head');
   for(const k of ['compilerBinarySha256','guestArtifactSha256'])
     if(!sha64.test(receipt[k]))fail(k+' invalid SHA');
   if(!['guest-runtime','guest-aot'].includes(receipt.executionMode))
@@ -120,7 +121,8 @@ export function verifyReceipt(receipt,contract){
     if(Object.hasOwn(REPOS,receipt.backend)){
       const prefix='https://github.com/'+REPOS[receipt.backend]+'/actions/runs/';
       if(typeof e.runUrl!=='string'||!e.runUrl.startsWith(prefix)||
-        !/^[1-9][0-9]*$/.test(e.runUrl.slice(prefix.length)))fail('runUrl repository mismatch');
+        (!/^[1-9][0-9]*$/.test(e.runUrl.slice(prefix.length)) ||
+          e.runUrl.slice(prefix.length)!==String(e.runId)))fail('runUrl repository/runId mismatch');
     }
     if(!Array.isArray(e.steps)||e.steps.length===0||e.steps.length!==e.executedSteps||
       e.steps.some(s=>!allowed(s,['name','conclusion'])||
