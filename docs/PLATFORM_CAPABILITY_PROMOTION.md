@@ -74,3 +74,28 @@ prevents a receipt for one repository from being presented as evidence for a
 different platform.
 
 This contract should be referenced by each platform repo as its promotion gate.
+
+## v1 contract integrity and independent attestation
+
+The **v1 policy is a closed-world contract**: the verifier must reject altered stage
+order, registered platform/repository/target-class identities, promotion-rule
+keys and ordered requirements, or the list of examples that are expressly *not*
+execution evidence. Changing one of these rules needs an explicit versioned
+policy upgrade and independently reviewed producer/consumer tests; silently
+editing a v1 JSON manifest must not weaken admission.
+
+**Receipt validation is not authentication.** Even a passing synthetic receipt
+with `exactHead=true`, `executedSteps>0` and a well-formed artifact digest
+proves only that its *fields* match the versioned schema. The values are
+self-attested until a trusted, read-only verifier independently fetches a
+completed workflow and job from GitHub, verifies the exact PR head, examines
+nonzero meaningful completed steps and trusted runner provenance, and
+authenticates the produced artifact and the exact compiler/guest source
+identities. Never promote a source-free Node test or host stub into a real
+compiler/guest or target-hardware result.
+
+A GitHub job that fails before any steps execute is **NOT_EXECUTED**, not an
+executed failing guest test. Do not erase either distinction by counting a
+synthetic positive fixture or by simply rerunning a zero-step job without
+fixing the runner admission failure. Preserve raw evidence and independent
+review before publication.
