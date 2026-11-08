@@ -53,7 +53,10 @@ export function makeGitHubReadOnlyClient({token, fetchImpl = globalThis.fetch, m
       const response = await fetchImpl(url.toString(), {method:'GET',redirect:'error',headers:{
         Accept:'application/vnd.github+json',Authorization:'Bearer '+token,
         'X-GitHub-Api-Version':'2022-11-28'}});
-      if (!response?.ok) throw new Error('GitHub provider error '+String(response?.status));
+      if (!response?.ok) { const error = new Error('GitHub provider error '+String(response?.status));
+        if (Number.isInteger(response?.status)) error.status = response.status;
+        throw error;
+      }
       const body = await response.json();
       if (shape === 'object') {
         if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error('Malformed provider object response');
