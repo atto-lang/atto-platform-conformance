@@ -23,7 +23,7 @@ function reviewTime(value) {
 }
 
 /** Assess provider-returned GitHub snapshots, never PR-authored evidence declarations. */
-export function assessPullRequest({ repository, number, expectedHead, expectedBaseSha, expectedBase = 'main', requiredStepNames,
+export function assessPullRequest({ repository, number, expectedHead, expectedBaseSha, expectedBase = 'main', requiredStepNames, requiredWorkflows,
   pr, reviews, runs, jobsByRun, trustedReviewers = ['ORESoftware', 'the1mills'],
   expectedParentMerged = true } = {}) {
   const blockers = [];
@@ -35,6 +35,13 @@ export function assessPullRequest({ repository, number, expectedHead, expectedBa
       requiredStepNames.some(x => !requiredString(x)) ||
       stableUnique(Array.isArray(requiredStepNames) ? requiredStepNames : []).length !== requiredStepNames?.length)
     fail('MISSING_REQUIRED_TEST_STEP_POLICY');
+  // A successful unrelated workflow or copied step name is not evidence.
+  const workflowPolicyValid = Array.isArray(requiredWorkflows) && requiredWorkflows.length > 0 &&
+    requiredWorkflows.every(x => x && Number.isSafeInteger(x.workflowId) && x.workflowId > 0 &&
+      requiredString(x.workflowName) && requiredString(x.jobName) && requiredString(x.testStepName));
+  if (!workflowPolicyValid || new Set((Array.isArray(requiredWorkflows) ? requiredWorkflows : []).map(x =>
+    `${x?.workflowId}:${x?.jobName}:${x?.testStepName}`)).size !== requiredWorkflows?.length)
+    fail('MISSING_REQUIRED_WORKFLOW_POLICY');
   if (!pr || typeof pr !== 'object' || Array.isArray(pr)) fail('MISSING_PROVIDER_PR');
   if (!pr || pr.state !== 'open' || pr.merged === true || pr.merged_at) fail('NOT_OPEN_UNMERGED');
   if (!pr || pr.draft !== false) fail('DRAFT_OR_UNKNOWN');
@@ -131,6 +138,20 @@ export function assessPullRequest({ repository, number, expectedHead, expectedBa
   if (executed < 1) fail('NO_EXECUTED_SUCCESSFUL_STEPS');
   if (Array.isArray(requiredStepNames) && requiredStepNames.some(x => !executedStepNames.has(x)))
     fail('MISSING_REQUIRED_EXECUTED_TEST_STEP');
+  if (workflowPolicyValid) for (const requirement of requiredWorkflows) {
+    const candidates = currentRuns.filter(r => r.workflow_id === requirement.workflowId);
+    if (candidates.some(r => r.name !== requirement.workflowName)) fail('WORKFLOW_IDENTITY_MISMATCH');
+    const validRuns = candidates.filter(r => r.name === requirement.workflowName);
+    if (!validRuns.length) { fail('MISSING_REQUIRED_WORKFLOW'); continue; }
+    const candidateJobs = validRuns.flatMap(r => (jobsByRun?.[String(r.id)] ?? [])
+      .filter(j => j?.name === requirement.jobName && j?.conclusion === 'success' &&
+        j?.run_id !== undefined && j.run_id === r.id && j?.run_attempt === r.run_attempt &&
+        Number.isSafeInteger(j.runner_id) && j.runner_id > 0));
+    if (!candidateJobs.length) { fail('MISSING_REQUIRED_WORKFLOW_JOB'); continue; }
+    if (!candidateJobs.some(j => Array.isArray(j.steps) && j.steps.some(s =>
+      s?.name === requirement.testStepName && s?.status === 'completed' && s?.conclusion === 'success')))
+      fail('MISSING_REQUIRED_WORKFLOW_STEP');
+  }
   return { repository, number, expectedHead, readyForIndependentMergeDecision: blockers.length === 0,
     executedSuccessfulStepCount: executed, blockers };
 }
