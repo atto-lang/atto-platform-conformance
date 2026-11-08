@@ -6,16 +6,19 @@ real Java, LLVM, Wasm, Forge, Rust/browser and .NET guests.**
 ## The checkpoint contract
 
 A cheap counter may be incremented after each **committed** loop backedge.
-Trusted Java/GraalVM and LLVM fair scheduling sample a clock/checkpoint at
-every 64th completed backedge until a 512-backedge reduction cap. Once
-the reduction cap is due, the next post-commit boundary and **every**
-subsequent committed backedge must test potential cooperation. An stale,
-incorrect or manually suppressed `probeDue=false` is not allowed to mask a
-reduction cap. This source-free conformance model now explicitly enforces
-that invariant.
+The hardened Java candidate and current LLVM fixed-cadence drafts target a
+**128-backedge** slow-scheduling poll, including after the **512**-backedge
+soft fairness target. Expensive runtime/clock/watchdog inspection must **not**
+begin running on every iteration after 512. A stale `probeDue=false` cannot
+suppress a scheduled checkpoint at 512, 640, 768, etc., but an unscheduled
+513/575/641 backedge performs only its cheap counter updates. An explicit
+compiler-proven guard-exit can request a one-off check independently.
 
-The first 511 completed backedges may defer a time-based scheduling probe
-until the next batched boundary; the reduction cap overrides batching.
+The 512 reduction threshold is **not hard execution fuel**. After a guarded
+handoff is deferred at 512, the next periodic slow-poll opportunity is 640,
+not 513. A newly runnable peer may be delayed by at most 127 additional
+committed backedges at that point; an individual backedge may still be
+arbitrarily expensive, so no hard wall-time guarantee follows.
 This does **not** permit UNTRUSTED security accounting to be batched: each
 UNTRUSTED loop backedge still requires a real fuel/cancellation check.
 Safety checks on calls, allocations, recursion and potentially expensive
@@ -27,7 +30,7 @@ At any overdue poll, these remain mandatory: a heap-resumable
 continuation, side effects already committed, no held live borrows,
 critical sections, mutex guards or uncaptured host frames, valid cleanup
 state, actor single-writer and carrier-exit fencing. If a runnable peer
-is missing, do not discard the reduction debt for the next backedge.
+is missing, do not discard the reduction debt for the next scheduled poll.
 
 ## Untrusted source-level cooperation gate
 
@@ -48,7 +51,7 @@ revocable isolate checks pass with independent evidence.
 ## New deterministic conformance regression
 
 The Node `safepoint-checkpoint-amortization-20261107.test.mjs` matrix
-covers 8192 backedges, mandatory probes after 512, stale
+covers 8192 backedges, periodic mandatory probes after 512, stale
 `probeDue=false`, reduced/fresh physical dispatch, various live-loan
 and partial-effect denial cases, no-runnable-peer behavior, untrusted
 cooperation prohibition, and rejection of fractional/unsafe JS counters.
