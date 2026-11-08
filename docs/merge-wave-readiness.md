@@ -5,7 +5,7 @@ This is a **read-only provider evidence checker**, not a merging bot or branch-p
 Run with Node.js 22+ and a read-capable scoped GitHub token:
 
     GITHUB_TOKEN=<token> node bin/merge-wave-readiness.mjs evidence/merge-wave-20261107-public-prs.json
-    node --test tests/merge-wave-readiness-v1.test.mjs
+    node --test tests/merge-wave-*.test.mjs
 
 The tool has only GET GitHub API calls. It exits nonzero on unknown or drifted PR heads, base branches, changes-requested reviews, stale/self approvals, draft/dirty PRs, runner_id=0, steps=[] or null, absent required test-step names, failed/pending CI and unmerged dependencies. A successful setup step is never a substitute for an actual required test step.
 
@@ -73,3 +73,21 @@ Stacked child PRs also require a pinned `expectedParentHead` in the manifest. A 
 New negative tests reject foreign source-head repositories, parent substitution, missing/wrong parent pins and cross-repository run/PR association drift. The local Node 22 focused suite now passes **195/195 tests** (182 previously + 13 focused provenance and race cases), with zero skips and failures. **This is not authenticated hosted exact-head CI.** The check remains advisory and never authorizes merges without branch rules, independent review and real hosted evidence.
 
 The additional six end-to-end tests prove the complete two-pass `collectWave` rejects a same-commit foreign PR-head relocation, source-run repository swap, and linked-PR base repository substitution. They also verify rejection of unrelated PR associations and a stale-but-well-formed parent SHA, while preserving harmless ordering changes. Local Node 22 execution: **195 tests passed, 0 failed, 0 skipped**. GitHub-hosted execution is unverified until actual named job steps are observed at the new head.
+
+
+## Protected-main governance admission (2026-11-07)
+
+The default CLI now invokes `collectProtectedWave` instead of returning the original source-head/CI advisory alone. It additionally fetches, **via authenticated GET only**, the following provider data for each PR:
+
+- GitHub classic branch protection: `/repos/{owner}/{repo}/branches/main/protection`
+- All active effective branch rules: `/repos/{owner}/{repo}/rules/branches/main`
+- Latest check runs on the expected head: `/repos/{owner}/{repo}/commits/{head}/check-runs?filter=latest`
+- Fresh PR identity and independent submitted review timeline, including dismissals
+
+The policy gate requires explicit protected-main approvals, administrator enforcement and exact-head successful checks with matching required check contexts and provider-app IDs when configured. It requires the maximum applicable independent-review quorum across classic protection and active rulesets, and denies stale, author, dismissed, contradictory or untrusted approvals. It also rejects unverified CODEOWNERS, required reviewing teams, last-push approval, thread resolution, merge queue or other unsupported restrictive rules. **This is deliberately conservative**: a valid GitHub configuration unsupported by the checker may be reported unverified, not as safe-to-merge.
+
+A private-repository branch-protection GET can require administrative read permission. Any HTTP 403/404, malformed response, missing checks or inaccessible rule source is `GOVERNANCE_PROVIDER_UNAVAILABLE`, **not** an implicit waiver. Security checks are read-only, and a passing result still has `mergeAuthorized=false`.
+
+Per-PR policy is read twice, followed by a **third, wave-wide policy readback** to detect rule changes while other repositories are checked. The original PR/CI evidence collector is then rerun to detect source, approval or check drift during policy collection. This is a bounded stability preflight; GitHub state can still change immediately afterward. Independent review, CODEOWNERS applicability, effective mergeability, any security incident holds and exact-head merge preconditions remain mandatory at merge time.
+
+The source now includes **70 additional governance tests**: 54 approval/ruleset/status negative-and-positive cases and 16 multi-repository source/protection/check race and pagination cases. The five merge-wave test files were exercised together using an isolated JavaScript harness with a Node-compatible URL/fetch shim: **265/265 test bodies passed**, zero failures. **This is not GitHub-hosted CI nor a verified native Node 22 run of the new head.** Hosted exact-head execution remains blocked by runner-admission issue #315, and independent review is still required. Run the `node --test` command above under Node 22 after runner admission is restored to obtain authentic hosted evidence.
