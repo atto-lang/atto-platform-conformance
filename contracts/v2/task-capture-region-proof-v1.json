@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "contract": "task-capture-region-proof-v1",
+  "status": "CANDIDATE_NOT_ATTESTED",
+  "purpose": "Task capture ownership and actor/critical region provenance targets; compile-time and runtime proofs are NOT implemented across backends.",
+  "sourceForm": ".atto",
+  "dependencies": {
+    "sourcePullRequests": [
+      "ores-truffle-oreslang/oreslang-source.java#2680",
+      "ores-truffle-oreslang/oreslang-source.java#2686"
+    ],
+    "relatedConformanceIssue": "ores-truffle-oreslang/oreslang-platform-conformance#615",
+    "relatedContract": "collection-ownership-sync-v1"
+  },
+  "semanticRequirements": {
+    "readonlyRecord": "Treat a readonly record view as an alias until the compiler proves an independent immutable owned snapshot; field-wise Send is insufficient.",
+    "ownedStruct": "Owned inline struct moves may be Send when every field is proven Send, there is no live alias, and the move is affine.",
+    "copyScalar": "Copy-safe scalar may be snapshotted at Task submission without moving the parent.",
+    "independentTask": "Independent Task launch is a one-shot owned/Copy transfer boundary; no actor self, active critical guard, stack loan, or foreign/scheduler authority.",
+    "scopedRead": "Ordinary loans fail closed; a structured immutable READ exception needs Sync referent, exact place and allocation generation, lexical scope and physical child quiescence.",
+    "critical": "Protect state/resource, guard held by logical task/continuation, thread carries execution only; no implicit await, blocking select/channel or scheduler-yield while guard is live.",
+    "actorSpawn": "Spawned actor has new heap, stack/mailbox and generation; task/parent cannot transfer raw actor state loans, only owned/copy/authorized message data.",
+    "exit": "Release linear guards exactly once along success, return, exception, panic/cancel cleanup; do not reclaim a borrowed allocation before physical retirement.",
+    "lowering": "Fail closed before executable IR/object publication whenever compiler-rooted loan/region proof is absent."
+  },
+  "compileTimeProofFields": [
+    "source_program_identity",
+    "task_expression_identity",
+    "ownership_check_epoch",
+    "lexical_root",
+    "logical_place_projection",
+    "capture_kind",
+    "value_type",
+    "send_sync_derivation",
+    "loan_lifetime_region",
+    "alias_exclusivity",
+    "suspension_effects"
+  ],
+  "runtimeValidationFields": [
+    "tenant_domain",
+    "actor_incarnation",
+    "allocation_identity",
+    "allocation_generation",
+    "logical_task_identity",
+    "task_generation",
+    "loan_id",
+    "read_write_mode",
+    "retirement_state"
+  ],
+  "forbiddenAuthorizationInputs": [
+    "os_thread_id",
+    "caller_supplied_actor_id",
+    "user_supplied_task_id",
+    "raw_pointer_address"
+  ],
+  "backendTargets": [
+    "java",
+    "llvm",
+    "wasm",
+    "forge",
+    "net"
+  ],
+  "fixtures": [
+    {
+      "id": "readonly-record-task-reject",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "sourceCommit": "e9e9fcfc85ae99b37c211d0d4d84cdf174605cc7",
+      "path": "tests/fixtures/task-record-capture-v1/readonly-record-task-reject.atto",
+      "gitBlob": "d90fea1c7b2db607ebb3b559ec1303ed027910e4",
+      "expectation": "compile-reject",
+      "expectedSemanticDiagnostic": "independent task capture 'view' contains a non-Send execution capability",
+      "rejectBeforeCodegen": true,
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "owned-struct-task-accept",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "sourceCommit": "e9e9fcfc85ae99b37c211d0d4d84cdf174605cc7",
+      "path": "tests/fixtures/task-record-capture-v1/owned-struct-task-accept.atto",
+      "gitBlob": "81217c06fe332064081ebcce0159231b758e165d",
+      "expectation": "compile-accept",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "scalar-copy-task-guest",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "sourceCommit": "e9e9fcfc85ae99b37c211d0d4d84cdf174605cc7",
+      "path": "tests/fixtures/task-record-capture-v1/scalar-copy-task-guest.atto",
+      "gitBlob": "56513a00517980a322d59eacf56abc5334a304ef",
+      "expectation": "compile-run",
+      "expectedStdout": "42",
+      "backendEvidence": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED"
+      }
+    }
+  ],
+  "promotionGates": {
+    "exactSourceHeadAndBlobs": true,
+    "nonzeroJobSteps": true,
+    "compilerOwnedProvenance": true,
+    "semanticDiagnosticNotParserOnly": true,
+    "negativeEmitsNoExecutableIR": true,
+    "positiveCompilerAndGuestControls": true,
+    "physicalRetirementProof": true,
+    "independentReview": true,
+    "zeroStepCountsAsEvidence": false,
+    "sourceFreeModelCountsAsGuest": false,
+    "hostOnlyCountsAsAOT": false
+  },
+  "limitations": [
+    "Fixture paths point to a private Java source PR; files are not replicated into this registry.",
+    "The source files were committed, but exact-head JUnit and executable guest tests are NOT_EXECUTED.",
+    "The record-view compiler restriction is conservative and not a proof of complete region/lifetime checking.",
+    "The other four backend compilers have no positive guest evidence from this contract.",
+    "Promotion needs a separate authenticated exact-head receipt verifier and actual executed compiler artifacts."
+  ]
+}
