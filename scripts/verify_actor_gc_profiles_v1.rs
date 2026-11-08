@@ -131,19 +131,49 @@ fn read_bounded<R: Read>(input: R) -> Result<Vec<u8>, String> {
     Ok(bytes)
 }
 
-// Only regular files in the checked-out repository are eligible. Refuse
-// symlinks and special files *before* attempting the potentially blocking open.
-// On Unix, compare opened dev/inode with the pre-open metadata to detect swaps;
-// exact immutable token comparison remains the final authority.
-fn read_policy_file(path: &std::path::Path) -> Result<Vec<u8>, String> {
-    let before = fs::symlink_metadata(path).map_err(|e| format!("policy stat failed: {e}"))?;
+// This verifier reads only a fixed checked-out repository path. Deny parent
+// traversal and symlinked ancestor directories, not merely the final symlink.
+// This is a pre-open integrity gate, not an atomic directory-handle traversal.
+fn check_policy_ancestors(path: &std::path::Path) -> Result<(), String> {
+    if path.components().any(|part| matches!(part, std::path::Component::ParentDir)) {
+        return Err("policy parent traversal denied".into());
+    }
+    for parent in path.ancestors().skip(1) {
+        if parent.as_os_str().is_empty() { continue; }
+        let metadata = fs::symlink_metadata(parent)
+            .map_err(|e| format!("policy ancestor stat failed: {e}"))?;
+        if !metadata.file_type().is_dir() {
+            return Err("policy ancestor must be a real directory".into());
+        }
+    }
+    Ok(())
+}
+
+// Linux uses O_NOFOLLOW on the final component and O_NONBLOCK to prevent a
+// regular-file-to-FIFO swap from hanging open(). Other targets retain the
+// pre-open and opened-descriptor checks but cannot claim this Linux safeguard.
+fn open_policy_checked(path: &std::path::Path) -> Result<fs::File, String> {
+    let mut options = fs::OpenOptions::new();
+    options.read(true);
+    #[cfg(target_os = "linux")]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        // Linux fcntl.h: O_NOFOLLOW = 0400000; O_NONBLOCK = 04000.
+        options.custom_flags(0o400000 | 0o4000);
+    }
+    options.open(path).map_err(|e| format!("policy open failed: {e}"))
+}
+
+// Kept separate so tests can deterministically simulate changes *after*
+// symlink_metadata, rather than depending on a flaky concurrent race.
+fn read_policy_after_stat(path: &std::path::Path, before: &fs::Metadata) -> Result<Vec<u8>, String> {
     if !before.file_type().is_file() {
         return Err("policy must be a regular non-symlink file".into());
     }
     if before.len() > MAX_POLICY_BYTES as u64 {
         return Err("noncanonical encoding or oversized policy".into());
     }
-    let file = fs::File::open(path).map_err(|e| format!("policy open failed: {e}"))?;
+    let file = open_policy_checked(path)?;
     let opened = file.metadata().map_err(|e| format!("policy fstat failed: {e}"))?;
     if !opened.is_file() {
         return Err("policy opened as non-regular file".into());
@@ -159,6 +189,12 @@ fn read_policy_file(path: &std::path::Path) -> Result<Vec<u8>, String> {
         }
     }
     read_bounded(file)
+}
+
+fn read_policy_file(path: &std::path::Path) -> Result<Vec<u8>, String> {
+    check_policy_ancestors(path)?;
+    let before = fs::symlink_metadata(path).map_err(|e| format!("policy stat failed: {e}"))?;
+    read_policy_after_stat(path, &before)
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -569,6 +605,77 @@ mod tests {
         let raw = read_bounded(std::io::Cursor::new(APPROVED.as_bytes()))
             .expect("read immutable policy");
         validate(&raw).expect("bounded read must preserve exact policy tokens");
+    }
+
+
+    #[test]
+    fn parent_traversal_is_denied_before_any_filesystem_read() {
+        let err = read_policy_file(std::path::Path::new("contracts/../contracts/actor_gc_profiles_v1.json"))
+            .expect_err("parent traversal must not be accepted");
+        assert_eq!(err, "policy parent traversal denied");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn symlinked_parent_directory_is_denied() {
+        use std::os::unix::fs::symlink;
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let nonce = SystemTime::now().duration_since(UNIX_EPOCH)
+            .expect("clock").as_nanos();
+        let root = std::env::temp_dir().canonicalize().expect("canonical temp directory")
+            .join(format!("atto-gc-parent-symlink-{}-{nonce}", std::process::id()));
+        fs::create_dir(&root).expect("test root");
+        let real = root.join("real");
+        fs::create_dir(&real).expect("real directory");
+        fs::write(real.join("policy.json"), APPROVED).expect("write policy");
+        let alias = root.join("alias");
+        symlink(&real, &alias).expect("symlink parent");
+        let err = read_policy_file(&alias.join("policy.json"))
+            .expect_err("symlinked ancestor must not be accepted");
+        assert_eq!(err, "policy ancestor must be a real directory");
+        fs::remove_dir_all(&root).expect("remove test root");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn post_stat_replaced_regular_inode_is_denied() {
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let nonce = SystemTime::now().duration_since(UNIX_EPOCH)
+            .expect("clock").as_nanos();
+        let root = std::env::temp_dir().canonicalize().expect("canonical temp directory")
+            .join(format!("atto-gc-inode-swap-{}-{nonce}", std::process::id()));
+        fs::create_dir(&root).expect("test root");
+        let policy = root.join("policy.json");
+        fs::write(&policy, APPROVED).expect("write baseline");
+        let before = fs::symlink_metadata(&policy).expect("baseline metadata");
+        fs::rename(&policy, root.join("old.json")).expect("preserve original inode");
+        fs::write(&policy, APPROVED).expect("write new inode with equal content");
+        let err = read_policy_after_stat(&policy, &before)
+            .expect_err("changed inode must fail even if tokens are identical");
+        assert_eq!(err, "policy identity changed during open");
+        fs::remove_dir_all(&root).expect("remove test root");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn post_stat_symlink_swap_to_same_inode_is_denied_by_nofollow() {
+        use std::os::unix::fs::symlink;
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let nonce = SystemTime::now().duration_since(UNIX_EPOCH)
+            .expect("clock").as_nanos();
+        let root = std::env::temp_dir().canonicalize().expect("canonical temp directory")
+            .join(format!("atto-gc-same-inode-swap-{}-{nonce}", std::process::id()));
+        fs::create_dir(&root).expect("test root");
+        let policy = root.join("policy.json");
+        fs::write(&policy, APPROVED).expect("write baseline");
+        let before = fs::symlink_metadata(&policy).expect("baseline metadata");
+        let backing = root.join("backing.json");
+        fs::rename(&policy, &backing).expect("preserve inode");
+        symlink(&backing, &policy).expect("swap to symlink of identical inode");
+        let err = read_policy_after_stat(&policy, &before)
+            .expect_err("O_NOFOLLOW must deny symlink-to-same-inode substitution");
+        assert!(err.starts_with("policy open failed:"), "{err}");
+        fs::remove_dir_all(&root).expect("remove test root");
     }
 
 }
