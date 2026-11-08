@@ -20,7 +20,7 @@ export function validateManifest(manifest) {
         !['workflowName','jobName','testStepName'].every(k => typeof w[k] === 'string' &&
           w[k].trim().length > 0 && w[k].length <= 160)) ||
       new Set(s.requiredWorkflows.map(w => `${w?.workflowId}:${w?.jobName}:${w?.testStepName}`)).size !== s.requiredWorkflows.length ||
-      (s.dependsOn != null && (!Number.isSafeInteger(s.dependsOn) || s.dependsOn < 1 || s.dependsOn === s.number)))
+      (s.dependsOn != null && (!Number.isSafeInteger(s.dependsOn) || s.dependsOn < 1 || s.dependsOn === s.number || !shaValid(s.expectedParentHead))))
       throw new Error('Invalid pinned PR identity');
     const key = s.repo+'#'+s.number;
     if (known.has(key)) throw new Error('Duplicate PR identity in manifest');
@@ -75,7 +75,7 @@ export function evidenceFingerprint({pr, reviews, runs, jobsByRun, parent}) {
   const id = x => x && typeof x === 'object' ? {
     number:x.number, state:x.state, merged:x.merged, merged_at:x.merged_at,
     draft:x.draft, mergeable:x.mergeable, author:x.user?.login,
-    head:x.head?.sha, baseRef:x.base?.ref, baseSha:x.base?.sha,
+    head:x.head?.sha, headRepo:x.head?.repo?.full_name, baseRef:x.base?.ref, baseSha:x.base?.sha,
     baseRepo:x.base?.repo?.full_name
   } : null;
   const normalizeList = items => items.map(x => JSON.stringify(x)).sort();
@@ -84,7 +84,9 @@ export function evidenceFingerprint({pr, reviews, runs, jobsByRun, parent}) {
   const runEvidence = normalizeList(runs.map(r => ({id:r?.id, status:r?.status,
     conclusion:r?.conclusion, head:r?.head_sha, event:r?.event, attempt:r?.run_attempt,
     workflow:r?.workflow_id, workflowName:r?.name,
-    prs:r?.pull_requests?.map(x => x?.number).sort(),
+    repository:r?.repository?.full_name, headRepository:r?.head_repository?.full_name,
+    prs:r?.pull_requests?.map(x => JSON.stringify({number:x?.number,
+      baseRepo:x?.base?.repo?.full_name, headRepo:x?.head?.repo?.full_name})).sort(),
     jobs:normalizeList(Array.isArray(jobsByRun?.[String(r?.id)]) ? jobsByRun[String(r.id)].map(j => ({
       id:j?.id, name:j?.name, runId:j?.run_id, attempt:j?.run_attempt,
       runner:j?.runner_id, conclusion:j?.conclusion, status:j?.status,
@@ -93,6 +95,16 @@ export function evidenceFingerprint({pr, reviews, runs, jobsByRun, parent}) {
     })) : [])
   })));
   return JSON.stringify({pr:id(pr), reviews:reviewEvidence, runs:runEvidence, parent:id(parent)});
+}
+
+/** Pin the parent's original source head separately from squash-merged main. */
+export function verifyStackedParent(spec,parent) {
+  if (spec?.dependsOn == null) return true;
+  return parent?.number === spec.dependsOn &&
+    parent?.head?.sha === spec.expectedParentHead &&
+    parent?.merged === true && typeof parent.merged_at === 'string' && parent.merged_at.length > 0 &&
+    parent?.base?.ref === 'main' && parent?.base?.repo?.full_name === spec.repo &&
+    (parent?.head?.repo?.full_name === undefined || parent.head.repo.full_name === spec.repo);
 }
 
 export async function collectWave(manifest, client) {
@@ -112,8 +124,7 @@ export async function collectWave(manifest, client) {
       jobsByRun[String(r.id)] = await client.get(path+'/actions/runs/'+r.id+'/jobs?filter=latest','jobs');
     }
     const parent = spec.dependsOn == null ? null : await client.get(path+'/pulls/'+spec.dependsOn,'object');
-    const expectedParentMerged = parent === null || (parent.merged === true &&
-      typeof parent.merged_at === 'string' && parent.base?.ref === 'main');
+    const expectedParentMerged = verifyStackedParent(spec,parent);
     initialSnapshots.push(evidenceFingerprint({pr,reviews,runs:current,jobsByRun,parent}));
     entries.push(assessPullRequest({repository:spec.repo, number:spec.number, expectedHead:spec.expectedHead,
       expectedBase:'main', expectedBaseSha:spec.expectedBaseSha, requiredStepNames:spec.requiredStepNames,
