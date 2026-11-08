@@ -3,7 +3,7 @@
   "contract_id": "attolang-safe-collection-source-repo-parity-v1",
   "status": "UNATTESTED_PER_BACKEND",
   "source_contract": "contracts/v1/safe-collection-access-v1/contract.json",
-  "source_fixture_cases": 13,
+  "source_fixture_cases": 17,
   "source_fixture_execution": "NOT_EXECUTED",
   "source_compatibility": [
     ".atto",
