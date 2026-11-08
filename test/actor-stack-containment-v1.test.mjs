@@ -48,7 +48,7 @@ function validatePending(matrix) {
   }
   assert.equal(matrix.requirements.nativeStackOverflowRecoverableOnSharedCarrier, false);
   assert.equal(matrix.requirements.untrustedArbitraryNativeCodeRequiresKillableWorker, true);
-  assert.ok(matrix.scenarios.length >= 64);
+  assert.ok(matrix.scenarios.length >= 71);
   assert.match(matrix.javaFrameArenaReference, /\/pull\/2627$/);
   const bootstrap = matrix.frameStorageBootstrap;
   assert.equal(bootstrap.javaHostPrimitive, 'MANAGED_BYTES_ONLY');
@@ -218,6 +218,26 @@ function validatePending(matrix) {
   assert.equal(bootstrap.javaM33cNETGuest, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaM33cWasmGuest, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaM33cForgeGuest, 'NOT_EXECUTED');
+  assert.match(bootstrap.javaM33dStackOverflowSourceReference, /\/pull\/2673$/);
+  assert.equal(bootstrap.javaM33dStackOverflowStatus, 'AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33dPerActorGuestStackAndArena, true);
+  assert.equal(bootstrap.javaM33dManagedFrameQuotaFailStop, true);
+  assert.equal(bootstrap.javaM33dSwallowedManagedQuotaMustStopBeforeNextMail, true);
+  assert.equal(bootstrap.javaM33dJVMStackOverflowOnlyAtAdmittedActorTurn, true);
+  assert.equal(bootstrap.javaM33dPoisonActorArenaBeforeStop, true);
+  assert.equal(bootstrap.javaM33dStacklessActorTerminalException, true);
+  assert.equal(bootstrap.javaM33dOtherVirtualMachineErrorsRethrown, true);
+  assert.equal(bootstrap.javaM33dSharedCarrierSiblingIsolation, 'AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33dLowStackSubprocessArgument, '-Xss256k');
+  assert.equal(bootstrap.javaM33dLowStackSubprocessOutput,
+      'ACTOR_NATIVE_STACK_OVERFLOW=A_FAILS_B_SURVIVES');
+  assert.equal(bootstrap.javaM33dHostJUnitAuthored, 7);
+  assert.equal(bootstrap.javaM33dHostJUnitExecuted, 0);
+  assert.equal(bootstrap.javaM33dLowStackSubprocessExecuted, 0);
+  assert.equal(bootstrap.javaM33dNativeJniFaultContainment, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33dSupervisorRestartGeneration, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33dCompiledAttoStackOverflow, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33dFiveBackendStackParity, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaAuthoredLegacyCompilerGuestTests, 1);
   assert.equal(bootstrap.javaLegacyCompilerGuestTestExecuted, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaGuardedInvocationByteFrames,
@@ -380,6 +400,20 @@ test('fake pass, duplicate backend, deleted proof and false promotion are reject
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33cNativeActorStackProof = 'PASS';})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33cLLVMGuest = 'PASS';})));
   assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaM33cVerifierSourceReference;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dStackOverflowStatus = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dPerActorGuestStackAndArena = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dSwallowedManagedQuotaMustStopBeforeNextMail = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dJVMStackOverflowOnlyAtAdmittedActorTurn = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dPoisonActorArenaBeforeStop = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dOtherVirtualMachineErrorsRethrown = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dSharedCarrierSiblingIsolation = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dHostJUnitExecuted = 7;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dLowStackSubprocessExecuted = 1;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dNativeJniFaultContainment = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dSupervisorRestartGeneration = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dCompiledAttoStackOverflow = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dFiveBackendStackParity = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaM33dStackOverflowSourceReference;})));
   assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaCompilerReturnRecordReference;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerLexicalGuestExecution = 'PASS';})));
   assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaCompilerScalarParameterReference;})));
@@ -724,6 +758,40 @@ test('M3.3c CFG verifier proofs remain distinct from hosted compiler and native 
   assert.equal(m.javaM33cLocalSmokeAssertionsPassed, 40);
   assert.equal(m.javaM33cLocalSmokeClassification, 'STUBBED_STANDALONE_JAVA_NOT_PROJECT');
   assert.equal(m.javaM33cCompiledAttoGuestEvidence, 'NOT_EXECUTED');
+  for (const backend of matrix.backends) {
+    assert.equal(backend.compilerGuest, 'NOT_EXECUTED');
+    assert.equal(backend.actorStackStorage, 'NOT_EXECUTED');
+  }
+  assert.equal(matrix.promotion.certified, false);
+});
+
+test('M3.3d actor-only stack overflow needs real guest, sibling and shallow-native-stack receipts', async () => {
+  const matrix = validatePending(await load());
+  const required = [
+    'actor-stack-quota-overflow-fail-stop-only-owner',
+    'actor-stack-swallowed-quota-no-further-mail',
+    'actor-jvm-stackoverflow-recovery-at-admitted-turn',
+    'actor-native-small-xss-process-a-fails-b-survives',
+    'actor-overflow-arena-zeroization-generation-fence',
+    'actor-overflow-supervisor-structured-child-and-sibling-policy',
+    'actor-stack-overflow-nonadmitted-vm-fatal-still-propagates'
+  ];
+  for (const id of required) {
+    const scenario = matrix.scenarios.find(s => s.id === id);
+    assert.ok(scenario, 'missing M3.3d actor-only stack failure proof: ' + id);
+    assert.equal(scenario.source, null, 'authored source is not compiled guest evidence');
+    assert.ok(scenario.requiredEvidence.includes('compilerGuest'));
+  }
+  const b = matrix.frameStorageBootstrap;
+  assert.equal(b.javaM33dPerActorGuestStackAndArena, true);
+  assert.equal(b.javaM33dSwallowedManagedQuotaMustStopBeforeNextMail, true);
+  assert.equal(b.javaM33dOtherVirtualMachineErrorsRethrown, true);
+  assert.equal(b.javaM33dHostJUnitAuthored, 7);
+  assert.equal(b.javaM33dHostJUnitExecuted, 0);
+  assert.equal(b.javaM33dLowStackSubprocessExecuted, 0);
+  assert.equal(b.javaM33dSharedCarrierSiblingIsolation, 'AUTHORED_NOT_EXECUTED');
+  assert.equal(b.javaM33dNativeJniFaultContainment, 'NOT_EXECUTED');
+  assert.equal(b.javaM33dSupervisorRestartGeneration, 'NOT_EXECUTED');
   for (const backend of matrix.backends) {
     assert.equal(backend.compilerGuest, 'NOT_EXECUTED');
     assert.equal(backend.actorStackStorage, 'NOT_EXECUTED');
