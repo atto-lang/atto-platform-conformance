@@ -8,6 +8,33 @@ const MANIFEST=path.join(ROOT,'contracts/cooperative-execution-v1.json');
 const SHA40=/^[0-9a-f]{40}$/;
 const SHA256=/^[0-9a-f]{64}$/;
 const GITHUB_RUN=/^https:\/\/github\.com\/atto-lang\/atto-source\.(java|llvm|wasm|forge|net|js)\/actions\/runs\/([1-9][0-9]*)$/;
+const CANONICAL_CASES=new Map([
+  ['hot-path-127-no-slow-poll',['runtime','only-one-slow-poll-at-128']],
+  ['interval-512-amortization',['runtime','only-one-slow-poll-at-512']],
+  ['counter-overflow-mask',['runtime','poll-after-unsigned-wrap']],
+  ['infinite-loop-fuel-denial',['security','actor-stops-without-refuel']],
+  ['nested-loop-cost-coverage',['runtime','nested-backedges-charged']],
+  ['continue-break-backedge-coverage',['compiler','all-cycles-metered']],
+  ['recursion-and-stack-budget',['compiler','recursive-scc-metered-and-stack-bounded']],
+  ['straight-line-weighted-block',['runtime','expensive-block-exhausts-fuel']],
+  ['cancellation-at-next-poll',['runtime','cancel-observed-within-poll-interval']],
+  ['await-resume-budget-conserved',['security','no-budget-reset-across-resume']],
+  ['cross-carrier-cpu-debt',['security','cpu-deltas-summed-across-carriers']],
+  ['wall-deadline-exact-boundary',['security','deadline-at-equality-denied']],
+  ['critical-region-no-unsafe-yield',['security','yield-deferred-denial-not-deferred']],
+  ['actor-local-budget-isolation',['security','actor-budget-not-shared']],
+  ['untrusted-ffi-hard-kill',['security','independent-boundary-terminates-hostile-guest']],
+  ['post-opt-safepoint-preservation',['compiler','metered-cycles-retained-after-optimization']],
+  ['worker-termination-neighbor-survives',['security','worker-terminated-neighbor-unaffected']]
+]);
+const REQUIRED_PASSED_FIELDS=[
+  'backend','case_id','head_sha','tree_sha','artifact_sha256','fixture_sha256',
+  'workflow_run_id','workflow_attempt','job_id','workflow_url','executed_job_steps',
+  'guest_executed','evidence_kind','command','observed','exit_code'
+];
+const REQUIRED_BOUNDARY_CASES=[
+  'untrusted-ffi-hard-kill','worker-termination-neighbor-survives'
+];
 export class EvidenceError extends Error {}
 const req=(ok,msg)=>{if(!ok)throw new EvidenceError(msg);};
 const nonempty=x=>typeof x==='string'&&x.trim().length>0;
@@ -26,17 +53,25 @@ export function validateManifest(m){
   req(p&&p.default_interval===128&&p.counter_bits===64,'poll-policy');
   req(Array.isArray(p.allowed_intervals)&&p.allowed_intervals.join(',')==='32,64,128,256,512','poll-policy-intervals');
   req(Array.isArray(m.invariants)&&m.invariants.length>=8,'invariants');
-  req(Array.isArray(m.cases)&&m.cases.length>=17,'case-count');
+  req(Array.isArray(m.cases)&&m.cases.length===CANONICAL_CASES.size,'case-count');
   const cases=new Map();
   for(const c of m.cases){
     req(c&&nonempty(c.id)&&nonempty(c.expect)&&
         ['runtime','compiler','security'].includes(c.kind)&&!cases.has(c.id),'case');
+    const pinned=CANONICAL_CASES.get(c.id);
+    req(pinned&&c.kind===pinned[0]&&c.expect===pinned[1],'case-contract-downgrade');
     cases.set(c.id,c);
   }
-  req(['runtime','compiler','security'].every(k=>m.cases.some(c=>c.kind===k)),'case-coverage');
-  req(m.evidence.states.join(',')==='passed,failed,unsupported,not_executed','evidence-states');
-  for(const key of ['head_sha','tree_sha','artifact_sha256','fixture_sha256','job_id','executed_job_steps','guest_executed','observed'])
-    req(m.evidence.required_passed_fields.includes(key),'missing-evidence-field:'+key);
+  req(m.evidence&&Array.isArray(m.evidence.states)&&
+    m.evidence.states.join(',')==='passed,failed,unsupported,not_executed','evidence-states');
+  req(Array.isArray(m.evidence.required_passed_fields)&&
+      m.evidence.required_passed_fields.length===REQUIRED_PASSED_FIELDS.length&&
+      REQUIRED_PASSED_FIELDS.every(k=>m.evidence.required_passed_fields.includes(k)),
+      'evidence-fields-downgrade');
+  req(Array.isArray(m.evidence.boundary_required_for)&&
+      m.evidence.boundary_required_for.length===REQUIRED_BOUNDARY_CASES.length&&
+      REQUIRED_BOUNDARY_CASES.every(k=>m.evidence.boundary_required_for.includes(k)),
+      'boundary-policy-downgrade');
   return cases;
 }
 export function validateReceipt(r,m){
