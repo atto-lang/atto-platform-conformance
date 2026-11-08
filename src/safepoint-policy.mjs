@@ -21,7 +21,11 @@ export function budgetDecision({reductions,limit=512,elapsedNs,timeLimitNs=2_000
  probeDue=true,peerRunnable=true,kind='auto-backedge',...safety}) {
  if(![reductions,limit,elapsedNs,timeLimitNs].every(x=>Number.isFinite(x)&&x>=0))
    throw new TypeError('invalid budget');
- if(!probeDue)return {decision:'CONTINUE',reason:'probe-not-due'};
+ // The fast batching flag can defer a *time* probe, but it must not
+ // suppress the mandatory check after the reduction cap. Java and LLVM
+ // poll every committed backedge once their 512-reduction budget is due.
+ // Otherwise a stale/missing probeDue would authorize endless execution.
+ if(!probeDue&&reductions<limit)return {decision:'CONTINUE',reason:'probe-not-due'};
  if(reductions<limit&&elapsedNs<timeLimitNs)return {decision:'CONTINUE',reason:'budget-remaining'};
  const gate=admitSafePoint({kind,...safety});
  if(gate.decision!=='ADMIT')return gate;
