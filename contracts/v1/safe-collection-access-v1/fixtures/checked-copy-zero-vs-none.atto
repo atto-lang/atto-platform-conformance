@@ -1,0 +1,9 @@
+// CANDIDATE: Some(0) must be distinguishable from None after checked copy.
+// NOT_EXECUTED; this is owned Option<int> only, not Option<ReadLoan<T>>.
+pub fnc main(): int {
+  let mut Array<int> values = new Array<int>();
+  values.add(0);
+  val Option<int> zero = values.get_copy(0);
+  val Option<int> absent = values.get_copy(1);
+  return zero.is_some() && absent.is_none() ? 42 : 0;
+}
