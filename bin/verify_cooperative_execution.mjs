@@ -35,6 +35,32 @@ const REQUIRED_PASSED_FIELDS=[
 const REQUIRED_BOUNDARY_CASES=[
   'untrusted-ffi-hard-kill','worker-termination-neighbor-survives'
 ];
+const CANONICAL_POLLING={
+  "default_interval": 128,
+  "allowed_intervals": [
+    32,
+    64,
+    128,
+    256,
+    512
+  ],
+  "counter_bits": 64,
+  "counter_wrap": "unsigned modulo 2^64; poll on zero after increment",
+  "hot_path": "Actor-local saturating fuel charge and integer mask branch each backedge; no scheduler or clock call each iteration",
+  "slow_path": "At configured interval, plus immediate fuel denial and actor entry/resume admission",
+  "untrusted": "All reachable CFG cycles require positive bounded charging; no trust in cooperative suspension",
+  "trusted": "Defer handoff while critical, never defer quota denial"
+};
+const CANONICAL_INVARIANTS=[
+  "All reachable CFG cycles must have a strictly positive bounded fuel charge; recursion SCCs need charged entries and a stack budget.",
+  "A subsequent optimized target CFG must preserve fuel checks; this source-level oracle alone cannot prove codegen.",
+  "Untrusted logical fuel, CPU debt and deadline must persist across await, carrier migration and callback resume.",
+  "Saturating fuel and CPU accounting never wrap to replenish quota; deadline is exclusive at equality.",
+  "Do not suspend with incompatible borrows or locks; fail-stop on exhausted quota even inside critical.",
+  "Long native calls, blocking FFI and hostile tenant code require independent enforceable isolation and kill.",
+  "A Web Worker is not an OS tenant sandbox; Wasm host imports, fuel and memory must be independently restricted.",
+  "Never treat synthetic, parser-only, skipped, zero-step or stale-head evidence as executed backend parity."
+];
 export class EvidenceError extends Error {}
 const req=(ok,msg)=>{if(!ok)throw new EvidenceError(msg);};
 const nonempty=x=>typeof x==='string'&&x.trim().length>0;
@@ -50,9 +76,14 @@ export function validateManifest(m){
     req(m.backends[key].status==='NOT_EXECUTED','backend-must-not-claim-guest');
   }
   const p=m.polling;
-  req(p&&p.default_interval===128&&p.counter_bits===64,'poll-policy');
-  req(Array.isArray(p.allowed_intervals)&&p.allowed_intervals.join(',')==='32,64,128,256,512','poll-policy-intervals');
-  req(Array.isArray(m.invariants)&&m.invariants.length>=8,'invariants');
+  req(p&&typeof p==='object'&&!Array.isArray(p),'poll-policy');
+  req(Object.keys(p).length===Object.keys(CANONICAL_POLLING).length&&
+      Object.keys(CANONICAL_POLLING).every(key=>
+        Object.hasOwn(p,key)&&JSON.stringify(p[key])===JSON.stringify(CANONICAL_POLLING[key])),
+      'poll-policy-downgrade');
+  req(Array.isArray(m.invariants)&&m.invariants.length===CANONICAL_INVARIANTS.length&&
+      CANONICAL_INVARIANTS.every((value,index)=>m.invariants[index]===value),
+      'invariant-policy-downgrade');
   req(Array.isArray(m.cases)&&m.cases.length===CANONICAL_CASES.size,'case-count');
   const cases=new Map();
   for(const c of m.cases){
