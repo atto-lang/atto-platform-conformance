@@ -1,0 +1,193 @@
+{
+  "schema_version": 1,
+  "contract_id": "attolang-safe-collection-source-repo-parity-v1",
+  "status": "UNATTESTED_PER_BACKEND",
+  "source_contract": "contracts/v1/safe-collection-access-v1/contract.json",
+  "source_fixture_cases": 10,
+  "source_fixture_execution": "NOT_EXECUTED",
+  "source_compatibility": [
+    ".atto",
+    ".ores"
+  ],
+  "target_semantics": [
+    "bounded checked get with explicit Option",
+    "NLL shared-read vs exclusive-write provenance",
+    "actor-owned 32-bit handles with epoch/generation fence",
+    "no cross-await/actor/critical loan escape",
+    "no implicit nested Option flatten"
+  ],
+  "required_source_repos": 9,
+  "repos": [
+    {
+      "repo": "ores-truffle-oreslang/oreslang-source.java",
+      "pr_url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2676",
+      "head_sha": "b6ea1b57160bf2a4c6755aec45dbce42e14cf710",
+      "code_path": "src/main/java/dev/oreslang/types/DataOrientedBorrowChecker.java",
+      "surface": "DataOrientedBorrowChecker.Place",
+      "scope": "logical DOP loan hierarchy; no source Option get",
+      "status": "HOST_ALIAS_CHECKER_UNATTESTED",
+      "provenance": {
+        "run_url": "https://github.com/ores-truffle-oreslang/oreslang-source.java/actions/runs/42501198061",
+        "runner_admission": "RUNNER_NOT_ADMITTED",
+        "executed_job_steps": 0
+      },
+      "semantic_guest_option_verified": false,
+      "static_full_borrow_checker_verified": false,
+      "cross_backend_guest_parity_verified": false
+    },
+    {
+      "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+      "pr_url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1591",
+      "head_sha": "019810fe691f23f9e17af43b0e277d1cb1ef0d81",
+      "code_path": "src/main/cpp/oreslang/runtime/NativeIntArrayRegion.c",
+      "surface": "oreslang_int_array_try_get_copy",
+      "scope": "native Array<int> Some/None copy ABI; source Option not lowered",
+      "status": "HOST_NATIVE_COPY_UNATTESTED",
+      "provenance": {
+        "run_url": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/actions/runs/42501200680",
+        "runner_admission": "RUNNER_NOT_ADMITTED",
+        "executed_job_steps": 0
+      },
+      "semantic_guest_option_verified": false,
+      "static_full_borrow_checker_verified": false,
+      "cross_backend_guest_parity_verified": false
+    },
+    {
+      "repo": "ores-truffle-oreslang/oreslang-source.net",
+      "pr_url": "https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/421",
+      "head_sha": "9f740630b996e0a6a46a0723c2bbbc70f0799c2f",
+      "code_path": "runtime/Ores.Net.Runtime/ActorShardColumns.cs",
+      "surface": "ActorShardColumns.TryRead",
+      "scope": "host scalar Some/None across AoS/SoA/AoSoA, separate from parser PR #418",
+      "status": "HOST_RUNTIME_COPY_UNATTESTED",
+      "provenance": {
+        "run_url": "https://github.com/ores-truffle-oreslang/oreslang-source.net/actions/runs/42501204127",
+        "runner_admission": "RUNNER_NOT_ADMITTED",
+        "executed_job_steps": 0
+      },
+      "semantic_guest_option_verified": false,
+      "static_full_borrow_checker_verified": false,
+      "cross_backend_guest_parity_verified": false
+    },
+    {
+      "repo": "ores-truffle-oreslang/oreslang-source.wasm",
+      "pr_url": "https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/444",
+      "head_sha": "a1d2441dcc47fa22eb8c6838af562d22296d06bd",
+      "code_path": "src/actor-arena.mjs",
+      "surface": "ActorArena.tryReadBytes",
+      "scope": "actor-owned byte slices, Some detached copy / None",
+      "status": "HOST_ARENA_COPY_UNATTESTED",
+      "provenance": {
+        "run_url": "https://github.com/ores-truffle-oreslang/oreslang-source.wasm/actions/runs/42501206811",
+        "runner_admission": "RUNNER_NOT_ADMITTED",
+        "executed_job_steps": 0
+      },
+      "semantic_guest_option_verified": false,
+      "static_full_borrow_checker_verified": false,
+      "cross_backend_guest_parity_verified": false
+    },
+    {
+      "repo": "ores-truffle-oreslang/oreslang-source.forge",
+      "pr_url": "https://github.com/ores-truffle-oreslang/oreslang-source.forge/pull/232",
+      "head_sha": "c3d5d73e124d1b67a9d04fe78daac4e4f9a56ade",
+      "code_path": "runtime/actor_arena.hpp",
+      "surface": "ActorArena::try_read_byte",
+      "scope": "actor-owned byte Copy / nullopt, no native guest Option",
+      "status": "HOST_ARENA_COPY_UNATTESTED",
+      "provenance": {
+        "run_url": "https://github.com/ores-truffle-oreslang/oreslang-source.forge/actions/runs/42501210582",
+        "runner_admission": "RUNNER_NOT_ADMITTED",
+        "executed_job_steps": 0
+      },
+      "semantic_guest_option_verified": false,
+      "static_full_borrow_checker_verified": false,
+      "cross_backend_guest_parity_verified": false
+    },
+    {
+      "repo": "ores-truffle-oreslang/oreslang-source.rs",
+      "pr_url": "https://github.com/ores-truffle-oreslang/oreslang-source.rs/pull/47",
+      "head_sha": "a7d40218bf7e6f1f5dc68ee2ec471cdd3087a19d",
+      "code_path": "src/mir.rs",
+      "surface": "mir::RESERVED_COLLECTION_NAMES",
+      "scope": "13 canonical name spoofing rejects; scalar compiler only",
+      "status": "COMPILER_FAIL_CLOSED_UNATTESTED",
+      "provenance": {
+        "run_url": "https://github.com/ores-truffle-oreslang/oreslang-source.rs/actions/runs/42501239366",
+        "runner_admission": "RUNNER_NOT_ADMITTED",
+        "executed_job_steps": 0
+      },
+      "semantic_guest_option_verified": false,
+      "static_full_borrow_checker_verified": false,
+      "cross_backend_guest_parity_verified": false
+    },
+    {
+      "repo": "ores-truffle-oreslang/oreslang-source.js",
+      "pr_url": "https://github.com/ores-truffle-oreslang/oreslang-source.js/pull/233",
+      "head_sha": "4330930725fc6b73dc8696aad0b48e573d1845a4",
+      "code_path": "src/inverted-row-index.mjs",
+      "surface": "InvertedRowIndex.tryIndex",
+      "scope": "generational dense row Some(handle)/None; no element loan",
+      "status": "HOST_INDEX_COPY_UNATTESTED",
+      "provenance": {
+        "run_url": "https://github.com/ores-truffle-oreslang/oreslang-source.js/actions/runs/42501243885",
+        "runner_admission": "RUNNER_NOT_ADMITTED",
+        "executed_job_steps": 0
+      },
+      "semantic_guest_option_verified": false,
+      "static_full_borrow_checker_verified": false,
+      "cross_backend_guest_parity_verified": false
+    },
+    {
+      "repo": "ores-truffle-oreslang/oreslang-source.cranelift",
+      "pr_url": "https://github.com/ores-truffle-oreslang/oreslang-source.cranelift/pull/97",
+      "head_sha": "f63ad1ebdbc944aba6263636416de3d27758ee6b",
+      "code_path": "src/frontend.rs",
+      "surface": "frontend::E_SAFE_COLLECTION_ACCESS_UNSUPPORTED",
+      "scope": "stage-0 JIT deliberate rejection before CLIF",
+      "status": "COMPILER_FAIL_CLOSED_UNATTESTED",
+      "provenance": {
+        "run_url": "https://github.com/ores-truffle-oreslang/oreslang-source.cranelift/actions/runs/42501247001",
+        "runner_admission": "RUNNER_NOT_ADMITTED",
+        "executed_job_steps": 0
+      },
+      "semantic_guest_option_verified": false,
+      "static_full_borrow_checker_verified": false,
+      "cross_backend_guest_parity_verified": false
+    },
+    {
+      "repo": "ores-truffle-oreslang/oreslang-source.hdl",
+      "pr_url": "https://github.com/ores-truffle-oreslang/oreslang-source.hdl/pull/29",
+      "head_sha": "bd924d556d6ae1a4d91dc430b1908bc2211540d4",
+      "code_path": "src/hardware-bank-proof.mjs",
+      "surface": "proveStaticBanking",
+      "scope": "fixed hardware RAM address proof; dynamic Option/loans not applicable",
+      "status": "STATIC_HARDWARE_ONLY_UNATTESTED",
+      "provenance": {
+        "run_url": "https://github.com/ores-truffle-oreslang/oreslang-source.hdl/actions/runs/42501250610",
+        "runner_admission": "RUNNER_NOT_ADMITTED",
+        "executed_job_steps": 0
+      },
+      "semantic_guest_option_verified": false,
+      "static_full_borrow_checker_verified": false,
+      "cross_backend_guest_parity_verified": false
+    }
+  ],
+  "promotion_rules": {
+    "require_all_nine_repo_heads": true,
+    "zero_step_ci_is_not_evidence": true,
+    "parser_unsupported_is_not_semantic_rejection": true,
+    "host_copy_api_is_not_guest_option": true,
+    "host_model_is_not_guest_borrow_checker": true,
+    "require_positive_guest_runtime_for_supported_backends": true,
+    "require_semantic_negative_diagnostic_and_no_executable_ir": true,
+    "hdl_static_hardware_model_not_dynamic_collection_runtime": true,
+    "require_independent_review": true,
+    "private_source_export_unauthorized_by_default": true
+  },
+  "notes": [
+    "The .NET compiler also has an independent overlapping fail-closed parser draft #418; do not overwrite it.",
+    "Do not downgrade scalar-only or hardware-only backends to fake guest support. All source-level Array/Option/borrow lanes remain unverified.",
+    "Some checked host APIs are copy primitives, not unforgeable compiler ReadLoan<T> capabilities.",
+    "Existing Java/LLVM collection PRs may add source implementation independently; reconcile before merge."
+  ]
+}
