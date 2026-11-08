@@ -42,7 +42,7 @@ test("shared compiler-backed candidate has immutable exact blob and never fakes 
   assert.equal(candidate.expected_exit_code,0);
   const fixture=readFileSync(path.join(root,candidate.shared_fixture_path));
   const sha=createHash("sha1").update(
-    Buffer.from("blob "+fixture.byteLength+"\\0", "utf8"))
+    Buffer.from("blob "+fixture.byteLength+"\0", "utf8"))
       .update(fixture).digest("hex");
   assert.equal(sha,candidate.pinned_git_blob_sha1,
     "source changed without updating all three backend fixture blob hashes");
