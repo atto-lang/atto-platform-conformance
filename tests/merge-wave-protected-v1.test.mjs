@@ -25,8 +25,8 @@ function mock({approval=true,admin=true,check=true,policy=true,rule=[]}={}) {
     id:1000+Number(repo==='org/site'?1:repo==='org/editor'?3:4),name:'CI',
     event:'pull_request',head_sha:H,status:'completed',conclusion:'success',
     workflow_id:7,run_attempt:1,repository:{full_name:repo},head_repository:{full_name:repo},
-    pull_requests:[{number:Number(repo==='org/site'?1:repo==='org/editor'?3:4),
-      base:{repo:{full_name:repo}}}]}];
+    pull_requests:(repo==='org/site'?[1,2]:repo==='org/cli'?[4,5]:[3]).map(n=>({
+      number:n,base:{repo:{full_name:repo}}}))}];
   if(/^actions\/runs\/\d+\/jobs\?filter=latest$/.test(resource)){
     const runId=Number(/^actions\/runs\/(\d+)/.exec(resource)[1]);
     return [{id:runId+5000,name:'tests',run_id:runId,run_attempt:1,runner_id:99,
