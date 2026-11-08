@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: '22'
       - run: npm test
-      - name: Merge-wave exact-head Node 22 regression receipt (SOURCE-FREE, NON-AUTHORIZING)
+      - name: Merge-wave exact-head Node 22 regression receipt (HOST-ONLY, NON-AUTHORIZING)
         env:
           EXPECTED_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
