@@ -6,8 +6,8 @@
   "canonical_language": "AttoLang",
   "api_spelling_status": "CANDIDATE_NOT_ADMITTED_ON_ALL_BACKENDS",
   "rules": {
-    "read": "Array/List/Vector/Slice.get(index) -> Option<ReadLoan<T>>; Map.get(key) -> Option<ReadLoan<V>>; all loan-bearing Option variants retain owner provenance",
-    "write": "get_mut -> Option<WriteLoan<T>> requires unique mutable access; overlap is a static error; write view cannot outlive owner",
+    "read": "Array/List/Vector/Slice.get(index) -> Option<ReadLoan<T>>; Map.get(key) -> Option<ReadLoan<V>>; all loan-bearing Option variants retain owner provenance Borrow permission and root conflict admission precede bounds misses; None never overrides exclusive WRITE authority.",
+    "write": "get_mut -> Option<WriteLoan<T>> requires unique mutable access; overlap is a static error; write view cannot outlive owner A miss cannot bypass existing loans or immutable access checks.",
     "copy": "get_copy -> Option<T> requires Copy<T>; never implicitly copies move-only elements",
     "owned_remove": "pop/remove -> Option<T> moves out an owned element after exclusive access and shape update",
     "index": "index operator is always range-checked; out-of-range is a contained actor trap; get is the non-panicking default",
@@ -61,6 +61,20 @@
       "attestation": "NOT_EXECUTED"
     },
     {
+      "id": "borrowed-get-option",
+      "expect": "compile_and_execute",
+      "path": "fixtures/borrowed-get-option.atto",
+      "result": "42",
+      "attestation": "NOT_EXECUTED"
+    },
+    {
+      "id": "read-then-write-after-last-use",
+      "expect": "compile_and_execute",
+      "path": "fixtures/read-then-write-after-last-use.atto",
+      "result": "42",
+      "attestation": "NOT_EXECUTED"
+    },
+    {
       "id": "copy-get-explicit-ownership",
       "expect": "compile_and_execute",
       "path": "fixtures/copy-get-explicit-ownership.atto",
@@ -72,6 +86,13 @@
       "expect": "compile_and_execute",
       "path": "fixtures/pop-empty-option.atto",
       "result": "42",
+      "attestation": "NOT_EXECUTED"
+    },
+    {
+      "id": "miss-under-live-write",
+      "expect": "compile_reject",
+      "path": "fixtures/miss-under-live-write.atto",
+      "diagnostic": "E_LOAN_CONFLICT",
       "attestation": "NOT_EXECUTED"
     },
     {
