@@ -48,7 +48,7 @@ function validatePending(matrix) {
   }
   assert.equal(matrix.requirements.nativeStackOverflowRecoverableOnSharedCarrier, false);
   assert.equal(matrix.requirements.untrustedArbitraryNativeCodeRequiresKillableWorker, true);
-  assert.ok(matrix.scenarios.length >= 38);
+  assert.ok(matrix.scenarios.length >= 42);
   assert.match(matrix.javaFrameArenaReference, /\/pull\/2627$/);
   const bootstrap = matrix.frameStorageBootstrap;
   assert.equal(bootstrap.javaHostPrimitive, 'MANAGED_BYTES_ONLY');
@@ -143,6 +143,20 @@ function validatePending(matrix) {
   assert.equal(bootstrap.javaM32NewHostJUnitMethodsExecuted, 0);
   assert.equal(bootstrap.javaM32HardenedGuestCompilerExecution, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaM32HardenedNativeStackIsolation, 'NOT_EXECUTED');
+  assert.match(bootstrap.javaM33EnvSnapshotReference, /\/pull\/2665$/);
+  assert.equal(bootstrap.javaM33EnvSnapshotStatus, 'AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33EnvSnapshotJUnitMethodsAuthored, 3);
+  assert.equal(bootstrap.javaM33EnvSnapshotJUnitMethodsExecuted, 0);
+  assert.equal(bootstrap.javaM33EnvSnapshotRetiredReadDenied, true);
+  assert.equal(bootstrap.javaM33EnvSnapshotSameTaskAwaitAllowed, 'AUTHORED_NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33EnvSnapshotCrossTaskReadDenied, true);
+  assert.equal(bootstrap.javaM33EnvSnapshotCrossTaskArenaPoisonAllowed, false);
+  assert.equal(bootstrap.javaM33EnvSnapshotExactExecutionIdentityFenced, true);
+  assert.equal(bootstrap.javaM33EnvReflectionFixtureSignatureRepaired, true);
+  assert.equal(bootstrap.javaM33EnvSnapshotCompiledAttoEvidence, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33EnvSnapshotActualCallbackParity, 'NOT_EXECUTED');
+  assert.equal(bootstrap.javaM33EnvSnapshotIterativeDispatcher, false);
+  assert.equal(bootstrap.javaM33EnvSnapshotNativeStackProof, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaAuthoredLegacyCompilerGuestTests, 1);
   assert.equal(bootstrap.javaLegacyCompilerGuestTestExecuted, 'NOT_EXECUTED');
   assert.equal(bootstrap.javaGuardedInvocationByteFrames,
@@ -253,6 +267,17 @@ test('fake pass, duplicate backend, deleted proof and false promotion are reject
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM32HardenedGuestCompilerExecution = 'PASS';})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM32HardenedNativeStackIsolation = 'PASS';})));
   assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaM32HardeningFollowupReference;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33EnvSnapshotStatus = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33EnvSnapshotJUnitMethodsExecuted = 3;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33EnvSnapshotCrossTaskReadDenied = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33EnvSnapshotCrossTaskArenaPoisonAllowed = true;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33EnvSnapshotExactExecutionIdentityFenced = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33EnvSnapshotRetiredReadDenied = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33EnvSnapshotCompiledAttoEvidence = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33EnvSnapshotActualCallbackParity = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33EnvSnapshotIterativeDispatcher = true;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33EnvSnapshotNativeStackProof = 'PASS';})));
+  assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaM33EnvSnapshotReference;})));
   assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaCompilerReturnRecordReference;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaCompilerLexicalGuestExecution = 'PASS';})));
   assert.throws(() => validatePending(mutate(m => {delete m.frameStorageBootstrap.javaCompilerScalarParameterReference;})));
@@ -477,4 +502,32 @@ test('M3.2 hardening denies same-carrier return reuse and stale scalar Task capt
     assert.equal(backend.actorStackStorage, 'NOT_EXECUTED');
   }
   assert.equal(manifest.promotion.certified, false);
+});
+
+test('M3.3 Env snapshot is task-identity fenced but has no guest callback parity', async () => {
+  const matrix = validatePending(await load());
+  const names = [
+    'actor-env-snapshot-same-source-task-across-await',
+    'actor-env-snapshot-other-source-task-same-actor-denied',
+    'actor-env-snapshot-after-owner-retirement-denied',
+    'actor-env-snapshot-corrupt-execution-owner-denied'
+  ];
+  for (const name of names) {
+    const scenario = matrix.scenarios.find(s => s.id === name);
+    assert.ok(scenario, 'missing M3.3 task snapshot proof: ' + name);
+    assert.equal(scenario.source, null, 'no invented compiler-guest fixture receipt');
+    assert.ok(scenario.requiredEvidence.includes('compilerGuest'));
+  }
+  const b = matrix.frameStorageBootstrap;
+  assert.equal(b.javaM33EnvSnapshotExactExecutionIdentityFenced, true);
+  assert.equal(b.javaM33EnvSnapshotRetiredReadDenied, true);
+  assert.equal(b.javaM33EnvSnapshotCrossTaskArenaPoisonAllowed, false);
+  assert.equal(b.javaM33EnvSnapshotJUnitMethodsExecuted, 0);
+  assert.equal(b.javaM33EnvSnapshotActualCallbackParity, 'NOT_EXECUTED');
+  assert.equal(b.javaM33EnvSnapshotIterativeDispatcher, false);
+  for (const backend of matrix.backends) {
+    assert.equal(backend.compilerGuest, 'NOT_EXECUTED');
+    assert.equal(backend.actorStackStorage, 'NOT_EXECUTED');
+  }
+  assert.equal(matrix.promotion.certified, false);
 });
