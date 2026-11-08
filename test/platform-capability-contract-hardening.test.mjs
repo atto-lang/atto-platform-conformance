@@ -98,7 +98,8 @@ test("v1 non-evidence taxonomy cannot be removed, duplicated or reclassified", (
 });
 
 test("inherited proof flags, commit IDs and platform names are not executable evidence", () => {
-  const valid = receipt();
+  // Use the highest stage so every proof field is mandatory in this case.
+  const valid = receipt("desktop", "physical-hardware");
   assert.equal(verifyPlatformCapabilityReceipt(valid, contract).ok, true);
 
   for (const field of [
