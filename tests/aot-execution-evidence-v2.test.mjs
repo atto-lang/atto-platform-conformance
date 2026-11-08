@@ -191,7 +191,7 @@ test('required receipt fields must be enumerable own data, never hidden getters'
 });
 
 test('runner label must not be a blank, control-character or multiline provenance claim', () => {
-  for(const label of ['', ' ', ' runner', 'runner ', '\\u0000', 'job\\nother', 'runner\\rverified', 'runner\\u007f']) {
+  for(const label of ['', ' ', ' runner', 'runner ', '\u0000', 'job\nother', 'runner\rverified', 'runner\u007f']) {
     const claim=good();
     claim.execution.runnerName=label;
     assert.equal(classify(claim).classification,'INVALID',JSON.stringify(label));
