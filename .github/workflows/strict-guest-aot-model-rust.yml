@@ -34,4 +34,9 @@ jobs:
           command -v rustc
           rustc --edition=2021 -D warnings -C overflow-checks=on --test tools/strict_guest_aot_gc_model.rs \
             -o "$RUNNER_TEMP/strict-guest-aot-gc-model-tests"
-          "$RUNNER_TEMP/strict-guest-aot-gc-model-tests" --nocapture
+          model_list="$("$RUNNER_TEMP/strict-guest-aot-gc-model-tests" --list)"
+          printf '%s\n' "$model_list"
+          printf '%s\n' "$model_list" | grep -Eq '^51 tests, 0 benchmarks
+
+          "$RUNNER_TEMP/strict-guest-aot-gc-model-tests" --test-threads=1 --nocapture
+          printf '%s\n' 'MODEL_ONLY_51_TESTS_PASSED; not a guest or release receipt'
