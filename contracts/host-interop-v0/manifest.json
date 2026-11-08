@@ -1,0 +1,167 @@
+{
+  "schema": "attolang.host-interop-v0",
+  "generated_for": "source-only canonical AttoLang host import admission; no compiled guest or native execution implied",
+  "status": "NOT_EXECUTED",
+  "profiles": {
+    "java": "Graal/JVM host interop allowlist policy",
+    "net": "net10.0 static CIL/NativeAOT compiler flag"
+  },
+  "fixtures": {
+    "positive-jvm-list.atto": {
+      "path": "contracts/host-interop-v0/positive-jvm-list.atto",
+      "git_blob_sha1": "1c64feba644ff5fe2d3d0ca77ff0f8b452e294e4"
+    },
+    "positive-dotnet-math.atto": {
+      "path": "contracts/host-interop-v0/positive-dotnet-math.atto",
+      "git_blob_sha1": "190e4d9f45e2fe60d8c8d48ee6f17085de2a74d2"
+    },
+    "negative-dotnet-io.atto": {
+      "path": "contracts/host-interop-v0/negative-dotnet-io.atto",
+      "git_blob_sha1": "aab8882d50bdf11a67ac4145d129c9d163ab181f"
+    },
+    "negative-dotnet-overload.atto": {
+      "path": "contracts/host-interop-v0/negative-dotnet-overload.atto",
+      "git_blob_sha1": "0a4ba320dfaf0cc9640a3a443b22c95a65749c3b"
+    },
+    "negative-jvm-invalid.atto": {
+      "path": "contracts/host-interop-v0/negative-jvm-invalid.atto",
+      "git_blob_sha1": "1ddadb200bb45df33d3316e1b3e4b63d2810a39a"
+    },
+    "negative-jvm-runtime.atto": {
+      "path": "contracts/host-interop-v0/negative-jvm-runtime.atto",
+      "git_blob_sha1": "c9075edfd615b4e8ac49dc790b1b83b94db15ca0"
+    }
+  },
+  "cases": [
+    {
+      "id": "java-allowlisted-list",
+      "backend": "java",
+      "file": "positive-jvm-list.atto",
+      "expected": "accept",
+      "phase": "execute",
+      "authority": "JAVA_INTEROP,allowlist:java.util.ArrayList",
+      "expected_output": "1",
+      "status": "NOT_EXECUTED",
+      "source_head": null,
+      "compiled_binary_sha256": null,
+      "executed_steps": 0
+    },
+    {
+      "id": "java-missing-capability",
+      "backend": "java",
+      "file": "positive-jvm-list.atto",
+      "expected": "reject",
+      "phase": "runtime-admission",
+      "authority": "none",
+      "expected_output": null,
+      "status": "NOT_EXECUTED",
+      "source_head": null,
+      "compiled_binary_sha256": null,
+      "executed_steps": 0
+    },
+    {
+      "id": "java-invalid-host-name",
+      "backend": "java",
+      "file": "negative-jvm-invalid.atto",
+      "expected": "reject",
+      "phase": "source-check",
+      "authority": "JAVA_INTEROP",
+      "expected_output": null,
+      "status": "NOT_EXECUTED",
+      "source_head": null,
+      "compiled_binary_sha256": null,
+      "executed_steps": 0
+    },
+    {
+      "id": "java-unallowlisted-runtime",
+      "backend": "java",
+      "file": "negative-jvm-runtime.atto",
+      "expected": "reject",
+      "phase": "runtime-admission",
+      "authority": "JAVA_INTEROP,allowlist:java.util.ArrayList",
+      "expected_output": null,
+      "status": "NOT_EXECUTED",
+      "source_head": null,
+      "compiled_binary_sha256": null,
+      "executed_steps": 0
+    },
+    {
+      "id": "java-reject-dotnet-host",
+      "backend": "java",
+      "file": "positive-dotnet-math.atto",
+      "expected": "reject",
+      "phase": "source-check",
+      "authority": "none",
+      "expected_output": null,
+      "status": "NOT_EXECUTED",
+      "source_head": null,
+      "compiled_binary_sha256": null,
+      "executed_steps": 0
+    },
+    {
+      "id": "net-allowlisted-scalar-math",
+      "backend": "net",
+      "file": "positive-dotnet-math.atto",
+      "expected": "accept",
+      "phase": "execute",
+      "authority": "interop.dotnet.math-i64",
+      "expected_output": "42",
+      "status": "NOT_EXECUTED",
+      "source_head": null,
+      "compiled_binary_sha256": null,
+      "executed_steps": 0
+    },
+    {
+      "id": "net-missing-capability",
+      "backend": "net",
+      "file": "positive-dotnet-math.atto",
+      "expected": "reject",
+      "phase": "source-check",
+      "authority": "none",
+      "expected_output": null,
+      "status": "NOT_EXECUTED",
+      "source_head": null,
+      "compiled_binary_sha256": null,
+      "executed_steps": 0
+    },
+    {
+      "id": "net-denied-file",
+      "backend": "net",
+      "file": "negative-dotnet-io.atto",
+      "expected": "reject",
+      "phase": "source-check",
+      "authority": "interop.dotnet.math-i64",
+      "expected_output": null,
+      "status": "NOT_EXECUTED",
+      "source_head": null,
+      "compiled_binary_sha256": null,
+      "executed_steps": 0
+    },
+    {
+      "id": "net-denied-overload",
+      "backend": "net",
+      "file": "negative-dotnet-overload.atto",
+      "expected": "reject",
+      "phase": "source-check",
+      "authority": "interop.dotnet.math-i64",
+      "expected_output": null,
+      "status": "NOT_EXECUTED",
+      "source_head": null,
+      "compiled_binary_sha256": null,
+      "executed_steps": 0
+    },
+    {
+      "id": "net-reject-jvm-host",
+      "backend": "net",
+      "file": "positive-jvm-list.atto",
+      "expected": "reject",
+      "phase": "source-check",
+      "authority": "interop.dotnet.math-i64",
+      "expected_output": null,
+      "status": "NOT_EXECUTED",
+      "source_head": null,
+      "compiled_binary_sha256": null,
+      "executed_steps": 0
+    }
+  ]
+}
