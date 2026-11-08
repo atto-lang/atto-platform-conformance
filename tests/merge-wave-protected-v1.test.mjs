@@ -158,3 +158,90 @@ test('invalid check-run envelope is refused',async()=>{
  const api=makeGitHubReadOnlyClient({token:'x',fetchImpl:async()=>({ok:true,status:200,json:async()=>({check_runs:null})})});
  await assert.rejects(api.get('/repos/org/repo/commits/'+H+'/check-runs','checks'),/Malformed provider pagination/);
 });
+
+
+test('protected branch HTTP 403 is identified without treating it as absent policy',async()=>{
+ const {client}=mock();const original=client.get;
+ client.get=async(path,kind)=>{
+   if(path.endsWith('/branches/main/protection')){
+     const error=new Error('private credentials must never appear in report');
+     error.status=403;throw error;
+   }
+   return original(path,kind);
+ };
+ const r=await collectProtectedWave(manifest(),client);
+ assert.equal(r.readyForHumanFinalReview,false);
+ assert.ok(r.governance.every(x=>x.blockers.includes('GOVERNANCE_PROTECTION_UNAVAILABLE')));
+ assert.ok(r.governance.every(x=>x.unavailableSources.some(s=>s.source==='PROTECTION'&&s.httpStatus===403)));
+ assert.doesNotMatch(JSON.stringify(r),/private credentials/i);
+});
+test('unsupported branch-rules HTTP 400 is reported distinctly from protection failure',async()=>{
+ const {client}=mock();const original=client.get;
+ client.get=async(path,kind)=>{
+   if(path.endsWith('/rules/branches/main')){
+     const e=new Error('unsupported endpoint');e.status=400;throw e;
+   }
+   return original(path,kind);
+ };
+ const r=await collectProtectedWave(manifest(),client);
+ assert.ok(r.governance.every(x=>x.blockers.includes('GOVERNANCE_RULES_UNAVAILABLE')));
+ assert.ok(r.governance.every(x=>x.unavailableSources.some(s=>s.source==='RULES'&&s.httpStatus===400)));
+});
+test('two simultaneous provider failures retain both restricted source categories',async()=>{
+ const {client}=mock();const original=client.get;
+ client.get=async(path,kind)=>{
+   if(path.endsWith('/branches/main/protection')||path.endsWith('/rules/branches/main')){
+     const e=new Error('do not log provider secret');e.status=path.includes('/protection')?403:400;throw e;
+   }
+   return original(path,kind);
+ };
+ const r=await collectProtectedWave(manifest(),client);
+ assert.ok(r.governance.every(x=>x.blockers.includes('GOVERNANCE_PROTECTION_UNAVAILABLE')&&
+   x.blockers.includes('GOVERNANCE_RULES_UNAVAILABLE')));
+ assert.ok(r.governance.every(x=>x.unavailableSources.length===2));
+ assert.doesNotMatch(JSON.stringify(r),/provider secret/);
+});
+test('check-run permission denied cannot be bypassed by executed workflow steps',async()=>{
+ const {client}=mock();const original=client.get;
+ client.get=async(path,kind)=>{
+   if(path.includes('/check-runs?')){const e=new Error('restricted');e.status=403;throw e;}
+   return original(path,kind);
+ };
+ const r=await collectProtectedWave(manifest(),client);
+ assert.ok(r.governance.every(x=>x.blockers.includes('GOVERNANCE_CHECKS_UNAVAILABLE')));
+ assert.equal(r.mergeAuthorized,false);
+});
+test('network failure has source category without misleading invented HTTP status',async()=>{
+ const {client}=mock();const original=client.get;
+ client.get=async(path,kind)=>path.endsWith('/rules/branches/main')
+   ? Promise.reject(new Error('connection reset')) : original(path,kind);
+ const r=await collectProtectedWave(manifest(),client);
+ assert.ok(r.governance.every(x=>x.blockers.includes('GOVERNANCE_RULES_UNAVAILABLE')));
+ assert.ok(r.governance.every(x=>x.unavailableSources.some(s=>s.source==='RULES'&&s.httpStatus===undefined)));
+});
+test('late rules permission revocation is caught by third wave-wide readback',async()=>{
+ const {client}=mock();const original=client.get;let seen=0;
+ client.get=async(path,kind)=>{
+   if(path==='/repos/org/editor/rules/branches/main'&&++seen===3){
+     const e=new Error('policy permission revoked');e.status=403;throw e;
+   }
+   return original(path,kind);
+ };
+ const r=await collectProtectedWave(manifest(),client);
+ assert.equal(r.readyForHumanFinalReview,false);
+ assert.ok(r.governance[2].blockers.includes('GOVERNANCE_RULES_UNAVAILABLE'));
+ assert.ok(r.governance[2].unavailableSources.some(s=>s.httpStatus===403));
+});
+test('HTTP client preserves safe status metadata without echoing credential',async()=>{
+ const api=makeGitHubReadOnlyClient({token:'PRIVATE_BEARER_SENTINEL',fetchImpl:async()=>({
+   ok:false,status:403,json:async()=>({message:'PRIVATE_BEARER_SENTINEL'})
+ })});
+ await assert.rejects(async()=>{
+   try{await api.get('/repos/org/repo/branches/main/protection')}
+   catch(e){
+     assert.equal(e.status,403);
+     assert.doesNotMatch(e.message,/PRIVATE_BEARER_SENTINEL/);
+     throw e;
+   }
+ },/GitHub provider error 403/);
+});
