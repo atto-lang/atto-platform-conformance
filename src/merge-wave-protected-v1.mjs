@@ -13,15 +13,33 @@ function policySnapshot(x) {
   });
 }
 
+const knownSources = ['PR','REVIEWS','PROTECTION','RULES','CHECKS'];
+function inaccessibleEvidence(error) {
+  const sources=Array.isArray(error?.unavailableSources) ? error.unavailableSources : [];
+  return {blockers:[...new Set(['GOVERNANCE_PROVIDER_UNAVAILABLE',
+    ...sources.map(x=>'GOVERNANCE_'+x.source+'_UNAVAILABLE')])],
+    unavailableSources:sources.map(x=>({source:x.source,
+      ...(Number.isInteger(x.status) ? {httpStatus:x.status} : {})}))};
+}
 async function fetchPolicy(client,spec) {
   const root='/repos/'+spec.repo;
-  const [pr,reviews,protection,rules,checkRuns]=await Promise.all([
-    client.get(root+'/pulls/'+spec.number,'object'),
-    client.get(root+'/pulls/'+spec.number+'/reviews','array'),
-    client.get(root+'/branches/main/protection','object'),
-    client.get(root+'/rules/branches/main','array'),
-    client.get(root+'/commits/'+spec.expectedHead+'/check-runs?filter=latest','checks')
-  ]);
+  const requests=[
+    [root+'/pulls/'+spec.number,'object'],
+    [root+'/pulls/'+spec.number+'/reviews','array'],
+    [root+'/branches/main/protection','object'],
+    [root+'/rules/branches/main','array'],
+    [root+'/commits/'+spec.expectedHead+'/check-runs?filter=latest','checks']
+  ];
+  const results=await Promise.allSettled(requests.map(([path,shape])=>client.get(path,shape)));
+  const unavailableSources=results.flatMap((result,i)=>result.status==='rejected'
+    ? [{source:knownSources[i],...(Number.isInteger(result.reason?.status)
+        ? {status:result.reason.status} : {})}] : []);
+  if (unavailableSources.length) {
+    const e=new Error('Governance evidence unavailable');
+    e.unavailableSources=unavailableSources;
+    throw e;
+  }
+  const [pr,reviews,protection,rules,checkRuns]=results.map(x=>x.value);
   return {pr,reviews,protection,rules,checkRuns};
 }
 
@@ -40,10 +58,10 @@ export async function collectProtectedWave(manifest,client) {
       }
       snapshots.push(policySnapshot(second));
       governance.push(policy);
-    } catch {
+    } catch (error) {
       snapshots.push(null);
       governance.push({repository:spec.repo,readyForHumanGovernanceReview:false,
-        advisoryOnly:true,mergeAuthorized:false,blockers:['GOVERNANCE_PROVIDER_UNAVAILABLE']});
+        advisoryOnly:true,mergeAuthorized:false,...inaccessibleEvidence(error)});
     }
   }
   // Third read across all repositories catches a policy that changes while a
@@ -56,9 +74,11 @@ export async function collectProtectedWave(manifest,client) {
         governance[i].readyForHumanGovernanceReview=false;
         governance[i].blockers=[...new Set([...governance[i].blockers,'GOVERNANCE_CHANGED_DURING_WAVE'])];
       }
-    } catch {
+    } catch (error) {
       governance[i].readyForHumanGovernanceReview=false;
-      governance[i].blockers=[...new Set([...governance[i].blockers,'GOVERNANCE_PROVIDER_UNAVAILABLE'])];
+      const failure=inaccessibleEvidence(error);
+      governance[i].blockers=[...new Set([...governance[i].blockers,...failure.blockers])];
+      governance[i].unavailableSources=[...(governance[i].unavailableSources||[]),...failure.unavailableSources];
     }
   }
   const final=await collectWave(manifest,client);
