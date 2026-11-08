@@ -159,12 +159,40 @@
       "untrusted": true
     },
     {
-      "id": "untrusted-proven",
+      "id": "untrusted-quota-continuous-but-cooperation-uncertified",
       "kind": "auto-backedge",
       "hasHeapContinuation": true,
-      "expect": "ADMIT",
+      "expect": "DEFER",
       "untrusted": true,
-      "quotaContinuous": true
+      "quotaContinuous": true,
+      "reason": "untrusted-cooperation-not-certified"
+    },
+    {
+      "id": "untrusted-rt-cooperate-quota-continuous-but-uncertified",
+      "kind": "cooperate",
+      "hasHeapContinuation": true,
+      "untrusted": true,
+      "quotaContinuous": true,
+      "expect": "REJECT",
+      "reason": "untrusted-cooperation-not-certified"
+    },
+    {
+      "id": "untrusted-await-with-continuous-quota",
+      "kind": "await",
+      "hasHeapContinuation": true,
+      "untrusted": true,
+      "quotaContinuous": true,
+      "expect": "ADMIT"
+    },
+    {
+      "id": "untrusted-auto-certification-requires-continuation",
+      "kind": "auto-backedge",
+      "hasHeapContinuation": false,
+      "untrusted": true,
+      "quotaContinuous": true,
+      "untrustedCooperationCertified": true,
+      "expect": "DEFER",
+      "reason": "continuation-not-lowered"
     }
   ]
 }
