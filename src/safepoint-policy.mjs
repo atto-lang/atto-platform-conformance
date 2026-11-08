@@ -3,7 +3,7 @@ const kinds=new Set(['await','blocking-call','readch','writech','select','cooper
 export function admitSafePoint(input) {
  const p={hasHeapContinuation:false,liveBorrow:false,liveGuard:false,plainCritical:false,
    hostFrame:false,partialEffect:false,inCleanup:false,cleanupLowered:false,
-   untrusted:false,quotaContinuous:false,...input};
+   untrusted:false,quotaContinuous:false,untrustedCooperationCertified:false,...input};
  if(!kinds.has(p.kind))throw new TypeError('unknown suspension kind');
  const denied=(reason)=>({decision:p.kind==='auto-backedge'?'DEFER':'REJECT',reason});
  if(p.plainCritical)return denied('plain-critical-no-suspend');
@@ -13,6 +13,12 @@ export function admitSafePoint(input) {
  if(p.partialEffect)return denied('partial-effect-not-committed');
  if(p.inCleanup&&!p.cleanupLowered)return denied('cleanup-not-lowered');
  if(p.untrusted&&!p.quotaContinuous)return denied('logical-quota-not-continuous');
+ // Conserved fuel/wall/CPU is necessary but not sufficient to certify
+ // UNTRUSTED source-level rt cooperate / implicit loop preemption. Until
+ // isolate revocation and cleanup semantics are proven these remain gated.
+ if(p.untrusted&&(p.kind==='cooperate'||p.kind==='auto-backedge')
+    &&!p.untrustedCooperationCertified)
+   return denied('untrusted-cooperation-not-certified');
  if(!p.hasHeapContinuation)return denied('continuation-not-lowered');
  return {decision:p.kind==='generator-value'?'EMIT_AND_PARK':'ADMIT',reason:'proven-heap-continuation'};
 }
