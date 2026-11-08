@@ -74,10 +74,14 @@ export function assessPostMerge({spec,pr,mergeCommit,mainBefore,mainCommit,compa
  if(!Array.isArray(runs)||!Array.isArray(requirements)||!requirements.length)
    fail('POSTMERGE_CI_UNVERIFIED');
  if(Array.isArray(requirements))for(const req of requirements){
+   const relevant=Array.isArray(runs)?runs.filter(r=>r?.workflow_id===req.workflowId&&
+     r?.name===req.workflowName&&r?.head_sha===current&&r?.event==='push'):[];
+   if(relevant.length!==1){fail('MAIN_CI_RUN_AMBIGUOUS_OR_REPLAYED');continue}
    const matching=Array.isArray(runs)?runs.filter(r=>r?.workflow_id===req.workflowId&&
      r?.name===req.workflowName&&r?.head_sha===current&&r?.event==='push'&&
      r?.status==='completed'&&r?.conclusion==='success'&&
-     Number.isSafeInteger(r?.id)&&r.id>0&&
+     r?.repository?.full_name===spec.repo&&r?.head_repository?.full_name===spec.repo&&
+     r?.head_branch==='main'&&Number.isSafeInteger(r?.id)&&r.id>0&&
      Number.isSafeInteger(r?.run_attempt)&&r.run_attempt>0):[];
    if(matching.length!==1){fail('MAIN_CI_RUN_NOT_PINNED');continue}
    const run=matching[0],jobs=jobsByRun?.[String(run.id)];
@@ -143,14 +147,21 @@ export async function collectPostMergeWave(manifest,client){
    }
  }
  const byID=new Map(entries.map(e=>[e.repo+'#'+e.number,e]));
- for(const spec of manifest.prs)if(spec.dependsOn!=null){
-   const child=byID.get(spec.repo+'#'+spec.number);
-   const parent=byID.get(spec.repo+'#'+spec.dependsOn);
-   if(!parent?.verified||!validDate(parent.mergedAt)||!validDate(child.mergedAt)||
-     Date.parse(parent.mergedAt)>=Date.parse(child.mergedAt)){
-     child.verified=false;
-     child.blockers=distinct([...child.blockers,'PARENT_NOT_VERIFIED_BEFORE_CHILD']);
+ // Propagate dependency failures to every transitive child independently of manifest order.
+ // A parent in this exact attested wave must precede its child in actual merge time.
+ for(let pass=0;pass<manifest.prs.length;pass++){
+   let changed=false;
+   for(const spec of manifest.prs)if(spec.dependsOn!=null){
+     const child=byID.get(spec.repo+'#'+spec.number);
+     const parent=byID.get(spec.repo+'#'+spec.dependsOn);
+     if(!parent?.verified||!validDate(parent.mergedAt)||!validDate(child.mergedAt)||
+       Date.parse(parent.mergedAt)>=Date.parse(child.mergedAt)){
+       if(child.verified)changed=true;
+       child.verified=false;
+       child.blockers=distinct([...child.blockers,'PARENT_NOT_VERIFIED_BEFORE_CHILD']);
+     }
    }
+   if(!changed)break;
  }
  const verified=entries.filter(e=>e.verified),repos=distinct(verified.map(e=>e.repo));
  const blockers=[];
