@@ -52,6 +52,17 @@ function sameOrderedStrings(value,expected) {
   return Array.isArray(value) && value.length===expected.length &&
     value.every((part,index)=>part===expected[index]);
 }
+function exactObjectKeys(value,expected) {
+  if(!value || typeof value!=="object" || Array.isArray(value))
+    return false;
+  const actual=Object.keys(value).sort();
+  const wanted=[...expected].sort();
+  return sameOrderedStrings(actual,wanted);
+}
+const expectedContractKeys=Object.freeze([
+  "schemaVersion","contract","stageOrder","platforms","promotionRules","nonEvidence"
+]);
+const expectedPlatformKeys=Object.freeze(["repository","targetClass"]);
 
 
 function validateContractV1(contract) {
@@ -59,6 +70,8 @@ function validateContractV1(contract) {
   if(!contract || contract.schemaVersion!==1 ||
      contract.contract!=="oreslang.platform-capability/1")
     return ["unsupported or missing contract"];
+  if(!exactObjectKeys(contract,expectedContractKeys))
+    errors.push("contract top-level field registry does not match v1");
   if(!Array.isArray(contract.stageOrder) ||
      contract.stageOrder.length!==expectedStages.length ||
      contract.stageOrder.some((value,index)=>value!==expectedStages[index]))
@@ -73,6 +86,8 @@ function validateContractV1(contract) {
       errors.push(`contract repository mismatch for ${name}`);
     if(contract.platforms?.[name]?.targetClass!==expectedTargetClasses[name])
       errors.push(`contract targetClass mismatch for ${name}`);
+    if(!exactObjectKeys(contract.platforms?.[name],expectedPlatformKeys))
+      errors.push(`contract platform fields mismatch for ${name}`);
   }
   const rules=contract.promotionRules;
   const actualRuleKeys=rules && typeof rules==="object" && !Array.isArray(rules)
