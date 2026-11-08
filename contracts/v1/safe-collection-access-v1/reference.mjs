@@ -158,7 +158,8 @@ export class CollectionLoanModel {
   }
 
   moveOwner(actor, newActor) {
-    this.#exclusive(actor);
+    this.#check(actor);
+    if (this.#loans.size) fail("E_LOAN_CONFLICT");
     if (newActor === actor || !newActor) fail("E_INVALID_TRANSFER");
     this.owner = newActor;
     this.#generation++;
