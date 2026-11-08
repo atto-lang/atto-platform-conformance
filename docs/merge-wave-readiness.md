@@ -43,3 +43,11 @@ Latest **local** result: **158/158 passing test cases**, including 139 additiona
 - Dependency and target-main ordering, with confirmation that a passing report **never** authorizes a merge
 
 GitHub API account privileges, approval applicability under CODEOWNERS, dynamic branch rulesets, active agent leases and source-level semantic compatibility **remain external checks**. The real REST provider requires a token with read access; the unit tests use deterministic mocks and cannot establish hosted runner admission. Update the frozen base SHA after every successful mainline merge; do not disable stale-base validation.
+
+## Exact workflow identity hardening (2026-11-07)
+
+The production manifest now **requires** `requiredWorkflows` for every PR. Each requirement pins a GitHub Actions `workflowId`, `workflowName`, `jobName` and `testStepName`. A passing workflow with a copied test-step label but a different workflow ID cannot satisfy the contract; neither can the right workflow with a renamed/missing job, a skipped or runnerless job, a stale run attempt, or a test step present only in an unrelated job. Each required test step must execute **inside** its pinned successful job and run.
+
+The pinned public wave uses the provider-returned workflow identities: website `378985166`; Sublime `373587523`; CLI main CI `373591906`, signed-release assurance `409917534`, and root-signed trust policy `409926325`. This source-free gate remains advisory and does not imply release authorization, independent review, or deployment.
+
+Expanded local suite after this fix: **174/174 Node 22 test cases pass**, including 16 additional workflow-spoof and manifest mutation cases over the previous 158. Hosted test evidence is still **NOT_EXECUTED** while org runner admission is blocked in issue #315. Do not count a workflow rerun request itself as execution.
