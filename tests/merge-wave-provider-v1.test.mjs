@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {makeGitHubReadOnlyClient, validateManifest, collectWave, evidenceFingerprint} from '../src/merge-wave-provider-v1.mjs';
+import {makeGitHubReadOnlyClient, validateManifest, collectWave, evidenceFingerprint, verifyStackedParent} from '../src/merge-wave-provider-v1.mjs';
 const A='a'.repeat(40), B='b'.repeat(40), C='c'.repeat(40);
-const p=(repo='org/repo',number=1,extra={})=>({repo,number,expectedHead:A,expectedBaseSha:B,requiredStepNames:['Test'],requiredWorkflows:[{workflowId:7,workflowName:'CI',jobName:'tests',testStepName:'Test'}],...extra});
+const p=(repo='org/repo',number=1,extra={})=>({repo,number,expectedHead:A,expectedBaseSha:B,requiredStepNames:['Test'],requiredWorkflows:[{workflowId:7,workflowName:'CI',jobName:'tests',testStepName:'Test'}],...(extra.dependsOn != null ? {expectedParentHead:A} : {}),...extra});
 const manifest=(...specs)=>({prs:specs.length?specs:[p()]});
 const ok=(body,status=200)=>({ok:status>=200 && status<300,status,json:async()=>body});
 function clientForMock(handler,{maxPages=10,pageSize=100}={}){
@@ -317,4 +317,61 @@ test('snapshots ignore irrelevant provider ordering of reviews and workflows',as
 test('snapshot fingerprint fails on unavailable review or run collections',()=>{
  assert.throws(()=>evidenceFingerprint({pr:{},reviews:null,runs:[]}),/Incomplete evidence snapshot/);
  assert.throws(()=>evidenceFingerprint({pr:{},reviews:[],runs:null}),/Incomplete evidence snapshot/);
+});
+
+test('manifest requires pinned source head for a stacked dependency',()=>{
+ const x=manifest(p('org/repo',1,{dependsOn:2}));
+ delete x.prs[0].expectedParentHead;
+ assert.throws(()=>validateManifest(x),/Invalid pinned PR identity/);
+ x.prs[0].expectedParentHead='not-a-sha';
+ assert.throws(()=>validateManifest(x),/Invalid pinned PR identity/);
+});
+test('merged parent cannot substitute another head, number, or repository',async()=>{
+ const {value,client}=mockFive({parentMerged:true,stacked:true});
+ const original=client.get;
+ const changes=[
+  x=>({...x,head:{sha:C}}),
+  x=>({...x,number:99}),
+  x=>({...x,base:{...x.base,repo:{full_name:'elsewhere/repo'}}}),
+  x=>({...x,head:{...x.head,repo:{full_name:'evil/mirror'}}}),
+ ];
+ for(const change of changes){
+  client.get=async(path,kind)=>{
+   const result=await original(path,kind);
+   return path==='/repos/org/cli/pulls/4' ? change(result) : result;
+  };
+  const wave=await collectWave(value,client);
+  assert.ok(wave.prs[4].blockers.includes('PARENT_NOT_MERGED'),JSON.stringify(wave.prs[4]));
+ }
+});
+test('snapshot fingerprint detects run source and destination repository changes',()=>{
+ const value={pr:{head:{sha:A}},reviews:[],jobsByRun:{9:[]},
+   runs:[{id:9,pull_requests:[],repository:{full_name:'org/repo'},head_repository:{full_name:'org/repo'}}]};
+ const prior=evidenceFingerprint(value);
+ for(const field of ['repository','head_repository']){
+   const changed=structuredClone(value);changed.runs[0][field].full_name='foreign/repo';
+   assert.notEqual(evidenceFingerprint(changed),prior,field);
+ }
+});
+test('snapshot fingerprint detects same-number PR association shifted to another repository',()=>{
+ const value={pr:{head:{sha:A}},reviews:[],jobsByRun:{9:[]},
+   runs:[{id:9,pull_requests:[{number:15,base:{repo:{full_name:'org/repo'}},head:{repo:{full_name:'org/repo'}}}]}]};
+ const prior=evidenceFingerprint(value);
+ for(const field of ['base','head']){
+   const changed=structuredClone(value);changed.runs[0].pull_requests[0][field].repo.full_name='foreign/repo';
+   assert.notEqual(evidenceFingerprint(changed),prior,field);
+ }
+});
+test('snapshot fingerprint captures PR source repo drift with unchanged SHA',()=>{
+ const value={pr:{head:{sha:A,repo:{full_name:'org/repo'}}},reviews:[],runs:[],jobsByRun:{}};
+ const changed=structuredClone(value);changed.pr.head.repo.full_name='foreign/repo';
+ assert.notEqual(evidenceFingerprint(changed),evidenceFingerprint(value));
+});
+test('merged parent original SHA remains separate from squash result on main',()=>{
+ const parent={number:4,merged:true,merged_at:'2026-11-07T23:00:00Z',
+   head:{sha:A,repo:{full_name:'org/repo'}},base:{ref:'main',repo:{full_name:'org/repo'}}};
+ const spec={repo:'org/repo',dependsOn:4,expectedParentHead:A,expectedBaseSha:B};
+ assert.equal(verifyStackedParent(spec,parent),true);
+ assert.equal(verifyStackedParent({...spec,expectedParentHead:C},parent),false);
+ assert.equal(verifyStackedParent(spec,{...parent,merged_at:null}),false);
 });
