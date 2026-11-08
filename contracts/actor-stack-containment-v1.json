@@ -877,6 +877,17 @@
         "actorStackStorage",
         "actorSurvival"
       ]
+    },
+    {
+      "id": "actor-stack-leaked-guard-rejected-before-next-mail-same-batch",
+      "kind": "pending-isolation",
+      "source": null,
+      "expectedFailureClass": "stale-carrier-guest-scope",
+      "requiredEvidence": [
+        "compilerGuest",
+        "actorStackStorage",
+        "actorSurvival"
+      ]
     }
   ],
   "promotion": {
@@ -1086,17 +1097,18 @@
     "javaM33dSharedCarrierSiblingIsolation": "AUTHORED_NOT_EXECUTED",
     "javaM33dLowStackSubprocessArgument": "-Xss256k",
     "javaM33dLowStackSubprocessOutput": "ACTOR_NATIVE_STACK_OVERFLOW=A_FAILS_B_SURVIVES",
-    "javaM33dHostJUnitAuthored": 9,
+    "javaM33dHostJUnitAuthored": 10,
     "javaM33dHostJUnitExecuted": 0,
     "javaM33dLowStackSubprocessExecuted": 0,
     "javaM33dNativeJniFaultContainment": "NOT_EXECUTED",
     "javaM33dSupervisorRestartGeneration": "NOT_EXECUTED",
     "javaM33dCompiledAttoStackOverflow": "NOT_EXECUTED",
     "javaM33dFiveBackendStackParity": "NOT_EXECUTED",
-    "javaM33dNote": "Java #2673 additionally quarantines leaked GuardCallDepthGuard carrier ThreadLocal scopes before actor turn exit; revokes original actor logical depth and zeroes original actor's frame bytes. Two new JUnit tests cover leaked scope and SOE+leaked scope with surviving sibling, total 9 authored host JUnit methods. No hosted execution.",
+    "javaM33dNote": "Java #2673 hardens admitted actor StackOverflowError and stale ThreadLocal guest call scope. A per-mailbox-envelope fence revokes unbalanced Scope before the actor can process a second message in the same physical batch; a physical-turn finally remains backup. Original actor logical depth and bytes are reclaimed; sibling B's arena stays isolated. Ten host JUnit methods authored (including -Xss256k subprocess), none executed.",
     "javaM33dThreadLocalGuardTurnExitQuarantine": true,
     "javaM33dUnwoundLogicalDepthReclaimed": true,
     "javaM33dLeakedFramesCancelledByOriginalExecutionId": true,
-    "javaM33dStaleGuardMayPoisonSibling": false
+    "javaM33dStaleGuardMayPoisonSibling": false,
+    "javaM33dPerEnvelopeGuestScopeFailStop": true
   }
 }
