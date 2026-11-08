@@ -34,6 +34,7 @@ function unexecuted() {
   x.sourceProgramSha256 = null;
   x.compilerSha256 = null;
   x.artifact = { kind: 'none', sha256: null };
+  Object.keys(x.closure).forEach(k => { x.closure[k] = false; });
   x.execution = { jobId: null, runnerName: null, completedSteps: 0,
     guestEntrypointRan: false, guestOutputSha256: null,
     guestInterpreterUsed: false, runtimeGuestCompilerUsed: false,
@@ -48,6 +49,7 @@ test('every backend and supported profile remains structurally reviewed, never r
       if (mode === 'jit') {
         x.artifact.kind = 'jit-only-guest';
         x.execution.aotBaselineRanWithoutJit = false;
+        x.execution.runtimeGuestJitUsed = true;
       }
       const result = inspect(x);
       assert.equal(result.structurallyValid, true, backend + ':' + mode);
