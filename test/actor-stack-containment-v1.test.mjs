@@ -48,7 +48,7 @@ function validatePending(matrix) {
   }
   assert.equal(matrix.requirements.nativeStackOverflowRecoverableOnSharedCarrier, false);
   assert.equal(matrix.requirements.untrustedArbitraryNativeCodeRequiresKillableWorker, true);
-  assert.ok(matrix.scenarios.length >= 71);
+  assert.ok(matrix.scenarios.length >= 73);
   assert.match(matrix.javaFrameArenaReference, /\/pull\/2627$/);
   const bootstrap = matrix.frameStorageBootstrap;
   assert.equal(bootstrap.javaHostPrimitive, 'MANAGED_BYTES_ONLY');
@@ -231,7 +231,11 @@ function validatePending(matrix) {
   assert.equal(bootstrap.javaM33dLowStackSubprocessArgument, '-Xss256k');
   assert.equal(bootstrap.javaM33dLowStackSubprocessOutput,
       'ACTOR_NATIVE_STACK_OVERFLOW=A_FAILS_B_SURVIVES');
-  assert.equal(bootstrap.javaM33dHostJUnitAuthored, 7);
+  assert.equal(bootstrap.javaM33dHostJUnitAuthored, 9);
+  assert.equal(bootstrap.javaM33dThreadLocalGuardTurnExitQuarantine, true);
+  assert.equal(bootstrap.javaM33dUnwoundLogicalDepthReclaimed, true);
+  assert.equal(bootstrap.javaM33dLeakedFramesCancelledByOriginalExecutionId, true);
+  assert.equal(bootstrap.javaM33dStaleGuardMayPoisonSibling, false);
   assert.equal(bootstrap.javaM33dHostJUnitExecuted, 0);
   assert.equal(bootstrap.javaM33dLowStackSubprocessExecuted, 0);
   assert.equal(bootstrap.javaM33dNativeJniFaultContainment, 'NOT_EXECUTED');
@@ -407,7 +411,11 @@ test('fake pass, duplicate backend, deleted proof and false promotion are reject
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dPoisonActorArenaBeforeStop = false;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dOtherVirtualMachineErrorsRethrown = false;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dSharedCarrierSiblingIsolation = 'PASS';})));
-  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dHostJUnitExecuted = 7;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dHostJUnitExecuted = 9;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dThreadLocalGuardTurnExitQuarantine = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dUnwoundLogicalDepthReclaimed = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dLeakedFramesCancelledByOriginalExecutionId = false;})));
+  assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dStaleGuardMayPoisonSibling = true;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dLowStackSubprocessExecuted = 1;})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dNativeJniFaultContainment = 'PASS';})));
   assert.throws(() => validatePending(mutate(m => {m.frameStorageBootstrap.javaM33dSupervisorRestartGeneration = 'PASS';})));
@@ -774,7 +782,9 @@ test('M3.3d actor-only stack overflow needs real guest, sibling and shallow-nati
     'actor-native-small-xss-process-a-fails-b-survives',
     'actor-overflow-arena-zeroization-generation-fence',
     'actor-overflow-supervisor-structured-child-and-sibling-policy',
-    'actor-stack-overflow-nonadmitted-vm-fatal-still-propagates'
+    'actor-stack-overflow-nonadmitted-vm-fatal-still-propagates',
+    'actor-stack-unbalanced-guard-threadlocal-revoked-at-turn-exit',
+    'actor-stack-overflow-leaked-guard-does-not-poison-sibling'
   ];
   for (const id of required) {
     const scenario = matrix.scenarios.find(s => s.id === id);
@@ -786,7 +796,9 @@ test('M3.3d actor-only stack overflow needs real guest, sibling and shallow-nati
   assert.equal(b.javaM33dPerActorGuestStackAndArena, true);
   assert.equal(b.javaM33dSwallowedManagedQuotaMustStopBeforeNextMail, true);
   assert.equal(b.javaM33dOtherVirtualMachineErrorsRethrown, true);
-  assert.equal(b.javaM33dHostJUnitAuthored, 7);
+  assert.equal(b.javaM33dHostJUnitAuthored, 9);
+  assert.equal(b.javaM33dThreadLocalGuardTurnExitQuarantine, true);
+  assert.equal(b.javaM33dStaleGuardMayPoisonSibling, false);
   assert.equal(b.javaM33dHostJUnitExecuted, 0);
   assert.equal(b.javaM33dLowStackSubprocessExecuted, 0);
   assert.equal(b.javaM33dSharedCarrierSiblingIsolation, 'AUTHORED_NOT_EXECUTED');
