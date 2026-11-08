@@ -15,6 +15,11 @@ export function validateManifest(manifest) {
       !Array.isArray(s?.requiredStepNames) || s.requiredStepNames.length === 0 ||
       s.requiredStepNames.some(n => typeof n !== 'string' || n.trim().length === 0 || n.length > 160) ||
       new Set(s.requiredStepNames).size !== s.requiredStepNames.length ||
+      !Array.isArray(s.requiredWorkflows) || s.requiredWorkflows.length < 1 ||
+      s.requiredWorkflows.some(w => !w || !Number.isSafeInteger(w.workflowId) || w.workflowId < 1 ||
+        !['workflowName','jobName','testStepName'].every(k => typeof w[k] === 'string' &&
+          w[k].trim().length > 0 && w[k].length <= 160)) ||
+      new Set(s.requiredWorkflows.map(w => `${w?.workflowId}:${w?.jobName}:${w?.testStepName}`)).size !== s.requiredWorkflows.length ||
       (s.dependsOn != null && (!Number.isSafeInteger(s.dependsOn) || s.dependsOn < 1 || s.dependsOn === s.number)))
       throw new Error('Invalid pinned PR identity');
     const key = s.repo+'#'+s.number;
@@ -84,6 +89,7 @@ export async function collectWave(manifest, client) {
       typeof parent.merged_at === 'string' && parent.base?.ref === 'main');
     entries.push(assessPullRequest({repository:spec.repo, number:spec.number, expectedHead:spec.expectedHead,
       expectedBase:'main', expectedBaseSha:spec.expectedBaseSha, requiredStepNames:spec.requiredStepNames,
+      requiredWorkflows:spec.requiredWorkflows,
       pr, reviews, runs:current, jobsByRun, expectedParentMerged}));
   }
   return assessWave(entries);
