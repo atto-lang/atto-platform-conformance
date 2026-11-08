@@ -63,7 +63,7 @@ jobs:
           };
           const tests = summary('tests'), pass = summary('pass'), fail = summary('fail');
           const skipped = summary('skipped'), cancelled = summary('cancelled'), todo = summary('todo');
-          if (tests < 337 || pass !== tests || fail !== 0 || skipped !== 0 ||
+          if (tests < 339 || pass !== tests || fail !== 0 || skipped !== 0 ||
               cancelled !== 0 || todo !== 0)
             throw new Error('MERGE_WAVE_EXACT_HEAD_TEST_EVIDENCE_INCOMPLETE');
           const receipt = {
