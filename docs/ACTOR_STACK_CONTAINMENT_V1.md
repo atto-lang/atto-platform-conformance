@@ -509,3 +509,52 @@ verification or noncanonical instruction admission, and premature
 native/five-backend parity promotion. Require real, nonzero-step
 exact-head Actions receipts, test XML, source fixture outputs and
 independent review before merging or claiming stack containment.
+
+## Java M3.3d actor-local overflow and native carrier survival
+
+[Java draft #2673](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2673)
+is stacked on #2669, addressing an actual shared-carrier failure gap.
+The existing Java runtime has separate generation-fenced
+`ActorGuestStack` and `ActorFrameArena` per actor incarnation, and
+`ActorScalarCallMachine` fails with a controlled budget exception
+before exceeding 64 actor frames / 64 KiB by default. Even if the
+host behavior swallows that exception, the physical actor mailbox
+checks its poisoned arena before further delivery. The actor's
+managed frame bytes are zeroized after physical quiescence, while
+a sibling actor continues with its own budget.
+
+The previously shared physical-turn catch rethrew all
+`VirtualMachineError` instances, including `StackOverflowError`
+from the still-recursive JVM legacy evaluator. Once such an SOE
+has unwound to a **fully admitted actor turn**, #2673 now poisons
+only the owning actor's guest stack and frame arena, then records
+a lightweight actor-local `ActorStackOverflowException` and uses
+the existing STOP/finalization protocol. The already-recovered
+`StackOverflowError` is not rethrown into the shared dispatcher.
+Other VM fatals, and errors before turn admission or outside the
+actor boundary, retain the existing fatal propagation behavior.
+
+This is **best-effort Java guest-turn recovery**, not an OS/JNI/native
+stack isolation guarantee. Unsafe or untrusted native code still
+requires a separately killable isolate/process. A failing actor's
+structured children are cancelled per supervision ownership policy;
+unrelated sibling actors must keep running and must not share its
+poisoned arena.
+
+Seven new Java host-runtime JUnit cases are **AUTHORED_NOT_EXECUTED**.
+They model a synthetic StackOverflowError, genuine JVM recursive
+StackOverflowError, swallowed/uncaught managed frame-budget failure,
+the independently healthy sibling reusing a one-worker SHARED
+carrier, zeroized retired actor frames, ordinary error preservation
+and a separate forked `-Xss256k` JVM test process with receipt
+`ACTOR_NATIVE_STACK_OVERFLOW=A_FAILS_B_SURVIVES` only if A fails
+and B completes on the same surviving shared carrier.
+
+Seven pending scenarios bring this actor-stack matrix to **71**.
+The contract test explicitly forbids manufactured JUnit execution,
+fake low-stack process PASS, native/JNI fault containment claims,
+premature supervisor restart/generation coverage or cross-backend
+stack parity. Real exact-head stepful Maven/Graal and Node CI,
+compiled `.atto` guest evidence, source actor supervisor restart,
+small native-stack process survival and independent review are still
+required before promoting actor overflow isolation across platforms.
