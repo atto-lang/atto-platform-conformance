@@ -47,13 +47,31 @@ test("all cases have candidate source, distinct IDs and prescribed failure proof
       assert.ok(!src.includes("expect-error:"));
     }
   }
-  assert.equal(positives, 8);
+  assert.equal(positives, 9);
   assert.equal(negatives, 10);
   for (const id of ["borrowed-get-option", "read-then-write-after-last-use", "miss-under-live-write",
     "nested-some-none-option", "high-bit-checked-get-copy",
-    "use-after-take-collection", "iterator-growth-conflict", "checked-copy-owned-option-int"]) {
+    "use-after-take-collection", "iterator-growth-conflict", "checked-copy-owned-option-int",
+    "checked-copy-zero-vs-none"]) {
     assert.ok(ids.has(id), "missing safety fixture: " + id);
   }
+});
+
+test("checked-copy candidates contain non-vacuous tagged-access operations", () => {
+  const readCase = (name) => readFileSync(path.join(base, "fixtures", name), "utf8");
+  const contract = readCase("checked-copy-owned-option-int.atto");
+  assert.match(contract, /val Option<int> present = values\.get_copy\(0\)/);
+  assert.match(contract, /val Option<int> negative = values\.get_copy\(-1\)/);
+  assert.match(contract, /val Option<int> high_bit = values\.get_copy\(2147483648\)/);
+  assert.match(contract, /return present\.unwrap_or\(0\) \+ negative\.unwrap_or\(0\) \+ high_bit\.unwrap_or\(0\)/);
+  assert.doesNotMatch(contract, /return\s+42\s*;/);
+
+  const zero = readCase("checked-copy-zero-vs-none.atto");
+  assert.match(zero, /values\.add\(0\)/);
+  assert.match(zero, /val Option<int> zero = values\.get_copy\(0\)/);
+  assert.match(zero, /val Option<int> absent = values\.get_copy\(1\)/);
+  assert.match(zero, /zero\.is_some\(\) && absent\.is_none\(\)/);
+  assert.doesNotMatch(zero, /return\s+42\s*;/);
 });
 
 test("collection contract preserves ownership + no-implicit-flattening constraints", () => {
