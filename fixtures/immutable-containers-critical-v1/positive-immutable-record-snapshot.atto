@@ -1,0 +1,5 @@
+pub fnc main(): int {
+  const before = infer record{value:7, other:10};
+  const after = infer record{...before, value:8};
+  return before.value + after.value;
+}
