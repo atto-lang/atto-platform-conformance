@@ -70,7 +70,8 @@ test('contract pins 32-bit actor-relative words, not native host addresses', () 
   assert.equal(contract.references.nativeFfiPointersCompressed, false);
   assert.equal(contract.references.actorRefsCompressed, false);
   assert.equal(contract.references.generationInWord, false);
-  assert.deepEqual(contract.targets, ['java-graalvm', 'llvm', 'net-nativeaot']);
+  assert.deepEqual(contract.targets, ['java-graalvm', 'llvm', 'net-nativeaot',
+    'wasm', 'forge', 'rust-source-rs', 'rust-cranelift']);
 });
 
 test('unsigned ref32 boundaries include high-bit words and do not sign extend', () => {
@@ -146,4 +147,37 @@ test('no host-reference result can claim backend guest or AOT execution', () => 
   for (const name of contract.targets)
     assert.equal(contract.evidence[name], 'NOT_EXECUTED');
   assert.match(contract.evidence.required, /exact-head executed \.atto guest/);
+});
+
+test('all seven targets remain unexecuted for source guest heap certification', () => {
+  assert.equal(contract.targets.length, 7);
+  assert.equal(new Set(contract.targets).size, 7);
+  for (const target of contract.targets) {
+    assert.equal(contract.evidence[target], 'NOT_EXECUTED');
+    assert.equal(typeof contract.implementationClassification[target], 'string');
+    assert.notEqual(contract.implementationClassification[target].length, 0);
+  }
+  assert.match(contract.evidence.required, /stepful compiled AttoLang actor guest/);
+});
+
+test('physical relocation contract requires peak charge and failure neutrality', () => {
+  for (const key of [
+    'relocationMustChargeOldAndFullReplacementUntilReclaim',
+    'refundOldOnlyAfterPhysicalScrubAndFree',
+    'logicalQuotaDistinctFromPhysicalCommittedBytes',
+    'guestAddressSpaceReservationNotPhysicalMemoryCharge',
+    'initialPhysicalCommitMayBeZero',
+    'growthMustPreserveAllLiveObjectBytes',
+    'rejectQuotaAndNativeAllocationFailuresWithoutPublishingPartialBacking',
+    'wasmGrowthRequiresFreshViewsAfterBufferChange',
+    'wasmMemoryGrowDoesNotProvePhysicalShrink',
+    'peakMustObeyProcessAndTenantBudgets',
+    'noNativeBackingChangeUnderActiveRawPointerOrLoan',
+    'noUnboundedReallocationDuringRealtimeTurn',
+    'actorBirthDoesNotCommitEntireHardLimit',
+    'schedulerMustContainOOMToOwner',
+    'growthIsNotGuestExecutionEvidence'
+  ]) assert.equal(contract.allocation[key], true, key);
+  assert.equal(contract.policyCandidates.status, 'UNVERIFIED_SIZING_PROPOSALS');
+  assert.equal(contract.policyCandidates.realtime.growthDuringAdmittedTurn, false);
 });
