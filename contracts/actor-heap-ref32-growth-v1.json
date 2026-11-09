@@ -4,7 +4,11 @@
   "targets": [
     "java-graalvm",
     "llvm",
-    "net-nativeaot"
+    "net-nativeaot",
+    "wasm",
+    "forge",
+    "rust-source-rs",
+    "rust-cranelift"
   ],
   "references": {
     "wordBits": 32,
@@ -35,7 +39,22 @@
     "failureIsAccountingNeutral": true,
     "realtimePrefaultNeverGrowsDuringActorTurn": true,
     "overflowIsActorScoped": true,
-    "default64MiBIsImplementationQuotaNot32BitWordLimit": true
+    "default64MiBIsImplementationQuotaNot32BitWordLimit": true,
+    "relocationMustChargeOldAndFullReplacementUntilReclaim": true,
+    "refundOldOnlyAfterPhysicalScrubAndFree": true,
+    "logicalQuotaDistinctFromPhysicalCommittedBytes": true,
+    "guestAddressSpaceReservationNotPhysicalMemoryCharge": true,
+    "initialPhysicalCommitMayBeZero": true,
+    "growthMustPreserveAllLiveObjectBytes": true,
+    "rejectQuotaAndNativeAllocationFailuresWithoutPublishingPartialBacking": true,
+    "wasmGrowthRequiresFreshViewsAfterBufferChange": true,
+    "wasmMemoryGrowDoesNotProvePhysicalShrink": true,
+    "peakMustObeyProcessAndTenantBudgets": true,
+    "noNativeBackingChangeUnderActiveRawPointerOrLoan": true,
+    "noUnboundedReallocationDuringRealtimeTurn": true,
+    "actorBirthDoesNotCommitEntireHardLimit": true,
+    "schedulerMustContainOOMToOwner": true,
+    "growthIsNotGuestExecutionEvidence": true
   },
   "security": {
     "authenticateActorAndIncarnation": true,
@@ -53,6 +72,41 @@
     "java-graalvm": "NOT_EXECUTED",
     "llvm": "NOT_EXECUTED",
     "net-nativeaot": "NOT_EXECUTED",
-    "required": "exact-head executed .atto guest compiler, object graph and native runtime tests; nonempty job steps"
+    "required": "exact-head stepful compiled AttoLang actor guest tests, heap allocate/grow/reclaim, failure/peak-budget negatives, physical runtime limits, AOT and pin/loan quiescence; host-only or parser-only runs cannot certify",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "rust-source-rs": "NOT_EXECUTED",
+    "rust-cranelift": "NOT_EXECUTED"
+  },
+  "policyCandidates": {
+    "status": "UNVERIFIED_SIZING_PROPOSALS",
+    "interpretation": "soft first-growth target and hard actor quota; never eagerly commit hard quota",
+    "tiny": {
+      "firstGrowthTargetBytes": 16384,
+      "hardLimitBytes": 1048576
+    },
+    "standard": {
+      "firstGrowthTargetBytes": 65536,
+      "hardLimitBytes": 67108864
+    },
+    "large": {
+      "firstGrowthTargetBytes": 1048576,
+      "hardLimitBytes": 268435456
+    },
+    "realtime": {
+      "firstGrowthTargetBytes": "explicit at admission",
+      "hardLimitBytes": "statically proved",
+      "growthDuringAdmittedTurn": false
+    },
+    "caveat": "Profiles are candidates, not current backend defaults or approved tenant budgets. Platform pages, wasm linear-memory limits, memory pressure and embedder limits may force smaller or larger physical granules."
+  },
+  "implementationClassification": {
+    "java-graalvm": "HOST_NATIVE_ARENA_AND_LAZY_REGIONS_GUEST_COVERAGE_UNVERIFIED",
+    "llvm": "HOST_FIXED_ARENA_AND_REALTIME_PREFAULT_GUEST_COVERAGE_UNVERIFIED",
+    "net-nativeaot": "HOST_LAZY_GROWTH_IN_DRAFT_412_AND_PEAK_FIX_DRAFT_436",
+    "wasm": "HOST_PRIVATE_FIXED_2_PAGE_ARENA_GROWTH_NOT_IMPLEMENTED",
+    "forge": "HOST_FIXED_CAPACITY_ARENA_GUEST_GROWTH_NOT_IMPLEMENTED",
+    "rust-source-rs": "SCALAR_COMPILER_NO_ACTOR_HEAP",
+    "rust-cranelift": "SCALAR_COMPILER_ACTORS_FAIL_CLOSED"
   }
 }
