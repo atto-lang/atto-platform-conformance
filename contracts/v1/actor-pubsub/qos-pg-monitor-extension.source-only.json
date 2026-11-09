@@ -1,0 +1,126 @@
+{
+  "schema": "attolang.actor_pubsub.qos_pg_monitor.source_only.v1",
+  "status": "SOURCE_ONLY_NOT_EXECUTED",
+  "compatibility": {
+    "extends": "oreslang.actor_pubsub.portable.v1",
+    "original_vectors": "PS001-PS026",
+    "new_keywords": false
+  },
+  "topic_policies": {
+    "RELIABLE": {
+      "full": "ALL_RECIPIENT_ATOMIC_REFUSAL",
+      "capacity": "QUEUED_PLUS_INFLIGHT",
+      "sequence_on_reject": false
+    },
+    "LOSSY": {
+      "full": "PER_RECIPIENT_DROP",
+      "capacity": "QUEUED_PLUS_INFLIGHT",
+      "sequence_on_reject": "COMMITS_FOR_PUBLICATION"
+    },
+    "LATEST": {
+      "full": "REPLACE_QUEUED_ONLY",
+      "capacity": "ONE_UNREAD_PLUS_ONE_INFLIGHT",
+      "subscription_capacity": 1,
+      "start_while_inflight": "Busy"
+    }
+  },
+  "publication_receipt": {
+    "admission_not_consumer_ack": true,
+    "fields": [
+      "sequence",
+      "recipients",
+      "accepted",
+      "dropped",
+      "coalesced",
+      "policy"
+    ]
+  },
+  "topic_stats": {
+    "fields": [
+      "policy",
+      "sequence",
+      "published",
+      "accepted",
+      "dropped",
+      "coalesced"
+    ],
+    "detached": true,
+    "counter_format": "decimal_u64_or_larger"
+  },
+  "group_monitor": {
+    "separate_from_topic_and_supervisor_control": true,
+    "grant": "EXACT_ACTIVE_MEMBERSHIP",
+    "snapshot_and_register": "ATOMIC",
+    "delta_events": [
+      "join",
+      "leave"
+    ],
+    "finite_queue": true,
+    "overflow": "FAIL_CLOSED_UNTIL_ATOMIC_RESYNC",
+    "revocation": [
+      "unmonitor",
+      "owner_leave",
+      "actor_retirement",
+      "group_close",
+      "broker_close"
+    ],
+    "authority_transfer": "DENY_BY_DEFAULT",
+    "distributed_provider": "NOT_IMPLEMENTED"
+  },
+  "enforced_negative_errors": [
+    "Full",
+    "InvalidPolicy",
+    "TopicPolicyMismatch",
+    "InvalidCapacity",
+    "Busy",
+    "UnauthorizedMonitor",
+    "StaleMonitor",
+    "MonitorOverflow",
+    "ResourceExhausted",
+    "UnknownTopic"
+  ],
+  "reference_suites": [
+    "tests/actor-pubsub-qos-policies-20261109.test.mjs",
+    "tests/actor-pubsub-group-monitor-20261109.test.mjs"
+  ],
+  "backend_status": {
+    "java": {
+      "compiler_lowering": "NOT_VERIFIED",
+      "guest_execution": "NOT_EXECUTED",
+      "race_tests": "NOT_EXECUTED",
+      "native_aot": "NOT_VERIFIED"
+    },
+    "llvm": {
+      "compiler_lowering": "NOT_VERIFIED",
+      "guest_execution": "NOT_EXECUTED",
+      "race_tests": "NOT_EXECUTED",
+      "native_aot": "NOT_VERIFIED"
+    },
+    "wasm": {
+      "compiler_lowering": "NOT_VERIFIED",
+      "guest_execution": "NOT_EXECUTED",
+      "race_tests": "NOT_EXECUTED",
+      "native_aot": "NOT_VERIFIED"
+    },
+    "net": {
+      "compiler_lowering": "NOT_VERIFIED",
+      "guest_execution": "NOT_EXECUTED",
+      "race_tests": "NOT_EXECUTED",
+      "native_aot": "NOT_VERIFIED"
+    },
+    "forge": {
+      "compiler_lowering": "NOT_VERIFIED",
+      "guest_execution": "NOT_EXECUTED",
+      "race_tests": "NOT_EXECUTED",
+      "native_aot": "NOT_VERIFIED"
+    },
+    "cranelift": {
+      "compiler_lowering": "NOT_VERIFIED",
+      "guest_execution": "NOT_EXECUTED",
+      "race_tests": "NOT_EXECUTED",
+      "native_aot": "NOT_VERIFIED"
+    }
+  },
+  "proof_contract": "Only an exact-head executed nonzero-step CI and guest/runtime receipts can promote any backend evidence.",
+  "source_export": "DENIED_CROSS_ORG_DURING_ACTIVE_INCIDENT_HOLD"
+}
