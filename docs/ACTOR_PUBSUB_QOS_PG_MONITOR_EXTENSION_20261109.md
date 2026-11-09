@@ -71,6 +71,30 @@ never carries arbitrary actor payloads.
   cannot be serialized as Sendable DATA, and group names do not grant
   membership or monitoring authority.
 
+### Monotone revision cursors (proposed extension)
+
+Every accepted join/leave transition increments a group-local arbitrary-precision
+revision. `monitorGroup` and `resyncGroupMonitor` return `revision` as a
+canonical decimal string alongside an immutable member snapshot; each join/leave
+delta carries that same `revision`. A second group has its own clock.
+Idempotent duplicate joins, rejected operations, monitor creation and topic
+DATA events never increment membership revision.
+
+`pollGroupMonitor(monitor,grant,afterRevision)` optionally enforces a strict
+expected predecessor cursor. It accepts only canonical bounded decimal strings;
+the next queued event must have `revision = afterRevision + 1`. If not, it
+returns `RevisionMismatch` and leaves the queue untouched. Malformed cursors
+return `InvalidRevision` without consuming anything. Overflow forces an
+atomic snapshot/resync, never incremental delivery past missing events. A
+monitor is immediately stale if its owning grant leaves, even with queued deltas.
+
+This is a **local, single-threaded reference contract**. Real concurrent
+backends must synchronize group mutations, monitor registration/snapshot and
+resync under a single linearizable admission boundary. They must define
+bounded counter rollover or an explicit epoch/key rotation and test it before
+claiming production guarantees. Do not use this as proof of distributed `pg`
+convergence, exactly-once delivery, or consumer handler acknowledgement.
+
 This reference model is strictly **local**. Erlang `pg` offers distributed
 membership with eventually consistent views. A distributed AttoLang provider
 would need explicit membership epochs, gap detection, resnapshot, and security
@@ -102,6 +126,7 @@ non-interceptable priority path.
 Reference tests:
 - `tests/actor-pubsub-qos-policies-20261109.test.mjs`
 - `tests/actor-pubsub-group-monitor-20261109.test.mjs`
+- `tests/actor-pubsub-monitor-revisions-20261109.test.mjs`
 - `tests/actor-pubsub-hidden-native-slots-20261109.test.mjs`
 - Existing 26 portable vectors and original quota/leave/rejoin tests
 
