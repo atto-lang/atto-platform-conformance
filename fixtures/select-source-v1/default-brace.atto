@@ -1,0 +1,9 @@
+// The brace form is semantically equivalent to over/end.
+pub fnc main(): int {
+  do select {
+    default: {
+      return 43;
+    }
+  }
+  return 0;
+}
