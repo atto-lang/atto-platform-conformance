@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "contract": "attolang.http-actor-concurrency-lifecycle/1",
+  "status": "NOT_CERTIFIED",
+  "evidenceAsOf": "2026-11-09",
+  "scope": {
+    "sourceRepositories": {
+      "java": "ores-truffle-oreslang/oreslang-source.java",
+      "llvm": "ores-truffle-oreslang/oreslang-source.llvm",
+      "wasm": "ores-truffle-oreslang/oreslang-source.wasm",
+      "forge": "ores-truffle-oreslang/oreslang-source.forge",
+      "net": "ores-truffle-oreslang/oreslang-source.net"
+    },
+    "restDemo": "ores-truffle-oreslang/oreslang-demo-restful-server"
+  },
+  "sourceContract": {
+    "serialAlias": "define serial http actor HttpActor as\nend",
+    "explicitOneOne": "define http actor HttpActor as\n    int requestConcurrency = 1;\n    int messageConcurrency = 1;\nend",
+    "normalizedMetadata": {
+      "transport": "HTTP",
+      "requestConcurrency": 1,
+      "messageConcurrency": 1
+    },
+    "semantics": {
+      "requestConcurrency": "maximum concurrent admitted HTTP request lifetimes per actor",
+      "messageConcurrency": "maximum concurrent message lifetimes per request",
+      "actorExecution": "at most one physical guest turn executing per actor incarnation",
+      "serial": "exactly one admitted request lifetime and one message lifetime"
+    }
+  },
+  "cases": [
+    {
+      "id": "HA01",
+      "kind": "compiler",
+      "name": "serial-alias",
+      "oracle": "The serial HTTP declaration and explicit (1,1) configuration lower to equivalent immutable HTTP actor policy metadata; aliases survive annotation expansion and tree shaking."
+    },
+    {
+      "id": "HA02",
+      "kind": "compiler-negative",
+      "name": "nonserial-denial",
+      "oracle": "A (3,4) configuration may parse, but must fail with a compiler-owned unsupported capability diagnostic until runtime admission, state loans and guest reentry are implemented. Never silently clamp to (1,1)."
+    },
+    {
+      "id": "HA03",
+      "kind": "compiler-negative",
+      "name": "invalid-limits",
+      "oracle": "Zero, negative, nonliteral, duplicate and conflicting requestConcurrency/messageConcurrency declarations fail before any actor or socket is published."
+    },
+    {
+      "id": "HA04",
+      "kind": "compiler-negative",
+      "name": "unbound-transport",
+      "oracle": "A generic mailbox spawn of an HTTP actor without a bound HTTP transport adapter fails closed; no silent ordinary actor fallback."
+    },
+    {
+      "id": "HA05",
+      "kind": "guest-runtime",
+      "name": "two-level-lifetimes",
+      "oracle": "Request and per-request message lifetime reservations obey their separate limits; concurrent lifetimes never imply two physical executing guest turns on one actor incarnation."
+    },
+    {
+      "id": "HA06",
+      "kind": "guest-runtime",
+      "name": "suspend-cancel-reentry",
+      "oracle": "Suspension holds logical admission while allowing carrier release; cancel/timeout releases reservations exactly once, prevents stale continuation reentry and keeps sealed-state loans exclusive."
+    },
+    {
+      "id": "HA07",
+      "kind": "guest-security",
+      "name": "exchange-incarnation",
+      "oracle": "Request/exchange authority is one-shot and bound to exact scheduler domain, actor slot and incarnation plus exchange generation; stale, wrong actor, and double claims reject."
+    },
+    {
+      "id": "HA08",
+      "kind": "guest-runtime",
+      "name": "shutdown-physical-exit",
+      "oracle": "Shutdown seals admission and rejects new requests, awaits accepted exchange and actor physical-turn quiescence, and does not claim success merely because socket response or mailbox drain completed."
+    },
+    {
+      "id": "HA09",
+      "kind": "guest-runtime",
+      "name": "shutdown-failure",
+      "oracle": "If an actor remains physically active beyond deadline, shutdown returns explicit failure; retry/forced close does not double-finalize or report a false successful quiescence."
+    },
+    {
+      "id": "HA10",
+      "kind": "guest-e2e",
+      "name": "demo-admission-restart",
+      "oracle": "The unchanged REST demo uses its single admitted request until actor completion, exposes explicit overload behavior, retains persisted state through normal restart and distinguishes termination from graceful draining."
+    },
+    {
+      "id": "HA11",
+      "kind": "guest-e2e",
+      "name": "aot-provenance",
+      "oracle": "Each claimed backend compiles the unchanged canonical HTTP actor guest, executes real loopback HTTP, records exact source+compiler+artifact identity and verifies Native AOT/full-AOT where applicable."
+    }
+  ],
+  "backendEvidence": {
+    "java": {
+      "compilerProducedHttpActorGuest": "NOT_VERIFIED",
+      "httpLoopbackGuestExecution": "NOT_VERIFIED",
+      "physicalShutdownGuestExecution": "NOT_VERIFIED",
+      "fullAotGuestExecution": "NOT_VERIFIED",
+      "evidence": null
+    },
+    "llvm": {
+      "compilerProducedHttpActorGuest": "NOT_VERIFIED",
+      "httpLoopbackGuestExecution": "NOT_VERIFIED",
+      "physicalShutdownGuestExecution": "NOT_VERIFIED",
+      "fullAotGuestExecution": "NOT_VERIFIED",
+      "evidence": null
+    },
+    "wasm": {
+      "compilerProducedHttpActorGuest": "NOT_VERIFIED",
+      "httpLoopbackGuestExecution": "NOT_VERIFIED",
+      "physicalShutdownGuestExecution": "NOT_VERIFIED",
+      "fullAotGuestExecution": "NOT_VERIFIED",
+      "evidence": null
+    },
+    "forge": {
+      "compilerProducedHttpActorGuest": "NOT_VERIFIED",
+      "httpLoopbackGuestExecution": "NOT_VERIFIED",
+      "physicalShutdownGuestExecution": "NOT_VERIFIED",
+      "fullAotGuestExecution": "NOT_VERIFIED",
+      "evidence": null
+    },
+    "net": {
+      "compilerProducedHttpActorGuest": "NOT_VERIFIED",
+      "httpLoopbackGuestExecution": "NOT_VERIFIED",
+      "physicalShutdownGuestExecution": "NOT_VERIFIED",
+      "fullAotGuestExecution": "NOT_VERIFIED",
+      "evidence": null
+    }
+  },
+  "demoEvidence": {
+    "compiledSourceHttpActor": "NOT_VERIFIED",
+    "stepfulRealHttpExecutionAtExactHead": "NOT_VERIFIED",
+    "hostRouteChecks": "SEPARATE_HOST_ONLY_EVIDENCE",
+    "evidence": null
+  },
+  "promotionGate": {
+    "allCasesRequired": true,
+    "allowHostOnlyAsGuest": false,
+    "allowZeroStepJob": false,
+    "allowRunnerlessJob": false,
+    "allowHistoricalOtherCommit": false,
+    "allowSyntheticReceiptAsExecution": false,
+    "requireExactHeadSourceAndCompiler": true,
+    "requireNonzeroExecutedJobSteps": true,
+    "requireRealCompiledGuestAndHttpSockets": true,
+    "requireArtifactAndSourceTreeIdentity": true,
+    "requireIndependentProvenanceReview": true
+  },
+  "dependencies": [
+    "oreslang-source.java#545",
+    "oreslang-source.java#546",
+    "oreslang-source.java#656",
+    "oreslang-source.java#997",
+    "oreslang-source.java#1166",
+    "oreslang-source.llvm#654",
+    "oreslang-source.llvm#1019",
+    "oreslang-source.net#228",
+    "oreslang-source.forge#167",
+    "oreslang-source.net#312",
+    "oreslang-platform-conformance#273"
+  ]
+}
