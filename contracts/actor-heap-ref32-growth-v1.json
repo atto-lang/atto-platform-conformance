@@ -104,9 +104,13 @@
     "java-graalvm": "HOST_NATIVE_ARENA_AND_LAZY_REGIONS_GUEST_COVERAGE_UNVERIFIED",
     "llvm": "HOST_FIXED_ARENA_AND_REALTIME_PREFAULT_GUEST_COVERAGE_UNVERIFIED",
     "net-nativeaot": "HOST_LAZY_GROWTH_IN_DRAFT_412_AND_PEAK_FIX_DRAFT_436",
-    "wasm": "HOST_PRIVATE_FIXED_2_PAGE_ARENA_GROWTH_NOT_IMPLEMENTED",
+    "wasm": "HOST_MAIN_FIXED_2_PAGE_ARENA_PLUS_SEPARATE_ELASTIC_HOST_DRAFT_452_GUEST_NOT_IMPLEMENTED",
     "forge": "HOST_FIXED_CAPACITY_ARENA_GUEST_GROWTH_NOT_IMPLEMENTED",
     "rust-source-rs": "SCALAR_COMPILER_NO_ACTOR_HEAP",
     "rust-cranelift": "SCALAR_COMPILER_ACTORS_FAIL_CLOSED"
+  },
+  "linkedHostPrototypes": {
+    "net-nativeaot": "https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/436",
+    "wasm": "https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/452"
   }
 }
