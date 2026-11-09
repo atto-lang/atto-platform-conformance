@@ -1,0 +1,55 @@
+name: Actor PubSub QoS + pg monitor source-only oracle
+on:
+  pull_request:
+    paths:
+      - "models/actor-pubsub-portable-v1.mjs"
+      - "tests/actor-pubsub-*.test.mjs"
+      - "contracts/v1/actor-pubsub/**"
+      - "docs/ACTOR_PUBSUB_QOS_PG_MONITOR_EXTENSION_20261109.md"
+      - ".github/workflows/actor-pubsub-qos-monitor-v1.yml"
+  push:
+    branches:
+      - "feat/pubsub-topic-qos-modes-*"
+    paths:
+      - "models/actor-pubsub-portable-v1.mjs"
+      - "tests/actor-pubsub-*.test.mjs"
+      - "contracts/v1/actor-pubsub/**"
+      - ".github/workflows/actor-pubsub-qos-monitor-v1.yml"
+permissions:
+  contents: read
+jobs:
+  source-only-oracle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Assert checked-out exact head
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          git status --porcelain
+      - name: Execute source-only conformance and regression suites
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test \
+            tests/actor-pubsub-portable-v1.test.mjs \
+            tests/actor-pubsub-payload-graph-limits.test.mjs \
+            tests/actor-pubsub-registry-quota.test.mjs \
+            tests/actor-pubsub-broker-close-grants-20261108.test.mjs \
+            tests/actor-pubsub-hidden-native-slots-20261109.test.mjs \
+            tests/actor-pubsub-qos-policies-20261109.test.mjs \
+            tests/actor-pubsub-group-monitor-20261109.test.mjs \
+            tests/actor-pubsub-qos-monitor-extension-ledger.test.mjs \
+            | tee /tmp/atto-pubsub-oracle.tap
+          grep -E '^# tests [1-9][0-9]*$' /tmp/atto-pubsub-oracle.tap
+          ! grep -E '^# fail [1-9][0-9]*$' /tmp/atto-pubsub-oracle.tap
+          echo "SOURCE_ONLY_NODE_ORACLE_ONLY_NO_GUEST_PARITY"
