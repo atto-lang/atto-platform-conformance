@@ -49,7 +49,7 @@ or successful reference model is not executable actor-memory parity evidence.
 | Java/GraalVM | `ActorNativeArena.java`, `ActorLinearMemory.java` | Lazy native regions; general object lowering not certified | NOT_EXECUTED for this contract |
 | LLVM | `ActorArena.c`, `RealtimeActorArena.c` | Preallocated 64 MiB-capped host slabs and fixed prefault RT profile; independent elastic host path still needed | NOT_EXECUTED |
 | .NET NativeAOT | `ActorArena.cs`, `ActorNativeArena.cs`; draft #412 | Existing fixed arena; on-demand native backing in draft #412; double-backing accounting patched in stacked draft #436 | NOT_EXECUTED |
-| Wasm | `src/actor-arena.mjs`; separate draft #452 | Main retains fixed private two-page host arena; draft #452 is a separately versioned elastic **host-only** prototype with 7 local Node tests, **not** compiler guest memory | NOT_EXECUTED |
+| Wasm | `src/actor-arena.mjs`; separate draft #452 | Main retains fixed private two-page host arena; draft #452 is a separately versioned elastic **host-only** prototype with 8 local Node tests, **not** compiler guest memory | NOT_EXECUTED |
 | Forge | `runtime/actor_arena.hpp`, `ActorIncarnationMemoryV1.hpp` | Fixed host capacities, aggregate budget; no general guest growth lowering | NOT_EXECUTED |
 | Rust source (.rs) | `README.md`, scalar Cranelift native-object compiler | No actor runtime allocation in advertised scalar subset | NOT_EXECUTED |
 | Independent Cranelift | `README.md`, state-region provenance types | Stage-0 scalar JIT deliberately rejects actors; not a Forge subsystem | NOT_EXECUTED |
@@ -126,4 +126,4 @@ a temporarily idle turn ended. Limit the number of concurrent growing actors.
 
 ## 2026-11-09 Wasm host-only follow-up
 
-Wasm draft [#452](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/452) adds an isolated actor-private growable page pool and tests without touching the existing fixed guest-host layout. Local source-identical Node v22 tests: **7/7 passed**; actual AttoLang guest object lowering, full repo Actions, worker/FFI quiescence and physical RSS evidence remain **NOT_EXECUTED**. The model conservatively retains accounting for pooled Wasm pages rather than assuming GC immediately frees backing. Do not advance the Wasm certification field until the compiled guest ABI is versioned and actually executed.
+Wasm draft [#452](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/452) adds an isolated actor-private growable page pool and tests without touching the existing fixed guest-host layout. Local source-identical Node v22 tests: **8/8 passed**; actual AttoLang guest object lowering, full repo Actions, worker/FFI quiescence and physical RSS evidence remain **NOT_EXECUTED**. The model conservatively retains accounting for pooled Wasm pages rather than assuming GC immediately frees backing. Do not advance the Wasm certification field until the compiled guest ABI is versioned and actually executed.
