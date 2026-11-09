@@ -68,7 +68,14 @@
     "distributed_provider": "NOT_IMPLEMENTED",
     "max_per_actor_default": 16,
     "max_control_queue_capacity_default": 256,
-    "quotas_reclaimed_on_revocation": true
+    "quotas_reclaimed_on_revocation": true,
+    "revision_format": "canonical_decimal_group_local_monotonic",
+    "delta_revision": "previous_revision_plus_one",
+    "cursor_mode": "OPTIONAL_STRICT_VALIDATION_NON_CONSUMING_ON_MISMATCH",
+    "invalid_cursor": "InvalidRevision",
+    "mismatch": "RevisionMismatch",
+    "resync_includes_revision": true,
+    "production_rollover": "NOT_SPECIFIED_OR_VERIFIED"
   },
   "enforced_negative_errors": [
     "Full",
@@ -84,7 +91,8 @@
   ],
   "reference_suites": [
     "tests/actor-pubsub-qos-policies-20261109.test.mjs",
-    "tests/actor-pubsub-group-monitor-20261109.test.mjs"
+    "tests/actor-pubsub-group-monitor-20261109.test.mjs",
+    "tests/actor-pubsub-monitor-revisions-20261109.test.mjs"
   ],
   "backend_status": {
     "java": {
