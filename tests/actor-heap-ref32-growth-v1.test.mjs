@@ -146,7 +146,7 @@ test('dynamic and prefault realtime profiles are separate, both enforce authorit
 test('no host-reference result can claim backend guest or AOT execution', () => {
   for (const name of contract.targets)
     assert.equal(contract.evidence[name], 'NOT_EXECUTED');
-  assert.match(contract.evidence.required, /exact-head executed \.atto guest/);
+  assert.match(contract.evidence.required, /exact-head stepful compiled AttoLang actor guest/);
 });
 
 test('all seven targets remain unexecuted for source guest heap certification', () => {
