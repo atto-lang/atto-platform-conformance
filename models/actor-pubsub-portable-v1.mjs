@@ -16,6 +16,18 @@ const safeKeys = (value) => {
   // A Proxy can execute arbitrary user callbacks during getPrototypeOf,
   // ownKeys, descriptor inspection, or freeze. Never inspect its traps.
   if (nodeTypes.isProxy(value)) return null;
+  // Native internal slots remain mutable even when the visible prototype is
+  // replaced with Object.prototype and Object.freeze reports true. Brand
+  // checks use Node's native predicates without invoking user-defined tags.
+  // This is a reference-oracle guard, not an untrusted-guest security boundary:
+  // arbitrary user classes with private fields still require runtime fencing.
+  if (nodeTypes.isDate(value) || nodeTypes.isMap(value) ||
+      nodeTypes.isSet(value) || nodeTypes.isWeakMap(value) ||
+      nodeTypes.isWeakSet(value) || nodeTypes.isRegExp(value) ||
+      nodeTypes.isPromise(value) || nodeTypes.isAnyArrayBuffer(value) ||
+      nodeTypes.isArrayBufferView(value) || nodeTypes.isBoxedPrimitive(value) ||
+      nodeTypes.isNativeError(value) || nodeTypes.isArgumentsObject(value) ||
+      nodeTypes.isExternal(value)) return null;
   const isArray=Array.isArray(value);
   const prototype=Object.getPrototypeOf(value);
   if (isArray ? prototype!==Array.prototype :
