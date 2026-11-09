@@ -103,3 +103,33 @@ test("group monitor quota and capacity values fail closed",()=>{
   }
   assert.equal(bus.groupMonitorCount,0);
 });
+
+test("per-actor and queue caps prevent one member monopolizing control resources",()=>{
+  const bus=new PubSubReference({
+    maxGroupMonitors:4,maxGroupMonitorsPerActor:2,
+    maxGroupMonitorQueueCapacity:2
+  });
+  const {group,a,b,ga}=groupWithActors(bus);
+  assert.equal(bus.monitorGroup(group,ga,3).error,"InvalidCapacity");
+  const one=admitted(bus.monitorGroup(group,ga,2)).monitor;
+  const two=admitted(bus.monitorGroup(group,ga,2)).monitor;
+  assert.equal(bus.monitorGroup(group,ga,2).error,"ResourceExhausted");
+  const gb=admitted(bus.join(group,b)).membership;
+  const other=admitted(bus.monitorGroup(group,gb,2)).monitor;
+  assert.equal(bus.groupMonitorCount,3);
+  admitted(bus.unmonitorGroup(one,ga));
+  assert.equal(bus.groupMonitorCount,2);
+  assert.equal(bus.monitorGroup(group,ga,2).ok,true);
+  admitted(bus.leave(ga));
+  assert.equal(bus.groupMonitorCount,1,
+    "owner leave reclaims every grant-owned monitor without affecting another actor");
+  assert.equal(bus.pollGroupMonitor(two,ga).error,"StaleMonitor");
+  assert.deepEqual(admitted(bus.pollGroupMonitor(other,gb)).event,{
+    kind:"leave",group_id:group.id,actor_key:a.key
+  });
+  for(const key of ["maxGroupMonitorsPerActor","maxGroupMonitorQueueCapacity"]){
+    for(const value of [0,-1,1.5,Infinity,NaN,"2",null]){
+      assert.throws(()=>new PubSubReference({[key]:value}),RangeError);
+    }
+  }
+});
