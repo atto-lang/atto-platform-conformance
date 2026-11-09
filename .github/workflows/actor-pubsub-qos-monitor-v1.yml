@@ -48,6 +48,7 @@ jobs:
             tests/actor-pubsub-hidden-native-slots-20261109.test.mjs \
             tests/actor-pubsub-qos-policies-20261109.test.mjs \
             tests/actor-pubsub-group-monitor-20261109.test.mjs \
+            tests/actor-pubsub-monitor-revisions-20261109.test.mjs \
             tests/actor-pubsub-qos-monitor-extension-ledger.test.mjs \
             | tee /tmp/atto-pubsub-oracle.tap
           grep -E '^# tests [1-9][0-9]*$' /tmp/atto-pubsub-oracle.tap
