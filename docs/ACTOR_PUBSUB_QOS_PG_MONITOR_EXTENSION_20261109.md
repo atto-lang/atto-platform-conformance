@@ -67,7 +67,7 @@ never carries arbitrary actor payloads.
 - `unmonitorGroup` reclaims quota and revokes the token. Owner leave, actor
   retirement, group close and broker close also revoke it. Group retirement
   never stops other group members.
-- `maxGroupMonitors` bounds active monitors per broker. Monitor handles
+- `maxGroupMonitors` bounds active monitors per broker. `maxGroupMonitorsPerActor` independently limits monitors across an actor's groups (default 16). `maxGroupMonitorQueueCapacity` limits queued changes per watcher (default 256); oversized requests fail closed. Monitor handles
   cannot be serialized as Sendable DATA, and group names do not grant
   membership or monitoring authority.
 
