@@ -116,13 +116,15 @@ export class PubSubReference {
     return [...this.#subscriptions.values()].filter(s=>!s.closed).length;
   }
 
-  constructor({maxActors=4096,maxGroups=1024,maxTopics=1024,maxSubscriptions=1024,maxMemberships=4096,maxGroupMonitors=1024}={}) {
+  constructor({maxActors=4096,maxGroups=1024,maxTopics=1024,maxSubscriptions=1024,maxMemberships=4096,maxGroupMonitors=1024,maxGroupMonitorsPerActor=16,maxGroupMonitorQueueCapacity=256}={}) {
     if (!Number.isSafeInteger(maxActors) || maxActors<1 ||
         !Number.isSafeInteger(maxGroups) || maxGroups<1 ||
         !Number.isSafeInteger(maxTopics) || maxTopics<1 ||
         !Number.isSafeInteger(maxSubscriptions) || maxSubscriptions<1 ||
         !Number.isSafeInteger(maxMemberships) || maxMemberships<1 ||
-        !Number.isSafeInteger(maxGroupMonitors) || maxGroupMonitors<1)
+        !Number.isSafeInteger(maxGroupMonitors) || maxGroupMonitors<1 ||
+        !Number.isSafeInteger(maxGroupMonitorsPerActor) || maxGroupMonitorsPerActor<1 ||
+        !Number.isSafeInteger(maxGroupMonitorQueueCapacity) || maxGroupMonitorQueueCapacity<1)
       throw new RangeError("positive finite quotas required");
     this.maxActors=maxActors;
     this.maxGroups=maxGroups;
@@ -130,6 +132,8 @@ export class PubSubReference {
     this.maxSubscriptions=maxSubscriptions;
     this.maxMemberships=maxMemberships;
     this.maxGroupMonitors=maxGroupMonitors;
+    this.maxGroupMonitorsPerActor=maxGroupMonitorsPerActor;
+    this.maxGroupMonitorQueueCapacity=maxGroupMonitorQueueCapacity;
     Object.freeze(this);
   }
 
@@ -471,11 +475,18 @@ export class PubSubReference {
     if (!membership || !membership.active || membership.capability!==grant ||
         grant.group!==group || !this.isActor(grant.actor))
       return failure("UnauthorizedMonitor");
-    if (!Number.isSafeInteger(capacity) || capacity<1)
+    if (!Number.isSafeInteger(capacity) || capacity<1 ||
+        capacity>this.maxGroupMonitorQueueCapacity)
       return failure("InvalidCapacity");
     if (this.#groupMonitors.size>=this.maxGroupMonitors ||
         this.#nextMonitor>=Number.MAX_SAFE_INTEGER)
       return failure("ResourceExhausted");
+    let owned=0;
+    for (const monitor of this.#groupMonitors.values()) {
+      if (this.#monitorStates.get(monitor).grant.actor===grant.actor)
+        owned++;
+    }
+    if (owned>=this.maxGroupMonitorsPerActor) return failure("ResourceExhausted");
     const state={group,grant,active:true,capacity,queue:[],overflow:false};
     const monitor=Object.freeze({id:++this.#nextMonitor});
     NON_DATA_CAPABILITIES.add(monitor);
