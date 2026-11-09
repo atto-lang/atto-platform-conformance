@@ -100,30 +100,36 @@ export class PubSubReference {
   #actorStates=new WeakMap();
   #groupStates=new WeakMap();
   #subscriptionStates=new WeakMap();
+  #groupMonitors=new Map();
+  #monitorStates=new WeakMap();
+  #nextMonitor=0;
   #nextSub=0;
   #nextMembership=0;
   #closed=false;
 
   get closed() {return this.#closed;}
   get membershipCount() {return this.#memberships.size;}
+  get groupMonitorCount() {return this.#groupMonitors.size;}
 
   // Introspection returns a detached copy, not an authority registry.
   get subscriptionCount() {
     return [...this.#subscriptions.values()].filter(s=>!s.closed).length;
   }
 
-  constructor({maxActors=4096,maxGroups=1024,maxTopics=1024,maxSubscriptions=1024,maxMemberships=4096}={}) {
+  constructor({maxActors=4096,maxGroups=1024,maxTopics=1024,maxSubscriptions=1024,maxMemberships=4096,maxGroupMonitors=1024}={}) {
     if (!Number.isSafeInteger(maxActors) || maxActors<1 ||
         !Number.isSafeInteger(maxGroups) || maxGroups<1 ||
         !Number.isSafeInteger(maxTopics) || maxTopics<1 ||
         !Number.isSafeInteger(maxSubscriptions) || maxSubscriptions<1 ||
-        !Number.isSafeInteger(maxMemberships) || maxMemberships<1)
+        !Number.isSafeInteger(maxMemberships) || maxMemberships<1 ||
+        !Number.isSafeInteger(maxGroupMonitors) || maxGroupMonitors<1)
       throw new RangeError("positive finite quotas required");
     this.maxActors=maxActors;
     this.maxGroups=maxGroups;
     this.maxTopics=maxTopics;
     this.maxSubscriptions=maxSubscriptions;
     this.maxMemberships=maxMemberships;
+    this.maxGroupMonitors=maxGroupMonitors;
     Object.freeze(this);
   }
 
@@ -237,6 +243,7 @@ export class PubSubReference {
     NON_DATA_CAPABILITIES.add(membership);
     this.#memberships.set(membership.id,entry);
     this.#grantStates.set(membership,entry);
+    this.#recordMembershipChange(group,"join",actor);
     return success({membership});
   }
 
@@ -248,6 +255,8 @@ export class PubSubReference {
     entry.active=false;
     this.#memberships.delete(entry.capability.id);
     this.#groupStates.get(membership.group).members.delete(membership.actor.key);
+    this.#revokeOwnerMonitors(membership.group,membership.actor);
+    this.#recordMembershipChange(membership.group,"leave",membership.actor);
     this.#cancelTarget(membership.actor.key,s=>s.kind==="group" && s.target===membership.group);
     // A group-bound direct subscription cannot survive a leave/rejoin.
     for (const sub of this.#subscriptions.values())
@@ -409,6 +418,8 @@ export class PubSubReference {
         m.active=false;
         this.#memberships.delete(id);
         this.#groupStates.get(m.capability.group).members.delete(actor.key);
+        this.#revokeOwnerMonitors(m.capability.group,actor);
+        this.#recordMembershipChange(m.capability.group,"leave",actor);
       }
     this.#cancelTarget(actor.key,()=>true);
     for (const sub of this.#subscriptions.values())
@@ -419,6 +430,7 @@ export class PubSubReference {
   closeGroup(group) {
     if (!this.isGroup(group)) return failure("StaleGroup");
     this.#groupStates.get(group).closed=true;
+    this.#revokeGroupMonitors(group);
     for (const [id,m] of this.#memberships)
       if (m.active && m.capability.group===group) {
         m.active=false;
@@ -434,6 +446,8 @@ export class PubSubReference {
   close() {
     if (this.closed) return success();
     this.#closed=true;
+    for (const monitor of [...this.#groupMonitors.values()])
+      this.#revokeMonitor(monitor);
     for (const sub of this.#subscriptions.values()) this.unsubscribe(sub);
     for (const group of this.#groups.values()) this.#groupStates.get(group).closed=true;
     // Closing the broker revokes the exact affine grant objects, not merely
@@ -443,6 +457,102 @@ export class PubSubReference {
     this.#memberships.clear();
     for (const group of this.#groups.values()) this.#groupStates.get(group).members.clear();
     return success();
+  }
+
+  // Erlang pg.monitor analogue, kept intentionally separate from DATA
+  // topic subscriptions and supervisor CONTROL notices. A current membership
+  // grant is required to observe a group. The snapshot and watch are minted
+  // in one oracle step; a production implementation needs one linearization
+  // point for initial snapshot + subsequent changes.
+  monitorGroup(group,grant,capacity=32) {
+    if (this.closed) return failure("Closed");
+    if (!this.isGroup(group)) return failure("StaleGroup");
+    const membership=this.#grantStates.get(grant);
+    if (!membership || !membership.active || membership.capability!==grant ||
+        grant.group!==group || !this.isActor(grant.actor))
+      return failure("UnauthorizedMonitor");
+    if (!Number.isSafeInteger(capacity) || capacity<1)
+      return failure("InvalidCapacity");
+    if (this.#groupMonitors.size>=this.maxGroupMonitors ||
+        this.#nextMonitor>=Number.MAX_SAFE_INTEGER)
+      return failure("ResourceExhausted");
+    const state={group,grant,active:true,capacity,queue:[],overflow:false};
+    const monitor=Object.freeze({id:++this.#nextMonitor});
+    NON_DATA_CAPABILITIES.add(monitor);
+    this.#monitorStates.set(monitor,state);
+    this.#groupMonitors.set(monitor.id,monitor);
+    return success({monitor,members:Object.freeze([...group.members].sort())});
+  }
+
+  // Access to a leaked monitor token alone conveys no observation authority:
+  // the original, live membership grant must accompany every read/resync.
+  #monitorAccess(monitor,grant) {
+    const state=this.#monitorStates.get(monitor);
+    if (!state || !state.active) return failure("StaleMonitor");
+    if (state.grant!==grant || !this.#grantStates.get(grant)?.active)
+      return failure("UnauthorizedMonitor");
+    return success({state});
+  }
+
+  pollGroupMonitor(monitor,grant) {
+    const access=this.#monitorAccess(monitor,grant);
+    if (!access.ok) return access;
+    const state=access.state;
+    if (state.overflow) return failure("MonitorOverflow");
+    if (!state.queue.length) return failure("Empty");
+    return success({event:state.queue.shift()});
+  }
+
+  resyncGroupMonitor(monitor,grant) {
+    const access=this.#monitorAccess(monitor,grant);
+    if (!access.ok) return access;
+    const state=access.state;
+    if (!this.isGroup(state.group)) return failure("StaleGroup");
+    state.queue.length=0;
+    state.overflow=false;
+    return success({members:Object.freeze([...state.group.members].sort())});
+  }
+
+  unmonitorGroup(monitor,grant) {
+    const access=this.#monitorAccess(monitor,grant);
+    if (!access.ok) return access;
+    this.#revokeMonitor(monitor);
+    return success();
+  }
+
+  #revokeMonitor(monitor) {
+    const state=this.#monitorStates.get(monitor);
+    if (!state || !state.active) return;
+    state.active=false;
+    state.queue.length=0;
+    this.#groupMonitors.delete(monitor.id);
+  }
+
+  #revokeOwnerMonitors(group,actor) {
+    for (const monitor of [...this.#groupMonitors.values()]) {
+      const state=this.#monitorStates.get(monitor);
+      if (state.group===group && state.grant.actor===actor)
+        this.#revokeMonitor(monitor);
+    }
+  }
+
+  #revokeGroupMonitors(group) {
+    for (const monitor of [...this.#groupMonitors.values()])
+      if (this.#monitorStates.get(monitor).group===group)
+        this.#revokeMonitor(monitor);
+  }
+
+  #recordMembershipChange(group,kind,actor) {
+    const event=Object.freeze({kind,group_id:group.id,actor_key:actor.key});
+    for (const monitor of this.#groupMonitors.values()) {
+      const state=this.#monitorStates.get(monitor);
+      if (!state.active || state.group!==group || state.overflow) continue;
+      if (state.queue.length>=state.capacity) {
+        // Silent loss is forbidden: clients must explicitly resnapshot.
+        state.queue.length=0;
+        state.overflow=true;
+      } else state.queue.push(event);
+    }
   }
 
   #cancelTarget(key,predicate) {
