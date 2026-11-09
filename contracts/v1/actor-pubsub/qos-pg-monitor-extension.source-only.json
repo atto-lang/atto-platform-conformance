@@ -65,7 +65,10 @@
       "broker_close"
     ],
     "authority_transfer": "DENY_BY_DEFAULT",
-    "distributed_provider": "NOT_IMPLEMENTED"
+    "distributed_provider": "NOT_IMPLEMENTED",
+    "max_per_actor_default": 16,
+    "max_control_queue_capacity_default": 256,
+    "quotas_reclaimed_on_revocation": true
   },
   "enforced_negative_errors": [
     "Full",
