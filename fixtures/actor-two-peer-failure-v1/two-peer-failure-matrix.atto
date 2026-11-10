@@ -1,0 +1,157 @@
+// ACTOR_TWO_PEER_FAILURE_V1 — PROPOSED canonical AttoLang source, NOT EXECUTED.
+// This is a future compiler acceptance target, NOT presently parser-valid.
+// Two guest actor classes; one long-lived Witness and one fresh FaultWorker
+// incarnation per scenario. Root is the trusted supervisor, not a third
+// ordinary data-plane actor. No host-language emulation is a guest pass.
+//
+// UNRESOLVED SOURCE APIs (must be standardized BEFORE positive admission):
+// FaultError constructor; FailureDisposition; defer recover syntax; spawn under
+// supervisor; supervisor CONTROL observation; deterministic bounded done/error
+// inspection. The conformance tests intentionally make no parser claims.
+
+define pub class FaultError extends Error as
+end
+
+fnc non_tail_fault(int remaining): int {
+  if remaining == 0 then
+    return 0;
+  fi
+  // This MUST consume a checked guest logical frame each call. It must never
+  // recurse into an unbounded CLR/JVM/native machine stack.
+  return 1 + non_tail_fault(remaining - 1);
+}
+
+define pub actor Witness as
+  state { value: int = 42; }
+
+  @Implements
+  receive(ActorMail<int> mail): void {
+    const snapshot = self.handle_state(critical-read |s| -> s.value);
+    if snapshot != 42 then
+      panic FaultError("witness heap corrupted");
+    fi
+    self.send(snapshot);
+    return;
+  }
+end
+
+define pub actor FaultWorker as
+  state { value: int = 7; }
+
+  @Implements
+  receive(ActorMail<int> mail): void {
+    const snapshot = self.handle_state(critical-read |s| -> s.value);
+    if snapshot != 7 then
+      panic FaultError("fault-worker heap corrupted");
+    fi
+
+    if mail.value == 0 then
+      // Ordinary throw: nearest matching catch wins, no fallback hook.
+      try {
+        throw FaultError("caught");
+      } catch (FaultError failure) {
+        self.send(100);
+      }
+      return;
+    fi
+    if mail.value == 1 then
+      // Unhandled throw: once-only on_throw at actor-turn boundary.
+      throw FaultError("uncaught");
+    fi
+    if mail.value == 2 then
+      // Raise skips catch but nearest lexical recover callback handles it.
+      defer recover |failure| -> {
+        self.send(202);
+        return FailureDisposition.recover;
+      };
+      try {
+        raise FaultError("lexical recover");
+      } catch (FaultError ignored) {
+        panic FaultError("raise was caught as throw");
+      }
+      return;
+    fi
+    if mail.value == 3 then
+      // Without lexical recover: on_raise runs once in an actor-local
+      // bounded failure turn; it does not replay the failed message.
+      raise FaultError("uncaught raise");
+    fi
+    if mail.value == 4 then
+      // No actor-local callback may observe, suppress or downgrade panic.
+      panic FaultError("terminal panic");
+    fi
+    if mail.value == 5 then
+      // Budget rejection must happen BEFORE native/carrier stack exhaustion.
+      const impossible = non_tail_fault(100000);
+      self.send(impossible);
+      return;
+    fi
+    // A previously recovered actor can take a subsequent healthy turn.
+    self.send(snapshot);
+    return;
+  }
+
+  @Implements
+  on_throw(failure: ThrowError): FailureDisposition {
+    self.send(101);
+    return FailureDisposition.recover;
+  }
+
+  @Implements
+  on_raise(failure: RaiseError): FailureDisposition {
+    self.send(203);
+    return FailureDisposition.recover;
+  }
+
+  // Deliberately NO actor-local on_panic(). Panic skips actor hooks.
+end
+
+define pub supervisor Root as
+  @Implements
+  pub on_panic(failure: Failure): void {
+    // Reserved authenticated parent CONTROL observation, never DATA mail.
+    // A later compiler stage must bind child-id/incarnation/sequence and
+    // publish one immutable notice to the trusted test observation channel.
+    self.record_control(failure);
+    return;
+  }
+end
+
+// Required guest orchestration (future portable actor/supervisor source ABI):
+// main MUST spawn one Witness and one fresh FaultWorker child of Root for
+// each case 0..5; require witnessed 42 AFTER each failure/handler, and assert:
+// 0 caught: result 100, on_throw=0, CONTROL=0.
+// 1 uncaught throw: result 101, on_throw=1, CONTROL=0; next mail returns 7.
+// 2 lexical raise: result 202, recover=1, on_raise=0, catch=0, CONTROL=0.
+// 3 uncaught raise: result 203, on_raise=1, CONTROL=0; next mail returns 7.
+// 4 panic: no actor result/guest callback; parent CONTROL PANIC exactly once,
+//   actor retired and stale references revoked; Witness still returns 42.
+// 5 stack: pre-native guest-stack-budget terminal event on parent CONTROL,
+//   no catch/recover/on_throw/on_raise; Witness still returns 42 and process
+//   stays alive. Incarnation, count and no-replay are mandatory assertions.
+//
+// The source-only phase deliberately REJECTS this candidate on all backends.
+// Only once compiled actor supervision and failure semantics exist may the
+// harness implement the above orchestrator and promote this unchanged SHA.
+pub async routine main(): void {
+  // Fail closed: runtime test orchestration and CONTROL API are not yet
+  // standardized. An executable that only prints expected text is NOT proof.
+  const root = spawn Root();
+  val witness = spawn Witness();
+  val faulty = spawn FaultWorker();
+  await witness.get_ready();
+  await faulty.get_ready();
+  witness.send(0);
+  val reply = (await witness.outputs.next()).value.unwrap();
+  if reply.value != 42 then
+    panic FaultError("witness mismatch");
+  fi
+  faulty.send(0);
+  val caught = (await faulty.outputs.next()).value.unwrap();
+  if caught.value != 100 then
+    panic FaultError("throw catch mismatch");
+  fi
+  // Deliberate non-success: remaining 5 cases require a standardized
+  // supervisor child-spawn, failure observation and per-case reentry ABI.
+  panic FaultError("ACTOR_TWO_PEER_V1_INCOMPLETE_ORCHESTRATOR");
+}
