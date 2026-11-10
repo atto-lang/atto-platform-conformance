@@ -115,3 +115,55 @@ test("ADT host-only verification driver rejects a mismatched source commit",()=>
  assert.match(run.stderr,/ADT_HOST_ONLY_NOT_VERIFIED: source HEAD mismatch/);
  assert.doesNotMatch(run.stdout,/ADT_HOST_ONLY_PASS=1/);
 });
+
+function withSyntheticAdtHostDriver(suiteBody,check){
+ const dir=mkdtempSync(join(tmpdir(),"adt-host-driver-"));
+ try {
+  mkdirSync(resolve(dir,"scripts"));
+  mkdirSync(resolve(dir,"tests"));
+  mkdirSync(resolve(dir,"contracts"));
+  copyFileSync(resolve(root,"scripts/verify-adt-conformance-head.sh"),
+   resolve(dir,"scripts/verify-adt-conformance-head.sh"));
+  // A synthetic stand-in deliberately tests the wrapper's TAP admission only.
+  // It does not verify actual source worktree integrity or guest semantics.
+  writeFileSync(resolve(dir,"scripts/verify-raw-worktree.py"),
+   'print("SYNTHETIC_WRAPPER_PROBE_ONLY")\n');
+  for(const name of [
+   "enum-semantics-v1.test.mjs",
+   "enum-semantics-v1-mutations.test.mjs",
+   "enum-semantics-v2-six-backend.test.mjs"
+  ]) writeFileSync(resolve(dir,"tests",name),suiteBody);
+  for(const name of ["enum-semantics-v1.json","enum-semantics-v2.json"])
+   writeFileSync(resolve(dir,"contracts",name),"{}\n");
+  execFileSync("git",["init","-q"],{cwd:dir});
+  execFileSync("git",["add","."],{cwd:dir});
+  execFileSync("git",["-c","user.name=synthetic-driver-test",
+   "-c","user.email=synthetic@example.invalid","-c","commit.gpgsign=false",
+   "commit","-qm","synthetic-only"],{cwd:dir});
+  const head=execFileSync("git",["rev-parse","HEAD"],{cwd:dir,encoding:"utf8"}).trim();
+  const tree=execFileSync("git",["rev-parse","HEAD^{tree}"],{cwd:dir,encoding:"utf8"}).trim();
+  const run=spawnSync("bash",["scripts/verify-adt-conformance-head.sh",head,tree],
+   {cwd:dir,encoding:"utf8",timeout:20000});
+  check(run);
+ } finally {rmSync(dir,{recursive:true,force:true});}
+}
+
+test("ADT host-only driver rejects 51 intentionally skipped synthetic tests",()=>{
+ const skipped='import test from "node:test";\n'+
+  Array.from({length:17},(_,i)=>
+   'test.skip("synthetic-skipped-'+i+'",()=>{});').join("\n")+"\n";
+ function withSyntheticAdtHostDriver(skipped,run=>{
+  assert.equal(run.status,1,run.stdout+"\n"+run.stderr);
+  assert.match(run.stderr,/ADT_HOST_ONLY_NOT_VERIFIED: incomplete, skipped or failed TAP suite/);
+  assert.match(run.stdout,/# skipped 51/);
+  assert.doesNotMatch(run.stdout,/ADT_HOST_ONLY_PASS=1/);
+ });
+});
+
+test("ADT host-only driver rejects source-pinned test files with no registered cases",()=>{
+ function withSyntheticAdtHostDriver("// synthetic test file intentionally registers zero tests\n",run=>{
+  assert.equal(run.status,1,run.stdout+"\n"+run.stderr);
+  assert.match(run.stderr,/ADT_HOST_ONLY_NOT_VERIFIED: incomplete, skipped or failed TAP suite/);
+  assert.doesNotMatch(run.stdout,/ADT_HOST_ONLY_PASS=1/);
+ });
+});
