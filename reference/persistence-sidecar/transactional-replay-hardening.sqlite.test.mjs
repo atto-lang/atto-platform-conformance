@@ -261,3 +261,54 @@ test('unverified pre-upgrade legacy event cannot silently become trusted replay'
     assert.throws(()=>load(db),/UNVERIFIED_LEGACY_EVENT/);
   });
 });
+
+
+test('legacy ACK and duplicate are refused after journal BLOB alteration',()=>{
+  fixture(db=>{
+    const write=legacy('legacy-blob');
+    commit(db,write);
+    assert.equal(db.verifyCommit(write).version,1);
+    assert.equal(db.enqueue(write).duplicate,true);
+    db.db.prepare('UPDATE events SET payload=? WHERE tenant=? AND actor=? AND state_name=? AND version=1')
+      .run(Buffer.from('{"cents":999}'),base.tenantId,base.actor,base.stateName);
+    assert.throws(()=>db.verifyCommit(write),/INCOMPLETE_OPERATION_LEDGER/);
+    assert.throws(()=>db.enqueue(write),/INCOMPLETE_OPERATION_LEDGER/);
+  });
+});
+
+test('legacy ACK and duplicate are refused after event deletion',()=>{
+  fixture(db=>{
+    const write=legacy('legacy-missing');
+    commit(db,write);
+    db.db.prepare('DELETE FROM events WHERE tenant=? AND actor=? AND state_name=? AND version=1')
+      .run(base.tenantId,base.actor,base.stateName);
+    assert.throws(()=>db.verifyCommit(write),/INCOMPLETE_OPERATION_LEDGER/);
+    assert.throws(()=>db.enqueue(write),/INCOMPLETE_OPERATION_LEDGER/);
+  });
+});
+
+test('legacy and command operation IDs collide in either direction',()=>{
+  fixture(db=>{
+    const c=command('shared-logical-id',0,[10,20]);
+    commit(db,c,true);
+    assert.throws(()=>db.enqueue(legacy('shared-logical-id',2)),/OP_ID_CONFLICT/);
+    const old=legacy('shared-legacy-id',2);
+    commit(db,old);
+    assert.throws(()=>db.enqueueCommand(command('shared-legacy-id',3,[1])),/OP_ID_CONFLICT/);
+    assert.equal(load(db).version,3);
+  });
+});
+
+test('valid current snapshot supports same-byte duplicate but rejects altered checkpoint',()=>{
+  fixture(db=>{
+    const snap={...legacy('checkpoint-proof',0,'snapshot'),
+      payload:Buffer.from('{"balance_cents":12}')};
+    commit(db,snap);
+    assert.equal(db.verifyCommit(snap).version,1);
+    assert.equal(db.enqueue(snap).duplicate,true);
+    db.db.prepare('UPDATE snapshots SET payload=? WHERE tenant=? AND actor=? AND state_name=?')
+      .run(Buffer.from('{"balance_cents":999}'),base.tenantId,base.actor,base.stateName);
+    assert.throws(()=>db.verifyCommit(snap),/INCOMPLETE_OPERATION_LEDGER/);
+    assert.throws(()=>db.enqueue(snap),/INCOMPLETE_OPERATION_LEDGER/);
+  });
+});
