@@ -163,7 +163,9 @@ class SharedRegionModel {
         const outcome = change(copy);
         if (outcome && typeof outcome.then === 'function') throw Error('await under write loan denied');
         const next = immutableCopy(copy);
-        if (this.#closed || epoch !== this.#epoch) throw Error('STOP fenced publication');
+        if (this.#closed || epoch !== this.#epoch || released
+            || this.#active.get(principal) !== record || !this.#writer)
+          throw Error('write loan revoked before publication');
         this.#value = next;
       },
       release: caller => {
@@ -313,4 +315,23 @@ test('snapshot rejects accessor side effects, symbol-key smuggling and unbounded
   assert.throws(() => d.singleton('pkg', 'Nan', () => ({ value: NaN })), /non-finite/);
   assert.throws(() => { d.domain = 'foreign'; }, TypeError);
   assert.throws(() => { d.maxSymbols = 1e9; }, TypeError);
+});
+
+
+test('reentrant writer release cannot publish stale changes over successor', async () => {
+  const d = new DomainModel('tenant-A');
+  const owner = d.mintPrincipal(1, 1);
+  const successor = d.mintPrincipal(2, 1);
+  const r = new SharedRegionModel(d, owner, { count: 0 });
+  const first = await r.acquire(owner, r.delegate(owner, owner, 'write'));
+  const secondPending = r.acquire(successor, r.delegate(owner, successor, 'write'));
+  assert.throws(() => first.write(owner, draft => {
+    draft.count = 900;
+    first.release(owner); // lease disappears while user callback is still active
+  }), /revoked/);
+  const second = await secondPending;
+  assert.equal(second.read(successor).count, 0, 'stale draft never published');
+  second.write(successor, draft => { draft.count = 1; });
+  assert.equal(second.read(successor).count, 1);
+  second.release(successor);
 });
