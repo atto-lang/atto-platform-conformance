@@ -13,7 +13,8 @@
 - Java/GraalVM [#2648](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2648): word parser, strict types and suspended XOR callback handling; draft, exact-head JUnit + guest execution still required.
 - LLVM [#1554](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1554): word parser, typed i1 / branch-PHI/XOR codegen; draft, actual O0/O2 compiler→LLVM IR→Clang linked guest plus sanitizers still required.
 - .NET NativeAOT [#415](https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/415): structured CFG/CIL and MethodDef; draft, exact-head linked NativeAOT binary execution still required.
-- Wasm / Forge: this source-only review did not establish an in-scope logical-word PR or real guest proof; do not infer absence of implementation.
+- Wasm: existing `tests/boolean-source-parity-wasm32.test.mjs` invokes a pinned upstream LLVM compiler when configured; this is **not** independent Wasm Rust-frontend logical-word execution evidence. No scoped logical-word PR or certified guest run found in this audit.
+- Forge [#241](https://github.com/ores-truffle-oreslang/oreslang-source.forge/pull/241): new draft repairs a concrete reserved-keyword acceptance bug in both i64 frontend and callable frontend; strictly **rejection-only**, with 54 parser and 96 CLI negative invocations authored, not yet executed. It still has no typed boolean lowering or guest operator execution.
 - Older [Java #1190](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/1190) and [LLVM #558](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/558) admit historical `^^` in drafts; do not mix their grammar with the newer reserved-word contract without explicit semantic reconciliation.
 - [Language spec #17](https://github.com/ores-truffle-oreslang/attolang-language-spec.md/pull/17) remains draft, not a merged normative contract.
 
