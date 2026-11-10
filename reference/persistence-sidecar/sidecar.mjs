@@ -140,13 +140,9 @@ export class BatchPersistenceSidecar {
     e.commandHash=hash_bytes(e.commandBytes);
     // Fence before dedup: stale actors cannot retrieve a prior success receipt.
     if(this.getFence.get(tenantId,actor)?.epoch!==epoch) fail('STALE_EPOCH');
-    const old=this.getCommand.get(tenantId,actor,stateName,opId);
-    if(old) {
-      if(old.command_hash!==e.commandHash)fail('OP_ID_CONFLICT');
-      return {opId,status:'committed',durable:true,duplicate:true,
-        firstVersion:old.first_version,version:old.last_version,
-        eventCount:old.event_count,resultBytes:Buffer.from(old.result_bytes)};
-    }
+    if(this.getCommand.get(tenantId,actor,stateName,opId))
+      return this.verifyCommand({tenantId,actor,stateName,opId,epoch,
+        commandBytes:e.commandBytes});
     if(this.getOp.get(tenantId,actor,stateName,opId))fail('OP_ID_CONFLICT');
     const k=key(e),attemptHash=hash_command_attempt(e),pending=this.pending.get(k);
     if(pending) {
@@ -162,21 +158,55 @@ export class BatchPersistenceSidecar {
     this.pending.set(k,{hash:attemptHash});this.queuedBytes+=charge;
     return {opId,status:'admitted',durable:false,duplicate:false};
   }
+  // A durable command receipt is trustworthy only when its provider record
+  // agrees with the persisted stream/snapshot, not merely an op-ID lookup.
+  // This helper is called inside the caller's SQLite read/write transaction.
+  #commandProof(tenantId,actor,stateName,opId,commandHash) {
+    const old=this.getCommand.get(tenantId,actor,stateName,opId);
+    if(!old)return null;
+    if(old.command_hash!==commandHash)fail('OP_ID_CONFLICT');
+    const head=this.getHead.get(tenantId,actor,stateName)?.version??0;
+    if(!uint(head)||!uint(old.first_version)||old.first_version<1||
+       !uint(old.last_version)||old.last_version>head||
+       !uint(old.event_count)||old.event_count<1||
+       old.event_count>this.maxBatchEntries||
+       old.last_version-old.first_version+1!==old.event_count||
+       !(old.result_bytes instanceof Uint8Array)||
+       old.result_bytes.byteLength>this.maxPayloadBytes)fail('CORRUPT_COMMAND_RECORD');
+    const snap=this.db.prepare('SELECT version FROM snapshots '+
+      'WHERE tenant=? AND actor=? AND state_name=?').get(tenantId,actor,stateName);
+    const snapshotVersion=snap?.version??0;
+    if(!uint(snapshotVersion)||snapshotVersion>head||
+       (old.first_version<=snapshotVersion && old.last_version>snapshotVersion))
+      fail('CORRUPT_COMMAND_RECORD');
+    if(old.last_version>snapshotVersion) {
+      const count=this.db.prepare(
+        'SELECT COUNT(*) AS n,MIN(version) AS first,MAX(version) AS last '+
+        'FROM events WHERE tenant=? AND actor=? AND state_name=? '+
+        'AND op_id=? AND version BETWEEN ? AND ?'
+      ).get(tenantId,actor,stateName,opId,old.first_version,old.last_version);
+      if(count.n!==old.event_count || count.first!==old.first_version ||
+         count.last!==old.last_version)fail('INCOMPLETE_COMMAND_JOURNAL');
+    }
+    return {opId,status:'committed',durable:true,duplicate:true,
+      firstVersion:old.first_version,version:old.last_version,
+      eventCount:old.event_count,resultBytes:Buffer.from(old.result_bytes)};
+  }
   verifyCommand({tenantId,actor,stateName,opId,epoch,commandBytes}={}) {
     if(tenantId!==this.tenantId)fail('WRONG_TENANT');
     if(![actor,stateName,opId].every(ident) || !uint(epoch) || epoch<1 ||
        !Buffer.isBuffer(commandBytes) || commandBytes.length>this.maxPayloadBytes)
       fail('INVALID_COMMAND_PROOF');
-    if(this.getFence.get(tenantId,actor)?.epoch!==epoch)fail('STALE_EPOCH');
-    const old=this.getCommand.get(tenantId,actor,stateName,opId);
-    if(!old)return null;
-    if(old.command_hash!==hash_bytes(commandBytes))fail('OP_ID_CONFLICT');
-    if(!uint(old.first_version)||old.first_version<1||!uint(old.last_version)||
-       !uint(old.event_count)||old.event_count<1||
-       old.last_version-old.first_version+1!==old.event_count)fail('CORRUPT_COMMAND_RECORD');
-    return {opId,status:'committed',durable:true,duplicate:true,
-      firstVersion:old.first_version,version:old.last_version,
-      eventCount:old.event_count,resultBytes:Buffer.from(old.result_bytes)};
+    this.db.exec('BEGIN');
+    try {
+      if(this.getFence.get(tenantId,actor)?.epoch!==epoch)fail('STALE_EPOCH');
+      const proof=this.#commandProof(tenantId,actor,stateName,opId,hash_bytes(commandBytes));
+      this.db.exec('COMMIT');
+      return proof;
+    } catch(err) {
+      try{this.db.exec('ROLLBACK');}catch{}
+      throw err;
+    }
   }
   flush() {
     let bytes=0,count=0,rows=0;
@@ -199,11 +229,10 @@ export class BatchPersistenceSidecar {
         if(e.kind==='command') {
           const old=this.getCommand.get(t,a,s,o);
           if(old) {
-            results.push(old.command_hash===e.commandHash
-              ? {opId:o,status:'committed',durable:true,duplicate:true,
-                 firstVersion:old.first_version,version:old.last_version,
-                 eventCount:old.event_count,resultBytes:Buffer.from(old.result_bytes)}
-              : {opId:o,status:'rejected',durable:false,code:'OP_ID_CONFLICT'});
+            if(old.command_hash!==e.commandHash)
+              results.push({opId:o,status:'rejected',durable:false,code:'OP_ID_CONFLICT'});
+            else
+              results.push(this.#commandProof(t,a,s,o,e.commandHash));
             continue;
           }
           if(this.getOp.get(t,a,s,o)) {
