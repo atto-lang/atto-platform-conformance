@@ -94,3 +94,28 @@ and unverified shadow carriers always remain `NOT_EXECUTED` or
 - `fixtures/mailbox-linearizability-v1/`: mailbox stop/race baseline
 - `contracts/actor-graph-v1/manifest.json`: new workload inventory and
   deliberately non-certifying backend status
+
+## First real-guest source candidate (not yet executed)
+
+`fixtures/actor-graph/v1/three-stage-explicit-coordinator.ores` is
+byte-identical (Git blob `79d833399d7044ca647df581d678d4eeb5125fea`)
+to the resource consumed by
+`oreslang-source.java/src/test/java/dev/oreslang/SourceActorGraphGuestRoutingTest.java`
+(PR #2739). It declares three source `StreamOperator<int,int>` actors,
+sends across genuine actor inbox/outbox interfaces, and expects `19`.
+For now the `main` guest explicitly forwards each result from
+`outputs.next()` to the next `ActorRef.send()`; this is **not**
+compiler-lowered `pipe` and is not source supervisor routing.
+
+The test has been authored, **not executed** on an authorized Java compiler
+runner. The Java source organization's CI jobs have zero executed steps at
+the current head. A future successful runner must execute JUnit against the
+actual compiler and capture the output and actor `get_done()` barriers.
+
+The existing LLVM `tests/fixtures/source-actor-pipeline-bidirectional.ores`
+is a separate older typed message/forward/backward fixture (Git blob
+`46579a917516899612fcd8c65c70b24b995c2c5a`). Its current native
+frontend does not yet accept the tagged enum/pattern syntax, so LLVM PR
+#1633 explicitly gates this legacy fixture as **negative no-IR** rather
+than wrongly passing it. Actual source `pipe` LLVM guest integration must
+follow the compiler and scheduler work described in G0–G4 above.
