@@ -133,3 +133,18 @@ Wasm draft [#452](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/
 LLVM draft [#1631](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1631) implements a **separate C11 host-only** elastic actor backing (max 64 MiB, initial native payload zero, transient old+full replacement quota, actor-relative ref32 plus out-of-line slot/incarnation/generation). On 2026-11-10 the source-identical native test compiled and executed under GCC and Clang at both O1 and O2 with ASan/UBSan, 4/4 passes; GH blob identities matched. This does **not** execute compiler-produced `.ores` actors and does not integrate into LLVM source actor lowering. In particular, its host-control slot metadata, allocator metadata, stacks and RSS are not included in its payload-byte ledger.
 
 Wasm #452 has since privatized `grow`/`recycle` host methods and added a ninth regression test. The **previous eight-case** source head passed in real Node; the **current nine-case** source head passed only in a V8 harness with an **emulated WebAssembly.Memory** (9/9), not a real Node/Wasm run. Both remain `NOT_EXECUTED` as compiled AttoLang guest evidence. Do not transfer the previous Node certificate to the changed head.
+
+## 2026-11-10 runner-admission checkpoint (source-free carrier only)
+
+**DO NOT EXPORT Oreslang private source.** P0 [security incident #22](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/22) and related #77 remain open. Live LLVM `main.protected` was **false** at this checkpoint. A destination appearing in `.github/private-ci-approved-repositories.txt` is not sufficient authorization: no protected-main independently reviewed exact-source-snapshot release was verified. Do not bypass through manual Git-tree/connector writes, artifact caches or a private test repo.
+
+Read-only verification identified private, writable carrier `streempilot-test/browser-studio-e2e` (GitHub immutable repository ID `1323599136`). A **new source-free synthetic** [draft PR #18](https://github.com/streempilot-test/browser-studio-e2e/pull/18) was executed with these facts:
+
+- Carrier exact HEAD `114728b304c051d0707e6c77142e7cb5e0e5da61`, not an LLVM/Atto source SHA.
+- GitHub [run #42849732229](https://github.com/streempilot-test/browser-studio-e2e/actions/runs/42849732229), job `129946777084`: **SUCCESS**, nine recorded successful steps, confirmed independent step logs.
+- Clang 18.1.3 and GCC 13.3.0 at O1/O2, ASan+UBSan: **4/4 synthetic budget-oracle binaries executed successfully**. .NET 10.0.403 SDK setup succeeded. These are toolchain and runner probes only.
+- The carrier branch contains *only newly authored synthetic C11 code* and its local preflight workflow. No LLVM/Atto private source, compiler files, source tree hashes, internal manifests, or source-bearing artifacts were copied. Status: `SYNTHETIC_ONLY_NOT_PROMOTABLE`.
+
+A source-org retry of LLVM native [run #42841049701](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/actions/runs/42841049701) was accepted, but the latest job again concluded failure without runner allocation or any executed steps. **NOT_EXECUTED**, not a compiler/test failure.
+
+**Next authorized path:** independent administrator/security team closes or disposes of the incident, enforces source `main` protection, approves the exact source commit/root-tree plus immutable PRIVATE destination ID and retention controls, and records two independently verified signoffs on the protected source branch before any source-bearing mirror. Alternatively execute the original source directly on a repaired source-org or trusted source-local runner. Until then, host-only tests do not promote any `evidence[*]` guest status.
