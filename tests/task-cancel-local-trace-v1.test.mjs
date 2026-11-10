@@ -129,3 +129,16 @@ test('async causal trace retains parent link and avoids false sibling ordering',
   assert.equal(events.filter(e=>e.task===b.id&&e.kind==='cancel-request').length,0);
   assert.equal(Object.isFrozen(events[0]),true);
 });
+
+test('bounded trace overflow never aborts child cancellation; incomplete traces cannot certify causality', () => {
+  const m = new TaskBoundaryModel(), parent = m.root(m.actor('A')), children = [];
+  for (let i = 0; i < 140; i++) children.push(m.child(parent));
+  assert.equal(m.traceComplete(), false);
+  assert.ok(m.droppedTraceEvents() > 0);
+  assert.equal(m.cancel(parent), true);
+  assert.ok(children.every(child => m.done(child).cancelled));
+  assert.equal(m.cancel(parent), false);
+  assert.equal(m.events().length, 256);
+  for (const child of children) assert.equal(m.retire(child).quiescent, true);
+  assert.equal(m.retire(parent).quiescent, true);
+});
