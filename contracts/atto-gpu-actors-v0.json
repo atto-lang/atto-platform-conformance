@@ -5,7 +5,8 @@
   "relatedContracts": [
     "oreslang.heterogeneous-compute/1",
     "state-container-virtual-actor-v1",
-    "singleton-shared-state-v1"
+    "singleton-shared-state-v1",
+    "attolang.gpu-actor-signature-hir/0"
   ],
   "relatedDocs": [
     "docs/CPU_GPU_TASK_V2.md",
