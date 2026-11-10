@@ -42,6 +42,7 @@ accepts the illustrative API below.
 | ES03 | Delete committed journal version 1 | restore fails; state remains initial/unpublished |
 | ES04 | Overdraft command | reducer rejects before enqueue; no version or state change |
 | ES05 | Bounded journal replay and atomic fenced read | malformed, oversized or missing events fail before publication |
+| ES06 | Durable operation ledger integrity | missing or mismatched journal operation record refuses replay |
 
 Run with Node 22.16+ (standalone host reference; synchronous SQLite **must
 not** execute on an AttoLang actor scheduler carrier):
@@ -77,7 +78,7 @@ epoch authority.
    IDs, full raw steps and PASS/FAIL/NOT_EXECUTED per backend. Runner-zero-step,
    host-only and parser-only checks are never source-guest certification.
 
-**Current certification:** ES01–ES05 are authored host reference assertions,
+**Current certification:** ES01–ES06 are authored host reference assertions,
 not yet runner-executed on this exact new branch. Every native .ores guest gate
 above remains **NOT_EXECUTED / NOT_CERTIFIED**.
 
@@ -88,3 +89,24 @@ lack of Actions minutes. Before any such mirror: destination-specific pre-copy
 authorization, validated private visibility, minimal permissions, exact tree
 and per-blob SHA verification, and stepful job logs are required. Never merge
 the P0 guest gate on the strength of source-free or host-only evidence.
+
+## November 10, 2026: alternate-runner admission, no private-source export
+
+Private carrier `atto-lang/atto-compilers-parity-testing` draft PR #12 executed
+[run 42903999229](https://github.com/atto-lang/atto-compilers-parity-testing/actions/runs/42903999229).
+All **five** job steps succeeded; the self-contained synthetic Node 22.16
+SQLite WAL/FULL crash/reopen canary printed `PASS synthetic SQLite before/after
+SIGKILL: 3 checks`. The workflow has no checkout and `permissions: {}`;
+**no private repository source was copied**.
+
+This validates *only* alternate-runner admission and the independently written
+test mechanism, not this repository's exact test or any backend compiler.
+Exact-head conformance source workflow run #42903555083 completed with zero
+executed job steps, so its SQLite suite remains **NOT_EXECUTED**. This symptom
+does not by itself establish Actions budget exhaustion.
+
+The Java source private-CI destination policy does not approve this carrier;
+source security draft #2694 documents independent approval and deny-all
+requirements. Cross-organization mirroring remains **DENIED** until approved
+destination identity, private visibility, exact-tree SHA and per-blob proof
+are satisfied. No alternative test success may override this gate.
