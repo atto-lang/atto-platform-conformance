@@ -180,3 +180,17 @@ test('cancelling a persistence wait cannot erase an unresolved write or authoriz
   assert.equal(account.balance_cents,901);
   assert.equal(account.has_pending_write,false);
 });
+
+test('bank replay rejects duplicate operation rows even with matching event hash',()=>{
+  const {account,store}=harness();account.restore();
+  committed(account,store,'dup-1',deposit(33));
+  store.events.push({...store.events[0],version:2,payload:Buffer.from(store.events[0].payload)});
+  store.version=2;
+  assert.throws(()=>harness(store).account.restore(),/INVALID_JOURNAL/);
+});
+
+test('bank adapter rejects mismatched trusted actor activation identity',()=>{
+  const store=new MemorySidecar();
+  assert.throws(()=>new BankAccountCommandReference({actor:new MemoryPolicyActor(store,2),
+    sidecar:store,tenantId:'tenant-a',actorId:'bank-a',epoch:1}),/ACTIVATION_SCOPE_MISMATCH/);
+});

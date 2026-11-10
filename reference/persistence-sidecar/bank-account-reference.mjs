@@ -46,6 +46,13 @@ export class BankAccountCommandReference {
     if (!actor || !sidecar || typeof tenantId !== 'string' || !tenantId ||
         typeof actorId !== 'string' || !actorId || typeof stateName !== 'string' || !stateName ||
         !int(epoch) || epoch < 1) reject('INVALID_ACTIVATION');
+    // Bind adapter identity to the trusted actor activation, not caller input.
+    if ((actor.tenantId !== undefined && actor.tenantId !== tenantId) ||
+        (actor.actor !== undefined && actor.actor !== actorId) ||
+        (actor.stateName !== undefined && actor.stateName !== stateName) ||
+        (actor.epoch !== undefined && actor.epoch !== epoch) ||
+        (sidecar.tenantId !== undefined && sidecar.tenantId !== tenantId))
+      reject('ACTIVATION_SCOPE_MISMATCH');
     this.#actor = actor;
     this.#sidecar = sidecar;
     this.#scope = Object.freeze({tenantId, actor:actorId, stateName, epoch});
@@ -68,8 +75,10 @@ export class BankAccountCommandReference {
     let balance = 0, sequence = 0;
     const seen = new Map();
     for (const entry of loaded.events) {
+      // This bank fixture emits exactly one event per command. Other typed
+      // actors may use multi-event transactions, but duplicated IDs here are corruption.
       if (entry.version !== sequence + 1 || entry.schemaVersion !== 1 ||
-          typeof entry.opId !== 'string' || !entry.opId ||
+          typeof entry.opId !== 'string' || !entry.opId || seen.has(entry.opId) ||
           !Buffer.isBuffer(entry.payload)) reject('INVALID_JOURNAL');
       let event;
       try { event = JSON.parse(entry.payload.toString('utf8')); }
