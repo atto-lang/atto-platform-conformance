@@ -85,7 +85,7 @@ export function auditActorCI(snapshot) {
   const kinds = result.jobs.map(j => j.classification);
   result.classification = kinds.includes('FOREIGN_JOB') ||
     kinds.includes('INVALID_STEP_DATA') ? 'INVALID_JOB_EVIDENCE' :
-    kinds.every(k => k === 'ZERO_STEPS') ? 'ZERO_STEP_RUNNER_ADMISSION' :
+    kinds.every(k => k === 'ZERO_STEPS') ? 'ZERO_STEP_UNEXECUTED' :
     kinds.some(k => k === 'ZERO_STEPS' || k === 'NO_EXECUTED_STEPS') ? 'PARTIAL_NOT_EXECUTED' :
     kinds.some(k => k === 'EXECUTED_STEP_FAILURE') ? 'EXECUTED_FAILURE' :
     'STEPS_EXECUTED_UNVERIFIED';
@@ -97,7 +97,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     if (process.argv.length !== 3) throw new Error('Usage: node audit-actor-ci-evidence.mjs snapshot.json');
     const verdict = auditActorCI(JSON.parse(readFileSync(process.argv[2], 'utf8')));
     process.stdout.write(JSON.stringify(verdict, null, 2) + '\n');
-    if (verdict.classification !== 'STEPS_EXECUTED_UNVERIFIED') process.exitCode = 2;
+    process.exitCode = verdict.certified ? 0 : 2;
   } catch (error) {
     process.stderr.write(`CI evidence audit error: ${error.message}\n`);
     process.exitCode = 2;
