@@ -113,3 +113,54 @@ test('bounded exhaustive event orders preserve no overlapping turns and exact to
     assert.deepEqual(state(m).map(a=>a.value),expected);
   }
 });
+
+test('1024 logical actors execute 4096 independent turns under bounded batches', () => {
+  const count = 1024;
+  const m = new Model({actorCount:count, mailboxCapacity:4});
+  for (let id=0;id<count;id++) for (let n=1;n<=4;n++) m.send(id,n);
+  let commits=0, batches=0;
+  for (;;) {
+    const batch=m.dispatch(64);
+    if (!batch.length) break;
+    assert.ok(batch.length<=64);
+    assert.equal(new Set(batch.map(t=>t.actorId)).size,batch.length);
+    for (const ticket of batch.toReversed()) {
+      assert.equal(m.complete(ticket).committed,true);
+      commits++;
+    }
+    batches++;
+    assert.ok(batches<=64, 'bounded progress must not starve actors');
+  }
+  assert.equal(commits,4096);
+  assert.equal(batches,64);
+  assert.ok(state(m).every(a=>a.value===10 && a.pending===0 && !a.active));
+});
+
+test('1024-actor device loss fences all outstanding state publication', () => {
+  const count=1024;
+  const m=new Model({actorCount:count});
+  for(let id=0;id<count;id++) m.send(id,1);
+  const batch=m.dispatch(256);
+  assert.equal(batch.length,256);
+  assert.equal(m.loseDevice(),true);
+  for(const t of batch.toReversed()) {
+    assert.equal(m.complete(t).error,'DEVICE_LOST');
+  }
+  assert.equal(m.snapshot().notifications.length, count);
+  assert.equal(new Set(m.snapshot().notifications.map(x=>x.actorId)).size, count);
+  assert.ok(state(m).every(a=>a.value===0 && a.pending===0 && a.closed));
+});
+
+test('dispatch fairness rotates across actors even with continual low-id work', () => {
+  const m=new Model({actorCount:4,mailboxCapacity:8});
+  for(let i=0;i<4;i++) m.send(i,1);
+  const seen=[];
+  for(let round=0;round<4;round++) {
+    const [ticket]=m.dispatch(1);
+    assert.ok(ticket);
+    seen.push(ticket.actorId);
+    m.complete(ticket);
+    if(round<3) m.send(ticket.actorId,1);
+  }
+  assert.deepEqual(seen,[0,1,2,3]);
+});
