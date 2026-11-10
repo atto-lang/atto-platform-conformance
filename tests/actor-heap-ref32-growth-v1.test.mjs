@@ -178,6 +178,10 @@ test('physical relocation contract requires peak charge and failure neutrality',
     'noUnboundedReallocationDuringRealtimeTurn',
     'actorBirthDoesNotCommitEntireHardLimit',
     'schedulerMustContainOOMToOwner',
+    'dynamicHoleReuseCannotAliasLiveObjects',
+    'scrubbedSlotReuseMayProceedAtLogicalHardQuota',
+    'lastOwnerResetInvalidatesDeadHoleExtents',
+    'publishedSlotGenerationMustAdvanceOnDrop',
     'growthIsNotGuestExecutionEvidence'
   ]) assert.equal(contract.allocation[key], true, key);
   assert.equal(contract.policyCandidates.status, 'UNVERIFIED_SIZING_PROPOSALS');
