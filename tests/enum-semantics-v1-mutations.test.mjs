@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {readFileSync,mkdtempSync,mkdirSync,copyFileSync,writeFileSync,rmSync,symlinkSync,unlinkSync,linkSync} from "node:fs";
+import {readFileSync,mkdtempSync,mkdirSync,copyFileSync,writeFileSync,rmSync,symlinkSync,unlinkSync,linkSync,renameSync} from "node:fs";
 import {resolve,dirname,join} from "node:path";
 import {tmpdir} from "node:os";
 import {fileURLToPath} from "node:url";
@@ -87,5 +87,14 @@ test("enum fixture invalid UTF-8 is rejected with pinned inventory",()=>{
  withCompleteTempCorpus((dir,dest)=>{
   writeFileSync(resolve(dest,m.cases[0].file),Buffer.from([0xc0,0xaf]));
   assert.throws(()=>validateEnumFiles(dir,m));
+ });
+});
+
+test("enum fixture directory symlink cannot redirect the corpus",()=>{
+ withCompleteTempCorpus((dir,dest)=>{
+  const real=resolve(dir,"real-fixtures");
+  renameSync(dest,real);
+  symlinkSync(real,dest,"dir");
+  assert.throws(()=>validateEnumFiles(dir,m),/symlinked fixture directory ancestor/);
  });
 });
