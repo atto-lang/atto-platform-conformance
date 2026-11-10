@@ -1,5 +1,5 @@
 define pub class Cart as
-  pub fnc answer(): int {
+  pub answer(): int {
     return 42;
   }
 end
