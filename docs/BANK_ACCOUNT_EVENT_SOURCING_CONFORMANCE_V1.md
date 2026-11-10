@@ -57,3 +57,28 @@ node --disable-warning=ExperimentalWarning --test reference/persistence-sidecar/
 No private cross-org mirror is authorized by this document. Observe the
 mandatory pre-copy allowlist/private publisher gate if source runners cannot
 admit jobs. Keep PR draft until exact-head executed tests and security review.
+
+## Durable command inbox and atomic event batch contract
+
+See `contracts/event-sourcing-durable-command-v1.json` for a versioned
+canonical command transaction and an exact 2-event big-endian wire vector.
+Java host [#2768](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2768)
+and LLVM host [#1646](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1646)
+have draft privileged SQLite methods to persist request bytes, event rows,
+journal head and original reply atomically, and to resolve the prior reply
+after epoch rotation. The provider must verify EVERY retained event row
+against the original durable inbox. A mismatch, stale epoch, wrong tenant,
+changed request or interrupted multi-event batch must fail closed.
+
+`reference/persistence-sidecar/durable-command-wire.test.mjs` checks
+canonical wire framing, truncation/overflow guards and the declared guest
+evidence boundary. It is a **pure Node reference test**, NOT an executable
+Java or LLVM source-guest conformance result; all five native compiler targets
+remain `NOT_EXECUTED`. The Java and LLVM branches also contain dedicated
+SQLite host integration tests, pending real exact-head runner execution.
+
+**Next release gates:** an asynchronous compiler-owned bridge under an actor
+turn, transitive pure reducers, sealed state and supervisor recovery, an
+outbox/terminal reply policy, plus actual guest execution on five backends.
+The original command bytes must be encoded deterministically and must not
+contain an actor-local pointer, borrowed alias or nondeterministic timestamp.

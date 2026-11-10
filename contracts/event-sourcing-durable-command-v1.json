@@ -1,0 +1,78 @@
+{
+  "schema": "atto.event-sourcing.durable-command/1",
+  "status": "DRAFT",
+  "providerProtocol": "sqlite-wal-full-privileged-host",
+  "maxEventsPerCommand": 256,
+  "maxBatchBytes": 1048576,
+  "maxSingleEventBytes": 65536,
+  "maxCommandBytes": 65536,
+  "maxReplyBytes": 65536,
+  "durableRecord": {
+    "primaryKey": [
+      "tenant",
+      "actor",
+      "state_slot",
+      "operation_id"
+    ],
+    "required": [
+      "activation_epoch",
+      "expected_version",
+      "canonical_command_bytes",
+      "first_event_version",
+      "last_event_version",
+      "event_batch_bytes",
+      "original_reply_bytes"
+    ],
+    "storageTransaction": [
+      "journal_head",
+      "event_rows",
+      "command_inbox",
+      "original_reply"
+    ],
+    "recovery": "new authenticated epoch, identical command bytes + op ID, inspect retained journal rows, original reply only"
+  },
+  "wire": {
+    "encoding": "uint32 big endian event count, then per event uint32 schema, uint32 payload size, payload bytes",
+    "example": {
+      "command": "Deposit(100)",
+      "operation_id": "op-42",
+      "events": [
+        {
+          "schema": 1,
+          "payload": "MoneyDeposited(60)"
+        },
+        {
+          "schema": 1,
+          "payload": "MoneyDeposited(40)"
+        }
+      ],
+      "event_batch_hex": "0000000200000001000000124d6f6e65794465706f73697465642836302900000001000000124d6f6e65794465706f736974656428343029",
+      "first_version": 1,
+      "last_version": 2,
+      "reply": "Ok(balance=100)"
+    }
+  },
+  "requiredNegatives": [
+    "stale_epoch",
+    "wrong_tenant",
+    "wrong_actor",
+    "wrong_state_slot",
+    "same_operation_changed_command",
+    "truncated_batch",
+    "wrong_event_schema",
+    "tampered_journal",
+    "missing_event",
+    "rollback_on_second_event_failure",
+    "oversize_event",
+    "oversize_request",
+    "oversize_reply",
+    "cross_legacy_operation_id_collision"
+  ],
+  "statusByBackend": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  }
+}
