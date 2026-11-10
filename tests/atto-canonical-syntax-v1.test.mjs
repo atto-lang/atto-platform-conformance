@@ -6,8 +6,8 @@ import {fileURLToPath} from "node:url";
 import {BACKENDS,CASE_IDS,validateAttoSyntaxManifest} from "../lib/atto-canonical-syntax-v1.mjs";
 const root=resolve(dirname(fileURLToPath(import.meta.url)),"..");
 const baseline=JSON.parse(readFileSync(resolve(root,"contracts/atto-canonical-syntax-v1.json"),"utf8"));
-test("24 pinned guest candidates, zero backend certifications",()=>{
- assert.equal(CASE_IDS.length,24);
+test("26 pinned guest candidates, zero backend certifications",()=>{
+ assert.equal(CASE_IDS.length,26);
  assert.deepEqual(baseline.backends,BACKENDS);
  assert.deepEqual(validateAttoSyntaxManifest(baseline,root),[]);
 });
@@ -19,8 +19,8 @@ test("manifest mutations fail closed",()=>{
   m=>m.backends.pop(),
   m=>m.cases[0].confirmedBackends.push("java"),
   m=>m.cases[0].expectedExitCode=0,
-  m=>m.cases[12].noGuestArtifactOnReject=false,
-  m=>m.cases[12].diagnosticCategory="",
+  m=>m.cases[13].noGuestArtifactOnReject=false,
+  m=>m.cases[13].diagnosticCategory="",
   m=>m.cases.pop(),
   m=>m.cases.reverse(),
   m=>m.cases[0].id="../escape",
