@@ -153,3 +153,41 @@ corruption relative to an independent persisted record but **are not
 cryptographically authenticated against an attacker able to rewrite all
 database rows**; a trusted provider or authenticated append-only evidence
 is required for that threat model.
+
+
+## 2026-11-10 additional audit: receipts, mixed APIs and admission
+
+The latest adversarial audit identified and patched two separate ways to
+report unproven legacy durability:
+
+- A matching legacy `operations` row alone **must never** justify either
+  a duplicate response or `verifyCommit`. The reference now checks the
+  actual immutable event BLOB + schema + operation ID, or the active
+  snapshot's BLOB/schema/operation integrity. Deleted or rewritten event
+  data rejects acknowledgement as `INCOMPLETE_OPERATION_LEDGER`.
+- The legacy receipt's epoch fence, operation lookup and durable payload
+  proof now execute inside one SQLite read transaction (and the duplicate
+  path rechecks the epoch within the transaction), preventing a fence
+  replacement between authorization and ACK evidence.
+
+Operation IDs are shared across the legacy event/snapshot API and the
+new atomic command API in one tenant/actor/stream. Reusing an existing
+`opId` across these APIs is always `OP_ID_CONFLICT`; both directions
+have negative tests. A payload-size configuration override may never
+weaken the immutable 1 MiB per-event/snapshot replay cap or the 16 MiB
+per-command event cap. New admission tests enforce that policy.
+
+This round also corrected a static integration defect: the recovery
+snapshot SELECT previously did not include `operation_digest` even
+though the snapshot-proof helper required it. The field is now selected
+in both replay and duplicate-proof queries. New source code passed a
+JavaScript syntax parse and GitHub blob readback. The regression tests
+remain **NOT_EXECUTED** in source CI; no claims of passing Node SQLite
+source tests or compiled AttoLang guest are made.
+
+**Further release blockers**: independently execute exact-source
+SQLite/JDBC test suites, validate old-database upgrade/rejection paths,
+instrument true process-loss after COMMIT-before-ACK, prove that replay
+caps cannot be exceeded before an authenticated checkpoint, and run
+compiler-lowered guest actor conformance. A source-free runner's passing
+synthetic tests do not authorize private-source mirroring.
