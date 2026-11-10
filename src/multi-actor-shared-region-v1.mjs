@@ -121,6 +121,13 @@ export class TrustedMultiActorSharedHostV1 {
     return region;
   }
 
+  hasOutstandingLoan(execution, exceptRegion = null) {
+    for (const region of this.#regions) {
+      if (region !== exceptRegion && region.hasExecution(execution)) return true;
+    }
+    return false;
+  }
+
   reclaimRegion(region) {
     assert(this.#regions.has(region), 'foreign or forged region');
     region.reclaim(INTERNAL);
@@ -187,15 +194,17 @@ class MultiActorSharedRegionV1 {
     return e;
   }
 
-  delegate(ownerExecution, recipient, mode) {
+  delegate(ownerExecution, recipientExecution, mode) {
     this.#ownerExecution(ownerExecution);
-    const a = actors.get(recipient);
-    assert(a?.live && a.host === this.#host && a.domain === this.#domain && a.trust === 'trusted',
-      'cross-domain or stale recipient');
+    const e = executions.get(recipientExecution);
+    const a = e?.a;
+    assert(e?.live && a?.live && e.host === this.#host &&
+      a.domain === this.#domain && a.trust === 'trusted',
+      'cross-domain or stale recipient execution');
     assert(mode === 'read' || mode === 'write', 'invalid loan mode');
     assert(this.#grants.size < this.#maxGrants, 'grant quota exhausted');
     const grant = Object.freeze({});
-    this.#grants.set(grant, { recipient, mode, epoch: this.#epoch });
+    this.#grants.set(grant, { recipientExecution, mode, epoch: this.#epoch });
     return grant;
   }
 
@@ -213,12 +222,14 @@ class MultiActorSharedRegionV1 {
     const e = this.#actor(execution);
     assert(mode === 'read' || mode === 'write', 'invalid loan mode');
     assert(!this.#hasExecution(execution), 'recursive acquisition or upgrade denied');
+    assert(!this.#host.hasOutstandingLoan(execution, this),
+      'cross-region nested critical loans denied until a global lock-order proof exists');
     let delegated = null;
     if (e.actor === this.#owner) {
       assert(grant === null, 'owner cannot consume delegation');
     } else {
       delegated = this.#grants.get(grant);
-      assert(delegated && delegated.recipient === e.actor && delegated.mode === mode &&
+      assert(delegated && delegated.recipientExecution === execution && delegated.mode === mode &&
         delegated.epoch === this.#epoch, 'invalid or stale delegation');
     }
     const live = this.#active();
@@ -355,7 +366,7 @@ class MultiActorSharedRegionV1 {
       }
     }
     for (const [grant, record] of this.#grants) {
-      if (record.recipient === actor) this.#grants.delete(grant);
+      if (executions.get(record.recipientExecution)?.actor === actor) this.#grants.delete(grant);
     }
     this.#drain();
     this.#check();
