@@ -1,0 +1,119 @@
+# AttoLang event sourcing — transactional recovery and command identity (draft)
+
+**Status: source-free Node/SQLite HOST MODEL; not a compiled AttoLang guest,
+production async provider or backend-parity certification.**
+
+## Integration context
+
+This draft is stacked on conformance #666 (which is stacked on #231/#227).
+It reconciles the bounded/fenced journal-safety requirements in #664 with
+#666's independent atomic multi-event command transaction model. It does
+**not** merge #664, modify its head, or claim either of the overlapping PRs
+has executed on a source Actions runner.
+
+AttoLang retains `define actor`, sealed actor `state {}`,
+`handle_state(critical-read |s| -> ...)` /
+`handle_state(critical-write |s| -> ...)`, and snake_case APIs. A typed
+`EventSourcedActor<State,Command,Event>` stdlib base remains a proposal.
+No additional `event actor` keyword is introduced.
+
+## Storage protocol
+
+1. A supervisor-authorized, stable logical actor ID and tenant are distinct
+   from the monotonically increasing activation **epoch**. The epoch fences
+   stale writers. Only the trusted host may grant an epoch.
+2. One logical command has one stable `opId` and a canonical immutable
+   `commandBytes` SHA-256 across restarts. A command may yield multiple
+   ordered immutable events, but their append, stream head, command result,
+   and durable command index must commit **atomically**.
+3. The logical dedupe index `command_commits` outlives journal compaction.
+   A duplicate under a *new* valid epoch returns the original result only
+   after provider verification; an old epoch is rejected before any lookup.
+   The epoch-bound legacy operation ID is **not** a replacement for this index.
+4. A provider-confirmed ACK is not enough by itself. Before an actor
+   publishes a candidate balance, the reference verifies command hash,
+   stream/event-count/version consistency, event contents digest,
+   result bytes digest, and a valid snapshot barrier where event payloads
+   have been compacted.
+5. Journal restore obtains the fence, snapshot, stream head, and bounded
+   contiguous post-snapshot events in one SQLite read transaction. It validates
+   both legacy `operations` evidence and newer `command_commits` records.
+   Replay refuses orphan events, missing events, corrupt indexes, invalid
+   BLOBs, schema mismatches and snapshot/journal gaps.
+6. The bank actor maintains a private candidate state and publishes it only
+   after trusted command evidence. Crashed/unacknowledged outcomes may be
+   reconciled using the **same** logical command ID. Await cancellation
+   removes a caller wait, never an ambiguous storage operation.
+
+## Limits and schema compatibility
+
+The host reference limits replay to 10,000 events, 16 MiB aggregate, and
+1 MiB per event/snapshot. The command index also stores
+`events_digest` and `result_digest` (SHA-256). Existing
+`command_commits` tables are upgraded additively; pre-upgrade records
+without these digests remain `UNVERIFIED_COMMAND_RECORD` and cannot be
+returned as durable duplicates. **No automatic silent legacy backfill**:
+a separate authenticated migration/verification design is needed to
+reactivate any old logical command record safely.
+
+The bank account host adapter is
+`reference/persistence-sidecar/bank-account-transactional.mjs`. It uses
+the **existing** sidecar `enqueueCommand` / `verifyCommand` API; it is
+not a second database, actor runtime, or mutable state sharing mechanism.
+The earlier `BankAccountCommandReference` intentionally remains as a
+single-event compatibility regression and must not be marketed as the
+canonical atomic multi-event implementation.
+
+## Host regression commands (not certified until actually executed)
+
+```sh
+node --disable-warning=ExperimentalWarning --test reference/persistence-sidecar/*.test.mjs
+```
+
+New suites:
+- `transactional-replay-hardening.sqlite.test.mjs`: mixed legacy + command
+  replay, corrupt legacy / command ledger, version gap, BLOB limits, snapshot
+  barrier, stale epoch, altered event/result hashes and safe compaction.
+- `bank-account-transactional.sqlite.test.mjs`: multi-event append,
+  commit-gated actor publication, lost ACK + epoch2 retry, forged receipt,
+  second-event rollback, snapshot/compaction, corrupt replay, overdraft,
+  cross-actor batch isolation and stale incarnation refusal.
+- Updated `command-transactions.sqlite.test.mjs`: orphaned command records
+  cannot claim durable success after *unauthenticated* event pruning.
+
+**Static parsing of the changed JavaScript files is not a database test.**
+The source-org job must run with nonzero executed steps on the exact head.
+The separately verified source-free alternate-runner canary [#42903999229]
+(https://github.com/atto-lang/atto-compilers-parity-testing/actions/runs/42903999229)
+is evidence of the runner's health, **not** of this branch's tests.
+
+## P0 missing integration and evidence
+
+- Implement actual compiler-owned `EventSourcedActor` source lowering,
+  borrow/critical-loan gates, pure deterministic reducers, sealed state,
+  and compile-negative fixtures. Use typed owned event transfer; no raw
+  host database handle or caller-supplied activation authority in guest code.
+- Integrate the transactional command journal into Java ActorRuntime's
+  asynchronous persistence continuation and fresh-arena recovery.
+  Existing Java #2757 exposes an event append but not this atomic
+  logical-command API. It remains host-only.
+- Prove real guest SIGKILL-before-commit and after-commit/before-ACK;
+  add supervisor tree recovery, stable actor identity, activation fences,
+  snapshot migration, transactional outbox and fairness.
+- Independently run canonical guest tests on Java/GraalVM, LLVM, .NET
+  Native AOT, Wasm and Forge and record exact head/tree SHA, executed steps,
+  raw results, and explicit PASS/FAIL/NOT_EXECUTED distinctions.
+- No private-source copying to an alternate GitHub organization without
+  destination-bound independently approved export policy, private visibility,
+  source tree and per-blob verification, and protected-main governance.
+
+## Security limitations (must not be hidden)
+
+Node `DatabaseSync` is **synchronous** and only a trusted reference model.
+It must never run on an AttoLang actor carrier. Even with WAL/FULL, SIGKILL
+tests do not demonstrate power-loss proof against device failure. SHA-256
+stored in the same untrusted database as the event is a corruption-detection
+mechanism, **not authenticated protection against a compromised provider**.
+Distributed coordinator/epoch authority and transactional external effects
+are not implemented. Cross-epoch dedupe retention must follow a documented
+policy and must not be pruned silently.
