@@ -30,7 +30,7 @@ jobs:
           [[ "$EXPECTED_SHA" =~ ^[0-9a-fA-F]{40}$ ]]
           test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
           test -z "$(git status --porcelain --untracked-files=all)"
-          test "$(git hash-object fixtures/actor-two-peer-failure-v1/two-peer-failure-matrix.atto)" = 003983eb9475d7fd680ea5b31804df02f1843f19
+          test "$(git hash-object fixtures/actor-two-peer-failure-v1/two-peer-failure-matrix.atto)" = eaac813262ca184930ba124180ed692e21329969
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
