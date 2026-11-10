@@ -1,10 +1,10 @@
 {
   "schema": "atto.gpu-actors-host-reference-evidence/0",
   "recordedAt": "2026-11-10",
-  "scope": "host-only Node reference model",
-  "featureContract": "atto.gpu-actors/0",
+  "scope": "host-only Node reference model; no AttoLang compiler guest or GPU hardware",
+  "contract": "atto.gpu-actors/0",
   "sourceRepo": "ores-truffle-oreslang/oreslang-platform-conformance",
-  "sourceHeadAtMirror": "777a007fc86688c202dca756efae4df4ac22b22f",
+  "sourceHeadAtMirror": "f812419df4268b8e1c6440627199006cd5d3e10f",
   "sourceFiles": [
     {
       "path": "src/gpu-actor-population-reference-v0.mjs",
@@ -12,24 +12,30 @@
     },
     {
       "path": "tests/gpu-actor-population-reference-v0.test.mjs",
-      "gitBlobSha": "f823a060e55f1949a2d08098baa9d5ab0c6a2c44"
+      "gitBlobSha": "34b82ec40980ce35d6574de07314da3045937b41"
     }
   ],
   "runnerRepo": "scintilla-run/scintilla-run-e2e",
   "carrierBranch": "carrier/gpu-actor-reference-20261110",
-  "carrierHead": "59372d0eb29bc5c54e447e8674b38ee9fe637a98",
-  "workflowRunId": 42899699951,
-  "workflowUrl": "https://github.com/scintilla-run/scintilla-run-e2e/actions/runs/42899699951",
-  "jobId": 130122073433,
+  "carrierHead": "565e68bedb361c24ced8c191a7445c4de6308aeb",
+  "workflowRunId": 42904627499,
+  "workflowUrl": "https://github.com/scintilla-run/scintilla-run-e2e/actions/runs/42904627499",
+  "jobId": 130139274937,
   "stepEvidence": {
     "hashComparison": "success",
     "nodeTest": "success",
-    "testCount": 8,
-    "passed": 8,
+    "testCount": 11,
+    "passed": 11,
     "failed": 0,
     "skipped": 0
   },
-  "boundedModelInterleavings": 256,
+  "exercisedModel": {
+    "actors": 1024,
+    "turnsCommitted": 4096,
+    "maxBatchSize": 64,
+    "deviceLossCohortSize": 1024,
+    "boundedTwoActorInterleavings": 256
+  },
   "backendTargetEvidence": {
     "java": "NOT_EXECUTED",
     "llvm": "NOT_EXECUTED",
@@ -39,14 +45,14 @@
   },
   "compilerGuestExecuted": false,
   "physicalGpuExecuted": false,
-  "productionSecurityTokenAuthProven": false,
+  "productionCapabilityAuthenticationProven": false,
   "gpuDriverVerified": false,
   "fiveBackendParityCertified": false,
   "limits": [
-    "Does not execute .atto language",
-    "Does not run JUnit on Java #2760",
-    "Does not exercise a GPU provider",
-    "Host token identity is a model oracle, not production-authenticated capabilities",
-    "The runner is a private carrier, not source-org CI"
+    "No .atto guest code execution",
+    "No physical GPU provider or GPU throughput evidence",
+    "No actual Java JUnit execution",
+    "No device-authenticated fences or GPU buffer enforcement",
+    "Host token identity is a deterministic model oracle, not production-authenticated capability"
   ]
 }
