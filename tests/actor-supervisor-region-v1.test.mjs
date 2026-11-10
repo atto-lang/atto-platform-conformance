@@ -505,3 +505,75 @@ test('HARDEN: creating a new alias while an exclusive writer is live is rejected
   assert.equal(checkBorrowTrace([...ops,['release','w'],['alias','region','r'],
     ['drop-alias','r'],['end']]).ok,true);
 });
+
+test('AUDIT: supervisor physical guest turn prevents owner transfer even without a loan', () => {
+  const r = mk(), original = r.owner;
+  r.beginSupervisorTurn(supervisor);
+  assert.equal(r.stats.activeSupervisorTurn, true);
+  denied(() => r.transfer(original, supervisor), /quiescence/);
+  denied(() => r.beginSupervisorTurn(supervisor), /non-reentrant/);
+  denied(() => r.endSupervisorTurn(actor), /foreign/);
+  r.endSupervisorTurn(supervisor);
+  const next = r.transfer(original, supervisor);
+  assert.equal(next.principal.role, 'supervisor');
+  denied(() => r.transfer(original, actor), /owner/);
+});
+
+test('AUDIT: STOP cannot reclaim while supervisor execution still physically active', () => {
+  const r = mk();
+  r.beginSupervisorTurn(supervisor);
+  r.stop(supervisor);
+  assert.equal(r.physicallyQuiescent(), false);
+  denied(() => r.reclaim(supervisor), /physical/);
+  denied(() => r.beginSupervisorTurn(supervisor), /sealed/);
+  r.endSupervisorTurn(supervisor);
+  assert.equal(r.physicallyQuiescent(), true);
+  r.reclaim(supervisor);
+  denied(() => r.endSupervisorTurn(supervisor), /duplicate/);
+});
+
+test('AUDIT: a derived alias must be dropped before its parent alias', () => {
+  const prefix = [['init', 's', 'actor'], ['alias', 's', 'a'], ['project', 'a', 'a.f']];
+  assert.match(checkBorrowTrace([...prefix, ['drop-alias', 'a']]).why, /derived projection/);
+  assert.equal(checkBorrowTrace([...prefix, ['drop-alias', 'a.f'], ['drop-alias', 'a'], ['end']]).ok, true);
+});
+
+test('AUDIT: dropping a projected alias with a live derived loan is rejected', () => {
+  const prefix = [['init', 's', 'actor'], ['alias', 's', 'a'], ['read', 'a', 'lr', 'actor']];
+  assert.match(checkBorrowTrace([...prefix, ['drop-alias', 'a']]).why, /derived loan/);
+  assert.equal(checkBorrowTrace([...prefix, ['release', 'lr'], ['drop-alias', 'a'], ['end']]).ok, true);
+});
+
+test('AUDIT: STOP before physical exit cannot be bypassed through restart', () => {
+  const r = mk(), owner = r.owner;
+  r.beginActorTurn(owner);
+  r.beginSupervisorTurn(supervisor);
+  r.stop(supervisor);
+  r.endActorTurn(owner);
+  assert.equal(r.physicallyQuiescent(), false);
+  denied(() => r.reclaim(supervisor), /physical/);
+  denied(() => r.restart(supervisor), /prior physical/);
+  r.endSupervisorTurn(supervisor);
+  r.reclaim(supervisor);
+  const restarted = r.restart(supervisor);
+  assert.notEqual(restarted, owner);
+  assert.equal(r.generation, 2);
+});
+
+test('AUDIT: transfer never creates a second owner while any physical turn exists', () => {
+  for (let i=0;i<500;i++) {
+    const r = mk();
+    const owner = r.owner;
+    if (i%2 === 0) r.beginActorTurn(owner);
+    if (i%3 === 0) r.beginSupervisorTurn(supervisor);
+    if (r.stats.activeActorTurn || r.stats.activeSupervisorTurn) {
+      denied(() => r.transfer(owner, supervisor), /quiescence/);
+    }
+    if (r.stats.activeActorTurn) r.endActorTurn(owner);
+    if (r.stats.activeSupervisorTurn) r.endSupervisorTurn(supervisor);
+    const next = r.transfer(owner, supervisor);
+    assert.equal(r.stats.owner,'supervisor');
+    denied(() => r.transfer(owner, actor), /owner/);
+    assert.equal(next.principal.role,'supervisor');
+  }
+});

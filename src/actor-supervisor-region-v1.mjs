@@ -67,9 +67,19 @@ export function checkBorrowTrace(ops) {
       // A live alias is a scoped, immutable view, not merely a spelling of
       // its root. Even without an explicit read op it prevents exclusive
       // mutation and cannot cross suspension/transfer.
-      aliases.set(arg, { base, role: roots.get(base) });
+      aliases.set(arg, { base, role: roots.get(base), parent: root });
     } else if (kind === 'drop-alias') {
-      if (!aliases.delete(root)) return fail(i, 'missing or already-dropped alias');
+      if (!aliases.has(root)) return fail(i, 'missing or already-dropped alias');
+      // A reborrow's parent must outlive its derived projection and all
+      // loans created through that view. Otherwise a dangling parent can be
+      // silently dropped while the child remains usable.
+      if ([...aliases.values()].some(a => a.parent === root)) {
+        return fail(i, 'alias has live derived projection');
+      }
+      if ([...loans.values()].some(l => l.via === root)) {
+        return fail(i, 'alias has outstanding derived loan');
+      }
+      aliases.delete(root);
     } else if (kind === 'read' || kind === 'write') {
       const base = resolve(root);
       const owner = roots.get(base);
@@ -100,7 +110,7 @@ export function checkBorrowTrace(ops) {
       // issuance consumes a one-use authorization.
       if (grant) grant.used = true;
       seenLoans.add(arg);
-      loans.set(arg, { root: base, role, kind });
+      loans.set(arg, { root: base, role, kind, via: aliases.has(root) ? root : null });
     } else if (kind === 'grant') {
       const owner = roots.get(root);
       if (!owner || typeof arg !== 'string' || !arg.length || seenGrants.has(arg) ||
@@ -184,6 +194,7 @@ export class ActorSupervisorRegionV1 {
   #maxActiveReaders;
   #nextTicket = 0;
   #activeActorTurn = false;
+  #activeSupervisorTurn = false;
 
   constructor({ actorId, supervisorId, generation = 1, maxPending = 16,
     maxDelegations = 64, maxActiveReaders = 1024 }) {
@@ -217,7 +228,8 @@ export class ActorSupervisorRegionV1 {
       pending: this.#pending.length,
       outstandingDelegations: this.#capabilities.size,
       stopped: this.#stopped,
-      reclaimed: this.#reclaimed, activeActorTurn: this.#activeActorTurn });
+      reclaimed: this.#reclaimed, activeActorTurn: this.#activeActorTurn,
+      activeSupervisorTurn: this.#activeSupervisorTurn });
   }
 
   #validOwner(token) { return token === this.#owner && !this.#reclaimed; }
@@ -235,6 +247,27 @@ export class ActorSupervisorRegionV1 {
     ensure(this.#validOwner(actorToken) && same(actorToken.principal, this.#actor) &&
       this.#activeActorTurn, 'foreign or duplicate actor turn exit');
     this.#activeActorTurn = false;
+  }
+
+  /**
+   * Supervisor guest turns are independent of CONTROL/STOP authority. A
+   * parent may operate without owning child memory; its physical turn must
+   * still drain before memory ownership is transferred or reclaimed.
+   * This is a source-free scheduler abstraction, not guest authentication.
+   */
+  beginSupervisorTurn(who) {
+    this.#operational();
+    who = principal(who);
+    ensure(same(who, this.#supervisor), 'foreign supervisor turn');
+    ensure(!this.#activeSupervisorTurn, 'supervisor is non-reentrant');
+    this.#activeSupervisorTurn = true;
+  }
+
+  endSupervisorTurn(who) {
+    who = principal(who);
+    ensure(same(who, this.#supervisor) && this.#activeSupervisorTurn,
+      'foreign or duplicate supervisor turn exit');
+    this.#activeSupervisorTurn = false;
   }
 
   /** Owner hands out a one-use SCOPED loan capability, never its raw state. */
@@ -369,7 +402,8 @@ export class ActorSupervisorRegionV1 {
     ensure((same(recipient, this.#actor) || same(recipient, this.#supervisor)) &&
       !same(recipient, ownerToken.principal), 'transfer must change participant');
     ensure(this.#active.size === 0 && this.#pending.length === 0 &&
-      this.#reserved.size === 0 && !this.#activeActorTurn,
+      this.#reserved.size === 0 && !this.#activeActorTurn &&
+      !this.#activeSupervisorTurn,
       'ownership transfer requires physical quiescence');
     ensure(this.#ownerEpoch < Number.MAX_SAFE_INTEGER, 'owner epoch exhausted');
     this.#ownerEpoch++;
@@ -392,7 +426,7 @@ export class ActorSupervisorRegionV1 {
   physicallyQuiescent() {
     return this.#stopped && this.#active.size === 0 &&
       this.#pending.length === 0 && !this.#activeActorTurn &&
-      this.#reserved.size === 0;
+      !this.#activeSupervisorTurn && this.#reserved.size === 0;
   }
 
   reclaim(supervisor) {

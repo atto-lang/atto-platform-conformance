@@ -167,3 +167,37 @@ Run the local reference tests with:
 ```
 node --test tests/actor-supervisor-region-v1.test.mjs
 ```
+
+## Follow-up audit: supervisor physical turn and derived alias fences (2026-11-10)
+
+This V1 oracle now tracks `activeSupervisorTurn` separately from
+`activeActorTurn`. A supervisor's lifecycle authority does **not** grant raw
+actor-state ownership, but an in-flight supervisor guest turn is nevertheless
+physical activity: neither owner transfer nor STOP reclamation is safe until
+both actor and supervisor guest turns have unwound. The model's supervisor-turn
+methods are **trusted-driver abstractions**, not an authorization mechanism.
+Runtime integration must bind them to authenticated scheduler execution and
+maintain physical-quiescence receipts, even when logical STOP revokes access.
+
+The lexical checker now records each derived alias's parent and denies:
+- dropping an alias while a derived projection is still live;
+- dropping an alias while a read/write loan borrowed through it is live.
+
+These are conservative root-level provenance constraints. Real compiler
+checking still needs path-sensitive MIR, nonlexical lifetime analysis,
+transactional ownership transfer and exception/unwind coverage. The source-free
+model does not represent actual object memory or protect asynchronous host
+callbacks from touching it.
+
+The additional tests exercise a STOP/transfer interleaving with simultaneous
+actor and supervisor turns, stale owner token after transfer, nested alias
+parent-before-child release, and 500 seeded no-double-owner transfer attempts.
+
+For cross-organization GHA validation, **never** checkout the source private
+repo using the destination repo's `GITHUB_TOKEN`. An explicitly authorized
+**private** destination can receive exact *blob bytes* using the connector,
+with SHA checks against the source head. Test the mirrored files using the
+same source-relative paths and pinned expected blob SHAs. A partial mirror
+proves only the copied code's identity; its overall Git tree SHA must **not**
+be claimed equal to the entire source repository's tree. Record both Git trees,
+actual executed runner steps and test results. A zero-step job is not evidence.
