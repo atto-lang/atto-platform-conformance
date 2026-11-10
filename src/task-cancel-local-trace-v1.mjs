@@ -10,8 +10,14 @@ export class TaskBoundaryModel {
   #next = 1;
   #tls = new Map();
   #events = [];
+  #droppedTraceEvents = 0;
   #record(task, kind, extra = {}) {
-    if (this.#events.length >= 256) throw new Error('TRACE_QUOTA');
+    // Telemetry pressure must never abort cancellation, cleanup, or admission.
+    // A dropped-event count makes this trace explicitly incomplete/non-certifying.
+    if (this.#events.length >= 256) {
+      this.#droppedTraceEvents++;
+      return;
+    }
     this.#events.push(Object.freeze({
       sequence: this.#events.length + 1, kind, task: task.id,
       traceId: task.traceId, spanId: task.spanId,
@@ -133,9 +139,15 @@ export class TaskBoundaryModel {
   cancel(task) {
     this.#task(task);
     if (task.retired || task.cancelled) return false;
-    task.cancelled = true; // revokes new work; intentionally DOES NOT release live locks
-    this.#record(task, 'cancel-request');
-    for (const child of task.children) this.cancel(child);
+    // Iterative propagation avoids unbounded host recursion on a deep Task tree.
+    const pending = [task];
+    while (pending.length > 0) {
+      const current = pending.pop();
+      if (current.retired || current.cancelled) continue;
+      current.cancelled = true; // revoke work, NEVER unlock a physically running task
+      this.#record(current, 'cancel-request');
+      for (const child of current.children) pending.push(child);
+    }
     return true;
   }
   retire(task) {
@@ -165,4 +177,6 @@ export class TaskBoundaryModel {
     });
   }
   events() { return Object.freeze([...this.#events]); }
+  droppedTraceEvents() { return this.#droppedTraceEvents; }
+  traceComplete() { return this.#droppedTraceEvents === 0; }
 }
