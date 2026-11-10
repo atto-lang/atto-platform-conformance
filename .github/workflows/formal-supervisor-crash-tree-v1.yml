@@ -1,0 +1,22 @@
+name: Bounded supervisor-crash-tree model only
+on:
+  pull_request:
+    paths:
+      - 'formal/supervisor-crash-tree-v1/**'
+      - '.github/workflows/formal-supervisor-crash-tree-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bounded-model:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Execute bounded reference model (not backend certification)
+        shell: bash
+        run: |
+          node --version
+          node formal/supervisor-crash-tree-v1/check.mjs
