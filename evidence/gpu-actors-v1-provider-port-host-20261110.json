@@ -4,22 +4,22 @@
   "source": {
     "repo": "ores-truffle-oreslang/oreslang-source.llvm",
     "pr": 1652,
-    "head": "aa02ba3db824337b82acbc587e6321701660141b",
+    "head": "0ee9fdd482d1a96e4b0a7b3ca99abad9090bbb09",
     "stackedOn": 1650,
-    "blob": "23fef983580e6323e278792ef17dc6c9b96306ee",
-    "testBlob": "4b97bc83cb1e62d0ae8ba7db92b285507b5d3b22"
+    "blob": "8e9f916898d285cbb36667cbd74e33b70cf60cd3",
+    "testBlob": "056928f4622ca70ca7476ee29845b4940d68630e"
   },
   "carrier": {
     "repo": "scintilla-run/scintilla-run-e2e",
     "branch": "carrier/gpu-provider-bridge-v1-20261110",
-    "head": "03566737d7fb7436d46549a5acabc158209d7a21",
-    "runId": 42921328555,
-    "jobId": 130196605781,
-    "url": "https://github.com/scintilla-run/scintilla-run-e2e/actions/runs/42921328555",
+    "head": "72af9f14caea283d3d063a7d5e407f3a5113464c",
+    "runId": 42921965357,
+    "jobId": 130198780658,
+    "url": "https://github.com/scintilla-run/scintilla-run-e2e/actions/runs/42921965357",
     "sourceBlobsChecked": true,
     "gccAsanUbsan": "PASS",
     "clang": "PASS",
-    "checksPerCompiler": 6280,
+    "checksPerCompiler": 6293,
     "mockActors": 1024,
     "mockTurns": 4096
   },
@@ -31,7 +31,9 @@
     "processRootRegistryCap": 256,
     "retainedAcrossSupervisorHandleDrop": true,
     "rootRetiresOnlyAfterMockProviderRelease": true,
-    "crossTenantDeviceLossContained": true
+    "crossTenantDeviceLossContained": true,
+    "retirementReleaseExcludesConcurrentActorTurns": true,
+    "retirementVsCancellationTested": true
   },
   "notProven": {
     "nativePhysicalGpuProvider": false,
