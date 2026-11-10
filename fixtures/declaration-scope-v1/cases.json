@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "status": "CORPUS_ONLY_NOT_BACKEND_EXECUTION",
+  "requirement": "AttoLang canonical define scope v1",
+  "positive": [
+    {
+      "path": "canonical.atto",
+      "expected": "accept",
+      "equivalentTo": "legacy.atto"
+    },
+    {
+      "path": "legacy.atto",
+      "expected": "accept",
+      "formatTo": "canonical.atto"
+    },
+    {
+      "path": "module-canonical.atto",
+      "expected": "accept",
+      "equivalentTo": "module-legacy.atto"
+    },
+    {
+      "path": "module-legacy.atto",
+      "expected": "accept",
+      "formatTo": "module-canonical.atto"
+    }
+  ],
+  "negative": [
+    {
+      "path": "negative-duplicate-modifier.atto",
+      "expected": "reject",
+      "diagnostic": "duplicate visibility"
+    },
+    {
+      "path": "negative-nested-type.atto",
+      "expected": "reject",
+      "diagnostic": "nested type not permitted in class"
+    }
+  ],
+  "backends": {
+    "formatter": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED"
+  },
+  "evidence": [],
+  "notes": "Root define pub is canonical; nested members omit define. Legacy spellings must retain AST, visibility and exported ABI. Source fixtures do not prove compiler execution."
+}
