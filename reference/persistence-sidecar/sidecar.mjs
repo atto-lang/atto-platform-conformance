@@ -84,7 +84,7 @@ export class BatchPersistenceSidecar {
     if(!operationColumns.includes('payload_hash'))
       this.db.exec('ALTER TABLE operations ADD COLUMN payload_hash TEXT');
     this.getFence = this.db.prepare('SELECT epoch FROM fences WHERE tenant=? AND actor=?');
-    this.getOp = this.db.prepare('SELECT digest, version, kind FROM operations WHERE tenant=? AND actor=? AND state_name=? AND op_id=?');
+    this.getOp = this.db.prepare('SELECT digest, version, kind, payload_hash FROM operations WHERE tenant=? AND actor=? AND state_name=? AND op_id=?');
     this.getHead = this.db.prepare('SELECT version FROM heads WHERE tenant=? AND actor=? AND state_name=?');
     this.putHead = this.db.prepare('INSERT INTO heads VALUES(?,?,?,?) ON CONFLICT(tenant,actor,state_name) DO UPDATE SET version=excluded.version');
     this.putSnapshot = this.db.prepare('INSERT INTO snapshots(tenant,actor,state_name,version,schema_version,payload,payload_hash,operation_digest) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(tenant,actor,state_name) DO UPDATE SET version=excluded.version, schema_version=excluded.schema_version, payload=excluded.payload, payload_hash=excluded.payload_hash, operation_digest=excluded.operation_digest');
@@ -122,7 +122,7 @@ export class BatchPersistenceSidecar {
     const existing = this.getOp.get(tenantId,actor,stateName,opId);
     if (existing) {
       if (existing.digest !== hash) fail('OP_ID_CONFLICT');
-      return {status:'committed',durable:true,duplicate:true,version:existing.version};
+      return this.#legacyProof(e,existing);
     }
     const queued = this.pending.get(k);
     if (queued) {
@@ -185,6 +185,48 @@ export class BatchPersistenceSidecar {
   // A durable command receipt is trustworthy only when its provider record
   // agrees with the persisted stream/snapshot, not merely an op-ID lookup.
   // This helper is called inside the caller's SQLite read/write transaction.
+  // Legacy receipts are accepted only if the persisted event/snapshot still
+  // matches the ORIGINAL operation's digest, schema and immutable bytes.
+  // An operation ledger row alone cannot prove a durable journal entry.
+  #legacyProof(e,op) {
+    if(!op || op.digest!==digest(e) || op.kind!==e.kind ||
+       !uint(op.version) || op.version!==e.expectedVersion+1)
+      fail('COMMIT_MISMATCH');
+    if(typeof op.payload_hash!=='string' ||
+       !/^[0-9a-f]{64}$/.test(op.payload_hash))
+      fail('UNVERIFIED_OPERATION');
+    if(hash_bytes(e.payload)!==op.payload_hash)
+      fail('COMMIT_MISMATCH');
+    if(e.kind==='event') {
+      const event=this.db.prepare(
+        'SELECT schema_version,length(payload) AS bytes,'+
+        'substr(payload,1,1048577) AS payload,op_id FROM events '+
+        'WHERE tenant=? AND actor=? AND state_name=? AND version=?'
+      ).get(e.tenantId,e.actor,e.stateName,op.version);
+      if(!event || event.schema_version!==e.schemaVersion ||
+         event.op_id!==e.opId || event.bytes!==e.payload.length ||
+         !(event.payload instanceof Uint8Array) ||
+         !Buffer.from(event.payload).equals(e.payload))
+        fail('INCOMPLETE_OPERATION_LEDGER');
+    } else {
+      const snapshot=this.db.prepare(
+        'SELECT version,schema_version,length(payload) AS bytes,'+
+        'substr(payload,1,1048577) AS payload,payload_hash,'+
+        'operation_digest FROM snapshots '+
+        'WHERE tenant=? AND actor=? AND state_name=?'
+      ).get(e.tenantId,e.actor,e.stateName);
+      if(!snapshot || snapshot.version!==op.version ||
+         snapshot.schema_version!==e.schemaVersion ||
+         snapshot.bytes!==e.payload.length ||
+         !(snapshot.payload instanceof Uint8Array) ||
+         !Buffer.from(snapshot.payload).equals(e.payload))
+        fail('INCOMPLETE_OPERATION_LEDGER');
+      this.#verifySnapshot(e.tenantId,e.actor,e.stateName,snapshot);
+    }
+    return {opId:e.opId,status:'committed',durable:true,duplicate:true,
+      version:op.version};
+  }
+
   // A snapshot is not an authenticated checkpoint merely because its state
   // row has a version. Require BOTH exact durable BLOB digest and the snapshot
   // operation written in the same SQLite transaction. Digest+operation are
@@ -345,9 +387,10 @@ export class BatchPersistenceSidecar {
         }
         const prior=this.getOp.get(t,a,s,o);
         if (prior) {
-          results.push(prior.digest===hash
-            ? {opId:o,status:'committed',durable:true,duplicate:true,version:prior.version}
-            : {opId:o,status:'rejected',durable:false,code:'OP_ID_CONFLICT'});
+          if(prior.digest===hash)
+            results.push(this.#legacyProof(e,prior));
+          else
+            results.push({opId:o,status:'rejected',durable:false,code:'OP_ID_CONFLICT'});
           continue;
         }
         const version=this.getHead.get(t,a,s)?.version??0;
@@ -387,7 +430,8 @@ export class BatchPersistenceSidecar {
     if (!op) return null;
     if (op.digest !== digest(e) || op.kind !== kind || op.version !== expectedVersion + 1)
       fail('COMMIT_MISMATCH');
-    return {opId,status:'committed',durable:true,version:op.version};
+    const proof=this.#legacyProof(e,op);
+    return {opId,status:'committed',durable:true,version:proof.version};
   }
   // Fencing and the journal must be read under ONE SQLite snapshot.
   // BEGIN (deferred) pins an MVCC snapshot at the initial fence SELECT, so
