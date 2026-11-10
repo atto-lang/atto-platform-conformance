@@ -299,3 +299,209 @@ test('6,400 deterministic interleavings preserve exclusive writer and bounded qu
   }
   assert.equal(transitions, 6_400);
 });
+
+test('HARDEN: a failed queue admission must not consume the one-use delegated grant', () => {
+  const r = mk(0), owner = r.owner;
+  const actorWrite = r.acquire(actor, 'write', { ownerToken: owner });
+  const grant = r.delegate(owner, supervisor, 'read');
+  denied(() => r.acquire(supervisor, 'read', { grant }), /queue full/);
+  // Failed admission did not buy a ticket; it cannot consume authorization.
+  r.release(actorWrite, actor);
+  const supervisorRead = r.acquire(supervisor, 'read', { grant });
+  assert.equal(r.access(supervisorRead, supervisor, 'read'), true);
+  r.release(supervisorRead, supervisor);
+  denied(() => r.acquire(supervisor, 'read', { grant }), /grant/);
+});
+
+test('HARDEN: recursive acquisition must not burn a second valid delegation', () => {
+  const r = mk(), owner = r.owner;
+  const firstGrant = r.delegate(owner, supervisor, 'read');
+  const secondGrant = r.delegate(owner, supervisor, 'write');
+  const first = r.acquire(supervisor, 'read', { grant: firstGrant });
+  denied(() => r.acquire(supervisor, 'write', { grant: secondGrant }), /recursive/);
+  r.release(first, supervisor);
+  const second = r.acquire(supervisor, 'write', { grant: secondGrant });
+  assert.equal(r.access(second, supervisor, 'write'), true);
+  r.release(second, supervisor);
+});
+
+test('HARDEN: bounded grant ledger prevents unbounded unconsumed capability growth', () => {
+  const r = new ActorSupervisorRegionV1({ actorId: actor.id, supervisorId: supervisor.id,
+    maxPending: 2, maxDelegations: 2 });
+  const owner = r.owner;
+  const s1 = { ...supervisor, executionId: 's1' };
+  const s2 = { ...supervisor, executionId: 's2' };
+  const g1 = r.delegate(owner, s1, 'read');
+  const g2 = r.delegate(owner, s2, 'read');
+  denied(() => r.delegate(owner, supervisor, 'write'), /delegation capacity/);
+  assert.equal(r.stats.outstandingDelegations, 2);
+  const t1 = r.acquire(s1, 'read', { grant: g1 });
+  assert.equal(r.stats.outstandingDelegations, 1);
+  const g3 = r.delegate(owner, supervisor, 'write');
+  assert.equal(r.stats.outstandingDelegations, 2);
+  r.release(t1, s1);
+  denied(() => r.acquire(supervisor, 'read', { grant: g3 }), /grant/);
+  const t2 = r.acquire(s2, 'read', { grant: g2 });
+  r.release(t2, s2);
+  const t3 = r.acquire(supervisor, 'write', { grant: g3 });
+  r.release(t3, supervisor);
+  assert.equal(r.stats.outstandingDelegations, 0);
+});
+
+test('HARDEN: stale and foreign principals cannot claim may-suspend proof', () => {
+  const r = mk();
+  denied(() => r.assertMaySuspend({ role: 'actor', id: 'other' }), /foreign/);
+  denied(() => r.assertMaySuspend({ role: 'supervisor', id: 'other' }), /foreign/);
+  r.stop(supervisor);
+  denied(() => r.assertMaySuspend(actor), /sealed/);
+});
+
+test('HARDEN: transfer revokes outstanding grants without rebinding them to next owner', () => {
+  const r = mk(), a = r.owner;
+  const g = r.delegate(a, supervisor, 'write');
+  assert.equal(r.stats.outstandingDelegations, 1);
+  const s = r.transfer(a, supervisor);
+  assert.equal(r.stats.outstandingDelegations, 0);
+  denied(() => r.acquire(supervisor, 'write', { grant: g }), /grant/);
+  const t = r.acquire(supervisor, 'write', { ownerToken: s });
+  r.release(t, supervisor);
+});
+
+test('HARDEN: borrowed writer must block owner raw reads and writes in static trace', () => {
+  const ops = [
+    ['init', 'state', 'actor'],
+    ['grant', 'state', 'grant', 'supervisor', 'write', 'actor'],
+    ['write', 'state', 'loan', 'supervisor', 'grant'],
+  ];
+  assert.match(checkBorrowTrace([...ops, ['owner-use', 'state', 'actor']]).why, /conflicting/);
+  assert.match(checkBorrowTrace([...ops, ['owner-use', 'state', 'actor', 'write']]).why, /conflicting/);
+  assert.equal(checkBorrowTrace([...ops, ['release', 'loan'],
+    ['owner-use', 'state', 'actor', 'write'], ['end']]).ok, true);
+});
+
+test('HARDEN: outstanding immutable loan blocks owner raw writes but permits reads', () => {
+  const ops = [['init', 'state', 'actor'], ['read', 'state', 'loan', 'actor']];
+  assert.match(checkBorrowTrace([...ops, ['owner-use', 'state', 'actor', 'write']]).why, /conflicting/);
+  assert.equal(checkBorrowTrace([...ops, ['owner-use', 'state', 'actor', 'read'],
+    ['release', 'loan'], ['end']]).ok, true);
+  assert.match(checkBorrowTrace([...ops, ['owner-use', 'state', 'actor', 'raw']]).why, /mode/);
+});
+
+test('HARDEN: escape of a released loan and malformed suspension must not silently pass', () => {
+  const ops = [['init', 'state', 'actor'], ['read', 'state', 'loan', 'actor'], ['release', 'loan']];
+  assert.match(checkBorrowTrace([...ops, ['escape', 'loan']]).why, /escape|invalid/);
+  assert.match(checkBorrowTrace([...ops, ['await', 'ghost']]).why, /role/);
+  assert.match(checkBorrowTrace([...ops, ['await']]).why, /role/);
+});
+
+test('HARDEN: end marker is terminal and loan IDs cannot be recycled after release', () => {
+  assert.match(checkBorrowTrace([['init', 'state', 'actor'], ['end'],
+    ['write', 'state', 'fresh', 'actor']]).why, /after end/);
+  assert.match(checkBorrowTrace([['init', 'state', 'actor'],
+    ['read', 'state', 'loan', 'actor'], ['release', 'loan'],
+    ['write', 'state', 'loan', 'actor']]).why, /loan/);
+});
+
+test('HARDEN: moving to current owner and invalid root/loan IDs fail closed', () => {
+  assert.match(checkBorrowTrace([['init', 'state', 'actor'],
+    ['move', 'state', 'actor']]).why, /change/);
+  assert.equal(checkBorrowTrace([['init', '', 'actor'], ['end']]).ok, false);
+  assert.equal(checkBorrowTrace([['init', 'state', 'actor'],
+    ['read', 'state', '', 'actor']]).ok, false);
+});
+
+test('HARDEN: malformed runtime delegation bounds fail closed', () => {
+  for (const maxDelegations of [-1, 0.5, Number.POSITIVE_INFINITY]) {
+    denied(() => new ActorSupervisorRegionV1({ actorId: actor.id,
+      supervisorId: supervisor.id, maxDelegations }), /delegation/);
+  }
+});
+
+test('HARDEN: projected and indirect aliases cannot launder a shared read into writer', () => {
+  const common = [
+    ['init', 'record', 'actor'],
+    ['alias', 'record', 'aliasOne'],
+    ['project', 'aliasOne', 'record.field'],
+    ['read', 'record.field', 'r', 'actor'],
+    ['grant', 'record', 'gw', 'supervisor', 'write', 'actor'],
+  ];
+  assert.match(checkBorrowTrace([...common,
+    ['write', 'record', 'w', 'supervisor', 'gw']]).why, /conflicting/);
+  assert.match(checkBorrowTrace([...common,
+    ['owner-use', 'aliasOne', 'actor', 'write']]).why, /conflicting/);
+  assert.equal(checkBorrowTrace([...common,
+    ['release', 'r', 'actor'], ['drop-alias', 'record.field'],
+    ['drop-alias', 'aliasOne'], ['end']]).ok, true);
+});
+
+test('HARDEN: borrowed alias blocks transfer even after last loan is released', () => {
+  const ops = [['init', 'region', 'actor'], ['alias', 'region', 'handle'],
+    ['read', 'handle', 'r', 'actor'], ['release', 'r']];
+  assert.match(checkBorrowTrace([...ops, ['move', 'region', 'supervisor']]).why, /aliases/);
+  assert.equal(checkBorrowTrace([...ops, ['drop-alias', 'handle'],
+    ['move', 'region', 'supervisor'], ['end']]).ok, true);
+  assert.match(checkBorrowTrace([...ops, ['end']]).why, /alias/);
+});
+
+test('HARDEN: foreign role cannot release another borrower static loan', () => {
+  const ops = [['init', 'region', 'actor'],
+    ['grant', 'region', 'grant', 'supervisor', 'read', 'actor'],
+    ['read', 'region', 'loan', 'supervisor', 'grant']];
+  assert.match(checkBorrowTrace([...ops, ['release', 'loan', 'actor']]).why, /borrower/);
+  assert.equal(checkBorrowTrace([...ops, ['release', 'loan', 'supervisor'], ['end']]).ok, true);
+});
+
+test('HARDEN: caller cannot issue duplicate projection names or outlive alias root', () => {
+  assert.match(checkBorrowTrace([['init','region','actor'], ['alias','region','r1'],
+    ['project','r1','r1']]).why, /alias/);
+  assert.match(checkBorrowTrace([['init','region','actor'], ['drop-alias','missing']]).why, /alias/);
+  assert.match(checkBorrowTrace([['init','region','actor'], ['alias','region','a'],
+    ['drop-alias','a'], ['read','a','loan','actor']]).why, /root/);
+});
+
+test('HARDEN: total active-reader count is bounded even for independent executions', () => {
+  const r = new ActorSupervisorRegionV1({actorId: actor.id, supervisorId: supervisor.id,
+    maxPending: 2, maxActiveReaders: 1});
+  const owner = r.owner;
+  const a1 = {...actor, executionId:'r1'}, a2 = {...actor, executionId:'r2'};
+  const s1 = {...supervisor, executionId:'w1'};
+  const first = r.acquire(a1, 'read', {ownerToken:owner});
+  const second = r.acquire(a2, 'read', {ownerToken:owner});
+  const writer = r.acquire(s1, 'write', {grant:r.delegate(owner,s1,'write')});
+  assert.equal(r.granted(second,a2),false);
+  assert.equal(r.granted(writer,s1),false);
+  denied(() => r.acquire({...actor,executionId:'r3'},'read',{ownerToken:owner}), /queue full/);
+  r.release(first,a1);
+  assert.equal(r.granted(second,a2),true);
+  assert.equal(r.granted(writer,s1),false);
+  r.release(second,a2);
+  assert.equal(r.granted(writer,s1),true);
+  r.release(writer,s1);
+  assert.equal(r.stats.activeReaders,0);
+});
+
+test('HARDEN: malformed active-reader limits fail closed', () => {
+  for (const maxActiveReaders of [-1, 0, 0.5, Number.POSITIVE_INFINITY]) {
+    denied(() => new ActorSupervisorRegionV1({actorId: actor.id,
+      supervisorId: supervisor.id,maxActiveReaders}), /reader bound/);
+  }
+});
+
+test('HARDEN: inert-looking aliases are live read borrows and forbid exclusive mutation', () => {
+  const ops = [['init','region','actor'],['alias','region','savedRef']];
+  assert.match(checkBorrowTrace([...ops,['owner-use','region','actor','write']]).why,/conflicting/);
+  assert.match(checkBorrowTrace([...ops,['write','region','w','actor']]).why,/conflicting/);
+  assert.match(checkBorrowTrace([...ops,
+    ['grant','region','g','supervisor','write','actor'],
+    ['write','region','w','supervisor','g']]).why,/conflicting/);
+  assert.match(checkBorrowTrace([...ops,['await','actor']]).why,/suspension/);
+  assert.equal(checkBorrowTrace([...ops,['drop-alias','savedRef'],
+    ['write','region','w','actor'],['release','w'],['end']]).ok,true);
+});
+
+test('HARDEN: creating a new alias while an exclusive writer is live is rejected', () => {
+  const ops = [['init','region','actor'],['write','region','w','actor']];
+  assert.match(checkBorrowTrace([...ops,['alias','region','r']]).why,/exclusive writer/);
+  assert.equal(checkBorrowTrace([...ops,['release','w'],['alias','region','r'],
+    ['drop-alias','r'],['end']]).ok,true);
+});
