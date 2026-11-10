@@ -1,4 +1,5 @@
 // HOST REFERENCE ONLY: durable journal/command-ledger integrity, not .ores guest execution.
+import {createHash} from 'node:crypto';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtempSync,rmSync} from 'node:fs';
@@ -6,6 +7,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {BatchPersistenceSidecar} from './sidecar.mjs';
 
+const require_hash=(b)=>createHash('sha256').update(b).digest('hex');
 function fixture(body) {
   const dir=mkdtempSync(join(tmpdir(),'atto-ledger-hardening-'));
   const db=new BatchPersistenceSidecar({path:join(dir,'test.sqlite'),tenantId:'tenant-hardening'});
@@ -179,5 +181,64 @@ test('after an authenticated snapshot barrier, compaction retains durable comman
     const duplicate=db.enqueueCommand({...c,epoch:2});
     assert.equal(duplicate.duplicate,true);
     assert.equal(db.flush().length,0);
+  });
+});
+
+
+test('tampered checkpoint BLOB never authorizes replay or dedupe after journal pruning',()=>{
+  fixture(db=>{
+    const c=command();commit(db,c,true);
+    commit(db,{...legacy('snapshot-1',2,'snapshot'),
+      payload:Buffer.from('{"balance_cents":100}')});
+    db.db.prepare('DELETE FROM events WHERE tenant=? AND actor=? AND state_name=? AND version<=2')
+      .run(base.tenantId,base.actor,base.stateName);
+    db.db.prepare('UPDATE snapshots SET payload=? WHERE tenant=? AND actor=? AND state_name=?')
+      .run(Buffer.from('{"balance_cents":999}'),base.tenantId,base.actor,base.stateName);
+    db.grantEpoch({tenantId:base.tenantId,actor:base.actor,epoch:2});
+    assert.throws(()=>load(db,2),/CORRUPT_SNAPSHOT_PROOF/);
+    assert.throws(()=>db.verifyCommand({...base,opId:c.opId,epoch:2,
+      commandBytes:c.commandBytes}),/CORRUPT_SNAPSHOT_PROOF/);
+  });
+});
+
+test('snapshot proof remains invalid when attacker replaces BLOB and recomputes only its payload hash',()=>{
+  fixture(db=>{
+    const c=command();commit(db,c,true);
+    commit(db,{...legacy('checkpoint-2',2,'snapshot'),
+      payload:Buffer.from('{"balance_cents":100}')});
+    const altered=Buffer.from('{"balance_cents":999}');
+    // An attacker updating snapshot and checksum must also forge the separate
+    // operation digest to avoid the independent on-disk ledger mismatch.
+    db.db.prepare('UPDATE snapshots SET payload=?,payload_hash=? WHERE tenant=? AND actor=? AND state_name=?')
+      .run(altered,require_hash(altered),base.tenantId,base.actor,base.stateName);
+    assert.throws(()=>load(db),/CORRUPT_SNAPSHOT_PROOF|UNVERIFIED_SNAPSHOT/);
+    assert.throws(()=>db.verifyCommand({...base,opId:c.opId,epoch:1,
+      commandBytes:c.commandBytes}),/CORRUPT_SNAPSHOT_PROOF|UNVERIFIED_SNAPSHOT/);
+  });
+});
+
+test('deleting original snapshot operation ledger refuses recovery and dedup receipts',()=>{
+  fixture(db=>{
+    const c=command();commit(db,c,true);
+    commit(db,{...legacy('snapshot-delete',2,'snapshot'),
+      payload:Buffer.from('{"balance_cents":100}')});
+    db.db.prepare('DELETE FROM operations WHERE tenant=? AND actor=? AND state_name=? AND kind=?')
+      .run(base.tenantId,base.actor,base.stateName,'snapshot');
+    assert.throws(()=>load(db),/UNVERIFIED_SNAPSHOT/);
+    assert.throws(()=>db.verifyCommand({...base,opId:c.opId,epoch:1,
+      commandBytes:c.commandBytes}),/UNVERIFIED_SNAPSHOT/);
+  });
+});
+
+test('snapshots without digests fail closed instead of silent legacy backfill',()=>{
+  fixture(db=>{
+    const c=command();commit(db,c,true);
+    commit(db,{...legacy('snapshot-upgrade',2,'snapshot'),
+      payload:Buffer.from('{"balance_cents":100}')});
+    db.db.prepare('UPDATE snapshots SET payload_hash=NULL,operation_digest=NULL WHERE tenant=? AND actor=? AND state_name=?')
+      .run(base.tenantId,base.actor,base.stateName);
+    assert.throws(()=>load(db),/UNVERIFIED_SNAPSHOT/);
+    assert.throws(()=>db.verifyCommand({...base,opId:c.opId,epoch:1,
+      commandBytes:c.commandBytes}),/UNVERIFIED_SNAPSHOT/);
   });
 });
