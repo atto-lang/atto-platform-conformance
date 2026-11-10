@@ -57,7 +57,7 @@ export class BatchPersistenceSidecar {
         PRIMARY KEY(tenant,actor,state_name,version));
       CREATE TABLE IF NOT EXISTS operations (tenant TEXT NOT NULL, actor TEXT NOT NULL,
         state_name TEXT NOT NULL, op_id TEXT NOT NULL, digest TEXT NOT NULL,
-        version INTEGER NOT NULL, kind TEXT NOT NULL,
+        version INTEGER NOT NULL, kind TEXT NOT NULL, payload_hash TEXT,
         PRIMARY KEY(tenant,actor,state_name,op_id));
       CREATE TABLE IF NOT EXISTS command_commits (
         tenant TEXT NOT NULL, actor TEXT NOT NULL, state_name TEXT NOT NULL,
@@ -80,13 +80,16 @@ export class BatchPersistenceSidecar {
       this.db.exec('ALTER TABLE command_commits ADD COLUMN events_digest TEXT');
     if(!commandColumns.includes('result_digest'))
       this.db.exec('ALTER TABLE command_commits ADD COLUMN result_digest TEXT');
+    const operationColumns=this.db.prepare('PRAGMA table_info(operations)').all().map(r=>r.name);
+    if(!operationColumns.includes('payload_hash'))
+      this.db.exec('ALTER TABLE operations ADD COLUMN payload_hash TEXT');
     this.getFence = this.db.prepare('SELECT epoch FROM fences WHERE tenant=? AND actor=?');
     this.getOp = this.db.prepare('SELECT digest, version, kind FROM operations WHERE tenant=? AND actor=? AND state_name=? AND op_id=?');
     this.getHead = this.db.prepare('SELECT version FROM heads WHERE tenant=? AND actor=? AND state_name=?');
     this.putHead = this.db.prepare('INSERT INTO heads VALUES(?,?,?,?) ON CONFLICT(tenant,actor,state_name) DO UPDATE SET version=excluded.version');
     this.putSnapshot = this.db.prepare('INSERT INTO snapshots(tenant,actor,state_name,version,schema_version,payload,payload_hash,operation_digest) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(tenant,actor,state_name) DO UPDATE SET version=excluded.version, schema_version=excluded.schema_version, payload=excluded.payload, payload_hash=excluded.payload_hash, operation_digest=excluded.operation_digest');
     this.putEvent = this.db.prepare('INSERT INTO events VALUES(?,?,?,?,?,?,?)');
-    this.putOp = this.db.prepare('INSERT INTO operations VALUES(?,?,?,?,?,?,?)');
+    this.putOp = this.db.prepare('INSERT INTO operations(tenant,actor,state_name,op_id,digest,version,kind,payload_hash) VALUES(?,?,?,?,?,?,?,?)');
     this.getCommand = this.db.prepare('SELECT command_hash,first_version,last_version,event_count,events_digest,result_digest,result_bytes FROM command_commits WHERE tenant=? AND actor=? AND state_name=? AND op_id=?');
     this.putCommand = this.db.prepare('INSERT INTO command_commits(tenant,actor,state_name,op_id,command_hash,first_version,last_version,event_count,events_digest,result_digest,result_bytes) VALUES(?,?,?,?,?,?,?,?,?,?,?)');
   }
@@ -202,11 +205,14 @@ export class BatchPersistenceSidecar {
        !/^[0-9a-f]{64}$/.test(saved.operation_digest))
       fail('UNVERIFIED_SNAPSHOT');
     const rows=this.db.prepare(
-      'SELECT digest FROM operations WHERE tenant=? AND actor=? '+
-      'AND state_name=? AND kind=? AND version=?'
+      'SELECT digest,payload_hash FROM operations WHERE tenant=? AND actor=? '+
+      'AND state_name=? AND kind=? AND version=? LIMIT 2'
     ).all(tenantId,actor,stateName,'snapshot',saved.version);
-    if(rows.length!==1 || rows[0].digest!==saved.operation_digest)
+    if(rows.length!==1 || rows[0].digest!==saved.operation_digest ||
+       !/^[0-9a-f]{64}$/.test(rows[0].payload_hash??''))
       fail('UNVERIFIED_SNAPSHOT');
+    if(rows[0].payload_hash!==saved.payload_hash)
+      fail('CORRUPT_SNAPSHOT_PROOF');
     return saved.version;
   }
 
@@ -355,7 +361,7 @@ export class BatchPersistenceSidecar {
         this.putHead.run(t,a,s,next);
         if (e.kind==='snapshot') this.putSnapshot.run(t,a,s,next,e.schemaVersion,e.payload,hash_bytes(e.payload),hash);
         else this.putEvent.run(t,a,s,next,e.schemaVersion,o,e.payload);
-        this.putOp.run(t,a,s,o,hash,next,e.kind);
+        this.putOp.run(t,a,s,o,hash,next,e.kind,hash_bytes(e.payload));
         results.push({opId:o,status:'committed',durable:true,duplicate:false,version:next});
       }
       this.db.exec('COMMIT');
