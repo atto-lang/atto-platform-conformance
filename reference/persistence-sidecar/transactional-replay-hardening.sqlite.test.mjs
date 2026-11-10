@@ -312,3 +312,15 @@ test('valid current snapshot supports same-byte duplicate but rejects altered ch
     assert.throws(()=>db.enqueue(snap),/INCOMPLETE_OPERATION_LEDGER/);
   });
 });
+
+
+test('custom large batching limits cannot admit events above immutable 1 MiB replay ceiling',()=>{
+  fixture(db=>{
+    db.maxPayloadBytes=2*1048576;
+    db.maxBatchBytes=2*1048576;
+    assert.throws(()=>db.enqueue({...legacy('oversized'),payload:Buffer.alloc(1048577)}),
+      /PAYLOAD_TOO_LARGE/);
+    assert.throws(()=>db.enqueueCommand({...command('oversized-command',0,[1]),events:[Buffer.alloc(1048577)]}),/PAYLOAD_TOO_LARGE/);
+    assert.equal(db.queue.length,0);
+  });
+});
