@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "contract": "atto.actor-graph.long-running/1",
+  "status": "HOST_ORACLE_ONLY_NOT_GUEST_EXECUTION",
+  "semanticBoundary": {
+    "actorInputOutput": "bounded-logical-byte-streams-not-process-stdio",
+    "processStdio": "single-trusted-descriptor-owner-requires-explicit-bridge",
+    "mailbox": "typed-addressed-message-transport-not-stdout",
+    "groupBus": "membership-controlled-opt-in-pubsub-not-lifecycle-owner",
+    "supervisor": "reserved-control-only-not-pipeline-data",
+    "admissionReceipt": "not-processing-or-durability",
+    "graphCycles": "explicit-bounded-feedback-only",
+    "actorGeneration": "old-mail-and-stream-capabilities-must-fail-after-restart",
+    "streamEof": "closed-and-drained-does-not-imply-actor-stop",
+    "sourceAvailability": "host-model-does-not-prove-guest-compiler-support"
+  },
+  "hostOracle": {
+    "entrypoint": "src/actor-graph-oracle-v1.mjs",
+    "count": 10000,
+    "capacity": 4,
+    "failAt": 7,
+    "expectedChecksum": "333383345000",
+    "expectedRestarts": 1,
+    "expectedStaleRejects": 1
+  },
+  "workloads": [
+    {
+      "id": "bounded-dag-map-reduce",
+      "required": [
+        "exact-checksum",
+        "bounded-data-queues",
+        "no-duplicate-commits",
+        "fair-progress"
+      ]
+    },
+    {
+      "id": "feedback-convergence",
+      "required": [
+        "typed-feedback-edge",
+        "epoch-fencing",
+        "finite-termination",
+        "no-unbounded-cycles"
+      ]
+    },
+    {
+      "id": "fanout-and-key-affinity",
+      "required": [
+        "per-edge-typed-receipts",
+        "copy-or-immutable-fanout",
+        "deterministic-round-robin",
+        "partial-failure-report"
+      ]
+    },
+    {
+      "id": "group-multi-membership-pubsub",
+      "required": [
+        "bounded-RELIABLE",
+        "coalescing-LATEST",
+        "membership-revocation",
+        "unrelated-group-survives"
+      ]
+    },
+    {
+      "id": "supervisor-restart-storm",
+      "required": [
+        "reserved-CONTROL",
+        "panic-bypass",
+        "bounded-restarts",
+        "physical-get_done",
+        "stale-generation-denial"
+      ]
+    },
+    {
+      "id": "actor-io-vs-mailbox",
+      "required": [
+        "input-EOF-after-drain",
+        "output-half-close",
+        "mailbox-independent",
+        "no-process-stdio-alias",
+        "port-authority"
+      ]
+    },
+    {
+      "id": "multi-tenant-isolation",
+      "required": [
+        "unauthorized-group-join-denied",
+        "foreign-mailbox-rejected",
+        "per-tenant-resource-quotas"
+      ]
+    }
+  ],
+  "evidence": {
+    "model": "HOST_ONLY_NOT_CERTIFYING",
+    "backendGuestExecution": {
+      "java-graalvm": "NOT_EXECUTED",
+      "llvm-native": "NOT_EXECUTED",
+      "net-native-aot": "NOT_EXECUTED",
+      "wasm": "NOT_EXECUTED",
+      "forge": "NOT_EXECUTED"
+    },
+    "parity": "NOT_CERTIFIED",
+    "promotionRequirements": [
+      "exact-compiler-commit-sha",
+      "exact-source-git-tree-and-blob-shas",
+      "stepful-workflow-run-job-and-runner",
+      "actual-compiled-guest-binary-execution",
+      "trusted-captured-stdout-stderr-exit-code",
+      "source-to-runtime-trace-correlation",
+      "supervisor-physical-stop-receipts",
+      "bounded-queue-and-heap-metrics",
+      "cross-backend-equivalent-outcomes"
+    ]
+  },
+  "nonEvidence": [
+    "host-only-reference-oracle",
+    "synthetic-trace",
+    "parser-only-negative",
+    "authored-but-unexecuted-tests",
+    "zero-step-workflow",
+    "self-reported-guest-receipt",
+    "stale-head-action",
+    "unverified-private-carrier"
+  ]
+}
