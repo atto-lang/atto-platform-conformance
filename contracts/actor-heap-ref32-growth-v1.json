@@ -58,7 +58,9 @@
     "dynamicHoleReuseCannotAliasLiveObjects": true,
     "scrubbedSlotReuseMayProceedAtLogicalHardQuota": true,
     "lastOwnerResetInvalidatesDeadHoleExtents": true,
-    "publishedSlotGenerationMustAdvanceOnDrop": true
+    "publishedSlotGenerationMustAdvanceOnDrop": true,
+    "failedNativeAdmissionMustNotConsumeUnpublishedLogicalAddressSpace": true,
+    "failedNativeAdmissionMustNotLeakStagedAllocatorMetadata": true
   },
   "security": {
     "authenticateActorAndIncarnation": true,
@@ -107,7 +109,7 @@
     "caveat": "Profiles are candidates, not current backend defaults or approved tenant budgets. Platform pages, wasm linear-memory limits, memory pressure and embedder limits may force smaller or larger physical granules."
   },
   "implementationClassification": {
-    "java-graalvm": "HOST_NATIVE_ARENA_AND_LAZY_REGIONS_GUEST_COVERAGE_UNVERIFIED",
+    "java-graalvm": "HOST_NATIVE_ARENA_LAZY_REGIONS_AND_UNPUBLISHED_OFFSET_ROLLBACK_DRAFT_2744_GUEST_UNVERIFIED",
     "llvm": "HOST_FIXED_REALTIME_ARENA_PLUS_SEPARATE_ELASTIC_NATIVE_DRAFT_1631_GUEST_NOT_EXECUTED",
     "net-nativeaot": "HOST_LAZY_GROWTH_IN_DRAFT_412_AND_PEAK_FIX_DRAFT_436",
     "wasm": "HOST_MAIN_FIXED_2_PAGE_ARENA_PLUS_SEPARATE_ELASTIC_HOST_DRAFT_452_GUEST_NOT_IMPLEMENTED",
@@ -118,6 +120,7 @@
   "linkedHostPrototypes": {
     "net-nativeaot": "https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/436",
     "wasm": "https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/452",
-    "llvm": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1631"
+    "llvm": "https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1631",
+    "java-graalvm": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2744"
   }
 }
