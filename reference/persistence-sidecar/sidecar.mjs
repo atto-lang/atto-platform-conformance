@@ -275,30 +275,103 @@ export class BatchPersistenceSidecar {
       fail('COMMIT_MISMATCH');
     return {opId,status:'committed',durable:true,version:op.version};
   }
-  // Loading durable actor state is activation-scoped; old epochs must not restore it.
-  loadFenced({tenantId,actor,stateName,epoch}) {
+  // Fencing and the journal must be read under ONE SQLite snapshot.
+  // BEGIN (deferred) pins an MVCC snapshot at the initial fence SELECT, so
+  // another connection cannot swap generations halfway through replay.
+  loadFenced({tenantId,actor,stateName,epoch}={}) {
     if (tenantId !== this.tenantId) fail('WRONG_TENANT');
     if (!ident(actor) || !ident(stateName) || !uint(epoch) || epoch < 1)
       fail('INVALID_READ');
-    this.db.exec('BEGIN IMMEDIATE');
+    this.db.exec('BEGIN');
     try {
-      if(this.getFence.get(tenantId,actor)?.epoch!==epoch)fail('STALE_EPOCH');
-      const state=this.load({tenantId,actor,stateName});
-      this.db.exec('COMMIT');return state;
-    } catch(e) {
-      try{this.db.exec('ROLLBACK');}catch{}
-      throw e;
+      if (this.getFence.get(tenantId,actor)?.epoch !== epoch) fail('STALE_EPOCH');
+      const loaded = this.#readState(tenantId,actor,stateName);
+      this.db.exec('COMMIT');
+      return loaded;
+    } catch (err) {
+      try { this.db.exec('ROLLBACK'); } catch {}
+      throw err;
     }
   }
-  load({tenantId,actor,stateName}) {
+  // Host inspection only: never expose unfenced load() to actor guest code.
+  load({tenantId,actor,stateName}={}) {
     if (tenantId !== this.tenantId) fail('WRONG_TENANT');
     if (![actor,stateName].every(ident)) fail('INVALID_READ');
-    const version=this.getHead.get(tenantId,actor,stateName)?.version??0;
-    const snapshot=this.db.prepare('SELECT version,schema_version,payload FROM snapshots WHERE tenant=? AND actor=? AND state_name=?').get(tenantId,actor,stateName);
-    const since=snapshot?.version??0;
-    const events=this.db.prepare('SELECT version,schema_version,op_id,payload FROM events WHERE tenant=? AND actor=? AND state_name=? AND version>? ORDER BY version ASC').all(tenantId,actor,stateName,since);
-    return {version, snapshot:snapshot?{version:snapshot.version,schemaVersion:snapshot.schema_version,payload:Buffer.from(snapshot.payload)}:null,
-      events:events.map(x=>({version:x.version,schemaVersion:x.schema_version,opId:x.op_id,payload:Buffer.from(x.payload)}))};
+    this.db.exec('BEGIN');
+    try {
+      const loaded = this.#readState(tenantId,actor,stateName);
+      this.db.exec('COMMIT');
+      return loaded;
+    } catch (err) {
+      try { this.db.exec('ROLLBACK'); } catch {}
+      throw err;
+    }
+  }
+  #readState(tenantId,actor,stateName) {
+    const head = this.getHead.get(tenantId,actor,stateName)?.version ?? 0;
+    if (!uint(head)) fail('INCOMPLETE_ACTOR_JOURNAL');
+    const saved = this.db.prepare(
+      'SELECT version,schema_version,length(payload) AS bytes,' +
+      'substr(payload,1,1048577) AS payload FROM snapshots ' +
+      'WHERE tenant=? AND actor=? AND state_name=?'
+    ).get(tenantId,actor,stateName);
+    let snapshot=null, since=0;
+    if (saved) {
+      if (!uint(saved.version) || saved.version < 1 || saved.version > head ||
+          !uint(saved.schema_version) || saved.schema_version < 1 ||
+          !uint(saved.bytes) || saved.bytes > 1048576 ||
+          !(saved.payload instanceof Uint8Array) ||
+          saved.payload.byteLength !== saved.bytes) fail('INVALID_ACTOR_SNAPSHOT');
+      since=saved.version;
+      snapshot={version:saved.version,schemaVersion:saved.schema_version,
+        payload:Buffer.from(saved.payload)};
+    }
+    if (head - since > 10000) fail('ACTOR_JOURNAL_REPLAY_LIMIT');
+    // LEFT JOIN both legacy single-event operations AND the newer logical
+    // multi-event command index. Multiple events may share a command opId.
+    // A replay event without either committed proof is corruption, not state.
+    const events=[];
+    let expected=since+1, aggregateBytes=0;
+    const rows=this.db.prepare(
+      'SELECT e.version,e.schema_version,e.op_id,length(e.payload) AS bytes,' +
+      'substr(e.payload,1,1048577) AS payload,' +
+      'o.version AS legacy_version,o.kind AS legacy_kind,' +
+      'c.first_version AS command_first,c.last_version AS command_last,' +
+      'c.event_count AS command_count ' +
+      'FROM events e LEFT JOIN operations o ON ' +
+      'o.tenant=e.tenant AND o.actor=e.actor AND o.state_name=e.state_name ' +
+      'AND o.op_id=e.op_id ' +
+      'LEFT JOIN command_commits c ON ' +
+      'c.tenant=e.tenant AND c.actor=e.actor AND c.state_name=e.state_name ' +
+      'AND c.op_id=e.op_id ' +
+      'WHERE e.tenant=? AND e.actor=? AND e.state_name=? AND e.version>? ' +
+      'ORDER BY e.version ASC'
+    );
+    for (const event of rows.iterate(tenantId,actor,stateName,since)) {
+      if (event.version !== expected) fail('JOURNAL_GAP');
+      if (!ident(event.op_id)) fail('INCOMPLETE_OPERATION_LEDGER');
+      const legacy=(event.legacy_version===event.version &&
+                    event.legacy_kind==='event' && event.command_first===null);
+      const command=(uint(event.command_first) && event.command_first>=1 &&
+                     uint(event.command_last) && uint(event.command_count) &&
+                     event.command_count>=1 &&
+                     event.command_last-event.command_first+1===event.command_count &&
+                     event.command_first<=event.version &&
+                     event.version<=event.command_last && event.legacy_version===null);
+      if (!legacy && !command) fail('INCOMPLETE_OPERATION_LEDGER');
+      if (!uint(event.schema_version) || event.schema_version < 1 ||
+          !uint(event.bytes) || event.bytes>1048576 ||
+          event.bytes>16777216-aggregateBytes ||
+          !(event.payload instanceof Uint8Array) ||
+          event.payload.byteLength!==event.bytes) fail('INVALID_ACTOR_EVENT');
+      if (events.length>=10000) fail('ACTOR_JOURNAL_REPLAY_LIMIT');
+      aggregateBytes+=event.bytes;
+      events.push({version:event.version,schemaVersion:event.schema_version,
+        opId:event.op_id,payload:Buffer.from(event.payload)});
+      expected++;
+    }
+    if (expected !== head+1) fail('JOURNAL_GAP');
+    return {version:head,snapshot,events};
   }
   close() { this.db.close(); }
 }
