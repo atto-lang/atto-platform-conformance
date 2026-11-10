@@ -11,8 +11,8 @@ class DomainModel {
   constructor(domain, { maxSymbols = 32 } = {}) {
     if (typeof domain !== 'string' || !domain) throw Error('invalid domain');
     if (!Number.isSafeInteger(maxSymbols) || maxSymbols < 1) throw Error('invalid symbol budget');
-    this.domain = domain;
-    this.maxSymbols = maxSymbols;
+    Object.defineProperty(this, 'domain', { value: domain, enumerable: true });
+    Object.defineProperty(this, 'maxSymbols', { value: maxSymbols, enumerable: true });
   }
   // Called only by trusted runtime, never exposed as a guest constructor.
   mintPrincipal(actor, incarnation) {
@@ -28,7 +28,8 @@ class DomainModel {
   valid(p) { return !!p && this.#principals.has(p); }
   // Compiler must resolve identity, including imports, before this is called.
   singleton(moduleId, declarationId, initialize) {
-    if (!moduleId || !declarationId || typeof initialize !== 'function') throw Error('invalid singleton declaration');
+    if (![moduleId, declarationId].every(x => typeof x === 'string' && x.length > 0 && x.length <= 256)
+        || typeof initialize !== 'function') throw Error('invalid singleton declaration');
     const id = JSON.stringify([moduleId, declarationId]);
     if (!this.#identities.has(id)) {
       const record = { state: 'initializing', value: undefined, error: undefined };
@@ -67,15 +68,28 @@ class DomainModel {
 
 function immutableCopy(value, seen = new WeakSet(), budget = { count: 0 }) {
   if (++budget.count > 128) throw Error('snapshot budget exceeded');
-  if (value === null || ['string', 'number', 'boolean'].includes(typeof value)) return value;
+  if (value === null || typeof value === 'boolean') return value;
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) throw Error('non-finite numeric snapshot');
+    return value;
+  }
+  if (typeof value === 'string') {
+    if (value.length > 65536) throw Error('string snapshot budget exceeded');
+    return value;
+  }
   if (!value || typeof value !== 'object' || seen.has(value)
       || ![Object.prototype, null].includes(Object.getPrototypeOf(value)) && !Array.isArray(value))
     throw Error('non-immutable snapshot');
   seen.add(value);
   const out = Array.isArray(value) ? [] : Object.create(null);
-  for (const key of Object.keys(value)) {
-    if (key === '__proto__' || key === 'constructor' || key === 'prototype') throw Error('unsafe property');
-    Object.defineProperty(out, key, { value: immutableCopy(value[key], seen, budget), enumerable: true });
+  for (const key of Reflect.ownKeys(value)) {
+    if (Array.isArray(value) && key === 'length') continue;
+    if (typeof key !== 'string' || key === '__proto__' || key === 'constructor' || key === 'prototype')
+      throw Error('unsafe property');
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor || !descriptor.enumerable || !Object.hasOwn(descriptor, 'value'))
+      throw Error('unsafe accessor or hidden property');
+    Object.defineProperty(out, key, { value: immutableCopy(descriptor.value, seen, budget), enumerable: true });
   }
   seen.delete(value);
   return Object.freeze(out);
@@ -286,4 +300,17 @@ test('cancelled waiter cannot starve a following reader or resurrect its loan', 
   assert.equal(second.read(late).x, 1);
   second.release(late); loan.release(owner);
   assert.equal(r.pending, 0);
+});
+
+test('snapshot rejects accessor side effects, symbol-key smuggling and unbounded input', () => {
+  const d = new DomainModel('tenant-A');
+  let sideEffects = 0;
+  const malicious = Object.defineProperty({}, 'x', { enumerable: true, get() { sideEffects++; return 1; } });
+  assert.throws(() => d.singleton('pkg', 'Getter', () => malicious), /unsafe accessor/);
+  assert.equal(sideEffects, 0);
+  assert.throws(() => d.singleton('pkg', 'SymbolKey', () => ({ [Symbol('cap')]: 1 })), /unsafe property/);
+  assert.throws(() => d.singleton('pkg', 'Huge', () => ({ value: 'x'.repeat(65537) })), /budget/);
+  assert.throws(() => d.singleton('pkg', 'Nan', () => ({ value: NaN })), /non-finite/);
+  assert.throws(() => { d.domain = 'foreign'; }, TypeError);
+  assert.throws(() => { d.maxSymbols = 1e9; }, TypeError);
 });
