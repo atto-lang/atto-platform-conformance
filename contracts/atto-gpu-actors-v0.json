@@ -1,0 +1,524 @@
+{
+  "schemaVersion": 1,
+  "contract": "atto.gpu-actors/0",
+  "status": "candidate-unattested",
+  "relatedContracts": [
+    "oreslang.heterogeneous-compute/1",
+    "state-container-virtual-actor-v1",
+    "singleton-shared-state-v1"
+  ],
+  "relatedDocs": [
+    "docs/CPU_GPU_TASK_V2.md",
+    "docs/HETEROGENEOUS_COMPUTE_V1.md",
+    "docs/CPU_GPU_NB_V1.md"
+  ],
+  "compilerBackends": [
+    "java",
+    "llvm",
+    "wasm",
+    "forge",
+    "net"
+  ],
+  "hardwareStatus": "NOT_EXECUTED",
+  "syntax": {
+    "gpuActor": "define gpu actor Name as ... end",
+    "gpuFunction": "gpu fnc",
+    "gpuTask": "gpu task { ... }",
+    "population": "spawn gpu Actor[count]()",
+    "populationStatus": "illustrative-not-accepted"
+  },
+  "runtime": {
+    "executionModes": [
+      "host-orchestrated-kernels",
+      "device-resident-actor-populations"
+    ],
+    "hostControlPlane": true,
+    "perActorExclusiveWriter": true,
+    "concurrentDifferentActors": true,
+    "allActorsSimultaneously": false,
+    "preservesActorSupervision": true,
+    "boundedPerActorMailboxes": true,
+    "implicitCpuFallback": false,
+    "implicitHostDeviceTransfer": false,
+    "directHostEffectsInsideKernels": false,
+    "deviceLossFaultDomain": "affected-device-cohort",
+    "gpuTaskV2Interoperability": true
+  },
+  "promotion": {
+    "compileGuestRequired": true,
+    "realGpuRequiredForPhysicalClaim": true,
+    "zeroStepRunNotEvidence": true,
+    "hostOnlyModelNotParity": true,
+    "exactSourceCommitRequired": true,
+    "fixtureSha256Required": true,
+    "compilerBinarySha256Required": true,
+    "deviceAndDriverIdentityRequired": true,
+    "fenceAndRetirementEvidenceRequired": true,
+    "independentReview": true
+  },
+  "scenarios": [
+    {
+      "id": "declaration.admit",
+      "kind": "compile",
+      "expected": "accept",
+      "requires": [
+        "actor-supervision-preserved",
+        "gpu-capability-required"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "kernel_method.admit",
+      "kind": "compile",
+      "expected": "accept",
+      "requires": [
+        "gpu-task-v2-interop",
+        "explicit-device-buffer"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "population.spawn",
+      "kind": "runtime",
+      "expected": "pass",
+      "requires": [
+        "bounded-admission",
+        "actor-identity-per-instance",
+        "soa-state-layout"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "dispatch.concurrent_actors",
+      "kind": "runtime",
+      "expected": "pass",
+      "requires": [
+        "distinct-actor-parallel-execution",
+        "no-simultaneity-guarantee"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "dispatch.same_actor_fifo",
+      "kind": "runtime",
+      "expected": "pass",
+      "requires": [
+        "per-actor-linearizable-mailbox",
+        "at-most-one-mutating-turn"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "dispatch.multiple_senders",
+      "kind": "runtime",
+      "expected": "pass",
+      "requires": [
+        "exactly-once-mailbox-admission",
+        "bounded-queue-credits"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "dispatch.fairness",
+      "kind": "runtime",
+      "expected": "pass",
+      "requires": [
+        "bounded-starvation-policy",
+        "no-deadlock-on-backpressure"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.sealed_direct_access",
+      "kind": "compile",
+      "expected": "reject",
+      "requires": [
+        "no-output-artifact",
+        "sealed-state-direct-access"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.cross_actor_alias",
+      "kind": "compile",
+      "expected": "reject",
+      "requires": [
+        "no-output-artifact",
+        "foreign-actor-state-capability"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.write_loan_over_gpu_fence",
+      "kind": "compile",
+      "expected": "reject",
+      "requires": [
+        "no-output-artifact",
+        "no-borrow-across-device-fence"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.critical_suspension",
+      "kind": "compile",
+      "expected": "reject",
+      "requires": [
+        "no-output-artifact",
+        "no-suspension-in-critical-region"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.read_snapshot_overlap",
+      "kind": "runtime",
+      "expected": "pass",
+      "requires": [
+        "immutable-snapshot-allowed",
+        "write-exclusion"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.failed_batch_no_partial_commit",
+      "kind": "runtime",
+      "expected": "pass",
+      "requires": [
+        "commit-only-successful-epochs",
+        "no-partially-published-state"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "kernel.host_send_forbidden",
+      "kind": "compile",
+      "expected": "reject",
+      "requires": [
+        "no-output-artifact",
+        "no-host-actor-effect-in-kernel"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "kernel.host_io_forbidden",
+      "kind": "compile",
+      "expected": "reject",
+      "requires": [
+        "no-output-artifact",
+        "device-effect-checker"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "kernel.unbounded_allocation_forbidden",
+      "kind": "compile",
+      "expected": "reject",
+      "requires": [
+        "no-output-artifact",
+        "bounded-device-resource-budget"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "kernel.unsafe_workgroup_barrier",
+      "kind": "compile",
+      "expected": "reject",
+      "requires": [
+        "no-output-artifact",
+        "uniform-barrier-control-flow"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "memory.explicit_transfer",
+      "kind": "runtime",
+      "expected": "pass",
+      "requires": [
+        "no-implicit-host-device-transfer",
+        "generation-fenced-buffer"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "memory.cross_tenant_denied",
+      "kind": "runtime",
+      "expected": "pass",
+      "requires": [
+        "device-context-isolation",
+        "no-capability-forgery"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "memory.use_after_take",
+      "kind": "compile",
+      "expected": "reject",
+      "requires": [
+        "no-output-artifact",
+        "move-semantics"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "lifecycle.cancel_after_dispatch",
+      "kind": "runtime",
+      "expected": "pass",
+      "requires": [
+        "cancel-request-is-not-quiescence",
+        "fence-delays-reclamation"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "lifecycle.stale_incarnation_completion",
+      "kind": "runtime",
+      "expected": "pass",
+      "requires": [
+        "generation-fenced-commit",
+        "no-actor-resurrection"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "lifecycle.device_loss",
+      "kind": "runtime",
+      "expected": "pass",
+      "requires": [
+        "cohort-failure-notice",
+        "supervisor-control-path",
+        "no-uncertified-actor-local-containment"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "lifecycle.actor_panic",
+      "kind": "runtime",
+      "expected": "pass",
+      "requires": [
+        "supervisor-control-path",
+        "no-in-kernel-panic-interception"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "backend.unsupported_gpu",
+      "kind": "runtime",
+      "expected": "pass",
+      "requires": [
+        "fail-closed",
+        "no-implicit-cpu-fallback"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "numeric.reproducibility",
+      "kind": "runtime",
+      "expected": "pass",
+      "requires": [
+        "explicit-determinism-mode",
+        "reduction-policy"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "evidence.physical_gpu_receipt",
+      "kind": "verification",
+      "expected": "pass",
+      "requires": [
+        "real-hardware-identity",
+        "exact-head",
+        "compiled-guest",
+        "executed-job-steps"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "wasm",
+        "forge",
+        "net"
+      ],
+      "evidence": "NOT_EXECUTED"
+    }
+  ]
+}
