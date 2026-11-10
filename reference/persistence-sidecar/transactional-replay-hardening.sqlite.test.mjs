@@ -126,3 +126,58 @@ test('fenced replay refuses an outdated activation epoch',()=>{
     assert.equal(load(db,2).version,2);
   });
 });
+
+
+test('valid-looking mutated domain event is denied by durable command event digest',()=>{
+  fixture(db=>{
+    const c=command();commit(db,c,true);
+    db.db.prepare('UPDATE events SET payload=? WHERE tenant=? AND actor=? AND state_name=? AND version=1')
+      .run(Buffer.from('{"cents":99}'),base.tenantId,base.actor,base.stateName);
+    assert.throws(()=>load(db),/INCOMPLETE_COMMAND_JOURNAL/);
+    assert.throws(()=>db.verifyCommand({...base,opId:c.opId,epoch:1,
+      commandBytes:c.commandBytes}),/INCOMPLETE_COMMAND_JOURNAL/);
+  });
+});
+
+test('tampered command result bytes are never returned as a durable duplicate',()=>{
+  fixture(db=>{
+    const c=command();commit(db,c,true);
+    db.db.prepare('UPDATE command_commits SET result_bytes=? WHERE tenant=? AND actor=? AND state_name=? AND op_id=?')
+      .run(Buffer.from('{"balance_cents":999}'),base.tenantId,base.actor,base.stateName,c.opId);
+    assert.throws(()=>db.verifyCommand({...base,opId:c.opId,epoch:1,
+      commandBytes:c.commandBytes}),/CORRUPT_COMMAND_RESULT/);
+    assert.throws(()=>db.enqueueCommand(c),/CORRUPT_COMMAND_RESULT/);
+  });
+});
+
+test('old unverified command ledger entry cannot silently gain durable status',()=>{
+  fixture(db=>{
+    const c=command();commit(db,c,true);
+    db.db.prepare('UPDATE command_commits SET events_digest=NULL WHERE tenant=? AND actor=? AND state_name=? AND op_id=?')
+      .run(base.tenantId,base.actor,base.stateName,c.opId);
+    assert.throws(()=>load(db),/UNVERIFIED_COMMAND_RECORD/);
+    assert.throws(()=>db.verifyCommand({...base,opId:c.opId,epoch:1,
+      commandBytes:c.commandBytes}),/UNVERIFIED_COMMAND_RECORD/);
+  });
+});
+
+test('after an authenticated snapshot barrier, compaction retains durable command dedupe',()=>{
+  fixture(db=>{
+    const c=command();commit(db,c,true);
+    const snapshot={...legacy('snapshot-1',2,'snapshot'),
+      payload:Buffer.from('{"balance_cents":100}')};
+    commit(db,snapshot);
+    db.db.prepare('DELETE FROM events WHERE tenant=? AND actor=? AND state_name=? AND version<=2')
+      .run(base.tenantId,base.actor,base.stateName);
+    db.grantEpoch({tenantId:base.tenantId,actor:base.actor,epoch:2});
+    const restored=load(db,2);
+    assert.equal(restored.snapshot.version,3);
+    assert.equal(restored.events.length,0);
+    const proof=db.verifyCommand({...base,opId:c.opId,epoch:2,
+      commandBytes:c.commandBytes});
+    assert.equal(proof.version,2);
+    const duplicate=db.enqueueCommand({...c,epoch:2});
+    assert.equal(duplicate.duplicate,true);
+    assert.equal(db.flush().length,0);
+  });
+});
