@@ -142,8 +142,12 @@ function withSyntheticAdtHostDriver(suiteBody,check){
    "commit","-qm","synthetic-only"],{cwd:dir});
   const head=execFileSync("git",["rev-parse","HEAD"],{cwd:dir,encoding:"utf8"}).trim();
   const tree=execFileSync("git",["rev-parse","HEAD^{tree}"],{cwd:dir,encoding:"utf8"}).trim();
+  // Node's outer test runner sets NODE_TEST_CONTEXT; remove it so the
+  // synthetic child can execute its own real Node test processes.
+  const isolatedEnv={...process.env};
+  delete isolatedEnv.NODE_TEST_CONTEXT;
   const run=spawnSync("bash",["scripts/verify-adt-conformance-head.sh",head,tree],
-   {cwd:dir,encoding:"utf8",timeout:20000});
+   {cwd:dir,encoding:"utf8",timeout:20000,env:isolatedEnv});
   check(run);
  } finally {rmSync(dir,{recursive:true,force:true});}
 }
