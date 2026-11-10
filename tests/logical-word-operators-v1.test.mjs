@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {readFileSync, writeFileSync, mkdtempSync, mkdirSync, rmSync} from "node:fs";
+import {readFileSync, writeFileSync, mkdtempSync, mkdirSync, rmSync, symlinkSync} from "node:fs";
 import {tmpdir} from "node:os";
 import {resolve, join} from "node:path";
 import {fileURLToPath} from "node:url";
@@ -32,7 +32,8 @@ test("canonical exact-byte fixtures and five-backend inventory remain source-onl
   assert.deepEqual(Object.keys(manifest.backends).sort(),["forge","java","llvm","net","wasm"]);
   assert.equal(manifest.receipts.length,0);
   assert.equal(manifest.spelling.xor,"eager-on-success-ltr-once");
-  assert.equal(manifest.fixtures.filter(f=>f.kind==="COMPILE_REJECT_NO_OUTPUT").length,7);
+  assert.equal(manifest.fixtures.filter(f=>f.kind==="COMPILE_REJECT_NO_OUTPUT").length,10);
+  assert.equal(manifest.fixtures.filter(f=>f.kind==="GUEST_EXIT").length,8);
 });
 
 test("a source mutation cannot silently retain a Git-blob pin",()=>{
@@ -110,4 +111,47 @@ test("even fully shaped synthetic receipts cannot prove native compilation or fi
     cases:manifest.fixtures.filter(f=>f.profile==="borrow_mut_class_effects").map(f=>
       ({id:f.id,input_blob:f.git_blob,compiled_and_linked:true,guest_exit_code:f.expected_exit}))};
   assert.match(assessLogicalReceipt(manifest,effect).state,/^CANDIDATE_/);
+});
+
+
+test("receipt schema rejects forged manifest fixtures, backend IDs and weaker execution gates",()=>{
+  const tampered=[
+    {...manifest,fixtures:manifest.fixtures.filter(f=>f.id!=="reject-dead-or")},
+    {...manifest,fixtures:manifest.fixtures.map(f=>f.id==="scalar-parity"?{...f,expected_exit:7}:f)},
+    {...manifest,backends:{...manifest.backends,llvm:{...manifest.backends.llvm,repo:"other-org/llvm"}}},
+    {...manifest,required_execution:manifest.required_execution.filter(s=>s!=="INDEPENDENT_REVIEW")},
+    {...manifest,receipts:[{state:"VERIFIED"}]},
+    {...manifest,spelling:{...manifest.spelling,precedence_tight_to_loose:["or","xor","and"]}}
+  ];
+  for (const source of tampered) {
+    assert.throws(()=>validateLogicalContract(source,root));
+    assert.equal(assessLogicalReceipt(source,receipt).reason,"UNTRUSTED_CONTRACT_OR_BACKEND");
+  }
+});
+
+test("receipt step identities cannot be duplicated or left unnumbered",()=>{
+  for (const steps of [
+    receipt.job.steps.map((s,i)=>i===1?{...s,number:1}:s),
+    receipt.job.steps.map((s,i)=>i===1?{...s,number:undefined}:s),
+    [...receipt.job.steps,{...receipt.job.steps[0],number:99}]
+  ]) {
+    assert.equal(assessLogicalReceipt(manifest,{...clone(receipt),
+      job:{...receipt.job,steps}}).state,"NOT_VERIFIED");
+  }
+});
+
+test("fixtures must not traverse symlinked parent directories",()=>{
+  const base=mkdtempSync(join(tmpdir(),"atto-logical-safe-"));
+  const external=mkdtempSync(join(tmpdir(),"atto-logical-external-"));
+  try {
+    mkdirSync(join(external,"logical-word-operators-v1"),{recursive:true});
+    for (const f of manifest.fixtures)
+      writeFileSync(join(external,"logical-word-operators-v1",f.id+".atto"),
+        readFileSync(join(root,f.path)));
+    symlinkSync(external,join(base,"fixtures"),"dir");
+    assert.throws(()=>validateLogicalContract(manifest,base),/symlink/);
+  } finally {
+    rmSync(base,{recursive:true,force:true});
+    rmSync(external,{recursive:true,force:true});
+  }
 });

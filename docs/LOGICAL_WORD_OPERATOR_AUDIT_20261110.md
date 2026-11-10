@@ -19,7 +19,9 @@
 - [Language spec #17](https://github.com/ores-truffle-oreslang/attolang-language-spec.md/pull/17) remains draft, not a merged normative contract.
 
 ## Source witnesses (not compiler tests)
-`fixtures/logical-word-operators-v1/` carries exact SHA-1 Git blobs copied from scoped compiler branches: universal scalar truth/precedence fixture `9e3d2d230faaba5e1ccfeaf1c4449c0c2a120c34` (exit 42), seven fail-closed negatives (including two new dead-RHS type checks), and four `borrow mut` effects fixtures (AND/OR skip; XOR eager/order) from LLVM's scoped branch.
+`fixtures/logical-word-operators-v1/` carries exact SHA-1 Git blobs copied from scoped compiler branches: universal scalar truth/precedence fixture `9e3d2d230faaba5e1ccfeaf1c4449c0c2a120c34` (exit 42), ten fail-closed negatives (including dead-RHS type checks and reserved `and`/`or`/`xor` names), three precedence guests, and four `borrow mut` effects fixtures (AND/OR skip; XOR eager/order) from LLVM's scoped branch.
+
+The fixture inventory is now 18 pinned cases: eight guest-exit cases and ten compile-rejection cases. The three new guest cases distinguish `and > xor > or` precedence, and the new negatives prevent operators from being reused as function names. A forged manifest cannot reach even the receipt-candidate state; source-only evaluation checks all pinned identities and required-execution gates. Step numbers/names must be unique, and fixture paths cannot traverse symlinks. All tests remain authored, not executed on GitHub Actions.
 
 The **baseline** profile is a target for all five backends; the **borrow_mut_class_effects** profile is a separate advanced target and MUST NOT silently pass through a reduced .NET/Wasm/Forge subset. Compiler check-only and host-only source emulators do not count as guest execution.
 

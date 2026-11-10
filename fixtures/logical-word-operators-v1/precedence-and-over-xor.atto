@@ -1,0 +1,3 @@
+pub fnc main(): int {
+  return (false and true xor true) ? 42 : 7;
+}

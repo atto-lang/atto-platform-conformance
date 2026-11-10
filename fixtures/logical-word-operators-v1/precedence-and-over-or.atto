@@ -1,0 +1,3 @@
+pub fnc main(): int {
+  return (true or false and false) ? 42 : 7;
+}

@@ -138,6 +138,51 @@
       "profile": "borrow_mut_class_effects",
       "kind": "GUEST_EXIT",
       "expected_exit": 42
+    },
+    {
+      "id": "precedence-and-over-xor",
+      "path": "fixtures/logical-word-operators-v1/precedence-and-over-xor.atto",
+      "git_blob": "e2a655af8c81408ff2cd72bf4f6aa32f206035ff",
+      "profile": "baseline",
+      "kind": "GUEST_EXIT",
+      "expected_exit": 42
+    },
+    {
+      "id": "precedence-xor-over-or",
+      "path": "fixtures/logical-word-operators-v1/precedence-xor-over-or.atto",
+      "git_blob": "281f05d235d4cb831855f6d7d871e7fff250f0e3",
+      "profile": "baseline",
+      "kind": "GUEST_EXIT",
+      "expected_exit": 42
+    },
+    {
+      "id": "precedence-and-over-or",
+      "path": "fixtures/logical-word-operators-v1/precedence-and-over-or.atto",
+      "git_blob": "d4df5324a2f042736b888110fe83f0b94dc0cd80",
+      "profile": "baseline",
+      "kind": "GUEST_EXIT",
+      "expected_exit": 42
+    },
+    {
+      "id": "reject-word-and-as-name",
+      "path": "fixtures/logical-word-operators-v1/reject-word-and-as-name.atto",
+      "git_blob": "8bd857161b2ea289ed12af82aea9087b7036bd74",
+      "profile": "baseline",
+      "kind": "COMPILE_REJECT_NO_OUTPUT"
+    },
+    {
+      "id": "reject-word-or-as-name",
+      "path": "fixtures/logical-word-operators-v1/reject-word-or-as-name.atto",
+      "git_blob": "64264296f793f8b2074c191b3b6ba93c38c6a4fa",
+      "profile": "baseline",
+      "kind": "COMPILE_REJECT_NO_OUTPUT"
+    },
+    {
+      "id": "reject-word-xor-as-name",
+      "path": "fixtures/logical-word-operators-v1/reject-word-xor-as-name.atto",
+      "git_blob": "348a9a83eb543d7415d242ae89ca7cdfa9fa31c0",
+      "profile": "baseline",
+      "kind": "COMPILE_REJECT_NO_OUTPUT"
     }
   ],
   "required_execution": [
