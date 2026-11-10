@@ -1,0 +1,9 @@
+define pub class Cart as
+  pub fnc answer(): int {
+    return 42;
+  }
+end
+
+define pub fnc entry(): int {
+  return 42;
+}
