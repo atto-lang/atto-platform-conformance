@@ -137,15 +137,16 @@ test('reject empty event list, oversize command and zero batch-admission bypass'
   });
 });
 
-test('dedupe index survives event pruning; replay still needs an authenticated snapshot',()=>{
+test('command dedupe index fails closed if events pruned without a durable snapshot',()=>{
   fixture(open=>{
     const db=open();grant(db);db.enqueueCommand(cmd());db.flush();
-    db.db.exec('DELETE FROM events');
+    db.db.exec('DELETE FROM events'); // Unauthorized compaction: no snapshot!
     grant(db,'bank-1',2);
     const retry=cmd({epoch:2});
-    assert.equal(db.verifyCommand(scope(retry)).version,2);
-    assert.equal(db.enqueueCommand(retry).duplicate,true);
+    assert.throws(()=>db.verifyCommand(scope(retry)),/INCOMPLETE_COMMAND_JOURNAL/);
+    assert.throws(()=>db.enqueueCommand(retry),/INCOMPLETE_COMMAND_JOURNAL/);
     assert.equal(db.flush().length,0);
+    assert.throws(()=>state(db,retry),/JOURNAL_GAP/);
   });
 });
 
