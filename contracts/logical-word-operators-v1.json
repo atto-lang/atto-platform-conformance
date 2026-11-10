@@ -45,8 +45,8 @@
     },
     "forge": {
       "repo": "ores-truffle-oreslang/oreslang-source.forge",
-      "pr": null,
-      "state": "NO_SCOPED_PR_FOUND_UNVERIFIED"
+      "pr": 241,
+      "state": "REJECTION_ONLY_DRAFT_UNVERIFIED"
     }
   },
   "fixtures": [
