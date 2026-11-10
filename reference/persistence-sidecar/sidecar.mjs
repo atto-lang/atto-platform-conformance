@@ -122,7 +122,8 @@ export class BatchPersistenceSidecar {
     const existing = this.getOp.get(tenantId,actor,stateName,opId);
     if (existing) {
       if (existing.digest !== hash) fail('OP_ID_CONFLICT');
-      return this.#legacyProof(e,existing);
+      const proof=this.#legacyProof(e,existing);
+      return {status:'committed',durable:true,duplicate:true,version:proof.version};
     }
     const queued = this.pending.get(k);
     if (queued) {
@@ -424,14 +425,25 @@ export class BatchPersistenceSidecar {
     if (tenantId !== this.tenantId) fail('WRONG_TENANT');
     if (![actor,stateName,opId].every(ident) || !uint(epoch) || epoch < 1 ||
         !uint(expectedVersion) || !uint(schemaVersion) || schemaVersion < 1 ||
-        !['snapshot','event'].includes(kind) || !Buffer.isBuffer(payload)) fail('INVALID_COMMIT_PROOF');
-    if (this.getFence.get(tenantId,actor)?.epoch !== epoch) fail('STALE_EPOCH');
-    const op=this.getOp.get(tenantId,actor,stateName,opId);
-    if (!op) return null;
-    if (op.digest !== digest(e) || op.kind !== kind || op.version !== expectedVersion + 1)
-      fail('COMMIT_MISMATCH');
-    const proof=this.#legacyProof(e,op);
-    return {opId,status:'committed',durable:true,version:proof.version};
+        !['snapshot','event'].includes(kind) || !Buffer.isBuffer(payload))
+      fail('INVALID_COMMIT_PROOF');
+    this.db.exec('BEGIN');
+    try {
+      if (this.getFence.get(tenantId,actor)?.epoch !== epoch) fail('STALE_EPOCH');
+      const op=this.getOp.get(tenantId,actor,stateName,opId);
+      if(!op) {
+        this.db.exec('COMMIT');
+        return null;
+      }
+      if (op.digest !== digest(e) || op.kind !== kind ||
+          op.version !== expectedVersion+1)fail('COMMIT_MISMATCH');
+      const proof=this.#legacyProof(e,op);
+      this.db.exec('COMMIT');
+      return {opId,status:'committed',durable:true,version:proof.version};
+    } catch (err) {
+      try { this.db.exec('ROLLBACK'); } catch {}
+      throw err;
+    }
   }
   // Fencing and the journal must be read under ONE SQLite snapshot.
   // BEGIN (deferred) pins an MVCC snapshot at the initial fence SELECT, so
@@ -470,7 +482,7 @@ export class BatchPersistenceSidecar {
     if (!uint(head)) fail('INCOMPLETE_ACTOR_JOURNAL');
     const saved = this.db.prepare(
       'SELECT version,schema_version,length(payload) AS bytes,' +
-      'substr(payload,1,1048577) AS payload,payload_hash FROM snapshots ' +
+      'substr(payload,1,1048577) AS payload,payload_hash,operation_digest FROM snapshots ' +
       'WHERE tenant=? AND actor=? AND state_name=?'
     ).get(tenantId,actor,stateName);
     let snapshot=null, since=0;
