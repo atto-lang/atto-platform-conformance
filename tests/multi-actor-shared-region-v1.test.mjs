@@ -57,15 +57,15 @@ test('singleton cannot publish getters, mutable classes, cycles, async results o
 
 test('three cross-slice actors: reader cohort and writer barrier prevent barging', () => {
   const { host, region, x, y, z, b, c } = setup();
-  const rb = region.delegate(x, b, 'read');
-  const rc = region.delegate(x, c, 'read');
+  const rb = region.delegate(x, y, 'read');
+  const rc = region.delegate(x, z, 'read');
   const readB = region.request(y, 'read', rb);
   const readC = region.request(z, 'read', rc);
   assert.equal(region.read(y, readB), 1); assert.equal(region.read(z, readC), 1);
   const writeA = region.request(x, 'write');
   assert.equal(region.ticketState(writeA), 'pending');
-  const r2 = region.delegate(x, b, 'read');
   const y2 = host.beginExecution(b, 'turn-b-late');
+  const r2 = region.delegate(x, y2, 'read');
   const late = region.request(y2, 'read', r2);
   assert.equal(region.ticketState(late), 'pending');
   assert.throws(() => region.read(y2, late), /active lease/);
@@ -96,7 +96,7 @@ test('foreign and stale actor cannot read or write even with a ticket from diffe
 
 test('owner cannot bypass existing read lease; recursion/upgrades and suspension denied', () => {
   const { region, x, y, b } = setup();
-  const cap = region.delegate(x, b, 'read');
+  const cap = region.delegate(x, y, 'read');
   const t = region.request(y, 'read', cap);
   assert.throws(() => region.write(x, t, 7), /active lease/);
   assert.throws(() => region.request(y, 'write', cap), /recursive/);
@@ -112,8 +112,8 @@ test('forged, cross-domain and untrusted actor claims denied', () => {
   const untrusted = host.registerActor({ id: 'evil', domain: 'app1', slice: 'untrusted', trust: 'untrusted' });
   const oy = host.beginExecution(other, 'o');
   const uy = host.beginExecution(untrusted, 'u');
-  assert.throws(() => region.delegate(x, other, 'read'), /cross-domain/);
-  assert.throws(() => region.delegate(x, untrusted, 'read'), /cross-domain/);
+  assert.throws(() => region.delegate(x, oy, 'read'), /cross-domain/);
+  assert.throws(() => region.delegate(x, uy, 'read'), /cross-domain/);
   assert.throws(() => region.request(oy, 'read'), /cross-domain/);
   assert.throws(() => region.request(uy, 'write'), /cross-domain/);
   assert.throws(() => region.request(host.beginExecution(b, 'another'), 'read'), /delegation/);
@@ -122,8 +122,8 @@ test('forged, cross-domain and untrusted actor claims denied', () => {
 test('full queue does not burn one-use delegation; cancel redrives FIFO', () => {
   const { region, x, y, z, b, c } = setup({ maxPending: 1 });
   const w = region.request(x, 'write');
-  const cb = region.delegate(x, b, 'read');
-  const cc = region.delegate(x, c, 'read');
+  const cb = region.delegate(x, y, 'read');
+  const cc = region.delegate(x, z, 'read');
   const queued = region.request(y, 'read', cb);
   assert.throws(() => region.request(z, 'read', cc), /queue full/);
   assert.equal(region.stats.grants, 1);
@@ -137,9 +137,9 @@ test('full queue does not burn one-use delegation; cancel redrives FIFO', () => 
 
 test('bounded readers and delegation ledger, no hidden unbounded growth', () => {
   const { region, x, y, z, b, c } = setup({ maxReaders: 1, maxGrants: 2, maxPending: 1 });
-  const a = region.delegate(x, b, 'read');
-  const d = region.delegate(x, c, 'read');
-  assert.throws(() => region.delegate(x, b, 'read'), /grant quota/);
+  const a = region.delegate(x, y, 'read');
+  const d = region.delegate(x, z, 'read');
+  assert.throws(() => region.delegate(x, y, 'read'), /grant quota/);
   const t = region.request(y, 'read', a);
   const q = region.request(z, 'read', d);
   assert.equal(region.ticketState(q), 'pending');
@@ -151,21 +151,21 @@ test('bounded readers and delegation ledger, no hidden unbounded growth', () => 
 
 test('transfer requires all pending loans and unconsumed grants drained; stale authority denied', () => {
   const { region, x, y, b } = setup();
-  const grant = region.delegate(x, b, 'write');
+  const grant = region.delegate(x, y, 'write');
   assert.throws(() => region.transferOwner(x, b), /quiescence/);
   const t = region.request(y, 'write', grant);
   assert.throws(() => region.transferOwner(x, b), /quiescence/);
   region.release(y, t);
   region.transferOwner(x, b);
   assert.throws(() => region.request(x, 'read'), /delegation/);
-  assert.throws(() => region.delegate(x, b, 'read'), /only region owner/);
+  assert.throws(() => region.delegate(x, y, 'read'), /only region owner/);
   const t2 = region.request(y, 'write');
   region.write(y, t2, 22); region.release(y, t2);
 });
 
 test('owner stop seals region, cannot reclaim until active physical loan released', () => {
   const { host, region, a, x, y, b } = setup();
-  const g = region.delegate(x, b, 'read');
+  const g = region.delegate(x, y, 'read');
   const r = region.request(y, 'read', g);
   host.stopActor(a);
   assert.equal(region.stats.sealed, true);
@@ -179,7 +179,7 @@ test('owner stop seals region, cannot reclaim until active physical loan release
 
 test('borrower stop cancels pending but holds physical active slot until cleanup', () => {
   const { host, region, x, y, b } = setup();
-  const g = region.delegate(x, b, 'read');
+  const g = region.delegate(x, y, 'read');
   const w = region.request(x, 'write');
   const r = region.request(y, 'read', g);
   host.stopActor(b);
@@ -191,7 +191,7 @@ test('borrower stop cancels pending but holds physical active slot until cleanup
 
 test('same actor name in next incarnation does not resurrect old delegation or active ticket', () => {
   const { host, region, x, y, b } = setup();
-  const g = region.delegate(x, b, 'read');
+  const g = region.delegate(x, y, 'read');
   host.stopActor(b);
   const revived = host.registerActor({ id: 'b', domain: 'app1', slice: 'slice2' });
   const y2 = host.beginExecution(revived, 'turn-b');
@@ -215,7 +215,7 @@ test('deterministic state machine sweeps writer/read queues across capacities', 
   for (let pending = 0; pending <= 3; pending++) for (let readers = 1; readers <= 3; readers++) {
     const { region, x, y, b } = setup({ maxPending: pending, maxReaders: readers });
     const writer = region.request(x, 'write');
-    const read = region.delegate(x, b, 'read');
+    const read = region.delegate(x, y, 'read');
     if (pending === 0) {
       assert.throws(() => region.request(y, 'read', read), /queue full/);
       region.release(x, writer);
@@ -243,7 +243,7 @@ test('terminal tickets are not retained as an ever-growing strong reference ledg
 
 test('borrower stopped inside active loan cannot write or free its physical slot early', () => {
   const { host, region, x, y, b } = setup();
-  const g = region.delegate(x, b, 'write');
+  const g = region.delegate(x, y, 'write');
   const t = region.request(y, 'write', g);
   host.stopActor(b);
   assert.equal(region.stats.writers, 1);
@@ -279,4 +279,26 @@ test('sparse singleton arrays preserve exact lengths without publishing mutable 
   assert.equal(copied.length, 5); assert.equal(0 in copied, false);
   assert.equal(copied[3].yes, true);
   assert.throws(() => { copied[3].yes = false; }, TypeError);
+});
+
+
+test('delegated loan is bound to one logical execution, not merely an actor label', () => {
+  const { host, region, x, y, b } = setup();
+  const second = host.beginExecution(b, 'another-turn');
+  const grant = region.delegate(x, y, 'read');
+  assert.throws(() => region.request(second, 'read', grant), /delegation/);
+  const borrowed = region.request(y, 'read', grant);
+  assert.throws(() => region.request(second, 'read', grant), /delegation/);
+  region.release(y, borrowed);
+});
+
+test('cross-region nested loans fail closed until global ordering is proven', () => {
+  const { host, region, a, x } = setup();
+  const otherRegion = host.createRegion(a, 2);
+  const t1 = region.request(x, 'read');
+  assert.throws(() => otherRegion.request(x, 'write'), /cross-region nested/);
+  region.release(x, t1);
+  const t2 = otherRegion.request(x, 'write');
+  otherRegion.write(x, t2, 3);
+  otherRegion.release(x, t2);
 });
