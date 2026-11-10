@@ -242,3 +242,22 @@ test('snapshots without digests fail closed instead of silent legacy backfill',(
       commandBytes:c.commandBytes}),/UNVERIFIED_SNAPSHOT/);
   });
 });
+
+
+test('modified legacy single-event bytes must not replay as valid actor state',()=>{
+  fixture(db=>{
+    commit(db,legacy());
+    db.db.prepare('UPDATE events SET payload=? WHERE tenant=? AND actor=? AND state_name=? AND version=1')
+      .run(Buffer.from('{"cents":999}'),base.tenantId,base.actor,base.stateName);
+    assert.throws(()=>load(db),/CORRUPT_LEGACY_EVENT/);
+  });
+});
+
+test('unverified pre-upgrade legacy event cannot silently become trusted replay',()=>{
+  fixture(db=>{
+    commit(db,legacy());
+    db.db.prepare('UPDATE operations SET payload_hash=NULL WHERE tenant=? AND actor=? AND state_name=? AND kind=?')
+      .run(base.tenantId,base.actor,base.stateName,'event');
+    assert.throws(()=>load(db),/UNVERIFIED_LEGACY_EVENT/);
+  });
+});
