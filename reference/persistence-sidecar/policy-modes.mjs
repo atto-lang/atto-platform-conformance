@@ -149,6 +149,63 @@ export class PolicyActorReference {
     return this.#enqueue(opId, 'event', e, nextState);
     });
   }
+  // One logical command may emit multiple deterministic immutable events.
+  // The runtime owns staging, single-flight admission and commit publication;
+  // no mutable actor-state loan crosses the provider call.
+  stage_events(opId, commandBytes, events, resultBytes = Buffer.from('null')) {
+    return this.#withScope(() => {
+      if (this.policy.storageKind !== 'event') deny('WRONG_STORAGE_KIND');
+      if (this.#pending) deny('WRITE_ALREADY_PENDING');
+      if (!Buffer.isBuffer(commandBytes) || !Buffer.isBuffer(resultBytes) ||
+          !Array.isArray(events) || events.length === 0) deny('INVALID_COMMAND');
+      if (typeof this.sidecar.enqueueCommand !== 'function' ||
+          typeof this.sidecar.verifyCommand !== 'function') deny('UNSUPPORTED_COMMAND_PROTOCOL');
+      let nextState = clone_json(this.#state);
+      const ownedEvents = [];
+      for (const event of events) {
+        const owned = clone_json(event);
+        nextState = clone_json(synchronous(x => this.reducer(clone_json(nextState), x), owned));
+        ownedEvents.push(encode(owned));
+      }
+      if (!Number.isSafeInteger(this.#version + ownedEvents.length)) deny('VERSION_EXHAUSTED');
+      const envelope = {tenantId:this.tenantId,actor:this.actor,stateName:this.stateName,
+        opId,epoch:this.epoch,expectedVersion:this.#version,
+        schemaVersion:this.schemaVersion,commandBytes:Buffer.from(commandBytes),
+        events:ownedEvents,resultBytes:Buffer.from(resultBytes)};
+      const receipt = this.sidecar.enqueueCommand(envelope);
+      if (receipt.status === 'committed') {
+        // Already durable on this or an earlier incarnation. Never apply the
+        // candidate twice. Caller must reconcile/restore the committed state.
+        const verified = this.sidecar.verifyCommand(envelope);
+        if (!verified || verified.status !== 'committed' || !verified.durable ||
+            verified.opId !== opId || verified.version !== receipt.version)
+          deny('UNVERIFIABLE_COMMIT');
+        deny('RELOAD_REQUIRED');
+      }
+      if (receipt.status !== 'admitted' || receipt.durable !== false)
+        deny('INVALID_ADMISSION_RECEIPT');
+      this.#pending = {kind:'command',opId,envelope,nextState,
+        firstVersion:this.#version+1,eventCount:ownedEvents.length,
+        nextVersion:this.#version+ownedEvents.length};
+      return receipt;
+    });
+  }
+  #verify_pending(p) {
+    const verified = p.kind === 'command'
+      ? this.sidecar.verifyCommand(p.envelope)
+      : this.sidecar.verifyCommit(p.envelope);
+    if (!verified || verified.opId !== p.opId || verified.status !== 'committed' ||
+        verified.durable !== true || verified.version !== p.nextVersion)
+      deny('OUTCOME_UNKNOWN');
+    if (p.kind === 'command') {
+      if (verified.firstVersion !== p.firstVersion ||
+          verified.eventCount !== p.eventCount ||
+          !Buffer.isBuffer(verified.resultBytes) ||
+          !verified.resultBytes.equals(p.envelope.resultBytes))
+        deny('OUTCOME_UNKNOWN');
+    }
+    return verified;
+  }
   apply_commit(receipt) {
     return this.#withScope(() => {
     const p = this.#pending;
@@ -161,11 +218,15 @@ export class PolicyActorReference {
         receipt.version !== p.nextVersion) deny('OUTCOME_UNKNOWN');
     // Public receipts are not proof of a transaction. Confirm by reading the
     // trusted provider's persisted operation record before publishing state.
-    if (typeof this.sidecar.verifyCommit !== 'function') deny('UNVERIFIABLE_COMMIT');
-    const verified = this.sidecar.verifyCommit(p.envelope);
-    if (!verified || verified.version !== receipt.version ||
-        verified.opId !== receipt.opId || verified.status !== 'committed' ||
-        verified.durable !== true) deny('OUTCOME_UNKNOWN');
+    if (p.kind === 'command') {
+      if (receipt.firstVersion !== p.firstVersion ||
+          receipt.eventCount !== p.eventCount ||
+          !Buffer.isBuffer(receipt.resultBytes) ||
+          !receipt.resultBytes.equals(p.envelope.resultBytes)) deny('OUTCOME_UNKNOWN');
+    }
+    if (typeof this.sidecar.verifyCommit !== 'function' && p.kind !== 'command')
+      deny('UNVERIFIABLE_COMMIT');
+    const verified = this.#verify_pending(p);
     this.#state = clone_json(p.nextState);
     this.#version = receipt.version;
     this.#pending = null;
@@ -179,12 +240,13 @@ export class PolicyActorReference {
     return this.#withScope(() => {
       const p = this.#pending;
       if (!p) deny('NO_PENDING_WRITE');
-      if (typeof this.sidecar.verifyCommit !== 'function') deny('UNVERIFIABLE_COMMIT');
-      const verified = this.sidecar.verifyCommit(p.envelope);
-      if (!verified) return {status:'pending', durable:false, opId:p.opId};
-      if (verified.opId !== p.opId || verified.status !== 'committed' ||
-          verified.durable !== true || verified.version !== p.nextVersion)
-        deny('OUTCOME_UNKNOWN');
+      if (p.kind !== 'command' && typeof this.sidecar.verifyCommit !== 'function')
+        deny('UNVERIFIABLE_COMMIT');
+      const raw = p.kind === 'command'
+        ? this.sidecar.verifyCommand(p.envelope)
+        : this.sidecar.verifyCommit(p.envelope);
+      if (!raw) return {status:'pending', durable:false, opId:p.opId};
+      const verified = this.#verify_pending(p);
       this.#state = clone_json(p.nextState);
       this.#version = verified.version;
       this.#pending = null;

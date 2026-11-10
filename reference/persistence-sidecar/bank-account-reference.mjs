@@ -7,6 +7,8 @@ const reject = (code) => { throw new Error(code); };
 const int = (x) => Number.isSafeInteger(x);
 const canon = (command) => JSON.stringify([command.kind, command.amount_cents]);
 const hash = (command) => createHash('sha256').update(canon(command)).digest('hex');
+// The command identity is independent of incarnation and stream version.
+const command_bytes = (command) => Buffer.from(canon(command),'utf8');
 
 export function validate_bank_command(command) {
   if (!command || typeof command !== 'object' || Array.isArray(command) ||
@@ -62,13 +64,15 @@ export class BankAccountCommandReference {
     const seen = new Map();
     for (const entry of loaded.events) {
       if (entry.version !== sequence + 1 || entry.schemaVersion !== 1 ||
-          typeof entry.opId !== 'string' || !entry.opId || seen.has(entry.opId) ||
+          typeof entry.opId !== 'string' || !entry.opId ||
           !Buffer.isBuffer(entry.payload)) reject('INVALID_JOURNAL');
       let event;
       try { event = JSON.parse(entry.payload.toString('utf8')); }
       catch { reject('INVALID_JOURNAL'); }
       balance = apply_bank_event({balance_cents:balance}, event).balance_cents;
       sequence = entry.version;
+      const prior = seen.get(entry.opId);
+      if (prior && prior.command_hash !== event.command_hash) reject('INVALID_JOURNAL');
       seen.set(entry.opId, {command_hash:event.command_hash, version:sequence});
     }
     if (sequence !== loaded.version || sequence !== this.#actor.version ||
@@ -82,15 +86,31 @@ export class BankAccountCommandReference {
     this.#check_ready();
     if (typeof opId !== 'string' || !opId || opId.length > 128) reject('INVALID_OPERATION_ID');
     const command = validate_bank_command(input), command_hash = hash(command);
-    const prior = this.#committed.get(opId);
-    if (prior) {
-      if (prior.command_hash !== command_hash) reject('OP_ID_CONFLICT');
-      return {status:'committed', durable:true, duplicate:true, version:prior.version};
-    }
     if (this.#pending) {
       if (this.#pending.opId === opId && this.#pending.command_hash === command_hash)
         return {status:'pending', durable:false, duplicate:true};
       reject('WRITE_ALREADY_PENDING');
+    }
+    const prior = this.#committed.get(opId);
+    if (prior && prior.command_hash !== command_hash) reject('OP_ID_CONFLICT');
+    // Durable duplicate proofs are provider-authoritative and epoch-fenced.
+    // A stale in-memory map alone may NEVER acknowledge a command.
+    if (typeof this.#sidecar.verifyCommand === 'function') {
+      const proof = this.#sidecar.verifyCommand({...this.#scope,opId,
+        commandBytes:command_bytes(command)});
+      if (proof) {
+        if (!prior || prior.version !== proof.version || proof.version > this.#actor.version)
+          reject('RELOAD_REQUIRED');
+        if (!proof.durable || proof.status !== 'committed' || proof.opId !== opId)
+          reject('UNVERIFIABLE_COMMIT');
+        return {status:'committed',durable:true,duplicate:true,version:proof.version};
+      }
+    }
+    if (prior) {
+      // Legacy command records lack the v2 index. Fence even this cached path.
+      if (typeof this.#sidecar.loadFenced !== 'function') reject('UNVERIFIABLE_RESTORE');
+      this.#sidecar.loadFenced(this.#scope);
+      return {status:'committed',durable:true,duplicate:true,version:prior.version};
     }
     const balance = this.balance_cents;
     const delta = command.kind === 'deposit' ? command.amount_cents : -command.amount_cents;
@@ -98,7 +118,12 @@ export class BankAccountCommandReference {
     if (balance + delta < 0) return {status:'rejected',code:'INSUFFICIENT_FUNDS',durable:false};
     const event = {kind:command.kind === 'deposit' ? 'money_deposited':'money_withdrawn',
       amount_cents:command.amount_cents,command_hash,schema_version:1};
-    const admitted = this.#actor.stage_event(opId,event);
+    const use_commands = typeof this.#actor.stage_events === 'function' &&
+      typeof this.#sidecar.verifyCommand === 'function';
+    const admitted = use_commands
+      ? this.#actor.stage_events(opId,command_bytes(command),[event],
+          Buffer.from(JSON.stringify({balance_cents:balance+delta})))
+      : this.#actor.stage_event(opId,event);
     if (admitted.status === 'committed') reject('UNEXPECTED_DIRECT_COMMIT');
     if (admitted.status !== 'admitted' || admitted.durable !== false) reject('INVALID_ADMISSION');
     this.#pending = {opId,command_hash};
