@@ -142,12 +142,18 @@ PendingNoticeHasController ==
 RunningHasLiveGeneration ==
     \A n \in Nodes : (phase[n] = "running") => loans[n] = 1
 
-NoPostFenceAdmission ==
-    \A n \in Managed : fenced[n] =>
-      ~(phase[n] = "running" /\ ~fenced[n])
+Ancestors(n) ==
+    IF n = "S" THEN {"R"}
+    ELSE IF n = "T" THEN {"R", "S"}
+    ELSE {"R", "S", "T"}
+
+NoLiveUnfencedChildOfFailedAncestor ==
+    \A n \in Managed :
+      (phase[n] = "running" /\ ~fenced[n]) =>
+        (\A a \in Ancestors(n) : phase[a] # "failed")
 
 Safety ==
     TypeOK /\ GuardianAndSiblingSurvive /\ FailureFencesDescendants /\
     NeverReclaimLiveLoans /\ PendingNoticeHasController /\
-    RunningHasLiveGeneration /\ NoPostFenceAdmission
+    RunningHasLiveGeneration /\ NoLiveUnfencedChildOfFailedAncestor
 =============================================================================
