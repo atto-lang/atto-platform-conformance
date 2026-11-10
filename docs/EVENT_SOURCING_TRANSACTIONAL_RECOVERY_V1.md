@@ -117,3 +117,39 @@ mechanism, **not authenticated protection against a compromised provider**.
 Distributed coordinator/epoch authority and transactional external effects
 are not implemented. Cross-epoch dedupe retention must follow a documented
 policy and must not be pruned silently.
+
+
+## 2026-11-10 snapshot and legacy event proof tightening
+
+Recovery and duplicate receipt paths now demand evidence from the **durable
+snapshot operation** before trusting a snapshot or acknowledging a command
+whose events were pruned. `snapshots.payload_hash` stores the original
+SHA-256 of snapshot bytes; `snapshots.operation_digest` binds the
+checkpoint to the durable `operations.digest` entry; and the independent
+`operations.payload_hash` must match the checkpoint's payload digest.
+Both entries are written in the same SQLite transaction. `loadFenced`,
+host `load` and `verifyCommand` read the evidence within their existing
+atomic SQLite snapshot transaction.
+
+The legacy single-event replay path also checks every event payload against
+`operations.payload_hash`, rather than trusting only a matching op ID and
+version. Modifying a syntactically valid event now fails closed before
+publication.
+
+An additive migration adds nullable checksum columns when old databases
+lack them. **Old snapshots and legacy events without these proofs are
+UNVERIFIED, not silently retroactively certified.** A separate separately
+approved authenticated migration and negative tests are required before
+releasing older persisted data. Treat this as a compatibility/release gate,
+not a transparent no-op database migration.
+
+Independent source-free local Node 22 SQLite experiment (5/5) validated
+the SQL schema/row and cross-table checksum mechanism for original, changed
+BLOB, recomputed payload checksum, missing operation record and Uint8Array
+payload behavior. It did **not** execute the exact GitHub sidecar source.
+Exact-head source-org Actions remain runner-admission blocked until a job
+actually runs steps. The SHA-256 cross-checks help identify tampering or
+corruption relative to an independent persisted record but **are not
+cryptographically authenticated against an attacker able to rewrite all
+database rows**; a trusted provider or authenticated append-only evidence
+is required for that threat model.
