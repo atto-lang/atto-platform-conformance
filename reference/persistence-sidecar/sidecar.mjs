@@ -207,7 +207,7 @@ export class BatchPersistenceSidecar {
       if (!uint(row.version) || row.version < 1 || row.version > version ||
           !uint(row.schema_version) || row.schema_version < 1 ||
           !uint(row.size) || row.size > 1048576 ||
-          !Buffer.isBuffer(row.payload) || row.payload.byteLength !== row.size)
+          !(row.payload instanceof Uint8Array) || row.payload.byteLength !== row.size)
         fail('INVALID_ACTOR_SNAPSHOT');
       since = row.version;
       snapshot = {version:row.version,schemaVersion:row.schema_version,payload:Buffer.from(row.payload)};
@@ -222,7 +222,7 @@ export class BatchPersistenceSidecar {
       if (e.version !== expected) fail('JOURNAL_GAP');
       if (!uint(e.schema_version) || e.schema_version < 1 ||
           !uint(e.size) || e.size > 1048576 || e.size > 16777216 - replayBytes ||
-          !Buffer.isBuffer(e.payload) || e.payload.byteLength !== e.size)
+          !(e.payload instanceof Uint8Array) || e.payload.byteLength !== e.size)
         fail('INVALID_ACTOR_EVENT');
       if (events.length === 10000) fail('ACTOR_JOURNAL_REPLAY_LIMIT');
       replayBytes += e.size;
