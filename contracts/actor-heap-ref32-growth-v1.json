@@ -66,7 +66,9 @@
     "retirementWaitsForOutstandingPins": true,
     "noCrossActorRawRefTransport": true,
     "noIntegerToRefConversion": true,
-    "noSilentNative64Widening": true
+    "noSilentNative64Widening": true,
+    "rejectStaleRef32WordAndGenerationAcrossDifferentAllocationSlots": true,
+    "guestRef32WordCannotReplaceOutOfLineOwnerSlotAuthority": true
   },
   "evidence": {
     "java-graalvm": "NOT_EXECUTED",
