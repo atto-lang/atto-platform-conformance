@@ -63,6 +63,8 @@ unrelated raw read or write.
 2. Grant readers together unless an earlier writer is queued; a queued writer
    imposes a barrier on subsequent readers. One writer runs alone. This gives
    bounded-queue, FIFO writer fairness under finite critical sections.
+   Bound **active readers** as well as queued waiters and outstanding unconsumed
+   delegation grants; a queue bound by itself does not bound memory growth.
 3. Reject recursive acquisition, upgrade attempts, duplicate release,
    cross-execution release, forged/stale grants, and cross-actor access.
 4. A pending request cancellation removes its queue reservation and re-drives
@@ -79,6 +81,10 @@ unrelated raw read or write.
    incarnation/generation, never a recycled valid old capability.
 7. The supervisor may request STOP and receive sanitized lifecycle snapshots.
    CONTROL capability is not a transferable actor-state data capability.
+8. Grant issuance and consumption must be failure-atomic: invalid execution,
+   recursive access, exhausted serials and queue overflow must not consume a
+   one-use delegation. On successful admission, consume it **exactly once**;
+   never leave consumed capabilities in an ever-growing strong-reference map.
 
 ## Executable reference model in this package
 
@@ -88,6 +94,31 @@ admission model: owner transfer, typed delegated borrows, reader cohorts,
 writer exclusion and FIFO barrier, bounded pending queue, cancellation,
 suspension rejection, STOP, physical-reclamation fencing, reincarnation ABA,
 and forged/foreign ticket rejection.
+
+### Additional audit findings and hardening in this draft
+
+The original V1 oracle had observable authorization/alias-model gaps, now
+covered by targeted red-to-green regression tests:
+
+| Gap | Hardening in source-free reference | Mandatory production follow-up |
+| --- | --- | --- |
+| Failed full-queue/recursive admission consumed a valid one-use supervisor grant | Commit admission only *after* validation, checked capacity and reservation; retain grant on failure | Implement atomic grant/loan transition on authenticated native runtime paths |
+| Unlimited outstanding grants or concurrent reader tickets could exhaust process memory | Default bounded grant ledger (64) and active-reader limit (1024), plus existing bounded pending queue | Enforce per-actor quotas before allocation; measure worst-case latency and allocation |
+| Owner raw access bypassed loan overlap in the lexical oracle | Treat raw owner read as shared access and raw owner write as exclusive; block conflicting loans | Check all owner field loads/stores in compiler MIR (not only explicit borrow instructions) |
+| Released loan escape or post-`end` operation silently passed source-free checks | Reject stale escapes, reused linear loan identities, nonterminal `end` and malformed suspension | Typed CFG/NLL and exception-edge cleanup proof |
+| Material field/indirect alias was invisible to overlap checks | Conservative `alias` / `project` / `drop-alias` lifetimes, root resolution, no move/write/suspend while aliased | Actual projection-sensitive alias analysis, including nested collections and captures |
+| Foreign principal could obtain a trivial suspension-clear answer in the model | Reject principals outside the actor/supervisor pair and reject post-STOP suspension | Use authenticated execution handle, slot, generation and region identity |
+| Restart checked generation overflow but not owner-epoch overflow | Fail closed before incrementing either counter | Persist/guard epoch fence under supervisor restart and hot reload |
+
+**Important model limitations:** The JavaScript test-driver `owner` getter is
+deliberately trusted instrumentation. A user who can call that getter is able to
+obtain the current symbolic owner token, so the oracle itself provides **no
+hostile-tenant security boundary**. No production code may expose the getter,
+arbitrary role strings, raw state pointers or ticket objects as sufficient
+authorization. In particular, the runtime must bind authority to an
+unforgeable logical execution and region generation. `alias` and `project`
+assume a live immutable view of the whole root and may reject safe disjoint
+field accesses; that conservatism is intentional until field proofs exist.
 
 **Limits**: no real AttoLang parser, typed MIR, compiler dataflow proof, JVM
 memory model, native mutex, Truffle guest, scheduler callbacks, OS-level thread
