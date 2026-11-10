@@ -138,4 +138,36 @@ if (process.argv[2] === '--after-commit' || process.argv[2] === '--before-commit
         assert.equal(recovered.version, 0);
       } finally { db.close(); }
     }));
+  test('bank actor: oversized journal BLOB is rejected before materialization or state publication', () =>
+    withStore(path => {
+      const db = open(path);
+      try {
+        db.grantEpoch({tenantId:TENANT, actor:ACTOR, epoch:1});
+        const a = actor(db, 1);
+        append(a, db, 'valid-event', {type:'MoneyDeposited',cents:1000});
+        db.db.prepare('UPDATE events SET payload=zeroblob(1048577) WHERE tenant=? AND actor=? AND state_name=? AND version=1')
+          .run(TENANT, ACTOR, SLOT);
+        db.grantEpoch({tenantId:TENANT, actor:ACTOR, epoch:2});
+        const recovered = actor(db, 2);
+        assert.throws(() => recovered.restore(), /INVALID_ACTOR_EVENT/);
+        assert.equal(balance(recovered), 0);
+        assert.equal(recovered.version, 0);
+      } finally { db.close(); }
+    }));
+  test('bank actor: excessive declared replay depth fails closed before allocating events', () =>
+    withStore(path => {
+      const db = open(path);
+      try {
+        db.grantEpoch({tenantId:TENANT, actor:ACTOR, epoch:1});
+        const a = actor(db, 1);
+        append(a, db, 'valid-event', {type:'MoneyDeposited',cents:1000});
+        db.db.prepare('UPDATE heads SET version=? WHERE tenant=? AND actor=? AND state_name=?')
+          .run(10001, TENANT, ACTOR, SLOT);
+        db.grantEpoch({tenantId:TENANT, actor:ACTOR, epoch:2});
+        const recovered = actor(db, 2);
+        assert.throws(() => recovered.restore(), /ACTOR_JOURNAL_REPLAY_LIMIT/);
+        assert.equal(balance(recovered), 0);
+      } finally { db.close(); }
+    }));
+
 }
