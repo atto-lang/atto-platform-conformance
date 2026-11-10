@@ -4,6 +4,28 @@
 
 Related existing contracts: `docs/TIMER_TIMEOUT_OBSERVER_V1.md`, `docs/TASK_BLOCKS_V0.md`, `docs/ATTO_NATIVE_THREADS_SCHEDULER_V1.md`, `docs/LOGICAL_CONTEXT_LOCAL_STORAGE_V1.md`. This contract preserves their semantics; it does not silently turn soft-RT `sleep` into certified hard-RT execution.
 
+## 0. Direct async/await is first-class
+
+Timer suspension is supported conceptually in **both** an existing async continuation and an independently spawned Task; no wrapper Task is required. These remain candidate .atto spellings until real compiler-backed guest execution is received:
+
+```atto
+pub async fnc main(): int {
+    await time.sleep(1ms);        // Future<void>, no carrier blocking
+    await time.after(0ms);        // zero duration still schedules a later turn
+    return 42;
+}
+```
+
+A `suspends fnc` may suspend its *caller* rather than spawning a child Task; ordinary non-suspending helper functions and actor `on_start` must reject `await`. An `async` callable/future continuation and a `Task<T>` are different concepts: `await` observes/resumes a current continuation, while `task { ... }` explicitly creates an independently scheduled child with an owned scope.
+
+For shared futures, `await time.timeout(duration, future)` is a **read-only observer**; timeout winning never grants permission to cancel the independently owned producer. For a **TaskScope-owned child Task**, an explicit deadline policy may request cancellation, but its owning scope completes only after child physical quiescence and cleanup. Synchronous Future observer hooks and clock workers must never execute guest code.
+
+Timer cancellation must atomically arbitrate timer expiry, owner cancellation, timeout, and hot-reload revocation. At most one wake may be committed; timer reservation/observer detachment is exactly once; late wakes must be ignored. Task-local state and trace span survive carrier migration; ThreadLocal stays with the physical thread and actor state remains generation-fenced.
+
+In the strict hard-RT profile, `await` is admissible only when the complete suspension/wake path, bounded remaining actor turn, all reachable continuation effects, release jitter, scheduling interference and cleanup have qualified target-specific upper bounds. Arbitrary awaited network I/O, garbage-collected allocations or unbounded Task spawning must be rejected, not silently treated as hard real time.
+
+Conformance candidate manifest: `fixtures/async-await-task-timers-v1/cases.json` (14 unexecuted candidate cases). Source-free contract assertions: `test/async-await-task-timers-v1.test.mjs`. Real compiler-backed execution is still the release gate.
+
 ## 1. Timer is not Task
 
 `Timer` is a bounded, owner- and generation-fenced clock registration; `Future<T>` is a completion observer; `Task<T>` is independently scheduled, cancellable execution. These are distinct types and lifetimes.
