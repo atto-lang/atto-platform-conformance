@@ -46,7 +46,7 @@ function validate(m, bytes) {
   assert.deepEqual(m.cases.map(c => c.controlNotices), [0,0,0,0,1,1]);
   for (const c of m.cases) {
     assert.equal(c.witnessResponse, 42);
-    if (c.mode < 4) assert.equal(c.postTurnResponse, 7);
+    if (c.mode < 4) assert.equal(c.postTurnResponse, 1007);
     else assert.equal(c.postTurnResponse, null);
   }
   assert.equal(m.cases[4].expectedNoticeKind, 'panic');
@@ -61,7 +61,9 @@ function validate(m, bytes) {
     'supervisorControlsAreAuthenticated',
     'exactlyOneTerminalNoticePerActorIncarnation',
     'actorSourceMustNotPrintSuccessUnconditionally',
-    'guestStdoutAloneInsufficient', 'disabledCrossOrgSourceCopy'
+    'guestStdoutAloneInsufficient', 'disabledCrossOrgSourceCopy',
+    'faultActorStateMutationBeforeFault', 'panicCatchBypassExplicit',
+    'stackRecoverCatchBypassExplicit', 'guestSuccessAfterCleanup'
   ]) assert.equal(m.invariants[k], true, k);
 
   const text = bytes.toString('utf8');
@@ -70,6 +72,17 @@ function validate(m, bytes) {
     .map(x => x[1]), ['Witness','FaultWorker']);
   assert.match(text, /define pub supervisor Root as/);
   assert.match(text, /critical-read/);
+  assert.match(text, /critical-write/);
+  assert.match(text, /changed != 1007/);
+  assert.match(text, /snapshot != 1007/);
+  assert.match(text, /while mode < 6 do/);
+  assert.equal([...text.matchAll(/catch \(FaultError ignored\)/g)].length, 2,
+    'panic AND stack must explicitly challenge catch bypass');
+  assert.match(text, /self\.send\(998\)/);
+  assert.match(text, /self\.send\(999\)/);
+  assert.ok(text.indexOf('await root.get_done();') <
+    text.indexOf('stdio.stdout.println("ACTOR_TWO_PEER_V1_OK|6|42")'),
+    'success line must follow complete witness and supervisor cleanup');
   assert.match(text, /defer recover/);
   assert.match(text, /non_tail_fault\(100000\)/);
   assert.match(text, /root\.control_events\.next\(\)/);
@@ -119,6 +132,11 @@ test('mutated source, fake backend passes, weakened safety and case spoofing are
     x => { x.invariants.noActorLocalOnPanic = false; },
     x => { x.invariants.noNativeFaultRecoveryOnSharedCarrier = false; },
     x => { x.invariants.guestStdoutAloneInsufficient = false; },
+    x => { x.invariants.faultActorStateMutationBeforeFault = false; },
+    x => { x.invariants.panicCatchBypassExplicit = false; },
+    x => { x.invariants.stackRecoverCatchBypassExplicit = false; },
+    x => { x.invariants.guestSuccessAfterCleanup = false; },
+    x => { x.cases[0].postTurnResponse = 7; },
     x => { x.promotion.certified = true; },
     x => { x.promotion.allowsZeroStepRun = true; },
     x => { x.cases[4].controlNotices = 0; },
