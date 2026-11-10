@@ -1,0 +1,153 @@
+{
+  "schema": "attolang.logical-word-operators.crossbackend.v1",
+  "status": "SOURCE_CONTRACT_NOT_BACKEND_EXECUTION",
+  "spelling": {
+    "canonical": [
+      "and",
+      "xor",
+      "or"
+    ],
+    "precedence_tight_to_loose": [
+      "and",
+      "xor",
+      "or"
+    ],
+    "left_associative": true,
+    "operands": "bool-only-no-coercion",
+    "and": "short-circuit-ltr",
+    "or": "short-circuit-ltr",
+    "xor": "eager-on-success-ltr-once",
+    "removed": [
+      "^",
+      "^^"
+    ]
+  },
+  "backends": {
+    "java": {
+      "repo": "ores-truffle-oreslang/oreslang-source.java",
+      "pr": 2648,
+      "state": "DRAFT_UNVERIFIED"
+    },
+    "llvm": {
+      "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+      "pr": 1554,
+      "state": "DRAFT_UNVERIFIED"
+    },
+    "net": {
+      "repo": "ores-truffle-oreslang/oreslang-source.net",
+      "pr": 415,
+      "state": "DRAFT_UNVERIFIED"
+    },
+    "wasm": {
+      "repo": "ores-truffle-oreslang/oreslang-source.wasm",
+      "pr": null,
+      "state": "NO_SCOPED_PR_FOUND_UNVERIFIED"
+    },
+    "forge": {
+      "repo": "ores-truffle-oreslang/oreslang-source.forge",
+      "pr": null,
+      "state": "NO_SCOPED_PR_FOUND_UNVERIFIED"
+    }
+  },
+  "fixtures": [
+    {
+      "id": "scalar-parity",
+      "path": "fixtures/logical-word-operators-v1/scalar-parity.atto",
+      "git_blob": "9e3d2d230faaba5e1ccfeaf1c4449c0c2a120c34",
+      "profile": "baseline",
+      "kind": "GUEST_EXIT",
+      "expected_exit": 42
+    },
+    {
+      "id": "reject-int-and",
+      "path": "fixtures/logical-word-operators-v1/reject-int-and.atto",
+      "git_blob": "65cabaf87bbd1f3cfb9715662c7e4b34022a9050",
+      "profile": "baseline",
+      "kind": "COMPILE_REJECT_NO_OUTPUT"
+    },
+    {
+      "id": "reject-int-or",
+      "path": "fixtures/logical-word-operators-v1/reject-int-or.atto",
+      "git_blob": "96aea7a5ec5a5866a0bf0a2bc58fe82c60edef20",
+      "profile": "baseline",
+      "kind": "COMPILE_REJECT_NO_OUTPUT"
+    },
+    {
+      "id": "reject-int-xor",
+      "path": "fixtures/logical-word-operators-v1/reject-int-xor.atto",
+      "git_blob": "563a33ba652263cc3cea3b6409a459742fa334c7",
+      "profile": "baseline",
+      "kind": "COMPILE_REJECT_NO_OUTPUT"
+    },
+    {
+      "id": "reject-dead-and",
+      "path": "fixtures/logical-word-operators-v1/reject-dead-and.atto",
+      "git_blob": "98d52a20112fd42c776c8aede139161363811add",
+      "profile": "baseline",
+      "kind": "COMPILE_REJECT_NO_OUTPUT"
+    },
+    {
+      "id": "reject-dead-or",
+      "path": "fixtures/logical-word-operators-v1/reject-dead-or.atto",
+      "git_blob": "5a053f32c327dc5f6652e3c11b5c7cf5001e8fb9",
+      "profile": "baseline",
+      "kind": "COMPILE_REJECT_NO_OUTPUT"
+    },
+    {
+      "id": "reject-caret-xor",
+      "path": "fixtures/logical-word-operators-v1/reject-caret-xor.atto",
+      "git_blob": "fce35efd5ce310c5c964c1823879253a27b63020",
+      "profile": "baseline",
+      "kind": "COMPILE_REJECT_NO_OUTPUT"
+    },
+    {
+      "id": "reject-double-caret-xor",
+      "path": "fixtures/logical-word-operators-v1/reject-double-caret-xor.atto",
+      "git_blob": "b969fd079e6eb5f9a56b3bbbad5a5a21e9ddb3a0",
+      "profile": "baseline",
+      "kind": "COMPILE_REJECT_NO_OUTPUT"
+    },
+    {
+      "id": "short-circuit-and",
+      "path": "fixtures/logical-word-operators-v1/short-circuit-and.atto",
+      "git_blob": "198c5d3812286c1390ee714db390abd730ec6fce",
+      "profile": "borrow_mut_class_effects",
+      "kind": "GUEST_EXIT",
+      "expected_exit": 1
+    },
+    {
+      "id": "short-circuit-or",
+      "path": "fixtures/logical-word-operators-v1/short-circuit-or.atto",
+      "git_blob": "b7c02d57a0e75e1385a31f427dbfc619de19428a",
+      "profile": "borrow_mut_class_effects",
+      "kind": "GUEST_EXIT",
+      "expected_exit": 1
+    },
+    {
+      "id": "xor-eager",
+      "path": "fixtures/logical-word-operators-v1/xor-eager.atto",
+      "git_blob": "4c34a92a224a7d7b59b5ff1df3d663dd1e6dc196",
+      "profile": "borrow_mut_class_effects",
+      "kind": "GUEST_EXIT",
+      "expected_exit": 42
+    },
+    {
+      "id": "xor-left-to-right",
+      "path": "fixtures/logical-word-operators-v1/xor-left-to-right.atto",
+      "git_blob": "f5e907fe908dcc758b97a9fe9646ea66eaa337f4",
+      "profile": "borrow_mut_class_effects",
+      "kind": "GUEST_EXIT",
+      "expected_exit": 42
+    }
+  ],
+  "required_execution": [
+    "EXACT_PR_HEAD_AND_TREE",
+    "EXACT_GIT_BLOB_INPUTS",
+    "NONZERO_EXECUTED_RUNNER_STEPS",
+    "REAL_COMPILER_AND_GUEST_BINARY",
+    "NEGATIVE_CASES_NO_IR_OR_BINARY",
+    "INDEPENDENT_REVIEW",
+    "PRIVATE_EXPORT_APPROVAL_IF_OTHER_REPO"
+  ],
+  "receipts": []
+}

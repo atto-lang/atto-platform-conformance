@@ -1,0 +1,3 @@
+fnc bad(): bool {
+  return true or 1;
+}
