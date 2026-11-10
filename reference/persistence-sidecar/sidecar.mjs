@@ -169,7 +169,7 @@ export class BatchPersistenceSidecar {
     if(!uint(head)||!uint(old.first_version)||old.first_version<1||
        !uint(old.last_version)||old.last_version>head||
        !uint(old.event_count)||old.event_count<1||
-       old.event_count>this.maxBatchEntries||
+       old.event_count>10000||
        old.last_version-old.first_version+1!==old.event_count||
        !(old.result_bytes instanceof Uint8Array)||
        old.result_bytes.byteLength>this.maxPayloadBytes)fail('CORRUPT_COMMAND_RECORD');
