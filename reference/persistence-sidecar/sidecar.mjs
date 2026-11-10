@@ -450,6 +450,7 @@ export class BatchPersistenceSidecar {
       'SELECT e.version,e.schema_version,e.op_id,length(e.payload) AS bytes,' +
       'substr(e.payload,1,1048577) AS payload,' +
       'o.version AS legacy_version,o.kind AS legacy_kind,' +
+      'o.payload_hash AS legacy_payload_hash,' +
       'c.first_version AS command_first,c.last_version AS command_last,' +
       'c.event_count AS command_count,c.command_hash AS command_hash ' +
       'FROM events e LEFT JOIN operations o ON ' +
@@ -484,6 +485,13 @@ export class BatchPersistenceSidecar {
           event.bytes>16777216-aggregateBytes ||
           !(event.payload instanceof Uint8Array) ||
           event.payload.byteLength!==event.bytes) fail('INVALID_ACTOR_EVENT');
+      if(legacy) {
+        if(typeof event.legacy_payload_hash!=='string' ||
+           !/^[0-9a-f]{64}$/.test(event.legacy_payload_hash))
+          fail('UNVERIFIED_LEGACY_EVENT');
+        if(hash_bytes(Buffer.from(event.payload))!==event.legacy_payload_hash)
+          fail('CORRUPT_LEGACY_EVENT');
+      }
       if (events.length>=10000) fail('ACTOR_JOURNAL_REPLAY_LIMIT');
       aggregateBytes+=event.bytes;
       events.push({version:event.version,schemaVersion:event.schema_version,
