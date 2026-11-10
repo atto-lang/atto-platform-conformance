@@ -170,4 +170,21 @@ if (process.argv[2] === '--after-commit' || process.argv[2] === '--before-commit
       } finally { db.close(); }
     }));
 
+  test('bank actor: tampered operation ledger prevents journal replay and state publication', () =>
+    withStore(path => {
+      const db = open(path);
+      try {
+        db.grantEpoch({tenantId:TENANT, actor:ACTOR, epoch:1});
+        const original = actor(db, 1);
+        append(original, db, 'deposit-with-proof', {type:'MoneyDeposited',cents:2000});
+        db.db.prepare('DELETE FROM operations WHERE tenant=? AND actor=? AND state_name=? AND op_id=?')
+          .run(TENANT, ACTOR, SLOT, 'deposit-with-proof');
+        db.grantEpoch({tenantId:TENANT, actor:ACTOR, epoch:2});
+        const recovered = actor(db, 2);
+        assert.throws(() => recovered.restore(), /INCOMPLETE_OPERATION_LEDGER/);
+        assert.equal(balance(recovered), 0);
+        assert.equal(recovered.version, 0);
+      } finally { db.close(); }
+    }));
+
 }
