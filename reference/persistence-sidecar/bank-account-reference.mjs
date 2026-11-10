@@ -115,6 +115,13 @@ export class BankAccountCommandReference {
     this.#pending = null;
     return {status:'committed',durable:true,duplicate:false,version:accepted.version};
   }
+  // Caller cancellation withdraws only its wait; it does not cancel a possibly
+  // committed provider transaction. The pending record stays until resolution.
+  cancel_wait() {
+    this.#check_ready();
+    if (!this.#pending) reject('NO_PENDING_WRITE');
+    return {status:'OUTCOME_UNKNOWN', durable:false, requires_reconciliation:true};
+  }
   reconcile_pending() {
     this.#check_ready();
     if (!this.#pending) reject('NO_PENDING_WRITE');
