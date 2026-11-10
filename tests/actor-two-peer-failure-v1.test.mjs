@@ -76,8 +76,8 @@ function validate(m, bytes) {
   assert.match(text, /changed != 1007/);
   assert.match(text, /snapshot != 1007/);
   assert.match(text, /while mode < 6 do/);
-  assert.equal([...text.matchAll(/catch \(FaultError ignored\)/g)].length, 2,
-    'panic AND stack must explicitly challenge catch bypass');
+  assert.equal([...text.matchAll(/catch \(FaultError ignored\)/g)].length, 3,
+    'raise, panic AND stack must explicitly challenge catch bypass');
   assert.match(text, /self\.send\(998\)/);
   assert.match(text, /self\.send\(999\)/);
   assert.ok(text.indexOf('await root.get_done();') <
