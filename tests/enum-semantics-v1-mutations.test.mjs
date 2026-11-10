@@ -152,7 +152,7 @@ test("ADT host-only driver rejects 51 intentionally skipped synthetic tests",()=
  const skipped='import test from "node:test";\n'+
   Array.from({length:17},(_,i)=>
    'test.skip("synthetic-skipped-'+i+'",()=>{});').join("\n")+"\n";
- function withSyntheticAdtHostDriver(skipped,run=>{
+ withSyntheticAdtHostDriver(skipped,run=>{
   assert.equal(run.status,1,run.stdout+"\n"+run.stderr);
   assert.match(run.stderr,/ADT_HOST_ONLY_NOT_VERIFIED: incomplete, skipped or failed TAP suite/);
   assert.match(run.stdout,/# skipped 51/);
@@ -161,7 +161,7 @@ test("ADT host-only driver rejects 51 intentionally skipped synthetic tests",()=
 });
 
 test("ADT host-only driver rejects source-pinned test files with no registered cases",()=>{
- function withSyntheticAdtHostDriver("// synthetic test file intentionally registers zero tests\n",run=>{
+ withSyntheticAdtHostDriver("// synthetic test file intentionally registers zero tests\n",run=>{
   assert.equal(run.status,1,run.stdout+"\n"+run.stderr);
   assert.match(run.stderr,/ADT_HOST_ONLY_NOT_VERIFIED: incomplete, skipped or failed TAP suite/);
   assert.doesNotMatch(run.stdout,/ADT_HOST_ONLY_PASS=1/);
