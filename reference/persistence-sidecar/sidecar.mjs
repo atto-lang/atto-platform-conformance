@@ -49,7 +49,7 @@ export class BatchPersistenceSidecar {
         PRIMARY KEY(tenant,actor,state_name));
       CREATE TABLE IF NOT EXISTS snapshots (tenant TEXT NOT NULL, actor TEXT NOT NULL,
         state_name TEXT NOT NULL, version INTEGER NOT NULL, schema_version INTEGER NOT NULL,
-        payload BLOB NOT NULL, payload_hash TEXT,
+        payload BLOB NOT NULL, payload_hash TEXT, operation_digest TEXT,
         PRIMARY KEY(tenant,actor,state_name));
       CREATE TABLE IF NOT EXISTS events (tenant TEXT NOT NULL, actor TEXT NOT NULL,
         state_name TEXT NOT NULL, version INTEGER NOT NULL, schema_version INTEGER NOT NULL,
@@ -71,6 +71,8 @@ export class BatchPersistenceSidecar {
     const snapshotColumns=this.db.prepare('PRAGMA table_info(snapshots)').all().map(r=>r.name);
     if(!snapshotColumns.includes('payload_hash'))
       this.db.exec('ALTER TABLE snapshots ADD COLUMN payload_hash TEXT');
+    if(!snapshotColumns.includes('operation_digest'))
+      this.db.exec('ALTER TABLE snapshots ADD COLUMN operation_digest TEXT');
     // Explicit fail-closed upgrade: previously saved command rows have no
     // trustworthy digest and cannot be acknowledged as durable duplicates.
     const commandColumns=this.db.prepare('PRAGMA table_info(command_commits)').all().map(r=>r.name);
@@ -82,7 +84,7 @@ export class BatchPersistenceSidecar {
     this.getOp = this.db.prepare('SELECT digest, version, kind FROM operations WHERE tenant=? AND actor=? AND state_name=? AND op_id=?');
     this.getHead = this.db.prepare('SELECT version FROM heads WHERE tenant=? AND actor=? AND state_name=?');
     this.putHead = this.db.prepare('INSERT INTO heads VALUES(?,?,?,?) ON CONFLICT(tenant,actor,state_name) DO UPDATE SET version=excluded.version');
-    this.putSnapshot = this.db.prepare('INSERT INTO snapshots(tenant,actor,state_name,version,schema_version,payload,payload_hash) VALUES(?,?,?,?,?,?,?) ON CONFLICT(tenant,actor,state_name) DO UPDATE SET version=excluded.version, schema_version=excluded.schema_version, payload=excluded.payload, payload_hash=excluded.payload_hash');
+    this.putSnapshot = this.db.prepare('INSERT INTO snapshots(tenant,actor,state_name,version,schema_version,payload,payload_hash,operation_digest) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(tenant,actor,state_name) DO UPDATE SET version=excluded.version, schema_version=excluded.schema_version, payload=excluded.payload, payload_hash=excluded.payload_hash, operation_digest=excluded.operation_digest');
     this.putEvent = this.db.prepare('INSERT INTO events VALUES(?,?,?,?,?,?,?)');
     this.putOp = this.db.prepare('INSERT INTO operations VALUES(?,?,?,?,?,?,?)');
     this.getCommand = this.db.prepare('SELECT command_hash,first_version,last_version,event_count,events_digest,result_digest,result_bytes FROM command_commits WHERE tenant=? AND actor=? AND state_name=? AND op_id=?');
@@ -196,11 +198,15 @@ export class BatchPersistenceSidecar {
       fail('UNVERIFIED_SNAPSHOT');
     if(hash_bytes(Buffer.from(saved.payload))!==saved.payload_hash)
       fail('CORRUPT_SNAPSHOT_PROOF');
-    const op=this.db.prepare(
-      'SELECT COUNT(*) AS n FROM operations WHERE tenant=? AND actor=? '+
+    if(typeof saved.operation_digest!=='string' ||
+       !/^[0-9a-f]{64}$/.test(saved.operation_digest))
+      fail('UNVERIFIED_SNAPSHOT');
+    const rows=this.db.prepare(
+      'SELECT digest FROM operations WHERE tenant=? AND actor=? '+
       'AND state_name=? AND kind=? AND version=?'
-    ).get(tenantId,actor,stateName,'snapshot',saved.version);
-    if(op.n!==1)fail('UNVERIFIED_SNAPSHOT');
+    ).all(tenantId,actor,stateName,'snapshot',saved.version);
+    if(rows.length!==1 || rows[0].digest!==saved.operation_digest)
+      fail('UNVERIFIED_SNAPSHOT');
     return saved.version;
   }
 
@@ -225,7 +231,7 @@ export class BatchPersistenceSidecar {
       fail('CORRUPT_COMMAND_RESULT');
     const snap=this.db.prepare(
       'SELECT version,schema_version,length(payload) AS bytes,'+
-      'substr(payload,1,1048577) AS payload,payload_hash FROM snapshots '+
+      'substr(payload,1,1048577) AS payload,payload_hash,operation_digest FROM snapshots '+
       'WHERE tenant=? AND actor=? AND state_name=?'
     ).get(tenantId,actor,stateName);
     const snapshotVersion=this.#verifySnapshot(tenantId,actor,stateName,snap);
@@ -347,7 +353,7 @@ export class BatchPersistenceSidecar {
         }
         const next=version+1;
         this.putHead.run(t,a,s,next);
-        if (e.kind==='snapshot') this.putSnapshot.run(t,a,s,next,e.schemaVersion,e.payload,hash_bytes(e.payload));
+        if (e.kind==='snapshot') this.putSnapshot.run(t,a,s,next,e.schemaVersion,e.payload,hash_bytes(e.payload),hash);
         else this.putEvent.run(t,a,s,next,e.schemaVersion,o,e.payload);
         this.putOp.run(t,a,s,o,hash,next,e.kind);
         results.push({opId:o,status:'committed',durable:true,duplicate:false,version:next});
