@@ -6,11 +6,11 @@ import {join} from 'node:path';
 import {BatchPersistenceSidecar} from './sidecar.mjs';
 
 // SQLite host contract tests; do not interpret as compiler/guest or power-loss proof.
-function fixture(run) {
+function fixture(run, config={}) {
   const dir=mkdtempSync(join(tmpdir(),'atto-command-'));
   const path=join(dir,'state.sqlite');
   const instances=[];
-  const open=()=>{const db=new BatchPersistenceSidecar({path,tenantId:'tenant-a'});instances.push(db);return db;};
+  const open=()=>{const db=new BatchPersistenceSidecar({path,tenantId:'tenant-a',...config});instances.push(db);return db;};
   try {run(open);} finally {
     for(const db of instances)try{db.close();}catch{}
     rmSync(dir,{recursive:true,force:true});
@@ -171,4 +171,30 @@ test('multiple commands on one actor preserve version order in one batch',()=>{
     assert.deepEqual(results.map(x=>x.version),[2,3]);
     assert.equal(state(db,cmd()).events.length,3);
   });
+});
+
+test('batch byte budget includes canonical command and durable result payloads',()=>{
+  fixture(open=>{
+    const db=open();grant(db);
+    const over=cmd({commandBytes:Buffer.alloc(80),events:[Buffer.alloc(30)],
+      resultBytes:Buffer.alloc(30)});
+    assert.throws(()=>db.enqueueCommand(over),/PAYLOAD_TOO_LARGE/);
+    assert.equal(db.queue.length,0);
+  },{maxBatchBytes:100});
+});
+
+test('flush splits commands by TOTAL batch bytes, not event bytes alone',()=>{
+  fixture(open=>{
+    const db=open();grant(db,'bank-1');grant(db,'bank-2');
+    const common={commandBytes:Buffer.alloc(20),events:[Buffer.alloc(20)],resultBytes:Buffer.alloc(20)};
+    const first=cmd(common);
+    const second=cmd({...common,actor:'bank-2',opId:'another-command'});
+    assert.equal(db.enqueueCommand(first).status,'admitted');
+    assert.equal(db.enqueueCommand(second).status,'admitted');
+    assert.equal(db.flush().length,1);
+    assert.equal(db.verifyCommand(scope(first)).version,1);
+    assert.equal(db.verifyCommand(scope(second)),null);
+    assert.equal(db.flush().length,1);
+    assert.equal(db.verifyCommand(scope(second)).version,1);
+  },{maxBatchBytes:100});
 });

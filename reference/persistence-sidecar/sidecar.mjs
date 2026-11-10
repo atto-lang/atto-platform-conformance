@@ -131,12 +131,15 @@ export class BatchPersistenceSidecar {
         events.length>this.maxBatchEntries || !events.every(Buffer.isBuffer))
       fail('INVALID_COMMAND_WRITE');
     const eventBytes=events.reduce((n,b)=>n+b.length,0);
+    // Bound the ENTIRE batch write, including command and durable result bytes;
+    // event-only accounting would bypass the configured batch byte budget.
+    const batchBytes=eventBytes+commandBytes.length+resultBytes.length;
     if (commandBytes.length>this.maxPayloadBytes || resultBytes.length>this.maxPayloadBytes ||
-        events.some(b=>b.length>this.maxPayloadBytes) || eventBytes>this.maxBatchBytes)
+        events.some(b=>b.length>this.maxPayloadBytes) || batchBytes>this.maxBatchBytes)
       fail('PAYLOAD_TOO_LARGE');
     const e={tenantId,actor,stateName,opId,epoch,expectedVersion,schemaVersion,
       kind:'command',commandBytes:Buffer.from(commandBytes),
-      events:events.map(b=>Buffer.from(b)),resultBytes:Buffer.from(resultBytes),eventBytes};
+      events:events.map(b=>Buffer.from(b)),resultBytes:Buffer.from(resultBytes),eventBytes,batchBytes};
     e.commandHash=hash_bytes(e.commandBytes);
     // Fence before dedup: stale actors cannot retrieve a prior success receipt.
     if(this.getFence.get(tenantId,actor)?.epoch!==epoch) fail('STALE_EPOCH');
@@ -183,7 +186,7 @@ export class BatchPersistenceSidecar {
     while(count<this.queue.length) {
       const e=this.queue[count].e;
       const needed=e.kind==='command'?e.events.length:1;
-      const size=e.kind==='command'?e.eventBytes:e.payload.length;
+      const size=e.kind==='command'?e.batchBytes:e.payload.length;
       if(rows+needed>this.maxBatchEntries || bytes+size>this.maxBatchBytes)break;
       rows+=needed;bytes+=size;count++;
     }
