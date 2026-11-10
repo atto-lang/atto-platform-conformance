@@ -1,0 +1,52 @@
+{
+  "schema": "atto.gpu-actors-host-reference-evidence/0",
+  "recordedAt": "2026-11-10",
+  "scope": "host-only Node reference model",
+  "featureContract": "atto.gpu-actors/0",
+  "sourceRepo": "ores-truffle-oreslang/oreslang-platform-conformance",
+  "sourceHeadAtMirror": "777a007fc86688c202dca756efae4df4ac22b22f",
+  "sourceFiles": [
+    {
+      "path": "src/gpu-actor-population-reference-v0.mjs",
+      "gitBlobSha": "1a97ee00150919736921b9f091f0326c730d674e"
+    },
+    {
+      "path": "tests/gpu-actor-population-reference-v0.test.mjs",
+      "gitBlobSha": "f823a060e55f1949a2d08098baa9d5ab0c6a2c44"
+    }
+  ],
+  "runnerRepo": "scintilla-run/scintilla-run-e2e",
+  "carrierBranch": "carrier/gpu-actor-reference-20261110",
+  "carrierHead": "59372d0eb29bc5c54e447e8674b38ee9fe637a98",
+  "workflowRunId": 42899699951,
+  "workflowUrl": "https://github.com/scintilla-run/scintilla-run-e2e/actions/runs/42899699951",
+  "jobId": 130122073433,
+  "stepEvidence": {
+    "hashComparison": "success",
+    "nodeTest": "success",
+    "testCount": 8,
+    "passed": 8,
+    "failed": 0,
+    "skipped": 0
+  },
+  "boundedModelInterleavings": 256,
+  "backendTargetEvidence": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED"
+  },
+  "compilerGuestExecuted": false,
+  "physicalGpuExecuted": false,
+  "productionSecurityTokenAuthProven": false,
+  "gpuDriverVerified": false,
+  "fiveBackendParityCertified": false,
+  "limits": [
+    "Does not execute .atto language",
+    "Does not run JUnit on Java #2760",
+    "Does not exercise a GPU provider",
+    "Host token identity is a model oracle, not production-authenticated capabilities",
+    "The runner is a private carrier, not source-org CI"
+  ]
+}
