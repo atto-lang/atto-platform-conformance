@@ -46,11 +46,15 @@ Also note that rejected business commands are not persisted and so do **not** ha
 7. **Snapshot + compaction:** confirmed snapshot barrier; durable command dedup history independent of pruned events; schema fingerprint/version, atomic migration and retention contract.
 8. **Isolation:** host-authenticated tenant, stable logical ActorId, separate epoch, state slot, and op ID; never serialize actor heap pointers, handles or mutable borrows. Maintain bounded entry/byte queues and fairness across thousands of actors.
 
+## Canonical host event vectors
+
+`reference/persistence-sidecar/bank-account-vectors.v1.json` records the command/event hashes and expected integer balances for deposit/withdraw replay, duplicate retry and conflict handling. This is a **host oracle and candidate compiler fixture**, not an accepted `.ores` program or evidence of guest execution. The accompanying Node test verifies the SHA-256 command binding.
+
 ## Exact-head evidence gates
 
 | Gate | Requirement | Status at authoring |
 | --- | --- | --- |
-| ES01 | Real SQLite host `deposit → commit → restart → replay` | Added test; independent CI execution pending |
+| ES01 | Real SQLite host `deposit → commit → restart → replay` | Added host test, including child SIGKILL after commit; independent CI execution pending |
 | ES02 | Commit before ACK lost; same op ID after epoch2 causes no duplicate | Added host test; not guest proof |
 | ES03 | Admission-only loss; pending reconciliation and forged ACK denial | Added host tests; not guest proof |
 | ES04 | Overdraw, negative/malformed amount and safe-integer overflow | Added host tests; not guest proof |
@@ -63,7 +67,7 @@ Also note that rejected business commands are not persisted and so do **not** ha
 | ES11 | Independent runner logs, exact commit/tree/blobs and security review | NOT_EXECUTED |
 | ES12 | No carrier blocking, outbox and snapshot schema migration fault injection | NOT_EXECUTED |
 
-`node --disable-warning=ExperimentalWarning --test reference/persistence-sidecar/bank-account-reference*.test.mjs` tests the host reference. `node --disable-warning=ExperimentalWarning --test reference/persistence-sidecar/*.test.mjs` runs the existing broader reference suite. Neither command establishes `.ores` compiler execution. Status must be based on actual logs and commit SHA, not merely checked-in test files, zero-step workflow runs or sidecar host tests.
+`node --disable-warning=ExperimentalWarning --test reference/persistence-sidecar/bank-account-reference*.test.mjs reference/persistence-sidecar/bank-account-vectors.test.mjs` tests the host reference. `node --disable-warning=ExperimentalWarning --test reference/persistence-sidecar/*.test.mjs` runs the existing broader reference suite. Neither command establishes `.ores` compiler execution. Status must be based on actual logs and commit SHA, not merely checked-in test files, zero-step workflow runs or sidecar host tests.
 
 ## Integration dependencies
 
