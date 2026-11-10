@@ -49,7 +49,7 @@ test('truncation, trailing bytes, bad count and schema fail closed',()=>{
   const bytes=Buffer.from(spec.wire.example.event_batch_hex,'hex');
   for(const length of [0,1,4,11,bytes.length-1])
     assert.throws(()=>decode(bytes.subarray(0,length)),/INVALID_BATCH/);
-  assert.throws(()=>decode(Buffer.concat([bytes,Buffer.of(0)])),/INVALID_BATCH/);
+  assert.throws(()=>decode(Buffer.concat([bytes,Buffer.from([0])])),/INVALID_BATCH/);
   for(const change of [[0,0],[0,255],[4,0]]){
     const changed=Buffer.from(bytes);
     changed.writeUInt32BE(change[1],change[0]);
