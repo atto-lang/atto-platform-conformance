@@ -120,5 +120,34 @@
     "self-reported-guest-receipt",
     "stale-head-action",
     "unverified-private-carrier"
+  ],
+  "sourceGuestCandidates": [
+    {
+      "id": "three-actor-explicit-coordinator",
+      "file": "fixtures/actor-graph/v1/three-stage-explicit-coordinator.ores",
+      "sourceGitBlobSha1": "79d833399d7044ca647df581d678d4eeb5125fea",
+      "expectedStdout": "19",
+      "actorCount": 3,
+      "forwardHops": 2,
+      "backwardHops": 2,
+      "transport": "explicit-ActorRef-mailbox-and-outputs-main-coordinator",
+      "sourcePipeLowering": false,
+      "compilerGuestEvidence": "NOT_EXECUTED",
+      "authoringBackend": "java-graalvm"
+    },
+    {
+      "id": "three-actor-llvm-typed-pipe-unported",
+      "file": "oreslang-source.llvm/tests/fixtures/source-actor-pipeline-bidirectional.ores",
+      "sourceGitBlobSha1": "46579a917516899612fcd8c65c70b24b995c2c5a",
+      "expectedResult": 19,
+      "sourcePipeLowering": false,
+      "compilerGuestEvidence": "NOT_EXECUTED",
+      "knownBlockers": [
+        "tagged-enum-and-pattern-lowering",
+        "source-forward-backward-lowering",
+        "atomic-stage-connection",
+        "scheduler-owned-control-vs-data"
+      ]
+    }
   ]
 }
