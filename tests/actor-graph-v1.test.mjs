@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
+import {createHash} from "node:crypto";
 import {runLongRunningGraph, ActorGroupOracle} from "../src/actor-graph-oracle-v1.mjs";
 
 const manifest=JSON.parse(readFileSync(
@@ -118,4 +119,26 @@ test("unknown groups, forged memberships and expired subscriptions fail closed",
   assert.throws(()=>g.addTopic("group","updates","LATEST"),/invalid topic/);
   assert.throws(()=>g.openGroup("group"),/invalid group/);
   assert.throws(()=>new ActorGroupOracle(0),RangeError);
+});
+
+test("cross-repo actor guest fixture pins exact source bytes without promoting execution",()=>{
+  const candidate=manifest.sourceGuestCandidates[0];
+  assert.equal(candidate.compilerGuestEvidence,"NOT_EXECUTED");
+  assert.equal(candidate.sourcePipeLowering,false);
+  assert.equal(candidate.actorCount,3);
+  assert.equal(candidate.forwardHops,2);
+  assert.equal(candidate.backwardHops,2);
+  assert.equal(candidate.expectedStdout,"19");
+  const bytes=readFileSync(new URL("../fixtures/actor-graph/v1/three-stage-explicit-coordinator.ores",import.meta.url));
+  const sha=createHash("sha1").update("blob "+bytes.length+"\\0").update(bytes).digest("hex");
+  assert.equal(sha,candidate.sourceGitBlobSha1);
+  const guest=bytes.toString("utf8");
+  assert.match(guest,/define actor SourceStage implements StreamOperator<int, int>/);
+  assert.match(guest,/define actor TransformStage implements StreamOperator<int, int>/);
+  assert.match(guest,/define actor SinkStage implements StreamOperator<int, int>/);
+  assert.equal((guest.match(/outputs\\.next\\(\\)/g)||[]).length,5);
+  assert.match(guest,/await source\\.get_done\\(\\)/);
+  assert.match(guest,/await transform\\.get_done\\(\\)/);
+  assert.match(guest,/await sink\\.get_done\\(\\)/);
+  assert.doesNotMatch(guest,/spawn [A-Za-z]+\\(\\) pipe spawn/);
 });
