@@ -1,5 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { auditActorCI } from '../scripts/audit-actor-ci-evidence.mjs';
 
 const llvmHead = '0072200f2feba54e2732e56d4d692740c839248f';
@@ -24,14 +28,14 @@ test('StateGraph no-jobs notification remains NO_JOBS_CREATED', () => {
 
 test('LLVM exact-head two missing-step jobs are runner-admission, never compile failure', () => {
   const v = auditActorCI(mk({jobs:[job(128874510315,null),job(128874510419,null)]}));
-  assert.equal(v.classification, 'ZERO_STEP_RUNNER_ADMISSION');
+  assert.equal(v.classification, 'ZERO_STEP_UNEXECUTED');
   assert.equal(v.jobs.length, 2);
   assert.equal(v.guest, 'NOT_EXECUTED');
 });
 
 test('empty steps are equivalent to null steps', () => {
   const v = auditActorCI(mk({jobs:[job(1,[]),job(2,null)]}));
-  assert.equal(v.classification, 'ZERO_STEP_RUNNER_ADMISSION');
+  assert.equal(v.classification, 'ZERO_STEP_UNEXECUTED');
 });
 
 test('mixed job step states never get promoted', () => {
@@ -98,11 +102,25 @@ test('conformance #643 exact-head zero-step run stays unverified', () => {
     jobs:[{id:129914863299,name:'advisory-readiness-tests',run_id:42840715193,steps:null,conclusion:'failure'}],
     claimed_guest_pass:true,
   });
-  assert.equal(v.classification,'ZERO_STEP_RUNNER_ADMISSION');
+  assert.equal(v.classification,'ZERO_STEP_UNEXECUTED');
   assert.equal(v.certified,false);
 });
 
 test('bogus SHA and repository are rejected before evaluating evidence', () => {
   assert.throws(() => auditActorCI(mk({expected_head_sha:'main'})), /40-hex/);
   assert.throws(() => auditActorCI(mk({repository:'something wrong'})), /canonical/);
+});
+
+test('CLI exits nonzero even when all purported guest/sanitizer steps succeeded', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'atto-ci-evidence-'));
+  try {
+    const file = join(dir, 'snapshot.json');
+    writeFileSync(file, JSON.stringify(mk({jobs:[job(1,[step(1,'guest exit 42')],{conclusion:'success'})]})));
+    const child = spawnSync(process.execPath, [new URL('../scripts/audit-actor-ci-evidence.mjs', import.meta.url).pathname, file], {encoding:'utf8'});
+    assert.equal(child.status, 2);
+    assert.match(child.stdout, /STEPS_EXECUTED_UNVERIFIED/);
+    assert.match(child.stdout, /"certified": false/);
+  } finally {
+    rmSync(dir, { recursive:true, force:true });
+  }
 });
