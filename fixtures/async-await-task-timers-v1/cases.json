@@ -1,0 +1,210 @@
+{
+  "contract": "async-await-task-timers-v1",
+  "status": "candidate-unverified",
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "semantics": {
+    "time.after": "Future<void> owner-bound timer observer, no implicit Task spawn",
+    "time.sleep": "Future<void> scheduler-suspending timer, no OS thread sleep",
+    "time.timeout": "Future<T> detached observer of shared producer; does not cancel producer",
+    "task": "independently scheduled Task<T>, owns child timers/cleanup scope",
+    "hard_rt": "opt-in qualified execution profile only; unsupported targets reject"
+  },
+  "requires": [
+    "exact_pr_head_sha",
+    "root_tree_sha",
+    "guest_compiler_sha",
+    "guest_artifact_sha",
+    "nonzero_runner_steps",
+    "compiled_guest_execution",
+    "physical_retirement_receipt_where_applicable"
+  ],
+  "cases": [
+    {
+      "id": "async_main_await_sleep",
+      "kind": "source_candidate",
+      "source": "pub async fnc main(): int { await time.sleep(1ms); return 42; }",
+      "expected": {
+        "result": 42,
+        "explicit_task_required": false,
+        "additional_tasks_spawned": 0,
+        "blocks_carrier": false
+      },
+      "notes": "First positive end-to-end guest receipt must compile and actually execute; not parser-only"
+    },
+    {
+      "id": "async_main_await_after_zero",
+      "kind": "source_candidate",
+      "source": "pub async fnc main(): int { await time.after(0ms); return 7; }",
+      "expected": {
+        "result": 7,
+        "minimum_resume_turns": 1,
+        "additional_tasks_spawned": 0
+      }
+    },
+    {
+      "id": "sync_main_implicit_task_await",
+      "kind": "source_candidate",
+      "source": "pub routine main(): void { await time.after(0ms); stdio.println(42); return; }",
+      "expected": {
+        "prints": "42",
+        "explicit_task_required": false,
+        "minimum_resume_turns": 1
+      },
+      "notes": "Selected zero-arity source main has scheduler-owned implicit Task"
+    },
+    {
+      "id": "suspends_helper_with_async_caller",
+      "kind": "source_candidate",
+      "source": "suspends fnc delay(): void { await time.sleep(1ms); return; } pub async fnc main(): int { delay(); return 3; }",
+      "expected": {
+        "result": 3,
+        "additional_tasks_spawned": 0
+      },
+      "notes": "Candidate spelling and effect; must validate against exact parser/compiler"
+    },
+    {
+      "id": "plain_sync_helper_await_reject",
+      "kind": "reject_candidate",
+      "source": "pub fnc helper(): int { await time.sleep(1ms); return 42; }",
+      "expected": {
+        "error": "SuspensionEffectError"
+      }
+    },
+    {
+      "id": "actor_on_start_await_reject",
+      "kind": "reject_candidate",
+      "source": "define actor Worker as on_start(): void { await time.sleep(1ms); return; } receive(ActorMail<String> mail): void { self.end(); return; } end",
+      "expected": {
+        "error": "SuspensionEffectError"
+      },
+      "notes": "Actor timer registration may also be denied on backends without owned CONTROL path"
+    },
+    {
+      "id": "async_timeout_observes_shared_producer",
+      "kind": "runtime_race",
+      "events": [
+        "producer_pending",
+        "time.timeout(0ms, shared_future)",
+        "timer_expire",
+        "shared_producer_success(9)"
+      ],
+      "expected": {
+        "observer": "TimeoutError",
+        "producer": "success(9)",
+        "producer_cancel_requests": 0,
+        "observer_waiters_after_timeout": 0
+      }
+    },
+    {
+      "id": "async_source_settled_before_zero_timeout",
+      "kind": "runtime_race",
+      "events": [
+        "producer_success(42)",
+        "time.timeout(0ms, producer)",
+        "await_observer"
+      ],
+      "expected": {
+        "observer": "success(42)",
+        "timer_slot_releases": 1,
+        "additional_tasks_spawned": 0
+      }
+    },
+    {
+      "id": "async_cancel_pending_timer",
+      "kind": "runtime_race",
+      "events": [
+        "async_frame_await_after(1h)",
+        "owner_cancel",
+        "concurrent(timer_expire,unregister)",
+        "physical_frame_cleanup"
+      ],
+      "expected": {
+        "single_winner": true,
+        "timer_slot_releases": 1,
+        "late_resumes": 0,
+        "cleanup_before_retirement": true
+      }
+    },
+    {
+      "id": "async_timer_wake_migration_preserves_task_context",
+      "kind": "runtime_race",
+      "events": [
+        "set_task_local(trace=abc)",
+        "await_timer_on_carrier_1",
+        "timer_expire",
+        "resume_on_carrier_2"
+      ],
+      "expected": {
+        "task_local_trace": "abc",
+        "thread_local_migrated": false,
+        "actor_local_cross_owner_access": false
+      }
+    },
+    {
+      "id": "async_actor_timer_wake_preserves_turn",
+      "kind": "runtime_race",
+      "events": [
+        "actor_A_handler_await_timer",
+        "actor_A_next_mail_queued",
+        "actor_B_runs",
+        "actor_A_timer_wake",
+        "actor_A_handler_resumes",
+        "actor_A_next_mail_runs"
+      ],
+      "expected": {
+        "actor_A_max_guest_turns": 1,
+        "actor_A_message_overtake": false,
+        "other_actor_progress": true,
+        "clock_thread_guest_calls": 0
+      },
+      "notes": "Unsupported actor timer API must be typed rejected until generation/CONTROL admission is proven"
+    },
+    {
+      "id": "async_cancel_defer_release_before_scope_done",
+      "kind": "runtime_race",
+      "events": [
+        "task_enter_cleanup_scope",
+        "task_acquire_resource",
+        "await_time.sleep(1h)",
+        "scope_cancel",
+        "cleanup_resource_once",
+        "physical_retirement",
+        "scope_done"
+      ],
+      "expected": {
+        "resource_release_count": 1,
+        "scope_done_after_physical_retirement": true,
+        "logical_cancel_is_not_retirement": true
+      }
+    },
+    {
+      "id": "async_parent_deadline_wins",
+      "kind": "runtime_race",
+      "events": [
+        "scope_deadline(100)",
+        "task_deadline(150)",
+        "async_timer_register"
+      ],
+      "expected": {
+        "effective_deadline": 100,
+        "clock_domain": "monotonic"
+      }
+    },
+    {
+      "id": "async_rt_unqualified_reject",
+      "kind": "qualification_negative",
+      "mode": "hard",
+      "target": "generic_java_graalvm",
+      "expected": {
+        "error": "HARD_RT_NOT_QUALIFIED",
+        "automatic_soft_downgrade": false
+      }
+    }
+  ]
+}
