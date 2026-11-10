@@ -241,3 +241,61 @@ test('cross-execution ticket and delegated grant replay denied', () => {
   assert.equal(r.access(t, s1, 'read'), true);
   r.release(t, s1);
 });
+
+test('6,400 deterministic interleavings preserve exclusive writer and bounded queue', () => {
+  let transitions = 0;
+  for (let seed = 1; seed <= 64; seed++) {
+    let state = seed;
+    const next = (n) => ((state = (Math.imul(state, 1664525) + 1013904223) >>> 0) % n);
+    const r = mk(4); const owner = r.owner;
+    const principals = [
+      { ...actor, executionId: 'a0' },
+      { ...actor, executionId: 'a1' },
+      { ...supervisor, executionId: 's0' },
+      { ...supervisor, executionId: 's1' },
+    ];
+    const tickets = [];
+    for (let step = 0; step < 100; step++) {
+      const op = next(4);
+      if (op <= 1) {
+        const who = principals[next(principals.length)];
+        const mode = next(3) === 0 ? 'write' : 'read';
+        try {
+          const auth = who.role === 'actor'
+            ? { ownerToken: owner }
+            : { grant: r.delegate(owner, who, mode) };
+          tickets.push({ who, ticket: r.acquire(who, mode, auth) });
+        } catch (e) {
+          assert.match(String(e), /recursive|queue full/);
+        }
+      } else if (tickets.length) {
+        const index = next(tickets.length);
+        const { who, ticket } = tickets[index];
+        if (r.granted(ticket, who)) {
+          if (op === 2) r.release(ticket, who);
+          else { // an active cancel cannot revoke a physical loan
+            assert.equal(r.cancelQueued(ticket, who), false);
+            r.release(ticket, who);
+          }
+        } else {
+          assert.equal(r.cancelQueued(ticket, who), true);
+        }
+        tickets.splice(index, 1);
+      }
+      const x = r.stats;
+      assert.ok(x.activeWriters <= 1);
+      assert.ok(x.activeWriters === 0 || x.activeReaders === 0);
+      assert.ok(x.pending <= 4);
+      assert.equal(x.owner, 'actor');
+      transitions++;
+    }
+    for (const { who, ticket } of tickets) {
+      if (r.granted(ticket, who)) r.release(ticket, who);
+      else r.cancelQueued(ticket, who);
+    }
+    r.stop(supervisor);
+    assert.equal(r.physicallyQuiescent(), true);
+    r.reclaim(supervisor);
+  }
+  assert.equal(transitions, 6_400);
+});
