@@ -141,6 +141,8 @@ test('dynamic and prefault realtime profiles are separate, both enforce authorit
   assert.equal(contract.security.authenticateTurnAfterCarrierMigration, true);
   assert.equal(contract.security.quarantinePublishedOffsetsUntilSafeReclamation, true);
   assert.equal(contract.security.noCrossActorRawRefTransport, true);
+  assert.equal(contract.security.rejectStaleRef32WordAndGenerationAcrossDifferentAllocationSlots, true);
+  assert.equal(contract.security.guestRef32WordCannotReplaceOutOfLineOwnerSlotAuthority, true);
 });
 
 test('no host-reference result can claim backend guest or AOT execution', () => {
