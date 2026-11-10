@@ -1,0 +1,2 @@
+import dotnet "System.Math";
+pub fnc main() -> int { return 42; }
