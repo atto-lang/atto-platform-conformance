@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "status": "PROPOSED_HOST_ORACLE_NOT_GUEST_EXECUTION",
+  "currency_units": "integer cents, no currency conversion",
+  "initial_state": {
+    "balance_cents": 0
+  },
+  "steps": [
+    {
+      "operation_id": "dep-1",
+      "command": {
+        "kind": "deposit",
+        "amount_cents": 12000
+      },
+      "event": {
+        "kind": "money_deposited",
+        "amount_cents": 12000,
+        "command_hash": "122a74e3a4d0c03d64c4d25c485d9ea1e2cf184c7fe5562ed755f11e161f0de4",
+        "schema_version": 1
+      },
+      "expected_balance_cents": 12000
+    },
+    {
+      "operation_id": "wd-1",
+      "command": {
+        "kind": "withdraw",
+        "amount_cents": 2500
+      },
+      "event": {
+        "kind": "money_withdrawn",
+        "amount_cents": 2500,
+        "command_hash": "b11b980049aac3c43625b36cffb1f251db04a38a1f07e0f79c7197e456ce1b19",
+        "schema_version": 1
+      },
+      "expected_balance_cents": 9500
+    },
+    {
+      "operation_id": "dep-2",
+      "command": {
+        "kind": "deposit",
+        "amount_cents": 75
+      },
+      "event": {
+        "kind": "money_deposited",
+        "amount_cents": 75,
+        "command_hash": "c5ea77a013d13d7da763a7f3a0ed63144231256471fcbc92b9ff59cf9fec7714",
+        "schema_version": 1
+      },
+      "expected_balance_cents": 9575
+    }
+  ],
+  "retries": [
+    {
+      "operation_id": "dep-1",
+      "command": {
+        "kind": "deposit",
+        "amount_cents": 12000
+      },
+      "expected_status": "duplicate_committed",
+      "expected_version": 1,
+      "expected_final_balance_cents": 9575
+    },
+    {
+      "operation_id": "dep-1",
+      "command": {
+        "kind": "deposit",
+        "amount_cents": 12001
+      },
+      "expected_error": "OP_ID_CONFLICT"
+    }
+  ],
+  "rejections": [
+    {
+      "operation_id": "wd-too-large",
+      "command": {
+        "kind": "withdraw",
+        "amount_cents": 99999
+      },
+      "expected_error": "INSUFFICIENT_FUNDS",
+      "expected_final_balance_cents": 9575
+    }
+  ],
+  "native_backend_execution": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  }
+}
