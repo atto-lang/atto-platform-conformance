@@ -26,6 +26,11 @@ export function apply_bank_event(state, event) {
       event.schema_version !== 1 || !int(event.amount_cents) || event.amount_cents <= 0 ||
       typeof event.command_hash !== 'string' || !/^[0-9a-f]{64}$/.test(event.command_hash))
     reject('INVALID_EVENT');
+  // A valid-looking hash must also match the canonical logical command.
+  // Otherwise tampered history could carry a forged retry identity.
+  const original_command = {kind:event.kind === 'money_deposited' ? 'deposit' : 'withdraw',
+    amount_cents:event.amount_cents};
+  if (event.command_hash !== hash(original_command)) reject('CORRUPT_ACCOUNT_JOURNAL');
   const delta = event.kind === 'money_deposited' ? event.amount_cents : -event.amount_cents;
   const next = state.balance_cents + delta;
   if (!int(next) || next < 0) reject('CORRUPT_ACCOUNT_JOURNAL');

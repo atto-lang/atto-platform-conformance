@@ -79,6 +79,8 @@ test('pure reducer and command validation reject invalid money and corrupt journ
     assert.throws(()=>validate_bank_command(command),/INVALID_COMMAND/);
   assert.throws(()=>apply_bank_event({balance_cents:0},{kind:'money_withdrawn',amount_cents:1,
     command_hash:'0'.repeat(64),schema_version:1}),/CORRUPT_ACCOUNT_JOURNAL/);
+  assert.throws(()=>apply_bank_event({balance_cents:0},{kind:'money_deposited',amount_cents:25,
+    command_hash:'0'.repeat(64),schema_version:1}),/CORRUPT_ACCOUNT_JOURNAL/);
 });
 
 test('must restore before accepting commands or exposing actor state',()=>{
