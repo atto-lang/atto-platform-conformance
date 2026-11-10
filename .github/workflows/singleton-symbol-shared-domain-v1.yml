@@ -1,0 +1,42 @@
+name: Singleton Symbol shared-domain source-free gate
+on:
+  pull_request:
+    paths:
+      - 'contracts/singleton-symbol-shared-domain-v1.json'
+      - 'verification/verify-singleton-symbol-shared-domain-v1.mjs'
+      - 'tests/singleton-symbol-shared-domain-v1.test.mjs'
+      - 'docs/SINGLETON_SYMBOL_SHARED_DOMAIN_V1.md'
+      - '.github/workflows/singleton-symbol-shared-domain-v1.yml'
+permissions:
+  contents: read
+jobs:
+  source-free-non-promoting:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Check out exact PR head, no persisted credentials
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Assert exact head/tree and print selected blob provenance
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -eu
+          ACTUAL_HEAD="$(git rev-parse HEAD)"
+          test "$ACTUAL_HEAD" = "$EXPECTED_HEAD"
+          printf 'SOURCE_HEAD=%s\n' "$ACTUAL_HEAD"
+          printf 'SOURCE_TREE=%s\n' "$(git rev-parse 'HEAD^{tree}')"
+          git ls-files -s -- contracts/singleton-symbol-shared-domain-v1.json verification/verify-singleton-symbol-shared-domain-v1.mjs tests/singleton-symbol-shared-domain-v1.test.mjs docs/SINGLETON_SYMBOL_SHARED_DOMAIN_V1.md
+      - name: Run source-free structural checks (NOT GUEST EVIDENCE)
+        run: |
+          set -eu
+          node --version
+          node --test tests/singleton-symbol-shared-domain-v1.test.mjs
+      - name: Evidence boundary
+        run: |
+          echo 'SOURCE_FREE_ONLY=true'
+          echo 'SEMANTIC_COMPILER=NOT_EXECUTED'
+          echo 'GUEST_EXECUTION=NOT_EXECUTED'
+          echo 'CROSS_BACKEND_PARITY=NOT_CERTIFIED'
