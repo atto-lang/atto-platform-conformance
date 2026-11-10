@@ -48,10 +48,34 @@ python3 scripts/verify-raw-worktree.py .
 
 # Require explicit test files. A broad npm test success alone does not establish
 # that all three ADT integrity and mutation suites executed.
-node --test \
+tap_file=$(mktemp "${TMPDIR:-/tmp}/adt-host-tap.XXXXXX")
+trap 'rm -f "$tap_file"' EXIT
+if ! node --test --test-reporter=tap \
   tests/enum-semantics-v1.test.mjs \
   tests/enum-semantics-v1-mutations.test.mjs \
-  tests/enum-semantics-v2-six-backend.test.mjs
+  tests/enum-semantics-v2-six-backend.test.mjs >"$tap_file" 2>&1; then
+  cat "$tap_file"
+  fail 'ADT Node test subprocess failed'
+fi
+cat "$tap_file"
+# Node can exit zero when every test is skipped or no tests are registered.
+# Demand at least the 50 source-pinned tests and a clean TAP footer.
+node --input-type=module - "$tap_file" <<'ADT_TAP'
+import {readFileSync} from 'node:fs';
+const text=readFileSync(process.argv[2],'utf8');
+const metrics={};
+for(const line of text.split(/\r?\n/)) {
+  const m=/^# (tests|pass|fail|cancelled|skipped|todo) ([0-9]+)$/.exec(line);
+  if(m) metrics[m[1]]=Number(m[2]);
+}
+const required=['tests','pass','fail','cancelled','skipped','todo'];
+if(required.some(k=>!Object.hasOwn(metrics,k)) ||
+   metrics.tests<50 || metrics.pass!==metrics.tests ||
+   metrics.fail!==0 || metrics.cancelled!==0 || metrics.skipped!==0 || metrics.todo!==0) {
+  console.error('ADT_HOST_ONLY_NOT_VERIFIED: incomplete, skipped or failed TAP suite',metrics);
+  process.exitCode=1;
+}
+ADT_TAP
 
 # Reject source modifications made during the tests.
 python3 scripts/verify-raw-worktree.py .
