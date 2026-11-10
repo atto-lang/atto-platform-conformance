@@ -5,7 +5,7 @@
 ## Single canonical source
 
 Source: fixtures/actor-two-peer-failure-v1/two-peer-failure-matrix.atto
-Git blob SHA-1: 003983eb9475d7fd680ea5b31804df02f1843f19
+Git blob SHA-1: eaac813262ca184930ba124180ed692e21329969
 
 This fixture intentionally defines two **data-plane** actor types: FaultWorker (fresh child incarnation per case) and one long-lived Witness (whose reply is 42 after every case). Root is a separate supervisor CONTROL authority, not a third ordinary data actor. Preserve the exact bytes for Java/GraalVM, LLVM and .NET; do not port the guest program into host Java/C++/C# and claim language parity.
 
@@ -18,9 +18,9 @@ This fixture intentionally defines two **data-plane** actor types: FaultWorker (
 | 4 | panic | none | no actor-local callback and no guest teardown | exactly one authenticated PANIC CONTROL |
 | 5 | 100,000 non-tail calls | none | guest logical-frame budget before native stack overflow | exactly one stack-budget CONTROL |
 
-For modes 0–3 the same recovered FaultWorker answers 7 to a NEW subsequent message; neither the failed instruction nor the old mail is replayed. Modes 4–5 physically retire it and invalidate stale send authority. The other actor answers 42 later, including after both terminal failures. This demonstrates observable noninterference; independent native allocation-domain identifiers, bounds, live-accounting, scrub/reclamation and stale-ref telemetry are still required to establish actual heap isolation.
+For modes 0–3 the same recovered FaultWorker answers 1007 to a NEW subsequent message; neither the failed instruction nor the old mail is replayed. Modes 4–5 physically retire it and invalidate stale send authority. FaultWorker first writes its sealed heap from 7 to 1007 before failure; the other actor answers 42 later, including after both terminal failures. This demonstrates observable noninterference; independent native allocation-domain identifiers, bounds, live-accounting, scrub/reclamation and stale-ref telemetry are still required to establish actual heap isolation.
 
-There is **no actor-local on_panic**: only the supervisor's on_panic(Failure) sees actual panic through reserved authenticated CONTROL. For raise, nearest lexical recover takes precedence; actor on_raise is a once-only fallback if no such recover handled the failure. Uncaught throw can invoke on_throw once. Panics and stack-budget exhaustion cannot be caught or rewritten as an ordinary Error. Do not recover by catching JVM/CLR StackOverflow exceptions or a SIGSEGV on a shared carrier.
+Both panic and deep-recursion modes intentionally install an otherwise matching catch; the stack case also installs lexical recover. Neither may intercept a terminal fault. Guest success is printed only after witness and supervisor cleanup. There is **no actor-local on_panic**: only the supervisor's on_panic(Failure) sees actual panic through reserved authenticated CONTROL. For raise, nearest lexical recover takes precedence; actor on_raise is a once-only fallback if no such recover handled the failure. Uncaught throw can invoke on_throw once. Panics and stack-budget exhaustion cannot be caught or rewritten as an ordinary Error. Do not recover by catching JVM/CLR StackOverflow exceptions or a SIGSEGV on a shared carrier.
 
 ## Known blocking source ABI decisions
 
