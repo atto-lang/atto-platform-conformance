@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'formal/supervisor-crash-tree-v1/**'
+      - 'formal/supervisor-crash-tree-v2/**'
       - '.github/workflows/formal-supervisor-crash-tree-v1.yml'
   workflow_dispatch:
 
@@ -19,4 +20,7 @@ jobs:
         shell: bash
         run: |
           node --version
+          test "$(git hash-object formal/supervisor-crash-tree-v1/check.mjs)" = a3ebe55f40f360346f0bce96cfdd7e4ef0319877
+          test "$(git hash-object formal/supervisor-crash-tree-v2/check.mjs)" = afb1335b7663109e1d8511cb2bc71700bc50fce4
           node formal/supervisor-crash-tree-v1/check.mjs
+          node formal/supervisor-crash-tree-v2/check.mjs
