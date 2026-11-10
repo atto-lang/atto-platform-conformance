@@ -215,11 +215,21 @@ export class BatchPersistenceSidecar {
     if (version - since > 10000) fail('ACTOR_JOURNAL_REPLAY_LIMIT');
     const events = [];
     let replayBytes = 0, expected = since + 1;
+    // Every replayable event must have the matching operation ledger row
+    // atomically written at commit. A missing/altered op breaks idempotency.
     const statement = this.db.prepare(
-      'SELECT version,schema_version,op_id,length(payload) AS size,substr(payload,1,1048577) AS payload FROM events WHERE tenant=? AND actor=? AND state_name=? AND version>? ORDER BY version ASC'
+      'SELECT e.version,e.schema_version,e.op_id,length(e.payload) AS size,' +
+      'substr(e.payload,1,1048577) AS payload,o.version AS op_version,o.kind AS op_kind ' +
+      'FROM events AS e LEFT JOIN operations AS o ' +
+      'ON o.tenant=e.tenant AND o.actor=e.actor AND o.state_name=e.state_name ' +
+      'AND o.op_id=e.op_id ' +
+      'WHERE e.tenant=? AND e.actor=? AND e.state_name=? AND e.version>? ' +
+      'ORDER BY e.version ASC'
     );
     for (const e of statement.iterate(tenantId,actor,stateName,since)) {
       if (e.version !== expected) fail('JOURNAL_GAP');
+      if (!ident(e.op_id) || e.op_version !== e.version ||
+          e.op_kind !== 'event') fail('INCOMPLETE_OPERATION_LEDGER');
       if (!uint(e.schema_version) || e.schema_version < 1 ||
           !uint(e.size) || e.size > 1048576 || e.size > 16777216 - replayBytes ||
           !(e.payload instanceof Uint8Array) || e.payload.byteLength !== e.size)
