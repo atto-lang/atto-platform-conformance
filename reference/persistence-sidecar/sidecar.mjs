@@ -181,11 +181,18 @@ export class BatchPersistenceSidecar {
     const head=this.getHead.get(tenantId,actor,stateName)?.version??0;
     if(!uint(head)||!uint(old.first_version)||old.first_version<1||
        !uint(old.last_version)||old.last_version>head||
-       !uint(old.event_count)||old.event_count<1||
-       old.event_count>10000||
+       !uint(old.event_count)||old.event_count<1||old.event_count>10000||
        old.last_version-old.first_version+1!==old.event_count||
        !(old.result_bytes instanceof Uint8Array)||
-       old.result_bytes.byteLength>this.maxPayloadBytes)fail('CORRUPT_COMMAND_RECORD');
+       old.result_bytes.byteLength>1048576)
+      fail('CORRUPT_COMMAND_RECORD');
+    if(typeof old.events_digest!=='string' ||
+       !/^[0-9a-f]{64}$/.test(old.events_digest) ||
+       typeof old.result_digest!=='string' ||
+       !/^[0-9a-f]{64}$/.test(old.result_digest))
+      fail('UNVERIFIED_COMMAND_RECORD');
+    if(hash_bytes(Buffer.from(old.result_bytes))!==old.result_digest)
+      fail('CORRUPT_COMMAND_RESULT');
     const snap=this.db.prepare('SELECT version FROM snapshots '+
       'WHERE tenant=? AND actor=? AND state_name=?').get(tenantId,actor,stateName);
     const snapshotVersion=snap?.version??0;
@@ -193,13 +200,32 @@ export class BatchPersistenceSidecar {
        (old.first_version<=snapshotVersion && old.last_version>snapshotVersion))
       fail('CORRUPT_COMMAND_RECORD');
     if(old.last_version>snapshotVersion) {
-      const count=this.db.prepare(
-        'SELECT COUNT(*) AS n,MIN(version) AS first,MAX(version) AS last '+
+      const rows=this.db.prepare(
+        'SELECT version,schema_version,length(payload) AS bytes,'+
+        'substr(payload,1,1048577) AS payload '+
         'FROM events WHERE tenant=? AND actor=? AND state_name=? '+
-        'AND op_id=? AND version BETWEEN ? AND ?'
-      ).get(tenantId,actor,stateName,opId,old.first_version,old.last_version);
-      if(count.n!==old.event_count || count.first!==old.first_version ||
-         count.last!==old.last_version)fail('INCOMPLETE_COMMAND_JOURNAL');
+        'AND op_id=? AND version BETWEEN ? AND ? ORDER BY version ASC'
+      );
+      let expected=old.first_version,total=0,schemaVersion=null;
+      const events=[];
+      for(const row of rows.iterate(tenantId,actor,stateName,opId,
+                                    old.first_version,old.last_version)) {
+        if(row.version!==expected || !uint(row.schema_version) ||
+           row.schema_version<1 || !uint(row.bytes) || row.bytes>1048576 ||
+           row.bytes>16777216-total ||
+           !(row.payload instanceof Uint8Array) ||
+           row.payload.byteLength!==row.bytes)
+          fail('INCOMPLETE_COMMAND_JOURNAL');
+        if(schemaVersion===null)schemaVersion=row.schema_version;
+        if(row.schema_version!==schemaVersion)fail('INCOMPLETE_COMMAND_JOURNAL');
+        total+=row.bytes;
+        events.push(Buffer.from(row.payload));
+        expected++;
+      }
+      if(expected!==old.last_version+1 ||
+         events.length!==old.event_count ||
+         events_digest(schemaVersion,events)!==old.events_digest)
+        fail('INCOMPLETE_COMMAND_JOURNAL');
     }
     return {opId,status:'committed',durable:true,duplicate:true,
       firstVersion:old.first_version,version:old.last_version,
@@ -373,14 +399,14 @@ export class BatchPersistenceSidecar {
     // LEFT JOIN both legacy single-event operations AND the newer logical
     // multi-event command index. Multiple events may share a command opId.
     // A replay event without either committed proof is corruption, not state.
-    const events=[];
+    const events=[],commandProofs=new Map();
     let expected=since+1, aggregateBytes=0;
     const rows=this.db.prepare(
       'SELECT e.version,e.schema_version,e.op_id,length(e.payload) AS bytes,' +
       'substr(e.payload,1,1048577) AS payload,' +
       'o.version AS legacy_version,o.kind AS legacy_kind,' +
       'c.first_version AS command_first,c.last_version AS command_last,' +
-      'c.event_count AS command_count ' +
+      'c.event_count AS command_count,c.command_hash AS command_hash ' +
       'FROM events e LEFT JOIN operations o ON ' +
       'o.tenant=e.tenant AND o.actor=e.actor AND o.state_name=e.state_name ' +
       'AND o.op_id=e.op_id ' +
@@ -402,6 +428,12 @@ export class BatchPersistenceSidecar {
                      event.command_first<=event.version &&
                      event.version<=event.command_last && event.legacy_version===null);
       if (!legacy && !command) fail('INCOMPLETE_OPERATION_LEDGER');
+      if(command) {
+        if(!ident(event.command_hash) || 
+           (event.command_first<=since && event.command_last>since))
+          fail('INCOMPLETE_OPERATION_LEDGER');
+        commandProofs.set(event.op_id,event.command_hash);
+      }
       if (!uint(event.schema_version) || event.schema_version < 1 ||
           !uint(event.bytes) || event.bytes>1048576 ||
           event.bytes>16777216-aggregateBytes ||
@@ -414,6 +446,12 @@ export class BatchPersistenceSidecar {
       expected++;
     }
     if (expected !== head+1) fail('JOURNAL_GAP');
+    // Verify each persisted logical command against original event payload
+    // digest; tampered but syntactically valid JSON must not alter replay.
+    for(const [opId,commandHash] of commandProofs) {
+      if(!this.#commandProof(tenantId,actor,stateName,opId,commandHash))
+        fail('INCOMPLETE_COMMAND_JOURNAL');
+    }
     return {version:head,snapshot,events};
   }
   close() { this.db.close(); }
