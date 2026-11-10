@@ -164,23 +164,74 @@ export class BatchPersistenceSidecar {
       fail('COMMIT_MISMATCH');
     return {opId,status:'committed',durable:true,version:op.version};
   }
-  // Loading durable actor state is activation-scoped; old epochs must not restore it.
+  // TRUSTED CONTROL PLANE ONLY. Epoch check, snapshot and ordered events
+  // must observe one consistent SQLite read transaction across processes.
   loadFenced({tenantId,actor,stateName,epoch}) {
     if (tenantId !== this.tenantId) fail('WRONG_TENANT');
     if (!ident(actor) || !ident(stateName) || !uint(epoch) || epoch < 1)
       fail('INVALID_READ');
-    if (this.getFence.get(tenantId,actor)?.epoch !== epoch) fail('STALE_EPOCH');
-    return this.load({tenantId,actor,stateName});
+    this.db.exec('BEGIN');
+    try {
+      if (this.getFence.get(tenantId,actor)?.epoch !== epoch) fail('STALE_EPOCH');
+      const restored = this.#readState(tenantId,actor,stateName);
+      this.db.exec('COMMIT');
+      return restored;
+    } catch (error) {
+      try { this.db.exec('ROLLBACK'); } catch {}
+      throw error;
+    }
   }
+  // Privileged host inspection path; guest actor reactivation uses loadFenced.
   load({tenantId,actor,stateName}) {
     if (tenantId !== this.tenantId) fail('WRONG_TENANT');
     if (![actor,stateName].every(ident)) fail('INVALID_READ');
-    const version=this.getHead.get(tenantId,actor,stateName)?.version??0;
-    const snapshot=this.db.prepare('SELECT version,schema_version,payload FROM snapshots WHERE tenant=? AND actor=? AND state_name=?').get(tenantId,actor,stateName);
-    const since=snapshot?.version??0;
-    const events=this.db.prepare('SELECT version,schema_version,op_id,payload FROM events WHERE tenant=? AND actor=? AND state_name=? AND version>? ORDER BY version ASC').all(tenantId,actor,stateName,since);
-    return {version, snapshot:snapshot?{version:snapshot.version,schemaVersion:snapshot.schema_version,payload:Buffer.from(snapshot.payload)}:null,
-      events:events.map(x=>({version:x.version,schemaVersion:x.schema_version,opId:x.op_id,payload:Buffer.from(x.payload)}))};
+    this.db.exec('BEGIN');
+    try {
+      const restored = this.#readState(tenantId,actor,stateName);
+      this.db.exec('COMMIT');
+      return restored;
+    } catch (error) {
+      try { this.db.exec('ROLLBACK'); } catch {}
+      throw error;
+    }
+  }
+  // Streaming, bounded read; rejects incomplete journals before state exposure.
+  #readState(tenantId, actor, stateName) {
+    const version = this.getHead.get(tenantId,actor,stateName)?.version ?? 0;
+    if (!uint(version)) fail('INCOMPLETE_ACTOR_JOURNAL');
+    const row = this.db.prepare(
+      'SELECT version,schema_version,length(payload) AS size,substr(payload,1,1048577) AS payload FROM snapshots WHERE tenant=? AND actor=? AND state_name=?'
+    ).get(tenantId,actor,stateName);
+    let snapshot = null, since = 0;
+    if (row) {
+      if (!uint(row.version) || row.version < 1 || row.version > version ||
+          !uint(row.schema_version) || row.schema_version < 1 ||
+          !uint(row.size) || row.size > 1048576 ||
+          !Buffer.isBuffer(row.payload) || row.payload.byteLength !== row.size)
+        fail('INVALID_ACTOR_SNAPSHOT');
+      since = row.version;
+      snapshot = {version:row.version,schemaVersion:row.schema_version,payload:Buffer.from(row.payload)};
+    }
+    if (version - since > 10000) fail('ACTOR_JOURNAL_REPLAY_LIMIT');
+    const events = [];
+    let replayBytes = 0, expected = since + 1;
+    const statement = this.db.prepare(
+      'SELECT version,schema_version,op_id,length(payload) AS size,substr(payload,1,1048577) AS payload FROM events WHERE tenant=? AND actor=? AND state_name=? AND version>? ORDER BY version ASC'
+    );
+    for (const e of statement.iterate(tenantId,actor,stateName,since)) {
+      if (e.version !== expected) fail('JOURNAL_GAP');
+      if (!uint(e.schema_version) || e.schema_version < 1 ||
+          !uint(e.size) || e.size > 1048576 || e.size > 16777216 - replayBytes ||
+          !Buffer.isBuffer(e.payload) || e.payload.byteLength !== e.size)
+        fail('INVALID_ACTOR_EVENT');
+      if (events.length === 10000) fail('ACTOR_JOURNAL_REPLAY_LIMIT');
+      replayBytes += e.size;
+      events.push({version:e.version,schemaVersion:e.schema_version,
+        opId:e.op_id,payload:Buffer.from(e.payload)});
+      expected++;
+    }
+    if (expected !== version + 1) fail('JOURNAL_GAP');
+    return {version,snapshot,events};
   }
   close() { this.db.close(); }
 }
