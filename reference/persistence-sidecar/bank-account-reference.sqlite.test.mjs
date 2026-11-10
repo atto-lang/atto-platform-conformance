@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {tmpdir} from 'node:os';
 import {mkdtempSync, rmSync} from 'node:fs';
 import {join} from 'node:path';
+import {spawnSync} from 'node:child_process';
 import {BatchPersistenceSidecar} from './sidecar.mjs';
 import {PolicyActorReference} from './policy-modes.mjs';
 import {BankAccountCommandReference, apply_bank_event} from './bank-account-reference.mjs';
@@ -13,7 +14,7 @@ const withdraw = amount_cents => ({kind:'withdraw',amount_cents});
 function fixture() {
   const dir = mkdtempSync(join(tmpdir(),'atto-bank-'));
   const path = join(dir,'bank.sqlite');
-  return {open:() => new BatchPersistenceSidecar({path,tenantId:'tenant-a'}),
+  return {path,open:() => new BatchPersistenceSidecar({path,tenantId:'tenant-a'}),
     close:() => rmSync(dir,{recursive:true,force:true})};
 }
 function bank(db, actorId, epoch) {
@@ -120,5 +121,38 @@ test('SQLite bank: stale incarnation fenced; snapshots prohibited without durabl
     assert.equal(db.flush()[0].status,'committed');
     const after_snapshot=bank(db,'bank-1',2);
     assert.throws(()=>after_snapshot.restore(),/DURABLE_DEDUPE_INDEX_REQUIRED/);
+  } finally {try{db?.close();}catch{} f.close();}
+});
+
+// A real OS-level child termination after SQLite COMMIT, before actor ACK/close.
+test('SQLite bank: SIGKILL child after durable COMMIT before ACK, then restart without duplicate',()=>{
+  const f=fixture();let db;
+  try {
+    const childSource = `
+      import {BatchPersistenceSidecar} from ${JSON.stringify("__SIDECAR__")};
+      import {PolicyActorReference} from ${JSON.stringify("__POLICY__")};
+      import {BankAccountCommandReference,apply_bank_event} from ${JSON.stringify("__BANK__")};
+      const db=new BatchPersistenceSidecar({path:${JSON.stringify(f.path)},tenantId:'tenant-a'});
+      db.grantEpoch({tenantId:'tenant-a',actor:'bank-kill',epoch:1});
+      const actor=new PolicyActorReference({sidecar:db,tenantId:'tenant-a',actor:'bank-kill',stateName:'main',
+        epoch:1,policy:'#event_sourced',initialState:{balance_cents:0},reducer:apply_bank_event,schemaVersion:1});
+      const bank=new BankAccountCommandReference({actor,sidecar:db,tenantId:'tenant-a',actorId:'bank-kill',epoch:1});
+      bank.restore();
+      if(bank.submit('kill-deposit',{kind:'deposit',amount_cents:725}).status!=='admitted')process.exit(11);
+      if(db.flush()[0].status!=='committed')process.exit(12);
+      process.kill(process.pid,'SIGKILL');
+    `.replace('"__SIDECAR__"',JSON.stringify(new URL('./sidecar.mjs',import.meta.url).href))
+      .replace('"__POLICY__"',JSON.stringify(new URL('./policy-modes.mjs',import.meta.url).href))
+      .replace('"__BANK__"',JSON.stringify(new URL('./bank-account-reference.mjs',import.meta.url).href));
+    const child=spawnSync(process.execPath,['--disable-warning=ExperimentalWarning','--input-type=module','-e',childSource],
+      {timeout:10000,encoding:'utf8'});
+    assert.equal(child.error,undefined);
+    assert.equal(child.signal,'SIGKILL',child.stderr);
+    db=f.open();db.grantEpoch({tenantId:'tenant-a',actor:'bank-kill',epoch:2});
+    const b=bank(db,'bank-kill',2);
+    assert.deepEqual(b.restore(),{status:'ready',version:1,balance_cents:725});
+    assert.deepEqual(b.submit('kill-deposit',deposit(725)),
+      {status:'committed',durable:true,duplicate:true,version:1});
+    assert.equal(db.loadFenced({tenantId:'tenant-a',actor:'bank-kill',stateName:'main',epoch:2}).events.length,1);
   } finally {try{db?.close();}catch{} f.close();}
 });
