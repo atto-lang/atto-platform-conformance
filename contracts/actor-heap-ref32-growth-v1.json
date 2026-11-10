@@ -54,7 +54,11 @@
     "noUnboundedReallocationDuringRealtimeTurn": true,
     "actorBirthDoesNotCommitEntireHardLimit": true,
     "schedulerMustContainOOMToOwner": true,
-    "growthIsNotGuestExecutionEvidence": true
+    "growthIsNotGuestExecutionEvidence": true,
+    "dynamicHoleReuseCannotAliasLiveObjects": true,
+    "scrubbedSlotReuseMayProceedAtLogicalHardQuota": true,
+    "lastOwnerResetInvalidatesDeadHoleExtents": true,
+    "publishedSlotGenerationMustAdvanceOnDrop": true
   },
   "security": {
     "authenticateActorAndIncarnation": true,
