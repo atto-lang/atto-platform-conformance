@@ -96,6 +96,7 @@ export class BatchPersistenceSidecar {
     const hash = digest(e), k = key(e);
     // Fence before any dedup receipt, including a retry of an already committed operation.
     if (this.getFence.get(tenantId,actor)?.epoch !== epoch) fail('STALE_EPOCH');
+    if (this.getCommand.get(tenantId,actor,stateName,opId)) fail('OP_ID_CONFLICT');
     const existing = this.getOp.get(tenantId,actor,stateName,opId);
     if (existing) {
       if (existing.digest !== hash) fail('OP_ID_CONFLICT');

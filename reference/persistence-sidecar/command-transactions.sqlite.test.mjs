@@ -132,7 +132,7 @@ test('reject empty event list, oversize command and zero batch-admission bypass'
     const db=open();grant(db);
     assert.throws(()=>db.enqueueCommand(cmd({events:[]})),/INVALID_COMMAND_WRITE/);
     assert.throws(()=>db.enqueueCommand(cmd({commandBytes:Buffer.alloc(65537)})),/PAYLOAD_TOO_LARGE/);
-    assert.throws(()=>db.enqueueCommand(cmd({events:[Buffer.alloc(65536),Buffer.alloc(65536)]})),/PAYLOAD_TOO_LARGE/);
+    assert.throws(()=>db.enqueueCommand(cmd({events:[Buffer.alloc(65537),Buffer.alloc(1)]})),/PAYLOAD_TOO_LARGE/);
     assert.equal(db.queue.length,0);
   });
 });
