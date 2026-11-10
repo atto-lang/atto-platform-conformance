@@ -12,6 +12,9 @@ const ident = (s) => typeof s === 'string' && s.length > 0 && s.length <= 128 &&
   !/[\x00-\x1f\x7f\uD800-\uDFFF]/u.test(s) && Buffer.byteLength(s, 'utf8') <= 128;
 const uint = (n) => Number.isSafeInteger(n) && n >= 0;
 const hash_bytes = (b) => createHash('sha256').update(b).digest('hex');
+const events_digest = (schemaVersion, events) => hash_bytes(Buffer.from(JSON.stringify([
+  schemaVersion,events.map(b=>b.toString('base64'))
+])));
 const hash_command_attempt = (e) => hash_bytes(Buffer.from(JSON.stringify([
   e.tenantId,e.actor,e.stateName,e.opId,e.epoch,e.expectedVersion,
   e.schemaVersion,e.commandHash,e.events.map(b=>b.toString('base64')),
@@ -59,8 +62,16 @@ export class BatchPersistenceSidecar {
         tenant TEXT NOT NULL, actor TEXT NOT NULL, state_name TEXT NOT NULL,
         op_id TEXT NOT NULL, command_hash TEXT NOT NULL,
         first_version INTEGER NOT NULL, last_version INTEGER NOT NULL,
-        event_count INTEGER NOT NULL, result_bytes BLOB NOT NULL,
+        event_count INTEGER NOT NULL, events_digest TEXT, result_digest TEXT,
+        result_bytes BLOB NOT NULL,
         PRIMARY KEY(tenant,actor,state_name,op_id));`);
+    // Explicit fail-closed upgrade: previously saved command rows have no
+    // trustworthy digest and cannot be acknowledged as durable duplicates.
+    const commandColumns=this.db.prepare('PRAGMA table_info(command_commits)').all().map(r=>r.name);
+    if(!commandColumns.includes('events_digest'))
+      this.db.exec('ALTER TABLE command_commits ADD COLUMN events_digest TEXT');
+    if(!commandColumns.includes('result_digest'))
+      this.db.exec('ALTER TABLE command_commits ADD COLUMN result_digest TEXT');
     this.getFence = this.db.prepare('SELECT epoch FROM fences WHERE tenant=? AND actor=?');
     this.getOp = this.db.prepare('SELECT digest, version, kind FROM operations WHERE tenant=? AND actor=? AND state_name=? AND op_id=?');
     this.getHead = this.db.prepare('SELECT version FROM heads WHERE tenant=? AND actor=? AND state_name=?');
@@ -68,8 +79,8 @@ export class BatchPersistenceSidecar {
     this.putSnapshot = this.db.prepare('INSERT INTO snapshots VALUES(?,?,?,?,?,?) ON CONFLICT(tenant,actor,state_name) DO UPDATE SET version=excluded.version, schema_version=excluded.schema_version, payload=excluded.payload');
     this.putEvent = this.db.prepare('INSERT INTO events VALUES(?,?,?,?,?,?,?)');
     this.putOp = this.db.prepare('INSERT INTO operations VALUES(?,?,?,?,?,?,?)');
-    this.getCommand = this.db.prepare('SELECT command_hash,first_version,last_version,event_count,result_bytes FROM command_commits WHERE tenant=? AND actor=? AND state_name=? AND op_id=?');
-    this.putCommand = this.db.prepare('INSERT INTO command_commits VALUES(?,?,?,?,?,?,?,?,?)');
+    this.getCommand = this.db.prepare('SELECT command_hash,first_version,last_version,event_count,events_digest,result_digest,result_bytes FROM command_commits WHERE tenant=? AND actor=? AND state_name=? AND op_id=?');
+    this.putCommand = this.db.prepare('INSERT INTO command_commits(tenant,actor,state_name,op_id,command_hash,first_version,last_version,event_count,events_digest,result_digest,result_bytes) VALUES(?,?,?,?,?,?,?,?,?,?,?)');
   }
   // TRUSTED CONTROL PLANE ONLY: never expose this to a guest actor.
   grantEpoch({ tenantId, actor, epoch }) {
@@ -138,6 +149,8 @@ export class BatchPersistenceSidecar {
       kind:'command',commandBytes:Buffer.from(commandBytes),
       events:events.map(b=>Buffer.from(b)),resultBytes:Buffer.from(resultBytes),eventBytes};
     e.commandHash=hash_bytes(e.commandBytes);
+    e.eventsDigest=events_digest(e.schemaVersion,e.events);
+    e.resultDigest=hash_bytes(e.resultBytes);
     // Fence before dedup: stale actors cannot retrieve a prior success receipt.
     if(this.getFence.get(tenantId,actor)?.epoch!==epoch) fail('STALE_EPOCH');
     if(this.getCommand.get(tenantId,actor,stateName,opId))
@@ -249,7 +262,8 @@ export class BatchPersistenceSidecar {
             this.putEvent.run(t,a,s,version+i+1,e.schemaVersion,o,e.events[i]);
           const next=version+e.events.length;
           this.putHead.run(t,a,s,next);
-          this.putCommand.run(t,a,s,o,e.commandHash,version+1,next,e.events.length,e.resultBytes);
+          this.putCommand.run(t,a,s,o,e.commandHash,version+1,next,e.events.length,
+            e.eventsDigest,e.resultDigest,e.resultBytes);
           results.push({opId:o,status:'committed',durable:true,duplicate:false,
             firstVersion:version+1,version:next,eventCount:e.events.length,
             resultBytes:Buffer.from(e.resultBytes)});
