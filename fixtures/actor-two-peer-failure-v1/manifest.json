@@ -5,7 +5,7 @@
   "canonicalExtension": ".atto",
   "scope": "one canonical two-data-actor source for isolated heaps, guest stack budget, throw/raise/panic, lexical recover, actor hooks and supervisor CONTROL",
   "source": "fixtures/actor-two-peer-failure-v1/two-peer-failure-matrix.atto",
-  "sourceGitBlobSha1": "003983eb9475d7fd680ea5b31804df02f1843f19",
+  "sourceGitBlobSha1": "eaac813262ca184930ba124180ed692e21329969",
   "evidenceLevel": "SOURCE_AUTHORED_ONLY",
   "compilationAdmission": "UNVERIFIED_PENDING_PORTABLE_SOURCE_ABI",
   "expectedExitCode": 0,
@@ -19,7 +19,7 @@
     "Root.control_event_count non-consuming read",
     "actor reference end and get_done failure semantics",
     "compile-time guest stack frame budget before native overflow",
-    "multi-case async for/if source lowering"
+    "multi-case async while/if source lowering, root stop and get_done"
   ],
   "actors": [
     "FaultWorker",
@@ -39,7 +39,7 @@
       "actorOnRaise": 0,
       "supervisorOnPanic": 0,
       "controlNotices": 0,
-      "postTurnResponse": 7,
+      "postTurnResponse": 1007,
       "witnessResponse": 42
     },
     {
@@ -52,7 +52,7 @@
       "actorOnRaise": 0,
       "supervisorOnPanic": 0,
       "controlNotices": 0,
-      "postTurnResponse": 7,
+      "postTurnResponse": 1007,
       "witnessResponse": 42
     },
     {
@@ -65,7 +65,7 @@
       "actorOnRaise": 0,
       "supervisorOnPanic": 0,
       "controlNotices": 0,
-      "postTurnResponse": 7,
+      "postTurnResponse": 1007,
       "witnessResponse": 42
     },
     {
@@ -78,7 +78,7 @@
       "actorOnRaise": 1,
       "supervisorOnPanic": 0,
       "controlNotices": 0,
-      "postTurnResponse": 7,
+      "postTurnResponse": 1007,
       "witnessResponse": 42
     },
     {
@@ -123,7 +123,11 @@
     "exactlyOneTerminalNoticePerActorIncarnation": true,
     "actorSourceMustNotPrintSuccessUnconditionally": true,
     "guestStdoutAloneInsufficient": true,
-    "disabledCrossOrgSourceCopy": true
+    "disabledCrossOrgSourceCopy": true,
+    "faultActorStateMutationBeforeFault": true,
+    "panicCatchBypassExplicit": true,
+    "stackRecoverCatchBypassExplicit": true,
+    "guestSuccessAfterCleanup": true
   },
   "backends": {
     "java": {
