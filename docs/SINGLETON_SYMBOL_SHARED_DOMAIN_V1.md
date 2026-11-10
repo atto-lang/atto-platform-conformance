@@ -29,7 +29,7 @@ Use the integrated JSON fixture as a **candidate-only bridge**, never as proof o
 
 ## Executable source-free reference model (added 2026-11-10)
 
-\`tests/singleton-domain-operational-model.test.mjs\` is a **Node-only reference state machine**, not AttoLang guest code, a real multi-threaded RW mutex, or the backend implementation. It adds six separately executed model tests for:
+\`tests/singleton-domain-operational-model.test.mjs\` is a **Node-only reference state machine**, not AttoLang guest code, a real multi-threaded RW mutex, or the backend implementation. It adds seven separately executed model tests for:
 
 - Domain-bound canonical singleton identity, deep-frozen snapshots, once-only initialization, sticky failure, and cycle rejection.
 - Simultaneous logical reader cohorts, FIFO writer barrier, late-reader exclusion, transactional writes, and disallowing \`await\` in a synchronous write loan.
@@ -37,7 +37,8 @@ Use the integrated JSON fixture as a **candidate-only bridge**, never as proof o
 - STOP logical revocation, pending-queue failure, and retained physical loans until their release.
 - Bounded \`#symbol\` interning, NFC, String/Symbol distinction, lookup-only untrusted decoding, and domain separation.
 - Cancellation of a queued writer without starving readers behind it.
+- Side-effect-free snapshot validation: reject getters/accessors, hidden and Symbol-keyed properties, non-finite numeric values, over-budget strings, and tampering with domain/quota configuration.
 
-**Local execution:** Node v22.16.0, \`node --test tests/singleton-domain-operational-model.test.mjs\`: **6 passed / 0 failed**. Source file Git blob SHA \`bdc3d672548ad63c282c505fd2a911cc9019324a\` was independently checked after push. The test workflow now runs both the original 21-check structural suite and this six-test operational model, but **GitHub-hosted execution and compiled guest parity still require exact-head, stepful evidence**.
+**Local execution:** Node v22.16.0, \`node --test tests/singleton-domain-operational-model.test.mjs\`: **7 passed / 0 failed**. Source file Git blob SHA \`f2e26cbc4d4d674cbd1f7104f9569e6c838409f6a\` was independently checked after push. The test workflow now runs both the original 21-check structural suite and this seven-test operational model, but **GitHub-hosted execution and compiled guest parity still require exact-head, stepful evidence**.
 
 The model intentionally does **not** prove that a compiler rejects borrow escape, that JVM/LLVM/.NET mutexes are thread-safe, or that native isolates have shared backing. The owner/principal constructors are trusted test-driver interfaces, not a proposed guest-callable API. Production lowering must use unforgeable runtime context, generation-fenced capabilities, actor-private heap barriers, bounded key/queue allocation, and explicitly coordinated multi-isolate access.
