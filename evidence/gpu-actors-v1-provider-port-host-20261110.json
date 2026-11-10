@@ -1,0 +1,56 @@
+{
+  "schema": "atto.gpu-actors-v1-provider-host-evidence/1",
+  "recordedAt": "2026-11-10",
+  "source": {
+    "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+    "pr": 1652,
+    "head": "aa02ba3db824337b82acbc587e6321701660141b",
+    "stackedOn": 1650,
+    "blob": "23fef983580e6323e278792ef17dc6c9b96306ee",
+    "testBlob": "4b97bc83cb1e62d0ae8ba7db92b285507b5d3b22"
+  },
+  "carrier": {
+    "repo": "scintilla-run/scintilla-run-e2e",
+    "branch": "carrier/gpu-provider-bridge-v1-20261110",
+    "head": "03566737d7fb7436d46549a5acabc158209d7a21",
+    "runId": 42921328555,
+    "jobId": 130196605781,
+    "url": "https://github.com/scintilla-run/scintilla-run-e2e/actions/runs/42921328555",
+    "sourceBlobsChecked": true,
+    "gccAsanUbsan": "PASS",
+    "clang": "PASS",
+    "checksPerCompiler": 6280,
+    "mockActors": 1024,
+    "mockTurns": 4096
+  },
+  "semantics": {
+    "localOpaqueEventOriginVerified": true,
+    "staleOrForeignEventsRejected": true,
+    "actorEnqueueAmbiguityRetained": true,
+    "supervisorOwnedQuarantine": true,
+    "processRootRegistryCap": 256,
+    "retainedAcrossSupervisorHandleDrop": true,
+    "rootRetiresOnlyAfterMockProviderRelease": true,
+    "crossTenantDeviceLossContained": true
+  },
+  "notProven": {
+    "nativePhysicalGpuProvider": false,
+    "physicalEventAuthenticated": false,
+    "realDriverQueue": false,
+    "compiledAttoLangGuest": false,
+    "typedGpuActorDeviceMir": false,
+    "fullCmakeCtest": false,
+    "fiveBackendHardwareParity": false,
+    "processRestartDurability": false
+  },
+  "backendGpuExecutionStates": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED"
+  },
+  "hardwareClaim": "NOT_EXECUTED",
+  "releaseReady": false,
+  "reviewRequired": true
+}
