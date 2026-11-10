@@ -164,3 +164,17 @@ test('fail closed on post-snapshot dedupe gap and corrupted journal',()=>{
   const restarted=harness(other).account;
   assert.throws(()=>restarted.restore(),/INVALID_EVENT|INVALID_JOURNAL/);
 });
+
+test('cancelling a persistence wait cannot erase an unresolved write or authorize the next command',()=>{
+  const {account,store}=harness();account.restore();
+  account.submit('cancel-me',deposit(901));
+  assert.deepEqual(account.cancel_wait(),
+    {status:'OUTCOME_UNKNOWN',durable:false,requires_reconciliation:true});
+  assert.equal(account.has_pending_write,true);
+  assert.equal(account.balance_cents,0);
+  assert.throws(()=>account.submit('next',deposit(1)),/WRITE_ALREADY_PENDING/);
+  store.flush();
+  assert.equal(account.reconcile_pending().status,'committed');
+  assert.equal(account.balance_cents,901);
+  assert.equal(account.has_pending_write,false);
+});
