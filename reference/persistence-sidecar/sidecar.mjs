@@ -121,9 +121,19 @@ export class BatchPersistenceSidecar {
     if (this.getCommand.get(tenantId,actor,stateName,opId)) fail('OP_ID_CONFLICT');
     const existing = this.getOp.get(tenantId,actor,stateName,opId);
     if (existing) {
-      if (existing.digest !== hash) fail('OP_ID_CONFLICT');
-      const proof=this.#legacyProof(e,existing);
-      return {status:'committed',durable:true,duplicate:true,version:proof.version};
+      this.db.exec('BEGIN');
+      try {
+        if(this.getFence.get(tenantId,actor)?.epoch!==epoch)fail('STALE_EPOCH');
+        const current=this.getOp.get(tenantId,actor,stateName,opId);
+        if(!current)fail('OUTCOME_UNKNOWN');
+        if(current.digest!==hash)fail('OP_ID_CONFLICT');
+        const proof=this.#legacyProof(e,current);
+        this.db.exec('COMMIT');
+        return {status:'committed',durable:true,duplicate:true,version:proof.version};
+      } catch(err) {
+        try{this.db.exec('ROLLBACK');}catch{}
+        throw err;
+      }
     }
     const queued = this.pending.get(k);
     if (queued) {
