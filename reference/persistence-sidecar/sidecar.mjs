@@ -112,7 +112,10 @@ export class BatchPersistenceSidecar {
     if (![actor,stateName,opId].every(ident) || !uint(epoch) || epoch < 1 ||
       !uint(expectedVersion) || !uint(schemaVersion) || schemaVersion < 1 ||
       !['snapshot','event'].includes(kind) || !Buffer.isBuffer(payload)) fail('INVALID_WRITE');
-    if (payload.byteLength > this.maxPayloadBytes || payload.byteLength > this.maxBatchBytes) fail('PAYLOAD_TOO_LARGE');
+    // Hard replay ceiling must not be relaxed by constructor batch limits:
+    // otherwise the provider can commit data it will later refuse to restore.
+    if (payload.byteLength > 1048576 || payload.byteLength > this.maxPayloadBytes ||
+        payload.byteLength > this.maxBatchBytes) fail('PAYLOAD_TOO_LARGE');
     // Snapshot bytes are copied on admission so callers cannot mutate an enqueued write.
     const e = {tenantId,actor,stateName,opId,epoch,expectedVersion,kind,schemaVersion,payload:Buffer.from(payload)};
     const hash = digest(e), k = key(e);
@@ -161,10 +164,13 @@ export class BatchPersistenceSidecar {
         !uint(expectedVersion) || !uint(schemaVersion) || schemaVersion<1 ||
         !Buffer.isBuffer(commandBytes) || !Buffer.isBuffer(resultBytes) ||
         !Array.isArray(events) || events.length<1 ||
-        events.length>this.maxBatchEntries || !events.every(Buffer.isBuffer))
+        events.length>this.maxBatchEntries || events.length>10000 ||
+        !events.every(Buffer.isBuffer))
       fail('INVALID_COMMAND_WRITE');
     const eventBytes=events.reduce((n,b)=>n+b.length,0);
-    if (commandBytes.length>this.maxPayloadBytes || resultBytes.length>this.maxPayloadBytes ||
+    if (commandBytes.length>1048576 || resultBytes.length>1048576 ||
+        events.some(b=>b.length>1048576) || eventBytes>16777216 ||
+        commandBytes.length>this.maxPayloadBytes || resultBytes.length>this.maxPayloadBytes ||
         events.some(b=>b.length>this.maxPayloadBytes) || eventBytes>this.maxBatchBytes)
       fail('PAYLOAD_TOO_LARGE');
     const e={tenantId,actor,stateName,opId,epoch,expectedVersion,schemaVersion,
