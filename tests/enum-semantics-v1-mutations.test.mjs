@@ -1,4 +1,5 @@
 import test from "node:test";
+import {execFileSync,spawnSync} from "node:child_process";
 import assert from "node:assert/strict";
 import {readFileSync,mkdtempSync,mkdirSync,copyFileSync,writeFileSync,rmSync,symlinkSync,unlinkSync,linkSync,renameSync} from "node:fs";
 import {resolve,dirname,join} from "node:path";
@@ -97,4 +98,20 @@ test("enum fixture directory symlink cannot redirect the corpus",()=>{
   symlinkSync(real,dest,"dir");
   assert.throws(()=>validateEnumFiles(dir,m),/symlinked fixture directory ancestor/);
  });
+});
+
+test("ADT host-only verification driver rejects a mismatched source tree",()=>{
+ const head=execFileSync("git",["rev-parse","HEAD"],{cwd:root,encoding:"utf8"}).trim();
+ const driver=resolve(root,"scripts/verify-adt-conformance-head.sh");
+ const run=spawnSync("bash",[driver,head,"0".repeat(40)],{cwd:root,encoding:"utf8",timeout:15000});
+ assert.equal(run.status,1);
+ assert.match(run.stderr,/ADT_HOST_ONLY_NOT_VERIFIED: source tree mismatch/);
+ assert.doesNotMatch(run.stdout,/ADT_HOST_ONLY_PASS=1/);
+});
+test("ADT host-only verification driver rejects a mismatched source commit",()=>{
+ const driver=resolve(root,"scripts/verify-adt-conformance-head.sh");
+ const run=spawnSync("bash",[driver,"0".repeat(40),"0".repeat(40)],{cwd:root,encoding:"utf8",timeout:15000});
+ assert.equal(run.status,1);
+ assert.match(run.stderr,/ADT_HOST_ONLY_NOT_VERIFIED: source HEAD mismatch/);
+ assert.doesNotMatch(run.stdout,/ADT_HOST_ONLY_PASS=1/);
 });
