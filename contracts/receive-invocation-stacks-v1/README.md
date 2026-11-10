@@ -28,6 +28,13 @@ Two **new, unmerged, host-runtime-only** implementation drafts have been authore
 
 Both have focused tests and exact-head CI workflows **authored**, but source-org Actions reports failed, **zero-step/steps=null** jobs. Neither counts as executed JUnit/CTest, compiled source guest proof, native stack containment, nor five-backend parity. All five `backend-matrix.json` guest statuses remain `NOT_EXECUTED` until independently observed exact-head nonzero-step results are recorded. Their parent runtime PRs (#2704, #1126) are also drafts; do not merge children independently without semantic rebase/review.
 
+## Nested-source and native-lease follow-up — 2026-11-10
+
+- [Java/GraalVM draft #2753](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2753): a bounded **source AST → scalar continuation** slice, using the production parser/type-/ownership-checker for nested `suspends fnc`/async Future-port calls, and the actor's actual SourceTask scheduler. The enclosing receive remains a host CodeExecutor bridge; this is NOT full source receive lowering.
+- [LLVM draft #1640](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1640): physical actor-lease authenticated frame+ledger coordinator, pointer-free ABI v1 metadata, real native scheduler DATA/WAKE host test. LLVM-generated source `suspends actor method` remains fail-closed.
+- **CI state: NOT_EXECUTED** for both exact-head focused workflows. Java run [42893334814](https://github.com/ores-truffle-oreslang/oreslang-source.java/actions/runs/42893334814), LLVM run [42894514318](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/actions/runs/42894514318) reported `failure` with no runner and no steps. These are not failing guest assertions or passing tests.
+- The five-backend matrix remains `NOT_EXECUTED` in every cell; no Java/LLVM guest result, Native Image, CTest sanitizer, Forge, Wasm or .NET proof has been promoted. A private cross-org test mirror is blocked pending the independent security authorization documented on LLVM parent #1126.
+
 ## Backend guest admission gates
 Run the same positive and negative AttoLang source semantics on all five backends:
 - Positive: nested `receive()` frames preserve locals/PC through await; two permitted simultaneous receives have disjoint live frames; spawned Task has a different stack, runs even on the same physical carrier.
