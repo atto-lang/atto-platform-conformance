@@ -70,6 +70,24 @@ host can still allocate and trace.
 | Java | [#2875](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2875) graph construction-order deterministic drops | Source-org CI submitted; current observed job had zero executed steps |
 | .NET | [#484](https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/484) 20k native-root managed-allocation budget test | Source-org CI submitted; current observed job had zero executed steps |
 
+## Hardening discovered during review
+
+- **Wasm:** a fixed two-page memory can still change ArrayBuffer identity after
+  `memory.grow(0)`. Cache the stable view only until a backing swap; refresh
+  before trusted copies, private-alias validation, and deferred STOP scrub.
+- **Java:** close all still-owned graph objects in reverse *construction*
+  order before notifying the backing-release callback. Use a bounded
+  preallocated drop array rather than creating an ArrayList at STOP; hold
+  reclamation while read loans remain.
+- **Forge:** host-copy ranges are checked with a pure integer-address
+  disjointness oracle. Regression tests must never fabricate invalid C++
+  `std::span` ranges merely to reach overflow checks.
+- **.NET:** retain its warmed same-thread zero-managed-allocation counter
+  and permanent-root churn regression; do not equate these isolated success
+  paths to a collector-free CLR or a verified general guest program.
+- **LLVM:** the earlier exact-blob native sanitizer matrix is substrate-only
+  until the source compiler lowers owned objects and exceptional drops.
+  
 Do not promote a draft source PR, a host-runtime test, a zero-step Actions failure,
 or a source-free model to **compiled guest executable parity**.
 Record `NOT_EXECUTED` until nonzero runner steps and exact source SHA match.
