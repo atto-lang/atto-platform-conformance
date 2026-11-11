@@ -88,8 +88,10 @@
           "verification/durable_command_wire_v1_test.cpp": "73d8fd2f900c0cdde64ca42f7c60b3f1d297ed0c"
         },
         "executed_local": [
-          "GCC14 -std=c++20 -Wall -Wextra -Wpedantic -Werror",
-          "Clang -std=c++20 -Wall -Wextra -Wpedantic -Werror"
+          "GCC 14 C++20 -Wall -Wextra -Wpedantic -Werror strict host executable PASS",
+          "Clang C++20 -Wall -Wextra -Wpedantic -Werror strict host executable PASS",
+          "GCC 14 C++20 -fsanitize=address,undefined -fno-omit-frame-pointer PASS",
+          "Clang C++20 -fsanitize=address,undefined -fno-omit-frame-pointer PASS"
         ],
         "guest": false,
         "durable": false
