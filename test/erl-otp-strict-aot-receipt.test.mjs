@@ -49,6 +49,9 @@ test('rejects zero-step, host-only, missing AOT/negative proof and invalid pinni
     r => { r.execution.runUrl = 'https://github.com/example/repo/actions/runs/41'; },
     r => { r.execution.independentReviewUrl = ''; },
     r => { r.backend = 'js'; },
+    r => { r.feature = 'unknown_future'; },
+    r => { r.fixture.id = 'not_a_vector'; },
+    r => { r.fixture.id = 'aot.no_interpreter_fallback'; },
     r => { r.status = 'NOT_EXECUTED'; },
   ];
   for (const mutate of mutations) {
