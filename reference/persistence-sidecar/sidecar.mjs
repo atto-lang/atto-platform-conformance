@@ -256,6 +256,9 @@ export class BatchPersistenceSidecar {
         // Compaction may delete a committed event only after a verified
         // snapshot covers its version. Recheck the entire active journal
         // in the current SQLite read/write transaction.
+        const checkpoint=this.getReplaySnapshot.get(e.tenantId,e.actor,e.stateName);
+        if(!checkpoint || checkpoint.version<op.version)
+          fail('INCOMPLETE_OPERATION_LEDGER');
         const restored=this.#readState(e.tenantId,e.actor,e.stateName);
         if(!restored.snapshot || restored.snapshot.version<op.version)
           fail('INCOMPLETE_OPERATION_LEDGER');
