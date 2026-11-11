@@ -25,7 +25,9 @@
     "bound-tenant-and-host-resources",
     "quiescence-stops-new-admission",
     "untrusted-must-have-enforced-isolation-or-deny",
-    "source-free-or-zero-step-ci-is-not-runtime-proof"
+    "source-free-or-zero-step-ci-is-not-runtime-proof",
+    "no-actor-slot-refund-before-confirmed-tenant-retirement",
+    "unconfirmed-tenant-termination-quarantines-quota-and-identity"
   ],
   "statuses": [
     "TRUSTED_HOST_ONLY",
@@ -63,7 +65,16 @@
         "requiredGate": "npm run test:real-tenant-vm",
         "runnerEvidence": "NOT_EXECUTED_RUNNER_ID_ZERO",
         "status": "NOT_EXECUTED",
-        "limitations": "Host-only multi-actor TenantVM candidate; real compiled guest and Worker kill unverified at exact PR head; no untrusted isolation certificate"
+        "limitations": "Host-only multi-actor TenantVM candidate; real compiled guest and Worker kill unverified at exact PR head; no untrusted isolation certificate",
+        "retirementHardening": {
+          "draft": "oreslang-source.wasm#478",
+          "sourceBlob": "5c267b87c32b9cc0ef9ae41f4c12387bc31ea2a1",
+          "workerRaceTestBlob": "dd0c584a4cee229351b0f7dc80348a2aeeef05d6",
+          "localControlledTransport": "3_PASS_OLD_LOGIC_3_FAIL",
+          "exactHeadWorkerTest": "NOT_EXECUTED",
+          "releaseRule": "quiescing or quarantined tenant retains remaining actor reservations until confirmed physical Worker.terminate receipt",
+          "failureRule": "unknown or rejected termination receipt quarantines tenant ID and host actor quota"
+        }
       }
     },
     "forge": {
