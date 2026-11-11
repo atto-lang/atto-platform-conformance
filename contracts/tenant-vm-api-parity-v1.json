@@ -54,7 +54,17 @@
       "api": "TenantRegistry::admit_tenant_vm -> TenantVMHandle",
       "status": "WASM_SCALAR_PROTOTYPE",
       "source": "aot-host/run/src/tenant_isolation.rs",
-      "test": "aot-host/run/src/tenant_isolation.rs"
+      "test": "aot-host/run/src/tenant_isolation.rs",
+      "experimentalMultiActorHost": {
+        "draft": "oreslang-source.wasm#478",
+        "kind": "TRUSTED_NODE_WORKER_PER_TENANT",
+        "guestSource": "tests/fixtures/tenant-vm-counter.atto",
+        "actorAbi": "pooled-actor-i64-v0",
+        "requiredGate": "npm run test:real-tenant-vm",
+        "runnerEvidence": "NOT_EXECUTED_RUNNER_ID_ZERO",
+        "status": "NOT_EXECUTED",
+        "limitations": "Host-only multi-actor TenantVM candidate; real compiled guest and Worker kill unverified at exact PR head; no untrusted isolation certificate"
+      }
     },
     "forge": {
       "repo": "oreslang-source.forge",
