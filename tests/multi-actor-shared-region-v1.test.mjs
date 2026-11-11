@@ -302,3 +302,100 @@ test('cross-region nested loans fail closed until global ordering is proven', ()
   otherRegion.write(x, t2, 3);
   otherRegion.release(x, t2);
 });
+
+test('retired execution revokes unused scoped grants, permitting owner transfer without quota leaks', () => {
+  const { host, region, x, y, b } = setup({ maxGrants: 1 });
+  const oldGrant = region.delegate(x, y, 'read');
+  assert.equal(region.stats.grants, 1);
+  assert.throws(() => region.transferOwner(x, b), /quiescence/);
+  assert.throws(() => region.onExecutionEnd(y, {}), /trusted runtime/);
+  host.endExecution(y);
+  assert.equal(region.stats.grants, 0);
+  // A reused logical name has a new execution identity, not the old grant.
+  const fresh = host.beginExecution(b, 'turn-b');
+  assert.throws(() => region.request(fresh, 'read', oldGrant), /delegation/);
+  region.transferOwner(x, b);
+  const newWrite = region.request(fresh, 'write');
+  region.write(fresh, newWrite, 41);
+  region.release(fresh, newWrite);
+  assert.equal(region.stats.retainedTickets, 0);
+});
+
+test('cross-region order fails closed in both directions without consuming scoped grants', () => {
+  const { host, a, region, x, y } = setup();
+  const second = host.createRegion(a, 9);
+  const firstGrant = region.delegate(x, y, 'read');
+  const secondGrant = second.delegate(x, y, 'write');
+  const first = region.request(y, 'read', firstGrant);
+  assert.throws(() => second.request(y, 'write', secondGrant), /cross-region nested/);
+  assert.equal(second.stats.grants, 1);
+  region.release(y, first);
+  const writing = second.request(y, 'write', secondGrant);
+  assert.throws(() => region.request(y, 'read', firstGrant), /cross-region nested/);
+  // The first grant is consumed only when its request is actually admitted.
+  assert.equal(region.stats.grants, 0);
+  second.release(y, writing);
+  const renewed = region.delegate(x, y, 'read');
+  const read = region.request(y, 'read', renewed);
+  region.release(y, read);
+  assert.deepEqual([region.stats.retainedTickets, second.stats.retainedTickets], [0, 0]);
+});
+
+test('STOP and cancellation races drain reservations but preserve physical writer retirement', () => {
+  const { host, region, a, x, y, z, b, c } = setup({ maxPending: 2 });
+  const ownerWrite = region.request(x, 'write');
+  const readerGrant = region.delegate(x, y, 'read');
+  const writerGrant = region.delegate(x, z, 'write');
+  const pendingRead = region.request(y, 'read', readerGrant);
+  const pendingWrite = region.request(z, 'write', writerGrant);
+  region.cancel(y, pendingRead);
+  assert.equal(region.ticketState(pendingRead), 'cancelled');
+  host.stopActor(c);
+  assert.equal(region.ticketState(pendingWrite), 'cancelled');
+  assert.equal(region.stats.pending, 0);
+  host.stopActor(a);
+  assert.equal(region.stats.sealed, true);
+  assert.equal(region.stats.writers, 1);
+  assert.throws(() => host.reclaimRegion(region), /quiescent/);
+  assert.throws(() => region.write(x, ownerWrite, 12), /stale/);
+  region.release(x, ownerWrite);
+  host.reclaimRegion(region);
+  assert.equal(region.stats.reclaimed, true);
+  assert.equal(region.stats.retainedTickets, 0);
+  assert.throws(() => region.request(y, 'read'), /sealed|stale/);
+});
+
+test('3, 7 and 15 cross-slice readers cannot barge ahead of a queued writer', () => {
+  for (const n of [3, 7, 15]) {
+    const host = new TrustedMultiActorSharedHostV1();
+    const owner = host.registerActor({ id: 'owner', domain: 'app', slice: 'owner-slice' });
+    const x = host.beginExecution(owner, 'turn-owner');
+    const writerExecution = host.beginExecution(owner, 'turn-writer');
+    const region = host.createRegion(owner, 0, { maxPending: 20, maxReaders: 20, maxGrants: 20 });
+    const headRead = region.request(x, 'read');
+    const queuedWriter = region.request(writerExecution, 'write');
+    assert.equal(region.ticketState(queuedWriter), 'pending');
+    const readers = [];
+    for (let i = 0; i < n; i++) {
+      const actor = host.registerActor({ id: 'reader-' + i, domain: 'app', slice: 'slice-' + i });
+      const exec = host.beginExecution(actor, 'turn-' + i);
+      const grant = region.delegate(x, exec, 'read');
+      const ticket = region.request(exec, 'read', grant);
+      assert.equal(region.ticketState(ticket), 'pending');
+      readers.push({ exec, ticket });
+    }
+    region.release(x, headRead);
+    assert.equal(region.ticketState(queuedWriter), 'active');
+    assert.equal(region.stats.readers, 0);
+    region.write(writerExecution, queuedWriter, n);
+    region.release(writerExecution, queuedWriter);
+    assert.equal(region.stats.readers, n);
+    for (const { exec, ticket } of readers) {
+      assert.equal(region.ticketState(ticket), 'active');
+      assert.equal(region.read(exec, ticket), n);
+      region.release(exec, ticket);
+    }
+    assert.equal(region.stats.retainedTickets, 0);
+    assert.equal(region.stats.pending, 0);
+  }
+});
