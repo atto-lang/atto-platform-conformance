@@ -55,7 +55,8 @@
     "ZG-009-throw-raise-panic-cancel-hot-reload-drop-matrix",
     "ZG-010-same-source-head-compiled-guest-evidence",
     "ZG-011-scrub-before-free-and-zero-live-native-budget",
-    "ZG-012-failed-allocation-retains-quota-and-ownership"
+    "ZG-012-failed-allocation-retains-quota-and-ownership",
+    "ZG-013-wasm-fixed-memory-zero-page-grow-refresh-and-last-pin-scrub"
   ],
   "observationsRequiredForExecutedClaims": [
     "sourceRepoAndExactHeadSha",
