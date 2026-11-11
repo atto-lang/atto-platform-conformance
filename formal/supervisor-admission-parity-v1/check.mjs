@@ -58,6 +58,14 @@ function validate(m) {
             "HOST_WORKER_ONLY","PARTIAL_HOST","FAIL_CLOSED_UNIMPLEMENTED",
             "UNIMPLEMENTED","NOT_EXECUTED"].includes(tag))
         fail("unknown/missing/unsupported evidence claim " + id);
+      // The current five PRs neither compile a common supervisor .atto guest
+      // nor atomically publish supervised children. Host-only code must not
+      // be relabeled as compiler or registered-child implementation coverage.
+      if (id === "S08" && tag !== "NOT_EXECUTED")
+        fail("compiled guest execution cannot be inferred from host sources");
+      if (id === "S06" && !["UNIMPLEMENTED",
+          "FAIL_CLOSED_UNIMPLEMENTED"].includes(tag))
+        fail("unverified atomic child registration cannot be claimed");
     }
   }
   const gates = m.stages;
@@ -92,7 +100,9 @@ const mutants = [
   m => { m.candidates[1].pr_url = "https://example.com/wrong"; },
   m => { m.candidates[0].head = "f".repeat(40); },
   m => { m.candidates[2].coverage.S09 = "PASS"; },
-  m => { m.stages.compiled_guest_executes = "PASS"; }
+  m => { m.stages.compiled_guest_executes = "PASS"; },
+  m => { m.candidates[0].coverage.S08 = "AUTHORED_HOST"; },
+  m => { m.candidates[3].coverage.S06 = "AUTHORED_HOST"; }
 ];
 for (const edit of mutants) mutant(edit);
-console.log("PASS supervisor five-backend parity inventory: backends=5 cases=8 mutations=10 certification=NOT_CERTIFIED");
+console.log("PASS supervisor five-backend parity inventory: backends=5 cases=8 mutations=12 certification=NOT_CERTIFIED");
