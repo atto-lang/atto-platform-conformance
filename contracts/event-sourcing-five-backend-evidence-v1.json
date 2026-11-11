@@ -78,14 +78,23 @@
     "net": {
       "repo": "ores-truffle-oreslang/oreslang-source.net",
       "pr": 490,
-      "head": "f1b8762bc9a77077206c0ea605a3389005937598",
+      "head": "b6f76f7ba888d4591a03f60790736f101cb408f7",
       "file": "runtime/Ores.Net.Runtime/DurableCommandInboxV1.cs",
       "git_blob": "0bcfa2418b7735f92a2c9cc43c3768f75e57a645",
       "host_contract": "sqlite_native_c_interop_atomic_multi_event_inbox",
       "host_evidence": "SOURCE_VERIFIED_ONLY",
       "guest_evidence": "NOT_EXECUTED",
       "ci_evidence": "NOT_EXECUTED",
-      "aot_evidence": "NOT_EXECUTED"
+      "aot_evidence": "NOT_EXECUTED",
+      "test_file": "verification/Ores.Net.Tests/DurableCommandInboxV1SelfTest.cs",
+      "test_git_blob": "673d18ff9966394fd1cc9cab2df85b22adb57e48",
+      "planned_test_negatives": [
+        "second_event_rollback",
+        "corrupted_journal",
+        "stale_epoch",
+        "changed_command",
+        "oversize_event"
+      ]
     }
   },
   "releaseRules": [
