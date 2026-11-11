@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { validateContract } from '../bin/verify-otel-contract.mjs';
+import { parseUniqueJSON } from '../bin/verify-otel-guest-parity.mjs';
 
 const approved = JSON.parse(readFileSync('contracts/otel-five-backend-v1.json','utf8'));
 const reject = fn => assert.throws(fn, /OTEL_CONTRACT_DENIED/);
@@ -40,4 +41,9 @@ test('source code identities, signal cardinality and security gates cannot be si
   mut(c=>{c.promotion='EXECUTED';});
   mut(c=>{c.classification='GUEST_VERIFIED';});
   mut(c=>{c.releaseCertified=true;});
+});
+
+test('canonical manifest duplicate JSON members cannot hide certification or identity drift',()=>{
+  reject(()=>parseUniqueJSON('{"classification":"EXECUTED_GUEST","classification":"CANDIDATE_ONLY"}'));
+  reject(()=>parseUniqueJSON('{"library":{"fixture":"forged","fixt\\u0075re":"tests/smoke.ores"}}'));
 });
