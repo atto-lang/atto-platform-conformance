@@ -91,6 +91,13 @@
       "expect": "REJECT",
       "diagnostic": "ACTOR_EXTERNAL_ROLE_UNSUPPORTED",
       "required_phase": "COMPILE_REJECT"
+    },
+    {
+      "id": "reject_unverified_init_state_builder",
+      "path": "fixtures/actor-external-entrypoints/v1/reject-unverified-init-state-builder.atto",
+      "expect": "REJECT",
+      "diagnostic": "ACTOR_INIT_STATE_BUILDER_UNVERIFIED",
+      "required_phase": "COMPILE_REJECT"
     }
   ]
 }
