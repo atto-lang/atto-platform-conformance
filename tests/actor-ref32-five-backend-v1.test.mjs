@@ -81,7 +81,8 @@ test("every mandatory semantic case and evidence phase stays fail closed", () =>
     m => { m.cases[0].phase = "runtime"; },
     m => { m.cases[11].mandatory = false; },
     m => { m.cases[14].mandatory = true; },
-    m => { m.cases[0].expected = ""; }
+    m => { m.cases[0].expected = ""; },
+    m => { m.cases[0].expected = "a plausible but incorrect alternative guest result"; }
   ]) {
     const changed = clone(); mutate(changed);
     assert.throws(() => validateActorRef32FiveBackendV1(changed, source),
