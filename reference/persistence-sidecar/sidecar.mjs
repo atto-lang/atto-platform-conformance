@@ -365,7 +365,9 @@ export class BatchPersistenceSidecar {
     if(!uint(newCount) || !uint(newBytes) || newCount<1 ||
        newCount>10000 || newBytes>16777216)return false;
     const checkpoint=this.getReplayCheckpoint.get(tenantId,actor,stateName)?.version??0;
-    if(!uint(checkpoint))fail('INVALID_ACTOR_SNAPSHOT');
+    const head=this.getHead.get(tenantId,actor,stateName)?.version??0;
+    if(!uint(checkpoint) || !uint(head) || checkpoint>head)
+      fail('INVALID_ACTOR_SNAPSHOT');
     const usage=this.getReplayUsage.get(tenantId,actor,stateName,checkpoint);
     if(!uint(usage.event_count)||!uint(usage.bytes))fail('INVALID_ACTOR_JOURNAL');
     return usage.event_count<=10000-newCount &&
