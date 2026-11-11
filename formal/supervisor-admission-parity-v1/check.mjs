@@ -8,7 +8,7 @@ const backendNames = ["java", "llvm", "net", "wasm", "forge"];
 // provenance. An updated PR must be independently inspected and both this
 // checker and manifest revised before a new exact-head receipt is accepted.
 const expected = Object.freeze({
-  java: {pr: 2785, head: "a027e09060c5184402775451b2305bac623257f7"},
+  java: {pr: 2885, head: "d0d793b36f64f87053baeaa2aca76c64ce90608e"},
   llvm: {pr: 1697, head: "4523a1c2262b49b9aa91c9b81230021126f78477"},
   net: {pr: 485, head: "81f7f4538691beb2c69bd679777a3830765217cf"},
   wasm: {pr: 475, head: "5c8f9528e2acbebe954dad60e0965056ca0ed4bd"},
@@ -58,14 +58,15 @@ function validate(m) {
             "HOST_WORKER_ONLY","PARTIAL_HOST","FAIL_CLOSED_UNIMPLEMENTED",
             "UNIMPLEMENTED","NOT_EXECUTED"].includes(tag))
         fail("unknown/missing/unsupported evidence claim " + id);
-      // The current five PRs neither compile a common supervisor .atto guest
-      // nor atomically publish supervised children. Host-only code must not
-      // be relabeled as compiler or registered-child implementation coverage.
+      // Java #2885 AUTHORS atomic inherited child registration, but still
+      // lacks executed host/guest evidence. Other four backends remain
+      // unimplemented for the full hierarchical inherited CONTROL contract.
       if (id === "S08" && tag !== "NOT_EXECUTED")
         fail("compiled guest execution cannot be inferred from host sources");
       if (id === "S06" && !["UNIMPLEMENTED",
-          "FAIL_CLOSED_UNIMPLEMENTED"].includes(tag))
-        fail("unverified atomic child registration cannot be claimed");
+          "FAIL_CLOSED_UNIMPLEMENTED"].includes(tag) &&
+          !(candidate.backend === "java" && tag === "AUTHORED_HOST"))
+        fail("hierarchical atomic child registration is not implemented in this backend");
     }
   }
   const gates = m.stages;
