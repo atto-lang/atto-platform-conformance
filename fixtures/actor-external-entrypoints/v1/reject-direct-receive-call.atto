@@ -1,6 +1,6 @@
 // ACTOR_RUNTIME_ONLY_RECEIVE: no direct or captured mailbox invocation.
 namespace actor_external_direct_receive;
-define actor Worker;
+declare actor Worker;
 define external mtd (Worker w) receive(ActorMail<int> mail): void { return; }
 pub routine misuse(Worker w, ActorMail<int> mail): void {
     w.receive(mail);
