@@ -12,7 +12,7 @@ const blobSHA=bytes=>createHash("sha1")
   .update(bytes).digest("hex");
 const expectedFiles=[
   ["operator_eq_neq_alias_positive","operator-positive.atto","832d839eefbc2a4e9ab65a15882367701886982a","AOT_GUEST_RETURN_42","P0"],
-  ["operator_reject_cross_numeric","operator-cross-numeric-reject.atto","2bfbfe915b89add228f0d2f3827b8cd4774c1089","COMPILE_REJECT_NO_IR","P0"],
+  ["operator_reject_cross_numeric","operator-cross-numeric-reject.atto","2bfbfe915b89add228f0d2f3827b8cd4774c1089","COMPILE_REJECT_NO_IR","AFTER_TYPED_EQUALITY_MIGRATION"],
   ["operator_legacy_equals_strict","operator-legacy-equals-reject.atto","ead96ba331627ea83e02338d0d53cd7400198452","COMPILE_REJECT_NO_IR","AFTER_OPERATOR_MIGRATION"],
   ["static_value_match_positive","value-match-positive.atto","c641c642e2abd8805258feaebe6f0459f69b6163","AOT_GUEST_RETURN_42","P0"]
 ];
