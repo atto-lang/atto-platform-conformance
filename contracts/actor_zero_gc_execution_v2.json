@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 2,
+  "contract": "oreslang-actor-zero-gc-executable-parity-v2",
+  "evidenceLevel": "source-only-policy",
+  "compiledGuestWorkloadCertifiedBackends": [],
+  "fullProcessZeroGcCertifiedBackends": [],
+  "hardRealtimeCertifiedBackends": [],
+  "backends": {
+    "java": {
+      "goal": "near-zero-managed-hotpath",
+      "hostTracingCollectorPossible": true,
+      "compiledGuestWorkloadVerified": false,
+      "memorySubstrate": "native-direct-actor-regions"
+    },
+    "llvm": {
+      "goal": "no-guest-tracing-gc",
+      "hostTracingCollectorPossible": false,
+      "compiledGuestWorkloadVerified": false,
+      "memorySubstrate": "actor-owned-native-arena"
+    },
+    "wasm": {
+      "goal": "no-wasm-guest-tracing-gc",
+      "hostTracingCollectorPossible": true,
+      "compiledGuestWorkloadVerified": false,
+      "memorySubstrate": "bounded-private-linear-memory"
+    },
+    "forge": {
+      "goal": "no-guest-tracing-gc",
+      "hostTracingCollectorPossible": false,
+      "compiledGuestWorkloadVerified": false,
+      "memorySubstrate": "actor-owned-cpp-arena"
+    },
+    "net": {
+      "goal": "near-zero-managed-hotpath",
+      "hostTracingCollectorPossible": true,
+      "compiledGuestWorkloadVerified": false,
+      "memorySubstrate": "native-memory-primitive-handle-arena"
+    },
+    "cranelift": {
+      "goal": "unsupported-until-actor-object-lowering",
+      "hostTracingCollectorPossible": false,
+      "compiledGuestWorkloadVerified": false,
+      "memorySubstrate": "scalar-only"
+    }
+  },
+  "requiredCases": [
+    "ZG-001-actor-persistent-root-plus-20000-transient-drops",
+    "ZG-002-reverse-construction-drop-order-after-slot-reuse",
+    "ZG-003-foreign-private-buffer-copy-alias-rejected",
+    "ZG-004-stale-incarnation-and-loan-delayed-retirement",
+    "ZG-005-no-collector-symbol-in-admitted-guest-binary",
+    "ZG-006-no-unbounded-allocation-in-admitted-native-turn",
+    "ZG-007-managed-allocation-counter-same-thread-warmup",
+    "ZG-008-wasm-linear-memory-caller-output-no-copy-result",
+    "ZG-009-throw-raise-panic-cancel-hot-reload-drop-matrix",
+    "ZG-010-same-source-head-compiled-guest-evidence",
+    "ZG-011-scrub-before-free-and-zero-live-native-budget",
+    "ZG-012-failed-allocation-retains-quota-and-ownership"
+  ],
+  "observationsRequiredForExecutedClaims": [
+    "sourceRepoAndExactHeadSha",
+    "compiledTargetAndRuntimeProfile",
+    "compilerCommandAndExitStatus",
+    "linkedGuestArtifactSha256",
+    "guestExecutionCommandExitAndOutputDigest",
+    "realRunnerIdAndNonzeroExecutedSteps",
+    "ownerAllocationDropAndRetainedByteCounters",
+    "collectorCountAndAllocatedManagedBytesWhereApplicable",
+    "nativeAllocatorAndFFIClosureAudit",
+    "guestGcOpcodeOrStatepointAudit",
+    "osPlatformArchitectureAndCompilerVersion"
+  ],
+  "releaseRule": "Native host smoke, source-only fixtures, zero observed collections, or draft PRs cannot certify whole-program zero-GC or deterministic guest object destruction."
+}
