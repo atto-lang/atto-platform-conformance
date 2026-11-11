@@ -21,6 +21,23 @@ const EXPECTED_CASE_IDS = [
   "await-suspension-borrow",
   "whole-actor-zero-gc"
 ];
+const CASE_EXPECTATIONS = [
+  ["execute-guest", "compiler-native", "Node(99,Node(42,None)).next.value==42"],
+  ["execute-guest", "runtime", "equal local reference words cannot access foreign actor memory"],
+  ["execute-guest", "runtime", "stale generation fails closed after slot reuse"],
+  ["execute-guest", "runtime", "reference generation never wraps into a live alias"],
+  ["execute-guest", "runtime", "linking wrong nominal class is rejected"],
+  ["execute-guest", "runtime", "raw byte write cannot forge a typed reference field"],
+  ["execute-guest", "runtime", "unaligned or partial typed i64 writes rejected"],
+  ["compile-reject", "compiler", "private reference cannot cross actor/tenant/FFI boundary as raw scalar"],
+  ["compile-reject", "compiler", "drop/rt take invalid with outstanding read loan"],
+  ["execute-guest", "runtime", "read loan survives turns without giving old turn dereference rights"],
+  ["execute-guest", "runtime", "STOP seals admission; physical refund after loan/pin release exactly once"],
+  ["execute-guest", "runtime", "failed allocation does not consume slot/type identity or native budget"],
+  ["execute-guest", "runtime", "owned objects clean up on panic, raise and throw, with correct supervisor notices"],
+  ["compile-reject", "compiler", "borrow cannot cross suspension without checked pinned continuation"],
+  ["measure", "performance", "whole-actor GC behavior requires separate real guest measurement and platform-specific definition"]
+];
 const SHA40 = /^[a-f0-9]{40}$/;
 const REPO_PREFIX = "ores-truffle-oreslang/oreslang-source.";
 
@@ -89,10 +106,10 @@ export function validateActorRef32FiveBackendV1(manifest, source) {
     deny("test-case inventory must be complete");
   for (let i = 0; i < cases.length; i++) {
     const c = cases[i];
+    const [kind, phase, expected] = CASE_EXPECTATIONS[i];
     if (!c || c.id !== EXPECTED_CASE_IDS[i] ||
-        !["execute-guest", "compile-reject", "measure"].includes(c.kind) ||
-        !["compiler-native", "compiler", "runtime", "performance"].includes(c.phase) ||
-        typeof c.expected !== "string" || c.expected.length < 12 ||
+        c.kind !== kind || c.phase !== phase ||
+        c.expected !== expected ||
         c.sourceFixture !== (i === 0 ? "node_graph.atto" : null) ||
         c.mandatory !== (i !== cases.length - 1))
       deny("case oracle drift or fabricated source fixture: " + i);
