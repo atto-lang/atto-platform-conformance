@@ -55,3 +55,15 @@ test('tenant lifecycle, identity, ownership and denial scenarios remain mandator
   assert.ok(contract.releaseGate.requires.some(x=>x.includes('neighbor-survival')));
   assert.ok(contract.releaseGate.requires.some(x=>x.includes('physical-retirement')));
 });
+
+test('Wasm multi-actor TenantVM prototype cannot silently become untrusted parity', () => {
+  const candidate = contract.backends.wasm.experimentalMultiActorHost;
+  assert.equal(candidate.draft, 'oreslang-source.wasm#478');
+  assert.equal(candidate.kind, 'TRUSTED_NODE_WORKER_PER_TENANT');
+  assert.equal(candidate.guestSource, 'tests/fixtures/tenant-vm-counter.atto');
+  assert.equal(candidate.requiredGate, 'npm run test:real-tenant-vm');
+  assert.equal(candidate.status, 'NOT_EXECUTED');
+  assert.equal(candidate.runnerEvidence, 'NOT_EXECUTED_RUNNER_ID_ZERO');
+  assert.match(candidate.limitations, /no untrusted isolation certificate/);
+  assert.equal(contract.releaseGate.untrustedTenantParity, 'NOT_VERIFIED');
+});
