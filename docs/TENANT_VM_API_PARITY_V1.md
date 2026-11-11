@@ -55,3 +55,22 @@ path. ABI/wire/schema IDs remain unchanged.
 
 Current status: `untrustedTenantParity=NOT_VERIFIED` for all toolchains.
 Citing the status table is **not** a claim of production support.
+
+## Quiescence hardening checkpoint (2026-11-11)
+
+Wasm [draft PR #478](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/478)
+now prevents actor admission and stop callbacks from refunding host actor
+slots during TenantVM quiescence, quarantine, or carrier failure. Reservations
+are reclaimed only after confirmed physical Worker termination, and the
+host's aggregate ledger is checked before an old tenant ID can be reused.
+
+Three deterministic controlled-transport local tests reproduced the old
+premature-refund behavior and passed with the patch. The new test
+`tests/trusted-tenant-vm-retirement-races.test.mjs` exercises the *real*
+Node Worker receipt and failed-termination behavior when CI is available.
+
+The exact committed patch/test blob IDs and `NOT_EXECUTED` real-Worker status
+are machine-readable in `contracts/tenant-vm-api-parity-v1.json`.
+Neither local control-double tests nor zero-step GitHub Actions runs certify
+independent untrusted-tenant execution. Native Wasmtime/Graal isolation and
+real compiler-generated multi-actor execution remain open security gates.
