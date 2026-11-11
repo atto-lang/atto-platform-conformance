@@ -298,3 +298,41 @@ execute the actual source, and never authenticate private-source
 export. The source protection and independent review requirements
 in security PR #2694 remain hard blocks; exact-source SQLite tests
 and compiled guest tests are NOT_EXECUTED.
+
+
+## Additional adversarial original-digest verification (2026-11-10)
+
+A separate P0 replay integrity audit identified that `operations.payload_hash`
+alone is insufficient if an event BLOB and its stored payload hash are
+rewritten together. The original operation digest was already durably
+persisted, but replay lacked the operation's **origin epoch** necessary to
+recompute it across supervisor generation changes.
+
+`operations.origin_epoch INTEGER` is now persisted with the same
+`BEGIN IMMEDIATE` operation commit. The Node loader reconstructs
+`SHA256(JSON([tenant,actor,stateName,opId,origin_epoch,version-1,
+kind,schemaVersion,base64(payload)]))` for every legacy event and
+snapshot, comparing the result with the original operation digest.
+It validates the epoch as an exact positive safe integer. Thus
+rewriting an event/snapshot and its separately stored payload hash,
+or changing its original epoch, fails recovery. A real cross-epoch
+recovery still uses the historical `origin_epoch`, never the newly
+fenced actor activation epoch.
+
+**Intentional fail-closed schema migration:** `origin_epoch` is added
+as a *nullable* column. Existing rows without trusted origin epoch
+may not be silently retrofitted or acknowledged as verified state.
+A distinct independently authenticated migration source is required
+for old operation provenance. The historical-schema suite now has
+three cases; the transactional replay-hardening file has 33
+adversarial tests. All those exact-source tests are authored, NOT
+executed in source-owned CI while Actions admission is blocked.
+
+An independently authored private no-checkout SQLite reference oracle
+[run #42953735486](https://github.com/atto-lang/atto-compilers-parity-testing/actions/runs/42953735486)
+executed 11 successful GitHub Actions job steps, including **6/6**
+paired-hash corruption / epoch-origination checks. It does not execute
+the real source parser/compiler/runtime. Same-database SHA256 is
+integrity evidence against partial modification, **not** a cryptographic
+signature or immutable external trust anchor against an adversary who
+can rewrite every SQLite record.
