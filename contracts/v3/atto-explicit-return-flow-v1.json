@@ -1,0 +1,113 @@
+{
+  "version": "atto-explicit-return-flow-v1",
+  "status": "contract-only-not-executed",
+  "semantics": {
+    "nonVoidFunctions": "explicit return value on every reachable path; no implicit last-expression return",
+    "voidFunctions": "fallthrough allowed; bare return allowed; valued return forbidden",
+    "bracelessLambda": "expression is the result without explicit return",
+    "bracedLambda": "explicit return required for non-void result",
+    "nestedLambda": "nested return does not satisfy enclosing function"
+  },
+  "targetBackends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge",
+    "cranelift"
+  ],
+  "confirmedBackends": [],
+  "executableParityCertified": false,
+  "cases": [
+    {
+      "id": "nonvoid-all-branches",
+      "file": "nonvoid-all-branches.atto",
+      "gitBlobSha1": "1be5798959c3ba4e682d0701cd4b424b95cb9eaa",
+      "outcome": "accept",
+      "expectedExitCode": 1,
+      "confirmedBackends": [],
+      "executableParityCertified": false
+    },
+    {
+      "id": "void-fallthrough",
+      "file": "void-fallthrough.atto",
+      "gitBlobSha1": "30d0745a2b2095f1992b6f91c68ed28bbf6a6ac7",
+      "outcome": "accept",
+      "expectedExitCode": 0,
+      "confirmedBackends": [],
+      "executableParityCertified": false
+    },
+    {
+      "id": "braceless-lambda-value",
+      "file": "braceless-lambda-value.atto",
+      "gitBlobSha1": "76d78382f8766553a064e279f9c374ff29aa35e2",
+      "outcome": "accept",
+      "expectedExitCode": 2,
+      "confirmedBackends": [],
+      "executableParityCertified": false
+    },
+    {
+      "id": "braced-lambda-return",
+      "file": "braced-lambda-return.atto",
+      "gitBlobSha1": "7a23265c28e5957491f4a53d8fd739530d8f898b",
+      "outcome": "accept",
+      "expectedExitCode": 2,
+      "confirmedBackends": [],
+      "executableParityCertified": false
+    },
+    {
+      "id": "nonvoid-no-return",
+      "file": "nonvoid-no-return.atto",
+      "gitBlobSha1": "0a62c35d2fe6b6b13e77dec7066cc87bbfc600a6",
+      "outcome": "reject",
+      "rejectKind": "missing-explicit-return",
+      "confirmedBackends": [],
+      "executableParityCertified": false
+    },
+    {
+      "id": "nonvoid-bare-return",
+      "file": "nonvoid-bare-return.atto",
+      "gitBlobSha1": "b864775dbd7c93d90de39cd6bf223cb498094ace",
+      "outcome": "reject",
+      "rejectKind": "missing-return-value",
+      "confirmedBackends": [],
+      "executableParityCertified": false
+    },
+    {
+      "id": "void-valued-return",
+      "file": "void-valued-return.atto",
+      "gitBlobSha1": "2565d745022507525802981b7481a776493c6d19",
+      "outcome": "reject",
+      "rejectKind": "void-valued-return",
+      "confirmedBackends": [],
+      "executableParityCertified": false
+    },
+    {
+      "id": "braced-lambda-fallthrough",
+      "file": "braced-lambda-fallthrough.atto",
+      "gitBlobSha1": "a315f657a79ea211a9600d0616e2017a1c9dd6df",
+      "outcome": "reject",
+      "rejectKind": "braced-lambda-missing-return",
+      "confirmedBackends": [],
+      "executableParityCertified": false
+    },
+    {
+      "id": "nested-lambda-no-outer-return",
+      "file": "nested-lambda-no-outer-return.atto",
+      "gitBlobSha1": "7d1e307df616e463cfdb8f541f808fde75874fa2",
+      "outcome": "reject",
+      "rejectKind": "outer-missing-return",
+      "confirmedBackends": [],
+      "executableParityCertified": false
+    },
+    {
+      "id": "single-branch-return",
+      "file": "single-branch-return.atto",
+      "gitBlobSha1": "c2b5ef9e4395925c40416e1c3bea784891329e55",
+      "outcome": "reject",
+      "rejectKind": "branch-missing-return",
+      "confirmedBackends": [],
+      "executableParityCertified": false
+    }
+  ]
+}
