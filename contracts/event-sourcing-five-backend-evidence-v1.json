@@ -1,0 +1,97 @@
+{
+  "schema": "atto.event-sourcing.five-backend-evidence/1",
+  "updated_utc": "2026-11-11",
+  "scope": "event-sourced-actor-durable-command",
+  "contract": "contracts/event-sourcing-durable-command-v1.json",
+  "guestAcceptance": "fixtures/event-sourcing/bank-account.atto",
+  "guestRequirement": "actual compiler-generated BankAccount .atto actor, crash-after-commit-before-ack, higher-epoch restore/retry, original reply, no duplicate effect",
+  "backendOrder": [
+    "java",
+    "llvm",
+    "wasm",
+    "forge",
+    "net"
+  ],
+  "backends": {
+    "java": {
+      "repo": "ores-truffle-oreslang/oreslang-source.java",
+      "pr": 2768,
+      "head": "f6f6ccb45ffded0d51ccca99ebcef4f3cba1ffe7",
+      "file": "src/main/java/dev/oreslang/runtime/persistence/SqlitePersistenceStore.java",
+      "git_blob": "c00efe8fdf495bfa8f799f28be2c983f56fb953e",
+      "host_contract": "sqlite_wal_full_atomic_multi_event_inbox_async_host_bridge",
+      "host_evidence": "SOURCE_VERIFIED_ONLY",
+      "guest_evidence": "NOT_EXECUTED",
+      "ci_evidence": "NOT_EXECUTED",
+      "aot_evidence": "NOT_EXECUTED"
+    },
+    "llvm": {
+      "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+      "pr": 1646,
+      "head": "7f687196af8f9eb0330944a2eec1c24901935bdc",
+      "file": "src/main/cpp/oreslang/runtime/SqliteBatchPersistence.hpp",
+      "git_blob": "426602862b48e74275459e5adf82bcfac130f642",
+      "host_contract": "sqlite_wal_full_atomic_multi_event_inbox",
+      "host_evidence": "SOURCE_VERIFIED_ONLY",
+      "guest_evidence": "NOT_EXECUTED",
+      "ci_evidence": "NOT_EXECUTED",
+      "aot_evidence": "NOT_EXECUTED"
+    },
+    "wasm": {
+      "repo": "ores-truffle-oreslang/oreslang-source.wasm",
+      "pr": 467,
+      "head": "0545cba129deff73936aed02ff092b55cd1f147e",
+      "file": "src/durable-command-wire-v1.mjs",
+      "git_blob": "94713408f78bf47348ce9be33e0784cdf895fa8e",
+      "host_contract": "bounded_wire_codec_only_no_storage",
+      "host_evidence": "SOURCE_VERIFIED_ONLY",
+      "guest_evidence": "NOT_EXECUTED",
+      "ci_evidence": "NOT_EXECUTED",
+      "aot_evidence": "NOT_EXECUTED"
+    },
+    "forge": {
+      "repo": "ores-truffle-oreslang/oreslang-source.forge",
+      "pr": 269,
+      "head": "5c7b744ccf8848d8533f1d7c26dc86c4370d1042",
+      "file": "runtime/durable_command_inbox_v1.hpp",
+      "git_blob": "169ff950937efb890dbe38414f5aa87d8507d506",
+      "test_file": "verification/durable_command_inbox_v1_test.cpp",
+      "test_git_blob": "fa22d0be08ae2fd6de03c899561e0566d083931a",
+      "host_contract": "sqlite_wal_full_atomic_multi_event_inbox",
+      "host_evidence": "LOCAL_HOST_EXECUTED",
+      "local_host_run": {
+        "flavors": [
+          "gcc_o2",
+          "gcc_asan_ubsan",
+          "clang_o2",
+          "clang_asan_ubsan"
+        ],
+        "reported": "FORGE_DURABLE_HOST_PASS|atomic_events=2|cross_epoch_reply=1|rollback=1|guest_atto=0",
+        "provenance": "local container binary compile and run against exact Git blob bytes; not GitHub Actions"
+      },
+      "guest_evidence": "NOT_EXECUTED",
+      "ci_evidence": "NOT_EXECUTED",
+      "aot_evidence": "NOT_EXECUTED"
+    },
+    "net": {
+      "repo": "ores-truffle-oreslang/oreslang-source.net",
+      "pr": 490,
+      "head": "f1b8762bc9a77077206c0ea605a3389005937598",
+      "file": "runtime/Ores.Net.Runtime/DurableCommandInboxV1.cs",
+      "git_blob": "0bcfa2418b7735f92a2c9cc43c3768f75e57a645",
+      "host_contract": "sqlite_native_c_interop_atomic_multi_event_inbox",
+      "host_evidence": "SOURCE_VERIFIED_ONLY",
+      "guest_evidence": "NOT_EXECUTED",
+      "ci_evidence": "NOT_EXECUTED",
+      "aot_evidence": "NOT_EXECUTED"
+    }
+  },
+  "releaseRules": [
+    "Never promote source-only or host-only evidence to compiled guest parity",
+    "Zero-step workflow is NOT_EXECUTED, even when GitHub status reports failure",
+    "No source mirroring outside approved private-source policy",
+    "Pure reducers and sealed actor state must be compiler checked",
+    "Guest replay must execute under current fenced actor epoch",
+    "Every backend needs exact source head+tree, fixture blob, real compiler run, actual binary and failed/crash tests"
+  ]
+}

@@ -105,3 +105,29 @@ injection, before status changes are allowed.
 This is an executable milestone and a **scope distinction**, not five-backend
 production actor parity. No private source is mirrored to another GitHub
 organization absent separately approved preflight and publisher policy.
+
+
+## Five-backend executable evidence tracker (2026-11-11)
+
+`contracts/event-sourcing-five-backend-evidence-v1.json` pins the
+Java/LLVM/Wasm/Forge/.NET draft PR heads and precise host-provider Git blobs.
+The inventory is **read-only/source-free** and NEVER certifies guest execution.
+
+New Forge host branch PR #269 implements real SQLite WAL/FULL atomic
+command+multi-event storage; its exact local header and test blobs passed
+GCC/Clang optimized and ASan/UBSan (four local binary runs). This is
+`LOCAL_HOST_EXECUTED`, **not** GH Actions or compiled .atto guest evidence.
+New .NET PR #490 stages SQLite native-interop host and Linux Native AOT
+probe but the .NET SDK is absent in the local environment: host and
+Native AOT execution remain `NOT_EXECUTED`.
+
+Java #2768 and LLVM #1646 have draft host persistence bridges but still
+require exact-head actual CI. Wasm #467 implements bounded wire encoding
+only; its zero-import wasm32 guest has no durable provider or actor host.
+Every backend's compiled BankAccount guest, crash/replay and AOT evidence
+are still `NOT_EXECUTED`.
+
+The new source-free test checks the exact backend inventory, evidence-label
+separation and release gates. It is NOT a replacement for executing the
+real AttoLang compiler, host runtime or binary; a zero-step workflow is
+never a test pass. Keep all PRs draft until independent verified runs.
