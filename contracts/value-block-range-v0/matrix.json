@@ -1,0 +1,85 @@
+{
+  "schema": "attolang.value-block-range.parity.v0",
+  "status": "GAPS_AUDITED_NOT_PARITY_VERIFIED",
+  "as_of": "2026-11-11",
+  "source_contract": {
+    "repo": "ores-truffle-oreslang/attolang-language-spec.md",
+    "pr": 32,
+    "branch": "design/value-block-ternary-range-loops-20261110",
+    "file": "contracts/atto-value-block-range-v0.json",
+    "git_blob_sha": "b18f455e0a6e14bc9b7b684309e7a3d9a9f41f61"
+  },
+  "required_guest_lanes": [
+    "java-interpreter",
+    "java-native-image",
+    "llvm-native",
+    "wasm32",
+    "forge-native",
+    "net-native-aot"
+  ],
+  "backend_audit": [
+    {
+      "backend": "java",
+      "repo": "ores-truffle-oreslang/oreslang-source.java",
+      "main_sha": "6d8eb70048eafc9a84c5aebe9c1bb06104f16e76",
+      "observed": "conditional_expr_ast_parser_and_type_tests_exist",
+      "gaps": [
+        "BlockExpr",
+        "RangeExpr",
+        "for_in",
+        "guest_aot_parity"
+      ]
+    },
+    {
+      "backend": "llvm",
+      "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+      "main_sha": "0ee037ca3e5dd9ac6ac1e9cc3d40f19ee6326a9c",
+      "observed": "scalar_conditional_expression_ast_exists",
+      "gaps": [
+        "value_blocks",
+        "range_tokens_and_ir",
+        "for_in",
+        "executed_guest_parity"
+      ]
+    },
+    {
+      "backend": "wasm",
+      "repo": "ores-truffle-oreslang/oreslang-source.wasm",
+      "main_sha": "2c6ce5988592080ea47b8877e2b8c1d3df5cb9bd",
+      "observed": "real_compiler_uses_pinned_llvm_wasm32_path",
+      "gaps": [
+        "pinned_llvm_support",
+        "wasm_guest_execution",
+        "wasm_memory_no_host_fallback"
+      ]
+    },
+    {
+      "backend": "forge",
+      "repo": "ores-truffle-oreslang/oreslang-source.forge",
+      "main_sha": "2acf59d589f8016f879581f17a27df144fa73075",
+      "observed": "ternary_explicitly_rejected_by_stage0_frontend",
+      "gaps": [
+        "ternary_bool_cfg",
+        "value_blocks",
+        "range_ir",
+        "for_in",
+        "native_guest"
+      ]
+    },
+    {
+      "backend": "net",
+      "repo": "ores-truffle-oreslang/oreslang-source.net",
+      "main_sha": "3f3606cc3ef81dad117047b4cb57609ad1a92672",
+      "observed": "ternary_explicitly_rejected_by_scalar_native_aot_frontend",
+      "gaps": [
+        "ternary_bool_cfg",
+        "value_blocks",
+        "range_ir",
+        "for_in",
+        "native_aot_guest"
+      ]
+    }
+  ],
+  "verified_guest_receipts": [],
+  "verification_rule": "No backend or lane counts as supporting the new syntax until the exact-head compiler has produced and run a guest artifact with all applicable positive and negative cases. Source-free checks do not count."
+}
