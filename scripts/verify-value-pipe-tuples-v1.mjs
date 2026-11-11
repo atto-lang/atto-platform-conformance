@@ -17,10 +17,19 @@ if(!fs.statSync(binary).isFile())throw Error("compiler binary must be a regular 
 const binSha=createHash("sha256").update(fs.readFileSync(binary)).digest("hex");
 const blobSha=(data)=>createHash("sha1").update(Buffer.concat([Buffer.from("blob "+data.length+String.fromCharCode(0)),data])).digest("hex");
 function verifyFixture(item){
-  const full=path.resolve(fixtureRoot,item.path);if(!full.startsWith(fixtureRoot))throw Error("fixture escapes root");
-  const bytes=fs.readFileSync(full),sha=blobSha(bytes);
+  if(typeof item.path!=="string"||!item.path.endsWith(".atto"))throw Error("invalid fixture path");
+  const full=path.resolve(fixtureRoot,item.path);
+  const relative=path.relative(fixtureRoot,full);
+  if(!relative||relative===".."||relative.startsWith(".."+path.sep)||path.isAbsolute(relative)){
+    throw Error("fixture escapes root");
+  }
+  const canonicalRoot=fs.realpathSync(fixtureRoot),canonicalFile=fs.realpathSync(full);
+  if(!canonicalFile.startsWith(canonicalRoot+path.sep)){
+    throw Error("symlinked fixture escapes canonical root");
+  }
+  const bytes=fs.readFileSync(canonicalFile),sha=blobSha(bytes);
   if(sha!==item.git_blob_sha1)throw Error("source fixture Git blob mismatch: "+item.path);
-  return full;
+  return canonicalFile;
 }
 function invoke(argv,file){
   const expanded=argv.map(x=>x.replaceAll("{fixture}",file));
@@ -34,9 +43,10 @@ const negatives=[];
 for(const item of plan.negative){
   const full=verifyFixture(item),res=invoke(check,full);
   const diagnostic=(res.stdout+"\n"+res.stderr).replaceAll(full,"<fixture>");
-  if(res.status===0||res.signal||!new RegExp(item.diagnostic_family,"i").test(diagnostic)){
+  if(!Number.isInteger(res.status)||res.status<=0||res.signal
+      ||!new RegExp(item.diagnostic_family,"i").test(diagnostic)){
     throw Error("negative source not soundly rejected: "+item.path+" "+JSON.stringify(res));
   }
   negatives.push({fixture:item.path,status:res.status,diagnostic_family_matched:true});
 }
-process.stdout.write(JSON.stringify({schema:"atto.tuple-guest-evidence/v1",backend,compiler,binary_sha256:binSha,positive_fixture:plan.positive.git_blob_sha1,positive_stdout:positive.stdout,negative_checks:negatives,real_executable_invoked:true,scope:"source guest + binary only; runner and AOT provenance separately required"},null,2)+"\n");
+process.stdout.write(JSON.stringify({schema:"atto.tuple-guest-evidence/v1",backend,compiler,binary_sha256:binSha,github_run_id:process.env.GITHUB_RUN_ID||null,github_run_attempt:process.env.GITHUB_RUN_ATTEMPT||null,positive_fixture:plan.positive.git_blob_sha1,positive_stdout:positive.stdout,negative_checks:negatives,real_executable_invoked:true,scope:"source guest + binary only; runner and AOT provenance separately required"},null,2)+"\n");
