@@ -2,8 +2,8 @@
 // This captures a candidate; only independently verified trusted CI can certify.
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { constants, closeSync, fstatSync, mkdirSync, mkdtempSync, openSync,
-  readFileSync, readSync, realpathSync, writeFileSync } from 'node:fs';
+import { constants, closeSync, fstatSync, mkdtempSync, openSync,
+  readSync, realpathSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { isAbsolute, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -28,7 +28,15 @@ function readBounded(path, limit) {
     const stat = fstatSync(fd);
     need(stat.isFile() && stat.nlink === 1 && stat.size > 0 && stat.size <= limit,
       'not a bounded regular file');
-    const data = readFileSync(fd);
+    const data = Buffer.alloc(stat.size);
+    let offset = 0;
+    while (offset < data.length) {
+      const n = readSync(fd, data, offset, data.length - offset, null);
+      need(n > 0, 'input truncated during bounded read');
+      offset += n;
+    }
+    const extra = Buffer.alloc(1);
+    need(readSync(fd, extra, 0, 1, null) === 0, 'input grew during bounded read');
     const after = fstatSync(fd);
     need(after.size === stat.size && after.ino === stat.ino &&
       after.dev === stat.dev && after.mtimeMs === stat.mtimeMs,
@@ -97,9 +105,14 @@ function checkedExe(path, expected, label) {
 function args(template, substitutions, label) {
   need(Array.isArray(template) && template.length >= 1 && template.length <= 40,
     label + ' argv must be bounded nonempty array');
+  const hostile = new Set(['-e', '--eval', '--evaluate', '--print', '-p', '-c',
+    '--command', '--input-type', '--import', '--require']);
   return template.map(arg => {
     need(typeof arg === 'string' && arg.length > 0 && arg.length <= 4096 &&
       !/[\u0000-\u001f]/.test(arg), label + ' invalid argument');
+    need(!hostile.has(arg) && !arg.startsWith('--eval=') &&
+      !arg.startsWith('--print=') && !arg.startsWith('--input-type='),
+      label + ' must not use inline interpreter code or preload flags');
     return arg.replaceAll('{fixture}', substitutions.fixture)
       .replaceAll('{artifact}', substitutions.artifact)
       .replaceAll('{compiler}', substitutions.compiler);
@@ -122,6 +135,33 @@ function spawnReal(argv, cwd, timeoutMs, label) {
     label + ' stdout exceeded byte budget');
   return result;
 }
+// A compiler emitting a shell script or a copied source file is not a native
+// AOT executable. These are shallow magic-byte admissions, NOT proof of
+// provenance or an executable's runtime behavior.
+export function checkGeneratedArtifact(path, profile) {
+  const fd = openSync(path, constants.O_RDONLY | (constants.O_NOFOLLOW || 0));
+  let magic;
+  try {
+    const stat = fstatSync(fd);
+    need(stat.isFile() && stat.size >= 4 && stat.size <= MAX_EXECUTABLE,
+      'generated artifact must be a bounded regular binary');
+    magic = Buffer.alloc(4);
+    need(readSync(fd, magic, 0, 4, 0) === 4,
+      'generated artifact truncated');
+  } finally { closeSync(fd); }
+  const isWasm = magic.equals(Buffer.from([0, 0x61, 0x73, 0x6d]));
+  const isELF = magic.equals(Buffer.from([0x7f, 0x45, 0x4c, 0x46]));
+  const isPE = magic[0] === 0x4d && magic[1] === 0x5a;
+  const isMachO = ['feedface', 'cefaedfe', 'feedfacf', 'cffaedfe'].includes(magic.toString('hex'));
+  if (profile === 'wasm-node-worker') {
+    need(isWasm, 'Wasm profile must execute a compiled WebAssembly module');
+  } else {
+    need(isELF || isPE || isMachO,
+      'Native/AOT profile must produce a native executable, not a script or source');
+  }
+  return true;
+}
+
 export function checkConfiguration(config) {
   need(config && typeof config === 'object' && !Array.isArray(config),
     'missing real-guest execution config');
@@ -167,6 +207,14 @@ export function captureReal(config) {
   const compile = args(config.compile_argv, substitution, 'compiler');
   const run = args(config.run_argv, substitution, 'guest');
   need(compile[0] === compiler, 'compile argv cannot substitute another compiler');
+  need(config.compile_argv.some(arg => arg.includes('{fixture}')),
+    'compiler argv must consume the pinned source-owned fixture');
+  need(config.artifact_kind !== 'generated' ||
+    config.compile_argv.some(arg => arg.includes('{artifact}')),
+    'generated guest compiler must write to the designated artifact');
+  need(config.run_argv.some(arg => arg.includes(config.artifact_kind ===
+    'generated' ? '{artifact}' : '{fixture}')),
+    'guest argv must consume the pinned source fixture or generated artifact');
   // An approved host launcher (node/java/dotnet) must itself be pinned as a
   // dependency; native-generated guest may execute its own freshly hashed artifact.
   const approvedRunExecutables = new Set([
@@ -176,9 +224,20 @@ export function captureReal(config) {
   spawnReal(compile, source.path, config.timeout_ms, 'compiler');
   const guestArtifact = config.artifact_kind === 'source_fixture' ? fixture : artifact;
   const artifactHash = hashFile(guestArtifact);
+  if (config.artifact_kind === 'generated') {
+    checkGeneratedArtifact(guestArtifact, config.profile);
+  }
   need(config.artifact_kind === 'source_fixture' || run.includes(artifact),
     'native-generated artifact not actually executed by configured run');
   const executed = spawnReal(run, source.path, Math.min(config.timeout_ms,30000), 'guest');
+  need(hashFile(guestArtifact) === artifactHash,
+    'guest artifact bytes changed during or after execution');
+  need(hashFile(compiler) === config.compiler_binary_sha256,
+    'compiler executable bytes changed during capture');
+  for (const pin of config.dependency_pins) {
+    need(hashFile(realpathSync(pin.path)) === pin.sha256,
+      'dependent runtime/toolchain executable bytes changed during capture');
+  }
   const semantic = checkGuestStdout(executed.stdout);
   writeFileSync(join(outputDir, 'guest.stdout.jsonl'), executed.stdout,
     { mode: 0o600, flag: 'wx' });
