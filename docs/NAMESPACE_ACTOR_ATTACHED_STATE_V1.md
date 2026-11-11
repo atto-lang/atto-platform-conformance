@@ -24,7 +24,9 @@ pub mtd (Foo f) increment(): void {
 }
 ```
 
-`pub declare actor Foo;` is invalid: declaration modifiers follow `declare`, just as in `declare pub actor Foo;`.\n\n**Syntax stage only:** the full example above is NOT currently an executable
+`pub declare actor Foo;` is invalid: declaration modifiers follow `declare`, just as in `declare pub actor Foo;`.
+
+**Syntax stage only:** the full example above is NOT currently an executable
 Atto program. Contract witness linking, attached state loan/MIR lowering and
 out-of-line actor dispatch have distinct proof gates.
 
