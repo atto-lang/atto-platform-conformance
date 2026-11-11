@@ -6,6 +6,9 @@ import { pathToFileURL } from 'node:url';
 
 const EXPECTED_CONTRACT = 'attolang-erlang-otp-strict-aot-v1';
 const TARGETS = new Set(['java', 'llvm', 'net', 'wasm', 'forge']);
+const MANIFEST = JSON.parse(readFileSync(new URL('../contracts/erl-otp-strict-aot-v1.json', import.meta.url), 'utf8'));
+const FEATURES = new Map(MANIFEST.features.map(feature => [feature.id, feature]));
+const VECTORS = new Map(MANIFEST.vectors.map(vector => [vector.id, vector]));
 const HEX40 = /^[0-9a-f]{40}$/;
 const HEX64 = /^[0-9a-f]{64}$/;
 const URL = /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/(actions\/runs\/\d+|pull\/\d+(?:#.+)?)$/;
@@ -19,6 +22,8 @@ export function validateReceipt(r) {
   requireValue(r.contract === EXPECTED_CONTRACT, 'contract mismatch');
   requireValue(TARGETS.has(r.backend), 'backend must be a strict-AOT target');
   requireValue(typeof r.feature === 'string' && /^[a-z][a-z0-9_]*$/.test(r.feature), 'feature ID invalid');
+  requireValue(FEATURES.has(r.feature), 'unknown feature; not in candidate contract');
+  requireValue(FEATURES.get(r.feature)?.backends.includes(r.backend) === true, 'feature/backend mismatch');
   requireValue(r.status === 'VERIFIED', 'not verified');
   requireValue(r.evidenceClass === 'compiler-guest', 'host-only/source-only evidence rejected');
   const c = r.compiler || {};
@@ -28,6 +33,9 @@ export function validateReceipt(r) {
   requireValue(HEX64.test(c.binarySha256 ?? ''), 'compiler binary SHA256 missing');
   const f = r.fixture || {};
   requireValue(typeof f.id === 'string' && f.id.length > 0, 'fixture ID missing');
+  requireValue(VECTORS.has(f.id), 'unknown fixture; not in candidate contract');
+  requireValue(VECTORS.get(f.id)?.feature === r.feature, 'fixture/feature mismatch');
+  requireValue(VECTORS.get(f.id)?.backends.includes(r.backend) === true, 'fixture/backend mismatch');
   requireValue(HEX64.test(f.sha256 ?? ''), 'fixture hash missing');
   requireValue(HEX64.test(r.artifact?.sha256 ?? ''), 'AOT artifact hash missing');
   const e = r.execution || {};
