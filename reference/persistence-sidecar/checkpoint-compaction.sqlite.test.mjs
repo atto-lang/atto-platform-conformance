@@ -265,3 +265,97 @@ test('mixed journal schema versions are rejected before destructive checkpoint',
     assert.equal(db.db.prepare('SELECT count(*) n FROM checkpoints').get().n,0);
   });
 });
+
+test('indexed checkpoint prevents accidental durable command deletion or modification',()=>{
+  fixture(open=>{
+    const db=open();grant(db,'account',1);
+    const a=bank(db);a.restore();do_commit(a,db,'d1',deposit(42));
+    a.checkpoint_and_compact();
+    assert.throws(()=>db.db.prepare('DELETE FROM command_commits').run(),
+      /IMMUTABLE_COMMAND_INDEX/);
+    assert.throws(()=>db.db.prepare('UPDATE command_commits SET command_hash=?').run('0'.repeat(64)),
+      /IMMUTABLE_COMMAND_INDEX/);
+    assert.equal(read(db).snapshot.version,1);
+    assert.equal(db.db.prepare('SELECT command_count FROM checkpoint_index_manifests').get().command_count,1);
+  });
+});
+
+test('deleted retained command after compaction fails closed during recovery',()=>{
+  fixture(open=>{
+    const db=open();grant(db,'account',1);
+    const a=bank(db);a.restore();do_commit(a,db,'d1',deposit(42));
+    a.checkpoint_and_compact();
+    // Simulate a privileged/out-of-band database corruption that bypasses
+    // provider immutability triggers. A digest is not a malicious-writer MAC.
+    db.db.exec('DROP TRIGGER immutable_command_commits_delete');
+    db.db.prepare('DELETE FROM command_commits WHERE tenant=? AND actor=? AND state_name=?')
+      .run('t','account','main');
+    assert.throws(()=>read(db),/CORRUPT_COMMAND_INDEX/);
+    assert.throws(()=>bank(db).restore(),/CORRUPT_COMMAND_INDEX/);
+  });
+});
+
+test('mutating committed result bytes is detected by command-index manifest',()=>{
+  fixture(open=>{
+    const db=open();grant(db,'account',1);
+    const a=bank(db);a.restore();do_commit(a,db,'d1',deposit(42));
+    a.checkpoint_and_compact();
+    db.db.exec('DROP TRIGGER immutable_command_commits_update');
+    db.db.prepare('UPDATE command_commits SET result_bytes=? WHERE op_id=?')
+      .run(Buffer.from('{"balance_cents":999}'),'d1');
+    assert.throws(()=>read(db),/CORRUPT_COMMAND_INDEX/);
+    assert.throws(()=>bank(db).restore(),/CORRUPT_COMMAND_INDEX/);
+  });
+});
+
+test('missing checkpoint command-index manifest never authorizes deduplication',()=>{
+  fixture(open=>{
+    const db=open();grant(db,'account',1);
+    const a=bank(db);a.restore();do_commit(a,db,'d1',deposit(42));
+    a.checkpoint_and_compact();
+    db.db.exec('DELETE FROM checkpoint_index_manifests');
+    assert.throws(()=>read(db),/COMMAND_INDEX_MANIFEST_REQUIRED/);
+    assert.throws(()=>bank(db).restore(),/COMMAND_INDEX_MANIFEST_REQUIRED/);
+  });
+});
+
+test('unindexed legacy tail after checkpoint cannot be replayed as an actor command',()=>{
+  fixture(open=>{
+    const db=open();grant(db,'account',1);
+    const a=bank(db);a.restore();do_commit(a,db,'d1',deposit(42));
+    a.checkpoint_and_compact();
+    const legacy={tenantId:'t',actor:'account',stateName:'main',epoch:1,
+      expectedVersion:1,schemaVersion:1,kind:'event',opId:'legacy-tail',
+      payload:Buffer.from('{}')};
+    assert.equal(db.enqueue(legacy).status,'admitted');
+    assert.equal(db.flush()[0].status,'committed');
+    assert.throws(()=>read(db),/UNINDEXED_JOURNAL/);
+    assert.throws(()=>bank(db).restore(),/UNINDEXED_JOURNAL/);
+  });
+});
+
+test('oversized durable command history fails checkpoint without deleting events',()=>{
+  fixture(open=>{
+    const db=open({maxIndexedCommands:1});grant(db,'account',1);
+    const a=bank(db);a.restore();
+    do_commit(a,db,'d1',deposit(10));do_commit(a,db,'d2',deposit(20));
+    assert.throws(()=>a.checkpoint_and_compact(),/COMMAND_INDEX_LIMIT_EXCEEDED/);
+    assert.equal(db.db.prepare('SELECT count(*) AS n FROM events').get().n,2);
+    assert.equal(db.db.prepare('SELECT count(*) AS n FROM checkpoints').get().n,0);
+  });
+});
+
+test('corrupt command version range cannot generate a durable duplicate receipt',()=>{
+  fixture(open=>{
+    const db=open();grant(db,'account',1);
+    const a=bank(db);a.restore();do_commit(a,db,'d1',deposit(42));
+    db.db.exec('DROP TRIGGER immutable_command_commits_update');
+    db.db.prepare('UPDATE command_commits SET last_version=? WHERE op_id=?')
+      .run(999,'d1');
+    const scope={tenantId:'t',actor:'account',stateName:'main',epoch:1,
+      opId:'d1',commandBytes:Buffer.from(JSON.stringify(['deposit',42]))};
+    assert.throws(()=>db.verifyCommand(scope),/CORRUPT_COMMAND_RECORD/);
+    assert.throws(()=>db.enqueueCommand({...scope,expectedVersion:1,schemaVersion:1,
+      events:[Buffer.from('{}')],resultBytes:Buffer.from('null')}),/CORRUPT_COMMAND_RECORD/);
+  });
+});
