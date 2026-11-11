@@ -3,7 +3,7 @@
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { constants, closeSync, fstatSync, mkdtempSync, openSync,
-  readSync, realpathSync, writeFileSync } from 'node:fs';
+  readSync, realpathSync, lstatSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { isAbsolute, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -23,6 +23,7 @@ function hex(x, regex, label) {
   need(typeof x === 'string' && regex.test(x) && /[1-9a-f]/.test(x), 'invalid ' + label);
 }
 function readBounded(path, limit) {
+  need(!lstatSync(path).isSymbolicLink(), 'source/config path must not be symbolic link');
   const fd = openSync(path, constants.O_RDONLY | (constants.O_NOFOLLOW || 0));
   try {
     const stat = fstatSync(fd);
@@ -45,6 +46,7 @@ function readBounded(path, limit) {
   } finally { closeSync(fd); }
 }
 function hashFile(path, max = MAX_EXECUTABLE) {
+  need(!lstatSync(path).isSymbolicLink(), 'binary/artifact must not be symlink');
   const fd = openSync(path, constants.O_RDONLY | (constants.O_NOFOLLOW || 0));
   try {
     const stat = fstatSync(fd);
@@ -68,8 +70,9 @@ function hashFile(path, max = MAX_EXECUTABLE) {
   } finally { closeSync(fd); }
 }
 function git(gitBinary, root, ...argv) {
+  const hookSink = process.platform === 'win32' ? 'NUL' : '/dev/null';
   const r = spawnSync(gitBinary, ['-c', 'core.fsmonitor=false',
-    '-c', 'core.hooksPath=/dev/null', '-C', root, ...argv], {
+    '-c', 'core.hooksPath=' + hookSink, '-C', root, ...argv], {
     shell: false, timeout: 10000, encoding: 'utf8', maxBuffer: 65536,
     env: { PATH: process.platform === 'win32' ?
         (process.env.SystemRoot || 'C:\\Windows') + '\\System32' : '/usr/bin:/bin',
@@ -144,12 +147,15 @@ function spawnReal(argv, cwd, timeoutMs, label) {
 // AOT executable. These are shallow magic-byte admissions, NOT proof of
 // provenance or an executable's runtime behavior.
 export function checkGeneratedArtifact(path, profile) {
+  need(!lstatSync(path).isSymbolicLink(),
+    'generated AOT/Wasm artifact must not be a symbolic link');
   const fd = openSync(path, constants.O_RDONLY | (constants.O_NOFOLLOW || 0));
   let magic;
   try {
     const stat = fstatSync(fd);
-    need(stat.isFile() && stat.size >= 4 && stat.size <= MAX_EXECUTABLE,
-      'generated artifact must be a bounded regular binary');
+    need(stat.isFile() && stat.nlink === 1 &&
+      stat.size >= 4 && stat.size <= MAX_EXECUTABLE,
+      'generated artifact must be a bounded single-link regular binary');
     magic = Buffer.alloc(4);
     need(readSync(fd, magic, 0, 4, 0) === 4,
       'generated artifact truncated');
