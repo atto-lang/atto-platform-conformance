@@ -52,8 +52,11 @@ function validateOperation(op) {
   ensure(op !== null && typeof op === 'object' && !Array.isArray(op),
     'E_MIR_SCHEMA');
   if (op.op === 'UnknownEffect') fail('E_MIR_UNSUPPORTED_EFFECT');
+  // A plain object inherits "constructor", "toString" and "__proto__".
+  // Never interpret inherited prototype members as admitted operation tags.
+  ensure(typeof op.op === 'string' && Object.hasOwn(OP_FIELDS, op.op),
+    'E_MIR_UNSUPPORTED_EFFECT');
   const fields = OP_FIELDS[op.op];
-  ensure(fields != null, 'E_MIR_UNSUPPORTED_EFFECT');
   recordOf(op, fields);
   for (const field of ['owner', 'from', 'into', 'loan']) {
     if (fields.includes(field)) id(op[field], field === 'loan'
@@ -399,4 +402,12 @@ test('unknown graph and block properties reject before checking semantics', () =
   assert.throws(() => semantics({entry: 0, blocks: [
     {...g.blocks[0], implicitUnwind: true}
   ]}), /E_MIR_SCHEMA/);
+});
+
+test('prototype property names never become recognized ownership operations', () => {
+  for (const name of ['__proto__', 'constructor', 'toString']) {
+    assert.throws(() => semantics(basic([
+      sampleInit(), {op: name}, {op: 'Return'}
+    ])), /E_MIR_UNSUPPORTED_EFFECT/, name);
+  }
 });
