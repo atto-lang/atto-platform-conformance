@@ -78,8 +78,8 @@ test("invalid quotas and forged capability identities fail before allocation",()
  assert.throws(()=>m.admit_request("r"),/capacity|duplicate/);
 });
 test("bounded adversarial action sequences never violate lifetime or physical turn limits",()=>{
- const actions=["admit_r","admit_m","enter","finish","exit","close","cancel","shutdown"];
- for(let sequence=0;sequence<4096;sequence++){
+ const actions=["admit_r","admit_m","enter","finish","exit","close","cancel","shutdown","force_stop","recycle"];
+ for(let sequence=0;sequence<10000;sequence++){
    const model=new HttpActorAdmissionModel({request_concurrency:2,message_concurrency:2});
    let value=sequence,request=null,message=null;
    for(let step=0;step<4;step++){
@@ -93,8 +93,13 @@ test("bounded adversarial action sequences never violate lifetime or physical tu
        if(action==="close" && request)model.close_response(request);
        if(action==="cancel" && request)model.cancel_request(request);
        if(action==="shutdown")model.start_shutdown();
+       if(action==="force_stop")model.force_stop();
+       if(action==="recycle")model.recycle();
      } catch(error) {
        assert.ok(error instanceof Error,"expected explicit denial, not silent downgrade");
+       assert.match(error.message,
+         /admission sealed|capacity exhausted|already closed|already completed|stale or forged|cannot reenter|physical execution already active|not the executing physical turn|message cannot resume|duplicate request|duplicate message|cannot recycle before quiescence/,
+         "unrecognized exception must not count as expected feature denial");
      }
      const snapshot=model.snapshot();
      assert.ok(snapshot.request_count<=2);
