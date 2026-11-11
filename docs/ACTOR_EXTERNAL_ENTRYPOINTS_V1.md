@@ -10,7 +10,7 @@ Canonical out-of-line, receiver-first proposal (the syntax intentionally follows
 
 ```atto
 namespace demo;
-define actor Worker implements WorkerApi;
+declare actor Worker;
 
 define external mtd (Worker w) init(): void {
   return;
@@ -24,7 +24,15 @@ define external mtd (Worker w) receive(ActorMail<int> mail): void {
 pub mtd (Worker w) describe(): int { return 7; }
 ```
 
-Inline actor-body declarations may use `external init(...)` and `external receive(...)` as equivalent source forms, subject to the same normalized metadata. Both forms are currently **proposed** in this contract. The latest Java `main` frontend does not accept this exact code, while active stacked drafts parse/bind some pieces without executable lowering.
+### Declaration versus definition
+
+- **Canonical out-of-line nominal actor:** `declare actor Worker;` (or `declare pub actor Worker;` when an exported nominal type is required). No receiver alias, actor instance, empty class, state storage or runnable dispatch table is synthesized by this declaration.
+- **Inline implementation:** `define actor Worker as ... end` remains the actor-body form; a full inline definition is not equivalent to a declaration.
+- **Migration compatibility:** existing `define actor Worker as worker;` is parsed by the Java draft, but is not the canonical spelling for a declaration.
+- **Future contracts:** `declare actor Worker implements WorkerApi;` requires retaining the nominal contract list in the standalone actor AST and proving link-time conformance. The initial Java parser deliberately rejects this extension rather than silently discarding it.
+- Inline actor-body methods may eventually use `external init(...)` and `external receive(...)` with the same verified role metadata. Those spellings are not yet implemented by the current static Java draft.
+
+The new Java compiler draft admits `declare actor` only as nominal/static metadata and continues to fail closed before executable lowering. The Java `main` frontend does not accept this exact code; cross-backend compiler/runtime parity remains unproven.
 
 ## Normative semantic rules
 
