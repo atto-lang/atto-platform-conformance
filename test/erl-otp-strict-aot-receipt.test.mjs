@@ -1,11 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { constants, mkdtempSync, writeFileSync, symlinkSync, linkSync, rmSync } from 'node:fs';
+import { constants, mkdtempSync, writeFileSync, symlinkSync, linkSync, rmSync, readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { inspectReceipt, validateReceipt, readUntrustedReceipt } from '../bin/verify-erl-otp-aot-receipt.mjs';
 
 const h40 = 'a'.repeat(40), h64 = 'b'.repeat(64);
+const manifest = JSON.parse(readFileSync(new URL('../contracts/erl-otp-strict-aot-v1.json', import.meta.url), 'utf8'));
+function sourceHashFor(id) {
+  const vector = manifest.vectors.find(v => v.id === id);
+  assert.ok(vector && typeof vector.source === 'string', 'source-backed fixture required: ' + id);
+  return createHash('sha256').update(Buffer.from(vector.source, 'utf8')).digest('hex');
+}
 function candidate(fixtureId = 'eq.same_int') {
   return {
     contract: 'attolang-erlang-otp-strict-aot-v1',
@@ -15,7 +22,7 @@ function candidate(fixtureId = 'eq.same_int') {
     evidenceClass: 'compiler-guest',
     compiler: { repository: 'ores-truffle-oreslang/oreslang-source.llvm',
       headSha: h40, treeSha: h40, binarySha256: h64 },
-    fixture: { id: fixtureId, sha256: h64 },
+    fixture: { id: fixtureId, sourceProfile: 'atto-strict-v1', sha256: sourceHashFor(fixtureId) },
     artifact: { sha256: h64 },
     execution: {
       runId: 42, jobId: 43, jobAttempt: 1, executedSteps: 6,
@@ -112,6 +119,28 @@ test('rejection mutation suite denies forged statuses and broken AOT invariants'
     assert.equal(v.structurallyValid, false, mutate.toString());
     assert.equal(v.ok, false);
     assert.ok(v.errors.length > 0);
+  }
+});
+
+test('a well-shaped but forged source digest fails before attestation', () => {
+  const r = candidate();
+  r.fixture.sha256 = h64;
+  assert.equal(validateReceipt(r).structurallyValid, false);
+});
+
+test('prose-only runtime/policy scenarios cannot impersonate executable fixtures', () => {
+  const scenarios = [
+    ['selective_receive.keep_unmatched', 'selective_receive'],
+    ['supervision_restart.one_for_one', 'supervision_restart'],
+    ['aot.no_interpreter_fallback', 'finite_closures'],
+  ];
+  for (const [id, feature] of scenarios) {
+    const r = candidate();
+    r.feature = feature;
+    r.fixture.id = id; // Even perfectly shaped user-supplied hashes are not executable source.
+    const result = validateReceipt(r);
+    assert.equal(result.structurallyValid, false, id);
+    assert.match(result.errors.join(' / '), /no executable guest source/);
   }
 });
 
