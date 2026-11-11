@@ -15,6 +15,7 @@ function configuration(profile = 'java-graalvm-jit') {
     otel_source_sha: 'b'.repeat(40),
     compiler_executable: '/nonexistent/compiler',
     compiler_binary_sha256: 'c'.repeat(64),
+    git_executable: '/trusted/git', git_binary_sha256: 'e'.repeat(64),
     dependency_pins: [],
     compile_argv: ['{compiler}', '--check', '{fixture}', '--out', '{artifact}'],
     run_argv: ['{compiler}', profile === 'java-graalvm-jit' ? '{fixture}' : '{artifact}'],
@@ -124,4 +125,16 @@ test('native-AOT and wasm artifact header admission rejects scripts and mismatch
   assert.equal(checkGeneratedArtifact(artifact, 'net-native-aot'), true);
   set(Buffer.from([0xcf, 0xfa, 0xed, 0xfe, 0, 0, 0, 0]));
   assert.equal(checkGeneratedArtifact(artifact, 'java-graalvm-native-aot'), true);
+});
+
+test('Git provenance binary must be an exact absolute pinned tool', () => {
+  const c = configuration();
+  c.git_executable = 'git';
+  denied(() => checkConfiguration(c));
+  c.git_executable = '/trusted/git';
+  c.git_binary_sha256 = '0'.repeat(64);
+  denied(() => checkConfiguration(c));
+  c.git_binary_sha256 = 'e'.repeat(64);
+  c.git_executable = null;
+  denied(() => checkConfiguration(c));
 });
