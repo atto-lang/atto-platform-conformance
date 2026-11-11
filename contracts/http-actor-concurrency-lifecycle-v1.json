@@ -25,7 +25,9 @@
       "requestConcurrency": "maximum concurrent admitted HTTP request lifetimes per actor",
       "messageConcurrency": "maximum concurrent message lifetimes per request",
       "actorExecution": "at most one physical guest turn executing per actor incarnation",
-      "serial": "exactly one admitted request lifetime and one message lifetime"
+      "serial": "exactly one admitted request lifetime and one message lifetime",
+      "gracefulDrain": "Seal new HTTP request admissions; keep previously admitted request capabilities available for their bounded message continuations until response close, timeout or explicit cancellation.",
+      "forcedStop": "Seal both request and message admission and cancel unfinished logical work; a physical carrier still inside the guest cannot be finalized or recycled until it exits."
     }
   },
   "cases": [
@@ -75,13 +77,13 @@
       "id": "HA08",
       "kind": "guest-runtime",
       "name": "shutdown-physical-exit",
-      "oracle": "Shutdown seals admission and rejects new requests, awaits accepted exchange and actor physical-turn quiescence, and does not claim success merely because socket response or mailbox drain completed."
+      "oracle": "Graceful shutdown seals *new request* admissions while permitting already admitted requests to finish their bounded messages; a completed socket response or mailbox drain cannot claim shutdown success until all accepted exchanges and physical carriers have exited."
     },
     {
       "id": "HA09",
       "kind": "guest-runtime",
       "name": "shutdown-failure",
-      "oracle": "If an actor remains physically active beyond deadline, shutdown returns explicit failure; retry/forced close does not double-finalize or report a false successful quiescence."
+      "oracle": "Deadline expiry reports explicit failure; forced stop seals both admission classes and logically cancels remaining requests, but keeps any active physical carrier pending. Concurrent retries and double claims never finalize or report false success."
     },
     {
       "id": "HA10",
