@@ -8,9 +8,11 @@ contract checking, and future guest runtime.
 
 ## Normative intended behavior
 
+- `declare actor Foo;` is the canonical nominal actor header when methods and state are attached outside the declaration. `pub declare actor Foo;` makes the type publicly accessible. The signature-only spelling `define actor Foo;` must fail, while `define actor Foo as ... end` remains the fully inline implementation form.
+
 - `namespace foo;` joins files **only within one verified package instance**.
   Namespace spelling alone does not establish package ownership.
-- `define actor Foo implements ActorXYZ;` is a nominal actor declaration,
+- `declare actor Foo implements ActorXYZ;` is a nominal actor declaration,
   not the constructor of an empty actor object and not a proof that
   `ActorXYZ` was implemented. An actor-targeted contract needs complete,
   direct, public, concrete and exact-signature witnesses.
