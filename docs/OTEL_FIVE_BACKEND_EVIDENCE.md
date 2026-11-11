@@ -130,6 +130,23 @@ node bin/run-otel-guest-execution.mjs /absolute/path/to/reviewed-local-config.js
 
 The launcher explicitly checks the SHA-256 of the Git binary used to read source identities, refuses inline interpreter-evaluation or preload flags, requires compile/run commands to consume the original pinned fixture/generated artifact, checks the binary magic for Wasm or native AOT candidates, and rehashes compiler, dependencies and guest output artifact after the run. This is a **fail-closed sanity check, not a reproducible-build or independent-provenance attestation**. It cannot prove that arbitrary approved commands actually compiled the fixture rather than printing matching data.
 
+**Current multi-stage compilation limitation:** this v1 runner accepts one
+`compile_argv` process followed by one `run_argv` process. Actual LLVM
+source-to-IR -> Clang native linking, LLVM-to-Wasm -> Clang/LLD, and .NET
+source-to-CIL -> Native AOT publishing may need *multiple* pinned compiler
+invocations. A profile configuration that merely passes `checkConfiguration`
+does **not** prove the target can be produced. Until a reviewed Rust or
+similarly independently pinned multi-stage build orchestrator performs those
+steps with full artifact provenance, do not label these profiles as executable
+guest parity. Do not substitute an unpinned shell script, Node eval,
+mock binary, copied JSONL fixture or managed JIT fallback as a shortcut.
+
+**Cross-backend compiler provenance:** Wasm uses an LLVM-derived frontend and
+must bind both the Wasm bridge source tree and the independently approved
+LLVM compiler source/binary, not mislabel the bridge SHA as provenance for
+the native LLVM compiler. The present local capture remains expressly
+unattested, even when artifact and binary digests are internally consistent.
+
 The launcher emits private, bounded `capture.json` and
 `guest.stdout.jsonl` in a fresh local temporary directory, labeled
 `REAL_PROCESS_CAPTURE_CANDIDATE_UNATTESTED`. This local provenance is
