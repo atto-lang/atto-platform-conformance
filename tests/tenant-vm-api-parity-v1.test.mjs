@@ -67,3 +67,19 @@ test('Wasm multi-actor TenantVM prototype cannot silently become untrusted parit
   assert.match(candidate.limitations, /no untrusted isolation certificate/);
   assert.equal(contract.releaseGate.untrustedTenantParity, 'NOT_VERIFIED');
 });
+
+test('TenantVM quiescence cannot refund host quota before physical retirement', () => {
+  const hardening = contract.backends.wasm.experimentalMultiActorHost.retirementHardening;
+  for (const name of [
+    'no-actor-slot-refund-before-confirmed-tenant-retirement',
+    'unconfirmed-tenant-termination-quarantines-quota-and-identity'
+  ]) assert.ok(contract.invariants.includes(name), name);
+  assert.equal(hardening.draft, 'oreslang-source.wasm#478');
+  assert.match(hardening.sourceBlob, /^[a-f0-9]{40}$/);
+  assert.match(hardening.workerRaceTestBlob, /^[a-f0-9]{40}$/);
+  assert.equal(hardening.localControlledTransport, '3_PASS_OLD_LOGIC_3_FAIL');
+  assert.equal(hardening.exactHeadWorkerTest, 'NOT_EXECUTED');
+  assert.match(hardening.releaseRule, /confirmed physical Worker/);
+  assert.match(hardening.failureRule, /quarantines tenant ID/);
+  assert.equal(contract.releaseGate.untrustedTenantParity, 'NOT_VERIFIED');
+});
