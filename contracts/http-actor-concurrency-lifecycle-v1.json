@@ -27,7 +27,8 @@
       "actorExecution": "at most one physical guest turn executing per actor incarnation",
       "serial": "exactly one admitted request lifetime and one message lifetime",
       "gracefulDrain": "Seal new HTTP request admissions; keep previously admitted request capabilities available for their bounded message continuations until response close, timeout or explicit cancellation.",
-      "forcedStop": "Seal both request and message admission and cancel unfinished logical work; a physical carrier still inside the guest cannot be finalized or recycled until it exits."
+      "forcedStop": "Seal both request and message admission and cancel unfinished logical work; a physical carrier still inside the guest cannot be finalized or recycled until it exits.",
+      "dispatchHandoff": "An accepted HTTP exchange holds a non-reusable dispatch-handoff lease from worker selection through actor attachment, including timeout and cancellation. Unpooled actor physical exit remains a separate retirement condition; pooled worker physical quiescence is a separate listener-shutdown condition."
     },
     "canonicalFixtures": {
       "serialOneOne": {
@@ -93,7 +94,7 @@
       "id": "HA06",
       "kind": "guest-runtime",
       "name": "suspend-cancel-reentry",
-      "oracle": "Suspension holds logical admission while allowing carrier release; cancel/timeout releases reservations exactly once, prevents stale continuation reentry and keeps sealed-state loans exclusive."
+      "oracle": "Suspension retains logical admission while allowing physical carrier release; cancellation/timeout cannot release an exchange during dispatch worker selection or actor handoff, prevents stale continuation reentry, and keeps sealed-state loans exclusive."
     },
     {
       "id": "HA07",
@@ -105,7 +106,7 @@
       "id": "HA08",
       "kind": "guest-runtime",
       "name": "shutdown-physical-exit",
-      "oracle": "Graceful shutdown seals *new request* admissions while permitting already admitted requests to finish their bounded messages; a completed socket response or mailbox drain cannot claim shutdown success until all accepted exchanges and physical carriers have exited."
+      "oracle": "Graceful shutdown seals new HTTP request admission while permitting already accepted bounded messages to finish; pending handoff leases and unpooled/pooled actor physical carriers prevent successful quiescence even if socket response and mailbox drain completed."
     },
     {
       "id": "HA09",
