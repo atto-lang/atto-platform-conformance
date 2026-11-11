@@ -37,6 +37,26 @@ implementation form. `define actor Foo;` must be rejected to distinguish
 these states. Public out-of-line APIs require an explicitly public actor type
 (`declare pub actor Foo;`).
 
+## Runtime-only actor ingress (static ABI, not executable)
+
+```atto
+external mtd (Foo f) init(): void {
+    return;
+}
+
+external mtd (Foo f) receive(ActorMail<int> mail): void {
+    return;
+}
+```
+
+A declared actor's `init` and `receive` must use explicit **private**
+`external mtd` rather than ordinary `pub mtd`. `init` takes no
+parameters and returns `void`; `receive` takes exactly one
+safe `ActorMail<T>` argument and returns `void`. These entry points
+are runtime activation/mailbox-only, not ordinary actor calls. The
+current Java static binder admits only ABI metadata; no capability,
+actor heap, mailbox turn, or callback is invoked by this declaration.
+
 ## State and method authority
 
 - `define state on actor Foo` is a private state *schema*, not a global
