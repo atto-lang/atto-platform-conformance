@@ -16,7 +16,7 @@ const expectedOutput=new Map([
 test("versioned functor contract has pinned current Java JVM evidence, not fake backend parity",()=>{
   assert.equal(registry.contract_id,"functor-adt-v1");
   assert.equal(registry.schema_version,1);
-  assert.equal(registry.status,"PARTIAL_JAVA_GUEST_ONLY_NOT_FIVE_BACKEND_PARITY");
+  assert.equal(registry.status,"PARTIAL_JAVA_JVM_AND_AOT_NOT_FIVE_BACKEND_PARITY");
   assert.deepEqual(registry.target_backends,["java","llvm","wasm","forge","net","cranelift"]);
   assert.equal(registry.source.source_commit,"faa149c6bcc7510a659c86499f614efdaffcc4e8");
   assert.equal(registry.source.fixture_tree,"be201b1c667057582a6e7e53025bb1d1938179c6");
@@ -24,8 +24,16 @@ test("versioned functor contract has pinned current Java JVM evidence, not fake 
   assert.equal(registry.evidence.java.junit_tests,3);
   assert.equal(registry.evidence.java.positive_assertions,36);
   assert.equal(registry.evidence.java.negative_fixtures,15);
-  assert.equal(registry.evidence.java_native_aot.current_source_verified,false);
-  assert.notEqual(registry.evidence.java_native_aot.source_head,registry.source.source_commit);
+  assert.equal(registry.evidence.java_native_aot.current_source_verified,true);
+  assert.equal(registry.evidence.java_native_aot.tier,"NATIVE_IMAGE_AOT_GUEST_EXECUTED_EXACT_BLOB_SUBSET");
+  assert.equal(registry.evidence.java_native_aot.positive_guest_cases,2);
+  assert.equal(registry.evidence.java_native_aot.positive_assertions,36);
+  assert.equal(registry.evidence.java_native_aot.negative_compiler_cases,15);
+  assert.equal(registry.evidence.java_native_aot.remaining_negative_cases,0);
+  assert.equal(registry.evidence.java_native_aot.build_mode,"aot");
+  assert.equal(registry.evidence.java_native_aot.guest_execution,"interpreter-no-jit");
+  assert.equal(registry.evidence.java_native_aot.source_head,registry.source.source_commit);
+  assert.notEqual(registry.evidence.historical_java_native_aot.source_head,registry.source.source_commit);
   assert.equal(registry.evidence.other_backends,"NOT_EXECUTED");
 });
 
@@ -40,7 +48,7 @@ test("all 17 original .atto source fixtures match Git blob SHA and required diag
     assert.equal(git,c.blob_sha,"blob mismatch "+c.path);
     assert.equal(c.backends.java,"GUEST_EXECUTED_EXACT_BLOB_SUBSET");
     for(const b of ["llvm","wasm","forge","net","cranelift"])assert.equal(c.backends[b],"PENDING");
-    assert.equal(c.execution_profiles.java_graalvm_native_aot,"NOT_EXECUTED_AT_CURRENT_SOURCE_HEAD");
+    assert.equal(c.execution_profiles.java_graalvm_native_aot,"GUEST_EXECUTED_EXACT_BLOB_SUBSET");
     assert.ok(content.toString("utf8").endsWith("\n"));
     if(expectedOutput.has(c.id)){
       assert.equal(c.kind,"compile_and_execute");
