@@ -19,6 +19,7 @@ export class HttpActorAdmissionModel {
   #request_tokens;
   #message_tokens;
   #physical;
+  #handoffs;
   constructor({request_concurrency=1,message_concurrency=1}={}) {
     for (const [name,n] of Object.entries({request_concurrency,message_concurrency})) {
       if (!Number.isSafeInteger(n) || n<1 || n>64) throw new RangeError(`${name} must be 1..64`);
@@ -36,17 +37,18 @@ export class HttpActorAdmissionModel {
     this.#request_tokens=new WeakMap();
     this.#message_tokens=new WeakMap();
     this.#physical=null;
+    this.#handoffs=new Set();
     // External callers cannot add shadow state keys.
     Object.preventExtensions(this);
   }
-  _request(token) {
+  #request(token) {
     const value=token && typeof token==="object" ? this.#request_tokens.get(token) : undefined;
     if (!value || value.generation!==this.#generation ||
         this.#requests.get(value.id)!==value)
       throw new Error("stale or forged request capability");
     return value;
   }
-  _message(token) {
+  #message(token) {
     const value=token && typeof token==="object" ? this.#message_tokens.get(token) : undefined;
     if (!value || value.generation!==this.#generation ||
         this.#messages.get(value.id)!==value)
@@ -70,7 +72,7 @@ export class HttpActorAdmissionModel {
     // Graceful shutdown denies new requests, not preexisting request work.
     // A forced stop revokes both request and message admission.
     if(this.#force_stopped) throw new Error("message admission sealed");
-    const request=this._request(request_token);
+    const request=this.#request(request_token);
     if(request.response_closed) throw new Error("request response already closed");
     if(typeof key!=="string" || key.length<1 || key.length>128) throw new TypeError("invalid message key");
     if(request.active.size>=this.#message_concurrency) throw new Error("message capacity exhausted");
@@ -84,8 +86,27 @@ export class HttpActorAdmissionModel {
     request.active.add(id);
     return token;
   }
+  /** Admission selected for dispatch, but actor association is not yet safe. */
+  begin_handoff(message_token) {
+    const message=this.#message(message_token);
+    if (this.#force_stopped) throw new Error("dispatch admission sealed");
+    if (message.finished || message.state!=="admitted")
+      throw new Error("message cannot begin handoff");
+    if (this.#handoffs.has(message.id)) throw new Error("duplicate dispatch handoff");
+    this.#handoffs.add(message.id);
+    message.state="dispatching";
+  }
+  /** Caller must have reconciled the spawned actor's physical exit liability. */
+  end_handoff(message_token) {
+    const message=this.#message(message_token);
+    if (!this.#handoffs.has(message.id) || message.state!=="dispatching")
+      throw new Error("no active dispatch handoff");
+    this.#handoffs.delete(message.id);
+    message.state="admitted";
+    if(message.finished) this.#retire_message(message);
+  }
   enter_turn(message_token) {
-    const message=this._message(message_token);
+    const message=this.#message(message_token);
     if(message.finished) throw new Error("completed message cannot reenter");
     if(this.#physical!==null) throw new Error("actor physical execution already active");
     if(message.state!=="admitted" && message.state!=="suspended") throw new Error("message cannot resume");
@@ -93,43 +114,46 @@ export class HttpActorAdmissionModel {
     this.#physical=message_token;
   }
   exit_turn(message_token) {
-    const message=this._message(message_token);
+    const message=this.#message(message_token);
     if(this.#physical!==message_token) throw new Error("not the executing physical turn");
     this.#physical=null;
-    if(message.finished) this._retire_message(message);
+    if(message.finished) this.#retire_message(message);
     else message.state="suspended";
   }
   complete_message(message_token) {
-    const message=this._message(message_token);
+    const message=this.#message(message_token);
     if(message.finished) throw new Error("message already completed");
+    if(message.state==="dispatching") throw new Error("message handoff active");
     message.finished=true;
-    if(this.#physical!==message_token) this._retire_message(message);
+    if(this.#physical!==message_token) this.#retire_message(message);
   }
   close_response(request_token) {
-    const request=this._request(request_token);
+    const request=this.#request(request_token);
     if(request.response_closed) throw new Error("response already closed");
     request.response_closed=true;
-    this._retire_request(request);
+    this.#retire_request(request);
   }
   cancel_request(request_token) {
-    const request=this._request(request_token);
+    const request=this.#request(request_token);
     request.response_closed=true;
     for (const id of [...request.active]) {
       const message=this.#messages.get(id);
       if (!message) throw new Error("missing admitted message");
       message.finished=true;
-      if(this.#physical!==message.token) this._retire_message(message);
+      if(this.#physical!==message.token) this.#retire_message(message);
     }
-    this._retire_request(request);
+    this.#retire_request(request);
   }
-  _retire_message(message) {
-    this.#messages.delete(message.token.id);
+  #retire_message(message) {
+    // Abort cannot release capacity until the actor handoff lease retires.
+    if(this.#handoffs.has(message.id)) return;
+    this.#messages.delete(message.id);
     const request=this.#requests.get(message.token.request_id);
     if(!request) throw new Error("message lost request owner");
     request.active.delete(message.token.id);
-    this._retire_request(request);
+    this.#retire_request(request);
   }
-  _retire_request(request) {
+  #retire_request(request) {
     if(request.response_closed && request.active.size===0)
       this.#requests.delete(request.token.id);
   }
@@ -145,7 +169,7 @@ export class HttpActorAdmissionModel {
   shutdown_state() {
     if(!this.#sealed) return "running";
     return this.#requests.size===0 && this.#messages.size===0 &&
-      this.#physical===null ? "quiescent":"pending";
+      this.#handoffs.size===0 && this.#physical===null ? "quiescent":"pending";
   }
   recycle() {
     if(this.shutdown_state()!=="quiescent") throw new Error("cannot recycle before quiescence");
@@ -157,6 +181,7 @@ export class HttpActorAdmissionModel {
     this.#force_stopped=false;
     this.#request_tokens=new WeakMap();
     this.#message_tokens=new WeakMap();
+    this.#handoffs=new Set();
   }
   snapshot() {
     return Object.freeze({
@@ -166,6 +191,7 @@ export class HttpActorAdmissionModel {
       request_count:this.#requests.size,
       message_count:this.#messages.size,
       physical_turns:this.#physical===null?0:1,
+      pending_handoffs:this.#handoffs.size,
       request_message_counts:Object.freeze([...this.#requests.values()].map(x=>x.active.size))
     });
   }
