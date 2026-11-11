@@ -7,7 +7,7 @@
     "v0MigrationPr": 1677,
     "v0Head": "5976141aa245f275377f6e80542dff44017e8d43",
     "workerPr": 1678,
-    "workerHead": "e9dbee402ccaa271a93399575f51da248499039c",
+    "workerHead": "fa708f7b4426375b2fa7a3c6c6703b74fdfa725b",
     "stack": [
       "#1650 host credit/fence bridge",
       "#1652 V1 event provenance and quarantine",
@@ -24,7 +24,9 @@
       "GpuActorOpenClRecoveryWorkerV1.hpp": "f7eef7f03a16bd664863ff9be1f850a00be3af49",
       "gpu_actor_opencl_provider_v2_test.cpp": "9c378919c7767efd4f5b8b4603258c206c710a20",
       "CMakeLists.txt": "b0d1fee0b7cfaeb6e30caddce4f778299b68cd01"
-    }
+    },
+    "workerTreeSha": "4d7a9b6971492141c011143632e7e82fa4c5254a",
+    "stackCorrectlyParentedOnP0": true
   },
   "carrier": {
     "repo": "scintilla-run/scintilla-run-e2e",
