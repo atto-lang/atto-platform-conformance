@@ -4,7 +4,7 @@ import {createHash} from "node:crypto";
 import {fileURLToPath} from "node:url";
 import {strict as assert} from "node:assert";
 
-const root=fileURLToPath(new URL("../../",import.meta.url));
+const root=fileURLToPath(new URL("../",import.meta.url));
 const contract=JSON.parse(readFileSync(join(root,"contracts/with-ownership-v1.json"),"utf8"));
 function validate(x) {
     assert.deepEqual(Object.keys(x).sort(),["schema_version","contract","classification","source_extension","canonical_receiver","implicit_return","backends","contract_properties","cases","evidence"].sort());
