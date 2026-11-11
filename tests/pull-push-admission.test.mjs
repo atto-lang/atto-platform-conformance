@@ -40,6 +40,17 @@ test('baseline has five pending backends and full category coverage',()=>{
   for(const id of ['pull-infinite-take-is-lazy','failed-send-retains-owned-value','demand-zero-negative-overflow','stale-actor-generation','native-fusion-no-tracing-gc']) assert.ok(ids.includes(id));
 });
 
+test('irrevocable terminal case is a required cross-backend execution gate',()=>{
+  const ids=assertManifest(manifest);
+  assert.ok(ids.includes('terminal-complete-cancel-race'));
+  const terminal=manifest.cases.find(c=>c.id==='terminal-complete-cancel-race');
+  assert.equal(terminal.class,'concurrency-positive');
+  assert.match(terminal.expect,/cancel.*after.*complete.*rejected/i);
+  for(const backend of Object.values(manifest.backends)){
+    assert.equal(backend.status,'NOT_EXECUTED');
+  }
+});
+
 test('all unattended PASS claims are rejected even with fake provenance',()=>{
   assert.throws(()=>validateClaim({backend:'llvm',case_id:'no-unsolicited-next',status:'passed',guest_executed:true,run_id:123,job_id:456,steps_executed:7},manifest),/unverified PASS/);
 });
