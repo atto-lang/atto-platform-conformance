@@ -1,6 +1,6 @@
 // Source-free COMMAND ADAPTER for the existing PolicyActorReference + BatchPersistenceSidecar.
 // NOT compiled AttoLang, a supervisor, an async provider or production idempotency.
-// v1 deliberately fails closed on snapshots/compaction: a durable command index is required first.
+// Compacted checkpoints require provider-verified command index provenance.
 import {createHash} from 'node:crypto';
 
 const reject = (code) => { throw new Error(code); };
@@ -42,6 +42,7 @@ export function apply_bank_event(state, event) {
 // Tenant, actor ID and epoch MUST originate in the trusted host control plane, never guest input.
 export class BankAccountCommandReference {
   #actor; #sidecar; #scope; #committed = new Map(); #pending = null; #ready = false;
+  #checkpointVersion = 0;
   constructor({actor, sidecar, tenantId, actorId, stateName = 'main', epoch}) {
     if (!actor || !sidecar || typeof tenantId !== 'string' || !tenantId ||
         typeof actorId !== 'string' || !actorId || typeof stateName !== 'string' || !stateName ||
@@ -65,14 +66,32 @@ export class BankAccountCommandReference {
   }
   get has_pending_write() { return this.#pending !== null; }
   // Supervisor must establish a provider-enforced activation fence BEFORE this call.
-  // Refuse snapshots until a durable command-dedupe index survives compaction.
+  // Reject ordinary legacy snapshots; allow only fenced command checkpoints
+  // supplied by the trusted provider. Read one coherent recovery view.
   restore() {
     if (this.#ready || this.#pending) reject('INVALID_RECOVERY_STATE');
-    this.#actor.restore();
-    const loaded = this.#sidecar.loadFenced(this.#scope);
-    if (loaded.snapshot !== null) reject('DURABLE_DEDUPE_INDEX_REQUIRED');
-    if (!int(loaded.version) || loaded.version < 0 || !Array.isArray(loaded.events)) reject('INVALID_JOURNAL');
+    const restored = this.#actor.restore();
+    const loaded = restored && Array.isArray(restored.events)
+      ? restored : this.#sidecar.loadFenced(this.#scope);
+    if (!int(loaded.version) || loaded.version < 0 || !Array.isArray(loaded.events))
+      reject('INVALID_JOURNAL');
     let balance = 0, sequence = 0;
+    if (loaded.snapshot !== null) {
+      const snap=loaded.snapshot;
+      if(snap.provenance!=='command_checkpoint_v1' || snap.verifiedCommandIndex!==true)
+        reject('DURABLE_DEDUPE_INDEX_REQUIRED');
+      if(!int(snap.version)||snap.version<1||snap.version>loaded.version||
+         snap.schemaVersion!==1||!Buffer.isBuffer(snap.payload))
+        reject('INVALID_CHECKPOINT');
+      let state;
+      try {state=JSON.parse(snap.payload.toString('utf8'));}
+      catch {reject('INVALID_CHECKPOINT');}
+      if(!state||typeof state!=='object'||Array.isArray(state)||
+         Object.keys(state).join(',')!=='balance_cents'||
+         !int(state.balance_cents)||state.balance_cents<0)
+        reject('INVALID_CHECKPOINT');
+      balance=state.balance_cents;sequence=snap.version;
+    }
     const seen = new Map();
     for (const entry of loaded.events) {
       // This bank fixture emits exactly one event per command. Other typed
@@ -93,6 +112,7 @@ export class BankAccountCommandReference {
         this.#actor.handle_state('critical-read', s => s.balance_cents) !== balance)
       reject('INVALID_JOURNAL');
     this.#committed = seen;
+    this.#checkpointVersion=loaded.snapshot?.version??0;
     this.#ready = true;
     return {status:'ready',version:sequence,balance_cents:balance};
   }
@@ -113,10 +133,18 @@ export class BankAccountCommandReference {
       const proof = this.#sidecar.verifyCommand({...this.#scope,opId,
         commandBytes:command_bytes(command)});
       if (proof) {
-        if (!prior || prior.version !== proof.version || proof.version > this.#actor.version)
-          reject('RELOAD_REQUIRED');
-        if (!proof.durable || proof.status !== 'committed' || proof.opId !== opId)
+        if (!proof.durable || proof.status !== 'committed' || proof.opId !== opId ||
+            !int(proof.version) || proof.version<1 || proof.version>this.#actor.version ||
+            proof.eventCount!==1 || proof.firstVersion!==proof.version ||
+            !Buffer.isBuffer(proof.resultBytes))
           reject('UNVERIFIABLE_COMMIT');
+        if(prior) {
+          if(prior.version!==proof.version)reject('INVALID_JOURNAL');
+        } else if(!this.#checkpointVersion || proof.version>this.#checkpointVersion) {
+          // Only an authenticated checkpoint may hide an old operation ID
+          // from the in-memory replay map. Newer absent IDs require reload.
+          reject('RELOAD_REQUIRED');
+        }
         return {status:'committed',durable:true,duplicate:true,version:proof.version};
       }
     }
@@ -153,6 +181,14 @@ export class BankAccountCommandReference {
     this.#committed.set(opId,{command_hash,version:accepted.version});
     this.#pending = null;
     return {status:'committed',durable:true,duplicate:false,version:accepted.version};
+  }
+  // Host-only checkpoint; the actor supplies its private verified state.
+  checkpoint_and_compact() {
+    this.#check_ready();
+    if(this.#pending)reject('PENDING_OUTCOME_MUST_RESOLVE');
+    if(typeof this.#actor.checkpoint_and_compact!=='function')
+      reject('UNSUPPORTED_CHECKPOINT_PROTOCOL');
+    return this.#actor.checkpoint_and_compact();
   }
   // Caller cancellation withdraws only its wait; it does not cancel a possibly
   // committed provider transaction. The pending record stays until resolution.

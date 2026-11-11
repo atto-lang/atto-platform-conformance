@@ -253,6 +253,24 @@ export class PolicyActorReference {
       return {status:'committed', durable:true, version:this.#version};
     });
   }
+  // Checkpoint from our verified committed state, never caller-provided bytes.
+  // No mutable state reference is exposed or held across the provider operation.
+  checkpoint_and_compact() {
+    return this.#withScope(() => {
+      if(this.policy.storageKind!=='event')deny('WRONG_STORAGE_KIND');
+      if(this.#pending)deny('PENDING_OUTCOME_MUST_RESOLVE');
+      if(this.#version<1)deny('INVALID_CHECKPOINT');
+      if(typeof this.sidecar.checkpointAndCompact!=='function')
+        deny('UNSUPPORTED_CHECKPOINT_PROTOCOL');
+      const result=this.sidecar.checkpointAndCompact({tenantId:this.tenantId,
+        actor:this.actor,stateName:this.stateName,epoch:this.epoch,
+        expectedVersion:this.#version,schemaVersion:this.schemaVersion,
+        payload:encode(this.#state)});
+      if(!result||result.status!=='committed'||result.durable!==true||
+         result.version!==this.#version)deny('UNVERIFIABLE_CHECKPOINT');
+      return result;
+    });
+  }
   restore() {
     return this.#withScope(() => {
     if (this.#pending) deny('PENDING_OUTCOME_MUST_RESOLVE');
@@ -275,6 +293,8 @@ export class PolicyActorReference {
     if (version !== loaded.version) deny('JOURNAL_GAP');
     this.#state = value;
     this.#version = version;
+    // One trusted fenced recovery view, reused by the host bank adapter.
+    return loaded;
     });
   }
 }
