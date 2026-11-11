@@ -120,7 +120,8 @@ export class BankAccountCommandReference {
       }
       const prior = seen.get(entry.opId);
       if (prior && prior.command_hash !== event.command_hash) reject('INVALID_JOURNAL');
-      seen.set(entry.opId, {command_hash:event.command_hash, version:sequence});
+      seen.set(entry.opId, {command_hash:event.command_hash, version:sequence,
+        result_bytes:Buffer.from(JSON.stringify({balance_cents:balance}))});
     }
     if (sequence !== loaded.version || sequence !== this.#actor.version ||
         this.#actor.handle_state('critical-read', s => s.balance_cents) !== balance)
@@ -154,6 +155,10 @@ export class BankAccountCommandReference {
           reject('UNVERIFIABLE_COMMIT');
         if(prior) {
           if(prior.version!==proof.version)reject('INVALID_JOURNAL');
+          // A receipt for a known journal operation must contain the
+          // original reducer outcome, not merely an unchanged operation hash.
+          if (!proof.resultBytes.equals(prior.result_bytes))
+            reject('UNVERIFIABLE_COMMIT');
         } else if(!this.#checkpointVersion || proof.version>this.#checkpointVersion) {
           // Only an authenticated checkpoint may hide an old operation ID
           // from the in-memory replay map. Newer absent IDs require reload.
@@ -178,25 +183,26 @@ export class BankAccountCommandReference {
     if (balance + delta < 0) return {status:'rejected',code:'INSUFFICIENT_FUNDS',durable:false};
     const event = {kind:command.kind === 'deposit' ? 'money_deposited':'money_withdrawn',
       amount_cents:command.amount_cents,command_hash,schema_version:1};
+    const result_bytes=Buffer.from(JSON.stringify({balance_cents:balance+delta}));
     const use_commands = typeof this.#actor.stage_events === 'function' &&
       typeof this.#sidecar.verifyCommand === 'function';
     const admitted = use_commands
-      ? this.#actor.stage_events(opId,command_bytes(command),[event],
-          Buffer.from(JSON.stringify({balance_cents:balance+delta})))
+      ? this.#actor.stage_events(opId,command_bytes(command),[event],result_bytes)
       : this.#actor.stage_event(opId,event);
     if (admitted.status === 'committed') reject('UNEXPECTED_DIRECT_COMMIT');
     if (admitted.status !== 'admitted' || admitted.durable !== false) reject('INVALID_ADMISSION');
-    this.#pending = {opId,command_hash};
+    this.#pending = {opId,command_hash,result_bytes};
     return {status:'admitted', durable:false, duplicate:!!admitted.duplicate};
   }
   // A trusted persisted-op verification is performed by PolicyActorReference.apply_commit.
   accept_commit(receipt) {
     this.#check_ready();
     if (!this.#pending) reject('NO_PENDING_WRITE');
-    const {opId, command_hash} = this.#pending;
+    const {opId, command_hash,result_bytes} = this.#pending;
     if (!receipt || receipt.opId !== opId) reject('UNMATCHED_RECEIPT');
     const accepted = this.#actor.apply_commit(receipt);
-    this.#committed.set(opId,{command_hash,version:accepted.version});
+    this.#committed.set(opId,{command_hash,version:accepted.version,
+      result_bytes:Buffer.from(result_bytes)});
     this.#pending = null;
     return {status:'committed',durable:true,duplicate:false,version:accepted.version};
   }
@@ -218,10 +224,11 @@ export class BankAccountCommandReference {
   reconcile_pending() {
     this.#check_ready();
     if (!this.#pending) reject('NO_PENDING_WRITE');
-    const {opId,command_hash} = this.#pending;
+    const {opId,command_hash,result_bytes} = this.#pending;
     const resolved = this.#actor.resolve_pending();
     if (resolved.status !== 'committed') return {status:'pending',durable:false};
-    this.#committed.set(opId,{command_hash,version:resolved.version});
+    this.#committed.set(opId,{command_hash,version:resolved.version,
+      result_bytes:Buffer.from(result_bytes)});
     this.#pending = null;
     return {status:'committed',durable:true,version:resolved.version};
   }
