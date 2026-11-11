@@ -35,7 +35,17 @@
       "!eq": "contiguous-atomic-binary-token",
       "rejectSplitAlias": true,
       "doNotRewriteCommentsStringsIdentifiers": true
-    }
+    },
+    "currentCompatibility": {
+      "legacyEqualityAliases": [
+        "==",
+        "!="
+      ],
+      "javaGraalNumericCrossTypeEquality": "legacy-behavior",
+      "nativeAotPolicyIsNotASourceSyntaxVersion": true,
+      "requiresMigrationReviewForRemoval": true
+    },
+    "invalidPolicyScope": "proposed-strict-source-v2-not-current-compiler-baseline"
   },
   "functionClauseMatching": {
     "status": "DEFERRED",
@@ -428,7 +438,9 @@
         "forge"
       ],
       "evidence": "NOT_EXECUTED",
-      "sourceProfile": "atto-strict-v1"
+      "sourceProfile": "atto-strict-v1",
+      "profile": "proposed-strict-source-v2",
+      "caveat": "not yet enforced by existing compiler defaults; versioned migration required"
     },
     {
       "id": "eq.no_cross_bool",
@@ -466,7 +478,9 @@
         "forge"
       ],
       "evidence": "NOT_EXECUTED",
-      "sourceProfile": "atto-strict-v1"
+      "sourceProfile": "atto-strict-v1",
+      "profile": "proposed-strict-source-v2",
+      "caveat": "not yet enforced by existing compiler defaults; versioned migration required"
     },
     {
       "id": "neq.reject_c_style",
@@ -485,7 +499,9 @@
         "forge"
       ],
       "evidence": "NOT_EXECUTED",
-      "sourceProfile": "atto-strict-v1"
+      "sourceProfile": "atto-strict-v1",
+      "profile": "proposed-strict-source-v2",
+      "caveat": "not yet enforced by existing compiler defaults; versioned migration required"
     },
     {
       "id": "eq.reject_erlang",
