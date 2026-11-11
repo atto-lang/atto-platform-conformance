@@ -333,7 +333,7 @@ test('replay event-count ceiling rejects 10001st event but snapshot opens new su
       const insert=db.db.prepare(
         'INSERT INTO events(tenant,actor,state_name,version,schema_version,op_id,payload) VALUES(?,?,?,?,?,?,?)');
       const proof=db.db.prepare(
-        'INSERT INTO operations(tenant,actor,state_name,op_id,digest,version,kind,payload_hash) VALUES(?,?,?,?,?,?,?,?)');
+        'INSERT INTO operations(tenant,actor,state_name,op_id,digest,version,kind,payload_hash,origin_epoch) VALUES(?,?,?,?,?,?,?,?,?)');
       const empty=Buffer.alloc(0),payloadHash=require_hash(empty);
       for(let n=1;n<=10000;n++) {
         const opId='seed-'+n;
@@ -343,7 +343,7 @@ test('replay event-count ceiling rejects 10001st event but snapshot opens new su
           'event',1,empty.toString('base64')
         ])));
         proof.run(base.tenantId,base.actor,base.stateName,opId,
-                  digest,n,'event',payloadHash);
+                  digest,n,'event',payloadHash,1);
       }
       db.putHead.run(base.tenantId,base.actor,base.stateName,10000);
       db.db.exec('COMMIT');
@@ -449,5 +449,49 @@ test('uncommitted future event row beyond the head cannot create phantom replay 
     assert.equal(db.db.prepare(
       'SELECT COUNT(*) AS n FROM operations WHERE tenant=? AND actor=? AND state_name=?'
     ).get(base.tenantId,base.actor,base.stateName).n,1);
+  });
+});
+
+
+test('rewriting both legacy event bytes and their payload hash cannot bypass full original digest',()=>{
+  fixture(db=>{
+    const first=legacy('event-coordinated-tamper');
+    commit(db,first);
+    const bytes=Buffer.from('{"cents":7}');
+    const changed=Buffer.from('{"cents":8}');
+    db.db.prepare('UPDATE events SET payload=? WHERE tenant=? AND actor=? AND state_name=? AND version=1')
+      .run(changed,base.tenantId,base.actor,base.stateName);
+    db.db.prepare('UPDATE operations SET payload_hash=? WHERE tenant=? AND actor=? AND state_name=? AND op_id=?')
+      .run(require_hash(changed),base.tenantId,base.actor,base.stateName,first.opId);
+    assert.throws(()=>load(db),/CORRUPT_LEGACY_EVENT/);
+    assert.equal(db.db.prepare('SELECT version FROM heads WHERE actor=?').get(base.actor).version,1);
+  });
+});
+
+test('snapshot payload plus both hashes cannot bypass original operation digest',()=>{
+  fixture(db=>{
+    const checkpoint={...legacy('snapshot-coordinated-tamper',0,'snapshot'),
+      payload:Buffer.from('balance=100')};
+    commit(db,checkpoint);
+    const changed=Buffer.from('balance=900');
+    const h=require_hash(changed);
+    db.db.prepare('UPDATE snapshots SET payload=?,payload_hash=? WHERE tenant=? AND actor=? AND state_name=?')
+      .run(changed,h,base.tenantId,base.actor,base.stateName);
+    db.db.prepare('UPDATE operations SET payload_hash=? WHERE tenant=? AND actor=? AND state_name=? AND op_id=?')
+      .run(h,base.tenantId,base.actor,base.stateName,checkpoint.opId);
+    assert.throws(()=>load(db),/CORRUPT_SNAPSHOT_PROOF/);
+    assert.equal(db.db.prepare('SELECT version FROM snapshots WHERE actor=?').get(base.actor).version,1);
+  });
+});
+
+test('legacy original epoch is verified after supervisor epoch rotation',()=>{
+  fixture(db=>{
+    const e=legacy('prior-epoch-event');
+    commit(db,e);
+    db.grantEpoch({tenantId:base.tenantId,actor:base.actor,epoch:2});
+    assert.equal(db.loadFenced({...base,epoch:2}).events.length,1);
+    db.db.prepare('UPDATE operations SET origin_epoch=? WHERE tenant=? AND actor=? AND state_name=? AND op_id=?')
+      .run(2,base.tenantId,base.actor,base.stateName,e.opId);
+    assert.throws(()=>db.loadFenced({...base,epoch:2}),/CORRUPT_LEGACY_EVENT/);
   });
 });
