@@ -30,10 +30,12 @@ source to another organization without independent authorization.
   named `new` is not admitted as a class factory merely because it was
   parsed. The language requires an explicit `Newable` trait contract.
 
-The reference compiler now has a name-based Newable opt-in negative gate,
-but static trait satisfaction, nominal trait identity, specialization and
-binary-package ABI validation are separate unfinished work. Do not treat
-this source corpus or a parser-only acceptance result as factory execution.
+The Java reference compiler PR #2794 now contains a compiler-owned,
+sealed `Newable[T]` v1 witness with an exact static zero-argument factory,
+and a pending Graal guest-execution test. Generic/static trait extension,
+portable binary-package ABI validation, and backend-specific native lowering
+remain unfinished. Do not treat this source corpus or a parser-only
+acceptance result as proof of factory execution.
 
 ## Backend source audit (not executable parity)
 
