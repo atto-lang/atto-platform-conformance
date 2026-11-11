@@ -100,6 +100,7 @@ process.stdout.write(JSON.stringify({
   positive_stdout:positive.stdout,negative_checks:negatives,
   github_run_id:process.env.GITHUB_RUN_ID||null,
   github_run_attempt:process.env.GITHUB_RUN_ATTEMPT||null,
-  real_executable_invoked:true,
-  scope:"configured compiler admission + guest output only; independent source-tree, AOT artifact and CI step attestation still required"
+  configured_executable_invoked:true,
+  attestation_status:"UNVERIFIED", independent_provenance_required:true,
+  scope:"configured command candidate only; no source-tree, native guest artifact or CI provenance independently attested"
 },null,2)+"\n");
