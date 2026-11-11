@@ -1,6 +1,6 @@
 // TARGET SYNTAX: compiler-backed execution is NOT YET VERIFIED.
 namespace actor_external_lifecycle;
-define actor Worker;
+declare actor Worker;
 define external mtd (Worker w) init(): void {
     return;
 }
