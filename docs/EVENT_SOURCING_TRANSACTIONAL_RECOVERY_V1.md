@@ -336,3 +336,27 @@ the real source parser/compiler/runtime. Same-database SHA256 is
 integrity evidence against partial modification, **not** a cryptographic
 signature or immutable external trust anchor against an adversary who
 can rewrite every SQLite record.
+
+## Verified legacy receipts after checkpoint compaction (2026-11-10)
+
+A committed legacy event's BLOB may be pruned after a verified snapshot
+covers it. The legacy receipt path now reconstructs its original digest
+from stored `origin_epoch`, independent of the current fenced epoch;
+the new activation can receive the matching durable duplicate result
+while old activations remain fenced.
+
+If an event has been pruned, a covering snapshot plus complete verified
+active journal is mandatory. A still-present altered event, a deleted
+uncheckpointed event, a corrupt checkpoint, and changed logical payload
+must NOT be certified. A historic snapshot receipt can also be
+deduplicated after a newer verified snapshot supersedes it.
+
+Three new adversarial tests cover epoch-two compacted-event receipts,
+superseded snapshot receipts and damaged checkpoint rejection.
+The replay-hardening file declares 36 tests; its exact-source tests
+remain NOT_EXECUTED in source CI.
+
+Independent source-free private Actions
+[run #42956100273](https://github.com/atto-lang/atto-compilers-parity-testing/actions/runs/42956100273)
+passed 12 steps including a 6/6 archived-operation/epoch proof.
+This is not source implementation execution or export approval.
