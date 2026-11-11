@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val inc = |x| -> { return x + 1; };
+  return inc(1);
+}
