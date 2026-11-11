@@ -17,6 +17,9 @@ const hash_command_attempt = (e) => hash_bytes(Buffer.from(JSON.stringify([
   e.schemaVersion,e.commandHash,e.events.map(b=>b.toString('base64')),
   e.resultBytes.toString('base64')
 ])));
+const checkpoint_hash = (e) => hash_bytes(Buffer.from(JSON.stringify([
+  e.tenantId,e.actor,e.stateName,e.version,e.schemaVersion,e.payload.toString('base64')
+])));
 const key = (e) => JSON.stringify([e.actor, e.stateName, e.opId]);
 const digest = (e) => createHash('sha256').update(JSON.stringify([
   e.tenantId,e.actor,e.stateName,e.opId,e.epoch,e.expectedVersion,
@@ -60,7 +63,13 @@ export class BatchPersistenceSidecar {
         op_id TEXT NOT NULL, command_hash TEXT NOT NULL,
         first_version INTEGER NOT NULL, last_version INTEGER NOT NULL,
         event_count INTEGER NOT NULL, result_bytes BLOB NOT NULL,
-        PRIMARY KEY(tenant,actor,state_name,op_id));`);
+        PRIMARY KEY(tenant,actor,state_name,op_id));
+      -- This is distinct from a legacy snapshot event: no new stream version.
+      CREATE TABLE IF NOT EXISTS checkpoints (
+        tenant TEXT NOT NULL, actor TEXT NOT NULL, state_name TEXT NOT NULL,
+        version INTEGER NOT NULL, schema_version INTEGER NOT NULL,
+        payload BLOB NOT NULL, digest TEXT NOT NULL,
+        PRIMARY KEY(tenant,actor,state_name));`);
     this.getFence = this.db.prepare('SELECT epoch FROM fences WHERE tenant=? AND actor=?');
     this.getOp = this.db.prepare('SELECT digest, version, kind FROM operations WHERE tenant=? AND actor=? AND state_name=? AND op_id=?');
     this.getHead = this.db.prepare('SELECT version FROM heads WHERE tenant=? AND actor=? AND state_name=?');
@@ -70,6 +79,11 @@ export class BatchPersistenceSidecar {
     this.putOp = this.db.prepare('INSERT INTO operations VALUES(?,?,?,?,?,?,?)');
     this.getCommand = this.db.prepare('SELECT command_hash,first_version,last_version,event_count,result_bytes FROM command_commits WHERE tenant=? AND actor=? AND state_name=? AND op_id=?');
     this.putCommand = this.db.prepare('INSERT INTO command_commits VALUES(?,?,?,?,?,?,?,?,?)');
+    this.getCheckpoint = this.db.prepare('SELECT version,schema_version,payload,digest FROM checkpoints WHERE tenant=? AND actor=? AND state_name=?');
+    this.putCheckpoint = this.db.prepare('INSERT INTO checkpoints VALUES(?,?,?,?,?,?,?) ON CONFLICT(tenant,actor,state_name) DO UPDATE SET version=excluded.version,schema_version=excluded.schema_version,payload=excluded.payload,digest=excluded.digest');
+    this.getLegacySnapshot = this.db.prepare('SELECT version,schema_version,payload FROM snapshots WHERE tenant=? AND actor=? AND state_name=?');
+    this.readCheckpointEvents = this.db.prepare('SELECT version,op_id FROM events WHERE tenant=? AND actor=? AND state_name=? AND version>? AND version<=? ORDER BY version ASC');
+    this.pruneCheckpointEvents = this.db.prepare('DELETE FROM events WHERE tenant=? AND actor=? AND state_name=? AND version<=?');
   }
   // TRUSTED CONTROL PLANE ONLY: never expose this to a guest actor.
   grantEpoch({ tenantId, actor, epoch }) {
@@ -278,6 +292,65 @@ export class BatchPersistenceSidecar {
       fail('COMMIT_MISMATCH');
     return {opId,status:'committed',durable:true,version:op.version};
   }
+  // Trusted-host checkpoint from already verified actor state. All-or-none
+  // provider CAS, checkpoint and pruning. The digest detects accidental
+  // corruption; it does not authenticate a compromised database writer.
+  checkpointAndCompact(input) {
+    const {tenantId,actor,stateName,epoch,expectedVersion,schemaVersion=1,payload}=input??{};
+    if(tenantId!==this.tenantId)fail('WRONG_TENANT');
+    if(!ident(actor)||!ident(stateName)||!uint(epoch)||epoch<1||
+       !uint(expectedVersion)||expectedVersion<1||!uint(schemaVersion)||
+       schemaVersion<1||!Buffer.isBuffer(payload))fail('INVALID_CHECKPOINT');
+    if(payload.length>this.maxPayloadBytes)fail('PAYLOAD_TOO_LARGE');
+    this.db.exec('BEGIN IMMEDIATE');
+    try {
+      if(this.getFence.get(tenantId,actor)?.epoch!==epoch)fail('STALE_EPOCH');
+      const head=this.getHead.get(tenantId,actor,stateName)?.version??0;
+      if(head!==expectedVersion)fail('VERSION_CONFLICT');
+      if(this.getLegacySnapshot.get(tenantId,actor,stateName))
+        fail('LEGACY_SNAPSHOT_PRESENT');
+      const old=this.getCheckpoint.get(tenantId,actor,stateName);
+      let from=0;
+      if(old) {
+        const owned=Buffer.from(old.payload);
+        if(!uint(old.version)||old.version<1||old.version>head||
+           !uint(old.schema_version)||old.schema_version<1||
+           old.digest!==checkpoint_hash({tenantId,actor,stateName,version:old.version,
+             schemaVersion:old.schema_version,payload:owned}))fail('CORRUPT_CHECKPOINT');
+        if(old.schema_version!==schemaVersion)fail('SCHEMA_MIGRATION_REQUIRED');
+        if(old.version===expectedVersion) {
+          if(!owned.equals(payload))fail('CHECKPOINT_CONFLICT');
+          this.db.exec('COMMIT');
+          return {status:'committed',durable:true,duplicate:true,
+            version:expectedVersion,prunedEvents:0};
+        }
+        from=old.version;
+      }
+      const events=this.readCheckpointEvents.all(tenantId,actor,stateName,from,expectedVersion);
+      if(events.length!==expectedVersion-from)fail('JOURNAL_GAP');
+      for(let i=0;i<events.length;i++) {
+        const entry=events[i];
+        if(entry.version!==from+i+1)fail('JOURNAL_GAP');
+        const cmd=this.getCommand.get(tenantId,actor,stateName,entry.op_id);
+        if(!cmd||entry.version<cmd.first_version||entry.version>cmd.last_version||
+           !uint(cmd.event_count)||cmd.event_count<1||
+           cmd.last_version-cmd.first_version+1!==cmd.event_count)
+          fail('UNINDEXED_JOURNAL');
+      }
+      this.putCheckpoint.run(tenantId,actor,stateName,expectedVersion,schemaVersion,
+        Buffer.from(payload),checkpoint_hash({tenantId,actor,stateName,
+          version:expectedVersion,schemaVersion,payload}));
+      const pruned=this.pruneCheckpointEvents.run(tenantId,actor,stateName,expectedVersion);
+      if(pruned.changes!==events.length)fail('JOURNAL_GAP');
+      this.db.exec('COMMIT');
+      return {status:'committed',durable:true,duplicate:false,
+        version:expectedVersion,prunedEvents:events.length};
+    } catch(e) {
+      try{this.db.exec('ROLLBACK');}catch{}
+      if(e instanceof AdmissionError)throw e;
+      fail('OUTCOME_UNKNOWN');
+    }
+  }
   // Loading durable actor state is activation-scoped; old epochs must not restore it.
   loadFenced({tenantId,actor,stateName,epoch}) {
     if (tenantId !== this.tenantId) fail('WRONG_TENANT');
@@ -297,11 +370,27 @@ export class BatchPersistenceSidecar {
     if (tenantId !== this.tenantId) fail('WRONG_TENANT');
     if (![actor,stateName].every(ident)) fail('INVALID_READ');
     const version=this.getHead.get(tenantId,actor,stateName)?.version??0;
-    const snapshot=this.db.prepare('SELECT version,schema_version,payload FROM snapshots WHERE tenant=? AND actor=? AND state_name=?').get(tenantId,actor,stateName);
+    const checkpoint=this.getCheckpoint.get(tenantId,actor,stateName);
+    const legacy=this.getLegacySnapshot.get(tenantId,actor,stateName);
+    if(checkpoint&&legacy)fail('AMBIGUOUS_SNAPSHOT');
+    let snapshot=null;
+    if(checkpoint) {
+      const owned=Buffer.from(checkpoint.payload);
+      if(!uint(checkpoint.version)||checkpoint.version<1||checkpoint.version>version||
+         !uint(checkpoint.schema_version)||checkpoint.schema_version<1||
+         checkpoint.digest!==checkpoint_hash({tenantId,actor,stateName,
+           version:checkpoint.version,schemaVersion:checkpoint.schema_version,payload:owned}))
+        fail('CORRUPT_CHECKPOINT');
+      snapshot={version:checkpoint.version,schemaVersion:checkpoint.schema_version,
+        payload:owned,provenance:'command_checkpoint_v1',verifiedCommandIndex:true};
+    } else if(legacy) {
+      snapshot={version:legacy.version,schemaVersion:legacy.schema_version,
+        payload:Buffer.from(legacy.payload)};
+    }
     const since=snapshot?.version??0;
     const events=this.db.prepare('SELECT version,schema_version,op_id,payload FROM events WHERE tenant=? AND actor=? AND state_name=? AND version>? ORDER BY version ASC').all(tenantId,actor,stateName,since);
-    return {version, snapshot:snapshot?{version:snapshot.version,schemaVersion:snapshot.schema_version,payload:Buffer.from(snapshot.payload)}:null,
-      events:events.map(x=>({version:x.version,schemaVersion:x.schema_version,opId:x.op_id,payload:Buffer.from(x.payload)}))};
+    return {version,snapshot,events:events.map(x=>({version:x.version,
+      schemaVersion:x.schema_version,opId:x.op_id,payload:Buffer.from(x.payload)}))};
   }
   close() { this.db.close(); }
 }
