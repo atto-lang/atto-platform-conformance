@@ -19,6 +19,8 @@ test("serial alias and explicit metadata retain the one-by-one contract", () => 
   assert.match(contract.sourceContract.explicitOneOne, /messageConcurrency = 1/);
   assert.deepEqual(contract.sourceContract.normalizedMetadata, {transport:"HTTP",requestConcurrency:1,messageConcurrency:1});
   assert.match(contract.sourceContract.semantics.actorExecution, /at most one physical guest turn/);
+  assert.match(contract.sourceContract.semantics.gracefulDrain, /Seal new HTTP request admissions/);
+  assert.match(contract.sourceContract.semantics.forcedStop, /Seal both request and message admission/);
 });
 test("exact mandatory compiler, ownership, shutdown and E2E case inventory", () => {
   assert.deepEqual(contract.cases.map(x=>x.id), required);
