@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 
 const EXPECTED_BACKENDS = ["java", "llvm", "wasm", "forge", "net"];
 const EXPECTED_CASE_IDS = [
@@ -136,7 +137,7 @@ export function verifyCurrentActorRef32FiveBackendV1() {
   return validateActorRef32FiveBackendV1(manifest, source);
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) ===
-    fileURLToPath(new URL("file://" + process.argv[1]))) {
+if (process.argv[1] && resolve(process.argv[1]) ===
+    fileURLToPath(import.meta.url)) {
   console.log(JSON.stringify(verifyCurrentActorRef32FiveBackendV1()));
 }
