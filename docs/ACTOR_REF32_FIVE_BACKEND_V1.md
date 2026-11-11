@@ -58,6 +58,44 @@ for every mandatory case. Where case fixtures are `null`, a compiler
 negative/positive `.atto` fixture is still required; do not treat a host
 negative test or a prose oracle as compiler evidence.
 
+## Existing draft implementations to reuse rather than duplicate
+
+These are **candidate PRs**, not verified parity. Some are stacked on
+earlier draft branches, so integrate in dependency order and verify the
+latest actual source heads rather than cherry-picking by PR number.
+
+- Java/GraalVM: [#328](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/328)
+  restores SHARED actor-local heaps; [#2651](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2651)
+  mints per-dispatch execution contexts. The next native guest gate needs
+  compiler-emitted `Node` allocation and typed field accesses in these
+  authenticated domains.
+- LLVM: [#1215](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1215)
+  already adds a narrow **source compiler lowering** for synchronous sealed
+  actor scalar state; [#1541](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1541)
+  targets actor-owned scalar frames. Extend these paths to typed object
+  graph allocation; do not treat their different scalar fixtures as the
+  canonical `Node` graph already passing.
+- Wasm: [#120](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/120)
+  binds pooled guest execution to private actor heaps;
+  [#445](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/445)
+  adds compressed32 *access grants*. Those checked-offset grants are
+  different from .NET's generation/slot words: prove equivalent
+  **authority and lifetime semantics**, not bit-identical references.
+- Forge: [#214](https://github.com/ores-truffle-oreslang/oreslang-source.forge/pull/214)
+  has a closed-world `.atto` scalar actor AOT bridge;
+  [#210](https://github.com/ores-truffle-oreslang/oreslang-source.forge/pull/210)
+  integrates actor heap and logical stack host infrastructure. Extend
+  the bridge to nominal object graphs independently of LLVM.
+- .NET: [#437](https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/437)
+  adds typed actor-native Ref32 runtime and
+  [#449](https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/449)
+  is the opt-in generated `.atto` two-node actor guest bridge.
+  Exact-head compilation and Linux/Windows NativeAOT execution are required.
+
+Reconcile dependencies and exact Git blobs before integrating overlapping
+actor-memory implementations. Never merge these drafts based solely on
+source-free contract tests or an unexecuted CI badge.
+
 ## Certification algorithm
 
 For **each** backend and every mandatory case, collect an immutable
