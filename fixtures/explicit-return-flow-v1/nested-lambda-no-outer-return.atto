@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val thunk = || -> { return 1; };
+  val int x = 1;
+}
