@@ -171,7 +171,8 @@ export function checkConfiguration(config) {
   need(Object.keys(config).length === keys.length && keys.every(k => Object.hasOwn(config,k)),
     'execution config has unknown or missing keys');
   need(config.schema === 'oreslang-otel-real-guest-execution/v1', 'wrong config schema');
-  need(PROFILES[config.profile], 'unknown exact backend runtime profile');
+  need(typeof config.profile === 'string' && Object.hasOwn(PROFILES, config.profile),
+    'unknown exact backend runtime profile');
   need(['generated','source_fixture'].includes(config.artifact_kind),
     'artifact kind is not declared');
   need(config.artifact_kind !== 'source_fixture' ||
