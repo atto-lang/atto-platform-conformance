@@ -40,6 +40,8 @@ these states. Public out-of-line APIs require an explicitly public actor type
 - `define state on actor Foo` is a private state *schema*, not a global
   singleton, shared mutable object, or second actor. One verified package
   instance, namespace and nominal actor determine the schema.
+  Only a `declare actor` nominal header may adopt this out-of-line schema;
+  inline `define actor Foo as ... end` cannot mix in a second state layout.
 - Each actor activation owns its physical state instance. Schema fields
   initialize to typed constant values after allocation under runtime
   control. No arbitrary initializer call, global pointer or reflection
@@ -67,7 +69,7 @@ these states. Public out-of-line APIs require an explicitly public actor type
 ## Evidence and promotion
 
 The companion `contracts/namespace-attached-actor-state-v1.json`
-contains **19** parser, static-linker, future typecheck and future runtime
+contains **20** parser, static-linker, future typecheck and future runtime
 cases. `NOT_EXECUTED` is required until backend-specific immutable exact
 source and fixture receipts exist. Source-free canaries do not count.
 
