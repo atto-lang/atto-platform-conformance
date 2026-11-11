@@ -16,7 +16,7 @@
       "file": "operator-cross-numeric-reject.atto",
       "git_blob": "2bfbfe915b89add228f0d2f3827b8cd4774c1089",
       "expected": "COMPILE_REJECT_NO_IR",
-      "gate": "P0"
+      "gate": "AFTER_TYPED_EQUALITY_MIGRATION"
     },
     {
       "id": "operator_legacy_equals_strict",
