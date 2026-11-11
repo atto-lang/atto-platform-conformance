@@ -1,0 +1,1384 @@
+{
+  "schema": "oreslang.five-source-shared-contract-metadata.v1",
+  "as_of": "2026-11-11",
+  "scope": "immutable-git-blob-metadata-only-not-guest-execution",
+  "backends": {
+    "java": {
+      "repo": "ores-truffle-oreslang/oreslang-source.java",
+      "head": "6d8eb70048eafc9a84c5aebe9c1bb06104f16e76",
+      "tree": "f16af3c76a2a5e6927d760dc09bc9a13233e4d6d"
+    },
+    "llvm": {
+      "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+      "head": "0ee037ca3e5dd9ac6ac1e9cc3d40f19ee6326a9c",
+      "tree": "6324f2fdbaf77d92e04e4b6148cf9b7adaa95217"
+    },
+    "wasm": {
+      "repo": "ores-truffle-oreslang/oreslang-source.wasm",
+      "head": "2c6ce5988592080ea47b8877e2b8c1d3df5cb9bd",
+      "tree": "f604a918d8308f336f0dbbb3507119db102ebff8"
+    },
+    "net": {
+      "repo": "ores-truffle-oreslang/oreslang-source.net",
+      "head": "3f3606cc3ef81dad117047b4cb57609ad1a92672",
+      "tree": "41cde0cea138969aac446d4fdc228fdd032d3c70"
+    },
+    "forge": {
+      "repo": "ores-truffle-oreslang/oreslang-source.forge",
+      "head": "2acf59d589f8016f879581f17a27df144fa73075",
+      "tree": "3011dbcebb0f3a52ecac4321d835e0d592cacc54"
+    }
+  },
+  "summary": {
+    "shared_at_least_two": 166,
+    "equal_at_main": 155,
+    "divergent_at_main": 11,
+    "shared_all_five": 9,
+    "equal_all_five": 8
+  },
+  "shared": [
+    {
+      "path": "contracts/architecture/v1/targets.tsv",
+      "blobs": {
+        "java": "c0aa8eedc7a4ec43edc1ae2b967dfdfae2cd9e1d",
+        "llvm": "bb84bd174a95ff99905abee71a382960d5356c46"
+      }
+    },
+    {
+      "path": "contracts/atto-core-v1/core.atto",
+      "blobs": {
+        "wasm": "d2cd9b8e0cd3e3bb3ee6a5f9cebf9ab3312c44f4",
+        "net": "d2cd9b8e0cd3e3bb3ee6a5f9cebf9ab3312c44f4",
+        "forge": "d2cd9b8e0cd3e3bb3ee6a5f9cebf9ab3312c44f4"
+      }
+    },
+    {
+      "path": "contracts/atto-core-v1/numeric.atto",
+      "blobs": {
+        "wasm": "5ced991f1d49b3c2a60fdd72b9003c0a4d18cd72",
+        "net": "5ced991f1d49b3c2a60fdd72b9003c0a4d18cd72",
+        "forge": "5ced991f1d49b3c2a60fdd72b9003c0a4d18cd72"
+      }
+    },
+    {
+      "path": "contracts/atto-parity-v1/add.atto",
+      "blobs": {
+        "java": "015f8b0f79aafa796a148d2adeff1574e8d6c491",
+        "llvm": "015f8b0f79aafa796a148d2adeff1574e8d6c491",
+        "wasm": "015f8b0f79aafa796a148d2adeff1574e8d6c491"
+      }
+    },
+    {
+      "path": "contracts/atto-scalar-v1/cases.json",
+      "blobs": {
+        "java": "43c4d295a237e483f70722bd90ec10d273b73854",
+        "llvm": "43c4d295a237e483f70722bd90ec10d273b73854"
+      }
+    },
+    {
+      "path": "contracts/atto-scalar-v1/negative/checked-add-overflow.atto",
+      "blobs": {
+        "java": "eed3113842125b1d2a295a11e3cc01a5c1e3da00",
+        "llvm": "eed3113842125b1d2a295a11e3cc01a5c1e3da00"
+      }
+    },
+    {
+      "path": "contracts/atto-scalar-v1/negative/checked-mul-overflow.atto",
+      "blobs": {
+        "java": "e608942c7e84fddb6ad7ca119a4a11d88aa9434b",
+        "llvm": "e608942c7e84fddb6ad7ca119a4a11d88aa9434b"
+      }
+    },
+    {
+      "path": "contracts/atto-scalar-v1/negative/checked-sub-overflow.atto",
+      "blobs": {
+        "java": "3f80e2eff35147984b040eb0a0215b439d20d09b",
+        "llvm": "3f80e2eff35147984b040eb0a0215b439d20d09b"
+      }
+    },
+    {
+      "path": "contracts/atto-scalar-v1/negative/eager-unused-overflow.atto",
+      "blobs": {
+        "java": "ff0c520f2bc2efcc3daf032eb61fddc8f0c91d48",
+        "llvm": "ff0c520f2bc2efcc3daf032eb61fddc8f0c91d48"
+      }
+    },
+    {
+      "path": "contracts/atto-scalar-v1/negative/removed-caret.atto",
+      "blobs": {
+        "java": "6889c7e83c8d94b906fbfe78723caee9580da6aa",
+        "llvm": "6889c7e83c8d94b906fbfe78723caee9580da6aa"
+      }
+    },
+    {
+      "path": "contracts/atto-scalar-v1/negative/removed-double-caret.atto",
+      "blobs": {
+        "java": "7ee99948018e927cce74c9ad0edc1975e4251689",
+        "llvm": "7ee99948018e927cce74c9ad0edc1975e4251689"
+      }
+    },
+    {
+      "path": "contracts/atto-scalar-v1/negative/removed-modulo.atto",
+      "blobs": {
+        "java": "45d5794870e93074d9b11b90833a849e96aaa4c1",
+        "llvm": "45d5794870e93074d9b11b90833a849e96aaa4c1"
+      }
+    },
+    {
+      "path": "contracts/atto-scalar-v1/negative/type-first-reassignment.atto",
+      "blobs": {
+        "java": "b118f53e68565dcb9e6acd58deb8ee47dca67606",
+        "llvm": "b118f53e68565dcb9e6acd58deb8ee47dca67606"
+      }
+    },
+    {
+      "path": "contracts/atto-scalar-v1/negative/typed-const-reassignment.atto",
+      "blobs": {
+        "java": "784ebd47a50211e6f00cb732cc74319ed1e58fac",
+        "llvm": "784ebd47a50211e6f00cb732cc74319ed1e58fac"
+      }
+    },
+    {
+      "path": "contracts/atto-scalar-v1/positive/canonical-add.atto",
+      "blobs": {
+        "java": "015f8b0f79aafa796a148d2adeff1574e8d6c491",
+        "llvm": "015f8b0f79aafa796a148d2adeff1574e8d6c491"
+      }
+    },
+    {
+      "path": "contracts/atto-scalar-v1/positive/inferred-const-readonly.atto",
+      "blobs": {
+        "java": "4fe471862d90ba57e135b93728bd44690ff2c894",
+        "llvm": "4fe471862d90ba57e135b93728bd44690ff2c894"
+      }
+    },
+    {
+      "path": "contracts/atto-scalar-v1/positive/parentheses.atto",
+      "blobs": {
+        "java": "9f508169c741486d5cec7510ac84fb761f342def",
+        "llvm": "9f508169c741486d5cec7510ac84fb761f342def"
+      }
+    },
+    {
+      "path": "contracts/atto-scalar-v1/positive/precedence.atto",
+      "blobs": {
+        "java": "50414e5e95c8007f066696f55aa75309555b83e2",
+        "llvm": "50414e5e95c8007f066696f55aa75309555b83e2"
+      }
+    },
+    {
+      "path": "contracts/atto-scalar-v1/positive/pure-call.atto",
+      "blobs": {
+        "java": "e5ab32f7d8f684d655a83a3df989f16c52090c05",
+        "llvm": "e5ab32f7d8f684d655a83a3df989f16c52090c05"
+      }
+    },
+    {
+      "path": "contracts/atto-scalar-v1/positive/signed-max-minus-one.atto",
+      "blobs": {
+        "java": "c400f440fde2fbc10514ab7cfd2ffe3d19729ee1",
+        "llvm": "c400f440fde2fbc10514ab7cfd2ffe3d19729ee1"
+      }
+    },
+    {
+      "path": "contracts/atto-scalar-v1/positive/signed-minimum.atto",
+      "blobs": {
+        "java": "450ebee951733d3f0b567413e70724155d26ce13",
+        "llvm": "450ebee951733d3f0b567413e70724155d26ce13"
+      }
+    },
+    {
+      "path": "contracts/atto-scalar-v1/positive/type-first-parameter.atto",
+      "blobs": {
+        "java": "3d6c16ed04aa86f954461885ec77c8f10b47fb5c",
+        "llvm": "3d6c16ed04aa86f954461885ec77c8f10b47fb5c"
+      }
+    },
+    {
+      "path": "contracts/atto-scalar-v1/positive/type-first-readonly.atto",
+      "blobs": {
+        "java": "75ff4afc98fc65a774611eb7686e893f3d28a6da",
+        "llvm": "75ff4afc98fc65a774611eb7686e893f3d28a6da"
+      }
+    },
+    {
+      "path": "contracts/atto-scalar-v1/positive/typed-const-readonly.atto",
+      "blobs": {
+        "java": "0325018c54dd3534ddac76dc29724aa61e979683",
+        "llvm": "0325018c54dd3534ddac76dc29724aa61e979683"
+      }
+    },
+    {
+      "path": "contracts/attoxp-scalar-v1/answer-42.atto",
+      "blobs": {
+        "llvm": "015f8b0f79aafa796a148d2adeff1574e8d6c491",
+        "wasm": "015f8b0f79aafa796a148d2adeff1574e8d6c491",
+        "net": "015f8b0f79aafa796a148d2adeff1574e8d6c491"
+      }
+    },
+    {
+      "path": "contracts/attoxp-scalar-v1/cases.json",
+      "blobs": {
+        "llvm": "9710177cdc4c25be5264406b4d4983a95ebe2537",
+        "wasm": "9710177cdc4c25be5264406b4d4983a95ebe2537",
+        "net": "9710177cdc4c25be5264406b4d4983a95ebe2537"
+      }
+    },
+    {
+      "path": "contracts/attoxp-scalar-v1/decrement-41.atto",
+      "blobs": {
+        "llvm": "d6e8a8339cac5c1b7582317cec98b946a964e91e",
+        "wasm": "d6e8a8339cac5c1b7582317cec98b946a964e91e",
+        "net": "d6e8a8339cac5c1b7582317cec98b946a964e91e"
+      }
+    },
+    {
+      "path": "contracts/attoxp-scalar-v1/multiply-42.atto",
+      "blobs": {
+        "llvm": "d05d87475d5b2f503bf70d0d7c02eb3261e66330",
+        "wasm": "d05d87475d5b2f503bf70d0d7c02eb3261e66330",
+        "net": "d05d87475d5b2f503bf70d0d7c02eb3261e66330"
+      }
+    },
+    {
+      "path": "contracts/attoxp-scalar-v1/reset-zero.atto",
+      "blobs": {
+        "llvm": "3ad6d8970439608d3bd9dba60e8e6f0ed952eaac",
+        "wasm": "3ad6d8970439608d3bd9dba60e8e6f0ed952eaac",
+        "net": "3ad6d8970439608d3bd9dba60e8e6f0ed952eaac"
+      }
+    },
+    {
+      "path": "contracts/clients/scalar-v1/01-precedence.ores",
+      "blobs": {
+        "java": "dc4572c06132b7d676b592302aac58ab227c49c9",
+        "net": "dc4572c06132b7d676b592302aac58ab227c49c9"
+      }
+    },
+    {
+      "path": "contracts/clients/scalar-v1/02-grouping.ores",
+      "blobs": {
+        "java": "2f1c78d0e58ed99cffe816b9863cfa403ef4bc17",
+        "net": "2f1c78d0e58ed99cffe816b9863cfa403ef4bc17"
+      }
+    },
+    {
+      "path": "contracts/clients/scalar-v1/03-signed.ores",
+      "blobs": {
+        "java": "9b33219d92f4c82f306671a0fb08762a61c28493",
+        "net": "9b33219d92f4c82f306671a0fb08762a61c28493"
+      }
+    },
+    {
+      "path": "contracts/clients/scalar-v1/04-i64-edge.ores",
+      "blobs": {
+        "java": "57c30465424ac16039cc44fb5223e5653ae02848",
+        "net": "57c30465424ac16039cc44fb5223e5653ae02848"
+      }
+    },
+    {
+      "path": "contracts/clients/scalar-v1/05-separators.ores",
+      "blobs": {
+        "java": "d72263c99a1f1fbee89eecb6615d08dd4f054a78",
+        "net": "d72263c99a1f1fbee89eecb6615d08dd4f054a78"
+      }
+    },
+    {
+      "path": "contracts/clients/scalar-v1/06-nested.ores",
+      "blobs": {
+        "java": "2e478a4600529843f81de7217716dbadb9809691",
+        "net": "2e478a4600529843f81de7217716dbadb9809691"
+      }
+    },
+    {
+      "path": "contracts/clients/scalar-v1/07-unknown-reject.ores",
+      "blobs": {
+        "java": "374cd23a0df9bafe95e9895c6fdedc313206f232",
+        "net": "374cd23a0df9bafe95e9895c6fdedc313206f232"
+      }
+    },
+    {
+      "path": "contracts/clients/scalar-v1/08-overflow-reject.ores",
+      "blobs": {
+        "java": "e7bc587beaf56e6279433b2f78ee91817e380f5d",
+        "net": "e7bc587beaf56e6279433b2f78ee91817e380f5d"
+      }
+    },
+    {
+      "path": "contracts/clients/scalar-v1/09-syntax-reject.ores",
+      "blobs": {
+        "java": "5610cde2b2afb655e6e2530546b1e2cdb3bb3ac7",
+        "net": "5610cde2b2afb655e6e2530546b1e2cdb3bb3ac7"
+      }
+    },
+    {
+      "path": "contracts/durable-m0/v1/checkout.atto",
+      "blobs": {
+        "llvm": "7a00bfea113e97217c8aca02813e0be72257009a",
+        "wasm": "7a00bfea113e97217c8aca02813e0be72257009a",
+        "net": "7a00bfea113e97217c8aca02813e0be72257009a"
+      }
+    },
+    {
+      "path": "contracts/durable-m0/v1/manifest-v1.json",
+      "blobs": {
+        "llvm": "09a4d48259e5250ee72cf52d3498afec037ce3a3",
+        "wasm": "09a4d48259e5250ee72cf52d3498afec037ce3a3",
+        "net": "09a4d48259e5250ee72cf52d3498afec037ce3a3"
+      }
+    },
+    {
+      "path": "contracts/guard-v1/canonical-scalar.atto",
+      "blobs": {
+        "java": "c86ac476e55074031c0bcda02f5eaf3cb1399477",
+        "llvm": "c86ac476e55074031c0bcda02f5eaf3cb1399477",
+        "wasm": "c86ac476e55074031c0bcda02f5eaf3cb1399477",
+        "net": "c86ac476e55074031c0bcda02f5eaf3cb1399477",
+        "forge": "c86ac476e55074031c0bcda02f5eaf3cb1399477"
+      }
+    },
+    {
+      "path": "contracts/guard-v1/reject-else.atto",
+      "blobs": {
+        "java": "b2bbee98cd3b95ac19462b4efd95a2e98b469154",
+        "llvm": "b2bbee98cd3b95ac19462b4efd95a2e98b469154",
+        "wasm": "b2bbee98cd3b95ac19462b4efd95a2e98b469154",
+        "net": "b2bbee98cd3b95ac19462b4efd95a2e98b469154",
+        "forge": "b2bbee98cd3b95ac19462b4efd95a2e98b469154"
+      }
+    },
+    {
+      "path": "contracts/guard-v1/reject-fallthrough.atto",
+      "blobs": {
+        "java": "1ff87aa95ed2537839347e80984c69ae46fdfa17",
+        "llvm": "1ff87aa95ed2537839347e80984c69ae46fdfa17",
+        "wasm": "1ff87aa95ed2537839347e80984c69ae46fdfa17",
+        "net": "1ff87aa95ed2537839347e80984c69ae46fdfa17",
+        "forge": "1ff87aa95ed2537839347e80984c69ae46fdfa17"
+      }
+    },
+    {
+      "path": "contracts/oresllm-parity/v1/budget-extension.json",
+      "blobs": {
+        "java": "a55d1bf1e2fc8820522e84b152e954b1d9e33941",
+        "llvm": "a55d1bf1e2fc8820522e84b152e954b1d9e33941",
+        "wasm": "a55d1bf1e2fc8820522e84b152e954b1d9e33941",
+        "net": "a55d1bf1e2fc8820522e84b152e954b1d9e33941"
+      }
+    },
+    {
+      "path": "contracts/oresllm-parity/v1/scalar.json",
+      "blobs": {
+        "java": "e07fbcdcec56172b88fb87cc80238d78f8da2c52",
+        "llvm": "e07fbcdcec56172b88fb87cc80238d78f8da2c52",
+        "wasm": "e07fbcdcec56172b88fb87cc80238d78f8da2c52",
+        "net": "e07fbcdcec56172b88fb87cc80238d78f8da2c52"
+      }
+    },
+    {
+      "path": "contracts/platform-core-v1/arith-precedence.ores",
+      "blobs": {
+        "java": "14f0a6fde3c55ead28f361da6c0e40279344137a",
+        "llvm": "14f0a6fde3c55ead28f361da6c0e40279344137a",
+        "wasm": "14f0a6fde3c55ead28f361da6c0e40279344137a",
+        "net": "14f0a6fde3c55ead28f361da6c0e40279344137a"
+      }
+    },
+    {
+      "path": "contracts/platform-core-v1/eager-checked-int.ores",
+      "blobs": {
+        "java": "b95fd94f36da98a8972f665eda126b46159de0f9",
+        "llvm": "b95fd94f36da98a8972f665eda126b46159de0f9",
+        "wasm": "b95fd94f36da98a8972f665eda126b46159de0f9",
+        "net": "b95fd94f36da98a8972f665eda126b46159de0f9"
+      }
+    },
+    {
+      "path": "contracts/platform-core-v1/manifest.json",
+      "blobs": {
+        "java": "8d06e0c7dff46253868954c595d2698ed5356e5f",
+        "llvm": "8d06e0c7dff46253868954c595d2698ed5356e5f",
+        "wasm": "8d06e0c7dff46253868954c595d2698ed5356e5f",
+        "net": "8d06e0c7dff46253868954c595d2698ed5356e5f"
+      }
+    },
+    {
+      "path": "contracts/platform-core-v1/max-minus-five.ores",
+      "blobs": {
+        "java": "ea1932dd800fdcf3ef00a01549ce6565d7691ade",
+        "llvm": "ea1932dd800fdcf3ef00a01549ce6565d7691ade",
+        "wasm": "ea1932dd800fdcf3ef00a01549ce6565d7691ade",
+        "net": "ea1932dd800fdcf3ef00a01549ce6565d7691ade"
+      }
+    },
+    {
+      "path": "contracts/platform-core-v1/native-testing-core.ores",
+      "blobs": {
+        "java": "703a209a650687a5f41213318590de2926d64d09",
+        "llvm": "703a209a650687a5f41213318590de2926d64d09",
+        "wasm": "703a209a650687a5f41213318590de2926d64d09",
+        "net": "703a209a650687a5f41213318590de2926d64d09"
+      }
+    },
+    {
+      "path": "contracts/platform-core-v1/negative-product.ores",
+      "blobs": {
+        "java": "ba664537993dd3bb808f0d3453bd01f5435cc098",
+        "llvm": "ba664537993dd3bb808f0d3453bd01f5435cc098",
+        "wasm": "ba664537993dd3bb808f0d3453bd01f5435cc098",
+        "net": "ba664537993dd3bb808f0d3453bd01f5435cc098"
+      }
+    },
+    {
+      "path": "contracts/platform-core-v1/nested-unary.ores",
+      "blobs": {
+        "java": "c6aa564c5bd4ce38c5e5fcc1e96cec8cea58c6d3",
+        "llvm": "c6aa564c5bd4ce38c5e5fcc1e96cec8cea58c6d3",
+        "wasm": "c6aa564c5bd4ce38c5e5fcc1e96cec8cea58c6d3",
+        "net": "c6aa564c5bd4ce38c5e5fcc1e96cec8cea58c6d3"
+      }
+    },
+    {
+      "path": "contracts/platform-core-v1/reject-no-value-return.ores",
+      "blobs": {
+        "java": "8cce1a3e24bec592834089d228f1047d61f510f0",
+        "llvm": "8cce1a3e24bec592834089d228f1047d61f510f0",
+        "wasm": "8cce1a3e24bec592834089d228f1047d61f510f0",
+        "net": "8cce1a3e24bec592834089d228f1047d61f510f0"
+      }
+    },
+    {
+      "path": "contracts/platform-core-v1/reject-overflow.ores",
+      "blobs": {
+        "java": "eed3113842125b1d2a295a11e3cc01a5c1e3da00",
+        "llvm": "eed3113842125b1d2a295a11e3cc01a5c1e3da00",
+        "wasm": "eed3113842125b1d2a295a11e3cc01a5c1e3da00",
+        "net": "eed3113842125b1d2a295a11e3cc01a5c1e3da00"
+      }
+    },
+    {
+      "path": "contracts/platform-core-v1/reject-string-as-int.ores",
+      "blobs": {
+        "java": "494a5d02d86c7d8f6222c25e1ca33eb7f92c1fba",
+        "llvm": "494a5d02d86c7d8f6222c25e1ca33eb7f92c1fba",
+        "wasm": "494a5d02d86c7d8f6222c25e1ca33eb7f92c1fba",
+        "net": "494a5d02d86c7d8f6222c25e1ca33eb7f92c1fba"
+      }
+    },
+    {
+      "path": "contracts/platform-core-v1/reject-unknown-symbol.ores",
+      "blobs": {
+        "java": "fb17d2b5a662d435c367c682abbd5af7807f1e48",
+        "llvm": "fb17d2b5a662d435c367c682abbd5af7807f1e48",
+        "wasm": "fb17d2b5a662d435c367c682abbd5af7807f1e48",
+        "net": "fb17d2b5a662d435c367c682abbd5af7807f1e48"
+      }
+    },
+    {
+      "path": "contracts/platform-core-v1/reject-xor-operator.ores",
+      "blobs": {
+        "java": "e7f5e47a28219f1f43cb1e18c7f50d45c089a6c4",
+        "llvm": "e7f5e47a28219f1f43cb1e18c7f50d45c089a6c4",
+        "wasm": "e7f5e47a28219f1f43cb1e18c7f50d45c089a6c4",
+        "net": "e7f5e47a28219f1f43cb1e18c7f50d45c089a6c4"
+      }
+    },
+    {
+      "path": "contracts/platform-core-v1/signed-minimum.ores",
+      "blobs": {
+        "java": "450ebee951733d3f0b567413e70724155d26ce13",
+        "llvm": "450ebee951733d3f0b567413e70724155d26ce13",
+        "wasm": "450ebee951733d3f0b567413e70724155d26ce13",
+        "net": "450ebee951733d3f0b567413e70724155d26ce13"
+      }
+    },
+    {
+      "path": "contracts/platform-core-v1/two-negative-factors.ores",
+      "blobs": {
+        "java": "d83e07867159bb3f5b1027a0689f7eeefa84ac88",
+        "llvm": "d83e07867159bb3f5b1027a0689f7eeefa84ac88",
+        "wasm": "d83e07867159bb3f5b1027a0689f7eeefa84ac88",
+        "net": "d83e07867159bb3f5b1027a0689f7eeefa84ac88"
+      }
+    },
+    {
+      "path": "contracts/replay_stream_v1/native-replay-stream-contract.atto",
+      "blobs": {
+        "llvm": "18cfff90b96e3654888f3853f920d4679de3e215",
+        "wasm": "18cfff90b96e3654888f3853f920d4679de3e215",
+        "net": "18cfff90b96e3654888f3853f920d4679de3e215"
+      }
+    },
+    {
+      "path": "contracts/replay_stream_v1/replay-video-disconnect-smoke.atto",
+      "blobs": {
+        "llvm": "663976aeeb2cd258d854269490c46e522f879777",
+        "wasm": "663976aeeb2cd258d854269490c46e522f879777",
+        "net": "663976aeeb2cd258d854269490c46e522f879777"
+      }
+    },
+    {
+      "path": "contracts/replay_stream_v1/replay_stream.atto",
+      "blobs": {
+        "llvm": "ec6927a7a76eab469908a033806e863416126fcd",
+        "wasm": "ec6927a7a76eab469908a033806e863416126fcd",
+        "net": "ec6927a7a76eab469908a033806e863416126fcd"
+      }
+    },
+    {
+      "path": "contracts/scalar/v1/cases.json",
+      "blobs": {
+        "wasm": "fd9df902b2df734ac62875037ca66db3ea41bc6b",
+        "net": "fd9df902b2df734ac62875037ca66db3ea41bc6b",
+        "forge": "fd9df902b2df734ac62875037ca66db3ea41bc6b"
+      }
+    },
+    {
+      "path": "contracts/scalar/v1/fixtures/i64-max-minus-one.ores",
+      "blobs": {
+        "wasm": "c400f440fde2fbc10514ab7cfd2ffe3d19729ee1",
+        "net": "c400f440fde2fbc10514ab7cfd2ffe3d19729ee1",
+        "forge": "c400f440fde2fbc10514ab7cfd2ffe3d19729ee1"
+      }
+    },
+    {
+      "path": "contracts/scalar/v1/fixtures/i64-max.ores",
+      "blobs": {
+        "wasm": "8193f4d6a5969fe0a53f0d2700ceb576033b45e3",
+        "net": "8193f4d6a5969fe0a53f0d2700ceb576033b45e3",
+        "forge": "8193f4d6a5969fe0a53f0d2700ceb576033b45e3"
+      }
+    },
+    {
+      "path": "contracts/scalar/v1/fixtures/i64-min.ores",
+      "blobs": {
+        "wasm": "450ebee951733d3f0b567413e70724155d26ce13",
+        "net": "450ebee951733d3f0b567413e70724155d26ce13",
+        "forge": "450ebee951733d3f0b567413e70724155d26ce13"
+      }
+    },
+    {
+      "path": "contracts/scalar/v1/fixtures/literal-42.ores",
+      "blobs": {
+        "wasm": "08b48c0ccd063bc863fb35b9e59d5c2ee6bc37d4",
+        "net": "08b48c0ccd063bc863fb35b9e59d5c2ee6bc37d4",
+        "forge": "08b48c0ccd063bc863fb35b9e59d5c2ee6bc37d4"
+      }
+    },
+    {
+      "path": "contracts/scalar/v1/fixtures/precedence.ores",
+      "blobs": {
+        "wasm": "2dca1f2a9510bf5648850d8b38328fe38fe9aeed",
+        "net": "2dca1f2a9510bf5648850d8b38328fe38fe9aeed",
+        "forge": "2dca1f2a9510bf5648850d8b38328fe38fe9aeed"
+      }
+    },
+    {
+      "path": "contracts/scalar/v1/fixtures/reject-actor.ores",
+      "blobs": {
+        "wasm": "1ef9596b87dae01b99c0196bbc90795c857c02bd",
+        "net": "1ef9596b87dae01b99c0196bbc90795c857c02bd",
+        "forge": "1ef9596b87dae01b99c0196bbc90795c857c02bd"
+      }
+    },
+    {
+      "path": "contracts/scalar/v1/fixtures/reject-async.ores",
+      "blobs": {
+        "wasm": "5ef809067332ab47cfacbc76fb2a287de865a01c",
+        "net": "5ef809067332ab47cfacbc76fb2a287de865a01c",
+        "forge": "5ef809067332ab47cfacbc76fb2a287de865a01c"
+      }
+    },
+    {
+      "path": "contracts/scalar/v1/fixtures/reject-division.ores",
+      "blobs": {
+        "wasm": "74d97f3fc4cb6e0765dbf5ef378e52d90cd7187b",
+        "net": "74d97f3fc4cb6e0765dbf5ef378e52d90cd7187b",
+        "forge": "74d97f3fc4cb6e0765dbf5ef378e52d90cd7187b"
+      }
+    },
+    {
+      "path": "contracts/scalar/v1/fixtures/reject-structural.ores",
+      "blobs": {
+        "wasm": "b889c7473344a6c058b824f35bad81938d198feb",
+        "net": "b889c7473344a6c058b824f35bad81938d198feb",
+        "forge": "b889c7473344a6c058b824f35bad81938d198feb"
+      }
+    },
+    {
+      "path": "contracts/scalar/v1/fixtures/reject-unknown.ores",
+      "blobs": {
+        "wasm": "1c3ff45f58168c3f992c3666b7e216112b5fd64c",
+        "net": "1c3ff45f58168c3f992c3666b7e216112b5fd64c",
+        "forge": "1c3ff45f58168c3f992c3666b7e216112b5fd64c"
+      }
+    },
+    {
+      "path": "contracts/scalar/v1/fixtures/unary.ores",
+      "blobs": {
+        "wasm": "b018b5b8238f708f744254b5d278fe074ac60d19",
+        "net": "b018b5b8238f708f744254b5d278fe074ac60d19",
+        "forge": "b018b5b8238f708f744254b5d278fe074ac60d19"
+      }
+    },
+    {
+      "path": "contracts/stategraph-portability/shared-bounded-cycle.ores",
+      "blobs": {
+        "java": "3c69cdf00c4e1390898ef0594eba76c54c0e2d7f",
+        "llvm": "3c69cdf00c4e1390898ef0594eba76c54c0e2d7f"
+      }
+    },
+    {
+      "path": "contracts/stategraph-portability/shared-canonical-then.ores",
+      "blobs": {
+        "java": "ad42a13d1542d8df6215bff42d056a489015c842",
+        "llvm": "ad42a13d1542d8df6215bff42d056a489015c842"
+      }
+    },
+    {
+      "path": "contracts/stategraph-portability/shared-generic-state.ores",
+      "blobs": {
+        "java": "c3a67b837a73f427a6157c446cc6e3989e9a66da",
+        "llvm": "c3a67b837a73f427a6157c446cc6e3989e9a66da",
+        "wasm": "c3a67b837a73f427a6157c446cc6e3989e9a66da",
+        "net": "c3a67b837a73f427a6157c446cc6e3989e9a66da"
+      }
+    },
+    {
+      "path": "contracts/stategraph-portability/shared-scalar.ores",
+      "blobs": {
+        "java": "ec1cb5e6cc38c26842d724ccacb0df028b702c3f",
+        "llvm": "ec1cb5e6cc38c26842d724ccacb0df028b702c3f",
+        "wasm": "ec1cb5e6cc38c26842d724ccacb0df028b702c3f",
+        "net": "ec1cb5e6cc38c26842d724ccacb0df028b702c3f"
+      }
+    },
+    {
+      "path": "contracts/stategraph-portability/shared-superstep-scalar.ores",
+      "blobs": {
+        "java": "054d4e9fe297c520513686feae076dc921f581ac",
+        "llvm": "054d4e9fe297c520513686feae076dc921f581ac"
+      }
+    },
+    {
+      "path": "contracts/structural/v2/cases.json",
+      "blobs": {
+        "wasm": "57c80adaa4029c6fd3e46a63c490cb193f951568",
+        "net": "57c80adaa4029c6fd3e46a63c490cb193f951568",
+        "forge": "14979d5799a115e3af634ec5d68c1b80d92872a6"
+      }
+    },
+    {
+      "path": "contracts/structural/v2/tuple-security.v1.json",
+      "blobs": {
+        "wasm": "af3a8455e4e8d664559e1d92e9952b6bf09c4ad2",
+        "net": "af3a8455e4e8d664559e1d92e9952b6bf09c4ad2",
+        "forge": "af3a8455e4e8d664559e1d92e9952b6bf09c4ad2"
+      }
+    },
+    {
+      "path": "contracts/v1/actor-family-conformance.json",
+      "blobs": {
+        "java": "a4b6ac9d1b876c98354847bf5c82dde12a5c6204",
+        "llvm": "a4b6ac9d1b876c98354847bf5c82dde12a5c6204"
+      }
+    },
+    {
+      "path": "contracts/v1/actor-pipeline-routing-v1.json",
+      "blobs": {
+        "llvm": "c349396074ea81beae9f7569715530f833e834fa",
+        "wasm": "c349396074ea81beae9f7569715530f833e834fa"
+      }
+    },
+    {
+      "path": "contracts/v1/actor_arena_lifecycle_v1.json",
+      "blobs": {
+        "java": "b0c2f086de90ccf9ee9c36edb6c83732c451e411",
+        "llvm": "b0c2f086de90ccf9ee9c36edb6c83732c451e411",
+        "wasm": "b0c2f086de90ccf9ee9c36edb6c83732c451e411",
+        "net": "b0c2f086de90ccf9ee9c36edb6c83732c451e411",
+        "forge": "b0c2f086de90ccf9ee9c36edb6c83732c451e411"
+      }
+    },
+    {
+      "path": "contracts/v1/actor_arena_quiescence_matrix_v2.json",
+      "blobs": {
+        "java": "b97e88d8eb7981c884e122a61df0f28c570d3ec0",
+        "llvm": "b97e88d8eb7981c884e122a61df0f28c570d3ec0",
+        "wasm": "b97e88d8eb7981c884e122a61df0f28c570d3ec0",
+        "net": "b97e88d8eb7981c884e122a61df0f28c570d3ec0",
+        "forge": "b97e88d8eb7981c884e122a61df0f28c570d3ec0"
+      }
+    },
+    {
+      "path": "contracts/v1/agent-dispatch/contract.json",
+      "blobs": {
+        "java": "21173ce1c244b239bafa4bc0d69bc2b47b9b6688",
+        "wasm": "21173ce1c244b239bafa4bc0d69bc2b47b9b6688",
+        "net": "21173ce1c244b239bafa4bc0d69bc2b47b9b6688",
+        "forge": "21173ce1c244b239bafa4bc0d69bc2b47b9b6688"
+      }
+    },
+    {
+      "path": "contracts/v1/cases.json",
+      "blobs": {
+        "java": "538be08c127ae9e4298b6427f1d6c13c47b22182",
+        "llvm": "538be08c127ae9e4298b6427f1d6c13c47b22182"
+      }
+    },
+    {
+      "path": "contracts/v1/conditional-expression-v1.json",
+      "blobs": {
+        "java": "e3da61d86e556e801454029acef3bc4879d954a9",
+        "llvm": "e3da61d86e556e801454029acef3bc4879d954a9",
+        "wasm": "e3da61d86e556e801454029acef3bc4879d954a9"
+      }
+    },
+    {
+      "path": "contracts/v1/cpu-gpu-nb-unsupported-v1.json",
+      "blobs": {
+        "wasm": "05e084144d5034557c824e2ad227ae5263bcac40",
+        "forge": "05e084144d5034557c824e2ad227ae5263bcac40"
+      }
+    },
+    {
+      "path": "contracts/v1/design/messagepack_collection_vectors.json",
+      "blobs": {
+        "llvm": "9937eb2bcd11ad59d59f4a0e4ac83953e5e5a1e6",
+        "forge": "2ddd37db0c2edf33bc0264465e3b638c7aa74086"
+      }
+    },
+    {
+      "path": "contracts/v1/dop-cpu-regions/cases.json",
+      "blobs": {
+        "wasm": "6316f60458ed48d325d5a2643f78f315f5af6a6a",
+        "net": "6316f60458ed48d325d5a2643f78f315f5af6a6a",
+        "forge": "6316f60458ed48d325d5a2643f78f315f5af6a6a"
+      }
+    },
+    {
+      "path": "contracts/v1/durable-objects/queue-v1.json",
+      "blobs": {
+        "java": "a982539293d2f8fdf9562e1e886f54410e7aaeb2",
+        "wasm": "a982539293d2f8fdf9562e1e886f54410e7aaeb2"
+      }
+    },
+    {
+      "path": "contracts/v1/fixtures/actor-unary.ores",
+      "blobs": {
+        "java": "66347a09f5f3f4272b81ade99f6b2bf48fa7e9f9",
+        "llvm": "66347a09f5f3f4272b81ade99f6b2bf48fa7e9f9"
+      }
+    },
+    {
+      "path": "contracts/v1/fixtures/forward-call.ores",
+      "blobs": {
+        "java": "16c3bf63092b1399755bb4852ef883edffbbfc5f",
+        "llvm": "16c3bf63092b1399755bb4852ef883edffbbfc5f"
+      }
+    },
+    {
+      "path": "contracts/v1/fixtures/literal-42.ores",
+      "blobs": {
+        "java": "08b48c0ccd063bc863fb35b9e59d5c2ee6bc37d4",
+        "llvm": "08b48c0ccd063bc863fb35b9e59d5c2ee6bc37d4"
+      }
+    },
+    {
+      "path": "contracts/v1/fixtures/module.ores",
+      "blobs": {
+        "java": "8a138c01f7872805997c5cec6276386c910e77b7",
+        "llvm": "8a138c01f7872805997c5cec6276386c910e77b7"
+      }
+    },
+    {
+      "path": "contracts/v1/fixtures/nested-comments.ores",
+      "blobs": {
+        "java": "e12e2fab3481aae01d02534df6e17adb97db3c82",
+        "llvm": "e12e2fab3481aae01d02534df6e17adb97db3c82"
+      }
+    },
+    {
+      "path": "contracts/v1/fixtures/precedence.ores",
+      "blobs": {
+        "java": "2dca1f2a9510bf5648850d8b38328fe38fe9aeed",
+        "llvm": "2dca1f2a9510bf5648850d8b38328fe38fe9aeed"
+      }
+    },
+    {
+      "path": "contracts/v1/fixtures/reject-arity.ores",
+      "blobs": {
+        "java": "fbd0b9e28888c7f21dbf91fa676cbb849e389c2f",
+        "llvm": "fbd0b9e28888c7f21dbf91fa676cbb849e389c2f"
+      }
+    },
+    {
+      "path": "contracts/v1/fixtures/reject-duplicate.ores",
+      "blobs": {
+        "java": "71f8cbb41e6be45841b30252ebff4d3e3636dce2",
+        "llvm": "71f8cbb41e6be45841b30252ebff4d3e3636dce2"
+      }
+    },
+    {
+      "path": "contracts/v1/fixtures/reject-unclosed.ores",
+      "blobs": {
+        "java": "e144dcbda7c5333cba38549ff754f697b3676bc2",
+        "llvm": "e144dcbda7c5333cba38549ff754f697b3676bc2"
+      }
+    },
+    {
+      "path": "contracts/v1/fixtures/reject-unknown.ores",
+      "blobs": {
+        "java": "e7d9e58f7d75091487b11e176b9b5f7fcf0d34b1",
+        "llvm": "e7d9e58f7d75091487b11e176b9b5f7fcf0d34b1"
+      }
+    },
+    {
+      "path": "contracts/v1/hpc-finance/guest-manifest.json",
+      "blobs": {
+        "llvm": "062cff056919708b2cc9e6f9a6f4cb6ec00661e8",
+        "wasm": "062cff056919708b2cc9e6f9a6f4cb6ec00661e8"
+      }
+    },
+    {
+      "path": "contracts/v1/hpc-finance/risk-gate-v1.tsv",
+      "blobs": {
+        "llvm": "cec489c1f7603617797340dd1b4a71cc85acfebd",
+        "wasm": "cec489c1f7603617797340dd1b4a71cc85acfebd"
+      }
+    },
+    {
+      "path": "contracts/v1/nominal_method_slot_abi_v1.json",
+      "blobs": {
+        "net": "3add71446a9bf7d9395bc991f6efe26eab44534f",
+        "forge": "3add71446a9bf7d9395bc991f6efe26eab44534f"
+      }
+    },
+    {
+      "path": "contracts/v1/numeric-parity/backend.json",
+      "blobs": {
+        "wasm": "c7daead774491421fd9bb0398e99c03a1d53375e",
+        "forge": "64f93e6d07847ac0b4d4f244de19d36a17c5eec2"
+      }
+    },
+    {
+      "path": "contracts/v1/numeric-parity/source-i64-cases.json",
+      "blobs": {
+        "wasm": "bbc319c19ecd007109d33592e210091eb267e5a2",
+        "forge": "bbc319c19ecd007109d33592e210091eb267e5a2"
+      }
+    },
+    {
+      "path": "contracts/v1/numeric-parity/source-i64-overflow-cases.json",
+      "blobs": {
+        "wasm": "2ce0b0ff5c52e54a788280fd64d67fa8dc32614a",
+        "forge": "2ce0b0ff5c52e54a788280fd64d67fa8dc32614a"
+      }
+    },
+    {
+      "path": "contracts/v1/numeric-precision/cases.json",
+      "blobs": {
+        "wasm": "cb28b5678d380f02c5e4e43bd763da04bdb996fe",
+        "forge": "80436f21a95816e2d5e40274daba9b923b3bcec9"
+      }
+    },
+    {
+      "path": "contracts/v1/package.json",
+      "blobs": {
+        "java": "f9bd8ff2d41fa35ad01cf1b8874c11411347d648",
+        "llvm": "f9bd8ff2d41fa35ad01cf1b8874c11411347d648"
+      }
+    },
+    {
+      "path": "contracts/v1/persistent_actor_data_v1.json",
+      "blobs": {
+        "wasm": "83a40f637ab77437108d02fedc8cde997f753928",
+        "net": "83a40f637ab77437108d02fedc8cde997f753928",
+        "forge": "83a40f637ab77437108d02fedc8cde997f753928"
+      }
+    },
+    {
+      "path": "contracts/v1/private-abstract-actor-hook-v1.json",
+      "blobs": {
+        "java": "415f812532f77ef6b18c61873d8e4a2223f5443b",
+        "wasm": "415f812532f77ef6b18c61873d8e4a2223f5443b",
+        "forge": "415f812532f77ef6b18c61873d8e4a2223f5443b"
+      }
+    },
+    {
+      "path": "contracts/v1/reactive-signal-v1.json",
+      "blobs": {
+        "llvm": "be5a88393f30232836b8ce2addcf83b74dc7924c",
+        "wasm": "58f5ea6cb151adcc692b00c0c68037c8683797b4",
+        "net": "8ac7c3f7f32b2262658c4b592aa665eb450966c0",
+        "forge": "309837843be215494be8c57ee0193c85ed803ca8"
+      }
+    },
+    {
+      "path": "contracts/v1/schema/report.schema.json",
+      "blobs": {
+        "java": "e3e7121d5851a72c5a77e83898b92b0f04634f32",
+        "llvm": "e3e7121d5851a72c5a77e83898b92b0f04634f32"
+      }
+    },
+    {
+      "path": "contracts/v1/schema/suite.schema.json",
+      "blobs": {
+        "java": "b6a81397b535641359658c423231088007b294d5",
+        "llvm": "b6a81397b535641359658c423231088007b294d5"
+      }
+    },
+    {
+      "path": "contracts/v1/scoped-permissions-v1.json",
+      "blobs": {
+        "java": "3ada226b481ea7e284a61d6acbb0bf1506949c31",
+        "forge": "f06c65d00c33b4339369a4a9235aab588bf4d935"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/cases.json",
+      "blobs": {
+        "java": "18ece26bece51f24b6e2470ed7b7a13af56c6587",
+        "llvm": "18ece26bece51f24b6e2470ed7b7a13af56c6587"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/add.ores",
+      "blobs": {
+        "java": "015f8b0f79aafa796a148d2adeff1574e8d6c491",
+        "llvm": "015f8b0f79aafa796a148d2adeff1574e8d6c491",
+        "wasm": "015f8b0f79aafa796a148d2adeff1574e8d6c491",
+        "net": "015f8b0f79aafa796a148d2adeff1574e8d6c491",
+        "forge": "015f8b0f79aafa796a148d2adeff1574e8d6c491"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/arity.ores",
+      "blobs": {
+        "java": "fbd0b9e28888c7f21dbf91fa676cbb849e389c2f",
+        "llvm": "fbd0b9e28888c7f21dbf91fa676cbb849e389c2f"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/comment.ores",
+      "blobs": {
+        "java": "e144dcbda7c5333cba38549ff754f697b3676bc2",
+        "llvm": "e144dcbda7c5333cba38549ff754f697b3676bc2"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/duplicate.ores",
+      "blobs": {
+        "java": "e819095613496106885d6c6d223c9bd1a8bfa28f",
+        "llvm": "e819095613496106885d6c6d223c9bd1a8bfa28f"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/forward.ores",
+      "blobs": {
+        "java": "63067f3b4ac9ad0f2550fa4ccc3314a9c05fc63b",
+        "llvm": "63067f3b4ac9ad0f2550fa4ccc3314a9c05fc63b"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/native-defer-field-return.ores",
+      "blobs": {
+        "java": "884d3bab58e0fc0a2f3c8b9f0be6ad10d3f0f082",
+        "llvm": "defd09e3fbe458179465cf21c39d50ddf65a22d4"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/native-defer-lifo-cfg.ores",
+      "blobs": {
+        "java": "ad760f5b050583d1b93cec6a25da9c2fa969256a",
+        "llvm": "ba222c6074f5a13f3753f33c3485bc87a1de3d5a"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/native-try-finally-return-snapshot.ores",
+      "blobs": {
+        "java": "1f1a0fc30fb79585ee3d89f855e94d0d55a2d67e",
+        "llvm": "9772f48e6d8a2489c40fd3989048d840898b9fda"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/oresllm-budget-budget-headroom.ores",
+      "blobs": {
+        "java": "6860c0bd4b0963853adf033e21a2ccbd5b71075f",
+        "llvm": "6860c0bd4b0963853adf033e21a2ccbd5b71075f"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/oresllm-budget-min-plus-zero.ores",
+      "blobs": {
+        "java": "4e67ac1683e711d75d9e4d0b9ecc1ea658bd75e2",
+        "llvm": "4e67ac1683e711d75d9e4d0b9ecc1ea658bd75e2"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/oresllm-budget-near-max-budget.ores",
+      "blobs": {
+        "java": "79607b70a20da415cf6883a4ec3db085b7ad05cb",
+        "llvm": "79607b70a20da415cf6883a4ec3db085b7ad05cb"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/oresllm-budget-negative-product.ores",
+      "blobs": {
+        "java": "3e919458059c8b9275612b2e4e1548c9b33452df",
+        "llvm": "3e919458059c8b9275612b2e4e1548c9b33452df"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/oresllm-budget-staged-subtractions.ores",
+      "blobs": {
+        "java": "06aca5cc0299ef52854fcdb24fef2a7ad37fe485",
+        "llvm": "06aca5cc0299ef52854fcdb24fef2a7ad37fe485"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/oresllm-grouped-negative.ores",
+      "blobs": {
+        "java": "22e8926b292cc53effe40fe506c0216b89677af9",
+        "llvm": "22e8926b292cc53effe40fe506c0216b89677af9"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/oresllm-left-associative.ores",
+      "blobs": {
+        "java": "0a65516453f36a8e26fd53a0ec7b179821717ceb",
+        "llvm": "0a65516453f36a8e26fd53a0ec7b179821717ceb"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/oresllm-max-minus-one.ores",
+      "blobs": {
+        "java": "cc3d33b3f9c8643fe335001d1c6f6a777276d314",
+        "llvm": "cc3d33b3f9c8643fe335001d1c6f6a777276d314"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/oresllm-min-max-cancel.ores",
+      "blobs": {
+        "java": "452a4b56d1a13fe8be82b48f31a95cd564de1eab",
+        "llvm": "452a4b56d1a13fe8be82b48f31a95cd564de1eab"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/oresllm-near-square.ores",
+      "blobs": {
+        "java": "f49e393c7b0d6e2b324f8315294964936de9f265",
+        "llvm": "f49e393c7b0d6e2b324f8315294964936de9f265"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/oresllm-nested-arithmetic.ores",
+      "blobs": {
+        "java": "cae0cd83d51f65d137aa500aa7b7040313e3de66",
+        "llvm": "cae0cd83d51f65d137aa500aa7b7040313e3de66"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/oresllm-nested-precedence.ores",
+      "blobs": {
+        "java": "f3fda2718ea88e734b30df4d6c1012191cc3b77a",
+        "llvm": "f3fda2718ea88e734b30df4d6c1012191cc3b77a"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/oresllm-over-2pow53.ores",
+      "blobs": {
+        "java": "3fef943aa0adef685f888fcaa1506adbc03701f6",
+        "llvm": "3fef943aa0adef685f888fcaa1506adbc03701f6"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/oresllm-over53-cancel.ores",
+      "blobs": {
+        "java": "919c6d0aee262ea506388c9ef636330334cb568c",
+        "llvm": "919c6d0aee262ea506388c9ef636330334cb568c"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/oresllm-precedence.ores",
+      "blobs": {
+        "java": "116c261c259f5d8753c3c827595243403f22045f",
+        "llvm": "116c261c259f5d8753c3c827595243403f22045f"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/oresllm-scalar-gradient.ores",
+      "blobs": {
+        "java": "fbd4877db8dc2edf8a02fb76ee738d24cb69f922",
+        "llvm": "fbd4877db8dc2edf8a02fb76ee738d24cb69f922",
+        "net": "fbd4877db8dc2edf8a02fb76ee738d24cb69f922"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/oresllm-signed-product.ores",
+      "blobs": {
+        "java": "901337ede5e2a7652837ed3f513073c63edb887e",
+        "llvm": "901337ede5e2a7652837ed3f513073c63edb887e"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/oresllm-signed-subtract.ores",
+      "blobs": {
+        "java": "7797ff45062a684f0af0533beed3952d4899564b",
+        "llvm": "7797ff45062a684f0af0533beed3952d4899564b"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/oresllm-subtract-self.ores",
+      "blobs": {
+        "java": "d1b46d5ea8bedf5af1954bdfdff84d30ffdd7d6b",
+        "llvm": "d1b46d5ea8bedf5af1954bdfdff84d30ffdd7d6b"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/oresllm-zero-add.ores",
+      "blobs": {
+        "java": "08b5752db0e4b40d81d0e3ba247ff11d0594be67",
+        "llvm": "08b5752db0e4b40d81d0e3ba247ff11d0594be67"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/oresllm-zero-product.ores",
+      "blobs": {
+        "java": "233b6e5f21ad016ea1c2e206a753f48340217824",
+        "llvm": "233b6e5f21ad016ea1c2e206a753f48340217824"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/oresllm-zero-times-max.ores",
+      "blobs": {
+        "java": "f0b1eafaefc2b58d64d2c70bc42accdf37e6c715",
+        "llvm": "f0b1eafaefc2b58d64d2c70bc42accdf37e6c715"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/overflow.ores",
+      "blobs": {
+        "java": "60a6dce7a302e0b54af26c49452afecb1b4ffb7c",
+        "llvm": "60a6dce7a302e0b54af26c49452afecb1b4ffb7c"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/owned-identifier.ores",
+      "blobs": {
+        "java": "30a7913f045efaec7c334494f1d7820a81ea89f2",
+        "llvm": "30a7913f045efaec7c334494f1d7820a81ea89f2"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/ownership.ores",
+      "blobs": {
+        "java": "d18959b0024b924632df3da70d1c0437386e70cc",
+        "llvm": "d18959b0024b924632df3da70d1c0437386e70cc"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/precedence.ores",
+      "blobs": {
+        "java": "2d09e697ad4eeac4ee263c3656b92998c67f0bfc",
+        "llvm": "2d09e697ad4eeac4ee263c3656b92998c67f0bfc",
+        "wasm": "2d09e697ad4eeac4ee263c3656b92998c67f0bfc",
+        "net": "2d09e697ad4eeac4ee263c3656b92998c67f0bfc",
+        "forge": "2d09e697ad4eeac4ee263c3656b92998c67f0bfc"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/proxy-packed-receipt.ores",
+      "blobs": {
+        "java": "13925491ac224bc5108097e73927968120eb182d",
+        "llvm": "13925491ac224bc5108097e73927968120eb182d"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/unary.ores",
+      "blobs": {
+        "java": "f9376d50509ce4b69572c610547b96cfdaa4cd7d",
+        "llvm": "f9376d50509ce4b69572c610547b96cfdaa4cd7d"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/underscores.ores",
+      "blobs": {
+        "java": "9de6f26fac278174c9f86ae7fa63ad331f99e96a",
+        "llvm": "9de6f26fac278174c9f86ae7fa63ad331f99e96a"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/unknown.ores",
+      "blobs": {
+        "java": "b942e9df050acb5bc8d291096b1435f5e0e0a83e",
+        "llvm": "b942e9df050acb5bc8d291096b1435f5e0e0a83e"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/report.schema.json",
+      "blobs": {
+        "java": "8255717721c987963eb9e377ba64c5d91cd8d86f",
+        "llvm": "8255717721c987963eb9e377ba64c5d91cd8d86f"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/schema.json",
+      "blobs": {
+        "java": "1f269b2be08dd6863cf80f540b0f8b8f53397478",
+        "llvm": "1f269b2be08dd6863cf80f540b0f8b8f53397478"
+      }
+    },
+    {
+      "path": "contracts/v1/semantics/traces/trace.schema.json",
+      "blobs": {
+        "java": "83dca84d05994a166022edd692e6a36b7e3e04f8",
+        "llvm": "83dca84d05994a166022edd692e6a36b7e3e04f8"
+      }
+    },
+    {
+      "path": "contracts/v1/serde_boundary_v1.json",
+      "blobs": {
+        "wasm": "93ea02c4192be3910391311febae6dc1ffcd24f1",
+        "net": "93ea02c4192be3910391311febae6dc1ffcd24f1",
+        "forge": "93ea02c4192be3910391311febae6dc1ffcd24f1"
+      }
+    },
+    {
+      "path": "contracts/v1/shared_domain_arena_v1.json",
+      "blobs": {
+        "java": "84594bc0e3e905b0950ac8728997138d66c44b50",
+        "llvm": "84594bc0e3e905b0950ac8728997138d66c44b50",
+        "wasm": "84594bc0e3e905b0950ac8728997138d66c44b50",
+        "net": "84594bc0e3e905b0950ac8728997138d66c44b50",
+        "forge": "84594bc0e3e905b0950ac8728997138d66c44b50"
+      }
+    },
+    {
+      "path": "contracts/v1/source-i64/portable-i64.v1.json",
+      "blobs": {
+        "java": "bbc319c19ecd007109d33592e210091eb267e5a2",
+        "llvm": "bbc319c19ecd007109d33592e210091eb267e5a2",
+        "net": "bbc319c19ecd007109d33592e210091eb267e5a2",
+        "forge": "bbc319c19ecd007109d33592e210091eb267e5a2"
+      }
+    },
+    {
+      "path": "contracts/v1/state-region-provenance-v1.json",
+      "blobs": {
+        "wasm": "6fdf13d9950c57b12d2fc8fcc08aa3d1c542c006",
+        "forge": "6fdf13d9950c57b12d2fc8fcc08aa3d1c542c006"
+      }
+    },
+    {
+      "path": "contracts/v1/wrapper-flattening-v1.json",
+      "blobs": {
+        "wasm": "175ecfb2e472a704cd715587f8d87a44b2e77d0f",
+        "forge": "175ecfb2e472a704cd715587f8d87a44b2e77d0f"
+      }
+    },
+    {
+      "path": "contracts/v2/cpu-gpu-task-unsupported-v2.json",
+      "blobs": {
+        "java": "067d557ac02b85a9f1ea44811bf106a1529926de",
+        "llvm": "067d557ac02b85a9f1ea44811bf106a1529926de",
+        "wasm": "9a31eab51d427d5f5d35db906d59959b893d3e08",
+        "net": "067d557ac02b85a9f1ea44811bf106a1529926de",
+        "forge": "067d557ac02b85a9f1ea44811bf106a1529926de"
+      }
+    },
+    {
+      "path": "contracts/v2/enum_case_slot_abi_vectors.json",
+      "blobs": {
+        "wasm": "43408bf2f4e47608913e158ba1a768fdc727b2fb",
+        "net": "43408bf2f4e47608913e158ba1a768fdc727b2fb",
+        "forge": "43408bf2f4e47608913e158ba1a768fdc727b2fb"
+      }
+    },
+    {
+      "path": "contracts/v2/enum_tag32_schema_v2_vectors.json",
+      "blobs": {
+        "wasm": "4bd2f0f151a06cd1e05f241ddfa654416ffb7081",
+        "net": "4bd2f0f151a06cd1e05f241ddfa654416ffb7081",
+        "forge": "4bd2f0f151a06cd1e05f241ddfa654416ffb7081"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "path": "contracts/architecture/v1/targets.tsv",
+      "category": "backend-specific-target-matrix",
+      "draft_pr": null
+    },
+    {
+      "path": "contracts/structural/v2/cases.json",
+      "category": "missing-negative-safety-cases",
+      "draft_pr": "https://github.com/ores-truffle-oreslang/oreslang-source.forge/pull/255"
+    },
+    {
+      "path": "contracts/v1/design/messagepack_collection_vectors.json",
+      "category": "wire-vector-coverage-needs-review",
+      "draft_pr": null
+    },
+    {
+      "path": "contracts/v1/numeric-parity/backend.json",
+      "category": "backend-specific-capability-evidence",
+      "draft_pr": null
+    },
+    {
+      "path": "contracts/v1/numeric-precision/cases.json",
+      "category": "numeric-fixture-extension-needs-review",
+      "draft_pr": null
+    },
+    {
+      "path": "contracts/v1/reactive-signal-v1.json",
+      "category": "backend-specific-capability-evidence",
+      "draft_pr": null
+    },
+    {
+      "path": "contracts/v1/scoped-permissions-v1.json",
+      "category": "missing-negative-permission-cases",
+      "draft_pr": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2871"
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/native-defer-field-return.ores",
+      "category": "ownership-spelling-drift-needs-review",
+      "draft_pr": null
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/native-defer-lifo-cfg.ores",
+      "category": "ownership-spelling-drift-needs-review",
+      "draft_pr": null
+    },
+    {
+      "path": "contracts/v1/semantics/fixtures/native-try-finally-return-snapshot.ores",
+      "category": "ownership-spelling-drift-needs-review",
+      "draft_pr": null
+    },
+    {
+      "path": "contracts/v2/cpu-gpu-task-unsupported-v2.json",
+      "category": "case-id-mismatch",
+      "draft_pr": "https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/464"
+    }
+  ],
+  "proposed_candidate_heads": {
+    "wasm": {
+      "head": "269e215c8298c47ce5fbae9adb37f46bef4e6ee4",
+      "path": "contracts/v2/cpu-gpu-task-unsupported-v2.json",
+      "blob_sha": "067d557ac02b85a9f1ea44811bf106a1529926de"
+    },
+    "forge": {
+      "head": "68bb7bc0c7d236390f822a9e19cabdf355934974",
+      "path": "contracts/structural/v2/cases.json",
+      "blob_sha": "57c80adaa4029c6fd3e46a63c490cb193f951568"
+    },
+    "java": {
+      "head": "e593cbd7047ba2395e4b8c753e39392f04c20d70",
+      "path": "contracts/v1/scoped-permissions-v1.json",
+      "blob_sha": "f06c65d00c33b4339369a4a9235aab588bf4d935"
+    }
+  },
+  "candidate_status": "draft-pr-unmerged",
+  "compiler_guest_execution_verified": false,
+  "toolchain_aot_execution_verified": false
+}
