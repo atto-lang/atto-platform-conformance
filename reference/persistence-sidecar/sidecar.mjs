@@ -118,9 +118,10 @@ export class BatchPersistenceSidecar {
          !uint(row.first_version) || row.first_version!==covered+1 ||
          !uint(row.last_version) || !uint(row.event_count) ||
          row.last_version-row.first_version+1!==row.event_count ||
-         !Buffer.isBuffer(row.result_bytes))fail('CORRUPT_COMMAND_INDEX');
+         !(row.result_bytes instanceof Uint8Array))fail('CORRUPT_COMMAND_INDEX');
+      // node:sqlite returns a Uint8Array for BLOB columns, not a Buffer.
       h.update(JSON.stringify([row.op_id,row.command_hash,row.first_version,
-        row.last_version,row.event_count,row.result_bytes.toString('base64')])+'\n');
+        row.last_version,row.event_count,Buffer.from(row.result_bytes).toString('base64')])+'\n');
       covered=row.last_version;
     }
     if(covered!==version)fail('CORRUPT_COMMAND_INDEX');
