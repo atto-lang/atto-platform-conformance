@@ -173,3 +173,25 @@ test("abandoned request cannot complete without cancellation or response close",
  m.force_stop();
  assert.equal(m.shutdown_state(),"quiescent");
 });
+
+test("untrusted callers cannot mutate the private admission ledger",()=>{
+ const m=new HttpActorAdmissionModel();
+ assert.equal(Object.isExtensible(m),false);
+ assert.equal(m.requests,undefined);
+ assert.equal(m.messages,undefined);
+ assert.equal(m.sealed,undefined);
+ const token=m.admit_request("one");
+ const message=m.admit_message(token,"mail");
+ assert.equal(Reflect.set(m,"request_concurrency",100),false);
+ assert.equal(Reflect.set(m,"requests",new Map()),false);
+ assert.equal(Reflect.set(m,"sealed",false),false);
+ assert.throws(()=>m.admit_request("two"),/request capacity/);
+ m.start_shutdown();
+ assert.throws(()=>m.admit_request("late"),/sealed/);
+ m.enter_turn(message);
+ m.complete_message(message);
+ m.close_response(token);
+ assert.equal(m.shutdown_state(),"pending");
+ m.exit_turn(message);
+ assert.equal(m.shutdown_state(),"quiescent");
+});
