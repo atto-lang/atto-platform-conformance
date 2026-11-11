@@ -7,8 +7,9 @@
     "pr": 32,
     "branch": "design/value-block-ternary-range-loops-20261110",
     "file": "contracts/atto-value-block-range-v0.json",
-    "git_blob_sha": "6fbe82fdac65fa3fcd878008e1ce737663eadf88",
-    "revision": "all-nine-toolchains-ten-lanes-20261111"
+    "git_blob_sha": "dc27b558d9afdebf83488bca7c8aabb1484cdedb",
+    "revision": "all-nine-toolchains-ten-lanes-20261111",
+    "range_witness_fix": "Range-count fixtures now print JSON visited values; local exit-code-only observations are insufficient."
   },
   "required_guest_lanes": [
     "java-interpreter",
@@ -36,8 +37,8 @@
       ],
       "candidate": {
         "pr": 2874,
-        "sha": "d8dec11d6ff7b3435aad0b1ba51047ba911e27c3",
-        "tree": "d47100200f33a4cad051c2e78353b04e9f44a6ae",
+        "sha": "ccf138f4652f328379b8bdf6d8d5fb2a66a3f505",
+        "tree": "3a26ac537e85aabbcf768b74bf22d29b3aadd446",
         "branch": "parity/value-block-range-contract-v0-20261111",
         "state": "DRAFT_NOT_GUEST_CERTIFIED"
       }
@@ -55,8 +56,8 @@
       ],
       "candidate": {
         "pr": 1696,
-        "sha": "02d5ba7c9ee4b15f15ee919f93d48e71be8b022b",
-        "tree": "e2762356affabc53e9a6f02f52f17fd10f61b631",
+        "sha": "12724395572a6380b14b72f0927b8537c5725969",
+        "tree": "7fbb485ed1faf3352440e74c166035868a6dc7f0",
         "branch": "parity/value-block-range-contract-v0-20261111",
         "state": "DRAFT_NOT_GUEST_CERTIFIED"
       }
@@ -73,8 +74,8 @@
       ],
       "candidate": {
         "pr": 473,
-        "sha": "40a14fb2c752d40a003ac3d50f6874f032d6cbbe",
-        "tree": "d1ea7325887a17265f34ac7b42e99921e0f06729",
+        "sha": "43a362f1f72ac893e3fdebc89fbb59fe0b1ee36a",
+        "tree": "ace53b5306324777badc663453fe4dc788dfbe6e",
         "branch": "parity/value-block-range-contract-v0-20261111",
         "state": "DRAFT_NOT_GUEST_CERTIFIED"
       }
@@ -93,8 +94,8 @@
       ],
       "candidate": {
         "pr": 264,
-        "sha": "fd508af2036d763b4978f7b2af12842a3c9c54cc",
-        "tree": "0072fef09138266ff14f13ead752b4bcc38dcaa2",
+        "sha": "97a4e9a8e65574499eb29e98b7d0c7d1761cc022",
+        "tree": "f77b4f547a1522a6c73e456821d845c5d35694ad",
         "branch": "parity/value-block-range-contract-v0-20261111",
         "state": "DRAFT_NOT_GUEST_CERTIFIED"
       }
@@ -113,8 +114,8 @@
       ],
       "candidate": {
         "pr": 483,
-        "sha": "16d5658ecc8a182804c79ec4d20c8ed29dbced51",
-        "tree": "ac82f339b4806938f41f9a6140d349cd0997908d",
+        "sha": "46a056fea70b2ea632f0575c50957c02bc073512",
+        "tree": "3a661dd0a5de9f73785fd79783e4418199318094",
         "branch": "parity/value-block-range-contract-v0-20261111",
         "state": "DRAFT_NOT_GUEST_CERTIFIED"
       }
@@ -132,8 +133,8 @@
       ],
       "candidate": {
         "pr": 59,
-        "sha": "ac848b8194c49bc452a255c6e83ade6ab9a3f632",
-        "tree": "5818eea3da4ba5dc21d3a667bc8958c780b23bd2",
+        "sha": "7953acfc9f8c5040777113b133ddbcd1b7d07726",
+        "tree": "2b26d588a52b521670acbf9736bbacff2f408fbd",
         "branch": "parity/value-block-range-contract-v0-20261111",
         "state": "DRAFT_NOT_GUEST_CERTIFIED"
       }
@@ -152,8 +153,8 @@
       ],
       "candidate": {
         "pr": 110,
-        "sha": "6934d0170a827397da7f1b6c52df4e0fdaf167a1",
-        "tree": "135b93dba2aa71abd345bce1e1caa827130bb5f5",
+        "sha": "cc01c3881c481b670445a15e564445d726f0d7f0",
+        "tree": "799010e7df3657a9bfd69b1c9fa3083d15a83676",
         "branch": "parity/value-block-range-contract-v0-20261111",
         "state": "DRAFT_NOT_GUEST_CERTIFIED"
       }
@@ -171,8 +172,8 @@
       ],
       "candidate": {
         "pr": 246,
-        "sha": "0fd29b23917db6775ff6cb8f58f5fc38a6b25352",
-        "tree": "85190135fe7d46ad534381903a8ef8391063f92a",
+        "sha": "723ac8d9893ada296efcbba165de9b50cf2b26c4",
+        "tree": "a3099475d5701dee90ce87c7f30934d2ad780d51",
         "branch": "parity/value-block-range-contract-v0-20261111",
         "state": "DRAFT_NOT_GUEST_CERTIFIED"
       }
@@ -190,8 +191,8 @@
       ],
       "candidate": {
         "pr": 41,
-        "sha": "28d4f1e47689a92729533dc4b4d640c5a48e6b33",
-        "tree": "0260c6586002f32cfde3e515b7bb66d2c975d3c5",
+        "sha": "98736b5d6f39105a818db5104f667c8bb9adb849",
+        "tree": "70eb2e51d8922ba9d35e29e44154ab061dfadbdc",
         "branch": "parity/value-block-range-contract-v0-20261111",
         "state": "DRAFT_NOT_GUEST_CERTIFIED"
       }
