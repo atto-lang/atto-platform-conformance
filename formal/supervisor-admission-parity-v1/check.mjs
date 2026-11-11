@@ -8,7 +8,7 @@ const backendNames = ["java", "llvm", "net", "wasm", "forge"];
 // provenance. An updated PR must be independently inspected and both this
 // checker and manifest revised before a new exact-head receipt is accepted.
 const expected = Object.freeze({
-  java: {pr: 2885, head: "d0d793b36f64f87053baeaa2aca76c64ce90608e"},
+  java: {pr: 2885, head: "c8ff9344f5627c2c851e131cb462d1dc0d9132be"},
   llvm: {pr: 1697, head: "4523a1c2262b49b9aa91c9b81230021126f78477"},
   net: {pr: 485, head: "81f7f4538691beb2c69bd679777a3830765217cf"},
   wasm: {pr: 475, head: "5c8f9528e2acbebe954dad60e0965056ca0ed4bd"},
