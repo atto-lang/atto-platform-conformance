@@ -31,10 +31,10 @@ Use a mailbox-local operation, distinct from channel `select` and distinct from 
 1. The recipient scans accepted data messages in **admission order**. It chooses the first message matching a statically compiled pattern predicate and guard. Unmatched messages stay in the queue in original relative order, with their ownership and quota preserved.
 2. Admission is linearizable. The sender gets `Result` admission status (e.g., Full, Closed, StaleGeneration), **not a processing/durability acknowledgment**. Bound the mailbox including unmatched messages; do not bypass priority CONTROL capacity.
 3. Selective scanning must be scheduler-accounted; long scans yield on bounded reductions. Yield, cancellation, timeout or a failed guard cannot consume an unmatched message, leak a borrow or reorder admission. Do not invoke effectful guard code.
-4. The actor's generation is pinned at admission. Restart invalidates old incarnation references and pending delivery. Crash recovery and supervisor cleanup settle or revoke outstanding tickets exactly once.
+4. The actor's generation is pinned at admission. Restart invalidates old incarnation references and pending delivery. **Close cancels and clears queued data** (it does not permit a subsequent selective receive of queued items), while already-consumed in-flight tickets settle physically. Crash recovery and supervisor cleanup settle or revoke outstanding tickets exactly once.
 5. For each sender→recipient incarnation pair, preserve admitted message order; distinct senders may interleave. A later matching message may be processed before earlier *unmatched* messages by design. Do not claim global execution FIFO after selective receive.
 6. Unknown or stale remote messages are denied or directed through an explicitly versioned dead-letter policy. Timeouts are based on monotonic deadlines; cancellation and timeout choose exactly one terminal outcome.
-7. The existing `mailbox-linearizability-v1` checker models dequeue-first, **not selective receive**. Its reference oracle must be extended rather than assumed to prove this behavior.
+7. Once a monotonic deadline has won, a pending selective receive must return timed out without a later dequeue. The existing `mailbox-linearizability-v1` checker models dequeue-first, **not selective receive**. Its reference oracle must be extended rather than assumed to prove this behavior.
 
 The accompanying model in `lib/erlang-otp-full-aot-model-v1.mjs` provides a **source-free executable specification** only; it does not implement or prove any compiler backend.
 
