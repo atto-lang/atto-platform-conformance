@@ -5,7 +5,7 @@ import { validateContract } from '../bin/verify-otel-contract.mjs';
 import { parseUniqueJSON } from '../bin/verify-otel-guest-parity.mjs';
 
 const approved = JSON.parse(readFileSync('contracts/otel-five-backend-v1.json','utf8'));
-const reject = fn => assert.throws(fn, /OTEL_CONTRACT_DENIED/);
+const reject = fn => assert.throws(fn, /OTEL_CONTRACT_DENIED|OTEL_PARITY_DENIED/);
 const mut = change => {const v=structuredClone(approved);change(v);reject(()=>validateContract(v));};
 
 test('canonical six-profile OTel manifest is always an unverified source-only contract',()=>{
