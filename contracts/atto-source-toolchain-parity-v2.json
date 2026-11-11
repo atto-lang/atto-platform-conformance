@@ -105,7 +105,8 @@
       "sourceBlobs": 323,
       "selectedTests": 31,
       "guestKind": "truffle-jvm-interpreter",
-      "scopeIsFullRepo": false
+      "scopeIsFullRepo": false,
+      "evidenceClass": "compiled-guest-subset"
     },
     {
       "backend": "llvm",
@@ -118,7 +119,36 @@
       "sourceBlobs": 61,
       "selectedTests": 32,
       "guestKind": "llvm-clang-native-ctest",
-      "scopeIsFullRepo": false
+      "scopeIsFullRepo": false,
+      "evidenceClass": "compiled-guest-subset"
+    },
+    {
+      "backend": "forge",
+      "scope": "stage-0 parser refuses unsupported match and tilde, baseline scalar 42; real GCC/Clang frontend with sanitizer",
+      "sourceSha": "af153431e3d393d4fc30232f1388201a2972e6ad",
+      "sourcePr": 268,
+      "carrierSha": "6893980c12b01a7a956de1fc4289592cfbf5b52d",
+      "carrierRun": 43036553579,
+      "carrierJob": 130576780575,
+      "sourceBlobs": 6,
+      "selectedTests": 9,
+      "guestKind": "forge-cpp20-native-frontend-no-match-map-codegen",
+      "scopeIsFullRepo": false,
+      "evidenceClass": "compile-reject-safety-subset"
+    },
+    {
+      "backend": "net",
+      "scope": "C# structured parser and CFG reject match and tilde, scalar 42 admitted; .NET10 compiler-core",
+      "sourceSha": "79fb122db3aa6e628369bcce8b4d90bff8ac7b44",
+      "sourcePr": 487,
+      "carrierSha": "11eda958ac890ab54f60a45df8d55ba99f125c22",
+      "carrierRun": 43035985080,
+      "carrierJob": 130574791444,
+      "sourceBlobs": 22,
+      "selectedTests": 13,
+      "guestKind": "dotnet10-structured-parser-cfg-no-cil-for-unsupported",
+      "scopeIsFullRepo": false,
+      "evidenceClass": "compile-reject-safety-subset"
     },
     {
       "backend": "js",
@@ -131,7 +161,8 @@
       "sourceBlobs": 6,
       "selectedTests": 12,
       "guestKind": "node-esm-v2",
-      "scopeIsFullRepo": false
+      "scopeIsFullRepo": false,
+      "evidenceClass": "compiled-guest-subset"
     }
   ],
   "knownDivergences": [

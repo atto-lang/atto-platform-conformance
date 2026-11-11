@@ -22,6 +22,8 @@ test('tampered source evidence or omitted toolchain never promotes parity',()=>{
  m=>m.selectedReceipts[0].sourceSha='0'.repeat(40).toUpperCase(),
  m=>m.selectedReceipts[1].sourceBlobs=0,
  m=>m.selectedReceipts[2].scopeIsFullRepo=true,
+ m=>m.selectedReceipts[2].evidenceClass='compiled-guest-subset',
+ m=>m.selectedReceipts[3].evidenceClass='compiled-guest-subset',
  m=>m.selectedReceipts.reverse(),
  m=>m.knownDivergences=[]
  ];
