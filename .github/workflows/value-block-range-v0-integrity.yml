@@ -1,0 +1,47 @@
+name: AttoLang value blocks/ranges contract integrity (source-free only)
+on:
+  push:
+    paths:
+      - 'contracts/value-block-range-v0/**'
+      - 'lib/value-block-range-v0-evidence.mjs'
+      - 'tests/value-block-range-v0-evidence.test.mjs'
+      - 'bin/verify-value-block-range-v0.mjs'
+      - '.github/workflows/value-block-range-v0-integrity.yml'
+  pull_request:
+    paths:
+      - 'contracts/value-block-range-v0/**'
+      - 'lib/value-block-range-v0-evidence.mjs'
+      - 'tests/value-block-range-v0-evidence.test.mjs'
+      - 'bin/verify-value-block-range-v0.mjs'
+      - '.github/workflows/value-block-range-v0-integrity.yml'
+permissions:
+  contents: read
+jobs:
+  source-free-integrity-not-guest-evidence:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Exact-head SHA and clean tree
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_HEAD" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git diff --quiet HEAD --
+          test -z "$(git ls-files --others --exclude-standard)"
+          echo "EXACT_SOURCE_HEAD=$EXPECTED_HEAD"
+          echo "EXACT_SOURCE_TREE=$(git rev-parse 'HEAD^{tree}')"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Source-free tests for contract/receipt forgery rejection
+        run: |
+          node --test tests/value-block-range-v0-evidence.test.mjs
+          node bin/verify-value-block-range-v0.mjs
+      - name: Proof class
+        run: echo "SOURCE_FREE_CONTRACT_ONLY_NOT_EXECUTED_ATTO_GUEST"
