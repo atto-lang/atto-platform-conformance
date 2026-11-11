@@ -1,0 +1,86 @@
+{
+  "schema": "oreslang-otel-five-backend/v1",
+  "classification": "CANDIDATE_ONLY",
+  "library": {
+    "repository": "ores-truffle-oreslang/oreslang-otel",
+    "fixture": "tests/smoke.ores",
+    "fixtureGitBlob": "c22a8841b868cd89dd4cb720435d9585fbbb05cc",
+    "implementation": "src/otel.ores",
+    "implementationGitBlob": "6a1b9b940f10e4b273ae2b02be5cfff5e0572afc",
+    "legacyExtension": ".ores"
+  },
+  "signals": {
+    "logs": 6,
+    "spans": 2,
+    "metrics": 1,
+    "total": 9
+  },
+  "requiredProfiles": [
+    {
+      "backend": "java",
+      "profile": "graalvm-jit",
+      "compiler": "ores-truffle-oreslang/oreslang-source.java"
+    },
+    {
+      "backend": "java",
+      "profile": "graalvm-native-aot",
+      "compiler": "ores-truffle-oreslang/oreslang-source.java"
+    },
+    {
+      "backend": "llvm",
+      "profile": "llvm-native",
+      "compiler": "ores-truffle-oreslang/oreslang-source.llvm"
+    },
+    {
+      "backend": "wasm",
+      "profile": "wasm-node-worker",
+      "compiler": "ores-truffle-oreslang/oreslang-source.wasm"
+    },
+    {
+      "backend": "forge",
+      "profile": "forge-native",
+      "compiler": "ores-truffle-oreslang/oreslang-source.forge"
+    },
+    {
+      "backend": "net",
+      "profile": "net-native-aot",
+      "compiler": "ores-truffle-oreslang/oreslang-source.net"
+    }
+  ],
+  "currentEvidence": [
+    {
+      "backend": "java",
+      "status": "UNVERIFIED_AT_CURRENT_HEAD",
+      "reason": "Native telemetry library designed for Java stdlib; exact-head guest execution and Native Image AOT receipts required"
+    },
+    {
+      "backend": "llvm",
+      "status": "UNVERIFIED_AT_CURRENT_HEAD",
+      "reason": "Native compiler has strings/console subset, but the full existing library and all span/metric semantics are not proven"
+    },
+    {
+      "backend": "wasm",
+      "status": "BLOCKED_GUEST_STDOUT_ABI",
+      "reason": "Core Wasm host presently imports nothing and admits scalar ()->i64 guest only; no telemetry stdout host capability"
+    },
+    {
+      "backend": "forge",
+      "status": "BLOCKED_GUEST_LANGUAGE_SUBSET",
+      "reason": "Independent C++ compiler still lacks full string/module/stdio/actor telemetry language support"
+    },
+    {
+      "backend": "net",
+      "status": "BLOCKED_GUEST_LANGUAGE_SUBSET",
+      "reason": "Native AOT scalar compiler does not yet compile general strings/imports/actors/stdio telemetry guest source"
+    }
+  ],
+  "security": [
+    "No private compiler source copied into any unapproved carrier",
+    "No host fixture, simulated stdout, or contract test may be claimed as guest execution",
+    "Ingress authorization and tenant identity are host/runtime-owned, never sourced from untrusted telemetry attributes",
+    "Use opaque ores_trace_id distinct from W3C trace_id and span_id; do not claim OTLP mapping until an actual adapter executes",
+    "Telemetry must not block actor carrier; drops/backpressure explicit; no secret keys or payload leakage",
+    "Capture exact compiler source/tree SHA, binary SHA256, guest artifact SHA256, stdout SHA256 and real process exit statuses"
+  ],
+  "promotion": "CONTRACT_SELF_TESTS_NEVER_PROVE_COMPILER_PARITY"
+}
