@@ -22,6 +22,13 @@ test('host-only success is never labeled source guest or durable provider succes
   assert.equal(forge.durable_provider,'NOT_IMPLEMENTED');
   assert.equal(forge.host_evidence.guest,false);
   assert.equal(forge.host_evidence.durable,false);
+  const wasm=inventory.backends.find(x=>x.id==='wasm');
+  assert.equal(wasm.host_wire,'LOCAL_NODE22_EXACT_BLOB_PASS');
+  assert.equal(wasm.durable_provider,'NOT_IMPLEMENTED');
+  assert.equal(wasm.host_evidence.guest,false);
+  assert.equal(wasm.host_evidence.durable,false);
+  for(const hash of Object.values(wasm.host_evidence.files))
+    assert.match(hash,/^[a-f0-9]{40}$/);
   for(const path of Object.values(forge.host_evidence.files))
     assert.match(path,/^[a-f0-9]{40}$/);
 });

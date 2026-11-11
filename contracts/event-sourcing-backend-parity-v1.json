@@ -48,13 +48,24 @@
       "repo": "ores-truffle-oreslang/oreslang-source.wasm",
       "pr": 467,
       "head_sha": "0545cba129deff73936aed02ff092b55cd1f147e",
-      "host_wire": "SOURCE_COMMITTED_NOT_EXECUTED",
+      "host_wire": "LOCAL_NODE22_EXACT_BLOB_PASS",
       "durable_provider": "NOT_IMPLEMENTED",
       "compiled_atto_guest": "NOT_EXECUTED",
       "required_profiles": [
         "zero-import wasm32 guest",
         "Node host adapter"
-      ]
+      ],
+      "host_evidence": {
+        "files": {
+          "src/durable-command-wire-v1.mjs": "94713408f78bf47348ce9be33e0784cdf895fa8e",
+          "tests/durable-command-wire-v1.test.mjs": "32a5d253f242f948a8ff6805ccccbe276d575785"
+        },
+        "executed_local": [
+          "Node 22.16.0 node --test six checks"
+        ],
+        "guest": false,
+        "durable": false
+      }
     },
     {
       "id": "forge",
