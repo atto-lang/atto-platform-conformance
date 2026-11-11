@@ -27,6 +27,14 @@ test("serial alias and explicit metadata retain the one-by-one contract", () => 
     /all exchange-completion Future callbacks returned/);
   assert.match(contract.sourceContract.semantics.listenerCarrierBarrier,
     /bounded explicit timeout/);
+  assert.match(contract.sourceContract.semantics.pooledWorkerAdmissionFence,
+    /linearizable admission seal/);
+  assert.match(contract.sourceContract.semantics.pooledWorkerAdmissionFence,
+    /post-seal requests/);
+  assert.match(contract.sourceContract.semantics.pooledWorkerAdmissionFence,
+    /ActorRuntime.gracefulStop/);
+  assert.match(contract.sourceContract.semantics.pooledWorkerAdmissionFence,
+    /thread-local cleanup/);
   assert.match(contract.sourceContract.semantics.forceCloseArbitration,
     /single winning owner/);
 });
