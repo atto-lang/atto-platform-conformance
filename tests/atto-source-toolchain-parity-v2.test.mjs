@@ -25,6 +25,9 @@ test('tampered source evidence or omitted toolchain never promotes parity',()=>{
  m=>m.selectedReceipts.reverse(),
  m=>m.knownDivergences=[]
  ];
- for(const mutate of mutations){const broken=structuredClone(manifest);mutate(broken);
- assert.ok(validateToolchainParityV2(broken,root).length>0);}
+ for(const [index,mutate] of mutations.entries()){
+  const broken=structuredClone(manifest);mutate(broken);
+  assert.ok(validateToolchainParityV2(broken,root).length>0,
+    'mutation '+index+' was incorrectly admitted');
+ }
 });
