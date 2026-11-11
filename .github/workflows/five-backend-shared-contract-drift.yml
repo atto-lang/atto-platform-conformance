@@ -1,0 +1,29 @@
+name: Five-backend shared contract SHA drift (metadata only)
+on:
+  pull_request:
+    paths:
+      - 'contracts/source-parity/**'
+      - '.github/workflows/five-backend-shared-contract-drift.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-free-metadata:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact conformance checkout
+        shell: bash
+        env:
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = ores-truffle-oreslang/oreslang-platform-conformance
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          test -z "$(git status --porcelain --untracked-files=normal)"
+      - name: Run strict source-free shared-contract drift validator and negative controls
+        run: python3 -I contracts/source-parity/check_five_backend_shared_contract_shas.py --self-test
