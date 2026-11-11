@@ -53,7 +53,11 @@ no-GC application.
 
 For Wasm use a caller-provided read destination in the hot path (no per-read
 copy result), bounded non-growing memory, no shared memory/host-import alias,
-and independent guest Wasm-GC/reference-type admission negatives. The JS
+and independent guest Wasm-GC/reference-type admission negatives. Even with
+`initial === maximum`, `WebAssembly.Memory.grow(0)` can detach the cached
+ArrayBuffer in Node. A fixed-memory hot-path view must detect this replacement,
+refresh once on change, and scrub the current backing at the last lifetime pin
+release. Case `ZG-013` makes this a mandatory regression. The JS
 host can still allocate and trace.
 
 ## Existing active implementation series
