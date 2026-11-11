@@ -1,0 +1,372 @@
+{
+  "schemaVersion": 1,
+  "contract": "namespace-actor-receiver-v1",
+  "status": "candidate-unattested",
+  "sourceStatus": "illustrative-source-not-compiler-verified",
+  "trackedJavaDraft": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2887",
+  "backendTargets": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge",
+    "js"
+  ],
+  "verifiedBackends": [],
+  "promotionRequires": [
+    "exact-head-tree-and-fixture-identities",
+    "nonzero-executed-source-CI-steps",
+    "non-skipped-parser-and-typecheck-results",
+    "real-guest-runtime-receipts-for-runtime-cases",
+    "independent-approved-review",
+    "no-mirroring-private-source-without-approved-policy"
+  ],
+  "cases": [
+    {
+      "id": "header.receiver_first.public",
+      "stage": "parser",
+      "expect": "accept_ast_only",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndefine actor Foo implements ActorXYZ;\npub mtd (Foo f) init(): f { return f; }\npub mtd (Foo f) bar(): void { return; }\n"
+      },
+      "requires": [
+        "preserve-actor-contract-references",
+        "no-synthesized-actor-or-implicit-self",
+        "receiver-first-method-AST"
+      ],
+      "currentJava": "authored-on-draft-2887-not-executed",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "header.contract_missing",
+      "stage": "static_binding",
+      "expect": "reject",
+      "diagnosticClass": "ACTOR_CONTRACT_WITNESS_UNSUPPORTED",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\npub define actor Foo implements ActorXYZ;\npub mtd (Foo f) bar(): void { return; }\n"
+      },
+      "requires": [
+        "no-ambient-contract-name-fallback",
+        "no-unverified-actor-witness"
+      ],
+      "currentJava": "authored-on-draft-2887-not-executed",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "header.two_unaliased_actors",
+      "stage": "static_binding",
+      "expect": "accept_metadata_only",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\npub define actor Foo;\npub define actor Bar;\npub mtd (Foo f) x(): void { return; }\npub mtd (Bar b) y(): void { return; }\n"
+      },
+      "requires": [
+        "no-synthetic-shared-receiver-alias",
+        "nominal-actor-slots"
+      ],
+      "currentJava": "authored-on-draft-2887-not-executed",
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "private_actor.public_method",
+      "stage": "static_binding",
+      "expect": "reject",
+      "diagnosticClass": "PRIVATE_ACTOR_PUBLIC_METHOD",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndefine actor Foo;\npub mtd (Foo f) bar(): void { return; }\n"
+      },
+      "requires": [
+        "visibility-coherence"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "cross_file.same_package",
+      "stage": "static_binding",
+      "expect": "accept_metadata_only",
+      "sourceUnits": {
+        "src/actor.atto": "namespace foo;\npub define actor Foo;\n",
+        "src/impl.atto": "namespace foo;\npub mtd (Foo f) bar(): void { return; }\n"
+      },
+      "requires": [
+        "verified-package-instance",
+        "exact-namespace-id",
+        "source-provenance"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "cross_file.wrong_namespace",
+      "stage": "static_binding",
+      "expect": "reject",
+      "diagnosticClass": "MISSING_NOMINAL_ACTOR",
+      "sourceUnits": {
+        "src/actor.atto": "namespace foo;\npub define actor Foo;\n",
+        "src/impl.atto": "namespace other;\npub mtd (Foo f) bar(): void { return; }\n"
+      },
+      "requires": [
+        "no-namespace-fallback"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "duplicate.method_slot",
+      "stage": "static_binding",
+      "expect": "reject",
+      "diagnosticClass": "DUPLICATE_ACTOR_METHOD",
+      "sourceUnits": {
+        "src/actor.atto": "namespace foo;\npub define actor Foo;\n",
+        "src/one.atto": "namespace foo;\npub mtd (Foo f) bar(): void { return; }\n",
+        "src/two.atto": "namespace foo;\npub mtd (Foo f) bar(): int { return 1; }\n"
+      },
+      "requires": [
+        "name-arity-slot-uniqueness",
+        "return-types-not-overload-discriminants"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "inherited_actor.unchecked_slot",
+      "stage": "static_binding",
+      "expect": "reject",
+      "diagnosticClass": "UNVERIFIED_INHERITED_SLOT_COHERENCE",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\npub define actor Parent as end\npub define actor Foo extends Parent as end\npub mtd (Foo f) bar(): void { return; }\n"
+      },
+      "requires": [
+        "no-unchecked-inherited-slot-shadowing"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "mail.borrowed_payload",
+      "stage": "static_binding",
+      "expect": "reject",
+      "diagnosticClass": "NON_SENDABLE_ACTOR_MAIL",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\npub define actor Foo;\ndefine mtd (Foo f) receive(ActorMail<borrow int> m): void { return; }\n"
+      },
+      "requires": [
+        "no-cross-actor-borrow-escape"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "contract.exact_public_signature",
+      "stage": "future_typecheck",
+      "expect": "accept_after_real_witness",
+      "sourceUnits": {
+        "src/contract.atto": "namespace foo;\ndefine contract ActorXYZ for actor as\n  pub mtd bar(): void;\nend\n",
+        "src/actor.atto": "namespace foo;\npub define actor Foo implements ActorXYZ;\n",
+        "src/impl.atto": "namespace foo;\npub mtd (Foo f) bar(): void { return; }\n"
+      },
+      "requires": [
+        "actor-only-contract-target",
+        "exact-method-signature",
+        "concrete-public-method",
+        "authenticated-namespace-source-set"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "contract.wrong_return",
+      "stage": "future_typecheck",
+      "expect": "reject",
+      "diagnosticClass": "ACTOR_CONTRACT_RETURN_MISMATCH",
+      "sourceUnits": {
+        "src/contract.atto": "namespace foo;\ndefine contract ActorXYZ for actor as\n  pub mtd bar(): int;\nend\n",
+        "src/actor.atto": "namespace foo;\npub define actor Foo implements ActorXYZ;\n",
+        "src/impl.atto": "namespace foo;\npub mtd (Foo f) bar(): void { return; }\n"
+      },
+      "requires": [
+        "nominal-return-types",
+        "no-contravariant-return-workaround"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "receiver_return.raw_actor_escape",
+      "stage": "future_typecheck",
+      "expect": "reject_until_sealed_handle_rule",
+      "diagnosticClass": "ACTOR_RECEIVER_ESCAPE_UNTYPED",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\npub define actor Foo;\npub mtd (Foo f) init(): f { return f; }\n"
+      },
+      "requires": [
+        "no-raw-actor-value-return",
+        "no-forged-ActorRef",
+        "lifecycle-not-implicitly-authorized"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "actor_call.same_turn",
+      "stage": "future_runtime",
+      "expect": "same_turn_no_second_mailbox_admission",
+      "requires": [
+        "authenticated-ActorContext",
+        "logical-turn-nonreentrancy",
+        "actor-owned-state-loans",
+        "same-actor-direct-dispatch"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "actor_ref.external_call",
+      "stage": "future_runtime",
+      "expect": "separate_mailbox_turn",
+      "requires": [
+        "typed-ActorRef",
+        "mailbox-quota",
+        "cancellation-fence",
+        "no-raw-state-pointer"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "actor_ref.stale_generation",
+      "stage": "future_runtime",
+      "expect": "reject_stale_activation",
+      "requires": [
+        "supervisor-generation-fence",
+        "stop-quiescence",
+        "borrow-cleanup"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    }
+  ]
+}
