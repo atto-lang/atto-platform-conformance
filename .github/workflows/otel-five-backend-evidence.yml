@@ -1,0 +1,49 @@
+name: OTel five-backend evidence gate (source-free only)
+on:
+  pull_request:
+    paths:
+      - 'contracts/otel-five-backend-v1.json'
+      - 'bin/verify-otel-guest-parity.mjs'
+      - 'tests/otel-five-backend-evidence.test.mjs'
+      - 'docs/OTEL_FIVE_BACKEND_EVIDENCE.md'
+      - '.github/workflows/otel-five-backend-evidence.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  no-false-guest-evidence:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact PR head without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Assert real source SHA and clean exact HEAD
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
+      - name: Pin supported Node toolchain
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Execute six-profile oracle and malicious receipt regressions
+        run: node --test tests/otel-five-backend-evidence.test.mjs
+      - name: Enforce current parity status stays non-promoting
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          import { PROFILES } from './bin/verify-otel-guest-parity.mjs';
+          const c = JSON.parse(fs.readFileSync('contracts/otel-five-backend-v1.json', 'utf8'));
+          assert.equal(c.classification, 'CANDIDATE_ONLY');
+          assert.equal(c.requiredProfiles.length, Object.keys(PROFILES).length);
+          assert.deepEqual(c.requiredProfiles.map(r => r.profile).sort(), Object.keys(PROFILES).sort());
+          assert.deepEqual(c.currentEvidence.map(r => r.backend).sort(), ['forge','java','llvm','net','wasm']);
+          assert.equal(c.promotion, 'CONTRACT_SELF_TESTS_NEVER_PROVE_COMPILER_PARITY');
+          console.log('CONTRACT_ONLY: no backend guest execution certified');
+          NODE
