@@ -67,6 +67,10 @@ test('old SQLite tables gain nullable proofs without silently trusting history',
     assert(columns('snapshots').includes('payload_hash'));
     assert(columns('snapshots').includes('operation_digest'));
     assert(columns('operations').includes('payload_hash'));
+    assert(columns('operations').includes('origin_epoch'));
+    assert.equal(db.db.prepare(
+      'SELECT origin_epoch FROM operations WHERE tenant=? AND actor=? AND state_name=? AND op_id=?'
+    ).get(tenantId,actor,stateName,'old-snapshot').origin_epoch,null);
     assert(columns('command_commits').includes('events_digest'));
     assert(columns('command_commits').includes('result_digest'));
     assert.throws(()=>db.loadFenced({tenantId,actor,stateName,epoch:1}),/UNVERIFIED_SNAPSHOT/);
