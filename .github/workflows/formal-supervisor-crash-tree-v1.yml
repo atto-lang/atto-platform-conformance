@@ -28,6 +28,6 @@ jobs:
           node formal/supervisor-crash-tree-v2/check.mjs
           test "$(git hash-object formal/supervisor-data-admission-v1/check.mjs)" = 5b1f73e8dca7f05d1dd795c41857519b08bb1d94
           node formal/supervisor-data-admission-v1/check.mjs
-          test "$(git hash-object formal/supervisor-admission-parity-v1/manifest.json)" = 1190b85c1f4f643abe9653d06f986a22beaf6313
-          test "$(git hash-object formal/supervisor-admission-parity-v1/check.mjs)" = 584fa82f215798e20c1757649fe9963698838efd
+          test "$(git hash-object formal/supervisor-admission-parity-v1/manifest.json)" = 5ae27248e7b66c552623c13d7744b7dc6fb79e03
+          test "$(git hash-object formal/supervisor-admission-parity-v1/check.mjs)" = 1dd901d36c4ac055622ecbd827338e54e9d95f05
           node formal/supervisor-admission-parity-v1/check.mjs
