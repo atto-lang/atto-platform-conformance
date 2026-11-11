@@ -458,6 +458,14 @@ export class BatchPersistenceSidecar {
         if(e.kind==='event' && !this.#fitsReplay(t,a,s,1,e.payload.length)) {
           results.push({opId:o,status:'rejected',durable:false,code:'REPLAY_LIMIT_EXCEEDED'});continue;
         }
+        if(e.kind==='snapshot') {
+          // Checkpoint publication must NOT launder missing/corrupted
+          // historical events into a healthy new replay suffix. Verify
+          // the FULL current tail and operation receipts inside this same
+          // BEGIN IMMEDIATE transaction before persisting the barrier.
+          const verified=this.#readState(t,a,s);
+          if(verified.version!==version)fail('INCOMPLETE_ACTOR_JOURNAL');
+        }
         const next=version+1;
         this.putHead.run(t,a,s,next);
         if (e.kind==='snapshot') this.putSnapshot.run(t,a,s,next,e.schemaVersion,e.payload,hash_bytes(e.payload),hash);
