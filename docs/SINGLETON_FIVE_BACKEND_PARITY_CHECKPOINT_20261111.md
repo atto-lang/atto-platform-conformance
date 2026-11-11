@@ -11,12 +11,12 @@ shared mutable pointer.
 | Backend | PR | Head SHA | Actual scope | Evidence classification |
 | --- | --- | --- | --- | --- |
 | Java/GraalVM singleton | [#2749](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2749) | `3e35afcc917494894622d1af5f7dc57f7a2d8337` | Real Java lexer/AST check-only, 12 authored JUnit tests, runtime refuses execution | NOT_EXECUTED guest |
-| Java/GraalVM RW | [#2747](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2747) | `4a8fb826848e4e93067c6e9011ecce501408e461` | Logical-execution/slot/generation RW ledger; 3/7/15 writer-fairness JUnit added | NOT_EXECUTED at head |
+| Java/GraalVM RW | [#2747](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2747) | `4028f49294cfd6c63236ee6a7ceee05fa2890a0f` | Logical-execution/slot/generation RW ledger; 3/7/15 writer-fairness JUnit added | NOT_EXECUTED at head |
 | LLVM native | [#1203](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1203) | `5554ef7dd730eaa97071c943ebc2f57229db8e7a` | Production-parser fail-closed singleton admission + expanded native CTest | NOT_EXECUTED at head |
-| .NET NativeAOT | [#267](https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/267) | `e7f5337378a5b302e5daa77883d3414779cd0a6b` | Both frontends deny unsupported source; host stage-0 async once-cell, retirement/cycle checks and 3/7/15 CLR carrier burst | NOT_EXECUTED at head; not guest |
-| Wasm | [#477](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/477) | `0a1a5b01cb9c227496497ebd62a1d8082539832d` | Pinned LLVM diagnostic must be authentic one-line admission, adversarial stdout/stderr checks | NOT_EXECUTED at head; not guest |
-| Forge | [#146](https://github.com/ores-truffle-oreslang/oreslang-source.forge/pull/146) | `c0f1eaf39f4bd9c08c7b0beb78ad236a3c5301f1` | Internal compiled scalar stage-0 initializer + trusted host once-registry; 3/7/15 carriers | NOT_EXECUTED at head; not general guest |
-| Forge bound dispatch | [#159](https://github.com/ores-truffle-oreslang/oreslang-source.forge/pull/159) | `a43884b8cec0a6657cfc8dfb0cd1ffd5eabfb5ba` | Stacked actor-dispatch-lease hardening, **not automatically included in #146's new head** | NOT_EXECUTED at head |
+| .NET NativeAOT | [#267](https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/267) | `84df876f59a1f47b0406de3e09cbbef9c45b9bbf` | Both frontends deny unsupported source; host stage-0 async once-cell, retirement/cycle checks and 3/7/15 CLR carrier burst | NOT_EXECUTED at head; not guest |
+| Wasm | [#477](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/477) | `bc1a6efe6173beaa65d3a04af0122522ab7d43f7` | Pinned LLVM diagnostic must be authentic one-line admission, adversarial stdout/stderr checks | NOT_EXECUTED at head; not guest |
+| Forge | [#146](https://github.com/ores-truffle-oreslang/oreslang-source.forge/pull/146) | `462fb3a89cd5e2bdc8a9d02fa4d171ce1b327ae5` | Internal compiled scalar stage-0 initializer + trusted host once-registry; 3/7/15 carriers | NOT_EXECUTED at head; not general guest |
+| Forge bound dispatch | [#159](https://github.com/ores-truffle-oreslang/oreslang-source.forge/pull/159) | `04a04d6dbbdb5bfd81c3b92218f383ac498554a4` | Stacked actor-dispatch-lease hardening, **not automatically included in #146's new head** | NOT_EXECUTED at head |
 
 Wasm's earlier singleton admission [#191](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/191)
 is **merged**; it does not certify the pinned LLVM compiler or release artifacts.
@@ -84,7 +84,7 @@ destination authorization and independent review.
   failed with `runner_id=null` and `steps=null`; no test execution can be
   inferred from these workflow conclusions. Other backend workflow coverage
   at their new heads has not been positively verified.
-- #662 has 29 authored tests (not current-head executed). #656's separate
+- #662 has 30 authored tests (not current-head executed). #656's separate
   exact-blob alternate-private-runner 44/44 model receipt **cannot** certify
   #662 or any backend compiled guest. Its general harness had **13 actual
   executed failures** that require triage.
@@ -99,3 +99,34 @@ destination authorization and independent review.
   code cannot establish allocator/borrow-checker parity.
 - **P2:** independent security and ABI review, validated release provenance,
   then staged merge after each required backend has real guest receipts.
+
+## Security hardening delta (2026-11-11)
+
+- **Java #2747:** production `ActorStateRwLoans` is now bound to its
+  actor's runtime-minted allocation domain at construction. Foreign first
+  borrowers, supervisor first access, stale incarnations and forged non-actor
+  owner bindings must fail. The legacy late-bound constructor remains for
+  isolated host-only tests; it must never be used to create production
+  actor-private state.
+- **Conformance #662:** suspension preflight is now host-wide across all
+  shared regions, including separate physical guest-turn pins. Calling
+  `assertCanSuspend` on an idle region cannot launder an outstanding borrow
+  from another region. Focused authored suite now has **30 tests**.
+- **Wasm #477:** a `command failed` linker/bridge result is insufficient.
+  The bridge must surface a real native, exit-1, stdout-empty,
+  same-line `ORES-SINGLETON-UNSUPPORTED` compiler diagnostic; signals,
+  generic errors and partial IR reject certification.
+- **Forge #159:** runtime capability token revocation snapshots its bounded
+  resource observers under the token mutex but invokes callbacks outside.
+  Mailbox close/restart publishes logical revocation before invoking callbacks
+  outside the mailbox lock, and serializes lifecycle changes until callbacks
+  drain. This closes observer lock-inversion deadlocks in host stage-0 paths;
+  executable test receipts and arbitrary reentrant lifecycle mutations remain
+  unverified.
+- **.NET #267 / Forge #146:** existing 3/7/15 success bursts now also
+  cover sticky initializer failures, without claiming native guest parity.
+
+**No new exact-head nonzero-step hosted run has yet certified these changes.**
+The new code and regression tests are review candidates only. Full source
+trees for stacked Java and Forge PRs still require integration and dedicated
+compiler/runtime guest tests before release.
