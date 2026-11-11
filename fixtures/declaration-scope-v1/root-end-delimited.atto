@@ -1,0 +1,3 @@
+define pub fnc answer() -> int ::
+  return 42;
+end
