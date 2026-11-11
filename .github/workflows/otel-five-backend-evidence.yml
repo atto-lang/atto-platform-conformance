@@ -7,6 +7,8 @@ on:
       - 'tests/otel-five-backend-evidence.test.mjs'
       - 'bin/run-otel-guest-execution.mjs'
       - 'tests/otel-real-guest-config.test.mjs'
+      - 'tests/otel-canonical-contract.test.mjs'
+      - 'bin/verify-otel-contract.mjs'
       - 'docs/OTEL_FIVE_BACKEND_EVIDENCE.md'
       - '.github/workflows/otel-five-backend-evidence.yml'
   workflow_dispatch:
@@ -34,18 +36,17 @@ jobs:
         with:
           node-version: '22'
       - name: Execute six-profile oracle and malicious receipt regressions
-        run: node --test tests/otel-five-backend-evidence.test.mjs tests/otel-real-guest-config.test.mjs
-      - name: Enforce current parity status stays non-promoting
+        run: node --test tests/otel-five-backend-evidence.test.mjs tests/otel-real-guest-config.test.mjs tests/otel-canonical-contract.test.mjs
+      - name: Fail closed on canonical source-only contract promotion
         run: |
+          node bin/verify-otel-contract.mjs > "$RUNNER_TEMP/otel-contract.json"
           node --input-type=module <<'NODE'
-          import fs from 'node:fs';
           import assert from 'node:assert/strict';
-          import { PROFILES } from './bin/verify-otel-guest-parity.mjs';
-          const c = JSON.parse(fs.readFileSync('contracts/otel-five-backend-v1.json', 'utf8'));
-          assert.equal(c.classification, 'CANDIDATE_ONLY');
-          assert.equal(c.requiredProfiles.length, Object.keys(PROFILES).length);
-          assert.deepEqual(c.requiredProfiles.map(r => r.profile).sort(), Object.keys(PROFILES).sort());
-          assert.deepEqual(c.currentEvidence.map(r => r.backend).sort(), ['forge','java','llvm','net','wasm']);
-          assert.equal(c.promotion, 'CONTRACT_SELF_TESTS_NEVER_PROVE_COMPILER_PARITY');
-          console.log('CONTRACT_ONLY: no backend guest execution certified');
+          import { readFileSync } from 'node:fs';
+          const result = JSON.parse(readFileSync(process.env.RUNNER_TEMP + '/otel-contract.json','utf8'));
+          assert.equal(result.classification,'SOURCE_ONLY_CANDIDATE');
+          assert.equal(result.guestExecuted,false);
+          assert.equal(result.releaseCertified,false);
+          assert.equal(result.profiles,6);
+          assert.equal(result.backends,5);
           NODE
