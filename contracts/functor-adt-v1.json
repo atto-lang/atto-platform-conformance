@@ -26,9 +26,23 @@
       "skipped": 0,
       "positive_assertions": 16,
       "negative_fixtures": 10,
-      "limitations": "Unrelated source-repo test/docs files not mirrored exactly; native AOT and other backends not tested."
+      "limitations": "Unrelated source-repo test/docs files not mirrored exactly; separate Java Native Image AOT proof covers a positive guest and two negative cases."
     },
-    "other_backends": "NOT_EXECUTED"
+    "other_backends": "NOT_EXECUTED",
+    "java_native_aot": {
+      "tier": "NATIVE_IMAGE_AOT_GUEST_EXECUTED_EXACT_BLOB_SUBSET",
+      "actions_url": "https://github.com/numerics-atto/mirror-oreslang-source.java/actions/runs/42954808209",
+      "carrier_commit": "43948948ff504f31f4be546700b3f95cc56f3996",
+      "source_head": "02fe4a3da37e0c8a9273ebe4f3f8d58eb9ec67b3",
+      "native_build_profile": "native-aot",
+      "build_mode": "aot",
+      "guest_execution": "interpreter-no-jit",
+      "positive_guest_cases": 1,
+      "positive_assertions": 16,
+      "negative_compiler_cases": 2,
+      "remaining_negative_cases": "NOT_EXECUTED_IN_NATIVE_AOT",
+      "limitations": "Exact-blob source subset, not complete source tree; no LLVM, Wasm, Forge, .NET or Cranelift proof."
+    }
   },
   "cases": [
     {
@@ -45,6 +59,9 @@
         "forge": "PENDING",
         "net": "PENDING",
         "cranelift": "PENDING"
+      },
+      "execution_profiles": {
+        "java_graalvm_native_aot": "NOT_EXECUTED"
       }
     },
     {
@@ -61,6 +78,9 @@
         "forge": "PENDING",
         "net": "PENDING",
         "cranelift": "PENDING"
+      },
+      "execution_profiles": {
+        "java_graalvm_native_aot": "NOT_EXECUTED"
       }
     },
     {
@@ -77,6 +97,9 @@
         "forge": "PENDING",
         "net": "PENDING",
         "cranelift": "PENDING"
+      },
+      "execution_profiles": {
+        "java_graalvm_native_aot": "NOT_EXECUTED"
       }
     },
     {
@@ -93,6 +116,9 @@
         "forge": "PENDING",
         "net": "PENDING",
         "cranelift": "PENDING"
+      },
+      "execution_profiles": {
+        "java_graalvm_native_aot": "NOT_EXECUTED"
       }
     },
     {
@@ -109,6 +135,9 @@
         "forge": "PENDING",
         "net": "PENDING",
         "cranelift": "PENDING"
+      },
+      "execution_profiles": {
+        "java_graalvm_native_aot": "GUEST_EXECUTED_EXACT_BLOB_SUBSET"
       }
     },
     {
@@ -125,6 +154,9 @@
         "forge": "PENDING",
         "net": "PENDING",
         "cranelift": "PENDING"
+      },
+      "execution_profiles": {
+        "java_graalvm_native_aot": "NOT_EXECUTED"
       }
     },
     {
@@ -141,6 +173,9 @@
         "forge": "PENDING",
         "net": "PENDING",
         "cranelift": "PENDING"
+      },
+      "execution_profiles": {
+        "java_graalvm_native_aot": "NOT_EXECUTED"
       }
     },
     {
@@ -157,6 +192,9 @@
         "forge": "PENDING",
         "net": "PENDING",
         "cranelift": "PENDING"
+      },
+      "execution_profiles": {
+        "java_graalvm_native_aot": "GUEST_EXECUTED_EXACT_BLOB_SUBSET"
       }
     },
     {
@@ -173,6 +211,9 @@
         "forge": "PENDING",
         "net": "PENDING",
         "cranelift": "PENDING"
+      },
+      "execution_profiles": {
+        "java_graalvm_native_aot": "NOT_EXECUTED"
       }
     },
     {
@@ -189,6 +230,9 @@
         "forge": "PENDING",
         "net": "PENDING",
         "cranelift": "PENDING"
+      },
+      "execution_profiles": {
+        "java_graalvm_native_aot": "NOT_EXECUTED"
       }
     },
     {
@@ -205,6 +249,9 @@
         "forge": "PENDING",
         "net": "PENDING",
         "cranelift": "PENDING"
+      },
+      "execution_profiles": {
+        "java_graalvm_native_aot": "GUEST_EXECUTED_EXACT_BLOB_SUBSET"
       }
     }
   ]
