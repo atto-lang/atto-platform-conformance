@@ -25,3 +25,13 @@ This README records the intended role of this repository; it is not a claim of f
 - [AttoLang](https://github.com/atto-lang)
 - [Language specification](https://github.com/atto-lang/atto-spec)
 - [Cross-platform conformance](https://github.com/atto-lang/atto-platform-conformance)
+
+## Pull/push collections (target-only candidate)
+
+The [pull/push admission v1 manifest](contracts/pull-push-admission-v1.json) defines 19 candidate checks
+covering lazy iterators, reactive demand, bounded channels, failed-send ownership,
+cancellation, actor generations, and compiler/allocator safety. Its [Node model integrity
+tests](tests/pull-push-admission.test.mjs) intentionally **reject all unattended PASS
+claims**. They are **not** guest tests, source implementation, or five-backend parity.
+The normative [language amendment](https://github.com/ores-truffle-oreslang/attolang-language-spec.md/pull/35)
+and [source-free model](https://github.com/atto-lang/atto-rx-channels/pull/3) track semantics.
