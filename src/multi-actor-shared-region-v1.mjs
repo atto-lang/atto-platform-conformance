@@ -136,6 +136,17 @@ export class TrustedMultiActorSharedHostV1 {
     region.reclaim(INTERNAL);
   }
 
+  /** Trusted scheduler-only model: physical guest turns outlive logical STOP. */
+  beginRegionTurn(region, execution) {
+    assert(this.#regions.has(region), 'foreign or forged region');
+    region.beginPhysicalTurn(execution, INTERNAL);
+  }
+
+  endRegionTurn(region, execution) {
+    assert(this.#regions.has(region), 'foreign or forged region');
+    region.endPhysicalTurn(execution, INTERNAL);
+  }
+
   stopActor(actor) {
     const a = actors.get(actor);
     assert(a?.live && a.host === this, 'unknown or stopped actor');
@@ -157,14 +168,16 @@ class MultiActorSharedRegionV1 {
   #ticketStates = new WeakMap(); // TEST-only terminal observation; no strong retention
   #grants = new Map();
   #pending = [];
+  #physicalTurns = new Set(); // live guest turns/physical callbacks, not lexical loans
+  #maxTurns;
   #maxPending;
   #maxReaders;
   #maxGrants;
 
-  constructor(host, owner, initial, { maxPending = 16, maxReaders = 1024, maxGrants = 64 } = {}) {
+  constructor(host, owner, initial, { maxPending = 16, maxReaders = 1024, maxGrants = 64, maxTurns = 1024 } = {}) {
     assert(host instanceof TrustedMultiActorSharedHostV1, 'trusted host required');
-    for (const n of [maxPending, maxReaders, maxGrants]) assert(Number.isSafeInteger(n) && n >= 0, 'invalid quota');
-    assert(maxReaders > 0, 'must permit at least one reader');
+    for (const n of [maxPending, maxReaders, maxGrants, maxTurns]) assert(Number.isSafeInteger(n) && n >= 0, 'invalid quota');
+    assert(maxReaders > 0 && maxTurns > 0, 'must permit a reader and physical turn');
     this.#host = host;
     this.#owner = owner;
     this.#domain = actors.get(owner).domain;
@@ -172,13 +185,15 @@ class MultiActorSharedRegionV1 {
     this.#maxPending = maxPending;
     this.#maxReaders = maxReaders;
     this.#maxGrants = maxGrants;
+    this.#maxTurns = maxTurns;
   }
 
   get stats() {
     const live = [...this.#tickets.values()].filter(t => t.state === 'active');
     return Object.freeze({ readers: live.filter(t => t.mode === 'read').length,
       writers: live.filter(t => t.mode === 'write').length,
-      pending: this.#pending.length, grants: this.#grants.size, retainedTickets: this.#tickets.size, epoch: this.#epoch,
+      pending: this.#pending.length, grants: this.#grants.size,
+      physicalTurns: this.#physicalTurns.size, retainedTickets: this.#tickets.size, epoch: this.#epoch,
       sealed: this.#sealed, reclaimed: this.#reclaimed });
   }
 
@@ -215,7 +230,24 @@ class MultiActorSharedRegionV1 {
     return [...this.#tickets.values()].some(t => t.execution === execution &&
       (t.state === 'active' || t.state === 'pending'));
   }
-  hasExecution(execution) { return this.#hasExecution(execution); }
+  hasExecution(execution) { return this.#hasExecution(execution) || this.#physicalTurns.has(execution); }
+
+  /** Model a running guest turn or callback that may still hold a physical region pin. */
+  beginPhysicalTurn(execution, authority) {
+    assert(authority === INTERNAL, 'only trusted runtime may start a physical region turn');
+    this.#actor(execution);
+    assert(!this.#physicalTurns.has(execution), 'physical guest turn already active');
+    assert(this.#physicalTurns.size < this.#maxTurns, 'physical turn quota exhausted');
+    this.#physicalTurns.add(execution);
+    this.#check();
+  }
+
+  /** Physical cleanup is allowed after STOP; no guest access is restored. */
+  endPhysicalTurn(execution, authority) {
+    assert(authority === INTERNAL, 'only trusted runtime may finish a physical region turn');
+    assert(this.#physicalTurns.delete(execution), 'invalid or duplicate physical turn completion');
+    this.#check();
+  }
 
   /** Only the scheduler can retire grants belonging to a finished logical turn. */
   onExecutionEnd(execution, authority) {
@@ -333,8 +365,8 @@ class MultiActorSharedRegionV1 {
     const readers = active.length - writers;
     assert(writers <= 1 && (writers === 0 || readers === 0) && readers <= this.#maxReaders,
       'RW exclusion invariant violated');
-    assert(this.#pending.length <= this.#maxPending && this.#grants.size <= this.#maxGrants,
-      'bounded capacity invariant violated');
+    assert(this.#pending.length <= this.#maxPending && this.#grants.size <= this.#maxGrants &&
+      this.#physicalTurns.size <= this.#maxTurns, 'bounded capacity invariant violated');
   }
 
   transferOwner(ownerExecution, nextActor) {
@@ -343,7 +375,8 @@ class MultiActorSharedRegionV1 {
     assert(a?.live && a.host === this.#host && a.domain === this.#domain && a.trust === 'trusted' && nextActor !== this.#owner,
       'invalid new owner');
     assert(this.#active().length === 0 && this.#pending.length === 0 &&
-      this.#grants.size === 0, 'owner move requires full quiescence and grant revocation');
+      this.#grants.size === 0 && this.#physicalTurns.size === 0,
+      'owner move requires full quiescence and grant revocation');
     assert(Number.isSafeInteger(this.#epoch + 1), 'owner epoch exhausted');
     this.#owner = nextActor;
     this.#epoch++;
@@ -387,7 +420,8 @@ class MultiActorSharedRegionV1 {
   reclaim(authority) {
     assert(authority === INTERNAL, 'only trusted runtime may reclaim');
     assert(this.#sealed && !this.#reclaimed && this.#active().length === 0 &&
-      this.#pending.length === 0, 'reclamation requires sealed, physically quiescent region');
+      this.#pending.length === 0 && this.#physicalTurns.size === 0,
+      'reclamation requires sealed, physically quiescent region');
     this.#reclaimed = true;
     this.#value = null;
   }
