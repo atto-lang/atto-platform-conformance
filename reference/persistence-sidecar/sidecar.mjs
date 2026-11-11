@@ -85,7 +85,7 @@ export class BatchPersistenceSidecar {
     this.getCheckpoint = this.db.prepare('SELECT version,schema_version,payload,digest FROM checkpoints WHERE tenant=? AND actor=? AND state_name=?');
     this.putCheckpoint = this.db.prepare('INSERT INTO checkpoints VALUES(?,?,?,?,?,?,?) ON CONFLICT(tenant,actor,state_name) DO UPDATE SET version=excluded.version,schema_version=excluded.schema_version,payload=excluded.payload,digest=excluded.digest');
     this.getLegacySnapshot = this.db.prepare('SELECT version,schema_version,payload FROM snapshots WHERE tenant=? AND actor=? AND state_name=?');
-    this.readCheckpointEvents = this.db.prepare('SELECT version,op_id FROM events WHERE tenant=? AND actor=? AND state_name=? AND version>? AND version<=? ORDER BY version ASC');
+    this.readCheckpointEvents = this.db.prepare('SELECT version,op_id,schema_version FROM events WHERE tenant=? AND actor=? AND state_name=? AND version>? AND version<=? ORDER BY version ASC');
     this.pruneCheckpointEvents = this.db.prepare('DELETE FROM events WHERE tenant=? AND actor=? AND state_name=? AND version<=?');
   }
   // TRUSTED CONTROL PLANE ONLY: never expose this to a guest actor.
@@ -335,6 +335,7 @@ export class BatchPersistenceSidecar {
         count++;
         if(count>this.maxReplayEvents)fail('REPLAY_LIMIT_EXCEEDED');
         if(entry.version!==from+count)fail('JOURNAL_GAP');
+        if(entry.schema_version!==schemaVersion)fail('SCHEMA_MIGRATION_REQUIRED');
         const cmd=this.getCommand.get(tenantId,actor,stateName,entry.op_id);
         if(!cmd||entry.version<cmd.first_version||entry.version>cmd.last_version||
            !uint(cmd.event_count)||cmd.event_count<1||

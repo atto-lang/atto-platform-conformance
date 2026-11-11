@@ -253,3 +253,15 @@ test('bounded one-event replay can compact and subsequently reload from checkpoi
     assert.deepEqual(a.restore(),{status:'ready',version:2,balance_cents:30});
   });
 });
+
+test('mixed journal schema versions are rejected before destructive checkpoint',()=>{
+  fixture(open=>{
+    const db=open();grant(db,'account',1);
+    const a=bank(db);a.restore();do_commit(a,db,'d1',deposit(10));
+    db.db.prepare('UPDATE events SET schema_version=? WHERE tenant=? AND actor=? AND state_name=?')
+      .run(2,'t','account','main');
+    assert.throws(()=>a.checkpoint_and_compact(),/SCHEMA_MIGRATION_REQUIRED/);
+    assert.equal(db.db.prepare('SELECT count(*) n FROM events').get().n,1);
+    assert.equal(db.db.prepare('SELECT count(*) n FROM checkpoints').get().n,0);
+  });
+});
