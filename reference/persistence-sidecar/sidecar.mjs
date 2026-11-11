@@ -29,10 +29,13 @@ const digest = (e) => createHash('sha256').update(JSON.stringify([
 export class BatchPersistenceSidecar {
   constructor({ path, tenantId, maxQueuedBytes = 4 * 1024 * 1024,
     maxPayloadBytes = 64 * 1024, maxQueuedEntries = 4096, maxBatchEntries = 256,
-    maxBatchBytes = 1024 * 1024, maxReplayEvents = 65536 }) {
+    maxBatchBytes = 1024 * 1024, maxReplayEvents = 65536,
+    maxIndexedCommands = 262144 }) {
     if (!ident(tenantId) || !ident(path)) fail('INVALID_CONFIG');
     if (![maxQueuedBytes,maxPayloadBytes,maxQueuedEntries,maxBatchEntries,maxBatchBytes].every(n => uint(n) && n > 0) ||
-        !uint(maxReplayEvents) || maxReplayEvents < 1 || maxReplayEvents > 65536) fail('INVALID_CONFIG');
+        !uint(maxReplayEvents) || maxReplayEvents < 1 || maxReplayEvents > 65536 ||
+        !uint(maxIndexedCommands) || maxIndexedCommands < 1 || maxIndexedCommands > 262144)
+      fail('INVALID_CONFIG');
     this.tenantId = tenantId;
     this.maxQueuedBytes = maxQueuedBytes;
     this.maxPayloadBytes = maxPayloadBytes;
@@ -40,6 +43,7 @@ export class BatchPersistenceSidecar {
     this.maxBatchEntries = maxBatchEntries;
     this.maxBatchBytes = maxBatchBytes;
     this.maxReplayEvents = maxReplayEvents;
+    this.maxIndexedCommands = maxIndexedCommands;
     this.queuedBytes = 0;
     this.queue = [];
     this.pending = new Map();
@@ -72,7 +76,19 @@ export class BatchPersistenceSidecar {
         tenant TEXT NOT NULL, actor TEXT NOT NULL, state_name TEXT NOT NULL,
         version INTEGER NOT NULL, schema_version INTEGER NOT NULL,
         payload BLOB NOT NULL, digest TEXT NOT NULL,
-        PRIMARY KEY(tenant,actor,state_name));`);
+        PRIMARY KEY(tenant,actor,state_name));
+      CREATE TABLE IF NOT EXISTS checkpoint_index_manifests (
+        tenant TEXT NOT NULL, actor TEXT NOT NULL, state_name TEXT NOT NULL,
+        version INTEGER NOT NULL, command_count INTEGER NOT NULL,
+        command_digest TEXT NOT NULL,
+        PRIMARY KEY(tenant,actor,state_name));
+      -- Stable command receipts must not disappear after compaction.
+      CREATE TRIGGER IF NOT EXISTS immutable_command_commits_delete
+        BEFORE DELETE ON command_commits
+        BEGIN SELECT RAISE(ABORT,'IMMUTABLE_COMMAND_INDEX'); END;
+      CREATE TRIGGER IF NOT EXISTS immutable_command_commits_update
+        BEFORE UPDATE ON command_commits
+        BEGIN SELECT RAISE(ABORT,'IMMUTABLE_COMMAND_INDEX'); END;`);
     this.getFence = this.db.prepare('SELECT epoch FROM fences WHERE tenant=? AND actor=?');
     this.getOp = this.db.prepare('SELECT digest, version, kind FROM operations WHERE tenant=? AND actor=? AND state_name=? AND op_id=?');
     this.getHead = this.db.prepare('SELECT version FROM heads WHERE tenant=? AND actor=? AND state_name=?');
@@ -87,6 +103,37 @@ export class BatchPersistenceSidecar {
     this.getLegacySnapshot = this.db.prepare('SELECT version,schema_version,payload FROM snapshots WHERE tenant=? AND actor=? AND state_name=?');
     this.readCheckpointEvents = this.db.prepare('SELECT version,op_id,schema_version FROM events WHERE tenant=? AND actor=? AND state_name=? AND version>? AND version<=? ORDER BY version ASC');
     this.pruneCheckpointEvents = this.db.prepare('DELETE FROM events WHERE tenant=? AND actor=? AND state_name=? AND version<=?');
+    this.getCheckpointManifest = this.db.prepare('SELECT version,command_count,command_digest FROM checkpoint_index_manifests WHERE tenant=? AND actor=? AND state_name=?');
+    this.putCheckpointManifest = this.db.prepare('INSERT INTO checkpoint_index_manifests VALUES(?,?,?,?,?,?) ON CONFLICT(tenant,actor,state_name) DO UPDATE SET version=excluded.version,command_count=excluded.command_count,command_digest=excluded.command_digest');
+    this.readIndexedCommands = this.db.prepare('SELECT op_id,command_hash,first_version,last_version,event_count,result_bytes FROM command_commits WHERE tenant=? AND actor=? AND state_name=? AND last_version<=? ORDER BY first_version ASC,op_id ASC');
+  }
+  // Cover the full retained command history through the checkpoint boundary.
+  // Host-only O(N) audit, bounded to prevent unbounded checkpoint/recovery work.
+  commandIndexDigest(tenantId,actor,stateName,version) {
+    let count=0,covered=0;const h=createHash('sha256');
+    for(const row of this.readIndexedCommands.iterate(tenantId,actor,stateName,version)) {
+      if(++count>this.maxIndexedCommands)fail('COMMAND_INDEX_LIMIT_EXCEEDED');
+      if(!ident(row.op_id) || typeof row.command_hash!=='string' ||
+         !/^[0-9a-f]{64}$/.test(row.command_hash) ||
+         !uint(row.first_version) || row.first_version!==covered+1 ||
+         !uint(row.last_version) || !uint(row.event_count) ||
+         row.last_version-row.first_version+1!==row.event_count ||
+         !Buffer.isBuffer(row.result_bytes))fail('CORRUPT_COMMAND_INDEX');
+      h.update(JSON.stringify([row.op_id,row.command_hash,row.first_version,
+        row.last_version,row.event_count,row.result_bytes.toString('base64')])+'\n');
+      covered=row.last_version;
+    }
+    if(covered!==version)fail('CORRUPT_COMMAND_INDEX');
+    return {commandCount:count,commandDigest:h.digest('hex')};
+  }
+  verifyCheckpointIndex(tenantId,actor,stateName,checkpoint) {
+    const manifest=this.getCheckpointManifest.get(tenantId,actor,stateName);
+    if(!manifest || manifest.version!==checkpoint.version)
+      fail('COMMAND_INDEX_MANIFEST_REQUIRED');
+    const summary=this.commandIndexDigest(tenantId,actor,stateName,checkpoint.version);
+    if(manifest.command_count!==summary.commandCount ||
+       manifest.command_digest!==summary.commandDigest)
+      fail('CORRUPT_COMMAND_INDEX');
   }
   // TRUSTED CONTROL PLANE ONLY: never expose this to a guest actor.
   grantEpoch({ tenantId, actor, epoch }) {
@@ -161,12 +208,8 @@ export class BatchPersistenceSidecar {
     // Fence before dedup: stale actors cannot retrieve a prior success receipt.
     if(this.getFence.get(tenantId,actor)?.epoch!==epoch) fail('STALE_EPOCH');
     const old=this.getCommand.get(tenantId,actor,stateName,opId);
-    if(old) {
-      if(old.command_hash!==e.commandHash)fail('OP_ID_CONFLICT');
-      return {opId,status:'committed',durable:true,duplicate:true,
-        firstVersion:old.first_version,version:old.last_version,
-        eventCount:old.event_count,resultBytes:Buffer.from(old.result_bytes)};
-    }
+    if(old) return this.verifyCommand({tenantId,actor,stateName,opId,epoch,
+      commandBytes:e.commandBytes});
     if(this.getOp.get(tenantId,actor,stateName,opId))fail('OP_ID_CONFLICT');
     const k=key(e),attemptHash=hash_command_attempt(e),pending=this.pending.get(k);
     if(pending) {
@@ -193,7 +236,9 @@ export class BatchPersistenceSidecar {
     if(old.command_hash!==hash_bytes(commandBytes))fail('OP_ID_CONFLICT');
     if(!uint(old.first_version)||old.first_version<1||!uint(old.last_version)||
        !uint(old.event_count)||old.event_count<1||
-       old.last_version-old.first_version+1!==old.event_count)fail('CORRUPT_COMMAND_RECORD');
+       old.last_version-old.first_version+1!==old.event_count ||
+       old.last_version>(this.getHead.get(tenantId,actor,stateName)?.version??0))
+      fail('CORRUPT_COMMAND_RECORD');
     return {opId,status:'committed',durable:true,duplicate:true,
       firstVersion:old.first_version,version:old.last_version,
       eventCount:old.event_count,resultBytes:Buffer.from(old.result_bytes)};
@@ -219,11 +264,12 @@ export class BatchPersistenceSidecar {
         if(e.kind==='command') {
           const old=this.getCommand.get(t,a,s,o);
           if(old) {
-            results.push(old.command_hash===e.commandHash
-              ? {opId:o,status:'committed',durable:true,duplicate:true,
-                 firstVersion:old.first_version,version:old.last_version,
-                 eventCount:old.event_count,resultBytes:Buffer.from(old.result_bytes)}
-              : {opId:o,status:'rejected',durable:false,code:'OP_ID_CONFLICT'});
+            if(old.command_hash!==e.commandHash) {
+              results.push({opId:o,status:'rejected',durable:false,code:'OP_ID_CONFLICT'});
+            } else {
+              results.push(this.verifyCommand({tenantId:t,actor:a,stateName:s,
+                opId:o,epoch:e.epoch,commandBytes:e.commandBytes}));
+            }
             continue;
           }
           if(this.getOp.get(t,a,s,o)) {
@@ -315,6 +361,7 @@ export class BatchPersistenceSidecar {
       const old=this.getCheckpoint.get(tenantId,actor,stateName);
       let from=0;
       if(old) {
+        this.verifyCheckpointIndex(tenantId,actor,stateName,old);
         const owned=Buffer.from(old.payload);
         if(!uint(old.version)||old.version<1||old.version>head||
            !uint(old.schema_version)||old.schema_version<1||
@@ -343,9 +390,12 @@ export class BatchPersistenceSidecar {
           fail('UNINDEXED_JOURNAL');
       }
       if(count!==expectedVersion-from)fail('JOURNAL_GAP');
+      const index=this.commandIndexDigest(tenantId,actor,stateName,expectedVersion);
       this.putCheckpoint.run(tenantId,actor,stateName,expectedVersion,schemaVersion,
         Buffer.from(payload),checkpoint_hash({tenantId,actor,stateName,
           version:expectedVersion,schemaVersion,payload}));
+      this.putCheckpointManifest.run(tenantId,actor,stateName,expectedVersion,
+        index.commandCount,index.commandDigest);
       const pruned=this.pruneCheckpointEvents.run(tenantId,actor,stateName,expectedVersion);
       if(pruned.changes!==count)fail('JOURNAL_GAP');
       this.db.exec('COMMIT');
@@ -387,6 +437,7 @@ export class BatchPersistenceSidecar {
          checkpoint.digest!==checkpoint_hash({tenantId,actor,stateName,
            version:checkpoint.version,schemaVersion:checkpoint.schema_version,payload:owned}))
         fail('CORRUPT_CHECKPOINT');
+      this.verifyCheckpointIndex(tenantId,actor,stateName,checkpoint);
       snapshot={version:checkpoint.version,schemaVersion:checkpoint.schema_version,
         payload:owned,provenance:'command_checkpoint_v1',verifiedCommandIndex:true};
     } else if(legacy) {
@@ -396,6 +447,15 @@ export class BatchPersistenceSidecar {
     const since=snapshot?.version??0;
     const events=this.db.prepare('SELECT version,schema_version,op_id,payload FROM events WHERE tenant=? AND actor=? AND state_name=? AND version>? ORDER BY version ASC LIMIT ?').all(tenantId,actor,stateName,since,this.maxReplayEvents+1);
     if(events.length>this.maxReplayEvents)fail('REPLAY_LIMIT_EXCEEDED');
+    if(checkpoint) {
+      // A legacy/unindexed write after compaction must not become replayable.
+      for(const e of events) {
+        const cmd=this.getCommand.get(tenantId,actor,stateName,e.op_id);
+        if(!cmd || e.version<cmd.first_version || e.version>cmd.last_version ||
+           cmd.last_version-cmd.first_version+1!==cmd.event_count)
+          fail('UNINDEXED_JOURNAL');
+      }
+    }
     return {version,snapshot,events:events.map(x=>({version:x.version,
       schemaVersion:x.schema_version,opId:x.op_id,payload:Buffer.from(x.payload)}))};
   }
