@@ -4,7 +4,7 @@
   "status": "candidate-unattested",
   "canonicalHeader": "declare actor Foo [implements ActorXYZ];",
   "canonicalStateSyntax": "define state on actor Foo as { let int x: 5; }",
-  "scope": "one sealed private per-actor-instance schema bound by verified package+namespace+nominal actor",
+  "scope": "one sealed private per-actor-instance schema attached only to a 'declare actor' header, keyed by verified package+namespace+nominal actor",
   "backendTargets": [
     "java",
     "llvm",
@@ -83,6 +83,29 @@
       },
       "requires": [
         "no-class-to-actor-escalation"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.inline_actor_layout_rejected",
+      "stage": "static_binding",
+      "expect": "reject",
+      "sourceUnits": {
+        "a": "namespace foo;\npub define actor Foo as end\n",
+        "b": "namespace foo;\ndefine state on actor Foo as { let int x: 5; }\n"
+      },
+      "requires": [
+        "declared-actor-state-layout-only",
+        "no-unverified-inline-state-migration"
       ],
       "backends": [
         "java",
