@@ -266,3 +266,35 @@ successfully: first-insert SIGKILL recovered zero rows; post-COMMIT
 SIGKILL recovered both rows. These local probes do **not** constitute
 execution of the GitHub source fixtures, which remain unverified until
 source-owned Actions admission is restored.
+
+
+## P0 follow-up: no journal-gap or checkpoint laundering (2026-11-10)
+
+Audit found a subtle trust-boundary bug: `COUNT(*)` and byte totals alone
+could make a truncated suffix look as though it still had replay capacity,
+and a subsequent snapshot could hide that missing or altered history.
+The Node SQLite reference now validates that the post-checkpoint journal
+covers exactly `checkpoint+1 .. head`, including `MIN(version)`,
+`MAX(version)`, count and byte bounds, before admission. A future event
+beyond the state head is rejected; a missing middle row cannot create
+artificial spare capacity. The checkpoint itself must match its durable
+operation evidence before its version is used as a replay barrier.
+
+Before writing a NEW snapshot, the provider also calls the full verified
+legacy/command journal reader **inside the existing `BEGIN IMMEDIATE`**.
+The transaction therefore refuses to checkpoint over missing legacy
+events, same-length altered events or corrupt multi-event command
+digests. New tests seed a fully witnessed 10,000-event journal before
+proving a checkpoint reset, and reject replay gaps/altered BLOBs/future
+events. The replay-hardening source file declares **30 tests**.
+
+A verified, private **source-free** runner candidate is
+`atto-lang/atto-compilers-parity-testing` (repo ID 1448719198).
+[Run #42951516578](https://github.com/atto-lang/atto-compilers-parity-testing/actions/runs/42951516578)
+and [run #42951509176](https://github.com/atto-lang/atto-compilers-parity-testing/actions/runs/42951509176)
+each executed 8 successful no-checkout steps; their synthetic
+checkpoint-laundering checks passed 6/6. These runs do **not**
+execute the actual source, and never authenticate private-source
+export. The source protection and independent review requirements
+in security PR #2694 remain hard blocks; exact-source SQLite tests
+and compiled guest tests are NOT_EXECUTED.
