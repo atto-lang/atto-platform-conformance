@@ -1,0 +1,8 @@
+define trait Newable as
+end
+
+define pub class Cart implements Newable[Cart] as
+  pub fnc new(): Cart {
+    return new Cart();
+  }
+end
