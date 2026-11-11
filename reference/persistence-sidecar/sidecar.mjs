@@ -87,6 +87,13 @@ export class BatchPersistenceSidecar {
     this.getOp = this.db.prepare('SELECT digest, version, kind, payload_hash FROM operations WHERE tenant=? AND actor=? AND state_name=? AND op_id=?');
     this.getHead = this.db.prepare('SELECT version FROM heads WHERE tenant=? AND actor=? AND state_name=?');
     this.putHead = this.db.prepare('INSERT INTO heads VALUES(?,?,?,?) ON CONFLICT(tenant,actor,state_name) DO UPDATE SET version=excluded.version');
+    this.getReplayCheckpoint = this.db.prepare(
+      'SELECT version FROM snapshots WHERE tenant=? AND actor=? AND state_name=?'
+    );
+    this.getReplayUsage = this.db.prepare(
+      'SELECT COUNT(*) AS event_count,COALESCE(SUM(length(payload)),0) AS bytes '+
+      'FROM events WHERE tenant=? AND actor=? AND state_name=? AND version>?'
+    );
     this.putSnapshot = this.db.prepare('INSERT INTO snapshots(tenant,actor,state_name,version,schema_version,payload,payload_hash,operation_digest) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(tenant,actor,state_name) DO UPDATE SET version=excluded.version, schema_version=excluded.schema_version, payload=excluded.payload, payload_hash=excluded.payload_hash, operation_digest=excluded.operation_digest');
     this.putEvent = this.db.prepare('INSERT INTO events VALUES(?,?,?,?,?,?,?)');
     this.putOp = this.db.prepare('INSERT INTO operations(tenant,actor,state_name,op_id,digest,version,kind,payload_hash) VALUES(?,?,?,?,?,?,?,?)');
@@ -351,6 +358,19 @@ export class BatchPersistenceSidecar {
       throw err;
     }
   }
+  // Called only under BEGIN IMMEDIATE. Include earlier writes in the same
+  // batch in this SQLite connection's transactional view. Snapshots reset
+  // the replay suffix but do not erase historic command identity.
+  #fitsReplay(tenantId,actor,stateName,newCount,newBytes) {
+    if(!uint(newCount) || !uint(newBytes) || newCount<1 ||
+       newCount>10000 || newBytes>16777216)return false;
+    const checkpoint=this.getReplayCheckpoint.get(tenantId,actor,stateName)?.version??0;
+    if(!uint(checkpoint))fail('INVALID_ACTOR_SNAPSHOT');
+    const usage=this.getReplayUsage.get(tenantId,actor,stateName,checkpoint);
+    if(!uint(usage.event_count)||!uint(usage.bytes))fail('INVALID_ACTOR_JOURNAL');
+    return usage.event_count<=10000-newCount &&
+      usage.bytes<=16777216-newBytes;
+  }
   flush() {
     let bytes=0,count=0,rows=0;
     while(count<this.queue.length) {
@@ -388,6 +408,9 @@ export class BatchPersistenceSidecar {
           if(e.events.length>Number.MAX_SAFE_INTEGER-version) {
             results.push({opId:o,status:'rejected',durable:false,code:'VERSION_EXHAUSTED'});continue;
           }
+          if(!this.#fitsReplay(t,a,s,e.events.length,e.eventBytes)) {
+            results.push({opId:o,status:'rejected',durable:false,code:'REPLAY_LIMIT_EXCEEDED'});continue;
+          }
           for(let i=0;i<e.events.length;i++)
             this.putEvent.run(t,a,s,version+i+1,e.schemaVersion,o,e.events[i]);
           const next=version+e.events.length;
@@ -416,6 +439,9 @@ export class BatchPersistenceSidecar {
         }
         if (version===Number.MAX_SAFE_INTEGER) {
           results.push({opId:o,status:'rejected',durable:false,code:'VERSION_EXHAUSTED'}); continue;
+        }
+        if(e.kind==='event' && !this.#fitsReplay(t,a,s,1,e.payload.length)) {
+          results.push({opId:o,status:'rejected',durable:false,code:'REPLAY_LIMIT_EXCEEDED'});continue;
         }
         const next=version+1;
         this.putHead.run(t,a,s,next);
