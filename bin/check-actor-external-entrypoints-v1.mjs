@@ -15,7 +15,7 @@ assert.equal(contract.semantics.ingress, 'RUNTIME_ONLY');
 assert.equal(contract.semantics.guest_visibility, 'PRIVATE');
 assert.equal(contract.semantics.public_rpc, false);
 assert.deepEqual(contract.semantics.roles, ['INIT', 'RECEIVE']);
-assert.equal(contract.fixtures.length, 12);
+assert.equal(contract.fixtures.length, 14);
 assert.equal(new Set(contract.fixtures.map((f) => f.id)).size, contract.fixtures.length);
 assert.equal(new Set(contract.fixtures.map((f) => f.path)).size, contract.fixtures.length);
 
@@ -37,7 +37,7 @@ for (const fixture of contract.fixtures) {
     assert.ok(source.includes('declare actor ')
       || source.includes('declare pub actor '), fixture.id);
   }
-  if (fixture.id === 'reject_unmarked_init' || fixture.id === 'reject_unmarked_receive') {
+  if (fixture.id === 'reject_unmarked_init' || fixture.id === 'reject_unmarked_receive' || fixture.id === 'reject_legacy_on_start') {
     assert.ok(source.includes('define mtd ') && !source.includes('define external mtd '),
       fixture.id);
   } else {
@@ -54,5 +54,5 @@ for (const fixture of contract.fixtures) {
   records.push({ id: fixture.id, expect: fixture.expect, sha256: createHash('sha256').update(bytes).digest('hex') });
 }
 assert.equal(records.filter((r) => r.expect === 'ACCEPT').length, 3);
-assert.equal(records.filter((r) => r.expect === 'REJECT').length, 9);
+assert.equal(records.filter((r) => r.expect === 'REJECT').length, 11);
 process.stdout.write(JSON.stringify({ status: 'SOURCE_FREE_CONTRACT_ONLY', compiler_executed: false, backends_verified: [], fixtures: records }, null, 2) + '\n');
