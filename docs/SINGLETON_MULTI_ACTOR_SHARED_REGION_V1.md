@@ -23,7 +23,7 @@ Mutable cross-actor sharing is a *distinct runtime-owned shared region* backed b
 
 ## Source-free reference oracle included in the local artifact
 
-`multi-actor-shared-region-v1.mjs` + `multi-actor-shared-region-v1.test.mjs` model immutable singleton publication and three trusted actors registered on distinct memory slices. The Node 22 local baseline runs 23 focused tests (plus a bounded matrix of 12 queue/reader capacity combinations). It catches singleton alias publication, cycle swallowed by initializer, forged/cross-host identity, stale delegated grants, writer/read conflicts, writer barriers, quotas, transfer during loans, stop during active access, stale incarnation, reclaimed memory and retained ticket maps.
+`multi-actor-shared-region-v1.mjs` + `multi-actor-shared-region-v1.test.mjs` model immutable singleton publication and three trusted actors registered on distinct memory slices. The prior Node 22 local baseline ran 23 focused tests (including a bounded matrix of 12 queue/reader capacity combinations). The current branch authors 29 focused tests; the additional 6 are **not yet certified by executed current-head CI**. It catches singleton alias publication, cycle swallowed by initializer, forged/cross-host identity, stale delegated grants, writer/read conflicts, writer barriers, quotas, transfer during loans, stop during active access, stale incarnation, reclaimed memory and retained ticket maps.
 
 The model is *not* a real concurrent RW lock, compiler/MIR borrow checker, native memory allocator, Java/Graal guest, LLVM compiled guest, Wasm cross-worker implementation, .NET NativeAOT, Forge/Cranelift JIT, or formal proof. The trusted host/test harness is deliberately **not** an interface that guest code may invoke. Its test introspection methods do not create production security authority.
 
@@ -37,3 +37,48 @@ The model is *not* a real concurrent RW lock, compiler/MIR borrow checker, nativ
 6. Require exact source tree, compiler checksum, nonzero runner/job steps, guest binaries/digests, sanitizer receipts, reviewer authorization, and fail-closed `NOT_EXECUTED` if infrastructure fails. No cross-org private source export without explicit approved destination and independent approval.
 
 **Repository references:** conformance PRs #242, #255, #256, #651, #656; Java PRs #2316, #2747, #2749; LLVM #1203; .NET #267; Wasm #191; Forge #146 and #159.
+
+## 2026-11-11 reconciliation with actor/supervisor model #656
+
+This branch **does not supersede** #656. Its one-owner/many-reader or one-writer
+rule, one-use authenticated grants, FIFO writer barrier, no read-to-write upgrade,
+failure-atomic admission, STOP/logical revocation and physical retirement fences
+must be interpreted identically. #656 additionally models lexical alias trees,
+owner raw field access, supervisor physical turns and bounded model interleavings.
+Those source-only proofs do **not** automatically carry over to this model.
+
+The cross-slice multi-actor model adds the following explicit hardening:
+
+- Ending a logical execution revokes all unused grants addressed to that exact
+  execution handle. Otherwise a dead recipient could permanently occupy the
+  grant quota and prevent a quiescent owner transfer. An execution's reuse of
+  the same textual ID cannot revive the old capability.
+- Cross-region nested loans are rejected in both acquisition orders, **before**
+  consuming any authorization, until a common global lock-order proof exists.
+  This remains a conservative denial, not a claimed ordered-lock implementation.
+- Cancellation followed by actor STOP cancels queue reservations but never
+  pretends an active writer's physical loan has unwound.
+- A separate trusted-scheduler beginRegionTurn / endRegionTurn model pins
+  physical activity even when the lexical loan has already been released.
+  Owner move and STOP reclamation require this pin to reach zero. Duplicate
+  completion, quota overflow and direct untrusted invocation are denied.
+  This **models** guest turns; it is not an OS lock or host callback/FFI pin.
+- Fairness tests exercise **3, 7 and 15** independent actor memory slices after
+  an already queued writer, with assertions that none barges ahead of it.
+
+**Current head evidence boundary:** 29 test cases are committed, not confirmed
+executed. The new same-repository exact-head workflow records the head SHA,
+Git tree, Git blobs and run ID and demands a nonzero-step Node 22 run with
+29/29 passing and no skips/cancellations. Initial workflow run
+[43030694512](https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/actions/runs/43030694512)
+finished as a runner-admission failure: job 130556649404 reported steps=null.
+It is **NOT_EXECUTED**, not an implementation failure or success.
+The #656 focused **44/44 hosted** source-free receipt is not a result for
+this distinct PR head. Its general harness's **13 actual failures** remain
+independent conformance blockers.
+
+**Still missing:** actual Java/Graal singleton code generation, authenticated
+runtime shared-region allocation, NLL/borrow and effect lowering, real scheduler
+pin/FFI callback fencing, crash-safe native/Wasm/.NET admission, full-AOT guest
+execution, independent review and a successful exact-head hosted runner.
+No cross-organization private-source transfer is authorized by this PR.
