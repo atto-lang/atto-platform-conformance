@@ -10,7 +10,7 @@ import {assessGuardReceipt, gitBlob, validateGuardContract}
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const contract = JSON.parse(readFileSync(join(root, "contracts/guard-v1.json"), "utf8"));
 const pins = {
-  "scalar-success": "c86ac476e55074031c0bcda02f5eaf3cb1399477",
+  "scalar-success": "e2344e360ac643e25df7ca14eb01432929cecbe5",
   "failure-must-exit": "1ff87aa95ed2537839347e80984c69ae46fdfa17",
   "no-else": "b2bbee98cd3b95ac19462b4efd95a2e98b469154",
 };
@@ -20,6 +20,9 @@ test("source exact-blobs match five compiler repository fixtures, but prove no g
   assert.deepEqual(validateGuardContract(contract, root), pins);
   assert.deepEqual(Object.keys(contract.backends).sort(), ["forge","java","llvm","net","wasm"]);
   assert.equal(contract.receipts.length, 0);
+  const canonical = readFileSync(join(root, "fixtures/guard-v1/canonical-scalar.atto"), "utf8");
+  assert.match(canonical, /\\bx neq 5\\b/);
+  assert.doesNotMatch(canonical, /\\bx != 5\\b/);
   for (const [name, x] of Object.entries(contract.backends)) {
     assert.ok(["AUTHORED_UNVERIFIED","REJECTION_ONLY_UNVERIFIED","CONTRACT_ONLY"].includes(x.state), name);
   }
