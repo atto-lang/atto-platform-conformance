@@ -5,7 +5,7 @@
 ```atto
 namespace foo;
 
-pub declare actor Foo implements ActorXYZ;
+declare pub actor Foo implements ActorXYZ;
 
 define state on actor Foo as {
     let int x: 5;
@@ -24,7 +24,7 @@ pub mtd (Foo f) increment(): void {
 }
 ```
 
-**Syntax stage only:** the full example above is NOT currently an executable
+`pub declare actor Foo;` is invalid: declaration modifiers follow `declare`, just as in `declare pub actor Foo;`.\n\n**Syntax stage only:** the full example above is NOT currently an executable
 Atto program. Contract witness linking, attached state loan/MIR lowering and
 out-of-line actor dispatch have distinct proof gates.
 
@@ -33,7 +33,7 @@ out-of-line actor dispatch have distinct proof gates.
 the contract. `define actor Foo as ... end` remains the full inline
 implementation form. `define actor Foo;` must be rejected to distinguish
 these states. Public out-of-line APIs require an explicitly public actor type
-(`pub declare actor Foo;`).
+(`declare pub actor Foo;`).
 
 ## State and method authority
 
