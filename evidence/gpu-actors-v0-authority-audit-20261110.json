@@ -1,0 +1,66 @@
+{
+  "schema": "attolang.gpu-actor-v0-authority-conformance/1",
+  "date": "2026-11-10",
+  "source": {
+    "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+    "pr": 1672,
+    "head": "95c41b782de1b533157c19f3184911ed8bc672c3",
+    "branch": "audit/gpu-opencl-v0-authority-boundary-20261110",
+    "basePr": 1669,
+    "shaV0": "75a15383c3f7ca2d098aa10e7d71b950c7653b66",
+    "shaNegative": "8a24bd5f48938403958b013f93afaeff8c97d463",
+    "shaGate": "6f646cfeeaf2557204a4d09f03684fd4197bf3ef",
+    "shaCMake": "855004eba014805f2dd2902edfc3b41de7c44776"
+  },
+  "ci": {
+    "carrierRepo": "scintilla-run/scintilla-run-e2e",
+    "branch": "carrier/gpu-opencl-v0-authority-20261110",
+    "runId": 42953785708,
+    "url": "https://github.com/scintilla-run/scintilla-run-e2e/actions/runs/42953785708",
+    "jobId": 130303966836,
+    "sourceBlobVerification": "PASS",
+    "privateTokenFreeMirror": true,
+    "gccAsanUbsan": "PASS",
+    "clang": "PASS",
+    "v0ChecksPerCompiler": 6257,
+    "v1ChecksPerCompiler": 6329,
+    "v2ChecksPerCompiler": 128,
+    "preexistingOpenClG3": "PASS_GCC_SANITIZERS",
+    "negativeV0PrivateGcc": "PASS",
+    "negativeV0PrivateClang": "PASS",
+    "cmakeStandaloneGateGcc": "PASS",
+    "cmakeStandaloneGateClang": "PASS",
+    "completeRepositoryCTest": "NOT_EXECUTED"
+  },
+  "behavior": {
+    "v0ProofMethodsPrivateByDefault": true,
+    "friendRegistry": "GpuActorQuarantineRegistryV1",
+    "legacyHostTestOnlyMacro": true,
+    "nativeMaliciousProviderPrevented": false,
+    "actualDeviceEventAttested": false
+  },
+  "hardware": {
+    "physicalProbeBuilt": true,
+    "attempted": true,
+    "gpuFound": false,
+    "exitCode": 77,
+    "physicalEventExecuted": false,
+    "cpuFallback": false
+  },
+  "backends": {
+    "llvm": "GUEST_GPU_NOT_EXECUTED",
+    "java": "GUEST_GPU_NOT_EXECUTED",
+    "net": "GUEST_GPU_NOT_EXECUTED",
+    "wasm": "GUEST_GPU_NOT_EXECUTED",
+    "forge": "GUEST_GPU_NOT_EXECUTED"
+  },
+  "blockedOn": [
+    "physical GPU driver/event attestation",
+    "native provider trust and test macro release policy",
+    "supervised crash-durable recovery",
+    "executable compiled GPU actor MIR/AOT",
+    "full source repo CMake/CTest and backend conformance"
+  ],
+  "releaseReady": false,
+  "draftOnly": true
+}
