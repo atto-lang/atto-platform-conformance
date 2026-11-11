@@ -163,6 +163,20 @@
       "guestKind": "node-esm-v2",
       "scopeIsFullRepo": false,
       "evidenceClass": "compiled-guest-subset"
+    },
+    {
+      "backend": "rs",
+      "scope": "real Rust/Cranelift native object compiler rejects ten unsupported map/match programs; baseline scalar 42 emits ELF",
+      "sourceSha": "5f1894c5e829e1f190498c91dd0c4dde9e48a3e6",
+      "sourcePr": 60,
+      "carrierSha": "30038861f25f3e88c87a3c87d4611aaec66b8aec",
+      "carrierRun": 43037382611,
+      "carrierJob": 130579717954,
+      "sourceBlobs": 18,
+      "selectedTests": 2,
+      "guestKind": "rust-cranelift-native-elf-object-scalar-only",
+      "scopeIsFullRepo": false,
+      "evidenceClass": "compile-reject-safety-subset"
     }
   ],
   "knownDivergences": [
