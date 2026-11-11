@@ -8,23 +8,57 @@
   "backends": {
     "java": {
       "repository": "ores-truffle-oreslang/oreslang-source.java",
-      "status": "NOT_EXECUTED"
+      "status": "NOT_EXECUTED",
+      "tier": "core-target",
+      "guestFlow": "NOT_IMPLEMENTED_OR_UNVERIFIED"
     },
     "llvm": {
       "repository": "ores-truffle-oreslang/oreslang-source.llvm",
-      "status": "NOT_EXECUTED"
+      "status": "NOT_EXECUTED",
+      "tier": "core-target",
+      "guestFlow": "NOT_IMPLEMENTED_OR_UNVERIFIED"
     },
     "wasm": {
       "repository": "ores-truffle-oreslang/oreslang-source.wasm",
-      "status": "NOT_EXECUTED"
+      "status": "NOT_EXECUTED",
+      "tier": "core-target",
+      "guestFlow": "NOT_IMPLEMENTED_OR_UNVERIFIED"
     },
     "forge": {
       "repository": "ores-truffle-oreslang/oreslang-source.forge",
-      "status": "NOT_EXECUTED"
+      "status": "NOT_EXECUTED",
+      "tier": "core-target",
+      "guestFlow": "NOT_IMPLEMENTED_OR_UNVERIFIED"
     },
     "net": {
       "repository": "ores-truffle-oreslang/oreslang-source.net",
-      "status": "NOT_EXECUTED"
+      "status": "NOT_EXECUTED",
+      "tier": "core-target",
+      "guestFlow": "NOT_IMPLEMENTED_OR_UNVERIFIED"
+    },
+    "js": {
+      "repository": "ores-truffle-oreslang/oreslang-source.js",
+      "status": "NOT_EXECUTED",
+      "tier": "worker-adapter-target",
+      "guestFlow": "NOT_IMPLEMENTED_OR_UNVERIFIED"
+    },
+    "rs": {
+      "repository": "ores-truffle-oreslang/oreslang-source.rs",
+      "status": "NOT_EXECUTED",
+      "tier": "scalar-fail-closed",
+      "guestFlow": "NOT_IMPLEMENTED_OR_UNVERIFIED"
+    },
+    "cranelift": {
+      "repository": "ores-truffle-oreslang/oreslang-source.cranelift",
+      "status": "NOT_EXECUTED",
+      "tier": "scalar-fail-closed",
+      "guestFlow": "NOT_IMPLEMENTED_OR_UNVERIFIED"
+    },
+    "hdl": {
+      "repository": "ores-truffle-oreslang/oreslang-source.hdl",
+      "status": "NOT_EXECUTED",
+      "tier": "hardware-fail-closed",
+      "guestFlow": "NOT_IMPLEMENTED_OR_UNVERIFIED"
     }
   },
   "cases": [
@@ -152,5 +186,36 @@
       "artifact_sha256"
     ],
     "rule": "No case is PASS from the manifest alone. Shape-complete receipts require independently verified exact-source provenance, real nonzero-step guest execution and compatible output. Source-free model results are not guest evidence."
+  },
+  "scopePolicy": {
+    "coreToolchains": [
+      "java",
+      "llvm",
+      "wasm",
+      "forge",
+      "net"
+    ],
+    "workerAdapters": [
+      "js"
+    ],
+    "subsetCompilers": [
+      "rs",
+      "cranelift"
+    ],
+    "hardwareSubset": [
+      "hdl"
+    ],
+    "candidateImplementationPrs": {
+      "java": 2852,
+      "llvm": 1675,
+      "wasm": 466,
+      "forge": 256,
+      "net": 475,
+      "js": 242,
+      "rs": 55,
+      "cranelift": 106,
+      "hdl": 37
+    },
+    "limits": "Source/runtime host tests, compiler-negative tests and target documentation are NOT equivalent to compiled source-level Flow/Subscription execution. The native-fusion-no-tracing-gc memory profile is only relevant to explicitly zero-tracing-GC native targets, not Java, JS, Wasm or .NET."
   }
 }
