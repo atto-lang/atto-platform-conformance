@@ -29,7 +29,8 @@ for (const fixture of contract.fixtures) {
   const bytes = readFileSync(absolute);
   const source = bytes.toString('utf8');
   assert.ok(source.includes('namespace '), fixture.id);
-  assert.ok(source.includes('define actor ') || source.includes('define pub actor '), fixture.id);
+  assert.ok(source.includes('declare actor ') || source.includes('declare pub actor ')
+    || source.includes('define actor '), fixture.id);
   assert.ok(source.includes('external '), fixture.id);
   assert.ok(fixture.expect === 'ACCEPT' || fixture.expect === 'REJECT', fixture.id);
   if (fixture.expect === 'REJECT') {
