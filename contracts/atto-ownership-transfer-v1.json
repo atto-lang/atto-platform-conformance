@@ -1,0 +1,182 @@
+{
+  "schemaVersion": 1,
+  "contract": "atto-ownership-transfer-v1",
+  "status": "candidate-unattested",
+  "sourceExtension": ".atto",
+  "backendTargets": [
+    "java",
+    "llvm",
+    "wasm",
+    "forge",
+    "net"
+  ],
+  "syntax": {
+    "take": "rt take x",
+    "borrow": "rt borrow x",
+    "mutableBorrow": "rt mut borrow x",
+    "copy": "rt copy x",
+    "share": "rt share x",
+    "standaloneMoveKeyword": false
+  },
+  "invariants": [
+    "rt take consumes the original owner exactly once",
+    "Independent Task non-Copy capture transfers at submission, never at await",
+    "Deferred channel callbacks transfer owned captures at registration",
+    "val is fixed and mutable; let rebindable and read-only; let mut both; const fixed and read-only",
+    "Failed full or closed bounded mailbox admission preserves original sender ownership",
+    "Independent Task cannot capture non-Send, borrowed, actor self, or actor-state guards",
+    "Copy-safe scalar capture must not poison source binding",
+    "A parser-only rejection never establishes semantic ownership safety"
+  ],
+  "cases": [
+    {
+      "id": "take-local-ok",
+      "expectation": "accept",
+      "phase": "compiler-runtime",
+      "fixture": "fixtures/atto-ownership-transfer-v1/take-local-ok.atto",
+      "requiredEvidence": "real-compiler-and-guest-execution",
+      "attestation": "unattested"
+    },
+    {
+      "id": "take-use-after-reject",
+      "expectation": "reject",
+      "phase": "compiler",
+      "fixture": "fixtures/atto-ownership-transfer-v1/take-use-after-reject.atto",
+      "requiredEvidence": "semantic-ownership-or-mutability-diagnostic",
+      "attestation": "unattested"
+    },
+    {
+      "id": "take-twice-reject",
+      "expectation": "reject",
+      "phase": "compiler",
+      "fixture": "fixtures/atto-ownership-transfer-v1/take-twice-reject.atto",
+      "requiredEvidence": "semantic-ownership-or-mutability-diagnostic",
+      "attestation": "unattested"
+    },
+    {
+      "id": "val-fixed-mutable-ok",
+      "expectation": "accept",
+      "phase": "compiler-runtime",
+      "fixture": "fixtures/atto-ownership-transfer-v1/val-fixed-mutable-ok.atto",
+      "requiredEvidence": "real-compiler-and-guest-execution",
+      "attestation": "unattested"
+    },
+    {
+      "id": "val-rebind-reject",
+      "expectation": "reject",
+      "phase": "compiler",
+      "fixture": "fixtures/atto-ownership-transfer-v1/val-rebind-reject.atto",
+      "requiredEvidence": "semantic-ownership-or-mutability-diagnostic",
+      "attestation": "unattested"
+    },
+    {
+      "id": "let-readonly-mutation-reject",
+      "expectation": "reject",
+      "phase": "compiler",
+      "fixture": "fixtures/atto-ownership-transfer-v1/let-readonly-mutation-reject.atto",
+      "requiredEvidence": "semantic-ownership-or-mutability-diagnostic",
+      "attestation": "unattested"
+    },
+    {
+      "id": "let-mut-rebind-ok",
+      "expectation": "accept",
+      "phase": "compiler-runtime",
+      "fixture": "fixtures/atto-ownership-transfer-v1/let-mut-rebind-ok.atto",
+      "requiredEvidence": "real-compiler-and-guest-execution",
+      "attestation": "unattested"
+    },
+    {
+      "id": "mut-borrow-canonical-ok",
+      "expectation": "accept",
+      "phase": "compiler-runtime",
+      "fixture": "fixtures/atto-ownership-transfer-v1/mut-borrow-canonical-ok.atto",
+      "requiredEvidence": "real-compiler-and-guest-execution",
+      "attestation": "unattested"
+    },
+    {
+      "id": "borrow-task-capture-reject",
+      "expectation": "reject",
+      "phase": "compiler",
+      "fixture": "fixtures/atto-ownership-transfer-v1/borrow-task-capture-reject.atto",
+      "requiredEvidence": "semantic-ownership-or-mutability-diagnostic",
+      "attestation": "unattested"
+    },
+    {
+      "id": "task-owner-moved-at-submit-reject",
+      "expectation": "reject",
+      "phase": "compiler",
+      "fixture": "fixtures/atto-ownership-transfer-v1/task-owner-moved-at-submit-reject.atto",
+      "requiredEvidence": "semantic-ownership-or-mutability-diagnostic",
+      "attestation": "unattested"
+    },
+    {
+      "id": "task-copy-scalar-ok",
+      "expectation": "accept",
+      "phase": "compiler-runtime",
+      "fixture": "fixtures/atto-ownership-transfer-v1/task-copy-scalar-ok.atto",
+      "requiredEvidence": "real-compiler-and-guest-execution",
+      "attestation": "unattested"
+    },
+    {
+      "id": "callback-owned-capture-reject",
+      "expectation": "reject",
+      "phase": "compiler",
+      "fixture": "fixtures/atto-ownership-transfer-v1/callback-owned-capture-reject.atto",
+      "requiredEvidence": "semantic-ownership-or-mutability-diagnostic",
+      "attestation": "unattested"
+    },
+    {
+      "id": "callback-copy-scalar-ok",
+      "expectation": "accept",
+      "phase": "compiler",
+      "fixture": "fixtures/atto-ownership-transfer-v1/callback-copy-scalar-ok.atto",
+      "requiredEvidence": "real-compiler-typecheck",
+      "attestation": "unattested"
+    },
+    {
+      "id": "channel-double-take-reject",
+      "expectation": "reject",
+      "phase": "compiler",
+      "fixture": "fixtures/atto-ownership-transfer-v1/channel-double-take-reject.atto",
+      "requiredEvidence": "semantic-ownership-or-mutability-diagnostic",
+      "attestation": "unattested"
+    },
+    {
+      "id": "actor-self-task-capture-reject",
+      "expectation": "reject",
+      "phase": "compiler",
+      "fixture": "fixtures/atto-ownership-transfer-v1/actor-self-task-capture-reject.atto",
+      "requiredEvidence": "semantic-ownership-or-mutability-diagnostic",
+      "attestation": "unattested"
+    },
+    {
+      "id": "borrow-across-await-reject",
+      "expectation": "reject",
+      "phase": "compiler",
+      "fixture": "fixtures/atto-ownership-transfer-v1/borrow-across-await-reject.atto",
+      "requiredEvidence": "semantic-ownership-or-mutability-diagnostic",
+      "attestation": "unattested"
+    }
+  ],
+  "promotion": {
+    "identicalFixtureIdsAcrossFiveBackends": true,
+    "realCompilerTypecheckRequired": true,
+    "semanticDiagnosticRequiredForRejections": true,
+    "parserOnlyRejectionCounts": false,
+    "actualGuestRequiredForRuntimeCases": true,
+    "hostOracleCountsAsGuest": false,
+    "exactSourceHeadTreeAndBlobRequired": true,
+    "nonzeroExecutedStepsRequired": true,
+    "javaAndNetAotRequired": true,
+    "llvmAndForgeSanitizersRequired": true,
+    "wasmWorkerRequired": true,
+    "privateSourceMirrorRequiresSecurityApproval": true
+  },
+  "evidence": {
+    "java": "unattested",
+    "llvm": "unattested",
+    "wasm": "unattested",
+    "forge": "unattested",
+    "net": "unattested"
+  }
+}
