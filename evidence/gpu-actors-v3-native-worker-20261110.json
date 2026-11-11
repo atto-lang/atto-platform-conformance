@@ -7,7 +7,7 @@
     "v0MigrationPr": 1677,
     "v0Head": "5976141aa245f275377f6e80542dff44017e8d43",
     "workerPr": 1678,
-    "workerHead": "fa708f7b4426375b2fa7a3c6c6703b74fdfa725b",
+    "workerHead": "963f274c1d94d7d19cff0f1f9b81ded14933c2aa",
     "stack": [
       "#1650 host credit/fence bridge",
       "#1652 V1 event provenance and quarantine",
@@ -20,10 +20,12 @@
     "sourceHashes": {
       "GpuActorHostTurnBridgeV0.hpp": "f49fcb2bfea035ac504ea3e58dc207980df8eb91",
       "gpu_actor_host_turn_bridge_v0_test.cpp": "57294886d72b8b1ff62ef4e07b654774fcb7e2b5",
-      "GpuActorOpenClProviderV2.hpp": "effa0a2d4dcf5a236780a6d9b0579a8430e8c8e0",
+      "GpuActorOpenClProviderV2.hpp": "78253690fcdc896f2246f266bab7083f6bb1e014",
       "GpuActorOpenClRecoveryWorkerV1.hpp": "f7eef7f03a16bd664863ff9be1f850a00be3af49",
-      "gpu_actor_opencl_provider_v2_test.cpp": "9c378919c7767efd4f5b8b4603258c206c710a20",
-      "CMakeLists.txt": "b0d1fee0b7cfaeb6e30caddce4f778299b68cd01"
+      "gpu_actor_opencl_provider_v2_test.cpp": "650886eb2dc85b0b902c48d6d6b5db94dfeebf20",
+      "CMakeLists.txt": "2cda0040c6ffcd353b7613e785c70554d5642954",
+      "gpu_actor_recovery_authority_negative.cpp": "be93e3792a516ebe871046806c9dbc5cad56b12b",
+      "GpuActorRecoveryAuthorityGate.cmake": "0d9775504c84566a3e855fcc2c0d778cd7187ad6"
     },
     "workerTreeSha": "4d7a9b6971492141c011143632e7e82fa4c5254a",
     "stackCorrectlyParentedOnP0": true
@@ -33,16 +35,16 @@
     "branch": "carrier/gpu-native-worker-v3-20261110",
     "exactShaVerified": true,
     "sourceAccess": "connector-mirror-no-cross-org-secrets",
-    "head": "b132927c82759603b59c8b94c4b35e4ff7b073b6",
-    "runId": 42958180311,
-    "jobId": 130318167381,
-    "url": "https://github.com/scintilla-run/scintilla-run-e2e/actions/runs/42958180311"
+    "head": "7f8e0e2d237b89646ba427a40e4128939c0a1bb7",
+    "runId": 42959491252,
+    "jobId": 130322389355,
+    "url": "https://github.com/scintilla-run/scintilla-run-e2e/actions/runs/42959491252"
   },
   "executed": {
     "gccAsanUbsan": "PASS",
     "clangStrict": "PASS",
     "assertionsEachCompiler": {
-      "openclV2": 144,
+      "openclV2": 156,
       "actorV1": 6329,
       "migratedV0": 1169
     },
@@ -58,15 +60,21 @@
     },
     "repositoryHostOnlyCMakeCTest": {
       "gcc": {
-        "passed": 5,
-        "total": 5
+        "passed": 6,
+        "total": 6
       },
       "clang": {
-        "passed": 5,
-        "total": 5
+        "passed": 6,
+        "total": 6
       }
     },
-    "fullCompilerCTest": "NOT_EXECUTED"
+    "fullCompilerCTest": "NOT_EXECUTED",
+    "recoveryAuthorityNegative": {
+      "gcc": "PASS",
+      "clang": "PASS",
+      "cmakeGcc": "PASS",
+      "cmakeClang": "PASS"
+    }
   },
   "safetyChecks": {
     "legacyV0TestMacroRemoved": true,
@@ -77,7 +85,9 @@
     "nativeClFinishOutsideAdapterMutex": true,
     "actorSchedulerCanPollWhileRecoveryBlocked": true,
     "failedRecoveryNeverCommitsStagedState": true,
-    "hardwareEventAttested": false
+    "hardwareEventAttested": false,
+    "nativeRecoveryMethodsPrivateToWorkerFriend": true,
+    "unprivilegedNativeRecoveryCallsCompileNegative": true
   },
   "physical": {
     "nativeGpuProbeBuilt": true,
