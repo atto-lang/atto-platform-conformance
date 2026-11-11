@@ -73,6 +73,32 @@ Safety invariants: (a) `receive_count_before_ready = 0`; (b) `init_count_per_inc
 - Java/Graal [#2786](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2786) and [#2792](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2792): private mailbox signatures and actor contract visibility rules (draft).
 - LLVM `main` still compiles only its fixed `pub on_message(int): int` scalar actor subset. `.net`, `.wasm` and `.forge` require independent compiler/source-actor checks; host runtime behavior is not proof of frontend parity.
 
+## Java opt-in stateless execution experiment (non-promoting)
+
+Java [#2889](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2889)
+now contains an opt-in, same-source **stateless** declared-actor lowering
+prototype using `OresCompiler.parseAndTypeCheckStatelessDeclaredActors`.
+It admits only canonical `declare actor`, a single inert private
+`external init(): void { return; }`, and a single typed private
+`external receive(ActorMail<T>)`. It produces a type- and ownership-checked
+internal executable actor and dispatches through the existing actor runtime.
+Normal compilation remains fail-closed.
+
+The source-runtime actor cell has a new once-only lifecycle gate for init,
+mailbox, teardown and terminal retirement. In a local, isolated Java 21
+experiment, an exact Git blob copy of that gate compiled against a small
+`ActorRuntime` API stub and executed 18 assertions. This is **not**
+Java/GraalVM JUnit, full actor guest execution or backend conformance.
+
+The Java PR adds an authored real JVM guest regression test for this
+opt-in subset; **it has not run** because the exact-head source-org Actions
+job continues to fail with no runner and zero executed steps. It does not
+implement state builders, sealed actor state, verified multi-file executable
+attachments, arbitrary out-of-line methods, typed `implements` witnesses,
+native-image parity or the four other backends. Therefore none of the
+14 conformance fixtures is promoted to `GUEST_EXECUTED` by this experiment,
+and the overall five-backend matrix remains **UNVERIFIED**.
+
 ## Required backend acceptance
 
 For **each** of Java/GraalVM AOT, LLVM native AOT, .NET NativeAOT, Wasm and Forge: parse and retain external metadata; typecheck positive and negative fixtures in `contracts/actor-external-entrypoints-v1.json`; prove actual emitted actor startup and mailbox guest execution; reject direct/fake ingress and stale generations; verify init failure supervision and stop/restart; provide exact SHA + executed job steps + test artifacts. `AUTHORED`, `PARSED`, `STATIC_BOUND` or `SOURCE_FREE_MODEL` evidence is not `GUEST_EXECUTED`.
