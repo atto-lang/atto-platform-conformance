@@ -93,7 +93,8 @@ export class BatchPersistenceSidecar {
       'FROM snapshots WHERE tenant=? AND actor=? AND state_name=?'
     );
     this.getReplayUsage = this.db.prepare(
-      'SELECT COUNT(*) AS event_count,COALESCE(SUM(length(payload)),0) AS bytes '+
+      'SELECT COUNT(*) AS event_count,COALESCE(SUM(length(payload)),0) AS bytes,'+
+      'MIN(version) AS first_version,MAX(version) AS last_version '+
       'FROM events WHERE tenant=? AND actor=? AND state_name=? AND version>?'
     );
     this.putSnapshot = this.db.prepare('INSERT INTO snapshots(tenant,actor,state_name,version,schema_version,payload,payload_hash,operation_digest) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(tenant,actor,state_name) DO UPDATE SET version=excluded.version, schema_version=excluded.schema_version, payload=excluded.payload, payload_hash=excluded.payload_hash, operation_digest=excluded.operation_digest');
@@ -374,6 +375,14 @@ export class BatchPersistenceSidecar {
     if(snapshot)this.#verifySnapshot(tenantId,actor,stateName,snapshot);
     const usage=this.getReplayUsage.get(tenantId,actor,stateName,checkpoint);
     if(!uint(usage.event_count)||!uint(usage.bytes))fail('INVALID_ACTOR_JOURNAL');
+    // A missing stream row must not create imaginary replay capacity.
+    // These comparisons are O(1) after the indexed COUNT/MIN/MAX scan
+    // and enforce the contiguous version range without loading BLOB bytes.
+    if(usage.event_count!==head-checkpoint ||
+       (usage.event_count>0 &&
+        (usage.first_version!==checkpoint+1 || usage.last_version!==head)) ||
+       (usage.event_count===0 && head!==checkpoint))
+      fail('INCOMPLETE_ACTOR_JOURNAL');
     return usage.event_count<=10000-newCount &&
       usage.bytes<=16777216-newBytes;
   }
