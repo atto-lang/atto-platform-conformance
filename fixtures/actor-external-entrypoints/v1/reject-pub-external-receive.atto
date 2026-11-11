@@ -1,6 +1,6 @@
 // ACTOR_EXTERNAL_LIFECYCLE_PRIVATE: external mailbox entry is not public RPC.
 namespace actor_external_bad_public_receive;
-define pub actor Worker;
+declare pub actor Worker;
 define pub external mtd (Worker w) receive(ActorMail<int> mail): void {
     return;
 }
