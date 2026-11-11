@@ -2,7 +2,7 @@
 // IMPORTANT: Validating self-reported metadata and captured bytes is NOT execution
 // attestation; the trusted CI/GitHub verifier must independently corroborate them.
 import { createHash } from 'node:crypto';
-import { openSync, closeSync, fstatSync, readSync, constants } from 'node:fs';
+import { openSync, closeSync, fstatSync, lstatSync, readSync, constants } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -234,6 +234,8 @@ export function verifyReceipt(receipt, capture) {
 function boundedFile(path) {
   let fd;
   try {
+    demand(!lstatSync(resolve(path)).isSymbolicLink(),
+      'receipt/stdout symlink denied on all targets');
     fd = openSync(resolve(path), constants.O_RDONLY | (constants.O_NOFOLLOW || 0));
   } catch {
     demand(false, 'unable to open bounded, regular, nonsymlinked receipt/stdout file');
