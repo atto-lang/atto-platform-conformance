@@ -10,7 +10,7 @@ import {BatchPersistenceSidecar} from './sidecar.mjs';
 const tenantId='tenant-migration', actor='old-account', stateName='ledger';
 const sha=(bytes)=>createHash('sha256').update(bytes).digest('hex');
 
-function oldFixture(body,{seedSnapshot=false,seedCommand=false}={}) {
+function oldFixture(body,{seedSnapshot=false,seedCommand=false,seedEvent=false}={}) {
   const dir=mkdtempSync(join(tmpdir(),'atto-old-persist-'));
   const path=join(dir,'legacy.sqlite');
   try {
@@ -48,6 +48,13 @@ function oldFixture(body,{seedSnapshot=false,seedCommand=false}={}) {
         .run(tenantId,actor,stateName,1,1,Buffer.from('balance=100'));
       raw.prepare('INSERT INTO operations VALUES(?,?,?,?,?,?,?)')
         .run(tenantId,actor,stateName,'old-snapshot','legacy-digest',1,'snapshot');
+    }
+    if(seedEvent) {
+      const e=Buffer.from('balance=5');
+      raw.prepare('INSERT INTO events VALUES(?,?,?,?,?,?,?)')
+        .run(tenantId,actor,stateName,1,1,'old-event',e);
+      raw.prepare('INSERT INTO operations VALUES(?,?,?,?,?,?,?)')
+        .run(tenantId,actor,stateName,'old-event','old-event-digest',1,'event');
     }
     if(seedCommand) {
       const commandBytes=Buffer.from('deposit:100');
@@ -95,4 +102,17 @@ test('pre-upgrade command record without digests can never become a durable dupl
       /UNVERIFIED_COMMAND_RECORD/);
     assert.equal(db.db.prepare('SELECT COUNT(*) AS n FROM events').get().n,0);
   },{seedCommand:true});
+});
+
+
+test('pre-upgrade event lacking original epoch cannot be certified by reconstructed metadata',()=>{
+  oldFixture(db=>{
+    const record=db.db.prepare('SELECT origin_epoch,payload_hash FROM operations WHERE op_id=?')
+      .get('old-event');
+    assert.equal(record.origin_epoch,null);
+    assert.equal(record.payload_hash,null);
+    assert.throws(()=>db.loadFenced({tenantId,actor,stateName,epoch:1}),
+      /UNVERIFIED_LEGACY_EVENT/);
+    assert.equal(db.db.prepare('SELECT COUNT(*) AS n FROM events').get().n,1);
+  },{seedEvent:true});
 });
