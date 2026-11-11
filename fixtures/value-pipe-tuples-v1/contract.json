@@ -1,0 +1,50 @@
+{
+  "schema": "atto.conformance.value-pipe-tuples/v1",
+  "source_pr": "ores-truffle-oreslang/oreslang-source.java#2798",
+  "verified_java_source_head": "1a5aef1eca85f50f17b55e6926a6f49e23a4e28c",
+  "source_file_identity": "git-blob-sha1",
+  "scope_note": "Fixture bytes are identical to those used by the independently executed Java/GraalVM funded mirror; success on one backend does not imply another backend's guest AOT parity.",
+  "positive": {
+    "path": "positive-tuple-pipeline.atto",
+    "git_blob_sha1": "09b15dad59e556079bc5312cff4131134d9e38f7",
+    "stdout": "39\n"
+  },
+  "negative": [
+    {
+      "path": "negative/named-function-no-flatten.atto",
+      "git_blob_sha1": "3c216290e3efa20edf44adc4f596ced83b5b33e5",
+      "diagnostic_family": "callable|arity|parameter|argument|overload|function"
+    },
+    {
+      "path": "negative/scalar-not-tuple.atto",
+      "git_blob_sha1": "66d170340c287f6c75f47e7bfa6aaf3a7c65024e",
+      "diagnostic_family": "tuple|multi-parameter|input|arity"
+    },
+    {
+      "path": "negative/tuple-return-type-mismatch.atto",
+      "git_blob_sha1": "d93352b1304ee8292a9c51d6204e82a7bbe2cc58",
+      "diagnostic_family": "type|assign|mismatch|return|incompatible"
+    },
+    {
+      "path": "negative/tuple-wrong-arity.atto",
+      "git_blob_sha1": "57f7fa9ef8086d783ce54d4fc8ce2f4ec0d2f94b",
+      "diagnostic_family": "tuple|arity|size|element|parameter"
+    }
+  ],
+  "target_backends": [
+    "java-graalvm-native-image-launcher",
+    "llvm-native-guest",
+    "dotnet-nativeaot-guest",
+    "wasm32-guest",
+    "forge-cranelift-guest"
+  ],
+  "evidence_requires": [
+    "compiler_identity",
+    "nonzero_executed_steps",
+    "same_fixture_blob",
+    "real_guest_stdout",
+    "compile_only_negative_admission",
+    "binary_sha256",
+    "artifact_trace"
+  ]
+}
