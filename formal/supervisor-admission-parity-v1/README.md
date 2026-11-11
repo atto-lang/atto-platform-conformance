@@ -7,7 +7,7 @@
 
 | Backend | Draft PR | Source test boundary |
 | --- | --- | --- |
-| Java | [#2785](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2785) | Host escrow permits, ancestor fence, pending tickets, incomplete nested child publish |
+| Java | [#2885](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2885) | Host escrow permits, ancestor fence and atomic inherited child publication authored; real JUnit unexecuted |
 | LLVM | [#1697](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1697) | NativeActorGroup/PriorityActorInbox close vs DATA and physical loan release |
 | .NET | [#485](https://github.com/ores-truffle-oreslang/oreslang-source.net/pull/485) | CLR ActorRuntime send vs STOP, sibling and native budget |
 | Wasm | [#475](https://github.com/ores-truffle-oreslang/oreslang-source.wasm/pull/475) | Real synthetic Wasm Worker supervisor STOP vs DATA, old handle and sibling |
@@ -21,7 +21,7 @@ The `manifest.json` records exact PR heads and **eight** parity cases with expli
 - .NET: 6,144 real CLR host sends raced with actor STOP; one healthy sibling and physical arena allocation returned to zero. NativeAOT guest compilation is not verified.
 - Wasm: 48 real synthetic-Wasm Worker sends raced with explicit supervisor STOP; unrelated sibling, no unexpected restart, stale DATA/STOP denied.
 - Forge: 6,144 native actor owner send/STOP races; native heap/frame budget refund, sibling, stale generation, fresh restart.
-- Java: previously authored 65,536-attempt standalone ledger race harness and 10 real ActorRuntime JUnit tests; note Java remains the only branch with a draft **hierarchical ancestor escrow**, and supervised child spawn is deliberately denied until registration is transactional.
+- Java: previously authored 65,536-attempt standalone ledger race harness and 10 real ActorRuntime JUnit tests; note Java remains the only branch with a draft **hierarchical ancestor escrow**; stacked Java #2885 now authors transactional inherited child registration, without executable certification.
 
 **The above new native host regressions are `AUTHORED_NOT_EXECUTED` on their exact PR heads.** All five org source workflows currently fail with **zero recorded steps**, not compiler diagnostics. No GitHub Actions PASS is claimed.
 
@@ -36,3 +36,9 @@ The `manifest.json` records exact PR heads and **eight** parity cases with expli
 7. Run actual TLA+ TLC and backend trace refinement, exact HEAD and immutable tree/blobs. Keep source/guest/AOT evidence distinguished from model or host-only outcomes.
 
 **No merge recommendation until those conditions are satisfied.** Do not interpret these draft additions as parity certification.
+
+## Shared differential event trace (2026-11-11)
+
+`nested_supervisor_crash.trace.reference.json` defines **19 synthetic reference events**: publish supervised children, accept pre-fence DATA, supervisor panic, ancestor CONTROL notice/fence, settle pre-fence DATA, retire child and supervisor, record claimed physical cleanup, commit decision before ACK, restart fresh generations and prove unrelated sibling progress. The companion `check-differential-trace.mjs` validates ordering and rejects 12 deliberately malformed traces, including stale generations, unsafe reparenting, missing cleanup, premature ACK and post-fence DATA. The **exact fetched source** ran in V8 and passed.
+
+The synthetic `receipt_source` field is **not** proof of actual FFI/native/stack reclamation. Each backend must eventually emit its own `UNVERIFIED_BACKEND_TRACE` events from a real compiled `.atto` guest; additional external signed/independently authenticated evidence is required before changing any stage to CERTIFIED. No real backend guest traces have been attached, and the current hosted workflow continues to depend on runner admission.
