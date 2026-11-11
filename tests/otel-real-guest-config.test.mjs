@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { checkConfiguration, captureReal } from '../bin/run-otel-guest-execution.mjs';
+import { checkConfiguration, captureReal, args, checkGeneratedArtifact } from '../bin/run-otel-guest-execution.mjs';
 import { PROFILES } from '../bin/verify-otel-guest-parity.mjs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 function configuration(profile = 'java-graalvm-jit') {
   return {
@@ -13,8 +16,8 @@ function configuration(profile = 'java-graalvm-jit') {
     compiler_executable: '/nonexistent/compiler',
     compiler_binary_sha256: 'c'.repeat(64),
     dependency_pins: [],
-    compile_argv: ['/nonexistent/compiler', '--check', '{fixture}'],
-    run_argv: ['/nonexistent/compiler', '{fixture}'],
+    compile_argv: ['{compiler}', '--check', '{fixture}', '--out', '{artifact}'],
+    run_argv: ['{compiler}', profile === 'java-graalvm-jit' ? '{fixture}' : '{artifact}'],
     artifact_kind: profile === 'java-graalvm-jit' ? 'source_fixture' : 'generated',
     timeout_ms: 5000,
   };
@@ -63,4 +66,62 @@ test('untrusted dependency pin paths and digests deny', () => {
   c.dependency_pins = [];
   c.artifact_kind = 'unknown-kind';
   denied(() => checkConfiguration(c));
+});
+
+test('forged prototype-name profiles and missing source/run bindings are denied', () => {
+  const c = configuration();
+  for (const profile of ['toString', '__proto__', 'constructor', 'valueOf']) {
+    c.profile = profile;
+    denied(() => checkConfiguration(c));
+  }
+  c.profile = 'java-graalvm-jit';
+  c.compile_argv[0] = '/tmp/other-compiler';
+  denied(() => checkConfiguration(c));
+  c.compile_argv[0] = '{compiler}';
+  c.compile_argv = ['{compiler}', '--version'];
+  denied(() => checkConfiguration(c));
+  c.compile_argv = ['{compiler}', '--check', '{fixture}'];
+  c.run_argv = ['{compiler}', '--version'];
+  denied(() => checkConfiguration(c));
+  const native = configuration('net-native-aot');
+  native.compile_argv = ['{compiler}', '--check', '{fixture}'];
+  denied(() => checkConfiguration(native));
+  native.compile_argv = ['{compiler}', '--out', '{artifact}', '{fixture}'];
+  native.run_argv = ['{compiler}', '--version'];
+  denied(() => checkConfiguration(native));
+});
+
+test('inline interpreter evaluation and preloads cannot impersonate compiled guest', () => {
+  const subs = { compiler: '/trusted/compiler', fixture: '/trusted/fixture',
+    artifact: '/trusted/generated-artifact' };
+  for (const option of ['-e', '--eval', '--eval=code', '-c',
+    '-p', '--print', '--require', '--import', '--input-type=module']) {
+    denied(() => args(['{compiler}', option, 'console.log(1)'], subs, 'guest'));
+  }
+  const cfg = configuration();
+  cfg.run_argv = ['{compiler}', '-e', 'console.log(1)', '{fixture}'];
+  denied(() => checkConfiguration(cfg));
+});
+
+test('native-AOT and wasm artifact header admission rejects scripts and mismatched code', t => {
+  const dir = mkdtempSync(join(tmpdir(), 'otel-artifact-admission-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const artifact = join(dir, 'guest');
+  const set = bytes => writeFileSync(artifact, bytes);
+  set(Buffer.from('#!/bin/sh\necho forged telemetry\n'));
+  for (const profile of ['llvm-native', 'java-graalvm-native-aot',
+    'forge-native', 'net-native-aot', 'wasm-node-worker']) {
+    denied(() => checkGeneratedArtifact(artifact, profile));
+  }
+  set(Buffer.from([0, 0x61, 0x73, 0x6d, 0x01, 0, 0, 0]));
+  assert.equal(checkGeneratedArtifact(artifact, 'wasm-node-worker'), true);
+  denied(() => checkGeneratedArtifact(artifact, 'llvm-native'));
+  set(Buffer.from([0x7f, 0x45, 0x4c, 0x46, 1, 1, 1, 0]));
+  assert.equal(checkGeneratedArtifact(artifact, 'llvm-native'), true);
+  assert.equal(checkGeneratedArtifact(artifact, 'net-native-aot'), true);
+  denied(() => checkGeneratedArtifact(artifact, 'wasm-node-worker'));
+  set(Buffer.from([0x4d, 0x5a, 0x90, 0, 0, 0, 0, 0]));
+  assert.equal(checkGeneratedArtifact(artifact, 'net-native-aot'), true);
+  set(Buffer.from([0xcf, 0xfa, 0xed, 0xfe, 0, 0, 0, 0]));
+  assert.equal(checkGeneratedArtifact(artifact, 'java-graalvm-native-aot'), true);
 });
