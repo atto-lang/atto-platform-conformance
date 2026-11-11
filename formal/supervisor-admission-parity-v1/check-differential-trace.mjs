@@ -134,7 +134,7 @@ const mutations=[
   t=>t.events.splice(17,0,{seq:17.5,kind:"DATA_ADMIT",actor:"a1",generation:2,ticket:"fake"})
 ];
 for(const edit of mutations) {
-  const altered=structuredClone(reference);
+  const altered=JSON.parse(JSON.stringify(reference));
   edit(altered);
   let rejected=false;try{validate(altered);}catch{rejected=true;}
   if(!rejected)throw Error("unsafe trace mutation accepted");
