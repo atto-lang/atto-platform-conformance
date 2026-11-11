@@ -1,0 +1,54 @@
+{
+  "schema": "attolang.erlang_otp.full_aot_fixture_registry.v1",
+  "status": "SOURCE_ONLY_UNEXECUTED",
+  "fixture_root": "fixtures/erlang-otp-full-aot-v1/",
+  "fixture_limit_bytes": 16384,
+  "cases": [
+    {
+      "id": "operator_eq_neq_alias_positive",
+      "file": "operator-positive.atto",
+      "git_blob": "832d839eefbc2a4e9ab65a15882367701886982a",
+      "expected": "AOT_GUEST_RETURN_42",
+      "gate": "P0"
+    },
+    {
+      "id": "operator_reject_cross_numeric",
+      "file": "operator-cross-numeric-reject.atto",
+      "git_blob": "2bfbfe915b89add228f0d2f3827b8cd4774c1089",
+      "expected": "COMPILE_REJECT_NO_IR",
+      "gate": "P0"
+    },
+    {
+      "id": "operator_legacy_equals_strict",
+      "file": "operator-legacy-equals-reject.atto",
+      "git_blob": "ead96ba331627ea83e02338d0d53cd7400198452",
+      "expected": "COMPILE_REJECT_NO_IR",
+      "gate": "AFTER_OPERATOR_MIGRATION"
+    },
+    {
+      "id": "static_value_match_positive",
+      "file": "value-match-positive.atto",
+      "git_blob": "c641c642e2abd8805258feaebe6f0459f69b6163",
+      "expected": "AOT_GUEST_RETURN_42",
+      "gate": "P0"
+    }
+  ],
+  "required_receipts": [
+    "EXACT_COMPILER_HEAD_AND_TREE",
+    "EXACT_FIXTURE_BLOBS",
+    "REAL_COMPILER_FRONTEND",
+    "LINKED_FULL_GUEST_AOT_ARTIFACT",
+    "EXECUTED_GUEST_EXIT",
+    "NEGATIVE_NO_IR",
+    "STEPFUL_RUNNER_EVIDENCE",
+    "INDEPENDENT_REVIEW"
+  ],
+  "receipts": [],
+  "backend_verdicts": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  }
+}
