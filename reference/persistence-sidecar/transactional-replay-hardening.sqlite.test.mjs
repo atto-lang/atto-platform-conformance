@@ -324,3 +324,57 @@ test('custom large batching limits cannot admit events above immutable 1 MiB rep
     assert.equal(db.queue.length,0);
   });
 });
+
+
+test('replay event-count ceiling rejects 10001st event but snapshot opens new suffix',()=>{
+  fixture(db=>{
+    db.db.exec('BEGIN IMMEDIATE');
+    try {
+      const insert=db.db.prepare(
+        'INSERT INTO events(tenant,actor,state_name,version,schema_version,op_id,payload) VALUES(?,?,?,?,?,?,?)');
+      for(let n=1;n<=10000;n++)
+        insert.run(base.tenantId,base.actor,base.stateName,n,1,'seed-'+n,Buffer.alloc(0));
+      db.putHead.run(base.tenantId,base.actor,base.stateName,10000);
+      db.db.exec('COMMIT');
+    } catch(error) {db.db.exec('ROLLBACK');throw error;}
+    assert.equal(db.enqueue(legacy('overflow-event',10000)).status,'admitted');
+    const rejected=db.flush()[0];
+    assert.equal(rejected.code,'REPLAY_LIMIT_EXCEEDED');
+    assert.equal(rejected.durable,false);
+    assert.equal(db.getHead.get(base.tenantId,base.actor,base.stateName).version,10000);
+    // The checkpoint clears the replay suffix without dropping historical
+    // op IDs, so a new post-checkpoint event may subsequently be written.
+    assert.equal(commit(db,{...legacy('checkpoint-cap',10000,'snapshot'),
+      payload:Buffer.from('trusted-checkpoint')}).version,10001);
+    assert.equal(commit(db,legacy('after-checkpoint',10001)).version,10002);
+    const restored=load(db);
+    assert.equal(restored.snapshot.version,10001);
+    assert.equal(restored.events.length,1);
+    assert.equal(restored.events[0].version,10002);
+  });
+});
+
+test('replay 16 MiB byte ceiling refuses later multi-event command and isolates actors',()=>{
+  fixture(db=>{
+    db.db.exec('BEGIN IMMEDIATE');
+    try {
+      const insert=db.db.prepare(
+        'INSERT INTO events(tenant,actor,state_name,version,schema_version,op_id,payload) '+
+        'VALUES(?,?,?,?,?,?,zeroblob(1048576))');
+      for(let n=1;n<=16;n++)
+        insert.run(base.tenantId,base.actor,base.stateName,n,1,'seed-large-'+n);
+      db.putHead.run(base.tenantId,base.actor,base.stateName,16);
+      db.db.exec('COMMIT');
+    } catch(error) {db.db.exec('ROLLBACK');throw error;}
+    const other={...base,actor:'other-account'};
+    db.grantEpoch({tenantId:other.tenantId,actor:other.actor,epoch:1});
+    const exceeded=command('overflow-bytes',16,[1,2]);
+    assert.equal(db.enqueueCommand(exceeded).status,'admitted');
+    assert.equal(db.enqueue({...legacy('unrelated',0),...other}).status,'admitted');
+    const outcome=db.flush();
+    assert.deepEqual(outcome.map(x=>x.status),['rejected','committed']);
+    assert.equal(outcome[0].code,'REPLAY_LIMIT_EXCEEDED');
+    assert.equal(db.getHead.get(base.tenantId,base.actor,base.stateName).version,16);
+    assert.equal(db.getHead.get(other.tenantId,other.actor,other.stateName).version,1);
+  });
+});
