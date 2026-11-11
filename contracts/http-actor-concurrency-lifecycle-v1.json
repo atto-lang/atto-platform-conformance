@@ -48,6 +48,14 @@
         "javaResource": "src/test/resources/http-actor-v1/unsupported-3x4.atto",
         "oracle": "compiler-owned unsafe concurrency rejection without artifact"
       }
+    },
+    "canonicalFixtureLocations": {
+      "conformance": "fixtures/http-actor-v1",
+      "java": "src/test/resources/http-actor-v1",
+      "llvm": "tests/fixtures/http-actor-v1",
+      "wasm": "tests/fixtures/http-actor-v1",
+      "forge": "verification/fixtures/http-actor-v1",
+      "net": "contracts/http-actor-v1"
     }
   },
   "cases": [
@@ -191,6 +199,7 @@
     "oreslang-source.wasm#469",
     "oreslang-source.forge#262",
     "oreslang-source.net#481",
-    "oreslang-demo-restful-server#71"
+    "oreslang-demo-restful-server#71",
+    "oreslang-source.java#2884"
   ]
 }
