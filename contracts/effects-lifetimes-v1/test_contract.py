@@ -3,7 +3,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
-from verify import CONTRACT, ROOT, evaluate, git_blob_sha, verify
+from verify import CONTRACT, ROOT, evaluate, git_blob_sha, verify, verify_llvm_observation
 
 class ContractTests(unittest.TestCase):
     def setUp(self):
@@ -50,6 +50,7 @@ class ContractTests(unittest.TestCase):
         self.assertEqual(observation["source"]["tree"], observation["mirror"]["snapshot_tree"])
         self.assertGreater(observation["mirror"]["run_id"], 0)
         self.assertGreater(observation["mirror"]["job_id"], 0)
+        self.assertEqual(verify_llvm_observation(observation, self.base), 4)
         rows = observation["candidate_fixture_evidence"]
         self.assertEqual(len(rows), len(self.base["cases"]))
         by_id = {row["id"]: row for row in rows}
@@ -77,9 +78,13 @@ class ContractTests(unittest.TestCase):
         )
         first = observed["candidate_fixture_evidence"][0]
         first["result"] = "PASS"
-        self.assertFalse(
-            all(row["result"] == "NOT_VERIFIED" for row in observed["candidate_fixture_evidence"])
-        )
+        with self.assertRaisesRegex(ValueError, "false promotion"):
+            verify_llvm_observation(observed, self.base)
+
+        observed["candidate_fixture_evidence"][0]["result"] = "NOT_VERIFIED"
+        observed["candidate_fixture_evidence"][0]["fixture_git_blob"] = "0" * 40
+        with self.assertRaisesRegex(ValueError, "blob"):
+            verify_llvm_observation(observed, self.base)
 
 if __name__ == "__main__":
     unittest.main()
