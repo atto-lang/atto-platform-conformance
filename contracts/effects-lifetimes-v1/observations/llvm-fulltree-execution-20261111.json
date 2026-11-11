@@ -1,0 +1,69 @@
+{
+  "schema": "atto-effects-lifetimes-llvm-observation-v1",
+  "status": "EXECUTED_COMPILER_FEATURES_NOT_VERIFIED",
+  "evidence_tier": "COMPILER_EXECUTED_GUEST_TASK_SUBSET_ONLY",
+  "source": {
+    "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+    "pull_request": 1668,
+    "pr_head": "5b73ca180ac0eca5c0941a1a0f656c24c8dc0913",
+    "tree": "2d40288014de41ff4cd0b5f2570498c78851444a"
+  },
+  "mirror": {
+    "repository": "numerics-atto/mirror-oreslang-source.llvm",
+    "snapshot_commit": "33eb9db38a0a1d05dcb9a6bb8dd99342bc361157",
+    "snapshot_tree": "2d40288014de41ff4cd0b5f2570498c78851444a",
+    "runner_pr": 4,
+    "runner_head": "17846e96dd8e43cc5396db3e81fe9960a0144fa5",
+    "run_id": 42956387687,
+    "run_attempt": 1,
+    "job_id": 130312400562
+  },
+  "compiler_sha256": "f8f0aa6b3d31ea51e220694bc2d12cc99715c039f95ed11b6e3debcd848a9825",
+  "executed_supported_scope": {
+    "native_ctests_passed": 4,
+    "native_task_guest_o0_exit": 42,
+    "native_task_guest_o2_exit": 42,
+    "native_task_negatives_passed": 4
+  },
+  "candidate_fixture_evidence": [
+    {
+      "id": "move-while-borrowed-reject",
+      "fixture_git_blob": "329e675b923c5b77865d8ab4e268f205ea7e9365",
+      "expected_diagnostic": "move_while_borrowed",
+      "compiler_exit": 1,
+      "observed": "oreslang-llvmc: scalar local requires an explicit ': int' or ': bool' type at byte 185",
+      "result": "NOT_VERIFIED"
+    },
+    {
+      "id": "read-write-alias-reject",
+      "fixture_git_blob": "346ffe8181a72c4bf4e91318f06fc0abc065172b",
+      "expected_diagnostic": "incompatible_borrow",
+      "compiler_exit": 1,
+      "observed": "oreslang-llvmc: scalar local requires an explicit ': int' or ': bool' type at byte 192",
+      "result": "NOT_VERIFIED"
+    },
+    {
+      "id": "borrow-across-suspension-reject",
+      "fixture_git_blob": "7d1d591aee02e95765398685003b5131742e8ae7",
+      "expected_diagnostic": "borrow_across_suspension",
+      "compiler_exit": 1,
+      "observed": "oreslang-llvmc: native suspends declaration requires suspension-aware borrow checking and LLVM continuation lowering at byte 132",
+      "result": "NOT_VERIFIED"
+    },
+    {
+      "id": "nll-last-use-positive",
+      "fixture_git_blob": "38a34fd39543f8cb18790da6575ef2eced1044d8",
+      "expected_result": "compiled guest exit 42",
+      "compiler_exit": 1,
+      "observed": "oreslang-llvmc: scalar local requires an explicit ': int' or ': bool' type at byte 189",
+      "result": "NOT_VERIFIED"
+    }
+  ],
+  "guardrails": [
+    "generic parser rejection is not a borrow-effect proof",
+    "compiled Task guest success does not certify the four new NLL cases",
+    "source-tree identity is not source PR commit identity",
+    "the original source org CI still reports zero-step jobs",
+    "no backend parity promotion"
+  ]
+}
