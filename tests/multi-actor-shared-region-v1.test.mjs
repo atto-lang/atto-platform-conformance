@@ -399,3 +399,38 @@ test('3, 7 and 15 cross-slice readers cannot barge ahead of a queued writer', ()
     assert.equal(region.stats.pending, 0);
   }
 });
+
+test('physical guest turn fences owner move and STOP reclamation even after loan release', () => {
+  const { host, region, a, x, b } = setup();
+  host.beginRegionTurn(region, x);
+  const loan = region.request(x, 'write');
+  region.release(x, loan);
+  assert.equal(region.stats.retainedTickets, 0);
+  assert.equal(region.stats.physicalTurns, 1);
+  assert.throws(() => host.endExecution(x), /active or pending/);
+  assert.throws(() => region.transferOwner(x, b), /quiescence/);
+  host.stopActor(a);
+  assert.throws(() => host.reclaimRegion(region), /quiescent/);
+  assert.throws(() => region.read(x, loan), /stale/);
+  host.endRegionTurn(region, x);
+  assert.equal(region.stats.physicalTurns, 0);
+  host.reclaimRegion(region);
+  assert.equal(region.stats.reclaimed, true);
+});
+
+test('physical turn admission is trusted, bounded and once-ended; STOP cannot resurrect guest authority', () => {
+  const { host, region, x, y, b } = setup({ maxTurns: 1 });
+  assert.throws(() => region.beginPhysicalTurn(x, {}), /trusted runtime/);
+  assert.throws(() => region.endPhysicalTurn(x, {}), /trusted runtime/);
+  host.beginRegionTurn(region, x);
+  assert.throws(() => host.beginRegionTurn(region, x), /already active/);
+  assert.throws(() => host.beginRegionTurn(region, y), /quota/);
+  host.endRegionTurn(region, x);
+  assert.throws(() => host.endRegionTurn(region, x), /invalid or duplicate/);
+  host.beginRegionTurn(region, y);
+  host.stopActor(b);
+  assert.throws(() => host.beginRegionTurn(region, x), /quota/);
+  host.endRegionTurn(region, y);
+  assert.throws(() => host.beginRegionTurn(region, y), /stale/);
+  assert.equal(region.stats.physicalTurns, 0);
+});
