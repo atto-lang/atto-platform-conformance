@@ -67,25 +67,27 @@ function hashFile(path, max = MAX_EXECUTABLE) {
     return hash.digest('hex');
   } finally { closeSync(fd); }
 }
-function git(root, ...argv) {
-  const r = spawnSync('git', ['-C', root, ...argv], {
+function git(gitBinary, root, ...argv) {
+  const r = spawnSync(gitBinary, ['-C', root, ...argv], {
     shell: false, timeout: 10000, encoding: 'utf8', maxBuffer: 65536,
-    env: { PATH: process.env.PATH || '/usr/bin:/bin', HOME: process.env.HOME || '/tmp',
+    env: { PATH: process.platform === 'win32' ?
+        (process.env.SystemRoot || 'C:\\Windows') + '\\System32' : '/usr/bin:/bin',
+      HOME: process.env.HOME || '/tmp',
       GIT_CONFIG_NOSYSTEM: '1', GIT_OPTIONAL_LOCKS: '0' },
   });
   need(!r.error && r.status === 0, 'Git identity/cleanliness check failed');
   return r.stdout.trim();
 }
-function sourceRoot(root, expectedSha, label) {
+function sourceRoot(gitBinary, root, expectedSha, label) {
   need(isAbsolute(root), label + ' checkout must be an absolute path');
   hex(expectedSha, HEX40, label + ' head');
   const physical = realpathSync(root);
-  need(git(physical, 'rev-parse', '--show-toplevel') === physical,
+  need(resolve(git(gitBinary, physical, 'rev-parse', '--show-toplevel')) === resolve(physical),
     label + ' must point to git checkout root');
-  need(git(physical, 'rev-parse', 'HEAD') === expectedSha, label + ' original head drift');
-  need(git(physical, 'status', '--porcelain', '--untracked-files=all') === '',
+  need(git(gitBinary, physical, 'rev-parse', 'HEAD') === expectedSha, label + ' original head drift');
+  need(git(gitBinary, physical, 'status', '--porcelain', '--untracked-files=all') === '',
     label + ' dirty checkout');
-  return { path: physical, tree: git(physical, 'rev-parse', 'HEAD^{tree}') };
+  return { path: physical, tree: git(gitBinary, physical, 'rev-parse', 'HEAD^{tree}') };
 }
 function pinSourceBlob(path, expected) {
   const bytes = readBounded(path, 1024 * 1024);
@@ -167,6 +169,7 @@ export function checkConfiguration(config) {
     'missing real-guest execution config');
   const keys = ['schema','profile','backend_source_root','backend_source_sha',
     'otel_source_root','otel_source_sha','compiler_executable','compiler_binary_sha256',
+    'git_executable','git_binary_sha256',
     'dependency_pins','compile_argv','run_argv','artifact_kind','timeout_ms'];
   need(Object.keys(config).length === keys.length && keys.every(k => Object.hasOwn(config,k)),
     'execution config has unknown or missing keys');
@@ -191,6 +194,9 @@ export function checkConfiguration(config) {
   need(config.run_argv.some(a => a.includes(
     config.artifact_kind === 'source_fixture' ? '{fixture}' : '{artifact}')),
     'guest must consume pinned source or generated artifact');
+  need(typeof config.git_executable === 'string' && isAbsolute(config.git_executable),
+    'Git executable must have an absolute path');
+  hex(config.git_binary_sha256, HEX64, 'Git executable SHA256');
   need(Number.isSafeInteger(config.timeout_ms) &&
     config.timeout_ms >= 1000 && config.timeout_ms <= 180000, 'invalid process timeout');
   need(Array.isArray(config.dependency_pins) && config.dependency_pins.length <= 32,
@@ -206,8 +212,9 @@ export function checkConfiguration(config) {
 
 export function captureReal(config) {
   const [backend, repo] = checkConfiguration(config);
-  const checkout = sourceRoot(config.backend_source_root, config.backend_source_sha, repo);
-  const source = sourceRoot(config.otel_source_root, config.otel_source_sha,
+  const gitBinary = checkedExe(config.git_executable, config.git_binary_sha256, 'Git');
+  const checkout = sourceRoot(gitBinary, config.backend_source_root, config.backend_source_sha, repo);
+  const source = sourceRoot(gitBinary, config.otel_source_root, config.otel_source_sha,
     'ores-truffle-oreslang/oreslang-otel');
   const fixture = join(source.path, 'tests', 'smoke.ores');
   const library = join(source.path, 'src', 'otel.ores');
@@ -251,6 +258,8 @@ export function captureReal(config) {
     'guest artifact bytes changed during or after execution');
   need(hashFile(compiler) === config.compiler_binary_sha256,
     'compiler executable bytes changed during capture');
+  need(hashFile(gitBinary) === config.git_binary_sha256,
+    'Git executable bytes changed during capture');
   for (const pin of config.dependency_pins) {
     need(hashFile(realpathSync(pin.path)) === pin.sha256,
       'dependent runtime/toolchain executable bytes changed during capture');
@@ -264,6 +273,7 @@ export function captureReal(config) {
     source_checkout_sha: config.backend_source_sha, source_tree_sha: checkout.tree,
     otel_source_sha: config.otel_source_sha, otel_source_tree_sha: source.tree,
     compiler_binary_sha256: config.compiler_binary_sha256,
+    git_binary_sha256: config.git_binary_sha256,
     original_fixture_git_blob: EXPECTED_FIXTURE,
     original_library_git_blob: EXPECTED_LIBRARY,
     guest_artifact_kind: config.artifact_kind, guest_artifact_sha256: artifactHash,
