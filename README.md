@@ -189,3 +189,35 @@ The Node fixture-integrity tests do not compile Oreslang, and no backend is
 marked confirmed until real exact-source compiler checks and guest execution
 produce independently reviewable evidence. Enum methods and full portable
 wire codecs remain separate implementation/verification gates.
+
+## Candidate AttoLang / Erlang-OTP strict-AOT parity (not promoted)
+
+See [the candidate contract](contracts/erl-otp-strict-aot-v1.json) and
+[the shared language design](https://github.com/ores-truffle-oreslang/oreslang-common-source/pull/261).
+The manifest currently tracks **20 feature areas, 34 non-promoted oracles**:
+12 source-backed compile candidates and 22 illustrative runtime/AOT scenarios.
+All are **NOT_EXECUTED** as guest parity evidence. Function-head clause dispatch
+is deferred; `eq`, `neq`, and candidate atomic `!eq` use a versioned strict
+AttoLang profile without silently breaking existing `.ores` syntax.
+
+Run host-side manifest and receipt inspector tests only:
+
+```sh
+node --test test/erl-otp-strict-aot-contract.test.mjs test/erl-otp-strict-aot-receipt.test.mjs
+```
+
+`node bin/verify-erl-otp-aot-receipt.mjs /path/to/claim.json` is **not a
+verification or promotion gate**, despite its historical filename. It is a
+**read-only, fail-closed structural inspector**, and always exits nonzero
+because self-reported JSON cannot independently establish source-tree
+identity, a runner attempt's actual executed steps, reviewer independence,
+compiler and artifact hashes, or compiler-guest execution. `ok=false` and
+`verified=false` are intentional even when `structurallyValid=true`.
+
+Compile-negative fixtures must produce no executable, an expected diagnostic,
+and no guest execution; positive fixtures require real compiled AOT guest
+execution and an artifact digest. Prose-only scenarios are categorically
+ineligible for executed-guest receipts until converted into real fixtures and
+a real target harness. Do not use the inspector's schema tests as CI parity
+proof, and do not silently substitute a host-only or source-only canary.
+
