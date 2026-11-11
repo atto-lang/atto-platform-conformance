@@ -35,6 +35,8 @@ test('source code identities, signal cardinality and security gates cannot be si
   mut(c=>{c.signals.logs=7;});
   mut(c=>{c.signals.total=8;});
   mut(c=>{c.security=[];});
+  mut(c=>{c.security[0]='Private source is freely exportable and permitted without gate approval';});
+  mut(c=>{c.security[4]='Unbounded blocking telemetry may be used in actor carrier threads';});
   mut(c=>{c.promotion='EXECUTED';});
   mut(c=>{c.classification='GUEST_VERIFIED';});
   mut(c=>{c.releaseCertified=true;});
