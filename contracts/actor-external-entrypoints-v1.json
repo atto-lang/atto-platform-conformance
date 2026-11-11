@@ -98,6 +98,20 @@
       "expect": "REJECT",
       "diagnostic": "ACTOR_INIT_STATE_BUILDER_UNVERIFIED",
       "required_phase": "COMPILE_REJECT"
+    },
+    {
+      "id": "reject_unmarked_init",
+      "path": "fixtures/actor-external-entrypoints/v1/reject-unmarked-init.atto",
+      "expect": "REJECT",
+      "diagnostic": "ACTOR_EXTERNAL_REQUIRED",
+      "required_phase": "COMPILE_REJECT"
+    },
+    {
+      "id": "reject_unmarked_receive",
+      "path": "fixtures/actor-external-entrypoints/v1/reject-unmarked-receive.atto",
+      "expect": "REJECT",
+      "diagnostic": "ACTOR_EXTERNAL_REQUIRED",
+      "required_phase": "COMPILE_REJECT"
     }
   ]
 }
