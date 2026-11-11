@@ -24,8 +24,14 @@ function validate(x) {
         assert.match(c.fixture,/^fixtures\/with-ownership-v1\/[a-z-]+\.atto$/);
         assert.equal(c.fixture,`fixtures/with-ownership-v1/${c.id}.atto`);
         assert.ok(c.kind==="run"||c.kind==="compile_reject");
-        assert.deepEqual(c.unimplemented_backends,["llvm","wasm","forge","net"]);
-        assert.equal(c.unimplemented_diagnostic,"WITH_BACKEND_UNSUPPORTED");
+        if (c.id==="contextual-with" || c.id==="trivia-inert") {
+            // These are ordinary source-language controls, NOT updates.
+            assert.deepEqual(c.unimplemented_backends,[]);
+            assert.equal(c.unimplemented_diagnostic,null);
+        } else {
+            assert.deepEqual(c.unimplemented_backends,["llvm","wasm","forge","net"]);
+            assert.equal(c.unimplemented_diagnostic,"WITH_BACKEND_UNSUPPORTED");
+        }
         const bytes=readFileSync(join(root,c.fixture));
         assert.ok(bytes.length>20&&bytes.length<4096);
         assert.equal(bytes.at(-1),10);
