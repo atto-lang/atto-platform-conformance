@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
+import {DatabaseSync} from 'node:sqlite';
 import {mkdtempSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
@@ -127,6 +128,14 @@ function fixture(mode,fn) {
   let db=null;
   try {
     killed_process(path,mode);
+    if(mode==='checkpoint_mid_transaction_sigkill') {
+      // A persistent test trigger references a connection-local SQLite UDF.
+      // Drop it using a raw connection BEFORE the provider prepares its
+      // DELETE statement; otherwise SQLite raises "no such function".
+      const cleanup=new DatabaseSync(path);
+      try {cleanup.exec('DROP TRIGGER IF EXISTS kill_mid_prune');}
+      finally {cleanup.close();}
+    }
     const open=()=>new BatchPersistenceSidecar({path,tenantId:t});
     db=open();
     fn({db,open,reopen:()=>{db.close();db=open();return db;}});
@@ -215,9 +224,8 @@ test('SIGKILL inside SQLite DELETE trigger rolls back checkpoint and index manif
     assert.equal(db.db.prepare('SELECT count(*) AS n FROM checkpoint_index_manifests').get().n,0);
     assert.equal(db.db.prepare('SELECT count(*) AS n FROM command_commits').get().n,1);
     assert.equal(a.submit('deposit-001',deposit(100)).duplicate,true);
-    // The test-only SQL crash hook remains in schema after process death.
-    // Drop it under trusted host control before attempting recovery compaction.
-    db.db.exec('DROP TRIGGER kill_mid_prune');
+    // Test-only crash trigger was removed by the raw recovery fixture
+    // before the provider reopened. The original event is still recoverable.
     assert.equal(a.checkpoint_and_compact().prunedEvents,1);
   });
 });
