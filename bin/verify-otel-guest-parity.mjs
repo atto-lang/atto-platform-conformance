@@ -2,9 +2,8 @@
 // IMPORTANT: Validating self-reported metadata and captured bytes is NOT execution
 // attestation; the trusted CI/GitHub verifier must independently corroborate them.
 import { createHash } from 'node:crypto';
-import { openSync, closeSync, fstatSync, readFileSync, constants } from 'node:fs';
+import { openSync, closeSync, fstatSync, readSync, constants } from 'node:fs';
 import { resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { pathToFileURL } from 'node:url';
 
 const SHA40 = /^[0-9a-f]{40}$/;
@@ -140,10 +139,19 @@ export function checkGuestStdout(bytes) {
     'log span/body types invalid');
   demand(rows.slice(0, 6).map(row => row.severity).join(',') ===
     'INFO,INFO,INFO,WARN,INFO,INFO', 'severity gating failed');
-  demand(rows[2].body === '-9223372036854775808|9223372036854775807|0|-1|100',
-    'signed-i64 decimal encoding failed');
-  demand(rows[1].body === Array.from({ length: 32 }, (_, i) => String.fromCharCode(i)).join(''),
-    'control-code escaping round-trip failed');
+  const expectedBodies = [
+    'quote" slash\\ newline\n nul\u0000 tab\t emoji😀',
+    Array.from({ length: 32 }, (_, i) => String.fromCharCode(i)).join(''),
+    '-9223372036854775808|9223372036854775807|0|-1|100',
+    'visible warning', 'visible all', 'visible equal',
+  ];
+  for (let i = 0; i < expectedBodies.length; i++) {
+    demand(rows[i].body === expectedBodies[i],
+      'smoke log body/Unicode/control/int64 mismatch at record ' + i);
+  }
+  const times = rows.map(row => row.timestamp_unix_ms);
+  demand(Math.max(...times) - Math.min(...times) <= 300000,
+    'telemetry timestamps span beyond bounded smoke window');
   const [child, root] = rows.slice(6, 8);
   for (const span of [child, root]) {
     string(span.span_id, 'span_id', 128);
@@ -162,6 +170,12 @@ export function checkGuestStdout(bytes) {
   const metric = rows[8];
   demand(metric.name === 'requests' && metric.kind === 'counter' &&
     metric.unit === '1' && metric.value === 1, 'metric observation differs');
+  for (const row of rows) {
+    if (row.signal === 'log') {
+      demand(row.body.length <= 4096 && row.span_id.length <= 128,
+        'log attributes exceed bounded string admission');
+    }
+  }
   return { records: 9, logs: 6, spans: 2, metrics: 1 };
 }
 
@@ -222,7 +236,16 @@ function boundedFile(path) {
     const before = fstatSync(fd);
     demand(before.isFile() && before.size > 0 && before.size <= LIMIT && before.nlink === 1,
       'receipt/stdout must be a bounded regular single-link file');
-    const bytes = readFileSync(fd);
+    const bytes = Buffer.alloc(before.size);
+    let offset = 0;
+    while (offset < bytes.length) {
+      const read = readSync(fd, bytes, offset, bytes.length - offset, null);
+      demand(read > 0, 'receipt/stdout truncated during read');
+      offset += read;
+    }
+    const extra = Buffer.alloc(1);
+    demand(readSync(fd, extra, 0, 1, null) === 0,
+      'receipt/stdout grew during bounded read');
     const after = fstatSync(fd);
     demand(bytes.length === before.size && before.size === after.size &&
       before.ino === after.ino && before.dev === after.dev &&
@@ -239,14 +262,15 @@ export function verifyFiles(receiptPath, stdoutPath) {
 }
 
 function main(argv) {
-  demand(argv.length >= 2, 'usage: node verify-otel-guest-parity.mjs <receipt.json> <stdout.jsonl> [--require-parity]');
-  const result = verifyFiles(argv[0], argv[1]);
-  process.stdout.write(JSON.stringify(result) + '\n');
-  // Self-reported run IDs/SHAs and synthetic stdout can be forged. Trusted
-  // external corroboration is mandatory before upgrading parity status.
-  if (argv.includes('--require-parity')) {
+  demand(argv.length === 2 || (argv.length === 3 && argv[2] === '--require-parity'),
+    'usage: node verify-otel-guest-parity.mjs <receipt.json> <stdout.jsonl> [--require-parity]');
+  // Guard before parsing or printing any valid-looking receipt. This mode
+  // MUST produce no successful-looking stdout even with valid synthetic data.
+  if (argv.length === 3) {
     throw new Error('OTEL_PARITY_DENIED: shape-only checks cannot certify a compiler');
   }
+  const result = verifyFiles(argv[0], argv[1]);
+  process.stdout.write(JSON.stringify(result) + '\n');
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
