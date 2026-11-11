@@ -34,3 +34,21 @@ The reference compiler now has a name-based Newable opt-in negative gate,
 but static trait satisfaction, nominal trait identity, specialization and
 binary-package ABI validation are separate unfinished work. Do not treat
 this source corpus or a parser-only acceptance result as factory execution.
+
+## Backend source audit (not executable parity)
+
+An inspection of the compiler source surfaces the following scoped claims,
+**not** compiler runs:
+
+| Frontend | Observed source behavior | Current limitation |
+|---|---|---|
+| Java/GraalVM | PR #2794 normalizes parser acceptance of both root orders and nested compatibility | Type-level Newable static witness and guest execution not yet proven |
+| .NET structured source | Scans both `define` and `pub` with duplicate checks | Rejects nominal class/actor methods until AOT lowering is implemented |
+| LLVM native source | Accepts both orderings for certain class/type declarations | Public `define pub fnc` is not generally admitted in its native subset |
+| Forge scalar frontend | Scans both modifiers and rejects duplicates | Only scalar `fnc` source form currently lowered |
+| JS scalar compiler | Parses both root orders and module-local aliases | Does not lower arbitrary class/actor sources |
+| Wasm / Rust | No exact executable audit on this change | Do not infer acceptance |
+
+These are **source observations**, not passing evidence. In particular,
+the LLVM and .NET restrictions must remain explicit backend differences
+until real compiler/guest test receipts prove portability.
