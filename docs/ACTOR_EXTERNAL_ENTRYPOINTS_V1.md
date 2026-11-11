@@ -47,6 +47,18 @@ The new Java compiler draft admits `declare actor` only as nominal/static metada
 9. Static-AOT backends record entrypoints in an internal dispatch table with role, nominal actor, package namespace, type signature and generation policy; the source marker must not silently create ELF/CIL/Wasm public exports or a reflection-based RPC surface.
 10. Compatibility: legacy `on_start`, `receive` and LLVM `on_message` remain versioned adapters while migration tests are developed. **Strict v1 mode** requires explicit `external` on declared `init`/`receive`. An actor without custom initialization may omit `init`; an actor that cannot receive messages may omit `receive` if its role/transport supports it. Never invoke both legacy and canonical startup handlers.
 
+## Hardening boundary for canonical declarations
+
+The canonical `declare actor A;` syntax is nominal-only. It does not allocate an empty executable actor, introduce an unresolved `declare type` forward, or authorize implementation by unrelated namespaces.
+
+For a canonical declared actor, any out-of-line method named `init` or `receive` **must** carry the contextual `external` marker. Ordinary `define mtd` declarations remain static method metadata and cannot occupy the runtime lifecycle role. The older `define actor A as receiver;` receiver-alias spelling and inline actor classes retain legacy migration rules until their own adapters are reviewed. No direct caller access is granted to `external` hooks.
+
+Until there is a typed, compiler-issued, ownership-checked state builder, `external init` must return `void`. A user-supplied type named `state` is not authority to construct a sealed state container. The Java draft now statically rejects `init(): state` with `ACTOR_INIT_STATE_BUILDER_UNVERIFIED`. This is a temporary fail-closed condition, **not** an assertion that actor state construction has shipped.
+
+Malformed `declare async/shared/static actor`, duplicate visibility modifiers, actor/inline-class name collisions, cross-namespace receiver impersonation, duplicate lifecycle slots, source IDs with Windows colons, and bidirectional/zero-width Unicode format controls must all fail static admission. A declaration with `implements`, `extends`, generic parameters, receiver aliases or an inline body remains rejected pending separately versioned semantic support; silently ignoring contract requirements is forbidden.
+
+Conformance evidence for this version includes 3 positive and 9 negative target fixtures. A successful *source-free inventory* check establishes only manifest and fixture integrity, never guest execution, runtime lifecycle behavior or five-backend parity.
+
 ## Lifecycle model
 
 `ALLOCATED -> INITIALIZING -> READY -> TURN_RUNNING -> READY -> STOPPING -> TERMINATED` with failure edges `INITIALIZING -> FAILED` and `TURN_RUNNING -> FAILED`. Restart creates a **new** incarnation, not an illegal transition from TERMINATED back to READY. A provisional host-side ActorRef (currently staged in Java) must remain unable to deliver messages before initialization and must be separately audited for early-publication safety.
