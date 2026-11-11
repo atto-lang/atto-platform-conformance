@@ -1,34 +1,85 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateReceipt } from '../bin/verify-erl-otp-aot-receipt.mjs';
+import { constants, mkdtempSync, writeFileSync, symlinkSync, linkSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { inspectReceipt, validateReceipt, readUntrustedReceipt } from '../bin/verify-erl-otp-aot-receipt.mjs';
 
-const hex40 = 'a'.repeat(40), hex64 = 'b'.repeat(64);
-function candidate() {
+const h40 = 'a'.repeat(40), h64 = 'b'.repeat(64);
+function candidate(fixtureId = 'eq.same_int') {
   return {
     contract: 'attolang-erlang-otp-strict-aot-v1',
     backend: 'llvm',
     feature: 'typed_equality',
     status: 'VERIFIED',
     evidenceClass: 'compiler-guest',
-    compiler: { repository: 'ores-truffle-oreslang/oreslang-source.llvm', headSha: hex40, treeSha: hex40, binarySha256: hex64 },
-    fixture: { id: 'eq.same_int', sha256: hex64 },
-    artifact: { sha256: hex64 },
+    compiler: { repository: 'ores-truffle-oreslang/oreslang-source.llvm',
+      headSha: h40, treeSha: h40, binarySha256: h64 },
+    fixture: { id: fixtureId, sha256: h64 },
+    artifact: { sha256: h64 },
     execution: {
       runId: 42, jobId: 43, jobAttempt: 1, executedSteps: 6,
-      compiledGuest: true, executedGuest: true, mode: 'strict-aot',
+      compilationOutcome: 'accepted', compiledGuest: true, executedGuest: true,
+      outputArtifactCreated: true, mode: 'strict-aot',
       jitUsed: false, interpreterFallbackUsed: false, runtimeGuestCompilerUsed: false,
       reflectionDispatchUsed: false, aotFallbackMutationRejected: true, negativeDiagnosticsPassed: true,
       runUrl: 'https://github.com/example/repo/actions/runs/42',
       independentReviewUrl: 'https://github.com/example/repo/pull/4#pullrequestreview-55',
-    }
+    },
   };
 }
-test('receipt checker never claims independent attestation', () => {
-  const result = validateReceipt(candidate());
-  assert.equal(result.ok, true, JSON.stringify(result.errors));
-  assert.equal(result.classification, 'STRUCTURAL_ONLY_NOT_INDEPENDENTLY_ATTESTED');
+function negativeCandidate() {
+  const r = candidate('eq.no_implicit_float');
+  r.execution.compilationOutcome = 'rejected';
+  r.execution.compiledGuest = false;
+  r.execution.executedGuest = false;
+  r.execution.outputArtifactCreated = false;
+  r.execution.observedDiagnosticClass = 'incompatible_equality_types';
+  delete r.artifact;
+  return r;
+}
+
+test('a perfect self-reported JSON is NEVER an independent guest proof', () => {
+  for (const r of [candidate(), negativeCandidate()]) {
+    const v = validateReceipt(r);
+    assert.equal(v.structurallyValid, true, v.errors.join(', '));
+    assert.equal(v.ok, false, 'no promotion without attestation');
+    assert.equal(v.verified, false);
+    assert.equal(v.classification, 'STRUCTURAL_ONLY_NOT_ATTESTED');
+    assert.deepEqual(inspectReceipt(r), v);
+  }
 });
-test('rejects zero-step, host-only, missing AOT/negative proof and invalid pinning', () => {
+
+test('rejected fixture cannot pretend it ran or published an artifact', () => {
+  const changes = [
+    r => { r.execution.compilationOutcome = 'accepted'; },
+    r => { r.execution.compiledGuest = true; },
+    r => { r.execution.executedGuest = true; },
+    r => { r.execution.outputArtifactCreated = true; },
+    r => { r.artifact = { sha256: h64 }; },
+    r => { r.execution.observedDiagnosticClass = 'wrong_class'; },
+  ];
+  for (const change of changes) {
+    const r = negativeCandidate(); change(r);
+    assert.equal(validateReceipt(r).structurallyValid, false, change.toString());
+  }
+});
+
+test('accepted fixture cannot pretend it rejected or omit executable proof', () => {
+  const changes = [
+    r => { r.execution.compilationOutcome = 'rejected'; },
+    r => { r.execution.compiledGuest = false; },
+    r => { r.execution.executedGuest = false; },
+    r => { r.execution.outputArtifactCreated = false; },
+    r => { delete r.artifact; },
+  ];
+  for (const change of changes) {
+    const r = candidate(); change(r);
+    assert.equal(validateReceipt(r).structurallyValid, false, change.toString());
+  }
+});
+
+test('rejection mutation suite denies forged statuses and broken AOT invariants', () => {
   const mutations = [
     r => { r.execution.executedSteps = 0; },
     r => { r.execution.executedSteps = null; },
@@ -36,8 +87,8 @@ test('rejects zero-step, host-only, missing AOT/negative proof and invalid pinni
     r => { r.compiler.headSha = 'bad'; },
     r => { r.compiler.treeSha = ''; },
     r => { r.compiler.binarySha256 = ''; },
-    r => { r.execution.executedGuest = false; },
-    r => { r.execution.compiledGuest = false; },
+    r => { r.fixture.sha256 = ''; },
+    r => { r.execution.mode = 'hybrid'; },
     r => { r.execution.interpreterFallbackUsed = true; },
     r => { delete r.execution.jitUsed; },
     r => { r.execution.runtimeGuestCompilerUsed = true; },
@@ -47,20 +98,45 @@ test('rejects zero-step, host-only, missing AOT/negative proof and invalid pinni
     r => { r.execution.runId = 0; },
     r => { r.execution.jobAttempt = null; },
     r => { r.execution.runUrl = 'https://github.com/example/repo/actions/runs/41'; },
-    r => { r.execution.independentReviewUrl = ''; },
+    r => { r.execution.runUrl = 'https://github.com/example/repo/actions/runs/42?forged=1'; },
+    r => { r.execution.independentReviewUrl = 'https://github.com/example/repo/pull/4'; },
     r => { r.backend = 'js'; },
+    r => { r.status = 'NOT_EXECUTED'; },
     r => { r.feature = 'unknown_future'; },
     r => { r.fixture.id = 'not_a_vector'; },
     r => { r.fixture.id = 'aot.no_interpreter_fallback'; },
-    r => { r.status = 'NOT_EXECUTED'; },
   ];
   for (const mutate of mutations) {
     const r = candidate(); mutate(r);
-    const result = validateReceipt(r);
-    assert.equal(result.ok, false, mutate.toString());
-    assert.ok(result.errors.length > 0);
+    const v = validateReceipt(r);
+    assert.equal(v.structurallyValid, false, mutate.toString());
+    assert.equal(v.ok, false);
+    assert.ok(v.errors.length > 0);
   }
 });
-test('null, array and absent receipts fail closed', () => {
-  for (const value of [null, undefined, [], 'PASS', 1]) assert.equal(validateReceipt(value).ok, false);
+
+test('null, array and primitive receipts fail closed', () => {
+  for (const value of [null, undefined, [], 'PASS', 1]) {
+    const v = validateReceipt(value);
+    assert.equal(v.structurallyValid, false);
+    assert.equal(v.ok, false);
+  }
 });
+
+test('path reader never follows symlinks or permits hardlink aliases', { skip: constants.O_NOFOLLOW === undefined },
+  () => {
+    const dir = mkdtempSync(join(tmpdir(), 'atto-aot-receipt-'));
+    try {
+      const target = join(dir, 'receipt.json');
+      writeFileSync(target, JSON.stringify(candidate()));
+      assert.deepEqual(readUntrustedReceipt(target), candidate());
+      const symlink = join(dir, 'link.json');
+      symlinkSync(target, symlink);
+      assert.throws(() => readUntrustedReceipt(symlink));
+      const hardlink = join(dir, 'hardlink.json');
+      linkSync(target, hardlink);
+      assert.throws(() => readUntrustedReceipt(target));
+      assert.throws(() => readUntrustedReceipt(hardlink));
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  }
+);
