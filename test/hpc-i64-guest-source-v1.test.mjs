@@ -37,3 +37,13 @@ test('i64 host arithmetic checks manifest numbers without claiming guest executi
   const signedLimit = (1n << 63n) - 1n;
   assert.ok(tiles.every(x => x >= -signedLimit - 1n && x <= signedLimit));
 });
+
+test('shared parameterized i64 guest source is pinned for native and Graal execution', async () => {
+  const source = await bytes('i64-parameterized-tiles.atto');
+  assert.ok(source.length > 0 && source.length < 4096);
+  assert.equal(gitBlobSha1(source), '88795ff752006d020ea08c6585a8b3b03bf641c7');
+  const guest = source.toString('utf8');
+  assert.match(guest, /pub fnc tile_reduce8\(/);
+  assert.match(guest, /pub fnc main\(\): int/);
+  assert.match(guest, /return tile4\(a, b, c, d\) \+ tile4\(e, f, g, h\);/);
+});
