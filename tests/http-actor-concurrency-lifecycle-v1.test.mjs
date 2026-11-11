@@ -25,7 +25,13 @@ test("serial alias and explicit metadata retain the one-by-one contract", () => 
 test("exact mandatory compiler, ownership, shutdown and E2E case inventory", () => {
   assert.deepEqual(contract.cases.map(x=>x.id), required);
   assert.equal(new Set(contract.cases.map(x=>x.name)).size, required.length);
-  assert.ok(contract.cases.every(x=>x.oracle.length > 55 && /^[a-z-]+$/.test(x.kind)));
+  // A generic letters-only regexp incorrectly rejects the required
+  // guest-e2e cases, silently blocking acceptance once CI actually runs.
+  // Enumerate semantic evidence classes rather than accepting arbitrary tags.
+  const allowedKinds = new Set([
+    "compiler", "compiler-negative", "guest-runtime", "guest-security", "guest-e2e"
+  ]);
+  assert.ok(contract.cases.every(x=>x.oracle.length > 55 && allowedKinds.has(x.kind)));
   assert.ok(contract.cases.some(x=>x.name==="shutdown-physical-exit"));
   assert.ok(contract.cases.some(x=>x.name==="nonserial-denial"));
   assert.ok(contract.cases.some(x=>x.name==="aot-provenance"));
