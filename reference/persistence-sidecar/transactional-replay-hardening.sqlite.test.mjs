@@ -378,3 +378,18 @@ test('replay 16 MiB byte ceiling refuses later multi-event command and isolates 
     assert.equal(db.getHead.get(other.tenantId,other.actor,other.stateName).version,1);
   });
 });
+
+
+test('corrupt checkpoint cannot authorize another durable event via replay-capacity accounting',()=>{
+  fixture(db=>{
+    const snap={...legacy('trusted-checkpoint',0,'snapshot'),
+      payload:Buffer.from('balance=100')};
+    commit(db,snap);
+    db.db.prepare('UPDATE snapshots SET payload=? WHERE tenant=? AND actor=? AND state_name=?')
+      .run(Buffer.from('balance=999'),base.tenantId,base.actor,base.stateName);
+    assert.equal(db.enqueue(legacy('unsafe-after-corruption',1)).status,'admitted');
+    assert.throws(()=>db.flush(),/OUTCOME_UNKNOWN/);
+    assert.equal(db.getHead.get(base.tenantId,base.actor,base.stateName).version,1);
+    assert.equal(db.db.prepare('SELECT COUNT(*) AS n FROM events').get().n,0);
+  });
+});
