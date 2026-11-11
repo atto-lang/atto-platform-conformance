@@ -24,6 +24,11 @@ test('AttoLang operators are not replaced by Erlang or C operators', () => {
   assert.deepEqual(contract.operatorPolicy.inequalityAlias, ['!eq']);
   assert.equal(contract.operatorPolicy.assignmentIsPatternMatch, false);
   assert.equal(contract.operatorPolicy.noImplicitNumericCoercion, true);
+  assert.equal(contract.operatorPolicy.sourceProfile, 'atto-strict-v1');
+  assert.equal(contract.operatorPolicy.inequalityAliasStatus, 'candidate-parser-not-verified');
+  assert.equal(contract.operatorPolicy.operatorTokenRules['!eq'], 'contiguous-atomic-binary-token');
+  assert.equal(contract.operatorPolicy.operatorTokenRules.rejectSplitAlias, true);
+  assert.match(contract.operatorPolicy.legacyCompatibility, /\.ores/);
   for (const forbidden of ['==', '!=', '=:=', '=/=']) {
     assert.ok(contract.operatorPolicy.invalid.includes(forbidden), forbidden);
   }
@@ -51,7 +56,11 @@ test('semantic vectors are distinct, typed, non-promoting and cover P0 failure c
     assert.equal(vector.evidence, 'NOT_EXECUTED', vector.id);
     assert.ok(['compile', 'runtime_trace', 'aot_policy'].includes(vector.kind));
     assert.ok(vector.expected && Object.keys(vector.expected).length > 0);
+    if (vector.kind !== 'compile') {
+      assert.equal(vector.oracleStatus, 'illustrative-not-guest-executed', vector.id);
+    }
     if (vector.kind === 'compile') {
+      assert.equal(vector.sourceProfile, 'atto-strict-v1', vector.id);
       assert.ok(vector.source.startsWith('fnc main() -> bool as'), vector.id);
       assert.ok(['accept', 'reject'].includes(vector.expected.compilation), vector.id);
       if (vector.expected.compilation === 'reject') {
@@ -60,7 +69,7 @@ test('semantic vectors are distinct, typed, non-promoting and cover P0 failure c
     }
   }
   for (const id of ['eq.same_int', 'neq.different_int', 'not_eq_alias.different_int', 'eq.no_implicit_float',
-    'eq.reject_c_style', 'neq.reject_c_style', 'selective_receive.keep_unmatched',
+    'eq.reject_c_style', 'neq.reject_c_style', 'eq.reject_split_bang_alias', 'eq.reject_partial_alias', 'selective_receive.keep_unmatched',
     'supervision_restart.one_for_all', 'binary_pattern_decode.short_input',
     'aot.no_interpreter_fallback']) {
     assert.ok(byId.has(id), id);
