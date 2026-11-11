@@ -119,3 +119,36 @@ test output. The older diverged #997/#1166 branches were *not* bulk-merged.
 Source transfer to alternate private organizations remains denied unless
 protected-source governance and independent exact-head approvals satisfy
 `docs/security/CI_PRIVATE_SOURCE_MIRRORING.md`.
+
+## Linearizable pooled-worker admission fence and terminal carrier receipt (2026-11-11)
+
+Java [draft #2884](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2884)
+now adds `HttpPooledWorkerAdmissionFence` for each reusable HTTP actor generation.
+`Handler.worker()` reserves a handoff through the worker's synchronized
+admission gate, and every exit path releases that reservation. Once a listener
+reaches its physical shutdown barrier, it atomically seals every worker
+incarnation historically associated with the listener. A different live
+listener sharing the same handler must use a replacement actor, rather than
+reusing that sealed incarnation (including while it is stopping).
+
+After all pre-seal HTTP handoffs settle, shutdown requests
+`ActorRuntime.gracefulStop` on each sealed generation. This second, actor-level
+admission seal blocks new actor messages, processes previously accepted mail,
+and requires DONE/physical finalization. Runtime quiescence also checks the
+new ActorRef-owned `physicalCarrierExitPending` receipt, which survives
+ActorCell map removal and DONE publication until the TurnExecutor's
+thread-local carrier authority has actually been cleared. Thus a terminal
+callback still executing on the actor's finalization stack cannot be
+mistaken for a physically departed carrier.
+
+New test coverage includes an independent JDK test for 64 concurrent worker
+reservation races, underflow and sealed-generation replacement; a two-listener
+Atto HTTP guest loopback regression requiring a replacement worker; and a
+held-DONE-subscriber regression preventing early physical quiescence.
+
+The exact production helper file's Git blob was compiled with **OpenJDK 21** and
+an independent local concurrency harness passed **1,100/1,100 checks**,
+including 100 rounds of 64 racing virtual threads. This is meaningful
+Java helper execution but **not** the full JDK 25/GraalVM JUnit test suite.
+The full PR is still DRAFT; no backend runtime parity is certified until
+executed exact-head CI is available and reviewed.
