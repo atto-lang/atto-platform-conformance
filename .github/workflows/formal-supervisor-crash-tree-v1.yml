@@ -32,5 +32,5 @@ jobs:
           test "$(git hash-object formal/supervisor-admission-parity-v1/check.mjs)" = 698e3f8efdca782c86de4e4968cc0fdbc2625b15
           node formal/supervisor-admission-parity-v1/check.mjs
           test "$(git hash-object formal/supervisor-admission-parity-v1/nested_supervisor_crash.trace.reference.json)" = 0d8afc0b71adfa5ee6a4bea0f20a14c8a805a6e8
-          test "$(git hash-object formal/supervisor-admission-parity-v1/check-differential-trace.mjs)" = 14f8f5c21fe30cb58c21656548b5ce5d6da0159c
+          test "$(git hash-object formal/supervisor-admission-parity-v1/check-differential-trace.mjs)" = 229991bcf81a1c371ebba69a768f537113d71af7
           node formal/supervisor-admission-parity-v1/check-differential-trace.mjs
