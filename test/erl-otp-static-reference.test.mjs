@@ -7,7 +7,7 @@ function queue({ generation, maxMessages = 32, maxBytes = 1024 }) {
   assert.ok(Number.isSafeInteger(generation) && generation >= 0);
   assert.ok(Number.isSafeInteger(maxMessages) && maxMessages > 0);
   assert.ok(Number.isSafeInteger(maxBytes) && maxBytes > 0);
-  return { generation, maxMessages, maxBytes, messages: [], bytes: 0 };
+  return { generation, maxMessages, maxBytes, messages: [], bytes: 0, scanIndex: 0, scanTagsKey: null };
 }
 
 function admit(q, { sender, tag, generation, bytes }) {
@@ -29,22 +29,46 @@ function receive(q, matchTags, context = {}) {
   assert.ok(Array.isArray(matchTags) && matchTags.length > 0);
   assert.ok(matchTags.every(tag => typeof tag === 'string' && tag.length > 0));
   assert.equal(new Set(matchTags).size, matchTags.length);
-  const { stopped = false, cancelled = false, now = 0, deadline = Infinity } = context;
+  const { stopped = false, cancelled = false, now = 0, deadline = Infinity, scanBudget = 64 } = context;
   assert.ok(Number.isSafeInteger(now) && now >= 0);
   assert.ok(deadline === Infinity || (Number.isSafeInteger(deadline) && deadline >= 0));
-  if (stopped) return { kind: 'STOP' };
-  if (cancelled) return { kind: 'CANCELLED' };
+  assert.ok(Number.isSafeInteger(scanBudget) && scanBudget >= 1 && scanBudget <= 65536);
+  if (stopped || cancelled) {
+    q.scanIndex = 0;
+    q.scanTagsKey = null;
+    return { kind: stopped ? 'STOP' : 'CANCELLED' };
+  }
+  const tagsKey = JSON.stringify([...matchTags].sort());
+  if (q.scanTagsKey !== tagsKey) {
+    q.scanIndex = 0;
+    q.scanTagsKey = tagsKey;
+  }
   const tags = new Set(matchTags);
-  for (let i = 0; i < q.messages.length; i++) {
+  let scanned = 0;
+  for (let i = q.scanIndex; i < q.messages.length; i++) {
+    if (scanned === scanBudget) {
+      q.scanIndex = i;
+      return { kind: 'YIELD', scanned }; // Checkpoint: never monopolize carrier.
+    }
     const m = q.messages[i];
     assert.equal(m.generation, q.generation, 'stale descriptor must never be admitted');
+    scanned++;
     if (!tags.has(m.tag)) continue;
     q.messages.splice(i, 1); // Exactly one commit; unmatched messages retain order.
     q.bytes -= m.bytes;
-    return { kind: 'MATCH', message: m, scanned: i + 1 };
+    q.scanIndex = 0;
+    q.scanTagsKey = null;
+    return { kind: 'MATCH', message: m, scanned };
   }
-  // Existing matching messages win over a zero-deadline timeout.
-  return { kind: now >= deadline ? 'TIMEOUT' : 'WAITING' };
+  // A new message appended after a completed scan is examined without
+  // rescanning the retained, statically proven nonmatches.
+  q.scanIndex = q.messages.length;
+  if (now >= deadline) {
+    q.scanIndex = 0;
+    q.scanTagsKey = null;
+    return { kind: 'TIMEOUT' };
+  }
+  return { kind: 'WAITING' };
 }
 
 function readBits(bytes, offsetBits, width, { endian = 'big', signed = false } = {}) {
@@ -143,4 +167,31 @@ test('all 1..64 bit widths preserve unsigned and signed conversion without point
     assert.equal(readBits(b, 0, width, { signed: true }).value, -1n);
     if (width > 1) assert.throws(() => readBits(b, 65 - width, width));
   }
+});
+
+test('bounded scanning yields and resumes without reordering or dropping unmatched messages', () => {
+  const q = queue({ generation: 4, maxMessages: 128 });
+  for (let i = 0; i < 99; i++) assert.equal(admit(q, msg('a', 'Other')), 'ADMITTED');
+  assert.equal(admit(q, msg('b', 'Shutdown')), 'ADMITTED');
+  for (let i = 0; i < 12; i++) {
+    assert.deepEqual(receive(q, ['Shutdown'], { scanBudget: 8 }), { kind: 'YIELD', scanned: 8 });
+    assert.equal(q.messages.length, 100);
+  }
+  assert.equal(receive(q, ['Shutdown'], { scanBudget: 8 }).kind, 'MATCH');
+  assert.equal(q.messages.length, 99);
+  assert.ok(q.messages.every(m => m.tag === 'Other'));
+  // Different tag sets must re-scan from the head rather than reuse an old cursor.
+  assert.equal(receive(q, ['Other'], { scanBudget: 8 }).kind, 'MATCH');
+});
+
+test('STOP/cancellation preempt budgeted scan and never consume a matching message', () => {
+  const q = queue({ generation: 4 });
+  for (let i = 0; i < 5; i++) admit(q, msg('a', 'Other'));
+  admit(q, msg('a', 'Shutdown'));
+  assert.equal(receive(q, ['Shutdown'], { scanBudget: 2 }).kind, 'YIELD');
+  const messages = structuredClone(q.messages);
+  assert.equal(receive(q, ['Shutdown'], { cancelled: true }).kind, 'CANCELLED');
+  assert.deepEqual(q.messages, messages);
+  assert.equal(receive(q, ['Shutdown'], { scanBudget: 10 }).kind, 'MATCH');
+  assert.equal(q.messages.length, 5);
 });
