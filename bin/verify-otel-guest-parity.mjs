@@ -188,7 +188,8 @@ export function verifyReceipt(receipt, capture) {
     'command_argv', 'ci',
   ], 'guest receipt');
   demand(receipt.schema === 'oreslang-otel-guest-receipt/v1', 'unknown receipt schema');
-  const profile = PROFILES[receipt.profile];
+  const profile = typeof receipt.profile === 'string' && Object.hasOwn(PROFILES, receipt.profile) ?
+    PROFILES[receipt.profile] : null;
   demand(profile && receipt.backend === profile[0] &&
     receipt.compiler_repository === profile[1], 'backend/compiler/profile substitution');
   for (const field of ['compiler_source_sha', 'compiler_tree_sha']) sha(receipt[field], SHA40, field);
