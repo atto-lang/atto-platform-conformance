@@ -1,0 +1,297 @@
+{
+  "contract": "atto-singleton-shared-symbol-parity-v2",
+  "version": 2,
+  "status": "draft-requirements-not-runtime-certification",
+  "primary_backends": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge"
+  ],
+  "additional_backends": [
+    "js",
+    "rs",
+    "cranelift",
+    "hdl"
+  ],
+  "logical_scope": "one compiler-resolved declaration identity per isolated application domain; independent domains never alias",
+  "critical_rule": "concurrent-read-or-exclusive-write with no suspension and physical callback quiescence",
+  "symbol_rule": "nominal logical Symbol identity, never raw pointer equality across isolates",
+  "actor_private_state": "never implicitly shared",
+  "guest_promotion": "deny-without-compiler-ownership-proof-and-exact-head-executable-guest",
+  "backends": {
+    "java": {
+      "tier": "primary",
+      "guest_singleton": "not-certified",
+      "guest_shared_region": "not-certified",
+      "compiled_guest_proof": "not-executed",
+      "native_isolate_proof": "not-executed",
+      "default_branch_parity": "unverified",
+      "required_evidence": [
+        "exact-git-sha",
+        "stepful-CI",
+        "compiled-guest",
+        "negative-admission"
+      ]
+    },
+    "llvm": {
+      "tier": "primary",
+      "guest_singleton": "not-certified",
+      "guest_shared_region": "not-certified",
+      "compiled_guest_proof": "not-executed",
+      "native_isolate_proof": "not-executed",
+      "default_branch_parity": "unverified",
+      "required_evidence": [
+        "exact-git-sha",
+        "stepful-CI",
+        "compiled-guest",
+        "negative-admission"
+      ]
+    },
+    "net": {
+      "tier": "primary",
+      "guest_singleton": "not-certified",
+      "guest_shared_region": "not-certified",
+      "compiled_guest_proof": "not-executed",
+      "native_isolate_proof": "not-executed",
+      "default_branch_parity": "unverified",
+      "required_evidence": [
+        "exact-git-sha",
+        "stepful-CI",
+        "compiled-guest",
+        "negative-admission"
+      ]
+    },
+    "wasm": {
+      "tier": "primary",
+      "guest_singleton": "not-certified",
+      "guest_shared_region": "not-certified",
+      "compiled_guest_proof": "not-executed",
+      "native_isolate_proof": "not-executed",
+      "default_branch_parity": "unverified",
+      "required_evidence": [
+        "exact-git-sha",
+        "stepful-CI",
+        "compiled-guest",
+        "negative-admission"
+      ]
+    },
+    "forge": {
+      "tier": "primary",
+      "guest_singleton": "not-certified",
+      "guest_shared_region": "not-certified",
+      "compiled_guest_proof": "not-executed",
+      "native_isolate_proof": "not-executed",
+      "default_branch_parity": "unverified",
+      "required_evidence": [
+        "exact-git-sha",
+        "stepful-CI",
+        "compiled-guest",
+        "negative-admission"
+      ]
+    },
+    "js": {
+      "tier": "additional",
+      "guest_singleton": "not-certified",
+      "guest_shared_region": "not-certified",
+      "compiled_guest_proof": "not-executed",
+      "native_isolate_proof": "not-executed",
+      "default_branch_parity": "unverified",
+      "required_evidence": [
+        "exact-git-sha",
+        "stepful-CI",
+        "compiled-guest",
+        "negative-admission"
+      ]
+    },
+    "rs": {
+      "tier": "additional",
+      "guest_singleton": "not-certified",
+      "guest_shared_region": "not-certified",
+      "compiled_guest_proof": "not-executed",
+      "native_isolate_proof": "not-executed",
+      "default_branch_parity": "unverified",
+      "required_evidence": [
+        "exact-git-sha",
+        "stepful-CI",
+        "compiled-guest",
+        "negative-admission"
+      ]
+    },
+    "cranelift": {
+      "tier": "additional",
+      "guest_singleton": "not-certified",
+      "guest_shared_region": "not-certified",
+      "compiled_guest_proof": "not-executed",
+      "native_isolate_proof": "not-executed",
+      "default_branch_parity": "unverified",
+      "required_evidence": [
+        "exact-git-sha",
+        "stepful-CI",
+        "compiled-guest",
+        "negative-admission"
+      ]
+    },
+    "hdl": {
+      "tier": "additional",
+      "guest_singleton": "not-certified",
+      "guest_shared_region": "not-certified",
+      "compiled_guest_proof": "not-executed",
+      "native_isolate_proof": "not-executed",
+      "default_branch_parity": "unverified",
+      "required_evidence": [
+        "exact-git-sha",
+        "stepful-CI",
+        "compiled-guest",
+        "negative-admission"
+      ]
+    }
+  },
+  "cases": [
+    {
+      "id": "singleton-key-module-namespace",
+      "expect": "required"
+    },
+    {
+      "id": "singleton-identity-within-domain",
+      "expect": "required"
+    },
+    {
+      "id": "singleton-distinct-tenants",
+      "expect": "required"
+    },
+    {
+      "id": "immutable-recursive-snapshot",
+      "expect": "required"
+    },
+    {
+      "id": "const-initialization-once",
+      "expect": "required"
+    },
+    {
+      "id": "sticky-initializer-failure",
+      "expect": "required"
+    },
+    {
+      "id": "initializer-cycle-rejected",
+      "expect": "deny"
+    },
+    {
+      "id": "schema-change-without-migration-rejected",
+      "expect": "deny"
+    },
+    {
+      "id": "mutable-alias-escape-rejected",
+      "expect": "deny"
+    },
+    {
+      "id": "actor-private-state-implicit-sharing-rejected",
+      "expect": "deny"
+    },
+    {
+      "id": "symbol-nominal-not-string",
+      "expect": "required"
+    },
+    {
+      "id": "symbol-cross-isolate-pointer-equality-forbidden",
+      "expect": "deny"
+    },
+    {
+      "id": "symbol-canonical-logical-id",
+      "expect": "required"
+    },
+    {
+      "id": "symbol-untrusted-private-publish-rejected",
+      "expect": "deny"
+    },
+    {
+      "id": "symbol-intern-budget",
+      "expect": "required"
+    },
+    {
+      "id": "reader-reader-overlap",
+      "expect": "required"
+    },
+    {
+      "id": "reader-writer-exclusion",
+      "expect": "required"
+    },
+    {
+      "id": "writer-writer-exclusion",
+      "expect": "required"
+    },
+    {
+      "id": "writer-barrier-fairness",
+      "expect": "required"
+    },
+    {
+      "id": "nonparking-actor-carrier",
+      "expect": "required"
+    },
+    {
+      "id": "runtime-minted-principal",
+      "expect": "required"
+    },
+    {
+      "id": "grant-one-shot",
+      "expect": "required"
+    },
+    {
+      "id": "wrong-tenant-denied",
+      "expect": "deny"
+    },
+    {
+      "id": "stale-incarnation-denied",
+      "expect": "deny"
+    },
+    {
+      "id": "ownership-transfer-quiescent",
+      "expect": "required"
+    },
+    {
+      "id": "cancel-queued-admission",
+      "expect": "required"
+    },
+    {
+      "id": "revoked-write-draft-never-published",
+      "expect": "required"
+    },
+    {
+      "id": "writer-physical-callback-drain",
+      "expect": "required"
+    },
+    {
+      "id": "no-await-under-critical",
+      "expect": "deny"
+    },
+    {
+      "id": "no-guest-callback-under-lock",
+      "expect": "deny"
+    },
+    {
+      "id": "stop-revokes-new-admission",
+      "expect": "required"
+    },
+    {
+      "id": "stop-retains-live-physical-pins",
+      "expect": "required"
+    },
+    {
+      "id": "native-reclamation-scrub-before-reuse",
+      "expect": "required"
+    },
+    {
+      "id": "hot-reload-generation-fence",
+      "expect": "required"
+    },
+    {
+      "id": "guest-executable-evidence-exact-head",
+      "expect": "required"
+    },
+    {
+      "id": "host-only-not-guest-certified",
+      "expect": "required"
+    }
+  ]
+}
