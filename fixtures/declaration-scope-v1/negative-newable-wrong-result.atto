@@ -1,0 +1,5 @@
+define pub class Cart implements Newable[Cart] as
+  pub fnc new(): int {
+    return 42;
+  }
+end
