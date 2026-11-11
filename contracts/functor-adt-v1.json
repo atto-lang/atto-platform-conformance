@@ -4,8 +4,8 @@
   "status": "PARTIAL_JAVA_GUEST_ONLY_NOT_FIVE_BACKEND_PARITY",
   "source": {
     "repo": "ores-truffle-oreslang/oreslang-source.java",
-    "source_commit": "02fe4a3da37e0c8a9273ebe4f3f8d58eb9ec67b3",
-    "fixture_tree": "2d1ec04e80a230edc66cd91a089dc9b9feead6d5",
+    "source_commit": "faa149c6bcc7510a659c86499f614efdaffcc4e8",
+    "fixture_tree": "be201b1c667057582a6e7e53025bb1d1938179c6",
     "compiler_main_tree": "9868e954398a7b8896cd14628a8a2e0189ea99b1"
   },
   "target_backends": [
@@ -19,18 +19,18 @@
   "evidence": {
     "java": {
       "tier": "EXACT_BLOB_SUBSET_GUEST_EXECUTED",
-      "actions_url": "https://github.com/numerics-atto/mirror-oreslang-source.java/actions/runs/42954467116",
-      "carrier_commit": "75d7886745cd78b0c55ee851660e9d18952468bc",
-      "junit_tests": 2,
+      "actions_url": "https://github.com/numerics-atto/mirror-oreslang-source.java/actions/runs/42957069176",
+      "carrier_commit": "11b4da87962a470f77683ac8a087eb3b842b0325",
+      "junit_tests": 3,
       "failed": 0,
       "skipped": 0,
-      "positive_assertions": 16,
-      "negative_fixtures": 10,
-      "limitations": "Unrelated source-repo test/docs files not mirrored exactly; separate Java Native Image AOT proof covers a positive guest and two negative cases."
+      "positive_assertions": 36,
+      "negative_fixtures": 15,
+      "limitations": "All 17 current-source guest fixtures verified through actual Java/GraalVM JUnit. Exact source-main/stdlib/selected test/fixtures, not full source tree."
     },
     "other_backends": "NOT_EXECUTED",
     "java_native_aot": {
-      "tier": "NATIVE_IMAGE_AOT_GUEST_EXECUTED_EXACT_BLOB_SUBSET",
+      "tier": "HISTORICAL_OLD_SOURCE_HEAD_ONLY",
       "actions_url": "https://github.com/numerics-atto/mirror-oreslang-source.java/actions/runs/42954808209",
       "carrier_commit": "43948948ff504f31f4be546700b3f95cc56f3996",
       "source_head": "02fe4a3da37e0c8a9273ebe4f3f8d58eb9ec67b3",
@@ -41,7 +41,8 @@
       "positive_assertions": 16,
       "negative_compiler_cases": 2,
       "remaining_negative_cases": "NOT_EXECUTED_IN_NATIVE_AOT",
-      "limitations": "Exact-blob source subset, not complete source tree; no LLVM, Wasm, Forge, .NET or Cranelift proof."
+      "limitations": "Historical AOT receipt was for prior exact source head 02fe4a3; current source head faa149c is not yet AOT-verified.",
+      "current_source_verified": false
     }
   },
   "cases": [
@@ -61,7 +62,7 @@
         "cranelift": "PENDING"
       },
       "execution_profiles": {
-        "java_graalvm_native_aot": "NOT_EXECUTED"
+        "java_graalvm_native_aot": "NOT_EXECUTED_AT_CURRENT_SOURCE_HEAD"
       }
     },
     {
@@ -80,7 +81,7 @@
         "cranelift": "PENDING"
       },
       "execution_profiles": {
-        "java_graalvm_native_aot": "NOT_EXECUTED"
+        "java_graalvm_native_aot": "NOT_EXECUTED_AT_CURRENT_SOURCE_HEAD"
       }
     },
     {
@@ -99,7 +100,7 @@
         "cranelift": "PENDING"
       },
       "execution_profiles": {
-        "java_graalvm_native_aot": "NOT_EXECUTED"
+        "java_graalvm_native_aot": "NOT_EXECUTED_AT_CURRENT_SOURCE_HEAD"
       }
     },
     {
@@ -118,7 +119,64 @@
         "cranelift": "PENDING"
       },
       "execution_profiles": {
-        "java_graalvm_native_aot": "NOT_EXECUTED"
+        "java_graalvm_native_aot": "NOT_EXECUTED_AT_CURRENT_SOURCE_HEAD"
+      }
+    },
+    {
+      "id": "bad-deep-map-error-domain",
+      "kind": "compile_reject",
+      "path": "fixtures/functor-adt-v1/bad-deep-map-error-domain.atto",
+      "blob_sha": "e6c95a09ab1cf3fe1eb6b25e06448c119db5f2b0",
+      "expected_stdout": null,
+      "diagnostic_category": "wrong-nested-error-domain",
+      "backends": {
+        "java": "GUEST_EXECUTED_EXACT_BLOB_SUBSET",
+        "llvm": "PENDING",
+        "wasm": "PENDING",
+        "forge": "PENDING",
+        "net": "PENDING",
+        "cranelift": "PENDING"
+      },
+      "execution_profiles": {
+        "java_graalvm_native_aot": "NOT_EXECUTED_AT_CURRENT_SOURCE_HEAD"
+      }
+    },
+    {
+      "id": "bad-deep-transpose-option-shape",
+      "kind": "compile_reject",
+      "path": "fixtures/functor-adt-v1/bad-deep-transpose-option-shape.atto",
+      "blob_sha": "4beeedb090ece494c389f002638c134dfda5a30e",
+      "expected_stdout": null,
+      "diagnostic_category": "wrong-deep-transpose-shape",
+      "backends": {
+        "java": "GUEST_EXECUTED_EXACT_BLOB_SUBSET",
+        "llvm": "PENDING",
+        "wasm": "PENDING",
+        "forge": "PENDING",
+        "net": "PENDING",
+        "cranelift": "PENDING"
+      },
+      "execution_profiles": {
+        "java_graalvm_native_aot": "NOT_EXECUTED_AT_CURRENT_SOURCE_HEAD"
+      }
+    },
+    {
+      "id": "bad-deep-transpose-result-shape",
+      "kind": "compile_reject",
+      "path": "fixtures/functor-adt-v1/bad-deep-transpose-result-shape.atto",
+      "blob_sha": "6b1ad5c78301659f0eb493b2be740cba4cdf3ab0",
+      "expected_stdout": null,
+      "diagnostic_category": "wrong-deep-transpose-shape",
+      "backends": {
+        "java": "GUEST_EXECUTED_EXACT_BLOB_SUBSET",
+        "llvm": "PENDING",
+        "wasm": "PENDING",
+        "forge": "PENDING",
+        "net": "PENDING",
+        "cranelift": "PENDING"
+      },
+      "execution_profiles": {
+        "java_graalvm_native_aot": "NOT_EXECUTED_AT_CURRENT_SOURCE_HEAD"
       }
     },
     {
@@ -137,7 +195,7 @@
         "cranelift": "PENDING"
       },
       "execution_profiles": {
-        "java_graalvm_native_aot": "GUEST_EXECUTED_EXACT_BLOB_SUBSET"
+        "java_graalvm_native_aot": "NOT_EXECUTED_AT_CURRENT_SOURCE_HEAD"
       }
     },
     {
@@ -156,7 +214,7 @@
         "cranelift": "PENDING"
       },
       "execution_profiles": {
-        "java_graalvm_native_aot": "NOT_EXECUTED"
+        "java_graalvm_native_aot": "NOT_EXECUTED_AT_CURRENT_SOURCE_HEAD"
       }
     },
     {
@@ -175,7 +233,7 @@
         "cranelift": "PENDING"
       },
       "execution_profiles": {
-        "java_graalvm_native_aot": "NOT_EXECUTED"
+        "java_graalvm_native_aot": "NOT_EXECUTED_AT_CURRENT_SOURCE_HEAD"
       }
     },
     {
@@ -194,7 +252,7 @@
         "cranelift": "PENDING"
       },
       "execution_profiles": {
-        "java_graalvm_native_aot": "GUEST_EXECUTED_EXACT_BLOB_SUBSET"
+        "java_graalvm_native_aot": "NOT_EXECUTED_AT_CURRENT_SOURCE_HEAD"
       }
     },
     {
@@ -213,7 +271,45 @@
         "cranelift": "PENDING"
       },
       "execution_profiles": {
-        "java_graalvm_native_aot": "NOT_EXECUTED"
+        "java_graalvm_native_aot": "NOT_EXECUTED_AT_CURRENT_SOURCE_HEAD"
+      }
+    },
+    {
+      "id": "bad-three-layer-option-collapse",
+      "kind": "compile_reject",
+      "path": "fixtures/functor-adt-v1/bad-three-layer-option-collapse.atto",
+      "blob_sha": "f996d0ea1a3fe02f98453eddd079e23609780275",
+      "expected_stdout": null,
+      "diagnostic_category": "implicit-nested-flatten",
+      "backends": {
+        "java": "GUEST_EXECUTED_EXACT_BLOB_SUBSET",
+        "llvm": "PENDING",
+        "wasm": "PENDING",
+        "forge": "PENDING",
+        "net": "PENDING",
+        "cranelift": "PENDING"
+      },
+      "execution_profiles": {
+        "java_graalvm_native_aot": "NOT_EXECUTED_AT_CURRENT_SOURCE_HEAD"
+      }
+    },
+    {
+      "id": "bad-three-layer-result-collapse",
+      "kind": "compile_reject",
+      "path": "fixtures/functor-adt-v1/bad-three-layer-result-collapse.atto",
+      "blob_sha": "9e614ee1850624242c7cccb553f5589e53e0a1ac",
+      "expected_stdout": null,
+      "diagnostic_category": "implicit-nested-flatten",
+      "backends": {
+        "java": "GUEST_EXECUTED_EXACT_BLOB_SUBSET",
+        "llvm": "PENDING",
+        "wasm": "PENDING",
+        "forge": "PENDING",
+        "net": "PENDING",
+        "cranelift": "PENDING"
+      },
+      "execution_profiles": {
+        "java_graalvm_native_aot": "NOT_EXECUTED_AT_CURRENT_SOURCE_HEAD"
       }
     },
     {
@@ -232,7 +328,26 @@
         "cranelift": "PENDING"
       },
       "execution_profiles": {
-        "java_graalvm_native_aot": "NOT_EXECUTED"
+        "java_graalvm_native_aot": "NOT_EXECUTED_AT_CURRENT_SOURCE_HEAD"
+      }
+    },
+    {
+      "id": "nested-functor-depth-positive",
+      "kind": "compile_and_execute",
+      "path": "fixtures/functor-adt-v1/nested-functor-depth-positive.atto",
+      "blob_sha": "d6ce6f0635557316d5cd24887f48f00954ad93f8",
+      "expected_stdout": "FNV2:11111111111111111111:END",
+      "diagnostic_category": null,
+      "backends": {
+        "java": "GUEST_EXECUTED_EXACT_BLOB_SUBSET",
+        "llvm": "PENDING",
+        "wasm": "PENDING",
+        "forge": "PENDING",
+        "net": "PENDING",
+        "cranelift": "PENDING"
+      },
+      "execution_profiles": {
+        "java_graalvm_native_aot": "NOT_EXECUTED_AT_CURRENT_SOURCE_HEAD"
       }
     },
     {
@@ -251,7 +366,7 @@
         "cranelift": "PENDING"
       },
       "execution_profiles": {
-        "java_graalvm_native_aot": "GUEST_EXECUTED_EXACT_BLOB_SUBSET"
+        "java_graalvm_native_aot": "NOT_EXECUTED_AT_CURRENT_SOURCE_HEAD"
       }
     }
   ]
