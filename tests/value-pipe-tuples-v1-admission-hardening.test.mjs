@@ -26,7 +26,7 @@ test("checker must be the pinned compiler executable, not an unrelated program",
   assert.doesNotMatch(r.stdout,/positive_compile_admission/);
 });
 
-test("missing valid *positive compile* cannot be hidden by fake run output and all-negative rejection",()=>{
+test("missing valid *positive compile* cannot be hidden by fake run output and all-negative rejection",{skip:process.platform==="win32"},()=>{
   const tmp=fs.mkdtempSync(path.join(os.tmpdir(),"atto-tuple-admission-"));
   try{
     const mock=path.join(tmp,"mock-compiler");
@@ -71,4 +71,37 @@ test("a program name cannot be supplied as the fixture placeholder",()=>{
   });
   assert.notEqual(r.status,0);
   assert.match(r.stderr,/standalone \{fixture\}/);
+});
+
+test("even a fake compiler that matches every oracle gets UNVERIFIED evidence only",()=>{
+  const tmp=fs.mkdtempSync(path.join(os.tmpdir(),"atto-tuple-unverified-"));
+  try{
+    const mock=path.join(tmp,"fake-compiler.mjs");
+    fs.writeFileSync(mock,`const file=process.argv.at(-1);
+if(process.argv.includes("--check")){
+  if(file.endsWith("/positive.atto")||file.endsWith("\\\\positive.atto"))process.exit(0);
+  console.error("tuple arity return function mismatch");
+  process.exit(1);
+}
+if(process.argv.includes("--run")){
+  process.stdout.write("39\\n");
+  process.exit(0);
+}
+process.exit(9);
+`);
+    const r=run({
+      ATTO_TUPLE_BACKEND:"llvm-native-guest",
+      ATTO_TUPLE_COMPILER_ID:"fake-shows-why-external-proof-is-required",
+      ATTO_TUPLE_COMPILER_BINARY:process.execPath,
+      ATTO_TUPLE_WORKDIR:tmp,
+      ATTO_TUPLE_RUN_ARGV_JSON:JSON.stringify([process.execPath,mock,"--run","{fixture}"]),
+      ATTO_TUPLE_CHECK_ARGV_JSON:JSON.stringify([process.execPath,mock,"--check","{fixture}"])
+    });
+    assert.equal(r.status,0,r.stderr);
+    const report=JSON.parse(r.stdout);
+    assert.equal(report.configured_executable_invoked,true);
+    assert.equal(report.attestation_status,"UNVERIFIED");
+    assert.equal(report.independent_provenance_required,true);
+    assert.ok(!("real_executable_invoked" in report),"mock cannot earn misleading real-backend flag");
+  }finally{fs.rmSync(tmp,{recursive:true,force:true});}
 });
