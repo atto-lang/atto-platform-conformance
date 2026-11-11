@@ -102,7 +102,7 @@ function checkedExe(path, expected, label) {
   need(hashFile(actual) === expected, label + ' binary hash mismatch');
   return actual;
 }
-function args(template, substitutions, label) {
+export function args(template, substitutions, label) {
   need(Array.isArray(template) && template.length >= 1 && template.length <= 40,
     label + ' argv must be bounded nonempty array');
   const hostile = new Set(['-e', '--eval', '--evaluate', '--print', '-p', '-c',
@@ -176,6 +176,20 @@ export function checkConfiguration(config) {
     'artifact kind is not declared');
   need(config.artifact_kind !== 'source_fixture' ||
     config.profile === 'java-graalvm-jit', 'only Java JIT can use source guest artifact');
+  const placeholders = { compiler: '/pinned-compiler', fixture: '/pinned-fixture',
+    artifact: '/generated-artifact' };
+  args(config.compile_argv, placeholders, 'compiler');
+  args(config.run_argv, placeholders, 'guest');
+  need(config.compile_argv[0] === '{compiler}',
+    'compiler entrypoint must use the verified compiler placeholder');
+  need(config.compile_argv.some(a => a.includes('{fixture}')),
+    'compiler must consume the pinned fixture');
+  need(config.artifact_kind === 'source_fixture' ||
+    config.compile_argv.some(a => a.includes('{artifact}')),
+    'generated compiler must write output to designated artifact');
+  need(config.run_argv.some(a => a.includes(
+    config.artifact_kind === 'source_fixture' ? '{fixture}' : '{artifact}')),
+    'guest must consume pinned source or generated artifact');
   need(Number.isSafeInteger(config.timeout_ms) &&
     config.timeout_ms >= 1000 && config.timeout_ms <= 180000, 'invalid process timeout');
   need(Array.isArray(config.dependency_pins) && config.dependency_pins.length <= 32,
@@ -202,7 +216,9 @@ export function captureReal(config) {
     config.compiler_binary_sha256, 'compiler');
   for (const pin of config.dependency_pins) checkedExe(pin.path, pin.sha256, 'dependency');
   const outputDir = mkdtempSync(join(tmpdir(), 'ores-otel-real-guest-'));
-  const artifact = join(outputDir, 'guest-artifact');
+  const artifact = join(outputDir, config.profile === 'wasm-node-worker' ?
+    'guest-artifact.wasm' : process.platform === 'win32' ?
+      'guest-artifact.exe' : 'guest-artifact');
   const substitution = { fixture, artifact, compiler };
   const compile = args(config.compile_argv, substitution, 'compiler');
   const run = args(config.run_argv, substitution, 'guest');
