@@ -1,0 +1,441 @@
+{
+  "schemaVersion": 1,
+  "contract": "namespace-attached-actor-state-v1",
+  "status": "candidate-unattested",
+  "canonicalHeader": "declare actor Foo [implements ActorXYZ];",
+  "canonicalStateSyntax": "define state on actor Foo as { let int x: 5; }",
+  "scope": "one sealed private per-actor-instance schema bound by verified package+namespace+nominal actor",
+  "backendTargets": [
+    "java",
+    "llvm",
+    "net",
+    "wasm",
+    "forge",
+    "js"
+  ],
+  "verifiedBackends": [],
+  "javaDraft": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2887",
+  "executionStatus": "parser-and-static-binder-staged-on-separate-DRAFT-not-runtime",
+  "proofRequired": [
+    "exact-pr-head-and-root-git-tree",
+    "verified-manifest-locked-source-set",
+    "nonzero-executed-JUnit-and-guest-tests",
+    "negative-diagnostic-and-no-binary-on-reject",
+    "non-escaping-fair-rw-critical-loan-tests",
+    "generation-fenced-stop-and-cancellation-tests",
+    "independent-approved-review"
+  ],
+  "cases": [
+    {
+      "id": "state.parser.constant_schema",
+      "stage": "parser",
+      "expect": "accept_ast_only",
+      "sourceUnits": {
+        "a": "namespace foo;\npub declare actor Foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\n"
+      },
+      "requires": [
+        "sealed-actor-state-AST",
+        "constant-initialization",
+        "private-state"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.cross_file_nominal",
+      "stage": "static_binding",
+      "expect": "accept_metadata_only",
+      "sourceUnits": {
+        "a": "namespace foo;\npub declare actor Foo;\n",
+        "b": "namespace foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\n"
+      },
+      "requires": [
+        "same-package-instance",
+        "same-namespace",
+        "single-actor-state-schema"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.class_impostor",
+      "stage": "static_binding",
+      "expect": "reject",
+      "sourceUnits": {
+        "a": "namespace foo;\npub define class Foo as end\n",
+        "b": "namespace foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\n"
+      },
+      "requires": [
+        "no-class-to-actor-escalation"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.missing_actor",
+      "stage": "static_binding",
+      "expect": "reject",
+      "sourceUnits": {
+        "a": "namespace foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\n"
+      },
+      "requires": [
+        "no-ambient-actor-lookup"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.wrong_namespace",
+      "stage": "static_binding",
+      "expect": "reject",
+      "sourceUnits": {
+        "a": "namespace foo;\npub declare actor Foo;\n",
+        "b": "namespace other;\ndefine state on actor Foo as {\n let int x: 5;\n}\n"
+      },
+      "requires": [
+        "no-cross-namespace-authority"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.duplicate_schema",
+      "stage": "static_binding",
+      "expect": "reject",
+      "sourceUnits": {
+        "a": "namespace foo;\npub declare actor Foo;\n",
+        "b": "namespace foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\n",
+        "c": "namespace foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\n"
+      },
+      "requires": [
+        "one-state-schema-per-actor"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.duplicate_field",
+      "stage": "parser",
+      "expect": "reject",
+      "sourceUnits": {
+        "a": "namespace foo;\npub declare actor Foo;\ndefine state on actor Foo as { let int x: 5; let int x: 7; }\n"
+      },
+      "requires": [
+        "no-field-shadowing"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.dynamic_initializer",
+      "stage": "parser",
+      "expect": "reject",
+      "sourceUnits": {
+        "a": "namespace foo;\npub declare actor Foo;\ndefine state on actor Foo as { let int x: compute(); }\n"
+      },
+      "requires": [
+        "no-effectful-initialization"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.literal_overflow",
+      "stage": "parser",
+      "expect": "reject",
+      "sourceUnits": {
+        "a": "namespace foo;\npub declare actor Foo;\ndefine state on actor Foo as { let int x: 9223372036854775808; }\n"
+      },
+      "requires": [
+        "no-int64-overflow"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.public_schema",
+      "stage": "parser",
+      "expect": "reject",
+      "sourceUnits": {
+        "a": "namespace foo;\npub declare actor Foo;\npub define state on actor Foo as {\n let int x: 5;\n}\n"
+      },
+      "requires": [
+        "state-always-private"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.noncritical_read",
+      "stage": "future_typecheck",
+      "expect": "reject",
+      "sourceUnits": {
+        "a": "namespace foo;\npub declare actor Foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\npub mtd (Foo f) leak(): int { return f.x; }\n"
+      },
+      "requires": [
+        "no-direct-state-projection",
+        "no-raw-state-borrow"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.noncritical_write",
+      "stage": "future_typecheck",
+      "expect": "reject",
+      "sourceUnits": {
+        "a": "namespace foo;\npub declare actor Foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\npub mtd (Foo f) bad(): void { f.x = 12; return; }\n"
+      },
+      "requires": [
+        "no-unlocked-state-mutation"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.critical_read",
+      "stage": "future_typecheck",
+      "expect": "accept_after_checked_loans",
+      "sourceUnits": {
+        "a": "namespace foo;\npub declare actor Foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\npub mtd (Foo f) get(): int { return handle_state(critical-read |s| -> s.x); }\n"
+      },
+      "requires": [
+        "read-only-loan",
+        "fair-rw-coherence",
+        "no-alias-escape"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.critical_write",
+      "stage": "future_typecheck",
+      "expect": "accept_after_checked_loans",
+      "sourceUnits": {
+        "a": "namespace foo;\npub declare actor Foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\npub mtd (Foo f) increment(): void { handle_state(critical-write |s| -> { s.x = s.x + 1; }); return; }\n"
+      },
+      "requires": [
+        "exclusive-write-loan",
+        "checked-i64",
+        "release-on-all-exits"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.suspend_in_critical",
+      "stage": "future_typecheck",
+      "expect": "reject",
+      "sourceUnits": {
+        "a": "namespace foo;\npub declare actor Foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\npub mtd (Foo f) bad(): void { handle_state(critical-write |s| -> { await sleep_async(1); }); return; }\n"
+      },
+      "requires": [
+        "no-await-in-write-loan"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.return_borrowed_alias",
+      "stage": "future_typecheck",
+      "expect": "reject",
+      "sourceUnits": {
+        "a": "namespace foo;\npub declare actor Foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\npub mtd (Foo f) bad(): borrow int { return handle_state(critical-read |s| -> rt borrow s.x); }\n"
+      },
+      "requires": [
+        "non-escaping-state-loans"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.two_actors_isolated",
+      "stage": "future_runtime",
+      "expect": "separate_state_per_actor_instance",
+      "sourceUnits": {},
+      "requires": [
+        "actor-owned-heaps",
+        "no-cross-actor-raw-state"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.supervisor_no_raw_state",
+      "stage": "future_runtime",
+      "expect": "deny_unauthorized_supervisor_read",
+      "sourceUnits": {},
+      "requires": [
+        "supervisor-not-owner",
+        "explicit-checked-transfer"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "state.stop_generation_fence",
+      "stage": "future_runtime",
+      "expect": "reject_stale_state_and_reclaim_on_quiescence",
+      "sourceUnits": {},
+      "requires": [
+        "generation-checked-actor-state",
+        "cancellation-cleanup",
+        "physical-quiescence"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    }
+  ]
+}
