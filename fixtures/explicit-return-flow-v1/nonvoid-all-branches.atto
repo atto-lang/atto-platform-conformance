@@ -1,0 +1,8 @@
+fnc choose(bool condition): int {
+  if condition then
+    return 1;
+  else
+    return 2;
+  fi
+}
+pub fnc main(): int { return choose(true); }
