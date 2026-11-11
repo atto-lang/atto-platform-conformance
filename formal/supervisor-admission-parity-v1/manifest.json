@@ -57,7 +57,7 @@
       "backend": "java",
       "repository": "ores-truffle-oreslang/oreslang-source.java",
       "pr": 2785,
-      "head": "a1c8c5c27653d29d512fe8b80d3b8bd09f816077",
+      "head": "a027e09060c5184402775451b2305bac623257f7",
       "description": "Escrow permits and subtree host bridge, JUnit authored, nested spawn currently fail-closed",
       "coverage": {
         "S01": "AUTHORED_HOST",
@@ -79,7 +79,7 @@
       "backend": "llvm",
       "repository": "ores-truffle-oreslang/oreslang-source.llvm",
       "pr": 1697,
-      "head": "1f17465c4c29e343ce98b6b58e257d551f4edc7f",
+      "head": "4523a1c2262b49b9aa91c9b81230021126f78477",
       "description": "NativeActorGroup bound priority inbox close vs DATA, physical resource-loan terminal release",
       "coverage": {
         "S01": "ACTOR_LOCAL_HOST_ONLY",
@@ -101,7 +101,7 @@
       "backend": "net",
       "repository": "ores-truffle-oreslang/oreslang-source.net",
       "pr": 485,
-      "head": "25f50203cb6d62a8d6bec1c9ae7c761cefb6ce6d",
+      "head": "81f7f4538691beb2c69bd679777a3830765217cf",
       "description": "CLR ActorRuntime generation/nonce send vs STOP and physical arena budget refund",
       "coverage": {
         "S01": "ACTOR_LOCAL_HOST_ONLY",
@@ -123,7 +123,7 @@
       "backend": "wasm",
       "repository": "ores-truffle-oreslang/oreslang-source.wasm",
       "pr": 475,
-      "head": "3e7a3c480d8310247a1c5c586ea194262234c2bf",
+      "head": "5c8f9528e2acbebe954dad60e0965056ca0ed4bd",
       "description": "Synthetic real Worker+Wasm actor STOP/send, typed terminal CONTROL and host generation restart",
       "coverage": {
         "S01": "ACTOR_LOCAL_HOST_ONLY",
@@ -145,7 +145,7 @@
       "backend": "forge",
       "repository": "ores-truffle-oreslang/oreslang-source.forge",
       "pr": 266,
-      "head": "5e3596c5df827f7515d2553c733fc96d6493d042",
+      "head": "16340785bbebc372cf7dcdf2b574d99aac608edb",
       "description": "Native actor-incarnation owner send vs STOP, heap/frame release and restart generation",
       "coverage": {
         "S01": "ACTOR_LOCAL_HOST_ONLY",
