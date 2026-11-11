@@ -2,6 +2,7 @@
 // Structural inspection only. Untrusted JSON is NOT GitHub/runner/build attestation.
 // No self-reported receipt can authorize parity promotion (even when well formed).
 import { constants, closeSync, fstatSync, lstatSync, openSync, readSync, readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -58,6 +59,12 @@ export function inspectReceipt(receipt) {
   requireField(vector !== undefined, 'unknown fixture');
   requireField(vector?.feature === receipt.feature, 'feature/fixture mismatch');
   requireField(vector?.backends.includes(receipt.backend) === true, 'fixture/backend mismatch');
+  // Prose runtime scenarios and policy prose are design oracles, not executable
+  // guest programs. They cannot be passed off as source-backed guest evidence.
+  requireField(vector?.kind === 'compile' && typeof vector.source === 'string' &&
+    vector.source.length > 0, 'fixture has no executable guest source; candidate only');
+  requireField(vector?.sourceProfile === 'atto-strict-v1', 'fixture lacks strict AttoLang source profile');
+  requireField(receipt.fixture?.sourceProfile === vector?.sourceProfile, 'source profile mismatch');
   requireField(receipt.status === 'VERIFIED', 'reported status is not VERIFIED');
   requireField(receipt.evidenceClass === 'compiler-guest', 'not compiler-guest evidence');
 
@@ -68,6 +75,10 @@ export function inspectReceipt(receipt) {
   requireField(isSha40(c?.treeSha), 'compiler tree SHA missing or invalid');
   requireField(isSha256(c?.binarySha256), 'compiler binary SHA256 missing or invalid');
   requireField(isSha256(receipt.fixture?.sha256), 'fixture digest missing or invalid');
+  if (vector?.kind === 'compile' && typeof vector.source === 'string') {
+    const expectedHash = createHash('sha256').update(Buffer.from(vector.source, 'utf8')).digest('hex');
+    requireField(receipt.fixture?.sha256 === expectedHash, 'fixture hash does not match committed source oracle');
+  }
 
   const e = receipt.execution;
   requireField(isRecord(e), 'execution section missing');
