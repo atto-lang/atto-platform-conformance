@@ -495,3 +495,64 @@ test('legacy original epoch is verified after supervisor epoch rotation',()=>{
     assert.throws(()=>db.loadFenced({...base,epoch:2}),/CORRUPT_LEGACY_EVENT/);
   });
 });
+
+
+test('legacy event retains durable duplicate receipt after verified snapshot compaction and epoch2 retry',()=>{
+  fixture(db=>{
+    const e=legacy('compacted-event');
+    commit(db,e);
+    const checkpoint={...legacy('checkpoint-after-event',1,'snapshot'),
+      payload:Buffer.from('balance=7')};
+    commit(db,checkpoint);
+    db.db.prepare('DELETE FROM events WHERE tenant=? AND actor=? AND state_name=? AND version=1')
+      .run(base.tenantId,base.actor,base.stateName);
+    db.grantEpoch({tenantId:base.tenantId,actor:base.actor,epoch:2});
+    assert.equal(load(db,2).snapshot.version,2);
+    assert.equal(load(db,2).events.length,0);
+    const retried={...e,epoch:2};
+    assert.equal(db.verifyCommit(retried).version,1);
+    const duplicate=db.enqueue(retried);
+    assert.equal(duplicate.status,'committed');
+    assert.equal(duplicate.durable,true);
+    assert.equal(duplicate.duplicate,true);
+    assert.equal(duplicate.version,1);
+    assert.equal(db.flush().length,0);
+    assert.equal(db.getHead.get(base.tenantId,base.actor,base.stateName).version,2);
+    assert.throws(()=>db.enqueue(e),/STALE_EPOCH/);
+    assert.throws(()=>db.enqueue({...retried,payload:Buffer.from('different')}),
+      /OP_ID_CONFLICT/);
+  });
+});
+
+test('superseded snapshot keeps historical operation receipt through actor epoch rotation',()=>{
+  fixture(db=>{
+    const first={...legacy('checkpoint-old',0,'snapshot'),payload:Buffer.from('v1')};
+    const second={...legacy('checkpoint-new',1,'snapshot'),payload:Buffer.from('v2')};
+    commit(db,first);commit(db,second);
+    db.grantEpoch({tenantId:base.tenantId,actor:base.actor,epoch:2});
+    assert.equal(load(db,2).snapshot.version,2);
+    assert.equal(db.verifyCommit({...first,epoch:2}).version,1);
+    assert.equal(db.enqueue({...first,epoch:2}).duplicate,true);
+    assert.equal(db.getHead.get(base.tenantId,base.actor,base.stateName).version,2);
+    assert.throws(()=>db.enqueue({...first,epoch:2,payload:Buffer.from('fake')}),
+      /OP_ID_CONFLICT/);
+  });
+});
+
+test('tampered active checkpoint cannot authenticate compacted legacy duplicate',()=>{
+  fixture(db=>{
+    const e=legacy('compacted-tamper-event');
+    commit(db,e);
+    const snap={...legacy('checkpoint-tampered',1,'snapshot'),
+      payload:Buffer.from('balance=7')};
+    commit(db,snap);
+    db.db.prepare('DELETE FROM events WHERE tenant=? AND actor=? AND state_name=? AND version=1')
+      .run(base.tenantId,base.actor,base.stateName);
+    db.db.prepare('UPDATE snapshots SET payload=? WHERE tenant=? AND actor=? AND state_name=?')
+      .run(Buffer.from('balance=9'),base.tenantId,base.actor,base.stateName);
+    db.grantEpoch({tenantId:base.tenantId,actor:base.actor,epoch:2});
+    assert.throws(()=>db.verifyCommit({...e,epoch:2}),/CORRUPT_SNAPSHOT_PROOF/);
+    assert.throws(()=>db.enqueue({...e,epoch:2}),/CORRUPT_SNAPSHOT_PROOF/);
+    assert.equal(db.getHead.get(base.tenantId,base.actor,base.stateName).version,2);
+  });
+});
