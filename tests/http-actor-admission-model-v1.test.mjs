@@ -195,3 +195,34 @@ test("untrusted callers cannot mutate the private admission ledger",()=>{
  m.exit_turn(message);
  assert.equal(m.shutdown_state(),"quiescent");
 });
+
+test("cancellation during dispatch retains request until physical handoff is reconciled",()=>{
+ const m=new HttpActorAdmissionModel();
+ const req=m.admit_request("handoff"), msg=m.admit_message(req,"work");
+ m.begin_handoff(msg);
+ assert.equal(m.snapshot().pending_handoffs,1);
+ assert.throws(()=>m.begin_handoff(msg),/message cannot begin handoff/);
+ assert.throws(()=>m.enter_turn(msg),/message cannot resume/);
+ assert.throws(()=>m.complete_message(msg),/message handoff active/);
+ m.start_shutdown();
+ m.force_stop();
+ assert.equal(m.snapshot().request_count,1);
+ assert.equal(m.snapshot().message_count,1);
+ assert.equal(m.shutdown_state(),"pending");
+ assert.throws(()=>m.recycle(),/quiescence/);
+ m.end_handoff(msg);
+ assert.equal(m.shutdown_state(),"quiescent");
+ assert.throws(()=>m.end_handoff(msg),/stale or forged/);
+});
+test("request and message record accessors cannot leak mutable capability internals",()=>{
+ const m=new HttpActorAdmissionModel();
+ const req=m.admit_request("private"),msg=m.admit_message(req,"private");
+ for(const name of ["_request","_message","_retire_message","_retire_request"])
+   assert.equal(m[name],undefined,"mutable internal method is visible: "+name);
+ assert.equal(m.snapshot().request_count,1);
+ assert.equal(m.snapshot().message_count,1);
+ m.start_shutdown();
+ m.force_stop();
+ assert.equal(m.shutdown_state(),"quiescent");
+ assert.throws(()=>m.enter_turn(msg),/stale or forged/);
+});
