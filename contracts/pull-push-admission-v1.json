@@ -1,0 +1,41 @@
+{
+  "schema": "atto.pull-push-admission.v1",
+  "version": 1,
+  "status": "TARGET_ONLY_NO_ATTO_GUEST_EXECUTION",
+  "languageContract": "ores-truffle-oreslang/attolang-language-spec.md/spec/23-pull-push-and-lazy-collections.md",
+  "sharedLegacyContract": "ores-truffle-oreslang/oreslang-source.java/contracts/v1/observable-stream-channel.md",
+  "sourceFreeReference": "atto-lang/atto-rx-channels/src/flow-port-model.mjs",
+  "backends": {
+    "java": {"repository": "ores-truffle-oreslang/oreslang-source.java", "status": "NOT_EXECUTED"},
+    "llvm": {"repository": "ores-truffle-oreslang/oreslang-source.llvm", "status": "NOT_EXECUTED"},
+    "wasm": {"repository": "ores-truffle-oreslang/oreslang-source.wasm", "status": "NOT_EXECUTED"},
+    "forge": {"repository": "ores-truffle-oreslang/oreslang-source.forge", "status": "NOT_EXECUTED"},
+    "net": {"repository": "ores-truffle-oreslang/oreslang-source.net", "status": "NOT_EXECUTED"}
+  },
+  "cases": [
+    {"id":"pull-empty-next","class":"guest-positive","expect":"empty-iterator-end"},
+    {"id":"pull-infinite-take-is-lazy","class":"guest-positive","expect":"only-demanded-values-evaluated"},
+    {"id":"lazy-filter-drops-owned-items","class":"guest-positive","expect":"filtered-values-dropped-exactly-once"},
+    {"id":"cross-await-stack-borrow","class":"compile-negative","expect":"borrow-lifetime-rejected-before-ir"},
+    {"id":"actor-state-callback-escape","class":"compile-negative","expect":"sealed-state-loan-rejected"},
+    {"id":"failed-send-retains-owned-value","class":"guest-positive","expect":"typed-failure-returns-original-value"},
+    {"id":"channel-zero-capacity-rendezvous","class":"concurrency-positive","expect":"no-implicit-buffer-one"},
+    {"id":"channel-fifo-and-budget","class":"concurrency-positive","expect":"fifo-with-bounded-retained-bytes"},
+    {"id":"demand-zero-negative-overflow","class":"guest-negative","expect":"invalid-credit-denied-without-mutation"},
+    {"id":"no-unsolicited-next","class":"guest-positive","expect":"next-count-not-above-requested-credit"},
+    {"id":"observable-channel-reader-lease","class":"concurrency-negative","expect":"second-implicit-independent-subscriber-denied"},
+    {"id":"broadcast-slow-consumer-isolation","class":"concurrency-positive","expect":"per-subscriber-finite-budget"},
+    {"id":"graceful-close-drains","class":"concurrency-positive","expect":"committed-fifo-before-complete"},
+    {"id":"error-cancel-drop-once","class":"concurrency-positive","expect":"queued-dropped-once-physical-loans-fenced"},
+    {"id":"four-way-nested-terminal","class":"guest-positive","expect":"next-complete-error-cancel-disjoint"},
+    {"id":"stale-actor-generation","class":"security-negative","expect":"stale-send-ack-denied"},
+    {"id":"forged-cross-domain-capability","class":"security-negative","expect":"wrong-domain-handle-denied"},
+    {"id":"reactor-callback-not-guest","class":"concurrency-negative","expect":"guest-code-runs-on-authorized-scheduler"},
+    {"id":"native-fusion-no-tracing-gc","class":"memory-profile","expect":"allocator-instrumented-no-intermediate-collection"}
+  ],
+  "evidencePolicy": {
+    "states": ["not_executed","unsupported","failed","passed"],
+    "requiredBeforePass": ["backend","case_id","source_commit_sha","source_tree_sha","fixture_blob_sha","compiler_commit_sha","workflow_url","run_id","job_id","steps_executed","guest_executed","observed","artifact_sha256"],
+    "rule": "No case is PASS from the manifest alone. Shape-complete receipts require independently verified exact-source provenance, real nonzero-step guest execution and compatible output. Source-free model results are not guest evidence."
+  }
+}
