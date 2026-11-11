@@ -313,7 +313,11 @@ class MultiActorSharedRegionV1 {
 
   assertCanSuspend(execution) {
     this.#actor(execution);
-    assert(!this.#hasExecution(execution), 'loan must not span await/select/yield');
+    // Suspension is a scheduler-wide boundary, not a property of one region.
+    // Calling this method on an idle region must not bless a live loan or
+    // physical guest turn in a different region of the same trusted host.
+    assert(!this.#host.hasOutstandingLoan(execution),
+      'loan or physical region turn must not span await/select/yield');
   }
 
   release(execution, ticket) {
