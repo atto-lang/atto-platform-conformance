@@ -4,25 +4,27 @@
   "source": {
     "repo": "ores-truffle-oreslang/oreslang-source.llvm",
     "pr": 1667,
-    "head": "988448538ba612d90e9e6385c084172747624334",
+    "head": "f6b424b4582d9501fc5c58a01f8026c73ef697cd",
     "base": "feat/gpu-actor-provider-port-v1-20261110",
     "portBlob": "d0103a9727a13cbd661c4095383f6e79570af7cc",
     "hostTestBlob": "d4c062a0d29cf2bdb4b3107ee9a5067c66e72069",
     "physicalProbeBlob": "965c20f494cfc4fac2acf9590cc3e0130708d979",
-    "openClSystemApiBlob": "36792e75a02cc3d1c7e9a9be17e6d5a75cfea269"
+    "openClSystemApiBlob": "36792e75a02cc3d1c7e9a9be17e6d5a75cfea269",
+    "preexistingOpenClProviderG3TestBlob": "5d0a53429c5a92a3461e5f8db5abb03d12191535"
   },
   "execution": {
     "carrierRepo": "scintilla-run/scintilla-run-e2e",
     "branch": "carrier/gpu-actor-opencl-v2-20261110",
-    "head": "72addc49d807255d813bfe01cdff4f0e62dcaa5e",
-    "runId": 42949404184,
-    "jobId": 130289898006,
-    "url": "https://github.com/scintilla-run/scintilla-run-e2e/actions/runs/42949404184",
+    "head": "e8eb8e6e82370789eae2f7b2eb58df5adc8a812c",
+    "runId": 42949702555,
+    "jobId": 130290869708,
+    "url": "https://github.com/scintilla-run/scintilla-run-e2e/actions/runs/42949702555",
     "exactBlobChecks": "passed",
     "gccAsanUbsan": "passed",
     "clang": "passed",
     "hostAssertionsPerCompiler": 65,
-    "physicalNativeProbeBuild": "passed"
+    "physicalNativeProbeBuild": "passed",
+    "preexistingOpenClG3SanitizerSuite": "passed"
   },
   "realGpuEvidence": {
     "nativeProbeAttempted": true,
@@ -40,7 +42,8 @@
     "native device loss quiescence recovery check",
     "numerical oracle on mock output",
     "native OpenCL GPU-only provider selector",
-    "failed native clGetEventInfo query cannot imply terminal command"
+    "failed native clGetEventInfo query cannot imply terminal command",
+    "preexisting native OpenClProvider G3 sanitizer suite passes after event-info fix"
   ],
   "blockers": [
     "physical GPU-capable runner needed",
