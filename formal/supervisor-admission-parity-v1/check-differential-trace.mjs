@@ -26,9 +26,21 @@ function validate(trace) {
     return false;
   }
   let seq=0,firstFence=Infinity,sibling=false,restarts=0;
+  // In a real runtime, terminal FAIL and ancestor DATA fence are published
+  // by one CONTROL ledger operation. The trace expands them into two
+  // observations but MUST NOT allow a DATA admit, child publish or decision
+  // to interleave between them.
+  let awaitingFence = null;
   for(const e of trace.events) {
     if(!Number.isSafeInteger(e.seq)||e.seq<=seq)fail("nonmonotonic sequence");
     seq=e.seq;
+    if(awaitingFence !== null) {
+      if(e.kind !== "FENCE" || e.actor !== awaitingFence.actor ||
+         e.generation !== awaitingFence.generation) {
+        fail("terminal failure and ancestor fence must be atomic");
+      }
+      awaitingFence = null;
+    }
     switch(e.kind) {
       case "PUBLISH": {
         if(!/^[a-z0-9_]+$/.test(e.actor??"")||e.actor==="root"||
@@ -71,7 +83,9 @@ function validate(trace) {
         if(x.retired||faults.has(x.key)||
            !["PANIC","RAISE","UNCAUGHT_THROW","STACK_OVERFLOW"].includes(e.failure_kind))
           fail("forged terminal");
-        faults.add(x.key);break;
+        faults.add(x.key);
+        awaitingFence = {actor:e.actor,generation:e.generation};
+        break;
       }
       case "FENCE": {
         const x=inc(e);
@@ -112,6 +126,7 @@ function validate(trace) {
       default:fail("unknown event");
     }
   }
+  if(awaitingFence !== null)fail("terminal failure never fenced");
   if([...tickets.values()].some(p=>!p.settled)||
      [...faults].some(f=>![...notices.values()].some(n=>n.failed===f&&n.acked))||
      !sibling||!restarts)fail("missing terminal/sibling/restart witness");
@@ -131,7 +146,8 @@ const mutations=[
   t=>t.events[16].parent="s2",
   t=>t.events.splice(14,1),
   t=>t.events[2].generation=0,
-  t=>t.events.splice(17,0,{seq:17.5,kind:"DATA_ADMIT",actor:"a1",generation:2,ticket:"fake"})
+  t=>t.events.splice(17,0,{seq:17.5,kind:"DATA_ADMIT",actor:"a1",generation:2,ticket:"fake"}),
+  t=>t.events.splice(6,0,{seq:6.5,kind:"DATA_ADMIT",actor:"a1",generation:2,ticket:"between-fail-and-fence"})
 ];
 for(const edit of mutations) {
   const altered=JSON.parse(JSON.stringify(reference));
