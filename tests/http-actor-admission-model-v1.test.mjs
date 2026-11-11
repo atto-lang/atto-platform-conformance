@@ -110,3 +110,61 @@ test("bounded adversarial action sequences never violate lifetime or physical tu
    }
  }
 });
+
+test("graceful drain blocks new requests but retains admitted request's messages",()=>{
+ const m=new HttpActorAdmissionModel();
+ const r=m.admit_request("original");
+ m.start_shutdown();
+ assert.throws(()=>m.admit_request("new"),/request admission sealed/);
+ assert.equal(m.shutdown_state(),"pending");
+ const first=m.admit_message(r,"completion");
+ m.enter_turn(first);
+ m.complete_message(first);
+ m.close_response(r);
+ assert.equal(m.shutdown_state(),"pending","physical turn remains active after response");
+ m.exit_turn(first);
+ assert.equal(m.shutdown_state(),"quiescent");
+ assert.throws(()=>m.admit_message(r,"late"),/stale or forged/);
+});
+test("forced stop cancels all admitted lifetimes but cannot fake carrier exit",()=>{
+ const m=new HttpActorAdmissionModel({request_concurrency:2,message_concurrency:2});
+ const a=m.admit_request("a"),b=m.admit_request("b");
+ const held=m.admit_message(a,"in-flight");
+ m.admit_message(b,"queued");
+ m.enter_turn(held);
+ assert.equal(m.force_stop(),true);
+ assert.equal(m.force_stop(),false,"forced stop must be single-owner");
+ assert.equal(m.snapshot().request_count,1,"physical request remains reserved");
+ assert.equal(m.snapshot().message_count,1,"physical turn cannot retire early");
+ assert.equal(m.shutdown_state(),"pending");
+ assert.throws(()=>m.admit_message(a,"late"),/message admission sealed/);
+ assert.throws(()=>m.recycle(),/quiescence/);
+ m.exit_turn(held);
+ assert.equal(m.shutdown_state(),"quiescent");
+ m.recycle();
+ assert.equal(m.snapshot().force_stopped,false);
+ assert.throws(()=>m.close_response(a),/stale/);
+});
+test("forged getters and proxies are never inspected before token authentication",()=>{
+ const m=new HttpActorAdmissionModel();
+ let touched=0;
+ const poison=new Proxy({}, {get(){touched++;throw new Error("forged getter invoked");}});
+ assert.throws(()=>m.admit_message(poison,"x"),/stale or forged/);
+ assert.throws(()=>m.enter_turn(poison),/stale or forged/);
+ assert.throws(()=>m.close_response(poison),/stale or forged/);
+ assert.equal(touched,0,"untrusted token getters must not execute");
+ const owner=m.admit_request("safe");
+ const fake=Object.freeze({...owner});
+ assert.throws(()=>m.admit_message(fake,"x"),/stale or forged/);
+});
+test("abandoned request cannot complete without cancellation or response close",()=>{
+ const m=new HttpActorAdmissionModel();
+ const a=m.admit_request("stalled");
+ m.start_shutdown();
+ assert.equal(m.shutdown_state(),"pending");
+ const t=m.admit_message(a,"late-existing");
+ m.complete_message(t);
+ assert.equal(m.shutdown_state(),"pending","response still owns its request lifetime");
+ m.force_stop();
+ assert.equal(m.shutdown_state(),"quiescent");
+});
