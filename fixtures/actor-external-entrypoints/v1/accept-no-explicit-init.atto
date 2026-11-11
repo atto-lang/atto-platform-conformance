@@ -1,6 +1,6 @@
 // No explicit init: runtime default initialization must be at most once.
 namespace actor_external_default;
-define actor Worker;
+declare actor Worker;
 define external mtd (Worker w) receive(ActorMail<int> mail): void {
     return;
 }
