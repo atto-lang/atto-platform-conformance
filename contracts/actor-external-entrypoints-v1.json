@@ -112,6 +112,20 @@
       "expect": "REJECT",
       "diagnostic": "ACTOR_EXTERNAL_REQUIRED",
       "required_phase": "COMPILE_REJECT"
+    },
+    {
+      "id": "reject_legacy_on_start",
+      "path": "fixtures/actor-external-entrypoints/v1/reject-legacy-on-start.atto",
+      "expect": "REJECT",
+      "diagnostic": "ACTOR_LEGACY_START_UNSUPPORTED",
+      "required_phase": "COMPILE_REJECT"
+    },
+    {
+      "id": "reject_mixed_init_on_start",
+      "path": "fixtures/actor-external-entrypoints/v1/reject-mixed-init-on-start.atto",
+      "expect": "REJECT",
+      "diagnostic": "ACTOR_INIT_ON_START_CONFLICT",
+      "required_phase": "COMPILE_REJECT"
     }
   ]
 }
