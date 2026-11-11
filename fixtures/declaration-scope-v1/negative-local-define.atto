@@ -1,0 +1,6 @@
+define pub fnc top(): int {
+  define fnc nested(): int {
+    return 1;
+  }
+  return 1;
+}
