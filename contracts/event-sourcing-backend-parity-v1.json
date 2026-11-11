@@ -1,0 +1,100 @@
+{
+  "schema": "atto.event-sourcing.backend-parity/1",
+  "scope": "durable BankAccount actor and cross-backend canonical event batch",
+  "snapshot_date": "2026-11-11",
+  "evidence_policy": "HOST_ONLY != SOURCE_COMPILED_GUEST; zero-step CI != PASS; source commit != execution",
+  "guest_target": "fixtures/event-sourcing/bank-account.atto",
+  "wire_target": "contracts/event-sourcing-durable-command-v1.json",
+  "release_gates": [
+    "real .atto parse, typecheck, ownership and pure reducer checks",
+    "compiler emitted actual backend executable guest",
+    "atomic event(s), durable command fingerprint and original reply",
+    "crash after commit before ack; fenced restart and replay; no duplicate event",
+    "failed transaction rollback and incomplete/corrupt journal fail closed",
+    "owner-checked asynchronous storage completion without borrowed alias",
+    "exact source SHA + compiler binary SHA + nonzero executed runner steps"
+  ],
+  "backends": [
+    {
+      "id": "java",
+      "repo": "ores-truffle-oreslang/oreslang-source.java",
+      "pr": 2768,
+      "head_sha": "151b018fdc94a024382c87168539174fcc7ff788",
+      "compiler_pr": 2770,
+      "stdlib_pr": 2763,
+      "host_wire": "SOURCE_COMMITTED_NOT_EXECUTED",
+      "durable_provider": "SOURCE_COMMITTED_NOT_EXECUTED",
+      "compiled_atto_guest": "NOT_EXECUTED",
+      "required_profiles": [
+        "JVM",
+        "GraalVM Native Image"
+      ]
+    },
+    {
+      "id": "llvm",
+      "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+      "pr": 1646,
+      "head_sha": "688fcd9b4eaf2c7cc771034c790c11551f77fbcf",
+      "host_wire": "SOURCE_COMMITTED_NOT_EXECUTED",
+      "durable_provider": "SOURCE_COMMITTED_NOT_EXECUTED",
+      "compiled_atto_guest": "NOT_EXECUTED",
+      "required_profiles": [
+        "native LLVM",
+        "GCC and Clang ASan/UBSan"
+      ]
+    },
+    {
+      "id": "wasm",
+      "repo": "ores-truffle-oreslang/oreslang-source.wasm",
+      "pr": 467,
+      "head_sha": "0545cba129deff73936aed02ff092b55cd1f147e",
+      "host_wire": "SOURCE_COMMITTED_NOT_EXECUTED",
+      "durable_provider": "NOT_IMPLEMENTED",
+      "compiled_atto_guest": "NOT_EXECUTED",
+      "required_profiles": [
+        "zero-import wasm32 guest",
+        "Node host adapter"
+      ]
+    },
+    {
+      "id": "forge",
+      "repo": "ores-truffle-oreslang/oreslang-source.forge",
+      "pr": 257,
+      "head_sha": "1827d9ebc3fa6c9ff7e0950c848049b21d59a038",
+      "host_wire": "LOCAL_STRICT_GCC_CLANG_PASS",
+      "durable_provider": "NOT_IMPLEMENTED",
+      "compiled_atto_guest": "NOT_EXECUTED",
+      "required_profiles": [
+        "Forge interpreter",
+        "Forge native AOT/JIT",
+        "C++20 host codec"
+      ],
+      "host_evidence": {
+        "files": {
+          "runtime/durable_command_wire_v1.hpp": "c5d22670270243816e41a5c68fee0d95f7d4c781",
+          "verification/durable_command_wire_v1_test.cpp": "73d8fd2f900c0cdde64ca42f7c60b3f1d297ed0c"
+        },
+        "executed_local": [
+          "GCC14 -std=c++20 -Wall -Wextra -Wpedantic -Werror",
+          "Clang -std=c++20 -Wall -Wextra -Wpedantic -Werror"
+        ],
+        "guest": false,
+        "durable": false
+      }
+    },
+    {
+      "id": "net",
+      "repo": "ores-truffle-oreslang/oreslang-source.net",
+      "pr": 476,
+      "head_sha": "a1548b665c71542b35b07a2788dd90bcadd9b088",
+      "host_wire": "SOURCE_COMMITTED_NOT_EXECUTED",
+      "durable_provider": "NOT_IMPLEMENTED",
+      "compiled_atto_guest": "NOT_EXECUTED",
+      "required_profiles": [
+        "linux-x64 Native AOT",
+        "win-x64 Native AOT"
+      ]
+    }
+  ],
+  "status": "DRAFT_ALL_GUEST_BACKENDS_NOT_EXECUTED"
+}

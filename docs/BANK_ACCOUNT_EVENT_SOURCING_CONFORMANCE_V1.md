@@ -82,3 +82,26 @@ turn, transitive pure reducers, sealed state and supervisor recovery, an
 outbox/terminal reply policy, plus actual guest execution on five backends.
 The original command bytes must be encoded deterministically and must not
 contain an actor-local pointer, borrowed alias or nondeterministic timestamp.
+
+## Five-backend scoped parity inventory (November 11, 2026)
+
+`contracts/event-sourcing-backend-parity-v1.json` now tracks the independently
+committed exact-head branches of Java/GraalVM (PR #2768), LLVM (#1646),
+Wasm (#467), Forge (#257), and .NET Native AOT (#476). The canonical
+two-event journal wire is now implemented in all five **host** languages.
+Forge's C++20 wire tests were executed locally with strict GCC and Clang;
+the other sources have checked-in host code/tests but require direct
+exact-head execution. Every compiled source `.atto` BankAccount guest
+remains **NOT_EXECUTED**. Wasm/Forge/.NET still lack a durable event-sourced
+actor provider and compiler lowering, and Java/LLVM provider work is
+not certified by running host-only reference tests.
+
+`reference/persistence-sidecar/backend-parity-status.test.mjs` rejects
+accidental promotion of host-only or stale evidence into guest pass status.
+The backend compiler binaries and emitted guest traces must be checked
+independently, using exact source/toolchain SHA, real execution and crash
+injection, before status changes are allowed.
+
+This is an executable milestone and a **scope distinction**, not five-backend
+production actor parity. No private source is mirrored to another GitHub
+organization absent separately approved preflight and publisher policy.
