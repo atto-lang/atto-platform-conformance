@@ -57,7 +57,7 @@
       "backend": "java",
       "repository": "ores-truffle-oreslang/oreslang-source.java",
       "pr": 2885,
-      "head": "2756086900c700b72f9d1e3ccbd45c4ea1ebf5a8",
+      "head": "dfc090837256749415202d1a16a2a90292d51ba3",
       "description": "Atomic inherited Java ActorRuntime child CONTROL reservation and rollback authored; 13 real JUnit cases require execution, no guest AOT proof",
       "coverage": {
         "S01": "AUTHORED_HOST",
