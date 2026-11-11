@@ -1,0 +1,60 @@
+{
+  "schema": "atto.gpu-actors-opencl-native-provider-evidence/2",
+  "recordedAt": "2026-11-10",
+  "source": {
+    "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+    "pr": 1667,
+    "head": "3c211dbeb28b30e9971940581ef735b69586699c",
+    "base": "feat/gpu-actor-provider-port-v1-20261110",
+    "portBlob": "d0103a9727a13cbd661c4095383f6e79570af7cc",
+    "hostTestBlob": "e1853839872b1a86290d8137e5102ece48fef325",
+    "physicalProbeBlob": "965c20f494cfc4fac2acf9590cc3e0130708d979"
+  },
+  "execution": {
+    "carrierRepo": "scintilla-run/scintilla-run-e2e",
+    "branch": "carrier/gpu-actor-opencl-v2-20261110",
+    "head": "30c1a325fd3591e1d903552af7bee34b3569d94f",
+    "runId": 42948847074,
+    "jobId": 130288095256,
+    "url": "https://github.com/scintilla-run/scintilla-run-e2e/actions/runs/42948847074",
+    "exactBlobChecks": "passed",
+    "gccAsanUbsan": "passed",
+    "clang": "passed",
+    "hostAssertionsPerCompiler": 59,
+    "physicalNativeProbeBuild": "passed"
+  },
+  "realGpuEvidence": {
+    "nativeProbeAttempted": true,
+    "exitCode": 77,
+    "reason": "GPU_ACTOR_V2_NO_GPU_RUNTIME no-compatible-GPU; no CPU fallback",
+    "physicalKernelExecuted": false,
+    "actualDeviceEventVerified": false,
+    "compiledGuest": false,
+    "backendGpuExecutionStatus": "NOT_EXECUTED"
+  },
+  "claimedHostSemantics": [
+    "native OpenClProvider API integrated with GPU actor ProviderPortV1",
+    "upload-kernel-download chain from mock OpenCL API",
+    "actor state commits after mock download completion",
+    "native device loss quiescence recovery check",
+    "numerical oracle on mock output",
+    "native OpenCL GPU-only provider selector"
+  ],
+  "blockers": [
+    "physical GPU-capable runner needed",
+    "source actor body GPU HIR/MIR absent",
+    "opencl provider does not expose authenticated ambiguous-enqueue recovery receipts",
+    "raw V0 native Boolean paths still present",
+    "root quarantine not process-crash durable",
+    "full repository CTest and five backend parity not executed"
+  ],
+  "backendStatuses": {
+    "java": "NOT_EXECUTED_GPU_ACTOR",
+    "llvm": "NOT_EXECUTED_GPU_ACTOR",
+    "net": "NOT_EXECUTED_GPU_ACTOR",
+    "wasm": "NOT_EXECUTED_GPU_ACTOR",
+    "forge": "NOT_EXECUTED_GPU_ACTOR"
+  },
+  "releaseReady": false,
+  "reviewRequired": true
+}
