@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "contract": "namespace-attached-actor-state-v1",
   "status": "candidate-unattested",
-  "canonicalHeader": "declare actor Foo [implements ActorXYZ];",
+  "canonicalHeader": "declare [pub | private] actor Foo [implements ActorXYZ];",
   "canonicalStateSyntax": "define state on actor Foo as { let int x: 5; }",
   "scope": "one sealed private per-actor-instance schema attached only to a 'declare actor' header, keyed by verified package+namespace+nominal actor",
   "backendTargets": [
@@ -31,7 +31,7 @@
       "stage": "parser",
       "expect": "accept_ast_only",
       "sourceUnits": {
-        "a": "namespace foo;\npub declare actor Foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\n"
+        "a": "namespace foo;\ndeclare pub actor Foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\n"
       },
       "requires": [
         "sealed-actor-state-AST",
@@ -54,7 +54,7 @@
       "stage": "static_binding",
       "expect": "accept_metadata_only",
       "sourceUnits": {
-        "a": "namespace foo;\npub declare actor Foo;\n",
+        "a": "namespace foo;\ndeclare pub actor Foo;\n",
         "b": "namespace foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\n"
       },
       "requires": [
@@ -144,7 +144,7 @@
       "stage": "static_binding",
       "expect": "reject",
       "sourceUnits": {
-        "a": "namespace foo;\npub declare actor Foo;\n",
+        "a": "namespace foo;\ndeclare pub actor Foo;\n",
         "b": "namespace other;\ndefine state on actor Foo as {\n let int x: 5;\n}\n"
       },
       "requires": [
@@ -166,7 +166,7 @@
       "stage": "static_binding",
       "expect": "reject",
       "sourceUnits": {
-        "a": "namespace foo;\npub declare actor Foo;\n",
+        "a": "namespace foo;\ndeclare pub actor Foo;\n",
         "b": "namespace foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\n",
         "c": "namespace foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\n"
       },
@@ -189,7 +189,7 @@
       "stage": "parser",
       "expect": "reject",
       "sourceUnits": {
-        "a": "namespace foo;\npub declare actor Foo;\ndefine state on actor Foo as { let int x: 5; let int x: 7; }\n"
+        "a": "namespace foo;\ndeclare pub actor Foo;\ndefine state on actor Foo as { let int x: 5; let int x: 7; }\n"
       },
       "requires": [
         "no-field-shadowing"
@@ -210,7 +210,7 @@
       "stage": "parser",
       "expect": "reject",
       "sourceUnits": {
-        "a": "namespace foo;\npub declare actor Foo;\ndefine state on actor Foo as { let int x: compute(); }\n"
+        "a": "namespace foo;\ndeclare pub actor Foo;\ndefine state on actor Foo as { let int x: compute(); }\n"
       },
       "requires": [
         "no-effectful-initialization"
@@ -231,7 +231,7 @@
       "stage": "parser",
       "expect": "reject",
       "sourceUnits": {
-        "a": "namespace foo;\npub declare actor Foo;\ndefine state on actor Foo as { let int x: 9223372036854775808; }\n"
+        "a": "namespace foo;\ndeclare pub actor Foo;\ndefine state on actor Foo as { let int x: 9223372036854775808; }\n"
       },
       "requires": [
         "no-int64-overflow"
@@ -252,7 +252,7 @@
       "stage": "parser",
       "expect": "reject",
       "sourceUnits": {
-        "a": "namespace foo;\npub declare actor Foo;\npub define state on actor Foo as {\n let int x: 5;\n}\n"
+        "a": "namespace foo;\ndeclare pub actor Foo;\npub define state on actor Foo as {\n let int x: 5;\n}\n"
       },
       "requires": [
         "state-always-private"
@@ -273,7 +273,7 @@
       "stage": "future_typecheck",
       "expect": "reject",
       "sourceUnits": {
-        "a": "namespace foo;\npub declare actor Foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\npub mtd (Foo f) leak(): int { return f.x; }\n"
+        "a": "namespace foo;\ndeclare pub actor Foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\npub mtd (Foo f) leak(): int { return f.x; }\n"
       },
       "requires": [
         "no-direct-state-projection",
@@ -295,7 +295,7 @@
       "stage": "future_typecheck",
       "expect": "reject",
       "sourceUnits": {
-        "a": "namespace foo;\npub declare actor Foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\npub mtd (Foo f) bad(): void { f.x = 12; return; }\n"
+        "a": "namespace foo;\ndeclare pub actor Foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\npub mtd (Foo f) bad(): void { f.x = 12; return; }\n"
       },
       "requires": [
         "no-unlocked-state-mutation"
@@ -316,7 +316,7 @@
       "stage": "future_typecheck",
       "expect": "accept_after_checked_loans",
       "sourceUnits": {
-        "a": "namespace foo;\npub declare actor Foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\npub mtd (Foo f) get(): int { return handle_state(critical-read |s| -> s.x); }\n"
+        "a": "namespace foo;\ndeclare pub actor Foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\npub mtd (Foo f) get(): int { return handle_state(critical-read |s| -> s.x); }\n"
       },
       "requires": [
         "read-only-loan",
@@ -339,7 +339,7 @@
       "stage": "future_typecheck",
       "expect": "accept_after_checked_loans",
       "sourceUnits": {
-        "a": "namespace foo;\npub declare actor Foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\npub mtd (Foo f) increment(): void { handle_state(critical-write |s| -> { s.x = s.x + 1; }); return; }\n"
+        "a": "namespace foo;\ndeclare pub actor Foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\npub mtd (Foo f) increment(): void { handle_state(critical-write |s| -> { s.x = s.x + 1; }); return; }\n"
       },
       "requires": [
         "exclusive-write-loan",
@@ -362,7 +362,7 @@
       "stage": "future_typecheck",
       "expect": "reject",
       "sourceUnits": {
-        "a": "namespace foo;\npub declare actor Foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\npub mtd (Foo f) bad(): void { handle_state(critical-write |s| -> { await sleep_async(1); }); return; }\n"
+        "a": "namespace foo;\ndeclare pub actor Foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\npub mtd (Foo f) bad(): void { handle_state(critical-write |s| -> { await sleep_async(1); }); return; }\n"
       },
       "requires": [
         "no-await-in-write-loan"
@@ -383,7 +383,7 @@
       "stage": "future_typecheck",
       "expect": "reject",
       "sourceUnits": {
-        "a": "namespace foo;\npub declare actor Foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\npub mtd (Foo f) bad(): borrow int { return handle_state(critical-read |s| -> rt borrow s.x); }\n"
+        "a": "namespace foo;\ndeclare pub actor Foo;\ndefine state on actor Foo as {\n let int x: 5;\n}\npub mtd (Foo f) bad(): borrow int { return handle_state(critical-read |s| -> rt borrow s.x); }\n"
       },
       "requires": [
         "non-escaping-state-loans"
@@ -460,5 +460,6 @@
       "confirmedBackends": [],
       "evidence": "NOT_EXECUTED"
     }
-  ]
+  ],
+  "visibilityOrdering": "declare pub actor is canonical; pub declare actor is rejected"
 }
