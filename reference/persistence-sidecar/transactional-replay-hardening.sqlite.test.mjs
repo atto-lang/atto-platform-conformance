@@ -433,3 +433,21 @@ test('same-length mutated event cannot be laundered into a durable checkpoint',(
     assert.equal(db.db.prepare('SELECT COUNT(*) AS n FROM snapshots').get().n,0);
   });
 });
+
+
+test('uncommitted future event row beyond the head cannot create phantom replay capacity',()=>{
+  fixture(db=>{
+    commit(db,legacy('trusted-first'));
+    db.db.prepare(
+      'INSERT INTO events(tenant,actor,state_name,version,schema_version,op_id,payload) '+
+      'VALUES(?,?,?,?,?,?,?)'
+    ).run(base.tenantId,base.actor,base.stateName,3,1,
+      'forged-future',Buffer.from('{"cents":9}'));
+    assert.equal(db.enqueue(legacy('must-not-advance',1)).status,'admitted');
+    assert.throws(()=>db.flush(),/OUTCOME_UNKNOWN/);
+    assert.equal(db.getHead.get(base.tenantId,base.actor,base.stateName).version,1);
+    assert.equal(db.db.prepare(
+      'SELECT COUNT(*) AS n FROM operations WHERE tenant=? AND actor=? AND state_name=?'
+    ).get(base.tenantId,base.actor,base.stateName).n,1);
+  });
+});
