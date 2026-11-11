@@ -6,18 +6,28 @@ import { classifyVirtualActorGuestReceipt as classify } from "../lib/virtual-act
 const contract = JSON.parse(await readFile(new URL(
   "../contracts/virtual-actor-activation-supervision-v1.json", import.meta.url), "utf8"));
 const backends = ["java", "llvm", "net", "wasm", "forge"];
-const h = "a".repeat(40), tree = "b".repeat(40), fixture = "c".repeat(64);
-const expected = { headSha: h, treeSha: tree, fixtureSha256: fixture };
+const mutations = ["stale-generation", "foreign-supervisor", "nonreentrant-overlap"];
+const expected = {
+  headSha: "a".repeat(40), treeSha: "b".repeat(40),
+  fixtureSha256: "c".repeat(64),
+  repoFullName: "ores-truffle-oreslang/example",
+  requiredNegativeMutations: mutations
+};
 const candidate = () => ({
-  ...expected, runnerId: 42,
-  steps: [{ kind: "compiled-atto-guest", conclusion: "success" }],
+  ...expected, runnerId: 42, runId: 123, jobId: 456, runAttempt: 1,
+  jobUrl: "https://github.com/ores-truffle-oreslang/example/actions/runs/123/job/456",
+  jobStatus: "completed", jobConclusion: "success",
+  steps: [{ number: 1, status: "completed", kind: "compiled-atto-guest",
+            conclusion: "success", executedTests: 3 }],
   compilerBackedGuest: true, hostOnly: false, sourceFree: false,
   guestLogSha256: "d".repeat(64),
-  jobUrl: "https://github.com/ores-truffle-oreslang/example/actions/runs/1/job/42",
-  negativeMutationReceipts: [{ rejected: true, logSha256: "e".repeat(64) }]
+  negativeMutationReceipts: mutations.map(mutationId => ({
+    mutationId, rejected: true, executedTests: 1, logSha256: "e".repeat(64)
+  }))
 });
+const status = receipt => classify(receipt, expected).classification;
 
-test("all five backends remain explicitly without guest evidence", () => {
+test("all five backends remain explicitly WITHOUT guest evidence", () => {
   assert.equal(contract.schemaVersion, 1);
   assert.equal(contract.contract, "atto.virtual-actor-activation-supervision/1");
   assert.equal(contract.status, "CANDIDATE_UNATTESTED");
@@ -33,47 +43,64 @@ test("all five backends remain explicitly without guest evidence", () => {
     }
   }
 });
-
-test("lookup, single-flight, restart, admission, nonreentrancy and owner oracles are present", () => {
+test("lookup, single-flight, restart, admission, nonreentrancy and owner oracles exist", () => {
   for (const prefix of ["lookup.", "activation.", "admission.", "restart.",
-                        "nonreentrancy.", "security.", "isolation."])
+                         "nonreentrancy.", "security.", "isolation."])
     assert.ok(contract.cases.some(c => c.id.startsWith(prefix)), prefix);
 });
-
-test("zero-step, missing-step and zero-runner IDs never imply guest success", () => {
-  assert.equal(classify({ ...candidate(), steps: [] }, expected).classification,
-    "UNVERIFIED_RUNNER_ADMISSION");
-  assert.equal(classify({ ...candidate(), steps: null }, expected).classification,
-    "UNVERIFIED_RUNNER_ADMISSION");
-  assert.equal(classify({ ...candidate(), runnerId: 0 }, expected).classification,
-    "UNVERIFIED_RUNNER_ADMISSION");
-  assert.equal(classify({ ...candidate(), steps: [{ conclusion: "skipped" }] }, expected).classification,
-    "UNVERIFIED_RUNNER_ADMISSION");
+test("missing/zero runner, empty, skipped, and never-completed steps are admissions", () => {
+  for (const bad of [
+    { runnerId: 0 }, { runnerId: null }, { runnerId: undefined }, { runnerId: -1 },
+    { steps: null }, { steps: [] },
+    { steps: [{ number: 1, status: "completed", conclusion: "skipped" }] },
+    { steps: [{ number: 1, status: "in_progress", conclusion: null }] },
+    { steps: [{ conclusion: "success", kind: "compiled-atto-guest" }] }
+  ]) assert.equal(status({ ...candidate(), ...bad }), "UNVERIFIED_RUNNER_ADMISSION");
 });
-
-test("host-only canaries and mismatched exact source are never guest evidence", () => {
-  assert.equal(classify({ ...candidate(), hostOnly: true }, expected).classification,
-    "UNVERIFIED_HOST_ONLY");
-  assert.equal(classify({ ...candidate(), sourceFree: true }, expected).classification,
-    "UNVERIFIED_HOST_ONLY");
-  assert.equal(classify({ ...candidate(), compilerBackedGuest: false }, expected).classification,
-    "UNVERIFIED_HOST_ONLY");
+test("host canaries cannot impersonate compiler-backed guests", () => {
+  for (const bad of [
+    { hostOnly: true }, { sourceFree: true },
+    { compilerBackedGuest: false }, { compilerBackedGuest: undefined }
+  ]) assert.equal(status({ ...candidate(), ...bad }), "UNVERIFIED_HOST_ONLY");
+});
+test("head, tree and fixture identity mismatches fail closed", () => {
   for (const field of ["headSha", "treeSha", "fixtureSha256"])
-    assert.equal(classify({ ...candidate(), [field]: "f".repeat(40) }, expected).classification,
+    assert.equal(status({ ...candidate(), [field]: "f".repeat(40) }),
       "UNVERIFIED_IDENTITY", field);
+  assert.equal(classify(candidate(), { ...expected, treeSha: null }).classification,
+    "UNVERIFIED_IDENTITY");
 });
-
-test("guest steps, raw logs, negative mutations and independent review remain necessary", () => {
-  assert.equal(classify({ ...candidate(), steps: [{ kind: "source-only", conclusion: "success" }] }, expected).classification,
-    "UNVERIFIED_GUEST_EXECUTION");
-  assert.equal(classify({ ...candidate(), guestLogSha256: null }, expected).classification,
-    "UNVERIFIED_GUEST_EXECUTION");
-  assert.equal(classify({ ...candidate(), negativeMutationReceipts: [] }, expected).classification,
+test("job URL, run, job, attempt and repository must bind", () => {
+  for (const bad of [
+    { runId: 0 }, { runId: null }, { jobId: 0 }, { runAttempt: 0 },
+    { runAttempt: undefined }, { repoFullName: "other/repo" },
+    { jobUrl: "https://github.com/other/repo/actions/runs/123/job/456" },
+    { jobUrl: "https://github.com/ores-truffle-oreslang/example/actions/runs/123/job/999" }
+  ]) assert.equal(status({ ...candidate(), ...bad }), "UNVERIFIED_JOB_IDENTITY");
+});
+test("a real completed guest step with executed tests is structurally necessary", () => {
+  for (const bad of [
+    { jobStatus: "queued" }, { jobConclusion: "failure" },
+    { guestLogSha256: null },
+    { steps: [{ number: 1, status: "completed", conclusion: "success", kind: "host-only" }] },
+    { steps: [{ number: 1, status: "completed", conclusion: "success",
+                kind: "compiled-atto-guest", executedTests: 0 }] }
+  ]) assert.equal(status({ ...candidate(), ...bad }), "UNVERIFIED_GUEST_EXECUTION");
+});
+test("required negative mutations must each be distinct and executed", () => {
+  const base = candidate();
+  for (const bad of [
+    [],
+    base.negativeMutationReceipts.slice(1),
+    [...base.negativeMutationReceipts, base.negativeMutationReceipts[0]],
+    base.negativeMutationReceipts.map((x, i) => i ? x : { ...x, rejected: false }),
+    base.negativeMutationReceipts.map((x, i) => i ? x : { ...x, executedTests: 0 }),
+    base.negativeMutationReceipts.map((x, i) => i ? x : { ...x, logSha256: null })
+  ]) assert.equal(status({ ...base, negativeMutationReceipts: bad }),
     "UNVERIFIED_NEGATIVE_MUTATIONS");
-  assert.equal(classify({ ...candidate(), negativeMutationReceipts:
-    [{ rejected: false, logSha256: "e".repeat(64) }] }, expected).classification,
+  assert.equal(classify(base, { ...expected, requiredNegativeMutations: [] }).classification,
     "UNVERIFIED_NEGATIVE_MUTATIONS");
-  // This status is never VERIFIED: real logs, compiler path, source tree, and
-  // independent review must be checked outside a user-provided receipt object.
-  assert.equal(classify(candidate(), expected).classification, "CANDIDATE_UNREVIEWED");
+});
+test("even perfect self-reported shapes are UNREVIEWED, never attested", () => {
+  assert.equal(status(candidate()), "CANDIDATE_UNREVIEWED");
 });
