@@ -713,6 +713,193 @@
         "forge"
       ],
       "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "typed_pattern_match.exhaustive_option",
+      "kind": "runtime_trace",
+      "feature": "typed_pattern_match",
+      "scenario": "match a statically typed Option[int] with Some(x) and None arms",
+      "expected": {
+        "decision_dag_compiled": "static; all arms covered"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "mailbox_bounds_fifo.full_quota",
+      "kind": "runtime_trace",
+      "feature": "mailbox_bounds_fifo",
+      "scenario": "enqueue beyond per-edge quota while preserving admitted per-sender FIFO",
+      "expected": {
+        "admission": "reject_without_consumption"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "maybe_conditional_match.early_exit_cleanup",
+      "kind": "runtime_trace",
+      "feature": "maybe_conditional_match",
+      "scenario": "second Result pattern fails; later expression not evaluated, defer releases borrowed view",
+      "expected": {
+        "early_exit": "typed_error_with_one_cleanup"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "comprehensions.static_iterator",
+      "kind": "runtime_trace",
+      "feature": "comprehensions",
+      "scenario": "typed finite iterator filters then maps with allocation quota",
+      "expected": {
+        "iterator": "statically_resolved_no_jit"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "typed_gen_server.one_reply",
+      "kind": "runtime_trace",
+      "feature": "typed_gen_server",
+      "scenario": "request/reply handler completes once after cancellation/reply race",
+      "expected": {
+        "reply_count": 1
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "typed_gen_statem.single_transition",
+      "kind": "runtime_trace",
+      "feature": "typed_gen_statem",
+      "scenario": "state machine processes an event from idle and transitions to active exactly once",
+      "expected": {
+        "final_state": "active"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "distributed_actor_transport.stale_replay",
+      "kind": "runtime_trace",
+      "feature": "distributed_actor_transport",
+      "scenario": "remote actor message has revoked credential or old generation",
+      "expected": {
+        "admission": "reject_and_no_mailbox_delivery"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "application_lifecycle.ordered_shutdown",
+      "kind": "runtime_trace",
+      "feature": "application_lifecycle",
+      "scenario": "application B depends on A; shutdown performed in reverse dependency order",
+      "expected": {
+        "shutdown_order": "B_before_A"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "typed_in_memory_tables.reader_writer_exclusion",
+      "kind": "runtime_trace",
+      "feature": "typed_in_memory_tables",
+      "scenario": "shared typed table has two concurrent readers while writer waits",
+      "expected": {
+        "read_write": "never_simultaneous"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "durable_actor_storage.recover_epoch",
+      "kind": "runtime_trace",
+      "feature": "durable_actor_storage",
+      "scenario": "process restarts from committed snapshot while rejecting stale incarnation writes",
+      "expected": {
+        "recovery": "committed_state_only"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "observer_logging.no_unbounded_reflection",
+      "kind": "runtime_trace",
+      "feature": "observer_logging",
+      "scenario": "read actor diagnostics from precompiled metadata without evaluating guest callbacks",
+      "expected": {
+        "observability": "bounded_no_guest_reflection"
+      },
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge"
+      ],
+      "evidence": "NOT_EXECUTED"
     }
   ]
 }
