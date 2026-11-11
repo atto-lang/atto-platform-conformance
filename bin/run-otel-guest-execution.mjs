@@ -68,12 +68,15 @@ function hashFile(path, max = MAX_EXECUTABLE) {
   } finally { closeSync(fd); }
 }
 function git(gitBinary, root, ...argv) {
-  const r = spawnSync(gitBinary, ['-C', root, ...argv], {
+  const r = spawnSync(gitBinary, ['-c', 'core.fsmonitor=false',
+    '-c', 'core.hooksPath=/dev/null', '-C', root, ...argv], {
     shell: false, timeout: 10000, encoding: 'utf8', maxBuffer: 65536,
     env: { PATH: process.platform === 'win32' ?
         (process.env.SystemRoot || 'C:\\Windows') + '\\System32' : '/usr/bin:/bin',
       HOME: process.env.HOME || '/tmp',
-      GIT_CONFIG_NOSYSTEM: '1', GIT_OPTIONAL_LOCKS: '0' },
+      GIT_CONFIG_NOSYSTEM: '1',
+      GIT_CONFIG_GLOBAL: process.platform === 'win32' ? 'NUL' : '/dev/null',
+      GIT_OPTIONAL_LOCKS: '0' },
   });
   need(!r.error && r.status === 0, 'Git identity/cleanliness check failed');
   return r.stdout.trim();
@@ -302,7 +305,9 @@ function main() {
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   try { main(); } catch (e) {
     // Never dump command/environment or failed guest stderr; they can be sensitive.
-    process.stderr.write(String(e.message).slice(0,250) + '\n');
+    const message = String(e.message);
+    process.stderr.write((message.startsWith('OTEL_REAL_GUEST_DENIED:') ?
+      message.slice(0, 250) : 'OTEL_REAL_GUEST_DENIED: file, process, or source admission failed') + '\n');
     process.exitCode = 1;
   }
 }
