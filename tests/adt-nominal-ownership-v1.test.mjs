@@ -35,6 +35,10 @@ function readManifest() {
 }
 
 function verify(manifest, checkDisk = true) {
+  assert.deepEqual(Object.keys(manifest).sort(), [
+    "cases", "confirmedBackends", "executableParityCertified", "status",
+    "targetBackends", "version"
+  ].sort(), "unexpected top-level certification field");
   assert.equal(manifest.version, "atto-adt-nominal-ownership-v1");
   assert.equal(manifest.status, "contract-only-not-executed");
   assert.deepEqual(manifest.targetBackends, backends);
@@ -49,6 +53,12 @@ function verify(manifest, checkDisk = true) {
     assert.match(item.id, /^[a-z][a-z0-9-]*$/);
     assert.ok(!ids.has(item.id), "duplicate test id");
     ids.add(item.id);
+    assert.deepEqual(Object.keys(item).sort(), (item.outcome === "accept"
+      ? ["confirmedBackends", "executableParityCertified", "expectedStdout",
+         "file", "gitBlobSha1", "id", "outcome"]
+      : ["confirmedBackends", "executableParityCertified", "rejectKind",
+         "file", "gitBlobSha1", "id", "outcome"]).sort(),
+      "unexpected per-case certification/metadata field");
     assert.equal(item.file, item.id + ".atto");
     const pinned = pinnedCases[item.id];
     assert.ok(pinned, "unknown nominal ADT corpus case");
@@ -73,11 +83,28 @@ function verify(manifest, checkDisk = true) {
     expected.add(item.file);
     if (checkDisk) {
       const name = path.join(sourceDirectory, item.file);
-      const st = fs.lstatSync(name);
-      assert.ok(st.isFile() && !st.isSymbolicLink() && st.nlink === 1,
+      const st = fs.lstatSync(name, { bigint: true });
+      assert.ok(st.isFile() && !st.isSymbolicLink() && st.nlink === 1n,
         "fixture must be a plain, singly linked file");
-      assert.ok(st.size > 0 && st.size < 65536);
-      const bytes = fs.readFileSync(name);
+      assert.ok(st.size > 0n && st.size < 65536n);
+      assert.ok(typeof fs.constants.O_NOFOLLOW === "number",
+        "O_NOFOLLOW is required for source integrity");
+      const fd = fs.openSync(name, fs.constants.O_RDONLY | fs.constants.O_NOFOLLOW);
+      let bytes;
+      try {
+        const opened = fs.fstatSync(fd, { bigint: true });
+        assert.ok(opened.isFile() && opened.nlink === 1n
+          && opened.dev === st.dev && opened.ino === st.ino,
+          "fixture changed during open or is hardlinked");
+        bytes = fs.readFileSync(fd);
+        const after = fs.fstatSync(fd, { bigint: true });
+        assert.ok(after.dev === opened.dev && after.ino === opened.ino
+          && after.size === opened.size && after.mtimeNs === opened.mtimeNs
+          && after.ctimeNs === opened.ctimeNs,
+          "fixture changed during read");
+      } finally {
+        fs.closeSync(fd);
+      }
       const text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
       assert.ok(!text.includes("\0"), "fixture contains embedded NUL");
       assert.match(text, /define enum /);
@@ -111,6 +138,8 @@ test("manifest rejects fake parity, duplicate cases, and path substitution", () 
     x => { x.cases[0].file = "../escape.atto"; },
     x => { x.cases[0].gitBlobSha1 = "0".repeat(40); },
     x => { x.cases[0].outcome = "reject"; },
+    x => { x.cases[0].certified = true; },
+    x => { x.nominalParityCertified = true; },
     x => { x.cases[0].gitBlobSha1 = x.cases[1].gitBlobSha1; },
     x => { x.cases[0].expectedStdout = "false\\n"; },
   ]) {
