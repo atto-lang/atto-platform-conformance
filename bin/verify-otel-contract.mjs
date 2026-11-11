@@ -20,6 +20,15 @@ const STATUSES = Object.freeze({
   net: 'BLOCKED_GUEST_LANGUAGE_SUBSET',
 });
 
+const REQUIRED_SECURITY = Object.freeze([
+  'No private compiler source copied into any unapproved carrier',
+  'No host fixture, simulated stdout, or contract test may be claimed as guest execution',
+  'Ingress authorization and tenant identity are host/runtime-owned, never sourced from untrusted telemetry attributes',
+  'Use opaque ores_trace_id distinct from W3C trace_id and span_id; do not claim OTLP mapping until an actual adapter executes',
+  'Telemetry must not block actor carrier; drops/backpressure explicit; no secret keys or payload leakage',
+  'Capture exact compiler source/tree SHA, binary SHA256, guest artifact SHA256, stdout SHA256 and real process exit statuses',
+]);
+
 function demand(ok, detail) {
   if (!ok) throw new Error('OTEL_CONTRACT_DENIED: ' + detail);
 }
@@ -71,9 +80,8 @@ export function validateContract(doc) {
       row.reason.length >= 40 && row.reason.length <= 512,
       'unreviewed or missing capability limitation');
   }
-  demand(Array.isArray(doc.security) && doc.security.length === 6 &&
-    doc.security.every(s => typeof s === 'string' && s.length >= 35 &&
-      s.length <= 300), 'security admission invariants removed');
+  demand(Array.isArray(doc.security) && same(doc.security, REQUIRED_SECURITY),
+    'security policy changed without a reviewed versioned contract');
   return {classification:'SOURCE_ONLY_CANDIDATE',profiles:PROFILES.length,
     backends:Object.keys(STATUSES).length,guestExecuted:false,releaseCertified:false};
 }
