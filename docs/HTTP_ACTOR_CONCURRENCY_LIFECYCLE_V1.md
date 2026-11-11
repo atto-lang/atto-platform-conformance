@@ -87,3 +87,35 @@ V8 adapter, including 10,000 bounded action sequences. It does not simulate
 physical HTTP sockets, VM context leave, entire actor scheduler behavior,
 or guarantee that `end_handoff` was called only after the real actor became
 quiescent. It is a *non-promoting model contract*, not runtime certification.
+
+## Java selective physical carrier drain integration (2026-11-11)
+
+Java [draft #2884](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2884)
+now has a **host-only, point-in-time** `ActorRuntime.httpCarrierQuiescent`
+observation under the current actor lifecycle lock. It requires the accepted
+mail watermark and physical guest carrier exit, no source receive suspension,
+no scheduler work, and no outstanding pending actor operations. This is not a
+perpetual actor-idle lease.
+
+For each listener, `NativeHttp.Server` now tracks **every pooled worker
+generation associated with its accepted requests**, even when a pool slot
+is replaced. A physical observer begins only when the HTTP transport has
+stopped, all accepted requests are retired and all per-request completion
+Future callbacks have returned. It polls asynchronously using the HTTP
+deadline scheduler, with an explicit bounded deadline across the entire
+shutdown, including any stuck socket cleanup. A forced close fails unresolved
+drain futures exactly once. Listener accept and failure callbacks are
+published outside listener and global HTTP runtime monitors; pooled actor
+DONE cleanup is handed off to a host cleanup dispatcher.
+
+The existing Java transport still uses the JDK HTTP server. This work does
+not establish nonblocking-NIO guest HTTP actor lowering, a full
+`requestConcurrency`/`messageConcurrency` runtime quota implementation,
+or cross-backend HTTP runtime parity.
+
+**Evidence boundary:** The Java JDK 25/GraalVM tests are authored but
+unexecuted until an authorized runner actually starts steps and records
+test output. The older diverged #997/#1166 branches were *not* bulk-merged.
+Source transfer to alternate private organizations remains denied unless
+protected-source governance and independent exact-head approvals satisfy
+`docs/security/CI_PRIVATE_SOURCE_MIRRORING.md`.
