@@ -5,6 +5,8 @@ on:
       - 'contracts/otel-five-backend-v1.json'
       - 'bin/verify-otel-guest-parity.mjs'
       - 'tests/otel-five-backend-evidence.test.mjs'
+      - 'bin/run-otel-guest-execution.mjs'
+      - 'tests/otel-real-guest-config.test.mjs'
       - 'docs/OTEL_FIVE_BACKEND_EVIDENCE.md'
       - '.github/workflows/otel-five-backend-evidence.yml'
   workflow_dispatch:
@@ -32,7 +34,7 @@ jobs:
         with:
           node-version: '22'
       - name: Execute six-profile oracle and malicious receipt regressions
-        run: node --test tests/otel-five-backend-evidence.test.mjs
+        run: node --test tests/otel-five-backend-evidence.test.mjs tests/otel-real-guest-config.test.mjs
       - name: Enforce current parity status stays non-promoting
         run: |
           node --input-type=module <<'NODE'
