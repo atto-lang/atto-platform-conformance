@@ -7,7 +7,8 @@
     "pr": 32,
     "branch": "design/value-block-ternary-range-loops-20261110",
     "file": "contracts/atto-value-block-range-v0.json",
-    "git_blob_sha": "b18f455e0a6e14bc9b7b684309e7a3d9a9f41f61"
+    "git_blob_sha": "6fbe82fdac65fa3fcd878008e1ce737663eadf88",
+    "revision": "all-nine-toolchains-ten-lanes-20261111"
   },
   "required_guest_lanes": [
     "java-interpreter",
@@ -32,7 +33,14 @@
         "RangeExpr",
         "for_in",
         "guest_aot_parity"
-      ]
+      ],
+      "candidate": {
+        "pr": 2874,
+        "sha": "d8dec11d6ff7b3435aad0b1ba51047ba911e27c3",
+        "tree": "d47100200f33a4cad051c2e78353b04e9f44a6ae",
+        "branch": "parity/value-block-range-contract-v0-20261111",
+        "state": "DRAFT_NOT_GUEST_CERTIFIED"
+      }
     },
     {
       "backend": "llvm",
@@ -44,7 +52,14 @@
         "range_tokens_and_ir",
         "for_in",
         "executed_guest_parity"
-      ]
+      ],
+      "candidate": {
+        "pr": 1696,
+        "sha": "02d5ba7c9ee4b15f15ee919f93d48e71be8b022b",
+        "tree": "e2762356affabc53e9a6f02f52f17fd10f61b631",
+        "branch": "parity/value-block-range-contract-v0-20261111",
+        "state": "DRAFT_NOT_GUEST_CERTIFIED"
+      }
     },
     {
       "backend": "wasm",
@@ -55,7 +70,14 @@
         "pinned_llvm_support",
         "wasm_guest_execution",
         "wasm_memory_no_host_fallback"
-      ]
+      ],
+      "candidate": {
+        "pr": 473,
+        "sha": "40a14fb2c752d40a003ac3d50f6874f032d6cbbe",
+        "tree": "d1ea7325887a17265f34ac7b42e99921e0f06729",
+        "branch": "parity/value-block-range-contract-v0-20261111",
+        "state": "DRAFT_NOT_GUEST_CERTIFIED"
+      }
     },
     {
       "backend": "forge",
@@ -68,7 +90,14 @@
         "range_ir",
         "for_in",
         "native_guest"
-      ]
+      ],
+      "candidate": {
+        "pr": 264,
+        "sha": "fd508af2036d763b4978f7b2af12842a3c9c54cc",
+        "tree": "0072fef09138266ff14f13ead752b4bcc38dcaa2",
+        "branch": "parity/value-block-range-contract-v0-20261111",
+        "state": "DRAFT_NOT_GUEST_CERTIFIED"
+      }
     },
     {
       "backend": "net",
@@ -81,7 +110,14 @@
         "range_ir",
         "for_in",
         "native_aot_guest"
-      ]
+      ],
+      "candidate": {
+        "pr": 483,
+        "sha": "16d5658ecc8a182804c79ec4d20c8ed29dbced51",
+        "tree": "ac82f339b4806938f41f9a6140d349cd0997908d",
+        "branch": "parity/value-block-range-contract-v0-20261111",
+        "state": "DRAFT_NOT_GUEST_CERTIFIED"
+      }
     },
     {
       "backend": "rs",
@@ -93,7 +129,14 @@
         "range_lex_ast",
         "for_in",
         "exact_head_guest"
-      ]
+      ],
+      "candidate": {
+        "pr": 59,
+        "sha": "ac848b8194c49bc452a255c6e83ade6ab9a3f632",
+        "tree": "5818eea3da4ba5dc21d3a667bc8958c780b23bd2",
+        "branch": "parity/value-block-range-contract-v0-20261111",
+        "state": "DRAFT_NOT_GUEST_CERTIFIED"
+      }
     },
     {
       "backend": "cranelift",
@@ -106,7 +149,14 @@
         "range_ir",
         "for_in",
         "native_guest"
-      ]
+      ],
+      "candidate": {
+        "pr": 110,
+        "sha": "6934d0170a827397da7f1b6c52df4e0fdaf167a1",
+        "tree": "135b93dba2aa71abd345bce1e1caa827130bb5f5",
+        "branch": "parity/value-block-range-contract-v0-20261111",
+        "state": "DRAFT_NOT_GUEST_CERTIFIED"
+      }
     },
     {
       "backend": "js",
@@ -118,7 +168,14 @@
         "range_iteration",
         "for_in",
         "worker_guest"
-      ]
+      ],
+      "candidate": {
+        "pr": 246,
+        "sha": "0fd29b23917db6775ff6cb8f58f5fc38a6b25352",
+        "tree": "85190135fe7d46ad534381903a8ef8391063f92a",
+        "branch": "parity/value-block-range-contract-v0-20261111",
+        "state": "DRAFT_NOT_GUEST_CERTIFIED"
+      }
     },
     {
       "backend": "hdl",
@@ -130,11 +187,18 @@
         "static_finite_range_unroll",
         "for_in",
         "rtl_simulator_evidence"
-      ]
+      ],
+      "candidate": {
+        "pr": 41,
+        "sha": "28d4f1e47689a92729533dc4b4d640c5a48e6b33",
+        "tree": "0260c6586002f32cfde3e515b7bb66d2c975d3c5",
+        "branch": "parity/value-block-range-contract-v0-20261111",
+        "state": "DRAFT_NOT_GUEST_CERTIFIED"
+      }
     }
   ],
   "verified_guest_receipts": [],
-  "verification_rule": "No backend or lane counts as supporting the new syntax until the exact-head compiler has produced and run a guest artifact with all applicable positive and negative cases. Source-free checks do not count.",
+  "verification_rule": "Only a pinned candidate head SHA/tree, independently verified compiler binary, phase-correct diagnostics and exact guest evidence may certify a supported lane. Source-free and hardware-unsupported cases cannot pass.",
   "audited_compiler_count": 9,
   "semantic_alignment_blocker": {
     "scope": "unresolved: canonical generic block expressions vs Java implementation draft #2797 ternary-arm-only BlockValueExpr",
