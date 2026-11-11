@@ -1,59 +1,158 @@
 #!/usr/bin/env node
-// Structural admission only. A self-reported JSON receipt is NOT an independent CI attestation.
-import { readFileSync, lstatSync } from 'node:fs';
+// Structural inspection only. Untrusted JSON is NOT GitHub/runner/build attestation.
+// No self-reported receipt can authorize parity promotion (even when well formed).
+import { constants, closeSync, fstatSync, lstatSync, openSync, readSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const EXPECTED_CONTRACT = 'attolang-erlang-otp-strict-aot-v1';
-const TARGETS = new Set(['java', 'llvm', 'net', 'wasm', 'forge']);
 const MANIFEST = JSON.parse(readFileSync(new URL('../contracts/erl-otp-strict-aot-v1.json', import.meta.url), 'utf8'));
+const CONTRACT = 'attolang-erlang-otp-strict-aot-v1';
 const FEATURES = new Map(MANIFEST.features.map(feature => [feature.id, feature]));
 const VECTORS = new Map(MANIFEST.vectors.map(vector => [vector.id, vector]));
+const TARGETS = new Set(MANIFEST.backends);
 const HEX40 = /^[0-9a-f]{40}$/;
 const HEX64 = /^[0-9a-f]{64}$/;
-const URL = /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/(actions\/runs\/\d+|pull\/\d+(?:#.+)?)$/;
+const REPO = /^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/;
+const MAX_BYTES = 1024 * 1024;
 
-export function validateReceipt(r) {
+const isRecord = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+const has = (record, key) => isRecord(record) && Object.hasOwn(record, key);
+const isSha40 = value => typeof value === 'string' && HEX40.test(value);
+const isSha256 = value => typeof value === 'string' && HEX64.test(value);
+
+function validRunUrl(value, runId) {
+  if (typeof value !== 'string' || !Number.isSafeInteger(runId) || runId < 1) return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && url.hostname === 'github.com' && url.port === '' &&
+      url.username === '' && url.password === '' && url.search === '' && url.hash === '' &&
+      /^\/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+\/actions\/runs\/[1-9][0-9]*$/.test(url.pathname) &&
+      url.pathname.endsWith('/actions/runs/' + runId);
+  } catch { return false; }
+}
+
+function validReviewUrl(value) {
+  if (typeof value !== 'string') return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && url.hostname === 'github.com' && url.port === '' &&
+      url.username === '' && url.password === '' && url.search === '' &&
+      /^\/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+\/pull\/[1-9][0-9]*$/.test(url.pathname) &&
+      /^#pullrequestreview-[1-9][0-9]*$/.test(url.hash);
+  } catch { return false; }
+}
+
+export function inspectReceipt(receipt) {
   const errors = [];
-  const requireValue = (condition, message) => { if (!condition) errors.push(message); };
-  if (!r || typeof r !== 'object' || Array.isArray(r)) {
-    return { ok: false, classification: 'NOT_ATTESTED', errors: ['receipt must be an object'] };
+  const requireField = (test, error) => { if (!test) errors.push(error); };
+  if (!isRecord(receipt)) {
+    return { ok: false, structurallyValid: false, verified: false, classification: 'REJECTED', errors: ['receipt must be an object'] };
   }
-  requireValue(r.contract === EXPECTED_CONTRACT, 'contract mismatch');
-  requireValue(TARGETS.has(r.backend), 'backend must be a strict-AOT target');
-  requireValue(typeof r.feature === 'string' && /^[a-z][a-z0-9_]*$/.test(r.feature), 'feature ID invalid');
-  requireValue(FEATURES.has(r.feature), 'unknown feature; not in candidate contract');
-  requireValue(FEATURES.get(r.feature)?.backends.includes(r.backend) === true, 'feature/backend mismatch');
-  requireValue(r.status === 'VERIFIED', 'not verified');
-  requireValue(r.evidenceClass === 'compiler-guest', 'host-only/source-only evidence rejected');
-  const c = r.compiler || {};
-  requireValue(typeof c.repository === 'string' && /^[-\w.]+\/[-\w.]+$/.test(c.repository), 'compiler repository missing');
-  requireValue(HEX40.test(c.headSha ?? ''), 'exact head SHA missing');
-  requireValue(HEX40.test(c.treeSha ?? ''), 'exact tree SHA missing');
-  requireValue(HEX64.test(c.binarySha256 ?? ''), 'compiler binary SHA256 missing');
-  const f = r.fixture || {};
-  requireValue(typeof f.id === 'string' && f.id.length > 0, 'fixture ID missing');
-  requireValue(VECTORS.has(f.id), 'unknown fixture; not in candidate contract');
-  requireValue(VECTORS.get(f.id)?.feature === r.feature, 'fixture/feature mismatch');
-  requireValue(VECTORS.get(f.id)?.backends.includes(r.backend) === true, 'fixture/backend mismatch');
-  requireValue(HEX64.test(f.sha256 ?? ''), 'fixture hash missing');
-  requireValue(HEX64.test(r.artifact?.sha256 ?? ''), 'AOT artifact hash missing');
-  const e = r.execution || {};
-  requireValue(Number.isSafeInteger(e.runId) && e.runId > 0, 'workflow run ID missing');
-  requireValue(Number.isSafeInteger(e.jobId) && e.jobId > 0, 'job ID missing');
-  requireValue(Number.isSafeInteger(e.jobAttempt) && e.jobAttempt > 0, 'job attempt binding missing');
-  requireValue(Number.isSafeInteger(e.executedSteps) && e.executedSteps > 0, 'no executed steps');
-  requireValue(e.compiledGuest === true, 'guest compilation unproven');
-  requireValue(e.executedGuest === true, 'guest execution unproven');
-  requireValue(e.mode === 'strict-aot', 'strict AOT mode unproven');
-  for (const key of ['jitUsed', 'interpreterFallbackUsed', 'runtimeGuestCompilerUsed', 'reflectionDispatchUsed']) {
-    requireValue(e[key] === false, key + ' not explicitly false');
+
+  requireField(receipt.contract === CONTRACT, 'contract mismatch');
+  requireField(TARGETS.has(receipt.backend), 'backend not in target set');
+  const feature = FEATURES.get(receipt.feature);
+  const vector = VECTORS.get(receipt.fixture?.id);
+  requireField(feature !== undefined, 'unknown feature');
+  requireField(feature?.backends.includes(receipt.backend) === true, 'feature/backend mismatch');
+  requireField(vector !== undefined, 'unknown fixture');
+  requireField(vector?.feature === receipt.feature, 'feature/fixture mismatch');
+  requireField(vector?.backends.includes(receipt.backend) === true, 'fixture/backend mismatch');
+  requireField(receipt.status === 'VERIFIED', 'reported status is not VERIFIED');
+  requireField(receipt.evidenceClass === 'compiler-guest', 'not compiler-guest evidence');
+
+  const c = receipt.compiler;
+  requireField(isRecord(c), 'compiler identity missing');
+  requireField(typeof c?.repository === 'string' && REPO.test(c.repository), 'compiler repository invalid');
+  requireField(isSha40(c?.headSha), 'compiler head SHA missing or invalid');
+  requireField(isSha40(c?.treeSha), 'compiler tree SHA missing or invalid');
+  requireField(isSha256(c?.binarySha256), 'compiler binary SHA256 missing or invalid');
+  requireField(isSha256(receipt.fixture?.sha256), 'fixture digest missing or invalid');
+
+  const e = receipt.execution;
+  requireField(isRecord(e), 'execution section missing');
+  requireField(Number.isSafeInteger(e?.runId) && e.runId > 0, 'workflow run ID invalid');
+  requireField(Number.isSafeInteger(e?.jobId) && e.jobId > 0, 'workflow job ID invalid');
+  requireField(Number.isSafeInteger(e?.jobAttempt) && e.jobAttempt > 0, 'job attempt invalid');
+  requireField(Number.isSafeInteger(e?.executedSteps) && e.executedSteps > 0, 'zero or unknown executed steps');
+  requireField(e?.mode === 'strict-aot', 'strict AOT mode not reported');
+  requireField(validRunUrl(e?.runUrl, e?.runId), 'run URL malformed or ID mismatch');
+  requireField(validReviewUrl(e?.independentReviewUrl), 'specific review URL missing or malformed');
+  for (const field of ['jitUsed', 'interpreterFallbackUsed', 'runtimeGuestCompilerUsed', 'reflectionDispatchUsed']) {
+    requireField(has(e, field) && e[field] === false, field + ' must be explicitly false');
   }
-  requireValue(e.aotFallbackMutationRejected === true, 'fallback mutation test not passed');
-  requireValue(e.negativeDiagnosticsPassed === true, 'negative guest tests not passed');
-  requireValue(typeof e.runUrl === 'string' && URL.test(e.runUrl) && e.runUrl.endsWith('/actions/runs/' + e.runId), 'run URL/ID mismatch');
-  requireValue(typeof e.independentReviewUrl === 'string' && URL.test(e.independentReviewUrl) && e.independentReviewUrl.includes('/pull/'), 'independent review URL absent');
-  return { ok: errors.length === 0, classification: 'STRUCTURAL_ONLY_NOT_INDEPENDENTLY_ATTESTED', errors };
+  requireField(e?.aotFallbackMutationRejected === true, 'no negative mutation proof');
+  requireField(e?.negativeDiagnosticsPassed === true, 'negative diagnostic checks missing');
+
+  // Rejected source cannot both yield a guest executable and prove no output artifact.
+  const negative = vector?.kind === 'compile' && vector.expected?.compilation === 'reject' ||
+    vector?.kind === 'aot_policy' && (vector.expected?.compilation === 'reject' || vector.expected?.admission === 'reject');
+  if (negative) {
+    requireField(e?.compilationOutcome === 'rejected', 'negative fixture must be rejected');
+    requireField(e?.compiledGuest === false, 'negative fixture must not compile guest');
+    requireField(e?.executedGuest === false, 'negative fixture must not execute guest');
+    requireField(e?.outputArtifactCreated === false, 'rejected input produced artifact');
+    requireField(!has(receipt, 'artifact'), 'rejected fixture must not carry an artifact');
+    if (vector.kind === 'compile') {
+      requireField(e?.observedDiagnosticClass === vector.expected.diagnosticClass, 'negative diagnostic class mismatch');
+    }
+  } else if (vector !== undefined) {
+    requireField(e?.compilationOutcome === 'accepted', 'positive fixture not accepted');
+    requireField(e?.compiledGuest === true, 'compiled guest not reported');
+    requireField(e?.executedGuest === true, 'guest execution not reported');
+    requireField(e?.outputArtifactCreated === true, 'AOT executable not reported');
+    requireField(isSha256(receipt.artifact?.sha256), 'AOT artifact digest missing or invalid');
+  }
+
+  const structurallyValid = errors.length === 0;
+  return {
+    // Deliberate fail-closed trust boundary. External independent attestor must verify
+    // GitHub run/jobs/review, source-tree identity, fixture bytes, binary and artifact.
+    ok: false,
+    structurallyValid,
+    verified: false,
+    classification: structurallyValid ? 'STRUCTURAL_ONLY_NOT_ATTESTED' : 'REJECTED',
+    errors,
+  };
+}
+
+// Existing caller compatibility. The return value MUST NEVER be used as a promotion receipt.
+export const validateReceipt = inspectReceipt;
+
+export function readUntrustedReceipt(pathname) {
+  if (constants.O_NOFOLLOW === undefined) {
+    throw new Error('no safe no-follow open support; refusing path input');
+  }
+  const path = resolve(pathname);
+  const before = lstatSync(path);
+  if (!before.isFile() || before.nlink !== 1 || before.size > MAX_BYTES) {
+    throw new Error('receipt must be single-linked regular file <=1MiB');
+  }
+  const fd = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW);
+  try {
+    const stat = fstatSync(fd);
+    if (!stat.isFile() || stat.nlink !== 1 || stat.dev !== before.dev || stat.ino !== before.ino || stat.size > MAX_BYTES) {
+      throw new Error('receipt replaced, linked or oversized during open');
+    }
+    const chunks = [];
+    let length = 0;
+    const buffer = Buffer.alloc(16 * 1024);
+    for (;;) {
+      const count = readSync(fd, buffer, 0, buffer.length, null);
+      if (count === 0) break;
+      length += count;
+      if (length > MAX_BYTES) throw new Error('receipt exceeds 1MiB bound');
+      chunks.push(Buffer.from(buffer.subarray(0, count)));
+    }
+    const after = fstatSync(fd);
+    if (after.size !== stat.size || after.mtimeMs !== stat.mtimeMs || after.ctimeMs !== stat.ctimeMs) {
+      throw new Error('receipt changed during read');
+    }
+    const text = new TextDecoder('utf-8', { fatal: true }).decode(Buffer.concat(chunks, length));
+    return JSON.parse(text);
+  } finally {
+    closeSync(fd);
+  }
 }
 
 function main() {
@@ -62,21 +161,16 @@ function main() {
     process.exitCode = 2;
     return;
   }
-  let receipt;
   try {
-    const path = resolve(process.argv[2]);
-    const stat = lstatSync(path);
-    if (!stat.isFile() || stat.size > 1024 * 1024) throw new Error('receipt must be a regular <=1MiB file');
-    receipt = JSON.parse(readFileSync(path, 'utf8'));
+    const receipt = readUntrustedReceipt(process.argv[2]);
+    const result = inspectReceipt(receipt);
+    console.log(JSON.stringify(result, null, 2));
   } catch (error) {
     console.error('REJECTED_INVALID_RECEIPT:', error.message);
-    process.exitCode = 1;
-    return;
   }
-  const result = validateReceipt(receipt);
-  console.log(JSON.stringify(result, null, 2));
-  if (!result.ok) process.exitCode = 1;
-  // A green schema check is deliberately not a proof of provenance or parity.
+  // No network/build/runner verification is possible from this self-reported JSON.
+  // A structurally valid receipt still does NOT authorize CI or promotion.
+  process.exitCode = 1;
 }
 
 if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) main();
