@@ -58,6 +58,7 @@ export class BatchPersistenceSidecar {
       CREATE TABLE IF NOT EXISTS operations (tenant TEXT NOT NULL, actor TEXT NOT NULL,
         state_name TEXT NOT NULL, op_id TEXT NOT NULL, digest TEXT NOT NULL,
         version INTEGER NOT NULL, kind TEXT NOT NULL, payload_hash TEXT,
+        origin_epoch INTEGER,
         PRIMARY KEY(tenant,actor,state_name,op_id));
       CREATE TABLE IF NOT EXISTS command_commits (
         tenant TEXT NOT NULL, actor TEXT NOT NULL, state_name TEXT NOT NULL,
@@ -83,8 +84,13 @@ export class BatchPersistenceSidecar {
     const operationColumns=this.db.prepare('PRAGMA table_info(operations)').all().map(r=>r.name);
     if(!operationColumns.includes('payload_hash'))
       this.db.exec('ALTER TABLE operations ADD COLUMN payload_hash TEXT');
+    // Pre-upgrade rows never recorded their source epoch. Without that
+    // value we cannot rederive their original operation digest safely;
+    // retain them but require an authenticated migration before replay.
+    if(!operationColumns.includes('origin_epoch'))
+      this.db.exec('ALTER TABLE operations ADD COLUMN origin_epoch INTEGER');
     this.getFence = this.db.prepare('SELECT epoch FROM fences WHERE tenant=? AND actor=?');
-    this.getOp = this.db.prepare('SELECT digest, version, kind, payload_hash FROM operations WHERE tenant=? AND actor=? AND state_name=? AND op_id=?');
+    this.getOp = this.db.prepare('SELECT digest, version, kind, payload_hash, origin_epoch FROM operations WHERE tenant=? AND actor=? AND state_name=? AND op_id=?');
     this.getHead = this.db.prepare('SELECT version FROM heads WHERE tenant=? AND actor=? AND state_name=?');
     this.putHead = this.db.prepare('INSERT INTO heads VALUES(?,?,?,?) ON CONFLICT(tenant,actor,state_name) DO UPDATE SET version=excluded.version');
     this.getReplaySnapshot = this.db.prepare(
@@ -99,7 +105,7 @@ export class BatchPersistenceSidecar {
     );
     this.putSnapshot = this.db.prepare('INSERT INTO snapshots(tenant,actor,state_name,version,schema_version,payload,payload_hash,operation_digest) VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(tenant,actor,state_name) DO UPDATE SET version=excluded.version, schema_version=excluded.schema_version, payload=excluded.payload, payload_hash=excluded.payload_hash, operation_digest=excluded.operation_digest');
     this.putEvent = this.db.prepare('INSERT INTO events VALUES(?,?,?,?,?,?,?)');
-    this.putOp = this.db.prepare('INSERT INTO operations(tenant,actor,state_name,op_id,digest,version,kind,payload_hash) VALUES(?,?,?,?,?,?,?,?)');
+    this.putOp = this.db.prepare('INSERT INTO operations(tenant,actor,state_name,op_id,digest,version,kind,payload_hash,origin_epoch) VALUES(?,?,?,?,?,?,?,?,?)');
     this.getCommand = this.db.prepare('SELECT command_hash,first_version,last_version,event_count,events_digest,result_digest,result_bytes FROM command_commits WHERE tenant=? AND actor=? AND state_name=? AND op_id=?');
     this.putCommand = this.db.prepare('INSERT INTO command_commits(tenant,actor,state_name,op_id,command_hash,first_version,last_version,event_count,events_digest,result_digest,result_bytes) VALUES(?,?,?,?,?,?,?,?,?,?,?)');
   }
@@ -217,6 +223,7 @@ export class BatchPersistenceSidecar {
   // An operation ledger row alone cannot prove a durable journal entry.
   #legacyProof(e,op) {
     if(!op || op.digest!==digest(e) || op.kind!==e.kind ||
+       !uint(op.origin_epoch) || op.origin_epoch!==e.epoch ||
        !uint(op.version) || op.version!==e.expectedVersion+1)
       fail('COMMIT_MISMATCH');
     if(typeof op.payload_hash!=='string' ||
@@ -274,13 +281,25 @@ export class BatchPersistenceSidecar {
        !/^[0-9a-f]{64}$/.test(saved.operation_digest))
       fail('UNVERIFIED_SNAPSHOT');
     const rows=this.db.prepare(
-      'SELECT digest,payload_hash FROM operations WHERE tenant=? AND actor=? '+
+      'SELECT digest,payload_hash,origin_epoch,op_id FROM operations WHERE tenant=? AND actor=? '+
       'AND state_name=? AND kind=? AND version=? LIMIT 2'
     ).all(tenantId,actor,stateName,'snapshot',saved.version);
     if(rows.length!==1 || rows[0].digest!==saved.operation_digest ||
        !/^[0-9a-f]{64}$/.test(rows[0].payload_hash??''))
       fail('UNVERIFIED_SNAPSHOT');
     if(rows[0].payload_hash!==saved.payload_hash)
+      fail('CORRUPT_SNAPSHOT_PROOF');
+    const original=rows[0];
+    if(!uint(original.origin_epoch) || original.origin_epoch<1 ||
+       !ident(original.op_id))
+      fail('UNVERIFIED_SNAPSHOT');
+    // A payload_hash and operation_digest stored in this same database are
+    // not independent if both can be rewritten. Recompute the original
+    // full operation digest from the persisted source epoch and metadata.
+    if(digest({tenantId,actor,stateName,opId:original.op_id,
+       epoch:original.origin_epoch,expectedVersion:saved.version-1,
+       kind:'snapshot',schemaVersion:saved.schema_version,
+       payload:Buffer.from(saved.payload)})!==original.digest)
       fail('CORRUPT_SNAPSHOT_PROOF');
     return saved.version;
   }
@@ -470,7 +489,7 @@ export class BatchPersistenceSidecar {
         this.putHead.run(t,a,s,next);
         if (e.kind==='snapshot') this.putSnapshot.run(t,a,s,next,e.schemaVersion,e.payload,hash_bytes(e.payload),hash);
         else this.putEvent.run(t,a,s,next,e.schemaVersion,o,e.payload);
-        this.putOp.run(t,a,s,o,hash,next,e.kind,hash_bytes(e.payload));
+        this.putOp.run(t,a,s,o,hash,next,e.kind,hash_bytes(e.payload),e.epoch);
         results.push({opId:o,status:'committed',durable:true,duplicate:false,version:next});
       }
       this.db.exec('COMMIT');
@@ -572,6 +591,7 @@ export class BatchPersistenceSidecar {
       'substr(e.payload,1,1048577) AS payload,' +
       'o.version AS legacy_version,o.kind AS legacy_kind,' +
       'o.payload_hash AS legacy_payload_hash,' +
+      'o.origin_epoch AS legacy_epoch,o.digest AS legacy_digest,' +
       'c.first_version AS command_first,c.last_version AS command_last,' +
       'c.event_count AS command_count,c.command_hash AS command_hash ' +
       'FROM events e LEFT JOIN operations o ON ' +
@@ -611,6 +631,15 @@ export class BatchPersistenceSidecar {
            !/^[0-9a-f]{64}$/.test(event.legacy_payload_hash))
           fail('UNVERIFIED_LEGACY_EVENT');
         if(hash_bytes(Buffer.from(event.payload))!==event.legacy_payload_hash)
+          fail('CORRUPT_LEGACY_EVENT');
+        if(!uint(event.legacy_epoch) || event.legacy_epoch<1 ||
+           typeof event.legacy_digest!=='string' ||
+           !/^[0-9a-f]{64}$/.test(event.legacy_digest))
+          fail('UNVERIFIED_LEGACY_EVENT');
+        if(digest({tenantId,actor,stateName,opId:event.op_id,
+           epoch:event.legacy_epoch,expectedVersion:event.version-1,
+           kind:'event',schemaVersion:event.schema_version,
+           payload:Buffer.from(event.payload)})!==event.legacy_digest)
           fail('CORRUPT_LEGACY_EVENT');
       }
       if (events.length>=10000) fail('ACTOR_JOURNAL_REPLAY_LIMIT');
