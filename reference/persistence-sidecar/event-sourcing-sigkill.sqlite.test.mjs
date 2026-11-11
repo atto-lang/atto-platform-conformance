@@ -81,13 +81,24 @@ function killed_process(path,mode) {
         if(receipt?.status!=='committed')throw Error('NO_COMMIT');
         if(mode!=='commit_before_ack') {
           a.accept_commit(receipt);
-          if(mode==='checkpoint_committed'||mode==='tail_commit_no_ack'||mode==='checkpoint_abort') {
+          if(mode==='checkpoint_committed'||mode==='tail_commit_no_ack'||
+             mode==='checkpoint_abort'||mode==='checkpoint_mid_transaction_sigkill') {
             if(mode==='checkpoint_abort') {
               db.db.exec(\`CREATE TRIGGER kill_prune BEFORE DELETE ON events
                 BEGIN SELECT RAISE(ABORT,'forced SQL abort'); END;\`);
               let failed=false;
               try{a.checkpoint_and_compact();}catch(e){failed=String(e).includes('OUTCOME_UNKNOWN');}
               if(!failed)throw Error('EXPECTED_CHECKPOINT_ROLLBACK');
+            } else if(mode==='checkpoint_mid_transaction_sigkill') {
+              // Terminate DURING the same SQLite BEGIN IMMEDIATE transaction,
+              // after the checkpoint and manifest INSERTs but before COMMIT.
+              db.db.function('kill_mid_prune',()=>{
+                process.kill(process.pid,'SIGKILL');
+              });
+              db.db.exec(\`CREATE TRIGGER kill_mid_prune BEFORE DELETE ON events
+                BEGIN SELECT kill_mid_prune(); END;\`);
+              a.checkpoint_and_compact();
+              throw Error('EXPECTED_SIGNAL_INSIDE_SQLITE');
             } else {
               if(a.checkpoint_and_compact().version!==1)throw Error('CHECKPOINT_FAILED');
               if(mode==='tail_commit_no_ack') {
@@ -189,5 +200,24 @@ test('SIGKILL after second-event transaction abort: no partial state or command 
     a.apply_commit(db.flush()[0]);
     assert.equal(a.version,2);
     assert.equal(a.handle_state('critical-read',s=>s.sum),7);
+  });
+});
+
+test('SIGKILL inside SQLite DELETE trigger rolls back checkpoint and index manifest',()=>{
+  fixture('checkpoint_mid_transaction_sigkill',({db})=>{
+    grant(db,'bank',2);
+    const a=recovered(db,2);
+    assert.equal(a.balance_cents,100);
+    assert.equal(a.version,1);
+    assert.equal(journal(db,'bank',2).snapshot,null);
+    assert.equal(journal(db,'bank',2).events.length,1);
+    assert.equal(db.db.prepare('SELECT count(*) AS n FROM checkpoints').get().n,0);
+    assert.equal(db.db.prepare('SELECT count(*) AS n FROM checkpoint_index_manifests').get().n,0);
+    assert.equal(db.db.prepare('SELECT count(*) AS n FROM command_commits').get().n,1);
+    assert.equal(a.submit('deposit-001',deposit(100)).duplicate,true);
+    // The test-only SQL crash hook remains in schema after process death.
+    // Drop it under trusted host control before attempting recovery compaction.
+    db.db.exec('DROP TRIGGER kill_mid_prune');
+    assert.equal(a.checkpoint_and_compact().prunedEvents,1);
   });
 });
