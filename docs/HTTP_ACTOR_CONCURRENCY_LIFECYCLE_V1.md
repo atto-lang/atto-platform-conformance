@@ -63,3 +63,27 @@ publishes close-state visibility and rejects dispatch after observed listener
 or runtime closure. It does **not** implement linearizable handoff or physical
 carrier exit. Never merge it with Java #997/#1166 without independent
 integration review and actual held-carrier shutdown testing.
+
+## Dispatch-handoff cancellation race (2026-11-11)
+
+The admission model now includes `begin_handoff(message_token)` and
+`end_handoff(message_token)`, with immutable token identity, private ledger
+accessors and explicit `pending_handoffs` snapshot accounting. Once dispatch
+starts selecting/attaching a worker, cancellation or transport closure cannot
+recycle the original request/message reservation until handoff has reconciled
+the actor's physical exit obligation.
+
+The Java draft [#2884](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2884)
+applies a focused `dispatchInProgress` lease in production
+`NativeHttp.State.release` and binds an unpooled spawned actor to the
+exchange before allowing retirement. Its actor-DONE follow-up performs HTTP
+release off the actor finalization callback stack. The new JUnit cases exercise
+the production release predicate, including an ordered concurrent
+timeout-vs-handoff check. **These JUnit tests are not yet executed on a JDK25
+runner.**
+
+The source-free model now passes **13/13 test groups** in an isolated
+V8 adapter, including 10,000 bounded action sequences. It does not simulate
+physical HTTP sockets, VM context leave, entire actor scheduler behavior,
+or guarantee that `end_handoff` was called only after the real actor became
+quiescent. It is a *non-promoting model contract*, not runtime certification.
