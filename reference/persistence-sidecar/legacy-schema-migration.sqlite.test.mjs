@@ -10,7 +10,7 @@ import {BatchPersistenceSidecar} from './sidecar.mjs';
 const tenantId='tenant-migration', actor='old-account', stateName='ledger';
 const sha=(bytes)=>createHash('sha256').update(bytes).digest('hex');
 
-function oldFixture(body) {
+function oldFixture(body,{seedSnapshot=false,seedCommand=false}={}) {
   const dir=mkdtempSync(join(tmpdir(),'atto-old-persist-'));
   const path=join(dir,'legacy.sqlite');
   try {
@@ -43,6 +43,18 @@ function oldFixture(body) {
     `);
     raw.prepare('INSERT INTO fences VALUES(?,?,?)').run(tenantId,actor,1);
     raw.prepare('INSERT INTO heads VALUES(?,?,?,?)').run(tenantId,actor,stateName,1);
+    if(seedSnapshot) {
+      raw.prepare('INSERT INTO snapshots VALUES(?,?,?,?,?,?)')
+        .run(tenantId,actor,stateName,1,1,Buffer.from('balance=100'));
+      raw.prepare('INSERT INTO operations VALUES(?,?,?,?,?,?,?)')
+        .run(tenantId,actor,stateName,'old-snapshot','legacy-digest',1,'snapshot');
+    }
+    if(seedCommand) {
+      const commandBytes=Buffer.from('deposit:100');
+      raw.prepare('INSERT INTO command_commits VALUES(?,?,?,?,?,?,?,?,?)')
+        .run(tenantId,actor,stateName,'old-command',
+          sha(commandBytes),1,1,1,Buffer.from('100'));
+    }
     raw.close();
     const sidecar=new BatchPersistenceSidecar({path,tenantId});
     try {body(sidecar);} finally {sidecar.close();}
@@ -57,10 +69,6 @@ test('old SQLite tables gain nullable proofs without silently trusting history',
     assert(columns('operations').includes('payload_hash'));
     assert(columns('command_commits').includes('events_digest'));
     assert(columns('command_commits').includes('result_digest'));
-    db.db.prepare('INSERT INTO snapshots(tenant,actor,state_name,version,schema_version,payload) VALUES(?,?,?,?,?,?)')
-      .run(tenantId,actor,stateName,1,1,Buffer.from('balance=100'));
-    db.db.prepare('INSERT INTO operations(tenant,actor,state_name,op_id,digest,version,kind) VALUES(?,?,?,?,?,?,?)')
-      .run(tenantId,actor,stateName,'old-snapshot','legacy-digest',1,'snapshot');
     assert.throws(()=>db.loadFenced({tenantId,actor,stateName,epoch:1}),/UNVERIFIED_SNAPSHOT/);
     assert.equal(db.db.prepare('SELECT COUNT(*) AS n FROM snapshots').get().n,1);
     // Quarantine cannot spill across actor IDs: a new actor still commits.
@@ -69,14 +77,12 @@ test('old SQLite tables gain nullable proofs without silently trusting history',
       epoch:1,expectedVersion:0,schemaVersion:1,kind:'event',payload:Buffer.from('ok')}).status,'admitted');
     assert.equal(db.flush()[0].durable,true);
     assert.equal(db.loadFenced({tenantId,actor:'fresh-account',stateName,epoch:1}).events.length,1);
-  });
+  },{seedSnapshot:true});
 });
 
 test('pre-upgrade command record without digests can never become a durable duplicate',()=>{
   oldFixture(db=>{
     const commandBytes=Buffer.from('deposit:100'),opId='old-command';
-    db.db.prepare('INSERT INTO command_commits(tenant,actor,state_name,op_id,command_hash,first_version,last_version,event_count,result_bytes) VALUES(?,?,?,?,?,?,?,?,?)')
-      .run(tenantId,actor,stateName,opId,sha(commandBytes),1,1,1,Buffer.from('100'));
     assert.throws(()=>db.verifyCommand({tenantId,actor,stateName,opId,epoch:1,
       commandBytes}),/UNVERIFIED_COMMAND_RECORD/);
     assert.throws(()=>db.enqueueCommand({tenantId,actor,stateName,opId,epoch:1,
@@ -84,5 +90,5 @@ test('pre-upgrade command record without digests can never become a durable dupl
       events:[Buffer.from('amount=100')],resultBytes:Buffer.from('100')}),
       /UNVERIFIED_COMMAND_RECORD/);
     assert.equal(db.db.prepare('SELECT COUNT(*) AS n FROM events').get().n,0);
-  });
+  },{seedCommand:true});
 });
