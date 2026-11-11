@@ -332,8 +332,19 @@ test('replay event-count ceiling rejects 10001st event but snapshot opens new su
     try {
       const insert=db.db.prepare(
         'INSERT INTO events(tenant,actor,state_name,version,schema_version,op_id,payload) VALUES(?,?,?,?,?,?,?)');
-      for(let n=1;n<=10000;n++)
-        insert.run(base.tenantId,base.actor,base.stateName,n,1,'seed-'+n,Buffer.alloc(0));
+      const proof=db.db.prepare(
+        'INSERT INTO operations(tenant,actor,state_name,op_id,digest,version,kind,payload_hash) VALUES(?,?,?,?,?,?,?,?)');
+      const empty=Buffer.alloc(0),payloadHash=require_hash(empty);
+      for(let n=1;n<=10000;n++) {
+        const opId='seed-'+n;
+        insert.run(base.tenantId,base.actor,base.stateName,n,1,opId,empty);
+        const digest=require_hash(Buffer.from(JSON.stringify([
+          base.tenantId,base.actor,base.stateName,opId,1,n-1,
+          'event',1,empty.toString('base64')
+        ])));
+        proof.run(base.tenantId,base.actor,base.stateName,opId,
+                  digest,n,'event',payloadHash);
+      }
       db.putHead.run(base.tenantId,base.actor,base.stateName,10000);
       db.db.exec('COMMIT');
     } catch(error) {db.db.exec('ROLLBACK');throw error;}
@@ -391,5 +402,34 @@ test('corrupt checkpoint cannot authorize another durable event via replay-capac
     assert.throws(()=>db.flush(),/OUTCOME_UNKNOWN/);
     assert.equal(db.getHead.get(base.tenantId,base.actor,base.stateName).version,1);
     assert.equal(db.db.prepare('SELECT COUNT(*) AS n FROM events').get().n,0);
+  });
+});
+
+
+test('missing journal row cannot be hidden by a fresh snapshot checkpoint',()=>{
+  fixture(db=>{
+    commit(db,legacy('written'));
+    db.db.prepare('DELETE FROM events WHERE tenant=? AND actor=? AND state_name=? AND version=1')
+      .run(base.tenantId,base.actor,base.stateName);
+    const checkpoint={...legacy('launder-gap',1,'snapshot'),
+      payload:Buffer.from('checkpoint')};
+    assert.equal(db.enqueue(checkpoint).status,'admitted');
+    assert.throws(()=>db.flush(),/OUTCOME_UNKNOWN/);
+    assert.equal(db.getHead.get(base.tenantId,base.actor,base.stateName).version,1);
+    assert.equal(db.db.prepare('SELECT COUNT(*) AS n FROM snapshots').get().n,0);
+  });
+});
+
+test('same-length mutated event cannot be laundered into a durable checkpoint',()=>{
+  fixture(db=>{
+    commit(db,legacy('proof-before'));
+    db.db.prepare('UPDATE events SET payload=? WHERE tenant=? AND actor=? AND state_name=? AND version=1')
+      .run(Buffer.from('{"cents":8}'),base.tenantId,base.actor,base.stateName);
+    const checkpoint={...legacy('launder-bytes',1,'snapshot'),
+      payload:Buffer.from('checkpoint')};
+    assert.equal(db.enqueue(checkpoint).status,'admitted');
+    assert.throws(()=>db.flush(),/OUTCOME_UNKNOWN/);
+    assert.equal(db.getHead.get(base.tenantId,base.actor,base.stateName).version,1);
+    assert.equal(db.db.prepare('SELECT COUNT(*) AS n FROM snapshots').get().n,0);
   });
 });
