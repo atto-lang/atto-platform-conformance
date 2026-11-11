@@ -24,6 +24,12 @@ test('AttoLang operators are not replaced by Erlang or C operators', () => {
   assert.deepEqual(contract.operatorPolicy.inequalityAlias, ['!eq']);
   assert.equal(contract.operatorPolicy.assignmentIsPatternMatch, false);
   assert.equal(contract.operatorPolicy.noImplicitNumericCoercion, true);
+  assert.equal(contract.operatorPolicy.invalidPolicyScope, 'proposed-strict-source-v2-not-current-compiler-baseline');
+  assert.deepEqual(contract.operatorPolicy.currentCompatibility.legacyEqualityAliases, ['==', '!=']);
+  for (const id of ['eq.no_implicit_float', 'eq.reject_c_style', 'neq.reject_c_style']) {
+    const strictVector = contract.vectors.find(v => v.id === id);
+    assert.equal(strictVector?.profile, 'proposed-strict-source-v2', id);
+  }
   assert.equal(contract.operatorPolicy.sourceProfile, 'atto-strict-v1');
   assert.equal(contract.operatorPolicy.inequalityAliasStatus, 'candidate-parser-not-verified');
   assert.equal(contract.operatorPolicy.operatorTokenRules['!eq'], 'contiguous-atomic-binary-token');
