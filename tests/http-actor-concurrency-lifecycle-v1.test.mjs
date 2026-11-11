@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 
 const contract = JSON.parse(readFileSync(new URL("../contracts/http-actor-concurrency-lifecycle-v1.json", import.meta.url), "utf8"));
 const backends = ["java", "llvm", "wasm", "forge", "net"];
@@ -55,4 +56,33 @@ test("promotion gate rejects zero-step, synthetic, historical and host-only rece
   for (const [key,value] of Object.entries(gate)) {
     assert.equal(value, !key.startsWith("allow"),key);
   }
+});
+
+test("canonical .atto fixture SHA-1 Git blobs and Java resources are pinned", () => {
+  const fixtures=contract.sourceContract.canonicalFixtures;
+  assert.deepEqual(Object.keys(fixtures).sort(),
+    ["serialOneOne","explicitOneOne","unsupportedThreeFour"].sort());
+  const texts={};
+  for(const [name,entry] of Object.entries(fixtures)) {
+    assert.match(entry.path,/^fixtures\/http-actor-v1\/[a-z0-9-]+\.atto$/);
+    assert.equal(entry.javaResource,
+      entry.path.replace(/^fixtures\//,"src/test/resources/"));
+    assert.match(entry.gitBlobSha,/^[0-9a-f]{40}$/);
+    const source=readFileSync(new URL("../"+entry.path,import.meta.url),"utf8");
+    const gitBlob=createHash("sha1")
+      .update("blob "+Buffer.byteLength(source,"utf8")+"\0")
+      .update(source,"utf8").digest("hex");
+    assert.equal(gitBlob,entry.gitBlobSha,"fixture drift for "+name);
+    assert.match(source,/define pub (serial )?http actor Endpoint as/);
+    assert.match(source,/receive\(ActorMail<int> mail\): void/);
+    assert.ok(!source.includes(".ores"),"new guest fixtures must use AttoLang");
+    texts[name]=source;
+  }
+  assert.ok(!texts.serialOneOne.includes("requestConcurrency"));
+  assert.match(texts.explicitOneOne,/requestConcurrency = 1;/);
+  assert.match(texts.explicitOneOne,/messageConcurrency = 1;/);
+  assert.match(texts.unsupportedThreeFour,/requestConcurrency = 3;/);
+  assert.match(texts.unsupportedThreeFour,/messageConcurrency = 4;/);
+  // This is a *file integrity* gate, not a compiler/runtime receipt.
+  assert.equal(contract.backendEvidence.java.compilerProducedHttpActorGuest,"NOT_VERIFIED");
 });
