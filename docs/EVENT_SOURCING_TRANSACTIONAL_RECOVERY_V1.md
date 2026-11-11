@@ -191,3 +191,41 @@ instrument true process-loss after COMMIT-before-ACK, prove that replay
 caps cannot be exceeded before an authenticated checkpoint, and run
 compiler-lowered guest actor conformance. A source-free runner's passing
 synthetic tests do not authorize private-source mirroring.
+
+
+## 2026-11-10 P0: reject unrecoverable journals before COMMIT
+
+The host reference now rejects event/command admissions that would push the
+**post-checkpoint suffix** over 10,000 events or 16 MiB, regardless of the
+configured batch capacity. Usage is counted inside the existing
+`BEGIN IMMEDIATE` transaction, so earlier writes from the same batch are
+included and an over-limit actor's nondurable
+`REPLAY_LIMIT_EXCEEDED` outcome does not prevent an unrelated actor from
+committing in the same batch.
+
+A checkpoint is counted only after its original durable snapshot-operation
+witness and BLOB/digest checks succeed. Corrupted or future-versioned
+snapshots cannot reset event usage to create illusory capacity. A snapshot
+write may establish a new barrier after the limit is reached; historical
+command IDs are retained for exactly-once deduplication.
+
+The 27-test transactional replay-hardening source file now includes
+boundary-specific scenarios for 10,001 events, 16 MiB, mixed-actor batching,
+recovery after an authenticated checkpoint and corrupted checkpoint
+refusal. A separate two-test migration file seeds a real *old-schema*
+database with pre-existing snapshot/command rows, checks the nullable
+digest-column upgrades and refuses their uncertified durable receipts.
+Neither file has been executed on the exact source head yet.
+
+Independent Node 22 SQLite tests passed 7/7 locally, and the
+source-free alternate private
+[Actions run #42940311766](https://github.com/atto-lang/atto-compilers-parity-testing/actions/runs/42940311766)
+passed seven job steps including the new seven-check replay-capacity probe.
+The code was independently authored and does **not** contain, mirror, or
+test private repository source. Do not claim full conformance or guest
+execution from this result.
+
+Release blockers remain: source-local Actions admission, real Node and
+JDBC exact-head execution, historical-data migration protocol,
+process-kill before/after COMMIT and before ACK, supervisor fencing,
+compiled guest AttoLang actor execution and five-backend parity.
