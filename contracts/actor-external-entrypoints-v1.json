@@ -10,7 +10,7 @@
     "ingress": "RUNTIME_ONLY",
     "guest_visibility": "PRIVATE",
     "public_rpc": false,
-    "initialization": "AT_MOST_ONCE_PER_INCARCATION",
+    "initialization": "AT_MOST_ONCE_PER_INCARNATION",
     "mailbox": "GENERATION_SCOPED_BOUNDED"
   },
   "backends": [
