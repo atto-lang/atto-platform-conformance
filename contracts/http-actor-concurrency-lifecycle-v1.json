@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "contract": "attolang.http-actor-concurrency-lifecycle/1",
   "status": "NOT_CERTIFIED",
-  "evidenceAsOf": "2026-11-09",
+  "evidenceAsOf": "2026-11-11",
   "scope": {
     "sourceRepositories": {
       "java": "ores-truffle-oreslang/oreslang-source.java",
@@ -165,6 +165,12 @@
     "oreslang-source.net#228",
     "oreslang-source.forge#167",
     "oreslang-source.net#312",
-    "oreslang-platform-conformance#273"
+    "oreslang-platform-conformance#273",
+    "oreslang-source.java#2877",
+    "oreslang-source.llvm#1694",
+    "oreslang-source.wasm#469",
+    "oreslang-source.forge#262",
+    "oreslang-source.net#481",
+    "oreslang-demo-restful-server#71"
   ]
 }
