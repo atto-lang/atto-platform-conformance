@@ -49,7 +49,7 @@ The new Java compiler draft admits `declare actor` only as nominal/static metada
 
 ## Hardening boundary for canonical declarations
 
-The canonical `declare actor A;` syntax is nominal-only. It does not allocate an empty executable actor, introduce an unresolved `declare type` forward, or authorize implementation by unrelated namespaces.
+The canonical `declare actor A;` syntax is nominal-only. Registering both `external init` and legacy `on_start` fails with `ACTOR_INIT_ON_START_CONFLICT` across a complete namespace (including separate files and mixed inline/out-of-line method definitions). An out-of-line `on_start` on a canonical declaration is rejected with `ACTOR_LEGACY_START_UNSUPPORTED`; legacy actor spellings retain a migration adapter, but never permit two startup hooks. It does not allocate an empty executable actor, introduce an unresolved `declare type` forward, or authorize implementation by unrelated namespaces.
 
 For a canonical declared actor, any out-of-line method named `init` or `receive` **must** carry the contextual `external` marker. Ordinary `define mtd` declarations remain static method metadata and cannot occupy the runtime lifecycle role. The older `define actor A as receiver;` receiver-alias spelling and inline actor classes retain legacy migration rules until their own adapters are reviewed. No direct caller access is granted to `external` hooks.
 
@@ -57,7 +57,7 @@ Until there is a typed, compiler-issued, ownership-checked state builder, `exter
 
 Malformed `declare async/shared/static actor`, duplicate visibility modifiers, actor/inline-class name collisions, cross-namespace receiver impersonation, duplicate lifecycle slots, source IDs with Windows colons, and bidirectional/zero-width Unicode format controls must all fail static admission. A declaration with `implements`, `extends`, generic parameters, receiver aliases or an inline body remains rejected pending separately versioned semantic support; silently ignoring contract requirements is forbidden.
 
-Conformance evidence for this version includes 3 positive and 9 negative target fixtures. A successful *source-free inventory* check establishes only manifest and fixture integrity, never guest execution, runtime lifecycle behavior or five-backend parity.
+Conformance evidence for this version includes 3 positive and 11 negative target fixtures. A successful *source-free inventory* check establishes only manifest and fixture integrity, never guest execution, runtime lifecycle behavior or five-backend parity.
 
 ## Lifecycle model
 
