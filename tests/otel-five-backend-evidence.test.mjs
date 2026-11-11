@@ -1,7 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { checkGuestStdout, parseUniqueJSON, verifyReceipt, PROFILES } from '../bin/verify-otel-guest-parity.mjs';
+import { checkGuestStdout, parseUniqueJSON, verifyReceipt, verifyFiles, PROFILES } from '../bin/verify-otel-guest-parity.mjs';
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, rmSync, writeFileSync, symlinkSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 const stamp = 1794400000000;
 const root = 'opaque-span-root';
@@ -167,4 +171,56 @@ test('unknown receipt keys and wrong stdout JSONL schema reject', () => {
   expectDenied(() => verifyReceipt(r, capture));
   const malformed = Buffer.from(capture.toString().replace('"oreslang-otel.v1"', '"OTLP"'));
   expectDenied(() => checkGuestStdout(malformed));
+});
+
+test('each of six source-owned message bodies is independently required', () => {
+  const capture = sampleCapture();
+  const source = capture.toString().trimEnd().split('\n').map(JSON.parse);
+  for (let idx = 0; idx < 6; idx++) {
+    const rows = structuredClone(source);
+    rows[idx].body += ' tampered';
+    expectDenied(() => checkGuestStdout(Buffer.from(
+      rows.map(JSON.stringify).join('\n') + '\n')));
+  }
+  const rows = structuredClone(source);
+  rows[0].timestamp_unix_ms = rows[0].timestamp_unix_ms - 300001;
+  expectDenied(() => checkGuestStdout(Buffer.from(
+    rows.map(JSON.stringify).join('\n') + '\n')));
+  rows[0].timestamp_unix_ms = source[0].timestamp_unix_ms;
+  rows[4].span_id = 'x'.repeat(129);
+  expectDenied(() => checkGuestStdout(Buffer.from(
+    rows.map(JSON.stringify).join('\n') + '\n')));
+});
+
+test('prototype-inherited compiler profile keys cannot impersonate one of six profiles', () => {
+  const capture = sampleCapture();
+  for (const profile of ['constructor', 'toString', '__proto__', 'valueOf']) {
+    const receipt = sampleReceipt(capture);
+    receipt.profile = profile;
+    expectDenied(() => verifyReceipt(receipt, capture));
+  }
+});
+
+test('bounded regular capture files pass, but symlinks are rejected', t => {
+  const directory = mkdtempSync(join(tmpdir(), 'otel-guest-files-'));
+  t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const capture = sampleCapture();
+  const receiptPath = join(directory, 'receipt.json');
+  const stdoutPath = join(directory, 'stdout.jsonl');
+  writeFileSync(receiptPath, JSON.stringify(sampleReceipt(capture)));
+  writeFileSync(stdoutPath, capture);
+  assert.equal(verifyFiles(receiptPath, stdoutPath).records, 9);
+  const symlinkPath = join(directory, 'stdout-symlink.jsonl');
+  symlinkSync(stdoutPath, symlinkPath);
+  expectDenied(() => verifyFiles(receiptPath, symlinkPath));
+});
+
+test('require-parity CLI fails before reading captures and prints no success JSON', () => {
+  const result = spawnSync(process.execPath, [
+    'bin/verify-otel-guest-parity.mjs', '/does-not-exist/receipt',
+    '/does-not-exist/stdout', '--require-parity',
+  ], { encoding: 'utf8', timeout: 5000, maxBuffer: 8192 });
+  assert.equal(result.status, 1);
+  assert.equal(result.stdout, '');
+  assert.match(result.stderr, /shape-only checks cannot certify a compiler/);
 });
