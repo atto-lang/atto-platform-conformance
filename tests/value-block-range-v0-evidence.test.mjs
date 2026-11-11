@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {validateContract, validateReceiptShape, gitBlobSha} from '../lib/value-block-range-v0-evidence.mjs';
+import {validateContract, validateReceiptShape, gitBlobSha, sourceSha256} from '../lib/value-block-range-v0-evidence.mjs';
 
 const raw=readFileSync(new URL('../contracts/value-block-range-v0/cases.json',import.meta.url),'utf8');
 const contract=JSON.parse(raw);
@@ -51,7 +51,7 @@ test('source-free and stale or incomplete guest receipts are rejected',()=>{
   receipt.evidence_class='COMPILED_ATTO_GUEST';
   receipt.compiler_head_sha='0'.repeat(40);
   receipt.compiler_tree_sha='0'.repeat(40);
-  assert.throws(()=>validateReceiptShape(receipt,contract,matrix),/audited SHA/);
+  assert.throws(()=>validateReceiptShape(receipt,contract,matrix),/pinned candidate SHA/);
 });
 
 test('all nine compiler repositories and ten execution lanes are present without synthetic successes',()=>{
@@ -77,5 +77,79 @@ test('receipt lane cannot impersonate another backend or use skipped guest execu
   baseline.backend='rs';
   baseline.compiler_head_sha='0'.repeat(40);
   baseline.compiler_tree_sha='0'.repeat(40);
-  assert.throws(()=>validateReceiptShape(baseline,contract,matrix),/audited SHA/);
+  assert.throws(()=>validateReceiptShape(baseline,contract,matrix),/pinned candidate SHA/);
+});
+
+
+function syntheticReceiptShapeOnly(lane='java-interpreter') {
+  const backend={ 'java-interpreter':'java', 'java-native-image':'java',
+    'llvm-native':'llvm','wasm32':'wasm','forge-native':'forge',
+    'net-native-aot':'net','rs-native':'rs','cranelift-native':'cranelift',
+    'js-worker':'js','hdl-rtl-simulation':'hdl' }[lane];
+  const candidate=matrix.backend_audit.find(x=>x.backend===backend).candidate;
+  return {
+    schema:'attolang.value-block-range.guest-receipt.v0',
+    evidence_class:'COMPILED_ATTO_GUEST',
+    contract_blob_sha:matrix.source_contract.git_blob_sha,
+    lane,backend,compiler_head_sha:candidate.sha,compiler_tree_sha:candidate.tree,
+    runner_repository:'voxletra/voxletra-e2e',run_id:1234,job_id:5678,
+    run_url:'https://github.com/voxletra/voxletra-e2e/actions/runs/1234',
+    completed_steps:['compiler','artifact','guest-execute'],
+    compiler_binary_sha256:'a'.repeat(64),
+    cases:contract.cases.map(spec=>{
+      const result={id:spec.id,source_sha256:sourceSha256(spec.source),status:'pass'};
+      if(spec.kind==='accept_execute') Object.assign(result,{
+        phase:'guest-execute',compile_exit:0,guest_exit:spec.expect.exit_code,
+        artifact_sha256:'b'.repeat(64),guest_stdout_sha256:'c'.repeat(64),
+        executed_guest:true,
+        ...(spec.expect.visited ? {visited:spec.expect.visited}:{}),
+      });
+      if(spec.kind.startsWith('reject_')) Object.assign(result,{
+        phase:spec.kind==='reject_parse'?'parser-reject':'typechecker-reject',
+        compile_exit:2,diagnostic_class:spec.expect.diagnostic,
+        artifact_published:false,
+      });
+      if(spec.kind==='accept_typecheck') Object.assign(result,{
+        phase:'typecheck',compile_exit:0,result_type:spec.expect.result_type,
+      });
+      if(spec.kind==='accept_lex') Object.assign(result,{
+        phase:'lex',lex_pass:true,lex_tokens:spec.expect.token_prefix,
+      });
+      return result;
+    }),
+  };
+}
+test('even a complete fabricated receipt can pass shape checks but is NOT externally verified',()=>{
+  const receipt=syntheticReceiptShapeOnly();
+  const shape=validateReceiptShape(receipt,contract,matrix);
+  assert.equal(shape.claim_status,'RECEIPT_SHAPE_VALID_EXTERNAL_VERIFICATION_REQUIRED');
+  assert.ok(!('certified' in shape));
+});
+test('wrong compiler tree, stale main, and inconsistent run URL are rejected',()=>{
+  const stale=syntheticReceiptShapeOnly();
+  stale.compiler_head_sha=matrix.backend_audit[0].main_sha;
+  assert.throws(()=>validateReceiptShape(stale,contract,matrix),/pinned candidate SHA/);
+  const tree=syntheticReceiptShapeOnly();
+  tree.compiler_tree_sha='0'.repeat(40);
+  assert.throws(()=>validateReceiptShape(tree,contract,matrix),/pinned candidate tree/);
+  const url=syntheticReceiptShapeOnly();
+  url.run_url='https://github.com/another/repo/actions/runs/1234';
+  assert.throws(()=>validateReceiptShape(url,contract,matrix),/runner repo\/url mismatch/);
+});
+test('wrong negative phase, missing range witness, wrong inferred type and missing lex tokens are rejected',()=>{
+  const wrongPhase=syntheticReceiptShapeOnly();
+  wrongPhase.cases.find(x=>x.id==='range_chaining').phase='typechecker-reject';
+  assert.throws(()=>validateReceiptShape(wrongPhase,contract,matrix),/correct compiler phase/);
+  const missingVisit=syntheticReceiptShapeOnly();
+  delete missingVisit.cases.find(x=>x.id==='range_exclusive_count').visited;
+  assert.throws(()=>validateReceiptShape(missingVisit,contract,matrix),/range iteration witness/);
+  const wrongType=syntheticReceiptShapeOnly();
+  wrongType.cases.find(x=>x.id==='empty_collection_context').result_type='Unknown';
+  assert.throws(()=>validateReceiptShape(wrongType,contract,matrix),/actual checked type/);
+  const wrongLex=syntheticReceiptShapeOnly();
+  wrongLex.cases.find(x=>x.id==='double_dot_not_spread').lex_tokens=['INT'];
+  assert.throws(()=>validateReceiptShape(wrongLex,contract,matrix));
+  const skipped=syntheticReceiptShapeOnly();
+  skipped.cases.find(x=>x.id==='inclusive_max_endpoint').status='skipped';
+  assert.throws(()=>validateReceiptShape(skipped,contract,matrix),/never passes/);
 });
