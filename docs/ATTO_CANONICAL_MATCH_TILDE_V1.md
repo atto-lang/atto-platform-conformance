@@ -10,13 +10,13 @@ MatchArm ::= "on" Pattern ["when" Expression] "->" Body
 DefaultArm ::= "default" "->" Body
 ```
 
-Normal match requires provably disjoint exhaustive arms. `match first` allows ordered overlaps. `default` is unique, unguarded and final; `on default` is not canonical formatter output, but the legacy input alias is accepted and normalized when it is semantically equivalent. Preserve legacy forms only when they are truly semantically equivalent; do not silently change procedural `do match` return behavior.
+Normal match requires provably disjoint exhaustive arms. `match first` allows ordered overlaps. `default` is unique, unguarded and final; `on default` is invalid and must be rejected (the shared v1/v2 language contract requires `default ->` without `on`); the legacy `on _` fallback is a distinct allowed compatibility form. Preserve legacy forms only when they are truly semantically equivalent; do not silently change procedural `do match` return behavior.
 
 `~(foo: value)` and `~record(foo: value)` are closed readonly records; `~(key => value)` and `~map(key => value)` are typed maps with **evaluated** keys. `~()` must reject, even in a typed context; explicit `~record()` or type-witnessed `~map()` disambiguates empties. `#symbol` map keys remain Symbols; no implicit String coercion. `struct{}`, `infer struct{}`, tuples, arrays, vectors, `record{}` and `Entry` remain distinct; no coercion or formatter rewrite of legacy syntax. A `structural` pattern uses only an authorized readonly visible-field view, never hidden actor state. `on ~map(...)` is reserved for the separate, not-yet-promoted map-pattern v2 extension.
 
 ## Fixture targets and promotion blockers
 
-The [manifest](../contracts/atto-canonical-syntax-v1.json) pins **26 actual .atto source files**: 13 accept targets returning exit code 42 and 13 compile-reject targets requiring nonzero diagnosis **without any emitted guest artifact**. All five backend results are `NOT_EXECUTED`, and every confirmedBackend list is empty. Expected diagnostic categories describe intended semantic classifications, not verified compiler strings.
+The [manifest](../contracts/atto-canonical-syntax-v1.json) pins **26 actual .atto source files**: 12 accept targets returning exit code 42 and 14 compile-reject targets requiring nonzero diagnosis **without any emitted guest artifact**. All five backend results are `NOT_EXECUTED`, and every confirmedBackend list is empty. Expected diagnostic categories describe intended semantic classifications, not verified compiler strings.
 
 Run `node --test tests/atto-canonical-syntax-v1.test.mjs` for source-only validation. For each of Java/GraalVM, LLVM, Wasm, Forge and .NET NativeAOT, real promotion requires exact source/fixture Git blob checks; compiled guest accept/reject results, exit codes and diagnostic/no-codegen checks; formatter roundtrip and ownership/actor isolation cases; workflow run/job/step evidence, and independent review. Native Image/AOT, map transaction and stable key Eq/Hash semantics are additional promotion gates. Zero-step Actions failures and parser-only carrier checks do **not** prove guest execution.
 

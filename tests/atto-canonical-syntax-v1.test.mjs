@@ -30,6 +30,17 @@ test("manifest mutations fail closed",()=>{
  ];
  for(const mutate of mutations){const m=structuredClone(baseline);mutate(m);assert.ok(validateAttoSyntaxManifest(m,root).length)}
 });
+test("noncanonical on default must always reject, in all five core backend targets",()=>{
+ const row=baseline.cases.find(c=>c.id==="legacy-on-default");
+ assert.equal(row.expect,"reject");
+ assert.equal(row.diagnosticCategory,"INVALID_MATCH_DEFAULT");
+ assert.equal(row.noGuestArtifactOnReject,true);
+ const mutant=structuredClone(baseline);
+ const alias=mutant.cases.find(c=>c.id==="legacy-on-default");
+ alias.expect="accept"; delete alias.diagnosticCategory; delete alias.noGuestArtifactOnReject;
+ alias.expectedExitCode=42;
+ assert.ok(validateAttoSyntaxManifest(mutant,root).length>0);
+});
 test("malformed manifest and negative artifact gates",()=>{
  for(const x of [null,[],{},false])assert.ok(validateAttoSyntaxManifest(x,root).length);
  for(const c of baseline.cases.filter(c=>c.expect==="reject")){assert.equal(c.noGuestArtifactOnReject,true);assert.match(c.diagnosticCategory,/^[A-Z][A-Z0-9_]+$/)}
