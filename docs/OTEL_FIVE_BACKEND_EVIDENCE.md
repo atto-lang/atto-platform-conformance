@@ -79,6 +79,65 @@ that a compiler emitted it. A single passing profile is not five-backend
 parity. Dashboard/collector admission also requires independent authenticated
 OTLP export and storage/readback proof, beyond this guest JSONL gate.
 
+
+## Opt-in real compiler/guest process launcher
+
+`bin/run-otel-guest-execution.mjs` executes an explicitly selected, SHA-pinned
+**real compiler** and then a real guest process. It has **no fake compiler,
+cached-output, checker-only or silent skip fallback**. It refuses missing
+source checkouts, wrong original fixture/library Git blob IDs, dirty
+checkouts, nonabsolute executable paths, tool hash drift, missing generated
+artifacts, nonzero exits, process timeouts and malformed/oversized JSONL.
+
+Example configuration **shape only** (replace the placeholder absolute paths
+and hashes with independently approved local binaries and clean checkouts;
+do not commit the resulting machine-specific file or any credentials):
+
+```json
+{
+  "schema": "oreslang-otel-real-guest-execution/v1",
+  "profile": "java-graalvm-jit",
+  "backend_source_root": "/secure/source/oreslang-source.java",
+  "backend_source_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "otel_source_root": "/secure/source/oreslang-otel",
+  "otel_source_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "compiler_executable": "/trusted/jdk/bin/java",
+  "compiler_binary_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "dependency_pins": [
+    {"path": "/trusted/compiler/oreslang-compiler.jar", "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"}
+  ],
+  "compile_argv": ["{compiler}", "-jar", "/trusted/compiler/oreslang-compiler.jar", "--check", "{fixture}"],
+  "run_argv": ["{compiler}", "-jar", "/trusted/compiler/oreslang-compiler.jar", "{fixture}"],
+  "artifact_kind": "source_fixture",
+  "timeout_ms": 30000
+}
+```
+
+The example compiler and command flags are **illustrative**, not a verified
+current CLI invocation or an approved binary identity. Update them to the
+backend's actual reviewed CLI. For a native-generated profile, set
+`artifact_kind:"generated"`, make the compiler write to `{artifact}`,
+and ensure `run_argv` actually invokes `{artifact}` through the pinned
+native runtime or host launcher. Only `java-graalvm-jit` may use
+`source_fixture` (no generated native application artifact). A verified JIT
+source input is not a Native Image artifact.
+
+```sh
+node bin/run-otel-guest-execution.mjs /absolute/path/to/reviewed-local-config.json
+```
+
+The launcher emits private, bounded `capture.json` and
+`guest.stdout.jsonl` in a fresh local temporary directory, labeled
+`REAL_PROCESS_CAPTURE_CANDIDATE_UNATTESTED`. This local provenance is
+**not sufficient for production parity**, since command identity and source
+origin still require independent GitHub-run, dependency/build and artifact
+corroboration. It never sends private source code to an outside carrier,
+automatically uploads an artifact or exports telemetry over the network.
+
+In particular, this runner cannot manufacture a working Wasm stdout import
+or the language features Forge/.NET are still missing. Those profiles fail
+rather than claiming parity.
+
 ## What to implement next
 
 Start with a **real Java/GraalVM JIT guest** under the pinned source-owned
