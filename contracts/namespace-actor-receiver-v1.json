@@ -367,6 +367,51 @@
       ],
       "confirmedBackends": [],
       "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "declare.reject_semicolon_define",
+      "stage": "parser",
+      "expect": "reject",
+      "diagnosticClass": "ACTOR_BODY_FREE_USE_DECLARE",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndefine actor Foo;\n"
+      },
+      "requires": [
+        "no-empty-actor-implicit-lowering",
+        "require-contextual-declare"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "declare.inline_definition_retained",
+      "stage": "parser",
+      "expect": "accept_ast_only",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndefine actor Foo as end\n"
+      },
+      "requires": [
+        "distinct-inline-ClassDecl",
+        "no-header-only-alias"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
     }
   ],
   "canonicalOutOfLineHeader": "declare actor Foo [implements ActorContract];",
