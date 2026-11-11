@@ -8,11 +8,11 @@ const contract=JSON.parse(raw);
 const matrix=JSON.parse(readFileSync(new URL('../contracts/value-block-range-v0/matrix.json',import.meta.url),'utf8'));
 const clone=x=>structuredClone(x);
 
-test('canonical 17-case design contract has immutable Git blob identity, not guest pass',()=>{
+test('canonical nine-backend 17-case contract has immutable Git blob identity, not guest pass',()=>{
   const result=validateContract(contract,matrix,raw);
   assert.equal(result.cases,17);
-  assert.equal(result.backends,5);
-  assert.equal(result.lanes,6);
+  assert.equal(result.backends,9);
+  assert.equal(result.lanes,10);
   assert.equal(result.evidence_class,'SOURCE_FREE_CONTRACT_ONLY');
   assert.equal(result.contractBlob,gitBlobSha(raw));
 });
@@ -52,4 +52,30 @@ test('source-free and stale or incomplete guest receipts are rejected',()=>{
   receipt.compiler_head_sha='0'.repeat(40);
   receipt.compiler_tree_sha='0'.repeat(40);
   assert.throws(()=>validateReceiptShape(receipt,contract,matrix),/audited SHA/);
+});
+
+test('all nine compiler repositories and ten execution lanes are present without synthetic successes',()=>{
+  const backends=matrix.backend_audit.map(x=>x.backend);
+  assert.deepEqual(backends,['java','llvm','wasm','forge','net','rs','cranelift','js','hdl']);
+  assert.deepEqual(matrix.required_guest_lanes,[
+    'java-interpreter','java-native-image','llvm-native','wasm32',
+    'forge-native','net-native-aot','rs-native','cranelift-native',
+    'js-worker','hdl-rtl-simulation'
+  ]);
+  assert.match(matrix.semantic_alignment_blocker?.scope,/Java implementation draft/);
+  assert.match(matrix.hardware_profile_note,/restricted hardware/);
+});
+test('receipt lane cannot impersonate another backend or use skipped guest execution',()=>{
+  const baseline={
+    schema:'attolang.value-block-range.guest-receipt.v0',
+    evidence_class:'COMPILED_ATTO_GUEST',
+    contract_blob_sha:matrix.source_contract.git_blob_sha,
+    lane:'rs-native',
+    backend:'hdl',
+  };
+  assert.throws(()=>validateReceiptShape(baseline,contract,matrix),/lane\/backend mismatch/);
+  baseline.backend='rs';
+  baseline.compiler_head_sha='0'.repeat(40);
+  baseline.compiler_tree_sha='0'.repeat(40);
+  assert.throws(()=>validateReceiptShape(baseline,contract,matrix),/audited SHA/);
 });
