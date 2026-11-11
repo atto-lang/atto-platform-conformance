@@ -156,3 +156,34 @@ test('SQLite bank: SIGKILL child after durable COMMIT before ACK, then restart w
     assert.equal(db.loadFenced({tenantId:'tenant-a',actor:'bank-kill',stateName:'main',epoch:2}).events.length,1);
   } finally {try{db?.close();}catch{} f.close();}
 });
+
+test('SQLite bank: missing durable command row cannot be acknowledged from cached replay map',()=>{
+  const f=fixture();let db;
+  try {
+    db=f.open();db.grantEpoch({tenantId:'tenant-a',actor:'bank-1',epoch:1});
+    const account=bank(db,'bank-1',1);account.restore();
+    commit(account,db,'deposit-stored',deposit(100));
+    db.db.exec('DROP TRIGGER immutable_command_commits_delete');
+    db.db.prepare('DELETE FROM command_commits WHERE tenant=? AND actor=? AND op_id=?')
+      .run('tenant-a','bank-1','deposit-stored');
+    assert.throws(()=>account.submit('deposit-stored',deposit(100)),/MISSING_COMMAND_RECORD/);
+    // The journal row alone is not a replacement for the durable receipt index.
+    assert.throws(()=>bank(db,'bank-1',1).restore(),/MISSING_COMMAND_RECORD/);
+    assert.equal(db.loadFenced({tenantId:'tenant-a',actor:'bank-1',stateName:'main',epoch:1}).events.length,1);
+  } finally {try{db?.close();}catch{} f.close();}
+});
+
+test('SQLite bank: altered durable command result fails uncompacted replay',()=>{
+  const f=fixture();let db;
+  try {
+    db=f.open();db.grantEpoch({tenantId:'tenant-a',actor:'bank-1',epoch:1});
+    const account=bank(db,'bank-1',1);account.restore();
+    commit(account,db,'deposit-stored',deposit(100));
+    db.db.exec('DROP TRIGGER immutable_command_commits_update');
+    db.db.prepare('UPDATE command_commits SET result_bytes=? WHERE tenant=? AND actor=? AND op_id=?')
+      .run(Buffer.from('{"balance_cents":999}'),'tenant-a','bank-1','deposit-stored');
+    assert.throws(()=>bank(db,'bank-1',1).restore(),/MISSING_COMMAND_RECORD/);
+    // Do not let a manipulated receipt bless a duplicate even if its hash matches.
+    assert.throws(()=>account.submit('deposit-stored',deposit(100)),/UNVERIFIABLE_COMMIT|MISSING_COMMAND_RECORD/);
+  } finally {try{db?.close();}catch{} f.close();}
+});
