@@ -108,6 +108,9 @@ export class TrustedMultiActorSharedHostV1 {
     const e = executions.get(execution);
     assert(e?.live && e.host === this, 'stale or forged execution');
     for (const region of this.#regions) assert(!region.hasExecution(execution), 'execution has active or pending loan');
+    // A grant is scoped to one authenticated execution, never its textual actor ID.
+    // Revoke unused grants before releasing that execution's incarnation slot.
+    for (const region of this.#regions) region.onExecutionEnd(execution, INTERNAL);
     e.live = false;
     e.a.executions.delete(e.logicalId);
   }
@@ -213,6 +216,15 @@ class MultiActorSharedRegionV1 {
       (t.state === 'active' || t.state === 'pending'));
   }
   hasExecution(execution) { return this.#hasExecution(execution); }
+
+  /** Only the scheduler can retire grants belonging to a finished logical turn. */
+  onExecutionEnd(execution, authority) {
+    assert(authority === INTERNAL, 'only trusted runtime may retire execution grants');
+    for (const [grant, record] of this.#grants) {
+      if (record.recipientExecution === execution) this.#grants.delete(grant);
+    }
+    this.#check();
+  }
 
   #active() {
     return [...this.#tickets.values()].filter(t => t.state === 'active');
