@@ -232,7 +232,12 @@ export function verifyReceipt(receipt, capture) {
 }
 
 function boundedFile(path) {
-  const fd = openSync(resolve(path), constants.O_RDONLY | (constants.O_NOFOLLOW || 0));
+  let fd;
+  try {
+    fd = openSync(resolve(path), constants.O_RDONLY | (constants.O_NOFOLLOW || 0));
+  } catch {
+    demand(false, 'unable to open bounded, regular, nonsymlinked receipt/stdout file');
+  }
   try {
     const before = fstatSync(fd);
     demand(before.isFile() && before.size > 0 && before.size <= LIMIT && before.nlink === 1,
@@ -277,7 +282,9 @@ function main(argv) {
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   try { main(process.argv.slice(2)); }
   catch (err) {
-    process.stderr.write(String(err.message).slice(0, 300) + '\n');
+    const message = String(err.message);
+    process.stderr.write((message.startsWith('OTEL_PARITY_DENIED:') ?
+      message.slice(0, 300) : 'OTEL_PARITY_DENIED: malformed or inaccessible evidence') + '\n');
     process.exitCode = 1;
   }
 }
