@@ -27,7 +27,11 @@ concurrency:
 jobs:
   logical-word-conformance:
     if: github.repository == 'ores-truffle-oreslang/oreslang-platform-conformance' && github.ref == 'refs/heads/main'
-    runs-on: [self-hosted, linux, x64, atto-conformance-trusted]
+    # Dedicated org runner group must permit only this reviewed @main workflow.
+    # A label alone is not a security boundary.
+    runs-on:
+      group: atto-conformance-source-local-trusted
+      labels: [self-hosted, linux, x64, atto-conformance-trusted]
     timeout-minutes: 25
     steps:
       - name: Confirm exact current PR #658 head and trusted repo before checkout
