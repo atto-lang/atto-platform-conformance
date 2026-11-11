@@ -434,3 +434,22 @@ test('physical turn admission is trusted, bounded and once-ended; STOP cannot re
   assert.throws(() => host.beginRegionTurn(region, y), /stale/);
   assert.equal(region.stats.physicalTurns, 0);
 });
+
+test('suspension cannot be certified by an idle region while a different region is borrowed', () => {
+  const { host, region, a, x } = setup();
+  const idleRegion = host.createRegion(a, 7);
+  const read = region.request(x, 'read');
+  assert.throws(() => idleRegion.assertCanSuspend(x), /loan or physical region turn/);
+  region.release(x, read);
+  idleRegion.assertCanSuspend(x);
+
+  host.beginRegionTurn(region, x);
+  assert.throws(() => idleRegion.assertCanSuspend(x), /loan or physical region turn/);
+  host.endRegionTurn(region, x);
+  idleRegion.assertCanSuspend(x);
+
+  const pendingWriter = region.request(x, 'write');
+  assert.throws(() => idleRegion.assertCanSuspend(x), /loan or physical region turn/);
+  region.release(x, pendingWriter);
+  assert.equal(region.stats.retainedTickets, 0);
+});
