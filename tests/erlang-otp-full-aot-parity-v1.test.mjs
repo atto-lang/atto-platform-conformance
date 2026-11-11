@@ -77,6 +77,7 @@ test("timeout, cancellation and guard miss retain mailbox order and quota", () =
   assert.equal(m.receive_matching(x=>x.type==="B",{cancelled:true}).status,"CANCELLED");
   assert.equal(m.receive_matching(x=>x.type==="B",{deadline_expired:true,cancelled:true}).status,"CANCELLED");
   assert.equal(m.receive_matching(x=>x.type==="C",{deadline_expired:true}).status,"TIMED_OUT");
+  assert.equal(m.receive_matching(x=>x.type==="B",{deadline_expired:true}).status,"TIMED_OUT");
   assert.deepEqual(m.pending_types(),["A","B"]);
   assert.equal(m.admit({sender:"alice",type:"C",recipient_generation:1}).status,"FULL");
   assert.equal(m.receive_matching(x=>x.type==="B").status,"MATCHED");
@@ -93,7 +94,8 @@ test("actor reincarnation fences stale references and resets the old queue", () 
   m.close();
   assert.equal(m.admit({sender:"a",type:"Closed",recipient_generation:20}).status,"CLOSED");
   assert.equal(m.receive_matching(x=>x.type==="DoesNotExist").status,"CLOSED_NO_MATCH");
-  assert.equal(m.receive_matching(x=>x.type==="New").status,"MATCHED");
+  assert.equal(m.receive_matching(x=>x.type==="New").status,"CLOSED_NO_MATCH");
+  assert.deepEqual(m.pending_types(),[]);
 });
 
 test("one_for_one, one_for_all, rest_for_one child sets and stop/start ordering", () => {
