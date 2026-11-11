@@ -19,7 +19,7 @@
       "id": "java",
       "repo": "ores-truffle-oreslang/oreslang-source.java",
       "pr": 2768,
-      "head_sha": "151b018fdc94a024382c87168539174fcc7ff788",
+      "head_sha": "f6f6ccb45ffded0d51ccca99ebcef4f3cba1ffe7",
       "compiler_pr": 2770,
       "stdlib_pr": 2763,
       "host_wire": "SOURCE_COMMITTED_NOT_EXECUTED",
@@ -28,20 +28,22 @@
       "required_profiles": [
         "JVM",
         "GraalVM Native Image"
-      ]
+      ],
+      "host_golden_vector": "SOURCE_TEST_COMMITTED_NOT_EXECUTED"
     },
     {
       "id": "llvm",
       "repo": "ores-truffle-oreslang/oreslang-source.llvm",
       "pr": 1646,
-      "head_sha": "688fcd9b4eaf2c7cc771034c790c11551f77fbcf",
+      "head_sha": "7f687196af8f9eb0330944a2eec1c24901935bdc",
       "host_wire": "SOURCE_COMMITTED_NOT_EXECUTED",
       "durable_provider": "SOURCE_COMMITTED_NOT_EXECUTED",
       "compiled_atto_guest": "NOT_EXECUTED",
       "required_profiles": [
         "native LLVM",
         "GCC and Clang ASan/UBSan"
-      ]
+      ],
+      "host_golden_vector": "SOURCE_TEST_COMMITTED_NOT_EXECUTED"
     },
     {
       "id": "wasm",
