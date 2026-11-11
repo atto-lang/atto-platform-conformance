@@ -12,14 +12,14 @@ function run(env){
   return spawnSync(process.execPath,[tool],{encoding:"utf8",timeout:10000,env:{...process.env,...env}});
 }
 
-test("checker must be the pinned compiler executable, not /bin/false",()=>{
+test("checker must be the pinned compiler executable, not an unrelated program",()=>{
   const r=run({
     ATTO_TUPLE_BACKEND:"llvm-native-guest",
     ATTO_TUPLE_COMPILER_ID:"source-only-fake",
-    ATTO_TUPLE_COMPILER_BINARY:process.execPath,
+    ATTO_TUPLE_COMPILER_BINARY:tool,
     ATTO_TUPLE_WORKDIR:process.cwd(),
     ATTO_TUPLE_RUN_ARGV_JSON:JSON.stringify([process.execPath,"{fixture}"]),
-    ATTO_TUPLE_CHECK_ARGV_JSON:JSON.stringify(["/bin/false","{fixture}"])
+    ATTO_TUPLE_CHECK_ARGV_JSON:JSON.stringify([process.execPath,"{fixture}"])
   });
   assert.notEqual(r.status,0);
   assert.match(r.stderr,/compile-check argv\[0\] must be the pinned/);
