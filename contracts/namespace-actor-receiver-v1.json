@@ -3,7 +3,7 @@
   "contract": "namespace-actor-receiver-v1",
   "status": "candidate-unattested",
   "sourceStatus": "illustrative-source-not-compiler-verified",
-  "trackedJavaDraft": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2887",
+  "trackedJavaDraft": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2892",
   "backendTargets": [
     "java",
     "llvm",
