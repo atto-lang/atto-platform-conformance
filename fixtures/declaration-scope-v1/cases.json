@@ -31,6 +31,18 @@
         "end-delimited-callable",
         "no-phantom-formatter-scope"
       ]
+    },
+    {
+      "path": "newable-static-factory.atto",
+      "expected": "parse-typecheck-and-execute",
+      "requiredFeatures": [
+        "compiler-owned-Newable[T]",
+        "static-factory-witness",
+        "class-lowering",
+        "intrinsic-new-distinction"
+      ],
+      "expectedGuestOutput": "42",
+      "backendStatus": "UNVERIFIED"
     }
   ],
   "negative": [
@@ -57,6 +69,24 @@
         "class-factory-admission",
         "Newable-opt-in"
       ]
+    },
+    {
+      "path": "negative-newable-wrong-result.atto",
+      "expected": "reject",
+      "diagnostic": "static-factory-return-mismatch",
+      "backendStatus": "UNVERIFIED"
+    },
+    {
+      "path": "negative-newable-wrong-target.atto",
+      "expected": "reject",
+      "diagnostic": "factory-marker-target-mismatch",
+      "backendStatus": "UNVERIFIED"
+    },
+    {
+      "path": "negative-newable-spoofed-trait.atto",
+      "expected": "reject",
+      "diagnostic": "reserved-compiler-owned-trait-name",
+      "backendStatus": "UNVERIFIED"
     }
   ],
   "backends": {
@@ -70,5 +100,5 @@
     "rs": "NOT_EXECUTED"
   },
   "evidence": [],
-  "notes": "Root define pub is canonical; nested members omit define. Legacy spellings must retain AST, visibility and exported ABI. Source fixtures do not prove compiler execution. Static Newable trait resolution and source-free binary package linking remain unimplemented; user-defined new cannot be treated as a built-in constructor."
+  "notes": "Root define pub is canonical; nested members omit define. Legacy spellings must retain AST, visibility and exported ABI. Source fixtures do not prove compiler execution. Static Newable trait resolution and source-free binary package linking remain unimplemented; user-defined new cannot be treated as a built-in constructor. Newable[T] is a sealed compiler-owned, non-actor, zero-argument public synchronous static factory witness in the first Java implementation slice; other backends remain unverified."
 }
