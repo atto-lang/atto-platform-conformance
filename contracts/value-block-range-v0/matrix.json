@@ -15,7 +15,11 @@
     "llvm-native",
     "wasm32",
     "forge-native",
-    "net-native-aot"
+    "net-native-aot",
+    "rs-native",
+    "cranelift-native",
+    "js-worker",
+    "hdl-rtl-simulation"
   ],
   "backend_audit": [
     {
@@ -78,8 +82,65 @@
         "for_in",
         "native_aot_guest"
       ]
+    },
+    {
+      "backend": "rs",
+      "repo": "ores-truffle-oreslang/oreslang-source.rs",
+      "main_sha": "e0b8124c69d486c2bd919fb2d0124ea4eb87159e",
+      "observed": "narrow Rust/Cranelift compiler; typed lazy ternary implementation exists in draft PR #40, not in default branch",
+      "gaps": [
+        "block_values_in_any_expression_position",
+        "range_lex_ast",
+        "for_in",
+        "exact_head_guest"
+      ]
+    },
+    {
+      "backend": "cranelift",
+      "repo": "ores-truffle-oreslang/oreslang-source.cranelift",
+      "main_sha": "d3227330a58ef0e170c0c2512b53f60c1eee29e8",
+      "observed": "standalone Rust Cranelift narrow expression parser, not general value-block/range frontend",
+      "gaps": [
+        "typed_ternary",
+        "block_values",
+        "range_ir",
+        "for_in",
+        "native_guest"
+      ]
+    },
+    {
+      "backend": "js",
+      "repo": "ores-truffle-oreslang/oreslang-source.js",
+      "main_sha": "b341ee620694db8c211e15cf36330a408373854a",
+      "observed": "standalone JavaScript compiler and guest runner with existing conditional test coverage; new block/range profile not verified",
+      "gaps": [
+        "block_values",
+        "range_iteration",
+        "for_in",
+        "worker_guest"
+      ]
+    },
+    {
+      "backend": "hdl",
+      "repo": "ores-truffle-oreslang/oreslang-source.hdl",
+      "main_sha": "022936b799740ba12b17f0d009b1e81a2bdd6549",
+      "observed": "narrow RTL/source compiler; hardware does not provide general heap/actor/collection semantics",
+      "gaps": [
+        "synthesizable_conditional_block",
+        "static_finite_range_unroll",
+        "for_in",
+        "rtl_simulator_evidence"
+      ]
     }
   ],
   "verified_guest_receipts": [],
-  "verification_rule": "No backend or lane counts as supporting the new syntax until the exact-head compiler has produced and run a guest artifact with all applicable positive and negative cases. Source-free checks do not count."
+  "verification_rule": "No backend or lane counts as supporting the new syntax until the exact-head compiler has produced and run a guest artifact with all applicable positive and negative cases. Source-free checks do not count.",
+  "audited_compiler_count": 9,
+  "semantic_alignment_blocker": {
+    "scope": "unresolved: canonical generic block expressions vs Java implementation draft #2797 ternary-arm-only BlockValueExpr",
+    "canonical_target": "standalone expression-position blocks evaluate final unterminated expression; ordinary return exits enclosing callable; no implicit lambda invocation",
+    "observed_java_pr": "ternary-arm-only blocks normalize return expression as arm result and auto-call bare zero-argument lambdas",
+    "resolution": "Reconcile spec PR #32 with Java PR #2797 and formatter PR #133 before marking any cross-backend complete"
+  },
+  "hardware_profile_note": "HDL RTL is a restricted hardware compilation profile. Dynamic heap arrays/actors are not applicable until proven; reject unsupported guest source, do not mark skipped cases as pass."
 }
