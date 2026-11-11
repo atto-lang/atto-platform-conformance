@@ -215,7 +215,7 @@
       "expect": "reject",
       "diagnosticClass": "NON_SENDABLE_ACTOR_MAIL",
       "sourceUnits": {
-        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\ndefine mtd (Foo f) receive(ActorMail<borrow int> m): void { return; }\n"
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\nexternal mtd (Foo f) receive(ActorMail<borrow int> m): void { return; }\n"
       },
       "requires": [
         "no-cross-actor-borrow-escape"
@@ -284,9 +284,9 @@
     },
     {
       "id": "receiver_return.raw_actor_escape",
-      "stage": "future_typecheck",
-      "expect": "reject_until_sealed_handle_rule",
-      "diagnosticClass": "ACTOR_RECEIVER_ESCAPE_UNTYPED",
+      "stage": "static_binding",
+      "expect": "reject",
+      "diagnosticClass": "DECLARED_ACTOR_RUNTIME_INGRESS_REQUIRED",
       "sourceUnits": {
         "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\npub mtd (Foo f) init(): f { return f; }\n"
       },
@@ -434,9 +434,224 @@
       ],
       "confirmedBackends": [],
       "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "ingress.init.private_void",
+      "stage": "static_binding",
+      "expect": "accept_metadata_only",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\nexternal mtd (Foo f) init(): void { return; }\n"
+      },
+      "requires": [
+        "private-runtime-only",
+        "zero-args",
+        "void-return"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "ingress.receive.mail",
+      "stage": "static_binding",
+      "expect": "accept_metadata_only",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\nexternal mtd (Foo f) receive(ActorMail<int> mail): void { return; }\n"
+      },
+      "requires": [
+        "private-mailbox-only",
+        "ActorMail<T>-owned"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "ingress.init.public_method_spoof",
+      "stage": "static_binding",
+      "expect": "reject",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\npub mtd (Foo f) init(): void { return; }\n"
+      },
+      "requires": [
+        "require-external-mtd-marker"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "ingress.receive.public_method_spoof",
+      "stage": "static_binding",
+      "expect": "reject",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\npub mtd (Foo f) receive(ActorMail<int> mail): void { return; }\n"
+      },
+      "requires": [
+        "require-external-mtd-marker"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "ingress.init.return_actor_escape",
+      "stage": "static_binding",
+      "expect": "reject",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\nexternal mtd (Foo f) init(): Foo { return f; }\n"
+      },
+      "requires": [
+        "init-returns-void",
+        "no-raw-actor-escape"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "ingress.init.parameters",
+      "stage": "static_binding",
+      "expect": "reject",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\nexternal mtd (Foo f) init(int x): void { return; }\n"
+      },
+      "requires": [
+        "init-zero-arg"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "ingress.receive.raw_arg",
+      "stage": "static_binding",
+      "expect": "reject",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\nexternal mtd (Foo f) receive(int v): void { return; }\n"
+      },
+      "requires": [
+        "mailbox-only-ingress"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "ingress.unrelated_hook",
+      "stage": "static_binding",
+      "expect": "reject",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\nexternal mtd (Foo f) bar(): void { return; }\n"
+      },
+      "requires": [
+        "no-fake-runtime-authority"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "ingress.public_marker",
+      "stage": "parser",
+      "expect": "reject",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\ndeclare pub actor Foo;\npub external mtd (Foo f) init(): void { return; }\n"
+      },
+      "requires": [
+        "external-not-pub"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
+    },
+    {
+      "id": "ingress.inline_actor_different_layout",
+      "stage": "static_binding",
+      "expect": "reject",
+      "sourceUnits": {
+        "src/foo.atto": "namespace foo;\npub define actor Foo as end\nexternal mtd (Foo f) init(): void { return; }\n"
+      },
+      "requires": [
+        "declared-actor-only"
+      ],
+      "backends": [
+        "java",
+        "llvm",
+        "net",
+        "wasm",
+        "forge",
+        "js"
+      ],
+      "confirmedBackends": [],
+      "evidence": "NOT_EXECUTED"
     }
   ],
   "canonicalOutOfLineHeader": "declare [pub | private] actor Foo [implements ActorContract];",
   "legacySemicolonDefinePolicy": "reject; use declare actor; retain define actor Foo as ... end for inline implementations",
-  "visibilityOrdering": "declare pub actor is canonical; pub declare actor is rejected"
+  "visibilityOrdering": "declare pub actor is canonical; pub declare actor is rejected",
+  "ingressControlRule": "explicit private external mtd init(): void is activation-only; external mtd receive(ActorMail<T>): void is mailbox-only; no ordinary calls"
 }
