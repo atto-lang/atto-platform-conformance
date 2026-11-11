@@ -1,0 +1,84 @@
+{
+  "schema": "atto.maybe-result-defer.v1",
+  "status": "SPEC_ONLY_NOT_EXECUTED",
+  "date": "2026-11-10",
+  "producer": "source-free oracle, not a compiler",
+  "required_backends": [
+    "java-graalvm",
+    "llvm-o0",
+    "llvm-o2",
+    "dotnet-nativeaot",
+    "wasm",
+    "forge-cranelift"
+  ],
+  "backend_evidence": {
+    "java-graalvm": "NOT_EXECUTED",
+    "llvm-o0": "NOT_EXECUTED",
+    "llvm-o2": "NOT_EXECUTED",
+    "dotnet-nativeaot": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge-cranelift": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "do-maybe-explicit-return",
+      "path": "fixtures/maybe-result-defer-v1/balance-do-maybe.atto",
+      "expect": "accept",
+      "mode": "statement"
+    },
+    {
+      "id": "return-maybe-nested-function-return",
+      "path": "fixtures/maybe-result-defer-v1/balance-return-maybe-diverge.atto",
+      "expect": "accept",
+      "mode": "diverging-expression"
+    },
+    {
+      "id": "return-maybe-value",
+      "path": "fixtures/maybe-result-defer-v1/balance-return-maybe-value.atto",
+      "expect": "accept",
+      "mode": "value-expression"
+    },
+    {
+      "id": "result-and-option-exhaustive",
+      "path": "fixtures/maybe-result-defer-v1/mixed-result-option.atto",
+      "expect": "accept",
+      "mode": "mixed-failure"
+    },
+    {
+      "id": "reject-missing-none-arm",
+      "path": "fixtures/maybe-result-defer-v1/negative-nonexhaustive.atto",
+      "expect": "reject",
+      "diagnostic": "nonexhaustive failure dispatch"
+    },
+    {
+      "id": "reject-implicit-error-widening",
+      "path": "fixtures/maybe-result-defer-v1/negative-implicit-error-conversion.atto",
+      "expect": "reject",
+      "diagnostic": "incompatible error types"
+    },
+    {
+      "id": "reject-fallible-bind-outside-maybe",
+      "path": "fixtures/maybe-result-defer-v1/negative-fallible-bind-outside.atto",
+      "expect": "reject",
+      "diagnostic": "?= outside maybe"
+    },
+    {
+      "id": "reject-async-defer",
+      "path": "fixtures/maybe-result-defer-v1/negative-async-defer.atto",
+      "expect": "reject",
+      "diagnostic": "suspend in ordinary defer"
+    }
+  ],
+  "required_behaviors": [
+    "eval-once",
+    "first-failure",
+    "explicit-caller-return",
+    "bottom-never",
+    "defer-lifo",
+    "no-host-exception-catch",
+    "contextual-maybe-identifier",
+    "static-pattern-exhaustiveness",
+    "ownership-no-escape",
+    "aot-no-reflection"
+  ]
+}
