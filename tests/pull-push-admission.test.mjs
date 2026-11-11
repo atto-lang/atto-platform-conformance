@@ -6,10 +6,15 @@ const manifest=JSON.parse(readFileSync(new URL('../contracts/pull-push-admission
 function assertManifest(m) {
   assert.equal(m.schema,'atto.pull-push-admission.v1');
   assert.equal(m.status,'TARGET_ONLY_NO_ATTO_GUEST_EXECUTION');
-  assert.deepEqual(Object.keys(m.backends).sort(),['forge','java','llvm','net','wasm']);
+  assert.deepEqual(Object.keys(m.backends).sort(),
+    ['cranelift','forge','hdl','java','js','llvm','net','rs','wasm']);
   for(const [id,b] of Object.entries(m.backends)) {
     assert.equal(b.status,'NOT_EXECUTED',`${id} cannot be claimed verified by a contract`);
     assert.match(b.repository,/^ores-truffle-oreslang\/oreslang-source\./);
+    assert.equal(b.repository, 'ores-truffle-oreslang/oreslang-source.' + id);
+    assert.equal(b.guestFlow, 'NOT_IMPLEMENTED_OR_UNVERIFIED');
+    assert.ok(['core-target','worker-adapter-target','scalar-fail-closed','hardware-fail-closed']
+      .includes(b.tier));
   }
   assert.ok(m.cases.length>=18);
   const ids=m.cases.map(c=>c.id);
@@ -49,6 +54,20 @@ test('irrevocable terminal case is a required cross-backend execution gate',()=>
   for(const backend of Object.values(manifest.backends)){
     assert.equal(backend.status,'NOT_EXECUTED');
   }
+});
+
+test('all nine repositories have tiered, unverified parity targets',()=>{
+  assertManifest(manifest);
+  const scope=manifest.scopePolicy;
+  assert.deepEqual(scope.coreToolchains.sort(),['forge','java','llvm','net','wasm']);
+  assert.deepEqual(scope.workerAdapters,['js']);
+  assert.deepEqual(scope.subsetCompilers.sort(),['cranelift','rs']);
+  assert.deepEqual(scope.hardwareSubset,['hdl']);
+  assert.deepEqual(Object.keys(scope.candidateImplementationPrs).sort(),
+    Object.keys(manifest.backends).sort());
+  for (const name of Object.keys(manifest.backends))
+    assert.ok(Number.isInteger(scope.candidateImplementationPrs[name]));
+  assert.match(scope.limits,/NOT equivalent/);
 });
 
 test('all unattended PASS claims are rejected even with fake provenance',()=>{
