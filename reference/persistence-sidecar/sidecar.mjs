@@ -87,6 +87,11 @@ export class BatchPersistenceSidecar {
     this.getOp = this.db.prepare('SELECT digest, version, kind, payload_hash FROM operations WHERE tenant=? AND actor=? AND state_name=? AND op_id=?');
     this.getHead = this.db.prepare('SELECT version FROM heads WHERE tenant=? AND actor=? AND state_name=?');
     this.putHead = this.db.prepare('INSERT INTO heads VALUES(?,?,?,?) ON CONFLICT(tenant,actor,state_name) DO UPDATE SET version=excluded.version');
+    this.getReplaySnapshot = this.db.prepare(
+      'SELECT version,schema_version,length(payload) AS bytes,'+
+      'substr(payload,1,1048577) AS payload,payload_hash,operation_digest '+
+      'FROM snapshots WHERE tenant=? AND actor=? AND state_name=?'
+    );
     this.getReplayUsage = this.db.prepare(
       'SELECT COUNT(*) AS event_count,COALESCE(SUM(length(payload)),0) AS bytes '+
       'FROM events WHERE tenant=? AND actor=? AND state_name=? AND version>?'
@@ -361,11 +366,7 @@ export class BatchPersistenceSidecar {
   #fitsReplay(tenantId,actor,stateName,newCount,newBytes) {
     if(!uint(newCount) || !uint(newBytes) || newCount<1 ||
        newCount>10000 || newBytes>16777216)return false;
-    const snapshot=this.db.prepare(
-      'SELECT version,schema_version,length(payload) AS bytes,'+
-      'substr(payload,1,1048577) AS payload,payload_hash,operation_digest '+
-      'FROM snapshots WHERE tenant=? AND actor=? AND state_name=?'
-    ).get(tenantId,actor,stateName);
+    const snapshot=this.getReplaySnapshot.get(tenantId,actor,stateName);
     const checkpoint=snapshot?.version??0;
     const head=this.getHead.get(tenantId,actor,stateName)?.version??0;
     if(!uint(checkpoint) || !uint(head) || checkpoint>head)
