@@ -40,14 +40,14 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
-      - name: Execute 27 deterministic tests and reject skips
+      - name: Execute 29 deterministic tests and reject skips
         shell: bash
         run: |
           set -euo pipefail
           node --version
           node --test --test-reporter=tap tests/multi-actor-shared-region-v1.test.mjs | tee singleton-region.tap
-          grep -Eq '^# tests 27$' singleton-region.tap
-          grep -Eq '^# pass 27$' singleton-region.tap
+          grep -Eq '^# tests 29$' singleton-region.tap
+          grep -Eq '^# pass 29$' singleton-region.tap
           grep -Eq '^# fail 0$' singleton-region.tap
           grep -Eq '^# skipped 0$' singleton-region.tap
           grep -Eq '^# cancelled 0$' singleton-region.tap
