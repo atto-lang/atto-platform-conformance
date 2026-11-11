@@ -14,7 +14,7 @@
     "js"
   ],
   "verifiedBackends": [],
-  "javaDraft": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2887",
+  "javaDraft": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2892",
   "executionStatus": "parser-and-static-binder-staged-on-separate-DRAFT-not-runtime",
   "proofRequired": [
     "exact-pr-head-and-root-git-tree",
