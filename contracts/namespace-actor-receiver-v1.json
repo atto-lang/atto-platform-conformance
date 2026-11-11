@@ -27,7 +27,7 @@
       "stage": "parser",
       "expect": "accept_ast_only",
       "sourceUnits": {
-        "src/foo.atto": "namespace foo;\ndefine actor Foo implements ActorXYZ;\npub mtd (Foo f) init(): f { return f; }\npub mtd (Foo f) bar(): void { return; }\n"
+        "src/foo.atto": "namespace foo;\ndeclare actor Foo implements ActorXYZ;\npub mtd (Foo f) init(): f { return f; }\npub mtd (Foo f) bar(): void { return; }\n"
       },
       "requires": [
         "preserve-actor-contract-references",
@@ -52,7 +52,7 @@
       "expect": "reject",
       "diagnosticClass": "ACTOR_CONTRACT_WITNESS_UNSUPPORTED",
       "sourceUnits": {
-        "src/foo.atto": "namespace foo;\npub define actor Foo implements ActorXYZ;\npub mtd (Foo f) bar(): void { return; }\n"
+        "src/foo.atto": "namespace foo;\npub declare actor Foo implements ActorXYZ;\npub mtd (Foo f) bar(): void { return; }\n"
       },
       "requires": [
         "no-ambient-contract-name-fallback",
@@ -75,7 +75,7 @@
       "stage": "static_binding",
       "expect": "accept_metadata_only",
       "sourceUnits": {
-        "src/foo.atto": "namespace foo;\npub define actor Foo;\npub define actor Bar;\npub mtd (Foo f) x(): void { return; }\npub mtd (Bar b) y(): void { return; }\n"
+        "src/foo.atto": "namespace foo;\npub declare actor Foo;\npub declare actor Bar;\npub mtd (Foo f) x(): void { return; }\npub mtd (Bar b) y(): void { return; }\n"
       },
       "requires": [
         "no-synthetic-shared-receiver-alias",
@@ -99,7 +99,7 @@
       "expect": "reject",
       "diagnosticClass": "PRIVATE_ACTOR_PUBLIC_METHOD",
       "sourceUnits": {
-        "src/foo.atto": "namespace foo;\ndefine actor Foo;\npub mtd (Foo f) bar(): void { return; }\n"
+        "src/foo.atto": "namespace foo;\ndeclare actor Foo;\npub mtd (Foo f) bar(): void { return; }\n"
       },
       "requires": [
         "visibility-coherence"
@@ -120,7 +120,7 @@
       "stage": "static_binding",
       "expect": "accept_metadata_only",
       "sourceUnits": {
-        "src/actor.atto": "namespace foo;\npub define actor Foo;\n",
+        "src/actor.atto": "namespace foo;\npub declare actor Foo;\n",
         "src/impl.atto": "namespace foo;\npub mtd (Foo f) bar(): void { return; }\n"
       },
       "requires": [
@@ -145,7 +145,7 @@
       "expect": "reject",
       "diagnosticClass": "MISSING_NOMINAL_ACTOR",
       "sourceUnits": {
-        "src/actor.atto": "namespace foo;\npub define actor Foo;\n",
+        "src/actor.atto": "namespace foo;\npub declare actor Foo;\n",
         "src/impl.atto": "namespace other;\npub mtd (Foo f) bar(): void { return; }\n"
       },
       "requires": [
@@ -168,7 +168,7 @@
       "expect": "reject",
       "diagnosticClass": "DUPLICATE_ACTOR_METHOD",
       "sourceUnits": {
-        "src/actor.atto": "namespace foo;\npub define actor Foo;\n",
+        "src/actor.atto": "namespace foo;\npub declare actor Foo;\n",
         "src/one.atto": "namespace foo;\npub mtd (Foo f) bar(): void { return; }\n",
         "src/two.atto": "namespace foo;\npub mtd (Foo f) bar(): int { return 1; }\n"
       },
@@ -215,7 +215,7 @@
       "expect": "reject",
       "diagnosticClass": "NON_SENDABLE_ACTOR_MAIL",
       "sourceUnits": {
-        "src/foo.atto": "namespace foo;\npub define actor Foo;\ndefine mtd (Foo f) receive(ActorMail<borrow int> m): void { return; }\n"
+        "src/foo.atto": "namespace foo;\npub declare actor Foo;\ndefine mtd (Foo f) receive(ActorMail<borrow int> m): void { return; }\n"
       },
       "requires": [
         "no-cross-actor-borrow-escape"
@@ -237,7 +237,7 @@
       "expect": "accept_after_real_witness",
       "sourceUnits": {
         "src/contract.atto": "namespace foo;\ndefine contract ActorXYZ for actor as\n  pub mtd bar(): void;\nend\n",
-        "src/actor.atto": "namespace foo;\npub define actor Foo implements ActorXYZ;\n",
+        "src/actor.atto": "namespace foo;\npub declare actor Foo implements ActorXYZ;\n",
         "src/impl.atto": "namespace foo;\npub mtd (Foo f) bar(): void { return; }\n"
       },
       "requires": [
@@ -264,7 +264,7 @@
       "diagnosticClass": "ACTOR_CONTRACT_RETURN_MISMATCH",
       "sourceUnits": {
         "src/contract.atto": "namespace foo;\ndefine contract ActorXYZ for actor as\n  pub mtd bar(): int;\nend\n",
-        "src/actor.atto": "namespace foo;\npub define actor Foo implements ActorXYZ;\n",
+        "src/actor.atto": "namespace foo;\npub declare actor Foo implements ActorXYZ;\n",
         "src/impl.atto": "namespace foo;\npub mtd (Foo f) bar(): void { return; }\n"
       },
       "requires": [
@@ -288,7 +288,7 @@
       "expect": "reject_until_sealed_handle_rule",
       "diagnosticClass": "ACTOR_RECEIVER_ESCAPE_UNTYPED",
       "sourceUnits": {
-        "src/foo.atto": "namespace foo;\npub define actor Foo;\npub mtd (Foo f) init(): f { return f; }\n"
+        "src/foo.atto": "namespace foo;\npub declare actor Foo;\npub mtd (Foo f) init(): f { return f; }\n"
       },
       "requires": [
         "no-raw-actor-value-return",
@@ -368,5 +368,7 @@
       "confirmedBackends": [],
       "evidence": "NOT_EXECUTED"
     }
-  ]
+  ],
+  "canonicalOutOfLineHeader": "declare actor Foo [implements ActorContract];",
+  "legacySemicolonDefinePolicy": "reject; use declare actor; retain define actor Foo as ... end for inline implementations"
 }
