@@ -103,6 +103,8 @@ do not commit the resulting machine-specific file or any credentials):
   "otel_source_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
   "compiler_executable": "/trusted/jdk/bin/java",
   "compiler_binary_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "git_executable": "/trusted/bin/git",
+  "git_binary_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
   "dependency_pins": [
     {"path": "/trusted/compiler/oreslang-compiler.jar", "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"}
   ],
@@ -125,6 +127,8 @@ source input is not a Native Image artifact.
 ```sh
 node bin/run-otel-guest-execution.mjs /absolute/path/to/reviewed-local-config.json
 ```
+
+The launcher explicitly checks the SHA-256 of the Git binary used to read source identities, refuses inline interpreter-evaluation or preload flags, requires compile/run commands to consume the original pinned fixture/generated artifact, checks the binary magic for Wasm or native AOT candidates, and rehashes compiler, dependencies and guest output artifact after the run. This is a **fail-closed sanity check, not a reproducible-build or independent-provenance attestation**. It cannot prove that arbitrary approved commands actually compiled the fixture rather than printing matching data.
 
 The launcher emits private, bounded `capture.json` and
 `guest.stdout.jsonl` in a fresh local temporary directory, labeled
