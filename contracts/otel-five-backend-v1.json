@@ -18,12 +18,12 @@
   "requiredProfiles": [
     {
       "backend": "java",
-      "profile": "graalvm-jit",
+      "profile": "java-graalvm-jit",
       "compiler": "ores-truffle-oreslang/oreslang-source.java"
     },
     {
       "backend": "java",
-      "profile": "graalvm-native-aot",
+      "profile": "java-graalvm-native-aot",
       "compiler": "ores-truffle-oreslang/oreslang-source.java"
     },
     {
