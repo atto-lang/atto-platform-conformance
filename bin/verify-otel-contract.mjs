@@ -1,6 +1,7 @@
 // Source-only canonical OTel capability contract. A valid manifest always
 // represents proposed conformance, NEVER a real compiled guest receipt.
-import { readFileSync } from 'node:fs';
+import { lstatSync, readFileSync } from 'node:fs';
+import { parseUniqueJSON } from './verify-otel-guest-parity.mjs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -89,7 +90,11 @@ export function validateContract(doc) {
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   try {
     if (process.argv.length !== 2) throw new Error('OTEL_CONTRACT_DENIED: no extra arguments');
-    const doc = JSON.parse(readFileSync(resolve('contracts/otel-five-backend-v1.json'),'utf8'));
+    const path = resolve('contracts/otel-five-backend-v1.json');
+    const stat = lstatSync(path);
+    demand(stat.isFile() && !stat.isSymbolicLink() && stat.size > 0 &&
+      stat.size <= 64 * 1024, 'canonical contract is not a bounded regular file');
+    const doc = parseUniqueJSON(readFileSync(path, 'utf8'));
     process.stdout.write(JSON.stringify(validateContract(doc))+'\n');
   } catch (err) {
     const message = String(err.message);
