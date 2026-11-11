@@ -1,0 +1,6 @@
+// ACTOR_EXTERNAL_ROLE_UNSUPPORTED: no arbitrary RPC exports in v1.
+namespace actor_external_bad_rpc;
+define actor Worker;
+define external mtd (Worker w) deposit(int amount): void {
+    return;
+}
