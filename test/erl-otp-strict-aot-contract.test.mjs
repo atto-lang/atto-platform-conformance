@@ -65,6 +65,8 @@ test('semantic vectors are distinct, typed, non-promoting and cover P0 failure c
     'aot.no_interpreter_fallback']) {
     assert.ok(byId.has(id), id);
   }
+  const covered = new Set(contract.vectors.map(v => v.feature));
+  for (const feature of contract.features) assert.ok(covered.has(feature.id), 'missing oracle for ' + feature.id);
   assert.ok(contract.vectors.some(v => v.kind === 'compile' && v.expected.compilation === 'accept'));
   assert.ok(contract.vectors.some(v => v.kind === 'compile' && v.expected.compilation === 'reject'));
 });
