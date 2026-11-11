@@ -28,6 +28,26 @@
       "serial": "exactly one admitted request lifetime and one message lifetime",
       "gracefulDrain": "Seal new HTTP request admissions; keep previously admitted request capabilities available for their bounded message continuations until response close, timeout or explicit cancellation.",
       "forcedStop": "Seal both request and message admission and cancel unfinished logical work; a physical carrier still inside the guest cannot be finalized or recycled until it exits."
+    },
+    "canonicalFixtures": {
+      "serialOneOne": {
+        "path": "fixtures/http-actor-v1/serial-1x1.atto",
+        "gitBlobSha": "7564a770934d2374ec5166a353c2c9bb3c383bdf",
+        "javaResource": "src/test/resources/http-actor-v1/serial-1x1.atto",
+        "oracle": "same HTTP (1,1) metadata as explicitOneOne; compiler policy only"
+      },
+      "explicitOneOne": {
+        "path": "fixtures/http-actor-v1/explicit-1x1.atto",
+        "gitBlobSha": "d2e5ebaffaaa26bfe6e117aaa8b36a6eb33937e1",
+        "javaResource": "src/test/resources/http-actor-v1/explicit-1x1.atto",
+        "oracle": "same HTTP (1,1) metadata as serialOneOne; compiler policy only"
+      },
+      "unsupportedThreeFour": {
+        "path": "fixtures/http-actor-v1/unsupported-3x4.atto",
+        "gitBlobSha": "6987e72d70ae509522f7e050a494c0aef721a653",
+        "javaResource": "src/test/resources/http-actor-v1/unsupported-3x4.atto",
+        "oracle": "compiler-owned unsafe concurrency rejection without artifact"
+      }
     }
   },
   "cases": [
