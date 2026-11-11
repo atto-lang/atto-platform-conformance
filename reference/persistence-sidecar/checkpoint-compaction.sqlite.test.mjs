@@ -11,7 +11,7 @@ import {BankAccountCommandReference,apply_bank_event} from './bank-account-refer
 function fixture(run) {
   const dir=mkdtempSync(join(tmpdir(),'atto-checkpoint-')), path=join(dir,'state.sqlite');
   const instances=[];
-  const open=()=>{const db=new BatchPersistenceSidecar({path,tenantId:'t'});instances.push(db);return db;};
+  const open=(options={})=>{const db=new BatchPersistenceSidecar({path,tenantId:'t',...options});instances.push(db);return db;};
   try {run(open);} finally {
     for(const db of instances)try{db.close();}catch{}
     rmSync(dir,{recursive:true,force:true});
@@ -225,5 +225,31 @@ test('a failed second checkpoint leaves prior checkpoint and later event replaya
     assert.deepEqual(restored.restore(),{status:'ready',version:2,balance_cents:50});
     assert.equal(restored.submit('d1',deposit(20)).duplicate,true);
     assert.equal(restored.submit('d2',deposit(30)).duplicate,true);
+  });
+});
+
+test('replay and checkpoint fail closed at configured bounded event limit',()=>{
+  fixture(open=>{
+    const db=open({maxReplayEvents:1});grant(db,'account',1);
+    const a=bank(db);a.restore();
+    do_commit(a,db,'d1',deposit(10));
+    do_commit(a,db,'d2',deposit(20));
+    assert.throws(()=>read(db),/REPLAY_LIMIT_EXCEEDED/);
+    assert.throws(()=>a.checkpoint_and_compact(),/REPLAY_LIMIT_EXCEEDED/);
+    assert.equal(db.db.prepare('SELECT count(*) n FROM events').get().n,2);
+    assert.equal(db.db.prepare('SELECT count(*) n FROM checkpoints').get().n,0);
+  });
+});
+
+test('bounded one-event replay can compact and subsequently reload from checkpoint',()=>{
+  fixture(open=>{
+    const db=open({maxReplayEvents:1});grant(db,'account',1);
+    let a=bank(db);a.restore();do_commit(a,db,'d1',deposit(10));
+    assert.equal(a.checkpoint_and_compact().prunedEvents,1);
+    do_commit(a,db,'d2',deposit(20));
+    const loaded=read(db);
+    assert.equal(loaded.snapshot.version,1);assert.equal(loaded.events.length,1);
+    grant(db,'account',2);a=bank(db,2);
+    assert.deepEqual(a.restore(),{status:'ready',version:2,balance_cents:30});
   });
 });

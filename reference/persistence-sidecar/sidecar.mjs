@@ -28,15 +28,18 @@ const digest = (e) => createHash('sha256').update(JSON.stringify([
 
 export class BatchPersistenceSidecar {
   constructor({ path, tenantId, maxQueuedBytes = 4 * 1024 * 1024,
-    maxPayloadBytes = 64 * 1024, maxQueuedEntries = 4096, maxBatchEntries = 256, maxBatchBytes = 1024 * 1024 }) {
+    maxPayloadBytes = 64 * 1024, maxQueuedEntries = 4096, maxBatchEntries = 256,
+    maxBatchBytes = 1024 * 1024, maxReplayEvents = 65536 }) {
     if (!ident(tenantId) || !ident(path)) fail('INVALID_CONFIG');
-    if (![maxQueuedBytes,maxPayloadBytes,maxQueuedEntries,maxBatchEntries,maxBatchBytes].every(n => uint(n) && n > 0)) fail('INVALID_CONFIG');
+    if (![maxQueuedBytes,maxPayloadBytes,maxQueuedEntries,maxBatchEntries,maxBatchBytes].every(n => uint(n) && n > 0) ||
+        !uint(maxReplayEvents) || maxReplayEvents < 1 || maxReplayEvents > 65536) fail('INVALID_CONFIG');
     this.tenantId = tenantId;
     this.maxQueuedBytes = maxQueuedBytes;
     this.maxPayloadBytes = maxPayloadBytes;
     this.maxQueuedEntries = maxQueuedEntries;
     this.maxBatchEntries = maxBatchEntries;
     this.maxBatchBytes = maxBatchBytes;
+    this.maxReplayEvents = maxReplayEvents;
     this.queuedBytes = 0;
     this.queue = [];
     this.pending = new Map();
@@ -326,25 +329,27 @@ export class BatchPersistenceSidecar {
         }
         from=old.version;
       }
-      const events=this.readCheckpointEvents.all(tenantId,actor,stateName,from,expectedVersion);
-      if(events.length!==expectedVersion-from)fail('JOURNAL_GAP');
-      for(let i=0;i<events.length;i++) {
-        const entry=events[i];
-        if(entry.version!==from+i+1)fail('JOURNAL_GAP');
+      // Iterate instead of materializing unbounded journal rows.
+      let count=0;
+      for(const entry of this.readCheckpointEvents.iterate(tenantId,actor,stateName,from,expectedVersion)) {
+        count++;
+        if(count>this.maxReplayEvents)fail('REPLAY_LIMIT_EXCEEDED');
+        if(entry.version!==from+count)fail('JOURNAL_GAP');
         const cmd=this.getCommand.get(tenantId,actor,stateName,entry.op_id);
         if(!cmd||entry.version<cmd.first_version||entry.version>cmd.last_version||
            !uint(cmd.event_count)||cmd.event_count<1||
            cmd.last_version-cmd.first_version+1!==cmd.event_count)
           fail('UNINDEXED_JOURNAL');
       }
+      if(count!==expectedVersion-from)fail('JOURNAL_GAP');
       this.putCheckpoint.run(tenantId,actor,stateName,expectedVersion,schemaVersion,
         Buffer.from(payload),checkpoint_hash({tenantId,actor,stateName,
           version:expectedVersion,schemaVersion,payload}));
       const pruned=this.pruneCheckpointEvents.run(tenantId,actor,stateName,expectedVersion);
-      if(pruned.changes!==events.length)fail('JOURNAL_GAP');
+      if(pruned.changes!==count)fail('JOURNAL_GAP');
       this.db.exec('COMMIT');
       return {status:'committed',durable:true,duplicate:false,
-        version:expectedVersion,prunedEvents:events.length};
+        version:expectedVersion,prunedEvents:count};
     } catch(e) {
       try{this.db.exec('ROLLBACK');}catch{}
       if(e instanceof AdmissionError)throw e;
@@ -388,7 +393,8 @@ export class BatchPersistenceSidecar {
         payload:Buffer.from(legacy.payload)};
     }
     const since=snapshot?.version??0;
-    const events=this.db.prepare('SELECT version,schema_version,op_id,payload FROM events WHERE tenant=? AND actor=? AND state_name=? AND version>? ORDER BY version ASC').all(tenantId,actor,stateName,since);
+    const events=this.db.prepare('SELECT version,schema_version,op_id,payload FROM events WHERE tenant=? AND actor=? AND state_name=? AND version>? ORDER BY version ASC LIMIT ?').all(tenantId,actor,stateName,since,this.maxReplayEvents+1);
+    if(events.length>this.maxReplayEvents)fail('REPLAY_LIMIT_EXCEEDED');
     return {version,snapshot,events:events.map(x=>({version:x.version,
       schemaVersion:x.schema_version,opId:x.op_id,payload:Buffer.from(x.payload)}))};
   }
