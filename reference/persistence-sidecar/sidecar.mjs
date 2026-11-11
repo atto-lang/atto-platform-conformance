@@ -145,7 +145,10 @@ export class BatchPersistenceSidecar {
         if(this.getFence.get(tenantId,actor)?.epoch!==epoch)fail('STALE_EPOCH');
         const current=this.getOp.get(tenantId,actor,stateName,opId);
         if(!current)fail('OUTCOME_UNKNOWN');
-        if(current.digest!==hash)fail('OP_ID_CONFLICT');
+        if(!uint(current.origin_epoch) || current.origin_epoch<1 ||
+           current.origin_epoch>e.epoch ||
+           current.digest!==digest({...e,epoch:current.origin_epoch}))
+          fail('OP_ID_CONFLICT');
         const proof=this.#legacyProof(e,current);
         this.db.exec('COMMIT');
         return {status:'committed',durable:true,duplicate:true,version:proof.version};
@@ -222,9 +225,13 @@ export class BatchPersistenceSidecar {
   // matches the ORIGINAL operation's digest, schema and immutable bytes.
   // An operation ledger row alone cannot prove a durable journal entry.
   #legacyProof(e,op) {
-    if(!op || op.digest!==digest(e) || op.kind!==e.kind ||
-       !uint(op.origin_epoch) || op.origin_epoch!==e.epoch ||
-       !uint(op.version) || op.version!==e.expectedVersion+1)
+    // The operation's epoch is historical; retries after supervisor fencing
+    // use the current epoch but must have identical logical command bytes.
+    if(!op || !uint(op.origin_epoch) || op.origin_epoch<1 ||
+       op.origin_epoch>e.epoch ||
+       op.digest!==digest({...e,epoch:op.origin_epoch}) ||
+       op.kind!==e.kind || !uint(op.version) ||
+       op.version!==e.expectedVersion+1)
       fail('COMMIT_MISMATCH');
     if(typeof op.payload_hash!=='string' ||
        !/^[0-9a-f]{64}$/.test(op.payload_hash))
@@ -237,11 +244,22 @@ export class BatchPersistenceSidecar {
         'substr(payload,1,1048577) AS payload,op_id FROM events '+
         'WHERE tenant=? AND actor=? AND state_name=? AND version=?'
       ).get(e.tenantId,e.actor,e.stateName,op.version);
-      if(!event || event.schema_version!==e.schemaVersion ||
-         event.op_id!==e.opId || event.bytes!==e.payload.length ||
-         !(event.payload instanceof Uint8Array) ||
-         !Buffer.from(event.payload).equals(e.payload))
-        fail('INCOMPLETE_OPERATION_LEDGER');
+      if(event) {
+        // A present row must match exactly; never paper over corruption by
+        // relying on a newer snapshot.
+        if(event.schema_version!==e.schemaVersion ||
+           event.op_id!==e.opId || event.bytes!==e.payload.length ||
+           !(event.payload instanceof Uint8Array) ||
+           !Buffer.from(event.payload).equals(e.payload))
+          fail('INCOMPLETE_OPERATION_LEDGER');
+      } else {
+        // Compaction may delete a committed event only after a verified
+        // snapshot covers its version. Recheck the entire active journal
+        // in the current SQLite read/write transaction.
+        const restored=this.#readState(e.tenantId,e.actor,e.stateName);
+        if(!restored.snapshot || restored.snapshot.version<op.version)
+          fail('INCOMPLETE_OPERATION_LEDGER');
+      }
     } else {
       const snapshot=this.db.prepare(
         'SELECT version,schema_version,length(payload) AS bytes,'+
@@ -249,13 +267,22 @@ export class BatchPersistenceSidecar {
         'operation_digest FROM snapshots '+
         'WHERE tenant=? AND actor=? AND state_name=?'
       ).get(e.tenantId,e.actor,e.stateName);
-      if(!snapshot || snapshot.version!==op.version ||
-         snapshot.schema_version!==e.schemaVersion ||
-         snapshot.bytes!==e.payload.length ||
-         !(snapshot.payload instanceof Uint8Array) ||
-         !Buffer.from(snapshot.payload).equals(e.payload))
+      if(!snapshot || snapshot.version<op.version)
         fail('INCOMPLETE_OPERATION_LEDGER');
-      this.#verifySnapshot(e.tenantId,e.actor,e.stateName,snapshot);
+      if(snapshot.version===op.version) {
+        if(snapshot.schema_version!==e.schemaVersion ||
+           snapshot.bytes!==e.payload.length ||
+           !(snapshot.payload instanceof Uint8Array) ||
+           !Buffer.from(snapshot.payload).equals(e.payload))
+          fail('INCOMPLETE_OPERATION_LEDGER');
+        this.#verifySnapshot(e.tenantId,e.actor,e.stateName,snapshot);
+      } else {
+        // An older checkpoint can be superseded by a newer verified
+        // checkpoint without invalidating its historical operation ID.
+        const restored=this.#readState(e.tenantId,e.actor,e.stateName);
+        if(!restored.snapshot || restored.snapshot.version<op.version)
+          fail('INCOMPLETE_OPERATION_LEDGER');
+      }
     }
     return {opId:e.opId,status:'committed',durable:true,duplicate:true,
       version:op.version};
@@ -461,7 +488,9 @@ export class BatchPersistenceSidecar {
         }
         const prior=this.getOp.get(t,a,s,o);
         if (prior) {
-          if(prior.digest===hash)
+          if(uint(prior.origin_epoch) && prior.origin_epoch>=1 &&
+             prior.origin_epoch<=e.epoch &&
+             prior.digest===digest({...e,epoch:prior.origin_epoch}))
             results.push(this.#legacyProof(e,prior));
           else
             results.push({opId:o,status:'rejected',durable:false,code:'OP_ID_CONFLICT'});
@@ -519,8 +548,11 @@ export class BatchPersistenceSidecar {
         this.db.exec('COMMIT');
         return null;
       }
-      if (op.digest !== digest(e) || op.kind !== kind ||
-          op.version !== expectedVersion+1)fail('COMMIT_MISMATCH');
+      if (!uint(op.origin_epoch) || op.origin_epoch<1 ||
+          op.origin_epoch>epoch ||
+          op.digest !== digest({...e,epoch:op.origin_epoch}) ||
+          op.kind !== kind || op.version !== expectedVersion+1)
+        fail('COMMIT_MISMATCH');
       const proof=this.#legacyProof(e,op);
       this.db.exec('COMMIT');
       return {opId,status:'committed',durable:true,version:proof.version};
