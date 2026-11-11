@@ -104,6 +104,20 @@ export class BankAccountCommandReference {
       catch { reject('INVALID_JOURNAL'); }
       balance = apply_bank_event({balance_cents:balance}, event).balance_cents;
       sequence = entry.version;
+      if (typeof this.#sidecar.verifyCommand === 'function') {
+        // Modern storage must retain a stable command receipt for EVERY
+        // replayed bank event, not only for compacted history.
+        const original_command = {kind:event.kind === 'money_deposited' ? 'deposit' : 'withdraw',
+          amount_cents:event.amount_cents};
+        const proof = this.#sidecar.verifyCommand({...this.#scope,opId:entry.opId,
+          commandBytes:command_bytes(original_command)});
+        if (!proof || proof.status !== 'committed' || proof.durable !== true ||
+            proof.opId !== entry.opId || proof.firstVersion !== entry.version ||
+            proof.version !== entry.version || proof.eventCount !== 1 ||
+            !Buffer.isBuffer(proof.resultBytes) ||
+            !proof.resultBytes.equals(Buffer.from(JSON.stringify({balance_cents:balance}))))
+          reject('MISSING_COMMAND_RECORD');
+      }
       const prior = seen.get(entry.opId);
       if (prior && prior.command_hash !== event.command_hash) reject('INVALID_JOURNAL');
       seen.set(entry.opId, {command_hash:event.command_hash, version:sequence});
@@ -149,7 +163,11 @@ export class BankAccountCommandReference {
       }
     }
     if (prior) {
-      // Legacy command records lack the v2 index. Fence even this cached path.
+      // A modern provider returning null is an integrity failure. Never
+      // acknowledge using a cached replay map when durable proof is missing.
+      if (typeof this.#sidecar.verifyCommand === 'function')
+        reject('MISSING_COMMAND_RECORD');
+      // Compatibility for source-free legacy memory test doubles only.
       if (typeof this.#sidecar.loadFenced !== 'function') reject('UNVERIFIABLE_RESTORE');
       this.#sidecar.loadFenced(this.#scope);
       return {status:'committed',durable:true,duplicate:true,version:prior.version};
