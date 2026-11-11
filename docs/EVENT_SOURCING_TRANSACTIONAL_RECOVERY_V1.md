@@ -229,3 +229,40 @@ Release blockers remain: source-local Actions admission, real Node and
 JDBC exact-head execution, historical-data migration protocol,
 process-kill before/after COMMIT and before ACK, supervisor fencing,
 compiled guest AttoLang actor execution and five-backend parity.
+
+
+## Crash-boundary subprocess tests (2026-11-10)
+
+The exact Node SQLite reference now includes
+`reference/persistence-sidecar/crash-command-child.mjs` and
+`crash-command-boundaries.sqlite.test.mjs`. The worker child executes the
+**existing** `BatchPersistenceSidecar.flush()` code with deterministic
+test-only SIGKILL injection:
+
+1. **Before BEGIN:** no command was admitted to durable SQLite state;
+   epoch-two recovery returns an empty stream, then the retry commits once.
+2. **Immediately after the first event INSERT:** a connection-local TEMP
+   SQLite trigger invokes a test-only native JS function that kills the
+   process *before COMMIT*. On reopen, WAL rolls back the first INSERT; no
+   partial event/head/command receipt survives; a retry commits once.
+3. **After actual SQLite COMMIT, before returning from flush:** a test-only
+   wrapper invokes the original `DatabaseSync.exec('COMMIT')`, waits for
+   it to return successfully, and kills the child before the caller
+   receives a receipt. On reopen under epoch two, the bank account's
+   original two immutable events and result survive, the old command ID
+   deduplicates without a second append, and an old activation is fenced.
+
+The helper is never imported into production guest code. The parent
+requires the child termination signal to equal `SIGKILL` and checks
+the journal, head, operation ledger, event payloads, result bytes,
+fresh-epoch deduplication and op-ID conflict. This is real **host Node
+SQLite transaction-path** testing once executed, but **not** physical
+power-loss durability, Java parity, an AOT guest run or cross-backend
+conformance.
+
+The exact Node test modules passed static JS syntax parsing. A separate
+self-contained local Node 22 SQLite trigger/intercept crash probe executed
+successfully: first-insert SIGKILL recovered zero rows; post-COMMIT
+SIGKILL recovered both rows. These local probes do **not** constitute
+execution of the GitHub source fixtures, which remain unverified until
+source-owned Actions admission is restored.
