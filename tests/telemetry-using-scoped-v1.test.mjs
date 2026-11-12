@@ -54,6 +54,25 @@ test('executed host smoke does not promote an unexecuted AttoLang guest', () => 
   assert.deepEqual(contract.executionEvidence.verifiedRuns, []);
 });
 
+test('funded CI executes exact-source host and parser but never promotes guest evidence', () => {
+  const result = contract.fundedHostValidation;
+  assert.equal(result.status, 'PASS_EXECUTED_HOST_AND_PRODUCTION_PARSER_ONLY');
+  assert.equal(result.workflowConclusion, 'success');
+  assert.equal(result.executedSteps, 12);
+  assert.match(result.sourceHead, /^[a-f0-9]{40}$/);
+  assert.match(result.sourceTree, /^[a-f0-9]{40}$/);
+  assert.match(result.fundedMirrorHead, /^[a-f0-9]{40}$/);
+  assert.equal(result.noCrossOrgToken, true);
+  assert.equal(result.noSecrets, true);
+  assert.match(result.mirrorScope, /^11 exact source Git blobs, not/);
+  assert.equal(result.runtime.repetitions * result.runtime.assertionsPerRun, 800);
+  assert.equal(result.parser.repetitions * result.parser.assertionsPerRun, 112);
+  assert.equal(result.negativeMutation.result, 'EXPECTED_ASSERTION_FAILURE_DETECTED');
+  assert.equal(result.executionEvidenceGuestStill, 'NOT_EXECUTED');
+  assert.equal(contract.executionEvidence.status, 'NOT_EXECUTED');
+  assert.deepEqual(contract.executionEvidence.verifiedRuns, []);
+});
+
 test('scoped span semantics retain await ownership, negative alias and spoof rejection', () => {
   assert.equal(contract.language.maySuspend, true);
   assert.equal(contract.language.nonSendableSpan, true);
