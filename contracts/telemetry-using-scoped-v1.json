@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "contract": "telemetry-using-scoped-v1",
+  "status": "candidate-unattested",
+  "dependsOn": {
+    "api": "https://github.com/ores-truffle-oreslang/oreslang-common-source/pull/277",
+    "javaParser": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2991",
+    "javaRuntime": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2992"
+  },
+  "language": {
+    "syntax": "using telemetry.span(name) as span { body }",
+    "status": "PARSER_ONLY_ON_JAVA_DRAFT; NO_BACKEND_EXECUTABLE_SUPPORT",
+    "resourceIdentity": "trusted static std.telemetry symbol, never call-name spoofing",
+    "implicitEffects": "no IO, no blocking, no hidden guest capability",
+    "lifetime": "one logical owned span per scope, not per carrier turn; terminalize once",
+    "maySuspend": true,
+    "nonSendableSpan": true,
+    "stateLoans": "live using state.write/read scoped borrow must still reject await",
+    "disabled": "no allocation, clock read, formatting or export"
+  },
+  "fixtures": [
+    {
+      "path": "fixtures/telemetry-using-v1/using-span-return.atto",
+      "gitBlobSha1": "da62f80f9583506b44878761db46aac82fc6b619",
+      "currentJava": "PARSER_ONLY_TYPECHECK_REJECTED",
+      "future": "COMPILE_AND_RUN_EXPECT_EXIT_7"
+    },
+    {
+      "path": "fixtures/telemetry-using-v1/using-span-nested.atto",
+      "gitBlobSha1": "3abace490838da87c2ae5b3deae5ea643a153ad2",
+      "currentJava": "PARSER_ONLY_TYPECHECK_REJECTED",
+      "future": "COMPILE_AND_RUN_EXPECT_EXIT_11"
+    },
+    {
+      "path": "fixtures/telemetry-using-v1/using-span-invalid-alias.atto",
+      "gitBlobSha1": "ed967301d43d387b6ecc8f373b5b94cfa08b4654",
+      "currentJava": "PARSER_REJECT",
+      "future": "PARSER_REJECT"
+    },
+    {
+      "path": "fixtures/telemetry-using-v1/using-span-forged-resource.atto",
+      "gitBlobSha1": "62a818550a64ed7ee5464549e691a0f7bf230b6c",
+      "currentJava": "TYPECHECK_REJECT",
+      "future": "TYPECHECK_REJECT"
+    },
+    {
+      "path": "fixtures/telemetry-using-v1/using-span-await.atto",
+      "gitBlobSha1": "483e3e6831c12df1fbe169d7e672663f1fcf5ab3",
+      "currentJava": "UNVERIFIED_PARSER_AND_TYPECHECK",
+      "future": "COMPILE_AND_RUN_WITH_FIXTURE_FS_PERMISSION; PRESERVE_ONE_SPAN"
+    }
+  ],
+  "acceptance": {
+    "backendTargets": [
+      "java-graal-jit",
+      "java-guest-aot",
+      "llvm-native-aot",
+      "dotnet-native-aot",
+      "wasm-worker",
+      "forge-native",
+      "js"
+    ],
+    "requiresExecutedSteps": true,
+    "requiresCompilerBackedGuest": true,
+    "requiresExactHeadShaTree": true,
+    "requiresFixtureBlobIdentity": true,
+    "requiresRealGuestExitAndSpanReceipts": true,
+    "requiresAsyncCarrierMigrationEvidence": true,
+    "requiresCancellationAndActorRestartTests": true,
+    "hostOnlyReferenceTestsSufficient": false,
+    "sourceOnlyTestsSufficient": false,
+    "zeroStepRunCountsAsExecuted": false,
+    "forbidSyntheticPromotion": true
+  },
+  "executionEvidence": {
+    "status": "NOT_EXECUTED",
+    "verifiedRuns": [],
+    "reason": "No exact-head backend compiler+guest run attached to this draft contract."
+  }
+}
