@@ -194,5 +194,19 @@
       "rendezvous"
     ],
     "requiredProof": "one atomic COMMITTED or RETURNED terminal outcome with original payload preserved on failure"
+  },
+  "hostImmediateOwnedSendCandidate": {
+    "sourcePr": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2910",
+    "api": "ChannelRuntime.Channel<T>.tryWriteOwned(T); WriteChannel<T>.tryWriteOwned(T)",
+    "outcomes": [
+      "COMMITTED",
+      "BACKPRESSURE",
+      "CLOSED"
+    ],
+    "invariant": "COMMITTED returns no payload, BACKPRESSURE/CLOSED return the same uncommitted payload object",
+    "implementationStatus": "JAVA_HOST_CANDIDATE_NOT_EXECUTED",
+    "guestTypecheckerLowering": "NOT_IMPLEMENTED",
+    "pendingAsyncEscrow": "NOT_IMPLEMENTED",
+    "boundary": "Source and host unit tests cannot prove actor mailbox, Atto guest or five-backend ownership parity"
   }
 }
