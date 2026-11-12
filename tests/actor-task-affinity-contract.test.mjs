@@ -22,7 +22,8 @@ test("actor task placement requires actor pool not supervisor CONTROL", async ()
   assert.equal(spec.guestProofRequired, true);
   assert.equal(spec.zeroStep, "NOT_EXECUTED");
   assert.deepEqual(spec.cases.map(c => c.id), [
-    "actor-task-await-reply", "reject-actor-self-capture"
+    "actor-task-await-reply", "reject-actor-self-capture",
+    "actor-task-nested-await", "reject-actor-mail-capture"
   ]);
   for (const entry of spec.cases) {
     assert.equal(entry.file, entry.id + ".atto");
@@ -46,4 +47,13 @@ test("source fixtures distinguish captured data from actor self", async () => {
 
   const negative = await read("reject-actor-self-capture.atto");
   assert.match(negative, /task \{[\s\S]*?self\.count;/);
+
+  const nested = await read("actor-task-nested-await.atto");
+  assert.match(nested, /let Future<int> outer = task \{/);
+  assert.match(nested, /let Future<int> nested = task \{/);
+  assert.match(nested, /return await nested;/);
+  assert.match(nested, /self\.send\(await outer\)/);
+
+  const unsafeMailbox = await read("reject-actor-mail-capture.atto");
+  assert.match(unsafeMailbox, /task \{[\s\S]*?mail\.value/);
 });
