@@ -27,7 +27,7 @@ test('source-owned five-fixture snapshot is immutable and non-promotable', () =>
   assert.equal(contract.status, 'candidate-unattested');
   assert.equal(contract.executionEvidence.status, 'NOT_EXECUTED');
   assert.deepEqual(contract.executionEvidence.verifiedRuns, []);
-  assert.equal(contract.fixtures.length, 5);
+  assert.equal(contract.fixtures.length, 6);
   assert.equal(new Set(contract.fixtures.map(f => f.path)).size, 5);
   assert.equal(contract.acceptance.requiresCompilerBackedGuest, true);
   assert.equal(contract.acceptance.requiresExecutedSteps, true);
@@ -62,6 +62,9 @@ test('scoped span semantics retain await ownership, negative alias and spoof rej
   assert.equal(fixtures.get('using-span-invalid-alias.atto').future, 'PARSER_REJECT');
   assert.equal(fixtures.get('using-span-forged-resource.atto').future, 'TYPECHECK_REJECT');
   assert.match(source(fixtures.get('using-span-await.atto')), /await fs\.exists/);
+  assert.match(source(fixtures.get('using-span-import.atto')), /use std\.telemetry as telemetry;/);
+  assert.equal(contract.acceptance.requiresTrustedTelemetryModuleImport, true);
+  assert.match(contract.language.importRequirement, /Parser currently only supports/);
   assert.match(source(fixtures.get('using-span-nested.atto')),
     /using telemetry\.span\("child"\) as inner/);
 });
