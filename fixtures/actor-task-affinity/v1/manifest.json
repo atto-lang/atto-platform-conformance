@@ -62,5 +62,9 @@
         "no-actor-self-capture"
       ]
     }
-  ]
+  ],
+  "stopTaskAdmission": "ATOMIC_WITH_STOP_SNAPSHOT",
+  "cleanupOnlyResume": "NO_NEW_TASKS",
+  "parentChildCancellation": "PHYSICAL_DESCENDANT_JOIN",
+  "gracefulStopPolicy": "BACKEND_EXPLICIT"
 }
