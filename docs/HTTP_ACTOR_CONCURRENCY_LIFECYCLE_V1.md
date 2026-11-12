@@ -152,3 +152,34 @@ including 100 rounds of 64 racing virtual threads. This is meaningful
 Java helper execution but **not** the full JDK 25/GraalVM JUnit test suite.
 The full PR is still DRAFT; no backend runtime parity is certified until
 executed exact-head CI is available and reviewed.
+
+## Unpooled physical carrier retirement and cross-listener contention
+
+A further audit of Java draft #2884 found that fresh unpooled actors previously
+released their HTTP admission permits when `done().isDone()` published,
+before the last `TurnExecutor` return/ThreadLocal exit. The corrected
+`State` uses a host-only asynchronous physical-exit observer, records a
+distinct `unpooledPhysicalExitObserved` receipt, and only then publishes
+request completion. Unpooled DONE callbacks and transfer failure cleanup
+are dispatched outside the actor lifecycle lock. The queued observer fails
+closed if a reliable exit receipt cannot be established.
+
+The guest HTTP regression now includes an unpooled post-response actor stop
+and listener drain test. The shared-pool guest regression repeats four
+two-listener runs; after listener A seals its worker generation, listener B
+sends 32 concurrent requests, which must all return HTTP 200 through the
+replacement generation. A separate JUnit regression races 128 post-seal
+reservations across listeners B/C while 48 pre-seal handoff leases remain
+held by A. All of these new integration tests remain **NOT_EXECUTED**
+while full Java/GraalVM CI is unavailable.
+
+Local OpenJDK 21 compiled a byte-for-byte verified
+`HttpPooledWorkerAdmissionFence` Git blob
+`89eebb2d2e2ccebb0d6651fe9b1f55477948ba58`.
+A standalone, **helper-only** concurrent Java harness passed 2,320
+assertions over 40 rounds with 128 post-seal contenders each (5,120
+post-seal attempts). This does not validate the HTTP guest/runtime tests.
+The Java transport continues to use JDK HttpServer with blocking socket
+operations offloaded to virtual threads; the separate
+`docs/HTTP_ACTOR_ASYNC_NIO_MIGRATION.md` in Java draft #2884 describes
+a future selector-based implementation, not shipped functionality.
