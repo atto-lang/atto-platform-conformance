@@ -35,6 +35,10 @@ test("serial alias and explicit metadata retain the one-by-one contract", () => 
     /ActorRuntime.gracefulStop/);
   assert.match(contract.sourceContract.semantics.pooledWorkerAdmissionFence,
     /thread-local cleanup/);
+  assert.match(contract.sourceContract.semantics.unpooledPhysicalRetirement,
+    /completed actor DONE Future is insufficient/);
+  assert.match(contract.sourceContract.semantics.unpooledPhysicalRetirement,
+    /State.release/);
   assert.match(contract.sourceContract.semantics.forceCloseArbitration,
     /single winning owner/);
 });
