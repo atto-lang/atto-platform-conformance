@@ -18,7 +18,7 @@
     "nonSendableSpan": true,
     "stateLoans": "live using state.write/read scoped borrow must still reject await",
     "disabled": "no allocation, clock read, formatting or export",
-    "importRequirement": "Canonical `use std.telemetry as telemetry;` should resolve a trusted compiler symbol; Java mainline Parser currently only supports `import ... from \"...\"`. Do not infer module authority from member name."
+    "importRequirement": "Java draft parser recognizes canonical `use std.telemetry as telemetry;`, but ImportRules.validate rejects that reserved std.telemetry path until trusted builtin resolution and scoped cleanup are implemented. `import module telemetry from \"std.telemetry\"` must also fail closed."
   },
   "fixtures": [
     {
@@ -54,7 +54,7 @@
     {
       "path": "fixtures/telemetry-using-v1/using-span-import.atto",
       "gitBlobSha1": "baf5e0895565499516d4b113867544eab2520d65",
-      "currentJava": "PARSER_REJECT_USE_IMPORT_NOT_YET_PRESENT",
+      "currentJava": "MAIN_UNSUPPORTED; JAVA_DRAFT_2991_2997_PARSER_ACCEPT_IMPORT_RULES_REJECT_BEFORE_RUNTIME",
       "future": "COMPILE_AND_RUN_EXPECT_EXIT_0; require trusted std.telemetry import symbol"
     }
   ],
@@ -154,5 +154,25 @@
       "jit_reinstrumentation"
     ],
     "executionEvidenceGuestStill": "NOT_EXECUTED"
+  },
+  "fundedImportParserValidation": {
+    "status": "PASS_EXECUTED_EXACT_SOURCE_PARSER_ONLY",
+    "sourceRepo": "ores-truffle-oreslang/oreslang-source.java",
+    "sourcePR": 2997,
+    "sourceHead": "5229d0d2886d09eb6fe5d7b8063f0e3a2576f884",
+    "sourceTree": "2d20a1fb247d30f801da45b116ea6253b4d00506",
+    "mirrorRepo": "numerics-atto/mirror-oreslang-source.java",
+    "mirrorHead": "33bc40197037bc970da3e513227a908e4ed81e50",
+    "run": "https://github.com/numerics-atto/mirror-oreslang-source.java/actions/runs/43330254735",
+    "graalVersion": "25.3",
+    "javaRelease": 21,
+    "sourceBlobsVerified": 9,
+    "repetitions": 15,
+    "assertionsPerRun": 27,
+    "totalAssertions": 405,
+    "negativeMutation": "PASS_EXPECTED_ASSERTION_FAILURE_ON_REMOVING_SCOPED_ALIAS_BINDING",
+    "tokenIsolation": "no cross-org checkout token or secrets",
+    "scope": "parser, ImportRules and TaskCaptureNames only; no guest telemetry or runtime span lowering",
+    "guestExecutionStatus": "NOT_EXECUTED"
   }
 }
