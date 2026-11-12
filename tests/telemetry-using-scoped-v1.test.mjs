@@ -85,8 +85,9 @@ test('GraalVM25 parser import/capture receipts remain strictly separate from gue
   assert.deepEqual(contract.executionEvidence.verifiedRuns, []);
   assert.match(run.negativeMutation, /EXPECTED_ASSERTION_FAILURE/);
   assert.match(contract.language.importRequirement, /ImportRules.validate rejects/);
+  assert.equal(contract.acceptance.requiresUnforgeableSyntacticBuiltinMarker, true);
   assert.match(contract.fixtures.find(f => f.path.endsWith('using-span-import.atto')).currentJava,
-    /PARSER_ACCEPT_IMPORT_RULES_REJECT/);
+    /DRAFT_PARSER_ADMITS_BUILTIN_SYNTAX_MARKER/);
 });
 
 test('scoped span semantics retain await ownership, negative alias and spoof rejection', () => {
@@ -99,7 +100,7 @@ test('scoped span semantics retain await ownership, negative alias and spoof rej
   assert.match(source(fixtures.get('using-span-await.atto')), /await fs\.exists/);
   assert.match(source(fixtures.get('using-span-import.atto')), /use std\.telemetry as telemetry;/);
   assert.equal(contract.acceptance.requiresTrustedTelemetryModuleImport, true);
-  assert.match(contract.language.importRequirement, /Parser currently only supports/);
+  assert.match(contract.language.importRequirement, /distinct.*syntax-only import marker/);
   assert.match(source(fixtures.get('using-span-nested.atto')),
     /using telemetry\.span\("child"\) as inner/);
 });
