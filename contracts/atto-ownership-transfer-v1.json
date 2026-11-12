@@ -178,5 +178,21 @@
     "wasm": "unattested",
     "forge": "unattested",
     "net": "unattested"
+  },
+  "knownGuestRecoveryGap": {
+    "status": "BLOCKED_UNPROVEN",
+    "issue": "https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/2920",
+    "limitation": "Java guest writech can consume before send settlement; canceled/closed/backpressured sends do not yet prove recoverable original payload authority",
+    "sourceFreeModelIsNotGuestEvidence": true,
+    "requiredCases": [
+      "full",
+      "closed",
+      "pending-cancel",
+      "pending-timeout",
+      "cancel-vs-commit",
+      "close-vs-commit",
+      "rendezvous"
+    ],
+    "requiredProof": "one atomic COMMITTED or RETURNED terminal outcome with original payload preserved on failure"
   }
 }
