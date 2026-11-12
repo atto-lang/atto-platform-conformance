@@ -17,7 +17,8 @@
     "maySuspend": true,
     "nonSendableSpan": true,
     "stateLoans": "live using state.write/read scoped borrow must still reject await",
-    "disabled": "no allocation, clock read, formatting or export"
+    "disabled": "no allocation, clock read, formatting or export",
+    "importRequirement": "Canonical `use std.telemetry as telemetry;` should resolve a trusted compiler symbol; Java mainline Parser currently only supports `import ... from \"...\"`. Do not infer module authority from member name."
   },
   "fixtures": [
     {
@@ -49,6 +50,12 @@
       "gitBlobSha1": "483e3e6831c12df1fbe169d7e672663f1fcf5ab3",
       "currentJava": "UNVERIFIED_PARSER_AND_TYPECHECK",
       "future": "COMPILE_AND_RUN_WITH_FIXTURE_FS_PERMISSION; PRESERVE_ONE_SPAN"
+    },
+    {
+      "path": "fixtures/telemetry-using-v1/using-span-import.atto",
+      "gitBlobSha1": "baf5e0895565499516d4b113867544eab2520d65",
+      "currentJava": "PARSER_REJECT_USE_IMPORT_NOT_YET_PRESENT",
+      "future": "COMPILE_AND_RUN_EXPECT_EXIT_0; require trusted std.telemetry import symbol"
     }
   ],
   "acceptance": {
@@ -71,7 +78,8 @@
     "hostOnlyReferenceTestsSufficient": false,
     "sourceOnlyTestsSufficient": false,
     "zeroStepRunCountsAsExecuted": false,
-    "forbidSyntheticPromotion": true
+    "forbidSyntheticPromotion": true,
+    "requiresTrustedTelemetryModuleImport": true
   },
   "executionEvidence": {
     "status": "NOT_EXECUTED",
