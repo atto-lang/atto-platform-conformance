@@ -1,0 +1,45 @@
+{
+  "schema": "atto.actor-task-affinity/1",
+  "status": "TARGET_NOT_VERIFIED",
+  "canonicalExtension": ".atto",
+  "backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "net",
+    "forge"
+  ],
+  "schedulerDomain": "actor-incarnation",
+  "physicalExecution": "actor-kind-worker-pool",
+  "controlPoolExecution": "FORBIDDEN",
+  "futureProducerExecutesGuest": "FORBIDDEN",
+  "actorStateCapture": "REJECT",
+  "untrustedMissingQuotaSupport": "REJECT",
+  "singleWriter": "REQUIRED",
+  "postStopGuestExecution": "CLEANUP_ONLY",
+  "guestProofRequired": true,
+  "zeroStep": "NOT_EXECUTED",
+  "cases": [
+    {
+      "id": "actor-task-await-reply",
+      "file": "actor-task-await-reply.atto",
+      "kind": "guest",
+      "expectedStdout": "42",
+      "requires": [
+        "actor-worker-pool",
+        "nested-inherited-scheduler",
+        "foreign-completion-enqueue",
+        "physical-quiescence"
+      ]
+    },
+    {
+      "id": "reject-actor-self-capture",
+      "file": "reject-actor-self-capture.atto",
+      "kind": "compile-reject",
+      "requires": [
+        "no-actor-self-capture",
+        "no-borrowed-state"
+      ]
+    }
+  ]
+}
