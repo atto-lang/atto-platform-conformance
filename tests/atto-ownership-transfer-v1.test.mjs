@@ -75,3 +75,15 @@ test('failed channel send guest ownership recovery remains an explicit release b
   assert.match(doc, /issues\/2920/);
   assert.match(doc, /not yet proven/i);
 });
+
+test('host-only immediate receipt cannot clear the async guest ownership blocker', () => {
+  const candidate = contract.hostImmediateOwnedSendCandidate;
+  assert.deepEqual(candidate.outcomes, ['COMMITTED', 'BACKPRESSURE', 'CLOSED']);
+  assert.match(candidate.api, /tryWriteOwned/);
+  assert.equal(candidate.implementationStatus, 'JAVA_HOST_CANDIDATE_NOT_EXECUTED');
+  assert.equal(candidate.guestTypecheckerLowering, 'NOT_IMPLEMENTED');
+  assert.equal(candidate.pendingAsyncEscrow, 'NOT_IMPLEMENTED');
+  assert.equal(contract.knownGuestRecoveryGap.status, 'BLOCKED_UNPROVEN');
+  assert.match(read('docs/ATTO_OWNERSHIP_TRANSFER_V1.md'),
+    /host-only, non-parking immediate/);
+});
