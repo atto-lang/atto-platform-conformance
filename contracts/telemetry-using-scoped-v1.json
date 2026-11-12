@@ -5,7 +5,8 @@
   "dependsOn": {
     "api": "https://github.com/ores-truffle-oreslang/oreslang-common-source/pull/277",
     "javaParser": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2991",
-    "javaRuntime": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2992"
+    "javaRuntime": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2992",
+    "javaIntegration": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2997"
   },
   "language": {
     "syntax": "using telemetry.span(name) as span { body }",
@@ -76,5 +77,32 @@
     "status": "NOT_EXECUTED",
     "verifiedRuns": [],
     "reason": "No exact-head backend compiler+guest run attached to this draft contract."
+  },
+  "hostSubstrateEvidence": {
+    "status": "HOST_ONLY_EXECUTED_LOCALLY_NOT_GUEST",
+    "java": "JDK21",
+    "invocation": "javac --release 21 -Xlint:all -Werror; java -ea dev.oreslang.runtime.LogicalTraceScopeSmoke",
+    "result": "LOGICAL_TRACE_SCOPE_PASS assertions=29",
+    "exactSourceBlob": "3b2eee2735c6f32dc00e6b1f14911442fbfe6c50",
+    "exactTestBlob": "5e23966533ef7d83d505383bc1d9e0d763b8149a",
+    "covers": [
+      "nested_lifo",
+      "parent_context_restore",
+      "suspend_resume_cross_carrier",
+      "stale_ticket_revocation",
+      "stop_generation_fence",
+      "cancel_resume_race",
+      "disabled_span_guard",
+      "bounded_depth"
+    ],
+    "doesNotCover": [
+      "actual_guest_compilation",
+      "compiler_scoped_resource_lowering",
+      "real_actor_scheduler_hook",
+      "native_image",
+      "real_network_io",
+      "otlp_export",
+      "jit_reinstrumentation"
+    ]
   }
 }
