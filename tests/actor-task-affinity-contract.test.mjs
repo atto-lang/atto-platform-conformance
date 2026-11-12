@@ -40,7 +40,9 @@ test("source fixtures distinguish captured data from actor self", async () => {
   assert.match(positive, /let Future<int> child = task \{/);
   assert.match(positive, /self\.send\(await child\)/);
   assert.match(positive, /await worker\.get_done\(\)/);
-  assert.doesNotMatch(positive, /task \{[\s\S]*?self\./);
+  const taskBody = positive.match(/let Future<int> child = task \{([\s\S]*?)\};/);
+  assert.ok(taskBody, "fixture must contain a task body");
+  assert.doesNotMatch(taskBody[1], /\bself\./);
 
   const negative = await read("reject-actor-self-capture.atto");
   assert.match(negative, /task \{[\s\S]*?self\.count;/);
