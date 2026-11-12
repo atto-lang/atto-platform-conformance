@@ -1,0 +1,120 @@
+{
+  "purpose": "2026-11-11 current five-mainline-PR three-repo advisory snapshot: never approve/merge automatically",
+  "coordinationIssue": "https://github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/582",
+  "prs": [
+    {
+      "repo": "ores-truffle-oreslang/ores-truffle-oreslang.github.io",
+      "number": 91,
+      "expectedHead": "5d2b44eefa17441447fd6a4305ab919934683325",
+      "expectedBaseSha": "779b3616c8551ea224baf00e224a348aef159245",
+      "requiredStepNames": [
+        "Verify exact PR head checkout",
+        "Check and build static HTML",
+        "Validate machine-readable language draft publication"
+      ],
+      "requiredWorkflows": [
+        {
+          "workflowId": 378985166,
+          "workflowName": "Validate marketing site",
+          "jobName": "AttoLang Site Validation",
+          "testStepName": "Check and build static HTML"
+        }
+      ]
+    },
+    {
+      "repo": "ores-truffle-oreslang/ores-truffle-oreslang.github.io",
+      "number": 92,
+      "expectedHead": "41c1b115955a62d104487442f2cbd02a6fde41ad",
+      "expectedBaseSha": "779b3616c8551ea224baf00e224a348aef159245",
+      "requiredStepNames": [
+        "Verify exact PR head checkout",
+        "Check and build static HTML",
+        "Validate machine-readable language draft publication"
+      ],
+      "requiredWorkflows": [
+        {
+          "workflowId": 378985166,
+          "workflowName": "Validate marketing site",
+          "jobName": "AttoLang Site Validation",
+          "testStepName": "Check and build static HTML"
+        }
+      ]
+    },
+    {
+      "repo": "ores-truffle-oreslang/ores-truffle-oreslang.github.io",
+      "number": 93,
+      "expectedHead": "d62760becdb6fd3355b6f45d21ab21e3c16e4ae0",
+      "expectedBaseSha": "779b3616c8551ea224baf00e224a348aef159245",
+      "requiredStepNames": [
+        "Verify exact PR head checkout",
+        "Check and build static HTML",
+        "Validate machine-readable language draft publication"
+      ],
+      "requiredWorkflows": [
+        {
+          "workflowId": 378985166,
+          "workflowName": "Validate marketing site",
+          "jobName": "AttoLang Site Validation",
+          "testStepName": "Check and build static HTML"
+        }
+      ]
+    },
+    {
+      "repo": "ores-truffle-oreslang/sublime-text-plugins",
+      "number": 162,
+      "expectedHead": "1e30acf1c4770ef1fef2baf5c5fa7c8dba296701",
+      "expectedBaseSha": "2f6530a587f69ac5efb68ddfa1321e521bac2422",
+      "requiredStepNames": [
+        "Verify exact source HEAD before executing tests or publishing artifacts",
+        "Test package contracts",
+        "Execute native Sublime syntax assertions with real engine",
+        "Build two identical Sublime package archives and smoke-test contents"
+      ],
+      "requiredWorkflows": [
+        {
+          "workflowId": 373587523,
+          "workflowName": "CI",
+          "jobName": "package",
+          "testStepName": "Test package contracts"
+        },
+        {
+          "workflowId": 373587523,
+          "workflowName": "CI",
+          "jobName": "sublime-syntax-engine",
+          "testStepName": "Execute native Sublime syntax assertions with real engine"
+        },
+        {
+          "workflowId": 373587523,
+          "workflowName": "CI",
+          "jobName": "release-package",
+          "testStepName": "Build two identical Sublime package archives and smoke-test contents"
+        }
+      ]
+    },
+    {
+      "repo": "ores-truffle-oreslang/oreslang-cli",
+      "number": 176,
+      "expectedHead": "2ff629784cb07b643a15f24500e34f1f79e3f441",
+      "expectedBaseSha": "7eaa52e4f52d95df670d516d34d4907872be1730",
+      "requiredStepNames": [
+        "Verify exact PR head and clean source tree",
+        "Test",
+        "Execute local DSSE and negative mutation checks (not release authorization)"
+      ],
+      "requiredWorkflows": [
+        {
+          "workflowId": 373591906,
+          "workflowName": "CI",
+          "jobName": "rust",
+          "testStepName": "Test"
+        },
+        {
+          "workflowId": 409917534,
+          "workflowName": "Source-free release assurance signature checks (NON-AUTHORIZING)",
+          "jobName": "local-signature-and-artifact-negative-matrix",
+          "testStepName": "Execute local DSSE and negative mutation checks (not release authorization)"
+        }
+      ]
+    }
+  ]
+}
