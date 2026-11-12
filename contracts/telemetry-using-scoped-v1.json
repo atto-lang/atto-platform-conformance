@@ -112,5 +112,47 @@
       "otlp_export",
       "jit_reinstrumentation"
     ]
+  },
+  "fundedHostValidation": {
+    "status": "PASS_EXECUTED_HOST_AND_PRODUCTION_PARSER_ONLY",
+    "sourcePR": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2997",
+    "sourceHead": "f8ddf97a03ab254821c3cc358ff967bcd620e0d8",
+    "sourceTree": "874a99916eb115d85a09b52cdcde9703544c72a5",
+    "fundedPrivateMirrorRepository": "numerics-atto/mirror-oreslang-source.java",
+    "fundedMirrorHead": "3f096209acc7a0d8b79ef3abcde73bcc68eddb84",
+    "workflowRun": "https://github.com/numerics-atto/mirror-oreslang-source.java/actions/runs/43324192133",
+    "workflowJobId": 131552364255,
+    "workflowConclusion": "success",
+    "executedSteps": 12,
+    "mirrorScope": "11 exact source Git blobs, not the complete source PR tree",
+    "noCrossOrgToken": true,
+    "noSecrets": true,
+    "javaVersion": 21,
+    "javaCompilerCommand": "javac --release 21 -Xlint:all -Werror",
+    "runtime": {
+      "repetitions": 25,
+      "assertionsPerRun": 32,
+      "totalAssertions": 800
+    },
+    "parser": {
+      "repetitions": 8,
+      "assertionsPerRun": 14,
+      "totalAssertions": 112
+    },
+    "negativeMutation": {
+      "result": "EXPECTED_ASSERTION_FAILURE_DETECTED",
+      "mutation": "remove scope.detach() only in temporary test copy",
+      "logMarker": "ATTO_TRACE_NEGATIVE_MUTATION_DETECTED missing_scope_detach",
+      "assertion": "inner scope releases parent and actor graph"
+    },
+    "excludedClaims": [
+      "exact_full_tree_guest_compilation",
+      "typechecker_authorized_telemetry",
+      "real_guest_await",
+      "native_image",
+      "otlp_export",
+      "jit_reinstrumentation"
+    ],
+    "executionEvidenceGuestStill": "NOT_EXECUTED"
   }
 }
