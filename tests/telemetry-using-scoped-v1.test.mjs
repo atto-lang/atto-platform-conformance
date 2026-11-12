@@ -22,13 +22,13 @@ function source(fixture) {
   return bytes.toString('utf8');
 }
 
-test('source-owned five-fixture snapshot is immutable and non-promotable', () => {
+test('source-owned six-fixture snapshot is immutable and non-promotable', () => {
   assert.equal(contract.contract, 'telemetry-using-scoped-v1');
   assert.equal(contract.status, 'candidate-unattested');
   assert.equal(contract.executionEvidence.status, 'NOT_EXECUTED');
   assert.deepEqual(contract.executionEvidence.verifiedRuns, []);
   assert.equal(contract.fixtures.length, 6);
-  assert.equal(new Set(contract.fixtures.map(f => f.path)).size, 5);
+  assert.equal(new Set(contract.fixtures.map(f => f.path)).size, 6);
   assert.equal(contract.acceptance.requiresCompilerBackedGuest, true);
   assert.equal(contract.acceptance.requiresExecutedSteps, true);
   assert.equal(contract.acceptance.requiresExactHeadShaTree, true);
