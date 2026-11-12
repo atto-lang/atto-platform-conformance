@@ -40,6 +40,27 @@
         "no-actor-self-capture",
         "no-borrowed-state"
       ]
+    },
+    {
+      "id": "actor-task-nested-await",
+      "file": "actor-task-nested-await.atto",
+      "kind": "guest",
+      "expectedStdout": "42",
+      "requires": [
+        "actor-worker-pool",
+        "nested-inherited-scheduler",
+        "actor-incarnation-identity",
+        "physical-quiescence"
+      ]
+    },
+    {
+      "id": "reject-actor-mail-capture",
+      "file": "reject-actor-mail-capture.atto",
+      "kind": "compile-reject",
+      "requires": [
+        "no-mailbox-capability-capture",
+        "no-actor-self-capture"
+      ]
     }
   ]
 }
