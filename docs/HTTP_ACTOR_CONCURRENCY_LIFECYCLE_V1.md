@@ -183,3 +183,37 @@ The Java transport continues to use JDK HttpServer with blocking socket
 operations offloaded to virtual threads; the separate
 `docs/HTTP_ACTOR_ASYNC_NIO_MIGRATION.md` in Java draft #2884 describes
 a future selector-based implementation, not shipped functionality.
+
+## Pooled handler-wide historical generation retirement (November 11, 2026)
+
+Java [draft #2884](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2884)
+now includes `HttpPooledWorkerGenerationRegistry`: the handler records **every**
+actor it spawned, even if replaced in a pool slot after another listener
+sealed that generation. `NativeHttp.close()` previously called `stopPool()`
+only on the current `workers[]` slots, potentially missing a live
+historical incarnation. The new stop path atomically seals registry admission
+under the handler lock and attempts to cancel every live generation,
+continuing after individual cancellation failures. Physical retirement removes
+generations from the registry only after their handoff lease and carrier exit
+have both been observed.
+
+A new exact-source JUnit class covers three-generation retention,
+double-registration failure and 32 repeated races with 96 candidate
+replacements. **Unexecuted at the source organization's runner.**
+
+Local host-only executable evidence: the Git-blob-verified Java 21 production
+registry helper (`2b4661000cc0f1bfcbedb9c9dcb6434cf96a7712`) and the
+existing admission gate helper
+(`89eebb2d2e2ccebb0d6651fe9b1f55477948ba58`) both compiled
+successfully; a separate Java virtual-thread harness executed **7,312
+assertions, 100 rounds × 96 contenders**. These checks do not certify full
+JDK 25/GraalVM, JUnit, Atto guest HTTP, or five-backend runtime parity.
+
+**Private runner evidence and security gate:** Current Java source
+`main` reports `protected:false`, so
+`docs/security/CI_PRIVATE_SOURCE_MIRRORING.md` forbids ANY cross-org private
+source export. An exact-run alternate private test organization does have
+recent source-free job execution (beamscale/bmscl-compiler run 43092108031,
+8 steps), but that is neither reviewed authorization for Java #2884 nor
+permission to copy its private source. Source transfer remains DENIED;
+contract status remains `NOT_CERTIFIED`.
