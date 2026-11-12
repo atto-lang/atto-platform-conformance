@@ -18,7 +18,7 @@
     "nonSendableSpan": true,
     "stateLoans": "live using state.write/read scoped borrow must still reject await",
     "disabled": "no allocation, clock read, formatting or export",
-    "importRequirement": "Java draft parser recognizes canonical `use std.telemetry as telemetry;`, but ImportRules.validate rejects that reserved std.telemetry path until trusted builtin resolution and scoped cleanup are implemented. `import module telemetry from \"std.telemetry\"` must also fail closed."
+    "importRequirement": "Java draft parser assigns a distinct `@builtin:std.telemetry` syntax-only import marker to canonical `use std.telemetry as telemetry;`. Generic quoted imports cannot forge this reserved marker. ImportRules.validate rejects both the marker and untrusted `std.telemetry` paths until an authenticated builtin resolver and scoped cleanup lowering exist."
   },
   "fixtures": [
     {
@@ -54,7 +54,7 @@
     {
       "path": "fixtures/telemetry-using-v1/using-span-import.atto",
       "gitBlobSha1": "baf5e0895565499516d4b113867544eab2520d65",
-      "currentJava": "MAIN_UNSUPPORTED; JAVA_DRAFT_2991_2997_PARSER_ACCEPT_IMPORT_RULES_REJECT_BEFORE_RUNTIME",
+      "currentJava": "MAIN_UNSUPPORTED; DRAFT_PARSER_ADMITS_BUILTIN_SYNTAX_MARKER_BUT_IMPORT_RULES_DENY_BEFORE_RUNTIME",
       "future": "COMPILE_AND_RUN_EXPECT_EXIT_0; require trusted std.telemetry import symbol"
     }
   ],
@@ -79,7 +79,8 @@
     "sourceOnlyTestsSufficient": false,
     "zeroStepRunCountsAsExecuted": false,
     "forbidSyntheticPromotion": true,
-    "requiresTrustedTelemetryModuleImport": true
+    "requiresTrustedTelemetryModuleImport": true,
+    "requiresUnforgeableSyntacticBuiltinMarker": true
   },
   "executionEvidence": {
     "status": "NOT_EXECUTED",
