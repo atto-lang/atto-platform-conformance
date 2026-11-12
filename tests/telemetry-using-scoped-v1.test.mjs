@@ -42,6 +42,18 @@ test('source-owned five-fixture snapshot is immutable and non-promotable', () =>
   }
 });
 
+test('executed host smoke does not promote an unexecuted AttoLang guest', () => {
+  const host = contract.hostSubstrateEvidence;
+  assert.equal(host.status, 'HOST_ONLY_EXECUTED_LOCALLY_NOT_GUEST');
+  assert.match(host.result, /^LOGICAL_TRACE_SCOPE_PASS assertions=29$/);
+  assert.match(host.exactSourceBlob, /^[a-f0-9]{40}$/);
+  assert.match(host.exactTestBlob, /^[a-f0-9]{40}$/);
+  assert.ok(host.doesNotCover.includes('actual_guest_compilation'));
+  assert.ok(host.doesNotCover.includes('jit_reinstrumentation'));
+  assert.equal(contract.executionEvidence.status, 'NOT_EXECUTED');
+  assert.deepEqual(contract.executionEvidence.verifiedRuns, []);
+});
+
 test('scoped span semantics retain await ownership, negative alias and spoof rejection', () => {
   assert.equal(contract.language.maySuspend, true);
   assert.equal(contract.language.nonSendableSpan, true);
