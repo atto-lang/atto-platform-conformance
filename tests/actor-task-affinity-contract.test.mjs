@@ -19,6 +19,10 @@ test("actor task placement requires actor pool not supervisor CONTROL", async ()
   assert.equal(spec.actorStateCapture, "REJECT");
   assert.equal(spec.singleWriter, "REQUIRED");
   assert.equal(spec.postStopGuestExecution, "CLEANUP_ONLY");
+  assert.equal(spec.stopTaskAdmission, "ATOMIC_WITH_STOP_SNAPSHOT");
+  assert.equal(spec.cleanupOnlyResume, "NO_NEW_TASKS");
+  assert.equal(spec.parentChildCancellation, "PHYSICAL_DESCENDANT_JOIN");
+  assert.equal(spec.gracefulStopPolicy, "BACKEND_EXPLICIT");
   assert.equal(spec.guestProofRequired, true);
   assert.equal(spec.zeroStep, "NOT_EXECUTED");
   assert.deepEqual(spec.cases.map(c => c.id), [
@@ -56,4 +60,16 @@ test("source fixtures distinguish captured data from actor self", async () => {
 
   const unsafeMailbox = await read("reject-actor-mail-capture.atto");
   assert.match(unsafeMailbox, /task \{[\s\S]*?mail\.value/);
+});
+
+test("STOP admission and cleanup are normative, not a static fixture PASS", async () => {
+  const contract = await readFile(
+    new URL("../contracts/v1/ACTOR_TASK_POOL_AFFINITY_V1.md", import.meta.url),
+    "utf8"
+  );
+  assert.match(contract, /initial registration and STOP's cancellation snapshot/);
+  assert.match(contract, /MUST linearize under the same actor-incarnation admission gate/);
+  assert.match(contract, /cannot create a new Task during a surviving/);
+  assert.match(contract, /Only already-admitted, authenticated lexical/);
+  assert.match(contract, /Static Node manifest tests are not guest-execution proof/);
 });
