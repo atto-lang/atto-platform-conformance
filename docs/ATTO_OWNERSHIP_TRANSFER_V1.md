@@ -24,3 +24,7 @@ The source-only validator is `node --test tests/atto-ownership-transfer-v1.test.
 Existing related contracts: `docs/ASYNC_TASK_BORROW_SAFETY_V1.md`, `contracts/collection-ownership-sync-v1.json`, and `contracts/actor-buffer-transfer-v1.json`. In particular the latter already models full/closed mailbox rejection without consuming a sender's payload; these Atto fixtures do not establish real mailbox execution.
 
 AttoNATS PR #12's async NIO guest sends INFO/PONG for one connection. It does not establish full NATS behavior, sealed actor-state compiler admission or backend ownership parity.
+
+## Explicit blocked guest recovery gate (2026-11-11)
+
+Java [issue #2920](https://github.com/ores-truffle-oreslang/oreslang-source.java/issues/2920) is an unresolved guest ownership gap: `OwnershipChecker` consumes a `writech` payload during registration, while `ChannelRuntime` returns `boolean` from immediate probes and `Future<void>` from pending writes. Full/closed/canceled sends are *not yet proven to return the original owned guest payload*. The source-free `actor-buffer-transfer-v1` model and Java host-identity tests are not sufficient. Do **not** merge/mark channel-owned-transfer parity passing until the guest API has a precisely specified `COMMITTED`/`RETURNED` outcome and real executing .atto rejection/recovery tests for full, close, cancellation, timeout, and races.
