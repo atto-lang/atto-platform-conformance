@@ -73,6 +73,22 @@ test('funded CI executes exact-source host and parser but never promotes guest e
   assert.deepEqual(contract.executionEvidence.verifiedRuns, []);
 });
 
+test('GraalVM25 parser import/capture receipts remain strictly separate from guest evidence', () => {
+  const run = contract.fundedImportParserValidation;
+  assert.equal(run.status, 'PASS_EXECUTED_EXACT_SOURCE_PARSER_ONLY');
+  assert.equal(run.graalVersion, '25.3');
+  assert.equal(run.sourceBlobsVerified, 9);
+  assert.equal(run.repetitions * run.assertionsPerRun, 405);
+  assert.equal(run.totalAssertions, 405);
+  assert.equal(run.guestExecutionStatus, 'NOT_EXECUTED');
+  assert.equal(contract.executionEvidence.status, 'NOT_EXECUTED');
+  assert.deepEqual(contract.executionEvidence.verifiedRuns, []);
+  assert.match(run.negativeMutation, /EXPECTED_ASSERTION_FAILURE/);
+  assert.match(contract.language.importRequirement, /ImportRules.validate rejects/);
+  assert.match(contract.fixtures.find(f => f.path.endsWith('using-span-import.atto')).currentJava,
+    /PARSER_ACCEPT_IMPORT_RULES_REJECT/);
+});
+
 test('scoped span semantics retain await ownership, negative alias and spoof rejection', () => {
   assert.equal(contract.language.maySuspend, true);
   assert.equal(contract.language.nonSendableSpan, true);
