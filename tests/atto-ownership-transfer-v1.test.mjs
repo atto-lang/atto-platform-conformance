@@ -60,3 +60,18 @@ test('only genuine semantic compiler and guest receipts promote parity', () => {
   for (const s of ['at **submission**','linearizable','semantic ownership','unattested'])
     assert.ok(doc.toLowerCase().includes(s.toLowerCase()), s);
 });
+
+test('failed channel send guest ownership recovery remains an explicit release blocker', () => {
+  const gap = contract.knownGuestRecoveryGap;
+  assert.equal(gap.status, 'BLOCKED_UNPROVEN');
+  assert.match(gap.issue, /\/issues\/2920$/);
+  assert.equal(gap.sourceFreeModelIsNotGuestEvidence, true);
+  assert.deepEqual(gap.requiredCases, [
+    'full', 'closed', 'pending-cancel', 'pending-timeout',
+    'cancel-vs-commit', 'close-vs-commit', 'rendezvous'
+  ]);
+  assert.match(gap.requiredProof, /COMMITTED or RETURNED/);
+  const doc = read('docs/ATTO_OWNERSHIP_TRANSFER_V1.md');
+  assert.match(doc, /issues\/2920/);
+  assert.match(doc, /not yet proven/i);
+});
