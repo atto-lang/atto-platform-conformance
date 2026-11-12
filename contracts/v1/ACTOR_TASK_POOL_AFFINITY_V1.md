@@ -40,8 +40,15 @@ to the root scheduler.
 STOP seals new admission, requests child cancellation, preserves a bounded
 cleanup-only continuation lane, and does not complete actor `get_done()`
 or reclaim state until guest cleanup and physical task retirement are
-witnessed. `Future.isDone` is not proof of quiescence. Panic goes to
-supervisor CONTROL as a *notice*, never as execution of the failed child.
+witnessed. A Task's initial registration and STOP's cancellation snapshot
+MUST linearize under the same actor-incarnation admission gate. A check
+performed before an unlocked `start()` call is insufficient: a concurrent
+STOP may otherwise miss the new Task. In particular, an actor whose scheduler
+was initialized before STOP cannot create a new Task during a surviving
+cancellation-cleanup turn. Only already-admitted, authenticated lexical
+unwind continuations may execute after STOP. `Future.isDone` is not proof
+of quiescence. Panic goes to supervisor CONTROL as a *notice*, never as
+execution of the failed child.
 
 `task scope` inside an actor remains a separate feature; reject until its
 physical lifecycle, quotas, and hot-reload generation integration is proven.
@@ -63,6 +70,8 @@ profiles, .NET NativeAOT and Forge as applicable. Assert:
 3. completion delivered by foreign producer does not run guest code;
 4. two actors cannot concurrently run the same actor-state turn;
 5. STOP, cancellation, restart and stale future callbacks fail closed;
+   initial Task admission races atomically against STOP, including when the
+   actor's source scheduler already exists; cleanup cannot spawn new Tasks;
 6. source self-capture rejected by compiler, including nested Tasks;
 7. UNTRUSTED quota unchanged across nested child and suspend/resume.
 
