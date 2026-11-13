@@ -7,7 +7,7 @@ test('guest runner refuses unconfigured invocation (cannot claim parity)',()=>{
  const x=spawnSync(process.execPath,[script],{encoding:'utf8',timeout:5000});
  assert.equal(x.status,2);
  assert.match(x.stderr,/TASK_GUEST_RUNNER_DENIED/);
- assert.doesNotMatch(x.stdout,/"passed":14/);
+ assert.doesNotMatch(x.stdout,/"passed":16/);
 });
 
 test('structural-only matrix CLI fails release gate without actual verified guest evidence',()=>{
