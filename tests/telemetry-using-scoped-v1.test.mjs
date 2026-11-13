@@ -90,6 +90,25 @@ test('GraalVM25 parser import/capture receipts remain strictly separate from gue
     /DRAFT_PARSER_ADMITS_BUILTIN_SYNTAX_MARKER/);
 });
 
+test('SourceTask immutable trace context host proof never promotes guest scoped spans', () => {
+  const proof = contract.fundedTaskContinuationHostValidation;
+  assert.equal(proof.status, 'PASS_EXECUTED_IMMUTABLE_TRACE_CONTEXT_HOST_ONLY');
+  assert.equal(proof.conclusion, 'success');
+  assert.equal(proof.executedSteps, 11);
+  assert.equal(proof.sourceBlobsVerified, 5);
+  assert.equal(proof.hostSmoke.repetitions * proof.hostSmoke.assertionsPerRun, 720);
+  assert.equal(proof.hostSmoke.totalAssertions, 720);
+  assert.equal(proof.negativeMutation.status, 'EXPECTED_ASSERTION_FAILURE_DETECTED');
+  assert.equal(proof.sourceTaskExecution, 'STATIC_WIRING_INSPECTED_NOT_ACTUALLY_COMPILED');
+  assert.equal(proof.sourceVisibilityProtected, true);
+  assert.equal(proof.crossOrgCheckoutTokenUsed, false);
+  assert.deepEqual(proof.zeroStepRunsExcluded, [43333375875, 43333637868]);
+  assert.ok(proof.excluded.includes('real_source_task_guest'));
+  assert.ok(proof.excluded.includes('full_tree_maven'));
+  assert.equal(contract.executionEvidence.status, 'NOT_EXECUTED');
+  assert.deepEqual(contract.executionEvidence.verifiedRuns, []);
+});
+
 test('scoped span semantics retain await ownership, negative alias and spoof rejection', () => {
   assert.equal(contract.language.maySuspend, true);
   assert.equal(contract.language.nonSendableSpan, true);
