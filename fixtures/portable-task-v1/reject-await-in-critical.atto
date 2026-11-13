@@ -1,5 +1,5 @@
 define actor Worker as
-  receive(ActorMail<int> mail): void {
+  suspends mtd receive(ActorMail<int> mail): void {
     handle_state(critical-write |s| -> {
       let Task<int> work = task { return 42; };
       let int value = await work; // critical exclusive loan may not suspend
