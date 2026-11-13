@@ -1,0 +1,27 @@
+// Candidate guest test: STOP must not retire an actor/child frame while its
+// suspension callback remains physically on a carrier. A late wake cannot
+// resurrect guest instructions from that actor generation.
+define actor Worker as
+  suspends mtd receive(ActorMail<int> mail): void {
+    let Task<int> child = task {
+      await probe_hold_suspending_turn("callback_live");
+      probe_trace("forbidden_post_stop");
+      return 1;
+    };
+    let int answer = await child;
+    return;
+  }
+end
+pub suspends fnc main(): int {
+  let ActorRef<Worker> actor = spawn Worker();
+  await actor.get_ready();
+  actor.send(1);
+  probe_wait_for("callback_live");
+  actor.stop();
+  probe_assert_actor_not_done(actor);
+  probe_release_suspending_turn(actor);
+  await actor.get_done();
+  probe_assert_absent("forbidden_post_stop");
+  probe_trace("stop_waited_for_physical_exit=true");
+  return 42;
+}
