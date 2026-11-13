@@ -1,6 +1,6 @@
 # Portable AttoLang Task / HasFuture<T> contract v1 (candidate)
 
-**Scope:** same `.atto` source across Java/GraalVM, LLVM, Wasm, Forge and .NET. This is a proposed normative semantic contract, **not** proof that existing backends implement it. Source names and probe hooks are provisional until the actual frontend accepts them. Review by compiler/runtime owners is required before declaring it frozen. All suite entries begin **not_executed**.
+**Scope:** same `.atto` source across Java/GraalVM, LLVM, Rust/Cranelift (`rs`), Wasm, Forge and .NET. This is a proposed normative semantic contract, **not** proof that existing backends implement it. Source names and probe hooks are provisional until the actual frontend accepts them. Review by compiler/runtime owners is required before declaring it frozen. All suite entries begin **not_executed**.
 
 ## Portable semantics
 
