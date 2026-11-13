@@ -41,7 +41,7 @@ async function digest(path){
 }
 async function run(cfg){
  required(cfg&&typeof cfg==='object'&&!Array.isArray(cfg),'invalid run configuration');
- required(['java','llvm','wasm','forge','net'].includes(cfg.backend),'invalid backend');
+ required(['java','llvm','wasm','rs','forge','net'].includes(cfg.backend),'invalid backend');
  required(isPath(cfg.compilerRoot)&&sha40(cfg.compilerCommit),'pinned absolute compiler checkout and full SHA required');
  required(sha40(cfg.fixtureCommit),'pinned fixture checkout SHA required');
  required(isPath(cfg.compilerIdentity),'compiled compiler identity file required');
