@@ -1,4 +1,4 @@
-pub async fnc main(): int {
+pub suspends fnc main(): int {
   let Task<String> work = task { return "ready"; };
   let String result = await work;
   if result eq "ready" then return 42; fi
