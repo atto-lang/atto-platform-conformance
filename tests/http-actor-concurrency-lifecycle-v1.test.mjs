@@ -46,11 +46,13 @@ test("serial alias and explicit metadata retain the one-by-one contract", () => 
   assert.match(contract.sourceContract.semantics.poolGenerationRetirement,
     /physical carrier exit/);
   assert.match(contract.sourceContract.semantics.sharedPoolCrossListenerShutdown,
-    /may not close the other listener's actor mailbox/);
+    /partitioned by exact listener identity/);
   assert.match(contract.sourceContract.semantics.sharedPoolCrossListenerShutdown,
-    /fail-closed interim safety gate/);
+    /A to drain successfully while listener B continues reusing/);
+  assert.match(contract.sourceContract.semantics.sharedPoolCrossListenerShutdown,
+    /slot removal never substitutes for carrier exit/);
   assert.match(contract.cases.find(x => x.id === "HA08").oracle,
-    /may not be globally stopped by one listener/);
+    /independently successful graceful drains/);
   assert.match(contract.sourceContract.semantics.forceCloseArbitration,
     /single winning owner/);
 });
