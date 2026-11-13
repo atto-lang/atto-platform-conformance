@@ -6,11 +6,12 @@ const {manifest,cases}=await loadSuite();
 const hex40='a'.repeat(40),hex64='b'.repeat(64);
 const positive=cases.find(c=>c.expect==='positive'&&c.mustObserve.length===0);
 function receipt(c=positive){return {status:'passed',caseId:c.id,backend:'java',compilerCommit:hex40,fixtureCommit:hex40,fixtureBlobSha:c.fixtureBlobSha,fixtureSha256:c.fixtureSha256,compilerSha256:hex64,compileArgv:['/absolute/compiler','--check',c.file],completedSteps:2,stepNames:['compile','guest'],runnerJobUrl:'https://github.com/ores-truffle-oreslang/oreslang-source.java/actions/runs/123',compilerExit:0,compilerOutput:'',rejectedEmittedArtifact:false,guestExecuted:true,artifactSha256:hex64,guestArgv:['/absolute/guest'],guestExit:42,guestOutput:''};}
-test('14 distinct immutable .atto source cases cover all five backends',()=>{
+test('14 distinct immutable .atto source cases cover all six backends',()=>{
  assert.equal(cases.length,14);assert.equal(new Set(cases.map(c=>c.fixtureBlobSha)).size,14);
  assert.equal(manifest.executionVerified,false);
- assert.deepEqual(Object.keys(summarize(cases,{})),['java','llvm','wasm','forge','net']);
+ assert.deepEqual(Object.keys(summarize(cases,{})),['java','llvm','wasm','rs','forge','net']);
  for(const v of Object.values(summarize(cases,{})))assert.deepEqual([v.passed,v.failed,v.unsupported,v.not_executed,v.releaseQualified],[0,0,0,14,false]);
+ assert.equal(summarize(cases,{}).rs.not_executed,14);
 });
 test('portable Task semantics are specified, not misreported as executed',async()=>{
  const text=await readFile(new URL('../contracts/portable-task-v1.md',import.meta.url),'utf8');
