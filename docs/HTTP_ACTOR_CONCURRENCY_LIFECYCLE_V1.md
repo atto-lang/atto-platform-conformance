@@ -241,7 +241,7 @@ has been superseded by this listener-partitioned design.
 
 The exact Git-blob production slot helper, admission fence, historical
 generation registry and the repository's offline Java smoke harness were
-compiled together under OpenJDK 21, executing **10,000/10,000 assertions**
+compiled together under OpenJDK 21, executing **10,200/10,200 assertions**
 over 100 rounds, each with 96 competing virtual-thread producers. These
 helper tests are executed evidence, **not** verification of the complete
 `NativeHttp` runtime, JDK 25/GraalVM compilation, live Atto guest loopback,
