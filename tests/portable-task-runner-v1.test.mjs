@@ -15,9 +15,9 @@ test('structural-only matrix CLI fails release gate without actual verified gues
  const out=spawnSync(process.execPath,[script],{encoding:'utf8',timeout:8000});
  assert.equal(out.status,1);
  const report=JSON.parse(out.stdout);
- assert.equal(report.backends.java.not_executed,14);
- assert.equal(report.backends.llvm.not_executed,14);
- assert.equal(report.backends.rs.not_executed,14);
+ assert.equal(report.backends.java.not_executed,16);
+ assert.equal(report.backends.llvm.not_executed,16);
+ assert.equal(report.backends.rs.not_executed,16);
  assert.equal(report.backends.wasm.releaseQualified,false);
 });
 
