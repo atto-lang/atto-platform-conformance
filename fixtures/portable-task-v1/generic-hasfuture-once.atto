@@ -1,4 +1,4 @@
-pub async fnc main(): int {
+pub suspends fnc main(): int {
   let HasFuture<int> observed = probe_counted_has_future(42);
   let int result = await observed;
   probe_assert_projection_count(1);
