@@ -31,6 +31,21 @@ must never capture raw `self`, actor state, mailbox messages, live guards,
 unsendable borrows, or host/supervisor capabilities. COPY/MOVE transfer
 must be identity-bound to the compiler-checked AST and atomic on admission.
 
+Every live actor incarnation MUST maintain a bounded, runtime-owned Task
+census. Registration of the initial scheduler Task and the STOP admission
+seal are one serialized transaction. A child Task's parent is inferred
+from its authenticated executing Task turn, not accepted from a freely
+forgeable pointer/ID. Parent `get_done()` MUST join each registered transitive
+child's physical retirement, including when the parent result is already
+terminal; cancelling an already-terminal parent must still revoke its
+outstanding descendants. Removal of a parent lifetime record cannot strand
+registered children or permit premature actor resource reclamation. Hosts
+must not close the actor's Task census before physical actor DONE.
+
+These are language-level obligations. Backend implementations may use a
+fixed-capacity ledger, pinned actor heap records, or an equivalent structure;
+the specific native host ABI is not mandated by the contract.
+
 For UNTRUSTED actors, child tasks must share the enclosing actor's
 fuel/wall/CPU/continuation admission accounting; no new budget is minted for
 a nested child. If the backend lacks these controls, the compiler/runtime
@@ -73,7 +88,13 @@ profiles, .NET NativeAOT and Forge as applicable. Assert:
    initial Task admission races atomically against STOP, including when the
    actor's source scheduler already exists; cleanup cannot spawn new Tasks;
 6. source self-capture rejected by compiler, including nested Tasks;
-7. UNTRUSTED quota unchanged across nested child and suspend/resume.
+7. UNTRUSTED quota unchanged across nested child and suspend/resume;
+8. a parent finishes before a suspended child, but its `get_done()` remains
+   pending until the child physically retires, and parent cancellation can
+   still revoke that child; stale/foreign parent identity cannot admit tasks;
+9. STOP atomically seals a bounded census and cancels all registered tasks,
+   including nested children, without requiring the application to enumerate
+   them; no registry/census memory is reclaimed before actor DONE.
 
 For unsupported backends, an explicit compiler rejection is acceptable as
 an honest capability statement, **not** executable parity.
