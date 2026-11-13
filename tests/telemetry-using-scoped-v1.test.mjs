@@ -109,6 +109,22 @@ test('SourceTask immutable trace context host proof never promotes guest scoped 
   assert.deepEqual(contract.executionEvidence.verifiedRuns, []);
 });
 
+test('funded scoped return-checker proof is real but scoped guest lowering is not', () => {
+  const proof = contract.fundedScopedControlFlowValidation;
+  assert.equal(proof.status, 'PASS_EXECUTED_PRODUCTION_PARSER_RETURN_CHECKER_HOST_ONLY');
+  assert.equal(proof.executedSteps, 11);
+  assert.equal(proof.verifiedSourceBlobs, 12);
+  assert.equal(proof.host.runs * proof.host.checksPerRun, 160);
+  assert.equal(proof.host.totalChecks, 160);
+  assert.equal(proof.negativeMutation.result, 'EXPECTED_FAILURE_CAUGHT');
+  assert.equal(proof.negativeMutation.assertion, 'return from finally incorrectly accepted');
+  assert.ok(proof.excluded.includes('real_atto_guest_await'));
+  assert.ok(proof.excluded.includes('production_evaluator_compilation'));
+  assert.equal(proof.guestExecution, 'NOT_EXECUTED');
+  assert.equal(contract.executionEvidence.status, 'NOT_EXECUTED');
+  assert.deepEqual(contract.executionEvidence.verifiedRuns, []);
+});
+
 test('scoped span semantics retain await ownership, negative alias and spoof rejection', () => {
   assert.equal(contract.language.maySuspend, true);
   assert.equal(contract.language.nonSendableSpan, true);
