@@ -1,6 +1,6 @@
 # Portable Task / HasFuture v1 — proposals, NOT guest-certified
 
-All 14 files are shared AttoLang **candidate** programs; the test hook vocabulary is not yet an implemented public ABI. This repository's `npm test` runs manifest integrity / receipt rejection tests only and MUST NEVER be cited as guest execution. `node bin/portable-task-v1.mjs` shows the fail-closed backend matrix; without actual receipts it exits 1 and reports `not_executed` for all 84 backend/case cells.
+All 16 files are shared AttoLang **candidate** programs; the test hook vocabulary is not yet an implemented public ABI. This repository's `npm test` runs manifest integrity / receipt rejection tests only and MUST NEVER be cited as guest execution. `node bin/portable-task-v1.mjs` shows the fail-closed backend matrix; without actual receipts it exits 1 and reports `not_executed` for all 96 backend/case cells.
 
 Two-phase rollout: (1) approve `contracts/portable-task-v1.md`, settle ActorRef await identity, and implement a narrow, capability-gated guest probe ABI; (2) run each byte-identical fixture using Java's current guest launcher and LLVM's `scripts/compile-aot.sh` on SHA-pinned source checkouts, then add Rust/Cranelift, Wasm, Forge, .NET. The compiler must fail closed for anything unsupported. Positive programs must really execute and emit trace events; negative programs must fail at the actual compiler and never execute. Do not rewrite fixtures differently per backend or substitute a Node/C++/Java host model for guest execution.
 
