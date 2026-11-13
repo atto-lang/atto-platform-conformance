@@ -20,7 +20,10 @@
     "retirement_rejects_new_lease",
     "cross_actor_mutable_access_denied",
     "zeroization_on_reuse",
-    "cancelled_io_pin_retired"
+    "cancelled_io_pin_retired",
+    "stale_actor_incarnation_denied",
+    "cross_tenant_transfer_denied",
+    "dequeue_does_not_refund_credit"
   ],
   "backend_statuses": {
     "java": "NOT_EXECUTED",
