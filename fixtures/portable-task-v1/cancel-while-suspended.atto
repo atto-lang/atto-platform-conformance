@@ -1,4 +1,4 @@
-pub async fnc main(): int {
+pub suspends fnc main(): int {
   let Task<int> task_handle = task {
     probe_trace("entered");
     await probe_pending("suspended"); // signals only after actual continuation suspension
