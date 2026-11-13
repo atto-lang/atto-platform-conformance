@@ -218,24 +218,40 @@ recent source-free job execution (beamscale/bmscl-compiler run 43092108031,
 permission to copy its private source. Source transfer remains DENIED;
 contract status remains `NOT_CERTIFIED`.
 
-## Shared-worker cross-listener shutdown ownership (2026-11-12)
+## Listener-partitioned pooled workers and independent shutdown (2026-11-12)
 
-The Java runtime draft `oreslang-source.java#2884` has an additional fail-closed
-ownership guard. A pooled actor may be reused by listeners A and B. A's
-shutdown must not call `ActorRuntime.gracefulStop()` while B retains a
-historical association with that exact generation: doing so could seal B's
-unrelated guest mailbox continuations. Once all pre-seal HTTP handoffs settle,
-Java now detects a second listener association and fails A's graceful-drain
-Future with an explicit error **without canceling B's actor**. B can continue
-serving subsequent requests on a replacement worker incarnation.
+Java draft [#2884](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/2884)
+now partitions every shared Handler's worker slots **by the exact listener's
+object identity** using `HttpPooledWorkerListenerSlots<Server,Worker>`.
+A reused Handler no longer implies a reused actor: listeners A and B have
+separate pooled ActorRefs from their first request onward. A's shutdown
+seals and gracefully stops only actors belonging to A; B continues to serve
+and reuse its actor. Replaced generations remain in the independent,
+whole-handler `HttpPooledWorkerGenerationRegistry` until their actual carrier
+exit. On listener terminal success, failure, or forced close, only its slot
+references are dropped; this is not itself an actor finalization receipt.
 
-This is a **temporary safety restriction**, not an implementation of fully
-independent graceful drain for two listeners that already share one worker.
-A successful version requires (a) per-listener actor pool ownership or
-(b) a proven per-listener message/completion lease that distinguishes A's
-finished work from B's active guest carrier. Treat a rejected A drain as a
-failure, never as physical shutdown success. Java's new
-`firstListenerCannotGracefullyStopActorStillSharedBySecondListener`
-loopback regression asserts B remains usable after A is rejected; the test
-has **not executed on JDK 25/GraalVM**, because GitHub Actions is failing before
-runner assignment. Five-backend HTTP lifecycle parity remains NOT_CERTIFIED.
+A new actual Atto loopback regression,
+`twoListenersSharingHandlerDrainIndependentlyWithoutStoppingEachOther`,
+requires A and B both to serve successfully, A to finish its own
+`shutdown(0)` while B stays operational, B to reuse the same B-owned
+worker for a subsequent HTTP request, and independent shutdown of B. The
+earlier temporary rule rejecting A's drain due to B's historical association
+has been superseded by this listener-partitioned design.
+
+The exact Git-blob production slot helper, admission fence, historical
+generation registry and the repository's offline Java smoke harness were
+compiled together under OpenJDK 21, executing **10,000/10,000 assertions**
+over 100 rounds, each with 96 competing virtual-thread producers. These
+helper tests are executed evidence, **not** verification of the complete
+`NativeHttp` runtime, JDK 25/GraalVM compilation, live Atto guest loopback,
+or five-backend parity. GitHub-hosted exact-head Actions remains blocked
+before runner allocation, so the contract stays `NOT_CERTIFIED`.
+
+The design intentionally trades cross-listener actor reuse for explicit
+listener shutdown ownership. Treat Handler's `pooled(size)` as a
+*per-listener* actor bound, not a global cap on all listeners sharing that
+Handler. Capacity sizing and memory/actor-count limits must account for
+the number of active listeners. A distinct future API may provide
+cross-listener physical actor sharing only alongside a proven per-listener
+completion/ownership lease.
