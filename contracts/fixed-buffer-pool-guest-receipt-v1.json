@@ -23,7 +23,11 @@
     "cancelled_io_pin_retired",
     "stale_actor_incarnation_denied",
     "cross_tenant_transfer_denied",
-    "dequeue_does_not_refund_credit"
+    "dequeue_does_not_refund_credit",
+    "receiver_registry_reclaim_busy_while_queued",
+    "receiver_registry_reclaim_busy_while_checked_out",
+    "sender_registry_handoff_ticket_settled",
+    "retired_destination_registry_rejected"
   ],
   "backend_statuses": {
     "java": "NOT_EXECUTED",
