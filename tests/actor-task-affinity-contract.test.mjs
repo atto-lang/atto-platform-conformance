@@ -72,4 +72,8 @@ test("STOP admission and cleanup are normative, not a static fixture PASS", asyn
   assert.match(contract, /cannot create a new Task during a surviving/);
   assert.match(contract, /Only already-admitted, authenticated lexical/);
   assert.match(contract, /Static Node manifest tests are not guest-execution proof/);
+  assert.match(contract, /Every live actor incarnation MUST maintain a bounded/);
+  assert.match(contract, /Parent `get_done\(\)` MUST join each registered transitive/);
+  assert.match(contract, /cancelling an already-terminal parent must still revoke/);
+  assert.match(contract, /Hosts must not close the actor's Task census/);
 });
