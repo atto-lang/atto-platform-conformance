@@ -217,3 +217,25 @@ recent source-free job execution (beamscale/bmscl-compiler run 43092108031,
 8 steps), but that is neither reviewed authorization for Java #2884 nor
 permission to copy its private source. Source transfer remains DENIED;
 contract status remains `NOT_CERTIFIED`.
+
+## Shared-worker cross-listener shutdown ownership (2026-11-12)
+
+The Java runtime draft `oreslang-source.java#2884` has an additional fail-closed
+ownership guard. A pooled actor may be reused by listeners A and B. A's
+shutdown must not call `ActorRuntime.gracefulStop()` while B retains a
+historical association with that exact generation: doing so could seal B's
+unrelated guest mailbox continuations. Once all pre-seal HTTP handoffs settle,
+Java now detects a second listener association and fails A's graceful-drain
+Future with an explicit error **without canceling B's actor**. B can continue
+serving subsequent requests on a replacement worker incarnation.
+
+This is a **temporary safety restriction**, not an implementation of fully
+independent graceful drain for two listeners that already share one worker.
+A successful version requires (a) per-listener actor pool ownership or
+(b) a proven per-listener message/completion lease that distinguishes A's
+finished work from B's active guest carrier. Treat a rejected A drain as a
+failure, never as physical shutdown success. Java's new
+`firstListenerCannotGracefullyStopActorStillSharedBySecondListener`
+loopback regression asserts B remains usable after A is rejected; the test
+has **not executed on JDK 25/GraalVM**, because GitHub Actions is failing before
+runner assignment. Five-backend HTTP lifecycle parity remains NOT_CERTIFIED.
