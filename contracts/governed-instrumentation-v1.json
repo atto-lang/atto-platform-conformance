@@ -1,0 +1,58 @@
+{
+  "schema": "attolang.governed-instrumentation.v1",
+  "version": 1,
+  "status": "SOURCE_FREE_REFERENCE_NOT_BACKEND_EXECUTION",
+  "tenantIsolationContract": "oreslang.tenant-isolation.v2",
+  "principle": "AOT for execution; a governed runtime JIT for selective specialization and deep tracing; one telemetry runtime for context propagation and export",
+  "modes": {
+    "off": "pure AOT fast path; no span recording or export work",
+    "probes": "precompiled probe sites activated at runtime, no code generation",
+    "deep": "selected functions recompiled with detailed probes and switched in through versioned dispatch"
+  },
+  "authority": {
+    "requester": "authorized operators only; guest code can never request instrumentation, executable memory or compilation",
+    "scope": "one request names one tenant; an operator must hold that tenant; functions of another tenant are refused",
+    "untrustedTenants": "the instrumented variant is produced by the trusted code producer from the tenant's validated artifact and re-validated (instrumented Wasm validated before lowering, or Truffle instrumentation inside the tenant's Graal isolate); native code is never patched in place"
+  },
+  "execution": {
+    "aotAuthoritative": "a failed, mismatched or unvalidated compile leaves the running version untouched",
+    "dispatch": "new calls switch to the new version at a safe point; the previous version stays live until its in-flight calls end; the AOT version is never discarded",
+    "compileService": "compilation runs on a separate, per-tenant quota-controlled service and never on an actor turn",
+    "realtime": "no deep recompilation or code switch inside real-time sections; prepare variants outside them",
+    "off": "turning instrumentation off returns dispatch to the AOT version; JIT versions are reclaimed once drained"
+  },
+  "telemetry": {
+    "buffers": "bounded per tenant, preallocated where possible; full buffers drop and count, never block or grow",
+    "export": "OTLP (HTTP/protobuf or gRPC) export is asynchronous and off the execution path",
+    "attributes": "allowlisted keys only; payloads, bodies, secrets, credentials and arbitrary actor state are never captured; per-key cardinality is capped",
+    "context": "trace context rides immutably in the actor message envelope and in suspended continuations, never in OS thread-locals; it survives suspension, migration and carrier changes",
+    "propagation": "W3C traceparent/tracestate at external boundaries; incoming context is correlation only, validated, and never grants tenant identity or authority",
+    "links": "fan-out and batch consumption use span links rather than invented parent-child edges"
+  },
+  "backendProfiles": {
+    "java": {"probes": "precompiled probe nodes", "deep": "Truffle instrumentation inside the tenant's Graal isolate", "status": "NOT_EXECUTED"},
+    "llvm": {"probes": "precompiled probe sites", "deep": "trusted: LLVM ORC on retained instrumentation IR; untrusted: instrumented Wasm re-validated and re-lowered into the tenant cage", "status": "NOT_EXECUTED"},
+    "net": {"probes": "precompiled probe variants in the NativeAOT image (no CIL JIT in NativeAOT)", "deep": "untrusted tenants are Wasm on the native core, so the LLVM re-lowering path covers them", "status": "NOT_EXECUTED"},
+    "wasm": {"probes": "probe imports toggled per tenant", "deep": "instrumented module variant, re-validated, swapped through the actor version protocol", "status": "NOT_EXECUTED"},
+    "forge": {"probes": "none yet", "deep": "none until validated code generation exists", "status": "NO_DEEP_PATH"},
+    "js": {"probes": "probe calls toggled per tenant", "deep": "instrumented Wasm or JS variant instantiated by the host; V8 internals are not controlled", "status": "NOT_EXECUTED"}
+  },
+  "artifacts": "a compact, signed, validated instrumentation IR is an optional build artifact, separate from minimal production AOT builds",
+  "requiredScenarios": [
+    "guest-cannot-request-instrumentation",
+    "operator-cannot-instrument-another-tenant",
+    "untrusted-instrumented-code-must-be-validated-by-trusted-producer",
+    "failed-compile-leaves-running-version",
+    "in-flight-calls-finish-on-old-version",
+    "aot-version-never-retired",
+    "off-returns-to-aot-and-reclaims-jit-versions",
+    "realtime-functions-refuse-deep-recompile",
+    "per-tenant-compile-quota",
+    "bounded-buffer-drops-and-counts",
+    "payloads-and-secrets-never-captured",
+    "attribute-cardinality-capped",
+    "invalid-traceparent-starts-fresh-trace",
+    "trace-context-survives-suspension-and-migration",
+    "tracing-disabled-overhead-measured-not-assumed"
+  ]
+}

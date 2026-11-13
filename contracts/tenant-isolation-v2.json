@@ -13,8 +13,18 @@
   },
   "design": {
     "unit": "a tenant incarnation owns one VM-isolate: its own heap, actors, generation and failure domain; multiple actors may live within it",
-    "identity": ["tenantId", "generation", "opaqueHostAuthority"],
-    "phases": ["created", "running", "quiescing", "stopped", "destroyed"],
+    "identity": [
+      "tenantId",
+      "generation",
+      "opaqueHostAuthority"
+    ],
+    "phases": [
+      "created",
+      "running",
+      "quiescing",
+      "stopped",
+      "destroyed"
+    ],
     "memory": "each isolate has a private heap with an enforced per-tenant cap; tenant-owned mutable state never crosses into another tenant; cross-tenant delivery copies or re-encodes values",
     "actor_execution": "no actor reentrancy, including across suspension or independent lock queues",
     "resource_accounting": "limit tenants per process, actors, heap and inflight work per tenant; account host overhead separately; the scalar reference turn is non-reentrant even if tenant inflight capacity exceeds one",
@@ -27,11 +37,19 @@
     "aot": "signed/approved native artifacts required before any unsafe deserialization; caller-supplied SHA is only identity check",
     "shutdown": "fence queued/running work, drain references and resource loans, then reclaim; a killed isolate's guest turns are abandoned but host-owned loans still drain before stop",
     "root_authority": "Opaque authority belongs to one root VM; matching tenant ID and numeric generation from another root never grants access",
-    "tenant_id_validation": "ASCII [A-Za-z0-9_.-], 1..128 bytes, excluding reserved path components '.' and '..'; strings are identifiers, not filesystem paths"
+    "tenant_id_validation": "ASCII [A-Za-z0-9_.-], 1..128 bytes, excluding reserved path components '.' and '..'; strings are identifiers, not filesystem paths",
+    "cpu_accounting": "turn deadlines and scheduling fairness count each tenant's own CPU time, not wall-clock time or turn counts, so a neighbor crowding the CPU cannot get an innocent tenant killed or starved",
+    "mail_quotas": "queued mail is bounded per tenant and per host in bytes, not only per mailbox; delivery and actor retirement refund it; a dead isolate returns all of it",
+    "host_calls": "every guest-controlled argument to a host call is validated before use, so no guest input can fault the host process; no guest-reachable path takes a process-wide lock",
+    "queued_work": "callers queued behind a running turn are rejected promptly once the tenant stops admitting work; they never wait for a possibly spinning turn to return",
+    "instrumentation": "runtime instrumentation (probes and JIT-recompiled tracing variants) follows attolang.governed-instrumentation.v1: operator-only, tenant-scoped, produced by the trusted code producer"
   },
   "securityBoundary": {
     "enforcedBy": "the per-tenant isolate plus the trusted code producer (Wasm validator and lowerer, or the Graal compiler), exactly as Graal's compiler is the boundary for its isolates",
-    "admissibleUntrustedGuestCode": ["validated-wasm", "truffle-isolate"],
+    "admissibleUntrustedGuestCode": [
+      "validated-wasm",
+      "truffle-isolate"
+    ],
     "refusedUntrustedGuestCode": {
       "native": "tenant-supplied native code can address anything in the process",
       "cil": "CoreCLR has no in-process isolate: one process-wide GC heap, no runtime IL verification, no AppDomains, and an AssemblyLoadContext is not a security boundary"
@@ -50,7 +68,9 @@
       "memoryCap": "isolate heap limit",
       "caveat": "polyglot isolates and SandboxPolicy.UNTRUSTED require Oracle GraalVM, not Community Edition",
       "status": "NOT_EXECUTED",
-      "drafts": ["oreslang-source.java#2346 (trusted per-tenant Contexts only)"]
+      "drafts": [
+        "oreslang-source.java#2346 (trusted per-tenant Contexts only)"
+      ]
     },
     "llvm": {
       "isolate": "TenantVm cage: private 4 GiB window plus guard per tenant, addressed as cage + u32 offset",
@@ -59,7 +79,10 @@
       "memoryCap": "cage commit limit",
       "caveat": "the runtime does not enforce the addressing rule; validated Wasm lowered by wasm2c is the enforced path",
       "status": "NOT_EXECUTED",
-      "drafts": ["oreslang-source.llvm#1343", "oreslang-source.llvm#1158"]
+      "drafts": [
+        "oreslang-source.llvm#1343",
+        "oreslang-source.llvm#1158"
+      ]
     },
     "wasm": {
       "isolate": "one Wasmtime Store + Instance per tenant",
@@ -68,7 +91,9 @@
       "memoryCap": "Store resource limiter",
       "caveat": "epochs are per Engine, so targeted kill needs a per-Store flag; one Store runs on one thread at a time",
       "status": "NOT_EXECUTED",
-      "drafts": ["oreslang-source.wasm#173"]
+      "drafts": [
+        "oreslang-source.wasm#173"
+      ]
     },
     "net": {
       "isolate": "TenantVm cage on the shared native core, called from .NET through TenantVmCApi",
@@ -77,7 +102,10 @@
       "memoryCap": "cage commit limit; tenants add no CLR GC load",
       "caveat": "direct CIL stays a first-class backend for trusted tenants only",
       "status": "NOT_EXECUTED",
-      "drafts": ["oreslang-source.net#243 (host admission)", "oreslang-source.llvm#1343 tests/tenant-vm/spikes/dotnet"]
+      "drafts": [
+        "oreslang-source.net#243 (host admission)",
+        "oreslang-source.llvm#1343 tests/tenant-vm/spikes/dotnet"
+      ]
     },
     "forge": {
       "isolate": "none yet",
@@ -124,6 +152,11 @@
     "resource-loan-drain-before-stop",
     "foreign-vm-root-handle-rejected-even-if-generation-collides",
     "reserved-dot-tenant-id-denial",
-    "neighbor-survives-tenant-trap-and-reincarnation"
+    "neighbor-survives-tenant-trap-and-reincarnation",
+    "deadline-and-fairness-count-tenant-cpu",
+    "tenant-and-host-mail-byte-quotas",
+    "guest-controlled-host-call-arguments-cannot-fault-host",
+    "queued-callers-rejected-promptly-on-quiescence",
+    "instrumentation-is-governed-and-tenant-scoped"
   ]
 }
