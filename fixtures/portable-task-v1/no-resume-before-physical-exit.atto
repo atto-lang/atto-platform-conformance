@@ -1,0 +1,29 @@
+// Candidate guest test: scheduler-owned probe pauses the *physical callback*
+// after the continuation is staged, but before the actor lease has exited.
+// The Future producer may only publish readiness, not run guest code.
+define actor Worker as
+  suspends mtd receive(ActorMail<int> mail): void {
+    let Task<int> child = task {
+      await probe_hold_suspending_turn("callback_live");
+      probe_trace("resumed_after_return");
+      return 42;
+    };
+    let int answer = await child;
+    probe_trace("actor_done");
+    return;
+  }
+end
+pub suspends fnc main(): int {
+  let ActorRef<Worker> actor = spawn Worker();
+  await actor.get_ready();
+  actor.send(1);
+  probe_wait_for("callback_live");
+  probe_publish_suspension_ready(actor);
+  probe_assert_no_actor_turn_overlap(actor);
+  probe_release_suspending_turn(actor);
+  probe_wait_for("actor_done");
+  actor.stop();
+  await actor.get_done();
+  probe_trace("no_early_resume=true");
+  return 42;
+}
