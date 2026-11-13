@@ -7,6 +7,7 @@
     "java",
     "llvm",
     "wasm",
+    "rs",
     "forge",
     "net"
   ],
@@ -32,6 +33,7 @@
         "java": "not_executed",
         "llvm": "not_executed",
         "wasm": "not_executed",
+        "rs": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
       }
@@ -52,6 +54,7 @@
         "java": "not_executed",
         "llvm": "not_executed",
         "wasm": "not_executed",
+        "rs": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
       }
@@ -69,6 +72,7 @@
         "java": "not_executed",
         "llvm": "not_executed",
         "wasm": "not_executed",
+        "rs": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
       }
@@ -86,6 +90,7 @@
         "java": "not_executed",
         "llvm": "not_executed",
         "wasm": "not_executed",
+        "rs": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
       }
@@ -105,6 +110,7 @@
         "java": "not_executed",
         "llvm": "not_executed",
         "wasm": "not_executed",
+        "rs": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
       }
@@ -124,6 +130,7 @@
         "java": "not_executed",
         "llvm": "not_executed",
         "wasm": "not_executed",
+        "rs": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
       }
@@ -145,6 +152,7 @@
         "java": "not_executed",
         "llvm": "not_executed",
         "wasm": "not_executed",
+        "rs": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
       }
@@ -167,6 +175,7 @@
         "java": "not_executed",
         "llvm": "not_executed",
         "wasm": "not_executed",
+        "rs": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
       }
@@ -187,6 +196,7 @@
         "java": "not_executed",
         "llvm": "not_executed",
         "wasm": "not_executed",
+        "rs": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
       }
@@ -207,6 +217,7 @@
         "java": "not_executed",
         "llvm": "not_executed",
         "wasm": "not_executed",
+        "rs": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
       }
@@ -224,6 +235,7 @@
         "java": "not_executed",
         "llvm": "not_executed",
         "wasm": "not_executed",
+        "rs": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
       },
@@ -242,6 +254,7 @@
         "java": "not_executed",
         "llvm": "not_executed",
         "wasm": "not_executed",
+        "rs": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
       },
@@ -260,6 +273,7 @@
         "java": "not_executed",
         "llvm": "not_executed",
         "wasm": "not_executed",
+        "rs": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
       },
@@ -278,6 +292,7 @@
         "java": "not_executed",
         "llvm": "not_executed",
         "wasm": "not_executed",
+        "rs": "not_executed",
         "forge": "not_executed",
         "net": "not_executed"
       },
