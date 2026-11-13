@@ -1,7 +1,7 @@
 define actor Worker as
   receive(ActorMail<int> mail): void { return; }
 end
-pub async fnc main(): int {
+pub suspends fnc main(): int {
   let ActorRef<Worker> actor = spawn Worker();
   let ActorRef<Worker> ready = await actor;
   probe_assert_same_actor_ref(actor, ready);
