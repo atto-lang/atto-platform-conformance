@@ -175,5 +175,47 @@
     "tokenIsolation": "no cross-org checkout token or secrets",
     "scope": "parser, ImportRules and TaskCaptureNames only; no guest telemetry or runtime span lowering",
     "guestExecutionStatus": "NOT_EXECUTED"
+  },
+  "fundedTaskContinuationHostValidation": {
+    "status": "PASS_EXECUTED_IMMUTABLE_TRACE_CONTEXT_HOST_ONLY",
+    "sourceRepo": "ores-truffle-oreslang/oreslang-source.java",
+    "sourcePR": 2997,
+    "sourceHead": "e740983103dd36fe898e44c1a274a34760262acb",
+    "sourceTree": "85a7409d69708b3e2afea66388a6c412cdbc2b45",
+    "mirrorRepo": "atto-co/atto-runtime-host.rs",
+    "mirrorHead": "9cba5a2d7a467bb64969fee7e54426397b4da173",
+    "workflowRun": "https://github.com/atto-co/atto-runtime-host.rs/actions/runs/43334151292",
+    "workflowJobId": 131585957466,
+    "executedSteps": 11,
+    "conclusion": "success",
+    "sourceBlobsVerified": 5,
+    "sourceTaskEvaluatorBlob": "193c022105e849467b064975eb22828018085b92",
+    "sourceTaskExecution": "STATIC_WIRING_INSPECTED_NOT_ACTUALLY_COMPILED",
+    "hostSmoke": {
+      "repetitions": 30,
+      "assertionsPerRun": 24,
+      "totalAssertions": 720,
+      "compiler": "GraalVM 25 javac --release 21 -Xlint:all -Werror"
+    },
+    "negativeMutation": {
+      "status": "EXPECTED_ASSERTION_FAILURE_DETECTED",
+      "fault": "CURRENT.remove() replaced by stale carrier restore",
+      "message": "failed turn still cleans carrier"
+    },
+    "zeroStepRunsExcluded": [
+      43333375875,
+      43333637868
+    ],
+    "sourceVisibilityProtected": true,
+    "crossOrgCheckoutTokenUsed": false,
+    "excluded": [
+      "real_source_task_guest",
+      "actor_envelope",
+      "compiler_owned_span_lifetime",
+      "full_tree_maven",
+      "native_image",
+      "otlp",
+      "jit_reinstrumentation"
+    ]
   }
 }
