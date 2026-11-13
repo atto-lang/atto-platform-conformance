@@ -1,5 +1,5 @@
 define class Box as pub let int value = 1; end
-pub async fnc main(): int {
+pub suspends fnc main(): int {
   let Box owner = new Box();
   val loan = rt mut borrow owner;
   let Task<int> work = task { return loan.value; };
