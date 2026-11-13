@@ -217,5 +217,45 @@
       "otlp",
       "jit_reinstrumentation"
     ]
+  },
+  "fundedScopedControlFlowValidation": {
+    "status": "PASS_EXECUTED_PRODUCTION_PARSER_RETURN_CHECKER_HOST_ONLY",
+    "sourcePR": 2997,
+    "sourceRepo": "ores-truffle-oreslang/oreslang-source.java",
+    "sourceHead": "666bc3c3e4348b556a2bc7d542d4b4c6874b9a40",
+    "sourceTree": "3ab2354cc9511f608467c9c2a03c9535c9a605c3",
+    "privateMirror": "atto-co/atto-runtime-host.rs",
+    "mirrorHead": "b3d4da128039b4f56cbe8e54e720e5c49edb9c4f",
+    "ciRun": "https://github.com/atto-co/atto-runtime-host.rs/actions/runs/43337330719",
+    "jobId": 131596713111,
+    "executedSteps": 11,
+    "verifiedSourceBlobs": 12,
+    "host": {
+      "compiler": "GraalVM JDK25 javac --release 21 -Xlint:all -Werror",
+      "checksPerRun": 8,
+      "runs": 20,
+      "totalChecks": 160,
+      "compiled": "Parser and ReturnCleanupChecker"
+    },
+    "staticSourceOnly": [
+      "OresEvalRootNode using suspension detection",
+      "OwnershipChecker scoped capture and fail-closed guards"
+    ],
+    "negativeMutation": {
+      "result": "EXPECTED_FAILURE_CAUGHT",
+      "detail": "remove telemetry scoped body traversal in ReturnCleanupChecker",
+      "assertion": "return from finally incorrectly accepted"
+    },
+    "excluded": [
+      "full_tree_maven",
+      "production_evaluator_compilation",
+      "ownership_checker_compilation",
+      "real_atto_guest_await",
+      "compiler_owned_span_lifecycle",
+      "graal_native",
+      "otlp",
+      "jit"
+    ],
+    "guestExecution": "NOT_EXECUTED"
   }
 }
