@@ -1,4 +1,4 @@
-pub async fnc main(): int {
+pub suspends fnc main(): int {
   probe_pause_worker_start(); // bounded scheduler admission barrier, before submission
   let Task<int> task_handle = task {
     probe_trace("should_not_start");
