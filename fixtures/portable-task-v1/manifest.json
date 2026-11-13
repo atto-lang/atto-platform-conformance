@@ -297,6 +297,52 @@
         "net": "not_executed"
       },
       "expectedDiagnosticCode": "ATTO_TASK_E_CRITICAL_SUSPEND"
+    },
+    {
+      "id": "no-resume-before-physical-exit",
+      "file": "no-resume-before-physical-exit.atto",
+      "expect": "positive",
+      "category": "two-phase-suspension",
+      "proposedSyntax": true,
+      "expectedGuestExit": 42,
+      "mustObserve": [
+        "resumed_after_return",
+        "actor_done",
+        "no_early_resume=true"
+      ],
+      "mustNotObserve": [
+        "forbidden_early_resume"
+      ],
+      "baseline": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
+    },
+    {
+      "id": "stop-while-suspending",
+      "file": "stop-while-suspending.atto",
+      "expect": "positive",
+      "category": "stop-race",
+      "proposedSyntax": true,
+      "expectedGuestExit": 42,
+      "mustObserve": [
+        "stop_waited_for_physical_exit=true"
+      ],
+      "mustNotObserve": [
+        "forbidden_post_stop"
+      ],
+      "baseline": {
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "rs": "not_executed",
+        "forge": "not_executed",
+        "net": "not_executed"
+      }
     }
   ]
 }
