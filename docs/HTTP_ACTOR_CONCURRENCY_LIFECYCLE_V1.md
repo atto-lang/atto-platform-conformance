@@ -127,9 +127,9 @@ now adds `HttpPooledWorkerAdmissionFence` for each reusable HTTP actor generatio
 `Handler.worker()` reserves a handoff through the worker's synchronized
 admission gate, and every exit path releases that reservation. Once a listener
 reaches its physical shutdown barrier, it atomically seals every worker
-incarnation historically associated with the listener. A different live
-listener sharing the same handler must use a replacement actor, rather than
-reusing that sealed incarnation (including while it is stopping).
+incarnation historically associated with the listener. The Handler's
+listener-identity slot registry ensures a different live listener already
+has its own actor generation, never the sealed incarnation.
 
 After all pre-seal HTTP handoffs settle, shutdown requests
 `ActorRuntime.gracefulStop` on each sealed generation. This second, actor-level
@@ -143,7 +143,7 @@ mistaken for a physically departed carrier.
 
 New test coverage includes an independent JDK test for 64 concurrent worker
 reservation races, underflow and sealed-generation replacement; a two-listener
-Atto HTTP guest loopback regression requiring a replacement worker; and a
+Atto HTTP guest loopback regression requiring distinct listener workers; and a
 held-DONE-subscriber regression preventing early physical quiescence.
 
 The exact production helper file's Git blob was compiled with **OpenJDK 21** and
@@ -166,9 +166,9 @@ closed if a reliable exit receipt cannot be established.
 
 The guest HTTP regression now includes an unpooled post-response actor stop
 and listener drain test. The shared-pool guest regression repeats four
-two-listener runs; after listener A seals its worker generation, listener B
-sends 32 concurrent requests, which must all return HTTP 200 through the
-replacement generation. A separate JUnit regression races 128 post-seal
+two-listener runs; after listener A seals its own worker, listener B
+sends 32 concurrent requests, which must all return HTTP 200 through B's
+separately owned generation. A source-free adversarial JUnit gate races 128 post-seal
 reservations across listeners B/C while 48 pre-seal handoff leases remain
 held by A. All of these new integration tests remain **NOT_EXECUTED**
 while full Java/GraalVM CI is unavailable.
