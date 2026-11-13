@@ -1,0 +1,30 @@
+{
+  "schema": "atto.fixed-buffer-pool.guest-receipt.v1",
+  "version": 1,
+  "status": "NOT_EXECUTED_ALL_BACKENDS",
+  "scope": "structural receipt validation; not authentication of GitHub or guest instrumentation",
+  "dependent_contract": "atto-lang/atto-common-source/contracts/fixed-buffer-pool-v1.json",
+  "minimum_transfers": 100000,
+  "allowed_backends": [
+    "java",
+    "llvm",
+    "net"
+  ],
+  "required_negative_cases": [
+    "pool_exhaustion_no_growth",
+    "sender_use_after_move_denied",
+    "failed_send_restores_sender",
+    "live_borrow_blocks_recycle",
+    "stale_generation_denied",
+    "double_release_denied",
+    "retirement_rejects_new_lease",
+    "cross_actor_mutable_access_denied",
+    "zeroization_on_reuse",
+    "cancelled_io_pin_retired"
+  ],
+  "backend_statuses": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED"
+  }
+}
