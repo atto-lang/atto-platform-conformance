@@ -137,3 +137,35 @@ test('fixture-local receipt step count is internally consistent',()=>{
  assert.equal(r.completedSteps,r.stepNames.length);
  assert.equal(classifyReceipt(positive,'java',r).status,'passed');
 });
+
+test('portable await cases explicitly declare suspends rather than async main',async()=>{
+ for(const c of cases){
+  const source=await readFile(new URL('../fixtures/portable-task-v1/'+c.file,import.meta.url),'utf8');
+  assert.doesNotMatch(source,/pub async fnc main\s*\(/,c.id);
+  if(source.includes('await ')&&source.includes('fnc main('))
+   assert.match(source,/pub suspends fnc main\s*\(/,c.id);
+ }
+ const critical=await readFile(new URL('../fixtures/portable-task-v1/reject-await-in-critical.atto',import.meta.url),'utf8');
+ assert.match(critical,/suspends mtd receive\s*\(/);
+});
+
+test('two-phase actor suspension race candidates are present but not guest-certified',()=>{
+ const expected=[
+  ['no-resume-before-physical-exit',['resumed_after_return','actor_done','no_early_resume=true']],
+  ['stop-while-suspending',['stop_waited_for_physical_exit=true']]
+ ];
+ const matrix=summarize(cases,{});
+ for(const [id,markers] of expected){
+  const c=cases.find(x=>x.id===id);
+  assert.ok(c,id);
+  assert.equal(c.expect,'positive');
+  assert.deepEqual(c.mustObserve,markers);
+  for(const b of Object.keys(matrix)){
+   assert.equal(c.baseline[b],'not_executed');
+   assert.equal(classifyReceipt(c,b,null).status,'not_executed');
+  }
+ }
+ assert.equal(Object.keys(matrix).length,6);
+ assert.equal(Object.values(matrix).reduce((sum,b)=>sum+b.not_executed,0),96);
+ assert.ok(Object.values(matrix).every(b=>b.releaseQualified===false));
+});
