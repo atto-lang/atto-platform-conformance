@@ -1,6 +1,6 @@
 {
   "schema": "atto.conformance.http-policy.v1",
-  "status": "FIXTURE_STAGED_NOT_EXECUTED",
+  "status": "RS_POLICY_GUEST_EXECUTED_HTTP3_WIRE_NOT_IMPLEMENTED",
   "canonical_atto_source": {
     "repository": "atto-lang/atto-common-source",
     "path": "stdlib/net/http_policy.atto",
