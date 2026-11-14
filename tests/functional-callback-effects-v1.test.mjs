@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {readFileSync} from "node:fs";
+import {readFileSync, lstatSync} from "node:fs";
+import {createHash} from "node:crypto";
 import {fileURLToPath} from "node:url";
 import {dirname, resolve} from "node:path";
 
@@ -137,4 +138,41 @@ test("the oracle rejects ambiguous edges and duplicate callable identities", () 
   delete fixture.nodes[0].calls[0].direct;
   fixture.nodes.push(structuredClone(fixture.nodes[0]));
   assert.throws(() => inferCase(fixture), /duplicate callable/);
+});
+
+function gitBlobSha(bytes) {
+  return createHash("sha1")
+    .update(Buffer.from("blob " + bytes.length + "\\0"))
+    .update(bytes).digest("hex");
+}
+
+test("identical checked-source .atto fixtures remain pinned to Git blob bytes", () => {
+  const expected = [
+    ["inline-option-map-pure", "83f65b12edb0a31e12e5008dbe08df4022a661f9"],
+    ["typed-helper-unresolved-purity", "3616c2f0ef96aa6421438016c7f6dbf637ec7cae"],
+    ["wrong-callback-result", "d7cab9e5b303808276e6014b7f527aa90ae9e884"]
+  ];
+  assert.deepEqual(contract.guest_fixtures.map(x => [x.id, x.git_blob]), expected);
+  for (const fixture of contract.guest_fixtures) {
+    assert.match(fixture.path, /^fixtures\\/functional-callback-effects-v1\\/[a-z-]+\\.atto$/);
+    const sourcePath = resolve(root, fixture.path);
+    assert.ok(!lstatSync(sourcePath).isSymbolicLink(),
+      "symlink cannot substitute reviewed guest source");
+    const bytes = readFileSync(sourcePath);
+    assert.equal(gitBlobSha(bytes), fixture.git_blob,
+      "source must match the immutable compiler guest fixture blob");
+    assert.equal(fixture.native_execution, "NOT_EXECUTED");
+  }
+});
+
+test("guest fixture provenance detects one-byte changes and status forgery", () => {
+  const fixture = contract.guest_fixtures[0];
+  const bytes = readFileSync(resolve(root, fixture.path));
+  const changed = Buffer.from(bytes);
+  changed[changed.length - 1] ^= 1;
+  assert.notEqual(gitBlobSha(changed), fixture.git_blob);
+  const forged = structuredClone(contract);
+  forged.guest_fixtures[0].native_execution = "PASS";
+  assert.notDeepEqual(forged.guest_fixtures.map(x => x.native_execution),
+    contract.guest_fixtures.map(x => x.native_execution));
 });
