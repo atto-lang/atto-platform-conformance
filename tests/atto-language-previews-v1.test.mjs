@@ -54,9 +54,20 @@ test('forgeable results cannot promote source-only evidence to compiler parity',
     {...copy(manifest),backend_status:{...manifest.backend_status,java:'VERIFIED'}},
     {...copy(manifest),fixtures:manifest.fixtures.slice(1)},
     {...copy(manifest),fixtures:manifest.fixtures.map((f,i)=>i?f:{...f,git_blob:'0'.repeat(40)})},
-    {...copy(manifest),fixtures:manifest.fixtures.map((f,i)=>i?f:{...f,path:'../outside.atto'})}
+    {...copy(manifest),fixtures:manifest.fixtures.map((f,i)=>i?f:{...f,path:'../outside.atto'})},
+    {...copy(manifest),fixtures:manifest.fixtures.map((f,i)=>i===3?{...f,id:'routine-mutual-reject'}:f)},
+    {...copy(manifest),fixtures:manifest.fixtures.map((f,i)=>i===4?{...f,path:manifest.fixtures[3].path,git_blob:manifest.fixtures[3].git_blob}:f)},
+    {...copy(manifest),fixtures:manifest.fixtures.map((f,i)=>i===0?{...f,expected_result:43}:f)}
   ];
   for(const forged of broken)assert.throws(()=>validateAttoPreviewManifest(forged,root));
+});
+
+test('canonical manifest identity cannot be self-repinned', () => {
+  const forged = copy(manifest);
+  const target = forged.fixtures.find(x=>x.id==='routine-direct');
+  const other = forged.fixtures.find(x=>x.id==='fnc-recursive');
+  Object.assign(target,{path:other.path,git_blob:other.git_blob});
+  assert.throws(()=>validateAttoPreviewManifest(forged,root),/Fixture identity/);
 });
 
 test('fixture tampering and symlinks fail the immutable Git blob gate',()=>{
