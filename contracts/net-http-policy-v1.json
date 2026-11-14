@@ -1,0 +1,56 @@
+{
+  "schema": "atto.conformance.http-policy.v1",
+  "status": "FIXTURE_STAGED_NOT_EXECUTED",
+  "canonical_atto_source": {
+    "repository": "atto-lang/atto-common-source",
+    "path": "stdlib/net/http_policy.atto",
+    "git_blob_sha": "68831fd1022f09ac5a4fd74b29fc34a6dcf9e13a"
+  },
+  "guest_fixture": {
+    "path": "fixtures/net/http_policy.atto",
+    "git_blob_sha": "8839b51bd1e7d2928e55943fccfbeabc6db0af9e",
+    "expected_exit_code": 42
+  },
+  "backend_results": [
+    {
+      "backend": "llvm",
+      "source_identical": true,
+      "guest_compiled": false,
+      "guest_executed": false,
+      "network_protocol_execution": "NOT_EXECUTED"
+    },
+    {
+      "backend": "java",
+      "source_identical": true,
+      "guest_compiled": false,
+      "guest_executed": false,
+      "network_protocol_execution": "NOT_EXECUTED"
+    },
+    {
+      "backend": "net",
+      "source_identical": true,
+      "guest_compiled": false,
+      "guest_executed": false,
+      "network_protocol_execution": "NOT_EXECUTED"
+    },
+    {
+      "backend": "rs",
+      "source_identical": true,
+      "guest_compiled": false,
+      "guest_executed": false,
+      "network_protocol_execution": "NOT_EXECUTED"
+    },
+    {
+      "backend": "wasm",
+      "source_identical": true,
+      "guest_compiled": false,
+      "guest_executed": false,
+      "network_protocol_execution": "NOT_EXECUTED"
+    }
+  ],
+  "limitations": [
+    "This fixture only tests pure Atto HTTP/3 eligibility, version preference, QUIC datagram gate, and 0-RTT policy.",
+    "It cannot establish QUIC, TLS, HTTP/3 wire, interop or end-to-end support.",
+    "A backend must supply an exact-head compiler run log, guest artifact digest and exit code before it can be marked passed."
+  ]
+}
