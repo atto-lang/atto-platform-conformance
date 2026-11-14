@@ -22,7 +22,7 @@ const accepted = claim => {
 };
 const denied = claim => {
   const r = admit(claim);
-  assert.equal(r.valid, false, JSON.stringify(claim));
+  assert.equal(r.valid, false, 'malformed claim must be denied');
   assert.equal(r.certified, false);
   assert.equal(r.releaseReady, false);
 };
