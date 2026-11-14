@@ -49,32 +49,37 @@ compiler-linked target artifacts run with nonzero CI steps, followed by
 compiler-generated per-turn frames, proper failure routing, and independent
 backend review. No source-free model result may promote these statuses.
 
-## Typed supervisor CONTROL host regression — NOT source-guest proof
+## Native actor quota → registered supervisor CONTROL → backpressure retry (HOST evidence only)
 
-Native LLVM draft [#1814](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1814)
-is stacked on source-to-frame draft #1807. The new
-`tests/native_actor_frame_quota_supervisor_test.c` links the real native
-scheduler and actor-owned logical-frame store, and is registered in both
-host-only and full CMake/CTest profiles.
+[LLVM PR #1814](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1814)
+is stacked on LLVM #1807/#1801. Two **real native integration tests** link
+NativeActorLogicalFramesV1 and NativeActorScheduler; the stronger test also
+uses NativeOresVM's **registered** supervisor hierarchy, a physical STOP/DONE
+barrier, an explicit host finalization receipt and priority typed CONTROL.
 
-The test **intends to execute**, in one scheduler instance:
-- A exhausts its one-frame quota and cancels its logical turn without aborting.
-- B's separate logical frame writes and reads back 42.
-- The **trusted host** waits for physical A STOP, closes A's frame store, and
-  publishes `OresNativeActorTerminalFailure` to its parent's **typed priority
-  CONTROL** lane; supervisor callback authenticates generation, source code
-  and correlation.
-- The host spawns replacement A at a **different scheduler slot** with actor
-  incarnation 2; prior ActorRef and frame tokens fail closed.
+The test demonstrates A's bounded frame denial, B's separate logical-frame
+result of 42, rejected premature/forged/replayed terminal notices, host-driven
+reincarnation with stale token rejection, and a **saturated** supervisor CONTROL
+slot that rejects a third terminal notice until the first two notices have
+made capacity; the caller then retries successfully without dropping notices.
 
-**Evidence discipline:** GCC and Clang locally syntax-checked the new C11
-test under `-Werror` against minimal signature-matched scheduler declarations.
-The real scheduler executable, LLVM compiler, and compiled `.atto` AOT guest
-were **NOT EXECUTED** locally. This does not establish a language-level
-supervised restart, exactly-once delivery across CONTROL saturation, host
-registration through `NativeOresVM.spawn_supervised`, or native segfault
-containment. Do not promote any of the six contract cases from
-`NOT_EXECUTED` until exact-head compiler and guest evidence is available.
+**Executed alternate org Actions evidence (GHA available, no cross-org token):**
+[successful run #43649743384](https://github.com/athlet-o/athleto-docs/actions/runs/43649743384),
+source LLVM PR exact head **f411187c89d7ff0f1b90e73c79db45669e793831**,
+private carrier commit **cd8117c435fb4877c50844f94de2916413d67438**.
+The 17-file source-dependency mirror included byte-identical original
+CMakeLists.txt and was verified by Git blob SHA both during connector transfer
+and on runner checkout. GCC C11 and Clang ASan/UBSan compiled and executed four
+native tests three times each (**24/24 PASS**). The original host-only CMake
+CTest configuration was also executed under both compilers (**4/4 PASS each**).
+
+**Classification:** this is compiled **native host** evidence, not a full Git
+tree clone, compiler-produced AttoLang guest, generated supervisor call path,
+native signal/segfault containment, full concurrent actor state implementation
+or five-backend AOT/zero-GC parity. The existing six contract cases remain
+explicitly **NOT_EXECUTED** as independent guest-conformance evidence.
+The source-level failure-to-supervisor bridge and actually resumable
+actor-owned call/continuation stacks remain release blockers.
 
 ## Dependencies and release order
 
