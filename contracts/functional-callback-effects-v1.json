@@ -291,5 +291,30 @@
       ],
       "admitted": false
     }
+  ],
+  "guest_fixtures": [
+    {
+      "id": "inline-option-map-pure",
+      "path": "fixtures/functional-callback-effects-v1/pure-inline.atto",
+      "git_blob": "83f65b12edb0a31e12e5008dbe08df4022a661f9",
+      "admission": "TYPECHECK_ACCEPT",
+      "guest_stdout": "42",
+      "native_execution": "NOT_EXECUTED"
+    },
+    {
+      "id": "typed-helper-unresolved-purity",
+      "path": "fixtures/functional-callback-effects-v1/unresolved-helper.atto",
+      "git_blob": "3616c2f0ef96aa6421438016c7f6dbf637ec7cae",
+      "admission": "TYPECHECK_ACCEPT",
+      "effect_analysis": "UNKNOWN_CALL",
+      "native_execution": "NOT_EXECUTED"
+    },
+    {
+      "id": "wrong-callback-result",
+      "path": "fixtures/functional-callback-effects-v1/reject-wrong-return.atto",
+      "git_blob": "d7cab9e5b303808276e6014b7f527aa90ae9e884",
+      "admission": "SEMANTIC_REJECT_NO_EXECUTABLE",
+      "native_execution": "NOT_EXECUTED"
+    }
   ]
 }
