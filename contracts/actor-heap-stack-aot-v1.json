@@ -1,0 +1,71 @@
+{
+  "schema": "atto.actor-heap-stack-aot.v1",
+  "status": "candidate-unverified-production-guest",
+  "purpose": "Full-AOT actor-private heap/stack and failure isolation parity; host/reference tests are not sufficient",
+  "backends": ["llvm", "rust-wasm", "java-graal-native-image", "dotnet-nativeaot", "forge"],
+  "constraints": {
+    "actor_heap": "private-incarnation-owned-and-bounded",
+    "actor_stack": "bounded-logical-frames-per-concurrent-receiver-turn",
+    "serial_actor_max_active_receives": 1,
+    "normal_actor_may_execute_concurrent_receiver_turns": true,
+    "reference_representation": "checked-region-relative-u32-plus-owner-incarnation-and-loan-metadata",
+    "suspension": "pinned-actor-owned-continuation-frame-required",
+    "state": "sealed-critical-read-and-critical-write",
+    "mailbox": "admission-atomic-move-or-fail-with-sender-retaining-ownership",
+    "guest_execution": "fully-aot-no-interpreter-or-required-jit",
+    "reclamation": "deterministic-drop-and-scrub-after-loan-termination",
+    "guest_tracing_gc": "forbidden-for-native-zero-gc-profile",
+    "host_gc": "measure-and-disclose-java-dotnet-and-browser-engines",
+    "native_untrusted_faults": "sandbox-or-process-containment-required-for-segfault-sibling-survival"
+  },
+  "cases": [
+    {
+      "id": "two-compiled-actor-instances",
+      "source": "fixtures/actor_heap_stack_aot_v1/two_actors.atto",
+      "expect": "compiled-guest-return-0-stdout-lines-1-and-42",
+      "execution": "REQUIRED",
+      "current_backend_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "actor-recursive-call-denied-before-aot",
+      "source": "fixtures/actor_heap_stack_aot_v1/recursive_actor_call.atto",
+      "expect": "compile-failure-no-artifact-E_ACTOR_STACK_RECURSION",
+      "execution": "REQUIRED",
+      "current_backend_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "actor-a-heap-quota-sibling-b-returns-42",
+      "source": null,
+      "expect": "actor-a-quota-notice-supervisor-b-42-process-survives",
+      "execution": "BLOCKED-UNTIL-CANONICAL-SOURCE-QUOTA-AND-CONTROL-SYNTAX",
+      "current_backend_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "actor-a-logical-stack-quota-sibling-b-returns-42",
+      "source": null,
+      "expect": "actor-a-stack-quota-notice-supervisor-b-42-process-survives",
+      "execution": "BLOCKED-UNTIL-GENERATED-PER-TURN-FRAMES",
+      "current_backend_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "actor-restart-fences-heap-and-stack-generation",
+      "source": null,
+      "expect": "old-ref32-and-frame-rejected-new-instance-valid",
+      "execution": "BLOCKED-UNTIL-SUPERVISOR-AND-GUEST-STATE-ABI",
+      "current_backend_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "cross-actor-state-borrow-cancellation",
+      "source": null,
+      "expect": "borrow-fails-before-ir-or-cancels-with-one-drop",
+      "execution": "BLOCKED-UNTIL-TYPED-OWNERSHIP-CFG-AND-CRITICAL-LOWERING",
+      "current_backend_status": "NOT_EXECUTED"
+    }
+  ],
+  "evidence_requirements": [
+    "exact-source-tree-sha", "exact-compiler-binary-sha256", "nonzero-executed-ci-steps",
+    "compiled-aot-artifact-digest", "real-guest-exit-and-stdout",
+    "negative-rejection-with-zero-artifact", "independent-review",
+    "no-host-reference-or-js-evaluator-counted-as-guest"
+  ]
+}
