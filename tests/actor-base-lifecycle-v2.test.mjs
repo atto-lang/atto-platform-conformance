@@ -15,6 +15,7 @@ class Lifecycle {
     this.phase = 'ALLOCATED';
     this.initCalls = 0;
     this.teardownCalls = 0;
+    this.teardownFinished = false;
     this.queue = 0;
     this.active = false;
     this.loans = 0;
@@ -75,15 +76,23 @@ class Lifecycle {
     this.cause = cause;
     if (!this.ready) this.readyFailure = 'ActorTerminated';
     this.phase = 'STOPPING';
-    // A sealed DATA mailbox must reject all later admissions.
-    this.queue = 0;
+    // Always seal new DATA admission. For initialized graceful stop,
+    // preserve previously accepted FIFO mail for bounded drain turns.
+    if (kind !== 'GRACEFUL_STOP' || !this.ready) this.queue = 0;
     if (cause) this.controlNotices.push({
       kind: 'FAILURE_REPORTED', generation: this.generation, cause
     });
     return true;
   }
+  beginDrainTurn() {
+    if (this.phase !== 'STOPPING' || this.stopKind !== 'GRACEFUL_STOP' ||
+        !this.ready || this.active || this.queue === 0) return false;
+    this.active = true;
+    this.queue--;
+    return true;
+  }
   drain() {
-    if (this.phase !== 'STOPPING' || this.active) return false;
+    if (this.phase !== 'STOPPING' || this.active || this.queue > 0) return false;
     this.phase = 'DRAINING';
     return true;
   }
@@ -95,12 +104,14 @@ class Lifecycle {
     return true;
   }
   finishTeardown() {
-    if (this.phase !== 'TEARDOWN') return false;
-    this.phase = 'DRAINING';
+    if (this.phase !== 'TEARDOWN' || this.teardownFinished) return false;
+    this.teardownFinished = true;
     return true;
   }
   retire() {
-    if (this.phase !== 'DRAINING' || this.active || this.loans > 0) return false;
+    if (!['DRAINING', 'TEARDOWN'].includes(this.phase) ||
+        this.active || this.loans > 0) return false;
+    if (this.phase === 'TEARDOWN' && !this.teardownFinished) return false;
     // A successful cooperative stop must complete its unique teardown.
     if (this.ready && this.stopKind === 'GRACEFUL_STOP' &&
         this.teardownCalls !== 1) return false;
@@ -216,6 +227,30 @@ test('active owner turn and borrowed state prevent physical retirement', () => {
   a.releaseLoan();
   assert.equal(a.retire(), true);
   assert.equal(a.teardownCalls, 1);
+});
+
+test('graceful stop drains accepted FIFO before teardown and retirement', () => {
+  const a = new Lifecycle();
+  a.startInit();
+  a.succeedInit();
+  assert.equal(a.send(1), true);
+  assert.equal(a.send(1), true);
+  assert.equal(a.stop('GRACEFUL_STOP'), true);
+  assert.equal(a.send(1), false);
+  assert.equal(a.beginTurn(), false);
+  assert.equal(a.drain(), false);
+  assert.equal(a.beginDrainTurn(), true);
+  assert.equal(a.beginDrainTurn(), false);
+  a.endTurn();
+  assert.equal(a.drain(), false);
+  assert.equal(a.beginDrainTurn(), true);
+  a.endTurn();
+  assert.equal(a.drain(), true);
+  assert.equal(a.retire(), false);
+  assert.equal(a.beginTeardown(), true);
+  assert.equal(a.retire(), false);
+  assert.equal(a.finishTeardown(), true);
+  assert.equal(a.retire(), true);
 });
 
 test('cancel does not invoke cooperative teardown', () => {
