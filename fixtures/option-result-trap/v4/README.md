@@ -22,10 +22,14 @@ a cross-backend equivalent source and cannot establish the LLVM/.NET unwind ABI.
   require result `7`, semantic type rejection, and ordinary checked-cast
   failure as `None`. Source candidate: Java PR #3059.
 - **LLVM native AOT:** lower nested tagged sums with correct ownership and
-  valid LLVM IR, compile and execute actual guest at O0/O2; check error
-  discriminants and no implicit flattening. First deliverable LLVM PR #1774
-  only ensures production compiler rejects unsupported syntax without IR.
-  A rejection is **not** a positive guest parity pass.
+  valid LLVM IR, compile and execute the identical guest at Clang O0/O2;
+  check error discriminants and no implicit flattening. LLVM PR #1774 now
+  contains a **candidate** restricted `trap (40 + 2)` -> `Some(42)` compiler
+  lowering for pure integer expressions, with an actual AOT/Clang O0/O2
+  process-exit-42 CTest, plus explicit rejection of complex operands.
+  This positive test has not yet produced exact-head stepful runner evidence.
+  It does **not** implement `Option<Result<...>>` or ordinary throw-to-None.
+  A successful rejection is **not** a positive nested-Result parity pass.
 - **.NET NativeAOT:** verify independent nested tag/payload SSA and CIL,
   NativeAOT publish and execute the guest on Linux x64 and Windows x64;
   preserve Result.Err data and an outer Option tag. First deliverable
