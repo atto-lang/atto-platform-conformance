@@ -17,7 +17,7 @@ assert.equal(manifest.required_evidence.unknown_or_skipped, 'not_a_pass');
 assert.equal(manifest.fixture.path, 'three-backend-boundary.atto');
 const bytes = await readFile(new URL(manifest.fixture.path, root));
 const gitBlob = createHash('sha1')
-  .update(Buffer.from('blob ' + bytes.length + '\\0'.replace('\\0','\0')))
+  .update(Buffer.from('blob ' + bytes.length + String.fromCharCode(0)))
   .update(bytes).digest('hex');
 assert.equal(gitBlob, manifest.fixture.git_blob_sha1,
   'canonical .atto guest bytes changed without manifest review');
