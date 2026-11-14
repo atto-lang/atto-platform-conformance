@@ -95,3 +95,41 @@ test('invalid enum, schema and boolean authority denied', () => {
     { enforced_memory_limit: null }
   ]) denied({ ...base(), ...patch });
 });
+test('exhaustive backend/fault/scope/mechanism/budget matrix never certifies', () => {
+  const fatal = new Set(['native-segv', 'host-oom', 'os-process-kill', 'vm-corruption']);
+  const scopes = ['actor', 'tenant', 'process'];
+  const mechanisms = ['none', 'same-process-guards', 'bounded-guest-vm', 'dedicated-worker-process'];
+  let cases = 0;
+  for (const backend of BACKENDS)
+    for (const failure_class of FAILURES)
+      for (const claimed_scope of scopes)
+        for (const isolation_mechanism of mechanisms)
+          for (const one_actor_per_worker of [false, true])
+            for (const supervisor_out_of_process of [false, true])
+              for (const enforced_memory_limit of [false, true])
+                for (const execution_status of ['not_executed', 'executed_claimed']) {
+                  const claim = { ...base(), backend, failure_class, claimed_scope,
+                    isolation_mechanism, one_actor_per_worker, supervisor_out_of_process,
+                    enforced_memory_limit, execution_status };
+                  const processScope = claimed_scope === 'process';
+                  const external = isolation_mechanism === 'dedicated-worker-process';
+                  const hostFatal = fatal.has(failure_class);
+                  const valid = (processScope || isolation_mechanism !== 'none') &&
+                    (!hostFatal || processScope || (external && supervisor_out_of_process &&
+                      (claimed_scope !== 'actor' || one_actor_per_worker) &&
+                      (failure_class !== 'host-oom' || enforced_memory_limit)));
+                  const got = admit(claim);
+                  assert.equal(got.valid, valid,
+                    `${backend} ${failure_class} ${claimed_scope} ${isolation_mechanism} ` +
+                    `${one_actor_per_worker} ${supervisor_out_of_process} ${enforced_memory_limit}`);
+                  assert.equal(got.certified, false);
+                  assert.equal(got.releaseReady, false);
+                  assert.equal(got.evidenceClass, 'SELF_REPORTED_SHAPE_ONLY');
+                  assert.equal(Object.isFrozen(got), true);
+                  if (valid) assert.equal(got.reason,
+                    execution_status === 'not_executed' ?
+                      'NOT_EXECUTED' : 'SELF_REPORTED_NOT_AUTHENTICATED');
+                  cases++;
+                }
+  assert.equal(cases, 7 * 8 * 3 * 4 * 2 * 2 * 2 * 2);
+});
