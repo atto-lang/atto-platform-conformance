@@ -25,6 +25,30 @@ The adapter receives `compile <absolute-source.atto> <absolute-artifact>` and `r
 
 The other four scenarios in the contract (heap quota, stack quota, generation-fenced restart, guarded cross-actor borrows/cancellation) are explicitly **BLOCKED** until the relevant guest syntax and native implementations exist. Never score these as passed on the strength of a source-free reference model. They are the release-critical scenarios for production fault containment.
 
+## LLVM first compiled native actor-frame slice — NOT YET CERTIFIED
+
+[LLVM PR #1807](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1807)
+is stacked on native frame-store [PR #1801](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1801).
+It wires statically emitted actor `on_message` frame push/store/load/pop into the
+private actor-incarnation frame store and adds
+`tests/fixtures/actor-logical-frame-aot-two-actors.atto` plus a private
+ABI-impersonation rejection. The source fixture returns 42 from `main`;
+its mailbox STOP semantics may abandon pending delivery, so it **cannot** prove
+that Actor B actually processed a message unless executed receipts show
+nonzero processed turns.
+
+A separate **native C11 runtime-only** adversarial test uses the real frame
+primitive: Actor A hits a one-frame quota, Actor B still returns `42`, A
+cancels, and incarnation 2 refuses stale incarnation 1 tokens. Local GCC and
+Clang ASan/UBSan executions passed. This does **not** test a compiled
+source-level quota exception, supervisor CONTROL notice, actual `.atto`
+AOT guest turn/stack exhaustion, or a sandboxed native segfault.
+
+**All cases remain NOT_EXECUTED as guest certification** until exact-head
+compiler-linked target artifacts run with nonzero CI steps, followed by
+compiler-generated per-turn frames, proper failure routing, and independent
+backend review. No source-free model result may promote these statuses.
+
 ## Dependencies and release order
 
 1. Actor memory contract in `atto-common-source` PR #13; reconcile with `shared-actor-arenas.v1` and actor transfer contracts.
