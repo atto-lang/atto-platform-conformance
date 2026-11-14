@@ -12,7 +12,7 @@ def git_blob_sha(raw):
 class HttpPolicyFixtureTest(unittest.TestCase):
     def test_exact_atto_fixture(self):
         contract = json.loads((ROOT / "contracts/net-http-policy-v1.json").read_text())
-        self.assertEqual(contract["status"], "FIXTURE_STAGED_NOT_EXECUTED")
+        self.assertEqual(contract["status"], "RS_POLICY_GUEST_EXECUTED_HTTP3_WIRE_NOT_IMPLEMENTED")
         fixture = contract["guest_fixture"]
         self.assertEqual(fixture["expected_exit_code"], 42)
         self.assertTrue(fixture["path"].endswith(".atto"))
