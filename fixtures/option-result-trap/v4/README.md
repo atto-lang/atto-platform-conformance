@@ -29,8 +29,12 @@ a cross-backend equivalent source and cannot establish the LLVM/.NET unwind ABI.
 - **.NET NativeAOT:** verify independent nested tag/payload SSA and CIL,
   NativeAOT publish and execute the guest on Linux x64 and Windows x64;
   preserve Result.Err data and an outer Option tag. First deliverable
-  .NET PR #508 only preserves closed Option<int> admission and rejects
-  unsupported Result/trap before lowering. A rejection is **not** parity.
+  .NET PR #508 now includes a candidate **non-throwing, synchronous `trap int`**
+  slice lowered to existing `Some(int)` tagged SSA/CIL, plus real
+  negative admission of unsupported `Result` and nested trap values.
+  The new limited code and NativeAOT execution are still unverified at
+  exact head; ordinary throw-to-None and `Option<Result>` are not implemented.
+  A rejection is **not** parity.
 
 After scalar success, add a separate identical-source ordinary guest Error
 fixture and require `None` only for an ordinary throw. Panic, raise,
