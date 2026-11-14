@@ -1,0 +1,34 @@
+name: actor AOT acceptance contract (host-only, NOT guest evidence)
+on:
+  pull_request:
+    paths:
+      - 'contracts/actor-heap-stack-aot-v1.json'
+      - 'docs/ACTOR_HEAP_STACK_AOT_V1.md'
+      - 'tools/actor_aot_guest_gate.rs'
+      - 'fixtures/actor_heap_stack_aot_v1/**'
+      - '.github/workflows/actor-aot-acceptance.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contract-and-gate-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate candidate status and fixture paths (NOT guest)
+        run: |
+          jq -e '.schema == "atto.actor-heap-stack-aot.v1" and
+            (.status == "candidate-unverified-production-guest") and
+            (.cases | length == 6) and
+            all(.cases[]; .current_backend_status == "NOT_EXECUTED")' contracts/actor-heap-stack-aot-v1.json
+          test -s fixtures/actor_heap_stack_aot_v1/two_actors.atto
+          test -s fixtures/actor_heap_stack_aot_v1/recursive_actor_call.atto
+      - name: Build Rust guest-admission tool (does NOT execute a guest)
+        run: |
+          rustc --edition=2021 -D warnings tools/actor_aot_guest_gate.rs -o /tmp/atto-actor-guest-gate
+          if /tmp/atto-actor-guest-gate; then
+            echo "guest gate unexpectedly passed without compiler/runner" >&2
+            exit 1
+          fi
+          echo "HOST_TOOL_BUILT_AND_FAIL_CLOSED; GUEST_NOT_EXECUTED"
