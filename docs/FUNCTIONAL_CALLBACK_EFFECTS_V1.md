@@ -11,9 +11,10 @@ AttoLang functions such as `map`, `filter`, `fold`, `flat_map`,
 callback's** effects at each invocation. They do not assume all callbacks are
 pure or all callbacks are impure.
 
-This first slice concerns **compiler metadata semantics only**; it does not
-introduce a new user-visible syntax, a host-language implementation of a guest
-standard-library method or a claim that any existing backend has integrated it.
+The first Java compiler follow-up now includes a checked-source callback
+analysis API and real `.atto` fixtures in draft PR #3081. This remains
+**partial compiler integration**, not a new user-visible syntax, an implementation
+of generic collection combinators, or verified native backend support.
 
 ## Contract
 
@@ -61,3 +62,27 @@ must preserve evaluation, ownership-drop and effect order.
 The contract's `receipts: []` is deliberate. Do not change backend status
 to PASS based on this document, a source-only fixture, a host oracle or a
 zero-step CI workflow.
+
+## Canonical source-level fixtures
+
+The manifest also pins these five Git-blob-identical `.atto` guest inputs
+on the Java and conformance branches:
+
+| ID | Expected compiler/guest behavior |
+| --- | --- |
+| `inline-option-map-pure` | Typecheck; Graal guest stdout `42` |
+| `typed-helper-unresolved-purity` | Typecheck; conservatively `UNKNOWN_CALL` |
+| `wrong-callback-result` | Semantic type rejection, no executable artifact |
+| `value-match-pipeline` | Typecheck; functional `|>` in exhaustive value match, stdout `42\\n0` |
+| `nonexhaustive-option-match` | Semantic rejection of missing `None` arm |
+
+`tests/functional-callback-effects-v1.test.mjs` verifies the exact Git
+blob SHA-1 for each `.atto` source and rejects a one-byte mutation or
+symlink substitution. That **does not** execute Java/LLVM/.NET/Wasm/Forge
+compilers and does not advance their status above `NOT_EXECUTED`.
+
+The Java regression suite now includes an actual Graal `Context.eval`
+assertion for the positive guests, but that JUnit test is **authored,
+not yet observed passing**. An eligible native runner must execute tests
+with immutable tree/head evidence and nonempty job steps before any
+support or parity claim.
