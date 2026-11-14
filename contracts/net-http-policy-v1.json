@@ -36,9 +36,24 @@
     {
       "backend": "rs",
       "source_identical": true,
-      "guest_compiled": false,
-      "guest_executed": false,
-      "network_protocol_execution": "NOT_EXECUTED"
+      "guest_compiled": true,
+      "guest_executed": true,
+      "network_protocol_execution": "NOT_EXECUTED",
+      "evidence": {
+        "status": "PASS_POLICY_GUEST_ONLY",
+        "execution_profile": "RS_NATIVE_COMPILER_TO_WASM_GUEST",
+        "run_url": "https://github.com/athlet-o/athleto-e2e/actions/runs/43644258623",
+        "runner_repository": "athlet-o/athleto-e2e",
+        "carrier_head": "115f3028405bd77074228fad218f7cd248fd0e9b",
+        "compiler_source_commit": "860137bcdc50684ab6cb6aa8f89932506b3beec4",
+        "compiler_source_slice_tree_sha": "3a6eadd731418b979a5154b6d8b00739d23d883e",
+        "fixture_blob_sha": "113b450f4f6197223fd3bb948fb984c6d999dfbd",
+        "guest_wasm_sha256": "f34e3f6512425b60b3f35f24b2bc20656633df5ed4781be713ae8c725d86bd02",
+        "expected_exit_code": 42,
+        "exhaustive_cases": 48,
+        "negative_result": "E_UNBOUND_FAIL_CLOSED",
+        "actual_http3_wire_proven": false
+      }
     },
     {
       "backend": "wasm",
@@ -52,5 +67,11 @@
     "This fixture only tests pure Atto HTTP/3 eligibility, version preference, QUIC datagram gate, and 0-RTT policy.",
     "It cannot establish QUIC, TLS, HTTP/3 wire, interop or end-to-end support.",
     "A backend must supply an exact-head compiler run log, guest artifact digest and exit code before it can be marked passed."
-  ]
+  ],
+  "exhaustive_guest_fixture": {
+    "path": "fixtures/net/http_policy_exhaustive.atto",
+    "git_blob_sha": "113b450f4f6197223fd3bb948fb984c6d999dfbd",
+    "expected_exit_code": 42,
+    "policy_cases": 48
+  }
 }
