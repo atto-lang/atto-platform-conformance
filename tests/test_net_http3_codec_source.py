@@ -57,6 +57,35 @@ class Http3CodecSourceAudit(unittest.TestCase):
         self.assertFalse(receipt["unsupported"]["http3_client_server_wire"])
         self.assertEqual(evidence["scalar_pure_cases"], 1255)
 
+    def test_llvm_artifact_hardening_passes_without_wire_claims(self):
+        r = self.manifest["llvm_native_aot_output_hardening"]
+        raw = (ROOT / r["evidence"]).read_bytes()
+        self.assertEqual(git_sha(raw), r["git_blob_sha"])
+        proof = json.loads(raw)
+        self.assertEqual(proof["status"],
+                         "PASS_LINUX_X86_64_SCALAR_GUEST_AND_OUTPUT_HARDENING")
+        self.assertEqual(proof["runner"]["run"], r["executed_run"])
+        self.assertEqual(proof["audited_source_commit"],
+                         r["exact_source_commit"])
+        self.assertEqual(proof["audited_full_tree"],
+                         r["exact_source_tree"])
+        self.assertEqual(proof["verification"]["total_native_atto_cases"],
+                         r["native_guests"])
+        for guard in ("source_output_alias_rejected",
+                      "hardlink_to_input_rejected",
+                      "symlink_to_input_rejected",
+                      "output_commits_only_after_full_success",
+                      "prior_output_preserved_after_source_or_clang_failure",
+                      "fake_successful_clang_without_artifact_rejected",
+                      "fake_successful_clang_with_invalid_elf_rejected",
+                      "verified_linux_x86_64_elf_header_and_executable_mode",
+                      "staged_temporary_artifacts_removed"):
+            self.assertTrue(proof["verification"][guard], guard)
+        self.assertFalse(proof["limitations"]["http3_wire_client_server"])
+        self.assertFalse(proof["limitations"]["actor_runtime_implemented"])
+        self.assertFalse(r["quic_tls_wire_executed"])
+        self.assertFalse(r["actor_runtime_executed"])
+
     def test_evidence_does_not_claim_actual_http3_networking(self):
         r = self.manifest["guest_evidence"]
         self.assertEqual(r["carrier_head"], "20fa8c4e421d5a438c1db337868bd66bbeb7a184")
