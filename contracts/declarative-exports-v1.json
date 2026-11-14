@@ -37,6 +37,28 @@
       "equivalent_to": "public-forward-fnc"
     },
     {
+      "id": "scalar-main-forward",
+      "source": "scalar-main-forward.atto",
+      "expect": "accept",
+      "target_kind": "fnc",
+      "visibility": "public"
+    },
+    {
+      "id": "scalar-main-trailing",
+      "source": "scalar-main-trailing.atto",
+      "expect": "accept",
+      "target_kind": "fnc",
+      "visibility": "public",
+      "equivalent_to": "scalar-main-forward"
+    },
+    {
+      "id": "scalar-pkg-helper",
+      "source": "scalar-pkg-helper.atto",
+      "expect": "accept",
+      "target_kind": "fnc",
+      "visibility": "package"
+    },
+    {
       "id": "public-inferred-class",
       "source": "public-inferred-class.atto",
       "expect": "accept",
