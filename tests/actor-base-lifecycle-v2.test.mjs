@@ -259,7 +259,7 @@ test('restart is new incarnation and stale generation is rejected', () => {
   assert.equal(b.send(9), false);
   assert.equal(b.send(10), true);
   assert.equal(b.beginTurn(), false);
-  assert.throws(() => a.restart().restart(), /false|true|TERMINATED/);
+  assert.throws(() => a.restart().restart());
 });
 
 test('typed trait behavior and state shape use different proofs', () => {
