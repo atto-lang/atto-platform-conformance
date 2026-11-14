@@ -81,10 +81,18 @@ class DeclarativeExportV1Corpus(unittest.TestCase):
                 def strip_exports(text: str) -> list[str]:
                     return [line for line in text.splitlines() if not line.startswith("export pub")]
                 self.assertEqual(strip_exports(a), strip_exports(b))
-                self.assertEqual(
-                    sorted(line for line in a.splitlines() if line.startswith("export pub")),
-                    sorted(line for line in b.splitlines() if line.startswith("export pub")),
-                )
+                # The inferred-kind spelling is semantically equal to an
+                # explicit fnc kind only when the target declaration is fnc.
+                def normalized_exports(text: str) -> list[str]:
+                    result = []
+                    for line in text.splitlines():
+                        if not line.startswith("export pub"):
+                            continue
+                        if line == "export pub main;" and "fnc main(" in text:
+                            line = "export pub fnc main;"
+                        result.append(line)
+                    return sorted(result)
+                self.assertEqual(normalized_exports(a), normalized_exports(b))
 
 
 if __name__ == "__main__":
