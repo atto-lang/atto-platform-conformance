@@ -152,7 +152,7 @@
     "ready": "success_only_after_complete_state_init; failure_on_stop_before_ready",
     "done": "settles_only_after_physical_retirement_including_tasks_resource_loans_and_callbacks",
     "restart": "new_incarnation_strictly_increasing_generation_after_prior_physical_retirement",
-    "non_reentrancy": "one_physical_guest_turn_per_incarnation",
+    "non_reentrancy": "one_physical_guest_turn_per_incarnation; runtime may enqueue bounded pending mail before READY",
     "control_lane": "supervisor_failure_and_panic_not_guest_data"
   },
   "events": [
@@ -175,7 +175,7 @@
       "name": "MAIL_ACCEPTED",
       "origin": "mailbox",
       "authority": "DATA",
-      "phase_gate": "READY"
+      "phase_gate": "BOUNDED_PRE_READY_QUEUE_PERMITTED; NEVER_DELIVER_BEFORE_READY"
     },
     {
       "name": "TURN_STARTED",
