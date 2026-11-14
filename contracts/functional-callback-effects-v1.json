@@ -315,6 +315,21 @@
       "git_blob": "d7cab9e5b303808276e6014b7f527aa90ae9e884",
       "admission": "SEMANTIC_REJECT_NO_EXECUTABLE",
       "native_execution": "NOT_EXECUTED"
+    },
+    {
+      "id": "value-match-pipeline",
+      "path": "fixtures/functional-callback-effects-v1/pipeline-match.atto",
+      "git_blob": "e4489268cc66aef15cd85870b2ccd2db96c898a8",
+      "admission": "TYPECHECK_ACCEPT",
+      "guest_stdout": "42\n0",
+      "native_execution": "NOT_EXECUTED"
+    },
+    {
+      "id": "nonexhaustive-option-match",
+      "path": "fixtures/functional-callback-effects-v1/reject-incomplete-match.atto",
+      "git_blob": "97c74c9df2f9320931503badc333100f72c1d0ab",
+      "admission": "SEMANTIC_REJECT_NO_EXECUTABLE",
+      "native_execution": "NOT_EXECUTED"
     }
   ]
 }
