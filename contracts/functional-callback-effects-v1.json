@@ -1,0 +1,295 @@
+{
+  "schema": "attolang.functional-callback-effects.v1",
+  "status": "SOURCE_AND_HOST_ORACLE_ONLY_NOT_EXECUTED",
+  "description": "Call-site-specialized higher-order callback effects, fail-closed unknowns and trap boundaries; no Atto guest execution claimed",
+  "feature_priority": "P0",
+  "source_extension": ".atto",
+  "backends": [
+    {
+      "id": "java",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "llvm",
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "net",
+      "repository": "ores-truffle-oreslang/oreslang-source.net",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "wasm",
+      "repository": "ores-truffle-oreslang/oreslang-source.wasm",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "forge",
+      "repository": "ores-truffle-oreslang/oreslang-source.forge",
+      "status": "NOT_EXECUTED"
+    }
+  ],
+  "required_guest_evidence": [
+    "IMMUTABLE_SOURCE_AND_COMPILER_IDS",
+    "ACTUAL_ATTO_FRONTEND_TYPECHECK",
+    "ACTUAL_GUEST_EXECUTION",
+    "NEGATIVE_EFFECT_REJECTION",
+    "NONEMPTY_CI_STEPS",
+    "BACKEND_INDEPENDENT_ASSERTION"
+  ],
+  "receipts": [],
+  "cases": [
+    {
+      "id": "pure-map",
+      "root": "std::map",
+      "bindings": {
+        "transform": "app::increment"
+      },
+      "nodes": [
+        {
+          "id": "std::map",
+          "direct": [
+            "ALLOC"
+          ],
+          "allowed": [
+            "ALLOC",
+            "THROW",
+            "PANIC",
+            "RAISE",
+            "CANCELLATION"
+          ],
+          "calls": [
+            {
+              "callback": "transform"
+            }
+          ]
+        },
+        {
+          "id": "app::increment",
+          "direct": [],
+          "calls": []
+        }
+      ],
+      "expected": [
+        "ALLOC"
+      ],
+      "admitted": true
+    },
+    {
+      "id": "impure-map",
+      "root": "std::map",
+      "bindings": {
+        "transform": "app::log"
+      },
+      "nodes": [
+        {
+          "id": "std::map",
+          "direct": [
+            "ALLOC"
+          ],
+          "allowed": [
+            "ALLOC",
+            "THROW",
+            "PANIC",
+            "RAISE",
+            "CANCELLATION"
+          ],
+          "calls": [
+            {
+              "callback": "transform"
+            }
+          ]
+        },
+        {
+          "id": "app::log",
+          "direct": [
+            "IO"
+          ],
+          "calls": []
+        }
+      ],
+      "expected": [
+        "ALLOC",
+        "IO"
+      ],
+      "admitted": false
+    },
+    {
+      "id": "unbound-map",
+      "root": "std::map",
+      "bindings": {},
+      "nodes": [
+        {
+          "id": "std::map",
+          "direct": [],
+          "allowed": [
+            "ALLOC",
+            "THROW",
+            "PANIC",
+            "RAISE",
+            "CANCELLATION"
+          ],
+          "calls": [
+            {
+              "callback": "transform"
+            }
+          ]
+        }
+      ],
+      "expected": [
+        "UNKNOWN_CALL"
+      ],
+      "admitted": false
+    },
+    {
+      "id": "same-named-function-no-binding",
+      "root": "std::map",
+      "bindings": {},
+      "nodes": [
+        {
+          "id": "std::map",
+          "direct": [],
+          "allowed": [
+            "ALLOC",
+            "THROW",
+            "PANIC",
+            "RAISE",
+            "CANCELLATION"
+          ],
+          "calls": [
+            {
+              "callback": "mapper"
+            }
+          ]
+        },
+        {
+          "id": "mapper",
+          "direct": [],
+          "calls": []
+        }
+      ],
+      "expected": [
+        "UNKNOWN_CALL"
+      ],
+      "admitted": false
+    },
+    {
+      "id": "recursive-callback-io",
+      "root": "std::filter",
+      "bindings": {
+        "predicate": "app::predicate"
+      },
+      "nodes": [
+        {
+          "id": "std::filter",
+          "direct": [],
+          "allowed": [
+            "ALLOC",
+            "THROW",
+            "PANIC",
+            "RAISE",
+            "CANCELLATION"
+          ],
+          "calls": [
+            {
+              "callback": "predicate"
+            }
+          ]
+        },
+        {
+          "id": "app::predicate",
+          "direct": [],
+          "calls": [
+            {
+              "direct": "app::helper"
+            }
+          ]
+        },
+        {
+          "id": "app::helper",
+          "direct": [],
+          "calls": [
+            {
+              "direct": "app::predicate"
+            },
+            {
+              "direct": "app::io"
+            }
+          ]
+        },
+        {
+          "id": "app::io",
+          "direct": [
+            "IO"
+          ],
+          "calls": []
+        }
+      ],
+      "expected": [
+        "IO"
+      ],
+      "admitted": false
+    },
+    {
+      "id": "trap-suppresses-only-throw",
+      "root": "std::apply",
+      "bindings": {
+        "callback": "app::handled"
+      },
+      "nodes": [
+        {
+          "id": "std::apply",
+          "direct": [],
+          "allowed": [
+            "PANIC"
+          ],
+          "calls": [
+            {
+              "callback": "callback"
+            }
+          ]
+        },
+        {
+          "id": "app::handled",
+          "direct": [
+            "THROW",
+            "PANIC"
+          ],
+          "traps_throw": true,
+          "calls": []
+        }
+      ],
+      "expected": [
+        "PANIC"
+      ],
+      "admitted": true
+    },
+    {
+      "id": "unresolved-foreign-callback",
+      "root": "std::fold",
+      "bindings": {
+        "step": "foreign::unknown"
+      },
+      "nodes": [
+        {
+          "id": "std::fold",
+          "direct": [],
+          "allowed": [
+            "ALLOC"
+          ],
+          "calls": [
+            {
+              "callback": "step"
+            }
+          ]
+        }
+      ],
+      "expected": [
+        "UNKNOWN_CALL"
+      ],
+      "admitted": false
+    }
+  ]
+}
