@@ -9,7 +9,7 @@
     },
     {
       "path": "stdlib/net/http3_frames.atto",
-      "git_blob_sha": "9762849fcc1e6c307ce291f9fc096df934eae130"
+      "git_blob_sha": "a30d5301be194e91737fa17ac8c17d976619929a"
     }
   ],
   "fixtures": [
@@ -21,8 +21,20 @@
     },
     {
       "path": "fixtures/net/http3_frame_rfc9114.atto",
-      "git_blob_sha": "0f30aec95e90c42317b2b97cca6d8791a90ce80e",
-      "cases": 406,
+      "git_blob_sha": "70f70bdfa037468e78496dc7637ce9851e1a66aa",
+      "cases": 435,
+      "expected_exit_code": 42
+    },
+    {
+      "path": "fixtures/net/http3_request_state_guards.atto",
+      "git_blob_sha": "6bdf5f7f9b1c5b8f3fcf6774b5ffcf94508fffc1",
+      "cases": 256,
+      "expected_exit_code": 42
+    },
+    {
+      "path": "fixtures/net/http3_push_state_guards.atto",
+      "git_blob_sha": "789ce50b79c4f73b2ba0796d4898aae7bf6418c7",
+      "cases": 256,
       "expected_exit_code": 42
     }
   ],
@@ -52,7 +64,8 @@
     "deterministic_wasm": true,
     "host_imports": 0,
     "native_machine_aot_test": false,
-    "actual_network_io": false
+    "actual_network_io": false,
+    "evidence_scope": "HISTORICAL_GUEST_BEFORE_62BIT_AND_STATE_HARDENING"
   },
   "targets": [
     {
@@ -90,5 +103,42 @@
     "Physical source bytes do not establish compilation or runtime parity",
     "Executed pure codec guest is not HTTP3 or QUIC interoperability",
     "Network I/O, QPACK, full AOT and actor-owned buffer lifecycle remain separately gated"
-  ]
+  ],
+  "hardening_evidence": {
+    "runner": "athlet-o/athleto-e2e",
+    "run": "https://github.com/athlet-o/athleto-e2e/actions/runs/43647064377",
+    "carrier_head": "943f4186932bc9a49a1067e0f5535273cd0d2665",
+    "source_compiler_commit": "860137bcdc50684ab6cb6aa8f89932506b3beec4",
+    "compiler_source_slice_tree": "3a6eadd731418b979a5154b6d8b00739d23d883e",
+    "execution_profile": "RS_HOST_COMPILER_ATTO_GUEST_WASM",
+    "guest_wasm_compiled": true,
+    "guest_wasm_executed": true,
+    "deterministic_artifacts": true,
+    "host_imports": 0,
+    "expected_exit_code": 42,
+    "cases": 1255,
+    "additional_cases_vs_pre_hardening": 541,
+    "fixture_artifacts": [
+      {
+        "path": "fixtures/net/quic_varint_rfc9000.atto",
+        "sha256": "c3345d79ca64c02c596cd988fbc17285ff6c487148ab81633194e71f20ba94f9"
+      },
+      {
+        "path": "fixtures/net/http3_frame_rfc9114.atto",
+        "sha256": "62c42ec1713d4fde4579b4dc594de76a38f4f3618d45cc928b2407ab682c4ba1"
+      },
+      {
+        "path": "fixtures/net/http3_request_state_guards.atto",
+        "sha256": "1b5138de2b0292a1d3ced5c5f4d7348803c1d33b3563158e114b57e833ce1e7a"
+      },
+      {
+        "path": "fixtures/net/http3_push_state_guards.atto",
+        "sha256": "42bd614c4fb7ad69f1fab6366c667d11b10c61b2ee8938ef506c41989700af77"
+      }
+    ],
+    "negative_input": "E_UNBOUND_FAIL_CLOSED",
+    "network_execution": false,
+    "other_backend_execution": false,
+    "native_machine_aot": false
+  }
 }
