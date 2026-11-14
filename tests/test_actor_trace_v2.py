@@ -158,6 +158,62 @@ class ActorTraceV2Test(unittest.TestCase):
         t["producer"]["backend"] = "java"
         with self.assertRaises(TraceViolation):
             verify_trace(t)
+        t["producer"] = {"backend": "reference", "subject": "runtime_host",
+                         "emission": "online_linearization_points"}
+        with self.assertRaisesRegex(TraceViolation, "must agree"):
+            verify_trace(t)
+        t["producer"]["subject"] = "compiled_atto_guest"
+        with self.assertRaises(TraceViolation):
+            verify_trace(t)
+
+    def test_cli_requires_backend_tier_and_parallel_witnesses(self):
+        with tempfile.TemporaryDirectory() as directory:
+            p = Path(directory) / "valid.json"
+            p.write_text(json.dumps(fixture()) + "\n")
+            requirements = ["--require-backend", "llvm", "--require-subject",
+                            "runtime_host", "--require-emission",
+                            "online_linearization_points", "--min-admitted", "4",
+                            "--min-control-dispatches", "1",
+                            "--require-parallel-receives", "--require-parallel-reads"]
+            self.assertEqual(main(requirements + [str(p)]), 0)
+            self.assertEqual(main(["--require-subject", "compiled_atto_guest", str(p)]), 1)
+            self.assertEqual(main(["--require-backend", "java", str(p)]), 1)
+            self.assertEqual(main(["--require-emission", "reconstructed_after_quiescence", str(p)]), 1)
+            self.assertEqual(main(["--min-admitted", "5", str(p)]), 1)
+            self.assertEqual(main(["--min-control-dispatches", "2", str(p)]), 1)
+            self.assertEqual(main(["--min-admitted", "-1", str(p)]), 1)
+            self.assertEqual(main(["--min-admitted", "100001", str(p)]), 1)
+            self.assertEqual(main(["--min-control-dispatches", "-1", str(p)]), 1)
+            t = fixture()
+            t["events"] = [e for e in t["events"] if e["kind"] not in
+                           {"critical_read_enter", "critical_read_exit",
+                            "critical_write_enter", "critical_write_exit"}]
+            for i, event in enumerate(t["events"]):
+                event["seq"] = i
+            p.write_text(json.dumps(t) + "\n")
+            self.assertEqual(main(["--require-parallel-reads", str(p)]), 1)
+            self.assertEqual(main(["--require-parallel-receives", str(p)]), 0)
+
+    def test_cli_refuses_missing_parallel_receivers(self):
+        t = fixture()
+        # A separate serial host receipt legitimately has no overlapping turn
+        # witnesses, but MUST NOT satisfy the concurrent guest CI gate.
+        t["events"] = [
+            dict(seq=0, kind="actor_spawn", actor_id="a", generation=1, serial=True),
+            dict(seq=1, kind="send_accept", actor_id="a", generation=1, message_id="m"),
+            dict(seq=2, kind="receive_start", actor_id="a", generation=1,
+                 message_id="m", receiver_id="r"),
+            dict(seq=3, kind="receive_complete", actor_id="a", generation=1,
+                 message_id="m", receiver_id="r"),
+            dict(seq=4, kind="actor_close", actor_id="a", generation=1),
+            dict(seq=5, kind="actor_retire", actor_id="a", generation=1),
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            p = Path(directory) / "serial.json"
+            p.write_text(json.dumps(t) + "\n")
+            self.assertEqual(main(["--require-parallel-receives", str(p)]), 1)
+            self.assertEqual(main(["--require-parallel-reads", str(p)]), 1)
+            self.assertEqual(main(["--min-admitted", "1", str(p)]), 0)
 
 
 if __name__ == "__main__":
