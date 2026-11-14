@@ -142,7 +142,7 @@ test("the oracle rejects ambiguous edges and duplicate callable identities", () 
 
 function gitBlobSha(bytes) {
   return createHash("sha1")
-    .update(Buffer.from("blob " + bytes.length + "\\0"))
+    .update(Buffer.from("blob " + bytes.length + "\0"))
     .update(bytes).digest("hex");
 }
 
