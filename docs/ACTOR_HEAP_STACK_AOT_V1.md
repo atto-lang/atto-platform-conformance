@@ -81,6 +81,40 @@ explicitly **NOT_EXECUTED** as independent guest-conformance evidence.
 The source-level failure-to-supervisor bridge and actually resumable
 actor-owned call/continuation stacks remain release blockers.
 
+## Native source-actor failure accounting & registered root supervision
+
+[LLVM draft #1819](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1819)
+is stacked on #1814/#1807/#1801. The native SourceActorBootstrap bridge now
+distinguishes **physically processed callbacks** from **successfully handled
+messages**, preserving the last successful result after a receiver frame
+failure. On frame error, it seals the failed actor's DATA admission. Every
+source actor is registered under the root supervisor, and terminal notices
+are published through registered NativeOresVM CONTROL after physical DONE,
+heap/frame reclamation, and explicit host finalization receipt.
+
+A source-runtime regression invokes statically linked native receiver
+callbacks using the same frame ABI emitted by LLVM: Actor A successfully
+handles payload 9 then fails on an invalid nested frame push; Actor B handles
+42 independently. A retains last_success_result=9 with failed_messages=1,
+does not admit further sends, and the root supervisor receives one typed
+PANIC with the frame failure code plus one normal STOPPED for B.
+
+**Executed native host evidence:**
+[alternate private Actions #43651616456](https://github.com/athlet-o/athleto-docs/actions/runs/43651616456)
+verified **31/31 exact source blobs**; GCC C11 and Clang ASan/UBSan
+compiled/executed **30/30** tests; original no-LLVM host CMake/CTest
+passed **5/5** per compiler. All GHA job steps executed.
+
+**Compiler AOT progress:** an exact 66-blob private dependency mirror built
+the full LLVM C++ compiler against LLVM 22, emitted real native actor frame
+push/pop calls from `actor-logical-frame-aot-two-actors.atto`, and exposed
+LLVM 22 API changes repaired in the source compatibility layer. LLVM
+producer/llc matching and native executable execution remain a separate
+gate until a successful run receipt is attached. These results do **not**
+yet prove a source-generated quota-triggered guest CONTROL failure or
+automatic supervisor policy restart, and the shared guest conformance
+registry must not be upgraded on native-host results alone.
+
 ## Dependencies and release order
 
 1. Actor memory contract in `atto-common-source` PR #13; reconcile with `shared-actor-arenas.v1` and actor transfer contracts.
