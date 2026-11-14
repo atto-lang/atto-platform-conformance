@@ -157,5 +157,18 @@
     "actor_runtime": false,
     "quic_tls_network": false,
     "full_language_aot": false
+  },
+  "llvm_native_aot_output_hardening": {
+    "evidence": "contracts/native-llvm-aot-hardening-v1.json",
+    "git_blob_sha": "e3914edcd5a6d7c885c504f56c6f6edafe83e716",
+    "executed_run": "https://github.com/athlet-o/athleto-e2e/actions/runs/43651073559",
+    "exact_source_commit": "ec2c04024b10f0dc1005c90fa73c6e741615df39",
+    "exact_source_tree": "bf71ea154bf87bb80c7534678e716d5daa94f455",
+    "native_guests": 1255,
+    "compile_and_execute_native": true,
+    "verified_protect_existing_outputs": true,
+    "verified_reject_fake_clang_success": true,
+    "quic_tls_wire_executed": false,
+    "actor_runtime_executed": false
   }
 }
