@@ -189,3 +189,7 @@ The Node fixture-integrity tests do not compile Oreslang, and no backend is
 marked confirmed until real exact-source compiler checks and guest execution
 produce independently reviewable evidence. Enum methods and full portable
 wire codecs remain separate implementation/verification gates.
+
+## Source-free actor fault-claim admission (draft)
+
+[Actor fault claim admission v1](docs/ACTOR_FAULT_CLAIM_V1.md) rejects inconsistent actor/tenant containment assertions for native segfaults, host OOM, process termination and VM corruption. It always reports `certified:false` and `releaseReady:false`: model-only checks never prove an executing guest or fault isolation.
