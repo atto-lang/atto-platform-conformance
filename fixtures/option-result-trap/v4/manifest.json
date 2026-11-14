@@ -35,5 +35,22 @@
     "java-graalvm": "ores-truffle-oreslang/oreslang-source.java#3059",
     "llvm-native-aot": "ores-truffle-oreslang/oreslang-source.llvm#1774",
     "dotnet-native-aot": "ores-truffle-oreslang/oreslang-source.net#508"
-  }
+  },
+  "additional_cases": [
+    {
+      "path": "reject-implicit-flattening.atto",
+      "git_blob_sha1": "76c11b89ceb4d2a070866038ce5f45b5982f5fdd",
+      "required_proof": "typed_mismatch_not_unsupported_syntax"
+    },
+    {
+      "path": "reject-missing-trap.atto",
+      "git_blob_sha1": "ca100eff6977a8c198c227a0e64ed8233744678a",
+      "required_proof": "typed_mismatch_not_unsupported_syntax"
+    },
+    {
+      "path": "panic-bypasses-trap.atto",
+      "git_blob_sha1": "9192fbb5dd18f50477d923bf2c4dcb03cdfd5684",
+      "required_proof": "uncaught_language_panic_no_guest_result"
+    }
+  ]
 }
