@@ -154,7 +154,9 @@ test("identical checked-source .atto fixtures remain pinned to Git blob bytes", 
   ];
   assert.deepEqual(contract.guest_fixtures.map(x => [x.id, x.git_blob]), expected);
   for (const fixture of contract.guest_fixtures) {
-    assert.match(fixture.path, /^fixtures\\/functional-callback-effects-v1\\/[a-z-]+\\.atto$/);
+    assert.ok(fixture.path.startsWith("fixtures/functional-callback-effects-v1/"));
+    assert.equal(fixture.path.split("/").length, 3);
+    assert.match(fixture.path.split("/")[2], /^[a-z-]+[.]atto$/);
     const sourcePath = resolve(root, fixture.path);
     assert.ok(!lstatSync(sourcePath).isSymbolicLink(),
       "symlink cannot substitute reviewed guest source");
