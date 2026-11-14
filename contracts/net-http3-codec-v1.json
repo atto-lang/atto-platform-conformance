@@ -1,6 +1,6 @@
 {
   "schema": "atto.conformance.http3.codec.v1",
-  "status": "EXECUTED_RS_GUEST_ONLY_NO_HTTP3_TRANSPORT",
+  "status": "RS_WASM_AND_LLVM_ELF_SCALAR_GUESTS_PASSED_NO_HTTP3_WIRE",
   "canonical_source_repo": "atto-lang/atto-common-source",
   "canonical_atto_sources": [
     {
@@ -70,9 +70,11 @@
   "targets": [
     {
       "backend": "llvm",
-      "guest_codec_execution": "NOT_EXECUTED",
+      "guest_codec_execution": "PASS_LLVM_NATIVE_ELF_SCALAR_AOT",
       "http3_wire": "NOT_IMPLEMENTED",
-      "client_server_loopback": "NOT_EXECUTED"
+      "client_server_loopback": "NOT_EXECUTED",
+      "scalar_zero_guest_gc": true,
+      "actor_runtime": "NOT_IMPLEMENTED"
     },
     {
       "backend": "java",
@@ -140,5 +142,20 @@
     "network_execution": false,
     "other_backend_execution": false,
     "native_machine_aot": false
+  },
+  "llvm_native_aot_evidence": {
+    "receipt": "contracts/native-llvm-aot-v1.json",
+    "git_blob_sha": "f46dbc38b78b7d891229b9e543661fb397e72b9f",
+    "url": "https://github.com/athlet-o/athleto-e2e/actions/runs/43649930185",
+    "verified_source_head": "034c4b00f357c1456ed4d1840437dadfa6924d85",
+    "verified_source_tree": "d02b401e5c7a3a524c4a70db8db8520c6ae408ee",
+    "scalar_pure_cases": 1255,
+    "compile_to_real_elf": true,
+    "execution_exit_code": 42,
+    "had_guest_vm": false,
+    "checked_i64_overflow_and_sanitizers_passed": true,
+    "actor_runtime": false,
+    "quic_tls_network": false,
+    "full_language_aot": false
   }
 }
