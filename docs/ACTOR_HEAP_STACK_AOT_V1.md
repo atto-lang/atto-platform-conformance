@@ -105,15 +105,30 @@ verified **31/31 exact source blobs**; GCC C11 and Clang ASan/UBSan
 compiled/executed **30/30** tests; original no-LLVM host CMake/CTest
 passed **5/5** per compiler. All GHA job steps executed.
 
-**Compiler AOT progress:** an exact 66-blob private dependency mirror built
-the full LLVM C++ compiler against LLVM 22, emitted real native actor frame
-push/pop calls from `actor-logical-frame-aot-two-actors.atto`, and exposed
-LLVM 22 API changes repaired in the source compatibility layer. LLVM
-producer/llc matching and native executable execution remain a separate
-gate until a successful run receipt is attached. These results do **not**
-yet prove a source-generated quota-triggered guest CONTROL failure or
-automatic supervisor policy restart, and the shared guest conformance
-registry must not be upgraded on native-host results alone.
+**Verified LLVM native AOT guest smoke:**
+[successful private alternate GHA run #43653113359](https://github.com/athlet-o/athleto-docs/actions/runs/43653113359)
+at exact source **4c3392390d753b2666c4c73b235ccc74df526d3a**
+and carrier commit **108e2b62eff910537b23fe2b7447441f9ce4201f**
+verified 66/66 exact source Git blobs, built the LLVM compiler
+with LLVM 22, compiled
+`tests/fixtures/actor-logical-frame-aot-two-actors.atto` to LLVM IR,
+confirmed real compiler-generated actor frame push/pop call sites, lowered
+the IR to a native object with matching `llc-22`, then linked/executed
+the actor application with Clang. The binary exited **42**, with two
+independent termination receipts (Actor A processed=1, successful=1,
+last=1; Actor B processed=1, successful=1, last=42).
+The same run executed native host regression tests 30/30 times, plus
+5/5 original CMake host tests under GCC and Clang ASan/UBSan.
+
+This confirms **native AOT compiled actor execution** and the
+separately executed *host* failure-to-supervisor bridge. It **does not**
+yet produce a single compiler-generated `.atto` guest that exhausts
+its frame/heap quota and is restarted by a source-language supervisor.
+The carrier is a 66-file dependency-closed mirror, not a full source
+Git tree clone. The six stricter registry cases retain NOT_EXECUTED
+because their canonical fixture, output/negative criteria, and
+complete provenance have not been independently met.
+
 
 ## Dependencies and release order
 
