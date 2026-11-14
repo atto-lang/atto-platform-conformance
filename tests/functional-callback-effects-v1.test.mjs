@@ -150,7 +150,9 @@ test("identical checked-source .atto fixtures remain pinned to Git blob bytes", 
   const expected = [
     ["inline-option-map-pure", "83f65b12edb0a31e12e5008dbe08df4022a661f9"],
     ["typed-helper-unresolved-purity", "3616c2f0ef96aa6421438016c7f6dbf637ec7cae"],
-    ["wrong-callback-result", "d7cab9e5b303808276e6014b7f527aa90ae9e884"]
+    ["wrong-callback-result", "d7cab9e5b303808276e6014b7f527aa90ae9e884"],
+    ["value-match-pipeline", "e4489268cc66aef15cd85870b2ccd2db96c898a8"],
+    ["nonexhaustive-option-match", "97c74c9df2f9320931503badc333100f72c1d0ab"]
   ];
   assert.deepEqual(contract.guest_fixtures.map(x => [x.id, x.git_blob]), expected);
   for (const fixture of contract.guest_fixtures) {
