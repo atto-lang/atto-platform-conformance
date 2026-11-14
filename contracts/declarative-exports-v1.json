@@ -1,0 +1,128 @@
+{
+  "schema": "atto.declarative-exports.v1",
+  "version": 1,
+  "contract": "File-root declarative export scope, binding and visibility; exports are collected before name resolution, independent of source position.",
+  "syntax": [
+    "export pub Foo;",
+    "export pub[pkg] class Bar;",
+    "export pub fnc answer;"
+  ],
+  "rules": {
+    "file_root_only": true,
+    "forward_reference": true,
+    "inferred_kind_requires_unambiguous_target": true,
+    "duplicate_export_same_name": "reject",
+    "kind_mismatch": "reject",
+    "unknown_target": "reject",
+    "conflicting_public_and_package_visibility": "reject",
+    "public_external_access": "allow only after proven symbol linking",
+    "package_scope_external_access": "deny",
+    "package_scope_same_package_access": "allow only after package graph and capability validation",
+    "emitted_metadata_must_not_grant_import_authority": true
+  },
+  "cases": [
+    {
+      "id": "public-forward-fnc",
+      "source": "public-forward-fnc.atto",
+      "expect": "accept",
+      "target_kind": "fnc",
+      "visibility": "public"
+    },
+    {
+      "id": "public-trailing-fnc",
+      "source": "public-trailing-fnc.atto",
+      "expect": "accept",
+      "target_kind": "fnc",
+      "visibility": "public",
+      "equivalent_to": "public-forward-fnc"
+    },
+    {
+      "id": "public-inferred-class",
+      "source": "public-inferred-class.atto",
+      "expect": "accept",
+      "target_kind": "class",
+      "visibility": "public"
+    },
+    {
+      "id": "package-explicit-class",
+      "source": "package-explicit-class.atto",
+      "expect": "accept",
+      "target_kind": "class",
+      "visibility": "package"
+    },
+    {
+      "id": "package-trailing-class",
+      "source": "package-trailing-class.atto",
+      "expect": "accept",
+      "target_kind": "class",
+      "visibility": "package",
+      "equivalent_to": "package-explicit-class"
+    },
+    {
+      "id": "negative-unbound",
+      "source": "negative-unbound.atto",
+      "expect": "reject",
+      "diagnostic": "unbound_export"
+    },
+    {
+      "id": "negative-wrong-kind",
+      "source": "negative-wrong-kind.atto",
+      "expect": "reject",
+      "diagnostic": "export_kind_mismatch"
+    },
+    {
+      "id": "negative-duplicate",
+      "source": "negative-duplicate.atto",
+      "expect": "reject",
+      "diagnostic": "duplicate_export"
+    },
+    {
+      "id": "negative-unknown-scope",
+      "source": "negative-unknown-scope.atto",
+      "expect": "reject",
+      "diagnostic": "invalid_scope"
+    },
+    {
+      "id": "negative-nested",
+      "source": "negative-nested.atto",
+      "expect": "reject",
+      "diagnostic": "export_not_file_root"
+    },
+    {
+      "id": "negative-package-conflict",
+      "source": "negative-package-conflict.atto",
+      "expect": "reject",
+      "diagnostic": "conflicting_export_visibility"
+    }
+  ],
+  "backends": {
+    "java": {
+      "positive_scope": "class and fnc parsing; import linkage must be separately verified"
+    },
+    "llvm": {
+      "positive_scope": "class and fnc parsing; native codegen/linking must be separately verified"
+    },
+    "net": {
+      "positive_scope": "fnc main subset; class/package imports unsupported"
+    },
+    "rs": {
+      "positive_scope": "scalar fnc only; class and actor unsupported"
+    },
+    "js": {
+      "positive_scope": "program-v2 class and fnc; external ESM package linking unsupported"
+    },
+    "forge": {
+      "positive_scope": "scalar fnc only; class and actor unsupported"
+    },
+    "cranelift": {
+      "positive_scope": "fnc main only"
+    },
+    "hdl": {
+      "positive_scope": "one fixed-width fnc; package exports unsupported"
+    },
+    "wasm": {
+      "positive_scope": "metadata decoder only; no source parser"
+    }
+  },
+  "evidence_policy": "A fixture file is not proof of feature execution; report accepted/rejected/unsupported, exact compiler commit, runner, build and execution receipts separately."
+}
