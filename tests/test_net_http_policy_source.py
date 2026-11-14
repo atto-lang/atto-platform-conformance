@@ -26,7 +26,9 @@ class HttpPolicyFixtureTest(unittest.TestCase):
         self.assertEqual(exhaustive["expected_exit_code"], 42)
         guest = (ROOT / exhaustive["path"]).read_bytes()
         self.assertEqual(git_blob_sha(guest), exhaustive["git_blob_sha"])
-        self.assertEqual(sum(line.startswith(b"  if ") for line in guest.splitlines()), 48)
+        self.assertIn(b"pub fnc main(): int {", guest)
+        main_body = guest.rsplit(b"pub fnc main(): int {", 1)[1]
+        self.assertEqual(sum(line.startswith(b"  if ") for line in main_body.splitlines()), 48)
         for row in contract["backend_results"]:
             if row["backend"] == "rs":
                 self.assertTrue(row["guest_compiled"])
