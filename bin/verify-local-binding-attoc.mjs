@@ -9,7 +9,12 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const contract = JSON.parse(fs.readFileSync(path.join(root, 'contracts/local-binding-mutability-v1.json'), 'utf8'));
+// Select one checked-in contract without allowing arbitrary file paths.
+const contractFile = process.env.ATTO_CONTRACT || 'local-binding-mutability-v1.json';
+if (!['local-binding-mutability-v1.json', 'local-const-evaluation-v1.json'].includes(contractFile)) {
+  throw new Error('unknown ATTO_CONTRACT');
+}
+const contract = JSON.parse(fs.readFileSync(path.join(root, 'contracts', contractFile), 'utf8'));
 const compiler = process.env.ATTOC;
 if (!compiler) throw new Error('ATTOC must point to the native Atto compiler binary');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'atto-bindings-'));
@@ -39,7 +44,7 @@ try {
     console.log(item.id + ': PASS');
     passed++;
   }
-  console.log('Binding conformance: ' + passed + '/' + contract.required_cases.length + ' passed');
+  console.log((contractFile.includes('const') ? 'Constant conformance: ' : 'Binding conformance: ') + passed + '/' + contract.required_cases.length + ' passed');
 } finally {
   fs.rmSync(tmp, { recursive: true, force: true });
 }
