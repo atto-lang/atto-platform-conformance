@@ -22,7 +22,7 @@ require one actor per worker. Host OOM also requires an OS-enforced limit.
 These are **necessary metadata**, never sufficient proof.
 
 The in-process guest-panic/stack/bounds/actor-quota cases likewise need
-real compiler lowering, CONTROl supervision, physically retired resources
+real compiler lowering, CONTROL supervision, physically retired resources
 and post-fault healthy-sibling progress before any certification. A
 `not_executed` record is honest bookkeeping, not a passing test.
 
