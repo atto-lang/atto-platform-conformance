@@ -433,5 +433,29 @@
       "verified_backends": [],
       "source_status": "DESIGN_CASE_NOT_EXECUTED"
     }
-  ]
+  ],
+  "candidate_implementations": [
+    {
+      "backend": "java",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "pr": 3084,
+      "role": "runtime_stop_fence_and_stateless_default_init",
+      "status": "AUTHORED_NOT_EXECUTED",
+      "source_guest_certified": false
+    },
+    {
+      "backend": "java",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "pr": 3085,
+      "role": "static_actor_contract_state_witness",
+      "status": "AUTHORED_NOT_EXECUTED",
+      "source_guest_certified": false
+    }
+  ],
+  "corpus": {
+    "stateless_no_explicit_init": "fixtures/actor-base-lifecycle-v2/stateless-no-init.atto",
+    "state_witness_package": "fixtures/actor-base-lifecycle-v2/state-witness/",
+    "status": "SOURCE_ONLY_NOT_EXECUTED",
+    "owner": "atto.actor.base-lifecycle/2"
+  }
 }
