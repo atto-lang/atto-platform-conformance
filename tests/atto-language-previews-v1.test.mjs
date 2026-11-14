@@ -14,8 +14,8 @@ test('Atto preview source contract has exact Git blobs, no backend parity receip
   const evidence = validateAttoPreviewManifest(manifest,root);
   assert.equal(Object.keys(evidence).length,12);
   assert.equal(manifest.compiler_receipts.length,0);
-  assert.equal(manifest.fixtures.filter(x=>x.kind==='REJECT').length,6);
-  assert.equal(manifest.fixtures.filter(x=>x.kind==='ACCEPT').length,6);
+  assert.equal(manifest.fixtures.filter(x=>x.kind==='REJECT').length,7);
+  assert.equal(manifest.fixtures.filter(x=>x.kind==='ACCEPT').length,5);
 });
 
 test('guard has a failure block with NO else; negative cases prove the distinction', () => {
