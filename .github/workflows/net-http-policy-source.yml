@@ -1,0 +1,26 @@
+name: Native Atto HTTP3 policy fixture source audit
+on:
+  pull_request:
+    paths:
+      - 'fixtures/net/http_policy.atto'
+      - 'contracts/net-http-policy-v1.json'
+      - 'tests/test_net_http_policy_source.py'
+      - '.github/workflows/net-http-policy-source.yml'
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  static-fixture-audit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4 pinned
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact checkout
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+      - name: Source fixture audit only (no guest compiled or executed)
+        run: python3 -m unittest discover -s tests -p 'test_net_http_policy_source.py' -v
