@@ -456,6 +456,13 @@
     "stateless_no_explicit_init": "fixtures/actor-base-lifecycle-v2/stateless-no-init.atto",
     "state_witness_package": "fixtures/actor-base-lifecycle-v2/state-witness/",
     "status": "SOURCE_ONLY_NOT_EXECUTED",
-    "owner": "atto.actor.base-lifecycle/2"
+    "owner": "atto.actor.base-lifecycle/2",
+    "git_blob_sha1": {
+      "stateless-no-init.atto": "e09f99f793f0fc6d83d36e72bcae2d752ff283a3",
+      "state-witness/actor.atto": "85ca85b56061ca7a3923bc3b2f4f6a9cd53e857f",
+      "state-witness/contract.atto": "7afcfe2bcb5f490e58b17d67decd09e249ffc7b4",
+      "state-witness/method.atto": "e9070b07fb9d2bdf1f454015a8c15ca308284ce3",
+      "state-witness/state.atto": "814b5778a5a8b22eabcd13f045e6b4c5ab336c75"
+    }
   }
 }
