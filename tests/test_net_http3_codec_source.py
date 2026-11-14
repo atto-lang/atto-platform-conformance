@@ -18,7 +18,7 @@ class Http3CodecSourceAudit(unittest.TestCase):
 
     def test_exhaustive_native_atto_fixtures_have_exact_bytes(self):
         self.assertEqual(self.manifest["schema"], "atto.conformance.http3.codec.v1")
-        self.assertEqual(len(self.manifest["fixtures"]), 2)
+        self.assertEqual(len(self.manifest["fixtures"]), 4)
         total = 0
         for record in self.manifest["fixtures"]:
             path = record["path"]
@@ -33,7 +33,7 @@ class Http3CodecSourceAudit(unittest.TestCase):
             self.assertEqual(checks, record["cases"])
             self.assertEqual(record["expected_exit_code"], 42)
             total += checks
-        self.assertEqual(total, 714)
+        self.assertEqual(total, 1255)
 
     def test_evidence_does_not_claim_actual_http3_networking(self):
         r = self.manifest["guest_evidence"]
@@ -46,6 +46,29 @@ class Http3CodecSourceAudit(unittest.TestCase):
         self.assertFalse(r["native_machine_aot_test"])
         self.assertEqual([x["cases"] for x in r["results"]], [308, 406])
         self.assertEqual([x["actual_exit_code"] for x in r["results"]], [42, 42])
+        old = r
+        self.assertEqual(old["evidence_scope"],
+                         "HISTORICAL_GUEST_BEFORE_62BIT_AND_STATE_HARDENING")
+        hard = self.manifest["hardening_evidence"]
+        self.assertIn("/actions/runs/43647064377", hard["run"])
+        self.assertEqual(hard["carrier_head"], "943f4186932bc9a49a1067e0f5535273cd0d2665")
+        self.assertEqual(hard["source_compiler_commit"],
+                         "860137bcdc50684ab6cb6aa8f89932506b3beec4")
+        self.assertEqual(hard["cases"], 1255)
+        self.assertEqual(hard["additional_cases_vs_pre_hardening"], 541)
+        self.assertEqual(hard["host_imports"], 0)
+        self.assertTrue(hard["guest_wasm_compiled"])
+        self.assertTrue(hard["guest_wasm_executed"])
+        self.assertTrue(hard["deterministic_artifacts"])
+        self.assertEqual(hard["expected_exit_code"], 42)
+        self.assertEqual(hard["negative_input"], "E_UNBOUND_FAIL_CLOSED")
+        self.assertFalse(hard["network_execution"])
+        self.assertFalse(hard["other_backend_execution"])
+        self.assertFalse(hard["native_machine_aot"])
+        self.assertEqual(
+            [row["path"] for row in hard["fixture_artifacts"]],
+            [row["path"] for row in self.manifest["fixtures"]],
+        )
         self.assertEqual(self.manifest["status"], "EXECUTED_RS_GUEST_ONLY_NO_HTTP3_TRANSPORT")
         self.assertEqual({x["backend"] for x in self.manifest["targets"]},
                          {"llvm", "java", "net", "rs", "wasm"})
