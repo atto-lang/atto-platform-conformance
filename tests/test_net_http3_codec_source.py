@@ -35,6 +35,28 @@ class Http3CodecSourceAudit(unittest.TestCase):
             total += checks
         self.assertEqual(total, 1255)
 
+    def test_llvm_native_aot_receipt_is_real_and_scope_limited(self):
+        evidence = self.manifest["llvm_native_aot_evidence"]
+        raw = (ROOT / evidence["receipt"]).read_bytes()
+        self.assertEqual(git_sha(raw), evidence["git_blob_sha"])
+        receipt = json.loads(raw)
+        self.assertEqual(receipt["runner"]["run"], evidence["url"])
+        self.assertEqual(receipt["source_snapshot"]["commit"],
+                         evidence["verified_source_head"])
+        self.assertEqual(receipt["source_snapshot"]["full_tree"],
+                         evidence["verified_source_tree"])
+        self.assertEqual(sum(x["cases"] for x in receipt["fixtures"]), 1255)
+        self.assertTrue(receipt["execution"]["actual_guest_execute"])
+        self.assertTrue(receipt["execution"]["direct_cli_native_elf_verified"])
+        self.assertTrue(receipt["execution"]["asan_ubsan_smoke_passed"])
+        self.assertFalse(receipt["execution"]["runtime_guest_vm"])
+        self.assertFalse(receipt["execution"]["runtime_jit"])
+        self.assertFalse(evidence["actor_runtime"])
+        self.assertFalse(evidence["quic_tls_network"])
+        self.assertFalse(evidence["full_language_aot"])
+        self.assertFalse(receipt["unsupported"]["http3_client_server_wire"])
+        self.assertEqual(evidence["scalar_pure_cases"], 1255)
+
     def test_evidence_does_not_claim_actual_http3_networking(self):
         r = self.manifest["guest_evidence"]
         self.assertEqual(r["carrier_head"], "20fa8c4e421d5a438c1db337868bd66bbeb7a184")
@@ -69,7 +91,8 @@ class Http3CodecSourceAudit(unittest.TestCase):
             [row["path"] for row in hard["fixture_artifacts"]],
             [row["path"] for row in self.manifest["fixtures"]],
         )
-        self.assertEqual(self.manifest["status"], "EXECUTED_RS_GUEST_ONLY_NO_HTTP3_TRANSPORT")
+        self.assertEqual(self.manifest["status"],
+                         "RS_WASM_AND_LLVM_ELF_SCALAR_GUESTS_PASSED_NO_HTTP3_WIRE")
         self.assertEqual({x["backend"] for x in self.manifest["targets"]},
                          {"llvm", "java", "net", "rs", "wasm"})
         for x in self.manifest["targets"]:
@@ -77,6 +100,10 @@ class Http3CodecSourceAudit(unittest.TestCase):
             self.assertEqual(x["client_server_loopback"], "NOT_EXECUTED")
             if x["backend"] == "rs":
                 self.assertEqual(x["guest_codec_execution"], "PASS_RUST_TO_WASM")
+            elif x["backend"] == "llvm":
+                self.assertEqual(x["guest_codec_execution"], "PASS_LLVM_NATIVE_ELF_SCALAR_AOT")
+                self.assertTrue(x["scalar_zero_guest_gc"])
+                self.assertEqual(x["actor_runtime"], "NOT_IMPLEMENTED")
             else:
                 self.assertEqual(x["guest_codec_execution"], "NOT_EXECUTED")
 
