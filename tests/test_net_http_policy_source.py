@@ -21,8 +21,28 @@ class HttpPolicyFixtureTest(unittest.TestCase):
         self.assertTrue(src.startswith(b"// expect-exit: 42\n"))
         self.assertEqual({row["backend"] for row in contract["backend_results"]},
                          {"llvm", "java", "net", "rs", "wasm"})
-        self.assertTrue(all(not row["guest_executed"] for row in contract["backend_results"]))
-        self.assertTrue(all(not row["guest_compiled"] for row in contract["backend_results"]))
+        exhaustive = contract["exhaustive_guest_fixture"]
+        self.assertEqual(exhaustive["policy_cases"], 48)
+        self.assertEqual(exhaustive["expected_exit_code"], 42)
+        guest = (ROOT / exhaustive["path"]).read_bytes()
+        self.assertEqual(git_blob_sha(guest), exhaustive["git_blob_sha"])
+        self.assertEqual(sum(line.startswith(b"  if ") for line in guest.splitlines()), 48)
+        for row in contract["backend_results"]:
+            if row["backend"] == "rs":
+                self.assertTrue(row["guest_compiled"])
+                self.assertTrue(row["guest_executed"])
+                evidence = row["evidence"]
+                self.assertEqual(evidence["status"], "PASS_POLICY_GUEST_ONLY")
+                self.assertEqual(evidence["fixture_blob_sha"], exhaustive["git_blob_sha"])
+                self.assertEqual(evidence["exhaustive_cases"], 48)
+                self.assertEqual(evidence["expected_exit_code"], 42)
+                self.assertFalse(evidence["actual_http3_wire_proven"])
+                self.assertIn("/actions/runs/43644258623", evidence["run_url"])
+            else:
+                self.assertFalse(row["guest_executed"])
+                self.assertFalse(row["guest_compiled"])
+                self.assertNotIn("evidence", row)
+            self.assertEqual(row["network_protocol_execution"], "NOT_EXECUTED")
 
 if __name__ == "__main__":
     unittest.main()
