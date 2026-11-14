@@ -3,6 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 
 const contract = JSON.parse(readFileSync(
   new URL('../contracts/actor-base-lifecycle-v2.json', import.meta.url), 'utf8'));
@@ -314,6 +315,32 @@ test('typed trait behavior and state shape use different proofs', () => {
   assert.equal(requireImplementation({
     ...base, traits: ['ActorLifecycle']
   }), 'ACTOR_RESERVED_AUTHORITY');
+});
+
+test('physical .atto fixture blobs match immutable cross-backend source pins', () => {
+  const corpus = contract.corpus;
+  assert.equal(corpus.status, 'SOURCE_ONLY_NOT_EXECUTED');
+  assert.equal(corpus.owner, contract.schema);
+  assert.equal(Object.keys(corpus.git_blob_sha1).length, 5);
+  const root = new URL('../fixtures/actor-base-lifecycle-v2/', import.meta.url);
+  for (const [relative, expected] of Object.entries(corpus.git_blob_sha1)) {
+    assert.ok(/^(?:state-witness\/)?[a-z-]+\.atto$/.test(relative), relative);
+    assert.ok(/^[0-9a-f]{40}$/.test(expected), relative);
+    const bytes = readFileSync(new URL(relative, root));
+    const actual = createHash('sha1')
+      .update(Buffer.from('blob ' + bytes.length + '\0'))
+      .update(bytes)
+      .digest('hex');
+    assert.equal(actual, expected, relative);
+  }
+  const noInit = readFileSync(new URL('stateless-no-init.atto', root), 'utf8');
+  assert.ok(noInit.includes('declare actor Worker;'));
+  assert.ok(noInit.includes('define external mtd (Worker w) receive(ActorMail<String>'));
+  assert.ok(!/\binit\s*\(/.test(noInit));
+  assert.ok(noInit.includes('await worker.get_ready();'));
+  assert.ok(noInit.includes('await worker.get_done();'));
+  assert.ok(contract.candidate_implementations.every(x =>
+      x.status === 'AUTHORED_NOT_EXECUTED' && x.source_guest_certified === false));
 });
 
 test('source-free output is never a parity receipt', () => {
