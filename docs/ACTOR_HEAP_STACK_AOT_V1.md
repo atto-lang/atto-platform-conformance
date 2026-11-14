@@ -49,6 +49,33 @@ compiler-linked target artifacts run with nonzero CI steps, followed by
 compiler-generated per-turn frames, proper failure routing, and independent
 backend review. No source-free model result may promote these statuses.
 
+## Typed supervisor CONTROL host regression — NOT source-guest proof
+
+Native LLVM draft [#1814](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1814)
+is stacked on source-to-frame draft #1807. The new
+`tests/native_actor_frame_quota_supervisor_test.c` links the real native
+scheduler and actor-owned logical-frame store, and is registered in both
+host-only and full CMake/CTest profiles.
+
+The test **intends to execute**, in one scheduler instance:
+- A exhausts its one-frame quota and cancels its logical turn without aborting.
+- B's separate logical frame writes and reads back 42.
+- The **trusted host** waits for physical A STOP, closes A's frame store, and
+  publishes `OresNativeActorTerminalFailure` to its parent's **typed priority
+  CONTROL** lane; supervisor callback authenticates generation, source code
+  and correlation.
+- The host spawns replacement A at a **different scheduler slot** with actor
+  incarnation 2; prior ActorRef and frame tokens fail closed.
+
+**Evidence discipline:** GCC and Clang locally syntax-checked the new C11
+test under `-Werror` against minimal signature-matched scheduler declarations.
+The real scheduler executable, LLVM compiler, and compiled `.atto` AOT guest
+were **NOT EXECUTED** locally. This does not establish a language-level
+supervised restart, exactly-once delivery across CONTROL saturation, host
+registration through `NativeOresVM.spawn_supervised`, or native segfault
+containment. Do not promote any of the six contract cases from
+`NOT_EXECUTED` until exact-head compiler and guest evidence is available.
+
 ## Dependencies and release order
 
 1. Actor memory contract in `atto-common-source` PR #13; reconcile with `shared-actor-arenas.v1` and actor transfer contracts.
