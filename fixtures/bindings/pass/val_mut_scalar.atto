@@ -1,0 +1,2 @@
+// expect-exit: 1
+pub fnc main(): int { val mut x: int = 1; return x; }
