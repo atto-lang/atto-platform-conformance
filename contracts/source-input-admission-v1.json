@@ -57,6 +57,66 @@
       "hex": "eda080",
       "status": "invalid_utf8",
       "offset": 1
+    },
+    {
+      "name": "nul-at-start",
+      "hex": "00",
+      "status": "nul",
+      "offset": 0
+    },
+    {
+      "name": "nul-in-quoted-string",
+      "hex": "22610022",
+      "status": "nul",
+      "offset": 2
+    },
+    {
+      "name": "nul-after-multibyte-comment",
+      "hex": "2f2a20c3a9202a2f00",
+      "status": "nul",
+      "offset": 8
+    },
+    {
+      "name": "overlong-2-byte",
+      "hex": "c0af",
+      "status": "invalid_utf8",
+      "offset": 0
+    },
+    {
+      "name": "overlong-3-byte",
+      "hex": "e08080",
+      "status": "invalid_utf8",
+      "offset": 1
+    },
+    {
+      "name": "above-unicode-range",
+      "hex": "f4908080",
+      "status": "invalid_utf8",
+      "offset": 1
+    },
+    {
+      "name": "stray-continuation",
+      "hex": "6180",
+      "status": "invalid_utf8",
+      "offset": 1
+    },
+    {
+      "name": "truncated-4-byte",
+      "hex": "78f09080",
+      "status": "invalid_utf8",
+      "offset": 1
+    },
+    {
+      "name": "valid-u10ffff",
+      "hex": "f48fbfbf",
+      "status": "valid",
+      "offset": null
+    },
+    {
+      "name": "valid-combining-mark",
+      "hex": "65cc81",
+      "status": "valid",
+      "offset": null
     }
   ],
   "backend_profiles": {
