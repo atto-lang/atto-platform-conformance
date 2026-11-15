@@ -48,7 +48,7 @@ jobs:
           set -euo pipefail
           test_source=tests/actor-execution-oracle-v1.test.mjs
           expected="$(grep -Ec '^test\(' "$test_source")"
-          test "$expected" = 13 || {
+          test "$expected" = 14 || {
             echo "ORACLE_TEST_INVENTORY_MISMATCH: $expected" >&2
             exit 1
           }
