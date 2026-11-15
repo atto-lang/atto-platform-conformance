@@ -27,8 +27,9 @@ static_assert(!std::is_constructible_v<Handle, std::uint32_t, std::uint32_t,
                                       std::uint32_t, std::uint32_t>);
 struct Region {
   std::array<std::int64_t, 16> data{};
+  std::array<bool, 16> initialized{}; // zeroed bytes are not initialized language values
   std::uint32_t generation = 1, tenant = 0, actor = 0, count = 0;
-  std::uint32_t readers = 0;
+  std::uint32_t readers = 0, shares = 0;
   bool live = false, writer = false, frozen = false, retired = false;
 };
 class Arena {
@@ -49,8 +50,8 @@ public:
       if (!r.live && !r.retired) {
         r.live = true; r.tenant = tenant; r.actor = actor;
         r.count = static_cast<std::uint32_t>(count);
-        r.readers = 0; r.writer = false; r.frozen = false;
-        r.data.fill(0);
+        r.readers = 0; r.shares = 0; r.writer = false; r.frozen = false;
+        r.data.fill(0); r.initialized.fill(false);
         return Handle{i, r.generation, tenant, actor};
       }
     }
@@ -58,13 +59,15 @@ public:
   }
   std::optional<std::int64_t> read(const Handle& h, std::uint64_t index) {
     auto* r = valid(h);
-    if (!r || r->writer || index >= r->count) return std::nullopt;
+    if (!r || r->writer || index >= r->count ||
+        !r->initialized[static_cast<std::size_t>(index)]) return std::nullopt;
     return r->data[static_cast<std::size_t>(index)];
   }
   bool write(const Handle& h, std::uint64_t index, std::int64_t value) {
     auto* r = valid(h);
     if (!r || r->writer || r->readers || r->frozen || index >= r->count) return false;
     r->data[static_cast<std::size_t>(index)] = value;
+    r->initialized[static_cast<std::size_t>(index)] = true;
     return true;
   }
   bool read_loan(const Handle& h) {
@@ -92,16 +95,29 @@ public:
     if (!r || r->readers || r->writer) return false;
     r->frozen = true; return true;
   }
+  // Model a scoped immutable share. No guest token or real thread scheduling
+  // is implemented here; the runtime must prove loan identity separately.
+  bool share_loan(const Handle& h) {
+    auto* r = valid(h);
+    if (!r || !r->frozen || r->writer || r->shares == std::numeric_limits<std::uint32_t>::max())
+      return false;
+    ++r->shares; return true;
+  }
+  bool end_share_loan(const Handle& h) {
+    auto* r = valid(h);
+    if (!r || !r->shares) return false;
+    --r->shares; return true;
+  }
   std::optional<Handle> move(const Handle& h, std::uint32_t tenant, std::uint32_t actor, bool admitted) {
     auto* r = valid(h);
-    if (!r || !admitted || r->readers || r->writer || r->tenant != tenant ||
+    if (!r || !admitted || r->readers || r->shares || r->writer || r->tenant != tenant ||
         r->generation == std::numeric_limits<std::uint32_t>::max()) return std::nullopt;
     ++r->generation; r->actor = actor;
     return Handle{h.slot_, r->generation, tenant, actor};
   }
   bool close(const Handle& h) {
     auto* r = valid(h);
-    if (!r || r->readers || r->writer) return false;
+    if (!r || r->readers || r->shares || r->writer) return false;
     r->live = false;
     if (r->generation == std::numeric_limits<std::uint32_t>::max()) r->retired = true;
     else ++r->generation;
@@ -111,6 +127,10 @@ public:
 int main() {
   Arena a;
   auto h = a.allocate(3, 7, 41); assert(h);
+  assert(!a.read(*h, 0));                           // uninitialized read denied
+  assert(!a.read(*h, 2));                           // distinct uninitialized element denied
+  assert(a.write(*h, 1, 0));                         // an initialized zero is a valid value
+  assert(a.read(*h, 1) == 0);
   assert(a.write(*h, 0, 42));                        // 1: valid write
   assert(a.read(*h, 0) == 42);                       // 2: valid read
   assert(!a.read(*h, 3));                           // 3: one past end
@@ -131,11 +151,21 @@ int main() {
   assert(a.read(*next, 0) == 42);
   assert(a.freeze(*next));                          // 14: immutable share disallows writes
   assert(!a.write(*next, 0, 1));
+  assert(!a.read(*next, 2));                        // freeze must not initialize memory
+  assert(a.share_loan(*next));
+  assert(a.share_loan(*next));
+  assert(!a.close(*next));                          // no free while shares still live
+  assert(!a.move(*next, 7, 43, true));              // no actor transfer with live shares
+  assert(a.end_share_loan(*next));
+  assert(!a.close(*next));                          // second share still pins region
+  assert(a.end_share_loan(*next));
+  assert(!a.end_share_loan(*next));                  // cannot underflow share accounting
+  assert(!a.share_loan(*h));                        // revoked owner cannot resurrect share
   assert(a.close(*next));                           // 15: close revokes and invalidates
   assert(!a.close(*next) && !a.read(*next, 0));
   assert(!a.allocate(UINT64_MAX, 7, 41));           // 16: no allocation arithmetic wrap
   auto zero = a.allocate(0, 7, 44); assert(zero);
   assert(!a.read(*zero, 0));                        // 17: zero length invalid access
   assert(a.close(*zero));
-  std::cout << "17/17 pointer capability SOURCE-FREE model assertions passed\n";
+  std::cout << "pointer capability SOURCE-FREE model assertions passed\n";
 }
