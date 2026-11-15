@@ -47,10 +47,10 @@ test('bounded admission, generation fencing, closure and in-flight lifetime',()=
 
 test('typed finite state transitions reject invalid events without changing state',()=>{
   const m=new ActorProtocolOracle(spec());
-  assert.deepEqual(m.advance('done'),{status:'REJECTED',state:'idle'});
-  assert.deepEqual(m.advance('begin'),{status:'TRANSITIONED',state:'busy'});
-  assert.deepEqual(m.advance('begin'),{status:'REJECTED',state:'busy'});
-  assert.deepEqual(m.advance('done'),{status:'TRANSITIONED',state:'finished'});
+  assert.deepEqual(m.advance('done',7),{status:'REJECTED',state:'idle'});
+  assert.deepEqual(m.advance('begin',7),{status:'TRANSITIONED',state:'busy'});
+  assert.deepEqual(m.advance('begin',7),{status:'REJECTED',state:'busy'});
+  assert.deepEqual(m.advance('done',7),{status:'TRANSITIONED',state:'finished'});
   assert.throws(()=>new ActorProtocolOracle({...spec(),transitions:[
     {from:'idle',event:'start',to:'busy'},
     {from:'idle',event:'start',to:'finished'}]}),/ambiguous transition/);
@@ -201,4 +201,23 @@ test('queued and outstanding CONTROL never overtake each other',()=>{
   assert.equal(m.dispatchControl().ticket,'notice3');
   assert.equal(m.settle('notice3'),'SETTLED');
   assert.deepEqual(m.dispatchControl(),{status:'SUSPENDED'});
+});
+
+test('stale timer and cancellation events cannot mutate closed or restarted state',()=>{
+  const m=new ActorProtocolOracle(spec());
+  assert.throws(()=>m.advance('begin'),/INVALID_ACTOR_EXECUTION: epoch/);
+  assert.throws(()=>m.advance('begin',0),/INVALID_ACTOR_EXECUTION: epoch/);
+  assert.deepEqual(m.advance('begin',8),{status:'STALE_EPOCH',state:'idle'});
+  assert.deepEqual(m.advance('begin',7),{status:'TRANSITIONED',state:'busy'});
+  assert.equal(m.close(),'CLOSED');
+  assert.deepEqual(m.advance('done',7),{status:'CLOSED',state:'busy'});
+  assert.equal(m.drained(),true);
+  assert.equal(m.restart(8,'idle'),'RESTARTED_MODEL_ONLY');
+  // Timeout/cancellation callbacks captured for incarnation 7 must not
+  // alter incarnation 8 even if their event names match a valid new arm.
+  assert.deepEqual(m.advance('begin',7),{status:'STALE_EPOCH',state:'idle'});
+  assert.deepEqual(m.advance('done',7),{status:'STALE_EPOCH',state:'idle'});
+  assert.deepEqual(m.advance('begin',9),{status:'STALE_EPOCH',state:'idle'});
+  assert.deepEqual(m.advance('begin',8),{status:'TRANSITIONED',state:'busy'});
+  assert.deepEqual(m.advance('done',8),{status:'TRANSITIONED',state:'finished'});
 });
