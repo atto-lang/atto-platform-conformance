@@ -74,7 +74,12 @@
       "http3_wire": "NOT_IMPLEMENTED",
       "client_server_loopback": "NOT_EXECUTED",
       "scalar_zero_guest_gc": true,
-      "actor_runtime": "NOT_IMPLEMENTED"
+      "actor_runtime": "PASS_BOUNDED_NATIVE_LEGACY_ACTOR_ONLY",
+      "actor_vm_or_jit_required": false,
+      "native_actor_arena_isolated": true,
+      "new_receiver_mtd_supported": false,
+      "sealed_state_critical_supported": false,
+      "actor_supervisor_control_supported": false
     },
     {
       "backend": "java",
@@ -170,5 +175,64 @@
     "verified_reject_fake_clang_success": true,
     "quic_tls_wire_executed": false,
     "actor_runtime_executed": false
-  }
+  },
+  "llvm_actor_native_evidence": {
+    "baseline_receipt": "contracts/native-llvm-actor-aot-v1.json",
+    "baseline_sha": "b6511bfb60d2a837db08b555aa6acacc1034bac6",
+    "baseline_url": "https://github.com/athlet-o/athleto-e2e/actions/runs/43657189906",
+    "baseline_exact_tree": "f40cb5044af7ffb55cbd05dd7024cc7963d6042d",
+    "hardening_receipt": "contracts/native-llvm-actor-capacity-v1.json",
+    "hardening_sha": "d5384b231710387420417f9853795815ae807d2b",
+    "hardening_url": "https://github.com/athlet-o/athleto-e2e/actions/runs/43657779372",
+    "hardening_exact_tree": "099b089383525f0da89dd734fc7d86e659450f2c",
+    "guest_executions": 80,
+    "native_actor_pass_fixtures": 4,
+    "negative_actor_fixtures": 3,
+    "concurrent_mailbox_messages": 8000,
+    "actor_instance_limit_proven": 32,
+    "actor_runtime_scope": "BOUNDED_LEGACY_ACTORS_ONLY",
+    "actual_quic_tls_http3_network": false,
+    "full_actor_model": false
+  },
+  "actor_fixtures": [
+    {
+      "path": "fixtures/actors/pass/180-two-types-state.atto",
+      "git_blob_sha": "31a7248917db4fad90069af7d2c236d7a257dfa0",
+      "executions": 20,
+      "result": "PASS_LLVM_NATIVE_ELF"
+    },
+    {
+      "path": "fixtures/actors/pass/181-same-type-separate-state.atto",
+      "git_blob_sha": "08b2d59fb772886508eda38ff03de2c61e1dfd5a",
+      "executions": 20,
+      "result": "PASS_LLVM_NATIVE_ELF"
+    },
+    {
+      "path": "fixtures/actors/pass/182-method-and-fifo.atto",
+      "git_blob_sha": "fd6c08535705b52972427afc940476a8ebfb6e46",
+      "executions": 20,
+      "result": "PASS_LLVM_NATIVE_ELF"
+    },
+    {
+      "path": "fixtures/actors/pass/183-bool-mail.atto",
+      "git_blob_sha": "bcbf4c0a4e72abca113a0cda21c9333cd467da2a",
+      "executions": 20,
+      "result": "PASS_LLVM_NATIVE_ELF"
+    },
+    {
+      "path": "fixtures/actors/fail/184-actor-ref-state-access.atto",
+      "git_blob_sha": "977b3259bcec01b2000f0b0f10efde53f370d533",
+      "result": "REJECTED_LLVM_COMPILER"
+    },
+    {
+      "path": "fixtures/actors/fail/185-actor-message-mismatch.atto",
+      "git_blob_sha": "3adaa75dd908bf5a5c6dfdb1e9f567e8a5d4b0af",
+      "result": "REJECTED_LLVM_COMPILER"
+    },
+    {
+      "path": "fixtures/actors/fail/186-declare-mtd-not-lowered.atto",
+      "git_blob_sha": "e729fc5c1e973f64cb832cce184910b7351c4995",
+      "result": "REJECTED_LLVM_COMPILER"
+    }
+  ]
 }
