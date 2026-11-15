@@ -88,12 +88,12 @@ class Http3CodecSourceAudit(unittest.TestCase):
 
     def test_shared_native_actor_fixtures_are_sha_exact(self):
         rows = self.manifest["actor_fixtures"]
-        self.assertEqual(len(rows), 7)
+        self.assertEqual(len(rows), 21)
         passed = [r for r in rows if "/pass/" in r["path"]]
         rejected = [r for r in rows if "/fail/" in r["path"]]
-        self.assertEqual(len(passed), 4)
-        self.assertEqual(len(rejected), 3)
-        self.assertEqual(sum(r["executions"] for r in passed), 80)
+        self.assertEqual(len(passed), 6)
+        self.assertEqual(len(rejected), 15)
+        self.assertEqual(sum(r["executions"] for r in passed), 120)
         for row in rows:
             path = row["path"]
             self.assertTrue(path.startswith("fixtures/actors/"))
@@ -101,9 +101,9 @@ class Http3CodecSourceAudit(unittest.TestCase):
             self.assertEqual(git_sha((ROOT / path).read_bytes()),
                              row["git_blob_sha"])
             if row in passed:
-                self.assertEqual(row["result"], "PASS_LLVM_NATIVE_ELF")
+                self.assertIn(row["result"], ("PASS_LLVM_NATIVE_ELF", "PASS_LLVM_NATIVE_ELF_TARGET_MTD"))
             else:
-                self.assertEqual(row["result"], "REJECTED_LLVM_COMPILER")
+                self.assertIn(row["result"], ("REJECTED_LLVM_COMPILER", "REJECTED_LLVM_TARGET_GUARD"))
 
     def test_llvm_bounded_actor_receipts_and_capacity_proof(self):
         e = self.manifest["llvm_actor_native_evidence"]
@@ -134,6 +134,32 @@ class Http3CodecSourceAudit(unittest.TestCase):
                          "BOUNDED_LEGACY_ACTORS_ONLY")
         self.assertFalse(early["unsupported"]["supervisor_priority_control"])
         self.assertFalse(later["unsupported"]["critical_read_write_sealed_state"])
+
+    def test_native_target_mtd_and_scalar_guard_evidence(self):
+        e = self.manifest["llvm_target_mtd_evidence"]
+        raw = (ROOT / e["receipt"]).read_bytes()
+        self.assertEqual(git_sha(raw), e["sha"])
+        evidence = json.loads(raw)
+        self.assertEqual(evidence["runner"]["run"], e["native_runner"])
+        self.assertEqual(evidence["runner"]["conclusion"], "success")
+        self.assertEqual(evidence["source"]["verified_commit"],
+                         e["exact_llvm_source_commit"])
+        self.assertEqual(evidence["source"]["exact_git_tree"],
+                         e["exact_llvm_source_tree"])
+        self.assertEqual(evidence["verified"]["total_native_atto_actor_executions"],
+                         e["native_guest_runs"])
+        self.assertEqual(evidence["verified"]["negative_actor_compilation_fixtures"],
+                         e["negative_compilation_tests"])
+        for row in evidence["positive_guest_blobs"] + evidence["negative_guest_blobs"]:
+            path = ROOT / row["path"].replace("tests/","fixtures/",1)
+            self.assertEqual(git_sha(path.read_bytes()),row["git_blob"])
+        self.assertTrue(e["target_direct_state_access_rejected"])
+        self.assertFalse(e["general_critical_callbacks"])
+        self.assertFalse(e["full_actor_borrow_model"])
+        self.assertFalse(e["supervisor_control"])
+        self.assertFalse(e["real_quic_tls_http3_wire"])
+        self.assertFalse(evidence["executable_scope"]["concurrent_reader_writer_locks"])
+        self.assertFalse(evidence["executable_scope"]["full_borrow_checker"])
 
     def test_evidence_does_not_claim_actual_http3_networking(self):
         r = self.manifest["guest_evidence"]
