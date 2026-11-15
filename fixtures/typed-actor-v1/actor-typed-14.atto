@@ -1,0 +1,3 @@
+// ACTOR-TYPED-14; EXPECTED=REJECT; NOT_EXECUTED
+// Runtime-negative: untyped erased references must not mint ActorRef<Child>.
+define actor Child receives String as receive(ActorMail<String> m): void { return; } end

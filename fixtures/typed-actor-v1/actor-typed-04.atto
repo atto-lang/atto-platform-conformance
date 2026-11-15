@@ -1,0 +1,5 @@
+// ACTOR-TYPED-04; EXPECTED=ACCEPT; NOT_EXECUTED
+define actor Sink receives int as receive(ActorMail<int> m): void { return; } end
+define actor Fanout sends int as
+  on_start(): void { val a = spawn Sink(); val b = spawn Sink(); a.send(1); b.send(1); return; }
+end

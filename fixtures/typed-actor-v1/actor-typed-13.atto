@@ -1,0 +1,6 @@
+// ACTOR-TYPED-13; EXPECTED=REJECT; NOT_EXECUTED
+// Ownership-negative: borrowed mutable payload cannot cross actor boundary.
+define actor Child receives String as receive(ActorMail<String> m): void { return; } end
+define actor Sender sends String as
+  on_start(): void { spawn Child().send(rt borrow mut "unsafe"); return; }
+end

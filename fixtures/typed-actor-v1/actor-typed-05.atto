@@ -1,0 +1,5 @@
+// ACTOR-TYPED-05; EXPECTED=REJECT; NOT_EXECUTED
+define actor Sink receives String as receive(ActorMail<String> m): void { return; } end
+define actor Producer sends int as
+  on_start(): void { spawn Sink().send("not permitted by sends"); return; }
+end

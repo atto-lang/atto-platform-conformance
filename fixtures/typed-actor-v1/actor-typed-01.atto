@@ -1,0 +1,5 @@
+// ACTOR-TYPED-01; EXPECTED=ACCEPT; NOT_EXECUTED
+define actor Worker receives int as
+  receive(ActorMail<int> mail): void { return; }
+end
+pub routine main(): void { val w = spawn Worker(); w.send(1); return; }

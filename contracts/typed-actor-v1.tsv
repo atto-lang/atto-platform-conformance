@@ -1,0 +1,16 @@
+# case	expected	status	fixture	boundary
+ACTOR-TYPED-01	ACCEPT	NOT_EXECUTED	fixtures/typed-actor-v1/actor-typed-01.atto	SOURCE_ONLY
+ACTOR-TYPED-02	REJECT	NOT_EXECUTED	fixtures/typed-actor-v1/actor-typed-02.atto	SOURCE_ONLY
+ACTOR-TYPED-03	ACCEPT	NOT_EXECUTED	fixtures/typed-actor-v1/actor-typed-03.atto	SOURCE_ONLY
+ACTOR-TYPED-04	ACCEPT	NOT_EXECUTED	fixtures/typed-actor-v1/actor-typed-04.atto	SOURCE_ONLY
+ACTOR-TYPED-05	REJECT	NOT_EXECUTED	fixtures/typed-actor-v1/actor-typed-05.atto	SOURCE_ONLY
+ACTOR-TYPED-06	ACCEPT	NOT_EXECUTED	fixtures/typed-actor-v1/actor-typed-06.atto	SOURCE_ONLY
+ACTOR-TYPED-07	ACCEPT	NOT_EXECUTED	fixtures/typed-actor-v1/actor-typed-07.atto	SOURCE_ONLY
+ACTOR-TYPED-08	REJECT	NOT_EXECUTED	fixtures/typed-actor-v1/actor-typed-08.atto	SOURCE_ONLY
+ACTOR-TYPED-09	ACCEPT	NOT_EXECUTED	fixtures/typed-actor-v1/actor-typed-09.atto	SOURCE_ONLY
+ACTOR-TYPED-10	REJECT	NOT_EXECUTED	fixtures/typed-actor-v1/actor-typed-10.atto	SOURCE_ONLY
+ACTOR-TYPED-11	ACCEPT	NOT_EXECUTED	fixtures/typed-actor-v1/actor-typed-11.atto	SOURCE_ONLY
+ACTOR-TYPED-12	REJECT	NOT_EXECUTED	fixtures/typed-actor-v1/actor-typed-12.atto	SOURCE_ONLY
+ACTOR-TYPED-13	REJECT	NOT_EXECUTED	fixtures/typed-actor-v1/actor-typed-13.atto	SOURCE_ONLY
+ACTOR-TYPED-14	REJECT	NOT_EXECUTED	fixtures/typed-actor-v1/actor-typed-14.atto	SOURCE_ONLY
+ACTOR-TYPED-15	REJECT	NOT_EXECUTED	fixtures/typed-actor-v1/actor-typed-15.atto	SOURCE_ONLY

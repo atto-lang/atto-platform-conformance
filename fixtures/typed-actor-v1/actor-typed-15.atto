@@ -1,0 +1,8 @@
+// ACTOR-TYPED-15; EXPECTED=REJECT; NOT_EXECUTED
+// Strict-mode negative: finite input union not handled exhaustively.
+define actor Child receives int | String as
+  receive(ActorMail<int | String> m): void {
+    match m.value over on is int -> return; end
+    return;
+  }
+end

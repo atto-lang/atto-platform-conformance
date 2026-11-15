@@ -1,0 +1,3 @@
+// ACTOR-TYPED-12; EXPECTED=REJECT; NOT_EXECUTED
+// Runtime probe: reject stale cross-isolate protocol generation.
+define actor Child receives String as receive(ActorMail<String> m): void { return; } end
