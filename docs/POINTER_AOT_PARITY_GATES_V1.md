@@ -19,7 +19,7 @@ Independent staged PRs may contain other prototype work; this table does not inv
 
 The finite two-slot, 16-element C++20 reference model checks 17 assertions for valid loads/stores, one-past-end, large index denial, read/exclusive loan incompatibility, failed-send rollback, foreign-tenant rejection, successful move with old-generation revocation, permanent freeze, close/revocation, overflowing allocation request and zero-size region denial.
 
-Local verification on 2026-11-15 against model blob SHA **9c0f018d457f08400a707e4e4e43477d7408301b**:
+Local verification on 2026-11-15 against model blob SHA **96117e25a599d11ebc679c459d28b6a9c02c2e18**:
 
 - g++ -std=c++20 -O2 -Wall -Wextra -Werror -pedantic: 17/17 passed.
 - clang++ -std=c++20 -O1 -g -Wall -Wextra -Werror -pedantic -fsanitize=address,undefined -fno-omit-frame-pointer: 17/17 passed.
