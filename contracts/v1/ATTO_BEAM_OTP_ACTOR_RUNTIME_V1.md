@@ -21,10 +21,10 @@ Use finite deterministic state/event transition tables. Invalid or ambiguous tra
 
 ## Mailboxes
 
-- Bounded DATA admission and explicit FULL/CLOSED/STALE_EPOCH results. Do not silently drop or turn failed admission into a successful acknowledgement.
+- Bounded DATA admission and explicit FULL/CLOSED/STALE_EPOCH results. **Credits count queued plus dispatched-but-unsettled receipts, separately in DATA and CONTROL lanes; dequeue does not refund capacity.** Do not silently drop or turn failed admission into a successful acknowledgement. The source-free model now checks in-flight escrow saturation and only refunds a credit on settlement (or explicit close of queued DATA).
 - Selective receive takes the earliest matching DATA ticket while leaving skipped DATA tickets available. Blocking receive must park the logical task rather than spin on EMPTY.
 - Supervisor CONTROL takes dispatch priority independent of guest DATA selection. The source-free oracle now separates guest-style DATA dispatch from trusted CONTROL dispatch. While CONTROL is queued or unacknowledged, DATA dispatch returns CONTROL_PENDING; a matching DATA tag cannot consume a supervisor notice. The guest cannot consume or suppress its panic CONTROL. Runtime CONTROL dispatch must be capability-restricted by each backend; the source-free JavaScript model does not authenticate that caller. CONTROL overflow is an explicit failure, not successful delivery; runtime escalation must be independently designed and proven.
-- Close withdraws queued DATA but preserves queued/in-flight CONTROL until supervisor settlement. Inflight DATA remains accountable after close. No double settlement. Restart must fence old epochs and additionally require actual physical quiescence.
+- Close withdraws queued DATA but preserves queued/in-flight CONTROL until supervisor settlement. Inflight DATA remains accountable after close. No double settlement. If multiple CONTROL notices exist, the model handles them one at a time in FIFO order and returns CONTROL_INFLIGHT until the previous notice is settled. Restart must fence old epochs and additionally require actual physical quiescence.
 - Oracle dispatch represents trusted runtime selection, **not** a public guest-callable operation.
 
 ## Ownership and binary
