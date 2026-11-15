@@ -1,5 +1,5 @@
 // SOURCE-FREE C++20 MODEL ONLY: not an AttoLang guest or backend.
-// Tests bounded, generation-checked, actor-scoped pointer capabilities without UB.
+// Exercises generation-checked, actor-scoped pointer capabilities without UB.
 #include <array>
 #include <cassert>
 #include <cstdint>
