@@ -77,13 +77,14 @@
       "actor_runtime": "PASS_BOUNDED_NATIVE_LEGACY_ACTOR_ONLY",
       "actor_vm_or_jit_required": false,
       "native_actor_arena_isolated": true,
-      "new_receiver_mtd_supported": false,
+      "new_receiver_mtd_supported": true,
       "sealed_state_critical_supported": true,
       "actor_supervisor_control_supported": false,
       "target_actor_mtd": "PASS_BOUNDED_NATIVE_SCALAR_CRITICAL_ONLY",
-      "sealed_state_scope": "one scalar read or pure scalar assignment, serialized worker",
+      "sealed_state_scope": "ONE_READ_OR_PURE_ASSIGNMENT_PER_CALLBACK_SERIALIZED_ACTOR_WORKER",
       "full_borrow_checker": false,
-      "concurrent_rw_locks": false
+      "concurrent_rw_locks": false,
+      "new_receiver_mtd_scope": "CONCRETE_LOCAL_NATIVE_SCALAR_ONLY"
     },
     {
       "backend": "java",
