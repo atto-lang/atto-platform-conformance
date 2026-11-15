@@ -9,6 +9,7 @@ const requireId = (x, field) => { if (!ident(x)) fail(field); };
 const requireEpoch = e => { if (!size(e, 1, 0x7fffffff)) fail('epoch'); };
 
 export class ActorProtocolOracle {
+  #initialState;
   constructor({id, epoch=1, dataCapacity=4, controlCapacity=4, states, initial, transitions}) {
     requireId(id, 'actor ID'); requireEpoch(epoch);
     if (!size(dataCapacity, 1, 32) || !size(controlCapacity, 1, 4)) fail('capacity');
@@ -26,7 +27,7 @@ export class ActorProtocolOracle {
       this.transitions.set(key, t.to);
     }
     this.id=id; this.epoch=epoch; this.dataCapacity=dataCapacity;
-    this.controlCapacity=controlCapacity; this.state=initial;
+    this.controlCapacity=controlCapacity; this.#initialState=initial; this.state=initial;
     this.data=[]; this.control=[]; this.inflight=new Map();
     this.seen=new Set(); this.closed=false;
   }
@@ -104,7 +105,10 @@ export class ActorProtocolOracle {
     if (nextEpoch<=this.epoch || !this.drained()) fail('unsafe restart or stale generation');
     // A real backend must separately prove physical quiescence and arena retirement.
     if (initial !== undefined && !this.states.has(initial)) fail('restart state');
-    this.epoch=nextEpoch;this.closed=false;this.state=initial === undefined ? this.state : initial;
+    // New incarnations start fresh, never from mutable state left by the
+    // retired incarnation (unless the supervisor names another valid initial state).
+    this.epoch=nextEpoch;this.closed=false;
+    this.state=initial === undefined ? this.#initialState : initial;
     this.seen.clear();
     return 'RESTARTED_MODEL_ONLY';
   }
