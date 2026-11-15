@@ -81,8 +81,12 @@ export class ActorProtocolOracle {
     if (!this.inflight.delete(ticket)) return 'INVALID';
     return 'SETTLED';
   }
-  advance(event) {
-    requireId(event,'event');
+  // A queued timer, cancellation, or state event belongs to its originating
+  // actor incarnation. It must never mutate a restarted or closed actor.
+  advance(event, epoch) {
+    requireId(event,'event'); requireEpoch(epoch);
+    if (epoch!==this.epoch) return {status:'STALE_EPOCH',state:this.state};
+    if (this.closed) return {status:'CLOSED',state:this.state};
     const next=this.transitions.get(this.state+'/'+event);
     if (!next) return {status:'REJECTED',state:this.state};
     this.state=next;
