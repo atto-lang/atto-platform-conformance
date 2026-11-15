@@ -23,7 +23,7 @@ Use finite deterministic state/event transition tables. Invalid or ambiguous tra
 
 - Bounded DATA admission and explicit FULL/CLOSED/STALE_EPOCH results. Do not silently drop or turn failed admission into a successful acknowledgement.
 - Selective receive takes the earliest matching DATA ticket while leaving skipped DATA tickets available. Blocking receive must park the logical task rather than spin on EMPTY.
-- Supervisor CONTROL takes dispatch priority independent of guest DATA selection. The guest cannot consume or suppress its panic CONTROL. CONTROL overflow is an explicit failure, not successful delivery; runtime escalation must be independently designed and proven.
+- Supervisor CONTROL takes dispatch priority independent of guest DATA selection. The source-free oracle now separates guest-style DATA dispatch from trusted CONTROL dispatch. While CONTROL is queued or unacknowledged, DATA dispatch returns CONTROL_PENDING; a matching DATA tag cannot consume a supervisor notice. The guest cannot consume or suppress its panic CONTROL. Runtime CONTROL dispatch must be capability-restricted by each backend; the source-free JavaScript model does not authenticate that caller. CONTROL overflow is an explicit failure, not successful delivery; runtime escalation must be independently designed and proven.
 - Close withdraws queued DATA but preserves queued/in-flight CONTROL until supervisor settlement. Inflight DATA remains accountable after close. No double settlement. Restart must fence old epochs and additionally require actual physical quiescence.
 - Oracle dispatch represents trusted runtime selection, **not** a public guest-callable operation.
 
@@ -40,7 +40,7 @@ From the conformance repository root:
     node --test tests/actor-execution-oracle-v1.test.mjs
     node --test
 
-The reference tests verify bounded round-robin continuation slices, CONTROL priority, selective DATA receive order, capacity/backpressure, stale epochs, state machine transitions, borrows and ownership moves, remote serialization requirements, lifecycle fencing, and exact binary frame lengths.
+The reference tests verify bounded round-robin continuation slices, CONTROL priority and delivery fencing, selective DATA receive order, DATA-tag spoofing isolation, capacity/backpressure, stale epochs, state machine transitions, borrows and ownership moves, remote serialization requirements, lifecycle fencing, and exact binary frame lengths.
 
 The oracle always labels simulated scheduling as compiledGuestExecuted=false and nativePreemptionProven=false; the binary view is marked nativeZeroCopyProven=false. Restart and reclamation return MODEL_ONLY classifications.
 
