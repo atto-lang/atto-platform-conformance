@@ -78,7 +78,8 @@
     },
     "cranelift": {
       "repo": "ores-truffle-oreslang/oreslang-source.cranelift",
-      "state": "NOT_VERIFIED"
+      "pr": 120,
+      "state": "DRAFT_NOT_EXECUTED"
     },
     "js": {
       "repo": "ores-truffle-oreslang/oreslang-source.js",
