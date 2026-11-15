@@ -37,7 +37,12 @@ export class ActorProtocolOracle {
     if (this.seen.has(ticket)) return 'DUPLICATE_TICKET';
     const queue=lane==='CONTROL'?this.control:this.data;
     const cap=lane==='CONTROL'?this.controlCapacity:this.dataCapacity;
-    if (queue.length >= cap) return 'FULL';
+    // A dequeue transfers custody, not capacity. Both queued and checked-out
+    // receipts consume a lane credit until the physical settlement boundary.
+    // Otherwise a receiver that never ACKs can admit arbitrarily many frames.
+    const outstanding=queue.length+
+      [...this.inflight.values()].filter(message=>message.lane===lane).length;
+    if (outstanding >= cap) return 'FULL';
     queue.push({ticket,kind,epoch,lane}); this.seen.add(ticket);
     return 'ACCEPTED';
   }
@@ -62,6 +67,10 @@ export class ActorProtocolOracle {
   // Trusted supervisor-side path ONLY. This JS method is a reference-model
   // operation, not an authorization token or an AttoLang guest API.
   dispatchControl() {
+    // Supervisor handling is single-flight, even when several CONTROL credits
+    // exist. A later notice waits for settlement of the currently held one.
+    if ([...this.inflight.values()].some(message=>message.lane==='CONTROL'))
+      return {status:'CONTROL_INFLIGHT'};
     const message=this.control.shift();
     if (!message) return {status:this.closed?'CLOSED':'SUSPENDED'};
     this.inflight.set(message.ticket,message);
