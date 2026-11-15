@@ -26,6 +26,14 @@ test("mobile copy preflight never turns overlap into admission", () => {
   assert.equal(mobile_copy_preflight({...base, length:65537}), "MESSAGE_TOO_LARGE");
   assert.equal(mobile_copy_preflight({...base, length:0, source_present:false, scratch_present:false}), "OK");
 });
+test("preflight oracle rejects absent or malformed requests without throwing", () => {
+  for (const request of [null, undefined, false, 0, "bad", [], NaN]) {
+    assert.equal(mobile_copy_preflight(request), "INVALID_ARGUMENT");
+  }
+  assert.equal(mobile_copy_preflight({length:3, capacity:3}), "INVALID_ARGUMENT");
+  assert.equal(mobile_copy_preflight({length:-1,capacity:1,source_present:true,scratch_present:true,overlaps:false}), "INVALID_ARGUMENT");
+  assert.equal(mobile_copy_preflight({length:0,capacity:0,source_present:false,scratch_present:false,overlaps:false}), "OK");
+});
 test("mailbox preflight validates state without consumption", () => {
   const slots=Object.freeze([0,3,0,0,0,0,0,0]);
   const box=Object.freeze({head:1,tail:2,count:1,slots});

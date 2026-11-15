@@ -17,7 +17,12 @@ export function replay_classify(window, sequence) {
   return (bitmap & (1n << delta)) === 0n ? "ACCEPT" : "DUPLICATE";
 }
 
-export function mobile_copy_preflight({length, capacity, source_present, scratch_present, overlaps}) {
+export function mobile_copy_preflight(request) {
+  // Reject absent or malformed host-reference requests without throwing.
+  // This models an invalid C call, not a usable guest-pointer validator.
+  if (!request || typeof request !== "object" || Array.isArray(request))
+    return "INVALID_ARGUMENT";
+  const {length, capacity, source_present, scratch_present, overlaps} = request;
   if (!Number.isSafeInteger(length) || length < 0 ||
       !Number.isSafeInteger(capacity) || capacity < 0 ||
       typeof source_present !== "boolean" || typeof scratch_present !== "boolean" ||
