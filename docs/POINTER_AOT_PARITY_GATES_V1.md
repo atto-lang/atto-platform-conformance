@@ -24,7 +24,7 @@ Local verification on 2026-11-15 against model blob SHA **96117e25a599d11ebc679c
 - g++ -std=c++20 -O2 -Wall -Wextra -Werror -pedantic: 17/17 passed.
 - clang++ -std=c++20 -O1 -g -Wall -Wextra -Werror -pedantic -fsanitize=address,undefined -fno-omit-frame-pointer: 17/17 passed.
 
-These are *historical* results for the earlier blob. The strengthened source blob `4a23a6bde66200f746893d22316dbaa55a011694` adds initialization masks, share-loan pinning and `NDEBUG` protection; its own exact-blob, executed GCC/Clang sanitizer receipt must be recorded separately and must not inherit the old 17/17 result.
+These are *historical* results for the earlier blob. The strengthened source blob `4a23a6bde66200f746893d22316dbaa55a011694` adds initialization masks, share-loan pinning and `NDEBUG` protection; its own executed proof is **[private Actions #43760576522](https://github.com/zed-pkg-test/oreslang-private-pr-validation-20261012/actions/runs/43760576522)** (completed success, all job steps executed), with the exact model Git blob rehashed before execution. Both GCC `-O2` and Clang ASan/UBSan compiled and ran every model assertion successfully. A deliberate `-DNDEBUG` compile was **rejected** at preprocessing as required, preventing false tests when `assert` is disabled. This is still **source-free model only**, not an AttoLang compiled guest, a native `Pointer<T>` AOT execution or concurrency proof.
 
 The model has no thread scheduler, real actor runtime, compiler output or FFI. It cannot prove correct native AOT lowering, hard real time, low/zero guest GC or multi-backend parity. Its pointer aliases are model Handle values, not machine addresses.
 
