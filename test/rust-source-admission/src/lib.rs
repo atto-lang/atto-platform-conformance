@@ -115,6 +115,72 @@ mod tests {
         });
     }
 
+    /// This check uses the standard library's independent UTF-8 decoder
+    /// rather than a duplicate implementation of the byte-offset algorithm.
+    fn assert_utf8_invariants(bytes: &[u8]) {
+        let result = classify(bytes);
+        match result.kind {
+            "valid" => {
+                assert_eq!(result.offset, None);
+                assert!(std::str::from_utf8(bytes).is_ok(), "bad UTF-8 admitted");
+                assert!(!bytes.contains(&0), "raw NUL admitted");
+            }
+            "nul" => {
+                let offset = result.offset.expect("NUL must have an offset");
+                assert_eq!(bytes.get(offset), Some(&0), "NUL location mismatch");
+                assert!(!bytes[..offset].contains(&0), "not first NUL");
+                assert!(
+                    std::str::from_utf8(&bytes[..offset]).is_ok(),
+                    "ill-formed UTF-8 preceding reported NUL"
+                );
+            }
+            "invalid_utf8" => {
+                assert!(result.offset.is_some(), "UTF-8 error missing byte offset");
+                assert!(
+                    std::str::from_utf8(bytes).is_err(),
+                    "invalid UTF-8 classification for valid bytes"
+                );
+            }
+            other => panic!("unexpected source classification: {other}"),
+        }
+    }
+
+    #[test]
+    fn exhaustive_two_byte_admission_invariants() {
+        // Covers all 65,536 byte pairs, including NUL before/after invalid
+        // UTF-8, overlong starts, standalone continuation and truncated leads.
+        for a in 0_u8..=u8::MAX {
+            for b in 0_u8..=u8::MAX {
+                assert_utf8_invariants(&[a, b]);
+            }
+        }
+    }
+
+    #[test]
+    fn deterministic_utf8_and_nul_mutation_campaign() {
+        // Reproducible, dependency-free corpus mutation; not a fuzzing proof.
+        let mut seed = 0x9e37_79b9_7f4a_7c15_u64;
+        for case in 0..20_000_u32 {
+            let next = |seed: &mut u64| {
+                *seed ^= *seed << 13;
+                *seed ^= *seed >> 7;
+                *seed ^= *seed << 17;
+                *seed
+            };
+            let len = (next(&mut seed) % 41) as usize;
+            let mut bytes = Vec::with_capacity(len);
+            for _ in 0..len {
+                let value = next(&mut seed) as u8;
+                bytes.push(match case % 4 {
+                    0 => 0x20 + value % 95, // printable ASCII only
+                    1 => if value % 7 == 0 { 0 } else { 0x20 + value % 95 },
+                    _ => value,
+                });
+            }
+            assert_utf8_invariants(&bytes);
+        }
+    }
+
     #[test]
     fn rejects_every_invalid_single_byte_without_panicking() {
         for lead in 0x80_u8..=0xff {
