@@ -1,0 +1,31 @@
+name: Typed actor message v1 Rust oracle (source-only)
+on:
+  push:
+    paths:
+      - 'tools/typed_actor_v1.rs'
+      - 'contracts/typed-actor-v1.tsv'
+      - 'fixtures/typed-actor-v1/**'
+      - '.github/workflows/typed-actor-v1-rust.yml'
+  pull_request:
+    paths:
+      - 'tools/typed_actor_v1.rs'
+      - 'contracts/typed-actor-v1.tsv'
+      - 'fixtures/typed-actor-v1/**'
+      - '.github/workflows/typed-actor-v1-rust.yml'
+permissions:
+  contents: read
+jobs:
+  rust-source-only-oracle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust source-only oracle tests (never guest parity)
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustc --version
+          rustc --edition=2021 --test tools/typed_actor_v1.rs -o /tmp/typed_actor_tests
+          /tmp/typed_actor_tests
+          rustc --edition=2021 tools/typed_actor_v1.rs -o /tmp/typed_actor_oracle
+          /tmp/typed_actor_oracle
