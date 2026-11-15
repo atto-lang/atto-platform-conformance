@@ -172,6 +172,59 @@ closure, not the complete private Git tree. The shared six-case canonical
 contract remains NOT_EXECUTED for cross-backend certification; this
 LLVM-only fixture is attached as concrete partial evidence.
 
+## Verified compiled one-for-one root-supervisor recovery (LLVM-only experimental fixture)
+
+[LLVM draft #1829](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1829)
+is stacked on #1824/#1819/#1814/#1807/#1801.
+`fixtures/llvm_native_actor_aot/actor_one_for_one_restart_a_b_42.atto`
+is the exact source fixture from that PR (Git blob
+**8030445fd3ffa664ebf6d82107f557da49e02661**).
+
+In the synchronous scalar AOT profile, `@ActorLifetimeFrameBudget(1)`
+enforces **one successful logical-frame admission per actor incarnation**,
+separate from the maximum simultaneous-frame depth. The actor also declares
+`@ActorRestartLimit(1)`: a bounded one-for-one supervisor policy.
+
+A processes payload 7, then payload 8 fails frame admission with typed
+actor-local failure code `0xA7700001`. After physical DONE and heap/frame
+reclamation, registered root priority CONTROL authorizes one fresh child
+A₂ with the **same budgets**, independent actor ID, physical scheduler slot,
+mailbox, heap and frame allocation. The consuming trusted-main
+`recover_blocking()` observes that supervisor-selected replacement.
+A₂ processes 9; sibling B remains alive and processes 42.
+The source guest receives exactly one root PANIC, two STOPPED notices,
+three terminal receipts and native exit 42. A stale old ActorRef is rejected
+and a duplicate recovery attempt denied in the native ABI regression.
+
+**Executed final exact-head alternative private Actions evidence:**
+[successful run #43667139629](https://github.com/athlet-o/athleto-docs/actions/runs/43667139629),
+source exact SHA **f71dcf0656d934219bc72a2c2cdbc6abb7a5b6ad**,
+carrier exact commit **451a70714bd09104d055cabd4993c6e64e5a5233**.
+Git blob identity verified **72/72** for the dependency-closed mirror
+(no cross-org GITHUB_TOKEN or custom secrets).
+GCC C11 strict warnings plus Clang ASan/UBSan executed **36/36** original
+repeated native test cases and **6/6** restart-budget-exhaustion variants;
+the original CMake host-only profile passed **7/7** CTest cases under
+each compiler (**14/14**). Compiled `.atto` native AOT
+(LLVM22 → llc22 → Clang) passed 3/3 one-for-one restart runs, 5/5
+quota-isolation runs and the healthy two-actor smoke.
+The negative `@ActorRestartLimit(5)` fixture failed without LLVM IR.
+
+**Security and completeness limits:** actor turn frames are synchronous
+scalar frames, not heap-owned resumable continuations. The new A₂ uses a
+new scheduler *slot* with a distinct physical identity; its initial slot
+generation value may also be 1 (slot identity provides freshness).
+A second quota failure by A₂ produces a second PANIC but **no A₃**, because
+the total restart allowance is exhausted; escalation is not yet a typed
+source-level Result or application supervisor policy. The root CONTROL
+callback chooses the restart, but the external trusted-main
+`recover_blocking()` bridge still drives old-child finalization.
+Unbounded CONTROL slot retry if the supervisor is permanently unavailable,
+process-wide native signal containment, full Git-tree verification,
+parallel receiver turns, and backend parity remain unverified.
+Therefore this LLVM experimental fixture must **not** be used to mark the
+canonical six-case five-backend contract PASS.
+
 ## Dependencies and release order
 
 1. Actor memory contract in `atto-common-source` PR #13; reconcile with `shared-actor-arenas.v1` and actor transfer contracts.
