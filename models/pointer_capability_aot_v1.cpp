@@ -8,6 +8,10 @@
 #include <optional>
 #include <type_traits>
 
+#if defined(NDEBUG)
+#error "Pointer capability reference-model assertions must not be compiled out"
+#endif
+
 class Handle {
   friend class Arena;
   std::uint32_t slot_, generation_, tenant_, actor_;
