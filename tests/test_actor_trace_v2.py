@@ -180,7 +180,7 @@ class ActorTraceV2Test(unittest.TestCase):
             self.assertEqual(main(["--require-parallel-receives", str(p)]), 1)
             self.assertEqual(main(["--require-parallel-reads", str(p)]), 1)
             # Reordered completion after the first turn ends gives no overlap.
-            t["events"][5], t["events"][7] = t["events"][7], t["events"][5]
+            t["events"][5:8] = [t["events"][7], t["events"][5], t["events"][6]]
             renumber(t["events"])
             p.write_text(json.dumps(t))
             self.assertFalse(verify_trace(t)["cross_actor_overlap_witnessed"])
