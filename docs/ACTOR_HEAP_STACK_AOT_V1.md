@@ -130,6 +130,48 @@ because their canonical fixture, output/negative criteria, and
 complete provenance have not been independently met.
 
 
+## Verified compiled LLVM actor-local frame admission failure (experimental fixture)
+
+[LLVM draft PR #1824](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/1824)
+is stacked on #1819/#1814/#1807/#1801. Its
+`tests/fixtures/actor-a-frame-quota-b-42.atto` has been copied byte-for-byte
+to `fixtures/llvm_native_actor_aot/actor_a_frame_quota_b_42.atto`,
+Git blob **567c7cdb606d95bd617ce467c9afc1845ad262a1**.
+
+The LLVM-only experimental annotation `@ActorFrameBudget(0)` sets an
+actor-local zero receiver-frame budget; LLVM emits a statically linked
+budgeted source-actor spawn and its generated `on_message` fails its first
+frame admission without treating its returned i64 zero as success.
+The guest calls `ActorRef.flush_blocking()` from trusted main to await
+physical callback outcomes before STOP (not from an actor carrier).
+Actor B handles payload 42 **after** A's frame failure. The root supervisor
+receives exactly one authenticated PANIC and one normal STOPPED CONTROL
+envelope, after heap and logical-frame reclamation.
+
+**Executed source-generated native AOT evidence:**
+[private alternate Actions #43657432032](https://github.com/athlet-o/athleto-docs/actions/runs/43657432032).
+Source LLVM exact commit **05d9731156cf433cab48bb5d3d28204d102a7ea1**,
+carrier commit **2f1f78b320c90b9f6a836789d73d032b4c2ba937**.
+69/69 exact source dependency blobs verified by Git SHA in the carrier.
+The LLVM compiler compiled the `.atto` source into native LLVM IR; matching
+LLVM22 `llc` emitted an object; Clang linked the real C runtime with
+ASan/UBSan; all **five** repeated guest executions passed with native exit 42,
+A accepted/processed=1, success=0, failed=1, code=0xA7700001; B
+processed/successful=1, last=42; exactly one PANIC and STOPPED.
+An `@ActorFrameBudget(17)` negative fixture produced no LLVM IR.
+The same run passed 30/30 repeated native C tests and 10/10 CTest
+executions across GCC and Clang sanitizers.
+
+**Do not promote the five-backend parity registry yet.** This verifies a
+zero-budget *frame-admission* boundary in the synchronous native scalar actor
+profile. It does not demonstrate a deep nested stack overflow, resumable
+actor-owned continuation frames, general heap OOM, concurrent receiver-state
+loans, automatic source-supervisor restart of A, or sandboxed native
+SIGSEGV containment. The private carrier mirrors the 69-file dependency
+closure, not the complete private Git tree. The shared six-case canonical
+contract remains NOT_EXECUTED for cross-backend certification; this
+LLVM-only fixture is attached as concrete partial evidence.
+
 ## Dependencies and release order
 
 1. Actor memory contract in `atto-common-source` PR #13; reconcile with `shared-actor-arenas.v1` and actor transfer contracts.
