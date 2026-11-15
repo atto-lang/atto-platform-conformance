@@ -17,7 +17,7 @@ Keep AttoLang actor-first and .atto guest fixtures. Preserve sealed actor state,
 
 ## Typed state machines
 
-Use finite deterministic state/event transition tables. Invalid or ambiguous transitions do not mutate state. All state events (including timer and cancellation events) must present the originating actor epoch: stale/future epochs return STALE_EPOCH without mutation, and a closed actor returns CLOSED. Restart must not permit events from earlier incarnations to affect the new actor. Postponed event delivery and timers are future requirements, **not implemented by this oracle**. All actual guest state mutation still obeys the sealed critical gate.
+Use finite deterministic state/event transition tables. Invalid or ambiguous transitions do not mutate state. All state events (including timer and cancellation events) must present the originating actor epoch: stale/future epochs return STALE_EPOCH without mutation, and a closed actor returns CLOSED. Restart must not permit events from earlier incarnations to affect the new actor. A new incarnation defaults to the actor's declared initial state rather than retaining mutable state from the retired generation; an explicit override must reference a declared valid state. Postponed event delivery and timers are future requirements, **not implemented by this oracle**. All actual guest state mutation still obeys the sealed critical gate.
 
 ## Mailboxes
 
