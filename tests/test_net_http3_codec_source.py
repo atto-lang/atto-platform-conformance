@@ -86,6 +86,55 @@ class Http3CodecSourceAudit(unittest.TestCase):
         self.assertFalse(r["quic_tls_wire_executed"])
         self.assertFalse(r["actor_runtime_executed"])
 
+    def test_shared_native_actor_fixtures_are_sha_exact(self):
+        rows = self.manifest["actor_fixtures"]
+        self.assertEqual(len(rows), 7)
+        passed = [r for r in rows if "/pass/" in r["path"]]
+        rejected = [r for r in rows if "/fail/" in r["path"]]
+        self.assertEqual(len(passed), 4)
+        self.assertEqual(len(rejected), 3)
+        self.assertEqual(sum(r["executions"] for r in passed), 80)
+        for row in rows:
+            path = row["path"]
+            self.assertTrue(path.startswith("fixtures/actors/"))
+            self.assertTrue(path.endswith(".atto"))
+            self.assertEqual(git_sha((ROOT / path).read_bytes()),
+                             row["git_blob_sha"])
+            if row in passed:
+                self.assertEqual(row["result"], "PASS_LLVM_NATIVE_ELF")
+            else:
+                self.assertEqual(row["result"], "REJECTED_LLVM_COMPILER")
+
+    def test_llvm_bounded_actor_receipts_and_capacity_proof(self):
+        e = self.manifest["llvm_actor_native_evidence"]
+        early_raw = (ROOT / e["baseline_receipt"]).read_bytes()
+        later_raw = (ROOT / e["hardening_receipt"]).read_bytes()
+        self.assertEqual(git_sha(early_raw), e["baseline_sha"])
+        self.assertEqual(git_sha(later_raw), e["hardening_sha"])
+        early, later = json.loads(early_raw), json.loads(later_raw)
+        self.assertEqual(early["carrier"]["run"], e["baseline_url"])
+        self.assertEqual(early["source"]["full_git_tree"],
+                         e["baseline_exact_tree"])
+        self.assertEqual(later["runner"]["run"], e["hardening_url"])
+        self.assertEqual(later["code_source"]["full_tree"],
+                         e["hardening_exact_tree"])
+        self.assertEqual(later["base_actor_receipt_blob"],
+                         e["baseline_sha"])
+        self.assertEqual(later["verified"]["maximum_actor_instances"],
+                         e["actor_instance_limit_proven"])
+        self.assertTrue(later["verified"]["maximum_actor_instances_actually_tested"])
+        self.assertTrue(later["verified"]["thirty_third_spawn_rejected"])
+        self.assertEqual(later["verified"]["abi_accepted_messages_total"],
+                         e["concurrent_mailbox_messages"])
+        self.assertEqual(later["verified"]["actor_native_guest_executions"],
+                         e["guest_executions"])
+        self.assertFalse(e["actual_quic_tls_http3_network"])
+        self.assertFalse(e["full_actor_model"])
+        self.assertEqual(e["actor_runtime_scope"],
+                         "BOUNDED_LEGACY_ACTORS_ONLY")
+        self.assertFalse(early["unsupported"]["supervisor_priority_control"])
+        self.assertFalse(later["unsupported"]["critical_read_write_sealed_state"])
+
     def test_evidence_does_not_claim_actual_http3_networking(self):
         r = self.manifest["guest_evidence"]
         self.assertEqual(r["carrier_head"], "20fa8c4e421d5a438c1db337868bd66bbeb7a184")
@@ -132,7 +181,13 @@ class Http3CodecSourceAudit(unittest.TestCase):
             elif x["backend"] == "llvm":
                 self.assertEqual(x["guest_codec_execution"], "PASS_LLVM_NATIVE_ELF_SCALAR_AOT")
                 self.assertTrue(x["scalar_zero_guest_gc"])
-                self.assertEqual(x["actor_runtime"], "NOT_IMPLEMENTED")
+                self.assertEqual(x["actor_runtime"],
+                                 "PASS_BOUNDED_NATIVE_LEGACY_ACTOR_ONLY")
+                self.assertTrue(x["native_actor_arena_isolated"])
+                self.assertFalse(x["actor_vm_or_jit_required"])
+                self.assertFalse(x["new_receiver_mtd_supported"])
+                self.assertFalse(x["sealed_state_critical_supported"])
+                self.assertFalse(x["actor_supervisor_control_supported"])
             else:
                 self.assertEqual(x["guest_codec_execution"], "NOT_EXECUTED")
 
