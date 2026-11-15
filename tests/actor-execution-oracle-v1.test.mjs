@@ -14,13 +14,15 @@ test('selective receive preserves unmatched FIFO and does not swallow CONTROL',(
   assert.deepEqual(m.dispatch(['missing']),{status:'SUSPENDED'});
   assert.equal(m.sendControl({ticket:'panic',kind:'panic',epoch:7}),'ACCEPTED');
   assert.equal(m.sendControl({ticket:'extra',kind:'stop',epoch:7}),'FULL');
-  assert.deepEqual(m.dispatch(['signal']),
+  assert.deepEqual(m.dispatch(['signal']),{status:'CONTROL_PENDING'});
+  assert.deepEqual(m.dispatchControl(),
     {status:'DELIVERED',ticket:'panic',kind:'panic',lane:'CONTROL'});
+  assert.deepEqual(m.dispatch(['signal']),{status:'CONTROL_PENDING'});
+  assert.equal(m.settle('panic'),'SETTLED');
   assert.deepEqual(m.dispatch(['signal']),
     {status:'DELIVERED',ticket:'b',kind:'signal',lane:'DATA'});
   assert.deepEqual(m.dispatch(['image']),
     {status:'DELIVERED',ticket:'a',kind:'image',lane:'DATA'});
-  assert.equal(m.settle('panic'),'SETTLED');
   assert.equal(m.settle('panic'),'INVALID');
 });
 
@@ -110,10 +112,34 @@ test('CONTROL queued during close cannot disappear or allow premature restart',(
   assert.equal(m.close(),'CLOSED');
   assert.equal(m.drained(),false);
   assert.throws(()=>m.restart(8,'idle'),/INVALID_ACTOR_EXECUTION/);
-  assert.equal(m.dispatch([]).ticket,'panic');
+  assert.deepEqual(m.dispatch([]),{status:'CONTROL_PENDING'});
+  assert.equal(m.dispatchControl().ticket,'panic');
+  assert.deepEqual(m.dispatch([]),{status:'CONTROL_PENDING'});
   assert.equal(m.drained(),false);
   assert.equal(m.settle('panic'),'SETTLED');
   assert.equal(m.drained(),true);
   assert.throws(()=>m.restart(8,'bogus'),/INVALID_ACTOR_EXECUTION/);
   assert.equal(m.restart(8,'idle'),'RESTARTED_MODEL_ONLY');
+});
+
+test('CONTROL cannot be intercepted by a guest DATA match or forged by its tag',()=>{
+  const m=new ActorProtocolOracle(spec());
+  assert.equal(m.sendData({ticket:'fake',kind:'panic',epoch:7}),'ACCEPTED');
+  // A guest DATA message named "panic" is not privileged CONTROL.
+  assert.deepEqual(m.dispatch(['panic']),
+    {status:'DELIVERED',ticket:'fake',kind:'panic',lane:'DATA'});
+  assert.equal(m.settle('fake'),'SETTLED');
+  assert.equal(m.sendData({ticket:'data',kind:'panic',epoch:7}),'ACCEPTED');
+  assert.equal(m.sendControl({ticket:'control',kind:'panic',epoch:7}),'ACCEPTED');
+  // Even an exact DATA pattern for CONTROL's kind cannot consume the notice.
+  assert.deepEqual(m.dispatch(['panic']),{status:'CONTROL_PENDING'});
+  assert.deepEqual(m.dispatchControl(),
+    {status:'DELIVERED',ticket:'control',kind:'panic',lane:'CONTROL'});
+  // Outstanding CONTROL fences DATA until the supervisor settles it.
+  assert.deepEqual(m.dispatch(['panic']),{status:'CONTROL_PENDING'});
+  assert.equal(m.settle('control'),'SETTLED');
+  assert.deepEqual(m.dispatch(['panic']),
+    {status:'DELIVERED',ticket:'data',kind:'panic',lane:'DATA'});
+  assert.equal(m.settle('data'),'SETTLED');
+  assert.deepEqual(m.dispatchControl(),{status:'SUSPENDED'});
 });
