@@ -78,8 +78,12 @@
       "actor_vm_or_jit_required": false,
       "native_actor_arena_isolated": true,
       "new_receiver_mtd_supported": false,
-      "sealed_state_critical_supported": false,
-      "actor_supervisor_control_supported": false
+      "sealed_state_critical_supported": true,
+      "actor_supervisor_control_supported": false,
+      "target_actor_mtd": "PASS_BOUNDED_NATIVE_SCALAR_CRITICAL_ONLY",
+      "sealed_state_scope": "one scalar read or pure scalar assignment, serialized worker",
+      "full_borrow_checker": false,
+      "concurrent_rw_locks": false
     },
     {
       "backend": "java",
@@ -233,6 +237,105 @@
       "path": "fixtures/actors/fail/186-declare-mtd-not-lowered.atto",
       "git_blob_sha": "e729fc5c1e973f64cb832cce184910b7351c4995",
       "result": "REJECTED_LLVM_COMPILER"
+    },
+    {
+      "path": "fixtures/actors/pass/187-namespace-two-receivers.atto",
+      "git_blob_sha": "bc8cbe1d9a6d14163bc4c1ac860e50bf08a21579",
+      "executions": 20,
+      "result": "PASS_LLVM_NATIVE_ELF_TARGET_MTD"
+    },
+    {
+      "path": "fixtures/actors/pass/188-critical-read-write.atto",
+      "git_blob_sha": "3550660aa86317c4d9c08366e278e2b25ff8c68d",
+      "executions": 20,
+      "result": "PASS_LLVM_NATIVE_ELF_TARGET_MTD"
+    },
+    {
+      "path": "fixtures/actors/fail/189-target-direct-state-in-receive.atto",
+      "git_blob_sha": "63aa2946aaad15324b70987500891b83f8e9694c",
+      "diagnostic": "E_SEALED",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/190-target-direct-state-in-mtd.atto",
+      "git_blob_sha": "934c03a336000d9f446c322ab724ec5fe8b5fea8",
+      "diagnostic": "E_SEALED",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/191-target-critical-read-mutation.atto",
+      "git_blob_sha": "823ca9b9de6ce0647a281548f43194d978e7da33",
+      "diagnostic": "E_READONLY",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/192-target-critical-state-escape.atto",
+      "git_blob_sha": "345f02958e2ce250531398992f58173e183c9eb2",
+      "diagnostic": "E_ESCAPE",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/193-target-critical-suspension.atto",
+      "git_blob_sha": "6012ef9237241940d2aa301bad6892530d7744f1",
+      "diagnostic": "E_BORROW",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/194-target-unlinked-forward.atto",
+      "git_blob_sha": "f38dbb70875c6e333037cacfb597daabc0c6bb0a",
+      "diagnostic": "E_UNLINKED",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/195-target-mtd-duplicate.atto",
+      "git_blob_sha": "c8e4111ea700a76213f6badb53bc142ce429772d",
+      "diagnostic": "E_DUPLICATE",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/196-target-immutable-critical-write.atto",
+      "git_blob_sha": "ae14c1de73d52b9438aa92f1406734c6e94cde91",
+      "diagnostic": "E_MUTABILITY",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/197-target-critical-host-effect.atto",
+      "git_blob_sha": "cfeddf3e4fdc916426744f549fcbd167b964dd03",
+      "diagnostic": "E_UNSUPPORTED_CRITICAL",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/198-target-nested-critical.atto",
+      "git_blob_sha": "8e923d56656aa71f38cb17cc4399846e51d9b373",
+      "diagnostic": "E_BORROW",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/199-target-read-complex-unsupported.atto",
+      "git_blob_sha": "369216a000b68001e918d74860e66dba243081ed",
+      "diagnostic": "E_UNSUPPORTED_CRITICAL",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/200-target-unrelocated-type.atto",
+      "git_blob_sha": "fcc06e6926b715ae9c2a3f8b079e2c27be803ec8",
+      "diagnostic": "E_UNSUPPORTED_NATIVE_TYPE",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
     }
-  ]
+  ],
+  "llvm_target_mtd_evidence": {
+    "receipt": "contracts/native-llvm-target-mtd-v1.json",
+    "sha": "62a95b145ab596db38cbf2068f1e92c6b5399934",
+    "native_runner": "https://github.com/athlet-o/athleto-e2e/actions/runs/43666674489",
+    "exact_llvm_source_commit": "93e20d12b0284233e1dcb6aa98076f4fd119d2ed",
+    "exact_llvm_source_tree": "a6d2f2ab5155fac02d29fec426c2014c30ad4a98",
+    "native_guest_runs": 120,
+    "negative_compilation_tests": 15,
+    "legacy_actor_state_access_allowed_outside_target_profile": true,
+    "target_direct_state_access_rejected": true,
+    "real_quic_tls_http3_wire": false,
+    "general_critical_callbacks": false,
+    "supervisor_control": false,
+    "full_actor_borrow_model": false
+  }
 }
