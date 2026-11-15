@@ -1,3 +1,4 @@
+import {types as utilTypes} from 'node:util';
 /**
  * Source-free, bounded trace oracle for positive-capacity try writech.
  * This is NOT a guest compiler/runtime test or evidence of backend parity.
@@ -8,7 +9,7 @@ const MAX_EVENTS = 10;
 const MAX_STATES = 100_000;
 const fail = message => { throw new Error('INVALID_TRY_WRITECH_HISTORY: ' + message); };
 const ownData = (value, keys) => {
-  if (value === null || typeof value !== 'object' || Array.isArray(value) ||
+  if (utilTypes.isProxy(value) || value === null || typeof value !== 'object' || Array.isArray(value) ||
       ![Object.prototype, null].includes(Object.getPrototypeOf(value))) fail('plain object required');
   for (const key of Reflect.ownKeys(value)) {
     if (typeof key !== 'string' || !keys.includes(key)) fail('unknown field');
@@ -24,7 +25,8 @@ export function validateTryWritechHistory(input) {
   if (input.schema !== 'oreslang.try_writech_linearizability.v1') fail('wrong schema');
   if (!Number.isInteger(input.capacity) || input.capacity < 1 || input.capacity > 4)
     fail('capacity must be 1..4 (rendezvous not modeled)');
-  if (!Array.isArray(input.events) || input.events.length < 1 || input.events.length > MAX_EVENTS)
+  if (utilTypes.isProxy(input.events) || !Array.isArray(input.events) ||
+      input.events.length < 1 || input.events.length > MAX_EVENTS)
     fail('bounded event list required');
   const ids = new Set();
   const ticks = new Set();
@@ -55,15 +57,17 @@ export function tryWritechTransition(state, event, capacity) {
   let result;
   if (event.op === 'write') {
     const p = event.payload;
-    // A returned Full/Closed value may be retried. Accepted or read values cannot.
-    if (next.ownership[p] === 'queued' || next.ownership[p] === 'consumed')
+    // Full/Closed payloads can be retried. A receiver may also resend a read value.
+    // This oracle cannot prove caller/actor identities; it only rejects a second
+    // admission while the same payload remains in the channel.
+    if (next.ownership[p] === 'queued')
       return {state: next, result: 'INVALID_OWNERSHIP'};
     if (!next.open) result = 'CLOSED:' + p;
     else if (next.queue.length === capacity) result = 'FULL:' + p;
     else { next.queue.push(p); next.ownership[p] = 'queued'; result = 'ACCEPTED'; }
   } else if (event.op === 'read') {
     if (next.queue.length) {
-      const p = next.queue.shift(); next.ownership[p] = 'consumed'; result = 'VALUE:' + p;
+      const p = next.queue.shift(); next.ownership[p] = 'recipient'; result = 'VALUE:' + p;
     } else result = next.open ? 'NONE' : 'CHANNEL_CLOSED';
   } else if (event.op === 'close') {
     result = next.open ? 'CLOSED' : 'ALREADY_CLOSED';
