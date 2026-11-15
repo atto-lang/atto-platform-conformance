@@ -44,18 +44,28 @@ export class ActorProtocolOracle {
   sendData(message) { return this.#admit('DATA', message); }
   // Host/supervisor-only ingress. Guest code never receives a CONTROL capability.
   sendControl(message) { return this.#admit('CONTROL', message); }
+  // Guest-facing DATA reference selection. A supervisor CONTROL notice is
+  // NEVER returned through DATA receive, even when its kind matches a guest pattern.
+  // A delivered-but-unsettled CONTROL also fences further DATA processing.
   dispatch(acceptedDataKinds) {
     if (!Array.isArray(acceptedDataKinds) || acceptedDataKinds.length>32 ||
         acceptedDataKinds.some(k=>!ident(k))) fail('receive pattern');
-    // The CONTROL lane is mandatory before ordinary DATA, even when no DATA pattern matches.
-    let message=this.control.shift();
-    if (!message) {
-      const index=this.data.findIndex(m=>acceptedDataKinds.includes(m.kind));
-      if (index>=0) message=this.data.splice(index,1)[0];
-    }
+    if (this.control.length ||
+        [...this.inflight.values()].some(m=>m.lane==='CONTROL'))
+      return {status:'CONTROL_PENDING'};
+    const index=this.data.findIndex(m=>acceptedDataKinds.includes(m.kind));
+    if (index<0) return {status:this.closed?'CLOSED':'SUSPENDED'};
+    const message=this.data.splice(index,1)[0];
+    this.inflight.set(message.ticket,message);
+    return {status:'DELIVERED',ticket:message.ticket,kind:message.kind,lane:'DATA'};
+  }
+  // Trusted supervisor-side path ONLY. This JS method is a reference-model
+  // operation, not an authorization token or an AttoLang guest API.
+  dispatchControl() {
+    const message=this.control.shift();
     if (!message) return {status:this.closed?'CLOSED':'SUSPENDED'};
     this.inflight.set(message.ticket,message);
-    return {status:'DELIVERED',ticket:message.ticket,kind:message.kind,lane:message.lane};
+    return {status:'DELIVERED',ticket:message.ticket,kind:message.kind,lane:'CONTROL'};
   }
   settle(ticket) {
     requireId(ticket,'ticket');
