@@ -150,6 +150,42 @@ class ActorTraceV2Test(unittest.TestCase):
             with self.assertRaises(TraceViolation):
                 load_json(p)
 
+    def test_separate_serial_actors_may_overlap_without_parallel_receivers(self):
+        t = copy.deepcopy(BASE)
+        events = [
+            ev("actor_spawn", actor_id="a", serial=True),
+            ev("actor_spawn", actor_id="b", serial=True),
+            ev("send_accept", actor_id="a", message_id="a1"),
+            ev("send_accept", actor_id="b", message_id="b1"),
+            ev("receive_start", actor_id="a", message_id="a1", receiver_id="ra"),
+            ev("receive_start", actor_id="b", message_id="b1", receiver_id="rb"),
+            ev("receive_complete", actor_id="b", message_id="b1", receiver_id="rb"),
+            ev("receive_complete", actor_id="a", message_id="a1", receiver_id="ra"),
+            ev("actor_close", actor_id="a"),
+            ev("actor_retire", actor_id="a"),
+            ev("actor_close", actor_id="b"),
+            ev("actor_retire", actor_id="b"),
+        ]
+        t["events"] = [dict(seq=i, **e) for i, e in enumerate(events)]
+        observations = verify_trace(t)
+        self.assertEqual(observations["completed"], 2)
+        self.assertTrue(observations["cross_actor_overlap_witnessed"])
+        self.assertFalse(observations["parallel_receives_witnessed"])
+        self.assertFalse(observations["parallel_reads_witnessed"])
+        with tempfile.TemporaryDirectory() as directory:
+            p = Path(directory) / "overlap.json"
+            p.write_text(json.dumps(t))
+            self.assertEqual(main(["--require-backend", "llvm",
+                                   "--require-cross-actor-overlap", str(p)]), 0)
+            self.assertEqual(main(["--require-parallel-receives", str(p)]), 1)
+            self.assertEqual(main(["--require-parallel-reads", str(p)]), 1)
+            # Reordered completion after the first turn ends gives no overlap.
+            t["events"][5:8] = [t["events"][7], t["events"][5], t["events"][6]]
+            renumber(t["events"])
+            p.write_text(json.dumps(t))
+            self.assertFalse(verify_trace(t)["cross_actor_overlap_witnessed"])
+            self.assertEqual(main(["--require-cross-actor-overlap", str(p)]), 1)
+
     def test_backend_provenance_not_promoted(self):
         t = fixture()
         t["producer"] = {"backend": "reference", "subject": "reference_model",
