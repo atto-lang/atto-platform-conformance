@@ -1,0 +1,152 @@
+{
+  "schema": "oreslang-private-ci-cross-policy-incident-review-v1",
+  "classification": "NON_AUTHORIZING_REVIEW_ONLY",
+  "source_transfer_authorized": false,
+  "review_date_utc": "2026-11-14",
+  "sources": {
+    "llvm": {
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "reviewed_main_sha": "542545deb87a769bcf91b698227bb183df68956e",
+      "publisher": "scripts/publish-private-ci-source-v3.py",
+      "incident_numbers": [
+        22,
+        77,
+        127,
+        212,
+        222
+      ]
+    },
+    "conformance": {
+      "repository": "ores-truffle-oreslang/oreslang-platform-conformance",
+      "reviewed_main_sha": "5b3f1d388498f4bc067673aab29908b0cdd4cecf",
+      "registry": "docs/security/private-ci-incident-disposition-review-v1.json",
+      "incident_numbers": [
+        22,
+        77,
+        127,
+        171,
+        172,
+        198,
+        200,
+        252
+      ]
+    }
+  },
+  "incident_repository": "ores-truffle-oreslang/oreslang-platform-conformance",
+  "independent_reviewer": {
+    "login": "ORESoftware",
+    "user_id": 11139560
+  },
+  "incidents": [
+    {
+      "number": 22,
+      "issue_id": 5832921751,
+      "gates": [
+        "llvm",
+        "conformance"
+      ],
+      "observed_state": "open",
+      "review_status": "hold"
+    },
+    {
+      "number": 77,
+      "issue_id": 5904679716,
+      "gates": [
+        "llvm",
+        "conformance"
+      ],
+      "observed_state": "open",
+      "review_status": "hold"
+    },
+    {
+      "number": 127,
+      "issue_id": 5935338521,
+      "gates": [
+        "llvm",
+        "conformance"
+      ],
+      "observed_state": "open",
+      "review_status": "hold"
+    },
+    {
+      "number": 171,
+      "issue_id": 6042555082,
+      "gates": [
+        "conformance"
+      ],
+      "observed_state": "open",
+      "review_status": "hold"
+    },
+    {
+      "number": 172,
+      "issue_id": 6042602777,
+      "gates": [
+        "conformance"
+      ],
+      "observed_state": "open",
+      "review_status": "hold"
+    },
+    {
+      "number": 198,
+      "issue_id": 6070465058,
+      "gates": [
+        "conformance"
+      ],
+      "observed_state": "open",
+      "review_status": "hold"
+    },
+    {
+      "number": 200,
+      "issue_id": 6071264936,
+      "gates": [
+        "conformance"
+      ],
+      "observed_state": "open",
+      "review_status": "hold"
+    },
+    {
+      "number": 212,
+      "issue_id": 6087989978,
+      "gates": [
+        "llvm"
+      ],
+      "observed_state": "open",
+      "review_status": "hold"
+    },
+    {
+      "number": 222,
+      "issue_id": 6092501448,
+      "gates": [
+        "llvm"
+      ],
+      "observed_state": "open",
+      "review_status": "hold"
+    },
+    {
+      "number": 252,
+      "issue_id": 6129229261,
+      "gates": [
+        "conformance"
+      ],
+      "observed_state": "open",
+      "review_status": "hold"
+    }
+  ],
+  "closure_requires": {
+    "state": "closed",
+    "state_reason": "completed",
+    "closed_by_login": "ORESoftware",
+    "closed_by_user_id": 11139560,
+    "independent_incident_specific_disposition": true,
+    "protected_source_main_review": true
+  },
+  "unmet_external_gates": [
+    "independent forensic disposition",
+    "verified incident closure",
+    "source branch protection",
+    "PR-specific approved carrier contract",
+    "reviewed exact source tree",
+    "approved retention and cleanup"
+  ],
+  "notes": "Metadata-only review: neither legacy registry is altered; no automatic source-transfer authorization is derivable from this document."
+}
