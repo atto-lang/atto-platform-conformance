@@ -36,9 +36,9 @@ test('overlapping writes at capacity one admit at most one', () => {
   bad(h([w('a', 1, 4, 'ACCEPTED', 'one'), w('b', 2, 3, 'ACCEPTED', 'two')]));
 });
 
-test('the exact accepted payload cannot be submitted twice, even after read', () => {
+test('the same payload cannot be admitted twice while queued; receiver can resend', () => {
   bad(h([w('a', 1, 2, 'ACCEPTED', 'one'), w('b', 3, 4, 'FULL:one', 'one')]));
-  bad(h([w('a', 1, 2, 'ACCEPTED', 'one'), r('r', 3, 4, 'VALUE:one'),
+  good(h([w('a', 1, 2, 'ACCEPTED', 'one'), r('r', 3, 4, 'VALUE:one'),
     w('b', 5, 6, 'ACCEPTED', 'one')]));
   good(h([w('a', 1, 2, 'ACCEPTED', 'one'), r('r', 3, 4, 'VALUE:one'),
     w('b', 5, 6, 'ACCEPTED', 'two')]));
@@ -65,7 +65,8 @@ test('malformed inputs, getters and unsupported rendezvous fail closed', () => {
     x => x.events.push(w('a', 3, 4, 'ACCEPTED', 'two')),
     x => Object.defineProperty(x.events[0], 'result', {get: () => 'ACCEPTED'}),
     x => x.events.push(r('read', 1, 3, 'NONE')),
-    x => x.events[0].result = 'FULL:wrong'
+    x => x.events[0].result = 'FULL:wrong',
+    x => x.events = new Proxy(x.events, {get: () => {throw new Error('proxy trap should not run');}})
   ]) {
     const x = base(); mutate(x);
     assert.throws(() => validateTryWritechHistory(x), /INVALID_TRY_WRITECH_HISTORY/);
