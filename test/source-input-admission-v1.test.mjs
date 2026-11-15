@@ -39,8 +39,8 @@ test("source admission reference is fixed, bounded and source-only",()=>{
   assert.equal(contract.verification,"REFERENCE_ONLY_NOT_EXECUTED_BY_BACKENDS");
   assert.deepEqual(Object.keys(contract.backend_profiles).sort(),
     ["forge","java","llvm","net","rs","wasm"]);
-  assert.equal(contract.cases.length,9);
-  assert.equal(new Set(contract.cases.map(entry=>entry.name)).size,9);
+  assert.equal(contract.cases.length,19);
+  assert.equal(new Set(contract.cases.map(entry=>entry.name)).size,contract.cases.length);
 });
 
 for (const entry of contract.cases) {
