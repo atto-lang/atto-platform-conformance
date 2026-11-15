@@ -143,3 +143,62 @@ test('CONTROL cannot be intercepted by a guest DATA match or forged by its tag',
   assert.equal(m.settle('data'),'SETTLED');
   assert.deepEqual(m.dispatchControl(),{status:'SUSPENDED'});
 });
+
+
+test('in-flight deliveries continue consuming bounded DATA credits until settlement',()=>{
+  const m=new ActorProtocolOracle(spec());
+  assert.equal(m.sendData({ticket:'one',kind:'data',epoch:7}),'ACCEPTED');
+  assert.equal(m.sendData({ticket:'two',kind:'data',epoch:7}),'ACCEPTED');
+  assert.equal(m.dispatch(['data']).ticket,'one');
+  // Queue length fell to one, but one unacknowledged delivery remains charged.
+  assert.equal(m.sendData({ticket:'three',kind:'data',epoch:7}),'FULL');
+  assert.equal(m.settle('one'),'SETTLED');
+  assert.equal(m.sendData({ticket:'three',kind:'data',epoch:7}),'ACCEPTED');
+  assert.equal(m.dispatch(['data']).ticket,'two');
+  assert.equal(m.dispatch(['data']).ticket,'three');
+  assert.equal(m.sendData({ticket:'four',kind:'data',epoch:7}),'FULL');
+  assert.equal(m.settle('two'),'SETTLED');
+  assert.equal(m.sendData({ticket:'four',kind:'data',epoch:7}),'ACCEPTED');
+  assert.equal(m.settle('two'),'INVALID');
+  assert.equal(m.settle('three'),'SETTLED');
+  assert.equal(m.dispatch(['data']).ticket,'four');
+  assert.equal(m.close(),'CLOSED');
+  assert.equal(m.drained(),false);
+  assert.equal(m.settle('four'),'SETTLED');
+  assert.equal(m.drained(),true);
+});
+
+test('CONTROL inflight escrow cannot be over-admitted or overtaken',()=>{
+  const m=new ActorProtocolOracle(spec());
+  assert.equal(m.sendControl({ticket:'panicA',kind:'panic',epoch:7}),'ACCEPTED');
+  assert.equal(m.dispatchControl().ticket,'panicA');
+  // Neither an empty queue nor a second dispatch refunds supervisor credit.
+  assert.deepEqual(m.dispatchControl(),{status:'CONTROL_INFLIGHT'});
+  assert.equal(m.sendControl({ticket:'panicB',kind:'panic',epoch:7}),'FULL');
+  assert.deepEqual(m.dispatch(['panic']),{status:'CONTROL_PENDING'});
+  assert.equal(m.settle('panicA'),'SETTLED');
+  assert.equal(m.sendControl({ticket:'panicB',kind:'panic',epoch:7}),'ACCEPTED');
+  assert.equal(m.close(),'CLOSED');
+  assert.equal(m.drained(),false);
+  assert.equal(m.dispatchControl().ticket,'panicB');
+  assert.equal(m.sendControl({ticket:'panicC',kind:'panic',epoch:7}),'CLOSED');
+  assert.deepEqual(m.dispatchControl(),{status:'CONTROL_INFLIGHT'});
+  assert.equal(m.settle('panicB'),'SETTLED');
+  assert.equal(m.drained(),true);
+});
+
+test('queued and outstanding CONTROL never overtake each other',()=>{
+  const m=new ActorProtocolOracle({...spec(),controlCapacity:2});
+  assert.equal(m.sendControl({ticket:'notice1',kind:'notice',epoch:7}),'ACCEPTED');
+  assert.equal(m.sendControl({ticket:'notice2',kind:'notice',epoch:7}),'ACCEPTED');
+  assert.equal(m.dispatchControl().ticket,'notice1');
+  assert.equal(m.sendControl({ticket:'notice3',kind:'notice',epoch:7}),'FULL');
+  assert.deepEqual(m.dispatchControl(),{status:'CONTROL_INFLIGHT'});
+  assert.equal(m.settle('notice1'),'SETTLED');
+  assert.equal(m.sendControl({ticket:'notice3',kind:'notice',epoch:7}),'ACCEPTED');
+  assert.equal(m.dispatchControl().ticket,'notice2');
+  assert.equal(m.settle('notice2'),'SETTLED');
+  assert.equal(m.dispatchControl().ticket,'notice3');
+  assert.equal(m.settle('notice3'),'SETTLED');
+  assert.deepEqual(m.dispatchControl(),{status:'SUSPENDED'});
+});
