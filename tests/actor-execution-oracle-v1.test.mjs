@@ -221,3 +221,19 @@ test('stale timer and cancellation events cannot mutate closed or restarted stat
   assert.deepEqual(m.advance('begin',8),{status:'TRANSITIONED',state:'busy'});
   assert.deepEqual(m.advance('done',8),{status:'TRANSITIONED',state:'finished'});
 });
+
+test('restart without override resets prior incarnation state to declared initial',()=>{
+  const m=new ActorProtocolOracle(spec());
+  assert.deepEqual(m.advance('begin',7),{status:'TRANSITIONED',state:'busy'});
+  assert.equal(m.close(),'CLOSED');
+  assert.equal(m.drained(),true);
+  assert.equal(m.restart(8),'RESTARTED_MODEL_ONLY');
+  assert.equal(m.state,'idle');
+  assert.deepEqual(m.advance('done',7),{status:'STALE_EPOCH',state:'idle'});
+  assert.deepEqual(m.advance('done',8),{status:'REJECTED',state:'idle'});
+  assert.deepEqual(m.advance('begin',8),{status:'TRANSITIONED',state:'busy'});
+  assert.equal(m.close(),'CLOSED');
+  assert.equal(m.restart(9,'finished'),'RESTARTED_MODEL_ONLY');
+  assert.equal(m.state,'finished');
+  assert.deepEqual(m.advance('begin',9),{status:'REJECTED',state:'finished'});
+});
