@@ -1,0 +1,71 @@
+{
+  "schema_version": "source-input-admission-v1",
+  "purpose": "Host/compiler source-byte admission reference; not guest compilation or backend execution evidence.",
+  "coordinate_system": "zero-based raw UTF-8 byte offsets; Java and .NET string APIs expose distinct UTF-16 source coordinates",
+  "utf8_requirement": "RFC 3629 shortest-form scalar UTF-8 only; reject surrogates, overlong and above U+10FFFF",
+  "cases": [
+    {
+      "name": "valid-ascii",
+      "hex": "2f2a206f6b202a2f0a666e63206d61696e28293a20696e74207b2072657475726e2034323b207d",
+      "status": "valid",
+      "offset": null
+    },
+    {
+      "name": "valid-astral-comment",
+      "hex": "2f2a20636166c3a920f09f9880202a2f0a",
+      "status": "valid",
+      "offset": null
+    },
+    {
+      "name": "block-comment-nul",
+      "hex": "2f2a2068696464656e00202a2f20666e63206d61696e28293a696e747b72657475726e2034323b7d",
+      "status": "nul",
+      "offset": 9
+    },
+    {
+      "name": "astral-comment-nul",
+      "hex": "2f2a20f09f9880202a2f0020666e63206d61696e28293a696e747b72657475726e2034323b7d",
+      "status": "nul",
+      "offset": 10
+    },
+    {
+      "name": "crlf-nul",
+      "hex": "780d0a00",
+      "status": "nul",
+      "offset": 3
+    },
+    {
+      "name": "invalid-lead",
+      "hex": "ff",
+      "status": "invalid_utf8",
+      "offset": 0
+    },
+    {
+      "name": "invalid-continuation",
+      "hex": "78e228a1",
+      "status": "invalid_utf8",
+      "offset": 2
+    },
+    {
+      "name": "truncated-sequence",
+      "hex": "e282",
+      "status": "invalid_utf8",
+      "offset": 0
+    },
+    {
+      "name": "encoded-surrogate",
+      "hex": "eda080",
+      "status": "invalid_utf8",
+      "offset": 1
+    }
+  ],
+  "backend_profiles": {
+    "java": "UTF-16 String source: reject NUL/unpaired surrogate and report 1-based line/column; disk UTF-8 decoder validation separate",
+    "net": "UTF-16 String source: reject NUL/unpaired surrogate and report 0-based code-unit offset; disk UTF-8 decoder validation separate",
+    "llvm": "Raw UTF-8 bytes: validator reports exact first malformed/NUL byte offset",
+    "forge": "Raw UTF-8 bytes: validator reports exact first malformed/NUL byte offset",
+    "rs": "UTF-8 &str source: raw NUL rejected at byte offset; malformed UTF-8 refused by input construction/decoder",
+    "wasm": "Node LLVM-to-Wasm source bridge: fatal UTF-8 decode and NUL rejection before source tokenization and LLVM invocation"
+  },
+  "verification": "REFERENCE_ONLY_NOT_EXECUTED_BY_BACKENDS"
+}
