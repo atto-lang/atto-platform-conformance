@@ -88,11 +88,11 @@ class Http3CodecSourceAudit(unittest.TestCase):
 
     def test_shared_native_actor_fixtures_are_sha_exact(self):
         rows = self.manifest["actor_fixtures"]
-        self.assertEqual(len(rows), 21)
+        self.assertEqual(len(rows), 25)
         passed = [r for r in rows if "/pass/" in r["path"]]
         rejected = [r for r in rows if "/fail/" in r["path"]]
         self.assertEqual(len(passed), 6)
-        self.assertEqual(len(rejected), 15)
+        self.assertEqual(len(rejected), 19)
         self.assertEqual(sum(r["executions"] for r in passed), 120)
         for row in rows:
             path = row["path"]
@@ -160,6 +160,38 @@ class Http3CodecSourceAudit(unittest.TestCase):
         self.assertFalse(e["real_quic_tls_http3_wire"])
         self.assertFalse(evidence["executable_scope"]["concurrent_reader_writer_locks"])
         self.assertFalse(evidence["executable_scope"]["full_borrow_checker"])
+
+    def test_llvm_nominal_bounds_and_sealed_state_private_runner(self):
+        audit = self.manifest["llvm_nominal_sealed_hardening"]
+        raw = (ROOT / audit["receipt"]).read_bytes()
+        self.assertEqual(git_sha(raw), audit["git_blob"])
+        proof = json.loads(raw)
+        self.assertEqual(proof["schema"], "atto.llvm.nominal-sealed-hardening.v1")
+        self.assertEqual(proof["source"]["verified_commit"], audit["source_commit"])
+        self.assertEqual(proof["source"]["exact_git_tree"],
+                         audit["exact_llvm_source_tree"])
+        self.assertEqual(proof["carrier"]["run"], audit["private_run"])
+        self.assertEqual(proof["carrier"]["conclusion"], "success")
+        self.assertTrue(proof["carrier"]["exact_full_tree_verified"])
+        self.assertFalse(proof["carrier"]["cross_org_checkout_secrets"])
+        self.assertEqual(proof["executed"]["native_guest_actor_executions"],
+                         audit["native_actor_guest_executions"])
+        self.assertEqual(proof["executed"]["fail_closed_actor_compilation_cases"],
+                         audit["actor_negative_compilation_diagnostics"])
+        self.assertEqual(len(proof["adversarial_fixtures"]),
+                         audit["additional_adversarial_fixtures"])
+        for row in proof["adversarial_fixtures"]:
+            copied = ROOT / row["path"].replace("tests/", "fixtures/", 1)
+            self.assertEqual(git_sha(copied.read_bytes()), row["git_blob"])
+            self.assertIn("// expect-reject: " + row["expected_error"],
+                          copied.read_text())
+        self.assertTrue(audit["native_actor_state_public_fields_rejected"])
+        self.assertTrue(audit["nominal_index_bounds_checked"])
+        self.assertTrue(audit["exact_receiver_signature_enforced"])
+        self.assertFalse(audit["full_actor_borrow_checker"])
+        self.assertFalse(audit["concurrent_reader_writer_lock"])
+        self.assertFalse(audit["http3_wire_tested"])
+        self.assertFalse(proof["scope"]["real_quic_tls_http3_wire"])
 
     def test_evidence_does_not_claim_actual_http3_networking(self):
         r = self.manifest["guest_evidence"]
