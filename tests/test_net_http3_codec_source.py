@@ -211,8 +211,12 @@ class Http3CodecSourceAudit(unittest.TestCase):
                                  "PASS_BOUNDED_NATIVE_LEGACY_ACTOR_ONLY")
                 self.assertTrue(x["native_actor_arena_isolated"])
                 self.assertFalse(x["actor_vm_or_jit_required"])
-                self.assertFalse(x["new_receiver_mtd_supported"])
-                self.assertFalse(x["sealed_state_critical_supported"])
+                self.assertTrue(x["new_receiver_mtd_supported"])
+                self.assertEqual(x["new_receiver_mtd_scope"],
+                                 "CONCRETE_LOCAL_NATIVE_SCALAR_ONLY")
+                self.assertTrue(x["sealed_state_critical_supported"])
+                self.assertFalse(x["full_borrow_checker"])
+                self.assertFalse(x["concurrent_rw_locks"])
                 self.assertFalse(x["actor_supervisor_control_supported"])
             else:
                 self.assertEqual(x["guest_codec_execution"], "NOT_EXECUTED")
