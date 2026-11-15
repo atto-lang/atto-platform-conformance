@@ -322,6 +322,30 @@
       "git_blob_sha": "fcc06e6926b715ae9c2a3f8b079e2c27be803ec8",
       "diagnostic": "E_UNSUPPORTED_NATIVE_TYPE",
       "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/201-target-public-sealed-state.atto",
+      "git_blob_sha": "b7fa449891da4ec771a80d38c95f4eb89f99279a",
+      "diagnostic": "E_SEALED",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/202-target-unrelocated-local-named-type.atto",
+      "git_blob_sha": "68147baea5078c2e92ce663b13af6779abc97818",
+      "diagnostic": "E_TYPE_INDEX",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/203-target-unrelocated-local-actorref.atto",
+      "git_blob_sha": "41420a845eec9cdb5996d4b7aaa791d5980ccd6f",
+      "diagnostic": "E_TYPE_INDEX",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
+    },
+    {
+      "path": "fixtures/actors/fail/204-target-unrelocated-receiver-local.atto",
+      "git_blob_sha": "5cd43aa71bf55135284c011215f4726d7447b94b",
+      "diagnostic": "E_TYPE_INDEX",
+      "result": "REJECTED_LLVM_TARGET_GUARD"
     }
   ],
   "llvm_target_mtd_evidence": {
@@ -338,5 +362,21 @@
     "general_critical_callbacks": false,
     "supervisor_control": false,
     "full_actor_borrow_model": false
+  },
+  "llvm_nominal_sealed_hardening": {
+    "receipt": "contracts/native-llvm-nominal-sealed-hardening-v1.json",
+    "git_blob": "17416105b9604afc190668414ef3d10fd908012f",
+    "source_commit": "b80020c46d1a496b663243e1a4a942edcfb208f6",
+    "exact_llvm_source_tree": "c5e1f150fa628f3985a535efd83bcfcbffb03cb0",
+    "private_run": "https://github.com/athlet-o/athleto-e2e/actions/runs/43669072054",
+    "native_actor_guest_executions": 120,
+    "actor_negative_compilation_diagnostics": 19,
+    "additional_adversarial_fixtures": 4,
+    "native_actor_state_public_fields_rejected": true,
+    "nominal_index_bounds_checked": true,
+    "exact_receiver_signature_enforced": true,
+    "full_actor_borrow_checker": false,
+    "concurrent_reader_writer_lock": false,
+    "http3_wire_tested": false
   }
 }
