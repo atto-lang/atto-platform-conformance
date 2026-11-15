@@ -6,8 +6,8 @@
 
 | Target | Evidence | Pointer<T> status |
 | --- | --- | --- |
-| atto-source.rs browser Wasm compiler | Emits a restricted compiled-guest Wasm subset. Separate draft #133 refuses Pointer<T> and unary &/* syntax. | UNSUPPORTED (negative gate proposed; exact-head CI not executed) |
-| atto-source.llvm | Main branch is a backend scope README, not a demonstrable complete pointer AOT implementation. | NOT_EXECUTED |
+| atto-source.rs browser Wasm compiler | Stacked #142 has exact-source private runner proof of compiled scalar/owned Wasm guests and no-artifact pointer rejection; **not** positive Pointer<T> lowering. | UNSUPPORTED (negative gate executed) |
+| atto-source.llvm | Stacked #13 has exact-source private runner proof of 15 native scalar guests and 18 no-IR pointer/syntax negatives; no positive Pointer<T> executable. | UNSUPPORTED (negative gate executed) |
 | atto-source.java / GraalVM Native Image | Main branch is a backend scope README. | NOT_EXECUTED |
 | atto-source.net / .NET Native AOT | Main branch is a backend scope README. | NOT_EXECUTED |
 | atto-source.forge | Main branch is a backend scope README. | NOT_EXECUTED |
@@ -17,12 +17,14 @@ Independent staged PRs may contain other prototype work; this table does not inv
 
 ## What the reference model proves
 
-The finite two-slot, 16-element C++20 reference model checks 17 assertions for valid loads/stores, one-past-end, large index denial, read/exclusive loan incompatibility, failed-send rollback, foreign-tenant rejection, successful move with old-generation revocation, permanent freeze, close/revocation, overflowing allocation request and zero-size region denial.
+The finite two-slot, 16-element C++20 reference model checks valid loads/stores, **uninitialized read rejection**, one-past-end and large-index denial, reader/writer loan exclusion, failed-send rollback, foreign-tenant rejection, successful move with old-generation revocation, immutable sharing with outstanding-loan revocation blocking, last-share close permission, generation safety on slot reuse, overflowing allocation requests and zero-sized region access denial. No assertion may silently disappear under `NDEBUG`: the model rejects such builds at preprocessing time.
 
 Local verification on 2026-11-15 against model blob SHA **96117e25a599d11ebc679c459d28b6a9c02c2e18**:
 
 - g++ -std=c++20 -O2 -Wall -Wextra -Werror -pedantic: 17/17 passed.
 - clang++ -std=c++20 -O1 -g -Wall -Wextra -Werror -pedantic -fsanitize=address,undefined -fno-omit-frame-pointer: 17/17 passed.
+
+These are *historical* results for the earlier blob. The strengthened source blob `4a23a6bde66200f746893d22316dbaa55a011694` adds initialization masks, share-loan pinning and `NDEBUG` protection; its own exact-blob, executed GCC/Clang sanitizer receipt must be recorded separately and must not inherit the old 17/17 result.
 
 The model has no thread scheduler, real actor runtime, compiler output or FFI. It cannot prove correct native AOT lowering, hard real time, low/zero guest GC or multi-backend parity. Its pointer aliases are model Handle values, not machine addresses.
 
