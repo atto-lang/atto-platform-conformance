@@ -1,0 +1,98 @@
+{
+  "schema": "attolang.source-terminal-controls.v1",
+  "status": "SOURCE_CONTRACT_ONLY_NOT_BACKEND_EXECUTION",
+  "purpose": "Original input must reject raw ASCII ESC (U+001B) and DEL (U+007F) before stripping comments, strings, or templates; NUL remains a separate existing rejection.",
+  "source_encoding": "valid UTF-8; Java and .NET in-memory strings use valid UTF-16",
+  "forbidden_raw_bytes": [
+    "1b",
+    "7f"
+  ],
+  "allow_ascii": [
+    "09",
+    "0a",
+    "0d"
+  ],
+  "coordinate_policy": "byte offsets zero-based in native, Rust and Wasm; UTF-16 code-unit offsets in .NET; 1-based UTF-16 line:column in Java",
+  "cases": [
+    {
+      "name": "valid-comment",
+      "hex": "2f2a20636166c3a920f09f9880202a2f0a666e63206d61696e28293a696e747b72657475726e2034323b7d",
+      "status": "valid",
+      "offset": null
+    },
+    {
+      "name": "valid-crlf-tab",
+      "hex": "780d0a0979",
+      "status": "valid",
+      "offset": null
+    },
+    {
+      "name": "visible-escaped-control",
+      "hex": "225c753030316222",
+      "status": "valid",
+      "offset": null
+    },
+    {
+      "name": "esc-comment",
+      "hex": "2f2a201b202a2f20666e63206d61696e28293a696e747b72657475726e2034323b7d",
+      "status": "terminal",
+      "offset": 3
+    },
+    {
+      "name": "del-line-comment",
+      "hex": "2f2f207f0a666e63206d61696e28293a696e747b72657475726e2034323b7d",
+      "status": "terminal",
+      "offset": 3
+    },
+    {
+      "name": "esc-string",
+      "hex": "22746578741b22",
+      "status": "terminal",
+      "offset": 5
+    },
+    {
+      "name": "del-after-accented-comment",
+      "hex": "2f2a20636166c3a9202a2f7f",
+      "status": "terminal",
+      "offset": 11
+    },
+    {
+      "name": "del-after-emoji-comment",
+      "hex": "2f2a20f09f9880202a2f7f",
+      "status": "terminal",
+      "offset": 10
+    },
+    {
+      "name": "esc-after-crlf",
+      "hex": "780d0a1b",
+      "status": "terminal",
+      "offset": 3
+    },
+    {
+      "name": "nul-before-esc",
+      "hex": "001b",
+      "status": "nul",
+      "offset": 0
+    },
+    {
+      "name": "esc-before-nul",
+      "hex": "1b00",
+      "status": "terminal",
+      "offset": 0
+    },
+    {
+      "name": "del-before-nul",
+      "hex": "7f00",
+      "status": "terminal",
+      "offset": 0
+    },
+    {
+      "name": "nul-only",
+      "hex": "00",
+      "status": "nul",
+      "offset": 0
+    }
+  ],
+  "verification": "UNEXECUTED_REAL_BACKENDS",
+  "notes": "Tests must validate raw source before comments/literals elide content; preserve first invalid-byte precedence and never echo controls in error diagnostics."
+}
