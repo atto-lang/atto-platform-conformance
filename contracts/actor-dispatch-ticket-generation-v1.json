@@ -1,0 +1,348 @@
+{
+  "schema": "oreslang.actor-dispatch-ticket-generation.v1",
+  "version": 1,
+  "status": "PROPOSED_NOT_EXECUTED",
+  "relation": {
+    "actorFinalizationScenario": "AF08",
+    "javaReferenceDraft": "https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/3127"
+  },
+  "scope": "bounded per-actor scheduling and physical turn lease authority; this is not a guest language ABI",
+  "ticketIdentity": [
+    "actor_id",
+    "actor_incarnation",
+    "slot",
+    "generation"
+  ],
+  "rules": [
+    "A completion, cancel or wake may mutate scheduling authority only if all four ticket identity fields match the current lease.",
+    "A stale or duplicated completion must be a no-op, including when a newer generation reuses the exact numeric slot.",
+    "An active physical worker must retain the exact ticket it entered until legitimate completion or explicitly authorized cancellation.",
+    "STOP fences issuance of new turns while allowing an already admitted physical turn to drain or safely retire.",
+    "A generation counter must never silently wrap to a still-replayable identity; on exhaustion the issuer must reject or use a provably noncolliding epoch.",
+    "Supervisor CONTROL and DATA delivery rules remain separate; rejecting a stale ticket must not consume or forge CONTROL authority."
+  ],
+  "fixtureNotation": {
+    "identity": "a tuple [actor_id, actor_incarnation, slot, generation]",
+    "active": "the exact live worker-held lease before the attempted action, or null",
+    "action": "an abstract scheduling event; not a claim that any backend exposes this as a guest API",
+    "outcome": "the required externally observable authority transition"
+  },
+  "scenarios": [
+    {
+      "id": "ATG01",
+      "name": "first-generation-lease-completes",
+      "active": [
+        "A",
+        7,
+        0,
+        1
+      ],
+      "action": {
+        "kind": "complete",
+        "ticket": [
+          "A",
+          7,
+          0,
+          1
+        ]
+      },
+      "expected": {
+        "result": "completed",
+        "activeAfter": null
+      }
+    },
+    {
+      "id": "ATG02",
+      "name": "stale-same-slot-generation-cannot-release",
+      "active": [
+        "A",
+        7,
+        0,
+        2
+      ],
+      "action": {
+        "kind": "complete",
+        "ticket": [
+          "A",
+          7,
+          0,
+          1
+        ]
+      },
+      "expected": {
+        "result": "ignored_stale",
+        "activeAfter": [
+          "A",
+          7,
+          0,
+          2
+        ]
+      }
+    },
+    {
+      "id": "ATG03",
+      "name": "stale-same-slot-cancellation-cannot-release",
+      "active": [
+        "A",
+        7,
+        0,
+        2
+      ],
+      "action": {
+        "kind": "cancel",
+        "ticket": [
+          "A",
+          7,
+          0,
+          1
+        ]
+      },
+      "expected": {
+        "result": "ignored_stale",
+        "activeAfter": [
+          "A",
+          7,
+          0,
+          2
+        ]
+      }
+    },
+    {
+      "id": "ATG04",
+      "name": "stale-same-slot-wake-cannot-schedule",
+      "active": [
+        "A",
+        7,
+        0,
+        2
+      ],
+      "action": {
+        "kind": "wake",
+        "ticket": [
+          "A",
+          7,
+          0,
+          1
+        ]
+      },
+      "expected": {
+        "result": "ignored_stale",
+        "activeAfter": [
+          "A",
+          7,
+          0,
+          2
+        ]
+      }
+    },
+    {
+      "id": "ATG05",
+      "name": "different-slot-does-not-authorize-release",
+      "active": [
+        "A",
+        7,
+        1,
+        1
+      ],
+      "action": {
+        "kind": "complete",
+        "ticket": [
+          "A",
+          7,
+          0,
+          1
+        ]
+      },
+      "expected": {
+        "result": "ignored_stale",
+        "activeAfter": [
+          "A",
+          7,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": "ATG06",
+      "name": "other-actor-ticket-cannot-release",
+      "active": [
+        "A",
+        7,
+        0,
+        2
+      ],
+      "action": {
+        "kind": "complete",
+        "ticket": [
+          "B",
+          7,
+          0,
+          2
+        ]
+      },
+      "expected": {
+        "result": "ignored_foreign",
+        "activeAfter": [
+          "A",
+          7,
+          0,
+          2
+        ]
+      }
+    },
+    {
+      "id": "ATG07",
+      "name": "prior-incarnation-ticket-cannot-release",
+      "active": [
+        "A",
+        8,
+        0,
+        1
+      ],
+      "action": {
+        "kind": "complete",
+        "ticket": [
+          "A",
+          7,
+          0,
+          1
+        ]
+      },
+      "expected": {
+        "result": "ignored_stale",
+        "activeAfter": [
+          "A",
+          8,
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "id": "ATG08",
+      "name": "duplicate-retired-completion-is-inert",
+      "active": null,
+      "action": {
+        "kind": "complete",
+        "ticket": [
+          "A",
+          7,
+          0,
+          1
+        ]
+      },
+      "expected": {
+        "result": "ignored_stale",
+        "activeAfter": null
+      }
+    },
+    {
+      "id": "ATG09",
+      "name": "stop-fences-new-issuance",
+      "active": null,
+      "action": {
+        "kind": "issue",
+        "actor": "A",
+        "incarnation": 7,
+        "slot": 0,
+        "generation": 2,
+        "stopped": true
+      },
+      "expected": {
+        "result": "denied_stopped",
+        "activeAfter": null
+      }
+    },
+    {
+      "id": "ATG10",
+      "name": "stop-allows-admitted-turn-to-drain",
+      "active": [
+        "A",
+        7,
+        0,
+        2
+      ],
+      "action": {
+        "kind": "complete",
+        "ticket": [
+          "A",
+          7,
+          0,
+          2
+        ],
+        "stopped": true
+      },
+      "expected": {
+        "result": "completed",
+        "activeAfter": null
+      }
+    },
+    {
+      "id": "ATG11",
+      "name": "generation-wraparound-fails-closed",
+      "active": null,
+      "action": {
+        "kind": "issue",
+        "actor": "A",
+        "incarnation": 7,
+        "slot": 0,
+        "generation": 1,
+        "exhausted": true,
+        "priorSameIdentityReplayable": true
+      },
+      "expected": {
+        "result": "denied_collision",
+        "activeAfter": null
+      }
+    },
+    {
+      "id": "ATG12",
+      "name": "stale-replay-does-not-mutate-control",
+      "active": [
+        "A",
+        7,
+        0,
+        2
+      ],
+      "action": {
+        "kind": "complete",
+        "ticket": [
+          "A",
+          7,
+          0,
+          1
+        ],
+        "controlNoticePresent": true
+      },
+      "expected": {
+        "result": "ignored_stale",
+        "activeAfter": [
+          "A",
+          7,
+          0,
+          2
+        ],
+        "controlNoticePreserved": true
+      }
+    }
+  ],
+  "backendStatus": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED"
+  },
+  "promotion": {
+    "sourceFreeRustModelCountsAsRuntimeProof": false,
+    "exactHeadStepfulRunRequired": true,
+    "privateSourceCrossOrgTransferRequiresApproval": true,
+    "independentCodeReviewRequired": true,
+    "realBackendSchedulingTestsRequired": true,
+    "resultsMustBeRecordedPerBackend": true,
+    "zeroStepCiCountsAsEvidence": false
+  }
+}
