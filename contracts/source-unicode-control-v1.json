@@ -1,0 +1,90 @@
+{
+  "schema": "attolang.source-unicode-control.v1",
+  "status": "SOURCE_CONTRACT_NOT_BACKEND_EXECUTION",
+  "purpose": "Pre-lexing admission forbids controls that disguise source token order or line boundaries, even inside ignored comments and strings",
+  "source_encoding": "valid_utf8",
+  "forbidden_codepoints": [
+    "0085",
+    "061C",
+    "200E",
+    "200F",
+    "2028",
+    "2029",
+    "202A",
+    "202B",
+    "202C",
+    "202D",
+    "202E",
+    "2066",
+    "2067",
+    "2068",
+    "2069"
+  ],
+  "permitted_comment_sample": "café ☕",
+  "baseline_source": "pub fnc main(): int { return 42; }",
+  "negative_cases": [
+    {
+      "id": "line-comment",
+      "prefix": "// hidden",
+      "suffix": "\npub fnc main(): int { return 42; }"
+    },
+    {
+      "id": "block-comment",
+      "prefix": "/* hidden",
+      "suffix": " */ pub fnc main(): int { return 42; }"
+    },
+    {
+      "id": "source-tail",
+      "prefix": "pub fnc main(): int { return 42; } // hidden",
+      "suffix": ""
+    }
+  ],
+  "requirements": [
+    "validate_original_source_before_comment_stripping",
+    "reject_entire_source_on_first_forbidden_codepoint",
+    "no_code_or_object_on_reject",
+    "stable_source_location_or_byte_offset_diagnostic",
+    "permit_ordinary_utf8_comment_text",
+    "compiler_backed_negative_proof",
+    "independent_backend_receipts_required"
+  ],
+  "backends": {
+    "java": {
+      "repo": "ores-truffle-oreslang/oreslang-source.java",
+      "pr": 3116,
+      "state": "DRAFT_NOT_EXECUTED"
+    },
+    "rust": {
+      "repo": "ores-truffle-oreslang/oreslang-source.rs",
+      "pr": 73,
+      "state": "DRAFT_NOT_EXECUTED"
+    },
+    "forge": {
+      "repo": "ores-truffle-oreslang/oreslang-source.forge",
+      "pr": 288,
+      "state": "DRAFT_NOT_EXECUTED"
+    },
+    "llvm": {
+      "repo": "ores-truffle-oreslang/oreslang-source.llvm",
+      "state": "NOT_VERIFIED"
+    },
+    "wasm": {
+      "repo": "ores-truffle-oreslang/oreslang-source.wasm",
+      "state": "NOT_VERIFIED"
+    },
+    "net": {
+      "repo": "ores-truffle-oreslang/oreslang-source.net",
+      "state": "NOT_VERIFIED"
+    },
+    "cranelift": {
+      "repo": "ores-truffle-oreslang/oreslang-source.cranelift",
+      "state": "NOT_VERIFIED"
+    },
+    "js": {
+      "repo": "ores-truffle-oreslang/oreslang-source.js",
+      "state": "NOT_VERIFIED"
+    }
+  },
+  "receipts": [],
+  "verdict": "UNVERIFIED"
+}
