@@ -6,10 +6,25 @@
 #include <iostream>
 #include <limits>
 #include <optional>
+#include <type_traits>
 
-struct Handle {
-  std::uint32_t slot, generation, tenant, actor;
+class Handle {
+  friend class Arena;
+  std::uint32_t slot_, generation_, tenant_, actor_;
+  Handle(std::uint32_t slot, std::uint32_t generation,
+         std::uint32_t tenant, std::uint32_t actor) noexcept
+      : slot_(slot), generation_(generation), tenant_(tenant), actor_(actor) {}
+public:
+  Handle(const Handle&) = delete;
+  Handle& operator=(const Handle&) = delete;
+  Handle(Handle&& other) noexcept
+      : slot_(other.slot_), generation_(other.generation_),
+        tenant_(other.tenant_), actor_(other.actor_) { other.generation_ = 0; }
+  Handle& operator=(Handle&&) = delete;
 };
+static_assert(!std::is_copy_constructible_v<Handle>);
+static_assert(!std::is_constructible_v<Handle, std::uint32_t, std::uint32_t,
+                                      std::uint32_t, std::uint32_t>);
 struct Region {
   std::array<std::int64_t, 16> data{};
   std::uint32_t generation = 1, tenant = 0, actor = 0, count = 0;
@@ -18,11 +33,11 @@ struct Region {
 };
 class Arena {
   std::array<Region, 2> regions{};
-  Region* valid(Handle h) {
-    if (h.slot >= regions.size()) return nullptr;
-    auto& r = regions[h.slot];
-    if (!r.live || r.generation != h.generation ||
-        r.tenant != h.tenant || r.actor != h.actor) return nullptr;
+  Region* valid(const Handle& h) {
+    if (h.slot_ >= regions.size()) return nullptr;
+    auto& r = regions[h.slot_];
+    if (!r.live || r.generation != h.generation_ ||
+        r.tenant != h.tenant_ || r.actor != h.actor_) return nullptr;
     return &r;
   }
 public:
@@ -41,50 +56,50 @@ public:
     }
     return std::nullopt;
   }
-  std::optional<std::int64_t> read(Handle h, std::uint64_t index) {
+  std::optional<std::int64_t> read(const Handle& h, std::uint64_t index) {
     auto* r = valid(h);
     if (!r || r->writer || index >= r->count) return std::nullopt;
     return r->data[static_cast<std::size_t>(index)];
   }
-  bool write(Handle h, std::uint64_t index, std::int64_t value) {
+  bool write(const Handle& h, std::uint64_t index, std::int64_t value) {
     auto* r = valid(h);
     if (!r || r->writer || r->readers || r->frozen || index >= r->count) return false;
     r->data[static_cast<std::size_t>(index)] = value;
     return true;
   }
-  bool read_loan(Handle h) {
+  bool read_loan(const Handle& h) {
     auto* r = valid(h);
     if (!r || r->writer || r->readers == std::numeric_limits<std::uint32_t>::max()) return false;
     ++r->readers; return true;
   }
-  bool end_read_loan(Handle h) {
+  bool end_read_loan(const Handle& h) {
     auto* r = valid(h);
     if (!r || !r->readers) return false;
     --r->readers; return true;
   }
-  bool write_loan(Handle h) {
+  bool write_loan(const Handle& h) {
     auto* r = valid(h);
     if (!r || r->writer || r->readers || r->frozen) return false;
     r->writer = true; return true;
   }
-  bool end_write_loan(Handle h) {
+  bool end_write_loan(const Handle& h) {
     auto* r = valid(h);
     if (!r || !r->writer) return false;
     r->writer = false; return true;
   }
-  bool freeze(Handle h) {
+  bool freeze(const Handle& h) {
     auto* r = valid(h);
     if (!r || r->readers || r->writer) return false;
     r->frozen = true; return true;
   }
-  std::optional<Handle> move(Handle h, std::uint32_t tenant, std::uint32_t actor, bool admitted) {
+  std::optional<Handle> move(const Handle& h, std::uint32_t tenant, std::uint32_t actor, bool admitted) {
     auto* r = valid(h);
     if (!r || !admitted || r->readers || r->writer || r->tenant != tenant ||
         r->generation == std::numeric_limits<std::uint32_t>::max()) return std::nullopt;
     ++r->generation; r->actor = actor;
-    return Handle{h.slot, r->generation, tenant, actor};
+    return Handle{h.slot_, r->generation, tenant, actor};
   }
-  bool close(Handle h) {
+  bool close(const Handle& h) {
     auto* r = valid(h);
     if (!r || r->readers || r->writer) return false;
     r->live = false;
