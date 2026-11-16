@@ -17,8 +17,11 @@ function gitBlobSha1(bytes) {
 test('typed-match-arm registry pins unchanged actual Git-source blobs', () => {
   assert.equal(manifest.schema, 'attolang.typed-match-arm.v1');
   assert.equal(manifest.status, 'CANDIDATE_NOT_CROSS_BACKEND_CERTIFIED');
-  assert.ok(manifest.cases.length >= 4);
+  assert.ok(manifest.cases.length >= 12);
   assert.equal(new Set(manifest.cases.map(x => x.id)).size, manifest.cases.length);
+  assert.equal(new Set(manifest.cases.map(x => x.path)).size, manifest.cases.length);
+  assert.ok(manifest.cases.some(x => x.id.startsWith('switch-') && x.expect.kind === 'exit'));
+  assert.ok(manifest.cases.some(x => x.id.startsWith('switch-') && x.expect.kind === 'diagnostic'));
   for (const item of manifest.cases) {
     assert.match(item.git_blob_sha1, /^[0-9a-f]{40}$/);
     assert.ok(item.path.startsWith('fixtures/typed-match-arm-v1/'));
@@ -29,7 +32,11 @@ test('typed-match-arm registry pins unchanged actual Git-source blobs', () => {
     const source = bytes.toString('utf8');
     if (item.expect.kind === 'exit') {
       assert.ok(source.includes('// expect-exit: ' + item.expect.value), item.id);
-      assert.match(source, /on\s+\w+(?:\([^)]*\))?\s*:\s*int\s*->/);
+      assert.match(source, /(?:on|case)\s+\w+(?:\([^)]*\))?\s*:\s*int\s*->/);
+      if (item.id.startsWith('switch-')) {
+        assert.match(source, /\bswitch\s*<int>/, item.id + ': typed switch expression');
+        assert.match(source, /\bcase\s+/, item.id + ': canonical case label');
+      }
     } else {
       assert.equal(item.expect.kind, 'diagnostic');
       assert.ok(source.includes('// expect-error: ' + item.expect.code), item.id);
