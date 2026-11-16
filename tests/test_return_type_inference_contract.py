@@ -23,7 +23,7 @@ class ReturnTypeManifestTests(unittest.TestCase):
             source = p.read_text()
             self.assertTrue(source.strip())
             self.assertTrue(any(x in source for x in ("infer", "typeof", "type<")))
-            self.assertEqual(set(case["backend_status"]), {"java", "llvm", "net", "rs_wasm"})
+            self.assertEqual(set(case["backend_status"]), {"java", "llvm", "net", "wasm", "forge", "rs_wasm"})
             self.assertTrue(all(s == "NOT_EXECUTED" for s in case["backend_status"].values()))
             if case["expected"] == "compile_error_no_artifact":
                 self.assertTrue(case["diagnostic_category"].startswith("E_"))
