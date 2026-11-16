@@ -1,3 +1,4 @@
+import {createHash} from "node:crypto";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
@@ -34,4 +35,21 @@ test("Java AOT and WASM Worker cannot be replaced by host-only success",()=>{
  assert.equal(validatePlaygroundReceipt(a,c).valid,false);
  const b=mk();b.backend="wasm";b.repository="ores-truffle-oreslang/oreslang-source.wasm";b.cases[0]=a.cases[0];
  assert.equal(validatePlaygroundReceipt(b,c).valid,false);
+});
+
+test("checked-in upstream manifest has exact Git blob identity and 42 matching source hashes",()=>{
+ const raw=readFileSync(new URL("../fixtures/playground-compiler-parity-v1/UPSTREAM_MANIFEST.tsv",import.meta.url));
+ const hash=createHash("sha1").update("blob "+raw.length+"\\0".replace("\\0","\0")).update(raw).digest("hex");
+ assert.equal(hash,c.upstream.manifestBlobSha);
+ const lines=raw.toString("utf8").trim().split("\n");
+ assert.ok(lines.includes("# site_commit "+c.upstream.siteCommit));
+ const entries=lines.filter(x=>x&&!x.startsWith("#")).map(x=>x.split("\t"));
+ assert.equal(entries.length,42);
+ const observed=new Map(entries);
+ assert.equal(observed.size,42);
+ for(const entry of c.cases.filter(x=>x.kind==="positive")){
+   const id=entry.id.slice("preview/".length);
+   assert.equal(observed.get(id),entry.reference.gitBlobSha);
+   assert.equal(entry.reference.path,"play/examples/preview/"+id+".atto");
+ }
 });
