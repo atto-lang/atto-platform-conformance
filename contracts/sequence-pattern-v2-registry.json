@@ -1,0 +1,787 @@
+{
+  "schema": "atto.sequence-patterns.v2/1",
+  "status": "TARGET_SOURCE_ONLY",
+  "spec_pr": "https://github.com/atto-lang/atto-spec/pull/59",
+  "compiler_issue": "https://github.com/atto-lang/atto-source.rs/issues/123",
+  "source_blobs": {
+    "spec": "3fd3b36c8f403210748cc7d4b04938298b0a4bad",
+    "host_reference_tests": "8c0872a75d54c23be128b3ef0701b8b35ceabf36"
+  },
+  "evidence": {
+    "kind": "HOST_REFERENCE_ONLY",
+    "carrier_run": "https://github.com/anticaptrad/atto-ci/actions/runs/43975724371",
+    "guest_execution": "NOT_EXECUTED"
+  },
+  "backends": [
+    "rust-wasm",
+    "java",
+    "llvm",
+    "net",
+    "forge"
+  ],
+  "cases": [
+    {
+      "id": "SPV2-001",
+      "name": "suffix",
+      "kind": "match",
+      "pattern": "List.of(..., 3)",
+      "subject": {
+        "kind": "List",
+        "items": [
+          1,
+          2,
+          3
+        ]
+      },
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-002",
+      "name": "prefix",
+      "kind": "match",
+      "pattern": "List.of(1, ...)",
+      "subject": {
+        "kind": "List",
+        "items": [
+          1,
+          2,
+          3
+        ]
+      },
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-003",
+      "name": "infix-contiguous",
+      "kind": "match",
+      "pattern": "List.of(..., 2, 3, ...)",
+      "subject": {
+        "kind": "List",
+        "items": [
+          9,
+          2,
+          3,
+          9
+        ]
+      },
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-004",
+      "name": "infix-noncontiguous",
+      "kind": "match",
+      "pattern": "List.of(..., 2, 3, ...)",
+      "subject": {
+        "kind": "List",
+        "items": [
+          9,
+          2,
+          9,
+          3
+        ]
+      },
+      "expected": {
+        "matched": false,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-005",
+      "name": "distinct-repeated",
+      "kind": "match",
+      "pattern": "List.of(..., 3, ..., 3)",
+      "subject": {
+        "kind": "List",
+        "items": [
+          3
+        ]
+      },
+      "expected": {
+        "matched": false,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-006",
+      "name": "distinct-repeated-positive",
+      "kind": "match",
+      "pattern": "List.of(..., 3, ..., 3)",
+      "subject": {
+        "kind": "List",
+        "items": [
+          3,
+          9,
+          3
+        ]
+      },
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-007",
+      "name": "type-bind",
+      "kind": "match",
+      "pattern": "List.of(..., is int as val x, ...)",
+      "subject": {
+        "kind": "List",
+        "items": [
+          "a",
+          2,
+          3
+        ]
+      },
+      "expected": {
+        "matched": true,
+        "bindings": {
+          "x": 2
+        }
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-008",
+      "name": "type-vs-bool",
+      "kind": "match",
+      "pattern": "List.of(is int)",
+      "subject": {
+        "kind": "List",
+        "items": [
+          true
+        ]
+      },
+      "expected": {
+        "matched": false,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-009",
+      "name": "literal-vs-type",
+      "kind": "match",
+      "pattern": "List.of(7)",
+      "subject": {
+        "kind": "List",
+        "items": [
+          8
+        ]
+      },
+      "expected": {
+        "matched": false,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-010",
+      "name": "counted-mixed",
+      "kind": "match",
+      "pattern": "Array.of(...(3 of int, 3 of bool))",
+      "subject": {
+        "kind": "Array",
+        "items": [
+          1,
+          2,
+          3,
+          true,
+          false,
+          true
+        ]
+      },
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-011",
+      "name": "counted-too-short",
+      "kind": "match",
+      "pattern": "Array.of(...(3 of int, 3 of bool))",
+      "subject": {
+        "kind": "Array",
+        "items": [
+          1,
+          2,
+          3,
+          true,
+          false
+        ]
+      },
+      "expected": {
+        "matched": false,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-012",
+      "name": "counted-not-search",
+      "kind": "match",
+      "pattern": "Array.of(...(3 of int, 3 of bool))",
+      "subject": {
+        "kind": "Array",
+        "items": [
+          "x",
+          1,
+          2,
+          3,
+          true,
+          false,
+          true
+        ]
+      },
+      "expected": {
+        "matched": false,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-013",
+      "name": "counted-search",
+      "kind": "match",
+      "pattern": "List.of(..., ...(3 of int), ...)",
+      "subject": {
+        "kind": "List",
+        "items": [
+          "x",
+          1,
+          2,
+          3,
+          "z"
+        ]
+      },
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-014",
+      "name": "counted-literal",
+      "kind": "match",
+      "pattern": "List.of(...(3 of 7))",
+      "subject": {
+        "kind": "List",
+        "items": [
+          7,
+          7,
+          7
+        ]
+      },
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-015",
+      "name": "counted-literal-negative",
+      "kind": "match",
+      "pattern": "List.of(...(3 of 7))",
+      "subject": {
+        "kind": "List",
+        "items": [
+          7,
+          8,
+          7
+        ]
+      },
+      "expected": {
+        "matched": false,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-016",
+      "name": "zero-count",
+      "kind": "match",
+      "pattern": "List.of(...(0 of int), 9)",
+      "subject": {
+        "kind": "List",
+        "items": [
+          9
+        ]
+      },
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-017",
+      "name": "tuple-exact",
+      "kind": "match",
+      "pattern": "Tuple.of(1, 2, 3)",
+      "subject": {
+        "kind": "Tuple",
+        "items": [
+          1,
+          2,
+          3
+        ]
+      },
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-018",
+      "name": "tuple-wrong-arity",
+      "kind": "match",
+      "pattern": "Tuple.of(1, 2, 3)",
+      "subject": {
+        "kind": "Tuple",
+        "items": [
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "expected": {
+        "matched": false,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-019",
+      "name": "trailing-anchor",
+      "kind": "match",
+      "pattern": "List.of(1, ..., 9)",
+      "subject": {
+        "kind": "List",
+        "items": [
+          1,
+          2,
+          3,
+          9
+        ]
+      },
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-020",
+      "name": "bare-rest-empty",
+      "kind": "match",
+      "pattern": "List.of(..., 1, ...)",
+      "subject": {
+        "kind": "List",
+        "items": [
+          1
+        ]
+      },
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-021",
+      "name": "legacy-prefix",
+      "kind": "reject",
+      "pattern": "List.of(..._, 1)",
+      "expected": {
+        "parse": "REJECT"
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-022",
+      "name": "legacy-suffix",
+      "kind": "reject",
+      "pattern": "List.of(_..., 1)",
+      "expected": {
+        "parse": "REJECT"
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-023",
+      "name": "adjacent-rests",
+      "kind": "reject",
+      "pattern": "List.of(..., ..., 1)",
+      "expected": {
+        "parse": "REJECT"
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-024",
+      "name": "postfix-ellipsis",
+      "kind": "reject",
+      "pattern": "List.of(...(int)...)",
+      "expected": {
+        "parse": "REJECT"
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-025",
+      "name": "uncounted-group",
+      "kind": "reject",
+      "pattern": "List.of(...(int))",
+      "expected": {
+        "parse": "REJECT"
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-026",
+      "name": "postfix-counted",
+      "kind": "reject",
+      "pattern": "List.of(...(3 of int)...)",
+      "expected": {
+        "parse": "REJECT"
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-027",
+      "name": "range-deferred",
+      "kind": "reject",
+      "pattern": "List.of(...(2..4 of int))",
+      "expected": {
+        "parse": "REJECT"
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-028",
+      "name": "rest-in-repeat",
+      "kind": "reject",
+      "pattern": "List.of(...(1 of ...))",
+      "expected": {
+        "parse": "REJECT"
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-029",
+      "name": "tuple-unbounded",
+      "kind": "reject",
+      "pattern": "Tuple.of(..., 1)",
+      "expected": {
+        "parse": "REJECT"
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-030",
+      "name": "duplicate-binders",
+      "kind": "reject",
+      "pattern": "List.of(5 as val x, 6 as val x)",
+      "expected": {
+        "parse": "REJECT"
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-031",
+      "name": "standalone-rest",
+      "kind": "reject",
+      "pattern": "...",
+      "expected": {
+        "parse": "REJECT"
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-032",
+      "name": "standalone-repeat",
+      "kind": "reject",
+      "pattern": "...(3 of int)",
+      "expected": {
+        "parse": "REJECT"
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-033",
+      "name": "binder-in-repeat",
+      "kind": "reject",
+      "pattern": "List.of(...(1 of 1 as val x))",
+      "expected": {
+        "parse": "REJECT"
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-034",
+      "name": "negative-count",
+      "kind": "reject",
+      "pattern": "List.of(...(-1 of int))",
+      "expected": {
+        "parse": "REJECT"
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-035",
+      "name": "budget-overflow",
+      "kind": "reject",
+      "pattern": "List.of(...(1000000 of int))",
+      "expected": {
+        "parse": "REJECT"
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-036",
+      "name": "trailing-comma",
+      "kind": "reject",
+      "pattern": "List.of(1,)",
+      "expected": {
+        "parse": "REJECT"
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    }
+  ]
+}
