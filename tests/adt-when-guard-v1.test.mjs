@@ -30,10 +30,10 @@ function validate(m){
   assert.match(proof.carrier_commit,/^[a-f0-9]{40}$/);
   assert.ok(Number.isSafeInteger(proof.workflow_run_id)&&proof.workflow_run_id>0);
   assert.ok(Number.isSafeInteger(proof.workflow_job_id)&&proof.workflow_job_id>0);
-  assert.equal(proof.scoped_source_git_blobs_verified,53);
+  assert.equal(proof.scoped_source_git_blobs_verified,59);
   assert.equal(proof.full_repository_tree_verified,false);
-  assert.deepEqual(proof.native_rust_tests,{passed:50,failed:0});
-  assert.equal(proof.legacy_guest_fixture_checks.passed,12);
+  assert.deepEqual(proof.native_rust_tests,{passed:53,failed:0});
+  assert.equal(proof.legacy_guest_fixture_checks.passed,18);
   assert.equal(proof.browser_compiler_wasm_built,true);
   assert.equal(proof.chromium_jspi_guest_execution,'PASS');
   assert.deepEqual(proof.guard_browser_cases,{positive:4,negative:1});
