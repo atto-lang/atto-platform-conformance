@@ -37,3 +37,7 @@ This README records the intended role of this repository; it is not a claim of f
 AttoLang is the public name; preserve existing Oreslang/.ores compatibility and use canonical .atto for new portable library source. This README defines scope, not feature readiness.
 
 **Acceptance:** name the exact source SHA/tree, runtime/toolchain, positive and negative checks and execution receipt before claiming support. Host-only tests and empty CI steps do not prove guest execution.
+
+## Slice and spread candidate contract (Rust-only reference checks)
+
+The [33 proposed collection test vectors](contracts/collection-slice-spread-v1.json) and [Rust semantic-model tests](tests/collection_slice_spread_contract.rs) describe checked indexes, half-open/negative-step slices, Unicode scalar positions, spread and ownership errors. The `collection-slice-spread-contract.yml` workflow uses **Rust**, not Python, for these checks. Every vector and backend is marked `NOT_EXECUTED`: reference-model tests are **not** a compiled AttoLang guest and do not prove cross-backend support.
