@@ -49,3 +49,15 @@ For each other backend, add an independently implemented compiler adapter that y
 5. Independent verification of the claimed source head, checkout tree, guest hashes and workflow steps before certifying parity.
 
 Do not adopt new syntax solely from these feature gates. These fixtures are portable candidate contracts, not proof that all backends currently implement closures or Option/Result.
+
+## Explicit 35-blob compiler-subset mode (weaker than exact full-tree)
+
+If full-tree Actions cannot start, a temporary carrier can assemble only the compiler/test files required for a particular guest smoke. **Every selected source file must match the original source Git blob SHA**, listed in a checked-in source lock manifest. This cannot be reported as complete source-tree CI. Use the same required CLI options plus:
+
+```
+--source-tree <actual-overlay-checkout-tree> \
+--source-original-tree <original-full-source-tree> \
+--source-blob-lock /path/to/source-checkout/tests/atto-rs242-source-blob-lock.tsv
+```
+
+The runner verifies both SHA identities independently, verifies the original source-head/tree metadata in the lock, checks every listed file's Git blob hash, and writes a distinct `source_blob_pinned_subset_not_full_tree` provenance classification with the original source tree and actual checkout tree recorded separately. It rejects a partial flag pair or fewer than 35 source blobs. Native AOT certification remains false in both modes.
