@@ -32,7 +32,7 @@ def validate(contract, receipt):
     demand(isinstance(receipt.get("toolchain"), str) and receipt["toolchain"].strip(), "missing toolchain")
     run = receipt.get("ci_run")
     demand(isinstance(run, dict), "missing GitHub run metadata")
-    demand(isinstance(run.get("url"), str) and re.match(r"^https://github.com/[^/]+/[^/]+/actions/runs/\\d+$", run["url"]), "invalid run URL")
+    demand(isinstance(run.get("url"), str) and re.match(r"^https://github.com/[^/]+/[^/]+/actions/runs/\d+$", run["url"]), "invalid run URL")
     demand(type(run.get("job_id")) is int and run["job_id"] > 0, "missing job ID")
     demand(run.get("steps_executed") is True, "zero-step run is not evidence")
     demand(run.get("conclusion") == "success", "CI did not succeed")
