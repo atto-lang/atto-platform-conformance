@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'contracts/actor-heap-stack-aot-v1.json'
+      - 'contracts/compact-ref32-parity-v1.json'
       - 'docs/ACTOR_HEAP_STACK_AOT_V1.md'
       - 'tools/actor_aot_guest_gate.rs'
       - 'fixtures/actor_heap_stack_aot_v1/**'
@@ -22,6 +23,13 @@ jobs:
             (.status == "candidate-unverified-production-guest") and
             (.cases | length == 6) and
             all(.cases[]; .current_backend_status == "NOT_EXECUTED")' contracts/actor-heap-stack-aot-v1.json
+          jq -e '.schema == "atto.compact-ref32-parity.v1" and
+            (.status == "candidate-unverified-production-guest") and
+            (.target_ref_bytes == 4) and
+            (.cases | length == 11) and
+            all(.cases[];
+              (.backend_status | length) == 5 and
+              all(.backend_status[]; . == "NOT_EXECUTED"))' contracts/compact-ref32-parity-v1.json
           test -s fixtures/actor_heap_stack_aot_v1/two_actors.atto
           test -s fixtures/actor_heap_stack_aot_v1/recursive_actor_call.atto
       - name: Build Rust guest-admission tool (does NOT execute a guest)
