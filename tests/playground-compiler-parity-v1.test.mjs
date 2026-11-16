@@ -53,3 +53,18 @@ test("checked-in upstream manifest has exact Git blob identity and 42 matching s
    assert.equal(entry.reference.path,"play/examples/preview/"+id+".atto");
  }
 });
+
+test("upstream merged 8/42 cannot silently promote Oreslang receipts",()=>{
+ assert.equal(c.upstream.compilerPrStateAtAudit,"merged");
+ const ev=c.upstream.referenceCompilerEvidence;
+ assert.equal(ev.sitePreviewGuestExecution.reportedExecuted,8);
+ assert.equal(ev.sitePreviewGuestExecution.reportedUnsupportedOrNotExecuted,34);
+ assert.equal(ev.sitePreviewGuestExecution.ids.length,8);
+ assert.equal(new Set(ev.sitePreviewGuestExecution.ids).size,8);
+ for(const id of ev.sitePreviewGuestExecution.ids)assert.ok(c.cases.some(x=>x.id==="preview/"+id));
+ assert.equal(ev.kind,"UPSTREAM_REFERENCE_ONLY_NOT_ORESLANG_PARITY");
+ const r=validatePlaygroundReceipt(mk(),c);
+ assert.equal(r.valid,true);
+ assert.equal(r.fullEvidenceShape,false);
+ assert.equal(r.parityCertified,false);
+});
