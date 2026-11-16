@@ -23,7 +23,8 @@ const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 
 function parseArgs(argv) {
   const args = {};
-  const valid = new Set(['profile', 'attoc', 'source-repo', 'checkout-head', 'source-head', 'source-tree', 'receipt']);
+  const required = ['profile', 'attoc', 'source-repo', 'checkout-head', 'source-head', 'source-tree', 'receipt'];
+  const valid = new Set([...required, 'source-original-tree', 'source-blob-lock']);
   for (let i = 0; i < argv.length; i += 2) {
     const key = argv[i];
     if (!key?.startsWith('--') || !valid.has(key.slice(2)) ||
@@ -33,12 +34,16 @@ function parseArgs(argv) {
     }
     args[key.slice(2)] = argv[i + 1];
   }
-  if (Object.keys(args).length !== valid.size ||
-      [...valid].some(key => !Object.hasOwn(args, key))) {
+  if (required.some(key => !Object.hasOwn(args, key))) {
     throw new Error('explicit profile, compiler, checkout, source SHA/tree and receipt are all required');
   }
-  for (const name of ['checkout-head', 'source-head', 'source-tree']) {
-    if (!HEX40.test(args[name])) throw new Error('invalid expected SHA for ' + name);
+  if (Boolean(args['source-original-tree']) !== Boolean(args['source-blob-lock'])) {
+    throw new Error('subset mode requires both original source tree and exact source-blob lock');
+  }
+  for (const name of ['checkout-head', 'source-head', 'source-tree', 'source-original-tree']) {
+    if (args[name] !== undefined && !HEX40.test(args[name])) {
+      throw new Error('invalid expected SHA for ' + name);
+    }
   }
   if (args.profile !== 'rust-source-wasm') {
     throw new Error('AOT backend has no executable adapter yet: ' + args.profile);
@@ -118,9 +123,48 @@ function main() {
   assert.ok(attoc.startsWith(repo + sep), 'compiler executable must be inside exact checkout');
   assert.ok(!existsSync(receipt), 'refuse to overwrite an existing evidence receipt');
   assert.equal(git(repo, ['rev-parse', 'HEAD']), params['checkout-head'], 'checkout SHA mismatch');
-  assert.equal(git(repo, ['rev-parse', 'HEAD^{tree}']), params['source-tree'], 'exact source tree mismatch');
-  // Original source PR head is provenance input, separately verified via GitHub.
-  // It need not equal the temporary carrier's commit SHA when trees match.
+  const checkoutTree = git(repo, ['rev-parse', 'HEAD^{tree}']);
+  assert.equal(checkoutTree, params['source-tree'], 'exact checkout tree mismatch');
+  // In a full-tree mirror, checkoutTree must equal the original source tree.
+  // A source-blob-locked build subset is a deliberately weaker proof mode:
+  // verify every compiler input blob and keep both original and checkout trees.
+  let originalTree = checkoutTree;
+  let provenanceMode = 'full_tree_sha_equivalent';
+  let lockFileSha256 = null;
+  let verifiedSourceBlobCount = null;
+  if (params['source-original-tree']) {
+    originalTree = params['source-original-tree'];
+    provenanceMode = 'source_blob_pinned_subset_not_full_tree';
+    const lockPath = realpathSync(resolve(params['source-blob-lock']));
+    assert.ok(lockPath.startsWith(repo + sep), 'blob lock must belong to local checkout');
+    const lockData = readFileSync(lockPath);
+    lockFileSha256 = sha256(lockData);
+    const lines = lockData.toString('utf8').split('\n');
+    assert.ok(lines.some(line => line.startsWith('# Source ') &&
+      line.endsWith('head: ' + params['source-head'])), 'blob lock is for a different source PR');
+    assert.ok(lines.includes('# Original complete source tree: ' + originalTree),
+      'blob lock is for a different original Git tree');
+    const seenPaths = new Set();
+    let count = 0;
+    for (const line of lines) {
+      if (!line || line.startsWith('#')) continue;
+      const columns = line.split('\t');
+      assert.equal(columns.length, 2, 'malformed source blob lock entry');
+      const [expectedSha, relative] = columns;
+      assert.ok(HEX40.test(expectedSha) && relative && !relative.includes('..') &&
+        !relative.includes('\\'), 'untrusted source lock path/SHA');
+      assert.ok(!seenPaths.has(relative), 'duplicate source lock path');
+      seenPaths.add(relative);
+      const path = resolve(repo, relative);
+      assert.ok(path.startsWith(repo + sep), 'source lock path escaped checkout');
+      assert.equal(gitBlobSha(readFileSync(path)), expectedSha,
+        'source blob does not match original source: ' + relative);
+      count++;
+    }
+    assert.ok(count >= 35, 'source-blob-pinned subset missing compiler inputs');
+    verifiedSourceBlobCount = count;
+  }
+  // Original source PR head is a separate provenance input.
   const compilerHash = sha256(readFileSync(attoc));
   const temp = mkdtempSync(join(tmpdir(), 'atto-full-aot-exec-'));
   const results = [];
@@ -137,7 +181,11 @@ function main() {
       status: 'executed_guest_smokes_not_native_aot_certified',
       compiler_source_head_sha: params['source-head'],
       compiler_checkout_head_sha: params['checkout-head'],
-      compiler_source_tree_sha: params['source-tree'],
+      compiler_source_tree_sha: originalTree,
+      compiler_checkout_tree_sha: checkoutTree,
+      compiler_provenance_mode: provenanceMode,
+      verified_source_blob_count: verifiedSourceBlobCount,
+      source_blob_lock_sha256: lockFileSha256,
       compiler_executable_sha256: compilerHash,
       actual_invocation: 'native attoc -o <guest.wasm>; WebAssembly.Instance(...).exports.main()',
       runtime_engine_jit_policy: 'engine-dependent',
