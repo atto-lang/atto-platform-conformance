@@ -34,6 +34,11 @@ jobs:
         run: |
           rustc --edition=2021 --test tests/stdio_unbounded_oracle.rs -o /tmp/stdio-unbounded-oracle
           /tmp/stdio-unbounded-oracle --nocapture
+      - name: Compile and run Rust supervised detached I/O lifecycle model
+        run: |
+          rustc --version
+          rustc --edition=2021 --test tests/io_detached_oracle.rs -o /tmp/io-detached-reference
+          /tmp/io-detached-reference --nocapture
       - name: Evidence boundary
         run: |
           echo "Reference model only; compiled AttoLang guest conformance: NOT_EXECUTED."
