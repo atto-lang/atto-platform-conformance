@@ -2,6 +2,18 @@
 
 Cross-platform, **evidence-first** language and runtime conformance suite. A harness that has not run a real compiler must never claim parity.
 
+## Canonical lambda v1 target fixtures
+
+[`fixtures/lambda-v1/manifest.json`](fixtures/lambda-v1/manifest.json) contains five positive and five rejection `.atto` cases for the canonical `|x| -> expression` syntax (typed arguments, captures, shadowing, `|>`, and rejected captures/placeholders). Their SHA-256 bytes are pinned. The **only** currently implemented check is fixture integrity and fail-closed manifest status validation:
+
+```sh
+node bin/validate-lambda-v1.mjs
+node --test test/lambda-v1-manifest.test.mjs
+```
+
+This produces `FIXTURE_INTEGRITY_ONLY_NOT_GUEST_EXECUTION` — **not** a compiler pass. Actual five-backend certification still requires immutable tree and compiler provenance, strict AOT artifact inspection, execution of each guest, and independent CI-run verification under the existing parity evidence policy.
+
+
 ## Real compiler evidence adapter (proposed integration)
 
 A private compiler build can produce a narrow two-fixture JSON smoke report using the companion changes in [Java PR #953](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/953) and [LLVM PR #383](https://github.com/ores-truffle-oreslang/oreslang-source.llvm/pull/383). This repo adds a **non-promoting** consistency checker:
