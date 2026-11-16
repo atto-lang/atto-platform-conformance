@@ -1,0 +1,1 @@
+pub fnc run(): infer { val infer: int = 5; return infer; } pub fnc main(): int { return run(); }
