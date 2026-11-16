@@ -1,0 +1,35 @@
+name: Collection slice and spread contract (Rust model)
+on:
+  pull_request:
+    paths:
+      - 'contracts/collection-slice-spread-v1.json'
+      - 'tests/collection_slice_spread_contract.rs'
+      - '.github/workflows/collection-slice-spread-contract.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  candidate-semantics-not-guest-execution:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Validate candidate contract shape and fail closed on fake PASS
+        shell: bash
+        run: |
+          jq -e '
+            .schema == "atto.collection-slice-spread.v1" and
+            .version == 1 and
+            .status == "TARGET_ONLY_NOT_EXECUTED" and
+            (.cases | length) == 33 and
+            ([.cases[].id] | unique | length) == 33 and
+            ([.cases[].guest_status] | all(. == "NOT_EXECUTED")) and
+            ([.backend_evidence[]] | all(. == "NOT_EXECUTED"))
+          ' contracts/collection-slice-spread-v1.json >/dev/null
+      - name: Compile Rust reference contract tests
+        run: rustc --edition=2021 --test tests/collection_slice_spread_contract.rs -o /tmp/atto-collection-contract-tests
+      - name: Run Rust candidate semantics tests
+        run: /tmp/atto-collection-contract-tests --nocapture
+      - name: Mark proof boundary
+        run: echo "CANDIDATE REFERENCE MODEL ONLY - NO AttoLang GUEST WAS EXECUTED"
