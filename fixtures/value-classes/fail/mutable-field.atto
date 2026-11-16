@@ -1,0 +1,4 @@
+define value class Bad as
+    pub let int count = 0;
+end
+pub fnc main(): int { return 0; }
