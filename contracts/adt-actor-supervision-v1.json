@@ -1,0 +1,77 @@
+{
+  "schema": "atto.adt-actor-supervision.v1",
+  "status": "PROPOSED_FINITE_REFERENCE_MODEL_NO_COMPILED_GUEST_CLAIM",
+  "source_spec": "atto-lang/atto-spec/language/adt-actor-supervision-v1.md",
+  "max_payload_bytes": 4096,
+  "max_nesting": 16,
+  "supported_reference_types": [
+    "int",
+    "bool",
+    "string",
+    "Option<T>",
+    "Result<T,E>",
+    "JobOutcome"
+  ],
+  "job_outcome_variants": {
+    "Completed": {
+      "id": "int",
+      "result": "Result<int,string>"
+    },
+    "Deferred": {},
+    "Failed": {
+      "reason": "string",
+      "retryable": "bool"
+    }
+  },
+  "rules": [
+    "All ADT values are checked against an exact nominal family and type specialization before admission",
+    "Variant tag + exact product field set are required; no implicit None/Err conversion",
+    "Private/opaque capabilities, borrowed references and resources cannot be nested to bypass Sendable",
+    "DATA cannot mint CONTROL; CONTROL notices require host authority separate from all guest payload fields",
+    "Panic notice points to an accepted currently-running message and its exact generation",
+    "CONTROL is delivered before scheduling new DATA even with a full bounded mailbox",
+    "Every admitted message is completed, failed or explicitly discarded once",
+    "Old actor generations and callback identities cannot settle work in a restarted generation",
+    "Malformed JSON, duplicate fields, invalid UTF8, oversized or too-deep payloads fail before handler",
+    "Host reference tests are not evidence for compiled actor guest execution"
+  ],
+  "examples": {
+    "some_ok": {
+      "variant": "Some",
+      "payload": {
+        "variant": "Ok",
+        "payload": 41
+      }
+    },
+    "some_err": {
+      "variant": "Some",
+      "payload": {
+        "variant": "Err",
+        "payload": "bad"
+      }
+    },
+    "none": {
+      "variant": "None"
+    },
+    "product_variant": {
+      "variant": "Completed",
+      "payload": {
+        "id": 7,
+        "result": {
+          "variant": "Ok",
+          "payload": 0
+        }
+      }
+    }
+  },
+  "required_evidence": [
+    "source_head",
+    "source_tree",
+    "compiler_toolchain",
+    "guest_runtime",
+    "executed_positive_cases",
+    "executed_negative_cases",
+    "control_provenance_proof",
+    "status"
+  ]
+}
