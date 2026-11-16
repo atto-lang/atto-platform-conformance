@@ -1,0 +1,134 @@
+{
+  "schema": "atto.actor-scheduler-domains.v1",
+  "version": 1,
+  "status": "REFERENCE_MODEL_ONLY_NOT_GUEST_EXECUTED",
+  "normative": "atto-lang/atto-spec/language/actor-scheduler-domains-v1.md",
+  "legacyAudit": [
+    "ores-truffle-oreslang/oreslang-source.java/src/main/java/dev/oreslang/runtime/OresScheduler.java",
+    "ores-truffle-oreslang/oreslang-source.llvm/src/main/cpp/oreslang/runtime/OresIsolateVM.hpp",
+    "ores-truffle-oreslang/oreslang-source.net/runtime/Ores.Net.Runtime/ActorDispatchDomains.cs"
+  ],
+  "startup": {
+    "max_atto_threads_multi_cpu_including_caller": 3,
+    "max_atto_threads_single_cpu_including_caller": 2,
+    "exclude_managed_host_threads": true,
+    "per_supervisor_dedicated_thread": false,
+    "per_reactor_dedicated_thread": false
+  },
+  "domains": {
+    "shared": "VM-owned trusted bounded pool",
+    "isolated": "private pool per isolated actor, lazy worker allocation",
+    "untrusted": "separate sandbox and pool per tenant/account/generation, no trusted-carrier fallback"
+  },
+  "security": {
+    "sandbox_required": true,
+    "llvm_default": "fail closed absent sandboxed process",
+    "java_host_context_is_not_physical_sandbox": true,
+    "dotnet_alc_is_not_physical_sandbox": true,
+    "tenant_generation_fence": true,
+    "broker_only_cross_tenant": true,
+    "control_reserved_slots": 4,
+    "global_thread_budget": true
+  },
+  "backends": {
+    "java": {
+      "repository": "atto-lang/atto-source.java",
+      "status": "NOT_EXECUTED"
+    },
+    "llvm": {
+      "repository": "atto-lang/atto-source.llvm",
+      "status": "NOT_EXECUTED"
+    },
+    "net": {
+      "repository": "atto-lang/atto-source.net",
+      "status": "NOT_EXECUTED"
+    },
+    "wasm": {
+      "repository": "atto-lang/atto-source.wasm",
+      "status": "NOT_EXECUTED"
+    },
+    "forge": {
+      "repository": "atto-lang/atto-source.forge",
+      "status": "NOT_EXECUTED"
+    }
+  },
+  "cases": [
+    {
+      "id": "startup-two-or-three",
+      "expect": "2-3 Atto-owned threads including startup caller"
+    },
+    {
+      "id": "shared-vm-pool",
+      "expect": "one shared trusted VM pool"
+    },
+    {
+      "id": "isolated-per-actor-lazy-pool",
+      "expect": "distinct private pool; lazy worker"
+    },
+    {
+      "id": "untrusted-deny-without-sandbox",
+      "expect": "deny admission without real sandbox"
+    },
+    {
+      "id": "tenant-per-account-pool",
+      "expect": "distinct bounded pool and generation per tenant"
+    },
+    {
+      "id": "global-thread-budget",
+      "expect": "no execution-domain fallback"
+    },
+    {
+      "id": "queue-overflow-atomic",
+      "expect": "failed admissions preserve work and ownership"
+    },
+    {
+      "id": "supervisor-priority-and-fairness",
+      "expect": "CONTROL prioritized without DATA starvation"
+    },
+    {
+      "id": "supervisor-control-reserved",
+      "expect": "DATA cannot exhaust CONTROL"
+    },
+    {
+      "id": "control-overflow-escalation",
+      "expect": "failure is escalated, never silently dropped"
+    },
+    {
+      "id": "coalesced-duplicate-control",
+      "expect": "one notice per actor incarnation"
+    },
+    {
+      "id": "tenant-generation-retirement",
+      "expect": "stale tenant closed; neighbor survives"
+    },
+    {
+      "id": "reactor-on-carrier",
+      "expect": "poll without dedicated reactor thread"
+    },
+    {
+      "id": "real-security-boundary",
+      "expect": "untrusted native/managed guest requires verified confinement"
+    }
+  ],
+  "receipt": {
+    "states": [
+      "passed",
+      "failed",
+      "unsupported",
+      "not_executed"
+    ],
+    "guest_execution_requires": [
+      "backend",
+      "case_id",
+      "exact_head_sha",
+      "source_tree_sha",
+      "toolchain",
+      "executed_steps_nonzero",
+      "guest_executed",
+      "observed",
+      "boundary_evidence",
+      "thread_count_evidence"
+    ],
+    "host_oracle_not_eligible_for_passed_guest": true
+  }
+}
