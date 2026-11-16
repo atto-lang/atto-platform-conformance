@@ -14,7 +14,7 @@ Execute portable language fixtures and record target-specific results.
 
 ## Sequence pattern v2 target registry
 
-[Sequence matching v2 registry](contracts/sequence-pattern-v2-registry.json) pins 36 proposed positive/negative semantics. Every backend result is explicitly **NOT_EXECUTED** until an independent compiler executes its source-derived guest fixture; [the registry integrity suite](tests/sequence-pattern-v2-registry.test.mjs) is host-only and cannot certify parity. Contract [atto-spec #59](https://github.com/atto-lang/atto-spec/pull/59); compiler tracking [atto-source.rs #123](https://github.com/atto-lang/atto-source.rs/issues/123).
+[Sequence matching v2 registry](contracts/sequence-pattern-v2-registry.json) pins 40 proposed positive/negative semantics (20 match and 20 parse-reject targets). Every backend result is explicitly **NOT_EXECUTED** until an independent compiler executes its source-derived guest fixture; [the registry integrity suite](tests/sequence-pattern-v2-registry.test.mjs) is host-only and cannot certify parity. Contract [atto-spec #59](https://github.com/atto-lang/atto-spec/pull/59); compiler tracking [atto-source.rs #123](https://github.com/atto-lang/atto-source.rs/issues/123).
 
 ## Validation
 
