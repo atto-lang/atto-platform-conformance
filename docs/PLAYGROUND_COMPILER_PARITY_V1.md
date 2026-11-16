@@ -3,8 +3,16 @@
 This is a **non-promoting** contract: no compiler success is claimed. The exact
 AttoLang `.atto` preview Git blobs are copied by SHA reference from website
 commit `38a19bdc251d6f8db3ffea3b8df0e6c84ca8881c` (manifest Git blob `c23e61a66e387dd08e5d0b9c1e3a076ce9d68bba`), tracked upstream
-in [atto-source.rs draft #165](https://github.com/atto-lang/atto-source.rs/pull/165).
-The PR body still says 35 but the current pinned manifest has **42** entries.
+in [atto-source.rs merged PR #165](https://github.com/atto-lang/atto-source.rs/pull/165).
+That merged implementation pins all 42, but **only 8 of 42 execute as real
+Rust/Wasm guests**, with 34 still unsupported. It reports 481 passing checks
+and 434 native-vs-wasm byte comparisons in an authorized private carrier
+[run 43798041741](https://github.com/agent-pontifex/atto-ci/actions/runs/43798041741),
+which has been independently confirmed as a completed successful workflow.
+Those are upstream AttoLang results and are **not Oreslang compiler or
+cross-backend execution evidence**. The eight upstream executed examples are:
+`borrow-checking`, `fib-match`, `function-pipeline`, `generators`,
+`lexical-scope-pure`, `result-option`, `state-containers`, `trap`.
 
 The nine target backends are: java, llvm, wasm, forge, net, cranelift, rs, js, hdl.
 Each gets 42 positive compiler-and-guest cases and eight safety-negative
