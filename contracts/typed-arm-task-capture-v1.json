@@ -1,0 +1,91 @@
+{
+  "schema": "atto.typed-arm-task-capture.v1",
+  "status": "SCOPED_RUST_WASM_PASS_NOT_CROSS_BACKEND_CERTIFIED",
+  "parent_contract": "attolang.typed-match-arm.v1",
+  "compiler": {
+    "repository": "atto-lang/atto-source.rs",
+    "pull_request": 245,
+    "stacked_on_pr": 236,
+    "exact_head_sha": "05c8aa182d30313cdce0d671d1ded4bd11c22401",
+    "browser_harness_blob_sha": "7596fb81e52e3026e38065526fc741b7f78a0916"
+  },
+  "abi": {
+    "profile": "atto.async.v3",
+    "new_import": "atto.task_start_i64(index:i32,copy:i64)->i32",
+    "new_export": "task_invoke_i64(index:i32,copy:i64)->i64",
+    "legacy_capture_free_abi": "atto.async.v2",
+    "scope": "one copied int arm binder; no references, owned values, or general closures"
+  },
+  "backends": {
+    "rust-wasm": "PASS_SCOPED",
+    "java-native-image": "NOT_EXECUTED",
+    "llvm-native": "NOT_EXECUTED",
+    "dotnet-nativeaot": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "match-option-int",
+      "path": "fixtures/typed-arm-task-capture-v1/pass/match-int-capture.atto",
+      "git_blob_sha1": "5d3f98d54e2ea2ed288ca6edfff9b1d5012d0c1a",
+      "expect": {
+        "kind": "browser_compiled_guest",
+        "return_value": 42,
+        "cooperative_yields": 1
+      }
+    },
+    {
+      "id": "switch-result-int",
+      "path": "fixtures/typed-arm-task-capture-v1/pass/switch-int-capture.atto",
+      "git_blob_sha1": "faf28799fb8eae3e0eee142780555880647219d3",
+      "expect": {
+        "kind": "browser_compiled_guest",
+        "return_value": 42,
+        "cooperative_yields": 1
+      }
+    },
+    {
+      "id": "reject-string",
+      "path": "fixtures/typed-arm-task-capture-v1/fail/reject-string-capture.atto",
+      "git_blob_sha1": "90bef882136f79418bd8876d0790e2a96efe35eb",
+      "expect": {
+        "kind": "no_guest",
+        "diagnostic": "E_UNSUPPORTED",
+        "guest_instantiated": false
+      }
+    }
+  ],
+  "execution_receipts": {
+    "rust-wasm": {
+      "status": "PASS_SCOPED",
+      "source_head": "05c8aa182d30313cdce0d671d1ded4bd11c22401",
+      "carrier_repo": "anticaptrad/atto-ci",
+      "carrier_commit": "b5a8d1270a0620868a10b4687176c030dd048098",
+      "workflow_run_id": 43960853684,
+      "workflow_job_id": 133627521871,
+      "scoped_source_blobs_verified": 51,
+      "full_source_repository_tree_verified": false,
+      "native_rust_regression_tests": {
+        "passed": 40,
+        "failed": 0
+      },
+      "legacy_match_switch_guest_fixtures": {
+        "passed": 12,
+        "failed": 0,
+        "positive_exit_42": 5,
+        "negative_no_artifact": 7
+      },
+      "actual_browser_compiler_wasm": true,
+      "actual_browser_guest_wasm": true,
+      "chromium_jspi": "PASS",
+      "source_literal_identity": "three fixture texts copied byte-identically from the browser source strings in the exact compiler head",
+      "execution_scope": "selected match/switch int captures and failed string capture only; no general closure semantics"
+    }
+  },
+  "limitations": [
+    "No native Java/LLVM/.NET guest execution for these cases",
+    "No full-source-tree mirror; only 51 scoped source blob hashes",
+    "No general task closure capture, object/borrowed capture, variable-sized payloads, or nested captured ADTs",
+    "No general match/switch expression-position values, Future<T> generalization, or ownership/cancellation parity"
+  ],
+  "evidence_policy": "A future backend PASS must demonstrate exact-source native compiled guest outcomes and negative no-artifact diagnostics; host-only manifest checks never certify a backend."
+}
