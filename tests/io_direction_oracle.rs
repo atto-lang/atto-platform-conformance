@@ -37,10 +37,12 @@ fn select(ports: &mut [Port], arms: &mut [Arm]) -> Result<Option<Winner>, Error>
             Arm::Read(i) if !ports[*i].queue.is_empty() || ports[*i].closed => {
                 return Ok(Some(Winner { index, value: Some(ports[*i].read()?) }));
             }
-            Arm::Write(i, Some(_)) if !ports[*i].closed && ports[*i].queue.len() < ports[*i].capacity => {
-                if let Arm::Write(_, value) = arm {
-                    ports[*i].write(value.take().unwrap()).expect("ready write admitted");
-                }
+            Arm::Write(i, value) if value.is_some() && !ports[*i].closed && ports[*i].queue.len() < ports[*i].capacity => {
+                // Match disjoint fields directly: re-matching the whole arm
+                // while i is borrowed causes Rust E0503.
+                let port = *i;
+                let payload = value.take().expect("ready arm owns payload");
+                ports[port].write(payload).expect("ready write admitted");
                 return Ok(Some(Winner { index, value: None }));
             }
             _ => {}
