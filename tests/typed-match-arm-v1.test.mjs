@@ -69,3 +69,31 @@ test('scoped Rust/Wasm PASS must cite executed guests; other backends remain unv
     assert.equal(manifest.execution_receipts?.[backend], undefined);
   }
 });
+
+test('mainline switch compiler PASS requires a full identical Git tree and executed guests', () => {
+  const proof = manifest.execution_receipts?.['rust-wasm-mainline'];
+  assert.ok(proof, 'missing exact-tree mainline compiler proof');
+  assert.equal(proof.status, 'PASS_SCOPED');
+  assert.equal(proof.source_commit, manifest.source.reference_commit);
+  assert.equal(proof.source_tree, manifest.source.reference_tree);
+  assert.match(proof.source_tree, /^[a-f0-9]{40}$/);
+  assert.equal(proof.carrier_tree, proof.source_tree,
+    'Git tree must match, not just a subset of changed files');
+  assert.equal(proof.source_git_blobs_verified, 729);
+  assert.equal(proof.native_rust_cargo_test, 'PASS');
+  assert.deepEqual(proof.guest_conformance,
+    { passed: 495, failed: 0, native_vs_wasm: 447, java_differential: 'SKIPPED' });
+  assert.equal(proof.typed_arm_fixtures.passed, manifest.cases.length);
+  assert.equal(proof.typed_arm_fixtures.positive_exit_42,
+    manifest.cases.filter(c => c.expect.kind === 'exit').length);
+  assert.equal(proof.typed_arm_fixtures.negative_no_guest,
+    manifest.cases.filter(c => c.expect.kind === 'diagnostic').length);
+  assert.equal(proof.chromium_browser_e2e, 'PASS');
+  assert.equal(proof.task_captures, 'UNSUPPORTED');
+  assert.equal(proof.general_expression_switch, 'UNSUPPORTED');
+  for (const n of ['workflow_run_id', 'workflow_job_id', 'artifact_id']) {
+    assert.ok(Number.isSafeInteger(proof[n]) && proof[n] > 0, n);
+  }
+  assert.match(proof.native_cranelift_job, /^FAIL:/,
+    'do not silently erase the independent native formatting gate');
+});
