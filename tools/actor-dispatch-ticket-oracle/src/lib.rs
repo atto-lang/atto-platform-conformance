@@ -15,8 +15,12 @@ fn manifest() -> Value {
 /// Reproduce the intentionally broken numeric-slot-only comparator when requested.
 #[cfg(test)]
 fn same_ticket(live: &Value, submitted: &Value, ignore_generation: bool) -> bool {
-    let Some(live) = live.as_array() else { return false };
-    let Some(submitted) = submitted.as_array() else { return false };
+    let Some(live) = live.as_array() else {
+        return false;
+    };
+    let Some(submitted) = submitted.as_array() else {
+        return false;
+    };
     if live.len() != 4 || submitted.len() != 4 {
         return false;
     }
