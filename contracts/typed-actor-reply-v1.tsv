@@ -31,3 +31,7 @@ ACTOR-REPLY-29	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	optional send_back alias shares r
 ACTOR-REPLY-30	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	HTTP streaming body is single unary response envelope
 ACTOR-REPLY-31	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	concurrent unary correlations remain independent
 ACTOR-REPLY-32	REJECT	NOT_EXECUTED	SOURCE_ONLY	zero argument respond_with for nonunit reply
+ACTOR-REPLY-33	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	authorized supervisor service unary DATA request
+ACTOR-REPLY-34	REJECT	NOT_EXECUTED	SOURCE_ONLY	forged CONTROL via ActorMail respond_with or emit
+ACTOR-REPLY-35	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	CONTROL priority under saturated DATA mailbox
+ACTOR-REPLY-36	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	panic caller reply error versus supervisor CONTROL
