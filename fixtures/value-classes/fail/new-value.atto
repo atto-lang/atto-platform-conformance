@@ -1,0 +1,12 @@
+define value class Point as
+    pub final int x;
+    pub final int y;
+    constructor(int x, int y) {
+        self.x = x;
+        self.y = y;
+    }
+end
+pub fnc main(): int {
+    val Point a = new Point(1, 2);
+    return 0;
+}
