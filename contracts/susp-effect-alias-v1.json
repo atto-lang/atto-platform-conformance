@@ -43,6 +43,13 @@
       "note": "Parser must preserve both independent suspension and generator markers; this is not a generator runtime execution claim"
     },
     {
+      "id": "generator_long_effect_parse",
+      "kind": "pass",
+      "stage": "frontend_parse",
+      "path": "fixtures/susp/pass/generator_long_effect_parse.atto",
+      "note": "Same AST effect dimensions as generator_effect_parse, with legacy suspends spelling"
+    },
+    {
       "id": "await_unmarked",
       "kind": "fail",
       "stage": "compile",
