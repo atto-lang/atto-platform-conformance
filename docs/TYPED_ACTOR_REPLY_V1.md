@@ -15,7 +15,7 @@ Each implementation must eventually add an actual .atto positive/negative guest 
 
 ## Unary return, explicit reply and stream separation (additional staging)
 
-The 14 new entries ACTOR-REPLY-19 through ACTOR-REPLY-32 are explicitly
+The 18 additional entries ACTOR-REPLY-19 through ACTOR-REPLY-36 are explicitly
 NOT_EXECUTED compiled-guest targets, grounded in
 [unary reply sugar specification](https://github.com/atto-lang/atto-spec/blob/proposal/typed-actor-replies-v1-20261116/proposals/UNARY_ACTOR_RETURN_AND_REPLY_SUGAR_V1.md).
 
