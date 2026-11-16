@@ -36,6 +36,13 @@
       "path": "fixtures/susp/pass/class_and_type_parse.atto"
     },
     {
+      "id": "generator_effect_parse",
+      "kind": "pass",
+      "stage": "frontend_parse",
+      "path": "fixtures/susp/pass/generator_effect_parse.atto",
+      "note": "Parser must preserve both independent suspension and generator markers; this is not a generator runtime execution claim"
+    },
+    {
       "id": "await_unmarked",
       "kind": "fail",
       "stage": "compile",
