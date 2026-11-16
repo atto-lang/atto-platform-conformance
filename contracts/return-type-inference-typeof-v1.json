@@ -1,0 +1,411 @@
+{
+  "schema_version": 1,
+  "status": "TARGET_ONLY_NOT_EXECUTED",
+  "spec_url": "https://github.com/atto-lang/atto-spec/blob/design/return-type-infer-typeof-v1-20261116/language/return-type-queries-and-inference-v1.md",
+  "source_compiler_execution": "NOT_EXECUTED",
+  "cases": [
+    {
+      "id": "infer_scalar",
+      "expected": "compile_and_run",
+      "expected_exit": 5,
+      "path": "fixtures/return-types/pass/infer_scalar.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "typeof_local_annotated",
+      "expected": "compile_and_run",
+      "expected_exit": 5,
+      "path": "fixtures/return-types/pass/typeof_local_annotated.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "typeof_local_inferred",
+      "expected": "compile_and_run",
+      "expected_exit": 5,
+      "path": "fixtures/return-types/pass/typeof_local_inferred.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "typeof_parameter",
+      "expected": "compile_and_run",
+      "expected_exit": 5,
+      "path": "fixtures/return-types/pass/typeof_parameter.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_branch",
+      "expected": "compile_and_run",
+      "expected_exit": 5,
+      "path": "fixtures/return-types/pass/infer_branch.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "typeof_other_value",
+      "expected": "compile_and_run",
+      "expected_exit": 6,
+      "path": "fixtures/return-types/pass/typeof_other_value.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_arrow",
+      "expected": "compile_and_run",
+      "expected_exit": 5,
+      "path": "fixtures/return-types/pass/infer_arrow.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "typeof_arrow",
+      "expected": "compile_and_run",
+      "expected_exit": 5,
+      "path": "fixtures/return-types/pass/typeof_arrow.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_void",
+      "expected": "compile_and_run",
+      "expected_exit": 5,
+      "path": "fixtures/return-types/pass/infer_void.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "typeof_legacy_value",
+      "expected": "compile_and_run",
+      "expected_exit": 5,
+      "path": "fixtures/return-types/pass/typeof_legacy_value.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "typeof_legacy_callable",
+      "expected": "compile_and_run",
+      "expected_exit": 5,
+      "path": "fixtures/return-types/pass/typeof_legacy_callable.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_comma_end",
+      "expected": "compile_and_run",
+      "expected_exit": 5,
+      "path": "fixtures/return-types/pass/infer_comma_end.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_option",
+      "expected": "compile_and_run",
+      "expected_exit": 5,
+      "path": "fixtures/return-types/pass/infer_option.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_early_caret",
+      "expected": "compile_and_run",
+      "expected_exit": 5,
+      "path": "fixtures/return-types/pass/infer_early_caret.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_contextual_identifier",
+      "expected": "compile_and_run",
+      "expected_exit": 5,
+      "path": "fixtures/return-types/pass/infer_contextual_identifier.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "typeof_unbound",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_TYPE_QUERY_UNBOUND",
+      "path": "fixtures/return-types/fail/typeof_unbound.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "typeof_branch_only",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_TYPE_QUERY_SCOPE",
+      "path": "fixtures/return-types/fail/typeof_branch_only.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "typeof_mutable_forward",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_TYPE_QUERY_SCOPE",
+      "path": "fixtures/return-types/fail/typeof_mutable_forward.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "typeof_bad_return",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_RETURN_TYPE_MISMATCH",
+      "path": "fixtures/return-types/fail/typeof_bad_return.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "typeof_cycle",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_RETURN_INFER_CYCLE",
+      "path": "fixtures/return-types/fail/typeof_cycle.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_recursion",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_RETURN_INFER_CYCLE",
+      "path": "fixtures/return-types/fail/infer_recursion.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_mixed_return",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_RETURN_INFER_AMBIGUOUS",
+      "path": "fixtures/return-types/fail/infer_mixed_return.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_missing_path",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_RETURN_PATH",
+      "path": "fixtures/return-types/fail/infer_missing_path.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_void_mixed",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_RETURN_INFER_AMBIGUOUS",
+      "path": "fixtures/return-types/fail/infer_void_mixed.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "typeof_generic_value",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_TYPE_QUERY_UNSUPPORTED",
+      "path": "fixtures/return-types/fail/typeof_generic_value.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "typeof_call_expression",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_TYPE_QUERY_UNSUPPORTED",
+      "path": "fixtures/return-types/fail/typeof_call_expression.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "typeof_void_type",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_TYPE_QUERY_UNSUPPORTED",
+      "path": "fixtures/return-types/fail/typeof_void_type.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "typeof_ambiguous_overload",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_TYPE_QUERY_AMBIGUOUS",
+      "path": "fixtures/return-types/fail/typeof_ambiguous_overload.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "typeof_shadowed_forward",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_TYPE_QUERY_SCOPE",
+      "path": "fixtures/return-types/fail/typeof_shadowed_forward.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_no_return_bodyless",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_RETURN_PATH",
+      "path": "fixtures/return-types/fail/infer_no_return_bodyless.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "typeof_return_runtime_test",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_TYPE_QUERY_UNSUPPORTED",
+      "path": "fixtures/return-types/fail/typeof_return_runtime_test.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    }
+  ]
+}
