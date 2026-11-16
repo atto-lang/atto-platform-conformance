@@ -1,0 +1,29 @@
+name: Actor scheduler domain reference gate
+on:
+  pull_request:
+    paths:
+      - 'contracts/actor-scheduler-domains-v1.json'
+      - 'tests/test_actor_scheduler_domains_v1.py'
+      - '.github/workflows/actor-scheduler-domains-v1.yml'
+  push:
+    paths:
+      - 'contracts/actor-scheduler-domains-v1.json'
+      - 'tests/test_actor_scheduler_domains_v1.py'
+      - '.github/workflows/actor-scheduler-domains-v1.yml'
+permissions:
+  contents: read
+jobs:
+  source-free-policy-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate contract
+        run: python3 -m json.tool contracts/actor-scheduler-domains-v1.json >/dev/null
+      - name: Run deterministic scheduler policy tests
+        run: python3 -m unittest discover -s tests -p 'test_actor_scheduler_domains_v1.py' -v
+      - name: Scope
+        run: echo 'REFERENCE_ONLY: no Java, LLVM, .NET guest runtime or tenant sandbox executed'
