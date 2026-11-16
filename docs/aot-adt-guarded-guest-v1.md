@@ -15,3 +15,7 @@ To count as native AOT acceptance:
 - When source GitHub Actions lacks minutes, verify the *entire compiler Git tree* and every blob through a private alternate carrier; this selected-fixture copy is not a substitute for compiler tree mirroring.
 
 The `tests/test_aot_adt_guarded_guest.py` host check validates fixture integrity and prevents accidental status promotion; a later compiled guest runner must consume the same manifest. An executed schema test is not AOT compiler parity.
+
+## Portability correction (normative language vs candidate limitation)
+
+The negative fixture `adt-result-int-error-unsupported` is **specific to the November 2026 Rust/Wasm candidate**, not a permanent AttoLang requirement. A fully specialized AOT compiler should eventually admit `Result<int,int>` when its generic payload/ABI layout is implemented. Other backends record this candidate-only row as `NOT_APPLICABLE` (with no guest execution claim) and must not be forced to reject a valid type. This avoids falsely rewarding incomplete generic implementations. Cross-backend conformance therefore uses the nine `portable-language` cases; the one Rust-candidate case remains separately tracked. Unsupported `Result<Option<int>,Error>` still needs its own positive/negative implementation fixtures.

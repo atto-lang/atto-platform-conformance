@@ -46,6 +46,12 @@ def validate(contract, receipt):
         reference = originals[row["id"]]
         label = row["id"] + ": "
         demand(row.get("git_blob_sha") == reference["git_blob_sha"], label + "wrong source blob")
+        if reference.get("expectation_scope") == "rust-candidate-only" and target != "rust-wasm-precompiled":
+            demand(row.get("status") == "NOT_APPLICABLE", label + "candidate-specific rejection is not portable")
+            demand(row.get("compile_invoked") is False, label + "candidate-only source must not gate native support")
+            demand(row.get("artifact_emitted") is False and row.get("guest_executed") is False,
+                   label + "skipped candidate case must not claim execution")
+            continue
         demand(row.get("compile_invoked") is True, label + "compiler did not run")
         if reference["kind"] == "pass":
             demand(row.get("compile_success") is True, label + "expected compilation success")

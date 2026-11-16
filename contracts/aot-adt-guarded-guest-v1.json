@@ -41,7 +41,8 @@
       "upstream_path": "tests/fixtures/pass/adt-nested-guard-typed-payload.atto",
       "git_blob_sha": "0268d620f32d822689f887ea5cb425d356370531",
       "expected_exit": 42,
-      "expected_stdout": ""
+      "expected_stdout": "",
+      "expectation_scope": "portable-language"
     },
     {
       "id": "adt-guard-skips-wrong-result-tag",
@@ -50,7 +51,8 @@
       "upstream_path": "tests/fixtures/pass/adt-guard-skips-wrong-result-tag.atto",
       "git_blob_sha": "4730792d63852a885c62642c2f79facf8956ad04",
       "expected_exit": 42,
-      "expected_stdout": ""
+      "expected_stdout": "",
+      "expectation_scope": "portable-language"
     },
     {
       "id": "adt-match-subject-once-guard",
@@ -59,7 +61,8 @@
       "upstream_path": "tests/fixtures/pass/adt-match-subject-once-guard.atto",
       "git_blob_sha": "ab3cde2ce9145d07f1403e4d6a06aeb1bd44e6eb",
       "expected_exit": 42,
-      "expected_stdout": "once\n"
+      "expected_stdout": "once\n",
+      "expectation_scope": "portable-language"
     },
     {
       "id": "adt-nested-err-guard-no-flatten",
@@ -68,7 +71,8 @@
       "upstream_path": "tests/fixtures/pass/adt-nested-err-guard-no-flatten.atto",
       "git_blob_sha": "03ed7876c3196f53e3dae905b098d0d57b3a014f",
       "expected_exit": 42,
-      "expected_stdout": ""
+      "expected_stdout": "",
+      "expectation_scope": "portable-language"
     },
     {
       "id": "adt-enum-three-way-exhaustive",
@@ -77,7 +81,8 @@
       "upstream_path": "tests/fixtures/pass/adt-enum-three-way-exhaustive.atto",
       "git_blob_sha": "2cda216dd4c2dbfce20bdb6d9af0a0cd8cc28415",
       "expected_exit": 42,
-      "expected_stdout": ""
+      "expected_stdout": "",
+      "expectation_scope": "portable-language"
     },
     {
       "id": "adt-guard-must-be-bool",
@@ -85,7 +90,8 @@
       "path": "fixtures/aot-adt/fail/adt-guard-must-be-bool.atto",
       "upstream_path": "tests/fixtures/fail/adt-guard-must-be-bool.atto",
       "git_blob_sha": "ead6b189d8ff854c3e2bff6bb4be94548343f989",
-      "expected_error": "E_TYPE"
+      "expected_error": "E_TYPE",
+      "expectation_scope": "portable-language"
     },
     {
       "id": "adt-option-guard-not-exhaustive",
@@ -93,7 +99,8 @@
       "path": "fixtures/aot-adt/fail/adt-option-guard-not-exhaustive.atto",
       "upstream_path": "tests/fixtures/fail/adt-option-guard-not-exhaustive.atto",
       "git_blob_sha": "8b416255ebdefb9841d5debab4301ad1e19d5673",
-      "expected_error": "E_MATCH"
+      "expected_error": "E_MATCH",
+      "expectation_scope": "portable-language"
     },
     {
       "id": "adt-result-int-error-unsupported",
@@ -101,7 +108,9 @@
       "path": "fixtures/aot-adt/fail/adt-result-int-error-unsupported.atto",
       "upstream_path": "tests/fixtures/fail/adt-result-int-error-unsupported.atto",
       "git_blob_sha": "2438ae98a587d8e0d73711148c9e31a5420a3bab",
-      "expected_error": "E_UNSUPPORTED_TYPE"
+      "expected_error": "E_UNSUPPORTED_TYPE",
+      "expectation_scope": "rust-candidate-only",
+      "future_language_goal": "Result<int,int> and other safe closed generic Result instantiations should be admitted once type layout, ownership and AOT specialization are implemented. E_UNSUPPORTED_TYPE is not a permanent language-wide rule."
     },
     {
       "id": "adt-nested-wrong-success-payload",
@@ -109,7 +118,8 @@
       "path": "fixtures/aot-adt/fail/adt-nested-wrong-success-payload.atto",
       "upstream_path": "tests/fixtures/fail/adt-nested-wrong-success-payload.atto",
       "git_blob_sha": "2caff7da4095d30cbfd9e7f4b9be3512cbe505a7",
-      "expected_error": "E_TYPE"
+      "expected_error": "E_TYPE",
+      "expectation_scope": "portable-language"
     },
     {
       "id": "adt-option-duplicate-unguarded",
@@ -117,8 +127,10 @@
       "path": "fixtures/aot-adt/fail/adt-option-duplicate-unguarded.atto",
       "upstream_path": "tests/fixtures/fail/adt-option-duplicate-unguarded.atto",
       "git_blob_sha": "325f9f42ee699524bb83ba597bba2c06f15def7c",
-      "expected_error": "E_MATCH"
+      "expected_error": "E_MATCH",
+      "expectation_scope": "portable-language"
     }
   ],
-  "acceptance": "Only an independently verified exact-source CI run compiling and executing real .atto guests against target AOT binaries may change a backend status. Host-only integrity tests alone are insufficient."
+  "acceptance": "Only an independently verified exact-source CI run compiling and executing real .atto guests against target AOT binaries may change a backend status. Host-only integrity tests alone are insufficient.",
+  "compatibility_gate": "For non-Rust targets, candidate-only negative cases must be marked NOT_APPLICABLE in execution receipts and cannot establish conformance; only portable-language cases count toward cross-backend parity. Candidate-only rejection is not a normative prohibition."
 }

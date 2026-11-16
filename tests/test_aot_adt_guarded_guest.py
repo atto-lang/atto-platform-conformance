@@ -51,6 +51,12 @@ class GuardedADTGuestMatrix(unittest.TestCase):
         self.assertTrue(all(v == "NOT_EXECUTED" for v in self.data["backends"].values()))
         self.assertIn("Result<Option<int>,Error>", self.data["unsupported_not_yet_proven"])
 
+    def test_candidate_only_rejection_not_a_general_language_ban(self):
+        candidates=[r for r in self.data["cases"] if r["expectation_scope"] == "rust-candidate-only"]
+        self.assertEqual([r["id"] for r in candidates], ["adt-result-int-error-unsupported"])
+        self.assertEqual(sum(r["expectation_scope"] == "portable-language" for r in self.data["cases"]), 9)
+        self.assertIn("Result<int,int>", candidates[0]["future_language_goal"])
+
     def specimen(self):
         m=self.data
         rows=[]
@@ -92,6 +98,17 @@ class GuardedADTGuestMatrix(unittest.TestCase):
                 mutate(receipt)
                 with self.assertRaises(verify.EvidenceError):
                     verify.validate(self.data,receipt)
+
+    def test_native_receipt_must_not_treat_candidate_rejection_as_portable(self):
+        receipt=self.specimen()
+        receipt["target"]="llvm-native"
+        receipt["build_mode"]="llvm-native"
+        with self.assertRaises(verify.EvidenceError):
+            verify.validate(self.data, receipt)
+        for row in receipt["cases"]:
+            if row["id"] == "adt-result-int-error-unsupported":
+                row.update(status="NOT_APPLICABLE",compile_invoked=False,artifact_emitted=False,guest_executed=False)
+        self.assertEqual(verify.validate(self.data, receipt),10)
 
     def test_structure_is_not_attestation(self):
         # An invented receipt can pass shape checks. Never promote a backend
