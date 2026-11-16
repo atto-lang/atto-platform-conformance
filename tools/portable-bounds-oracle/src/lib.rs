@@ -1,11 +1,14 @@
 //! Source-free, dependency-free Rust oracle for the portable bounds v1 contract.
 //! These tests do NOT compile/execute any .atto guest code.
+#[cfg(test)]
 fn index(index: i64, length: i64) -> bool {
     index >= 0 && length > 0 && index < length
 }
+#[cfg(test)]
 fn slice(offset: i64, count: i64, length: i64) -> bool {
     offset >= 0 && count >= 0 && length >= 0 && offset <= length && count <= length - offset
 }
+#[cfg(test)]
 fn strided(offset: i64, stride: i64, count: i64, length: i64) -> bool {
     if stride <= 0 || count < 0 || !slice(offset, 0, length) {
         return false;
