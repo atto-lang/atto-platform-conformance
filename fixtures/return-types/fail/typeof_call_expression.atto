@@ -1,0 +1,1 @@
+pub fnc get(): int { return 5; } pub fnc run(): typeof(get()) { return 5; }
