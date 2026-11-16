@@ -1,0 +1,65 @@
+{
+  "schema": "atto.ffi-boundary.v1",
+  "version": 1,
+  "status": "CANDIDATE_CONTRACT_ONLY_NO_GUEST_EXECUTION",
+  "spec": "atto-lang/atto-spec/language/ffi-boundary-v1.md",
+  "capability": "FFI",
+  "hostImportNamespace": "atto",
+  "scalarSemantics": {
+    "int": "signed-i64",
+    "bool": "strict-0-or-1",
+    "float": "ieee754-binary64",
+    "void": "return-only"
+  },
+  "canonicalInterchange": {
+    "byteOrder": "little",
+    "intBytes": 8,
+    "boolBytes": 1,
+    "floatBytes": 8,
+    "nanHex": "000000000000f87f",
+    "note": "Interchange only; never claim this is a C/JNI/PInvoke/Wasm native calling convention"
+  },
+  "backends": {
+    "rs-wasm": {"repository": "atto-lang/atto-source.rs", "status": "NOT_EXECUTED"},
+    "java": {"repository": "ores-truffle-oreslang/oreslang-source.java", "status": "NOT_EXECUTED"},
+    "llvm": {"repository": "atto-lang/atto-source.llvm", "status": "NOT_EXECUTED"},
+    "net": {"repository": "ores-truffle-oreslang/oreslang-source.net", "status": "NOT_EXECUTED"},
+    "forge": {"repository": "ores-truffle-oreslang/oreslang-source.forge", "status": "NOT_EXECUTED"}
+  },
+  "cases": [
+    {"id": "i64-values-are-not-pointer-sized", "kind": "runtime-positive", "expect": "signed-64-bit-roundtrip-on-32-and-64-bit-hosts"},
+    {"id": "canonical-bool-zero-one", "kind": "runtime-positive", "expect": "only-0-and-1-roundtrip"},
+    {"id": "reject-bool-two", "kind": "runtime-negative", "expect": "invalid-bool-byte-rejected"},
+    {"id": "float-signed-zero-and-nan", "kind": "runtime-positive", "expect": "signed-zero-and-canonical-nan"},
+    {"id": "foreign-in-ordinary-actor", "kind": "compile-negative", "expect": "foreign-declaration-outside-ffi-actor-rejected"},
+    {"id": "foreign-pointer-parameter", "kind": "compile-negative", "expect": "raw-pointer-argument-rejected"},
+    {"id": "foreign-borrowed-slice", "kind": "compile-negative", "expect": "borrow-escape-rejected"},
+    {"id": "foreign-string-parameter", "kind": "compile-negative", "expect": "unsupported-string-abi-rejected"},
+    {"id": "untrusted-ffi-actor", "kind": "compile-negative", "expect": "untrusted-native-boundary-rejected"},
+    {"id": "foreign-arbitrary-library-path", "kind": "compile-negative", "expect": "caller-path-and-symbol-alias-rejected"},
+    {"id": "foreign-missing-suspends", "kind": "compile-negative", "expect": "effect-admission-rejected"},
+    {"id": "foreign-callback-type", "kind": "compile-negative", "expect": "callback-not-admitted-v1"},
+    {"id": "signature-target-mismatch", "kind": "security-negative", "expect": "link-before-load-rejected"},
+    {"id": "abi-version-mismatch", "kind": "security-negative", "expect": "unsupported-version-rejected"},
+    {"id": "artifact-digest-mismatch", "kind": "security-negative", "expect": "artifact-identity-rejected"},
+    {"id": "supervisor-without-ffi-permission", "kind": "security-negative", "expect": "permission-denied-before-load"},
+    {"id": "handle-cross-domain", "kind": "security-negative", "expect": "foreign-domain-rejected"},
+    {"id": "handle-wrong-type", "kind": "security-negative", "expect": "type-identity-rejected"},
+    {"id": "handle-stale-slot-generation", "kind": "security-negative", "expect": "stale-slot-rejected"},
+    {"id": "handle-stale-actor-generation", "kind": "security-negative", "expect": "stale-owner-rejected"},
+    {"id": "handle-rights-escalation", "kind": "security-negative", "expect": "forged-rights-rejected"},
+    {"id": "actor-retire-fences-ffi", "kind": "runtime-positive", "expect": "retirement-denies-new-calls-and-awaits-leases"},
+    {"id": "double-lease-release", "kind": "runtime-positive", "expect": "cleanup-exactly-once"},
+    {"id": "callback-after-retire", "kind": "security-negative", "expect": "stale-callback-denied"},
+    {"id": "foreign-exception-no-cross-unwind", "kind": "security-negative", "expect": "foreign-fault-contained-not-success"},
+    {"id": "foreign-failure-preserves-owner", "kind": "runtime-positive", "expect": "checked-failure-keeps-source-ownership"},
+    {"id": "native-ptr32-overflow", "kind": "security-negative", "expect": "no-pointer-sized-int-truncation"},
+    {"id": "native-func-reentrancy-denied", "kind": "security-negative", "expect": "foreign-callback-no-reentry"},
+    {"id": "quota-exhaustion-no-admission", "kind": "security-negative", "expect": "failed-open-leaves-no-partial-grant"}
+  ],
+  "resultPolicy": {
+    "states": ["passed", "failed", "unsupported", "not_executed"],
+    "requiredForPassed": ["backend", "case_id", "status", "source_head_sha", "source_tree_sha", "artifact_sha256", "workflow_url", "run_id", "job_id", "executed_steps", "command", "target", "bridge_version", "abi_fingerprint", "observed", "exit_code", "evidence_kind", "guest_executed"],
+    "note": "Receipt validation is structural, not provenance attestation: independent review must validate executed CI logs, source-tree equality and real guest/native artifact. Host-only tests never establish backend parity."
+  }
+}
