@@ -1,0 +1,1 @@
+fnc checked(): Result<int,string> { return Ok(41); } pub suspends fnc main(): int { return match<int> checked() over on Err(error) when error != "E3" : int -> 0, on Ok(value) when value > 5 : int -> await task { return value + 1; }, default : int -> 10, end; }
