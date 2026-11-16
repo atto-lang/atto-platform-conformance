@@ -6,7 +6,9 @@
     "repo": "atto-lang/atto-source.rs",
     "pr": 233,
     "branch": "feature/typed-match-arm-return-check-v1",
-    "reference_commit": "9e1b573542307e731851011460a648b3510d4b6b"
+    "reference_commit": "60d9b4db71f699f0380a61b48c8225ffa4a5731e",
+    "async_compiler_pr": 236,
+    "async_compiler_commit": "0700c3e4be0005783fd64cbff4980d4375f00866"
   },
   "backends": {
     "rust-wasm": "NOT_EXECUTED",
@@ -49,6 +51,78 @@
       "expect": {
         "kind": "diagnostic",
         "code": "E_RETURN"
+      }
+    },
+    {
+      "id": "switch-return-result",
+      "path": "fixtures/typed-match-arm-v1/pass/typed-switch-result-case.atto",
+      "git_blob_sha1": "81183c0d5610212ea962b8b9fe0e697ff36983a3",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      }
+    },
+    {
+      "id": "switch-nested-result",
+      "path": "fixtures/typed-match-arm-v1/pass/typed-switch-nested-case.atto",
+      "git_blob_sha1": "3bb88a251caf7a04bd920338976257ce85e3c0db",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      }
+    },
+    {
+      "id": "switch-statement",
+      "path": "fixtures/typed-match-arm-v1/pass/typed-switch-statement-case.atto",
+      "git_blob_sha1": "181a351bab95ca9ccdde86bfcd5a00ad6564708f",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      }
+    },
+    {
+      "id": "switch-type-conflict",
+      "path": "fixtures/typed-match-arm-v1/fail/typed-switch-conflicting-case.atto",
+      "git_blob_sha1": "ac177bfc9116930420e130e72cbdaa6e9df8491c",
+      "expect": {
+        "kind": "diagnostic",
+        "code": "E_TYPE"
+      }
+    },
+    {
+      "id": "switch-nonexhaustive",
+      "path": "fixtures/typed-match-arm-v1/fail/typed-switch-nonexhaustive-case.atto",
+      "git_blob_sha1": "42113a3c7c186d11ea2558167d3b4de650a1540e",
+      "expect": {
+        "kind": "diagnostic",
+        "code": "E_MATCH"
+      }
+    },
+    {
+      "id": "switch-duplicate",
+      "path": "fixtures/typed-match-arm-v1/fail/typed-switch-duplicate-case.atto",
+      "git_blob_sha1": "dc8228bd33ce627a88189fbf9550f12457966dd1",
+      "expect": {
+        "kind": "diagnostic",
+        "code": "E_MATCH"
+      }
+    },
+    {
+      "id": "switch-fallthrough",
+      "path": "fixtures/typed-match-arm-v1/fail/typed-switch-case-fallthrough.atto",
+      "git_blob_sha1": "1b3efc33a0b475e8e53f40ea2f17c3baad15c6d5",
+      "expect": {
+        "kind": "diagnostic",
+        "code": "E_RETURN"
+      }
+    },
+    {
+      "id": "switch-malformed",
+      "path": "fixtures/typed-match-arm-v1/fail/typed-switch-malformed-case.atto",
+      "git_blob_sha1": "9bee9a317da8f1823521342c6af769b3bb8e81b1",
+      "expect": {
+        "kind": "diagnostic",
+        "code": "E_SYNTAX"
       }
     }
   ]
