@@ -1,7 +1,5 @@
 //! Source-free, dependency-free Rust oracle for the portable bounds v1 contract.
 //! These tests do NOT compile/execute any .atto guest code.
-use std::collections::HashSet;
-
 fn index(index: i64, length: i64) -> bool {
     index >= 0 && length > 0 && index < length
 }
@@ -24,6 +22,7 @@ fn strided(offset: i64, stride: i64, count: i64, length: i64) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashSet;
 
     #[test]
     fn pinned_vectors_are_unique_complete_and_match_reference() {
