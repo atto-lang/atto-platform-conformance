@@ -12,6 +12,10 @@ Execute portable language fixtures and record target-specific results.
 - Use test fixtures and reproducible evidence to distinguish proposed behavior from implemented behavior.
 - Record breaking changes, migration notes, and dependencies on other AttoLang components.
 
+## Proposed value-class conformance (NOT EXECUTED)
+
+[Value-class v1 registry](contracts/value-classes-v1.json) contains 5 positive and 13 negative target `.atto` fixtures, with every backend marked `NOT_EXECUTED`. The local manifest checker is *host-only* and cannot upgrade a backend to PASS. Track the normative draft in [atto-spec #60](https://github.com/atto-lang/atto-spec/pull/60) and the Rust browser safety gate in [atto-source.rs #252](https://github.com/atto-lang/atto-source.rs/pull/252).
+
 ## Validation
 
 Validation should rely on checked-in tests and exact-commit CI results. When reporting parity, distinguish **passed**, **failed**, **unsupported**, and **not executed**. Avoid inferring guest-runtime support from host-only tests.
