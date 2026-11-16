@@ -1,0 +1,5 @@
+define value class Bad as
+    pub final int n;
+    constructor() {}
+end
+pub fnc main(): int { return 0; }
