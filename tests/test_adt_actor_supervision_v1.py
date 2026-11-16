@@ -41,6 +41,24 @@ def fields(obj, names):
     if not isinstance(obj, dict) or set(obj) != set(names):
         raise Rejected("incorrect or extra fields")
 
+def validate_type(ty, depth=0):
+    """Validate *both* generic branches, including inactive None/Ok cases."""
+    if not isinstance(ty, str) or len(ty) > 512 or depth > MAX_DEPTH:
+        raise Rejected("bad or too-deep declared ADT type")
+    if ty in ("int", "bool", "string", "JobOutcome"):
+        return
+    if ty.startswith("Option<"):
+        (inner,) = split_generic(ty, "Option", 1)
+        validate_type(inner, depth + 1)
+        return
+    if ty.startswith("Result<"):
+        good, bad = split_generic(ty, "Result", 2)
+        validate_type(good, depth + 1)
+        validate_type(bad, depth + 1)
+        return
+    raise Rejected("unknown or non-sendable declared ADT type")
+
+
 def validate(ty, value, depth=0):
     if depth > MAX_DEPTH:
         raise Rejected("ADT nesting too deep")
@@ -88,6 +106,7 @@ def validate(ty, value, depth=0):
         raise Rejected("unknown or forbidden nominal type")
 
 def decode(ty, blob):
+    validate_type(ty)
     if not isinstance(blob, bytes) or len(blob) > MAX_BYTES:
         raise Rejected("invalid or oversized wire message")
     try:
@@ -106,6 +125,7 @@ def decode(ty, blob):
     return value
 
 def encode(ty, value):
+    validate_type(ty)
     validate(ty, value)
     try:
         blob = json.dumps(value, separators=(",", ":"), ensure_ascii=False,
@@ -252,6 +272,21 @@ class AdtActorSupervisionTest(unittest.TestCase):
         for ty, value in mutations:
             with self.subTest(ty=ty, value=value), self.assertRaises(Rejected):
                 encode(ty, value)
+
+    def test_inactive_generic_type_branch_cannot_hide_bad_type(self):
+        bad = [
+            ("Option<ActorRef<Worker>>", {"variant": "None"}),
+            ("Option<Unknown>", {"variant": "None"}),
+            ("Result<int,ActorRef<Worker>>", {"variant": "Ok", "payload": 1}),
+            ("Result<ActorRef<Worker>,string>", {"variant": "Err", "payload": "x"}),
+            ("Option<" * 17 + "int" + ">" * 17, {"variant": "None"}),
+            ("Result<int>", {"variant": "Ok", "payload": 4}),
+        ]
+        for ty, value in bad:
+            with self.subTest(ty=ty), self.assertRaises(Rejected):
+                encode(ty, value)
+        self.assertEqual(decode("Result<int,string>", encode("Result<int,string>",
+            {"variant": "Ok", "payload": 1}))["payload"], 1)
 
     def test_encoding_malformations(self):
         for blob in [
