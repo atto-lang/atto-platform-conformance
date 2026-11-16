@@ -1,0 +1,97 @@
+{
+  "schema": "atto.susp-effect-alias.v1",
+  "version": 1,
+  "status": "PORTABLE_CONTRACT_AND_RS_FOCUSED_EVIDENCE",
+  "normative_spec": "atto-lang/atto-spec:language/susp-effect-shorthand-v1.md",
+  "canonical": "susp",
+  "aliases": [
+    "susp",
+    "suspends"
+  ],
+  "forbidden_aliases": [
+    "#"
+  ],
+  "effect_identity": "susp and suspends are identical; susp fnc(T)->R is distinct from plain fnc(T)->R",
+  "required_cases": [
+    {
+      "id": "await_short",
+      "kind": "pass",
+      "stage": "guest_jspsi",
+      "path": "fixtures/susp/pass/await_short.atto",
+      "expected_result": 42,
+      "expected_yields_min": 1
+    },
+    {
+      "id": "await_long",
+      "kind": "pass",
+      "stage": "guest_jspsi",
+      "path": "fixtures/susp/pass/await_long.atto",
+      "expected_result": 42,
+      "expected_yields_min": 1
+    },
+    {
+      "id": "class_and_type_parse",
+      "kind": "pass",
+      "stage": "frontend_parse",
+      "path": "fixtures/susp/pass/class_and_type_parse.atto"
+    },
+    {
+      "id": "await_unmarked",
+      "kind": "fail",
+      "stage": "compile",
+      "path": "fixtures/susp/fail/await_unmarked.atto",
+      "expected_error": "E_EFFECT"
+    },
+    {
+      "id": "pure_susp",
+      "kind": "fail",
+      "stage": "compile",
+      "path": "fixtures/susp/fail/pure_susp.atto",
+      "expected_error": "E_PURE"
+    },
+    {
+      "id": "duplicate_marker",
+      "kind": "fail",
+      "stage": "parse",
+      "path": "fixtures/susp/fail/duplicate_marker.atto",
+      "expected_error": "E_UNSUPPORTED"
+    },
+    {
+      "id": "direct_suspend_lambda",
+      "kind": "fail",
+      "stage": "compile",
+      "path": "fixtures/susp/fail/direct_suspend_lambda.atto",
+      "expected_error": "E_UNSUPPORTED",
+      "note": "Temporary fail-closed slice; portable semantics ultimately require supported suspension-capable closures"
+    },
+    {
+      "id": "not_a_callable_type",
+      "kind": "fail",
+      "stage": "parse",
+      "path": "fixtures/susp/fail/not_a_callable_type.atto",
+      "expected_error": "E_TYPE"
+    }
+  ],
+  "backend_status": {
+    "rs-browser": "FOCUSED_VERIFIED_NOT_FULL_REGISTRY",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "hdl": "NOT_EXECUTED"
+  },
+  "focused_evidence": {
+    "source_repo": "atto-lang/atto-source.rs",
+    "source_pr": 189,
+    "source_head": "00ca6f4f1ee6303abf18aadf0f4b4126e9ddf4b5",
+    "carrier_repo": "agent-pontifex/atto-ci",
+    "carrier_tree": "de3243d6b76c1aae489c246587f9b79a5eb3820a",
+    "carrier_run_url": "https://github.com/agent-pontifex/atto-ci/actions/runs/43803038123",
+    "mirrored_source_test_blob_count": 35,
+    "scope": "Exact-source Rust focused tests, wasm32 compiler build and Chromium JSPI suite; this registry's fixture paths have not been individually executed"
+  },
+  "evidence_rule": "Record exact backend compiler HEAD/tree, generated guest, executed positive and negative cases and runtime/toolchain. Zero-step workflows are NOT_EXECUTED; host-only/parser evidence is not guest parity."
+}
