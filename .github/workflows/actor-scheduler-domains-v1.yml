@@ -32,4 +32,5 @@ jobs:
       - name: Run deterministic scheduler policy tests
         run: python3 -m unittest discover -s tests -p 'test_actor_scheduler_*v1.py' -v
       - name: Scope
-        run: echo 'REFERENCE_ONLY: no Java, LLVM, .NET guest runtime or tenant sandbox executed'
+        run: |
+          echo 'REFERENCE_ONLY: no Java, LLVM, .NET guest runtime or tenant sandbox executed'
