@@ -1,0 +1,124 @@
+{
+  "schema": "atto.aot-adt-guarded-guest.v1",
+  "status": "CANDIDATE_NOT_EXECUTED",
+  "source": {
+    "repo": "atto-lang/atto-source.rs",
+    "commit": "e2d18c418c9d46dde3e7bf4b1936d39139ffefee",
+    "root_tree": "24035e0b26d52b56c770792cc7d6771e98262ec3",
+    "pr": "https://github.com/atto-lang/atto-source.rs/pull/219"
+  },
+  "supported_subset": [
+    "Option<int>",
+    "Result<int,string>",
+    "Option<Result<int,string>>",
+    "payload-free enums"
+  ],
+  "unsupported_not_yet_proven": [
+    "Result<Option<int>,Error>",
+    "Result<int,int>",
+    "fully generic tagged unions",
+    "native multi-backend parity"
+  ],
+  "backends": {
+    "rust-wasm-precompiled": "NOT_EXECUTED",
+    "java-native-image": "NOT_EXECUTED",
+    "llvm-native": "NOT_EXECUTED",
+    "dotnet-nativeaot": "NOT_EXECUTED"
+  },
+  "semantics": [
+    "match input evaluated exactly once",
+    "tag-gated payload materialization before guard evaluation",
+    "guards evaluated in source order and fallthrough on false",
+    "nested Option/Result not flattened",
+    "guarded arm cannot establish exhaustiveness",
+    "reject invalid source without guest artifact"
+  ],
+  "cases": [
+    {
+      "id": "adt-nested-guard-typed-payload",
+      "kind": "pass",
+      "path": "fixtures/aot-adt/pass/adt-nested-guard-typed-payload.atto",
+      "upstream_path": "tests/fixtures/pass/adt-nested-guard-typed-payload.atto",
+      "git_blob_sha": "0268d620f32d822689f887ea5cb425d356370531",
+      "expected_exit": 42,
+      "expected_stdout": ""
+    },
+    {
+      "id": "adt-guard-skips-wrong-result-tag",
+      "kind": "pass",
+      "path": "fixtures/aot-adt/pass/adt-guard-skips-wrong-result-tag.atto",
+      "upstream_path": "tests/fixtures/pass/adt-guard-skips-wrong-result-tag.atto",
+      "git_blob_sha": "4730792d63852a885c62642c2f79facf8956ad04",
+      "expected_exit": 42,
+      "expected_stdout": ""
+    },
+    {
+      "id": "adt-match-subject-once-guard",
+      "kind": "pass",
+      "path": "fixtures/aot-adt/pass/adt-match-subject-once-guard.atto",
+      "upstream_path": "tests/fixtures/pass/adt-match-subject-once-guard.atto",
+      "git_blob_sha": "ab3cde2ce9145d07f1403e4d6a06aeb1bd44e6eb",
+      "expected_exit": 42,
+      "expected_stdout": "once\n"
+    },
+    {
+      "id": "adt-nested-err-guard-no-flatten",
+      "kind": "pass",
+      "path": "fixtures/aot-adt/pass/adt-nested-err-guard-no-flatten.atto",
+      "upstream_path": "tests/fixtures/pass/adt-nested-err-guard-no-flatten.atto",
+      "git_blob_sha": "03ed7876c3196f53e3dae905b098d0d57b3a014f",
+      "expected_exit": 42,
+      "expected_stdout": ""
+    },
+    {
+      "id": "adt-enum-three-way-exhaustive",
+      "kind": "pass",
+      "path": "fixtures/aot-adt/pass/adt-enum-three-way-exhaustive.atto",
+      "upstream_path": "tests/fixtures/pass/adt-enum-three-way-exhaustive.atto",
+      "git_blob_sha": "2cda216dd4c2dbfce20bdb6d9af0a0cd8cc28415",
+      "expected_exit": 42,
+      "expected_stdout": ""
+    },
+    {
+      "id": "adt-guard-must-be-bool",
+      "kind": "fail",
+      "path": "fixtures/aot-adt/fail/adt-guard-must-be-bool.atto",
+      "upstream_path": "tests/fixtures/fail/adt-guard-must-be-bool.atto",
+      "git_blob_sha": "ead6b189d8ff854c3e2bff6bb4be94548343f989",
+      "expected_error": "E_TYPE"
+    },
+    {
+      "id": "adt-option-guard-not-exhaustive",
+      "kind": "fail",
+      "path": "fixtures/aot-adt/fail/adt-option-guard-not-exhaustive.atto",
+      "upstream_path": "tests/fixtures/fail/adt-option-guard-not-exhaustive.atto",
+      "git_blob_sha": "8b416255ebdefb9841d5debab4301ad1e19d5673",
+      "expected_error": "E_MATCH"
+    },
+    {
+      "id": "adt-result-int-error-unsupported",
+      "kind": "fail",
+      "path": "fixtures/aot-adt/fail/adt-result-int-error-unsupported.atto",
+      "upstream_path": "tests/fixtures/fail/adt-result-int-error-unsupported.atto",
+      "git_blob_sha": "2438ae98a587d8e0d73711148c9e31a5420a3bab",
+      "expected_error": "E_UNSUPPORTED_TYPE"
+    },
+    {
+      "id": "adt-nested-wrong-success-payload",
+      "kind": "fail",
+      "path": "fixtures/aot-adt/fail/adt-nested-wrong-success-payload.atto",
+      "upstream_path": "tests/fixtures/fail/adt-nested-wrong-success-payload.atto",
+      "git_blob_sha": "2caff7da4095d30cbfd9e7f4b9be3512cbe505a7",
+      "expected_error": "E_TYPE"
+    },
+    {
+      "id": "adt-option-duplicate-unguarded",
+      "kind": "fail",
+      "path": "fixtures/aot-adt/fail/adt-option-duplicate-unguarded.atto",
+      "upstream_path": "tests/fixtures/fail/adt-option-duplicate-unguarded.atto",
+      "git_blob_sha": "325f9f42ee699524bb83ba597bba2c06f15def7c",
+      "expected_error": "E_MATCH"
+    }
+  ],
+  "acceptance": "Only an independently verified exact-source CI run compiling and executing real .atto guests against target AOT binaries may change a backend status. Host-only integrity tests alone are insufficient."
+}
