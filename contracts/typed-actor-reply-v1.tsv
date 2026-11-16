@@ -17,3 +17,17 @@ ACTOR-REPLY-15	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	request unary only
 ACTOR-REPLY-16	REJECT	NOT_EXECUTED	SOURCE_ONLY	remote generation
 ACTOR-REPLY-17	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	AOT specialization
 ACTOR-REPLY-18	REJECT	NOT_EXECUTED	SOURCE_ONLY	slot exhaustion
+ACTOR-REPLY-19	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	unary HTTP return commits one correlated envelope
+ACTOR-REPLY-20	REJECT	NOT_EXECUTED	SOURCE_ONLY	unary return plus respond_with duplicate
+ACTOR-REPLY-21	REJECT	NOT_EXECUTED	SOURCE_ONLY	unary modifier rejects oneway stream erased any wrong R
+ACTOR-REPLY-22	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	ordinary actor stages respond_with nominal unary R
+ACTOR-REPLY-23	REJECT	NOT_EXECUTED	SOURCE_ONLY	second reply and mixed alias share one capability
+ACTOR-REPLY-24	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	panic after stage discards success and fails caller
+ACTOR-REPLY-25	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	missing reply settles terminal MissingReply
+ACTOR-REPLY-26	REJECT	NOT_EXECUTED	SOURCE_ONLY	any and payload narrowing cannot forge reply type
+ACTOR-REPLY-27	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	stream zero or N ordered items and one terminal
+ACTOR-REPLY-28	REJECT	NOT_EXECUTED	SOURCE_ONLY	cannot use emits or sends to satisfy reply
+ACTOR-REPLY-29	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	optional send_back alias shares respond_with capability
+ACTOR-REPLY-30	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	HTTP streaming body is single unary response envelope
+ACTOR-REPLY-31	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	concurrent unary correlations remain independent
+ACTOR-REPLY-32	REJECT	NOT_EXECUTED	SOURCE_ONLY	zero argument respond_with for nonunit reply
