@@ -12,7 +12,7 @@
     "0a",
     "0d"
   ],
-  "coordinate_policy": "byte offsets zero-based in native, Rust and Wasm; UTF-16 code-unit offsets in .NET; 1-based UTF-16 line:column in Java",
+  "coordinate_policy": "LLVM, Forge, Cranelift, Rust and Wasm: zero-based UTF-8 byte offset; .NET and JavaScript: zero-based UTF-16 code-unit offset; Java: one-based line and UTF-16 column",
   "cases": [
     {
       "name": "valid-comment",
@@ -94,5 +94,15 @@
     }
   ],
   "verification": "UNEXECUTED_REAL_BACKENDS",
-  "notes": "Tests must validate raw source before comments/literals elide content; preserve first invalid-byte precedence and never echo controls in error diagnostics."
+  "notes": "Tests must validate raw source before comments/literals elide content; preserve first invalid-byte precedence and never echo controls in error diagnostics.",
+  "backend_scope": [
+    "java",
+    "llvm",
+    "forge",
+    "net",
+    "rs",
+    "wasm",
+    "js",
+    "cranelift"
+  ]
 }
