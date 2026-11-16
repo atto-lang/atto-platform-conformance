@@ -1,0 +1,5 @@
+define value class Link as
+    pub final Link next;
+    constructor(Link next) { self.next = next; }
+end
+pub fnc main(): int { return 0; }
