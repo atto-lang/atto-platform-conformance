@@ -8,8 +8,8 @@ Raw NUL (`00`) remains separately prohibited. When more than one of NUL/ESC/DEL 
 
 ## Coordinates
 
-- LLVM, Forge, Rust, Wasm: zero-based **UTF-8 byte** offset, including multi-byte scalars preceding an offending byte.
-- .NET scalar and structured parser: zero-based **UTF-16 code-unit** offset; include linked-import discovery entry points.
+- LLVM, Forge, Rust, Wasm, Cranelift: zero-based **UTF-8 byte** offset, including multi-byte scalars preceding an offending byte.
+- .NET scalar and structured parser, plus JavaScript: zero-based **UTF-16 code-unit** offset; include linked-import discovery entry points.
 - Java lexer: one-based **line:UTF-16 column**, matching existing CRLF normalization and surrogate-pair columns.
 - Ill-formed UTF-8 source is already rejected by the existing UTF-8 admission contract. This v1 terminal contract assumes valid encoded input; backend-specific diagnostics for invalid encoding are independently tested.
 
