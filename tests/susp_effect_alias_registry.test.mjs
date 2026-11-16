@@ -28,7 +28,7 @@ test('all required positive and negative fixtures exist and are nonempty',async(
     assert.ok(text.includes('fnc'),'fixture must declare a callable');
     assert.ok(text.trim().length>25);
   }
-  assert.ok(ids.size>=8);
+  assert.ok(ids.size>=10);
 });
 test('unverified backends cannot be presented as passing', () => {
   for (const [name,status] of Object.entries(registry.backend_status)) {
@@ -37,4 +37,15 @@ test('unverified backends cannot be presented as passing', () => {
   assert.match(registry.backend_status['rs-browser'],/^FOCUSED_/);
   assert.match(registry.focused_evidence.scope,/not been individually executed/);
   assert.ok(registry.focused_evidence.mirrored_source_test_blob_count>0);
+});
+
+test('suspending generator fixture pair changes only the effect spelling',async() => {
+  const short = await readFile(new URL('../fixtures/susp/pass/generator_effect_parse.atto',import.meta.url),'utf8');
+  const long = await readFile(new URL('../fixtures/susp/pass/generator_long_effect_parse.atto',import.meta.url),'utf8');
+  const noComments = source => source.split('\n').filter(line => !line.trimStart().startsWith('//')).join('\n');
+  const a = noComments(short);
+  const b = noComments(long);
+  assert.match(a,/pub susp fnc \*gen/);
+  assert.equal(a.replace('pub susp fnc *gen','pub suspends fnc *gen'),b);
+  assert.match(registry.evidence_rule,/Zero-step workflows are NOT_EXECUTED/);
 });
