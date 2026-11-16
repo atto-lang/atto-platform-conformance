@@ -45,3 +45,21 @@ test('contract coverage includes exact values, type guards, anchored rests, coun
   for(const needed of ['..._','_...','...(int)...','...(2..4 of int)','Tuple.of(..., 1)'])
     assert.ok(n.some(x=>x.includes(needed)),needed);
 });
+
+test('hardened contract provenance and transitive repetition safety have explicit negative targets',()=>{
+  assert.equal(registry.source_blobs.spec,'0e1dc9dcba1b543e4f781b94e32c067736c8b41c');
+  assert.equal(registry.source_blobs.host_reference_tests,'22f82ba23fa52f72b8f96dafbc9826873bbd1248');
+  assert.equal(registry.evidence.carrier_admission,'NOT_EXECUTED_ZERO_STEPS');
+  assert.equal(registry.evidence.host_reference_latest,'LOCAL_9_OF_9_CI_NOT_EXECUTED');
+  assert.equal(registry.evidence.carrier_tree_sha,registry.evidence.exact_source_tree_sha);
+  for(const pattern of [
+    'List.of(...(2 of List.of(1 as val x)))',
+    'List.of(...(2 of Tuple.of(is int as val x)))',
+    'List.of(...(2 of List.of(...(1 of int))))',
+    'List.of(...(2 of List.of(Tuple.of(3 as let x))))'
+  ]) {
+    const testcase=registry.cases.find(c=>c.pattern===pattern);
+    assert.equal(testcase?.kind,'reject');
+    assert.deepEqual(testcase?.expected,{parse:'REJECT'});
+  }
+});
