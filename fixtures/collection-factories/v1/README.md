@@ -4,9 +4,12 @@
 
 This manifest is an exact source snapshot of
 [oreslang-common-source #257](https://github.com/ores-truffle-oreslang/oreslang-common-source/pull/257),
-source blob **`8c9388325e6d5f762e03b5a14c9292d848f90dee`**.
+source blob **`afeed4fde3566c617cc8b74a532f9c3204b1e2f6`**.
 It contains 37 source expectations covering Map, Entry, Pair, Tuple,
-Array, List, Vector, Set, Record and legacy aggregate syntax.
+Array, List, Vector, Set, Record and legacy aggregate syntax. **Nine former
+`~kind(...)` constructors now require a parser rejection**, while all
+canonical `Type.of(...)` factory cases remain positive targets. Tilde is
+reserved for structural types/patterns: see atto-lang/atto-spec#38.
 
 For each backend, expand a candidate into a genuine AttoLang guest
 translation unit and check parser/type/ownership/lowering plus actual
