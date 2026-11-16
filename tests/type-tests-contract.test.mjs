@@ -18,7 +18,7 @@ test('type-test case corpus and evidence are internally consistent (not guest ex
  assert.match(receipt.source_commit,/^[0-9a-f]{40}$/);
  assert.match(receipt.source_tree,/^[0-9a-f]{40}$/);
  assert.match(receipt.carrier_commit,/^[0-9a-f]{40}$/);
- assert.equal(receipt.actions_run,43974884145);
+ assert.equal(receipt.actions_run,43976663058);
  for(const [backend, status] of Object.entries(manifest.backend_status)){
     if(backend!=='rs-browser-scalar')assert.equal(status.state,'not_executed');
  }

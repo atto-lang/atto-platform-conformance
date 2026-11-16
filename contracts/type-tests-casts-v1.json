@@ -54,11 +54,15 @@
   "backend_status": {
     "rs-browser-scalar": {
       "state": "passed",
-      "source_commit": "769a80f2f93b071cf3ae21b59139685fcc2435e5",
-      "source_tree": "ce12df6b2ab1e0231b0257e1d8ac1ae81a4f63ce",
-      "carrier_commit": "d7f38cda187f8976e98c6a51269d83fe6d24b287",
-      "actions_run": 43974884145,
-      "method": "Exact-tree native and wasm32 compiler, genuine guest Wasm execution, negative no-artifact checks, Chromium browser E2E"
+      "source_commit": "5f5059a90372e482b41a8b029c7eb47e0b3d39bb",
+      "source_tree": "786f943c5361a125c90a332d05275d0701fa007a",
+      "carrier_commit": "791c316e94cfceecfc3e345881005c1c6e88dfc1",
+      "actions_run": 43976663058,
+      "method": "Exact-tree native and wasm32 compiler, genuine guest Wasm execution, negative no-artifact checks, Chromium browser E2E",
+      "test_counts": {
+        "positive_guest_wasm": 10,
+        "negative_no_artifact": 14
+      }
     },
     "java": {
       "state": "not_executed"
