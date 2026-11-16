@@ -110,6 +110,7 @@ class BrokerTests(unittest.TestCase):
     def test_foreign_completion_cannot_pretend_to_be_second_lease(self):
         lease = self.broker.enter("A", self.handle, "Foo", "call")
         self.denied(self.broker.complete, ffi.Lease(lease.nonce + 1, self.handle))
+        self.denied(self.broker.complete, ffi.Lease(lease.nonce, self.handle))
         self.denied(self.broker.complete, replace(lease, handle=replace(self.handle, type_id="Bar")))
         self.assertTrue(self.broker.complete(lease))
 
