@@ -1,0 +1,6 @@
+// expect-exit: 7
+define class Foo as
+    pub val int n = 7;
+end
+pub fnc exclusive(): new unique Foo { return new Foo(); }
+pub fnc main(): int { return exclusive().n; }

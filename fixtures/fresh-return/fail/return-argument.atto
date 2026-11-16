@@ -1,0 +1,4 @@
+// expect-error: E_FRESH_UNPROVEN
+define class Foo as end
+pub fnc not_new(Foo previous): new Foo { return previous; }
+pub fnc main(): int { return 0; }

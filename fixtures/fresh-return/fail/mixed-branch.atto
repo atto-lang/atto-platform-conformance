@@ -1,0 +1,7 @@
+// expect-error: E_FRESH_UNPROVEN
+define class Foo as end
+pub fnc sometimes_fresh(bool flag, Foo existing): new Foo {
+    if flag { return new Foo(); }
+    return existing;
+}
+pub fnc main(): int { return 0; }

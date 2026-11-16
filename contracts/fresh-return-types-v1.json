@@ -1,0 +1,61 @@
+{
+  "schema": "atto-fresh-return-v1",
+  "status": "CANDIDATE_NOT_IMPLEMENTED",
+  "spec": "atto-lang/atto-spec/language/fresh-return-types-v1.md",
+  "backends": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED"
+  },
+  "evidence": "Neither these fixture texts nor their manifest prove compiler, JIT, or AOT support.",
+  "fixtures": [
+    {
+      "path": "fixtures/fresh-return/pass/fresh-factory.atto",
+      "expect": "PASS",
+      "exit_code": 7
+    },
+    {
+      "path": "fixtures/fresh-return/pass/fresh-helper.atto",
+      "expect": "PASS",
+      "exit_code": 7
+    },
+    {
+      "path": "fixtures/fresh-return/pass/fresh-copy-override.atto",
+      "expect": "PASS",
+      "exit_code": 7
+    },
+    {
+      "path": "fixtures/fresh-return/pass/fresh-unique-factory.atto",
+      "expect": "PASS",
+      "exit_code": 7
+    },
+    {
+      "path": "fixtures/fresh-return/fail/return-self.atto",
+      "expect": "E_FRESH_UNPROVEN"
+    },
+    {
+      "path": "fixtures/fresh-return/fail/return-argument.atto",
+      "expect": "E_FRESH_UNPROVEN"
+    },
+    {
+      "path": "fixtures/fresh-return/fail/helper-unrefined.atto",
+      "expect": "E_FRESH_UNPROVEN"
+    },
+    {
+      "path": "fixtures/fresh-return/fail/mixed-branch.atto",
+      "expect": "E_FRESH_UNPROVEN"
+    },
+    {
+      "path": "fixtures/fresh-return/fail/copy-override-unrelated-fresh.atto",
+      "expect": "E_COPY_OVERRIDE"
+    },
+    {
+      "path": "fixtures/fresh-return/fail/copy-override-double-baseline.atto",
+      "expect": "E_COPY_OVERRIDE"
+    },
+    {
+      "path": "fixtures/fresh-return/fail/fresh-scalar.atto",
+      "expect": "E_FRESH_TYPE"
+    }
+  ]
+}
