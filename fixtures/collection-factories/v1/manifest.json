@@ -25,8 +25,8 @@
     {
       "id": "map-explicit-tilde",
       "family": "map",
-      "expected": "ACCEPT",
-      "phase": "guest",
+      "expected": "REJECT",
+      "phase": "parser",
       "source": "const m = ~map<string,int>(\"a\" => 1, \"b\" => 2);",
       "status": "TARGET_NOT_EXECUTED"
     },
@@ -65,8 +65,8 @@
     {
       "id": "entry-tilde",
       "family": "entry",
-      "expected": "ACCEPT",
-      "phase": "guest",
+      "expected": "REJECT",
+      "phase": "parser",
       "source": "const e = ~entry(\"key\", true);",
       "status": "TARGET_NOT_EXECUTED"
     },
@@ -89,8 +89,8 @@
     {
       "id": "pair-tilde",
       "family": "pair",
-      "expected": "ACCEPT",
-      "phase": "guest",
+      "expected": "REJECT",
+      "phase": "parser",
       "source": "const p = ~pair(4, true);",
       "status": "TARGET_NOT_EXECUTED"
     },
@@ -113,8 +113,8 @@
     {
       "id": "tuple-tilde",
       "family": "tuple",
-      "expected": "ACCEPT",
-      "phase": "guest",
+      "expected": "REJECT",
+      "phase": "parser",
       "source": "const t = ~tuple(4, true, \"a\");",
       "status": "TARGET_NOT_EXECUTED"
     },
@@ -137,8 +137,8 @@
     {
       "id": "array-tilde",
       "family": "array",
-      "expected": "ACCEPT",
-      "phase": "guest",
+      "expected": "REJECT",
+      "phase": "parser",
       "source": "const a = ~array(1, 2, 3);",
       "status": "TARGET_NOT_EXECUTED"
     },
@@ -161,8 +161,8 @@
     {
       "id": "list-tilde",
       "family": "list",
-      "expected": "ACCEPT",
-      "phase": "guest",
+      "expected": "REJECT",
+      "phase": "parser",
       "source": "const l = ~list(1, 2);",
       "status": "TARGET_NOT_EXECUTED"
     },
@@ -185,8 +185,8 @@
     {
       "id": "vector-tilde",
       "family": "vector",
-      "expected": "ACCEPT",
-      "phase": "guest",
+      "expected": "REJECT",
+      "phase": "parser",
       "source": "const v = ~vector(1, 2);",
       "status": "TARGET_NOT_EXECUTED"
     },
@@ -209,8 +209,8 @@
     {
       "id": "set-tilde",
       "family": "set",
-      "expected": "ACCEPT",
-      "phase": "guest",
+      "expected": "REJECT",
+      "phase": "parser",
       "source": "const s = ~set(1, 2);",
       "status": "TARGET_NOT_EXECUTED"
     },
@@ -233,8 +233,8 @@
     {
       "id": "record-tilde",
       "family": "record",
-      "expected": "ACCEPT",
-      "phase": "guest",
+      "expected": "REJECT",
+      "phase": "parser",
       "source": "const r = ~record(ready: true, count: 2);",
       "status": "TARGET_NOT_EXECUTED"
     },
