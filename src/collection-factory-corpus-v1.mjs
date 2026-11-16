@@ -2,6 +2,7 @@
 const families = new Set(['map','entry','pair','tuple','array','list','vector','set','record']);
 const backends = new Set(['java','llvm','wasm','forge','net','cranelift','js','rs','hdl']);
 const allowed = new Set(['ACCEPT','REJECT']);
+const removedAlias = /~(?:map|entry|pair|tuple|array|list|vector|set|record)\s*(?:<|\()/;
 
 export function validateCollectionFactoryManifest(manifest) {
   if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) throw Error('invalid manifest');
@@ -20,9 +21,21 @@ export function validateCollectionFactoryManifest(manifest) {
         c.status !== 'TARGET_NOT_EXECUTED' || typeof c.source !== 'string' ||
         c.source.length < 8 || c.source.length > 4096)
       throw Error('invalid candidate or falsely asserted execution');
+    if (c.expected === 'ACCEPT' && removedAlias.test(c.source))
+      throw Error('removed tilde collection constructors cannot be accepted');
+    if (removedAlias.test(c.source) && (c.expected !== 'REJECT' || c.phase !== 'parser'))
+      throw Error('tilde collection constructors must be rejected by parser');
+    if (c.family !== 'legacy' && c.expected === 'ACCEPT' &&
+        !c.source.includes(c.family[0].toUpperCase() + c.family.slice(1) + '.of'))
+      throw Error('positive cases must use canonical Type.of');
     seen.add(c.id);
   }
   for (const family of families) {
+    const removed = manifest.cases.filter(c =>
+      c.family === family && (c.id === family + '-tilde' || c.id === 'map-explicit-tilde'));
+    if (removed.length !== 1 || removed[0].expected !== 'REJECT' ||
+        removed[0].phase !== 'parser' || !removedAlias.test(removed[0].source))
+      throw Error('missing removed tilde parser regression: ' + family);
     const coverage = new Set(manifest.cases.filter(c => c.family === family).map(c => c.expected));
     if (!coverage.has('ACCEPT') || !coverage.has('REJECT')) throw Error('missing family coverage: ' + family);
   }
