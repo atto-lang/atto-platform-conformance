@@ -1,0 +1,26 @@
+name: Sequence pattern v2 target registry integrity (HOST ONLY)
+on:
+  push:
+    paths:
+      - 'contracts/sequence-pattern-v2-registry.json'
+      - 'tests/sequence-pattern-v2-registry.test.mjs'
+      - '.github/workflows/sequence-pattern-v2-registry.yml'
+  pull_request:
+    paths:
+      - 'contracts/sequence-pattern-v2-registry.json'
+      - 'tests/sequence-pattern-v2-registry.test.mjs'
+      - '.github/workflows/sequence-pattern-v2-registry.yml'
+permissions:
+  contents: read
+jobs:
+  host-registry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Run HOST-ONLY source registry integrity checks
+        run: |
+          node --version
+          node --test tests/sequence-pattern-v2-registry.test.mjs
