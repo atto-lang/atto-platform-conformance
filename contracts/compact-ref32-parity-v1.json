@@ -1,0 +1,134 @@
+{
+  "schema": "atto.compact-ref32-parity.v1",
+  "status": "candidate-unverified-production-guest",
+  "host_profiles": [
+    "pointer32",
+    "pointer64"
+  ],
+  "target_ref_bytes": 4,
+  "reference_model": "atto-lang/atto-common-source#13 tools/ref32_heap_v1.cpp (source-free only)",
+  "evidence_policy": "PER_BACKEND_COMPILED_GUEST_AND_NATIVE_HOST_EXECUTION_REQUIRED",
+  "cases": [
+    {
+      "id": "native-width-32",
+      "requirement": "Run same source and compiled guest on 32-bit executable/OS; verify four-byte guest refs without native pointer truncation",
+      "backend_status": {
+        "java-graal": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "dotnet-nativeaot": "NOT_EXECUTED",
+        "wasm32": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "native-width-64",
+      "requirement": "Run same source on 64-bit host; verify four-byte guest references and native-width FFI pointers",
+      "backend_status": {
+        "java-graal": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "dotnet-nativeaot": "NOT_EXECUTED",
+        "wasm32": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "compact-object-layout",
+      "requirement": "Inspect emitted guest object arrays/classes/records for 4-byte references and alignment and no hidden native-width pointer in guest payload",
+      "backend_status": {
+        "java-graal": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "dotnet-nativeaot": "NOT_EXECUTED",
+        "wasm32": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "null-bounds-overflow",
+      "requirement": "Reject null, UINT32_MAX requested length, addition/rounding wrap, forged slot and out-of-bounds access before allocator mutation",
+      "backend_status": {
+        "java-graal": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "dotnet-nativeaot": "NOT_EXECUTED",
+        "wasm32": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "reuse-aba-generation",
+      "requirement": "Recycle freed storage, fail stale generations and double free, retire exhausted generations without wraparound",
+      "backend_status": {
+        "java-graal": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "dotnet-nativeaot": "NOT_EXECUTED",
+        "wasm32": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "actor-tenant-incarnation",
+      "requirement": "Reject raw Ref32 transport, cross-actor and cross-tenant access and references held across STOP/restart",
+      "backend_status": {
+        "java-graal": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "dotnet-nativeaot": "NOT_EXECUTED",
+        "wasm32": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "scratch-continuation",
+      "requirement": "Pinned continuation and turn scratch respect frame/borrow lifetime; no use after turn quiescence",
+      "backend_status": {
+        "java-graal": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "dotnet-nativeaot": "NOT_EXECUTED",
+        "wasm32": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "oom-and-mailbox-failure",
+      "requirement": "Slot and byte quota failures preserve live allocations and sender message ownership; supervisor CONTROL remains available",
+      "backend_status": {
+        "java-graal": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "dotnet-nativeaot": "NOT_EXECUTED",
+        "wasm32": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "stop-zeroize-sibling",
+      "requirement": "STOP revokes admissions, waits for loans and frames, zeroizes sensitive memory; sibling actor returns expected output",
+      "backend_status": {
+        "java-graal": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "dotnet-nativeaot": "NOT_EXECUTED",
+        "wasm32": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "metadata-and-rss",
+      "requirement": "Compare actual RSS and committed memory including metadata, alignment, mailbox, carrier threads at varying actor counts",
+      "backend_status": {
+        "java-graal": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "dotnet-nativeaot": "NOT_EXECUTED",
+        "wasm32": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "hot-path-allocation",
+      "requirement": "Verify no host dynamic allocation in admitted bounded slab/arena hot path; deterministic worst-case or bounded retry",
+      "backend_status": {
+        "java-graal": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "dotnet-nativeaot": "NOT_EXECUTED",
+        "wasm32": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    }
+  ]
+}
