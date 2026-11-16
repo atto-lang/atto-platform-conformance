@@ -34,11 +34,11 @@ fn evaluate(case: &Value, ignore_generation: bool) -> (&'static str, Value) {
             {
                 ("denied_collision", Value::Null)
             } else {
-                ("admitted", json!([
-                    action["actor"],
-                    action["incarnation"],
-                    action["slot"],
-                    action["generation"],
+                ("admitted", Value::Array(vec![
+                    action["actor"].clone(),
+                    action["incarnation"].clone(),
+                    action["slot"].clone(),
+                    action["generation"].clone(),
                 ]))
             }
         }
@@ -86,8 +86,12 @@ mod tests {
         for case in cases {
             let id = case["id"].as_str().expect("case ID");
             assert!(ids.insert(id), "duplicate case ID: {id}");
-            assert_eq!(case["expected"]["activeAfter"].is_null(), false,
-                "explicit expected activeAfter field required for {id}");
+            assert!(
+                case["expected"]
+                    .as_object()
+                    .is_some_and(|o| o.contains_key("activeAfter")),
+                "explicit expected activeAfter field required for {id}"
+            );
         }
     }
 
