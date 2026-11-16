@@ -212,3 +212,49 @@ fn mixed_closed_and_live_select_stays_pending_when_live_arm_could_wake() {
     assert_eq!(select(&mut ports, &mut arms), Ok(None));
     assert!(matches!(&arms[0], Arm::Write(_, Some(v)) if v == "retained"));
 }
+
+
+#[test]
+fn competing_reads_on_same_channel_consume_one_message_per_selection() {
+    let mut ports = [Port::new(Kind::Channel, 1)];
+    ports[0].write("single".into()).unwrap();
+    let mut arms = [Arm::Read(0), Arm::Read(0)];
+    assert_eq!(select(&mut ports, &mut arms),
+        Ok(Some(Winner { index: 0, value: Some(Read::Data("single".into())) })));
+    assert_eq!(ports[0].read(), Err(Error::WouldBlock),
+        "a losing read must not dequeue the same message");
+    assert_eq!(select(&mut ports, &mut arms), Ok(None),
+        "both reads should be blocked until a new message arrives");
+    ports[0].write("next".into()).unwrap();
+    assert_eq!(select(&mut ports, &mut arms),
+        Ok(Some(Winner { index: 0, value: Some(Read::Data("next".into())) })));
+}
+
+#[test]
+fn full_channel_read_wins_then_retained_write_can_commit_once() {
+    let mut ports = [Port::new(Kind::Channel, 1)];
+    ports[0].write("old".into()).unwrap();
+    let mut arms = [Arm::Write(0, Some("new".into())), Arm::Read(0)];
+    // The bounded port is full: writing cannot win before a reader makes space.
+    assert_eq!(select(&mut ports, &mut arms),
+        Ok(Some(Winner { index: 1, value: Some(Read::Data("old".into())) })));
+    assert!(ports[0].queue.is_empty());
+    assert!(matches!(&arms[0], Arm::Write(_, Some(v)) if v == "new"),
+        "the losing write must keep its payload");
+    assert_eq!(select(&mut ports, &mut arms),
+        Ok(Some(Winner { index: 0, value: None })));
+    assert_eq!(ports[0].queue.len(), 1);
+    assert_eq!(ports[0].read(), Ok(Read::Data("new".into())));
+    // The committed write has no payload and cannot run again.
+    assert_eq!(select(&mut ports, &mut arms), Ok(None));
+}
+
+#[test]
+fn closed_port_validation_precedes_ready_channel_read() {
+    let mut ports = [Port::new(Kind::Channel, 1)];
+    ports[0].write("safe".into()).unwrap();
+    let mut arms = [Arm::Read(0), Arm::Write(42, Some("invalid".into()))];
+    assert_eq!(select(&mut ports, &mut arms), Err(Error::NotSelectable));
+    assert_eq!(ports[0].queue.front().map(String::as_str), Some("safe"));
+    assert!(matches!(&arms[1], Arm::Write(_, Some(v)) if v == "invalid"));
+}
