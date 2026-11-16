@@ -4,7 +4,7 @@ import {resolve, sep} from 'node:path';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-const root = fileURLToPath(new URL('../', import.meta.url));
+const root = resolve(fileURLToPath(new URL('../', import.meta.url)));
 const registry = JSON.parse(await readFile(
   new URL('../contracts/susp-effect-alias-v1.json',import.meta.url),'utf8'));
 test('canonical suspension alias contract is nonambiguous', () => {
