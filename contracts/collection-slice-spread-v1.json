@@ -1,0 +1,330 @@
+{
+  "schema": "atto.collection-slice-spread.v1",
+  "version": 1,
+  "status": "TARGET_ONLY_NOT_EXECUTED",
+  "spec": "atto-lang/atto-spec/language/collection-slice-spread-v1.md",
+  "assertion": "These are proposed semantic vectors, not passing guest tests.",
+  "semantics": {
+    "negative_indexes": "len + i",
+    "slice_end": "exclusive",
+    "positive_defaults": [
+      0,
+      "len",
+      1
+    ],
+    "negative_defaults": [
+      "len-1",
+      -1,
+      -1
+    ],
+    "explicit_negative_end": "normalizes relative to length, NOT reverse sentinel",
+    "zero_stride": "reject",
+    "explicit_bounds": "checked no clamping",
+    "utf8_string_unit": "Unicode scalar",
+    "contiguous_slice": "borrowed read-only view",
+    "strided_slice": "borrowed read-only strided view",
+    "spread": "one evaluation and explicit materialization, ownership checked",
+    "infinite_iterable": "no implicit materialization"
+  },
+  "cases": [
+    {
+      "id": "idx-first",
+      "category": "index",
+      "source": "pub fnc main(): int { val a = [10,20,30,40,50]; val x = a[0]; return 0; }",
+      "expected_parse": "ACCEPT",
+      "expected_value": 10,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "idx-last",
+      "category": "index",
+      "source": "pub fnc main(): int { val a = [10,20,30,40,50]; val x = a[-1]; return 0; }",
+      "expected_parse": "ACCEPT",
+      "expected_value": 50,
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "slice-mid",
+      "category": "slice",
+      "source": "pub fnc main(): int { val a = [10,20,30,40,50]; val x = a[1:4]; return 0; }",
+      "expected_parse": "ACCEPT",
+      "expected_value": [
+        20,
+        30,
+        40
+      ],
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "slice-head",
+      "category": "slice",
+      "source": "pub fnc main(): int { val a = [10,20,30,40,50]; val x = a[:3]; return 0; }",
+      "expected_parse": "ACCEPT",
+      "expected_value": [
+        10,
+        20,
+        30
+      ],
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "slice-tail",
+      "category": "slice",
+      "source": "pub fnc main(): int { val a = [10,20,30,40,50]; val x = a[2:]; return 0; }",
+      "expected_parse": "ACCEPT",
+      "expected_value": [
+        30,
+        40,
+        50
+      ],
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "slice-all",
+      "category": "slice",
+      "source": "pub fnc main(): int { val a = [10,20,30,40,50]; val x = a[:]; return 0; }",
+      "expected_parse": "ACCEPT",
+      "expected_value": [
+        10,
+        20,
+        30,
+        40,
+        50
+      ],
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "slice-stride",
+      "category": "slice",
+      "source": "pub fnc main(): int { val a = [10,20,30,40,50]; val x = a[::2]; return 0; }",
+      "expected_parse": "ACCEPT",
+      "expected_value": [
+        10,
+        30,
+        50
+      ],
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "slice-reverse",
+      "category": "slice",
+      "source": "pub fnc main(): int { val a = [10,20,30,40,50]; val x = a[::-1]; return 0; }",
+      "expected_parse": "ACCEPT",
+      "expected_value": [
+        50,
+        40,
+        30,
+        20,
+        10
+      ],
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "slice-reverse-part",
+      "category": "slice",
+      "source": "pub fnc main(): int { val a = [10,20,30,40,50]; val x = a[4:0:-2]; return 0; }",
+      "expected_parse": "ACCEPT",
+      "expected_value": [
+        50,
+        30
+      ],
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "slice-negative-explicit-end",
+      "category": "slice",
+      "source": "pub fnc main(): int { val a = [10,20,30,40,50]; val x = a[4:-1:-1]; return 0; }",
+      "expected_parse": "ACCEPT",
+      "expected_value": [],
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "slice-opposite-direction",
+      "category": "slice",
+      "source": "pub fnc main(): int { val a = [10,20,30,40,50]; val x = a[4:1]; return 0; }",
+      "expected_parse": "ACCEPT",
+      "expected_value": [],
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "slice-empty",
+      "category": "slice",
+      "source": "pub fnc main(): int { val a = []; val x = a[:]; return 0; }",
+      "expected_parse": "ACCEPT",
+      "expected_value": [],
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "spread-two",
+      "category": "spread",
+      "source": "pub fnc main(): int { val a = [1,2]; val b = [3,4]; val x = [0,...a,...b,5]; return 0; }",
+      "expected_parse": "ACCEPT",
+      "expected_value": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "spread-map",
+      "category": "spread",
+      "source": "pub fnc main(): int { val a = [1,2,3]; val x = [...a.map(|n| -> n * 2)]; return 0; }",
+      "expected_parse": "ACCEPT",
+      "expected_value": [
+        2,
+        4,
+        6
+      ],
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "string-index",
+      "category": "unicode",
+      "source": "pub fnc main(): int { val s = \"héllo\"; val x = s[1]; return 0; }",
+      "expected_parse": "ACCEPT",
+      "expected_value": "é",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "string-contiguous",
+      "category": "unicode",
+      "source": "pub fnc main(): int { val s = \"héllo\"; val x = s[:2]; return 0; }",
+      "expected_parse": "ACCEPT",
+      "expected_value": "hé",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "string-reversed",
+      "category": "unicode",
+      "source": "pub fnc main(): int { val s = \"héllo\"; val x = s[::-1].collect_string(); return 0; }",
+      "expected_parse": "ACCEPT",
+      "expected_value": "olléh",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "empty-index",
+      "category": "negative",
+      "source": "pub fnc main(): int { val a = [1,2]; val x = a[]; return 0; }",
+      "expected_diagnostic": "E_SLICE_SYNTAX",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "missing-stride",
+      "category": "negative",
+      "source": "pub fnc main(): int { val a = [1,2]; val x = a[::]; return 0; }",
+      "expected_diagnostic": "E_SLICE_SYNTAX",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "missing-trailing-step",
+      "category": "negative",
+      "source": "pub fnc main(): int { val a = [1,2]; val x = a[1:2:]; return 0; }",
+      "expected_diagnostic": "E_SLICE_SYNTAX",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "extra-slice-colon",
+      "category": "negative",
+      "source": "pub fnc main(): int { val a = [1,2]; val x = a[0:1:2:3]; return 0; }",
+      "expected_diagnostic": "E_SLICE_SYNTAX",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "zero-stride",
+      "category": "negative",
+      "source": "pub fnc main(): int { val a = [1,2]; val x = a[::0]; return 0; }",
+      "expected_diagnostic": "E_SLICE_STEP_ZERO",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "negative-zero-stride",
+      "category": "negative",
+      "source": "pub fnc main(): int { val a = [1,2]; val x = a[0:2:-0]; return 0; }",
+      "expected_diagnostic": "E_SLICE_STEP_ZERO",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "scalar-spread",
+      "category": "negative",
+      "source": "pub fnc main(): int { val x = [...42]; return 0; }",
+      "expected_diagnostic": "E_SPREAD_ELEMENT",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "scalar-index",
+      "category": "negative",
+      "source": "pub fnc main(): int { val x = 42[0]; return 0; }",
+      "expected_diagnostic": "E_NOT_INDEXABLE",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "scalar-slice",
+      "category": "negative",
+      "source": "pub fnc main(): int { val x = 42[:]; return 0; }",
+      "expected_diagnostic": "E_NOT_SLICEABLE",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "out-of-bounds-index",
+      "category": "negative",
+      "source": "pub fnc main(): int { val a = [1,2]; val x = a[2]; return 0; }",
+      "expected_diagnostic": "E_INDEX_BOUNDS",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "out-of-bounds-slice",
+      "category": "negative",
+      "source": "pub fnc main(): int { val a = [1,2]; val x = a[0:3]; return 0; }",
+      "expected_diagnostic": "E_SLICE_BOUNDS",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "unbounded-spread",
+      "category": "negative",
+      "source": "pub fnc main(): int { val x = [...infinite_stream()]; return 0; }",
+      "expected_diagnostic": "E_UNBOUNDED_SPREAD",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "mutable-alias",
+      "category": "negative",
+      "source": "pub fnc main(): int { val a = [1,2,3]; val x = a[:]; x[0] = 2; return 0; }",
+      "expected_diagnostic": "E_BORROW",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "actor-borrow-escape",
+      "category": "negative",
+      "source": "pub fnc main(): int { val x = actor.handle_state(critical-read |s| -> s.items[:]); return 0; }",
+      "expected_diagnostic": "E_ISOLATION",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "spread-outside-context",
+      "category": "negative",
+      "source": "pub fnc main(): int { val a = [1,2]; val x = ...a; return 0; }",
+      "expected_diagnostic": "E_SPREAD_CONTEXT",
+      "guest_status": "NOT_EXECUTED"
+    },
+    {
+      "id": "computed-arity-fixed-call",
+      "category": "negative",
+      "source": "pub fnc main(): int { val a = [1,2]; val x = fixed2(...a); return 0; }",
+      "expected_diagnostic": "E_SPREAD_ELEMENT",
+      "guest_status": "NOT_EXECUTED"
+    }
+  ],
+  "backend_evidence": {
+    "rust-browser": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED"
+  }
+}
