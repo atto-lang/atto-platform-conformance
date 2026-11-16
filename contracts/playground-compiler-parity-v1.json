@@ -8,8 +8,31 @@
     "sourceRoot": "play/examples/preview",
     "sourceExtension": ".atto",
     "compilerPr": "https://github.com/atto-lang/atto-source.rs/pull/165",
-    "compilerBranchHead": "0dea7e135951417d6e33249adc09a61c99426118",
-    "note": "Reference Atto .atto text is NOT an accepted Oreslang .ores translation or execution proof."
+    "compilerBranchHead": "570e0c28b625268379170043137f3e84f82bf268",
+    "note": "Reference Atto .atto text is NOT an accepted Oreslang .ores translation or execution proof.",
+    "compilerPrStateAtAudit": "merged",
+    "referenceCompilerEvidence": {
+      "kind": "UPSTREAM_REFERENCE_ONLY_NOT_ORESLANG_PARITY",
+      "mergedPrHead": "570e0c28b625268379170043137f3e84f82bf268",
+      "assertedSourceTree": "dc3daf3059b79b5d003cf7061eb626b7db1294a0",
+      "carrierRunUrl": "https://github.com/agent-pontifex/atto-ci/actions/runs/43798041741",
+      "carrierConclusion": "success",
+      "sitePreviewGuestExecution": {
+        "reportedExecuted": 8,
+        "reportedUnsupportedOrNotExecuted": 34,
+        "ids": [
+          "borrow-checking",
+          "fib-match",
+          "function-pipeline",
+          "generators",
+          "lexical-scope-pure",
+          "result-option",
+          "state-containers",
+          "trap"
+        ]
+      },
+      "note": "Upstream PR describes 8 executable Rust/Wasm previews; carrier workflow independently verified successful. Not Oreslang guest execution or cross-backend parity."
+    }
   },
   "backends": [
     {
