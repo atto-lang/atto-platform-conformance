@@ -1,0 +1,30 @@
+name: I/O direction shorthand Rust reference model
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  rust-reference-only:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify exact tree
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          git rev-parse HEAD
+          git rev-parse HEAD^{tree}
+      - name: Compile and run Rust reference tests
+        run: |
+          rustc --version
+          rustc --edition=2021 --test tests/io_direction_oracle.rs -o /tmp/io-direction-reference
+          /tmp/io-direction-reference --nocapture
+      - name: Evidence boundary
+        run: |
+          echo "Reference model only; compiled AttoLang guest conformance: NOT_EXECUTED."
