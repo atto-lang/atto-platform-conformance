@@ -4,11 +4,15 @@ on:
     paths:
       - 'contracts/actor-scheduler-domains-v1.json'
       - 'tests/test_actor_scheduler_domains_v1.py'
+      - 'tests/test_actor_scheduler_receipts_v1.py'
+      - 'bin/verify_actor_scheduler_receipt.py'
       - '.github/workflows/actor-scheduler-domains-v1.yml'
   push:
     paths:
       - 'contracts/actor-scheduler-domains-v1.json'
       - 'tests/test_actor_scheduler_domains_v1.py'
+      - 'tests/test_actor_scheduler_receipts_v1.py'
+      - 'bin/verify_actor_scheduler_receipt.py'
       - '.github/workflows/actor-scheduler-domains-v1.yml'
 permissions:
   contents: read
@@ -23,7 +27,7 @@ jobs:
           python-version: '3.12'
       - name: Validate contract
         run: python3 -m json.tool contracts/actor-scheduler-domains-v1.json >/dev/null
-      - name: Run deterministic scheduler policy tests
-        run: python3 -m unittest discover -s tests -p 'test_actor_scheduler_domains_v1.py' -v
+      - name: Validate receipt baseline\n        run: python3 bin/verify_actor_scheduler_receipt.py\n      - name: Run deterministic scheduler policy tests
+        run: python3 -m unittest discover -s tests -p 'test_actor_scheduler_*v1.py' -v
       - name: Scope
         run: echo 'REFERENCE_ONLY: no Java, LLVM, .NET guest runtime or tenant sandbox executed'
