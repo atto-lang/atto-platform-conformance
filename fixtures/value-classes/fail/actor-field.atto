@@ -1,0 +1,8 @@
+define actor Worker as
+    let int state = 0;
+end
+define value class Bad as
+    pub final Worker worker;
+    constructor(Worker worker) { self.worker = worker; }
+end
+pub fnc main(): int { return 0; }
