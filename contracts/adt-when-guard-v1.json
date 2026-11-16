@@ -5,13 +5,13 @@
   "compiler": {
     "repo": "atto-lang/atto-source.rs",
     "pr": 247,
-    "head_sha": "8e91d1ffba5a4c7d94a524362a453f0d3a3efb95",
+    "head_sha": "eb8be6be78dbb180ea84fd49602c9869c9a46802",
     "parent_prs": [
       246,
       245,
       236
     ],
-    "browser_harness_blob_sha": "7c6ba5a72a3addad23db3be30331b0a11deade08"
+    "browser_harness_blob_sha": "8d7d6ec382a9c4fc6b5d09fe2605702ada52ccb8"
   },
   "semantics": {
     "ordered_dispatch": true,
@@ -85,12 +85,12 @@
   "execution_receipts": {
     "rust-wasm": {
       "status": "PASS_SCOPED",
-      "source_head": "8e91d1ffba5a4c7d94a524362a453f0d3a3efb95",
+      "source_head": "eb8be6be78dbb180ea84fd49602c9869c9a46802",
       "carrier_repo": "anticaptrad/atto-ci",
-      "carrier_branch": "ci/atto-adt-guards-reconciled-247-20261116",
-      "carrier_commit": "65a020437acb52736241a2fdb82dd1f69e9892ee",
-      "workflow_run_id": 43974455216,
-      "workflow_job_id": 133674716098,
+      "carrier_branch": "ci/atto-adt-stack-247-reconciled-20261116",
+      "carrier_commit": "2957aff81a1c91f9b859b32f7dd5ab9d06d4f8bc",
+      "workflow_run_id": 43975793243,
+      "workflow_job_id": 133679293949,
       "scoped_source_git_blobs_verified": 59,
       "full_repository_tree_verified": false,
       "native_rust_test_suites": 10,
@@ -110,7 +110,7 @@
         "positive": 4,
         "negative": 1
       },
-      "evidence_limits": "59 scoped source blobs, not full source Git tree; positive guarded match/case and negative no-artifact executions within Rust/Wasm only; no structured Error.code, !==, all-backend or general owned capture parity."
+      "evidence_limits": "59 selected source Git blobs (not full-tree identity), 53 Rust regression tests, 18 compiled Wasm guests, and real Chromium JSPI through the complete #236→#245→#246→#247 stack; no general owned capture or native Java/LLVM/.NET certification."
     }
   },
   "independent_native_parity_admission": "Only mark Java/LLVM/.NET PASS after exact-compiler-source native AOT compilation, same five fixture oracles, no-artifact diagnostic checks and real executed CI steps. Do not infer backend parity from host-only tests or this Rust/Wasm result."
