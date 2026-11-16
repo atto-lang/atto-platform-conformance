@@ -1,0 +1,117 @@
+{
+  "schema": "atto.adt-when-guard.v1",
+  "status": "SCOPED_RUST_WASM_PASS_NOT_CROSS_BACKEND_CERTIFIED",
+  "spec_pr": 57,
+  "compiler": {
+    "repo": "atto-lang/atto-source.rs",
+    "pr": 247,
+    "head_sha": "6bb21d7428cbc6bac3516ca242c5027eca8009e8",
+    "parent_prs": [
+      246,
+      245,
+      236
+    ],
+    "browser_harness_blob_sha": "1bc1568d0bbdc5b78a217a7c0327f6c8d8771176"
+  },
+  "semantics": {
+    "ordered_dispatch": true,
+    "scrutinee_evaluated_once": true,
+    "guard_requires_bool": true,
+    "binder_initialized_after_tag_before_guard": true,
+    "guards_are_not_exhaustive": true,
+    "unguarded_variant_covers_variant": true,
+    "unguarded_default_covers_remaining": true,
+    "duplicate_variant_after_unguarded_rejected": true,
+    "tags_with_discarded_payloads": "Ok(), Err(), Some(), Ok(_), Err(_), Some(_); no hidden binders",
+    "error_type_in_scope": "Result<int,string>",
+    "error_code_field_available": false,
+    "inequality_operator": "!="
+  },
+  "backends": {
+    "rust-wasm": "PASS_SCOPED",
+    "java-native-image": "NOT_EXECUTED",
+    "llvm-native": "NOT_EXECUTED",
+    "dotnet-nativeaot": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "ok-when-captured-task",
+      "path": "fixtures/adt-when-guard-v1/pass/ok-captured-when.atto",
+      "git_blob_sha1": "745884c283db9fff09ca20e306e31f8882bf198d",
+      "expect": {
+        "kind": "browser_compiled_guest",
+        "return_value": 42,
+        "cooperative_yields": 1
+      }
+    },
+    {
+      "id": "err-guard-false-default",
+      "path": "fixtures/adt-when-guard-v1/pass/err-false-when.atto",
+      "git_blob_sha1": "bcb3c02c9a2f042a532e55d5e9ecea98248d92d7",
+      "expect": {
+        "kind": "browser_compiled_guest",
+        "return_value": 10
+      }
+    },
+    {
+      "id": "err-guard-true-payload",
+      "path": "fixtures/adt-when-guard-v1/pass/err-true-when.atto",
+      "git_blob_sha1": "e8dca26d74b793f323ae42b6b38883bae5058a0c",
+      "expect": {
+        "kind": "browser_compiled_guest",
+        "return_value": 0
+      }
+    },
+    {
+      "id": "switch-repeated-guarded-some",
+      "path": "fixtures/adt-when-guard-v1/pass/switch-repeated-some-when.atto",
+      "git_blob_sha1": "ba030e5fbfb2018a97c63e4162c9d7464c938d3b",
+      "expect": {
+        "kind": "browser_compiled_guest",
+        "return_value": 42
+      }
+    },
+    {
+      "id": "unguarded-default-required",
+      "path": "fixtures/adt-when-guard-v1/fail/guard-only-nonexhaustive.atto",
+      "git_blob_sha1": "02f504dd8ac0cc9067c6bb79a6ad5b29d7292fe6",
+      "expect": {
+        "kind": "negative_no_guest",
+        "diagnostic": "E_MATCH",
+        "guest_instantiated": false
+      }
+    }
+  ],
+  "execution_receipts": {
+    "rust-wasm": {
+      "status": "PASS_SCOPED",
+      "source_head": "6bb21d7428cbc6bac3516ca242c5027eca8009e8",
+      "carrier_repo": "anticaptrad/atto-ci",
+      "carrier_branch": "ci/atto-adt-when-guards-247-20261116",
+      "carrier_commit": "05416a52b7cc45fc2cd8a96b615c1d254661fab1",
+      "workflow_run_id": 43969800075,
+      "workflow_job_id": 133658658444,
+      "scoped_source_git_blobs_verified": 53,
+      "full_repository_tree_verified": false,
+      "native_rust_test_suites": 10,
+      "native_rust_tests": {
+        "passed": 50,
+        "failed": 0
+      },
+      "legacy_guest_fixture_checks": {
+        "passed": 12,
+        "failed": 0,
+        "positive_guest_returns_42": 5,
+        "negative_no_artifact": 7
+      },
+      "browser_compiler_wasm_built": true,
+      "chromium_jspi_guest_execution": "PASS",
+      "guard_browser_cases": {
+        "positive": 4,
+        "negative": 1
+      },
+      "evidence_limits": "Only these scoped cases; no proof of general structured Error.code, JS !==, other backend parity or full repository exact tree."
+    }
+  },
+  "independent_native_parity_admission": "Only mark Java/LLVM/.NET PASS after exact-compiler-source native AOT compilation, same five fixture oracles, no-artifact diagnostic checks and real executed CI steps. Do not infer backend parity from host-only tests or this Rust/Wasm result."
+}
