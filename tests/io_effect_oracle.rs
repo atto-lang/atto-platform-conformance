@@ -110,3 +110,40 @@ fn marking_a_function_suspends_does_not_make_nb_registration_blocking() {
     assert_eq!(result,OutcomeShape::Future);
     assert_ne!(result,OutcomeShape::Completed);
 }
+
+// Stdio output has no channel-slot backpressure; OS drain/flush is a
+// *different* effectful operation. These are Rust host reference tests,
+// not evidence of an Atto compiler's effect checker or a real pipe.
+const STDIO_ADMISSION: Capability = Capability {
+    potentially_suspends: false, async_registration: true, immediate_probe: true,
+};
+const STDIO_FLUSH: Capability = Capability {
+    potentially_suspends: true, async_registration: true, immediate_probe: false,
+};
+
+#[test]
+fn stdio_admission_never_needs_suspends_but_still_requires_io_permission() {
+    assert_eq!(admit(IO_ONLY, STDIO_ADMISSION, Mode::Direct),
+        Ok(OutcomeShape::Completed));
+    assert_eq!(admit(IO_SUSPENDS, STDIO_ADMISSION, Mode::Direct),
+        Ok(OutcomeShape::Completed));
+    assert_eq!(admit(PURE, STDIO_ADMISSION, Mode::Direct),
+        Err(Denied::PureIo));
+    assert_eq!(admit(Callable { pure: false, io: false, suspends: false },
+                     STDIO_ADMISSION, Mode::Direct), Err(Denied::IoPermission));
+}
+
+#[test]
+fn flushing_is_separate_potentially_suspending_effect() {
+    assert_eq!(admit(IO_ONLY, STDIO_FLUSH, Mode::Direct), Err(Denied::NeedsSuspends));
+    assert_eq!(admit(IO_SUSPENDS, STDIO_FLUSH, Mode::Direct),
+        Ok(OutcomeShape::Completed));
+}
+
+#[test]
+fn stdout_nonblocking_registration_retains_future_result_contract() {
+    assert_eq!(admit(IO_ONLY, STDIO_ADMISSION, Mode::Nonblocking),
+        Ok(OutcomeShape::Future));
+    assert_eq!(admit(IO_ONLY, STDIO_ADMISSION, Mode::TryImmediate),
+        Ok(OutcomeShape::ImmediateReadiness));
+}
