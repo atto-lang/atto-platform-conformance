@@ -4,13 +4,20 @@
   "spec_pr": "https://github.com/atto-lang/atto-spec/pull/59",
   "compiler_issue": "https://github.com/atto-lang/atto-source.rs/issues/123",
   "source_blobs": {
-    "spec": "3fd3b36c8f403210748cc7d4b04938298b0a4bad",
-    "host_reference_tests": "8c0872a75d54c23be128b3ef0701b8b35ceabf36"
+    "spec": "0e1dc9dcba1b543e4f781b94e32c067736c8b41c",
+    "host_reference_tests": "22f82ba23fa52f72b8f96dafbc9826873bbd1248"
   },
   "evidence": {
     "kind": "HOST_REFERENCE_ONLY",
-    "carrier_run": "https://github.com/anticaptrad/atto-ci/actions/runs/43975724371",
-    "guest_execution": "NOT_EXECUTED"
+    "carrier_run": null,
+    "guest_execution": "NOT_EXECUTED",
+    "host_reference_latest": "LOCAL_9_OF_9_CI_NOT_EXECUTED",
+    "exact_source_tree_sha": "ba871474301632b02e848418e9dd8e1fb5b45cf1",
+    "carrier_tree_sha": "ba871474301632b02e848418e9dd8e1fb5b45cf1",
+    "carrier_runs": [
+      "https://github.com/anticaptrad/atto-ci/actions/runs/43979272340"
+    ],
+    "carrier_admission": "NOT_EXECUTED_ZERO_STEPS"
   },
   "backends": [
     "rust-wasm",
@@ -772,6 +779,70 @@
       "name": "trailing-comma",
       "kind": "reject",
       "pattern": "List.of(1,)",
+      "expected": {
+        "parse": "REJECT"
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-037",
+      "name": "transitive-nested-binder",
+      "kind": "reject",
+      "pattern": "List.of(...(2 of List.of(1 as val x)))",
+      "expected": {
+        "parse": "REJECT"
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-038",
+      "name": "transitive-tuple-binder",
+      "kind": "reject",
+      "pattern": "List.of(...(2 of Tuple.of(is int as val x)))",
+      "expected": {
+        "parse": "REJECT"
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-039",
+      "name": "transitive-nested-repeat",
+      "kind": "reject",
+      "pattern": "List.of(...(2 of List.of(...(1 of int))))",
+      "expected": {
+        "parse": "REJECT"
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "SPV2-040",
+      "name": "transitive-deep-binder",
+      "kind": "reject",
+      "pattern": "List.of(...(2 of List.of(Tuple.of(3 as let x))))",
       "expected": {
         "parse": "REJECT"
       },
