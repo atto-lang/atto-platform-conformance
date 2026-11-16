@@ -1,0 +1,1 @@
+type IncType = typeof fnc(int) => int; pub fnc main(): int { return 5; }
