@@ -81,3 +81,22 @@ test('executor refuses unsupported native AOT adapter before claiming success', 
   assert.match(result.stderr, /no executable adapter yet/i);
   assert.doesNotMatch(result.stdout, /passed/i);
 });
+
+
+test('subset mode refuses an original-tree assertion without the exact source blob lock', () => {
+  const sha = 'a'.repeat(40);
+  const result = spawnSync(process.execPath,
+    [resolve(root, 'bin/run-full-aot-executable-gates.mjs'),
+      '--profile', 'rust-source-wasm',
+      '--attoc', '/tmp/no-attoc',
+      '--source-repo', '/tmp/no-repo',
+      '--checkout-head', sha,
+      '--source-head', sha,
+      '--source-tree', sha,
+      '--source-original-tree', sha,
+      '--receipt', '/tmp/no-atto-proof.json'],
+    { encoding: 'utf8' });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /both original source tree and exact source-blob lock/i);
+  assert.doesNotMatch(result.stdout, /passed/i);
+});
