@@ -11,7 +11,7 @@ class FreshReturnRegistryTest(unittest.TestCase):
         self.assertEqual(m["status"], "CANDIDATE_NOT_IMPLEMENTED")
         self.assertEqual(set(m["backends"]), {"java", "llvm", "net"})
         self.assertTrue(all(v == "NOT_EXECUTED" for v in m["backends"].values()))
-        self.assertEqual(len(m["fixtures"]), 11)
+        self.assertEqual(len(m["fixtures"]), 12)
         paths = [case["path"] for case in m["fixtures"]]
         self.assertEqual(len(paths), len(set(paths)))
         for case in m["fixtures"]:
