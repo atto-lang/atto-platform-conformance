@@ -1,0 +1,1 @@
+fnc checked(): Result<int,string> { return Ok(41); } pub suspends fnc main(): int { return switch<int> checked() over case Err(message) : int -> 0, case Ok(value) : int -> await task { return value + 1; }, end; }
