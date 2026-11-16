@@ -1,4 +1,4 @@
-// Candidate negative: accepted text recipient does not widen integer recipient.
+// Must be rejected at the second recipient's typed ActorRef.send.
 define actor TextSink receives String as
   receive(ActorMail<String> mail): void { return; }
 end
