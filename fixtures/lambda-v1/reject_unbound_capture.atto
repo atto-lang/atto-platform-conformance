@@ -1,0 +1,4 @@
+// REJECT: a free identifier must resolve lexically.
+pub fnc main() -> int ::
+  return (|int x| -> x + unknown_binding)(42)
+end

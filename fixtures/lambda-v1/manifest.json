@@ -1,0 +1,98 @@
+{
+  "schema": "atto.lambda.v1",
+  "status": "TARGET-NOT-EXECUTED",
+  "canonical_lambda": "|x| -> expression",
+  "requested_backends": [
+    "java",
+    "llvm",
+    "wasm",
+    "forge",
+    "net"
+  ],
+  "note": "No fixture is considered an implementation pass without external compiler AOT execution evidence.",
+  "cases": [
+    {
+      "id": "typed_single",
+      "source": "typed_single.atto",
+      "sha256": "79553fd5ab15b24fc8ef35453e0251ec1bf9b522eda9e0bdc1f4b13bfe433dcf",
+      "expect": "accept",
+      "coverage": "parse-type-aot",
+      "exit_code": 42
+    },
+    {
+      "id": "typed_pair",
+      "source": "typed_pair.atto",
+      "sha256": "cb5554ed492a06c6bb084c5477622ec13f60f4d8ecfff7a1adb659af387d6be4",
+      "expect": "accept",
+      "coverage": "parse-type-aot",
+      "exit_code": 42
+    },
+    {
+      "id": "lexical_capture",
+      "source": "lexical_capture.atto",
+      "sha256": "72728781567aec1d684ff1f6b93e11ded29decdde60192d63c626794776a5b0b",
+      "expect": "accept",
+      "coverage": "capture-aot",
+      "exit_code": 42
+    },
+    {
+      "id": "nested_shadowing",
+      "source": "nested_shadowing.atto",
+      "sha256": "cddafd6c8cc41948b669966e2b2e8cc15ec574517aa9dfd5a34867c585f130d1",
+      "expect": "accept",
+      "coverage": "scoping-aot",
+      "exit_code": 42
+    },
+    {
+      "id": "contextual_pipeline",
+      "source": "contextual_pipeline.atto",
+      "sha256": "eb8fb5e0c38c6a4413bfa39940bca92a9b9398b4a61ab0f02810db3a2adab6fc",
+      "expect": "accept",
+      "coverage": "inference-pipeline-aot",
+      "exit_code": 42
+    },
+    {
+      "id": "reject_ampersand_capture",
+      "source": "reject_ampersand_capture.atto",
+      "sha256": "4badbb4af76aec7d11222ffa9dbf7b7e4fce148f87834be5aa8f7f34e4c89bd3",
+      "expect": "reject",
+      "phase": "parse"
+    },
+    {
+      "id": "reject_free_placeholder",
+      "source": "reject_free_placeholder.atto",
+      "sha256": "24b68e957a3a4a452805d297e172845b59436696a69a9e50ff23fabf6968a32c",
+      "expect": "reject",
+      "phase": "typecheck"
+    },
+    {
+      "id": "reject_duplicate_parameter",
+      "source": "reject_duplicate_parameter.atto",
+      "sha256": "46e0da5f07c861f2a94cba9aa1bef27540ca57836d6f9a27cf362c0803215dbb",
+      "expect": "reject",
+      "phase": "parse"
+    },
+    {
+      "id": "reject_missing_arrow",
+      "source": "reject_missing_arrow.atto",
+      "sha256": "d117f181462043629a0fadfaba952de6df5164d52dcbb258fa1367572d26838b",
+      "expect": "reject",
+      "phase": "parse"
+    },
+    {
+      "id": "reject_unbound_capture",
+      "source": "reject_unbound_capture.atto",
+      "sha256": "a8d5043982c3461bf2f1bc11777f50a5c9162185c90941141c3edce8300777a4",
+      "expect": "reject",
+      "phase": "typecheck"
+    }
+  ],
+  "deferred_cases": [
+    "suspending-lambda effect grammar",
+    "borrowed capture escape",
+    "moved capture invocation cardinality",
+    "actor-state capture and isolation",
+    "zero-parameter and block-bodied grammar",
+    "formatter AST round-trip"
+  ]
+}

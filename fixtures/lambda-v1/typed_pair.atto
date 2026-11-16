@@ -1,0 +1,4 @@
+// TARGET fixture — typed parameter order and static invocation.
+pub fnc main() -> int ::
+  return (|int x, int y| -> x + y)(19, 23)
+end

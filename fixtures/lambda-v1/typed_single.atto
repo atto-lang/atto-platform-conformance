@@ -1,0 +1,4 @@
+// TARGET fixture — requires a real AttoLang AOT backend before certification.
+pub fnc main() -> int ::
+  return (|int x| -> x + 1)(41)
+end
