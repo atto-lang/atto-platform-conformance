@@ -1,0 +1,36 @@
+name: Value class v1 contract (host-only, NOT guest)
+on:
+  pull_request:
+    paths:
+      - 'contracts/value-classes-v1.json'
+      - 'fixtures/value-classes/**'
+      - 'tests/test_value_classes_contract.py'
+      - '.github/workflows/value-classes-v1.yml'
+  push:
+    paths:
+      - 'contracts/value-classes-v1.json'
+      - 'fixtures/value-classes/**'
+      - 'tests/test_value_classes_contract.py'
+      - '.github/workflows/value-classes-v1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reference-contract-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Verify exact-source checkout provenance
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          git rev-parse HEAD
+          git rev-parse HEAD^{tree}
+      - name: Validate fixture manifest and negative evidence rules (HOST ONLY)
+        run: python3 -m unittest discover -s tests -p 'test_value_classes_contract.py' -v
+      - name: State scope explicitly
+        run: echo 'HOST_ONLY_NOT_EXECUTED_VALUE_CLASS_GUESTS'
