@@ -116,6 +116,9 @@ def encode(ty, value):
         raise Rejected("oversized wire message")
     return blob
 
+_RUNTIME_AUTHORITY = object()  # inaccessible to application DATA in this reference model
+
+
 class Boundary:
     """Bounded reference model: authority stays in host methods, never guest DATA."""
     def __init__(self, message_type, capacity=2):
@@ -164,7 +167,9 @@ class Boundary:
         self.completed += 1
         self.accounting()
 
-    def panic(self, generation, message_id, reason):
+    def panic(self, generation, message_id, reason, authority=None):
+        if authority is not _RUNTIME_AUTHORITY:
+            raise Rejected("only runtime may mint supervisor CONTROL")
         if generation != self.generation or not self.running or self.running[0] != message_id:
             raise Rejected("panic requires live accepted in-flight turn")
         if not isinstance(reason, str) or len(reason.encode("utf-8")) > 256:
@@ -255,7 +260,7 @@ class AdtActorSupervisionTest(unittest.TestCase):
             b'{"variant":"Some","payload":NaN}',
             b'{"variant":"Some","payload":9223372036854775808}',
             b'{"variant":"None"} garbage',
-            b'\\xff',
+            b'\xff',
             b' ' * (MAX_BYTES + 1),
         ]:
             with self.subTest(blob=blob[:50]), self.assertRaises(Rejected):
@@ -280,7 +285,7 @@ class AdtActorSupervisionTest(unittest.TestCase):
         with self.assertRaises(Rejected):
             b.send(1, data)
         self.assertEqual(b.receive()[0], first)
-        b.panic(1, first, "uncaught raise")
+        b.panic(1, first, "uncaught raise", authority=_RUNTIME_AUTHORITY)
         with self.assertRaises(Rejected):
             b.receive()
         self.assertEqual(b.dispatch_control()["message_id"], first)
@@ -304,8 +309,51 @@ class AdtActorSupervisionTest(unittest.TestCase):
             b.send(1, forged)
         self.assertEqual(b.control, [])
         with self.assertRaises(Rejected):
-            b.panic(1, 900, "fabricated")
+            b.panic(1, 900, "fabricated", authority=_RUNTIME_AUTHORITY)
         self.assertEqual(b.control, [])
+
+    def test_only_runtime_authority_can_emit_control(self):
+        b = Boundary("Option<int>")
+        ident = b.send(1, encode(b.ty, {"variant": "Some", "payload": 7}))
+        b.receive()
+        with self.assertRaises(Rejected):
+            b.panic(1, ident, "pretend panic")
+        self.assertEqual(b.control, [])
+        b.complete(1, ident)
+        self.assertEqual(b.completed, 1)
+
+    def test_data_err_is_not_panic_control(self):
+        b = Boundary("Result<int,string>")
+        ident = b.send(1, encode(b.ty, {"variant": "Err", "payload": "ordinary error"}))
+        b.receive()
+        b.complete(1, ident)
+        self.assertEqual(b.control, [])
+        self.assertEqual((b.accepted, b.completed, b.failed), (1, 1, 0))
+
+    def test_deep_but_bounded_nested_and_unicode(self):
+        ty = "Result<Option<Result<int,string>>,string>"
+        value = {"variant": "Ok", "payload": {"variant": "Some", "payload":
+                 {"variant": "Err", "payload": "µ☃"}}}
+        self.assertEqual(decode(ty, encode(ty, value)), value)
+        self.assertEqual(decode("Option<int>", encode("Option<int>",
+                         {"variant": "Some", "payload": -(1 << 63)}))["payload"], -(1 << 63))
+        with self.assertRaises(Rejected):
+            encode("Result<int,string>", {"variant": "Err", "payload": "λ" * MAX_BYTES})
+
+    def test_sibling_isolation_and_stale_notice(self):
+        failed = Boundary("Option<int>")
+        healthy = Boundary("Option<int>")
+        f = failed.send(1, encode(failed.ty, {"variant": "None"}))
+        h = healthy.send(1, encode(healthy.ty, {"variant": "Some", "payload": 9}))
+        failed.receive()
+        failed.panic(1, f, "crash", authority=_RUNTIME_AUTHORITY)
+        failed.dispatch_control()
+        failed.restart()
+        with self.assertRaises(Rejected):
+            failed.panic(1, f, "late", authority=_RUNTIME_AUTHORITY)
+        healthy.receive()
+        healthy.complete(1, h)
+        self.assertEqual((healthy.completed, healthy.failed), (1, 0))
 
     def test_seeded_nested_matrix_and_accounting(self):
         rng = random.Random(20261116)
