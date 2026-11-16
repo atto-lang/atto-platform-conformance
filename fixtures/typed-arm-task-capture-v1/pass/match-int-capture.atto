@@ -1,0 +1,1 @@
+fnc checked(): Option<int> { return Some(41); } pub suspends fnc main(): int { return match<int> checked() over on Some(n) : int -> await task { return n + 1; }, on None : int -> 0, end; }
