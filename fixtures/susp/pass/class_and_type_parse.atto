@@ -1,0 +1,6 @@
+define class Client as
+    susp mtd get(): int { return await 42; }
+    static susp fnc connect(): int { return await 42; }
+end
+pub fnc apply(susp fnc(int)->int cb): int { return 42; }
+pub fnc main(): int { return 42; }
