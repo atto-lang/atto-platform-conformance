@@ -56,6 +56,11 @@
     {
       "path": "fixtures/fresh-return/fail/fresh-scalar.atto",
       "expect": "E_FRESH_TYPE"
+    },
+    {
+      "path": "fixtures/fresh-return/pass/fresh-copy-direct-stateless.atto",
+      "expect": "PASS",
+      "exit_code": 7
     }
   ]
 }
