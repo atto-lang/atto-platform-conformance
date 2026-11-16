@@ -1,0 +1,18 @@
+define value class Point as
+    pub final int x;
+    pub final int y;
+    constructor(int x, int y) {
+        self.x = x;
+        self.y = y;
+    }
+end
+define value class OtherPoint as
+    pub final int x;
+    pub final int y;
+    constructor(int x, int y) { self.x = x; self.y = y; }
+end
+pub fnc main(): int {
+    val Point a = Point(1, 2);
+    val OtherPoint b = OtherPoint(1, 2);
+    if a == b then return 0; else return 1; fi
+}
