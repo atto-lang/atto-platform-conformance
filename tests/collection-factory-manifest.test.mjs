@@ -15,13 +15,16 @@ test('37 factory targets are source-only and enumerate nine uncertified backends
   assert.deepEqual([...new Set(original.cases.map(c => c.status))], ['TARGET_NOT_EXECUTED']);
 });
 
-test('positive Type.of and ~kind cases preserve the same family', () => {
+test('canonical Type.of is accepted; former ~kind constructors are parser rejects', () => {
   for (const family of ['map','entry','pair','tuple','array','list','vector','set','record']) {
     const cases = original.cases.filter(c => c.family === family && c.expected === 'ACCEPT');
     assert.ok(cases.some(c => c.source.includes(family[0].toUpperCase() +
       family.slice(1) + '.of')), family);
-    assert.ok(cases.some(c => c.source.includes('~' + family + '(') ||
-      c.source.includes('~' + family + '<')), family);
+    const removed = original.cases.filter(c => c.family === family &&
+      c.id.endsWith('-tilde'));
+    assert.equal(removed.length, 1, family);
+    assert.equal(removed[0].expected, 'REJECT', family);
+    assert.equal(removed[0].phase, 'parser', family);
   }
 });
 
@@ -55,4 +58,17 @@ test('authored factory targets cannot mint guest execution receipts', () => {
   sample.cases[0].status = 'GUEST_PASS';
   assert.throws(() => validateCollectionFactoryManifest(sample), /falsely asserted execution/);
   assert.throws(() => wrapCollectionFactoryCandidate(sample.cases[0]), /not an admitted/);
+});
+
+test('restoring any ~kind factory acceptance fails closed', () => {
+  const sample = mutated();
+  for (const c of sample.cases) {
+    if (c.id.endsWith('-tilde')) {
+      c.expected = 'ACCEPT';
+      c.phase = 'guest';
+      assert.throws(() => validateCollectionFactoryManifest(sample), /tilde/);
+      c.expected = 'REJECT';
+      c.phase = 'parser';
+    }
+  }
 });
