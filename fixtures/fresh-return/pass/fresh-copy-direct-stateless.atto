@@ -1,0 +1,11 @@
+// expect-exit: 7
+// Stateless concrete Foo: direct new Foo is a proven full logical copy.
+define class Foo as
+    @Override
+    copy(): new Foo { return new Foo(); }
+end
+pub fnc main(): int {
+    val Foo a = new Foo();
+    val Foo b = copy! a;
+    return 7;
+}
