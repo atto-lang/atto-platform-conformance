@@ -48,6 +48,14 @@ fn select(ports: &mut [Port], arms: &mut [Arm]) -> Result<Option<Winner>, Error>
             _ => {}
         }
     }
+    // A select with no possibly active operation must terminate instead of
+    // waiting forever. Closed writable ports retain any uncommitted payload.
+    if arms.is_empty() || arms.iter().all(|arm| match arm {
+        Arm::Read(_) => false, // a closed read exposes the explicit EOF outcome above
+        Arm::Write(i, _) => ports[*i].closed,
+    }) {
+        return Err(Error::Closed);
+    }
     Ok(None)
 }
 #[test]
@@ -157,7 +165,7 @@ fn close_during_pending_write_cannot_steal_or_publish_value() {
     let mut arms = [Arm::Write(0, Some("not-published".into()))];
     assert_eq!(select(&mut ports, &mut arms), Ok(None));
     ports[0].closed = true;
-    assert_eq!(select(&mut ports, &mut arms), Ok(None));
+    assert_eq!(select(&mut ports, &mut arms), Err(Error::Closed));
     assert_eq!(ports[0].queue.len(), 1);
     assert!(matches!(&arms[0], Arm::Write(_, Some(x)) if x == "not-published"));
 }
@@ -179,4 +187,28 @@ fn closed_stream_is_terminal_not_phantom_data() {
     let winner = select(&mut ports, &mut arms).unwrap().unwrap();
     assert_eq!(winner.value, Some(Read::Eof));
     assert_ne!(winner.value, Some(Read::Data(String::new())));
+}
+
+#[test]
+fn fully_closed_write_only_selection_terminates_without_consuming_payload() {
+    let mut ports = [Port::new(Kind::Channel, 1), Port::new(Kind::SelectableStream, 1)];
+    ports[0].closed = true;
+    ports[1].closed = true;
+    let mut arms = [
+        Arm::Write(0, Some("left".into())),
+        Arm::Write(1, Some("right".into())),
+    ];
+    assert_eq!(select(&mut ports, &mut arms), Err(Error::Closed));
+    assert!(ports.iter().all(|p| p.queue.is_empty()));
+    assert!(matches!(&arms[0], Arm::Write(_, Some(v)) if v == "left"));
+    assert!(matches!(&arms[1], Arm::Write(_, Some(v)) if v == "right"));
+}
+
+#[test]
+fn mixed_closed_and_live_select_stays_pending_when_live_arm_could_wake() {
+    let mut ports = [Port::new(Kind::Channel, 1), Port::new(Kind::SelectableStream, 1)];
+    ports[0].closed = true;
+    let mut arms = [Arm::Write(0, Some("retained".into())), Arm::Read(1)];
+    assert_eq!(select(&mut ports, &mut arms), Ok(None));
+    assert!(matches!(&arms[0], Arm::Write(_, Some(v)) if v == "retained"));
 }
