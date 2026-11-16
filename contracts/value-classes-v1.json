@@ -1,0 +1,279 @@
+{
+  "schema": "atto.value-classes.v1",
+  "version": 1,
+  "status": "PROPOSED_NOT_EXECUTED",
+  "owner": "atto-lang/atto-spec",
+  "spec": "language/value-classes-v1.md",
+  "profiles": {
+    "stage_a": "Recognize value-class grammar and fail closed where semantics are unsupported",
+    "stage_b": "Nominal scalar values with real guest execution and value equality",
+    "stage_c": "Nested values, Sendable, verified AOT/ABI and nested storage",
+    "stage_d": "Optional verified flattening, SIMD and SoA"
+  },
+  "invariants": [
+    "nominal_identity_free",
+    "deep_immutable",
+    "once_initialized",
+    "type_safe_equality",
+    "no_identity_operations",
+    "copy_without_fresh_identity",
+    "sendable_is_not_serializable",
+    "full_aot_no_jit",
+    "no_silent_heap_class_equivalence"
+  ],
+  "required_cases": [
+    {
+      "id": "equal-nominal",
+      "kind": "pass",
+      "path": "fixtures/value-classes/pass/equal-nominal.atto",
+      "expected_exit": 42,
+      "backend_status": {
+        "rs-browser": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm-independent": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "unequal-value",
+      "kind": "pass",
+      "path": "fixtures/value-classes/pass/unequal-value.atto",
+      "expected_exit": 42,
+      "backend_status": {
+        "rs-browser": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm-independent": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "rebinding-value",
+      "kind": "pass",
+      "path": "fixtures/value-classes/pass/rebinding-value.atto",
+      "expected_exit": 42,
+      "backend_status": {
+        "rs-browser": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm-independent": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "copy-immutable-value",
+      "kind": "pass",
+      "path": "fixtures/value-classes/pass/copy-immutable-value.atto",
+      "expected_exit": 42,
+      "backend_status": {
+        "rs-browser": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm-independent": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "nested-value",
+      "kind": "pass",
+      "path": "fixtures/value-classes/pass/nested-value.atto",
+      "expected_exit": 42,
+      "backend_status": {
+        "rs-browser": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm-independent": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "mutable-field",
+      "kind": "fail",
+      "path": "fixtures/value-classes/fail/mutable-field.atto",
+      "expected_error": "E_VALUE_MUTABLE",
+      "backend_status": {
+        "rs-browser": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm-independent": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "post-init-mutation",
+      "kind": "fail",
+      "path": "fixtures/value-classes/fail/post-init-mutation.atto",
+      "expected_error": "E_VALUE_MUTABLE",
+      "backend_status": {
+        "rs-browser": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm-independent": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "identity-operator",
+      "kind": "fail",
+      "path": "fixtures/value-classes/fail/identity-operator.atto",
+      "expected_error": "E_VALUE_IDENTITY",
+      "backend_status": {
+        "rs-browser": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm-independent": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "new-value",
+      "kind": "fail",
+      "path": "fixtures/value-classes/fail/new-value.atto",
+      "expected_error": "E_VALUE_IDENTITY",
+      "backend_status": {
+        "rs-browser": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm-independent": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "identity-field",
+      "kind": "fail",
+      "path": "fixtures/value-classes/fail/identity-field.atto",
+      "expected_error": "E_VALUE_FIELD",
+      "backend_status": {
+        "rs-browser": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm-independent": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "channel-field",
+      "kind": "fail",
+      "path": "fixtures/value-classes/fail/channel-field.atto",
+      "expected_error": "E_VALUE_FIELD",
+      "backend_status": {
+        "rs-browser": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm-independent": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "recursive-inline",
+      "kind": "fail",
+      "path": "fixtures/value-classes/fail/recursive-inline.atto",
+      "expected_error": "E_VALUE_FIELD",
+      "backend_status": {
+        "rs-browser": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm-independent": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "float-unresolved",
+      "kind": "fail",
+      "path": "fixtures/value-classes/fail/float-unresolved.atto",
+      "expected_error": "E_VALUE_FIELD",
+      "backend_status": {
+        "rs-browser": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm-independent": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "double-initialization",
+      "kind": "fail",
+      "path": "fixtures/value-classes/fail/double-initialization.atto",
+      "expected_error": "E_VALUE_CONSTRUCTOR",
+      "backend_status": {
+        "rs-browser": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm-independent": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "missing-initialization",
+      "kind": "fail",
+      "path": "fixtures/value-classes/fail/missing-initialization.atto",
+      "expected_error": "E_VALUE_CONSTRUCTOR",
+      "backend_status": {
+        "rs-browser": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm-independent": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "nominal-mismatch",
+      "kind": "fail",
+      "path": "fixtures/value-classes/fail/nominal-mismatch.atto",
+      "expected_error": "E_TYPE",
+      "backend_status": {
+        "rs-browser": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm-independent": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "identity-inheritance",
+      "kind": "fail",
+      "path": "fixtures/value-classes/fail/identity-inheritance.atto",
+      "expected_error": "E_VALUE_IDENTITY",
+      "backend_status": {
+        "rs-browser": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm-independent": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "actor-field",
+      "kind": "fail",
+      "path": "fixtures/value-classes/fail/actor-field.atto",
+      "expected_error": "E_VALUE_FIELD",
+      "backend_status": {
+        "rs-browser": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm-independent": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    }
+  ],
+  "evidence_rule": "No row is passed without exact-source-sha compiler AND executable guest evidence (negative cases require compiler diagnostic and no artifact); host-only/parse-only checks cannot prove semantics. Mark all backends NOT_EXECUTED until verified."
+}
