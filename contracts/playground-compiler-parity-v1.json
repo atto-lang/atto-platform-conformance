@@ -1,0 +1,615 @@
+{
+  "schema": "oreslang.playground-compiler-parity/1",
+  "status": "TARGET_MATRIX_NOT_EXECUTION_EVIDENCE",
+  "upstream": {
+    "repository": "atto-lang/atto-lang.github.io",
+    "siteCommit": "38a19bdc251d6f8db3ffea3b8df0e6c84ca8881c",
+    "manifestBlobSha": "c23e61a66e387dd08e5d0b9c1e3a076ce9d68bba",
+    "sourceRoot": "play/examples/preview",
+    "sourceExtension": ".atto",
+    "compilerPr": "https://github.com/atto-lang/atto-source.rs/pull/165",
+    "compilerBranchHead": "0dea7e135951417d6e33249adc09a61c99426118",
+    "note": "Reference Atto .atto text is NOT an accepted Oreslang .ores translation or execution proof."
+  },
+  "backends": [
+    {
+      "id": "java",
+      "repository": "ores-truffle-oreslang/oreslang-source.java",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "llvm",
+      "repository": "ores-truffle-oreslang/oreslang-source.llvm",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "wasm",
+      "repository": "ores-truffle-oreslang/oreslang-source.wasm",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "forge",
+      "repository": "ores-truffle-oreslang/oreslang-source.forge",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "net",
+      "repository": "ores-truffle-oreslang/oreslang-source.net",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "cranelift",
+      "repository": "ores-truffle-oreslang/oreslang-source.cranelift",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "rs",
+      "repository": "ores-truffle-oreslang/oreslang-source.rs",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "js",
+      "repository": "ores-truffle-oreslang/oreslang-source.js",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "hdl",
+      "repository": "ores-truffle-oreslang/oreslang-source.hdl",
+      "status": "NOT_EXECUTED"
+    }
+  ],
+  "families": [
+    "arc-atomic-send",
+    "higher-order-lambdas",
+    "diamond-inheritance",
+    "defer-recover",
+    "channels",
+    "async-execution"
+  ],
+  "cases": [
+    {
+      "id": "preview/actor-pipeline",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/actor-pipeline.atto",
+        "gitBlobSha": "7736f9710da491050fa5e71307eb933561791774"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/actor-receiver-methods",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/actor-receiver-methods.atto",
+        "gitBlobSha": "aac346b631d1a0faf06b17d156c00c2ab54f39a2"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/async-iterators",
+      "kind": "positive",
+      "family": "async-execution",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/async-iterators.atto",
+        "gitBlobSha": "5ef19f8968ac4d29ff66fc65a4a775b7c00edee6"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/boolean-operators",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/boolean-operators.atto",
+        "gitBlobSha": "a323f261ed2d4e92bf489e71819fd522233762e8"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/borrow-arc-send-atomic-box",
+      "kind": "positive",
+      "family": "arc-atomic-send",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/borrow-arc-send-atomic-box.atto",
+        "gitBlobSha": "183c5f2f1881034e5d6e57968c7dd444ada166ab"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/borrow-checking",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/borrow-checking.atto",
+        "gitBlobSha": "9df7379909d348d60c833533cb7c2e475cd68301"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/callable-body-styles",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/callable-body-styles.atto",
+        "gitBlobSha": "6cb3a7504caa5cb75f4b38af73aed9cb25016b78"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/channel-bounded",
+      "kind": "positive",
+      "family": "channels",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/channel-bounded.atto",
+        "gitBlobSha": "4c272c8a288a84ef6842651722bbf4ed3d430035"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/channel-probe",
+      "kind": "positive",
+      "family": "channels",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/channel-probe.atto",
+        "gitBlobSha": "0f8a65616e09fb7560c025f3e00dc4040402ebec"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/channel-unbounded",
+      "kind": "positive",
+      "family": "channels",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/channel-unbounded.atto",
+        "gitBlobSha": "70e7325e584aa688eccfd7ff0a72759f70b81424"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/closures-functors",
+      "kind": "positive",
+      "family": "higher-order-lambdas",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/closures-functors.atto",
+        "gitBlobSha": "5d3fa82fa5c554f2a92ad7c5bb75f43a7dc7c977"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/data-shapes",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/data-shapes.atto",
+        "gitBlobSha": "300227bcaf5a6f34ed3f946462e0b35a131dd4ff"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/defer-recover",
+      "kind": "positive",
+      "family": "defer-recover",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/defer-recover.atto",
+        "gitBlobSha": "ba323a22c2a776e5c67caa719cf2b937898e5df1"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/diamond-inheritance",
+      "kind": "positive",
+      "family": "diamond-inheritance",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/diamond-inheritance.atto",
+        "gitBlobSha": "05814acb37c0335c03294875b870560a2839031d"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/effects",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/effects.atto",
+        "gitBlobSha": "d536a2857e675e6a050dd15731fb4e9a47ae4af5"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/fib-match",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/fib-match.atto",
+        "gitBlobSha": "6dfec3f23bb47ab4a3536e8120f7f2f280846800"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/function-pipeline",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/function-pipeline.atto",
+        "gitBlobSha": "b7d1d0c494b53f414e8bb17a3cf50e56b5963707"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/generators",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/generators.atto",
+        "gitBlobSha": "2251e22ae1b22447d89b30d0e39a792af66ebcf5"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/guard",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/guard.atto",
+        "gitBlobSha": "ec5b695237addeaeab3939a794ce71ccc7130bbe"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/lambdas",
+      "kind": "positive",
+      "family": "higher-order-lambdas",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/lambdas.atto",
+        "gitBlobSha": "3c4effc7549ae2de2db88c8e94368d145402b989"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/lexical-scope-pure",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/lexical-scope-pure.atto",
+        "gitBlobSha": "8063d92228a9a1840fde9f727074658887556dcd"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/match-types-is",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/match-types-is.atto",
+        "gitBlobSha": "51c4361b8146d4dbb904eac2500fa5893fb7df31"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/match-values",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/match-values.atto",
+        "gitBlobSha": "e0791c8a0ba767329a2b7765b0ec3c276f580365"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/modules",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/modules.atto",
+        "gitBlobSha": "09ea30a1d609723b2c7f009aa553b663c6113ec0"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/mutable-state",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/mutable-state.atto",
+        "gitBlobSha": "6a1c000a200af65e09cd67e6dd73e01ca49d10a3"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/mutex-locks",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/mutex-locks.atto",
+        "gitBlobSha": "31b08b6bebdbd0c243a98679e1a2968b7aea0ed9"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/namespaces",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/namespaces.atto",
+        "gitBlobSha": "a11b92a93b82c2955048fffad998a3254b647957"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/nio-reactor",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/nio-reactor.atto",
+        "gitBlobSha": "c6b816255d8a02c89d771fb8e63f207980fd2781"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/result-option",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/result-option.atto",
+        "gitBlobSha": "f3934f0b6edd69cf975ec8ab5a4dfb5166991b77"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/result-option-end",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/result-option-end.atto",
+        "gitBlobSha": "4996a3924bb8223d7f3ccb966622f9f4de17ab46"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/routine",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/routine.atto",
+        "gitBlobSha": "107943ceb68393f8b096712616da9d8023767041"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/rx-interop",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/rx-interop.atto",
+        "gitBlobSha": "eb58878db01df3e86e6d2e2110ebfd025799f421"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/rx-observable",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/rx-observable.atto",
+        "gitBlobSha": "e05fbef46066b7418a3c8362a8ef0cbd6cbdb8e8"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/state-containers",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/state-containers.atto",
+        "gitBlobSha": "eac6084e6a02989f8973eb7fc2af7d59baf9db7e"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/stdio-channels",
+      "kind": "positive",
+      "family": "channels",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/stdio-channels.atto",
+        "gitBlobSha": "912eb5b9b14c8fd2bbd4f7bac27a6d27309a043c"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/supervisor-mailbox",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/supervisor-mailbox.atto",
+        "gitBlobSha": "ca5cb7c193c65c9d18237122651dc11c40e1b8b2"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/suspends",
+      "kind": "positive",
+      "family": "async-execution",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/suspends.atto",
+        "gitBlobSha": "503d8548bbaabb234eaefac11a0e76f47fd5cda7"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/tasks-async",
+      "kind": "positive",
+      "family": "async-execution",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/tasks-async.atto",
+        "gitBlobSha": "046010b7eb46159ff46f9d09f1ba9a7d09ce904c"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/traits-interfaces",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/traits-interfaces.atto",
+        "gitBlobSha": "59e04d922e4a9cbd2a58cea7526a0b1c0b31b627"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/trap",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/trap.atto",
+        "gitBlobSha": "71d22c2365c687fbce044cea7d7d2927c3fb6e86"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/use-using-with",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/use-using-with.atto",
+        "gitBlobSha": "0f148133c967412fa8a25ccc79cfcc8d34158d98"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "preview/visibility-modifiers",
+      "kind": "positive",
+      "family": "additional-preview",
+      "reference": {
+        "language": "atto",
+        "path": "play/examples/preview/visibility-modifiers.atto",
+        "gitBlobSha": "3c15b61abe91cbf679b64c4ef2ab64a31bbe9ad2"
+      },
+      "expectation": "real guest execution"
+    },
+    {
+      "id": "negative/arc-send-laundering",
+      "kind": "semantic-rejection",
+      "family": "arc-atomic-send",
+      "diagnosticCategory": "ownership",
+      "rule": "Arc/Weak/Option may not mint missing Send or Sync",
+      "fixtureStatus": "NOT_AUTHORED"
+    },
+    {
+      "id": "negative/atomic-non-atomic-fallback",
+      "kind": "semantic-rejection",
+      "family": "arc-atomic-send",
+      "diagnosticCategory": "ownership",
+      "rule": "Atomic operation must not silently lower to unsynchronized shared access",
+      "fixtureStatus": "NOT_AUTHORED"
+    },
+    {
+      "id": "negative/escaping-borrowed-closure",
+      "kind": "semantic-rejection",
+      "family": "higher-order-lambdas",
+      "diagnosticCategory": "ownership",
+      "rule": "Higher-order callback cannot outlive borrowed capture",
+      "fixtureStatus": "NOT_AUTHORED"
+    },
+    {
+      "id": "negative/ambiguous-diamond-method",
+      "kind": "semantic-rejection",
+      "family": "diamond-inheritance",
+      "diagnosticCategory": "inheritance",
+      "rule": "Inherited same-arity method collision requires explicit resolution",
+      "fixtureStatus": "NOT_AUTHORED"
+    },
+    {
+      "id": "negative/actor-panic-recover",
+      "kind": "semantic-rejection",
+      "family": "defer-recover",
+      "diagnosticCategory": "effect",
+      "rule": "Actor-local recover must not intercept supervisor-directed panic",
+      "fixtureStatus": "NOT_AUTHORED"
+    },
+    {
+      "id": "negative/channel-wrong-element",
+      "kind": "semantic-rejection",
+      "family": "channels",
+      "diagnosticCategory": "type",
+      "rule": "Channel must reject incompatible element",
+      "fixtureStatus": "NOT_AUTHORED"
+    },
+    {
+      "id": "negative/channel-non-send",
+      "kind": "semantic-rejection",
+      "family": "channels",
+      "diagnosticCategory": "ownership",
+      "rule": "Non-Send value cannot cross actor isolation by channel",
+      "fixtureStatus": "NOT_AUTHORED"
+    },
+    {
+      "id": "negative/mutable-borrow-across-await",
+      "kind": "semantic-rejection",
+      "family": "async-execution",
+      "diagnosticCategory": "ownership",
+      "rule": "Live unpinned mutable loan cannot cross suspension",
+      "fixtureStatus": "NOT_AUTHORED"
+    }
+  ],
+  "promotion": {
+    "positiveNeedsGuestExecution": true,
+    "negativeNeedsSemanticDiagnostic": true,
+    "requireExactGitCommitAndTree": true,
+    "requireCompilerBinaryHash": true,
+    "requirePinnedNativeOresSource": true,
+    "rejectZeroStep": true,
+    "rejectParserOnlyNegative": true,
+    "fullAot": [
+      "java",
+      "llvm",
+      "net",
+      "forge"
+    ],
+    "wasmWorkerExecution": true,
+    "independentReviewRequired": true,
+    "shapeCheckerDoesNotAuthenticate": true
+  }
+}
