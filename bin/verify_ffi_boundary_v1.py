@@ -160,7 +160,7 @@ class Broker:
         # Never surface the lease ticket to the guest as a forged integer.
         require(type(lease) is Lease and lease.handle.domain == self.domain, "foreign completion")
         saved = self._leases.get(lease.nonce)
-        require(saved is not None and saved[0] == lease, "stale or forged completion")
+        require(saved is not None and saved[0] is lease, "stale or forged completion")
         if saved[1]:
             return False
         handle = lease.handle
