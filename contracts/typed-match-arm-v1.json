@@ -8,10 +8,10 @@
     "branch": "feature/typed-match-arm-return-check-v1",
     "reference_commit": "60d9b4db71f699f0380a61b48c8225ffa4a5731e",
     "async_compiler_pr": 236,
-    "async_compiler_commit": "0700c3e4be0005783fd64cbff4980d4375f00866"
+    "async_compiler_commit": "3eb8e31c51b3188c0a1d8cee2e51e5c39c5248ad"
   },
   "backends": {
-    "rust-wasm": "NOT_EXECUTED",
+    "rust-wasm": "PASS",
     "java": "NOT_EXECUTED",
     "llvm": "NOT_EXECUTED",
     "dotnet": "NOT_EXECUTED"
@@ -125,5 +125,33 @@
         "code": "E_SYNTAX"
       }
     }
-  ]
+  ],
+  "execution_receipts": {
+    "rust-wasm": {
+      "status": "PASS",
+      "scope": "Exactly the 12 registered match/switch fixtures plus selected-arm JSPI checks; not general match values, captured tasks or Java/LLVM/.NET parity",
+      "source_repo": "atto-lang/atto-source.rs",
+      "source_pr": 236,
+      "source_commit": "3eb8e31c51b3188c0a1d8cee2e51e5c39c5248ad",
+      "carrier_repo": "cliptown/cliptown-e2e",
+      "carrier_branch": "ci/typed-match-runner-smoke-20261116",
+      "carrier_commit": "210704c509ac1795b07bda56205cdb29e66cd40e",
+      "workflow_run_id": 43952883265,
+      "workflow_job_id": 133599741532,
+      "source_git_blobs_verified": 50,
+      "source_blob_coverage": "50 mirrored compiler/test/fixture files; not the complete source repository tree",
+      "native_rust_tests": {
+        "passed": 35,
+        "failed": 0
+      },
+      "guest_fixtures": {
+        "passed": 12,
+        "failed": 0,
+        "positive_exit_42": 5,
+        "negative_without_artifact": 7
+      },
+      "chromium_jspi": "PASS: real Rust-compiled compiler Wasm and guest Wasm; selected match and switch task await each yielded exactly once; mismatched arms rejected",
+      "task_captures": "UNSUPPORTED"
+    }
+  }
 }
