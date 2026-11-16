@@ -1,0 +1,5 @@
+// CANDIDATE: frontend/type/effect contract, not a verified guest execution.
+pub suspends fnc read_once(Channel<int> c): Result<Option<int>, IoError> using io, suspend {
+    val Result<Option<int>, IoError> outcome << c;
+    return outcome;
+}

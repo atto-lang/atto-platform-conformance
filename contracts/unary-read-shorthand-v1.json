@@ -1,0 +1,242 @@
+{
+  "schema": "atto.io.unary-read-shorthand.v1",
+  "version": 1,
+  "status": "TARGET_ONLY_NOT_EXECUTED",
+  "spec_pr": "https://github.com/atto-lang/atto-spec/pull/52",
+  "rust_pr": "https://github.com/atto-lang/atto-source.rs/pull/230",
+  "rust_preflight_evidence": {
+    "source_commit": "e2cfef6cb1e152c71b22ffabea30195e0f3900a5",
+    "tree_sha": "45ac281388b66e66f977fefbce264dc93fc4b610",
+    "carrier_run": "https://github.com/anticaptrad/atto-ci/actions/runs/43941594255",
+    "scope": "syntax and suspension preflight; executable channel guest reads still rejected E_UNSUPPORTED"
+  },
+  "semantic_guards": [
+    "susp-or-suspends-required",
+    "io-and-suspend-capabilities",
+    "result-option-eof-preserved",
+    "source-evaluated-exactly-once",
+    "fifo-repeated-reads",
+    "compound-target-checked",
+    "no-hidden-unwrap",
+    "trap-does-not-erase-suspend",
+    "borrow-check-across-suspend"
+  ],
+  "positive_guest_execution": "PENDING_PER_BACKEND",
+  "cases": [
+    {
+      "id": "prefix_susp",
+      "path": "fixtures/io-unary/pass/prefix_susp.atto",
+      "kind": "pass",
+      "stage": "TYPECHECK_TARGET",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "prefix_paren_suspends",
+      "path": "fixtures/io-unary/pass/prefix_paren_suspends.atto",
+      "kind": "pass",
+      "stage": "TYPECHECK_TARGET",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "decl_type_first",
+      "path": "fixtures/io-unary/pass/decl_type_first.atto",
+      "kind": "pass",
+      "stage": "TYPECHECK_TARGET",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "decl_name_first",
+      "path": "fixtures/io-unary/pass/decl_name_first.atto",
+      "kind": "pass",
+      "stage": "TYPECHECK_TARGET",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "decl_source_right",
+      "path": "fixtures/io-unary/pass/decl_source_right.atto",
+      "kind": "pass",
+      "stage": "TYPECHECK_TARGET",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "two_reads",
+      "path": "fixtures/io-unary/pass/two_reads.atto",
+      "kind": "pass",
+      "stage": "TYPECHECK_TARGET",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "compound_direct_result",
+      "path": "fixtures/io-unary/pass/compound_direct_result.atto",
+      "kind": "pass",
+      "stage": "TYPECHECK_TARGET",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "missing_susp",
+      "path": "fixtures/io-unary/fail/missing_susp.atto",
+      "kind": "fail",
+      "stage": "COMPILE_REJECT_TARGET",
+      "expected_error": "E_SUSPENDS_REQUIRED",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "io_suspend_effect_but_no_modifier",
+      "path": "fixtures/io-unary/fail/io_suspend_effect_but_no_modifier.atto",
+      "kind": "fail",
+      "stage": "COMPILE_REJECT_TARGET",
+      "expected_error": "E_SUSPENDS_REQUIRED",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "nested_plain_lambda",
+      "path": "fixtures/io-unary/fail/nested_plain_lambda.atto",
+      "kind": "fail",
+      "stage": "COMPILE_REJECT_TARGET",
+      "expected_error": "E_SUSPENDS_REQUIRED",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "checked_to_int_mismatch",
+      "path": "fixtures/io-unary/fail/checked_to_int_mismatch.atto",
+      "kind": "fail",
+      "stage": "COMPILE_REJECT_TARGET",
+      "expected_error": "E_TYPE",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "checked_compound_mismatch",
+      "path": "fixtures/io-unary/fail/checked_compound_mismatch.atto",
+      "kind": "fail",
+      "stage": "COMPILE_REJECT_TARGET",
+      "expected_error": "E_TYPE",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "const_runtime_read",
+      "path": "fixtures/io-unary/fail/const_runtime_read.atto",
+      "kind": "fail",
+      "stage": "COMPILE_REJECT_TARGET",
+      "expected_error": "E_CONST_EFFECT",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "discarded_unary_read",
+      "path": "fixtures/io-unary/fail/discarded_unary_read.atto",
+      "kind": "fail",
+      "stage": "COMPILE_REJECT_TARGET",
+      "expected_error": "E_IO_DISCARD",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "spaced_operator",
+      "path": "fixtures/io-unary/fail/spaced_operator.atto",
+      "kind": "fail",
+      "stage": "COMPILE_REJECT_TARGET",
+      "expected_error": "E_SYNTAX",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "nonreadable_operand",
+      "path": "fixtures/io-unary/fail/nonreadable_operand.atto",
+      "kind": "fail",
+      "stage": "COMPILE_REJECT_TARGET",
+      "expected_error": "E_TYPE",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "trap_must_not_remove_susp",
+      "path": "fixtures/io-unary/fail/trap_must_not_remove_susp.atto",
+      "kind": "fail",
+      "stage": "COMPILE_REJECT_TARGET",
+      "expected_error": "E_SUSPENDS_REQUIRED",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED"
+      }
+    }
+  ],
+  "evidence_rule": "Do not label backend PASS without exact source/compiler Git tree, actual compiled guest/negative no-artifact execution, runner and runtime receipts. Preflight or host models are not guest execution."
+}

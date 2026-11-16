@@ -1,0 +1,5 @@
+// CANDIDATE: frontend/type/effect contract, not a verified guest execution.
+pub susp fnc discard(Channel<int> c): int using io, suspend {
+    << c;
+    return 0;
+}

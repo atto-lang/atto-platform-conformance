@@ -1,0 +1,4 @@
+pub susp fnc example(Channel<int> c): int using io, suspend {
+    val thunk = || -> { val result = << c; };
+    return 0;
+}

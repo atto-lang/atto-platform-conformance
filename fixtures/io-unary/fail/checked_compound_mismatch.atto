@@ -1,0 +1,6 @@
+// CANDIDATE: frontend/type/effect contract, not a verified guest execution.
+pub susp fnc bad_compound(Channel<int> c): int using io, suspend {
+    let total = 0;
+    total += << c;
+    return total;
+}

@@ -1,0 +1,3 @@
+pub fnc read_once(Channel<int> c): Result<Option<int>,IoError> using io {
+    return << c;
+}

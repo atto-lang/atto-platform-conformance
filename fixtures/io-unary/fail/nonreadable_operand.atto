@@ -1,0 +1,4 @@
+pub susp fnc bad_source(): int using io, suspend {
+    val int n = 42;
+    return << n;
+}
