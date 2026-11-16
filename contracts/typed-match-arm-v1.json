@@ -1,0 +1,55 @@
+{
+  "schema": "attolang.typed-match-arm.v1",
+  "status": "CANDIDATE_NOT_CROSS_BACKEND_CERTIFIED",
+  "contract": "atto-lang/atto-spec:language/typed-match-switch-arms-v1.md",
+  "source": {
+    "repo": "atto-lang/atto-source.rs",
+    "pr": 233,
+    "branch": "feature/typed-match-arm-return-check-v1",
+    "reference_commit": "9e1b573542307e731851011460a648b3510d4b6b"
+  },
+  "backends": {
+    "rust-wasm": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "dotnet": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "return-adt",
+      "path": "fixtures/typed-match-arm-v1/pass/typed-match-result-arm.atto",
+      "git_blob_sha1": "597ecadbf31e580527f85867562fe85c3a552eb3",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      }
+    },
+    {
+      "id": "nested-adt",
+      "path": "fixtures/typed-match-arm-v1/pass/typed-match-nested-result.atto",
+      "git_blob_sha1": "c1119065b08c134f7e1e7d348bde8f36215eb080",
+      "expect": {
+        "kind": "exit",
+        "value": 42
+      }
+    },
+    {
+      "id": "arm-header-conflict",
+      "path": "fixtures/typed-match-arm-v1/fail/typed-match-header-arm-conflict.atto",
+      "git_blob_sha1": "fed68556a44420ff937f0a1fec6904413a3ca515",
+      "expect": {
+        "kind": "diagnostic",
+        "code": "E_TYPE"
+      }
+    },
+    {
+      "id": "typed-fallthrough",
+      "path": "fixtures/typed-match-arm-v1/fail/typed-match-arm-fallthrough.atto",
+      "git_blob_sha1": "997137051c218a049c8f9479f7afdb2ff2414c41",
+      "expect": {
+        "kind": "diagnostic",
+        "code": "E_RETURN"
+      }
+    }
+  ]
+}
