@@ -6,9 +6,10 @@
     "repo": "atto-lang/atto-source.rs",
     "pr": 233,
     "branch": "feature/typed-match-arm-return-check-v1",
-    "reference_commit": "60d9b4db71f699f0380a61b48c8225ffa4a5731e",
+    "reference_commit": "4b9b13337bfe626d4c15c4de393a6afa7c8f99c8",
     "async_compiler_pr": 236,
-    "async_compiler_commit": "3eb8e31c51b3188c0a1d8cee2e51e5c39c5248ad"
+    "async_compiler_commit": "3eb8e31c51b3188c0a1d8cee2e51e5c39c5248ad",
+    "reference_tree": "96893a388eabdbdb37309fdf751444ebdf5a9d45"
   },
   "backends": {
     "rust-wasm": "PASS",
@@ -152,6 +153,40 @@
       },
       "chromium_jspi": "PASS: real Rust-compiled compiler Wasm and guest Wasm; selected match and switch task await each yielded exactly once; mismatched arms rejected",
       "task_captures": "UNSUPPORTED"
+    },
+    "rust-wasm-mainline": {
+      "status": "PASS_SCOPED",
+      "scope": "PR #233 restricted definite-return match/switch, 12 shared typed-arm fixtures, legacy no-over switch; no JSPI capture support or general expression-position values",
+      "source_repo": "atto-lang/atto-source.rs",
+      "source_pr": 233,
+      "source_commit": "4b9b13337bfe626d4c15c4de393a6afa7c8f99c8",
+      "source_tree": "96893a388eabdbdb37309fdf751444ebdf5a9d45",
+      "carrier_repo": "anticaptrad/atto-ci",
+      "carrier_pr": 13,
+      "carrier_commit": "3acdc6314281e13e8387df97f3262a9f9d5fa047",
+      "carrier_tree": "96893a388eabdbdb37309fdf751444ebdf5a9d45",
+      "workflow_run_id": 43961398013,
+      "workflow_job_id": 133629437258,
+      "source_git_blobs_verified": 729,
+      "native_rust_cargo_test": "PASS",
+      "guest_conformance": {
+        "passed": 495,
+        "failed": 0,
+        "native_vs_wasm": 447,
+        "java_differential": "SKIPPED"
+      },
+      "typed_arm_fixtures": {
+        "passed": 12,
+        "failed": 0,
+        "positive_exit_42": 5,
+        "negative_no_guest": 7
+      },
+      "chromium_browser_e2e": "PASS",
+      "artifact_id": 14274501775,
+      "artifact_name": "atto-compiler-wasm32-3acdc6314281e13e8387df97f3262a9f9d5fa047",
+      "native_cranelift_job": "FAIL: rustfmt on native baseline files unchanged from source main",
+      "task_captures": "UNSUPPORTED",
+      "general_expression_switch": "UNSUPPORTED"
     }
   }
 }
