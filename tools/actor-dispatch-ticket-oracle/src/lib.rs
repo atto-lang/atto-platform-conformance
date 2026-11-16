@@ -1,15 +1,19 @@
 //! Backend-neutral *model* checker for actor ticket generation conformance.
 //! Does not compile an Atto guest or attest any Java/LLVM/.NET/Wasm runtime.
-use serde_json::{json, Value};
+#[cfg(test)]
+use serde_json::Value;
 
+#[cfg(test)]
 const MANIFEST: &str =
     include_str!("../../../contracts/actor-dispatch-ticket-generation-v1.json");
 
+#[cfg(test)]
 fn manifest() -> Value {
     serde_json::from_str(MANIFEST).expect("actor ticket contract must be valid JSON")
 }
 
 /// Reproduce the intentionally broken numeric-slot-only comparator when requested.
+#[cfg(test)]
 fn same_ticket(live: &Value, submitted: &Value, ignore_generation: bool) -> bool {
     let Some(live) = live.as_array() else { return false };
     let Some(submitted) = submitted.as_array() else { return false };
@@ -22,6 +26,7 @@ fn same_ticket(live: &Value, submitted: &Value, ignore_generation: bool) -> bool
     identity && (ignore_generation || live[3] == submitted[3])
 }
 
+#[cfg(test)]
 fn evaluate(case: &Value, ignore_generation: bool) -> (&'static str, Value) {
     let active = &case["active"];
     let action = &case["action"];
@@ -66,6 +71,7 @@ fn evaluate(case: &Value, ignore_generation: bool) -> (&'static str, Value) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::json;
     use std::collections::HashSet;
 
     #[test]
