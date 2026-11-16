@@ -1,0 +1,5 @@
+define value class Bad as
+    pub final Channel<int> channel;
+    constructor(Channel<int> channel) { self.channel = channel; }
+end
+pub fnc main(): int { return 0; }
