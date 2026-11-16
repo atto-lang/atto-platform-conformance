@@ -1,0 +1,82 @@
+{
+  "schema": "atto.type-tests-casts.v1",
+  "version": 1,
+  "language_spec": "atto-lang/atto-spec#58",
+  "status": "RS_STATIC_ANY_GUEST_VERIFIED_ONLY",
+  "scope": "Reifiable type tests, negation, immutable branch-local captures; no implicit or unchecked casts. General Any, using resource cleanup and typed switch are not proven.",
+  "cases": [
+    {
+      "id": "is-int",
+      "kind": "pass",
+      "path": "fixtures/type-tests/pass/is-int.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "match-as-val-when",
+      "kind": "pass",
+      "path": "fixtures/type-tests/pass/match-as-val-when.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "if-is-as-val",
+      "kind": "pass",
+      "path": "fixtures/type-tests/pass/if-is-as-val.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "if-is-negated-as-val",
+      "kind": "pass",
+      "path": "fixtures/type-tests/pass/if-is-negated-as-val.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "if-implicit-binding",
+      "kind": "fail",
+      "path": "fixtures/type-tests/fail/if-implicit-binding.atto",
+      "expected_error": "E_SYNTAX",
+      "no_guest_artifact": true
+    },
+    {
+      "id": "if-binding-escapes",
+      "kind": "fail",
+      "path": "fixtures/type-tests/fail/if-binding-escapes.atto",
+      "expected_error": "E_UNBOUND",
+      "no_guest_artifact": true
+    },
+    {
+      "id": "unapproved-as-cast",
+      "kind": "fail",
+      "path": "fixtures/type-tests/fail/unapproved-as-cast.atto",
+      "expected_error": "E_UNSUPPORTED",
+      "no_guest_artifact": true
+    }
+  ],
+  "backend_status": {
+    "rs-browser-scalar": {
+      "state": "passed",
+      "source_commit": "769a80f2f93b071cf3ae21b59139685fcc2435e5",
+      "source_tree": "ce12df6b2ab1e0231b0257e1d8ac1ae81a4f63ce",
+      "carrier_commit": "d7f38cda187f8976e98c6a51269d83fe6d24b287",
+      "actions_run": 43974884145,
+      "method": "Exact-tree native and wasm32 compiler, genuine guest Wasm execution, negative no-artifact checks, Chromium browser E2E"
+    },
+    "java": {
+      "state": "not_executed"
+    },
+    "llvm": {
+      "state": "not_executed"
+    },
+    "net": {
+      "state": "not_executed"
+    },
+    "forge": {
+      "state": "not_executed"
+    },
+    "wasm-independent": {
+      "state": "not_executed"
+    },
+    "rs-native": {
+      "state": "not_executed"
+    }
+  }
+}

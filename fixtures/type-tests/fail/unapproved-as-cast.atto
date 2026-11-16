@@ -1,0 +1,3 @@
+// expect-error: E_UNSUPPORTED
+fnc f(Any v): int { return v as int; }
+pub fnc main(): int { val value: Any = 41; return f(value); }
