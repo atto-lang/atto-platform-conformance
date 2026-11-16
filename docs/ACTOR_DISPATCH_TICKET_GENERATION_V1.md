@@ -37,3 +37,15 @@ Actions allocation with no executed steps remains infrastructure non-evidence.
 **Privacy:** The contract is newly authored backend-neutral behavioral data,
 not a copy of any private compiler source. No cross-organization source export
 is authorized by this proposal.
+
+## Java runtime integration boundary
+
+As inspected on the Java reference `main` head
+`a88353e68c9160ba0f33b25038c07a0a0188ca17`, the current
+`ActorRuntime.ActorCell` publishes a new `Object` token for each
+dispatch, checked with object identity by `runBatch`. It does **not**
+reuse numeric dispatch slots, so ATG02–ATG04 are *prospective* tests for
+a different reusable-slot implementation. The corresponding existing
+Java behavior is tested by
+[Java physical-turn replay draft #3136](https://github.com/ores-truffle-oreslang/oreslang-source.java/pull/3136).
+No backend is promoted or marked conformant by this note.
