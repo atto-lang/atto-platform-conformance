@@ -5,13 +5,13 @@
   "compiler": {
     "repo": "atto-lang/atto-source.rs",
     "pr": 247,
-    "head_sha": "6bb21d7428cbc6bac3516ca242c5027eca8009e8",
+    "head_sha": "8e91d1ffba5a4c7d94a524362a453f0d3a3efb95",
     "parent_prs": [
       246,
       245,
       236
     ],
-    "browser_harness_blob_sha": "1bc1568d0bbdc5b78a217a7c0327f6c8d8771176"
+    "browser_harness_blob_sha": "7c6ba5a72a3addad23db3be30331b0a11deade08"
   },
   "semantics": {
     "ordered_dispatch": true,
@@ -85,24 +85,24 @@
   "execution_receipts": {
     "rust-wasm": {
       "status": "PASS_SCOPED",
-      "source_head": "6bb21d7428cbc6bac3516ca242c5027eca8009e8",
+      "source_head": "8e91d1ffba5a4c7d94a524362a453f0d3a3efb95",
       "carrier_repo": "anticaptrad/atto-ci",
-      "carrier_branch": "ci/atto-adt-when-guards-247-20261116",
-      "carrier_commit": "05416a52b7cc45fc2cd8a96b615c1d254661fab1",
-      "workflow_run_id": 43969800075,
-      "workflow_job_id": 133658658444,
-      "scoped_source_git_blobs_verified": 53,
+      "carrier_branch": "ci/atto-adt-guards-reconciled-247-20261116",
+      "carrier_commit": "65a020437acb52736241a2fdb82dd1f69e9892ee",
+      "workflow_run_id": 43974455216,
+      "workflow_job_id": 133674716098,
+      "scoped_source_git_blobs_verified": 59,
       "full_repository_tree_verified": false,
       "native_rust_test_suites": 10,
       "native_rust_tests": {
-        "passed": 50,
+        "passed": 53,
         "failed": 0
       },
       "legacy_guest_fixture_checks": {
-        "passed": 12,
+        "passed": 18,
         "failed": 0,
-        "positive_guest_returns_42": 5,
-        "negative_no_artifact": 7
+        "positive_guest_returns_42": 8,
+        "negative_no_artifact": 10
       },
       "browser_compiler_wasm_built": true,
       "chromium_jspi_guest_execution": "PASS",
@@ -110,7 +110,7 @@
         "positive": 4,
         "negative": 1
       },
-      "evidence_limits": "Only these scoped cases; no proof of general structured Error.code, JS !==, other backend parity or full repository exact tree."
+      "evidence_limits": "59 scoped source blobs, not full source Git tree; positive guarded match/case and negative no-artifact executions within Rust/Wasm only; no structured Error.code, !==, all-backend or general owned capture parity."
     }
   },
   "independent_native_parity_admission": "Only mark Java/LLVM/.NET PASS after exact-compiler-source native AOT compilation, same five fixture oracles, no-artifact diagnostic checks and real executed CI steps. Do not infer backend parity from host-only tests or this Rust/Wasm result."
