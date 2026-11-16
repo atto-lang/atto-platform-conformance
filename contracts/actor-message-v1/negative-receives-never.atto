@@ -1,0 +1,4 @@
+// Candidate negative: CONTROL-only mailbox requires separate verified routing.
+define actor ControlOnly receives never as
+  on_start(): void { return; }
+end
