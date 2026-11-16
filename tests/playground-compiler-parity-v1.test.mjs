@@ -68,3 +68,16 @@ test("upstream merged 8/42 cannot silently promote Oreslang receipts",()=>{
  assert.equal(r.fullEvidenceShape,false);
  assert.equal(r.parityCertified,false);
 });
+
+test("nine target compilers each remain incomplete despite a valid inventory",()=>{
+ for(const b of c.backends){
+   const receipt=mk();
+   receipt.backend=b.id;
+   receipt.repository=b.repository;
+   const report=validatePlaygroundReceipt(receipt,c);
+   assert.equal(report.valid,true,b.id+": well-formed incomplete inventory");
+   assert.equal(report.observed,50,b.id+": complete inventory");
+   assert.equal(report.fullEvidenceShape,false,b.id+": cannot claim real execution");
+   assert.equal(report.parityCertified,false,b.id+": cannot claim parity");
+ }
+});
