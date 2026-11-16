@@ -1,0 +1,1 @@
+pub fnc id(int x): typeof(x) { return x; } pub fnc main(): int { return id(5); }
