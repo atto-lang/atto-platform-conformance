@@ -44,8 +44,28 @@ test('typed-match-arm registry pins unchanged actual Git-source blobs', () => {
   }
 });
 
-test('never turn missing guest compiler receipts into backend passes', () => {
-  for (const backend of ['rust-wasm', 'java', 'llvm', 'dotnet']) {
+test('scoped Rust/Wasm PASS must cite executed guests; other backends remain unverified', () => {
+  assert.equal(manifest.backends['rust-wasm'], 'PASS');
+  const proof = manifest.execution_receipts?.['rust-wasm'];
+  assert.ok(proof, 'a PASS requires an explicit immutable execution receipt');
+  assert.equal(proof.status, 'PASS');
+  assert.match(proof.source_commit, /^[a-f0-9]{40}$/);
+  assert.match(proof.carrier_commit, /^[a-f0-9]{40}$/);
+  assert.equal(proof.source_commit, manifest.source.async_compiler_commit);
+  assert.equal(proof.source_git_blobs_verified, 50);
+  assert.ok(Number.isSafeInteger(proof.workflow_run_id) && proof.workflow_run_id > 0);
+  assert.ok(Number.isSafeInteger(proof.workflow_job_id) && proof.workflow_job_id > 0);
+  assert.deepEqual(proof.native_rust_tests, { passed: 35, failed: 0 });
+  assert.equal(proof.guest_fixtures.passed, manifest.cases.length);
+  assert.equal(proof.guest_fixtures.failed, 0);
+  assert.equal(proof.guest_fixtures.positive_exit_42,
+    manifest.cases.filter(x => x.expect.kind === 'exit').length);
+  assert.equal(proof.guest_fixtures.negative_without_artifact,
+    manifest.cases.filter(x => x.expect.kind === 'diagnostic').length);
+  assert.match(proof.chromium_jspi, /^PASS:/);
+  assert.equal(proof.task_captures, 'UNSUPPORTED');
+  for (const backend of ['java', 'llvm', 'dotnet']) {
     assert.equal(manifest.backends[backend], 'NOT_EXECUTED');
+    assert.equal(manifest.execution_receipts?.[backend], undefined);
   }
 });
