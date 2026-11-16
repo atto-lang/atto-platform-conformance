@@ -1,0 +1,7 @@
+// expect-error: E_MATCH
+pub fnc main(): int {
+  val result: Option<int> = Some(41);
+  ^ match result over
+    on Some(n) -> { return n; }
+  end
+}

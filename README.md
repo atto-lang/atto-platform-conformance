@@ -37,3 +37,16 @@ This README records the intended role of this repository; it is not a claim of f
 AttoLang is the public name; preserve existing Oreslang/.ores compatibility and use canonical .atto for new portable library source. This README defines scope, not feature readiness.
 
 **Acceptance:** name the exact source SHA/tree, runtime/toolchain, positive and negative checks and execution receipt before claiming support. Host-only tests and empty CI steps do not prove guest execution.
+
+## Channel / return-position match conformance v1
+
+- [Contract and backend evidence matrix](contracts/channel-return-ownership-v1.json)
+- Fixtures: `fixtures/channel-return/{pass,fail,pending}`
+- Metadata validator: `python3 -m unittest tests/test_channel_return_ownership_contract.py`
+
+Rust/Wasm browser guest execution has an exact-tree CI receipt, but its
+`abandon_read` cleanup helper is **host-only**. Automatic guest cleanup
+on `^`/`return`, thrown errors, and actor termination is not yet implemented.
+The `pending` case is a **known unimplemented ownership diagnostic**, not a
+passing fixture. Java, LLVM, .NET, independent Wasm, and Forge require their
+own compiled-guest receipts before any parity claim.

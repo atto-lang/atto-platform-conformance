@@ -1,0 +1,14 @@
+// expect-exit: 42
+// rust-wasm: compiled and executed; other backends need own receipts
+pub fnc main(): int {
+  val result: Result<Option<int>,IoError> = Ok(Some(41));
+  ^ match result over
+    on Err(error) -> { return -1; }
+    on Ok(item) -> {
+      return match item over
+        on None -> { return 0; }
+        on Some(n) -> { ^ n + 1; }
+      end
+    }
+  end
+}

@@ -1,0 +1,28 @@
+// expect-exit: 42
+// Explicit close, drain, and release: no outstanding read ticket.
+pub susp fnc main(): int {
+  val opened: Result<Channel<int>,IoError> = Channel<int>.bounded(0);
+  ^ match opened over
+    on Err(error) -> { return -10; }
+    on Ok(channel) -> {
+      val closed: Result<void,IoError> = channel.close();
+      val pending: Future<Result<Option<int>,IoError>> = nb readch channel;
+      val outcome: Result<Option<int>,IoError> = await pending;
+      val released: Result<void,IoError> = channel.release();
+      ^ match released over
+        on Err(error) -> { return -11; }
+        on Ok -> {
+          ^ match outcome over
+            on Err(error) -> { return -12; }
+            on Ok(item) -> {
+              ^ match item over
+                on None -> { return 42; }
+                on Some(value) -> { return -13; }
+              end
+            }
+          end
+        }
+      end
+    }
+  end
+}

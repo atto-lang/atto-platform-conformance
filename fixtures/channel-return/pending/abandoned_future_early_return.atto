@@ -1,0 +1,12 @@
+// pending-expected-error: E_FUTURE_OWNERSHIP
+// Not a passing fixture yet: compiler automatic drop/unwind is unimplemented.
+pub susp fnc main(): int {
+  val opened: Result<Channel<int>,IoError> = Channel<int>.bounded(0);
+  ^ match opened over
+    on Err(error) -> { return -1; }
+    on Ok(channel) -> {
+      val pending = nb readch channel;
+      ^ 42;
+    }
+  end
+}
