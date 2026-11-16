@@ -1,0 +1,29 @@
+name: Typed actor reply v1 Rust reference model (source-only)
+on:
+  push:
+    paths:
+      - 'tools/typed_actor_reply_v1.rs'
+      - 'contracts/typed-actor-reply-v1.tsv'
+      - '.github/workflows/typed-actor-reply-v1-rust.yml'
+  pull_request:
+    paths:
+      - 'tools/typed_actor_reply_v1.rs'
+      - 'contracts/typed-actor-reply-v1.tsv'
+      - '.github/workflows/typed-actor-reply-v1-rust.yml'
+permissions:
+  contents: read
+jobs:
+  rust-source-only-reply-model:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Execute Rust reference-model tests (NOT compiled Atto guest)
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustc --version
+          rustc --edition=2021 --test tools/typed_actor_reply_v1.rs -o /tmp/typed_actor_reply_tests
+          /tmp/typed_actor_reply_tests
+          rustc --edition=2021 tools/typed_actor_reply_v1.rs -o /tmp/typed_actor_reply
+          /tmp/typed_actor_reply
