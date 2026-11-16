@@ -1,0 +1,30 @@
+name: Typed arm scalar task capture v1 source identity (host only)
+on:
+  pull_request:
+    paths:
+      - 'contracts/typed-arm-task-capture-v1.json'
+      - 'docs/typed-arm-task-capture-v1.md'
+      - 'fixtures/typed-arm-task-capture-v1/**'
+      - 'tests/typed-arm-task-capture-v1.test.mjs'
+      - '.github/workflows/typed-arm-scalar-task-capture.yml'
+  push:
+    paths:
+      - 'contracts/typed-arm-task-capture-v1.json'
+      - 'docs/typed-arm-task-capture-v1.md'
+      - 'fixtures/typed-arm-task-capture-v1/**'
+      - 'tests/typed-arm-task-capture-v1.test.mjs'
+      - '.github/workflows/typed-arm-scalar-task-capture.yml'
+permissions:
+  contents: read
+jobs:
+  source-only-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Verify fixture Git blob identities and reject forged receipts
+        run: node --test tests/typed-arm-task-capture-v1.test.mjs
+      - name: Evidence warning
+        run: echo "HOST ONLY: no native or Wasm guest compiled in this job"
