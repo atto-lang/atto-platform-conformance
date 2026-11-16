@@ -27,7 +27,9 @@ jobs:
           python-version: '3.12'
       - name: Validate contract
         run: python3 -m json.tool contracts/actor-scheduler-domains-v1.json >/dev/null
-      - name: Validate receipt baseline\n        run: python3 bin/verify_actor_scheduler_receipt.py\n      - name: Run deterministic scheduler policy tests
+      - name: Validate receipt baseline
+        run: python3 bin/verify_actor_scheduler_receipt.py
+      - name: Run deterministic scheduler policy tests
         run: python3 -m unittest discover -s tests -p 'test_actor_scheduler_*v1.py' -v
       - name: Scope
         run: echo 'REFERENCE_ONLY: no Java, LLVM, .NET guest runtime or tenant sandbox executed'
