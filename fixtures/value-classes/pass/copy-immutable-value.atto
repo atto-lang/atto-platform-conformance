@@ -1,0 +1,13 @@
+define value class Point as
+    pub final int x;
+    pub final int y;
+    constructor(int x, int y) {
+        self.x = x;
+        self.y = y;
+    }
+end
+pub fnc main(): int {
+    val Point a = Point(20, 22);
+    val Point b = copy! a;
+    if b eq a then return b.x + b.y; else return 0; fi
+}
