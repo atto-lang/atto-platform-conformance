@@ -406,6 +406,136 @@
         "net": "NOT_EXECUTED",
         "rs_wasm": "NOT_EXECUTED"
       }
+    },
+    {
+      "id": "typeof_bare_parameter",
+      "expected": "compile_and_run",
+      "path": "fixtures/return-types/pass/typeof_bare_parameter.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      },
+      "expected_exit": 5
+    },
+    {
+      "id": "typeof_parenthesized_parameter",
+      "expected": "compile_and_run",
+      "path": "fixtures/return-types/pass/typeof_parenthesized_parameter.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      },
+      "expected_exit": 5
+    },
+    {
+      "id": "typeof_bare_forward_local",
+      "expected": "compile_and_run",
+      "path": "fixtures/return-types/pass/typeof_bare_forward_local.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      },
+      "expected_exit": 5
+    },
+    {
+      "id": "typeof_parenthesized_forward_local",
+      "expected": "compile_and_run",
+      "path": "fixtures/return-types/pass/typeof_parenthesized_forward_local.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      },
+      "expected_exit": 5
+    },
+    {
+      "id": "typeof_bang_adjoined",
+      "expected": "compile_error_no_artifact",
+      "path": "fixtures/return-types/fail/typeof_bang_adjoined.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      },
+      "diagnostic_category": "E_TYPE_QUERY_UNSUPPORTED"
+    },
+    {
+      "id": "typeof_bang_spaced",
+      "expected": "compile_error_no_artifact",
+      "path": "fixtures/return-types/fail/typeof_bang_spaced.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      },
+      "diagnostic_category": "E_TYPE_QUERY_UNSUPPORTED"
+    },
+    {
+      "id": "typeof_parentheses_empty",
+      "expected": "compile_error_no_artifact",
+      "path": "fixtures/return-types/fail/typeof_parentheses_empty.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      },
+      "diagnostic_category": "E_TYPE_QUERY_UNSUPPORTED"
+    },
+    {
+      "id": "typeof_parentheses_multiple",
+      "expected": "compile_error_no_artifact",
+      "path": "fixtures/return-types/fail/typeof_parentheses_multiple.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      },
+      "diagnostic_category": "E_TYPE_QUERY_UNSUPPORTED"
+    },
+    {
+      "id": "typeof_parenthesized_expression",
+      "expected": "compile_error_no_artifact",
+      "path": "fixtures/return-types/fail/typeof_parenthesized_expression.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      },
+      "diagnostic_category": "E_TYPE_QUERY_UNSUPPORTED"
     }
-  ]
+  ],
+  "typeof_syntax": {
+    "canonical": "typeof name",
+    "compatible": [
+      "typeof(name)"
+    ],
+    "reserved_unchanged": "typeof fnc(...) => T",
+    "forbidden": [
+      "typeof! name",
+      "typeof !name"
+    ],
+    "formatter_target": "typeof name",
+    "implementation_status": "TARGET_ONLY_NOT_EXECUTED"
+  }
 }
