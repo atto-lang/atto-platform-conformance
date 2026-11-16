@@ -1,4 +1,4 @@
-// Candidate positive: one actor can target multiple typed ActorRefs.
+// Stage-1 typed ingress; independent ActorRef destinations, no sends effect asserted.
 define actor TextSink receives String as
   receive(ActorMail<String> mail): void { return; }
 end
