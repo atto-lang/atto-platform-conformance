@@ -15,7 +15,7 @@ test('manifest preserves exact real Rust/Wasm source provenance without inventin
  assert.equal(manifest.cases.length,24);
  assert.equal(manifest.cases.filter(x=>x.kind==='execute').length,12);
  assert.equal(manifest.cases.filter(x=>x.kind==='reject').length,12);
- for(const k of ['java','llvm','net'])assert.notMatch(manifest.backends[k].state,/^EXECUTED|^CERTIFIED/);
+ for(const k of ['java','llvm','net'])assert.doesNotMatch(manifest.backends[k].state,/^EXECUTED|^CERTIFIED/);
  assert.equal(manifest.backends.rust_wasm.state,'EXECUTED_CANONICAL_SUBSET');
 });
 test('24 original ADT guard fixture bytes, file modes and identifiers are immutable',async()=>{
