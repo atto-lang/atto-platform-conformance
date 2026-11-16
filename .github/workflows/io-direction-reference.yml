@@ -25,6 +25,11 @@ jobs:
           rustc --version
           rustc --edition=2021 --test tests/io_direction_oracle.rs -o /tmp/io-direction-reference
           /tmp/io-direction-reference --nocapture
+      - name: Compile and run Rust suspension-effect reference tests
+        run: |
+          rustc --version
+          rustc --edition=2021 --test tests/io_effect_oracle.rs -o /tmp/io-effect-reference
+          /tmp/io-effect-reference --nocapture
       - name: Evidence boundary
         run: |
           echo "Reference model only; compiled AttoLang guest conformance: NOT_EXECUTED."
