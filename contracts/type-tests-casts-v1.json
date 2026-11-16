@@ -49,20 +49,58 @@
       "path": "fixtures/type-tests/fail/unapproved-as-cast.atto",
       "expected_error": "E_UNSUPPORTED",
       "no_guest_artifact": true
+    },
+    {
+      "id": "guarded-wildcard-fallthrough",
+      "kind": "pass",
+      "path": "fixtures/type-tests/pass/guarded-wildcard-fallthrough.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "duplicate-positive-tag",
+      "kind": "fail",
+      "path": "fixtures/type-tests/fail/duplicate-positive-tag.atto",
+      "expected_error": "E_MATCH",
+      "no_guest_artifact": true
+    },
+    {
+      "id": "duplicate-negated-tag",
+      "kind": "fail",
+      "path": "fixtures/type-tests/fail/duplicate-negated-tag.atto",
+      "expected_error": "E_MATCH",
+      "no_guest_artifact": true
+    },
+    {
+      "id": "unreachable-post-wildcard",
+      "kind": "fail",
+      "path": "fixtures/type-tests/fail/unreachable-post-wildcard.atto",
+      "expected_error": "E_MATCH",
+      "no_guest_artifact": true
+    },
+    {
+      "id": "duplicate-type-alias",
+      "kind": "fail",
+      "path": "fixtures/type-tests/fail/duplicate-type-alias.atto",
+      "expected_error": "E_MATCH",
+      "no_guest_artifact": true
     }
   ],
   "backend_status": {
     "rs-browser-scalar": {
       "state": "passed",
-      "source_commit": "5f5059a90372e482b41a8b029c7eb47e0b3d39bb",
-      "source_tree": "786f943c5361a125c90a332d05275d0701fa007a",
-      "carrier_commit": "791c316e94cfceecfc3e345881005c1c6e88dfc1",
-      "actions_run": 43976663058,
-      "method": "Exact-tree native and wasm32 compiler, genuine guest Wasm execution, negative no-artifact checks, Chromium browser E2E",
+      "source_commit": "7ae5064c1a87ec0006d759b145c41cff3537f7ae",
+      "source_tree": "8c30e3bc632e69ad0e37f15616a10043a79d3b7b",
+      "carrier_commit": "b81d68113fa3c69fab1681c64ff3788abb32f4ea",
+      "actions_run": 43980682449,
+      "method": "Exact-src-subtree cargo test --lib plus compiled attoc and actual Node WebAssembly guest tests",
       "test_counts": {
-        "positive_guest_wasm": 10,
-        "negative_no_artifact": 14
-      }
+        "rust_unit": 12,
+        "actual_guest_wasm": 11,
+        "negative_no_artifact": 18
+      },
+      "source_compiler_src_tree": "81b470f3a6c2169944e76f5c5625057897bc05ce",
+      "carrier_focused_tree": "b8a09a7c8fd834acfd92e675545a1f4b8cf1a718",
+      "proof_scope": "Source compiler src Git subtree and Cargo.toml/Cargo.lock/guest-test blobs reproduced exactly in private carrier; actual native Rust compiler build and guest Wasm execution. Carrier root tree is a focused slice, not the entire 716-blob source tree."
     },
     "java": {
       "state": "not_executed"
