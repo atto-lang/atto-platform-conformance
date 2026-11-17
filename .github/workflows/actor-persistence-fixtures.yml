@@ -1,0 +1,27 @@
+name: Actor persistence conformance registry (host only)
+on:
+  pull_request:
+    paths:
+      - 'contracts/actor-persistence-v1.json'
+      - 'fixtures/actors/persistence/**'
+      - 'tests/test_actor_persistence_contract.py'
+      - '.github/workflows/actor-persistence-fixtures.yml'
+  push:
+    paths:
+      - 'contracts/actor-persistence-v1.json'
+      - 'fixtures/actors/persistence/**'
+      - 'tests/test_actor_persistence_contract.py'
+      - '.github/workflows/actor-persistence-fixtures.yml'
+permissions:
+  contents: read
+jobs:
+  structural-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - run: python3 -m json.tool contracts/actor-persistence-v1.json >/dev/null
+      - run: python3 -m unittest discover -s tests -p 'test_actor_persistence_contract.py' -v
+      - run: echo 'HOST_ONLY - fixtures do not prove compiled actor recovery'
