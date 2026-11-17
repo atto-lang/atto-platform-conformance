@@ -1,0 +1,8 @@
+// expect-exit: 42
+// candidate: independent mutable nested buffers, not just outer array descriptor
+pub fnc main(): int {
+    val source = Array.of(Array.of(40), Array.of(2));
+    val detached = copy!! source;
+    detached[0][0] = 1;
+    return source[0][0] + detached[1][0];
+}
