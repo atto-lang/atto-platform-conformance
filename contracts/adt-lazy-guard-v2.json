@@ -1,0 +1,98 @@
+{
+  "schema": "atto.adt-lazy-guard.v2",
+  "status": "RUST_WASM_SCOPED_PASS_NATIVE_PARITY_NOT_EXECUTED",
+  "stacked_spec_pr": 57,
+  "compiler": {
+    "repo": "atto-lang/atto-source.rs",
+    "pull_request": 259,
+    "base_pr": 247,
+    "source_head_sha": "1cced72561fed3a92b4607aa22f197f3a97f8a7b",
+    "source_root_git_tree_sha": "3a28e4d0912a5a2bc797b37706608e1825ba56ee",
+    "browser_harness_blob_sha": "99575ede7416c1d6a7b28d9af49e785614eeb73d"
+  },
+  "backend_states": {
+    "rust-wasm": "PASS_SCOPED",
+    "java-native-image": "NOT_EXECUTED",
+    "llvm-native": "NOT_EXECUTED",
+    "dotnet-nativeaot": "NOT_EXECUTED"
+  },
+  "semantics": {
+    "eval_scrutinee_once": true,
+    "bind_only_in_reached_candidate": true,
+    "validate_tag_before_payload": true,
+    "guard_only_after_binding": true,
+    "guard_false_tries_next_arm": true,
+    "selected_arm_suppresses_later_guards": true,
+    "unguarded_default_exhaustiveness": true,
+    "guarded_patterns_not_exhaustive": true,
+    "nonreturning_statement_arm_selection": true
+  },
+  "cases": [
+    {
+      "id": "selected-suppresses-later-guard",
+      "path": "fixtures/adt-lazy-guard-v2/pass/selected-suppresses-later-guard.atto",
+      "git_blob_sha1": "974b2dd20aaf862431a351986842b25274240406",
+      "expect": {
+        "kind": "executed_compiled_wasm_guest",
+        "return_value": 42,
+        "stdout": "",
+        "side_effects": "only the reached guard/body executes"
+      }
+    },
+    {
+      "id": "reached-guard-once",
+      "path": "fixtures/adt-lazy-guard-v2/pass/reached-guard-once.atto",
+      "git_blob_sha1": "c1545e920ab3afe63ddfa2235d0abc0a8c486d52",
+      "expect": {
+        "kind": "executed_compiled_wasm_guest",
+        "return_value": 42,
+        "stdout": "GUARD_ONCE\n",
+        "side_effects": "only the reached guard/body executes"
+      }
+    },
+    {
+      "id": "inactive-variant-not-projected",
+      "path": "fixtures/adt-lazy-guard-v2/pass/inactive-variant-not-projected.atto",
+      "git_blob_sha1": "e9ef08876cdfda0f355b3d55b0ed5b560318d007",
+      "expect": {
+        "kind": "executed_compiled_wasm_guest",
+        "return_value": 42,
+        "stdout": "",
+        "side_effects": "only the reached guard/body executes"
+      }
+    },
+    {
+      "id": "non-returning-arm-selects-once",
+      "path": "fixtures/adt-lazy-guard-v2/pass/non-returning-arm-selects-once.atto",
+      "git_blob_sha1": "7a5b2753163a0123cfd42f11fedfacdb90870d9e",
+      "expect": {
+        "kind": "executed_compiled_wasm_guest",
+        "return_value": 42,
+        "stdout": "",
+        "side_effects": "only the reached guard/body executes"
+      }
+    }
+  ],
+  "evidence": {
+    "rust-wasm": {
+      "status": "PASS_SCOPED",
+      "runner_repo": "gha-indie-worker/atto-ci",
+      "run_id": 43984239737,
+      "job_id": 133708155341,
+      "carrier_commit_sha": "cb4200ce4f3450eb469907ef6cb178b0d498b026",
+      "source_head_sha": "1cced72561fed3a92b4607aa22f197f3a97f8a7b",
+      "verified_source_blobs": 609,
+      "source_tree_exact_match": true,
+      "rust_tests_passed": 300,
+      "rust_tests_failed": 0,
+      "rust_test_summaries": 46,
+      "real_compiler_wasm": true,
+      "real_guest_wasm": true,
+      "chromium_jspi": "PASS",
+      "browser_depth_positive": "250-term addition returned 250",
+      "browser_depth_negative": "3000-term addition returned E_NESTING with no guest",
+      "limit": "No independent Java, LLVM or .NET compiled guests; this host metadata declaration is NOT a substitute for run logs."
+    }
+  },
+  "evidence_rule": "A backend cannot be marked PASS unless pinned compiler source and exact fixture positive guest execution and negative no-artifact cases are independently verified on a real native/AOT runner."
+}
