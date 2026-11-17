@@ -15,7 +15,14 @@ class EqualityContract(unittest.TestCase):
         self.assertEqual(doc["semantics"]["identity_operators"], ["==", "!="])
         self.assertEqual(doc["semantics"]["primitive_identity"], "COMPILE_TIME_ERROR")
         self.assertEqual(set(doc["backend_status"]), {"rs-browser", "java", "llvm", "net", "wasm-independent", "forge", "cranelift", "js", "hdl"})
-        self.assertTrue(all(status != "VERIFIED" for status in doc["backend_status"].values()))
+        self.assertEqual(doc["backend_status"]["rs-browser"], "FOCUSED_VERIFIED")
+        self.assertTrue(all(value == "NOT_VERIFIED" for key, value in doc["backend_status"].items() if key != "rs-browser"))
+        evidence = doc["evidence"]["rs-browser"]
+        self.assertEqual(evidence["source_tree"], evidence["runner_tree"])
+        self.assertEqual(evidence["registry_fixture_blobs_verified"], len(doc["required_cases"]))
+        self.assertEqual(evidence["conformance_failed"], 0)
+        self.assertGreaterEqual(evidence["native_vs_wasm_compared"], 448)
+        self.assertIn("bait-bikes-test/atto-ci/actions/runs/", evidence["workflow_run"])
 
     def test_fixtures_exist_and_have_expected_headers(self):
         doc = json.loads(CONTRACT.read_text())
