@@ -1,0 +1,64 @@
+{
+  "schema": "atto-copy-modes-flat-class-compiled-evidence-v1",
+  "scope": "BOUNDARY_ONLY_NOT_FULL_GRAPH_PARITY",
+  "spec": "atto-lang/atto-spec#39",
+  "compiler_repo": "atto-lang/atto-source.rs",
+  "compiler_pr": 265,
+  "compiler_head": "f7d0779a820d0551447220f962491fccda2819ca",
+  "source_tree_full": "f6e0a87b5accca31065d8917bd32dfbe487c7b1f",
+  "tested_projection_tree": "ca2d7860e976922ed7d9b8a016149de11d43fd4b",
+  "tested_projection_file_count": 42,
+  "full_source_tree_mirrored": false,
+  "carrier": "gha-indie-worker/atto-ci",
+  "carrier_commit": "445b22131be6e704f8680453ac36509cce3d125d",
+  "workflow_run_url": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44130153322",
+  "runner_admitted": true,
+  "job_executed": true,
+  "toolchain": "rustc 1.85.1",
+  "test_receipts": {
+    "native_rust_integration_tests": {
+      "pass": 7,
+      "fail": 0
+    },
+    "native_compiler_guest_wasm_positive": {
+      "pass": 7,
+      "fail": 0,
+      "expected_guest_return": 42
+    },
+    "compiler_negative_fixtures": {
+      "pass": 3,
+      "fail": 0,
+      "diagnostics": [
+        "E_COPY_OVERRIDE",
+        "E_SYNTAX",
+        "E_BORROW"
+      ]
+    },
+    "browser_compiler_wasm32_aot": {
+      "compiled": true,
+      "module_validated": true,
+      "host_import_count": 0,
+      "byte_count": 785554
+    }
+  },
+  "verified_semantics": [
+    "copy!! scalar values",
+    "fresh flat-class root allocation",
+    "independent mutation for original and two independently copied class roots",
+    "constructor-initialized field values",
+    "private field values via public methods",
+    "missing user copy override proof rejects",
+    "exclusive loan denies copy"
+  ],
+  "not_verified": [
+    "same-file portable conformance fixture compilation",
+    "nested mutable collection graphs",
+    "cycles/repeated mutable aliases",
+    "Object.copy_deep() superclass polymorphism",
+    "actor mailman fan-out",
+    "other full native-AOT backends",
+    "full-project rustfmt and strict Clippy"
+  ],
+  "conformance_manifest_backend_statuses_unchanged": true,
+  "notes": "Equivalent Rust/Wasm copy!! fixtures executed; this is NOT an execution receipt for every fixture in contracts/copy-modes-v2.json. Backends remain NOT_EXECUTED for the full conformance matrix."
+}
