@@ -1,25 +1,25 @@
 {
   "schema": "atto.trap-result.exact-tree-guest-evidence.v1",
-  "captured_at_utc": "2026-11-17T20:53:06Z",
+  "captured_at_utc": "2026-11-17T23:22:50Z",
   "source_repo": "atto-lang/atto-source.rs",
   "source_pr": 275,
-  "source_commit": "1bfe76971db09630446ba00757c003f778646836",
-  "source_git_tree": "09097b9937dac09f4635bf7cbc809debea491eda",
+  "source_commit": "1f84511b6b83b2dfe41374ff93a09ea8a6e57914",
+  "source_git_tree": "a0a57fd6c7b8ce9f23ae6476638efcefde81a9b7",
   "carrier_repo": "gha-indie-worker/atto-ci",
   "carrier_pr": 6,
-  "carrier_commit": "13d816ed03079339782a3cf1f5b50dc12aa6cbac",
-  "carrier_git_tree": "09097b9937dac09f4635bf7cbc809debea491eda",
+  "carrier_commit": "1975de7e25d8706ad6d3da71be541487b2fa6014",
+  "carrier_git_tree": "a0a57fd6c7b8ce9f23ae6476638efcefde81a9b7",
   "exact_tree_match": true,
-  "runner_workflow_run": 44173738613,
-  "workflow_url": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44173738613",
+  "runner_workflow_run": 44198631530,
+  "workflow_url": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44198631530",
   "workflow_conclusion": "success",
   "rust_native_cargo_tests": "passed",
   "rust_wasm_compiler_build": "passed",
   "conformance": {
     "status": "PASSED",
-    "count": 496,
+    "count": 510,
     "failures": 0,
-    "native_vs_wasm_compared": 448
+    "native_vs_wasm_compared": 462
   },
   "trap_guest_cases": [
     "Result<int,Error> Ok and returned Err",
@@ -31,10 +31,14 @@
     "early Err propagation",
     "panic bypass",
     "caller-side trap outranks callee recover",
-    "fail-closed ? before defer/recover/finally cleanup until unwinding path is implemented"
+    "Err and None ? with LIFO defer cleanup, nested inner-to-outer finally and no catch/recover on returned Err",
+    "? before unregistered defer skips cleanup, successful ? executes registered cleanup",
+    "fail-closed ? inside defer/recover/finally to prevent replacing a pending outcome",
+    "same original Error handle through catch(Error e), throw and nested finally; equal-message distinct instance remains unequal",
+    "nested traps preserve raised tag and restore catch depth across early ? exit; subsequent recover remains effective"
   ],
   "chromium_worker_e2e": "PASSED",
-  "browser_compiler_sha256": "5ae18dfea59c42ff00826bd6d1d57eeb48c2a6e2ae9c17dea249a570927b112a",
+  "browser_compiler_sha256": "0e2980c52e80aa3cdf5dd1be4874ff8467fab054ba58989a17435c5f0a9a6b77",
   "source_release_status": "candidate_not_published",
   "java_differential": "NOT_EXECUTED",
   "llvm_native": "NOT_EXECUTED",
@@ -46,5 +50,8 @@
   "error_subclasses": "UNSUPPORTED",
   "actor_method_trap": "UNSUPPORTED",
   "note": "Actual compiled Rust/wasm32 guest receipt for bounded Error profiles only, not full AttoLang backend parity or public compiler release.",
-  "cleanup_aware_question_mark": "UNSUPPORTED_WHEN_UNWIND_FRAME_PRESENT"
+  "cleanup_aware_question_mark": "PASSED_FOR_REGISTERED_DEFER_AND_TRY_FINALLY; UNSUPPORTED_INSIDE_DEFER_RECOVER_FINALLY_CALLBACKS",
+  "native_cranelift_auxiliary_gate": "FAILED_UNRELATED_CARGO_FMT_CHECK",
+  "source_organization_ci": "NOT_EXECUTED_SOURCE_ORG_CAPACITY",
+  "guest_mirror_exact_tree_verified": true
 }
