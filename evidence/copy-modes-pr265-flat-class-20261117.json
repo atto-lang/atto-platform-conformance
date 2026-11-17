@@ -60,5 +60,50 @@
     "full-project rustfmt and strict Clippy"
   ],
   "conformance_manifest_backend_statuses_unchanged": true,
-  "notes": "Equivalent Rust/Wasm copy!! fixtures executed; this is NOT an execution receipt for every fixture in contracts/copy-modes-v2.json. Backends remain NOT_EXECUTED for the full conformance matrix."
+  "notes": "Historical projected-source receipt retained above. Full 729-blob exact-tree compiler evidence is in full_source_tree_followup. This verifies bounded flat-class copying only; no production nested mutable arrays, cycle/alias graph cloning, actor-mail fan-out, or eight-backend parity. Manifest backend statuses remain NOT_EXECUTED.",
+  "full_source_tree_followup": {
+    "schema": "atto-copy-modes-full-tree-compiler-receipt-v1",
+    "compiler_pr_head": "bce174c55639511186e96d4b9498673c79f6a6f2",
+    "exact_source_tree": "2e633230379b59d6ed02e0213f23c44d15917c40",
+    "source_blob_count": 729,
+    "exact_full_tree_mirrored": true,
+    "carrier": "gha-indie-worker/atto-ci",
+    "carrier_head": "5512b4a161108ceb9449ece98bd2d81271d891cf",
+    "ci_run": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44138410260",
+    "executed_job": true,
+    "toolchain": "rustc 1.85.1",
+    "full_cargo_all_targets": "PASS",
+    "native_and_wasm32_compiler_build": "PASS",
+    "portable_conformance": {
+      "pass": 493,
+      "fail": 0,
+      "native_vs_wasm_compared": 445,
+      "java_differential": "NOT_EXECUTED"
+    },
+    "copy_deep_rust_integration": {
+      "pass": 8,
+      "fail": 0
+    },
+    "copy_deep_guest": {
+      "positive": 7,
+      "negative_rejection": 4,
+      "fail": 0
+    },
+    "canonical_copy_verifier_blob_sha": "3008a139cfba41131839de3567a263163152cf00",
+    "canonical_verifier_integrated": true,
+    "full_project_lint": {
+      "rustfmt": "FAIL_EXISTING_DRIFT",
+      "clippy": "FAIL_EXISTING_WARNINGS",
+      "clippy_exit_code": 101
+    },
+    "nested_array_copy": "REJECTED_UNSUPPORTED_E_UNSUPPORTED_TYPE",
+    "graph_copy_reference_model": {
+      "source_repo": "ores-truffle-oreslang/atto-borrow-checker.rs",
+      "source_head": "7a44ec146305fbea45f63b509fe7b991aa11da61",
+      "exact_tree": "981272b90c433e3c81813fb12dd40da3bfcabadd",
+      "tests_pass": 196,
+      "ci_run": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44134343873",
+      "production_wasm_integration": false
+    }
+  }
 }
