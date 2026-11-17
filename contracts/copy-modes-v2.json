@@ -20,6 +20,12 @@
   },
   "fixtures": [
     {
+      "id": "flat-class-copier-mutation",
+      "path": "fixtures/copy-modes-v2/pass/flat-class-copier-mutation.atto",
+      "expect": "PASS",
+      "exit_code": 42
+    },
+    {
       "id": "scalar-deep",
       "path": "fixtures/copy-modes-v2/pass/scalar-deep-copy.atto",
       "expect": "PASS",
