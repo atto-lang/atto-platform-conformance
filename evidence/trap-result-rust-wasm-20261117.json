@@ -1,25 +1,25 @@
 {
   "schema": "atto.trap-result.exact-tree-guest-evidence.v1",
-  "captured_at_utc": "2026-11-17T20:49:03Z",
+  "captured_at_utc": "2026-11-17T20:53:06Z",
   "source_repo": "atto-lang/atto-source.rs",
   "source_pr": 275,
-  "source_commit": "7f9b1b439c16cadec618f3a18785994c23496742",
-  "source_git_tree": "31d2c8b33597fde7f3a1e1dec3efdd58a1fa04d3",
+  "source_commit": "1bfe76971db09630446ba00757c003f778646836",
+  "source_git_tree": "09097b9937dac09f4635bf7cbc809debea491eda",
   "carrier_repo": "gha-indie-worker/atto-ci",
   "carrier_pr": 6,
-  "carrier_commit": "15ea92ccebfcc5010d9bbfa3376d65ba5dae5caa",
-  "carrier_git_tree": "31d2c8b33597fde7f3a1e1dec3efdd58a1fa04d3",
+  "carrier_commit": "13d816ed03079339782a3cf1f5b50dc12aa6cbac",
+  "carrier_git_tree": "09097b9937dac09f4635bf7cbc809debea491eda",
   "exact_tree_match": true,
-  "runner_workflow_run": 44172979786,
-  "workflow_url": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44172979786",
+  "runner_workflow_run": 44173738613,
+  "workflow_url": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44173738613",
   "workflow_conclusion": "success",
   "rust_native_cargo_tests": "passed",
   "rust_wasm_compiler_build": "passed",
   "conformance": {
     "status": "PASSED",
-    "count": 495,
+    "count": 496,
     "failures": 0,
-    "native_vs_wasm_compared": 447
+    "native_vs_wasm_compared": 448
   },
   "trap_guest_cases": [
     "Result<int,Error> Ok and returned Err",
@@ -30,10 +30,11 @@
     "original Error rethrown as Error handle",
     "early Err propagation",
     "panic bypass",
-    "caller-side trap outranks callee recover"
+    "caller-side trap outranks callee recover",
+    "fail-closed ? before defer/recover/finally cleanup until unwinding path is implemented"
   ],
   "chromium_worker_e2e": "PASSED",
-  "browser_compiler_sha256": "5e33c9407c175234cdce2f263f10e64bf4618685576be111ce09c755dc36d19d",
+  "browser_compiler_sha256": "5ae18dfea59c42ff00826bd6d1d57eeb48c2a6e2ae9c17dea249a570927b112a",
   "source_release_status": "candidate_not_published",
   "java_differential": "NOT_EXECUTED",
   "llvm_native": "NOT_EXECUTED",
@@ -44,5 +45,6 @@
   "arbitrary_generic_result": "UNSUPPORTED",
   "error_subclasses": "UNSUPPORTED",
   "actor_method_trap": "UNSUPPORTED",
-  "note": "Actual compiled Rust/wasm32 guest receipt for bounded Error profiles only, not full AttoLang backend parity or public compiler release."
+  "note": "Actual compiled Rust/wasm32 guest receipt for bounded Error profiles only, not full AttoLang backend parity or public compiler release.",
+  "cleanup_aware_question_mark": "UNSUPPORTED_WHEN_UNWIND_FRAME_PRESENT"
 }
