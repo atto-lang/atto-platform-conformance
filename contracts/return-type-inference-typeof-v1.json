@@ -753,6 +753,171 @@
         "forge": "NOT_EXECUTED",
         "rs_wasm": "NOT_EXECUTED"
       }
+    },
+    {
+      "id": "infer_struct_contextual_named",
+      "expected": "compile_and_run",
+      "expected_exit": 7,
+      "path": "fixtures/return-types/pass/infer_struct_contextual_named.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_struct_anonymous_fields",
+      "expected": "compile_and_run",
+      "expected_exit": 5,
+      "path": "fixtures/return-types/pass/infer_struct_anonymous_fields.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_struct_anonymous_empty",
+      "expected": "compile_and_run",
+      "expected_exit": 5,
+      "path": "fixtures/return-types/pass/infer_struct_anonymous_empty.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_struct_named_empty",
+      "expected": "compile_and_run",
+      "expected_exit": 5,
+      "path": "fixtures/return-types/pass/infer_struct_named_empty.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_struct_contextual_parameter",
+      "expected": "compile_and_run",
+      "expected_exit": 5,
+      "path": "fixtures/return-types/pass/infer_struct_contextual_parameter.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_struct_missing_required",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_STRUCT_MISSING_FIELD",
+      "path": "fixtures/return-types/fail/infer_struct_missing_required.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_struct_unknown_field",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_NO_FIELD",
+      "path": "fixtures/return-types/fail/infer_struct_unknown_field.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_struct_duplicate_field",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_DUPLICATE",
+      "path": "fixtures/return-types/fail/infer_struct_duplicate_field.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_struct_uninferred_field",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_TYPE_INFER_AMBIGUOUS",
+      "path": "fixtures/return-types/fail/infer_struct_uninferred_field.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_struct_nominal_shape_guess",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_TYPE_NOMINAL_MISMATCH",
+      "path": "fixtures/return-types/fail/infer_struct_nominal_shape_guess.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_struct_quoted_field",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_STRUCT_FIELD_NAME",
+      "path": "fixtures/return-types/fail/infer_struct_quoted_field.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
     }
   ],
   "typeof_syntax": {
