@@ -1,0 +1,16 @@
+// Syntax-only persistent actor hook implementations. Browser guest cannot emit
+// or execute these suspending bodies until the typed effect/runtime gate exists.
+define persistent actor Counter as
+    state count: int = 0;
+    susp fnc load_state(ctx: PersistenceContext):
+        Result<Option<ActorStateSnapshot<Counter>>, PersistenceError> {
+        return None;
+    }
+    susp fnc save_state(
+        ctx: PersistenceContext,
+        snapshot: ActorStateSnapshot<Counter>
+    ): Result<CheckpointReceipt, PersistenceError> {
+        return 1;
+    }
+end
+pub fnc main(): int { return 0; }

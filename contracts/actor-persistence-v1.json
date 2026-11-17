@@ -132,6 +132,66 @@
       "phase": "runtime",
       "expect": "NOT_EXECUTED",
       "scenario": "Committed mailbox offset and state checkpoint recover atomically; external effects not exactly-once"
+    },
+    {
+      "id": "persistent-implemented-hook-signature",
+      "phase": "parse",
+      "expect": "ACCEPT_TARGET_ONLY",
+      "fixture": "fixtures/actors/persistence/persistent_implemented_hooks.atto"
+    },
+    {
+      "id": "persistent-prototypes-not-implementations",
+      "phase": "semantic",
+      "expect": "REJECT_TARGET_ONLY",
+      "diagnostic": "E_PERSIST_HOOKS",
+      "fixture": "fixtures/actors/persistence/persistent_hook_surface.atto"
+    },
+    {
+      "id": "persistent-invalid-result-nesting",
+      "phase": "semantic",
+      "expect": "REJECT_TARGET_ONLY",
+      "diagnostic": "E_PERSIST_SIGNATURE",
+      "fixture": "fixtures/actors/persistence/persistent_wrong_hook_result.atto"
     }
-  ]
+  ],
+  "nativeHostEvidence": {
+    "scope": "NATIVE_C_SQLITE_STORE_ONLY_NOT_COMPILED_ATTO_GUEST",
+    "repository": "atto-lang/atto-source.rs",
+    "pullRequest": 266,
+    "branch": "feat/actor-sqlite-checkpoint-store-v1-20261117",
+    "blobShas": {
+      "header": "27acbacbaae407032aaedac87e6ef05938c0d7b7",
+      "store": "e2a83fe274a098782a303eb745397d9057323a05",
+      "crashTest": "1cfefcb5bc812d629302ba5fef1c27b802baa9c8",
+      "counterTest": "71d6f2bf795ddc6d720a60b213eedc29881d37c4"
+    },
+    "localEvidence": {
+      "os": "Linux",
+      "result": "PASSED",
+      "compilerMatrix": [
+        "GCC O1 UBSan",
+        "GCC O2 UBSan",
+        "Clang O1 UBSan",
+        "Clang O2 UBSan",
+        "GCC O1 ASan+UBSan"
+      ],
+      "verifiedScenarios": [
+        "WAL FULL state commit",
+        "SIGKILL after commit",
+        "SIGKILL before commit",
+        "100 increments and new process revival at 100",
+        "stale actor epoch rejected",
+        "checkpoint-sequence CAS",
+        "malformed snapshot rejected"
+      ]
+    },
+    "githubActions": "NOT_EXECUTED_ZERO_JOB_STEPS",
+    "limits": [
+      "host simulation, not compiled actor",
+      "no guest AOT serializer emission",
+      "no durable mailbox atomic acknowledgment",
+      "not a power loss/fsync hardware verification",
+      "no other backend parity"
+    ]
+  }
 }
