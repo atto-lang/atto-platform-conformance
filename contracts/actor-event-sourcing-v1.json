@@ -39,7 +39,7 @@
       "phase": "parse",
       "expect": "REJECT_TARGET_ONLY",
       "fixture": "fixtures/actors/event_sourcing/invalid_event_actor_keyword.atto",
-      "diagnostic": "E_ACTOR_PERSISTENCE_MODIFIER"
+      "diagnostic": "E_UNSUPPORTED"
     },
     {
       "id": "missing-runtime-journal",
