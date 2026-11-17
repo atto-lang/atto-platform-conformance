@@ -14,5 +14,5 @@ end
 pub fnc main(): int {
     val Point a = Point(1, 2);
     val OtherPoint b = OtherPoint(1, 2);
-    if a == b then return 0; else return 1; fi
+    if a eq b then return 0; else return 1; fi
 }

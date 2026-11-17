@@ -135,6 +135,20 @@
       }
     },
     {
+      "id": "identity-inequality",
+      "kind": "fail",
+      "path": "fixtures/value-classes/fail/identity-inequality.atto",
+      "expected_error": "E_VALUE_IDENTITY",
+      "backend_status": {
+        "rs-browser": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm-independent": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
       "id": "new-value",
       "kind": "fail",
       "path": "fixtures/value-classes/fail/new-value.atto",
@@ -275,5 +289,12 @@
       }
     }
   ],
-  "evidence_rule": "No row is passed without exact-source-sha compiler AND executable guest evidence (negative cases require compiler diagnostic and no artifact); host-only/parse-only checks cannot prove semantics. Mark all backends NOT_EXECUTED until verified."
+  "evidence_rule": "No row is passed without exact-source-sha compiler AND executable guest evidence (negative cases require compiler diagnostic and no artifact); host-only/parse-only checks cannot prove semantics. Mark all backends NOT_EXECUTED until verified.",
+  "operator_contract": {
+    "value_equality": "eq",
+    "value_inequality": "neq",
+    "reference_identity": "== and != are E_VALUE_IDENTITY for nominal value classes",
+    "linked_proposal": "atto-lang/atto-spec#62",
+    "notes": "Do not lower identity syntax to field equality, and never claim identity for a nominal value class."
+  }
 }

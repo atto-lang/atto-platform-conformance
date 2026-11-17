@@ -19,10 +19,10 @@ class ValueClassContractAudit(unittest.TestCase):
 
     def test_all_fixtures_present_and_unique(self):
         cases = self.data["required_cases"]
-        self.assertEqual(len(cases), 18)
+        self.assertEqual(len(cases), 19)
         self.assertEqual(len({c["id"] for c in cases}), len(cases))
         self.assertEqual(sum(c["kind"] == "pass" for c in cases), 5)
-        self.assertEqual(sum(c["kind"] == "fail" for c in cases), 13)
+        self.assertEqual(sum(c["kind"] == "fail" for c in cases), 14)
         for case in cases:
             with self.subTest(case=case["id"]):
                 path = (ROOT / case["path"]).resolve()
@@ -55,9 +55,15 @@ class ValueClassContractAudit(unittest.TestCase):
             (ROOT / c["path"]).read_text(encoding="utf-8")
             for c in self.data["required_cases"] if c["kind"] == "pass"
         )
-        self.assertIn("a == b", corpus)
-        self.assertIn("a != b", corpus)
+        self.assertIn("a eq b", corpus)
+        self.assertIn("a neq b", corpus)
         self.assertIn("b eq a", corpus)
+        self.assertNotIn("a == b", corpus)
+        self.assertNotIn("a != b", corpus)
+        for name, spelling in [("identity-operator", "a == b"), ("identity-inequality", "a != b")]:
+            case = next(c for c in self.data["required_cases"] if c["id"] == name)
+            self.assertEqual(case["expected_error"], "E_VALUE_IDENTITY")
+            self.assertIn(spelling, (ROOT / case["path"]).read_text(encoding="utf-8"))
         self.assertIn("copy! a", corpus)
         self.assertIn("let Point a", corpus)
         self.assertIn("pub final Point", corpus)

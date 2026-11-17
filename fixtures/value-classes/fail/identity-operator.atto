@@ -9,5 +9,5 @@ end
 pub fnc main(): int {
     val Point a = Point(1, 2);
     val Point b = Point(1, 2);
-    if a === b then return 1; else return 0; fi
+    if a == b then return 1; else return 0; fi
 }
