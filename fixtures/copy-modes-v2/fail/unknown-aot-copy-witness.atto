@@ -1,0 +1,7 @@
+// expect-error: E_COPY_AOT_WITNESS
+// candidate: opaque dynamic Object cannot invent an AOT graph dispatch witness
+pub fnc main(): int {
+    val Object opaque = foreign_unknown_object();
+    val duplicated = copy!! opaque;
+    return 0;
+}
