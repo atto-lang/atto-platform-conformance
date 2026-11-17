@@ -1,0 +1,4 @@
+pub fnc main(): infer {
+    val empty = None;
+    return 5;
+}
