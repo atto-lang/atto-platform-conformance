@@ -1,7 +1,7 @@
 {
   "schema": "atto.equality-operators.v1",
   "version": 1,
-  "status": "PROPOSED_PARTIAL_IMPLEMENTATION",
+  "status": "PARTIAL_BACKEND_EXECUTED",
   "normative_source": "atto-lang/atto-spec#62",
   "related": "atto-lang/atto-spec#60",
   "semantics": {
@@ -95,7 +95,7 @@
     "NaN edge cases and hashing contract"
   ],
   "backend_status": {
-    "rs-browser": "PENDING_FULL_CI",
+    "rs-browser": "FOCUSED_VERIFIED",
     "java": "NOT_VERIFIED",
     "llvm": "NOT_VERIFIED",
     "net": "NOT_VERIFIED",
@@ -109,5 +109,21 @@
     "pass": "Only real compiler + guest execution and exact SHA of source and run is a PASS",
     "fail": "Diagnostic must match expected_error and emitted guest artifact must be absent",
     "quorum": "Never infer multi-backend parity from Rust/browser only"
+  },
+  "evidence": {
+    "rs-browser": {
+      "source_repository": "atto-lang/atto-source.rs",
+      "source_head": "d28903f066ab6764b4b6e45d232478615b926036",
+      "source_tree": "e9e0a2483c6f1d0cb9db77d4922757f396a65609",
+      "runner_repository": "bait-bikes-test/atto-ci",
+      "runner_head": "abae865c78524a1e2cb6f6b6586084cb172e0456",
+      "runner_tree": "e9e0a2483c6f1d0cb9db77d4922757f396a65609",
+      "workflow_run": "https://github.com/bait-bikes-test/atto-ci/actions/runs/44123914626",
+      "conformance_passed": 496,
+      "conformance_failed": 0,
+      "native_vs_wasm_compared": 448,
+      "registry_fixture_blobs_verified": 11,
+      "notes": "11 exact-blob portable registry cases vendored into compiler pass/fail corpus; positive cases executed as Wasm guests, negative cases rejected with checked diagnostics and no artifacts. Java differential not run. Other backends remain unverified."
+    }
   }
 }
