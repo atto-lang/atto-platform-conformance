@@ -94,7 +94,7 @@
       "kind": "pass",
       "path": "fixtures/equality/pass/class_equals_checked.atto",
       "expected_exit": 42,
-      "source_blob_sha": "68d7b0e291dd380940406a50ab99818de3d420a6"
+      "source_blob_sha": "42ed8d49d1149a5f67d8428a4218d0dd53d1cd38"
     },
     {
       "id": "class_neq_method_once",

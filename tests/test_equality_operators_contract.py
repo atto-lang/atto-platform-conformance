@@ -1,5 +1,6 @@
 """Portable equality contract registry integrity — host model, NOT guest execution."""
 import json
+import hashlib
 from pathlib import Path
 import unittest
 
@@ -35,7 +36,13 @@ class EqualityContract(unittest.TestCase):
         for case in cases:
             path = ROOT / case["path"]
             self.assertTrue(path.is_file(), case["path"])
-            source = path.read_text()
+            source_bytes = path.read_bytes()
+            source = source_bytes.decode("utf-8")
+            if case.get("source_blob_sha"):
+                computed = hashlib.sha1(
+                    b"blob " + str(len(source_bytes)).encode() + b"\\0" + source_bytes
+                ).hexdigest()
+                self.assertEqual(computed, case["source_blob_sha"], case["path"])
             self.assertIn("pub fnc main(): int", source)
             self.assertLess(len(source), 20_000)
             if case["kind"] == "pass":
