@@ -1,0 +1,72 @@
+{
+  "schema": "atto-copy-modes-v2",
+  "status": "CANDIDATE_NOT_IMPLEMENTED",
+  "spec": "atto-lang/atto-spec#39",
+  "language_semantics": {
+    "shallow": "copy! / copy()",
+    "deep": "copy!! / copy_deep()",
+    "user_argument_count": 0
+  },
+  "evidence": "Host-side fixture checks do not compile AttoLang. All listed backend guest runs remain NOT_EXECUTED until independent exact-source compiled receipts.",
+  "backends": {
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED"
+  },
+  "fixtures": [
+    {
+      "id": "scalar-deep",
+      "path": "fixtures/copy-modes-v2/pass/scalar-deep-copy.atto",
+      "expect": "PASS",
+      "exit_code": 42
+    },
+    {
+      "id": "nested-arrays",
+      "path": "fixtures/copy-modes-v2/pass/nested-mutable-arrays.atto",
+      "expect": "PASS",
+      "exit_code": 42
+    },
+    {
+      "id": "superclass-concrete",
+      "path": "fixtures/copy-modes-v2/pass/superclass-concrete-private.atto",
+      "expect": "PASS",
+      "exit_code": 42
+    },
+    {
+      "id": "actor-two-recipients",
+      "path": "fixtures/copy-modes-v2/pass/actor-two-recipient-isolation.atto",
+      "expect": "PASS",
+      "exit_code": 42
+    },
+    {
+      "id": "shallow-exclusive-reject",
+      "path": "fixtures/copy-modes-v2/fail/shallow-exclusive-nested-array.atto",
+      "expect": "E_COPY_SHALLOW_ALIAS"
+    },
+    {
+      "id": "resource-reject",
+      "path": "fixtures/copy-modes-v2/fail/no-copy-resource-graph.atto",
+      "expect": "E_COPY_FORBIDDEN"
+    },
+    {
+      "id": "actor-shallow-alias-reject",
+      "path": "fixtures/copy-modes-v2/fail/shallow-shared-mutable-actor-send.atto",
+      "expect": "E_COPY_ACTOR_ISOLATION"
+    },
+    {
+      "id": "unknown-aot-type-reject",
+      "path": "fixtures/copy-modes-v2/fail/unknown-aot-copy-witness.atto",
+      "expect": "E_COPY_AOT_WITNESS"
+    },
+    {
+      "id": "wrong-deep-baseline-reject",
+      "path": "fixtures/copy-modes-v2/fail/deep-copy-wrong-baseline.atto",
+      "expect": "E_COPY_OVERRIDE"
+    }
+  ]
+}
