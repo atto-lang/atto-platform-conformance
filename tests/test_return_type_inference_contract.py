@@ -33,6 +33,29 @@ class ReturnTypeManifestTests(unittest.TestCase):
                 self.assertIn("/pass/", case["path"])
                 self.assertIsInstance(case["expected_exit"], int)
 
+    def test_bounded_inference_context_and_recursion_cases(self):
+        data = json.loads((ROOT / "contracts/return-type-inference-typeof-v1.json").read_text())
+        indexed = {case["id"]: case for case in data["cases"]}
+        required = {
+            "infer_local_rebinding": ("compile_and_run", None),
+            "infer_contextual_none": ("compile_and_run", None),
+            "infer_contextual_empty_array": ("compile_and_run", None),
+            "infer_contextual_lambda": ("compile_and_run", None),
+            "infer_typed_recursion": ("compile_and_run", None),
+            "infer_untyped_none": ("compile_error_no_artifact", "E_TYPE_INFER_AMBIGUOUS"),
+            "infer_untyped_empty_array": ("compile_error_no_artifact", "E_TYPE_INFER_AMBIGUOUS"),
+            "infer_contextless_lambda": ("compile_error_no_artifact", "E_INFER_CONTEXT"),
+            "infer_local_retype": ("compile_error_no_artifact", "E_TYPE"),
+            "infer_mutual_recursion": ("compile_error_no_artifact", "E_RETURN_INFER_CYCLE"),
+        }
+        for name, (expected, diag) in required.items():
+            with self.subTest(name=name):
+                case = indexed[name]
+                self.assertEqual(case["expected"], expected)
+                if diag:
+                    self.assertEqual(case["diagnostic_category"], diag)
+                self.assertTrue((ROOT / case["path"]).is_file())
+
     def test_legacy_compat_and_type_expression_denials(self):
         data = json.loads((ROOT / "contracts/return-type-inference-typeof-v1.json").read_text())
         names = {c["id"] for c in data["cases"]}
