@@ -1,7 +1,7 @@
 {
   "schema": "atto.equality-operators.v1",
   "version": 1,
-  "status": "PROPOSED_PARTIAL_IMPLEMENTATION_WITH_NEW_GUEST_CASES_PENDING_REVERIFICATION",
+  "status": "PARTIAL_BACKEND_EXECUTED",
   "normative_source": "atto-lang/atto-spec#62",
   "related": "atto-lang/atto-spec#60",
   "semantics": {
@@ -133,7 +133,7 @@
     "NaN edge cases and hashing contract"
   ],
   "backend_status": {
-    "rs-browser": "PENDING_EXPANDED_CI",
+    "rs-browser": "FOCUSED_VERIFIED",
     "java": "NOT_VERIFIED",
     "llvm": "NOT_VERIFIED",
     "net": "NOT_VERIFIED",
@@ -151,24 +151,27 @@
   "evidence": {
     "rs-browser": {
       "source_repository": "atto-lang/atto-source.rs",
-      "source_head": "6333f4fc89201d433ff2b2cf6b396a8d901313cd",
-      "source_tree": "ff939cd49b624f73f59fa979bcd20f33244306ee",
+      "source_head": "b64f8f013c5fedb0bfd1043db749f60fb18fa3f0",
+      "source_tree": "57d586e13967d8971aece99b299c10d5db144dfd",
       "runner_repository": "bait-bikes-test/atto-ci",
-      "runner_head": "b809519df82f753a0727722de57c7ba09e33f4e1",
-      "runner_tree": "ff939cd49b624f73f59fa979bcd20f33244306ee",
-      "workflow_run": "https://github.com/bait-bikes-test/atto-ci/actions/runs/44127011297",
-      "conformance_passed": 496,
+      "runner_head": "e0245194eab1fbfe789d1f69016bc76f2581a9df",
+      "runner_tree": "57d586e13967d8971aece99b299c10d5db144dfd",
+      "workflow_run": "https://github.com/bait-bikes-test/atto-ci/actions/runs/44131753192",
+      "conformance_passed": 501,
       "conformance_failed": 0,
-      "native_vs_wasm_compared": 448,
-      "registry_fixture_blobs_verified": 11,
-      "notes": "11 exact-blob portable registry cases vendored into compiler pass/fail corpus; positive cases executed as Wasm guests, negative cases rejected with checked diagnostics and no artifacts. Java differential not run. Other backends remain unverified.",
+      "native_vs_wasm_compared": 453,
+      "registry_fixture_blobs_verified": 16,
+      "notes": "16 source-blob-verified portable equality fixtures executed or compile-rejected by Rust/browser native and Wasm compiler, including checked equals dispatch, borrowed other, once-only negation and missing/invalid equals. Java differential skipped; all other targets remain unverified.",
       "additional_verified_hardening": [
         "generator handle value/identity comparison fails before invalid guest emission",
         "lambda equality analyzer rejects unsupported comparison domains",
         "distinct equality/identity AST nodes verified by parser tests",
-        "same versus distinct class object identity with equal fields"
-      ],
-      "scope": "PRIOR_EVIDENCE_ONLY_11_OF_16_FIXTURES"
+        "same versus distinct class object identity with equal fields",
+        "checked public non-static same-class equals returns bool with borrowed other argument",
+        "explicit .equals(other) and infix eq/neq preserve both owners",
+        "neq dispatches equals exactly once with verified stdout oracle",
+        "deep nested operator checker retains stack bound after dispatch helper"
+      ]
     }
   }
 }
