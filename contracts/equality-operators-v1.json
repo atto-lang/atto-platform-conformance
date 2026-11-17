@@ -1,7 +1,7 @@
 {
   "schema": "atto.equality-operators.v1",
   "version": 1,
-  "status": "PARTIAL_BACKEND_EXECUTED",
+  "status": "EXPANDED_19_CASE_REGISTRY_PENDING_NEW_HEAD_GUEST_CI",
   "normative_source": "atto-lang/atto-spec#62",
   "related": "atto-lang/atto-spec#60",
   "semantics": {
@@ -20,7 +20,8 @@
     "naN_and_signed_zero": "IEEE float equality proposed; NaN neq NaN and +0 eq -0",
     "single_evaluation": "evaluate lhs and rhs once in source order",
     "class_value_equality": "Checked public non-static equals(Self other): bool, AOT direct dispatch, no implicit owner moves; neq negates exactly one call; absent or invalid methods fail closed.",
-    "class_ownership": "Method other argument is borrowed/non-owning, cannot be moved or transferred; identity checks never invoke equals."
+    "class_ownership": "Method other argument is borrowed/non-owning, cannot be moved or transferred; identity checks never invoke equals.",
+    "class_self_identity": "Within instance methods, self may be projected as a non-owning stable class reference for == and != only; returning or moving self remains rejected."
   },
   "required_cases": [
     {
@@ -124,6 +125,27 @@
       "path": "fixtures/equality/fail/class_equals_missing_method.atto",
       "expected_error": "E_EQUALS",
       "source_blob_sha": "6111ad2b345b0adf4405146a1bda7f51988ddd35"
+    },
+    {
+      "id": "class_self_identity",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/class_self_identity.atto",
+      "expected_exit": 43,
+      "source_blob_sha": "f3b918e3251bee545d072e52feed9111388d1a73"
+    },
+    {
+      "id": "class_self_owner_escape",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/class_self_owner_escape.atto",
+      "expected_error": "E_UNSUPPORTED",
+      "source_blob_sha": "b7331584c2f993af8567b4d7b37ce23ff308c7a6"
+    },
+    {
+      "id": "class_self_primitive_identity",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/class_self_primitive_identity.atto",
+      "expected_error": "E_IDENTITY_TYPE",
+      "source_blob_sha": "5062fb4784352caef0e94edfc9001df9657f720a"
     }
   ],
   "deferred_cases": [
@@ -133,7 +155,7 @@
     "NaN edge cases and hashing contract"
   ],
   "backend_status": {
-    "rs-browser": "FOCUSED_VERIFIED",
+    "rs-browser": "PENDING_EXPANDED_CI",
     "java": "NOT_VERIFIED",
     "llvm": "NOT_VERIFIED",
     "net": "NOT_VERIFIED",
@@ -171,7 +193,8 @@
         "explicit .equals(other) and infix eq/neq preserve both owners",
         "neq dispatches equals exactly once with verified stdout oracle",
         "deep nested operator checker retains stack bound after dispatch helper"
-      ]
+      ],
+      "scope": "PRIOR_PASS_APPLIES_TO_16_OF_19_PORTABLE_CASES"
     }
   }
 }

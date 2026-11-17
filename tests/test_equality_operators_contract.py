@@ -16,11 +16,13 @@ class EqualityContract(unittest.TestCase):
         self.assertEqual(doc["semantics"]["identity_operators"], ["==", "!="])
         self.assertEqual(doc["semantics"]["primitive_identity"], "COMPILE_TIME_ERROR")
         self.assertEqual(set(doc["backend_status"]), {"rs-browser", "java", "llvm", "net", "wasm-independent", "forge", "cranelift", "js", "hdl"})
-        self.assertEqual(doc["backend_status"]["rs-browser"], "FOCUSED_VERIFIED")
+        self.assertEqual(doc["backend_status"]["rs-browser"], "PENDING_EXPANDED_CI")
         self.assertTrue(all(value == "NOT_VERIFIED" for key, value in doc["backend_status"].items() if key != "rs-browser"))
         evidence = doc["evidence"]["rs-browser"]
         self.assertEqual(evidence["source_tree"], evidence["runner_tree"])
-        self.assertEqual(evidence["registry_fixture_blobs_verified"], len(doc["required_cases"]))
+        self.assertEqual(evidence["registry_fixture_blobs_verified"], 16)
+        self.assertEqual(len(doc["required_cases"]), 19)
+        self.assertEqual(evidence["scope"], "PRIOR_PASS_APPLIES_TO_16_OF_19_PORTABLE_CASES")
         self.assertEqual(len(doc["required_cases"]), 16)
         self.assertEqual(evidence["conformance_failed"], 0)
         self.assertGreaterEqual(evidence["native_vs_wasm_compared"], 453)
@@ -70,6 +72,21 @@ class EqualityContract(unittest.TestCase):
             ("class_equals_missing_method", "E_EQUALS"),
         ]:
             self.assertEqual(cases[name]["expected_error"], diagnostic)
+
+    def test_class_self_identity_is_nonowning(self):
+        doc = json.loads(CONTRACT.read_text())
+        cases = {case["id"]: case for case in doc["required_cases"]}
+        pos = cases["class_self_identity"]
+        self.assertEqual(pos["expected_exit"], 43)
+        content = (ROOT / pos["path"]).read_text()
+        self.assertIn("self == other", content)
+        self.assertIn("self != other", content)
+        for case_id, error in [
+            ("class_self_owner_escape", "E_UNSUPPORTED"),
+            ("class_self_primitive_identity", "E_IDENTITY_TYPE"),
+        ]:
+            self.assertEqual(cases[case_id]["expected_error"], error)
+        self.assertIn("non-owning", doc["semantics"]["class_self_identity"])
 
     def test_value_vs_identity_stay_distinct(self):
         doc = json.loads(CONTRACT.read_text())
