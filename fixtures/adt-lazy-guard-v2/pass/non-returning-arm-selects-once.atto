@@ -1,0 +1,1 @@
+fnc optional(): Option<int> { return Some(41); } pub fnc main(): int { let result = 0; match optional() over on Some(n) when n > 40 -> { result = 42; } on Some(n) when n > 0 -> { result = 99; } on Some() -> { result = -1; } on None -> { result = 0; } end return result; }
