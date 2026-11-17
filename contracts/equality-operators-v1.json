@@ -21,7 +21,11 @@
     "single_evaluation": "evaluate lhs and rhs once in source order",
     "class_value_equality": "Checked public non-static equals(Self other): bool, AOT direct dispatch, no implicit owner moves; neq negates exactly one call; absent or invalid methods fail closed.",
     "class_ownership": "Method other argument is borrowed/non-owning, cannot be moved or transferred; identity checks never invoke equals.",
-    "class_self_identity": "Within instance methods, self may be projected as a non-owning stable class reference for == and != only; returning or moving self remains rejected."
+    "class_self_identity": "Within instance methods, self may be projected as a non-owning stable class reference for == and != only; returning or moving self remains rejected.",
+    "inherited_equality": "Source-local fieldless/constructor-free ancestor equals(Ancestor other): bool is statically specialized to the concrete child; no runtime subtype/virtual dispatch, reflection or JIT.",
+    "explicit_override": "An override must match the inherited equals signature before checked concrete AOT specialization.",
+    "null": "AttoLang rejects null literal E_NULL; Option<Class> is E_UNSUPPORTED_TYPE in Rust/browser.",
+    "ieee_float": "NaN eq NaN false, neq true, signed zeros equal, infinities use IEEE f64."
   },
   "required_cases": [
     {
@@ -146,6 +150,83 @@
       "path": "fixtures/equality/fail/class_self_primitive_identity.atto",
       "expected_error": "E_IDENTITY_TYPE",
       "source_blob_sha": "5062fb4784352caef0e94edfc9001df9657f720a"
+    },
+    {
+      "id": "inherited_class_equals",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/inherited_class_equals.atto",
+      "expected_exit": 49,
+      "source_blob_sha": "9f1f38f795dbd3c2bba0a2526e2189eb3e117146"
+    },
+    {
+      "id": "overridden_class_equals",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/overridden_class_equals.atto",
+      "expected_exit": 50,
+      "source_blob_sha": "3f91ef4b588107664b240ab67fef72089f8a24cd"
+    },
+    {
+      "id": "transitive_inherited_equals",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/transitive_inherited_equals.atto",
+      "expected_exit": 51,
+      "source_blob_sha": "d5cd81884233a8accbccf017c1f4347ea873488a"
+    },
+    {
+      "id": "nan_value_equality",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/nan_value_equality.atto",
+      "expected_exit": 52,
+      "source_blob_sha": "0d1141f24a407bca8d0442119c482486f4c674af"
+    },
+    {
+      "id": "infinity_value_equality",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/infinity_value_equality.atto",
+      "expected_exit": 53,
+      "source_blob_sha": "da5dd96461b10d6ff464e621c98e2e5649055385"
+    },
+    {
+      "id": "inherited_equals_bad_signature",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/inherited_equals_bad_signature.atto",
+      "expected_error": "E_EQUALS_INHERITANCE",
+      "source_blob_sha": "fb5fdc4781bb751eefbe200360b239076e05d731"
+    },
+    {
+      "id": "override_equals_wrong_type",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/override_equals_wrong_type.atto",
+      "expected_error": "E_SIGNATURE",
+      "source_blob_sha": "bf54cd914acac31d40df8c0e94ae14fb8831f308"
+    },
+    {
+      "id": "inherited_equals_with_fields",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/inherited_equals_with_fields.atto",
+      "expected_error": "E_UNSUPPORTED",
+      "source_blob_sha": "9abf4b549988b4c48f5c4ced254ea8ba161a6e80"
+    },
+    {
+      "id": "option_class_unsupported",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/option_class_unsupported.atto",
+      "expected_error": "E_UNSUPPORTED_TYPE",
+      "source_blob_sha": "2c3ff4a003f538b5c2678af208ac08430a359e6f"
+    },
+    {
+      "id": "null_literal_unsupported",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/null_literal_unsupported.atto",
+      "expected_error": "E_NULL",
+      "source_blob_sha": "ffe8f52b06d2368705febce73fd5da10124bd4e7"
+    },
+    {
+      "id": "unrelated_equals_inheritance",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/unrelated_equals_inheritance.atto",
+      "expected_error": "E_AMBIGUOUS_MEMBER",
+      "source_blob_sha": "9c3969b581119f730b3cd15aa92b78d2993d4ba3"
     }
   ],
   "deferred_cases": [
@@ -173,17 +254,17 @@
   "evidence": {
     "rs-browser": {
       "source_repository": "atto-lang/atto-source.rs",
-      "source_head": "af370b686de70cca5965613f23bb81610f7066d9",
-      "source_tree": "37905e80be9e9b58c501d8781d8e385952e81968",
+      "source_head": "732927f97ee4064b11508faa4f9aa054a5329803",
+      "source_tree": "58eab5510f709c96feb808186839fb40e67b9d0f",
       "runner_repository": "bait-bikes-test/atto-ci",
-      "runner_head": "2701758c7fd6cd0fda8a7b8121a511c99b7bbbc0",
-      "runner_tree": "37905e80be9e9b58c501d8781d8e385952e81968",
-      "workflow_run": "https://github.com/bait-bikes-test/atto-ci/actions/runs/44134604206",
-      "conformance_passed": 504,
+      "runner_head": "e3e236e12c6de7fd2e42eeac5107de21a873f356",
+      "runner_tree": "58eab5510f709c96feb808186839fb40e67b9d0f",
+      "workflow_run": "https://github.com/bait-bikes-test/atto-ci/actions/runs/44138232805",
+      "conformance_passed": 515,
       "conformance_failed": 0,
-      "native_vs_wasm_compared": 456,
-      "registry_fixture_blobs_verified": 19,
-      "notes": "All 19 portable equality source fixtures are recorded with source Git blob SHAs; source Rust/browser pass/fail corpus executed or rejected them, including non-owning class self identity and self owner escape. Chromium E2E and artifact provenance passed. Java differential skipped; all other backends NOT_VERIFIED.",
+      "native_vs_wasm_compared": 467,
+      "registry_fixture_blobs_verified": 30,
+      "notes": "30 portable fixtures present as Git-SHA-identical source compiler fixtures; Rust/browser guest/native/Wasm/Chromium full pass. Inherited equals specialization is static only, no runtime virtual dispatch. Java differential skipped, all other backends NOT_VERIFIED.",
       "additional_verified_hardening": [
         "generator handle value/identity comparison fails before invalid guest emission",
         "lambda equality analyzer rejects unsupported comparison domains",
@@ -192,7 +273,11 @@
         "checked public non-static same-class equals returns bool with borrowed other argument",
         "explicit .equals(other) and infix eq/neq preserve both owners",
         "neq dispatches equals exactly once with verified stdout oracle",
-        "deep nested operator checker retains stack bound after dispatch helper"
+        "deep nested operator checker retains stack bound after dispatch helper",
+        "source-local inherited and overridden static equals specialization",
+        "transitive statically inherited equals",
+        "IEEE NaN and infinity value equality",
+        "Option<Class> and null rejected"
       ]
     }
   }

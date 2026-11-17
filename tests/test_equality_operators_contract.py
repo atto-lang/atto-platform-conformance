@@ -21,9 +21,9 @@ class EqualityContract(unittest.TestCase):
         evidence = doc["evidence"]["rs-browser"]
         self.assertEqual(evidence["source_tree"], evidence["runner_tree"])
         self.assertEqual(evidence["registry_fixture_blobs_verified"], len(doc["required_cases"]))
-        self.assertEqual(len(doc["required_cases"]), 19)
+        self.assertEqual(len(doc["required_cases"]), 30)
         self.assertEqual(evidence["conformance_failed"], 0)
-        self.assertGreaterEqual(evidence["native_vs_wasm_compared"], 456)
+        self.assertGreaterEqual(evidence["native_vs_wasm_compared"], 467)
         self.assertIn("bait-bikes-test/atto-ci/actions/runs/", evidence["workflow_run"])
 
     def test_fixtures_exist_and_have_expected_headers(self):
@@ -85,6 +85,32 @@ class EqualityContract(unittest.TestCase):
         ]:
             self.assertEqual(cases[case_id]["expected_error"], error)
         self.assertIn("non-owning", doc["semantics"]["class_self_identity"])
+
+    def test_inherited_equality_and_absence_gates(self):
+        d = json.loads(CONTRACT.read_text())
+        cases = {c["id"]: c for c in d["required_cases"]}
+        self.assertIn("statically specialized", d["semantics"]["inherited_equality"])
+        self.assertIn("no runtime", d["semantics"]["inherited_equality"])
+        for name, code in [
+            ("inherited_class_equals", 49),
+            ("overridden_class_equals", 50),
+            ("transitive_inherited_equals", 51),
+            ("nan_value_equality", 52),
+            ("infinity_value_equality", 53),
+        ]:
+            self.assertEqual(cases[name]["expected_exit"], code)
+            self.assertIn("source_blob_sha", cases[name])
+        for name, error in [
+            ("inherited_equals_bad_signature", "E_EQUALS_INHERITANCE"),
+            ("override_equals_wrong_type", "E_SIGNATURE"),
+            ("inherited_equals_with_fields", "E_UNSUPPORTED"),
+            ("option_class_unsupported", "E_UNSUPPORTED_TYPE"),
+            ("null_literal_unsupported", "E_NULL"),
+            ("unrelated_equals_inheritance", "E_AMBIGUOUS_MEMBER"),
+        ]:
+            self.assertEqual(cases[name]["expected_error"], error)
+            self.assertIn("source_blob_sha", cases[name])
+        self.assertIn("Option<Class>", d["semantics"]["null"])
 
     def test_value_vs_identity_stay_distinct(self):
         doc = json.loads(CONTRACT.read_text())
