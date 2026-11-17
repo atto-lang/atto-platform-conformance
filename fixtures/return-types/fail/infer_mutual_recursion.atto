@@ -1,0 +1,3 @@
+pub fnc first(): infer { return second(); }
+pub fnc second(): infer { return first(); }
+pub fnc main(): int { return first(); }
