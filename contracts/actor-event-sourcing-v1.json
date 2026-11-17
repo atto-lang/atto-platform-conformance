@@ -1,0 +1,144 @@
+{
+  "schema": "atto.actor.event-sourcing.conformance.v1",
+  "status": "TARGET_ONLY_NO_SOURCE_GUEST_EXECUTION",
+  "spec": "atto-lang/atto-spec/language/actor-event-sourcing-v1.md",
+  "basePersistenceContract": "atto-lang/atto-platform-conformance/contracts/actor-persistence-v1.json",
+  "grammar": "define [pub] durable actor Name as ... end",
+  "policySymbols": [
+    "#none",
+    "#snapshot",
+    "#event_sourced",
+    "#batched_sidecar"
+  ],
+  "policyRule": "event-sourced durable actor requires a real journal, dedupe, fences, commit-before-publication; batching is only transport",
+  "evidenceRules": {
+    "parserTargetIsNotGuestExecution": true,
+    "hostModelIsNotDiskProof": true,
+    "standaloneSQLiteStateSnapshotIsNotEventJournal": true,
+    "externalEffectsExactlyOnce": false
+  },
+  "backendStatus": {
+    "rs": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED"
+  },
+  "cases": [
+    {
+      "id": "canonical-durable-event-policy",
+      "phase": "parse",
+      "expect": "ACCEPT_TARGET_ONLY",
+      "fixture": "fixtures/actors/event_sourcing/durable_actor_declaration.atto"
+    },
+    {
+      "id": "event-as-actor-keyword",
+      "phase": "parse",
+      "expect": "REJECT_TARGET_ONLY",
+      "fixture": "fixtures/actors/event_sourcing/invalid_event_actor_keyword.atto",
+      "diagnostic": "E_ACTOR_PERSISTENCE_MODIFIER"
+    },
+    {
+      "id": "missing-runtime-journal",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "Provider missing event journal; must reject rather than snapshot-only downgrade"
+    },
+    {
+      "id": "epoch-fenced-before-dedupe",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "Stale activation must fail even for identical operation ID and payload digest"
+    },
+    {
+      "id": "single-writer-atomic-batch",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "Append all events+dedupe receipt+co-located outbox in one advertised transaction"
+    },
+    {
+      "id": "expected-version-cas",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "Stale expected_version fails and stream head remains unchanged"
+    },
+    {
+      "id": "same-op-same-payload",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "Retry returns original committed receipt with no duplicate event"
+    },
+    {
+      "id": "same-op-different-payload",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "Operation ID reused with a different digest is an error"
+    },
+    {
+      "id": "ambiguous-outcome",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "Lost provider receipt resolves original operation ID before actor proceeds"
+    },
+    {
+      "id": "commit-before-publication",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "No durable success reply or state publication until authoritative commit"
+    },
+    {
+      "id": "crash-after-commit-before-ack",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "SIGKILL after event append before acknowledgment; replay and retry dedupe identical"
+    },
+    {
+      "id": "snapshot-offset-contiguity",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "Snapshot offset and journal tail contiguous; missing event fails closed"
+    },
+    {
+      "id": "replay-purity",
+      "phase": "semantic",
+      "expect": "REJECT_TARGET_ONLY",
+      "diagnostic": "E_EVENT_REPLAY_EFFECT",
+      "scenario": "Pure apply_event cannot send, await, read clock, perform I/O, or mutate external state"
+    },
+    {
+      "id": "active-critical-loan-at-await",
+      "phase": "semantic",
+      "expect": "REJECT_TARGET_ONLY",
+      "diagnostic": "E_CHECKPOINT_BOUNDARY",
+      "scenario": "No sealed-state borrow survives persist_async suspension"
+    },
+    {
+      "id": "cross-tenant-identity",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "Guest ActorRef does not grant tenant credentials or store key authority"
+    },
+    {
+      "id": "batched-sidecar-only",
+      "phase": "semantic",
+      "expect": "REJECT_TARGET_ONLY",
+      "diagnostic": "E_EVENT_POLICY",
+      "scenario": "Batched sidecar alone has no durable journal policy"
+    },
+    {
+      "id": "outbox-external-side-effect",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "Effect dispatched via committed outbox only; not replayed directly"
+    },
+    {
+      "id": "fenced-supervisor-restart",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "Supervisor CONTROL path creates new incarnation and fences old writer before recovery"
+    }
+  ]
+}
