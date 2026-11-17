@@ -1,0 +1,113 @@
+{
+  "schema": "atto.equality-operators.v1",
+  "version": 1,
+  "status": "PROPOSED_PARTIAL_IMPLEMENTATION",
+  "normative_source": "atto-lang/atto-spec#62",
+  "related": "atto-lang/atto-spec#60",
+  "semantics": {
+    "value_operators": [
+      "eq",
+      "neq"
+    ],
+    "identity_operators": [
+      "==",
+      "!="
+    ],
+    "primitive_identity": "COMPILE_TIME_ERROR",
+    "object_value_equality": "calls equals() when the backend implements the contract; never fall back to identity",
+    "object_identity": "stable logical reference identity; not a promise of physical address equality",
+    "mixed_numeric_value_equality": "reject without explicit conversion (proposed)",
+    "naN_and_signed_zero": "IEEE float equality proposed; NaN neq NaN and +0 eq -0",
+    "single_evaluation": "evaluate lhs and rhs once in source order"
+  },
+  "required_cases": [
+    {
+      "id": "int_value_equal",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/int_value_equal.atto",
+      "expected_exit": 11
+    },
+    {
+      "id": "int_value_unequal",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/int_value_unequal.atto",
+      "expected_exit": 12
+    },
+    {
+      "id": "bool_value_unequal",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/bool_value_unequal.atto",
+      "expected_exit": 13
+    },
+    {
+      "id": "class_identity",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/class_identity.atto",
+      "expected_exit": 14
+    },
+    {
+      "id": "string_content_equality",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/string_content_equality.atto",
+      "expected_exit": 15
+    },
+    {
+      "id": "float_signed_zero",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/float_signed_zero.atto",
+      "expected_exit": 16
+    },
+    {
+      "id": "primitive_identity_equal",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/primitive_identity_equal.atto",
+      "expected_error": "E_IDENTITY_TYPE"
+    },
+    {
+      "id": "primitive_identity_unequal",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/primitive_identity_unequal.atto",
+      "expected_error": "E_IDENTITY_TYPE"
+    },
+    {
+      "id": "bool_identity_equal",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/bool_identity_equal.atto",
+      "expected_error": "E_IDENTITY_TYPE"
+    },
+    {
+      "id": "mixed_numeric_equality",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/mixed_numeric_equality.atto",
+      "expected_error": "E_TYPE"
+    },
+    {
+      "id": "tagged_adt_identity",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/tagged_adt_identity.atto",
+      "expected_error": "E_IDENTITY_TYPE"
+    }
+  ],
+  "deferred_cases": [
+    "dynamic equals() dispatch and null handling",
+    "unboxed value class identity rejected",
+    "cross-domain actor/borrow/transfer identity preservation",
+    "NaN edge cases and hashing contract"
+  ],
+  "backend_status": {
+    "rs-browser": "PENDING_FULL_CI",
+    "java": "NOT_VERIFIED",
+    "llvm": "NOT_VERIFIED",
+    "net": "NOT_VERIFIED",
+    "wasm-independent": "NOT_VERIFIED",
+    "forge": "NOT_VERIFIED",
+    "cranelift": "NOT_VERIFIED",
+    "js": "NOT_VERIFIED",
+    "hdl": "NOT_VERIFIED"
+  },
+  "evidence_rules": {
+    "pass": "Only real compiler + guest execution and exact SHA of source and run is a PASS",
+    "fail": "Diagnostic must match expected_error and emitted guest artifact must be absent",
+    "quorum": "Never infer multi-backend parity from Rust/browser only"
+  }
+}
