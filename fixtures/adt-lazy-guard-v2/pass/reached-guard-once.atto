@@ -1,0 +1,1 @@
+fnc observe(int n): bool { stdio.println("GUARD_ONCE"); return n > 0; } fnc optional(): Option<int> { return Some(41); } pub fnc main(): int { return match<int> optional() over on Some(n) when n > 100 : int -> 1, on Some(n) when observe(n) : int -> n + 1, on Some() : int -> 0, on None : int -> 2, end; }
