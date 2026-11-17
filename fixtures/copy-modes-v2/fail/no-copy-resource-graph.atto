@@ -1,0 +1,12 @@
+// expect-error: E_COPY_FORBIDDEN
+define @NoCopy class Resource as
+    pub val int handle = 7;
+end
+define class Request as
+    pub val Resource fd = new Resource();
+end
+pub fnc main(): int {
+    val original = new Request();
+    val clone = copy!! original;
+    return 0;
+}
