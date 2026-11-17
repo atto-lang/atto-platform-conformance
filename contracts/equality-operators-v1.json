@@ -113,17 +113,23 @@
   "evidence": {
     "rs-browser": {
       "source_repository": "atto-lang/atto-source.rs",
-      "source_head": "d28903f066ab6764b4b6e45d232478615b926036",
-      "source_tree": "e9e0a2483c6f1d0cb9db77d4922757f396a65609",
+      "source_head": "6333f4fc89201d433ff2b2cf6b396a8d901313cd",
+      "source_tree": "ff939cd49b624f73f59fa979bcd20f33244306ee",
       "runner_repository": "bait-bikes-test/atto-ci",
-      "runner_head": "abae865c78524a1e2cb6f6b6586084cb172e0456",
-      "runner_tree": "e9e0a2483c6f1d0cb9db77d4922757f396a65609",
-      "workflow_run": "https://github.com/bait-bikes-test/atto-ci/actions/runs/44123914626",
+      "runner_head": "b809519df82f753a0727722de57c7ba09e33f4e1",
+      "runner_tree": "ff939cd49b624f73f59fa979bcd20f33244306ee",
+      "workflow_run": "https://github.com/bait-bikes-test/atto-ci/actions/runs/44127011297",
       "conformance_passed": 496,
       "conformance_failed": 0,
       "native_vs_wasm_compared": 448,
       "registry_fixture_blobs_verified": 11,
-      "notes": "11 exact-blob portable registry cases vendored into compiler pass/fail corpus; positive cases executed as Wasm guests, negative cases rejected with checked diagnostics and no artifacts. Java differential not run. Other backends remain unverified."
+      "notes": "11 exact-blob portable registry cases vendored into compiler pass/fail corpus; positive cases executed as Wasm guests, negative cases rejected with checked diagnostics and no artifacts. Java differential not run. Other backends remain unverified.",
+      "additional_verified_hardening": [
+        "generator handle value/identity comparison fails before invalid guest emission",
+        "lambda equality analyzer rejects unsupported comparison domains",
+        "distinct equality/identity AST nodes verified by parser tests",
+        "same versus distinct class object identity with equal fields"
+      ]
     }
   }
 }
