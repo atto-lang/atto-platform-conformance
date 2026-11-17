@@ -1,0 +1,1 @@
+fnc observe(int n): bool { stdio.println("WRONG_TAG"); return true; } fnc value(): Result<int,string> { return Err("bad"); } pub fnc main(): int { return match<int> value() over on Ok(n) when observe(n) : int -> 9, on Err(error) when error == "bad" : int -> 42, on Err() : int -> 0, on Ok() : int -> 1, end; }
