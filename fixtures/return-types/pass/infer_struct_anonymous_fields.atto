@@ -1,0 +1,4 @@
+pub fnc main(): int {
+    const s = infer struct { x: 3, name: "Lima", active: true };
+    return s.x + 2;
+}
