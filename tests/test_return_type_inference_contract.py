@@ -56,6 +56,37 @@ class ReturnTypeManifestTests(unittest.TestCase):
                     self.assertEqual(case["diagnostic_category"], diag)
                 self.assertTrue((ROOT / case["path"]).is_file())
 
+    def test_struct_inference_target_cases(self):
+        data = json.loads((ROOT / "contracts/return-type-inference-typeof-v1.json").read_text())
+        indexed = {case["id"]: case for case in data["cases"]}
+        expected = {
+            "infer_struct_contextual_named": ("compile_and_run", 7),
+            "infer_struct_anonymous_fields": ("compile_and_run", 5),
+            "infer_struct_anonymous_empty": ("compile_and_run", 5),
+            "infer_struct_named_empty": ("compile_and_run", 5),
+            "infer_struct_contextual_parameter": ("compile_and_run", 5),
+            "infer_struct_missing_required": ("compile_error_no_artifact", "E_STRUCT_MISSING_FIELD"),
+            "infer_struct_unknown_field": ("compile_error_no_artifact", "E_NO_FIELD"),
+            "infer_struct_duplicate_field": ("compile_error_no_artifact", "E_DUPLICATE"),
+            "infer_struct_uninferred_field": ("compile_error_no_artifact", "E_TYPE_INFER_AMBIGUOUS"),
+            "infer_struct_nominal_shape_guess": ("compile_error_no_artifact", "E_TYPE_NOMINAL_MISMATCH"),
+            "infer_struct_quoted_field": ("compile_error_no_artifact", "E_STRUCT_FIELD_NAME"),
+        }
+        for name, (outcome, value) in expected.items():
+            with self.subTest(name=name):
+                case = indexed[name]
+                self.assertEqual(case["expected"], outcome)
+                if outcome == "compile_and_run":
+                    self.assertEqual(case["expected_exit"], value)
+                else:
+                    self.assertEqual(case["diagnostic_category"], value)
+                source = (ROOT / case["path"]).read_text()
+                self.assertIn("infer struct", source)
+                self.assertEqual(set(case["backend_status"]),
+                                 {"java", "llvm", "net", "wasm", "forge", "rs_wasm"})
+                self.assertTrue(all(status == "NOT_EXECUTED"
+                                    for status in case["backend_status"].values()))
+
     def test_legacy_compat_and_type_expression_denials(self):
         data = json.loads((ROOT / "contracts/return-type-inference-typeof-v1.json").read_text())
         names = {c["id"] for c in data["cases"]}
