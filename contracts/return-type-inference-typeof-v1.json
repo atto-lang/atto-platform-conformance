@@ -603,6 +603,156 @@
         "rs_wasm": "NOT_EXECUTED"
       },
       "diagnostic_category": "E_TYPE_QUERY_UNSUPPORTED"
+    },
+    {
+      "id": "infer_local_rebinding",
+      "expected": "compile_and_run",
+      "expected_exit": 5,
+      "path": "fixtures/return-types/pass/infer_local_rebinding.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_contextual_none",
+      "expected": "compile_and_run",
+      "expected_exit": 5,
+      "path": "fixtures/return-types/pass/infer_contextual_none.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_contextual_empty_array",
+      "expected": "compile_and_run",
+      "expected_exit": 5,
+      "path": "fixtures/return-types/pass/infer_contextual_empty_array.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_contextual_lambda",
+      "expected": "compile_and_run",
+      "expected_exit": 5,
+      "path": "fixtures/return-types/pass/infer_contextual_lambda.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_typed_recursion",
+      "expected": "compile_and_run",
+      "expected_exit": 6,
+      "path": "fixtures/return-types/pass/infer_typed_recursion.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_untyped_none",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_TYPE_INFER_AMBIGUOUS",
+      "path": "fixtures/return-types/fail/infer_untyped_none.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_untyped_empty_array",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_TYPE_INFER_AMBIGUOUS",
+      "path": "fixtures/return-types/fail/infer_untyped_empty_array.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_contextless_lambda",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_INFER_CONTEXT",
+      "path": "fixtures/return-types/fail/infer_contextless_lambda.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_local_retype",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_TYPE",
+      "path": "fixtures/return-types/fail/infer_local_retype.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "infer_mutual_recursion",
+      "expected": "compile_error_no_artifact",
+      "diagnostic_category": "E_RETURN_INFER_CYCLE",
+      "path": "fixtures/return-types/fail/infer_mutual_recursion.atto",
+      "source_kind": "atto",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "rs_wasm": "NOT_EXECUTED"
+      }
     }
   ],
   "typeof_syntax": {
