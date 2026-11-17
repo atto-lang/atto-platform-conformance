@@ -1,0 +1,14 @@
+// expect-exit: 42
+// candidate: real Rust/Wasm flat-class AOT copier, not generic graph copying
+define class Parcel as
+    pub let int value = 42;
+end
+pub fnc main(): int {
+    let original = new Parcel();
+    let copied = copy!! original;
+    block {
+        val writer = borrow! mut copied;
+        writer.value = 99;
+    }
+    return original.value;
+}
