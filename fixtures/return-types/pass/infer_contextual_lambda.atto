@@ -1,0 +1,6 @@
+pub fnc apply(fnc(int) -> int callback): int {
+    return callback(5);
+}
+pub fnc main(): infer {
+    return apply(|x| -> x);
+}
