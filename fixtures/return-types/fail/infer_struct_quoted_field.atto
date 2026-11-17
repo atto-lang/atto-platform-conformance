@@ -1,0 +1,4 @@
+pub fnc main(): int {
+    const s = infer struct { "not an identifier": 5 };
+    return 5;
+}
