@@ -1,0 +1,14 @@
+// expect-error: E_COPY_ACTOR_ISOLATION
+// candidate: same mutable shared nested identity must not cross actor boundary
+define class Packet as
+    pub let Shared<Array<int>> bytes = Shared.of(Array.of(1));
+end
+define actor Receiver receives Packet as
+    receive(Packet p) { }
+end
+pub suspends fnc main(): int {
+    val packet = new Packet();
+    val target = spawn Receiver();
+    target.send(copy! packet);
+    return 0;
+}
