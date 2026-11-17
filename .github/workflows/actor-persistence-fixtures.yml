@@ -3,12 +3,16 @@ on:
   pull_request:
     paths:
       - 'contracts/actor-persistence-v1.json'
+      - 'contracts/actor-persistence-scalar-wire-v1.json'
+      - 'tests/actor-persistence-wire.test.mjs'
       - 'fixtures/actors/persistence/**'
       - 'tests/test_actor_persistence_contract.py'
       - '.github/workflows/actor-persistence-fixtures.yml'
   push:
     paths:
       - 'contracts/actor-persistence-v1.json'
+      - 'contracts/actor-persistence-scalar-wire-v1.json'
+      - 'tests/actor-persistence-wire.test.mjs'
       - 'fixtures/actors/persistence/**'
       - 'tests/test_actor_persistence_contract.py'
       - '.github/workflows/actor-persistence-fixtures.yml'
@@ -23,5 +27,6 @@ jobs:
         with:
           persist-credentials: false
       - run: python3 -m json.tool contracts/actor-persistence-v1.json >/dev/null
+      - run: node --test tests/actor-persistence-wire.test.mjs
       - run: python3 -m unittest discover -s tests -p 'test_actor_persistence_contract.py' -v
       - run: echo 'HOST_ONLY - fixtures do not prove compiled actor recovery'
