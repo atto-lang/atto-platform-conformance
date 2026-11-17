@@ -1,0 +1,137 @@
+{
+  "schema": "atto.actor-persistence.v1",
+  "version": 1,
+  "status": "TARGET_ONLY_NO_BACKEND_EXECUTION",
+  "specification": "atto-lang/atto-spec/language/actor-persistence-v1.md",
+  "api": "atto-lang/atto-common-source/interfaces/actor_persistence_v1.atto",
+  "rule": "persistent means mandatory user load/save hooks and chosen backend; durable means runtime-owned disk checkpoint/restore without user persistence overrides",
+  "backend_status": {
+    "rs": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED"
+  },
+  "assertions": {
+    "noSilentFallback": true,
+    "quiescentSnapshotOnly": true,
+    "epochFencingRequired": true,
+    "stableSchemaRequired": true,
+    "noUserDurableHooks": true,
+    "externalEffectsExactlyOnce": false,
+    "stackContinuationPersisted": false
+  },
+  "cases": [
+    {
+      "id": "durable-keyword",
+      "phase": "parse",
+      "expect": "ACCEPT_TARGET_ONLY",
+      "fixture": "fixtures/actors/persistence/durable_empty.atto"
+    },
+    {
+      "id": "persistent-keyword",
+      "phase": "parse",
+      "expect": "ACCEPT_TARGET_ONLY",
+      "fixture": "fixtures/actors/persistence/persistent_empty.atto"
+    },
+    {
+      "id": "persistent-hook-signature-syntax",
+      "phase": "parse",
+      "expect": "ACCEPT_TARGET_ONLY",
+      "fixture": "fixtures/actors/persistence/persistent_hook_surface.atto"
+    },
+    {
+      "id": "both-keywords-rejected",
+      "phase": "semantic",
+      "expect": "REJECT_TARGET_ONLY",
+      "diagnostic": "E_ACTOR_PERSISTENCE_MODIFIER",
+      "fixture": "fixtures/actors/persistence/dual_modifier.atto"
+    },
+    {
+      "id": "missing-user-hooks-rejected",
+      "phase": "semantic",
+      "expect": "REJECT_TARGET_ONLY",
+      "diagnostic": "E_PERSIST_HOOKS",
+      "fixture": "fixtures/actors/persistence/persistent_empty.atto"
+    },
+    {
+      "id": "durable-user-hook-rejected",
+      "phase": "semantic",
+      "expect": "REJECT_TARGET_ONLY",
+      "diagnostic": "E_DURABLE_HOOK_OVERRIDE",
+      "fixture": "fixtures/actors/persistence/durable_custom_hook.atto"
+    },
+    {
+      "id": "socket-state-rejected",
+      "phase": "semantic",
+      "expect": "REJECT_TARGET_ONLY",
+      "diagnostic": "E_NON_PERSISTABLE_STATE",
+      "fixture": "fixtures/actors/persistence/non_persistable_socket.atto"
+    },
+    {
+      "id": "wrong-effect-hook-rejected",
+      "phase": "semantic",
+      "expect": "REJECT_TARGET_ONLY",
+      "diagnostic": "E_PERSIST_SIGNATURE",
+      "scenario": "sync hook does not satisfy required susp fnc signature"
+    },
+    {
+      "id": "unsafe-critical-checkpoint-rejected",
+      "phase": "semantic",
+      "expect": "REJECT_TARGET_ONLY",
+      "diagnostic": "E_CHECKPOINT_BOUNDARY",
+      "scenario": "a snapshot cannot cross a live critical-write loan or unsafe await"
+    },
+    {
+      "id": "persistent-store-choice",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "A developer hook delegates to SQLite, with a successful write and an independent reopen/read"
+    },
+    {
+      "id": "persistent-store-failure",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "Failed SQLite commit is rejected, no success acknowledgment, supervisor notified"
+    },
+    {
+      "id": "durable-disk-survival",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "Killed after durable disk commit, actor revives with exact logical ID/state and fresh epoch"
+    },
+    {
+      "id": "durable-torn-write",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "Killed before commit, torn write discarded and last committed snapshot recovered"
+    },
+    {
+      "id": "stale-writer-fenced",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "Old epoch may not commit over revived actor after lease takeover"
+    },
+    {
+      "id": "corrupt-disk-fail-closed",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "Corrupt checksum or incompatible state version never silently resets to default"
+    },
+    {
+      "id": "snapshot-graph-cycles",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "Owned object graph cycles restore without raw pointer reinterpretation"
+    },
+    {
+      "id": "mailbox-delivery-replay",
+      "phase": "runtime",
+      "expect": "NOT_EXECUTED",
+      "scenario": "Committed mailbox offset and state checkpoint recover atomically; external effects not exactly-once"
+    }
+  ]
+}
