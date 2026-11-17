@@ -1,7 +1,7 @@
 {
   "schema": "atto.equality-operators.v1",
   "version": 1,
-  "status": "PARTIAL_BACKEND_EXECUTED",
+  "status": "PROPOSED_PARTIAL_IMPLEMENTATION_WITH_NEW_GUEST_CASES_PENDING_REVERIFICATION",
   "normative_source": "atto-lang/atto-spec#62",
   "related": "atto-lang/atto-spec#60",
   "semantics": {
@@ -18,7 +18,9 @@
     "object_identity": "stable logical reference identity; not a promise of physical address equality",
     "mixed_numeric_value_equality": "reject without explicit conversion (proposed)",
     "naN_and_signed_zero": "IEEE float equality proposed; NaN neq NaN and +0 eq -0",
-    "single_evaluation": "evaluate lhs and rhs once in source order"
+    "single_evaluation": "evaluate lhs and rhs once in source order",
+    "class_value_equality": "Checked public non-static equals(Self other): bool, AOT direct dispatch, no implicit owner moves; neq negates exactly one call; absent or invalid methods fail closed.",
+    "class_ownership": "Method other argument is borrowed/non-owning, cannot be moved or transferred; identity checks never invoke equals."
   },
   "required_cases": [
     {
@@ -86,6 +88,42 @@
       "kind": "fail",
       "path": "fixtures/equality/fail/tagged_adt_identity.atto",
       "expected_error": "E_IDENTITY_TYPE"
+    },
+    {
+      "id": "class_equals_checked",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/class_equals_checked.atto",
+      "expected_exit": 42,
+      "source_blob_sha": "68d7b0e291dd380940406a50ab99818de3d420a6"
+    },
+    {
+      "id": "class_neq_method_once",
+      "kind": "pass",
+      "path": "fixtures/equality/pass/class_neq_method_once.atto",
+      "expected_exit": 42,
+      "expected_stdout": "equals called\n",
+      "source_blob_sha": "094b418bb9562da3f8272d1960418ac574dac4f6"
+    },
+    {
+      "id": "class_equals_invalid_signature",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/class_equals_invalid_signature.atto",
+      "expected_error": "E_EQUALS_SIGNATURE",
+      "source_blob_sha": "d792bc733cab067dd48223bde3013830fd90f369"
+    },
+    {
+      "id": "class_equals_borrowed_other_move",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/class_equals_borrowed_other_move.atto",
+      "expected_error": "E_BORROW",
+      "source_blob_sha": "8620adab6b467510af2b3f2de36fccfe97001825"
+    },
+    {
+      "id": "class_equals_missing_method",
+      "kind": "fail",
+      "path": "fixtures/equality/fail/class_equals_missing_method.atto",
+      "expected_error": "E_EQUALS",
+      "source_blob_sha": "6111ad2b345b0adf4405146a1bda7f51988ddd35"
     }
   ],
   "deferred_cases": [
@@ -95,7 +133,7 @@
     "NaN edge cases and hashing contract"
   ],
   "backend_status": {
-    "rs-browser": "FOCUSED_VERIFIED",
+    "rs-browser": "PENDING_EXPANDED_CI",
     "java": "NOT_VERIFIED",
     "llvm": "NOT_VERIFIED",
     "net": "NOT_VERIFIED",
@@ -129,7 +167,8 @@
         "lambda equality analyzer rejects unsupported comparison domains",
         "distinct equality/identity AST nodes verified by parser tests",
         "same versus distinct class object identity with equal fields"
-      ]
+      ],
+      "scope": "PRIOR_EVIDENCE_ONLY_11_OF_16_FIXTURES"
     }
   }
 }

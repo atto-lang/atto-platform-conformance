@@ -15,11 +15,13 @@ class EqualityContract(unittest.TestCase):
         self.assertEqual(doc["semantics"]["identity_operators"], ["==", "!="])
         self.assertEqual(doc["semantics"]["primitive_identity"], "COMPILE_TIME_ERROR")
         self.assertEqual(set(doc["backend_status"]), {"rs-browser", "java", "llvm", "net", "wasm-independent", "forge", "cranelift", "js", "hdl"})
-        self.assertEqual(doc["backend_status"]["rs-browser"], "FOCUSED_VERIFIED")
+        self.assertEqual(doc["backend_status"]["rs-browser"], "PENDING_EXPANDED_CI")
         self.assertTrue(all(value == "NOT_VERIFIED" for key, value in doc["backend_status"].items() if key != "rs-browser"))
         evidence = doc["evidence"]["rs-browser"]
         self.assertEqual(evidence["source_tree"], evidence["runner_tree"])
-        self.assertEqual(evidence["registry_fixture_blobs_verified"], len(doc["required_cases"]))
+        self.assertEqual(evidence["registry_fixture_blobs_verified"], 11)
+        self.assertEqual(len(doc["required_cases"]), 16)
+        self.assertEqual(evidence["scope"], "PRIOR_EVIDENCE_ONLY_11_OF_16_FIXTURES")
         self.assertEqual(evidence["conformance_failed"], 0)
         self.assertGreaterEqual(evidence["native_vs_wasm_compared"], 448)
         self.assertIn("bait-bikes-test/atto-ci/actions/runs/", evidence["workflow_run"])
@@ -43,6 +45,25 @@ class EqualityContract(unittest.TestCase):
                 self.assertEqual(case["kind"], "fail")
                 self.assertIn("// expect-error: " + case["expected_error"], source)
                 self.assertNotIn("expected_exit", case)
+
+    def test_checked_class_dispatch_fails_closed(self):
+        doc = json.loads(CONTRACT.read_text())
+        cases = {case["id"]: case for case in doc["required_cases"]}
+        self.assertIn("equals(Self other): bool", doc["semantics"]["class_value_equality"])
+        self.assertIn("borrowed", doc["semantics"]["class_ownership"])
+        for name in ["class_equals_checked", "class_neq_method_once"]:
+            self.assertEqual(cases[name]["kind"], "pass")
+            text = (ROOT / cases[name]["path"]).read_text()
+            self.assertIn("pub equals(", text)
+        once = cases["class_neq_method_once"]
+        self.assertEqual(once["expected_stdout"], "equals called\\n")
+        self.assertIn("// expect-stdout: equals called", (ROOT / once["path"]).read_text())
+        for name, diagnostic in [
+            ("class_equals_invalid_signature", "E_EQUALS_SIGNATURE"),
+            ("class_equals_borrowed_other_move", "E_BORROW"),
+            ("class_equals_missing_method", "E_EQUALS"),
+        ]:
+            self.assertEqual(cases[name]["expected_error"], diagnostic)
 
     def test_value_vs_identity_stay_distinct(self):
         doc = json.loads(CONTRACT.read_text())
