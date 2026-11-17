@@ -1,7 +1,7 @@
 {
   "schema": "atto.equality-operators.v1",
   "version": 1,
-  "status": "EXPANDED_19_CASE_REGISTRY_PENDING_NEW_HEAD_GUEST_CI",
+  "status": "PARTIAL_BACKEND_EXECUTED",
   "normative_source": "atto-lang/atto-spec#62",
   "related": "atto-lang/atto-spec#60",
   "semantics": {
@@ -155,7 +155,7 @@
     "NaN edge cases and hashing contract"
   ],
   "backend_status": {
-    "rs-browser": "PENDING_EXPANDED_CI",
+    "rs-browser": "FOCUSED_VERIFIED",
     "java": "NOT_VERIFIED",
     "llvm": "NOT_VERIFIED",
     "net": "NOT_VERIFIED",
@@ -173,17 +173,17 @@
   "evidence": {
     "rs-browser": {
       "source_repository": "atto-lang/atto-source.rs",
-      "source_head": "b64f8f013c5fedb0bfd1043db749f60fb18fa3f0",
-      "source_tree": "57d586e13967d8971aece99b299c10d5db144dfd",
+      "source_head": "af370b686de70cca5965613f23bb81610f7066d9",
+      "source_tree": "37905e80be9e9b58c501d8781d8e385952e81968",
       "runner_repository": "bait-bikes-test/atto-ci",
-      "runner_head": "e0245194eab1fbfe789d1f69016bc76f2581a9df",
-      "runner_tree": "57d586e13967d8971aece99b299c10d5db144dfd",
-      "workflow_run": "https://github.com/bait-bikes-test/atto-ci/actions/runs/44131753192",
-      "conformance_passed": 501,
+      "runner_head": "2701758c7fd6cd0fda8a7b8121a511c99b7bbbc0",
+      "runner_tree": "37905e80be9e9b58c501d8781d8e385952e81968",
+      "workflow_run": "https://github.com/bait-bikes-test/atto-ci/actions/runs/44134604206",
+      "conformance_passed": 504,
       "conformance_failed": 0,
-      "native_vs_wasm_compared": 453,
-      "registry_fixture_blobs_verified": 16,
-      "notes": "16 source-blob-verified portable equality fixtures executed or compile-rejected by Rust/browser native and Wasm compiler, including checked equals dispatch, borrowed other, once-only negation and missing/invalid equals. Java differential skipped; all other targets remain unverified.",
+      "native_vs_wasm_compared": 456,
+      "registry_fixture_blobs_verified": 19,
+      "notes": "All 19 portable equality source fixtures are recorded with source Git blob SHAs; source Rust/browser pass/fail corpus executed or rejected them, including non-owning class self identity and self owner escape. Chromium E2E and artifact provenance passed. Java differential skipped; all other backends NOT_VERIFIED.",
       "additional_verified_hardening": [
         "generator handle value/identity comparison fails before invalid guest emission",
         "lambda equality analyzer rejects unsupported comparison domains",
@@ -193,8 +193,7 @@
         "explicit .equals(other) and infix eq/neq preserve both owners",
         "neq dispatches equals exactly once with verified stdout oracle",
         "deep nested operator checker retains stack bound after dispatch helper"
-      ],
-      "scope": "PRIOR_PASS_APPLIES_TO_16_OF_19_PORTABLE_CASES"
+      ]
     }
   }
 }

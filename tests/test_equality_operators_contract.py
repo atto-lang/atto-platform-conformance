@@ -16,16 +16,14 @@ class EqualityContract(unittest.TestCase):
         self.assertEqual(doc["semantics"]["identity_operators"], ["==", "!="])
         self.assertEqual(doc["semantics"]["primitive_identity"], "COMPILE_TIME_ERROR")
         self.assertEqual(set(doc["backend_status"]), {"rs-browser", "java", "llvm", "net", "wasm-independent", "forge", "cranelift", "js", "hdl"})
-        self.assertEqual(doc["backend_status"]["rs-browser"], "PENDING_EXPANDED_CI")
+        self.assertEqual(doc["backend_status"]["rs-browser"], "FOCUSED_VERIFIED")
         self.assertTrue(all(value == "NOT_VERIFIED" for key, value in doc["backend_status"].items() if key != "rs-browser"))
         evidence = doc["evidence"]["rs-browser"]
         self.assertEqual(evidence["source_tree"], evidence["runner_tree"])
-        self.assertEqual(evidence["registry_fixture_blobs_verified"], 16)
+        self.assertEqual(evidence["registry_fixture_blobs_verified"], len(doc["required_cases"]))
         self.assertEqual(len(doc["required_cases"]), 19)
-        self.assertEqual(evidence["scope"], "PRIOR_PASS_APPLIES_TO_16_OF_19_PORTABLE_CASES")
-        self.assertEqual(len(doc["required_cases"]), 16)
         self.assertEqual(evidence["conformance_failed"], 0)
-        self.assertGreaterEqual(evidence["native_vs_wasm_compared"], 453)
+        self.assertGreaterEqual(evidence["native_vs_wasm_compared"], 456)
         self.assertIn("bait-bikes-test/atto-ci/actions/runs/", evidence["workflow_run"])
 
     def test_fixtures_exist_and_have_expected_headers(self):
