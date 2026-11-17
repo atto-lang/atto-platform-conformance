@@ -140,5 +140,58 @@
       "expect": "NOT_EXECUTED",
       "scenario": "Supervisor CONTROL path creates new incarnation and fences old writer before recovery"
     }
-  ]
+  ],
+  "nativeHostJournalEvidence": {
+    "classification": "NATIVE_SQLITE_HOST_EVENT_JOURNAL_ONLY",
+    "repository": "atto-lang/atto-source.rs",
+    "draftPullRequest": 269,
+    "sourceHead": "6201913d29c25eb1f7a6e68de3fe24cc76297225",
+    "baseCheckpointPR": 266,
+    "journalApi": "native/persistence_sqlite/atto_actor_journal_v1.h",
+    "gitBlobShas": {
+      "header": "41ec374c919d6f334ad8fe9df96a7bbb7131e4b6",
+      "implementation": "931eccd6b04e15654ffe2ec95060a1807efc4887",
+      "nativeTests": "c5d65aa877903855c35f069a29e1b8cec230282d"
+    },
+    "localTests": {
+      "result": "PASSED",
+      "scope": "native C host only",
+      "compilerMatrix": [
+        "GCC 14.2 O1 UBSan",
+        "GCC 14.2 O2 UBSan",
+        "Clang 17 O1 UBSan",
+        "Clang 17 O2 UBSan",
+        "GCC 14.2 O1 ASan+UBSan",
+        "Clang 17 O1 ASan+UBSan"
+      ],
+      "scenarios": [
+        "atomic event batch, operation receipt and outbox commit",
+        "outbox trigger fault rolls back all writes",
+        "fenced old epoch before operation dedupe",
+        "expected stream version CAS",
+        "SHA-256 command hash binding and event integrity",
+        "100 events committed, SIGKILL, fresh connection contiguous replay",
+        "duplicate original operation reply without re-append",
+        "SIGKILL during uncommitted transaction rolls back",
+        "tampered/missing journal entries fail read"
+      ]
+    },
+    "githubActions": "NOT_EXECUTED_PRE_RUNNER_OR_ZERO_STEP_FAILURE",
+    "privateCarrier": {
+      "repository": "zed-pkg-test/formal-methods-cross-check",
+      "branch": "ci/atto-sqlite-event-journal-pr269-20261117",
+      "head": "a08de4a39ef045e15bfa55150c6b80ee5983c8d0",
+      "verifiedSourceBlobs": 5,
+      "result": "NOT_EXECUTED"
+    },
+    "limitations": [
+      "no compiled AttoLang actor guest",
+      "no typechecked pure decide/apply_event",
+      "no supervisor-mediated activation or durable mailbox",
+      "no outbox delivery relay",
+      "no snapshot/journal reconciliation or migration",
+      "no cross-backend parity",
+      "SIGKILL not equivalent to hardware power loss"
+    ]
+  }
 }
