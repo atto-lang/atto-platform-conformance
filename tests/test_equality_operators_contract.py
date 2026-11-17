@@ -39,7 +39,7 @@ class EqualityContract(unittest.TestCase):
             source = source_bytes.decode("utf-8")
             if case.get("source_blob_sha"):
                 computed = hashlib.sha1(
-                    b"blob " + str(len(source_bytes)).encode() + b"\\0" + source_bytes
+                    b"blob " + str(len(source_bytes)).encode() + b"\0" + source_bytes
                 ).hexdigest()
                 self.assertEqual(computed, case["source_blob_sha"], case["path"])
             self.assertIn("pub fnc main(): int", source)
@@ -62,7 +62,7 @@ class EqualityContract(unittest.TestCase):
             text = (ROOT / cases[name]["path"]).read_text()
             self.assertIn("pub equals(", text)
         once = cases["class_neq_method_once"]
-        self.assertEqual(once["expected_stdout"], "equals called\\n")
+        self.assertEqual(once["expected_stdout"], "equals called\n")
         self.assertIn("// expect-stdout: equals called", (ROOT / once["path"]).read_text())
         for name, diagnostic in [
             ("class_equals_invalid_signature", "E_EQUALS_SIGNATURE"),
