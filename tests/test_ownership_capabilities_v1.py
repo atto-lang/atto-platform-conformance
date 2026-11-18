@@ -123,5 +123,18 @@ class OwnershipContract(unittest.TestCase):
         self.assertTrue(REQUIRED_DIAGNOSTICS <= found)
 
 
+    def test_pinned_storage_must_not_cross_unproven_domain_boundaries(self):
+        for case_id in (
+            "pinned_mailbox_prepare", "pinned_direct_actor_move",
+            "pinned_task_capture_move", "pinned_frozen_publication",
+            "pinned_guarded_promotion",
+        ):
+            with self.subTest(case=case_id):
+                case = self.by_id[case_id]
+                self.assertEqual(case["capability"], "pin")
+                self.assertEqual(case["expected"], "reject")
+                self.assertEqual(case["diagnostic"], "E_PIN_BOUNDARY_TRANSFER")
+
+
 if __name__ == "__main__":
     unittest.main()
