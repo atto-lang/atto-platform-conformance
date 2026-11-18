@@ -1,0 +1,8 @@
+// expect-exit: 9
+define class Box<T> as
+  pub T value;
+end
+pub fnc main(): int {
+  val Box<int> b = new Box<int>(value: 9);
+  return b.value;
+}
