@@ -1,0 +1,8 @@
+// expect-error: E_GUARD_ESCAPE
+// exclusive callback cannot smuggle protected storage out via its return value
+define class Box as pub let int value = 42; end
+pub fnc main(): int {
+  val state = share! RwLock(new Box());
+  val escaped = state.with_write(|mut box| -> box);
+  return escaped.value;
+}
