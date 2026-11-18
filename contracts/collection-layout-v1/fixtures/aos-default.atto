@@ -4,7 +4,7 @@ define struct Particle {
     velocity: int;
 }
 
-fnc layout_default() -> int {
+fnc main() -> int {
     let particles: Array<Particle> = [
         Particle(x=1, y=2, velocity=3),
         Particle(x=4, y=5, velocity=6)
