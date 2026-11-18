@@ -1,0 +1,11 @@
+define struct Particle as
+    int x;
+    int y;
+    int velocity;
+end
+
+fnc main() -> int {
+    val Particle = 99;
+    val item = Particle(x=1, y=2, velocity=3);
+    return item.x;
+}
