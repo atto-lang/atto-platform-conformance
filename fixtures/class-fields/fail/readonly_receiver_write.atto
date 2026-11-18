@@ -1,0 +1,6 @@
+// expect-error: E_OWNERSHIP
+define class Counter as
+  pub int value = 1;
+  change(): int { self.value = 9; return self.value; }
+end
+pub fnc main(): int { return 0; }
