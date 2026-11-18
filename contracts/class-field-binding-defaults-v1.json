@@ -1,0 +1,98 @@
+{
+  "schema": "atto.class-field-binding-defaults.v1",
+  "version": 1,
+  "status": "ACCEPTED_TARGET_NOT_CROSS_BACKEND_VERIFIED",
+  "owner": "atto-lang/atto-spec",
+  "spec_path": "language/class-field-binding-defaults-v1.md",
+  "semantics": {
+    "scope": "ordinary type-first class fields only; no change to type-first locals, module define const, structs/records or sealed actor state",
+    "default": "T field = e is exactly let T field = e, regardless of T (including generic instantiations)",
+    "binding": {
+      "let": "reassignable",
+      "val": "not reassignable",
+      "final": "single definite assignment only",
+      "const": "non-reassignable with constexpr initializer"
+    },
+    "referent": {
+      "mut": "separate requested writable-referent permission; no ownership bypass",
+      "omitted": "no writable referent permission from declaration alone"
+    },
+    "local_shorthand": "type-first local T x = e remains const T x = e",
+    "const_scope": "class const is constexpr; file/module direct os.read_env runtime-once special case does not apply",
+    "actor": "sealed actor state remains access-controlled; no bypass via class default"
+  },
+  "required_cases": [
+    {
+      "id": "scalar_default_and_explicit_let",
+      "kind": "pass",
+      "path": "fixtures/class-fields/pass/scalar_default_let.atto",
+      "expected_exit": 20,
+      "verification": "EXECUTE_COMPILED_GUEST"
+    },
+    {
+      "id": "nonprimitive_default",
+      "kind": "pass",
+      "path": "fixtures/class-fields/pass/nonprimitive_default_let.atto",
+      "expected_exit": 5,
+      "verification": "EXECUTE_COMPILED_GUEST"
+    },
+    {
+      "id": "generic_default_type_independent",
+      "kind": "pass",
+      "path": "fixtures/class-fields/pass/generic_default_let.atto",
+      "expected_exit": 9,
+      "verification": "EXECUTE_COMPILED_GUEST_WHEN_GENERIC_BACKEND_SUPPORTED"
+    },
+    {
+      "id": "let_constructor_write",
+      "kind": "pass",
+      "path": "fixtures/class-fields/pass/let_constructor_write.atto",
+      "expected_exit": 9,
+      "verification": "EXECUTE_COMPILED_GUEST"
+    },
+    {
+      "id": "val_constructor_reassignment",
+      "kind": "fail",
+      "path": "fixtures/class-fields/fail/val_field_reassignment.atto",
+      "expected_error": "E_IMMUTABLE",
+      "verification": "COMPILER_REJECT_NO_ARTIFACT"
+    },
+    {
+      "id": "final_reassignment",
+      "kind": "fail",
+      "path": "fixtures/class-fields/fail/final_field_reassignment.atto",
+      "expected_error": "E_IMMUTABLE",
+      "verification": "COMPILER_REJECT_NO_ARTIFACT"
+    },
+    {
+      "id": "readonly_receiver_write",
+      "kind": "fail",
+      "path": "fixtures/class-fields/fail/readonly_receiver_write.atto",
+      "expected_error": "E_OWNERSHIP",
+      "verification": "COMPILER_REJECT_NO_ARTIFACT"
+    },
+    {
+      "id": "class_const_runtime_initializer",
+      "kind": "fail",
+      "path": "fixtures/class-fields/fail/class_const_runtime.atto",
+      "expected_error": "E_CONST",
+      "verification": "COMPILER_REJECT_NO_ARTIFACT"
+    },
+    {
+      "id": "local_shorthand_remains_const",
+      "kind": "fail",
+      "path": "fixtures/class-fields/fail/local_shorthand_runtime.atto",
+      "expected_error": "E_CONST",
+      "verification": "COMPILER_REJECT_NO_ARTIFACT"
+    }
+  ],
+  "backend_status": {
+    "rs-browser": "PARSER_SUBSET_ONLY_NOT_GUEST_VERIFIED",
+    "java": "NOT_VERIFIED",
+    "llvm": "NOT_VERIFIED",
+    "net": "NOT_VERIFIED",
+    "wasm-independent": "NOT_VERIFIED",
+    "forge": "NOT_VERIFIED"
+  },
+  "evidence_rule": "Only real compiler diagnostics with no artifact, and real executed compiled guests pinned to SHA count as backend conformance. Parser AST tests are not guest execution. Unsupported syntax must reject, not fake success."
+}
