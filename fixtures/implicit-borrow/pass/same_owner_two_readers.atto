@@ -1,0 +1,8 @@
+// expect-exit: 42
+// Temporary read loans overlap while later arguments evaluate.
+define class Box as pub let int value = 21; end
+fnc sum(Box a, Box b): int { return a.value + b.value; }
+pub fnc main(): int {
+  val b = new Box();
+  return sum(b, b);
+}

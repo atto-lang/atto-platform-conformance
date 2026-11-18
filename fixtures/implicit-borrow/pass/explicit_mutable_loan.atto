@@ -1,0 +1,9 @@
+// expect-exit: 42
+// The callee's static write effect requires mut at the call site.
+define class Box as pub let int value = 1; end
+fnc bump(Box b): void { b.value += 41; }
+pub fnc main(): int {
+  val mut Box b = new Box();
+  bump(mut b);
+  return b.value;
+}

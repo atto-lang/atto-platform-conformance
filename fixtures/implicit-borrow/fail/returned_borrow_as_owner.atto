@@ -1,0 +1,9 @@
+// expect-error: E_BORROW
+// Borrowed formals have no owned-return authority.
+define class Box as pub let int value = 1; end
+fnc leak(Box b): Box { return b; }
+pub fnc main(): int {
+  val b = new Box();
+  val escaped = leak(b);
+  return escaped.value;
+}

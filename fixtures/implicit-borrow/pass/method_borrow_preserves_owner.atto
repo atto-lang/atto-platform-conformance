@@ -1,0 +1,11 @@
+// expect-exit: 42
+// Nonprimitive method arguments borrow as function parameters do.
+define class Box as pub let int value = 21; end
+define class Reader as
+  pub twice(Box b): int { return b.value + b.value; }
+end
+pub fnc main(): int {
+  val reader = new Reader();
+  val box = new Box();
+  return reader.twice(box);
+}

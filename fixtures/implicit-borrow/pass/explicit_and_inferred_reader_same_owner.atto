@@ -1,0 +1,8 @@
+// expect-exit: 42
+// Both checked loans remain nonowning; no retained share/copy is created.
+define class Box as pub let int value = 21; end
+fnc both(Box a, Box b): int { return a.value + b.value; }
+pub fnc main(): int {
+  val b = new Box();
+  return both(borrow! b, b);
+}

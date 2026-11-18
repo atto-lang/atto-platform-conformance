@@ -1,0 +1,133 @@
+{
+  "schema": "atto.implicit-argument-borrow.v1",
+  "version": 1,
+  "status": "TARGET_NOT_EXECUTED",
+  "spec_pr": "https://github.com/atto-lang/atto-spec/pull/89",
+  "language_spec_pr": "https://github.com/ores-truffle-oreslang/attolang-language-spec.md/pull/80",
+  "existing_partial_compiler_pr": "https://github.com/atto-lang/atto-source.rs/pull/332",
+  "semantics": {
+    "plain_nonprimitive_formal": "default nonowning borrow, no implicit move or share",
+    "read_call": "read(foo) ~ read(borrow! foo) under equal verified provenance",
+    "write_call": "write(mut foo) requires sealed mutable param effect and exclusive permission",
+    "ambiguous": "require explicit borrow! and verified provenance or reject, no guest",
+    "call_order": "single evaluation in lexical source order; overlapping loans across later argument evaluation",
+    "breakage": "old implicitly consuming class formals require an explicit, versioned migration; owned-formal grammar pending",
+    "cross_actor": "no raw actor-local borrow crosses actor/isolate/send/await boundaries without independently proven capability"
+  },
+  "required_cases": [
+    {
+      "id": "IB_P_01",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/readonly_preserves_owner.atto",
+      "expected_exit": 42,
+      "proof": "compiled guest must execute and preserve caller ownership"
+    },
+    {
+      "id": "IB_P_02",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/explicit_read_equivalence.atto",
+      "expected_exit": 42,
+      "proof": "compiled guest must execute and preserve caller ownership"
+    },
+    {
+      "id": "IB_P_03",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/same_owner_two_readers.atto",
+      "expected_exit": 42,
+      "proof": "compiled guest must execute and preserve caller ownership"
+    },
+    {
+      "id": "IB_P_04",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/explicit_mutable_loan.atto",
+      "expected_exit": 42,
+      "proof": "compiled guest must execute and preserve caller ownership"
+    },
+    {
+      "id": "IB_P_05",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/method_borrow_preserves_owner.atto",
+      "expected_exit": 42,
+      "proof": "compiled guest must execute and preserve caller ownership"
+    },
+    {
+      "id": "IB_P_06",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/explicit_and_inferred_reader_same_owner.atto",
+      "expected_exit": 42,
+      "proof": "compiled guest must execute and preserve caller ownership"
+    },
+    {
+      "id": "IB_F_01",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/mutation_missing_mut.atto",
+      "expected_error": "E_BORROW_MUT_REQUIRED",
+      "proof": "reject before artifact emission with a deterministic ownership diagnostic"
+    },
+    {
+      "id": "IB_F_02",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/shared_read_conflicts_with_mut.atto",
+      "expected_error": "E_BORROW",
+      "proof": "reject before artifact emission with a deterministic ownership diagnostic"
+    },
+    {
+      "id": "IB_F_03",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/returned_borrow_as_owner.atto",
+      "expected_error": "E_BORROW",
+      "proof": "reject before artifact emission with a deterministic ownership diagnostic"
+    },
+    {
+      "id": "IB_F_04",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/caller_owner_after_take.atto",
+      "expected_error": "E_MOVED",
+      "proof": "reject before artifact emission with a deterministic ownership diagnostic"
+    },
+    {
+      "id": "IB_F_05",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/temporary_without_proven_place.atto",
+      "expected_error": "E_BORROW_AMBIGUOUS",
+      "proof": "reject before artifact emission with a deterministic ownership diagnostic"
+    },
+    {
+      "id": "IB_F_06",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/borrow_not_ownership_transfer.atto",
+      "expected_error": "E_BORROW",
+      "proof": "reject before artifact emission with a deterministic ownership diagnostic"
+    },
+    {
+      "id": "IB_F_07",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/shared_alias_no_hidden_write.atto",
+      "expected_error": "E_BORROW",
+      "proof": "reject before artifact emission with a deterministic ownership diagnostic"
+    },
+    {
+      "id": "IB_F_08",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/explicit_borrow_does_not_escape.atto",
+      "expected_error": "E_BORROW",
+      "proof": "reject before artifact emission with a deterministic ownership diagnostic"
+    },
+    {
+      "id": "IB_F_09",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/named_argument_conflict.atto",
+      "expected_error": "E_BORROW",
+      "proof": "reject before artifact emission with a deterministic ownership diagnostic"
+    }
+  ],
+  "backend_status": {
+    "rs-browser": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  },
+  "evidence_rule": "Source fixtures and local registry validation are NOT compiler or guest execution. For each backend record exact source SHA/tree, build/guest artifacts, positive guest output, negative diagnostic and zero output artifact, and nonzero workflow steps."
+}

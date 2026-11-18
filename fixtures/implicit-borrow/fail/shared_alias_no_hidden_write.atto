@@ -1,0 +1,9 @@
+// expect-error: E_BORROW
+// Ordinary borrow never turns into persistent shared mutation authority.
+define class Box as pub let int value = 1; end
+fnc write(Box b): void { b.value += 1; }
+pub fnc main(): int {
+  val b = new Box();
+  write(mut b);
+  return b.value;
+}

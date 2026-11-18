@@ -12,6 +12,10 @@ Execute portable language fixtures and record target-specific results.
 - Use test fixtures and reproducible evidence to distinguish proposed behavior from implemented behavior.
 - Record breaking changes, migration notes, and dependencies on other AttoLang components.
 
+## Proposed implicit argument borrowing
+
+[Target registry](contracts/implicit-argument-borrow-v1.json): `python3 bin/validate_implicit_argument_borrow.py` validates fixture integrity only. Each compiler and guest must be independently tested; all new backend states begin `NOT_EXECUTED`.
+
 ## Validation
 
 Validation should rely on checked-in tests and exact-commit CI results. When reporting parity, distinguish **passed**, **failed**, **unsupported**, and **not executed**. Avoid inferring guest-runtime support from host-only tests.

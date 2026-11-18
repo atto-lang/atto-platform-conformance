@@ -1,0 +1,8 @@
+// expect-exit: 42
+// Target: bare Box formal is a loan; two calls leave owner usable.
+define class Box as pub let int value = 21; end
+fnc read(Box b): int { return b.value; }
+pub fnc main(): int {
+  val b = new Box();
+  return read(b) + read(b);
+}
