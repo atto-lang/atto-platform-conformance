@@ -40,7 +40,7 @@
   "source": {
     "repo": "atto-lang/atto-source.rs",
     "branch": "feat/bitwise-triple-shifts-v1-20261117",
-    "commit": "ab96b5d36589def227da007babb025774b09ea33",
+    "commit": "763ec6050e6608b1d16e8b0f02632756dabc0923",
     "pr": "https://github.com/atto-lang/atto-source.rs/pull/334"
   },
   "required_cases": [
