@@ -1,0 +1,83 @@
+{
+  "schema": "atto.file-module-const.v1",
+  "version": 1,
+  "status": "TARGET_NOT_EXECUTED",
+  "owner": "atto-lang/atto-spec",
+  "spec_path": "language/file-module-const-v1.md",
+  "semantics": {
+    "syntax": [
+      "define const T name = constexpr;",
+      "define const T name as constexpr;"
+    ],
+    "compile_time_only": true,
+    "top_level_unconditional": true,
+    "runtime_env_forbidden": true,
+    "initializer_effects_forbidden": true,
+    "mutable_process_global": false
+  },
+  "required_cases": [
+    {
+      "id": "equal_and_as",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/equal_and_as.atto",
+      "expected_exit": 12
+    },
+    {
+      "id": "references_fold",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/references_fold.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "bool_const",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/bool_const.atto",
+      "expected_exit": 1
+    },
+    {
+      "id": "env_runtime",
+      "kind": "fail",
+      "path": "fixtures/file-module-const/fail/env_runtime.atto",
+      "expected_error": "E_CONST"
+    },
+    {
+      "id": "runtime_call",
+      "kind": "fail",
+      "path": "fixtures/file-module-const/fail/runtime_call.atto",
+      "expected_error": "E_CONST"
+    },
+    {
+      "id": "type_mismatch",
+      "kind": "fail",
+      "path": "fixtures/file-module-const/fail/type_mismatch.atto",
+      "expected_error": "E_CONST_TYPE"
+    },
+    {
+      "id": "duplicate",
+      "kind": "fail",
+      "path": "fixtures/file-module-const/fail/duplicate.atto",
+      "expected_error": "E_DUPLICATE"
+    },
+    {
+      "id": "cycle",
+      "kind": "fail",
+      "path": "fixtures/file-module-const/fail/cycle.atto",
+      "expected_error": "E_CONST_CYCLE"
+    },
+    {
+      "id": "overflow",
+      "kind": "fail",
+      "path": "fixtures/file-module-const/fail/overflow.atto",
+      "expected_error": "E_CONST_OVERFLOW"
+    }
+  ],
+  "backend_status": {
+    "rs-browser": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  },
+  "evidence_rule": "Only an actual backend compiler's exact SHA, compile diagnostics and executed compiled guest artifact can establish support. Registry presence and host-only validation are not evidence of execution."
+}

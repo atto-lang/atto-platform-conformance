@@ -1,0 +1,3 @@
+// expect-error: E_CONST
+define const int foo as os.read_env("foo_bar");
+pub fnc main(): int { return foo; }

@@ -1,0 +1,4 @@
+// expect-error: E_CONST_CYCLE
+define const int first = second + 1;
+define const int second = first + 1;
+pub fnc main(): int { return first; }
