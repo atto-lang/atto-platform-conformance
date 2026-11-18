@@ -1,0 +1,13 @@
+define struct Particle {
+    x: int;
+    y: int;
+    velocity: int;
+}
+
+fnc require_soa(values: Array<Particle, layout=soa>) -> int {
+    return values.length();
+}
+
+fnc reject_conversion(values: Array<Particle, layout=aos>) -> int {
+    return require_soa(values);
+}
