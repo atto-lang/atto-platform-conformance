@@ -4,7 +4,7 @@ define struct Particle {
     velocity: int;
 }
 
-fnc layout_named_order() -> int {
+fnc main() -> int {
     let a: Array<Particle, layout=soa> = [];
     let b: Array<layout=soa, T=Particle> = [];
     return a.length() + b.length();
