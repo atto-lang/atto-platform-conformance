@@ -321,6 +321,13 @@
       "layer": "host_runtime_model",
       "capability": "pin",
       "expected": "accept"
+    },
+    {
+      "id": "read_wrong_region_permit",
+      "layer": "host_runtime_model",
+      "capability": "freeze",
+      "expected": "reject",
+      "diagnostic": "WrongDomain"
     }
   ]
 }
