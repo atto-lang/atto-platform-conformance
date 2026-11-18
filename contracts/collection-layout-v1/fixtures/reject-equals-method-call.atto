@@ -1,0 +1,10 @@
+define class Counter as
+    int value: 0;
+    add(int amount) -> int {
+        return self.value + amount;
+    }
+end
+fnc main() -> int {
+    val c = new Counter();
+    return c.add(amount=42);
+}
