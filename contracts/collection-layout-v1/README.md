@@ -19,3 +19,16 @@ A future implementation must provide for each backend: source and compiler immut
 ## Struct initializer spelling parity
 
 `Particle{x: 10, ...}` is a struct field literal and `Particle(x=10, ...)` is a dedicated equals-based **struct aggregate initializer**, not an ordinary function named-argument call. `struct-initializer-equivalence.atto` requires matching logical values in a SoA array; `reject-duplicate-struct-field.atto` rejects repeated field keys before guest emission. This does **not** relax the general `name: value` callable rule and does not claim compilation or runtime execution.
+
+## Strict native compiler -> guest Wasm harness (not yet passing)
+
+Once the compiler actually supports these source constructs, use an independently built, immutable native `attoc` binary:
+
+```sh
+ATTOC=/absolute/path/to/attoc ATTO_COMPILER_SOURCE_SHA=<checked-source-commit> \
+  node tests/collection-layout-v1.guest.mjs
+```
+
+The runner invokes `attoc` against **each actual .atto fixture**, validates produced WebAssembly, instantiates each positive guest, calls exported `main()`, compares its integer result (including 15 for the SoA example), and verifies that negative cases produce no artifact and the required error class. The runner fails closed if the compiler is missing or any semantic diagnostic class has no agreed machine-stable code. It computes fixture, compiler-binary and generated-Wasm SHA-256 receipts. **It does not prove the physical layout**, and neither a runner pass alone nor a self-test pass can promote a backend status without independent heap/column/borrow evidence.
+
+This workflow is deliberately not connected to automatic CI until a genuine compiler implementation and an authorized test runner exist. No cross-organization private source transfer is performed by this script.
