@@ -1,0 +1,10 @@
+define class Box as
+    int value: 0;
+    constructor(int value) {
+        self.value = value;
+    }
+end
+fnc main() -> int {
+    val b = new Box(value=42);
+    return b.value;
+}
