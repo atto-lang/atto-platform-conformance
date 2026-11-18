@@ -1,0 +1,9 @@
+// expect-error: E_SHARED_MUTATION
+// shared ownership cannot be converted into an exclusive ordinary loan
+define class Box as pub let int value = 0; end
+pub fnc main(): int {
+  val b = new Box();
+  val shared = share! b;
+  val writer = borrow! mut shared;
+  return writer.value;
+}
