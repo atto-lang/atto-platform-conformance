@@ -147,5 +147,49 @@
     "wasm-independent": "NOT_EXECUTED",
     "forge": "NOT_EXECUTED"
   },
-  "evidence_rule": "Registry and source-only fixture checks are NOT executable compiler conformance. Record exact compiler SHA/tree, carrier blob parity, compiler execution, actual guest exit/output for positives, exact error+zero artifact for negatives, scheduler/race tests for guards and nonzero workflow steps. Unsupported is not PASS."
+  "evidence_rule": "Registry and source-only fixture checks are NOT executable compiler conformance. Record exact compiler SHA/tree, carrier blob parity, compiler execution, actual guest exit/output for positives, exact error+zero artifact for negatives, scheduler/race tests for guards and nonzero workflow steps. Unsupported is not PASS.",
+  "required_runtime_scenarios": [
+    {
+      "id": "SR_01",
+      "name": "concurrent_readers",
+      "expect": "many overlapping read guards on same protected object; no writer overlaps",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "SR_02",
+      "name": "exclusive_writers",
+      "expect": "at most one write guard; no reader overlaps; no torn intermediate snapshots",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "SR_03",
+      "name": "cancellation_waiter",
+      "expect": "cancelled lock waiter does not retain guard or block actor scheduler",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "SR_04",
+      "name": "exceptional_release",
+      "expect": "guard releases exactly once on return/throw/raise/panic and supported cancellation",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "SR_05",
+      "name": "owner_refcount_lifecycle",
+      "expect": "exact once drop, refcount overflow reject, no double release, cycle policy enforced",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "SR_06",
+      "name": "isolate_boundary",
+      "expect": "unsupported worker/actor domains reject without host pointer or fake lock",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "SR_07",
+      "name": "contention_progress",
+      "expect": "suspended lock acquisition does not block scheduler reactor progress or leak ownership",
+      "status": "NOT_EXECUTED"
+    }
+  ]
 }
