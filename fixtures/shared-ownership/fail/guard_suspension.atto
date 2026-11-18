@@ -1,0 +1,12 @@
+// expect-error: E_GUARD_SUSPEND
+// suspension inside the exclusive guard can deadlock / break actor turn safety
+define class Box as pub let int value = 0; end
+define actor Worker as end
+pub fnc main(): int {
+  val state = share! RwLock(new Box());
+  state.with_write(|mut box| -> {
+    await spawn Worker();
+    box.value = 42;
+  });
+  return 42;
+}
