@@ -37,3 +37,7 @@ This README records the intended role of this repository; it is not a claim of f
 AttoLang is the public name; preserve existing Oreslang/.ores compatibility and use canonical .atto for new portable library source. This README defines scope, not feature readiness.
 
 **Acceptance:** name the exact source SHA/tree, runtime/toolchain, positive and negative checks and execution receipt before claiming support. Host-only tests and empty CI steps do not prove guest execution.
+
+## Collection layout v1 target fixtures
+
+[`contracts/collection-layout-v1/`](contracts/collection-layout-v1/README.md) defines proposed AoS, SoA and AoSoA named-generic Array fixtures. All backend statuses are **NOT_EXECUTED** until exact-source actual guest tests; the dedicated Node test is registry-only and cannot promote support.
