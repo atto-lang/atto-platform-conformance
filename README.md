@@ -32,7 +32,7 @@ This README records the intended role of this repository; it is not a claim of f
 
 ## Repository ownership and contribution routing
 
-**Belongs here:** Portable positive and negative guest fixtures, five-backend matrix, evidence schemas and reproducible run receipts.
+**Belongs here:** Portable positive and negative guest fixtures, an extensible multi-backend matrix, evidence schemas and reproducible run receipts. Include new backends only when target-specific compiled-guest evidence exists.
 
 **Belongs elsewhere:** Backend implementations belong in atto-source.*; differential comparators in atto-compilers-parity-testing; normative rules in atto-spec.
 
