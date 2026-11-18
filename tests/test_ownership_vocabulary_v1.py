@@ -79,5 +79,17 @@ class VocabularyContract(unittest.TestCase):
             "E_SUSPEND_WITH_LIVE_LOAN",
         )
 
+    def test_pin_is_not_an_unverified_task_or_actor_transfer_capability(self):
+        for case_id in (
+            "pinned_mailbox_prepare", "pinned_direct_actor_move",
+            "pinned_task_capture_move", "pinned_frozen_publication",
+            "pinned_guarded_promotion",
+        ):
+            case = self.by_id[case_id]
+            self.assertEqual(case["feature"], "pin!")
+            self.assertEqual(case["expected"], "reject")
+            self.assertEqual(case["diagnostic"], "E_PIN_BOUNDARY_TRANSFER")
+
+
 if __name__ == "__main__":
     unittest.main()
