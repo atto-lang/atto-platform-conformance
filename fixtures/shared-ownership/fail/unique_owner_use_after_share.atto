@@ -1,0 +1,8 @@
+// expect-error: E_SHARED_OWNER_MOVED
+// original exclusive owner was consumed by unique-to-frozen conversion
+define class Box as pub let int value = 42; end
+pub fnc main(): int {
+  val b = new Box();
+  val shared = share! b;
+  return b.value;
+}
