@@ -1,0 +1,27 @@
+name: Collection layout v1 fixture registry (host-only)
+
+on:
+  push:
+    paths:
+      - 'contracts/collection-layout-v1/**'
+      - 'tests/collection-layout-v1.test.mjs'
+      - '.github/workflows/collection-layout-v1.yml'
+  pull_request:
+    paths:
+      - 'contracts/collection-layout-v1/**'
+      - 'tests/collection-layout-v1.test.mjs'
+      - '.github/workflows/collection-layout-v1.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  manifest-self-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check manifest/fixture consistency only (NOT guest execution)
+        run: node --test tests/collection-layout-v1.test.mjs
