@@ -1,4 +1,4 @@
-// expect-error: E_GUARD_ESCAPE
+// expect-error: E_GUARD_REENTRANT
 // non-reentrant same-lock acquisition while write guard is held is disallowed
 define class Box as pub let int value = 42; end
 pub fnc main(): int {
