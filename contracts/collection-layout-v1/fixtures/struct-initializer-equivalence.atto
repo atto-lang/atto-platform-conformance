@@ -1,0 +1,18 @@
+define struct Particle {
+    x: int;
+    y: int;
+    velocity: int;
+}
+
+fnc compare_initializers() -> int {
+    let brace_form: Array<Particle, layout=soa> = [
+        Particle{x: 10, y: 20, velocity: 1},
+        Particle{x: 30, y: 40, velocity: 2}
+    ];
+    let equals_form: Array<Particle, layout=soa> = [
+        Particle(x=10, y=20, velocity=1),
+        Particle(x=30, y=40, velocity=2)
+    ];
+
+    return brace_form[0].x + equals_form[1].x;
+}
