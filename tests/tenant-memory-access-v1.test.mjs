@@ -20,6 +20,7 @@ const mandatoryScenarios = [
   'carrier-exception-and-cancellation-handoff',
   'root-host-api-callback-lifetime-and-concurrency', 'retirement-race-does-not-release-live-memory',
   'allocator-and-buffer-reuse-no-old-data', 'guest-native-ffi-and-import-admission-denied',
+  'lowerer-security-macro-overrides-rejected',
   'neighbor-survives-failed-tenant', 'compiled-real-guest-cross-tenant-denial'
 ];
 
@@ -66,4 +67,5 @@ test('the stated threat model excludes malicious native execution, not accidenta
   assert.ok(contract.threatModel.excluded.includes('malicious native/FFI guest code'));
   assert.ok(contract.threatModel.excluded.includes('microarchitectural side channels'));
   assert.match(contract.requirements.admission, /no fallback/);
+  assert.match(contract.requirements.admission, /arbitrary preprocessor definitions/);
 });
