@@ -10,7 +10,7 @@ const data = JSON.parse(readFileSync(resolve(root, 'cases.json'), 'utf8'));
 test('collection layout v1 is a non-promoting fixture registry', () => {
     assert.equal(data.schema, 'atto.collection-layout.v1');
     assert.equal(data.maturity, 'TARGET_NOT_EXECUTED');
-    assert.equal(data.cases.length, 11);
+    assert.equal(data.cases.length, 20);
     assert.ok(Object.keys(data.backends).length >= 5);
     for (const status of Object.values(data.backends)) {
         assert.equal(status, 'NOT_EXECUTED');
@@ -46,6 +46,6 @@ test('collection layout v1 is a non-promoting fixture registry', () => {
             negatives++;
         }
     }
-    assert.equal(guests, 5);
-    assert.equal(negatives, 6);
+    assert.equal(guests, 7);
+    assert.equal(negatives, 13);
 });
