@@ -29,7 +29,7 @@
     "take": "take! does not export a raw writable native pointer across tenant VMs; transfer requires a trusted, atomic and generation-fenced owner change with all aliases revoked, or a validated copy; otherwise reject",
     "share": "share! is not implicit; any cross-tenant sharing must be immutable and backed by memory the receiver cannot mutate, or copied; sharing mutable raw backing storage is rejected",
     "hostApi": "Host API validates every guest offset, length and target against the current actor and tenant before touching memory; host message-copy source ranges must belong to the sending actor, not merely mapped tenant pages; integer overflow, OOB, forged and stale handles fail closed",
-    "carriers": "A carrier handoff clears or rebinds guest TLS, tenant heap base, root/actor authority and borrowed references; no stale context is reused after a turn, exception, suspension, cancellation or tenant switch",
+    "carriers": "A carrier handoff clears or rebinds guest TLS, tenant heap base, root/actor authority and borrowed references; no stale context is reused after a turn, exception, suspension, cancellation or tenant switch Module-global guest callback indirection must never cache a pointer into a destructible root host; callbacks obtain tenant authority only from the active carrier",
     "lifetime": "Retirement prevents fresh admissions, waits for or safely terminates executing carriers and drains host-owned resource loans before unmapping or returning quotas; stale handles stay invalid",
     "scrubbing": "Memory and pooled message buffers are sanitized before reuse by a different tenant; tenant-local uninitialized reads are forbidden by compiler/runtime semantics",
     "admission": "Untrusted guests must come from a validated, confinement-enforcing producer (e.g. Wasm engine or proved lowering, or an actual Graal isolate); no fallback to raw native/CIL/FFI execution"
@@ -49,6 +49,7 @@
     "host-send-cross-actor-source-offset-rejected",
     "carrier-tls-and-heap-base-handoff",
     "carrier-exception-and-cancellation-handoff",
+    "root-host-api-callback-lifetime-and-concurrency",
     "retirement-race-does-not-release-live-memory",
     "allocator-and-buffer-reuse-no-old-data",
     "guest-native-ffi-and-import-admission-denied",
