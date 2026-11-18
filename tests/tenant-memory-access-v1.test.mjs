@@ -17,7 +17,8 @@ const mandatoryScenarios = [
   'tenant-cage-out-of-bounds-rejected', 'effective-address-overflow-rejected',
   'host-call-offset-length-overflow-rejected', 'host-send-cross-actor-source-offset-rejected',
   'carrier-tls-and-heap-base-handoff',
-  'carrier-exception-and-cancellation-handoff', 'retirement-race-does-not-release-live-memory',
+  'carrier-exception-and-cancellation-handoff',
+  'root-host-api-callback-lifetime-and-concurrency', 'retirement-race-does-not-release-live-memory',
   'allocator-and-buffer-reuse-no-old-data', 'guest-native-ffi-and-import-admission-denied',
   'neighbor-survives-failed-tenant', 'compiled-real-guest-cross-tenant-denial'
 ];
@@ -39,6 +40,7 @@ test('memory ownership, compiler confinement, handoff and lifetime requirements 
   assert.match(contract.requirements.hostApi, /overflow/);
   assert.match(contract.requirements.hostApi, /sending actor/);
   assert.match(contract.requirements.carriers, /tenant switch/);
+  assert.match(contract.requirements.carriers, /Module-global guest callback/);
   assert.match(contract.requirements.borrow, /compilation error/);
   assert.match(contract.requirements.scrubbing, /different tenant/);
 });
