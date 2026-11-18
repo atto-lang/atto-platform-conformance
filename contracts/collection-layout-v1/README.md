@@ -32,3 +32,9 @@ ATTOC=/absolute/path/to/attoc ATTO_COMPILER_SOURCE_SHA=<checked-source-commit> \
 The runner invokes `attoc` against **each actual .atto fixture**, validates produced WebAssembly, instantiates each positive guest, calls exported `main()`, compares its integer result (including 15 for the SoA example), and verifies that negative cases produce no artifact and the required error class. The runner fails closed if the compiler is missing or any semantic diagnostic class has no agreed machine-stable code. It computes fixture, compiler-binary and generated-Wasm SHA-256 receipts. **It does not prove the physical layout**, and neither a runner pass alone nor a self-test pass can promote a backend status without independent heap/column/borrow evidence.
 
 This workflow is deliberately not connected to automatic CI until a genuine compiler implementation and an authorized test runner exist. No cross-organization private source transfer is performed by this script.
+
+## Equals grammar compatibility audit (TARGET / NOT_EXECUTED)
+
+[Atto-spec PR #84](https://github.com/atto-lang/atto-spec/pull/84) documents the statically restricted `StructName(field=value)` shorthand. This suite also includes a **scalar-only** positive target independent of the unimplemented SoA allocator, and a source-order side-effect target (`y` then `x`). The negative cases explicitly reject `=` on ordinary function/method calls and user-defined constructors, shadowed nominal types, mixed positional/colon fields, and unknown struct fields. The checker must not parse assignment expressions or invent a broad `=` named-call syntax.
+
+All cases remain NOT_EXECUTED until real exact-commit compiler/guest evidence and actual backend-negative diagnostic receipts. Unsupported targets must reject without Wasm/native artifact emission. Conformance schema/registry checks are not parser or guest execution tests.
