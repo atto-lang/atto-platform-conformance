@@ -1,0 +1,6 @@
+// expect-exit: 9
+define class Counter as
+  pub int value = 1;
+  constructor() { self.value = 9; }
+end
+pub fnc main(): int { val Counter c = new Counter(); return c.value; }
