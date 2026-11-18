@@ -3,12 +3,16 @@ on:
   push:
     paths:
       - 'contracts/ownership-capabilities-v1.json'
+      - 'contracts/ownership-vocabulary-v1.json'
       - 'tests/test_ownership_capabilities_v1.py'
+      - 'tests/test_ownership_vocabulary_v1.py'
       - '.github/workflows/ownership-capabilities-contract.yml'
   pull_request:
     paths:
       - 'contracts/ownership-capabilities-v1.json'
+      - 'contracts/ownership-vocabulary-v1.json'
       - 'tests/test_ownership_capabilities_v1.py'
+      - 'tests/test_ownership_vocabulary_v1.py'
       - '.github/workflows/ownership-capabilities-contract.yml'
 permissions:
   contents: read
@@ -23,4 +27,6 @@ jobs:
       # No API tokens, runner secrets, package downloads or cross-org clones:
       # these are deliberately source-only contract/evidence regression checks.
       - name: Validate fail-closed capability expectations
-        run: python3 -m unittest discover -v -s tests -p 'test_ownership_capabilities_v1.py'
+        run: |
+          python3 -m unittest discover -v -s tests -p 'test_ownership_capabilities_v1.py'
+          python3 -m unittest discover -v -s tests -p 'test_ownership_vocabulary_v1.py'
