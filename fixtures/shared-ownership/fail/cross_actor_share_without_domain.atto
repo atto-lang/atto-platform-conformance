@@ -1,0 +1,13 @@
+// expect-error: E_SHARE_DOMAIN
+// sharing an actor-local object does not prove cross-actor Sendable capability
+define class Box as pub let int value = 0; end
+define serial actor Worker as
+  receive(msg: Shared<Box>): void { }
+end
+pub fnc main(): int {
+  val local = new Box();
+  val frozen = share! local;
+  val worker = spawn Worker();
+  worker.send(frozen);
+  return 42;
+}
