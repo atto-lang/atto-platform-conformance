@@ -6,11 +6,11 @@ import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const atto = process.env.ATTOC;
-if (!atto || !resolve(atto).startsWith('/') || !existsSync(atto)) {
+if (!atto || !isAbsolute(atto) || !existsSync(atto)) {
     throw new Error('ATTOC must name an existing native attoc compiler executable; no host simulation is permitted');
 }
 const compilerBytes = readFileSync(atto);
