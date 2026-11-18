@@ -107,7 +107,7 @@
       "id": "S_F_08",
       "kind": "fail",
       "path": "fixtures/shared-ownership/fail/reentrant_guard_acquisition.atto",
-      "expected_error": "E_GUARD_ESCAPE",
+      "expected_error": "E_GUARD_REENTRANT",
       "proof": "must reject with expected diagnostic and zero emitted guest bytes"
     },
     {
@@ -115,6 +115,27 @@
       "kind": "fail",
       "path": "fixtures/shared-ownership/fail/deeply_frozen_nested_write.atto",
       "expected_error": "E_SHARED_MUTATION",
+      "proof": "must reject with expected diagnostic and zero emitted guest bytes"
+    },
+    {
+      "id": "S_F_10",
+      "kind": "fail",
+      "path": "fixtures/shared-ownership/fail/guard_suspension.atto",
+      "expected_error": "E_GUARD_SUSPEND",
+      "proof": "must reject with expected diagnostic and zero emitted guest bytes"
+    },
+    {
+      "id": "S_F_11",
+      "kind": "fail",
+      "path": "fixtures/shared-ownership/fail/cross_actor_share_without_domain.atto",
+      "expected_error": "E_SHARE_DOMAIN",
+      "proof": "must reject with expected diagnostic and zero emitted guest bytes"
+    },
+    {
+      "id": "S_F_12",
+      "kind": "fail",
+      "path": "fixtures/shared-ownership/fail/guard_reference_returned_by_writer.atto",
+      "expected_error": "E_GUARD_ESCAPE",
       "proof": "must reject with expected diagnostic and zero emitted guest bytes"
     }
   ],
