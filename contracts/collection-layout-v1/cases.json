@@ -49,6 +49,24 @@
       "status": "NOT_EXECUTED"
     },
     {
+      "id": "struct-initializer-equivalence",
+      "fixture": "fixtures/struct-initializer-equivalence.atto",
+      "kind": "guest",
+      "expected": {
+        "return_int": 40
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-duplicate-struct-field",
+      "fixture": "fixtures/reject-duplicate-struct-field.atto",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnostic_class": "duplicate_struct_field"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
       "id": "reject-duplicate-layout",
       "fixture": "fixtures/reject-duplicate-layout.atto",
       "kind": "compile_reject",
