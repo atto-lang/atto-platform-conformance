@@ -1,0 +1,9 @@
+// expect-error: E_SHARE_ALIAS
+// the original mutable loan is live across the conversion
+define class Box as pub let int value = 42; end
+pub fnc main(): int {
+  val mut b = new Box();
+  val writer = borrow! mut b;
+  val shared = share! b;
+  return writer.value + shared.value;
+}
