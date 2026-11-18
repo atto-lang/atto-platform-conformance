@@ -47,6 +47,11 @@ def validate() -> int:
     assert counts["pass"] >= 6, counts
     assert counts["fail"] >= 10, counts
 
+    scenarios = manifest["required_runtime_scenarios"]
+    assert len(scenarios) >= 7
+    assert len({s["id"] for s in scenarios}) == len(scenarios)
+    assert all(s["status"] == "NOT_EXECUTED" and s["expect"] for s in scenarios)
+
     print(
         f"PASS source-only integrity: {len(ids)} TARGET fixtures "
         f"({counts['pass']} positives, {counts['fail']} negatives); "
