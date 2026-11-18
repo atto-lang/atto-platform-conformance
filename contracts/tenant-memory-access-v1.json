@@ -1,0 +1,51 @@
+{
+  "schema": "oreslang.tenant-memory-access.v1",
+  "version": 1,
+  "status": "SOURCE_FREE_CONTRACT_NOT_BACKEND_EXECUTION",
+  "parent": "oreslang.tenant-isolation.v2",
+  "threatModel": {
+    "goal": "Prevent accidental memory disclosure or mutation between tenants sharing one OS process and carrier pthreads",
+    "inScope": ["safe guest compilation and lowering", "actor ownership and borrowing", "host calls and serialized messages", "worker handoff", "cancellation and stale references", "allocator reuse"],
+    "excluded": ["malicious native/FFI guest code", "native compiler or host-runtime compromise", "microarchitectural side channels", "OS-process-level containment"]
+  },
+  "requirements": {
+    "tenantReferences": "Untrusted code cannot manufacture, receive or dereference a raw native pointer to tenant or host memory; compiler-generated loads and stores are confined to the current tenant and actor allocation by validated guest-memory addressing, including overflow-safe effective-address arithmetic",
+    "scope": "Every mutable object, actor state, heap allocation and resource handle belongs to one root, tenant generation and actor/transfer authority; a matching tenant name or reused numeric slot alone confers no authority",
+    "actorMemory": "Actors within a tenant cannot access other actors' mutable allocations except through a compiler-checked ownership or synchronization mechanism; untrusted guest memory loads remain actor-bounded",
+    "borrow": "A borrowed or mutable reference cannot cross a TenantVM boundary, escape its valid lifetime through a continuation or survive owner retirement; failing static proof is a compilation error",
+    "copy": "Cross-tenant message payloads are validated values; copy!! deep-copies reachable mutable data, including nested data and repeated/cyclic references, or rejects unsupported graphs, without retaining sender-owned backing storage",
+    "take": "take! does not export a raw writable native pointer across tenant VMs; transfer requires a trusted, atomic and generation-fenced owner change with all aliases revoked, or a validated copy; otherwise reject",
+    "share": "share! is not implicit; any cross-tenant sharing must be immutable and backed by memory the receiver cannot mutate, or copied; sharing mutable raw backing storage is rejected",
+    "hostApi": "Host API validates every guest offset, length and target against the current actor and tenant before touching memory; integer overflow, OOB, forged and stale handles fail closed",
+    "carriers": "A carrier handoff clears or rebinds guest TLS, tenant heap base, root/actor authority and borrowed references; no stale context is reused after a turn, exception, suspension, cancellation or tenant switch",
+    "lifetime": "Retirement prevents fresh admissions, waits for or safely terminates executing carriers and drains host-owned resource loans before unmapping or returning quotas; stale handles stay invalid",
+    "scrubbing": "Memory and pooled message buffers are sanitized before reuse by a different tenant; tenant-local uninitialized reads are forbidden by compiler/runtime semantics",
+    "admission": "Untrusted guests must come from a validated, confinement-enforcing producer (e.g. Wasm engine or proved lowering, or an actual Graal isolate); no fallback to raw native/CIL/FFI execution"
+  },
+  "mandatoryScenarios": [
+    "nested-deep-copy-no-alias",
+    "cyclic-or-shared-subgraph-copy-or-reject",
+    "mutable-backing-store-cross-tenant-denied",
+    "borrow-escape-cross-tenant-rejected",
+    "invalid-take-cross-tenant-rejected",
+    "forged-and-replayed-handle-rejected",
+    "tenant-generation-reuse-rejected",
+    "actor-sibling-out-of-bounds-rejected",
+    "tenant-cage-out-of-bounds-rejected",
+    "effective-address-overflow-rejected",
+    "host-call-offset-length-overflow-rejected",
+    "carrier-tls-and-heap-base-handoff",
+    "carrier-exception-and-cancellation-handoff",
+    "retirement-race-does-not-release-live-memory",
+    "allocator-and-buffer-reuse-no-old-data",
+    "guest-native-ffi-and-import-admission-denied",
+    "neighbor-survives-failed-tenant",
+    "compiled-real-guest-cross-tenant-denial"
+  ],
+  "promotion": {
+    "backendEvidence": "NOT_EXECUTED",
+    "requiredKinds": ["BACKEND_NATIVE_EXECUTED", "REAL_ORESLANG_GUEST_EXECUTED"],
+    "mustPin": ["source_commit_sha", "source_tree_sha", "compiler_binary_sha256", "runtime_binary_sha256", "test_report_sha256", "platform", "nonzero_executed_steps"],
+    "rule": "This manifest and its Node tests prove schema consistency only; no backend may report untrusted TenantVM memory isolation without compiled guest negative tests and executed exact-tree CI"
+  }
+}
