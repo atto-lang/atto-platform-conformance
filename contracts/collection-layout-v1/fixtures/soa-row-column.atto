@@ -4,11 +4,11 @@ define struct Particle {
     velocity: int;
 }
 
-fnc layout_soa_mutation() -> int {
+fnc main() -> int {
     let particles: Array<Particle, layout=soa> = [
-        Particle(x=1, y=2, velocity=3),
-        Particle(x=4, y=5, velocity=6)
+        Particle(x=10, y=20, velocity=1),
+        Particle(x=30, y=40, velocity=2)
     ];
-    particles[0].x += 10;
+    particles[0].x += 5;
     return particles.columns.x[0];
 }
