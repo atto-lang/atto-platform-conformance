@@ -1,3 +1,0 @@
-// expect-startup-error: EnvPermissionError
-define const string restricted = os.read_env("ATTO_RESTRICTED_ENV");
-pub fnc main(): int { return 123; }

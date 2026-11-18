@@ -1,3 +1,0 @@
-// expect-error: E_ENV_KEY
-define const string empty_key = os.read_env("");
-pub fnc main(): int { return 1; }

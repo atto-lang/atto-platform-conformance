@@ -13,10 +13,16 @@
     ],
     "top_level_unconditional": true,
     "constexpr_folded_at_build_time": true,
+    "env_return_type": "string",
+    "env_total_no_throw": true,
+    "env_total_no_raise": true,
+    "env_missing_value": "",
+    "env_invalid_or_empty_key_value": "",
+    "env_denied_value": "",
+    "env_unrepresentable_value": "lossy UTF-8 replacement to valid string (subject to platform contract)",
     "env_read_static_startup_once": true,
     "env_read_compiler_time_forbidden": true,
-    "env_key_requires_static_nonempty_string": true,
-    "env_missing_or_permission_denied": "startup error before main, not compile error",
+    "env_key_requires_compile_time_string": true,
     "mutable_process_global": false,
     "typed_string_env_no_implicit_coercion": true,
     "unsupported_runtime_calls_forbidden": true,
@@ -142,9 +148,10 @@
     },
     {
       "id": "env_empty_key",
-      "kind": "fail",
-      "path": "fixtures/file-module-const/fail/env_empty_key.atto",
-      "expected_error": "E_ENV_KEY"
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/env_empty_key.atto",
+      "expected_exit": 1,
+      "expected_env_result": ""
     },
     {
       "id": "env_runtime_key",
@@ -154,27 +161,40 @@
     },
     {
       "id": "env_missing",
-      "kind": "runtime-fail",
-      "path": "fixtures/file-module-const/runtime-fail/env_missing.atto",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/env_missing.atto",
       "env": {},
       "absent_env_keys": [
         "ATTO_REQUIRED_ENV"
       ],
-      "expected_startup_error": "EnvMissingError",
-      "entrypoint_must_not_run": true
+      "expected_exit": 1,
+      "expected_env_result": "",
+      "expect_no_throw_or_raise": true
     },
     {
       "id": "env_denied",
-      "kind": "runtime-fail",
-      "path": "fixtures/file-module-const/runtime-fail/env_denied.atto",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/env_denied.atto",
       "env": {
         "ATTO_RESTRICTED_ENV": "secret"
       },
       "denied_env_keys": [
         "ATTO_RESTRICTED_ENV"
       ],
-      "expected_startup_error": "EnvPermissionError",
-      "entrypoint_must_not_run": true
+      "expected_exit": 1,
+      "expected_env_result": "",
+      "expect_no_throw_or_raise": true
+    },
+    {
+      "id": "env_present_empty",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/env_present_empty.atto",
+      "env": {
+        "ATTO_PRESENT_EMPTY": ""
+      },
+      "expected_exit": 1,
+      "expected_env_result": "",
+      "expect_no_throw_or_raise": true
     }
   ],
   "backend_status": {
@@ -185,5 +205,5 @@
     "wasm-independent": "NOT_EXECUTED",
     "forge": "NOT_EXECUTED"
   },
-  "evidence_rule": "For compile-pass, run actual guest with exact-SHA pinned artifact; env cases must use launch-time or explicitly injected host environment, never build env. For runtime-fail, compile successfully but prove startup aborts before main. For compiler-fail, require diagnostic and no artifact. Test same artifact under different envs, snapshot immutability, permissions. All backends NOT_EXECUTED pending real runs."
+  "evidence_rule": "Run real guest with exact-SHA-pinned compiler and artifact. For env reads use launch-time/capability-provided environment, never build-time env. For denied, missing, empty-key and explicitly-empty values verify normal guest execution and empty string without throw/raise. For compile-fail require expected diagnostic and no artifact. Check same AOT artifact under different runtime environments, once-only snapshot immutability and permission denial confidentiality. All backends NOT_EXECUTED pending real runs."
 }
