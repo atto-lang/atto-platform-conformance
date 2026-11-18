@@ -325,6 +325,41 @@
       "layer": "browser_compiler",
       "expected": "reject",
       "diagnostic": "E_MOVED"
+    },
+    {
+      "id": "pinned_mailbox_prepare",
+      "feature": "pin!",
+      "layer": "canonical_verifier",
+      "expected": "reject",
+      "diagnostic": "E_PIN_BOUNDARY_TRANSFER"
+    },
+    {
+      "id": "pinned_direct_actor_move",
+      "feature": "pin!",
+      "layer": "canonical_verifier",
+      "expected": "reject",
+      "diagnostic": "E_PIN_BOUNDARY_TRANSFER"
+    },
+    {
+      "id": "pinned_task_capture_move",
+      "feature": "pin!",
+      "layer": "canonical_verifier",
+      "expected": "reject",
+      "diagnostic": "E_PIN_BOUNDARY_TRANSFER"
+    },
+    {
+      "id": "pinned_frozen_publication",
+      "feature": "pin!",
+      "layer": "canonical_verifier",
+      "expected": "reject",
+      "diagnostic": "E_PIN_BOUNDARY_TRANSFER"
+    },
+    {
+      "id": "pinned_guarded_promotion",
+      "feature": "pin!",
+      "layer": "canonical_verifier",
+      "expected": "reject",
+      "diagnostic": "E_PIN_BOUNDARY_TRANSFER"
     }
   ]
 }
