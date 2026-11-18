@@ -1,0 +1,326 @@
+{
+  "schema": "atto.ownership-capabilities.v1",
+  "status": "CONTRACT_AND_RESTRICTED_MODEL_ONLY_NOT_BACKEND_PARITY",
+  "source_of_truth": [
+    "ores-truffle-oreslang/attolang-language-spec.md#81",
+    "ores-truffle-oreslang/atto-borrow-checker.rs#43",
+    "atto-lang/atto-source.rs#344"
+  ],
+  "required_pr_head_binding": true,
+  "warning": "Cases are normative expectations, NOT evidence of a run. Browser frontend weak/pin admission fails closed. Runtime model uses trusted Rust Arc/Weak and Pin, not guest compilation or production tenant security.",
+  "backend_evidence": {
+    "java": "NOT_VERIFIED",
+    "llvm": "NOT_VERIFIED",
+    "wasm": "NOT_VERIFIED",
+    "net": "NOT_VERIFIED",
+    "forge": "NOT_VERIFIED",
+    "cranelift": "NOT_VERIFIED",
+    "rs": "NOT_VERIFIED",
+    "js": "NOT_VERIFIED",
+    "hdl": "NOT_VERIFIED"
+  },
+  "capabilities": {
+    "freeze": {
+      "consume_owner": true,
+      "deep_graph_required": true,
+      "mutable_alias_survival_forbidden": true,
+      "read_only_after_freeze": true
+    },
+    "weak": {
+      "requires_shared_owner": true,
+      "does_not_retain_lifetime": true,
+      "upgrade_returns": "Option<Shared<T>>",
+      "generation_fence_required": true,
+      "domain_authorization_required": true
+    },
+    "pin": {
+      "stable_pointee_address": true,
+      "thread_affinity": false,
+      "borrow_across_await_automatically_allowed": false
+    }
+  },
+  "cases": [
+    {
+      "id": "parse_freeze",
+      "layer": "source_parser",
+      "capability": "freeze",
+      "expected": "accept"
+    },
+    {
+      "id": "parse_weak",
+      "layer": "source_parser",
+      "capability": "weak",
+      "expected": "accept"
+    },
+    {
+      "id": "parse_pin",
+      "layer": "source_parser",
+      "capability": "pin",
+      "expected": "accept"
+    },
+    {
+      "id": "primitive_freeze",
+      "layer": "browser_compiler",
+      "capability": "freeze",
+      "expected": "accept"
+    },
+    {
+      "id": "class_freeze_without_witness",
+      "layer": "browser_compiler",
+      "capability": "freeze",
+      "expected": "reject",
+      "diagnostic": "E_FREEZE_PROOF"
+    },
+    {
+      "id": "weak_no_wasm_lowering",
+      "layer": "browser_compiler",
+      "capability": "weak",
+      "expected": "reject",
+      "diagnostic": "E_WEAK_UNSUPPORTED"
+    },
+    {
+      "id": "pin_no_wasm_lowering",
+      "layer": "browser_compiler",
+      "capability": "pin",
+      "expected": "reject",
+      "diagnostic": "E_PIN_UNSUPPORTED"
+    },
+    {
+      "id": "freeze_owner_move",
+      "layer": "canonical_verifier",
+      "capability": "freeze",
+      "expected": "accept"
+    },
+    {
+      "id": "freeze_after_loan",
+      "layer": "canonical_verifier",
+      "capability": "freeze",
+      "expected": "reject",
+      "diagnostic": "E_BORROW_CONFLICT"
+    },
+    {
+      "id": "freeze_no_deep_witness",
+      "layer": "canonical_verifier",
+      "capability": "freeze",
+      "expected": "reject",
+      "diagnostic": "E_DEEP_FREEZE_PROOF_REQUIRED"
+    },
+    {
+      "id": "read_frozen_owner",
+      "layer": "canonical_verifier",
+      "capability": "freeze",
+      "expected": "accept"
+    },
+    {
+      "id": "write_frozen_owner",
+      "layer": "canonical_verifier",
+      "capability": "freeze",
+      "expected": "reject",
+      "diagnostic": "E_FROZEN_WRITE"
+    },
+    {
+      "id": "mut_borrow_frozen_owner",
+      "layer": "canonical_verifier",
+      "capability": "freeze",
+      "expected": "reject",
+      "diagnostic": "E_FROZEN_BORROW_MUT"
+    },
+    {
+      "id": "old_owner_after_freeze",
+      "layer": "canonical_verifier",
+      "capability": "freeze",
+      "expected": "reject",
+      "diagnostic": "E_USE_AFTER_MOVE_OR_DROP"
+    },
+    {
+      "id": "publish_without_sync_witness",
+      "layer": "canonical_verifier",
+      "capability": "freeze",
+      "expected": "reject",
+      "diagnostic": "E_SHARED_FROZEN_PROOF_REQUIRED"
+    },
+    {
+      "id": "pin_stable_address_witness",
+      "layer": "canonical_verifier",
+      "capability": "pin",
+      "expected": "accept"
+    },
+    {
+      "id": "pin_no_stable_address_witness",
+      "layer": "canonical_verifier",
+      "capability": "pin",
+      "expected": "reject",
+      "diagnostic": "E_PIN_ADDRESS_PROOF_REQUIRED"
+    },
+    {
+      "id": "pointee_relocation_after_pin",
+      "layer": "canonical_verifier",
+      "capability": "pin",
+      "expected": "reject",
+      "diagnostic": "E_PIN_RELOCATION"
+    },
+    {
+      "id": "pin_borrow_across_suspend",
+      "layer": "canonical_verifier",
+      "capability": "pin",
+      "expected": "reject",
+      "diagnostic": "E_SUSPEND_WITH_LIVE_LOAN"
+    },
+    {
+      "id": "pin_then_unproven_freeze",
+      "layer": "canonical_verifier",
+      "capability": "pin",
+      "expected": "reject",
+      "diagnostic": "E_PIN_STORAGE_TRANSFER"
+    },
+    {
+      "id": "weak_from_unpublished_region",
+      "layer": "canonical_verifier",
+      "capability": "weak",
+      "expected": "reject",
+      "diagnostic": "E_WEAK_SHARED_REGION_REQUIRED"
+    },
+    {
+      "id": "weak_missing_generation_witness",
+      "layer": "canonical_verifier",
+      "capability": "weak",
+      "expected": "reject",
+      "diagnostic": "E_WEAK_GENERATION_PROOF_REQUIRED"
+    },
+    {
+      "id": "weak_reused_identity",
+      "layer": "canonical_verifier",
+      "capability": "weak",
+      "expected": "reject",
+      "diagnostic": "E_WEAK_DEF_REUSED"
+    },
+    {
+      "id": "weak_unknown_probe",
+      "layer": "canonical_verifier",
+      "capability": "weak",
+      "expected": "reject",
+      "diagnostic": "E_UNKNOWN_WEAK"
+    },
+    {
+      "id": "cyclic_graph_freeze",
+      "layer": "host_runtime_model",
+      "capability": "freeze",
+      "expected": "accept"
+    },
+    {
+      "id": "external_mutable_graph_alias",
+      "layer": "host_runtime_model",
+      "capability": "freeze",
+      "expected": "reject",
+      "diagnostic": "UnfreezableEdge"
+    },
+    {
+      "id": "interior_mutable_graph_child",
+      "layer": "host_runtime_model",
+      "capability": "freeze",
+      "expected": "reject",
+      "diagnostic": "UnfreezableEdge"
+    },
+    {
+      "id": "foreign_pointer_in_graph",
+      "layer": "host_runtime_model",
+      "capability": "freeze",
+      "expected": "reject",
+      "diagnostic": "UnfreezableEdge"
+    },
+    {
+      "id": "dynamic_unknown_graph_child",
+      "layer": "host_runtime_model",
+      "capability": "freeze",
+      "expected": "reject",
+      "diagnostic": "UnfreezableEdge"
+    },
+    {
+      "id": "missing_child",
+      "layer": "host_runtime_model",
+      "capability": "freeze",
+      "expected": "reject",
+      "diagnostic": "UnknownEdge"
+    },
+    {
+      "id": "duplicate_graph_node",
+      "layer": "host_runtime_model",
+      "capability": "freeze",
+      "expected": "reject",
+      "diagnostic": "DuplicateNode"
+    },
+    {
+      "id": "disconnected_graph",
+      "layer": "host_runtime_model",
+      "capability": "freeze",
+      "expected": "reject",
+      "diagnostic": "DisconnectedGraph"
+    },
+    {
+      "id": "graph_budget_exceeded",
+      "layer": "host_runtime_model",
+      "capability": "freeze",
+      "expected": "reject",
+      "diagnostic": "BudgetExceeded"
+    },
+    {
+      "id": "weak_upgrade_before_retirement",
+      "layer": "host_runtime_model",
+      "capability": "weak",
+      "expected": "accept"
+    },
+    {
+      "id": "weak_upgrade_after_retirement",
+      "layer": "host_runtime_model",
+      "capability": "weak",
+      "expected": "reject",
+      "diagnostic": "None"
+    },
+    {
+      "id": "weak_upgrade_wrong_region_permit",
+      "layer": "host_runtime_model",
+      "capability": "weak",
+      "expected": "reject",
+      "diagnostic": "None"
+    },
+    {
+      "id": "stale_weak_new_allocation_same_tenant",
+      "layer": "host_runtime_model",
+      "capability": "weak",
+      "expected": "reject",
+      "diagnostic": "None"
+    },
+    {
+      "id": "read_frozen_after_retirement",
+      "layer": "host_runtime_model",
+      "capability": "freeze",
+      "expected": "reject",
+      "diagnostic": "Retired"
+    },
+    {
+      "id": "retirement_with_live_reader",
+      "layer": "host_runtime_model",
+      "capability": "weak",
+      "expected": "reject",
+      "diagnostic": "Busy"
+    },
+    {
+      "id": "drop_owner_inside_read_callback",
+      "layer": "host_runtime_model",
+      "capability": "weak",
+      "expected": "accept"
+    },
+    {
+      "id": "pin_pointee_address_after_handle_swap",
+      "layer": "host_runtime_model",
+      "capability": "pin",
+      "expected": "accept"
+    },
+    {
+      "id": "pin_pointee_address_after_thread_move",
+      "layer": "host_runtime_model",
+      "capability": "pin",
+      "expected": "accept"
+    }
+  ]
+}
