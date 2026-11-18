@@ -1,0 +1,16 @@
+define struct Particle {
+    x: int;
+    y: int;
+    velocity: int;
+}
+
+fnc layout_aosoa_partial_block() -> int {
+    let particles: Array<Particle, layout=aosoa(4)> = [
+        Particle(x=1, y=0, velocity=0),
+        Particle(x=2, y=0, velocity=0),
+        Particle(x=3, y=0, velocity=0),
+        Particle(x=4, y=0, velocity=0),
+        Particle(x=5, y=0, velocity=0)
+    ];
+    return particles[4].x;
+}
