@@ -33,6 +33,12 @@ test('collection layout v1 is a non-promoting fixture registry', () => {
         assert.ok(source.length >= 20 && source.length <= 65536);
         if (entry.kind === 'guest') {
             assert.equal(Number.isInteger(entry.expected.return_int), true);
+            assert.match(source, /fnc main\s*\(\s*\)\s*->\s*int\s*\{/);
+            if (entry.id === 'soa-row-column') {
+                assert.equal(entry.expected.return_int, 15);
+                assert.match(source, /particles\[0\]\.x\s*\+=\s*5/);
+                assert.match(source, /return particles\.columns\.x\[0\]/);
+            }
             guests++;
         } else {
             assert.equal(entry.kind, 'compile_reject');
