@@ -1,0 +1,110 @@
+{
+  "schema": "atto.bitwise-operators.v1",
+  "version": 1,
+  "status": "PROPOSED_NOT_EXECUTED",
+  "owner": "atto-lang/atto-spec",
+  "spec_pr": "https://github.com/atto-lang/atto-spec/pull/87",
+  "semantics": {
+    "width_bits": 64,
+    "type": "int",
+    "two_complement": true,
+    "binary": [
+      "&",
+      "|",
+      "^",
+      "<<<",
+      ">>>",
+      "ashr"
+    ],
+    "unary": [
+      "~"
+    ],
+    "mutable_assign": [
+      "&=",
+      "|=",
+      "^=",
+      "<<<=",
+      ">>>=",
+      "ashr="
+    ],
+    "left_shift": "discard high bits and zero-fill low bits",
+    "logical_right": "zero-fill high bits",
+    "arithmetic_right": "sign-extend",
+    "count": "mask with 63 (subject to spec ratification)",
+    "reserved_for_single_stream_io": [
+      "<<",
+      ">>"
+    ],
+    "no_implicit_bool_or_float_coercion": true
+  },
+  "source": {
+    "repo": "atto-lang/atto-source.rs",
+    "branch": "feat/bitwise-triple-shifts-v1-20261117",
+    "commit": "ab96b5d36589def227da007babb025774b09ea33",
+    "pr": "https://github.com/atto-lang/atto-source.rs/pull/334"
+  },
+  "required_cases": [
+    {
+      "id": "190-bitwise-triple-shifts",
+      "path": "fixtures/bitwise/pass/190-bitwise-triple-shifts.atto",
+      "source_path": "tests/fixtures/pass/190-bitwise-triple-shifts.atto",
+      "source_blob_sha": "0a30f931e861c43ac3a3f389e8c615bc6c63493b",
+      "kind": "pass",
+      "expected_exit": 42
+    },
+    {
+      "id": "191-bitwise-sign-fill",
+      "path": "fixtures/bitwise/pass/191-bitwise-sign-fill.atto",
+      "source_path": "tests/fixtures/pass/191-bitwise-sign-fill.atto",
+      "source_blob_sha": "25bc571a74064a7f5bc7927a8f3f97259f77224c",
+      "kind": "pass",
+      "expected_exit": 42
+    },
+    {
+      "id": "190-bitwise-float",
+      "path": "fixtures/bitwise/fail/190-bitwise-float.atto",
+      "source_path": "tests/fixtures/fail/190-bitwise-float.atto",
+      "source_blob_sha": "82a4cce60b74d0e314228fc8f69e0f82e992fa3f",
+      "kind": "fail",
+      "expected_error": "E_TYPE"
+    },
+    {
+      "id": "191-bitwise-bool",
+      "path": "fixtures/bitwise/fail/191-bitwise-bool.atto",
+      "source_path": "tests/fixtures/fail/191-bitwise-bool.atto",
+      "source_blob_sha": "8bb08f28d03b2d9dc1589942a481284f24273d71",
+      "kind": "fail",
+      "expected_error": "E_TYPE"
+    },
+    {
+      "id": "192-bitwise-immutable",
+      "path": "fixtures/bitwise/fail/192-bitwise-immutable.atto",
+      "source_path": "tests/fixtures/fail/192-bitwise-immutable.atto",
+      "source_blob_sha": "dfcd768bc3257c050052e7c0d94c81e2198abda6",
+      "kind": "fail",
+      "expected_error": "E_IMMUTABLE"
+    }
+  ],
+  "additional_required_vectors": [
+    "BW-001",
+    "BW-002",
+    "BW-003",
+    "BW-004",
+    "BW-005",
+    "BW-006",
+    "BW-007",
+    "BW-008",
+    "BW-009",
+    "BW-010",
+    "BW-011"
+  ],
+  "backend_status": {
+    "rs-browser": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  },
+  "evidence_rule": "Source blobs must match exact expected SHA. Only exact-head compiler builds plus executable guest results prove backend parity. A job with zero executed steps is NOT_EXECUTED."
+}
