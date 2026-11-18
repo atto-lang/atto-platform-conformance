@@ -110,6 +110,88 @@
         "diagnostic_class": "overlapping_mutable_borrows"
       },
       "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "struct-equals-scalar",
+      "fixture": "fixtures/struct-equals-scalar.atto",
+      "kind": "guest",
+      "expected": {
+        "return_int": 41
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "struct-equals-effect-order",
+      "fixture": "fixtures/struct-equals-effect-order.atto",
+      "kind": "guest",
+      "expected": {
+        "return_int": 30,
+        "stdout": "y\nx\n"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-equals-ordinary-call",
+      "fixture": "fixtures/reject-equals-ordinary-call.atto",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnostic_class": "equals_label_non_struct_call"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-equals-custom-constructor",
+      "fixture": "fixtures/reject-equals-custom-constructor.atto",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnostic_class": "equals_label_explicit_constructor"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-equals-shadowed-struct",
+      "fixture": "fixtures/reject-equals-shadowed-struct.atto",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnostic_class": "shadowed_type_no_struct_fallback"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-equals-mixed-positionals",
+      "fixture": "fixtures/reject-equals-mixed-positionals.atto",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnostic_class": "invalid_struct_field_initializer"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-equals-mixed-colons",
+      "fixture": "fixtures/reject-equals-mixed-colons.atto",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnostic_class": "invalid_struct_field_initializer"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-equals-unknown-field",
+      "fixture": "fixtures/reject-equals-unknown-field.atto",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnostic_class": "unknown_struct_field"
+      },
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "reject-equals-method-call",
+      "fixture": "fixtures/reject-equals-method-call.atto",
+      "kind": "compile_reject",
+      "expected": {
+        "diagnostic_class": "equals_label_non_struct_call"
+      },
+      "status": "NOT_EXECUTED"
     }
   ]
 }
