@@ -1,0 +1,10 @@
+// expect-error: E_GUARD_ESCAPE
+// non-reentrant same-lock acquisition while write guard is held is disallowed
+define class Box as pub let int value = 42; end
+pub fnc main(): int {
+  val state = share! RwLock(new Box());
+  state.with_write(|mut box| -> {
+    state.with_read(|view| -> view.value);
+  });
+  return 42;
+}
