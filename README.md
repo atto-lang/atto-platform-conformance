@@ -12,6 +12,13 @@ Execute portable language fixtures and record target-specific results.
 - Use test fixtures and reproducible evidence to distinguish proposed behavior from implemented behavior.
 - Record breaking changes, migration notes, and dependencies on other AttoLang components.
 
+## Shared ownership and explicit guard conformance (TARGET)
+
+- [Versioned target registry](contracts/shared-ownership-and-guards-v1.json): 6 proposed positive and 12 proposed negative guest fixtures for `share!`, deep freeze, owner invalidation and explicit `RwLock<T>` guards.
+- `python3 bin/validate_shared_ownership_and_guards.py` checks source/manifest integrity **only**. It cannot certify parser, compiler, runtime behavior or backend parity.
+- A backend may claim **PASS** only after positive guests execute and negatives reject with zero emitted guest bytes at the exact source SHA, with meaningful stepful CI receipts; guard race/scheduler/cancellation testing is also required.
+- [Normative draft specification](https://github.com/atto-lang/atto-spec/pull/90). Until executable implementation catches up, cases are `TARGET_NOT_EXECUTED`.
+
 ## Validation
 
 Validation should rely on checked-in tests and exact-commit CI results. When reporting parity, distinguish **passed**, **failed**, **unsupported**, and **not executed**. Avoid inferring guest-runtime support from host-only tests.
