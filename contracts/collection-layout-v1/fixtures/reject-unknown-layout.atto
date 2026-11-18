@@ -1,0 +1,9 @@
+define struct Particle {
+    x: int;
+    y: int;
+    velocity: int;
+}
+
+fnc unknown_layout() -> Array<Particle, layout=swizzled> {
+    return [];
+}
