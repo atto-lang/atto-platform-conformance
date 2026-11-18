@@ -328,6 +328,41 @@
       "capability": "freeze",
       "expected": "reject",
       "diagnostic": "WrongDomain"
+    },
+    {
+      "id": "pinned_mailbox_prepare",
+      "layer": "canonical_verifier",
+      "capability": "pin",
+      "expected": "reject",
+      "diagnostic": "E_PIN_BOUNDARY_TRANSFER"
+    },
+    {
+      "id": "pinned_direct_actor_move",
+      "layer": "canonical_verifier",
+      "capability": "pin",
+      "expected": "reject",
+      "diagnostic": "E_PIN_BOUNDARY_TRANSFER"
+    },
+    {
+      "id": "pinned_task_capture_move",
+      "layer": "canonical_verifier",
+      "capability": "pin",
+      "expected": "reject",
+      "diagnostic": "E_PIN_BOUNDARY_TRANSFER"
+    },
+    {
+      "id": "pinned_frozen_publication",
+      "layer": "canonical_verifier",
+      "capability": "pin",
+      "expected": "reject",
+      "diagnostic": "E_PIN_BOUNDARY_TRANSFER"
+    },
+    {
+      "id": "pinned_guarded_promotion",
+      "layer": "canonical_verifier",
+      "capability": "pin",
+      "expected": "reject",
+      "diagnostic": "E_PIN_BOUNDARY_TRANSFER"
     }
   ]
 }
