@@ -12,7 +12,11 @@
     "ambiguous": "require explicit borrow! and verified provenance or reject, no guest",
     "call_order": "single evaluation in lexical source order; overlapping loans across later argument evaluation",
     "breakage": "old implicitly consuming class formals require an explicit, versioned migration; owned-formal grammar pending",
-    "cross_actor": "no raw actor-local borrow crosses actor/isolate/send/await boundaries without independently proven capability"
+    "cross_actor": "no raw actor-local borrow crosses actor/isolate/send/await boundaries without independently proven capability",
+    "returned_borrow": "Borrow<T> distinguishes borrowed result; infer result lifetime only when all returns originate from one provable borrowed parameter or self",
+    "named_lifetimes": "lt! a binder (lifetime! a alias), lt=a named generic lifetime; multiple candidate return sources need explicit checked relationships",
+    "nll": "lifetime last-use expiry closes loan interval but never grants the borrowed alias drop/move ownership",
+    "escape": "no returned local/temporary, unproved await, actor crossing or captured escaping reference"
   },
   "required_cases": [
     {
@@ -119,6 +123,83 @@
       "path": "fixtures/implicit-borrow/fail/named_argument_conflict.atto",
       "expected_error": "E_BORROW",
       "proof": "reject before artifact emission with a deterministic ownership diagnostic"
+    },
+    {
+      "id": "IB_P_07",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/single_input_borrowed_return.atto",
+      "expected_exit": 42,
+      "proof": "must compile and run a guest; returned-borrow source must be tracked through NLL"
+    },
+    {
+      "id": "IB_P_08",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/method_self_borrowed_return.atto",
+      "expected_exit": 42,
+      "proof": "must compile and run a guest; returned-borrow source must be tracked through NLL"
+    },
+    {
+      "id": "IB_P_09",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/named_lifetime_two_inputs.atto",
+      "expected_exit": 42,
+      "proof": "must compile and run a guest; returned-borrow source must be tracked through NLL"
+    },
+    {
+      "id": "IB_P_10",
+      "kind": "pass",
+      "path": "fixtures/implicit-borrow/pass/nll_returned_view_last_use.atto",
+      "expected_exit": 42,
+      "proof": "must compile and run a guest; returned-borrow source must be tracked through NLL"
+    },
+    {
+      "id": "IB_F_10",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/borrowed_return_from_local.atto",
+      "expected_error": "E_LIFETIME",
+      "proof": "must reject before code emission with owner/alias provenance and lifetime diagnostic"
+    },
+    {
+      "id": "IB_F_11",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/multiple_input_return_without_provenance.atto",
+      "expected_error": "E_LIFETIME",
+      "proof": "must reject before code emission with owner/alias provenance and lifetime diagnostic"
+    },
+    {
+      "id": "IB_F_12",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/wrong_named_lifetime_return.atto",
+      "expected_error": "E_LIFETIME",
+      "proof": "must reject before code emission with owner/alias provenance and lifetime diagnostic"
+    },
+    {
+      "id": "IB_F_13",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/borrowed_return_outlives_source.atto",
+      "expected_error": "E_LIFETIME",
+      "proof": "must reject before code emission with owner/alias provenance and lifetime diagnostic"
+    },
+    {
+      "id": "IB_F_14",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/returned_loan_conflicts_with_mutation.atto",
+      "expected_error": "E_BORROW",
+      "proof": "must reject before code emission with owner/alias provenance and lifetime diagnostic"
+    },
+    {
+      "id": "IB_F_15",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/unknown_lifetime_binder.atto",
+      "expected_error": "E_LIFETIME",
+      "proof": "must reject before code emission with owner/alias provenance and lifetime diagnostic"
+    },
+    {
+      "id": "IB_F_16",
+      "kind": "fail",
+      "path": "fixtures/implicit-borrow/fail/implicit_borrow_returned_as_owned.atto",
+      "expected_error": "E_BORROW",
+      "proof": "must reject before code emission with owner/alias provenance and lifetime diagnostic"
     }
   ],
   "backend_status": {
@@ -129,5 +210,5 @@
     "wasm-independent": "NOT_EXECUTED",
     "forge": "NOT_EXECUTED"
   },
-  "evidence_rule": "Source fixtures and local registry validation are NOT compiler or guest execution. For each backend record exact source SHA/tree, build/guest artifacts, positive guest output, negative diagnostic and zero output artifact, and nonzero workflow steps."
+  "evidence_rule": "All fixtures are proposed target syntax. Validate registry shape separately from compiler/guest runs; exact error codes and outputs are target expectations pending backend support. Record source SHA/tree and emitted-byte-free rejection."
 }

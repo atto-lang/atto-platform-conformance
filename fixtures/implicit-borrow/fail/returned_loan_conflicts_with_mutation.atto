@@ -1,0 +1,13 @@
+// expect-error: E_BORROW
+// TARGET_ONLY: no guest artifact on rejection
+// A derived Child read loan prevents writes to the containing Parent.
+define class Child as pub let int value = 21; end
+define class Parent as pub let Child child = new Child(); end
+fnc get_child(Parent p): Borrow<Child> { return p.child; }
+fnc update(Parent p): void { p.child.value += 1; }
+pub fnc main(): int {
+  val mut Parent p = new Parent();
+  val view = get_child(p);
+  update(mut p);
+  return view.value;
+}

@@ -1,0 +1,13 @@
+// expect-error: E_LIFETIME
+// TARGET_ONLY: no guest artifact on rejection
+// lt=a on result must not accept a return rooted in lt=b.
+define class Child as pub let int value = 21; end
+fnc wrong<lt! a, lt! b>(
+  Borrow<Child, lt=a> left,
+  Borrow<Child, lt=b> right
+): Borrow<Child, lt=a> { return right; }
+pub fnc main(): int {
+  val a = new Child();
+  val b = new Child();
+  return wrong(a, b).value;
+}

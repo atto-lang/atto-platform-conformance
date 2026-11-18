@@ -1,0 +1,8 @@
+// expect-error: E_LIFETIME
+// TARGET_ONLY: no guest artifact on rejection
+// Referencing a lifetime identifier not bound by lt! must reject.
+define class Child as pub let int value = 21; end
+fnc read<lt! a>(Borrow<Child, lt=missing> child): int {
+  return child.value;
+}
+pub fnc main(): int { val c = new Child(); return read(c); }

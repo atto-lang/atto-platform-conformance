@@ -1,0 +1,6 @@
+// expect-error: E_BORROW
+// TARGET_ONLY: no guest artifact on rejection
+// An implicit borrowed formal cannot be returned as an owned Child.
+define class Child as pub let int value = 21; end
+fnc steal(Child c): Child { return c; }
+pub fnc main(): int { val c = new Child(); return steal(c).value; }

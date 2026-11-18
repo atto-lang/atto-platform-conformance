@@ -14,7 +14,7 @@ Execute portable language fixtures and record target-specific results.
 
 ## Proposed implicit argument borrowing
 
-[Target registry](contracts/implicit-argument-borrow-v1.json): `python3 bin/validate_implicit_argument_borrow.py` validates fixture integrity only. Each compiler and guest must be independently tested; all new backend states begin `NOT_EXECUTED`.
+[Target registry](contracts/implicit-argument-borrow-v1.json): `python3 bin/validate_implicit_argument_borrow.py` validates fixture integrity only. Now includes inferred borrowed-return and named lt! lifetime cases. Each compiler and guest must be independently tested; all new backend states begin `NOT_EXECUTED`.
 
 ## Validation
 

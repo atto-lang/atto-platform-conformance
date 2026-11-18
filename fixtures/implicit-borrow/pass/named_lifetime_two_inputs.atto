@@ -1,0 +1,14 @@
+// expect-exit: 42
+// TARGET_ONLY: not yet guest executed
+// Explicit lt! quantification ties output to left, not right.
+define class Child as pub let int value = 21; end
+fnc choose_left<lt! a, lt! b>(
+  Borrow<Child, lt=a> left,
+  Borrow<Child, lt=b> right
+): Borrow<Child, lt=a> { return left; }
+pub fnc main(): int {
+  val left = new Child();
+  val right = new Child();
+  val v = choose_left(left, right);
+  return v.value + v.value;
+}

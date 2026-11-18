@@ -1,0 +1,9 @@
+// expect-error: E_LIFETIME
+// TARGET_ONLY: no guest artifact on rejection
+// No escaping return may point to a callee-local owner.
+define class Child as pub let int value = 21; end
+fnc invalid(): Borrow<Child> {
+  val local = new Child();
+  return local;
+}
+pub fnc main(): int { return invalid().value; }
