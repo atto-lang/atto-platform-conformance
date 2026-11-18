@@ -1,0 +1,11 @@
+// expect-exit: 5
+define class Leaf as
+  pub int count = 5;
+end
+define class Wrapper as
+  pub Leaf child = new Leaf();
+end
+pub fnc main(): int {
+  val Wrapper wrapped = new Wrapper();
+  return wrapped.child.count;
+}
