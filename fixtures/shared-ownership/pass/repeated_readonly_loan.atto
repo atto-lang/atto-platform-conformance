@@ -1,0 +1,9 @@
+// expect-exit: 42
+// automatic borrowing of shared-owner access does not create another owner
+define class Box as pub let int value = 21; end
+fnc inspect(Box b): int { return b.value; }
+pub fnc main(): int {
+  val box = new Box();
+  val a = share! box;
+  return inspect(a) + inspect(a);
+}
