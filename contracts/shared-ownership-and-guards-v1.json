@@ -1,0 +1,130 @@
+{
+  "schema": "atto.shared-ownership-and-guards.v1",
+  "version": 1,
+  "status": "TARGET_NOT_EXECUTED",
+  "spec_pr": "https://github.com/atto-lang/atto-spec/pull/90",
+  "related_borrow_spec_pr": "https://github.com/atto-lang/atto-spec/pull/89",
+  "semantics": {
+    "share": "explicit owner duplication or unique-to-readonly-frozen conversion, never copy or lock",
+    "frozen": "transitively immutable ordinary data; reject live mutable aliases",
+    "guard": "RwLock guards authorize multiple readers or one writer, never both",
+    "actor": "share does not imply Sendable, Serializable or cross-domain rights",
+    "failure": "reject unsupported or unproven semantics before emitting guest"
+  },
+  "required_cases": [
+    {
+      "id": "S_P_01",
+      "kind": "pass",
+      "path": "fixtures/shared-ownership/pass/frozen_read_preserves_object.atto",
+      "expected_exit": 42,
+      "proof": "must compile and execute guest at exact source SHA"
+    },
+    {
+      "id": "S_P_02",
+      "kind": "pass",
+      "path": "fixtures/shared-ownership/pass/duplicate_shared_owners.atto",
+      "expected_exit": 42,
+      "proof": "must compile and execute guest at exact source SHA"
+    },
+    {
+      "id": "S_P_03",
+      "kind": "pass",
+      "path": "fixtures/shared-ownership/pass/deeply_frozen_nested_read.atto",
+      "expected_exit": 42,
+      "proof": "must compile and execute guest at exact source SHA"
+    },
+    {
+      "id": "S_P_04",
+      "kind": "pass",
+      "path": "fixtures/shared-ownership/pass/repeated_readonly_loan.atto",
+      "expected_exit": 42,
+      "proof": "must compile and execute guest at exact source SHA"
+    },
+    {
+      "id": "S_P_05",
+      "kind": "pass",
+      "path": "fixtures/shared-ownership/pass/rwlock_multiple_read_guards.atto",
+      "expected_exit": 42,
+      "proof": "must compile and execute guest at exact source SHA"
+    },
+    {
+      "id": "S_P_06",
+      "kind": "pass",
+      "path": "fixtures/shared-ownership/pass/rwlock_write_then_read.atto",
+      "expected_exit": 42,
+      "proof": "must compile and execute guest at exact source SHA"
+    },
+    {
+      "id": "S_F_01",
+      "kind": "fail",
+      "path": "fixtures/shared-ownership/fail/ordinary_shared_direct_write.atto",
+      "expected_error": "E_SHARED_MUTATION",
+      "proof": "must reject with expected diagnostic and zero emitted guest bytes"
+    },
+    {
+      "id": "S_F_02",
+      "kind": "fail",
+      "path": "fixtures/shared-ownership/fail/ordinary_shared_mutable_loan.atto",
+      "expected_error": "E_SHARED_MUTATION",
+      "proof": "must reject with expected diagnostic and zero emitted guest bytes"
+    },
+    {
+      "id": "S_F_03",
+      "kind": "fail",
+      "path": "fixtures/shared-ownership/fail/unique_owner_use_after_share.atto",
+      "expected_error": "E_SHARED_OWNER_MOVED",
+      "proof": "must reject with expected diagnostic and zero emitted guest bytes"
+    },
+    {
+      "id": "S_F_04",
+      "kind": "fail",
+      "path": "fixtures/shared-ownership/fail/live_mutable_loan_blocks_freeze.atto",
+      "expected_error": "E_SHARE_ALIAS",
+      "proof": "must reject with expected diagnostic and zero emitted guest bytes"
+    },
+    {
+      "id": "S_F_05",
+      "kind": "fail",
+      "path": "fixtures/shared-ownership/fail/nested_mutable_alias_blocks_freeze.atto",
+      "expected_error": "E_SHARE_ALIAS",
+      "proof": "must reject with expected diagnostic and zero emitted guest bytes"
+    },
+    {
+      "id": "S_F_06",
+      "kind": "fail",
+      "path": "fixtures/shared-ownership/fail/borrow_cannot_promote_to_shared.atto",
+      "expected_error": "E_SHARE_ALIAS",
+      "proof": "must reject with expected diagnostic and zero emitted guest bytes"
+    },
+    {
+      "id": "S_F_07",
+      "kind": "fail",
+      "path": "fixtures/shared-ownership/fail/guard_borrow_escape.atto",
+      "expected_error": "E_GUARD_ESCAPE",
+      "proof": "must reject with expected diagnostic and zero emitted guest bytes"
+    },
+    {
+      "id": "S_F_08",
+      "kind": "fail",
+      "path": "fixtures/shared-ownership/fail/reentrant_guard_acquisition.atto",
+      "expected_error": "E_GUARD_ESCAPE",
+      "proof": "must reject with expected diagnostic and zero emitted guest bytes"
+    },
+    {
+      "id": "S_F_09",
+      "kind": "fail",
+      "path": "fixtures/shared-ownership/fail/deeply_frozen_nested_write.atto",
+      "expected_error": "E_SHARED_MUTATION",
+      "proof": "must reject with expected diagnostic and zero emitted guest bytes"
+    }
+  ],
+  "backend_status": {
+    "rs-browser": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED"
+  },
+  "evidence_rule": "Registry and source-only fixture checks are NOT executable compiler conformance. Record exact compiler SHA/tree, carrier blob parity, compiler execution, actual guest exit/output for positives, exact error+zero artifact for negatives, scheduler/race tests for guards and nonzero workflow steps. Unsupported is not PASS."
+}
