@@ -7,13 +7,20 @@
   "semantics": {
     "syntax": [
       "define const T name = constexpr;",
-      "define const T name as constexpr;"
+      "define const T name as constexpr;",
+      "define const string name = os.read_env(\"KEY\");",
+      "define const string name as os.read_env(\"KEY\");"
     ],
-    "compile_time_only": true,
     "top_level_unconditional": true,
-    "runtime_env_forbidden": true,
-    "initializer_effects_forbidden": true,
-    "mutable_process_global": false
+    "constexpr_folded_at_build_time": true,
+    "env_read_static_startup_once": true,
+    "env_read_compiler_time_forbidden": true,
+    "env_key_requires_static_nonempty_string": true,
+    "env_missing_or_permission_denied": "startup error before main, not compile error",
+    "mutable_process_global": false,
+    "typed_string_env_no_implicit_coercion": true,
+    "unsupported_runtime_calls_forbidden": true,
+    "same_artifact_different_environments": true
   },
   "required_cases": [
     {
@@ -35,10 +42,10 @@
       "expected_exit": 1
     },
     {
-      "id": "env_runtime",
+      "id": "env_string_not_int",
       "kind": "fail",
       "path": "fixtures/file-module-const/fail/env_runtime.atto",
-      "expected_error": "E_CONST"
+      "expected_error": "E_CONST_TYPE"
     },
     {
       "id": "runtime_call",
@@ -69,6 +76,105 @@
       "kind": "fail",
       "path": "fixtures/file-module-const/fail/overflow.atto",
       "expected_error": "E_CONST_OVERFLOW"
+    },
+    {
+      "id": "env_equal_and_as",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/env_equal_and_as.atto",
+      "env": {
+        "ATTO_TEST_FIRST": "alpha",
+        "ATTO_TEST_SECOND": "beta"
+      },
+      "expected_exit": 12
+    },
+    {
+      "id": "env_per_instance",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/env_per_instance.atto",
+      "reuse_compiled_artifact": true,
+      "startups": [
+        {
+          "env": {
+            "ATTO_TEST_REGION": "east"
+          },
+          "expected_exit": 1
+        },
+        {
+          "env": {
+            "ATTO_TEST_REGION": "west"
+          },
+          "expected_exit": 2
+        }
+      ]
+    },
+    {
+      "id": "env_in_module",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/env_in_module.atto",
+      "env": {
+        "ATTO_TEST_MODULE": "stable"
+      },
+      "expected_exit": 1
+    },
+    {
+      "id": "env_key_from_const",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/env_key_from_const.atto",
+      "env": {
+        "ATTO_TEST_KEY": "allowed"
+      },
+      "expected_exit": 1
+    },
+    {
+      "id": "env_same_key_snapshot",
+      "kind": "pass",
+      "path": "fixtures/file-module-const/pass/env_same_key_snapshot.atto",
+      "env": {
+        "ATTO_TEST_SAME": "unchanged"
+      },
+      "env_after_init": {
+        "ATTO_TEST_SAME": "changed"
+      },
+      "expected_exit": 1,
+      "expected_host_reads": {
+        "ATTO_TEST_SAME": 1
+      }
+    },
+    {
+      "id": "env_empty_key",
+      "kind": "fail",
+      "path": "fixtures/file-module-const/fail/env_empty_key.atto",
+      "expected_error": "E_ENV_KEY"
+    },
+    {
+      "id": "env_runtime_key",
+      "kind": "fail",
+      "path": "fixtures/file-module-const/fail/env_runtime_key.atto",
+      "expected_error": "E_CONST"
+    },
+    {
+      "id": "env_missing",
+      "kind": "runtime-fail",
+      "path": "fixtures/file-module-const/runtime-fail/env_missing.atto",
+      "env": {},
+      "absent_env_keys": [
+        "ATTO_REQUIRED_ENV"
+      ],
+      "expected_startup_error": "EnvMissingError",
+      "entrypoint_must_not_run": true
+    },
+    {
+      "id": "env_denied",
+      "kind": "runtime-fail",
+      "path": "fixtures/file-module-const/runtime-fail/env_denied.atto",
+      "env": {
+        "ATTO_RESTRICTED_ENV": "secret"
+      },
+      "denied_env_keys": [
+        "ATTO_RESTRICTED_ENV"
+      ],
+      "expected_startup_error": "EnvPermissionError",
+      "entrypoint_must_not_run": true
     }
   ],
   "backend_status": {
@@ -79,5 +185,5 @@
     "wasm-independent": "NOT_EXECUTED",
     "forge": "NOT_EXECUTED"
   },
-  "evidence_rule": "Only an actual backend compiler's exact SHA, compile diagnostics and executed compiled guest artifact can establish support. Registry presence and host-only validation are not evidence of execution."
+  "evidence_rule": "For compile-pass, run actual guest with exact-SHA pinned artifact; env cases must use launch-time or explicitly injected host environment, never build env. For runtime-fail, compile successfully but prove startup aborts before main. For compiler-fail, require diagnostic and no artifact. Test same artifact under different envs, snapshot immutability, permissions. All backends NOT_EXECUTED pending real runs."
 }

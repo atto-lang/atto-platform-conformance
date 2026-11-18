@@ -1,0 +1,3 @@
+// expect-startup-error: EnvMissingError
+define const string required as os.read_env("ATTO_REQUIRED_ENV");
+pub fnc main(): int { return 123; }
