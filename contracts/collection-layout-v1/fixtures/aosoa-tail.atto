@@ -4,7 +4,7 @@ define struct Particle {
     velocity: int;
 }
 
-fnc layout_aosoa_partial_block() -> int {
+fnc main() -> int {
     let particles: Array<Particle, layout=aosoa(4)> = [
         Particle(x=1, y=0, velocity=0),
         Particle(x=2, y=0, velocity=0),
