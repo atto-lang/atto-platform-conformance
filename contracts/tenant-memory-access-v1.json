@@ -32,7 +32,7 @@
     "carriers": "A carrier handoff clears or rebinds guest TLS, tenant heap base, root/actor authority and borrowed references; no stale context is reused after a turn, exception, suspension, cancellation or tenant switch Module-global guest callback indirection must never cache a pointer into a destructible root host; callbacks obtain tenant authority only from the active carrier",
     "lifetime": "Retirement prevents fresh admissions, waits for or safely terminates executing carriers and drains host-owned resource loans before unmapping or returning quotas; stale handles stay invalid",
     "scrubbing": "Memory and pooled message buffers are sanitized before reuse by a different tenant; tenant-local uninitialized reads are forbidden by compiler/runtime semantics",
-    "admission": "Untrusted guests must come from a validated, confinement-enforcing producer (e.g. Wasm engine or proved lowering, or an actual Graal isolate); no fallback to raw native/CIL/FFI execution"
+    "admission": "Untrusted guests must come from a validated, confinement-enforcing producer (e.g. Wasm engine or proved lowering, or an actual Graal isolate); no fallback to raw native/CIL/FFI execution Production lowering must not accept arbitrary preprocessor definitions or test-only guard modes that can override Wasm bounds checks while preserving a bounds-checked manifest; test artifacts are explicitly marked not for admission"
   },
   "mandatoryScenarios": [
     "nested-deep-copy-no-alias",
@@ -53,6 +53,7 @@
     "retirement-race-does-not-release-live-memory",
     "allocator-and-buffer-reuse-no-old-data",
     "guest-native-ffi-and-import-admission-denied",
+    "lowerer-security-macro-overrides-rejected",
     "neighbor-survives-failed-tenant",
     "compiled-real-guest-cross-tenant-denial"
   ],
