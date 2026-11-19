@@ -1,31 +1,60 @@
+# Exact-head source/fixture and Rust reference checks; NOT Atto guest parity.
 name: Typed actor message v1 Rust oracle (source-only)
 on:
   push:
     paths:
       - 'tools/typed_actor_v1.rs'
+      - 'tools/typed_actor_fixture_identity.rs'
       - 'contracts/typed-actor-v1.tsv'
       - 'fixtures/typed-actor-v1/**'
       - '.github/workflows/typed-actor-v1-rust.yml'
   pull_request:
     paths:
       - 'tools/typed_actor_v1.rs'
+      - 'tools/typed_actor_fixture_identity.rs'
       - 'contracts/typed-actor-v1.tsv'
       - 'fixtures/typed-actor-v1/**'
       - '.github/workflows/typed-actor-v1-rust.yml'
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
   rust-source-only-oracle:
-    runs-on: ubuntu-latest
-    timeout-minutes: 8
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - name: Rust source-only oracle tests (never guest parity)
+      - name: Check out exact source PR revision without persisted token
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact checked-out commit and root tree
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_HEAD" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          echo "ATTO_CONFORMANCE_SOURCE_HEAD=$EXPECTED_HEAD"
+          echo "ATTO_CONFORMANCE_SOURCE_TREE=$(git rev-parse 'HEAD^{tree}')"
+      - name: Rust source-only oracle and pinned fixture identities (NOT guest parity)
         shell: bash
         run: |
           set -euo pipefail
           rustc --version
-          rustc --edition=2021 --test tools/typed_actor_v1.rs -o /tmp/typed_actor_tests
-          /tmp/typed_actor_tests
-          rustc --edition=2021 tools/typed_actor_v1.rs -o /tmp/typed_actor_oracle
-          /tmp/typed_actor_oracle
+          git --version
+          rustc --edition=2021 --test tools/typed_actor_fixture_identity.rs -o "$RUNNER_TEMP/typed_actor_identity_tests"
+          "$RUNNER_TEMP/typed_actor_identity_tests"
+          rustc --edition=2021 tools/typed_actor_fixture_identity.rs -o "$RUNNER_TEMP/typed_actor_identity"
+          "$RUNNER_TEMP/typed_actor_identity"
+          rustc --edition=2021 --test tools/typed_actor_v1.rs -o "$RUNNER_TEMP/typed_actor_tests"
+          "$RUNNER_TEMP/typed_actor_tests"
+          rustc --edition=2021 tools/typed_actor_v1.rs -o "$RUNNER_TEMP/typed_actor_oracle"
+          "$RUNNER_TEMP/typed_actor_oracle"
+      - name: Explicitly prohibit reference-model promotion to compiler parity
+        run: |
+          echo 'ATTO_TYPED_ACTOR_V1_SOURCE_ONLY=PASS'
+          echo 'ATTO_TYPED_ACTOR_V1_GUEST_EXECUTED=false'
+          echo 'ATTO_TYPED_ACTOR_V1_CONTROL_AUTHENTICATED=false'
+          echo 'ATTO_TYPED_ACTOR_V1_AOT_VERIFIED=false'
