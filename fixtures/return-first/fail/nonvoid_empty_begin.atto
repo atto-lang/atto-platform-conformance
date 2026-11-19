@@ -1,0 +1,3 @@
+// expect-error: E_RETURN
+int <- calculate(int x) begin end
+pub fnc main() -> int { return 0; }

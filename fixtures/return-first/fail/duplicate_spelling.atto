@@ -1,0 +1,4 @@
+// expect-error: E_DUPLICATE
+fnc calculate(int x) -> int { return x; }
+int <- calculate(int x) begin return x; end
+pub fnc main() -> int { return 0; }

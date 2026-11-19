@@ -1,0 +1,4 @@
+// expect-exit: 42
+// return-first syntax variant infer_bare_return_first_begin; compiled guest proof still pending
+infer <- calculate_other() begin return 42; end
+pub fnc main() -> int { return calculate_other(); }

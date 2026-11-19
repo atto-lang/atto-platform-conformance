@@ -1,0 +1,4 @@
+// expect-exit: 0
+// return-first syntax variant void_name_colon_brace; compiled guest proof still pending
+fnc reset(): void {  }
+pub fnc main() -> int { reset(); return 0; }
