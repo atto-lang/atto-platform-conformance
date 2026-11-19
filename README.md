@@ -111,3 +111,37 @@ proof only. The browser-hosted compiler and other independent backends
 remain `NOT_EXECUTED`; constructor definite-initialization analysis remains
 a separate work item.
 
+
+
+## Explicit deferred final class constructor fields
+
+`contracts/constructor-definite-final-v1.json` defines 13 portable Atto
+fixtures for the narrow `final int id;` case: three positive constructors
+(direct, `if/else`, and out-of-line) and ten compile-negative cases.
+All other class fields continue to need declaration initializers in the
+current Rust/browser compiler; the accepted v2 implicit `val` default
+is unchanged. The constructor checks both **definitely initialized** and
+**possibly initialized** branch states, rejecting reads before initialization,
+possible double writes and a successful path without all deferred fields set.
+Loops, exception regions and deferred callbacks cannot acquire an unproven
+exactly-once field write capability.
+
+The exact checked-in fixtures were compiled with the native Rust compiler
+and executed in
+[private carrier run #44452651416](https://github.com/gha-indie-worker/atto-ci/actions/runs/44452651416):
+58 source Git blobs verified; three valid guest Wasm programs returned 42;
+all ten negatives failed with expected diagnostics and no Wasm artifacts.
+The fully reconciled compiler's
+[locked Rust regression #44454006529](https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/44454006529)
+passed 547/547 tests on a 697-blob exact source/test Git subtree mirror.
+The **actual merged compiler** was independently rebuilt and run against
+all 13 exact portable fixtures in
+[merged-compiler carrier run #44454811741](https://github.com/gha-indie-worker/atto-ci/actions/runs/44454811741);
+the source Git subtree exactly matched merge commit `57ed0e7`,
+16 focused constructor tests and three receipt tests passed, all three
+compiled guests returned 42, and all ten negatives emitted no artifact.
+
+This proof is restricted to a **native-hosted Rust compiler generating
+Wasm guests**. It is not browser-hosted compiler execution or independent
+Java/LLVM/.NET/Forge/Wasm backend verification. General required-field,
+struct value-layout, and exceptional cleanup proofs are separate milestones.
