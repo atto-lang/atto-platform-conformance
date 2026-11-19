@@ -52,3 +52,18 @@ ACTOR-REPLY-50	REJECT	NOT_EXECUTED	SOURCE_ONLY	cancelled pending handle cannot b
 ACTOR-REPLY-51	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	ask alias retains unary typing and distinct transport errors
 ACTOR-REPLY-52	REJECT	NOT_EXECUTED	SOURCE_ONLY	remote serialization and typed protocol mismatch fail closed
 ACTOR-REPLY-53	REJECT	NOT_EXECUTED	SOURCE_ONLY	supervisor CONTROL cannot be forged via proxy ACK
+ACTOR-REPLY-54	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	two-real-OS-process Unix domain socket typed framed delivery
+ACTOR-REPLY-55	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	two-real-OS-process TCP loopback framed delivery
+ACTOR-REPLY-56	REJECT	NOT_EXECUTED	SOURCE_ONLY	wrong tenant and capability at IPC connection
+ACTOR-REPLY-57	REJECT	NOT_EXECUTED	SOURCE_ONLY	protocol version mismatch no downgrade
+ACTOR-REPLY-58	REJECT	NOT_EXECUTED	SOURCE_ONLY	remote actor incarnation mismatch after restart
+ACTOR-REPLY-59	REJECT	NOT_EXECUTED	SOURCE_ONLY	remote target changes after authorized association
+ACTOR-REPLY-60	REJECT	NOT_EXECUTED	SOURCE_ONLY	mismatched request ACK correlation never settles
+ACTOR-REPLY-61	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	connection drops after possible admission yields Indeterminate
+ACTOR-REPLY-62	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	admission ACK followed by process crash is not Processed
+ACTOR-REPLY-63	REJECT	NOT_EXECUTED	SOURCE_ONLY	oversized frame rejected before payload allocation
+ACTOR-REPLY-64	REJECT	NOT_EXECUTED	SOURCE_ONLY	production TCP missing mutual TLS and authorization
+ACTOR-REPLY-65	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	real compiled .atto guest in second process executes receive
+ACTOR-REPLY-66	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	remote ActorRegistry lookup resolves legitimate physical incarnation
+ACTOR-REPLY-67	REJECT	NOT_EXECUTED	SOURCE_ONLY	unauthorized socket IO via untrusted tenant bypasses capability
+ACTOR-REPLY-68	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	independent across-process backpressure and CONTROL priority
