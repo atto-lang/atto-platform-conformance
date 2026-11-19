@@ -16,6 +16,24 @@ Execute portable language fixtures and record target-specific results.
 
 [Target registry](contracts/implicit-argument-borrow-v1.json): `python3 bin/validate_implicit_argument_borrow.py` validates fixture integrity only. Now includes inferred borrowed-return and named lt! lifetime cases. Each compiler and guest must be independently tested; all new backend states begin `NOT_EXECUTED`.
 
+## Ownership-bang interpretation for implicit-call fixtures
+
+Treat a normal nonprimitive call `inspect(owner)` as an implicit readonly
+`borrow!` under the target language contract. The paired spelling
+`inspect(borrow! owner)` must yield identical scoped loan rights and retain
+the original owner; neither permits mutation or an owned return. Mutable
+`update(mut owner)` and explicit `update(borrow! mut owner)` require unique
+write authority. Consuming calls must use `take!` at the formal and caller.
+
+Related operations remain separate: `share!` requires frozen or guarded
+shared authority; `copy!` is a proven shallow copy and `copy!!` an
+independent deep graph; `pin! take!` fixes pointee storage but does not
+extend borrows across await/actor boundaries; `drop!` consumes only after
+loans end. Add paired negative guests for every authority change instead of
+promoting host-only manifest validation as compiler evidence. The existing
+implicit-borrow registry's status stays `NOT_EXECUTED` until actual guests
+compile and run on exact compiler + fixture trees.
+
 ## Validation
 
 Validation should rely on checked-in tests and exact-commit CI results. When reporting parity, distinguish **passed**, **failed**, **unsupported**, and **not executed**. Avoid inferring guest-runtime support from host-only tests.
