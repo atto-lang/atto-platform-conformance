@@ -8,6 +8,7 @@ on:
     paths:
       - 'contracts/borrow-checker-v1.tsv'
       - 'contracts/borrow-checker-execution-v1.tsv'
+      - 'contracts/borrow-checker-host-parity-v1.tsv'
       - 'fixtures/borrow-checker-v1/**'
       - 'docs/BORROW_CHECKER_CONFORMANCE_V1.md'
       - 'tests/borrow_checker_matrix_v1.rs'
@@ -19,6 +20,7 @@ on:
     paths:
       - 'contracts/borrow-checker-v1.tsv'
       - 'contracts/borrow-checker-execution-v1.tsv'
+      - 'contracts/borrow-checker-host-parity-v1.tsv'
       - 'fixtures/borrow-checker-v1/**'
       - 'docs/BORROW_CHECKER_CONFORMANCE_V1.md'
       - 'tests/borrow_checker_matrix_v1.rs'

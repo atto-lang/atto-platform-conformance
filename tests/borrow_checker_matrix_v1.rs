@@ -5,6 +5,7 @@ use std::path::Path;
 
 const MANIFEST: &str = include_str!("../contracts/borrow-checker-v1.tsv");
 const RECEIPTS: &str = include_str!("../contracts/borrow-checker-execution-v1.tsv");
+const PARITY: &str = include_str!("../contracts/borrow-checker-host-parity-v1.tsv");
 const VERIFIED_SLICE: &str = "VERIFIED_NATIVE_RUST_TO_WASM_GUEST";
 fn expected_case_status(id: &str) -> &'static str {
     match id {
@@ -150,6 +151,55 @@ fn do_not_conflate_oracle_with_evidence() {
         assert_ne!(c.oracle, "PASSED");
         assert_ne!(c.oracle, "UNSUPPORTED");
     }
+}
+
+
+#[test]
+fn native_and_wasm32_compiler_parity_receipts_bind_original_execution() {
+    // This is a *receipt integrity check*, not a new compiled guest run.
+    let mut src = PARITY.lines();
+    assert_eq!(src.next(), Some("id\tcompiler_tree\tnative_compiler_sha256\twasm32_compiler_sha256\tfixture_blob_sha\tguest_artifact_sha256\tresult\tcarrier_run_id\tcarrier_job_id"));
+    let prior: BTreeMap<&str, Vec<&str>> = RECEIPTS.lines().skip(1)
+        .map(|l| {
+            let f: Vec<_> = l.split('\t').collect();
+            assert_eq!(f.len(), 13);
+            (f[0], f)
+        }).collect();
+    let all = cases();
+    let mut seen = BTreeSet::new();
+    for l in src {
+        let v: Vec<&str> = l.split('\t').collect();
+        assert_eq!(v.len(), 9, "bad native-vs-Wasm32 parity receipt row");
+        let id = v[0];
+        assert!(seen.insert(id), "duplicate parity case {}", id);
+        let c = all.iter().find(|c| c.id == id).expect("unknown parity case");
+        assert_eq!(c.status, VERIFIED_SLICE, "no parity promotion of target-only cases");
+        let original = prior.get(id).expect("missing prior guest receipt");
+        assert_eq!(v[1], original[6], "compiler source Git tree changed");
+        assert_eq!(v[2], original[7], "native compiler binary changed");
+        assert_eq!(v[4], original[8], "fixture Git blob changed");
+        assert_eq!(v[5], original[9], "compiled guest digest changed");
+        for i in [2usize, 3usize] {
+            assert_eq!(v[i].len(), 64, "short compiler digest: {}", id);
+            assert!(v[i].bytes().all(|b| b.is_ascii_hexdigit()));
+        }
+        assert_eq!(v[7], "44449360766", "unreviewed parity run");
+        assert_eq!(v[8], "135309223758", "unreviewed parity job");
+        let expected = match c.verdict {
+            "PASS" => "BYTE_IDENTICAL_GUEST_EXIT_42".to_owned(),
+            "REJECT" => format!("BOTH_HOSTS_REJECT_{}_NO_ARTIFACT", c.oracle),
+            other => panic!("bad case verdict: {}", other),
+        };
+        assert_eq!(v[6], expected, "unreviewed parity result for {}", id);
+        let expected_wasm = match c.operation {
+            "implicit_borrow" | "write_loan" => "13da68a9329f3e1f2a191473334965d4476a92a9d4866d06daaa2ec975328cf9",
+            "copy_deep" => "de0cd07b7239d07141d06f678ba0e056fa7b678ebe1ab30466526236967712da",
+            _ => panic!("unadmitted parity operation"),
+        };
+        assert_eq!(v[3], expected_wasm, "unexpected wasm32-hosted compiler output");
+    }
+    assert_eq!(seen.len(), 6, "exact six-case compiler differential expected");
+    assert_eq!(seen.len(), prior.len(), "missing or extra parity receipts");
 }
 
 #[test]
