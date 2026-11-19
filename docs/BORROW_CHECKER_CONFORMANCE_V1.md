@@ -54,6 +54,20 @@ These PRs have different ancestry and maturity. This matrix does **not** claim a
 4. **Exact-head per backend**: record **source commit SHA and tree SHA**, toolchain, target, compiler and guest artifact SHA-256, full executed command, test log/step count, expected vs actual exit/output, diagnostic/no-artifact evidence, and reviewer. Repeat for each backend/feature at the **actual merged or stacked exact SHA**. A test passing on another head cannot be transferred.
 5. **No invented support**: `PASS`, `FAIL`, `UNSUPPORTED` and `NOT_EXECUTED` describe execution results per case and backend; a proposed expected verdict `PASS` or `REJECT` in the TSV is **an oracle, not a test result**. If a backend cannot implement a feature safely, it must fail closed; zero-step CI and skipped tests remain `NOT_EXECUTED`.
 
+## Optional compiled-guest execution gate (Rust, exact compiler inputs)
+
+[`bin/run_borrow_checker_matrix.rs`](../bin/run_borrow_checker_matrix.rs) is a dependency-free Rust **single-case** runner for candidate cases. It intentionally rejects `TARGET_ONLY` fixtures and unapproved draft-profile execution; it never marks a fixture passed merely because source code was checked in. Compile with:
+
+~~~sh
+rustc --edition=2021 bin/run_borrow_checker_matrix.rs -o borrow_checker_exec_v1
+~~~
+
+Run a supported case by passing **all actual immutable compiler provenance**: `--case BCV1-015`, `--compiler /path/to/attoc`, `--compiler-repo /path/to/atto-source.rs`, `--compiler-head <40-hex>`, `--compiler-tree <40-hex>`, `--compiler-sha256 <64-hex>`, `--guest-runner /path/to/actual-guest-runtime`, and any necessary repeated `--compiler-arg` or `--guest-arg`. A draft-profile case also requires explicit `--allow-draft-profile`; the source's first line already chooses the temporary migration profile, so **do not redundantly add** a conflicting `--ownership-profile` flag.
+
+The runner checks source Git HEAD and root tree, verifies the compiler binary's SHA-256 on Linux, compiles the selected source with an isolated `-o` destination, and checks the intended semantic diagnostic **and zero artifact** for negatives. For positives it demands a nonempty generated guest and actually invokes the supplied guest runtime, requiring exit code 42. It does **not** infer the correct Wasm runner from the backend, and it does **not** validate compiler provenance from a claimed SHA alone: the person invoking it must build the exact compiler binary from the verified tree and record that build receipt. A returned status of 2 indicates unsupported/unexecuted admission rather than a semantic compiler failure.
+
+The included workflow only runs **host Rust unit tests** for this runner; it never substitutes those tests for a real configured compiler/guest invocation. An authorized, exact-tree carrier runner must supply the actual compiler artifact, runtime and reviewed command before backend conformance can be promoted.
+
 ## Initial backend execution status for these exact fixtures
 
 | Backend | Initial status | Note |

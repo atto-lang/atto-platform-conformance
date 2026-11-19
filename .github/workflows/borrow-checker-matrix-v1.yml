@@ -6,6 +6,7 @@ on:
       - 'fixtures/borrow-checker-v1/**'
       - 'docs/BORROW_CHECKER_CONFORMANCE_V1.md'
       - 'tests/borrow_checker_matrix_v1.rs'
+      - 'bin/run_borrow_checker_matrix.rs'
       - '.github/workflows/borrow-checker-matrix-v1.yml'
   workflow_dispatch:
 
@@ -23,3 +24,7 @@ jobs:
           rustc --version
           rustc --edition=2021 --test tests/borrow_checker_matrix_v1.rs -o "$RUNNER_TEMP/borrow_checker_matrix_v1"
           "$RUNNER_TEMP/borrow_checker_matrix_v1" --nocapture
+      - name: Rust-only executable gate unit tests — not compiled guest execution
+        run: |
+          rustc --edition=2021 --test bin/run_borrow_checker_matrix.rs -o "$RUNNER_TEMP/borrow_checker_exec_v1_tests"
+          "$RUNNER_TEMP/borrow_checker_exec_v1_tests" --nocapture
