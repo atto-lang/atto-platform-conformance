@@ -1,0 +1,5 @@
+// expect-exit: 0
+define class Counter as
+  reset() -> void { }
+end
+pub fnc main() -> int { return 0; }
