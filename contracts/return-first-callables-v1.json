@@ -1,7 +1,7 @@
 {
   "schema": "atto.return-first-callables.v1",
   "version": 1,
-  "status": "ACCEPTED_SYNTAX_TARGET_BACKEND_EXECUTION_NOT_VERIFIED",
+  "status": "RUST_BROWSER_GUEST_VERIFIED_WITH_DISTINCT_FAILING_CLASS_FIELD_GATE",
   "owner": "atto-lang/atto-spec",
   "spec": "language/return-first-and-begin-callables-v1.md",
   "semantics": {
@@ -260,7 +260,7 @@
     }
   ],
   "backend_status": {
-    "rs-browser": "PARSER_AND_REGRESSION_TESTS_COMMITTED_NOT_EXECUTED",
+    "rs-browser": "GUEST_VERIFIED_27_POSITIVE_6_NEGATIVE_WITH_SEPARATE_CLASS_DEFAULT_GATE_FAILURE",
     "java": "NOT_VERIFIED",
     "llvm": "NOT_VERIFIED",
     "net": "NOT_VERIFIED",
@@ -270,5 +270,14 @@
     "js": "NOT_VERIFIED",
     "hdl": "NOT_VERIFIED"
   },
-  "evidence_rule": "Tests require real guest execution or negative compiler diagnostic with no artifact, exact compiler/source/target/runtime SHAs. Static fixture presence and parser acceptance are not guest proof."
+  "evidence_rule": "Tests require real guest execution or negative compiler diagnostic with no artifact, exact compiler/source/target/runtime SHAs. Static fixture presence and parser acceptance are not guest proof.",
+  "evidence": [
+    {
+      "path": "evidence/return-first/rs-browser-20261119.json",
+      "source_sha": "5aa1168f8d9d146553c7fa8adccfb354a80904f3",
+      "conformance_fixture_sha": "8bb92ecbee4d48f0f49cc642a2eccc63738ebae3",
+      "run_url": "https://github.com/declarative-migrations/atto-ci/actions/runs/44445002912",
+      "note": "Individual return-syntax steps passed; overall workflow failed because the class-field default contract has four unrelated failures. Full repo and other backends not verified."
+    }
+  ]
 }
