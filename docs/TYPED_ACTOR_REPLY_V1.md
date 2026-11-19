@@ -65,3 +65,32 @@ A passing Rust test run proves only reference-model behavior, not that an
 Atto guest, scheduler, proxy actor, persistence provider, network transport,
 or any native/AOT backend implements the contract. Require exact-head job
 steps and separate backend guest receipts before changing any guest status.
+
+## Cross-process proxy IPC: real host processes (still not compiled Atto)
+
+The 15 proposed guest conformance cases ACTOR-REPLY-54 through
+ACTOR-REPLY-68 are all `NOT_EXECUTED`. See
+[atto-spec cross-process IPC v1](https://github.com/atto-lang/atto-spec/blob/proposal/typed-actor-replies-v1-20261116/proposals/CROSS_PROCESS_PROXY_ACTOR_IPC_V1.md).
+
+`tools/proxy_actor_ipc_two_process_v1.rs` contains 10 host-only executable
+Rust tests which spawn a **different OS process** serving a real Unix
+domain socket or loopback TCP endpoint. The independent child process
+parses bounded binary envelopes, checks a **test-only** numeric capability,
+enqueues a scalar in its host-owned mailbox and returns separate destination
+admission and processing receipts. Tests cover wrong tenant/capability,
+version downgrade, stale incarnation, target mismatch, forged correlation,
+loss before ACK, loss after ACK and oversize framing.
+
+Run on a Unix-like CI runner with Rust:
+
+~~~sh
+rustc --edition=2021 --test -D warnings tools/proxy_actor_ipc_two_process_v1.rs -o /tmp/proxy_actor_ipc_two_process_tests
+/tmp/proxy_actor_ipc_two_process_tests --nocapture
+~~~
+
+The child is **Rust test infrastructure**, not an Atto actor, and the
+loopback TCP path is **plaintext and test-only**. There is no mutual TLS,
+peer identity, real scheduler, compiler guest, userland asynchronous reactor,
+durability or full end-to-end wire authentication here. Do not promote
+ACTOR-REPLY-54..68 guest statuses merely because the host two-process
+checks pass. Production TCP requires mutual TLS and capability policy.
