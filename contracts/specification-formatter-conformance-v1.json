@@ -5,7 +5,7 @@
   "authority": {
     "repository": "atto-lang/atto-spec",
     "pull_request": 115,
-    "commit": "dab563bedaaf2ce801b2a2991e3c693f664bb2ab",
+    "commit": "2f32c957ce01bc157479a5c96538efd853dc3643",
     "registry_path": "contracts/specification-rules-v1.json",
     "registry_blob_sha": "987dfab669a0cc62b9be2eac5c968116df058a3a"
   },
