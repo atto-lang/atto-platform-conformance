@@ -106,3 +106,33 @@ test('executed actor-local Wasm guest receipt is exact-head scoped, without prom
   assert.deepEqual(new Set(Object.values(registry.backend_status)),new Set(['NOT_EXECUTED']));
   assert.ok(registry.cases.every(c=>c.status==='NOT_EXECUTED'));
 });
+
+test('mainline-reconciled actor mtd native-to-Wasm proof stays scoped to one executable actor profile',()=>{
+  const receipt=JSON.parse(readFileSync(
+    new URL('../evidence/implements-actor-local-rs-mainline-20261119.json',import.meta.url),'utf8'));
+  assert.equal(receipt.schema,'atto.implements.actor_local.rs_mainline_guest.v1');
+  assert.equal(receipt.status,'PASS_SCOPED');
+  assert.equal(receipt.source_pull_request,374);
+  assert.equal(receipt.base_branch,'main');
+  for(const sha of [receipt.source_head_sha,receipt.source_main_parent_sha,receipt.carrier_head_sha])
+    assert.match(sha,/^[0-9a-f]{40}$/);
+  assert.equal(receipt.source_changed_files.length,5);
+  assert.equal(receipt.run_id,44457107764);
+  assert.equal(receipt.job_id,135334688118);
+  assert.equal(receipt.conclusion,'success');
+  assert.equal(receipt.executed_steps,true);
+  assert.equal(receipt.exact_source_blobs,45);
+  assert.deepEqual(receipt.tests,{
+    isolated_rust:15,compiler_library:42,actor_receiver_rust:11,
+    nominal_contract_rust:14,abstract_trait_rust:9,node_conformance_integrity:5,failures:0
+  });
+  assert.equal(receipt.actual_guest.stdout,'42\n');
+  assert.equal(receipt.actual_guest.byte_identical_two_compiles,true);
+  assert.deepEqual(receipt.actual_guest.functions,['actor_init(0)','actor_receive(0,21n,1n)']);
+  assert.equal(receipt.negative.missing_actor_required_method,'E_IMPL_MISSING');
+  assert.equal(receipt.negative.no_artifact_for_missing_actor,true);
+  assert.equal(receipt.negative.external_ActorRef_mtd,'E_UNSUPPORTED');
+  assert.ok(receipt.unsupported_or_unproven.includes('struct value mtd ABI'));
+  assert.deepEqual(new Set(Object.values(registry.backend_status)),new Set(['NOT_EXECUTED']));
+  assert.ok(registry.cases.every(c=>c.status==='NOT_EXECUTED'));
+});
