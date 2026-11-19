@@ -300,4 +300,227 @@ mod tests {
         assert!(matches!(fresh_process.reserve(id,"actor:a",1),Ok(Reservation::New(_))));
         // This is precisely why a durable WAL/transactional ledger is required.
     }
+
+    #[test]
+    fn distinct_jobs_compete_for_fixed_quota_without_over_admission() {
+        let ledger=Arc::new(Mutex::new(Ledger::new(128)));
+        let barrier=Arc::new(Barrier::new(17));
+        let accepted=Arc::new(AtomicUsize::new(0));
+        let mut workers=vec![];
+        for worker in 0..16 {
+            let (l,b,ok)=(ledger.clone(),barrier.clone(),accepted.clone());
+            workers.push(thread::spawn(move||{
+                b.wait();
+                for n in 0..32 {
+                    let id=key(&format!("worker-{worker}-job-{n}"));
+                    let result=l.lock().unwrap().reserve(id,"actor:billing",42);
+                    match result {
+                        Ok(Reservation::New(_))=>{ok.fetch_add(1,Ordering::SeqCst);},
+                        Err(Error::Full)=>{},
+                        other=>panic!("unexpected capacity outcome: {other:?}")
+                    }
+                }
+            }));
+        }
+        barrier.wait();
+        for t in workers {t.join().unwrap();}
+        assert_eq!(accepted.load(Ordering::SeqCst),128);
+        assert_eq!(ledger.lock().unwrap().slots.len(),128);
+    }
+
+    #[test]
+    fn competing_payloads_cannot_both_reserve_same_job_identity() {
+        let ledger=Arc::new(Mutex::new(Ledger::new(1)));
+        let barrier=Arc::new(Barrier::new(33));
+        let mut workers=vec![];
+        for i in 0..32 {
+            let (l,b)=(ledger.clone(),barrier.clone());
+            workers.push(thread::spawn(move||{
+                b.wait();
+                l.lock().unwrap().reserve(key("conflict"),"actor:billing",i)
+            }));
+        }
+        barrier.wait();
+        let outcomes:Vec<_>=workers.into_iter().map(|w|w.join().unwrap()).collect();
+        assert_eq!(outcomes.iter().filter(|x|matches!(x,Ok(Reservation::New(_)))).count(),1);
+        assert_eq!(outcomes.iter().filter(|x|matches!(x,Err(Error::Conflict))).count(),31);
+        assert_eq!(ledger.lock().unwrap().slots.len(),1);
+    }
+
+    #[test]
+    fn exact_id_bytes_distinguish_unicode_separator_and_nul_keys() {
+        let mut l=Ledger::new(8);
+        for id in ["a:b","a\0b","a","e\u{301}","\u{e9}","\u{1f680}"] {
+            assert!(matches!(l.reserve(key(id),"actor:billing",11),Ok(Reservation::New(_))));
+        }
+        assert_eq!(l.slots.len(),6);
+        assert_ne!(key("e\u{301}"),key("\u{e9}"));
+        assert_eq!(JobKey::new("tenant","a:b").unwrap().job_id,"a:b");
+    }
+
+    #[test]
+    fn rejected_identity_is_retained_and_cannot_be_conflicted_or_reused() {
+        let mut l=Ledger::new(1);let id=key("denied");
+        let Reservation::New(token)=l.reserve(id.clone(),"actor:jobs",1).unwrap() else {panic!()};
+        l.reject_before_send(&id,token).unwrap();
+        assert_eq!(l.reserve(id.clone(),"actor:jobs",1),Ok(Reservation::Duplicate(Phase::Rejected)));
+        assert_eq!(l.reserve(id,"actor:jobs",2),Err(Error::Conflict));
+        assert_eq!(l.slots.len(),1);
+    }
+
+    #[test]
+    fn terminal_receipts_cannot_be_mutated_to_another_terminal_outcome() {
+        let mut l=Ledger::new(2);let id=key("done");
+        let Reservation::New(token)=l.reserve(id.clone(),"actor:jobs",1).unwrap() else {panic!()};
+        l.admit(&id,token,actor(1)).unwrap();
+        l.start(&id,token,actor(1)).unwrap();
+        l.complete(&id,token,actor(1)).unwrap();
+        assert_eq!(l.fail(&id,token,actor(1)),Err(Error::WrongPhase));
+        assert_eq!(l.uncertain(&id,token),Err(Error::WrongPhase));
+        assert_eq!(l.reject_before_send(&id,token),Err(Error::WrongPhase));
+        assert_eq!(l.phase(&id),Some(Phase::Completed));
+    }
+
+    #[test]
+    fn terminal_failure_cannot_be_completed_or_reopened() {
+        let mut l=Ledger::new(1);let id=key("fail-terminal");
+        let Reservation::New(token)=l.reserve(id.clone(),"actor:jobs",1).unwrap() else {panic!()};
+        l.admit(&id,token,actor(1)).unwrap();
+        l.start(&id,token,actor(1)).unwrap();
+        l.fail(&id,token,actor(1)).unwrap();
+        assert_eq!(l.complete(&id,token,actor(1)),Err(Error::WrongPhase));
+        assert_eq!(l.start(&id,token,actor(1)),Err(Error::WrongPhase));
+        assert_eq!(l.fail(&id,token,actor(1)),Err(Error::WrongPhase));
+    }
+
+    #[test]
+    fn uncertainty_before_confirmed_admission_never_permits_blind_send() {
+        let mut l=Ledger::new(1);let id=key("pre-admission");
+        let Reservation::New(token)=l.reserve(id.clone(),"group:workers",1).unwrap() else {panic!()};
+        l.uncertain(&id,token).unwrap();
+        assert_eq!(l.admit(&id,token,actor(1)),Err(Error::WrongPhase));
+        assert_eq!(l.reject_before_send(&id,token),Err(Error::WrongPhase));
+        assert_eq!(l.phase(&id),Some(Phase::Indeterminate));
+    }
+
+    #[test]
+    fn uncertainty_after_handler_start_never_accepts_late_completion() {
+        let mut l=Ledger::new(1);let id=key("started-crash");
+        let Reservation::New(token)=l.reserve(id.clone(),"actor:billing",1).unwrap() else {panic!()};
+        l.admit(&id,token,actor(1)).unwrap();
+        l.start(&id,token,actor(1)).unwrap();
+        l.uncertain(&id,token).unwrap();
+        assert_eq!(l.complete(&id,token,actor(1)),Err(Error::WrongPhase));
+        assert_eq!(l.admit(&id,token,actor(2)),Err(Error::WrongPhase));
+        assert_eq!(l.phase(&id),Some(Phase::Indeterminate));
+    }
+
+    #[test]
+    fn different_key_receipt_tokens_cannot_settle_another_job() {
+        let mut l=Ledger::new(2);let a=key("a");let b=key("b");
+        let Reservation::New(ta)=l.reserve(a.clone(),"actor:jobs",1).unwrap() else {panic!()};
+        let Reservation::New(tb)=l.reserve(b.clone(),"actor:jobs",1).unwrap() else {panic!()};
+        assert_ne!(ta,tb);
+        l.admit(&a,ta,actor(1)).unwrap();
+        l.admit(&b,tb,actor(1)).unwrap();
+        assert_eq!(l.start(&a,tb,actor(1)),Err(Error::ForgedOrStale));
+        assert_eq!(l.start(&b,ta,actor(1)),Err(Error::ForgedOrStale));
+        assert_eq!(l.phase(&a),Some(Phase::Admitted));
+        assert_eq!(l.phase(&b),Some(Phase::Admitted));
+    }
+
+    #[test]
+    fn forged_actor_slot_cannot_claim_correct_generation_receipt() {
+        let mut l=Ledger::new(1);let id=key("a");
+        let Reservation::New(token)=l.reserve(id.clone(),"actor:a",1).unwrap() else {panic!()};
+        l.admit(&id,token,actor(1)).unwrap();
+        let alien=Actor{slot:18,..actor(1)};
+        assert_eq!(l.start(&id,token,alien),Err(Error::ForgedOrStale));
+        l.start(&id,token,actor(1)).unwrap();
+        assert_eq!(l.complete(&id,token,alien),Err(Error::ForgedOrStale));
+    }
+
+    #[test]
+    fn reservation_tokens_advance_and_cannot_wrap_on_overflow() {
+        let mut l=Ledger::new(3);
+        let Reservation::New(first)=l.reserve(key("one"),"actor:jobs",1).unwrap() else {panic!()};
+        let Reservation::New(second)=l.reserve(key("two"),"actor:jobs",1).unwrap() else {panic!()};
+        assert!(second>first);
+        l.next_token=u64::MAX;
+        assert_eq!(l.reserve(key("three"),"actor:jobs",1),Err(Error::Full));
+        assert_eq!(l.slots.len(),2);
+        assert_eq!(l.reserve(key("one"),"actor:jobs",1),Ok(Reservation::Duplicate(Phase::Reserved)));
+    }
+
+    #[test]
+    fn missing_receipt_operations_cannot_allocate_phantom_jobs() {
+        let mut l=Ledger::new(1);let id=key("phantom");
+        assert_eq!(l.phase(&id),None);
+        assert_eq!(l.admit(&id,1,actor(1)),Err(Error::Missing));
+        assert_eq!(l.start(&id,1,actor(1)),Err(Error::Missing));
+        assert_eq!(l.complete(&id,1,actor(1)),Err(Error::Missing));
+        assert_eq!(l.fail(&id,1,actor(1)),Err(Error::Missing));
+        assert_eq!(l.uncertain(&id,1),Err(Error::Missing));
+        assert_eq!(l.reject_before_send(&id,1),Err(Error::Missing));
+        assert_eq!(l.slots.len(),0);
+    }
+
+    #[test]
+    fn even_after_completion_bounded_volatile_ledger_keeps_dedup_identity() {
+        let mut l=Ledger::new(1);let id=key("terminal");
+        let Reservation::New(token)=l.reserve(id.clone(),"actor:jobs",1).unwrap() else {panic!()};
+        l.admit(&id,token,actor(1)).unwrap();
+        l.start(&id,token,actor(1)).unwrap();
+        l.complete(&id,token,actor(1)).unwrap();
+        assert_eq!(l.reserve(id,"actor:jobs",1),Ok(Reservation::Duplicate(Phase::Completed)));
+        assert_eq!(l.reserve(key("other"),"actor:jobs",1),Err(Error::Full));
+    }
+
+    #[test]
+    fn different_tenants_have_independent_receipts_with_identical_job_ids() {
+        let mut l=Ledger::new(2);
+        let a=JobKey::new("a","shared").unwrap(),b=JobKey::new("b","shared").unwrap();
+        let Reservation::New(ta)=l.reserve(a.clone(),"actor:jobs",42).unwrap() else {panic!()};
+        let Reservation::New(tb)=l.reserve(b.clone(),"actor:jobs",42).unwrap() else {panic!()};
+        assert_ne!(ta,tb);
+        l.admit(&a,ta,actor(1)).unwrap();
+        l.admit(&b,tb,actor(1)).unwrap();
+        l.start(&a,ta,actor(1)).unwrap();
+        assert_eq!(l.phase(&b),Some(Phase::Admitted));
+        assert_eq!(l.complete(&b,ta,actor(1)),Err(Error::ForgedOrStale));
+    }
+
+    #[test]
+    fn group_placement_is_order_independent_for_1024_distinct_jobs() {
+        let members:Vec<Actor>=(0..32).map(|slot|Actor{
+            runtime_epoch:7,slot,incarnation:1
+        }).collect();
+        let mut reversed=members.clone();reversed.reverse();
+        for i in 0..1024 {
+            let id=key(&format!("job-{i}"));
+            let winner=select_one(&id,&members).unwrap();
+            assert!(members.contains(&winner));
+            assert_eq!(select_one(&id,&reversed),Some(winner));
+        }
+        assert_eq!(select_one(&key("job"),&[]),None);
+    }
+
+    #[test]
+    fn terminal_receipt_cannot_be_replayed_into_new_registry_epoch() {
+        let mut old=Ledger::new(1);let id=key("restart");
+        let Reservation::New(token)=old.reserve(id.clone(),"actor:jobs",1).unwrap() else {panic!()};
+        old.admit(&id,token,actor(1)).unwrap();
+        old.start(&id,token,actor(1)).unwrap();
+        old.complete(&id,token,actor(1)).unwrap();
+        let mut next=Ledger::new(1);
+        let Reservation::New(new_token)=next.reserve(id.clone(),"actor:jobs",1).unwrap() else {panic!()};
+        // The toy volatile model deliberately reuses token 1 after restart.
+        // A real receipt must bind registry epoch in its opaque authority.
+        assert_eq!(token,new_token);
+        let replacement=Actor{runtime_epoch:6,..actor(1)};
+        next.admit(&id,new_token,replacement).unwrap();
+        assert_eq!(next.start(&id,token,actor(1)),Err(Error::ForgedOrStale));
+        assert_eq!(next.complete(&id,token,actor(1)),Err(Error::ForgedOrStale));
+    }
+
 }
