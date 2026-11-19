@@ -70,6 +70,60 @@ fn four_portable_atto_fixtures_have_the_exact_approved_git_blobs() {
     }
 }
 
+fn indexed_fixture_sha(repo_root: &std::path::Path, path: &str) -> String {
+    // A byte-identical symlink target is NOT an identical tracked Git blob.
+    // Require an ordinary (100644) stage-zero file at the exact path.
+    let output = Command::new("git")
+        .arg("-C")
+        .arg(repo_root)
+        .args(["ls-files", "--stage", "--"])
+        .arg(path)
+        .output()
+        .expect("git ls-files must be available for source identity");
+    assert!(
+        output.status.success(),
+        "git ls-files failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let output = std::str::from_utf8(&output.stdout).expect("Git index entry is not UTF-8");
+    let (entry, indexed_path) = output
+        .trim_end_matches('\n')
+        .split_once('\t')
+        .expect("fixture missing from Git index or malformed index entry");
+    assert_eq!(indexed_path, path, "unexpected Git index fixture path");
+    let mut fields = entry.split_whitespace();
+    assert_eq!(fields.next(), Some("100644"), "{path}: not a regular Git blob");
+    let sha = fields.next().expect("fixture index entry lacks blob SHA");
+    assert_eq!(fields.next(), Some("0"), "{path}: nonzero Git index stage");
+    assert_eq!(fields.next(), None, "{path}: malformed Git index entry");
+    sha.to_owned()
+}
+
+#[test]
+fn four_fixtures_are_regular_tracked_git_blobs_matching_embedded_bytes() {
+    let repo_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    for (name, bytes, expected) in FIXTURES {
+        let rel_path = format!("contracts/actor-message-v1/{name}");
+        let fixture_path = repo_root.join(&rel_path);
+        let metadata =
+            std::fs::symlink_metadata(&fixture_path).expect("fixture missing from checkout");
+        assert!(
+            metadata.file_type().is_file(),
+            "{name}: symlinks and non-files are not permitted"
+        );
+        assert_eq!(
+            std::fs::read(&fixture_path).expect("failed reading fixture"),
+            bytes,
+            "{name}: checked-out fixture differs from embedded bytes"
+        );
+        assert_eq!(
+            indexed_fixture_sha(&repo_root, &rel_path),
+            expected,
+            "{name}: Git index blob identity or file mode differs from approved source"
+        );
+    }
+}
+
 #[test]
 fn single_byte_fixture_mutations_are_detected() {
     for (name, bytes, expected) in FIXTURES {
