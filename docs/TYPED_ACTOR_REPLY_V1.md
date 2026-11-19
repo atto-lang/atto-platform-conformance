@@ -38,3 +38,30 @@ type-check ActorMail<T>, exercise a real supervisor CONTROL path, check actual
 HTTP framing, enforce Sendable/Serializable, or execute any backend. A stepful
 Rust CI result proves only the reference-model tests. Do not promote any guest
 backend conformance status based on these host tests.
+
+## Proxy acknowledgment model: SOURCE_ONLY
+
+The 17 new proposed compiled-guest cases ACTOR-REPLY-37 through
+ACTOR-REPLY-53 correspond to the [proxy ACK and durable-delivery contract](https://github.com/atto-lang/atto-spec/blob/proposal/typed-actor-replies-v1-20261116/proposals/PROXY_ACTOR_ACK_AND_DELIVERY_V1.md).
+All are **NOT_EXECUTED**, including backend statuses. This addition does not
+claim a proxy actor runtime is wired to authenticated app replies.
+
+`tools/proxy_actor_ack_v1.rs` provides **14 Rust host-only unit tests**
+covering proxy queue versus final recipient admission, Started versus
+Processed, typed outcome conflict, inbox-versus-result durable scopes, absent
+provider support, wrong tenant/target/attempt/token/protocol, bounded slots,
+activation restart, network uncertainty, retry identity, panic, and cancellation.
+Its numeric permit is a test double for a **runtime-private** authenticated
+receipt; it does **not** implement or prove cryptographic transport security.
+
+Run with Rust installed:
+
+~~~sh
+rustc --edition=2021 --test -D warnings tools/proxy_actor_ack_v1.rs -o /tmp/proxy_actor_ack_tests
+/tmp/proxy_actor_ack_tests
+~~~
+
+A passing Rust test run proves only reference-model behavior, not that an
+Atto guest, scheduler, proxy actor, persistence provider, network transport,
+or any native/AOT backend implements the contract. Require exact-head job
+steps and separate backend guest receipts before changing any guest status.
