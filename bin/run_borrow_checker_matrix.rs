@@ -32,6 +32,12 @@ fn git_rev(repo: &Path, revision: &str) -> Result<String, String> {
     if !output.status.success() { return Err(format!("git rev-parse {revision} failed")); }
     Ok(String::from_utf8_lossy(&output.stdout).trim().to_owned())
 }
+fn git_blob(path: &Path) -> Result<String, String> {
+    let output = Command::new("git").arg("hash-object").arg(path).output()
+        .map_err(|e| format!("git hash-object: {e}"))?;
+    if !output.status.success() { return Err(format!("git hash-object failed for {}", path.display())); }
+    Ok(String::from_utf8_lossy(&output.stdout).trim().to_owned())
+}
 fn actual_sha256(path: &Path) -> Result<String, String> {
     let output = Command::new("sha256sum").arg(path).output()
         .map_err(|e| format!("sha256sum (Linux): {e}"))?;
@@ -42,13 +48,15 @@ fn actual_sha256(path: &Path) -> Result<String, String> {
 struct Args {
     case_id: String, compiler: PathBuf, compiler_repo: PathBuf,
     compiler_head: String, compiler_tree: String, compiler_digest: String,
+    fixture_blob: String, manifest_blob: String,
     guest_runner: Option<PathBuf>, guest_args: Vec<String>,
     compiler_args: Vec<String>, allow_draft: bool,
 }
 fn parse_args() -> Result<Args, String> {
     let mut args = env::args().skip(1);
-    let (mut id, mut compiler, mut repo, mut head, mut tree, mut digest, mut runner) =
-        (None, None, None, None, None, None, None);
+    let (mut id, mut compiler, mut repo, mut head, mut tree, mut digest,
+        mut fixture_blob, mut manifest_blob, mut runner) =
+        (None, None, None, None, None, None, None, None, None);
     let mut runner_args = Vec::new();
     let mut compiler_args = Vec::new();
     let mut draft = false;
@@ -62,6 +70,8 @@ fn parse_args() -> Result<Args, String> {
             "--compiler-head" => head = value,
             "--compiler-tree" => tree = value,
             "--compiler-sha256" => digest = value,
+            "--fixture-blob-sha" => fixture_blob = value,
+            "--manifest-blob-sha" => manifest_blob = value,
             "--guest-runner" => runner = value.map(PathBuf::from),
             "--guest-arg" => runner_args.push(value.unwrap_or_default()),
             "--compiler-arg" => compiler_args.push(value.unwrap_or_default()),
@@ -77,6 +87,8 @@ fn parse_args() -> Result<Args, String> {
         compiler_head: head.ok_or("missing --compiler-head")?,
         compiler_tree: tree.ok_or("missing --compiler-tree")?,
         compiler_digest: digest.ok_or("missing --compiler-sha256")?,
+        fixture_blob: fixture_blob.ok_or("missing --fixture-blob-sha")?,
+        manifest_blob: manifest_blob.ok_or("missing --manifest-blob-sha")?,
         guest_runner: runner, guest_args: runner_args, compiler_args,
         allow_draft: draft,
     })
@@ -97,8 +109,9 @@ fn run() -> Result<(), String> {
         return Err(format!("unknown admission mode {}", case.admission));
     }
     if !sha_is_valid(&opt.compiler_head, 40) || !sha_is_valid(&opt.compiler_tree, 40)
-        || !sha_is_valid(&opt.compiler_digest, 64) {
-        return Err("require full 40-hex source head/tree and 64-hex compiler SHA-256".to_owned());
+        || !sha_is_valid(&opt.compiler_digest, 64)
+        || !sha_is_valid(&opt.fixture_blob, 40) || !sha_is_valid(&opt.manifest_blob, 40) {
+        return Err("require exact 40-hex source/head/tree and Git blobs plus 64-hex compiler SHA-256".to_owned());
     }
     let actual_head = git_rev(&opt.compiler_repo, "HEAD")?;
     let actual_tree = git_rev(&opt.compiler_repo, "HEAD^{tree}")?;
@@ -115,6 +128,14 @@ fn run() -> Result<(), String> {
         || case.fixture.contains("..") { return Err("unsafe fixture path".to_owned()); }
     let fixture = fs::canonicalize(root.join(case.fixture))
         .map_err(|e| format!("fixture missing {}: {e}", case.fixture))?;
+    let manifest = root.join("contracts/borrow-checker-v1.tsv");
+    let on_disk_manifest = fs::read_to_string(&manifest).map_err(|e| e.to_string())?;
+    if on_disk_manifest != MANIFEST {
+        return Err("manifest changed since the Rust runner was compiled".to_owned());
+    }
+    if git_blob(&manifest)? != opt.manifest_blob || git_blob(&fixture)? != opt.fixture_blob {
+        return Err("unverified Git blob: manifest/fixture does not match exact-source receipt".to_owned());
+    }
     let content = fs::read_to_string(&fixture).map_err(|e| e.to_string())?;
     if case.admission == "PROFILE_CANDIDATE_DRAFT"
         && content.lines().next() != Some("// atto-ownership: borrow-default-v1") {
@@ -133,7 +154,8 @@ fn run() -> Result<(), String> {
     let emitted = fs::metadata(&artifact).map(|m| m.len() > 0).unwrap_or(false);
     println!("CASE={} SOURCE_HEAD={} SOURCE_TREE={} COMPILER_SHA256={}",
         case.id, actual_head, actual_tree, actual_binary);
-    println!("FIXTURE={} OUTPUT_DIR={}", fixture.display(), temp.display());
+    println!("FIXTURE={} FIXTURE_BLOB={} MANIFEST_BLOB={} OUTPUT_DIR={}",
+        fixture.display(), opt.fixture_blob, opt.manifest_blob, temp.display());
     println!("COMPILE_EXIT={:?} COMPILE_STDOUT_STDERR:\n{}", compiled.status.code(), diagnostics);
     match case.verdict {
         "REJECT" => {
