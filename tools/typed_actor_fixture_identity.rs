@@ -76,9 +76,9 @@ fn verify(root: &Path) -> Result<usize, String> {
             return Err(format!("{relative}: invalid fixture length"));
         }
         let actual = git_blob_sha(&bytes)?;
-        if &actual != sha { return Err(format!("{relative}: fixture content SHA mismatch: {actual}")); }
+        if actual != *sha { return Err(format!("{relative}: fixture content SHA mismatch: {actual}")); }
         let tracked = indexed_sha(root, &relative)?;
-        if &tracked != sha { return Err(format!("{relative}: Git index blob SHA mismatch: {tracked}")); }
+        if tracked != *sha { return Err(format!("{relative}: Git index blob SHA mismatch: {tracked}")); }
     }
     Ok(EXPECTED.len())
 }
@@ -105,7 +105,7 @@ mod tests {
             let relative = format!("fixtures/typed-actor-v1/actor-typed-{:02}.atto", index + 1);
             let mut bytes = fs::read(&relative).expect("fixture missing");
             bytes.push(0);
-            assert_ne!(&git_blob_sha(&bytes).expect("git hashing failed"), sha);
+            assert_ne!(git_blob_sha(&bytes).expect("git hashing failed"), *sha);
         }
     }
 
