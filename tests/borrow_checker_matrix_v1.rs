@@ -115,7 +115,7 @@ fn canonical_bang_vocabulary_and_implicit_call_loans_are_covered() {
         let source = std::fs::read_to_string(&path)
             .unwrap_or_else(|e| panic!("{}: {e}", path.display()));
         for spelling in *required {
-            assert!(source.contains(spelling),
+            assert!(source.contains(*spelling),
                 "{} must exercise canonical ownership spelling: {spelling}", path.display());
         }
     }
