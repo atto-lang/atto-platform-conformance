@@ -1,0 +1,5 @@
+// expect-error: E_RETURN_ANNOTATION
+define actor Worker as
+  receive(ActorMail<int> mail) { }
+end
+pub fnc main() -> int { return 0; }
