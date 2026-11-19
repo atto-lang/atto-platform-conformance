@@ -186,6 +186,74 @@
       "error": "E_DUPLICATE",
       "source": "define interface Foo as ping(): int; end\ndefine actor Foo implements Foo as pub ping(): int { return 1; } end\npub fnc main(): int { return 0; }",
       "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "class-out-of-line",
+      "owner": "class",
+      "expect": "accept",
+      "source": "define interface IPing as ping(): int; end\ndeclare class C implements IPing;\ndefine class C implements IPing as end\npub mtd (C self) ping(): int { return 42; }\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "actor-required-trait-mtd",
+      "owner": "actor",
+      "expect": "accept",
+      "source": "define trait RequiredPing as ping(): int; end\ndeclare actor A implements RequiredPing;\ndefine actor A implements RequiredPing as end\npub mtd (A self) ping(): int { return 42; }\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "struct-required-trait-mtd",
+      "owner": "struct",
+      "expect": "accept",
+      "source": "define trait RequiredPing as ping(): int; end\ndefine struct S implements RequiredPing as pub value: int; end\npub mtd (S self) ping(): int { return self.value; }\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "class-required-trait-missing",
+      "owner": "class",
+      "expect": "reject",
+      "error": "E_IMPL_MISSING",
+      "source": "define trait RequiredPing as ping(): int; end\ndefine class C implements RequiredPing as end\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "actor-required-trait-missing",
+      "owner": "actor",
+      "expect": "reject",
+      "error": "E_IMPL_MISSING",
+      "source": "define trait RequiredPing as ping(): int; end\ndefine actor A implements RequiredPing as end\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "struct-required-trait-missing",
+      "owner": "struct",
+      "expect": "reject",
+      "error": "E_IMPL_MISSING",
+      "source": "define trait RequiredPing as ping(): int; end\ndefine struct S implements RequiredPing as pub value: int; end\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "static-not-instance",
+      "owner": "class",
+      "expect": "reject",
+      "error": "E_IMPL_MISSING",
+      "source": "define interface IPing as ping(): int; end\ndefine class C implements IPing as pub static fnc ping(): int { return 42; } end\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "trait-conflict-explicit-mtd",
+      "owner": "class",
+      "expect": "accept",
+      "source": "define trait DefaultPing as pub ping(): int { return 42; } end\ndefine trait OtherPing as pub ping(): int { return 7; } end\ndefine class C implements DefaultPing, OtherPing as end\npub mtd (C self) ping(): int { return 9; }\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "wrong-owner-mtd-struct",
+      "owner": "struct",
+      "expect": "reject",
+      "error": "E_IMPL_MISSING",
+      "source": "define interface IPing as ping(): int; end\ndefine struct S implements IPing as pub value: int; end\ndefine struct Other as pub value: int; end\npub mtd (Other self) ping(): int { return self.value; }\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
     }
   ]
 }
