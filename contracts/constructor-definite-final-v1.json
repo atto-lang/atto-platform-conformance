@@ -1,6 +1,6 @@
 {
   "schema": "atto.constructor-definite-final.v1",
-  "status": "TARGET_NOT_EXECUTED",
+  "status": "RUST_NATIVE_TO_WASM_GUEST_SCOPED_PASS",
   "language_authority": "atto-lang/atto-spec/language/class-field-binding-defaults-v1.md",
   "compiler_pr": "https://github.com/atto-lang/atto-source.rs/pull/370",
   "scope": "Explicit deferred final class fields only. All ordinary field declaration initializers are applied before constructor execution. No zero-fill default, no alias publication, no independent backend parity.",
@@ -95,7 +95,7 @@
     }
   ],
   "backend_status": {
-    "rs-native-host": "NOT_EXECUTED",
+    "rs-native-host": "VERIFIED",
     "rs-browser-hosted": "NOT_EXECUTED",
     "java": "NOT_EXECUTED",
     "llvm": "NOT_EXECUTED",
@@ -104,5 +104,72 @@
     "forge": "NOT_EXECUTED",
     "cranelift": "NOT_EXECUTED",
     "js": "NOT_EXECUTED"
+  },
+  "compiler_merged_sha": "57ed0e73d59e70104dcdbfccec490682bdb14b79",
+  "evidence": {
+    "scope": "NATIVE_RUST_COMPILER_TO_EXECUTED_WASM_GUEST",
+    "compiler_head_at_guest_run": "48cdc0ad45d3f075ae3be46d13285361ee6408a5",
+    "carrier_repository": "gha-indie-worker/atto-ci",
+    "carrier_commit": "afd507b8b1f6f2750e87bf2e6c105601746001ce",
+    "run_url": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44452651416",
+    "run_id": 44452651416,
+    "job_id": 135320078622,
+    "conclusion": "success",
+    "exact_source_blobs_verified": 58,
+    "rust_library_tests": {
+      "passed": 40,
+      "failed": 0
+    },
+    "rust_constructor_tests": {
+      "passed": 16,
+      "failed": 0
+    },
+    "portable_integrity_tests": {
+      "passed": 2,
+      "failed": 0
+    },
+    "compiled_wasm_positive_cases": {
+      "count": 3,
+      "entrypoint": "main",
+      "expected_return": 42
+    },
+    "compile_negative_cases": {
+      "count": 10,
+      "expected_diagnostics": [
+        "E_INIT",
+        "E_INIT_READ",
+        "E_INIT_ONCE",
+        "E_INIT_FLOW",
+        "E_IMMUTABLE"
+      ],
+      "emitted_artifacts": 0
+    },
+    "full_rust_suite_evidence": {
+      "carrier_repo": "gha-indie-worker/gha-indie-worker-docs",
+      "carrier_commit": "dbca000da6de8d4a9de56841f2f28e9c3374442b",
+      "reconciled_source_head": "3d6212bf289e71bac426505fd5fe4d70a84ae96a",
+      "run_url": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/44454006529",
+      "run_id": 44454006529,
+      "job_id": 135324516531,
+      "result": "success",
+      "exact_source_and_test_git_blob_count": 697,
+      "source_subtree_sha": "dc0366cc4c76938a46c212500151253baf71e60c",
+      "tests_subtree_sha": "0f28a52a258ad73f79269a678da297752f7c4593",
+      "rust_tests": {
+        "passed": 547,
+        "failed": 0
+      }
+    },
+    "exclusions": [
+      "rs-browser-hosted",
+      "java",
+      "llvm",
+      "wasm-independent",
+      "net",
+      "forge",
+      "cranelift",
+      "js"
+    ],
+    "limitation": "Wasm execution is from a native-hosted Rust compiler. Independent backends, struct constructor ABI, exception cleanup semantics, and exhaustive CFG are not proven."
   }
 }
