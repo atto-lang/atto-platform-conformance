@@ -111,8 +111,9 @@ fn four_fixtures_are_regular_tracked_git_blobs_matching_embedded_bytes() {
             metadata.file_type().is_file(),
             "{name}: symlinks and non-files are not permitted"
         );
+        let checked_out = std::fs::read(&fixture_path).expect("failed reading fixture");
         assert_eq!(
-            std::fs::read(&fixture_path).expect("failed reading fixture"),
+            checked_out.as_slice(),
             bytes,
             "{name}: checked-out fixture differs from embedded bytes"
         );
