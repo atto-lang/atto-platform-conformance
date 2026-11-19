@@ -35,3 +35,20 @@ ACTOR-REPLY-33	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	authorized supervisor service una
 ACTOR-REPLY-34	REJECT	NOT_EXECUTED	SOURCE_ONLY	forged CONTROL via ActorMail respond_with or emit
 ACTOR-REPLY-35	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	CONTROL priority under saturated DATA mailbox
 ACTOR-REPLY-36	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	panic caller reply error versus supervisor CONTROL
+ACTOR-REPLY-37	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	proxy-forward without destination ACK
+ACTOR-REPLY-38	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	end-to-end recipient mailbox authenticated admission
+ACTOR-REPLY-39	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	destination Started does not imply Processed
+ACTOR-REPLY-40	REJECT	NOT_EXECUTED	SOURCE_ONLY	out-of-order and conflicting completion ACK
+ACTOR-REPLY-41	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	durable inbox commit does not imply handler execution
+ACTOR-REPLY-42	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	durable result requires completed turn and provider commit
+ACTOR-REPLY-43	REJECT	NOT_EXECUTED	SOURCE_ONLY	non-durable actor cannot claim persisted
+ACTOR-REPLY-44	REJECT	NOT_EXECUTED	SOURCE_ONLY	forged cross-tenant cross-target wrong-attempt or wire version ACK
+ACTOR-REPLY-45	REJECT	NOT_EXECUTED	SOURCE_ONLY	duplicate same-attempt admission and bounded saturation
+ACTOR-REPLY-46	REJECT	NOT_EXECUTED	SOURCE_ONLY	stale ACK after activation restart and slot recycle
+ACTOR-REPLY-47	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	ambiguous network loss is indeterminate not rejected
+ACTOR-REPLY-48	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	retry changes attempt but requires separate durable deduplication
+ACTOR-REPLY-49	REJECT	NOT_EXECUTED	SOURCE_ONLY	panic after Started cannot generate Processed success
+ACTOR-REPLY-50	REJECT	NOT_EXECUTED	SOURCE_ONLY	cancelled pending handle cannot be resurrected by late ACK
+ACTOR-REPLY-51	ACCEPT	NOT_EXECUTED	SOURCE_ONLY	ask alias retains unary typing and distinct transport errors
+ACTOR-REPLY-52	REJECT	NOT_EXECUTED	SOURCE_ONLY	remote serialization and typed protocol mismatch fail closed
+ACTOR-REPLY-53	REJECT	NOT_EXECUTED	SOURCE_ONLY	supervisor CONTROL cannot be forged via proxy ACK
