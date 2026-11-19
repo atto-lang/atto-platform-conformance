@@ -479,7 +479,8 @@ mod tests {
     #[test]
     fn different_tenants_have_independent_receipts_with_identical_job_ids() {
         let mut l=Ledger::new(2);
-        let a=JobKey::new("a","shared").unwrap(),b=JobKey::new("b","shared").unwrap();
+        let a=JobKey::new("a","shared").unwrap();
+        let b=JobKey::new("b","shared").unwrap();
         let Reservation::New(ta)=l.reserve(a.clone(),"actor:jobs",42).unwrap() else {panic!()};
         let Reservation::New(tb)=l.reserve(b.clone(),"actor:jobs",42).unwrap() else {panic!()};
         assert_ne!(ta,tb);
