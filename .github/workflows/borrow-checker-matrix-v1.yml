@@ -20,18 +20,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288ca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
       - name: Node-only synthetic Wasm runner checks (not Atto guest conformance)
         run: node --test tests/borrow_guest_exit_v1.test.mjs
+      - name: Install pinned Rust host toolchain (not a guest test)
+        run: rustup toolchain install 1.85.1 --profile minimal
       - name: Static Rust versioned matrix validation — not guest execution
         run: |
-          rustc --version
-          rustc --edition=2021 --test tests/borrow_checker_matrix_v1.rs -o "$RUNNER_TEMP/borrow_checker_matrix_v1"
+          rustc +1.85.1 --version
+          rustc +1.85.1 --edition=2021 --test tests/borrow_checker_matrix_v1.rs -o "$RUNNER_TEMP/borrow_checker_matrix_v1"
           "$RUNNER_TEMP/borrow_checker_matrix_v1" --nocapture
       - name: Rust-only executable gate unit tests — not compiled guest execution
         run: |
-          rustc --edition=2021 --test bin/run_borrow_checker_matrix.rs -o "$RUNNER_TEMP/borrow_checker_exec_v1_tests"
+          rustc +1.85.1 --edition=2021 --test bin/run_borrow_checker_matrix.rs -o "$RUNNER_TEMP/borrow_checker_exec_v1_tests"
           "$RUNNER_TEMP/borrow_checker_exec_v1_tests" --nocapture
