@@ -1,0 +1,57 @@
+{
+  "schema": "atto.actor-job-receipts.v1",
+  "status": "CANDIDATE_RUST_HOST_MODEL_ONLY",
+  "spec": "https://github.com/atto-lang/atto-spec/pull/113",
+  "scope": "typed logical job identity, one-owner admission, lifecycle receipt fencing and no blind redelivery",
+  "job_identity_fields": [
+    "namespace",
+    "job_id"
+  ],
+  "target_bindings": [
+    "actor_type",
+    "target_identity",
+    "payload_fingerprint"
+  ],
+  "envelope_required_fields": [
+    "job_id",
+    "attempt",
+    "payload",
+    "correlation_id"
+  ],
+  "actor_receipt_identity_fields": [
+    "registry_epoch",
+    "actor_incarnation",
+    "attempt",
+    "opaque_receipt_token"
+  ],
+  "states": [
+    "absent",
+    "reserved",
+    "admitted",
+    "started",
+    "completed",
+    "failed",
+    "rejected",
+    "indeterminate"
+  ],
+  "runner": "rustc --edition=2021 --test tests/actor_job_receipts_v1.rs",
+  "required_scenarios": [
+    "same_id_1024_contenders_32_threads_single_reservation",
+    "cross_tenant_isolation_and_conflicting_payload",
+    "no_completed_without_actor_start",
+    "stale_epoch_incarnation_and_receipt_rejected",
+    "unknown_send_outcome_never_rerouted",
+    "proven_pre_send_rejection_distinct_from_ambiguous_send",
+    "failed_attempt_not_auto_resubmitted",
+    "bounded_key_and_ledger_capacity",
+    "one_member_deterministic_group_placement",
+    "no_false_durable_dedup_across_process_restart"
+  ],
+  "evidence": {
+    "rust_host_model": "PENDING_EXECUTION",
+    "compiled_atto_job_id_handler": "NOT_EXECUTED",
+    "guest_typed_job_transport": "NOT_IMPLEMENTED",
+    "durable_recovery": "NOT_IMPLEMENTED",
+    "backend_parity": "NOT_EXECUTED"
+  }
+}
