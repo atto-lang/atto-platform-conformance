@@ -16,7 +16,31 @@ Execute portable language fixtures and record target-specific results.
 - Use test fixtures and reproducible evidence to distinguish proposed behavior from implemented behavior.
 - Record breaking changes, migration notes, and dependencies on other AttoLang components.
 
-- [Class-field binding defaults v2](contracts/class-field-binding-defaults-v2.json): proposed implicit-`val` migration, exact SHA-linked pass/fail `.atto` fixtures, and backend results marked NOT_EXECUTED until compiled guest verification.
+## Constructor header whitespace target fixtures
+
+`contracts/receiver-constructor-whitespace-v1.json` tracks three equivalent
+out-of-line class constructor spellings and one duplicate-header rejection.
+Fixtures in `fixtures/receiver-constructors/` are ordinary `.atto` programs
+with a target exit of 42; `tests/receiver-constructor-whitespace.test.mjs`
+checks **source-only fixture integrity**, not compiler or guest execution.
+
+All eight cross-backend targets remain `NOT_EXECUTED` pending independent
+browser/compiler and runtime verification. A **separately scoped native Rust
+compiler -> executed WebAssembly guest** receipt now records exact compiler
+merge SHA `dbd450f5abde91a2d3a50d193c589a7f77888afc`, 39 matching
+source blobs, Rust 1.99.1 focused tests (8/8), three actual guests returning
+42 with byte-identical Wasm SHA-256, canonical guest 42, and negative
+`E_DUPLICATE` with no guest artifact in
+[successful carrier run #44436599781](https://github.com/gha-indie-worker/atto-ci/actions/runs/44436599781).
+Source-only Node tests 32/32 passed in
+[run #44435810059](https://github.com/gha-indie-worker/atto-ci/actions/runs/44435810059).
+These receipts do **not** assert that the Rust compiler itself ran inside
+`wasm32` or that Java/LLVM/.NET/Forge/independent Wasm have parity. Related
+proposals: [atto-spec #98](https://github.com/atto-lang/atto-spec/pull/98),
+[atto-source.rs #354](https://github.com/atto-lang/atto-source.rs/pull/354),
+and [atto-format #16](https://github.com/atto-lang/atto-format/pull/16).
+
+- [Class-field binding defaults v2](contracts/class-field-binding-defaults-v2.json): canonical implicit-`val` target, 4 SHA-matched `.atto` fixtures, 422-passing Rust native tests, and executed compiled WebAssembly guest. Cross-package linking and other backends remain NOT_VERIFIED.
 
 ## Validation
 
