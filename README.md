@@ -42,6 +42,27 @@ and [atto-format #16](https://github.com/atto-lang/atto-format/pull/16).
 
 - [Class-field binding defaults v2](contracts/class-field-binding-defaults-v2.json): canonical implicit-`val` target, 4 SHA-matched `.atto` fixtures, 422-passing Rust native tests, and executed compiled WebAssembly guest. Cross-package linking and other backends remain NOT_VERIFIED.
 
+## Under-construction self publication guard
+
+`contracts/constructor-self-publication-v1.json` records negative `.atto`
+cases for escaping a constructor's under-construction `self` through a function
+argument or invoking methods on that object before publication. Valid direct
+`self.field` initialization remains permitted. The normative contract is
+[atto-spec's constructor design](https://github.com/atto-lang/atto-spec/blob/main/language/out-of-line-receivers-constructors-and-state-v1.md).
+
+The Rust compiler's [PR #359](https://github.com/atto-lang/atto-source.rs/pull/359)
+implemented a conservative `E_OWNERSHIP` gate and passed its actual
+[private exact-blob Rust / compiled-Wasm run](https://github.com/gha-indie-worker/atto-ci/actions/runs/44444349850).
+The two portable negative `.atto` fixtures were independently executed
+against the native Rust compiler in
+[private exact-blob run #44444993654](https://github.com/gha-indie-worker/atto-ci/actions/runs/44444993654):
+49 blobs matched before/after, 10 Rust focused tests passed, 4 positive
+compiled WebAssembly guests ran, and both negative cases returned
+`E_OWNERSHIP` without creating guest artifacts. This proof is scoped to
+the Rust **native-hosted** compiler; the Rust browser-hosted compiler and
+independent Java/LLVM/.NET/Wasm/Forge/Cranelift/JS backends remain
+`NOT_EXECUTED`.
+
 ## Validation
 
 Validation should rely on checked-in tests and exact-commit CI results. When reporting parity, distinguish **passed**, **failed**, **unsupported**, and **not executed**. Avoid inferring guest-runtime support from host-only tests.
