@@ -94,6 +94,45 @@ fn fixtures_exist_and_match_case_identity() {
 }
 
 #[test]
+fn canonical_bang_vocabulary_and_implicit_call_loans_are_covered() {
+    // Source-level coverage only: this guard cannot prove any Atto guest ran.
+    let root = Path::new(file!()).parent().expect("tests/").parent().expect("root/");
+    let samples: &[(&str, &[&str])] = &[
+        ("implicit-borrow", &["inspect(original)", "inspect(borrow! original)"]),
+        ("write-loan", &["update(mut counter)", "read(borrow! counter)"]),
+        ("read-loan", &["borrow!"]),
+        ("take", &["take!"]),
+        ("share", &["share!"]),
+        ("copy-shallow", &["copy!"]),
+        ("copy-deep", &["copy!!"]),
+        ("pin", &["pin! take!"]),
+        ("drop", &["drop!"]),
+        ("freeze", &["freeze!"]),
+        ("weak", &["weak!"]),
+    ];
+    for (fixture, required) in samples {
+        let path = root.join(format!("fixtures/borrow-checker-v1/pass/{fixture}.atto"));
+        let source = std::fs::read_to_string(&path)
+            .unwrap_or_else(|e| panic!("{}: {e}", path.display()));
+        for spelling in *required {
+            assert!(source.contains(spelling),
+                "{} must exercise canonical ownership spelling: {spelling}", path.display());
+        }
+    }
+
+    // Legacy Oreslang rt-borrow spellings must never re-enter Atto guest fixtures.
+    // Omitted borrow! at a nonprimitive call site is intentional, not a move.
+    for c in cases() {
+        let source = std::fs::read_to_string(root.join(c.fixture))
+            .unwrap_or_else(|e| panic!("{}: {e}", c.fixture));
+        for legacy in ["rt borrow ", "rt mut borrow ", "rt take ", "rt copy "] {
+            assert!(!source.contains(legacy),
+                "{} reintroduces legacy ownership syntax: {legacy}", c.fixture);
+        }
+    }
+}
+
+#[test]
 fn do_not_conflate_oracle_with_evidence() {
     // The integration matrix begins without real source-to-guest evidence.
     for c in cases() {
