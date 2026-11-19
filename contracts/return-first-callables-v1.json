@@ -236,6 +236,27 @@
       "path": "fixtures/return-first/fail/duplicate_spelling.atto",
       "expected_error": "E_DUPLICATE",
       "verification": "COMPILER_NO_ARTIFACT_PROOF_REQUIRED"
+    },
+    {
+      "id": "mtd_return_first_brace",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/mtd_return_first_brace.atto",
+      "expected_exit": 42,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "mtd_return_first_begin",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/mtd_return_first_begin.atto",
+      "expected_exit": 42,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "mtd_return_first_bare_end",
+      "kind": "pass",
+      "path": "fixtures/return-first/pass/mtd_return_first_bare_end.atto",
+      "expected_exit": 42,
+      "verification": "COMPILED_GUEST_EXECUTION_REQUIRED"
     }
   ],
   "backend_status": {
