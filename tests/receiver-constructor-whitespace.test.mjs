@@ -23,7 +23,7 @@ test('all three constructor spellings have byte-identical non-whitespace source'
     assert.equal(x.expected_exit, 42);
     return value;
   });
-  const equivalent = source.map(x => x.replace(/\\s+/g, ''));
+  const equivalent = source.map(x => x.replace(/\s+/g, ''));
   assert.ok(equivalent.every(x => x === equivalent[0]));
   for (const x of source) assert.ok(x.includes('pub fnc main()'));
 });
@@ -34,6 +34,6 @@ test('different whitespace never introduces another constructor overload', () =>
   assert.equal(negative.expected_error, 'E_DUPLICATE');
   const source = readFileSync(new URL(negative.path, root), 'utf8');
   assert.ok(source.includes('// expect-error: E_DUPLICATE'));
-  assert.match(source, /constructor \\(Counter\\)\\(\\): self/);
-  assert.match(source, /constructor\\(Counter\\) \\(\\): self/);
+  assert.match(source, /constructor \(Counter\)\(\): self/);
+  assert.match(source, /constructor\(Counter\) \(\): self/);
 });
