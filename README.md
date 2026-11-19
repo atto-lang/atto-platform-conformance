@@ -134,6 +134,12 @@ all ten negatives failed with expected diagnostics and no Wasm artifacts.
 The fully reconciled compiler's
 [locked Rust regression #44454006529](https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/44454006529)
 passed 547/547 tests on a 697-blob exact source/test Git subtree mirror.
+The **actual merged compiler** was independently rebuilt and run against
+all 13 exact portable fixtures in
+[merged-compiler carrier run #44454811741](https://github.com/gha-indie-worker/atto-ci/actions/runs/44454811741);
+the source Git subtree exactly matched merge commit `57ed0e7`,
+16 focused constructor tests and three receipt tests passed, all three
+compiled guests returned 42, and all ten negatives emitted no artifact.
 
 This proof is restricted to a **native-hosted Rust compiler generating
 Wasm guests**. It is not browser-hosted compiler execution or independent
