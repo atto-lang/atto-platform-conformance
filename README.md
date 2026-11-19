@@ -68,6 +68,10 @@ independent Java/LLVM/.NET/Wasm/Forge/Cranelift/JS backends remain
 - [Tuple destructuring v1](contracts/tuple-destructuring-v1.json): 33 acceptance/rejection cases spanning binding modes, aliases, const and ownership. On the **exact Rust/browser-Wasm compiler SHA `4fd0a231d475ae45f819f8ee304cbc680b6dfd93`**, [executed CI run 44444944421](https://github.com/usa-acc/atto-ci/actions/runs/44444944421) proved **29 passed** (15 positive compiled-and-executed Wasm guests and 14 expected negative diagnostics), **4 unsupported** (non-Copy object tuples), **0 failed**, using 60/60 exact compiler blobs and 2/2 exact conformance-input blobs. [Machine-readable receipt](evidence/tuple/rs-browser-wasm-4fd0a231-20261118.json) preserves all cases, and [Node contract test](tests/tuple-destructuring-v1.test.mjs) validates receipt provenance and consistency; [guest runner](tests/tuple-destructuring-guest.mjs) performs real compilation and guest execution when provided `ATTOC_BIN` and `ATTO_SOURCE_SHA`. The other five backends remain `not_executed`; case-level aggregate parity stays `not_executed` until independently proven. Do not treat host-only receipt validation as guest execution.
 
 
+## Interface/trait receiver conformance target matrix
+
+[Unified `implements` receiver conformance v1](contracts/implements-receiver-conformance-v1.json) carries 20 proposed AttoLang source programs covering actor/class/struct implementation, out-of-line `mtd`, inherited/default methods and fail-closed contracts. [Host-only Node test](tests/implements-receiver-conformance-v1.test.mjs) validates the registry. **No compiler or guest run has executed for these cases; all backends remain NOT_EXECUTED.** See [atto-spec contract](https://github.com/atto-lang/atto-spec/blob/feat/implements-receiver-contract-v1-20261118/language/implements-receiver-conformance-v1.md).
+
 ## Validation
 
 Validation should rely on checked-in tests and exact-commit CI results. When reporting parity, distinguish **passed**, **failed**, **unsupported**, and **not executed**. Avoid inferring guest-runtime support from host-only tests.
