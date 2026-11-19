@@ -1,0 +1,556 @@
+{
+  "schema_version": 1,
+  "contract": "atto-tuple-destructuring-v1",
+  "normative_spec": "https://github.com/atto-lang/atto-spec/blob/feat/tuple-destructure-mut-alias-20261118/language/tuple-destructuring-v1.md",
+  "summary": "Target contract across six backends. Rust/browser-Wasm outcomes are individually verified on the exact source SHA, with 29 PASS, 4 UNSUPPORTED (object tuples); five other backends remain NOT_EXECUTED. Aggregate status stays NOT_EXECUTED until full parity evidence exists.",
+  "allowed_verification_statuses": [
+    "passed",
+    "failed",
+    "unsupported",
+    "not_executed"
+  ],
+  "cases": [
+    {
+      "id": "tuple-let-mut",
+      "group": "basic",
+      "expect": "accept",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  let (a, r, mut j) = fixtures(); j = 4;\n  return 0;\n}",
+      "reason": "mut inherits let; a/r/j are locals",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-val-override",
+      "group": "basic",
+      "expect": "accept",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  let (a, val r, val mut j) = fixtures();\n  return 0;\n}",
+      "reason": "val overrides let; mut is independent",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-all-explicit",
+      "group": "basic",
+      "expect": "accept",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  (let a, val r, let mut j) = fixtures();\n  return 0;\n}",
+      "reason": "explicit tuple pattern is alternative declaration",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-typed",
+      "group": "basic",
+      "expect": "accept",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  let (a: int, val r: int, mut j: int) = fixtures();\n  return 0;\n}",
+      "reason": "element annotations are checked",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-singleton",
+      "group": "shape",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  let (only,) = (1,);\n  return 0;\n}",
+      "reason": "singleton comma is required",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-discard",
+      "group": "shape",
+      "expect": "accept",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  let (a, _, mut j) = fixtures();\n  return 0;\n}",
+      "reason": "discard consumes exactly one element",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-empty-root",
+      "group": "shape",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  let () as foo = ();\n  return 0;\n}",
+      "reason": "empty tuple binds only the root alias",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-constexpr-component",
+      "group": "const",
+      "expect": "accept",
+      "source": "pub fnc main(): int {\n  let (a, const r, mut j) = (1,2,3);\n  return 0;\n}",
+      "reason": "whole initializer is compile-time known",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-root-alias",
+      "group": "alias",
+      "expect": "accept",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  let (a, r, mut j) as foo = fixtures();\n  return 0;\n}",
+      "reason": "RHS stored once; alias is immutable root",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-root-object-loan",
+      "group": "alias",
+      "expect": "accept",
+      "source": "define class Cell as pub let int value = 1; end\npub fnc object_fixtures(): Tuple<int,Cell,Cell> { return (1,new Cell(),new Cell()); }\npub fnc main(): int {\n  let (a, val r, mut j) as foo = object_fixtures(); j.value = 9;\n  return 0;\n}",
+      "reason": "write through exclusive element loan; no whole-root use while loan live",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "unsupported",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-const-from-runtime",
+      "group": "const",
+      "expect": "reject",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  let (a, const r, mut j) = fixtures();\n  return 0;\n}",
+      "reason": "dynamic call cannot satisfy local const",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-const-mut-scalar",
+      "group": "const",
+      "expect": "reject",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  let (a, const r, const mut j) = (1,2,3);\n  return 0;\n}",
+      "reason": "scalar const mut must fail E_CONST_MUT_TARGET",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-arity-mismatch",
+      "group": "shape",
+      "expect": "reject",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  let (a, r) = fixtures();\n  return 0;\n}",
+      "reason": "tuple arity must match exactly",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-name-duplicate",
+      "group": "scope",
+      "expect": "reject",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  let (a, a, j) = fixtures();\n  return 0;\n}",
+      "reason": "duplicate binding names rejected",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-root-name-collision",
+      "group": "scope",
+      "expect": "reject",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  let (a, r, j) as a = fixtures();\n  return 0;\n}",
+      "reason": "root alias must not shadow a sibling binder",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-without-binding-mode",
+      "group": "syntax",
+      "expect": "reject",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  (a, r, mut j) = fixtures();\n  return 0;\n}",
+      "reason": "all-explicit parenthesized style requires mode per element",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-val-reassign",
+      "group": "mutability",
+      "expect": "reject",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  let (a, val r, j) = fixtures(); r = 7;\n  return 0;\n}",
+      "reason": "val r cannot rebind",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-let-alias-reassign-after-last-use",
+      "group": "alias",
+      "expect": "accept",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  let (a, r, j) as foo = fixtures(); foo = (2,3,4);\n  return 0;\n}",
+      "reason": "a let root may rebind after element copies or loans have ended",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-readonly-referent",
+      "group": "mutability",
+      "expect": "reject",
+      "source": "define class Cell as pub let int value = 1; end\npub fnc object_fixtures(): Tuple<int,Cell,Cell> { return (1,new Cell(),new Cell()); }\npub fnc main(): int {\n  let (a, r, j) = object_fixtures(); j.value = 9;\n  return 0;\n}",
+      "reason": "unqualified j has no mut authority",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "unsupported",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-alias-overlap",
+      "group": "alias",
+      "expect": "reject",
+      "source": "define class Cell as pub let int value = 1; end\npub fnc object_fixtures(): Tuple<int,Cell,Cell> { return (1,new Cell(),new Cell()); }\npub fnc main(): int {\n  let (a, r, mut j) as foo = object_fixtures(); let full = foo; j.value = 9;\n  return 0;\n}",
+      "reason": "whole-root move while exclusive j loan remains live",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "unsupported",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-nested-unsupported",
+      "group": "syntax",
+      "expect": "reject",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  let (a, (r, j)) = fixtures();\n  return 0;\n}",
+      "reason": "v1 flat patterns only",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-singleton-without-comma",
+      "group": "syntax",
+      "expect": "reject",
+      "source": "pub fnc main(): int {\n  let (only) = (1,);\n  return 0;\n}",
+      "reason": "singleton binder requires the comma to prevent tuple/group ambiguity",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-runtime-const-and-scalar-const-mut",
+      "group": "const",
+      "expect": "reject",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  let (a, const r, const mut j) = fixtures();\n  return 0;\n}",
+      "reason": "runtime local const and scalar const mut must both fail",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-typed-as-let-alias",
+      "group": "alias",
+      "expect": "accept",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  let (a, r, mut j) as let foo = fixtures();\n  return 0;\n}",
+      "reason": "explicit as let matches inherited outer let",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-typed-as-val-alias",
+      "group": "alias",
+      "expect": "accept",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  let (a, r, mut j) as val foo = fixtures();\n  return 0;\n}",
+      "reason": "val root can own runtime tuple, but cannot be rebound",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-typed-as-const-alias-literal",
+      "group": "alias",
+      "expect": "accept",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  let (a, r, mut j) as const foo = (1, 2, 3);\n  return 0;\n}",
+      "reason": "const root accepts constexpr tuple initializer",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-val-outer-alias-inherits",
+      "group": "alias",
+      "expect": "accept",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  val (a, r, mut j) as foo = fixtures();\n  return 0;\n}",
+      "reason": "unqualified alias inherits val outer binding kind",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-explicit-element-and-alias-mode",
+      "group": "alias",
+      "expect": "accept",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  (let a, val r, let mut j) as val foo = fixtures();\n  return 0;\n}",
+      "reason": "fully explicit tuple element binders require qualified root alias",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-runtime-as-const-reject",
+      "group": "const",
+      "expect": "reject",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  let (a, r, mut j) as const foo = fixtures();\n  return 0;\n}",
+      "reason": "const root does not accept runtime call",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-as-val-rebind-reject",
+      "group": "alias",
+      "expect": "reject",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  let (a, r, mut j) as val foo = fixtures(); foo = (3,4,5);\n  return 0;\n}",
+      "reason": "val root cannot be rebound",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-as-const-rebind-reject",
+      "group": "alias",
+      "expect": "reject",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  let (a, r, mut j) as const foo = (1,2,3); foo = (4,5,6);\n  return 0;\n}",
+      "reason": "const root cannot be rebound",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-explicit-unqualified-alias-reject",
+      "group": "syntax",
+      "expect": "reject",
+      "source": "pub fnc fixtures(): Tuple<int,int,int> { return (1,2,3); }\npub fnc main(): int {\n  (let a, val r, let mut j) as foo = fixtures();\n  return 0;\n}",
+      "reason": "unqualified root on fully explicit pattern lacks inherited outer binding kind",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "passed",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    },
+    {
+      "id": "tuple-let-root-active-mut-loan-rebind-reject",
+      "group": "alias",
+      "expect": "reject",
+      "source": "define class Cell as pub let int value = 1; end\npub fnc object_fixtures(): Tuple<int,Cell,Cell> { return (1,new Cell(),new Cell()); }\npub fnc main(): int {\n  let (a, r, mut j) as foo = object_fixtures(); foo = object_fixtures(); j.value = 9;\n  return 0;\n}",
+      "reason": "let root cannot be rebound while exclusive mutable element loan remains live",
+      "status": "not_executed",
+      "evidence": {
+        "rust_browser_wasm": "unsupported",
+        "java": "not_executed",
+        "llvm": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "independent_wasm": "not_executed"
+      }
+    }
+  ],
+  "rust_browser_wasm_provenance": {
+    "source_sha": "4fd0a231d475ae45f819f8ee304cbc680b6dfd93",
+    "source_tree_sha": "a738bc504d2b58da033dae5394c4d56a5d6072be",
+    "run_url": "https://github.com/usa-acc/atto-ci/actions/runs/44444944421",
+    "receipt": "evidence/tuple/rs-browser-wasm-4fd0a231-20261118.json",
+    "registry_input_blob_sha": "d12fa3f17de674f2f6c822fcf1fcfcdf18f03f86",
+    "test_runner_blob_sha": "7436146fd8773ada1790787f7933f5d15f9c4e76",
+    "source_blobs_verified": 60,
+    "conformance_blobs_verified": 2,
+    "passed": 29,
+    "unsupported": 4,
+    "failed": 0,
+    "positive_guest_executed": 15
+  }
+}
