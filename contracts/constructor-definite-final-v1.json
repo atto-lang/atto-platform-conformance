@@ -1,9 +1,9 @@
 {
   "schema": "atto.constructor-definite-final.v1",
   "status": "RUST_NATIVE_TO_WASM_GUEST_SCOPED_PASS",
-  "language_authority": "atto-lang/atto-spec/language/class-field-binding-defaults-v1.md",
+  "language_authority": "atto-lang/atto-spec/language/class-field-binding-defaults-v2.md",
   "compiler_pr": "https://github.com/atto-lang/atto-source.rs/pull/370",
-  "scope": "Explicit deferred final class fields only. All ordinary field declaration initializers are applied before constructor execution. No zero-fill default, no alias publication, no independent backend parity.",
+  "scope": "Explicit deferred final class fields only. All ordinary field declaration initializers are applied before constructor execution. No zero-fill default, no alias publication, no independent backend parity. Explicit val/let/const initializer requirements and v2 implicit val field defaults are unchanged.",
   "cases": [
     {
       "id": "direct_deferred_final",
