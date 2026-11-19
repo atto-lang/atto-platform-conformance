@@ -40,6 +40,8 @@ proposals: [atto-spec #98](https://github.com/atto-lang/atto-spec/pull/98),
 [atto-source.rs #354](https://github.com/atto-lang/atto-source.rs/pull/354),
 and [atto-format #16](https://github.com/atto-lang/atto-format/pull/16).
 
+- [Class-field binding defaults v2](contracts/class-field-binding-defaults-v2.json): canonical implicit-`val` target, 4 SHA-matched `.atto` fixtures, 422-passing Rust native tests, and executed compiled WebAssembly guest. Cross-package linking and other backends remain NOT_VERIFIED.
+
 ## Validation
 
 Validation should rely on checked-in tests and exact-commit CI results. When reporting parity, distinguish **passed**, **failed**, **unsupported**, and **not executed**. Avoid inferring guest-runtime support from host-only tests.
