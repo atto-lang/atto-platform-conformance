@@ -1,7 +1,7 @@
 {
   "schema": "atto.class-field-binding-defaults.v2",
   "version": 2,
-  "status": "SPEC_PROPOSAL_NOT_EXECUTED",
+  "status": "FOCUSED_RS_GUEST_VERIFIED_OTHER_BACKENDS_NOT_VERIFIED",
   "owner": "atto-lang/atto-spec",
   "source_spec": {
     "repository": "atto-lang/atto-spec",
@@ -61,12 +61,73 @@
     }
   ],
   "backend_status": {
-    "rs-browser": "NOT_EXECUTED",
+    "rs-browser": "FOCUSED_VERIFIED_SINGLE_SOURCE",
     "java": "NOT_VERIFIED",
     "llvm": "NOT_VERIFIED",
     "net": "NOT_VERIFIED",
     "wasm-independent": "NOT_VERIFIED",
     "forge": "NOT_VERIFIED"
   },
-  "provenance_policy": "A successful source-free CI probe, parser-only acceptance or host-only test is not compiled guest conformance. Pin source SHA/tree/blob hashes and record executed guest returns or compile diagnostics. Cross-package security requires a real multi-package compiler and cannot be established by these same-file fixtures."
+  "provenance_policy": "A successful source-free CI probe, parser-only acceptance or host-only test is not compiled guest conformance. Pin source SHA/tree/blob hashes and record executed guest returns or compile diagnostics. Cross-package security requires a real multi-package compiler and cannot be established by these same-file fixtures.",
+  "evidence": [
+    {
+      "type": "exact_git_blob_guest_compiler_run",
+      "source_repository": "atto-lang/atto-source.rs",
+      "source_head": "823fb712bc5bed4d89fbd170bd820e9271a40c61",
+      "source_tree": "530cdcaa1bd9882ee935c194e64300b04b0fc5ec",
+      "mirror_repository": "gha-indie-worker/gha-indie-worker-docs",
+      "mirror_branch": "ci/atto-rs-358-823fb712-20261118",
+      "mirror_commit": "25856ca8d1cfa0c1f22cf190da0ef88052215e42",
+      "run_url": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/44436915965",
+      "run_id": 44436915965,
+      "job_id": 135267965353,
+      "job_conclusion": "success",
+      "verified_source_blob_count": 39,
+      "rust_lib_tests": {
+        "passed": 15,
+        "failed": 0
+      },
+      "rust_targeted_integration_tests": {
+        "passed": 21,
+        "failed": 0
+      },
+      "guest": {
+        "compiled": true,
+        "executed": true,
+        "engine": "Node.js WebAssembly",
+        "entrypoint": "main",
+        "expected_exit": 42,
+        "actual_exit": 42
+      },
+      "negative_cases": [
+        {
+          "id": "implicit_val_ctor_reassign_denied",
+          "actual_error": "E_IMMUTABLE",
+          "no_artifact": true
+        },
+        {
+          "id": "private_field_outside_class_denied",
+          "actual_error": "E_PRIVATE",
+          "no_artifact": true
+        },
+        {
+          "id": "class_const_runtime_call_denied",
+          "actual_error": "E_CONST",
+          "no_artifact": true
+        }
+      ],
+      "scope": "Focused browser-subset native compiler + compiled Wasm guest. No all-fixture/full-suite, cross-package linker, wasm32-host-compiler, or other backend parity claim."
+    }
+  ],
+  "lint_evidence": {
+    "rustfmt": "BASELINE_FAILURE_WIDESPREAD",
+    "clippy": "BASELINE_3_ERRORS_WITH_D_WARNINGS",
+    "run_url": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/44436916063",
+    "clippy_untouched_files": [
+      "src/generator_frame.rs",
+      "src/target_syntax.rs",
+      "src/wasm/generator_runtime.rs"
+    ],
+    "note": "The tested feature's targeted Rust/guest checks passed. Formatting and strict Clippy require independent cleanup; do not label the complete source repository green."
+  }
 }
