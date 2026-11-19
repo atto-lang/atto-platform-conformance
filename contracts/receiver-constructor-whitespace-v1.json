@@ -42,5 +42,56 @@
     "cranelift": "NOT_EXECUTED",
     "js": "NOT_EXECUTED"
   },
-  "evidence_rule": "No backend is PASS until an exact-source SHA guest compiler executes real positive and negative cases with nonempty verified CI steps; source-only models and host-only checks cannot establish guest parity."
+  "evidence_rule": "No backend is PASS until an exact-source SHA guest compiler executes real positive and negative cases with nonempty verified CI steps; source-only models and host-only checks cannot establish guest parity.",
+  "focused_guest_evidence": {
+    "scope": "RUST_NATIVE_COMPILER_TO_EXECUTED_WASM_GUEST",
+    "outcome": "PASS",
+    "excludes": [
+      "wasm32-browser-hosted-compiler",
+      "java",
+      "llvm",
+      "net",
+      "wasm-independent",
+      "forge",
+      "cranelift",
+      "js"
+    ],
+    "compiler_repo": "atto-lang/atto-source.rs",
+    "compiler_merge_sha": "dbd450f5abde91a2d3a50d193c589a7f77888afc",
+    "compiler_tree_sha": "dec09c71ce90337516c14d63c8de79d33b213bd1",
+    "carrier_repository": "gha-indie-worker/atto-ci",
+    "carrier_commit": "476ca30f3aec1945a116715c1575ad050ccc6dda",
+    "workflow_url": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44436599781",
+    "run_id": 44436599781,
+    "job_id": 135266908797,
+    "github_actions_result": "success",
+    "exact_source_blobs_verified_before_and_after": 39,
+    "rustc": "1.99.1 (58cf8f9c3 2026-10-13)",
+    "cargo": "1.99.1 (5f94df478 2026-08-27)",
+    "rust_tests": {
+      "total": 8,
+      "passed": 8,
+      "failed": 0
+    },
+    "guest_positive_cases": [
+      "owner_adjacent",
+      "groups_spaced",
+      "keyword_compact",
+      "canonical_987"
+    ],
+    "guest_return_value": "42n",
+    "guest_equivalent_wasm_sha256": "5bd6af29f50abe423b19203ed2933bb6909430e26309f92edc630efb3b709bfc",
+    "guest_negative_case": "duplicate_spacing",
+    "guest_negative_diagnostic": "E_DUPLICATE",
+    "guest_negative_artifact": "NONE",
+    "source_only_test_evidence": {
+      "run_id": 44435810059,
+      "run_url": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44435810059",
+      "node_tests": 32,
+      "passed": 32,
+      "failed": 0,
+      "exact_source_blobs": 10
+    },
+    "safety": "This proves native Rust compiler -> real guest WebAssembly, not browser-hosted Rust compiler nor any other backend. Prior all-backend NOT_EXECUTED statuses remain unchanged pending independent executions."
+  }
 }
