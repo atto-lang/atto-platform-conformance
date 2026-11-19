@@ -93,3 +93,21 @@ This README records the intended role of this repository; it is not a claim of f
 AttoLang is the canonical project name; new source, examples and documentation use `.atto` and the `atto-lang` repository organization. This README defines scope, not feature readiness.
 
 **Acceptance:** name the exact source SHA/tree, runtime/toolchain, positive and negative checks and execution receipt before claiming support. Host-only tests and empty CI steps do not prove guest execution.
+
+## Inline class constructor self-publication conformance v2
+
+`contracts/class-constructor-self-publication-v2.json` extends the out-of-line
+constructor safety cases to legacy **inline** class constructors. It includes
+two portable compile-negative `.atto` fixtures for `publish(self)` and
+`self.peek()` before initialization/publication, plus a positive fixture
+executing an initialized `Counter` and returning 42.
+
+The exact checked-in fixtures were executed on the native Rust compiler in
+[private token-free 48-source-blob carrier run #44447969540](https://github.com/gha-indie-worker/atto-ci/actions/runs/44447969540):
+12 Rust focused tests passed, both negatives returned `E_OWNERSHIP` and
+emitted no Wasm, the positive compiled Wasm guest returned 42, and two Node
+registry checks passed. This is **native-hosted Rust compiler → Wasm guest**
+proof only. The browser-hosted compiler and other independent backends
+remain `NOT_EXECUTED`; constructor definite-initialization analysis remains
+a separate work item.
+
