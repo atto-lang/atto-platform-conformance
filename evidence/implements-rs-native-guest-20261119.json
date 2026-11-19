@@ -1,0 +1,86 @@
+{
+  "schema": "atto.implements.focused.rs-native-guest.v1",
+  "status": "PASS_SCOPED",
+  "observed_utc": "2026-11-19T03:42:58Z",
+  "source_repo": "atto-lang/atto-source.rs",
+  "source_pr": 369,
+  "source_head_sha": "ee83de8fc200dc82493417ccd8eb4f9809e082a1",
+  "source_commit_scope": "exact verified compiler crate selection, not whole repository tree",
+  "source_scope": [
+    "Cargo.toml",
+    "Cargo.lock",
+    "src/**/*.rs",
+    "tests/trait_required_methods.rs",
+    "tests/nominal_actor_struct_implements.rs"
+  ],
+  "source_blobs_count": 42,
+  "source_blobs_verified": true,
+  "carrier_repo": "usa-acc/atto-ci",
+  "carrier_pr": 1,
+  "carrier_head_sha": "8bc1d8c03ffa37f218ba03e9392ee09ed40d908c",
+  "run_url": "https://github.com/usa-acc/atto-ci/actions/runs/44453297940",
+  "workflow_run_id": 44453297940,
+  "workflow_job_id": 135322214752,
+  "github_actions_conclusion": "success",
+  "job_steps_executed": true,
+  "rustc_version": "1.99.1",
+  "tests": {
+    "isolated_module": {
+      "passed": 15,
+      "failed": 0
+    },
+    "compiler_lib": {
+      "passed": 40,
+      "failed": 0
+    },
+    "actor_struct_contract": {
+      "passed": 14,
+      "failed": 0
+    },
+    "abstract_trait_contract": {
+      "passed": 9,
+      "failed": 0
+    }
+  },
+  "guest": {
+    "compiled_with": "native hosted Atto compiler",
+    "executed_with": "Node.js WebAssembly",
+    "source": "compiler369/ci-fixtures/class-abstract-trait-pass.atto",
+    "return_value": "42n",
+    "two_compilation_outputs_byte_identical": true,
+    "unexpected_imports": 0
+  },
+  "negative_guests": [
+    {
+      "file": "class-trait-missing.atto",
+      "code": "E_INTERFACE",
+      "no_artifact": true
+    },
+    {
+      "file": "actor-interface-missing.atto",
+      "code": "E_IMPL_MISSING",
+      "no_artifact": true
+    },
+    {
+      "file": "struct-value-abi-unsupported.atto",
+      "code": "E_UNSUPPORTED",
+      "no_artifact": true
+    }
+  ],
+  "unproven": [
+    "all 29 portable conformance cases end-to-end",
+    "full source repository exact-tree mirror",
+    "Rust wasm32 browser-hosted compiler",
+    "general actor mtd guest ABI",
+    "struct value mtd guest ABI",
+    "Java",
+    "LLVM",
+    ".NET",
+    "Forge",
+    "independent Wasm",
+    "Cranelift",
+    "JS",
+    "generic/ownership/effect/import parity"
+  ],
+  "claim_rule": "Do not promote any full portable backend status to PASS from this receipt; all 29 portable registry cases remain NOT_EXECUTED until each is exercised and pinned."
+}
