@@ -47,3 +47,34 @@ test('out-of-line method linkage, trait defaults and declaration mismatches are 
 });
 
 // HOST-ONLY source/metadata assertions. Never claim these have compiled or executed .atto.
+
+test('focused Rust-native compiled guest receipt is scoped and cannot silently promote portable parity',()=>{
+  const receipt = JSON.parse(readFileSync(
+    new URL('../evidence/implements-rs-native-guest-20261119.json',import.meta.url),'utf8'));
+  assert.equal(receipt.schema,'atto.implements.focused.rs-native-guest.v1');
+  assert.equal(receipt.status,'PASS_SCOPED');
+  assert.equal(receipt.source_repo,'atto-lang/atto-source.rs');
+  assert.equal(receipt.source_pr,369);
+  for(const sha of [receipt.source_head_sha,receipt.carrier_head_sha])
+    assert.match(sha,/^[0-9a-f]{40}$/);
+  assert.equal(receipt.source_blobs_count,42);
+  assert.equal(receipt.source_blobs_verified,true);
+  assert.equal(receipt.github_actions_conclusion,'success');
+  assert.equal(receipt.job_steps_executed,true);
+  assert.equal(receipt.workflow_run_id,44453297940);
+  assert.equal(receipt.workflow_job_id,135322214752);
+  assert.deepEqual(receipt.tests,{
+    isolated_module:{passed:15,failed:0},
+    compiler_lib:{passed:40,failed:0},
+    actor_struct_contract:{passed:14,failed:0},
+    abstract_trait_contract:{passed:9,failed:0}
+  });
+  assert.equal(receipt.guest.return_value,'42n');
+  assert.equal(receipt.guest.two_compilation_outputs_byte_identical,true);
+  assert.equal(receipt.negative_guests.length,3);
+  assert.ok(receipt.negative_guests.every(x=>x.no_artifact));
+  assert.ok(receipt.unproven.includes('general actor mtd guest ABI'));
+  assert.ok(receipt.unproven.includes('struct value mtd guest ABI'));
+  assert.deepEqual(new Set(Object.values(registry.backend_status)),new Set(['NOT_EXECUTED']));
+  assert.ok(registry.cases.every(c=>c.status==='NOT_EXECUTED'));
+});
