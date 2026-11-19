@@ -1,0 +1,108 @@
+{
+  "schema": "atto.constructor-definite-final.v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "language_authority": "atto-lang/atto-spec/language/class-field-binding-defaults-v1.md",
+  "compiler_pr": "https://github.com/atto-lang/atto-source.rs/pull/370",
+  "scope": "Explicit deferred final class fields only. All ordinary field declaration initializers are applied before constructor execution. No zero-fill default, no alias publication, no independent backend parity.",
+  "cases": [
+    {
+      "id": "direct_deferred_final",
+      "path": "fixtures/constructor-definite-final/v1/pass/direct_deferred_final.atto",
+      "kind": "pass",
+      "expected_exit": 42
+    },
+    {
+      "id": "branch_deferred_final",
+      "path": "fixtures/constructor-definite-final/v1/pass/branch_deferred_final.atto",
+      "kind": "pass",
+      "expected_exit": 42
+    },
+    {
+      "id": "out_of_line_deferred_final",
+      "path": "fixtures/constructor-definite-final/v1/pass/out_of_line_deferred_final.atto",
+      "kind": "pass",
+      "expected_exit": 42
+    },
+    {
+      "id": "missing_deferred_final",
+      "path": "fixtures/constructor-definite-final/v1/fail/missing_deferred_final.atto",
+      "kind": "fail",
+      "expected_error": "E_INIT",
+      "no_artifact": true
+    },
+    {
+      "id": "partial_branch_deferred_final",
+      "path": "fixtures/constructor-definite-final/v1/fail/partial_branch_deferred_final.atto",
+      "kind": "fail",
+      "expected_error": "E_INIT",
+      "no_artifact": true
+    },
+    {
+      "id": "branch_then_duplicate_deferred_final",
+      "path": "fixtures/constructor-definite-final/v1/fail/branch_then_duplicate_deferred_final.atto",
+      "kind": "fail",
+      "expected_error": "E_INIT_ONCE",
+      "no_artifact": true
+    },
+    {
+      "id": "double_write_deferred_final",
+      "path": "fixtures/constructor-definite-final/v1/fail/double_write_deferred_final.atto",
+      "kind": "fail",
+      "expected_error": "E_INIT_ONCE",
+      "no_artifact": true
+    },
+    {
+      "id": "read_before_deferred_final",
+      "path": "fixtures/constructor-definite-final/v1/fail/read_before_deferred_final.atto",
+      "kind": "fail",
+      "expected_error": "E_INIT_READ",
+      "no_artifact": true
+    },
+    {
+      "id": "read_self_during_write",
+      "path": "fixtures/constructor-definite-final/v1/fail/read_self_during_write.atto",
+      "kind": "fail",
+      "expected_error": "E_INIT_READ",
+      "no_artifact": true
+    },
+    {
+      "id": "initialized_final_rebind",
+      "path": "fixtures/constructor-definite-final/v1/fail/initialized_final_rebind.atto",
+      "kind": "fail",
+      "expected_error": "E_IMMUTABLE",
+      "no_artifact": true
+    },
+    {
+      "id": "no_constructor_deferred_final",
+      "path": "fixtures/constructor-definite-final/v1/fail/no_constructor_deferred_final.atto",
+      "kind": "fail",
+      "expected_error": "E_INIT",
+      "no_artifact": true
+    },
+    {
+      "id": "return_before_deferred_final",
+      "path": "fixtures/constructor-definite-final/v1/fail/return_before_deferred_final.atto",
+      "kind": "fail",
+      "expected_error": "E_INIT",
+      "no_artifact": true
+    },
+    {
+      "id": "repeated_final_write",
+      "path": "fixtures/constructor-definite-final/v1/fail/repeated_final_write.atto",
+      "kind": "fail",
+      "expected_error": "E_INIT_FLOW",
+      "no_artifact": true
+    }
+  ],
+  "backend_status": {
+    "rs-native-host": "NOT_EXECUTED",
+    "rs-browser-hosted": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED"
+  }
+}
