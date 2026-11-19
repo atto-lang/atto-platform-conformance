@@ -53,3 +53,21 @@ test('exact-SHA compiled guest evidence is scoped and cannot be inherited by ano
   assert.equal(e.exclusions.length,8);
   assert.ok(e.exclusions.includes('rs-browser-hosted'));
 });
+
+test('merged Rust compiler guest receipt proves execution without cross-backend claims',()=>{
+  const e=c.evidence.merged_compiler_guest;
+  assert.equal(e.scope,'EXACT_MERGED_RUST_SRC_TREE_TO_EXECUTED_WASM_GUEST');
+  for(const sha of [e.source_merge_commit,e.merged_src_tree_sha,
+    e.portable_fixture_tree_sha,e.carrier_commit])
+    assert.match(sha,/^[0-9a-f]{40}$/);
+  assert.equal(e.source_merge_commit,c.compiler_merged_sha);
+  assert.equal(e.run_id,44454811741);
+  assert.equal(e.job_id,135327139981);
+  assert.equal(e.conclusion,'success');
+  assert.deepEqual(e.focused_rust_constructor_tests,{passed:16,failed:0});
+  assert.deepEqual(e.updated_registry_tests,{passed:3,failed:0});
+  assert.deepEqual(e.compiled_wasm_positive_guests,{count:3,return_value:42});
+  assert.deepEqual(e.rejected_portable_cases,{count:10,emitted_artifacts:0});
+  assert.equal(c.backend_status['rs-browser-hosted'],'NOT_EXECUTED');
+  assert.equal(c.backend_status.java,'NOT_EXECUTED');
+});
