@@ -160,3 +160,53 @@ test("a refused deep request changes nothing and consumes no compile quota", () 
   assert.equal(r.state("acme.checkout").active, "aot");
   assert.equal(r.request(ops, "acme", ["acme.checkout"], "deep").length, 1, "quota still available");
 });
+
+test("late DEEP completion after OFF or a new DEEP revision is rejected", () => {
+  const r = setup({maxCompilesPerTenant: 2});
+  const [stale] = r.request(ops, "acme", ["acme.checkout"], "deep");
+  r.request(ops, "acme", ["acme.checkout"], "off");
+  assert.deepEqual(r.complete(stale, good("acme.checkout")),
+    {installed: false, reason: "POLICY_REVOKED"});
+  assert.equal(r.enter("acme.checkout").version.kind, "aot");
+  const [old] = r.request(ops, "acme", ["acme.checkout"], "deep");
+  const [current] = r.request(ops, "acme", ["acme.checkout"], "deep");
+  assert.equal(r.complete(current, good("acme.checkout")).installed, true);
+  assert.equal(r.complete(old, good("acme.checkout")).reason, "POLICY_REVOKED");
+});
+
+test("PROBES turns DEEP off without terminating old in-flight invocations", () => {
+  const r = setup();
+  const [job] = r.request(ops, "acme", ["acme.checkout"], "deep");
+  r.complete(job, good("acme.checkout"));
+  const inflight = r.enter("acme.checkout");
+  r.request(ops, "acme", ["acme.checkout"], "probes");
+  const latest = r.enter("acme.checkout");
+  assert.equal(inflight.version.kind, "deep");
+  assert.equal(latest.version.kind, "aot");
+  assert.equal(latest.probes, true);
+  r.exit(inflight);
+  r.exit(latest);
+  assert.equal(r.state("acme.checkout").liveVersions.length, 1);
+});
+
+test("forged compile tickets and duplicate function scopes are denied", () => {
+  const r = setup();
+  fails(() => r.complete({fnId: "acme.checkout", tenant: "acme", state: {done: false}},
+    good("acme.checkout")), "UNRECOGNIZED_COMPILE_JOB");
+  fails(() => r.request(ops, "acme", ["acme.checkout", "acme.checkout"], "deep"),
+    "DUPLICATE_SCOPE_FUNCTION");
+});
+
+test("nested secret attributes and oversized telemetry cannot bypass allowlists", () => {
+  const keys = ["http.method", "http.request.header.authorization.scheme", "file.path",
+    "url.query.token", "__proto__", "db.query.parameters", "oversized"];
+  const b = new TelemetryBuffer({capacity: 2, allowedAttributes: keys, maxValuesPerKey: 1});
+  const attrs = JSON.parse('{"http.method":"GET","http.request.header.authorization.scheme":"Basic",'
+    + '"file.path":"/tmp/a","url.query.token":"abc","__proto__":"danger",'
+    + '"db.query.parameters":"{pw}","oversized":"' + "x".repeat(257) + '"}');
+  b.record("request", attrs);
+  assert.deepEqual(b.drain(1)[0].attributes, {"http.method": "GET"});
+  assert.equal(b.redacted, 6);
+  fails(() => new TelemetryBuffer({capacity: 2, allowedAttributes: new Array(65).fill("x")}),
+    "INVALID_BUFFER");
+});
