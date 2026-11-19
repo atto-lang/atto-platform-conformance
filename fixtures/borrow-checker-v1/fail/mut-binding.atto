@@ -1,0 +1,8 @@
+// BCV1-020 mut_binding fail: target AttoLang semantics, NOT_EXECUTED.
+// Expected compiler rejection E_MUTABILITY with NO guest artifact.
+define class Boxed as pub let int value = 1; end
+pub fnc main(): int {
+  val Boxed x = new Boxed();
+  x.value = 42; // immutable referent permission
+  return x.value;
+}
