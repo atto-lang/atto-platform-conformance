@@ -5,6 +5,8 @@ on:
     paths:
       - 'tools/typed_actor_v1.rs'
       - 'tools/typed_actor_fixture_identity.rs'
+      - 'tools/typed_actor_backend_inventory.rs'
+      - 'contracts/atto-source-backend-typed-actor-v1.tsv'
       - 'contracts/typed-actor-v1.tsv'
       - 'fixtures/typed-actor-v1/**'
       - '.github/workflows/typed-actor-v1-rust.yml'
@@ -12,6 +14,8 @@ on:
     paths:
       - 'tools/typed_actor_v1.rs'
       - 'tools/typed_actor_fixture_identity.rs'
+      - 'tools/typed_actor_backend_inventory.rs'
+      - 'contracts/atto-source-backend-typed-actor-v1.tsv'
       - 'contracts/typed-actor-v1.tsv'
       - 'fixtures/typed-actor-v1/**'
       - '.github/workflows/typed-actor-v1-rust.yml'
@@ -48,6 +52,10 @@ jobs:
           "$RUNNER_TEMP/typed_actor_identity_tests"
           rustc --edition=2021 tools/typed_actor_fixture_identity.rs -o "$RUNNER_TEMP/typed_actor_identity"
           "$RUNNER_TEMP/typed_actor_identity"
+          rustc --edition=2021 --test tools/typed_actor_backend_inventory.rs -o "$RUNNER_TEMP/typed_actor_backend_tests"
+          "$RUNNER_TEMP/typed_actor_backend_tests"
+          rustc --edition=2021 tools/typed_actor_backend_inventory.rs -o "$RUNNER_TEMP/typed_actor_backend_inventory"
+          "$RUNNER_TEMP/typed_actor_backend_inventory"
           rustc --edition=2021 --test tools/typed_actor_v1.rs -o "$RUNNER_TEMP/typed_actor_tests"
           "$RUNNER_TEMP/typed_actor_tests"
           rustc --edition=2021 tools/typed_actor_v1.rs -o "$RUNNER_TEMP/typed_actor_oracle"
