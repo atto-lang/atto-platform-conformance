@@ -170,6 +170,35 @@
       "cranelift",
       "js"
     ],
-    "limitation": "Wasm execution is from a native-hosted Rust compiler. Independent backends, struct constructor ABI, exception cleanup semantics, and exhaustive CFG are not proven."
+    "limitation": "Wasm execution is from a native-hosted Rust compiler. Independent backends, struct constructor ABI, exception cleanup semantics, and exhaustive CFG are not proven.",
+    "merged_compiler_guest": {
+      "scope": "EXACT_MERGED_RUST_SRC_TREE_TO_EXECUTED_WASM_GUEST",
+      "source_merge_commit": "57ed0e73d59e70104dcdbfccec490682bdb14b79",
+      "merged_src_tree_sha": "dc0366cc4c76938a46c212500151253baf71e60c",
+      "portable_fixture_tree_sha": "b47d4c25977157e9df712165f0f60929097f23f4",
+      "carrier_repo": "gha-indie-worker/atto-ci",
+      "carrier_commit": "3546c14bb1c1edd7051642f59df83fa9db752c62",
+      "run_url": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44454811741",
+      "run_id": 44454811741,
+      "job_id": 135327139981,
+      "conclusion": "success",
+      "focused_rust_constructor_tests": {
+        "passed": 16,
+        "failed": 0
+      },
+      "updated_registry_tests": {
+        "passed": 3,
+        "failed": 0
+      },
+      "compiled_wasm_positive_guests": {
+        "count": 3,
+        "return_value": 42
+      },
+      "rejected_portable_cases": {
+        "count": 10,
+        "emitted_artifacts": 0
+      },
+      "note": "Exact source Git tree matches the merged Rust compiler, and fixture tree matches the checked-in PR. Independent backend parity not claimed."
+    }
   }
 }
