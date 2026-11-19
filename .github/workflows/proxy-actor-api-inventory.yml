@@ -1,0 +1,25 @@
+name: Proxy actor API parity inventory (source only)
+on:
+  pull_request:
+    paths: [ 'contracts/proxy-actor-api-parity-v1.json', 'tests/proxy-actor-api-parity-v1.test.mjs', '.github/workflows/proxy-actor-api-inventory.yml' ]
+  push:
+    paths: [ 'contracts/proxy-actor-api-parity-v1.json', 'tests/proxy-actor-api-parity-v1.test.mjs', '.github/workflows/proxy-actor-api-inventory.yml' ]
+permissions:
+  contents: read
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Exact PR SHA
+        env:
+          EXPECTED: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: node --test tests/proxy-actor-api-parity-v1.test.mjs
+      - run: echo 'SOURCE_ONLY INVENTORY: does not prove any backend guest parity'
