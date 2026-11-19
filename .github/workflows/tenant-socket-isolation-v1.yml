@@ -1,0 +1,31 @@
+name: Tenant socket isolation v1 structural gate
+on:
+  pull_request:
+    paths:
+      - 'contracts/tenant-socket-isolation-v1.json'
+      - 'bin/verify-socket-broker-receipt.mjs'
+      - 'tests/tenant-socket-isolation-v1.test.mjs'
+      - '.github/workflows/tenant-socket-isolation-v1.yml'
+  push:
+    paths:
+      - 'contracts/tenant-socket-isolation-v1.json'
+      - 'bin/verify-socket-broker-receipt.mjs'
+      - 'tests/tenant-socket-isolation-v1.test.mjs'
+      - '.github/workflows/tenant-socket-isolation-v1.yml'
+permissions:
+  contents: read
+jobs:
+  structural-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify schema and adversarial receipt controls
+        run: node --test tests/tenant-socket-isolation-v1.test.mjs
+      - name: Scope
+        run: echo 'STRUCTURAL_ONLY - ALL BACKENDS NOT_EXECUTED'
