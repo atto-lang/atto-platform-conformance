@@ -1,9 +1,15 @@
-// BCV1-036 actor_state fail: target AttoLang semantics, NOT_EXECUTED.
-// Expected compiler rejection E_CRITICAL_READ_WRITE with NO guest artifact.
+// BCV1-036 actor_state fail: a critical-read guard cannot write sealed actor state.
+// expect-error: E_CRITICAL_READ_WRITE
+// TARGET_ONLY: reject via state-access permission, not an undefined message type.
 define actor Vault as
   define state as { pub let int count = 0; }
-  receive(Read msg): void {
-    handle_state(critical-read |s| -> { s.count = 42; }); // read guard is not a writer
+  receive(ActorMail<int> mail): void {
+    handle_state(critical-read |s| -> { s.count = mail.value; });
+    return;
   }
 end
-pub fnc main(): int { return 42; }
+pub fnc main(): int {
+  val vault = spawn Vault();
+  vault.send(42);
+  return 42;
+}

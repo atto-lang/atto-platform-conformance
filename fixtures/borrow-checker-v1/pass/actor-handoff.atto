@@ -1,10 +1,17 @@
-// BCV1-037 actor_handoff pass: target AttoLang semantics, NOT_EXECUTED.
-// Expected success and exit value 42.
-// TARGET typed mailbox contract; copy!! prepares a detached Sendable graph.
+// BCV1-037 actor_handoff pass: deep-copy message, preserve sender's owned graph.
+// expect-exit: 42
+// expect-stdout: 42
+// TARGET_ONLY: typed class payload and actor graph ownership require runtime proof.
 define class Payload as pub let int value = 42; end
+define actor Receiver as
+  receive(ActorMail<Payload> mail): void {
+    stdio.println(mail.value.value);
+    return;
+  }
+end
 pub fnc main(): int {
-  val payload = new Payload();
-  val worker = spawn Receiver();
-  worker.send(copy!! payload);
-  return payload.value;
+  val sender_graph = new Payload();
+  val receiver = spawn Receiver();
+  receiver.send(copy!! sender_graph);
+  return sender_graph.value;
 }

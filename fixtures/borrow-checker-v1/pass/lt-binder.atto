@@ -1,7 +1,16 @@
-// BCV1-021 lt_binder pass: target AttoLang semantics, NOT_EXECUTED.
-// Expected success and exit value 42.
+// BCV1-021 lt_binder pass: borrowed result tied to the first input's named lifetime.
+// expect-exit: 42
+// TARGET_ONLY: compiler must prove named lifetime relations before admitting.
 define class Foo as pub let int value = 42; end
-fnc choose_left<lt! a, lt! b>(Borrow<Foo, lt=a> left, Borrow<Foo, lt=b> right): Borrow<Foo, lt=a> {
+fnc choose_left<lt! a, lt! b>(
+  Borrow<Foo, lt=a> left,
+  Borrow<Foo, lt=b> right
+): Borrow<Foo, lt=a> {
   return left;
 }
-pub fnc main(): int { return 42; }
+pub fnc main(): int {
+  let first = new Foo();
+  let second = new Foo();
+  val selected = choose_left(borrow! first, borrow! second);
+  return selected.value;
+}

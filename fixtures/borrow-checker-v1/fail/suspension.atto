@@ -1,10 +1,13 @@
-// BCV1-040 suspension fail: target AttoLang semantics, NOT_EXECUTED.
-// Expected compiler rejection E_LOAN_SUSPEND with NO guest artifact.
-// Live loan crossing await is not admitted without pinned-frame and cleanup proof.
+// BCV1-040 suspension fail: live view cannot traverse await without pinned-frame proof.
+// expect-error: E_LOAN_SUSPEND
+// TARGET_ONLY: rejection must be borrow-lifetime failure, not an unknown callee.
 define class Payload as pub let int value = 42; end
+define actor Idle as
+  receive(ActorMail<int> mail): void { return; }
+end
 pub fnc main(): int {
-  val p = new Payload();
-  val view = borrow! p;
-  await complete_task();
+  val owner = new Payload();
+  val view = borrow! owner;
+  val idle = await spawn Idle();
   return view.value;
 }

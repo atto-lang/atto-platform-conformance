@@ -1,11 +1,16 @@
-// BCV1-038 actor_handoff fail: target AttoLang semantics, NOT_EXECUTED.
-// Expected compiler rejection E_ACTOR_LOAN_ESCAPE with NO guest artifact.
-// Ordinary local loans cannot escape into unbounded actor mailboxes.
+// BCV1-038 actor_handoff fail: caller-local loan cannot escape into a mailbox.
+// expect-error: E_ACTOR_LOAN_ESCAPE
+// TARGET_ONLY: rejection must come from loan/domain proof, not undefined Receiver.
 define class Payload as pub let int value = 42; end
+define actor Receiver as
+  receive(ActorMail<Payload> mail): void {
+    return;
+  }
+end
 pub fnc main(): int {
-  val payload = new Payload();
-  val view = borrow! payload;
-  val worker = spawn Receiver();
-  worker.send(view);
-  return 42;
+  val sender_graph = new Payload();
+  val view = borrow! sender_graph;
+  val receiver = spawn Receiver();
+  receiver.send(view);
+  return sender_graph.value;
 }

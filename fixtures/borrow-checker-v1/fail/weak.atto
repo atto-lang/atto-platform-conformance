@@ -1,8 +1,10 @@
-// BCV1-026 weak fail: target AttoLang semantics, NOT_EXECUTED.
-// Expected compiler rejection E_WEAK_PROVENANCE with NO guest artifact.
+// BCV1-026 weak fail: a temporary read loan cannot mint a weak owner handle.
+// expect-error: E_WEAK_PROVENANCE
+// TARGET_ONLY: owner is live, so do not confuse rejection with a temporary-loan error.
 define class Cell as pub let int value = 42; end
 pub fnc main(): int {
-  val borrowed = borrow! new Cell();
-  val fake_weak = weak! borrowed; // cannot create weak owner from loan
+  val owner = new Cell();
+  val borrowed = borrow! owner;
+  val invalid = weak! borrowed;
   return 42;
 }

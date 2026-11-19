@@ -1,9 +1,10 @@
-// BCV1-025 weak pass: target AttoLang semantics, NOT_EXECUTED.
-// Expected success and exit value 42.
-// TARGET library weak-upgrade contract; a weak reference is not another owning handle.
+// BCV1-025 weak pass: upgrade weak handle while a frozen shared owner is alive.
+// expect-exit: 42
+// TARGET_ONLY: upgrade's Option<T> and generation-fencing ABI are not ratified.
 define class Snapshot as pub let int value = 42; end
 pub fnc main(): int {
-  val shared = share! new Snapshot();
+  val original = new Snapshot();
+  val shared = share! original;
   val weak_ref = weak! shared;
   val upgraded = weak_ref.upgrade();
   return upgraded.is_some() ? 42 : 0;

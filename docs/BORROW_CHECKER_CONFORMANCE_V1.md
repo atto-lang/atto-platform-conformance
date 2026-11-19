@@ -81,6 +81,19 @@ The *expected test verdict* is not a run result. The TSV's **admission** field n
 
 The known compiler-profile examples were aligned with source fixtures in compiler #346/#347 and the accepted flat-class copy path from compiler #265; they include `expect-exit` / `expect-error` headers. The remaining target-only fixtures are **not** yet executable compiler conformance tests and must stay excluded from admission counts until their precise grammar and backend witnesses are reviewed.
 
+## Target-only fixture integrity audit
+
+The following **source defects were corrected** without claiming execution or new backend support:
+
+- `actor_state` now uses a declared `ActorMail<int>` handler instead of undeclared `Increment`/`Read`, and explicitly exercises the guarded state callback. The intended negative still writes through `critical-read`.
+- `actor_handoff` declares the receiving actor and the typed class-message handler. The intended negative passes an actual live borrow into the mailbox rather than failing name resolution.
+- `suspension` now declares the actor used by `await spawn`; the positive loan ends inside a block, and the negative loan remains live across the await.
+- `pointer` uses a `Result<int, PointerError>` function for `?` and an explicit `main(): int` result match, as proposed in `atto-spec#18`. The exact fallible API remains **unratified**, so this is still not an executable compiler test.
+- `weak` creates a stable owner before borrowing and upgrading, so its provenance negative cannot pass merely by rejecting a borrow of a temporary.
+- `lt_binder` now actually calls `choose_left` with two distinct owned inputs and observes the returned borrowed view; a function definition left uncalled would not test runtime/provenance behavior.
+
+These changes remove obvious *extraneous* errors but do **not** prove grammar admission, runtime semantics or backend support. The `deep_graph` target pair remains blocked on the specification and implementation of legal cyclic/repeated mutable-alias construction and the verified copy memo; simply compiling a shallow `Array` expression must not be misreported as deep-copy graph conformance. The actor-state, async, pointer and weak candidates likewise remain `TARGET_ONLY` until their accepted surface syntax and compiled witnesses are established.
+
 ## Source limitations and test design notes
 
 Some target snippets intentionally exercise language constructs not yet known to be admitted together by current parsers: `Pointer<T>` allocation effects, named `lt!` binders, actual cycle builders, `weak!.upgrade`, `pin!` actor handoffs, out-of-line state callbacks and `await` while an owner is live. They are **acceptance targets**, not claimed runnable test artifacts. Before promoting any case to `EXECUTABLE`, implement or revise its precise accepted grammar; maintain at least one wrong-capability negative in the same feature family. Do not modify an expected failure into a different, easier parser failure to get a green result.

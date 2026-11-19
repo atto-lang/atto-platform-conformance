@@ -1,10 +1,17 @@
-// BCV1-035 actor_state pass: target AttoLang semantics, NOT_EXECUTED.
-// Expected success and exit value 42.
-// TARGET sealed actor-state callback grammar.
+// BCV1-035 actor_state pass: actor's sealed state is changed only through critical-write.
+// expect-exit: 42
+// expect-stdout: 42
+// TARGET_ONLY: actor-sealed state syntax and guest delivery still need admission.
 define actor Vault as
   define state as { pub let int count = 0; }
-  receive(Increment msg): void {
-    handle_state(critical-write |s| -> { s.count = 42; });
+  receive(ActorMail<int> mail): void {
+    handle_state(critical-write |s| -> { s.count = mail.value; });
+    stdio.println(handle_state(critical-read |s| -> s.count));
+    return;
   }
 end
-pub fnc main(): int { return 42; }
+pub fnc main(): int {
+  val vault = spawn Vault();
+  vault.send(42);
+  return 42;
+}
