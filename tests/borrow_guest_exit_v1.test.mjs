@@ -14,10 +14,10 @@ function uleb(n) {
 }
 function section(id, data) { return [id,...uleb(data.length),...data]; }
 function name(s) { const b=[...Buffer.from(s)]; return [...uleb(b.length),...b]; }
-function mockGuest(result) {
+function mockGuest(result, panicCode=0) {
   const type=section(1,[1,0x60,0,1,0x7e]);
   const funcs=section(3,[1,0]);
-  const panic=section(6,[1,0x7f,1,0x41,0,0x0b]);
+  const panic=section(6,[1,0x7f,1,0x41,panicCode,0x0b]);
   const exports=section(7,[2,...name('main'),0,0,...name('panic_code'),3,0]);
   const body=[0,0x42,...uleb(result),0x0b];
   const code=section(10,[1,...uleb(body.length),...body]);
@@ -43,4 +43,17 @@ test('unexpected Wasm export fails closed',()=>{
   const b=mockGuest(42);const marker=Buffer.from('panic_code');
   const at=b.indexOf(marker);assert.ok(at>=0);b.set(Buffer.from('panic_codx'),at);
   const r=execute(b);assert.equal(r.status,1);assert.match(r.stderr,/ATTO_GUEST_INVALID/);
+});
+
+test('nonzero guest panic code cannot pass with main 42',()=>{
+  const r=execute(mockGuest(42,3));assert.equal(r.status,1);assert.match(r.stderr,/ATTO_GUEST_INVALID/);
+});
+test('guest i64 outside process exit range fails closed',()=>{
+  const r=execute(mockGuest(256));assert.equal(r.status,1);assert.match(r.stderr,/ATTO_GUEST_INVALID/);
+});
+test('actor custom section is rejected rather than simulated',()=>{
+  const actorSection=section(0,[...name('atto.actors'),0]);
+  const b=Buffer.concat([mockGuest(42),Buffer.from(actorSection)]);
+  assert.equal(WebAssembly.validate(b),true);
+  const r=execute(b);assert.equal(r.status,1);assert.match(r.stderr,/actor guests require/);
 });

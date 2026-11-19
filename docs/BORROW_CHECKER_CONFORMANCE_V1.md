@@ -64,6 +64,12 @@ Run against **an actual compiler artifact** by supplying to the Rust driver `--g
 
 [`tests/borrow_guest_exit_v1.test.mjs`](../tests/borrow_guest_exit_v1.test.mjs) uses **synthetic Wasm** to exercise adapter exit-value propagation and fail-closed behavior. It is not compiler evidence or an ownership proof. Those Node tests can run independently of the Rust toolchain, but they can never qualify a backend as passing a fixture.
 
+## Evidence integrity hardening (November 2026)
+
+The Rust verifier now **rejects dirty compiler and fixture working trees**, checks semantic diagnostic tokens with exact code boundaries, and requires a genuinely **empty output directory** for negative compilation (a zero-byte `.wasm` still counts as a forbidden artifact). It prints the compiled guest artifact SHA-256, verifies the guest-runner executable SHA-256 through `--guest-runner-sha256 <64-hex>`, and removes isolated temporary output directories on normal exit or Rust unwinding.
+
+These are stronger **integrity gates, not test results**. Runner binary digests do not alone prove the runtime's implementation; use the reviewed Node adapter from the exact fixture checkout and pin that source as well. The Node adapter's local synthetic test matrix was expanded from four to seven cases (nonzero panic, out-of-range return, and actor-module denial).
+
 ## Optional compiled-guest execution gate (Rust, exact compiler inputs)
 
 [`bin/run_borrow_checker_matrix.rs`](../bin/run_borrow_checker_matrix.rs) is a dependency-free Rust **single-case** runner for candidate cases. It intentionally rejects `TARGET_ONLY` fixtures and unapproved draft-profile execution; it never marks a fixture passed merely because source code was checked in. Compile with:
@@ -72,7 +78,7 @@ Run against **an actual compiler artifact** by supplying to the Rust driver `--g
 rustc --edition=2021 bin/run_borrow_checker_matrix.rs -o borrow_checker_exec_v1
 ~~~
 
-Run a supported case by passing **all actual immutable compiler provenance**: `--case BCV1-015`, `--compiler /path/to/attoc`, `--compiler-repo /path/to/atto-source.rs`, `--compiler-head <40-hex>`, `--compiler-tree <40-hex>`, `--compiler-sha256 <64-hex>`, `--fixture-blob-sha <40-hex>`, `--manifest-blob-sha <40-hex>`, `--guest-runner /path/to/actual-guest-runtime`, and any necessary repeated `--compiler-arg` or `--guest-arg`. A draft-profile case also requires explicit `--allow-draft-profile`; the source's first line already chooses the temporary migration profile, so **do not redundantly add** a conflicting `--ownership-profile` flag.
+Run a supported case by passing **all actual immutable compiler provenance**: `--case BCV1-015`, `--compiler /path/to/attoc`, `--compiler-repo /path/to/atto-source.rs`, `--compiler-head <40-hex>`, `--compiler-tree <40-hex>`, `--compiler-sha256 <64-hex>`, `--fixture-blob-sha <40-hex>`, `--manifest-blob-sha <40-hex>`, `--guest-runner /path/to/actual-guest-runtime`, `--guest-runner-sha256 <64-hex>`, and any necessary repeated `--compiler-arg` or `--guest-arg`. A draft-profile case also requires explicit `--allow-draft-profile`; the source's first line already chooses the temporary migration profile, so **do not redundantly add** a conflicting `--ownership-profile` flag.
 
 The runner verifies both the compiler and fixture checkout Git HEAD/root tree before running and checks source integrity. The runner checks source Git HEAD and root tree, verifies the compiler binary's SHA-256 on Linux, verifies the selected fixture and contract manifest against their **independently expected Git blob SHAs**, confirms the on-disk manifest equals the compile-time embedded manifest, then compiles the selected source with an isolated `-o` destination, and checks the intended semantic diagnostic **and zero artifact** for negatives. For positives it demands a nonempty generated guest and actually invokes the supplied guest runtime, requiring exit code 42. It does **not** infer the correct Wasm runner from the backend, and it does **not** validate compiler provenance from a claimed SHA alone: the person invoking it must build the exact compiler binary from the verified tree and record that build receipt. A returned status of 2 indicates unsupported/unexecuted admission rather than a semantic compiler failure.
 
