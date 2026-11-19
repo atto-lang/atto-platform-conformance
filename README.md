@@ -53,8 +53,15 @@ argument or invoking methods on that object before publication. Valid direct
 The Rust compiler's [PR #359](https://github.com/atto-lang/atto-source.rs/pull/359)
 implemented a conservative `E_OWNERSHIP` gate and passed its actual
 [private exact-blob Rust / compiled-Wasm run](https://github.com/gha-indie-worker/atto-ci/actions/runs/44444349850).
-Portable fixture and independent backend evidence must be recorded separately;
-untested implementations remain `NOT_EXECUTED` and must not be promoted to PASS.
+The two portable negative `.atto` fixtures were independently executed
+against the native Rust compiler in
+[private exact-blob run #44444993654](https://github.com/gha-indie-worker/atto-ci/actions/runs/44444993654):
+49 blobs matched before/after, 10 Rust focused tests passed, 4 positive
+compiled WebAssembly guests ran, and both negative cases returned
+`E_OWNERSHIP` without creating guest artifacts. This proof is scoped to
+the Rust **native-hosted** compiler; the Rust browser-hosted compiler and
+independent Java/LLVM/.NET/Wasm/Forge/Cranelift/JS backends remain
+`NOT_EXECUTED`.
 
 ## Validation
 
