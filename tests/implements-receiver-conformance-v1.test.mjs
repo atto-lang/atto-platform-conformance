@@ -78,3 +78,31 @@ test('focused Rust-native compiled guest receipt is scoped and cannot silently p
   assert.deepEqual(new Set(Object.values(registry.backend_status)),new Set(['NOT_EXECUTED']));
   assert.ok(registry.cases.every(c=>c.status==='NOT_EXECUTED'));
 });
+
+test('executed actor-local Wasm guest receipt is exact-head scoped, without promoting portable parity',()=>{
+  const evidence=JSON.parse(readFileSync(
+    new URL('../evidence/implements-actor-local-rs-native-guest-20261119.json',import.meta.url),'utf8'));
+  assert.equal(evidence.schema,'atto.implements.actor_local.rs_native_guest.v1');
+  assert.equal(evidence.status,'PASS_SCOPED');
+  assert.equal(evidence.source_pr,374);
+  for(const sha of [evidence.source_sha,evidence.merged_base_sha,evidence.carrier_sha,evidence.guest.fixture_blob_sha])
+    assert.match(sha,/^[0-9a-f]{40}$/);
+  assert.equal(evidence.source_blobs_verified,45);
+  assert.equal(evidence.workflow_run_id,44456387901);
+  assert.equal(evidence.workflow_job_id,135332315028);
+  assert.equal(evidence.workflow_conclusion,'success');
+  assert.equal(evidence.real_steps_executed,true);
+  assert.deepEqual(evidence.tests,{
+    isolated_rust:15,compiler_library:42,actor_receiver_rust:11,
+    nominal_contract_rust:14,abstract_trait_rust:9,conformance_receipt_node:4,failed:0
+  });
+  assert.equal(evidence.guest.stdout,'42\n');
+  assert.deepEqual(evidence.guest.bindings,['actor_init(0)','actor_receive(0,21n,1n)']);
+  assert.equal(evidence.guest.wasm_deterministic,true);
+  assert.equal(evidence.negative_cases.actor_missing_method_no_artifact,true);
+  assert.equal(evidence.negative_cases.direct_external_actorref_method_call,'E_UNSUPPORTED');
+  assert.ok(evidence.unsupported_or_unverified.includes('struct value receiver guest execution'));
+  assert.ok(evidence.unsupported_or_unverified.includes('sealed state locks/critical sections'));
+  assert.deepEqual(new Set(Object.values(registry.backend_status)),new Set(['NOT_EXECUTED']));
+  assert.ok(registry.cases.every(c=>c.status==='NOT_EXECUTED'));
+});
