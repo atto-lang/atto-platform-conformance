@@ -1,0 +1,42 @@
+{
+  "schema": "atto.class-constructor-self-publication.v2",
+  "status": "TARGET_NOT_EXECUTED",
+  "meaning": "Portable inline class constructor cases extending the already-verified out-of-line v1 contract; no independent backend parity implied.",
+  "authoritative_source": "atto-lang/atto-spec/language/out-of-line-receivers-constructors-and-state-v1.md",
+  "compiler_source_merge_sha": "3320a94fd38baf2435a3e6fb4ca22edffa6e4c3d",
+  "cases": [
+    {
+      "id": "inline_self_escape",
+      "path": "fixtures/receiver-constructors/fail/inline_self_escape.atto",
+      "kind": "reject",
+      "code": "E_OWNERSHIP",
+      "artifact": "NONE"
+    },
+    {
+      "id": "inline_method_before_publication",
+      "path": "fixtures/receiver-constructors/fail/inline_method_before_publication.atto",
+      "kind": "reject",
+      "code": "E_OWNERSHIP",
+      "artifact": "NONE"
+    },
+    {
+      "id": "inline_initialized_counter",
+      "path": "fixtures/receiver-constructors/pass/inline_initialized_counter.atto",
+      "kind": "execute",
+      "expected_exit": 42
+    }
+  ],
+  "backend_status": {
+    "rs-native-host": "NOT_EXECUTED",
+    "rs-browser-hosted": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED"
+  },
+  "reference_source_run_url": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44447475547",
+  "note": "Reference Rust guest run executed generated equivalent inline sources, not these separately checked-in portable fixtures. Do not promote any backend status until these exact fixtures are run."
+}
