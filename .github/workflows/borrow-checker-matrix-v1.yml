@@ -7,6 +7,8 @@ on:
       - 'docs/BORROW_CHECKER_CONFORMANCE_V1.md'
       - 'tests/borrow_checker_matrix_v1.rs'
       - 'bin/run_borrow_checker_matrix.rs'
+      - 'bin/borrow_guest_exit.mjs'
+      - 'tests/borrow_guest_exit_v1.test.mjs'
       - '.github/workflows/borrow-checker-matrix-v1.yml'
   workflow_dispatch:
 
@@ -19,6 +21,11 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Node-only synthetic Wasm runner checks (not Atto guest conformance)
+        run: node --test tests/borrow_guest_exit_v1.test.mjs
       - name: Static Rust versioned matrix validation — not guest execution
         run: |
           rustc --version

@@ -49,14 +49,16 @@ struct Args {
     case_id: String, compiler: PathBuf, compiler_repo: PathBuf,
     compiler_head: String, compiler_tree: String, compiler_digest: String,
     fixture_blob: String, manifest_blob: String,
+    fixture_repo: PathBuf, fixture_head: String, fixture_tree: String,
     guest_runner: Option<PathBuf>, guest_args: Vec<String>,
     compiler_args: Vec<String>, allow_draft: bool,
 }
 fn parse_args() -> Result<Args, String> {
     let mut args = env::args().skip(1);
     let (mut id, mut compiler, mut repo, mut head, mut tree, mut digest,
-        mut fixture_blob, mut manifest_blob, mut runner) =
-        (None, None, None, None, None, None, None, None, None);
+        mut fixture_blob, mut manifest_blob, mut fixture_repo, mut fixture_head,
+        mut fixture_tree, mut runner) =
+        (None, None, None, None, None, None, None, None, None, None, None, None);
     let mut runner_args = Vec::new();
     let mut compiler_args = Vec::new();
     let mut draft = false;
@@ -72,6 +74,9 @@ fn parse_args() -> Result<Args, String> {
             "--compiler-sha256" => digest = value,
             "--fixture-blob-sha" => fixture_blob = value,
             "--manifest-blob-sha" => manifest_blob = value,
+            "--fixture-repo" => fixture_repo = value.map(PathBuf::from),
+            "--fixture-head" => fixture_head = value,
+            "--fixture-tree" => fixture_tree = value,
             "--guest-runner" => runner = value.map(PathBuf::from),
             "--guest-arg" => runner_args.push(value.unwrap_or_default()),
             "--compiler-arg" => compiler_args.push(value.unwrap_or_default()),
@@ -89,6 +94,9 @@ fn parse_args() -> Result<Args, String> {
         compiler_digest: digest.ok_or("missing --compiler-sha256")?,
         fixture_blob: fixture_blob.ok_or("missing --fixture-blob-sha")?,
         manifest_blob: manifest_blob.ok_or("missing --manifest-blob-sha")?,
+        fixture_repo: fixture_repo.ok_or("missing --fixture-repo")?,
+        fixture_head: fixture_head.ok_or("missing --fixture-head")?,
+        fixture_tree: fixture_tree.ok_or("missing --fixture-tree")?,
         guest_runner: runner, guest_args: runner_args, compiler_args,
         allow_draft: draft,
     })
@@ -110,7 +118,8 @@ fn run() -> Result<(), String> {
     }
     if !sha_is_valid(&opt.compiler_head, 40) || !sha_is_valid(&opt.compiler_tree, 40)
         || !sha_is_valid(&opt.compiler_digest, 64)
-        || !sha_is_valid(&opt.fixture_blob, 40) || !sha_is_valid(&opt.manifest_blob, 40) {
+        || !sha_is_valid(&opt.fixture_blob, 40) || !sha_is_valid(&opt.manifest_blob, 40)
+        || !sha_is_valid(&opt.fixture_head, 40) || !sha_is_valid(&opt.fixture_tree, 40) {
         return Err("require exact 40-hex source/head/tree and Git blobs plus 64-hex compiler SHA-256".to_owned());
     }
     let actual_head = git_rev(&opt.compiler_repo, "HEAD")?;
@@ -122,12 +131,17 @@ fn run() -> Result<(), String> {
     if actual_binary != opt.compiler_digest {
         return Err(format!("compiler binary SHA-256 mismatch: {actual_binary}"));
     }
-    let root = Path::new(file!()).parent().and_then(Path::parent)
-        .ok_or_else(|| "cannot locate fixture repo root".to_owned())?;
+    let root = fs::canonicalize(&opt.fixture_repo)
+        .map_err(|e| format!("fixture checkout not accessible: {e}"))?;
+    if git_rev(&root, "HEAD")? != opt.fixture_head
+        || git_rev(&root, "HEAD^{tree}")? != opt.fixture_tree {
+        return Err("fixture checkout HEAD/TREE does not match expected immutable Git receipt".to_owned());
+    }
     if !case.fixture.starts_with("fixtures/borrow-checker-v1/")
         || case.fixture.contains("..") { return Err("unsafe fixture path".to_owned()); }
     let fixture = fs::canonicalize(root.join(case.fixture))
         .map_err(|e| format!("fixture missing {}: {e}", case.fixture))?;
+    if !fixture.starts_with(&root) { return Err("fixture symlink escaped checkout".to_owned()); }
     let manifest = root.join("contracts/borrow-checker-v1.tsv");
     let on_disk_manifest = fs::read_to_string(&manifest).map_err(|e| e.to_string())?;
     if on_disk_manifest != MANIFEST {
@@ -152,8 +166,10 @@ fn run() -> Result<(), String> {
     let diagnostics = format!("{}\n{}", String::from_utf8_lossy(&compiled.stdout),
         String::from_utf8_lossy(&compiled.stderr));
     let emitted = fs::metadata(&artifact).map(|m| m.len() > 0).unwrap_or(false);
-    println!("CASE={} SOURCE_HEAD={} SOURCE_TREE={} COMPILER_SHA256={}",
+    println!("CASE={} COMPILER_SOURCE_HEAD={} COMPILER_SOURCE_TREE={} COMPILER_SHA256={}",
         case.id, actual_head, actual_tree, actual_binary);
+    println!("FIXTURE_SOURCE_HEAD={} FIXTURE_SOURCE_TREE={}",
+        opt.fixture_head, opt.fixture_tree);
     println!("FIXTURE={} FIXTURE_BLOB={} MANIFEST_BLOB={} OUTPUT_DIR={}",
         fixture.display(), opt.fixture_blob, opt.manifest_blob, temp.display());
     println!("COMPILE_EXIT={:?} COMPILE_STDOUT_STDERR:\n{}", compiled.status.code(), diagnostics);
