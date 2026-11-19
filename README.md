@@ -70,7 +70,7 @@ independent Java/LLVM/.NET/Wasm/Forge/Cranelift/JS backends remain
 
 ## Interface/trait receiver conformance target matrix
 
-[Unified `implements` receiver conformance v1](contracts/implements-receiver-conformance-v1.json) carries 20 proposed AttoLang source programs covering actor/class/struct implementation, out-of-line `mtd`, inherited/default methods and fail-closed contracts. [Host-only Node test](tests/implements-receiver-conformance-v1.test.mjs) validates the registry. **No compiler or guest run has executed for these cases; all backends remain NOT_EXECUTED.** See [atto-spec contract](https://github.com/atto-lang/atto-spec/blob/feat/implements-receiver-contract-v1-20261118/language/implements-receiver-conformance-v1.md).
+[Unified `implements` receiver conformance v1](contracts/implements-receiver-conformance-v1.json) carries 29 proposed AttoLang source programs covering actor/class/struct implementation, out-of-line `mtd`, inherited/default methods and fail-closed contracts. [Host-only Node test](tests/implements-receiver-conformance-v1.test.mjs) validates the registry. **No compiler or guest run has executed for these cases; all backends remain NOT_EXECUTED.** See [atto-spec contract](https://github.com/atto-lang/atto-spec/blob/feat/implements-receiver-contract-v1-20261118/language/implements-receiver-conformance-v1.md).
 
 ## Validation
 
