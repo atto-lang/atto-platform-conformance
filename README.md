@@ -145,3 +145,28 @@ This proof is restricted to a **native-hosted Rust compiler generating
 Wasm guests**. It is not browser-hosted compiler execution or independent
 Java/LLVM/.NET/Forge/Wasm backend verification. General required-field,
 struct value-layout, and exceptional cleanup proofs are separate milestones.
+
+
+## Hardened constructor final-field admission v2
+
+`contracts/constructor-definite-final-admission-v2.json` extends the constructor
+v1 contract with nine portable `.atto` source cases: two positive compiled
+Wasm guest programs using multiple deferred `final` fields and a preinitialized
+field, plus seven negative branch, read-before-write, or missing `val`/`let`/
+`const` initializer cases. Source-level missing non-`final` initializers are
+rejected by the parser; the Rust checker additionally rejects synthesized
+invalid AST fields to avoid silently accepting zero-filled storage.
+
+The exact checked-in fixture Git tree was verified and all cases compiled
+with the *merged* Rust compiler in
+[private carrier run #44458895446](https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/44458895446).
+The 20 focused Rust tests and two initial conformance integrity tests passed;
+two guests returned 42 and seven negative programs emitted no Wasm.
+The corresponding
+[full exact-tree run #44458275142](https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/44458275142)
+passed 577 Rust tests on 703 matching source/test Git blobs, including a
+checker test bypassing the parser.
+
+These results verify the **native-hosted Rust compiler emitting Wasm**. They
+do not prove a wasm32-hosted compiler, independent Java/LLVM/.NET/Forge/Wasm
+backends, or general exception-cleanup and struct-construction safety.
