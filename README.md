@@ -42,6 +42,32 @@ and [atto-format #16](https://github.com/atto-lang/atto-format/pull/16).
 
 - [Class-field binding defaults v2](contracts/class-field-binding-defaults-v2.json): canonical implicit-`val` target, 4 SHA-matched `.atto` fixtures, 422-passing Rust native tests, and executed compiled WebAssembly guest. Cross-package linking and other backends remain NOT_VERIFIED.
 
+## Under-construction self publication guard
+
+`contracts/constructor-self-publication-v1.json` records negative `.atto`
+cases for escaping a constructor's under-construction `self` through a function
+argument or invoking methods on that object before publication. Valid direct
+`self.field` initialization remains permitted. The normative contract is
+[atto-spec's constructor design](https://github.com/atto-lang/atto-spec/blob/main/language/out-of-line-receivers-constructors-and-state-v1.md).
+
+The Rust compiler's [PR #359](https://github.com/atto-lang/atto-source.rs/pull/359)
+implemented a conservative `E_OWNERSHIP` gate and passed its actual
+[private exact-blob Rust / compiled-Wasm run](https://github.com/gha-indie-worker/atto-ci/actions/runs/44444349850).
+The two portable negative `.atto` fixtures were independently executed
+against the native Rust compiler in
+[private exact-blob run #44444993654](https://github.com/gha-indie-worker/atto-ci/actions/runs/44444993654):
+49 blobs matched before/after, 10 Rust focused tests passed, 4 positive
+compiled WebAssembly guests ran, and both negative cases returned
+`E_OWNERSHIP` without creating guest artifacts. This proof is scoped to
+the Rust **native-hosted** compiler; the Rust browser-hosted compiler and
+independent Java/LLVM/.NET/Wasm/Forge/Cranelift/JS backends remain
+`NOT_EXECUTED`.
+
+## Tuple destructuring target registry
+
+- [Tuple destructuring v1](contracts/tuple-destructuring-v1.json): 33 acceptance/rejection cases spanning binding modes, aliases, const and ownership. On the **exact Rust/browser-Wasm compiler SHA `4fd0a231d475ae45f819f8ee304cbc680b6dfd93`**, [executed CI run 44444944421](https://github.com/usa-acc/atto-ci/actions/runs/44444944421) proved **29 passed** (15 positive compiled-and-executed Wasm guests and 14 expected negative diagnostics), **4 unsupported** (non-Copy object tuples), **0 failed**, using 60/60 exact compiler blobs and 2/2 exact conformance-input blobs. [Machine-readable receipt](evidence/tuple/rs-browser-wasm-4fd0a231-20261118.json) preserves all cases, and [Node contract test](tests/tuple-destructuring-v1.test.mjs) validates receipt provenance and consistency; [guest runner](tests/tuple-destructuring-guest.mjs) performs real compilation and guest execution when provided `ATTOC_BIN` and `ATTO_SOURCE_SHA`. The other five backends remain `not_executed`; case-level aggregate parity stays `not_executed` until independently proven. Do not treat host-only receipt validation as guest execution.
+
+
 ## Validation
 
 Validation should rely on checked-in tests and exact-commit CI results. When reporting parity, distinguish **passed**, **failed**, **unsupported**, and **not executed**. Avoid inferring guest-runtime support from host-only tests.
