@@ -1,0 +1,46 @@
+{
+  "schema": "atto.receiver.constructor.whitespace.v1",
+  "version": 1,
+  "status": "TARGET_NOT_EXECUTED",
+  "owner": "atto-lang/atto-spec",
+  "contract": "https://github.com/atto-lang/atto-spec/pull/98",
+  "semantic_rule": "Lexically equivalent declaration headers bind the same nominal constructor; no spacing-sensitive overloads.",
+  "canonical_header": "constructor (Counter)(int initial): self",
+  "required_cases": [
+    {
+      "id": "owner_adjacent",
+      "kind": "pass",
+      "path": "fixtures/receiver-constructors/pass/owner_adjacent.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "groups_spaced",
+      "kind": "pass",
+      "path": "fixtures/receiver-constructors/pass/groups_spaced.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "keyword_compact",
+      "kind": "pass",
+      "path": "fixtures/receiver-constructors/pass/keyword_compact.atto",
+      "expected_exit": 42
+    },
+    {
+      "id": "duplicate_spacing",
+      "kind": "fail",
+      "path": "fixtures/receiver-constructors/fail/duplicate_spacing.atto",
+      "expected_error": "E_DUPLICATE"
+    }
+  ],
+  "backend_status": {
+    "rs-browser": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED"
+  },
+  "evidence_rule": "No backend is PASS until an exact-source SHA guest compiler executes real positive and negative cases with nonempty verified CI steps; source-only models and host-only checks cannot establish guest parity."
+}
