@@ -4,12 +4,14 @@ on:
     paths:
       - 'tools/typed_actor_reply_v1.rs'
       - 'tools/unary_reply_staging_v1.rs'
+      - 'tools/proxy_actor_ack_v1.rs'
       - 'contracts/typed-actor-reply-v1.tsv'
       - '.github/workflows/typed-actor-reply-v1-rust.yml'
   pull_request:
     paths:
       - 'tools/typed_actor_reply_v1.rs'
       - 'tools/unary_reply_staging_v1.rs'
+      - 'tools/proxy_actor_ack_v1.rs'
       - 'contracts/typed-actor-reply-v1.tsv'
       - '.github/workflows/typed-actor-reply-v1-rust.yml'
 permissions:
@@ -29,5 +31,7 @@ jobs:
           /tmp/typed_actor_reply_tests
           rustc --edition=2021 --test tools/unary_reply_staging_v1.rs -o /tmp/unary_reply_staging_tests
           /tmp/unary_reply_staging_tests
+          rustc --edition=2021 --test -D warnings tools/proxy_actor_ack_v1.rs -o /tmp/proxy_actor_ack_tests
+          /tmp/proxy_actor_ack_tests
           rustc --edition=2021 tools/typed_actor_reply_v1.rs -o /tmp/typed_actor_reply
           /tmp/typed_actor_reply
