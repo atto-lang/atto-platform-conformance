@@ -1,10 +1,11 @@
-// BCV1-003 implicit_borrow pass: target AttoLang semantics, NOT_EXECUTED.
-// Expected success and exit value 42.
-define class Meter as pub let int reading = 42; end
-fnc inspect(Meter item): int { return item.reading; }
+// atto-ownership: borrow-default-v1
+// BCV1-003 implicit_borrow pass: candidate in compiler #346 opt-in profile, NOT_EXECUTED at this head.
+// expect-exit: 42
+define class Meter as pub let int reading = 21; end
+fnc inspect(Meter x): int { return x.reading; }
 pub fnc main(): int {
-  val m = new Meter();
-  val first = inspect(m);
-  val second = inspect(borrow! m);
-  return first + second - 42;
+  let original = new Meter();
+  val inferred = inspect(original);
+  val explicit = inspect(borrow! original);
+  return inferred + explicit;
 }

@@ -66,6 +66,21 @@ These PRs have different ancestry and maturity. This matrix does **not** claim a
 | Forge | NOT_EXECUTED | Needs independent compiler and runtime confirmation |
 | Cranelift, JS, HDL and other declared targets | NOT_EXECUTED | Add rows only with independently proven target admission |
 
+## Compiler-slice audit (updated 18 November 2026)
+
+The *expected test verdict* is not a run result. The TSV's **admission** field now distinguishes candidate feature branches from other target-only fixtures:
+
+| TSV operation | Admission | Exact evidence and remaining gate |
+| --- | --- | --- |
+| `implicit_borrow` (2 cases) | `PROFILE_CANDIDATE_DRAFT` | `atto-source.rs#346` head `d1b88b4e4feb3ba630465380de58eca390747a8a` has exact-head source-carrier evidence, but is **draft**; its temporary `// atto-ownership: borrow-default-v1` header must be on line 1 of each test source |
+| `write_loan` (2 cases) | `PROFILE_CANDIDATE_DRAFT` | `atto-source.rs#347` head `e80e16987d71246d1f8839eccb85b0b52f867985` adds `fnc update(mut Counter p)` and `update(mut counter)` under the same temporary opt-in, and remains **draft/stacked** |
+| `copy_deep` (2 cases) | `COMPILER_CANDIDATE_MERGED` | `atto-source.rs#265` **merged**; only verified **flat scalar-field class** deep copies are admitted. Positive fixture changes the cloned object's field then checks the source stayed `42`; negative checks `E_BORROW` on copying with a live exclusive loan |
+| Other 34 cases | `TARGET_ONLY` | No general compiler admission is inferred. Some tests require future grammar/library APIs, actor-local graph cloning, pointer region types, named lifetimes or suspension proofs |
+
+**Candidate is NOT passed.** The `backend_status` column remains `NOT_EXECUTED` for **every case**. Running the Rust schema validator proves neither compiler admission nor guest behavior. The actual test runner must select the **exact compiler version/profile**, prove each expected rejection is not a lexical/parser surrogate, run guest positives (exit 42) and pin the entire source and artifact digests. Neither a PR #346 carrier receipt nor a merged #265 receipt automatically applies to the new fixture bytes in PR #80.
+
+The known compiler-profile examples were aligned with source fixtures in compiler #346/#347 and the accepted flat-class copy path from compiler #265; they include `expect-exit` / `expect-error` headers. The remaining target-only fixtures are **not** yet executable compiler conformance tests and must stay excluded from admission counts until their precise grammar and backend witnesses are reviewed.
+
 ## Source limitations and test design notes
 
 Some target snippets intentionally exercise language constructs not yet known to be admitted together by current parsers: `Pointer<T>` allocation effects, named `lt!` binders, actual cycle builders, `weak!.upgrade`, `pin!` actor handoffs, out-of-line state callbacks and `await` while an owner is live. They are **acceptance targets**, not claimed runnable test artifacts. Before promoting any case to `EXECUTABLE`, implement or revise its precise accepted grammar; maintain at least one wrong-capability negative in the same feature family. Do not modify an expected failure into a different, easier parser failure to get a green result.

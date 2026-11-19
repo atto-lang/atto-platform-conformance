@@ -1,8 +1,14 @@
-// BCV1-016 copy_deep fail: target AttoLang semantics, NOT_EXECUTED.
-// Expected compiler rejection E_COPY_GRAPH_UNPROVEN with NO guest artifact.
-define class Resource as pub let Pointer<int> ptr; end
+// BCV1-016 copy_deep fail: cannot deep-copy a class owner during a live exclusive loan.
+// expect-error: E_BORROW
+// java: rejects
+define class Parcel as
+  pub let int value = 42;
+end
 pub fnc main(): int {
-  val r = new Resource();
-  val q = copy!! r; // raw/foreign resource graph has no DeepCopyable proof
-  return 42;
+  let original = new Parcel();
+  block {
+    val writer = borrow! mut original;
+    val illegal = copy!! original;
+    return illegal.value;
+  }
 }

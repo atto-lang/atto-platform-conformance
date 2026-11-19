@@ -40,7 +40,13 @@ fn complete_pairwise_coverage() {
         assert!(!c.operation.is_empty());
         assert!(c.spec.contains('#'), "missing PR provenance for {}", c.id);
         assert_eq!(c.status, "NOT_EXECUTED", "unproven backend success for {}", c.id);
-        assert_eq!(c.admission, "TARGET_ONLY", "never infer compiler admission from a static registry");
+        // Candidate identifies a known compiler slice, NOT an executed result.
+        let expected_admission = match c.operation {
+            "implicit_borrow" | "write_loan" => "PROFILE_CANDIDATE_DRAFT",
+            "copy_deep" => "COMPILER_CANDIDATE_MERGED",
+            _ => "TARGET_ONLY",
+        };
+        assert_eq!(c.admission, expected_admission, "unexpected compiler admission label for {}", c.id);
         match c.verdict {
             "PASS" => assert_eq!(c.oracle, "RETURNS_42"),
             "REJECT" => assert!(c.oracle.starts_with("E_"), "no rejection diagnostic: {}", c.id),
@@ -66,7 +72,20 @@ fn fixtures_exist_and_match_case_identity() {
         assert!(c.fixture.contains(expected_dir), "fixture directory disagrees with verdict");
         let path = root.join(c.fixture);
         let source = std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
-        assert!(source.starts_with(&format!("// {}", c.id)), "missing case identity: {}", c.id);
+        let first = source.lines().next().unwrap_or_default();
+        let id_header = format!("// {}", c.id);
+        if c.admission == "PROFILE_CANDIDATE_DRAFT" {
+            // The Rust/Wasm compiler's experimental opt-in MUST be physical line 1.
+            assert_eq!(first, "// atto-ownership: borrow-default-v1", "migration profile missing for {}", c.id);
+            assert!(source.lines().nth(1).unwrap_or_default().starts_with(&id_header), "case identity must follow profile: {}", c.id);
+        } else {
+            assert!(first.starts_with(&id_header), "missing case identity: {}", c.id);
+        }
+        if c.admission != "TARGET_ONLY" {
+            let oracle = if c.verdict == "PASS" { "// expect-exit: 42".to_owned() }
+                         else { format!("// expect-error: {}", c.oracle) };
+            assert!(source.lines().take(5).any(|line| line == oracle), "compiler-candidate oracle header mismatch for {}", c.id);
+        }
         assert!(source.contains(&format!(" {} ", c.operation)), "wrong operation header: {}", c.id);
         assert!(source.contains("pub fnc main()"), "no standalone main(): {}", c.id);
         assert!(source.ends_with('\n'), "no trailing newline: {}", c.id);

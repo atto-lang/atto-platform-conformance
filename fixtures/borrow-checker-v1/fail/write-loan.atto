@@ -1,10 +1,11 @@
-// BCV1-008 write_loan fail: target AttoLang semantics, NOT_EXECUTED.
-// Expected compiler rejection E_BORROW with NO guest artifact.
-define class Meter as pub let int reading = 1; end
+// atto-ownership: borrow-default-v1
+// BCV1-008 write_loan fail: live read loan conflicts with exclusive call loan, NOT_EXECUTED at this head.
+// expect-error: E_BORROW
+define class Counter as pub mut int value = 1; end
+fnc update(mut Counter p): void { p.value = 42; }
 pub fnc main(): int {
-  val mut m = new Meter();
-  val reader = borrow! m;
-  val writer = borrow! mut m; // conflicts with live shared loan
-  writer.reading = 42;
-  return reader.reading;
+  let counter = new Counter();
+  val view = borrow! counter;
+  update(mut counter);
+  return view.value;
 }
