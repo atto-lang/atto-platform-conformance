@@ -12,3 +12,46 @@ rustc --edition=2021 tools/typed_actor_v1.rs -o /tmp/typed_actor_oracle
 ```
 
 This verifier must never be used to promote Java/LLVM/.NET/Wasm/Forge support. Each backend requires independently executed compile-positive, compile-negative and runtime guest traces with exact compiler SHA, toolchain and target, and real CONTROL/mailbox evidence. Existing Java `ActorRef<ActorClass>` must remain compatible until an explicit migration plan is proven.
+
+## Canonical source identity and backend admission (v1)
+
+**11 separate source repositories were independently inventoried.** The snapshot
+`contracts/atto-source-backend-typed-actor-v1.tsv` pins each repository's
+observed `main` SHA and its current architectural role. Every typed-actor
+guest-parity status is deliberately `NOT_EXECUTED`. This means *not proven*,
+not that no individual feature works. Source revisions must be refreshed
+before any later exact-head execution. The Rust gate
+`tools/typed_actor_backend_inventory.rs` refuses missing repos, incorrect
+SHAs, or a fake `PASSED` status.
+
+The original 15 candidate `.atto` fixtures are independently pinned by
+`tools/typed_actor_fixture_identity.rs`. This fail-closed Rust test validates
+real Git blob bytes, the checked-out regular-file mode, the stage-zero
+Git index identity and one-byte mutation denial. A successful hash or
+reference-oracle test establishes **source identity only**.
+
+Backend progress remains capability-specific:
+- **Rust/Wasm compiler:** [atto-source.rs #216](https://github.com/atto-lang/atto-source.rs/pull/216) adds bounded typed actor header/receiver checks but does not implement all 15 cases or complete supervisor control routing.
+- **JavaScript trusted-host subset:** [atto-source.js #31](https://github.com/atto-lang/atto-source.js/pull/31) proposes an executable `receives int` header matching its *existing* concrete `ActorMail<int>` route. This is not an independent browser Wasm compiler or proof of forged-CONTROL isolation.
+- **Wasm adapter:** `atto-source.wasm` integrates the compiler/artifact path rather than supplying an independently equivalent second compiler.
+- **Self-hosting, .NET, HDL, realtime and other native backends** retain independent proof obligations and cannot be promoted from another backend's host tests.
+
+To run only the Rust source validation **inside this repository**:
+
+```sh
+rustc --edition=2021 --test tools/typed_actor_fixture_identity.rs -o /tmp/atto_actor_fixture_tests
+/tmp/atto_actor_fixture_tests
+rustc --edition=2021 --test tools/typed_actor_backend_inventory.rs -o /tmp/atto_backend_inventory_tests
+/tmp/atto_backend_inventory_tests
+rustc --edition=2021 --test tools/typed_actor_v1.rs -o /tmp/atto_actor_oracle_tests
+/tmp/atto_actor_oracle_tests
+```
+
+**Promotion criteria:** for each actual backend and each supported test
+provide exact source commit/root tree SHA, independent compiler artifact
+SHA-256, the canonical fixture blob SHA, workflow run/job/attempt with
+nonzero executed build/test steps, observed compiler positive/negative
+result, native/Wasm **guest execution** as applicable, and authenticated
+supervisor CONTROL-vs-DATA evidence for runtime tests. Compiler frontends,
+host reference models, generated JavaScript host modules, and zero-step jobs
+must be reported independently, not as interchangeable guest parity.
