@@ -58,6 +58,13 @@
       "verification": "COMPILER_REJECT_NO_ARTIFACT"
     },
     {
+      "id": "val_mut_field_reassignment",
+      "kind": "fail",
+      "path": "fixtures/class-fields/fail/val_mut_field_reassignment.atto",
+      "expected_error": "E_IMMUTABLE",
+      "verification": "COMPILER_REJECT_NO_ARTIFACT"
+    },
+    {
       "id": "final_reassignment",
       "kind": "fail",
       "path": "fixtures/class-fields/fail/final_field_reassignment.atto",
@@ -87,12 +94,12 @@
     }
   ],
   "backend_status": {
-    "rs-browser": "PARSER_SUBSET_ONLY_NOT_GUEST_VERIFIED",
+    "rs-browser": "PARSER_AND_CHECKER_PARTIAL_TESTS_NOT_EXECUTED",
     "java": "NOT_VERIFIED",
     "llvm": "NOT_VERIFIED",
     "net": "NOT_VERIFIED",
     "wasm-independent": "NOT_VERIFIED",
     "forge": "NOT_VERIFIED"
   },
-  "evidence_rule": "Only real compiler diagnostics with no artifact, and real executed compiled guests pinned to SHA count as backend conformance. Parser AST tests are not guest execution. Unsupported syntax must reject, not fake success."
+  "evidence_rule": "No backend is reported guest-verified by this registry. Source Rust PR #352 adds parser/checker test coverage; Actions admission failures prevented execution. Only real compiler diagnostics with no artifact and real executed compiled guests pinned to SHA count as conformance."
 }
