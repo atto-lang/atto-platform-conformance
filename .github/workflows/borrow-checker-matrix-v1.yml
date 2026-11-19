@@ -1,5 +1,19 @@
 name: Borrow-checker v1 static contract (Rust)
 on:
+  # Token-free exact-blob mirrors use a private carrier branch with this prefix.
+  # Restrict execution to this fixture tree; never clone a private source org.
+  push:
+    branches:
+      - 'ci/borrow-checker-v1-*'
+    paths:
+      - 'contracts/borrow-checker-v1.tsv'
+      - 'fixtures/borrow-checker-v1/**'
+      - 'docs/BORROW_CHECKER_CONFORMANCE_V1.md'
+      - 'tests/borrow_checker_matrix_v1.rs'
+      - 'bin/run_borrow_checker_matrix.rs'
+      - 'bin/borrow_guest_exit.mjs'
+      - 'tests/borrow_guest_exit_v1.test.mjs'
+      - '.github/workflows/borrow-checker-matrix-v1.yml'
   pull_request:
     paths:
       - 'contracts/borrow-checker-v1.tsv'
@@ -23,7 +37,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
-      - uses: actions/setup-node@49933ea5288ca8642d1e84afbd3f7d6820020
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
       - name: Node-only synthetic Wasm runner checks (not Atto guest conformance)
