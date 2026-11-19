@@ -4,7 +4,7 @@
 
 const MODES = new Set(["off", "probes", "deep"]);
 const TRUSTED_PRODUCERS = new Set(["validated-wasm", "truffle-isolate"]);
-const FORBIDDEN_ATTRIBUTE = /(^|\.)(payload|body|password|passwd|secret|token|authorization|cookie|api[_-]?key|credential)s?$/i;
+const FORBIDDEN_ATTRIBUTE = /(^|\.)(payload|body|password|passwd|secret|token|authorization|cookie|api[_-]?key|credential|parameters|query|path|baggage|__proto__|constructor|prototype)s?(\.|$)/i;
 const TRACEPARENT = /^00-([0-9a-f]{32})-([0-9a-f]{16})-([0-9a-f]{2})$/;
 
 function fail(code) { throw new Error(code); }
@@ -13,6 +13,7 @@ function positive(n) { return Number.isSafeInteger(n) && n > 0; }
 export class InstrumentationReference {
   #functions = new Map(); // fnId -> record
   #compiling = new Map(); // tenant -> active compile count
+  #jobs = new WeakMap(); // authenticated host-only ticket identity -> mutable state
   #maxCompiles;
   #nextVersion = 1;
 
@@ -26,7 +27,7 @@ export class InstrumentationReference {
     if (this.#functions.has(fnId)) fail("DUPLICATE_FUNCTION");
     const aot = {id: this.#nextVersion++, kind: "aot", leases: 0, retired: false};
     this.#functions.set(fnId, {fnId, tenant, untrusted, deepEligible, realtime, aot,
-      active: aot, live: new Set([aot]), probes: false});
+      active: aot, live: new Set([aot]), probes: false, mode: "off", revision: 0});
   }
 
   #authorize(principal, tenant) {
@@ -41,6 +42,7 @@ export class InstrumentationReference {
     this.#authorize(principal, tenant);
     if (!MODES.has(mode)) fail("UNKNOWN_MODE");
     if (!Array.isArray(fnIds) || fnIds.length === 0) fail("EMPTY_SCOPE");
+    if (new Set(fnIds).size !== fnIds.length) fail("DUPLICATE_SCOPE_FUNCTION");
     const records = fnIds.map(id => {
       const r = this.#functions.get(id);
       if (!r) fail("UNKNOWN_FUNCTION");
@@ -56,22 +58,36 @@ export class InstrumentationReference {
       const busy = this.#compiling.get(tenant) ?? 0;
       if (busy + records.length > this.#maxCompiles) fail("COMPILE_QUOTA");
     }
-    if (mode === "off") {
-      for (const r of records) { r.probes = false; this.#switch(r, r.aot); }
+    // An OFF/PROBES/DEEP transition fences outstanding compiler tickets.
+    for (const r of records) { r.revision++; r.mode = mode; }
+    if (mode === "off" || mode === "probes") {
+      for (const r of records) {
+        r.probes = mode === "probes";
+        this.#switch(r, r.aot);
+      }
       return [];
     }
-    if (mode === "probes") { for (const r of records) r.probes = true; return []; }
+    for (const r of records) r.probes = false;
     this.#compiling.set(tenant, (this.#compiling.get(tenant) ?? 0) + records.length);
-    return records.map(r => Object.freeze({fnId: r.fnId, tenant, state: {done: false}}));
+    return records.map(r => {
+      const job = Object.freeze({fnId: r.fnId, tenant});
+      this.#jobs.set(job, {done: false, revision: r.revision});
+      return job;
+    });
   }
 
   // Runs on the compile service, never on an actor thread. `artifact` is what
   // the producer returned, or an Error if compilation failed.
   complete(job, artifact) {
-    if (job.state.done) fail("JOB_ALREADY_COMPLETE");
-    job.state.done = true;
+    const ticket = job && this.#jobs.get(job);
+    if (!ticket) fail("UNRECOGNIZED_COMPILE_JOB");
+    if (ticket.done) fail("JOB_ALREADY_COMPLETE");
+    ticket.done = true;
     this.#compiling.set(job.tenant, this.#compiling.get(job.tenant) - 1);
     const r = this.#functions.get(job.fnId);
+    // An operator change always wins over an in-progress compilation.
+    if (r.revision !== ticket.revision || r.mode !== "deep")
+      return {installed: false, reason: "POLICY_REVOKED"};
     // AOT stays authoritative: any failure leaves the current version running.
     if (artifact instanceof Error) return {installed: false, reason: "COMPILE_FAILED"};
     if (!artifact || artifact.fnId !== job.fnId || artifact.tenant !== job.tenant)
@@ -127,7 +143,11 @@ export class TelemetryBuffer {
   redacted = 0;
 
   constructor({capacity, allowedAttributes, maxValuesPerKey = 64}) {
-    if (!positive(capacity) || !positive(maxValuesPerKey)) fail("INVALID_BUFFER");
+    if (!positive(capacity) || capacity > 65536 || !positive(maxValuesPerKey)
+        || maxValuesPerKey > 64 || !Array.isArray(allowedAttributes)
+        || allowedAttributes.length > 64
+        || allowedAttributes.some(k => typeof k !== "string" || k.length > 128))
+      fail("INVALID_BUFFER");
     this.#capacity = capacity;
     this.#allowed = new Set(allowedAttributes);
     this.#maxValuesPerKey = maxValuesPerKey;
@@ -135,9 +155,11 @@ export class TelemetryBuffer {
 
   record(name, attributes = {}) {
     if (this.#events.length >= this.#capacity) { this.dropped++; return false; }
+    if (typeof name !== "string" || name.length > 128) { this.redacted++; return false; }
     const kept = {};
     for (const [k, v] of Object.entries(attributes)) {
-      if (FORBIDDEN_ATTRIBUTE.test(k) || !this.#allowed.has(k) ||
+      if (FORBIDDEN_ATTRIBUTE.test(k) || k.length > 128 || !this.#allowed.has(k) ||
+          (typeof v === "string" && v.length > 256) ||
           !(typeof v === "string" || Number.isSafeInteger(v) || typeof v === "boolean")) {
         this.redacted++; continue;
       }
