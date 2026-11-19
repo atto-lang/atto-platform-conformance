@@ -1,0 +1,36 @@
+{
+  "schema": "atto.out-of-line-constructor-self-publication.v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "authority": "atto-lang/atto-spec/language/out-of-line-receivers-constructors-and-state-v1.md",
+  "safety_rule": "An under-construction class instance cannot escape through an alias, a function call, a return, or a method dispatch until full initialization is proven.",
+  "required_cases": [
+    {
+      "id": "escape_self_reference",
+      "kind": "fail",
+      "expected_error": "E_OWNERSHIP",
+      "path": "fixtures/receiver-constructors/fail/escape_self_reference.atto"
+    },
+    {
+      "id": "method_before_publication",
+      "kind": "fail",
+      "expected_error": "E_OWNERSHIP",
+      "path": "fixtures/receiver-constructors/fail/method_before_publication.atto"
+    }
+  ],
+  "existing_valid_initializer": "fixtures/receiver-constructors/pass/owner_adjacent.atto",
+  "backend_status": {
+    "rs-native-guest": "NOT_EXECUTED",
+    "rs-browser-hosted": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED"
+  },
+  "evidence_note": "Rust compiler PR #359 passed 10 focused Rust tests and four actual Wasm guests with 45 exact mirrored blobs; the two new standalone portable negative fixtures need independent run receipts before their own execution status can be updated. No other backend parity claimed.",
+  "source_pr": "https://github.com/atto-lang/atto-source.rs/pull/359",
+  "source_merge_sha": "f9fe6444757be712f99586b99f89b41dc884b037",
+  "carrier_run_url": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44444349850"
+}
