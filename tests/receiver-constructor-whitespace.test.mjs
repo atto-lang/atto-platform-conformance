@@ -37,3 +37,26 @@ test('different whitespace never introduces another constructor overload', () =>
   assert.match(source, /constructor \(Counter\)\(\): self/);
   assert.match(source, /constructor\(Counter\) \(\): self/);
 });
+
+test('focused native Rust-to-Wasm guest receipt is scoped, exact SHA pinned and never mistaken for browser parity', () => {
+  const receipt = c.focused_guest_evidence;
+  assert.equal(receipt.scope, 'RUST_NATIVE_COMPILER_TO_EXECUTED_WASM_GUEST');
+  assert.equal(receipt.outcome, 'PASS');
+  for (const sha of [receipt.compiler_merge_sha, receipt.compiler_tree_sha, receipt.carrier_commit])
+    assert.match(sha, /^[0-9a-f]{40}$/);
+  assert.equal(receipt.run_id, 44436599781);
+  assert.equal(receipt.job_id, 135266908797);
+  assert.equal(receipt.github_actions_result, 'success');
+  assert.equal(receipt.exact_source_blobs_verified_before_and_after, 39);
+  assert.deepEqual(receipt.rust_tests, {total:8,passed:8,failed:0});
+  assert.deepEqual(receipt.guest_positive_cases,
+    ['owner_adjacent','groups_spaced','keyword_compact','canonical_987']);
+  assert.equal(receipt.guest_return_value, '42n');
+  assert.match(receipt.guest_equivalent_wasm_sha256, /^[0-9a-f]{64}$/);
+  assert.equal(receipt.guest_negative_diagnostic, 'E_DUPLICATE');
+  assert.equal(receipt.guest_negative_artifact, 'NONE');
+  assert.equal(receipt.source_only_test_evidence.node_tests, 32);
+  assert.equal(c.backend_status['rs-browser'], 'NOT_EXECUTED',
+    'native-hosted source compiler execution is not browser-hosted compiler execution');
+  assert.ok(receipt.excludes.includes('wasm32-browser-hosted-compiler'));
+});
