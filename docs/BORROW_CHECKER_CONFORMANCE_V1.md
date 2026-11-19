@@ -84,11 +84,25 @@ The runner verifies both the compiler and fixture checkout Git HEAD/root tree be
 
 The included workflow only runs **host Rust unit tests** for this runner; it never substitutes those tests for a real configured compiler/guest invocation. An authorized, exact-tree carrier runner must supply the actual compiler artifact, runtime and reviewed command before backend conformance can be promoted.
 
-## Initial backend execution status for these exact fixtures
+## Executed native-Rust compiler to Wasm-guest evidence (19 November 2026 UTC)
+
+**The first six compiler-aligned acceptance cases are now actually verified**, not merely drafted. The private, source-exact carrier [CI run #44446731449](https://github.com/gha-indie-worker/atto-ci/actions/runs/44446731449) completed both compiler jobs successfully: **three genuine compiled Wasm guests returned 42**, and **three negative programs produced the correct `E_*` ownership diagnostic with zero output artifacts**. See the [machine-readable, per-case receipt](../contracts/borrow-checker-execution-v1.tsv) for source/fixture Git blob IDs, compiler source HEAD and tree SHAs, compiler executable SHA-256, generated guest SHA-256, exact CI run and job IDs.
+
+| Family | Positive execution | Negative semantic rejection | Exact compiler source |
+| --- | --- | --- | --- |
+| `implicit_borrow` | `BCV1-003` main returned 42 | `BCV1-004` `E_MOVED`; no artifact | Rust compiler #347 at `e80e1698...` (draft migration profile) |
+| `write_loan` | `BCV1-007` main returned 42 | `BCV1-008` `E_BORROW`; no artifact | Rust compiler #347 at `e80e1698...` (draft migration profile) |
+| `copy_deep` (flat class only) | `BCV1-015` main returned 42 | `BCV1-016` `E_BORROW`; no artifact | Rust compiler #265 at `a4365d1d...` |
+
+The verified source conformance **snapshot** is `7adbc6341d408236d9f8bcb705def915db5e22ab` with full Git root tree `de57c0a7f46d2b2a1cbd830e032fc0587b67c80d`. This is a **native-hosted Rust compiler generating WebAssembly which was genuinely executed using the Node Atto guest ABI adapter**. It does **not** prove the independently built wasm32 compiler emits identical bytes, general recursive graph copy, Java/JVM or Native Image, LLVM, .NET Native AOT, Forge, or other backend parity. Compiler #346/#347 remain draft and versioned opt-in; no unversioned language-wide borrowing behavior is claimed. The remaining **34 target-only cases stay `NOT_EXECUTED`**.
+
+The registry's `backend_status` now uses `VERIFIED_NATIVE_RUST_TO_WASM_GUEST` for exactly these six candidates; the separate receipt identifies the backend and exact tested source. This label does not certify parity across other backends. The independent host-test carrier [CI #44445951203](https://github.com/gha-indie-worker/atto-ci/actions/runs/44445951203) also executed and passed **7 Node adapter, 4 Rust matrix and 4 Rust runner unit tests** on the same prior fixture tree (15/15). Updated receipt-validation tests require their own fresh exact-head CI before being considered passed.
+
+## Backend-specific execution status (exact-source receipts)
 
 | Backend | Initial status | Note |
 | --- | --- | --- |
-| Rust/browser compiler and generated Wasm | NOT_EXECUTED | Some narrower operations have separate verified evidence, not these fixtures |
+| Native Rust compiler to generated Wasm guest | PARTIAL: 6/40 verified | Exact #347 and #265 heads only; 34 target-only cases not executed, no standalone wasm32 compiler differential |
 | Independent Wasm backend | NOT_EXECUTED | Worker/actor semantics need independent compiled guests |
 | Java / GraalVM Native Image | NOT_EXECUTED | Host JVM tests are not Native Image execution |
 | LLVM native | NOT_EXECUTED | Needs compiled native guest and sanitizer/ownership checks |

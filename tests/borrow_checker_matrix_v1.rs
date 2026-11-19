@@ -4,6 +4,15 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
 const MANIFEST: &str = include_str!("../contracts/borrow-checker-v1.tsv");
+const RECEIPTS: &str = include_str!("../contracts/borrow-checker-execution-v1.tsv");
+const VERIFIED_SLICE: &str = "VERIFIED_NATIVE_RUST_TO_WASM_GUEST";
+fn expected_case_status(id: &str) -> &'static str {
+    match id {
+        "BCV1-003" | "BCV1-004" | "BCV1-007" | "BCV1-008" | "BCV1-015" | "BCV1-016" => VERIFIED_SLICE,
+        _ => "NOT_EXECUTED",
+    }
+}
+
 const HEADER: &str = "id\toperation\tverdict\toracle\tfixture\tspec_reference\tbackend_status\tadmission";
 
 #[derive(Debug)]
@@ -39,7 +48,7 @@ fn complete_pairwise_coverage() {
         assert!(paths.insert(c.fixture), "duplicate fixture: {}", c.fixture);
         assert!(!c.operation.is_empty());
         assert!(c.spec.contains('#'), "missing PR provenance for {}", c.id);
-        assert_eq!(c.status, "NOT_EXECUTED", "unproven backend success for {}", c.id);
+        assert_eq!(c.status, expected_case_status(c.id), "unproven or incorrectly generalized backend result for {}", c.id);
         // Candidate identifies a known compiler slice, NOT an executed result.
         let expected_admission = match c.operation {
             "implicit_borrow" | "write_loan" => "PROFILE_CANDIDATE_DRAFT",
@@ -134,11 +143,60 @@ fn canonical_bang_vocabulary_and_implicit_call_loans_are_covered() {
 
 #[test]
 fn do_not_conflate_oracle_with_evidence() {
-    // The integration matrix begins without real source-to-guest evidence.
+    // The only executed slice has exact per-case receipts; all other cases remain unexecuted.
     for c in cases() {
-        assert!(matches!(c.status, "NOT_EXECUTED"));
+        assert_eq!(c.status, expected_case_status(c.id));
         assert!(matches!(c.verdict, "PASS" | "REJECT"));
         assert_ne!(c.oracle, "PASSED");
         assert_ne!(c.oracle, "UNSUPPORTED");
+    }
+}
+
+#[test]
+fn native_rust_wasm_guest_receipts_bind_exact_case_blobs() {
+    let mut entries = RECEIPTS.lines();
+    assert_eq!(entries.next(), Some("id\tbackend\tresult\tsource_head\tsource_tree\tcompiler_head\tcompiler_tree\tcompiler_sha256\tfixture_blob_sha\tguest_artifact_sha256\tdiagnostic\tcarrier_run_id\tcarrier_job_id"));
+    let all = cases();
+    let root = Path::new(file!()).parent().expect("tests/").parent().expect("root/");
+    let mut seen = BTreeSet::new();
+    for line in entries {
+        let f: Vec<&str> = line.split('\t').collect();
+        assert_eq!(f.len(), 13, "malformed exact execution receipt");
+        let c = all.iter().find(|c| c.id == f[0]).expect("receipt must reference real case");
+        assert_eq!(c.status, VERIFIED_SLICE);
+        assert!(seen.insert(f[0]), "duplicated executed case");
+        assert_eq!(f[1], "native_rust_compiler_to_wasm_guest");
+        assert_eq!(f[3], "7adbc6341d408236d9f8bcb705def915db5e22ab");
+        assert_eq!(f[4], "de57c0a7f46d2b2a1cbd830e032fc0587b67c80d");
+        for i in [3, 4, 5, 6, 8] {
+            assert_eq!(f[i].len(), 40, "short Git SHA in {}", c.id);
+            assert!(f[i].bytes().all(|b| b.is_ascii_hexdigit()));
+        }
+        assert_eq!(f[7].len(), 64, "compiler binary SHA-256 missing");
+        assert!(f[7].bytes().all(|b| b.is_ascii_hexdigit()));
+        assert_eq!(f[11], "44446731449");
+        match c.verdict {
+            "PASS" => {
+                assert_eq!(f[2], "GUEST_EXIT_42");
+                assert_eq!(f[9].len(), 64);
+                assert_eq!(f[10], "-");
+            }
+            "REJECT" => {
+                assert_eq!(f[2], "NO_ARTIFACT_REJECTION");
+                assert_eq!(f[9], "-");
+                assert_eq!(f[10], c.oracle);
+            }
+            _ => panic!("unsupported verdict"),
+        }
+        let path = root.join(c.fixture);
+        let output = std::process::Command::new("git").arg("hash-object").arg(&path)
+            .output().expect("git hash-object must execute");
+        assert!(output.status.success(), "cannot hash receipt fixture {}", c.id);
+        let actual = String::from_utf8(output.stdout).expect("UTF-8 blob SHA");
+        assert_eq!(actual.trim(), f[8], "receipt fixture bytes drifted: {}", c.id);
+    }
+    assert_eq!(seen.len(), 6, "exactly six admitted fixture receipts");
+    for c in all {
+        assert_eq!(seen.contains(c.id), c.status == VERIFIED_SLICE);
     }
 }
