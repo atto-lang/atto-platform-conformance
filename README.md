@@ -16,6 +16,8 @@ Execute portable language fixtures and record target-specific results.
 - Use test fixtures and reproducible evidence to distinguish proposed behavior from implemented behavior.
 - Record breaking changes, migration notes, and dependencies on other AttoLang components.
 
+- [Class-field binding defaults v2](contracts/class-field-binding-defaults-v2.json): proposed implicit-`val` migration, exact SHA-linked pass/fail `.atto` fixtures, and backend results marked NOT_EXECUTED until compiled guest verification.
+
 ## Validation
 
 Validation should rely on checked-in tests and exact-commit CI results. When reporting parity, distinguish **passed**, **failed**, **unsupported**, and **not executed**. Avoid inferring guest-runtime support from host-only tests.

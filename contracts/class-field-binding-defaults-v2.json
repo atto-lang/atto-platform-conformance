@@ -1,0 +1,72 @@
+{
+  "schema": "atto.class-field-binding-defaults.v2",
+  "version": 2,
+  "status": "SPEC_PROPOSAL_NOT_EXECUTED",
+  "owner": "atto-lang/atto-spec",
+  "source_spec": {
+    "repository": "atto-lang/atto-spec",
+    "pr": 102,
+    "path": "language/class-field-binding-defaults-v2.md"
+  },
+  "source_compiler": {
+    "repository": "atto-lang/atto-source.rs",
+    "pr": 358,
+    "head_sha": "823fb712bc5bed4d89fbd170bd820e9271a40c61",
+    "tree_sha": "530cdcaa1bd9882ee935c194e64300b04b0fc5ec"
+  },
+  "semantics": {
+    "default_class_field_binding": "val for all primitive, nominal and generic type arguments; no implicit mut",
+    "explicit_rebinding": "let; requires authorized receiver or mutable loan",
+    "referent_mutation": "mut requests independently checked referent-write authority, never implicit name rebinding",
+    "val": "binding fixed, runtime initializer permitted within supported effect profile",
+    "final": "exactly one initialization; deferred assignment only with definite-assignment proof",
+    "const": "compile-time-evaluable class field; no file/module runtime os.read_env exception",
+    "legacy_named_fields": "keep existing semantics pending separate migration",
+    "locals": "type-first local shorthand retains const, not implicit val",
+    "package_access": "private class-only; pub[pkg] authenticated declaring package only; pub exposed if declaring type accessible",
+    "negative_fixture_rule": "Must fail before artifact emission with expected compiler error"
+  },
+  "required_cases": [
+    {
+      "id": "same_package_read_explicit_let_constructor",
+      "kind": "pass",
+      "path": "fixtures/class-fields/v2/pass/class-field-visibility-default-val.atto",
+      "source_path": "tests/fixtures/pass/class-field-visibility-default-val.atto",
+      "source_blob_sha": "1cac9591ba7d6c0fcea73e5193d3b56a76a13e61",
+      "expected_exit": 42
+    },
+    {
+      "id": "implicit_val_ctor_reassign_denied",
+      "kind": "fail",
+      "path": "fixtures/class-fields/v2/fail/class-field-implicit-val-constructor-assign.atto",
+      "source_path": "tests/fixtures/fail/class-field-implicit-val-constructor-assign.atto",
+      "source_blob_sha": "f8ecc3c49abbe3c7cea0e13b56ac0fff137b2797",
+      "expected_error": "E_IMMUTABLE"
+    },
+    {
+      "id": "private_field_outside_class_denied",
+      "kind": "fail",
+      "path": "fixtures/class-fields/v2/fail/class-field-private-outside-class.atto",
+      "source_path": "tests/fixtures/fail/class-field-private-outside-class.atto",
+      "source_blob_sha": "c3f34523b6dba79ec80979b7bf403f5d4ca9e5e6",
+      "expected_error": "E_PRIVATE"
+    },
+    {
+      "id": "class_const_runtime_call_denied",
+      "kind": "fail",
+      "path": "fixtures/class-fields/v2/fail/class-field-const-runtime-call.atto",
+      "source_path": "tests/fixtures/fail/class-field-const-runtime-call.atto",
+      "source_blob_sha": "45fad8ac2f6f93eb0d305178990b8b7a38343f8e",
+      "expected_error": "E_CONST"
+    }
+  ],
+  "backend_status": {
+    "rs-browser": "NOT_EXECUTED",
+    "java": "NOT_VERIFIED",
+    "llvm": "NOT_VERIFIED",
+    "net": "NOT_VERIFIED",
+    "wasm-independent": "NOT_VERIFIED",
+    "forge": "NOT_VERIFIED"
+  },
+  "provenance_policy": "A successful source-free CI probe, parser-only acceptance or host-only test is not compiled guest conformance. Pin source SHA/tree/blob hashes and record executed guest returns or compile diagnostics. Cross-package security requires a real multi-package compiler and cannot be established by these same-file fixtures."
+}
