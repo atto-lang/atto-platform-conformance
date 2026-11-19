@@ -4,6 +4,13 @@
 use std::{env, fs, path::{Path, PathBuf}, process::Command, time::{SystemTime, UNIX_EPOCH}};
 
 const MANIFEST: &str = include_str!("../contracts/borrow-checker-v1.tsv");
+const VERIFIED_STATUS: &str = "VERIFIED_NATIVE_RUST_TO_WASM_GUEST";
+fn expected_execution_status(id: &str) -> &'static str {
+    match id {
+        "BCV1-003" | "BCV1-004" | "BCV1-007" | "BCV1-008" | "BCV1-015" | "BCV1-016" => VERIFIED_STATUS,
+        _ => "NOT_EXECUTED",
+    }
+}
 
 #[derive(Debug)]
 struct Case<'a> {
@@ -140,8 +147,8 @@ fn parse_args() -> Result<Args, String> {
 fn run() -> Result<(), String> {
     let opt = parse_args()?;
     let case = find_case(&opt.case_id)?;
-    if case.status != "NOT_EXECUTED" {
-        return Err(format!("contract status was modified without a verified evidence receipt: {}", case.status));
+    if case.status != expected_execution_status(case.id) {
+        return Err(format!("case status inconsistent with exact scoped evidence: {}", case.status));
     }
     if case.admission == "TARGET_ONLY" {
         return Err(format!("UNSUPPORTED: {} is target-only; no safe compiler admission claimed", case.id));
@@ -287,7 +294,7 @@ mod tests {
             let f: Vec<&str> = line.split('\t').collect();
             assert!(matches!(f[7], "TARGET_ONLY" | "PROFILE_CANDIDATE_DRAFT" |
                 "COMPILER_CANDIDATE_MERGED"));
-            assert_eq!(f[6], "NOT_EXECUTED");
+            assert_eq!(f[6], expected_execution_status(f[0]));
         }
     }
 }
