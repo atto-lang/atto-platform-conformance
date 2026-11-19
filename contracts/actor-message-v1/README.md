@@ -21,6 +21,8 @@ cargo clippy --manifest-path tools/actor-message-contract-v1/Cargo.toml --all-ta
 cargo test --manifest-path tools/actor-message-contract-v1/Cargo.toml
 ```
 
+The Rust test `tests/exact_fixture_blobs.rs` additionally pins the **exact Git blob SHA** for all four portable `.atto` fixtures and checks single-byte mutation detection. It runs as part of `cargo test` and depends only on Git being available on PATH. It hashes the embedded fixture bytes through `git hash-object --stdin`, not a cached index or local branch ref. A green fixture-identity check means **source bytes matched the approved pins**, not that Java or any other backend compiled or executed those files. Cross-repository blob pairing must still be verified against the immutable Java #3126 and conformance #740 PR heads; updating any pin requires independent approval.
+
 The Rust tests are an **abstract oracle and fixture-presence smoke test**, not an Atto parser, source execution, native AOT proof, or end-to-end supervisor authentication test.
 
 **Evidence ledger at creation:** Java PR proposed, Java JUnit **NOT EXECUTED**, reference Rust model **NOT EXECUTED**, LLVM/.NET/Wasm/Forge/Cranelift/Rust/JS/HDL backends **NOT EXECUTED**. No parity passes claimed. All backends need the same exact `.atto` source blobs, actual compiler identities, stepful exact-head test receipts, and verified positive+negative outcomes before promotion. Do not export private source trees to third-party runners without explicit source-side approval.
