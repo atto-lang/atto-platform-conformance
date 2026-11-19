@@ -1,7 +1,7 @@
 {
   "schema": "atto.class-field-binding-defaults.v2",
   "version": 2,
-  "status": "FOCUSED_RS_GUEST_VERIFIED_OTHER_BACKENDS_NOT_VERIFIED",
+  "status": "FULL_RS_TESTS_AND_FOCUSED_GUEST_VERIFIED_OTHER_BACKENDS_NOT_VERIFIED",
   "owner": "atto-lang/atto-spec",
   "source_spec": {
     "repository": "atto-lang/atto-spec",
@@ -11,8 +11,8 @@
   "source_compiler": {
     "repository": "atto-lang/atto-source.rs",
     "pr": 358,
-    "head_sha": "823fb712bc5bed4d89fbd170bd820e9271a40c61",
-    "tree_sha": "530cdcaa1bd9882ee935c194e64300b04b0fc5ec"
+    "head_sha": "5a0c0a7f9da42bcfae2b39a413a5b3a6ef678409",
+    "tree_sha": "5bc06e5d231b2abe2ea002294139d315c996d27f"
   },
   "semantics": {
     "default_class_field_binding": "val for all primitive, nominal and generic type arguments; no implicit mut",
@@ -61,7 +61,7 @@
     }
   ],
   "backend_status": {
-    "rs-browser": "FOCUSED_VERIFIED_SINGLE_SOURCE",
+    "rs-browser": "FULL_NATIVE_RUST_SUITE_FOCUSED_GUEST_VERIFIED",
     "java": "NOT_VERIFIED",
     "llvm": "NOT_VERIFIED",
     "net": "NOT_VERIFIED",
@@ -117,17 +117,59 @@
         }
       ],
       "scope": "Focused browser-subset native compiler + compiled Wasm guest. No all-fixture/full-suite, cross-package linker, wasm32-host-compiler, or other backend parity claim."
+    },
+    {
+      "type": "full_native_rust_suite_exact_blob_mirror",
+      "source_repository": "atto-lang/atto-source.rs",
+      "source_head": "5a0c0a7f9da42bcfae2b39a413a5b3a6ef678409",
+      "source_tree": "5bc06e5d231b2abe2ea002294139d315c996d27f",
+      "mirror_repository": "gha-indie-worker/gha-indie-worker-docs",
+      "mirror_branch": "ci/atto-rs-358-823fb712-20261118",
+      "mirror_commit": "ae9a6e6da7551b0602d09d598d26fec553b54cfc",
+      "run_url": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/44440471287",
+      "run_id": 44440471287,
+      "job_id": 135279744691,
+      "job_conclusion": "success",
+      "verified_git_blob_count": 659,
+      "cargo_test_locked": {
+        "passed": 422,
+        "failed": 0,
+        "executed_summaries": 59
+      },
+      "notes": "Entire Rust source and tests tree, Cargo manifests, 659 exact source blob SHAs, 422 Rust tests including prior shape/nominal preview regressions. This run does not execute all independent guest fixtures or other backends."
+    },
+    {
+      "type": "focused_native_compiler_actual_guest_wasm",
+      "source_repository": "atto-lang/atto-source.rs",
+      "source_head": "5a0c0a7f9da42bcfae2b39a413a5b3a6ef678409",
+      "source_tree": "5bc06e5d231b2abe2ea002294139d315c996d27f",
+      "mirror_repository": "gha-indie-worker/gha-indie-worker-docs",
+      "mirror_commit": "ae9a6e6da7551b0602d09d598d26fec553b54cfc",
+      "run_url": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/44440471318",
+      "run_id": 44440471318,
+      "job_id": 135279744617,
+      "job_conclusion": "success",
+      "verified_git_blob_count": 42,
+      "actual_guest_exit": 42,
+      "negative_errors": [
+        "E_IMMUTABLE",
+        "E_PRIVATE",
+        "E_CONST"
+      ],
+      "all_negative_rejected_before_artifact": true
     }
   ],
   "lint_evidence": {
     "rustfmt": "BASELINE_FAILURE_WIDESPREAD",
     "clippy": "BASELINE_3_ERRORS_WITH_D_WARNINGS",
-    "run_url": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/44436916063",
+    "run_url": "https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/44440471225",
     "clippy_untouched_files": [
       "src/generator_frame.rs",
       "src/target_syntax.rs",
       "src/wasm/generator_runtime.rs"
     ],
-    "note": "The tested feature's targeted Rust/guest checks passed. Formatting and strict Clippy require independent cleanup; do not label the complete source repository green."
+    "note": "Strict Clippy fails with pre-existing warnings in untouched files; rustfmt check likewise fails broadly on baseline files. Full Rust functional suite and focused guest run pass, lint gate not green.",
+    "source_head": "5a0c0a7f9da42bcfae2b39a413a5b3a6ef678409",
+    "status": "BASELINE_UNRESOLVED"
   }
 }
