@@ -1,0 +1,100 @@
+{
+  "schema": "atto.explicit-callable-return-types.v1",
+  "version": 1,
+  "status": "SPEC_ACCEPTED_BACKEND_EXECUTION_PENDING",
+  "owner": "atto-lang/atto-spec",
+  "spec": "language/explicit-callable-return-types-v1.md",
+  "semantics": {
+    "named_callable_return": "mandatory concrete type including void; infer is explicit opt-in",
+    "header_separators": [
+      "->",
+      ":"
+    ],
+    "omitted_return": "E_RETURN_ANNOTATION, no implicit void",
+    "infer": "single statically proven concrete result or E_RETURN_INFER; no emission on ambiguity",
+    "lambda": "contextual inference separately governed by lambda return spec",
+    "constructor": "no return annotation",
+    "formatter": "preserve authored annotation and do not invent void/infer"
+  },
+  "required_cases": [
+    {
+      "id": "function_explicit_void",
+      "kind": "pass",
+      "path": "fixtures/returns/pass/function_void.atto",
+      "expected_exit": 0,
+      "gate": "EXECUTE_COMPILED_GUEST"
+    },
+    {
+      "id": "function_explicit_int",
+      "kind": "pass",
+      "path": "fixtures/returns/pass/function_int.atto",
+      "expected_exit": 42,
+      "gate": "EXECUTE_COMPILED_GUEST"
+    },
+    {
+      "id": "function_infer_int",
+      "kind": "pass",
+      "path": "fixtures/returns/pass/function_infer_int.atto",
+      "expected_exit": 42,
+      "gate": "EXECUTE_COMPILED_GUEST"
+    },
+    {
+      "id": "function_infer_void",
+      "kind": "pass",
+      "path": "fixtures/returns/pass/function_infer_void.atto",
+      "expected_exit": 0,
+      "gate": "EXECUTE_COMPILED_GUEST"
+    },
+    {
+      "id": "method_explicit_void",
+      "kind": "pass",
+      "path": "fixtures/returns/pass/method_void.atto",
+      "expected_exit": 0,
+      "gate": "EXECUTE_COMPILED_GUEST"
+    },
+    {
+      "id": "missing_function_return",
+      "kind": "fail",
+      "path": "fixtures/returns/fail/missing_function_return.atto",
+      "expected_error": "E_RETURN_ANNOTATION",
+      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+    },
+    {
+      "id": "missing_method_return",
+      "kind": "fail",
+      "path": "fixtures/returns/fail/missing_method_return.atto",
+      "expected_error": "E_RETURN_ANNOTATION",
+      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+    },
+    {
+      "id": "missing_receive_return",
+      "kind": "fail",
+      "path": "fixtures/returns/fail/missing_receive_return.atto",
+      "expected_error": "E_RETURN_ANNOTATION",
+      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+    },
+    {
+      "id": "conflicting_infer_return",
+      "kind": "fail",
+      "path": "fixtures/returns/fail/conflicting_infer.atto",
+      "expected_error": "E_RETURN_INFER",
+      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+    },
+    {
+      "id": "opaque_infer_return",
+      "kind": "fail",
+      "path": "fixtures/returns/fail/opaque_infer.atto",
+      "expected_error": "E_RETURN_INFER",
+      "gate": "NO_ARTIFACT_DIAGNOSTIC"
+    }
+  ],
+  "backend_status": {
+    "rs-browser": "PARSER_IMPLEMENTED_BUT_NOT_EXECUTED",
+    "java": "NOT_VERIFIED",
+    "llvm": "NOT_VERIFIED",
+    "net": "NOT_VERIFIED",
+    "wasm-independent": "NOT_VERIFIED",
+    "forge": "NOT_VERIFIED"
+  },
+  "evidence_rule": "Actual guest execution and negative compiler no-artifact diagnostics pinned to exact source/IR/compiler and runtime SHAs required before claiming conformance; parser-only acceptance is not PASS."
+}
