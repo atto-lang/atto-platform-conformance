@@ -172,3 +172,7 @@ checker test bypassing the parser.
 These results verify the **native-hosted Rust compiler emitting Wasm**. They
 do not prove a wasm32-hosted compiler, independent Java/LLVM/.NET/Forge/Wasm
 backends, or general exception-cleanup and struct-construction safety.
+
+## Specification / formatter parity tracking
+
+[Specification-derived formatter matrix](contracts/specification-formatter-conformance-v1.json) tracks rule IDs and negative/positive vectors from atto-spec, separately for atto-format and legacy oreslang-format. **No parser, compiled guest or cross-formatter parity has been executed for this new matrix.** [Protocol](docs/specification-formatter-conformance-v1.md).

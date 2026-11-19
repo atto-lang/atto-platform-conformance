@@ -1,0 +1,222 @@
+{
+  "schema": "atto.specification-formatter-conformance.v1",
+  "schema_version": 1,
+  "status": "TARGET_FIXTURES_NO_CROSS_REPOSITORY_GUEST_OR_PARSER_EXECUTION",
+  "authority": {
+    "repository": "atto-lang/atto-spec",
+    "pull_request": 115,
+    "commit": "dab563bedaaf2ce801b2a2991e3c693f664bb2ab",
+    "registry_path": "contracts/specification-rules-v1.json",
+    "registry_blob_sha": "987dfab669a0cc62b9be2eac5c968116df058a3a"
+  },
+  "source_note": "Snapshot of proposed atto-spec formatter_cases at exact pinned commit; atto-spec is the sole source of truth. Resolve drift by reviewing specs, never treating copied cases as normative.",
+  "backends": [
+    "rs",
+    "llvm",
+    "wasm",
+    "cranelift",
+    "java",
+    "net",
+    "forge",
+    "atto"
+  ],
+  "formatter_consumers": [
+    "atto-lang/atto-format",
+    "ores-truffle-oreslang/oreslang-format"
+  ],
+  "permitted_states": [
+    "passed",
+    "failed",
+    "unsupported",
+    "not_executed"
+  ],
+  "cases": [
+    {
+      "id": "fmt-namespace-before-import",
+      "rules": [
+        "ATTO-SYN-001",
+        "ATTO-FMT-002"
+      ],
+      "source": "use namespace storefront;\nimport * as math from \"./math.atto\";\npub fnc main(): int { return 0; }\n",
+      "expect": "accept",
+      "logical_path": "src/storefront/main.atto",
+      "reason": "namespace header before imports",
+      "status": "not_executed",
+      "evidence": {
+        "rs": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "cranelift": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "atto": "not_executed",
+        "atto-lang/atto-format": "not_executed",
+        "ores-truffle-oreslang/oreslang-format": "not_executed"
+      }
+    },
+    {
+      "id": "fmt-namespace-invalid-order",
+      "rules": [
+        "ATTO-SYN-001",
+        "ATTO-FMT-003"
+      ],
+      "source": "import * as math from \"./math.atto\";\nuse namespace storefront;\n",
+      "expect": "reject",
+      "logical_path": "src/storefront/main.atto",
+      "reason": "late namespace cannot be repaired",
+      "status": "not_executed",
+      "evidence": {
+        "rs": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "cranelift": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "atto": "not_executed",
+        "atto-lang/atto-format": "not_executed",
+        "ores-truffle-oreslang/oreslang-format": "not_executed"
+      }
+    },
+    {
+      "id": "fmt-namespace-duplicate",
+      "rules": [
+        "ATTO-SYN-001",
+        "ATTO-FMT-003"
+      ],
+      "source": "use namespace storefront;\nuse namespace storefront;\n",
+      "expect": "reject",
+      "logical_path": "src/storefront/main.atto",
+      "reason": "duplicate header cannot be silently removed",
+      "status": "not_executed",
+      "evidence": {
+        "rs": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "cranelift": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "atto": "not_executed",
+        "atto-lang/atto-format": "not_executed",
+        "ores-truffle-oreslang/oreslang-format": "not_executed"
+      }
+    },
+    {
+      "id": "fmt-deep-copy-distinction",
+      "rules": [
+        "ATTO-OWN-003",
+        "ATTO-FMT-002"
+      ],
+      "source": "val x = copy! original;\nval y = copy!! original;\n",
+      "expect": "contextual",
+      "reason": "copy operators must retain semantic identity; definitions required",
+      "status": "not_executed",
+      "evidence": {
+        "rs": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "cranelift": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "atto": "not_executed",
+        "atto-lang/atto-format": "not_executed",
+        "ores-truffle-oreslang/oreslang-format": "not_executed"
+      }
+    },
+    {
+      "id": "fmt-ownership-transfer",
+      "rules": [
+        "ATTO-OWN-002",
+        "ATTO-FMT-002"
+      ],
+      "source": "val next = take! owner;\ndrop! next;\n",
+      "expect": "contextual",
+      "reason": "ownership transitions require valid named declarations",
+      "status": "not_executed",
+      "evidence": {
+        "rs": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "cranelift": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "atto": "not_executed",
+        "atto-lang/atto-format": "not_executed",
+        "ores-truffle-oreslang/oreslang-format": "not_executed"
+      }
+    },
+    {
+      "id": "fmt-static-env-const",
+      "rules": [
+        "ATTO-CONST-001",
+        "ATTO-FMT-002"
+      ],
+      "source": "define const string api_host as os.read_env(\"API_HOST\");\n",
+      "expect": "accept",
+      "reason": "static env initializer is not constexpr",
+      "status": "not_executed",
+      "evidence": {
+        "rs": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "cranelift": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "atto": "not_executed",
+        "atto-lang/atto-format": "not_executed",
+        "ores-truffle-oreslang/oreslang-format": "not_executed"
+      }
+    },
+    {
+      "id": "fmt-explicit-return",
+      "rules": [
+        "ATTO-TYPE-001",
+        "ATTO-FMT-002"
+      ],
+      "source": "pub fnc main(): int { return 42; }\n",
+      "expect": "accept",
+      "reason": "retains mandatory explicit result",
+      "status": "not_executed",
+      "evidence": {
+        "rs": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "cranelift": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "atto": "not_executed",
+        "atto-lang/atto-format": "not_executed",
+        "ores-truffle-oreslang/oreslang-format": "not_executed"
+      }
+    },
+    {
+      "id": "fmt-lifetime-context",
+      "rules": [
+        "ATTO-OWN-001",
+        "ATTO-FMT-002"
+      ],
+      "source": "fnc inspect<lifetime! a, T>(Borrow<T, lt=a> value) -> void {}\n",
+      "expect": "contextual",
+      "reason": "formatter alias only where a binder is proven",
+      "status": "not_executed",
+      "evidence": {
+        "rs": "not_executed",
+        "llvm": "not_executed",
+        "wasm": "not_executed",
+        "cranelift": "not_executed",
+        "java": "not_executed",
+        "net": "not_executed",
+        "forge": "not_executed",
+        "atto": "not_executed",
+        "atto-lang/atto-format": "not_executed",
+        "ores-truffle-oreslang/oreslang-format": "not_executed"
+      }
+    }
+  ]
+}
