@@ -94,7 +94,10 @@
     "llvm": "NOT_VERIFIED",
     "net": "NOT_VERIFIED",
     "wasm-independent": "NOT_VERIFIED",
-    "forge": "NOT_VERIFIED"
+    "forge": "NOT_VERIFIED",
+    "cranelift": "NOT_VERIFIED",
+    "js": "NOT_VERIFIED",
+    "hdl": "NOT_VERIFIED"
   },
   "evidence_rule": "Actual guest execution and negative compiler no-artifact diagnostics pinned to exact source/IR/compiler and runtime SHAs required before claiming conformance; parser-only acceptance is not PASS."
 }
