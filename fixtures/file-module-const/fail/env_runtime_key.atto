@@ -1,0 +1,4 @@
+// expect-error: E_CONST
+define const string dynamic_key as os.read_env("ATTO_KEY_SOURCE");
+define const string value = os.read_env(dynamic_key);
+pub fnc main(): int { return 1; }
