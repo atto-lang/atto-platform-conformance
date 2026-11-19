@@ -65,7 +65,7 @@ independent Java/LLVM/.NET/Wasm/Forge/Cranelift/JS backends remain
 
 ## Tuple destructuring target registry
 
-- [Tuple destructuring v1](contracts/tuple-destructuring-v1.json): 33 acceptance/rejection cases spanning binding modes, aliases, const and ownership. On the **exact Rust/browser-Wasm compiler SHA `4fd0a231d475ae45f819f8ee304cbc680b6dfd93`**, [executed CI run 44444944421](https://github.com/usa-acc/atto-ci/actions/runs/44444944421) proved **29 passed** (15 positive compiled-and-executed Wasm guests and 14 expected negative diagnostics), **4 unsupported** (non-Copy object tuples), **0 failed**, using 60/60 exact compiler blobs and 2/2 exact conformance-input blobs. [Machine-readable receipt](evidence/tuple/rs-browser-wasm-4fd0a231-20261118.json) preserves all cases, and [Node contract test](tests/tuple-destructuring-v1.test.mjs) validates receipt provenance and consistency; [guest runner](tests/tuple-destructuring-guest.mjs) performs real compilation and guest execution when provided `ATTOC_BIN` and `ATTO_SOURCE_SHA`. The other five backends remain `not_executed`; case-level aggregate parity stays `not_executed` until independently proven. Do not treat host-only receipt validation as guest execution.
+- [Tuple destructuring v1](contracts/tuple-destructuring-v1.json): 33 acceptance/rejection cases spanning binding modes, aliases, const and ownership. On the **exact final merged Rust/browser-Wasm compiler SHA `026739474d0702d55b02b9772f8b13a7c7b461b0`**, [post-merge CI run 44447960061](https://github.com/usa-acc/atto-ci/actions/runs/44447960061) proved **29 passed** (15 positive compiled-and-executed Wasm guests and 14 expected negative diagnostics), **4 unsupported** (non-Copy object tuples), **0 failed**, using 68/68 exact compiler blobs and 4/4 exact conformance inputs. The earlier [historical receipt](evidence/tuple/rs-browser-wasm-4fd0a231-20261118.json) remains preserved. [Latest machine-readable receipt](evidence/tuple/rs-browser-wasm-02673947-20261118.json) preserves all cases, and [Node contract test](tests/tuple-destructuring-v1.test.mjs) validates receipt provenance and consistency; [guest runner](tests/tuple-destructuring-guest.mjs) performs real compilation and guest execution when provided `ATTOC_BIN` and `ATTO_SOURCE_SHA`. The other five backends remain `not_executed`; case-level aggregate parity stays `not_executed` until independently proven. Do not treat host-only receipt validation as guest execution.
 
 
 ## Validation
@@ -111,3 +111,37 @@ proof only. The browser-hosted compiler and other independent backends
 remain `NOT_EXECUTED`; constructor definite-initialization analysis remains
 a separate work item.
 
+
+
+## Explicit deferred final class constructor fields
+
+`contracts/constructor-definite-final-v1.json` defines 13 portable Atto
+fixtures for the narrow `final int id;` case: three positive constructors
+(direct, `if/else`, and out-of-line) and ten compile-negative cases.
+All other class fields continue to need declaration initializers in the
+current Rust/browser compiler; the accepted v2 implicit `val` default
+is unchanged. The constructor checks both **definitely initialized** and
+**possibly initialized** branch states, rejecting reads before initialization,
+possible double writes and a successful path without all deferred fields set.
+Loops, exception regions and deferred callbacks cannot acquire an unproven
+exactly-once field write capability.
+
+The exact checked-in fixtures were compiled with the native Rust compiler
+and executed in
+[private carrier run #44452651416](https://github.com/gha-indie-worker/atto-ci/actions/runs/44452651416):
+58 source Git blobs verified; three valid guest Wasm programs returned 42;
+all ten negatives failed with expected diagnostics and no Wasm artifacts.
+The fully reconciled compiler's
+[locked Rust regression #44454006529](https://github.com/gha-indie-worker/gha-indie-worker-docs/actions/runs/44454006529)
+passed 547/547 tests on a 697-blob exact source/test Git subtree mirror.
+The **actual merged compiler** was independently rebuilt and run against
+all 13 exact portable fixtures in
+[merged-compiler carrier run #44454811741](https://github.com/gha-indie-worker/atto-ci/actions/runs/44454811741);
+the source Git subtree exactly matched merge commit `57ed0e7`,
+16 focused constructor tests and three receipt tests passed, all three
+compiled guests returned 42, and all ten negatives emitted no artifact.
+
+This proof is restricted to a **native-hosted Rust compiler generating
+Wasm guests**. It is not browser-hosted compiler execution or independent
+Java/LLVM/.NET/Forge/Wasm backend verification. General required-field,
+struct value-layout, and exceptional cleanup proofs are separate milestones.

@@ -47,16 +47,22 @@ test('reported Rust/browser-Wasm outcomes are pinned to an executed, matching re
   assert.match(metadata.source_sha, /^[a-f0-9]{40}$/);
   assert.match(metadata.run_url, /^https:\/\/github.com\/usa-acc\/atto-ci\/actions\/runs\/\d+$/);
   assert.match(metadata.receipt, /^evidence\/tuple\/rs-browser-wasm-[a-f0-9]+-\d+\.json$/);
-  assert.equal(metadata.source_blobs_verified, 60);
-  assert.equal(metadata.conformance_blobs_verified, 2);
+  assert.equal(metadata.source_blobs_verified, 68);
+  assert.equal(metadata.conformance_blobs_verified, 4);
   const receipt = JSON.parse(readFileSync(new URL('../' + metadata.receipt, import.meta.url), 'utf8'));
   assert.equal(receipt.schema_version, 1);
   assert.equal(receipt.contract, registry.contract);
   assert.equal(receipt.source_commit, metadata.source_sha);
+  assert.equal(metadata.source_sha, '026739474d0702d55b02b9772f8b13a7c7b461b0');
+  assert.equal(metadata.previous_receipt, 'evidence/tuple/rs-browser-wasm-4fd0a231-20261118.json');
+  assert.equal(receipt.provenance.source_tree_sha, metadata.source_tree_sha);
+  assert.equal(receipt.provenance.registry_git_blob_sha, metadata.registry_input_blob_sha);
+  assert.equal(receipt.provenance.runner_git_blob_sha, metadata.test_runner_blob_sha);
+
   assert.equal(receipt.provenance.run_url, metadata.run_url);
   assert.equal(receipt.provenance.run_conclusion, 'success');
-  assert.equal(receipt.provenance.source_blobs_verified, 60);
-  assert.equal(receipt.provenance.conformance_blobs_verified, 2);
+  assert.equal(receipt.provenance.source_blobs_verified, 68);
+  assert.equal(receipt.provenance.conformance_blobs_verified, 4);
   assert.equal(receipt.cases.length, registry.cases.length);
   assert.equal(new Set(receipt.cases.map(c => c.id)).size, registry.cases.length);
 
