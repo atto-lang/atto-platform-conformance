@@ -1,0 +1,10 @@
+// BCV1-037 actor_handoff pass: target AttoLang semantics, NOT_EXECUTED.
+// Expected success and exit value 42.
+// TARGET typed mailbox contract; copy!! prepares a detached Sendable graph.
+define class Payload as pub let int value = 42; end
+pub fnc main(): int {
+  val payload = new Payload();
+  val worker = spawn Receiver();
+  worker.send(copy!! payload);
+  return payload.value;
+}

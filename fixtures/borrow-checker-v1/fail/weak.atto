@@ -1,0 +1,8 @@
+// BCV1-026 weak fail: target AttoLang semantics, NOT_EXECUTED.
+// Expected compiler rejection E_WEAK_PROVENANCE with NO guest artifact.
+define class Cell as pub let int value = 42; end
+pub fnc main(): int {
+  val borrowed = borrow! new Cell();
+  val fake_weak = weak! borrowed; // cannot create weak owner from loan
+  return 42;
+}

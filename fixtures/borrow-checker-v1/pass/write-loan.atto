@@ -1,0 +1,9 @@
+// BCV1-007 write_loan pass: target AttoLang semantics, NOT_EXECUTED.
+// Expected success and exit value 42.
+define class Meter as pub let int reading = 1; end
+pub fnc main(): int {
+  val mut m = new Meter();
+  val writer = borrow! mut m;
+  writer.reading = 42;
+  return writer.reading;
+}

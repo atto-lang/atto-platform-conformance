@@ -1,0 +1,10 @@
+// BCV1-039 suspension pass: target AttoLang semantics, NOT_EXECUTED.
+// Expected success and exit value 42.
+// TARGET synchronous loan ends before suspension.
+define class Payload as pub let int value = 42; end
+pub fnc main(): int {
+  val p = new Payload();
+  block { val view = borrow! p; stdio.println(view.value); }
+  await complete_task();
+  return p.value;
+}

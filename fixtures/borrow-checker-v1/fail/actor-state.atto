@@ -1,0 +1,9 @@
+// BCV1-036 actor_state fail: target AttoLang semantics, NOT_EXECUTED.
+// Expected compiler rejection E_CRITICAL_READ_WRITE with NO guest artifact.
+define actor Vault as
+  define state as { pub let int count = 0; }
+  receive(Read msg): void {
+    handle_state(critical-read |s| -> { s.count = 42; }); // read guard is not a writer
+  }
+end
+pub fnc main(): int { return 42; }

@@ -1,0 +1,25 @@
+name: Borrow-checker v1 static contract (Rust)
+on:
+  pull_request:
+    paths:
+      - 'contracts/borrow-checker-v1.tsv'
+      - 'fixtures/borrow-checker-v1/**'
+      - 'docs/BORROW_CHECKER_CONFORMANCE_V1.md'
+      - 'tests/borrow_checker_matrix_v1.rs'
+      - '.github/workflows/borrow-checker-matrix-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  host-contract-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static Rust versioned matrix validation — not guest execution
+        run: |
+          rustc --version
+          rustc --edition=2021 --test tests/borrow_checker_matrix_v1.rs -o "$RUNNER_TEMP/borrow_checker_matrix_v1"
+          "$RUNNER_TEMP/borrow_checker_matrix_v1" --nocapture

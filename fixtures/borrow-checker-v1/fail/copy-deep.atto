@@ -1,0 +1,8 @@
+// BCV1-016 copy_deep fail: target AttoLang semantics, NOT_EXECUTED.
+// Expected compiler rejection E_COPY_GRAPH_UNPROVEN with NO guest artifact.
+define class Resource as pub let Pointer<int> ptr; end
+pub fnc main(): int {
+  val r = new Resource();
+  val q = copy!! r; // raw/foreign resource graph has no DeepCopyable proof
+  return 42;
+}

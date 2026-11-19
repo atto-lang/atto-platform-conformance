@@ -1,0 +1,10 @@
+// BCV1-040 suspension fail: target AttoLang semantics, NOT_EXECUTED.
+// Expected compiler rejection E_LOAN_SUSPEND with NO guest artifact.
+// Live loan crossing await is not admitted without pinned-frame and cleanup proof.
+define class Payload as pub let int value = 42; end
+pub fnc main(): int {
+  val p = new Payload();
+  val view = borrow! p;
+  await complete_task();
+  return view.value;
+}

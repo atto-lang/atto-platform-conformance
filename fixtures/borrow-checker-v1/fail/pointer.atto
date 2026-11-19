@@ -1,0 +1,8 @@
+// BCV1-034 pointer fail: target AttoLang semantics, NOT_EXECUTED.
+// Expected compiler rejection E_POINTER_SYNTAX with NO guest artifact.
+// Unary &x address-of is forbidden in AttoLang source.
+pub fnc main(): int {
+  val int x = 42;
+  val illegal = &x;
+  return 42;
+}

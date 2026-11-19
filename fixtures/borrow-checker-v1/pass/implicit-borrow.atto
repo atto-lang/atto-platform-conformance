@@ -1,0 +1,10 @@
+// BCV1-003 implicit_borrow pass: target AttoLang semantics, NOT_EXECUTED.
+// Expected success and exit value 42.
+define class Meter as pub let int reading = 42; end
+fnc inspect(Meter item): int { return item.reading; }
+pub fnc main(): int {
+  val m = new Meter();
+  val first = inspect(m);
+  val second = inspect(borrow! m);
+  return first + second - 42;
+}

@@ -1,0 +1,73 @@
+# Borrow-checker integration conformance matrix v1
+
+**Status: TARGET TEST PLAN / NOT_EXECUTED.** This is a versioned **integration** registry for the public [AttoLang borrow-checker guide](https://github.com/atto-lang/.github/blob/main/BORROW_CHECKER.md). It records 40 proposed compiler/guest cases (20 positive + 20 negative) across 20 feature families. Its source snippets are deliberately not presented as already compilable; parser, typed ownership, AOT and runtime admission are separate.
+
+The canonical case list is [`contracts/borrow-checker-v1.tsv`](../contracts/borrow-checker-v1.tsv), with each row pointing to an independently readable `.atto` fixture under [`fixtures/borrow-checker-v1/`](../fixtures/borrow-checker-v1/). Each `PASS` row requires a compiled Atto guest that **runs and returns 42**; each `REJECT` row requires the intended ownership/type diagnostic and **zero emitted guest bytes**, not a generic syntax error substituted for the intended type/effect check. Every row starts at `NOT_EXECUTED`, including bounded Rust/Wasm features already verified at a different exact SHA or with different test inputs.
+
+## Cross-branch semantic baseline
+
+This registry intentionally assumes the **feature-branch target semantics** will be reconciled and merged, while recording the exact currently reviewed sources:
+
+| Contract or implementation | Feature branch / PR head used for design |
+| --- | --- |
+| Expanded ownership words, including pinned relocation guards | [atto-spec #94](https://github.com/atto-lang/atto-spec/pull/94) `a83e6422770ef69bd28650ba4973a2ffb9a19739`; predecessor [#92](https://github.com/atto-lang/atto-spec/pull/92) |
+| Nonprimitive arguments borrow by default | [atto-spec #89](https://github.com/atto-lang/atto-spec/pull/89) and [conformance #74](https://github.com/atto-lang/atto-platform-conformance/pull/74) at `81b5bc848f9b012a7e1d3c1d3093f0920e33e69d` |
+| Shallow `copy!`, deep `copy!!`, actor graph fan-out | [atto-spec #39](https://github.com/atto-lang/atto-spec/pull/39) and [conformance #64](https://github.com/atto-lang/atto-platform-conformance/pull/64) at `781bda978f38ad9c13de2f7a480eff9c7534d93d` |
+| Frozen `share!` and synchronized writers | [atto-spec #90](https://github.com/atto-lang/atto-spec/pull/90) |
+| `freeze!`, `weak!`, `pin!`, `drop!`, `lt!` models | [conformance #76](https://github.com/atto-lang/atto-platform-conformance/pull/76) at `09c1bae49555bc57232dc1b46484127bb643c884` |
+| Typed `Pointer<T>`, actor state, Mailman and suspension | [atto-spec #18](https://github.com/atto-lang/atto-spec/pull/18), [#29](https://github.com/atto-lang/atto-spec/pull/29), [#64](https://github.com/atto-lang/atto-spec/pull/64), [#27](https://github.com/atto-lang/atto-spec/pull/27) |
+| Bounded compiler actual behavior (not general parity) | [atto-source.rs #264](https://github.com/atto-lang/atto-source.rs/pull/264) checked handles; [#265](https://github.com/atto-lang/atto-source.rs/pull/265) flat-class AOT `copy!!` |
+| Independent host ownership verifier | [atto-borrow-checker.rs #43](https://github.com/atto-lang/atto-borrow-checker.rs/pull/43) |
+
+These PRs have different ancestry and maturity. This matrix does **not** claim any unmerged branch has been combined, reviewed, or executed on all backends. In particular, `copy!` is **shallow**, `copy!!` is **deep**, `share!` is **frozen readonly** and ordinary nonprimitive function arguments **borrow**, never silently move.
+
+## Coverage
+
+| Feature | PASS fixture | REJECT fixture |
+| --- | --- | --- |
+| `scalar_value` | [pass](../fixtures/borrow-checker-v1/pass/scalar-value.atto) | [reject](../fixtures/borrow-checker-v1/fail/scalar-value.atto) |
+| `implicit_borrow` | [pass](../fixtures/borrow-checker-v1/pass/implicit-borrow.atto) | [reject](../fixtures/borrow-checker-v1/fail/implicit-borrow.atto) |
+| `read_loan` | [pass](../fixtures/borrow-checker-v1/pass/read-loan.atto) | [reject](../fixtures/borrow-checker-v1/fail/read-loan.atto) |
+| `write_loan` | [pass](../fixtures/borrow-checker-v1/pass/write-loan.atto) | [reject](../fixtures/borrow-checker-v1/fail/write-loan.atto) |
+| `take` | [pass](../fixtures/borrow-checker-v1/pass/take.atto) | [reject](../fixtures/borrow-checker-v1/fail/take.atto) |
+| `share` | [pass](../fixtures/borrow-checker-v1/pass/share.atto) | [reject](../fixtures/borrow-checker-v1/fail/share.atto) |
+| `copy_shallow` | [pass](../fixtures/borrow-checker-v1/pass/copy-shallow.atto) | [reject](../fixtures/borrow-checker-v1/fail/copy-shallow.atto) |
+| `copy_deep` | [pass](../fixtures/borrow-checker-v1/pass/copy-deep.atto) | [reject](../fixtures/borrow-checker-v1/fail/copy-deep.atto) |
+| `deep_graph` | [pass](../fixtures/borrow-checker-v1/pass/deep-graph.atto) | [reject](../fixtures/borrow-checker-v1/fail/deep-graph.atto) |
+| `mut_binding` | [pass](../fixtures/borrow-checker-v1/pass/mut-binding.atto) | [reject](../fixtures/borrow-checker-v1/fail/mut-binding.atto) |
+| `lt_binder` | [pass](../fixtures/borrow-checker-v1/pass/lt-binder.atto) | [reject](../fixtures/borrow-checker-v1/fail/lt-binder.atto) |
+| `freeze` | [pass](../fixtures/borrow-checker-v1/pass/freeze.atto) | [reject](../fixtures/borrow-checker-v1/fail/freeze.atto) |
+| `weak` | [pass](../fixtures/borrow-checker-v1/pass/weak.atto) | [reject](../fixtures/borrow-checker-v1/fail/weak.atto) |
+| `pin` | [pass](../fixtures/borrow-checker-v1/pass/pin.atto) | [reject](../fixtures/borrow-checker-v1/fail/pin.atto) |
+| `drop` | [pass](../fixtures/borrow-checker-v1/pass/drop.atto) | [reject](../fixtures/borrow-checker-v1/fail/drop.atto) |
+| `checked_handle` | [pass](../fixtures/borrow-checker-v1/pass/checked-handle.atto) | [reject](../fixtures/borrow-checker-v1/fail/checked-handle.atto) |
+| `pointer` | [pass](../fixtures/borrow-checker-v1/pass/pointer.atto) | [reject](../fixtures/borrow-checker-v1/fail/pointer.atto) |
+| `actor_state` | [pass](../fixtures/borrow-checker-v1/pass/actor-state.atto) | [reject](../fixtures/borrow-checker-v1/fail/actor-state.atto) |
+| `actor_handoff` | [pass](../fixtures/borrow-checker-v1/pass/actor-handoff.atto) | [reject](../fixtures/borrow-checker-v1/fail/actor-handoff.atto) |
+| `suspension` | [pass](../fixtures/borrow-checker-v1/pass/suspension.atto) | [reject](../fixtures/borrow-checker-v1/fail/suspension.atto) |
+
+## Required execution and evidence gates
+
+1. **Static Rust matrix check**: run `rustc --edition=2021 --test tests/borrow_checker_matrix_v1.rs -o borrow_checker_matrix_v1` and then `./borrow_checker_matrix_v1`. It verifies all local fixtures, unique IDs/paths, both verdicts for every family, unexecuted statuses and non-empty oracles. It deliberately does **not** execute an Atto compiler.
+2. **Compiler preflight**: use exact source branch/head, grammar/effect profile and compiler target for each case. A positive is `PASS` only when its actual `.atto` guest compiles **and runs** with result 42. A negative is `PASS` only when the intended diagnostic family is emitted with no executable/Wasm artifact; `E_SYNTAX` on an ownership-negative fixture is **not** a pass unless that case explicitly tests syntax.
+3. **Ownership and runtime**: test nested aliases/cycles and constructor non-reexecution for `copy!!`, shallow copy denial of a unique nested child, fail-atomic mailbox admission, freeze/weak generation fencing, pin relocation, guarded state and cancellation cleanup. Authenticated domains, precompiled copy plans, fixed budgets and independent message graphs need real runtime witnesses, not a host reference oracle.
+4. **Exact-head per backend**: record **source commit SHA and tree SHA**, toolchain, target, compiler and guest artifact SHA-256, full executed command, test log/step count, expected vs actual exit/output, diagnostic/no-artifact evidence, and reviewer. Repeat for each backend/feature at the **actual merged or stacked exact SHA**. A test passing on another head cannot be transferred.
+5. **No invented support**: `PASS`, `FAIL`, `UNSUPPORTED` and `NOT_EXECUTED` describe execution results per case and backend; a proposed expected verdict `PASS` or `REJECT` in the TSV is **an oracle, not a test result**. If a backend cannot implement a feature safely, it must fail closed; zero-step CI and skipped tests remain `NOT_EXECUTED`.
+
+## Initial backend execution status for these exact fixtures
+
+| Backend | Initial status | Note |
+| --- | --- | --- |
+| Rust/browser compiler and generated Wasm | NOT_EXECUTED | Some narrower operations have separate verified evidence, not these fixtures |
+| Independent Wasm backend | NOT_EXECUTED | Worker/actor semantics need independent compiled guests |
+| Java / GraalVM Native Image | NOT_EXECUTED | Host JVM tests are not Native Image execution |
+| LLVM native | NOT_EXECUTED | Needs compiled native guest and sanitizer/ownership checks |
+| .NET Native AOT | NOT_EXECUTED | Needs published/native AOT executable evidence |
+| Forge | NOT_EXECUTED | Needs independent compiler and runtime confirmation |
+| Cranelift, JS, HDL and other declared targets | NOT_EXECUTED | Add rows only with independently proven target admission |
+
+## Source limitations and test design notes
+
+Some target snippets intentionally exercise language constructs not yet known to be admitted together by current parsers: `Pointer<T>` allocation effects, named `lt!` binders, actual cycle builders, `weak!.upgrade`, `pin!` actor handoffs, out-of-line state callbacks and `await` while an owner is live. They are **acceptance targets**, not claimed runnable test artifacts. Before promoting any case to `EXECUTABLE`, implement or revise its precise accepted grammar; maintain at least one wrong-capability negative in the same feature family. Do not modify an expected failure into a different, easier parser failure to get a green result.
+
+This integration registry is **additive** to existing conformance PRs #74 (implicit borrowing), #64 (copying) and #76 (ownership capabilities). It does not replace their fixtures, introduce Python, or assert that their own tests executed. Future work should integrate approved fixtures, migrate existing Python contract tests to Rust with parity, and update the matrix by evidence rather than by assumption.

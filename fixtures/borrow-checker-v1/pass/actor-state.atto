@@ -1,0 +1,10 @@
+// BCV1-035 actor_state pass: target AttoLang semantics, NOT_EXECUTED.
+// Expected success and exit value 42.
+// TARGET sealed actor-state callback grammar.
+define actor Vault as
+  define state as { pub let int count = 0; }
+  receive(Increment msg): void {
+    handle_state(critical-write |s| -> { s.count = 42; });
+  }
+end
+pub fnc main(): int { return 42; }

@@ -1,0 +1,7 @@
+// BCV1-021 lt_binder pass: target AttoLang semantics, NOT_EXECUTED.
+// Expected success and exit value 42.
+define class Foo as pub let int value = 42; end
+fnc choose_left<lt! a, lt! b>(Borrow<Foo, lt=a> left, Borrow<Foo, lt=b> right): Borrow<Foo, lt=a> {
+  return left;
+}
+pub fnc main(): int { return 42; }
