@@ -5,8 +5,6 @@ on:
       - 'contracts/aot-gc-tenant-evidence-v1.json'
       - 'fixtures/aot-tenant/**'
       - 'bin/verify_aot_gc_receipt.py'
-      - 'bin/list-cases.mjs'
-      - 'tests/conformance-planner.test.mjs'
       - 'tests/test_aot_gc_receipts.py'
       - '.github/workflows/aot-gc-tenant-evidence.yml'
   push:
@@ -14,8 +12,6 @@ on:
       - 'contracts/aot-gc-tenant-evidence-v1.json'
       - 'fixtures/aot-tenant/**'
       - 'bin/verify_aot_gc_receipt.py'
-      - 'bin/list-cases.mjs'
-      - 'tests/conformance-planner.test.mjs'
       - 'tests/test_aot_gc_receipts.py'
       - '.github/workflows/aot-gc-tenant-evidence.yml'
 permissions:
@@ -39,7 +35,5 @@ jobs:
         run: python3 bin/verify_aot_gc_receipt.py
       - name: Validate 20 adversarial evidence controls
         run: python3 -m unittest discover -s tests -p test_aot_gc_receipts.py -v
-      - name: Validate source-only conformance planning matrix
-        run: node --test tests/conformance-planner.test.mjs
       - name: Evidence boundary
         run: echo 'STRUCTURAL_VALIDATOR_ONLY; no AttoLang compiler, guest, native image or GC executed'

@@ -1,0 +1,6 @@
+// expect-exit: 1
+define const string explicitly_empty as os.read_env("ATTO_PRESENT_EMPTY");
+pub fnc main(): int {
+  if explicitly_empty eq "" then return 1;
+  else return 0; fi
+}
