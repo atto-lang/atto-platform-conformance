@@ -1,0 +1,191 @@
+{
+  "schema": "atto.implements.receiver.conformance.v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "normative_spec": "https://github.com/atto-lang/atto-spec/blob/feat/implements-receiver-contract-v1-20261118/language/implements-receiver-conformance-v1.md",
+  "canonical_implements": "implements",
+  "owner_kinds": [
+    "actor",
+    "class",
+    "struct"
+  ],
+  "contract_kinds": [
+    "interface",
+    "trait"
+  ],
+  "backend_status": {
+    "rs-native": "NOT_EXECUTED",
+    "rs-browser-wasm": "NOT_EXECUTED",
+    "java": "NOT_EXECUTED",
+    "llvm": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "wasm-independent": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED"
+  },
+  "required_gates": [
+    "parse",
+    "semantic",
+    "link",
+    "emit",
+    "guest_execute"
+  ],
+  "positive_gate": "real compiled guest, not parse-only",
+  "negative_gate": "located diagnostic and no executable artifact",
+  "comment": "Source programs are portable proposed .atto inputs. No compiler/backend verdict is asserted by this host-only registry. Actual runs must pin and verify exact source and fixture hashes.",
+  "cases": [
+    {
+      "id": "class-inline",
+      "owner": "class",
+      "expect": "accept",
+      "source": "define interface IPing as ping(): int; end\ndefine class C implements IPing as pub ping(): int { return 42; } end\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "class-inherited",
+      "owner": "class",
+      "expect": "accept",
+      "source": "define interface IPing as ping(): int; end\ndefine class Base as pub ping(): int { return 42; } end\ndefine class C extends Base implements IPing as end\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "class-default",
+      "owner": "class",
+      "expect": "accept",
+      "source": "define interface IPing as ping(): int; end\ndefine trait DefaultPing as pub ping(): int { return 42; } end\ndefine class C implements IPing, DefaultPing as end\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "actor-inline",
+      "owner": "actor",
+      "expect": "accept",
+      "source": "define interface IPing as ping(): int; end\ndefine actor A implements IPing as pub ping(): int { return 42; } end\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "actor-out-of-line",
+      "owner": "actor",
+      "expect": "accept",
+      "source": "define interface IPing as ping(): int; end\ndeclare actor A implements IPing;\ndefine actor A implements IPing as end\npub mtd (A self) ping(): int { return 42; }\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "struct-out-of-line",
+      "owner": "struct",
+      "expect": "accept",
+      "source": "define interface IPing as ping(): int; end\ndeclare struct S implements IPing;\ndefine struct S implements IPing as pub value: int; end\npub mtd (S self) ping(): int { return self.value; }\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "struct-default",
+      "owner": "struct",
+      "expect": "accept",
+      "source": "define interface IPing as ping(): int; end\ndefine trait DefaultPing as pub ping(): int { return 42; } end\ndefine struct S implements IPing, DefaultPing as pub value: int; end\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "actor-missing",
+      "owner": "actor",
+      "expect": "reject",
+      "error": "E_IMPL_MISSING",
+      "source": "define interface IPing as ping(): int; end\ndefine actor A implements IPing as end\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "class-missing",
+      "owner": "class",
+      "expect": "reject",
+      "error": "E_IMPL_MISSING",
+      "source": "define interface IPing as ping(): int; end\ndefine class C implements IPing as end\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "struct-missing",
+      "owner": "struct",
+      "expect": "reject",
+      "error": "E_IMPL_MISSING",
+      "source": "define interface IPing as ping(): int; end\ndefine struct S implements IPing as pub value: int; end\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "class-wrong-return",
+      "owner": "class",
+      "expect": "reject",
+      "error": "E_IMPL_SIGNATURE",
+      "source": "define interface IPing as ping(): int; end\ndefine class C implements IPing as pub ping(): string { return \"wrong\"; } end\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "actor-wrong-parameter",
+      "owner": "actor",
+      "expect": "reject",
+      "error": "E_IMPL_SIGNATURE",
+      "source": "define interface IPing as ping(): int; end\ndefine actor A implements IPing as pub ping(int x): int { return x; } end\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "struct-private-member",
+      "owner": "struct",
+      "expect": "reject",
+      "error": "E_IMPL_VISIBILITY",
+      "source": "define interface IPing as ping(): int; end\ndefine struct S implements IPing as value: int; end\nmtd (S self) ping(): int { return self.value; }\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "wrong-owner-mtd",
+      "owner": "class",
+      "expect": "reject",
+      "error": "E_IMPL_MISSING",
+      "source": "define interface IPing as ping(): int; end\ndefine class C implements IPing as end\ndefine class Other as end\npub mtd (Other self) ping(): int { return 42; }\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "trait-ambiguous",
+      "owner": "class",
+      "expect": "reject",
+      "error": "E_IMPL_CONFLICT",
+      "source": "define trait DefaultPing as pub ping(): int { return 42; } end\ndefine trait OtherPing as pub ping(): int { return 7; } end\ndefine class C implements DefaultPing, OtherPing as end\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "unknown-contract",
+      "owner": "actor",
+      "expect": "reject",
+      "error": "E_IMPL_UNRESOLVED",
+      "source": "define actor A implements MissingContract as end\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "not-interface-or-trait",
+      "owner": "struct",
+      "expect": "reject",
+      "error": "E_IMPL_KIND",
+      "source": "define class Ordinary as end\ndefine struct S implements Ordinary as pub value: int; end\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "declare-define-mismatch",
+      "owner": "actor",
+      "expect": "reject",
+      "error": "E_IMPL_SIGNATURE",
+      "source": "define interface IPing as ping(): int; end\ndeclare actor A implements IPing;\ndefine actor A as end\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "duplicate-inline-out-of-line",
+      "owner": "class",
+      "expect": "reject",
+      "error": "E_DUPLICATE",
+      "source": "define interface IPing as ping(): int; end\ndefine class C implements IPing as pub ping(): int { return 1; } end\npub mtd (C self) ping(): int { return 2; }\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "nominal-name-collision",
+      "owner": "actor",
+      "expect": "reject",
+      "error": "E_DUPLICATE",
+      "source": "define interface Foo as ping(): int; end\ndefine actor Foo implements Foo as pub ping(): int { return 1; } end\npub fnc main(): int { return 0; }",
+      "status": "NOT_EXECUTED"
+    }
+  ]
+}
