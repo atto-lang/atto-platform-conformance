@@ -1,6 +1,6 @@
 {
   "schema": "atto.out-of-line-constructor-self-publication.v1",
-  "status": "TARGET_NOT_EXECUTED",
+  "status": "RUST_NATIVE_COMPILER_GUEST_SCOPED_PASS",
   "authority": "atto-lang/atto-spec/language/out-of-line-receivers-constructors-and-state-v1.md",
   "safety_rule": "An under-construction class instance cannot escape through an alias, a function call, a return, or a method dispatch until full initialization is proven.",
   "required_cases": [
@@ -19,7 +19,7 @@
   ],
   "existing_valid_initializer": "fixtures/receiver-constructors/pass/owner_adjacent.atto",
   "backend_status": {
-    "rs-native-guest": "NOT_EXECUTED",
+    "rs-native-guest": "VERIFIED",
     "rs-browser-hosted": "NOT_EXECUTED",
     "java": "NOT_EXECUTED",
     "llvm": "NOT_EXECUTED",
@@ -29,8 +29,50 @@
     "cranelift": "NOT_EXECUTED",
     "js": "NOT_EXECUTED"
   },
-  "evidence_note": "Rust compiler PR #359 passed 10 focused Rust tests and four actual Wasm guests with 45 exact mirrored blobs; the two new standalone portable negative fixtures need independent run receipts before their own execution status can be updated. No other backend parity claimed.",
+  "evidence_note": "The two standalone portable negative fixtures were compiled with the exact Rust source from PR #359 on a private carrier: both returned E_OWNERSHIP and emitted no Wasm. 10 Rust tests, 4 compiled Wasm positive guests, 2 source-only Node contract tests passed. Rust compiler running in browser and independent backends remain NOT_EXECUTED.",
   "source_pr": "https://github.com/atto-lang/atto-source.rs/pull/359",
   "source_merge_sha": "f9fe6444757be712f99586b99f89b41dc884b037",
-  "carrier_run_url": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44444349850"
+  "carrier_run_url": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44444349850",
+  "guest_evidence": {
+    "scope": "NATIVE_RUST_COMPILER_TO_WASM_GUEST_PLUS_COMPILE_NEGATIVES",
+    "source_head_sha": "19d6ecccf4557e05f395ce9190fc198c291f55f2",
+    "source_merged_sha": "f9fe6444757be712f99586b99f89b41dc884b037",
+    "carrier_repo": "gha-indie-worker/atto-ci",
+    "carrier_branch": "validation/atto-ctor-portable-safety-20261118",
+    "carrier_commit": "fd159c9942056ede73390cdf8fb98af179d0d5a2",
+    "run_id": 44444993654,
+    "run_url": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44444993654",
+    "job_id": 135294863519,
+    "result": "SUCCESS",
+    "source_blobs_verified_before_after": 49,
+    "rustc": "1.99.1",
+    "rust_focused_tests": {
+      "pass": 10,
+      "fail": 0
+    },
+    "positive_wasm_guests": {
+      "count": 4,
+      "expected_result": 42,
+      "three_spelling_wasm_sha256": "5bd6af29f50abe423b19203ed2933bb6909430e26309f92edc630efb3b709bfc"
+    },
+    "portable_negative_guests": {
+      "count": 2,
+      "expected_error": "E_OWNERSHIP",
+      "emitted_artifacts": 0
+    },
+    "source_only_node_tests": {
+      "pass": 2,
+      "fail": 0
+    },
+    "excluded_backends": [
+      "rs-browser-hosted",
+      "java",
+      "llvm",
+      "wasm-independent",
+      "net",
+      "forge",
+      "cranelift",
+      "js"
+    ]
+  }
 }
