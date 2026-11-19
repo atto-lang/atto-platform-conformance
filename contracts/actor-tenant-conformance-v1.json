@@ -103,15 +103,27 @@
       "backend",
       "case_id",
       "head_sha",
+      "checked_out_sha",
+      "head_tree_sha",
       "artifact_sha256",
       "workflow_url",
+      "run_id",
+      "run_attempt",
+      "job_id",
       "command",
+      "steps",
       "guest_executed",
       "evidence_kind",
       "observed",
       "exit_code"
     ],
-    "note": "Receipt schema is STRUCTURAL only. Even a well-formed receipt does not authenticate its source, prove exact-head provenance, or confirm hardware sandboxing. CI validation and observed real guest execution must be reviewed independently.",
-    "security": "Security cases demand executed guest evidence, enforced memory-domain boundary identification and concrete negative/positive outcome."
+    "note": "STRUCTURAL VALIDATION ONLY: checked_out_sha, head_tree_sha, job_id, run_attempt, steps, workflow_url and commands are self-reported. This validator does NOT query GitHub or verify trust, exact-head source provenance, guest compiler origin, or actual enforced sandboxing. Independently authenticate executed workflow/job/step records and artifact identity before promoting any backend status.",
+    "security": "Security cases demand executed guest evidence, enforced memory-domain boundary identification and concrete negative/positive outcome.",
+    "caseEvidence": {
+      "compile-negative": "compiler-rejection; guest_executed=false; nonzero compiler exit; real successful CI rejection test step",
+      "untrusted-tenant-missing-sandbox": "sandbox-admission-rejection; guest_executed=false; nonzero admission exit; boundary=none; enforcement_tested=false",
+      "all-other-runtime-and-security-cases": "compiled-guest; guest_executed=true; security cases require tested sandbox boundary"
+    },
+    "steps": "Nonempty completed CI step records with name, status, conclusion and exact command; at least one successful test step must match receipt.command. Zero steps or null steps cannot substantiate a pass."
   }
 }
