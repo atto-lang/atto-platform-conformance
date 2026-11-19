@@ -1,0 +1,3 @@
+// expect-error: E_RETURN_INFER
+fnc bad() -> infer { return unproved(); }
+pub fnc main() -> int { return 0; }
