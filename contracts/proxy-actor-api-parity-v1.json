@@ -1,0 +1,130 @@
+{
+  "schema": "atto.proxy_actor_api_parity.v1",
+  "authority": "https://github.com/atto-lang/atto-spec/pull/40",
+  "runtime_integration": "https://github.com/atto-lang/atto-source.java/issues/43",
+  "conformance_pr": "https://github.com/atto-lang/atto-platform-conformance/pull/40",
+  "status_semantics": {
+    "NOT_EXECUTED": "No executed exact-head compiled .atto sender and remote receive handler evidence.",
+    "PASSED": "Requires independently verified, exact-source-SHA real compiled .atto cross-process guest trace including negative/failure gates.",
+    "UNSUPPORTED": "Compiler/runtime must reject explicitly; may not forge destination ACK."
+  },
+  "api": [
+    "send",
+    "send_async",
+    "send_ack",
+    "send_received",
+    "send_result",
+    "send_durable",
+    "request",
+    "ask",
+    "get_done",
+    "connect_async",
+    "resolve_async",
+    "watch_service"
+  ],
+  "mandatory_guest_gates": [
+    "two_real_os_processes",
+    "compiled_atto_sender",
+    "compiled_atto_receiver",
+    "bounded_destination_mailbox",
+    "actual_destination_admission",
+    "handler_started",
+    "handler_processed",
+    "typed_request_reply",
+    "no_intermediary_ack",
+    "durable_scope_authority",
+    "wrong_tenant_denied",
+    "wrong_incarnation_denied",
+    "stale_ack_rejected",
+    "process_restart_fenced",
+    "ambiguous_disconnect_indeterminate",
+    "backpressure_bounded",
+    "supervisor_control_separate",
+    "transport_authenticated",
+    "exact_head_ci_steps",
+    "no_insecure_transport_downgrade"
+  ],
+  "host_receipt_model": "Existing draft native host-only receipt transition gate, NOT a proof of authenticated wire, production IPC, compiled Atto guest support or any mandatory guest gate.",
+  "backends": [
+    {
+      "id": "java",
+      "host_gate_pr": "https://github.com/atto-lang/atto-source.java/pull/44",
+      "host_gate_status": "DRAFT_UNVERIFIED",
+      "compiled_guest_ipc_status": "NOT_EXECUTED",
+      "authenticated_transport_status": "NOT_EXECUTED",
+      "native_aot_status": "NOT_EXECUTED",
+      "guest_evidence": null,
+      "notes": "JVM/Graal native integration not executed"
+    },
+    {
+      "id": "llvm",
+      "host_gate_pr": "https://github.com/atto-lang/atto-source.llvm/pull/50",
+      "host_gate_status": "DRAFT_UNVERIFIED",
+      "compiled_guest_ipc_status": "NOT_EXECUTED",
+      "authenticated_transport_status": "NOT_EXECUTED",
+      "native_aot_status": "NOT_EXECUTED",
+      "guest_evidence": null,
+      "notes": "Native process-isolation and actor runtime must be connected to real compiled handler"
+    },
+    {
+      "id": "net",
+      "host_gate_pr": "https://github.com/atto-lang/atto-source.net/pull/10",
+      "host_gate_status": "DRAFT_UNVERIFIED",
+      "compiled_guest_ipc_status": "NOT_EXECUTED",
+      "authenticated_transport_status": "NOT_EXECUTED",
+      "native_aot_status": "NOT_EXECUTED",
+      "guest_evidence": null,
+      "notes": "Direct CIL scalar subset is not yet a remote actor runtime"
+    },
+    {
+      "id": "wasm",
+      "host_gate_pr": "https://github.com/atto-lang/atto-source.wasm/pull/38",
+      "host_gate_status": "DRAFT_UNVERIFIED",
+      "compiled_guest_ipc_status": "NOT_EXECUTED",
+      "authenticated_transport_status": "NOT_EXECUTED",
+      "native_aot_status": "NOT_EXECUTED",
+      "guest_evidence": null,
+      "notes": "Browser guest cannot open raw Unix sockets; trusted host bridge required"
+    },
+    {
+      "id": "rs",
+      "host_gate_pr": "https://github.com/atto-lang/atto-source.rs/pull/400",
+      "host_gate_status": "DRAFT_UNVERIFIED",
+      "compiled_guest_ipc_status": "NOT_EXECUTED",
+      "authenticated_transport_status": "NOT_EXECUTED",
+      "native_aot_status": "NOT_EXECUTED",
+      "guest_evidence": null,
+      "notes": "Browser compiler unary/remote ABI remains unsupported"
+    },
+    {
+      "id": "forge",
+      "host_gate_pr": "https://github.com/atto-lang/atto-source.forge/pull/33",
+      "host_gate_status": "DRAFT_UNVERIFIED",
+      "compiled_guest_ipc_status": "NOT_EXECUTED",
+      "authenticated_transport_status": "NOT_EXECUTED",
+      "native_aot_status": "NOT_EXECUTED",
+      "guest_evidence": null,
+      "notes": "Forge actor frontend/runtime remote path not implemented"
+    },
+    {
+      "id": "cranelift",
+      "host_gate_pr": "https://github.com/atto-lang/atto-source.cranelift/pull/40",
+      "host_gate_status": "DRAFT_UNVERIFIED",
+      "compiled_guest_ipc_status": "NOT_EXECUTED",
+      "authenticated_transport_status": "NOT_EXECUTED",
+      "native_aot_status": "NOT_EXECUTED",
+      "guest_evidence": null,
+      "notes": "Cranelift host gate does not enable compiled guest remote execution"
+    },
+    {
+      "id": "js",
+      "host_gate_pr": "https://github.com/atto-lang/atto-source.js/pull/32",
+      "host_gate_status": "DRAFT_UNVERIFIED",
+      "compiled_guest_ipc_status": "NOT_EXECUTED",
+      "authenticated_transport_status": "NOT_EXECUTED",
+      "native_aot_status": "NOT_EXECUTED",
+      "guest_evidence": null,
+      "notes": "Worker host-side receipt gate cannot substitute for compiled Atto guest"
+    }
+  ]
+}
