@@ -1,0 +1,7 @@
+// expect-error: E_IMMUTABLE
+// 'val' fixes the field binding even if 'mut' permits separate referent writes.
+define class Stable as
+  pub val mut int id = 1;
+  constructor() { self.id = 2; }
+end
+pub fnc main(): int { return 0; }
