@@ -16,7 +16,7 @@ test('unified implements target is explicitly not guest-certified',()=>{
 
 test('case matrix covers success and fail-closed regression families for all three receiver kinds',()=>{
   const cases=registry.cases;
-  assert.equal(cases.length,20);
+  assert.equal(cases.length,29);
   assert.equal(new Set(cases.map(c=>c.id)).size,cases.length);
   for(const owner of registry.owner_kinds){
     assert.ok(cases.some(c=>c.owner===owner && c.expect==='accept'));
@@ -41,6 +41,9 @@ test('out-of-line method linkage, trait defaults and declaration mismatches are 
   assert.equal(byId['declare-define-mismatch'].error,'E_IMPL_SIGNATURE');
   assert.equal(byId['wrong-owner-mtd'].error,'E_IMPL_MISSING');
   assert.equal(byId['nominal-name-collision'].error,'E_DUPLICATE');
+  for(const owner of ['class','actor','struct'])assert.equal(byId[owner+'-required-trait-missing'].error,'E_IMPL_MISSING');
+  for(const id of ['class-out-of-line','actor-required-trait-mtd','struct-required-trait-mtd'])assert.equal(byId[id].expect,'accept');
+  assert.equal(byId['trait-conflict-explicit-mtd'].expect,'accept');
 });
 
 // HOST-ONLY source/metadata assertions. Never claim these have compiled or executed .atto.
