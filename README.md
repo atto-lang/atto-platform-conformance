@@ -16,6 +16,21 @@ Execute portable language fixtures and record target-specific results.
 - Use test fixtures and reproducible evidence to distinguish proposed behavior from implemented behavior.
 - Record breaking changes, migration notes, and dependencies on other AttoLang components.
 
+## Constructor header whitespace target fixtures
+
+`contracts/receiver-constructor-whitespace-v1.json` tracks three equivalent
+out-of-line class constructor spellings and one duplicate-header rejection.
+Fixtures in `fixtures/receiver-constructors/` are ordinary `.atto` programs
+with a target exit of 42; `tests/receiver-constructor-whitespace.test.mjs`
+checks **source-only fixture integrity**, not compiler or guest execution.
+
+Every backend is currently marked `NOT_EXECUTED`. Do not turn any entry into
+`PASS` without exact-source/compiler SHA, real guest execution, negative
+diagnostics, a nonempty test log, and target-specific evidence. Related
+proposals: [atto-spec #98](https://github.com/atto-lang/atto-spec/pull/98),
+[atto-source.rs #354](https://github.com/atto-lang/atto-source.rs/pull/354),
+and [atto-format #16](https://github.com/atto-lang/atto-format/pull/16).
+
 ## Validation
 
 Validation should rely on checked-in tests and exact-commit CI results. When reporting parity, distinguish **passed**, **failed**, **unsupported**, and **not executed**. Avoid inferring guest-runtime support from host-only tests.
