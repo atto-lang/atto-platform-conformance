@@ -450,12 +450,12 @@
   },
   "workstream_capability_notes": {
     "atto-lang/atto-source.forge": "native C++20 typed planning passes local GCC/Clang tests with ASan/UBSan; source GitHub Actions still 0 steps; no compiled .atto pipe guest",
-    "atto-lang/atto-source.rs": "experimental checked 3-stage guest admission and runtime claimed-channel public I/O fences; staged but NOT_EXECUTED: preloaded queue rejection, external send/receive/close denial, source/channel/sink rollback. TenantVM and cancellation still unsupported."
+    "atto-lang/atto-source.rs": "Rust experimental bounded 3-stage checked DATA guest: VERIFIED exact-tree runner PASS in opto-sync/atto-ci run 44769011619 (25 compiled Node guests, 50 Chromium browser checks, 349 conformance cases, 313 native-vs-wasm byte parity); full normative graph lifecycle/TenantVM/other-backend parity NOT_EXECUTED"
   },
   "rust_v2_checked_guest_preview": {
     "repo": "atto-lang/atto-source.rs",
     "pull_request": "https://github.com/atto-lang/atto-source.rs/pull/262",
-    "source_commit": "beb912de3562875c88d94897f13af9d7cc539406",
+    "source_commit": "3facd7a174599d42080d65c267abe329dbf51c79",
     "type": "Result<PipeHandle, PipeSetupError>",
     "opt_in": "explicit_result_binding_annotation_only",
     "endpoint_scope": "single_tenant_bounded_actor_channel_actor_triple",
@@ -522,7 +522,7 @@
         "status": "NOT_EXECUTED"
       }
     },
-    "test_coverage": "Rust compiler fixture, Node compiled guest and Chromium worker guest tests are wired; no executable exact-head run",
+    "test_coverage": "Opto-sync run 44769011619 verified experimental 3-stage Rust compiler, Node guest and Chromium subset; full normative pipe/stream/tenant conformance remains NOT_EXECUTED",
     "rollback_recovery_scope": "experimental_fixed_3stage_actor_channel_actor_only_not_general_graph_or_TenantVM",
     "channel_ownership_hardening": {
       "scope": "EXPERIMENTAL_GUEST_ONLY",
@@ -562,7 +562,8 @@
       ],
       "recheck_after_suspension": "public channel send and receive revalidate claim before each retry; internal actor send must match source-owner record",
       "guest_execution": "NOT_EXECUTED"
-    }
+    },
+    "verified_subset_receipt": "rust_v2_checked_guest_execution_receipt"
   },
   "alternate_ci_runner_probe_2026_11_20": {
     "purpose": "Discover any working GitHub-hosted runner before attempting private cross-org exact-tree Atto source transfer",
@@ -642,5 +643,65 @@
     "available_budget": "NOT_PROVEN",
     "guest_compiler_test": "NOT_EXECUTED",
     "note": "A 0-step pre-execution failure does not prove account billing/minutes exhaustion. No actual exact-tree cross-org mirror was performed for this head."
+  },
+  "rust_v2_checked_guest_execution_receipt": {
+    "receipt_schema": "atto.experimental.pipe_guest_ci.v1",
+    "status": "PASS_EXPERIMENTAL_SUBSET",
+    "verified_at_utc": "2026-11-20T16:02:00Z",
+    "source_repo": "atto-lang/atto-source.rs",
+    "source_pr": "https://github.com/atto-lang/atto-source.rs/pull/262",
+    "source_commit": "3facd7a174599d42080d65c267abe329dbf51c79",
+    "source_git_tree": "266e87845bb1c59fa7997cc53e611a0c57789872",
+    "carrier_repo": "opto-sync/atto-ci",
+    "carrier_pr": "https://github.com/opto-sync/atto-ci/pull/1",
+    "carrier_commit": "81e490acfa2731dcc5e88eac17e455ac8163d76a",
+    "carrier_git_tree": "266e87845bb1c59fa7997cc53e611a0c57789872",
+    "exact_tree_verified": true,
+    "git_blob_count": 368,
+    "transfer_security": "token_free_private_carrier_no_cross_org_checkout_sha_verified",
+    "workflow_run_id": 44769011619,
+    "workflow_run_url": "https://github.com/opto-sync/atto-ci/actions/runs/44769011619",
+    "job_id": 136401315349,
+    "job_name": "real-compiler",
+    "job_conclusion": "success",
+    "executed_steps": 14,
+    "verification": {
+      "rust_cargo_test": "success",
+      "native_attoc_build": "success",
+      "compiled_node_wasm_guest_cases": 25,
+      "compiled_node_wasm_guest_accepted": 12,
+      "compiled_node_wasm_guest_denied": 13,
+      "wasm32_compiler_build": "success",
+      "conformance_cases_passed": 349,
+      "conformance_cases_failed": 0,
+      "native_vs_wasm_compiler_output_parity_cases": 313,
+      "chromium_browser_checks": 50,
+      "compiler_artifact_published": true,
+      "compiler_artifact_id": 14646800381,
+      "compiler_artifact_name": "atto-compiler-wasm32-81e490acfa2731dcc5e88eac17e455ac8163d76a",
+      "compiler_wasm_sha256": "db5ab8d4c2993f19995c6f3671f3beef8b4ae52918dfb93d5dbee5ac5bd7a6c1",
+      "compiler_wasm_size_bytes": 750392
+    },
+    "tested_security_guards": [
+      "claimed_channel_send",
+      "claimed_channel_receive",
+      "claimed_channel_close",
+      "claimed_channel_for_await",
+      "claimed_channel_rx_poll",
+      "closed_port_rejection",
+      "source_output_occupied",
+      "sink_input_occupied",
+      "channel_occupied",
+      "queued_data_before_attachment"
+    ],
+    "known_limitations": [
+      "only bounded 3-stage actor-channel-actor experimental guest",
+      "not general PipeHandle graph admission",
+      "no checked cancellation_or_get_done_for_PipeHandle",
+      "no TenantVM generation or cross-tenant security proof",
+      "not hard-real-time or other backend runtime parity",
+      "source branch remains draft and unmergeable"
+    ],
+    "full_backend_parity_status": "NOT_EXECUTED"
   }
 }
