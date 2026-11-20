@@ -3,11 +3,11 @@
   "classification": "HOST_ONLY_LOCAL_EXECUTION_NOT_GUEST_CONFORMANCE",
   "source_repo": "atto-lang/atto-source.llvm",
   "source_pr": "https://github.com/atto-lang/atto-source.llvm/pull/62",
-  "source_head_sha": "837bf9a0a0728af2477676ea1ced059f590ca3a3",
+  "source_head_sha": "64a72a811597c948c90058f01cae8b5a62b3ad4e",
   "source_git_blobs": {
     "native/include/atto/host_fs_broker.h": "3a14858cb3dc74bb11978445f212b2c7053d8803",
-    "native/src/host_fs_broker.c": "238d5d5a741a2d3b59c5709b6746efdfe85d04d1",
-    "native/tests/host_fs_broker_test.c": "4c552ce2a0303c0baf53290dc6a8e70e78494325",
+    "native/src/host_fs_broker.c": "2dd98f32f0edf6dd1a86ddc189a732f7461c8c1a",
+    "native/tests/host_fs_broker_test.c": "85e0002e6cc15f0a41bc2102322a43cce2c57b63",
     "native/CMakeLists.txt": "2a248abf9c9e01e0ab5878b7d400fb512e4ffd39"
   },
   "local_verification": {
@@ -57,7 +57,8 @@
       "stale_generation",
       "atomic_replacement",
       "root_inode_pin_after_rename",
-      "active_symlink_swap_300_iterations_600_reads"
+      "active_symlink_swap_300_iterations_600_reads",
+      "post_race_successful_in_root_read"
     ],
     "verified_bytes": "Exact Git blob SHA of all four source/test/CMake files equals independently compiled local files"
   },
