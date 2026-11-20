@@ -7,14 +7,19 @@
     "contract_blob_sha": "85eb550491972543a48a7a2c92cd49e8307db56b"
   },
   "acceptance": {
-    "positive_exits": [
+    "positive_main_values": [
       83,
       83,
       42,
       42
     ],
     "negative_no_artifact": true,
-    "stdout": "",
+    "guest_result_profiles": [
+      "os_exit_code",
+      "stdout_line_i64",
+      "wasm_export_i64"
+    ],
+    "note": "The canonical source's expect-exit comments denote the main(): int result. Backend process/guest ABIs must be recorded independently: Forge and Cranelift currently print the returned i64 and exit zero.",
     "script_outputs_are_not_guest_outputs": true
   },
   "cases": [
@@ -22,29 +27,25 @@
       "file": "conformance/functional-pipelines-v1/block-body.atto",
       "blob_sha": "4a2eab34e1ba39709198afda19a71cfce67f4030",
       "kind": "positive",
-      "expected_exit": 83,
-      "expected_stdout": ""
+      "expected_main_value": 83
     },
     {
       "file": "conformance/functional-pipelines-v1/inline-arrow-body.atto",
       "blob_sha": "ec25b1ce607afa7d30dd5315eace12ff42f0c4d6",
       "kind": "positive",
-      "expected_exit": 83,
-      "expected_stdout": ""
+      "expected_main_value": 83
     },
     {
       "file": "conformance/functional-pipelines-v1/reverse-associative.atto",
       "blob_sha": "e71023cd0cc258c9650167e979c45ffb5162d9f7",
       "kind": "positive",
-      "expected_exit": 42,
-      "expected_stdout": ""
+      "expected_main_value": 42
     },
     {
       "file": "conformance/functional-pipelines-v1/mixed-parenthesized.atto",
       "blob_sha": "0fcdce8f0b1381125d0148122441c81dfb2a0abf",
       "kind": "positive",
-      "expected_exit": 42,
-      "expected_stdout": ""
+      "expected_main_value": 42
     },
     {
       "file": "conformance/functional-pipelines-v1/reject-return-type.atto",
@@ -82,7 +83,8 @@
       "implementation_pr": "https://github.com/atto-lang/atto-source.rs/pull/381",
       "proposed_head_sha": "aef93dc5c6a859f9849958ecc46f97fb531a0deb",
       "execution_status": "not_executed",
-      "receipt": null
+      "receipt": null,
+      "result_profile": null
     },
     "rs-browser-wasm-compiler": {
       "repo": "atto-lang/atto-source.rs",
@@ -90,7 +92,8 @@
       "implementation_pr": "https://github.com/atto-lang/atto-source.rs/pull/381",
       "proposed_head_sha": "aef93dc5c6a859f9849958ecc46f97fb531a0deb",
       "execution_status": "not_executed",
-      "receipt": null
+      "receipt": null,
+      "result_profile": null
     },
     "browser-pinned-release": {
       "repo": "atto-lang/atto-lang.github.io",
@@ -98,7 +101,8 @@
       "implementation_pr": "https://github.com/atto-lang/atto-source.rs/pull/381",
       "proposed_head_sha": null,
       "execution_status": "not_executed",
-      "receipt": null
+      "receipt": null,
+      "result_profile": null
     },
     "llvm-rust-aot": {
       "repo": "atto-lang/atto-source.llvm",
@@ -106,7 +110,8 @@
       "implementation_pr": "https://github.com/atto-lang/atto-source.llvm/pull/54",
       "proposed_head_sha": "3ae7f7f026e415eb1dd3807bafa160914b1316fa",
       "execution_status": "not_executed",
-      "receipt": null
+      "receipt": null,
+      "result_profile": "os_exit_code"
     },
     "llvm-independent-cpp": {
       "repo": "atto-lang/atto-source.llvm",
@@ -114,7 +119,8 @@
       "implementation_pr": "https://github.com/atto-lang/atto-source.llvm/pull/54",
       "proposed_head_sha": null,
       "execution_status": "not_executed",
-      "receipt": null
+      "receipt": null,
+      "result_profile": null
     },
     "net-direct-cil": {
       "repo": "atto-lang/atto-source.net",
@@ -122,7 +128,8 @@
       "implementation_pr": "https://github.com/atto-lang/atto-source.net/pull/16",
       "proposed_head_sha": "c452af80d40754fa5900b1ba0880c50c0aa6c790",
       "execution_status": "not_executed",
-      "receipt": null
+      "receipt": null,
+      "result_profile": "os_exit_code"
     },
     "java-scalar-bootstrap": {
       "repo": "atto-lang/atto-source.java",
@@ -130,7 +137,8 @@
       "implementation_pr": "https://github.com/atto-lang/atto-source.java/pull/51",
       "proposed_head_sha": "20f760bd002a750f6cacb823ac3cce510a1d6367",
       "execution_status": "not_executed",
-      "receipt": null
+      "receipt": null,
+      "result_profile": "os_exit_code"
     },
     "java-production-compiler": {
       "repo": "atto-lang/atto-source.java",
@@ -138,7 +146,8 @@
       "implementation_pr": "https://github.com/atto-lang/atto-source.java/pull/51",
       "proposed_head_sha": null,
       "execution_status": "not_executed",
-      "receipt": null
+      "receipt": null,
+      "result_profile": null
     },
     "forge": {
       "repo": "atto-lang/atto-source.forge",
@@ -146,7 +155,8 @@
       "implementation_pr": "https://github.com/atto-lang/atto-source.forge/pull/45",
       "proposed_head_sha": "a346a7386b30300a8fdf2e3a72559ca88048f49d",
       "execution_status": "not_executed",
-      "receipt": null
+      "receipt": null,
+      "result_profile": "stdout_line_i64"
     },
     "cranelift": {
       "repo": "atto-lang/atto-source.cranelift",
@@ -154,7 +164,8 @@
       "implementation_pr": "https://github.com/atto-lang/atto-source.cranelift/pull/50",
       "proposed_head_sha": "1cc646bd75f10f544243e1b8aa85f6334cde7400",
       "execution_status": "not_executed",
-      "receipt": null
+      "receipt": null,
+      "result_profile": "stdout_line_i64"
     },
     "wasm-runtime": {
       "repo": "atto-lang/atto-source.wasm",
@@ -162,7 +173,8 @@
       "implementation_pr": null,
       "proposed_head_sha": null,
       "execution_status": "not_executed",
-      "receipt": null
+      "receipt": null,
+      "result_profile": null
     },
     "js-runtime": {
       "repo": "atto-lang/atto-source.js",
@@ -170,7 +182,8 @@
       "implementation_pr": null,
       "proposed_head_sha": null,
       "execution_status": "not_executed",
-      "receipt": null
+      "receipt": null,
+      "result_profile": null
     },
     "atto-self-hosted": {
       "repo": "atto-lang/atto-source.atto",
@@ -178,7 +191,8 @@
       "implementation_pr": null,
       "proposed_head_sha": null,
       "execution_status": "not_executed",
-      "receipt": null
+      "receipt": null,
+      "result_profile": null
     },
     "hdl": {
       "repo": "atto-lang/atto-source.hdl",
@@ -186,7 +200,8 @@
       "implementation_pr": null,
       "proposed_head_sha": null,
       "execution_status": "not_executed",
-      "receipt": null
+      "receipt": null,
+      "result_profile": null
     },
     "realtime": {
       "repo": "atto-lang/atto-source.realtime",
@@ -194,7 +209,8 @@
       "implementation_pr": null,
       "proposed_head_sha": null,
       "execution_status": "not_executed",
-      "receipt": null
+      "receipt": null,
+      "result_profile": null
     }
   },
   "formatter": {
@@ -213,11 +229,14 @@
     "command": true,
     "ci_run_url": true,
     "complete_case_results": 8,
+    "result_profile": "os_exit_code | stdout_line_i64 | wasm_export_i64; must match the backend's declared ABI if known",
     "per_positive_case": [
       "source_fixture_blob_sha",
-      "observed_exit",
+      "observed_main_value",
+      "observed_process_exit",
       "observed_stdout",
-      "guest_artifact_sha256",
+      "guest_emission_sha256",
+      "emission_kind",
       "guest_executed"
     ],
     "per_negative_case": [
@@ -225,7 +244,7 @@
       "observed_rejection",
       "artifact_exists"
     ],
-    "provenance_rule": "Each of the 8 source-pinned fixtures must be independently evidenced by an actual compiled guest or genuine no-artifact rejection on the exact same backend head."
+    "provenance_rule": "Every positive must be produced by actual compiled guest execution; host adapters may inspect the emitted native exit/stdio/Wasm export but may never calculate the expected return themselves."
   },
   "exclusions": [
     "host-only reference tests",
