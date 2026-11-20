@@ -258,3 +258,43 @@ test('seven supplemental edge fixtures require per-backend execution, not author
   assert.equal(ledger.backend_states['js-compiled-esm']
     .local_execution.new_test_script_not_yet_run_in_Node,true);
 });
+
+test('new Linux publication and JS V8 smoke cannot masquerade as compiled CI guest receipts', () => {
+  const forge = ledger.backend_states.forge;
+  assert.equal(forge.execution_status,'not_executed');
+  assert.equal(forge.receipt,null);
+  const p=forge.local_publication_probe;
+  assert.equal(p.status,'local_exact_syscall_logic_executed_no_full_forge_guest_on_new_head');
+  assert.match(p.compiler_blob_sha,sha);
+  assert.match(p.authored_script_blob_sha,sha);
+  assert.equal(p.source_head,forge.proposed_head_sha);
+  assert.equal(p.test_script_git_sha_verified_locally,true);
+  assert.equal(p.adversarial_competing_processes,16);
+  assert.equal(p.winning_publishers,1);
+  assert.equal(p.losing_publishers,15);
+  assert.equal(p.syscall_logic_additional_concurrent_writers,24);
+  assert.equal(p.syscall_logic_additional_winners,1);
+  assert.equal(p.source_mode,'0600');
+  assert.equal(p.no_overwrite_regular,true);
+  assert.equal(p.no_overwrite_symlink,true);
+  assert.equal(p.no_named_temporary_publication,true);
+  assert.equal(p.exact_head_full_forge_compile_run,false);
+  assert.match(p.smoke_gate_executed_against,/stand-in Forge CLI/);
+  assert.equal(Object.keys(p.smoke_gate_cases).length,4);
+  assert.ok(Object.values(p.smoke_gate_cases).every(s=>s==='passed'));
+  const js=ledger.backend_states['js-compiled-esm'];
+  assert.equal(js.execution_status,'not_executed');
+  assert.equal(js.receipt,null);
+  const v=js.local_full_fixtures_v8;
+  assert.match(v.compiler_blob_sha,sha);
+  assert.equal(v.fixture_git_blobs_verified,15);
+  assert.equal(v.compiled_function_executions,7);
+  assert.equal(v.checked_overflow_runtime_traps,1);
+  assert.equal(v.invalid_source_fail_closed,7);
+  assert.equal(v.passed,15);
+  assert.equal(v.failed,0);
+  assert.deepEqual(v.observed_values,
+    ['83','83','42','42','61','42','-9223372036854775808']);
+  assert.match(v.scope,/in-process rather than Node ESM\/CLI or CI runner/);
+  assert.equal(forge.local_execution.source_changed_since_local_observation,true);
+});
