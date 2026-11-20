@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "contract": "pipe-rpipe-directed-endpoints-v1",
+  "authority": "atto-lang/atto-spec language/directed-rpipe-and-stream-capture-v1.md (draft PR #45)",
+  "evidence_status": "NOT_EXECUTED",
+  "scope": "Every compiler implements or explicitly capability-rejects typed continuous pipe/rpipe. No backend is presumed passing.",
+  "operator_edges": {
+    "pipe": "left_to_right",
+    "rpipe": "right_to_left",
+    "functional_forward": "|>",
+    "functional_reverse": "<|"
+  },
+  "endpoint_roles": {
+    "actor_source": "declared emits T",
+    "actor_sink": "declared receives T",
+    "channel": "PipeSource<T> and PipeSink<T>",
+    "readable_stream": "PipeSource<T>",
+    "stream_sink_port": "PipeSink<T>"
+  },
+  "cases": [
+    {
+      "id": "actor-forward",
+      "path": "fixtures/pipe-rpipe-v1/actor-forward.atto",
+      "expect": "accept_typechecked_graph",
+      "required_direction": "Producer->Consumer"
+    },
+    {
+      "id": "actor-reverse",
+      "path": "fixtures/pipe-rpipe-v1/actor-reverse.atto",
+      "expect": "accept_typechecked_graph",
+      "required_direction": "Producer->Consumer"
+    },
+    {
+      "id": "actor-missing-emits",
+      "path": "fixtures/pipe-rpipe-v1/actor-missing-emits.atto",
+      "expect": "reject_source_role",
+      "error_family": "E_TYPE"
+    },
+    {
+      "id": "actor-wrong-direction",
+      "path": "fixtures/pipe-rpipe-v1/actor-wrong-direction.atto",
+      "expect": "reject_source_role",
+      "error_family": "E_TYPE"
+    },
+    {
+      "id": "mixed-channel-stream-forward",
+      "path": "fixtures/pipe-rpipe-v1/mixed-channel-stream-forward.atto",
+      "expect": "accept_typechecked_graph",
+      "required_direction": "Producer->Channel<int>->Stream<int>->Consumer"
+    },
+    {
+      "id": "mixed-channel-stream-reverse",
+      "path": "fixtures/pipe-rpipe-v1/mixed-channel-stream-reverse.atto",
+      "expect": "accept_typechecked_graph",
+      "required_direction": "Producer->Channel<int>->Stream<int>->Consumer"
+    },
+    {
+      "id": "actor-duplicate-direction",
+      "path": "fixtures/pipe-rpipe-v1/actor-duplicate-direction.atto",
+      "expect": "reject_second_connection_if_unicast_port_occupied",
+      "required_direction": "Producer->Consumer twice, NEVER duplex",
+      "phase": "runtime_admission"
+    },
+    {
+      "id": "actor-mixed-directions",
+      "path": "fixtures/pipe-rpipe-v1/actor-mixed-directions.atto",
+      "expect": "reject_unparenthesized_direction_mix",
+      "error_family": "E_PIPE_DIRECTION"
+    }
+  ],
+  "backend_evidence": [
+    {
+      "repo": "atto-lang/atto-source.java",
+      "status": "NOT_EXECUTED",
+      "note": "must supply own exact-head compile and guest receipts"
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "status": "NOT_EXECUTED",
+      "note": "must supply own exact-head compile and guest receipts"
+    },
+    {
+      "repo": "atto-lang/atto-source.wasm",
+      "status": "NOT_EXECUTED",
+      "note": "must supply own exact-head compile and guest receipts"
+    },
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "status": "NOT_EXECUTED",
+      "note": "must supply own exact-head compile and guest receipts"
+    },
+    {
+      "repo": "atto-lang/atto-source.net",
+      "status": "NOT_EXECUTED",
+      "note": "must supply own exact-head compile and guest receipts"
+    },
+    {
+      "repo": "atto-lang/atto-source.forge",
+      "status": "NOT_EXECUTED",
+      "note": "must supply own exact-head compile and guest receipts"
+    },
+    {
+      "repo": "atto-lang/atto-source.cranelift",
+      "status": "NOT_EXECUTED",
+      "note": "must supply own exact-head compile and guest receipts"
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "status": "NOT_EXECUTED",
+      "note": "must supply own exact-head compile and guest receipts"
+    },
+    {
+      "repo": "atto-lang/atto-source.atto",
+      "status": "NOT_EXECUTED",
+      "note": "self-hosted compiler not bootstrapped"
+    },
+    {
+      "repo": "atto-lang/atto-source.hdl",
+      "status": "NOT_EXECUTED",
+      "note": "hardware backend may need explicit unsupported capability profile"
+    },
+    {
+      "repo": "atto-lang/atto-source.realtime",
+      "status": "NOT_EXECUTED",
+      "note": "bootstrap-only project"
+    }
+  ],
+  "required_receipts": [
+    "backend_repo",
+    "backend_commit_sha",
+    "fixture_blob_sha",
+    "compiler_invocation",
+    "compile_diagnostic",
+    "emitted_artifact_sha_if_any",
+    "guest_executed",
+    "guest_exit_code",
+    "observed_edge_direction",
+    "item_order_and_count",
+    "backpressure_capacity_0_1_n",
+    "EOF",
+    "cancel_quiescence",
+    "ownership_release",
+    "actor_supervisor_CONTROL_isolation",
+    "CI_run_url",
+    "executed_steps_nonzero"
+  ],
+  "security_invariants": [
+    "no CONTROL to DATA reroute",
+    "no unchecked cross-tenant socket or mailbox capability",
+    "atomic activation and rollback",
+    "no implicit fanout or duplicated admission",
+    "bounded buffers",
+    "ownership across await and cancellation",
+    "once-only error settlement"
+  ],
+  "gating": "Source fixtures and manifest are not passing conformance; positive cases need compiled guest transfer and observed receipts. A backend can report TARGET_UNSUPPORTED with an explicit diagnostic, not PASS."
+}
