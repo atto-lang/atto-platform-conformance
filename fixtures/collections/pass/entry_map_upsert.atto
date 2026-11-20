@@ -1,0 +1,13 @@
+// Target fixture only: NOT_EXECUTED on all backends.
+// A real guest test must return 5 and attest the executable/compiler SHA.
+let Entry<string, int> entry = "foo" => 5;
+
+pub fnc main(): int {
+    let mut Map<string, int> x = {
+        "foo" => 5
+    };
+    x.set("foo", 6);
+    x["foo"] = 3;
+    x.add(entry);
+    return x.get("foo").unwrap();
+}
