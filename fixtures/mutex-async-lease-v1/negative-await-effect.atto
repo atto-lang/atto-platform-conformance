@@ -1,6 +1,6 @@
 // COMPILE-NEGATIVE: E_AWAIT_EFFECT. No guest artifact.
 pub fnc main(): int {
-  val counter = Mutex<int>(0);
+  val counter = new Mutex<int>(0);
   using counter.lock_async() as lease {
     lease.value += 1;
   }

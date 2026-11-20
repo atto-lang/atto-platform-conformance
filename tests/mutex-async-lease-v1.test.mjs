@@ -26,7 +26,11 @@ test('mutex fixture sources are present, unique and declare exact outcomes', () 
     const full = resolve(root,contract.fixtures_dir,c.source);
     assert.equal(existsSync(full),true,full);
     const src = readFileSync(full,'utf8');
-    if (c.feature !== 'await') {
+    if (c.feature === 'value_struct') {
+      assert.match(src, /define struct Point/, 'value struct must be declared');
+      assert.match(src, /Point\\(x=1, y=2\\)/, 'struct call without new must remain valid');
+      assert.doesNotMatch(src, /new Point\\(/);
+    } else if (c.feature !== 'await') {
       assert.match(src,/Mutex<int>/, 'mutex fixture must reference typed Mutex');
       assert.match(src,/lock_async\(\)/, 'mutex fixture must acquire asynchronously');
       assert.match(src,/\busing\b/, 'mutex fixture must use scoped cleanup');
@@ -58,7 +62,20 @@ test('two sequential acquisitions and overflowing guard are explicit unexecuted 
   assert.equal(get('two-sequential-ready').expected_releases,2);
   assert.equal(get('reject-guard-overflow').expected_diagnostic,'E_OVERFLOW');
   assert.equal(get('reject-guard-overflow').guest_artifact,false);
-  assert.ok(contract.cases.length >= 18);
+  assert.ok(contract.cases.length >= 21);
   assert.equal(contract.backend_evidence['atto-source.rs'].status,'NOT_EXECUTED',
     'source-only fixtures never promote actual compiler/guest parity');
+});
+
+test('Mutex is an opaque resource class with explicit new, unlike value structs', () => {
+  assert.equal(contract.constructor_contract.class_kind,'opaque_sealed_nominal_resource_class');
+  assert.equal(contract.constructor_contract.canonical,'new Mutex<T>(value)');
+  assert.equal(contract.constructor_contract.bare_call_rejected.diagnostic,'E_NEW_REQUIRED');
+  const negative=contract.cases.find(x=>x.id==='reject-bare-mutex-class-call');
+  assert.equal(negative.expected_diagnostic,'E_NEW_REQUIRED');
+  assert.equal(negative.guest_artifact,false);
+  const value=contract.cases.find(x=>x.id==='allow-bare-value-struct-constructor');
+  assert.equal(value.expected_exit,3);
+  for(const evidence of Object.values(contract.backend_evidence))
+    assert.equal(evidence.status,'NOT_EXECUTED');
 });

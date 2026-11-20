@@ -1,7 +1,7 @@
 // COMPILE-NEGATIVE: E_GUARD_SUSPEND even though await 42 is ready.
 // A syntactic suspend site is forbidden under a synchronous scoped lease.
 pub susp fnc main(): int {
-  val counter = Mutex<int>(0);
+  val counter = new Mutex<int>(0);
   using await counter.lock_async() as lease {
     lease.value += await 42;
   }

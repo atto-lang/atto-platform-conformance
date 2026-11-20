@@ -1,7 +1,7 @@
 // COMPILE-NEGATIVE: E_GUARD_SUSPEND. No guest artifact.
 susp fnc read_next(): int { return await 42; }
 pub susp fnc main(): int {
-  val counter = Mutex<int>(0);
+  val counter = new Mutex<int>(0);
   using counter.lock_async() as lease {
     lease.value += await read_next();
   }

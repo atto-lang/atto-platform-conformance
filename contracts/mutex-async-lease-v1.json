@@ -145,6 +145,28 @@
       "source": "negative-guard-overflow.atto",
       "expected_diagnostic": "E_OVERFLOW",
       "guest_artifact": false
+    },
+    {
+      "id": "reject-bare-mutex-class-call",
+      "kind": "compile_negative",
+      "feature": "constructor",
+      "source": "negative-old-mutex-constructor.atto",
+      "expected_diagnostic": "E_NEW_REQUIRED",
+      "guest_artifact": false
+    },
+    {
+      "id": "allow-bare-value-struct-constructor",
+      "kind": "compiled_guest_positive",
+      "feature": "value_struct",
+      "source": "value-struct-bare-constructor.atto",
+      "expected_exit": 3,
+      "expected_runtime_suspensions": 0
+    },
+    {
+      "id": "mutex-class-identity-and-no-implicit-copy",
+      "kind": "runtime_probe",
+      "expected": "Mutex<T> is an opaque sealed nominal resource class with unique identity, not a by-value struct; implicit copying or spoofed access is rejected, and verified loans stay in the authorized owner domain",
+      "evidence_required": true
     }
   ],
   "backend_evidence": {
@@ -233,5 +255,17 @@
     "atto-source.rs#186",
     "atto-source.rs#262",
     "atto-source.rs#397"
-  ]
+  ],
+  "constructor_contract": {
+    "class_kind": "opaque_sealed_nominal_resource_class",
+    "canonical": "new Mutex<T>(value)",
+    "bare_call_rejected": {
+      "source": "Mutex<int>(0)",
+      "diagnostic": "E_NEW_REQUIRED",
+      "artifact": false
+    },
+    "ordinary_value_struct_may_omit_new": true,
+    "ownership": "Unique owner resource, borrow by default for nonprimitive function parameters; no implicit clone or by-value copy",
+    "guest_promotion": "No backend may claim constructor parity without source-pinned compiler/type-checker and executed guest evidence"
+  }
 }

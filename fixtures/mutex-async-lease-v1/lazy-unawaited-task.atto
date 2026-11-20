@@ -6,7 +6,7 @@ susp fnc increment(Mutex<int> counter): int {
   }
 }
 pub fnc main(): int {
-  val counter = Mutex<int>(0);
+  val counter = new Mutex<int>(0);
   val pending = increment(counter);
   // The body is never driven; creation MUST NOT acquire or increment.
   return 0;
