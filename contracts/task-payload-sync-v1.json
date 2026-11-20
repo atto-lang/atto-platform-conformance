@@ -2,7 +2,7 @@
   "schema": "atto.task-payload-sync.v1",
   "status": "TARGET_NOT_GUEST_VERIFIED",
   "source_contract": "atto-lang/atto-spec/language/typed-task-payload-sync-v1.md",
-  "meaning": "task<T> returns Future<T> and is independently schedulable; await task<T> spawns and joins; sync task<T> and do sync task<T> execute inline on caller TaskId, without an independent spawn or Future; do task<T> is supervised child spawn",
+  "meaning": "task<T> returns Future<T> and is independently schedulable; await task<T> spawns and joins; sync task<T> and void-only do sync task<void> execute inline on caller TaskId, without an independent spawn or Future; do task<T> is supervised child spawn",
   "execution_frame_model": "independent logical continuations for spawned task<T> within a structured TaskScope; inline sync task runs in its caller's logical continuation and creates no independent child; physical frame sharing only after proven lifetime and alias safety",
   "cases": [
     {
@@ -41,7 +41,7 @@
     {
       "id": "discard_do_sync_task",
       "source_path": "fixtures/task-payload-sync-v1/discard_do_sync_task.atto",
-      "source_git_blob": "eed8205d70528244d2a5b0655c1e999fad6d1194",
+      "source_git_blob": "4bed36abc94abfb7daa47bf0a6b1c0d497cb12f4",
       "kind": "positive",
       "expected": {
         "guest_exit": 42,
@@ -51,7 +51,7 @@
           "SAME_LOGICAL_TASK_ID",
           "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT",
           "NO_INDEPENDENT_WORKER_DISPATCH",
-          "INLINE_RESULT_DISCARDED_AFTER_BODY"
+          "INLINE_VOID_COMPLETION_NO_RESULT"
         ]
       }
     },
@@ -942,7 +942,7 @@
       "release_qualified": false
     }
   ],
-  "sync_inline_model": "sync task<T> runs inline in caller TaskId; no independent TaskSpawn/TaskJoin/Future or new worker assignment; pure bodies allowed in non-susp context, suspending inline bodies suspend their caller cooperatively (carrier migration allowed); do sync task is inline discard and MUST NOT canonicalize to do task; lexical using/defer unwind LIFO before return, cancel/fail; never yield under active critical guard",
+  "sync_inline_model": "sync task<T> runs inline in caller TaskId; no independent TaskSpawn/TaskJoin/Future or new worker assignment; pure bodies allowed in non-susp context, suspending inline bodies suspend their caller cooperatively (carrier migration allowed); do sync task accepts only an explicit void payload or inferred void, forbids return expressions, and MUST NOT canonicalize to do task; lexical using/defer unwind LIFO before return, cancel/fail; never yield under active critical guard",
   "inline_sync_runtime_probes": [
     {
       "id": "inline_no_child_admission",
