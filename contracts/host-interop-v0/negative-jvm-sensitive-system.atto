@@ -1,0 +1,2 @@
+import jvm "java.lang.System" as JSystem;
+pub fnc main(): int { return 42; }

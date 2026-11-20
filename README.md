@@ -41,8 +41,8 @@ target/physical claims without the required evidence. See
 
 ## AttoLang JVM/.NET host import contract (source-only)
 
-The [host-interop-v0 contract](contracts/host-interop-v0/README.md) pins six
-canonical `.atto` fixture blobs and ten positive/negative, backend-qualified
+The [host-interop-v0 contract](contracts/host-interop-v0/README.md) pins ten
+canonical `.atto` fixture blobs and fourteen positive/negative, backend-qualified
 import oracles. Both compiler backends currently report **NOT_EXECUTED**
 until exact-head real JVM/.NET Native AOT guest execution and negative
 capability admission receipts exist. `npm test` validates only the versioned

@@ -1,0 +1,2 @@
+import dotnet "System.Reflection.Assembly" as Reflect;
+pub fnc main() -> int { return 42; }

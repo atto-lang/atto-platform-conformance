@@ -62,3 +62,14 @@ compile-time checked Sendable handle adapter explicitly allows them. 32-bit
 actor heap offsets remain distinct from 64-bit host pointers. JNI, reflection,
 file/process/network authority, dynamic loading, cross-tenant handles and
 unfenced callbacks are out of scope for v0.
+
+## Additional fail-closed import-admission oracles
+
+The stacked hardening extension adds four source-only negatives: a JVM
+`java.lang.System` import must remain denied even when an exact class name is
+included in the requested allowlist; both host import syntaxes require `as`;
+and the .NET Math capability cannot authorize `System.Reflection.Assembly`.
+The Java system-class test is **runtime-admission**, not source syntax rejection.
+These additional cases are **NOT_EXECUTED** until compiler-owned and
+restricted-host tests execute at exact source heads; the Node tests check
+only pinned content and failure-classification integrity.

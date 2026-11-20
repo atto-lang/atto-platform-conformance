@@ -9,11 +9,11 @@ const root = resolve(fileURLToPath(new URL('../', import.meta.url)));
 const manifest = JSON.parse(readFileSync(
   resolve(root, 'contracts/host-interop-v0/manifest.json'), 'utf8'));
 
-test('host interop manifest is a non-promoting ten-case backend-owned contract', () => {
+test('host interop manifest is a non-promoting fourteen-case backend-owned contract', () => {
   assert.equal(manifest.schema, 'attolang.host-interop-v0');
   assert.equal(manifest.status, 'NOT_EXECUTED');
-  assert.equal(manifest.cases.length, 10);
-  assert.equal(Object.keys(manifest.fixtures).length, 6);
+  assert.equal(manifest.cases.length, 14);
+  assert.equal(Object.keys(manifest.fixtures).length, 10);
   const ids = new Set();
   for (const item of manifest.cases) {
     assert.match(item.id, /^(java|net)-[a-z-]+$/);
@@ -35,7 +35,7 @@ test('host interop manifest is a non-promoting ten-case backend-owned contract',
     }
   }
   assert.equal(manifest.cases.filter(x => x.expected === 'accept').length, 2);
-  assert.equal(manifest.cases.filter(x => x.expected === 'reject').length, 8);
+  assert.equal(manifest.cases.filter(x => x.expected === 'reject').length, 12);
   assert.equal(manifest.cases.filter(x => x.id === 'net-missing-capability').length, 1);
   assert.equal(manifest.cases.filter(x => x.id === 'java-missing-capability').length, 1);
 });

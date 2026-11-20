@@ -30,6 +30,22 @@
     "negative-jvm-runtime.atto": {
       "path": "contracts/host-interop-v0/negative-jvm-runtime.atto",
       "git_blob_sha1": "c9075edfd615b4e8ac49dc790b1b83b94db15ca0"
+    },
+    "negative-jvm-sensitive-system.atto": {
+      "path": "contracts/host-interop-v0/negative-jvm-sensitive-system.atto",
+      "git_blob_sha1": "ff05642355032c93630037bfc1deaec54ff74bb4"
+    },
+    "negative-jvm-missing-alias.atto": {
+      "path": "contracts/host-interop-v0/negative-jvm-missing-alias.atto",
+      "git_blob_sha1": "e518f00c9928dd25129cf4d8513ac5d53c15b541"
+    },
+    "negative-dotnet-missing-alias.atto": {
+      "path": "contracts/host-interop-v0/negative-dotnet-missing-alias.atto",
+      "git_blob_sha1": "944872b85507495d88fd9c9e7251e7e9460651fc"
+    },
+    "negative-dotnet-reflection.atto": {
+      "path": "contracts/host-interop-v0/negative-dotnet-reflection.atto",
+      "git_blob_sha1": "0140b6c4badc23e486d1a8867fd255899a92d6df"
     }
   },
   "cases": [
@@ -154,6 +170,58 @@
       "id": "net-reject-jvm-host",
       "backend": "net",
       "file": "positive-jvm-list.atto",
+      "expected": "reject",
+      "phase": "source-check",
+      "authority": "interop.dotnet.math-i64",
+      "expected_output": null,
+      "status": "NOT_EXECUTED",
+      "source_head": null,
+      "compiled_binary_sha256": null,
+      "executed_steps": 0
+    },
+    {
+      "id": "java-deny-sensitive-system",
+      "backend": "java",
+      "file": "negative-jvm-sensitive-system.atto",
+      "expected": "reject",
+      "phase": "runtime-admission",
+      "authority": "JAVA_INTEROP,allowlist:java.lang.System",
+      "expected_output": null,
+      "status": "NOT_EXECUTED",
+      "source_head": null,
+      "compiled_binary_sha256": null,
+      "executed_steps": 0
+    },
+    {
+      "id": "java-reject-missing-alias",
+      "backend": "java",
+      "file": "negative-jvm-missing-alias.atto",
+      "expected": "reject",
+      "phase": "source-check",
+      "authority": "JAVA_INTEROP",
+      "expected_output": null,
+      "status": "NOT_EXECUTED",
+      "source_head": null,
+      "compiled_binary_sha256": null,
+      "executed_steps": 0
+    },
+    {
+      "id": "net-reject-missing-alias",
+      "backend": "net",
+      "file": "negative-dotnet-missing-alias.atto",
+      "expected": "reject",
+      "phase": "source-check",
+      "authority": "interop.dotnet.math-i64",
+      "expected_output": null,
+      "status": "NOT_EXECUTED",
+      "source_head": null,
+      "compiled_binary_sha256": null,
+      "executed_steps": 0
+    },
+    {
+      "id": "net-deny-reflection",
+      "backend": "net",
+      "file": "negative-dotnet-reflection.atto",
       "expected": "reject",
       "phase": "source-check",
       "authority": "interop.dotnet.math-i64",
