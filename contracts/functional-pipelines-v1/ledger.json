@@ -207,7 +207,7 @@
       "repo": "atto-lang/atto-source.forge",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.forge/pull/45",
-      "proposed_head_sha": "ad3d974568d281de085e74a6fa9d300ef5cfaa69",
+      "proposed_head_sha": "48d610b9acf40a7f1ea02f4529efef9232579359",
       "execution_status": "not_executed",
       "receipt": null,
       "result_profile": "stdout_line_i64",
@@ -300,14 +300,14 @@
         "exclusive_output_create_observed": true,
         "temp_symlink_no_clobber_observed": true,
         "temp_regular_no_clobber_observed": true,
-        "current_compiler_blob_sha": "aadc3ff036559849ea898e8de9c2b8e5e09a640f",
+        "current_compiler_blob_sha": "bd5574d01ef149bc5e1eb636c1368ce2e3d323b7",
         "source_changed_since_local_observation": true,
         "observed_compiler_blob_sha": "c64c2ea8ed8c4bbb7fcf4024561cd57fd2d3aa97"
       },
       "local_publication_probe": {
         "status": "local_exact_syscall_logic_executed_no_full_forge_guest_on_new_head",
-        "source_head": "ad3d974568d281de085e74a6fa9d300ef5cfaa69",
-        "compiler_blob_sha": "aadc3ff036559849ea898e8de9c2b8e5e09a640f",
+        "source_head": "48d610b9acf40a7f1ea02f4529efef9232579359",
+        "compiler_blob_sha": "bd5574d01ef149bc5e1eb636c1368ce2e3d323b7",
         "authored_script_blob_sha": "3ffc9f413a953eb0f2f229d3c0d79d677356c8b7",
         "test_script_git_sha_verified_locally": true,
         "smoke_gate_executed_against": "stand-in Forge CLI emitting simple fixed native 83 guest; not actual Atto parser/compiler",
@@ -327,7 +327,30 @@
         "no_overwrite_symlink": true,
         "no_named_temporary_publication": true,
         "exact_head_full_forge_compile_run": false,
-        "assertion": "No CI receipt and no newly compiled Atto Forge guest on this new source blob"
+        "assertion": "No CI receipt and no newly compiled Atto Forge guest on this new source blob",
+        "current_cmake_test_blob_sha": "ff41c68991a72a9e8086eb430897b1b73302a17f",
+        "input_reader_probe": {
+          "status": "local_exact_syscall_logic_executed_no_full_forge_guest",
+          "toolchains": [
+            "g++ 14.2.0",
+            "clang++ 17.0.0"
+          ],
+          "build_variants": [
+            "C++20 -Wall -Wextra -Werror -pedantic",
+            "ASan+UBSan"
+          ],
+          "matrix_runs": 4,
+          "scenarios": [
+            "regular",
+            "symlink rejected",
+            "FIFO rejected without blocking",
+            "oversize rejected",
+            "empty"
+          ],
+          "all_expected_outcomes_observed": true,
+          "source_compiler_blob_sha": "bd5574d01ef149bc5e1eb636c1368ce2e3d323b7",
+          "scope": "Exact opened-inode descriptor read routine compiled as isolated C++ harness; NOT full Forge binary, NOT Actions CI"
+        }
       }
     },
     "cranelift": {
@@ -597,7 +620,7 @@
       },
       "forge": {
         "implementation_repo": "atto-lang/atto-source.forge",
-        "proposed_head_sha": "ad3d974568d281de085e74a6fa9d300ef5cfaa69",
+        "proposed_head_sha": "48d610b9acf40a7f1ea02f4529efef9232579359",
         "fixture_files_copied_and_blob_verified": 7,
         "tests_authored": true,
         "execution_status": "not_executed",
