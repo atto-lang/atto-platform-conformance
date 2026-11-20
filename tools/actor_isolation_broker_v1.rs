@@ -101,8 +101,11 @@ impl Mailman {
     fn reservation_count(&self) -> usize {
         self.payloads.values().filter(|v| matches!(v, PayloadState::Escrow { .. })).count()
     }
-    fn commit(&mut self, payload_id: u64, recipient: ActorIdentity, epoch: u64)
-        -> Result<(), Denial> {
+    fn commit(&mut self, payload_id: u64, recipient: ActorIdentity, epoch: u64,
+              still_authorized: bool) -> Result<(), Denial> {
+        // Admission linearizes here. Revalidate the trusted route grant after
+        // reservation and before any sender ownership is consumed.
+        if !still_authorized { return Err(Denial::NoAuthority); }
         if self.closed { return Err(Denial::Closed); }
         if self.destination != Some(recipient) || self.epoch != epoch {
             return Err(Denial::StaleIdentity);
@@ -219,8 +222,8 @@ mod tests {
         m.register(13, 7).unwrap();
         m.stage(13, 7, actor(), 22, true).unwrap();
         assert_eq!(m.payloads[&13], PayloadState::Escrow { tenant: 7, recipient: actor(), epoch: 22 });
-        m.commit(13, actor(), 22).unwrap();
-        assert_eq!(m.commit(13, actor(), 22), Err(Denial::NotOwner));
+        m.commit(13, actor(), 22, true).unwrap();
+        assert_eq!(m.commit(13, actor(), 22, true), Err(Denial::NotOwner));
         m.deliver(13, actor(), 22).unwrap();
         assert_eq!(m.deliver(13, actor(), 22), Err(Denial::NotOwner));
         assert_eq!(m.payloads[&13], PayloadState::Retired);
@@ -238,6 +241,16 @@ mod tests {
         assert_eq!(m.stage(1, 8, actor(), 22, true), Err(Denial::NoAuthority));
         assert_eq!(m.payloads[&1], PayloadState::Sender { tenant: 7 });
     }
+    #[test] fn revoked_between_stage_and_admission_cannot_consume_sender_owner() {
+        let mut m = Mailman::new(actor(), 1, 22);
+        m.register(1, 7).unwrap();
+        m.stage(1, 7, actor(), 22, true).unwrap();
+        assert_eq!(m.commit(1, actor(), 22, false), Err(Denial::NoAuthority));
+        assert_eq!(m.payloads[&1], PayloadState::Escrow { tenant: 7, recipient: actor(), epoch: 22 });
+        m.abort(1, 7).unwrap();
+        assert_eq!(m.payloads[&1], PayloadState::Sender { tenant: 7 });
+        assert_eq!(m.inbox_count, 0);
+    }
     #[test] fn cancellation_before_commit_restores_owner_once() {
         let mut m = Mailman::new(actor(), 1, 22); m.register(1, 7).unwrap();
         m.stage(1, 7, actor(), 22, true).unwrap();
@@ -248,14 +261,14 @@ mod tests {
     #[test] fn cancellation_after_commit_cannot_reclaim_accepted_message() {
         let mut m = Mailman::new(actor(), 1, 22); m.register(1, 7).unwrap();
         m.stage(1, 7, actor(), 22, true).unwrap();
-        m.commit(1, actor(), 22).unwrap();
+        m.commit(1, actor(), 22, true).unwrap();
         assert_eq!(m.abort(1, 7), Err(Denial::NotOwner));
         assert_eq!(m.payloads[&1], PayloadState::Inbox { recipient: actor(), epoch: 22 });
     }
     #[test] fn close_returns_escrow_and_retires_committed_payload_once() {
         let mut m = Mailman::new(actor(), 2, 22);
         for id in 1..=2 { m.register(id, 7).unwrap(); m.stage(id, 7, actor(), 22, true).unwrap(); }
-        m.commit(1, actor(), 22).unwrap();
+        m.commit(1, actor(), 22, true).unwrap();
         m.close(); m.close();
         assert_eq!(m.payloads[&1], PayloadState::Retired);
         assert_eq!(m.payloads[&2], PayloadState::Sender { tenant: 7 });
@@ -266,7 +279,7 @@ mod tests {
         m.register(1, 7).unwrap(); m.stage(1, 7, actor(), 22, true).unwrap();
         let mut next = actor(); next.incarnation += 1;
         m.restart(next, 23);
-        assert_eq!(m.commit(1, actor(), 22), Err(Denial::StaleIdentity));
+        assert_eq!(m.commit(1, actor(), 22, true), Err(Denial::StaleIdentity));
         assert_eq!(m.payloads[&1], PayloadState::Sender { tenant: 7 });
         assert_eq!(m.stage(1, 7, actor(), 22, true), Err(Denial::StaleIdentity));
     }
