@@ -50,3 +50,15 @@ test('ready await and guard-await prohibition are separate source contracts', ()
   assert.equal(get('reject-guard-ready-await').guest_artifact, false);
   assert.ok(contract.cases.some(x => x.id === 'legacy-async-2-abi-rejection'));
 });
+
+test('two sequential acquisitions and overflowing guard are explicit unexecuted target cases', () => {
+  const get = id => contract.cases.find(x => x.id === id);
+  assert.equal(get('two-sequential-ready').expected_exit,2);
+  assert.equal(get('two-sequential-ready').expected_sequential_acquisitions,2);
+  assert.equal(get('two-sequential-ready').expected_releases,2);
+  assert.equal(get('reject-guard-overflow').expected_diagnostic,'E_OVERFLOW');
+  assert.equal(get('reject-guard-overflow').guest_artifact,false);
+  assert.ok(contract.cases.length >= 18);
+  assert.equal(contract.backend_evidence['atto-source.rs'].status,'NOT_EXECUTED',
+    'source-only fixtures never promote actual compiler/guest parity');
+});
