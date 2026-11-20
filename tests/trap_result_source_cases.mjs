@@ -48,9 +48,9 @@ test('source-only target registry is complete and has both outcomes', () => {
 test('obsolete Option-valued trap is an exact pinned negative, never a v1 positive', () => {
   const path = 'fixtures/trap-result-v1/reject-obsolete-option-trap-binding.atto';
   const data = readFileSync(root + path);
-  const sha = createHash('sha1').update('blob ' + data.length + '\\0').update(data).digest('hex');
+  const sha = createHash('sha1').update('blob ' + data.length + String.fromCharCode(0)).update(data).digest('hex');
   assert.equal(sha, 'c0467b30232d2ecd5487eecb09fd86cedc79cbc0');
-  assert.match(data.toString('utf8'), /Option<int> = trap \\(40 \\+ 2\\)/);
+  assert.ok(data.toString('utf8').includes('Option<int> = trap (40 + 2)'));
   const caseEntry = m.cases.find(c => c.id === 'reject-obsolete-option-trap-binding');
   assert.equal(caseEntry.source, path);
   assert.equal(caseEntry.expect.kind, 'compile_reject');
