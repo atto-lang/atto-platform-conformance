@@ -1,23 +1,25 @@
 {
   "schema": "atto.task-compiler-local-execution.v1",
-  "observed_utc": "2026-11-20T06:04:06Z",
+  "observed_utc": "2026-11-20",
   "provenance": "ChatGPT isolated local container; reconstructed exact bytes from authenticated GitHub connector fetch_file then verified with git hash-object. NOT a GitHub Actions CI run.",
   "grade": "LOCALLY_EXECUTED_LIMITED_PROFILE",
   "java": {
     "repo": "atto-lang/atto-source.java",
     "pr": 59,
-    "head": "11444064480f896d1d2de2d7d0fc1d0849d494d3",
+    "head": "35339c0df48fe42d2dd450495979732e285ce803",
     "toolchain": "OpenJDK javac 21.0.12.1; -Xlint:all -Werror",
     "blobs": {
-      "src/compiler/asyncv1/AttoAsyncV1Compiler.java": "805e28e6b6f99798e8d737662e7531ec3e98b288",
-      "tests/compiler/AttoAsyncV1CompilerProbe.java": "5ee6be44c719c29d904ad63c1766b23a7641ed49",
+      "src/compiler/asyncv1/AttoAsyncV1Compiler.java": "a7e4f4d24bd1a1105229a443f2527b7ead210189",
+      "tests/compiler/AttoAsyncV1CompilerProbe.java": "cb5d8bcdd7188e261060ea03a5875844f42f4b0e",
       "fixtures/async_v1/completed_future_typed.atto": "240fc8e0ad724722b13f8e0034b30bc69db76925",
       "fixtures/async_v1/completed_future.atto": "b2c23fcf15bebda5449032f41e3096dae68302c0",
-      "ci/async/verify-compiled-completed-future.sh": "56749987ecfa8a7ab681a8d0b6f0ced1768059fe"
+      "ci/async/verify-compiled-completed-future.sh": "cec8bdf8c3eecbc3dfd50ee79d09af02516b27eb",
+      "tests/compiler/AttoAsyncV1GeneratedIdentifierProbe.java": "3d73792dbeb346412652600496124f49d0d673c1"
     },
     "admission": {
-      "checks_passed": 55,
-      "checks_expected": 55
+      "checks_expected": 56,
+      "checks_passed": 56,
+      "execution": "OpenJDK 21 -Xlint:all -Werror source+probe SHA-matched"
     },
     "compiled_guest": {
       "scope": "CLOSED_WORLD_COMPLETED_FUTURE_INT",
@@ -40,7 +42,24 @@
     },
     "native_image": "NOT_EXECUTED",
     "task_cancellation": "NOT_EXECUTED",
-    "lock_cleanup": "NOT_EXECUTED"
+    "lock_cleanup": "NOT_EXECUTED",
+    "generated_identifier_matrix": {
+      "admitted_generated_java_compiled": 19,
+      "invalid_identifiers_rejected": 4,
+      "exact_source_verified": true,
+      "compiler_flags": "-Xlint:all -Werror",
+      "execution": "LOCAL_JDK_TEST_PASSED"
+    },
+    "negative_diagnostic": {
+      "test": "private_guest_token_abc123 is never echoed to output",
+      "diagnostic": "E_ASYNC_UNEXPECTED_TOKEN",
+      "no_generated_java_artifact": true,
+      "executed": true
+    },
+    "source_org_actions": {
+      "status": "ZERO_EXECUTED_STEPS",
+      "requalification": "NOT_EXECUTED"
+    }
   },
   "forge": {
     "repo": "atto-lang/atto-source.forge",
@@ -88,5 +107,14 @@
     "GitHub Actions runner probes previously returned zero executed steps; cannot infer CI pass.",
     "Browser JSPI host tests execute separately but do not prove guest Future.cancel(), checked MIR or lock cleanup.",
     "Do not set canonical task/cancellation conformance runtime cells to PASS based on this limited evidence."
-  ]
+  ],
+  "carrier_probe": {
+    "repo": "akrion-sim/akrion-sim-e2e",
+    "run_url": "https://github.com/akrion-sim/akrion-sim-e2e/actions/runs/44764395804",
+    "job": "verify_runner",
+    "steps": 0,
+    "conclusion": "failure",
+    "source_mirror_created": false,
+    "workflow_file_deleted": true
+  }
 }
