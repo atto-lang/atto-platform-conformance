@@ -81,7 +81,7 @@
       "repo": "atto-lang/atto-source.rs",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.rs/pull/381",
-      "proposed_head_sha": "6f059f873159c863ac747867fa49add1f7799d99",
+      "proposed_head_sha": "07bb320af8c44ef3cfa41cf1605b1aa8bca10c85",
       "execution_status": "not_executed",
       "receipt": null,
       "result_profile": null
@@ -90,7 +90,7 @@
       "repo": "atto-lang/atto-source.rs",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.rs/pull/381",
-      "proposed_head_sha": "6f059f873159c863ac747867fa49add1f7799d99",
+      "proposed_head_sha": "07bb320af8c44ef3cfa41cf1605b1aa8bca10c85",
       "execution_status": "not_executed",
       "receipt": null,
       "result_profile": null
@@ -108,7 +108,7 @@
       "repo": "atto-lang/atto-source.llvm",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.llvm/pull/54",
-      "proposed_head_sha": "54411d16842564500076f84962b21c63b941db67",
+      "proposed_head_sha": "345702776195a3c37b955cadfc071a98d55b708c",
       "execution_status": "not_executed",
       "receipt": null,
       "result_profile": "os_exit_code"
@@ -489,25 +489,39 @@
     "targets": {
       "rs-browser-wasm-compiler": {
         "implementation_repo": "atto-lang/atto-source.rs",
-        "proposed_head_sha": "6f059f873159c863ac747867fa49add1f7799d99",
+        "proposed_head_sha": "07bb320af8c44ef3cfa41cf1605b1aa8bca10c85",
         "fixture_files_copied_and_blob_verified": 7,
         "tests_authored": true,
         "execution_status": "not_executed",
         "receipt": null,
         "full_signed_i64_test_authored": true,
         "checked_overflow_guest_test_authored": true,
-        "three_fail_closed_source_tests_authored": true
+        "three_fail_closed_source_tests_authored": true,
+        "reserved_authority_keyword_negative_tests": [
+          "unsafe",
+          "sync",
+          "task",
+          "pipe",
+          "rpipe"
+        ]
       },
       "llvm-rust-aot": {
         "implementation_repo": "atto-lang/atto-source.llvm",
-        "proposed_head_sha": "54411d16842564500076f84962b21c63b941db67",
+        "proposed_head_sha": "345702776195a3c37b955cadfc071a98d55b708c",
         "fixture_files_copied_and_blob_verified": 7,
         "tests_authored": true,
         "execution_status": "not_executed",
         "receipt": null,
         "full_signed_i64_test_authored": true,
         "checked_overflow_guest_test_authored": true,
-        "three_fail_closed_source_tests_authored": true
+        "three_fail_closed_source_tests_authored": true,
+        "reserved_authority_keyword_negative_tests": [
+          "unsafe",
+          "sync",
+          "task",
+          "pipe",
+          "rpipe"
+        ]
       },
       "net-direct-cil": {
         "implementation_repo": "atto-lang/atto-source.net",
@@ -551,7 +565,7 @@
       },
       "rs-native-compiler": {
         "implementation_repo": "atto-lang/atto-source.rs",
-        "proposed_head_sha": "6f059f873159c863ac747867fa49add1f7799d99",
+        "proposed_head_sha": "07bb320af8c44ef3cfa41cf1605b1aa8bca10c85",
         "fixture_files_copied_and_blob_verified": 7,
         "tests_authored": true,
         "execution_status": "not_executed",
@@ -559,7 +573,14 @@
         "conditional_compiler_check": "The Wasm conformance harness compares native CLI emitted guest bytes when ATTOC is provided; no native CLI success receipt exists",
         "full_signed_i64_test_authored": true,
         "checked_overflow_guest_test_authored": true,
-        "three_fail_closed_source_tests_authored": true
+        "three_fail_closed_source_tests_authored": true,
+        "reserved_authority_keyword_negative_tests": [
+          "unsafe",
+          "sync",
+          "task",
+          "pipe",
+          "rpipe"
+        ]
       }
     },
     "local_v8_smoke": {
@@ -587,6 +608,48 @@
       "exit_code": 0,
       "source_provenance": "synthetic minimal LLVM IR containing an internal guest-shaped i64 function; NOT compiled from .atto and must not be treated as guest evidence",
       "purpose": "Validate fixed printf observation adapter syntax before real LLVM runner admission"
+    },
+    "runner_admission_observation": {
+      "status": "no_jobs_executed",
+      "category": "pre_step_runner_admission_failure",
+      "source_repository_runs": [
+        {
+          "repo": "atto-lang/atto-source.rs",
+          "run_id": 44681244011,
+          "job": "real-compiler",
+          "executed_steps": 0
+        },
+        {
+          "repo": "atto-lang/atto-source.llvm",
+          "run_id": 44681328962,
+          "job": "compiled-native-atto",
+          "executed_steps": 0
+        },
+        {
+          "repo": "atto-lang/atto-source.llvm",
+          "run_id": 44681329040,
+          "job": "scalar-aot",
+          "executed_steps": 0
+        },
+        {
+          "repo": "atto-lang/atto-platform-conformance",
+          "run_id": 44681475499,
+          "job": "manifest-integrity",
+          "executed_steps": 0
+        }
+      ],
+      "alternate_carriers_checked": [
+        "benefactor-cc/atto-ci",
+        "voxletra/atto-ci",
+        "scintilla-run/atto-ci",
+        "athlet-o/atto-ci",
+        "agent-pontifex/atto-ci",
+        "akrion-sim/atto-ci",
+        "zed-pkg-test/atto-ci",
+        "honeypot-r-us-test/atto-ci"
+      ],
+      "tested_carrier_execution_confirmed": false,
+      "disposition": "No runner admitted in sampled carrier runs; do not mirror private trees or promote guest parity until a carrier smoke job executes nonzero steps."
     }
   }
 }
