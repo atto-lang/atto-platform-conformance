@@ -59,6 +59,53 @@
     "source_org_actions": {
       "status": "ZERO_EXECUTED_STEPS",
       "requalification": "NOT_EXECUTED"
+    },
+    "exact_blob_carrier_github_actions": {
+      "source_repo": "atto-lang/atto-source.java",
+      "source_pr": 59,
+      "source_pr_head": "35339c0df48fe42d2dd450495979732e285ce803",
+      "source_blobs_verified": 7,
+      "source_blobs_total": 7,
+      "source_scope": "EXACT_TEST_DEPENDENCY_CLOSURE_ONLY; not complete source Git tree",
+      "carrier_repo": "r2g-test/atto-ci",
+      "carrier_visibility": "private",
+      "carrier_commit": "96f14d5002c73dd34b05b34bdb103eecb811186b",
+      "carrier_tree_sha": "1f04bb6d996aa4acda3e2e2f6ff9c362dc2665a0",
+      "run_id": 44768560080,
+      "run_url": "https://github.com/r2g-test/atto-ci/actions/runs/44768560080",
+      "job_id": 136399721107,
+      "conclusion": "success",
+      "job_steps": 8,
+      "runs_on": "ubuntu-24.04",
+      "jdk_distribution": "graalvm",
+      "jdk_version": "25",
+      "exact_tree_gate": "PASS",
+      "exact_tree_gate_files": 6,
+      "source_blob_gate": "7/7",
+      "source_admission_checks_passed": 56,
+      "source_admission_checks_total": 56,
+      "source_generated_identifier_matrix": {
+        "admitted_java_compiled": 19,
+        "invalid_names_rejected": 4
+      },
+      "compiled_legacy_task": {
+        "jvm_exit": 42,
+        "native_image_exit": 42
+      },
+      "compiled_typed_task_int": {
+        "jvm_exit": 42,
+        "native_image_exit": 42
+      },
+      "native_image_generated": true,
+      "native_image_runtime_executed": true,
+      "source_token_used": false,
+      "cross_org_checkout": false,
+      "limitations": [
+        "This Java slice only admits an already-completed Future<int> and a bounded scalar pipeline.",
+        "Not a general async scheduler, task cancellation or lock-guard cleanup proof.",
+        "Only 7 source dependencies were SHA verified; carrier tree differs from full Java source repo.",
+        "The compiler source PR itself still has zero-step Actions failures."
+      ]
     }
   },
   "forge": {
