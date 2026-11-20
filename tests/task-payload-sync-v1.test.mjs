@@ -129,9 +129,9 @@ test('cancellable task lock leases have pinned positive and negative sources', (
     assert.equal(cases[id].expected.diagnostic, code);
     assert.equal(cases[id].expected.no_artifact, true);
   }
-  assert.equal(registry.lock_cancellation_runtime_probes.length, 14);
+  assert.equal(registry.lock_cancellation_runtime_probes.length, 15);
   const ids = registry.lock_cancellation_runtime_probes.map(p => p.id);
-  assert.equal(new Set(ids).size, 14);
+  assert.equal(new Set(ids).size, 15);
   for (const p of registry.lock_cancellation_runtime_probes) {
     assert.ok(p.assertions?.length >= 3, p.id);
     assert.ok(p.action, p.id);
@@ -235,4 +235,30 @@ test('trusted lock-park receipt gates cancel and grant wakes', () => {
   ]);
   assert.ok(probes.queued_wait_cancel.assertions.includes('WAKE_REQUIRES_TRUSTED_LOCK_PARK_RECEIPT'));
   assert.ok(probes.grant_cancel_race.assertions.includes('GRANT_HINT_REQUIRES_TRUSTED_LOCK_PARK_RECEIPT'));
+});
+
+test('atomic host ready admission cannot lose a lock grant or dispatch twice', () => {
+  const probe = registry.lock_cancellation_runtime_probes.find(p => p.id === 'atomic_host_ready_admission');
+  assert.equal(probe.evidence_required, true);
+  assert.equal(probe.release_qualified, false);
+  for (const witness of [
+    'GRANT_ACK_AND_READY_QUEUE_INSERTION_ONE_SERIALIZED_TRANSITION',
+    'FAILED_OR_CAPACITY_REJECTED_READY_ENQUEUE_LEAVES_GRANT_PENDING',
+    'ONE_RUNNABLE_ENTRY_PER_LOGICAL_TASK',
+    'READY_BUT_UNDISPATCHED_TASK_CANNOT_CLAIM_OR_PARK',
+    'CANCELLATION_AND_GRANT_WAKE_FOR_SAME_TASK_NOT_DUPLICATED',
+    'VALID_SUCCESSOR_NOT_LOST_AFTER_REVOKED_GRANT',
+    'CANCELLED_WAITER_NEVER_RELEASES_ACTIVE_OWNER',
+    'READY_QUEUE_NOT_VISIBLE_TO_UNTRUSTED_GUEST',
+    'NONPARKING_HOST_ARBITER_WHEN_BUSY',
+    'PHYSICAL_RETIREMENT_REQUIRES_TRUSTED_DISPATCH_AND_GUEST_EXIT'
+  ]) assert.ok(probe.assertions.includes(witness), witness);
+  assert.deepEqual(probe.required_happens_before, [
+    ['TRUSTED_LOCK_PARK','HOST_READY_ADMISSION'],
+    ['HOST_READY_ADMISSION','READY_GRANT_ACK'],
+    ['HOST_READY_ADMISSION','SCHEDULER_POP_READY'],
+    ['SCHEDULER_POP_READY','GUEST_CLAIM_OR_CANCEL_UNWIND']
+  ]);
+  assert.ok(Object.values(registry.backends).every(b =>
+    b.status === 'NOT_EXECUTED' && b.release_qualified === false));
 });
