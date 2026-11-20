@@ -10,6 +10,15 @@ const contract = JSON.parse(readFileSync(root + 'contracts/native-option-int-gue
 test('native Option<int> contract has three 42-exit source fixtures', () => {
   assert.equal(contract.claim, 'TARGET_ONLY_NOT_GUEST_VERIFIED');
   assert.equal(contract.cases.length, 3);
+  assert.equal(contract.cross_compiler_candidate_sources.length, 2);
+  assert.deepEqual(
+    contract.cross_compiler_candidate_sources.map(c => c.repository),
+    ['atto-lang/atto-source.llvm', 'atto-lang/atto-source.rs']
+  );
+  assert.notEqual(
+    contract.cross_compiler_candidate_sources[0].head,
+    contract.cross_compiler_candidate_sources[1].head
+  );
   assert.equal(Object.keys(contract.backends).length, 11);
   for (const c of contract.cases) {
     assert.match(c.source, /^fixtures\/native-option-int-v1\/[-a-z]+\.atto$/);

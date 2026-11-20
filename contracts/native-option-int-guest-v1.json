@@ -91,5 +91,19 @@
       "status": "NOT_EXECUTED",
       "compiler_guest_receipt": null
     }
-  }
+  },
+  "cross_compiler_candidate_sources": [
+    {
+      "repository": "atto-lang/atto-source.llvm",
+      "head": "1e2c14bed4e1724a6e43859f66a80951973dc141",
+      "role": "Rust native LLVM/ELF AOT bootstrap",
+      "fixture_prefix": "tests/native-adt/"
+    },
+    {
+      "repository": "atto-lang/atto-source.rs",
+      "head": "f29bde64c152f2f0f1e19efb53a4e2b9258f65a5",
+      "role": "Rust compiler/Wasm guest",
+      "fixture_prefix": "tests/fixtures/pass/"
+    }
+  ]
 }
