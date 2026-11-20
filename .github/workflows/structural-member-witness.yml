@@ -1,0 +1,23 @@
+name: Structural member witness host reference (NOT guest conformance)
+on:
+  push:
+    paths:
+      - "contracts/structural-member-witness-v1.json"
+      - "tests/structural-member-witness-v1.test.mjs"
+      - ".github/workflows/structural-member-witness.yml"
+  pull_request:
+    paths:
+      - "contracts/structural-member-witness-v1.json"
+      - "tests/structural-member-witness-v1.test.mjs"
+      - ".github/workflows/structural-member-witness.yml"
+permissions:
+  contents: read
+jobs:
+  reference-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check 42 host-model cases (not compiler execution)
+        run: node --test tests/structural-member-witness-v1.test.mjs
