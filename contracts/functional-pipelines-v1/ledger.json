@@ -392,9 +392,18 @@
   "formatter": {
     "repo": "atto-lang/atto-format",
     "implementation_pr": "https://github.com/atto-lang/atto-format/pull/26",
-    "proposed_head_sha": "e7c32d9bbe0786065f5650de5b0670e792a469db",
+    "proposed_head_sha": "9c9d010a529f532cdbad213e457976b13ecc32e2",
     "verification_status": "not_executed",
-    "receipt": null
+    "receipt": null,
+    "local_v8_smoke": {
+      "source_blob_sha": "b11dc095ecd06ae524ae2e8df472ad33fce58dab",
+      "test_blob_sha": "3546b3630fb55b4eb901e59b411745ba5bf4d3b8",
+      "executed_cases": 31,
+      "failed_cases": 0,
+      "idempotent": true,
+      "multiarg_grouped_reverse_preserved": true,
+      "scope": "Actual formatter function executed in Code Mode V8 with minimal test/assert harness; node --test and GitHub Actions not executed, no guest semantic proof"
+    }
   },
   "receipt_requirements": {
     "executed_step_count_min": 1,
