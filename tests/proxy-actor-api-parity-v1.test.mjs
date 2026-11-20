@@ -46,6 +46,21 @@ test('proxy actor API registry remains canonical and cross-backend complete', ()
       assert.equal(b.host_ticket_ci, null,
         b.id + ': unexecuted ticket code cannot carry PASS evidence');
     }
+    if (b.restricted_sender_local_evidence) {
+      const sender = b.restricted_sender_local_evidence;
+      assert.equal(sender.status, 'LOCAL_JDK21_EXACT_FOUR_BLOBS_PASSED');
+      for (const field of ['compiler_blob', 'host_interface_blob', 'test_blob',
+                           'fixture_blob'])
+        assert.match(sender[field], /^[0-9a-f]{40}$/,
+          b.id + ': missing exact local source/test Git blob identity');
+      assert.match(sender.tested_toolchain, /^OpenJDK javac 21[.]/);
+      assert.equal(sender.generated_class, 'M10GeneratedSender');
+      assert.ok(sender.local_test_marker.includes('RESTRICTED_ATTO_SENDER'));
+      // A local restricted compiler probe cannot unlock any full compiled
+      // Atto guest or authenticated transport gate.
+      assert.notEqual(b.compiled_guest_ipc_status, 'PASSED');
+      assert.equal(b.guest_evidence, null);
+    }
     if (b.gateway_integration) {
       const gateway = b.gateway_integration;
       assert.equal(gateway.source_head_sha, b.host_ticket_pr_head_sha,
