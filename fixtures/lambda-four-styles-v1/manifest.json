@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "id": "lambda-four-styles-v1",
+  "normative_spec": "atto-lang/atto-spec#149",
+  "scope": "Target-only: separate syntax, static callable storage, typing and guest behavior; none executed on any backend",
+  "expected_guest_exit_for_positive": 42,
+  "caveat": "Every backend status is NOT_EXECUTED; parsing/compilation/execution must be evidenced separately at exact current SHA. No source-only check may mark guest parity.",
+  "cases": [
+    {
+      "id": "type-first-infer",
+      "path": "fixtures/lambda-four-styles-v1/positive/type-first-infer.atto",
+      "expectation": "ACCEPT_AND_EXIT_42",
+      "expected_type_or_diagnostic": "void",
+      "parameter_style": "type_first",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "name-first-infer",
+      "path": "fixtures/lambda-four-styles-v1/positive/name-first-infer.atto",
+      "expectation": "ACCEPT_AND_EXIT_42",
+      "expected_type_or_diagnostic": "void",
+      "parameter_style": "name_first",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "name-first-arrow-void",
+      "path": "fixtures/lambda-four-styles-v1/positive/name-first-arrow-void.atto",
+      "expectation": "ACCEPT_AND_EXIT_42",
+      "expected_type_or_diagnostic": "void",
+      "parameter_style": "name_first",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "name-first-colon-void",
+      "path": "fixtures/lambda-four-styles-v1/positive/name-first-colon-void.atto",
+      "expectation": "ACCEPT_AND_EXIT_42",
+      "expected_type_or_diagnostic": "void",
+      "parameter_style": "name_first",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "duplicate-param",
+      "path": "fixtures/lambda-four-styles-v1/negative/duplicate-param.atto",
+      "expectation": "REJECT_WITHOUT_ARTIFACT",
+      "expected_type_or_diagnostic": "E_DUPLICATE",
+      "parameter_style": "mixed",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "void-return-value",
+      "path": "fixtures/lambda-four-styles-v1/negative/void-return-value.atto",
+      "expectation": "REJECT_WITHOUT_ARTIFACT",
+      "expected_type_or_diagnostic": "E_TYPE",
+      "parameter_style": "name_first",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "void-parameter",
+      "path": "fixtures/lambda-four-styles-v1/negative/void-parameter.atto",
+      "expectation": "REJECT_WITHOUT_ARTIFACT",
+      "expected_type_or_diagnostic": "E_TYPE",
+      "parameter_style": "type_first",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "legacy-result-missing-block",
+      "path": "fixtures/lambda-four-styles-v1/negative/legacy-result-missing-block.atto",
+      "expectation": "REJECT_WITHOUT_ARTIFACT",
+      "expected_type_or_diagnostic": "E_SYNTAX",
+      "parameter_style": "name_first",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
+      }
+    }
+  ]
+}
