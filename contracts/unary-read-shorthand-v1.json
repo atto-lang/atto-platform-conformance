@@ -25,7 +25,12 @@
     "no-ambiguous-gtgt-binder-or-triple-shift",
     "new-channel-int-constructor-is-fallible-result",
     "new-channel-constructor-matches-bounded-intrinsic",
-    "no-silent-unchecked-channel-send"
+    "no-silent-unchecked-channel-send",
+    "checked-async-send-suspends-on-full",
+    "async-send-preserves-fifo-and-one-admission",
+    "async-send-close-cancel-do-not-publish",
+    "async-send-does-not-call-try_send",
+    "channel-host-single-guest-owner"
   ],
   "positive_guest_execution": "PENDING_PER_BACKEND",
   "cases": [
@@ -605,6 +610,151 @@
         "rs": "NOT_EXECUTED",
         "wasm": "NOT_EXECUTED"
       }
+    },
+    {
+      "id": "async_send_postfix_receive",
+      "path": "fixtures/io-unary/pass/async_send_postfix_receive.atto",
+      "kind": "pass",
+      "stage": "TYPECHECK_TARGET",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "async_send_method_prefix_receive",
+      "path": "fixtures/io-unary/pass/async_send_method_prefix_receive.atto",
+      "kind": "pass",
+      "stage": "TYPECHECK_TARGET",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "async_send_missing_susp",
+      "path": "fixtures/io-unary/fail/async_send_missing_susp.atto",
+      "kind": "fail",
+      "stage": "COMPILE_REJECT_TARGET",
+      "expected_error": "E_SUSPENDS_REQUIRED",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "async_send_wrong_payload",
+      "path": "fixtures/io-unary/fail/async_send_wrong_payload.atto",
+      "kind": "fail",
+      "stage": "COMPILE_REJECT_TARGET",
+      "expected_error": "E_TYPE",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "async_send_nonwritable",
+      "path": "fixtures/io-unary/fail/async_send_nonwritable.atto",
+      "kind": "fail",
+      "stage": "COMPILE_REJECT_TARGET",
+      "expected_error": "E_IO_WRITABLE",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "async_send_discarded",
+      "path": "fixtures/io-unary/fail/async_send_discarded.atto",
+      "kind": "fail",
+      "stage": "COMPILE_REJECT_TARGET",
+      "expected_error": "E_IO_DISCARD",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "async_send_triple_shift",
+      "path": "fixtures/io-unary/fail/async_send_triple_shift.atto",
+      "kind": "fail",
+      "stage": "COMPILE_REJECT_TARGET",
+      "expected_error": "E_IO_SYNTAX",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
     }
   ],
   "evidence_rule": "Do not label backend PASS without exact source/compiler Git tree, actual compiled guest/negative no-artifact execution, runner and runtime receipts. Preflight or host models are not guest execution.",
@@ -624,5 +774,15 @@
     "java": "host-side regex/pre-HIR checked read admission only; no compiled Atto guest channel ABI",
     "llvm": "native lexer rejects unlowered Channel<int>; no compiled channel guest or runtime",
     "forge": "lexes << / >> distinctly, rejects guest IO before scalar lowering; no executable channel guest"
-  }
+  },
+  "channel_async_send_source_pr": "https://github.com/atto-lang/atto-source.rs/pull/257",
+  "channel_async_send_status": "SOURCE_STAGED_EXECUTION_NOT_VERIFIED",
+  "runtime_scenarios": [
+    "capacity-one-queued-41-send-42-waits-and-delivers-after-read",
+    "capacity-zero-rendezvous-requires-reader-before-admission",
+    "waiting-writers-admitted-in-FIFO-order-no-try_send-bypass",
+    "close-while-full-rejects-unadmitted-message-with-Closed",
+    "abort-before-admission-never-enqueues-or-forges-Ok",
+    "tenant-worker-host-is-never-attached-to-second-guest"
+  ]
 }

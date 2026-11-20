@@ -33,7 +33,7 @@ test('all portable source candidate and negative files are present',async()=>{
       'must exercise direction operator or its deliberate whitespace-nearmiss');
     assert.ok(source.length>40);
   }
-  assert.equal(ids.size,28);
+  assert.equal(ids.size,35);
 });
 test('required effect, unary, type-first and compound variants are represented',async()=>{
   const byId=Object.fromEntries(m.cases.map(c=>[c.id,c]));
@@ -82,4 +82,29 @@ test('backend admission evidence is scoped and never confused with executable pa
         backend+' admission work is not exact-head guest execution: '+c.id);
     }
   }
+});
+
+test('checked async channel write contract carries fail-closed diagnostics and no fake PASS',async()=>{
+  assert.equal(m.channel_async_send_status,'SOURCE_STAGED_EXECUTION_NOT_VERIFIED');
+  const byId=Object.fromEntries(m.cases.map(c=>[c.id,c]));
+  for(const id of ['async_send_postfix_receive','async_send_method_prefix_receive']) {
+    assert.equal(byId[id].kind,'pass');
+    const source=await readFile(resolve(root,byId[id].path),'utf8');
+    assert.ok(source.includes('42'),'test must send a real payload');
+    assert.ok(source.includes('on Err(error)'),'caller must handle send errors');
+  }
+  const errors={
+    async_send_missing_susp:'E_SUSPENDS_REQUIRED',
+    async_send_wrong_payload:'E_TYPE',
+    async_send_nonwritable:'E_IO_WRITABLE',
+    async_send_discarded:'E_IO_DISCARD',
+    async_send_triple_shift:'E_IO_SYNTAX',
+  };
+  for(const [id,diag] of Object.entries(errors)) {
+    assert.equal(byId[id].kind,'fail');
+    assert.equal(byId[id].expected_error,diag);
+  }
+  assert.ok(m.runtime_scenarios.length>=6);
+  for(const c of m.cases) for(const status of Object.values(c.backend_status))
+    assert.equal(status,'NOT_EXECUTED','new source cases cannot claim runtime PASS');
 });
