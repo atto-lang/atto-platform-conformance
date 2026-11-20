@@ -181,3 +181,19 @@ a source-only Rust oracle with string DATA delivery.
 On the observed draft heads, GitHub Actions failed before providing
 usable executed job steps; exact-head positive compile, negative rejection,
 guest execution and CONTROL isolation evidence remain NOT_EXECUTED.
+
+
+## Actor isolation type proof targets (2026-11-19; SOURCE_ONLY)
+
+[atto-spec #27](https://github.com/atto-lang/atto-spec/pull/27) now includes a distinct proposed [actor isolation type contract](https://github.com/atto-lang/atto-spec/blob/proposal/ownership-box-arc-send-suspend-v1-20261115/language/actor-isolation-types-v1.md). The new `contracts/actor-isolation-types-v1.tsv` records **36 unexecuted cases** for actor-local unique moves, deep-frozen sharing, nested `Option/Result` and product fields, runtime capability denial, authenticated `ActorRef` delegation, generation fencing and brokered cross-TenantVM wire copies. Every backend status is `NOT_EXECUTED`.
+
+The companion `tools/actor_isolation_types_v1.rs` is a **source-only**, no-dependency Rust policy oracle and 12 isolated Rust tests. It checks every registry row, rejects incomplete or fraudulent PASS claims, and checks transitive pointer/capability/loan/lease rejection; it does not compile any `.atto` program or implement a production broker. This is intentionally additive to typed `receives/sends` and does not replace Mailman escrow or TenantVM executable conformance.
+
+```sh
+rustc --edition=2021 --test -D warnings tools/actor_isolation_types_v1.rs -o /tmp/atto_actor_isolation_model_tests
+/tmp/atto_actor_isolation_model_tests
+rustc --edition=2021 -D warnings tools/actor_isolation_types_v1.rs -o /tmp/atto_actor_isolation_model
+/tmp/atto_actor_isolation_model
+```
+
+The existing exact-head typed-actor workflow invokes both commands and explicitly labels the result SOURCE_ONLY. Until it executes nonzero build/test steps on a pinned head, Rust test status is **NOT_EXECUTED**. A separate compiler/backend harness must turn these policy rows into complete positive and negative `.atto` fixtures, type-check no-emission rejection and execute real guest mailbox/recipient traces with independently verified artifact hashes before any backend case becomes PASS.
