@@ -3,7 +3,7 @@
   "status": "TARGET_ONLY_NOT_EXECUTED",
   "normative_source": "atto-lang/atto-spec#18",
   "candidate_prototype": "atto-lang/atto-source.rs#264 (class handles only, NOT Pointer<int>)",
-  "description": "Exact user local pointer aliases and 30+ target scenarios for lifetime, aliasing, syntax, CFG, provenance and pointer/class-handle separation. NOT compiler evidence.",
+  "description": "Exact user local pointer syntax and 36 target scenarios: release CFG, multiple readonly loans, raw-address rejection, provenance, capabilities and owned-vs-borrowed Pointer<T> authority. NOT compiler evidence.",
   "typing": {
     "rt ref local": "Pointer<T> compiler-minted nonallocating local-place checked capability",
     "deref! ptr / rt deref ptr": "copy T when T is Copy, otherwise scoped immutable loan",
@@ -260,7 +260,7 @@
     {
       "id": "PRL-022",
       "path": "fixtures/pointer-ref-local-v1/fail/early-return-leak.atto",
-      "why": "unreachable late unref does not discharge live handle",
+      "why": "early conditional return bypasses unref on one reachable path",
       "status": "NOT_EXECUTED",
       "result": "REJECT_NO_ARTIFACT",
       "error_category": "E_POINTER_LIFETIME"
@@ -344,9 +344,41 @@
       "status": "NOT_EXECUTED",
       "result": "REJECT_NO_ARTIFACT",
       "error_category": "E_POINTER_TYPE"
+    },
+    {
+      "id": "PRL-033",
+      "path": "fixtures/pointer-ref-local-v1/fail/close-borrow.atto",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_AUTHORITY",
+      "why": "borrowed local pointer cannot close or deallocate its original place",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "PRL-034",
+      "path": "fixtures/pointer-ref-local-v1/fail/write-through-readonly.atto",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_AUTHORITY",
+      "why": "readonly rt ref cannot gain write_at mutating authority",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "PRL-035",
+      "path": "fixtures/pointer-ref-local-v1/fail/cast-pointer-int.atto",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_FORGED",
+      "why": "pointer metadata cannot be cast to raw integer address",
+      "status": "NOT_EXECUTED"
+    },
+    {
+      "id": "PRL-036",
+      "path": "fixtures/pointer-ref-local-v1/fail/read-uninitialized.atto",
+      "result": "REJECT_NO_ARTIFACT",
+      "error_category": "E_POINTER_UNINITIALIZED",
+      "why": "uninitialized local has no valid dereferenceable value",
+      "status": "NOT_EXECUTED"
     }
   ],
-  "case_count": 32,
+  "case_count": 36,
   "pass_count": 10,
-  "reject_count": 22
+  "reject_count": 26
 }

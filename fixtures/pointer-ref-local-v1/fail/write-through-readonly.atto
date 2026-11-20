@@ -1,0 +1,7 @@
+pub fnc main(): int {
+  let value: int = 42;
+  val Pointer<int> ptr = rt ref value;
+  ptr.write_at(0, 13);
+  rt unref ptr;
+  return value;
+}
