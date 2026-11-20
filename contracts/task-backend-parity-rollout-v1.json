@@ -241,5 +241,47 @@
       "tracking_issue": "https://github.com/atto-lang/atto-source.realtime/issues/5"
     }
   },
-  "tracking_issue": "https://github.com/atto-lang/atto-compilers-parity-testing/issues/34"
+  "tracking_issue": "https://github.com/atto-lang/atto-compilers-parity-testing/issues/34",
+  "reconciliation_findings": [
+    {
+      "id": "js_bare_void_statement_diagnostic",
+      "status": "OPEN",
+      "canonical_diagnostic": "E_SYNTAX",
+      "observed_diagnostic": "E_TASK_DISCARD_REQUIRES_DO",
+      "repository": "atto-lang/atto-source.js",
+      "canonical_pr": "https://github.com/atto-lang/atto-source.js/pull/68",
+      "source_file": "src/transpile-worker.mjs",
+      "source_blob": "27f86321243d5374949cd4d81ad2ecca60deaf46",
+      "action": "Reconcile JS #47 + stacked #68 without changing the rejected syntax or weakening no-artifact gate; assert E_SYNTAX in actual Node/browser guests"
+    },
+    {
+      "id": "forge_bare_void_statement_diagnostic",
+      "status": "OPEN",
+      "canonical_diagnostic": "E_SYNTAX",
+      "observed_diagnostic": "E_PARSE_SYNTAX",
+      "repository": "atto-lang/atto-source.forge",
+      "canonical_pr": "https://github.com/atto-lang/atto-source.forge/pull/52",
+      "source_file": "include/atto/scalar_parser.hpp",
+      "source_blob": "4deb154917d98cb466325b19521b2121fd60c0b2",
+      "action": "Reconcile bare standalone inline statement diagnostic to canonical E_SYNTAX in existing draft #52; preserve generic parser rejection and native guest tests"
+    },
+    {
+      "id": "llvm_mixed_rust_cpp_frontend",
+      "status": "OPEN",
+      "canonical_diagnostic": null,
+      "observed_diagnostic": null,
+      "repository": "atto-lang/atto-source.llvm",
+      "canonical_pr": "https://github.com/atto-lang/atto-source.llvm/pull/72",
+      "action": "Rust LLVM scalar frontend lowers pure inline while separate C++ compiler fails closed; bind capability profiles and require executable same-source parity before claiming LLVM-wide task support; obey source NO-EXPORT hold"
+    },
+    {
+      "id": "hardware_rtl_profile_semantics",
+      "status": "TARGET_PROFILE_DECISION_REQUIRED",
+      "canonical_diagnostic": "E_UNSUPPORTED",
+      "observed_diagnostic": "HDL_TASK_UNSUPPORTED",
+      "repository": "atto-lang/atto-source.hdl",
+      "canonical_pr": "https://github.com/atto-lang/atto-source.hdl/pull/20",
+      "action": "Document reviewed HDL-specific fail-closed diagnostic mapping and hardware nonapplicability; unsigned fixed-width wrapping must not be advertised as signed checked i64 guest parity"
+    }
+  ]
 }
