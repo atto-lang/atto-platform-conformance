@@ -11,7 +11,7 @@ const REPO = /^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/;
 const POSITIVE = n => Number.isSafeInteger(n) && n > 0;
 function absoluteTime(value) { const n = Date.parse(value); return Number.isFinite(n) ? n : NaN; }
 
-export function assessAdmission({ repository, run, jobs, workflow, expected }) {
+export function assessAdmission({ repository, run, jobs, workflow, expected, now = Date.now() }) {
   requireGate(REPO.test(expected.repo), 'invalid expected repository');
   requireGate(POSITIVE(expected.repoId), 'immutable destination repository ID required');
   requireGate(SHA.test(expected.headSha), 'invalid expected head SHA');
@@ -26,6 +26,8 @@ export function assessAdmission({ repository, run, jobs, workflow, expected }) {
   requireGate(run.head_sha === expected.headSha, 'run head does not match approved source-free canary');
   requireGate(run.path === expected.workflowPath, 'run uses a different workflow');
   requireGate(run.status === 'completed' && run.conclusion === 'success', 'run not successful');
+  const age = now - absoluteTime(run.created_at);
+  requireGate(Number.isFinite(age) && age >= 0 && age <= 60 * 60 * 1000, 'canary is older than one hour or future dated');
   requireGate(POSITIVE(run.run_attempt), 'no authenticated run attempt');
   requireGate(run.event === 'push' || run.event === 'workflow_dispatch', 'invalid canary trigger');
   requireGate(workflow?.sha === expected.workflowBlobSha, 'workflow not pinned to approved Git blob');
@@ -53,7 +55,7 @@ export function assessAdmission({ repository, run, jobs, workflow, expected }) {
 }
 
 // No secrets printed. API endpoints are built from independently validated repo + numeric IDs.
-export async function checkLiveAdmission(expected, { token, fetchImpl = fetch } = {}) {
+export async function checkLiveAdmission(expected, { token, fetchImpl = fetch, now = Date.now() } = {}) {
   requireGate(token && typeof token === 'string', 'GH_TOKEN or GITHUB_TOKEN required for private repositories');
   requireGate(REPO.test(expected.repo), 'invalid expected repository');
   requireGate(POSITIVE(expected.repoId), 'immutable destination repository ID required');
@@ -80,7 +82,7 @@ export async function checkLiveAdmission(expected, { token, fetchImpl = fetch } 
   requireGate(jobHeaders.length === 1 && POSITIVE(jobHeaders[0].id), 'named job missing');
   const job = await get(base + '/actions/jobs/' + jobHeaders[0].id);
   const workflow = await get(base + '/contents/' + expected.workflowPath + '?ref=' + expected.headSha);
-  return assessAdmission({ repository, run, jobs: [job], workflow, expected });
+  return assessAdmission({ repository, run, jobs: [job], workflow, expected, now });
 }
 
 const invokedAsCLI = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
