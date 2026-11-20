@@ -1,0 +1,6 @@
+# case	expected	status	diagnostic	fixture	git_blob_sha
+ACTOR-STRING-01	ACCEPT	NOT_EXECUTED	NONE	fixtures/typed-actor-string-v1/01-router-string-positive.atto	ba0c2fce9eb7e5a980d22c8ff22a0689b7b8b352
+ACTOR-STRING-02	REJECT	NOT_EXECUTED	E_TYPE	fixtures/typed-actor-string-v1/02-wrong-incoming-payload.atto	c3bf9c6013db45bfd04a553bedc48dea4f1268c9
+ACTOR-STRING-03	REJECT	NOT_EXECUTED	E_ACTOR_RECEIVES	fixtures/typed-actor-string-v1/03-wrong-mail-handler.atto	53ec128b2f6369e3885ca1485f1dbccd8e20080f
+ACTOR-STRING-04	REJECT	NOT_EXECUTED	E_ACTOR_SEND_CONTRACT	fixtures/typed-actor-string-v1/04-outbound-effect-violation.atto	becbb1a9630f0865e4a7eaeac90d683aa2e2512b
+ACTOR-STRING-05	REJECT	NOT_EXECUTED	E_ACTOR_CONTRACT	fixtures/typed-actor-string-v1/05-duplicate-sends.atto	c9c9fb943c29e3259607fb747a477caa64c59f3d
