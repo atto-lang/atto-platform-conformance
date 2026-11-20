@@ -1,0 +1,26 @@
+name: Typed pattern-fragment target registry (HOST ONLY)
+on:
+  pull_request:
+    paths:
+      - 'contracts/typed-pattern-fragments-v1.json'
+      - 'tests/typed-pattern-fragments-v1-registry.test.mjs'
+      - '.github/workflows/typed-pattern-fragments-v1.yml'
+  push:
+    paths:
+      - 'contracts/typed-pattern-fragments-v1.json'
+      - 'tests/typed-pattern-fragments-v1-registry.test.mjs'
+      - '.github/workflows/typed-pattern-fragments-v1.yml'
+permissions:
+  contents: read
+jobs:
+  registry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Validate unexecuted source-only target registry
+        run: |
+          node --version
+          node --test tests/typed-pattern-fragments-v1-registry.test.mjs
