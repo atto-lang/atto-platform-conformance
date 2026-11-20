@@ -210,7 +210,7 @@ test('cancellable task lock leases have pinned positive and negative sources', (
   }
   assert.equal(registry.lock_cancellation_runtime_probes.length, 17);
   const ids = registry.lock_cancellation_runtime_probes.map(p => p.id);
-  assert.equal(new Set(ids).size, 15);
+  assert.equal(new Set(ids).size, registry.lock_cancellation_runtime_probes.length);
   for (const p of registry.lock_cancellation_runtime_probes) {
     assert.ok(p.assertions?.length >= 3, p.id);
     assert.ok(p.action, p.id);
