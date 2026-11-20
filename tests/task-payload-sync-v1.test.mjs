@@ -129,9 +129,9 @@ test('cancellable task lock leases have pinned positive and negative sources', (
     assert.equal(cases[id].expected.diagnostic, code);
     assert.equal(cases[id].expected.no_artifact, true);
   }
-  assert.equal(registry.lock_cancellation_runtime_probes.length, 11);
+  assert.equal(registry.lock_cancellation_runtime_probes.length, 12);
   const ids = registry.lock_cancellation_runtime_probes.map(p => p.id);
-  assert.equal(new Set(ids).size, 11);
+  assert.equal(new Set(ids).size, 12);
   for (const p of registry.lock_cancellation_runtime_probes) {
     assert.ok(p.assertions?.length >= 3, p.id);
     assert.ok(p.action, p.id);
@@ -186,4 +186,17 @@ test('scheduler cancellation and grant wake notifications are lossless and claim
   ]) {
     assert.ok(grant.assertions.includes(required), required);
   }
+});
+
+test('normal parent return triggers child cancellation but preserves successful parent outcome', () => {
+  const probe = registry.lock_cancellation_runtime_probes.find(p => p.id ===
+    'successful_parent_scope_exit_cancels_descendants');
+  assert.equal(probe.evidence_required, true);
+  for (const required of [
+    'PARENT_SUCCESS_NOT_REPLACED_BY_CANCELLATION',
+    'CHILD_AND_GRANDCHILD_RECEIVE_TRANSITIVE_CANCELLATION',
+    'NO_CHILD_JOIN_WHILE_PARENT_GUARD_HELD',
+    'UNRELATED_SIBLING_UNAFFECTED',
+    'NO_PARENT_STORAGE_REUSE_BEFORE_DESCENDANTS_RETIRED'
+  ]) assert.ok(probe.assertions.includes(required), required);
 });
