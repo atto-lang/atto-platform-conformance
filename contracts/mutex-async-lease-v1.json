@@ -167,6 +167,22 @@
       "kind": "runtime_probe",
       "expected": "Mutex<T> is an opaque sealed nominal resource class with unique identity, not a by-value struct; implicit copying or spoofed access is rejected, and verified loans stay in the authorized owner domain",
       "evidence_required": true
+    },
+    {
+      "id": "reject-bare-mutex-without-lock-call",
+      "kind": "compile_negative",
+      "feature": "constructor",
+      "source": "negative-old-constructor-no-lock.atto",
+      "expected_diagnostic": "E_NEW_REQUIRED",
+      "guest_artifact": false
+    },
+    {
+      "id": "reject-bare-nested-generic-mutex",
+      "kind": "compile_negative",
+      "feature": "constructor",
+      "source": "negative-old-constructor-nested.atto",
+      "expected_diagnostic": "E_NEW_REQUIRED",
+      "guest_artifact": false
     }
   ],
   "backend_evidence": {
@@ -266,7 +282,9 @@
     },
     "ordinary_value_struct_may_omit_new": true,
     "ownership": "Unique owner resource, borrow by default for nonprimitive function parameters; no implicit clone or by-value copy",
-    "guest_promotion": "No backend may claim constructor parity without source-pinned compiler/type-checker and executed guest evidence"
+    "guest_promotion": "No backend may claim constructor parity without source-pinned compiler/type-checker and executed guest evidence",
+    "lexing_rule": "Detect bare generic resource-class construction regardless of .lock_async presence; handle nested generic delimiters; type references and commented/quoted code do not instantiate a resource class",
+    "nested_bare_mutex_constructor_rejected": true
   },
   "constructor_parity_tracking": {
     "scope": "source_constructor_diagnostics_only",
