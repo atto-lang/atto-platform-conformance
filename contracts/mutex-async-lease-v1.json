@@ -267,5 +267,65 @@
     "ordinary_value_struct_may_omit_new": true,
     "ownership": "Unique owner resource, borrow by default for nonprimitive function parameters; no implicit clone or by-value copy",
     "guest_promotion": "No backend may claim constructor parity without source-pinned compiler/type-checker and executed guest evidence"
+  },
+  "constructor_parity_tracking": {
+    "scope": "source_constructor_diagnostics_only",
+    "source_status": "PROPOSED_NOT_EXECUTED",
+    "canonical": "new Mutex<T>(value)",
+    "illegal_bare_call": "E_NEW_REQUIRED",
+    "supported_but_unimplemented": "E_LOCK_UNSUPPORTED",
+    "evidence_rule": "No guest/backend PASS from a PR, lexical test, host model, zero-step action, or a source-only contract fixture.",
+    "backends": {
+      "atto-source.java": {
+        "pr": 58,
+        "profile": "restricted_m1_java_compiler_negative_source_admission",
+        "status": "NOT_EXECUTED"
+      },
+      "atto-source.llvm": {
+        "pr": 71,
+        "profile": "native_llvm_parser_negative_source_admission",
+        "status": "NOT_EXECUTED"
+      },
+      "atto-source.wasm": {
+        "pr": 48,
+        "profile": "scalar_wasm_bridge_negative_source_admission",
+        "status": "NOT_EXECUTED"
+      },
+      "atto-source.forge": {
+        "pr": 51,
+        "profile": "cxx_scalar_compiler_negative_source_admission",
+        "status": "NOT_EXECUTED"
+      },
+      "atto-source.net": {
+        "pr": 29,
+        "profile": "direct_cil_scalar_compiler_negative_source_admission",
+        "status": "NOT_EXECUTED"
+      },
+      "atto-source.rs": {
+        "pr": 416,
+        "profile": "narrow_single_task_uncontended_guest_candidate",
+        "status": "NOT_EXECUTED"
+      },
+      "atto-source.js": {
+        "pr": 43,
+        "profile": "worker_subset_negative_source_admission",
+        "status": "NOT_EXECUTED"
+      },
+      "atto-source.cranelift": {
+        "pr": 53,
+        "profile": "native_scalar_jit_negative_source_admission",
+        "status": "NOT_EXECUTED"
+      },
+      "atto-source.hdl": {
+        "pr": null,
+        "profile": "no_compiler_source_bootstrapped",
+        "status": "NOT_EXECUTED"
+      },
+      "atto-source.atto": {
+        "pr": null,
+        "profile": "self_hosted_compiler_not_bootstrapped",
+        "status": "NOT_EXECUTED"
+      }
+    }
   }
 }
