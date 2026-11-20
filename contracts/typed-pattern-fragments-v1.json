@@ -1070,5 +1070,56 @@
     "atto-selfhost": "bootstrap/self-hosted compiler; not self-hosted yet",
     "hdl": "synthesizable restricted hardware profile; may reject dynamic patterns",
     "realtime": "hard-real-time restricted profile requiring bounded WCET"
-  }
+  },
+  "portable_guest_fixtures": [
+    {
+      "path": "fixtures/typed-pattern-fragments/positive_typed_fragment_60.atto",
+      "blob_sha": "0f0535d1dfe177a8ab80de6c7925d59544841af6",
+      "kind": "positive",
+      "expected_exit_code": 60,
+      "paired_with": "fixtures/typed-pattern-fragments/positive_native_rest_60.atto"
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/positive_native_rest_60.atto",
+      "blob_sha": "9e2058f5cf48799cc13e6cd839c39d0ac0d70b2f",
+      "kind": "positive",
+      "expected_exit_code": 60,
+      "paired_with": "fixtures/typed-pattern-fragments/positive_typed_fragment_60.atto"
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/negative_dynamic_template.atto",
+      "blob_sha": "c0c0dc250f8692a1d087248057d175f386a2a6a8",
+      "kind": "reject",
+      "expected_diagnostic": "E_PATTERN_CONSTEXPR",
+      "guest_artifact": false
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/negative_bind_inside_template.atto",
+      "blob_sha": "8307638ce3e4ca0bd836bf209164d59d7e3d6134",
+      "kind": "reject",
+      "expected_diagnostic": "E_PATTERN_BINDING",
+      "guest_artifact": false
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/negative_type_confusion.atto",
+      "blob_sha": "939c46202979031a96a134ba56f240ff49927725",
+      "kind": "reject",
+      "expected_diagnostic": "E_PATTERN_TYPE",
+      "guest_artifact": false
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/negative_adjacent_rest.atto",
+      "blob_sha": "f6f8c536ecb6d624b313e7b1caa8b80e20b6ce16",
+      "kind": "reject",
+      "expected_diagnostic": "E_PATTERN_SOURCE",
+      "guest_artifact": false
+    },
+    {
+      "path": "fixtures/typed-pattern-fragments/negative_runtime_evaluation.atto",
+      "blob_sha": "a871ae8640cf973f3402ed43d998d19e10c795f2",
+      "kind": "reject",
+      "expected_diagnostic": "E_PATTERN_SOURCE",
+      "guest_artifact": false
+    }
+  ]
 }
