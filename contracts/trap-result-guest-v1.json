@@ -9,67 +9,90 @@
       "role": "self-hosted compiler scaffold",
       "status": "NOT_EXECUTED",
       "compiler_head": null,
-      "guest_receipt": null
+      "guest_receipt": null,
+      "implementation_stage": "NO_RESULT_GUEST_CANDIDATE_VERIFIED"
     },
     "atto-source.cranelift": {
       "role": "native Cranelift compiler",
       "status": "NOT_EXECUTED",
       "compiler_head": null,
-      "guest_receipt": null
+      "guest_receipt": null,
+      "implementation_stage": "RUST_HOST_RUNTIME_AND_SOURCE_REJECTION",
+      "draft_pr": "https://github.com/atto-lang/atto-source.cranelift/pull/47",
+      "notes": "host Result model and real compiler negative source admission for unsupported ADTs"
     },
     "atto-source.forge": {
       "role": "Forge C++ compiler",
       "status": "NOT_EXECUTED",
       "compiler_head": null,
-      "guest_receipt": null
+      "guest_receipt": null,
+      "implementation_stage": "NATIVE_CPP_RUNTIME_FOUNDATION_ONLY",
+      "draft_pr": "https://github.com/atto-lang/atto-source.forge/pull/41",
+      "notes": "C++ typed Result/Error foundation, scalar .atto compiler still unsupported"
     },
     "atto-source.hdl": {
       "role": "HDL target scaffold",
       "status": "NOT_EXECUTED",
       "compiler_head": null,
-      "guest_receipt": null
+      "guest_receipt": null,
+      "implementation_stage": "NO_RESULT_GUEST_CANDIDATE_VERIFIED"
     },
     "atto-source.java": {
       "role": "JVM/Graal compiler",
       "status": "NOT_EXECUTED",
       "compiler_head": null,
-      "guest_receipt": null
+      "guest_receipt": null,
+      "implementation_stage": "JAVA_GRAAL_HOST_RUNTIME_FOUNDATION_ONLY",
+      "draft_pr": "https://github.com/atto-lang/atto-source.java/pull/52",
+      "notes": "Java/Graal tagged Result and Error identity host probe, not compiled Atto guest"
     },
     "atto-source.js": {
       "role": "JS compiler and worker runtime",
       "status": "NOT_EXECUTED",
       "compiler_head": null,
-      "guest_receipt": null
+      "guest_receipt": null,
+      "implementation_stage": "NO_RESULT_GUEST_CANDIDATE_VERIFIED"
     },
     "atto-source.llvm": {
       "role": "native LLVM compiler",
       "status": "NOT_EXECUTED",
       "compiler_head": null,
-      "guest_receipt": null
+      "guest_receipt": null,
+      "implementation_stage": "NATIVE_C_RUNTIME_FOUNDATION_ONLY",
+      "draft_pr": "https://github.com/atto-lang/atto-source.llvm/pull/63",
+      "notes": "C11 pointer-free tenant-tagged parse Result substrate, not LLVM AOT generated guest"
     },
     "atto-source.net": {
       "role": "CIL / NativeAOT compiler",
       "status": "NOT_EXECUTED",
       "compiler_head": null,
-      "guest_receipt": null
+      "guest_receipt": null,
+      "implementation_stage": "DOTNET_NATIVEAOT_HOST_RUNTIME_AND_SOURCE_REJECTION",
+      "draft_pr": "https://github.com/atto-lang/atto-source.net/pull/19",
+      "notes": "host typed Result and direct CIL fail-closed source negative gates"
     },
     "atto-source.realtime": {
       "role": "real-time runtime scaffold",
       "status": "NOT_EXECUTED",
       "compiler_head": null,
-      "guest_receipt": null
+      "guest_receipt": null,
+      "implementation_stage": "NO_RESULT_GUEST_CANDIDATE_VERIFIED"
     },
     "atto-source.rs": {
       "role": "Rust browser/Wasm compiler",
       "status": "NOT_EXECUTED",
       "compiler_head": null,
-      "guest_receipt": null
+      "guest_receipt": null,
+      "implementation_stage": "RUST_WASM_GUEST_CANDIDATE_NOT_EXECUTED",
+      "draft_pr": "https://github.com/atto-lang/atto-source.rs/pull/331",
+      "notes": "typed Result/Option, ? and trap candidate; new int.parse guest tests need exact current head"
     },
     "atto-source.wasm": {
       "role": "Wasm host/target; not independent full source frontend",
       "status": "NOT_EXECUTED",
       "compiler_head": null,
-      "guest_receipt": null
+      "guest_receipt": null,
+      "implementation_stage": "NO_RESULT_GUEST_CANDIDATE_VERIFIED"
     }
   },
   "cases": [

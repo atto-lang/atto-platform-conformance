@@ -52,3 +52,23 @@ The Node integrity test validates only the registry and fixture source files. Al
 ### Checked integer parsing expansion (target only)
 
 Eight additional signed-i64 and bounded-input guest fixtures were copied byte-for-byte from Rust/Wasm PR #331 source candidate `f50e3bf0bf62791bcb517d25982729653b0b44a6` and registered at `TARGET_ONLY`: the minimum signed value, positive/negative overflow, leading zeros, empty and non-ASCII input, and 1,024/1,025-byte boundary behavior. The proposed normative contract is [atto-spec PR #124](https://github.com/atto-lang/atto-spec/pull/124). The contract is not yet ratified; these fixtures are not an implementation claim. Existing source-only Node integrity checks only verify presence and expected result categories, **not compiled guest execution**.
+
+
+### Backend implementation staging (host-only is not guest parity)
+
+The following linked drafts stage **different layers** of the same spec:
+[Rust/Wasm guest compiler #331](https://github.com/atto-lang/atto-source.rs/pull/331),
+[LLVM native C runtime #63](https://github.com/atto-lang/atto-source.llvm/pull/63),
+[Java/Graal host runtime #52](https://github.com/atto-lang/atto-source.java/pull/52),
+[.NET CIL host/negative gates #19](https://github.com/atto-lang/atto-source.net/pull/19),
+[Forge C++ runtime #41](https://github.com/atto-lang/atto-source.forge/pull/41), and
+[Cranelift host/negative gates #47](https://github.com/atto-lang/atto-source.cranelift/pull/47).
+Only Rust/Wasm contains candidate source-guest lowering for the new int.parse
+feature, and it lacks an exact-new-head compiled guest receipt. The five
+other named backends stage host parsing/ABI or fail-closed compiler admission,
+not Result/Option/?/trap codegen.
+
+The machine-readable registry records implementation_stage and draft_pr for
+each backend while retaining status=NOT_EXECUTED and guest_receipt=null.
+A native host test may pass without changing this guest status. No current
+release or merge should infer full multi-backend parity from any of these PRs.
