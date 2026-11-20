@@ -105,7 +105,8 @@
       "expect": {
         "kind": "guest_exit",
         "exit_code": 42
-      }
+      },
+      "source_blob_sha": "41b7dfd0338c470af195d8c1a4e2afaac7bacbd6"
     },
     {
       "id": "parse-id-invalid",
@@ -114,7 +115,8 @@
       "expect": {
         "kind": "guest_exit",
         "exit_code": 0
-      }
+      },
+      "source_blob_sha": "3a43c445e0bea782f98df24edf138265604797c7"
     },
     {
       "id": "option-propagation",
@@ -123,7 +125,8 @@
       "expect": {
         "kind": "guest_exit",
         "exit_code": 42
-      }
+      },
+      "source_blob_sha": "25f07143b32f44375f237a2ede897c53ba66707b"
     },
     {
       "id": "returned-err-data",
@@ -132,7 +135,8 @@
       "expect": {
         "kind": "guest_exit",
         "exit_code": 7
-      }
+      },
+      "source_blob_sha": "168c3ee00dcd8064f6b8edf05a24a02164f85da1"
     },
     {
       "id": "trap-ordinary-throw",
@@ -141,7 +145,8 @@
       "expect": {
         "kind": "guest_exit",
         "exit_code": 42
-      }
+      },
+      "source_blob_sha": "fff86fae13e48925443aa22ca1faa222d00ef8d0"
     },
     {
       "id": "trap-existing-result",
@@ -150,7 +155,8 @@
       "expect": {
         "kind": "guest_exit",
         "exit_code": 42
-      }
+      },
+      "source_blob_sha": "2d71c15eb4e2f9f5b9bf42b5eef8ce3271d8106e"
     },
     {
       "id": "reject-obsolete-option-trap-binding",
@@ -160,7 +166,8 @@
         "kind": "compile_reject",
         "diagnostic": "E_TYPE",
         "no_artifact": true
-      }
+      },
+      "source_blob_sha": "c0467b30232d2ecd5487eecb09fd86cedc79cbc0"
     },
     {
       "id": "reject-question-return-int",
@@ -170,7 +177,8 @@
         "kind": "compile_reject",
         "diagnostic": "E_TYPE",
         "no_artifact": true
-      }
+      },
+      "source_blob_sha": "d2427a841d25afcdbdec5da2b46f396ab1287285"
     },
     {
       "id": "reject-result-into-option",
@@ -180,7 +188,8 @@
         "kind": "compile_reject",
         "diagnostic": "E_TYPE",
         "no_artifact": true
-      }
+      },
+      "source_blob_sha": "b4400303fc644afbc58795964386edad5d451bab"
     },
     {
       "id": "reject-nonexhaustive-match",
@@ -190,7 +199,8 @@
         "kind": "compile_reject",
         "diagnostic": "E_MATCH",
         "no_artifact": true
-      }
+      },
+      "source_blob_sha": "da6967bd967a7291c0a968b25450b6744580021f"
     },
     {
       "id": "reject-wrong-err-payload",
@@ -200,7 +210,8 @@
         "kind": "compile_reject",
         "diagnostic": "E_TYPE",
         "no_artifact": true
-      }
+      },
+      "source_blob_sha": "9537d1cf3822160fb7e42f7f6aa513ab99d0bf48"
     },
     {
       "id": "reject-impossible-join",
@@ -210,7 +221,8 @@
         "kind": "compile_reject",
         "diagnostic": "E_TRAP_ERROR_JOIN",
         "no_artifact": true
-      }
+      },
+      "source_blob_sha": "1e91f8ad4de39f4fe97cda8d9bfb6a7dc45d0c1a"
     },
     {
       "id": "reject-non-error-throw",
@@ -220,7 +232,8 @@
         "kind": "compile_reject",
         "diagnostic": "E_TYPE",
         "no_artifact": true
-      }
+      },
+      "source_blob_sha": "4b01e0d0be6dfd12cf63ae8b17834b596481ead1"
     },
     {
       "id": "int-parse-min",
@@ -229,7 +242,8 @@
       "expect": {
         "kind": "guest_exit",
         "exit_code": 42
-      }
+      },
+      "source_blob_sha": "e58c3ad966c9d212b6498621f6f2805753d1be2e"
     },
     {
       "id": "int-parse-max-overflow",
@@ -238,7 +252,8 @@
       "expect": {
         "kind": "guest_exit",
         "exit_code": 42
-      }
+      },
+      "source_blob_sha": "2f2084b3174c30fcfec07df91a09deadb3d2cfaa"
     },
     {
       "id": "int-parse-min-overflow",
@@ -247,7 +262,8 @@
       "expect": {
         "kind": "guest_exit",
         "exit_code": 42
-      }
+      },
+      "source_blob_sha": "b602d33a89608579b5d69e309955c6e1355fee31"
     },
     {
       "id": "int-parse-leading-zeroes",
@@ -256,7 +272,8 @@
       "expect": {
         "kind": "guest_exit",
         "exit_code": 42
-      }
+      },
+      "source_blob_sha": "a93d6350158d109cf6ee924cb6a8816c385c56a3"
     },
     {
       "id": "int-parse-empty",
@@ -265,7 +282,8 @@
       "expect": {
         "kind": "guest_exit",
         "exit_code": 42
-      }
+      },
+      "source_blob_sha": "f76de39b6ec0f19f28c25e03ad5984a3bd7adf7c"
     },
     {
       "id": "int-parse-nonascii",
@@ -274,7 +292,8 @@
       "expect": {
         "kind": "guest_exit",
         "exit_code": 42
-      }
+      },
+      "source_blob_sha": "047b0c5c9487f62431ec4c80e0c05af975664736"
     },
     {
       "id": "int-parse-overlong",
@@ -283,7 +302,8 @@
       "expect": {
         "kind": "guest_exit",
         "exit_code": 42
-      }
+      },
+      "source_blob_sha": "216aab01da15e08155b25d650affbc52868c7cb3"
     },
     {
       "id": "int-parse-max-admitted-length",
@@ -292,7 +312,8 @@
       "expect": {
         "kind": "guest_exit",
         "exit_code": 42
-      }
+      },
+      "source_blob_sha": "40ba3931ae7ee83cd7253a7f64cbd03a8b9690a3"
     }
   ],
   "int_parse_normative_candidate": "https://github.com/atto-lang/atto-spec/pull/124",
