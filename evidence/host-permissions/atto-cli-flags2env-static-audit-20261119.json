@@ -4,12 +4,12 @@
   "sources": {
     "cli_repo": "atto-lang/atto-cli",
     "cli_pr": "https://github.com/atto-lang/atto-cli/pull/7",
-    "exact_head_sha": "16e3e635c6fd9dee63d89869d4c3dd2685f2325b",
+    "exact_head_sha": "4c1830902e9c494901084ab66e3930918eb80c18",
     "bundled_parser_repo": "flags-2-env/flags-2-env",
     "pinned_parser_git_commit": "278245253ee5d37b1fb54285383ab18818de6b18",
     "parser_c_blob": "786c9314c9a0d9ed51e64e0299ad41745b579aff",
     "cli_schema_blob": "9b82603226dad028e55b5d3fe518aa9974881780",
-    "cli_permission_model_blob": "1d1ef94304343451d49d180bcc5786ae74363114"
+    "cli_permission_model_blob": "aa0663febf9547ff60eb5f95c18072707790610c"
   },
   "static_findings": [
     "26 .cli-flags.toml flag tables, no repeated declared env keys",
@@ -18,7 +18,8 @@
     "upstream C parser does NOT recognize a bare_value flag-table key; all 16 invalid occurrences removed",
     "versioned deterministic argv-only request encoding added, including deny-all marker and explicit denies",
     "unsigned canonical request is NOT a verified artifact manifest or permission grant",
-    "current scalar Wasm host rejects privileged allow requests rather than ignoring them"
+    "current scalar Wasm host rejects privileged allow requests rather than ignoring them",
+    "canonical encoder Rust unit tests independently reject forged path scopes and forged noncanonical network scopes"
   ],
   "tests": {
     "local_rust_compilation": "NOT_EXECUTED_CARGO_UNAVAILABLE",
