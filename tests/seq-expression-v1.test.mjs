@@ -53,7 +53,7 @@ test('initial audit is not a fabricated execution receipt', () => {
 
 test('backend candidate heads and restricted semantic subsets are pinned, never counted as PASS', () => {
   const candidates = registry.implementation_candidates;
-  assert.deepEqual(Object.keys(candidates), ['rust_native', 'rust_browser_wasm', 'forge', 'net']);
+  assert.deepEqual(Object.keys(candidates), ['rust_native', 'rust_browser_wasm', 'forge', 'net', 'cranelift']);
   for (const [backend, candidate] of Object.entries(candidates)) {
     assert.ok(backends.includes(backend), backend);
     assert.match(candidate.pull_request, /^https:\/\/github\.com\/atto-lang\/atto-source\.[a-z]+\/pull\/\d+$/);
