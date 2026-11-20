@@ -450,7 +450,7 @@
   },
   "workstream_capability_notes": {
     "atto-lang/atto-source.forge": "native C++20 typed planning passes local GCC/Clang tests with ASan/UBSan; source GitHub Actions still 0 steps; no compiled .atto pipe guest",
-    "atto-lang/atto-source.rs": "provisional opt-in typed Result<PipeHandle, PipeSetupError>; six checked forward/reverse, stopped/closed, source-occupied and sink-occupied rollback fixtures; runtime and compiler NOT_EXECUTED; cancellation, opaque lifetime and TenantVM still unavailable"
+    "atto-lang/atto-source.rs": "experimental checked Result<PipeHandle,PipeSetupError> with 6 guest fixtures covering forward/reverse, stopped endpoint, both port conflicts and restoration after setup failure; compiler/guest NOT_EXECUTED, cancellation/borrow release/generation fencing not implemented"
   },
   "rust_v2_checked_guest_preview": {
     "repo": "atto-lang/atto-source.rs",
@@ -504,6 +504,7 @@
         "expected_stdout": "40\n2\n",
         "status": "NOT_EXECUTED"
       }
-    }
+    },
+    "test_coverage": "Rust compiler fixture, Node compiled guest and Chromium worker guest tests are wired; no executable exact-head run"
   }
 }
