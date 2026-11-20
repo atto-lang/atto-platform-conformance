@@ -1,0 +1,5 @@
+# case	expected	diagnostic	guest_status	fixture	git_blob_sha
+ACTOR-BOOL-01	ACCEPT	NONE	NOT_EXECUTED	fixtures/typed-actor-bool-v1/actor-bool-never-parity-v1.atto	a103999dd9b047e24ae79fedd88398374bc10590
+ACTOR-BOOL-02	REJECT	E_ACTOR_RECEIVES	NOT_EXECUTED	fixtures/typed-actor-bool-v1/02-receives-handler-mismatch.atto	fe76f70ef141b7bba74254ecaf7708f881144f32
+ACTOR-BOOL-03	REJECT	E_ACTOR_SEND_CONTRACT	NOT_EXECUTED	fixtures/typed-actor-bool-v1/03-sends-void-invalid.atto	0f1637268858eeac654cccc7f0c925e4f9c88572
+ACTOR-BOOL-04	REJECT	E_ACTOR_CONTRACT	NOT_EXECUTED	fixtures/typed-actor-bool-v1/04-duplicate-sends-clause.atto	df6aa49bd474e95d7df5092cea4ff41236c286a6
