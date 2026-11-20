@@ -133,3 +133,44 @@ GCC/Clang CMake/CTest + sanitizers, Cranelift native JIT, .NET
 CoreCLR/NativeAOT, Java JDK25/GraalVM Native Image,
 Rust browser/Wasm and LLVM native emitters, plus independent
 security/ownership/effects validation in the production compilers.
+
+
+## 2026-11-20 exact-head and receipt-admission hardening
+
+The ledger contains **16 execution/release profiles across all 11 \`atto-source.*\` repositories**.
+A profile is not synonymous with a repository: Rust and LLVM have multiple
+independent execution paths, Java has bootstrap and production paths, JS has
+compiled-ESM and runtime paths, and the browser has a separate pinned release.
+
+Current source PR SHA references for .NET, Java, Forge, Cranelift and JS were
+refreshed from their GitHub PR-head readbacks. This does **not** promote tests:
+all profile \`execution_status\` values remain \`not_executed\`, all receipts
+remain null, and the supplemental edge suite remains unqualified.
+
+Local historical Java/JVM, Forge/C++ and JS/V8 execution observations are
+**quarantined from current-head parity claims**: their recorded compiler Git
+blob differs from the actual compiler blob at the now-proposed PR head.
+Those local test observations remain useful for debugging their previous
+revision, but must be repeated on each current exact source tree.
+
+The admission test now requires an **exact 16-profile / 11-source-repository
+inventory**, and a claimed \`passed\` receipt must additionally bind
+\`compiler_repo\`, \`compiler_head_sha\`, \`compiler_tree_sha\`, GitHub
+\`run_id\`, \`job_id\`, \`run_attempt\`, a nonzero assigned \`runner_id\`,
+real completed successful step entries, and the exact GitHub source-repo
+run/job URL. A verified artifact must have a nonzero artifact ID, the
+same-run artifact URL and a SHA-256 ZIP digest. The test includes 18 negative
+mutation probes of these new provenance checks.
+
+**Crucial limitation:** a static ledger cannot independently authenticate
+self-reported GitHub run steps or an artifact digest. The independent
+qualifier must inspect the actual GitHub job API, download the artifact,
+verify the ZIP hash, check compiled outputs and the eight source-negative
+absence checks against the exact SHA/tree, and only then allow a reviewer
+to mark the target \`passed\`. A synthetic, source-free or historical
+execution cannot qualify a compiler. The source-repository-only URL check
+is intentionally fail-closed; carrier receipts need separately approved
+export/destination policy and a distinct validated evidence contract.
+
+Atto GitHub Actions were recently returning failed zero-step runs; no
+new compiled-guest CI evidence was produced by this metadata hardening.
