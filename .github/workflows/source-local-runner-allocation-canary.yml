@@ -25,7 +25,13 @@ jobs:
         run: |
           set -euo pipefail
           test "${GITHUB_REPOSITORY}" = 'ores-truffle-oreslang/oreslang-platform-conformance'
-          printf 'RUNNER_ALLOCATED source_local=true runner_os=%s run_id=%s\n' "${RUNNER_OS}" "${GITHUB_RUN_ID}"
+          test -n "${GITHUB_RUN_ID:-}"
+          test -n "${GITHUB_SHA:-}"
+          test -n "${RUNNER_OS:-}"
+          test -n "${RUNNER_NAME:-}"
+          # This is an allocation marker, never a validated compiler or release receipt.
+          # GitHub REST must independently authenticate job.runner_id, runner_name and steps.
+          printf 'RUNNER_ALLOCATED source_local=true runner_os=%s runner_name=%s run_id=%s\n' "${RUNNER_OS}" "${RUNNER_NAME}" "${GITHUB_RUN_ID}"
           printf '{"kind":"source-local-metadata-only","run_id":"%s","head_sha":"%s","runner_os":"%s","source_checkout":false,"source_export":false,"compiler_tested":false}\n' \
             "${GITHUB_RUN_ID}" "${GITHUB_SHA}" "${RUNNER_OS}" > runner-canary.json
       - name: Publish metadata-only canary receipt
