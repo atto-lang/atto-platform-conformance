@@ -70,7 +70,7 @@ test('portable guest input fixtures are exact Git blobs, never fake pass receipt
   const paths=new Set();
   let positives=0,negative=0,traps=0;
   for(const f of fixtures) {
-    assert.match(f.path,/^fixtures\/typed-pattern-fragments\/[a-z0-9_]+\.atto$/);
+    assert.match(f.path,/^fixtures\/typed-pattern-fragments\/[a-z0-9_-]+\.atto$/);
     assert.ok(!paths.has(f.path),f.path);
     paths.add(f.path);
     const file=new URL('../'+f.path,import.meta.url);
