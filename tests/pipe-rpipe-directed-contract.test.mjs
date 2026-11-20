@@ -165,3 +165,26 @@ test('operator boundaries and receipt obligations reject inferred duplex or sile
     assert.ok(contract.required_receipts.includes(required), 'missing receipt requirement ' + required);
   }
 });
+
+
+test('experimental Rust checked PipeHandle preview cannot masquerade as backend conformance', ()=>{
+  const preview=contract.rust_v2_checked_guest_preview;
+  assert.equal(preview.repo,'atto-lang/atto-source.rs');
+  assert.equal(preview.type,'Result<PipeHandle, PipeSetupError>');
+  assert.equal(preview.opt_in,'explicit_result_binding_annotation_only');
+  assert.equal(preview.endpoint_scope,'single_tenant_bounded_actor_channel_actor_triple');
+  assert.match(preview.error_semantics,/without trap or DATA publication/);
+  assert.equal(preview.checked_setup_compiler,'NOT_EXECUTED');
+  assert.equal(preview.checked_setup_guest,'NOT_EXECUTED');
+  assert.equal(preview.pipe_handle_methods,'NOT_IMPLEMENTED');
+  assert.equal(preview.cancellation_and_guards,'NOT_IMPLEMENTED');
+  assert.equal(preview.tenant_generation_proof,'NOT_EXECUTED');
+  assert.equal(preview.binding_spec_status,'NON_NORMATIVE_EXPERIMENTAL');
+  assert.equal(new Set(preview.new_guest_fixture_ids).size,3);
+  for (const id of preview.new_guest_fixture_ids) {
+    assert.match(id,/^2[12][019]-v2-checked-/);
+  }
+  const row=contract.backend_evidence.find(x=>x.repo===preview.repo);
+  assert.ok(row);
+  assert.equal(row.status,'NOT_EXECUTED');
+});
