@@ -989,6 +989,13 @@
       "source_tree": "2f261c3df74db8620fbd48cf6e78feeda934d533",
       "scope": "Direct ECMA-335 CIL bounded i64 seq integrated with #16 checked |> / <| pipelines, inline arrow bodies and immutable locals; CoreCLR/NativeAOT guests require real CI; 16-element cap",
       "verification_status": "not_executed"
+    },
+    "cranelift": {
+      "pull_request": "https://github.com/atto-lang/atto-source.cranelift/pull/52",
+      "head_sha": "6e18ec33f205c45f7ef7a1a58be22de3ff9f80f0",
+      "source_tree": "cfd964dd78a722da7da87bae04ddf9dc1da84f57",
+      "scope": "Independent Cranelift stage-0 checked i64 native JIT seq(...) and (>...) only, 16 element cap, source-order traps; no ownership/async/actor or pipeline composition certification",
+      "verification_status": "not_executed"
     }
   }
 }
