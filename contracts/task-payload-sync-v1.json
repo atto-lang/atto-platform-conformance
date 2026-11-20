@@ -595,6 +595,28 @@
       "full_source_tree_sha": "044a36c1dbbb93dfae966a8f06c5dfee6357b497",
       "carrier_mirror_commit_sha": "d1c17abea78441eb1d51c0fe917cbe73340f3cf3",
       "scope": "LIMITED_PURE_INLINE_JAVA_EXECUTION_WITH_FULL_SOURCE_TREE_IDENTITY_VERIFIED"
+    },
+    "cranelift_inline_void_scalar": {
+      "status": "EXECUTED_LIMITED_PROFILE",
+      "full_task_backend_status": "NOT_EXECUTED",
+      "source_head": "076a09aa1e3c9a77267ad4f4f72edeaa52f203b1",
+      "full_source_tree_sha": "f3f3a521dcb3ac30dfd398d2dd5017a76ef25ac7",
+      "frontend_blob_sha": "7499e10aa85c8b5a9c35d9122ea0619147312d1e",
+      "inline_test_blob_sha": "59d467f2a0ff18d5d8e578c5af084daba8040ceb",
+      "carrier_mirror_commit_sha": "5c6f232cf423e61b42e17abdfd10a8219e5d1efd",
+      "carrier_run": "https://github.com/r2g-test/atto-ci/actions/runs/44802783871",
+      "exact_source_blob_count": 171,
+      "native_cargo_test_count_passed": 394,
+      "cargo_test_exit": 0,
+      "cargo_clippy_exit": 0,
+      "cargo_fmt_exit": 1,
+      "native_positive_cases": 3,
+      "native_negative_cases": 4,
+      "checked_failure_no_guest_output": true,
+      "do_sync_requires_void": true,
+      "standalone_void_requires_do": true,
+      "release_qualified": false,
+      "scope": "TRUSTED_SIGNED_I64_INLINE_CRANELIFT_JIT_NOT_GENERAL_TASKSCOPE_OR_UNTRUSTED_TENANTVM"
     }
   },
   "cancellation_model": "owned Future<T>.cancel(): void requests nonblocking idempotent cancellation; TaskCancelled terminal distinct from success/failure; scope cascades and physically retires all children; receipt witnesses mandatory",
