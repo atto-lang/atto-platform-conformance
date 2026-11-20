@@ -334,5 +334,107 @@
       "guest_pipe_execution": "NOT_EXECUTED"
     }
   ],
-  "compiler_workstreams_note": "PRs represent unmerged source work only; do not count as executed tests or guest conformance. Each backend must supply its own exact SHA and actual material CI/guest receipt."
+  "compiler_workstreams_note": "PRs represent unmerged source work only; do not count as executed tests or guest conformance. Each backend must supply its own exact SHA and actual material CI/guest receipt.",
+  "exact_source_compiler_mirrors": [
+    {
+      "repo": "atto-lang/atto-source.rs",
+      "pr": "https://github.com/atto-lang/atto-source.rs/pull/262",
+      "case_ids": [
+        "actor-forward",
+        "actor-reverse",
+        "actor-missing-emits",
+        "actor-wrong-direction",
+        "actor-mixed-directions",
+        "actor-duplicate-direction"
+      ],
+      "admission": "typed_declared_actor_ports_and_experimental_guest_wasm",
+      "guest_execution": "NOT_EXECUTED",
+      "limitation": "runtime panics on duplicate/closed admission, while canonical spec requires Result/PipeSetupError; no Stream<T> graph lowering"
+    },
+    {
+      "repo": "atto-lang/atto-source.js",
+      "pr": "https://github.com/atto-lang/atto-source.js/pull/31",
+      "case_ids": [
+        "actor-forward",
+        "actor-reverse",
+        "actor-missing-emits",
+        "actor-wrong-direction",
+        "mixed-channel-stream-forward",
+        "mixed-channel-stream-reverse",
+        "actor-duplicate-direction",
+        "actor-mixed-directions",
+        "stopped-source",
+        "closed-channel",
+        "stopped-consumer",
+        "stopped-actor-sink"
+      ],
+      "admission": "exact_shared_source_explicit_unsupported_guest_diagnostic",
+      "guest_execution": "NOT_EXECUTED",
+      "limitation": "compiler must fail closed; no guest continuous transport implemented"
+    },
+    {
+      "repo": "atto-lang/atto-source.llvm",
+      "pr": "https://github.com/atto-lang/atto-source.llvm/pull/66",
+      "case_ids": [
+        "actor-forward",
+        "actor-reverse",
+        "actor-missing-emits",
+        "actor-wrong-direction",
+        "mixed-channel-stream-forward",
+        "mixed-channel-stream-reverse",
+        "actor-duplicate-direction",
+        "actor-mixed-directions",
+        "stopped-source",
+        "closed-channel",
+        "stopped-consumer",
+        "stopped-actor-sink"
+      ],
+      "admission": "exact_shared_source_explicit_unsupported_guest_diagnostic",
+      "guest_execution": "NOT_EXECUTED",
+      "limitation": "compiler must fail closed; no guest continuous transport implemented"
+    },
+    {
+      "repo": "atto-lang/atto-source.net",
+      "pr": "https://github.com/atto-lang/atto-source.net/pull/25",
+      "case_ids": [
+        "actor-forward",
+        "actor-reverse",
+        "actor-missing-emits",
+        "actor-wrong-direction",
+        "mixed-channel-stream-forward",
+        "mixed-channel-stream-reverse",
+        "actor-duplicate-direction",
+        "actor-mixed-directions",
+        "stopped-source",
+        "closed-channel",
+        "stopped-consumer",
+        "stopped-actor-sink"
+      ],
+      "admission": "exact_shared_source_explicit_unsupported_guest_diagnostic",
+      "guest_execution": "NOT_EXECUTED",
+      "limitation": "compiler must fail closed; no guest continuous transport implemented"
+    },
+    {
+      "repo": "atto-lang/atto-source.forge",
+      "pr": "https://github.com/atto-lang/atto-source.forge/pull/49",
+      "case_ids": [
+        "actor-forward",
+        "actor-reverse",
+        "actor-missing-emits",
+        "actor-wrong-direction",
+        "mixed-channel-stream-forward",
+        "mixed-channel-stream-reverse",
+        "actor-duplicate-direction",
+        "actor-mixed-directions",
+        "stopped-source",
+        "closed-channel",
+        "stopped-consumer",
+        "stopped-actor-sink"
+      ],
+      "admission": "exact_shared_source_explicit_unsupported_guest_diagnostic",
+      "guest_execution": "NOT_EXECUTED",
+      "limitation": "compiler must fail closed; no guest continuous transport implemented"
+    }
+  ],
+  "exact_source_compiler_mirrors_note": "Git blob identities of copied fixture source verified from GitHub connector, but source-only copies and no-step CI runs are not compiler successes or guest parity. LLVM, .NET, Forge and JS deny all 12 fixtures; Rust v2 has six original actor fixtures authored for compilation and one negative guest admission, while streams and checked Result/PipeSetupError remain gaps."
 }
