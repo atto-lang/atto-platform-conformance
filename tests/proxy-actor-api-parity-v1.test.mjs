@@ -42,6 +42,14 @@ test('proxy actor API registry remains canonical and cross-backend complete', ()
       assert.ok(Number.isInteger(b.host_ticket_ci.executed_ci_steps) &&
         b.host_ticket_ci.executed_ci_steps > 0);
       assert.match(b.host_ticket_ci.ci_url, /^https:\/\/github\.com\//);
+      if (b.host_ticket_ci.source_proof === 'EXACT_FULL_GIT_TREE') {
+        assert.match(b.host_ticket_ci.source_tree_sha, /^[0-9a-f]{40}$/);
+        assert.equal(b.host_ticket_ci.source_tree_sha,
+          b.host_ticket_ci.mirrored_tree_sha,
+          b.id + ': a merely selected-blob copy cannot claim exact full-tree parity');
+        assert.ok(b.host_ticket_ci.verified_blob_count >= 125,
+          b.id + ': full-tree proof unexpectedly incomplete');
+      }
     } else {
       assert.equal(b.host_ticket_ci, null,
         b.id + ': unexecuted ticket code cannot carry PASS evidence');
@@ -93,16 +101,25 @@ test('proxy actor API registry remains canonical and cross-backend complete', ()
         assert.equal(e.ci_url, b.host_ticket_ci.ci_url);
         assert.ok(e.original_git_blob_count >= 16);
         assert.equal(e.original_git_blob_count, b.host_ticket_ci.verified_blob_count);
+        if (b.host_ticket_ci.source_proof === 'EXACT_FULL_GIT_TREE') {
+          assert.equal(e.original_tree_sha, b.host_ticket_ci.source_tree_sha);
+          assert.equal(e.mirror_tree_sha, e.original_tree_sha);
+          assert.ok(e.markers.includes('ATTO_M10_EXACT_FULL_126_BLOB_TREE_MATCH=PASS'),
+            b.id + ': full-tree source evidence missing');
+        } else {
+          assert.ok(e.markers.includes('ATTO_SOURCE_SIXTEEN_ORIGINAL_GIT_BLOBS=PASS'),
+            b.id + ': original scoped-source evidence missing');
+        }
         assert.ok(e.executed_job_steps >= 4);
         assert.equal(e.executed_job_steps, b.host_ticket_ci.executed_ci_steps);
         assert.equal(new Set(e.markers).size, e.markers.length);
         for (const marker of [
-          'ATTO_SOURCE_SIXTEEN_ORIGINAL_GIT_BLOBS=PASS',
           'M6_NIO_SCHEDULER_SUPERVISOR_NATIVE_HOST=PASS',
           'M6_TICKET_128_CONCURRENT_MAIL_EXACT_CORRELATION=PASS',
           'M10_RESTRICTED_COMPILED_ATTO_PROCESS_A_SENDER=PASS',
           'M10_RESTRICTED_COMPILED_ATTO_REMOTE_RECEIVE=PASS',
-          'M10_12_CONCURRENT_PER_MAIL_SCOPED_RESULTS_OR_VERIFIED_FULL=PASS'
+          'M10_12_CONCURRENT_PER_MAIL_SCOPED_RESULTS_OR_VERIFIED_FULL=PASS',
+          'M10_SIGNED_REJECTED_FULL_ROUTE_CORRELATION=PASS'
         ]) assert.ok(e.markers.includes(marker),
           b.id + ': missing exact two-process host-only evidence ' + marker);
         assert.notEqual(b.compiled_guest_ipc_status, 'PASSED',
