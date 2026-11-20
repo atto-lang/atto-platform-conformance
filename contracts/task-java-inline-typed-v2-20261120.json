@@ -1,0 +1,125 @@
+{
+  "schema": "atto.java-inline-typed-v2-execution.v1",
+  "observed_utc": "2026-11-20",
+  "status": "EXECUTED_LIMITED_PROFILE",
+  "release_qualified": false,
+  "canonical_spec": "atto-lang/atto-spec#129 (void-only do sync task; inline task on caller TaskId)",
+  "source": {
+    "repo": "atto-lang/atto-source.java",
+    "pr": 59,
+    "head_sha": "11226e12a5fcfcdf74dcbd7f760efb248f7c7255",
+    "git_tree_sha": "f4b787f20b874b334733100ea554ad860ca63c1b",
+    "total_git_blobs": 114,
+    "focus_blobs": {
+      "src/compiler/asyncv1/AttoAsyncV1Compiler.java": "c48e58b40ba8631d46aa877094842e9b99312310",
+      "src/compiler/asyncv1/AttoInlineTaskV2Compiler.java": "ea9e507b8b331a289b413c875c69137b7c30952d",
+      "tests/compiler/AttoInlineTaskV2Probe.java": "0f7ff773e1c0c4583fc498f8d2e57b98a205fa20",
+      "ci/async/verify-compiled-completed-future.sh": "c121b537e3557664e6b8065884077f9d6426809d",
+      "fixtures/async_v1/inline_v2_nested.atto": "75cf086a35b312f63231ac8ee657afbc433c5fee",
+      "fixtures/async_v1/inline_v2_arithmetic.atto": "a74ee3189583073596577a3b61939ef0cf2e7ca1",
+      "fixtures/async_v1/inline_v2_bad_void.atto": "be169f6ba762b740016d7cc6905aeeecbaef32f6",
+      "fixtures/async_v1/inline_v2_unsupported_effect.atto": "de962de0f0060b5dab9e497d9364b550f8ce9890",
+      "fixtures/async_v1/inline_v2_overflow.atto": "3e148e7a403d27c336cfc353b055cc56bb3aa779"
+    }
+  },
+  "runner": {
+    "repo": "r2g-test/atto-ci",
+    "private": true,
+    "no_source_token": true,
+    "cross_org_checkout": false,
+    "mirror_commit_sha": "e07c036a33d614d6185059311561d63772a33bd1",
+    "mirror_tree_sha": "f4b787f20b874b334733100ea554ad860ca63c1b",
+    "exact_full_source_tree": true,
+    "exact_source_blobs": 114,
+    "carrier_commit_sha": "e89081c26ea27359977c069d3edd417e04c9d1ed",
+    "carrier_tree_sha": "08bd289843e93f0a0b470163acbd9c778e11ffbf",
+    "carrier_only_delta": ".github/workflows/atto-java-inline-v2.yml",
+    "workflow_run_id": 44803310176,
+    "workflow_url": "https://github.com/r2g-test/atto-ci/actions/runs/44803310176",
+    "job_id": 136520708509,
+    "workflow_conclusion": "success",
+    "job_conclusion": "success",
+    "exact_tree_gate": "PASS",
+    "runner": "ubuntu-24.04",
+    "jdk": "GraalVM JDK 25",
+    "native_image": "GraalVM Native Image --no-fallback --gc=epsilon"
+  },
+  "execution": {
+    "existing_source_admission": {
+      "passed": 97,
+      "total": 97
+    },
+    "new_typed_inline_parser": {
+      "positive_passed": 15,
+      "negative_passed": 34
+    },
+    "existing_cli_security": {
+      "passed": 10,
+      "total": 10
+    },
+    "generated_identifiers": {
+      "accepted": 19,
+      "rejected": 4
+    },
+    "existing_legacy_completed_future": {
+      "jvm_exit": 42,
+      "native_exit": 42
+    },
+    "existing_typed_completed_future": {
+      "jvm_exit": 42,
+      "native_exit": 42
+    },
+    "existing_pure_inline": {
+      "jvm_exit": 42,
+      "native_exit": 42
+    },
+    "typed_inline_nested": {
+      "jvm_exit": 42,
+      "native_exit": 42,
+      "marker": "ATTO_INLINE_V2_JVM_NATIVE=PASS"
+    },
+    "typed_inline_arithmetic": {
+      "jvm_exit": 42
+    },
+    "negative_guest_source": {
+      "no_artifact": true,
+      "diagnostics": [
+        "E_TASK_RETURN_TYPE",
+        "E_UNSUPPORTED_INLINE_EFFECT"
+      ],
+      "marker": "ATTO_INLINE_V2_NEGATIVE_NO_ARTIFACT=PASS"
+    },
+    "checked_overflow": {
+      "jvm_exception": "java.lang.ArithmeticException: integer overflow",
+      "no_success_result": true,
+      "marker": "ATTO_INLINE_V2_CHECKED_OVERFLOW=PASS"
+    },
+    "typed_ir_trace": [
+      "INLINE_TASK_ENTER",
+      "INLINE_TASK_EXIT",
+      "SCALAR_BIND",
+      "CHECKED_ARITHMETIC",
+      "RETURN_INLINE",
+      "RETURN_MAIN"
+    ],
+    "failed_prior_proof": {
+      "run_url": "https://github.com/r2g-test/atto-ci/actions/runs/44802925515",
+      "result": "failed Bash quoted-grep syntax, despite 97/97 legacy and 15/34 new source probes; corrected, not counted as runtime evidence"
+    }
+  },
+  "scope": {
+    "supported": "bounded stand-alone pure inline main AST: multiple statements, nested void/value tasks, lexical val locals and checked int arithmetic",
+    "parser": "limited pure-subset compiler; not the general Atto frontend",
+    "mir": "typed linear operation trace only; not production MIR, scheduler or structured cancellation",
+    "source_file_guard": "8192-byte bounded nofollow strict UTF-8 read inherited from prior hardened compiler",
+    "runtime_tenantvm_proven": false,
+    "scheduler_cancellation_proven": false,
+    "suspension_proven": false,
+    "borrows_and_guards_proven": false,
+    "defer_using_cleanup_proven": false,
+    "independent_security_review_proven": false,
+    "source_org_exact_head_actions_verified": false,
+    "full_source_private_carrier_verified": true,
+    "pr_remains_draft": true
+  }
+}

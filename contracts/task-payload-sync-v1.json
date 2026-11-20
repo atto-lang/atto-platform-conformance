@@ -617,6 +617,19 @@
       "standalone_void_requires_do": true,
       "release_qualified": false,
       "scope": "TRUSTED_SIGNED_I64_INLINE_CRANELIFT_JIT_NOT_GENERAL_TASKSCOPE_OR_UNTRUSTED_TENANTVM"
+    },
+    "java_inline_typed_v2": {
+      "path": "contracts/task-java-inline-typed-v2-20261120.json",
+      "status": "EXECUTED_LIMITED_PROFILE",
+      "full_task_backend_status": "NOT_EXECUTED",
+      "source_head": "11226e12a5fcfcdf74dcbd7f760efb248f7c7255",
+      "source_tree": "f4b787f20b874b334733100ea554ad860ca63c1b",
+      "full_source_blobs": 114,
+      "carrier_run": "https://github.com/r2g-test/atto-ci/actions/runs/44803310176",
+      "typed_ast_positive": 15,
+      "typed_ast_negative": 34,
+      "native_image_guest_exit": 42,
+      "release_qualified": false
     }
   },
   "cancellation_model": "owned Future<T>.cancel(): void requests nonblocking idempotent cancellation; TaskCancelled terminal distinct from success/failure; scope cascades and physically retires all children; receipt witnesses mandatory",
