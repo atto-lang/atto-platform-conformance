@@ -1,7 +1,7 @@
 ### Fourth compiler candidate: Forge native bounded Pointer<int>
 
 [atto-source.forge #50](https://github.com/atto-lang/atto-source.forge/pull/50)
-pins compiler head `93935c18c9977462a5630c835e9e5ef0e2035bfb` and native
+pins compiler head `60e667238f943e4b6b47c0e4d0f603ad2b440ef5` and native
 `include/atto` tree `151c08add7df9db670033b27bcefdba36f61753b`.
 The canonical PRL-001/002 Atto input blobs match exactly. The Forge
 frontend now has candidate typed local-ref parsing and emits restricted
@@ -9,7 +9,7 @@ native C++ stack-pointer read code, not owning allocation.
 
 CTest has been authored to compile four real native guest binaries under
 GCC/Clang and ASan/UBSan and reject 24 invalid sources before C++ output.
-**Both matrix jobs in run #44664282171 failed before any steps executed**,
+**Both jobs in exact-head run #44664843939 failed before any steps executed**,
 so Forge remains **NOT_EXECUTED**.
 
 Forge stage-0 guests print main's logical scalar (e.g. 42) and exit 0,
