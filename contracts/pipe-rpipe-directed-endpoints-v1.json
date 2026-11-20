@@ -450,12 +450,12 @@
   },
   "workstream_capability_notes": {
     "atto-lang/atto-source.forge": "native C++20 typed planning passes local GCC/Clang tests with ASan/UBSan; source GitHub Actions still 0 steps; no compiled .atto pipe guest",
-    "atto-lang/atto-source.rs": "experimental opt-in Result<PipeHandle, PipeSetupError>, 7 checked guest fixtures including stopped source/sink and three occupied port rollback cases; source compiler and guest NOT_EXECUTED; no cancellation, tenant generation fence or general graph lowering"
+    "atto-lang/atto-source.rs": "experimental checked 3-stage guest admission and runtime claimed-channel public I/O fences; staged but NOT_EXECUTED: preloaded queue rejection, external send/receive/close denial, source/channel/sink rollback. TenantVM and cancellation still unsupported."
   },
   "rust_v2_checked_guest_preview": {
     "repo": "atto-lang/atto-source.rs",
     "pull_request": "https://github.com/atto-lang/atto-source.rs/pull/262",
-    "source_commit": "27da4c948d1cc5d10467cd49b510d4f41547a36b",
+    "source_commit": "beb912de3562875c88d94897f13af9d7cc539406",
     "type": "Result<PipeHandle, PipeSetupError>",
     "opt_in": "explicit_result_binding_annotation_only",
     "endpoint_scope": "single_tenant_bounded_actor_channel_actor_triple",
@@ -468,7 +468,8 @@
       "222-v2-checked-setup-output-occupied",
       "222-v2-checked-output-occupied-rollback",
       "223-v2-checked-input-occupied-rollback",
-      "224-v2-checked-channel-occupied-rollback"
+      "224-v2-checked-channel-occupied-rollback",
+      "225-v2-checked-preloaded-channel-denial"
     ],
     "checked_setup_compiler": "NOT_EXECUTED",
     "checked_setup_guest": "NOT_EXECUTED",
@@ -483,7 +484,8 @@
       "source_occupied": 4,
       "sink_occupied": 5,
       "channel_occupied": 6,
-      "sink_has_downstream": 7
+      "sink_has_downstream": 7,
+      "nonquiescent_channel": 8
     },
     "error_code_accessor": "PipeSetupError.code()",
     "allocation_rule": "success_result_and_guest_bridge_allocated_before_atomic_DATA_publication",
@@ -521,6 +523,45 @@
       }
     },
     "test_coverage": "Rust compiler fixture, Node compiled guest and Chromium worker guest tests are wired; no executable exact-head run",
-    "rollback_recovery_scope": "experimental_fixed_3stage_actor_channel_actor_only_not_general_graph_or_TenantVM"
+    "rollback_recovery_scope": "experimental_fixed_3stage_actor_channel_actor_only_not_general_graph_or_TenantVM",
+    "channel_ownership_hardening": {
+      "scope": "EXPERIMENTAL_GUEST_ONLY",
+      "fail_closed_preloaded_queue": {
+        "source": "tests/fixtures/pass/225-v2-checked-preloaded-channel-denial.atto",
+        "shared": "fixtures/pipe-rpipe-checked-v2/preloaded-channel-denial.atto",
+        "sha": "9780290e56482e2d8255cd2349f43dee71342c21",
+        "error_code": 8,
+        "expected_stdout": "40\n2\n",
+        "status": "NOT_EXECUTED"
+      },
+      "claimed_public_access": [
+        {
+          "kind": "send",
+          "source": "tests/fixtures/panic/225-v2-pipe-claimed-channel-send.atto",
+          "shared": "fixtures/pipe-rpipe-checked-v2/claimed-channel-send.atto",
+          "sha": "1d8ff00900d2f88e7c8df18fd98e8614e0f98d62",
+          "panic_code": 10,
+          "status": "NOT_EXECUTED"
+        },
+        {
+          "kind": "receive",
+          "source": "tests/fixtures/panic/226-v2-pipe-claimed-channel-receive.atto",
+          "shared": "fixtures/pipe-rpipe-checked-v2/claimed-channel-receive.atto",
+          "sha": "47118a81108939fb46b700b45d9e642ae98d1030",
+          "panic_code": 10,
+          "status": "NOT_EXECUTED"
+        },
+        {
+          "kind": "close",
+          "source": "tests/fixtures/panic/227-v2-pipe-claimed-channel-close.atto",
+          "shared": "fixtures/pipe-rpipe-checked-v2/claimed-channel-close.atto",
+          "sha": "84fc85c8b63e75e3ca7d321af6d7283606918911",
+          "panic_code": 10,
+          "status": "NOT_EXECUTED"
+        }
+      ],
+      "recheck_after_suspension": "public channel send and receive revalidate claim before each retry; internal actor send must match source-owner record",
+      "guest_execution": "NOT_EXECUTED"
+    }
   }
 }
