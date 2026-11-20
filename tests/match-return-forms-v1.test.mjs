@@ -163,3 +163,28 @@ test('direct-CIL real guest results remain scoped below full original-fixture pa
   // Scalar adaptations do not provide the required stdout 2\\n2\\n.
   assert.equal(manifest.backends['atto-source.net'].status, 'NOT_EXECUTED');
 });
+
+
+test('alternate direct-CIL PR27 exact-source guest receipt stays separately scoped', () => {
+  const net = manifest.source.candidate_net_direct_cil_pr27;
+  assert.equal(net.pr, 27);
+  assert.equal(net.head, 'd4f822fb47677dbd3205457caff336e6744c5fb2');
+  assert.equal(net.tree, 'fead700c16f245e82b1b6e0620612d781ae7858a');
+  assert.equal(net.carrier.repository, 'usa-acc/atto-ci');
+  assert.equal(net.carrier.run_id, 44661047559);
+  assert.equal(net.carrier.job_id, 136039091233);
+  assert.equal(net.carrier.conclusion, 'SUCCESS');
+  assert.equal(net.carrier.tree_sha_verified, true);
+  assert.equal(net.adapted_scalar.status, 'PASS_EXECUTED_SCOPED_CORECLR_NATIVEAOT');
+  assert.deepEqual(net.adapted_scalar.observed_exits, [4, 4, 42]);
+  assert.equal(net.adapted_scalar.observed_nativeaot_exit, 42);
+  assert.equal(net.negative_oracles.status, 'PASS_REJECTED_NO_ARTIFACT');
+  assert.equal(net.negative_oracles.passed, 6);
+  assert.equal(net.negative_oracles.failed, 0);
+  assert.equal(net.full_user_stdout_fixtures.status, 'UNSUPPORTED');
+  assert.equal(net.full_user_stdout_fixtures.observed_rejection, 'E_LEX');
+  // Do not treat two adapted guests as original printing-program parity.
+  assert.equal(manifest.backends['atto-source.net'].status, 'NOT_EXECUTED');
+  // Canonical older PR26 proof must not be clobbered by alternate PR27.
+  assert.equal(manifest.source.candidate_net_direct_cil.pr, 26);
+});
