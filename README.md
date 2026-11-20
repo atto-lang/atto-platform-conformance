@@ -33,7 +33,7 @@ The versioned `tests/typed-patterns-cross-backend-guests.mjs` is an **actual com
 
 Rust/Wasm: `attoc` emits Wasm, which must validate, import no host matcher, have guest-owned memory and produce the exact exported `main` result (or checked overflow `panic_code=1`). Forge: `forge_scalar` must emit a C++20 native guest with real list storage, a native C++ compiler must build it, and the binary must print the exact result or exit 70 with `E_OVERFLOW`. These two **target-specific overflow ABIs are normalized only to the shared semantic error**; do not claim the process exit code is a Wasm panic code.
 
-Run from this conformance checkout only after building the actual compiler in its own exact source-tree checkout (or an authorized Git-tree-identical private mirror):
+Run from this conformance checkout with the production compiler source present at its exact pinned commit/tree (or an authorized Git-tree-identical private mirror). **The proof runner itself rebuilds the compiler from that pinned tree into a fresh external temporary directory** (Cargo --locked for Rust; CMake for Forge), hashes the new compiler binary, and then compiles/executes the guests. It rejects any ATTOC_RELATIVE/FORGE_RELATIVE prebuilt executable override:
 
 ```sh
 ATTO_COMPILER_REPO=/absolute/path/to/atto-source.rs \
@@ -42,11 +42,10 @@ node tests/typed-patterns-cross-backend-guests.mjs rust-wasm
 
 ATTO_COMPILER_REPO=/absolute/path/to/atto-source.forge \
 ATTO_EXPECTED_COMPILER_TREE=<independently-verified-40-character-git-tree-SHA> \
-FORGE_RELATIVE=build/forge_scalar \
 node tests/typed-patterns-cross-backend-guests.mjs forge-native
 ```
 
-The runner produces a machine-readable receipt **only after all eight compiled guests truly execute**. It will reject an absent compiler, missing tree/SHA provenance, dirty compiler tree, incorrect output or failed overflow checks. Java, LLVM, .NET and the other backend roles have not yet supplied a compatible compiler adapter, and must remain `NOT_EXECUTED`. A passing host-only registry integrity test is **not** this execution proof.
+The runner produces a machine-readable receipt **only after all eight compiled guests truly execute**. It will reject a missing or failed fresh compiler build, a prebuilt-compiler override, an unpinned or dirty compiler tree, incorrect output, or failed overflow checks. Hashes attest the just-built compiler executable, not merely the source inputs. Java, LLVM, .NET and the other backend roles have not yet supplied a compatible compiler adapter, and must remain `NOT_EXECUTED`. A passing host-only registry integrity test is **not** this execution proof.
 
 
 ## Sequence pattern v2 target registry
