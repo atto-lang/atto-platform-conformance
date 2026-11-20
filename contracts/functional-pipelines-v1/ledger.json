@@ -144,7 +144,7 @@
       "repo": "atto-lang/atto-source.forge",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.forge/pull/45",
-      "proposed_head_sha": "2741865a9ab3b04470896621382c50064ff582e2",
+      "proposed_head_sha": "d87084a5a47fcd0a48337efa2b4335ceea19efdf",
       "execution_status": "not_executed",
       "receipt": null
     },
