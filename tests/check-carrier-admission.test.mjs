@@ -2,19 +2,20 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { assessAdmission, checkLiveAdmission, AdmissionFailure } from '../tools/check-carrier-admission.mjs';
 const SHA = 'a'.repeat(40);
+const NOW = Date.parse('2026-11-20T00:00:10Z');
 const expected = {repo:'example-org/canary',repoId:42,runId:123,headSha:SHA,
   workflowPath:'.github/workflows/source-free-canary.yml',workflowBlobSha:'b'.repeat(40),
   jobName:'source-free-check',proofStep:'ADMISSION_PROOF'};
 const repo = {full_name:expected.repo,id:42,archived:false};
 const run = {id:123,head_sha:SHA,repository:{full_name:expected.repo,id:42},path:expected.workflowPath,
-  status:'completed',conclusion:'success',run_attempt:1,event:'push'};
+  status:'completed',conclusion:'success',run_attempt:1,event:'push',created_at:'2026-11-20T00:00:00Z'};
 const workflow = {sha:expected.workflowBlobSha,path:expected.workflowPath};
 const job = {id:991,run_id:123,run_attempt:1,head_sha:SHA,name:expected.jobName,
   status:'completed',conclusion:'success',runner_id:777,runner_name:'runner-1',
   started_at:'2026-11-20T00:00:00Z',completed_at:'2026-11-20T00:00:02Z',
   steps:[{name:'ADMISSION_PROOF',status:'completed',conclusion:'success'}]};
 const inputs=()=>({repository:structuredClone(repo),run:structuredClone(run),jobs:[structuredClone(job)],
-  workflow:structuredClone(workflow),expected:structuredClone(expected)});
+  workflow:structuredClone(workflow),expected:structuredClone(expected),now:NOW});
 
 test('one synthetic positive is classified only as capacity, never guest parity',()=>{
   const result=assessAdmission(inputs());
@@ -32,6 +33,8 @@ const changes=[
  ['failed run',x=>x.run.conclusion='failure'],
  ['queued run',x=>x.run.status='queued'],
  ['bad workflow event',x=>x.run.event='pull_request_target'],
+ ['stale canary',x=>x.now+=2*60*60*1000],
+ ['future-dated canary',x=>x.now-=60*1000],
  ['no job',x=>x.jobs=[]],
  ['duplicate named job',x=>x.jobs.push(structuredClone(x.jobs[0]))],
  ['wrong job run',x=>x.jobs[0].run_id=555],
@@ -69,7 +72,7 @@ test('live probe denies incomplete page of jobs',async()=>{
     if(url.includes('/jobs?'))return {ok:true,json:async()=>({total_count:2,jobs:[job]})};
     throw Error('unexpected API '+url);
   };
-  await assert.rejects(checkLiveAdmission(expected,{token:'test-token',fetchImpl}),AdmissionFailure);
+  await assert.rejects(checkLiveAdmission(expected,{token:'test-token',fetchImpl,now:NOW}),AdmissionFailure);
   assert.equal(urls.length,3);
 });
 test('live probe fully validates 5 API resources when simulated',async()=>{
@@ -81,6 +84,6 @@ test('live probe fully validates 5 API resources when simulated',async()=>{
     if(url.includes('/contents/'))return workflow;
     throw Error('unexpected '+url);
   }});
-  const r=await checkLiveAdmission(expected,{token:'fake',fetchImpl});
+  const r=await checkLiveAdmission(expected,{token:'fake',fetchImpl,now:NOW});
   assert.equal(r.admitted,true);
 });
