@@ -10,7 +10,7 @@ const cases = Object.fromEntries(registry.cases.map(c => [c.id,c]));
 test('versioned typed task fixtures are pinned to exact Git blob identity', () => {
   assert.equal(registry.schema, 'atto.task-payload-sync.v1');
   assert.equal(registry.status, 'TARGET_NOT_GUEST_VERIFIED');
-  assert.equal(registry.cases.length, 32);
+  assert.equal(registry.cases.length, 37);
   assert.equal(new Set(registry.cases.map(x=>x.id)).size,32);
   for (const c of registry.cases) {
     assert.match(c.source_path,/^fixtures\/task-payload-sync-v1\/[a-z0-9_]+\.atto$/);
@@ -23,13 +23,65 @@ test('versioned typed task fixtures are pinned to exact Git blob identity', () =
     }
   }
 });
-test('await and sync typed task fixtures differ only in spelling', () => {
-  assert.equal(getSource(cases.sync_payload).toString('utf8').replace('sync task<int>','await task<int>'),
-    getSource(cases.await_payload).toString('utf8'));
+test('sync is an inline execution mode, not a spawned await/do-task alias', () => {
+  assert.match(registry.sync_inline_model,/caller TaskId/);
+  assert.match(registry.sync_inline_model,/without an independent spawn or Future|no independent TaskSpawn/i);
+  assert.match(registry.sync_inline_model,/MUST NOT canonicalize to do task/);
+  const sync = cases.sync_payload;
+  const awaitTask = cases.await_payload;
+  const doSync = cases.discard_do_sync_task;
+  const doTask = cases.discard_do_task;
+  const required = [
+    'INLINE_ENTER_BEFORE_BODY', 'NO_INDEPENDENT_CHILD_SPAWN',
+    'SAME_LOGICAL_TASK_ID', 'INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT',
+    'NO_INDEPENDENT_WORKER_DISPATCH',
+  ];
+  for (const item of [sync,doSync]) {
+    assert.equal(item.kind,'positive');
+    for (const name of required) assert.ok(item.expected.witnesses.includes(name),name);
+  }
+  assert.ok(awaitTask.expected.witnesses.includes('INDEPENDENT_CHILD_SPAWN'));
+  assert.ok(doTask.expected.witnesses.includes('INDEPENDENT_CHILD_SPAWN'));
+  assert.ok(!doSync.expected.witnesses.includes('INDEPENDENT_CHILD_SPAWN'));
+  assert.match(getSource(sync).toString('utf8'),/sync task<int>/);
+  assert.match(getSource(awaitTask).toString('utf8'),/await task<int>/);
+  assert.match(getSource(doSync).toString('utf8'),/do sync task<int>/);
+  assert.match(getSource(doTask).toString('utf8'),/do task<int>/);
 });
-test('do sync task canonicalizes to do task without losing body or type', () => {
-  assert.equal(getSource(cases.discard_do_sync_task).toString('utf8').replace('do sync task<int>','do task<int>'),
-    getSource(cases.discard_do_task).toString('utf8'));
+test('inline sync task requires only transitive effects and never suspends under guard', () => {
+  const pure = cases.sync_inline_non_susp;
+  const ordered = cases.sync_inline_order;
+  const suspended = cases.sync_inline_suspend;
+  const lockedPure = cases.sync_inline_guard_pure;
+  const lockedSuspend = cases.sync_inline_guard_suspend;
+  assert.equal(pure.kind,'positive');
+  assert.match(getSource(pure).toString('utf8'),/pub fnc main\(\): int/);
+  assert.doesNotMatch(getSource(pure).toString('utf8'),/await/);
+  assert.ok(pure.expected.witnesses.includes('NON_SUSP_CALLER_ADMITTED'));
+  assert.deepEqual(ordered.expected.stdout,'7\n9\n');
+  assert.match(getSource(ordered).toString('utf8'),/stdio\.println\(7\);[\s\S]*stdio\.println\(9\);/);
+  assert.match(getSource(suspended).toString('utf8'),/sync task<int>[\s\S]*await task<int>/);
+  assert.ok(suspended.expected.witnesses.includes('CALLER_TASK_ID_RESTORED_AFTER_RESUME'));
+  assert.ok(suspended.expected.witnesses.includes('NO_OS_THREAD_PINNING_ASSUMED'));
+  assert.match(getSource(lockedPure).toString('utf8'),/using await lock\.lock_async/);
+  assert.match(getSource(lockedPure).toString('utf8'),/sync task<int> \{ return 1; \}/);
+  assert.ok(lockedPure.expected.witnesses.includes('GUARD_RELEASE_EXACTLY_ONCE'));
+  assert.equal(lockedSuspend.kind,'negative');
+  assert.equal(lockedSuspend.expected.diagnostic,'E_GUARD_SUSPEND');
+  assert.equal(lockedSuspend.expected.no_artifact,true);
+  assert.match(getSource(lockedSuspend).toString('utf8'),/sync task<int>[\s\S]*await task<int>/);
+  const effect = cases.sync_needs_susp;
+  assert.equal(effect.expected.diagnostic,'E_EFFECT');
+  assert.match(getSource(effect).toString('utf8'),/pub fnc main\(\): int/);
+  assert.match(getSource(effect).toString('utf8'),/return await task<int>/);
+  assert.equal(registry.inline_sync_runtime_probes.length,5);
+  for (const p of registry.inline_sync_runtime_probes) {
+    assert.equal(p.evidence_required,true);
+    assert.equal(p.release_qualified,false);
+    assert.ok(p.assertions?.length>=3,p.id);
+  }
+  assert.ok(registry.inline_sync_runtime_probes.find(p=>p.id==='do_sync_cannot_alias_do_task')
+    .assertions.includes('FORMATTER_PRESERVES_SYNC'));
 });
 test('all compiler backends remain not-executed until real guest receipts', () => {
   assert.equal(Object.keys(registry.backends).length,10);
