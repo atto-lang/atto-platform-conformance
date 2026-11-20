@@ -5,6 +5,8 @@ const read=(p)=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 const spec=JSON.parse(read("contracts/map-of-entries-nominal-struct-v1.json"));
 test("new Map.of_entries and Struct profile is not marked as run",()=>{
  assert.equal(spec.contract,"atto-map-of-entries-nominal-struct-v1");
+ assert.equal(spec.spec,"https://github.com/atto-lang/atto-spec/pull/131");
+ for(const url of ["https://github.com/atto-lang/atto-source.rs/pull/430","https://github.com/atto-lang/atto-platform-conformance/pull/117"]) assert.ok(spec.related.includes(url),url);
  assert.equal(spec.status,"TARGET_NOT_EXECUTED");
  assert.equal(Object.keys(spec.backend_status).length,11);
  assert.equal(spec.cases.length,27);
