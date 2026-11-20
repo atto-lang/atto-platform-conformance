@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "contract": "atto-match-on-result-arms-v1",
+  "normative_spec": "https://github.com/atto-lang/atto-spec/pull/145",
+  "description": "Canonical contextual on introduces every match ... over arm. Ok/Err and wildcard positive cases plus bare and switch-default negatives. Does NOT prove actor send return typing.",
+  "status": "not_executed",
+  "backend_evidence": {
+    "java": "not_executed",
+    "rust": "not_executed",
+    "llvm_native": "not_executed",
+    "llvm_browser_wasm": "not_executed",
+    "independent_wasm": "not_executed",
+    "net": "not_executed",
+    "forge": "not_executed",
+    "cranelift": "not_executed"
+  },
+  "cases": [
+    {
+      "id": "ok-accepted",
+      "path": "fixtures/match-on-result/v1/ok-accepted.atto",
+      "blob_sha": "8b226c8e2be7576b5d066589d20825f3d19820d5",
+      "expect": "accept",
+      "exit": 42
+    },
+    {
+      "id": "err-rejected",
+      "path": "fixtures/match-on-result/v1/err-rejected.atto",
+      "blob_sha": "94dd5f99014d5ed1854079021927b68b11da1703",
+      "expect": "accept",
+      "exit": 42
+    },
+    {
+      "id": "wildcard-on",
+      "path": "fixtures/match-on-result/v1/wildcard-on.atto",
+      "blob_sha": "36209ac27301b67ffdf9d31d9cd91790c888014f",
+      "expect": "accept",
+      "exit": 42
+    },
+    {
+      "id": "reject-bare-ok",
+      "path": "fixtures/match-on-result/v1/reject-bare-ok.atto",
+      "blob_sha": "9faa8f9b163f5e60f09fa371516ae695573b1040",
+      "expect": "reject",
+      "diagnostic": "E_SYNTAX"
+    },
+    {
+      "id": "reject-bare-err",
+      "path": "fixtures/match-on-result/v1/reject-bare-err.atto",
+      "blob_sha": "c41882353d510b2dbf1ef965d64b3928f065f04d",
+      "expect": "reject",
+      "diagnostic": "E_SYNTAX"
+    },
+    {
+      "id": "reject-default-arm",
+      "path": "fixtures/match-on-result/v1/reject-default-arm.atto",
+      "blob_sha": "1f67e63506dbbcc9d8faaafb9f763f47db5cc9e6",
+      "expect": "reject",
+      "diagnostic": "E_SYNTAX"
+    }
+  ]
+}
