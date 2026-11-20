@@ -153,16 +153,99 @@
       "repo": "atto-lang/atto-source.forge",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.forge/pull/45",
-      "proposed_head_sha": "ae18a9fe0cb74dbd15963ccfef864443f115eb0d",
+      "proposed_head_sha": "758d25e9e4c0c1048f88c18f003486461609a0be",
       "execution_status": "not_executed",
       "receipt": null,
-      "result_profile": "stdout_line_i64"
+      "result_profile": "stdout_line_i64",
+      "local_execution": {
+        "status": "executed_locally_not_ci_admitted",
+        "toolchain": "GCC 14.2.0; Clang 17.0.0; Linux C++20",
+        "compiler_blob_sha": "a9dae8e13cd48badff45f29ac710caf0aee370cb",
+        "tests_blob_sha": "cc5d1b913336078e0843c1c3183df4d1582a0a85",
+        "checked_i64_runtime_blob_sha": "e9a6598416c919f9ac7c629847f8d6677c703a14",
+        "guest_main_values": [
+          83,
+          83,
+          42,
+          42
+        ],
+        "observed_guest_stdout": [
+          "83\n",
+          "83\n",
+          "42\n",
+          "42\n"
+        ],
+        "observed_process_exit": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "guest_artifact_sha256": [
+          "19c172711994a49937f8d4c9352f427f7e0a047e9158549b38d3beec25408a6b",
+          "a4689538de8f049086a771dcd7892c446f914715ffbfbe09684670537d60d863",
+          "eed5e475941acc45a62930ed5d7ca42019406bd72307789189a396ff9deaaa74",
+          "0b5917742fa678523240b8b484aae75c93dc43afbb969deab2fb49b29efc6c7e"
+        ],
+        "guest_artifact_sha256_by_toolchain": {
+          "g++": [
+            "19c172711994a49937f8d4c9352f427f7e0a047e9158549b38d3beec25408a6b",
+            "a4689538de8f049086a771dcd7892c446f914715ffbfbe09684670537d60d863",
+            "eed5e475941acc45a62930ed5d7ca42019406bd72307789189a396ff9deaaa74",
+            "0b5917742fa678523240b8b484aae75c93dc43afbb969deab2fb49b29efc6c7e"
+          ],
+          "clang++": [
+            "0e967f8b330e2d6d3583eba720e336f69df5a1b334c14b2763bfd4eeb817cf7f",
+            "b0aa8e4521e0caf48d079ff05c1bf0649a62030f560e71c235828fd797682035",
+            "b21d238b71dca64c2de0fb4968cd70c24e393807edc0d1d6ef753c091d899df1",
+            "0d044537c806d5eab064bdecad1bfed3a495531ea0d37f74a144b47e99eb1a52"
+          ]
+        },
+        "canonical_negative_results": [
+          "E_TYPE",
+          "E_PARSE",
+          "E_MIXED_PIPE",
+          "E_MIXED_PIPE"
+        ],
+        "canonical_negative_no_output_artifact": true,
+        "i64_min_observed": "-9223372036854775808",
+        "checked_overflow_observed": {
+          "exit": 70,
+          "stderr": "E_OVERFLOW\n"
+        },
+        "reserved_authority_rejections": [
+          "unsafe",
+          "pipe"
+        ],
+        "sanitizer_observed": {
+          "toolchains": [
+            "g++",
+            "clang++"
+          ],
+          "types": [
+            "address",
+            "undefined"
+          ],
+          "compiled_native_runtime_cases": [
+            "block-body",
+            "inline-arrow-body",
+            "reverse-associative",
+            "mixed-parenthesized",
+            "int64-min",
+            "int64-overflow"
+          ],
+          "status": "observed_expected_outcomes_locally"
+        },
+        "executed_test_groups": 4,
+        "failing_test_groups": 0,
+        "scope": "Actual locally built Forge frontend + emitted C++ native binaries; four exact spec fixture blobs on GCC/Clang; CMake/CTest whole suite and exact-head CI unexecuted. This is not production Forge JIT/TenantVM certification."
+      }
     },
     "cranelift": {
       "repo": "atto-lang/atto-source.cranelift",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.cranelift/pull/50",
-      "proposed_head_sha": "cf868732d028460a081ff493f8d6c0745eaa9454",
+      "proposed_head_sha": "97a4404d30df887fa3ad26c79d7c0ef2dab8c8c0",
       "execution_status": "not_executed",
       "receipt": null,
       "result_profile": "stdout_line_i64"
