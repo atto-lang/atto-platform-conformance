@@ -178,7 +178,7 @@ test('seven supplemental edge fixtures require per-backend execution, not author
     assert.match(c.blob_sha,sha);
   }
   const expected=[
-    'rs-browser-wasm-compiler','llvm-rust-aot','net-direct-cil',
+    'rs-browser-wasm-compiler','rs-native-compiler','llvm-rust-aot','net-direct-cil',
     'java-scalar-bootstrap','forge','cranelift','js-compiled-esm'
   ];
   assert.deepEqual(Object.keys(edge.targets).sort(),expected.sort());
@@ -187,13 +187,24 @@ test('seven supplemental edge fixtures require per-backend execution, not author
     assert.match(row.proposed_head_sha,sha);
     assert.equal(row.proposed_head_sha,ledger.backend_states[backend].proposed_head_sha);
     assert.equal(row.tests_authored,true);
-    assert.equal(row.fixture_files_copied_and_blob_verified,
-      ['rs-browser-wasm-compiler','llvm-rust-aot'].includes(backend)?2:7);
+    assert.equal(row.fixture_files_copied_and_blob_verified,7);
+    if (['rs-browser-wasm-compiler','rs-native-compiler','llvm-rust-aot'].includes(backend)) {
+      assert.equal(row.full_signed_i64_test_authored,true);
+      assert.equal(row.checked_overflow_guest_test_authored,true);
+      assert.equal(row.three_fail_closed_source_tests_authored,true);
+    }
+    if (backend === 'rs-native-compiler')
+      assert.match(row.conditional_compiler_check, /ATTOC/);
     assert.equal(row.execution_status,'not_executed');
     assert.equal(row.receipt,null);
   }
   assert.equal(edge.overall_execution_status,'not_executed');
   assert.equal(edge.guest_result_abi_must_be_recorded_separately,true);
+  const llvmProbe=edge.local_llvm_adapter_abi_probe;
+  assert.equal(llvmProbe.status,'test_adapter_syntax_verified_not_compiler_guest');
+  assert.equal(llvmProbe.expected_and_observed_stdout,'-9223372036854775808\n');
+  assert.equal(llvmProbe.exit_code,0);
+  assert.match(llvmProbe.source_provenance, /NOT compiled from \.atto/);
   const smoke=edge.local_v8_smoke;
   assert.equal(smoke.status,'actual_generated_js_executed_in_process_no_Node_CI_admission');
   assert.match(smoke.compiler_blob_sha,sha);
