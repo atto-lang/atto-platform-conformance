@@ -58,10 +58,10 @@
       "authenticated_transport_status": "NOT_EXECUTED",
       "native_aot_status": "NOT_EXECUTED",
       "guest_evidence": null,
-      "notes": "Consolidated #44 includes real scoped M6 exact-message tickets plus copied/adapted #45 M10 nonblocking selector UDS gateway and strict compiled RemoteAdder receiver. New current-head M10 integration has no executed tests: two private runner attempts failed before all steps. Original M6 host tests and independent M10 tests passed on earlier separate SHAs only.",
+      "notes": "M6 exact-ticket scheduler and M10 selector combined on #44; additional restricted source-compiled sender in process A invokes host-injected broker and compiled source receiver B in test harness. Exactly four sender source/test Git blobs compiled and passed locally on JDK21; combined source head has no executable CI and all canonical guest IPC gates remain unexecuted.",
       "host_ticket_scope": "REAL_MAILBOX",
       "host_ticket_status": "CURRENT_HEAD_NOT_EXECUTED",
-      "host_ticket_pr_head_sha": "0aa81d06533ef6c9cbe19c54af4d51b86a250cac",
+      "host_ticket_pr_head_sha": "ea9b4218a90fe2dbcaeeb5a8b612d894acdd4b9b",
       "host_ticket_ci": null,
       "host_ticket_previous_verified": {
         "source_head_sha": "e7dbc3f9f584f16c872af8858335767986ea9be8",
@@ -72,7 +72,7 @@
       "gateway_integration": {
         "kind": "EXPERIMENTAL_M10_SELECTOR_USES_M6_RUNTIME_ISSUED_TICKET",
         "status": "NOT_EXECUTED_CURRENT_HEAD",
-        "source_head_sha": "0aa81d06533ef6c9cbe19c54af4d51b86a250cac",
+        "source_head_sha": "ea9b4218a90fe2dbcaeeb5a8b612d894acdd4b9b",
         "source_pr": "https://github.com/atto-lang/atto-source.java/pull/44",
         "prior_independent_m10_ci": "https://github.com/bait-bikes-test/atto-ci/actions/runs/44635718533",
         "blocked_attempts": [
@@ -80,6 +80,18 @@
           "https://github.com/ores-stack/ores-stack-cli/actions/runs/44660323082"
         ],
         "caveats": "Both consolidation attempts failed before any job steps (0); no compiled Atto sender, canonical authenticated transport or full guest parity."
+      },
+      "restricted_sender_local_evidence": {
+        "status": "LOCAL_JDK21_EXACT_FOUR_BLOBS_PASSED",
+        "implementation": "EXPERIMENTAL_RESTRICTED_COMPILER_HOST_INJECTED_PROXY_NOT_CANONICAL_ASYNC",
+        "compiler_blob": "d8b826311f54825dcda6bf533afaeefd9eaf83c4",
+        "host_interface_blob": "7135a6c23ffd1a40abb348240899319e3fe95abb",
+        "test_blob": "bbfed6d798e34fff1f6b4fe01c025350b783edbe",
+        "fixture_blob": "57f122f708787a61e88e93f81cd14996e66757af",
+        "tested_toolchain": "OpenJDK javac 21.0.12.1 --release 21 -Xlint:all,-try -Werror",
+        "generated_class": "M10GeneratedSender",
+        "local_test_marker": "M10_COMPILED_RESTRICTED_ATTO_SENDER_BROKER_AND_NEGATIVES=PASS",
+        "limits": "Compiled Atto preview only. Host injected callback, not canonical parser/type checking, suspends lowering, TenantVM security or verified two-process IPC."
       }
     },
     {
