@@ -1,0 +1,826 @@
+{
+  "schema": "atto.typed-pattern-fragments.v1/1",
+  "status": "TARGET_SOURCE_ONLY",
+  "spec": "atto-spec/language/typed-pattern-fragments-v1.md",
+  "spec_pr": "https://github.com/atto-lang/atto-spec/pull/59",
+  "spec_blob_sha": "cd6b01241e9a77b3cb1c93d36f60aa0dce8b075c",
+  "evidence": {
+    "kind": "HOST_ONLY",
+    "guest_execution": "NOT_EXECUTED",
+    "host_ci": "NOT_EXECUTED_CURRENT_HEAD",
+    "note": "Cases are portable targets, not compiler or executed guest evidence."
+  },
+  "backends": [
+    "rust-wasm",
+    "java",
+    "llvm",
+    "net",
+    "forge"
+  ],
+  "cases": [
+    {
+      "id": "PFV1-001",
+      "name": "inferred-typed-rest-three-binders",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "pattern": "List.of(pattern.of(\"...\"), is int as val a, is int as val b, is int as val c, pattern.of(\"...\"))",
+      "expected": {
+        "matched": true,
+        "bindings": {
+          "a": 1,
+          "b": 2,
+          "c": 3
+        },
+        "result": 6
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-002",
+      "name": "explicit-typed-rest-three-binders",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          9,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "pattern": "List.of(pattern.of<int>(\"...\"), is int as val a, is int as val b, is int as val c, pattern.of<int>(\"...\"))",
+      "expected": {
+        "matched": true,
+        "bindings": {
+          "a": 9,
+          "b": 2,
+          "c": 3
+        },
+        "result": 14
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-003",
+      "name": "empty-leading-trailing-rest",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          1,
+          2,
+          3
+        ]
+      },
+      "pattern": "List.of(pattern.of(\"...\"), 1, 2, 3, pattern.of(\"...\"))",
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-004",
+      "name": "rest-prefix-anchor",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          1,
+          2,
+          3
+        ]
+      },
+      "pattern": "List.of(1, pattern.of(\"...\"))",
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-005",
+      "name": "rest-suffix-anchor",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          1,
+          2,
+          3
+        ]
+      },
+      "pattern": "List.of(pattern.of(\"...\"), 3)",
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-006",
+      "name": "rest-with-missing-literal",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          1,
+          3,
+          4
+        ]
+      },
+      "pattern": "List.of(pattern.of(\"...\"), 2, pattern.of(\"...\"))",
+      "expected": {
+        "matched": false,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-007",
+      "name": "counted-typed-fragment",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          1,
+          2,
+          3
+        ]
+      },
+      "pattern": "List.of(pattern.of<int>(\"...(3 of int)\"))",
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-008",
+      "name": "counted-fragment-not-search",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "pattern": "List.of(pattern.of<int>(\"...(3 of int)\"))",
+      "expected": {
+        "matched": false,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-009",
+      "name": "counted-fragment-with-search",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
+      "pattern": "List.of(pattern.of(\"...\"), pattern.of<int>(\"...(3 of int)\"))",
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-010",
+      "name": "counted-literal-fragment",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          7,
+          7,
+          7
+        ]
+      },
+      "pattern": "List.of(pattern.of<int>(\"...(3 of 7)\"))",
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-011",
+      "name": "heterogeneous-type-test",
+      "kind": "match",
+      "subject": {
+        "type": "List<Any>",
+        "items": [
+          "x",
+          2,
+          true
+        ]
+      },
+      "pattern": "List.of(pattern.of<Any>(\"...\"), pattern.of<Any>(\"is int\"), pattern.of<Any>(\"...\"))",
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-012",
+      "name": "heterogeneous-type-test-false",
+      "kind": "match",
+      "subject": {
+        "type": "List<Any>",
+        "items": [
+          true,
+          false
+        ]
+      },
+      "pattern": "List.of(pattern.of<Any>(\"...\"), pattern.of<Any>(\"is int\"), pattern.of<Any>(\"...\"))",
+      "expected": {
+        "matched": false,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-013",
+      "name": "quoted-literal-fragment",
+      "kind": "match",
+      "subject": {
+        "type": "List<string>",
+        "items": [
+          "hello"
+        ]
+      },
+      "pattern": "List.of(pattern.of<string>(\"\\\"hello\\\"\"))",
+      "expected": {
+        "matched": true,
+        "bindings": {}
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-014",
+      "name": "compile-time-constant-reuse",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          1,
+          2
+        ]
+      },
+      "pattern": "List.of(rest_ints, 2)",
+      "expected": {
+        "matched": true,
+        "bindings": {},
+        "requires": "define const pattern.SeqPart<int> rest_ints = pattern.of<int>(\"...\")"
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-015",
+      "name": "borrowed-rest-capture-span",
+      "kind": "match",
+      "subject": {
+        "type": "List<Any>",
+        "items": [
+          false,
+          1,
+          2,
+          3,
+          true
+        ]
+      },
+      "pattern": "List.of(pattern.of<Any>(\"...\") as val before, is int as val a, is int as val b, is int as val c, pattern.of<Any>(\"...\") as val after)",
+      "expected": {
+        "matched": true,
+        "bindings": {
+          "a": 1,
+          "b": 2,
+          "c": 3
+        },
+        "borrowed_spans": {
+          "before": [
+            0,
+            1
+          ],
+          "after": [
+            4,
+            5
+          ]
+        }
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-016",
+      "name": "guard-not-retried",
+      "kind": "match",
+      "subject": {
+        "type": "List<int>",
+        "items": [
+          1,
+          8
+        ]
+      },
+      "pattern": "List.of(pattern.of(\"...\"), is int as val x, pattern.of(\"...\")) when x > 5",
+      "expected": {
+        "matched": false,
+        "bindings": {},
+        "fallback_result": 0,
+        "guard_evaluations": 1
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-017",
+      "name": "runtime-fragment-source",
+      "kind": "reject",
+      "source": "val text = os.read_env(\"P\"); on List.of(pattern.of(text)) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_CONSTEXPR",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-018",
+      "name": "runtime-env-backed-module-const",
+      "kind": "reject",
+      "source": "define const string template = os.read_env(\"P\"); on List.of(pattern.of(template)) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_CONSTEXPR",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-019",
+      "name": "single-quoted-multichar",
+      "kind": "reject",
+      "source": "on List.of(pattern.of('...')) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_SOURCE",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-020",
+      "name": "explicit-element-type-mismatch",
+      "kind": "reject",
+      "source": "val items: List<string> = List.of(\"x\"); on List.of(pattern.of<int>(\"...\")) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_TYPE",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-021",
+      "name": "any-is-not-int-rest",
+      "kind": "reject",
+      "source": "val items: List<Any> = List.of(1); on List.of(pattern.of<int>(\"...\")) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_TYPE",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-022",
+      "name": "bind-inside-string",
+      "kind": "reject",
+      "source": "on List.of(pattern.of<Any>(\"is int as val x\")) -> x",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_BINDING",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-023",
+      "name": "dynamic-callback-in-string",
+      "kind": "reject",
+      "source": "on List.of(pattern.of(\"user_predicate()\")) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_SOURCE",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-024",
+      "name": "suspend-in-string",
+      "kind": "reject",
+      "source": "on List.of(pattern.of(\"await read()\")) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_SOURCE",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-025",
+      "name": "nested-repeat",
+      "kind": "reject",
+      "source": "on List.of(pattern.of(\"...(2 of ...(3 of int))\")) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_SOURCE",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-026",
+      "name": "repeat-count-overflow",
+      "kind": "reject",
+      "source": "on List.of(pattern.of(\"...(9999999999999999999999 of int)\")) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_BUDGET",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-027",
+      "name": "adjacent-rest-in-fragment",
+      "kind": "reject",
+      "source": "on List.of(pattern.of(\"..., ...\")) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_SOURCE",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-028",
+      "name": "adjacent-rest-after-expansion",
+      "kind": "reject",
+      "source": "on List.of(pattern.of(\"...\"), ...) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_SOURCE",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-029",
+      "name": "capture-multiple-items",
+      "kind": "reject",
+      "source": "on List.of(pattern.of(\"1, 2, 3\") as val x) -> x",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_BINDING",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-030",
+      "name": "duplicate-capture",
+      "kind": "reject",
+      "source": "on List.of(... as val x, pattern.of(\"...\") as val x) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_BINDING",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-031",
+      "name": "spoofed-module-identity",
+      "kind": "reject",
+      "source": "on List.of(user_pattern.of(\"...\")) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_CONTEXT",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-032",
+      "name": "tuple-rest-fragment",
+      "kind": "reject",
+      "source": "on Tuple.of(pattern.of(\"...\"), 1) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_CONTEXT",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-033",
+      "name": "runtime-pattern-as-structural-intrinsic",
+      "kind": "reject",
+      "source": "val p = pattern.parse_seq<int>(text, limits); on List.of(p) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_CONTEXT",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-034",
+      "name": "fragment-outside-pattern",
+      "kind": "reject",
+      "source": "val p = pattern.of<int>(\"...\"); use_as_runtime_value(p);",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_CONTEXT",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-035",
+      "name": "borrowed-rest-escape",
+      "kind": "reject",
+      "source": "on List.of(... as val before, is int as val x) -> return before",
+      "expected": {
+        "diagnostic_category": "E_UNSUPPORTED",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-036",
+      "name": "cross-tenant-borrow",
+      "kind": "reject",
+      "source": "on List.of(... as val before, is int as val x) -> other_tenant.send(before)",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_BINDING",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-037",
+      "name": "malformed-template",
+      "kind": "reject",
+      "source": "on List.of(pattern.of(\"...(3 of int\")) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_SOURCE",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "PFV1-038",
+      "name": "runtime-variable-count",
+      "kind": "reject",
+      "source": "on List.of(pattern.of(\"...(n of int)\")) -> 1",
+      "expected": {
+        "diagnostic_category": "E_PATTERN_SOURCE",
+        "guest_artifact": false
+      },
+      "execution": {
+        "rust-wasm": "NOT_EXECUTED",
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED"
+      }
+    }
+  ]
+}
