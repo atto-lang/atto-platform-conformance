@@ -1,0 +1,13 @@
+// TARGET ONLY — no execution of an unawaited lazy task.
+susp fnc increment(Mutex<int> counter): int {
+  using counter.lock_async() as lock_lease {
+    lock_lease.value += 1;
+    return lock_lease.value;
+  }
+}
+pub fnc main(): int {
+  val counter = Mutex<int>(0);
+  val pending = increment(counter);
+  // The body is never driven; creation MUST NOT acquire or increment.
+  return 0;
+}
