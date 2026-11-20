@@ -53,6 +53,27 @@ test('every backend must carry independent genuine execution evidence', () => {
         assert.match(hash, /^[a-f0-9]{64}$/);
       assert.ok(row.local_execution.executed_test_groups > 0);
       assert.equal(row.local_execution.failing_test_groups, 0);
+      if (name === 'forge') {
+        const local = row.local_execution;
+        assert.match(local.checked_i64_runtime_blob_sha, sha);
+        assert.deepEqual(local.observed_guest_stdout, ['83\n','83\n','42\n','42\n']);
+        assert.deepEqual(local.observed_process_exit, [0,0,0,0]);
+        assert.equal(local.canonical_negative_no_output_artifact, true);
+        assert.deepEqual(local.canonical_negative_results,
+          ['E_TYPE','E_PARSE','E_MIXED_PIPE','E_MIXED_PIPE']);
+        assert.equal(local.i64_min_observed, '-9223372036854775808');
+        assert.deepEqual(local.checked_overflow_observed,
+          {exit:70,stderr:'E_OVERFLOW\n'});
+        assert.ok(local.sanitizer_observed);
+        assert.deepEqual(local.sanitizer_observed.toolchains, ['g++','clang++']);
+        for (const compiler of local.sanitizer_observed.toolchains) {
+          const digests = local.guest_artifact_sha256_by_toolchain[compiler];
+          assert.equal(digests.length, ledger.cases.filter(c => c.kind === 'positive').length);
+          for (const digest of digests) assert.match(digest, /^[a-f0-9]{64}$/);
+        }
+        // This data is explicitly NOT a source-org Actions receipt.
+        assert.match(local.scope, /CI unexecuted/);
+      }
     }
 
     assert.ok(row.result_profile === null ||
