@@ -1,0 +1,5 @@
+// Channel capacity must be typed int before host admission.
+pub fnc reject_wrong_capacity(): int {
+    val opened = new Channel<int>("two");
+    return 0;
+}

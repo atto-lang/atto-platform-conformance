@@ -29,11 +29,11 @@ test('all portable source candidate and negative files are present',async()=>{
     const full=resolve(root,c.path);assert.ok(full.startsWith(root+sep),'path escape');
     const source=await readFile(full,'utf8');
     assert.ok(source.includes('fnc'),'must declare callable');
-    assert.ok(source.includes('<<')||source.includes('>>')||c.id==='spaced_operator',
+    assert.ok(source.includes('<<')||source.includes('>>')||source.includes('new Channel<int>')||c.id==='spaced_operator',
       'must exercise direction operator or its deliberate whitespace-nearmiss');
     assert.ok(source.length>40);
   }
-  assert.equal(ids.size,25);
+  assert.equal(ids.size,28);
 });
 test('required effect, unary, type-first and compound variants are represented',async()=>{
   const byId=Object.fromEntries(m.cases.map(c=>[c.id,c]));
@@ -58,5 +58,17 @@ test('postfix expression shorthand matrix distinguishes alias, type and effects'
                     'postfix_discarded','postfix_spaced']) {
     assert.equal(byId[id].kind,'fail');
     assert.ok(byId[id].expected_error.startsWith('E_'));
+  }
+});
+
+test('checked new Channel<int> constructor parity is explicit and unverified', async()=>{
+  const byId=Object.fromEntries(m.cases.map(c=>[c.id,c]));
+  const read=async id=>readFile(resolve(root,byId[id].path),'utf8');
+  assert.equal(m.constructor_guest_execution,'PENDING_EXACT_HEAD_TESTS_PER_BACKEND');
+  assert.match(await read('checked_channel_new_constructor'),/match new Channel<int>\(2\) over/);
+  assert.match(await read('checked_channel_new_constructor'),/on Err\(error\)/);
+  for(const id of ['new_channel_raw_handle_mismatch','new_channel_capacity_type_mismatch']) {
+    assert.equal(byId[id].kind,'fail');
+    assert.equal(byId[id].expected_error,'E_TYPE');
   }
 });

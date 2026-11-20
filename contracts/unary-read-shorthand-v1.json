@@ -22,7 +22,10 @@
     "borrow-check-across-suspend",
     "postfix-source-gtgt-equals-prefix-ltlt",
     "postfix-contiguous-expression-terminal-only",
-    "no-ambiguous-gtgt-binder-or-triple-shift"
+    "no-ambiguous-gtgt-binder-or-triple-shift",
+    "new-channel-int-constructor-is-fallible-result",
+    "new-channel-constructor-matches-bounded-intrinsic",
+    "no-silent-unchecked-channel-send"
   ],
   "positive_guest_execution": "PENDING_PER_BACKEND",
   "cases": [
@@ -540,10 +543,74 @@
         "rs-browser": "NOT_EXECUTED",
         "wasm": "NOT_EXECUTED"
       }
+    },
+    {
+      "id": "checked_channel_new_constructor",
+      "path": "fixtures/io-unary/pass/checked_channel_new_constructor.atto",
+      "kind": "pass",
+      "stage": "TYPECHECK_TARGET",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "new_channel_raw_handle_mismatch",
+      "path": "fixtures/io-unary/fail/new_channel_raw_handle_mismatch.atto",
+      "kind": "fail",
+      "stage": "COMPILE_REJECT_TARGET",
+      "expected_error": "E_TYPE",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
+    },
+    {
+      "id": "new_channel_capacity_type_mismatch",
+      "path": "fixtures/io-unary/fail/new_channel_capacity_type_mismatch.atto",
+      "kind": "fail",
+      "stage": "COMPILE_REJECT_TARGET",
+      "expected_error": "E_TYPE",
+      "backend_status": {
+        "java": "NOT_EXECUTED",
+        "llvm": "NOT_EXECUTED",
+        "net": "NOT_EXECUTED",
+        "rs-browser": "NOT_EXECUTED",
+        "atto": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "forge": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED",
+        "rs": "NOT_EXECUTED",
+        "wasm": "NOT_EXECUTED"
+      }
     }
   ],
   "evidence_rule": "Do not label backend PASS without exact source/compiler Git tree, actual compiled guest/negative no-artifact execution, runner and runtime receipts. Preflight or host models are not guest execution.",
   "postfix_spec_pr": "https://github.com/atto-lang/atto-spec/pull/52",
   "postfix_rust_implementation_pr": "https://github.com/atto-lang/atto-source.rs/pull/257",
-  "postfix_guest_execution": "PENDING_EXACT_HEAD_TESTS_PER_BACKEND"
+  "postfix_guest_execution": "PENDING_EXACT_HEAD_TESTS_PER_BACKEND",
+  "constructor_rust_pr": "https://github.com/atto-lang/atto-source.rs/pull/257",
+  "constructor_guest_execution": "PENDING_EXACT_HEAD_TESTS_PER_BACKEND"
 }
