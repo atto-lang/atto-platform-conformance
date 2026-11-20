@@ -255,3 +255,48 @@ test('all eight private CI carrier probes are recorded as zero-step failures, no
   }
   assert.match(probe.temporary_probe_prs,/closed unmerged/);
 });
+
+
+test('exact-tree Rust v2 guest pass is scoped evidence, never full multi-backend parity', ()=>{
+  const r=contract.rust_v2_checked_guest_execution_receipt;
+  assert.equal(r.receipt_schema,'atto.experimental.pipe_guest_ci.v1');
+  assert.equal(r.status,'PASS_EXPERIMENTAL_SUBSET');
+  assert.equal(r.source_repo,'atto-lang/atto-source.rs');
+  assert.equal(r.carrier_repo,'opto-sync/atto-ci');
+  assert.match(r.source_commit,/^[0-9a-f]{40}$/);
+  assert.match(r.carrier_commit,/^[0-9a-f]{40}$/);
+  assert.equal(r.source_git_tree,r.carrier_git_tree);
+  assert.match(r.source_git_tree,/^[0-9a-f]{40}$/);
+  assert.equal(r.exact_tree_verified,true);
+  assert.equal(r.git_blob_count,368);
+  assert.match(r.transfer_security,/token_free/);
+  assert.equal(r.workflow_run_url,
+    'https://github.com/opto-sync/atto-ci/actions/runs/'+r.workflow_run_id);
+  assert.equal(r.job_conclusion,'success');
+  assert.ok(r.executed_steps>=10);
+  assert.equal(r.verification.rust_cargo_test,'success');
+  assert.equal(r.verification.native_attoc_build,'success');
+  assert.equal(r.verification.compiled_node_wasm_guest_cases,25);
+  assert.equal(r.verification.compiled_node_wasm_guest_accepted+
+    r.verification.compiled_node_wasm_guest_denied,25);
+  assert.equal(r.verification.wasm32_compiler_build,'success');
+  assert.equal(r.verification.conformance_cases_passed,349);
+  assert.equal(r.verification.conformance_cases_failed,0);
+  assert.equal(r.verification.native_vs_wasm_compiler_output_parity_cases,313);
+  assert.equal(r.verification.chromium_browser_checks,50);
+  assert.equal(r.verification.compiler_artifact_published,true);
+  assert.match(r.verification.compiler_wasm_sha256,/^[0-9a-f]{64}$/);
+  assert.ok(r.verification.compiler_wasm_size_bytes>0);
+  for (const required of [
+    'claimed_channel_send','claimed_channel_receive',
+    'claimed_channel_close','claimed_channel_for_await',
+    'claimed_channel_rx_poll','source_output_occupied',
+    'sink_input_occupied','channel_occupied'
+  ]) assert.ok(r.tested_security_guards.includes(required));
+  assert.ok(r.known_limitations.some(s=>/TenantVM/.test(s)));
+  assert.ok(r.known_limitations.some(s=>/cancellation/.test(s)));
+  assert.equal(r.full_backend_parity_status,'NOT_EXECUTED');
+  assert.equal(contract.evidence_status,'NOT_EXECUTED');
+  assert.equal(contract.backend_evidence.find(b=>b.repo===r.source_repo).status,
+    'NOT_EXECUTED', 'single Rust guest subset cannot certify every required contract');
+});
