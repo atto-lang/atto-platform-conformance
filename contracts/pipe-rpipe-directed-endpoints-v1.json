@@ -273,7 +273,8 @@
     "bounded buffers",
     "ownership across await and cancellation",
     "once-only error settlement",
-    "closed or stopped source/sink ports reject before publication"
+    "closed or stopped source/sink ports reject before publication",
+    "one source output and one sink input owner per default unicast port; fan-in and fan-out require explicit typed adapters"
   ],
   "gating": "Source fixtures and manifest are not passing conformance; positive cases need compiled guest transfer and observed receipts. A backend can report TARGET_UNSUPPORTED with an explicit diagnostic, not PASS.",
   "fixture_sha_lock_version": 1,
@@ -436,5 +437,15 @@
       "limitation": "compiler must fail closed; no guest continuous transport implemented"
     }
   ],
-  "exact_source_compiler_mirrors_note": "Git blob identities of copied fixture source verified from GitHub connector, but source-only copies and no-step CI runs are not compiler successes or guest parity. LLVM, .NET, Forge and JS deny all 12 fixtures; Rust v2 has six original actor fixtures authored for compilation and one negative guest admission, while streams and checked Result/PipeSetupError remain gaps."
+  "exact_source_compiler_mirrors_note": "Git blob identities of copied fixture source verified from GitHub connector, but source-only copies and no-step CI runs are not compiler successes or guest parity. LLVM, .NET, Forge and JS deny all 12 fixtures; Rust v2 has six original actor fixtures authored for compilation and one negative guest admission, while streams and checked Result/PipeSetupError remain gaps.",
+  "unicast_port_ownership": {
+    "source_output": "at_most_one_unicast_DATA_attachment",
+    "sink_input": "at_most_one_unicast_DATA_attachment",
+    "duplicate_directed_edge": "E_PIPE_DUPLICATE_EDGE",
+    "occupied_source_output": "E_PIPE_OUTPUT_OCCUPIED",
+    "occupied_sink_input": "E_PIPE_INPUT_OCCUPIED",
+    "fan_out_requires": "explicit_typed_tee_or_broadcast_adapter",
+    "fan_in_requires": "explicit_typed_merge_or_join_adapter",
+    "admission": "compiler_preflight_only_runtime_must_atomically_reserve_and_rollback"
+  }
 }
