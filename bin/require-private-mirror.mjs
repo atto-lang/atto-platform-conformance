@@ -54,6 +54,60 @@ async function repoMetadata(name, token, fetchImpl) {
   return result;
 }
 
+const POLICY_PATH = ".github/private-ci-approved-repositories.txt";
+const OWNER_REPO = /^[A-Za-z0-9][A-Za-z0-9_.-]*\/[A-Za-z0-9][A-Za-z0-9_.-]*$/;
+
+/** Caller-supplied lists are only restrictions, never authorization.
+ * Read exact approval from trusted source main, never the PR under test.
+ * Protected-main security reviews must be enforced in GitHub branch rules.
+ */
+async function requireReviewedApproval(source, destination, sourceRepo, token, fetchImpl) {
+  if (sourceRepo.default_branch !== "main")
+    throw Error("trusted source default branch must be main");
+  let response;
+  try {
+    response = await fetchImpl(
+      "https://api.github.com/repos/" + source + "/contents/" + POLICY_PATH + "?ref=main",
+      {
+        method: "GET", redirect: "error",
+        headers: {
+          "Accept": "application/vnd.github+json",
+          "Authorization": "Bearer " + token,
+          "X-GitHub-Api-Version": "2022-11-28"
+        },
+        signal: AbortSignal.timeout(5000)
+      }
+    );
+  } catch {
+    throw Error("trusted source destination policy request failed");
+  }
+  if (!response || response.status !== 200)
+    throw Error("trusted source destination policy unavailable");
+  let record;
+  try { record = await response.json(); }
+  catch { throw Error("trusted source destination policy invalid"); }
+  if (!record || record.path !== POLICY_PATH || record.encoding !== "base64" ||
+      !Number.isSafeInteger(record.size) || record.size < 0 || record.size > 4096 ||
+      typeof record.content !== "string" || record.content.length > 8192)
+    throw Error("trusted source destination policy invalid");
+  const encoded = record.content.replace(/\s/g, "");
+  if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(encoded))
+    throw Error("trusted source destination policy encoding invalid");
+  const bytes = Buffer.from(encoded, "base64");
+  if (bytes.length !== record.size || bytes.toString("base64") !== encoded)
+    throw Error("trusted source destination policy bytes invalid");
+  const policy = bytes.toString("utf8");
+  if (Buffer.byteLength(policy) !== bytes.length || policy.includes("\0"))
+    throw Error("trusted source destination policy text invalid");
+  const active = policy.split(/\r?\n/).map(x => x.trim())
+    .filter(x => x.length > 0 && !x.startsWith("#"));
+  if (active.length > 32 || active.some(x => !OWNER_REPO.test(x) || x.includes("..")) ||
+      new Set(active).size !== active.length)
+    throw Error("trusted source destination policy entries invalid");
+  if (!active.includes(destination))
+    throw Error("destination not approved by trusted source main policy");
+}
+
 export async function requirePrivateMirror({
   source, destination, approvedDestinations, token, fetchImpl = fetch
 }) {
@@ -79,9 +133,11 @@ export async function requirePrivateMirror({
   }
   const destinationRepo = await repoMetadata(to, token, fetchImpl);
   if (destinationRepo.private !== true || destinationRepo.visibility !== "private" ||
-      destinationRepo.archived === true || destinationRepo.permissions?.push !== true) {
+      destinationRepo.archived === true || destinationRepo.permissions?.push !== true ||
+      destinationRepo.default_branch !== "main") {
     throw Error("destination must be a writable verified PRIVATE GitHub repository");
   }
+  await requireReviewedApproval(from, to, sourceRepo, token, fetchImpl);
   return Object.freeze({status: "PRIVATE_MIRROR_APPROVED", source: from, destination: to});
 }
 

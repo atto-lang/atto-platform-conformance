@@ -1,0 +1,2 @@
+# Private CI destinations require protected-main security review.
+# Empty by default. Exact owner/repository entries only; never approve via a PR's own branch.
