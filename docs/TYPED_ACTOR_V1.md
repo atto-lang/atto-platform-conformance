@@ -277,3 +277,32 @@ worker runtime, untrusted TenantVM isolation, full 963-file compiler mirror,
 brokered cross-tenant transport, or verified checked ownership transfer.
 Do not promote full backend parity; retain Draft status. The compiler's
 `take!` actor transfer remains rejected pending an acknowledgement/refund ABI.
+
+## Typed DATA vs supervisor CONTROL host-boundary targets (2026-11-20)
+
+`contracts/typed-actor-control-boundary-v1.tsv` adds eight explicitly
+`NOT_EXECUTED` cases for forged DATA-as-CONTROL, foreign physical Worker,
+stale generation, replay, hidden/symbol/accessor authority fields,
+descriptor-validation TOCTOU, priority CONTROL under full application DATA
+backpressure, and forced worker termination that must not pretend guest
+cleanup or recover executed. This is complementary to the 15 unchanged
+`ACTOR-TYPED` canonical source-language fixture IDs.
+
+`tools/typed_actor_control_boundary_v1.rs` is a bounded, dependency-free
+Rust **SOURCE_ONLY** model and strict registry/evidence checker, wired into
+the existing exact-PR-head Rust workflow. A passing host policy oracle
+does NOT establish any source-compiled `.atto` actor send, supervisor
+CONTROL guest message, real Worker identity security or NativeAOT parity.
+
+The Wasm host-side [terminal CONTROL hardening PR #54]
+(https://github.com/atto-lang/atto-source.wasm/pull/54) snapshots exact own
+property descriptors and eliminates re-reading hostile records after
+validation, while requiring a physically bound Worker identity and
+generation-fenced terminal handling. That is host transport groundwork,
+not completion of these guest-oriented target cases.
+
+Promotion requires independently witnessed exact-head compiler/guest
+artifacts, negative no-artifact outcomes, real multi-tenant Worker execution
+and an authenticated supervisor CONTROL observation that cannot be emitted
+by application DATA or an untrusted actor. Missing/zero-step CI remains
+`NOT_EXECUTED`; keep draft and do not merge on source-only tests.
