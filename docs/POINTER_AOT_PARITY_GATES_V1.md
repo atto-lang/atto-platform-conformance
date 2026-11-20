@@ -37,11 +37,10 @@ This is a RUNNER_ADMISSION failure, not a compiler verdict.
 See the `token_free_carrier` ledger record; its executable/artifact hashes
 remain null and every backend remains `NOT_EXECUTED`.
 
-## Three candidate compilers: exact source heads, zero execution receipts
+## Compiler candidate ledger: exact source heads, zero execution receipts
 
 The separate [source-only candidate ledger](../contracts/pointer-local-candidate-evidence-v1.json)
-tracks reviewed draft implementation heads for Rust/Wasm mainline-safe (PR #419; overlap with checked-handle PR #264),
-LLVM native AOT (PR #64) and .NET CIL / NativeAOT (PR #22).
+tracks four reviewed draft implementation heads: Rust/Wasm mainline-safe (PR #419; overlap with checked-handle PR #264), LLVM native AOT (PR #64), .NET CIL / NativeAOT (PR #22), and Forge restricted native C++ guest AOT (PR #50).
 They implement a strict single-local, one-read/one-unref subset, **not**
 all 36 conformance cases. Every ledger entry preserves the exact SHA and
 still explicitly reports NOT_EXECUTED, 0 real runner steps, null compiled
