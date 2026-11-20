@@ -68,7 +68,19 @@
     "scope": "SOURCE_PARSER_TESTS; task<T>/sync deliberately unsupported",
     "compiled_atto_task_guest": "NOT_EXECUTED",
     "task_cancellation": "NOT_EXECUTED",
-    "lock_cleanup": "NOT_EXECUTED"
+    "lock_cleanup": "NOT_EXECUTED",
+    "sanitizers": {
+      "toolchains": [
+        "g++ 14.2.0",
+        "clang++ 17.0.0"
+      ],
+      "flags": "-std=c++20 -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -Wall -Wextra -Werror -pedantic",
+      "builds_executed": 2,
+      "builds_passed": 2,
+      "asan_options": "detect_leaks=1",
+      "ubsan_options": "halt_on_error=1",
+      "scope": "full checked-in source parser regression test; not a compiled guest"
+    }
   },
   "shared_limits": [
     "Rust toolchain absent locally (rustc/cargo).",
