@@ -5,7 +5,8 @@
   "normative_reference": {
     "repo": "atto-lang/atto-spec",
     "pr": 32,
-    "path": "language/stdio-channel-endpoints-v1.md"
+    "path": "language/stdio-channel-endpoints-v1.md",
+    "adt_pattern_path": "language/adt-is-variant-patterns-v1.md"
   },
   "data_contract": {
     "process_aliases": {
@@ -27,7 +28,16 @@
     "checked_success_discard": [
       "on Ok",
       "on Ok(_)"
-    ]
+    ],
+    "is_adt_pattern_equivalences": {
+      "on is Ok<_>": "on Ok(_)",
+      "on is Ok<line>": "on Ok(line)",
+      "on is Some<item>": "on Some(item)",
+      "on is Err<error>": "on Err(error)",
+      "on is None": "on None"
+    },
+    "is_angle_pattern_binding": "static nominal ADT payload binding, never generic type assertion or user-defined extractor",
+    "is_nested_result_rule": "Ok(line) binds Option<string>, not string; Some(item) binds string; EOF is None"
   },
   "required_cases": [
     {
@@ -177,6 +187,182 @@
       "path": "fixtures/stdio-channel/fail/stream_and_readch_conflict.atto",
       "expected_error": "E_IO_CONSUMER_CONFLICT",
       "no_guest_artifact_or_input_consumed": true
+    },
+    {
+      "id": "checked_echo_is_variants",
+      "kind": "guest-pass",
+      "path": "fixtures/stdio-channel/pass/echo_checked_is_variants.atto",
+      "runs": [
+        {
+          "id": "one_line",
+          "stdin": "hello\n",
+          "stdout": "Echo the next input item:hello",
+          "stderr": "echo complete",
+          "exit": 0
+        },
+        {
+          "id": "empty_line",
+          "stdin": "\n",
+          "stdout": "Echo the next input item:",
+          "stderr": "echo complete",
+          "exit": 0
+        },
+        {
+          "id": "eof",
+          "stdin": "",
+          "stdout": "Echo the next input item:",
+          "stderr": "",
+          "exit": 11
+        },
+        {
+          "id": "unterminated",
+          "stdin": "last",
+          "stdout": "Echo the next input item:last",
+          "stderr": "echo complete",
+          "exit": 0
+        },
+        {
+          "id": "crlf",
+          "stdin": "hello\r\n",
+          "stdout": "Echo the next input item:hello",
+          "stderr": "echo complete",
+          "exit": 0
+        },
+        {
+          "id": "unicode",
+          "stdin": "é💡\n",
+          "stdout": "Echo the next input item:é💡",
+          "stderr": "echo complete",
+          "exit": 0
+        },
+        {
+          "id": "nul",
+          "stdin": "a\u0000b\n",
+          "stdout": "Echo the next input item:a\u0000b",
+          "stderr": "echo complete",
+          "exit": 0
+        }
+      ],
+      "equivalent_to": "checked_echo"
+    },
+    {
+      "id": "checked_echo_is_variants_readch",
+      "kind": "guest-pass",
+      "path": "fixtures/stdio-channel/pass/echo_checked_is_variants_readch.atto",
+      "runs": [
+        {
+          "id": "one_line",
+          "stdin": "hello\n",
+          "stdout": "Echo the next input item:hello",
+          "stderr": "echo complete",
+          "exit": 0
+        },
+        {
+          "id": "empty_line",
+          "stdin": "\n",
+          "stdout": "Echo the next input item:",
+          "stderr": "echo complete",
+          "exit": 0
+        },
+        {
+          "id": "eof",
+          "stdin": "",
+          "stdout": "Echo the next input item:",
+          "stderr": "",
+          "exit": 11
+        },
+        {
+          "id": "unterminated",
+          "stdin": "last",
+          "stdout": "Echo the next input item:last",
+          "stderr": "echo complete",
+          "exit": 0
+        },
+        {
+          "id": "crlf",
+          "stdin": "hello\r\n",
+          "stdout": "Echo the next input item:hello",
+          "stderr": "echo complete",
+          "exit": 0
+        },
+        {
+          "id": "unicode",
+          "stdin": "é💡\n",
+          "stdout": "Echo the next input item:é💡",
+          "stderr": "echo complete",
+          "exit": 0
+        },
+        {
+          "id": "nul",
+          "stdin": "a\u0000b\n",
+          "stdout": "Echo the next input item:a\u0000b",
+          "stderr": "echo complete",
+          "exit": 0
+        }
+      ],
+      "equivalent_to": "checked_echo"
+    },
+    {
+      "id": "stdio_is_pattern_fallback",
+      "kind": "source-compile-pass",
+      "path": "fixtures/stdio-channel/pass/stdio_is_pattern_fallback.atto",
+      "semantics": "Result<void,IoError> -> Result<Option<string>,IoError> -> Option<string> -> string; explicit empty-string fallback is NOT EOF translation"
+    },
+    {
+      "id": "is_unknown_extractor",
+      "kind": "compile-fail",
+      "path": "fixtures/stdio-channel/fail/is_unknown_extractor.atto",
+      "expected_error": "E_PATTERN",
+      "no_guest_artifact": true
+    },
+    {
+      "id": "is_none_payload",
+      "kind": "compile-fail",
+      "path": "fixtures/stdio-channel/fail/is_none_payload.atto",
+      "expected_error": "E_ARITY",
+      "no_guest_artifact": true
+    },
+    {
+      "id": "is_void_ok_bound",
+      "kind": "compile-fail",
+      "path": "fixtures/stdio-channel/fail/is_void_ok_bound.atto",
+      "expected_error": "E_ARITY",
+      "no_guest_artifact": true
+    },
+    {
+      "id": "is_missing_ok_payload",
+      "kind": "compile-fail",
+      "path": "fixtures/stdio-channel/fail/is_missing_ok_payload.atto",
+      "expected_error": "E_ARITY",
+      "no_guest_artifact": true
+    },
+    {
+      "id": "is_wrong_variant_family",
+      "kind": "compile-fail",
+      "path": "fixtures/stdio-channel/fail/is_wrong_variant_family.atto",
+      "expected_error": "E_TYPE",
+      "no_guest_artifact": true
+    },
+    {
+      "id": "is_nested_extractor",
+      "kind": "compile-fail",
+      "path": "fixtures/stdio-channel/fail/is_nested_extractor.atto",
+      "expected_error": "E_SYNTAX",
+      "no_guest_artifact": true
+    },
+    {
+      "id": "is_multi_payload",
+      "kind": "compile-fail",
+      "path": "fixtures/stdio-channel/fail/is_multi_payload.atto",
+      "expected_error": "E_SYNTAX",
+      "no_guest_artifact": true
+    },
+    {
+      "id": "is_duplicate_arm",
+      "kind": "compile-fail",
+      "path": "fixtures/stdio-channel/fail/is_duplicate_arm.atto",
+      "expected_error": "E_MATCH",
+      "no_guest_artifact": true
     }
   ],
   "dynamic_gates": [
@@ -225,5 +411,5 @@
       "hdl"
     ]
   },
-  "evidence_rule": "No backend is marked PASS on source-only contract tests, host models, parser acceptance, stale/other backend receipts, or zero executed CI steps. Require exact compiler/tree SHA, actual compiled .atto guest, input/output/exit witnesses, negative codegen refusal, carrier liveness/security evidence, and runnable target receipt. The two checked-read spellings must produce equivalent typed guest behavior. Nested Ok/Option matching is separate; no implicit unwrap."
+  "evidence_rule": "No backend is marked PASS on source-only contract tests, host models, parser acceptance, stale/other backend receipts, or zero executed CI steps. Require exact compiler/tree SHA, actual compiled .atto guest, input/output/exit witnesses, negative codegen refusal, carrier liveness/security evidence, and runnable target receipt. The two checked-read spellings must produce equivalent typed guest behavior. Nested Ok/Option matching is separate; no implicit unwrap. Verify checked nominal is-ADT syntax and its legacy parentheses aliases are parse/type/IR-equivalent, with negative invalid extractors, wrong families/arity, duplicate arms, and actual guest execution before status changes."
 }
