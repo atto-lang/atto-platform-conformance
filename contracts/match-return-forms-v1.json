@@ -123,6 +123,37 @@
       "native_vs_wasm_compiler_guest_bytes": "IDENTICAL",
       "native_cpp_llvm_aot": "NOT_EXECUTED",
       "native_issue": "https://github.com/atto-lang/atto-source.llvm/issues/60"
+    },
+    "candidate_llvm_rust_frontend": {
+      "repo": "atto-lang/atto-source.llvm",
+      "pr": 69,
+      "head": "a4b86d24e4fb9ff02255c0a78482ac56b53aa132",
+      "branch": "feature/guarded-return-match-frontend-v1-20261119",
+      "parser_git_blob": "156aadd760c0156277223e6b2defaab3be7ae11f",
+      "lexer_git_blob": "f48dc2b2c9759dcebec77d30daecd4fc8e412944",
+      "exact_shared_fixtures": "4/4 identical Git blob SHA-1",
+      "implementation_scope": "LLVM repository Rust frontend and LLVM IR native scalar AOT driver; NOT the independent native C++ oreslang-llvmc frontend",
+      "adapted_native_scalar_guest": {
+        "status": "NOT_EXECUTED",
+        "cases": [
+          "native-return-scalar.atto",
+          "native-caret-scalar.atto"
+        ],
+        "expected_exit": 4
+      },
+      "exact_user_printing_guest": {
+        "status": "UNSUPPORTED",
+        "reason": "Native scalar LLVM stdout/stdio runtime absent; E_UNSUPPORTED_NATIVE_RUNTIME expected, not executed"
+      },
+      "negative_tests": {
+        "status": "NOT_EXECUTED",
+        "expected_codes": [
+          "E_MATCH",
+          "E_RETURN"
+        ],
+        "no_artifact": true
+      },
+      "ci_status": "NOT_EXECUTED"
     }
   },
   "backends": {
@@ -146,7 +177,7 @@
     },
     "atto-source.llvm": {
       "status": "NOT_EXECUTED",
-      "compiler_implementation": "independent native C++ LLVM AOT; Rust/Wasm frontend separately verified at source.candidate_llvm_frontend",
+      "compiler_implementation": "separate Rust frontend/native scalar LLVM IR driver and C++ LLVM backend; Rust-frontend candidate PR #69 unexecuted",
       "source_sha": null,
       "guest_receipt": null
     },
