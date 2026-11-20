@@ -153,6 +153,16 @@
       }
     },
     {
+      "id": "reject-obsolete-option-trap-binding",
+      "source": "fixtures/trap-result-v1/reject-obsolete-option-trap-binding.atto",
+      "status": "TARGET_ONLY",
+      "expect": {
+        "kind": "compile_reject",
+        "diagnostic": "E_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
       "id": "reject-question-return-int",
       "source": "fixtures/trap-result-v1/reject-question-return-int.atto",
       "status": "TARGET_ONLY",
