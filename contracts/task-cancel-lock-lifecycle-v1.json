@@ -11,7 +11,10 @@
     "Tenant/actor ownership and generation-fenced wakeups are mandatory",
     "Cancellation request, terminal outcome and physical retirement are distinct",
     "No scheduler-carrier parking or suspension under a synchronous guard",
-    "No cross-tenant access or unverified scoped borrowed capture"
+    "No cross-tenant access or unverified scoped borrowed capture",
+    "After TenantVM/TaskScope STOP, new root tasks and new mutex objects are permanently denied even if there were no existing tasks; repeated STOP never reopens admission",
+    "An active claimed guard may release only at a trusted guest safe point after STOP; its cleanup is not equivalent to admitting new work",
+    "An affine MutexLease<T> must not be Sendable/Serializable or moved to another OS thread, actor, or TenantVM; the compiler must reject such transfers"
   ],
   "cases": [
     {
@@ -127,5 +130,21 @@
       "release_qualified": false
     }
   },
-  "verification": "Every positive requires an exact-compiler-head, compiled .atto guest result plus authenticated scheduler/lock physical retirement trace. All negatives must fail before guest artifact emission. Host-only Rust and source-blob checks do not satisfy guest execution."
+  "verification": "Every positive requires an exact-compiler-head, compiled .atto guest result plus authenticated scheduler/lock physical retirement trace. All negatives must fail before guest artifact emission. Host-only Rust and source-blob checks do not satisfy guest execution.",
+  "host_reference_invariants": {
+    "exact_guest_verification": "NOT_EXECUTED",
+    "source_pr": "atto-lang/atto-source.rs#416",
+    "checks": [
+      {
+        "id": "terminal_shutdown_admission",
+        "expect": "new_root_task_denied_and_new_mutex_denied_after_stop; repeated_stop_is_terminal; claimed_lease_unwinds_only_at_safe_point",
+        "support": "host-only Rust reference model; requires actual source-pinned cargo tests"
+      },
+      {
+        "id": "lease_non_sendable_typestate",
+        "expect": "zero-allocation affine active_to_released lease marker is !Send and !Sync; production guest lease also requires verified actor/tenant provenance",
+        "support": "Rust compiler HIR candidate only; needs real guest type-checker admission"
+      }
+    ]
+  }
 }
