@@ -174,7 +174,7 @@
     "wasm": "https://github.com/atto-lang/atto-source.wasm/issues/12",
     "net": "https://github.com/atto-lang/atto-source.net/issues/121",
     "forge": "https://github.com/atto-lang/atto-source.forge/issues/108",
-    "js": "https://github.com/atto-lang/atto-source.js/issues/75",
+    "js": "https://github.com/atto-lang/atto-source.js/pull/76",
     "cranelift": "https://github.com/atto-lang/atto-source.cranelift/issues/77",
     "atto": "https://github.com/atto-lang/atto-source.atto/issues/14",
     "hdl": "https://github.com/atto-lang/atto-source.hdl/issues/22",
@@ -186,5 +186,10 @@
     "EXECUTED_GUEST_OR_ELIGIBLE_PROFILE_REJECTION",
     "EXACT_HEAD_SOURCE_AND_RUNTIME_SHA",
     "OWNERSHIP_TENANTVM_EFFECT_SECURITY"
-  ]
+  ],
+  "implementation_notes": {
+    "js": "Draft PR #76 adds closed direct-call noncapturing const-lambda ESM profile. Standalone local Node v22 source-emitter tests 2/2 passed; exact-head repository CI/guest integration NOT_EXECUTED. No full closure/parity claim.",
+    "java": "Draft PR #477 now includes actual positive/negative guest fixtures and source SHA checks. Current-head execution NOT_EXECUTED.",
+    "rs": "Draft PR #300 includes all four parsed and compiler-positive cases. Current-head Rust/Wasm compiler and guest execution NOT_EXECUTED."
+  }
 }
