@@ -800,6 +800,27 @@
       ],
       "evidence_required": true,
       "release_qualified": false
+    },
+    {
+      "id": "lock_park_unclaimed_grant_and_ambiguous_wait",
+      "given": [
+        "task_A_has_unclaimed_grant_for_mutex_X",
+        "task_A_has_waiter_for_mutex_Y",
+        "host_attempts_park_on_Y",
+        "alternative_task_B_has_two_queued_mutex_waits_without_select"
+      ],
+      "action": "attempt_physical_lock_park_without_claiming_or_revoking_X_and_without_disambiguating_B_wait",
+      "assertions": [
+        "UNCLAIMED_GRANT_PREVENTS_PARK_ON_DIFFERENT_MUTEX",
+        "ACTIVE_LEASE_PREVENTS_PARK",
+        "MULTIPLE_OUTSTANDING_WAITS_WITHOUT_TYPED_SELECT_ARE_REJECTED",
+        "PARK_REJECTION_LEAVES_OTHER_GRANT_ACTIVE_AND_EXACT",
+        "NO_PHANTOM_READY_ENTRY_OR_WAKE_HINT",
+        "CANCELLATION_REMOVES_ALL_PENDING_WAITS",
+        "NO_GUEST_OR_HOST_DOUBLE_RELEASE"
+      ],
+      "evidence_required": true,
+      "release_qualified": false
     }
   ]
 }
