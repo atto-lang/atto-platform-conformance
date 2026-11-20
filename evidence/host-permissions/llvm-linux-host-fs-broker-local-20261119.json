@@ -89,7 +89,7 @@
       "24_PER_LAYER_MISSING_GRANT_OR_EXPLICIT_DENY_CASES",
       "POLICY_SNAPSHOT_IMMUTABLE_AFTER_CONSTRUCTION"
     ],
-    "verified_bytes": "Exact Git blob SHA of all six C header/source/test files and CMake equals locally compiled/tested bytes; GitHub workflow audited separately",
+    "verified_bytes": "The earlier broker and synthetic guest-frame tests matched the Git blobs at historical head 4195367eed3950da3babe35a261675194a1fbb96; DO NOT count as passing on current head 5ae8720a0581870fc3bb8f9c1d36f0b3c3fcdf55.",
     "test_markers": [
       "ATTO_HOST_FS_BROKER_HOST_ONLY_TEST_PASS",
       "ATTO_HOST_FS_GUEST_OFFSET_BRIDGE_HOST_ONLY_TEST_PASS"
@@ -132,8 +132,11 @@
       "current_head_real_broker_async_test": "NOT_EXECUTED",
       "current_head_v5_layout_test": "NOT_EXECUTED",
       "current_head_full_cmake_ctest": "NOT_EXECUTED",
-      "comparison": "Earlier native broker/offset32 test successes were on an older head; they are not current-head green CI evidence."
-    }
+      "comparison": "Earlier native broker/offset32 test successes were on an older head; they are not current-head green CI evidence.",
+      "note": "Only the signed verifier and mock-backed async worker were locally compiled/executed against current matching source/test blobs. Actual broker code changed since the earlier test head; its current-head tests are NOT_EXECUTED."
+    },
+    "evidence_source_head_sha": "4195367eed3950da3babe35a261675194a1fbb96",
+    "classification": "HISTORICAL_HOST_ONLY_TEST_EXECUTIONS_ON_EARLIER_HEAD"
   },
   "source_ci": {
     "run_id": 44678661403,
