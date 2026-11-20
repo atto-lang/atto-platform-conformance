@@ -48,11 +48,19 @@ test('proxy actor API registry remains canonical and cross-backend complete', ()
     }
     if (b.restricted_sender_local_evidence) {
       const sender = b.restricted_sender_local_evidence;
-      assert.equal(sender.status, 'LOCAL_JDK21_EXACT_FOUR_BLOBS_PASSED');
-      for (const field of ['compiler_blob', 'host_interface_blob', 'test_blob',
-                           'fixture_blob'])
+      assert.equal(sender.status, 'LOCAL_JDK21_EXACT_EIGHT_BLOBS_PASSED');
+      const requiredBlobs = ['compiler_blob', 'host_interface_blob', 'test_blob',
+          'fixture_blob', 'receiver_compiler_blob', 'receiver_test_blob',
+          'receiver_fixture_blob', 'os_peer_test_blob'];
+      assert.equal(sender.verified_blob_count, requiredBlobs.length);
+      for (const field of requiredBlobs)
         assert.match(sender[field], /^[0-9a-f]{40}$/,
           b.id + ': missing exact local source/test Git blob identity');
+      assert.equal(new Set(requiredBlobs.map(name => sender[name])).size, 8);
+      for (const marker of ['M10_SOURCE_BOUNDED_FD_UTF8_FAIL_CLOSED=PASS',
+          'M10_RECEIVER_SOURCE_FD_UTF8_AND_OUTPUT_NOFOLLOW=PASS',
+          'M10_UDS_PEER_KERNEL_PRINCIPAL_NOT_USER_NAME_PROPERTY=PASS'])
+        assert.ok(sender.local_test_markers.includes(marker));
       assert.match(sender.tested_toolchain, /^OpenJDK javac 21[.]/);
       assert.equal(sender.generated_class, 'M10GeneratedSender');
       assert.ok(sender.local_test_marker.includes('RESTRICTED_ATTO_SENDER'));
