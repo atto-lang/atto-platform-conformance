@@ -2,8 +2,8 @@
   "schema": "atto.task-payload-sync.v1",
   "status": "TARGET_NOT_GUEST_VERIFIED",
   "source_contract": "atto-lang/atto-spec/language/typed-task-payload-sync-v1.md",
-  "meaning": "task<T> returns Future<T>; await/sync unwrap exactly once; do sync task is supervised nonjoining do task",
-  "execution_frame_model": "independent logical continuations within one structured TaskScope; physical frame sharing only after proven lifetime and alias safety",
+  "meaning": "task<T> returns Future<T> and is independently schedulable; await task<T> spawns and joins; sync task<T> and do sync task<T> execute inline on caller TaskId, without an independent spawn or Future; do task<T> is supervised child spawn",
+  "execution_frame_model": "independent logical continuations for spawned task<T> within a structured TaskScope; inline sync task runs in its caller's logical continuation and creates no independent child; physical frame sharing only after proven lifetime and alias safety",
   "cases": [
     {
       "id": "await_payload",
@@ -11,7 +11,11 @@
       "source_git_blob": "25ab1c9f741ed0bdc71478b5ffddee3525281e2d",
       "kind": "positive",
       "expected": {
-        "guest_exit": 42
+        "guest_exit": 42,
+        "witnesses": [
+          "INDEPENDENT_CHILD_SPAWN",
+          "TASK_JOIN_PHYSICAL_RETIRE"
+        ]
       }
     },
     {
@@ -40,7 +44,15 @@
       "source_git_blob": "eed8205d70528244d2a5b0655c1e999fad6d1194",
       "kind": "positive",
       "expected": {
-        "guest_exit": 42
+        "guest_exit": 42,
+        "witnesses": [
+          "INLINE_ENTER_BEFORE_BODY",
+          "NO_INDEPENDENT_CHILD_SPAWN",
+          "SAME_LOGICAL_TASK_ID",
+          "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT",
+          "NO_INDEPENDENT_WORKER_DISPATCH",
+          "INLINE_RESULT_DISCARDED_AFTER_BODY"
+        ]
       }
     },
     {
@@ -49,7 +61,12 @@
       "source_git_blob": "12b5ae365783f92cf3e183f20e70b717be0d7a06",
       "kind": "positive",
       "expected": {
-        "guest_exit": 42
+        "guest_exit": 42,
+        "witnesses": [
+          "INDEPENDENT_CHILD_SPAWN",
+          "SUPERVISED_DISCARD",
+          "SCOPE_PHYSICAL_RETIRE"
+        ]
       }
     },
     {
@@ -65,7 +82,7 @@
     {
       "id": "sync_needs_susp",
       "source_path": "fixtures/task-payload-sync-v1/sync_needs_susp.atto",
-      "source_git_blob": "603399a626c14085e2032cacf35d50d7ce6df75a",
+      "source_git_blob": "72d8a7c372da3e1138c936b9fd72aba1580dbaf0",
       "kind": "negative",
       "expected": {
         "diagnostic": "E_EFFECT",
@@ -78,7 +95,15 @@
       "source_git_blob": "097b4c5e854231f84aa5ac8bde508f9c97f4b353",
       "kind": "positive",
       "expected": {
-        "guest_exit": 42
+        "guest_exit": 42,
+        "witnesses": [
+          "INLINE_ENTER_BEFORE_BODY",
+          "NO_INDEPENDENT_CHILD_SPAWN",
+          "SAME_LOGICAL_TASK_ID",
+          "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT",
+          "NO_INDEPENDENT_WORKER_DISPATCH",
+          "INLINE_RETURN_VALUE_42"
+        ]
       }
     },
     {
@@ -347,6 +372,90 @@
       "kind": "negative",
       "expected": {
         "diagnostic": "E_GUARD_ESCAPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "sync_inline_non_susp",
+      "source_path": "fixtures/task-payload-sync-v1/sync_inline_non_susp.atto",
+      "source_git_blob": "7136c973a255f3b97d41420ed83d4c231c850400",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "INLINE_ENTER_BEFORE_BODY",
+          "NO_INDEPENDENT_CHILD_SPAWN",
+          "SAME_LOGICAL_TASK_ID",
+          "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT",
+          "NO_INDEPENDENT_WORKER_DISPATCH",
+          "NON_SUSP_CALLER_ADMITTED"
+        ]
+      }
+    },
+    {
+      "id": "sync_inline_order",
+      "source_path": "fixtures/task-payload-sync-v1/sync_inline_order.atto",
+      "source_git_blob": "840e1ea604e7a2216f17ef8edfb951d6f1f16d50",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "stdout": "7\n9\n",
+        "witnesses": [
+          "INLINE_ENTER_BEFORE_BODY",
+          "NO_INDEPENDENT_CHILD_SPAWN",
+          "SAME_LOGICAL_TASK_ID",
+          "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT",
+          "NO_INDEPENDENT_WORKER_DISPATCH",
+          "BODY_STDOUT_PRECEDES_PARENT_STDOUT"
+        ]
+      }
+    },
+    {
+      "id": "sync_inline_suspend",
+      "source_path": "fixtures/task-payload-sync-v1/sync_inline_suspend.atto",
+      "source_git_blob": "26d9f7daedd12f77933dc49c9244870abc17a046",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "INLINE_ENTER_BEFORE_BODY",
+          "NO_INDEPENDENT_CHILD_SPAWN",
+          "SAME_LOGICAL_TASK_ID",
+          "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT",
+          "NO_INDEPENDENT_WORKER_DISPATCH",
+          "ONLY_NESTED_EXPLICIT_TASK_SPAWNS",
+          "CALLER_SUSPENDS_NONPARKING",
+          "CALLER_TASK_ID_RESTORED_AFTER_RESUME",
+          "NO_OS_THREAD_PINNING_ASSUMED"
+        ]
+      }
+    },
+    {
+      "id": "sync_inline_guard_pure",
+      "source_path": "fixtures/task-payload-sync-v1/sync_inline_guard_pure.atto",
+      "source_git_blob": "2275dc163ba0d0040fa4bb4938e746d4cc343819",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "INLINE_ENTER_BEFORE_BODY",
+          "NO_INDEPENDENT_CHILD_SPAWN",
+          "SAME_LOGICAL_TASK_ID",
+          "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT",
+          "NO_INDEPENDENT_WORKER_DISPATCH",
+          "NO_SUSPEND_WITH_GUARD_HELD",
+          "INLINE_CLEANUP_BEFORE_GUARD_RELEASE",
+          "GUARD_RELEASE_EXACTLY_ONCE"
+        ]
+      }
+    },
+    {
+      "id": "sync_inline_guard_suspend",
+      "source_path": "fixtures/task-payload-sync-v1/sync_inline_guard_suspend.atto",
+      "source_git_blob": "f6b22a68ec359381bab86ec68116371eace75bfb",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_GUARD_SUSPEND",
         "no_artifact": true
       }
     }
@@ -821,6 +930,64 @@
       ],
       "evidence_required": true,
       "release_qualified": false
+    }
+  ],
+  "sync_inline_model": "sync task<T> runs inline in caller TaskId; no independent TaskSpawn/TaskJoin/Future or new worker assignment; pure bodies allowed in non-susp context, suspending inline bodies suspend their caller cooperatively (carrier migration allowed); do sync task is inline discard and MUST NOT canonicalize to do task; lexical using/defer unwind LIFO before return, cancel/fail; never yield under active critical guard",
+  "inline_sync_runtime_probes": [
+    {
+      "id": "inline_no_child_admission",
+      "evidence_required": true,
+      "release_qualified": false,
+      "assertions": [
+        "INLINE_ENTER_BEFORE_BODY",
+        "NO_INDEPENDENT_CHILD_SPAWN",
+        "SAME_LOGICAL_TASK_ID",
+        "INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT",
+        "NO_INDEPENDENT_WORKER_DISPATCH"
+      ]
+    },
+    {
+      "id": "inline_pure_non_susp",
+      "evidence_required": true,
+      "release_qualified": false,
+      "assertions": [
+        "NON_SUSP_CALLER_ADMITTED",
+        "NO_IMPLICIT_YIELD",
+        "NO_THREAD_CREATION_REQUIREMENT"
+      ]
+    },
+    {
+      "id": "inline_suspend_may_migrate_carrier",
+      "evidence_required": true,
+      "release_qualified": false,
+      "assertions": [
+        "CALLER_SUSPENDS_NONPARKING",
+        "CALLER_TASK_ID_RESTORED_AFTER_RESUME",
+        "NESTED_EXPLICIT_CHILD_RETIRES",
+        "NO_OS_THREAD_PINNING_ASSUMED"
+      ]
+    },
+    {
+      "id": "inline_guard_effect_safety",
+      "evidence_required": true,
+      "release_qualified": false,
+      "assertions": [
+        "PURE_INLINE_UNDER_GUARD_ALLOWED",
+        "SUSPENDING_INLINE_UNDER_GUARD_REJECTED",
+        "NO_ARTIFACT_FOR_GUARD_SUSPEND",
+        "GUARD_RELEASE_EXACTLY_ONCE"
+      ]
+    },
+    {
+      "id": "do_sync_cannot_alias_do_task",
+      "evidence_required": true,
+      "release_qualified": false,
+      "assertions": [
+        "DO_SYNC_INLINE_NO_CHILD",
+        "DO_TASK_SUPERVISED_CHILD",
+        "FORMATTER_PRESERVES_SYNC",
+        "SAME_BODY_DIFFERENT_SCHEDULING"
+      ]
     }
   ]
 }
