@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const registry=JSON.parse(readFileSync(new URL('../contracts/typed-pattern-fragments-v1.json',import.meta.url),'utf8'));
-const backends=['rust-wasm','java','llvm','net','forge'];
+const backends=['rust-wasm','java','llvm','net','forge','wasm-host','cranelift','js','atto-selfhost','hdl','realtime'];
 test('canonical spec pointer, exact source blob and honest unexecuted evidence',()=>{
   assert.equal(registry.schema,'atto.typed-pattern-fragments.v1/1');
   assert.equal(registry.status,'TARGET_SOURCE_ONLY');
@@ -13,6 +13,8 @@ test('canonical spec pointer, exact source blob and honest unexecuted evidence',
   assert.equal(registry.evidence.guest_execution,'NOT_EXECUTED');
   assert.equal(registry.evidence.host_ci,'NOT_EXECUTED_CURRENT_HEAD');
   assert.deepEqual(registry.backends,backends);
+  assert.equal(registry.backend_roles['wasm-host'].includes('not independent frontend'),true);
+  for(const role of backends) assert.ok(typeof registry.backend_roles[role]==='string' && registry.backend_roles[role].length>10);
 });
 test('unique typed pattern cases and per-backend evidence fail closed',()=>{
   const ids=new Set(), names=new Set();let positive=0,negative=0;
