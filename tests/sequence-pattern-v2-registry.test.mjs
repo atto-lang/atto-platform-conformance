@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const registry=JSON.parse(readFileSync(new URL('../contracts/sequence-pattern-v2-registry.json',import.meta.url),'utf8'));
-const backends=['rust-wasm','java','llvm','net','forge'];
+const backends=['rust-wasm','java','llvm','net','forge','wasm-host','cranelift','js','atto-selfhost','hdl','realtime'];
 
 test('version, provenance, and source-only evidence cannot impersonate guest execution',()=>{
   assert.equal(registry.schema,'atto.sequence-patterns.v2/1');
@@ -11,6 +11,7 @@ test('version, provenance, and source-only evidence cannot impersonate guest exe
   assert.equal(registry.evidence.kind,'HOST_REFERENCE_ONLY');
   assert.equal(registry.evidence.guest_execution,'NOT_EXECUTED');
   assert.deepEqual(registry.backends,backends);
+  for(const role of backends) assert.ok(registry.backend_roles[role]);
   assert.match(registry.spec_pr,/atto-spec\/pull\/59/);
   for(const sha of Object.values(registry.source_blobs)) assert.match(sha,/^[0-9a-f]{40}$/);
 });
