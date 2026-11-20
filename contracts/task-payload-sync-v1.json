@@ -578,6 +578,12 @@
       "release_qualified": false,
       "compiler_sha": null,
       "guest_receipt": null
+    },
+    "realtime": {
+      "status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "compiler_sha": null,
+      "guest_receipt": null
     }
   },
   "verification": "Source-only registry; requires exact compiler SHA, negative no-artifact proofs, actual guest execution and independent backend receipts.",

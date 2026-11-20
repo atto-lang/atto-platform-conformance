@@ -192,6 +192,15 @@
       "guard_cleanup": "NOT_EXECUTED",
       "compiled_guest": "NOT_EXECUTED",
       "release_qualified": false
+    },
+    "realtime": {
+      "repository": "atto-lang/atto-source.realtime",
+      "profile": "BOOTSTRAP_ONLY_NO_COMPILER_OR_RUNTIME",
+      "status": "NOT_EXECUTED",
+      "task_cancellation": "NOT_EXECUTED",
+      "guard_cleanup": "NOT_EXECUTED",
+      "compiled_guest": "NOT_EXECUTED",
+      "release_qualified": false
     }
   },
   "notes": [

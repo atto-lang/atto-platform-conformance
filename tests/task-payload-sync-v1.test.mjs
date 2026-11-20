@@ -111,7 +111,7 @@ test('inline sync task requires only transitive effects and never suspends under
     .assertions.includes('FORMATTER_PRESERVES_SYNC'));
 });
 test('all compiler backends remain not-executed until real guest receipts', () => {
-  assert.equal(Object.keys(registry.backends).length,10);
+  assert.equal(Object.keys(registry.backends).length,11);
   for (const [backend,entry] of Object.entries(registry.backends)) {
     assert.equal(entry.status,'NOT_EXECUTED',backend);
     assert.equal(entry.release_qualified,false,backend);

@@ -1,0 +1,226 @@
+{
+  "schema": "atto.task-backend-parity-rollout.v1",
+  "as_of": "2026-11-20",
+  "evidence_class": "AUDIT_SNAPSHOT_NOT_EXECUTION_PROOF",
+  "normative_spec": "atto-lang/atto-spec#129",
+  "fixture_registry": "contracts/task-payload-sync-v1.json",
+  "canonical_case_count": 42,
+  "purpose": "Complete 11-repository target accounting, current draft ownership, security authorization and explicit no-false-pass parity admission.",
+  "semantic_invariants": {
+    "no_spawn_for_inline": true,
+    "inline_current_task_id": true,
+    "do_sync_only_void": true,
+    "do_task_distinct_and_may_discard_nonvoid": true,
+    "bare_void_sync_statement_requires_do": true,
+    "value_sync_task_is_expression": true,
+    "checked_int_is_i64": true,
+    "suspension_borrow_lease_and_cleanup_must_be_proven": true,
+    "unsupported_rejects_before_artifact": true,
+    "tenant_vm_cross_tenant_no_ambient_privileges": true
+  },
+  "syntax_cases": [
+    {
+      "id": "void_do_inferred",
+      "syntax": "do sync task {}",
+      "target": "accept iff body is void; run inline; no separate TaskId"
+    },
+    {
+      "id": "void_do_explicit",
+      "syntax": "do sync task<void> { return; }",
+      "target": "accept; void-only lexical local return"
+    },
+    {
+      "id": "do_nonvoid_reject",
+      "syntax": "do sync task<int> { return 42; }",
+      "target": "E_TASK_RETURN_TYPE; no guest artifact"
+    },
+    {
+      "id": "do_inferred_nonvoid_reject",
+      "syntax": "do sync task { return 42; }",
+      "target": "E_TASK_RETURN_TYPE; no guest artifact"
+    },
+    {
+      "id": "bare_void_statement_reject",
+      "syntax": "sync task {}",
+      "target": "E_SYNTAX in statement context; no artifact"
+    },
+    {
+      "id": "bare_typed_void_statement_reject",
+      "syntax": "sync task<void> {}",
+      "target": "E_SYNTAX in statement context; no artifact"
+    },
+    {
+      "id": "value_inline",
+      "syntax": "val answer = sync task<int> { return 42; }",
+      "target": "value 42, local return, no Future"
+    },
+    {
+      "id": "value_sync_suspend",
+      "syntax": "sync task<int> { return await task<int> { return 42; }; }",
+      "target": "caller suspends only under proven effect/borrow gates; otherwise fail closed"
+    },
+    {
+      "id": "spawn_nonvoid",
+      "syntax": "do task<int> { return 42; }",
+      "target": "independent TaskScope-owned spawn, distinct from do sync task"
+    },
+    {
+      "id": "tenant_lock",
+      "syntax": "sync task<int> { /* guarded/suspending critical section */ }",
+      "target": "must prove TenantVM, guard and cleanup; otherwise fail closed"
+    }
+  ],
+  "required_gates": [
+    "canonical parser/formatter roundtrip and reserved-token admission",
+    "type checked void-only do sync task; E_TASK_RETURN_TYPE / E_SYNTAX no-artifact negatives",
+    "typed inline enter/exit on original caller TaskId with deterministic ordering",
+    "checked i64 arithmetic including min/max and overflow",
+    "lexical return, nested scopes, scoped cleanup and LIFO on all exits",
+    "suspending inline body transitive effects and borrow/guard suspension safety",
+    "separate task/await/do task spawn/return semantics and TaskScope ownership",
+    "future cancellation requests, TaskCancelled terminal outcome and physical child retirement",
+    "bounded quotas, tenant memory/capability isolation and no ambient I/O",
+    "exact-head actual compiler+guest tests on relevant target toolchains",
+    "negative tests generate no artifact, including unsafe tenant/borrow/lock/suspension combinations",
+    "required independent review, authorized source transfer and protected-branch controls"
+  ],
+  "rollup": {
+    "target_repositories": 11,
+    "production_task_runtime_certified": 0,
+    "all_backends_release_qualified": false,
+    "no_unverified_backend_is_pass": true
+  },
+  "backends": {
+    "java": {
+      "repository": "atto-lang/atto-source.java",
+      "platform": "java",
+      "stage": "VERIFIED_RESTRICTED_GUEST",
+      "execution_status": "EXECUTED_LIMITED_PROFILE",
+      "full_task_runtime_status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "source_export_policy": "EXACT_SOURCE_TREE_CARRIER_CONFIRMED",
+      "evidence_note": "pure scalar Java and GraalVM Native Image; no general suspension",
+      "canonical_draft_pr": "https://github.com/atto-lang/atto-source.java/pull/59",
+      "current_observed_head": "c4b2c349a0decedc94f24441be9e78f6af7cb112",
+      "restricted_execution_receipt": "contracts/task-java-inline-typed-v2-20261120.json",
+      "restricted_run": "https://github.com/r2g-test/atto-ci/actions/runs/44811782037",
+      "restricted_git_tree": "6180130e9f612da1df955884c52c4f9cb6987e7a"
+    },
+    "llvm": {
+      "repository": "atto-lang/atto-source.llvm",
+      "platform": "llvm",
+      "stage": "DRAFT_RESTRICTED_COMPILER",
+      "execution_status": "NOT_CURRENT_HEAD_VERIFIED",
+      "full_task_runtime_status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "source_export_policy": "NO_EXPORT_HOLD",
+      "evidence_note": "Rust LLVM pure scalar task, separate C++ fail-closed frontend; source mirror hold issue #196",
+      "canonical_draft_pr": "https://github.com/atto-lang/atto-source.llvm/pull/72",
+      "current_observed_head": "e484d8b4572b9430cdd845c55a1301a01a9fa7cd"
+    },
+    "net": {
+      "repository": "atto-lang/atto-source.net",
+      "platform": "net",
+      "stage": "DRAFT_RESTRICTED_COMPILER",
+      "execution_status": "NOT_INDEPENDENTLY_VERIFIED_HERE",
+      "full_task_runtime_status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "source_export_policy": "REQUIRES_APPROVED_CARRIER",
+      "evidence_note": "restricted CIL pure inline scalar; CoreCLR and NativeAOT prior receipt asserted",
+      "canonical_draft_pr": "https://github.com/atto-lang/atto-source.net/pull/30",
+      "current_observed_head": "d4a6a7d11cc2f9ef4d39788918ca3cecb15b688b"
+    },
+    "forge": {
+      "repository": "atto-lang/atto-source.forge",
+      "platform": "forge",
+      "stage": "DRAFT_RESTRICTED_COMPILER",
+      "execution_status": "NOT_CURRENT_HEAD_VERIFIED",
+      "full_task_runtime_status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "source_export_policy": "REQUIRES_APPROVED_CARRIER",
+      "evidence_note": "native scalar; parser/emit overlap and conflicting PR #102 require reconciliation",
+      "canonical_draft_pr": "https://github.com/atto-lang/atto-source.forge/pull/52",
+      "current_observed_head": "62752c7f604900d9a62f4db4db8da13fd6a363a7"
+    },
+    "cranelift": {
+      "repository": "atto-lang/atto-source.cranelift",
+      "platform": "cranelift",
+      "stage": "DRAFT_RESTRICTED_COMPILER",
+      "execution_status": "EVIDENCE_REPORTED_NOT_RECHECKED_HERE",
+      "full_task_runtime_status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "source_export_policy": "CHECK_APPROVED_CARRIER",
+      "evidence_note": "trusted scalar JIT, no TaskScope or TenantVM certification",
+      "canonical_draft_pr": "https://github.com/atto-lang/atto-source.cranelift/pull/54",
+      "current_observed_head": "45d1393cbb53ba8a22624961f1a96d3e479aaaa6"
+    },
+    "rs": {
+      "repository": "atto-lang/atto-source.rs",
+      "platform": "rs",
+      "stage": "DRAFT_RESTRICTED_COMPILER",
+      "execution_status": "NOT_CURRENT_HEAD_VERIFIED",
+      "full_task_runtime_status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "source_export_policy": "REQUIRES_APPROVED_CARRIER",
+      "evidence_note": "Rust Wasm emitter, static bounded defer subset; stacked onto #427",
+      "canonical_draft_pr": "https://github.com/atto-lang/atto-source.rs/pull/438",
+      "current_observed_head": "24754fcfa22c6797548815bd44afa572a248903b",
+      "stacked_pr": "https://github.com/atto-lang/atto-source.rs/pull/427"
+    },
+    "wasm": {
+      "repository": "atto-lang/atto-source.wasm",
+      "platform": "wasm",
+      "stage": "DRAFT_INTEGRATION_VERIFIER",
+      "execution_status": "GUEST_NOT_EXECUTED",
+      "full_task_runtime_status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "source_export_policy": "NO_EXPORT_HOLD",
+      "evidence_note": "artifact verifier backed by pinned Rust compiler, not independent wasm compiler",
+      "canonical_draft_pr": "https://github.com/atto-lang/atto-source.wasm/pull/53",
+      "current_observed_head": "a7d3acadc81e160dfc8a6cbf64998b929ee14d5f"
+    },
+    "js": {
+      "repository": "atto-lang/atto-source.js",
+      "platform": "js",
+      "stage": "DRAFT_RESTRICTED_COMPILER",
+      "execution_status": "NATIVE_NODE_BROWSER_NOT_EXECUTED",
+      "full_task_runtime_status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "source_export_policy": "NO_EXPORT_HOLD",
+      "evidence_note": "stacked on #47; constrained V8 only, native Node/browser unverified",
+      "canonical_draft_pr": "https://github.com/atto-lang/atto-source.js/pull/68",
+      "current_observed_head": "28fc10e978931f429c61615d027474b3269096e3",
+      "stacked_pr": "https://github.com/atto-lang/atto-source.js/pull/47"
+    },
+    "hdl": {
+      "repository": "atto-lang/atto-source.hdl",
+      "platform": "hdl",
+      "stage": "HARDWARE_RESTRICTED",
+      "execution_status": "NOT_EXECUTED",
+      "full_task_runtime_status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "source_export_policy": "REQUIRES_BACKEND_SPECIFIC_APPROVAL",
+      "evidence_note": "combinational RTL subset; dynamic actor/task execution unsupported, must reject with no RTL"
+    },
+    "atto": {
+      "repository": "atto-lang/atto-source.atto",
+      "platform": "atto",
+      "stage": "BOOTSTRAP_ONLY",
+      "execution_status": "NOT_EXECUTED",
+      "full_task_runtime_status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "source_export_policy": "NO_COMPILER_TO_TEST",
+      "evidence_note": "self-hosting project README/AGENTS only; no compiler"
+    },
+    "realtime": {
+      "repository": "atto-lang/atto-source.realtime",
+      "platform": "realtime",
+      "stage": "BOOTSTRAP_ONLY",
+      "execution_status": "NOT_EXECUTED",
+      "full_task_runtime_status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "source_export_policy": "NO_COMPILER_TO_TEST",
+      "evidence_note": "realtime project README/AGENTS only; no compiler"
+    }
+  }
+}

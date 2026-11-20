@@ -13,7 +13,7 @@ const blobSha = b => createHash('sha1').update(
 test('task compiler parity registry is source-only and fixes exact source hashes', () => {
   assert.equal(manifest.schema,'atto.task-compiler-parity-admission.v1');
   assert.equal(manifest.evidence_grade,'SOURCE_ONLY');
-  assert.equal(Object.keys(manifest.source_profiles).length,10);
+  assert.equal(Object.keys(manifest.source_profiles).length,11);
   assert.equal(new Set(manifest.source_cases.map(x=>x.id)).size,manifest.source_cases.length);
   const cases = new Map(targets.cases.map(x=>[x.id,x]));
   for (const c of manifest.source_cases) {
