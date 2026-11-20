@@ -39,6 +39,25 @@
       "exact_canonical_guest_sources": {
         "PRL-001": "6056400afa8d7b9b71f29be5ca4cfb15240a59b3",
         "PRL-002": "8fa66e68b386c2c6d1f2b15b9399e70a116c0828"
+      },
+      "token_free_carrier": {
+        "repository": "gha-indie-worker/atto-ci",
+        "branch": "ci/atto-pointer-mainline-419-exact-20261120",
+        "carrier_commit": "a7c7efe5652e8db406bc37b1fe2226eb10a439a3",
+        "upstream_commit": "00a6d3e8a86e27f635cf3b2a808b6a0b61a2b977",
+        "upstream_compiler_src_tree": "274523e1adffc85c4f86c84e1983917ff089d4e0",
+        "source_tree_matches": true,
+        "cargo_toml_blob": "7bcb27474e87c1f05d6f96acf8a6a6c75ac4bcef",
+        "cargo_lock_blob": "387853d3838d48e0c89d77fbecfcd41d53fbd4ca",
+        "exact_prl_001_blob": "6056400afa8d7b9b71f29be5ca4cfb15240a59b3",
+        "exact_prl_002_blob": "8fa66e68b386c2c6d1f2b15b9399e70a116c0828",
+        "workflow_path": ".github/workflows/atto-pointer-mainline-419.yml",
+        "run_url": "https://github.com/gha-indie-worker/atto-ci/actions/runs/44662256278",
+        "latest_run_attempt": 2,
+        "executed_steps": 0,
+        "admission": "FAILED_ZERO_STEPS",
+        "compiler_executable_sha256": null,
+        "guest_wasm_sha256": null
       }
     },
     {

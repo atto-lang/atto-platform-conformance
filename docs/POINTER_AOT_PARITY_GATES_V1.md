@@ -1,3 +1,21 @@
+### Exact private mirror attempt — mainline Rust/Wasm PR #419
+
+A private, token-free carrier has been built at
+[gha-indie-worker/atto-ci](https://github.com/gha-indie-worker/atto-ci/tree/ci/atto-pointer-mainline-419-exact-20261120)
+(commit `a7c7efe5652e8db406bc37b1fe2226eb10a439a3`).
+Git readback verifies the complete compiler `src/` tree
+(`274523e1adffc85c4f86c84e1983917ff089d4e0`), Cargo metadata,
+pointer Rust integration test, and the canonical PRL-001/002 source blobs
+against exact `atto-source.rs #419` source commit
+`00a6d3e8a86e27f635cf3b2a808b6a0b61a2b977`.
+
+The dedicated workflow compiles real native and wasm32 compilers, executes
+two actual guest modules and checks six invalid sources for no artifact.
+**Run #44662256278 failed twice with ZERO executed job steps.**
+This is a RUNNER_ADMISSION failure, not a compiler verdict.
+See the `token_free_carrier` ledger record; its executable/artifact hashes
+remain null and every backend remains `NOT_EXECUTED`.
+
 ## Three candidate compilers: exact source heads, zero execution receipts
 
 The separate [source-only candidate ledger](../contracts/pointer-local-candidate-evidence-v1.json)

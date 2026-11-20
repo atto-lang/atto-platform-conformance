@@ -35,6 +35,26 @@ test('candidate ledger keeps actual source commits distinct from executed eviden
     assert.equal(c.guest_artifact_sha256,null);
     assert.equal(c.runner_job_id,null);
     assert.equal(c.executed_step_count,0);
+    if (c.backend === 'atto-source.rs') {
+      const mirror=c.token_free_carrier;
+      assert.equal(mirror.repository,'gha-indie-worker/atto-ci');
+      assert.equal(mirror.upstream_commit,c.source_head);
+      assert.equal(mirror.upstream_compiler_src_tree,c.compiler_subtree);
+      assert.equal(mirror.upstream_compiler_src_tree,'274523e1adffc85c4f86c84e1983917ff089d4e0');
+      assert.equal(mirror.source_tree_matches,true,'Git tree identity is source-only proof');
+      assert.match(mirror.carrier_commit,/^[0-9a-f]{40}$/);
+      assert.equal(mirror.cargo_toml_blob,'7bcb27474e87c1f05d6f96acf8a6a6c75ac4bcef');
+      assert.equal(mirror.cargo_lock_blob,'387853d3838d48e0c89d77fbecfcd41d53fbd4ca');
+      assert.equal(mirror.exact_prl_001_blob,c.exact_canonical_guest_sources['PRL-001']);
+      assert.equal(mirror.exact_prl_002_blob,c.exact_canonical_guest_sources['PRL-002']);
+      assert.match(mirror.run_url,/^https:\/\/github\.com\/[^/]+\/[^/]+\/actions\/runs\/\d+$/);
+      assert.equal(mirror.latest_run_attempt,2);
+      assert.equal(mirror.executed_steps,0,'not permitted to claim compiled guest proof');
+      assert.equal(mirror.admission,'FAILED_ZERO_STEPS');
+      assert.equal(mirror.compiler_executable_sha256,null);
+      assert.equal(mirror.guest_wasm_sha256,null);
+    }
+
     assert.equal(c.guest_exit_receipt,null);
     assert.equal(c.negative_rejection_receipt,null);
     assert.equal(c.independent_approval,null);
