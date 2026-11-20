@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // Carrier-only verification: no network, tokens, remote checkout, or code execution.
 import {createHash} from 'node:crypto';
-import {createReadStream} from 'node:fs';
-import {lstat, readFile, readlink} from 'node:fs/promises';
+import {constants} from 'node:fs';
+import {lstat, readFile, readlink, open} from 'node:fs/promises';
 import {resolve, join, sep} from 'node:path';
 import {spawnSync} from 'node:child_process';
 
@@ -69,13 +69,25 @@ for (const entry of manifest.entries) {
   if (entry.mode === '120000') {
     if (!stat.isSymbolicLink()) fail('SYMLINK_MODE');
     const target = await readlink(full,{encoding:'buffer'});
+    const spelled = target.toString('utf8');
+    if (!Buffer.from(spelled,'utf8').equals(target) || spelled.includes('\\') || spelled.includes('\0'))
+      fail('SYMLINK_TARGET_ENCODING');
+    const destination = resolve(root,...pieces.slice(0,-1),spelled);
+    if (destination !== root && !destination.startsWith(root+sep)) fail('SYMLINK_ESCAPE');
     sha.update(Buffer.from(`blob ${target.length}\0`));
     sha.update(target);
   } else {
     if (!stat.isFile() || stat.isSymbolicLink()) fail('FILE_MODE');
     if (Boolean(stat.mode & 0o111) !== (entry.mode === '100755')) fail('EXECUTABLE_MODE');
-    sha.update(Buffer.from(`blob ${stat.size}\0`));
-    for await (const chunk of createReadStream(full)) sha.update(chunk);
+    // Do not follow a newly planted final-component symlink after lstat.
+    const handle = await open(full,constants.O_RDONLY|constants.O_NOFOLLOW|constants.O_CLOEXEC);
+    try {
+      const current = await handle.stat();
+      if (!current.isFile() || current.dev !== stat.dev || current.ino !== stat.ino ||
+          current.size !== stat.size || current.mode !== stat.mode) fail('FILE_RACE');
+      sha.update(Buffer.from(`blob ${current.size}\0`));
+      for await (const chunk of handle.createReadStream({autoClose:false})) sha.update(chunk);
+    } finally { await handle.close(); }
   }
   if (sha.digest('hex') !== entry.sha) fail('WORKTREE_BLOB');
   count++;
