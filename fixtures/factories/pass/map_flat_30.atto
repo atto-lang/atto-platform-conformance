@@ -1,0 +1,5 @@
+// TARGET, NOT EXECUTED. Positional Map.of alternating key/value overload.
+pub fnc main(): int {
+  val scores = Map.of("a", 10, "b", 20);
+  return scores.get("a").unwrap() + scores.get("b").unwrap();
+}
