@@ -1,7 +1,7 @@
 ## Three candidate compilers: exact source heads, zero execution receipts
 
 The separate [source-only candidate ledger](../contracts/pointer-local-candidate-evidence-v1.json)
-tracks reviewed draft implementation heads for Rust/Wasm (PR #264),
+tracks reviewed draft implementation heads for Rust/Wasm mainline-safe (PR #419; overlap with checked-handle PR #264),
 LLVM native AOT (PR #64) and .NET CIL / NativeAOT (PR #22).
 They implement a strict single-local, one-read/one-unref subset, **not**
 all 36 conformance cases. Every ledger entry preserves the exact SHA and

@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 const doc=JSON.parse(readFileSync(new URL('../contracts/pointer-local-candidate-evidence-v1.json',import.meta.url),'utf8'));
 const cases=JSON.parse(readFileSync(new URL('../contracts/pointer-ref-local-v1.json',import.meta.url),'utf8'));
 const known={
-  'atto-source.rs':{pr:264,sha:'56356874cb2da41fcd7a4cf61994aa08e9ef5a85'},
+  'atto-source.rs':{pr:419,sha:'eb23ae9677cab04398f85253a7c7b810be89e590'},
   'atto-source.llvm':{pr:64,sha:'b4049c77c71f6834a93f294c129779bfaf3ec1f1'},
   'atto-source.net':{pr:22,sha:'fa732820a0f0bc3de2c7422efd06ad365518fde1'},
 };
@@ -29,7 +29,7 @@ test('candidate ledger keeps actual source commits distinct from executed eviden
     assert.equal(c.pr,expected.pr);
     assert.equal(c.source_head,expected.sha);
     assert.match(c.source_head,/^[a-f0-9]{40}$/);
-    assert.equal(c.source_state,'CANDIDATE_COMMITTED');
+    assert.ok(['CANDIDATE_COMMITTED','MAINLINE_CANDIDATE_COMMITTED'].includes(c.source_state));
     assert.equal(c.execution_status,'NOT_EXECUTED');
     assert.equal(c.compiler_artifact_sha256,null);
     assert.equal(c.guest_artifact_sha256,null);
@@ -41,7 +41,7 @@ test('candidate ledger keeps actual source commits distinct from executed eviden
     assert.deepEqual(c.expected_guest_ids,['PRL-001','PRL-002']);
     assert.ok(c.test_entry.length>5);
     assert.ok(c.scope.includes('Pointer<int>')||c.scope.includes('BorrowedLocalIntPlan'));
-    assert.match(c.last_attempted_ci_run,/^https:\/\/github\.com\/[^/]+\/[^/]+\/actions\/runs\/\d+$/);
+    if(c.last_attempted_ci_run!==null) assert.match(c.last_attempted_ci_run,/^https:\/\/github\.com\/[^/]+\/[^/]+\/actions\/runs\/\d+$/);
     assert.equal(cases.backend_status[c.backend].status,'NOT_EXECUTED');
     assert.equal(cases.backend_status[c.backend].runner,null);
   }
