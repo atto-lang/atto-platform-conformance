@@ -450,12 +450,12 @@
   },
   "workstream_capability_notes": {
     "atto-lang/atto-source.forge": "native C++20 typed planning passes local GCC/Clang tests with ASan/UBSan; source GitHub Actions still 0 steps; no compiled .atto pipe guest",
-    "atto-lang/atto-source.rs": "experimental checked Result<PipeHandle,PipeSetupError> with 6 guest fixtures covering forward/reverse, stopped endpoint, both port conflicts and restoration after setup failure; compiler/guest NOT_EXECUTED, cancellation/borrow release/generation fencing not implemented"
+    "atto-lang/atto-source.rs": "experimental opt-in Result<PipeHandle, PipeSetupError>, 7 checked guest fixtures including stopped source/sink and three occupied port rollback cases; source compiler and guest NOT_EXECUTED; no cancellation, tenant generation fence or general graph lowering"
   },
   "rust_v2_checked_guest_preview": {
     "repo": "atto-lang/atto-source.rs",
     "pull_request": "https://github.com/atto-lang/atto-source.rs/pull/262",
-    "source_commit": "d01e0035bdfe99c26bb25782dfe305548b136084",
+    "source_commit": "27da4c948d1cc5d10467cd49b510d4f41547a36b",
     "type": "Result<PipeHandle, PipeSetupError>",
     "opt_in": "explicit_result_binding_annotation_only",
     "endpoint_scope": "single_tenant_bounded_actor_channel_actor_triple",
@@ -467,7 +467,8 @@
       "221-v2-checked-setup-rollback",
       "222-v2-checked-setup-output-occupied",
       "222-v2-checked-output-occupied-rollback",
-      "223-v2-checked-input-occupied-rollback"
+      "223-v2-checked-input-occupied-rollback",
+      "224-v2-checked-channel-occupied-rollback"
     ],
     "checked_setup_compiler": "NOT_EXECUTED",
     "checked_setup_guest": "NOT_EXECUTED",
@@ -507,6 +508,16 @@
         "status": "NOT_EXECUTED",
         "shared_fixture": "fixtures/pipe-rpipe-checked-v2/input-occupied-rollback.atto",
         "source_git_blob_sha": "cf1bb6c469851258a794f9275cd7bd817133f3f3"
+      },
+      "channel_occupied_conflict": {
+        "guest_fixture": "tests/fixtures/pass/224-v2-checked-channel-occupied-rollback.atto",
+        "shared_fixture": "fixtures/pipe-rpipe-checked-v2/channel-occupied-rollback.atto",
+        "source_git_blob_sha": "eee7cac651e9be89d98fdca15bef3f10241a8b80",
+        "error_code": 6,
+        "rejected_publications": 0,
+        "unclaimed_source_channel_sink_reusable": true,
+        "expected_stdout": "40\n2\n",
+        "status": "NOT_EXECUTED"
       }
     },
     "test_coverage": "Rust compiler fixture, Node compiled guest and Chromium worker guest tests are wired; no executable exact-head run",
