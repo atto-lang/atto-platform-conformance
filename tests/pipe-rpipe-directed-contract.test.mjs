@@ -201,6 +201,13 @@ test('experimental Rust checked PipeHandle preview cannot masquerade as backend 
     assert.equal(entry.expected_stdout,'40\\n2\\n'.replaceAll('\\n','\n'));
     assert.ok(entry.guest_fixture.startsWith('tests/fixtures/pass/'));
     assert.match(entry.guest_fixture,/2(?:22|23)-v2-checked-[a-z-]+[.]atto$/);
+    assert.ok(entry.shared_fixture.startsWith('fixtures/pipe-rpipe-checked-v2/'));
+    assert.match(entry.source_git_blob_sha,/^[0-9a-f]{40}$/);
+    const bytes=readFileSync(new URL(entry.shared_fixture,root),'utf8');
+    assert.equal(gitBlobSha(bytes),entry.source_git_blob_sha,'rollback fixture blob mismatch');
+    assert.match(bytes,/PipeSetupError/);
+    assert.match(bytes,/error[.]code[(][)]/);
+    assert.match(bytes,/second_producer pipe second_channel pipe second_consumer/);
   }
   const row=contract.backend_evidence.find(x=>x.repo===preview.repo);
   assert.ok(row);
