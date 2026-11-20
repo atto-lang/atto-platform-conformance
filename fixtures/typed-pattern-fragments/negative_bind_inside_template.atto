@@ -1,0 +1,10 @@
+// Expected E_PATTERN_BINDING, NO GUEST ARTIFACT.
+import module pattern from "std.pattern";
+
+pub fnc main(): int {
+  val items: List<Any> = List.of(1, 2, 3);
+  return match<int> items over
+    on List.of(pattern.of<Any>("is int as val x")) -> 1,
+    on _ -> 0
+  end;
+}
