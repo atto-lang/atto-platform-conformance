@@ -112,15 +112,33 @@
     "cranelift": {
       "repository": "atto-lang/atto-source.cranelift",
       "pr_url": "https://github.com/atto-lang/atto-source.cranelift/pull/54",
-      "head_sha": "af7de1e962920d6ff47724510e3a90265819920f",
+      "head_sha": "076a09aa1e3c9a77267ad4f4f72edeaa52f203b1",
       "source_file": "src/frontend.rs",
-      "source_blob_sha": "757a3a9dabc02d1a1ac3f4eecf0b49348c12f6d6",
+      "source_blob_sha": "7499e10aa85c8b5a9c35d9122ea0619147312d1e",
       "profile": "TRUSTED_INLINE_SCALAR_VOID_ONLY_SOURCE_ADMISSION",
       "status": "SOURCE_ONLY_NOT_EXECUTED",
       "task_cancellation": "NOT_EXECUTED",
       "guard_cleanup": "NOT_EXECUTED",
       "compiled_guest": "NOT_EXECUTED",
-      "release_qualified": false
+      "release_qualified": false,
+      "restricted_native_receipt": {
+        "status": "EXECUTED_LIMITED_SCALAR_ONLY",
+        "source_tree_sha": "f3f3a521dcb3ac30dfd398d2dd5017a76ef25ac7",
+        "carrier_repo": "r2g-test/atto-ci",
+        "carrier_commit_sha": "5c6f232cf423e61b42e17abdfd10a8219e5d1efd",
+        "carrier_run": "https://github.com/r2g-test/atto-ci/actions/runs/44802783871",
+        "verified_git_blobs": 171,
+        "rust_toolchain": "1.99.1",
+        "cargo_tests_passed": 394,
+        "cargo_test_exit": 0,
+        "cargo_clippy_exit": 0,
+        "cargo_fmt_exit": 1,
+        "native_positive_cases": 3,
+        "native_rejection_cases": 4,
+        "checked_division_error_no_output": true,
+        "full_task_cancel_borrow_tenant_vm": "NOT_EXECUTED",
+        "release_qualified": false
+      }
     },
     "forge": {
       "repository": "atto-lang/atto-source.forge",
