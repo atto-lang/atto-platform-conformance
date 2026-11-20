@@ -153,7 +153,22 @@
         ],
         "no_artifact": true
       },
-      "ci_status": "NOT_EXECUTED"
+      "ci_status": "NOT_EXECUTED",
+      "source_ci_runs": [
+        {
+          "id": 44658021752,
+          "result": "failure",
+          "job": "scalar-aot",
+          "executed_steps": 0
+        },
+        {
+          "id": 44658021744,
+          "result": "failure",
+          "job": "cortexm-freestanding",
+          "executed_steps": 0
+        }
+      ],
+      "ci_note": "Exact current-head GitHub Actions jobs failed with zero steps; do not count as compiler failure or PASS."
     }
   },
   "backends": {
