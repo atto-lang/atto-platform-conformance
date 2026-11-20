@@ -129,7 +129,7 @@ test('cancellable task lock leases have pinned positive and negative sources', (
     assert.equal(cases[id].expected.diagnostic, code);
     assert.equal(cases[id].expected.no_artifact, true);
   }
-  assert.equal(registry.lock_cancellation_runtime_probes.length, 16);
+  assert.equal(registry.lock_cancellation_runtime_probes.length, 17);
   const ids = registry.lock_cancellation_runtime_probes.map(p => p.id);
   assert.equal(new Set(ids).size, 15);
   for (const p of registry.lock_cancellation_runtime_probes) {
@@ -280,4 +280,18 @@ test('parked or ready-but-undispatched tasks cannot create lock tickets or child
   ]) assert.ok(probe.assertions.includes(invariant), invariant);
   assert.ok(Object.values(registry.backends).every(b =>
     b.status === 'NOT_EXECUTED' && b.release_qualified === false));
+});
+
+test('a lock park cannot strand an unclaimed grant or ambiguously suspend on two locks', () => {
+  const probe = registry.lock_cancellation_runtime_probes.find(p =>
+    p.id === 'lock_park_unclaimed_grant_and_ambiguous_wait');
+  assert.equal(probe.evidence_required, true);
+  assert.equal(probe.release_qualified, false);
+  for (const invariant of [
+    'UNCLAIMED_GRANT_PREVENTS_PARK_ON_DIFFERENT_MUTEX',
+    'ACTIVE_LEASE_PREVENTS_PARK',
+    'MULTIPLE_OUTSTANDING_WAITS_WITHOUT_TYPED_SELECT_ARE_REJECTED',
+    'NO_PHANTOM_READY_ENTRY_OR_WAKE_HINT',
+    'CANCELLATION_REMOVES_ALL_PENDING_WAITS',
+  ]) assert.ok(probe.assertions.includes(invariant), invariant);
 });
