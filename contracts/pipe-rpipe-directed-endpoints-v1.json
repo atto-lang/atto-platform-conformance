@@ -23,14 +23,28 @@
       "path": "fixtures/pipe-rpipe-v1/actor-forward.atto",
       "expect": "accept_typechecked_graph",
       "required_direction": "Producer->Consumer",
-      "source_git_blob_sha": "dd59abdb707d05dabac30139feb4bd03b60459d1"
+      "source_git_blob_sha": "dd59abdb707d05dabac30139feb4bd03b60459d1",
+      "expected_data_edges": [
+        {
+          "source": "producer",
+          "sink": "consumer",
+          "payload": "int"
+        }
+      ]
     },
     {
       "id": "actor-reverse",
       "path": "fixtures/pipe-rpipe-v1/actor-reverse.atto",
       "expect": "accept_typechecked_graph",
       "required_direction": "Producer->Consumer",
-      "source_git_blob_sha": "da3d759d56aac4cfd6919521df862edb594f426f"
+      "source_git_blob_sha": "da3d759d56aac4cfd6919521df862edb594f426f",
+      "expected_data_edges": [
+        {
+          "source": "producer",
+          "sink": "consumer",
+          "payload": "int"
+        }
+      ]
     },
     {
       "id": "actor-missing-emits",
@@ -51,14 +65,48 @@
       "path": "fixtures/pipe-rpipe-v1/mixed-channel-stream-forward.atto",
       "expect": "accept_typechecked_graph",
       "required_direction": "Producer->Channel<int>->Stream<int>->Consumer",
-      "source_git_blob_sha": "6e2528f7c4b278c0fff9671c8c5985bfbd94adb1"
+      "source_git_blob_sha": "6e2528f7c4b278c0fff9671c8c5985bfbd94adb1",
+      "expected_data_edges": [
+        {
+          "source": "Producer",
+          "sink": "Channel<int>",
+          "payload": "int"
+        },
+        {
+          "source": "Channel<int>",
+          "sink": "Stream<int>",
+          "payload": "int"
+        },
+        {
+          "source": "Stream<int>",
+          "sink": "Consumer",
+          "payload": "int"
+        }
+      ]
     },
     {
       "id": "mixed-channel-stream-reverse",
       "path": "fixtures/pipe-rpipe-v1/mixed-channel-stream-reverse.atto",
       "expect": "accept_typechecked_graph",
       "required_direction": "Producer->Channel<int>->Stream<int>->Consumer",
-      "source_git_blob_sha": "060b61b80cfb3946a9510edd1190be6256212424"
+      "source_git_blob_sha": "060b61b80cfb3946a9510edd1190be6256212424",
+      "expected_data_edges": [
+        {
+          "source": "Producer",
+          "sink": "Channel<int>",
+          "payload": "int"
+        },
+        {
+          "source": "Channel<int>",
+          "sink": "Stream<int>",
+          "payload": "int"
+        },
+        {
+          "source": "Stream<int>",
+          "sink": "Consumer",
+          "payload": "int"
+        }
+      ]
     },
     {
       "id": "actor-duplicate-direction",
@@ -162,5 +210,12 @@
     "once-only error settlement"
   ],
   "gating": "Source fixtures and manifest are not passing conformance; positive cases need compiled guest transfer and observed receipts. A backend can report TARGET_UNSUPPORTED with an explicit diagnostic, not PASS.",
-  "fixture_sha_lock_version": 1
+  "fixture_sha_lock_version": 1,
+  "normalization_contract": {
+    "preserve_lexical_constructor_order": true,
+    "evaluate_each_stage_once": true,
+    "directed_edges_never_supervisor_control": true,
+    "reverse_operator_does_not_imply_duplex": true,
+    "rpipe_reverses_written_stage_order_only": true
+  }
 }
