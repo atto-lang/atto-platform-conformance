@@ -36,17 +36,17 @@ test('Entry extension retains the original Map contract and unique bounded fixtu
   assert.ok(Object.values(registry.verification.backend_evidence).every((status) => status === 'not_executed'));
 });
 
-test('requested top-level dual spellings and non-overwriting add produce exit 3', () => {
+test('requested top-level dual spellings and checked add upsert produce exit 5', () => {
   const c = byId.get('entry-global-dual-cast-duplicate-add');
   assert.ok(c);
-  assert.equal(c.expected_exit, 3);
+  assert.equal(c.expected_exit, 5);
   assert.ok(c.source.includes('let entry1 = ("foo" => 5) as Entry<string, int>;'));
   assert.ok(c.source.includes('let entry2 = "foo" => 5 (as Entry<string, int>);'));
   for (const fragment of ['x.set("foo", 6)', 'x["foo"] = 3', 'x.add(entry1)', 'x.add(entry2)', 'x.get("foo").unwrap()']) {
     assert.ok(c.source.includes(fragment), fragment);
   }
   assert.equal(byId.get('map-literal-set-index-add').expected_exit, 3);
-  assert.equal(byId.get('entry-duplicate-add-reusable').expected_exit, 3);
+  assert.equal(byId.get('entry-duplicate-add-reusable').expected_exit, 5);
 });
 
 test('both Entry casts, generic negatives, ownership/static admission are covered', () => {
