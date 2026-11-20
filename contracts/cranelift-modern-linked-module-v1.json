@@ -1,0 +1,159 @@
+{
+  "schema": "atto.cranelift-modern-linked-module.v1",
+  "status": "SOURCE_CORPUS_ONLY_NOT_EXECUTED",
+  "scope": "Independent Java versus Cranelift and other Atto backend guest linking parity; the target profile is not a current-Cranelift support claim",
+  "spec_refs": [
+    "atto-lang/atto-spec/language/unified-static-imports-v1.md",
+    "atto-lang/atto-platform-conformance/fixtures/import-v1/README.md"
+  ],
+  "implementation_tracker": "https://github.com/atto-lang/atto-source.cranelift/issues/71",
+  "historical_v1": "Existing fixtures/import-v1 uses retired +/ spelling; retain it as history, never rewrite its Git blobs",
+  "source_root": "fixtures/cranelift-linked-module-v1/project",
+  "backend_evidence": {
+    "java": "NOT_EXECUTED",
+    "cranelift": "NOT_EXECUTED_UNSUPPORTED_ON_MAIN",
+    "llvm": "NOT_EXECUTED",
+    "wasm": "NOT_EXECUTED",
+    "forge": "NOT_EXECUTED",
+    "net": "NOT_EXECUTED",
+    "rs": "NOT_EXECUTED",
+    "js": "NOT_EXECUTED"
+  },
+  "compiler_sha": null,
+  "runner_receipt": null,
+  "execution_proofs": [],
+  "source_blobs": {
+    ".ores.pkg.toml": "ffac0c92fc38ab2b908e4b3c8d12cee36c535038",
+    "src/lib/helpers.atto": "353468f8dbe797d5507c71196716e7a862c92a67",
+    "src/main-root.atto": "fded0d4e1885ba676fb6a6969fded7817c73cfb0",
+    "src/main-relative.atto": "a7dfcee1f2b5686b0ccb6e25d109cb6702c7c182",
+    "src/main-nonlinear.atto": "7b277b97fab78d76a86cc538ec27f031d4064c5e",
+    "src/invalid-private-export.atto": "824a10dc56e24853cf16265317ca48630ec76e03",
+    "src/invalid-retired-root.atto": "9ef72e84d5d14f71a3aa375d239dfcfcb5989370",
+    "src/invalid-root-traversal.atto": "bbd6c062051fe61288d7329616ce37b8a60ba500",
+    "src/invalid-missing-export.atto": "b08ddf2747bb2b2b60bebd75fd0d70429acb4383",
+    "src/invalid-duplicate-binding.atto": "b0bb62daee8c091b9b1d76874318b979d1bf64ae"
+  },
+  "cases": [
+    {
+      "id": "rooted-direct-call",
+      "entry": "src/main-root.atto",
+      "expect": "PASS",
+      "expect_stdout": "42\n",
+      "expected_reason": "ROOT_CANONICAL_EXPORT",
+      "git_blob_sha": "fded0d4e1885ba676fb6a6969fded7817c73cfb0",
+      "status": "NOT_EXECUTED",
+      "requires": [
+        "verified source graph",
+        "exact-once typed call",
+        "public export resolution",
+        "no forbidden codegen on rejection"
+      ]
+    },
+    {
+      "id": "relative-direct-call",
+      "entry": "src/main-relative.atto",
+      "expect": "PASS",
+      "expect_stdout": "42\n",
+      "expected_reason": "RELATIVE_EXPORT",
+      "git_blob_sha": "a7dfcee1f2b5686b0ccb6e25d109cb6702c7c182",
+      "status": "NOT_EXECUTED",
+      "requires": [
+        "verified source graph",
+        "exact-once typed call",
+        "public export resolution",
+        "no forbidden codegen on rejection"
+      ]
+    },
+    {
+      "id": "nonlinear-argument-once",
+      "entry": "src/main-nonlinear.atto",
+      "expect": "PASS",
+      "expect_stdout": "42\n",
+      "expected_reason": "CALL_PARAMETER_REFERENCED_TWICE",
+      "git_blob_sha": "7b277b97fab78d76a86cc538ec27f031d4064c5e",
+      "status": "NOT_EXECUTED",
+      "requires": [
+        "verified source graph",
+        "exact-once typed call",
+        "public export resolution",
+        "no forbidden codegen on rejection"
+      ]
+    },
+    {
+      "id": "reject-private-export",
+      "entry": "src/invalid-private-export.atto",
+      "expect": "REJECT",
+      "expect_stdout": null,
+      "expected_reason": "IMPORT_NOT_PUBLIC",
+      "git_blob_sha": "824a10dc56e24853cf16265317ca48630ec76e03",
+      "status": "NOT_EXECUTED",
+      "requires": [
+        "verified source graph",
+        "exact-once typed call",
+        "public export resolution",
+        "no forbidden codegen on rejection"
+      ]
+    },
+    {
+      "id": "reject-retired-root-prefix",
+      "entry": "src/invalid-retired-root.atto",
+      "expect": "REJECT",
+      "expect_stdout": null,
+      "expected_reason": "RETIRED_ROOT_PREFIX",
+      "git_blob_sha": "9ef72e84d5d14f71a3aa375d239dfcfcb5989370",
+      "status": "NOT_EXECUTED",
+      "requires": [
+        "verified source graph",
+        "exact-once typed call",
+        "public export resolution",
+        "no forbidden codegen on rejection"
+      ]
+    },
+    {
+      "id": "reject-root-traversal",
+      "entry": "src/invalid-root-traversal.atto",
+      "expect": "REJECT",
+      "expect_stdout": null,
+      "expected_reason": "NONCANONICAL_ROOT_TRAVERSAL",
+      "git_blob_sha": "bbd6c062051fe61288d7329616ce37b8a60ba500",
+      "status": "NOT_EXECUTED",
+      "requires": [
+        "verified source graph",
+        "exact-once typed call",
+        "public export resolution",
+        "no forbidden codegen on rejection"
+      ]
+    },
+    {
+      "id": "reject-missing-export",
+      "entry": "src/invalid-missing-export.atto",
+      "expect": "REJECT",
+      "expect_stdout": null,
+      "expected_reason": "UNBOUND_IMPORTED_EXPORT",
+      "git_blob_sha": "b08ddf2747bb2b2b60bebd75fd0d70429acb4383",
+      "status": "NOT_EXECUTED",
+      "requires": [
+        "verified source graph",
+        "exact-once typed call",
+        "public export resolution",
+        "no forbidden codegen on rejection"
+      ]
+    },
+    {
+      "id": "reject-duplicate-binding",
+      "entry": "src/invalid-duplicate-binding.atto",
+      "expect": "REJECT",
+      "expect_stdout": null,
+      "expected_reason": "DUPLICATE_IMPORT_BINDING",
+      "git_blob_sha": "b0bb62daee8c091b9b1d76874318b979d1bf64ae",
+      "status": "NOT_EXECUTED",
+      "requires": [
+        "verified source graph",
+        "exact-once typed call",
+        "public export resolution",
+        "no forbidden codegen on rejection"
+      ]
+    }
+  ]
+}
