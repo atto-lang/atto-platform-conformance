@@ -1,0 +1,23 @@
+// SOURCE-ONLY candidate for real native-Atto module/linker conformance.
+// Must compile and RUN with the canonical std.http/std.fs modules to count.
+// Until std package linking works, use a typed no-artifact diagnostic.
+import * as http from pkg "std.http";
+import * as fs from pkg "std.fs";
+
+pub fnc main(): int {
+  if http.http_status_valid(200) == false then return 1; fi
+  if http.http_status_success(200) == false then return 2; fi
+  if http.http_status_success(404) then return 3; fi
+  if http.http_status_client_error(404) == false then return 4; fi
+  if http.http_get_status_may_have_body(404) == false then return 5; fi
+  if http.http_get_status_may_have_body(204) then return 6; fi
+  if http.http_get_status_may_have_body(205) then return 7; fi
+  if http.http_get_status_may_have_body(304) then return 8; fi
+  if fs.fs_text_size_admissible(10, 10, 10) == false then return 9; fi
+  if fs.fs_text_size_admissible(11, 10, 100) then return 10; fi
+  if fs.fs_text_range_admissible(9, 2, 10) then return 11; fi
+  if fs.fs_text_range_admissible(9, 1, 10) == false then return 12; fi
+  if fs.fs_text_replacement_admissible(4, 7, 5, 8) == false then return 13; fi
+  if fs.fs_text_replacement_admissible(4, 8, 5, 8) then return 14; fi
+  return 42;
+}
