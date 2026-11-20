@@ -204,15 +204,15 @@
       "repo": "atto-lang/atto-source.forge",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.forge/pull/45",
-      "proposed_head_sha": "005a3b7c0006b698b6f5bfb4fe03ab5ac8e049dc",
+      "proposed_head_sha": "813d4481f110cf9a2505da48dbad3c8d0354c301",
       "execution_status": "not_executed",
       "receipt": null,
       "result_profile": "stdout_line_i64",
       "local_execution": {
         "status": "executed_locally_not_ci_admitted",
         "toolchain": "GCC 14.2.0; Clang 17.0.0; Linux C++20",
-        "compiler_blob_sha": "a9dae8e13cd48badff45f29ac710caf0aee370cb",
-        "tests_blob_sha": "cc5d1b913336078e0843c1c3183df4d1582a0a85",
+        "compiler_blob_sha": "c64c2ea8ed8c4bbb7fcf4024561cd57fd2d3aa97",
+        "tests_blob_sha": "c6c21b68d0fa43672e0ff2de85d7f2dd4ecb737d",
         "checked_i64_runtime_blob_sha": "e9a6598416c919f9ac7c629847f8d6677c703a14",
         "guest_main_values": [
           83,
@@ -233,23 +233,23 @@
           0
         ],
         "guest_artifact_sha256": [
-          "19c172711994a49937f8d4c9352f427f7e0a047e9158549b38d3beec25408a6b",
-          "a4689538de8f049086a771dcd7892c446f914715ffbfbe09684670537d60d863",
-          "eed5e475941acc45a62930ed5d7ca42019406bd72307789189a396ff9deaaa74",
-          "0b5917742fa678523240b8b484aae75c93dc43afbb969deab2fb49b29efc6c7e"
+          "93cb18fc6cbe58b5f5cd0f111bcf90c6e126905fba40311be049120208e4790b",
+          "b219e0be2a4ad2366b18b7b0d6aa80fc77868832da5079d45e7d3ff65ea8e24c",
+          "a966cc93188c7d5cccf5d45b7446be2397e930e17b5f30a5aa150857fb34d278",
+          "c4e86acb507a94a4246020555278701d0b0f85a50d34630198dbb474f0196a5c"
         ],
         "guest_artifact_sha256_by_toolchain": {
           "g++": [
-            "19c172711994a49937f8d4c9352f427f7e0a047e9158549b38d3beec25408a6b",
-            "a4689538de8f049086a771dcd7892c446f914715ffbfbe09684670537d60d863",
-            "eed5e475941acc45a62930ed5d7ca42019406bd72307789189a396ff9deaaa74",
-            "0b5917742fa678523240b8b484aae75c93dc43afbb969deab2fb49b29efc6c7e"
+            "93cb18fc6cbe58b5f5cd0f111bcf90c6e126905fba40311be049120208e4790b",
+            "b219e0be2a4ad2366b18b7b0d6aa80fc77868832da5079d45e7d3ff65ea8e24c",
+            "a966cc93188c7d5cccf5d45b7446be2397e930e17b5f30a5aa150857fb34d278",
+            "c4e86acb507a94a4246020555278701d0b0f85a50d34630198dbb474f0196a5c"
           ],
           "clang++": [
-            "0e967f8b330e2d6d3583eba720e336f69df5a1b334c14b2763bfd4eeb817cf7f",
-            "b0aa8e4521e0caf48d079ff05c1bf0649a62030f560e71c235828fd797682035",
-            "b21d238b71dca64c2de0fb4968cd70c24e393807edc0d1d6ef753c091d899df1",
-            "0d044537c806d5eab064bdecad1bfed3a495531ea0d37f74a144b47e99eb1a52"
+            "f95882e19da4aaa39c963bba3b64b899183264c5f5411ae873eb7c094e44617e",
+            "3a8db04f4ae319009a1ab0351e5feecea905143a61e0154cc2b378377790d2bd",
+            "1096c0f78e761a351b7540b1917e4afd2969b145a0b806a52c7e777a0eeb58fe",
+            "d58c08cb3bc8e1282bd7599c8e4d782ce857bef8383dac42269db041f18376e5"
           ]
         },
         "canonical_negative_results": [
@@ -285,14 +285,18 @@
             "int64-min",
             "int64-overflow"
           ],
-          "status": "observed_expected_outcomes_locally"
+          "status": "observed_expected_outcomes_locally_on_hardened_compiler"
         },
         "executed_test_groups": 4,
         "failing_test_groups": 0,
-        "scope": "Actual locally built Forge frontend + emitted C++ native binaries; four exact spec fixture blobs on GCC/Clang; CMake/CTest whole suite and exact-head CI unexecuted. This is not production Forge JIT/TenantVM certification.",
+        "scope": "Exact Git blob of hardened standalone Forge C++ compiler; local GCC14/Clang17 native execution of four SHA-exact canonical source cases + signed minimum/overflow with ASan+UBSan on each toolchain, private mode 0600 and no-clobber temporary-path checks; whole repo CMake/CTest and exact-head CI not executed; no claim of directory-descriptor anchored security or production TenantVM integration.",
         "relative_output_observed": "compiled_and_executed_83",
         "no_overwrite_observed": true,
-        "symlink_output_rejected": true
+        "symlink_output_rejected": true,
+        "generated_source_mode": "0600",
+        "exclusive_output_create_observed": true,
+        "temp_symlink_no_clobber_observed": true,
+        "temp_regular_no_clobber_observed": true
       }
     },
     "cranelift": {
