@@ -153,7 +153,7 @@
       "repo": "atto-lang/atto-source.forge",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.forge/pull/45",
-      "proposed_head_sha": "758d25e9e4c0c1048f88c18f003486461609a0be",
+      "proposed_head_sha": "005a3b7c0006b698b6f5bfb4fe03ab5ac8e049dc",
       "execution_status": "not_executed",
       "receipt": null,
       "result_profile": "stdout_line_i64",
@@ -238,7 +238,10 @@
         },
         "executed_test_groups": 4,
         "failing_test_groups": 0,
-        "scope": "Actual locally built Forge frontend + emitted C++ native binaries; four exact spec fixture blobs on GCC/Clang; CMake/CTest whole suite and exact-head CI unexecuted. This is not production Forge JIT/TenantVM certification."
+        "scope": "Actual locally built Forge frontend + emitted C++ native binaries; four exact spec fixture blobs on GCC/Clang; CMake/CTest whole suite and exact-head CI unexecuted. This is not production Forge JIT/TenantVM certification.",
+        "relative_output_observed": "compiled_and_executed_83",
+        "no_overwrite_observed": true,
+        "symlink_output_rejected": true
       }
     },
     "cranelift": {
