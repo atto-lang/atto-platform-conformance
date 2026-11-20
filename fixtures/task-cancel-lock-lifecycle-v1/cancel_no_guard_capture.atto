@@ -1,0 +1,8 @@
+// MUST FAIL before guest artifact emission: a live lock lease cannot escape to a child.
+pub susp fnc main(): int {
+  val counter = Mutex<int>(0);
+  using counter.lock() as lease {
+    do task<void> { lease.value += 1; };
+  }
+  return 42;
+}
