@@ -172,34 +172,149 @@
     },
     "candidate_net_direct_cil": {
       "repo": "atto-lang/atto-source.net",
+      "pr": 26,
+      "head": "a6394852ed15352e81b02c68da0985fbfe52f9d4",
+      "branch": "feat/guarded-return-match-direct-cil-v1-20261119",
+      "implementation": "int-only ValueMatch AST, scoped typed guards, nonexhaustive/unreachable checks, branch-based ECMA-335 CIL with one-evaluation subject and CoreCLR/NativeAOT guest tests",
+      "exact_shared_fixtures": "4/4 byte-identical Git blob SHA-1 to canonical Rust/conformance",
+      "guest_scalar_variants": {
+        "cases": [
+          "native-return-scalar.atto",
+          "native-caret-scalar.atto"
+        ],
+        "expected_exit": 4,
+        "status": "PASS_COMPILED_CORECLR_AND_NATIVEAOT_EXACT_HEAD",
+        "note": "not equivalent to original printing fixtures",
+        "evidence": {
+          "run_id": 44660359500,
+          "source_head": "74468dd7e0ea781fa5c43d91a5adbdecedd02e91",
+          "real_CoreCLR_and_NativeAOT": "return/caret scalar exit=4 each",
+          "baseline": "PASS",
+          "overall": "FAILED",
+          "failure": "E_LEX instead of E_RETURN on canonical braced-fallthrough fixture"
+        },
+        "executed_guest_cases": [
+          {
+            "id": "scalar-return",
+            "coreclr_exit": 4,
+            "nativeaot_exit": 4,
+            "verified": true
+          },
+          {
+            "id": "scalar-caret",
+            "coreclr_exit": 4,
+            "nativeaot_exit": 4,
+            "verified": true
+          }
+        ]
+      },
+      "exact_user_printing_programs": {
+        "status": "UNSUPPORTED",
+        "reason": "restricted direct-CIL frontend does not lex/lower stdio.println",
+        "observed_rejection": {
+          "return_fixture": "E_LEX",
+          "caret_fixture": "E_LEX",
+          "no_guest_artifacts": true
+        }
+      },
+      "source_org_ci": {
+        "run_id": 44659872311,
+        "status": "NOT_EXECUTED",
+        "zero_step_failure": true
+      },
+      "private_carrier": {
+        "repository": "usa-acc/atto-ci",
+        "branch": "ci/atto-net-match-26-20261119",
+        "carrier_commit": "d403e99dd6814901d7c4ce59a31cd1ff64b6a2e3",
+        "source_tree_sha": "711f44af42775e1227127e0f81bb6a521cbb23fb",
+        "full_tree_sha_verified": true,
+        "source_blobs_verified": 38,
+        "run_id": 44660814076,
+        "status": "SUCCESS_EXECUTED_NATIVE_CORECLR_AND_AOT_SCALAR",
+        "conclusion": "SUCCESS",
+        "linux_job_id": 136038317374,
+        "artifact_id": 14595981111,
+        "artifact_sha256": "7476033ff7412f6996428fbb52c0b6d05290ef9677dccc3812dd66301bf46509",
+        "source_head": "a6394852ed15352e81b02c68da0985fbfe52f9d4",
+        "link": "https://github.com/usa-acc/atto-ci/actions/runs/44660814076",
+        "baseline": {
+          "compiled_coreclr_and_nativeaot_exit42": true,
+          "negative_passed": 12
+        }
+      },
+      "retry": {
+        "description": "Lexer admits '=' as a token but rejects assignment semantics, allowing invalid braced arm to be diagnosed E_RETURN; assignment-expression negative added",
+        "source_head": "a6394852ed15352e81b02c68da0985fbfe52f9d4",
+        "run_id": 44660814076,
+        "status": "PASS"
+      },
+      "canonical_negative_cases": [
+        {
+          "id": "nonexhaustive-guard",
+          "status": "PASS_REJECTED_NO_ARTIFACT",
+          "diagnostic": "E_MATCH"
+        },
+        {
+          "id": "fallthrough-block",
+          "status": "PASS_REJECTED_NO_ARTIFACT",
+          "diagnostic": "E_RETURN"
+        }
+      ],
+      "additional_negative_cases": {
+        "passed": 7,
+        "failed": 0,
+        "codes": [
+          "E_TYPE",
+          "E_MATCH",
+          "E_MATCH",
+          "E_SYMBOL",
+          "E_TYPE",
+          "E_MATCH",
+          "E_PARSE"
+        ],
+        "no_artifact": true
+      }
+    },
+    "candidate_net_direct_cil_pr27": {
+      "repo": "atto-lang/atto-source.net",
       "pr": 27,
       "head": "d4f822fb47677dbd3205457caff336e6744c5fb2",
       "tree": "fead700c16f245e82b1b6e0620612d781ae7858a",
       "scope": "integer guarded return/caret match AST + actual ECMA-335 CIL branching, not guest stdio",
       "source_fixtures": "four canonical Git blobs byte-for-byte identical",
       "adapted_scalar": {
-        "status": "NOT_EXECUTED",
+        "status": "PASS_EXECUTED_SCOPED_CORECLR_NATIVEAOT",
         "expected_exits": [
           4,
           4,
           42
         ],
         "coreclr": true,
-        "nativeaot": true
+        "nativeaot": true,
+        "observed_exits": [
+          4,
+          4,
+          42
+        ],
+        "observed_nativeaot_exit": 42
       },
       "full_user_stdout_fixtures": {
         "status": "UNSUPPORTED",
-        "reason": "direct CIL v0 has no stdio.println guest lowering"
+        "reason": "direct CIL v0 has no stdio.println guest lowering",
+        "observed_rejection": "E_LEX",
+        "no_guest": true
       },
       "negative_oracles": {
-        "status": "NOT_EXECUTED",
+        "status": "PASS_REJECTED_NO_ARTIFACT",
         "codes": [
           "E_MATCH",
           "E_RETURN",
           "E_TYPE",
           "E_SYMBOL"
         ],
-        "no_artifact": true
+        "no_artifact": true,
+        "passed": 6,
+        "failed": 0
       },
       "carrier": {
         "repository": "usa-acc/atto-ci",
@@ -207,7 +322,9 @@
         "head": "90cb4b47b000af51854eb1e7d0f916037396643d",
         "source_tree": "fead700c16f245e82b1b6e0620612d781ae7858a",
         "tree_sha_verified": true,
-        "status": "IN_PROGRESS_AT_AUDIT"
+        "status": "SUCCESS_EXACT_HEAD_CORECLR_NATIVEAOT",
+        "job_id": 136039091233,
+        "conclusion": "SUCCESS"
       }
     }
   },
