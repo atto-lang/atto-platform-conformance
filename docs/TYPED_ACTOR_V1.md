@@ -43,6 +43,21 @@ promotes a backend to guest PASS. The required next evidence is an executed
 pinned Wasm guest receive, negative compile/no-artifact checks, and cross-memory
 lifetime and capability validation.
 
+
+### Executed host-only string DATA bridge evidence (2026-11-19)
+
+[Carrier run 44653928953](https://github.com/bait-bikes-test/atto-ci/actions/runs/44653928953)
+executed nonzero build/test steps on exact Git blob mirrors of
+`atto-source.rs#406`: **13/13 Rust codec** tests and **14/14 Node/Wasm
+host-memory** tests passed under Rust 1.99.1 and Node 22.23.4. The result is
+pinned in `evidence/typed-actor-string-host-boundary-20261119.json`, including
+all three blob IDs, source HEAD, carrier HEAD, run/job identifiers and explicit
+non-promotion statuses. A handcrafted Wasm stub did execute a received message
+pointer, but **no Atto-compiled guest was involved**. Therefore all five
+`ACTOR-STRING-*` source fixture statuses remain **NOT_EXECUTED**, and the
+bridge requires an independently verified compiler-owned receiver memory
+reservation before being enabled for untrusted tenants.
+
 ## Canonical source identity and backend admission (v1)
 
 **11 separate source repositories were independently inventoried.** The snapshot
