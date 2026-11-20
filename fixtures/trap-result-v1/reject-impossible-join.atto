@@ -1,0 +1,5 @@
+fnc legacy(): Result<int, string> { return Err("bad"); }
+pub fnc main(): int {
+  val v = trap legacy();
+  return 0;
+}

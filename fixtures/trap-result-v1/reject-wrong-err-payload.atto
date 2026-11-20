@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val result: Result<int, Error> = Err("bad");
+  return 0;
+}

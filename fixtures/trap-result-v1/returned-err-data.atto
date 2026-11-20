@@ -1,0 +1,7 @@
+fnc fail(): Result<int, Error> { return Err(Error("bad id")); }
+pub fnc main(): int {
+  return match fail() over
+    on Ok(_) -> 0,
+    on Err() -> 7
+  end;
+}

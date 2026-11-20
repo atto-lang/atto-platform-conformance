@@ -42,3 +42,9 @@ Every backend must prove exact guest traces (stdout, exit, panic, error identity
 - Do not convert host-oracle PASS into guest conformance PASS. Mark each concrete supported Rust/Wasm guest profile PASSED only with the exact recorded execution receipt; keep generic unions and every unexecuted backend UNSUPPORTED or NOT_EXECUTED.
 
 Legacy candidate `Option<Result<T,E>>` / `Some(Err(...))` output is a known **nonconformant historical result**, not a fixture to bless.
+
+## parse_id and all-backend guest target gate
+
+The [source guest registry](trap-result-guest-v1.json) includes exact-source int.parse(text)? and return match Ok/Err examples, malformed input, Option ?, ordinary throw capture, Result-aware trap, and six deterministic negative tests. The int.parse API must return Result<int,Error> or a losslessly upcastable Error subtype, preserving original Error identity. No host-side parsing fallback counts as source guest execution.
+
+The Node integrity test validates only the registry and fixture source files. All 11 named repositories remain NOT_EXECUTED on these new fixtures until independently checked against their exact compiler heads, with real compiled guest runs or no-artifact diagnostic evidence. The Wasm host and Atto/HDL/realtime scaffolds have different implementation roles; inclusion in the manifest is not certification. Existing Rust/Wasm evidence concerns its earlier pinned subset, not this new parse_id example.

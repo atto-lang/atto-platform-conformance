@@ -1,0 +1,11 @@
+fnc value(): Option<int> { return Some(42); }
+fnc with_question(): Option<int> {
+  val n = value()?;
+  return Some(n);
+}
+pub fnc main(): int {
+  return match with_question() over
+    on Some(v) -> v,
+    on None -> 0
+  end;
+}

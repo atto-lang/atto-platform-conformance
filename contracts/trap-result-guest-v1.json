@@ -1,0 +1,191 @@
+{
+  "schema_version": 1,
+  "contract": "trap-result-guest-v1",
+  "claim": "TARGET_ONLY_NOT_GUEST_VERIFIED",
+  "normative": "https://github.com/atto-lang/atto-spec/blob/main/language/trap-result-v1.md",
+  "int_parse_requirement": "int.parse(string) must return Result<int,Error> or Result<int,ParseError> with ParseError subtype of Error and original error identity preserved by ?; neither API nor widening is certified here",
+  "backends": {
+    "atto-source.atto": {
+      "role": "self-hosted compiler scaffold",
+      "status": "NOT_EXECUTED",
+      "compiler_head": null,
+      "guest_receipt": null
+    },
+    "atto-source.cranelift": {
+      "role": "native Cranelift compiler",
+      "status": "NOT_EXECUTED",
+      "compiler_head": null,
+      "guest_receipt": null
+    },
+    "atto-source.forge": {
+      "role": "Forge C++ compiler",
+      "status": "NOT_EXECUTED",
+      "compiler_head": null,
+      "guest_receipt": null
+    },
+    "atto-source.hdl": {
+      "role": "HDL target scaffold",
+      "status": "NOT_EXECUTED",
+      "compiler_head": null,
+      "guest_receipt": null
+    },
+    "atto-source.java": {
+      "role": "JVM/Graal compiler",
+      "status": "NOT_EXECUTED",
+      "compiler_head": null,
+      "guest_receipt": null
+    },
+    "atto-source.js": {
+      "role": "JS compiler and worker runtime",
+      "status": "NOT_EXECUTED",
+      "compiler_head": null,
+      "guest_receipt": null
+    },
+    "atto-source.llvm": {
+      "role": "native LLVM compiler",
+      "status": "NOT_EXECUTED",
+      "compiler_head": null,
+      "guest_receipt": null
+    },
+    "atto-source.net": {
+      "role": "CIL / NativeAOT compiler",
+      "status": "NOT_EXECUTED",
+      "compiler_head": null,
+      "guest_receipt": null
+    },
+    "atto-source.realtime": {
+      "role": "real-time runtime scaffold",
+      "status": "NOT_EXECUTED",
+      "compiler_head": null,
+      "guest_receipt": null
+    },
+    "atto-source.rs": {
+      "role": "Rust browser/Wasm compiler",
+      "status": "NOT_EXECUTED",
+      "compiler_head": null,
+      "guest_receipt": null
+    },
+    "atto-source.wasm": {
+      "role": "Wasm host/target; not independent full source frontend",
+      "status": "NOT_EXECUTED",
+      "compiler_head": null,
+      "guest_receipt": null
+    }
+  },
+  "cases": [
+    {
+      "id": "parse-id-ok",
+      "source": "fixtures/trap-result-v1/parse-id-ok.atto",
+      "status": "TARGET_ONLY",
+      "expect": {
+        "kind": "guest_exit",
+        "exit_code": 42
+      }
+    },
+    {
+      "id": "parse-id-invalid",
+      "source": "fixtures/trap-result-v1/parse-id-invalid.atto",
+      "status": "TARGET_ONLY",
+      "expect": {
+        "kind": "guest_exit",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "option-propagation",
+      "source": "fixtures/trap-result-v1/option-propagation.atto",
+      "status": "TARGET_ONLY",
+      "expect": {
+        "kind": "guest_exit",
+        "exit_code": 42
+      }
+    },
+    {
+      "id": "returned-err-data",
+      "source": "fixtures/trap-result-v1/returned-err-data.atto",
+      "status": "TARGET_ONLY",
+      "expect": {
+        "kind": "guest_exit",
+        "exit_code": 7
+      }
+    },
+    {
+      "id": "trap-ordinary-throw",
+      "source": "fixtures/trap-result-v1/trap-ordinary-throw.atto",
+      "status": "TARGET_ONLY",
+      "expect": {
+        "kind": "guest_exit",
+        "exit_code": 42
+      }
+    },
+    {
+      "id": "trap-existing-result",
+      "source": "fixtures/trap-result-v1/trap-existing-result.atto",
+      "status": "TARGET_ONLY",
+      "expect": {
+        "kind": "guest_exit",
+        "exit_code": 42
+      }
+    },
+    {
+      "id": "reject-question-return-int",
+      "source": "fixtures/trap-result-v1/reject-question-return-int.atto",
+      "status": "TARGET_ONLY",
+      "expect": {
+        "kind": "compile_reject",
+        "diagnostic": "E_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "reject-result-into-option",
+      "source": "fixtures/trap-result-v1/reject-result-into-option.atto",
+      "status": "TARGET_ONLY",
+      "expect": {
+        "kind": "compile_reject",
+        "diagnostic": "E_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "reject-nonexhaustive-match",
+      "source": "fixtures/trap-result-v1/reject-nonexhaustive-match.atto",
+      "status": "TARGET_ONLY",
+      "expect": {
+        "kind": "compile_reject",
+        "diagnostic": "E_MATCH",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "reject-wrong-err-payload",
+      "source": "fixtures/trap-result-v1/reject-wrong-err-payload.atto",
+      "status": "TARGET_ONLY",
+      "expect": {
+        "kind": "compile_reject",
+        "diagnostic": "E_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "reject-impossible-join",
+      "source": "fixtures/trap-result-v1/reject-impossible-join.atto",
+      "status": "TARGET_ONLY",
+      "expect": {
+        "kind": "compile_reject",
+        "diagnostic": "E_TRAP_ERROR_JOIN",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "reject-non-error-throw",
+      "source": "fixtures/trap-result-v1/reject-non-error-throw.atto",
+      "status": "TARGET_ONLY",
+      "expect": {
+        "kind": "compile_reject",
+        "diagnostic": "E_TYPE",
+        "no_artifact": true
+      }
+    }
+  ]
+}

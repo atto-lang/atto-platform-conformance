@@ -1,0 +1,6 @@
+fnc checked(): Result<int, Error> { return Ok(42); }
+pub fnc main(): int {
+  return match checked() over
+    on Ok(value) -> value
+  end;
+}
