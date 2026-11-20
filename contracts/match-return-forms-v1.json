@@ -33,7 +33,41 @@
         "conclusion": "startup_failure",
         "job_count": 0
       },
-      "guest_verification": "NOT_EXECUTED"
+      "guest_verification": "PASS_SCOPED_COMPILER_SOURCE_GUEST_NOT_FULL_REPOSITORY_CI",
+      "scoped_carrier_ci": {
+        "repo": "usa-acc/atto-ci",
+        "carrier_commit": "c7651febe3b32156fb55ccf61e9f5aed182df082",
+        "run_id": 44656052364,
+        "linux_job_id": 136022426091,
+        "conclusion": "SUCCESS",
+        "scope": "exact 48-blob compiler src subtree; Cargo manifests and 8 fixtures exact; NOT full repository tree",
+        "source_head": "51e10b711882284477714af1da56ee9f0e35c504",
+        "source_repo_full_tree": "8d980d0a6d240c424fb045f7546762b1001f21d4",
+        "compiler_src_tree": "9df607c835c23cfe34ba9f06dc34b235bf5a37fe",
+        "rust_library_tests": {
+          "passed": 50,
+          "failed": 0
+        },
+        "compiled_guest_cases": {
+          "passed": 8,
+          "failed": 0,
+          "expected_stdout": "2\n2\n",
+          "expected_main_exit": 0,
+          "adt_exits": [
+            21,
+            42,
+            42,
+            42
+          ],
+          "negative_codes": [
+            "E_MATCH",
+            "E_RETURN"
+          ],
+          "no_guest_on_failure": true
+        },
+        "native_vs_wasm_compiler_guest_bytes": "IDENTICAL",
+        "full_repository_ci": "NOT_EXECUTED"
+      }
     },
     "candidate_llvm_frontend": {
       "repo": "atto-lang/atto-source.llvm",
@@ -205,6 +239,7 @@
     "Two positive sources are the exact requested return and caret programs; negative tests are fail-closed obligations.",
     "Candidate parser has guarded match/value/block return paths. No new guest execution is implied by adding a fixture.",
     "Every backend requires exact-head compiled guest output or diagnostic with no artifact. Compiler WAsm built from Rust is not an independent second compiler.",
-    "Executed 8-case frontend Rust/Wasm guest receipt is scoped to the frontend crate inside atto-source.llvm; native C++ LLVM AOT is still NOT_EXECUTED."
+    "Executed 8-case frontend Rust/Wasm guest receipt is scoped to the frontend crate inside atto-source.llvm; native C++ LLVM AOT is still NOT_EXECUTED.",
+    "Source.rs PR #411 has executable 8-case Rust/Wasm compiler guest parity at exact src subtree SHA on usa-acc carrier; full source repository and merge CI remain NOT_EXECUTED."
   ]
 }
