@@ -147,3 +147,57 @@ test('every backend must carry independent genuine execution evidence', () => {
   assert.equal(ledger.formatter.receipt, null);
   assert.ok(ledger.exclusions.includes('zero-step Actions runs'));
 });
+
+
+test('seven supplemental edge fixtures require per-backend execution, not authored test files', () => {
+  const edge=ledger.edge_contract;
+  assert.equal(edge.schema,'atto.functional-pipelines.edge.evidence.v1');
+  assert.match(edge.authority_head_sha,sha);
+  assert.match(edge.manifest_blob_sha,sha);
+  assert.match(edge.relationship,/original 8 canonical cases remain unchanged/);
+  assert.equal(ledger.cases.length,8,'supplemental fixture addition must not drop core cases');
+  assert.deepEqual(edge.cases.map(c=>c.expected),[
+    '61','42','-9223372036854775808',
+    'runtime_checked_overflow','source_rejection','source_rejection','source_rejection'
+  ]);
+  assert.equal(edge.cases.length,7);
+  assert.equal(new Set(edge.cases.map(c=>c.file)).size,7);
+  for(const c of edge.cases){
+    assert.match(c.file,/^[a-z0-9-]+\.atto$/);
+    assert.match(c.blob_sha,sha);
+  }
+  const expected=[
+    'rs-browser-wasm-compiler','llvm-rust-aot','net-direct-cil',
+    'java-scalar-bootstrap','forge','cranelift','js-compiled-esm'
+  ];
+  assert.deepEqual(Object.keys(edge.targets).sort(),expected.sort());
+  for(const [backend,row]of Object.entries(edge.targets)){
+    assert.equal(row.implementation_repo,ledger.backend_states[backend].repo);
+    assert.match(row.proposed_head_sha,sha);
+    assert.equal(row.proposed_head_sha,ledger.backend_states[backend].proposed_head_sha);
+    assert.equal(row.tests_authored,true);
+    assert.equal(row.fixture_files_copied_and_blob_verified,
+      ['rs-browser-wasm-compiler','llvm-rust-aot'].includes(backend)?2:7);
+    assert.equal(row.execution_status,'not_executed');
+    assert.equal(row.receipt,null);
+  }
+  assert.equal(edge.overall_execution_status,'not_executed');
+  assert.equal(edge.guest_result_abi_must_be_recorded_separately,true);
+  const smoke=edge.local_v8_smoke;
+  assert.equal(smoke.status,'actual_generated_js_executed_in_process_no_Node_CI_admission');
+  assert.match(smoke.compiler_blob_sha,sha);
+  assert.equal(smoke.input_blobs_verified,7);
+  assert.deepEqual(smoke.emitted_guest_observed_main_values,
+    ['61','42','-9223372036854775808']);
+  assert.equal(smoke.compiled_overflow_observed,'E_OVERFLOW');
+  assert.deepEqual(smoke.source_rejections,['E_LITERAL','E_LITERAL','E_NAME']);
+  assert.match(smoke.scope,/not Actions CI/);
+  // A changed Java compiler may not inherit a prior unrelated local receipt.
+  assert.equal(ledger.backend_states['java-scalar-bootstrap']
+    .local_execution.source_changed_since_local_observation,true);
+  assert.notEqual(ledger.backend_states['java-scalar-bootstrap']
+    .local_execution.observed_compiler_blob_sha,
+    ledger.backend_states['java-scalar-bootstrap'].local_execution.current_compiler_blob_sha);
+  assert.equal(ledger.backend_states['js-compiled-esm']
+    .local_execution.new_test_script_not_yet_run_in_Node,true);
+});
