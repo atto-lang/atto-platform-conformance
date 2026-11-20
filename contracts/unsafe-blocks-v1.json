@@ -1,0 +1,487 @@
+{
+  "schema_version": 1,
+  "contract": "atto-unsafe-blocks-v1",
+  "status": "TARGET_ONLY_NOT_EXECUTED",
+  "normative_spec": "https://github.com/atto-lang/atto-spec/blob/feat/unsafe-block-contract-v1-20261119/language/unsafe-blocks-v1.md",
+  "execution_note": "Source-only proposed fixtures. No compiler or runtime has run these cases. Target-only intrinsics, native grants and host capabilities are placeholders until defined by the spec/profile. Do not treat a parser, lexical scan, or host-only integrity check as compiled guest conformance.",
+  "profiles": {
+    "trusted_native": "Host extension compiled with explicit verified grant and exact ABI",
+    "tenantvm_guest": "All untrusted actors and every VM-isolate; native unsafe source and std/unsafe imports forbidden",
+    "any": "Purely safe Atto source without an unsafe operation"
+  },
+  "allowed_verification_statuses": [
+    "passed",
+    "failed",
+    "unsupported",
+    "not_executed"
+  ],
+  "targets": [
+    "rs_browser_wasm",
+    "java_graal",
+    "llvm_native",
+    "forge",
+    "net_aot",
+    "independent_wasm",
+    "cranelift",
+    "js",
+    "atto_selfhost"
+  ],
+  "cases": [
+    {
+      "id": "empty-trusted",
+      "profile": "trusted_native",
+      "expect": "accept",
+      "diagnostic": null,
+      "source": "pub fnc main(): int { unsafe { } return 42; }",
+      "reason": "Empty block is valid but grants no privileges",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "safe-inside-trusted",
+      "profile": "trusted_native",
+      "expect": "accept",
+      "diagnostic": null,
+      "source": "pub fnc main(): int { unsafe { val int sum = 20 + 22; } return 42; }",
+      "reason": "Safe arithmetic remains checked",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "nested-trusted",
+      "profile": "trusted_native",
+      "expect": "accept",
+      "diagnostic": null,
+      "source": "pub fnc main(): int { unsafe { unsafe { val int x = 42; } } return 42; }",
+      "reason": "Nested blocks form lexical regions",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "string-not-keyword",
+      "profile": "any",
+      "expect": "accept",
+      "diagnostic": null,
+      "source": "pub fnc main(): int { val string s = \"unsafe { }\"; return 42; }",
+      "reason": "String content is not keyword",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "comment-not-keyword",
+      "profile": "any",
+      "expect": "accept",
+      "diagnostic": null,
+      "source": "pub fnc main(): int { /* unsafe { } */ return 42; }",
+      "reason": "Comment content is not keyword",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "symbol-not-keyword",
+      "profile": "any",
+      "expect": "accept",
+      "diagnostic": null,
+      "source": "pub fnc main(): int { val mark = #unsafe; return 42; }",
+      "reason": "Symbol spelling is not keyword",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "identifier-near-miss",
+      "profile": "any",
+      "expect": "accept",
+      "diagnostic": null,
+      "source": "pub fnc main(): int { val int unsafe_tools = 42; return unsafe_tools; }",
+      "reason": "Substring in identifier is not keyword",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-fnc-checked-call",
+      "profile": "trusted_native",
+      "expect": "accept",
+      "diagnostic": null,
+      "source": "pub unsafe fnc host_only(): int { return 42; } pub fnc main(): int { unsafe { return host_only(); } }",
+      "reason": "Unsafe callable requires explicit lexical call-site",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-call-no-block",
+      "profile": "trusted_native",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_CONTEXT",
+      "source": "pub unsafe fnc host_only(): int { return 42; } pub fnc main(): int { return host_only(); }",
+      "reason": "Unsafe declaration alone cannot be invoked in safe context",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-region-ends",
+      "profile": "trusted_native",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_CONTEXT",
+      "source": "pub unsafe fnc host_only(): int { return 42; } pub fnc main(): int { unsafe { } return host_only(); }",
+      "reason": "Lexical region ends after closing brace",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-fnc-body-not-implicit",
+      "profile": "trusted_native",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_CONTEXT",
+      "source": "pub unsafe fnc inner(): int { return 42; } pub unsafe fnc outer(): int { return inner(); } pub fnc main(): int { unsafe { return outer(); } }",
+      "reason": "Unsafe callable body remains checked",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "bare-unsafe",
+      "profile": "trusted_native",
+      "expect": "reject",
+      "diagnostic": "E_SYNTAX",
+      "source": "pub fnc main(): int { unsafe; return 42; }",
+      "reason": "Standalone unsafe requires block",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "missing-close",
+      "profile": "trusted_native",
+      "expect": "reject",
+      "diagnostic": "E_SYNTAX",
+      "source": "pub fnc main(): int { unsafe { return 42; }",
+      "reason": "Braces must be parsed structurally",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "tenantvm-empty-block",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "pub fnc main(): int { unsafe { } return 42; }",
+      "reason": "Even empty unsafe block forbidden in untrusted TenantVM guest",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "tenantvm-nested-block",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "pub fnc main(): int { unsafe { unsafe { } } return 42; }",
+      "reason": "Nesting cannot confer guest privileges",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "tenantvm-unsafe-call",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "pub unsafe fnc host_only(): int { return 42; } pub fnc main(): int { unsafe { return host_only(); } }",
+      "reason": "Unsafe call cannot escape guest domain",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "forged-pointer",
+      "profile": "trusted_native",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_GRANT",
+      "source": "pub fnc main(): int { unsafe { val RawPointer<int> ptr = 123; } return 42; }",
+      "reason": "Integer cannot mint region provenance; target-only raw API",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "raw-pointer-no-lexical",
+      "profile": "trusted_native",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_CONTEXT",
+      "source": "pub fnc main(): int { val RawPointer<int> ptr = native_ptr(); val int x = raw_load(ptr); return x; }",
+      "reason": "Target-only native intrinsic requires lexical unsafe",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "ffi-no-capability",
+      "profile": "trusted_native",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_GRANT",
+      "source": "pub fnc main(): int { unsafe { native_ffi_call(); } return 42; }",
+      "reason": "Illustrative native FFI intrinsic still requires real grant",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "tenantvm-unsafe-import",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_DOMAIN",
+      "source": "import module native_ffi from \"std/unsafe/ffi\"; pub fnc main(): int { return 42; }",
+      "reason": "No direct or transitive native unsafe stdlib imports in guests",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "tenantvm-transport-native-grant",
+      "profile": "tenantvm_guest",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_ESCAPE",
+      "source": "pub fnc main(): int { unsafe { send_to_tenant(native_grant()); } return 42; }",
+      "reason": "Native grant cannot cross tenant boundary",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-await-live-native-loan",
+      "profile": "trusted_native",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_ESCAPE",
+      "source": "pub susp fnc main(): int { unsafe { val guard = native_exclusive_lease(); await tick(); use_lease(guard); } return 42; }",
+      "reason": "Unsafe cannot retain native exclusive loan across suspension",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-lock-lease-escape",
+      "profile": "trusted_native",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_ESCAPE",
+      "source": "pub susp fnc main(): int { using counter.lock() as lease { unsafe { await tick(); } } return 42; }",
+      "reason": "Unsafe cannot make synchronous lease span suspension",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    },
+    {
+      "id": "unsafe-fnc-no-authority",
+      "profile": "trusted_native",
+      "expect": "reject",
+      "diagnostic": "E_UNSAFE_GRANT",
+      "source": "pub unsafe fnc raw_call(): int { unsafe { return native_ffi_call(); } } pub fnc main(): int { unsafe { return raw_call(); } }",
+      "reason": "Signature and lexical block cannot mint native privilege",
+      "verification": {
+        "rs_browser_wasm": "not_executed",
+        "java_graal": "not_executed",
+        "llvm_native": "not_executed",
+        "forge": "not_executed",
+        "net_aot": "not_executed",
+        "independent_wasm": "not_executed",
+        "cranelift": "not_executed",
+        "js": "not_executed",
+        "atto_selfhost": "not_executed"
+      }
+    }
+  ]
+}
