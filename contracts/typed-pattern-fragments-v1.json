@@ -418,10 +418,10 @@
       "subject": {
         "type": "List<string>",
         "items": [
-          "hello"
+          "a as b"
         ]
       },
-      "pattern": "List.of(pattern.of<string>(\"\\\"hello\\\"\"))",
+      "pattern": "List.of(pattern.of<string>(\"\\\"a as b\\\"\"))",
       "expected": {
         "matched": true,
         "bindings": {}
