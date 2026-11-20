@@ -978,16 +978,16 @@
     },
     "forge": {
       "pull_request": "https://github.com/atto-lang/atto-source.forge/pull/42",
-      "head_sha": "76b2346f7ebc9e3b30fca7f71331c8a132d3398d",
-      "source_tree": "08f24b543aeb131fb1b05f33d994e290993f8263",
-      "scope": "Independent C++20 stage-0 i64 sequence with 16-element cap, generated native guest, checked trap propagation",
+      "head_sha": "996be3e243c0f2fcb49ab5906ae03dc10e0623e3",
+      "source_tree": "2b98acbe7ed64f947b0608d335682fc0b03880b2",
+      "scope": "Independent C++20 stage-0 bounded i64 seq with ordered checked prefix traps; integrated with #44 fail-closed two-character I/O direction lexer; 16-element cap and generated native guest fixtures",
       "verification_status": "not_executed"
     },
     "net": {
       "pull_request": "https://github.com/atto-lang/atto-source.net/pull/20",
-      "head_sha": "db2cafa79a33eda849d00337d8b863c83f383bd7",
-      "source_tree": "db21c0feac6168deabf9cc2fc97ed67eee3e9123",
-      "scope": "Independent .NET direct ECMA-335 CIL i64 sequence with 16-element cap and managed/NativeAOT guest fixtures",
+      "head_sha": "dc7137b6681c72e9ddbdc6ab130ec9cf45df3752",
+      "source_tree": "76ebe030c7c9c0c430817ad45b98682338411546",
+      "scope": "Direct ECMA-335 CIL bounded i64 seq integrated with #16 checked |> / <| pipelines, inline arrow bodies and immutable locals; CoreCLR/NativeAOT guests require real CI; 16-element cap",
       "verification_status": "not_executed"
     }
   }
