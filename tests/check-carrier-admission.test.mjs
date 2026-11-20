@@ -48,6 +48,7 @@ const changes=[
  ['checkout step',x=>x.jobs[0].steps[0].name='actions/checkout and ADMISSION_PROOF'],
  ['extra failed step',x=>x.jobs[0].steps.push({name:'failed',status:'completed',conclusion:'failure'})],
  ['wrong expected repo id',x=>x.expected.repoId=666],
+ ['missing immutable repo id',x=>delete x.expected.repoId],
  ['wrong expected SHA',x=>x.expected.headSha='c'.repeat(40)]
 ];
 for(const [label,mutate] of changes)test('deny: '+label,()=>{
