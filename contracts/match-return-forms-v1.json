@@ -7,7 +7,34 @@
     "pr": 330,
     "branch": "integration/callable-body-v1-v2-seq-20261117",
     "head_at_fixture_import": "b16c76c860304b5af03b370c3a59b3e1650b046a",
-    "verification": "NOT_EXECUTED_ON_THIS_HEAD"
+    "verification": "NOT_EXECUTED_ON_THIS_HEAD",
+    "candidate_main_based": {
+      "repo": "atto-lang/atto-source.rs",
+      "pr": 411,
+      "branch": "fix/match-caret-main-20261119",
+      "head": "51e10b711882284477714af1da56ee9f0e35c504",
+      "tree": "0e252950f7e5ca0c8b9664bfb5ab14eb56ceee49",
+      "parser_git_blob": "36aadcf4da8950d8dc1cd6886afd6d690ab72ad8",
+      "implementation": "statement-position caret delegates to existing return-match parser while preserving main integer XOR",
+      "verified_six_changed_blobs": true,
+      "full_tree_reconstruction": {
+        "carrier": "gha-indie-worker/atto-ci",
+        "source_subtree_sha": "0e252950f7e5ca0c8b9664bfb5ab14eb56ceee49",
+        "carrier_commit": "a20265b532208e90163808968b98de6b2a0f1bf6",
+        "result": "EXACT_GIT_TREE_MATCH_ONLY"
+      },
+      "source_org_ci": {
+        "status": "NOT_EXECUTED",
+        "reason": "four failure jobs with zero steps"
+      },
+      "carrier_ci": {
+        "status": "NOT_EXECUTED",
+        "run_id": 44650781339,
+        "conclusion": "startup_failure",
+        "job_count": 0
+      },
+      "guest_verification": "NOT_EXECUTED"
+    }
   },
   "backends": {
     "atto-source.rs": {
