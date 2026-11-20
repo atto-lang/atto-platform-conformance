@@ -129,9 +129,9 @@ test('cancellable task lock leases have pinned positive and negative sources', (
     assert.equal(cases[id].expected.diagnostic, code);
     assert.equal(cases[id].expected.no_artifact, true);
   }
-  assert.equal(registry.lock_cancellation_runtime_probes.length, 9);
+  assert.equal(registry.lock_cancellation_runtime_probes.length, 11);
   const ids = registry.lock_cancellation_runtime_probes.map(p => p.id);
-  assert.equal(new Set(ids).size, 9);
+  assert.equal(new Set(ids).size, 11);
   for (const p of registry.lock_cancellation_runtime_probes) {
     assert.ok(p.assertions?.length >= 3, p.id);
     assert.ok(p.action, p.id);
@@ -152,4 +152,20 @@ test('cancellable task lock leases have pinned positive and negative sources', (
   for (const id of positives) {
     assert.ok(cases[id].expected.witnesses.some(w => /if_guard_claimed|if_both_claimed|each_claimed_lease/.test(w)), id);
   }
+});
+
+test('cross-mutex grant replay and tenant STOP are mandatory negative runtime probes', () => {
+  const probes = Object.fromEntries(registry.lock_cancellation_runtime_probes.map(p => [p.id, p]));
+  const replay = probes.task_cancel_cross_mutex_ticket_replay;
+  assert.ok(replay?.evidence_required);
+  assert.ok(replay.assertions.includes('WRONG_TICKET_REJECTED'));
+  assert.ok(replay.assertions.includes('PER_MUTEX_GENERATION_UNIQUE'));
+  const stop = probes.tenant_shutdown_claimed_guard;
+  assert.ok(stop?.evidence_required);
+  assert.ok(stop.assertions.includes('ACTIVE_LEASE_REMAINS_FENCED_UNTIL_HOLDER_UNWINDS'));
+  assert.ok(stop.assertions.includes('SHUTDOWN_IDEMPOTENT'));
+  assert.deepEqual(stop.required_order, [
+    'A_LOCK_CLAIM', 'HOST_TENANT_STOP', 'B_WAIT_REVOKED',
+    'A_SAFE_UNWIND', 'A_LOCK_RELEASE', 'TENANT_PHYSICAL_QUIESCENCE',
+  ]);
 });
