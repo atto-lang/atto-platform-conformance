@@ -144,7 +144,7 @@
       "repo": "atto-lang/atto-source.forge",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.forge/pull/45",
-      "proposed_head_sha": "d87084a5a47fcd0a48337efa2b4335ceea19efdf",
+      "proposed_head_sha": "a346a7386b30300a8fdf2e3a72559ca88048f49d",
       "execution_status": "not_executed",
       "receipt": null
     },
@@ -152,7 +152,7 @@
       "repo": "atto-lang/atto-source.cranelift",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.cranelift/pull/50",
-      "proposed_head_sha": "17b52657a70a32d8c409d2400ca5e7baa73a3ffd",
+      "proposed_head_sha": "1cc646bd75f10f544243e1b8aa85f6334cde7400",
       "execution_status": "not_executed",
       "receipt": null
     },
