@@ -8,14 +8,20 @@
     "kind": "HOST_ONLY",
     "guest_execution": "NOT_EXECUTED",
     "host_ci": "NOT_EXECUTED_CURRENT_HEAD",
-    "note": "Cases are portable targets, not compiler or executed guest evidence."
+    "note": "Cases are portable targets, not compiler or executed guest evidence. Expanded to 11 backends/roles; wasm-host is not an independent compiler."
   },
   "backends": [
     "rust-wasm",
     "java",
     "llvm",
     "net",
-    "forge"
+    "forge",
+    "wasm-host",
+    "cranelift",
+    "js",
+    "atto-selfhost",
+    "hdl",
+    "realtime"
   ],
   "cases": [
     {
@@ -47,7 +53,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -79,7 +91,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -104,7 +122,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -129,7 +153,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -154,7 +184,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -179,7 +215,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -204,7 +246,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -230,7 +278,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -256,7 +310,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -281,7 +341,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -306,7 +372,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -330,7 +402,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -353,7 +431,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -378,7 +462,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -419,7 +509,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -446,7 +542,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -463,7 +565,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -480,7 +588,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -497,7 +611,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -514,7 +634,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -531,7 +657,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -548,7 +680,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -565,7 +703,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -582,7 +726,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -599,7 +749,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -616,7 +772,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -633,7 +795,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -650,7 +818,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -667,7 +841,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -684,7 +864,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -701,7 +887,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -718,7 +910,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -735,7 +933,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -752,7 +956,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -769,7 +979,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -786,7 +1002,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -803,7 +1025,13 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     },
     {
@@ -820,8 +1048,27 @@
         "java": "NOT_EXECUTED",
         "llvm": "NOT_EXECUTED",
         "net": "NOT_EXECUTED",
-        "forge": "NOT_EXECUTED"
+        "forge": "NOT_EXECUTED",
+        "wasm-host": "NOT_EXECUTED",
+        "cranelift": "NOT_EXECUTED",
+        "js": "NOT_EXECUTED",
+        "atto-selfhost": "NOT_EXECUTED",
+        "hdl": "NOT_EXECUTED",
+        "realtime": "NOT_EXECUTED"
       }
     }
-  ]
+  ],
+  "backend_roles": {
+    "rust-wasm": "Rust source compiler emitting Wasm guest",
+    "java": "JVM and GraalVM Native Image compiler",
+    "llvm": "independent native LLVM compiler (not Rust-hosted prototype)",
+    "net": "CIL and Windows/Linux NativeAOT compiler",
+    "forge": "independent C++ Forge compiler/AOT",
+    "wasm-host": "artifact admission/worker guest host, not independent frontend",
+    "cranelift": "Cranelift native experimental compiler",
+    "js": "JavaScript code-generation and worker runtime",
+    "atto-selfhost": "bootstrap/self-hosted compiler; not self-hosted yet",
+    "hdl": "synthesizable restricted hardware profile; may reject dynamic patterns",
+    "realtime": "hard-real-time restricted profile requiring bounded WCET"
+  }
 }
