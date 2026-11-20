@@ -8,6 +8,9 @@ on:
       - 'tools/verify-token-free-carrier-mirror.mjs'
       - 'tools/check-carrier-admission.mjs'
       - 'tests/check-carrier-admission.test.mjs'
+      - 'tools/canonical-carrier-workflow.mjs'
+      - 'tools/canonical-carrier-workflow.test.mjs'
+      - 'templates/source-free-canary.yml'
       - '.github/workflows/functional-pipelines-evidence.yml'
   workflow_dispatch:
 permissions:
@@ -35,4 +38,4 @@ jobs:
       - name: Verify SHA-pinned conformance matrix without asserting guest PASS
         run: |
           node --version
-          node --test tests/functional-pipelines-ledger.test.mjs tests/token-free-carrier-mirror.test.mjs tests/check-carrier-admission.test.mjs
+          node --test tests/functional-pipelines-ledger.test.mjs tests/token-free-carrier-mirror.test.mjs tests/check-carrier-admission.test.mjs tools/canonical-carrier-workflow.test.mjs
