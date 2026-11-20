@@ -1,0 +1,205 @@
+{
+  "schema": "atto.task-payload-sync.v1",
+  "status": "TARGET_NOT_GUEST_VERIFIED",
+  "source_contract": "atto-lang/atto-spec/language/typed-task-payload-sync-v1.md",
+  "meaning": "task<T> returns Future<T>; await/sync unwrap exactly once; do sync task is supervised nonjoining do task",
+  "cases": [
+    {
+      "id": "await_payload",
+      "source_path": "fixtures/task-payload-sync-v1/await_payload.atto",
+      "source_git_blob": "25ab1c9f741ed0bdc71478b5ffddee3525281e2d",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42
+      }
+    },
+    {
+      "id": "borrow_escape_discard",
+      "source_path": "fixtures/task-payload-sync-v1/borrow_escape_discard.atto",
+      "source_git_blob": "2d470c0dbbcf16c23f5a1759ac71be3020dadc62",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_BORROW_ESCAPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "borrow_live_across_join",
+      "source_path": "fixtures/task-payload-sync-v1/borrow_live_across_join.atto",
+      "source_git_blob": "35e40d9045b74b7b9d9bdb38029a6f0c74123a82",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_SUSPEND_WITH_LIVE_LOAN",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "discard_do_sync_task",
+      "source_path": "fixtures/task-payload-sync-v1/discard_do_sync_task.atto",
+      "source_git_blob": "eed8205d70528244d2a5b0655c1e999fad6d1194",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42
+      }
+    },
+    {
+      "id": "discard_do_task",
+      "source_path": "fixtures/task-payload-sync-v1/discard_do_task.atto",
+      "source_git_blob": "12b5ae365783f92cf3e183f20e70b717be0d7a06",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42
+      }
+    },
+    {
+      "id": "missing_nonvoid_return",
+      "source_path": "fixtures/task-payload-sync-v1/missing_nonvoid_return.atto",
+      "source_git_blob": "93f0dc511b43f35e13c0f0daae3929369b939603",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_RETURN_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "sync_needs_susp",
+      "source_path": "fixtures/task-payload-sync-v1/sync_needs_susp.atto",
+      "source_git_blob": "603399a626c14085e2032cacf35d50d7ce6df75a",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_EFFECT",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "sync_payload",
+      "source_path": "fixtures/task-payload-sync-v1/sync_payload.atto",
+      "source_git_blob": "097b4c5e854231f84aa5ac8bde508f9c97f4b353",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42
+      }
+    },
+    {
+      "id": "sync_reserved",
+      "source_path": "fixtures/task-payload-sync-v1/sync_reserved.atto",
+      "source_git_blob": "27fec562c1de69431e3561bf3517e1d91894e497",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_RESERVED",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "typed_payload_future",
+      "source_path": "fixtures/task-payload-sync-v1/typed_payload_future.atto",
+      "source_git_blob": "258a53480b652b7c0857a4f8a8d833649ca535be",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42
+      }
+    },
+    {
+      "id": "void_payload",
+      "source_path": "fixtures/task-payload-sync-v1/void_payload.atto",
+      "source_git_blob": "8865465a69ae8a54279b0ea3449126999fcede36",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42
+      }
+    },
+    {
+      "id": "wrong_await_future",
+      "source_path": "fixtures/task-payload-sync-v1/wrong_await_future.atto",
+      "source_git_blob": "3867ac9cc6529b9678273e4be0c6f11b27478fae",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_RETURN_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "wrong_direct_int",
+      "source_path": "fixtures/task-payload-sync-v1/wrong_direct_int.atto",
+      "source_git_blob": "71dbfbd318795b444b0e2c3e87bbe028f57d2071",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_RETURN_TYPE",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "wrong_return_type",
+      "source_path": "fixtures/task-payload-sync-v1/wrong_return_type.atto",
+      "source_git_blob": "7b828e07711ba7e13c591a8953308eed0487d514",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_TASK_RETURN_TYPE",
+        "no_artifact": true
+      }
+    }
+  ],
+  "backends": {
+    "rs-wasm": {
+      "status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "compiler_sha": null,
+      "guest_receipt": null
+    },
+    "java": {
+      "status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "compiler_sha": null,
+      "guest_receipt": null
+    },
+    "llvm": {
+      "status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "compiler_sha": null,
+      "guest_receipt": null
+    },
+    "forge": {
+      "status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "compiler_sha": null,
+      "guest_receipt": null
+    },
+    "net": {
+      "status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "compiler_sha": null,
+      "guest_receipt": null
+    },
+    "independent-wasm": {
+      "status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "compiler_sha": null,
+      "guest_receipt": null
+    },
+    "js": {
+      "status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "compiler_sha": null,
+      "guest_receipt": null
+    },
+    "cranelift": {
+      "status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "compiler_sha": null,
+      "guest_receipt": null
+    },
+    "atto": {
+      "status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "compiler_sha": null,
+      "guest_receipt": null
+    },
+    "hdl": {
+      "status": "NOT_EXECUTED",
+      "release_qualified": false,
+      "compiler_sha": null,
+      "guest_receipt": null
+    }
+  },
+  "verification": "Source-only registry; requires exact compiler SHA, negative no-artifact proofs, actual guest execution and independent backend receipts."
+}
