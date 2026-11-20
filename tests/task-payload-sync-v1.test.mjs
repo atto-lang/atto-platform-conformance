@@ -32,7 +32,7 @@ test('sync is an inline execution mode, not a spawned await/do-task alias', () =
   const doSync = cases.discard_do_sync_task;
   const doTask = cases.discard_do_task;
   const required = [
-    'INLINE_ENTER_BEFORE_BODY', 'NO_INDEPENDENT_CHILD_SPAWN',
+    'INLINE_ENTER_BEFORE_BODY', 'NO_SYNTHETIC_SYNC_CHILD_SPAWN',
     'SAME_LOGICAL_TASK_ID', 'INLINE_EXIT_BEFORE_NEXT_PARENT_STATEMENT',
     'NO_INDEPENDENT_WORKER_DISPATCH',
   ];
