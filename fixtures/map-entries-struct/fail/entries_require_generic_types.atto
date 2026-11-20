@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  const m = Map.of_entries(5=>true);
+  return 0;
+}

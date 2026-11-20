@@ -1,0 +1,5 @@
+pub fnc main(): int {
+  val bool b = true;
+  const m = Map.of_entries<int,bool>(5=>b);
+  return 0;
+}

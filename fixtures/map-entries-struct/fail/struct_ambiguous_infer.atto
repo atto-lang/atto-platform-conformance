@@ -1,0 +1,6 @@
+define struct First as int x; end
+define struct Second as int x; end
+pub fnc main(): int {
+  val p=infer struct{x:42};
+  return 0;
+}

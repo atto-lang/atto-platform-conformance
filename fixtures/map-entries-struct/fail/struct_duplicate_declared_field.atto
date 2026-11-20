@@ -1,0 +1,2 @@
+define struct Point as int x; int x; end
+pub fnc main(): int {return 0;}

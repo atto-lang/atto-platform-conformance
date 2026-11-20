@@ -1,0 +1,2 @@
+define struct Data as List<int> data; end
+pub fnc main(): int {return 0;}

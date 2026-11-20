@@ -1,0 +1,7 @@
+define struct Counter as int value; end
+define struct Switch as bool value; end
+pub fnc main(): int {
+  val a = infer struct{value:42};
+  val b = infer struct{value:true};
+  return b.value ? a.value : 0;
+}
