@@ -4,6 +4,8 @@ on:
     paths:
       - 'contracts/functional-pipelines-v1/**'
       - 'tests/functional-pipelines-ledger.test.mjs'
+      - 'tests/token-free-carrier-mirror.test.mjs'
+      - 'tools/verify-token-free-carrier-mirror.mjs'
       - '.github/workflows/functional-pipelines-evidence.yml'
   workflow_dispatch:
 permissions:
@@ -16,7 +18,19 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Bind evidence test to exact source PR head, not synthetic merge SHA
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          test "$(git write-tree)" = "$(git rev-parse 'HEAD^{tree}')"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          echo "ATTO_CONFORMANCE_EXACT_HEAD=$EXPECTED_SHA"
+          echo "ATTO_CONFORMANCE_EXACT_TREE=$(git rev-parse 'HEAD^{tree}')"
       - name: Verify SHA-pinned conformance matrix without asserting guest PASS
         run: |
           node --version
-          node --test tests/functional-pipelines-ledger.test.mjs
+          node --test tests/functional-pipelines-ledger.test.mjs tests/token-free-carrier-mirror.test.mjs
