@@ -51,7 +51,9 @@
       "status": "NOT_EXECUTED",
       "compiler_head": null,
       "guest_receipt": null,
-      "implementation_stage": "NO_RESULT_GUEST_CANDIDATE_VERIFIED"
+      "implementation_stage": "TRUSTED_JS_WORKER_SOURCE_COMPILE_CANDIDATE_NOT_EXECUTED",
+      "draft_pr": "https://github.com/atto-lang/atto-source.js/pull/38",
+      "notes": "strict source-compiled int.parse, Result<int,Error>, ? and Ok/Err match Worker candidate; no general trap/Option/hostile TenantVM proof; exact current-head guest CI missing"
     },
     "atto-source.llvm": {
       "role": "native LLVM compiler",
