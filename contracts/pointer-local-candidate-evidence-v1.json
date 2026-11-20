@@ -110,7 +110,7 @@
       "backend": "atto-source.forge",
       "pr": 50,
       "repository": "atto-lang/atto-source.forge",
-      "source_head": "93935c18c9977462a5630c835e9e5ef0e2035bfb",
+      "source_head": "60e667238f943e4b6b47c0e4d0f603ad2b440ef5",
       "compiler_subtree": "151c08add7df9db670033b27bcefdba36f61753b",
       "scope": "Restricted canonical lexer/typed BorrowedLocal Pointer<int> compilation to actual native C++ guest stack read, one nonowning unref; Forge stage-0 prints logical result and exits 0",
       "test_entry": "tests/pointer_local_guest.cmake",

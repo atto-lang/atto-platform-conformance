@@ -8,7 +8,7 @@ const known={
   'atto-source.rs':{pr:419,sha:'00a6d3e8a86e27f635cf3b2a808b6a0b61a2b977'},
   'atto-source.llvm':{pr:64,sha:'b4049c77c71f6834a93f294c129779bfaf3ec1f1'},
   'atto-source.net':{pr:22,sha:'fa732820a0f0bc3de2c7422efd06ad365518fde1'},
-  'atto-source.forge':{pr:50,sha:'93935c18c9977462a5630c835e9e5ef0e2035bfb'},
+  'atto-source.forge':{pr:50,sha:'60e667238f943e4b6b47c0e4d0f603ad2b440ef5'},
 };
 test('candidate ledger keeps actual source commits distinct from executed evidence',()=>{
   assert.equal(doc.schema,'atto.pointer-local-candidate-evidence.v1');
