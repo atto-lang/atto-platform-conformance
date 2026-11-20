@@ -581,6 +581,48 @@
         "PHYSICAL_RETIRED_AFTER_LEASE_SETTLED",
         "NO_CROSS_TENANT_GRANT"
       ]
+    },
+    {
+      "id": "task_cancel_cross_mutex_ticket_replay",
+      "given": [
+        "trusted_task_has_grant_for_mutex_A",
+        "same_task_has_pending_or_granted_mutex_B",
+        "different_lock_generations"
+      ],
+      "action": "attempt_to_claim_mutex_B_using_mutex_A_ticket",
+      "assertions": [
+        "NO_CROSS_MUTEX_GRANT",
+        "WRONG_TICKET_REJECTED",
+        "PER_MUTEX_GENERATION_UNIQUE",
+        "NO_ACCESS_TO_OTHER_PROTECTED_MEMORY",
+        "NO_DOUBLE_RELEASE"
+      ],
+      "evidence_required": true
+    },
+    {
+      "id": "tenant_shutdown_claimed_guard",
+      "given": [
+        "active_lease_claimed_by_task_A",
+        "task_B_waiting",
+        "host_tenant_stop_requested"
+      ],
+      "action": "cancel_all_task_scopes_then_close_lock_queues",
+      "required_order": [
+        "A_LOCK_CLAIM",
+        "HOST_TENANT_STOP",
+        "B_WAIT_REVOKED",
+        "A_SAFE_UNWIND",
+        "A_LOCK_RELEASE",
+        "TENANT_PHYSICAL_QUIESCENCE"
+      ],
+      "assertions": [
+        "NO_NEW_GRANTS_AFTER_STOP",
+        "ACTIVE_LEASE_REMAINS_FENCED_UNTIL_HOLDER_UNWINDS",
+        "NO_STALE_WAITER_WAKE",
+        "SHUTDOWN_IDEMPOTENT",
+        "PHYSICAL_RETIRE_AFTER_CALLBACK_DRAIN"
+      ],
+      "evidence_required": true
     }
   ]
 }
