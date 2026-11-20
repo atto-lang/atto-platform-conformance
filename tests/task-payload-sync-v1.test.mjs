@@ -129,9 +129,9 @@ test('cancellable task lock leases have pinned positive and negative sources', (
     assert.equal(cases[id].expected.diagnostic, code);
     assert.equal(cases[id].expected.no_artifact, true);
   }
-  assert.equal(registry.lock_cancellation_runtime_probes.length, 12);
+  assert.equal(registry.lock_cancellation_runtime_probes.length, 13);
   const ids = registry.lock_cancellation_runtime_probes.map(p => p.id);
-  assert.equal(new Set(ids).size, 12);
+  assert.equal(new Set(ids).size, 13);
   for (const p of registry.lock_cancellation_runtime_probes) {
     assert.ok(p.assertions?.length >= 3, p.id);
     assert.ok(p.action, p.id);
@@ -199,4 +199,14 @@ test('normal parent return triggers child cancellation but preserves successful 
     'UNRELATED_SIBLING_UNAFFECTED',
     'NO_PARENT_STORAGE_REUSE_BEFORE_DESCENDANTS_RETIRED'
   ]) assert.ok(probe.assertions.includes(required), required);
+});
+
+test('lexical using guard exits before task terminal and cancellation cannot double-unlock', () => {
+  const p = registry.lock_cancellation_runtime_probes.find(x =>
+    x.id === 'lexical_guard_scope_exit_while_task_continues');
+  assert.equal(p.evidence_required, true);
+  assert.ok(p.assertions.includes('GUEST_CANNOT_FORGE_GUARD_RELEASE'));
+  assert.ok(p.assertions.includes('NO_TASK_RETIRE_NEEDED_BEFORE_GUARD_RELEASE'));
+  assert.ok(p.assertions.includes('A_CANCELLATION_AFTER_RELEASE_DOES_NOT_DOUBLE_UNLOCK'));
+  assert.ok(p.required_order.indexOf('A_RELEASE') < p.required_order.indexOf('A_TERMINAL'));
 });
