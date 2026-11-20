@@ -1,0 +1,126 @@
+{
+  "schema": "atto.byte-buffer.host-foundations.v1",
+  "status": "HOST_ONLY_EVIDENCE_NOT_GUEST_CONFORMANCE",
+  "guest_registry": "contracts/byte-buffer-v1.json",
+  "guest_cases_total": 22,
+  "source_provenance": "Git blob SHA of local test files matched fetched PR source exactly for executed cases; no compiler-produced Atto guest was involved",
+  "host_tests": [
+    {
+      "backend": "llvm",
+      "status": "HOST_PASS",
+      "scope": "standalone checked C++ host primitive; NOT LLVM frontend/codegen guest",
+      "source_repo": "atto-lang/atto-source.llvm",
+      "head_at_test": "cdd98400e004c135a1b4625d255d76fb2dc6b242",
+      "source_blob_sha": "b335e33a8417e9c2cd97e9b9969a8f79b2554626",
+      "test_blob_sha": "244f6f7b268bf56dfb681a8e58932d70d91f0712",
+      "toolchains": [
+        "GCC 14.2.0",
+        "Clang 17.0.0"
+      ],
+      "modes": [
+        "C++17",
+        "C++20"
+      ],
+      "sanitizers": [
+        "ASan",
+        "UBSan"
+      ],
+      "assertions_per_mode": 200133,
+      "executions": 4
+    },
+    {
+      "backend": "forge",
+      "status": "HOST_PASS",
+      "scope": "standalone checked C++ host primitive; NOT Forge generated guest",
+      "source_repo": "atto-lang/atto-source.forge",
+      "head_at_test": "57fb21790a65ccb0a01abbd3b4846e10fa57d5f7",
+      "source_blob_sha": "b335e33a8417e9c2cd97e9b9969a8f79b2554626",
+      "test_blob_sha": "244f6f7b268bf56dfb681a8e58932d70d91f0712",
+      "toolchains": [
+        "GCC 14.2.0",
+        "Clang 17.0.0"
+      ],
+      "modes": [
+        "C++17",
+        "C++20"
+      ],
+      "sanitizers": [
+        "ASan",
+        "UBSan"
+      ],
+      "assertions_per_mode": 200133,
+      "executions": 4
+    },
+    {
+      "backend": "java",
+      "status": "HOST_PASS",
+      "scope": "JDK class + host test, no Atto guest or GraalVM Native Image",
+      "source_repo": "atto-lang/atto-source.java",
+      "head_at_test": "82dfd18fa2f3eafc7876540d51eb90ab243c2f29",
+      "source_blob_sha": "98ba936f9464a71ba67959054ab44d9ff6c020b1",
+      "test_blob_sha": "b4cbcecb5cec6260271800720e714f4c2536a4f6",
+      "toolchains": [
+        "OpenJDK 21.0.12"
+      ],
+      "modes": [
+        "javac -Xlint:all -Werror",
+        "java host test"
+      ],
+      "sanitizers": [],
+      "assertions_per_mode": 35,
+      "executions": 1
+    },
+    {
+      "backend": "js",
+      "status": "HOST_PASS",
+      "scope": "Node.js private Uint8Array runtime; NOT compiled Atto guest",
+      "source_repo": "atto-lang/atto-source.js",
+      "head_at_test": "76cbcf76d79d7b5e19fccf0122a4924c99b7ecb1",
+      "source_blob_sha": "e2c819abfa68275c2e3e848120d26124e770c24a",
+      "test_blob_sha": "c0819cd7c18738ff262fda35557594b4aa83d303",
+      "toolchains": [
+        "Node.js 22.16.0"
+      ],
+      "modes": [
+        "node --test tests/owned-bytes-v1.test.mjs"
+      ],
+      "sanitizers": [],
+      "passed_tests": 4,
+      "executions": 1
+    },
+    {
+      "backend": "rs",
+      "status": "NOT_EXECUTED",
+      "scope": "Rust runtime module exists but no local cargo/rustc and no emitted Wasm guest"
+    },
+    {
+      "backend": "cranelift",
+      "status": "NOT_EXECUTED",
+      "scope": "Rust runtime module source-identical with rs; no local cargo/rustc and no guest"
+    },
+    {
+      "backend": "wasm",
+      "status": "NOT_EXECUTED",
+      "scope": "ActorArena methods/tests staged, no exact-branch runner receipt"
+    },
+    {
+      "backend": "net",
+      "status": "NOT_EXECUTED",
+      "scope": ".NET host primitive/tests staged but dotnet unavailable locally"
+    },
+    {
+      "backend": "atto",
+      "status": "NOT_EXECUTED",
+      "scope": "self-hosted compiler not integrated"
+    },
+    {
+      "backend": "hdl",
+      "status": "NOT_EXECUTED",
+      "scope": "HDL profile applicability and memory model undecided"
+    }
+  ],
+  "guest_status": "NOT_EXECUTED",
+  "native_aot_status": "NOT_EXECUTED",
+  "aggregate_tenant_isolation_certified": false,
+  "release_authorized": false
+}
