@@ -19,7 +19,15 @@
     "output_outcome": "Result<void,IoError>",
     "carrier_threads_may_park": false,
     "active_stdin_consumers": 1,
-    "tenant_stdio_ambient": false
+    "tenant_stdio_ambient": false,
+    "checked_read_spellings": [
+      "readch input",
+      "<< input"
+    ],
+    "checked_success_discard": [
+      "on Ok",
+      "on Ok(_)"
+    ]
   },
   "required_cases": [
     {
@@ -77,6 +85,63 @@
           "exit": 0
         }
       ]
+    },
+    {
+      "id": "checked_echo_readch_alias",
+      "kind": "guest-pass",
+      "path": "fixtures/stdio-channel/pass/echo_checked_readch.atto",
+      "runs": [
+        {
+          "id": "one_line",
+          "stdin": "hello\n",
+          "stdout": "Echo the next input item:hello",
+          "stderr": "echo complete",
+          "exit": 0
+        },
+        {
+          "id": "empty_line",
+          "stdin": "\n",
+          "stdout": "Echo the next input item:",
+          "stderr": "echo complete",
+          "exit": 0
+        },
+        {
+          "id": "eof",
+          "stdin": "",
+          "stdout": "Echo the next input item:",
+          "stderr": "",
+          "exit": 11
+        },
+        {
+          "id": "unterminated",
+          "stdin": "last",
+          "stdout": "Echo the next input item:last",
+          "stderr": "echo complete",
+          "exit": 0
+        },
+        {
+          "id": "crlf",
+          "stdin": "hello\r\n",
+          "stdout": "Echo the next input item:hello",
+          "stderr": "echo complete",
+          "exit": 0
+        },
+        {
+          "id": "unicode",
+          "stdin": "é💡\n",
+          "stdout": "Echo the next input item:é💡",
+          "stderr": "echo complete",
+          "exit": 0
+        },
+        {
+          "id": "nul",
+          "stdin": "a\u0000b\n",
+          "stdout": "Echo the next input item:a\u0000b",
+          "stderr": "echo complete",
+          "exit": 0
+        }
+      ],
+      "equivalent_to": "checked_echo"
     },
     {
       "id": "unchecked_read_payload",
@@ -160,5 +225,5 @@
       "hdl"
     ]
   },
-  "evidence_rule": "No backend is marked PASS on source-only contract tests, host models, parser acceptance, stale/other backend receipts, or zero executed CI steps. Require exact compiler/tree SHA, actual compiled .atto guest, input/output/exit witnesses, negative codegen refusal, carrier liveness/security evidence, and runnable target receipt."
+  "evidence_rule": "No backend is marked PASS on source-only contract tests, host models, parser acceptance, stale/other backend receipts, or zero executed CI steps. Require exact compiler/tree SHA, actual compiled .atto guest, input/output/exit witnesses, negative codegen refusal, carrier liveness/security evidence, and runnable target receipt. The two checked-read spellings must produce equivalent typed guest behavior. Nested Ok/Option matching is separate; no implicit unwrap."
 }
