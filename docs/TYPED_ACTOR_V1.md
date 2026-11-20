@@ -13,6 +13,49 @@ rustc --edition=2021 tools/typed_actor_v1.rs -o /tmp/typed_actor_oracle
 
 This verifier must never be used to promote Java/LLVM/.NET/Wasm/Forge support. Each backend requires independently executed compile-positive, compile-negative and runtime guest traces with exact compiler SHA, toolchain and target, and real CONTROL/mailbox evidence. Existing Java `ActorRef<ActorClass>` must remain compatible until an explicit migration plan is proven.
 
+## Bounded bool mailbox and `sends never` compiler parity (2026-11-19)
+
+`fixtures/typed-actor-bool-v1/actor-bool-never-parity-v1.atto` is
+byte-identical (Git blob `a103999dd9b047e24ae79fedd88398374bc10590`)
+in `atto-source.rs`, the Rust-hosted `atto-source.llvm/frontend`,
+`atto-source.js` and this conformance repository. It declares
+`receives bool sends never`, updates one boolean actor field and
+produces no outbound application DATA messages. The accompanying
+`contracts/typed-actor-bool-v1.tsv` has one positive and three
+negative source cases: mismatched receiver, invalid `sends void`
+and duplicate outbound clauses. They target the draft canonical codes
+`E_ACTOR_RECEIVES`, `E_ACTOR_SEND_CONTRACT` and
+`E_ACTOR_CONTRACT`, respectively.
+
+Rust/Wasm and the LLVM-repository **Rust-hosted Wasm frontend** carry
+new compiler acceptance tests on their draft branches, but their
+current-head CI has not run executable build/test steps; acceptance
+remains **NOT_EXECUTED**. This is not native LLVM/C++ execution evidence.
+
+The JS compiler's earlier exact-source
+[funded run 44656352488](https://github.com/bait-bikes-test/atto-ci/actions/runs/44656352488)
+executed **10/10 tests passing** on Node 22.23.5 and actually ran
+generated JavaScript compiled from the byte-pinned `.atto` fixture.
+That receipt is pinned to JS source head
+`8f94a4667ba6a77ffac9894c99babbc6fea5cc6f`.
+Subsequent diagnostic-alignment edits have **not** received a stepful
+CI run; the attempted private carriers in three organizations returned
+zero-step infrastructure failures. Thus the prior JS receipt proves
+only its exact earlier revision, not an automatic current-head PASS.
+Evidence and run IDs are pinned in
+`evidence/typed-actor-bool-never-parity-20261119.json`.
+
+Run the standalone **source-only identity gate**:
+
+```sh
+rustc --edition=2021 --test -D warnings tools/typed_actor_bool_v1.rs -o /tmp/actor_bool_source_tests
+/tmp/actor_bool_source_tests
+```
+
+This Rust gate verifies the registry and actual fixture blob SHA; it
+does **not** compile AttoLang. No Java, native LLVM, .NET, Forge or
+full Wasm guest parity claim follows from the generated-JS test.
+
 ## Additional string-mailbox guest targets (not executed)
 
 `contracts/typed-actor-string-v1.tsv` pins five additional candidate fixtures
