@@ -419,3 +419,29 @@ test('source-repo execution receipt admission rejects 18 provenance mutations', 
       undefined, 'must reject provenance mutation ' + i);
   }
 });
+
+
+test('73 Git-exact fixture copies are only source identity proof, never runtime proof', () => {
+  const audit = ledger.head_audit.fixture_blob_audit;
+  assert.equal(audit.source_files_inspected, 73);
+  assert.equal(audit.exact_matches, 73);
+  assert.equal(audit.compile_or_runtime_execution_proved, false);
+  const expectedCounts = {
+    'js-compiled-esm': 15, forge: 15, cranelift: 15,
+    'java-scalar-bootstrap': 7, 'net-direct-cil': 7,
+    'llvm-rust-aot': 7, 'rs-browser-wasm-compiler': 7
+  };
+  assert.deepEqual(Object.keys(audit.checked).sort(), Object.keys(expectedCounts).sort());
+  for (const [profile, count] of Object.entries(expectedCounts)) {
+    const probe = audit.checked[profile];
+    const row = ledger.backend_states[profile];
+    assert.equal(probe.repo, row.repo);
+    assert.equal(probe.head_sha, row.proposed_head_sha);
+    assert.match(probe.head_sha, sha);
+    assert.equal(probe.source_fixture_files_inspected, count);
+    assert.equal(probe.git_blob_sha_exact_matches, count);
+    assert.equal(probe.actual_guest_runs_certified, 0);
+    assert.equal(row.execution_status, 'not_executed');
+    assert.equal(row.receipt, null);
+  }
+});
