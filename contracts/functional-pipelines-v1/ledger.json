@@ -837,6 +837,65 @@
       "java-scalar-bootstrap",
       "js-compiled-esm"
     ],
-    "head_must_be_rechecked_before_promotion": true
+    "head_must_be_rechecked_before_promotion": true,
+    "fixture_blob_audit": {
+      "method": "GitHub repository file blob SHA read back at the exact implementation PR head and compared against atto-spec #121 fixture Git blob SHA",
+      "checked_at": "2026-11-20",
+      "source_files_inspected": 73,
+      "exact_matches": 73,
+      "compile_or_runtime_execution_proved": false,
+      "scope": "15 canonical+edge copies each for JS, Forge, Cranelift; 7 supplemental edge copies each for Java, .NET, LLVM Rust frontend and Rust frontend; no host model or compiler guest passed",
+      "checked": {
+        "js-compiled-esm": {
+          "repo": "atto-lang/atto-source.js",
+          "head_sha": "e5b81f44018a291a09aedb5927ffea9b7dd15590",
+          "source_fixture_files_inspected": 15,
+          "git_blob_sha_exact_matches": 15,
+          "actual_guest_runs_certified": 0
+        },
+        "forge": {
+          "repo": "atto-lang/atto-source.forge",
+          "head_sha": "ad3d974568d281de085e74a6fa9d300ef5cfaa69",
+          "source_fixture_files_inspected": 15,
+          "git_blob_sha_exact_matches": 15,
+          "actual_guest_runs_certified": 0
+        },
+        "cranelift": {
+          "repo": "atto-lang/atto-source.cranelift",
+          "head_sha": "2004588b59e0c415415aec6e0cd305d26960293b",
+          "source_fixture_files_inspected": 15,
+          "git_blob_sha_exact_matches": 15,
+          "actual_guest_runs_certified": 0
+        },
+        "java-scalar-bootstrap": {
+          "repo": "atto-lang/atto-source.java",
+          "head_sha": "1bdfa3cc7819beb75357e44a6f92d2b7cd66f066",
+          "source_fixture_files_inspected": 7,
+          "git_blob_sha_exact_matches": 7,
+          "actual_guest_runs_certified": 0
+        },
+        "net-direct-cil": {
+          "repo": "atto-lang/atto-source.net",
+          "head_sha": "6a16c8d1b0733538f960a99050eebc01dc8e1f30",
+          "source_fixture_files_inspected": 7,
+          "git_blob_sha_exact_matches": 7,
+          "actual_guest_runs_certified": 0
+        },
+        "llvm-rust-aot": {
+          "repo": "atto-lang/atto-source.llvm",
+          "head_sha": "345702776195a3c37b955cadfc071a98d55b708c",
+          "source_fixture_files_inspected": 7,
+          "git_blob_sha_exact_matches": 7,
+          "actual_guest_runs_certified": 0
+        },
+        "rs-browser-wasm-compiler": {
+          "repo": "atto-lang/atto-source.rs",
+          "head_sha": "07bb320af8c44ef3cfa41cf1605b1aa8bca10c85",
+          "source_fixture_files_inspected": 7,
+          "git_blob_sha_exact_matches": 7,
+          "actual_guest_runs_certified": 0
+        }
+      }
+    }
   }
 }
