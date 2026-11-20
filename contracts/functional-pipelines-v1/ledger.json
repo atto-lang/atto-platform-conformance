@@ -878,10 +878,11 @@
         },
         "forge": {
           "repo": "atto-lang/atto-source.forge",
-          "head_sha": "ad3d974568d281de085e74a6fa9d300ef5cfaa69",
+          "head_sha": "48d610b9acf40a7f1ea02f4529efef9232579359",
           "source_fixture_files_inspected": 15,
           "git_blob_sha_exact_matches": 15,
-          "actual_guest_runs_certified": 0
+          "actual_guest_runs_certified": 0,
+          "notes": "2026-11-20 reverified 8 original + 7 edge fixture SHA-1 Git blobs after Forge source/output hardening; no backend execution claim"
         },
         "cranelift": {
           "repo": "atto-lang/atto-source.cranelift",
