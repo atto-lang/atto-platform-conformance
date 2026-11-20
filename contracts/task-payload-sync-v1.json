@@ -276,6 +276,79 @@
         "diagnostic": "E_EFFECT",
         "no_artifact": true
       }
+    },
+    {
+      "id": "cancel_lock_scoped_release",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_lock_scoped_release.atto",
+      "source_git_blob": "1aad3b3d75e87c80f6c306cec5af0203e71c03d1",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "cancel_request_may_race_with_completion",
+          "claimed_lease_release_exactly_once",
+          "guard_release_precedes_physical_retire",
+          "no_unreleased_permit"
+        ]
+      }
+    },
+    {
+      "id": "cancel_lock_early_return",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_lock_early_return.atto",
+      "source_git_blob": "c95bb9cd32004f80b1b390a81adc68aa79ee9419",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "early_return_releases_held_guard",
+          "no_duplicate_release",
+          "scope_physically_retired"
+        ]
+      }
+    },
+    {
+      "id": "cancel_lock_nested_lifo",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_lock_nested_lifo.atto",
+      "source_git_blob": "4815985b1e1ad233a918760f867a17c4fc51ec62",
+      "kind": "positive",
+      "expected": {
+        "guest_exit": 42,
+        "witnesses": [
+          "inner_guard_released_before_outer_guard",
+          "all_claimed_leases_released_exactly_once",
+          "scope_physically_retired"
+        ]
+      }
+    },
+    {
+      "id": "cancel_lock_await_inside_guard",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_lock_await_inside_guard.atto",
+      "source_git_blob": "65115806e916539c1abba7cd0dd7b7356548da97",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_GUARD_SUSPEND",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "cancel_lock_held_during_join",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_lock_held_during_join.atto",
+      "source_git_blob": "5b0505c485beb9961d0bd554dc7d28a13ef2126a",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_GUARD_SUSPEND",
+        "no_artifact": true
+      }
+    },
+    {
+      "id": "cancel_lock_guard_escape",
+      "source_path": "fixtures/task-payload-sync-v1/cancel_lock_guard_escape.atto",
+      "source_git_blob": "d92895d54013fc50ce0c095aa421df2421043a50",
+      "kind": "negative",
+      "expected": {
+        "diagnostic": "E_GUARD_ESCAPE",
+        "no_artifact": true
+      }
     }
   ],
   "backends": {
@@ -341,5 +414,127 @@
     }
   },
   "verification": "Source-only registry; requires exact compiler SHA, negative no-artifact proofs, actual guest execution and independent backend receipts.",
-  "cancellation_model": "owned Future<T>.cancel(): void requests nonblocking idempotent cancellation; TaskCancelled terminal distinct from success/failure; scope cascades and physically retires all children; receipt witnesses mandatory"
+  "cancellation_model": "owned Future<T>.cancel(): void requests nonblocking idempotent cancellation; TaskCancelled terminal distinct from success/failure; scope cascades and physically retires all children; receipt witnesses mandatory",
+  "lock_cancellation_model": "Cancel request != lock release != task retirement. Queued waiter revokes without a guard; active lease never releases until holder safe-point cleanup; exactly-once LIFO release; no child join under live guard; cleanup failures retain fenced ownership and block DONE.",
+  "lock_cancellation_runtime_probes": [
+    {
+      "id": "queued_wait_cancel",
+      "given": [
+        "task_A_holds_lock",
+        "task_B_queued"
+      ],
+      "action": "cancel_task_B",
+      "required_order": [
+        "A_LOCK_CLAIM",
+        "B_WAIT",
+        "B_CANCEL_WAIT",
+        "A_LOCK_RELEASE"
+      ],
+      "assertions": [
+        "B_NO_GRANT",
+        "NO_CARRIER_PARK",
+        "NO_ORPHAN_WAIT_TICKET",
+        "B_TERMINAL_AFTER_WAIT_SETTLED"
+      ]
+    },
+    {
+      "id": "grant_cancel_race",
+      "given": [
+        "task_A_releasing",
+        "task_B_waiting",
+        "task_C_waiting"
+      ],
+      "action": "cancel_task_B_at_handoff",
+      "assertions": [
+        "ONE_TERMINAL_CLAIM_B",
+        "B_NEVER_USES_REVOKED_LEASE",
+        "ONE_VALID_GRANT_TO_C",
+        "NO_STALE_WAKE",
+        "NO_DUPLICATE_RELEASE"
+      ]
+    },
+    {
+      "id": "active_guard_cancel",
+      "given": [
+        "task_A_inside_guard",
+        "task_B_waiting"
+      ],
+      "action": "cancel_task_A",
+      "required_order": [
+        "A_LOCK_CLAIM",
+        "A_CANCEL_REQUEST",
+        "A_SAFE_POINT_UNWIND",
+        "A_LOCK_RELEASE",
+        "B_LOCK_CLAIM",
+        "A_PHYSICAL_RETIRE"
+      ],
+      "assertions": [
+        "NO_EARLY_UNLOCK",
+        "ONE_RELEASE",
+        "NO_USE_AFTER_RELEASE",
+        "A_DONE_AFTER_CLEANUP_AND_CALLBACK_DRAIN"
+      ]
+    },
+    {
+      "id": "nested_guards_lifo",
+      "given": [
+        "task_A_holds_lock_1_then_lock_2"
+      ],
+      "action": "cancel_task_A",
+      "required_order": [
+        "A_GUARD_2_RELEASE",
+        "A_GUARD_1_RELEASE",
+        "A_PHYSICAL_RETIRE"
+      ],
+      "assertions": [
+        "ONE_RELEASE_PER_CLAIM",
+        "NO_LOST_LEASE"
+      ]
+    },
+    {
+      "id": "parent_guard_child_join_deadlock",
+      "given": [
+        "parent_holds_lock",
+        "child_waits_same_lock"
+      ],
+      "action": "parent_scope_cancel_and_exit",
+      "required_order": [
+        "PARENT_GUARD_RELEASE",
+        "CHILD_PHYSICAL_RETIRE",
+        "PARENT_PHYSICAL_RETIRE"
+      ],
+      "assertions": [
+        "NO_JOIN_UNDER_GUARD",
+        "NO_CARRIER_BLOCK"
+      ]
+    },
+    {
+      "id": "cleanup_failure_fence",
+      "given": [
+        "task_A_has_active_lease",
+        "host_cleanup_fails"
+      ],
+      "action": "cancel_task_A",
+      "assertions": [
+        "TASK_NOT_MARKED_PHYSICALLY_RETIRED",
+        "LOCK_NOT_REGRANTED",
+        "FAILURE_CAUSE_RETAINED",
+        "INDEPENDENT_GUARDS_ATTEMPTED",
+        "TENANT_QUARANTINED_OR_SAFE_RECOVERY"
+      ]
+    },
+    {
+      "id": "isolate_hard_stop_host_lease",
+      "given": [
+        "untrusted_guest_with_host_owned_guard"
+      ],
+      "action": "terminate_isolated_guest",
+      "assertions": [
+        "HOST_GENERATION_REVOKED",
+        "DOMAIN_QUIESCENCE_PROVEN_BEFORE_REUSE",
+        "NO_GUEST_DEFER_ASSUMED",
+        "NO_CROSS_TENANT_LEASE_REPLAY"
+      ]
+    }
+  ]
 }
