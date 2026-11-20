@@ -1,0 +1,4 @@
+pub fnc main(): int {
+  val r = Record.of(name="Atto");
+  return r.count;
+}
