@@ -8,6 +8,10 @@ Cross-platform conformance tests for AttoLang compiler and runtime implementatio
 
 This repository is maintained at [atto-lang/atto-platform-conformance](https://github.com/atto-lang/atto-platform-conformance); use `https://github.com/atto-lang/atto-platform-conformance.git` for Git remotes and canonical `.atto` source examples. The normative language contract is [atto-spec](https://github.com/atto-lang/atto-spec), with executable guest evidence tracked by [atto-platform-conformance](https://github.com/atto-lang/atto-platform-conformance). Follow current ownership, borrowing, effects, actor, and syntax rules there; do not infer implemented features from a README or unexecuted CI.
 
+## All eleven source repositories: checked-i64 parity
+
+[Checked-i64 all-backends v1](contracts/checked-i64-all-backends-v1/README.md) pins the exact shared 15-case arithmetic corpus and the 11 `atto-source.*` main snapshots. Its source-only BigInt oracle and negative mutation tests explicitly **do not** claim compiled guest parity; individual compiler/target receipts remain required.
+
 ## Purpose
 
 Execute portable language fixtures and record target-specific results.
