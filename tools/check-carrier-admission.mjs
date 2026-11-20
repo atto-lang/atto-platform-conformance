@@ -1,6 +1,7 @@
 // Source-free GitHub Actions capacity admission. This does not authorize private exports.
 // Usage: GH_TOKEN=... node tools/check-carrier-admission.mjs owner/repo <repo-id> 123456 <head-sha> <workflow-path> <workflow-blob-sha> <job-name>
 import { pathToFileURL } from 'node:url';
+import {CANARY_PATH, CANARY_JOB, CANARY_STEP, CANARY_BLOB_SHA, verifyCanonicalCarrierWorkflow} from './canonical-carrier-workflow.mjs';
 
 export class AdmissionFailure extends Error {
   constructor(reason) { super(reason); this.name = 'AdmissionFailure'; }
@@ -16,12 +17,18 @@ export function assessAdmission({ repository, run, jobs, workflow, expected, now
   requireGate(POSITIVE(expected.repoId), 'immutable destination repository ID required');
   requireGate(SHA.test(expected.headSha), 'invalid expected head SHA');
   requireGate(SHA.test(expected.workflowBlobSha), 'invalid approved workflow blob');
+  requireGate(expected.workflowPath === CANARY_PATH && expected.jobName === CANARY_JOB &&
+    expected.proofStep === CANARY_STEP && expected.workflowBlobSha === CANARY_BLOB_SHA,
+    'canary does not use the reviewed canonical source-free workflow');
   requireGate(expected.workflowPath.startsWith('.github/workflows/') && expected.workflowPath.endsWith('.yml'), 'bad workflow path');
   requireGate(typeof expected.jobName === 'string' && expected.jobName.length > 0, 'job name required');
   requireGate(repository?.full_name === expected.repo && repository.archived === false, 'destination repository is missing, archived or mismatched');
   requireGate(POSITIVE(repository.id), 'destination immutable repository ID missing');
   requireGate(repository.id === expected.repoId, 'destination repository ID changed');
+  requireGate(repository.private === true && repository.visibility === 'private',
+    'private-source carrier must be a private repository');
   requireGate(run?.repository?.full_name === expected.repo && run.repository.id === repository.id, 'run repository mismatch');
+  requireGate(run.repository.private === true, 'run repository is not private');
   requireGate(POSITIVE(run.id) && run.id === expected.runId, 'run ID mismatch');
   requireGate(run.head_sha === expected.headSha, 'run head does not match approved source-free canary');
   requireGate(run.path === expected.workflowPath, 'run uses a different workflow');
@@ -32,6 +39,8 @@ export function assessAdmission({ repository, run, jobs, workflow, expected, now
   requireGate(run.event === 'push' || run.event === 'workflow_dispatch', 'invalid canary trigger');
   requireGate(workflow?.sha === expected.workflowBlobSha, 'workflow not pinned to approved Git blob');
   requireGate(workflow?.path === expected.workflowPath, 'fetched workflow path mismatch');
+  try { verifyCanonicalCarrierWorkflow(workflow, expected.workflowBlobSha); }
+  catch { throw new AdmissionFailure('unapproved or altered source-free workflow content'); }
   requireGate(Array.isArray(jobs) && jobs.length >= 1, 'no jobs');
   const matching = jobs.filter(j => j.name === expected.jobName);
   requireGate(matching.length === 1, 'missing or duplicated named canary job');
@@ -62,6 +71,9 @@ export async function checkLiveAdmission(expected, { token, fetchImpl = fetch, n
   requireGate(POSITIVE(expected.runId), 'run ID required');
   requireGate(SHA.test(expected.headSha), 'expected SHA must be 40 lowercase hex');
   requireGate(SHA.test(expected.workflowBlobSha), 'expected workflow blob must be 40 lowercase hex');
+  requireGate(expected.workflowPath === CANARY_PATH && expected.jobName === CANARY_JOB &&
+    expected.proofStep === CANARY_STEP && expected.workflowBlobSha === CANARY_BLOB_SHA,
+    'noncanonical canary expected fields: refusing API request');
   const base = 'https://api.github.com/repos/' + expected.repo;
   async function get(url) {
     const res = await fetchImpl(url, { headers: {
