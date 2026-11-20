@@ -1,0 +1,8 @@
+// expect-error: E_IO_CONSUMER_CONFLICT
+// Must be rejected statically when provable or denied at reader-lease admission.
+// No stdin bytes may be consumed by the denied competing reader.
+pub suspends fnc main(): int using io, suspend {
+  val stream = stdio.in.stream();
+  val item = readch process.stdin;
+  return 0;
+}
