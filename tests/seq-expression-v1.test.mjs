@@ -50,3 +50,22 @@ test('initial audit is not a fabricated execution receipt', () => {
     assert.ok(backends.every(b => c.evidence[b] === 'not_executed'));
   }
 });
+
+test('backend candidate heads and restricted semantic subsets are pinned, never counted as PASS', () => {
+  const candidates = registry.implementation_candidates;
+  assert.deepEqual(Object.keys(candidates), ['rust_native', 'rust_browser_wasm', 'forge', 'net']);
+  for (const [backend, candidate] of Object.entries(candidates)) {
+    assert.ok(backends.includes(backend), backend);
+    assert.match(candidate.pull_request, /^https:\/\/github\.com\/atto-lang\/atto-source\.[a-z]+\/pull\/\d+$/);
+    assert.match(candidate.head_sha, /^[0-9a-f]{40}$/);
+    assert.match(candidate.source_tree, /^[0-9a-f]{40}$/);
+    assert.ok(candidate.scope.length > 35);
+    assert.equal(candidate.verification_status, 'not_executed');
+  }
+  assert.equal(candidates.rust_native.source_tree, candidates.rust_browser_wasm.source_tree);
+  // A source implementation candidate is not evidence that any guest has run.
+  for (const c of registry.cases) {
+    for (const backend of Object.keys(candidates))
+      assert.equal(c.evidence[backend], 'not_executed', c.id + ': ' + backend);
+  }
+});
