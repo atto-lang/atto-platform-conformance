@@ -7,6 +7,8 @@ on:
       - 'tools/actor_isolation_broker_v1.rs'
       - 'contracts/actor-isolation-types-v1.tsv'
       - 'tools/typed_actor_v1.rs'
+      - 'tools/typed_actor_control_boundary_v1.rs'
+      - 'contracts/typed-actor-control-boundary-v1.tsv'
       - 'tools/typed_actor_bool_v1.rs'
       - 'contracts/typed-actor-bool-v1.tsv'
       - 'fixtures/typed-actor-bool-v1/**'
@@ -25,6 +27,8 @@ on:
       - 'tools/actor_isolation_broker_v1.rs'
       - 'contracts/actor-isolation-types-v1.tsv'
       - 'tools/typed_actor_v1.rs'
+      - 'tools/typed_actor_control_boundary_v1.rs'
+      - 'contracts/typed-actor-control-boundary-v1.tsv'
       - 'tools/typed_actor_bool_v1.rs'
       - 'contracts/typed-actor-bool-v1.tsv'
       - 'fixtures/typed-actor-bool-v1/**'
@@ -78,6 +82,10 @@ jobs:
           "$RUNNER_TEMP/typed_actor_tests"
           rustc --edition=2021 tools/typed_actor_v1.rs -o "$RUNNER_TEMP/typed_actor_oracle"
           "$RUNNER_TEMP/typed_actor_oracle"
+          # Independent typed DATA / authenticated terminal CONTROL policy model.
+          # Host/source-only: never infer compiled guest supervision from this.
+          rustc --edition=2021 --test tools/typed_actor_control_boundary_v1.rs -o "$RUNNER_TEMP/typed_actor_control_tests"
+          "$RUNNER_TEMP/typed_actor_control_tests"
           rustc --edition=2021 --test -D warnings tools/typed_actor_string_targets.rs -o "$RUNNER_TEMP/actor_string_target_tests"
           "$RUNNER_TEMP/actor_string_target_tests"
           rustc --edition=2021 -D warnings tools/typed_actor_string_targets.rs -o "$RUNNER_TEMP/actor_string_targets"
