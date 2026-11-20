@@ -1,0 +1,13 @@
+// ACTOR-STRING-04; TARGET_REJECT; expected E_ACTOR_SEND_CONTRACT; NOT_EXECUTED
+// Destination accepts string, but the sender's declared sends int forbids it.
+define actor Sink receives string as
+  susp receive(ActorMail<string> mail): void { return; }
+end
+define actor Router receives int sends int as
+  susp receive(ActorMail<int> mail): void {
+    val sink = spawn Sink();
+    sink.send("not an int");
+    return;
+  }
+end
+pub susp fnc main(): int { return 0; }
