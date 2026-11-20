@@ -44,7 +44,7 @@ test('pipe/rpipe contract explicitly declares source-only evidence, not guest pa
 
 test('fixture paths and expected diagnostics are unique, bounded and pinned to git blobs', ()=>{
   const ids = new Set(), paths = new Set();
-  assert.equal(contract.cases.length, 8);
+  assert.equal(contract.cases.length, 12);
   for (const entry of contract.cases) {
     assert.match(entry.id, /^[a-z0-9-]+$/);
     assert.ok(!ids.has(entry.id), 'duplicate test ID');
@@ -62,6 +62,25 @@ test('fixture paths and expected diagnostics are unique, bounded and pinned to g
     assert.match(text, /return 0;/);
     if (entry.expect.startsWith('reject')) assert.ok(entry.error_family || entry.phase === 'runtime_admission');
   }
+});
+
+test('closed or stopped DATA endpoints reject before graph publication', ()=>{
+  const ids = ['stopped-source','closed-channel','stopped-consumer','stopped-actor-sink'];
+  const byId = new Map(contract.cases.map(v => [v.id, v]));
+  for (const id of ids) {
+    const entry = byId.get(id);
+    assert.ok(entry, 'missing stopped/closed port fixture ' + id);
+    assert.equal(entry.expect, 'reject_closed_or_stopped_port');
+    assert.equal(entry.phase, 'runtime_admission');
+    assert.equal(entry.error_family, 'PipeSetupError');
+    assert.equal(entry.expected_data_publication, 'NONE');
+    assert.equal(entry.expected_delivery_count, 0);
+    const source = readFileSync(new URL(entry.path, root), 'utf8');
+    assert.match(source, /\.stop\(\)|\.close\(\)/);
+    assert.match(source, /\bpipe\b/);
+  }
+  assert.ok(contract.security_invariants.some(v => /closed or stopped/.test(v)));
+  assert.ok(contract.required_receipts.includes('closed_or_stopped_port_denial'));
 });
 
 test('operator boundaries and receipt obligations reject inferred duplex or silent backend success', ()=>{
