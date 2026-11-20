@@ -99,6 +99,7 @@ test('every backend must carry independent genuine execution evidence', () => {
     if (row.execution_status === 'passed') {
       const receipt = row.receipt;
       assert.ok(receipt && typeof receipt === 'object', name);
+      assertReceiptProvenance(row, receipt, name);
       assert.ok(receipt.executed_step_count >= 1, name);
       assert.equal(receipt.real_guest, true, name);
       assert.match(receipt.compiler_head_sha, sha);
@@ -297,4 +298,124 @@ test('new Linux publication and JS V8 smoke cannot masquerade as compiled CI gue
     ['83','83','42','42','61','42','-9223372036854775808']);
   assert.match(v.scope,/in-process rather than Node ESM\/CLI or CI runner/);
   assert.equal(forge.local_execution.source_changed_since_local_observation,true);
+});
+
+
+// Machine-readable receipts are assertions until an independent reviewer fetches
+// the source repository's GitHub job steps and artifact. These checks only reject
+// clearly forged, mismatched, or incomplete assertions; they do not query GitHub.
+function assertReceiptProvenance(row, receipt, name) {
+  assert.equal(row.implementation, 'code_authored', name + ': implementation not admitted');
+  assert.match(row.proposed_head_sha, sha, name + ': no reviewed head');
+  assert.equal(receipt?.compiler_repo, row.repo, name + ': wrong repository');
+  assert.equal(receipt.compiler_head_sha, row.proposed_head_sha, name + ': stale head');
+  assert.match(receipt.compiler_tree_sha, sha, name + ': tree missing');
+  for (const field of ['run_id', 'job_id', 'run_attempt', 'runner_id', 'artifact_id']) {
+    assert.ok(Number.isSafeInteger(receipt[field]) && receipt[field] > 0,
+      name + ': missing/invalid ' + field);
+  }
+  assert.ok(typeof receipt.runner_name === 'string' && receipt.runner_name.trim(),
+    name + ': runner not assigned');
+  const runUrl = 'https://github.com/' + row.repo + '/actions/runs/' + receipt.run_id;
+  assert.equal(receipt.ci_run_url, runUrl, name + ': run not tied to compiler repo');
+  assert.equal(receipt.job_url, runUrl + '/job/' + receipt.job_id,
+    name + ': job not tied to run');
+  assert.ok(Array.isArray(receipt.completed_steps) && receipt.completed_steps.length > 0,
+    name + ': zero completed steps');
+  assert.equal(receipt.executed_step_count, receipt.completed_steps.length,
+    name + ': claimed step count not tied to observations');
+  const seen = new Set();
+  for (const step of receipt.completed_steps) {
+    assert.ok(typeof step.name === 'string' && step.name.trim(), name + ': unnamed step');
+    assert.ok(!seen.has(step.name), name + ': repeated step evidence');
+    seen.add(step.name);
+    assert.equal(step.status, 'completed', name + ': pending step');
+    assert.equal(step.conclusion, 'success', name + ': failed step');
+  }
+  assert.equal(receipt.artifact_url, runUrl + '/artifacts/' + receipt.artifact_id,
+    name + ': artifact not tied to source run');
+  assert.match(receipt.artifact_sha256, /^[a-f0-9]{64}$/,
+    name + ': missing artifact ZIP digest');
+  assert.equal(receipt.artifact_verified, true, name + ': artifact not independently checked');
+}
+
+test('exactly 16 distinct release/guest profiles represent all 11 Atto source compilers', () => {
+  const expected = [
+    'rs-native-compiler', 'rs-browser-wasm-compiler', 'browser-pinned-release',
+    'llvm-rust-aot', 'llvm-independent-cpp', 'net-direct-cil',
+    'java-scalar-bootstrap', 'java-production-compiler', 'forge', 'cranelift',
+    'wasm-runtime', 'js-runtime', 'atto-self-hosted', 'hdl', 'realtime',
+    'js-compiled-esm'
+  ];
+  assert.deepEqual(Object.keys(ledger.backend_states).sort(), expected.sort());
+  const sourceRepos = [...new Set(Object.values(ledger.backend_states)
+    .map(row => row.repo).filter(repo => repo.startsWith('atto-lang/atto-source.')))].sort();
+  assert.deepEqual(sourceRepos, [
+    'atto-lang/atto-source.atto', 'atto-lang/atto-source.cranelift',
+    'atto-lang/atto-source.forge', 'atto-lang/atto-source.hdl',
+    'atto-lang/atto-source.java', 'atto-lang/atto-source.js',
+    'atto-lang/atto-source.llvm', 'atto-lang/atto-source.net',
+    'atto-lang/atto-source.realtime', 'atto-lang/atto-source.rs',
+    'atto-lang/atto-source.wasm'
+  ]);
+});
+
+test('historic local guest observations must not qualify modified compiler blobs', () => {
+  assert.equal(ledger.head_audit.head_must_be_rechecked_before_promotion, true);
+  assert.deepEqual(ledger.head_audit.local_evidence_stale_profiles,
+    ['forge', 'java-scalar-bootstrap', 'js-compiled-esm']);
+  for (const key of ledger.head_audit.local_evidence_stale_profiles) {
+    const row = ledger.backend_states[key];
+    const local = row.local_execution;
+    assert.equal(local.source_changed_since_local_observation, true, key);
+    assert.equal(local.observed_compiler_blob_sha, local.compiler_blob_sha, key);
+    assert.match(local.current_compiler_blob_sha, sha, key);
+    assert.notEqual(local.compiler_blob_sha, local.current_compiler_blob_sha, key);
+    assert.equal(row.execution_status, 'not_executed');
+    assert.equal(row.receipt, null);
+  }
+  for (const [key, edge] of Object.entries(ledger.edge_contract.targets)) {
+    assert.equal(edge.proposed_head_sha, ledger.backend_states[key].proposed_head_sha, key);
+  }
+});
+
+test('source-repo execution receipt admission rejects 18 provenance mutations', () => {
+  const row = ledger.backend_states.forge;
+  const runUrl = 'https://github.com/' + row.repo + '/actions/runs/123';
+  const candidate = {
+    compiler_repo: row.repo, compiler_head_sha: row.proposed_head_sha,
+    compiler_tree_sha: 'a'.repeat(40), run_id: 123, job_id: 456,
+    run_attempt: 1, runner_id: 789, runner_name: 'ephemeral-source-local',
+    ci_run_url: runUrl, job_url: runUrl + '/job/456',
+    completed_steps: [
+      {name: 'compile', status: 'completed', conclusion: 'success'},
+      {name: 'execute-guests', status: 'completed', conclusion: 'success'}
+    ],
+    executed_step_count: 2, artifact_id: 321,
+    artifact_url: runUrl + '/artifacts/321',
+    artifact_sha256: 'a'.repeat(64), artifact_verified: true
+  };
+  // This synthetic acceptance is STRUCTURE ONLY; it is NOT evidence of a run.
+  assert.doesNotThrow(() => assertReceiptProvenance(row, candidate, 'synthetic'));
+  const bad = [
+    {compiler_repo:'atto-lang/atto-source.rs'},
+    {compiler_head_sha:'b'.repeat(40)},
+    {run_id:0}, {job_id:0}, {run_attempt:0}, {runner_id:0}, {runner_name:''},
+    {ci_run_url:'https://github.com/unrelated/test/actions/runs/123'},
+    {job_url:runUrl + '/job/789'},
+    {completed_steps:[]}, {executed_step_count:0},
+    {completed_steps:[{name:'compile', status:'queued', conclusion:'success'}]},
+    {completed_steps:[{name:'compile', status:'completed', conclusion:'failure'}]},
+    {completed_steps:[
+      {name:'guest', status:'completed', conclusion:'success'},
+      {name:'guest', status:'completed', conclusion:'success'}
+    ]},
+    {artifact_id:0}, {artifact_url:'https://github.com/other/test/actions/runs/123/artifacts/321'},
+    {artifact_sha256:'ffff'}, {artifact_verified:false}
+  ];
+  assert.equal(bad.length,18);
+  for (const [i, patch] of bad.entries()) {
+    assert.throws(() => assertReceiptProvenance(row, {...candidate, ...patch}, 'mutation-' + i),
+      undefined, 'must reject provenance mutation ' + i);
+  }
 });
