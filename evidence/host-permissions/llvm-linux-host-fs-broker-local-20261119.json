@@ -3,12 +3,15 @@
   "classification": "HOST_ONLY_LOCAL_EXECUTION_NOT_GUEST_CONFORMANCE",
   "source_repo": "atto-lang/atto-source.llvm",
   "source_pr": "https://github.com/atto-lang/atto-source.llvm/pull/62",
-  "source_head_sha": "64a72a811597c948c90058f01cae8b5a62b3ad4e",
+  "source_head_sha": "ef1956983b0821cd84331a334b3e6260fdd06f7e",
   "source_git_blobs": {
-    "native/include/atto/host_fs_broker.h": "3a14858cb3dc74bb11978445f212b2c7053d8803",
-    "native/src/host_fs_broker.c": "2dd98f32f0edf6dd1a86ddc189a732f7461c8c1a",
-    "native/tests/host_fs_broker_test.c": "85e0002e6cc15f0a41bc2102322a43cce2c57b63",
-    "native/CMakeLists.txt": "2a248abf9c9e01e0ab5878b7d400fb512e4ffd39"
+    "native/include/atto/host_fs_broker.h": "61e82579ecb04adb1a8ed79acbfa78d6eb0d8cef",
+    "native/src/host_fs_broker.c": "ccc5da91cb4073190b490574337d4059efdb6953",
+    "native/tests/host_fs_broker_test.c": "6ffd147d7d462a1c80bcf45339049ffb4cdd4195",
+    "native/CMakeLists.txt": "64de3201653ee01226941832b5a548d13ff2a9b2",
+    "native/include/atto/host_fs_guest_bridge.h": "b08b525b2695d08bb0fdafc997ad1a01be45a5e4",
+    "native/src/host_fs_guest_bridge.c": "7680556f684bbdd8dd306d24b5c96ea5a226042f",
+    "native/tests/host_fs_guest_bridge_test.c": "6f1fc83d8de72cf8db73470b0315462d05f355e4"
   },
   "local_verification": {
     "executor": "local isolated tool container; not source-owned GitHub Actions",
@@ -41,7 +44,8 @@
       "-Werror",
       "-pedantic",
       "-fsanitize=address,undefined",
-      "-fno-omit-frame-pointer"
+      "-fno-omit-frame-pointer",
+      "-pthread"
     ],
     "test_marker": "ATTO_HOST_FS_BROKER_HOST_ONLY_TEST_PASS",
     "covered": [
@@ -58,16 +62,28 @@
       "atomic_replacement",
       "root_inode_pin_after_rename",
       "active_symlink_swap_300_iterations_600_reads",
-      "post_race_successful_in_root_read"
+      "post_race_successful_in_root_read",
+      "host_generation_revoke_serializes_admitted_io",
+      "pthread_barrier_parallel_read_revocation",
+      "host_owned_offset32_guest_cage_copy",
+      "cage_offset_overflow_rejection",
+      "embedded_nul_and_traversal_guest_path_rejection",
+      "denied_guest_cage_output_unchanged",
+      "fake_tenant_and_stale_generation_guest_frame_rejection"
     ],
-    "verified_bytes": "Exact Git blob SHA of all four source/test/CMake files equals independently compiled local files"
+    "verified_bytes": "Exact Git blob SHA of all four source/test/CMake files equals independently compiled local files",
+    "test_markers": [
+      "ATTO_HOST_FS_BROKER_HOST_ONLY_TEST_PASS",
+      "ATTO_HOST_FS_GUEST_OFFSET_BRIDGE_HOST_ONLY_TEST_PASS"
+    ],
+    "host_executables": 2
   },
   "source_ci": {
-    "run_id": 44656191613,
+    "run_id": 44658895112,
     "job": "host-security-regression",
     "observed_job_steps": 0,
-    "state": "NOT_EXECUTED_AT_INITIAL_HEAD",
-    "note": "Initial attempt on earlier head failed before steps; source CI on updated head must be inspected separately"
+    "state": "NOT_EXECUTED_CURRENT_HEAD_OR_NEAR_HEAD",
+    "note": "Initial runner admission failed with zero steps; latest head must receive independent current-head stepful CI"
   },
   "guest_parity": {
     "atto_source_compiled": false,
@@ -75,13 +91,16 @@
     "std_fs_linked": false,
     "manifest_verified": false,
     "tenant_isolation_proven": false,
-    "backend_status": "NOT_EXECUTED"
+    "backend_status": "NOT_EXECUTED",
+    "guest_offset_frame_test": true,
+    "guest_offset_frame_test_scope": "SIMULATED_HOST_OWNED_CAGE_ONLY"
   },
   "known_limitations": [
     "Trusted scheduler must authenticate tenant/generation; IDs alone can be spoofed",
     "Guest can bypass cooperative broker if granted raw syscall/FFI/native memory access",
     "Host-managed root and directory tree must not be movable by attacker OS principals",
     "Signed artifact ceiling, async I/O, cancellation and live compiled Atto guest missing",
-    "CMake/CTest at exact checked-in head is not yet observed via an admitted runner"
+    "CMake/CTest at exact checked-in head is not yet observed via an admitted runner",
+    "Host-only bridge uses a synthetic cage, not compiler-generated .atto nor authenticated guest turn"
   ]
 }
