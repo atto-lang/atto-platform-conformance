@@ -1175,10 +1175,11 @@
     "rust_wasm": {
       "repo": "atto-lang/atto-source.rs",
       "pr": 415,
-      "head": "6927a2747bc803ead9075a825d80a968fe6576c2",
+      "head": "5821d164ace312038f406c88c2b0fde2f2253771",
       "scope": "fixed-local-List<int>-native-rest-only",
       "guest_status": "NOT_EXECUTED",
-      "caveat": "restricted source compiler and 7 positive guest source inputs authored, but exact-head CI had zero steps; no compiled guest results observed"
+      "caveat": "restricted source compiler and 7 positive guest source inputs authored, but exact-head CI had zero steps; no compiled guest results observed",
+      "tree": "9109ffb05b84600d44887d97e9f152c0f4b1f8d0"
     },
     "forge_native": {
       "repo": "atto-lang/atto-source.forge",
@@ -1186,7 +1187,9 @@
       "scope": "fixed-local-List<int>-native-rest-only",
       "compiler_path": "forge_scalar .atto -> validated C++20 -> native executable",
       "guest_status": "NOT_EXECUTED",
-      "caveat": "real compiled guest candidate authored with eight exact Rust source blobs; native compiler and sanitizer run not yet verified"
+      "caveat": "real compiled guest candidate authored with eight exact Rust source blobs; native compiler and sanitizer run not yet verified",
+      "head": "9f66adf259236e12dbc9f0e08aa430c85eba03ed",
+      "tree": "8499308b8063253a7c0c1115068e14023118d3ad"
     }
   }
 }
