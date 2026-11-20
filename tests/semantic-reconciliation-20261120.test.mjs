@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 const read = path => readFileSync(new URL('../' + path, import.meta.url));
 const json = path => JSON.parse(read(path).toString('utf8'));
-const gitBlob = b => createHash('sha1').update('blob '+b.length+'\\0'.replace('\\0','\0')).update(b).digest('hex');
+const gitBlob = b => createHash('sha1').update('blob '+b.length+String.fromCharCode(0)).update(b).digest('hex');
 
 test('return-first bullet and arrow fixtures are immutable exact Git blobs', () => {
  const reg=json('contracts/v2/return-first-separators-v1.json');
