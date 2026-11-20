@@ -32,7 +32,7 @@ async function checked_bytes(name) {
   const bytes = await readFile(path);
   assert.equal(bytes.length, stat.size, "fixture changed during read");
   assert.equal(bytes.toString("utf8").includes("\uFFFD"), false, "invalid UTF-8 fixture");
-  const hash = createHash("sha1").update(Buffer.from("blob " + bytes.length + "\\0"))
+  const hash = createHash("sha1").update(Buffer.from("blob " + bytes.length + "\0"))
     .update(bytes).digest("hex");
   assert.equal(hash, corpus.source_blobs[name], "Git blob mismatch: " + name);
   return bytes.toString("utf8");
@@ -55,7 +55,7 @@ test("modern linked-module corpus is strictly source-only", () => {
     assert.equal(c.status, "NOT_EXECUTED");
     assert.equal(c.git_blob_sha, corpus.source_blobs[c.entry]);
     assert.ok(["PASS", "REJECT"].includes(c.expect));
-    if (c.expect === "PASS") assert.equal(c.expect_stdout, "42\\n");
+    if (c.expect === "PASS") assert.equal(c.expect_stdout, "42\n");
     else assert.equal(c.expect_stdout, null);
   }
 });
@@ -79,7 +79,7 @@ test("canonical +, relative import, and nonlinear scalar call witnesses stay dis
   const relative = await checked_bytes("src/main-relative.atto");
   const nonlinear = await checked_bytes("src/main-nonlinear.atto");
   const helper = await checked_bytes("src/lib/helpers.atto");
-  assert.match(rooted, /from "\\+src\/lib\/helpers\.atto"/u);
+  assert.match(rooted, /from "\+src\/lib\/helpers\.atto"/u);
   assert.match(relative, /from "\.\/lib\/helpers\.atto"/u);
   assert.match(nonlinear, /return twice\(21\);/u);
   assert.match(helper, /return value \+ value;/u);
