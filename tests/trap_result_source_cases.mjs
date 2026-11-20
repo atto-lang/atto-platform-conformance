@@ -1,6 +1,7 @@
 // SOURCE ONLY. Does not run an Atto compiler or guest.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -42,4 +43,16 @@ test('source-only target registry is complete and has both outcomes', () => {
   assert.ok(ids.has('reject-impossible-join'));
   assert.ok(ids.has('reject-obsolete-option-trap-binding'));
 
+});
+
+test('obsolete Option-valued trap is an exact pinned negative, never a v1 positive', () => {
+  const path = 'fixtures/trap-result-v1/reject-obsolete-option-trap-binding.atto';
+  const data = readFileSync(root + path);
+  const sha = createHash('sha1').update('blob ' + data.length + '\\0').update(data).digest('hex');
+  assert.equal(sha, 'c0467b30232d2ecd5487eecb09fd86cedc79cbc0');
+  assert.match(data.toString('utf8'), /Option<int> = trap \\(40 \\+ 2\\)/);
+  const caseEntry = m.cases.find(c => c.id === 'reject-obsolete-option-trap-binding');
+  assert.equal(caseEntry.source, path);
+  assert.equal(caseEntry.expect.kind, 'compile_reject');
+  assert.equal(caseEntry.expect.no_artifact, true);
 });
