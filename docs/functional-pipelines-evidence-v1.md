@@ -62,3 +62,74 @@ after its earlier observed JDK21 guest runs. The historical local receipt
 remains attached to its earlier source Git blob, explicitly marked
 source_changed_since_local_observation. Every target in the extension
 remains not_executed with a null CI receipt.
+
+## Eight fresh private GitHub carrier admission canaries (2026-11-20)
+
+Each carrier was tested on a temporary branch named
+`ci/canary-functional-pipeline-capacity-20261120`, containing a
+minimal single-job, single-shell-step Ubuntu Actions workflow. The
+job performs only `echo` and `command -v git`. It has read-only
+content permissions, no checkout, no source files from Atto, and
+no cross-organization credentials.
+
+| Authorized private carrier | Workflow run | Steps executed |
+| --- | ---: | ---: |
+| benefactor-cc/atto-ci | 44682112211 | 0 |
+| voxletra/atto-ci | 44682117376 | 0 |
+| scintilla-run/atto-ci | 44682361850 | 0 |
+| athlet-o/atto-ci | 44682367642 | 0 |
+| agent-pontifex/atto-ci | 44682371219 | 0 |
+| honeypot-r-us-test/atto-ci | 44682377706 | 0 |
+| akrion-sim/atto-ci | 44683175752 | 0 |
+| zed-pkg-test/atto-ci | 44683179241 | 0 |
+
+All eight jobs completed as **failed before any step** with no
+runner assigned. That does **not** establish the underlying reason:
+billing/minutes, workflow permissions, policy, platform scheduling
+and other admission failures remain possible. It does establish that
+none of the tested carriers has demonstrated capacity to run the
+required mirror. The conformance ledger records each run ID
+without upgrading any backend to a passing status.
+
+**Secure mirror admission protocol**: (1) verify that the alternate
+carrier is private, authorized to hold the source, and successfully
+executes a nonzero-step canary; (2) pin the immutable source PR
+commit SHA and read its complete recursive Git tree, including
+file mode, symlinks, executable bits and non-text blobs; (3) via
+the GitHub connector copy the actual source blobs into the carrier,
+checking the exact Git blob hashes; (4) construct and commit a
+mirror tree, verifying the source and carrier tree SHA and exact
+file modes, with fail-closed behavior for submodules or unsupported
+entries; (5) run Actions on that local carrier checkout using only
+the carrier repository's own `GITHUB_TOKEN`; (6) preserve
+artifact hashes, process exit and result ABIs, toolchain versions,
+exact head and CI steps in the ledger. Never silently substitute a
+text-only approximation for a full binary Git tree.
+
+Because **step 1 did not pass**, no private source tree was mirrored
+or checked out cross-organization during this pass.
+
+## Scalar authority word hardening
+
+JavaScript, Forge C++, Cranelift Rust, .NET CIL and Java scalar source
+frontends now all reject `sync`, `task`, and `yield` as
+callable, argument-binding or local-binding names. Each of the five
+restricted compiler PRs has nine additional negative test cases;
+these tests are authored but only the JavaScript compiler's
+current source blob has been exercised in a V8 smoke harness.
+
+The **current** JavaScript source compiler Git blob
+`1dba4620bbacfb78086974c5da86eee87ca0bbbf`
+successfully generated and executed seven spec programs in-process
+with values `83/83/42/42/61/42/i64::MIN`, trapped checked overflow,
+rejected seven pinned invalid fixtures, and rejected nine
+`sync/task/yield` binding variants. This is not a Node child process,
+GitHub Actions, or proof of secure tenant isolation. Previous
+JVM/native/Node local receipts are retained as historical evidence
+with explicit stale-compiler SHA markers after these source changes.
+
+**Remaining gates:** executed end-to-end Node ESM CLI, Forge
+GCC/Clang CMake/CTest + sanitizers, Cranelift native JIT, .NET
+CoreCLR/NativeAOT, Java JDK25/GraalVM Native Image,
+Rust browser/Wasm and LLVM native emitters, plus independent
+security/ownership/effects validation in the production compilers.
