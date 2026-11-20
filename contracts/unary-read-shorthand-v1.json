@@ -612,5 +612,17 @@
   "postfix_rust_implementation_pr": "https://github.com/atto-lang/atto-source.rs/pull/257",
   "postfix_guest_execution": "PENDING_EXACT_HEAD_TESTS_PER_BACKEND",
   "constructor_rust_pr": "https://github.com/atto-lang/atto-source.rs/pull/257",
-  "constructor_guest_execution": "PENDING_EXACT_HEAD_TESTS_PER_BACKEND"
+  "constructor_guest_execution": "PENDING_EXACT_HEAD_TESTS_PER_BACKEND",
+  "backend_admission_prs": {
+    "rs-browser": "https://github.com/atto-lang/atto-source.rs/pull/257",
+    "java": "https://github.com/atto-lang/atto-source.java/pull/53",
+    "llvm": "https://github.com/atto-lang/atto-source.llvm/pull/61",
+    "forge": "https://github.com/atto-lang/atto-source.forge/pull/44"
+  },
+  "backend_evidence_boundaries": {
+    "rs-browser": "checked read/constructor code staged; guest CI zero-step blocked; suspending channel send unimplemented",
+    "java": "host-side regex/pre-HIR checked read admission only; no compiled Atto guest channel ABI",
+    "llvm": "native lexer rejects unlowered Channel<int>; no compiled channel guest or runtime",
+    "forge": "lexes << / >> distinctly, rejects guest IO before scalar lowering; no executable channel guest"
+  }
 }
