@@ -1,0 +1,7 @@
+// COMPILE-NEGATIVE: E_GUARD_ESCAPE. No guest artifact.
+pub susp fnc leak(): MutexLease<int> {
+  val counter = Mutex<int>(0);
+  using counter.lock_async() as lease {
+    return lease;
+  }
+}
