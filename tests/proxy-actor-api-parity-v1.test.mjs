@@ -82,6 +82,33 @@ test('proxy actor API registry remains canonical and cross-backend complete', ()
         assert.ok(gateway.blocked_attempts.every(url =>
           /^https:\/\/github\.com\//.test(url)));
       }
+      if (gateway.status === 'SOURCE_EXACT_TESTED') {
+        assert.equal(b.host_ticket_status, 'SOURCE_EXACT_HOST_TESTED');
+        const e = gateway.executed_evidence;
+        assert.ok(e, b.id + ': source exact gateway without executable evidence');
+        assert.equal(e.source_head_sha, b.host_ticket_pr_head_sha);
+        assert.equal(e.source_head_sha, b.host_ticket_ci.source_head_sha);
+        assert.match(e.carrier_commit_sha, /^[0-9a-f]{40}$/);
+        assert.equal(e.carrier_commit_sha, b.host_ticket_ci.carrier_commit_sha);
+        assert.equal(e.ci_url, b.host_ticket_ci.ci_url);
+        assert.ok(e.original_git_blob_count >= 16);
+        assert.equal(e.original_git_blob_count, b.host_ticket_ci.verified_blob_count);
+        assert.ok(e.executed_job_steps >= 4);
+        assert.equal(e.executed_job_steps, b.host_ticket_ci.executed_ci_steps);
+        assert.equal(new Set(e.markers).size, e.markers.length);
+        for (const marker of [
+          'ATTO_SOURCE_SIXTEEN_ORIGINAL_GIT_BLOBS=PASS',
+          'M6_NIO_SCHEDULER_SUPERVISOR_NATIVE_HOST=PASS',
+          'M6_TICKET_128_CONCURRENT_MAIL_EXACT_CORRELATION=PASS',
+          'M10_RESTRICTED_COMPILED_ATTO_PROCESS_A_SENDER=PASS',
+          'M10_RESTRICTED_COMPILED_ATTO_REMOTE_RECEIVE=PASS',
+          'M10_12_CONCURRENT_PER_MAIL_SCOPED_RESULTS_OR_VERIFIED_FULL=PASS'
+        ]) assert.ok(e.markers.includes(marker),
+          b.id + ': missing exact two-process host-only evidence ' + marker);
+        assert.notEqual(b.compiled_guest_ipc_status, 'PASSED',
+          b.id + ': restricted host bridge is not canonical .atto guest');
+        assert.equal(b.guest_evidence, null);
+      }
     }
     if (b.compiled_guest_ipc_status === 'PASSED') {
       assert.ok(b.guest_evidence && /^[0-9a-f]{40}$/.test(b.guest_evidence.source_sha),
