@@ -326,6 +326,52 @@
         "job_id": 136039091233,
         "conclusion": "SUCCESS"
       }
+    },
+    "candidate_net_stdio_v1": {
+      "repository": "atto-lang/atto-source.net",
+      "pr": 26,
+      "source_head": "29c7ac16de01c966b10324b96131b9658f96efb8",
+      "source_tree": "60f30977956ddd7a8517ea35873ea773995ecb31",
+      "parser_emitter_blob": "5841273f41cbb178c3626b00fab6032ee772e7bd",
+      "scope": "restricted int-only direct ECMA-335 CIL guest with ordered stdio.println(int) and trusted host grant; NOT TenantVM stdout capability support",
+      "policy": "--allow-stdio required for trusted standalone compiler; default deny E_PERMISSION without artifact",
+      "fixture_source": "original unmodified 4 canonical fixtures",
+      "oracle": {
+        "positive": [
+          {
+            "id": "return-block",
+            "stdout": "2\n2\n",
+            "exit": 0
+          },
+          {
+            "id": "caret-block",
+            "stdout": "2\n2\n",
+            "exit": 0
+          }
+        ],
+        "negative": [
+          {
+            "id": "nonexhaustive-guard",
+            "code": "E_MATCH",
+            "no_artifact": true
+          },
+          {
+            "id": "fallthrough-block",
+            "code": "E_RETURN",
+            "no_artifact": true
+          }
+        ]
+      },
+      "private_carrier": {
+        "repo": "usa-acc/atto-ci",
+        "commit": "075af2b2dd90dc90d5321fadba056626d1871ad0",
+        "source_tree_sha": "60f30977956ddd7a8517ea35873ea773995ecb31",
+        "full_tree_sha_verified": true,
+        "source_blobs_verified": 46,
+        "run_id": 44662545614,
+        "status": "IN_PROGRESS"
+      },
+      "compiled_guest_results": "NOT_YET_CERTIFIED"
     }
   },
   "backends": {
