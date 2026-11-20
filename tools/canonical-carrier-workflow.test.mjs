@@ -33,7 +33,6 @@ for(const [name,mutate] of mutations)test('reject '+name,()=>{
   assert.throws(()=>verifyCanonicalCarrierWorkflow(x,approved),CanaryPolicyError);
 });
 
-
 test('published carrier YAML has exactly the audited source-free bytes and blob SHA',async()=>{
   const {readFile} = await import('node:fs/promises');
   const bytes = await readFile(new URL('../templates/source-free-canary.yml',import.meta.url));
