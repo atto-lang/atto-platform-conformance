@@ -1,0 +1,75 @@
+{
+  "schema": "atto.actor-isolation.compiled-rust-guest-source-subset.v1",
+  "date": "2026-11-20",
+  "status": "PASS_COMPILED_ATTO_GUEST_SYNTHETIC_TRUSTED_HOST",
+  "source_repo": "atto-lang/atto-source.rs",
+  "source_pr": 406,
+  "source_head_verified": "9305b24573bbe0183dbbd6a59c8166c9f1635627",
+  "source_root_tree_sha": "e18e72ba95dd8ce7128a554527df2d67bdb4472e",
+  "source_blobs_compared_by_git_path_and_sha": 68,
+  "source_blobs_matching_single_head": 68,
+  "source_head_mirror_subset_only": true,
+  "source_complete_tree_not_mirrored": true,
+  "original_compiler_and_fixture_code_head": "f9c8a13c06d2ecf1252b831b440c569604ed9fd8",
+  "carrier_repo": "ores-rate-limit-test/atto-ci",
+  "carrier_private": true,
+  "carrier_branch": "ci/atto-actor-isolation-compiled-guest-subset-20261120",
+  "carrier_commit": "d2e6a0d44074abfc722a9e4589a65ae6bec5345e",
+  "carrier_tree": "5f576c1fab80a6284a29ad1eaae288d4712a02cc",
+  "workflow_run_id": 44770032043,
+  "job_id": 136404901130,
+  "run_url": "https://github.com/ores-rate-limit-test/atto-ci/actions/runs/44770032043",
+  "run_conclusion": "success",
+  "stepful": true,
+  "toolchain": "rustc 1.100.0 (0ef1bc386 2026-11-09)",
+  "evidence_checks": {
+    "actual_atto_compiler_built": true,
+    "cargo_offline_locked": true,
+    "compiler_integration_tests": {
+      "passed": 11,
+      "failed": 0
+    },
+    "compiler_isolation_witness_tests": {
+      "passed": 5,
+      "failed": 0
+    },
+    "compiler_host_admission_tests": {
+      "passed": 12,
+      "failed": 0
+    },
+    "positive_atto_to_wasm_compilation": 2,
+    "wasm_validation_in_node": true,
+    "synthetic_trusted_host_guest_execution": true,
+    "compiled_actor_int_send_output": "42\\n",
+    "compiled_actor_bool_receive_output": "true\\n",
+    "negative_fixture_compiler_rejections_no_artifact": 9,
+    "negative_fixture_expected_diagnostics_confirmed": 9,
+    "exact_selected_source_blobs_verified": 68,
+    "original_source_full_tree_mirrored": false,
+    "real_browser_worker_scheduler_executed": false,
+    "production_actor_runtime_executed": false,
+    "actual_tenantvm_security_proved": false,
+    "cross_tenant_broker_executed": false,
+    "ffi_and_capability_confinement_proved": false,
+    "cross_org_checkout_token_used": false,
+    "source_org_required_checks_satisfied": false
+  },
+  "conformance_full_tree_receipt": {
+    "repo": "atto-lang/atto-platform-conformance",
+    "source_head": "06031a76634e9f41df1ff1cfd353d89b90625893",
+    "root_tree": "a5a26e1f0ab09a185b2e5d738db2272525931417",
+    "private_carrier_commit": "1374ab8ab7db5d570037372d8f934a17cf6a1c3b",
+    "source_blobs": 119,
+    "exact_root_tree_match": true,
+    "triggered_workflows": 6,
+    "successful_workflows": 6,
+    "typed_actor_source_only_run": "https://github.com/ores-rate-limit-test/atto-ci/actions/runs/44768350807",
+    "no_compiled_atto_guest_in_conformance_workflow": true
+  },
+  "governance": {
+    "draft": true,
+    "merge_authorized": false,
+    "backend_parity_not_certified": true
+  },
+  "notes": "Two actual Atto programs compiled to Wasm and actor entrypoints executed via minimal synchronous trusted Node host. This proves a bounded compiler/guest behavior slice, NOT untrusted actor sandboxing, authorized mailbox admission, or a production same-process TenantVM."
+}
