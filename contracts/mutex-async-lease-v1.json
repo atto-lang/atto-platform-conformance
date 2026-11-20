@@ -70,8 +70,23 @@
     {
       "id": "contention-nonparking",
       "kind": "runtime_probe",
-      "expected": "On one scheduler carrier, mutex waiter parks only logical continuation; independently runnable task progresses; FIFO/queue bounds and no busy spin",
-      "evidence_required": true
+      "expected": "On carrier A, an independent holder owns the lease without suspending inside its critical section. On carrier B, Task B's contended lock_async() parks only B's logical continuation; an unrelated Task C completes on carrier B before A releases. After A releases, B receives one grant. No blocked carrier or unbounded spin.",
+      "evidence_required": true,
+      "probe_carriers": 2,
+      "required_order": [
+        "A_ACQUIRE",
+        "B_PENDING",
+        "C_PROGRESS",
+        "A_RELEASE",
+        "B_GRANTED",
+        "B_RELEASE"
+      ],
+      "fail_if": [
+        "A_AWAIT_INSIDE_GUARD",
+        "C_PROGRESS_AFTER_A_RELEASE",
+        "SCHEDULER_CARRIER_BLOCKED",
+        "DUPLICATE_GRANT"
+      ]
     },
     {
       "id": "cancellation-grant-race",
