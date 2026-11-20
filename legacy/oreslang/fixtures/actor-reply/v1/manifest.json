@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "scope": "actor-reply-control-source-proposal-v1",
+  "cases": [
+    {
+      "id": "actor-explicit-respond",
+      "file": "explicit-respond.ores",
+      "sourceGitBlobSha1": "08d3f21d8d7377523586e84ceeaa67c168c15411",
+      "expect": "accept",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "browser-worker"
+      ]
+    },
+    {
+      "id": "return-match-value",
+      "file": "return-match-value.ores",
+      "sourceGitBlobSha1": "65673841325a95e40df9f275d605150462b88820",
+      "expect": "accept",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "browser-worker"
+      ]
+    },
+    {
+      "id": "do-match-value",
+      "file": "do-match-value.ores",
+      "sourceGitBlobSha1": "f896bd3bc72550a9ec1e5ca845a82737d760eb34",
+      "expect": "accept",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "browser-worker"
+      ]
+    },
+    {
+      "id": "reject-implicit-void-return",
+      "file": "invalid-implicit-void-return.ores",
+      "sourceGitBlobSha1": "444832a8d40ef3af224a76da2bd303ba0ff4be4f",
+      "expect": "reject",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "browser-worker"
+      ]
+    },
+    {
+      "id": "reject-double-response",
+      "file": "invalid-double-response.ores",
+      "sourceGitBlobSha1": "1ddbdd6b2e846914209a509912cba445593f074d",
+      "expect": "reject",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "browser-worker"
+      ]
+    },
+    {
+      "id": "reject-do-match-void-return",
+      "file": "invalid-do-match-void-return.ores",
+      "sourceGitBlobSha1": "a1cccde82d9287c0eac6025230eca91879477b2a",
+      "expect": "reject",
+      "confirmedBackends": [],
+      "pendingBackends": [
+        "java-graalvm",
+        "llvm",
+        "wasm",
+        "browser-worker"
+      ]
+    }
+  ],
+  "hostReference": {
+    "repo": "ores-truffle-oreslang/oreslang-wasm",
+    "pullRequest": 16,
+    "kind": "javascript-only",
+    "compilerAdmission": false
+  },
+  "notes": "No compiler can claim acceptance for these exact message enum + reply-control fixtures without a real binary and runtime execution or an explicitly specified parser-only stage. The JS reference tests verify behavior but do not promote any language backend."
+}

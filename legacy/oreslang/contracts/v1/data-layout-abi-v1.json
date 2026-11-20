@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "contract": "oreslang-data-layout-abi-v1",
+  "status": "reference-contract-not-production-certification",
+  "scalarTypes": {
+    "bool": {
+      "bytes": 1,
+      "align": 1
+    },
+    "i8": {
+      "bytes": 1,
+      "align": 1
+    },
+    "u8": {
+      "bytes": 1,
+      "align": 1
+    },
+    "i16": {
+      "bytes": 2,
+      "align": 2
+    },
+    "u16": {
+      "bytes": 2,
+      "align": 2
+    },
+    "i32": {
+      "bytes": 4,
+      "align": 4
+    },
+    "u32": {
+      "bytes": 4,
+      "align": 4
+    },
+    "f32": {
+      "bytes": 4,
+      "align": 4
+    },
+    "char32": {
+      "bytes": 4,
+      "align": 4
+    },
+    "ref32": {
+      "bytes": 4,
+      "align": 4
+    },
+    "i64": {
+      "bytes": 8,
+      "align": 8
+    },
+    "u64": {
+      "bytes": 8,
+      "align": 8
+    },
+    "f64": {
+      "bytes": 8,
+      "align": 8
+    }
+  },
+  "byteOrder": "target-native; serialization/wire byte order is a separate contract",
+  "layouts": {
+    "aos": "one segment; natural field alignment; row stride rounded to maximum field alignment",
+    "soa": "one segment per field; scalar stride equals scalar width",
+    "aosoa": "one segment of tiles; each field owns tileWidth adjacent scalar lanes; tile stride rounded to maximum field alignment",
+    "soaos": "one segment per declared field group; each segment is an array of naturally aligned compact subrecords"
+  },
+  "aosoa": {
+    "tileWidth": {
+      "minimum": 1,
+      "maximum": 1024,
+      "powerOfTwo": true
+    },
+    "tails": "capacity controls live rows; padded tail lanes are never live entities"
+  },
+  "soaos": {
+    "groups": "must form an exact, nonempty partition of declared fields; group order and field order are ABI-significant"
+  },
+  "handles": {
+    "row": "owner + store-domain + slot + generation; never a raw row pointer",
+    "structuralMutation": "blocked while conflicting field/slice loans exist"
+  },
+  "compressed32": {
+    "role": "actor-local managed object reference encoding; not ActorRef, native pointer, FFI handle, row handle, or capability",
+    "nullWord": "0x00000000",
+    "nonNullFormula": "word = (canonicalActorOffsetBytes / 8) + 1",
+    "decodeFormula": "canonicalActorOffsetBytes = (unsigned(word) - 1) * 8",
+    "canonicalObjectAlignmentBytes": 8,
+    "storageBytes": 4,
+    "maximumEncodedStartingOffsetBytes": "34359738352",
+    "maximumLogicalSpanBytes": "34359738360",
+    "storedInWiderCell": "all bits above bit 31 must be zero",
+    "mandatoryChecks": [
+      "owning actor/allocation domain",
+      "current actor incarnation",
+      "object-start issuance",
+      "generation/liveness",
+      "logical span and access bounds",
+      "type/layout identity",
+      "borrow/access privilege"
+    ],
+    "reuse": "canonical published object offsets do not recycle within one physical actor lifetime under compressed32-v1"
+  },
+  "unsupported": "unknown scalar/layout/profile or unrepresentable extent must fail before publishing an artifact"
+}

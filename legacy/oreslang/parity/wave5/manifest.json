@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "wave": 5,
+  "status": "candidate-fixtures-and-artifact-shape-gates-only",
+  "certifiedParity": false,
+  "backends": [
+    "java",
+    "llvm",
+    "net",
+    "forge",
+    "wasm"
+  ],
+  "tasks": [
+    {
+      "id": 21,
+      "name": "actor-memory-domains",
+      "proof": "real actor object ownership, local/explicit-shared arenas, loan/retirement/quotas and no host escape",
+      "refs": [
+        "java#1080",
+        "llvm#463",
+        "net#36",
+        "forge#29",
+        "wasm#34"
+      ]
+    },
+    {
+      "id": 22,
+      "name": "llvm-native-application-aot",
+      "proof": "compiled Oreslang guest as native ELF/PE/MachO, owned object graph and ABI calls, real execution, no guest interpreter fallback",
+      "refs": [
+        "llvm#361",
+        "llvm#264",
+        "llvm#484"
+      ]
+    },
+    {
+      "id": 23,
+      "name": "net-nativeaot-program",
+      "proof": "source→NativeAOT Windows x64/ARM64 native PE32+ without CLI directory, real guest execution and no CIL/JIT fallback",
+      "refs": [
+        "net#18",
+        "net#37"
+      ]
+    },
+    {
+      "id": 24,
+      "name": "forge-independent-native-codegen",
+      "proof": "Forge-native emitted machine code, SSA→instruction selection→register allocation/call frames, guest execution not Forge run interpreter",
+      "refs": [
+        "forge#30",
+        "forge#11"
+      ]
+    },
+    {
+      "id": 25,
+      "name": "llvm-to-wasm-profiles",
+      "proof": "pinned LLVM source compiler→wasm32 guest execution, controlled host imports, bounded memory and source graph",
+      "refs": [
+        "wasm#35",
+        "wasm#41",
+        "wasm#34"
+      ]
+    }
+  ],
+  "fixtures": [
+    {
+      "id": "actor-memory-read",
+      "path": "fixtures/actor-memory-read.ores",
+      "task": 21,
+      "backend": "java",
+      "mode": "admit",
+      "gitBlob": "d0b08b6278b7f02e346a8a96ebb71f1b33ef87dd",
+      "verified": false
+    },
+    {
+      "id": "actor-memory-escape-reject",
+      "path": "fixtures/actor-memory-escape-reject.ores",
+      "task": 21,
+      "backend": "java",
+      "mode": "reject",
+      "gitBlob": "bcbd630e455855773e1411eddd6dfa984c8452bc",
+      "verified": false
+    },
+    {
+      "id": "llvm-native-main",
+      "path": "fixtures/llvm-native-main.ores",
+      "task": 22,
+      "backend": "llvm",
+      "mode": "native-guest",
+      "gitBlob": "015f8b0f79aafa796a148d2adeff1574e8d6c491",
+      "verified": false
+    },
+    {
+      "id": "net-native-main",
+      "path": "fixtures/net-native-main.ores",
+      "task": 23,
+      "backend": "net",
+      "mode": "native-guest",
+      "gitBlob": "015f8b0f79aafa796a148d2adeff1574e8d6c491",
+      "verified": false
+    },
+    {
+      "id": "forge-native-main",
+      "path": "fixtures/forge-native-main.ores",
+      "task": 24,
+      "backend": "forge",
+      "mode": "native-guest",
+      "gitBlob": "015f8b0f79aafa796a148d2adeff1574e8d6c491",
+      "verified": false
+    },
+    {
+      "id": "wasm-native-main",
+      "path": "fixtures/wasm-native-main.ores",
+      "task": 25,
+      "backend": "wasm",
+      "mode": "wasm-guest",
+      "gitBlob": "015f8b0f79aafa796a148d2adeff1574e8d6c491",
+      "verified": false
+    }
+  ],
+  "requiredProof": [
+    "real source compiler binary and build provenance",
+    "real compiled guest artifact identity and type",
+    "actual guest observation on intended target",
+    "independent binding to exact source tree and compiler dependencies",
+    "memory/isolation and no guest interpreter/JIT fallback evidence"
+  ]
+}

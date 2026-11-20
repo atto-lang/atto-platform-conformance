@@ -1,0 +1,52 @@
+# Exact-head bounded TLC safety model, not executable Atto broker certification.
+name: Actor mailbox CONTROL and generation TLC (host-only)
+on:
+  pull_request:
+    paths:
+      - 'formal/ActorMailbox*'
+      - '.github/workflows/actor-mailbox-tlc.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  actor-mailbox-tlc:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Bind source SHA
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git diff --quiet HEAD --
+      - name: Run bounded TLC and require three negative counterexamples
+        shell: bash
+        working-directory: formal
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 --retry-delay 2 -o tla2tools.jar https://github.com/zactionsz/tla-tools/releases/download/tla2tools-2026.08.11.125311/tla2tools.jar
+          echo 'ab323b79802aedc3203b3f9af37c6aca3ed43f4e0225b36f2aa77b26de46c05f  tla2tools.jar' | sha256sum -c -
+          java -Xmx1g -cp tla2tools.jar tlc2.TLC -deadlock -workers 1 -config ActorMailboxSafety.cfg ActorMailboxSafety.tla > normal.log 2>&1 || { cat normal.log; exit 1; }
+          grep -q 'Model checking completed' normal.log || { cat normal.log; exit 1; }
+          for case in Priority Stale Lost; do
+            case "$case" in
+              Priority) expected='ControlNeverOvertaken' ;;
+              Stale) expected='OnlyCurrentGeneration' ;;
+              Lost) expected='Conservation' ;;
+            esac
+            if java -Xmx1g -cp tla2tools.jar tlc2.TLC -deadlock -workers 1 -config "ActorMailboxUnsafe${case}.cfg" ActorMailboxSafety.tla > "unsafe-${case}.log" 2>&1; then
+              cat "unsafe-${case}.log"
+              echo "Mutation ${case} escaped verification" >&2
+              exit 1
+            fi
+            grep -q "Invariant ${expected} is violated" "unsafe-${case}.log" || { cat "unsafe-${case}.log"; exit 1; }
+            echo "MUTATION_REJECTED case=${case} invariant=${expected}"
+          done
+          echo 'ACTOR_MAILBOX_TLC_PASS model=bounded source_sha='$(git rev-parse HEAD)
+          echo 'COMPILED_ATTO_GUEST=NOT_EXECUTED'

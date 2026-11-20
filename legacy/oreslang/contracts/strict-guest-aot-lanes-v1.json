@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 1,
+  "id": "strict-guest-aot-native-release-lanes-v1",
+  "status": "NOT_EXECUTED",
+  "policy": "Targets only: this source-free inventory does not attest compiler steps, signed artifacts or guest execution.",
+  "sourceContract": "github.com/ores-truffle-oreslang/oreslang-platform-conformance/issues/321",
+  "signedArtifactDependency": "contracts/v2/aot-artifact (draft PR #325; independent trust and loader verification required)",
+  "backends": [
+    "java-graalvm",
+    "llvm",
+    "net-nativeaot",
+    "forge"
+  ],
+  "platforms": [
+    "linux-x64",
+    "linux-arm64",
+    "windows-x64",
+    "macos-arm64"
+  ],
+  "requiredCases": [
+    "guest-return-42",
+    "guest-return-14",
+    "checked-overflow-reject",
+    "unsupported-guest-reject"
+  ],
+  "lanes": [
+    {
+      "id": "java-graalvm-linux-x64",
+      "backend": "java-graalvm",
+      "platform": "linux-x64",
+      "artifactFormat": "ELF64",
+      "mode": "program-specific-full-guest-aot",
+      "status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "java-graalvm-linux-arm64",
+      "backend": "java-graalvm",
+      "platform": "linux-arm64",
+      "artifactFormat": "ELF64",
+      "mode": "program-specific-full-guest-aot",
+      "status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "java-graalvm-windows-x64",
+      "backend": "java-graalvm",
+      "platform": "windows-x64",
+      "artifactFormat": "PE32+",
+      "mode": "program-specific-full-guest-aot",
+      "status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "java-graalvm-macos-arm64",
+      "backend": "java-graalvm",
+      "platform": "macos-arm64",
+      "artifactFormat": "Mach-O64",
+      "mode": "program-specific-full-guest-aot",
+      "status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "llvm-linux-x64",
+      "backend": "llvm",
+      "platform": "linux-x64",
+      "artifactFormat": "ELF64",
+      "mode": "program-specific-full-guest-aot",
+      "status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "llvm-linux-arm64",
+      "backend": "llvm",
+      "platform": "linux-arm64",
+      "artifactFormat": "ELF64",
+      "mode": "program-specific-full-guest-aot",
+      "status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "llvm-windows-x64",
+      "backend": "llvm",
+      "platform": "windows-x64",
+      "artifactFormat": "PE32+",
+      "mode": "program-specific-full-guest-aot",
+      "status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "llvm-macos-arm64",
+      "backend": "llvm",
+      "platform": "macos-arm64",
+      "artifactFormat": "Mach-O64",
+      "mode": "program-specific-full-guest-aot",
+      "status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "net-nativeaot-linux-x64",
+      "backend": "net-nativeaot",
+      "platform": "linux-x64",
+      "artifactFormat": "ELF64",
+      "mode": "program-specific-full-guest-aot",
+      "status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "net-nativeaot-linux-arm64",
+      "backend": "net-nativeaot",
+      "platform": "linux-arm64",
+      "artifactFormat": "ELF64",
+      "mode": "program-specific-full-guest-aot",
+      "status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "net-nativeaot-windows-x64",
+      "backend": "net-nativeaot",
+      "platform": "windows-x64",
+      "artifactFormat": "PE32+",
+      "mode": "program-specific-full-guest-aot",
+      "status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "net-nativeaot-macos-arm64",
+      "backend": "net-nativeaot",
+      "platform": "macos-arm64",
+      "artifactFormat": "Mach-O64",
+      "mode": "program-specific-full-guest-aot",
+      "status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "forge-linux-x64",
+      "backend": "forge",
+      "platform": "linux-x64",
+      "artifactFormat": "ELF64",
+      "mode": "program-specific-full-guest-aot",
+      "status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "forge-linux-arm64",
+      "backend": "forge",
+      "platform": "linux-arm64",
+      "artifactFormat": "ELF64",
+      "mode": "program-specific-full-guest-aot",
+      "status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "forge-windows-x64",
+      "backend": "forge",
+      "platform": "windows-x64",
+      "artifactFormat": "PE32+",
+      "mode": "program-specific-full-guest-aot",
+      "status": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "id": "forge-macos-arm64",
+      "backend": "forge",
+      "platform": "macos-arm64",
+      "artifactFormat": "Mach-O64",
+      "mode": "program-specific-full-guest-aot",
+      "status": "NOT_EXECUTED",
+      "receipt": null
+    }
+  ],
+  "wasmProducts": [
+    {
+      "id": "portable-wasm",
+      "status": "NOT_EXECUTED",
+      "proof": "portable .wasm guest module, bounded Wasm host semantics"
+    },
+    {
+      "id": "precompiled-wasm-host",
+      "status": "NOT_EXECUTED",
+      "proof": "precompiled guest module + native host, no Wasm JIT fallback"
+    }
+  ]
+}

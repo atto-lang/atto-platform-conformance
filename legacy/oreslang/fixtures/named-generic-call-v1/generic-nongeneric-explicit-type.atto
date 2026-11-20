@@ -1,0 +1,6 @@
+fnc double(int value) -> int ::
+  return value + value
+end
+fnc main() -> int ::
+  return double<int>(21)
+end

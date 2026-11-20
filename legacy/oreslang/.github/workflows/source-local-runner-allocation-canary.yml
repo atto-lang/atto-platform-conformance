@@ -1,0 +1,37 @@
+# Metadata-only diagnostic for CI bootstrap issue #69.
+# No source checkout, credentials, repository file reads, network fetches,
+# cross-organization exports, or compiler/runtime tests.
+name: Source-local runner allocation canary (metadata only)
+on:
+  push:
+    branches:
+      - ci/source-local-allocation-canary-20261018
+  pull_request:
+    paths:
+      - .github/workflows/source-local-runner-allocation-canary.yml
+      - verification/verify-singleton-shared-state-v1.mjs
+      - verification/SINGLETON_V1_EVIDENCE_RUNBOOK.md
+      - contracts/singleton-shared-state-v1.json
+      - evidence/singleton-shared-state-v1.json
+  workflow_dispatch:
+permissions: {}
+jobs:
+  source-local-canary:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Confirm a runner executed a shell step
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_REPOSITORY}" = 'ores-truffle-oreslang/oreslang-platform-conformance'
+          printf 'RUNNER_ALLOCATED source_local=true runner_os=%s run_id=%s\n' "${RUNNER_OS}" "${GITHUB_RUN_ID}"
+          printf '{"kind":"source-local-metadata-only","run_id":"%s","head_sha":"%s","runner_os":"%s","source_checkout":false,"source_export":false,"compiler_tested":false}\n' \
+            "${GITHUB_RUN_ID}" "${GITHUB_SHA}" "${RUNNER_OS}" > runner-canary.json
+      - name: Publish metadata-only canary receipt
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: source-local-runner-allocation-receipt
+          path: runner-canary.json
+          if-no-files-found: error
+          retention-days: 1

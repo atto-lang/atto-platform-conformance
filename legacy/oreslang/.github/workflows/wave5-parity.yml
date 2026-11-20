@@ -1,0 +1,39 @@
+name: Wave 5 native AOT and memory evidence controls (not compiler parity)
+on:
+  pull_request:
+    paths:
+      - 'parity/wave5/**'
+      - '.github/workflows/wave5-parity.yml'
+  push:
+    branches:
+      - 'feat/parity-wave5-memory-native-aot-wasm-20261016'
+    paths:
+      - 'parity/wave5/**'
+permissions:
+  contents: read
+jobs:
+  native-artifact-controls:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact source head
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse --verify HEAD)" = "$EXPECTED_SHA"
+          test -z "$(git status --porcelain --untracked-files=all)"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Confirm native Clang control compiler
+        run: clang --version
+      - name: Verify exact six fixture blob identities without compiler parity promotion
+        run: node parity/wave5/bin/validate.mjs --validate
+      - name: Run bounded ELF, PE, Mach-O, Wasm and actor memory tests
+        run: node --test parity/wave5/tests/*.test.mjs

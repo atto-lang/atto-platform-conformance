@@ -1,0 +1,7 @@
+pub fnc main(): void {
+  let int count = 1;
+  let borrowed = rt borrow count;
+  let Task<int> job = task { return 1; };
+  let int result = await job;
+  return;
+}

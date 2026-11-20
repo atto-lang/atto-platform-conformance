@@ -1,0 +1,219 @@
+{
+  "schema": "oreslang.tensor-span-v1",
+  "scalar": "signed-i64",
+  "semantics": {
+    "indexing": "start + (count - 1)*stride < backing_elements for count > 0, in mathematical integers",
+    "empty": "zero count valid when 0 <= start <= backing_elements and stride > 0",
+    "authority": "metadata only; no allocation access, owner, actor or GPU capability"
+  },
+  "cases": [
+    {
+      "id": "full",
+      "backing_elements": "8",
+      "start_element": "0",
+      "element_count": "8",
+      "element_stride": "1",
+      "valid": true
+    },
+    {
+      "id": "stepped",
+      "backing_elements": "8",
+      "start_element": "1",
+      "element_count": "3",
+      "element_stride": "3",
+      "valid": true
+    },
+    {
+      "id": "empty_end",
+      "backing_elements": "8",
+      "start_element": "8",
+      "element_count": "0",
+      "element_stride": "3",
+      "valid": true
+    },
+    {
+      "id": "zero_storage_empty",
+      "backing_elements": "0",
+      "start_element": "0",
+      "element_count": "0",
+      "element_stride": "1",
+      "valid": true
+    },
+    {
+      "id": "max_last",
+      "backing_elements": "9223372036854775807",
+      "start_element": "9223372036854775806",
+      "element_count": "1",
+      "element_stride": "1",
+      "valid": true
+    },
+    {
+      "id": "past_end",
+      "backing_elements": "8",
+      "start_element": "7",
+      "element_count": "2",
+      "element_stride": "1",
+      "valid": false
+    },
+    {
+      "id": "nonempty_at_end",
+      "backing_elements": "8",
+      "start_element": "8",
+      "element_count": "1",
+      "element_stride": "1",
+      "valid": false
+    },
+    {
+      "id": "zero_stride",
+      "backing_elements": "8",
+      "start_element": "1",
+      "element_count": "2",
+      "element_stride": "0",
+      "valid": false
+    },
+    {
+      "id": "negative_stride",
+      "backing_elements": "8",
+      "start_element": "1",
+      "element_count": "2",
+      "element_stride": "-2",
+      "valid": false
+    },
+    {
+      "id": "overflow_guard",
+      "backing_elements": "9223372036854775807",
+      "start_element": "1",
+      "element_count": "9223372036854775807",
+      "element_stride": "2",
+      "valid": false
+    },
+    {
+      "id": "negative_capacity",
+      "backing_elements": "-1",
+      "start_element": "0",
+      "element_count": "0",
+      "element_stride": "1",
+      "valid": false
+    },
+    {
+      "id": "negative_start",
+      "backing_elements": "8",
+      "start_element": "-1",
+      "element_count": "1",
+      "element_stride": "1",
+      "valid": false
+    },
+    {
+      "id": "negative_count",
+      "backing_elements": "8",
+      "start_element": "0",
+      "element_count": "-1",
+      "element_stride": "1",
+      "valid": false
+    },
+    {
+      "id": "empty_past_end",
+      "backing_elements": "8",
+      "start_element": "9",
+      "element_count": "0",
+      "element_stride": "1",
+      "valid": false
+    },
+    {
+      "id": "last_index_off_by_one",
+      "backing_elements": "8",
+      "start_element": "0",
+      "element_count": "3",
+      "element_stride": "4",
+      "valid": false
+    },
+    {
+      "id": "max_contiguous",
+      "backing_elements": "9223372036854775807",
+      "start_element": "0",
+      "element_count": "9223372036854775807",
+      "element_stride": "1",
+      "valid": true
+    },
+    {
+      "id": "max_stride_invalid",
+      "backing_elements": "9223372036854775807",
+      "start_element": "0",
+      "element_count": "9223372036854775807",
+      "element_stride": "2",
+      "valid": false
+    },
+    {
+      "id": "zero_nonempty",
+      "backing_elements": "0",
+      "start_element": "0",
+      "element_count": "1",
+      "element_stride": "1",
+      "valid": false
+    },
+    {
+      "id": "empty_max_end",
+      "backing_elements": "9223372036854775807",
+      "start_element": "9223372036854775807",
+      "element_count": "0",
+      "element_stride": "9223372036854775807",
+      "valid": true
+    },
+    {
+      "id": "max_end_nonempty",
+      "backing_elements": "9223372036854775807",
+      "start_element": "9223372036854775807",
+      "element_count": "1",
+      "element_stride": "9223372036854775807",
+      "valid": false
+    },
+    {
+      "id": "negative_min",
+      "backing_elements": "-9223372036854775808",
+      "start_element": "0",
+      "element_count": "0",
+      "element_stride": "1",
+      "valid": false
+    },
+    {
+      "id": "valid_one",
+      "backing_elements": "1",
+      "start_element": "0",
+      "element_count": "1",
+      "element_stride": "1",
+      "valid": true
+    },
+    {
+      "id": "valid_one_large_stride",
+      "backing_elements": "1",
+      "start_element": "0",
+      "element_count": "1",
+      "element_stride": "9223372036854775807",
+      "valid": true
+    },
+    {
+      "id": "invalid_count_two",
+      "backing_elements": "1",
+      "start_element": "0",
+      "element_count": "2",
+      "element_stride": "1",
+      "valid": false
+    },
+    {
+      "id": "valid_large_start",
+      "backing_elements": "9223372036854775807",
+      "start_element": "9223372036854775805",
+      "element_count": "2",
+      "element_stride": "1",
+      "valid": true
+    },
+    {
+      "id": "invalid_large_start",
+      "backing_elements": "9223372036854775807",
+      "start_element": "9223372036854775805",
+      "element_count": "2",
+      "element_stride": "2",
+      "valid": false
+    }
+  ]
+}

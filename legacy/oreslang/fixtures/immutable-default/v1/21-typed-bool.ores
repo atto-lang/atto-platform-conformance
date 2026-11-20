@@ -1,0 +1,1 @@
+fnc main(): int { bool ready = true; if ready; do return 7; else return 0; fi }

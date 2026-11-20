@@ -1,0 +1,6 @@
+define class Foo as
+  let int value=40;
+  pub x(int n):int{return n;}
+  pub y(mut self, int n):int{return self.value+n;}
+end
+pub fnc main():int{let mut Foo f=new Foo();return f.x(1)+f.y(1);}

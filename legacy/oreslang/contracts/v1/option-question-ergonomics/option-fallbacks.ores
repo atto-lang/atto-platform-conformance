@@ -1,0 +1,23 @@
+// Experimental Option/Result ergonomics fixture. This is source to test
+// against future target compiler builds, NOT evidence of executed parity.
+// The literal None fallback needs Java draft #1907 or equivalent support.
+define module core as
+  pub fnc option_default(Option<int> input): int {
+    return input.unwrap_or_else(() -> 42);
+  }
+  pub fnc option_recover(Option<int> input): Option<int> {
+    return input.or_else(() -> Some(8));
+  }
+  pub fnc option_still_none(Option<int> input): Option<int> {
+    return input.or_else(() -> None);
+  }
+  pub fnc option_to_result(Option<int> input, int error): Result<int, int> {
+    return input.ok_or(error);
+  }
+  pub fnc result_default(Result<int, int> input): int {
+    return input.unwrap_or_else((int error) -> error);
+  }
+  pub fnc result_recover(Result<int, int> input): Result<int, int> {
+    return input.or_else((int error) -> Ok(error));
+  }
+end

@@ -1,0 +1,37 @@
+// Candidate Oreslang scalar admission core for versioned scoped reads.
+// This is pure deterministic source, NOT a network client or a parity receipt.
+// Real Java/LLVM/WASM/Cranelift/.NET guest compilation is required separately.
+define module scoped_sync_admission as
+  // Server checkpoints are nonnegative, ordered, and never projected ahead.
+  pub fnc valid_checkpoint(int durable, int observed, int proposed): bool {
+    if durable < 0 || observed < durable ||
+      proposed < durable || proposed > observed; then
+      return false;
+    fi
+    return true;
+  }
+
+  // Every emitted event advances monotonically within its page checkpoint.
+  pub fnc valid_change_order(int previous, int next, int page_checkpoint): bool {
+    if previous < 0 || next <= previous || next > page_checkpoint; then
+      return false;
+    fi
+    return true;
+  }
+
+  // A deleted record retains its tombstone revision. Equal is a replay.
+  pub fnc valid_revision(int prior, int incoming): bool {
+    if prior < 0 || incoming <= prior; then
+      return false;
+    fi
+    return true;
+  }
+
+  // An abandoned subscription generation may not claim new results.
+  pub fnc valid_generation(int observed, int current, int claim): bool {
+    if current <= 0 || observed != current || claim != current; then
+      return false;
+    fi
+    return true;
+  }
+end

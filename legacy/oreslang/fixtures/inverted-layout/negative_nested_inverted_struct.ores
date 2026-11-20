@@ -1,0 +1,10 @@
+// EXPECT-COMPILE-ERROR: nested inverted struct requires explicitly supported boundary.
+define inverted struct Inner as
+    float x;
+end
+
+define inverted class Outer as
+    Inner inner;
+end
+
+fnc main(): int { return 0; }

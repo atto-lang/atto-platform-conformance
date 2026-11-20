@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "contract": "oreslang-safe-suspension-v1",
+  "backendEvidence": {
+    "java": "pending",
+    "llvm": "pending",
+    "wasm": "pending",
+    "browser": "pending"
+  },
+  "cases": [
+    {
+      "id": "await-owned",
+      "kind": "await",
+      "hasHeapContinuation": true,
+      "expect": "ADMIT"
+    },
+    {
+      "id": "blocking-owned",
+      "kind": "blocking-call",
+      "hasHeapContinuation": true,
+      "expect": "ADMIT"
+    },
+    {
+      "id": "readch-owned",
+      "kind": "readch",
+      "hasHeapContinuation": true,
+      "expect": "ADMIT"
+    },
+    {
+      "id": "writech-owned",
+      "kind": "writech",
+      "hasHeapContinuation": true,
+      "expect": "ADMIT"
+    },
+    {
+      "id": "select-owned",
+      "kind": "select",
+      "hasHeapContinuation": true,
+      "expect": "ADMIT"
+    },
+    {
+      "id": "cooperate-owned",
+      "kind": "cooperate",
+      "hasHeapContinuation": true,
+      "expect": "ADMIT"
+    },
+    {
+      "id": "auto-loop-owned",
+      "kind": "auto-backedge",
+      "hasHeapContinuation": true,
+      "expect": "ADMIT"
+    },
+    {
+      "id": "generator-owned",
+      "kind": "generator-value",
+      "hasHeapContinuation": true,
+      "expect": "EMIT_AND_PARK"
+    },
+    {
+      "id": "await-sync-stack",
+      "kind": "await",
+      "hasHeapContinuation": false,
+      "expect": "REJECT",
+      "reason": "continuation-not-lowered"
+    },
+    {
+      "id": "auto-sync-stack",
+      "kind": "auto-backedge",
+      "hasHeapContinuation": false,
+      "expect": "DEFER",
+      "reason": "continuation-not-lowered"
+    },
+    {
+      "id": "cooperate-loan",
+      "kind": "cooperate",
+      "hasHeapContinuation": true,
+      "expect": "REJECT",
+      "reason": "loan-across-suspension",
+      "liveBorrow": true
+    },
+    {
+      "id": "auto-loan",
+      "kind": "auto-backedge",
+      "hasHeapContinuation": true,
+      "expect": "DEFER",
+      "reason": "loan-across-suspension",
+      "liveBorrow": true
+    },
+    {
+      "id": "await-guard",
+      "kind": "await",
+      "hasHeapContinuation": true,
+      "expect": "REJECT",
+      "reason": "guard-across-suspension",
+      "liveGuard": true
+    },
+    {
+      "id": "cooperate-critical",
+      "kind": "cooperate",
+      "hasHeapContinuation": true,
+      "expect": "REJECT",
+      "reason": "plain-critical-no-suspend",
+      "plainCritical": true
+    },
+    {
+      "id": "auto-critical",
+      "kind": "auto-backedge",
+      "hasHeapContinuation": true,
+      "expect": "DEFER",
+      "reason": "plain-critical-no-suspend",
+      "plainCritical": true
+    },
+    {
+      "id": "await-host-frame",
+      "kind": "await",
+      "hasHeapContinuation": true,
+      "expect": "REJECT",
+      "reason": "host-frame-not-captured",
+      "hostFrame": true
+    },
+    {
+      "id": "auto-partial-effect",
+      "kind": "auto-backedge",
+      "hasHeapContinuation": true,
+      "expect": "DEFER",
+      "reason": "partial-effect-not-committed",
+      "partialEffect": true
+    },
+    {
+      "id": "await-finally-unlowered",
+      "kind": "await",
+      "hasHeapContinuation": true,
+      "expect": "REJECT",
+      "reason": "cleanup-not-lowered",
+      "inCleanup": true
+    },
+    {
+      "id": "await-finally-lowered",
+      "kind": "await",
+      "hasHeapContinuation": true,
+      "expect": "ADMIT",
+      "inCleanup": true,
+      "cleanupLowered": true
+    },
+    {
+      "id": "untrusted-auto-unproven",
+      "kind": "auto-backedge",
+      "hasHeapContinuation": true,
+      "expect": "DEFER",
+      "reason": "logical-quota-not-continuous",
+      "untrusted": true
+    },
+    {
+      "id": "untrusted-await-unproven",
+      "kind": "await",
+      "hasHeapContinuation": true,
+      "expect": "REJECT",
+      "reason": "logical-quota-not-continuous",
+      "untrusted": true
+    },
+    {
+      "id": "untrusted-proven",
+      "kind": "auto-backedge",
+      "hasHeapContinuation": true,
+      "expect": "ADMIT",
+      "untrusted": true,
+      "quotaContinuous": true
+    }
+  ]
+}

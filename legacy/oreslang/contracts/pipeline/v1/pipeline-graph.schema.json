@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:oreslang:actor-pipeline:proposal-v1",
+  "title": "Typed actor pipeline proposal v1 (structural only)",
+  "description": "Structural contract. validatePipelineContract checks ordered adjacency, nominal types, role positions, least privilege, and policy constants. Not proof of compiler admission.",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion","kind","operations","semantics","stages","edges","confirmedBackends","pendingBackends"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "kind": {"const": "typed-actor-pipeline-proposal-v1"},
+    "operations": {"type":"object","additionalProperties":false,"required":["forward","backward"],"properties":{"forward":{"const":"self.forward"},"backward":{"const":"self.backward"}}},
+    "semantics": {"type":"object","additionalProperties":false,"required":["forwardAcknowledges","backwardCorrelation","supervisorDataRouting","generationFencing","atomicPublication"],"properties":{"forwardAcknowledges":{"const":"mailbox-admission"},"backwardCorrelation":{"const":"explicit"},"supervisorDataRouting":{"const":false},"generationFencing":{"const":true},"atomicPublication":{"const":true}}},
+    "stages": {"type":"array","minItems":3,"maxItems":32,"items":{"$ref":"#/$defs/stage"}},
+    "edges": {"type":"array","minItems":2,"maxItems":31,"items":{"$ref":"#/$defs/edge"}},
+    "confirmedBackends": {"const": []},
+    "pendingBackends": {"const": ["java-graalvm","llvm","wasm","browser-worker"]}
+  },
+  "$defs": {
+    "nominalType": {"type":"string","maxLength":128,"pattern":"^[A-Z][A-Za-z0-9_]*(\\.[A-Z][A-Za-z0-9_]*)*$"},
+    "nullableType": {"anyOf":[{"$ref":"#/$defs/nominalType"},{"type":"null"}]},
+    "stage": {"type":"object","additionalProperties":false,"required":["id","role","forwardIn","forwardOut","backwardIn","backwardOut"],"properties":{"id":{"type":"string","pattern":"^[a-z][a-z0-9-]{0,63}$"},"role":{"enum":["readable","transform","writable"]},"forwardIn":{"$ref":"#/$defs/nullableType"},"forwardOut":{"$ref":"#/$defs/nullableType"},"backwardIn":{"$ref":"#/$defs/nullableType"},"backwardOut":{"$ref":"#/$defs/nullableType"}}},
+    "edge": {"type":"object","additionalProperties":false,"required":["from","to","forwardType","backwardType","capacity"],"properties":{"from":{"type":"string","pattern":"^[a-z][a-z0-9-]{0,63}$"},"to":{"type":"string","pattern":"^[a-z][a-z0-9-]{0,63}$"},"forwardType":{"$ref":"#/$defs/nominalType"},"backwardType":{"$ref":"#/$defs/nominalType"},"capacity":{"type":"integer","minimum":1,"maximum":256}}}
+  }
+}

@@ -1,0 +1,7 @@
+pub routine main(): void {
+  let Fnc<int, int> down = |int n| -> {
+    return n == 0 ? 0 : down(n - 1);
+  };
+  stdio.stdout.write(down(100000));
+  return;
+}

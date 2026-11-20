@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "description": "Pinned portable mutable actor-state Oreslang guest fixture. Metadata only: the private .ores file is not duplicated; host tests and model tests are never backend execution evidence.",
+  "source": {
+    "repository": "ores-truffle-oreslang/oreslang-source.java",
+    "commit": "341bb390dbd7171be4ebf95c6142ab8517ae9b65",
+    "path": "src/test/resources/parity/actor-critical-modes/mutable_state_write_then_read.ores",
+    "gitBlob": "1a261a25dd722e577c0f4d313eac79007675d917"
+  },
+  "expected": {
+    "kind": "compile-and-run",
+    "exitCode": 0,
+    "stdout": "mutable-state-container-ok",
+    "semantics": [
+      "actor-private-mutable-container",
+      "write-loan-in-place-twice",
+      "read-loan-observes-committed-value",
+      "actor-stop-after-message"
+    ]
+  },
+  "negativeFixtureRegistry": "critical-state-guest-fixtures-v1.json",
+  "requiredNegativeIds": [
+    "reject_read_mutation",
+    "reject_read_mutable_reborrow",
+    "reject_await_in_read",
+    "reject_await_in_write",
+    "reject_state_escape",
+    "reject_direct_state_access",
+    "reject_string_forged_write_mode",
+    "reject_unknown_mode"
+  ],
+  "backendEvidence": {
+    "java": "not-executed",
+    "llvm": "not-executed",
+    "wasm": "not-executed",
+    "cranelift": "not-executed",
+    "net": "not-executed",
+    "forge": "not-executed"
+  },
+  "requirements": {
+    "compiler": "real Oreslang compiler must compile the pinned guest source (not a rewritten equivalent)",
+    "runtime": "run emitted guest program and observe exact output and exit code",
+    "security": "run inside approved repository/runner boundary; no private-source alternate-org mirroring",
+    "evidence": "exact compiler/backend head, guest blob SHA, stepful build/run logs; local harness receipt alone is diagnostic",
+    "failClosed": "do not mark a backend PASS on missing, skipped, zero-step or model-only execution",
+    "cranelift": "Separate Rust Cranelift stage-0 is scalar-only: actor mutable state must fail closed until actor, borrow, async and scheduler lowering are implemented."
+  }
+}
