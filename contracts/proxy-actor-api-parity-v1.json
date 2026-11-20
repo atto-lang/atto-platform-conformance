@@ -58,10 +58,10 @@
       "authenticated_transport_status": "NOT_EXECUTED",
       "native_aot_status": "NOT_EXECUTED",
       "guest_evidence": null,
-      "notes": "M6 exact-ticket scheduler and M10 selector combined on #44; additional restricted source-compiled sender in process A invokes host-injected broker and compiled source receiver B in test harness. Exactly four sender source/test Git blobs compiled and passed locally on JDK21; combined source head has no executable CI and all canonical guest IPC gates remain unexecuted.",
+      "notes": "Exact four original restricted-sender source/test blobs locally compiled and executed on JDK21, including adversarial syntax rejection; offline source-head/blob gate added. Consolidated M6+M10 selector cross-process new source head and private runner attempts still NOT_EXECUTED, latest twelve-blob carrier run 44662438767 failed with zero steps. Native/compiled canonical guest IPC gates remain unexecuted.",
       "host_ticket_scope": "REAL_MAILBOX",
       "host_ticket_status": "CURRENT_HEAD_NOT_EXECUTED",
-      "host_ticket_pr_head_sha": "ea9b4218a90fe2dbcaeeb5a8b612d894acdd4b9b",
+      "host_ticket_pr_head_sha": "57ce436879fd03b334efcc50db9348ec15179c95",
       "host_ticket_ci": null,
       "host_ticket_previous_verified": {
         "source_head_sha": "e7dbc3f9f584f16c872af8858335767986ea9be8",
@@ -72,12 +72,13 @@
       "gateway_integration": {
         "kind": "EXPERIMENTAL_M10_SELECTOR_USES_M6_RUNTIME_ISSUED_TICKET",
         "status": "NOT_EXECUTED_CURRENT_HEAD",
-        "source_head_sha": "ea9b4218a90fe2dbcaeeb5a8b612d894acdd4b9b",
+        "source_head_sha": "57ce436879fd03b334efcc50db9348ec15179c95",
         "source_pr": "https://github.com/atto-lang/atto-source.java/pull/44",
         "prior_independent_m10_ci": "https://github.com/bait-bikes-test/atto-ci/actions/runs/44635718533",
         "blocked_attempts": [
           "https://github.com/bait-bikes-test/atto-ci/actions/runs/44660093745",
-          "https://github.com/ores-stack/ores-stack-cli/actions/runs/44660323082"
+          "https://github.com/ores-stack/ores-stack-cli/actions/runs/44660323082",
+          "https://github.com/ores-stack/ores-stack-cli/actions/runs/44662438767"
         ],
         "caveats": "Both consolidation attempts failed before any job steps (0); no compiled Atto sender, canonical authenticated transport or full guest parity."
       },
@@ -91,7 +92,10 @@
         "tested_toolchain": "OpenJDK javac 21.0.12.1 --release 21 -Xlint:all,-try -Werror",
         "generated_class": "M10GeneratedSender",
         "local_test_marker": "M10_COMPILED_RESTRICTED_ATTO_SENDER_BROKER_AND_NEGATIVES=PASS",
-        "limits": "Compiled Atto preview only. Host injected callback, not canonical parser/type checking, suspends lowering, TenantVM security or verified two-process IPC."
+        "limits": "Compiled Atto preview only. Host injected callback, not canonical parser/type checking, suspends lowering, TenantVM security or verified two-process IPC.",
+        "verified_ssh_free_blob_count": 4,
+        "offline_test_script_sha": "46bebe944a4f8e91666b2529f94f7ea229cec396",
+        "tested_profile": "isolated exact-original-blob local Git checkout, --release 21 and -Werror; no M6/M10 IPC linked"
       }
     },
     {
