@@ -17,7 +17,7 @@ test('all eleven backends remain uncertified for these new fixtures', () => {
 });
 test('source-only target registry is complete and has both outcomes', () => {
   const ids = new Set();
-  assert.equal(m.cases.length, 20);
+  assert.equal(m.cases.length, 21);
   let positive = 0, negative = 0;
   for (const c of m.cases) {
     assert.ok(!ids.has(c.id)); ids.add(c.id);
@@ -37,7 +37,9 @@ test('source-only target registry is complete and has both outcomes', () => {
     }
   }
   assert.equal(positive, 14);
-  assert.equal(negative, 6);
+  assert.equal(negative, 7);
   assert.ok(ids.has('parse-id-ok'));
   assert.ok(ids.has('reject-impossible-join'));
+  assert.ok(ids.has('reject-obsolete-option-trap-binding'));
+
 });
