@@ -57,6 +57,24 @@ test('operator boundaries and receipt obligations reject inferred duplex or sile
   assert.equal(contract.operator_edges.functional_forward, '|>');
   assert.equal(contract.operator_edges.functional_reverse, '<|');
   const byId = new Map(contract.cases.map(v => [v.id, v]));
+  // A reverse-written chain must not be reported as backwards DATA flow.
+  assert.deepEqual(
+    byId.get('actor-forward').expected_data_edges,
+    byId.get('actor-reverse').expected_data_edges,
+  );
+  assert.deepEqual(
+    byId.get('mixed-channel-stream-forward').expected_data_edges,
+    byId.get('mixed-channel-stream-reverse').expected_data_edges,
+  );
+  for (const c of contract.cases.filter(v=>v.expect==='accept_typechecked_graph')) {
+    assert.ok(c.expected_data_edges?.length>=1);
+    assert.ok(c.expected_data_edges.every(e=>
+      e.source && e.sink && e.payload && e.source!==e.sink));
+  }
+  assert.equal(contract.normalization_contract.preserve_lexical_constructor_order,true);
+  assert.equal(contract.normalization_contract.evaluate_each_stage_once,true);
+  assert.equal(contract.normalization_contract.directed_edges_never_supervisor_control,true);
+  assert.equal(contract.normalization_contract.reverse_operator_does_not_imply_duplex,true);
   assert.equal(byId.get('actor-forward').required_direction, 'Producer->Consumer');
   assert.equal(byId.get('actor-reverse').required_direction, 'Producer->Consumer');
   assert.match(byId.get('actor-duplicate-direction').required_direction, /NEVER duplex/);
