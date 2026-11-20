@@ -207,7 +207,7 @@
       "repo": "atto-lang/atto-source.forge",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.forge/pull/45",
-      "proposed_head_sha": "ad3d974568d281de085e74a6fa9d300ef5cfaa69",
+      "proposed_head_sha": "e07112481ac774e9efa32bb2df9ee50c21118963",
       "execution_status": "not_executed",
       "receipt": null,
       "result_profile": "stdout_line_i64",
@@ -301,7 +301,8 @@
         "temp_symlink_no_clobber_observed": true,
         "temp_regular_no_clobber_observed": true,
         "current_compiler_blob_sha": "aadc3ff036559849ea898e8de9c2b8e5e09a640f",
-        "source_changed_since_local_observation": true
+        "source_changed_since_local_observation": true,
+        "observed_compiler_blob_sha": "c64c2ea8ed8c4bbb7fcf4024561cd57fd2d3aa97"
       },
       "local_publication_probe": {
         "status": "local_exact_syscall_logic_executed_no_full_forge_guest_on_new_head",
@@ -414,7 +415,9 @@
         "current_test_blob_sha": "04f197a90085a9fd3e99ff8963158a120027c4f0",
         "new_test_script_not_yet_run_in_Node": true,
         "current_compiler_blob_sha": "1dba4620bbacfb78086974c5da86eee87ca0bbbf",
-        "source_changed_since_local_Node_observation": true
+        "source_changed_since_local_Node_observation": true,
+        "observed_compiler_blob_sha": "2d3cd3a30e6cd41bcd7eac0294053ff3e77ccd99",
+        "source_changed_since_local_observation": true
       },
       "local_full_fixtures_v8": {
         "status": "compiled_generated_esm_function_v8_in_process_not_Node_CI",
@@ -812,5 +815,17 @@
         "other scheduling restriction"
       ]
     }
+  },
+  "head_audit": {
+    "checked_on": "2026-11-20",
+    "method": "GitHub PR exact-head readback; head pins are provenance observations, not CI passes",
+    "compiler_profiles_checked": 8,
+    "source_fixture_blobs_checked": 8,
+    "local_evidence_stale_profiles": [
+      "forge",
+      "java-scalar-bootstrap",
+      "js-compiled-esm"
+    ],
+    "head_must_be_rechecked_before_promotion": true
   }
 }
