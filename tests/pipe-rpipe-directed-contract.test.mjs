@@ -184,12 +184,13 @@ test('experimental Rust checked PipeHandle preview cannot masquerade as backend 
   assert.deepEqual(preview.error_codes_v2_preview,{
     invalid_alias:1,invalid_capacity:2,closed_or_stopped:3,
     source_occupied:4,sink_occupied:5,channel_occupied:6,sink_has_downstream:7,
+    nonquiescent_channel:8,
   });
   assert.equal(preview.allocation_rule,
     'success_result_and_guest_bridge_allocated_before_atomic_DATA_publication');
-  assert.equal(new Set(preview.new_guest_fixture_ids).size,7);
+  assert.equal(new Set(preview.new_guest_fixture_ids).size,8);
   for (const id of preview.new_guest_fixture_ids) {
-    assert.match(id,/^2(?:19|20|21|22|23|24)-v2-checked-/);
+    assert.match(id,/^2(?:19|20|21|22|23|24|25)-v2-checked-/);
   }
   const cases=preview.rollback_recovery_cases;
   assert.equal(cases.source_output_conflict.error_code,4);
@@ -210,6 +211,27 @@ test('experimental Rust checked PipeHandle preview cannot masquerade as backend 
     assert.match(bytes,/error[.]code[(][)]/);
     assert.match(bytes,/second_producer pipe second_channel pipe second_consumer/);
   }
+  const hardening=preview.channel_ownership_hardening;
+  assert.equal(hardening.scope,'EXPERIMENTAL_GUEST_ONLY');
+  assert.equal(hardening.guest_execution,'NOT_EXECUTED');
+  assert.equal(hardening.fail_closed_preloaded_queue.error_code,8);
+  assert.equal(hardening.fail_closed_preloaded_queue.status,'NOT_EXECUTED');
+  assert.equal(hardening.claimed_public_access.length,3);
+  for(const entry of [
+    {source:hardening.fail_closed_preloaded_queue.source,shared:hardening.fail_closed_preloaded_queue.shared,
+      sha:hardening.fail_closed_preloaded_queue.sha,status:hardening.fail_closed_preloaded_queue.status},
+    ...hardening.claimed_public_access
+  ]){
+    assert.equal(entry.status,'NOT_EXECUTED');
+    assert.match(entry.sha,/^[a-f0-9]{40}$/);
+    const bytes=readFileSync(new URL(entry.shared,root),'utf8');
+    assert.equal(gitBlobSha(bytes),entry.sha,'exact source mirror changed: '+entry.shared);
+    assert.match(bytes,/PipeHandle/);
+  }
+  assert.deepEqual(hardening.claimed_public_access.map(e=>e.kind).sort(),
+    ['close','receive','send']);
+  assert.ok(hardening.claimed_public_access.every(e=>e.panic_code===10));
+  assert.match(hardening.recheck_after_suspension,/revalidate/);
   const row=contract.backend_evidence.find(x=>x.repo===preview.repo);
   assert.ok(row);
   assert.equal(row.status,'NOT_EXECUTED');
