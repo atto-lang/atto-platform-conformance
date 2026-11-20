@@ -4,6 +4,9 @@ on:
     paths:
       - 'models/pointer_capability_aot_v1.cpp'
       - 'contracts/pointer-ref-local-v1.json'
+      - 'contracts/pointer-source-traits-operators-v1.json'
+      - 'fixtures/pointer-source-operators-v1/**'
+      - 'tests/pointer_source_traits_operators_v1.test.mjs'
       - 'contracts/pointer-local-candidate-evidence-v1.json'
       - 'tests/pointer_local_candidates_v1.test.mjs'
       - 'fixtures/pointer-ref-local-v1/**'
@@ -39,7 +42,7 @@ jobs:
           ASAN_OPTIONS=detect_leaks=1 /tmp/atto_pointer_model_san
       - name: Verify pointer-local rt/bang fixture registry (SOURCE ONLY)
         run: |
-          node --test tests/pointer_ref_local_v1.test.mjs tests/pointer_local_candidates_v1.test.mjs
+          node --test tests/pointer_ref_local_v1.test.mjs tests/pointer_local_candidates_v1.test.mjs tests/pointer_source_traits_operators_v1.test.mjs
       - name: Install pinned Rust toolchain for source-free lease model
         run: rustup toolchain install 1.85.1 --profile minimal
       - name: Execute Rust local-lease oracle (HOST ONLY, no Atto guest)
