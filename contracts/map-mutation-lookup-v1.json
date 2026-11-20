@@ -2,7 +2,7 @@
   "schema_version": 1,
   "contract": "atto-map-mutation-lookup-v1",
   "normative_spec": "https://github.com/atto-lang/atto-spec/blob/feat/map-mutation-api-v1-20261119/language/map-mutation-api-v1.md",
-  "summary": "Proposed Map mutability, first-class Entry<K,V> values, two whole-entry `as` spellings, get/set/add/index write, Option safety; NO compiled guest execution is claimed.",
+  "summary": "Proposed Map mutability, immutable nominal Entry<K,V> and two whole-Entry ascriptions, get/set/add upsert and distinct try_add, indexed Map write, Option absence; NOT_EXECUTED as compiled guest.",
   "status": "not_executed",
   "allowed_verification_statuses": [
     "passed",
@@ -16,8 +16,8 @@
       "group": "guest",
       "expect": "accept",
       "expected_exit": 3,
-      "source": "pub fnc main(): int {\n  let mut Map<string,int> m = {\"foo\" => 5};\n  m.set(\"foo\", 6);\n  m[\"foo\"] = 3;\n  m.add(\"foo\" => 7);\n  m.add(\"bar\", 7);\n  return m.get(\"foo\").unwrap_or(0);\n}",
-      "reason": "mutation and duplicate add preserve 3",
+      "source": "pub fnc main(): int {\n  let mut Map<string,int> m = {\"foo\" => 5};\n  m.set(\"foo\", 6);\n  m[\"foo\"] = 3;\n  m.try_add(\"foo\" => 7);\n  m.add(\"bar\", 7);\n  return m.get(\"foo\").unwrap_or(0);\n}",
+      "reason": "set/bracket upsert while duplicate try_add preserves 3; independent add of bar inserts new key",
       "status": "not_executed",
       "evidence": {
         "rust_browser_wasm": "not_executed",
@@ -31,12 +31,12 @@
       }
     },
     {
-      "id": "map-add-duplicate-false",
+      "id": "map-try-add-duplicate-false",
       "group": "guest",
       "expect": "accept",
       "expected_exit": 3,
-      "source": "pub fnc main(): int {\n  val mut Map<string,int> m = {\"foo\" => 3};\n  if m.add(\"foo\" => 7) then return 99; fi\n  return m.get(\"foo\").unwrap_or(0);\n}",
-      "reason": "duplicate add atomic no-overwrite; val mut keeps name fixed",
+      "source": "pub fnc main(): int {\n  val mut Map<string,int> m = {\"foo\" => 3};\n  if m.try_add(\"foo\" => 7) then return 99; fi\n  return m.get(\"foo\").unwrap_or(0);\n}",
+      "reason": "duplicate try_add returns false atomically and preserves existing value; val mut keeps name fixed",
       "status": "not_executed",
       "evidence": {
         "rust_browser_wasm": "not_executed",
@@ -259,12 +259,12 @@
       }
     },
     {
-      "id": "map-readonly-record-index",
+      "id": "map-computed-record-index-reject",
       "group": "negative",
       "expect": "reject",
       "expected_error": "E_UNSUPPORTED",
-      "source": "pub fnc main(): int {\n  let mut Record r = {\"foo\": 3};\n  r[\"foo\"] = 5;\n  return 0;\n}",
-      "reason": "map index-write cannot be redirected onto Record",
+      "source": "pub fnc main(): int {\n  let mut Record r = {\"foo\": 3};\n  let string dynamic_key = \"foo\";\n  r[dynamic_key] = 5;\n  return 0;\n}",
+      "reason": "computed Record field indexing is forbidden even with mutable authority; static literals are covered in Record conformance #100",
       "status": "not_executed",
       "evidence": {
         "rust_browser_wasm": "not_executed",
@@ -301,7 +301,7 @@
       "group": "guest",
       "expect": "accept",
       "source": "let entry1 = (\"foo\" => 5) as Entry<string, int>;\nlet entry2 = \"foo\" => 5 (as Entry<string, int>);\n\npub fnc main(): int {\n  let mut Map<string, int> x = {\n    \"foo\" => 5\n  };\n  x.set(\"foo\", 6);\n  x[\"foo\"] = 3;\n  x.add(entry1);\n  x.add(entry2);\n  return x.get(\"foo\").unwrap();\n}",
-      "reason": "User's exact two ascription forms, static file-scope entries, and duplicate add leave the key at 3",
+      "reason": "User's exact dual whole-Entry ascriptions; both add calls upsert so final foo is 5",
       "status": "not_executed",
       "evidence": {
         "rust_browser_wasm": "not_executed",
@@ -313,7 +313,7 @@
         "cranelift": "not_executed",
         "atto_native": "not_executed"
       },
-      "expected_exit": 3
+      "expected_exit": 5
     },
     {
       "id": "entry-local-parenthesized-as",
@@ -415,7 +415,7 @@
       "group": "guest",
       "expect": "accept",
       "source": "pub fnc main(): int {\n  let e = (\"foo\" => 5) as Entry<string, int>;\n  let mut Map<string, int> m = {\"foo\" => 3};\n  m.add(e);\n  m.add(e);\n  return m.get(\"foo\").unwrap();\n}",
-      "reason": "Same immutable Entry may be passed twice and add never overwrites a duplicate",
+      "reason": "Repeated borrowing of the same immutable Entry is allowed and both adds upsert without moving the Entry",
       "status": "not_executed",
       "evidence": {
         "rust_browser_wasm": "not_executed",
@@ -427,7 +427,7 @@
         "cranelift": "not_executed",
         "atto_native": "not_executed"
       },
-      "expected_exit": 3
+      "expected_exit": 5
     },
     {
       "id": "entry-key-type-mismatch",
@@ -484,7 +484,7 @@
         "cranelift": "not_executed",
         "atto_native": "not_executed"
       },
-      "expected_error": "E_TYPE"
+      "expected_error": "E_TYPE_ARITY"
     },
     {
       "id": "entry-invalid-map-ascription",
