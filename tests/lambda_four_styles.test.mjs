@@ -21,6 +21,26 @@ test('four distinct positive lambda syntaxes are registered without invented bac
     for (const status of Object.values(entry.backend_status))
       assert.equal(status, 'NOT_EXECUTED');
   }
+  assert.deepEqual(Object.keys(manifest.backend_tracking).sort(), targets.slice().sort());
+  for (const [backend, url] of Object.entries(manifest.backend_tracking)) {
+    assert.match(url, new RegExp('^https://github\\.com/atto-lang/atto-source\\.' + backend + '/(pull|issues)/[0-9]+
+  assert.equal(good.length, 4);
+  for (const c of good) {
+    const src = readFileSync(resolve(root, c.path), 'utf8');
+    assert.match(src, /return;/);
+    assert.match(src, /return 42;/);
+    assert.equal(c.expected_type_or_diagnostic, 'void');
+  }
+  const bodies = good.map(c => readFileSync(resolve(root, c.path), 'utf8'));
+  assert.match(bodies[0], /\|int foo, string x\| -> \{/);
+  assert.match(bodies[1], /\|foo: int, x: string\| -> \{/);
+  assert.match(bodies[2], /\|foo: int, x: string\| -> void \{/);
+  assert.match(bodies[3], /\|foo: int, x: string\| : void -> \{/);
+  assert.equal(manifest.cases.filter(c => c.expectation === 'REJECT_WITHOUT_ARTIFACT').length, 4);
+});
+));
+  }
+  assert.ok(manifest.validation_requirements.includes('EXACT_HEAD_SOURCE_AND_RUNTIME_SHA'));
   const good = manifest.cases.filter(c => c.expectation === 'ACCEPT_AND_EXIT_42');
   assert.equal(good.length, 4);
   for (const c of good) {
