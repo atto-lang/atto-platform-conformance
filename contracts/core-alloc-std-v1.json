@@ -124,5 +124,10 @@
     "nonzero-guest-execution-steps-on-exact-compiler-head",
     "reject-direct-guest-OwnedBytes-and-forged-intrinsic-access"
   ],
-  "release_authorized": false
+  "release_authorized": false,
+  "preview_evidence": {
+    "path": "evidence/forge-alloc-guest-preview-local-v1.json",
+    "status": "RESTRICTED_FORGE_GUEST_LOCAL_ONLY",
+    "canonical_library_compiled": false
+  }
 }
