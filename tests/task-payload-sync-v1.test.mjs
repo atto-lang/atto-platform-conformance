@@ -347,3 +347,14 @@ test('a lock park cannot strand an unclaimed grant or ambiguously suspend on two
     'CANCELLATION_REMOVES_ALL_PENDING_WAITS',
   ]) assert.ok(probe.assertions.includes(invariant), invariant);
 });
+
+test('legacy raw grant ack cannot bypass ready queue insertion', () => {
+  const probe = registry.lock_cancellation_runtime_probes.find(p => p.id === 'atomic_host_ready_admission');
+  assert.ok(probe, 'missing atomic admission probe');
+  assert.equal(probe.evidence_required, true);
+  assert.equal(probe.release_qualified, false);
+  assert.ok(probe.assertions.includes('RAW_WAKE_HINT_ACK_WITHOUT_READY_QUEUE_REJECTED'));
+  assert.ok(probe.assertions.includes('GRANT_ACK_AND_READY_QUEUE_INSERTION_ONE_SERIALIZED_TRANSITION'));
+  assert.ok(Object.values(registry.backends).every(b =>
+    b.status === 'NOT_EXECUTED' && b.release_qualified === false));
+});
