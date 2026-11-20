@@ -47,6 +47,15 @@ test('backend audit snapshots never masquerade as full compilation results',()=>
  assert.equal(matrix.backends.hdl.source_export_policy,'NO_EXPORT_HOLD');
  assert.equal(matrix.backends.hdl.restricted_source_probe.node22_cli_test_run,false);
  assert.equal(matrix.backends.java.execution_status,'EXECUTED_LIMITED_PROFILE');
+ assert.equal(matrix.backends.net.execution_status,'EXECUTED_LIMITED_PROFILE');
+ assert.equal(matrix.backends.cranelift.execution_status,'EXECUTED_LIMITED_PROFILE');
+ assert.deepEqual(matrix.rollup.verified_limited_guest_backends,['cranelift','java','net']);
+ assert.equal(matrix.rollup.verified_current_head_limited_guest_backends,3);
+ for(const name of matrix.rollup.verified_limited_guest_backends){
+   assert.match(matrix.backends[name].restricted_git_tree,/^[0-9a-f]{40}$/);
+   assert.match(matrix.backends[name].restricted_run,/^https:\/\/github\.com\//);
+   assert.equal(matrix.backends[name].full_task_runtime_status,'NOT_EXECUTED');
+ }
  assert.equal(matrix.backends.java.restricted_execution_receipt,'contracts/task-java-inline-typed-v2-20261120.json');
 });
 test('no backend is silently allowed to redefine inline vs spawned semantics',()=>{

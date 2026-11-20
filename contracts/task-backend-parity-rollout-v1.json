@@ -88,7 +88,14 @@
     "target_repositories": 11,
     "production_task_runtime_certified": 0,
     "all_backends_release_qualified": false,
-    "no_unverified_backend_is_pass": true
+    "no_unverified_backend_is_pass": true,
+    "verified_current_head_limited_guest_backends": 3,
+    "verified_limited_guest_backends": [
+      "cranelift",
+      "java",
+      "net"
+    ],
+    "full_runtime_certification_remains_zero": true
   },
   "backends": {
     "java": {
@@ -122,13 +129,17 @@
       "repository": "atto-lang/atto-source.net",
       "platform": "net",
       "stage": "DRAFT_RESTRICTED_COMPILER",
-      "execution_status": "NOT_INDEPENDENTLY_VERIFIED_HERE",
+      "execution_status": "EXECUTED_LIMITED_PROFILE",
       "full_task_runtime_status": "NOT_EXECUTED",
       "release_qualified": false,
       "source_export_policy": "REQUIRES_APPROVED_CARRIER",
-      "evidence_note": "restricted CIL pure inline scalar; CoreCLR and NativeAOT prior receipt asserted",
+      "evidence_note": "Executed exact 44-blob CIL compiler: 28/28 negative no-DLL gates, 7/7 CoreCLR positive fixtures including 4 inline, Linux and Windows NativeAOT guests exit 42; full TaskScope unverified",
       "canonical_draft_pr": "https://github.com/atto-lang/atto-source.net/pull/30",
-      "current_observed_head": "d4a6a7d11cc2f9ef4d39788918ca3cecb15b688b"
+      "current_observed_head": "d4a6a7d11cc2f9ef4d39788918ca3cecb15b688b",
+      "restricted_run": "https://github.com/r2g-test/atto-ci/actions/runs/44799264521",
+      "restricted_git_tree": "3a769afb3e160e3aea22cbc68cc08ab0cefe1b68",
+      "restricted_git_blobs": 44,
+      "evidence_verified_in_live_job_logs": true
     },
     "forge": {
       "repository": "atto-lang/atto-source.forge",
@@ -146,13 +157,17 @@
       "repository": "atto-lang/atto-source.cranelift",
       "platform": "cranelift",
       "stage": "DRAFT_RESTRICTED_COMPILER",
-      "execution_status": "EVIDENCE_REPORTED_NOT_RECHECKED_HERE",
+      "execution_status": "EXECUTED_LIMITED_PROFILE",
       "full_task_runtime_status": "NOT_EXECUTED",
       "release_qualified": false,
       "source_export_policy": "CHECK_APPROVED_CARRIER",
-      "evidence_note": "trusted scalar JIT, no TaskScope or TenantVM certification",
+      "evidence_note": "Executed exact 171-blob Rust/Cranelift JIT source: 3 native positives, 8 native negative gates and checked no-partial-output, current-head cargo/clippy/fmt; trusted scalar only, no tenant isolation or TaskScope",
       "canonical_draft_pr": "https://github.com/atto-lang/atto-source.cranelift/pull/54",
-      "current_observed_head": "45d1393cbb53ba8a22624961f1a96d3e479aaaa6"
+      "current_observed_head": "45d1393cbb53ba8a22624961f1a96d3e479aaaa6",
+      "restricted_run": "https://github.com/r2g-test/atto-ci/actions/runs/44813387081",
+      "restricted_git_tree": "efe01c501492b2b225f71e8c4896be9ace807523",
+      "restricted_git_blobs": 171,
+      "evidence_verified_in_live_job_logs": true
     },
     "rs": {
       "repository": "atto-lang/atto-source.rs",
