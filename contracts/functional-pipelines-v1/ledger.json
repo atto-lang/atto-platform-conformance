@@ -207,7 +207,7 @@
       "repo": "atto-lang/atto-source.forge",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.forge/pull/45",
-      "proposed_head_sha": "e07112481ac774e9efa32bb2df9ee50c21118963",
+      "proposed_head_sha": "ad3d974568d281de085e74a6fa9d300ef5cfaa69",
       "execution_status": "not_executed",
       "receipt": null,
       "result_profile": "stdout_line_i64",
@@ -597,7 +597,7 @@
       },
       "forge": {
         "implementation_repo": "atto-lang/atto-source.forge",
-        "proposed_head_sha": "e07112481ac774e9efa32bb2df9ee50c21118963",
+        "proposed_head_sha": "ad3d974568d281de085e74a6fa9d300ef5cfaa69",
         "fixture_files_copied_and_blob_verified": 7,
         "tests_authored": true,
         "execution_status": "not_executed",
