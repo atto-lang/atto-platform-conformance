@@ -65,3 +65,20 @@ test('all 10 backends must remain unverified until exact-head compiled guest tra
   }
   assert.ok(registry.causal_requirements.some(x=>/must not force unlock active lease/i.test(x)));
 });
+
+test('terminal host-kernel shutdown and affine non-Send leases remain unverified guest gates',()=>{
+  const targets=registry.host_reference_invariants;
+  assert.equal(targets.exact_guest_verification,'NOT_EXECUTED');
+  assert.equal(targets.source_pr,'atto-lang/atto-source.rs#416');
+  assert.equal(targets.checks.length,2);
+  assert.equal(targets.checks[0].id,'terminal_shutdown_admission');
+  assert.match(targets.checks[0].expect,/new_root_task_denied_and_new_mutex_denied_after_stop/);
+  assert.match(targets.checks[0].expect,/claimed_lease_unwinds_only_at_safe_point/);
+  assert.equal(targets.checks[1].id,'lease_non_sendable_typestate');
+  assert.match(targets.checks[1].expect,/!Send and !Sync/);
+  assert.ok(registry.causal_requirements.some(x=>/STOP.*permanently denied/.test(x)));
+  assert.ok(registry.causal_requirements.some(x=>/must not be Sendable\/Serializable/.test(x)));
+  // These target conditions do not qualify as compiled guest/runtime passes.
+  for(const evidence of Object.values(registry.backends))
+    assert.equal(evidence.status,'NOT_EXECUTED');
+});
