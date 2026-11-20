@@ -126,7 +126,7 @@
       "repo": "atto-lang/atto-source.net",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.net/pull/16",
-      "proposed_head_sha": "fbf715495b7bd63339cbfa2e3e3ad6a6aabc5460",
+      "proposed_head_sha": "6a16c8d1b0733538f960a99050eebc01dc8e1f30",
       "execution_status": "not_executed",
       "receipt": null,
       "result_profile": "os_exit_code"
@@ -135,7 +135,7 @@
       "repo": "atto-lang/atto-source.java",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.java/pull/51",
-      "proposed_head_sha": "d39a65a01082f6744287c1eeac77c6d277bf975d",
+      "proposed_head_sha": "1bdfa3cc7819beb75357e44a6f92d2b7cd66f066",
       "execution_status": "not_executed",
       "receipt": null,
       "result_profile": "os_exit_code",
@@ -190,7 +190,7 @@
         "failing_test_groups": 0,
         "scope": "Local actual checked Atto source→Java source→javac JVM class→java guest-process execution under JDK21. Four canonical exact Git blobs and 11 extended negative test sources were exercised; signed min through compiled f_main observer. Authored GraalVM25 full CI script, whole repo suite, Native Image and source-org CI remain unexecuted.",
         "observed_compiler_blob_sha": "61f31581970076f88af694063e68e3e748c8d4b6",
-        "current_compiler_blob_sha": "3267621f3a544cc5b3632530a1c138d6fcb282ab",
+        "current_compiler_blob_sha": "a0846be581f0e1124bdd339bc40564f1be5e9670",
         "source_changed_since_local_observation": true
       }
     },
@@ -207,7 +207,7 @@
       "repo": "atto-lang/atto-source.forge",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.forge/pull/45",
-      "proposed_head_sha": "c4c2dd86e7ceb8ab44c0f91776991222c38265d3",
+      "proposed_head_sha": "e07112481ac774e9efa32bb2df9ee50c21118963",
       "execution_status": "not_executed",
       "receipt": null,
       "result_profile": "stdout_line_i64",
@@ -299,14 +299,16 @@
         "generated_source_mode": "0600",
         "exclusive_output_create_observed": true,
         "temp_symlink_no_clobber_observed": true,
-        "temp_regular_no_clobber_observed": true
+        "temp_regular_no_clobber_observed": true,
+        "current_compiler_blob_sha": "73fa0bbb5ce04ee50b3dd8b6a32467313c99aa7a",
+        "source_changed_since_local_observation": true
       }
     },
     "cranelift": {
       "repo": "atto-lang/atto-source.cranelift",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.cranelift/pull/50",
-      "proposed_head_sha": "93072d2202dceb3babda228992e9625f767eefe9",
+      "proposed_head_sha": "2004588b59e0c415415aec6e0cd305d26960293b",
       "execution_status": "not_executed",
       "receipt": null,
       "result_profile": "stdout_line_i64"
@@ -360,7 +362,7 @@
       "repo": "atto-lang/atto-source.js",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.js/pull/41",
-      "proposed_head_sha": "f370a6fc558b40a633f2560183b4a5fd70560b4f",
+      "proposed_head_sha": "e5b81f44018a291a09aedb5927ffea9b7dd15590",
       "result_profile": "stdout_line_i64",
       "execution_status": "not_executed",
       "receipt": null,
@@ -384,8 +386,10 @@
         "executed_test_groups": 4,
         "failing_test_groups": 0,
         "scope": "local Node child-process ESM guest tests, not exact-head GitHub Actions, not production tenant isolation",
-        "current_test_blob_sha": "b0dd02dc252a2972e37c5506124236eb21aca45b",
-        "new_test_script_not_yet_run_in_Node": true
+        "current_test_blob_sha": "04f197a90085a9fd3e99ff8963158a120027c4f0",
+        "new_test_script_not_yet_run_in_Node": true,
+        "current_compiler_blob_sha": "1dba4620bbacfb78086974c5da86eee87ca0bbbf",
+        "source_changed_since_local_Node_observation": true
       }
     }
   },
@@ -525,43 +529,53 @@
       },
       "net-direct-cil": {
         "implementation_repo": "atto-lang/atto-source.net",
-        "proposed_head_sha": "fbf715495b7bd63339cbfa2e3e3ad6a6aabc5460",
+        "proposed_head_sha": "6a16c8d1b0733538f960a99050eebc01dc8e1f30",
         "fixture_files_copied_and_blob_verified": 7,
         "tests_authored": true,
         "execution_status": "not_executed",
-        "receipt": null
+        "receipt": null,
+        "reserved_task_sync_yield_rejection_tests_authored": 9,
+        "reserved_task_sync_yield_test_executed": false
       },
       "java-scalar-bootstrap": {
         "implementation_repo": "atto-lang/atto-source.java",
-        "proposed_head_sha": "d39a65a01082f6744287c1eeac77c6d277bf975d",
+        "proposed_head_sha": "1bdfa3cc7819beb75357e44a6f92d2b7cd66f066",
         "fixture_files_copied_and_blob_verified": 7,
         "tests_authored": true,
         "execution_status": "not_executed",
-        "receipt": null
+        "receipt": null,
+        "reserved_task_sync_yield_rejection_tests_authored": 9,
+        "reserved_task_sync_yield_test_executed": false
       },
       "forge": {
         "implementation_repo": "atto-lang/atto-source.forge",
-        "proposed_head_sha": "c4c2dd86e7ceb8ab44c0f91776991222c38265d3",
+        "proposed_head_sha": "e07112481ac774e9efa32bb2df9ee50c21118963",
         "fixture_files_copied_and_blob_verified": 7,
         "tests_authored": true,
         "execution_status": "not_executed",
-        "receipt": null
+        "receipt": null,
+        "reserved_task_sync_yield_rejection_tests_authored": 9,
+        "reserved_task_sync_yield_test_executed": false
       },
       "cranelift": {
         "implementation_repo": "atto-lang/atto-source.cranelift",
-        "proposed_head_sha": "93072d2202dceb3babda228992e9625f767eefe9",
+        "proposed_head_sha": "2004588b59e0c415415aec6e0cd305d26960293b",
         "fixture_files_copied_and_blob_verified": 7,
         "tests_authored": true,
         "execution_status": "not_executed",
-        "receipt": null
+        "receipt": null,
+        "reserved_task_sync_yield_rejection_tests_authored": 9,
+        "reserved_task_sync_yield_test_executed": false
       },
       "js-compiled-esm": {
         "implementation_repo": "atto-lang/atto-source.js",
-        "proposed_head_sha": "f370a6fc558b40a633f2560183b4a5fd70560b4f",
+        "proposed_head_sha": "e5b81f44018a291a09aedb5927ffea9b7dd15590",
         "fixture_files_copied_and_blob_verified": 7,
         "tests_authored": true,
         "execution_status": "not_executed",
-        "receipt": null
+        "receipt": null,
+        "reserved_task_sync_yield_rejection_tests_authored": 9,
+        "reserved_task_sync_yield_test_executed": false
       },
       "rs-native-compiler": {
         "implementation_repo": "atto-lang/atto-source.rs",
@@ -585,21 +599,43 @@
     },
     "local_v8_smoke": {
       "status": "actual_generated_js_executed_in_process_no_Node_CI_admission",
-      "compiler_blob_sha": "2d3cd3a30e6cd41bcd7eac0294053ff3e77ccd99",
-      "emitted_guest_observed_main_values": [
+      "compiler_blob_sha": "1dba4620bbacfb78086974c5da86eee87ca0bbbf",
+      "compiled_guest_values": [
+        "83",
+        "83",
+        "42",
+        "42",
         "61",
         "42",
         "-9223372036854775808"
       ],
       "compiled_overflow_observed": "E_OVERFLOW",
       "source_rejections": [
+        "E_TYPE",
+        "E_PARSE",
+        "E_MIXED_PIPE",
+        "E_MIXED_PIPE",
         "E_LITERAL",
         "E_LITERAL",
         "E_NAME"
       ],
-      "input_blobs_verified": 7,
-      "method": "exact compiler ESM code exported functions loaded into isolated V8 function scope; emitted JS code executed by V8",
-      "scope": "In-process V8 compiled-code smoke; not OS-process Node ESM import, not independent backend, not Actions CI"
+      "reserved_binding_rejections": [
+        "sync/fnc",
+        "sync/param",
+        "sync/local",
+        "task/fnc",
+        "task/param",
+        "task/local",
+        "yield/fnc",
+        "yield/param",
+        "yield/local"
+      ],
+      "input_blobs_verified": 15,
+      "executed_generated_guest_cases": 7,
+      "executed_guest_runtime_traps": 1,
+      "admission_rejections": 16,
+      "scope": "Exact source compiler function executed by Code Mode V8; emitted generated guest ESM functions executed in-process using Function after removing export tokens; not Node ESM subprocess, not GitHub Actions, not production multi-tenant isolation.",
+      "method": "V8 compiled-code smoke of exact committed compiler blob, zero network/ambient guest I/O"
     },
     "local_llvm_adapter_abi_probe": {
       "status": "test_adapter_syntax_verified_not_compiler_guest",
@@ -649,7 +685,87 @@
         "honeypot-r-us-test/atto-ci"
       ],
       "tested_carrier_execution_confirmed": false,
-      "disposition": "No runner admitted in sampled carrier runs; do not mirror private trees or promote guest parity until a carrier smoke job executes nonzero steps."
+      "disposition": "All eight private authorized carriers failed one-step no-checkout admission. Do not mirror private source trees without a nonzero-step successful canary or owner-approved configured self-hosted runner. No root cause established.",
+      "fresh_canary_runs": [
+        {
+          "repo": "benefactor-cc/atto-ci",
+          "run_id": 44682112211,
+          "workflow": "Atto functional pipeline carrier capacity canary",
+          "kind": "single shell step, no checkout, no cross-organization secrets",
+          "job_conclusion": "failure",
+          "executed_steps": 0,
+          "runner_assigned": false
+        },
+        {
+          "repo": "voxletra/atto-ci",
+          "run_id": 44682117376,
+          "workflow": "Atto functional pipeline carrier capacity canary",
+          "kind": "single shell step, no checkout, no cross-organization secrets",
+          "job_conclusion": "failure",
+          "executed_steps": 0,
+          "runner_assigned": false
+        },
+        {
+          "repo": "scintilla-run/atto-ci",
+          "run_id": 44682361850,
+          "workflow": "Atto functional pipeline carrier capacity canary",
+          "kind": "single shell step, no checkout, no cross-organization secrets",
+          "job_conclusion": "failure",
+          "executed_steps": 0,
+          "runner_assigned": false
+        },
+        {
+          "repo": "athlet-o/atto-ci",
+          "run_id": 44682367642,
+          "workflow": "Atto functional pipeline carrier capacity canary",
+          "kind": "single shell step, no checkout, no cross-organization secrets",
+          "job_conclusion": "failure",
+          "executed_steps": 0,
+          "runner_assigned": false
+        },
+        {
+          "repo": "agent-pontifex/atto-ci",
+          "run_id": 44682371219,
+          "workflow": "Atto functional pipeline carrier capacity canary",
+          "kind": "single shell step, no checkout, no cross-organization secrets",
+          "job_conclusion": "failure",
+          "executed_steps": 0,
+          "runner_assigned": false
+        },
+        {
+          "repo": "honeypot-r-us-test/atto-ci",
+          "run_id": 44682377706,
+          "workflow": "Atto functional pipeline carrier capacity canary",
+          "kind": "single shell step, no checkout, no cross-organization secrets",
+          "job_conclusion": "failure",
+          "executed_steps": 0,
+          "runner_assigned": false
+        },
+        {
+          "repo": "akrion-sim/atto-ci",
+          "run_id": 44683175752,
+          "workflow": "Atto functional pipeline carrier capacity canary",
+          "kind": "single shell step, no checkout, no cross-organization secrets",
+          "job_conclusion": "failure",
+          "executed_steps": 0,
+          "runner_assigned": false
+        },
+        {
+          "repo": "zed-pkg-test/atto-ci",
+          "run_id": 44683179241,
+          "workflow": "Atto functional pipeline carrier capacity canary",
+          "kind": "single shell step, no checkout, no cross-organization secrets",
+          "job_conclusion": "failure",
+          "executed_steps": 0,
+          "runner_assigned": false
+        }
+      ],
+      "possible_causes_not_verified": [
+        "billing/minutes",
+        "organization actions policy",
+        "runner admission/platform",
+        "other scheduling restriction"
+      ]
     }
   }
 }
