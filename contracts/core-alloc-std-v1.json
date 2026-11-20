@@ -1,0 +1,121 @@
+{
+  "schema": "atto.core-alloc-std.v1",
+  "status": "TARGET_NOT_EXECUTED",
+  "source_owner": "atto-lang/atto-common-source",
+  "source_branch": "feat/byte-buffer-contract-v1-20261119",
+  "source_policy": "CANONICAL_ATTO_BYTES_ONLY",
+  "scope": "Seven candidate Atto guest fixtures; no host stub may be counted as guest execution",
+  "layers": [
+    "core",
+    "alloc",
+    "std"
+  ],
+  "cases": [
+    {
+      "id": "CAS-001",
+      "source": "fixtures/core-alloc-std-v1/01-core-size-boundaries.atto",
+      "expected": "EXIT_1",
+      "layer": "core"
+    },
+    {
+      "id": "CAS-002",
+      "source": "fixtures/core-alloc-std-v1/02-core-overflow-guards.atto",
+      "expected": "EXIT_1",
+      "layer": "core"
+    },
+    {
+      "id": "CAS-003",
+      "source": "fixtures/core-alloc-std-v1/03-alloc-zeroed-write.atto",
+      "expected": "EXIT_1",
+      "layer": "alloc"
+    },
+    {
+      "id": "CAS-004",
+      "source": "fixtures/core-alloc-std-v1/04-alloc-immutable-negative.atto",
+      "expected": "COMPILE_IMMUTABLE",
+      "layer": "alloc"
+    },
+    {
+      "id": "CAS-005",
+      "source": "fixtures/core-alloc-std-v1/05-alloc-bounds-negative.atto",
+      "expected": "THROWS_BUFFER_BOUNDS",
+      "layer": "alloc"
+    },
+    {
+      "id": "CAS-006",
+      "source": "fixtures/core-alloc-std-v1/06-std-bytes-equal.atto",
+      "expected": "EXIT_1",
+      "layer": "std"
+    },
+    {
+      "id": "CAS-007",
+      "source": "fixtures/core-alloc-std-v1/07-std-bytes-not-equal.atto",
+      "expected": "EXIT_1",
+      "layer": "std"
+    }
+  ],
+  "backends": [
+    {
+      "backend": "java",
+      "execution": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "backend": "llvm",
+      "execution": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "backend": "wasm",
+      "execution": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "backend": "rs",
+      "execution": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "backend": "net",
+      "execution": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "backend": "forge",
+      "execution": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "backend": "cranelift",
+      "execution": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "backend": "js",
+      "execution": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "backend": "atto",
+      "execution": "NOT_EXECUTED",
+      "receipt": null
+    },
+    {
+      "backend": "hdl",
+      "execution": "NOT_EXECUTED",
+      "receipt": null
+    }
+  ],
+  "required_guest_gates": [
+    "exact-canonical-module-bytes",
+    "package-resolution-and-import-authorization",
+    "core-no-allocator-or-libc",
+    "sealed-OwnedBytes-and-typed-Error",
+    "tenant-and-actor-generation-checked-allocator",
+    "quota-zeroing-revoke-and-no-pointer-leaks",
+    "exclusive-mutable-receiver-and-immutable-val-rejection",
+    "real-compiled-guest-positives-and-negatives",
+    "nonzero-guest-execution-steps-on-exact-compiler-head"
+  ],
+  "release_authorized": false
+}
