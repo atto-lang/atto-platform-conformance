@@ -10,8 +10,8 @@ const cases = Object.fromEntries(registry.cases.map(c => [c.id,c]));
 test('versioned typed task fixtures are pinned to exact Git blob identity', () => {
   assert.equal(registry.schema, 'atto.task-payload-sync.v1');
   assert.equal(registry.status, 'TARGET_NOT_GUEST_VERIFIED');
-  assert.equal(registry.cases.length, 17);
-  assert.equal(new Set(registry.cases.map(x=>x.id)).size,17);
+  assert.equal(registry.cases.length, 25);
+  assert.equal(new Set(registry.cases.map(x=>x.id)).size,25);
   for (const c of registry.cases) {
     assert.match(c.source_path,/^fixtures\/task-payload-sync-v1\/[a-z0-9_]+\.atto$/);
     assert.equal(gitSha(getSource(c)),c.source_git_blob,c.id);
@@ -55,4 +55,41 @@ test('separate logical task frames and safe physical coallocation are the target
   assert.match(local,/return local \+ child_result;/);
   assert.equal((nested.match(/task<int> \{/g) ?? []).length,2);
   assert.match(nested,/await nested;/);
+});
+
+test('cancellation contracts are pinned, fail closed and require runtime witnesses', () => {
+  assert.match(registry.cancellation_model, /nonblocking idempotent cancellation/);
+  assert.match(registry.cancellation_model, /physically retires/);
+  const casesToProve = [
+    'cancel_request_nonblocking',
+    'cancel_idempotent',
+    'cancel_scope_exit_discard',
+    'cancel_nested_descendants',
+    'cancel_preserves_sibling',
+    'cancel_await_error',
+  ];
+  for (const id of casesToProve) {
+    assert.equal(cases[id].kind, 'positive');
+    assert.equal(cases[id].expected.guest_exit, 42);
+    assert.ok(cases[id].expected.witnesses?.length >= 2, id);
+    const source = getSource(cases[id]).toString('utf8');
+    assert.match(source, /task<void>/, id);
+  }
+  const request = getSource(cases.cancel_request_nonblocking).toString('utf8');
+  const repeated = getSource(cases.cancel_idempotent).toString('utf8');
+  const scoped = getSource(cases.cancel_scope_exit_discard).toString('utf8');
+  const nested = getSource(cases.cancel_nested_descendants).toString('utf8');
+  const sibling = getSource(cases.cancel_preserves_sibling).toString('utf8');
+  const observed = getSource(cases.cancel_await_error).toString('utf8');
+  assert.equal((request.match(/worker\.cancel\(\);/g) ?? []).length, 1);
+  assert.equal((repeated.match(/worker\.cancel\(\);/g) ?? []).length, 2);
+  assert.match(scoped, /do task<void>/);
+  assert.doesNotMatch(scoped, /\.cancel\(\);/);
+  assert.match(nested, /outer\.cancel\(\);/);
+  assert.match(nested, /do task<void>/);
+  assert.match(sibling, /return await sibling;/);
+  assert.match(observed, /catch \(Error error\)/);
+  assert.match(observed, /await worker;/);
+  assert.equal(cases.cancel_void_used_as_int.expected.diagnostic, 'E_TASK_CANCEL_TYPE');
+  assert.equal(cases.cancel_nonfuture_receiver.expected.diagnostic, 'E_TASK_CANCEL_TARGET');
 });
