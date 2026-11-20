@@ -2,7 +2,7 @@
   "schema": "atto.functional-pipelines.evidence.v1",
   "authority": {
     "repo": "atto-lang/atto-spec",
-    "head_sha": "af7e2279122ee2efab76ec8cc8dad4361bebbd43",
+    "head_sha": "1163b159f1cf3313eef5b54f3f5218c455a5d19d",
     "contract": "conformance/functional-pipelines-v1/cases.json",
     "contract_blob_sha": "85eb550491972543a48a7a2c92cd49e8307db56b"
   },
@@ -495,7 +495,7 @@
   "edge_contract": {
     "schema": "atto.functional-pipelines.edge.evidence.v1",
     "source_authority": "atto-lang/atto-spec#121",
-    "authority_head_sha": "af7e2279122ee2efab76ec8cc8dad4361bebbd43",
+    "authority_head_sha": "1163b159f1cf3313eef5b54f3f5218c455a5d19d",
     "manifest": "conformance/functional-pipelines-v1/edge/cases.json",
     "manifest_blob_sha": "bd715b9984b3803c8015e7fa4ba3ee5b42ebb1ea",
     "relationship": "Supplemental 7-case boundary/argument-order suite; original 8 canonical cases remain unchanged and mandatory",
@@ -814,7 +814,18 @@
         "runner admission/platform",
         "other scheduling restriction"
       ]
-    }
+    },
+    "authority_word_policy": [
+      "sync",
+      "task",
+      "yield"
+    ],
+    "authority_word_policy_contexts": [
+      "function",
+      "parameter",
+      "local"
+    ],
+    "authority_word_policy_spec_status": "spec_source_updated_compiler_CI_unexecuted"
   },
   "head_audit": {
     "checked_on": "2026-11-20",
