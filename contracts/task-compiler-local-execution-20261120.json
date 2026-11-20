@@ -381,6 +381,23 @@
       "No production guest scheduler ABI or tenant isolation/physical-quiescence proof; cannot qualify broader runtime parity",
       "Source repository root tree differs from carrier root: compiler src subtree and 71 source Git blobs match exactly",
       "Native and browser wasm32 backends beyond this emitted guest profile are not certified by this receipt"
-    ]
+    ],
+    "receipt_validation": {
+      "run_id": 44773393383,
+      "run_url": "https://github.com/r2g-test/atto-ci/actions/runs/44773393383",
+      "job_id": 136416643205,
+      "carrier_commit": "b71180ded9f6cfc8f03082259e9fc0e4569213f5",
+      "source_compiler_head": "c3712257cabf6090adc0e227328ae1f487872f0e",
+      "conclusion": "success",
+      "actual_step_execution": true,
+      "source_sha_gate": "71/71 PASS",
+      "compiler_lib": "118/118 PASS",
+      "mutex_compiler_integration": "12/12 PASS",
+      "source_compiled_wasm_guest_cases": "15/15 PASS",
+      "clippy_deny_warnings": "PASS",
+      "node_receipt_tests": "3/3 PASS",
+      "canonical_task_cancellation_runtime": "NOT_EXECUTED",
+      "limitations": "Receipt validator proves the authenticity and appropriate scope of the restricted guest evidence. It is not a general task cancellation, contended async Mutex, or TenantVM physical-retirement proof."
+    }
   }
 }
