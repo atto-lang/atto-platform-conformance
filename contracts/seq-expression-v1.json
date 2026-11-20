@@ -960,5 +960,35 @@
     "Limit+1 nesting, AST height, item count, source bytes and OOM",
     "Formatter byte/AST equivalence in both v1 and v2",
     "Real guest results, diagnostic code and zero output on rejects for each backend"
-  ]
+  ],
+  "implementation_candidates": {
+    "rust_native": {
+      "pull_request": "https://github.com/atto-lang/atto-source.rs/pull/407",
+      "head_sha": "5859cf0f8955e96af9b6548cd7edc472aad78c1a",
+      "source_tree": "7f140210e9d0dcdc53126a2adc3ad8c80baba93b",
+      "scope": "Rust scalar browser-guest sequence with v1/v2 edition gates; ownership/lifecycle tails restricted",
+      "verification_status": "not_executed"
+    },
+    "rust_browser_wasm": {
+      "pull_request": "https://github.com/atto-lang/atto-source.rs/pull/407",
+      "head_sha": "5859cf0f8955e96af9b6548cd7edc472aad78c1a",
+      "source_tree": "7f140210e9d0dcdc53126a2adc3ad8c80baba93b",
+      "scope": "Same Rust source compiling in Wasm browser, guest byte equality requires real execution",
+      "verification_status": "not_executed"
+    },
+    "forge": {
+      "pull_request": "https://github.com/atto-lang/atto-source.forge/pull/42",
+      "head_sha": "76b2346f7ebc9e3b30fca7f71331c8a132d3398d",
+      "source_tree": "08f24b543aeb131fb1b05f33d994e290993f8263",
+      "scope": "Independent C++20 stage-0 i64 sequence with 16-element cap, generated native guest, checked trap propagation",
+      "verification_status": "not_executed"
+    },
+    "net": {
+      "pull_request": "https://github.com/atto-lang/atto-source.net/pull/20",
+      "head_sha": "db2cafa79a33eda849d00337d8b863c83f383bd7",
+      "source_tree": "db21c0feac6168deabf9cc2fc97ed67eee3e9123",
+      "scope": "Independent .NET direct ECMA-335 CIL i64 sequence with 16-element cap and managed/NativeAOT guest fixtures",
+      "verification_status": "not_executed"
+    }
+  }
 }
