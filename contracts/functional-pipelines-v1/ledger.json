@@ -207,7 +207,7 @@
       "repo": "atto-lang/atto-source.forge",
       "implementation": "code_authored",
       "implementation_pr": "https://github.com/atto-lang/atto-source.forge/pull/45",
-      "proposed_head_sha": "e07112481ac774e9efa32bb2df9ee50c21118963",
+      "proposed_head_sha": "ad3d974568d281de085e74a6fa9d300ef5cfaa69",
       "execution_status": "not_executed",
       "receipt": null,
       "result_profile": "stdout_line_i64",
@@ -300,8 +300,33 @@
         "exclusive_output_create_observed": true,
         "temp_symlink_no_clobber_observed": true,
         "temp_regular_no_clobber_observed": true,
-        "current_compiler_blob_sha": "73fa0bbb5ce04ee50b3dd8b6a32467313c99aa7a",
+        "current_compiler_blob_sha": "aadc3ff036559849ea898e8de9c2b8e5e09a640f",
         "source_changed_since_local_observation": true
+      },
+      "local_publication_probe": {
+        "status": "local_exact_syscall_logic_executed_no_full_forge_guest_on_new_head",
+        "source_head": "ad3d974568d281de085e74a6fa9d300ef5cfaa69",
+        "compiler_blob_sha": "aadc3ff036559849ea898e8de9c2b8e5e09a640f",
+        "authored_script_blob_sha": "3ffc9f413a953eb0f2f229d3c0d79d677356c8b7",
+        "test_script_git_sha_verified_locally": true,
+        "smoke_gate_executed_against": "stand-in Forge CLI emitting simple fixed native 83 guest; not actual Atto parser/compiler",
+        "smoke_gate_cases": {
+          "g++-no-sanitizers": "passed",
+          "g++-asan-ubsan": "passed",
+          "clang++-no-sanitizers": "passed",
+          "clang++-asan-ubsan": "passed"
+        },
+        "adversarial_competing_processes": 16,
+        "winning_publishers": 1,
+        "losing_publishers": 15,
+        "syscall_logic_additional_concurrent_writers": 24,
+        "syscall_logic_additional_winners": 1,
+        "source_mode": "0600",
+        "no_overwrite_regular": true,
+        "no_overwrite_symlink": true,
+        "no_named_temporary_publication": true,
+        "exact_head_full_forge_compile_run": false,
+        "assertion": "No CI receipt and no newly compiled Atto Forge guest on this new source blob"
       }
     },
     "cranelift": {
@@ -390,6 +415,26 @@
         "new_test_script_not_yet_run_in_Node": true,
         "current_compiler_blob_sha": "1dba4620bbacfb78086974c5da86eee87ca0bbbf",
         "source_changed_since_local_Node_observation": true
+      },
+      "local_full_fixtures_v8": {
+        "status": "compiled_generated_esm_function_v8_in_process_not_Node_CI",
+        "compiler_blob_sha": "1dba4620bbacfb78086974c5da86eee87ca0bbbf",
+        "fixture_git_blobs_verified": 15,
+        "compiled_function_executions": 7,
+        "checked_overflow_runtime_traps": 1,
+        "invalid_source_fail_closed": 7,
+        "passed": 15,
+        "failed": 0,
+        "observed_values": [
+          "83",
+          "83",
+          "42",
+          "42",
+          "61",
+          "42",
+          "-9223372036854775808"
+        ],
+        "scope": "Actual JavaScript compiler source from GitHub emitted guest JS; executed in V8 in-process rather than Node ESM/CLI or CI runner."
       }
     }
   },
