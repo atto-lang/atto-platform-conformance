@@ -1,0 +1,42 @@
+name: Option type suffix native-scalar source contract
+
+on:
+  pull_request:
+    paths:
+      - 'contracts/option-type-suffix-native-v1.json'
+      - 'fixtures/option-type-suffix-v1/**'
+      - 'tests/option-type-suffix-native-v1.test.mjs'
+      - '.github/workflows/option-type-suffix-native-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exact-source-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify exact source head and tree
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+          test -z "$(git status --porcelain)"
+          echo "ATTO_OPTION_CONFORMANCE_HEAD=$EXPECTED_SHA"
+          echo "ATTO_OPTION_CONFORMANCE_TREE=$(git rev-parse 'HEAD^{tree}')"
+          test "$(find fixtures/option-type-suffix-v1 -type f -name '*.atto' | wc -l)" -eq 10
+      - name: Validate exact fixture Git blobs and not-executed statuses
+        run: |
+          set -euo pipefail
+          node --version
+          node --test tests/option-type-suffix-native-v1.test.mjs
+      - name: Evidence scope
+        run: |
+          echo "Source-contract validation only; NOT_EXECUTED compiler/guest statuses remain."
+          echo "ATTO_OPTION_CONFORMANCE_MATERIAL_STEPS=4"
