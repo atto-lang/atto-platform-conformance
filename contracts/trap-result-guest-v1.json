@@ -3,7 +3,7 @@
   "contract": "trap-result-guest-v1",
   "claim": "TARGET_ONLY_NOT_GUEST_VERIFIED",
   "normative": "https://github.com/atto-lang/atto-spec/blob/main/language/trap-result-v1.md",
-  "int_parse_requirement": "int.parse(string) must return Result<int,Error> or Result<int,ParseError> with ParseError subtype of Error and original error identity preserved by ?; neither API nor widening is certified here",
+  "int_parse_requirement": "v1: int.parse(string) returns Result<int,Error> exactly; no automatic ParseError subtype/covariance without a separately specified and verified nominal error-join rule; ? preserves the original tagged Error handle",
   "backends": {
     "atto-source.atto": {
       "role": "self-hosted compiler scaffold",
