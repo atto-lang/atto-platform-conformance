@@ -1,0 +1,5 @@
+pub susp fnc main(): int {
+  val Future<int> worker = task<int> { return 42; };
+  val int wrong = worker.cancel();
+  return wrong;
+}
