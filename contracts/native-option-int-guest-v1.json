@@ -5,8 +5,8 @@
   "candidate": {
     "repository": "atto-lang/atto-source.llvm",
     "pr": 57,
-    "head": "fae962b1801d252021a0aa825e0ead7233c57f51",
-    "tree": "dbf4348e43eb663abf7111f6064da76168b1301a",
+    "head": "9c9a2e98570a1c60c3f9ae53c25cedefaa5aed90",
+    "tree": "4d93d346d78c8eeb8b1d4b8e871ebe7b43c5dc78",
     "guest_target": "Linux x86_64 ELF, Clang O0/O2, no GC/heap",
     "hardening": "deny-by-default recursive typed-IR heapless Option<int> proof; explicit TStmt::Unreachable lowering; not executable CI evidence"
   },
@@ -69,7 +69,7 @@
     {
       "id": "reject-question-main",
       "source": "fixtures/native-option-int-v1/reject-question-main.atto",
-      "git_blob_sha": "0a4c4638e42027dd1b25f99c26e439a14e546aaf",
+      "git_blob_sha": "34dded7cd225aba0a6170b2a2813d8d1ad4c8295",
       "expect": {
         "kind": "compile_reject",
         "diagnostic": "E_TYPE",
@@ -86,7 +86,7 @@
     "atto-source.llvm": {
       "status": "NOT_EXECUTED",
       "compiler_guest_receipt": null,
-      "candidate_head": "fae962b1801d252021a0aa825e0ead7233c57f51",
+      "candidate_head": "9c9a2e98570a1c60c3f9ae53c25cedefaa5aed90",
       "candidate_role": "atto-llvm native Rust/LLVM scalar AOT executable, not LLVM C++ backend"
     },
     "atto-source.java": {
@@ -129,13 +129,13 @@
   "cross_compiler_candidate_sources": [
     {
       "repository": "atto-lang/atto-source.llvm",
-      "head": "fae962b1801d252021a0aa825e0ead7233c57f51",
+      "head": "9c9a2e98570a1c60c3f9ae53c25cedefaa5aed90",
       "role": "Rust native LLVM/ELF AOT bootstrap",
       "fixture_prefix": "tests/native-adt/"
     },
     {
       "repository": "atto-lang/atto-source.rs",
-      "head": "66a49e19d494df0725e7315879f81c1f22b29f83",
+      "head": "aae7ff2a2bb5f267d94a4913c51b3e0d39cfc886",
       "role": "Rust/Wasm current-main fixture-only PR #423 (no implementation port)",
       "fixture_prefix": "tests/fixtures/pass/"
     }
