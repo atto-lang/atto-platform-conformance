@@ -686,7 +686,8 @@
       ],
       "assertions": [
         "ONE_RELEASE_PER_CLAIM",
-        "NO_LOST_LEASE"
+        "NO_LOST_LEASE",
+        "INNER_GUARD_RELEASE_BEFORE_OUTER"
       ]
     },
     {
@@ -703,7 +704,8 @@
       ],
       "assertions": [
         "NO_JOIN_UNDER_GUARD",
-        "NO_CARRIER_BLOCK"
+        "NO_CARRIER_BLOCK",
+        "PARENT_GUARD_RELEASE_BEFORE_CHILD_RETIRE"
       ]
     },
     {
