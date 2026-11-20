@@ -32,3 +32,11 @@ for(const [name,mutate] of mutations)test('reject '+name,()=>{
     name==='empty expected digest'?'':name==='invalid expected digest'?'notsha':CANARY_BLOB_SHA;
   assert.throws(()=>verifyCanonicalCarrierWorkflow(x,approved),CanaryPolicyError);
 });
+
+
+test('published carrier YAML has exactly the audited source-free bytes and blob SHA',async()=>{
+  const {readFile} = await import('node:fs/promises');
+  const bytes = await readFile(new URL('../templates/source-free-canary.yml',import.meta.url));
+  assert.ok(bytes.equals(Buffer.from(CANARY_SOURCE,'utf8')));
+  assert.equal(gitBlobSha(bytes),CANARY_BLOB_SHA);
+});
