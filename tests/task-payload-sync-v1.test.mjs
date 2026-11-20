@@ -129,9 +129,9 @@ test('cancellable task lock leases have pinned positive and negative sources', (
     assert.equal(cases[id].expected.diagnostic, code);
     assert.equal(cases[id].expected.no_artifact, true);
   }
-  assert.equal(registry.lock_cancellation_runtime_probes.length, 13);
+  assert.equal(registry.lock_cancellation_runtime_probes.length, 14);
   const ids = registry.lock_cancellation_runtime_probes.map(p => p.id);
-  assert.equal(new Set(ids).size, 13);
+  assert.equal(new Set(ids).size, 14);
   for (const p of registry.lock_cancellation_runtime_probes) {
     assert.ok(p.assertions?.length >= 3, p.id);
     assert.ok(p.action, p.id);
@@ -209,4 +209,28 @@ test('lexical using guard exits before task terminal and cancellation cannot dou
   assert.ok(p.assertions.includes('NO_TASK_RETIRE_NEEDED_BEFORE_GUARD_RELEASE'));
   assert.ok(p.assertions.includes('A_CANCELLATION_AFTER_RELEASE_DOES_NOT_DOUBLE_UNLOCK'));
   assert.ok(p.required_order.indexOf('A_RELEASE') < p.required_order.indexOf('A_TERMINAL'));
+});
+
+test('trusted lock-park receipt gates cancel and grant wakes', () => {
+  const probes = Object.fromEntries(registry.lock_cancellation_runtime_probes.map(p => [p.id,p]));
+  const park = probes.lock_park_cancel_linearization;
+  assert.equal(park.evidence_required, true);
+  for (const witness of [
+    'NO_CANCEL_WAKE_UNLESS_B_WAS_TRUSTED_PARKED',
+    'NO_GRANT_WAKE_UNLESS_B_WAS_TRUSTED_PARKED',
+    'NO_DUPLICATE_DISPATCH_OF_RUNNING_CONTINUATION',
+    'GUARD_HOLDING_TASK_CANNOT_PARK_LOCK_WAIT',
+    'WRONG_TICKET_OR_WRONG_TENANT_PARK_REJECTED',
+    'CANCEL_BEFORE_PARK_RETURNS_CANCELLATION_PENDING',
+    'GRANT_BEFORE_PARK_IS_CLAIMABLE_WITHOUT_PARK',
+    'ACK_AFTER_READY_QUEUE_ADMISSION_ONLY',
+    'ACK_IDENTIFIES_EXACT_PARKED_TASK_AND_GRANT',
+    'NO_PREMATURE_GUARD_RELEASE'
+  ]) assert.ok(park.assertions.includes(witness), witness);
+  assert.deepEqual(park.required_happens_before, [
+    ['TRUSTED_PARK','CANCEL_WAKE_IF_CANCEL_WINS_LATER'],
+    ['TRUSTED_PARK','GRANT_WAKE_IF_GRANT_WINS_LATER']
+  ]);
+  assert.ok(probes.queued_wait_cancel.assertions.includes('WAKE_REQUIRES_TRUSTED_LOCK_PARK_RECEIPT'));
+  assert.ok(probes.grant_cancel_race.assertions.includes('GRANT_HINT_REQUIRES_TRUSTED_LOCK_PARK_RECEIPT'));
 });
