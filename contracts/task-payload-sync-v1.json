@@ -722,6 +722,48 @@
         ]
       ],
       "evidence_required": true
+    },
+    {
+      "id": "atomic_host_ready_admission",
+      "given": [
+        "task_A_claimed_mutex",
+        "task_B_trusted_parked_on_mutex",
+        "task_C_trusted_parked_on_mutex",
+        "one_privileged_scheduler_arbiter_controls_lock_and_ready_ledgers"
+      ],
+      "action": "race_A_guard_release_B_grant_B_cancel_and_privileged_ready_queue_enqueue",
+      "assertions": [
+        "GRANT_ACK_AND_READY_QUEUE_INSERTION_ONE_SERIALIZED_TRANSITION",
+        "FAILED_OR_CAPACITY_REJECTED_READY_ENQUEUE_LEAVES_GRANT_PENDING",
+        "ONE_RUNNABLE_ENTRY_PER_LOGICAL_TASK",
+        "READY_BUT_UNDISPATCHED_TASK_CANNOT_CLAIM_OR_PARK",
+        "CANCELLATION_AND_GRANT_WAKE_FOR_SAME_TASK_NOT_DUPLICATED",
+        "VALID_SUCCESSOR_NOT_LOST_AFTER_REVOKED_GRANT",
+        "CANCELLED_WAITER_NEVER_RELEASES_ACTIVE_OWNER",
+        "READY_QUEUE_NOT_VISIBLE_TO_UNTRUSTED_GUEST",
+        "NONPARKING_HOST_ARBITER_WHEN_BUSY",
+        "PHYSICAL_RETIREMENT_REQUIRES_TRUSTED_DISPATCH_AND_GUEST_EXIT"
+      ],
+      "required_happens_before": [
+        [
+          "TRUSTED_LOCK_PARK",
+          "HOST_READY_ADMISSION"
+        ],
+        [
+          "HOST_READY_ADMISSION",
+          "READY_GRANT_ACK"
+        ],
+        [
+          "HOST_READY_ADMISSION",
+          "SCHEDULER_POP_READY"
+        ],
+        [
+          "SCHEDULER_POP_READY",
+          "GUEST_CLAIM_OR_CANCEL_UNWIND"
+        ]
+      ],
+      "evidence_required": true,
+      "release_qualified": false
     }
   ]
 }
