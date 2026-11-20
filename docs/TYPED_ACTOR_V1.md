@@ -247,3 +247,33 @@ executed evidence.
 ### Stepful private reference-model receipt (2026-11-20)
 
 [Private run #44683859021](https://github.com/ores-rate-limit-test/atto-ci/actions/runs/44683859021) executed on the independently authenticated three-source-blob subset: **12/12 isolation policy Rust tests, 16/16 broker Rust tests and 36/36 registry rows** on Rust 1.99.1. Job `136113409387`, carrier commit `0562e3c883d8f152e47c00f1c66578c22e29e0c8`. Machine-readable receipt: `evidence/actor-isolation-reference-audit-20261120.json`. The initial stepful run exposed an incorrect positive ActorRef assertion; that test was corrected before the successful rerun. A complete source tree was also reconstructed in another private carrier with an identical Git tree SHA, but its Actions failed before any steps. Neither run certifies compiled Atto guests or production TenantVM confinement; all backend statuses remain NOT_EXECUTED.
+
+## Compiled Rust/Wasm actor smoke and full-tree conformance receipts (2026-11-20)
+
+The fully reconstructed conformance source tree at PR #33 head
+`06031a76634e9f41df1ff1cfd353d89b90625893` (Git root tree
+`a5a26e1f0ab09a185b2e5d738db2272525931417`) was mirrored
+byte-identically into private carrier
+`ores-rate-limit-test/atto-ci` commit
+`1374ab8ab7db5d570037372d8f934a17cf6a1c3b`: **119 blobs, exact root SHA**.
+All **six triggered workflows passed with executed steps**. The
+[typed actor source-only run #44768350807](https://github.com/ores-rate-limit-test/atto-ci/actions/runs/44768350807)
+completed 47 Rust unit tests across seven source-only suites; this specific
+run does NOT compile Atto guest code.
+
+The separate [real compiler/guest run #44770032043](https://github.com/ores-rate-limit-test/atto-ci/actions/runs/44770032043)
+built `attoc` from a **68-file exact-source subset**, passed 11 integration
+tests + 5 witness tests + 12 admission tests, generated valid Wasm for two
+actor programs, and executed real compiled `int` and `bool` actor receive
+handlers inside a **minimal synthetic trusted Node host**. The int actor
+printed `42`, and the bool actor printed `true`. All **nine source negative
+fixtures** failed with expected diagnostics and no Wasm artifact.
+Source blob identities match the single source commit
+`atto-source.rs` `9305b24573bbe0183dbbd6a59c8166c9f1635627`.
+Machine receipt: `evidence/actor-isolation-compiled-rust-guest-20261120.json`.
+
+**Scope remains limited.** The compiled guest test is NOT a production
+worker runtime, untrusted TenantVM isolation, full 963-file compiler mirror,
+brokered cross-tenant transport, or verified checked ownership transfer.
+Do not promote full backend parity; retain Draft status. The compiler's
+`take!` actor transfer remains rejected pending an acknowledgement/refund ABI.
