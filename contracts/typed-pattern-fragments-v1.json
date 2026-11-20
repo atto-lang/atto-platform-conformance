@@ -1211,8 +1211,8 @@
       "compiler_path": "forge_scalar .atto -> validated C++20 -> native executable",
       "guest_status": "NOT_EXECUTED",
       "caveat": "real compiled guest candidate authored with eight exact Rust source blobs; native compiler and sanitizer run not yet verified",
-      "head": "d2f0ba1ccaf187347c62e77c7cc754ad6a4f9d02",
-      "tree": "3a1731cb84e7bf2ae2e8db999905a5868ac6a2c5"
+      "head": "e3437deafc56a4d765ba007cf2eef6e7aa8dbeef",
+      "tree": "27c01647ed770c477ae25d3d5abdae8de70c8eae"
     }
   }
 }
